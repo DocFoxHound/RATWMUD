@@ -3886,7 +3886,7 @@ def report_text(rep):
     lines.append('')
     lines.append('Businesses with a till (merchants): ' + ', '.join(f'{k} {v}' for k, v in rep['businesses'].items()))
     lines.append('')
-    lines.append('Draws (generated: item_catalog.store_goods, from crafts.json):')
+    lines.append('Draws (generated from crafts.json):')
     for b, d in rep['draws'].items():
         lines.append(f'  {b}: making {", ".join(d["making"]) or "-"}; resale {", ".join(d["resale"]) or "-"}')
     lines.append('')

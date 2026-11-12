@@ -148,9 +148,10 @@ class DungeonMasterLive(unittest.TestCase):
         kept = [i['type'] for i in (row[0].get('injuries') or [])]
         self.assertEqual(kept, ['bent_tail'], 'saved with the bent tail only: ' + json.dumps(row[0].get('injuries')))
 
-    def start(self, seconds=120):
+    def start(self, seconds=120, extra=()):
         """A game server on this database (the class's), once it is listening."""
-        server = subprocess.Popen([str(SERVER), '--database', 'dev', '--port', str(free_port()), '--for', str(seconds), '--dev-identity'],
+        server = subprocess.Popen([str(SERVER), '--database', 'dev', '--port', str(free_port()), '--for', str(seconds), '--dev-identity',
+                                   *extra],
                                   env={**os.environ, 'RATW_DATABASE_URL': self.url, 'RATW_AI': 'off'},
                                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         for line in server.stdout:
@@ -214,10 +215,20 @@ class DungeonMasterLive(unittest.TestCase):
                 with lock.transaction():
                     lock.execute('LOCK TABLE game.journal IN EXCLUSIVE MODE')
                     first = dm.grant(who, 'dev', pc, 23, 'for the lost ewe')['id']
+                    # (Second repair: two economy.sync rows in one poll, the slider moved "now": the second, answered
+                    # with the first's outcome, waits for the first's record too.)
+                    with W.connect('dev', 'owner', dbname=self.name) as conn:
+                        S.patch_economy_rules(conn, 'greyfen', {'prosperity': -50})
+                        syncs = [conn.execute("INSERT INTO dm.actions (kind, target_id, requested_by, payload) VALUES "
+                                              "('economy.sync', 'economy', 'test', %s) RETURNING id",
+                                              (json.dumps({'now': True}),)).fetchone()[0] for _ in range(2)]
+                        conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': syncs[0]}),))
                     time.sleep(5)
                     with W.connect('dev', 'owner', dbname=self.name) as look:
                         status = look.execute('SELECT status FROM dm.actions WHERE id = %s', (first,)).fetchone()[0]
+                        synced = [look.execute('SELECT status FROM dm.actions WHERE id = %s', (a,)).fetchone()[0] for a in syncs]
                     self.assertEqual(status, 'queued', 'not "applied" while its record isn\'t written')
+                    self.assertEqual(synced, ['queued', 'queued'], 'neither economy.sync "applied" before the record')
                     self.assertFalse([l for l in heard if 'grants you' in l], 'the player not told either: ' + ''.join(heard[-5:]))
                     server.kill()
                     server.communicate(timeout=60)
@@ -234,28 +245,39 @@ class DungeonMasterLive(unittest.TestCase):
         try:
             status, result = self.outcome(first, 30)
             self.assertEqual((status, result), ('applied', 'Granted 23p: for the lost ewe.'), 'the next server applies the queued row')
-            # (2) The row held after its record commits.
+            for a in syncs:
+                self.assertEqual(self.outcome(a, 30)[0], 'applied', 'the queued syncs applied by the next server')
+            # (2) The rows held after their records commit. Second repair: the next server comes back more than ten
+            # minutes after the first was asked (its requested_at set back), and the expiry caught the other meanwhile:
+            # both answered from the records, never "expired" (a DM told that would pay again).
+            grants = []
             with W.connect('dev', 'owner', dbname=self.name) as conn:
-                second = conn.execute('INSERT INTO dm.actions (kind, target_id, requested_by, payload) VALUES (%s, %s, %s, %s) RETURNING id',
-                                      ('character.grant', pc, 'test', json.dumps({'coins': 23, 'reason': 'for the second ewe'}))).fetchone()[0]
+                for reason in ('for the second ewe', 'for the third ewe'):
+                    grants.append(conn.execute('INSERT INTO dm.actions (kind, target_id, requested_by, payload) VALUES (%s, %s, %s, %s) RETURNING id',
+                                               ('character.grant', pc, 'test', json.dumps({'coins': 23, 'reason': reason}))).fetchone()[0])
+            second, third = grants
             with W.connect('dev', 'owner', dbname=self.name) as row_lock:
                 with row_lock.transaction():
-                    row_lock.execute('SELECT 1 FROM dm.actions WHERE id = %s FOR UPDATE', (second,))
+                    row_lock.execute('SELECT 1 FROM dm.actions WHERE id = ANY(%s) FOR UPDATE', (grants,))
                     with W.connect('dev', 'owner', dbname=self.name) as conn:
                         conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': second}),))
                     deadline, found = time.time() + 20, 0
-                    while time.time() < deadline and not found:
+                    while time.time() < deadline and found < 2:
                         with W.connect('dev', 'owner', dbname=self.name) as conn:
-                            found = conn.execute("SELECT count(*) FROM game.journal WHERE record LIKE '%%\"dmActs\"%%' "
-                                                 'AND record LIKE %s', (f'%"{second}"%',)).fetchone()[0]
+                            found = sum(conn.execute("SELECT count(*) FROM game.journal WHERE record LIKE '%%\"dmActs\"%%' "
+                                                     'AND record LIKE %s', (f'%"{g}"%',)).fetchone()[0] > 0 for g in grants)
                         time.sleep(.25)
-                    self.assertTrue(found, 'the grant\'s record, with its dm.actions id, committed')
+                    self.assertEqual(found, 2, 'the grants\' records, with their dm.actions ids, committed')
                     time.sleep(1)
                     server.kill()
                     server.communicate(timeout=60)
                     self.end_the_dead_servers_sessions()
             with W.connect('dev', 'owner', dbname=self.name) as conn:
-                self.assertEqual(conn.execute('SELECT status FROM dm.actions WHERE id = %s', (second,)).fetchone()[0], 'queued')
+                self.assertEqual([conn.execute('SELECT status FROM dm.actions WHERE id = %s', (g,)).fetchone()[0] for g in grants],
+                                 ['queued', 'queued'])
+                conn.execute("UPDATE dm.actions SET requested_at = now() - interval '11 minutes' WHERE id = %s", (second,))
+                conn.execute("UPDATE dm.actions SET status = 'expired', result = 'Not applied within ten minutes.', done_at = now(), "
+                             "requested_at = now() - interval '11 minutes' WHERE id = %s", (third,))
         finally:
             if server.poll() is None:
                 server.kill()
@@ -263,12 +285,98 @@ class DungeonMasterLive(unittest.TestCase):
         server, _ = self.start(240)
         try:
             status, result = self.outcome(second, 30)
-            self.assertEqual((status, result), ('applied', 'Granted 23p: for the second ewe.'), 'answered from the record')
+            self.assertEqual((status, result), ('applied', 'Granted 23p: for the second ewe.'), 'answered from the record, not expired')
+            deadline = time.time() + 30
+            while time.time() < deadline:
+                with W.connect('dev', 'owner', dbname=self.name) as conn:
+                    status, result = conn.execute('SELECT status, result FROM dm.actions WHERE id = %s', (third,)).fetchone()
+                if status == 'applied':
+                    break
+                time.sleep(.25)
+            self.assertEqual((status, result), ('applied', 'Granted 23p: for the third ewe.'), 'an expired row the record holds set right')
         finally:
             server.send_signal(signal.SIGTERM)
             out, _ = server.communicate(timeout=60)
         self.assertIn('already applied before the restart', out)
-        self.assertEqual(self.saved_cash(pc), had + 46, 'each grant paid once: 23 and 23, never 69')
+        self.assertEqual(self.saved_cash(pc), had + 69, 'each grant paid once: 23, 23 and 23, never 92')
+
+    def test_the_storykeepers_band_on_a_live_server(self):
+        """Phase 9's second repair (a missing item): the Storykeeper's npc_band, through the operator bridge of a real
+        server on this database, holds a resident's household to a band: its receipt, the report's band for a while."""
+        import tempfile
+        import uuid
+        bridge = Path(tempfile.mkdtemp(prefix='ratw-s2stage-bridge-'))
+        try:
+            server, _ = self.start(120, ('--dm-directory', str(bridge)))
+            try:
+                snapshot = bridge / 'snapshot.json'
+                deadline, npc = time.time() + 30, None
+                while time.time() < deadline and not npc:   # (Once the first bands are worked out.)
+                    try:
+                        view = json.loads(snapshot.read_text())
+                        npc = next((c['id'] for c in view['characters'] if c.get('kind') == 'staged' and c.get('band')), None)
+                    except (OSError, ValueError):
+                        pass
+                    time.sleep(.25)
+                self.assertTrue(npc, 'a resident with a band in the bridge\'s snapshot')
+                now = int(time.time())
+                rid = uuid.uuid4().hex
+                request = {'version': 1, 'id': rid, 'worldId': view['worldId'], 'createdAtUnix': now, 'expiresAtUnix': now + 120,
+                           'kind': 'npc_band', 'payload': {'npc': npc, 'band': 'rich', 'days': 3}}
+                (bridge / 'outbox' / f'{rid}.tmp').write_text(json.dumps(request))
+                (bridge / 'outbox' / f'{rid}.tmp').rename(bridge / 'outbox' / f'{rid}.json')
+                reply_at = bridge / 'inbox' / f'{rid}.json'
+                deadline = time.time() + 30
+                while time.time() < deadline and not reply_at.exists():
+                    time.sleep(.25)
+                reply = json.loads(reply_at.read_text())
+                self.assertTrue(reply['ok'], reply)
+                self.assertIn('Band rich for', reply['detail'])
+                held = []
+                deadline = time.time() + 60
+                while time.time() < deadline and not held:
+                    with W.connect('dev', 'owner', dbname=self.name) as conn:
+                        row = conn.execute("SELECT payload::jsonb->'society'->'report'->'bandOverrides' FROM game.checkpoints").fetchone()
+                    held = [o for o in (row[0] if row and row[0] else []) if npc in (o.get('members') or []) and o.get('band') == 'rich']
+                    time.sleep(.5)
+                self.assertTrue(held, 'the report holds the household rich for a while')
+            finally:
+                server.send_signal(signal.SIGTERM)
+                server.communicate(timeout=60)
+        finally:
+            shutil.rmtree(bridge, ignore_errors=True)
+
+    def test_economy_sync_reads_the_economy_alone(self):
+        """Phase 9's second repair: economy.sync reads live.economy_manifest (the economy's records), never the whole world
+        again (on Ridgemere 2.0 that stopped the game for seconds on each slider move): with live.people_manifest out of
+        the way, a slider move still reaches the running server."""
+        server, _ = self.start(120)
+        try:
+            with W.connect('dev', 'owner', dbname=self.name) as conn:
+                conn.execute('ALTER FUNCTION live.people_manifest(ratw_id, text) RENAME TO people_manifest_away')
+            try:
+                with W.connect('dev', 'owner', dbname=self.name) as conn:
+                    S.patch_economy_rules(conn, 'greyfen', {'prosperity': 40, 'prosperityCause': 'the silver strike'})
+                sync = self.queue('economy.sync', 'economy', {'now': True})
+                status, result = self.outcome(sync, 30)
+                self.assertEqual(status, 'applied', result)
+                deadline = time.time() + 60          # (The report reaches the checkpoint with the next snapshot.)
+                report = {}
+                while time.time() < deadline:
+                    with W.connect('dev', 'owner', dbname=self.name) as conn:
+                        row = conn.execute("SELECT payload::jsonb->'society'->'report'->'prosperity' FROM game.checkpoints").fetchone()
+                    report = (row[0] if row else None) or {}
+                    if report.get('target') == 40:
+                        break
+                    time.sleep(.5)
+            finally:
+                with W.connect('dev', 'owner', dbname=self.name) as conn:
+                    conn.execute('ALTER FUNCTION live.people_manifest_away(ratw_id, text) RENAME TO people_manifest')
+                    S.patch_economy_rules(conn, 'greyfen', drop=('prosperity', 'prosperityCause'))
+            self.assertEqual((report.get('target'), report.get('cause')), (40, 'the silver strike'), 'the slider in force: ' + json.dumps(report))
+        finally:
+            server.send_signal(signal.SIGTERM)
+            server.communicate(timeout=60)
 
     def test_the_acts_survive_a_crash(self):
         """Doc 79, Phase 9, integrated: every path from the studio and the DM tool to the running server, then a crash.

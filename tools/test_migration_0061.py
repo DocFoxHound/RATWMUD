@@ -147,7 +147,9 @@ class Migration0061Tests(unittest.TestCase):
             self.assertIn('loop needs off', lines)
             for gone in ('store ', 'nostore ', 'countryoff ', 'subsidy ', 'comforts ', 'farms ', 'farmarea ', 'farm '):
                 self.assertFalse([l for l in lines if l.startswith(gone)], gone)
-            self.assertIn('season "bread" price 100 95 105 120 shelf 100 110 100 90', lines)
+            # (A group stored with its supply and normal keeps 0060's line, which a server built before Phase 9 reads.)
+            self.assertIn('season "bread" supply 100 120 90 80 price 100 95 105 120 shelf 100 110 100 90 normal 12', lines)
+            self.assertIn(next(l for l in old.split('\n') if l.startswith('season "bread"')), lines, '0060 wrote it so')
             self.assertIn('season "fish" price 90 90 100 110 shelf 100 100 100 100', lines)
             self.assertFalse([l for l in lines if l.startswith('season "odd"')])
             rules = [l for l in lines if l.startswith('rule ')]
@@ -187,6 +189,76 @@ class Migration0061Tests(unittest.TestCase):
             self.assertEqual(len(overrides), 1)
             self.assertGreater(len(overrides[0].encode()), M.OVERRIDES_MOST)
             self.assertTrue(lines[0].startswith('economy ') and lines[0].endswith(' 10 12'), 'the old dailies kept for older servers')
+
+    def test_malformed_stored_values_never_stop_the_manifest(self):
+        # Phase 9's second repair: one bad host value (a service switched "sometimes", a price in words, a season's
+        # number in words, a rule of 40.5) made live.people_manifest itself fail, so the world could not load. Now each
+        # is written as a word Core skips with a warning (or, a rule that isn't a whole number, left out: the entity
+        # world_store reads holds whole numbers only), and the rest of the economy reads.
+        with Scratch() as db:
+            W.migrate(db.owner)
+            world = seed_world(db.owner)
+            db.owner.execute('UPDATE live.economy SET services = %s, seasons = seasons || %s, rules = rules || %s WHERE world_id = %s',
+                             (json.dumps({'groom_and_trim': {'on': 'sometimes', 'price': 'six', 'every': 20}, 'odd': 7}),
+                              json.dumps({'eel': {'price': [100, 'dear', 100, 100], 'shelf': [100] * 4}}),
+                              json.dumps({'ripple': 40.5}), world))
+            lines = db.owner.execute('SELECT live.people_manifest(%s)', (world,)).fetchone()[0].split('\n')
+            self.assertIn('service "groom_and_trim" unset price unset every 20', lines)
+            self.assertFalse([l for l in lines if l.startswith('service "odd"')])
+            self.assertIn('season "eel" price 100 unset 100 100 shelf 100 100 100 100', lines)
+            self.assertFalse([l for l in lines if l.startswith('rule "ripple"')], 'a rule of 40.5 is not written')
+            # The same through manifest_lines (the exporter), line for line.
+            row = db.owner.execute('SELECT seasons, services FROM live.economy WHERE world_id = %s', (world,)).fetchone()
+            written = M.economy_lines({'seasons': row[0], 'services': row[1], 'rules': {'ripple': 40.5}})
+            for line in ('service "groom_and_trim" unset price unset every 20', 'season "eel" price 100 unset 100 100 shelf 100 100 100 100'):
+                self.assertIn(line, written)
+            self.assertFalse([l for l in written if l.startswith('rule ')])
+
+    def test_the_economy_alone_is_the_manifests_first_lines(self):
+        # Phase 9's second repair: economy.sync reads live.economy_manifest (the economy's records only), not every
+        # resident; it is exactly the head of live.people_manifest, and the game may read it.
+        with Scratch() as db:
+            W.migrate(db.owner)
+            world = seed_world(db.owner)
+            seed_people(db.owner, world, settings=False)
+            whole = db.owner.execute('SELECT live.people_manifest(%s)', (world,)).fetchone()[0]
+            with W.connect('dev', 'game', dbname=db.name) as game:
+                economy = game.execute('SELECT live.economy_manifest(%s)', (world,)).fetchone()[0]
+            self.assertTrue(economy.startswith('economy 1234 40 30 10 12\n'))
+            self.assertTrue(whole.startswith(economy + '\n'), 'the people follow the economy')
+            self.assertFalse([l for l in economy.split('\n') if l.startswith('resident ')])
+            self.assertIsNone(db.owner.execute("SELECT live.economy_manifest('nowhere')").fetchone()[0])
+
+    def test_rolled_back_by_hand_then_applied_again(self):
+        # Phase 9's second repair: Database/rollback/0061_staged_economy_down.sql, as its header says to run it. After
+        # it the world is 0060's (the table back with 0055's grants, 0060's manifest, 0061 not listed), the bands kept;
+        # world_db.migrate then applies 0061 again (band_override already there).
+        import world_store as S
+        down = (Path(__file__).resolve().parent.parent / 'Database' / 'rollback' / '0061_staged_economy_down.sql').read_text()
+        with Scratch() as db:
+            W.migrate(db.owner, files_upto(60))
+            world = seed_world(db.owner)
+            seed_people(db.owner, world)
+            old = db.owner.execute('SELECT live.people_manifest(%s)', (world,)).fetchone()[0]
+            W.migrate(db.owner)
+            db.owner.execute("UPDATE live.npcs SET band_override = 'rich' WHERE id = 'bram'")
+            with db.owner.transaction():
+                db.owner.execute(down)
+            self.assertNotIn('0061', W.applied_migrations(db.owner))
+            self.assertIn('business_settings', tables(db.owner))
+            self.assertFalse(S.slim_supported(db.owner), 'never half migrated')
+            # (0060's manifest again, its store line back: these NPCs have no home, so no nostore line either way.)
+            self.assertEqual(db.owner.execute('SELECT live.people_manifest(%s)', (world,)).fetchone()[0], old)
+            with W.connect('dev', 'editor', dbname=db.name) as editor:
+                editor.execute("INSERT INTO live.business_settings (world_id, npc_id, internal_store) VALUES (%s, 'cora', false)", (world,))
+            with W.connect('dev', 'game', dbname=db.name) as game:
+                with self.assertRaises(Exception):
+                    game.execute("DELETE FROM live.business_settings")
+            db.owner.execute('DELETE FROM live.business_settings')
+            self.assertEqual(W.migrate(db.owner), ['0061_staged_economy'])
+            self.check_slim(db.owner)
+            self.assertEqual(db.owner.execute("SELECT band_override FROM live.npcs WHERE id = 'bram'").fetchone()[0], 'rich')
+            self.assertIn('band "bram" rich', db.owner.execute('SELECT live.people_manifest(%s)', (world,)).fetchone()[0])
 
     def test_the_game_may_still_read_the_manifest(self):
         with Scratch() as db:

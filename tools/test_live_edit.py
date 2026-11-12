@@ -153,6 +153,42 @@ class LiveTests(unittest.TestCase):
             L.apply_edit(self.conn, 'a1', 'Ada', 'Bad', [{'key': 'economy', 'before': S.economy_value(self.conn, 'greyfen'),
                                                          'after': {**stored, 'treasury': -5}}])
 
+    def test_the_economy_key_holds_new_overrides_to_the_studios_rules(self):
+        # Phase 9's second repair: a new override that won't do (7,000 unknown goods, a cap of 10^12, an unknown key) is
+        # refused here as the studio refuses it (Core would skip the whole overrides line, the slider's cause with it);
+        # one already stored doesn't block another change.
+        stored = L.Batch(self.conn, L.world_row(self.conn)).current('economy')
+        bad = {**stored, 'overrides': {'prosperityCause': 'the war levy', 'neverImported': [f'no_good_{i}' for i in range(7000)],
+                                       'status': {'caps': {'grantsADay': 10 ** 12}, 'nonsense': 'x'}}}
+        with self.assertRaises(L.Rejected) as raised:
+            L.apply_edit(self.conn, 'a1', 'Ada', 'Bad overrides', [{'key': 'economy', 'before': stored, 'after': bad}], queue_sync=False)
+        self.assertIn('neverImported', str(raised.exception))
+        self.assertNotIn('neverImported', self.conn.execute('SELECT rules FROM live.economy').fetchone()[0])
+        # (One stored by hand, which Core reads past: another change still goes in.)
+        with W.connect('dev', 'owner', dbname=self.name) as owner:
+            owner.execute('''UPDATE live.economy SET rules = rules || '{"neverImported": ["no_such_good"]}' ''')
+        held = S.economy_value(self.conn, 'greyfen')
+        L.apply_edit(self.conn, 'a1', 'Ada', 'Needs off', [{'key': 'economy', 'before': held, 'after': {**held, 'needsPaused': True}}],
+                     queue_sync=False)
+        self.assertTrue(S.economy_value(self.conn, 'greyfen')['needsPaused'])
+
+    def test_the_load_says_whether_the_world_holds_a_band(self):
+        # Phase 9's second repair: the Inspector's Band picker is greyed on a world before 0061 (this one has it).
+        self.assertIs(self.world.load()['bands'], True)
+
+    def test_the_sync_is_queued_as_atlass_own_role(self):
+        # Phase 9's second repair: through dm.queue_economy_sync (migration 0061), as Atlas's role on its own connection,
+        # whatever the registry's keys (it logged in as the DM's role through the key "dev", silently None elsewhere).
+        action = L.queue_economy_sync(self.conn, 'Ada', {'now': True})
+        self.assertTrue(action)
+        self.assertEqual(self.conn.execute('SELECT current_user').fetchone()[0], 'ratw_editor')
+        with W.connect('dev', 'owner', dbname=self.name) as owner:
+            row = owner.execute('SELECT kind, target_id, requested_by, payload FROM dm.actions WHERE id = %s', (action,)).fetchone()
+        self.assertEqual(row, ('economy.sync', 'economy', 'Ada', {'now': True}))
+        with self.assertRaises(Exception):          # (Atlas's role still can't write dm.actions itself.)
+            with W.connect('dev', 'editor', dbname=self.name) as editor:
+                editor.execute("INSERT INTO dm.actions (kind, requested_by) VALUES ('character.grant', 'x')")
+
     def test_an_npcs_band_through_person(self):
         key = 'person:brann'
         before = L.Batch(self.conn, L.world_row(self.conn)).current(key)

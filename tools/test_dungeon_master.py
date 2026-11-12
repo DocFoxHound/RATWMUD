@@ -1114,9 +1114,49 @@ class ProsperityTests(Fixture):
         self.assertNotIn('long ago', ' '.join(e['text'] for e in log), 'a 28-day log')
         ripples = [e for e in log if e['kind'] == 'ripple']
         self.assertEqual(len(ripples), 1, 'big ripples only (over 0.2)')
-        self.assertIn('bread at Greyfen dearer', ripples[0]['text'])
+        self.assertIn('Trencher bread at Greyfen dearer', ripples[0]['text'], 'the good by its name')
         for gone in ('total', 'houses', 'funds', 'carters', 'residents', 'capital'):
             self.assertNotIn(gone, view)
+
+    def test_the_tab_names_what_it_shows(self):
+        # Phase 9's second repair: a player's coin by its account's characters' names (the faucet door keeps it by the
+        # account), the log's players and residents by name, the goods by the catalogue's names, and the realm's own
+        # treasury beside the towns' (a world with none of its own, as Ridgemere 2.0, had an empty table and no word why).
+        self.plant()
+        with W.connect('dev', 'game', dbname=self.names['dev']) as game:
+            game.execute("INSERT INTO game.account_profiles (world_id, key, position, data) VALUES ('greyfen', 'acct-ada', 0, %s)",
+                         (json.dumps({'account': 'acct-ada', 'characters': ['player-ada']}),))
+        with W.connect('dev', 'owner', dbname=self.names['dev']) as owner:
+            npc, npc_name = owner.execute("SELECT id, name FROM live.npcs WHERE world_id = 'greyfen' ORDER BY id LIMIT 1").fetchone()
+        master = self.sign_in('dm-master')
+        self.dm.act(master, 'dev', 'character.grant', 'player-ada', {'coins': 5, 'reason': 'for the bell'})
+        self.dm.act(master, 'dev', 'band.override', npc, {'band': 'poor', 'days': 3})
+        view = self.dm.prosperity('dev')
+        self.assertEqual(next(h for h in view['players']['holders'] if h['holder'] == 'acct-ada')['name'], 'Ada')
+        texts = [e['text'] for e in view['log'] if e.get('state')]
+        self.assertTrue(any('character.grant Ada:' in t for t in texts), texts)
+        self.assertTrue(any(f'band.override {npc_name}:' in t for t in texts), texts)
+        self.assertEqual(view['goodNames'], {'bread': 'Trencher bread'})
+        self.assertIn({'kind': 'cause', 'text': 'Trencher bread at Greyfen: the long frost'}, view['word'])
+        self.assertEqual(view['treasury'], 5, 'the realm\'s own treasury')
+
+    def test_the_npc_tab_knows_whom_the_bands_cover(self):
+        # Phase 9's second repair: the NPC tab offered a band for a while on every NPC and said it took; the game refuses
+        # one no household holds. The view names whom the bands cover (the save's residents), keeps the act's outcome
+        # among the NPC's actions, and says whether the world holds an NPC's own band (migration 0061).
+        society = {'residents': {'wren': {}, 'brann': {}}, 'report': REPORT}
+        with W.connect('dev', 'game', dbname=self.names['dev']) as game:
+            game.execute('SELECT game.save_checkpoint(%s, 9, %s)',
+                         ('greyfen', json.dumps({'schema': 1, 'calendarDays': 40.4, 'society': society})))
+        master = self.sign_in('dm-master')
+        self.dm.act(master, 'dev', 'band.override', 'sloe', {'band': 'poor', 'days': 3})
+        view = self.dm.npcs('dev')
+        self.assertEqual(view['bandable'], ['brann', 'wren'])
+        self.assertTrue(view['bandsAuthored'])
+        self.assertIn('band.override', [a['kind'] for a in view['actions']], 'its outcome on the NPC tab')
+        with W.connect('dev', 'owner', dbname=self.names['dev']) as owner:
+            owner.execute('DELETE FROM game.checkpoints')
+        self.assertIsNone(self.dm.npcs('dev')['bandable'], 'no save yet: not known')
 
     def test_the_log_says_what_the_server_made_of_each_act(self):
         # Doc 79, Phase 9's first repair: an act is in the log with its outcome, never as done when the server refused it

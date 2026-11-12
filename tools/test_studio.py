@@ -858,8 +858,15 @@ class FakeConn:
         return False
 
     def execute(self, sql, params=()):
+        if 'FOR UPDATE' in sql:                     # (A live world's row locked for the edit: Phase 9's second repair.)
+            self.locked = getattr(self, 'locked', 0) + 1
+            return None
         assert sql.startswith('SELECT id FROM world.worlds'), sql
         return type('Row', (), {'fetchone': lambda _: ('w',)})()
+
+    def transaction(self):
+        import contextlib
+        return contextlib.nullcontext()
 
 
 class FakeStore:
@@ -1088,6 +1095,35 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual((status, data['prosperity']['value']), (200, 100), data)
         self.assertEqual(self.one(self.live, "SELECT rules->>'prosperity' FROM live.economy"), '100')
 
+    def test_two_dms_at_once_on_a_live_world_keep_both_changes(self):
+        # Phase 9's second repair: a rules change on a live world read the row, then wrote the whole rules column back; a
+        # slider moved by another DM between the two was lost (audited and its sync queued all the same). The row is now
+        # locked from the read to the write: the slider waits, then lands on the rules change.
+        real = ST.map_editor.check_economy
+        seen, results = [], []
+
+        def slider():
+            results.append(self.call('POST', '/api/dm/economy/steer', {'world': self.live, 'prosperity': -50, 'cause': 'the war levy'},
+                                     token='dm-token'))
+
+        def meanwhile(*args, **kwargs):
+            if not seen:
+                seen.append(threading.Thread(target=slider))
+                seen[0].start()
+                seen[0].join(1.5)               # (Before the repair it finished here, under the change; now it waits.)
+            return real(*args, **kwargs)
+
+        ST.map_editor.check_economy = meanwhile
+        try:
+            status, data = self.call('POST', '/api/dm/economy/rules', {'world': self.live, 'set': {'theftCap': 6}}, token='dm-token')
+        finally:
+            ST.map_editor.check_economy = real
+        self.assertEqual(status, 200, data)
+        seen[0].join(15)
+        self.assertEqual(results[0][0], 200, results)
+        stored = self.sql(self.live, "SELECT rules FROM live.economy WHERE world_id = 'greyfen'")[0][0]
+        self.assertEqual((stored.get('theftCap'), stored.get('prosperity'), stored.get('prosperityCause')), (6, -50, 'the war levy'), stored)
+
     def test_the_slider_on_dev_is_logged_and_now_alone_moves_the_times(self):
         # Doc 79, Phase 9's first repair: on a dev world the slider goes through live_edit (open Atlas sessions follow it,
         # its log holds it); "now" with the value as it is still queues economy.sync {now} (a slider easing to its mark).
@@ -1109,6 +1145,8 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         status, data = self.call('POST', '/api/atlas/economy/imports', {'neverImported': []}, token='dm-token', headers=editor)
         self.assertEqual((status, data['changed']), (200, True), data)
         self.assertEqual(data['economy']['overrides'].get('neverImported'), [], 'ships carry everything: kept, not dropped')
+        # (Phase 9's second repair: it says from when, since a ship already on the timetable keeps its cargo.)
+        self.assertIn('from the next week\'s timetable on (a ship already posted keeps its cargo)', data['detail'])
         self.assertIn('overrides {"neverImported": []}', self.lines(self.dev))
         for market in ({'events': [1]}, {'events': 'x'}, {'wharf': [2]}):
             status, data = self.call('POST', '/api/atlas/economy/market', {'market': market}, token='dm-token', headers=editor)
@@ -1206,15 +1244,17 @@ class RuleListTests(unittest.TestCase):
         self.assertEqual({r['name'] for r in ST.Economy.rule_list()}, set(map_editor.RULES) - {'prosperity'}, 'the slider\'s apart')
 
     def test_a_rule_the_game_no_longer_has_is_kept_and_ignored(self):
-        # Doc 79, 14 and 17: an old world's rule (the steering's, the loop's) refuses nothing, warns, and never reaches
-        # the world file (Core would skip it); a known rule out of its range is still refused.
+        # Doc 79, 14 and 17: an old world's rule (the steering's, the loop's) refuses nothing and warns; it reaches the world
+        # file as it reaches the database's manifest (Phase 9's second repair: the two writers agreed on nothing here, and
+        # the Rules panel said it was never sent), and Core reads it past with a warning. A known rule out of its range is
+        # still refused.
         rules = {'steer': 1, 'almsADay': 12, 'neverBroke': 1}
         self.assertEqual(map_editor.check_rules(rules, {}), [])
         self.assertEqual(map_editor.unknown_rules(rules), ['almsADay', 'steer'])
         p = greyfen()
         p['economy']['rules'] = rules
         lines = map_editor.export_files(p)['world.ratw'].splitlines()
-        self.assertEqual([l for l in lines if l.startswith('rule ')], ['rule "neverBroke" 1'])
+        self.assertEqual([l for l in lines if l.startswith('rule ')], ['rule "almsADay" 12', 'rule "neverBroke" 1', 'rule "steer" 1'])
         self.assertTrue(map_editor.check_rules({'halfLifeDurable': 4}, {}), 'under its low')
         self.assertTrue(map_editor.check_rules({'neverBroke': 2}, {}))
 

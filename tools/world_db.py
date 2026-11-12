@@ -372,8 +372,12 @@ def ensure_roles(databases: list[str] | None = None) -> list[str]:
                     created.append(name)
             # The Dungeon Master works on every world.
             for database in [w['database'] for w in worlds()] if databases is None else databases:
+                # (The role's own grant, not has_database_privilege, which counts PUBLIC's CONNECT: a later REVOKE ALL
+                # FROM PUBLIC, as _grant_connect makes, then cut the DM off. Phase 9's second repair.)
                 if su.execute('SELECT 1 FROM pg_database WHERE datname = %s', (database,)).fetchone() and not su.execute(
-                        "SELECT has_database_privilege('ratw_dm', %s, 'CONNECT')", (database,)).fetchone()[0]:
+                        "SELECT EXISTS (SELECT 1 FROM pg_database d, aclexplode(coalesce(d.datacl, acldefault('d', d.datdba))) a "
+                        "WHERE d.datname = %s AND a.grantee = 'ratw_dm'::regrole AND a.privilege_type = 'CONNECT')",
+                        (database,)).fetchone()[0]:
                     su.execute(sql.SQL('GRANT CONNECT ON DATABASE {} TO ratw_dm').format(sql.Identifier(database)))
         finally:
             su.execute('SELECT pg_advisory_unlock(%s)', (ROLES_LOCK,))

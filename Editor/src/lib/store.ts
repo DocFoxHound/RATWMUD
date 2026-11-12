@@ -50,6 +50,8 @@ export interface EditorState {
     editors: Editor[];
     /** Chapters' camp buildings from the DEV game (read-only; lib/session.ts refreshes them). */
     camps: CampBuilding[];
+    /** Whether the world can hold an NPC's own band (migration 0061; doc 79, 14): the Band picker is greyed without it. */
+    bandsHeld: boolean;
     conflict: ConflictNotice | null;
     marks: Mark[];
     view: View;
@@ -90,7 +92,7 @@ export interface EditorState {
 
 let state: EditorState = {
     project: M.createProject(64, 48, 'Loading the world…'), past: [], future: [], loaded: false,
-    live: {state: 'connecting', pending: 0, error: ''}, identity: null, editors: [], camps: [], conflict: null, marks: [],
+    live: {state: 'connecting', pending: 0, error: ''}, identity: null, editors: [], camps: [], bandsHeld: true, conflict: null, marks: [],
     view: {kind: 'world'}, selection: null, tool: 'select', glyph: '#', brush: 1,
     height: 1, filled: true, role: 'civilian', building: 'house', side: 'S', cellSize: {w: 64, h: 64}, road: {glyph: 'd', width: 3, bridges: true}, roadPoints: [], pending: null, dialog: null,
     palette: false, overlays: {cuts: true, links: true, territory: false, people: true, routes: true, grid: false, camps: true, ways: false},

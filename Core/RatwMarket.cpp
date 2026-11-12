@@ -1904,7 +1904,12 @@ bool Society::setProsperity(int target, bool now, const std::string& cause)
     while (!words.empty() && words.front() == ' ')
         words.erase(words.begin());
     const bool taken = !words.empty() && market::plainWords(words, 80);
-    if (dir == 0 || (!taken && (!moved || (b.sliderCause.dir == dir && !b.sliderCause.words.empty()))))
+    // (The host's words taken away, the DM's cause in force: the world's own words of its way take over, quietly, told as
+    // the DM's were: Phase 9's second repair. A cleared cause is the host's say, as economy.sync reads the stored one.)
+    const bool cleared = cause.empty() && b.sliderCause.dm && b.sliderCause.dir != 0;
+    if (cleared && dir == 0)
+        dir = b.sliderCause.dir;
+    if (dir == 0 || (!taken && !cleared && (!moved || (b.sliderCause.dir == dir && !b.sliderCause.words.empty()))))
         return taken || cause.empty();
     if (taken && b.sliderCause.dm && b.sliderCause.words == words && b.sliderCause.dir == dir)
         return true;                               // (The same words again, the same way: a sync says what it said.)
@@ -1912,7 +1917,7 @@ bool Society::setProsperity(int target, bool now, const std::string& cause)
     next.dir = dir;
     next.day = marketClock();
     next.n = b.sliderCause.n + 1;
-    next.told = false;
+    next.told = cleared && b.sliderCause.dir == dir && b.sliderCause.told;
     if (taken)
     {
         next.words = words;

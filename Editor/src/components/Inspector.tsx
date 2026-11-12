@@ -292,6 +292,7 @@ function LettingEditor({id, letting}: {id: string; letting?: M.Letting}) {
 // --------------------------------------------------------------------------- People
 
 function PersonInspector({project, person}: {project: Project; person: Person}) {
+    const bandsHeld = useStore(s => s.bandsHeld);
     const update = (fields: Partial<Person>, label = `Updated ${person.name}.`) =>
         commit(label, p => M.upsertPerson(p, {...person, ...fields}), true);
     const look = person.appearance;
@@ -369,7 +370,9 @@ function PersonInspector({project, person}: {project: Project; person: Person}) 
         </Section>
         <Section title="Band" open={false}>
             <SelectField label="Economic band" value={person.band ?? ''} onChange={v => update({band: v === '' ? null : v as Band})}
-                hint="For the resident's whole household; the highest band among its members wins, and a DM's band for a while comes first."
+                disabled={!bandsHeld && !person.band}
+                hint={bandsHeld ? "For the resident's whole household; the highest band among its members wins, and a DM's band for a while comes first."
+                                : "This world needs migration 0061 to hold an NPC's own band: from rank until then."}
                 options={[{value: '', label: 'From rank'}, ...BANDS.map(b => ({value: b, label: b[0].toUpperCase() + b.slice(1)}))]} />
             <Hint>Residents are fed by their band; the poor go short when the nearest food shop is bare.</Hint>
         </Section>

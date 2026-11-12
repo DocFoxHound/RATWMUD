@@ -535,6 +535,19 @@ class ScanTest(unittest.TestCase):
             self.assertTrue(errors, (bad, where))
             self.assertTrue(any('rules' in e for e in errors), errors)
 
+    def test_an_economy_row_that_wont_do_is_refused(self):
+        # Phase 9's second repair: a package's live.economy row is checked as a save checks it (an untrusted package's
+        # service switched "sometimes", a column that isn't an object, overrides past Core's one line), each by its path.
+        good = {'world_id': 'w', 'treasury': 500, 'store_herbs': 10, 'store_meals': 10, 'rules': {'ripple': 40},
+                'services': {'groom_and_trim': {'on': False, 'price': 6, 'every': 20}}, 'seasons': {}}
+        self.assertEqual(P.economy_rows_problems([good]), [])
+        for bad in ({**good, 'services': {'groom_and_trim': {'on': 'sometimes', 'price': 6, 'every': 20}}},
+                    {**good, 'rules': [1, 2]}, {**good, 'treasury': -5},
+                    {**good, 'rules': {'market': {'wharf': {'ships': ['the Gull ' + 'x' * 70000]}}}}):
+            problems = P.economy_rows_problems([bad])
+            self.assertTrue(problems and all(p.startswith('live.economy[0]') for p in problems), (bad.keys(), problems))
+            self.assertTrue(P.scan(None, {'live.economy': [bad]})[0])
+
     def test_the_prosperity_report_is_never_packaged(self):
         doc = save()
         doc['society']['report'] = {'v': 1, 'markets': [{'id': 'town', 'households': {'poor': 3}}]}

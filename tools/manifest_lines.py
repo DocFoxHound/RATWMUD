@@ -6,9 +6,11 @@ both (leniently: RatwAuthoring.cpp).
 
     economy T SH SM 10 12                            once (10 12: the old daily herbs and meals, for older servers)
     loop needs off                                   when needs are paused
-    season "<group>" price P P P P shelf S S S S      a group the world changed (by text)
+    season "<group>" price P P P P shelf S S S S      a group the world changed (by text); one stored with its supply
+                                                     and normal keeps 0060's line: supply ... price ... shelf ... normal N
     rule "<name>" N                                  an integer rule the world changed (by text)
-    service "<id>" on|off price N every D            a service the world changed (by text)
+    service "<id>" on|off price N every D            a service the world changed (by text); a switch that is not
+                                                     true or false, or a price or days not a number: "unset" (Core skips it)
     overrides {json}                                 prosperityCause, neverImported, status, market (when any)
     band "<npc>" destitute|poor|comfortable|rich     after its resident's records (person_lines)
 
@@ -41,6 +43,14 @@ def _four(v) -> bool:
     return isinstance(v, list) and len(v) == 4
 
 
+def _number(v) -> bool:
+    return isinstance(v, (int, float)) and not isinstance(v, bool)
+
+
+def _numbers(v) -> str:
+    return ' '.join(str(x) if _number(x) else 'unset' for x in v)
+
+
 def economy_lines(entity) -> list[str]:
     """The economy's lines for an entity, in live.people_manifest's order (economy, loop, then seasons, rules and services
     each sorted by text, then the overrides)."""
@@ -51,12 +61,14 @@ def economy_lines(entity) -> list[str]:
     seasons = []
     for group, g in (e.get('seasons') or {}).items():
         if isinstance(g, dict) and _four(g.get('price')) and _four(g.get('shelf')):
-            seasons.append(f'season {quote(group)} price {" ".join(map(str, g["price"]))} '
-                           f'shelf {" ".join(map(str, g["shelf"]))}')
+            old = _four(g.get('supply')) and _number(g.get('normal'))     # (0060's line: older servers read it.)
+            seasons.append(f'season {quote(group)} ' + (f'supply {_numbers(g["supply"])} ' if old else '') +
+                           f'price {_numbers(g["price"])} shelf {_numbers(g["shelf"])}' + (f' normal {g["normal"]}' if old else ''))
     out += sorted(seasons)
     out += sorted(f'rule {quote(name)} {value}' for name, value in (e.get('rules') or {}).items() if _whole(value))
-    word = lambda on: 'on' if on else 'off'
-    out += sorted(f'service {quote(sid)} {word(s.get("on"))} price {s.get("price")} every {s.get("every")}'
+    word = lambda on: 'on' if on is True else 'off' if on is False else 'unset'
+    num = lambda v: str(v) if _number(v) else 'unset'
+    out += sorted(f'service {quote(sid)} {word(s.get("on"))} price {num(s.get("price"))} every {num(s.get("every"))}'
                   for sid, s in (e.get('services') or {}).items() if isinstance(s, dict))
     overrides = {k: v for k, v in (e.get('overrides') or {}).items() if k in OVERRIDE_KEYS}
     if overrides:

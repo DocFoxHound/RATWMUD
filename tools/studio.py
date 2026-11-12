@@ -57,6 +57,7 @@ service, as before. Every request needs the local origin, as both hosts did.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import copy
 import errno
 import http.client
@@ -253,30 +254,37 @@ class Economy:
             if slim and not slimmed:
                 raise D.DMError(f'{NO_SLIM_HERE} (python3 tools/world_db.py migrate --db {key}).', 409)
             w = self.world_of(conn, key)
-            stored = S.economy_value(conn, w)
-            before = self.entity(stored)
-            after = change(copy.deepcopy(before))
-            if canonical(before) == canonical(after):
-                return {'changed': False, 'before': before, 'after': after, 'view': self.view(conn, w)}
-            # (Only what this change brings is refused, a bad override with it: doc 79, 14.)
-            had = set(map_editor.check_economy(before, strict_overrides=True))
-            problems = [p for p in map_editor.check_economy(after, strict_overrides=True) if p not in had]
-            if problems:
-                raise D.DMError(' '.join(problems), 400)
-            # (The slider's cause is stored on a world before 0061 too: the rest of the overrides need it.)
-            past_cause = lambda o: {k: v for k, v in (o or {}).items() if k != 'prosperityCause'}
-            if not slimmed and canonical(past_cause(after['overrides'])) != canonical(past_cause(before['overrides'])):
-                raise D.DMError(f'{NO_SLIM_HERE} (python3 tools/world_db.py migrate --db {key}).', 409)
-            try:
-                if self.live(key):
-                    S.save_economy(conn, w, after)
-                else:
-                    import live_edit
-                    old = stored if stored is not None else S.default_economy()
-                    apply_edit(live_edit, conn, editor, label, [{'key': 'economy', 'before': old, 'after': after}])
-            except S.EconomyRefused as error:
-                raise D.DMError(str(error), 409) from error
-            return {'changed': True, 'before': before, 'after': after, 'view': self.view(conn, w)}
+            live = self.live(key)
+            # (On a live world the row is locked from the read to the write, Phase 9's second repair: a slider moved
+            # meanwhile by another DM, patch_economy_rules, waits for this write and lands on it, never under it. A dev
+            # world's edit goes through live_edit, which holds its `before` against the row.)
+            with conn.transaction() if live else contextlib.nullcontext():
+                if live:
+                    conn.execute('SELECT 1 FROM live.economy WHERE world_id = %s FOR UPDATE', (w,))
+                stored = S.economy_value(conn, w)
+                before = self.entity(stored)
+                after = change(copy.deepcopy(before))
+                if canonical(before) == canonical(after):
+                    return {'changed': False, 'before': before, 'after': after, 'view': self.view(conn, w)}
+                # (Only what this change brings is refused, a bad override with it: doc 79, 14.)
+                had = set(map_editor.check_economy(before, strict_overrides=True))
+                problems = [p for p in map_editor.check_economy(after, strict_overrides=True) if p not in had]
+                if problems:
+                    raise D.DMError(' '.join(problems), 400)
+                # (The slider's cause is stored on a world before 0061 too: the rest of the overrides need it.)
+                past_cause = lambda o: {k: v for k, v in (o or {}).items() if k != 'prosperityCause'}
+                if not slimmed and canonical(past_cause(after['overrides'])) != canonical(past_cause(before['overrides'])):
+                    raise D.DMError(f'{NO_SLIM_HERE} (python3 tools/world_db.py migrate --db {key}).', 409)
+                try:
+                    if live:
+                        S.save_economy(conn, w, after)
+                    else:
+                        import live_edit
+                        old = stored if stored is not None else S.default_economy()
+                        apply_edit(live_edit, conn, editor, label, [{'key': 'economy', 'before': old, 'after': after}])
+                except S.EconomyRefused as error:
+                    raise D.DMError(str(error), 409) from error
+                return {'changed': True, 'before': before, 'after': after, 'view': self.view(conn, w)}
 
     def set_steer(self, key, data, editor) -> dict:
         """The slider (doc 79, 12): {prosperity: anything (clamped, never refused: 9999 is 100, "abc" 0, 37 35), cause?:
@@ -466,7 +474,9 @@ class Economy:
             never = sorted(set(never), key=never.index) if all(isinstance(g, str) for g in never) else never
         result = self._override(key, editor, 'neverImported', never, 'The goods ships never carry')
         if never is not None:
-            result['detail'] = f'The goods ships never carry: {", ".join(never) or "none"}.'
+            # (Phase 9's second repair: a ship already on the timetable keeps its cargo; the list is the next week's on.)
+            result['detail'] = (f'The goods ships never carry: {", ".join(never) or "none"}, from the next week\'s timetable on '
+                                '(a ship already posted keeps its cargo).')
         return result
 
     def set_status(self, key, data, editor) -> dict:

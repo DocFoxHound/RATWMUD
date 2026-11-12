@@ -76,6 +76,15 @@ IDs are replay-safe within a bounded persisted receipt history. Do not recycle
 IDs or present this as an unlimited exactly-once transaction journal. Expired,
 malformed or cross-world requests fail closed. Queued is not applied.
 
+When the checkpoint fails, a grant, fine, band or transfer that the world's
+journal has written stands: its receipt says so ("Journalled, but the
+checkpoint failed: it stands") and the channel halts. If the journal has not
+written it either, the request is held: no receipt is written, the request
+stays in `outbox/`, and the channel halts. The next server answers it from its
+receipt (the journal record carries the receipts) if the record was written,
+or applies it then if it was not. A held request is never told as standing.
+(Doc 79, Phase 9's second repair.)
+
 Supported payloads:
 
 - `notice`: `{scope:"world"|"cell"|"player"|"players", text, target?, targets?}`.

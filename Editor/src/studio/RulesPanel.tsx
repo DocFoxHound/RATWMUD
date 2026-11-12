@@ -63,7 +63,7 @@ export function RulesPanel({data, locked, setRules, setServices, setNeeds}: {dat
                     <small>{words.unit}</small></label>;
         })}
         {held.length > 0 && <p className="hint">{held.length} rule{held.length === 1 ? '' : 's'} this world kept from before the
-            staged economy ({held.join(', ')}): kept, never sent to the game, and not listed.</p>}
+            staged economy ({held.join(', ')}): kept and not listed; the game reads them past (its log names each at load).</p>}
         <h3>The city's services</h3>
         <p className="hint">Things the barber, the moneychanger, the pawnbroker, the stables, the shipwright and the builders'
             yard do for a household or a patron. A household has each done about once every so many days, times its band's (none

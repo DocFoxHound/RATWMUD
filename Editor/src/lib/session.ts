@@ -28,6 +28,7 @@ export async function startSession() {
         startGround(api.live.ground, installGround);
         if (!loadProject(adoptLean(world.project as never))) throw new Error('The world from the database could not be read.');
         seq = world.seq; gameSeq = world.gameSeq;
+        setState({bandsHeld: world.bands !== false});   // (A world before migration 0061 can't hold an NPC's band.)
         refreshCamps();
     } catch (error) {
         starting = false;

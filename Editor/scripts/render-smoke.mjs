@@ -20,7 +20,8 @@ try {
         'Seasons': ['grain and flour'], 'Imports': ['Cheese', '0 never carried'], 'Status': ['The daily caps'],
         'Market': ['the House wedding'],
         'Imports (before 0061)': ['0061'], 'Status (before 0061)': ['0061'], 'Market (before 0061)': ['0061'],
-        'Prosperity': ['Greyfen', '11:30', 'refused by the game', 'the Gull', 'The orchards'],
+        'Prosperity': ['Greyfen', '11:30', 'refused by the game', 'the Gull', 'The orchards', 'Trencher bread', "The realm's treasury"],
+        'Prosperity (no town purses)': ["No town keeps a purse of its own in this world: the realm's treasury is the only one"],
     };
     if (process.env.RENDER_DUMP) for (const [name, text] of Object.entries(html)) console.log(`== ${name}\n${text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 700)}`);
     for (const [name, text] of Object.entries(html)) {

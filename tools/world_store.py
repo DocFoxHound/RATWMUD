@@ -113,8 +113,6 @@ SLIM_TABLES = {**TABLES, 'live.npcs': (('world_id', 'id'), (*TABLES['live.npcs']
 SEASON_TABLES = {**TABLES, 'live.economy': (('world_id',), TABLES['live.economy'][1][:6])}
 LOOP_TABLES = {**TABLES, 'live.economy': (('world_id',), TABLES['live.economy'][1][:5])}
 LEGACY_TABLES = {**TABLES, 'live.economy': (('world_id',), TABLES['live.economy'][1][:4])}
-STORE_TABLES = LEGACY_TABLES                       # (0055's store room is dead: as a world without it.)
-RULE_TABLES = TABLES                               # (0058's and 0059's columns are 0060's: the kept ones.)
 # Children are deleted before parents and written after them; deferred foreign keys settle the rest at commit.
 WRITE_ORDER = ['world.areas', 'world.terrain_chunks', 'world.cells', 'world.interiors', 'world.links', 'world.resources',
                'live.factions', 'world.chapters', 'live.patrol_routes', 'live.patrol_posts', 'live.npcs',
@@ -414,9 +412,9 @@ def slot_entity(r):
     return {'id': r['id'], 'name': r['name'], 'profession': r['profession'], **_resident(r)}
 
 
-def economy_entity(r, businesses=None):
+def economy_entity(r):
     """A live.economy row as the economy entity (doc 79, 14; economy_contract): the kept columns, the rules' integers apart
-    from the host's overrides. A column the world hasn't got reads its default. (`businesses`: ignored, the store room's.)"""
+    from the host's overrides. A column the world hasn't got reads its default."""
     rules, overrides, _ = split_rules(r.get('rules') or {})
     return {'treasury': r['treasury'], 'storeHerbs': r['store_herbs'], 'storeMeals': r['store_meals'],
             'needsPaused': bool(r.get('needs_paused', False)), 'seasons': copy.deepcopy(dict(r.get('seasons') or {})),

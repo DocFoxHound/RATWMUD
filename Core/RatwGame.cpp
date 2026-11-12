@@ -971,12 +971,37 @@ void Game::applyDmActions(double dt)
     if (minute)
     {
         dmExpiryAccumulator_ = 0;
+        // First, once after a start: a row the journal's record holds (dmActs) was applied before a crash, so it is answered
+        // from there, queued or caught by the expiry meanwhile, before any expiry (Phase 9's second repair: a restart more
+        // than ten minutes after the act was asked marked a paid grant "expired", and a DM who saw that paid it twice).
+        if (!dmActsAnswered_)
+        {
+            dmActsAnswered_ = true;
+            if (dmActs_.size())
+            {
+                const auto answered = worldDb_.exec(
+                    "UPDATE dm.actions a SET status = CASE WHEN (j.value->>'ok')::boolean THEN 'applied' ELSE 'refused' END, "
+                    "result = j.value->>'text', done_at = now() FROM jsonb_each($1::jsonb) AS j "
+                    "WHERE a.id::text = j.key AND a.kind = j.value->>'kind' AND a.target_id = j.value->>'target' "
+                    "AND a.status IN ('queued', 'expired') RETURNING a.kind, a.target_id, a.result",
+                    {json::dump(dmActs_)});
+                for (const auto& row : answered.rows)
+                    if (row.size() > 2 && row[0] && row[1] && row[2])
+                        note("info", "RATW_DM_ACTION " + *row[0] + " " + *row[1] + ": already applied before the restart: " + *row[2]);
+            }
+        }
+        // (Never a row applied whose record is still being written: it is answered once the record is committed.)
+        std::string waiting = "{";
+        for (const auto& w : dmStatusWaiting_)
+            waiting += (waiting.size() > 1 ? "," : "") + w.id;
         worldDb_.exec("UPDATE dm.actions SET status = 'expired', result = 'Not applied within ten minutes.', done_at = now() "
-                      "WHERE status = 'queued' AND requested_at < now() - interval '10 minutes'");
+                      "WHERE status = 'queued' AND requested_at < now() - interval '10 minutes' AND NOT (id::text = ANY($1::text[]))",
+                      {waiting + "}"});
     }
     const auto queued = worldDb_.exec("SELECT id, kind, target_id, requested_by, payload::text FROM dm.actions WHERE status = 'queued' ORDER BY id LIMIT 50");
     bool changed = false;
     std::optional<Result> synced;                   // (economy.sync's outcome, once this poll.)
+    std::uint64_t syncedSeq = 0;                    // (Its record's seq, if it journalled one: the others wait for it too.)
     bool syncNow = false;
     for (const auto& row : queued.rows)
         if (row.size() > 4 && row[1] && *row[1] == "economy.sync" && row[4])
@@ -1051,7 +1076,10 @@ void Game::applyDmActions(double dt)
                     payload.set("now", true);
                 outcome = applyEconomyCommand(kind, target, payload.isObject() ? payload : json::Value::object(), *row[0]);
                 if (kind == "economy.sync")
+                {
                     synced = outcome;
+                    syncedSeq = journalSeq_ != seqBefore ? journalSeq_ : 0;
+                }
             }
         }
         else if (kind == "voice.sync")
@@ -1563,9 +1591,12 @@ void Game::applyDmActions(double dt)
         changed |= outcome.ok;
         // "Applied" only once what the act journalled is committed (a crash before then loses the act: the DM must not
         // have been told it happened). With nothing journalled, or written already, at once.
+        // (A second economy.sync of the poll, answered with the first's outcome, waits for the first's record: Phase 9's
+        // second repair.)
         auto* writer = store_ ? store_->journal() : nullptr;
-        if (writer && journalSeq_ != seqBefore && writer->committed() < journalSeq_)
-            dmStatusWaiting_.push_back({*row[0], outcome.ok ? "applied" : "refused", outcome.message, journalSeq_});
+        const std::uint64_t seq = journalSeq_ != seqBefore ? journalSeq_ : kind == "economy.sync" ? syncedSeq : 0;
+        if (writer && seq && writer->committed() < seq)
+            dmStatusWaiting_.push_back({*row[0], outcome.ok ? "applied" : "refused", outcome.message, seq});
         else
             worldDb_.exec("UPDATE dm.actions SET status = $2, result = $3, done_at = now() WHERE id = $1 AND status = 'queued'",
                           {*row[0], std::string(outcome.ok ? "applied" : "refused"), outcome.message});
@@ -3032,12 +3063,24 @@ void Game::tick(double dt)
                 online.insert(c->entityId);
         director_.tick(real, world_, characters_, online, operatorActivity_, revision_,
                        [this] {
-                           // (The checkpoint journals what moved first: a failed save after that record is Journalled.)
+                           // (The checkpoint journals what moved first, with the bridge's receipts: a failed save after
+                           // that record is Journalled once the record is written, Pending while it isn't: Phase 9's
+                           // second repair, never "it stands" for a record a crash could still lose.)
                            ++revision_;
+                           world_.society().setReport(world_.prosperityReport());   // (A grant or band in the report saved now.)
                            const auto seq = journalSeq_;
+                           journalDirector_ = true;
                            save();
-                           return storageReady_ ? int(director::Bridge::Committed)
-                                                : journalSeq_ != seq ? int(director::Bridge::Journalled) : int(director::Bridge::NotCommitted);
+                           journalDirector_ = false;
+                           if (storageReady_)
+                               return int(director::Bridge::Committed);
+                           if (journalSeq_ == seq)
+                               return int(director::Bridge::NotCommitted);
+                           auto* writer = store_ ? store_->journal() : nullptr;
+                           if (writer)
+                               writer->flush();             // (Bounded: it returns at the first failed write.)
+                           return writer && writer->committed() >= journalSeq_ ? int(director::Bridge::Journalled)
+                                                                               : int(director::Bridge::Pending);
                        },
                        [this](const std::set<std::string>& targets, const std::string& text) {
                            for (auto* c : clients_)

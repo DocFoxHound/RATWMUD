@@ -9,6 +9,7 @@ import {Fragment, useCallback, useEffect, useState} from 'react';
 import {dmApi, type EconomyActKind, type Me, type ProsperityView, type Target} from './api';
 import {BANDS, HARVEST_WORDS, GRANT_MOST, CAUSE_MOST} from '../lib/economyContract';
 import {clock, dayLabel} from '../lib/economy';
+import {awaitOutcome} from '../lib/acts';
 
 const p = (n: number | null | undefined) => n === null || n === undefined ? '—' : `${Math.round(n).toLocaleString()}p`;
 const signed = (n: number) => `${n > 0 ? '+' : ''}${n}`;
@@ -48,15 +49,9 @@ export function ProsperityTab({me, target, initial}: {me: Me; target: Target; in
             const queued = await dmApi.liveAct(target, kind, id, payload);
             setSaid(`${what}: queued (${JSON.stringify(queued.payload)}). Waiting for the game server…`);
             setOpen('');
-            for (let i = 0; i < 10; i++) {
-                await new Promise(r => setTimeout(r, 1000));
-                const done = await dmApi.action(target, queued.id);
-                if (done.status !== 'queued') {
-                    (done.status === 'applied' ? setSaid : setProblem)(`${what}: ${done.status}. ${done.result ?? ''}`);
-                    break;
-                }
-                if (i === 9) setSaid(`${what}: still queued; no game server has picked it up yet.`);
-            }
+            const done = await awaitOutcome(() => dmApi.action(target, queued.id));
+            if (done.status === 'queued') setSaid(`${what}: still queued; no game server has picked it up yet.`);
+            else (done.status === 'applied' ? setSaid : setProblem)(`${what}: ${done.status}. ${done.result ?? ''}`);
             await load();
         } catch (e) { setProblem((e as Error).message); }
         finally { setBusy(false); }
@@ -133,7 +128,7 @@ export function ProsperityTab({me, target, initial}: {me: Me; target: Target; in
 
                 <h3>The price board (the largest pressures)</h3>
                 <table className="dm-table"><thead><tr><th>Market</th><th>Good</th><th>Pressure</th><th>Why</th></tr></thead>
-                    <tbody>{(report?.pressures ?? []).map(r => <tr key={`${r.market}:${r.good}`}><td>{marketName(r.market)}</td><td>{r.good}</td>
+                    <tbody>{(report?.pressures ?? []).map(r => <tr key={`${r.market}:${r.good}`}><td>{marketName(r.market)}</td><td>{data.goodNames?.[r.good] ?? r.good}</td>
                         <td className="num">{r.P > 0 ? '▲' : '▼'} {Math.abs(r.P).toFixed(2)}</td><td>{r.cause}</td></tr>)}</tbody></table>
 
                 <h3>Harvests</h3>
@@ -200,8 +195,10 @@ export function ProsperityTab({me, target, initial}: {me: Me; target: Target; in
                     <p className="hint">A grant is new money, capped a player a day by the world; a fine is never more than they carry.</p>
                 </div>
 
-                <h3>Towns' treasuries</h3>
-                <table className="dm-table"><tbody>{data.towns.map(t => <tr key={t.community}><td>{t.community}</td><td className="num">{p(t.treasury)}</td></tr>)}</tbody></table>
+                <h3>Treasuries</h3>
+                {data.treasury !== null && data.treasury !== undefined && <p>The realm's treasury: {p(data.treasury)}.</p>}
+                {data.towns.length ? <table className="dm-table"><tbody>{data.towns.map(t => <tr key={t.community}><td>{t.community}</td><td className="num">{p(t.treasury)}</td></tr>)}</tbody></table>
+                    : <p className="hint">No town keeps a purse of its own in this world{data.treasury !== null && data.treasury !== undefined ? ': the realm\'s treasury is the only one' : ''}.</p>}
 
                 <h3>The log (28 days)</h3>
                 <ol className="dm-log">{data.log.map((e, i) => <li key={i} className={e.state ? `dm-log-${e.state}` : undefined}><small>{e.at.startsWith('game day') ? e.at : new Date(e.at).toLocaleString()}</small> {e.text}</li>)}</ol>

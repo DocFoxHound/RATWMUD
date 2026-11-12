@@ -881,6 +881,7 @@ def scan(snapshot: dict | None, rows: dict, usernames=(), names=(), allowed_tabl
     for table, table_rows in rows.items():
         check(table, table_rows)
     errors.extend(economy_words(rows.get('live.economy')))
+    errors.extend(economy_rows_problems(rows.get('live.economy')))
     if len(errors) > limit:
         errors = errors[:limit] + [f'... and {len(errors) - limit} more']
     return errors, warnings
@@ -1143,6 +1144,35 @@ def economy_words(rows) -> list[str]:
     return errors
 
 
+def economy_rows_problems(rows) -> list[str]:
+    """What in a shipped live.economy row would leave the world it makes without its economy (doc 79, Phase 9's second
+    repair: imports are untrusted, doc 78): its settings as a save checks them (map_editor.check_economy; a bad override
+    is Core's to skip with a warning, so not refused), and its overrides no longer than the one manifest line Core reads
+    (manifest_lines.OVERRIDES_MOST: a longer one is skipped whole, the slider's cause with it). Each by its path."""
+    import manifest_lines
+    import map_editor
+    import world_store
+    errors = []
+    defaults = world_store.default_economy()
+    for i, row in enumerate(rows or []):
+        where = f'live.economy[{i}]'
+        if not isinstance(row, dict):
+            errors.append(f'{where}: not a row')
+            continue
+        shapes = [c for c in ('seasons', 'services', 'rules') if c in row and not isinstance(row[c], dict)]
+        if shapes:
+            errors += [f'{where}.{c}: must be an object' for c in shapes]
+            continue
+        full = {'treasury': defaults['treasury'], 'store_herbs': defaults['storeHerbs'], 'store_meals': defaults['storeMeals'], **row}
+        entity = world_store.economy_entity(full)
+        errors += [f'{where}: {p}' for p in map_editor.check_economy(entity)]
+        overrides = json.dumps(entity['overrides'], ensure_ascii=False) if entity['overrides'] else ''
+        if len(overrides.encode()) > manifest_lines.OVERRIDES_MOST:
+            errors.append(f'{where}.rules: the host\'s overrides are {len(overrides.encode())} bytes: Core reads at most '
+                          f'{manifest_lines.OVERRIDES_MOST}')
+    return errors
+
+
 def allowed_tables() -> set:
     return {s.table for s in live_specs()} | {'live.economy', 'world.worlds', 'world.areas'}
 
@@ -1359,6 +1389,9 @@ def _import(directory: Path, key: str, name: str, manifest: dict, world: dict, l
         snapshot_path = directory / 'snapshot.json.gz'
         snapshot = read_json_gz(snapshot_path) if snapshot_path.exists() else None
         world_id = world['world']['id']
+        # (Its economy row checked before anything is written: an untrusted package's bad one refused with its path.)
+        if problems := economy_rows_problems(live.get('live.economy')) + economy_words(live.get('live.economy')):
+            raise PackageError('The package\'s economy won\'t do:\n' + '\n'.join(f'  {p}' for p in problems[:20]))
         counts = {}
         with conn.transaction():
             conn.execute('SET CONSTRAINTS ALL DEFERRED')

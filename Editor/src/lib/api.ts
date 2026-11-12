@@ -91,7 +91,7 @@ export const api = {
     /** The one world, edited live (tools/live_edit.py). */
     live: {
         /** Lean: world cells come as outlines and previews; their ground is asked for as they come into view. */
-        load: async () => json<{project: Project; seq: number; gameSeq?: number}>(await get('live/world?lean=1')),
+        load: async () => json<{project: Project; seq: number; gameSeq?: number; bands?: boolean}>(await get('live/world?lean=1')),
         ground: async (ids: string[]) => json<{seq: number; cells: Record<string, SentGround>}>(
             await get(`live/ground?cells=${ids.map(encodeURIComponent).join(',')}`)),
         edit: (body: unknown) => post('live/edit', body),

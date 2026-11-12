@@ -100,11 +100,6 @@ def _data(name: str) -> dict:
         return {}
 
 
-def status_file() -> dict:
-    """Data/Economy/status.json ({} if it can't be read)."""
-    return _data('status.json')
-
-
 def market_file() -> dict:
     """Data/Economy/market.json ({} if it can't be read)."""
     return _data('market.json')

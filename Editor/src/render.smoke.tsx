@@ -49,7 +49,7 @@ const prosperity: ProsperityView = {
             {id: 'fields', name: 'The fields', harvest: 'fair', override: null}],
         eventKinds: [{id: 'house_wedding', words: 'the House wedding', needs: []}], weekDays: [40, 41, 42, 43, 44, 45, 46, 47, 48],
         nextWeek: 42, bandOverrides: [{household: 'h:cottage', band: 'poor', until: 52, members: ['npc_x']}]},
-    towns: [{community: 'greyfen', treasury: 900}],
+    towns: [{community: 'greyfen', treasury: 900}], treasury: 5, goodNames: {bread: 'Trencher bread'},
     week: {wagons: [{id: 'c9', from: 'grey', to: 'port', day: 40, state: 'travelling', goods: ['salt']}],
         ships: [{id: 's3', port: 'grey', name: 'the Gull', day: 41, state: 'due', goods: ['salt']}],
         events: [{id: 'e4', market: 'grey', kind: 'house_wedding', day: 42, hour: 11.5, state: 'due', by: 'dm', words: 'the wedding'}]},
@@ -73,5 +73,7 @@ export function renderAll(): Record<string, string> {
         out['Market' + at] = renderToString(<MarketPanel data={d} locked={false} setMarket={none} />);
     }
     out['Prosperity'] = renderToString(<ProsperityTab me={me} target="dev" initial={prosperity} />);
+    // (A world with no town purses of its own, as Ridgemere 2.0: the realm's treasury, and a word why the table is empty.)
+    out['Prosperity (no town purses)'] = renderToString(<ProsperityTab me={me} target="dev" initial={{...prosperity, towns: [], treasury: 1200}} />);
     return out;
 }

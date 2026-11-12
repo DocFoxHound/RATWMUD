@@ -497,14 +497,22 @@ Value Bridge::execute(const Value& request, const std::string& expectedId, const
     receipts_.push(receipt);
     if (receipts_.size() > 512)
         receipts_.items().erase(receipts_.items().begin());
-    if (const int committed = commit(); committed != Committed)
+    const bool economy = kind == "player_grant" || kind == "npc_band" || kind == "economy_transfer";
+    committingEconomy_ = economy && applied.ok;
+    const int committed = commit();
+    committingEconomy_ = false;
+    if (committed != Committed)
     {
         healthy_ = false;
         // A grant, a fine, a band or a transfer the journal took before the checkpoint failed stands (the journal is
         // replayed over the last checkpoint at the restart): kept, its receipt too, and said so, never "not committed".
-        const bool economy = kind == "player_grant" || kind == "npc_band" || kind == "economy_transfer";
         if (committed == Journalled && applied.ok && economy)
             return result(expectedId, true, applied.message + " (Journalled, but the checkpoint failed: it stands, and the operator channel is halted.)", now);
+        if (committed == Pending && applied.ok && economy)
+        {
+            held_ = true;                           // (Answered by the next server: from its receipt, or applied then.)
+            return result(expectedId, false, "Held: the journal is not writing; answered after the restart.", now);
+        }
         if (applied.ok)
             world = before;
         receipts_ = previous;
@@ -558,7 +566,11 @@ void Bridge::tick(double dt, World& world, const std::map<std::string, Entity>& 
             Value request;
             std::string problem;
             json::parse(raw.str(), request, problem);
+            held_ = false;
             reply = execute(request, id, digest(raw.str()), world, online, now, commit, notice);
+            if (held_)
+                return halt("RATW operator request held: its journal record is not written yet; channel halted, the request "
+                            "left for the next server to answer.");
         }
         if (!writeFile((fs::path(directory_) / "inbox" / (id + ".json")).string(), reply))
             return halt("RATW operator receipt cannot be published; channel halted.");

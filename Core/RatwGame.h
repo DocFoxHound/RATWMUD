@@ -1994,6 +1994,7 @@ class Game
     // The DM's economy acts applied (doc 79, Phase 9's first repair): by dm.actions id, saved in the checkpoint and set by
     // each act's journal record; and the dm.actions rows told "applied" only once their record is committed.
     json::Value dmActs_ = json::Value::object();
+    int economyManifestFunction_ = -1;               // (live.economy_manifest there: -1 not yet asked; readEconomy.)
     std::string actingFor_;                         // (The dm.actions id record() writes into dmActs, while an act is applied.)
     struct DmStatus
     {
@@ -2001,6 +2002,8 @@ class Game
         std::uint64_t seq;
     };
     std::vector<DmStatus> dmStatusWaiting_;
+    bool journalDirector_ = false;                   // (The operator bridge's state in the next record: its commit.)
+    bool dmActsAnswered_ = false;                    // (The restart's rows answered from dmActs: once, before any expiry.)
     void releaseDmStatuses();
     static constexpr std::size_t DmActsKept = 64;
     void beginHolding(Connection* c);

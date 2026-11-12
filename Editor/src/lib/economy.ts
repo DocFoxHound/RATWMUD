@@ -102,7 +102,7 @@ export function ruleOf(text: string, high: number, low = 0): number | null | und
     const n = wholeOf(text, high, low);
     return n === null ? undefined : n;
 }
-/** How many rules the world keeps that the game no longer has (kept, never written to the world file). */
+/** The rules the world keeps that the game no longer has (kept, written as they are; the game reads them past). */
 export const heldRules = (d: EconomyData): string[] => d.heldRules
     ?? Object.keys(d.economy.rules).filter(k => k !== 'prosperity' && !d.ruleList.some(r => r.name === k));
 

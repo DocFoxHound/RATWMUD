@@ -607,7 +607,8 @@ void Society::stagedBands(std::int64_t day, bool now)
         }
         // The DM's timed override first, then the band the host authored for a member (the Band picker: standing, for the
         // whole household), then the guarantees and the score.
-        if (const auto o = st.overrides.find(key); o != st.overrides.end() && o->second.until >= day)
+        // (In force before its day `until`: a band for N days from today is N days, the report's and the DM tool's.)
+        if (const auto o = st.overrides.find(key); o != st.overrides.end() && o->second.until > day)
             c.fixed = std::clamp(o->second.band, 0, status::Bands - 1), c.overridden = true;
         else if (authored >= 0)
             c.fixed = std::min(authored, status::Bands - 1), c.overridden = true, c.reason = c.reason || authored == status::Destitute;
@@ -912,7 +913,7 @@ void Society::stagedPrune(std::int64_t day)
     for (auto it = st.faucets.begin(); it != st.faucets.end();)
         it = day - it->first >= 28 ? st.faucets.erase(it) : std::next(it);
     for (auto it = st.overrides.begin(); it != st.overrides.end();)
-        it = it->second.until < day ? st.overrides.erase(it) : std::next(it);
+        it = it->second.until <= day ? st.overrides.erase(it) : std::next(it);
     // (Street life, Phase 6: a dole more than a week old, and fed fame's weeks gone by.)
     for (auto it = st.dole.begin(); it != st.dole.end();)
         it = day - it->second >= 7 ? st.dole.erase(it) : std::next(it);

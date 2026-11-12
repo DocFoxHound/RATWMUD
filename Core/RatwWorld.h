@@ -1568,6 +1568,10 @@ class World
     // The same from a build held in memory (e.g. read from the world database):
     // "world.ratw" plus the cell files it names, by relative path.
     Result loadWorldFiles(const std::map<std::string, std::string>& files, const std::string& label);
+    // The economy's records alone, read from manifest text as loadWorld reads them (leniently, with its warnings), every
+    // other record passed over: what economy.sync needs, without reading the world again (doc 79, Phase 9's second
+    // repair: a full read stopped the game for seconds on each lever). Into `into.economy` and `into.warnings`.
+    static void readEconomyRecords(const std::string& manifest, AuthoredRoster& into);
     // --- Streamed worlds ---------------------------------------------------------------------------------
     // A world too large to hold at once keeps every cell's header (name, size, position, weather...) but a
     // cell's tiles and seams only while someone is in it or next to it. The source gives them by cell ID.

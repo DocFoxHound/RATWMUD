@@ -240,14 +240,13 @@ def check_season(group, setting) -> list[str]:
     return errors
 
 
-def check_economy(economy, person_ids=None, strict_overrides=False) -> list[str]:
+def check_economy(economy, strict_overrides=False) -> list[str]:
     """The economy entity's problems (none: it is sound): what a change is checked against. A setting the staged economy
-    no longer reads is no problem (economy_problems warns of it); nor is a bad override unless `strict_overrides`.
-    `person_ids` is read past (the store room's per-business switches went with migration 0061)."""
+    no longer reads is no problem (economy_problems warns of it); nor is a bad override unless `strict_overrides`."""
     return economy_problems(economy, strict_overrides=strict_overrides)[0]
 
 
-def economy_problems(economy, person_ids=None, strict_overrides=False) -> tuple[list[str], list[str]]:
+def economy_problems(economy, strict_overrides=False) -> tuple[list[str], list[str]]:
     """(errors, warnings) of the economy entity: errors refuse it; warnings name what is read past (a key the staged
     economy no longer reads, a rule Core no longer has, a bad override, which Core skips: an error with
     `strict_overrides`)."""
@@ -992,9 +991,9 @@ def export_files(value, roster_data=None, with_roster=False, stream=False):
             manifest.append(line)
     if content:
         # The economy's records as live.people_manifest writes them since 0061 (tools/manifest_lines.py; doc 79, 14): the
-        # economy line, needs, seasons, the rules Core has and the services, and the host's overrides.
-        e = p.get('economy', DEFAULT_ECONOMY)
-        manifest += manifest_lines.economy_lines({**e, 'rules': {k: v for k, v in (e.get('rules') or {}).items() if k in RULES}})
+        # economy line, needs, seasons, every whole-number rule (one Core no longer has, a held rule, too: it reads it past
+        # with a warning, as from the database) and the services, and the host's overrides.
+        manifest += manifest_lines.economy_lines(p.get('economy', DEFAULT_ECONOMY))
     at = lambda spot: f'{quote(spot["cell"])} {spot["x"] + .5:g} {spot["y"] + .5:g}'
     npc_at = lambda spot: at(spot) if spot else '"-" 0 0'     # An NPC's unset place (doc 66, 2), as live.place writes it.
     if p.get('herbPatch'):

@@ -452,6 +452,25 @@ class DatabaseTests(unittest.TestCase):
             W.connect('prod', 'editor').close()
 
 
+@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
+class EnsureRolesTests(unittest.TestCase):
+    def test_the_dms_connect_is_its_own_grant_not_publics(self):
+        # Phase 9's second repair: ensure_roles skipped the DM's grant while PUBLIC still held CONNECT (as a new database
+        # has it), so a later REVOKE ALL ... FROM PUBLIC cut the DM off.
+        name = f'ratw_test_{DB_TAG}roles_{secrets.token_hex(4)}'
+        with superuser() as su:
+            su.execute(f'CREATE DATABASE {name} OWNER ratw_owner')
+        try:
+            W.ensure_roles([name])
+            with superuser() as su:
+                su.execute(f'REVOKE ALL ON DATABASE {name} FROM PUBLIC')
+                self.assertTrue(su.execute("SELECT has_database_privilege('ratw_dm', %s, 'CONNECT')", (name,)).fetchone()[0])
+            W.ensure_roles([name])                  # (Again: nothing granted twice, nothing fails.)
+        finally:
+            with superuser() as su:
+                su.execute(f'DROP DATABASE {name} WITH (FORCE)')
+
+
 class ScratchRegistry:
     """A copy of Database/worlds.json and an empty local choice in a temporary folder, for one test."""
 

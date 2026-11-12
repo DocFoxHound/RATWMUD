@@ -14,6 +14,7 @@ import {surfaceFor} from '../lib/surface';
 import {NumberField, Row, SelectField, TextField, Toggle, Hint} from '../components/fields';
 import {useWorld} from './world';
 import {BANDS, type Band} from '../lib/economyContract';
+import {awaitOutcome, outcomeWords} from '../lib/acts';
 import {isLive, worldName, dmApi, type Action, type Me, type NpcArea, type Npcs, type Target} from './api';
 import {CalendarPanel} from './CalendarPanel';
 import {LifePanel} from './LifePanel';
@@ -193,10 +194,17 @@ export function NpcTab({me, target, suite}: {me: Me; target: Target; suite: 'atl
     const life = (id: string, name: string, kill: boolean) => sure(`${kill ? 'Kill' : 'Revive'} ${name}`) &&
         finish(() => dmApi.npcLife(target, id, kill), `${kill ? 'Killed' : 'Revived'} ${name}.`);
     // A household's band for a while (doc 79, 12: band.override): the game puts the NPC's whole household in it.
-    const bandFor = (id: string, name: string, band: Band | 'clear', days: number) =>
-        sure(band === 'clear' ? `Clear the band set for ${name}'s household` : `Make ${name}'s household ${band} for ${days} days`) &&
-        finish(() => dmApi.liveAct(target, 'band.override', id, band === 'clear' ? {band} : {band, days}),
-               band === 'clear' ? `${name}'s household is back to its own band.` : `${name}'s household is ${band} for ${days} days.`);
+    // (Told only what the game server made of it, Phase 9's second repair: "is poor for 3 days" was said as the row was
+    // queued, and for an NPC no household holds the game refused it unseen.)
+    const bandFor = (id: string, name: string, band: Band | 'clear', days: number) => {
+        if (!sure(band === 'clear' ? `Clear the band set for ${name}'s household` : `Make ${name}'s household ${band} for ${days} days`)) return;
+        let said = '';
+        const done = band === 'clear' ? `${name}'s household is back to its own band.` : `${name}'s household is ${band} for ${days} days.`;
+        void finish(async () => {
+            const queued = await dmApi.liveAct(target, 'band.override', id, band === 'clear' ? {band} : {band, days});
+            said = outcomeWords(`${name}'s band`, await awaitOutcome(() => dmApi.action(target, queued.id)), done);
+        }, '').then(() => { if (said) setProblem(said); });
+    };
     const wander = (id: string, name: string, area: string) => sure(area ? `Have ${name} wander ${data?.areas.find(a => a.id === area)?.name}` : `Stop ${name} wandering`) &&
         finish(() => dmApi.setWander(target, id, area || null), area ? `${name} now wanders there.` : `${name} keeps to their schedule.`);
 
@@ -318,7 +326,8 @@ export function NpcTab({me, target, suite}: {me: Me; target: Target; suite: 'atl
             {problem && <p className="hint dm-note">{problem}</p>}
             {layer === 'npcs' && (draft ? <><NpcInspector draft={draft} setDraft={setDraft} routes={data?.routes ?? []} world={world!} canEdit={canEdit} canLive={canLive} busy={busy}
                 dirty={dirty} isNew={isNew} dead={dead.has(draft.id)} target={target} actions={actions} areas={data?.areas ?? []}
-                wander={data?.wanders[draft.id] ?? ''} held={data?.bandsHeld?.[draft.id] ?? null} spawnedBy={data?.spawns.find(r => r.id === data.spawned[draft.id])?.name ?? (data?.spawned[draft.id] ? 'a deleted rule' : '')}
+                wander={data?.wanders[draft.id] ?? ''} held={data?.bandsHeld?.[draft.id] ?? null}
+                bandable={!data?.bandable || data.bandable.includes(draft.id)} bandsAuthored={data?.bandsAuthored !== false} spawnedBy={data?.spawns.find(r => r.id === data.spawned[draft.id])?.name ?? (data?.spawned[draft.id] ? 'a deleted rule' : '')}
                 onWander={area => wander(draft.id, draft.name, area)} onBandFor={(band, days) => bandFor(draft.id, draft.name, band, days)}
                 onPick={p => setPick(p)} onSave={save} onRevert={revert} onDelete={remove} onLife={kill => life(draft.id, draft.name, kill)} />
                 {!isNew && building && <VoicePanel me={me} target={target} npc={draft.id} name={draft.name} />}
@@ -367,11 +376,13 @@ type Banded = Person & {band?: Band | null};
 const BAND_OPTIONS: {value: '' | Band; label: string}[] = [{value: '', label: 'From rank'},
     ...BANDS.map(b => ({value: b, label: b[0].toUpperCase() + b.slice(1)}))];
 
-function NpcInspector({draft, setDraft, routes, world, canEdit, canLive, busy, dirty, isNew, dead, target, actions, areas, wander, spawnedBy, held, onWander, onBandFor, onPick, onSave, onRevert, onDelete, onLife}: {
+function NpcInspector({draft, setDraft, routes, world, canEdit, canLive, busy, dirty, isNew, dead, target, actions, areas, wander, spawnedBy, held, bandable = true, bandsAuthored = true, onWander, onBandFor, onPick, onSave, onRevert, onDelete, onLife}: {
     draft: Person; setDraft: (p: Person) => void; routes: {id: string; name: string}[]; world: Project; canEdit: boolean; canLive: boolean; busy: boolean;
     dirty: boolean; isNew: boolean; dead: boolean; target: Target; actions: Action[]; areas: NpcArea[]; wander: string; spawnedBy: string;
     /** The DM's band for a while on this NPC's household, as last saved (none: no such band in force). */
     held?: {band: string; until: number} | null;
+    /** Whether the bands cover this NPC (a resident the game houses, as last saved); whether the world holds an NPC's own band. */
+    bandable?: boolean; bandsAuthored?: boolean;
     onWander: (area: string) => void; onBandFor: (band: Band | 'clear', days: number) => void; onPick: (p: Pick) => void; onSave: () => void;
     onRevert: () => void; onDelete: () => void; onLife: (kill: boolean) => void;
 }) {
@@ -404,7 +415,9 @@ function NpcInspector({draft, setDraft, routes, world, canEdit, canLive, busy, d
                 options={[{value: '', label: 'Keeps to their spots'}, ...wanderAreas.map(a => ({value: a.id, label: a.name}))]}
                 onChange={v => { if (canEdit && !dirty && !busy) onWander(v); }} />}
             <SelectField label="Band" value={(draft as Banded).band ?? ''} options={BAND_OPTIONS}
-                hint="Residents are fed by their band; the poor go short when the nearest food shop is bare. It covers their whole household (the highest band of its people wins), until the DM sets one for a while."
+                disabled={!bandsAuthored && !(draft as Banded).band}
+                hint={bandsAuthored ? "Residents are fed by their band; the poor go short when the nearest food shop is bare. It covers their whole household (the highest band of its people wins), until the DM sets one for a while."
+                                    : "This world needs migration 0061 to hold an NPC's own band: from rank until then."}
                 onChange={v => set({band: v || null})} />
             <Toggle label="A paid post (for succession)" hint="Ranks this resident for succession; nothing pays them" checked={draft.paid} onChange={v => set({paid: v})} />
             <TextField label="Description" multiline value={draft.description} max={4000} onCommit={v => set({description: v})} />
@@ -425,8 +438,10 @@ function NpcInspector({draft, setDraft, routes, world, canEdit, canLive, busy, d
                 <button className="danger" disabled={busy} onClick={onDelete}>Delete</button>
             </div>}
         </>}
-        {canLive && !isNew && <div className="dm-band-for">
-            <p className="hint">{held ? `Held ${held.band} by the DM until game day ${held.until} (the whole household).`
+        {canLive && !isNew && !bandable && <Hint>The bands cover the residents the game houses; {draft.name} is not one of them (as last
+            saved), so there is no household to hold to a band for a while.</Hint>}
+        {canLive && !isNew && bandable && <div className="dm-band-for">
+            <p className="hint">{held ? `Held ${held.band} by the DM (the whole household); it lapses on game day ${held.until}.`
                                       : 'No band of the DM\'s in force on their household.'} <small>(As last saved.)</small></p>
             <Row><SelectField label="Band for a while (their household)" value={timed.band}
                     options={[...BANDS.map(b => ({value: b as Band | 'clear', label: b[0].toUpperCase() + b.slice(1)})), {value: 'clear', label: 'Clear the DM\'s band'}]}
@@ -444,7 +459,8 @@ function NpcInspector({draft, setDraft, routes, world, canEdit, canLive, busy, d
     </div>;
 }
 
-const ACTION_LABELS: Record<string, string> = {'npc.sync': 'sync', 'npc.kill': 'kill', 'npc.revive': 'revive', 'layers.sync': 'sync layers'};
+const ACTION_LABELS: Record<string, string> = {'npc.sync': 'sync', 'npc.kill': 'kill', 'npc.revive': 'revive', 'layers.sync': 'sync layers',
+    'band.override': 'band for a while'};
 
 function ActionList({actions, target}: {actions: Action[]; target: Target}) {
     if (!actions.length) return null;

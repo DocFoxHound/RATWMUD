@@ -340,10 +340,12 @@ class Batch:
             if value is None:
                 raise ValueError('The economy cannot be removed.')
             # (Only what this edit brings is refused: a problem the stored settings already have, which Core reads past,
-            # never blocks another change. Doc 79, Phase 9's first repair.)
+            # never blocks another change. Doc 79, Phase 9's first repair. The host's overrides held to the studio's
+            # strict rules too, Phase 9's second repair: a new bad or oversized one, which Core would skip whole, cause
+            # and all, is refused here as the studio refuses it; one already stored is not.)
             stored = S.economy_value(self.conn, w)
-            had = set(map_editor.check_economy(stored)) if stored is not None else set()
-            problems = [p for p in map_editor.check_economy(value) if p not in had]
+            had = set(map_editor.check_economy(stored, strict_overrides=True)) if stored is not None else set()
+            problems = [p for p in map_editor.check_economy(value, strict_overrides=True) if p not in had]
             if problems:
                 raise ValueError(' '.join(problems))
             try:
@@ -354,16 +356,25 @@ class Batch:
 
 
 def queue_economy_sync(conn, who, payload=None):
-    """economy.sync for the world's running game server (doc 79, 12: it reads live.economy again and applies it at once),
-    queued as the DM's role on the same database (Atlas's own can't write dm.actions); the action's id, or None if it
-    couldn't be queued (no server to tell is no error: an unapplied action expires after ten minutes)."""
+    """economy.sync for the world's running game server (doc 79, 12: it reads live.economy again and applies it at once);
+    the action's id, or None if it couldn't be queued (no server to tell is no error: an unapplied action expires after
+    ten minutes). Since migration 0061 as Atlas's own role, through dm.queue_economy_sync (Phase 9's second repair: Atlas
+    logged in as the DM's role, through the registry key "dev", and on a registry without it, or a host with no DM
+    password, the server was never told); before it as the DM's role on the same database."""
     try:
-        with world_db.connect('dev', 'dm', dbname=conn.info.dbname, host=conn.info.host, port=conn.info.port) as dm:
+        if conn.execute("SELECT to_regprocedure('dm.queue_economy_sync(text, jsonb)') IS NOT NULL").fetchone()[0]:
+            return conn.execute('SELECT dm.queue_economy_sync(%s, %s)', (str(who)[:60] or 'Atlas', S.Jsonb(payload or {}))).fetchone()[0]
+    except psycopg.Error:
+        pass                                    # (A world before 0061: the DM's role, below.)
+    try:
+        names = world_db.keys()
+        key = next((k for k in names if world_db.world(k)['database'] == conn.info.dbname), names[0] if names else 'dev')
+        with world_db.connect(key, 'dm', dbname=conn.info.dbname, host=conn.info.host, port=conn.info.port) as dm:
             action = dm.execute('INSERT INTO dm.actions (kind, target_id, requested_by, payload) VALUES (%s, %s, %s, %s) RETURNING id',
                                 ('economy.sync', 'economy', str(who)[:60] or 'Atlas', S.Jsonb(payload or {}))).fetchone()[0]
             dm.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action}),))
             return action
-    except (world_db.DatabaseError, psycopg.Error):
+    except (world_db.DatabaseError, psycopg.Error, KeyError):
         return None
 
 
@@ -679,7 +690,8 @@ class LiveWorld:
     def load(self, lean=False):
         with self.connect() as conn:
             project, seq, game_seq = load(conn, lean, with_game=True)
-        return {'project': project, 'seq': seq, 'gameSeq': game_seq}
+            bands = S.slim_supported(conn)          # (Migration 0061: an NPC's own band; the Band picker greyed without it.)
+        return {'project': project, 'seq': seq, 'gameSeq': game_seq, 'bands': bands}
 
     def ground(self, ids):
         with self.connect() as conn:

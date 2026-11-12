@@ -633,6 +633,31 @@ void lenientEconomyRecords()
                "its economy read");
         expect(warned(w, "the rule market skipped") && warned(w, "the rule steer skipped"), "its words and old rules skipped with a warning");
         expect(w.society().rule("prosperity") == 0, "an old world's steerLean isn't mapped across: it opens at 0 (16.7 e)");
+        // Phase 9's second repair: economy.sync reads the economy's records alone (World::readEconomyRecords), never the
+        // world again; what it reads is what the whole load read, warnings and all.
+        AuthoredRoster alone;
+        World::readEconomyRecords(f.manifest, alone);
+        const auto& a = alone.economy;
+        bool same = a.treasury == e.treasury && a.storeHerbs == e.storeHerbs && a.storeMeals == e.storeMeals &&
+                    a.needsPaused == e.needsPaused && a.rules == e.rules && a.seasons.size() == e.seasons.size() &&
+                    a.services.size() == e.services.size() && a.overrides.cause == e.overrides.cause &&
+                    alone.warningCount == w.society().authored().warningCount;
+        for (const auto& [g, season] : e.seasons)
+            same &= a.seasons.count(g) && a.seasons.at(g).price == season.price && a.seasons.at(g).shelf == season.shelf;
+        expect(same, "second repair: the economy alone reads as the whole load: " + std::to_string(alone.warningCount) + " warnings for " +
+                         std::to_string(w.society().authored().warningCount));
+    }
+    {
+        // Phase 9's second repair: a tab after the record's kind is the kind's end too (the fields split on tabs), so a long
+        // overrides line written with a tab is skipped with a warning, never a refusal of the world; a season's 1e30
+        // percent is the highest, not the lowest (clamped before it is rounded).
+        auto tab = withLines("overrides\t{\"market\": {\"x\": \"" + std::string(20000, 'a') + "\"}}\n", "a long overrides line after a tab");
+        expect(warned(tab, "too long") || tab.society().authored().economy.overrides.market.isObject(), "a tab: read or skipped, never refused");
+        auto huge = withLines("season \"fish\" price 1e30 100 100 100 shelf 100 100 100 -1e30\n", "a season of 1e30");
+        const auto& fish = huge.society().authored().economy.seasons.at("fish");
+        expect(fish.price[0] == 1000 && fish.shelf[3] == 0, "second repair: 1e30 is 1000, -1e30 is 0: " + std::to_string(fish.price[0]));
+        auto longTab = withLines("overrides\t{\"market\": {\"x\": \"" + std::string(70000, 'a') + "\"}}\n", "a 70 KB overrides line after a tab");
+        expect(warned(longTab, "too long"), "second repair: a 70 KB overrides line after a tab skipped with a warning");
     }
     {
         // The overrides line: bad JSON skipped, unknown keys skipped, a second ignored; its cause over a rule's; 70 KB skipped.

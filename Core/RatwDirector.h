@@ -18,8 +18,13 @@ class Bridge
     using Notice = std::function<void(const std::set<std::string>& recipients, const std::string& text)>;
     // The checkpoint after a request: NotCommitted (nothing kept: the request is undone), Committed, or Journalled (the
     // checkpoint failed, but the journal took the request's economy change, so it stands and is replayed after a restart:
-    // never reported undone; doc 79, Phase 9's first repair). A bool works: true Committed, false NotCommitted.
-    enum : int { NotCommitted = 0, Committed = 1, Journalled = 2 };
+    // never reported undone; doc 79, Phase 9's first repair), its record committed before this is said; or Pending (the
+    // checkpoint failed and the journal holds the record but hasn't written it: Phase 9's second repair). A Pending economy
+    // act is neither undone nor answered: its request stays in outbox/ and the channel halts, so the next server answers
+    // it from its receipt, which the same record carries (Game: the operator bridge's state), if the record was written,
+    // or applies it then if it wasn't; never "it stands" for an act a crash could still lose. A bool works: true
+    // Committed, false NotCommitted.
+    enum : int { NotCommitted = 0, Committed = 1, Journalled = 2, Pending = 3 };
     using Commit = std::function<int()>;
     Bridge();
     ~Bridge();
@@ -36,12 +41,17 @@ class Bridge
               const std::map<std::string, double>& activity, std::uint64_t revision, const Commit& commit,
               const Notice& notice);
     std::function<void(const std::string&)> log;
+    // While a commit runs: whether its request is a grant, fine, band or transfer (the journal's kinds), whose receipt the
+    // commit's journal record carries (Game: the bridge's state), so a Pending one is answered from it after a restart.
+    bool committingEconomy() const { return committingEconomy_; }
 
   private:
+    bool committingEconomy_ = false;
     std::string directory_, worldId_;
     json::Value receipts_ = json::Value::array();
     double accumulator_ = 2;
     bool healthy_ = true;
+    bool held_ = false;                           // (execute's last request Pending: left in outbox/, unanswered.)
     struct CachedTerrain
     {
         std::uint64_t fingerprint = 0;

@@ -454,6 +454,19 @@ void theListAndItsChecks()
                std::any_of(d.causesDown.begin(), d.causesDown.end(), [&](const market::Data::Cause& c) { return c.words == cause.words; }),
            "a seeded cause for the move down stands in: " + cause.words);
     expect(!soc.setProsperity(-60, false, "a cause\nof two lines") && soc.board().sliderCause.words == cause.words, "nor words with a line break");
+    // Phase 9's second repair: the host's cause cleared (economy.sync then passes none) while the DM's is in force: the
+    // world's own words of its way take over, quietly (told as the DM's were), standing or moved the same way.
+    const auto worlds = [&](const market::SliderCause& c) {
+        return !c.dm && std::any_of(d.causesDown.begin(), d.causesDown.end(), [&](const market::Data::Cause& k) { return k.words == c.words; });
+    };
+    expect(soc.setProsperity(-40, false, "the Crown's war levy") && soc.board().sliderCause.dm, "second repair: the DM's cause");
+    soc.stagedBoard().sliderCause.told = true;
+    expect(soc.setProsperity(-40, false, "") && worlds(soc.board().sliderCause) && soc.board().sliderCause.told,
+           "second repair: cleared, standing: the world's words, not told again: " + soc.board().sliderCause.words);
+    expect(soc.setProsperity(-40, false, "the Crown's war levy") && soc.board().sliderCause.dm, "second repair: the DM's again");
+    expect(soc.setProsperity(-60, false, "") && worlds(soc.board().sliderCause), "second repair: cleared, moved the same way: the world's words");
+    const auto kept = soc.board().sliderCause.words;
+    expect(soc.setProsperity(-70, false, "") && soc.board().sliderCause.words == kept, "second repair: the world's own cause kept on a move the same way");
 }
 
 // 8.4: a seeded scheduler, 1 to 3 events a market a week at the rule's own 100 (x eventRate), each of the list's kinds a
@@ -847,6 +860,14 @@ void theDMsLevers()
     expect(!act("harvest.override", "no_such_area", {{"word", "poor"}}).ok, "an unknown area refused");
     r = act("harvest.override", end->area, {{"word", "poor"}, {"words", "blight in the fields"}});
     expect(r.ok && w.harvestOf(end->area) == 0, "a poor harvest called: " + r.message);
+    {
+        // (Second repair: the outcome names the area as the Prosperity tab does, not by its id.)
+        std::string name = end->area;
+        for (const auto& a : items::farms().areas)
+            if (a.id == end->area && !a.name.empty())
+                name = a.name;
+        expect(r.message.rfind("The harvest at " + name + " called poor", 0) == 0 && name != end->area, "second repair: named: " + r.message);
+    }
     const double until = soc.board().harvestOverride.at(end->area).until;
     expect(until > w.calendarDays() && until <= w.calendarDays() + 92, "its days the season's left by default");
     w.tick(.6);
@@ -935,6 +956,7 @@ void theDMsLevers()
     r = act("band.override", "e2", {{"band", "poor"}, {"days", 500}});
     expect(r.ok && soc.statusOf("e2")->band == status::Poor && soc.state().staged.overrides.at(h2).until == soc.state().budgetDay + 112,
            "the DM's timed band wins, its days clamped: " + r.message);
+    expect(r.message.rfind(w.entity("e2")->name + "'s household is held poor", 0) == 0, "second repair: the resident named: " + r.message);
     expect(act("band.override", "e2", {{"band", "clear"}}).ok && soc.statusOf("e2")->band == status::Rich, "cleared: the authored band again");
     expect(!act("band.override", "e2", {{"band", "wealthy"}}).ok && !act("band.override", "nobody", {{"band", "poor"}}).ok, "a bad word or resident refused");
     // character.grant: a faucet capped a day, a fine never past the cash; the door balanced; nothing unregistered.
@@ -2347,13 +2369,15 @@ const std::vector<EventCrash>& eventCrashes()
         {"dm_storm",
          [](game::Game& g) {
              g.world().tick(.6);
-             std::string ship;
+             std::string ship, name;
              for (const auto& s : g.world().society().board().ships)
                  if (s.status == "due" && ship.empty())
-                     ship = s.id;
+                     ship = s.id, name = s.name;
              expect(!ship.empty(), "dm_storm: a ship due");
              dmCheckpoint(g);
-             expect(dmAct(g, "ship.storm", ship, {}).ok, "dm_storm: applied");
+             const auto stormed = dmAct(g, "ship.storm", ship, {});
+             expect(stormed.ok && stormed.message.rfind("A storm keeps " + name + " (" + ship + ", for ", 0) == 0,
+                    "dm_storm: applied, the ship named (second repair): " + stormed.message);
              dmTold(g);
              auto was = json::Value::object();
              was.add("ship", ship);
@@ -2716,6 +2740,25 @@ void theFirstRepair()
                 for (const auto& m : o.array("members"))
                     shown |= m.asString() == npc;
         expect(shown, "first repair: the report shows it, its end and its members: " + json::dump(soc.report().array("bandOverrides")));
+        // Second repair: a band for N days is N days, counting today: in force on its last day (the DM tool shows it), gone
+        // the day after (it lasted a day more than asked, and the report dropped it a day before it lapsed).
+        {
+            soc.overrideBand(soc.householdOf(npc), -1, 0);
+            soc.stagedBands(day + 2);
+            const int natural = soc.statusOf(npc)->band;
+            const char* other = natural == status::Rich ? "destitute" : "rich";
+            auto two = json::Value::object();
+            two.add("band", other);
+            two.add("days", 2);
+            expect(g.applyEconomyCommand("band.override", npc, two).ok && soc.state().staged.overrides.at(soc.householdOf(npc)).until == day + 2,
+                   "second repair: a band for two days");
+            soc.stagedBands(day + 1);
+            expect(soc.statusOf(npc)->band == status::bandOf(other) && soc.statusOf(npc)->overridden, "second repair: in force on its second day");
+            soc.stagedBands(day + 2);
+            expect(!soc.statusOf(npc)->overridden || soc.spec(npc)->band >= 0, "second repair: lapsed on the third (" +
+                                                                                   std::to_string(natural) + ")");
+            soc.stagedBands(day);
+        }
         const auto today = std::int64_t(std::floor(w.calendarDays()));
         expect(soc.report().number("nextWeek") == double((today / calendar::DaysPerWeek + 1) * calendar::DaysPerWeek),
                "first repair: next week's first day");

@@ -58,6 +58,15 @@ double seasonLeft(double day)
         ++n;
     return std::floor(day) + n - day;
 }
+// A farm area's name, as the Prosperity tab shows it (Phase 9's second repair: an act's outcome said "grain", not "grain
+// and flour").
+std::string areaWords(const std::string& area)
+{
+    for (const auto& a : items::farms().areas)
+        if (a.id == area)
+            return a.name.empty() ? a.id : a.name;
+    return area;
+}
 } // namespace
 
 bool Game::economyCommand(const std::string& kind)
@@ -74,26 +83,38 @@ bool Game::readEconomy(EconomySpec& spec, std::size_t& skipped, std::string& pro
     skipped = 0;
     if (economyReader)
         return economyReader(spec, problem);
-    World candidate;
-    bool loaded = false;
+    // Only the economy's records are read (World::readEconomyRecords), never the whole world again: a full read of
+    // Ridgemere 2.0's residents and cells stopped the game for seconds on every slider move (Phase 9's second repair).
+    std::string text;
     if (!options_.database.empty())
-        loaded = loadWithLivePeople(candidate, problem);
+    {
+        // (Migration 0061's live.economy_manifest: the economy alone; on an older world the whole manifest, its economy read.)
+        if (economyManifestFunction_ < 0)
+        {
+            const auto has = worldDb_.exec("SELECT to_regprocedure('live.economy_manifest(ratw_id)') IS NOT NULL");
+            economyManifestFunction_ = has.ok && !has.rows.empty() && has.rows[0][0] && *has.rows[0][0] == "t" ? 1 : 0;
+        }
+        const auto read = worldDb_.exec(economyManifestFunction_ ? "SELECT coalesce(live.economy_manifest($1), '')"
+                                                                 : "SELECT live.people_manifest($1)",
+                                        {liveWorldId_});
+        if (!read.ok || read.rows.empty() || !read.rows[0][0])
+        {
+            problem = "Cannot read the economy from the live tables: " + read.error;
+            return false;
+        }
+        text = *read.rows[0][0];
+    }
     else if (worldFiles_.count("world.ratw"))
     {
-        // (A world export: its manifest read again from disk, the host's edit of its records, over the cells as loaded.)
-        auto files = worldFiles_;
+        // (A world export: its manifest read again from disk, the host's edit of its records.)
+        text = worldFiles_.at("world.ratw");
         if (!options_.worldExport.empty())
             if (std::ifstream in(std::filesystem::path(options_.worldExport) / "world.ratw", std::ios::binary); in)
             {
-                std::ostringstream text;
-                text << in.rdbuf();
-                files["world.ratw"] = text.str();
+                std::ostringstream read;
+                read << in.rdbuf();
+                text = read.str();
             }
-        if (streamedBuild_)
-            candidate.setCellSource(cellSource());
-        const auto read = candidate.loadWorldFiles(files, "world export");
-        loaded = read.ok;
-        problem = read.message;
     }
     else
     {
@@ -101,11 +122,11 @@ bool Game::readEconomy(EconomySpec& spec, std::size_t& skipped, std::string& pro
         spec = world_.society().authored().economy;
         return true;
     }
-    if (!loaded)
-        return false;
-    spec = candidate.society().authored().economy;
-    skipped = candidate.society().authored().warningCount;
-    logEconomyWarnings(candidate.society().authored());
+    AuthoredRoster roster;
+    World::readEconomyRecords(text, roster);
+    spec = roster.economy;
+    skipped = roster.warningCount;
+    logEconomyWarnings(roster);
     return true;
 }
 
@@ -194,7 +215,7 @@ Result Game::applyEconomyCommand(const std::string& kind, const std::string& tar
         if (w == -2)
             outcome = {false, "Call the harvest poor, fair or good, or clear it.", target};
         else if (w == -1)
-            outcome = world_.clearHarvest(target) ? Result{true, "The harvest at " + target + " is as the season gives it again.", target}
+            outcome = world_.clearHarvest(target) ? Result{true, "The harvest at " + areaWords(target) + " is as the season gives it again.", target}
                                                   : Result{false, "No harvest is called there.", target};
         else
         {
@@ -203,7 +224,7 @@ Result Game::applyEconomyCommand(const std::string& kind, const std::string& tar
             if (words.empty())
                 words = w == 0 ? "a poor harvest" : w == 2 ? "a good harvest" : "a fair harvest";
             outcome = world_.overrideHarvest(target, w, std::max(1., days), words)
-                          ? Result{true, "The harvest at " + target + " called " + word + " for " + std::to_string(int(std::max(1., days))) +
+                          ? Result{true, "The harvest at " + areaWords(target) + " called " + word + " for " + std::to_string(int(std::max(1., days))) +
                                              " days: " + words + ".", target}
                           : Result{false, "No such farm area, or those words won't do.", target};
         }
@@ -232,7 +253,11 @@ Result Game::applyEconomyCommand(const std::string& kind, const std::string& tar
     else if (kind == "ship.storm")
     {
         journal = Economy | Roads;
-        outcome = world_.stormShip(target) ? Result{true, "A storm keeps the ship " + target + " out.", target}
+        std::string ship = target;                  // (Its name and port in the outcome: "the Long Tide", not "s1".)
+        for (const auto& s : society.board().ships)
+            if (s.id == target && !s.name.empty())
+                ship = s.name + " (" + target + ", for " + world_.marketWords(s.port) + ")";
+        outcome = world_.stormShip(target) ? Result{true, "A storm keeps " + ship + " out.", target}
                                            : Result{false, "No such ship still due.", target};
     }
     else if (kind == "prices.reset")
@@ -269,8 +294,10 @@ Result Game::applyEconomyCommand(const std::string& kind, const std::string& tar
         else
         {
             society.overrideBand(household, band, society.state().budgetDay + days);
-            outcome = {true, band < 0 ? "The band of " + target + "'s household is theirs again."
-                                      : target + "'s household is held " + word + " for " + std::to_string(days) + " days.",
+            const auto* e = world_.entity(target);
+            const auto who = e && !e->name.empty() ? e->name : target;
+            outcome = {true, band < 0 ? "The band of " + who + "'s household is theirs again."
+                                      : who + "'s household is held " + word + " for " + std::to_string(days) + " days.",
                        target};
         }
     }

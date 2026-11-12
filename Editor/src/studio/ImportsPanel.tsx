@@ -12,8 +12,9 @@ export function ImportsPanel({data, locked, setImports}: {data: EconomyData; loc
     const off = locked || !data.slim;
     return <section className="economy-switches imports-panel">
         <h3>The ships</h3>
-        <p className="hint">Goods the ships never carry here, whatever the port wants: kept out of every manifest (a port's
-            own makers, a good the realm must make for itself). {own ? 'This world\'s own list.' : `market.json's: ${never.join(', ') || 'none'}.`}</p>
+        <p className="hint">Goods the ships never carry here, whatever the port wants (a port's own makers, a good the realm
+            must make for itself): kept out of every manifest from the next week's timetable on; a ship already posted
+            keeps its cargo. {own ? 'This world\'s own list.' : `market.json's: ${never.join(', ') || 'none'}.`}</p>
         {!data.slim && <p className="publish-error">This world needs migration 0061 for its own list (python3 tools/world_db.py migrate).</p>}
         <div className="economy-filters">
             <label>Find <input value={search} onChange={e => setSearch(e.target.value)} size={14} /></label>

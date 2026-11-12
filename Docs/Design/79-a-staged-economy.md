@@ -1435,8 +1435,11 @@ the file's reject style (:842-979) on purpose: a host's half-finished edit must 
 
 **Migration 0061** (schema only; the last today is 0060):
 - `live.economy` keeps `world_id`, `rules` (jsonb: prosperity and its cause, the clamps' flags, the Board's rules,
-  the faucet caps, Times nudges, harvest overrides, the host's `status.json` and `market.json` overrides),
-  `seasons`, `services`, `needs_paused`, `treasury`, `store_herbs` and `store_meals`. The dead columns (the other
+  the faucet caps, the host's `status.json` and `market.json` overrides, the goods never imported),
+  `seasons`, `services`, `needs_paused`, `treasury`, `store_herbs` and `store_meals`. (As built in Phase 9: the DM's
+  Times nudges and harvest calls are one-off acts on the Market Board, saved and journalled with it, 5.2, never in
+  `live.economy`: re-applied at every sync or start they would run again and post their notices again. So doc 78
+  M7's "Reset economy rules", which copies `live.economy`, leaves a nudge or a harvest call in force.) The dead columns (the other
   `store_*`, `country*`, `gate_toll`, `carriage`, `wage_*`, `subsidies`, `comforts_*`, `farms`) stay in place and
   ignored (D20).
 - `live.business_settings` is dropped (D10). It comes out of world_sync's synced tables (`tools/world_sync.py:431,
@@ -3982,7 +3985,8 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     report gains `bandOverrides` (each DM band for a while, its end and members) and `nextWeek`; only economy.sync
     dumps the Board to compare; the grant ceiling is `status::GrantsMost` in all three places; 0061's economy line keeps
     two numbers after the store's, always `10 12` (the old daily herbs and meals, read past), so a server built before
-    Phase 9 still reads a world with no overrides or band lines after the migration (`manifest_lines` the same); an
+    Phase 9 still reads a world with no overrides or band lines after the migration (`manifest_lines` the same; wrong for
+    a world with a season row until the second repair below); an
     overrides line of any length is written (Core skips one over 65,536 bytes with a warning) instead of being left out.
   - **Fixed, tools:** `world_sync` writes an unset band as NULL where the target has the column, so "From rank" reaches
     the other world both ways and the plan after says they agree; a band the target can't hold (no 0061) is refused,
@@ -4033,7 +4037,8 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     rebuild from the merged ridgemere2 before opening a world that has either. Tools from before Phase 9 that write
     `live.business_settings` (live_edit, world_sync) stop working after it. To go back without the backup: 0060's
     `CREATE OR REPLACE FUNCTION live.people_manifest` and its `live.business_settings` table (empty) put back by hand;
-    `band_override` can stay.
+    `band_override` can stay. (Both corrected by the second repair below: the order, the grants and the migration's
+    row were missing, and seasons break older servers too.)
   - **Tests (the one run):** a fresh Release build (`build-p9r1`, from empty; 127 warnings, as the integration's, none
     in the lines touched); ctest 89/89 with the database, none skipped (`pg_client` on a throwaway
     `ratw_test_s2stage_p9r1`, dropped; the `_pg` tests' own `ratw_test_s2stage_*`). All 37 `tools/test_*.py` with the
@@ -4043,6 +4048,118 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     passed (26 checks). The client's 146 and its typecheck; the Editor's 78 + 62, its typecheck and the render smoke (13
     panels); `DM/model.test.mjs` 16. No `s2stage` or `ratw_test_` database left; `artifacts/screenshots/dev-console-fight.png`,
     rewritten by `test_live_map`, restored.
+- **2026-11-12: Phase 9, second repair** (`r2-staged-p9`, on the first repair's `26d12a0`; the second review's confirmed
+  findings and missing items, each fixed with a test that fails before and passes after, or answered below). No economy
+  simulation over days, no paid model call; DEV and PROD never migrated or written (the copies' test reads them with
+  `pg_dump`). Migration 0061 is edited in place (no world but throwaway ones has taken it).
+  - **The DM's acts told truly** (the high and medium journal findings):
+    - A restart more than ten minutes after an act was asked marked a paid, journalled act "expired" (the DM tool then
+      said "never applied", inviting a second payment). Now the first poll after a start answers every queued or
+      expired row whose act the journal's record holds (`dmActs`) before any expiry runs, and the expiry never takes a
+      row whose record is still being written (`dmStatusWaiting_`). Test: `test_dm_live`'s journal-windows test, its
+      second window with two grants held after their records commit, one set back eleven minutes, the other caught by
+      the expiry meanwhile: both "applied", 23 + 23 + 23 paid once each.
+    - The Director said "Journalled ... it stands" once the record was only queued; a crash then lost the grant. The
+      commit now waits for the writer (bounded: `flush` returns at the first failed write) and says Journalled only
+      once the record is written, else Pending: the request is neither undone nor answered, it stays in `outbox/`, the
+      channel halts, and the bridge's receipts go into the same journal record (`director`), so the next server answers
+      it from its receipt if the record was written, or applies it then. Tests: `server_parts` (Pending held, answered
+      from a restored receipt, applied once without it) and the new `tools/test_director_journal.py` (a real server on a
+      file save made read only, its journal 0400: no reply while unwritten; after the kill, the next server pays 23
+      once). `Docs/DM_BRIDGE_CONTRACT.md` says so.
+    - A second economy.sync of a poll was "applied" before the first's record committed: it now waits for that record.
+      Test: in the journal-windows test, two syncs with the journal locked both stay queued.
+  - **economy.sync reads the economy alone:** migration 0061's new `live.economy_manifest(world)` (the economy's records;
+    `live.people_manifest` now begins with it) and `World::readEconomyRecords` (Authoring's economy reader, the same code
+    as the world's load, `EconomyRecords`), so a lever never has the game read every resident and cell again (2.5 s a
+    sync on a copy of DEV). On a 0060 world the whole manifest is read, its economy lines only. Tests: `host_edit_tests`
+    (the economy alone reads as the whole load, warnings and all), `test_migration_0061` (the function is the manifest's
+    head, the game may call it), `test_dm_live.test_economy_sync_reads_the_economy_alone` (with `people_manifest`
+    renamed away, a slider move reaches the running server; refused before).
+  - **0061 and its way back:** a season stored with its supply and normal (every 0057-0060 group) keeps 0060's four-part
+    line, so a server built before Phase 9 reads a migrated world until something writes an overrides line, a band line or
+    a season without supply and normal (the first repair's claim was wrong for any world with a season row); malformed
+    stored values (a service switched "sometimes", a price or a season's number in words, a column not an object) no
+    longer make the manifest fail (the world could not load): each is written as `unset`, which Core skips with a
+    warning; a rule that is not a whole number (40.5) is not written (the entity holds whole numbers only, so the studio
+    and the manifest agree). `Database/rollback/0061_staged_economy_down.sql` is the way back without a backup, in its
+    order (the table with 0055's grants, 0060's manifest, 0061's functions dropped, its `schema_migrations` row deleted);
+    0061's `band_override` is `ADD COLUMN IF NOT EXISTS`, so it applies again. Atlas tells the server of its economy
+    edit as its own role (`dm.queue_economy_sync`, SECURITY DEFINER, economy.sync only): live_edit logged in as the DM's
+    role through the registry key "dev", and with no such key or no DM password (doc 78 M7's helper) the server was
+    never told. `manifest_lines` writes the same lines. Tests: `test_migration_0061` (four-part line, malformed values,
+    the rollback and 0061 again), `test_manifest_lines`, `test_live_edit` (the queue as `ratw_editor`).
+  - **Fixed, Core:** a host's cleared cause (or a move with none) while the DM's words were in force kept them, still
+    marked the DM's: the world's own words of the way take over, quietly (told as the DM's were); a band for N days is N
+    days counting today (it was N+1, and the report dropped it a day early: in force before its day `until` now); an
+    act's outcome names the area ("grain and flour"), the ship ("the Long Tide (s1, for Ridgemere)") and the resident; a
+    tab after a record's kind is its end (a long `overrides` line after a tab was a refusal of the world); a season's
+    1e30 is 1000, not 10 (clamped before rounding); the report is worked out again after a Storykeeper act, before its
+    checkpoint (a band set through the Director was missing from the report and the NPC tab till the next morning).
+    Tests: `events_tests` (the cleared cause, the band's days, the outcomes' names, the storm's in the `dm_storm` crash
+    case), `host_edit_tests` (the tab, 1e30), `test_dm_live.test_the_storykeepers_band_on_a_live_server`.
+  - **Fixed, tools:** a live world's economy edit locks the row from its read to its write (`SELECT ... FOR UPDATE` in
+    the studio's `_edit`), so a slider moved meanwhile by another DM waits and lands on it (it was lost, though audited
+    and synced; test: `test_studio` runs the slider between the rules change's read and write); live_edit's economy key
+    holds a new override to the studio's strict rules (7,000 unknown goods and a 10^12 cap were stored, and Core then
+    skipped the whole overrides line, cause and all); a package's `live.economy` row is checked at import and by the
+    scan (`world_package.economy_rows_problems`: its settings as a save checks them, its overrides no longer than Core's
+    one line); `ensure_roles` checks the DM's own CONNECT grant, not PUBLIC's; the Rules panel says the held rules are
+    sent and read past (the file export writes them as the database's manifest does: the two writers agree); the Imports
+    panel and its reply say a never-imported good is kept out from the next week's timetable on (a ship already posted
+    keeps its cargo). Dead names cut: world_store's `STORE_TABLES`, `RULE_TABLES` and `economy_entity`'s `businesses`;
+    map_editor's `person_ids`; `economy_contract.status_file`; the DM tool's own market.json reader (`market_file`);
+    worldgen's notes naming `item_catalog.store_goods`.
+  - **Fixed, DM and Editor:** the NPC tab's band for a while waits for the game's outcome (`lib/acts.ts`, shared with
+    the Prosperity tab) and says a refusal, offers the panel only on the residents the game houses (the npcs view's
+    `bandable`: on DEV 524 of the 1,083 NPCs, the town's and the Country's among them, were refused unseen), and lists
+    band.override among the NPC's actions; the Band picker is greyed on a world before 0061, in the NPC tab
+    (`bandsAuthored`) and the Inspector (Atlas's load says `bands`); a player's coin is shown by its account's
+    characters' names, the log by players', residents', areas' and goods' names, the price board and the word on the
+    street by the goods' names (`goodNames`); the realm's own treasury is shown, and an empty towns' table says why;
+    `dmApi.grant` (unused) cut. Tests: `test_dungeon_master` (names, `bandable`), `test_live_edit` (`bands`),
+    `Editor/src/lib/acts.test.ts`, the render smoke (14 panels, the treasuries' empty state).
+  - **Kept, and said:** `sync.ts`'s economy conflict block, which section 17 and Phase 3's hand-off list among what goes,
+    stays: it shows live.economy's kept columns that differ between dev and live, never syncing them (they are each
+    world's own), so a host sees why the two worlds' economies differ. Section 14 now says the DM's nudges and harvest
+    calls are on the Board, not in `live.economy.rules` (so doc 78 M7's "Reset economy rules" leaves them).
+  - **Not done, and why:** the map-edge "outside" endpoint for a world with no port: the doc disagrees with itself
+    (Phase 5's entry against its hand-off list) and U3 (defer) is the user's to answer. The town projects' watchpost and
+    waystation proposals: "for Phase 9 or a later plan", left to a later plan. Doc 78: not edited (U13); its M7 must add
+    the original `live.economy` copy, and its Q17 seed list must drop `business_settings`; 0061 now gives M7 the
+    editor-role economy.sync it needs. A storm at a port other than Ridgemere's: no world has one. The panels in a
+    browser: rendered with react-dom/server only (layout unseen). DEV's 0061 apply and a live DEV check are the user's.
+  - **Applying 0061 (the user's step), and back:** after a backup. A server built before Phase 9 reads the migrated DEV
+    (its seasons are `{}`, no overrides or band lines) but not a world with an overrides or band line or a season without
+    supply and normal; other sessions should rebuild from the merged ridgemere2 first. Tools from before Phase 9 that
+    write `live.business_settings` stop working after it. Without a backup, back with
+    `Database/rollback/0061_staged_economy_down.sql` (its header gives the command).
+  - **Tests (the one run):** a fresh Release build (`build-p9r2`, from empty; 127 warnings, as before, none in the lines
+    touched); ctest 89/89 with the database, none skipped (`pg_client` on a throwaway `ratw_test_s2stage_p9r2`,
+    dropped; the `_pg` tests' own `ratw_test_s2stage_*`): `events_tests` 270,205 checks, `exploit_tests` 871,756,
+    `host_edit_tests` 664, `status_tests` 21,975, `market_tests` 13,864, `port_tests` 9,665, `save_compat_tests` 23,108,
+    `server_parts` 258, `wire_tests` 428, `authoring` 200. All 38 `tools/test_*.py` (the new `test_director_journal`
+    among them) with the database and this build's server (`RATW_TEST_SERVER`, `RATW_SERVER`, `RATW_SERVER_BINARY`;
+    `RATW_TEST_DB_TAG=s2stage_`, `RATW_TEST_KEY_PREFIX=s2stage`, `RATW_MIGRATE_COPIES=ratw_ridgemere2,ratw_prod`, each
+    copied read only): 728 tests, none failing, 24 skipped (the 23 `RATW_SLOW` world builds and `test_game_tables`'
+    save under `Saved/`); `dm_smoke` passed (26 checks). The client's 146 and its typecheck; the Editor's 78 + 65, its
+    typecheck and the render smoke (14 panels); `DM/model.test.mjs` 16 (`node_modules` linked from the main checkout,
+    removed after). No `s2stage` or `ratw_test_` database left; `artifacts/screenshots/dev-console-fight.png`, rewritten
+    by `test_live_map`, restored.
+  - **The perf gate** (DEV build 70 exported read only, `world_check EXPORT --simulate A B --players 20 --threads 8`,
+    Release, 765 residents, two runs each, the machine quiet but for the runs, load 0.6-1.3; ms, the two runs' mean, the
+    baseline's in brackets):
+
+    | Window | mean | p99 | p99 after the first minute | worst after the first minute | worst |
+    |---|---|---|---|---|---|
+    | 6-8 | 2.62 (2.60) | 5.81 (5.77) | 5.47 (5.44) | 12.0 (12.2) | 39.9 (38.5) |
+    | 17-19 | 2.16 (2.14) | 5.18 (5.21) | 5.00 (4.99) | 22.0 (21.9) | 38.1 (39.3) |
+    | 23-25 | 1.66 (1.62) | 4.61 (4.52) | 4.10 (4.04) | 12.6 (12.8) | 38.6 (36.8) |
+    | 6-8 `--ship-day` | 2.56 (2.65) | 5.79 (5.86) | 5.49 (5.49) | 11.7 (12.7) | 37.5 (37.6) |
+
+    Within the gate's noise (0.05 ms of mean, 0.1 of p99) in every window; 23-25 is the closest (0.04 of mean, 0.09 of
+    p99). The worst tick of each run is tick 19 in the first minute, as before. (`world_check` has no Game: the repair's
+    poll and Director changes are outside it, as the gate says.)
 
 ## Review (2026-11-08)
 

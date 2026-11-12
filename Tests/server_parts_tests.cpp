@@ -16,9 +16,11 @@
 #include <arpa/inet.h>
 #include <atomic>
 #include <cmath>
+#include <ctime>
 #include <fstream>
 #include <functional>
 #include <set>
+#include <sstream>
 #include <filesystem>
 #include <iostream>
 #include <netinet/in.h>
@@ -699,6 +701,50 @@ void directorTests()
     expect(!ok(undoes.execute(envelope(undoes, "weather-j", "weather", R"({"cell":"exterior","preset":"fog"})"), "weather-j", hash, world,
                               online, 1001, journalled, notice)),
            "weather, which no journal holds, is still not acknowledged");
+    // Second repair: a grant whose checkpoint failed while the journal hadn't written its record yet (Pending): neither
+    // undone nor answered "it stands" (a crash then would lose it); the request stays in outbox/ and the channel halts. The
+    // next server answers it from its receipt, which the record carries, or (the record never written) applies it then.
+    {
+        namespace fs = std::filesystem;
+        const auto dir = fs::temp_directory_path() / ("ratw-bridge-held-" + std::to_string(::getpid()));
+        fs::remove_all(dir);
+        director::Bridge held;
+        expect(held.configure(dir.string()), "second repair: a bridge directory");
+        const double now = double(std::time(nullptr));
+        auto request = envelope(held, "grant-p", "player_grant", R"({"player":"player-ash","coins":5,"reason":"for the ford"})");
+        request.set("createdAtUnix", now);
+        request.set("expiresAtUnix", now + 200);
+        const auto outbox = dir / "outbox" / "grant-p.json", inbox = dir / "inbox" / "grant-p.json";
+        std::ofstream(outbox, std::ios::binary) << json::dump(request);
+        const auto before = held.state();
+        const auto cash = world.society().account("player-ash")->cash;
+        held.tick(5, world, {}, online, {}, 1, [] { return int(director::Bridge::Pending); }, notice);
+        expect(fs::exists(outbox) && !fs::exists(inbox) && !held.enabled() && world.society().account("player-ash")->cash == cash + 5,
+               "second repair: a Pending grant is held, unanswered, the channel halted");
+        int commits2 = 0;
+        const auto counted = [&]() { ++commits2; return int(director::Bridge::Committed); };
+        director::Bridge written;                   // (The record was written: its receipt came back with it.)
+        expect(written.configure(dir.string()) && written.restore(held.state()), "second repair: restored with the record's receipt");
+        written.tick(5, world, {}, online, {}, 2, counted, notice);
+        json::Value reply;
+        std::string problem;
+        {
+            std::ifstream in(inbox, std::ios::binary);
+            std::ostringstream text;
+            text << in.rdbuf();
+            json::parse(text.str(), reply, problem);
+        }
+        expect(!fs::exists(outbox) && ok(reply) && commits2 == 0 && world.society().account("player-ash")->cash == cash + 5,
+               "second repair: answered from its receipt, never paid twice: " + json::dump(reply));
+        fs::remove(inbox);                          // (The record never written: the request is applied by the next server.)
+        std::ofstream(outbox, std::ios::binary) << json::dump(request);
+        director::Bridge lost;
+        expect(lost.configure(dir.string()) && lost.restore(before), "second repair: restored without the receipt");
+        lost.tick(5, world, {}, online, {}, 3, counted, notice);
+        expect(fs::exists(inbox) && commits2 == 1 && world.society().account("player-ash")->cash == cash + 10,
+               "second repair: applied then, once");
+        fs::remove_all(dir);
+    }
     // A fine bigger than the purse: told as what it took.
     director::Bridge fines;
     const auto boHas = world.society().account("player-bo")->cash;

@@ -154,6 +154,9 @@ export interface Npcs {
     wanders: Record<string, string>; spawned: Record<string, string>; actions: Action[];
     /** NPC ID → the DM's band for a while on their household, as last saved: its band and the game day it lapses. */
     bandsHeld?: Record<string, {band: string; until: number; household: string}>;
+    /** The NPCs the bands cover (residents the game houses, as last saved; null: no save yet); whether the world holds an
+     *  NPC's own band (migration 0061). */
+    bandable?: string[] | null; bandsAuthored?: boolean;
 }
 
 export type FactionKind = 'npc' | 'city' | 'guild' | 'clan' | 'other';
@@ -256,6 +259,10 @@ export interface ProsperityView {
     report: ProsperityReport | null;
     /** The towns' treasuries (accounts stores:<community>, D24). */
     towns: {community: string; treasury: number}[];
+    /** The realm's own treasury (the account `treasury`), beside the towns' (none: not in the save). */
+    treasury?: number | null;
+    /** The price board's goods by the catalogue's names. */
+    goodNames?: Record<string, string>;
     week: {wagons: WeekWagon[]; ships: WeekShip[]; events: WeekEvent[]};
     players: {days: PlayerMoneyDay[]; holders: PlayerMoneyHolder[]};
     thefts: number;
@@ -281,9 +288,6 @@ export const dmApi = {
      *  while (target an NPC of it), or a player's grant or fine: queued for the game server; poll it with action(). */
     liveAct: (target: Target, kind: EconomyActKind, id: string, payload: Record<string, unknown> = {}, reason = '') =>
         call<Queued>(`${at(target)}prosperity/act`, {target, kind, id, payload, reason}),
-    /** A player's grant (coins > 0) or fine (coins < 0), with its reason (character.grant). */
-    grant: (target: Target, character: string, coins: number, reason: string) =>
-        call<Queued>(`${at(target)}players/grant`, {target, character, coins, reason}),
     /** Lean: world cells come as outlines and previews; their ground is asked for as they come into view (dm/world.ts). */
     world: (target: Target) => call<Project>(`${at(target)}world?target=${target}&lean=1`),
     ground: (target: Target, ids: string[]) =>
