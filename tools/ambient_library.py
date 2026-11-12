@@ -32,7 +32,7 @@ NEEDS = {"gossip": {"subject", "claim"}, "news": {"news"}, "quarrel": set(), "fr
 BANDS = {"gossip": ("friends", "acquaintances", "rivals"), "news": ("friends", "acquaintances", "rivals"),
          "quarrel": ("rivals",), "friends": ("friends",), "day": ("friends", "acquaintances")}
 TONES = ("plain", "warm", "gruff", "formal", "sly", "shy")
-RULES = """Write overheard exchanges between two NPCs of Runs Against the World, a text-first roleplaying world of
+RULES = """Write overheard exchanges between two NPCs of Run Against the World, a text-first roleplaying world of
 quadrupedal wolves, for a library the game fills in later. Each exchange is two to four short spoken lines, alternating,
 the first by "a". Use these blanks for every name and fact, exactly as written, and nothing else in braces:
 {teller} (a's name), {listener} (b's name), {subject} (who a rumour is about), {claim} (what is said of them, a phrase

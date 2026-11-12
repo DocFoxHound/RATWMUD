@@ -225,7 +225,7 @@ def story_personality(c: dict) -> str:
 
 # --------------------------------------------------------------------------- LLM generation
 
-GENERATE_SYSTEM = """You design non-player characters for Runs Against the World, a
+GENERATE_SYSTEM = """You design non-player characters for Run Against the World, a
 persistent roleplaying world of sapient quadrupedal wolves in a pre-industrial
 civilization (kings, guilds, churches, merchants, thieves, farms, docks). There are
 no humans. Wolves have no hands: they use mouths, forepaws, harnesses and pull-cords.

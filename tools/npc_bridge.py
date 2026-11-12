@@ -24,7 +24,7 @@ FIELD_LIMITS = {"npc": 256, "player": 256, "description": 4000,
                 "activity": 1000, "heard": 12000, "memory": 4000, "scene": 4000}
 # A roster character sheet; omitted for residents that have none.
 OPTIONAL_LIMITS = {"personality": 4000, "backstory": 12000}
-SYSTEM = """You voice one NPC in Runs Against the World, a text-first roleplaying
+SYSTEM = """You voice one NPC in Run Against the World, a text-first roleplaying
 world of quadrupedal wolves. Return JSON with only a text field containing the
 NPC's spoken reply, normally one to three short sentences, at most 600 characters.
 Stay in the supplied NPC's personality, backstory, activity, scene and knowledge. No human

@@ -1,4 +1,4 @@
-# Runs Against the World — MVP Execution Plan
+# Run Against the World — MVP Execution Plan
 
 **Status:** Finalized MVP baseline — implementation authorized; delivery evidence tracked in `Docs/IMPLEMENTATION_STATUS.md`  
 **Date:** 2026-09-21  

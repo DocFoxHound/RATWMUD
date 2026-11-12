@@ -46,7 +46,7 @@ MOMENTS = {
 }
 FILLS = {'{saying}': '#saying#', '{oath}': '#oath#', '{dear}': '#dear#', '{pet}': '#pet#', '{player}': '#topic.player#'}
 
-RULES = """You write the people of Runs Against the World, a text-first roleplaying world of quadrupedal wolves in a realm
+RULES = """You write the people of Run Against the World, a text-first roleplaying world of quadrupedal wolves in a realm
 of seven regions: Ridgemere, the rain city on its hills above Ridgemere Sound, its Heights for the rich and great Houses,
 its Commons, its Wharf and Docks, and the Sump at the bottom where the poor live; Frosthollow, mining in a high snowy
 valley; Coldwater, fishers on the lake Glasswater; Oakhaven in the Warmwood; Mirebridge in the Sallow Fens; Larkfield,

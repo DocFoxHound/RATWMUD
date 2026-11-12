@@ -149,7 +149,7 @@ export class Hud {
         const top = el('header', 'topbar', this.root);
         const brand = el('div', 'brand', top);
         el('span', 'mark', brand, '◭');
-        el('span', 'title', brand, 'RUNS AGAINST THE WORLD');
+        el('span', 'title', brand, 'RUN AGAINST THE WORLD');
         const when = el('div', 'when', top);
         this.calendar = el('span', 'label sage', when);
         this.weather = el('span', 'muted', when);

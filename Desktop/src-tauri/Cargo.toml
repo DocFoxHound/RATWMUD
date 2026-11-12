@@ -1,7 +1,7 @@
 [package]
 name = "ratw-desktop"
 version = "0.0.1"
-description = "Runs Against the World: the desktop client (docs 76 and 77)."
+description = "Run Against the World: the desktop client (docs 76 and 77)."
 edition = "2021"
 rust-version = "1.90"
 publish = false

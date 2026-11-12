@@ -2588,7 +2588,7 @@ M1, M2a, M2b, M3 and M4 built, and the R1 review's findings fixed (security, and
     review are words; the LIVE feed shows names, not NPC ids; the Economy tab speaks the host's words; Server Health's
     count axes have whole-number ticks; the arrive page says only what there is to choose; the status bar says
     "Community world" on a world on central, and the welcome line lost its "unless a local provider is configured". The
-    game's name is **Runs Against the World** everywhere (README, VISION, the page's own title; the desktop shell's
+    game's name is **Run Against the World** everywhere (README, VISION, the page's own title; the desktop shell's
     window, menu and product name now agree). The **My world** tab stays M5's.
   - **Checked by eye:** the e2e desktop app in a headless `kwin_wayland --virtual` (WebKitGTK needs
     `WEBKIT_DISABLE_DMABUF_RENDERER=1` there), against a local central, a ticket-mode world and the Editor port on a

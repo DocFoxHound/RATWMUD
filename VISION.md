@@ -1,4 +1,4 @@
-# Runs Against the World — Product Vision
+# Run Against the World — Product Vision
 
 **Status:** Working vision, not an implementation plan  
 **Date:** 2026-09-21  
@@ -6,7 +6,7 @@
 
 ## Vision in One Sentence
 
-**Runs Against the World is a persistent, roleplay-first world in which prose supplies the performance, an ASCII-derived spatial interface supplies shared physical truth, and a living society remembers what its players do.**
+**Run Against the World is a persistent, roleplay-first world in which prose supplies the performance, an ASCII-derived spatial interface supplies shared physical truth, and a living society remembers what its players do.**
 
 The project should feel less like a conventional graphical RPG with a chat box and more like a modern stage for collaborative imagination. The interface helps players understand, remember, and interact with the world. It should not illustrate every action for them.
 

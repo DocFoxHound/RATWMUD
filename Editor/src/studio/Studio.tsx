@@ -108,7 +108,7 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
 
     return <div className={`studio studio-${suite}`}>
         <header className="studio-bar">
-            <div className="brand"><span className="mark">R<i>›</i></span><div><b>RATW STUDIO</b><small>Runs Against the World</small></div></div>
+            <div className="brand"><span className="mark">R<i>›</i></span><div><b>RATW STUDIO</b><small>Run Against the World</small></div></div>
             <div className="segmented studio-suites" role="radiogroup" aria-label="Suite">
                 <button role="radio" aria-checked={suite === 'atlas'} className={suite === 'atlas' ? 'on' : ''} disabled={!session.atlas.available}
                     title={session.atlas.available ? 'Atlas: building worlds (dev worlds)' : session.atlas.reason || 'Atlas is for dm and admin accounts'}

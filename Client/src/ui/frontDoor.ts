@@ -203,7 +203,7 @@ export class FrontDoor {
         const stage = el('div', {className: 'door-stage'},
             el('header', {className: 'door-header'},
                 el('div', {className: 'door-mark'}, 'W›'),
-                el('div', {className: 'door-title'}, el('h1', {}, 'RUNS AGAINST THE WORLD'), el('p', {}, 'A living world. A story of your own.')),
+                el('div', {className: 'door-title'}, el('h1', {}, 'RUN AGAINST THE WORLD'), el('p', {}, 'A living world. A story of your own.')),
                 el('div', {className: 'door-edition'}, options.edition ?? (central ? 'EARLY DEVELOPMENT' : 'BROWSER CLIENT  /  EARLY DEVELOPMENT'))),
             this.body, this.status,
             el('p', {className: 'door-footnote'}, options.footnote ?? (central ? ''

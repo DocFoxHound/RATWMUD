@@ -1,4 +1,4 @@
-# Runs Against the World
+# Run Against the World
 
 A persistent, text-first roleplaying world inhabited by quadrupedal wolves, played in the browser. The terrain is a logical glyph tilemap; wolves move freely over it as an upright `W` with an orbiting `>` facing marker. Roleplay prose stays in the narrative pane.
 
