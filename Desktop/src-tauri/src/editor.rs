@@ -1048,20 +1048,22 @@ mod tests {
             let mut inner = e.inner.lock().unwrap();
             let g = inner.session.as_ref().unwrap().generation;
             inner.window = Some(Window { generation: g, world: W1.into(), username: "host-k7q2".into() });
-            inner.keepalive_at = Some(Instant::now() - KEEPALIVE_EVERY);
-        }
+            inner.keepalive_at = None;                 // (Never one yet: due. No Instant is set back in time: on Windows an
+        }                                              //  Instant can't go before the computer started.)
         e.tick(None);
         assert_eq!(keepalives(), 0, "an open window left alone renews nothing");
-        *e.last_input.lock().unwrap() = Some(Instant::now() - INPUT_COUNTS_FOR - Duration::from_secs(1));
-        e.tick(None);
-        assert_eq!(keepalives(), 0, "input over 30 minutes ago doesn't count");
+        if let Some(long_ago) = Instant::now().checked_sub(INPUT_COUNTS_FOR + Duration::from_secs(1)) {
+            *e.last_input.lock().unwrap() = Some(long_ago);
+            e.tick(None);
+            assert_eq!(keepalives(), 0, "input over 30 minutes ago doesn't count");
+        }
         *e.last_input.lock().unwrap() = Some(Instant::now());
         e.tick(None);
         assert_eq!(keepalives(), 1, "after the host's input, a keep-alive");
         e.tick(None);
         assert_eq!(keepalives(), 1, "at most every 5 minutes");
         e.inner.lock().unwrap().window = None;
-        e.inner.lock().unwrap().keepalive_at = Some(Instant::now() - KEEPALIVE_EVERY);
+        e.inner.lock().unwrap().keepalive_at = None;
         e.tick(None);
         assert_eq!(keepalives(), 1, "no Editor window, no keep-alive");
     }
