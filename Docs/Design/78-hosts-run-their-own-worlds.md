@@ -2095,6 +2095,58 @@ M1 and M2a built (2026-11-12, below); the rest not yet.
     dm password; run `make-certificate` and `first-owner` and act on `requests/`. M3: `Core.app` is where the hosted
     studio plugs in, with `session['username']` as its `who`. M4: the hello's fields, `rotation_message` and `read_code`
     are the client's contract.
+- **2026-11-12: M0a measured** (branch `r2-editor-m0a`, from `ridgemere2` at 65a9f0e). Read-only: no game server, no
+  PROD, no paid calls; DEV (`ratw_ridgemere2`) only read. The spike is kept in `Desktop/spike-editor/` (a throwaway
+  Tauri app, the stand-in world `world_stub.py`, `docker_peer.sh`, `windows_facts.ps1`, `measure_replies.py`); the
+  Windows half ran on a GitHub runner through `.github/workflows/editor-spike.yml` (run 43289848875: Windows Server
+  2025, WebView2/Edge 156; and ubuntu-latest's rootful Docker Engine 29.4.2). This laptop: Fedora 43, WebKitGTK
+  2.50.5, rootless Docker Engine 29.3.1 (pasta networking). Tauri 2.12.5, wry 0.57.1, ureq 3.5.1, rustls 0.23.46.
+
+  The `editor` scheme test: an Editor window (label `editor`) loads the built studio app (`Editor/dist`, 1.1 MB)
+  through the scheme, whose handler forwards to the stand-in over the pinned client (TLS 1.3, the doc's own `openssl`
+  P-256 command), adds the bearer, caps requests at 16 MB and replies at 32 MB on the wire and after gunzip, and sets
+  section 6.6's CSP; a script evaluated in the window then posts and fetches.
+
+  | Item | Result | How measured | For D1 |
+  |---|---|---|---|
+  | Studio app through the scheme | **Yes on both.** Page renders (the sign-in screen) on `editor://localhost` (WebKitGTK) and `http://editor.localhost` (WebView2), a secure context, `crypto.subtle` present; **no CSP violation** under section 6.6's CSP (no `style-src` needed) | Spike, `page` lines; a `securitypolicyviolation` listener injected before the page | Scheme stays |
+  | 16 MB POST bodies | **Intact on both** (CRC-32 equal at the server; 16 MB binary and a 16 MB JSON string). **Neither webview passes `Content-Length` to the handler** (absent from the request's headers), so the shell must set it; ureq does from the body. 17 MB refused (413) by the cap. Linux 150 ms, Windows 370 ms | Spike, `post-*` and `scheme-request-big` lines | Scheme stays; M4: the proxy sets `Content-Length` itself, never copies it |
+  | 32 MB replies, raw and gzipped | **Both work on both;** 33 MB refused by each cap (wire, and after gunzip). 32 MB raw: Linux 250 ms, Windows 600 ms in the page; 32 MB from 2.7 MB of gzip: 410 ms / 1.2 s (debug build) | Spike, `get-*` and `proxy-big` lines | Scheme stays |
+  | `webview_label()` in the handler | **Works on both:** the main window's request arrives labelled `main` and is refused (403); the Editor window's arrive labelled `editor` | Spike, `scheme-refused-label` | Scheme stays |
+  | The Editor window's IPC | `window.__TAURI__` and `__TAURI_INTERNALS__` **exist** in it (`withGlobalTauri`), but an app command and `plugin:window\|set_title` are **refused** by the ACL on both. Tauri files the scheme's origin under "URL: local", so a capability naming window `editor` would grant it: none may | Spike, `tauri-*-command` lines | As planned |
+  | Incognito windows | **WebView2: work** (storage gone in the next window; the persistent control keeps it). **WebKitGTK: the scheme never answers an incognito window** (navigation starts, no request reaches the handler, both orders). wry builds an incognito view on a fresh ephemeral context and registers schemes on it after making the view (`wry webkitgtk/mod.rs:259-381`), the likely cause. **A window with its own `data_directory`, new per session, works on both and is isolated** | Spike rounds `iipp`, `ppii`, `ddp` | M4: per-session data directory (deleted after the window is destroyed) instead of `incognito`, at least on Linux |
+  | `on_download` | **WebView2:** `Requested` fires and refusing it saves nothing; two more downloads straight after raised no event at all (likely WebView2's "multiple automatic downloads" block; unconfirmed). **WebKitGTK:** in an own-data-directory window `Requested` fires and refusing works; in the shared default context it **did not fire** and a `blob:` download was saved to `~/Downloads` (deleted). Scheme-served attachments fail on WebKitGTK either way | Spike, `on-download-*` lines | M4: the per-session data directory (above), and the navigation rule refuses `blob:`/`data:` and every navigation but the page, which WebKitGTK does report (`editor-navigation`) |
+  | ureq `Agent::with_parts` + pinned TLS 1.3 verifier | **Works on both.** A copy of `RustlsConnector` (about 80 lines) builds against `ureq::unversioned::transport`; only `TransportAdapter::set_timeout_at` is crate-private (`set_timeout` used). Right pin: 200 (first request 44-94 ms with the handshake, then about 1 ms on the pooled connection). Wrong pin: `invalid peer certificate: ApplicationVerificationFailure`. TLS 1.2-only port: `ProtocolVersion` alert. Record mode's SPKI SHA-256 equals `openssl`'s | Spike, `pinned-*` and `record-mode` lines | **ureq stays;** no hyper-rustls |
+  | Peer addresses, Docker Engine | **IPv4 from another host: real address** (rootful: 10.77.0.2 seen as 10.77.0.2). **From the world's own computer over 127.0.0.1: the bridge gateway** 172.17.0.1 (rootful and rootless). Rootless (pasta) keeps the computer's own LAN address too; another host wasn't available here | `docker_peer.sh`: a container echoing its peer; on the runner a network namespace on a veth pair stands in for another computer | Per-address limits stay for IPv4; local clients share one bucket |
+  | IPv6 through a publish, Docker Engine | **A `0.0.0.0` publish doesn't answer IPv6** (rootful and rootless). A bare `P:P` publish answers IPv6 on rootful Engine (not rootless here), but **every IPv6 peer arrives as 172.17.0.1** (docker-proxy into an IPv4-only container), so per-address limits fold for IPv6 | Same | `RATW_EDITOR_BIND=0.0.0.0` (IPv4) is the "open" value; section 3.2's `::` fallback is dropped (it would fold every IPv6 stranger into one address) |
+  | Reserved ports vs 17789 | Runner: reserved only 80, 5985-5986, 47001; dynamic range 49152-65535; **17789, 7788 and 8765 free and bindable.** Hyper-V, VirtualMachinePlatform and WSL are enabled there, but no WSL VM or Docker Desktop ran, so Hyper-V's own reservations (taken from the dynamic range) never appeared | `windows_facts.ps1` (`netsh int ipv4/ipv6 show excludedportrange`, `show dynamicport`, a bind test) | 17789 stays (below the dynamic range); the user's PC with Docker Desktop running is the real check |
+  | Docker Desktop: peers, IPv6, bind-mount `chown`/`chmod` | **Not measurable on the runner:** windows-latest has the Docker CLI and no running engine, and no Docker Desktop | `windows_facts.ps1` | User's PC (below) |
+  | Studio with no `Saved/` or `artifacts/` | **Starts, serves the page and answers** (`/api/studio/ping` 200, the page 200, signed-out routes 401); creates neither directory. It still needs a dev world in the registry (section 4, M3's hosted mode) | `git archive` of 65a9f0e without `artifacts/`, `Editor/dist` added, `studio.py --host 127.0.0.1` on DEV | M3 as planned |
+  | A dump's size (`pg_dump -Fc`, postgres:18's 18.6) | **DEV:** 304 MB whole (25 s); **51 MB without `world.build_cells`' data** (4 s); the build cells alone 252 MB for 3 builds (about 84 MB a build; 1,212 rows and 120 MB of row data each); without build cells and `world.terrain_chunks` (Atlas's source, not in a slice-1 package) 7.2 MB. **A packaged world** (doc 77's rev5 test world, one older build, few players): 85 MB whole, **0.8 MB without build cells** | `pg_dump` piped to `wc -c` | Q15's "build cells once each" holds: a daily dump is 1-2% of a whole one |
+  | Largest DM and Atlas replies (DEV) | What the page asks for: `/api/live/world?lean=1` 3.06 MB raw / 0.61 MB gzipped (level 3, as `http_body.py`); a ground batch of the 32 largest cells (the route's maximum) 4.8 MB / 0.77 MB; `/api/dm/npcs` 1.0 MB / 0.14 MB; the rest under 0.2 MB. **But the full (non-lean) `/api/live/world` and `/api/world` are 235 MB raw / 45 MB gzipped (40 MB at level 9), over both 32 MB caps;** the page never asks for them | `measure_replies.py`: the methods behind each GET route, encoded as the handlers do | 32 MB caps stay; M3's allowlist must refuse the non-lean world routes (or force `lean=1`) |
+  | A ticket's `gift` claim vs a world-set Gift | **Not overwritten.** The claim (`family`) is read only on the first arrival (`character_arrive`, `RatwGameTickets.cpp:401-481`) and the lobby; a returning wolf's hello refreshes only the look (`:336-360`). `character.gift` writes the wolf's own Gift (`RatwGame.cpp:1422-1452`) | Code read, not run | `character.gift` is meaningful on community worlds; section 8's table stands |
+
+  **D1, decided:**
+  - **The `editor` scheme, not shape (b).** It carries the studio on both platforms: bodies, raw and gzipped replies,
+    the label check, the CSP and refused IPC. M4 takes three changes: the proxy sets `Content-Length` from the body;
+    the Editor window gets a **new data directory per session** (deleted after the window is destroyed) instead of
+    `incognito`, which WebKitGTK can't use with a custom scheme; and the navigation rule refuses `blob:`, `data:` and
+    any navigation but the page, behind `on_download`, which didn't fire in WebKitGTK's shared context.
+  - **ureq `with_parts`, pinned to `=3.5.1`;** no hyper-rustls client.
+  - **Per-address limits stay, for IPv4.** Docker Engine shows other hosts' real IPv4 addresses. IPv6 peers through a
+    publish all look like the gateway, so the Editor is opened with `RATW_EDITOR_BIND=0.0.0.0` (IPv4 only) and the
+    guide doesn't offer `::`. Local clients share the gateway's bucket. Docker Desktop is unmeasured; the design
+    already copes if it folds (section 3.2's residual).
+  - **Port 17789 stays** (outside every reserved range on the runner and below the dynamic range Hyper-V reserves
+    from), pending the user's PC.
+
+  **Still needs the user's Windows PC** (Docker Desktop running, then `pwsh Desktop/spike-editor/windows_facts.ps1
+  -Keep` in a checkout of `r2-editor-m0a`, and `http://<the PC's LAN address>:47789/` from a phone or a second
+  computer): the peer address Docker Desktop shows for another computer, and for the PC itself; whether a `0.0.0.0`
+  publish answers IPv6 there; `chown` and `chmod` from a root container into a bind-mounted Windows folder (the
+  script writes, chowns, chmods and reads back, and prints the NTFS ACL); `netsh int ipv4 show excludedportrange
+  protocol=tcp` with WSL2 and Docker Desktop up; and WebView2's second and third downloads with a real signed-in
+  session.
 
 ## Review (2026-11-08)
 
