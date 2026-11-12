@@ -2520,6 +2520,65 @@ M1, M2a, M2b, M3 and M4 built (2026-11-12, below); the rest not yet.
     times alone); `test_studio` 72, `test_dungeon_master` 54, `test_dm_live` 10, `test_map_editor` 52,
     `test_world_package` 48 (1 skipped, as before); `npm run test:editor` 1 of 1; ctest 89 of 89 (`pg_client` on a
     throwaway database's URL).
+- **2026-11-12: R1: the host's experience fixed,** on `r2-editor-rux` (from `r2-editor` at 1002e6f, beside the security
+  repairs on `r2-editor-rsec`): every high and medium finding of R1's correctness review, its cheap lows and its wording
+  table, and the screenshot review of the real desktop app (34 shots).
+  - **H1:** a pasted Editor code is used for SIGN IN whenever the session in memory isn't live (`signsInWithCode`), so a
+    co-builder's code works after the owner's session ended; tested in `net/editor.test.ts` and end to end
+    (`editor.test.mjs`: the owner's session ended, then a fresh code for pell, signed in with the code's password).
+  - **H2:** the entrypoint writes `admin/server.json` `{up, reason (starting|running|restarting|exit|world.toml|closed),
+    code, failures, retryAt, at}` at every change; the hello carries it as `server` `{up, reason, code, failures,
+    retryIn}` (checked again by the shell, `wire::hello_page`), and the hosted Server tab as `hostServer`
+    (`/api/dm/server/status`). The pill and the Server tab never say Open/Running while it is down: "Stopped (exit 11):
+    starts again in 5 s", "Keeps stopping (exit 11): starts again in 2 min", "Stopped: world.toml has a mistake (see the
+    log)", "Restarting…". A failed status call is "Not answering", not "Restarting…".
+  - **H3:** the reset script is M5's; until then every screen, refusal and file names
+    `docker compose exec world ratw-editor reset NAME` (screen 4's footer with the account's name, "expired",
+    "owner-account", `first-editor.txt` once used).
+  - **M-a:** the helper's own connections get `statement_timeout` 5 s and TCP keepalives (connect_timeout was 5 s
+    already); the hello waits at most 2 s for the database, then answers progress `slow` (a new code) for a world that was
+    set up: "Your world answered, but its database is slow: try again in a minute."
+  - **M-b:** a hello that times out asks `/status` on the same port: the game's port, which holds a TLS hello without a
+    word, is named ("That's your world's game port. The Editor uses port 17789 (or your .env's RATW_EDITOR_PORT).").
+  - **M-c:** the first owner's code carries `127.0.0.1:<the host's Editor port>`; under a co-builder's code made on the
+    world's own computer: "It doesn't include your world's address: tell them that too (your home or public address,
+    port N)."
+  - **M-d:** the owner's folder path is no longer scrubbed. **M-e:** a Restart button on the hosted Server tab (owner only,
+    asked first; "Restarting…" until the server is back). **M-f:** a broken `world.toml` on the container's first start no
+    longer exits: the helper starts from the last good settings copy (if any) and world.toml is read again after 5 s,
+    30 s, 2 min, then every 2 min, on a schedule of its own apart from the crash backoff, with "next try at" in the log;
+    the loopback can't-connect text adds "docker compose logs world says what's wrong (a line starting RATW_PACKAGE
+    error:)" and says "Docker" on Linux. **M-g:** the flaky Lanes test's world bucket no longer refills on the real clock
+    (`rate = 0`), and its helper is `fail_sign_in` (it shadowed `TestCase.fail`). **M-h:** viewers see "Your account can
+    watch only. Ask the world's owner to change its role." **M-i:** the owner's sign-in reply carries
+    `notices: {failedToday, changes}` (counts only), shown on screen 5 before any step-up.
+  - **The lows:** the Editor window reads once a half minute after a 401 (not every 2 s); the shell's scheme answers
+    503 `{"error": "restarting"}` (and a page that reloads itself) when the world doesn't answer, and the window says
+    "Your world is restarting: the Editor reconnects by itself."; hosted headers and lines use the world's own name (never
+    "WORLD" or the registry's "Ridgemere 2.0") and drop the dev studio's words; the last owner's row has no TURN OFF or
+    REMOVE; "Your password is saved." on the first choice; one note on screen 4, not two; the log's listening line
+    prints the host's port; addresses of the world's own computer read "this computer"; the Host page's EDITOR tries a
+    recent world's own address first; the world-name password rule checks each word of 4+ letters; a stale status line
+    no longer survives a screen change. `Desktop/spike-editor/` and `.github/workflows/editor-spike.yml` are removed from
+    this branch (they stay on `r2-editor-m0a`).
+  - **The screenshot review:** the Editor accounts panel scrolls with the menu card (no 80 px box, nothing over the
+    footer); the Prosperity tab's buttons wrap and its side column drops below under 1400 px; the Host page's token box
+    scrolls with the list (Refresh stays in the card) and gives the package's lines (`.env`, `world.toml`, `docker compose
+    up -d`) in place of `ratw_server` / `world_agent.py` commands and "(doc 77, Phase 5)"; the creator's tab row stays in
+    view; the map's title wraps instead of being cut; the setting-up screen has a progress bar; colours in the creator's
+    review are words; the LIVE feed shows names, not NPC ids; the Economy tab speaks the host's words; Server Health's
+    count axes have whole-number ticks; the arrive page says only what there is to choose; the status bar says
+    "Community world" on a world on central, and the welcome line lost its "unless a local provider is configured". The
+    game's name is **Runs Against the World** everywhere (README, VISION, the page's own title; the desktop shell's
+    window, menu and product name now agree). The **My world** tab stays M5's.
+  - **Checked by eye:** the e2e desktop app in a headless `kwin_wayland --virtual` (WebKitGTK needs
+    `WEBKIT_DISABLE_DMABUF_RENDERER=1` there), against a local central, a ticket-mode world and the Editor port on a
+    throwaway copy of DEV: 22 of the 34 screens re-taken (the ones these fixes touch).
+  - **Tests** (one run; Release `ratw_server` in `build-rux`, `RATW_TEST_DB_TAG=s2stage_`): `cargo test` 58; Client 161
+    and typecheck; Editor 78 + 76, typecheck, build and render smoke (14 panels); `test_world_admin` 91 (the M-g test
+    among them); `test_studio` 73; `test_dungeon_master` 54; `Package/test_package.py` 54; ctest 89 of 89 (`pg_client` on
+    a throwaway database's URL); `npm run test:editor` 1 of 1 (its new H1 step first asked the menu again before the
+    shell had seen the world's 401; the step now makes the call that meets it, and the test passed, 33 s).
 
 ## Review (2026-11-08)
 
