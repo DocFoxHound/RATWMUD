@@ -1,0 +1,6 @@
+#!/bin/sh
+# Your world's Editor accounts and certificate (Docs/Design/78, section 3.6), on the world's computer:
+#   docker compose exec world ratw-editor list | add NAME --role R | reset NAME | invite NAME | disable NAME
+#                                         enable NAME | remove NAME | sign-out-all | fingerprint | new-certificate [--leaked]
+# Runs as root only to read the dm password, then as ratw-admin (tools/world_admin.py).
+exec python3 /opt/ratw/tools/world_admin.py "$@"

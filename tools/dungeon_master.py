@@ -199,7 +199,10 @@ FACTION_KINDS = ('npc', 'city', 'guild', 'clan', 'other')
 STANCES = ('allied', 'friendly', 'neutral', 'tense', 'hostile', 'war')
 MAX_FACTIONS = 64                                          # What the game's world loader accepts.
 ID = re.compile(r'^[a-z][a-z0-9_]{0,39}$')          # Within ratw_id (48), leaving room for suffixes.
-RANK = {'viewer': 0, 'dm': 1, 'admin': 2}
+# Ranks (migration 0063 widened the roles for a host's Editor accounts: Docs/Design/78, 6.3). In the user's own studio
+# nothing changes: Atlas needs dm, and only admin gets character.dm. A host's Editor (tools/world_admin.py) never signs
+# in an admin row; there Atlas needs builder and My world's actions and the accounts need owner.
+RANK = {'viewer': 0, 'dm': 1, 'builder': 2, 'owner': 3, 'admin': 4}
 PLAIN_ID = re.compile(r'^[^\s\x00-\x1f\x7f]+$')       # An account or good id: no spaces or control characters.
 MIME = {'.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png',
         '.woff2': 'font/woff2', '.ico': 'image/x-icon'}
@@ -224,7 +227,7 @@ def create_account(conn, username, role, password):
     if not re.fullmatch(r'[a-z][a-z0-9_-]{2,31}', username or ''):
         raise DMError('Usernames are 3-32 lowercase letters, digits, _ or -.')
     if role not in RANK:
-        raise DMError('Role must be viewer, dm or admin.')
+        raise DMError('Role must be viewer, dm, builder, owner or admin.')
     if len(password) < 12:
         raise DMError('DM passwords must be at least 12 characters.')
     conn.execute('INSERT INTO dm.admins (username, role, password) VALUES (%s, %s, %s)',

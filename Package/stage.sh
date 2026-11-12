@@ -15,7 +15,7 @@
 #                                  configures every target, even when only ratw_server is built), Client/wasm/walk.cpp
 #                                  and Data/Terrain/terrain.json (the client-data hash)
 #   DIR/app/                       what runs: Data/ (the server's directories only), Database/migrations/, tools/*.py
-#                                  (not the tests) and the Package's entrypoint
+#                                  (not the tests), the Package's entrypoint, ratw-editor and the breached-password list
 #   DIR/world/                     the world export (tools/world_package.py export) given with --world; empty without
 #                                  one, and the container then starts only with RATW_PACKAGE_IMPORT=skip
 # The build id is the commit (12 characters), with +dirty if any staged file differs from it; --build-id overrides it.
@@ -67,7 +67,7 @@ cd "$root"
 # the client's or the tools', not the server's.
 data_dirs=(Economy Fame Gifts Items Lore Progression Social Storylines Talk Terrain Together Town Voice Wild)
 src_paths=(CMakeLists.txt Core Server Tests Client/wasm/walk.cpp Data/Terrain/terrain.json)
-app_paths=(Database/migrations Package/entrypoint.py)
+app_paths=(Database/migrations Package/entrypoint.py Package/ratw-editor Package/breached-passwords.txt)
 for d in "${data_dirs[@]}"; do app_paths+=("Data/$d"); done
 
 listed() {   # The files git tracks or would add under the paths given (deleted ones left out), NUL-separated.

@@ -74,7 +74,7 @@ def tearDownModule():
 def empty_state():
     import world_db
     with world_db.connect('dev', 'owner', dbname=SCRATCH) as owner:
-        owner.execute('TRUNCATE dm.meta, dm.documents, dm.commands, dm.audit, dm.activity, dm.routes, dm.arrivals')
+        owner.execute('TRUNCATE dm.meta, dm.documents, dm.commands, dm.storykeeper_audit, dm.activity, dm.routes, dm.arrivals')
 
 
 class ServiceFixture(unittest.TestCase):

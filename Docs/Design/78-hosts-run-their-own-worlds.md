@@ -1885,7 +1885,7 @@ answers out of the box, not whether managing from anywhere works.
 
 ## Progress
 
-M1 built (2026-11-12, below); the rest not yet.
+M1 and M2a built (2026-11-12, below); the rest not yet.
 
 - **2026-11-08: the user's decisions.** "Go with the recommendations": all 21 decisions in section 17 take their
   recommendation (among them: the Editor answers only on the world's own computer until the host opens it; roles
@@ -1960,6 +1960,141 @@ M1 built (2026-11-12, below); the rest not yet.
     `world_db.py migrate --db dev`: 0062 applied to `ratw_ridgemere2`. PROD and old DEV untouched.
   - Not in M1: the "ticket's `gift` claim against a world-set Gift" question (M0a); Disabled-with-reason states in the
     DM tool (M3/M5); the I11 revokes and `dm.audit` (M2a).
+
+- **2026-11-12: M2a built (The helper's security core),** on `r2-editor` after M1. `tools/world_admin.py` (standard
+  library, the image's psycopg and `openssl`; no new Python dependency) and `tools/test_world_admin.py`. Every item of
+  section 14's M2a row:
+  - **TLS 1.3 with the world's key, reloaded on a signal.** `ssl.SSLContext(PROTOCOL_TLS_SERVER)`, minimum and maximum
+    TLS 1.3. `make_certificate` (the entrypoint's, M2b) makes an ECDSA P-256 key and a 100-year self-signed certificate
+    with `openssl req` once, with the world's id (its central id, or `local-` and 32 hex when it has none) in
+    `world-id`; the fingerprint is the SPKI's SHA-256 (the SPKI read from the certificate's DER by a small parser), its
+    first 128 bits in 8 groups of 4. SIGHUP builds a new context for new connections (a bad key keeps the old one).
+    Nothing on the port is ever answered in plain HTTP: the TCP side pauses reading at once, the limits run, then
+    `loop.start_tls` (10 s handshake); a failed handshake closes without a byte. (`StreamWriter.start_tls` was tried
+    first: its reader kept the TCP transport for flow control, and two large bodies read at once stalled for good; the
+    TLS transport now gets a reader and writer of its own.)
+  - **The hello** (`GET /editor/hello`, public, at most 1 KB, cached 2 s): `{world, name, package, editorApi: 1, kind,
+    serverState, progress {code, percent}, setupPending, rotation?}`. It answers before the database does (progress from
+    `progress.json`, which the entrypoint will write; without one, `database` until it answers); the name loses control
+    and bidirectional characters and is cut to 40; `setupPending` while an owner is still on a one-time password; `kind:
+    "official"` once `ever-official` exists or `central.json` says so, and then every sign-in and every signed-in route
+    is refused.
+  - **Signed rotation.** `ratw-editor new-certificate` makes a new key, signs `"RATW Editor key rotation v1\n<world
+    id>\n<new key's pin>\n"` with the old key (ECDSA P-256, SHA-256, DER: what ring's `ECDSA_P256_SHA256_ASN1` checks),
+    keeps the old key as `previous-key.pem`, writes `rotation.json` (the new SPKI, the signature, the old pin) for the
+    hello, and signals the helper through `helper.pid`. `--leaked`: no signature, the previous key dropped, every
+    session and device ended.
+  - **The routes:** `/editor/login`, `/editor/password`, `/editor/step-up` (5 minutes, bound to the session; five wrong
+    passwords typed in an open session end it), `/editor/keepalive`, `/editor/logout`, and `GET /editor/accounts` with
+    `POST /editor/accounts/{add,reset,role,wolves,disable,enable,remove,end-sessions}` (owner, with a step-up). A
+    one-time session may only call password, keep-alive and logout. Everything else (`/api/...`, the page's files) needs
+    a bearer session and goes to `Core.app`, the hosted studio's hook (M3); until then it is 404 behind the session.
+    Replies to `/api/` are forced to JSON or octet-stream; every reply has `nosniff` and `no-store`.
+  - **Accounts** stay the DM tool's (`dm.admins`, `dm.sessions`) in the world's database. Screen 5's routes add
+    `viewer`, `dm` or `builder` only, change roles up to builder, and can't reset an owner (a stolen owner session would
+    get that owner's code: owners are reset by `reset-editor-password`/`ratw-editor`); the last owner can't be removed,
+    turned off or demoted, by the screen or by `ratw-editor`. Every change writes a log line and an audit row
+    (`account.*`, who = the owner's session); the list returns the banners since the owner's previous sign-in, "failed
+    sign-ins today", each account's role, claim address, last address and devices.
+  - **Migration 0063** (`0063_editor_accounts.sql`, schema only): the role CHECK widened to viewer, dm, builder, owner,
+    admin (`RANK` 0-4 in `dungeon_master.py`: in the user's studio nothing changes; an admin row never signs in to a
+    host's Editor); `dm.admins` gains `must_change`, `must_change_until`, `may_act_on_wolves`, `claimed_from`,
+    `created_by`; `dm.sessions` gains `last_seen`, `device`, `step_up_until`, `address` and `since`; new `dm.devices`
+    (with each device's failures and wait), `dm.invites` (with failures), `dm.locks` and `dm.ai_use`. **I11:** found by
+    grep, the server uses `dm.actions`, `dm.health`, `dm.watch` and `dm.watchers`; it keeps those, and the legacy
+    Storykeeper (`dm_service.py`, which connects as `ratw_game`) keeps its own tables. Its log moved from `dm.audit` to
+    a new `dm.storykeeper_audit` (two lines in `dm_service.py`), so `dm.audit`, `dm.stories`, the four new tables and
+    their sequences are revoked from `ratw_game`, and `dm`'s default privileges for `ratw_game` are revoked too: every
+    later `dm.*` table starts closed to the game. The I11 test lists every `dm.*` table `ratw_game` holds any privilege
+    on and fails on one not named; another creates a table and checks it is closed; another, as `ratw_game`, fails to
+    read any trusted table or forge a session or audit row.
+  - **Editor codes and invites.** `ratw-editor:` and base64url of `{v: 1, w: world id, k: the SPKI's full SHA-256, u,
+    p?: one-time password, i?: invite, a?: address}`. A new account's code carries both (`add`, `reset`, the first
+    owner, screen 5); `ratw-editor invite` only an invite (the password stays). Sign-in always takes the password; an
+    invite (SHA-256 in `dm.invites`) is looked up before any scrypt, works once, expires (72 hours; 7 days for the first
+    owner), and five wrong passwords with it void it. `read_code` checks a pasted one, for M4.
+  - **Passwords:** at least 12 characters (256 at most); not containing the username or the world's name (spaces, `-`,
+    `_` and case ignored; names under 3 letters skipped); not one of the NCSC's 100,000 commonest breached passwords
+    (`Package/breached-passwords.txt`, 800 KB, lowercased, from SecLists), nor one of them with digits or symbols around
+    it, nor one repeated; at least 5 different characters. The reply is a code (`short`, `long`, `username`, `world`,
+    `common`, `simple`, `same`) the client words.
+  - **The browser rule:** `Origin`, `Cookie` or any `Sec-Fetch-*` refused (403); no `OPTIONS` (405) and no
+    `Access-Control-*`; `Host` ignored.
+  - **Connections:** a sign-in pool (4 threads), a signed-in pool (8) and a scrypt pool (2); per address (IPv6 by /64)
+    at most 4 open and a burst of 6 handshakes then 3 a second; world-wide at most 32 open and a burst of 40 then 10 a
+    second; 10 s for the handshake and the first request, 60 s idle; heads at most 8 KB; bodies without a session at
+    most 4 KB, `Content-Length` required, chunked refused, nothing read before the session is checked; `/editor/*` 4 KB,
+    `/api/` 16 MB, at most 2 over 1 MB at once (503 beyond); 20 requests a second a session; at most 6 database
+    connections; every handler and connection catches everything (the log names only the exception's type).
+  - **Peers that can't be told apart (D1, built both ways).** `RATW_EDITOR_PEERS=auto` (default): the container's
+    default gateway (from `/proc/net/route`; M0a: connections from the world's own computer, and IPv6 through a bare
+    publish, arrive as it) and loopback are unidentified; `real` and `folded` force either. An unidentified peer has no
+    per-address limits: its connections count only world-wide and its failures only in the world-wide and per-account
+    counts. It is never trusted (I3): the host's own lanes are known devices, codes and the one-time password.
+  - **Signing in:** at most 2 scrypt checks at once and 8 waiting; known devices and codes first, and one arriving at a
+    full queue takes the newest stranger's place. Unknown, disabled and admin names (and odd stored hashes) run the same
+    scrypt on a dummy hash made at start and get "Wrong name or password."; a failure's rows are written after the
+    reply, so a real name takes no longer than an unknown one; a disabled account or an expired one-time password is
+    told only with the right password. Lanes: **known devices** (a token for its own account only, at most 5 an account,
+    5 failures make that device wait 15 minutes), **codes** (no counts), **one-time accounts** (per address only; never
+    locked; not world-wide), **everyone else** (per address: 5 in 15 minutes, then 15, 30, 60 minutes; per account: 5
+    from unknown devices, then 15 minutes doubling to 4 hours, in `dm.locks`, kept across a restart and not lifted by a
+    good sign-in; world-wide: 20 failures a minute, starting half full). A device token shown with another username
+    counts as unknown and as a failure. Unknown names lock the same way in memory, so a lock says nothing about whether
+    a name exists. `new_devices = "approve"`: a typed password from a new device is refused without a code. Counter
+    tables are fixed (4,096): when one is full a new address fails closed onto the world-wide count.
+  - **Sessions:** `dm.sessions` rows (they survive a restart); 30 minutes without input (`last_seen`, renewed only by
+    the keep-alive and the client's own screens' routes, at most once a minute; a page's requests renew nothing), 12
+    hours at most; 3 an account (its own oldest evicted); 10 a world (a new sign-in refused, "Too many people signed
+    in", nobody evicted). A good sign-in gives a device token (stored hashed; none on a one-time password: the password
+    change gives it). A password change ends the account's other sessions, forgets its devices, invites and lock, and,
+    for an owner leaving a one-time password, drops a `first-editor-used` request (`requests/`, kind-only files) for the
+    root entrypoint. **The audit mapping:** a session's `who['username']` is `account#short` (6 hex derived from the
+    stored hash, never the token) for `requested_by` and the audit.
+  - **Logs and audit, folded:** `RATW_EDITOR` lines whose values are checked (a name, an address key, a route, a status,
+    a count: anything else prints `?`); a name typed that isn't a username is never looked up or logged (it may be a
+    password typed in the wrong box). One audit row per known account and address an hour, with a count; none for
+    unknown names; above 10 failures a minute the rest fold into one line and one audit row a minute. Each signed-in
+    request writes one line (account, route, status).
+  - **`ratw-editor`** (`Package/ratw-editor`, installed in `/usr/local/bin`): `list`, `add NAME --role R` (the only way
+    to an owner; never admin), `reset`, `invite`, `disable`, `enable`, `remove`, `sign-out-all`, `fingerprint`,
+    `new-certificate [--leaked]`, and the entrypoint's `first-owner` (JSON: the generated `host-xxxx` or `[editor]
+    owner`, its one-time password, invite and code; renewed when 7 days pass unclaimed; nothing on an official world)
+    and `make-certificate`. As root it reads only the dm password from `passwords.env`, then runs itself again as
+    `ratw-admin` with no other groups. Codes go only to its terminal.
+  - **The image:** `Package/Dockerfile` names `openssl`, adds `ratw-admin` (10003, in no other group) and installs
+    `ratw-editor`; `stage.sh` stages it and the breached-password list. (Those three were M2b's list; done here because
+    `ratw-editor` needs them. The rest of M2b stands: the `admin` volume, the entrypoint's certificate, first owner,
+    settings copy, progress file, request handling, restarts, compose and README.)
+  - **Tests** (one run): `test_world_admin` **80** (I11 and the migration; every password rule; the lock arithmetic;
+    peer keys; the scrypt gate's cap, queue and priority; the certificate, fingerprint and a rotation checked with
+    `openssl dgst -verify` and refused for another world; codes; requests; signing in: same words and one scrypt for
+    real, unknown, disabled and odd names with a timing check, admin refused, the host token, bad bodies, the database
+    down, setting up, official; the first owner, its forced change, `first-editor-used`, expiry and renewal; every lane
+    and count, devices scoped and capped, invites once/expired/voided, approve, a full table failing closed, locks
+    across a restart; sessions: caps, idle, keep-alive once a minute, 12 hours, disabled, restart, logout; every account
+    route and refusal, banners, audit rows; folded logs and no secret in any line; over a real TLS port: TLS 1.2
+    refused, the key's fingerprint, plain HTTP unanswered, the hello, the browser rule, body caps, sessions on every
+    non-public route, a one-time session's limits, a raising handler, a slow signed-in reply not delaying a sign-in, 2
+    large bodies at once, the request rate, a fifth connection from one address, the handshake rate, a slow handshake,
+    the 33rd connection; the real `serve` process reloading on SIGHUP with the rotation in its hello and stopping on
+    SIGTERM; with the Editor off nothing listens; `ratw-editor` end to end). Also once: ctest 89 of 89 (on M1's Release
+    build in `build-m1`: no C++ changed; `pg_client` on a throwaway `ratw_test_s2stage_m2a` with all 63 migrations,
+    dropped after), `test_dungeon_master` 54, `test_studio` 54, `test_dm_live` 10, `test_world_package` 48 (1 skipped,
+    as at M1: the pre-79 package check; its end-to-end tests need `RATW_TEST_SERVER`, given on a second invocation after
+    the first skipped them), `test_dm_service` 40 (the Storykeeper's new log table), `Package/test_package.py` 20: all
+    OK. No `s2stage` database, `/tmp` file or process left.
+  - **DEV migrated:** `pg_dump -Fc` first (`Saved/Backups/ratw_ridgemere2-before-0063.dump`, 303 MB), then `world_db.py
+    migrate --db dev`: 0063 applied to `ratw_ridgemere2`; `ratw_game` there now holds exactly the eleven tables named
+    above. PROD and old DEV untouched. Until `r2-editor` is merged, the main checkout's legacy Storykeeper
+    (`dm_service.py`, never started) would fail writing `dm.audit` on DEV.
+  - **Time:** about an hour and a quarter of session time, against 6-8 plan hours and 3-3.5 expected (0.45): the
+    0.45 factor was generous for this phase, which needed no client or Core work.
+  - **For later phases.** M2b: write `settings.json`, `progress.json`, `central.json`/`ever-official`, the registry copy
+    (`worlds.json`) into the `admin` volume; start `world_admin.py serve` as `ratw-admin` with `RATW_ADMIN_DIR` and the
+    dm password; run `make-certificate` and `first-owner` and act on `requests/`. M3: `Core.app` is where the hosted
+    studio plugs in, with `session['username']` as its `who`. M4: the hello's fields, `rotation_message` and `read_code`
+    are the client's contract.
 
 ## Review (2026-11-08)
 

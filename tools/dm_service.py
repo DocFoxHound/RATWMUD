@@ -381,7 +381,7 @@ class DMService:
                         (kind, value['id'], encode(value)))
 
     def _audit(self, action, target, detail):
-        self.db.execute('INSERT INTO audit(at,action,target,detail) VALUES(?,?,?,?)',
+        self.db.execute('INSERT INTO storykeeper_audit(at,action,target,detail) VALUES(?,?,?,?)',
                         (self.clock(), action, target, text(detail, 2000, empty=True, multiline=True)))
 
     def bridge(self):
@@ -451,7 +451,7 @@ class DMService:
                       'snapshot': copy.deepcopy(self.snapshot),
                       'activity': [dict(row) for row in self.db.execute(f'SELECT {ACTIVITY} FROM activity ORDER BY chapter,weekday,hour')],
                       'routes': [dict(row) for row in self.db.execute('SELECT * FROM routes ORDER BY chapter,source,destination')],
-                      'audit': [dict(row) for row in self.db.execute('SELECT * FROM audit ORDER BY sequence DESC LIMIT 200')]}
+                      'audit': [dict(row) for row in self.db.execute('SELECT * FROM storykeeper_audit ORDER BY sequence DESC LIMIT 200')]}
             for singular, plural in [('campaign', 'campaigns'), ('beat', 'beats'), ('event', 'events'),
                                      ('chapter', 'chapters'), ('faction', 'factions'), ('opinion', 'opinions'),
                                      ('migration', 'migrationPreviews')]:

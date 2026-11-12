@@ -23,21 +23,27 @@ FROM python:3.14-slim-trixie
 # tcmalloc is linked; CA certificates for the Mind's and the agent's HTTPS; tini as PID 1 (signals, zombies).
 # Two users (Package/entrypoint.py): ratw (10001) runs the import, the NPC Mind and the world agent, each given only
 # its secrets in its environment; ratw-server (10002) runs the server, which faces the internet, and can reach none of
-# them. The entrypoint runs as root to read the host's files (mounted in /etc/ratw) and the database passwords
-# (compose.yaml), all root's alone.
+# them. ratw-admin (10003, in no other group) runs the Editor's helper (tools/world_admin.py, Docs/Design/78, 6.5),
+# with openssl to make and sign the Editor's certificate. The entrypoint runs as root to read the host's files
+# (mounted in /etc/ratw) and the database passwords (compose.yaml), all root's alone.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends libpq5 libssl3t64 zlib1g libtcmalloc-minimal4t64 ca-certificates tini \
+    openssl \
  && rm -rf /var/lib/apt/lists/* \
  && pip install --no-cache-dir "psycopg[binary]==3.2.13" \
  && groupadd --gid 10001 ratw \
  && useradd --uid 10001 --gid 10001 --home-dir /var/lib/ratw --no-create-home --shell /usr/sbin/nologin ratw \
  && groupadd --gid 10002 ratw-server \
  && useradd --uid 10002 --gid 10002 --home-dir /var/lib/ratw --no-create-home --shell /usr/sbin/nologin ratw-server \
+ && groupadd --gid 10003 ratw-admin \
+ && useradd --uid 10003 --gid 10003 --home-dir /var/lib/ratw/admin --no-create-home --shell /usr/sbin/nologin ratw-admin \
  && install -d -o root -g root -m 0755 /var/lib/ratw \
  && install -d -o ratw -g ratw-server -m 0770 /var/lib/ratw/logs \
  && install -d -o root -g root -m 0700 /etc/ratw /etc/ratw/host
 COPY --from=build /build/ratw_server /opt/ratw/bin/ratw_server
 COPY app/ /opt/ratw/
+# The Editor's accounts command (Docs/Design/78, 3.6): `docker compose exec world ratw-editor ...`.
+RUN install -m 0755 /opt/ratw/Package/ratw-editor /usr/local/bin/ratw-editor
 COPY world/ /package/world/
 # The server's Data (Core: RATW_DATA_DIR); the tools' registry and local choices in the container's own state, not the
 # repository's (tools/world_db.py); Python writes no __pycache__ into the read-only app.
