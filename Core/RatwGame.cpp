@@ -344,6 +344,10 @@ Game::~Game()
         store_->flush();
         if (auto* writer = store_->journal())
             writer->flush();
+        // A clean stop (Phase 9's last repair): the acts applied whose records have now been written are answered, so the
+        // DM's tool never shows a paid grant "waiting" until some later server starts. (One whose record still couldn't
+        // be written stays queued: the next server applies it or answers it from the record.)
+        releaseDmStatuses();
     }
     letGoOfOwnership();                             // Last, once everything is written.
 }
@@ -1029,6 +1033,21 @@ void Game::applyDmActions(double dt)
         }
         const auto seqBefore = journalSeq_;
         Result outcome{false, "Unknown action.", {}};
+        // Any other kind that journals what it does (a deed, a Gift, a town project, an NPC's band: Phase 9's last repair)
+        // carries its dm.actions id in its record too, so a crash after the record commits answers the row from it, never
+        // applying the act again. Its outcome isn't known until it is applied: the record holds a plain receipt, and the
+        // checkpoint the outcome itself. (The economy's acts keep their own, with their outcome: applyEconomyCommand.)
+        const bool receipted = !economyCommand(kind);
+        if (receipted)
+        {
+            auto act = json::Value::object();
+            act.add("ok", true);
+            act.add("text", "Applied (the server stopped before it could say what it did).");
+            act.add("kind", kind);
+            act.add("target", target);
+            dmActs_.set(*row[0], std::move(act));
+            actingFor_ = *row[0];
+        }
         if (kind == "layers.sync" || kind == "factions.sync" || kind == "npc.sync")
         {
             World candidate;
@@ -1588,6 +1607,22 @@ void Game::applyDmActions(double dt)
                                             wire::number(payload, "minutes", 0));
             }
         }
+        if (receipted)
+        {
+            // (Nothing journalled: no receipt, the act is applied again if the row is still queued after a crash. Else
+            // the receipt with its outcome, for the checkpoint; the oldest dropped past DmActsKept.)
+            actingFor_.clear();
+            dmActs_.erase(*row[0]);
+            if (journalSeq_ != seqBefore)
+            {
+                auto act = json::Value::object();
+                act.add("ok", outcome.ok);
+                act.add("text", outcome.message);
+                act.add("kind", kind);
+                act.add("target", target);
+                keepDmAct(*row[0], std::move(act));
+            }
+        }
         changed |= outcome.ok;
         // "Applied" only once what the act journalled is committed (a crash before then loses the act: the DM must not
         // have been told it happened). With nothing journalled, or written already, at once.
@@ -1608,6 +1643,20 @@ void Game::applyDmActions(double dt)
         ++revision_;
         saveSoon();
     }
+}
+
+void Game::keepDmAct(const std::string& id, json::Value act)
+{
+    while (dmActs_.size() >= DmActsKept)
+    {
+        // (The oldest by number: dm.actions ids grow; a row is never left queued that long.)
+        std::string oldest;
+        for (const auto& [key, v] : dmActs_.fields())
+            if (oldest.empty() || key.size() < oldest.size() || (key.size() == oldest.size() && key < oldest))
+                oldest = key;
+        dmActs_.erase(oldest);
+    }
+    dmActs_.set(id, std::move(act));
 }
 
 void Game::releaseDmStatuses()

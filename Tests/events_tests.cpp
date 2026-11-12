@@ -455,14 +455,15 @@ void theListAndItsChecks()
            "a seeded cause for the move down stands in: " + cause.words);
     expect(!soc.setProsperity(-60, false, "a cause\nof two lines") && soc.board().sliderCause.words == cause.words, "nor words with a line break");
     // Phase 9's second repair: the host's cause cleared (economy.sync then passes none) while the DM's is in force: the
-    // world's own words of its way take over, quietly (told as the DM's were), standing or moved the same way.
+    // world's own words of its way take over, standing or moved the same way. The last repair: and are told in their turn,
+    // so the boards' notice of the DM's words is replaced (it stayed up a week, against the crier and talk).
     const auto worlds = [&](const market::SliderCause& c) {
         return !c.dm && std::any_of(d.causesDown.begin(), d.causesDown.end(), [&](const market::Data::Cause& k) { return k.words == c.words; });
     };
     expect(soc.setProsperity(-40, false, "the Crown's war levy") && soc.board().sliderCause.dm, "second repair: the DM's cause");
     soc.stagedBoard().sliderCause.told = true;
-    expect(soc.setProsperity(-40, false, "") && worlds(soc.board().sliderCause) && soc.board().sliderCause.told,
-           "second repair: cleared, standing: the world's words, not told again: " + soc.board().sliderCause.words);
+    expect(soc.setProsperity(-40, false, "") && worlds(soc.board().sliderCause) && !soc.board().sliderCause.told,
+           "second repair: cleared, standing: the world's words, to be told (last repair): " + soc.board().sliderCause.words);
     expect(soc.setProsperity(-40, false, "the Crown's war levy") && soc.board().sliderCause.dm, "second repair: the DM's again");
     expect(soc.setProsperity(-60, false, "") && worlds(soc.board().sliderCause), "second repair: cleared, moved the same way: the world's words");
     const auto kept = soc.board().sliderCause.words;
@@ -853,6 +854,8 @@ void theDMsLevers()
     expect(!act("times.nudge", "nowhere", {{"points", 10}}).ok, "an unknown market refused");
     expect(!act("times.nudge", "east", {{"points", 10}, {"words", "a dog show"}}).ok, "the forbidden word refused");
     expect(act("times.nudge", "east", {{"points", 0}}).ok && !soc.board().nudges.count("east"), "points 0 lifts it");
+    expect(!act("times.nudge", "east", {{"points", 0}}).ok && !act("times.nudge", "east", {{"points", 20}, {"days", 0}}).ok,
+           "last repair: no nudge in force: lifting one is refused, as a harvest's clear is");
     // harvest.override and its clearing.
     const auto end = std::find_if(w.cartEnds().begin(), w.cartEnds().end(), [](const auto& e) { return e.farmId == "grain_farm_1"; });
     expect(end != w.cartEnds().end(), "the farm's cart end");
@@ -905,10 +908,42 @@ void theDMsLevers()
         soc.adoptEconomy(spec);
         expect(goodBiased >= good, "the harvest bias leans the harvests good: " + std::to_string(good) + " to " + std::to_string(goodBiased));
     }
+    // Last repair: harvestBias's effect itself, at one moment (the test above compares different days, and passes on
+    // "no worse"): in every area the harvest at -20 is never better than at 0, nor at 0 than at +20, and over the realm's
+    // areas +20 calls more of them good and fewer poor than -20 does (the score moves by bias/100).
+    {
+        auto spec = soc.authored().economy;
+        const auto harvests = [&](int bias) {
+            spec.rules["harvestBias"] = bias;
+            soc.adoptEconomy(spec);
+            std::vector<int> out;
+            for (const auto& a : items::farms().areas)
+                out.push_back(w.harvestOf(a.id));
+            return out;
+        };
+        int poorLow = 0, poorHigh = 0, goodLow = 0, goodHigh = 0;
+        bool ordered = true;
+        const auto low = harvests(-20), mid = harvests(0), high = harvests(20);
+        for (std::size_t i = 0; i < mid.size(); ++i)
+        {
+            ordered &= low[i] <= mid[i] && mid[i] <= high[i];
+            poorLow += low[i] == 0, poorHigh += high[i] == 0, goodLow += low[i] == 2, goodHigh += high[i] == 2;
+        }
+        spec.rules["harvestBias"] = 0;
+        soc.adoptEconomy(spec);
+        expect(ordered && goodHigh > goodLow && poorHigh < poorLow,
+               "last repair: the harvest bias moves the harvests: good " + std::to_string(goodLow) + " at -20 to " + std::to_string(goodHigh) +
+                   " at +20, poor " + std::to_string(poorLow) + " to " + std::to_string(poorHigh));
+    }
     // event.add and event.cancel.
     r = act("event.add", "east", {{"kind", "house_wedding"}, {"day", double(today(w) + 2)}, {"hour", 99}});
     expect(r.ok && r.message.rfind(r.targetId + ": ", 0) == 0 && w.stagedEvent(r.targetId)->hour == 23, "an event, its hour clamped: " + r.message);
-    expect(act("event.cancel", r.targetId, {}).ok && w.stagedEvent(r.targetId)->status == "cancelled", "cancelled");
+    {
+        const auto cancelled = act("event.cancel", r.targetId, {});
+        expect(cancelled.ok && w.stagedEvent(r.targetId)->status == "cancelled", "cancelled");
+        expect(cancelled.message.find(" at " + w.marketWords(w.stagedEvent(r.targetId)->market) + " (" + r.targetId + ") is cancelled.") != std::string::npos,
+               "last repair: the cancelled event by its words and market, not its id alone: " + cancelled.message);
+    }
     expect(!act("event.cancel", "e999", {}).ok, "an unknown event refused");
     expect(!act("event.add", "east", {{"kind", "no_such_kind"}}).ok, "an unknown kind refused");
     r = act("event.add", "east", {{"kind", "house_wedding"}, {"day", 1e9}});
@@ -958,6 +993,7 @@ void theDMsLevers()
            "the DM's timed band wins, its days clamped: " + r.message);
     expect(r.message.rfind(w.entity("e2")->name + "'s household is held poor", 0) == 0, "second repair: the resident named: " + r.message);
     expect(act("band.override", "e2", {{"band", "clear"}}).ok && soc.statusOf("e2")->band == status::Rich, "cleared: the authored band again");
+    expect(!act("band.override", "e2", {{"band", "clear"}}).ok, "last repair: no band held: clearing one is refused");
     expect(!act("band.override", "e2", {{"band", "wealthy"}}).ok && !act("band.override", "nobody", {{"band", "poor"}}).ok, "a bad word or resident refused");
     // character.grant: a faucet capped a day, a fine never past the cash; the door balanced; nothing unregistered.
     w.addPlayer("player-ada", "Ada");
@@ -974,7 +1010,7 @@ void theDMsLevers()
         const auto had = soc.account("player-ada")->cash;
         r = act("character.grant", "player-ada", {{"coins", -2500}, {"reason", "for the broken cart"}});
         expect(r.ok && soc.account("player-ada")->cash == 0 &&
-                   r.message == "Fined " + std::to_string(had) + "p (all player-ada had; 2500p asked): for the broken cart.",
+                   r.message == "Fined " + std::to_string(had) + "p (all Ada had; 2500p asked): for the broken cart.",
                "a fine of no more than the purse, told as what it took: " + r.message);
     }
     expect(!act("character.grant", "player-ada", {{"coins", -5}, {"reason", "again"}}).ok, "nothing left to fine");
@@ -1011,6 +1047,42 @@ void theDMsLevers()
                "each skipped with a warning");
         soc.adoptOverrides({}, nullptr);
         expect(&soc.market() == &market::data() && soc.statusTable().cap("grantsADay") == 500, "none: the shipped defaults again");
+    }
+    // Last repair: economy.sync's outcome counts the host's overrides skipped or held (it is what the host is shown), and
+    // the server's log says how many it didn't name after the twentieth, never dropping them without a word.
+    {
+        auto spec = soc.authored().economy;
+        json::Value v;
+        std::string caps;
+        for (int i = 0; i < 25; ++i)
+            caps += (i ? ", " : "") + ("\"nope" + std::to_string(i) + "\": 1");
+        expect(json::parse("{\"caps\": {" + caps + "}}", v, problem), problem);
+        spec.overrides.status = v;
+        std::string logged;
+        const auto was = g.log;
+        g.log = [&logged](const char*, const std::string& text) { logged += text + "\n"; };
+        g.economyReader = [&spec](EconomySpec& into, std::string&) { into = spec; return true; };
+        const auto synced = act("economy.sync", "economy", {});
+        g.economyReader = [&](EconomySpec& into, std::string&) { into = soc.authored().economy; return true; };
+        expect(synced.ok && synced.message.find("25 overrides skipped or held") != std::string::npos, "last repair: the outcome counts them: " + synced.message);
+        expect(logged.find("and 5 more of the host's overrides skipped or held") != std::string::npos, "last repair: and N more, in the log");
+        expect(act("economy.sync", "economy", {}).ok && soc.statusTable().cap("grantsADay") == 500, "the world's own settings again");
+        g.economyReader = nullptr;
+        g.log = was;
+    }
+    // Last repair: more acts than the receipts kept (DmActsKept, 64) between two checkpoints: the newest 64 are held, the
+    // oldest dropped by number, never the newest.
+    {
+        for (int i = 0; i < 70; ++i)
+        {
+            auto nudge = json::Value::object();
+            nudge.add("points", 5 + i % 3);
+            nudge.add("days", 1);
+            expect(g.applyEconomyCommand("times.nudge", "east", nudge, std::to_string(9000 + i)).ok, "a nudge with its dm.actions id");
+        }
+        expect(g.dmActs().size() == 64 && !g.dmActs().find("9000") && !g.dmActs().find("9005") && g.dmActs().find("9006") &&
+                   g.dmActs().find("9069"),
+               "last repair: the newest 64 receipts kept: " + std::to_string(g.dmActs().size()));
     }
     expect(soc.realBalanced(), "money still balanced");
     std::filesystem::remove_all(root);
@@ -2334,6 +2406,27 @@ const std::vector<EventCrash>& eventCrashes()
              const auto& n = g.world().society().board().nudges;
              expect(n.count("east") && n.at("east").points == 37 && n.at("east").cause == "boom at the port", "dm_nudge: there after the crash");
          }},
+        // (Last repair: the harvest called was the one act without a crash case of its own.)
+        {"dm_harvest",
+         [](game::Game& g) {
+             dmCheckpoint(g);
+             auto was = json::Value::object();
+             for (const auto& a : items::farms().areas)
+                 if (dmAct(g, "harvest.override", a.id, {{"word", "poor"}, {"days", 5}, {"words", "blight in the fields"}}).ok)
+                 {
+                     was.add("area", a.id);
+                     break;
+                 }
+             expect(was.has("area"), "dm_harvest: a harvest called poor");
+             dmTold(g);
+             return was;
+         },
+         [](game::Game& g, const json::Value& was) {
+             const auto& o = g.world().society().board().harvestOverride;
+             const auto found = o.find(was.string("area"));
+             expect(found != o.end() && found->second.word == 0 && found->second.cause == "blight in the fields",
+                    "dm_harvest: called poor still, once, after the crash");
+         }},
         {"dm_event_add",
          [](game::Game& g) {
              dmCheckpoint(g);
@@ -2617,13 +2710,35 @@ Fixture crashWorld()
     return f;
 }
 
+// A strip with a farm (the DM's levers' own: a harvest can be called only where a farm or a cart's end is).
+Fixture farmStrip()
+{
+    named = {{3, "fs_grain_long_granary"}};
+    rules = "rule \"eventRate\" 0\n";
+    auto probe = strip("EE.G...WW");
+    auto p = load(probe);
+    std::string label;
+    for (const auto& farm : p.society().farms())
+        if (farm.def->id == "grain_farm_1")
+            label = p.society().farmLabel(farm, 0);
+    auto f = strip("EE.G...WW", resident("fk", "Bran Long", "civilian", label, 0, 9.5, 3, 9.5));
+    rules.clear();
+    named.clear();
+    return f;
+}
+
+// The world a crash case plays on: the harbour (seeded events for the morning's roll, none for the rest), the farm strip
+// for the harvest called.
+Fixture crashFixture(const std::string& name)
+{
+    return name == "event_morning" ? harbour() : name == "dm_harvest" ? farmStrip() : crashWorld();
+}
+
 void eventsThroughACrash()
 {
     for (const auto& r : eventRuns())
     {
-        auto f = crashWorld();
-        if (std::string(r.c->name) == "event_morning")
-            f = harbour();                          // (Its morning rolls the seeded events.)
+        auto f = crashFixture(r.c->name);
         const auto root = onDisk(f, "eventcrash-" + r.name);
         const auto path = crashSave(r.name);
         cleanSave(path);
@@ -2641,7 +2756,7 @@ int writeCrashes(const std::filesystem::path& dir)
     fs::create_directories(dir);
     for (const auto& r : eventRuns())
     {
-        auto f = std::string(r.c->name) == "event_morning" ? harbour() : crashWorld();
+        auto f = crashFixture(r.c->name);
         const auto root = onDisk(f, "eventcrash-" + r.name);
         const auto path = crashSave(r.name);
         cleanSave(path);
@@ -2661,7 +2776,7 @@ int checkCrashes(const std::filesystem::path& back, const std::filesystem::path&
     namespace fs = std::filesystem;
     for (const auto& r : eventRuns())
     {
-        auto f = std::string(r.c->name) == "event_morning" ? harbour() : crashWorld();
+        auto f = crashFixture(r.c->name);
         const auto root = onDisk(f, "eventcrash-" + r.name);
         const auto path = crashSave(r.name);
         cleanSave(path);

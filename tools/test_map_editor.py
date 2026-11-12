@@ -489,6 +489,18 @@ class ContentTests(unittest.TestCase):
             self.assertIn(f'economy.{key}', str(refused.exception))
         self.assertNotIn('wharfFee', str(refused.exception))
         self.assertEqual(editor.check_economy({**self.greyfen()['economy'], 'rules': {'prosperity': -35, 'harvestBias': -20}}), [])
+        # Phase 9's last repair: a rule's name that is no plain word (a line break in it became a second manifest line the
+        # game refused the whole world for) is refused by a save, by check_rules and so by every door that checks an
+        # economy; a plain name the game no longer has is still kept and only warned of.
+        for name in ('zz\nbogus', 'ripple\n', 'a b', 'q"uote', ''):
+            problems = editor.check_economy({**self.greyfen()['economy'], 'rules': {name: 5}})
+            self.assertTrue(problems and 'not a rule\'s name' in problems[0], (name, problems))
+            bad = self.greyfen()
+            bad['economy'] = {**bad['economy'], 'rules': {name: 5}}
+            with self.assertRaises(editor.ValidationError):
+                editor.check_project(bad)
+        errors, warnings = editor.economy_problems({**self.greyfen()['economy'], 'rules': {'steerLean': 150}})
+        self.assertEqual((errors, len(warnings)), ([], 1))
         self.assertTrue(editor.check_economy({**self.greyfen()['economy'], 'rules': {'harvestBias': -21}}))
 
     def test_the_seasons_take_both_shapes_within_the_season_room(self):

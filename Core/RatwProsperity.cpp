@@ -187,6 +187,28 @@ bool World::clearHarvest(const std::string& area)
     return true;
 }
 
+void World::noteBeggars()
+{
+    // After each hour's placing (tendStreet): in the begging hours of a begging day (10.2: Marketday and Restday, 8:00 to
+    // 18:00) each market's count is raised to the most seen that day, a new day starting from none (a boom's empty
+    // Marketday then reads 0, not last Restday's). Outside those hours nothing changes: the last begging day's stands.
+    const int weekday = calendar::weekdayOf(calendarDays_);
+    const double hour = (calendarDays_ - std::floor(calendarDays_)) * 24;
+    if ((weekday != calendar::Marketday && weekday != calendar::Restday) || hour < 8 || hour >= 18 || !society_.stagedReady())
+        return;
+    if (const auto today = std::int64_t(std::floor(calendarDays_)); today != beggarsSeenDay_)
+    {
+        beggarsSeen_.clear();
+        beggarsSeenDay_ = today;
+    }
+    std::map<std::string, int> now;
+    for (const auto& [id, spot] : beggars_)
+        if (const auto* m = society_.tradePoints().ofCellId(spot.cell))
+            ++now[m->id];
+    for (const auto& [market, n] : now)
+        beggarsSeen_[market] = std::max(beggarsSeen_[market], n);
+}
+
 json::Value World::prosperityReport()
 {
     using json::Value;
@@ -208,10 +230,22 @@ json::Value World::prosperityReport()
     }
     const auto counts = society_.marketCounts();
     const auto& thefts = theftPlan();
-    std::map<std::string, int> beggarsAt;
-    for (const auto& [id, spot] : beggars_)
-        if (const auto* m = society_.tradePoints().ofCellId(spot.cell))
-            ++beggarsAt[m->id];
+    // Beggars today (Phase 9's last repair): the most out at once on the last begging day (noteBeggars), never the count
+    // at this moment, which at midnight is always none. A server that has seen no begging day since it started keeps the
+    // last report's count and day.
+    std::map<std::string, int> beggarsAt = beggarsSeen_;
+    double beggarsDay = double(beggarsSeenDay_);
+    if (beggarsSeenDay_ < 0 && society_.report().isObject())
+    {
+        const auto& last = society_.report();
+        if (const auto* day = last.find("beggarsDay"); day && day->isNumber())
+            beggarsDay = day->asNumber(-1);
+        if (const auto* list = last.find("markets"); list && list->isArray() && beggarsDay >= 0)
+            for (const auto& m : list->items())
+                if (m.isObject() && m.find("beggars") && m.find("beggars")->isNumber())
+                    beggarsAt[m.string("id")] = int(m.number("beggars"));
+    }
+    report.add("beggarsDay", beggarsDay);           // (-1: no begging day seen yet.)
     auto markets = Value::array();
     for (const auto& m : society_.tradePoints().markets)
     {

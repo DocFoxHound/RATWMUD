@@ -1341,9 +1341,21 @@ void beggarsAndAlms()
         expect(e.kind != "alms", "alms in the ledger: " + e.from + " to " + e.to);
     expect(w.society().realBalanced(), "real money balanced");
     // On a working day, nobody begs.
+    const auto beggingDay = std::int64_t(std::floor(w.calendarDays()));
     onTo(w, calendar::weekdayOf(w.calendarDays() + 1), 10);
     if (const int wd = calendar::weekdayOf(w.calendarDays()); wd != calendar::Marketday && wd != calendar::Restday)
         expect(w.beggars().empty(), "no beggars on a working day");
+    // Phase 9's last repair: the Prosperity report's "beggars today" is the most out at once on the last begging day, so
+    // it is true at midnight and on a working day (it read the count of the moment: all but always 0).
+    {
+        const auto report = w.prosperityReport();
+        int counted = 0;
+        for (const auto& m : report.array("markets"))
+            counted += int(m.number("beggars"));
+        expect(counted >= int(beggars.size()) && counted > 0 && report.number("beggarsDay", -1) == double(beggingDay),
+               "last repair: the report's beggars are the begging day's most: " + std::to_string(counted) + " on day " +
+                   std::to_string(report.number("beggarsDay", -1)) + ", " + std::to_string(beggars.size()) + " seen on " + std::to_string(beggingDay));
+    }
     fs::remove_all(root);
 }
 

@@ -8,6 +8,8 @@ import {useCallback, useEffect, useState} from 'react';
 import {api} from '../lib/api';
 import type {Me} from '../dm/api';
 import type {EconomyData, EconomyReply} from '../lib/economy';
+import {awaitSync} from '../lib/acts';
+import {syncWords} from '../lib/economyContract';
 import {ImportsPanel} from './ImportsPanel';
 import {MarketPanel} from './MarketPanel';
 import {RulesPanel} from './RulesPanel';
@@ -34,6 +36,10 @@ export function EconomyControls({me}: {me: Me}) {
             setData(next as EconomyData);
             setSaid(next.changed === false ? 'Nothing to change.' : `${next.detail || 'Changed.'} ${next.takesEffect}`);
             if (next.warnings?.length) setProblem(next.warnings.join(' '));
+            // (What the game server makes of it, read back without holding the page: applied with what it skipped,
+            // refused, or never taken while no server runs. Phase 9's last repair.)
+            if (next.sync !== null && next.sync !== undefined)
+                void awaitSync(next.sync, () => api.economy.read()).then(last => { if (last) setData(d => d && {...d, lastSync: last}); });
         } catch (error) { setProblem((error as Error).message); await load(); }
         finally { setBusy(false); }
     };
@@ -56,6 +62,8 @@ export function EconomyControls({me}: {me: Me}) {
             {!canChange && <p className="hint">Your account ({me.role}) can look; changing these needs a dm or admin account.</p>}
             {said && <p className="publish-done">{said}</p>}
             {problem && <p className="publish-error">{problem}</p>}
+            {data.lastSync && <p className={data.lastSync.status === 'applied' && !/skipped|held/.test(data.lastSync.result) ? 'hint' : 'publish-error'}>
+                {syncWords(data.lastSync)}</p>}
             <SteerPanel {...props} setSteer={body => void change(() => api.economy.steer(body))} />
             <RulesPanel {...props} setRules={body => void change(() => api.economy.rules(body))}
                 setServices={body => void change(() => api.economy.services(body))}

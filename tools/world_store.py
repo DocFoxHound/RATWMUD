@@ -443,6 +443,13 @@ def save_economy(conn, world_id, economy) -> dict:
         raise EconomyRefused(refused)
     columns = tables['live.economy'][1]
     with conn.transaction():
+        # A rule's name that is no plain word would split the manifest's line (Phase 9's last repair): refused here too,
+        # whoever calls; one the row already holds is let by (the manifest never prints it), so the row can still be saved.
+        if 'rules' in columns and (wanted := [n for n in (economy or {}).get('rules') or {} if not economy_contract.name_fits(n)]):
+            row = conn.execute('SELECT rules FROM live.economy WHERE world_id = %s', (world_id,)).fetchone()
+            held = row[0] if row and isinstance(row[0], dict) else {}
+            if problems := economy_contract.rule_name_problems(n for n in wanted if n not in held):
+                raise EconomyRefused(' '.join(problems[:4]))
         other = stored_other_rules(conn, world_id)
         row = economy_row(world_id, economy, columns, other)
         rest = [c for c in columns if c != 'world_id']
@@ -458,6 +465,8 @@ def patch_economy_rules(conn, world_id, set_=None, drop=()) -> dict:
     if not rules_supported(conn):
         raise EconomyRefused(NO_RULES)
     set_ = dict(set_ or {})
+    if problems := economy_contract.rule_name_problems(k for k in set_ if k not in OVERRIDE_KEYS):
+        raise EconomyRefused(' '.join(problems[:4]))    # (Never a name that would split the manifest's line.)
     if any(k in OVERRIDE_KEYS and k != 'prosperityCause' for k in set_) and not slim_supported(conn):
         raise EconomyRefused(NO_SLIM)
     conn.execute('INSERT INTO live.economy (world_id, treasury, store_herbs, store_meals) VALUES (%s, %s, %s, %s) '

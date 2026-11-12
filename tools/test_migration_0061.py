@@ -21,6 +21,7 @@ import subprocess
 import unittest
 from pathlib import Path
 
+import economy_contract as C
 import manifest_lines as M
 import world_db as W
 from test_world_db import database_available, superuser
@@ -214,6 +215,52 @@ class Migration0061Tests(unittest.TestCase):
                 self.assertIn(line, written)
             self.assertFalse([l for l in written if l.startswith('rule ')])
 
+    def test_a_name_that_would_split_a_line_is_never_written(self):
+        # Phase 9's last repair: a rule's (a service's, a season group's) name with a line break in it, stored past the
+        # doors, was printed as two manifest lines, and the game refused the whole world for the second ("Unknown manifest
+        # record"). The manifest prints only a name that is one plain word; manifest_lines the same.
+        with Scratch() as db:
+            W.migrate(db.owner)
+            world = seed_world(db.owner)
+            bad = {'zz\nbogus': 5, 'a b': 6, 'q"uote': 7, 'steerLean': 150}
+            db.owner.execute('UPDATE live.economy SET rules = rules || %s, services = services || %s, seasons = seasons || %s WHERE world_id = %s',
+                             (json.dumps(bad), json.dumps({'x\ny': {'on': True, 'price': 1, 'every': 2}}),
+                              json.dumps({'ee\nl': {'price': [100] * 4, 'shelf': [100] * 4}}), world))
+            for manifest in ('live.people_manifest', 'live.economy_manifest'):
+                lines = db.owner.execute(f'SELECT {manifest}(%s)', (world,)).fetchone()[0].split('\n')
+                self.assertIn('rule "steerLean" 150', lines, 'a plain name Core no longer has is still written (Core skips it)')
+                self.assertFalse([l for l in lines if l.startswith(('rule "zz', 'rule "a b', 'rule "q', 'service "x', 'season "ee'))],
+                                 (manifest, lines[:12]))
+                # (No tail of a split line either: every line begins with a record's kind.)
+                kinds = {l.split(' ', 1)[0] for l in lines}
+                self.assertLessEqual(kinds, {'economy', 'loop', 'season', 'rule', 'service', 'overrides', 'resident', 'story', 'route',
+                                             'joinable', 'protected', 'band', 'wander', 'faction', 'claims', 'kin'}, kinds)
+            row = db.owner.execute('SELECT seasons, services, rules FROM live.economy WHERE world_id = %s', (world,)).fetchone()
+            written = M.economy_lines({'seasons': row[0], 'services': row[1], 'rules': {k: v for k, v in row[2].items() if isinstance(v, int)}})
+            economy = db.owner.execute('SELECT live.economy_manifest(%s)', (world,)).fetchone()[0].split('\n')
+            self.assertEqual(sorted(l for l in written if l.split(' ', 1)[0] in ('rule', 'service', 'season')),
+                             sorted(l for l in economy if l.split(' ', 1)[0] in ('rule', 'service', 'season')), 'manifest_lines writes the same')
+            for name, fits in (('ripple', True), ('wall_limewashed', True), ('a-b', True), ('zz\nbogus', False), ('zz\n', False),
+                               ('', False), ('9lives', False), ('a b', False), ('x' * 65, False)):
+                self.assertIs(db.owner.execute('SELECT live.economy_name(%s)', (name,)).fetchone()[0], fits, repr(name))
+                self.assertIs(C.name_fits(name), fits, repr(name))
+
+    def test_the_sync_function_holds_only_what_the_game_reads(self):
+        # Phase 9's last repair: dm.queue_economy_sync stored any JSON of any size from the editor's role (5 MB was
+        # taken); it keeps {"now": true} or nothing. The publisher has no USAGE on schema dm: its dead EXECUTE grant is gone.
+        with Scratch() as db:
+            W.migrate(db.owner)
+            with W.connect('dev', 'editor', dbname=db.name) as editor:
+                big = editor.execute('SELECT dm.queue_economy_sync(%s, %s::jsonb)', ('Ada', json.dumps({'now': True, 'junk': 'x' * 200000}))).fetchone()[0]
+                none = editor.execute('SELECT dm.queue_economy_sync(%s, %s::jsonb)', ('Ada', json.dumps({'now': 'yes', 'junk': [1] * 1000}))).fetchone()[0]
+            rows = dict(db.owner.execute('SELECT id, payload FROM dm.actions WHERE id = ANY(%s)', ([big, none],)).fetchall())
+            self.assertEqual((rows[big], rows[none]), ({'now': True}, {}))
+            grants = {r[0] for r in db.owner.execute(
+                "SELECT grantee FROM information_schema.routine_privileges WHERE routine_schema = 'dm' AND routine_name = 'queue_economy_sync'")}
+            self.assertIn('ratw_editor', grants)
+            self.assertIn('ratw_dm', grants)
+            self.assertNotIn('ratw_publisher', grants)
+
     def test_the_economy_alone_is_the_manifests_first_lines(self):
         # Phase 9's second repair: economy.sync reads live.economy_manifest (the economy's records only), not every
         # resident; it is exactly the head of live.people_manifest, and the game may read it.
@@ -245,17 +292,34 @@ class Migration0061Tests(unittest.TestCase):
             with db.owner.transaction():
                 db.owner.execute(down)
             self.assertNotIn('0061', W.applied_migrations(db.owner))
+            # (Last repair: 0061's USAGE on schema dm is taken back from the editor, as 0060 had it.)
+            self.assertFalse(db.owner.execute("SELECT has_schema_privilege('ratw_editor', 'dm', 'USAGE')").fetchone()[0])
+            self.assertIsNone(db.owner.execute("SELECT to_regprocedure('live.economy_name(text)')").fetchone()[0])
             self.assertIn('business_settings', tables(db.owner))
             self.assertFalse(S.slim_supported(db.owner), 'never half migrated')
-            # (0060's manifest again, its store line back: these NPCs have no home, so no nostore line either way.)
-            self.assertEqual(db.owner.execute('SELECT live.people_manifest(%s)', (world,)).fetchone()[0], old)
+            # (0060's manifest again, its store line back: these NPCs have no home, so no nostore line either way. But
+            # for a season stored without its supply and normal, the last repair: 0060 printed "season g supply price ...
+            # normal" for it, a line a server before Phase 9 refuses the world for; the rolled-back manifest leaves it out.)
+            kept = [l for l in old.split('\n') if not (l.startswith('season ') and ' supply price ' in l)]
+            self.assertEqual(db.owner.execute('SELECT live.people_manifest(%s)', (world,)).fetchone()[0].split('\n'), kept)
             with W.connect('dev', 'editor', dbname=db.name) as editor:
                 editor.execute("INSERT INTO live.business_settings (world_id, npc_id, internal_store) VALUES (%s, 'cora', false)", (world,))
             with W.connect('dev', 'game', dbname=db.name) as game:
                 with self.assertRaises(Exception):
                     game.execute("DELETE FROM live.business_settings")
             db.owner.execute('DELETE FROM live.business_settings')
+            # (Last repair: a season the slim studio wrote, {price, shelf} alone, is left out of the rolled-back manifest:
+            # 0060's line for it, "season g supply price ... normal", is one a server before Phase 9 refuses the world
+            # for; one stored with its supply and normal is printed as 0060 printed it.)
+            db.owner.execute('UPDATE live.economy SET seasons = %s WHERE world_id = %s',
+                             (json.dumps({'fish': {'price': [90, 90, 100, 110], 'shelf': [100] * 4},
+                                          'grain': {'supply': [100, 120, 90, 80], 'price': [100, 95, 105, 120], 'shelf': [100] * 4, 'normal': 12}}), world))
+            rolled = db.owner.execute('SELECT live.people_manifest(%s)', (world,)).fetchone()[0].split('\n')
+            self.assertEqual([l for l in rolled if l.startswith('season ')],
+                             ['season "grain" supply 100 120 90 80 price 100 95 105 120 shelf 100 100 100 100 normal 12'])
+            db.owner.execute("UPDATE live.economy SET seasons = '{}' WHERE world_id = %s", (world,))
             self.assertEqual(W.migrate(db.owner), ['0061_staged_economy'])
+            self.assertTrue(db.owner.execute("SELECT has_schema_privilege('ratw_editor', 'dm', 'USAGE')").fetchone()[0])
             self.check_slim(db.owner)
             self.assertEqual(db.owner.execute("SELECT band_override FROM live.npcs WHERE id = 'bram'").fetchone()[0], 'rich')
             self.assertIn('band "bram" rich', db.owner.execute('SELECT live.people_manifest(%s)', (world,)).fetchone()[0])

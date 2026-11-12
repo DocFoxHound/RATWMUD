@@ -28,6 +28,11 @@ inline constexpr double DepthLeast = 20, PassingTrade = 20;
 inline constexpr double RippleMost = .15;             // Ripple-caused |P| on any good (7.4).
 inline constexpr std::size_t RippleKeep = 6;          // Goods kept at each of the two steps (7.4).
 inline constexpr std::size_t RecentKept = 50;
+// The Board's big moves (doc 79, 12: the year log's "big ripples"; Phase 9's last repair): a staged move of a good's
+// pressure (an event, a ship, a storm, a wagon, a harvest, a raid: Society::setPressure) by more than BigMove is kept
+// BigMoveDays with its cause, MovesKept at most. A single trade or ripple never moves that far (0.15 at most).
+inline constexpr double BigMove = .2, BigMoveDays = 28;
+inline constexpr std::size_t MovesKept = 200;
 inline constexpr double DawnHour = 6;                 // The market day turns at dawn (budgets, allowances, ripples).
 inline constexpr int SliderStepADay = 10;             // The slider the Board reads moves at most this a day (D17).
 inline constexpr double SettingOutDays = 15. / 1440;   // A keeper "setting out the wares" at the restock: 15 game minutes.
@@ -344,6 +349,7 @@ struct Board
     std::map<std::string, double> settingOut;        // Till -> the clock (game days) its keeper sets out the wares
                                                      // until, at the morning restock (7.7).
     std::deque<Ripple> recent;
+    std::deque<Ripple> moves;                        // The big staged moves of the last BigMoveDays (BigMove; setPressure).
     // Staged trade (doc 79, Phase 4; 8.1-8.2, 7.7): the departures posted or rolled and not yet gone, the last day the
     // routes were rolled for, the next departure's number; each till's back room of goods its market doesn't make (D27:
     // filled on arrivals, a fifth less each morning; absent: never stocked yet, filled as by an arrival); the DM's harvest
@@ -381,7 +387,7 @@ struct Board
     {
         return slider == 0 && sliderTarget == 0 && sliderDay < 0 && cell.empty() && day < 0 && budgetLeft.empty() && takenToday.empty() &&
                pushed.empty() && netToday.empty() && soldToday.empty() && week < 0 && discountWeek.empty() &&
-               restocked.empty() && settingOut.empty() && recent.empty() && committed.empty() && rolledThrough < 0 &&
+               restocked.empty() && settingOut.empty() && recent.empty() && moves.empty() && committed.empty() && rolledThrough < 0 &&
                nextDeparture == 1 && backRoom.empty() && harvestOverride.empty() && troubles.empty() && timesShift.empty() &&
                news.empty() && broughtIn.empty() && ships.empty() && shipsThrough.empty() && nextShip == 1 && events.empty() &&
                eventsThrough.empty() && nextEvent == 1 && sliderCause.n == 0 && sliderCause.words.empty() && nudges.empty() &&

@@ -1756,7 +1756,7 @@ class Game
     // The staged economy's settings (RatwGameEconomy.cpp): read again for economy.sync (the records Authoring skipped
     // counted), put in force (the rules, the host's overrides, the slider's target and cause), and at start.
     bool readEconomy(EconomySpec& spec, std::size_t& skipped, std::string& problem);
-    void applyEconomySpec(const EconomySpec& spec, bool now);
+    std::size_t applyEconomySpec(const EconomySpec& spec, bool now);   // (The host's overrides skipped or held: how many.)
     void logEconomyWarnings(const AuthoredRoster& roster);
     void startEconomy();
     void feedWatch(double dt);              // A frame for the LIVE map while a Dungeon Master watches (RatwGameWatch.cpp).
@@ -2005,6 +2005,7 @@ class Game
     bool journalDirector_ = false;                   // (The operator bridge's state in the next record: its commit.)
     bool dmActsAnswered_ = false;                    // (The restart's rows answered from dmActs: once, before any expiry.)
     void releaseDmStatuses();
+    void keepDmAct(const std::string& id, json::Value act);   // (Into dmActs_, the oldest dropped past DmActsKept.)
     static constexpr std::size_t DmActsKept = 64;
     void beginHolding(Connection* c);
     void endHolding();

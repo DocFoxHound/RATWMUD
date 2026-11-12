@@ -32,12 +32,33 @@ HARVEST_WORDS = ('poor', 'fair', 'good')
 GRANT_MOST = 2500                               # The most a host may raise caps.grantsADay to (and one grant's most).
 CAP_CEILING = 5                                 # A host's faucet cap: at most 5x the shipped default.
 
+# A rule's, a service's or a season group's name as the manifest can carry it (migration 0061's live.economy_name, the same
+# pattern): one plain word, so it never splits a manifest line or opens a new record (doc 79, Phase 9's last repair).
+NAME = re.compile(r'[A-Za-z][A-Za-z0-9_-]{0,63}\Z')
+
 _FORBIDDEN = re.compile(r'(?<![A-Za-z])dogs?(?![A-Za-z])', re.IGNORECASE)
 
 
 def forbidden_word(text: str) -> bool:
     """The word world text never has (market::forbiddenWord): "dog" or "dogs" as a word, in any case."""
     return bool(_FORBIDDEN.search(text or ''))
+
+
+def name_fits(name) -> bool:
+    """Whether a rule's (or a service's, a season group's) name is one plain word: a letter, then letters, digits, _ or -,
+    64 at most. Anything else (a space, a quote, a newline) is refused at every door and never written to the manifest."""
+    return isinstance(name, str) and NAME.match(name) is not None
+
+
+def shown_name(name) -> str:
+    """A refused name as an error message shows it: its first 40 characters, escaped."""
+    return repr(str(name)[:40])
+
+
+def rule_name_problems(names) -> list[str]:
+    """The names among `names` that are no plain word, each as a refusal."""
+    return [f'economy.rules: {shown_name(n)} is not a rule\'s name (one plain word: letters, digits, _ and -).'
+            for n in names if not name_fits(n)]
 
 
 def clamp_prosperity(v) -> int:

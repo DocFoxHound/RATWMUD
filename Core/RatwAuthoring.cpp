@@ -29,6 +29,23 @@ bool economyRecord(std::string_view kind)
             return true;
     return false;
 }
+// Whether a line leaves a quoted field open (an odd count of quotes, a backslash escaping the next character, as
+// std::quoted): a rule's, a service's or a season's name with a line break in it splits its record over two lines or
+// more (doc 79, Phase 9's last repair; migration 0061 never prints such a name, a world file written otherwise may).
+bool leavesQuoteOpen(std::string_view line)
+{
+    bool open = false;
+    for (std::size_t i = 0; i < line.size(); ++i)
+    {
+        if (line[i] == '\\')
+            ++i;
+        else if (line[i] == '"')
+            open = !open;
+    }
+    return open;
+}
+bool namedEconomyRecord(std::string_view kind) { return kind == "rule" || kind == "service" || kind == "season"; }
+constexpr std::size_t SplitMost = 8;            // The lines a split record's tail is looked for, at most.
 // A streamed world (RATW_WORLD 3) names its cells with "area" records and loads their tiles on demand.
 constexpr std::size_t MaxAreas = 4000000;
 bool identifier(const std::string& text, std::size_t limit)
@@ -530,10 +547,30 @@ void World::readEconomyRecords(const std::string& manifest, AuthoredRoster& into
     std::string line;
     std::size_t lineNumber = 0;
     EconomyRecords records{into, [&](const std::string& why) { into.warn("line " + std::to_string(lineNumber) + ": " + why); }};
+    std::string splitKind;
+    std::size_t splitLine = 0;
     while (std::getline(input, line))
     {
         ++lineNumber;
         const std::string_view head(line.data(), std::min(line.find_first_of(" \t"), line.size()));
+        // (A split record's tail, as loadWorld skips it: its closing line warned of and never read as a record.)
+        if (!splitKind.empty())
+        {
+            const bool closes = leavesQuoteOpen(line);
+            if (lineNumber - splitLine > SplitMost || (!closes && economyRecord(head)))
+                splitKind.clear();
+            else if (closes)
+            {
+                records.warn("the rest of a split " + splitKind + " record skipped");
+                splitKind.clear();
+                continue;
+            }
+        }
+        if (namedEconomyRecord(head) && leavesQuoteOpen(line))
+        {
+            splitKind = std::string(head);
+            splitLine = lineNumber;
+        }
         if (!economyRecord(head) || head == "band")
             continue;
         if (line.size() > (head == "overrides" ? OverridesMost : LineMost))
@@ -597,12 +634,35 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
     // the world loading. The rest of the file keeps its refusals.
     const auto warn = [&](const std::string& why) { roster.warn("line " + std::to_string(lineNumber) + ": " + why); };
     EconomyRecords economyRecords{roster, warn};
+    std::string splitKind;                          // The economy record left with a quote open, while its tail is skipped.
+    std::size_t splitLine = 0;
     while (std::getline(input, line))
     {
         ++lineNumber;
         // (The record's kind is cut at its first space or tab: the fields are read with >>, which splits on either.)
         const std::string_view head(line.data(), std::min(line.find_first_of(" \t"), line.size()));
         const bool economyKind = economyRecord(head);
+        // A split economy record (its name held a line break: Phase 9's last repair): its first line was skipped as
+        // malformed; its tail (up to the line that closes the quote, SplitMost lines at most) is skipped with a warning
+        // too, never read as a record of its own and never a refusal of the world. A line in between that is a whole
+        // economy record ends the search (the quote was a slip of the hand, not a split).
+        if (!splitKind.empty())
+        {
+            const bool closes = leavesQuoteOpen(line);
+            if (lineNumber - splitLine > SplitMost || (!closes && economyKind))
+                splitKind.clear();
+            else if (closes)
+            {
+                warn("the rest of a split " + splitKind + " record skipped");
+                splitKind.clear();
+                continue;
+            }
+        }
+        if (splitKind.empty() && namedEconomyRecord(head) && leavesQuoteOpen(line))
+        {
+            splitKind = std::string(head);
+            splitLine = lineNumber;
+        }
         if (line.size() > (head == "overrides" ? OverridesMost : LineMost))
         {
             if (!economyKind)
@@ -966,6 +1026,8 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
             residentIds.insert(r.id);
             roster.residents.push_back(std::move(r));   // (Its places are checked below, once it is known to be placed.)
         }
+        else if (!splitKind.empty())
+            warn("a line inside a split " + splitKind + " record skipped");     // (Between its first line and its last.)
         else
             return reject("Unknown manifest record.");
     }

@@ -210,6 +210,34 @@ void talkSaysTheShownPrice()
     expect(storm.trend == 1 && storm.cause == "ship_late" && storm.ship == "the Heron" && storm.causeWords == "the Heron stormbound",
            "dearer since the Heron is stormbound: " + storm.ship + ", " + storm.causeWords);
     s.stagedBoard().ships.clear();
+    // Phase 9's last repair: the year log's big moves. A staged move of a price by more than 0.2 is kept on the Board with
+    // its real cause (the -0.3 wagon, the 0.6 back up, the storm's none: it moved nothing), a small one is not; they save
+    // and load, and a Board without any writes none.
+    const auto& big = s.board().moves;
+    expect(big.size() == 2 && big[0].cause == "caravan" && big[0].delta < -market::BigMove && big[1].delta > .5 &&
+               big[1].market == "ridgemere" && big[1].good == "bread",
+           "last repair: the big staged moves kept with their causes: " + std::to_string(big.size()));
+    s.setPressure("ridgemere", "bread", .45, "raid");
+    s.setPressure("ridgemere", "bread", .05, "harvest");
+    expect(s.board().moves.size() == 3 && s.board().moves.back().cause == "harvest" && near(s.board().moves.back().delta, -.4, .01),
+           "last repair: a 0.15 raid is none, the harvest's 0.4 is one");
+    const auto kept = market::decode(market::encode(s.board()));
+    expect(kept.moves.size() == 3 && kept.moves.back().cause == "harvest", "last repair: the moves saved and read back");
+    expect(!market::encode(market::Board{}).has("moves"), "last repair: a Board with no big move writes none");
+    // Last repair: a host's event list none of whose kinds would do falls back to the shipped events with a warning (as
+    // the causes and the ships' names do), never a world with no staged events; an empty list still says "none".
+    {
+        json::Value over;
+        std::string error;
+        expect(json::parse(R"({"events": {"list": ["no_such_kind", {"id": "Bad Id"}]}})", over, error), error);
+        std::vector<std::string> warnings;
+        const auto d = market::layered(market::data(), over, nullptr, &warnings);
+        expect(!d.events.empty() && d.events.size() == market::data().events.size() &&
+                   std::any_of(warnings.begin(), warnings.end(), [](const std::string& w) { return w.find("no kind would do") != std::string::npos; }),
+               "last repair: no valid kind: the shipped events kept, with a warning");
+        expect(json::parse(R"({"events": {"list": []}})", over, error), error);
+        expect(market::layered(market::data(), over, nullptr, nullptr).events.empty(), "last repair: an empty list is still no events");
+    }
 }
 
 void breadInRidgemere()

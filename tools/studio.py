@@ -145,12 +145,39 @@ class Economy:
         """economy.sync for the world's running game server: it reads live.economy again and applies it at once
         (`payload` {now: true}: the slider jumps to its mark). Expires unapplied after ten minutes when no server runs
         (a server started later reads the row)."""
+        # Through migration 0061's dm.queue_economy_sync as the role the change itself was written with, where the world
+        # has it (Phase 9's last repair: Atlas's helper holds only the editor's password, doc 78 M7, and its Economy page
+        # still needed the DM's to tell the server); else, a world before 0061, as the DM's role.
+        import psycopg
+        try:
+            with self.connect(key) as conn:
+                if conn.execute("SELECT to_regprocedure('dm.queue_economy_sync(text, jsonb)') IS NOT NULL").fetchone()[0]:
+                    return conn.execute('SELECT dm.queue_economy_sync(%s, %s::jsonb)',
+                                        (str(who)[:60] or 'Atlas', json.dumps(payload or {}))).fetchone()[0]
+        except (psycopg.Error, S.Unavailable):
+            pass
         with self._connect_dm(key) as conn:
             action = conn.execute("INSERT INTO dm.actions (kind, target_id, requested_by, payload) "
                                   "VALUES ('economy.sync', 'economy', %s, %s) RETURNING id",
                                   (who, json.dumps(payload or {}))).fetchone()[0]
             conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action}),))
         return action
+
+    def last_sync(self, key) -> dict | None:
+        """What the game server made of the last economy.sync (Phase 9's last repair: no screen showed it): {id, status
+        (queued, applied, refused or expired), result (Core's words: "... (2 records skipped)", a refusal's reason, "Not
+        applied within ten minutes."), by, at}, or None when none was ever sent or the DM's queue can't be read."""
+        import psycopg
+        try:
+            with self._connect_dm(key) as conn:
+                row = conn.execute("SELECT id, status, result, requested_by, requested_at FROM dm.actions "
+                                   "WHERE kind = 'economy.sync' ORDER BY id DESC LIMIT 1").fetchone()
+        except (psycopg.Error, world_db.DatabaseError):
+            return None
+        if not row:
+            return None
+        return {'id': row[0], 'status': row[1], 'result': row[2] or '', 'by': row[3] or '',
+                'at': row[4].isoformat() if hasattr(row[4], 'isoformat') else str(row[4])}
 
     @staticmethod
     def live(key) -> bool:
@@ -887,7 +914,7 @@ def make_handler(studio: Studio):
             who = self.signed_in()
             key = studio.atlas_key
             if method == 'GET':
-                return self.reply(200, {**studio.economy.read(key), 'worldInfo': shown(key)})
+                return self.reply(200, {**studio.economy.read(key), 'lastSync': studio.economy.last_sync(key), 'worldInfo': shown(key)})
             self.writer(who)
             if not self.as_(studio.atlas).editing():
                 raise D.DMError('Local editor session required.', 403)
@@ -910,7 +937,7 @@ def make_handler(studio: Studio):
                 said = f'{out["detail"]} Before: {self.short(before, kind)}; after: {self.short(after, kind)}.'
                 out = self.audited(who, key, f'economy.{kind}', target, said, out)
                 out = self.synced(who, key, out, {'now': bool(result.get('now'))} if kind == 'steer' else None)
-            return {**view, **out}
+            return {**view, 'lastSync': studio.economy.last_sync(key), **out}
 
         @staticmethod
         def short(entity, kind):
@@ -939,7 +966,7 @@ def make_handler(studio: Studio):
             who = self.signed_in()
             if method == 'GET':
                 key = self.live_key(str((query.get('world') or [''])[0]))
-                return self.reply(200, {**studio.economy.read(key), 'worldInfo': shown(key)})
+                return self.reply(200, {**studio.economy.read(key), 'lastSync': studio.economy.last_sync(key), 'worldInfo': shown(key)})
             self.writer(who)
             data = self.as_(studio.dm_suite).body()
             key = self.live_key(str(data.pop('world', '') or ''))

@@ -601,6 +601,8 @@ void directorTests()
                banded.society().statusOf("npc_una")->band == status::Rich && banded.society().state().staged.overrides.count(household) &&
                banded.society().state().staged.overrides.at(household).until == banded.society().state().budgetDay + 5,
            "a resident's household is rich for five days: " + banding.string("detail"));
+    expect(banding.string("detail") == "Band rich for npc_ivar's household for 5 days.",   // (The roster's name for Ivar is its id.)
+           "last repair: the reply names the household by its resident's name, never the household's id: " + banding.string("detail"));
     const auto clear = envelope(bridge, "band-2", "npc_band", R"({"npc":"npc_una","band":"clear"})");
     expect(ok(bridge.execute(clear, "band-2", hash, banded, online, 1001, commit, notice)) &&
                !banded.society().state().staged.overrides.count(household), "and the DM's band cleared");
@@ -609,6 +611,46 @@ void directorTests()
              {"band-nobody", R"({"npc":"npc_nobody","band":"poor"})"}})
         expect(!ok(bridge.execute(envelope(bridge, id, "npc_band", payload), id, hash, banded, online, 1001, commit, notice)),
                "a bad band is refused: " + id);
+    // The user's decision of 2026-11-12 (doc 79, 12 and 16.1): an authored band (the Band picker) is the host's explicit
+    // word for a household and beats the guarantees. The Watch's floor: a guard authored poor is poor, where a guard with
+    // no authored band is comfortable or better. Never Broke: a household authored destitute stays destitute while the
+    // rule lifts every other out. And an authored rich is rich wherever it lives.
+    {
+        World authored;
+        AuthoredRoster roster;
+        const auto add = [&](const std::string& id, const std::string& role, const std::string& home, int band) {
+            ResidentSpec r;
+            r.id = r.name = id;
+            r.role = role;
+            r.workLabel = role == "guard" ? "watchman of the Watch" : "unloading ships at the piers";
+            r.age = 40;
+            r.home = r.evening = {home, 2.5, 2.5};
+            r.work = r.serve = {"piers", 3.5, 3.5};
+            r.purse = 40;
+            r.band = band;
+            roster.residents.push_back(r);
+        };
+        add("npc_guard_poor", "guard", "watch_row_a", status::Poor);
+        add("npc_guard", "guard", "watch_row_b", -1);
+        add("npc_low", "civilian", "sump_rents_a", status::Destitute);
+        add("npc_high", "civilian", "sump_rents_b", status::Rich);
+        add("npc_plain", "civilian", "sump_rents_c", -1);
+        roster.economy.rules["neverBroke"] = 1;
+        authored.society().configure(roster);
+        authored.society().adoptEconomy(roster.economy);
+        authored.society().stagedBands(2, true);
+        const auto band = [&](const char* id) {
+            const auto* st = authored.society().statusOf(id);
+            return st ? st->band : -9;
+        };
+        expect(authored.society().rule("neverBroke") == 1 && band("npc_plain") != status::Destitute, "decision D: Never Broke on, nobody else destitute");
+        expect(band("npc_low") == status::Destitute && authored.society().statusOf("npc_low")->overridden,
+               "decision D: authored destitute beats Never Broke: " + std::to_string(band("npc_low")));
+        expect(band("npc_guard_poor") == status::Poor && band("npc_guard") >= status::Comfortable,
+               "decision D: authored poor beats the Watch's floor (a guard with no authored band keeps it): " +
+                   std::to_string(band("npc_guard_poor")) + ", " + std::to_string(band("npc_guard")));
+        expect(band("npc_high") == status::Rich, "decision D: authored rich is rich: " + std::to_string(band("npc_high")));
+    }
 
     director::Bridge restart;
     expect(restart.restore(parsed(json::dump(bridge.state()))), "receipts survive a restore");
@@ -708,41 +750,46 @@ void directorTests()
         namespace fs = std::filesystem;
         const auto dir = fs::temp_directory_path() / ("ratw-bridge-held-" + std::to_string(::getpid()));
         fs::remove_all(dir);
-        director::Bridge held;
-        expect(held.configure(dir.string()), "second repair: a bridge directory");
-        const double now = double(std::time(nullptr));
-        auto request = envelope(held, "grant-p", "player_grant", R"({"player":"player-ash","coins":5,"reason":"for the ford"})");
-        request.set("createdAtUnix", now);
-        request.set("expiresAtUnix", now + 200);
-        const auto outbox = dir / "outbox" / "grant-p.json", inbox = dir / "inbox" / "grant-p.json";
-        std::ofstream(outbox, std::ios::binary) << json::dump(request);
-        const auto before = held.state();
-        const auto cash = world.society().account("player-ash")->cash;
-        held.tick(5, world, {}, online, {}, 1, [] { return int(director::Bridge::Pending); }, notice);
-        expect(fs::exists(outbox) && !fs::exists(inbox) && !held.enabled() && world.society().account("player-ash")->cash == cash + 5,
-               "second repair: a Pending grant is held, unanswered, the channel halted");
-        int commits2 = 0;
-        const auto counted = [&]() { ++commits2; return int(director::Bridge::Committed); };
-        director::Bridge written;                   // (The record was written: its receipt came back with it.)
-        expect(written.configure(dir.string()) && written.restore(held.state()), "second repair: restored with the record's receipt");
-        written.tick(5, world, {}, online, {}, 2, counted, notice);
-        json::Value reply;
-        std::string problem;
+        // (Last repair: the bridges live in a block of their own. Each tick leaves a worker writing snapshot.json, and a
+        // Bridge's destructor waits for its own: the folder is removed only once all three are gone. Removing it while
+        // one still wrote failed 3 runs in 20 with "Directory not empty".)
         {
-            std::ifstream in(inbox, std::ios::binary);
-            std::ostringstream text;
-            text << in.rdbuf();
-            json::parse(text.str(), reply, problem);
+            director::Bridge held;
+            expect(held.configure(dir.string()), "second repair: a bridge directory");
+            const double now = double(std::time(nullptr));
+            auto request = envelope(held, "grant-p", "player_grant", R"({"player":"player-ash","coins":5,"reason":"for the ford"})");
+            request.set("createdAtUnix", now);
+            request.set("expiresAtUnix", now + 200);
+            const auto outbox = dir / "outbox" / "grant-p.json", inbox = dir / "inbox" / "grant-p.json";
+            std::ofstream(outbox, std::ios::binary) << json::dump(request);
+            const auto before = held.state();
+            const auto cash = world.society().account("player-ash")->cash;
+            held.tick(5, world, {}, online, {}, 1, [] { return int(director::Bridge::Pending); }, notice);
+            expect(fs::exists(outbox) && !fs::exists(inbox) && !held.enabled() && world.society().account("player-ash")->cash == cash + 5,
+                   "second repair: a Pending grant is held, unanswered, the channel halted");
+            int commits2 = 0;
+            const auto counted = [&]() { ++commits2; return int(director::Bridge::Committed); };
+            director::Bridge written;                   // (The record was written: its receipt came back with it.)
+            expect(written.configure(dir.string()) && written.restore(held.state()), "second repair: restored with the record's receipt");
+            written.tick(5, world, {}, online, {}, 2, counted, notice);
+            json::Value reply;
+            std::string problem;
+            {
+                std::ifstream in(inbox, std::ios::binary);
+                std::ostringstream text;
+                text << in.rdbuf();
+                json::parse(text.str(), reply, problem);
+            }
+            expect(!fs::exists(outbox) && ok(reply) && commits2 == 0 && world.society().account("player-ash")->cash == cash + 5,
+                   "second repair: answered from its receipt, never paid twice: " + json::dump(reply));
+            fs::remove(inbox);                          // (The record never written: the request is applied by the next server.)
+            std::ofstream(outbox, std::ios::binary) << json::dump(request);
+            director::Bridge lost;
+            expect(lost.configure(dir.string()) && lost.restore(before), "second repair: restored without the receipt");
+            lost.tick(5, world, {}, online, {}, 3, counted, notice);
+            expect(fs::exists(inbox) && commits2 == 1 && world.society().account("player-ash")->cash == cash + 10,
+                   "second repair: applied then, once");
         }
-        expect(!fs::exists(outbox) && ok(reply) && commits2 == 0 && world.society().account("player-ash")->cash == cash + 5,
-               "second repair: answered from its receipt, never paid twice: " + json::dump(reply));
-        fs::remove(inbox);                          // (The record never written: the request is applied by the next server.)
-        std::ofstream(outbox, std::ios::binary) << json::dump(request);
-        director::Bridge lost;
-        expect(lost.configure(dir.string()) && lost.restore(before), "second repair: restored without the receipt");
-        lost.tick(5, world, {}, online, {}, 3, counted, notice);
-        expect(fs::exists(inbox) && commits2 == 1 && world.society().account("player-ash")->cash == cash + 10,
-               "second repair: applied then, once");
         fs::remove_all(dir);
     }
     // A fine bigger than the purse: told as what it took.

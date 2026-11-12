@@ -1610,6 +1610,7 @@ void World::tendStreet()
     {
         streetHour_ = hour;
         placeBeggars();
+        noteBeggars();                              // (The day's most, for the Prosperity report: RatwProsperity.cpp.)
         placeSleepers();
     }
     // The Restday dole, each pass (its queue moves).

@@ -656,6 +656,23 @@ void lenientEconomyRecords()
         auto huge = withLines("season \"fish\" price 1e30 100 100 100 shelf 100 100 100 -1e30\n", "a season of 1e30");
         const auto& fish = huge.society().authored().economy.seasons.at("fish");
         expect(fish.price[0] == 1000 && fish.shelf[3] == 0, "second repair: 1e30 is 1000, -1e30 is 0: " + std::to_string(fish.price[0]));
+        // Phase 9's last repair: a rule's name with a line break in it (a row written past the doors) splits its record;
+        // the first line is skipped as malformed and its tail too, with a warning, never "Unknown manifest record" and
+        // never read as a record of its own (the tail here would set the slider to 100).
+        auto split = withLines("rule \"zz\nbogus\" 5\nrule \"ripple\" 40\n", "a rule's name split over two lines");
+        expect(warned(split, "the rest of a split rule record skipped") && split.society().rule("ripple") == 40,
+               "last repair: the split rule skipped, the next rule read");
+        auto three = withLines("service \"a\nmiddle words\nrule \"prosperity\" 100 \" on price 1 every 2\nrule \"ripple\" 40\n", "a service's name split over three");
+        expect(warned(three, "a line inside a split service record skipped") && warned(three, "the rest of a split service record skipped") &&
+                   three.society().rule("prosperity") == 0 && three.society().rule("ripple") == 40,
+               "last repair: a split record's tail is never a record of its own: " + std::to_string(three.society().rule("prosperity")));
+        // (A quote left open by a slip of the hand: the next whole record is still read.)
+        auto slip = withLines("rule \"ripple 40\nrule \"depthScale\" 200\n", "a quote left open");
+        expect(slip.society().rule("depthScale") == 200, "last repair: the record after a slip still read");
+        AuthoredRoster alone;
+        World::readEconomyRecords("rule \"zz\nrule \"prosperity\" 100 \" 5\nrule \"ripple\" 40\n", alone);
+        expect(!alone.economy.rules.count("prosperity") && alone.economy.rules.count("ripple"),
+               "last repair: economy.sync skips a split record's tail too");
         auto longTab = withLines("overrides\t{\"market\": {\"x\": \"" + std::string(70000, 'a') + "\"}}\n", "a 70 KB overrides line after a tab");
         expect(warned(longTab, "too long"), "second repair: a 70 KB overrides line after a tab skipped with a warning");
     }

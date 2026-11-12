@@ -1349,7 +1349,7 @@ loader and travel with the world package.
 | `neverBroke` | **Change:** a clamp, the destitute band is empty | No begging or need-theft |
 | The 11 steering levers, measures and targets, skim, tithe, dividend, charters, supervisor, weekly ledger, `steerMeanDays`, `skim*` | **Cut** | Nothing is conserved, so nothing is steered or audited |
 | Edicts | **Change:** "word on the street", read-only: the Board's top causes, harvests, ships, events, Times and the slider's cause | The same data talk reads, so the panel and the talk agree |
-| Year log | **Change:** slider moves with their causes, overrides and big ripples (a pressure move over 0.2) | Hosts can see why bread is dear |
+| Year log | **Change:** slider moves with their causes, overrides and big moves (a staged move of a good's price by more than 0.2: an event, a ship, a storm, a wagon, a harvest, a raid, each kept on the Board for 28 days with what made it) | Hosts can see why bread is dear |
 | `needsPaused` | **Keep** | Maintenance and testing |
 | Store room: `internalStore`, `storeMarkup`, `storeResale`, `resaleMarkup`, `storeRule`, per-business `nostore` (`live.business_settings`) | **Cut** | Restocking is free |
 | `wharf`, `wharfReserve`, the 11 wharf rules, `wharf.credit` | **Cut;** add `shipsPerWeek` (0 means no ships even with a port) | Ships are a timetable |
@@ -1364,11 +1364,50 @@ loader and travel with the world package.
 | Farms panel: per-area `on`, `yieldScale` | **Change:** a harvest bias, and a per-area harvest override (poor, fair, good) with a season's expiry; areas are always on | A story lever: "blight at the orchards" |
 | `economy_transfer` (the Storykeeper; `RatwDirector.cpp:222, 381-388`; `dm_service.py:575`) | **Change:** "grant or fine a player" (a faucet or sink with a reason and a cap), and on an NPC target a band override with an expiry | It must not need a funded source; a story can still make Bram destitute |
 | `operatorTransfer` | **Keep** for real and escrow accounts | Stories |
-| Money tab (`MoneyTab.tsx`; `dungeon_master.py:986-1049`) | **Change** into a **Prosperity** tab: bands by market, the hungry, would-be thieves and beggars today, Times and causes, the price board (the largest pressures, with causes), wagons, ships and staged events this week, player coin made against sunk | The one read model |
+| Money tab (`MoneyTab.tsx`; `dungeon_master.py:986-1049`) | **Change** into a **Prosperity** tab: bands by market, the hungry, would-be thieves and beggars today (the most out at once on the last begging day), Times and causes, the price board (the largest pressures, with causes), wagons, ships and staged events this week, player coin made against sunk | The one read model |
 | Drift view (`studio.py:508-552`) | **Cut** | |
 | NpcTab "Paid by the town treasury" (`NpcTab.tsx:392`) | **Keep,** relabelled "A paid post (for succession)" | `p.paid` feeds succession rank (`RatwCareers.cpp:49-52, 894`) |
 | **New** | a Times nudge per market with an expiry ("boom at the port"); "reset prices" (eased over a day); `caravanRate` (0-3 ×); `eventRate` (0-3 ×); `theftCap`; the faucet caps (theft, stakes, faction discount, rewards, welcome); `wagonsMost`; a band override per household with an expiry; override notices on or off; `status.json`'s shares and behaviour table (edited in Atlas into `live.economy.rules`) | DM-tweakable, each with a clamp in `RULE_LIMITS` (`tools/map_editor.py`) |
 | `SellBackShare`, the clamp's ends, `minShare`, I1-I5 | **Not levers** | Anything a lever touched could open a money loop |
+
+**As built, and confirmed (the user's word of 2026-11-12: "go with your best judgement", so these are the
+orchestrator's calls on the user's behalf, each as Phase 9 built it).**
+
+- **Nudges and harvest calls are one-off acts on the Market Board,** saved and journalled with it, never rules in
+  `live.economy`. Doc 78 M7's "Reset economy rules", which copies `live.economy`, leaves a nudge or a harvest call in
+  force until it lapses or the DM lifts it.
+- **A grant is at most 500p a player a day** (`status.json` `caps.grantsADay`), which a host may raise to 2,500 at
+  most; one grant or fine is at most 2,500p. **A fine takes at most what the player carries,** and the DM and the
+  player are told what was taken, not what was asked.
+- **A host's faucet cap is at most 5 times the shipped default** (`welcomeDays` at least the shipped 7).
+- **Bands:** in a household the highest authored band among its members wins; the DM's band for a while (the
+  Prosperity and NPC tabs' `band.override`, the Storykeeper's `npc_band`) comes before it. **An authored band (the
+  Band picker) is the host's explicit word and stands over the guarantees:** a House head may be authored poor, a
+  Watch household authored below comfortable loses the Watch's floor, a Sump household authored rich loses the Sump's
+  cap, and a household authored destitute stays destitute under Never Broke (16.1). A band holds only for a resident
+  the game houses in a market's households: the pickers are greyed for the rest, with a word why.
+- **The Storykeeper is kept:** it may grant or fine a player (`player_grant`) and hold a resident's household to a
+  band for a while (`npc_band`), each through the same doors and caps as the DM's.
+- **`harvestBias` is a rule** (−20 to 20 hundredths on every area's harvest score), beside the per-area harvest call.
+- **The Prosperity report may lag by one checkpoint:** the game works it out at each staged morning, at start and
+  after each DM act, and it is saved with the checkpoint; the tab reads the save, never the running server. What has
+  lapsed since (a nudge, a price reset, a harvest call) is taken off what the tab shows.
+- **A host's `market.json` overrides cover four paths only:** `events.perWeek`, `events.list`, `events.causes` and
+  `wharf.ships` (the goods ships never carry are `neverImported`). Every other `market.json` value stays the shipped
+  one for every world; `status.json`'s keys are the ones `economy_contract.STATUS_KEYS` lists. An override list none
+  of whose entries will do falls back to the shipped list with a warning (events, causes, ships' names alike).
+- **A rule's, a service's or a season group's name is one plain word** (a letter, then letters, digits, `_` or `-`,
+  64 at most). Any other is refused at every door (a save, Atlas's keyed edit, the studio, a package's import) and
+  never written to the manifest; a plain name the game no longer has is kept and read past with a warning (14).
+- **"Beggars today" is the most out at once on the last begging day** (Marketday or Restday, 8:00 to 18:00), with
+  that day: the report is worked out at midnight, when nobody begs, so a count of the moment was all but always 0.
+- **The year log's big moves** are the Board's `moves` (above 0.2, 28 days, 200 at most, with Core's cause word:
+  event, ship, ship late, ship takes, caravan, harvest, late, raid, or a missed cart's reason). The Board's `recent`
+  (its last 50 trades and ripples, none of which moves a price past 0.15) is talk's, not this log's.
+- **What the game server made of a lever's `economy.sync`** (applied, with the records and overrides it skipped;
+  refused; never taken while no server runs) is shown on the Economy page and tab and in the Prosperity log.
+- **The map-edge "outside" endpoint** for a world with no port is deferred: not in doc 79's scope, a follow-up (see
+  Progress, "Phase 9 complete").
 
 ## 13. The world package (doc 77)
 
@@ -1446,6 +1485,19 @@ the file's reject style (:842-979) on purpose: a host's half-finished edit must 
   444, 718`) and out of `tools/world_build.py:42-43`.
 - `live.npcs` gains a nullable `band_override`. `purse`, `herbs` and `meals` stay, ignored.
 - `live.people_manifest()` is redefined with one `economy` line plus `rule`, `service` and `season` lines.
+  As built: its economy records are `live.economy_manifest(world)`'s (what `economy.sync` reads, so a lever never has
+  the game read every resident again), then an `overrides` line (the host's words and tables as one JSON object) and a
+  `band` line after a resident's records. For servers built before Phase 9 the `economy` line keeps two numbers after
+  the store's herbs and meals, always `10 12` (the old daily herbs and meals, read past), and a season stored with
+  its supply and normal keeps 0060's four-part line; this compatible shape is part of the grammar
+  (`tools/manifest_lines.py` writes the same lines). A name that is no plain word (`live.economy_name`) is never
+  printed: a line break in one became a second line, and the game refused the world for it. Core skips the tail of
+  such a split record with a warning if a world file written some other way holds one.
+- `dm.queue_economy_sync(who, payload)` (SECURITY DEFINER; granted to the editor's and the DM's roles) queues
+  `economy.sync` for Atlas's own role, which can't write `dm.actions`; it stores `{"now": true}` or nothing.
+- `Database/rollback/0061_staged_economy_down.sql` takes 0061 back by hand (the table with 0055's grants, 0060's
+  manifest less a season stored without its supply and normal, 0061's functions and its grant on schema `dm` gone, its
+  `schema_migrations` row deleted). Its header says what a server built before Phase 9 reads after it.
 - Matching changes: `tools/world_store.py`'s versioned tables (:118-176), `tools/live_edit.py`'s `economy` key
   (:172-358). `live.economy` stays never-synced (`world_sync.py:45, 63`).
 - NpcTab's Purse, Meals and Herbs (`Editor/src/dm/NpcTab.tsx:391-394`, `Editor/src/components/Inspector.tsx:368-374`)
@@ -1453,8 +1505,11 @@ the file's reject style (:842-979) on purpose: a host's half-finished edit must 
   shop" (:373) becomes "Residents are fed by their band; the poor go short when the nearest food shop is bare."
 
 **Order.** DEV applies 0061 over 0060, after a backup (DEV is not precious). PROD is on the old map at 54; it applies
-55-61 in order when the user pushes, and 0061 only drops and redefines, so it is safe on either path. When PROD gets
-this is D19. On a world's first boot after the change, a one-line log notes "economy staged (doc 79)". Doc 78's
+55-61 in order when the user pushes, and 0061 only drops and redefines, so its rows are safe on either path. Two
+things are not: tools from before doc 79 that write `live.business_settings` (an old `live_edit`, `world_sync`) stop
+working once 0061 has dropped the table, and `world_db migrate` applies every pending migration in order, so any
+later migration applied to PROD (doc 78's, say) carries 0061 with it. PROD therefore takes 0061 only together with
+this code (D19 (a): with the new map). When PROD gets this is D19. On a world's first boot after the change, a one-line log notes "economy staged (doc 79)". Doc 78's
 build order is D22.
 
 ## 15. Performance
@@ -1501,7 +1556,10 @@ All seeded and offline; each ctest takes seconds. No balance runs.
    - Shares, short-day chances and theft odds are monotone in the slider.
    - The guarantees hold in their order of precedence (a House head in the Sump is rich); with the Sump deleted, no
      error. A band never sits more than one from its home and class without an event.
-   - Never Broke empties destitute; Never Hungry empties short days.
+   - Never Broke empties destitute; Never Hungry empties short days. Two households stay destitute under Never
+     Broke, each by someone's explicit word: one the DM holds destitute for a while, and one a host authored destitute
+     in the Band picker (the user's decision of 2026-11-12: an authored band stands over the guarantees, a House
+     head's, the Watch's floor, the Sump's cap and Never Broke alike; `server_parts_tests`).
    - At most one band a week; "now" skips it; the slider smoothed to 10 a day; the same result on 1 and 4 threads;
      save and restore round-trip with no band jump; the fortune noise stays within ±0.3 over 500 weeks.
    - A `status.json` override that sums to 140, isn't monotone or has a share under 2% falls back to the default.
@@ -1668,6 +1726,12 @@ goes, not only the pointer.
 rules; `SeasonsPanel.tsx` (97), retargeted at `market.json`'s overrides; `Editor/src/lib/economy.ts` and its test,
 trimmed of steer tags; `sync.ts`'s `economy` conflict block (:67-70, doc 66); the "economy is never touched" copy in
 `UpdateFromLive.tsx:82` and `ServerTab.tsx:192`, checked and reworded.
+
+As built (Phase 9), two of these were kept, each cut down: **`RulesPanel`'s held rules** stay as one line (how many
+rules the world names that the game no longer has: kept in the row, sent and read past), and **`sync.ts`'s economy
+block** stays as a read-only list of the kept columns that differ between dev and live (it never syncs them: each
+world's economy is its own). The DM tool's second grant route (`POST /api/players/grant`, `DungeonMaster.grant`)
+went in Phase 9's last repair: a grant is an act like the rest (`POST /api/prosperity/act`).
 
 **Artifacts:** `artifacts/economy`: 28 GB untracked on disk, 34 MB tracked. Deleting it is the user's call (D18).
 
@@ -3919,7 +3983,7 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     `test_live_map`, `test_npc_mind`, `test_one_server`, `test_world_db`, `dm_smoke`), `test_studio`'s own
     `unmigrate_store` for its pre-0055 world, and the DM tool knowing an event the DM added since the last checkpoint by
     its outcome ("e<N>: ...") so `event.cancel` is not refused as unknown.
-  - **Not end to end yet:** the map-edge "outside" endpoint for a world with no port (deferred, U3); a storm on a world
+  - **Not end to end yet:** the map-edge "outside" endpoint for a world with no port (deferred: not in doc 79's scope, confirmed 2026-11-12); a storm on a world
     whose port is not Ridgemere's (none other exists); the Storykeeper's `npc_band` only through `director_tests` and
     dm_service's shapes, not a live server; the Editor's and DM tool's panels by their typecheck and unit tests, not a
     browser. DEV's 0061 apply and a live DEV check are the user's.
@@ -4025,11 +4089,11 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     panels rendered: `npm run smoke` builds `src/render.smoke.tsx` for Node and renders the six economy panels (slim
     and before 0061) and the Prosperity tab with react-dom/server (no browser: layout unseen).
   - **Not done, and why:** the map-edge "outside" endpoint for a world with no port: the doc disagrees with itself
-    (Phase 5's entry: "in no phase's row", the morning refill standing in; Phase 5's hand-off list: Phase 9's), and the
-    judged plan's U3 (defer) awaits the user's word, so it is the user's to decide; Ridgemere 2.0 has a port. The town
+    (Phase 5's entry: "in no phase's row", the morning refill standing in; Phase 5's hand-off list: Phase 9's), and
+    Phase 9's plan deferred it (confirmed 2026-11-12: not in doc 79's scope, a follow-up); Ridgemere 2.0 has a port. The town
     projects' watchpost and waystation proposals: "for Phase 9 or a later plan", left to a later plan. A storm on PROD's
-    copy: PROD's maintenance flag refuses a live server there. Doc 78: not edited (U13; its stale notes are listed in
-    the integration's entry). The Inspector's Band picker isn't greyed on a world before 0061; the save refuses it
+    copy: PROD's maintenance flag refuses a live server there. Doc 78: not edited (Phase 9's plan left doc 78 to its own
+    session; its stale notes are listed in the integration's entry). The Inspector's Band picker isn't greyed on a world before 0061; the save refuses it
     with the reason instead. The perf gate was not run again (the repair adds a check of an empty list and a flag to
     the tick; the act-time Board dump went).
   - **Applying 0061 (the user's step), and back:** after a backup. A server built before Phase 9 reads the migrated
@@ -4124,8 +4188,9 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     world's own), so a host sees why the two worlds' economies differ. Section 14 now says the DM's nudges and harvest
     calls are on the Board, not in `live.economy.rules` (so doc 78 M7's "Reset economy rules" leaves them).
   - **Not done, and why:** the map-edge "outside" endpoint for a world with no port: the doc disagrees with itself
-    (Phase 5's entry against its hand-off list) and U3 (defer) is the user's to answer. The town projects' watchpost and
-    waystation proposals: "for Phase 9 or a later plan", left to a later plan. Doc 78: not edited (U13); its M7 must add
+    (Phase 5's entry against its hand-off list), and Phase 9's plan deferred it (confirmed 2026-11-12: a follow-up). The
+    town projects' watchpost and waystation proposals: "for Phase 9 or a later plan", left to a later plan. Doc 78: not
+    edited (left to its own session); its M7 must add
     the original `live.economy` copy, and its Q17 seed list must drop `business_settings`; 0061 now gives M7 the
     editor-role economy.sync it needs. A storm at a port other than Ridgemere's: no world has one. The panels in a
     browser: rendered with react-dom/server only (layout unseen). DEV's 0061 apply and a live DEV check are the user's.
@@ -4160,6 +4225,113 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     Within the gate's noise (0.05 ms of mean, 0.1 of p99) in every window; 23-25 is the closest (0.04 of mean, 0.09 of
     p99). The worst tick of each run is tick 19 in the first minute, as before. (`world_check` has no Game: the repair's
     poll and Director changes are outside it, as the gate says.)
+
+- **2026-11-12: Phase 9 complete (the last repair)** (`r2-staged-p9`, on the second repair's `1468208`; the third
+  review's and the final check's findings, and the user's decisions of 2026-11-12). No DEV or PROD database was
+  migrated or written (only read-only `pg_dump` copies, for `test_migration_0061`'s copies); no economy simulation; no
+  paid model call. Migration 0061 was edited in place again (it has only ever been applied to throwaway databases).
+  A second session worked beside this one on events' Times points, the beggars' rules and talk lines (`r2-staged-dec`);
+  this repair touched its files only where a finding needed a line: `Core/RatwStreet.cpp` (one call after the hourly
+  placing, for "beggars today"), `Tests/events_tests.cpp` and `Tests/street_tests.cpp` (new checks beside old ones,
+  and the old ones' words where an outcome changed), and `Core/RatwMarket.cpp` outside `timesScore` and `timesCause`
+  (`setPressure`, `setProsperity`'s cleared cause, the Board's `moves`, `layered`'s event list).
+  - **What Phase 9 built** (three lanes, an integration and three repairs): migration 0061 and its way back; lenient
+    Authoring with the host's overrides and band lines; `world_store`, `live_edit`, `world_build`, `world_sync` and the
+    world package on the slim table; the studio slimmed to the slider with its cause, the rules, services, seasons, the
+    goods ships never carry and the host's `status.json` and `market.json` values; the DM's Economy and Prosperity tabs
+    (the report, the week's wagons, ships and events, player coin made against sunk, the word on the street, the log)
+    and the DM's acts (a Times nudge, a harvest called, an event added or cancelled, a ship stormed, prices reset, a
+    household's band for a while, a player's grant or fine), each journalled before anyone is told and applied exactly
+    once through a crash; the Band picker; the Storykeeper's grant and band; `economy.sync` reading the economy alone.
+  - **The decisions, confirmed** (2026-11-12, the user: "go with your best judgement"; the orchestrator's calls on the
+    user's behalf, recorded in section 12's "As built, and confirmed"): nudges and harvest calls are one-off acts on the
+    Board and survive "Reset economy rules"; grants 500p a player a day with a 2,500p ceiling, a fine at most the
+    player's cash; a host's cap at most 5 times the shipped default; the highest band in a household wins and the DM's
+    band for a while comes first; an authored band stands over the guarantees (a House head's, the Watch's floor, the
+    Sump's cap, Never Broke), now tested (`server_parts_tests`) and said in sections 12 and 16.1; the Storykeeper is
+    kept; `harvestBias` is a rule; the Prosperity report may lag one checkpoint; the map-edge "outside" endpoint is
+    deferred (a follow-up).
+  - **Fixed, the three that mattered:**
+    - *A rule's name with a line break stopped the world loading.* The name became two manifest lines and the game
+      refused the world for the second at every start, npc.sync and release. Now a rule's (a service's, a season
+      group's) name must be one plain word (`economy_contract.NAME`, the same pattern as 0061's `live.economy_name`):
+      refused by `check_rules` (so by `check_project`, Atlas's keyed edit and a package's `economy_rows_problems`), by
+      `world_store.save_economy` and `patch_economy_rules` whoever calls them (a name the row already holds lets a
+      save by), and never printed by 0061's manifest or `manifest_lines`; and Core skips the tail of a split `rule`,
+      `service` or `season` record with a warning (up to the line that closes its quote, 8 lines at most), never
+      "Unknown manifest record". A plain name the game no longer has is still kept and read past (14). Tests:
+      `host_edit_tests`, `test_map_editor`, `test_live_edit`, `test_world_store`, `test_world_package`,
+      `test_manifest_lines`, `test_migration_0061` (both writers the same lines).
+    - *The Prosperity tab's Beggars were all but always 0* (the report is worked out at midnight). The world keeps the
+      most beggars out at once in each market on the last begging day (`World::noteBeggars`, after each hour's
+      placing) and the report gives that with its day (`beggarsDay`); a server that has seen no begging day since it
+      started keeps the last report's. Test: `street_tests` (the count read on the working day after).
+    - *`server_parts_tests` failed 3 runs in 20:* its held-grant block removed its bridge folder while a Bridge was
+      still writing `snapshot.json`. The three bridges now live in a block of their own (each Bridge's destructor
+      waits for its writer) before the folder goes. Proof: 40 solo runs of `build-p9fix/server_parts_tests`, none
+      failed (the tree before failed 3 in 20), and no `ratw-bridge-held-*` folder of its own left in `/tmp`.
+  - **The year log's big moves, made true:** `Society::setPressure` (events, ships, storms, wagons, harvests, raids,
+    missed carts) records a move of more than 0.2 on the Board (`moves`: 28 days, 200 at most, saved only when there
+    is any) with its cause, and the log reads those, in a host's words ("the harvest", "a ship landed"), never
+    `recent` (the last 50 trades, none of which moves a price that far). Tests: `market_tests`, `test_dungeon_master`.
+  - **Fixed, the small ones.** *Names, not ids:* the ships' and the wagons' goods (`goodNames`), a ship and an event
+    in the log, the fined player ("all Ada had"), a cancelled event ("... at Ridgemere (e4)"), the Storykeeper's
+    `npc_band` reply (the resident's household), an account with no profile ("the account ada"). *Refusals alike:*
+    lifting a nudge that isn't in force and clearing a band that isn't held are refused, as a harvest's clear already
+    was; an empty Days field is the usual week, never 0. *The database:* the rollback takes 0061's USAGE on schema
+    `dm` back from the editor, drops `live.economy_name` and leaves out a season stored without its supply and
+    normal (its header says what a server before Phase 9 reads after it); `dm.queue_economy_sync` is no longer
+    granted to the publisher (which has no USAGE there) and stores only `{"now": true}` or nothing. *Core:* a host's
+    event list with no valid kind falls back to the shipped events; override warnings past the twentieth are counted
+    ("and N more"); acts whose record was still being written at a clean stop are answered at the stop; the other
+    dm.actions kinds that journal what they do (a deed, a Gift, a town project, an NPC's band) carry a receipt in the
+    record too, so a crash after the commit never applies them twice; a cleared slider cause is told again, so the
+    DM's words come off the boards (the second repair's "quietly" left them up a week). *The tools and the screens:*
+    what has lapsed since the report (a nudge, a reset, a harvest call) is not shown as in force; "(N set)" says what
+    it counts; the players' hover shows goods; the second grant route (`/api/players/grant`, `DungeonMaster.grant`)
+    is cut; the act kinds are one list on each side (`LIVE_ACTS`; `ECONOMY_ACT_KINDS`), held together and to Core's by
+    a test; the Band pickers are greyed for an NPC the game doesn't house, with a word why (the NPC tab by `bandable`;
+    Atlas's Inspector for an NPC with no home, and its hint says whom a band holds for); `economy.sync`'s outcome is
+    shown on the Economy page and tab (`lastSync`: applied with what it skipped, refused, never taken) and in the
+    Prosperity log; the studio queues `economy.sync` through `dm.queue_economy_sync` as its own role where the world
+    has it. *Tests added besides:* `harvestBias`'s effect itself, a `harvest.override` crash case (`dm_harvest`, on a
+    strip with a farm), more than 64 acts between two checkpoints, the authored band over the guarantees.
+  - **Left, for a follow-up** (none blocks the merge):
+    - the map-edge "outside" endpoint for a world with no port (deferred, confirmed; Ridgemere 2.0 has a port);
+    - the town projects' watchpost and waystation proposals (a later plan);
+    - `StatusPanel` and `MarketPanel` are partly raw JSON (`rows`, `street`, the events' `causes`), and no panel edits
+      `score`, `hold`, `leanDays`, `timesShift`, `smoothing`, `hysteresis` or the `short*` keys (the API takes them);
+    - the studio still writes `dm.audit` as the DM's role, so Atlas's Economy page still needs the DM's password for
+      its audit (and to read back `lastSync`); doc 78 M7's helper wants an editor-role door for both;
+    - the studio's HTTP layer over a real database (`/api/dm/economy/steer` end to end) is tested with stand-ins and
+      in process, not over a registered throwaway world;
+    - a storm at a port other than Ridgemere's (no world has one), and on PROD's copy (its maintenance flag refuses a
+      live server);
+    - the panels have never been opened in a browser: rendered with react-dom/server only (layout unseen);
+    - the Beggars column was not watched live through a Marketday (that needs a world run for days);
+    - a per-kind Postgres crash test (`Tests/dm_economy_pg.py`) was not written: `events_pg` replays every `dm_*`
+      crash case through Postgres and `test_dm_live` crashes a real server;
+    - the perf gate's 23-25 baseline row could not be reproduced on the baseline's own code (the final check's note):
+      the table wants measuring again before it is used as a gate. No timings were taken in this repair (it adds one
+      map lookup to `setPressure` and an hourly count of the beggars);
+    - doc 78 was not edited: its M7 must copy the original `live.economy`, and its Q17 seed list must drop
+      `business_settings`;
+    - **DEV's 0061 apply** is the orchestrator's, after the merge and a backup; other sessions rebuild from the merged
+      branch first (a server built before Phase 9 doesn't read an overrides or band line).
+  - **Hours.** Phase 9's row expected 5-6.5 hours. It ran well over: three lanes built side by side, an integration,
+    and three repair rounds after three reviews and a final check (this is the third).
+  - **Tests (the one run):** a fresh Release build (`build-p9fix`, from empty; 127 warnings, as before); ctest 89/89
+    with the database, none skipped (`pg_client` on a throwaway `ratw_test_s2stage_p9fix_pg`, dropped; the main checkout's
+    `Database/.env` sourced): `events_tests` 270,353 checks, `market_tests` 13,872, `host_edit_tests` 671,
+    `server_parts_tests` 263, `street_tests` 23,434. All 38 `tools/test_*.py` with the database and this build's server
+    (`RATW_TEST_SERVER`, `RATW_SERVER`, `RATW_SERVER_BINARY`; `RATW_TEST_DB_TAG=s2stage_`,
+    `RATW_TEST_KEY_PREFIX=s2stage`, `RATW_MIGRATE_COPIES=ratw_ridgemere2,ratw_prod`, each copied read only with
+    `pg_dump`): 739 tests, none failing, 24 skipped (the 23 `RATW_SLOW` world builds and `test_game_tables`' save under
+    `Saved/`); the edited 0061 migrated DEV's copy, a server opened it and stormed a ship there, and PROD's copy
+    migrated (closed for maintenance by its own flag). The client's 146 and its typecheck; the Editor's 78 + 68, its
+    typecheck and the render smoke (14 panels); `DM/model.test.mjs` 16 (`node_modules` linked from the main checkout,
+    removed after). No perf timings (as asked). No `s2stage` database of this run left;
+    `artifacts/screenshots/dev-console-fight.png`, rewritten by `test_live_map`, restored.
 
 ## Review (2026-11-08)
 

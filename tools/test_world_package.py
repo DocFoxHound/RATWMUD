@@ -548,6 +548,19 @@ class ScanTest(unittest.TestCase):
             self.assertTrue(problems and all(p.startswith('live.economy[0]') for p in problems), (bad.keys(), problems))
             self.assertTrue(P.scan(None, {'live.economy': [bad]})[0])
 
+    def test_a_rule_name_that_would_split_the_manifest_is_refused(self):
+        # Phase 9's last repair: an imported row's rule named with a line break (or any name that is no plain word) became
+        # two manifest lines and the game refused the world it made; the import and the scan refuse the row. A plain name
+        # the game no longer has is still let by (kept, ignored: doc 79, 14).
+        good = {'world_id': 'w', 'treasury': 500, 'store_herbs': 10, 'store_meals': 10, 'rules': {'ripple': 40, 'steerLean': 150},
+                'services': {}, 'seasons': {}}
+        self.assertEqual(P.economy_rows_problems([good]), [])
+        for name in ('zz\nbogus', 'a b', 'q"uote', ''):
+            bad = {**good, 'rules': {'ripple': 40, name: 5}}
+            problems = P.economy_rows_problems([bad])
+            self.assertTrue(problems and 'not a rule\'s name' in problems[0], (name, problems))
+            self.assertTrue(P.scan(None, {'live.economy': [bad]})[0], name)
+
     def test_the_prosperity_report_is_never_packaged(self):
         doc = save()
         doc['society']['report'] = {'v': 1, 'markets': [{'id': 'town', 'households': {'poor': 3}}]}

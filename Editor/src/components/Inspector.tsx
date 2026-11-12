@@ -370,9 +370,10 @@ function PersonInspector({project, person}: {project: Project; person: Person}) 
         </Section>
         <Section title="Band" open={false}>
             <SelectField label="Economic band" value={person.band ?? ''} onChange={v => update({band: v === '' ? null : v as Band})}
-                disabled={!bandsHeld && !person.band}
-                hint={bandsHeld ? "For the resident's whole household; the highest band among its members wins, and a DM's band for a while comes first."
-                                : "This world needs migration 0061 to hold an NPC's own band: from rank until then."}
+                disabled={(!bandsHeld || !person.home) && !person.band}
+                hint={!bandsHeld ? "This world needs migration 0061 to hold an NPC's own band: from rank until then."
+                      : !person.home ? "An NPC with no home has no household, and the game houses only residents of a market: a band here would do nothing."
+                      : "For the resident's whole household; the highest band among its members wins, a DM's band for a while comes first, and it stands over the guarantees (a House, the Watch, the Sump, Never Broke). It holds only for a resident the game houses in a market: the Country's and a town's own folk take none."}
                 options={[{value: '', label: 'From rank'}, ...BANDS.map(b => ({value: b, label: b[0].toUpperCase() + b.slice(1)}))]} />
             <Hint>Residents are fed by their band; the poor go short when the nearest food shop is bare.</Hint>
         </Section>

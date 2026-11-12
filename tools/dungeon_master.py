@@ -22,6 +22,7 @@ Atlas's world).
 from __future__ import annotations
 
 import argparse
+import copy
 import getpass
 import hashlib
 import json
@@ -181,11 +182,7 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            'milestone.credit': 'dm', 'visitors.sync': 'dm',
            # Talk (Docs/Design/62-talk.md, phase 6): a resident's voice, their family, a dialect or a figure saved; read again.
            'voice.sync': 'dm',
-           # The staged economy (Docs/Design/79-a-staged-economy.md, 12; Phase 9): a market's Times nudged for a while, an
-           # area's harvest called, a staged event added or cancelled, a ship stormed, a market's prices reset (or all), a
-           # household's band for a while (target an NPC of it), a player's grant or fine (LIVE_ACTS clamps each).
-           'times.nudge': 'dm', 'harvest.override': 'dm', 'event.add': 'dm', 'event.cancel': 'dm', 'ship.storm': 'dm',
-           'prices.reset': 'dm', 'band.override': 'dm', 'character.grant': 'dm',
+           # (The staged economy's acts, doc 79, 12, are added below from the one list of them: LIVE_ACTS.)
            # Marking a player a Dungeon Master in the game (the Dev Console) is for admins.
            'character.dm': 'admin'}
 # Injuries a Dungeon Master may give (Docs/Design/38-injuries.md, phase 5; the game's Core/RatwInjury.cpp has the same).
@@ -1005,7 +1002,9 @@ class DungeonMaster:
                                          ORDER BY id DESC LIMIT 2000''', (world, kinds, day - 28)).fetchall()
             else:
                 events = []
-            acts = list(ECONOMY_ACTS)
+            # (And economy.sync, the levers' own: what the server made of each is in the log too, the last repair: skipped
+            # records, a refusal, "never applied" when no server took it.)
+            acts = [*ECONOMY_ACTS, 'economy.sync']
             audit = conn.execute('''SELECT at, action, target, detail, who FROM dm.audit
                                     WHERE action LIKE 'economy.%%' AND at >= %s
                                     ORDER BY at DESC, sequence DESC LIMIT 400''', (self.clock() - 28 * 86400,)).fetchall()
@@ -1025,7 +1024,12 @@ class DungeonMaster:
         market_names = {m.get('id'): m.get('name') or m.get('id') for m in (report or {}).get('markets', []) if isinstance(m, dict)}
         area_names = {a.get('id'): a.get('name') or a.get('id') for a in (report or {}).get('areas', []) if isinstance(a, dict)}
         item_names = good_names()
-        everyone = {**item_names, **npc_names, **names, **holder_names, **area_names, **market_names}
+        # (A ship and a staged event by what they are called, never "s1" or "e4": the log's storm and cancel lines.)
+        ship_names = {s.get('id'): s.get('name') for s in board.get('ships', []) or [] if isinstance(s, dict) and s.get('id') and s.get('name')}
+        event_names = {e.get('id'): f"{e.get('words') or e.get('kind')} at {market_names.get(e.get('market'), e.get('market'))}"
+                       for e in board.get('events', []) or [] if isinstance(e, dict) and e.get('id')}
+        everyone = {'economy': 'the levers', **ship_names, **event_names, **item_names, **npc_names, **names, **holder_names,
+                    **area_names, **market_names}
         written = row[3] if row else None
         stale = written is None or (row[4] - written).total_seconds() > STALE_AFTER
         today = int(day) if day is not None else None
@@ -1037,8 +1041,10 @@ class DungeonMaster:
         thefts = sum(1 for e in events if e[0] in THEFT_EVENTS and today is not None and int(e[6]) == today)
         realm = accounts.get('treasury') if isinstance(accounts.get('treasury'), dict) else None
         goods = {pr.get('good') for pr in (report or {}).get('pressures', []) or [] if isinstance(pr, dict)}
+        # (The ships' and the wagons' goods by name too, the last repair: "floor_bowl_wood" was what the host read.)
+        goods |= {g for row in week['ships'] + week['wagons'] for g in row['goods']}
         return {'target': target, 'writtenAt': written.isoformat() if written else None, 'gameDay': day, 'stale': stale,
-                'report': report, 'towns': towns, 'treasury': _whole_or_zero(realm.get('cash')) if realm else None,
+                'report': in_force(report, day), 'towns': towns, 'treasury': _whole_or_zero(realm.get('cash')) if realm else None,
                 'week': week, 'players': players, 'thefts': thefts,
                 'goodNames': {g: item_names[g] for g in goods if g in item_names},
                 'word': street_word(report, week, market_names, item_names),
@@ -1080,11 +1086,6 @@ class DungeonMaster:
                            f'asked: {_brief(clean)}'
                            + (f' — {reason[:500]}' if reason else ''))
         return {'id': action_id, 'status': 'queued', 'payload': clean}
-
-    def grant(self, who, target, character, coins, reason):
-        """A player's grant (coins > 0, a faucet) or fine (coins < 0, a sink), with its reason (doc 79, 12; D16): queued as
-        character.grant, which Core caps (status.json caps.grantsADay a player a day; a fine at most their cash)."""
-        return self.act(who, target, 'character.grant', character, {'coins': coins, 'reason': reason})
 
     @staticmethod
     def _act_targets(conn, world, what, society):
@@ -2057,6 +2058,9 @@ WAGON_EVENTS = ('caravan departs', 'caravan arrives', 'caravan lost', 'wagon can
 THEFT_EVENTS = ('theft', 'attempted theft')
 STALE_AFTER = 180                     # Seconds: a checkpoint older than this is shown as stale (the server may be down).
 RIPPLE_LOGGED = 0.2                   # A pressure move this big is in the year log (12: "big ripples").
+# What moved a price so far, in a host's words (the Board's `moves`: Core's cause word of each staged move).
+MOVE_CAUSES = {'event': 'an event', 'ship': 'a ship landed', 'ship takes': 'a ship loading', 'ship late': 'a ship kept from port',
+               'caravan': 'a wagon', 'harvest': 'the harvest', 'late': 'a wagon late', 'raid': 'a wagon raided on the road'}
 TARGET_WORDS = {'markets': 'market', 'npc': 'resident', 'character': 'player'}   # (A 404's words: "No such resident".)
 EVENT_ID = EC.EVENT_ID                 # (An event kind's id: economy_contract's, the one Core holds.)
 
@@ -2152,6 +2156,11 @@ LIVE_ACTS = {'times.nudge': ('market', _nudge), 'harvest.override': ('area', _ha
              'event.cancel': ('event', _nothing), 'ship.storm': ('ship', _nothing), 'prices.reset': ('markets', _reset),
              'band.override': ('npc', _band), 'character.grant': ('character', _grant)}
 ECONOMY_ACTS = tuple(LIVE_ACTS)
+# The one list of the staged economy's acts (Phase 9's last repair: they were written out by hand here, in ACTIONS and
+# in LIVE_KINDS): each a DM's (Docs/Design/79-a-staged-economy.md, 12: a market's Times nudged for a while, an area's
+# harvest called, a staged event added or cancelled, a ship stormed, a market's prices reset, a household's band for a
+# while, a player's grant or fine).
+ACTIONS.update({kind: 'dm' for kind in LIVE_ACTS})
 
 
 def _json_value(value):
@@ -2183,6 +2192,25 @@ def event_kinds(society):
         return set(kinds)
     events = EC.market_file().get('events')
     return {k.get('id') for k in (events or {}).get('list', []) if isinstance(k, dict)} if isinstance(events, dict) else set()
+
+
+def in_force(report, day):
+    """The report with what has lapsed since it was worked out taken off (Phase 9's last repair): the report is the
+    morning's, and a nudge, a price reset or a harvest call that ran out during the day still read as in force until the
+    next. `day`: the checkpoint's clock (game days)."""
+    if not isinstance(report, dict) or day is None:
+        return report
+    out = copy.deepcopy(report)
+    for m in out.get('markets') or []:
+        if isinstance(m, dict):
+            for key in ('nudge', 'resetting'):
+                held = m.get(key)
+                if isinstance(held, dict) and _number(held.get('until')) <= day:
+                    m[key] = None
+    for a in out.get('areas') or []:
+        if isinstance(a, dict) and isinstance(a.get('override'), dict) and _number(a['override'].get('until')) <= day:
+            a['override'] = None
+    return out
 
 
 def act_before(kind, target_id, society):
@@ -2289,19 +2317,28 @@ def player_money(staged, names, today):
             continue
         tally = [0, 0, 0, 0]
         for holder, reasons in (faucets[key] or {}).items():
-            h = holders.setdefault(holder, {'holder': holder, 'name': names.get(holder, holder), 'made': 0, 'sunk': 0, 'byReason': {}})
+            h = holders.setdefault(holder, {'holder': holder, 'name': names.get(holder) or holder_words(holder), 'made': 0, 'sunk': 0,
+                                            'byReason': {}})
             for reason, t in (reasons or {}).items():
                 t = [_whole_or_zero(x) for x in (t if isinstance(t, list) else [])][:4] + [0, 0, 0, 0]
                 for i in range(4):
                     tally[i] += t[i]
                 h['made'] += t[0]
                 h['sunk'] += t[1]
-                was = h['byReason'].setdefault(reason, [0, 0])
-                was[0] += t[0]
-                was[1] += t[1]
+                # (Coin made and sunk, then goods in and out at the catalogue's price: the hover showed "+0 -0" for a
+                # reason that was all goods.)
+                was = h['byReason'].setdefault(reason, [0, 0, 0, 0])
+                for i in range(4):
+                    was[i] += t[i]
         days.append({'day': int(key), 'made': tally[0], 'sunk': tally[1], 'goodsMade': tally[2], 'goodsSunk': tally[3]})
     top = sorted(holders.values(), key=lambda h: (-(h['made'] + h['sunk']), h['holder']))[:20]
     return {'days': days, 'holders': top}
+
+
+def holder_words(holder) -> str:
+    """A faucet holder with no name on record, in words: "the account ada" for "acct-ada", else the key itself."""
+    holder = str(holder)
+    return f'the account {holder[len("acct-"):]}' if holder.startswith('acct-') and len(holder) > 5 else holder
 
 
 def good_names() -> dict:
@@ -2344,14 +2381,16 @@ def street_word(report, week, names, goods=None):
     return out[:20]
 
 
+# (dm.actions.status: the four the table holds.)
 ACT_STATES = {'applied': 'done', 'refused': 'refused by the game', 'expired': 'never applied (no server took it)',
-              'queued': 'waiting for the game server', 'failed': 'failed'}
+              'queued': 'waiting for the game server'}
 
 
 def economy_log(audit, events, board, names, today, acts=()):
     """The economy's log for 28 days (12: the year log): the DM's lever writes (dm.audit), the DM's acts with what the game
     server made of each (dm.actions: done, refused with its reason, never applied, or still waiting), what the game made of
-    them and the causes it told (game.events), and the Board's big ripples (a pressure move over 0.2)."""
+    them and the causes it told (game.events), and the Board's big moves (a staged move of a price over 0.2, with what
+    made it: an event, a ship, a storm, a wagon, a harvest, a raid)."""
     out = []
     for at, action, target, detail, who in audit:
         out.append({'at': datetime.fromtimestamp(float(at), timezone.utc).isoformat(), 'kind': action,
@@ -2359,7 +2398,9 @@ def economy_log(audit, events, board, names, today, acts=()):
     for at, kind, target, who, status, result in acts:
         out.append({'at': at.astimezone(timezone.utc).isoformat() if hasattr(at, 'astimezone') else str(at), 'kind': kind,
                     'state': status, 'text': f'{who}: {kind} {names.get(target, target)}: {ACT_STATES.get(status, status)}'
-                                            + (f' ({result})' if result else '')})
+                                            + (f' ({result})' if result else '')
+                    if kind != 'economy.sync' else
+                    f'{who}: the levers sent to the game server: {ACT_STATES.get(status, status)}' + (f' ({result})' if result else '')})
     for kind, actor, target, _cell, item, quantity, day, detail, recorded in events:
         if kind not in PROSPERITY_LOG_EVENTS:
             continue
@@ -2368,13 +2409,16 @@ def economy_log(audit, events, board, names, today, acts=()):
         out.append({'at': recorded.astimezone(timezone.utc).isoformat() if hasattr(recorded, 'astimezone') else str(recorded), 'kind': kind,
                     'text': f'{kind}: {place}' + (f' ({words})' if words else '') + (f' {quantity:+d}' if kind == 'times nudged' and quantity else '')})
     out.sort(key=lambda e: e['at'], reverse=True)
-    ripples = sorted((r for r in board.get('recent', []) or [] if isinstance(r, dict)
+    # The big moves (Phase 9's last repair): the Board's `moves`, each staged move of a price by more than 0.2 in the last
+    # 28 days with what made it (Society::setPressure: an event, a ship, a storm, a wagon, a harvest, a raid). Never
+    # `recent`, which holds the last 50 trades and ripples, none of which moves a price that far.
+    ripples = sorted((r for r in board.get('moves', []) or [] if isinstance(r, dict)
                       and abs(_number(r.get('delta'))) > RIPPLE_LOGGED and (today is None or _number(r.get('day')) >= today - 28)),
                      key=lambda r: -_number(r.get('day')))
     ripples = [{'at': f"game day {int(_number(r.get('day')))}", 'kind': 'ripple',
                 'text': f"{names.get(r.get('good'), r.get('good'))} at {names.get(r.get('market'), r.get('market'))} "
                         f"{'dearer' if _number(r.get('delta')) > 0 else 'cheaper'} by {abs(_number(r.get('delta'))):.2f}"
-                        + (f" ({r['cause']})" if r.get('cause') else '')} for r in ripples]
+                        + (f" ({MOVE_CAUSES.get(r['cause'], r['cause'])})" if r.get('cause') else '')} for r in ripples]
     return out[:300] + ripples[:100]
 
 
@@ -2385,9 +2429,8 @@ LIVE_KINDS = ('project.post', 'project.cancel', 'project.complete', 'project.rem
               'storyline.give', 'storyline.tick', 'storyteller.decide', 'storyteller.revoke', 'tale.pause', 'tale.resume',
               'tale.stop', 'visitors.sync',
               'deed.award', 'deed.revoke', 'nickname.drop', 'nickname.restore', 'board.remove', 'estate.clear', 'estate.release',
-              # The staged economy's acts (doc 79, 12): normalised by LIVE_ACTS (DungeonMaster.act).
-              'times.nudge', 'harvest.override', 'event.add', 'event.cancel', 'ship.storm', 'prices.reset', 'band.override',
-              'character.grant')
+              # The staged economy's acts (doc 79, 12): normalised by LIVE_ACTS (DungeonMaster.act), the one list of them.
+              *ECONOMY_ACTS)
 
 
 def storyline_templates() -> list:
@@ -2628,10 +2671,6 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                 data = self.body()
                 return self.reply(200, dm.act(who, self.posted(data), str(data.get('kind', '')), data.get('id', ''),
                                               data.get('payload'), str(data.get('reason', ''))))
-            if method == 'POST' and path == '/api/players/grant':
-                data = self.body()
-                return self.reply(200, dm.grant(who, self.posted(data), data.get('character', ''), data.get('coins'),
-                                                data.get('reason')))
             if method == 'GET' and path == '/api/calendar':
                 return self.reply(200, dm.calendar(self.target(query)))
             if method == 'POST' and path == '/api/festivals/call':

@@ -414,10 +414,12 @@ function NpcInspector({draft, setDraft, routes, world, canEdit, canLive, busy, d
                 hint={dirty ? 'Save or revert the other changes first.' : 'Roams this area during work hours and evenings instead of standing at one spot. Applies at once.'}
                 options={[{value: '', label: 'Keeps to their spots'}, ...wanderAreas.map(a => ({value: a.id, label: a.name}))]}
                 onChange={v => { if (canEdit && !dirty && !busy) onWander(v); }} />}
+            {/* (Greyed too for an NPC the game doesn't house, the last repair: a band there did nothing, and nobody was told.) */}
             <SelectField label="Band" value={(draft as Banded).band ?? ''} options={BAND_OPTIONS}
-                disabled={!bandsAuthored && !(draft as Banded).band}
-                hint={bandsAuthored ? "Residents are fed by their band; the poor go short when the nearest food shop is bare. It covers their whole household (the highest band of its people wins), until the DM sets one for a while."
-                                    : "This world needs migration 0061 to hold an NPC's own band: from rank until then."}
+                disabled={(!bandsAuthored || (!bandable && !isNew)) && !(draft as Banded).band}
+                hint={!bandsAuthored ? "This world needs migration 0061 to hold an NPC's own band: from rank until then."
+                      : !bandable && !isNew ? `The bands cover the residents the game houses, and ${draft.name} is not one of them as last saved (the town's and the Country's folk have no household in a market): a band here would do nothing.`
+                      : "Residents are fed by their band; the poor go short when the nearest food shop is bare. It covers their whole household (the highest band of its people wins) and stands over the guarantees (a House, the Watch, the Sump, Never Broke), until the DM sets one for a while."}
                 onChange={v => set({band: v || null})} />
             <Toggle label="A paid post (for succession)" hint="Ranks this resident for succession; nothing pays them" checked={draft.paid} onChange={v => set({paid: v})} />
             <TextField label="Description" multiline value={draft.description} max={4000} onCommit={v => set({description: v})} />

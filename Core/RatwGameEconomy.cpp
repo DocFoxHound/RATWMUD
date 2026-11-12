@@ -20,6 +20,7 @@
 #include "RatwGame.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <filesystem>
 #include <fstream>
@@ -138,7 +139,7 @@ void Game::logEconomyWarnings(const AuthoredRoster& roster)
         note("warn", "RATW_ECONOMY and " + std::to_string(roster.warningCount - WarningsLogged) + " more economy records skipped");
 }
 
-void Game::applyEconomySpec(const EconomySpec& spec, bool now)
+std::size_t Game::applyEconomySpec(const EconomySpec& spec, bool now)
 {
     auto& society = world_.society();
     society.adoptEconomy(spec);
@@ -146,12 +147,16 @@ void Game::applyEconomySpec(const EconomySpec& spec, bool now)
     society.adoptOverrides(spec.overrides, &warnings);
     for (std::size_t i = 0; i < warnings.size() && i < WarningsLogged; ++i)
         note("warn", "RATW_ECONOMY override " + warnings[i]);
+    // (Last repair: the warnings past the twentieth are counted, never dropped without a word.)
+    if (warnings.size() > WarningsLogged)
+        note("warn", "RATW_ECONOMY and " + std::to_string(warnings.size() - WarningsLogged) + " more of the host's overrides skipped or held");
     // The slider re-meant (12): the rule prosperity is where it heads (absent: 0, so an old world opens at 0), with the
     // host's cause; `now` skips the smoothing and works the bands out at once.
     society.setProsperity(society.rule("prosperity"), now, spec.overrides.cause);
     if (now && society.state().staged.day >= 0)
         society.stagedBands(society.state().staged.day, true);
     world_.refreshRoadMarkets();                    // (The goods no ship brings may have changed: the ports' imports again.)
+    return warnings.size();
 }
 
 void Game::startEconomy()
@@ -182,10 +187,15 @@ Result Game::applyEconomyCommand(const std::string& kind, const std::string& tar
         if (!readEconomy(spec, skipped, problem))
             return {false, "The economy's rules could not be read: " + problem, target};
         const bool now = payload.boolean("now", false);
-        applyEconomySpec(spec, now);
-        outcome = {true, "The economy's rules are read again and in force." +
-                             (skipped ? " (" + std::to_string(skipped) + " records skipped)" : std::string()),
-                   target};
+        const auto held = applyEconomySpec(spec, now);
+        // (What the host is shown, last repair: the records skipped and the overrides skipped or held, each counted; the
+        // server's log names them.)
+        std::string notes;
+        if (skipped)
+            notes = std::to_string(skipped) + (skipped == 1 ? " record skipped" : " records skipped");
+        if (held)
+            notes += (notes.empty() ? "" : ", ") + std::to_string(held) + (held == 1 ? " override skipped or held" : " overrides skipped or held");
+        outcome = {true, "The economy's rules are read again and in force." + (notes.empty() ? std::string() : " (" + notes + ")"), target};
         // (Journalled only when the Board or the staged state moved: a sync that changes nothing writes nothing.)
         if (json::dump(market::encode(society.board())) == boardBefore && !now)
             journal = 0;
@@ -199,6 +209,9 @@ Result Game::applyEconomyCommand(const std::string& kind, const std::string& tar
             words = points > 0 ? "good news at the market" : "bad news at the market";
         if (!world_.roadMarket(target))
             outcome = {false, "No such market.", target};
+        else if (const auto held = society.board().nudges.find(target);
+                 (points == 0 || days <= 0) && (held == society.board().nudges.end() || world_.calendarDays() >= held->second.until))
+            outcome = {false, "No nudge is in force at " + world_.marketWords(target) + ".", target};   // (As a harvest's or a band's clear.)
         else if (!world_.nudgeTimes(target, points, days, words))
             outcome = {false, "Those words won't do: plain words, 80 at most.", target};
         else
@@ -248,8 +261,16 @@ Result Game::applyEconomyCommand(const std::string& kind, const std::string& tar
         }
     }
     else if (kind == "event.cancel")
-        outcome = world_.cancelStagedEvent(target) ? Result{true, "The event " + target + " is cancelled.", target}
+    {
+        // (Its words and market in the outcome, never its id alone: "the wedding ... at Ridgemere (e4)".)
+        std::string what = "The event " + target;
+        if (const auto* e = world_.stagedEvent(target); e && !e->words.empty())
+            what = e->words + " at " + world_.marketWords(e->market) + " (" + target + ")";
+        if (!what.empty())
+            what[0] = char(std::toupper(static_cast<unsigned char>(what[0])));
+        outcome = world_.cancelStagedEvent(target) ? Result{true, what + " is cancelled.", target}
                                                    : Result{false, "No such event still to come or on.", target};
+    }
     else if (kind == "ship.storm")
     {
         journal = Economy | Roads;
@@ -291,6 +312,8 @@ Result Game::applyEconomyCommand(const std::string& kind, const std::string& tar
             outcome = {false, "That resident has no household yet.", target};
         else if (band < 0 && word != "clear")
             outcome = {false, "No band " + word + ": destitute, poor, comfortable or rich, or clear.", target};
+        else if (band < 0 && !society.state().staged.overrides.count(household))
+            outcome = {false, "No band is held for that household.", target};   // (As a harvest's clear with none called.)
         else
         {
             society.overrideBand(household, band, society.state().budgetDay + days);
@@ -309,11 +332,17 @@ Result Game::applyEconomyCommand(const std::string& kind, const std::string& tar
         journal = Economy | Character;
         character = target;
         std::int64_t moved = 0;
+        // (The player by name in what the DM reads, never "player-<id>".)
+        std::string who = target;
+        if (const auto* e = world_.entity(target); e && !e->name.empty())
+            who = e->name;
+        else if (const auto saved = characters_.find(target); saved != characters_.end() && !saved->second.name.empty())
+            who = saved->second.name;
         if (society.grantPlayer(target, coins, reason, problem, &moved))
         {
             // (A fine is at most what the player holds: the DM and the player told what was taken, not what was asked.)
             outcome = {true, (coins > 0 ? "Granted " : "Fined ") + std::to_string(moved) + "p" +
-                                 (coins < 0 && moved < -coins ? " (all " + target + " had; " + std::to_string(-coins) + "p asked)" : "") +
+                                 (coins < 0 && moved < -coins ? " (all " + who + " had; " + std::to_string(-coins) + "p asked)" : "") +
                                  ": " + reason + ".", target};
             told = clientOf(target);
             tell = coins > 0 ? "A Dungeon Master grants you " + std::to_string(moved) + " pennies: " + reason + "."
@@ -334,16 +363,7 @@ Result Game::applyEconomyCommand(const std::string& kind, const std::string& tar
         act.add("text", outcome.message);
         act.add("kind", kind);
         act.add("target", target);
-        while (dmActs_.size() >= DmActsKept)
-        {
-            // (The oldest by number: dm.actions ids grow; a row is never left queued that long.)
-            std::string oldest;
-            for (const auto& [id, v] : dmActs_.fields())
-                if (oldest.empty() || id.size() < oldest.size() || (id.size() == oldest.size() && id < oldest))
-                    oldest = id;
-            dmActs_.erase(oldest);
-        }
-        dmActs_.set(actionId, std::move(act));
+        keepDmAct(actionId, std::move(act));
         actingFor_ = actionId;
     }
     if (told)

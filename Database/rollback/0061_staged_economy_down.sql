@@ -4,10 +4,23 @@
 --     psql "$OWNER_URL" --single-transaction -v ON_ERROR_STOP=1 -f Database/rollback/0061_staged_economy_down.sql
 --
 -- Not a migration (world_db.migrate never reads this folder). In this order: the table first (0060's manifest names it),
--- with 0055's grants; then 0060's live.people_manifest, word for word; then 0061's own functions dropped and its row in
+-- with 0055's grants; then 0060's live.people_manifest (word for word but for one guard, below); then 0061's own functions
+-- dropped, its grant on schema dm taken back and its row in
 -- public.schema_migrations deleted, so world_db.migrate applies 0061 again later (and world_store.slim_supported is
 -- False meanwhile, never half true). live.npcs.band_override stays (0061 adds it IF NOT EXISTS; 0060 reads past it), with
 -- its values: what an NPC's band was is kept for when 0061 comes back. No live.economy row is touched (0061 rewrote none).
+--
+-- What a server built before doc 79's Phase 9 reads after this (the last repair):
+--   * A season group the slim studio wrote since 0061 holds only {price, shelf}. 0060's line for it ("season g supply
+--     price ... shelf ... normal") is one such a server refuses the whole world for, so the manifest below leaves that
+--     group out (the one change to 0060's text): the older server reads the data files' season for it. The row keeps
+--     the host's price and shelf, and they are in force again once 0061 is applied again. To keep them under the older
+--     server too, give the group its supply (four percents) and normal (pieces a day) by hand first.
+--   * live.economy.rules may hold the host's overrides (prosperityCause, neverImported, status, market) and the new
+--     rules: 0060's manifest prints each as a rule line, and an older server may refuse a rule it doesn't know or a
+--     value that is no whole number. Take them out of the row first if an older server is to run on it (a server of
+--     Phase 9 or later reads past them).
+--   * 0061's USAGE on schema dm is taken back from ratw_editor (0060 gave it none).
 
 -- 1. The store room's switches, empty (0055's table and grants; tests: test_migration_0061's rollback case).
 CREATE TABLE live.business_settings (
@@ -21,7 +34,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON live.business_settings TO ratw_editor, r
 REVOKE INSERT, UPDATE, DELETE ON live.business_settings FROM ratw_game, ratw_dm;
 GRANT SELECT ON live.business_settings TO ratw_game, ratw_dm;
 
--- 2. 0060's manifest (Database/migrations/0060_farms.sql), word for word.
+-- 2. 0060's manifest (Database/migrations/0060_farms.sql), word for word but for the season line's guard.
 CREATE OR REPLACE FUNCTION live.people_manifest(p_world ratw_id, p_npc text DEFAULT NULL) RETURNS text
 LANGUAGE sql STABLE AS $$
     WITH people AS (
@@ -81,6 +94,8 @@ LANGUAGE sql STABLE AS $$
                'shelf', (SELECT string_agg(v, ' ' ORDER BY n) FROM jsonb_array_elements_text(g.value->'shelf') WITH ORDINALITY AS x(v, n)),
                'normal', g.value->>'normal')
         FROM live.economy, jsonb_each(seasons) AS g WHERE world_id = p_world AND p_npc IS NULL
+          -- (Not 0060's: a group without its supply and normal, the slim studio's, is left out. See the header.)
+          AND jsonb_typeof(g.value->'supply') = 'array' AND jsonb_typeof(g.value->'normal') = 'number'
         UNION ALL
         SELECT 0, 0, 0, 7, 'rule ' || live.q(r.key) || ' ' || r.value
         FROM live.economy, jsonb_each_text(rules) AS r WHERE world_id = p_world AND p_npc IS NULL
@@ -151,8 +166,10 @@ LANGUAGE sql STABLE AS $$
     SELECT coalesce(string_agg(text, E'\n' ORDER BY part, kind, position, line, text), '') FROM lines
 $$;
 
--- 3. 0061's own functions, and its row.
+-- 3. 0061's own functions and its grant on schema dm, and its row.
 DROP FUNCTION live.economy_manifest(ratw_id);
 DROP FUNCTION live.economy_numbers(jsonb);
+DROP FUNCTION live.economy_name(text);
 DROP FUNCTION dm.queue_economy_sync(text, jsonb);
+REVOKE USAGE ON SCHEMA dm FROM ratw_editor;
 DELETE FROM public.schema_migrations WHERE version = '0061';

@@ -55,6 +55,18 @@ class EconomyLinesTests(unittest.TestCase):
         lines = M.economy_lines({'services': {'a': {'on': 'sometimes', 'price': '6', 'every': 20}, 'b': {'on': True, 'price': 6, 'every': 2}}})
         self.assertEqual(lines[1:], ['service "a" unset price unset every 20', 'service "b" on price 6 every 2'])
 
+    def test_a_name_that_would_split_a_line_is_never_written(self):
+        # Phase 9's last repair: a rule's, a service's or a season group's name that is no plain word (a line break above
+        # all: the second line was a record the game refused the world for) is left out, as migration 0061's manifest
+        # leaves it out (test_migration_0061 holds the two to the same lines).
+        four = {'price': [100] * 4, 'shelf': [100] * 4}
+        lines = M.economy_lines({'rules': {'zz\nbogus': 5, 'a b': 6, 'ripple': 40, 'steerLean': 150},
+                                 'services': {'x\ny': {'on': True, 'price': 1, 'every': 2}, 'stabling': {'on': False, 'price': 1, 'every': 2}},
+                                 'seasons': {'ee\nl': four, 'fish': four}})
+        self.assertEqual(lines[1:], ['season "fish" price 100 100 100 100 shelf 100 100 100 100', 'rule "ripple" 40', 'rule "steerLean" 150',
+                                     'service "stabling" off price 1 every 2'])
+        self.assertFalse([l for l in lines if '\n' in l])
+
     def test_quotes_as_live_q(self):
         self.assertEqual(M.quote('a "b" \\c'), '"a \\"b\\" \\\\c"')
 

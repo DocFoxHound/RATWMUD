@@ -6782,6 +6782,8 @@ Result World::restore(const PersistedWorld& saved)
     theftPlanDay_ = -1;
     beggars_.clear();
     beggarWhere_.clear();
+    beggarsSeen_.clear();
+    beggarsSeenDay_ = -1;
     runners_.clear();
     warmWall_.clear();
     dolePriests_.clear();

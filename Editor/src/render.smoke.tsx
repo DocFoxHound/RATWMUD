@@ -54,7 +54,7 @@ const prosperity: ProsperityView = {
         ships: [{id: 's3', port: 'grey', name: 'the Gull', day: 41, state: 'due', goods: ['salt']}],
         events: [{id: 'e4', market: 'grey', kind: 'house_wedding', day: 42, hour: 11.5, state: 'due', by: 'dm', words: 'the wedding'}]},
     players: {days: [{day: 40, made: 25, sunk: 4, goodsMade: 1, goodsSunk: 0}],
-        holders: [{holder: 'acct-ada', name: 'Ada', made: 25, sunk: 4, byReason: {'dm grant: for the bell': [25, 0]}}]},
+        holders: [{holder: 'acct-ada', name: 'Ada', made: 25, sunk: 4, byReason: {'dm grant: for the bell': [25, 0, 0, 0], 'provisions to start with': [0, 0, 12, 0]}}]},
     thefts: 1, word: [{kind: 'slider', text: 'the long frost'}],
     log: [{at: new Date().toISOString(), kind: 'character.grant', state: 'refused', text: 'dm-user: character.grant Ada: refused by the game (Over the cap)'},
         {at: 'game day 39', kind: 'ripple', text: 'bread at Greyfen dearer by 0.35'}],

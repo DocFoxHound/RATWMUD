@@ -768,6 +768,11 @@ class StandInEconomy:
         self.calls.append(('queue_sync', key, who, payload))
         return 7
 
+    def last_sync(self, key):
+        # (Last repair: what the server made of the last economy.sync, shown on the page.)
+        return {'id': 7, 'status': 'applied', 'result': 'The economy\'s rules are read again and in force. (2 records skipped)',
+                'by': 'dm-user', 'at': '2026-11-12T10:00:00+00:00'}
+
 
 class EconomyRouteTests(unittest.TestCase):
     """Doc 79, 12 (Phase 9): the Economy page's routes with a stand-in: reads for anyone signed in, writes for dm and
@@ -788,6 +793,9 @@ class EconomyRouteTests(unittest.TestCase):
         status, data = self.call('GET', '/api/atlas/economy', token='viewer-token')
         self.assertEqual(status, 200, data)
         self.assertEqual((data['world'], data['worldInfo']['key']), ('w', 'dev-old'))
+        # (Last repair: what the game server made of the last economy.sync is on the page: skipped records, a refusal,
+        # "expired" when no server took it.)
+        self.assertEqual((data['lastSync']['status'], '2 records skipped' in data['lastSync']['result']), ('applied', True), data['lastSync'])
         body = {'set': {'ripple': 40}}
         self.assertEqual(self.call('POST', '/api/atlas/economy/rules', body, token='viewer-token')[0], 403, 'a viewer reads only')
         self.assertEqual(self.call('POST', '/api/atlas/economy/rules', body, token='dm-token')[0], 403, 'Atlas\'s token too')
@@ -796,6 +804,7 @@ class EconomyRouteTests(unittest.TestCase):
         status, data = self.call('POST', '/api/atlas/economy/rules', body, token='dm-token', headers=editor)
         self.assertEqual(status, 200, data)
         self.assertEqual((data['changed'], data['sync'], data['warnings'], data['world']), (True, 7, [], 'w'), data)
+        self.assertEqual(data['lastSync']['id'], 7, 'a change\'s reply carries the sync it queued')
         self.assertIn(('set_rules', 'dev-old', body, 'dm-user'), self.economy.calls)
         live = W.live_world()
         status, data = self.call('GET', '/api/dm/economy', token='viewer-token')
@@ -867,6 +876,45 @@ class FakeConn:
     def transaction(self):
         import contextlib
         return contextlib.nullcontext()
+
+
+class QueueSyncTests(unittest.TestCase):
+    """Phase 9's last repair: the studio tells the running server through migration 0061's dm.queue_economy_sync as the
+    role it wrote the change with (Atlas's helper holds only the editor's password), the DM's role only on a world
+    before 0061; and reads back what the server made of the last one."""
+
+    class Conn:
+        def __init__(self, has, log):
+            self.has, self.log = has, log
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            return False
+
+        def execute(self, sql, params=()):
+            self.log.append((sql.split()[0] + ' ' + ('function' if 'queue_economy_sync(%s' in sql else 'insert' if 'INSERT' in sql
+                                                    else 'notify' if 'pg_notify' in sql else 'look'), params))
+            row = (self.has,) if 'to_regprocedure' in sql else (41,)
+            return type('Row', (), {'fetchone': lambda _: row})()
+
+    def economy(self, has):
+        self.own, self.dm = [], []
+        economy = ST.Economy(connect=lambda key: self.Conn(has, self.own), connect_dm=lambda key: self.Conn(has, self.dm))
+        economy.live = lambda key: False
+        return economy
+
+    def test_through_the_function_as_its_own_role(self):
+        economy = self.economy(True)
+        self.assertEqual(economy.queue_sync('dev', 'Ada', {'now': True}), 41)
+        self.assertEqual(self.own[-1], ('SELECT function', ('Ada', '{"now": true}')))
+        self.assertEqual(self.dm, [], 'never the DM\'s role where the world has the function')
+
+    def test_as_the_dm_before_0061(self):
+        economy = self.economy(False)
+        self.assertEqual(economy.queue_sync('dev', 'Ada'), 41)
+        self.assertEqual([c[0] for c in self.dm], ['INSERT insert', 'SELECT notify'])
 
 
 class FakeStore:
@@ -1137,7 +1185,9 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         status, data = self.call('POST', '/api/atlas/economy/steer', {'prosperity': 20}, token='dm-token', headers=editor)
         self.assertEqual((status, data['changed'], data['sync']), (200, False, None), 'the same value without now: nothing')
         queued = self.sql(self.dev, "SELECT payload FROM dm.actions WHERE kind = 'economy.sync' ORDER BY id")
-        self.assertEqual([q[0] for q in queued], [{'now': False}, {'now': True}])
+        # (Through migration 0061's dm.queue_economy_sync, the last repair: it keeps only what the game reads, {"now": true}
+        # or nothing.)
+        self.assertEqual([q[0] for q in queued], [{}, {'now': True}])
         self.assertEqual(self.one(self.dev, "SELECT rules->>'prosperity' FROM live.economy"), '20')
 
     def test_an_empty_never_imported_list_and_a_malformed_market(self):

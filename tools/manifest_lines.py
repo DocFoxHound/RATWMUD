@@ -9,6 +9,9 @@ both (leniently: RatwAuthoring.cpp).
     season "<group>" price P P P P shelf S S S S      a group the world changed (by text); one stored with its supply
                                                      and normal keeps 0060's line: supply ... price ... shelf ... normal N
     rule "<name>" N                                  an integer rule the world changed (by text)
+                                                     (a rule's, a service's or a season group's name that is no plain
+                                                     word, economy_contract.NAME, is never written: it would split
+                                                     the line, and Core would read its tail as a new record)
     service "<id>" on|off price N every D            a service the world changed (by text); a switch that is not
                                                      true or false, or a price or days not a number: "unset" (Core skips it)
     overrides {json}                                 prosperityCause, neverImported, status, market (when any)
@@ -21,7 +24,7 @@ from __future__ import annotations
 
 import json
 
-from economy_contract import BANDS, OVERRIDE_KEYS
+from economy_contract import BANDS, OVERRIDE_KEYS, name_fits
 
 OVERRIDES_MOST = 65536                          # The overrides line's JSON Core reads at most (longer: skipped, warned).
 # The economy line's last two numbers: the old daily herbs and meals at their defaults, read past since Phase 9, written
@@ -60,16 +63,17 @@ def economy_lines(entity) -> list[str]:
         out.append('loop needs off')
     seasons = []
     for group, g in (e.get('seasons') or {}).items():
-        if isinstance(g, dict) and _four(g.get('price')) and _four(g.get('shelf')):
+        if name_fits(group) and isinstance(g, dict) and _four(g.get('price')) and _four(g.get('shelf')):
             old = _four(g.get('supply')) and _number(g.get('normal'))     # (0060's line: older servers read it.)
             seasons.append(f'season {quote(group)} ' + (f'supply {_numbers(g["supply"])} ' if old else '') +
                            f'price {_numbers(g["price"])} shelf {_numbers(g["shelf"])}' + (f' normal {g["normal"]}' if old else ''))
     out += sorted(seasons)
-    out += sorted(f'rule {quote(name)} {value}' for name, value in (e.get('rules') or {}).items() if _whole(value))
+    out += sorted(f'rule {quote(name)} {value}' for name, value in (e.get('rules') or {}).items()
+                  if name_fits(name) and _whole(value))
     word = lambda on: 'on' if on is True else 'off' if on is False else 'unset'
     num = lambda v: str(v) if _number(v) else 'unset'
     out += sorted(f'service {quote(sid)} {word(s.get("on"))} price {num(s.get("price"))} every {num(s.get("every"))}'
-                  for sid, s in (e.get('services') or {}).items() if isinstance(s, dict))
+                  for sid, s in (e.get('services') or {}).items() if name_fits(sid) and isinstance(s, dict))
     overrides = {k: v for k, v in (e.get('overrides') or {}).items() if k in OVERRIDE_KEYS}
     if overrides:
         # (Whatever its length, as the SQL: one too long is Core's to skip with a warning.)

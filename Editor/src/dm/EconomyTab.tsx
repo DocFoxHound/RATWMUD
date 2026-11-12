@@ -8,7 +8,8 @@
 // 17): restocking is free.
 import {useCallback, useEffect, useState, type ComponentProps, type JSXElementConstructor} from 'react';
 import {dmApi, type Me, type Target} from './api';
-import type {EconomyReply} from '../lib/economyContract';
+import {syncWords, type EconomyReply} from '../lib/economyContract';
+import {awaitSync} from '../lib/acts';
 import {SteerPanel} from '../studio/SteerPanel';
 import {RulesPanel} from '../studio/RulesPanel';
 import {SeasonsPanel} from '../studio/SeasonsPanel';
@@ -37,6 +38,10 @@ export function EconomyTab({me, target}: {me: Me; target: Target}) {
             setData(next as PanelData);
             setSaid(next.changed === false ? 'Nothing to change.' : `${next.detail || 'Changed.'} ${next.takesEffect}`);
             if (next.warnings?.length) setProblem(next.warnings.join(' '));
+            // (What the game server makes of it, read back without holding the page: applied with what it skipped,
+            // refused, or never taken while no server runs. Phase 9's last repair.)
+            if (next.sync !== null && next.sync !== undefined)
+                void awaitSync(next.sync, () => dmApi.economy.get(target)).then(last => { if (last) setData(d => d && {...d, lastSync: last}); });
         } catch (error) { setProblem((error as Error).message); await load(); }
         finally { setBusy(false); }
     };
@@ -66,6 +71,8 @@ export function EconomyTab({me, target}: {me: Me; target: Target}) {
             {!data.supported && <p className="publish-error">{data.problem}</p>}
             {said && <p className="publish-done">{said}</p>}
             {problem && <p className="publish-error">{problem}</p>}
+            {data.lastSync && <p className={data.lastSync.status === 'applied' && !/skipped|held/.test(data.lastSync.result) ? 'hint' : 'publish-error'}>
+                {syncWords(data.lastSync)}</p>}
             <SteerPanel data={data} locked={locked} setSteer={setSteer} />
             <RulesPanel data={data} locked={locked} setRules={setRules} setServices={setServices} setNeeds={setNeeds} />
             <SeasonsPanel data={data} locked={locked} setSeasons={setSeasons} />

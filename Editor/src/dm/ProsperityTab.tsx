@@ -7,7 +7,7 @@
 // view catches up at its next checkpoint.
 import {Fragment, useCallback, useEffect, useState} from 'react';
 import {dmApi, type EconomyActKind, type Me, type ProsperityView, type Target} from './api';
-import {BANDS, HARVEST_WORDS, GRANT_MOST, CAUSE_MOST} from '../lib/economyContract';
+import {BANDS, HARVEST_WORDS, GRANT_MOST, CAUSE_MOST, reasonWords} from '../lib/economyContract';
 import {clock, dayLabel} from '../lib/economy';
 import {awaitOutcome} from '../lib/acts';
 
@@ -61,6 +61,7 @@ export function ProsperityTab({me, target, initial}: {me: Me; target: Target; in
     const report = data?.report ?? null;
     const markets = report?.markets ?? [];
     const marketName = (id: string) => markets.find(m => m.id === id)?.name ?? id;
+    const good = (id: string) => data?.goodNames?.[id] ?? id;      // (A good by the catalogue's name, never its id.)
     const kinds = report?.eventKinds ?? [];
     const today = data?.gameDay === null || data?.gameDay === undefined ? null : Math.floor(data.gameDay);
     const nextTwoWeeks = today === null ? [] : Array.from({length: 14}, (_, i) => today - (today % 7) + i).filter(d => d >= today);
@@ -91,9 +92,12 @@ export function ProsperityTab({me, target, initial}: {me: Me; target: Target; in
                     <span className="hint"> (the slider is on the Economy tab)</span></p>}
                 <h3>Markets <button disabled={locked} onClick={() => window.confirm('Reset prices in every market? They ease to ordinary over a day.') &&
                     void act('prices.reset', 'all', {}, 'Prices reset everywhere')}>Reset all prices</button></h3>
-                <table className="dm-table"><thead><tr><th>Market</th><th>Times</th><th title="Households: destitute / poor / comfortable / rich (the DM's bands among them)">Bands</th>
+                <table className="dm-table"><thead><tr><th>Market</th><th>Times</th>
+                    <th title="Households: destitute / poor / comfortable / rich. (N set): households whose band is set rather than worked out, by a DM for a while or in the Band picker (an NPC's own band).">Bands</th>
                     <th title="Hunger 60 or more">Hungry</th><th title="Short of food today">Short</th><th title="Thefts expected today">Thieves</th>
-                    <th>Beggars</th><th>Dole</th><th></th></tr></thead>
+                    <th title={`The most beggars out at once on the last begging day (a Marketday or a Restday, 8 to 18)${
+                        report?.beggarsDay !== undefined && report.beggarsDay >= 0 ? `: day ${report.beggarsDay}` : ': none seen yet'}. Nobody begs on a working day.`}>Beggars</th>
+                    <th>Dole</th><th></th></tr></thead>
                     <tbody>{markets.map(m => <Fragment key={m.id}>
                         <tr key={m.id}><td>{m.name}</td>
                             <td title={m.times.cause}>{m.times.word}{m.times.cause ? ` · ${m.times.cause}` : ''}
@@ -108,10 +112,12 @@ export function ProsperityTab({me, target, initial}: {me: Me; target: Target; in
                         {open === `nudge:${m.id}` && <tr key={`${m.id}-nudge`}><td colSpan={9}><div className="dm-act-form">
                             <label className="field"><span>Points (-100 hard to +100 boom; 0 ends a nudge)</span>
                                 <input type="number" min={-100} max={100} value={draft.points} onChange={e => set({points: e.target.value})} /></label>
-                            <label className="field"><span>Days (0 ends it)</span><input type="number" min={0} max={366} value={draft.days} onChange={e => set({days: e.target.value})} /></label>
+                            <label className="field"><span>Days (0 ends it; empty: 7)</span><input type="number" min={0} max={366} value={draft.days} onChange={e => set({days: e.target.value})} /></label>
                             {words}
+                            {/* (An empty Days field is the usual week, never 0: it lifted a nudge unasked.) */}
                             <button className="primary" disabled={locked || Number.isNaN(whole(draft.points))} onClick={() =>
-                                void act('times.nudge', m.id, {points: whole(draft.points), days: whole(draft.days) || 0, words: draft.words}, `Times nudged at ${m.name}`)}>Nudge</button>
+                                void act('times.nudge', m.id, {points: whole(draft.points), words: draft.words,
+                                                               ...(Number.isNaN(whole(draft.days)) ? {} : {days: whole(draft.days)})}, `Times nudged at ${m.name}`)}>Nudge</button>
                         </div></td></tr>}
                         {open === `event:${m.id}` && <tr key={`${m.id}-event`}><td colSpan={9}><div className="dm-act-form">
                             <label className="field"><span>Event</span><select value={draft.kind} onChange={e => set({kind: e.target.value})}>
@@ -128,7 +134,7 @@ export function ProsperityTab({me, target, initial}: {me: Me; target: Target; in
 
                 <h3>The price board (the largest pressures)</h3>
                 <table className="dm-table"><thead><tr><th>Market</th><th>Good</th><th>Pressure</th><th>Why</th></tr></thead>
-                    <tbody>{(report?.pressures ?? []).map(r => <tr key={`${r.market}:${r.good}`}><td>{marketName(r.market)}</td><td>{data.goodNames?.[r.good] ?? r.good}</td>
+                    <tbody>{(report?.pressures ?? []).map(r => <tr key={`${r.market}:${r.good}`}><td>{marketName(r.market)}</td><td>{good(r.good)}</td>
                         <td className="num">{r.P > 0 ? '▲' : '▼'} {Math.abs(r.P).toFixed(2)}</td><td>{r.cause}</td></tr>)}</tbody></table>
 
                 <h3>Harvests</h3>
@@ -153,11 +159,11 @@ export function ProsperityTab({me, target, initial}: {me: Me; target: Target; in
                 <h3>This week: wagons and carts</h3>
                 <table className="dm-table"><thead><tr><th>Day</th><th>From</th><th>To</th><th>State</th><th>Goods</th></tr></thead>
                     <tbody>{data.week.wagons.map(w => <tr key={w.id}><td className="num">{w.day}</td><td>{marketName(w.from)}</td><td>{marketName(w.to)}</td>
-                        <td>{w.state}</td><td>{w.goods.join(', ')}</td></tr>)}</tbody></table>
+                        <td>{w.state}</td><td>{w.goods.map(good).join(', ')}</td></tr>)}</tbody></table>
                 <h3>This week: ships</h3>
                 <table className="dm-table"><thead><tr><th>Day</th><th>Ship</th><th>Port</th><th>State</th><th>Brings</th><th></th></tr></thead>
                     <tbody>{data.week.ships.map(s => <tr key={s.id || s.name}><td className="num">{s.day}</td><td>{s.name}</td><td>{marketName(s.port)}</td>
-                        <td>{s.state}</td><td>{s.goods.join(', ')}</td>
+                        <td>{s.state}</td><td>{s.goods.map(good).join(', ')}</td>
                         <td>{s.state === 'due' && s.id && <button disabled={locked} onClick={() => window.confirm(`Keep ${s.name} out with a storm?`) &&
                             void act('ship.storm', s.id, {}, `${s.name} stormbound`)}>Storm</button>}</td></tr>)}</tbody></table>
                 <h3>This week: events</h3>
@@ -177,7 +183,7 @@ export function ProsperityTab({me, target, initial}: {me: Me; target: Target; in
                     <tbody>{data.players.days.map(d => <tr key={d.day}><td className="num">{d.day}</td><td className="num">{p(d.made)}</td>
                         <td className="num">{p(d.sunk)}</td><td className="num">{p(d.goodsMade)} / {p(d.goodsSunk)}</td></tr>)}</tbody></table>
                 <table className="dm-table"><thead><tr><th>Player</th><th>Made</th><th>Sunk</th></tr></thead>
-                    <tbody>{data.players.holders.map(h => <tr key={h.holder} title={Object.entries(h.byReason).map(([r, [m, s]]) => `${r}: +${m} -${s}`).join('\n')}>
+                    <tbody>{data.players.holders.map(h => <tr key={h.holder} title={Object.entries(h.byReason).map(([r, t]) => reasonWords(r, t)).join('\n')}>
                         <td>{h.name}</td><td className="num">{p(h.made)}</td><td className="num">{p(h.sunk)}</td></tr>)}</tbody></table>
                 <div className="dm-act-form">
                     <label className="field"><span>Grant or fine a player</span><select value={draft.who} disabled={locked}

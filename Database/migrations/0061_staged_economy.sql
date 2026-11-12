@@ -25,6 +25,15 @@ COMMENT ON COLUMN live.npcs.band_override IS
 -- that is not a number, is printed as a word Core skips with a warning. tools/manifest_lines.py writes the same lines.
 -- (CASE, not AND, guards each jsonb_array_length: SQL may test the conditions of a WHERE in any order.)
 
+-- A rule's, a service's or a season group's name the manifest can carry: one plain word (tools/economy_contract.py's
+-- NAME, the same pattern). Any other (a space, a quote, a newline: live.q escapes quotes, never a line break) is never
+-- printed: it would split the line and Core would read its tail as a new record. The doors refuse such a name; this is
+-- for a row written some other way (Phase 9's last repair).
+CREATE OR REPLACE FUNCTION live.economy_name(p_name text) RETURNS boolean
+LANGUAGE sql IMMUTABLE AS $$
+    SELECT p_name ~ '^[A-Za-z][A-Za-z0-9_-]{0,63}$' AND p_name !~ '[[:cntrl:]]'
+$$;
+
 -- A season's four numbers as 0060 printed them; one that is not a number as a word Core skips the season for.
 CREATE OR REPLACE FUNCTION live.economy_numbers(p_list jsonb) RETURNS text
 LANGUAGE sql IMMUTABLE AS $$
@@ -54,20 +63,20 @@ LANGUAGE sql STABLE AS $$
         FROM e, jsonb_each(e.seasons) AS g,
              LATERAL (SELECT coalesce(CASE WHEN jsonb_typeof(g.value->'supply') = 'array' THEN jsonb_array_length(g.value->'supply') END = 4, false)
                              AND jsonb_typeof(g.value->'normal') = 'number' AS supply) AS four
-        WHERE jsonb_typeof(g.value) = 'object'
+        WHERE jsonb_typeof(g.value) = 'object' AND live.economy_name(g.key)
           AND CASE WHEN jsonb_typeof(g.value->'price') = 'array' THEN jsonb_array_length(g.value->'price') END = 4
           AND CASE WHEN jsonb_typeof(g.value->'shelf') = 'array' THEN jsonb_array_length(g.value->'shelf') END = 4
         UNION ALL
         SELECT 7, 'rule ' || live.q(r.key) || ' ' || r.value::text
         FROM e, jsonb_each(e.rules) AS r
-        WHERE jsonb_typeof(r.value) = 'number' AND r.value::text ~ '^-?[0-9]+$'
+        WHERE jsonb_typeof(r.value) = 'number' AND r.value::text ~ '^-?[0-9]+$' AND live.economy_name(r.key)
         UNION ALL
         SELECT 8, concat_ws(' ', 'service', live.q(s.key),
                CASE s.value->'on' WHEN 'true'::jsonb THEN 'on' WHEN 'false'::jsonb THEN 'off' ELSE 'unset' END,
                'price', CASE WHEN jsonb_typeof(s.value->'price') = 'number' THEN (s.value->'price')::text ELSE 'unset' END,
                'every', CASE WHEN jsonb_typeof(s.value->'every') = 'number' THEN (s.value->'every')::text ELSE 'unset' END)
         FROM e, jsonb_each(e.services) AS s
-        WHERE jsonb_typeof(s.value) = 'object'
+        WHERE jsonb_typeof(s.value) = 'object' AND live.economy_name(s.key)
         UNION ALL
         SELECT 9, 'overrides ' || o.v::text
         FROM e,
@@ -156,12 +165,14 @@ $$;
 -- live.people_manifest named it, in 0055-0060; redefined above without it.)
 DROP TABLE live.business_settings;
 
-GRANT EXECUTE ON FUNCTION live.economy_manifest(ratw_id), live.economy_numbers(jsonb)
+GRANT EXECUTE ON FUNCTION live.economy_manifest(ratw_id), live.economy_numbers(jsonb), live.economy_name(text)
     TO ratw_game, ratw_dm, ratw_editor, ratw_publisher;
 
 -- 5. Atlas's economy edit tells the running server (economy.sync) as Atlas's own role, which can't write dm.actions
 -- (doc 78 M7's helper holds only the editor's password): this one kind, through a function that runs as the owner.
--- Phase 9's second repair; tools/live_edit.py queue_economy_sync.
+-- Phase 9's second repair; tools/live_edit.py queue_economy_sync and tools/studio.py Economy.queue_sync. The payload it
+-- stores is only what the game reads of it ({"now": true}, else {}): never a caller's own JSON, of whatever size (the
+-- last repair). Granted to the editor and the DM; the publisher has no USAGE on schema dm and never calls it.
 CREATE OR REPLACE FUNCTION dm.queue_economy_sync(p_who text, p_payload jsonb DEFAULT '{}') RETURNS bigint
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, dm AS $$
 DECLARE
@@ -169,7 +180,8 @@ DECLARE
 BEGIN
     INSERT INTO dm.actions (kind, target_id, requested_by, payload)
     VALUES ('economy.sync', 'economy', coalesce(nullif(left(p_who, 60), ''), 'Atlas'),
-            CASE WHEN jsonb_typeof(p_payload) = 'object' THEN p_payload ELSE '{}' END)
+            CASE WHEN jsonb_typeof(p_payload) = 'object' AND p_payload->'now' = 'true'::jsonb THEN '{"now": true}'::jsonb
+                 ELSE '{}'::jsonb END)
     RETURNING id INTO queued;
     PERFORM pg_notify('ratw_dm', json_build_object('action', queued)::text);
     RETURN queued;
@@ -177,7 +189,7 @@ END
 $$;
 REVOKE ALL ON FUNCTION dm.queue_economy_sync(text, jsonb) FROM PUBLIC;
 GRANT USAGE ON SCHEMA dm TO ratw_editor;
-GRANT EXECUTE ON FUNCTION dm.queue_economy_sync(text, jsonb) TO ratw_editor, ratw_publisher, ratw_dm;
+GRANT EXECUTE ON FUNCTION dm.queue_economy_sync(text, jsonb) TO ratw_editor, ratw_dm;
 
 COMMENT ON TABLE live.economy IS 'Doc 79, 14: read are world_id, treasury, store_herbs, store_meals, needs_paused, seasons, '
     'services, rules; every other column is dead (D20). Never synced.';

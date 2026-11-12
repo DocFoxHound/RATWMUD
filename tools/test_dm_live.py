@@ -214,7 +214,7 @@ class DungeonMasterLive(unittest.TestCase):
             with W.connect('dev', 'owner', dbname=self.name) as lock:
                 with lock.transaction():
                     lock.execute('LOCK TABLE game.journal IN EXCLUSIVE MODE')
-                    first = dm.grant(who, 'dev', pc, 23, 'for the lost ewe')['id']
+                    first = dm.act(who, 'dev', 'character.grant', pc, {'coins': 23, 'reason': 'for the lost ewe'})['id']
                     # (Second repair: two economy.sync rows in one poll, the slider moved "now": the second, answered
                     # with the first's outcome, waits for the first's record too.)
                     with W.connect('dev', 'owner', dbname=self.name) as conn:
@@ -299,6 +299,86 @@ class DungeonMasterLive(unittest.TestCase):
             out, _ = server.communicate(timeout=60)
         self.assertIn('already applied before the restart', out)
         self.assertEqual(self.saved_cash(pc), had + 69, 'each grant paid once: 23, 23 and 23, never 92')
+
+    def test_a_clean_stop_answers_the_acts_still_waiting(self):
+        """Doc 79, Phase 9's last repair: an act applied whose journal record wasn't written yet when the server was
+        stopped cleanly stayed "queued" in the DM's tool until some later server started. The stop now waits for the
+        journal and answers it. The journal is held (game.journal locked) while a Times nudge is applied; the server is
+        told to stop; the journal is let go; the row reads "applied" once the server has gone, with no other server."""
+        import dungeon_master as D
+        dm = D.DungeonMaster(lambda target: W.connect('dev', 'dm', dbname=self.name), clock=time.time)
+        server, _ = self.start(240)
+        try:
+            report, deadline = None, time.time() + 60
+            while not report and time.time() < deadline:
+                report = dm.prosperity('dev')['report']
+                if not report:
+                    time.sleep(.5)
+            self.assertTrue(report, 'a checkpoint with the report')
+            market = report['markets'][0]['id']
+            with W.connect('dev', 'owner', dbname=self.name) as lock:
+                with lock.transaction():
+                    lock.execute('LOCK TABLE game.journal IN EXCLUSIVE MODE')
+                    action = self.queue('times.nudge', market, {'points': 15, 'days': 2, 'words': 'a fair wind'})
+                    time.sleep(5)
+                    with W.connect('dev', 'owner', dbname=self.name) as look:
+                        status = look.execute('SELECT status FROM dm.actions WHERE id = %s', (action,)).fetchone()[0]
+                    self.assertEqual(status, 'queued', 'applied in the game, its record not yet written')
+                    server.send_signal(signal.SIGTERM)
+                    time.sleep(3)                       # (The stop waits on the journal.)
+            server.communicate(timeout=90)
+        finally:
+            if server.poll() is None:
+                server.kill()
+                server.communicate(timeout=60)
+        with W.connect('dev', 'owner', dbname=self.name) as conn:
+            status, result = conn.execute('SELECT status, result FROM dm.actions WHERE id = %s', (action,)).fetchone()
+        self.assertEqual(status, 'applied', f'answered at the clean stop, with no later server: {result}')
+        self.assertIn('nudged +15 for 2 days: a fair wind', result)
+
+    def test_another_kinds_act_is_answered_from_its_record_after_a_crash(self):
+        """Doc 79, Phase 9's last repair: the other dm.actions kinds that journal what they do (here npc.sync, an NPC's
+        authored band taken up) carry their dm.actions id in the record too. The row is held (FOR UPDATE) once the record
+        is committed, so the server can't mark it; killed there, the next server answers the row from the record and
+        never applies the act again."""
+        with W.connect('dev', 'owner', dbname=self.name) as conn:
+            npc = conn.execute("SELECT id FROM live.npcs WHERE band_override IS NULL ORDER BY id DESC LIMIT 1").fetchone()[0]
+        server, _ = self.start(240)
+        try:
+            with W.connect('dev', 'owner', dbname=self.name) as conn:
+                conn.execute("UPDATE live.npcs SET band_override = 'comfortable' WHERE id = %s", (npc,))
+                action = conn.execute("INSERT INTO dm.actions (kind, target_id, requested_by, payload) VALUES ('npc.sync', %s, 'test', '{}') "
+                                      'RETURNING id', (npc,)).fetchone()[0]
+            with W.connect('dev', 'owner', dbname=self.name) as row_lock:
+                with row_lock.transaction():
+                    row_lock.execute('SELECT 1 FROM dm.actions WHERE id = %s FOR UPDATE', (action,))
+                    with W.connect('dev', 'owner', dbname=self.name) as conn:
+                        conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action}),))
+                    deadline, found = time.time() + 30, False
+                    while time.time() < deadline and not found:
+                        with W.connect('dev', 'owner', dbname=self.name) as conn:
+                            found = conn.execute("SELECT count(*) FROM game.journal WHERE record LIKE '%%\"dmActs\"%%' AND record LIKE %s",
+                                                 (f'%"{action}"%',)).fetchone()[0] > 0
+                        time.sleep(.25)
+                    self.assertTrue(found, 'the act\'s record, with its dm.actions id, committed')
+                    time.sleep(1)
+                    server.kill()
+                    server.communicate(timeout=60)
+                    self.end_the_dead_servers_sessions()
+            with W.connect('dev', 'owner', dbname=self.name) as conn:
+                self.assertEqual(conn.execute('SELECT status FROM dm.actions WHERE id = %s', (action,)).fetchone()[0], 'queued')
+        finally:
+            if server.poll() is None:
+                server.kill()
+                server.communicate(timeout=60)
+        server, _ = self.start(240)
+        try:
+            status, result = self.outcome(action, 30)
+        finally:
+            server.send_signal(signal.SIGTERM)
+            out, _ = server.communicate(timeout=60)
+        self.assertEqual(status, 'applied', result)
+        self.assertIn(f'RATW_DM_ACTION npc.sync {npc}: already applied before the restart', out)
 
     def test_the_storykeepers_band_on_a_live_server(self):
         """Phase 9's second repair (a missing item): the Storykeeper's npc_band, through the operator bridge of a real
@@ -441,9 +521,9 @@ class DungeonMasterLive(unittest.TestCase):
                     'reset': ('prices.reset', 'all', {'words': 'fresh stock at last'})}
             for what, (kind_, target, payload) in acts.items():
                 queued[what] = dm.act(who, 'dev', kind_, target, payload)['id']
-            queued['grant'] = dm.grant(who, 'dev', pc, 23, 'for finding the lost ewe')['id']
-            queued['fine'] = dm.grant(who, 'dev', pc, -20, 'for the broken fence')['id']
-            queued['over the cap'] = dm.grant(who, 'dev', pc, 2000, 'too much at once')['id']
+            queued['grant'] = dm.act(who, 'dev', 'character.grant', pc, {'coins': 23, 'reason': 'for finding the lost ewe'})['id']
+            queued['fine'] = dm.act(who, 'dev', 'character.grant', pc, {'coins': -20, 'reason': 'for the broken fence'})['id']
+            queued['over the cap'] = dm.act(who, 'dev', 'character.grant', pc, {'coins': 2000, 'reason': 'too much at once'})['id']
             applied = {what: self.outcome(action) for what, action in queued.items()}
             first = applied['event 1'][1].split(':')[0]
             applied['event.cancel'] = self.outcome(dm.act(who, 'dev', 'event.cancel', first, {})['id'])
@@ -493,7 +573,7 @@ class DungeonMasterLive(unittest.TestCase):
         holder = next((h for h in view['players']['holders'] if pc in (h['holder'], h['name']) or h['holder'].endswith(pc)), None)
         self.assertIsNotNone(holder, json.dumps(view['players']))
         self.assertEqual((holder['byReason'].get('dm grant: for finding the lost ewe'), holder['byReason'].get('dm fine: for the broken fence')),
-                         ([23, 0], [0, 20]), 'granted 23 and fined 20, once each (the one over the cap refused): ' + json.dumps(holder))
+                         ([23, 0, 0, 0], [0, 20, 0, 0]), 'granted 23 and fined 20, once each (the one over the cap refused): ' + json.dumps(holder))
         with W.connect('dev', 'owner', dbname=self.name) as conn:
             band = conn.execute('SELECT band_override FROM live.npcs WHERE id = %s', (npcs[0],)).fetchone()[0]
         self.assertEqual(band, 'rich', 'the Band picker\'s band stored')

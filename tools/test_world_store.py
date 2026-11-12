@@ -275,6 +275,22 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(after['overrides'], {'prosperityCause': 'a fair'})
         self.assertEqual(self.conn.execute('SELECT rules FROM live.economy').fetchone()[0],
                          {'nested': {'a': 1}, 'ripple': 30, 'prosperityCause': 'a fair'}, 'what it doesn\'t know kept')
+        # Phase 9's last repair: a rule's name that would split the manifest's line is refused by both writers, whoever
+        # calls them; one the row already holds (written some other way) doesn't block a save, and is never printed.
+        for name in ('zz\nbogus', 'a b'):
+            with self.assertRaisesRegex(S.EconomyRefused, 'not a rule'):
+                S.save_economy(self.conn, 'greyfen', {**entity, 'rules': {'ripple': 30, name: 5}})
+            with self.assertRaisesRegex(S.EconomyRefused, 'not a rule'):
+                S.patch_economy_rules(self.conn, 'greyfen', {name: 5})
+        self.assertEqual(self.conn.execute('SELECT rules FROM live.economy').fetchone()[0],
+                         {'nested': {'a': 1}, 'ripple': 30, 'prosperityCause': 'a fair'}, 'nothing of a refused save written')
+        self.conn.execute("""UPDATE live.economy SET rules = rules || '{"zz\\nbogus": 5}' WHERE world_id = 'greyfen'""")
+        held = S.economy_value(self.conn, 'greyfen')
+        self.assertIn('zz\nbogus', held['rules'])
+        self.assertEqual(S.save_economy(self.conn, 'greyfen', {**held, 'needsPaused': True})['needsPaused'], True, 'a held one lets a save by')
+        self.assertFalse([l for l in self.conn.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
+                          if 'bogus' in l], 'and the manifest never prints it')
+        self.conn.execute("""UPDATE live.economy SET rules = rules - 'zz\nbogus', needs_paused = false WHERE world_id = 'greyfen'""")
         # patch_economy_rules: one statement, so two writers' keys both land.
         other = W.connect('dev', 'editor', dbname=self.name)
         try:

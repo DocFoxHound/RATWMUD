@@ -153,6 +153,17 @@ class LiveTests(unittest.TestCase):
             L.apply_edit(self.conn, 'a1', 'Ada', 'Bad', [{'key': 'economy', 'before': S.economy_value(self.conn, 'greyfen'),
                                                          'after': {**stored, 'treasury': -5}}])
 
+    def test_a_rule_name_that_would_split_the_manifest_is_refused(self):
+        # Phase 9's last repair: a rule named with a line break got through Atlas's keyed edit; the manifest then held a
+        # second line the game refused the whole world for.
+        stored = L.Batch(self.conn, L.world_row(self.conn)).current('economy')
+        with self.assertRaises(L.Rejected) as raised:
+            L.apply_edit(self.conn, 'a1', 'Ada', 'A bad rule', [{'key': 'economy', 'before': stored,
+                                                                 'after': {**stored, 'rules': {**stored['rules'], 'zz\nbogus': 5}}}],
+                         queue_sync=False)
+        self.assertIn('not a rule\'s name', str(raised.exception))
+        self.assertNotIn('zz\nbogus', self.conn.execute('SELECT rules FROM live.economy').fetchone()[0])
+
     def test_the_economy_key_holds_new_overrides_to_the_studios_rules(self):
         # Phase 9's second repair: a new override that won't do (7,000 unknown goods, a cap of 10^12, an unknown key) is
         # refused here as the studio refuses it (Core would skip the whole overrides line, the slider's cause with it);

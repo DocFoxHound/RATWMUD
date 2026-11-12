@@ -400,6 +400,10 @@ Data layered(const Data& base, const json::Value& over, const std::vector<std::s
                             kinds.push_back(k);
                     if (!v.isArray())
                         note("events.list skipped: not a list");
+                    else if (kinds.empty() && !v.items().empty())
+                        // (Last repair: as the causes and the ships' names fall back. A list none of whose kinds would do
+                        // left the world with no staged events at all; an empty list still says "none".)
+                        note("events.list skipped: no kind would do");
                     else
                         d.events = std::move(kinds);
                 }
@@ -820,6 +824,21 @@ json::Value encode(const Board& b)
         recent.push(j);
     }
     o.add("recent", recent);
+    if (!b.moves.empty())                            // (Only when there is any: a Board from before it reads back the same.)
+    {
+        auto moves = Value::array();
+        for (const auto& r : b.moves)
+        {
+            auto j = Value::object();
+            j.add("day", r.day);
+            j.add("delta", r.delta);
+            j.add("market", r.market);
+            j.add("good", r.good);
+            j.add("cause", r.cause);
+            moves.push(j);
+        }
+        o.add("moves", moves);
+    }
     // Staged trade (Phase 4): written only when there is any, so a Board from before it reads back the same.
     if (!b.committed.empty())
     {
@@ -1225,6 +1244,13 @@ Board decode(const json::Value& v)
             Ripple one{r.number("day", 0), r.number("delta", 0), r.string("market"), r.string("good"), r.string("cause").substr(0, 16)};
             if (finite(one.day) && finite(one.delta) && name(one.market) && good(one.good))
                 b.recent.push_back(std::move(one));
+        }
+    for (const auto& r : v.array("moves"))
+        if (r.isObject() && b.moves.size() < MovesKept)
+        {
+            Ripple one{r.number("day", 0), r.number("delta", 0), r.string("market"), r.string("good"), r.string("cause").substr(0, 16)};
+            if (finite(one.day) && finite(one.delta) && name(one.market) && good(one.good))
+                b.moves.push_back(std::move(one));
         }
     // Staged trade (Phase 4), leniently: a departure with no ends or a broken day is dropped, its unknown goods dropped,
     // its numbers clamped (the world drops one whose markets are gone: World::ensureRoadMarkets).
@@ -1904,8 +1930,10 @@ bool Society::setProsperity(int target, bool now, const std::string& cause)
     while (!words.empty() && words.front() == ' ')
         words.erase(words.begin());
     const bool taken = !words.empty() && market::plainWords(words, 80);
-    // (The host's words taken away, the DM's cause in force: the world's own words of its way take over, quietly, told as
-    // the DM's were: Phase 9's second repair. A cleared cause is the host's say, as economy.sync reads the stored one.)
+    // (The host's words taken away, the DM's cause in force: the world's own words of its way take over: Phase 9's second
+    // repair. A cleared cause is the host's say, as economy.sync reads the stored one. They are told in their turn (the
+    // last repair: taken over "quietly", the DM's words stayed on every market's board for a week, against the crier and
+    // talk): the new notice replaces the DM's.)
     const bool cleared = cause.empty() && b.sliderCause.dm && b.sliderCause.dir != 0;
     if (cleared && dir == 0)
         dir = b.sliderCause.dir;
@@ -1917,7 +1945,7 @@ bool Society::setProsperity(int target, bool now, const std::string& cause)
     next.dir = dir;
     next.day = marketClock();
     next.n = b.sliderCause.n + 1;
-    next.told = cleared && b.sliderCause.dir == dir && b.sliderCause.told;
+    next.told = false;
     if (taken)
     {
         next.words = words;
@@ -2182,6 +2210,14 @@ void Society::setPressure(const std::string& market, const std::string& base, do
     if (!market::finite(P) || market.empty() || base.empty())
         return;
     P = std::clamp(P, -market::PressureMost, market::PressureMost);
+    // A big staged move, for the year log (12; Phase 9's last repair): what it moved from, with its real cause.
+    if (const double moved = P - pressure(market, base); std::abs(moved) > market::BigMove)
+    {
+        auto& moves = state_.board.moves;
+        moves.push_back({marketClock(), moved, market, base, cause.substr(0, 16)});
+        while (moves.size() > market::MovesKept)
+            moves.pop_front();
+    }
     if (std::abs(P) < 1e-9)
     {
         if (const auto m = state_.board.cell.find(market); m != state_.board.cell.end())
@@ -3294,6 +3330,8 @@ void Society::marketMorning(std::int64_t day)
     stepSlider(day);
     while (b.recent.size() > market::RecentKept)
         b.recent.pop_front();
+    while (!b.moves.empty() && b.moves.front().day < now - market::BigMoveDays)
+        b.moves.pop_front();
     b.day = day;
 }
 

@@ -154,6 +154,8 @@ def check_rules(rules, services) -> list[str]:
     if not isinstance(rules, dict):
         errors.append('economy.rules must be {rule: whole number}.')
     else:
+        # (A name that is no plain word would split the manifest's line: refused at every door, Phase 9's last repair.)
+        errors += economy_contract.rule_name_problems(rules)
         for name, value in rules.items():
             if name not in RULES:
                 continue                    # (A rule Core no longer has: kept and ignored, unknown_rules warns.)

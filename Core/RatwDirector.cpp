@@ -441,8 +441,13 @@ Value Bridge::execute(const Value& request, const std::string& expectedId, const
         else if (household.empty())
             applied = {false, "That resident has no household the bands know yet.", {}};
         else if (world.society().overrideBand(household, band, world.society().state().budgetDay + std::int64_t(days)))
-            applied = {true, band < 0 ? "The DM's band cleared for " + household + "."
-                                      : "Band " + word + " for " + household + " for " + std::to_string(std::int64_t(days)) + " days.", {}};
+        {
+            // (The household by its resident's name in what the Storykeeper and the host read, never its id.)
+            const auto* who = world.society().spec(text(p, "npc"));
+            const std::string of = (who && !who->name.empty() ? who->name : text(p, "npc")) + "'s household";
+            applied = {true, band < 0 ? "The DM's band cleared for " + of + "."
+                                      : "Band " + word + " for " + of + " for " + std::to_string(std::int64_t(days)) + " days.", {}};
+        }
     }
     else if (kind == "notice" && keys(p, {"scope", "target", "targets", "text"}))
     {

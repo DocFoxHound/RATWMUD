@@ -4,7 +4,8 @@ import type {Person, Place, Project, Route} from '../model/model.mjs';
 import type {SentGround} from '../lib/lazyGround';
 import type {Chronicle} from '../lib/chronicle';
 import type {BuildStatus, Choice, ImportPlan, ImportResult, MapPair, Release, ServerStatus, SyncItem, SyncWorld} from '../lib/sync';
-import type {EconomyReply, EconomyView, LiveActKind, ProsperityReport} from '../lib/economyContract';
+import type {EconomyActKind, EconomyReply, EconomyView, ProsperityReport} from '../lib/economyContract';
+export type {EconomyActKind} from '../lib/economyContract';
 
 /** A world's key (Database/worlds.json, doc 66): any registered world, live or dev. */
 export type Target = string;
@@ -253,7 +254,9 @@ export interface WeekWagon { id: string; from: string; to: string; day: number; 
 export interface WeekShip { id: string; port: string; name: string; day: number; state: 'due' | 'in' | 'sailed' | 'storm' | 'lost'; goods: string[] }
 export interface WeekEvent { id: string; market: string; kind: string; day: number; hour: number; state: string; by: string; words: string }
 export interface PlayerMoneyDay { day: number; made: number; sunk: number; goodsMade: number; goodsSunk: number }
-export interface PlayerMoneyHolder { holder: string; name: string; made: number; sunk: number; byReason: Record<string, [number, number]> }
+export interface PlayerMoneyHolder { holder: string; name: string; made: number; sunk: number; 
+    /** By the faucet's or the sink's reason: coin made, coin sunk, then goods in and out at the catalogue's price. */
+    byReason: Record<string, [number, number, number?, number?]> }
 export interface ProsperityView {
     target: Target; writtenAt: string | null; gameDay: number | null; stale: boolean;
     report: ProsperityReport | null;
@@ -261,7 +264,7 @@ export interface ProsperityView {
     towns: {community: string; treasury: number}[];
     /** The realm's own treasury (the account `treasury`), beside the towns' (none: not in the save). */
     treasury?: number | null;
-    /** The price board's goods by the catalogue's names. */
+    /** The price board's, the ships' and the wagons' goods by the catalogue's names. */
     goodNames?: Record<string, string>;
     week: {wagons: WeekWagon[]; ships: WeekShip[]; events: WeekEvent[]};
     players: {days: PlayerMoneyDay[]; holders: PlayerMoneyHolder[]};
@@ -269,11 +272,10 @@ export interface ProsperityView {
     /** The word on the street (12): at most 20. */
     word: {kind: 'cause' | 'harvest' | 'ship' | 'event' | 'times' | 'slider'; text: string}[];
     /** 28 days: the DM's lever writes and acts (an act with its `state`: applied, refused, expired or queued), what the
-     *  game made of them, and big ripples. */
-    log: {at: string; kind: string; text: string; state?: 'applied' | 'refused' | 'expired' | 'queued' | 'failed'}[];
+     *  game made of them (the levers' economy.sync too), and the big moves of a price (over 0.2) with what made each. */
+    log: {at: string; kind: string; text: string; state?: 'applied' | 'refused' | 'expired' | 'queued'}[];
 }
 /** A DM's live act on the staged economy (doc 79, 12): its kind, what it names, and its payload as the tool clamped it. */
-export type EconomyActKind = LiveActKind | 'character.grant';
 export interface Queued { id: number; status: 'queued'; payload: Record<string, unknown> }
 
 export const dmApi = {

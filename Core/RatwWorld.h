@@ -2064,6 +2064,13 @@ class World
     std::map<std::string, DoleTaker> doleTakers_;
     bool streetReady_ = false;                      // (The society's staged households made when the street was placed.)
     std::map<std::string, std::string> beggarWhere_;   // A beggar's place in words: "at the market", "at the chapel steps".
+    // "Beggars today" for the Prosperity report (Phase 9's last repair): the most beggars out at once in each market on
+    // the last day anyone could beg (Marketday or Restday, 8:00 to 18:00), and that day. The report is worked out at
+    // midnight, when no one begs: it reads this, never beggars_. Not saved: a server that hasn't seen a begging day yet
+    // keeps the last report's count (prosperityReport).
+    std::map<std::string, int> beggarsSeen_;
+    std::int64_t beggarsSeenDay_ = -1;
+    void noteBeggars();
     std::map<std::string, std::vector<Spot>> warmPlaces_;   // A market's warm walls (a bakehouse's, a forge's), today's.
     std::map<std::string, Runner> runners_;
     std::int64_t streetHour_ = -1, streetMinute_ = -1, theftPlanDay_ = -1, almsDay_ = -1, chapelStepsDay_ = -1;
