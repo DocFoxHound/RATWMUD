@@ -687,10 +687,14 @@ def wait_for_database(seconds: float = 180) -> None:
                 su.execute('SELECT 1')
             return
         except world_db.DatabaseError as error:
+            # (M6's run: after a refused `up -d` (a port already allocated), Docker can start this container again with
+            # no network at all, and the name db never resolves. Only a fresh container mends it.)
+            lost = ' This part of the world isn\'t on its network: type docker compose down, then docker compose up -d ' \
+                   '(your world is kept).' if 'resolve host' in str(error) else ''
             if time.monotonic() > deadline or stopping:
-                fail(f'the database never answered: {error}')
+                fail(f'the database never answered: {error}.{lost}')
             if not said:
-                say(f'waiting for the database ({error})')
+                say(f'waiting for the database ({error}).{lost}')
                 said = True
             time.sleep(2)
 
@@ -1372,6 +1376,49 @@ def update_backup(s: dict) -> None:
         say(f'made a backup before the update: backups/{answer.get("name")}.dump')
 
 
+KEPT_TABLES = ('admins', 'devices', 'invites', 'locks')
+
+
+def put_back_accounts() -> None:
+    """Today's Editor accounts, kept by a restore of an older backup (Package/ratw-backup.pl: its tables lacked today's
+    columns and roles, so they couldn't go straight back), put back over the backup's once the migrations have brought
+    it up to date (doc 78, 12.2; M6). One transaction, as the restore does; every Editor session ends. The file is the
+    backup service's, in the requests volume only root and it can write; it is removed once used, or set aside as
+    .kept-accounts.failed.json (said plainly) if it can't be."""
+    path = BACKUP_REQUESTS / '.kept-accounts.json'
+    if not os.path.lexists(path):
+        return
+    kept = json_or_none(read_small(path, 32 * 1024 * 1024))
+    tables = kept.get('tables') if isinstance(kept, dict) else None
+    admins = tables.get('admins') if isinstance(tables, dict) else None
+    try:
+        if not isinstance(admins, list) or not all(isinstance(tables.get(t, []), list) for t in KEPT_TABLES):
+            raise ValueError('not a list of accounts')
+        from psycopg import sql
+        world_db = tools_module('world_db')
+        with world_db.connect(KEY, 'owner') as conn, conn.transaction():
+            conn.execute('DELETE FROM dm.admins')            # (Their sessions, devices, invites and locks go with them.)
+            for table in KEPT_TABLES:
+                rows = [r for r in tables.get(table) or [] if isinstance(r, dict)]
+                if not rows:
+                    continue
+                columns = [c for (c,) in conn.execute(
+                    """SELECT column_name FROM information_schema.columns WHERE table_schema = 'dm' AND table_name = %s
+                       ORDER BY ordinal_position""", (table,)).fetchall() if all(c in r for r in rows)]
+                names = sql.SQL(', ').join(map(sql.Identifier, columns))
+                conn.execute(sql.SQL('INSERT INTO {t} ({c}) SELECT {c} FROM json_populate_recordset(NULL::{t}, %s::json)')
+                             .format(t=sql.Identifier('dm', table), c=names), (json.dumps(rows),))
+            conn.execute('DELETE FROM dm.sessions')
+        path.unlink()
+        say(f'put back the {len(admins)} Editor account(s) the restore kept: '
+            + ', '.join(sorted(str(a.get('username', '?'))[:32] for a in admins if isinstance(a, dict))))
+    except Exception as error:  # noqa: BLE001 - (psycopg's own errors too): said; the world starts with the backup's.
+        say(f'warning: the Editor accounts the restore kept couldn\'t be put back ({type(error).__name__}): the world '
+            'has the backup\'s accounts. Lost your password? Double-click reset-editor-password in the world folder.')
+        with contextlib.suppress(OSError):
+            os.replace(path, BACKUP_REQUESTS / '.kept-accounts.failed.json')
+
+
 class Supervisor:
     """The server and its helpers, kept up whatever the server does (doc 78, 12.4 and 6.5)."""
 
@@ -1719,6 +1766,7 @@ def main() -> int:
     progress('importing', 20)
     import_world(s['name'])
     record_run(s)
+    put_back_accounts()
     if stopping:
         if world.editor is not None:
             world.editor.stop()

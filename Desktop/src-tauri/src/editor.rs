@@ -324,7 +324,10 @@ impl Editor {
         let first_met = verdict == Verdict::Moved && self.pins.read(|f| f.by_pin(&pin).is_some_and(|k| k.addresses.is_empty()));
         self.pins.change(|f| f.apply(&verdict, &address.shown, &spki, &hello));
         let (known_user, previous) = match &verdict {
-            Verdict::Changed { old } | Verdict::Rotated { old } => (String::new(), tls::pin_from_text(&old.pin).map(|p| fingerprint(&p))),
+            Verdict::Changed { old } => (String::new(), tls::pin_from_text(&old.pin).map(|p| fingerprint(&p))),
+            // (The same world, moved to a key its old one signed: its last username carries over. M6's run found screen 4
+            // empty after a rotation.)
+            Verdict::Rotated { old } => (old.username.clone(), tls::pin_from_text(&old.pin).map(|p| fingerprint(&p))),
             _ => (self.pins.read(|f| f.by_pin(&pin).map(|k| k.username.clone())).unwrap_or_default(), None),
         };
         let username = {
@@ -1078,6 +1081,36 @@ mod tests {
         assert_eq!(e.forget(&other, "Ashfal")["error"], "name");
         assert_eq!(e.forget(&other, "ashfall")["ok"], true);
         assert_eq!(e.connect(&other)["state"], "new");
+    }
+
+    #[test]
+    fn a_signed_rotation_moves_quietly_and_keeps_the_last_username() {
+        let first = TestWorld::start(Some(server_config(CERT_A, KEY_A, false)), routes(W1));
+        let e = editor();
+        let at = format!("127.0.0.1:{}", first.port);
+        let c = e.connect(&at);
+        e.trust(&at, c["fingerprint"].as_str().unwrap());
+        assert_eq!(e.sign_in(None, &at, "pell", "right-password-123", false)["session"]["role"], "owner");
+        e.sign_out(None);
+        drop(first);
+        // `ratw-editor new-certificate`: key B, its hello carrying the rotation A signed.
+        let r = crate::editor::pins::tests::rotation(W1, KEY_A);
+        let body = {
+            let mut h: Value = serde_json::from_str(&hello_body(W1)).unwrap();
+            h["rotation"] = json!({"spki": tls::b64(&r.spki), "signature": tls::b64(&r.signature), "previous": r.previous});
+            h.to_string()
+        };
+        let base = routes(W1);
+        let second = TestWorld::start(Some(server_config(CERT_B, KEY_B, false)), Box::new(move |seen: &Seen| {
+            if seen.path == "/editor/hello" { (200, vec![], body.clone().into_bytes()) } else { base(seen) }
+        }));
+        let other = format!("127.0.0.1:{}", second.port);
+        e.pins.change(|f| f.keys[0].addresses.push(other.clone()));
+        let moved = e.connect(&other);
+        assert_eq!(moved["state"], "rotated", "{moved}");
+        assert_eq!(moved["username"], "pell", "screen 4 keeps the account");
+        assert_eq!(moved["previous"], fingerprint(&pin_a()));
+        assert_eq!(e.sign_in(None, &other, "pell", "right-password-123", false)["session"]["role"], "owner");
     }
 
     #[test]

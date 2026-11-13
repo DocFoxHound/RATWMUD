@@ -4,7 +4,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {agoText, allowedCall, baseUrl, Central, CentralError, envLine, readHostWorld, readListedWorld, shellWord, worldTomlLines,
     ShellCentral, type CentralReply, type CentralTransport} from './central.ts';
-import {parseAddress, shownAddress, statusLine} from './worlds.ts';
+import {HOST_SEES, parseAddress, shownAddress, statusLine} from './worlds.ts';
 import type {Json} from '../game/json.ts';
 
 const World = 'world-0123456789abcdef0123456789abcdef';
@@ -44,11 +44,18 @@ test('central\'s list carries the count and the listing until a world\'s own sta
     assert.equal(readListedWorld({id: World}), null, 'no address, not joinable');
     assert.equal(readListedWorld({id: World, address: 'a:1', kind: 'official?'})?.kind, 'community', 'only central says official');
     assert.equal(w.host, '', 'no host name, the address shown');
-    assert.equal(statusLine(undefined, w), '3 of 40 wolves · asking…');
+    assert.equal(statusLine(undefined, w), '3 of 40 wolves · asking… · AI used', 'the listing says the world uses AI');
     assert.equal(statusLine(undefined, null), 'Asking…');
+    // "AI used" and "cheats on" from central's listing until the world answers, and from either afterwards (doc 78, 9).
+    assert.equal(statusLine(undefined, {...w, voices: false, cheats: true}), '3 of 40 wolves · asking… · cheats on');
+    assert.match(statusLine({id: World, name: '', kind: 'community', protocol: 1, clientData: '', players: 5, limit: 40, voices: true,
+        cheats: false, private: false, ms: 12}, w), /^5 of 40 wolves · 12 ms · AI used$/);
+    assert.match(statusLine({id: World, name: '', kind: 'community', protocol: 1, clientData: '', players: 5, limit: 40, voices: false,
+        cheats: false, private: false, ms: 12}, {...w, voices: false, cheats: true}), /^5 of 40 wolves · 12 ms · cheats on$/);
+    assert.match(HOST_SEES, /read everything you say and do there, and sees your internet address/);
     assert.equal(statusLine(null, w), 'Not answering');
     assert.match(statusLine({id: World, name: '', kind: 'community', protocol: 1, clientData: '', players: 5, limit: 40, voices: false,
-        cheats: false, private: false, ms: 12}, w), /^5 of 40 wolves · 12 ms$/);
+        cheats: false, private: false, ms: 12}, {...w, voices: false}), /^5 of 40 wolves · 12 ms$/);
 });
 
 test('a host\'s worlds read as the Host page shows them', () => {

@@ -37,6 +37,7 @@ if [ -z "$name" ]; then
         exit 0
     fi
 fi
+name=${name,,}                  # (Pell is pell: names are small letters.)
 if ! [[ "$name" =~ ^[a-z][a-z0-9_-]{2,31}$ ]]; then
     echo "That isn't an Editor account's name (3 to 32 small letters, digits, - and _). Nothing was changed."
     pause

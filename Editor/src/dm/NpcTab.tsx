@@ -6,6 +6,7 @@
 //          with each one's life and the calendar.
 // NPCs are shown at their spawn points (home, work and evening places), never where they happen to be walking;
 // that is the LIVE tab's job. Saving writes the row and syncs it into a running game server.
+import {NO_MAP_YET, noMapYet} from '../lib/hosted';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import * as M from '../model/model.mjs';
 import type {Person, Place, Project, Role, Route} from '../model/model.mjs';
@@ -14,7 +15,7 @@ import {surfaceFor} from '../lib/surface';
 import {NumberField, Row, SelectField, TextField, Toggle, Hint} from '../components/fields';
 import {useWorld} from './world';
 import {BANDS, type Band} from '../lib/economyContract';
-import {awaitOutcome, outcomeWords} from '../lib/acts';
+import {awaitOutcome, outcomeWords, sureText} from '../lib/acts';
 import {isLive, worldName, dmApi, type Action, type Me, type NpcArea, type Npcs, type Target, worldLabel} from './api';
 import {CalendarPanel} from './CalendarPanel';
 import {LifePanel} from './LifePanel';
@@ -180,7 +181,8 @@ export function NpcTab({me, target, suite}: {me: Me; target: Target; suite: 'atl
         finally { setBusy(false); }
     };
     const live = isLive(target);
-    const sure = (what: string) => !live || window.confirm(`${what} on ${worldName(target)}?`);
+    // (With its opposite, or that it has none, as the LIVE tab's: M6's run found this tab's kill and revive without it.)
+    const sure = (what: string, act = '') => !live || window.confirm(act ? sureText(what, worldName(target), act) : `${what} on ${worldName(target)}?`);
     const taken = () => [...(data?.people ?? []).map(p => p.id), ...(data?.holders ?? []).map(h => h.id)];
     const save = () => {
         if (!draft || !sure(`Save ${draft.name}`)) return;
@@ -191,13 +193,13 @@ export function NpcTab({me, target, suite}: {me: Me; target: Target; suite: 'atl
     const remove = () => draft && window.confirm(`Delete ${draft.name}${live ? ` from ${worldName(target)}` : ''}? They leave the world entirely.`) &&
         (!live || window.confirm(`Really delete ${draft.name}? This cannot be undone.`)) &&
         finish(() => dmApi.deleteNpc(target, draft.id).then(() => setSelected(null)), `Deleted ${draft.name}.`);
-    const life = (id: string, name: string, kill: boolean) => sure(`${kill ? 'Kill' : 'Revive'} ${name}`) &&
+    const life = (id: string, name: string, kill: boolean) => sure(`${kill ? 'Kill' : 'Revive'} ${name}`, kill ? 'npc.kill' : 'npc.revive') &&
         finish(() => dmApi.npcLife(target, id, kill), `${kill ? 'Killed' : 'Revived'} ${name}.`);
     // A household's band for a while (doc 79, 12: band.override): the game puts the NPC's whole household in it.
     // (Told only what the game server made of it, Phase 9's second repair: "is poor for 3 days" was said as the row was
     // queued, and for an NPC no household holds the game refused it unseen.)
     const bandFor = (id: string, name: string, band: Band | 'clear', days: number) => {
-        if (!sure(band === 'clear' ? `Clear the band set for ${name}'s household` : `Make ${name}'s household ${band} for ${days} days`)) return;
+        if (!sure(band === 'clear' ? `Clear the band set for ${name}'s household` : `Make ${name}'s household ${band} for ${days} days`, 'band.override')) return;
         let said = '';
         const done = band === 'clear' ? `${name}'s household is back to its own band.` : `${name}'s household is ${band} for ${days} days.`;
         void finish(async () => {
@@ -319,7 +321,8 @@ export function NpcTab({me, target, suite}: {me: Me; target: Target; suite: 'atl
                             {canEdit && layer === 'spawns' && <button className="primary" onClick={newRule}>+ New spawn rule</button>}</>}
                 </div>
             </div>
-            {surface && world ? <MapView surface={surface} world={world} markers={markers} overlay={overlay} selected={selected} mode={mode}
+            {noMapYet(world) ? <div className="dm-center"><p className="hint">{NO_MAP_YET}</p></div>
+                : surface && world ? <MapView surface={surface} world={world} markers={markers} overlay={overlay} selected={selected} mode={mode}
                 onClick={onMapClick} onPaint={onPaint} onOpen={id => setView({kind: 'cell', id})} /> : <div className="dm-center"><p className="hint">{problem || 'Loading the world…'}</p></div>}
         </main>
         <aside className="inspector" aria-label="Inspector">

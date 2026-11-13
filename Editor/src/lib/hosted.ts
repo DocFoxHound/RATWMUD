@@ -58,6 +58,13 @@ export function goTo(query: string) {
 let restarting = false;
 const restartWatchers = new Set<(restarting: boolean) => void>();
 
+/** LIVE's map on a world whose package holds no map source (slice 1: only its build, which the page can't draw; the
+ *  source comes with map editing, doc 78's M7). M6's run found the map simply black. */
+export const NO_MAP_YET = 'This world\'s map picture comes with map editing, in a later update: the world itself is all there. ' +
+    'Everything else here works now: Find someone (on the left), the panel on the right, and the NPC Life, Players, Prosperity ' +
+    'and Economy tabs.';
+export const noMapYet = (world: {cells: unknown[]} | null | undefined) => !!world && world.cells.length === 0;
+
 export const RESTARTING_TEXT = 'Your world is restarting: the Editor reconnects by itself.';
 export const RESTARTING_ACT = 'Your world is restarting: try again in a moment.';
 

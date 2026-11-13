@@ -320,7 +320,7 @@ pub fn write_private(path: &std::path::Path, bytes: &[u8]) -> std::io::Result<()
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
     use crate::editor::tls::tests::{CERT_A, CERT_B, KEY_A};
     use crate::editor::tls::{b64, spki_of};
@@ -341,7 +341,7 @@ mod tests {
 
     /// A rotation from A to B, signed by A's key (as `ratw-editor new-certificate` signs, with openssl: the same ECDSA
     /// P-256 SHA-256 DER signature ring makes here).
-    fn rotation(world: &str, signer: &[u8]) -> Rotation {
+    pub(crate) fn rotation(world: &str, signer: &[u8]) -> Rotation {
         let rng = ring::rand::SystemRandom::new();
         let key = ring::signature::EcdsaKeyPair::from_pkcs8(&ring::signature::ECDSA_P256_SHA256_ASN1_SIGNING, signer, &rng).unwrap();
         let signature = key.sign(&rng, &rotation_message(world, &sha256(&spki(CERT_B)))).unwrap();

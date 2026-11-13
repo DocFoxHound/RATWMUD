@@ -68,6 +68,9 @@ test('a confirmation names the wolf and says whether there is an opposite (doc 7
     assert.match(tie, /Ada is a player's wolf\.\n/);
     assert.match(tie, /It has no opposite: it can't be undone from here\./);
     assert.equal(sureText('Do it', 'Ashfall', 'unknown.kind'), 'Do it on Ashfall?', 'an unlisted act says nothing of an opposite');
+    // NPC Life's kill, revive and band (M6's run: they asked without the opposite).
+    assert.equal(sureText('Kill Ivo Tarmarsh', 'Ashfall', 'npc.kill'), 'Kill Ivo Tarmarsh on Ashfall?\n\nIts opposite: Revive.');
+    assert.match(sureText('Make Ivo\'s household poor for 3 days', 'Ashfall', 'band.override'), /Its opposite: Clear the band/);
     assert.ok(Object.values(OPPOSITES).every(o => o === null || (o.length > 3 && !o.endsWith('.'))));
     assert.equal(greyed([false, 'a'], [true, 'b'], [true, 'c']), 'b');
     assert.equal(greyed([false, 'a']), '');

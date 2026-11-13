@@ -1921,10 +1921,16 @@ class Process(unittest.TestCase):
         fingerprint = self.cli('fingerprint').stdout
         self.assertIn(A.fingerprint(A.cert_spki(self.folder.path / 'editor-cert.pem')), fingerprint)
         owner_sql("INSERT INTO dm.sessions (token_hash, username, expires_at) VALUES ('t2', 'ferro', now() + interval '1 hour')")
-        leaked = self.cli('new-certificate', '--leaked')
+        (manage / 'editor-certificate.txt').write_text('the old fingerprint')
+        leaked = subprocess.run([sys.executable, str(TOOLS / 'world_admin.py'), '--admin-dir', str(self.folder.path),
+                                 'new-certificate', '--leaked'], env={**self.env, 'RATW_MANAGE_DIR': str(manage)},
+                                capture_output=True, text=True, timeout=60)
         self.assertEqual(leaked.returncode, 0, leaked.stderr)
         self.assertIn('Every Editor session has ended', leaked.stdout)
         self.assertEqual(owner_sql('SELECT count(*) FROM dm.sessions')[0][0], 0)
+        # manage/editor-certificate.txt says the new fingerprint at once, not after the next start (M6's run).
+        self.assertIn(A.fingerprint(A.cert_spki(self.folder.path / 'editor-cert.pem')), (manage / 'editor-certificate.txt').read_text())
+        self.assertNotIn(fingerprint.split('fingerprint: ')[1].split('\n')[0], (manage / 'editor-certificate.txt').read_text())
 
     def test_first_owner_once_and_never_on_an_official_world(self):
         made = json.loads(self.cli('first-owner').stdout)

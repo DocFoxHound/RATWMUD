@@ -18,6 +18,7 @@ import {artCache, sendPortrait, squarePixels} from './artwork.ts';
 import {ask, askText} from './dialog.ts';
 import {EditorDoor} from './editorDoor.ts';
 import {hostOf, type EditorBridge} from '../net/editor.ts';
+import {HOST_SEES} from '../net/worlds.ts';
 
 
 // Natural coats, pale to dark (doc 29, phase 9); any colour is also allowed.
@@ -159,6 +160,7 @@ export class FrontDoor {
     lostWorld = '';                          // The world just lost, offered again (Reconnect).
     arriveWolf: Json | null = null;          // Central mode: the wolf arriving in a world for the first time.
     arriveWorld = '';
+    arriveKind = '';                         // The kind of world being joined ('' by address: told as community).
     tierChoices: string[] = [];
     canHost = false;                         // Central mode: the account is a host's (central sets it), so the Host page.
     hostWorlds: DoorHostWorld[] = [];        // The Host page: the account's worlds, how many it may have, and central's URL.
@@ -737,6 +739,7 @@ export class FrontDoor {
             if (this.busy) return;
             if (!address.value.trim()) return this.setMessage('Type a world\'s address: host:port.', true);
             this.setMessage(`Asking ${address.value.trim()}…`);
+            this.arriveKind = '';
             this.submit({type: 'world_join', address: address.value.trim(), wolf: this.selectedId});
         });
         const card = el('section', {className: 'door-card door-form door-worlds'},
@@ -755,7 +758,8 @@ export class FrontDoor {
             el('h2', {className: 'name'}, str(wolf, 'name')),
             el('p', {className: 'muted large'}, wolf ? `${stageName(num(wolf, 'age', 18))} · age ${num(wolf, 'age', 18).toFixed(0)}${this.caption(wolf, ' · ')}` : ''),
             canvas,
-            el('p', {className: 'muted'}, 'In a world your wolf hasn\'t been to, you choose where they arrive and who they know there. Next time, they go straight in.'));
+            el('p', {className: 'muted'}, 'In a world your wolf hasn\'t been to, you choose where they arrive and who they know there. Next time, they go straight in.'),
+            el('p', {className: 'muted small'}, HOST_SEES));
         return el('div', {className: 'door-row'}, side, card);
     }
 
@@ -774,6 +778,7 @@ export class FrontDoor {
     private joinWorld(w: DoorWorld) {
         if (this.busy) return;
         this.setMessage(`Joining ${w.name}…`);
+        this.arriveKind = w.kind;
         this.submit({type: 'world_join', world: w.id, wolf: this.selectedId});
     }
 
@@ -971,7 +976,8 @@ export class FrontDoor {
         const preview = el('section', {className: 'door-card door-preview'},
             el('p', {className: 'gold small'}, `FIRST TIME IN ${this.arriveWorld.toUpperCase()}`),
             nameHeading, summary, canvas,
-            el('p', {className: 'muted'}, 'What you choose here is this world\'s: another world asks again.'));
+            el('p', {className: 'muted'}, 'What you choose here is this world\'s: another world asks again.'),
+            ...(this.arriveKind === 'official' ? [] : [el('p', {className: 'muted small'}, HOST_SEES)]));
         const actions = el('div', {className: 'door-actions'},
             this.button('Leave', () => this.submit({type: 'arrive_cancel'})),
             this.button('ARRIVE', () => this.arrive(), true));

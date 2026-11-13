@@ -7,6 +7,8 @@ rem backup's), ends every Editor session and starts the world again. The backup 
 rem running world, a backup from another world, a damaged one and one made by a newer package. (restore.sh: the same.)
 setlocal EnableExtensions DisableDelayedExpansion
 cd /d "%~dp0"
+rem (Without Compose's "Container ... Creating" lines between the questions: M6's run.)
+set "COMPOSE_PROGRESS=quiet"
 
 docker compose version <nul >nul 2>&1
 if errorlevel 1 (
@@ -58,7 +60,10 @@ if defined ODD (
     goto :again
 )
 docker compose run --rm -T backup show %NAME% <nul
-if errorlevel 1 goto :again
+if errorlevel 1 (
+    echo Nothing was changed.
+    goto :again
+)
 set "SURE="
 set /p "SURE=Type RESTORE to go on (anything else stops): "
 rem (Compared with delayed expansion, so nothing typed is ever read as part of a command.)

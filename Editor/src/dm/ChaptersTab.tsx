@@ -1,6 +1,7 @@
 // Chapters (Docs/Design/32-parties-chapters-factions.md): the players' clans as the game server last saved them, their
 // camps and Holds on the map, and what waits on a Dungeon Master: treaties and requests to become a House. A pending
 // one the Dungeon Master leaves alone for a game day is decided by the faction's own rule.
+import {NO_MAP_YET, noMapYet} from '../lib/hosted';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {surfaceFor} from '../lib/surface';
 import {Hint} from '../components/fields';
@@ -103,7 +104,8 @@ export function ChaptersTab({me, target}: {me: Me; target: Target}) {
                 <div className="options"><span className="tool-help">Camps and Holds as last saved; buildings being raised are drawn faint. Open a camp to see each building.</span>
                     <button onClick={() => void load()} title="Reload from the database">Refresh</button></div>
             </div>
-            {surface && world ? <MapView surface={surface} world={world} markers={markers} overlay={overlay} selected={null} mode="select"
+            {noMapYet(world) ? <div className="dm-center"><p className="hint">{NO_MAP_YET}</p></div>
+                : surface && world ? <MapView surface={surface} world={world} markers={markers} overlay={overlay} selected={null} mode="select"
                 onClick={(_, marker) => { const site = marker && data?.sites.find(s => s.id === marker.id.split('/')[0]); if (site) setSelected(site.chapter); }}
                 onPaint={() => undefined} onOpen={id => setView({kind: 'cell', id})} />
                 : <div className="dm-center"><p className="hint">{problem || 'Loading the world…'}</p></div>}

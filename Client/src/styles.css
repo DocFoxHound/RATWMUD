@@ -893,6 +893,7 @@ button.given { opacity: .6; }
 .editor-where h2 { margin-bottom: 2px; }
 .editor-sign-in, .editor-password { width: 520px; align-self: flex-start; }
 .editor-pill { font-size: 14px; color: var(--ink); background: var(--sage); }
+.editor-pill.down { background: #c9714f; }
 .editor-tools { display: flex; gap: 24px; margin: 8px 0; }
 .editor-tool { flex: 1; display: flex; flex-direction: column; gap: 8px; }
 .door .editor-tool button { font-size: 30px; padding: 26px; }

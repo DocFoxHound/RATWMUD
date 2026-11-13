@@ -65,7 +65,9 @@ $want = @('compose version', 'compose exec -T world true', 'compose exec -T worl
           'compose exec -T world ratw-editor reset host-k7q2 --write-file')
 Check 'reset: lists, asks, resets, writes the file' (($r.calls -join '|') -eq ($want -join '|')) ($r.calls -join "`n")
 Check 'reset: the code is shown' (($r.out -match 'ratw-editor:abc') -and ($r.out -match 'first-editor.txt')) $r.out
-foreach ($answers in @(@('Host K7Q2'), @('pell&echo HACKED>hacked.txt'), @(''))) {
+$r = Run-Script 'reset-editor-password.bat' @('Host-K7Q2')
+Check 'reset: a name typed with capitals is the small one' (($r.calls -join '|') -eq ($want -join '|')) ($r.calls -join "`n")
+foreach ($answers in @(@('Host K7Q2'), @('pell&echo HACKED>hacked.txt'), @('Pell"&echo HACKED>hacked.txt&"'), @(''))) {
     $r = Run-Script 'reset-editor-password.bat' $answers
     Check "reset [$($answers -join ' / ')]: nothing reset" (-not ($r.calls -match 'reset')) ($r.calls -join "`n")
     Check "reset [$($answers -join ' / ')]: nothing typed ran" (-not ((Test-Path (Join-Path $work 'hacked.txt')) -or (Test-Path (Join-Path $world 'hacked.txt')))) ''

@@ -32,15 +32,19 @@ if not defined NAME (
 )
 
 :chosen
-rem An account's name is small letters, digits, - and _ (3 to 32): anything else stops here.
+rem An account's name is small letters, digits, - and _ (3 to 32): anything else stops here. (Capitals are allowed
+rem through, then made small: Pell is pell. Only once nothing else is left is the name expanded outside quotes.)
 set "ODD="
 setlocal EnableDelayedExpansion
-for /f "delims=abcdefghijklmnopqrstuvwxyz0123456789_-" %%A in ("!NAME!") do set "ODD=1"
+for /f "delims=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-" %%A in ("!NAME!") do set "ODD=1"
 endlocal & set "ODD=%ODD%"
 if defined ODD (
     echo That isn't an Editor account's name ^(3 to 32 small letters, digits, - and _^). Nothing was changed.
     goto :done
 )
+setlocal EnableDelayedExpansion
+for %%L in (a b c d e f g h i j k l m n o p q r s t u v w x y z) do set "NAME=!NAME:%%L=%%L!"
+endlocal & set "NAME=%NAME%"
 
 echo.
 docker compose exec -T world ratw-editor reset %NAME% --write-file <nul

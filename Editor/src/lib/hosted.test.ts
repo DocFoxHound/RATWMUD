@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {actorName, asShipped, CLOSED_TEXT, ENDED_PROBE_MS, hostServerDown, inTime, mayCall, needsMigration, restartingReply, shippedOwn,
-    type HostServer} from './hosted.ts';
+import {actorName, asShipped, CLOSED_TEXT, ENDED_PROBE_MS, hostServerDown, inTime, mayCall, needsMigration, NO_MAP_YET, noMapYet, restartingReply,
+    shippedOwn, type HostServer} from './hosted.ts';
 
 const server = (h: Partial<HostServer>): HostServer => ({up: false, reason: 'exit', code: null, failures: 0, retryIn: null, ...h});
 
@@ -43,4 +43,11 @@ test('hosted pages name accounts and defaults in the host\'s words (R1: "by dm-d
     assert.equal(asShipped('status', true), 'Back to the default');
     assert.match(needsMigration('its own list', true), /newer package/);
     assert.match(needsMigration('its own list', false), /migration 0061/);
+});
+
+test('LIVE says why a world with no map source shows no map, and not a black square (M6\'s run)', () => {
+    assert.equal(noMapYet({cells: []}), true);
+    assert.equal(noMapYet({cells: [{}]}), false);
+    assert.equal(noMapYet(null), false, 'still loading: "Loading the world…" as before');
+    assert.match(NO_MAP_YET, /comes with map editing, in a later update/);
 });

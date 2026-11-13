@@ -317,6 +317,10 @@ export function statusPill(hello: EditorHello | null): string {
     return wolves === null ? state : `${state} · ${wolves} ${wolves === 1 ? 'wolf' : 'wolves'}`;
 }
 
+/** Whether the pill says the world is well (open, or opening for you alone): the rest are drawn in the warning colour, so
+ *  "Keeps stopping" doesn't look like "Open" (M6's run). */
+export const pillIsWell = (text: string) => text.startsWith('Open');
+
 /** Screen 5's "Last backup 3 h ago" (section 2), from the hello's age in seconds; '' when the world says nothing (a
  *  package without the backup service). */
 export function lastBackupText(hello: EditorHello | null): string {
@@ -358,7 +362,7 @@ export function coBuilderNote(place: Place, address: string): string {
 export const ROLE_LINES: Record<string, string> = {
     viewer: 'Can watch the DM tool; can\'t change anything.',
     dm: 'Can run events and NPCs; can\'t touch the map or accounts.',
-    builder: 'Can run events and NPCs, and edit and publish the map; can\'t touch accounts or My world.',
+    builder: 'Can run events and NPCs, and will edit the map when map editing comes; can\'t touch accounts or My world.',
     owner: 'Everything, including Editor accounts and My world.',
 };
 

@@ -82,12 +82,20 @@ export function readStatus(body: unknown, ms: number): WorldStatus | null {
         cheats: b.cheats === true, private: b.private === true, ms: Math.max(0, Math.round(ms))};
 }
 
-/** What the world list says of a world's status: until the world's own /status answers, central's count. */
-export function statusLine(s: WorldStatus | null | undefined, listed?: {players: number; limit: number} | null): string {
-    if (s === undefined) return listed ? `${listed.players}${listed.limit ? ` of ${listed.limit}` : ''} wolves · asking…` : 'Asking…';
+/** What the world list says of a world's status: until the world's own /status answers, central's count. "AI used"
+ *  covers the residents' voices and the host's own tools, which use the same key (doc 78, 9); "cheats on" as the
+ *  listing says. Either from central's listing or the world's /status. */
+export function statusLine(s: WorldStatus | null | undefined, listed?: {players: number; limit: number; voices?: boolean; cheats?: boolean} | null): string {
+    const marks = (ai: boolean, cheats: boolean) => `${ai ? ' · AI used' : ''}${cheats ? ' · cheats on' : ''}`;
+    if (s === undefined) return listed ? `${listed.players}${listed.limit ? ` of ${listed.limit}` : ''} wolves · asking…${marks(listed.voices === true, listed.cheats === true)}` : 'Asking…';
     if (s === null) return 'Not answering';
-    return `${s.players} of ${s.limit} wolves · ${s.ms} ms${s.voices ? ' · AI voices' : ''}${s.cheats ? ' · cheats on' : ''}`;
+    return `${s.players} of ${s.limit} wolves · ${s.ms} ms${marks(s.voices || listed?.voices === true, s.cheats || listed?.cheats === true)}`;
 }
+
+/** What a community world's players are told, on the world list and the first-arrival page (doc 78, section 9): the
+ *  host owns the database and the connection, and no filter changes that. */
+export const HOST_SEES = 'A community world is run by its host. The host can read everything you say and do there, and sees your ' +
+    'internet address; co-builders they add see what the host\'s tools show. Your wolf\'s name is the same on every world.';
 
 export type Fit = 'ok' | 'update' | 'older' | 'data' | 'unknown';
 

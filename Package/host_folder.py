@@ -17,6 +17,7 @@ import argparse
 from pathlib import Path
 import shutil
 import sys
+import time
 import zipfile
 
 HERE = Path(__file__).resolve().parent
@@ -81,7 +82,11 @@ def zip_folder(folder: Path, target: Path) -> Path:
             info.external_attr = ((0o100755 if name in RUNNABLE else 0o100644) << 16)   # (unzip keeps .sh runnable.)
             archive.writestr(info, (folder / name).read_bytes())
         for name in FOLDERS:
-            archive.writestr(zipfile.ZipInfo(f'{top}/{name}/'), b'')     # (A folder entry: unzipped, it is made empty.)
+            # A folder entry: unzipped, it is made empty. Its mode a folder's, 0755 (M6's run: zipfile's default left
+            # Linux's unzip with a 0600 folder nobody could open), with the MS-DOS directory flag for Windows.
+            info = zipfile.ZipInfo(f'{top}/{name}/', time.localtime()[:6])
+            info.external_attr = (0o40755 << 16) | 0x10
+            archive.writestr(info, b'')
     return target
 
 

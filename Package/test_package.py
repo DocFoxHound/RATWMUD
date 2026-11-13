@@ -289,6 +289,25 @@ class Children(unittest.TestCase):
             self.assertEqual(E.run_as('ratw-server'), {})
 
 
+class Database(unittest.TestCase):
+    def test_a_container_off_its_network_says_how_to_mend_it(self):
+        """M6's run: after `up -d` was refused (a port already allocated), Docker started the world again on no network,
+        and it waited for "db" for ever; the log now says to take it down and up again."""
+        world_db = E.tools_module('world_db')
+        lost = mock.Mock(side_effect=world_db.DatabaseError("Cannot connect to PostgreSQL as its superuser: failed to resolve host 'db'"))
+        err, out = io.StringIO(), io.StringIO()
+        with mock.patch.object(world_db, 'superuser', lost), contextlib.redirect_stderr(err), contextlib.redirect_stdout(out), \
+                self.assertRaises(SystemExit):
+            E.wait_for_database(0)
+        self.assertIn('docker compose down, then docker compose up -d (your world is kept)', err.getvalue())
+        other = mock.Mock(side_effect=world_db.DatabaseError('connection refused'))
+        err = io.StringIO()
+        with mock.patch.object(world_db, 'superuser', other), contextlib.redirect_stderr(err), contextlib.redirect_stdout(out), \
+                self.assertRaises(SystemExit):
+            E.wait_for_database(0)
+        self.assertNotIn('docker compose down', err.getvalue())
+
+
 class Stage(unittest.TestCase):
     """stage.sh replaces --out: never a directory that isn't one of its contexts."""
 
@@ -1014,6 +1033,85 @@ class Backups(Folders):
             self.assertIn('the disk is nearly full', self.output)
 
 
+def _scratch_database():
+    """A throwaway world database with every migration (RATW_TEST_DB_TAG names it), or None without PostgreSQL."""
+    sys.path.insert(0, str(ROOT / 'tools'))
+    import secrets as _secrets
+    import test_world_db
+    import world_db
+    if not test_world_db.database_available():
+        return None
+    world_db.ensure_roles()
+    name = f'ratw_test_{os.environ.get("RATW_TEST_DB_TAG", "")}kept_{_secrets.token_hex(4)}'
+    with test_world_db.superuser() as su:
+        su.execute(f'CREATE DATABASE {name} OWNER ratw_owner')
+    with world_db.connect('dev', 'owner', dbname=name) as owner:
+        world_db.migrate(owner)
+    return name
+
+
+class KeptAccounts(Folders):
+    """Doc 78, 12.2 (M6, found as M5's checker): a restore of a backup from an older package (before migration 0063,
+    whose dm.admins can't hold an owner) keeps today's Editor accounts in .kept-accounts.json, and the start puts them
+    back once the migrations have run; a broken file is set aside, said plainly, and the world keeps the backup's."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.database = _scratch_database()
+        if cls.database is None:
+            raise unittest.SkipTest('local PostgreSQL not running')
+
+    @classmethod
+    def tearDownClass(cls):
+        import test_world_db
+        with test_world_db.superuser() as su:
+            su.execute(f'DROP DATABASE IF EXISTS {cls.database} WITH (FORCE)')
+
+    def sql(self, text, params=None):
+        import world_db
+        with world_db.connect('dev', 'owner', dbname=self.database) as conn:
+            cursor = conn.execute(text, params)
+            return cursor.fetchall() if cursor.description else None
+
+    def put_back(self):
+        import world_db
+        real = world_db.connect
+        with mock.patch.object(world_db, 'connect', lambda key, role, **kw: real('dev', role, dbname=self.database)):
+            self.quiet(E.put_back_accounts)
+
+    def test_kept_accounts_go_back_after_the_migrations(self):
+        self.sql('TRUNCATE dm.admins, dm.sessions, dm.devices, dm.invites, dm.locks CASCADE')
+        self.sql("""INSERT INTO dm.admins (username, role, password) VALUES ('host-k7q2', 'admin', '{}')""")
+        self.sql("""INSERT INTO dm.sessions (token_hash, username, expires_at) VALUES ('x', 'host-k7q2', now() + interval '1 hour')""")
+        # (As json_agg gives them: every row with every column of today's table, and one the restored table lacks.)
+        today = [{'username': 'host-k7q2', 'role': 'owner', 'password': {'hash': 'h'}, 'disabled': False, 'must_change': True,
+                  'may_act_on_wolves': False, 'not_a_column': 1},
+                 {'username': 'pell', 'role': 'builder', 'password': {'hash': 'p'}, 'disabled': True, 'must_change': False,
+                  'may_act_on_wolves': True, 'not_a_column': 2}]
+        body = {'v': 1, 'from': 'ratw-20261113T002925Z-before-update', 'tables': {'admins': today, 'devices': [], 'invites': [], 'locks': []}}
+        E.BACKUP_REQUESTS.joinpath('.kept-accounts.json').write_text(json.dumps(body))
+        self.put_back()
+        self.assertIn('put back the 2 Editor account(s) the restore kept: host-k7q2, pell', self.output)
+        self.assertEqual(self.sql('SELECT username, role, disabled, must_change, may_act_on_wolves FROM dm.admins ORDER BY username'),
+                         [('host-k7q2', 'owner', False, True, False), ('pell', 'builder', True, False, True)])
+        self.assertEqual(self.sql('SELECT count(*) FROM dm.sessions'), [(0,)], 'every Editor session ended')
+        self.assertFalse(os.path.lexists(E.BACKUP_REQUESTS / '.kept-accounts.json'), 'used once')
+        self.put_back()
+        self.assertEqual(self.output, '', 'nothing kept: nothing done')
+
+    def test_a_broken_file_is_set_aside_and_the_backup_s_accounts_stay(self):
+        self.sql('TRUNCATE dm.admins, dm.sessions, dm.devices, dm.invites, dm.locks CASCADE')
+        self.sql("""INSERT INTO dm.admins (username, role, password) VALUES ('old-owner', 'owner', '{}')""")
+        for broken in ('{"v": 1, "tables": {"admins": "rm -rf"}}', 'not json',
+                       json.dumps({'v': 1, 'tables': {'admins': [{'username': 'x', 'role': 'king', 'password': {}}]}})):
+            E.BACKUP_REQUESTS.joinpath('.kept-accounts.json').write_text(broken)
+            self.put_back()
+            self.assertIn('couldn\'t be put back', self.output)
+            self.assertEqual(self.sql('SELECT username FROM dm.admins'), [('old-owner',)], 'the backup\'s accounts, untouched')
+            self.assertFalse(os.path.lexists(E.BACKUP_REQUESTS / '.kept-accounts.json'))
+            self.assertTrue((E.BACKUP_REQUESTS / '.kept-accounts.failed.json').exists())
+
+
 class Scripts(unittest.TestCase):
     """The host's double-click scripts (doc 78, 3.6 and 12.2): restore and reset-editor-password, run here against a
     stand-in docker (testdata/fake-docker.sh); the .bat files read for the same steps (desktop-windows.yml runs them on
@@ -1070,6 +1168,8 @@ class Scripts(unittest.TestCase):
                                  'compose exec -T world ratw-editor reset host-k7q2 --write-file'])
         self.assertIn('ratw-editor:abc', done.stdout)
         self.assertIn('manage/first-editor.txt', done.stdout)
+        done, calls = self.run_script('reset-editor-password.sh', 'Host-K7Q2\n')
+        self.assertEqual(calls[-1], 'compose exec -T world ratw-editor reset host-k7q2 --write-file', 'capitals made small')
         done, calls = self.run_script('reset-editor-password.sh', 'Host K7Q2; rm\n')
         self.assertIn('Nothing was changed', done.stdout)
         self.assertFalse(any('reset' in c for c in calls))
@@ -1081,7 +1181,7 @@ class Scripts(unittest.TestCase):
             text = raw.decode('ascii')
             for words in ('@echo off', 'cd /d "%~dp0"', '\r\npause\r\n', 'setlocal EnableDelayedExpansion'):
                 self.assertIn(words, text, name)
-            self.assertNotIn('!', text.replace('!NAME!', '').replace('!NUMBER!', '').replace('!SURE!', '').replace('!WHICH:~0,1!', ''),
+            self.assertNotIn('!', text.replace('!NAME:%%L=%%L!', '').replace('!NAME!', '').replace('!NUMBER!', '').replace('!SURE!', '').replace('!WHICH:~0,1!', ''),
                              f'{name}: "!" is read by delayed expansion: none in the words')
         restore = (HERE / 'restore.bat').read_text()
         for step in ('docker compose stop backup', 'docker compose run --rm -T backup list', 'backup name %NUMBER%',
@@ -1100,6 +1200,42 @@ class Scripts(unittest.TestCase):
         self.assertEqual(done.returncode, 0, done.stderr)
         self.assertIn('syntax OK', done.stderr)
 
+
+    def test_no_unpinned_backup_outlives_ninety_days_but_the_newest(self):
+        """M6: the 5 newest of the rest (by hand, before an update...) and the dailies had no age limit, so a deleted wolf
+        could stay in a backup for ever on a world seldom updated; now none outlives 90 days unpinned, but the newest."""
+        found = subprocess.run(['docker', 'image', 'inspect', 'postgres:18'], capture_output=True)
+        if found.returncode != 0:
+            self.skipTest('no postgres:18 image here')
+        with tempfile.TemporaryDirectory(prefix='s2stage-prune-') as folder:
+            now = int(time.time())
+            made = {'ratw-20260101T000000Z-before-update': now - 200 * 86400, 'ratw-20260102T000000Z-daily': now - 199 * 86400,
+                    'ratw-20260103T000000Z-by-hand': now - 100 * 86400, 'ratw-20260104T000000Z-by-hand': now - 95 * 86400,
+                    'ratw-20260105T000000Z-daily': now - 91 * 86400, 'ratw-20260106T000000Z-before-update': now - 10 * 86400}
+            pinned = 'ratw-20260103T000000Z-by-hand'
+            for name, at in made.items():
+                Path(folder, f'{name}.dump').write_text('x')
+                Path(folder, f'{name}.json').write_text(json.dumps({'name': name, 'at': at, 'kind': name.split('Z-')[1],
+                                                                    'pinnedUntil': now + 86400 if name == pinned else None}))
+            script = ('no warnings; do "/p/ratw-backup.pl" or die $@; *main::world_facts = sub { {builds => []} }; '
+                      '*main::say_ = sub {}; prune(); print join(" ", sort map { s/\\.json$//r } grep { /\\.json$/ } '
+                      'do { opendir my $d, "/b"; readdir $d }), "\\n";')
+            done = subprocess.run(['docker', 'run', '--rm', '--network', 'none', '-v', f'{HERE}:/p:ro', '-v', f'{folder}:/b',
+                                   '-e', 'RATW_BACKUPS_DIR=/b', '--entrypoint', 'perl', 'postgres:18', '-e', script],
+                                  capture_output=True, text=True, timeout=120)
+            self.assertEqual(done.returncode, 0, done.stderr)
+            self.assertEqual(done.stdout.split(), sorted([pinned, 'ratw-20260106T000000Z-before-update']))
+            # Only one backup, however old: kept.
+            for name in made:
+                for end in ('.dump', '.json'):
+                    Path(folder, name + end).unlink(missing_ok=True)
+            name = 'ratw-20260101T000000Z-daily'
+            Path(folder, f'{name}.dump').write_text('x')
+            Path(folder, f'{name}.json').write_text(json.dumps({'name': name, 'at': now - 300 * 86400, 'kind': 'daily'}))
+            done = subprocess.run(['docker', 'run', '--rm', '--network', 'none', '-v', f'{HERE}:/p:ro', '-v', f'{folder}:/b',
+                                   '-e', 'RATW_BACKUPS_DIR=/b', '--entrypoint', 'perl', 'postgres:18', '-e', script],
+                                  capture_output=True, text=True, timeout=120)
+            self.assertEqual(done.stdout.split(), [name], done.stderr)
 
 class HostFolder(unittest.TestCase):
     def test_the_folder_ships_empty_manage_and_backups(self):
@@ -1125,6 +1261,13 @@ class HostFolder(unittest.TestCase):
             with zipfile.ZipFile(Path(folder) / 'my-world.zip') as archive:
                 modes = {i.filename: (i.external_attr >> 16) & 0o777 for i in archive.infolist()}
             self.assertEqual((modes['my-world/restore.sh'], modes['my-world/restore.bat']), (0o755, 0o644), 'unzipped, .sh runs')
+            # The two folders unzip as folders anyone may open (M6's run: they came out 0600, which nobody could enter).
+            self.assertEqual((modes['my-world/manage/'], modes['my-world/backups/']), (0o755, 0o755))
+            if shutil.which('unzip'):
+                into = Path(folder) / 'unzipped'
+                subprocess.run(['unzip', '-q', str(Path(folder) / 'my-world.zip'), '-d', str(into)], check=True)
+                for name in ('manage', 'backups'):
+                    self.assertTrue((into / 'my-world' / name).is_dir() and os.access(into / 'my-world' / name, os.X_OK), name)
             with self.assertRaises(SystemExit):
                 H.make(out)                                  # (Never into a folder that holds something.)
 

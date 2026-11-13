@@ -10,6 +10,8 @@
 # backup from another world, a damaged one and one made by a newer package. (restore.bat is the same for Windows.)
 set -u
 cd "$(dirname "$0")" || exit 1
+# (Without Compose's "Container ... Creating" lines between the questions: M6's run.)
+export COMPOSE_PROGRESS=quiet
 
 pause() {
     if [ -t 0 ]; then read -r -p "Press Enter to close." _; fi
@@ -62,6 +64,7 @@ case "$name" in
 esac
 
 if ! docker compose run --rm -T backup show "$name" </dev/null; then
+    echo "Nothing was changed."
     again
     pause
     exit 1

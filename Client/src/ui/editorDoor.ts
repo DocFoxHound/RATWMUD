@@ -11,7 +11,7 @@
 // world's words. The password goes to the shell once and its box is cleared at once; the shell keeps the session.
 import {ask, askText} from './dialog.ts';
 import {ago, bannerText, coBuilderNote, connectRefusal, EDITOR_PORT, firstTimeNote, fromWhere, hostOf, isCode, newPasswordProblem,
-    lastBackupText, resetHow, ROLE_LINES, settingUp, signInRefusal, signsInWithCode, statusPill, type AuditBanner, type Connected, type EditorAccount,
+    lastBackupText, resetHow, ROLE_LINES, settingUp, signInRefusal, signsInWithCode, pillIsWell, statusPill, type AuditBanner, type Connected, type EditorAccount,
     type EditorBridge, type EditorHello, type EditorSession, type RecentWorld} from '../net/editor.ts';
 
 type Screen = 'address' | 'key' | 'sign-in' | 'password' | 'menu';
@@ -346,8 +346,8 @@ export class EditorDoor {
                     'connection. Don\'t sign in.'),
                 el('p', {className: 'muted'}, 'What this computer trusted:'), el('pre', {className: 'editor-print'}, c.previous ?? 'unknown'),
                 el('p', {className: 'muted'}, `What ${c.address} shows now:`), el('pre', {className: 'editor-print'}, c.fingerprint),
-                el('p', {className: 'muted'}, 'Only if you know why (a fresh world, ratw-editor new-certificate --leaked, a lost volume): compare ' +
-                    'the new fingerprint with manage/editor-certificate.txt in the world folder, then type the world\'s name and forget the old ' +
+                el('p', {className: 'muted'}, 'Only if you know why (you started this world afresh, lost its storage, or ran ratw-editor new-certificate ' +
+                    '--leaked yourself): compare the new fingerprint with manage/editor-certificate.txt in the world folder, then type the world\'s name and forget the old ' +
                     'certificate. A new Editor code from the world\'s owner also clears this.'),
                 el('label', {}, el('span', {}, 'THE WORLD\'S NAME'), typed),
                 el('div', {className: 'door-actions'}, back, forget));
@@ -371,7 +371,7 @@ export class EditorDoor {
             el('h2', {}, c.hello.name || 'A world'),
             el('p', {className: 'large'}, `First connection to ${c.hello.name || 'this world'} at ${c.address}. Its certificate fingerprint is:`),
             el('pre', {className: 'editor-print'}, c.fingerprint),
-            el('p', {}, 'Compare it with the one in your world folder, manage/editor-certificate.txt, or in the world\'s log. If they match, trust it.'),
+            el('p', {}, 'Compare it with the one in your world folder, manage/editor-certificate.txt. If they match, trust it.'),
             ...(local ? [el('p', {className: 'sage'}, 'This is the computer you\'re using: comparing is up to you.')] : []),
             el('p', {className: 'muted small'}, 'Using an Editor code skips this.'),
             el('div', {className: 'grow'}),
@@ -424,7 +424,7 @@ export class EditorDoor {
                 'password are in manage/first-editor.txt in your world folder. Pasting the Editor code from that file is easiest.')] : []),
             ...(fromCode ? [el('p', {className: 'sage'}, 'Your Editor code carries the one-time password: just sign in.')] : []),
             form,
-            el('p', {className: 'muted small'}, `Lost your password? On the world's computer, ${resetHow(this.username)}.`),
+            el('p', {className: 'muted small'}, `Lost your password? Ask the world's owner for a new Editor code; or, on the world's computer, ${resetHow(this.username)}.`),
             el('div', {className: 'grow'}),
             el('div', {className: 'door-actions'}, this.button('Back', () => { this.screen = 'address'; this.notice = ''; this.redraw(); })));
         return el('div', {className: 'door-row'}, card);
@@ -517,6 +517,7 @@ export class EditorDoor {
             this.statusTimer = window.setInterval(() => { if (this.screen === 'menu') void this.refreshStatus(); }, 15000);
         }
         const pill = el('span', {className: 'world-kind editor-pill'}, statusPill(this.hello));
+        pill.classList.toggle('down', !pillIsWell(pill.textContent ?? ''));
         pill.dataset.pill = '1';
         const backup = el('p', {className: 'muted small'}, lastBackupText(this.hello));
         backup.dataset.lastBackup = '1';
@@ -560,7 +561,10 @@ export class EditorDoor {
         const r = await this.bridge.status();
         this.hello = r.ok ? r.hello : null;
         const pill = document.querySelector<HTMLElement>('[data-pill]');
-        if (pill) pill.textContent = statusPill(this.hello);
+        if (pill) {
+            pill.textContent = statusPill(this.hello);
+            pill.classList.toggle('down', !pillIsWell(pill.textContent));
+        }
         const backup = document.querySelector<HTMLElement>('[data-last-backup]');
         if (backup) backup.textContent = lastBackupText(this.hello);
     }
@@ -603,6 +607,7 @@ export class EditorDoor {
             if (r.error === 'ended') { this.screen = 'sign-in'; this.redraw(); }
             return false;
         }
+        this.say('');                   // ("Checking your password…" no longer true: M6's run saw it stay under the list.)
         return true;
     }
 
@@ -692,7 +697,7 @@ export class EditorDoor {
             const who = name.value.trim().toLowerCase();
             if (!who) return this.say('Give the co-builder an account name.', true);
             void this.change('add', {username: who, role: role.value, mayActOnWolves: wolves.checked},
-                `Add ${who} as a ${role.value}? They need the RATW desktop client, and your Editor port open to them (RATW_EDITOR_BIND=0.0.0.0 in .env, ` +
+                `Add ${who} with the role ${role.value}? They need the RATW desktop client, and your Editor port open to them (RATW_EDITOR_BIND=0.0.0.0 in .env, ` +
                 'and from outside your home a forwarded port).');
         });
         const codeBox: HTMLElement[] = [];
@@ -709,7 +714,7 @@ export class EditorDoor {
             'End every Editor session, yours too, and forget every device?'), 'danger');
         return el('div', {className: 'editor-accounts'},
             el('p', {className: 'gold small'}, 'EDITOR ACCOUNTS'), ...codeBox,
-            list, line, add,
+            list, add, line,
             el('div', {className: 'door-actions'}, end, this.button('Close', () => { this.accounts = null; this.newCode = ''; this.redraw(); })));
     }
 

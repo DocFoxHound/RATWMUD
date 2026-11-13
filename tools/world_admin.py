@@ -2215,6 +2215,15 @@ def write_manage_file(name: str, text: str) -> bool:
     return True
 
 
+def refresh_certificate_file(folder: Path) -> bool:
+    """manage/editor-certificate.txt again after `ratw-editor new-certificate` (M6's run: it kept the old fingerprint until
+    the next start, while the red screen and the guide say to compare with it). False if it can't be written here."""
+    try:
+        return write_manage_file('editor-certificate.txt', certificate_text(folder, host_port()))
+    except OSError:
+        return False
+
+
 def _connect_cli():
     return world_db.connect(WORLD_KEY, 'dm')
 
@@ -2275,6 +2284,8 @@ def main(argv: list[str] | None = None) -> int:
         return reset_to_file(argv, args)
     dropped = _as_admin(argv)
     if dropped is not None:
+        if dropped == 0 and args.command == 'new-certificate':
+            refresh_certificate_file(folder)          # (Root's: ratw-admin can't write the world folder's manage/.)
         return dropped
     try:
         if args.command == 'new-certificate':
@@ -2283,6 +2294,7 @@ def main(argv: list[str] | None = None) -> int:
                 with _connect_cli() as conn:
                     end_all(conn, 'ratw-editor')
             reloaded = signal_helper(folder)
+            refresh_certificate_file(folder)
             print(f'New Editor certificate: {done["fingerprint"]} (was {done["previous"]}).')
             if args.leaked:
                 print('Every Editor session has ended and every client will warn. Send your co-builders new Editor codes '

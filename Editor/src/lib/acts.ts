@@ -62,6 +62,7 @@ export const OPPOSITES: Record<string, string | null> = {
     'npc.kill': 'Revive',
     'npc.revive': 'Kill',
     'npc.leave': null,
+    'band.override': 'Clear the band, on the same panel (or let it run out)',
     'visitor.bring': 'Send away',
     'project.remove': null,
     'project.cancel': null,

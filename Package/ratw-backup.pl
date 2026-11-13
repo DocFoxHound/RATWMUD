@@ -23,14 +23,16 @@
 #                                     file it needs (with their SHA-256), its own SHA-256 and size, and a pin
 #   build-ID.cells.gz, build-ID.json  one build's cells (COPY text, gzipped), and its manifest
 # KIND is daily, by-hand, before-publish, before-update or before-restore. Kept: the 7 newest dailies, the 5 newest of
-# the rest, and up to 5 the owner pins, each pin for at most 90 days; build files while a kept dump (or the world)
+# the rest, none of them past 90 days but the newest backup, and up to 5 the owner pins, each pin for at most 90 days; build files while a kept dump (or the world)
 # needs them. A dump that would leave under 2 GB free on the disk is refused (RATW_BACKUP_MIN_FREE_MB).
 #
 # The requests volume (/requests here; root's in the world's container): kind-only files the world's entrypoint drops
 # (backup-by-hand.HEX, backup-before-publish.HEX, before-update.HEX, pin-STAMP.HEX, unpin-STAMP.HEX), each answered in
 # .result.HEX; this service's state in .backup-status.json (the entrypoint copies it, checked, to the Editor); the
 # world image's package and migration level in .world-image.json (the entrypoint's); .lock while a dump or a restore
-# runs. Other dot files (.ever-official) are left alone.
+# runs; .kept-accounts.json, today's Editor accounts a restore of an older backup keeps, which the entrypoint puts back
+# once its migrations have brought that backup's database up to date (it is removed then). Other dot files
+# (.ever-official) are left alone.
 use strict;
 use warnings;
 use JSON::PP;
@@ -56,6 +58,7 @@ my $STAMP = qr/^\d{8}T\d{6}Z$/;
 my $REQUEST = qr/^(backup-by-hand|backup-before-publish|before-update|(?:pin|unpin)-\d{8}T\d{6}Z)\.([0-9a-f]{12})$/;
 my $JSON = JSON::PP->new->canonical->utf8;
 my %PASSWORD;
+my $KEPT = "$REQUESTS/.kept-accounts.json";
 my %HOLD;           # Dumps never pruned while this runs: the one a restore is putting back (its safety copy prunes).
 
 sub say_ { print "RATW_BACKUP @_\n"; }
@@ -385,7 +388,10 @@ sub prune {
     my (%keep, $daily, $other);
     for my $m (@all) {
         my $is_daily = $m->{kind} eq 'daily';
-        if (pinned($m, $now) || ($is_daily ? ++$daily <= $KEEP_DAILY : ++$other <= $KEEP_OTHER)) {
+        # (No unpinned backup outlives $PIN_DAYS, whatever its count, but the newest: a deleted wolf isn't kept in a
+        # backup for ever on a world that is seldom updated or seldom on. M6.)
+        my $young = $now - ($m->{at} // 0) <= $PIN_DAYS * 86400 || $m->{name} eq $all[0]{name};
+        if (pinned($m, $now) || ($young && ($is_daily ? ++$daily <= $KEEP_DAILY : ++$other <= $KEEP_OTHER))) {
             $keep{$m->{name}} = 1;
         }
         $keep{$m->{name}} = 1 if $HOLD{$m->{name}};
@@ -641,6 +647,7 @@ sub restore {
                . "backups.");
     }
     my $level = ($image->{migrations} // '') =~ /^(\d{1,6})$/ ? $1 : $now->{migration};
+    my $older = ($m->{migration} // '') =~ /^\d+$/ && ($level // '') =~ /^\d+$/ && $m->{migration} < $level;
     if (($m->{migration} // '') =~ /^\d+$/ && ($level // '') =~ /^\d+$/ && $m->{migration} > $level) {
         refuse("This backup was made by a newer package of the world (its database is at migration $m->{migration}; "
                . "this package's is at $level). Update the world first (keep world.toml, .env and backups), then restore.");
@@ -663,6 +670,7 @@ sub restore {
                 if !$kept && (query("SELECT to_regclass('dm.admins') IS NOT NULL", role => 'super') // '') eq 't';
         }
     }
+    unlink $KEPT;                   # (A restore before this one that never reached a start: its accounts are stale.)
     print "Putting the world back to " . when_text($m->{at}) . "...\n";
     say_("restoring $m->{name} (" . ($keep ? 'keeping' : 'taking the backup\'s') . ' Editor accounts)');
     query("DROP DATABASE IF EXISTS $DB WITH (FORCE)", role => 'super', database => 'postgres', loud => 1) // fail_(
@@ -681,7 +689,17 @@ sub restore {
         fail_("build $b->{id}\'s map couldn't be put back: $t (the safety copy is in backups/)") if $c != 0;
     }
     my $took = !$keep;
-    if ($keep && $kept) {
+    my $later;
+    if ($keep && $kept && $older) {
+        # An older backup's tables lack today's columns (and roles: 0063's owner and builder): its accounts go back in
+        # when the world starts, after its migrations (Package/entrypoint.py, put_back_accounts).
+        my $body = '{"v":1,"from":' . $JSON->encode($m->{name}) . ',"tables":{'
+            . join(',', map { $JSON->encode($_) . ':' . $kept->{$_} } sort keys %$kept) . "}}\n";
+        eval { write_whole($KEPT, $body, 0600, [0, 0]); 1 }
+            or fail_("today's Editor accounts couldn't be kept for the world's start ($@; the safety copy is in backups/; "
+                     . 'the world has the backup\'s accounts now)');
+        $later = eval { $JSON->decode($kept->{admins}) } || [];
+    } elsif ($keep && $kept) {
         put_accounts($kept) or fail_("today's Editor accounts couldn't be put back over the backup's (the safety copy is "
                                      . 'in backups/; the world has the backup\'s accounts now)');
     } elsif ($keep) {
@@ -690,8 +708,12 @@ sub restore {
     }
     query("DO \$x\$ BEGIN IF to_regclass('dm.sessions') IS NOT NULL THEN DELETE FROM dm.sessions; END IF; END \$x\$",
           role => 'super', loud => 1);
-    my @accounts = (query("SELECT to_regclass('dm.admins') IS NOT NULL", role => 'super') // '') eq 't' ? accounts_list() : ();
+    my @accounts = $later ? (sort { $a->{username} cmp $b->{username} }
+                             map { {username => $_->{username}, role => $_->{role}, off => $_->{disabled} ? 1 : 0} } @$later)
+                 : (query("SELECT to_regclass('dm.admins') IS NOT NULL", role => 'super') // '') eq 't' ? accounts_list() : ();
     first_editor_after(when_text($m->{at}), @accounts) if $took;
+    print "\nThis backup comes from an older package: your world brings it up to date when it starts, and then puts\n"
+        . "your Editor accounts back as they were.\n" if $later;
     print "\nDone: your world is back to " . when_text($m->{at}) . ". Every Editor session has ended.\n";
     print "Its Editor accounts" . ($took ? ' (the backup\'s)' : ' (kept as they were)') . ":\n";
     print @accounts ? join('', map { "    $_->{username} ($_->{role}" . ($_->{off} ? ', turned off' : '') . ")\n" } @accounts)
@@ -703,6 +725,8 @@ sub restore {
 
 # ---------------------------------------------------------------------------------------------------------------- main
 
+# (Only when run, not when a test loads it with `do` to call one part.)
+return 1 if caller;
 my $command = shift @ARGV // 'serve';
 if ($command eq 'serve') {
     serve();

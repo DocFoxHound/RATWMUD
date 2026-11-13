@@ -1,4 +1,4 @@
-# Your world's settings (Docs/Design/77, section 8). Edit this file, then `docker compose up -d` (README.md).
+# Your world's settings (Hosting.md, section 5). Edit this file with Notepad or any plain-text editor.
 # Read whenever the world's server starts: after a change, the Editor's Restart, or `docker compose restart world upnp`
 # (the upnp service reads it too).
 
@@ -75,8 +75,8 @@ cost_mode = "balanced"
 upnp = true
 
 [editor]
-# The Editor: your world's own DM tool (and later its map editor), from the game's EDITOR button (README.md, "The
-# Editor"). false turns it off: nothing then answers on the Editor port.
+# The Editor: your world's own DM tool (and later its map editor), from the game's EDITOR button (Hosting.md,
+# sections 10-16). false turns it off: nothing then answers on the Editor port.
 enabled = true
 # Your first Editor account's name (3 to 32 small letters, digits, - or _). Leave it out and the world makes one up
 # (host- and four letters and digits). Either way the name, a one-time password and an Editor code appear in

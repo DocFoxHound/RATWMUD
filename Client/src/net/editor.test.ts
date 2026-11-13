@@ -171,3 +171,11 @@ test('banners are worded by the client, never from the world\'s detail', () => {
     assert.equal(ago(1000, 1000 + 3 * 3600), '3 h ago');
     assert.equal(ago(null), 'never');
 });
+
+test('the pill is drawn as a warning unless the world is open (M6\'s run: "Keeps stopping" looked like "Open")', async () => {
+    const {pillIsWell} = await import('./editor.ts');
+    assert.equal(pillIsWell('Open · 3 wolves'), true);
+    assert.equal(pillIsWell('Open only to you'), true);
+    for (const text of ['Keeps stopping (exit 139): starts again in 21 s', 'Closed for changes', 'Not answering', 'Setting up 40%', 'Restarting…'])
+        assert.equal(pillIsWell(text), false, text);
+});
