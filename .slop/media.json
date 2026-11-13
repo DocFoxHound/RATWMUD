@@ -1,0 +1,15 @@
+{
+  "icon": "icon.png",
+  "thumbnail": "thumbnail.png",
+  "gallery": [
+    { "image": "screenshots/greyfen-square.png", "caption": "Greyfen Crossing at noon: the market square, its fountain and the wolves who work there" },
+    { "image": "screenshots/square-talk.png", "caption": "Players and townsfolk talking in the square, each line in the story log" },
+    { "image": "screenshots/duel-begins.png", "caption": "A duel begins: each side takes its ground" },
+    { "image": "screenshots/duel-your-turn.png", "caption": "Your turn: a bite to the throat, with fire Gifts to call on" },
+    { "image": "screenshots/ridgemere-commons.png", "caption": "Ridgemere, the Commons and the Rise: the city's residents at their trades" },
+    { "image": "screenshots/creator-fur-zones.png", "caption": "The character creator: a painted wolf in your own colours, zone by zone" },
+    { "image": "screenshots/editor-live-map.png", "caption": "Hosting your own world: the Editor's live map" },
+    { "image": "screenshots/editor-npc-life.png", "caption": "The Editor's NPC Life: the world's residents, places and calendar" },
+    { "image": "screenshots/editor-atlas.png", "caption": "Atlas in the Editor: the world's map, its cells and markers" }
+  ]
+}

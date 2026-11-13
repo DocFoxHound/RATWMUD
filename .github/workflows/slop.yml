@@ -1,0 +1,37 @@
+# SLAPorSLOP's Slop Build (https://slaporslop.games/publishing.md, Option B; Docs/Publishing-on-SLAPorSLOP.md): the
+# desktop client (Desktop/, a Tauri 2 shell) for Windows (.zip) and Linux (.tar.gz, .deb, .rpm), built on GitHub's
+# runners from this repository, signed with GitHub artifact attestations and checked (Microsoft Defender, gitleaks,
+# OSV-Scanner).
+#
+# The pages the shell builds in live outside Desktop/: build-command (run in Desktop/ after its `npm ci`) installs and
+# builds the Editor's page and the game's page first, as desktop-windows.yml does (`npm run setup`, then the builds);
+# `tauri build` then embeds Client/dist (frontendDist) and Editor/dist (build.rs). The shared recipe installs WebKitGTK
+# and GTK on Linux itself.
+#
+# publish: false builds and checks only (no release, nothing sent to SLAPorSLOP; the files stay a day as the run's
+# artifacts). Switch it to true (or remove the line) to publish: every push to ridgemere2 then makes a numbered build
+# release, and a v* tag a versioned one.
+name: Slop Build
+on:
+  push:
+    branches: [ridgemere2]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  slop:
+    uses: DocFoxHound/slop-build/.github/workflows/build.yml@v1
+    with:
+      app: run-against-the-world
+      slop-url: https://slaporslop.games
+      project-type: tauri
+      project-path: Desktop
+      build-command: npm --prefix ../Client ci && npm --prefix ../Editor ci && npm --prefix ../Editor run build && npm --prefix ../Client run build
+      platforms: windows,linux
+      linux-packages: deb,rpm
+      publish: false
