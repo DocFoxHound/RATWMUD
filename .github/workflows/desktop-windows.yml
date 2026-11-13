@@ -3,7 +3,7 @@
 # (codex/mvp-foundation); the jobs check out the branch or tag they build, whatever branch the file is started from.
 #
 # Three jobs:
-# - client: the real desktop client from a branch (default r2-desktop): Client/ built and bundled, `cargo test`, the
+# - client: the real desktop client from a branch (default r2-desktop): Client/ and Editor/ built and bundled, `cargo test`, the
 #   release build and its NSIS installer. Uploads the installer and the bare .exe for the user's Windows PC.
 # - spike: doc 77 Phase 0's transport spike from the tag desktop-spike-phase0 (b7aed3d): the stand-in world on
 #   loopback and on the runner's own address, the spike app once (it runs the page's transport tests and quits).
@@ -48,8 +48,8 @@ jobs:
         with:
           workspaces: Desktop/src-tauri
       - run: npm run setup
-      - name: Build the page (the shell's tests and build need Client/dist)
-        run: npm --prefix ../Client run build
+      - name: Build the pages (the shell's tests and build need Client/dist and Editor/dist, which is built in)
+        run: npm --prefix ../Editor run build && npm --prefix ../Client run build
       - name: Shell tests
         run: npm test
       - name: Build (release, NSIS installer; builds Client/dist first)

@@ -960,6 +960,18 @@ fill the disk.
 
 ### 6.6 The shell and the page
 
+> **Changed 2026-11-13 (publishing on SLAPorSLOP, Docs/Publishing-on-SLAPorSLOP.md).** SLAPorSLOP's rule 1 forbids a
+> downloaded app running code a server sends, signed or not. So the client now ships the Editor's page itself:
+> `Editor/dist` (and the portraits it shows, `Data/Portraits/*.png` as `portraits/`) is built in the release like
+> `Client/dist` and embedded in the program (`Desktop/src-tauri/build.rs`, `src/editor/pages.rs`). The `editor` scheme
+> serves page files from that copy and never asks the world for one; only `/api/` (data) goes to the world, with every
+> other rule below kept (the window's binding, the account routes refused, header rules, size caps, forced content
+> types, the shell's CSP, downloads through the save dialog). The signed bundle below is gone: no `bundle.json` fetch,
+> no release key in the client (`editor/bundle.rs` and its `RELEASE_KEYS`/`OLDEST` removed; the hello's `editorApi`
+> still has to match). `Package/stage.sh` still stages and can sign `Editor/` in the image; the client no longer reads
+> either, so the signing step and `--make-release-key` can go when the package moves to its own repository. A world
+> whose package is newer or older than the client is caught by the hello's `editorApi` ("client-old"/"package-old").
+
 **The commands, granted to the main window only** (registered beside today's five, `lib.rs:236-239`):
 - `editor_connect(address)` → `{state: "new" | "trusted" | "moved" | "rotated" | "changed", world, name,
   fingerprint, previous?, hello}`. Parses with its own default port (17789), tries 127.0.0.1 for `localhost`,

@@ -5,8 +5,8 @@ real helper (tools/world_admin.py: its TLS 1.3 port, sign-in, sessions, account 
 with every migration and Greyfen with one player (Ada) in it, and an admin directory of its own with the world's
 certificate, first owner, settings copy and one-world registry (`world`), as the entrypoint writes them in the image.
 
-The studio serves the signed Editor bundle given with --bundle as the image's Editor/dist (stage.sh's output:
-bundle.json and portraits/ inside), only behind a session. Each request the studio gets is logged with its method,
+The studio is given the built Editor with --bundle as the image's Editor/dist (the client no longer asks a world for
+page files: its own are built in, so the run checks that only /api/ is asked). Each request the studio gets is logged with its method,
 path, status and the session's account, and the bearer token the helper saw (only so the test can look for it where
 it must never be). No AI key: the studio's AI is off, so nothing here calls a model.
 

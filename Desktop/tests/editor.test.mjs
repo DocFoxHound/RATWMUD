@@ -3,7 +3,7 @@
 // with Greyfen and one player, dropped afterwards), driven through the main window's own screens:
 //   EDITOR, the first owner's Editor code (it carries the address), signing in with the code, choosing a password (4b), the menu,
 //   the accounts panel behind the password asked again (a wrong one refused), a co-builder added and their code shown
-//   once, the DM tool in the Editor window (the hosted studio behind the session: only signed files; the session the
+//   once, the DM tool in the Editor window (the hosted studio behind the session: the page the client's own; the session the
 //   account's; the Prosperity tab and a DM act from it, queued and audited under the account and its session; no shell
 //   commands there; no token in its page; it can't leave its origin or open windows), the session ending under the
 //   window and the same account taking it up again, sign out (the window goes), a signed key rotation moving quietly, a
@@ -12,12 +12,12 @@
 //
 //   cd Desktop && npm run test:editor     (builds the Editor, the page and the e2e build, then this)
 //
-// Needs a display, the local PostgreSQL (Database/.env, or its settings in the environment), python3 and openssl.
+// Needs a display, the local PostgreSQL (Database/.env, or its settings in the environment) and python3.
 // Opens real windows for about a minute. Everything is kept in a throwaway --data-dir with --token-store file.
 import {test, before, after} from 'node:test';
 import assert from 'node:assert/strict';
-import {spawn, execFileSync} from 'node:child_process';
-import {cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync} from 'node:fs';
+import {spawn} from 'node:child_process';
+import {existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join, resolve} from 'node:path';
 import {createInterface} from 'node:readline';
@@ -48,18 +48,9 @@ before(async () => {
     if (!existsSync(join(root, 'Editor', 'dist', 'index.html'))) return void (skip = 'build the Editor first: npm --prefix Editor run build');
     scratch = mkdtempSync(join(tmpdir(), 's2stage-editor-e2e-'));
     data = join(scratch, 'data');
-    // The Editor bundle, signed as stage.sh signs the image's, with a key made for this run (a debug build trusts it
-    // through RATW_EDITOR_DEV_KEY; a release build never does).
-    const bundle = join(scratch, 'bundle');
-    cpSync(join(root, 'Editor', 'dist'), bundle, {recursive: true});
-    // (And the page's portraits inside it, as stage.sh stages the image's Editor: /opt/ratw/Editor/dist/portraits.)
-    mkdirSync(join(bundle, 'portraits'), {recursive: true});
-    for (const f of readdirSync(join(root, 'Data', 'Portraits')).filter(f => f.endsWith('.png'))) cpSync(join(root, 'Data', 'Portraits', f), join(bundle, 'portraits', f));
-    execFileSync('openssl', ['genpkey', '-algorithm', 'ed25519', '-out', join(scratch, 'key.pem')]);
-    execFileSync('bash', [join(root, 'Package', 'stage.sh'), '--sign-bundle', bundle, '--release-key', join(scratch, 'key.pem')], {stdio: 'ignore'});
-    const signed = JSON.parse(readFileSync(join(bundle, 'bundle.json'), 'utf8'));
-    const der = execFileSync('openssl', ['pkey', '-in', join(scratch, 'key.pem'), '-pubout', '-outform', 'DER']);
-    process.env.RATW_EDITOR_DEV_KEY = `${signed.key}:${der.subarray(der.length - 32).toString('base64')}`;
+    // (The world's studio is given the built Editor too, as the image has it; the client never asks it for a page file:
+    // its own are built in, editor/pages.rs.)
+    const bundle = join(root, 'Editor', 'dist');
     world = spawn('python3', [join(import.meta.dirname, 'editor_world.py'), '--bundle', bundle], {stdio: ['pipe', 'pipe', 'inherit']});
     lines = createInterface({input: world.stdout});
     lines.on('line', line => { try { const v = JSON.parse(line); waiting.shift()?.(v); } catch { /* the helper's log lines */ } });
@@ -185,13 +176,14 @@ test('the Editor: a code, a password, the menu, accounts, the window, a rotation
     assert.match(await page.evaluate(`document.querySelector('[data-account=${js(owner)}]').textContent`), /only owner/, 'no TURN OFF or REMOVE for the last owner');
     assert.match(await page.evaluate(`document.querySelector('.editor-menu').textContent`), /Account pell added by/);
 
-    // The DM tool in the Editor window: the signed files only, the session added by the shell.
+    // The DM tool in the Editor window: the client's own page, only /api/ sent to the world, the session added by the shell.
     await click('button[data-action=editor-dm]');
     await editorReady();
     assert.match(await inEditor('location.href'), /^(editor:\/\/localhost|http:\/\/editor\.localhost)\/\?suite=dm$/);
     const log = (await tell('log')).log;
     const paths = log.map(l => l.path);
-    for (const p of ['/bundle.json', '/', '/api/studio/session']) assert.ok(paths.includes(p), `${p} was asked for: ${paths.join(' ')}`);
+    assert.ok(paths.includes('/api/studio/session'), `the session was asked for: ${paths.join(' ')}`);
+    assert.deepEqual(paths.filter(p => !p.startsWith('/api/')), [], 'no page file was asked of the world');
     assert.ok(log.every(l => l.account === owner));
     const bearer = log[0].bearer;
     // The real hosted studio (doc 78, M3) behind the session: the page's start asks nothing it refuses, the session is
@@ -245,7 +237,7 @@ test('the Editor: a code, a password, the menu, accounts, the window, a rotation
     const everything = await inEditor(`document.documentElement.outerHTML + JSON.stringify({...localStorage}) + JSON.stringify({...sessionStorage}) +
         document.cookie + Object.keys(window).join(',')`);
     for (const secret of [bearer, deviceToken, NEW_PASSWORD]) assert.ok(secret && !everything.includes(secret), 'no token or password in the Editor\'s page');
-    // It can't read a file off the signed list, leave its origin, or open a window.
+    // It can't read a file that isn't the Editor's, leave its origin, or open a window.
     assert.equal(await inEditor(`fetch('/editor/accounts').then(r => r.status)`), 403);
     assert.equal(await inEditor(`fetch('/not-signed.js').then(r => r.status)`), 404);
     assert.equal(await inEditor(`String(window.open('https://example.net/'))`), 'null');

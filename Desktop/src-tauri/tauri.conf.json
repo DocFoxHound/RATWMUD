@@ -5,13 +5,14 @@
   "identifier": "net.ratw.client",
   "build": {
     "frontendDist": "../../Client/dist",
-    "beforeBuildCommand": "npm --prefix ../Client run build"
+    "beforeBuildCommand": "npm --prefix ../Editor run build && npm --prefix ../Client run build"
   },
   "app": {
     "withGlobalTauri": true,
     "windows": [
       {
         "label": "main",
+        "create": false,
         "title": "Run Against the World",
         "width": 1280,
         "height": 800,

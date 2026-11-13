@@ -8,7 +8,7 @@
 //   editor/wire.rs     addresses, the hello and Editor codes, checked
 //   editor/pins.rs     the pin store (by key, addresses as aliases), signed rotation, the red screen's cases
 //   editor/devices.rs  device tokens in the keychain
-//   editor/bundle.rs   the signed Editor bundle and its release key
+//   editor/pages.rs    the Editor's page files, built into the client (never fetched from a world)
 //   editor/proxy.rs    the `editor` scheme's rules
 //
 // The Editor window (label `editor`) gets no capability at all: Tauri files the scheme's origin under "URL: local", so a
@@ -17,8 +17,8 @@
 // window, deleted after it closes (WebKitGTK's incognito windows never reach a custom scheme, M0a). Its navigation is
 // kept to the scheme's origin (lib.rs, page_origin_for), it opens no other window, and its downloads need an allowed
 // extension and go through the shell's save dialog.
-pub mod bundle;
 pub mod devices;
+pub mod pages;
 pub mod pins;
 pub mod proxy;
 pub mod tls;
@@ -32,7 +32,6 @@ use std::time::{Duration, Instant};
 use serde_json::{json, Value};
 use tauri::{AppHandle, Emitter, Manager, State};
 
-use bundle::Manifest;
 use pins::{PinStore, Verdict};
 use proxy::Binding;
 use tls::{fingerprint, sha256, Mode, Pin};
@@ -72,7 +71,6 @@ struct Session {
     /// one; from an Editor code the page never had it). Dropped once changed.
     one_time: Option<String>,
     agent: ureq::Agent,
-    manifest: Option<Arc<Manifest>>,
 }
 
 /// The Editor window's binding (I10): one world, by its key's pin as well as the id it claims (R1 review, security 4: a
@@ -464,7 +462,7 @@ impl Editor {
             let generation = inner.generation;
             let one_time = must_change.then(|| secret.clone());
             let session = Session { generation, address, place, base, pin, world: known.world.clone(), name: known.name.clone(), username: username.clone(),
-                role, must_change, token: Some(token), one_time, agent, manifest: None };
+                role, must_change, token: Some(token), one_time, agent };
             let view = Self::session_view(&session);
             // The session before this one is ended on its world too (another world's, or this account's own).
             old = inner.session.take();
@@ -651,7 +649,6 @@ impl Editor {
             match inner.session.as_mut() {
                 Some(s) if s.generation == generation && s.token.is_some() => {
                     s.token = None;
-                    s.manifest = None;
                     Some(json!({"state": "ended", "world": s.world, "username": s.username}))
                 }
                 _ => None,
@@ -664,34 +661,6 @@ impl Editor {
 
     // ------------------------------------------------------------------------------------------------- the window
 
-    /// The signed bundle for this session: fetched once, checked against the release keys.
-    fn manifest(&self) -> Result<Arc<Manifest>, Value> {
-        let (agent, base, token, generation) = self.live()?;
-        if let Some(m) = self.inner.lock().unwrap().session.as_ref().and_then(|s| s.manifest.clone()) {
-            return Ok(m);
-        }
-        let world = proxy::World { agent, base, token };
-        let fetched = proxy::Upstream::send(&world, "GET", "/bundle.json", None, None, None).map_err(|_| refused("unreachable"))?;
-        if fetched.status == 401 {
-            self.ended(None, generation);
-            return Err(json!({"ok": false, "status": 401, "error": "ended"}));
-        }
-        let body = proxy::decoded(&fetched).map_err(|_| refused("unsigned"))?;
-        let manifest = match (fetched.status, bundle::verify(&body, &bundle::trusted_keys(), bundle::OLDEST, wire::EDITOR_API)) {
-            (200, Ok(m)) => Arc::new(m),
-            (_, Err(why)) => {
-                eprintln!("ratw-desktop: the world's Editor bundle was refused: {why:?}");
-                return Err(refused("unsigned"));
-            }
-            _ => return Err(refused("unsigned")),
-        };
-        let mut inner = self.inner.lock().unwrap();
-        if let Some(s) = inner.session.as_mut().filter(|s| s.generation == generation) {
-            s.manifest = Some(manifest.clone());
-        }
-        Ok(manifest)
-    }
-
     /// The `editor` scheme: one request from a webview.
     pub fn proxy(&self, app: &AppHandle, label: &str, request: &tauri::http::Request<Vec<u8>>) -> tauri::http::Response<Vec<u8>> {
         let asked = proxy::asked(request);
@@ -700,17 +669,17 @@ impl Editor {
             crate::e2e::reply(app, &String::from_utf8_lossy(&asked.body));
             return proxy::response(proxy::Answer { status: 204, content_type: "application/json", body: vec![], ended: false, input: false });
         }
-        let (binding, upstream, manifest, generation) = {
+        let (binding, upstream, generation) = {
             let inner = self.inner.lock().unwrap();
             match (&inner.session, &inner.window) {
                 (Some(s), Some(w)) if label == "editor" && w.world == s.world && w.pin == s.pin && w.username == s.username => {
                     match (&s.token, w.generation == s.generation) {
                         (Some(t), true) => (Binding::Current, Some(proxy::World { agent: s.agent.clone(), base: s.base.clone(), token: t.clone() }),
-                            s.manifest.clone(), s.generation),
-                        _ => (Binding::Ended, None, None, s.generation),
+                            s.generation),
+                        _ => (Binding::Ended, None, s.generation),
                     }
                 }
-                _ => (Binding::Stale, None, None, 0),
+                _ => (Binding::Stale, None, 0),
             }
         };
         struct Nowhere;
@@ -719,14 +688,9 @@ impl Editor {
                 Err("no session".into())
             }
         }
-        // A session signed in again in place (the same account, the window kept): its signed list, fetched once.
-        let manifest = match (&upstream, manifest) {
-            (Some(_), None) => self.manifest().ok(),
-            (_, m) => m,
-        };
         let answer = match &upstream {
-            Some(u) => proxy::handle(label, binding, &asked, manifest.as_deref(), u),
-            None => proxy::handle(label, binding, &asked, None, &Nowhere),
+            Some(u) => proxy::handle(label, binding, &asked, pages::FILES, u),
+            None => proxy::handle(label, binding, &asked, pages::FILES, &Nowhere),
         };
         if answer.input {
             *self.last_input.lock().unwrap() = Some(Instant::now());
@@ -891,16 +855,7 @@ pub async fn editor_open(suite: String, app: AppHandle, editor: Ed<'_>) -> Resul
             None => return Ok(refused("signed-out")),
         }
     }
-    // The signed list is read afresh each time a tool is opened: the world may have been updated since this session
-    // signed in (doc 78's closing run: after an update the window said "isn't an official RATW build" until the host
-    // signed in again, the page's files no longer matching the list fetched before it).
-    if let Some(s) = e.inner.lock().unwrap().session.as_mut() {
-        s.manifest = None;
-    }
-    let checked = { let e = e.clone(); blocking(move || match e.manifest() { Ok(_) => json!({"ok": true}), Err(v) => v }).await? };
-    if checked["ok"] != true {
-        return Ok(checked);
-    }
+    // (The page is the client's own, editor/pages.rs: nothing to fetch or check from the world first.)
     let url = editor_url(&format!("/?suite={suite}"));
     let title = e.window_title().unwrap_or_else(|| "RATW Editor".into());
     *e.last_input.lock().unwrap() = Some(Instant::now());       // (Opening it is the host's input.)

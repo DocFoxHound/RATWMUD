@@ -1,6 +1,7 @@
 // The `editor` URI scheme (Docs/Design/78, 6.6): the Editor window's every request, proxied by the shell to its world
 // over the pinned client, with the session's bearer token added here. The page never holds the token (I4), can add no
-// header of its own, and runs only signed files (I6).
+// header of its own, and runs only the client's own files (I6): the page files come from the client's build
+// (editor/pages.rs), never from the world; only /api/ (data) is sent on.
 //
 // The rules, each tested below:
 // - only the window labelled `editor`, and only while it is bound to the current session (I10): a window from another
@@ -10,12 +11,15 @@
 // - sent on: the method, the path and query, the body (up to 16 MB; Content-Length set from it, since neither webview
 //   hands it over, M0a), Content-Type and Accept; never Cookie, Origin, Authorization or Host from the page;
 // - replies up to 32 MB on the wire and 32 MB after gunzip; no redirects (the agent follows none); 60 s;
-// - a page file must be on the signed list and hash to it, and its type comes from its name; `/api/` replies are JSON
-//   (or octet-stream for ground) with nosniff, whatever the world said; the shell's own CSP on every reply;
+// - a page file is the client's own (GET only, its type from its name), never asked of the world; `/api/` replies are
+//   JSON (or octet-stream for ground) with nosniff, whatever the world said; the shell's own CSP on every reply;
 // - a 401 from the world tells the main window (the menu shows "Your Editor session ended").
 use std::io::Read;
 
-use super::bundle::{content_type, file_of, Manifest};
+use super::pages::{content_type, file_of};
+
+/// The page files a handler serves: (path, bytes); `pages::FILES` in the client.
+pub type Pages<'a> = &'a [(&'a str, &'a [u8])];
 
 pub const MAX_REQUEST: usize = 16 * 1024 * 1024;
 pub const MAX_REPLY: u64 = 32 * 1024 * 1024;
@@ -69,14 +73,6 @@ impl Answer {
         Answer { status, content_type: "application/json", body: serde_json::json!({"error": message}).to_string().into_bytes(), ended: false, input: false }
     }
 
-    /// The shell's own page while the world doesn't answer: it asks again every 5 seconds by itself.
-    fn restarting() -> Answer {
-        let body = "<!doctype html><html><head><meta charset=\"utf-8\"><meta http-equiv=\"refresh\" content=\"5\"><title>RATW Editor</title></head>\
-                    <body style=\"background:#141613;color:#e8e1d3;font:16px system-ui;padding:3em\"><p>Restarting…</p>\
-                    <p style=\"color:#a59f90\">Your world is restarting: the Editor reconnects by itself.</p></body></html>";
-        Answer { status: 503, content_type: "text/html; charset=utf-8", body: body.as_bytes().to_vec(), ended: false, input: false }
-    }
-
     /// The shell's own page in place of a file it refused.
     fn page(status: u16, message: &str) -> Answer {
         let body = format!("<!doctype html><html><head><meta charset=\"utf-8\"><title>RATW Editor</title></head>\
@@ -87,7 +83,7 @@ impl Answer {
 
 /// The API's answer while the world doesn't answer (503): a code the Editor page words itself.
 pub const RESTARTING: &str = "restarting";
-pub const NOT_OFFICIAL: &str = "This world's Editor isn't an official RATW build.";
+pub const NOT_BUILT: &str = "This copy of the client was built without its Editor.";
 pub const ENDED: &str = "Your Editor session ended: sign in again from the Editor menu.";
 
 /// What came back from the world, before decompression.
@@ -136,7 +132,7 @@ pub fn decoded(fetched: &Fetched) -> Result<Vec<u8>, &'static str> {
     }
 }
 
-pub fn handle(label: &str, binding: Binding, asked: &Asked, manifest: Option<&Manifest>, upstream: &dyn Upstream) -> Answer {
+pub fn handle(label: &str, binding: Binding, asked: &Asked, pages: Pages, upstream: &dyn Upstream) -> Answer {
     if label != "editor" {
         return Answer::text(403, "Only the Editor window uses the editor scheme.");
     }
@@ -184,28 +180,17 @@ pub fn handle(label: &str, binding: Binding, asked: &Asked, manifest: Option<&Ma
         };
         return Answer { status: fetched.status, content_type: kind, body: data, ended: fetched.status == 401, input: false };
     }
-    // A page file: GET only, on the signed list, hashing to it.
+    // A page file: GET only, the client's own, never asked of the world.
     if asked.method != "GET" {
         return Answer::text(405, "Page files are read only.");
     }
-    let (Some(manifest), Some(file)) = (manifest, file_of(&asked.path)) else { return Answer::page(404, NOT_OFFICIAL) };
-    if !manifest.lists(&file) {
-        return Answer::page(404, "Not part of this world's Editor.");
+    if !pages.iter().any(|(name, _)| *name == "index.html") {
+        return Answer::page(404, NOT_BUILT);
     }
-    let Some(kind) = content_type(&file) else { return Answer::page(404, NOT_OFFICIAL) };
-    let fetched = match upstream.send("GET", &asked.path, None, None, None) {
-        Ok(f) => f,
-        Err(_) => return Answer::restarting(),
-    };
-    if fetched.status == 401 {
-        return Answer { ended: true, ..Answer::page(401, ENDED) };
-    }
-    if fetched.status != 200 {
-        return Answer::page(fetched.status.clamp(400, 599), "The world couldn't send this part of its Editor.");
-    }
-    match decoded(&fetched) {
-        Ok(data) if manifest.holds(&file, &data) => Answer { status: 200, content_type: kind, body: data, ended: false, input: false },
-        _ => Answer::page(403, NOT_OFFICIAL),
+    let found = file_of(&asked.path).and_then(|file| Some((content_type(&file)?, pages.iter().find(|(name, _)| *name == file)?.1)));
+    match found {
+        Some((kind, body)) => Answer { status: 200, content_type: kind, body: body.to_vec(), ended: false, input: false },
+        None => Answer::page(404, "Not part of the Editor."),
     }
 }
 
@@ -279,8 +264,6 @@ impl Upstream for World {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::editor::bundle::tests::signed;
-    use crate::editor::bundle::{verify, OLDEST};
     use std::io::Write;
     use std::sync::Mutex;
 
@@ -314,51 +297,46 @@ mod tests {
         e.finish().unwrap()
     }
 
-    fn manifest() -> Manifest {
-        let (bundle, keys) = signed(&[("index.html", b"<html>page</html>"), ("assets/app.js", b"run()")], OLDEST);
-        verify(&bundle, &keys, OLDEST, 1).unwrap()
-    }
+    const PAGES: Pages = &[("index.html", b"<html>page</html>"), ("assets/app.js", b"run()"), ("portraits/red.png", b"\x89PNG")];
 
     #[test]
     fn only_the_editor_window_bound_to_the_current_session() {
         let world = fake(|_| plain(200, "application/json", b"{}"));
-        let m = manifest();
         for label in ["main", "editor2", ""] {
-            assert_eq!(handle(label, Binding::Current, &get("/api/x"), Some(&m), &world).status, 403, "{label}");
+            assert_eq!(handle(label, Binding::Current, &get("/api/x"), PAGES, &world).status, 403, "{label}");
         }
-        assert_eq!(handle("editor", Binding::Stale, &get("/api/x"), Some(&m), &world).status, 403, "another session's window");
-        let ended = handle("editor", Binding::Ended, &get("/api/x"), Some(&m), &world);
+        assert_eq!(handle("editor", Binding::Stale, &get("/api/x"), PAGES, &world).status, 403, "another session's window");
+        let ended = handle("editor", Binding::Ended, &get("/api/x"), PAGES, &world);
         assert_eq!((ended.status, ended.ended), (401, true), "an ended session: the page keeps its saves");
         assert!(world.seen.lock().unwrap().is_empty(), "none of them reached the world");
-        assert_eq!(handle("editor", Binding::Current, &get("/api/x"), Some(&m), &world).status, 200);
+        assert_eq!(handle("editor", Binding::Current, &get("/api/x"), PAGES, &world).status, 200);
     }
 
     #[test]
     fn the_page_adds_no_header_and_never_reaches_the_account_routes() {
         let world = fake(|_| plain(200, "application/json", b"{}"));
-        let m = manifest();
         let post = Asked { method: "POST".into(), path: "/api/dm/act?x=1".into(), content_type: Some("application/json".into()),
             accept: Some("application/json".into()), body: b"{\"a\":1}".to_vec() };
-        assert_eq!(handle("editor", Binding::Current, &post, Some(&m), &world).status, 200);
+        assert_eq!(handle("editor", Binding::Current, &post, PAGES, &world).status, 200);
         let seen = world.seen.lock().unwrap().clone();
         assert_eq!(seen, vec![("POST".into(), "/api/dm/act?x=1".into(), Some("application/json".into()), Some("application/json".into()), 7)]);
         for path in ["/editor/accounts", "/editor/accounts/add", "/editor/login", "/editor", "/editor/keepalive?x"] {
             for method in ["GET", "POST"] {
                 let a = Asked { method: method.into(), path: path.into(), ..Default::default() };
-                assert_eq!(handle("editor", Binding::Current, &a, Some(&m), &world).status, 403, "{method} {path}");
+                assert_eq!(handle("editor", Binding::Current, &a, PAGES, &world).status, 403, "{method} {path}");
             }
         }
         for method in ["PUT", "DELETE", "OPTIONS", "PATCH"] {
             let a = Asked { method: method.into(), path: "/api/x".into(), ..Default::default() };
-            assert_eq!(handle("editor", Binding::Current, &a, Some(&m), &world).status, 405);
+            assert_eq!(handle("editor", Binding::Current, &a, PAGES, &world).status, 405);
         }
         for path in ["//evil.example/x", "/api/../editor/accounts", "/a\\b", "/api/%2e%2e/x", "/api/.%2e/x", "/api/%2E./x", "/api/%2e/x", "relative"] {
-            assert_eq!(handle("editor", Binding::Current, &get(path), Some(&m), &world).status, 400, "{path}");
+            assert_eq!(handle("editor", Binding::Current, &get(path), PAGES, &world).status, 400, "{path}");
         }
         assert_eq!(world.seen.lock().unwrap().len(), 1);
         // A header with a line break in it isn't passed on.
         let bad = Asked { method: "POST".into(), path: "/api/x".into(), content_type: Some("text/plain\r\nCookie: a=b".into()), ..Default::default() };
-        handle("editor", Binding::Current, &bad, Some(&m), &world);
+        handle("editor", Binding::Current, &bad, PAGES, &world);
         assert_eq!(world.seen.lock().unwrap().last().unwrap().2, None);
     }
 
@@ -370,19 +348,15 @@ mod tests {
                 Err("connection refused".into())
             }
         }
-        let m = manifest();
-        let api = handle("editor", Binding::Current, &get("/api/dm/live"), Some(&m), &Down);
+        let api = handle("editor", Binding::Current, &get("/api/dm/live"), PAGES, &Down);
         assert_eq!((api.status, api.content_type, api.ended), (503, "application/json", false), "not an ended session");
         assert_eq!(serde_json::from_slice::<serde_json::Value>(&api.body).unwrap()["error"], RESTARTING);
-        let page = handle("editor", Binding::Current, &get("/"), Some(&m), &Down);
-        let text = String::from_utf8(page.body).unwrap();
-        assert_eq!(page.status, 503);
-        assert!(text.contains("Restarting") && text.contains("http-equiv=\"refresh\""), "{text}");
+        let page = handle("editor", Binding::Current, &get("/"), PAGES, &Down);
+        assert_eq!((page.status, page.body.as_slice()), (200, &b"<html>page</html>"[..]), "the page is the client's own: it opens, and says Restarting itself");
     }
 
     #[test]
     fn sizes_are_capped_both_ways() {
-        let m = manifest();
         let world = fake(|path| match path {
             "/api/big" => plain(200, "application/json", &vec![b' '; MAX_REPLY as usize + 1]),
             "/api/bomb" => Fetched { status: 200, content_type: None, encoding: Some("gzip".into()), body: gzip(&vec![b'a'; MAX_REPLY as usize + 1]) },
@@ -391,71 +365,67 @@ mod tests {
             _ => plain(200, "application/json", b"{}"),
         });
         let post = |n: usize| Asked { method: "POST".into(), path: "/api/x".into(), body: vec![0; n], ..Default::default() };
-        assert_eq!(handle("editor", Binding::Current, &post(MAX_REQUEST), Some(&m), &world).status, 200, "16 MB passes");
-        assert_eq!(handle("editor", Binding::Current, &post(MAX_REQUEST + 1), Some(&m), &world).status, 413);
+        assert_eq!(handle("editor", Binding::Current, &post(MAX_REQUEST), PAGES, &world).status, 200, "16 MB passes");
+        assert_eq!(handle("editor", Binding::Current, &post(MAX_REQUEST + 1), PAGES, &world).status, 413);
         assert_eq!(world.seen.lock().unwrap().last().unwrap().4, MAX_REQUEST, "the body went whole");
-        assert_eq!(handle("editor", Binding::Current, &get("/api/big"), Some(&m), &world).status, 502, "over 32 MB on the wire");
-        assert_eq!(handle("editor", Binding::Current, &get("/api/bomb"), Some(&m), &world).status, 502, "over 32 MB after gunzip");
-        assert_eq!(handle("editor", Binding::Current, &get("/api/br"), Some(&m), &world).status, 502);
-        let gz = handle("editor", Binding::Current, &get("/api/gz"), Some(&m), &world);
+        assert_eq!(handle("editor", Binding::Current, &get("/api/big"), PAGES, &world).status, 502, "over 32 MB on the wire");
+        assert_eq!(handle("editor", Binding::Current, &get("/api/bomb"), PAGES, &world).status, 502, "over 32 MB after gunzip");
+        assert_eq!(handle("editor", Binding::Current, &get("/api/br"), PAGES, &world).status, 502);
+        let gz = handle("editor", Binding::Current, &get("/api/gz"), PAGES, &world);
         assert_eq!((gz.status, gz.body.len(), gz.content_type), (200, 1 << 20, "application/json"), "gunzipped, and forced to JSON");
     }
 
     #[test]
     fn api_replies_never_run_as_script() {
-        let m = manifest();
         let world = fake(|path| match path {
             "/api/ground" => plain(200, "application/octet-stream", b"\x00\x01"),
             "/api/script" => plain(200, "text/html", b"<script>alert(1)</script>"),
             "/api/gone" => plain(401, "application/json", b"{\"error\":\"signed-out\"}"),
             _ => plain(200, "text/javascript", b"run()"),
         });
-        assert_eq!(handle("editor", Binding::Current, &get("/api/ground"), Some(&m), &world).content_type, "application/octet-stream");
-        assert_eq!(handle("editor", Binding::Current, &get("/api/script"), Some(&m), &world).content_type, "application/json");
-        assert_eq!(handle("editor", Binding::Current, &get("/api/js"), Some(&m), &world).content_type, "application/json");
-        let gone = handle("editor", Binding::Current, &get("/api/gone"), Some(&m), &world);
+        assert_eq!(handle("editor", Binding::Current, &get("/api/ground"), PAGES, &world).content_type, "application/octet-stream");
+        assert_eq!(handle("editor", Binding::Current, &get("/api/script"), PAGES, &world).content_type, "application/json");
+        assert_eq!(handle("editor", Binding::Current, &get("/api/js"), PAGES, &world).content_type, "application/json");
+        let gone = handle("editor", Binding::Current, &get("/api/gone"), PAGES, &world);
         assert_eq!((gone.status, gone.ended), (401, true), "a 401 reaches the menu");
-        let r = response(handle("editor", Binding::Current, &get("/api/script"), Some(&m), &world));
+        let r = response(handle("editor", Binding::Current, &get("/api/script"), PAGES, &world));
         assert_eq!(r.headers()["x-content-type-options"], "nosniff");
         assert_eq!(r.headers()["content-security-policy"], CSP);
         assert!(r.headers().get("set-cookie").is_none());
     }
 
     #[test]
-    fn only_signed_page_files_pass() {
-        let m = manifest();
-        let world = fake(|path| match path {
-            "/" | "/?suite=dm" => plain(200, "application/octet-stream", b"<html>page</html>"),
-            "/assets/app.js" => Fetched { status: 200, content_type: Some("text/plain".into()), encoding: Some("gzip".into()), body: gzip(b"run()") },
-            "/assets/evil.js" => plain(200, "text/javascript", b"evil()"),
-            "/assets/changed.js" => plain(200, "text/javascript", b"evil()"),
-            _ => plain(404, "application/json", b"{}"),
-        });
-        let page = handle("editor", Binding::Current, &get("/?suite=dm"), Some(&m), &world);
-        assert_eq!((page.status, page.content_type), (200, "text/html; charset=utf-8"), "its type from its name, never the world's");
-        let js = handle("editor", Binding::Current, &get("/assets/app.js"), Some(&m), &world);
+    fn page_files_are_the_clients_own_and_never_asked_of_the_world() {
+        let world = fake(|_| plain(200, "text/javascript", b"evil()"));
+        let page = handle("editor", Binding::Current, &get("/?suite=dm"), PAGES, &world);
+        assert_eq!((page.status, page.content_type, page.body.as_slice()), (200, "text/html; charset=utf-8", &b"<html>page</html>"[..]));
+        let js = handle("editor", Binding::Current, &get("/assets/app.js"), PAGES, &world);
         assert_eq!((js.status, js.content_type, js.body.as_slice()), (200, "text/javascript; charset=utf-8", &b"run()"[..]));
-        assert_eq!(handle("editor", Binding::Current, &get("/assets/evil.js"), Some(&m), &world).status, 404, "not on the signed list");
-        let mut changed = m.clone();
-        changed.files.insert("assets/changed.js".into(), crate::editor::tls::sha256(b"run()"));
-        let refused = handle("editor", Binding::Current, &get("/assets/changed.js"), Some(&changed), &world);
-        assert_eq!(refused.status, 403);
-        assert!(String::from_utf8_lossy(&refused.body).contains(NOT_OFFICIAL));
-        assert_eq!(handle("editor", Binding::Current, &get("/"), None, &world).status, 404, "no signed bundle, no page");
+        let png = handle("editor", Binding::Current, &get("/portraits/red.png"), PAGES, &world);
+        assert_eq!((png.status, png.content_type), (200, "image/png"));
+        for missing in ["/assets/evil.js", "/bundle.json", "/portraits/x.exe", "/a/../index.html"] {
+            assert_ne!(handle("editor", Binding::Current, &get(missing), PAGES, &world).status, 200, "{missing}");
+        }
+        let none = handle("editor", Binding::Current, &get("/"), &[], &world);
+        assert_eq!(none.status, 404);
+        assert!(String::from_utf8_lossy(&none.body).contains(NOT_BUILT));
         let post = Asked { method: "POST".into(), path: "/".into(), ..Default::default() };
-        assert_eq!(handle("editor", Binding::Current, &post, Some(&m), &world).status, 405);
-        // Never asked of the world: files not on the list.
-        assert!(!world.seen.lock().unwrap().iter().any(|s| s.1 == "/assets/evil.js"));
+        assert_eq!(handle("editor", Binding::Current, &post, PAGES, &world).status, 405);
+        assert!(world.seen.lock().unwrap().is_empty(), "no page file was asked of the world: {:?}", world.seen.lock().unwrap());
+        // An ended or stale window gets no page either.
+        assert_eq!(handle("editor", Binding::Ended, &get("/"), PAGES, &world).status, 401);
+        assert_eq!(handle("editor", Binding::Stale, &get("/"), PAGES, &world).status, 403);
+        assert_eq!(handle("main", Binding::Current, &get("/"), PAGES, &world).status, 403);
     }
 
     #[test]
     fn the_input_ping_stays_in_the_shell() {
         let world = fake(|_| plain(200, "application/json", b"{}"));
         let a = Asked { method: "POST".into(), path: INPUT_PATH.into(), ..Default::default() };
-        let r = handle("editor", Binding::Current, &a, None, &world);
+        let r = handle("editor", Binding::Current, &a, PAGES, &world);
         assert_eq!((r.status, r.input), (204, true));
         assert!(world.seen.lock().unwrap().is_empty());
-        assert_eq!(handle("main", Binding::Current, &a, None, &world).input, false);
+        assert_eq!(handle("main", Binding::Current, &a, PAGES, &world).input, false);
     }
 
     #[test]

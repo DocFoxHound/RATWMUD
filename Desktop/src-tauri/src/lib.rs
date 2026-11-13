@@ -8,18 +8,26 @@
 //     (the navigation rule);
 //   - with --relay, runs the loopback relay for worlds the webview can't reach itself (relay.rs);
 //   - the Editor (Docs/Design/78): a world's own tools, over a pinned TLS connection, in a window of their own
-//     (editor.rs).
+//     (editor.rs); its page is built into the client too (editor/pages.rs);
+//   - started by the SLAPorSLOP app: keeps everything in SLOP_SAVE_DIR (below) and sends Slop Pulse (pulse.rs).
+//
+// Where it keeps things: the data folder holds the Editor's pin store (editor-worlds.json), the file token store and
+// the Editor's device token files (when there is no keychain, or with --token-store file), the window's size and place,
+// and, with --data-dir or SLOP_SAVE_DIR, the webviews' own data (the page's localStorage and caches: webview/). When
+// SLOP_SAVE_DIR is set (SLAPorSLOP's save folder, the same in its sandbox mode), it is the data folder and the token
+// store is the file there (sandbox mode on Linux has no keyring); --data-dir and --token-store still win.
 //
 // Arguments:
 //   --central URL          central's address (default: central.rs BUILT_IN); https://, or http:// to this computer
-//   --token-store KIND     keychain (default; a file when there is none), file, or memory
-//   --data-dir PATH        where the app keeps its files (default: the OS's app data folder); for tests
+//   --token-store KIND     keychain (default; a file when there is none; file under SLOP_SAVE_DIR), file, or memory
+//   --data-dir PATH        where the app keeps its files (default: SLOP_SAVE_DIR, else the OS's app data folder)
 //   --relay                run the loopback relay
 //   --e2e-check            (an e2e build only) print "ratw-desktop e2e" and exit: how the tests know the hook is in
 mod central;
 #[cfg(feature = "e2e")]
 mod e2e;
 pub mod editor;
+mod pulse;
 mod relay;
 mod tokens;
 
@@ -41,7 +49,15 @@ pub struct Options {
 }
 
 pub fn options(args: &[String]) -> Result<Options, String> {
-    let mut o = Options { central: central::BUILT_IN.into(), token_store: "keychain".into(), data_dir: None, relay: false };
+    options_in(args, None)
+}
+
+/// The options, with SLAPorSLOP's save folder (SLOP_SAVE_DIR) when the SLAPorSLOP app started the client: everything kept
+/// on this computer goes there, and the token store is the file there, unless the arguments say otherwise.
+pub fn options_in(args: &[String], save_dir: Option<&str>) -> Result<Options, String> {
+    let save_dir = save_dir.map(str::trim).filter(|d| !d.is_empty());
+    let mut o = Options { central: central::BUILT_IN.into(), token_store: if save_dir.is_some() { "file" } else { "keychain" }.into(),
+        data_dir: save_dir.map(PathBuf::from), relay: false };
     let mut i = 0;
     while i < args.len() {
         let (name, inline) = match args[i].split_once('=') {
@@ -172,7 +188,7 @@ pub fn run() {
         println!("ratw-desktop e2e");
         return;
     }
-    let opts = match options(&args) {
+    let opts = match options_in(&args, std::env::var("SLOP_SAVE_DIR").ok().as_deref()) {
         Ok(o) => o,
         Err(e) => {
             eprintln!("ratw-desktop: {e}");
@@ -189,7 +205,7 @@ pub fn run() {
     let _ = rustls::crypto::ring::default_provider().install_default();
 
     let state_flags = tauri_plugin_window_state::StateFlags::all() - tauri_plugin_window_state::StateFlags::VISIBLE;
-    // With --data-dir (tests), the window's size and place are kept there too, never over the real ones.
+    // With --data-dir (tests) or SLOP_SAVE_DIR, the window's size and place are kept there too, never over the real ones.
     let state_file = opts.data_dir.as_ref().map(|d| d.join("window-state.json"));
     let mut window_state = tauri_plugin_window_state::Builder::default().with_state_flags(state_flags);
     if let Some(f) = &state_file {
@@ -249,6 +265,17 @@ pub fn run() {
                 None
             };
             app.manage(relay);
+            app.manage(pulse::start());
+
+            // The main window (made here, not from the config, so its webview's data can go in the data folder: with
+            // --data-dir or SLOP_SAVE_DIR, the page's localStorage and caches are kept in webview/ there; otherwise the
+            // OS's usual place for the app).
+            let config = app.config().app.windows.iter().find(|w| w.label == "main").cloned().ok_or("no main window in the config")?;
+            let mut main = tauri::WebviewWindowBuilder::from_config(app.handle(), &config)?;
+            if let Some(dir) = &opts.data_dir {
+                main = main.data_directory(dir.join("webview"));
+            }
+            main.build()?;
 
             if let Some(window) = app.get_webview_window("main") {
                 let kept = match &state_file {
@@ -305,6 +332,9 @@ pub fn run() {
                 e.sign_out(None);
                 e.clean_up();
             }
+            if let Some(Some(p)) = handle.try_state::<Option<Arc<pulse::Pulse>>>().as_deref() {
+                p.end();
+            }
         }
     });
 }
@@ -326,6 +356,12 @@ mod tests {
         let o = options(&args(&["--central", "https://c.example.net", "--token-store=file", "--data-dir", "/tmp/x", "--relay"])).unwrap();
         assert_eq!(o, Options { central: "https://c.example.net".into(), token_store: "file".into(), data_dir: Some("/tmp/x".into()), relay: true });
         assert!(options(&args(&["--central"])).is_err());
+        // Started by SLAPorSLOP: everything in its save folder, the token store the file there; arguments still win.
+        let o = options_in(&[], Some("/saves/run-against-the-world")).unwrap();
+        assert_eq!((o.data_dir, o.token_store.as_str()), (Some("/saves/run-against-the-world".into()), "file"));
+        let o = options_in(&args(&["--data-dir", "/tmp/x", "--token-store", "memory"]), Some("/saves/r")).unwrap();
+        assert_eq!((o.data_dir, o.token_store.as_str()), (Some("/tmp/x".into()), "memory"));
+        assert_eq!(options_in(&[], Some("")).unwrap(), options(&[]).unwrap(), "an empty SLOP_SAVE_DIR is no save folder");
         assert!(options(&args(&["--server", "x"])).is_err());
     }
 

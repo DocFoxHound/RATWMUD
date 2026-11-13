@@ -242,7 +242,6 @@ export function signInRefusal(r: Refusal): string {
         case 'exists': return 'There is an Editor account by that name already.';
         case 'username': return 'An account name is 3-32 lowercase letters, digits, _ or -, starting with a letter.';
         case 'role': return 'Choose viewer, dm or builder.';
-        case 'unsigned': return 'This world\'s Editor isn\'t an official RATW build.';
         case 'must-change': return 'Choose your own password first.';
         case 'weak': return passwordProblem(r.reason ?? '');
         default: return 'Something went wrong. Try again.';

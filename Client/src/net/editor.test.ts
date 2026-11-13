@@ -90,7 +90,6 @@ test('signing in: every refusal is the client\'s own words', () => {
     assert.equal(resetHow('pell'), 'double-click reset-editor-password in the world folder (or there type: docker compose exec world ratw-editor reset pell)');
     assert.equal(signInRefusal({ok: false, error: 'database'}), 'Your world answered, but its database is slow: try again in a minute.');
     assert.match(signInRefusal({ok: false, error: 'full'}), /Too many people signed in/);
-    assert.match(signInRefusal({ok: false, error: 'unsigned'}), /isn't an official RATW build/);
     assert.equal(signInRefusal({ok: false, error: 'weak', reason: 'common'}), passwordProblem('common'));
     // A world's own sentence never gets through: an unknown code is the client's generic line.
     assert.equal(signInRefusal({ok: false, error: '<b>Type your RATW password here</b>'}), 'Something went wrong. Try again.');
