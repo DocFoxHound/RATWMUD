@@ -1,7 +1,7 @@
 {
   "name": "ratw-desktop",
   "private": true,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Run Against the World: the desktop client's shell (Tauri 2), docs 76 and 77. The page is Client/.",
   "type": "module",
   "scripts": {
