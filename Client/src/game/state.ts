@@ -9,6 +9,7 @@ import {contains, rect, type Rect} from '../ui/painter.ts';
 import {FarAway, type MotionFrame} from '../net/motion.ts';
 import type {DoorState, FringeGround, Walker} from './walker.ts';
 import {bandFits, bandSpot} from './fringe.ts';
+import {screenRect, shadeRow} from './screen.ts';
 import {placeAt, apart, arenaRows, arenaSight, fighterAt, myTurn, octant, readBattle, stepToward, readChallenge, readFights, readGround, type BattleLine, type BattleView,
     type ChallengeView, type FightSquare, type GroundView, type GearView, type GiftOption, type Tile} from './battle.ts';
 import {FightEffects} from './fightFx.ts';
@@ -320,9 +321,10 @@ export class GameState {
     private cellVersion = 0;
     private walkerVersion = -1;
     private walkerBlocked = '';
-    // Terrain shading worked out here (doc 31, Phase 4.6): which tiles the wolf sees, with the server's own sight
-    // rule, on reaching a new tile; the server then leaves its visibility rows out. Which tiles the page knows at all
-    // (the glyphs it was sent) stays the server's.
+    // Terrain shading worked out here (doc 31, Phase 4.6): which tiles are on the wolf's screen (doc 80: all of them
+    // are shown as seen, whatever its line of sight; screen.ts, the server's own rectangle), on reaching a new tile;
+    // the server then leaves its visibility rows out. Which tiles the page knows at all (the glyphs it was sent)
+    // stays the server's.
     clientSight = false;
     private sightKey = '';
     talkTargets: string[] = []; // Whom the player is speaking to (up to four), until they leave sight or are let go.
@@ -1325,40 +1327,31 @@ export class GameState {
 
     // ------------------------------------------------------------------ Terrain shading
 
-    /** Works out again what the wolf sees, when it stands on a new tile or the cell, its doors or its sight changed. */
+    /**
+     * Works out again what is on the wolf's screen, when it stands on a new tile or the cell changed: every tile of
+     * the screen's rectangle the page knows is shown as seen (doc 80: no line of sight, no range, no light), the rest
+     * of what it knows as remembered.
+     */
     private shadeTerrain() {
-        if (!this.clientSight || !this.walker || this.battle) return;     // (In an arena, the whole arena is seen.)
-        const self = obj(this.snapshot, 'self');
+        if (!this.clientSight || this.battle) return;     // (In an arena, the whole arena is seen.)
         const me = this.entities.get(this.selfId);
-        if (!self || !me || !this.tileRows.length) return;
+        if (!me || !this.tileRows.length) return;
         const x = this.freePose ? this.freePose.x : me.x, y = this.freePose ? this.freePose.y : me.y;
-        const range = num(self, 'sightRange', 0);
-        const key = `${this.cellId}|${this.cellVersion}|${Math.floor(x)},${Math.floor(y)}|${range}`;
+        const key = `${this.cellId}|${this.cellVersion}|${Math.floor(x)},${Math.floor(y)}|${this.fringe}`;
         if (key === this.sightKey) return;
         this.sightKey = key;
-        this.ensureWalkerCell();
-        const seen = this.walker.sight(x, y, range);
-        // The walker's grid is the cell with its fringe round it (doc 70): the cell's (0, 0) at (band, band).
-        const band = this.walker.band, gridWidth = this.cellWidth + 2 * band;
-        const shade = (glyph: string, gx: number, gy: number) => glyph === ' ' ? '0' : seen[gy * gridWidth + gx] ? '2' : '1';
-        const rows: string[] = [];
-        for (let ty = 0; ty < this.cellHeight; ++ty) {
-            const glyphs = this.tileRows[ty] ?? '';
-            let row = '';
-            for (let tx = 0; tx < this.cellWidth; ++tx) row += shade(glyphs[tx] ?? ' ', tx + band, ty + band);
-            rows.push(row);
-        }
-        this.visibilityRows = rows;
-        if (band && band === this.fringe)
-            this.fringeVisibility = this.fringeRows.map((glyphs, r) => {
-                // A band row: whole above and below the cell, else its two ends.
-                const y = r - band, whole = r < band || r >= band + this.cellHeight;
-                let row = '';
-                for (let c = 0; c < glyphs.length; ++c) {
-                    const x = whole ? c - band : c < band ? c - band : this.cellWidth + c - band;
-                    row += shade(glyphs[c], x + band, y + band);
-                }
-                return row;
+        const band = this.fringe;
+        const r = screenRect(x, y, this.cellWidth, this.cellHeight, band);
+        const off = (glyphs: string) => shadeRow(glyphs, 0, -1);
+        this.visibilityRows = this.tileRows.map((glyphs, ty) => ty < r.y0 || ty > r.y1 ? off(glyphs) : shadeRow(glyphs, r.x0, r.x1));
+        if (band)
+            this.fringeVisibility = this.fringeRows.map((glyphs, row) => {
+                // A band row: whole above and below the cell (from -band), else its two ends (the east one from the
+                // cell's width on).
+                const ty = row - band;
+                if (ty < r.y0 || ty > r.y1) return off(glyphs);
+                if (row < band || row >= band + this.cellHeight) return shadeRow(glyphs, r.x0 + band, r.x1 + band);
+                return shadeRow(glyphs.slice(0, band), r.x0 + band, r.x1 + band) + shadeRow(glyphs.slice(band), r.x0 - this.cellWidth, r.x1 - this.cellWidth);
             });
     }
 

@@ -28,6 +28,7 @@
 #include "RatwRoads.h"
 #include "RatwCalendar.h"
 #include "RatwSociety.h"
+#include "RatwScreen.h"
 
 // Engine-independent, deterministic authoritative simulation. Positions are in
 // terrain-tile units, with x right and y down. Facing is radians, east == zero.
@@ -546,11 +547,12 @@ struct ScentCue
 // nothing beside the cell, or while the wolf is far from every edge.
 struct Fringe
 {
-    static constexpr int Band = 48;      // How far beyond the cell's edges it reaches: past any wolf's sight.
-    static constexpr int Near = 96;      // How near an edge a wolf must be for it to be sent: half the widest local map.
+    static constexpr int Band = 48;      // How far beyond the cell's edges it reaches.
+    static constexpr int Near = 96;      // How near an edge a wolf must be for it to be sent: half the widest local map
+                                         // (screen::HalfWidth, RatwScreen.h: its screen then never reaches an edge).
     int width = 0;
     std::vector<char> glyphs;            // What is known there: ' ' nothing,
-    std::vector<char> seen;              // '2' in sight now, '1' remembered, '0' unknown;
+    std::vector<char> seen;              // '2' on its screen now, '1' remembered, '0' unknown;
     std::vector<float> heights;          // its height where known (0 elsewhere).
 };
 // Where tile (x, y), in a `width` x `height` cell's own coordinates, lies in its band `band` wide; -1 inside the cell
@@ -574,13 +576,15 @@ struct Snapshot
     double time = 0;
     Environment environment;
     Entity self;
-    Cell cell; // Hidden tiles have blank glyphs and no terrain properties.
+    Cell cell; // Tiles off the screen have blank glyphs (or the remembered one) and no terrain properties.
+    // The tiles on the player's screen (doc 80: all of them, whatever the wolf's line of sight), and those off it
+    // that it remembers.
     std::vector<bool> visibleTiles, rememberedTiles;
-    // The ground round the cell, from the cells beside it (null for none): the same one, shared, until what the wolf
-    // sees or remembers there changes.
+    // The ground round the cell, from the cells beside it (null for none): the same one, shared, until what the screen
+    // shows or the wolf remembers there changes.
     std::shared_ptr<const Fringe> fringe;
-    std::vector<Entity> entities;  // Includes self; never hidden actors.
-    std::vector<Door> doors;       // Currently visible fixtures only.
+    std::vector<Entity> entities;  // Includes self; everyone on the screen but those hiding from it (World::shown).
+    std::vector<Door> doors;       // The fixtures on the screen only.
     std::vector<MapCell> worldMap; // Current plus first-degree known neighbors.
     bool isometric = false;
     std::vector<ScentCue> scentCues; // Aggregated unseen wolves, no identities.
@@ -1457,9 +1461,10 @@ class World
     // go (firstSteps: along the roads where there are any); empty with no way.
     std::vector<std::string> routeBetween(const std::string& from, const std::string& to) const;
     bool deterministic() const { return deterministic_; }
-    // Brings these players' views up to date together, on several threads at once (each view is thousands of sight
-    // rays, and one player's doesn't depend on another's). observe() and snapshot() then find them ready. Changes
-    // nothing they would have seen; call it from the thread that owns the world, between ticks.
+    // Brings these players' views up to date together, so observe() and snapshot() (which may run on several
+    // threads) find them ready. Changes nothing they would have seen; call it from the thread that owns the world,
+    // between ticks. (A view was thousands of sight rays, cast on helper threads; since doc 80 it is the screen's
+    // rectangle, marked in place.)
     void prepareViews(const std::vector<std::string>& observerIds) const;
     // Where tick() spends its time, in milliseconds, since the profile was last reset: the total and the worst single
     // tick for each part. For benchmarks and server logs; it changes nothing the simulation does.
@@ -1543,6 +1548,20 @@ class World
     // of every wolf in the cell (doc 31, Phase 4: the range was worked out three times a wolf).
     double visionClarity(const Entity& observer, const Entity& source, double range) const;
     double sightRange(const Entity& observer) const;
+    // What a player is shown (Docs/Design/80-the-whole-screen.md). Its screen: the rectangle of tiles round its wolf
+    // (RatwScreen.h), stopping at the edge of the ground there is to show (the cell, and the band round it near an
+    // edge outdoors), as the page's map does.
+    screen::Rect screenOf(const Entity& observer) const;
+    // Whether a wolf is hiding (doc 40): crouched, or in a fight stalking or not yet noticed by the other side. Only
+    // these are kept from a player's screen until it makes them out.
+    bool sneaking(const Entity& e) const;
+    // Whether `source` is sent to the player `observer`: itself; anyone on its screen who isn't hiding; one who is,
+    // only once seen as ever (visionClarity > 0: its sight range in this light and weather, a clear line, and within
+    // the crouch's detection range by the sneak's skill). Never game outside its hunt (doc 41).
+    bool shown(const Entity& observer, const Entity& source, double range, const screen::Rect& screen) const;
+    bool shown(const std::string& observerId, const std::string& sourceId) const;
+    // Whether a point of the observer's cell is on its screen.
+    bool onScreen(const Entity& observer, Vec2 point) const;
     // Movement sounds only: this never reduces deliberate spoken voice volume.
     double movementAudibility(const std::string& observerId, const std::string& sourceId) const;
     double scentClarity(const std::string& observerId, const std::string& sourceId) const;
@@ -2757,9 +2776,9 @@ class World
     bool visiblePoint(const Entity& observer, Vec2 point) const;
     bool visiblePoint(const Entity& observer, Vec2 point, double range) const;
     bool visiblePortal(const Entity& observer, const Door& door) const;
-    // What a wolf sees of the cells beside its own (doc 70, "Sight across seams"): a window round it in its own cell's
-    // coordinates (so it may start below 0), 1 for each tile of a cell beside it that it sees. Empty while all it
-    // could see lies in its own cell.
+    // What a player's screen shows of the cells beside its own (doc 70, "Sight across seams"; doc 80): the screen's
+    // rectangle in its own cell's coordinates (so it may start below 0), 1 for each tile of it. Empty while the whole
+    // screen lies in its own cell.
     struct Beyond
     {
         int x0 = 0, y0 = 0, width = 0, height = 0;
@@ -2769,11 +2788,12 @@ class World
             return x >= x0 && y >= y0 && x < x0 + width && y < y0 + height && visible[std::size_t((y - y0) * width + (x - x0))];
         }
     };
-    // visiblePoint() for every tile of the observer's cell at once (1 = visible): the sight range is worked out once
-    // and only tiles within it are traced, where testing each tile alone recomputes the light for every one. With
-    // `beyond`, also what it sees past the cell's edges, over the ground of the loaded cells beside it.
-    std::vector<char> visibleTileMask(const Entity& observer, const Cell& cell, double range, Beyond* beyond = nullptr) const;
-    void sightBeyond(const Entity& observer, const Cell& cell, double range, Beyond& out) const;
+    // The tiles of the observer's cell on its screen (1 = shown; doc 80: no line of sight, no range, no light). With
+    // `beyond`, also the part of the screen past the cell's edges.
+    std::vector<char> screenMask(const Entity& observer, const Cell& cell, Beyond* beyond = nullptr) const;
+    // Whether the ground round the observer's cell is shown (the band, fringeOf): outdoors with cells beside it, and
+    // the wolf within Fringe::Near of an edge.
+    bool bandShown(const Entity& observer, const Cell& cell) const;
     // The outdoor cells at the same level whose ground lies within Fringe::Band of each outdoor cell's edges, and where
     // their (0, 0) is in its tiles; made with the fixture index (rebuildFixtureIndex) and as a cell is put in by hand,
     // so the threads building views only read it.
@@ -2788,7 +2808,7 @@ class World
     const std::vector<Beside>& besideCells(const std::string& cellId) const;
     std::shared_ptr<const Fringe> fringeOf(const Entity& observer, const Cell& cell, const Beyond& beyond) const;
     // Whether the band round the observer's cell (fringeOf) carries the cell beside it at (dx, dy), `width` x `height`:
-    // the observer is near an edge of its own and within the band's reach of that cell.
+    // the observer is near an edge of its own and its screen reaches that cell.
     static bool inBand(const Entity& observer, const Cell& cell, int dx, int dy, int width, int height);
     // The places beside each player's own as its World Map last had them (snapshot's worldMap), by place: while it is
     // near one, what it sees there goes out in the band, as row edits, and the place's own entry (its whole picture,
@@ -2801,9 +2821,9 @@ class World
         Glyphs glyphs;                       // What its World Map shows of each, unseen tiles blank.
     };
     std::map<std::string, MapHeld> mapHeld_;
-    // Each player's view, kept until something that shapes it changes: the cell, where they stand, how far they can
-    // see, a door opening or closing there, or a cell beside it loading or going. `fresh` says whether it was just
-    // recomputed.
+    // Each player's view, kept until something that shapes it changes: the cell, the tile they stand on, a door
+    // opening or closing there, or a cell beside it loading or going. `fresh` says whether it was just recomputed.
+    // (`range`, how far they can see, is no longer part of it: doc 80.)
     struct View
     {
         std::string cellId;
@@ -2818,7 +2838,7 @@ class World
     mutable std::map<std::string, View> views_;
     const std::vector<char>& viewOf(const Entity& observer, const Cell& cell, bool* fresh = nullptr) const;
     // The cache key viewOf() compares (everything but the tiles seen).
-    View viewKey(const Entity& observer, const Cell& cell, double range) const;
+    View viewKey(const Entity& observer, const Cell& cell) const;
     std::vector<Vec2> findPath(const Entity& actor, Vec2 goal, bool allowClosed = false) const;
     std::vector<Vec2> searchPath(const Entity& actor, Vec2 goal, bool allowClosed) const;   // findPath, uncached.
     // searchPath's checks before the search: false when no route can exist; else the closed doors' tiles, for astar.

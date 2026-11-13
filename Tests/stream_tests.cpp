@@ -174,9 +174,10 @@ void playersCrossAndReturn()
     expect(ada->cellId == "c_1_0", "Ada crosses into the next cell");
     world.tick(.1);
     expect(world.cell("c_2_0")->loaded, "and the one beyond it loads");
-    // On to c_4_0 (out of sight of c_1_0), then wait until c_1_0 unloads (the spawn, c_0_0, never does: it is where a
-    // wolf goes whose own place can't be loaded): travel back still follows the remembered way.
-    for (const auto* next : {"c_2_0", "c_3_0", "c_4_0"})
+    // On to c_5_0 (its screen no longer reaching c_1_0: doc 80 shows the whole band round a cell, 48 tiles, three of
+    // these 16-tile cells), then wait until c_1_0 unloads (the spawn, c_0_0, never does: it is where a wolf goes whose
+    // own place can't be loaded): travel back still follows the remembered way.
+    for (const auto* next : {"c_2_0", "c_3_0", "c_4_0", "c_5_0"})
     {
         const std::string before = ada->cellId;
         world.moveTo("player-ada", Side + .15, 8.5);
@@ -1147,9 +1148,9 @@ void aWolfAlwaysStandsOnGround()
     }
 }
 
-// Sight and the map run on across seams (doc 70): a wolf near an edge sees into the cell beside its own, over that
-// cell's ground (a wall there hides what is behind it), remembers what it saw there, and its view carries that ground
-// round its own cell; by a corner, the cell across the corner is loaded and seen into too.
+// The screen and the map run on across seams (doc 70; doc 80): a wolf near an edge is shown the cell beside its own, a
+// wall there and what is behind it alike, remembers what it was shown there, and its view carries that ground round
+// its own cell; by a corner, the cell across the corner is loaded and shown too.
 void sightRunsOnAcrossSeams()
 {
     auto f = grid("");
@@ -1174,7 +1175,8 @@ void sightRunsOnAcrossSeams()
            "It sees the open ground past the seam");
     expect(fringe.seen[std::size_t(at(Side + 4, 8))] == '2' && fringe.glyphs[std::size_t(at(Side + 4, 8))] == '#',
            "and the wall there");
-    expect(fringe.seen[std::size_t(at(Side + 6, 8))] != '2', "but not what is behind the wall");
+    expect(fringe.seen[std::size_t(at(Side + 6, 8))] == '2' && fringe.glyphs[std::size_t(at(Side + 6, 8))] == ',',
+           "and what is behind the wall: the whole screen is shown (doc 80)");
     expect(fringe.seen[std::size_t(at(-3, 8))] == '0' && fringe.glyphs[std::size_t(at(-3, 8))] == ' ',
            "Nothing is known past the world's edge");
     const auto& book = world.memories("player-ada");
@@ -1182,13 +1184,13 @@ void sightRunsOnAcrossSeams()
     expect(glimpsed != book.end() && glimpsed->second.knowledge == Knowledge::Glimpsed &&
                glimpsed->second.observed[std::size_t(8 * Side + 4)] && glimpsed->second.glyphs[std::size_t(8 * Side + 4)] == '#',
            "What it saw there is remembered, the place glimpsed, not visited");
-    // Back from the edge, and dim-sighted, out of sight of the wall: remembered there now.
+    // Back from the edge, and dim-sighted: the wall is on its screen still, and shown as it is.
     world.entity("player-ada")->position = {Side - 6.5, 8.5};
     world.entity("player-ada")->vision = .2;
     const auto later = world.snapshot("player-ada", false, true);
-    expect(later.fringe && later.fringe->seen[std::size_t(at(Side + 4, 8))] == '1' &&
+    expect(later.fringe && later.fringe->seen[std::size_t(at(Side + 4, 8))] == '2' &&
                later.fringe->glyphs[std::size_t(at(Side + 4, 8))] == '#',
-           "The wall past the seam is remembered where it is no longer seen");
+           "The wall past the seam is shown however poor the wolf's eyes");
     // A save keeps a glimpse's detail.
     auto fresh = load(f);
     expect(fresh.restore(world.save()).ok, "A save with ground glimpsed past a seam restores");
@@ -1211,7 +1213,6 @@ void theMapKeepsAPlaceBesideAsItWas()
     auto world = load(f);
     world.setTimeOfDay(12);
     auto& ada = world.addPlayer("player-ada", "Ada", "c_0_0", {Side - 1.5, 1.5});
-    ada.vision = .2;                                // (Short sight: each step shows more of the place beside.)
     world.tick(.1);                                 // (The cells beside it load.)
     const auto pictureOf = [](const Snapshot& view, const std::string& id) {
         for (const auto& m : view.worldMap)
@@ -1224,18 +1225,23 @@ void theMapKeepsAPlaceBesideAsItWas()
         return std::size_t(std::count(m.observed.begin(), m.observed.end(), true));
     };
     const auto shown = pictureOf(world.snapshot("player-ada", false, true), "c_1_0");
-    const auto atFirst = remembered();
+    // (The whole of this small place is on the screen at once, doc 80; what changes as the wolf walks is the ground
+    // there, which it is shown live: a tile of it a step.)
+    expect(remembered() == std::size_t(Side * Side), "By the seam, the whole of the small place beside is shown and remembered");
     std::set<std::vector<char>> pictures;
     Snapshot last;
     for (int y = 2; y < Side - 1; ++y)
     {
+        world.cell("c_1_0")->tile(3, y)->glyph = ',';
         ada.position = {Side - 1.5, y + .5};
         last = world.snapshot("player-ada", false, true);
         pictures.insert(pictureOf(last, "c_1_0"));
     }
-    expect(atFirst > 0 && remembered() > atFirst, "Walking by the seam, the wolf remembers more and more of the place beside");
+    expect(world.memories("player-ada").at("c_1_0").glyphs[std::size_t((Side - 2) * Side + 3)] == ',',
+           "Walking by the seam, the wolf remembers the place beside as it is shown it, step by step");
     expect(pictures.size() == 1 && *pictures.begin() == shown, "but the World Map's picture of it stays as it was");
-    expect(last.fringe && last.fringe->seen[std::size_t(bandIndex(last.fringe->width, Side, Side, Side + 1, Side - 2))] == '2',
+    expect(last.fringe && last.fringe->seen[std::size_t(bandIndex(last.fringe->width, Side, Side, Side + 1, Side - 2))] == '2' &&
+               last.fringe->glyphs[std::size_t(bandIndex(last.fringe->width, Side, Side, Side + 3, Side - 2))] == ',',
            "while the band round its own place carries what it sees there");
     // Across the south seam into c_0_1: the map's picture of c_1_0 has all the wolf saw of it.
     const auto seen = remembered();

@@ -82,7 +82,9 @@ for pairs that are near each other.
 
 **Against players:**
 
-- A player sees what their character notices: an unnoticed wolf isn't drawn, as today.
+- A player sees what their character notices: an unnoticed wolf isn't drawn, as today. *(Since 2026-11-13, doc 80:
+  a player's screen shows everyone on it who isn't sneaking, whatever its wolf's line of sight; this holds for those
+  sneaking, by the same detection, `World::shown`.)*
 - New: a *suspicious* player gets today's anonymous cues ("unseen pawsteps", "scent: a wolf, roughly NE") instead of
   nothing, using the same sector arrows.
 - Fights between players still need consent (a challenge), so sneaking on players is about getting close unseen, not

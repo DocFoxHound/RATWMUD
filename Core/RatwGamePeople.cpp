@@ -177,7 +177,7 @@ people::Viewer Game::viewerFacts(const std::string& viewer, const std::string& t
             const auto it = people::rules().senseReach.find(sense);
             return it == people::rules().senseReach.end() ? 0.0 : it->second;
         };
-        v.sees = world_.visionClarity(viewer, target) > 0;
+        v.sees = a->npc ? world_.visionClarity(viewer, target) > 0 : world_.shown(viewer, target);   // (A player: its screen, doc 80.)
         v.smells = apart <= reach("scent") && !world_.scentMasked(*b) && a->smell > 0;
         v.hears = apart <= reach("sound");
     }

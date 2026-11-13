@@ -129,7 +129,7 @@ bool Game::chapterCommand(Connection* c, const Value& j, Result& result)
     else if (verb == "invite")
     {
         const auto* them = world_.entity(target);
-        if (!them || them->npc || world_.visionClarity(id, target) <= 0)
+        if (!them || them->npc || !world_.shown(id, target))
         {
             result = {false, "You can only invite a player you can see.", target};
             return true;

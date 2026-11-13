@@ -1170,7 +1170,10 @@ void evenings()
            "the room hears it too");
     expect(heard("That's " + look(nell, vicId) + " there: in now and then"), "Vic pointed out by look: in now and then");
     expect(heard("That's " + look(nell, valId) + " there: a regular here and looking for company tonight"), "Val: a regular, looking for company");
-    expect(!heard("That's " + look(nell, ottoId)) && !heard("That's " + look(nell, beaId)), "not Otto (Out of character), not Bea (blocked)");
+    // (Nell's screen shows all four in the dim room now, doc 80, each by its look: "a brown wolf", "a brown wolf (2)"...
+    // so the whole phrase is matched, not a look that is the start of another's.)
+    expect(!heard("That's " + look(nell, ottoId) + " there") && !heard("That's " + look(nell, beaId) + " there"),
+           "not Otto (Out of character), not Bea (blocked)");
     expect(std::any_of(val.events.begin(), val.events.end(),
                        [&](const json::Value& e) { return contains(e.string("text"), "That's " + look(val, vicId) + " there"); }),
            "Val hears the same line with her own name for Vic: each listener as it knows him");

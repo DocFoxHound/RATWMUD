@@ -3274,9 +3274,10 @@ void Game::movementSounds()
         const auto& listener = listeners[i]->entityId;
         const auto* me = world_.entity(listener);
         const double range = world_.sightRange(*me);
+        const auto screen = world_.screenOf(*me);
         double best = 0;
-        for (const Entity* e : world_.entitiesIn(me->cellId))   // (Footsteps carry within the cell.)
-            if (!e->npc && e->id != listener && e->cellId == me->cellId && world_.visionClarity(*me, *e, range) <= 0)
+        for (const Entity* e : world_.entitiesIn(me->cellId))   // (Footsteps carry within the cell: of those not shown.)
+            if (!e->npc && e->id != listener && e->cellId == me->cellId && !world_.shown(*me, *e, range, screen))
                 best = std::max(best, world_.movementAudibility(listener, e->id));
         loudest[i] = best;
     };
@@ -4245,7 +4246,7 @@ void Game::sendSnapshot(Connection* c)
     {
         auto lying = Value::array();
         for (const auto& g : world_.groundItems())
-            if (g.cellId == view.self.cellId && std::hypot(g.x - view.self.position.x, g.y - view.self.position.y) <= world_.sightRange(view.self))
+            if (g.cellId == view.self.cellId && world_.onScreen(view.self, {g.x, g.y}))   // (All on the screen: doc 80.)
             {
                 auto o = Value::object();
                 o.add("id", g.id);
@@ -4584,6 +4585,10 @@ std::vector<std::string> Game::publish(const std::string& author, const ParsedPo
         auto sense = world_.perceive(listener, author, voice);
         if (listener == author)
             sense = {1, 1, true};
+        // A voice is put to the wolf it comes from when the listener's screen shows that wolf (doc 80), though what
+        // is heard and seen of the post stays by its ears and eyes.
+        else if (!sense.identifiable && world_.shown(listener, author))
+            sense.identifiable = true;
         auto segments = perceivePost(post, sense.hearing, sense.vision, event * 7919 + std::hash<std::string>{}(listener));
         if (post.veilNames)                         // (Wolves named as this listener knows them: doc 52.)
             for (auto& segment : segments)
@@ -4666,7 +4671,7 @@ std::vector<std::string> Game::publish(const std::string& author, const ParsedPo
             for (const auto& whom : to)
                 if (whom == listener)
                     names.push("you");
-                else if (const auto* w = world_.entity(whom); w && (whom == author || world_.visionClarity(listener, whom) > 0))
+                else if (const auto* w = world_.entity(whom); w && (whom == author || world_.shown(listener, whom)))
                     names.push(labelFor(listener, whom));
                 else
                     names.push("someone");
@@ -5722,7 +5727,7 @@ void Game::command(Connection* c, const std::string& raw)
                 {
                     bool visibleScent = false;
                     for (const auto& [other, e] : world_.entities())
-                        if (other != id && world_.visionClarity(id, other) > 0 && world_.scentClarity(id, other) > 0)
+                        if (other != id && world_.shown(id, other) && world_.scentClarity(id, other) > 0)
                             visibleScent = true;
                     system(c, visibleScent ? "You catch the scent of nearby wolves you can already see. No additional unseen wolf scent reaches you."
                                            : "No distinct wolf scent reaches you right now. That does not mean you are alone.");
@@ -5776,7 +5781,7 @@ void Game::command(Connection* c, const std::string& raw)
         else if (action == "talk" || action == "speak")
         {
             const auto* npc = world_.entity(target);
-            if (!npc || !npc->npc || world_.visionClarity(id, target) <= 0)
+            if (!npc || !npc->npc || !world_.shown(id, target))
             {
                 system(c, "You cannot see that wolf.");
                 return;
@@ -5968,7 +5973,7 @@ void Game::command(Connection* c, const std::string& raw)
         {
             const auto* other = world_.entity(target);
             // Missing and hidden characters answer alike, so guessed IDs can't turn anonymous scent into an identity.
-            if (!other || (target != id && world_.visionClarity(id, target) <= 0))
+            if (!other || (target != id && !world_.shown(id, target)))
             {
                 system(c, "You cannot inspect someone you cannot see.");
                 return;

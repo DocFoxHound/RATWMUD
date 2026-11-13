@@ -138,19 +138,29 @@ test("the page's sight is the server's rule: walls and closed doors hide what li
     assert.equal(short[2 * 12 + 5], 0, 'not beyond it');
 });
 
-test('terrain shading on the page: seen, remembered and unknown worked out here, the server sending no visibility', async () => {
+test('terrain shading on the page: the whole screen seen, known ground off it remembered, the rest unknown (doc 80)', async () => {
     const {state: s, commands} = testGame();
     s.walker = await Walker.load(wasm);
     const known = rows.map((r, y) => (y === 5 ? '            ' : r));    // The bottom row unknown: blank glyphs.
-    s.applySnapshot({cell: {id: 'room', width: 12, height: 6, rows: known}, self: {id: 'self', x: 2.5, y: 2.5, posture: 'standing', sightRange: 27},
+    s.applySnapshot({cell: {id: 'room', width: 12, height: 6, rows: known}, self: {id: 'self', x: 2.5, y: 2.5, posture: 'standing', sightRange: 2},
         entities: [], doors: [], time: 0, cellGeneration: 1});
     assert.ok(commands.some(c => c.type === 'walking' && c.sight === 'client'), 'it asks to shade the terrain itself');
     s.applyMotion({motionSession: '', observer: 'self', cellId: 'room', cellGeneration: 1, revision: 0, time: 0.05,
         entities: [{id: 'self', x: 2.5, y: 2.5, facing: 0, moving: false}], mode: 0});
     s.tick(1, 0.016);
-    assert.equal(s.visibilityRows[2][3], '2', 'floor in sight: seen');
-    assert.equal(s.visibilityRows[2][8], '1', 'past the wall: remembered');
+    assert.equal(s.visibilityRows[2][3], '2', 'floor beside it: seen');
+    assert.equal(s.visibilityRows[2][8], '2', 'past the wall, and past its own short sight: seen all the same');
     assert.equal(s.visibilityRows[5][3], '0', 'never sent: unknown');
+    // A place wider than the screen (96 tiles each side of the wolf, Core/RatwScreen.h): what the page knows beyond
+    // it is remembered.
+    const wide = Array.from({length: 6}, () => '.'.repeat(300));
+    s.applySnapshot({cell: {id: 'field', width: 300, height: 6, rows: wide}, self: {id: 'self', x: 150.5, y: 2.5, posture: 'standing', sightRange: 27},
+        entities: [], doors: [], time: 1, cellGeneration: 2});
+    s.applyMotion({motionSession: '', observer: 'self', cellId: 'field', cellGeneration: 2, revision: 0, time: 1.05,
+        entities: [{id: 'self', x: 150.5, y: 2.5, facing: 0, moving: false}], mode: 0});
+    s.tick(2, 0.016);
+    assert.equal(s.visibilityRows[2].slice(53, 248), '1' + '2'.repeat(193) + '1', 'the screen seen, a tile past each end remembered');
+    assert.equal(s.seenAt(40, 5), '1', 'and so the rest');
 });
 
 test("the page sees exactly what the server sees: the demo world's exterior (Client/src/game/sight.golden.json)", async () => {

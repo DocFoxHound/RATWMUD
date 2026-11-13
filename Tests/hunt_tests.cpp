@@ -129,6 +129,25 @@ void startingAHunt()
         expect(w.animalUnaware(id), "not yet aware of the hunter");
         expect(w.visionClarity("player-ada", id) == 0, "and never seen in the world, only in the hunt");
     }
+    // The whole screen (doc 80) changes nothing for game: it is on no one's screen in the world, the hunter's or a
+    // passer-by's standing beside it, awake or crouched; only the hunt shows it (doc 41).
+    auto& passer = hunter(w, "player-bo");
+    w.tick(.05);
+    for (const auto& id : animals)
+    {
+        passer.position = w.entity(id)->position;
+        for (const std::string who : {"player-ada", "player-bo"})
+        {
+            const auto view = w.snapshot(who);
+            expect(!w.shown(who, id) && std::none_of(view.entities.begin(), view.entities.end(), [&](const Entity& e) { return e.id == id; }),
+                   "game is sent to no one's view of the world: " + who);
+        }
+    }
+    passer.position = {40.5, 31.5};
+    const auto beside = w.snapshot("player-bo");
+    expect(std::any_of(beside.entities.begin(), beside.entities.end(), [](const Entity& e) { return e.id == "player-ada"; }),
+           "(a passer-by is shown the hunter herself)");
+    w.removePlayer("player-bo");
     expect(!w.startHunt("player-ada").ok, "one hunt at a time");
 }
 

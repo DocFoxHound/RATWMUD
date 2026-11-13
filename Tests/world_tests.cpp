@@ -563,6 +563,155 @@ void aDoorOutOfSight()
     expect(scout->cellId == "exterior", "It walks up to the door and goes through: " + scout->cellId + " " +
                                             std::to_string(scout->position.x) + "," + std::to_string(scout->position.y));
 }
+// The whole screen (Docs/Design/80-the-whole-screen.md): a player is shown every tile and every wolf on its screen,
+// whatever its own wolf's line of sight, the light or the weather; only one hiding (doc 40) is kept from it, until made
+// out as ever.
+void theWholeScreen()
+{
+    // The rectangle (RatwScreen.h): 96 tiles each side of the wolf's own and 56 above and below, moved to stay on the
+    // ground there is, all of it where there is less.
+    {
+        const auto mid = screen::around(200.5, 150.5, 400, 300, 0);
+        expect(mid.x0 == 104 && mid.x1 == 296 && mid.y0 == 94 && mid.y1 == 206, "The screen is 193 by 113 tiles round the wolf");
+        const auto corner = screen::around(3.5, 2.5, 400, 300, 0);
+        expect(corner.x0 == 0 && corner.x1 == 192 && corner.y0 == 0 && corner.y1 == 112, "By an edge it stops there, as wide as ever");
+        const auto band = screen::around(3.5, 2.5, 400, 300, 48);
+        expect(band.x0 == -48 && band.x1 == 144 && band.y0 == -48 && band.y1 == 64, "With ground shown round the cell, it runs on over it");
+        const auto room = screen::around(5.5, 5.5, 32, 24, 0);
+        expect(room.x0 == 0 && room.x1 == 31 && room.y0 == 0 && room.y1 == 23, "A small place is on the screen whole");
+        expect(mid.holds(104.0, 94.0) && mid.holds(296.9, 206.9) && !mid.holds(103.9, 150) && !mid.holds(297, 150), "Its edges are whole tiles");
+    }
+    World w;
+    quiet(w);
+    auto& c = *w.cell("tavern");
+    c.width = 400;
+    c.height = 300;
+    c.tiles.assign(std::size_t(c.width * c.height), Tile{});
+    for (int y = 0; y < c.height; ++y)                  // A wall from top to bottom, ten tiles east of the observer.
+    {
+        auto& t = *c.tile(210, y);
+        t.glyph = '#';
+        t.terrain = Terrain::Wall;
+        t.solid = t.opaque = true;
+    }
+    for (const auto& entry : w.entities())              // (The residents out of the way, up in the loft, but one.)
+        if (entry.second.npc && entry.first != "npc_keeper")
+        {
+            w.entity(entry.first)->cellId = "loft";
+            w.entity(entry.first)->position = {8.5, 6.5};
+        }
+    auto& keeper = *w.entity("npc_keeper");
+    keeper.cellId = "tavern";
+    keeper.position = {231.5, 152.5};
+    auto& o = w.addPlayer("o", "Observer");
+    auto& s = w.addPlayer("s", "Sneak");
+    o.position = {200.5, 150.5};
+    s.position = {230.5, 150.5};
+    const auto at = [&](int x, int y) { return std::size_t(y * c.width + x); };
+    const auto count = [](const std::vector<bool>& v) { return std::count(v.begin(), v.end(), true); };
+    // Ground: by day, at night and in an unlit room alike, behind the wall too; nothing beyond the rectangle.
+    for (const double hour : {12.0, 0.0})
+    {
+        w.setTimeOfDay(hour);
+        w.setLighting("tavern", hour > 6 ? 1 : 0, hour > 6 ? 1 : 0, "warm");
+        const auto view = w.snapshot("o");
+        expect(count(view.visibleTiles) == 193 * 113, "Every tile of the screen is shown, and no other: " + std::to_string(count(view.visibleTiles)));
+        expect(!w.lineOfSight("tavern", o.position, {220.5, 150.5}) && view.visibleTiles[at(220, 150)] &&
+                   view.cell.tiles[at(220, 150)].glyph == '.' && view.cell.tiles[at(210, 150)].glyph == '#',
+               "The ground behind a wall is shown as it is, and the wall");
+        expect(view.visibleTiles[at(104, 94)] && view.visibleTiles[at(296, 206)] && !view.visibleTiles[at(103, 150)] &&
+                   !view.visibleTiles[at(297, 150)] && !view.visibleTiles[at(200, 93)] && !view.visibleTiles[at(200, 207)],
+               "The screen ends 96 tiles to each side and 56 above and below");
+        expect(!view.rememberedTiles[at(297, 150)] && view.cell.tiles[at(297, 150)].glyph == ' ' && !view.cell.tiles[at(210, 20)].opaque,
+               "Ground off the screen, never on it, is unknown: nothing of it is sent");
+        // Wolves: one standing behind the wall, in the dark or not, is sent; so is a resident there.
+        expect(w.visionClarity("o", "s") == 0 && hasEntity(view, "s"), "A wolf standing behind a wall is sent");
+    }
+    // Night still, the room unlit. A resident behind the wall, and the doors, wherever they stand on the screen.
+    expect(hasEntity(w.snapshot("o"), "npc_keeper"), "A resident behind a wall in the dark is sent");
+    std::size_t fixtures = 0;
+    for (const Door* d : w.doorsIn("tavern"))
+        fixtures += !(d->passage && d->boundary);
+    expect(fixtures > 0 && w.snapshot("o").doors.empty(), "Fixtures off the screen are not sent");
+    o.position = {20.5, 12.5};
+    for (int y = 11; y <= 13; ++y)                      // (Walled in on every side: it has no line to anything.)
+        for (int x = 19; x <= 21; ++x)
+            if (x != 20 || y != 12)
+                c.tile(x, y)->opaque = c.tile(x, y)->solid = true;
+    expect(w.snapshot("o").doors.size() == fixtures && !w.lineOfSight("tavern", o.position, w.door("stairs_up")->position),
+           "Every fixture on the screen is sent, in sight of the wolf or not");
+    for (int y = 11; y <= 13; ++y)
+        for (int x = 19; x <= 21; ++x)
+            *c.tile(x, y) = Tile{};
+    // What was on the screen is remembered once it is off it (the map's memory, as ever): as it was last shown.
+    o.position = {200.5, 150.5};
+    w.snapshot("o");
+    c.tile(104, 150)->glyph = ',';
+    o.position = {210.5, 150.5};                       // (Ten tiles east: the screen now begins at 114.)
+    const auto moved = w.snapshot("o");
+    expect(!moved.visibleTiles[at(104, 150)] && moved.rememberedTiles[at(104, 150)] && moved.cell.tiles[at(104, 150)].glyph == '.',
+           "Ground that has left the screen is remembered as it was shown, not as it is now");
+    expect(moved.visibleTiles[at(306, 150)] && !moved.rememberedTiles[at(306, 150)], "and new ground has come onto it");
+    // Sneaking (doc 40) is kept. A crouching wolf is sent only once made out: within the observer's sight in this
+    // light, along a clear line, and from close by its skill ((7 - 4 x skill/100) tiles of a full sight's 27).
+    w.setTimeOfDay(12);
+    w.setLighting("tavern", 1, 1, "warm");
+    o.position = {200.5, 150.5};
+    const auto sent = [&](const std::string& id) { return hasEntity(w.snapshot("o"), id); };
+    for (const std::string id : {"s", "npc_keeper"})    // A player and a resident alike.
+    {
+        auto& e = *w.entity(id);
+        e.sneakSkill = 0;
+        e.posture = "crouching";
+        e.position = {208.5, 150.5};
+        expect(!sent(id) && !w.shown("o", id), id + ": crouched eight tiles off in the open, it is not sent");
+        e.position = {206.5, 150.5};
+        expect(sent(id) && w.shown("o", id), id + ": within six, it is made out and sent");
+        e.sneakSkill = 100;
+        expect(!sent(id), id + ": a skilled sneak is not, at that distance");
+        e.position = {202.5, 150.5};
+        expect(sent(id), id + ": but is from two tiles");
+        e.sneakSkill = 0;
+        e.position = {212.5, 150.5};
+        o.position = {207.5, 150.5};
+        expect(!sent(id) && w.snapshot("o").visibleTiles[at(212, 150)], id + ": crouched five tiles off behind the wall, it is not sent, though its tile is");
+        e.posture = "standing";
+        expect(sent(id), id + ": standing there, it is");
+        e.posture = "crouching";
+        o.position = {200.5, 150.5};
+        e.position = {204.5, 150.5};
+        *c.tile(202, 150) = tileFromGlyph('P');
+        expect(!sent(id), id + ": crouched four tiles off behind a pine's trunk, it is not sent");
+        *c.tile(202, 150) = Tile{};
+        expect(sent(id), id + ": the trunk gone, it is");
+        // The light and the weather still count for spotting: in the dark the same crouch is seen only from a step.
+        w.setLighting("tavern", 0, 0, "warm");
+        w.setTimeOfDay(0);
+        expect(!sent(id), id + ": in the dark it is not made out at four tiles");
+        e.position = {200.9, 150.5};
+        expect(sent(id), id + ": and is, underfoot");
+        w.setTimeOfDay(12);
+        w.setLighting("tavern", 1, 1, "warm");
+        e.posture = "standing";
+        e.position = {230.5, 152.5};
+    }
+    // The observer's own eyes too: blind, it is shown the standing, never one hiding.
+    o.eyeHealth = 0;
+    s.posture = "crouching";
+    s.position = {201.5, 150.5};
+    expect(!sent("s") && sent("npc_keeper"), "A blind wolf's player is shown those standing, never one crouched beside it");
+    // One it isn't sent it may still hear or smell, without a name or a place (as ever).
+    s.velocity = {.2, 0};
+    expect(w.snapshot("o").movementHeard && !w.snapshot("o").scentCues.empty(), "The pawsteps and scent of one not sent still reach it");
+    s.posture = "standing";
+    expect(sent("s") && !w.snapshot("o").movementHeard && w.snapshot("o").scentCues.empty(), "and are no cue once it is shown");
+    // What residents themselves see is as it was: a wall hides a standing wolf from one of them.
+    o.eyeHealth = 1;
+    s.velocity = {};
+    s.position = {230.5, 150.5};
+    keeper.position = {200.5, 152.5};
+    expect(w.visionClarity("npc_keeper", "s") == 0 && w.actions("npc_keeper", "s").empty(), "A resident's own sight stops at the wall, as ever");
+}
 void sensesAndWeather()
 {
     World w;
@@ -584,7 +733,11 @@ void sensesAndWeather()
     a.position = {22.5, 6.5};
     b.position = {26.5, 6.5};
     expect(w.visionClarity("a", "b") == 0, "Closed pantry blocks visual action");
+    // The whole screen (doc 80): a wolf behind a closed door is sent all the same; only one hiding there is not.
+    expect(hasEntity(w.snapshot("a"), "b"), "A wolf out of sight but on the screen is in the observer's snapshot");
+    b.posture = "crouching";
     expect(!hasEntity(w.snapshot("a"), "b"), "Hidden actor omitted from observer snapshot");
+    b.posture = "standing";
     expect(w.hearingClarity("a", "b", Voice::Yell) > 0, "Muted voice may be heard through barrier");
     expect(!w.perceive("a", "b", Voice::Yell).identifiable, "Unseen heard speaker has no identifiable source");
     w.interact("a", "door_pantry", "open");
@@ -762,21 +915,25 @@ void mapMemory()
     auto& p = player(w);
     auto s = w.snapshot("p");
     expect(mapCell(s, "exterior") == nullptr, "Unseen adjacent cell absent");
-    expect(mapCell(s, "loft") == nullptr, "Opaque pantry hides vertical portal");
-    p.position = {22.5, 6.5};
-    w.interact("p", "door_pantry", "open");
-    p.position = {27.5, 5.5};
-    s = w.snapshot("p");
+    // The whole screen (doc 80): the loft's steps are on it, the pantry's wall between or no, so the loft is glimpsed
+    // at once.
     const auto* loft = mapCell(s, "loft");
     expect(loft && loft->visible && loft->knowledge == Knowledge::Glimpsed,
-           "Seeing through opening earns coarse glimpse");
+           "An open way on the screen earns a coarse glimpse, behind a wall too");
     expect(loft->rememberedGlyphs.empty(), "Glimpsed cell does not reveal detailed terrain");
     expect(s.isometric, "Visible vertical stack activates isometric view");
-    p.position = {21.5, 12.5};
+    // A way that is shut shows nothing through it: the place beyond stays known, dim.
+    p.position = {16.5, 22.5};
+    expect(w.interact("p", "door_main", "open").ok, "The yard door opens");
+    p.cellId = "tavern";                            // (Opening it took the wolf through: back inside, by the open door.)
+    p.position = {16.5, 22.5};
     s = w.snapshot("p");
-    loft = mapCell(s, "loft");
-    expect(loft && !loft->visible, "Known adjacent cell remains dim after losing sight");
-    expect(!s.isometric, "Remembered vertical outline alone stays top-down");
+    expect(mapCell(s, "exterior") && mapCell(s, "exterior")->visible, "An open door on the screen shows the place beyond");
+    expect(w.interact("p", "door_main", "close").ok, "The yard door closes");
+    s = w.snapshot("p");
+    expect(mapCell(s, "exterior") && !mapCell(s, "exterior")->visible, "Known adjacent cell remains dim once its way is shut");
+    p.position = {22.5, 6.5};
+    w.interact("p", "door_pantry", "open");
     p.position = {28.5, 5.5};
     expect(w.interact("p", "stairs_up", "enter").ok, "Steps are explicit transition action");
     expect(p.cellId == "loft", "Entered loft");
@@ -1038,8 +1195,8 @@ void persistedRoundtripAndPrivacy()
     expect(mapCell(before, "exterior") && mapCell(before, "exterior")->knowledge == Knowledge::Glimpsed,
            "Roundtrip fixture includes glimpsed exterior");
     expect(mapCell(before, "loft") && mapCell(before, "loft")->knowledge == Knowledge::Visited &&
-               !mapCell(before, "loft")->visible,
-           "Roundtrip fixture includes out-of-sight visited loft");
+               mapCell(before, "loft")->visible,
+           "Roundtrip fixture includes the visited loft, its steps on the screen behind the pantry's wall (doc 80)");
     const auto saved = original.save();
     World restored;
     expect(restored.restore(saved).ok, "Full persisted world restores into new simulation");
@@ -1064,8 +1221,12 @@ void persistedRoundtripAndPrivacy()
            "Visited detail survives exact roundtrip");
     expect(mapCell(after, "exterior")->rememberedGlyphs.empty(),
            "Glimpsed memory gains no detailed terrain from restore");
-    expect(!hasEntity(after, "q") && !hasEntity(after, "npc_cook") && !hasEntity(after, "npc_scribe"),
-           "Restart does not reveal actors in another cell or behind closed pantry");
+    expect(!hasEntity(after, "q"), "Restart does not reveal actors in another cell");
+    // (Those behind the closed pantry are on the screen, so sent: doc 80. One crouched there is not.)
+    restored.entity("npc_cook")->posture = "crouching";
+    expect(hasEntity(restored.snapshot("p"), "npc_scribe") == hasEntity(before, "npc_scribe") &&
+               !hasEntity(restored.snapshot("p"), "npc_cook"),
+           "Restart reveals no one hiding behind the closed pantry");
     bool hiddenProperties = true;
     for (std::size_t i = 0; i < after.cell.tiles.size(); ++i)
         if (!after.visibleTiles[i])
@@ -1267,6 +1428,10 @@ void scentWindAndWeather()
     expect(w.scentClarity("observer", "source") > 0, "Nearby wolves remain scentable in still air");
     const auto calm = w.scentCues("observer");
     observer.eyeHealth = 0;
+    // The whole screen (doc 80): a blind wolf's player is still shown everyone on its screen who isn't hiding, so
+    // only one hiding there, unseen, is left to its nose.
+    expect(w.scentCues("observer").empty(), "A source on the screen is no scent cue, however poor the observer's eyes");
+    source.posture = "crouching";
     const auto blindCalm = w.scentCues("observer");
     expect(!blindCalm.empty() && !blindCalm.front().windborne, "Calm proximity cue is not labeled windborne");
     expect(calm.empty(), "A clearly visible source does not duplicate itself as an unknown scent cue");
@@ -1327,14 +1492,19 @@ void scentAirPathsAndPrivacy()
     wall->solid = wall->opaque = true;
     expect(!w.lineOfSight("tavern", observer.position, source.position), "Corner fixture blocks direct visual sight");
     expect(w.scentClarity("observer", "source") > 0, "Scent travels around an obstacle through a connected air path");
+    // The whole screen (doc 80): a wolf standing behind the obstacle is shown, and may be looked at; one hiding
+    // there is not, and its scent gives nothing of it away.
+    expect(hasEntity(w.snapshot("observer"), "source") && w.snapshot("observer").scentCues.empty() &&
+               w.interact("observer", "source", "inspect").ok,
+           "A wolf behind an obstacle on the screen is shown, with no scent cue beside");
+    const double standingScent = w.scentClarity("observer", "source");
+    source.posture = "crouching";
+    source.sneakSkill = 100;
     expect(!hasEntity(w.snapshot("observer"), "source"), "Scent around an obstacle never supplies a visual wolf token");
     expect(w.actions("observer", "source").empty() && !w.interact("observer", "source", "inspect").ok,
            "Knowing an anonymous scent direction never unlocks target identity or inspection");
     expect(!w.perceive("observer", "source").identifiable,
            "Scent detection cannot upgrade an unseen speaker to an identified character");
-    const double standingScent = w.scentClarity("observer", "source");
-    source.posture = "crouching";
-    source.sneakSkill = 100;
     expect(near(w.scentClarity("observer", "source"), standingScent),
            "An expert sneak remains equally scentable; stealth does not erase body odor");
 
@@ -1356,11 +1526,15 @@ void scentAirPathsAndPrivacy()
     expect(unchanged, "Receiving scent alone cannot promote cells or terrain into visual map memory");
     source.position = {16.5, 13.5};
     source.velocity = {.2, 0};
-    source.posture = "standing";
     observer.noseHealth = 0;
     observer.earHealth = 1;
+    source.sneakSkill = 0;                          // (Creeping, but clumsily: heard a tile off.)
     expect(w.snapshot("observer").movementHeard && w.snapshot("observer").scentCues.empty(),
            "An anosmic blind wolf can still hear nearby movement independently of scent");
+    source.posture = "standing";
+    expect(!w.snapshot("observer").movementHeard && hasEntity(w.snapshot("observer"), "source"),
+           "A wolf walking on the screen is shown, not heard as someone unseen (doc 80)");
+    source.posture = "crouching";
     source.velocity = {};
     expect(!w.snapshot("observer").movementHeard, "Stationary wolves do not leave stale movement-heard flags");
 
@@ -1402,6 +1576,8 @@ void anonymousScentSectors()
     observer.eyeHealth = 0;
     w.setWeather("exterior", Weather::Clear);
     w.setWind("exterior", 0, .5);
+    expect(w.scentCues("observer").empty(), "A wolf standing on the screen is shown, not smelt out (doc 80)");
+    source.posture = "crouching";                   // Hiding, and the observer blind: left to its nose.
     auto cues = w.scentCues("observer");
     expect(cues.size() == 1 && cues[0].sector == 4 && cues[0].windborne,
            "Eastward air flow reveals a broad west/upwind source sector, not the air-flow heading");
@@ -1409,6 +1585,7 @@ void anonymousScentSectors()
     auto& another = player(w, "another");
     another.cellId = "exterior";
     another.position = {13.5, 12.5};
+    another.posture = "crouching";
     cues = w.scentCues("observer");
     expect(cues.size() == 1 && cues[0].sector == 4,
            "Multiple hidden wolves in one direction aggregate into one cue without an exact count");
@@ -1899,6 +2076,7 @@ int main()
         aQueueStandsStill();
         aDoorOutOfSight();
         sensesAndWeather();
+        theWholeScreen();
         stealthPerception();
         posturePortalTransitions();
         mapMemory();

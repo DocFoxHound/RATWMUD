@@ -132,7 +132,10 @@ Value frame(const World& world, const std::string& observer, bool full)
     root.add("cellId", self->cellId);
     root.add("time", world.time());
     auto poses = Value::array();
-    const double range = world.sightRange(*self);       // Once per frame, not per wolf (doc 31, Phase 4).
+    // Whom the player is shown (World::shown, doc 80: everyone on its screen but those hiding from it), as its
+    // snapshots have it. The range and the screen once per frame, not per wolf (doc 31, Phase 4).
+    const double range = world.sightRange(*self);
+    const auto screen = world.screenOf(*self);
     for (const Entity* found : world.entitiesIn(self->cellId))  // Its own cell's wolves (doc 31, Phase 4).
     {
         const auto& e = *found;
@@ -142,7 +145,7 @@ Value frame(const World& world, const std::string& observer, bool full)
             continue;
         if (!full && !isSelf && std::hypot(e.position.x - self->position.x, e.position.y - self->position.y) > FarAway)
             continue;                              // Far: in the full frames only.
-        if (!isSelf && world.visionClarity(*self, e, range) <= 0)
+        if (!isSelf && !world.shown(*self, e, range, screen))
             continue;
         auto pose = Value::object();
         pose.add("id", e.id);

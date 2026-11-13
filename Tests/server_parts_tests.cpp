@@ -866,11 +866,24 @@ void motionTests()
     expect(f.string("observer") == "player-ash" && f.string("cellId") == ash->cellId, "a frame is the observer's");
     expect(posed(f, "player-ash") && posed(f, "npc_keeper") && posed(f, "player-bram"), "it poses the observer and who it can see");
     expect(!posed(f, "player-far") && json::dump(f).find("player-far") == std::string::npos, "never another cell's actors, not even their IDs");
+    // The whole screen (doc 80): a frame poses everyone on the observer's screen, whatever its eyes; only one hiding
+    // from it (crouched, and not made out) is left out, ID and all.
     ash->eyeHealth = 0;
     bram->position = {bram->position.x + 10, bram->position.y};
     f = motion::frame(world, "player-ash");
+    expect(posed(f, "player-bram") && posed(f, "player-ash"), "a wolf on the screen is posed though the observer's wolf is blind");
+    bram->posture = "crouching";
+    f = motion::frame(world, "player-ash");
     expect(!posed(f, "player-bram") && json::dump(f).find("player-bram") == std::string::npos && posed(f, "player-ash"),
-           "a pose the observer cannot see is dropped");
+           "the pose of one hiding from the observer is dropped");
+    ash->eyeHealth = 1;
+    f = motion::frame(world, "player-ash");
+    expect(!posed(f, "player-bram") && json::dump(f).find("player-bram") == std::string::npos,
+           "a crouching wolf ten tiles off isn't posed to good eyes either");
+    bram->position = {ash->position.x + 3, ash->position.y};
+    expect(posed(motion::frame(world, "player-ash"), "player-bram") == (world.visionClarity("player-ash", "player-bram") > 0),
+           "it is posed once made out, as ever");
+    bram->posture = "standing";
 
     ash->eyeHealth = 1;
     f = motion::frame(world, "player-ash");
@@ -889,8 +902,10 @@ void motionTests()
                std::abs(got[i].number("y") - sent[i].number("y")) < 1e-4;
     expect(same, "and every pose, to within float precision");
 
-    // The page's sight (doc 31, Phase 4.6): what the server sees from this spot of the demo exterior is what the
-    // browser client's test expects its own sight to see (Client/src/game/sight.golden.json).
+    // The shared sight rule (doc 31, Phase 4.6; Core/RatwSight.h): what a wolf's own eyes reach from this spot of the
+    // demo exterior is what the browser client's test expects of the same rule in WebAssembly (Client/src/game/
+    // sight.golden.json). Since doc 80 it no longer decides what a screen shows (all of it), only who is spotted
+    // hiding; the screen's rectangle is checked below.
     {
         std::ifstream sightIn(std::string(RATW_SOURCE_DIR) + "/Client/src/game/sight.golden.json");
         const std::string sightText((std::istreambuf_iterator<char>(sightIn)), std::istreambuf_iterator<char>());
@@ -901,12 +916,19 @@ void motionTests()
         eye.position = {golden.number("x"), golden.number("y")};
         const auto view = w.snapshot("player-eye");
         const int width = int(golden.number("width"));
-        std::size_t differ = 0;
+        const double range = w.sightRange(eye);
+        std::size_t differ = 0, unshown = 0;
         for (std::size_t y = 0; y < golden.array("seen").size(); ++y)
             for (int x = 0; x < width; ++x)
-                differ += (view.visibleTiles[y * std::size_t(width) + std::size_t(x)] ? '1' : '0') != golden.array("seen")[y].asString()[std::size_t(x)];
-        expect(differ == 0 && w.sightRange(*w.entity("player-eye")) == golden.number("range"),
-               "the server still sees what the sight golden says (" + std::to_string(differ) + " tiles differ)");
+            {
+                const Vec2 at{x + .5, double(y) + .5};
+                const bool seen = std::hypot(at.x - eye.position.x, at.y - eye.position.y) <= range && w.lineOfSight(eye.cellId, eye.position, at);
+                differ += (seen ? '1' : '0') != golden.array("seen")[y].asString()[std::size_t(x)];
+                unshown += !view.visibleTiles[y * std::size_t(width) + std::size_t(x)];
+            }
+        expect(differ == 0 && range == golden.number("range"),
+               "the server's sight rule still sees what the sight golden says (" + std::to_string(differ) + " tiles differ)");
+        expect(unshown == 0, "and the screen shows every tile of that cell, seen by the wolf or not (doc 80)");
     }
     // Packed snapshots (doc 31, Phase 4.8): the bytes the browser client's test reads (Client/src/net/pack.golden.json).
     {

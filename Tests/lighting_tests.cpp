@@ -145,35 +145,44 @@ void authoritativePerceptionAndMemory()
     observer.position = {10.5, 12.5};
     source.position = {24.5, 12.5};
     const auto distantTile = static_cast<std::size_t>(12 * 40 + 24);
+    // The whole screen (Docs/Design/80-the-whole-screen.md): a dark room is shown whole, with the wolves standing in
+    // it. The dark still decides what the observer's own eyes make out: one hiding, and who it can name by sight.
     const auto dark = world.snapshot("observer");
-    expect(!contains(dark, "source") && near(world.visionClarity("observer", "source"), 0) &&
+    expect(contains(dark, "source") && near(world.visionClarity("observer", "source"), 0) &&
                !world.perceive("observer", "source").identifiable,
-           "Dark interiors hide distant wolves, visual poses, and identity server-side");
-    expect(!dark.visibleTiles[distantTile] && !dark.rememberedTiles[distantTile] &&
-               dark.cell.tiles[distantTile].glyph == ' ',
-           "Unknown terrain in a dark room is neither revealed nor recorded");
+           "A dark interior shows a distant wolf on the screen, though the observer's own eyes can't make it out");
+    expect(dark.visibleTiles[distantTile] && dark.cell.tiles[distantTile].glyph == '.',
+           "Terrain in a dark room is shown as it is");
     expect(near(dark.environment.sight, .08) && near(dark.environment.sight, world.environmentAt("tavern").sight),
-           "The transmitted atmosphere matches the authoritative visibility filter");
+           "The transmitted atmosphere matches the authoritative filter for those hiding");
     const double hearing = world.hearingClarity("observer", "source");
+    source.posture = "crouching";
+    source.position = {14.5, 12.5};
+    expect(!contains(world.snapshot("observer"), "source"), "A wolf crouched four tiles off in the dark is not sent");
     world.setLighting("tavern", 1, 1, "warm");
+    expect(contains(world.snapshot("observer"), "source"), "Lit, the same crouching wolf is made out and sent");
+    source.posture = "standing";
+    source.position = {24.5, 12.5};
     const auto lit = world.snapshot("observer");
     expect(contains(lit, "source") && lit.visibleTiles[distantTile] && world.visionClarity("observer", "source") > 0,
-           "Artificial lighting restores actual night-time visibility in the room");
+           "Artificial lighting restores the observer's own night-time sight in the room");
     expect(near(world.hearingClarity("observer", "source"), hearing),
            "Lighting does not silently change spoken clarity");
     world.setLighting("tavern", 0, 0, "warm");
     world.cell("tavern")->tile(24, 12)->glyph = ',';
-    const auto remembered = world.snapshot("observer");
-    expect(!remembered.visibleTiles[distantTile] && remembered.rememberedTiles[distantTile] &&
-               remembered.cell.tiles[distantTile].glyph == '.' && !contains(remembered, "source"),
-           "Dimming preserves previously seen geometry without disclosing live edits or actors");
+    const auto edited = world.snapshot("observer");
+    expect(edited.visibleTiles[distantTile] && edited.cell.tiles[distantTile].glyph == ',',
+           "Ground on the screen is shown live in the dark, edits and all");
     source.position = {13, 12.5};
+    source.posture = "crouching";
     const double scent = world.scentClarity("observer", "source");
-    expect(world.visionClarity("observer", "source") == 0 && scent > 0 && !world.scentCues("observer").empty(),
-           "A wolf beyond dark sight range can still be scented without becoming visible");
+    expect(world.visionClarity("observer", "source") == 0 && scent > 0 && !world.scentCues("observer").empty() &&
+               !contains(world.snapshot("observer"), "source"),
+           "A wolf hiding beyond dark sight range can still be scented without becoming visible");
     world.setLighting("tavern", 1, 1, "warm");
     expect(near(scent, world.scentClarity("observer", "source")) && world.scentCues("observer").empty(),
            "Lighting changes the cue's visual context, not scent sensitivity");
+    source.posture = "standing";
     observer.eyeHealth = 0;
     expect(world.visionClarity("observer", "source") == 0, "Bright rooms do not bypass damaged vision");
     observer.eyeHealth = 1;
