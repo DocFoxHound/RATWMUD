@@ -4,7 +4,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync, statSync} from 'node:fs';
 import {inflateSync} from 'node:zlib';
-import {readAppearance} from './portrait.ts';
+import {paintedLook, readAppearance} from './portrait.ts';
 
 const species = ['timber', 'maned', 'arctic', 'red', 'ethiopian'];
 const sheet = (name: string) => new URL(`../../../Data/Portraits/${name}.png`, import.meta.url);
@@ -97,3 +97,19 @@ for (const name of species)
             assert.ok(opaque > 0 && clear > 0, `the frame at ${fx},${fy} has a sprite on a clear ground (${opaque} opaque, ${clear} clear)`);
         }
     });
+
+// Every in-game portrait is the painted wolf (doc 81): a wolf's own fur and size, or for one saved before the painted
+// wolves, the look derived from what it had (as character select shows it).
+test('a portrait is painted in the wolf\'s own fur, or the derived look of an older wolf', () => {
+    const older = {species: 'timber', sex: 'female', stature: 'short', pattern: 'saddle', baseColor: 6, gradientColor: 0, markingColor: 5,
+        gradientAmount: 0.6, patternAmount: 0.8};
+    const fur = {coat: ['rust', 'sand', 'ivory'], eyes: 'amber', zones: {back: ['soot', 'charcoal', 'ash']}};
+    assert.deepEqual(paintedLook({...older, stature: 'tall', build: 'large', fur}), {fur, build: 'large'}, 'its own fur, at its size');
+    const derived = paintedLook(older);
+    assert.equal(derived?.build, 'small', 'an older wolf: the size of its stature');
+    assert.ok(derived?.fur.zones?.back, 'and its saddle on its back');
+    assert.deepEqual(paintedLook(older), derived, 'the same every time');
+    assert.equal(paintedLook({...older, build: 'lean'})?.build, 'large', 'a first painting\'s name: the painting that took its place');
+    assert.equal(paintedLook(null), null, 'no appearance (a hunt\'s game): no wolf');
+    assert.equal(paintedLook({...older, fur: {coat: ['neon', 'sand', 'ivory'], eyes: 'amber'}}), null, 'off the palette: none');
+});

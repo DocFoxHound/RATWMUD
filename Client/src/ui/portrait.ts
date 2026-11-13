@@ -1,11 +1,11 @@
-// The wolf portrait on the character sheet, the inspection card and the creator (UI/SRatwWolfDoll.cpp): the
-// species' painted sheet (Data/Portraits, four life stages in a 2×2 grid) recoloured with the chosen coat. Never used
-// for the map's W token.
-import {CoatColors} from './theme.ts';
+// A wolf's portrait wherever the game shows one (Docs/Design/81-painted-wolves.md): the painted wolf (wolfPaint.ts) in
+// that wolf's own fur, its face or its profile, or an uploaded picture where the viewer may see one. The appearance as
+// the server checks it, and the height at the shoulder. Never used for the map's W token, nor for a hunt's game (its
+// glyph).
 import {isObject, type Json} from '../game/json.ts';
-import {drawWolf} from './wolfArt.ts';
 import {artCache} from './artwork.ts';
-import {readFur, type Fur} from './fur.ts';
+import {buildOf, Builds, furOf, readFur, type Build, type Fur} from './fur.ts';
+import {PaintedWolves, WolfPaper, type Painting} from './wolfPaint.ts';
 
 export interface Appearance {
     species: string;
@@ -87,85 +87,57 @@ export function shoulderHeightCm(a: Appearance, age: number): number {
     return baseline * stature * maturity;
 }
 
-function smooth(a: number, b: number, v: number) {
-    const t = Math.min(1, Math.max(0, (v - a) / (b - a)));
-    return t * t * (3 - 2 * t);
-}
-function patch(x: number, y: number, cx: number, cy: number, rx: number, ry: number) {
-    const dx = (x - cx) / rx, dy = (y - cy) / ry;
-    return 1 - smooth(0.64, 1, dx * dx + dy * dy);
-}
-const coat = (i: number): [number, number, number] => {
-    const c = CoatColors[i];
-    return [((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255];
-};
+/** Which painting a portrait shows (doc 81): the face (one painting, every wolf's), or the profile of the wolf's size. */
+export type PortraitView = 'face' | 'profile';
 
-/** Recolours one life stage of a sheet: RGBA in, RGBA out (the painted outlines, eyes and highlights kept). */
-export function recolor(source: Uint8ClampedArray, sheetWidth: number, frameX: number, frameY: number, width: number, height: number,
-    a: Appearance): Uint8ClampedArray {
-    const out = new Uint8ClampedArray(width * height * 4);
-    const base = coat(a.baseColor), gradient = coat(a.gradientColor), marking = coat(a.markingColor), highlight = coat(0);
-    for (let y = 0; y < height; ++y)
-        for (let x = 0; x < width; ++x) {
-            const s = ((y + frameY) * sheetWidth + x + frameX) * 4, o = (y * width + x) * 4;
-            const u = x / width, v = y / height;
-            const l = (source[s] * 0.2126 + source[s + 1] * 0.7152 + source[s + 2] * 0.0722) / 255;
-            const g = smooth(0.2, 0.88, v) * a.gradientAmount;
-            let color = [0, 1, 2].map(i => base[i] + (gradient[i] - base[i]) * g);
-            let mask = 0;
-            if (a.pattern === 'saddle') mask = patch(u, v, 0.49, 0.44, 0.27, 0.14);
-            else if (a.pattern === 'mantle') mask = Math.max(patch(u, v, 0.48, 0.42, 0.34, 0.18), patch(u, v, 0.27, 0.36, 0.11, 0.2));
-            else if (a.pattern === 'piebald')
-                mask = Math.max(patch(u, v, 0.4, 0.53, 0.11, 0.16), patch(u, v, 0.66, 0.57, 0.1, 0.19), patch(u, v, 0.22, 0.3, 0.065, 0.12));
-            color = color.map((c, i) => c + (marking[i] - c) * mask * a.patternAmount);
-            if (l < 0.17) color = [l * 0.7, l * 0.75, l * 0.78];
-            else {
-                const lift = smooth(0.76, 1, l) * 0.56;
-                color = color.map((c, i) => c * (0.3 + l * 1.02) * (1 - lift) + highlight[i] * lift);
-            }
-            out[o] = color[0] * 255;
-            out[o + 1] = color[1] * 255;
-            out[o + 2] = color[2] * 255;
-            out[o + 3] = source[s + 3];
-        }
-    return out;
-}
-
-/** Portraits for one page: sheets loaded once, each look recoloured once. */
-export class Portraits {
-    private made = new Map<string, HTMLCanvasElement>();
-    onReady: () => void = () => {};
-
-    /** The portrait: the stylised wolf (wolfArt.ts) in this coat and at this age, drawn once and kept. */
-    get(appearance: Appearance, age: number): HTMLCanvasElement | null {
-        const stage = lifeStage(Number.isFinite(age) ? Math.min(10000, Math.max(0, Math.trunc(age))) : 18);
-        const key = JSON.stringify([appearance, stage]);
-        const made = this.made.get(key);
-        if (made) return made;
-        if (typeof document === 'undefined') return null;
-        const canvas = document.createElement('canvas');
-        canvas.width = 500;
-        canvas.height = 340;
-        const c = canvas.getContext('2d');
-        if (!c) return null;
-        drawWolf(c, appearance, stage);
-        if (this.made.size > 64) this.made.clear();
-        this.made.set(key, canvas);
-        return canvas;
-    }
-
-    failed(_species: string): boolean {
-        return false;                      // Drawn in code: there is no sheet to fail to load.
-    }
+export interface PortraitOptions {
+    view?: PortraitView;        // The profile unless said.
+    paper?: boolean;            // On the paintings' paper (rounded), else on nothing: what is behind shows. On unless said.
+    radius?: number;            // The paper's corners, in pixels (a fraction of the box's shorter side by default).
+    pad?: number;               // The margin round the painting, as a share of the box's shorter side (0.07).
+    flip?: boolean;             // Facing right (the paintings face left): the left of a face-off.
 }
 
 /**
- * Draws a portrait into a box: scaled to fit with room for the tallest stature, so stature genuinely changes height,
- * standing near the bottom. Returns false if there is nothing to draw (yet).
+ * The wolves' portraits for one page (doc 81): the paintings (wolfPaint.ts) asked for at once, so they have arrived by
+ * the first portrait, and each look painted once at the size it is shown and kept. `version` counts paintings arrived:
+ * a place that drew before one did draws again when it changes (or listens).
  */
-export function drawPortrait(ctx: CanvasRenderingContext2D, portraits: Portraits, appearanceJson: unknown, age: number,
-    x: number, y: number, w: number, h: number, artwork?: string): boolean {
-    // An uploaded portrait the viewer may see (doc 29, phase 9): drawn square, centred, in place of the wolf.
+export class Portraits {
+    readonly wolves = new PaintedWolves();
+    version = 0;
+    private listeners = new Set<() => void>();
+
+    constructor() {
+        this.wolves.onReady = () => {
+            ++this.version;
+            for (const f of this.listeners) f();
+        };
+        for (const painting of ['face', ...Builds] as const) this.wolves.aspect(painting);
+    }
+
+    /** Called as each painting arrives; returns a function that stops it. */
+    listen(f: () => void): () => void {
+        this.listeners.add(f);
+        return () => this.listeners.delete(f);
+    }
+}
+
+/** Where a wolf's painted look comes from: an appearance as the server sends it (its `fur`, or for a wolf saved before
+ *  the painted wolves the look derived from what it had: fur.ts furOf), and the painting of its size. */
+export function paintedLook(appearanceJson: unknown): {fur: Fur; build: Build} | null {
+    const look = readAppearance(appearanceJson);
+    return look ? {fur: furOf(look), build: buildOf(look)} : null;
+}
+
+/**
+ * Draws a portrait into a box: an uploaded picture the viewer may see (doc 29, phase 9), square and centred; else the
+ * painted wolf in its own fur (doc 81), its face or its profile, on its paper. The profiles share one frame, so a small
+ * wolf stands smaller than a large one in boxes of one size. False if there is nothing to draw (yet): no appearance (a
+ * hunt's game), or the paintings still on their way.
+ */
+export function drawPortrait(ctx: CanvasRenderingContext2D, portraits: Portraits, appearanceJson: unknown,
+    x: number, y: number, w: number, h: number, artwork?: string, options: PortraitOptions = {}): boolean {
     const picture = artCache.get(artwork);
     if (picture) {
         const side = Math.min(w, h);
@@ -175,16 +147,24 @@ export function drawPortrait(ctx: CanvasRenderingContext2D, portraits: Portraits
         ctx.restore();
         return true;
     }
-    const appearance = readAppearance(appearanceJson);
-    if (!appearance) return false;
-    const image = portraits.get(appearance, age);
-    if (!image) return false;
-    const stature = appearance.stature === 'short' ? 0.88 : appearance.stature === 'tall' ? 1.12 : 1;
-    const s = Math.min(w / image.width, h / (image.height * 1.12));
-    const dw = image.width * s, dh = image.height * s * stature;
+    const look = paintedLook(appearanceJson);
+    if (!look) return false;
+    const painting: Painting = options.view === 'face' ? 'face' : look.build;
+    const wolves = portraits.wolves;
+    if (!wolves.aspect(painting)) return false;
+    const short = Math.min(w, h), pad = short * (options.pad ?? 0.07);
     ctx.save();
-    ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(image, x + (w - dw) / 2, y + h * 0.94 - dh * 0.9, dw, dh);
+    if (options.paper !== false) {
+        ctx.fillStyle = WolfPaper;
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, options.radius ?? short * (painting === 'face' ? 0.14 : 0.06));
+        ctx.fill();
+    }
+    if (options.flip) {
+        ctx.translate(2 * x + w, 0);
+        ctx.scale(-1, 1);
+    }
+    const drawn = wolves.draw(ctx, painting, look.fur, x + pad, y + pad, w - 2 * pad, h - 2 * pad);
     ctx.restore();
-    return true;
+    return drawn;
 }

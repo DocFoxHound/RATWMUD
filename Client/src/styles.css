@@ -134,7 +134,7 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .party-name { color: var(--gold); }
 .party-tools, .party-foot { display: flex; gap: 4px; flex-wrap: wrap; }
 .party-foot { margin-top: 6px; }
-.thumb { width: 44px; height: 44px; flex: none; background: var(--ink); border-radius: 3px; image-rendering: pixelated; }
+.thumb { width: 44px; height: 44px; flex: none; background: var(--ink); border-radius: 3px; }
 .sight-text { flex: 1; min-width: 0; }
 .sight-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sight-detail { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -204,6 +204,7 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .rpg-slots { display: flex; flex-direction: column; gap: 8px; justify-content: center; min-width: 0; }
 .rpg-figure { display: flex; align-items: center; justify-content: center; min-width: 0; }
 .rpg-figure .portrait { width: 100%; max-width: 210px; aspect-ratio: 1; height: auto; border-radius: 4px; }
+.rpg-figure .portrait.painted { aspect-ratio: 8 / 5; }   /* The painted profile (doc 81): wide. */
 .rpg-doll-row { display: grid; grid-template-columns: 1fr; }
 .rpg-slot { display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 7px 9px; min-height: 52px; background: var(--ink);
     border: 1px dashed #3a4a44; border-radius: 4px; color: var(--paper); font: inherit; cursor: help; }
@@ -228,14 +229,15 @@ button.rpg-slot:disabled { cursor: not-allowed; opacity: .75; }
 .rpg-detail { background: var(--panel); border: 1px solid #34443e; border-radius: 4px; padding: 12px; display: flex; flex-direction: column; gap: 6px; min-height: 120px; }
 .rpg-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .rpg-fur { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 10px; align-items: center; }
-.rpg-fur-svg { width: 100%; max-width: 380px; height: auto; display: block; margin: 0 auto; }
-.rpg-fur-wolf { fill: #24302c; stroke: #4a5c55; stroke-width: 1.5; }
+.rpg-fur-figure { position: relative; width: 100%; max-width: 380px; margin: 0 auto; }
+.rpg-fur-wolf { display: block; width: 100%; height: auto; }
+.rpg-fur-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .rpg-fur-spot { cursor: pointer; }
-.rpg-fur-spot circle { fill: var(--ink); stroke: #6b7c74; stroke-width: 1.5; }
+.rpg-fur-spot circle { fill: var(--ink); fill-opacity: .8; stroke: var(--paper); stroke-width: 4.5; }
 .rpg-fur-spot.has circle { fill: color-mix(in srgb, var(--gold) 35%, var(--ink)); stroke: var(--gold); }
-.rpg-fur-spot.chosen circle { stroke: var(--paper); stroke-width: 2.5; }
+.rpg-fur-spot.chosen circle { stroke: var(--gold); stroke-width: 8; }
 .rpg-fur-spot:hover circle { stroke: var(--sage); }
-.rpg-fur-spot text { font: 10px 'RATW Mono', monospace; fill: var(--paper); text-anchor: middle; pointer-events: none; }
+.rpg-fur-spot text { font: 30px 'RATW Mono', monospace; fill: var(--paper); text-anchor: middle; pointer-events: none; }
 .rpg-fur-list { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .rpg-fur-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; }
 .rpg-fur-row .secondary { padding: 4px 8px; font-size: 11px; }
@@ -288,6 +290,9 @@ button.rpg-slot:disabled { cursor: not-allowed; opacity: .75; }
 .sheet-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin: 8px 0; }
 .sheet-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .sheet .portrait { width: 100%; height: auto; background: var(--ink); border: 1px solid #34443e; image-rendering: pixelated; }
+/* The painted wolf (doc 81) on its own paper: no frame of its own. */
+.sheet .portrait.painted { background: none; border: none; image-rendering: auto; }
+.sheet .wolf-id { margin-bottom: 8px; }
 .sheet-actions { display: flex; gap: 14px; justify-content: flex-end; align-items: center; margin-top: 8px; }
 .sheet .primary { background: var(--raised); padding: 11px 16px; }
 .sheet .primary:hover { outline: 1px solid var(--sage); }

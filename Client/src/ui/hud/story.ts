@@ -162,7 +162,7 @@ export class StoryPanel {
         // Howls one may still join (doc 51): their direction and distance, never who.
         const calls = [...s.howls.entries()].filter(([, h]) => h.canJoin && h.until > s.clock);
         const key = JSON.stringify([shown, ended, stories.map(st => [str(st, 'id'), str(st, 'state'), bool(st, 'mine')]),
-            given.map(g => str(g, 'id')), nearby, calls.map(([id, h]) => [id, h.wolves]), this.adding, s.shelf.open, [...this.openLogs].map(id => [id, s.fightLogs.get(id)?.length ?? -1])]);
+            given.map(g => str(g, 'id')), nearby, calls.map(([id, h]) => [id, h.wolves]), this.adding, s.shelf.open, this.portraits?.version ?? 0, [...this.openLogs].map(id => [id, s.fightLogs.get(id)?.length ?? -1])]);
         if (key === this.sceneKey) return;
         this.sceneKey = key;
         this.sceneBar.replaceChildren();
@@ -232,12 +232,12 @@ export class StoryPanel {
             for (const w of arr(n, 'who').filter(isObject)) {
                 const line = el('div', 'scene-who-wolf', who);
                 const face = el('canvas', 'scene-who-face', line);
-                face.width = face.height = 40;
+                face.width = face.height = 80;
                 const c = face.getContext('2d');
-                const stage = str(w, 'lifeStage');
+                // Its painted face in its own fur (doc 81), or its uploaded picture (drawn when the line is next built,
+                // should the paintings not have arrived: their count is in the key).
                 if (c && this.portraits)
-                    drawPortrait(c, this.portraits, obj(w, 'appearance'), stage === 'young' ? 6 : stage === 'adolescent' ? 13 : stage === 'old' ? 65 : 18,
-                        0, 0, 40, 40, str(w, 'artwork') || undefined);
+                    drawPortrait(c, this.portraits, obj(w, 'appearance'), 0, 0, 80, 80, str(w, 'artwork') || undefined, {view: 'face', pad: 0.04});
                 el('span', '', line, str(w, 'name'));
             }
             el('span', 'label muted', row, open ? 'A SCENE HERE · OPEN' : 'A SCENE HERE · KNOCK TO JOIN');
