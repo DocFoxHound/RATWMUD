@@ -547,7 +547,7 @@ accounts. The user keeps his local studio.
 - A live world gives `ratw_editor` no CONNECT (`CONNECT_ROLES['live']`, `world_db.py:76`; `compose.yaml:114`), so in
   slice 1 the editor role and its password do nothing.
 - Measured on this laptop when one build was 119 MB (doc 70, section 7): a build takes **40 s and 3.9 GB of RAM**.
-  Today's build is about 307 MB by doc 77's draft figure, not rechecked.
+  M0b, at today's 324 MB build: 41 s and 3.8 GB (the heights, not the build's size, set the memory).
 
 **The package**
 - `Package/stage.sh` copies every top-level `tools/*.py` except tests (`:93-96`). So `dungeon_master.py`, `studio.py`,
@@ -1291,9 +1291,9 @@ Rules:
 **Why every package, not an "editable" one:** a host who never edits still needs the source if a later server can't
 load their old build (section 12.5).
 
-**Size, not measured.** `terrain_chunks` alone was 964 rows and 65 MB at doc 70's revision, 56 MB of it heights as
-jsonb. Guess: the package grows from about 24 MB to 40-70 MB compressed. M0b measures it; doc 70's dense heights
-encoding (doc 70, lines 276-279) is the fix if heights dominate.
+**Size, measured (M0b).** The AUTHORED tables add 43.4 MB compressed to a package (45.7 MB today, so about 89 MB),
+38.2 MB of it `terrain_chunks`' heights. Under D2's 50 MB, so dense heights don't go first; written as
+`encode_heights` rows in the package alone they would come to 0.7 MB (Progress, "M0b measured").
 
 **Imports are untrusted.** Hosts will pass worlds around. Import keeps to parameterised SQL and in-memory extraction
 (as today), and adds column allowlists for the AUTHORED tables, size caps, and the Atlas validator with the client
@@ -1337,10 +1337,12 @@ to learn that at the end.
    is in plain words with a "Show me" link that jumps to the spot in Atlas.
 2. **Back up.** If no backup can be made (an old `compose.yaml` with no backup service, a full disk), Publish refuses.
 3. **Check memory:** the cgroup's `memory.max` and `memory.current` and `MemAvailable`. Below N GB, refuse with
-   "Publishing needs about N GB free; this world has M." N is set in M0b.
+   "Publishing needs about N GB free; this world has M." **N = 5 GB** (M0b: the build peaks at 3.8 GB, beside the
+   running server's 0.75 GB and its save fork).
 4. **Build in a child process** with `RLIMIT_AS`, reusing `Builds.rebuild`'s steps, so a failed build dies alone
-   instead of the kernel killing `ratw_server`. Killed after a time limit M0b sets on modest hardware (4 cores,
-   8 GB, a slow disk), not this laptop. Progress ticks come from `export_files` (new; today it is one long call).
+   instead of the kernel killing `ratw_server`. **`RLIMIT_AS` 6 GiB; killed after 10 minutes** (M0b: the build took
+   49 s on 2 cores and a throttled disk, 81 s on a slow core). Progress ticks come from `export_files` (new; today it
+   is one long call).
 5. `world_build.build(editor_conn, created_by=<the Editor account>)` stores the build and sends `ratw_release`.
 6. **The host chooses how the world moves onto it:**
    - **Open only to me** (recommended for a first Publish): a new `host_only` server state. The server restarts onto
@@ -1359,11 +1361,13 @@ Close and Open feel immediate.
 place or cell the running build lacks is refused: "Publish the map first." The reverse (Publish removing something
 live rows use) is caught by step 1.
 
-**The memory guide.** Measured 3.9 GB at a third of today's build size. Docker Desktop's WSL2 VM gets half the PC's
-RAM by default, so a 16 GB PC has 8 GB for the server, Postgres, the save's fork and a build. Docker Desktop's
-Resources slider doesn't set memory on the WSL2 backend; the guide gives the real steps: make
-`%UserProfile%\.wslconfig` holding `[wsl2]` and `memory=12GB`, run `wsl --shutdown`, restart Docker Desktop. It says
-"2 GB to play; N GB to Publish". Building in a separate container started on demand is Q12's alternative.
+**The memory guide.** M0b measured 3.8 GB for the build at today's size, and about 4.7-5.5 GB for the whole Publish
+with the server and Postgres beside it; so the guide's line is "2 GB to play; 5 GB more to Publish", and a PC needs
+16 GB to Publish. Docker Desktop's WSL2 VM gets half the PC's RAM by default, so a 16 GB PC has 8 GB for the
+server, Postgres, the save's fork and a build: just enough. Docker Desktop's Resources slider doesn't set memory on
+the WSL2 backend; the guide gives the real steps: make `%UserProfile%\.wslconfig` holding `[wsl2]` and
+`memory=12GB`, run `wsl --shutdown`, restart Docker Desktop. Building in a separate container started on demand is
+Q12's alternative, not taken (D2).
 
 ### 10.4 Map edits never take a world off the list
 
@@ -1930,18 +1934,18 @@ answers out of the box, not whether managing from anywhere works.
 - The Editor on WKWebView (macOS): not tried; hidden until it is.
 - That ureq's `Agent::with_parts` takes a copied `RustlsConnector` with a custom verifier (M0a).
 - Whether the container sees real peer addresses under Docker Engine and Docker Desktop (M0a).
-- Publish's RAM and time at today's build size, and the source's size (M0b).
+- ~~Publish's RAM and time at today's build size, and the source's size (M0b).~~ Measured: Progress, "M0b measured".
 - Real dump sizes with and without build cells (M0a).
 - Whether builds carry a format number (none found by grep).
-- What the server does when the checkpoint names a place the build lacks (M0b).
+- ~~What the server does when the checkpoint names a place the build lacks (M0b).~~ Measured: it lets go of what is
+  gone, but refuses the whole save for a wolf on a tile the new map makes solid (Progress, "M0b measured").
 - Whether a ticket's `gift` claim overwrites a world-set Gift on the next `hello`.
 - Whether anything a community world sends central (the agent's heartbeat) carries Gift or tier changes. By doc 77
   section 6 it shouldn't.
 
 ## Progress
 
-M1, M2a, M2b, M3 and M4 built, the R1 review's findings fixed (security, and the host's experience, merged on
-`r2-editor`), and M5 built (2026-11-12, below); the rest not yet.
+Slice 1 done (M0a to M6, 2026-11-12, below); slice 2 begun: M0b measured (D2 decided); the rest not yet.
 
 - **2026-11-08: the user's decisions.** "Go with the recommendations": all 21 decisions in section 17 take their
   recommendation (among them: the Editor answers only on the world's own computer until the host opens it; roles
@@ -3058,6 +3062,100 @@ M1, M2a, M2b, M3 and M4 built, the R1 review's findings fixed (security, and the
     agent-hours across its lanes (M1 and M0a about half an hour each; M2a about 1¼ h; M2b, M3 and M4 about an hour each,
     side by side; the lanes wired and R1's review and two repair lanes about 4; M5 about 1; M6 about 1½), against 15-20
     expected and 35-45 planned.
+
+- **2026-11-12: M0b measured: slice 2 begins** (branch `r2-editor-m0b`, from `ridgemere2` at 613857a; the user's
+  go-ahead for slice 2, and so for Publish's timing: "Okay, go ahead and proceed with slice 2 then"). DEV
+  (`ratw_ridgemere2`) was only read: one `pg_dump -Fc` (304 MB, 41 s), restored into a throwaway `s2stage` on this
+  laptop's server (23 s) and into a second one in a container of its own (below). Every build, edit and server start
+  ran on those copies, which are dropped. No PROD, no old DEV, no paid calls. This laptop: i9-13900H (20 threads), 62
+  GB, NVMe, Python 3.14 on Fedora 43. Today's build: 1,212 places, 324 MB of files unpacked (doc 77's "307 MB" was
+  three builds in the database), about 176 MB a build in `world.build_cells` once stored.
+
+  **Modest hardware, emulated.** Docker containers with cgroup v2 limits: Postgres in a fresh `postgres:18` container
+  (the package's own `db`: default settings, 128 MB of shared buffers) with `--cpus 2 --memory 2g`, its disk held to
+  100 MB/s each way and 1,000 write IOPS (`--device-read-bps`, `--device-write-bps`, `--device-write-iops` on both
+  NVMe devices; `dd` with `oflag=direct` then wrote 136 MB/s), and each Publish step in the package image
+  (`ratw-world:latest`, its Python 3.14 and psycopg 3.2, the worktree's `tools/` mounted read-only) with `--cpus 2
+  --memory 4g --memory-swap 4g`; that is 4 cores and 6 GB between them, the server's 0.75 GB added by hand (the server
+  ran under `systemd-run --user --scope -p CPUQuota=200%`, against the same throttled Postgres). A slower core than
+  this laptop's (a cheaper or older PC) was bracketed with `--cpus 0.6`: the build is single-threaded Python, so a
+  2-core quota alone barely slows it.
+
+  | Item | Figure | How measured | For D2 |
+  |---|---|---|---|
+  | Package today (slice 1) | **45.7 MB** compressed, 323.6 MB unpacked (`build.tar.gz` 45.0 MB, the snapshot 0.5 MB, the rest 0.2 MB); 3.3 s, 0.33 GB | `world_package.py export --world dev` on `s2stage` | The base |
+  | The AUTHORED tables, as the package would write them (`world_sync.read`, JSON, gzip 6) | **+43.4 MB compressed** (190.7 MB raw). `terrain_chunks` 43.3 MB of it (964 rows): **heights 38.2 MB**, glyphs 4.1 MB; `interiors` 0.07, `links` 0.02, `cells` and `areas` 0.01 each; `resources`, `places`, `chapters` and `minimaps` empty in DEV. A package becomes **about 89 MB** | A script reading each table as `world_sync.read` does, then `json.dumps` and `gzip` as `write_json_gz` | **Under D2's 50 MB**, narrowly |
+  | The same with dense heights (`world_store.encode_heights` rows, which Atlas already receives) | Heights **0.69 MB** compressed (16.2 MB raw; every chunk fits the codes), so the AUTHORED tables come to **about 5.9 MB** and a package to **about 52 MB**. Reading the terrain part at import: **822 MB and 2.0 s sparse, 79 MB and 0.1 s dense** | The same rows encoded; then a fresh process parsing each `.json.gz` in memory, as import does | Not required by D2; cheap in M7 (below) |
+  | Validate: load the world, `check_project`, `world_sync.orphans`, `SET CONSTRAINTS ALL IMMEDIATE` | Laptop **21.2 s** (load 10.6, check 10.6, the last two 0.01 s), **3.46 GB**. Modest **24.6 s**, 3.45 GB; slow core **41.8 s** | `step.py validate` (wall time, peak RSS sampled every 50 ms and `ru_maxrss`, `VmPeak`, the container's `memory.peak`) | |
+  | `world_sync.validate_dev`'s second check (a whole `export_files`) | Laptop **35.4 s, 3.81 GB**: the same work the build does again | `step.py export` | M8 must not run it before a build |
+  | Build: `world_build.build` (load, export, roster, store 1,212 cells, NOTIFY) | Laptop **40.7 s**, peak RSS **3.80 GB**, `VmPeak` 4.11 GB. Modest **48.8 s**, 3.82 GB (container peak 3.81 GB of its 4 GB). Slow core **80.6 s**. **At `--memory 3500m` it was killed** (exit 137): no build row, no cells, the roster unchanged (one transaction) | `step.py build` | |
+  | Where the build's memory goes | Loading the world alone peaks at **3.45 GB**; its **15.1 million height entries** (`"x,y": h` dicts) are about **2.3 GB** of that (RSS fell to 1.13 GB once they were dropped). The build's size barely matters: doc 70's 3.9 GB was at a third of today's build | The loaded project with every cell's `heights` emptied, then `VmRSS` | Heights are the lever for memory as well as size |
+  | Postgres during a build | About **0.17 GB** used (the container's peak 1.6 GB, nearly all page cache, which gives way) | `docker stats` each second; `memory.stat` | |
+  | The server on the new build | Ready in **3.3 s**, **0.73 GB** RSS, no players (laptop and the 2-core quota alike); a stop with its save **0.13 s** | `ratw_server` (built from 613857a) on `s2stage`, timed to "listening", `VmRSS`/`VmHWM` for 25 s | |
+  | Backups for a Publish (M5's way) | The before-publish dump (`pg_dump -Fc --exclude-table-data=world.build_cells`) **51.6 MB, 4.1 s** (modest 4.6 s); the new build's `build-N.cells.gz` (`COPY ... \| gzip`) **84.8 MB, 8.8 s** (modest 9.1 s) | As `ratw-backup.pl` runs them, in the Postgres container | Each Publish adds about 136 MB to `backups/` (the retention bounds it) and a build to the database (3 kept, about 530 MB) |
+  | **Publish, whole** (backup, validate, build, build file, restart) | Laptop **about 78 s**; **modest about 90 s**; slow core **about 2½ minutes** (validate and build measured there, the rest taken from the modest run). Plus the wait for the restart: up to 5 s of the entrypoint's poll, and with "When everyone has left", until they have | The rows above, added | |
+  | **Publish's peak memory** | The build **3.8 GB** + the running server **0.75 GB** (more with players) + Postgres **0.2 GB** = **about 4.7 GB**; **about 5.5 GB** if the server's save fork (up to its own size again) lands during the build. Validation and the build run one after the other, so their peaks don't add | The rows above | **Under D2's 6 GB**, narrowly |
+  | The checkpoint names an interior or cell the new build lacks | **The server starts, and lets go of what is gone.** Removed on a copy, through Atlas's own `save_world`, with the live rows moved first as step 1 would demand: the Grey Gull Inn (37 NPCs standing in it, 4 crime incidents, 40 NPCs' evening place), a house two residents lived in, and two outdoor cells (one NPC in one, a bandit camp in the other). Then `world_build.build`, then a server: ready in 3.3 s, no warning. After a save: **the 38 NPCs who stood in a removed place were back in their authored bodies** (`World::restore`'s `placeable`), **the two residents rehomed** to their new authored home (`Society::rehome`), lighting, weather, wind, map memories and door states of removed places dropped; **kept unchanged but stale:** the crime incidents and the bandit camp naming them (a camp there never raids again), and, by code, leases (`Game::lodgingsLoad` checks nothing) and stalls. **A wolf** saved in a removed place wakes at the spawn (`World::restore`, and on arrival `Game` at `RatwGame.cpp:2417`), tested in `Tests/world_tests.cpp:147-168`. A map memory of a resized interior is kept (it is checked against itself, not the place: tested, 20x14 and 21x14 both restore). `world.places` is empty in DEV: nothing to remove | Two edits on the `s2stage` copy (`save_world`, then a build, a scratch server and a saving one, the saved NPCs compared with the old save); a map memory written into `game.map_memories` | M8's checks, below |
+  | **What makes the whole save refused** | `World::restore` refuses the checkpoint, the server logs `RATW_WORLD_REJECTED` and **won't start** (a malformed map memory showed it: "Invalid saved map memory"). On a new map that happens when **any wolf, online or away** (every character is in the save's players), **last stood on a tile the new map makes solid** or covers with a closed door ("one in a wall of a place that is there is still refused", the same test); when a resident's new authored home is unusable too (Atlas's validator already refuses a home on a solid tile: "Person ... evening: tile is solid."); and, by code only, a door turned into steps while the save has it closed ("Steps cannot be closed") | The same; `Tests/world_tests.cpp`; code read | M8: section 12.4's fallback catches it, but step 1 should prevent it |
+  | Atlas writing a ground kind the catalogue lacks | **It can't.** The catalogue covers all printable ASCII but `'`, `\` and `` ` ``. Live edits `tile:X,Y` and `rtile:ROOM:X,Y` with each of those, `é` and a space: **all refused** ("not a terrain glyph"; a catalogue glyph, `~`, stored as the control). A whole save (`save_world`) with one: **refused** ("terrain must be 26×17, using supported ASCII glyphs"). **The database's own CHECK (`^[!-~]*$`) accepts `'`, `\` and `` ` ``**, so only the tools hold the line | `live_edit.apply_edit` and `world_store.save_world` on `s2stage`; a direct `UPDATE` (rolled back) | M7: import runs `check_project` before writing (section 10.1 says so; a test must prove it) |
+
+  **D2, decided: neither threshold is crossed.**
+  - **Publish builds in the world's container (Q12's (a), as recommended).** Its peak is about 4.7 GB, 5.5 GB at
+    worst: under about 6 GB. **N = 5 GB:** Publish refuses unless about 5 GB is free beside what is running
+    (the build's 3.8 GB, a save fork's 0.75 GB, a margin), and says so up front. **The child's `RLIMIT_AS` is 6 GiB**
+    (its `VmPeak` was 4.1 GB). **Its time limit is 10 minutes** (the slow core's build took 81 s; validation runs
+    before it under its own 5 minutes). The guide's line becomes **"2 GB to play; 5 GB more to Publish"**, so
+    Docker needs about 7-8 GB: a 16 GB PC's default WSL2 half (8 GB) is just enough, and the guide recommends
+    `memory=12GB` there; **a PC with 8 GB of RAM can't Publish today's map** (stated as a requirement: 16 GB to
+    Publish).
+  - **Dense heights don't go first:** the Atlas source adds 43.4 MB, under about 50 MB.
+  - **Both margins are thin** (about 15% each), and a bigger map would cross both. Heights are the lever for both: 38
+    of the 43 MB and about 2.3 GB of the build's 3.8 GB. Doc 70's dense heights in the database (and in the project
+    the tools load) are the fix if a map grows; not needed now.
+
+  **For M7 (map source in the package):**
+  - The package goes from 45.7 MB to about 89 MB compressed; the import reads about 190 MB of JSON. The caps: the
+    terrain part at 128 MB compressed and 512 MB unpacked, the other AUTHORED parts at 8 MB each (today's largest,
+    `interiors`, 0.65 MB raw), with row counts from section 10.3's client limits.
+  - **Recommended, small (about a quarter of an hour): write `terrain_chunks.heights` in the package as
+    `encode_heights` rows and decode them at import** (`world_store.decode_heights`; every DEV chunk fits). It is the
+    package's own format, not doc 70's database change: the package comes to about 52 MB instead of 89, and import
+    reads the terrain in 79 MB instead of 822 MB. A chunk that doesn't fit keeps its object, as `live_edit` already
+    does for a cell. Its own decision (it changes `FORMAT` to 2); without it M7 still works.
+  - Import runs `check_project` on the AUTHORED rows before writing anything: the database alone would take `'`,
+    `\` and `` ` `` as ground.
+
+  **For M8 (Atlas and Publish):**
+  - One child process does validation then the build. Not `world_sync.validate_dev` as it stands: its second
+    `export_files` costs 35 s and 3.8 GB for nothing, since the build exports and fails with the same errors. Better
+    still, `world_build.build` takes the project the validation loaded, saving one load (about 11 s).
+  - A killed build leaves nothing behind (one transaction), so Publish's retry is simply Publish again.
+  - **Step 1's checkpoint check, from what the server does:** what the server lets go needs no check (NPCs, residents'
+    homes, weather, lighting, doors and memories of removed places, a wolf in a removed place). It must check
+    **every saved wolf's tile** (`game.characters`, online or away) against the new build, solid or under a closed
+    door; **leases and stalls** in removed or changed places (refuse with "Show me", or end them with the refund the
+    game gives); and a **door turned into steps**. **Recommended instead of the wolf check: a small Core change**, a
+    wolf whose saved tile the new map makes solid wakes at the spawn, as one from a removed place already does
+    (`World::restore`, a small change with a line in `world_tests`), so no map edit can stop a world starting. Crime
+    incidents and bandit camps in removed places are harmless; the stale camp could be dropped at restore.
+  - Disk: each Publish adds about 136 MB to `backups/` and one build to the database (three kept, about 530 MB);
+    the six-an-hour cap bounds the rest.
+
+  **Needs the user's Windows PC** (for M10's guide; nothing here blocks M7 or M8):
+  1. What Docker Desktop's VM has: in PowerShell, `docker info --format "{{.MemTotal}}"` and `wsl -l -v`; then
+     `docker run --rm postgres:18 sh -c "cat /sys/fs/cgroup/memory.max; grep MemAvailable /proc/meminfo"`, which is
+     what Publish's memory check will read in the world's container (likely `max`, and the VM's free memory).
+  2. The `.wslconfig` steps, as the guide will give them: Notepad, a file `%UserProfile%\.wslconfig` (saved as "All
+     files", no `.txt`) holding `[wsl2]` and `memory=12GB` on a 16 GB PC; `wsl --shutdown`; quit and start Docker
+     Desktop; check step 1's `MemTotal` shows about 12 GB. Whether Docker Desktop's Settings > Resources shows any
+     memory setting with the WSL2 backend (section 10.3 says it doesn't), and whether WSL's
+     `[experimental] autoMemoryReclaim=gradual` gives the page cache back to Windows after a Publish (worth a line in
+     the guide if it does).
+  3. Publish's real timing there waits for M7 and M8 (a package with its map source); M10's Windows run times it and
+     reads My world's memory line.
+
+  Clean: `s2stage` dropped on both servers, the measuring containers, their network and volume removed, no server
+  left running, `/tmp` cleared. About ¾ hour of the 1 expected.
 
 ## Review (2026-11-08)
 
