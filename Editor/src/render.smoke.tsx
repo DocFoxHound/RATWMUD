@@ -75,6 +75,9 @@ const myWorld = (owner: boolean): MyWorld => ({
         backups: [{name: 'ratw-20261112T140300Z-by-hand', kind: 'by-hand', at: now - 3 * 3600, size: 820000, package: '0.4.2', migration: '0064', pinnedUntil: null},
             {name: 'ratw-20261111T090000Z-daily', kind: 'daily', at: now - 30 * 3600, size: 810000, package: '0.4.2', migration: '0064', pinnedUntil: now + 80 * 86400}],
         pins: 1, pinCap: 5, working: null, problem: {code: 'disk', at: now, free: 1024 ** 3}, disk: {free: 1024 ** 3, used: 90 * 1024 ** 2, minFree: 2 * 1024 ** 3}},
+    share: owner ? {state: 'ready', at: now - 120, started: now - 200, file: 'ashfall-2026-11-12.ratwpkg', size: 46 * 1024 ** 2, problem: null,
+        files: [{name: 'ashfall-2026-11-12.ratwpkg', size: 46 * 1024 ** 2, at: now - 120}], kept: 3, thisHour: 1, perHour: 3, waiting: false, snapshot: true}
+        : {state: 'working', at: now, started: now, file: null, size: null, problem: null, files: [], kept: 3, thisHour: 1, perHour: 3, waiting: false, snapshot: false},
     ...(owner ? {folder: 'C:\\Users\\Ann\\OneDrive\\ratw-world', exits: [{at: now - 600, code: 139, lines: ['the world server stopped']}]} : {}),
 } as unknown as MyWorld);
 
@@ -95,5 +98,9 @@ export function renderAll(): Record<string, string> {
     out['Prosperity (no town purses)'] = renderToString(<ProsperityTab me={me} target="dev" initial={{...prosperity, towns: [], treasury: 1200}} />);
     out['My world (owner)'] = renderToString(<MyWorldTab me={{username: 'host-k7q2#3f2a1c', role: 'owner', hosted: true} as Me} initial={myWorld(true)} />);
     out['My world (dm)'] = renderToString(<MyWorldTab me={{username: 'pell#3f2a1c', role: 'dm', hosted: true} as Me} initial={myWorld(false)} />);
+    // (Doc 78, M9: Share my world refused on a nearly full disk.)
+    out['My world (share failed)'] = renderToString(<MyWorldTab me={{username: 'host-k7q2#3f2a1c', role: 'owner', hosted: true} as Me}
+        initial={{...myWorld(true), share: {state: 'failed', at: now, started: now, file: null, size: null, kept: 3, thisHour: 1, perHour: 3,
+            waiting: false, snapshot: false, files: [], problem: {code: 'disk', free: 300 * 1024 ** 2, need: 1280 * 1024 ** 2, where: 'folder'}}}} />);
     return out;
 }

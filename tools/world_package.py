@@ -9,6 +9,11 @@ a world exported as plain files, with every player taken out of its save, for a 
   python3 tools/world_package.py scan DIR [--source KEY]
         the gate: no player id anywhere, no negative cash, goods within limits (--source: also the source world's
         usernames, and the names its players chose as warnings). Exit 1 if it fails.
+  python3 tools/world_package.py pack DIR --out FILE.ratwpkg
+  python3 tools/world_package.py unpack FILE.ratwpkg --out DIR
+        a package as one file and back: a plain tar of its files (already compressed), as "Share my world" writes it
+        (Docs/Design/78, 10.5; M9). Unpacking takes only the package's own file names, plain files, within a size cap.
+        scan and import take a .ratwpkg file as well as a directory.
   python3 tools/world_package.py import DIR --key KEY [--name NAME]
         first start: makes world KEY's database (a live world), runs the migrations and imports the package in one
         transaction. Connection settings from the environment (RATW_*, POSTGRES_*; RATW_WORLDS_FILE a one-world
@@ -1254,6 +1259,88 @@ def export(key: str, out: Path, with_snapshot=True, version=None, log=print, tra
     return manifest
 
 
+# --------------------------------------------------------------------------- One file ("Share my world")
+
+PACKED = '.ratwpkg'
+PACK_NAMES = (MANIFEST, SUMS) + PARTS
+PACK_MOST = 4 << 30                 # A packed package's files, at most this many bytes together (unpack refuses more).
+
+
+def pack(directory: Path, out) -> int:
+    """A package directory as one file (doc 78, 10.5; M9): a plain tar of its files, which are compressed already, the
+    manifest and SHA256SUMS first. `out` is a binary file object. Each file is read without following a link and must be
+    a plain one (the Share's export directory is another user's). Returns the bytes written."""
+    import stat as stat_
+    start = out.tell()
+    with tarfile.open(fileobj=out, mode='w', format=tarfile.PAX_FORMAT) as tar:
+        for name in PACK_NAMES:
+            try:
+                fd = os.open(directory / name, os.O_RDONLY | os.O_NOFOLLOW)
+            except FileNotFoundError:
+                if name == 'snapshot.json.gz':
+                    continue
+                raise PackageError(f'The package has no {name}.')
+            with os.fdopen(fd, 'rb') as f:
+                info = os.fstat(f.fileno())
+                if not stat_.S_ISREG(info.st_mode):
+                    raise PackageError(f'{name} isn\'t a plain file.')
+                entry = tarfile.TarInfo(name)
+                entry.size, entry.mtime, entry.mode = info.st_size, int(info.st_mtime), 0o644
+                tar.addfile(entry, f)
+    return out.tell() - start
+
+
+def unpack(file: Path, directory: Path) -> dict:
+    """A .ratwpkg file into `directory` (made, or empty), checked: only the package's own names, each once, plain files,
+    PACK_MOST bytes at most in all; then verified against its SHA256SUMS. An untrusted file can't write anywhere else
+    (no paths, no links). Returns the manifest. Raises PackageError."""
+    directory.mkdir(parents=True, exist_ok=True)
+    if any(directory.iterdir()):
+        raise PackageError(f'{directory} isn\'t empty; give a new directory.')
+    seen, total = set(), 0
+    try:
+        with tarfile.open(file, mode='r:') as tar:
+            for member in tar:
+                if member.name not in PACK_NAMES or member.name in seen or not member.isreg():
+                    raise PackageError(f'{file.name} holds {member.name[:60]!r}, which isn\'t a world package\'s file.')
+                total += member.size
+                if total > PACK_MOST:
+                    raise PackageError(f'{file.name} is larger than a world package may be.')
+                seen.add(member.name)
+                source = tar.extractfile(member)
+                with open(directory / member.name, 'xb') as target:
+                    shutil.copyfileobj(source, target, 1 << 20)
+    except tarfile.ReadError as error:
+        raise PackageError(f'{file.name} isn\'t a packed world package ({error}).') from error
+    if MANIFEST not in seen or SUMS not in seen:
+        raise PackageError(f'{file.name} has no {MANIFEST if MANIFEST not in seen else SUMS}: not a world package.')
+    return verify(directory)
+
+
+class opened:
+    """A package as a directory: itself, or a .ratwpkg file unpacked into a temporary one (removed afterwards)."""
+
+    def __init__(self, path: Path):
+        self.path, self.temp = Path(path), None
+
+    def __enter__(self) -> Path:
+        if self.path.is_dir():
+            return self.path
+        if not self.path.is_file():
+            raise PackageError(f'{self.path} is neither a package directory nor a .ratwpkg file.')
+        self.temp = Path(tempfile.mkdtemp(prefix='ratw-package-'))
+        try:
+            unpack(self.path, self.temp)
+        except BaseException:
+            shutil.rmtree(self.temp, ignore_errors=True)
+            raise
+        return self.temp
+
+    def __exit__(self, *_):
+        if self.temp is not None:
+            shutil.rmtree(self.temp, ignore_errors=True)
+
+
 def scan_directory(directory: Path, usernames=(), names=()) -> tuple[list, list]:
     verify(directory)
     world = read_json_gz(directory / 'world.json.gz')
@@ -1513,10 +1600,16 @@ def main(argv=None) -> int:
     p.add_argument('--no-snapshot', action='store_true', help='leave the save out (the world starts cold)')
     p.add_argument('--version', help='the package version (default: KEY-bBUILD-YYYYmmddHHMM)')
     p = sub.add_parser('scan', help='check a package')
-    p.add_argument('directory', type=Path)
+    p.add_argument('directory', type=Path, help='the package: a directory, or a .ratwpkg file')
     p.add_argument('--source', help="also look for this world's usernames and characters' names")
-    p = sub.add_parser('import', help="first start: make a world's database from a package")
+    p = sub.add_parser('pack', help='a package directory as one .ratwpkg file')
     p.add_argument('directory', type=Path)
+    p.add_argument('--out', required=True, type=Path, help='the file to write (must not exist)')
+    p = sub.add_parser('unpack', help='a .ratwpkg file as a package directory')
+    p.add_argument('file', type=Path)
+    p.add_argument('--out', required=True, type=Path, help='the directory to write (missing or empty)')
+    p = sub.add_parser('import', help="first start: make a world's database from a package")
+    p.add_argument('directory', type=Path, help='the package: a directory, or a .ratwpkg file')
     p.add_argument('--key', required=True, help='the world key (kind live)')
     p.add_argument('--name', help="the world's name in the registry (default the package's world name)")
     args = parser.parse_args(argv)
@@ -1530,9 +1623,18 @@ def main(argv=None) -> int:
             if m['strip']:
                 removed = ', '.join(f'{k} {v}' for k, v in sorted(m['strip']['removed'].items())) or 'nothing'
                 print(f'Strip: removed {removed}.')
+        elif args.command == 'pack':
+            verify(args.directory)
+            with open(args.out, 'xb') as out:
+                size = pack(args.directory, out)
+            print(f'{args.out}: {size / 1e6:.1f} MB.')
+        elif args.command == 'unpack':
+            m = unpack(args.file, args.out)
+            print(f'Package {m["version"]} ({m["id"]}) unpacked to {args.out}.')
         elif args.command == 'scan':
             usernames, names = source_people(args.source) if args.source else ((), ())
-            errors, warnings = scan_directory(args.directory, usernames, names)
+            with opened(args.directory) as directory:
+                errors, warnings = scan_directory(directory, usernames, names)
             for w in warnings[:40]:
                 print(f'warning: {w}')
             if errors:
@@ -1540,7 +1642,8 @@ def main(argv=None) -> int:
                 return 1
             print(f'{args.directory}: the scan passed' + (f' ({len(warnings)} warnings).' if warnings else '.'))
         else:
-            import_package(args.directory, args.key, args.name)
+            with opened(args.directory) as directory:
+                import_package(directory, args.key, args.name)
     except (PackageError, W.DatabaseError, OSError, ValueError, tarfile.TarError) as error:
         print(error, file=sys.stderr)
         return 1

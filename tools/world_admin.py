@@ -107,6 +107,12 @@ PIN_REQUEST = re.compile(r'^(?:pin|unpin)-\d{8}T\d{6}Z$')
 BACKUP_NAME = re.compile(r'^ratw-(\d{8}T\d{6}Z)-(daily|by-hand|before-publish|before-update|before-restore)$')
 BACKUP_KINDS = ('daily', 'by-hand', 'before-publish', 'before-update', 'before-restore')
 MANAGE_DIR = Path(os.environ.get('RATW_MANAGE_DIR', '/var/ratw/manage'))   # The world folder's manage/ (root's, inside).
+# "Share my world" (doc 78, 10.5; M9): the root entrypoint's share.json, checked. One at a time, at most SHARES_AN_HOUR
+# started an hour (Package/entrypoint.py counts them too), the newest SHARES_KEPT files kept in manage/shared/.
+SHARE_STATES = ('idle', 'working', 'ready', 'failed')
+SHARE_PROBLEMS = ('disk', 'failed', 'folder')
+SHARED_FILE = re.compile(r'^[a-z0-9][a-z0-9-]{0,47}-\d{4}-\d{2}-\d{2}(?:-\d{1,2})?\.ratwpkg$')
+SHARES_AN_HOUR, SHARES_KEPT = 3, 3
 
 # Passwords and secrets.
 MIN_PASSWORD, MAX_PASSWORD = 12, 256
@@ -596,6 +602,37 @@ def read_backups(folder: Path, now: float) -> dict | None:
             'pins': sum(1 for b in items if b['pinnedUntil']), 'pinCap': 5, 'problem': problem,
             'working': raw.get('working') if raw.get('working') in BACKUP_KINDS else None,
             'disk': {k: disk[k] if whole(disk.get(k)) else None for k in ('free', 'used', 'minFree')}}
+
+
+def read_share(folder: Path, now: float) -> dict | None:
+    """"Share my world" as the root entrypoint last wrote it (share.json), checked: its state (idle, working, ready,
+    failed), the file made (a name of the share's pattern alone) and its size, the problem's code and numbers, the files
+    in manage/shared/, the shares started this hour, and whether a request is already waiting for root. None when there
+    is none (an older package)."""
+    raw = _read_json(folder / 'share.json')
+    if raw.get('v') != 1 or raw.get('state') not in SHARE_STATES:
+        return None
+    whole = lambda v: v if isinstance(v, int) and not isinstance(v, bool) and v >= 0 else None
+    files = [{'name': f['name'], 'size': whole(f.get('size')), 'at': whole(f.get('at'))}
+             for f in (raw.get('files') or [])[:SHARES_KEPT + 2]
+             if isinstance(f, dict) and isinstance(f.get('name'), str) and SHARED_FILE.match(f['name'])]
+    problem = raw.get('problem') if isinstance(raw.get('problem'), dict) else None
+    if problem is not None:
+        problem = {'code': problem.get('code') if problem.get('code') in SHARE_PROBLEMS else 'failed',
+                   'free': whole(problem.get('free')), 'need': whole(problem.get('need')),
+                   'where': problem.get('where') if problem.get('where') in ('folder', 'docker') else None}
+    name = raw.get('file')
+    contents = raw.get('contents') if isinstance(raw.get('contents'), dict) else {}
+    recent = [t for t in (raw.get('recent') or []) if whole(t) is not None and now - t < 3600]
+    try:
+        waiting = any(e.name.startswith('share.') for e in os.scandir(folder / 'requests'))
+    except OSError:
+        waiting = False
+    return {'state': raw['state'], 'at': whole(raw.get('at')), 'started': whole(raw.get('started')),
+            'file': name if isinstance(name, str) and SHARED_FILE.match(name) else None, 'size': whole(raw.get('size')),
+            'problem': problem if raw['state'] == 'failed' else None, 'files': files, 'kept': SHARES_KEPT,
+            'thisHour': len(recent), 'perHour': SHARES_AN_HOUR, 'waiting': waiting,
+            'snapshot': contents.get('snapshot') is True}
 
 
 _WOLVES = {'at': float('-inf'), 'count': None}

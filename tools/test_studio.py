@@ -1485,7 +1485,7 @@ def served_routes():
 
 # The routes HostedStudio answers itself (not the studio's handlers).
 HOSTED_OWN = {('GET', '/api/studio/ai'), ('GET', '/api/world'), ('POST', '/api/world/restart'), ('POST', '/api/world/backup'),
-              ('POST', '/api/world/pin')}
+              ('POST', '/api/world/pin'), ('POST', '/api/world/share')}
 
 
 class HostedAllowlistTests(HostedBase):
@@ -1637,6 +1637,44 @@ class HostedAllowlistTests(HostedBase):
         self.assertEqual(made, ['backup-by-hand\n', 'unpin-20261110T140300Z\n'])
         shown = ST.Hosted(folder=self.folder).backups()        # (What My world shows: test_world_admin reads it whole.)
         self.assertEqual((shown['pins'], shown['last']['name'], shown['pinCap']), (5, items[0]['name'], 5))
+
+    def test_share_my_world_is_the_owner_s_one_at_a_time_and_three_an_hour(self):
+        """Doc 78, 10.5 (M9): Share my world is a kind-only `share` request for root, the owner's; refused while one is
+        being made or a request already waits, and after three this hour; with an older package (no share.json) there
+        is nothing to ask."""
+        self.assertEqual(self.call('POST', '/api/world/share', role='owner'), (409, {'error': ST.NO_SHARE}))
+        now = int(time.time())
+        state = {'v': 1, 'state': 'idle', 'at': now, 'recent': [], 'files': []}
+        (self.folder / 'share.json').write_text(json.dumps(state))
+        for role in ('viewer', 'dm', 'builder'):
+            self.assertEqual(self.call('POST', '/api/world/share', role=role)[0], 403, role)
+        self.assertEqual(self.call('POST', '/api/world/share', role='owner'), (200, {'ok': True, 'asked': True}))
+        self.assertEqual([p.read_text() for p in (self.folder / 'requests').iterdir()], ['share\n'])
+        self.assertEqual(self.dm.calls[-1][0], 'log')
+        status, data = self.call('POST', '/api/world/share', role='owner')
+        self.assertEqual((status, data['error']), (409, 'Your world\'s file is being made now: one at a time.'),
+                         'a request waiting for root')
+        for p in (self.folder / 'requests').iterdir():
+            p.unlink()
+        (self.folder / 'share.json').write_text(json.dumps({**state, 'state': 'working', 'started': now}))
+        self.assertEqual(self.call('POST', '/api/world/share', role='owner')[0], 409, 'one being made')
+        files = [{'name': 'ashfall-vale-2026-11-12.ratwpkg', 'size': 5_000_000, 'at': now},
+                 {'name': '../../etc/passwd', 'size': 1, 'at': now}]
+        (self.folder / 'share.json').write_text(json.dumps({**state, 'state': 'ready', 'file': 'ashfall-vale-2026-11-12.ratwpkg',
+                                                            'size': 5_000_000, 'recent': [now - 4000, now - 60, now - 30, now - 10],
+                                                            'files': files}))
+        status, data = self.call('POST', '/api/world/share', role='owner')
+        self.assertEqual((status, data['error']), (429, 'Your world has been shared 3 times this hour, the most an hour: '
+                                                        'try again later.'))
+        shown = ST.Hosted(folder=self.folder).share()           # (What My world shows: test_world_admin reads it whole.)
+        self.assertEqual((shown['state'], shown['file'], shown['thisHour'], [f['name'] for f in shown['files']]),
+                         ('ready', 'ashfall-vale-2026-11-12.ratwpkg', 3, ['ashfall-vale-2026-11-12.ratwpkg']),
+                         'only a share\'s own file names')
+        (self.folder / 'share.json').write_text(json.dumps({**state, 'state': 'failed', 'file': 'x; rm -rf',
+                                                            'problem': {'code': 'disk', 'free': 10, 'need': 99, 'where': 'folder'}}))
+        shown = ST.Hosted(folder=self.folder).share()
+        self.assertEqual((shown['file'], shown['problem']), (None, {'code': 'disk', 'free': 10, 'need': 99, 'where': 'folder'}))
+        self.assertEqual(self.call('POST', '/api/world/share', role='owner')[0], 200, 'a failed one can be tried again')
 
     def test_page_files_are_the_built_app_only(self):
         status, kind = self.hosted({'username': 'pell#a1b2c3', 'role': 'viewer'}, 'GET', '/', '', {}, b'')[:2]

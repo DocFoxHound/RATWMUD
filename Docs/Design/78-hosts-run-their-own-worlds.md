@@ -1381,6 +1381,14 @@ which the helper doesn't hold. The root entrypoint runs the export into `manage/
 token and `dm.*`, and runs the same scan. The certificate's key is never in the folder. The guide says never to zip
 the world folder.
 
+**As built (M9):** the owner's **Share my world** in My world: a confirmation listing what the file holds and what it
+never does (and that a slice-1 package carries the map as built, not its source: M7), then "Making the file…", then
+"Ready: `<world>-<date>.ratwpkg` (size)" with its path in the world folder (`manage/shared/`), or the failure in plain
+words (a full disk, which one; the export failed; no manage folder). Root runs `world_package export` as `ratw` with
+the owner's password alone into the container's own state, packs it into one file (a plain tar of the package's
+files, `world_package pack`/`unpack`; `scan` and `import` take the file too), the folder owner's, and keeps the newest
+3. One at a time, 3 an hour (the studio refuses first, root again). Progress, M9.
+
 ## 11. When each change takes effect
 
 In slice 2 every Save button in the Editor window carries a badge: **Live now** or **Waits for Publish**. Nothing a
@@ -1941,7 +1949,7 @@ answers out of the box, not whether managing from anywhere works.
 ## Progress
 
 M1, M2a, M2b, M3 and M4 built, the R1 review's findings fixed (security, and the host's experience, merged on
-`r2-editor`), and M5 built (2026-11-12, below); the rest not yet.
+`r2-editor`), M5 and M6 built (slice 1 done), and M9 built on `r2-editor-m9` (2026-11-12, below); the rest not yet.
 
 - **2026-11-08: the user's decisions.** "Go with the recommendations": all 21 decisions in section 17 take their
   recommendation (among them: the Editor answers only on the world's own computer until the host opens it; roles
@@ -3058,6 +3066,99 @@ M1, M2a, M2b, M3 and M4 built, the R1 review's findings fixed (security, and the
     agent-hours across its lanes (M1 and M0a about half an hour each; M2a about 1¼ h; M2b, M3 and M4 about an hour each,
     side by side; the lanes wired and R1's review and two repair lanes about 4; M5 about 1; M6 about 1½), against 15-20
     expected and 35-45 planned.
+
+- **2026-11-12: M9 built (Share my world),** on `r2-editor-m9` (from `r2-editor` at 613857a, beside M0b). No C++ and
+  no migration changed. Every item of section 14's M9 row:
+  - **The My world button** (`Editor/src/dm/MyWorldTab.tsx`, `ShareCard`; words in `Editor/src/lib/myWorld.ts`): a
+    **Share my world** card, the owner's (others see it greyed, with why). **⇪ Share my world…** opens a confirmation
+    in the page that lists what the file holds (the map as the world plays it; the residents, their families,
+    backstories and what they remember of each other; the economy's settings, rules, seasons and the realm's treasury;
+    the host's DM changes; the calendar and festivals), what it never holds (any player and everything of theirs,
+    anything players said or wrote and their addresses, the Editor accounts, the DM tool's history and AI-written life
+    stories, the host token, the AI key, the certificate's key, the backups), and **slice 1's limit: the map as built,
+    not its editing source (M7)**. **Make the file**, then "Making the file…" (polled every 5 s), then "Ready:
+    `ashfall-vale-2026-11-13.ratwpkg` (44 MB)" with its whole path in the world folder (`C:\...\manage\shared\...`
+    on Windows) and **Copy the path**, and the files there. Failures in plain words: which disk is nearly full, with
+    its numbers; the export failed (`RATW_SHARE` lines in the log); no manage folder (an old compose.yaml); an older
+    package.
+  - **The `share` request:** `POST /api/world/share` (owner; `tools/studio.py`, `HostedStudio.share_world`) writes a
+    kind-only `share` request and an audit row (`server.share`, "Shared the world" in History). Refused **one at a
+    time** (409 while one is being made, or while a request still waits for root) and **3 an hour** (429), from
+    root's `share.json`, which `world_admin.read_share` checks (file names by their pattern, codes and whole numbers
+    only); `GET /api/world` carries it as `share` (null with an older package: then the route is 409 too).
+  - **The root entrypoint** (`Package/entrypoint.py`, `Share`): `tools/world_package.py export` run as `ratw` with
+    the owner's password alone (the helper never holds it), into `/var/lib/ratw/share/` (ratw's, 0700: the server's
+    user can't read or plant anything there, checked in the run), so the strip, the scan and the read-back are the
+    export's own. Root then packs the package into one file, `manage/shared/<world>-<date>.ratwpkg` (the world's name
+    as small letters and dashes, the UTC date, `-2`, `-3` for more the same day): a new file (`O_EXCL|O_NOFOLLOW`,
+    the manage folder owner's, 0644: nothing secret is in it), renamed into place, and the work directory removed. The
+    **newest 3 are kept**, the oldest removed and said. Root counts too: one at a time and 3 an hour whatever the
+    helper writes. Before the export, the free space on the world folder's disk and Docker's is checked (the last
+    file's size, or 256 MB, plus `RATW_SHARE_MIN_FREE_MB`, 1024); a disk that fills while the file is written
+    (`ENOSPC`) is said with the numbers, and no half-written file stays. An export running over 30 minutes is
+    stopped. The container's start removes what a stop left (the work directory, half-written files) and writes the
+    state afresh. `manage/shared` is made by root; a link there is moved aside, never followed.
+  - **One file:** `world_package.py pack DIR --out FILE` and `unpack FILE --out DIR` (a plain tar of the package's own
+    files, already gzipped); `scan` and `import` take the `.ratwpkg` file as well as a directory (unpacked into a
+    temporary directory, removed afterwards). Unpacking is for an untrusted file: only the package's six names, each
+    once, plain files, 4 GB at most, then the checksums.
+  - **What a shared slice-1 world holds:** the export's (section 8 of doc 77 as built): the newest build (the map as
+    played), the world row and areas, the seed rows (NPCs, routes, areas, spawns, factions, talk, the economy's kept
+    columns with the host's overrides) and the save with every player stripped out. Never `dm.*`, `admin.*`, the
+    AUTHORED tables (M7 adds them), old builds, keys or passwords. A shared world imports as a live world; it can't
+    yet be started from a host's folder (only through an image the game's team makes), and the guide says so.
+  - **The guide** (`Docs/Hosting.md`, section 24, now "Sharing your world: Share my world, never the folder"): the
+    steps, what the file holds and never does, the missing map source, what the other person can do with it now, one
+    at a time, 3 an hour, 3 kept, each failure's row, "not a backup"; My world's list in section 11 names it.
+    `Package/README.md`: the line, and `unpack` for building an image from a shared file.
+  - **End to end** (rootless Docker 29.3.1, Compose 5.1.1). DEV exported read-only (`s2stage-m9`, 45.7 MB), staged
+    `--no-editor`, built as `ratw-world-s2stage-m9`; a host folder from `host_folder.py`, project `s2stage-m9`, ports
+    7799/17799, `world` and `backup` up. A small TLS 1.3 client signed in as the owner from `first-editor.txt`:
+    - My world's `share`: `idle`, no files.
+    - **Share with the world running:** 200, a second at once 409 ("being made now: one at a time"); ready in 6 s:
+      `manage/shared/ashfall-vale-2026-11-13.ratwpkg`, 45.6 MB, the host user's, 0644 (`manage/shared` 0755).
+    - **With players in it:** the world closed (exit 76), then `tools/test_world_package.py`'s `plant` run inside the
+      container put a wolf into its save in every part the strip knows (purse, Chapter, camp, contracts, letters,
+      lodging, stall, party, bonds, beliefs, talk memory, standing, friends...); shared again (`-2`): the export's
+      strip removed them all (`accounts 1, ... players 1, ... talkMemory 1`). On the host the file **scanned clean**;
+      unpacked, no `wolf-`, `acct-`, `dm:`, the owner's Editor name, "Ash Tallow", "Dear Ash", "Ash the Quick",
+      "The Test", `chapter-1` or the chosen password anywhere (the `ashley` and `bramble` matches are residents'
+      ids, as many as in the unplanted DEV export); `players` empty, no `accounts`, no Chapters or parties.
+    - **It imports cleanly into another throwaway world:** `world_package.py import FILE --key s2stage-m9-imp` (a
+      registry of its own, the local PostgreSQL): 64 migrations, the world, 1,212 cells, 3,151 seed rows and the
+      snapshot; again: "already holds package ... nothing to do"; no temporary directory left. A Release
+      `ratw_server` (`r2-editor/build-r1m`) loaded it (`RATW_DATABASE_WORLD_LOADED ... residents=773`,
+      `RATW_RESTORE characters=0`) and saved it again: no player, no `wolf-` or `acct-`, no `dm.admins` row.
+    - **3 an hour:** the third (world open again) ready, the fourth 429; a `share` request dropped straight into the
+      requests folder as `ratw-admin` (as a misbehaving helper would) refused by root ("more than 3 times this
+      hour"). As `ratw-server`, `/var/lib/ratw/share` couldn't be listed or written.
+    - **A full disk:** a 20 MB tmpfs over `manage/shared` (a compose override): "the file couldn't be written into
+      manage/shared ([Errno 28] No space left on device)", My world `failed` with `{code: disk, free: 20 MB, need:
+      44 MB, where: folder}` (the numbers added after the first try showed none), the folder empty.
+    - **3 kept:** without the override, a fourth file (`-4`) removed the oldest ("the newest 3 are kept").
+    Afterwards `down -v`, the image removed, the throwaway database dropped, `/tmp/m9` removed; Docker's build cache
+    is left. DEV only read; PROD and old DEV untouched.
+  - **Tests** (one run, `RATW_TEST_DB_TAG=s2stage_`, `RATW_TEST_KEY_PREFIX=s2stage`, `RATW_TEST_SERVER` from
+    `r2-editor/build-r1m`): `Package/test_package.py` **80** (new, `Share`: a share packed
+    into `manage/shared/` and unpacked and opened as a package, `-2` the same day and three kept; one at a time and
+    three an hour; a failed export, one out of space, a refused full disk, a disk filling while the file is written,
+    no manage folder; the start tidying what a stop left and a link moved aside; unpacking refusing paths, links,
+    repeats, foreign names and a file that isn't a tar; the world's name as a file name; a `share` request reaching
+    the share); `tools/test_world_package.py` 48 (1 skipped, as before; `scan` and `import` of a file run in the
+    end-to-end run); `test_studio` **77** (new: Share my world the owner's, one at a time with a request waiting or one
+    being made, 3 an hour, only a share's file names shown, a failed one tried again); `tools/test_world_admin.py` 103
+    (My world's test now also shares through the helper: the state for a `dm`, 403 for a `dm`, the owner's request
+    kind-only, 409 the second time, `server.share` in History); Editor 78 + **81** (new: the share's words, where the
+    file is on Windows and Linux, each failure), typecheck, and the render smoke **17** panels (new: My world with a
+    share ready for the owner, being made for a `dm`, refused on a full disk). No ctest: no C++ changed. No `s2stage`
+    database of this run, `/tmp` file, container, volume, image or process left.
+  - **Differences from the plan, decided here:** the file is one `.ratwpkg` (a tar of the package's files) rather than
+    the package's directory, so a host sends one thing; the date is UTC (the container's clock), so an evening's share
+    in the Americas carries tomorrow's date; root packs the file in its own loop (about a second for 45 MB here; a slow
+    Windows folder may hold the loop a few seconds); the hourly count restarts with the container.
+  - **For later:** starting a world from a shared file in the host's folder (it needs a package-from-file path in the
+    entrypoint, and import's untrusted-package caps); M7 adds the map source to what a share carries; Docker Desktop
+    (which disk `df` reports for the Windows folder) is untried, as for M5's backups.
 
 ## Review (2026-11-08)
 

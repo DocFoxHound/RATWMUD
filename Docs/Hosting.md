@@ -55,7 +55,7 @@ Contents:
 21. Stopping, starting, and after a restart
 22. A second world on one computer
 23. Moving to another computer, or starting again
-24. Never zip your world folder to send it
+24. Sharing your world: Share my world, never the folder
 25. Being the host in the game
 26. What you can see, and your duties
 27. Something went wrong
@@ -667,6 +667,8 @@ The **My world** tab is about the world itself. At the top: how many wolves are 
   (section 18).
 - **Version and certificate**: the package's version and the Editor's fingerprint.
 - **History**: every change made with the Editor, newest first, with the account that made it; **Sign-ins**.
+- **Share my world**: one file of your world without its players, made into `manage\shared` in the world folder
+  (section 24). The owner's only.
 - For the owner only: **the world folder**'s path (with a warning if it looks like a OneDrive, Dropbox, Google Drive or
   iCloud folder), and, if the world's server keeps stopping, its last lines.
 - **Something went wrong?**: a short table of what to do (section 27).
@@ -1215,7 +1217,9 @@ take the old world's backups.
 
 ---
 
-## 24. Never zip your world folder to send it
+## 24. Sharing your world: Share my world, never the folder
+
+### Never zip your world folder to send it
 
 Your world folder isn't the package any more. Once the world has run, it holds:
 - `.env`, with your **host token**;
@@ -1223,12 +1227,77 @@ Your world folder isn't the package any more. Once the world has run, it holds:
 - `backups`, with **everything players did and said** in your world, and your Editor accounts' password hashes;
 - perhaps your **AI key** in `world.toml` or a key file.
 
-So **never zip it, upload it, or put it in a shared or synced folder** to send someone. To help a friend host, send
-them the package from the game's team instead. To get help, send the log (section 27) after reading it through. A way
-to share your world's map with someone ("Share my world") comes in a later update.
+So **never zip it, upload it, or put it in a shared or synced folder** to send someone. To share your world itself,
+use **Share my world** (below). To help a friend host, send them the package from the game's team. To get help, send
+the log (section 27) after reading it through.
 
 If you sent it by mistake: make a new host token (section 2, **NEW TOKEN**), reset every Editor account that hadn't
 chosen a password (section 16), and change your AI key on OpenAI's site.
+
+### Share my world
+
+**Share my world** makes one file of your world **without its players**, for someone else to run or look at. Only the
+world's owner can make one.
+
+1. Sign in to the Editor (section 10), open **DM**, then the **My world** tab.
+2. Under **Share my world**, choose **⇪ Share my world…**. The Editor says what goes in the file and what never does
+   (below). Read it, then choose **Make the file**.
+3. "Making the file…" shows while the world exports itself, with every player taken out, and checks the result again.
+   It takes a minute or two on most computers. The world keeps running; players notice nothing.
+4. Then: "Ready: `ashfall-vale-2026-11-12.ratwpkg` (46 MB)", and where it is: in your world folder, the folder
+   `manage\shared` (`manage/shared` on Linux), for example `C:\RATW\my-world\manage\shared\ashfall-vale-2026-11-12.ratwpkg`.
+   **Copy the path** copies it. Open that folder in File Explorer to find the file.
+5. Send the file like any large file (a file-sending service, a USB stick). It holds no account and no key: nobody can
+   sign in to your world with it.
+
+**What the file holds:**
+- the map, as the world plays it: its land, towns, buildings and rooms;
+- the residents: who they are, where they live and work, their families, their backstories and what they remember of
+  each other;
+- the economy: its settings, rules, seasons and the realm's treasury (the shops' and residents' purses are worked out
+  afresh when the world starts);
+- your changes with the DM tool: residents, routes, factions, talk, and the economy's settings and rules;
+- the calendar, seasons and festivals.
+
+**What it never holds:**
+- any player: no wolf, nor its money, goods, home, letters, friends or Chapter (they are taken out, not handed to
+  anyone else: a player's coins and goods simply go);
+- anything players said or wrote, and their internet addresses;
+- your Editor accounts, their passwords, devices and sign-ins;
+- the DM tool's history, and the residents' life stories written with the AI;
+- your host token, your AI key, the Editor's certificate key, and your backups.
+
+The world checks every file before it writes it, and refuses to write one that still names a player anywhere. If that
+ever happens, My world says the export failed (below): tell the game's team.
+
+**Not yet in it: the map's editing source.** In this version a world's package carries its map **as built**, ready to
+play, but not the source the map editor works on. Whoever gets your file can run your world as it is, but can't change
+its map in the map editor until map editing comes (a later update). Your own world is the same: its map can't be edited
+yet either.
+
+**What the other person does with it:** in this first version a world is started from a package the game's team makes
+into a world image. So for now, send the file to the game's team if you want it to become a world others can host, or
+keep it as a copy of your world without its players. Starting a world of your own from someone's shared file comes in
+a later update.
+
+**How many, and how often:**
+- one at a time: while one is being made, the button is greyed ("Your world's file is being made now");
+- at most 3 an hour;
+- the newest 3 files are kept in `manage/shared`; making a fourth removes the oldest. To keep one, copy it out of the
+  folder. A second file the same day is called `...-2.ratwpkg`, and so on.
+
+**If it fails**, My world says why:
+
+| My world says | What to do |
+|---|---|
+| "The file wasn't made: the disk that holds the world folder is nearly full (300 MB free; making the file needs about 1.3 GB)" | Free some space on that disk (or delete old files in `manage\shared`), then try again. The world needs room for the file, and 1 GB more. |
+| "... the disk Docker keeps its storage on is nearly full ..." | The same for the disk Docker keeps its storage on (on Windows, usually C:): free some space there, then try again. |
+| "The file wasn't made: the export failed ..." | In the world folder, `docker compose logs world` shows the reason on the lines that start `RATW_SHARE`. Send those lines to the game's team. |
+| "The world folder has no manage folder ..." | Your `compose.yaml` is from before the Editor (section 20, "A world from before the Editor"). |
+| "This world's package is older than Share my world ..." | Update the world (section 20). |
+
+The shared file is **not a backup**: it has no players, so you can't put your world back from it. Backups are section
+19.
 
 ---
 

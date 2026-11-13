@@ -1112,6 +1112,230 @@ class KeptAccounts(Folders):
             self.assertTrue((E.BACKUP_REQUESTS / '.kept-accounts.failed.json').exists())
 
 
+# A stand-in for tools/world_package.py export (the Share runs it as a child): a small, real, verified package written
+# as the real one writes it (a partial directory renamed into place), or a failure when SHARE_FAIL says so.
+STAND_IN_EXPORT = r"""
+import gzip, json, os, sys, tarfile, io
+from pathlib import Path
+sys.path.insert(0, os.environ['REAL_TOOLS'])
+import world_package as P
+out = Path(sys.argv[sys.argv.index('--out') + 1])
+version = sys.argv[sys.argv.index('--version') + 1]
+if os.environ.get('SHARE_FAIL'):
+    print(os.environ['SHARE_FAIL'], flush=True)
+    sys.exit(1)
+work = out.parent / ('.' + out.name + '.partial')
+work.mkdir()
+P.write_json_gz(work / 'world.json.gz', {'world': {'id': 'w1', 'name': 'Wolf Hollow'}, 'areas': []})
+P.write_json_gz(work / 'live.json.gz', {'tables': {}})
+P.write_json_gz(work / 'snapshot.json.gz', {'schema': 1, 'npcs': []})
+with tarfile.open(work / 'build.tar.gz', 'w:gz') as tar:
+    data = b'world'
+    entry = tarfile.TarInfo('world.ratw'); entry.size = len(data); tar.addfile(entry, io.BytesIO(data))
+(work / 'package.json').write_text(json.dumps({'format': 1, 'id': 'x' * 32, 'version': version, 'snapshot': True,
+                                               'build': {'id': 4}}))
+P.write_sums(work)
+os.replace(work, out)
+print('Package written', flush=True)
+"""
+
+
+class Share(Folders):
+    """Share my world (doc 78, 10.5; M9): root runs the export as a child, packs it into manage/shared/, keeps three, one
+    at a time and three an hour, and says plainly why one failed."""
+
+    def setUp(self):
+        super().setUp()
+        sys.path.insert(0, str(ROOT / 'tools'))
+        import world_package
+        self.P = world_package
+        tools = self.dir / 'tools'
+        tools.mkdir()
+        (tools / 'world_package.py').write_text(STAND_IN_EXPORT)
+        self.saved_tools = E.TOOLS
+        E.TOOLS = tools
+        self.env = mock.patch.dict(os.environ, {'REAL_TOOLS': str(ROOT / 'tools')})
+        self.env.start()
+        self.settings = {'name': 'Wolf Hollow'}
+
+    def tearDown(self):
+        E.TOOLS = self.saved_tools
+        self.env.stop()
+        super().tearDown()
+
+    def state(self):
+        return json.loads((E.ADMIN / 'share.json').read_text())
+
+    def run_share(self, share):
+        self.quiet(share.ask, self.settings)
+        deadline = time.monotonic() + 30
+        while share.process is not None and time.monotonic() < deadline:
+            self.quiet(share.check)
+            time.sleep(0.05)
+        self.assertIsNone(share.process, 'the export ended')
+        return self.state()
+
+    def test_a_share_is_packed_into_manage_shared_and_imports_as_a_package(self):
+        share = E.Share()
+        self.quiet(share.tidy)
+        self.assertEqual(self.state()['state'], 'idle')
+        state = self.run_share(share)
+        today = time.strftime('%Y-%m-%d', time.gmtime())
+        name = f'wolf-hollow-{today}.ratwpkg'
+        self.assertEqual((state['state'], state['file'], state['contents']), ('ready', name, {'snapshot': True, 'build': 4}))
+        self.assertIn(f'manage/shared/{name} is ready', self.output)
+        made = E.MANAGE / 'shared' / name
+        self.assertEqual(stat.S_IMODE(made.stat().st_mode), 0o644)
+        self.assertEqual(stat.S_IMODE((E.MANAGE / 'shared').stat().st_mode), 0o755)
+        self.assertEqual(state['size'], made.stat().st_size)
+        self.assertEqual([f['name'] for f in state['files']], [name])
+        self.assertEqual(list((E.STATE / 'share').iterdir()), [], 'the export\'s directory removed')
+        with tarfile_names(made) as names:
+            self.assertEqual(names, ['package.json', 'SHA256SUMS', 'world.json.gz', 'live.json.gz', 'build.tar.gz',
+                                     'snapshot.json.gz'])
+        manifest = self.P.unpack(made, self.dir / 'unpacked')
+        self.assertTrue(manifest['version'].startswith('wolf-hollow-shared-'))
+        with self.P.opened(made) as directory:
+            self.assertEqual(self.P.verify(directory)['id'], 'x' * 32)
+        # A second today is -2; past three, the oldest goes.
+        os.utime(E.MANAGE / 'shared' / name, (time.time() - 1000, time.time() - 1000))
+        for n in range(4):
+            share.recent = []
+            self.run_share(share)
+        left = sorted(p.name for p in (E.MANAGE / 'shared').iterdir())
+        self.assertEqual(len(left), E.SHARES_KEPT, left)
+        self.assertTrue(all((E.MANAGE / 'shared' / n).stat().st_mtime > time.time() - 500 for n in left), 'the oldest removed')
+        self.assertIn(f'wolf-hollow-{today}-4.ratwpkg', left, 'a second the same day is -2, and so on')
+        self.assertIn('the newest 3 are kept', self.output)
+
+    def test_one_at_a_time_and_three_an_hour(self):
+        share = E.Share()
+        self.quiet(share.tidy)
+        with mock.patch.dict(os.environ, {'SHARE_FAIL': ''}):
+            self.quiet(share.ask, self.settings)
+            first = share.process
+            self.quiet(share.ask, self.settings)
+            self.assertIn('one at a time', self.output)
+            self.assertIs(share.process, first)
+            self.assertEqual(self.state()['state'], 'working')
+            first.wait(30)
+            self.quiet(share.check)
+            self.run_share(share)
+            self.run_share(share)
+            self.quiet(share.ask, self.settings)
+        self.assertIn('more than 3 times this hour', self.output)
+        self.assertIsNone(share.process)
+
+    def test_a_failed_export_and_a_full_disk_are_said_and_shown(self):
+        share = E.Share()
+        self.quiet(share.tidy)
+        with mock.patch.dict(os.environ, {'SHARE_FAIL': 'The scan failed; nothing was written'}):
+            state = self.run_share(share)
+        self.assertEqual((state['state'], state['problem']['code']), ('failed', 'failed'))
+        self.assertIn('The scan failed; nothing was written', list(share.lines), 'the export\'s lines, for the log')
+        self.assertIn('its lines are above, under RATW_SHARE', self.output)
+        with mock.patch.dict(os.environ, {'SHARE_FAIL': "OSError: [Errno 28] No space left on device"}):
+            state = self.run_share(share)
+        self.assertEqual(state['problem']['code'], 'disk')
+        self.assertEqual(list((E.STATE / 'share').iterdir()), [])
+        share.recent = []
+        low = shutil._ntuple_diskusage(100, 90, 10 * 1024 * 1024)
+        with mock.patch.object(E.shutil, 'disk_usage', return_value=low):
+            self.quiet(share.ask, self.settings)
+        self.assertIsNone(share.process, 'refused before the export')
+        state = self.state()
+        self.assertEqual((state['state'], state['problem']['code'], state['problem']['free'], state['problem']['where']),
+                         ('failed', 'disk', 10 * 1024 * 1024, 'folder'))
+        self.assertIn('MB free', self.output)
+        # A disk that fills while the file is written (M9's run: a 20 MB tmpfs over manage/shared): said with its numbers,
+        # nothing half-written left.
+        share.recent = []
+        real_pack = self.P.pack
+
+        def full(directory, out):
+            out.write(b'x' * 10)
+            raise OSError(28, 'No space left on device')
+        with mock.patch.object(self.P, 'pack', full):
+            state = self.run_share(share)
+        self.assertEqual((state['problem']['code'], state['problem']['where']), ('disk', 'folder'))
+        self.assertGreater(state['problem']['need'], 0)
+        self.assertEqual([p.name for p in (E.MANAGE / 'shared').iterdir()], [], 'no partial file left')
+        self.assertIs(self.P.pack, real_pack)
+        shutil.rmtree(E.MANAGE)
+        self.quiet(share.ask, self.settings)
+        self.assertEqual(self.state()['problem']['code'], 'folder')
+
+    def test_the_container_s_start_tidies_what_a_stop_left(self):
+        shared = E.shared_dir()
+        (shared / '.wolf-hollow-2026-11-12.ratwpkg.partial-abcd').write_text('half')
+        (shared / 'notes.txt').write_text('the host\'s own')
+        (E.STATE / 'share').mkdir()
+        (E.STATE / 'share' / 'package-0123').mkdir()
+        self.quiet(E.Share().tidy)
+        self.assertEqual(sorted(p.name for p in shared.iterdir()), ['notes.txt'], 'only the half-written file goes')
+        self.assertFalse((E.STATE / 'share').exists())
+        target = self.dir / 'elsewhere'
+        target.mkdir()
+        shutil.rmtree(shared)
+        shared.symlink_to(target)
+        self.assertTrue(self.quiet(E.shared_dir).is_dir())
+        self.assertFalse((E.MANAGE / 'shared').is_symlink(), 'a link there is moved aside, never followed')
+        self.assertIn('moved aside', self.output)
+
+    def test_unpacking_takes_only_a_package_s_own_files(self):
+        def packed(*members):
+            path = self.dir / f'bad-{len(list(self.dir.glob("bad-*")))}.ratwpkg'
+            with tarfile_module().open(path, 'w') as tar:
+                for name, kind in members:
+                    entry = tarfile_module().TarInfo(name)
+                    if kind == 'link':
+                        entry.type, entry.linkname = tarfile_module().SYMTYPE, '/etc/passwd'
+                        tar.addfile(entry)
+                    else:
+                        entry.size = 2
+                        tar.addfile(entry, io.BytesIO(b'{}'))
+            return path
+        for members, words in (((('../package.json', 'file'),), 'isn\'t a world package'),
+                               ((('package.json', 'link'),), 'isn\'t a world package'),
+                               ((('package.json', 'file'), ('package.json', 'file')), 'isn\'t a world package'),
+                               ((('evil.sh', 'file'),), 'isn\'t a world package'),
+                               ((('package.json', 'file'),), 'no SHA256SUMS')):
+            with self.assertRaisesRegex(self.P.PackageError, words):
+                self.P.unpack(packed(*members), self.dir / f'out-{len(list(self.dir.glob("out-*")))}')
+        self.assertFalse((self.dir / 'package.json').exists())
+        with self.assertRaisesRegex(self.P.PackageError, 'isn\'t a packed world package'):
+            self.P.unpack(self.dir / 'tools' / 'world_package.py', self.dir / 'out-text')
+
+    def test_the_world_s_name_as_a_file_name(self):
+        self.assertEqual([E.world_slug(n) for n in ('Ashfall Vale', 'Ærø: the Ford!', '***', 'x' * 60)],
+                         ['ashfall-vale', 'r-the-ford', 'world', 'x' * 40])
+        for name in ('ashfall-vale-2026-11-12.ratwpkg', 'world-2026-11-12-2.ratwpkg'):
+            self.assertTrue(E.SHARED_FILE.match(name), name)
+        for name in ('../x-2026-11-12.ratwpkg', 'x-2026-11-12.ratwpkg.sh', '.x-2026-11-12.ratwpkg'):
+            self.assertFalse(E.SHARED_FILE.match(name), name)
+
+    def test_a_share_request_reaches_the_share(self):
+        (E.ADMIN / 'requests' / 'share.0123456789ab').write_text('share\n')
+        world = E.Supervisor(7788, 17789, self.dir, self.dir)
+        world.s = self.settings
+        with mock.patch.object(world.share, 'ask') as asked:
+            for kind in self.quiet(E.take_requests):
+                self.quiet(world.act, kind)
+        asked.assert_called_once_with(self.settings)
+
+
+def tarfile_module():
+    import tarfile
+    return tarfile
+
+
+@contextlib.contextmanager
+def tarfile_names(path):
+    import tarfile
+    with tarfile.open(path, 'r:') as tar:
+        yield [m.name for m in tar.getmembers()]
+
+
 class Scripts(unittest.TestCase):
     """The host's double-click scripts (doc 78, 3.6 and 12.2): restore and reset-editor-password, run here against a
     stand-in docker (testdata/fake-docker.sh); the .bat files read for the same steps (desktop-windows.yml runs them on

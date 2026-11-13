@@ -45,8 +45,9 @@ whole world:
    command: doc 78, 6.5 and I7): `restart` (the server stops, saving, and starts again, world.toml read first),
    `backup-by-hand`, `backup-before-publish` and a pin on one backup (`pin-STAMP`, `unpin-STAMP`: passed on to the
    backup service through the `requests` volume),
-   `share` (not built yet: doc 78, M9), `first-editor-used` (manage/first-editor.txt emptied: the owner chose a
-   password). A Mind or agent or Editor helper that stops on its own is started again (at most once a minute).
+   `share` ("Share my world", doc 78, 10.5: tools/world_package.py export, players stripped out, as ratw into the
+   container's own state, then packed by root into one file in manage/shared/, the folder owner's, the newest 3 kept;
+   one at a time, 3 an hour), `first-editor-used` (manage/first-editor.txt emptied: the owner chose a password). A Mind or agent or Editor helper that stops on its own is started again (at most once a minute).
 8. UPnP (world.toml's [network] upnp, default true) isn't tried here: this container is on Docker's own network, from
    which the router's search can't be reached. compose.yaml's upnp service tries it from the host's network
    (tools/world_upnp.py hold); this only checks the setting and says where to look.
@@ -136,6 +137,15 @@ EXIT_LINES, EXITS_KEPT = 20, 10                 # exits.json: the server's last 
 BACKUPS_WAITING = 8                             # Backup requests left for the backup service, at most.
 UPDATE_BACKUP_WAIT, UPDATE_BACKUP_UNCLAIMED = 1800, 120   # An update's backup: waited for this long; given up on if the
                                                 # backup service shows no sign of life (an old compose.yaml) for this long.
+# "Share my world" (doc 78, 10.5; M9): the world exported (players stripped out, as tools/world_package.py does) and
+# packed into one file in manage/shared/: <world>-<date>.ratwpkg. One at a time, at most SHARES_AN_HOUR started an hour
+# (the hosted studio refuses before root does), the newest SHARES_KEPT kept. The export needs the room to write the
+# package twice over (the work directory in the container's state, then the file) and SHARE_MIN_FREE more on each.
+SHARES_KEPT, SHARES_AN_HOUR = 3, 3
+SHARE_MIN_FREE = int(os.environ.get('RATW_SHARE_MIN_FREE_MB', '1024')) * 1024 * 1024
+SHARE_GUESS = 256 * 1024 * 1024                 # The package's size before the first share has measured it.
+SHARE_TIMEOUT = 1800                            # An export still running after this long is stopped (said, failed).
+SHARED_FILE = re.compile(r'^[a-z0-9][a-z0-9-]{0,47}-\d{4}-\d{2}-\d{2}(?:-\d{1,2})?\.ratwpkg$')
 FIRST_EDITOR_USED = ('Used. Lost your password? Double-click reset-editor-password in this folder\n'
                      '(reset-editor-password.bat on Windows, reset-editor-password.sh elsewhere), or type:\n\n'
                      '    docker compose exec world ratw-editor reset NAME\n\n'
@@ -1419,6 +1429,241 @@ def put_back_accounts() -> None:
             os.replace(path, BACKUP_REQUESTS / '.kept-accounts.failed.json')
 
 
+def world_slug(name: str) -> str:
+    """The world's name as a file name's start: small letters, digits and dashes, at most 40 ("Ashfall Vale" is
+    ashfall-vale; a name with none of them is "world")."""
+    import unicodedata
+    plain = unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode('ascii').lower()
+    slug = re.sub(r'[^a-z0-9]+', '-', plain).strip('-')[:40].strip('-')
+    return slug or 'world'
+
+
+def shared_dir() -> Path | None:
+    """manage/shared/, made if missing, the manage folder owner's (0755: nothing secret goes in it). A link or a file
+    there is moved aside, never followed. None when there is no manage folder (an old compose.yaml)."""
+    if not manage_ready():
+        return None
+    path = MANAGE / 'shared'
+    try:
+        found = os.lstat(path)
+        if not stat.S_ISDIR(found.st_mode):
+            move_aside(path, 'not a folder (a link?)')
+    except FileNotFoundError:
+        pass
+    path.mkdir(mode=0o755, exist_ok=True)
+    fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        _chown(fd, manage_owner(), True, path)
+        with contextlib.suppress(OSError):
+            os.fchmod(fd, 0o755)
+    finally:
+        os.close(fd)
+    return path
+
+
+def shared_files(directory: Path | None) -> list[dict]:
+    """The shared files in manage/shared/, newest first: {name, size, at}. Only plain files with a share's name."""
+    found = []
+    if directory is None:
+        return found
+    try:
+        for entry in os.scandir(directory):
+            if SHARED_FILE.match(entry.name) and entry.is_file(follow_symlinks=False):
+                info = entry.stat(follow_symlinks=False)
+                found.append({'name': entry.name, 'size': info.st_size, 'at': int(info.st_mtime)})
+    except OSError:
+        return []
+    return sorted(found, key=lambda f: (f['at'], f['name']), reverse=True)
+
+
+class Share:
+    """"Share my world" (doc 78, 10.5; M9). The helper asks with a `share` request (it holds no owner password:
+    world_package export connects as the database's owner); this runs tools/world_package.py export as ratw (with the
+    owner's password alone) into the container's own state, where only ratw writes, then packs the package into one file
+    in the host's manage/shared/, the folder owner's: what the export holds and nothing else (players, the Editor's
+    accounts, dm.*, admin.*, the host token and the AI key are never in it: the strip and the scan are the export's).
+    Its state goes to the admin volume (share.json) for My world: idle, working, ready (the file) or failed (disk,
+    failed, folder), with the files there."""
+
+    def __init__(self, clock=time.monotonic, wall=time.time):
+        self.clock, self.wall = clock, wall
+        self.process: subprocess.Popen | None = None
+        self.work: Path | None = None
+        self.started, self.started_wall = 0.0, 0.0
+        self.recent: list[float] = []               # Wall-clock starts this hour (root's own count: the studio's too).
+        self.lines: collections.deque = collections.deque(maxlen=EXIT_LINES)
+        self.name = ''
+        self.last_size = 0
+        self.state: dict = {'v': 1, 'state': 'idle'}
+
+    def root(self) -> Path:
+        return STATE / 'share'
+
+    def tidy(self) -> None:
+        """At the container's start: an export's leftovers (a stop part way) and half-written files removed; the state
+        written afresh, with the files there."""
+        with contextlib.suppress(OSError):
+            if os.path.lexists(self.root()):
+                if os.path.isdir(self.root()) and not os.path.islink(self.root()):
+                    shutil.rmtree(self.root(), ignore_errors=True)
+                else:
+                    os.unlink(self.root())
+        directory = shared_dir() if manage_ready() else None
+        if directory is not None:
+            with contextlib.suppress(OSError):
+                for entry in os.scandir(directory):
+                    if entry.name.startswith('.') and '.partial-' in entry.name and entry.is_file(follow_symlinks=False):
+                        os.unlink(entry.path)
+        self.write('idle')
+
+    def write(self, state: str, **extra) -> None:
+        directory = MANAGE / 'shared' if manage_ready() else None
+        self.state = {'v': 1, 'state': state, 'at': int(self.wall()), 'kept': SHARES_KEPT,
+                      'recent': [int(t) for t in self.recent], 'files': shared_files(directory)[:SHARES_KEPT + 2], **extra}
+        try:
+            write_file(ADMIN / 'share.json', json.dumps(self.state) + '\n', None, 0o644)
+        except OSError as error:
+            say(f'warning: the share\'s state couldn\'t be written for the Editor ({error.strerror})')
+
+    def failed(self, code: str, said: str, **extra) -> None:
+        say(f'Share my world: {said}')
+        self.write('failed', problem={'code': code, 'at': int(self.wall()), **extra}, started=int(self.started_wall))
+
+    def ask(self, s: dict | None) -> None:
+        """A `share` request: one at a time, SHARES_AN_HOUR an hour; the folder and the disks checked first."""
+        now = self.wall()
+        self.recent = [t for t in self.recent if now - t < 3600]
+        if self.process is not None:
+            say('Share my world was asked for again while one is being made: one at a time')
+            return
+        if len(self.recent) >= SHARES_AN_HOUR:
+            say(f'Share my world was asked for more than {SHARES_AN_HOUR} times this hour: refused')
+            return
+        self.recent.append(now)
+        self.started_wall = now
+        if s is None or shared_dir() is None:
+            self.failed('folder', 'there is no manage folder in the world folder (an older compose.yaml): take the new '
+                        'compose.yaml from the package (keep .env and world.toml), make an empty folder called manage '
+                        'beside it, then docker compose up -d')
+            return
+        need = max(self.last_size, SHARE_GUESS) + SHARE_MIN_FREE
+        for where, what in ((MANAGE, 'the world folder'), (STATE, 'Docker\'s own storage')):
+            try:
+                free = shutil.disk_usage(where).free
+            except OSError:
+                continue
+            if free < need:
+                self.failed('disk', f'refused: {what}\'s disk has {free / 2**20:.0f} MB free, and the file needs about '
+                            f'{need / 2**20:.0f} MB to be made (with {SHARE_MIN_FREE / 2**20:.0f} MB left free)',
+                            free=int(free), need=int(need), where='folder' if where == MANAGE else 'docker')
+                return
+        made = time.gmtime(now)
+        self.name = f'{world_slug(s.get("name") or "")}-{time.strftime("%Y-%m-%d", made)}'
+        version = f'{world_slug(s.get("name") or "")}-shared-{time.strftime("%Y%m%d%H%M", made)}'
+        root = private_dir(self.root(), HELPER)
+        self.work = root / f'package-{secrets.token_hex(6)}'
+        self.lines.clear()
+        say('Share my world was asked for by the Editor: exporting the world, with every player taken out')
+        self.process = subprocess.Popen(
+            [sys.executable, str(TOOLS / 'world_package.py'), 'export', '--world', KEY, '--out', str(self.work),
+             '--version', version], cwd=STATE, env=child_env('RATW_OWNER_PASSWORD'), stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT, text=True, encoding='utf-8', errors='replace', **run_as(HELPER))
+        self.process.tee = threading.Thread(target=self._lines, args=(self.process.stdout,), daemon=True)
+        self.process.tee.start()
+        self.started = self.clock()
+        self.write('working', started=int(now))
+
+    def _lines(self, stream) -> None:
+        for line in child_lines(stream):
+            child_say('RATW_SHARE', line)
+            if line.strip():
+                self.lines.append(LOG_UNSAFE.sub('', line.rstrip('\n'))[:400])
+
+    def check(self) -> None:
+        """Every tick: an export that ended is packed into its file (or said to have failed); one that runs too long is
+        stopped."""
+        if self.process is None:
+            return
+        code = self.process.poll()
+        if code is None:
+            if self.clock() - self.started > SHARE_TIMEOUT:
+                say(f'Share my world: the export ran over {SHARE_TIMEOUT // 60} minutes: stopping it')
+                self.process.kill()
+            return
+        self.process.tee.join(2)
+        with contextlib.suppress(OSError):
+            self.process.stdout.close()
+        self.process = None
+        try:
+            if code != 0:
+                disk = any('No space left' in line for line in self.lines)
+                self.failed('disk' if disk else 'failed', f'the export failed (exit {code})'
+                            + ('; the disk is full' if disk else ': its lines are above, under RATW_SHARE'))
+                return
+            self.finish()
+        finally:
+            if self.work is not None:
+                shutil.rmtree(self.work, ignore_errors=True)
+                self.work = None
+
+    def finish(self) -> None:
+        """The export's package packed into manage/shared/NAME.ratwpkg (a new file, renamed into place, the folder
+        owner's, 0644), the oldest beyond SHARES_KEPT removed."""
+        directory = shared_dir()
+        if directory is None:
+            self.failed('folder', 'the manage folder went away while the file was made')
+            return
+        world_package = tools_module('world_package')
+        name, n = f'{self.name}.ratwpkg', 2
+        while os.path.lexists(directory / name):
+            name, n = f'{self.name}-{n}.ratwpkg', n + 1
+        temp = directory / f'.{name}.partial-{secrets.token_hex(4)}'
+        try:
+            manifest = json_or_none(read_small(self.work / 'package.json', 256 * 1024)) or {}
+            fd = os.open(temp, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o644)
+            with os.fdopen(fd, 'wb') as out:
+                _chown(out.fileno(), manage_owner(), True, temp)
+                with contextlib.suppress(OSError):
+                    os.fchmod(out.fileno(), 0o644)
+                size = world_package.pack(self.work, out)
+                out.flush()
+                os.fsync(out.fileno())
+            os.replace(temp, directory / name)
+        except (OSError, world_package.PackageError) as error:
+            with contextlib.suppress(OSError):
+                temp.unlink()
+            disk = isinstance(error, OSError) and error.errno in (errno.ENOSPC, errno.EDQUOT)
+            numbers = {}
+            if disk:
+                with contextlib.suppress(OSError):
+                    need = sum(e.stat(follow_symlinks=False).st_size for e in os.scandir(self.work))
+                    numbers = {'free': int(shutil.disk_usage(directory).free), 'need': int(need), 'where': 'folder'}
+            self.failed('disk' if disk else 'failed', f'the file couldn\'t be written into manage/shared ({error})', **numbers)
+            return
+        self.last_size = size
+        for old in shared_files(directory)[SHARES_KEPT:]:
+            with contextlib.suppress(OSError):
+                os.unlink(directory / old['name'])
+                say(f'Share my world: removed the oldest shared file, manage/shared/{old["name"]} (the newest '
+                    f'{SHARES_KEPT} are kept)')
+        say(f'Share my world: manage/shared/{name} is ready ({size / 1e6:.1f} MB): the world without its players')
+        self.write('ready', file=name, size=size, started=int(self.started_wall),
+                   contents={'snapshot': manifest.get('snapshot') is True,
+                             'build': (manifest.get('build') or {}).get('id') if isinstance(manifest.get('build'), dict) else None})
+
+    def stop(self) -> None:
+        if self.process is not None:
+            self.process.kill()
+            with contextlib.suppress(subprocess.TimeoutExpired):
+                self.process.wait(5)
+            with contextlib.suppress(OSError):
+                self.process.stdout.close()
+            self.process = None
+        if self.work is not None:
+            shutil.rmtree(self.work, ignore_errors=True)
+            self.work = None
+
+
 class Supervisor:
     """The server and its helpers, kept up whatever the server does (doc 78, 12.4 and 6.5)."""
 
@@ -1449,6 +1694,7 @@ class Supervisor:
         self.code = 0
         self.toml = TomlRetry()
         self.backups: str | None = None
+        self.share = Share(clock)
 
     # -- the helpers -------------------------------------------------------------------------------------------
     def apply_editor(self, s: dict) -> None:
@@ -1515,6 +1761,7 @@ class Supervisor:
             h.check()
         for kind in take_requests():
             self.act(kind)
+        self.share.check()
         self.central = mirror_central(self.central)
         self.backups = mirror_backups(self.backups)
         if self.editor is not None and official():
@@ -1537,7 +1784,7 @@ class Supervisor:
         elif kind in ('backup-by-hand', 'backup-before-publish') or kind.startswith(('pin-', 'unpin-')):
             pass_backup(kind)
         elif kind == 'share':
-            say('sharing the world was asked for by the Editor, but it isn\'t built yet (Docs/Design/78, M9)')
+            self.share.ask(self.s)
         elif kind == 'first-editor-used':
             if write_manage('first-editor.txt', FIRST_EDITOR_USED):
                 say('the first Editor account has its own password now: manage/first-editor.txt is emptied')
@@ -1659,6 +1906,7 @@ class Supervisor:
         self.next_start = self.clock()
         while self.step():
             time.sleep(0.5)
+        self.share.stop()
         for h in (self.agent, self.mind, self.editor):   # (The agent first: its leave takes the world off the list.)
             if h is not None:
                 h.stop()
@@ -1778,6 +2026,7 @@ def main() -> int:
 
     world_db = tools_module('world_db')
     world.apply(s)
+    world.share.tidy()
     return world.run(world_db.libpq_conninfo(KEY, 'game'))
 
 

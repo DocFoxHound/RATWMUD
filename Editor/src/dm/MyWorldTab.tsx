@@ -1,13 +1,15 @@
-// My world (Docs/Design/78, sections 2, 7 and 12; Phase M5): a host's own world in the Editor window. Its status with
-// Close and Open and Restart, its backups (a backup now, pins, "Copy restore steps"), the settings it runs with, the AI's
+// My world (Docs/Design/78, sections 2, 7, 10.5 and 12; Phases M5 and M9): a host's own world in the Editor window. Its
+// status with Close and Open and Restart, its backups (a backup now, pins, "Copy restore steps"), Share my world (a file
+// of the world without its players, in the world folder's manage/shared/), the settings it runs with, the AI's
 // use, its version and certificate, the history of changes, sign-ins; for the owner also the world folder and the lines
 // of a server that keeps stopping. Everyone signed in reads it; the actions are the owner's (others see them greyed,
 // with why). A restore itself is never done from here: it runs on the world's computer (restore.bat or restore.sh).
 import {useCallback, useEffect, useState} from 'react';
-import {atLeast, dmApi, type BackupItem, type Me, type MyWorld} from './api';
+import {atLeast, dmApi, type BackupItem, type Me, type MyWorld, type ShareState} from './api';
 import {actorName} from '../lib/hosted';
 import {greyed} from '../lib/acts';
-import {ago, BACKUP_WHY, backupProblem, historyWords, lastBackupLine, restoreSteps, size, syncedFolder, windowsFolder} from '../lib/myWorld';
+import {ago, BACKUP_WHY, backupProblem, historyWords, lastBackupLine, restoreSteps, SHARE_HOLDS, SHARE_NEVER, SHARE_NOT_YET, sharedPath,
+    shareProblem, size, syncedFolder, windowsFolder} from '../lib/myWorld';
 import {HostedServerPanel} from './ServerTab';
 
 const at = (seconds: number | null | undefined) => (seconds ? new Date(seconds * 1000).toLocaleString() : '—');
@@ -42,6 +44,7 @@ export function MyWorldTab({me, initial}: {me: Me; initial?: MyWorld}) {
                 reload={() => load().then(w => w?.status ?? null)} />
             {!owner && <p className="hint">Closing, opening and restarting the world, and its backups, are for its owner. You see them as they are.</p>}
             <BackupsCard world={world} owner={owner} ownerOnly={ownerOnly} reload={load} />
+            <ShareCard world={world} owner={owner} ownerOnly={ownerOnly} reload={load} />
             <section className="sync-card">
                 <h3>Settings</h3>
                 <table className="dm-table"><tbody>
@@ -156,6 +159,67 @@ function BackupsCard({world, owner, ownerOnly, reload}: {world: MyWorld; owner: 
         </div>}
         <p className="hint">A restore runs only on the world's computer, never from the Editor: in the world folder, double-click restore.bat
             (Windows), or run ./restore.sh. It lists the backups, asks which one, makes a safety copy first and keeps your Editor accounts unless you say.</p>
+    </section>;
+}
+
+/** Share my world (doc 78, 10.5; M9): a file of the world without its players, made by the world itself into the world
+ *  folder's manage/shared/. A confirmation first, saying what goes in the file and what never does; then "Making the
+ *  file…" until it is ready (its name and where it is) or failed (why). The owner's; others see it greyed. */
+function ShareCard({world, owner, ownerOnly, reload}: {world: MyWorld; owner: boolean; ownerOnly: string; reload: () => Promise<MyWorld | null>}) {
+    const [asking, setAsking] = useState(false), [busy, setBusy] = useState(false), [note, setNote] = useState('');
+    const [asked, setAsked] = useState<number | null>(null), [copied, setCopied] = useState(false);
+    const share: ShareState | null | undefined = world.share;
+    const working = !!share && (share.state === 'working' || share.waiting);
+    // Asked, or being made: read again every 5 s until it is ready or failed (20 minutes at most). `asked` is the state's
+    // own time when the request went (the world's clock, not this computer's): a newer state that isn't working ends it.
+    useEffect(() => {
+        if (asked === null && !working) return;
+        if (asked !== null && share && !working && (share.at ?? 0) !== asked) { setAsked(null); return; }
+        const t = setInterval(() => void reload(), 5000), stop = setTimeout(() => setAsked(null), 20 * 60_000);
+        return () => { clearInterval(t); clearTimeout(stop); };
+    }, [asked, working, share, reload]);
+    if (share === undefined || share === null) return <section className="sync-card wide"><h3>Share my world</h3>
+        <p className="hint">This world's package is older than Share my world: update it (keep world.toml, .env, manage and backups), then
+            docker compose up -d.</p></section>;
+    const why = greyed([!owner, ownerOnly], [busy, 'Asking…'], [working || asked !== null, 'Your world\'s file is being made now.'],
+        [share.thisHour >= share.perHour, `Your world has been shared ${share.thisHour} times this hour, the most an hour: try again later.`]);
+    const make = async () => {
+        setBusy(true); setNote('');
+        try { await dmApi.shareWorld(); setAsked(share.at ?? 0); setAsking(false); void reload(); }
+        catch (error) { setNote((error as Error).message); }
+        finally { setBusy(false); }
+    };
+    const ready = share.state === 'ready' && share.file && !working && asked === null;
+    const where = ready ? sharedPath(world.folder ?? '', share.file!) : '';
+    return <section className="sync-card wide" data-share>
+        <h3>Share my world</h3>
+        <p>Makes one file of your world, without its players, for someone else to run or look at. The world makes it itself, into the
+            folder <code>manage{windowsFolder(world.folder ?? '') ? '\\' : '/'}shared</code> in your world folder. Never send the world
+            folder itself (it holds your host token, your Editor codes and every player's data in its backups).</p>
+        {!asking && <button disabled={!!why} title={why || undefined} data-action="share" onClick={() => { setAsking(true); setNote(''); }}>⇪ Share my world…</button>}
+        {asking && <div className="my-world-steps" data-share-confirm>
+            <p><strong>The file holds:</strong></p>
+            <ul>{SHARE_HOLDS.map(line => <li key={line}>{line}</li>)}</ul>
+            <p><strong>It never holds:</strong></p>
+            <ul>{SHARE_NEVER.map(line => <li key={line}>{line}</li>)}</ul>
+            <p className="hint">{SHARE_NOT_YET}</p>
+            <p className="hint">Making it takes a minute or two; the world keeps running. The newest {share.kept} files are kept, older ones are removed.</p>
+            <button disabled={!!why} title={why || undefined} data-action="share-make" onClick={() => void make()}>Make the file</button>
+            {' '}<button onClick={() => setAsking(false)}>Cancel</button>
+        </div>}
+        {(working || asked !== null) && <p data-share-state="working">Making the file… The world is exported with every player taken out, then
+            checked again before it is written. This page says when it is ready.</p>}
+        {ready && <div data-share-state="ready">
+            <p>Ready: <strong>{share.file}</strong> ({size(share.size)}), made {share.at ? ago(Date.now() / 1000 - share.at) : ''}.</p>
+            <p className="meta">It is in your world folder: <code data-share-path>{where}</code>
+                {' '}<button className="small" onClick={() => void navigator.clipboard?.writeText(where).then(() => setCopied(true), () => setCopied(false))}>
+                    {copied ? 'Copied' : 'Copy the path'}</button></p>
+            <p className="hint">Send it like any large file. Whoever gets it can't sign in to your world with it: it holds no account and no key.</p>
+        </div>}
+        {share.state === 'failed' && !working && asked === null && <p className="error" data-share-state="failed">{shareProblem(share.problem)}</p>}
+        {note && <p className="error">{note}</p>}
+        {share.files.length > 0 && <table className="dm-table"><thead><tr><th>In manage/shared</th><th>Size</th><th>Made</th></tr></thead>
+            <tbody>{share.files.map(f => <tr key={f.name}><td>{f.name}</td><td>{size(f.size)}</td><td>{f.at ? ago(Date.now() / 1000 - f.at) : '—'}</td></tr>)}</tbody></table>}
     </section>;
 }
 
