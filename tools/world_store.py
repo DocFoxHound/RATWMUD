@@ -1041,6 +1041,48 @@ def load_world(conn, world_id: str, ground: bool = True, with_seen: bool = False
     return project, revision
 
 
+def project_from_rows(world_row: dict, tables: dict) -> dict:
+    """The project load_world would make, from rows held in memory rather than read (a world package's, before its
+    import writes anything: Docs/Design/78, 10.1 and M7). `world_row` is the world.worlds row; `tables` {table: [row
+    dicts with column names, as SELECT * gives them]}: world.cells, world.interiors, world.links, world.resources,
+    world.chapters, world.terrain_chunks (heights as an "x,y" object), live.npcs, live.profession_slots,
+    live.factions, live.faction_claims, live.patrol_routes (each with its "posts", as a package holds them),
+    live.npc_relations, live.economy. A table left out has no rows."""
+    rows = lambda table: list(tables.get(table) or [])
+    ordered = lambda table: sorted(rows(table), key=lambda r: (r.get('position') or 0, str(r.get('id', ''))))
+    claims = {}
+    for r in sorted(rows('live.faction_claims'), key=lambda r: (r['area'], r['faction_id'])):
+        claims.setdefault(r['area'], []).append(r['faction_id'])
+    places = lambda table: [{**r, 'claims': claims.get(r['id'], [])} for r in ordered(table)]
+    cells = [cell_entity(r) for r in places('world.cells')]
+    size = world_row.get('chunk_size') or 32
+    ground = _cut([(r['cx'], r['cy'], r['glyphs'], r.get('heights') or {}) for r in rows('world.terrain_chunks')],
+                  cells, size)
+    for c in cells:
+        c['terrain'], c['heights'] = ground[c['id']]
+    herb = sorted((r for r in rows('world.resources') if r.get('kind') == 'herb'), key=lambda r: r['id'])
+    economy = rows('live.economy')
+    return {
+        'format': 'ratw-atlas', 'version': 3, 'id': world_row['id'], 'name': world_row['name'],
+        'cells': cells, 'rooms': [room_entity(r) for r in places('world.interiors')],
+        'links': [link_entity(r) for r in ordered('world.links')],
+        'spawn': ({'cell': world_row['spawn_area'], 'x': world_row['spawn_x'], 'y': world_row['spawn_y']}
+                  if world_row.get('spawn_area') else None),
+        'factions': [{'id': r['id'], 'name': r['name'], 'color': r['color']} for r in ordered('live.factions')],
+        'chapters': [{'id': r['id'], 'name': r['name']} for r in ordered('world.chapters')],
+        'people': [person_entity(r) for r in ordered('live.npcs')],
+        'routes': [{'id': r['id'], 'name': r['name'],
+                    'posts': [{'cell': p['area'], 'x': p['x'], 'y': p['y']}
+                              for p in sorted(r.get('posts') or [], key=lambda p: p['seq'])]}
+                   for r in ordered('live.patrol_routes')],
+        'economy': economy_entity(economy[0]) if economy else default_economy(),
+        'herbPatch': {'cell': herb[0]['area'], 'x': herb[0]['x'], 'y': herb[0]['y']} if herb else None,
+        'slots': [slot_entity(r) for r in ordered('live.profession_slots')],
+        'relations': [{'npc': r['npc_id'], 'other': r['other_id'], 'kind': r['kind']}
+                      for r in sorted(rows('live.npc_relations'), key=lambda r: (r['npc_id'], r['other_id'], r['kind']))],
+    }
+
+
 def _ground_into(conn, q, world_id, cells, size, revision, updated):
     """Gives each cell its ground (terrain rows and heights), from the kept copy while that is still current."""
     # Each cell's ground, cut from the terrain chunks it covers: the slow part of a load, and changed only by edits

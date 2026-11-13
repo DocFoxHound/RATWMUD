@@ -1293,7 +1293,8 @@ load their old build (section 12.5).
 
 **Size, measured (M0b).** The AUTHORED tables add 43.4 MB compressed to a package (45.7 MB today, so about 89 MB),
 38.2 MB of it `terrain_chunks`' heights. Under D2's 50 MB, so dense heights don't go first; written as
-`encode_heights` rows in the package alone they would come to 0.7 MB (Progress, "M0b measured").
+`encode_heights` rows in the package alone they would come to 0.7 MB (Progress, "M0b measured"). **As built (M7):**
+the package writes them so (format 2), and DEV's comes to 50.9 MB.
 
 **Imports are untrusted.** Hosts will pass worlds around. Import keeps to parameterised SQL and in-memory extraction
 (as today), and adds column allowlists for the AUTHORED tables, size caps, and the Atlas validator with the client
@@ -1386,7 +1387,7 @@ token and `dm.*`, and runs the same scan. The certificate's key is never in the 
 the world folder.
 
 **As built (M9):** the owner's **Share my world** in My world: a confirmation listing what the file holds and what it
-never does (and that a slice-1 package carries the map as built, not its source: M7), then "Making the file…", then
+never does (and, since M7, that it carries the map's editing source beside the map as built), then "Making the file…", then
 "Ready: `<world>-<date>.ratwpkg` (size)" with its path in the world folder (`manage/shared/`), or the failure in plain
 words (a full disk, which one; the export failed; no manage folder). Root runs `world_package export` as `ratw` with
 the owner's password alone into the container's own state, packs it into one file (a plain tar of the package's
@@ -1953,7 +1954,7 @@ answers out of the box, not whether managing from anywhere works.
 
 ## Progress
 
-Slice 1 done (M0a to M6, 2026-11-12, below); slice 2 begun: M0b measured (D2 decided) and M9 built; the rest not yet.
+Slice 1 done (M0a to M6, 2026-11-12, below); slice 2 begun: M0b measured (D2 decided), M9 and M7 built; the rest not yet.
 
 - **2026-11-08: the user's decisions.** "Go with the recommendations": all 21 decisions in section 17 take their
   recommendation (among them: the Editor answers only on the world's own computer until the host opens it; roles
@@ -3256,6 +3257,30 @@ Slice 1 done (M0a to M6, 2026-11-12, below); slice 2 begun: M0b measured (D2 dec
 
   Clean: `s2stage` dropped on both servers, the measuring containers, their network and volume removed, no server
   left running, `/tmp` cleared. About ¾ hour of the 1 expected.
+- **2026-11-12: M7 built (Map source in the package),** on `r2-editor` after M0b (from 766694e). No C++, no migration.
+  - **Package format 2** (`tools/world_package.py`): `terrain.json.gz` (terrain chunks, heights as `encode_heights` rows,
+    `{"$dense": [...]}`: the orchestrator's decision on M0b's recommendation) and `map.json.gz` (cells, interiors, links,
+    resources, places, chapters, minimaps). DEV's package: **45.7 MB before, 50.9 MB after**; export 13 s, 0.4 GB.
+    Format 1 still imports, as a live world (nothing to edit); `pack`/`unpack` carry both.
+  - **Scan:** the names in every author column and account of the source (builds, edits, editors, DM accounts, actions,
+    audit, releases, server state, `Database/dm-accounts.txt`, the login) are held out as usernames are; shipped author
+    columns may hold only the package's words or a model's name. The export lists places nothing reaches from the spawn.
+  - **Import, untrusted:** before the registry, a database or a migration is touched: each part within its caps (terrain
+    128/512 MB, map tables 8 MB each), table and column allowlists, row counts and sizes, the scan, then `check_project`
+    on the project the rows make (`world_store.project_from_rows`); then constraints and `world_sync.orphans` in the
+    transaction. DEV's import: 37 s, peak 2.0 GB (the validator's).
+  - **Kind:** the five places say `dev` (`live` for a package without the source), the server keeps `--world-kind live`;
+    `ensure_roles` grants a world's kind's CONNECT roles (the editor on dev); the helper gets the editor password, so a
+    dev world's economy goes through `live_edit`. The original `live.economy` and the seed keys are kept at import; the
+    add-only step on an update adds dialects, figures and voices never given, never one changed or removed.
+  - Share's words (My world, Hosting.md 24, section 10.5) say the file carries the editing source.
+  - **Not done:** the Docker end to end (moved after M8 by the orchestrator), so the entrypoint's kind switch and the
+    helper on the editor role are untried in a container; `world_build.build` taking a loaded project is left to M8.
+    **For M8:** a hosted dev world already offers Atlas to builders (M3's gate was the kind), with no Publish yet.
+  - Tests (one run, `s2stage` databases dropped): `test_world_package` 52 (1 skipped; new: the dev import with its
+    source equal to `load_world`, an edit as editor, build, NOTIFY and exit 75 in a real server; format 1; five hostile
+    packages refused before anything is written; the add-only step), `Package/test_package` 81, `test_world_db` 50,
+    `test_world_store` 23, the Editor's `myWorld` test.
 
 ## Review (2026-11-08)
 

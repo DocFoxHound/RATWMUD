@@ -74,8 +74,8 @@ export function historyWords(action: string): string {
     return known[action] ?? plain.charAt(0).toUpperCase() + plain.slice(1);
 }
 
-/** Share my world (doc 78, 10.5; M9): what goes in the file, and what never does. Until map editing comes (M7), a
- *  package carries the map as built, not the map's source, so the file can be played but its map can't be edited. */
+/** Share my world (doc 78, 10.5; M9): what goes in the file, and what never does. Since M7 a package carries the map's
+ *  editing source beside the map as built, so the world a shared file makes can have its map edited. */
 export const SHARE_HOLDS = [
     'the map, as the world plays it (its land, towns, buildings and rooms)',
     'the residents: who they are, where they live and work, their families, their backstories and what they remember of each other',
@@ -90,8 +90,8 @@ export const SHARE_NEVER = [
     'the DM tool\'s history and the residents\' life stories written with the AI',
     'your host token, your AI key, the Editor\'s certificate key, your backups',
 ];
-export const SHARE_NOT_YET = 'The map\'s editing source isn\'t in it yet: whoever gets the file can play the world as it is, ' +
-    'but its map can\'t be changed in the map editor until map editing comes in a later update.';
+export const SHARE_NOT_YET = 'It carries the map\'s editing source too, beside the map as built: a world made from the file ' +
+    'can have its map changed in the map editor, as yours can.';
 
 /** Where the shared file is, in the host's words: the world folder's path when known, Windows or Linux style. */
 export function sharedPath(folder: string, file: string): string {

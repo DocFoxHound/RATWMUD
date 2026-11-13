@@ -1270,10 +1270,10 @@ world's owner can make one.
 The world checks every file before it writes it, and refuses to write one that still names a player anywhere. If that
 ever happens, My world says the export failed (below): tell the game's team.
 
-**Not yet in it: the map's editing source.** In this version a world's package carries its map **as built**, ready to
-play, but not the source the map editor works on. Whoever gets your file can run your world as it is, but can't change
-its map in the map editor until map editing comes (a later update). Your own world is the same: its map can't be edited
-yet either.
+**The map's editing source is in it too.** A world's package carries its map **as built**, ready to play, and the
+source the map editor works on beside it. A world made from your file can have its map changed in the map editor, as
+yours can. (A file shared from a world started before this version holds the map as built only: that world was made
+without its source, and stays so.)
 
 **What the other person does with it:** in this first version a world is started from a package the game's team makes
 into a world image. So for now, send the file to the game's team if you want it to become a world others can host, or

@@ -31,7 +31,7 @@ test('Share my world in the host\'s words: what the file holds and never does, w
     const never = SHARE_NEVER.join(' ');
     for (const words of ['player', 'said or wrote', 'internet addresses', 'Editor accounts', 'passwords', 'host token', 'AI key', 'backups'])
         assert.ok(never.includes(words), `never: ${words}`);
-    assert.ok(SHARE_HOLDS.some(line => line.startsWith('the map')) && /editing source/.test(SHARE_NOT_YET), 'slice 1: the map as built, no source');
+    assert.ok(SHARE_HOLDS.some(line => line.startsWith('the map')) && /editing source too/.test(SHARE_NOT_YET), 'M7: the map as built and its editing source');
     assert.ok(!SHARE_HOLDS.join(' ').includes('player'), 'nothing of players in what it holds');
     assert.equal(sharedPath('C:\\Users\\Ann\\ratw-world\\', 'ashfall-2026-11-12.ratwpkg'), 'C:\\Users\\Ann\\ratw-world\\manage\\shared\\ashfall-2026-11-12.ratwpkg');
     assert.equal(sharedPath('/home/ann/ratw-world/', 'a-2026-11-12.ratwpkg'), '/home/ann/ratw-world/manage/shared/a-2026-11-12.ratwpkg');

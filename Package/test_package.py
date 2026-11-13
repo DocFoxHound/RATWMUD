@@ -511,12 +511,24 @@ class Files(Folders):
         self.assertFalse(copy.exists())
         self.assertNotIn('RATW_AI_CONFIG', E.admin_env(17789))
 
-    def test_the_helper_gets_the_dm_password_and_nothing_else_secret(self):
+    def test_the_registry_says_dev_and_live_after_a_package_without_the_source(self):
+        # Doc 78, 10.2 (M7): a dev world served as live, Atlas's world too; live again for a slice-1 world.
+        try:
+            worlds, local = E.registry_text('Ashfall')
+            self.assertEqual(json.loads(worlds)['worlds'][0]['kind'], 'dev')
+            self.assertEqual(json.loads(local), {'live': 'world', 'atlas': 'world'})
+            E.WORLD_KIND = 'live'
+            worlds, local = E.registry_text('Ashfall')
+            self.assertEqual((json.loads(worlds)['worlds'][0]['kind'], json.loads(local)), ('live', {'live': 'world'}))
+        finally:
+            E.WORLD_KIND = 'dev'
+
+    def test_the_helper_gets_the_dm_and_editor_passwords_and_nothing_else_secret(self):
         saved = dict(os.environ)
         try:
             os.environ.update({k: 'secret' for k in E.SECRET_ENV})
             env = E.admin_env(17790)
-            self.assertEqual(sorted(k for k in env if k in E.SECRET_ENV), ['RATW_DM_PASSWORD'])
+            self.assertEqual(sorted(k for k in env if k in E.SECRET_ENV), ['RATW_DM_PASSWORD', 'RATW_EDITOR_PASSWORD'])
             self.assertEqual((env['RATW_ADMIN_DIR'], env['RATW_WORLDS_FILE'], env['RATW_EDITOR_PORT'], env['HOME']),
                              (str(E.ADMIN), str(E.ADMIN / 'worlds.json'), '17790', str(E.ADMIN)))
         finally:

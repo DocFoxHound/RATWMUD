@@ -803,7 +803,14 @@ class EndToEndTest(unittest.TestCase):
 
     def test_the_export(self):
         m = self.manifest
-        self.assertEqual(m['format'], 1)
+        self.assertEqual(m['format'], 2)
+        self.assertTrue(m['map_source'])
+        self.assertGreater(m['dense_heights'], 0, 'heights written as encode_heights rows')
+        for table in P.SOURCE_TABLES:
+            self.assertIn(table, m['rows'])
+        terrain = P.read_json_gz(self.out / 'terrain.json.gz')['tables'][P.TERRAIN]
+        self.assertEqual(len(terrain), m['rows'][P.TERRAIN])
+        self.assertLess((self.out / 'terrain.json.gz').stat().st_size, 16 << 20, 'dense: a few MB, not 43')
         self.assertEqual(m['source'], 'dev')
         self.assertTrue(m['snapshot'])
         self.assertEqual(m['protocol'], 1)
@@ -1027,6 +1034,173 @@ class EndToEndTest(unittest.TestCase):
         self.assertEqual(escrow(after), escrow(before), 'escrow to the penny after a real server loaded and played it')
         self.assertEqual(sum(escrow(after).values()), sum(planted.values()))
 
+    def copy_package(self, name, change=None, format_=None, drop=()):
+        """A copy of DEV's package with its parts changed (`change(parts)` on the parsed JSON parts, by file name), a new
+        id, and its sums written again; the build linked, never copied."""
+        directory = Path(self.folder.name) / name
+        directory.mkdir()
+        parts = {n: P.read_json_gz(self.out / n) for n in P.PARTS if n.endswith('.json.gz') and (self.out / n).exists()}
+        if change:
+            change(parts)
+        for n, value in parts.items():
+            if n not in drop:
+                P.write_json_gz(directory / n, value)
+        (directory / 'build.tar.gz').symlink_to(self.out / 'build.tar.gz')
+        manifest = json.loads((self.out / P.MANIFEST).read_text())
+        manifest['id'] = secrets.token_hex(16)
+        manifest['version'] = name
+        if format_:
+            manifest['format'] = format_
+        (directory / P.MANIFEST).write_text(json.dumps(manifest))
+        P.write_sums(directory)
+        return directory
+
+    def test_imported_as_a_dev_world_with_its_source_edited_built_and_restarted(self):
+        """Doc 78, M7: a dev world served as live, with the map's source as Atlas holds it (load_world gives the project
+        the package's rows make), the editor's CONNECT, the original economy and the seed keys kept; an Atlas edit
+        through the editor role, a build, its NOTIFY, and a real server (--world-kind live) exits 75 onto it."""
+        import live_edit
+        import world_build
+        import world_store as S
+        import world_sync
+        key = self.key('m')
+        self.assertEqual(P.import_package(self.out, key, log=lambda *_: None), 'imported')
+        self.assertEqual(W.world(key)['kind'], 'dev')
+        with superuser() as su:
+            self.assertTrue(su.execute("SELECT has_database_privilege('ratw_editor', %s, 'CONNECT')",
+                                       (P.database_of(key),)).fetchone()[0])
+        with W.connect(key, 'owner') as conn:
+            record = conn.execute("SELECT value FROM admin.settings WHERE key = 'package'").fetchone()[0]
+            self.assertEqual((record['format'], record['map_source']), (2, True))
+            original = conn.execute("SELECT value FROM admin.settings WHERE key = %s", (P.ORIGINAL_ECONOMY,)).fetchone()[0]
+            self.assertEqual(original['from'], 'import')
+            seeded = conn.execute("SELECT value FROM admin.settings WHERE key = %s", (P.SEEDED,)).fetchone()[0]
+            self.assertTrue(any(k.startswith('live.npc_voice/') for k in seeded['keys']))
+            for table in P.SOURCE_TABLES:
+                self.assertEqual(conn.execute(f'SELECT count(*) FROM {table}').fetchone()[0], self.manifest['rows'][table], table)
+        contents = P.read_contents(self.out, self.manifest)
+        tables = {t: [world_sync.from_json(r) for r in contents['live'].get(t) or []] for t in P.PROJECT_LIVE}
+        for table in P.SOURCE_TABLES:
+            tables[table] = [world_sync.from_json(r) for r in contents['source'][table]]
+        for row in tables[P.TERRAIN]:
+            row['heights'] = P.chunk_heights(row)
+        mine = S.project_from_rows(world_sync.from_json(contents['world']['world']), tables)
+        with W.connect(key, 'editor') as conn:
+            theirs, _ = S.load_world(conn, mine['id'])
+        order = lambda r: (r['npc'], r['other'], r['kind'])     # (The database's collation orders these its own way.)
+        mine['relations'], theirs['relations'] = sorted(mine['relations'], key=order), sorted(theirs['relations'], key=order)
+        self.assertEqual(mine, theirs, 'the package makes the project the imported world loads')
+        # A real server on it (as the container runs it: --world-kind live), then an edit, a build and its NOTIFY.
+        env = dict(os.environ, RATW_DATABASE_URL=W.libpq_conninfo(key, 'game'), RATW_AI='off')
+        server = subprocess.Popen([str(SERVER), '--database', key, '--world-kind', 'live', '--bind', '127.0.0.1',
+                                   '--port', '0', '--for', '120', '--talk-data', str(ROOT / 'Data' / 'Talk')],
+                                  env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        try:
+            for line in server.stdout:
+                if 'listening on port' in line:
+                    break
+            cell = mine['cells'][0]['id']
+            with W.connect(key, 'editor') as conn:
+                batch = live_edit.Batch(conn, live_edit.world_row(conn))
+                before = batch.current(f'cell:{cell}')
+                live_edit.apply_edit(conn, 'm7', 'host-test', 'Rename', [{'key': f'cell:{cell}', 'before': before,
+                                                                         'after': {**before, 'name': 'Renamed by M7'}}])
+                build, _ = world_build.build(conn, 'host-test')
+            out, _ = server.communicate(timeout=60)
+        finally:
+            if server.poll() is None:
+                server.kill()
+                server.communicate()
+        self.assertEqual(server.returncode, 75, out[-3000:])
+        self.assertIn(f'RATW_RELEASE_RESTART build={build}', out)
+        status, log = self.run_server(key, seconds=6)
+        self.assertEqual(status, 0, log[-3000:])
+        self.assertIn('RATW_DATABASE_WORLD_LOADED', log)
+
+    def test_a_format_1_package_still_imports_as_a_live_world(self):
+        def slice_one(parts):
+            for name in P.SOURCE_PARTS:
+                parts.pop(name)
+        directory = self.copy_package('format1', slice_one, format_=1)
+        self.assertEqual(P.scan_directory(directory)[0], [])
+        key = self.key('n')
+        logs = []
+        self.assertEqual(P.import_package(directory, key, log=logs.append), 'imported', logs)
+        self.assertEqual(W.world(key)['kind'], 'live', 'nothing to edit: a live world, as slice 1 made it')
+        self.assertTrue(any('no map source (format 1)' in line for line in logs), logs)
+        with W.connect(key, 'owner') as conn:
+            self.assertEqual(conn.execute("SELECT value->'map_source' FROM admin.settings WHERE key = 'package'").fetchone()[0], False)
+            self.assertEqual(conn.execute('SELECT count(*) FROM world.cells').fetchone()[0], 0)
+        status, log = self.run_server(key, seconds=6)
+        self.assertEqual(status, 0, log[-3000:])
+        self.assertIn('RATW_DATABASE_WORLD_LOADED', log)
+
+    def test_a_hostile_package_is_refused_before_anything_is_written(self):
+        """Doc 78, 10.1: imports are untrusted. Each refused before the registry, a database or a migration is
+        touched: a glyph the catalogue lacks (the database's own CHECK takes it: only check_project refuses it), an
+        oversized part, a table and a column no package holds, an author column naming a person."""
+        def glyph(parts):
+            chunk = parts['terrain.json.gz']['tables'][P.TERRAIN][0]
+            chunk['glyphs'] = "'" + chunk['glyphs'][1:]
+
+        def table(parts):
+            parts['map.json.gz']['tables']['world.editors'] = [{'editor': 'someone'}]
+
+        def column(parts):
+            parts['map.json.gz']['tables']['world.cells'][0]['secret'] = 'x'
+
+        def author(parts):
+            parts['live.json.gz']['tables']['live.npc_voice'][0]['written_by'] = 'Martin Example'
+
+        def huge(parts):
+            parts['map.json.gz']['tables']['world.cells'][0]['description'] = 'x' * (2 << 20)
+        cases = {'glyph': (glyph, "terrain must be"), 'table': (table, 'world.editors'), 'column': (column, 'secret'),
+                 'author': (author, 'names who wrote it'), 'huge': (huge, 'a row may be at most')}
+        before = W.registry_file().read_text()
+        refuse = lambda *_, **__: (_ for _ in ()).throw(AssertionError('written before the checks'))
+        for name, (change, said) in cases.items():
+            directory = self.copy_package(f'hostile-{name}', change)
+            key = self.key(f'h{name[:2]}')
+            with mock.patch.object(W, 'register', refuse), mock.patch.object(W, 'new_world', refuse), \
+                    mock.patch.object(W, 'migrate', refuse), mock.patch.object(W, 'ensure_roles', refuse), \
+                    mock.patch.object(P, '_write_registry', refuse):
+                with self.assertRaises(P.PackageError, msg=name) as caught:
+                    P.import_package(directory, key, log=lambda *_: None)
+            self.assertIn(said, str(caught.exception), name)
+            self.assertIn('nothing was written', str(caught.exception), name)
+            self.assertFalse(P._database_exists(P.database_of(key)), name)
+        self.assertEqual(W.registry_file().read_text(), before)
+        # An oversized part, by its packed size, is refused before it is read.
+        with mock.patch.dict(P.PART_MOST, {'terrain.json.gz': (1024, 1 << 30)}):
+            with self.assertRaisesRegex(P.PackageError, 'terrain.json.gz is'):
+                P.checked_contents(self.out, self.manifest)
+
+    def test_the_add_only_seed_step_on_an_update(self):
+        """Q17's (a): a newer package's new dialect is added; one the host changed stays as the host left it, and one
+        the host removed doesn't come back."""
+        key = self.key('s')
+        self.assertEqual(P.import_package(self.out, key, log=lambda *_: None), 'imported')
+        dialects = P.read_json_gz(self.out / 'live.json.gz')['tables']['live.dialects']
+        self.assertGreaterEqual(len(dialects), 2)
+        edited, removed = dialects[0]['name'], dialects[1]['name']
+        with W.connect(key, 'owner') as conn:
+            conn.execute("UPDATE live.dialects SET grammar = 'the host''s' WHERE name = %s", (edited,))
+            conn.execute('DELETE FROM live.dialects WHERE name = %s', (removed,))
+
+        def newer(parts):
+            rows = parts['live.json.gz']['tables']['live.dialects']
+            rows.append({**rows[0], 'name': 'newer_speech', 'grammar': 'new'})
+            rows[0]['grammar'] = 'the package changed it'
+        directory = self.copy_package('newer', newer)
+        logs = []
+        self.assertEqual(P.import_package(directory, key, log=logs.append), 'kept', logs)
+        self.assertTrue(any('1 new live.dialects' in line for line in logs), logs)
+        with W.connect(key, 'owner') as conn:
+            grammar = dict(conn.execute('SELECT name, grammar FROM live.dialects').fetchall())
+        self.assertEqual(grammar.get('newer_speech'), 'new')
+        self.assertEqual(grammar[edited], "the host's")
+        self.assertNotIn(removed, grammar)
+
     def test_a_world_no_package_made_is_refused(self):
         key = self.key('d')
         self.assertEqual(P.import_package(self.out, key, log=lambda *_: None), 'imported')
@@ -1109,7 +1283,7 @@ class EndToEndTest(unittest.TestCase):
         try:
             self.assertEqual(P.main(['import', str(self.out), '--key', key, '--name', 'Hosted']), 0)
             entries = json.loads(registry.read_text())['worlds']
-            self.assertEqual(entries, [{'key': key, 'name': 'Hosted', 'database': P.database_of(key), 'kind': 'live'}])
+            self.assertEqual(entries, [{'key': key, 'name': 'Hosted', 'database': P.database_of(key), 'kind': 'dev'}])
             self.assertEqual(P.main(['import', str(self.out), '--key', key]), 0)
         finally:
             os.environ['RATW_WORLDS_FILE'] = saved

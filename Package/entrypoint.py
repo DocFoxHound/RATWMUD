@@ -13,7 +13,7 @@ whole world:
    manage/editor-certificate.txt; then the helper, tools/world_admin.py, as ratw-admin (uid 10003, in no other
    group), with only the dm password and its own copies of what it may know: the registry, the AI config, a cleaned
    copy of world.toml (settings.json: no token, no key), central's word on the world (central.json, and
-   `ever-official`, never cleared), and the set-up progress (progress.json). [editor] enabled = false: no helper, so
+   `ever-official`, never cleared), and the set-up progress (progress.json); and the editor password (slice 2). [editor] enabled = false: no helper, so
    nothing answers on the Editor port. Never on a world central has ever named official (doc 78, 6.7).
 3. Waits for the database, then imports the world package (/package/world) into it: `tools/world_package.py import
    /package/world --key world --name NAME`. On the first start that makes the world; on every later one it applies
@@ -671,10 +671,38 @@ def write_manage(name: str, body: str, mode: int = 0o600) -> bool:
 
 # ---------------------------------------------------------------------------------------------- the database
 
+# The world's kind in the registry (doc 78, 10.2): a dev world served as live (the server keeps --world-kind live, so
+# its dev-only /store console stays off), Atlas's world too; 'live' again after the import for a world started from a
+# package without the map's source (slice 1's), which has nothing to edit (world_kind_after_import).
+WORLD_KIND = 'dev'
+
+
 def registry_text(name: str) -> tuple[str, str]:
     database = os.environ.get('RATW_WORLD_DATABASE', 'ratw_world')
-    entry = {'key': KEY, 'name': name, 'database': database, 'kind': 'live'}
-    return '{"worlds": [\n  ' + json.dumps(entry) + '\n]}\n', json.dumps({'live': KEY}) + '\n'
+    entry = {'key': KEY, 'name': name, 'database': database, 'kind': WORLD_KIND}
+    local = {'live': KEY, **({'atlas': KEY} if WORLD_KIND == 'dev' else {})}
+    return '{"worlds": [\n  ' + json.dumps(entry) + '\n]}\n', json.dumps(local) + '\n'
+
+
+def world_kind_after_import(name: str) -> str:
+    """The kind the world keeps: dev when its database holds the map's source (cells or interiors), else live, and
+    the registry and the helper's copy written again when that changed."""
+    global WORLD_KIND
+    world_db = tools_module('world_db')
+    try:
+        with world_db.connect(KEY, 'game') as conn:
+            source = conn.execute('SELECT EXISTS (SELECT 1 FROM world.cells) OR EXISTS (SELECT 1 FROM world.interiors)'
+                                  ).fetchone()[0]
+    except Exception as error:  # noqa: BLE001 - keep the kind as it is; the server's start says what is wrong.
+        say(f'note: the world\'s map source couldn\'t be checked ({type(error).__name__}); it stays {WORLD_KIND}')
+        return WORLD_KIND
+    kind = 'dev' if source else 'live'
+    if kind != WORLD_KIND:
+        WORLD_KIND = kind
+        write_registry(name)
+        say('this world was started from a package without its map\'s source: it stays a live world (map editing '
+            'needs a world started from a newer package)')
+    return kind
 
 
 def write_registry(name: str) -> None:
@@ -993,7 +1021,8 @@ def official() -> bool:
 
 
 def admin_env(port: int) -> dict:
-    """The Editor's helper's environment: the dm password and its own copies, nothing else secret (doc 78, 6.5)."""
+    """The Editor's helper's environment: the dm and editor passwords and its own copies, nothing else secret (doc 78,
+    6.5; the editor's from slice 2, 10.2: Atlas's edits and a dev world's economy go through live_edit as editor)."""
     extra = {'RATW_ADMIN_DIR': str(ADMIN), 'RATW_WORLDS_FILE': str(ADMIN / 'worlds.json'),
              'RATW_WORLDS_LOCAL': str(ADMIN / 'worlds.local.json'), 'RATW_EDITOR_PORT': str(port),
              'RATW_EDITOR_DROPPED': '1', 'HOME': str(ADMIN)}
@@ -1001,7 +1030,7 @@ def admin_env(port: int) -> dict:
         extra['RATW_AI_CONFIG'] = str(ADMIN / 'npc-ai.json')
     if package_version():
         extra['RATW_PACKAGE_VERSION'] = package_version()
-    return child_env('RATW_DM_PASSWORD', **extra)
+    return child_env('RATW_DM_PASSWORD', 'RATW_EDITOR_PASSWORD', **extra)
 
 
 def admin_tool(args: list[str], port: int) -> subprocess.CompletedProcess:
@@ -2013,6 +2042,7 @@ def main() -> int:
     update_backup(s)
     progress('importing', 20)
     import_world(s['name'])
+    world_kind_after_import(s['name'])
     record_run(s)
     put_back_accounts()
     if stopping:

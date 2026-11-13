@@ -15,13 +15,19 @@ a world exported as plain files, with every player taken out of its save, for a 
         (Docs/Design/78, 10.5; M9). Unpacking takes only the package's own file names, plain files, within a size cap.
         scan and import take a .ratwpkg file as well as a directory.
   python3 tools/world_package.py import DIR --key KEY [--name NAME]
-        first start: makes world KEY's database (a live world), runs the migrations and imports the package in one
-        transaction. Connection settings from the environment (RATW_*, POSTGRES_*; RATW_WORLDS_FILE a one-world
-        registry, written if missing; a key the registry lacks is registered first), so it works in a container with no
-        Database/.env. A database that already holds a package keeps its world: the migrations run, and a different
-        package (a newer image's) is not applied, only noted. Refuses a database holding a world no package made.
+        first start: makes world KEY's database (a dev world served as live: Docs/Design/78, 10.2), runs the migrations
+        and imports the package in one transaction. Connection settings from the environment (RATW_*, POSTGRES_*;
+        RATW_WORLDS_FILE a one-world registry, written if missing; a key the registry lacks is registered first), so it
+        works in a container with no Database/.env. A package is untrusted (doc 78, 10.1): before anything is written
+        (the registry, the database) it is read within its caps (each part's size packed and unpacked, rows a table,
+        bytes a row), its tables and columns held to allowlists, its author columns to the words a package may carry,
+        scanned for players as the export is, and its map checked by Atlas's validator (map_editor.check_project: the
+        database alone takes ' \\ and ` as ground). A database that already holds a package keeps its world: the
+        migrations run, a different package (a newer image's) is not applied, only its new seed rows are added (the
+        add-only step: talk tables, voices, the economy's row; never a row or key the world had or has removed).
+        Refuses a database holding a world no package made.
 
-The package (format 1), every part gzip-compressed:
+The package (format 2; format 1, slice 1's, without the map source, still imports), every part gzip-compressed:
   package.json          format, package id and version, source key, build id and fingerprint, protocol, client-data
                         hash, made_at, what is in it (counts only: never an id or a name)
   world.json.gz         the world row (world.worlds) and its areas (id and kind): NPCs, slots, posts, claims and the
@@ -32,13 +38,23 @@ The package (format 1), every part gzip-compressed:
                         host's overrides: the slider's cause, the goods no ship brings, status.json's and market.json's
                         values; their words scanned for player ids and the forbidden word), as world_sync writes rows
                         (bytes and timestamps tagged)
+  terrain.json.gz       the map's source, its ground (format 2; doc 78, 10.1 and M7): world.terrain_chunks, each
+                        chunk's heights as world_store.encode_heights rows ({"$dense": [rows]}: about a fiftieth of the
+                        "x,y" object; a chunk whose heights don't fit keeps its object)
+  map.json.gz           the rest of the map's source (format 2): world.cells, interiors, links, resources, places,
+                        chapters and minimaps, as Atlas holds them, so the importing world is a dev world Atlas edits
   build.tar.gz          the newest build as world_build.export writes it: world.ratw, cells/<id>.cell, seams/<id>
+                        (still shipped: a first start doesn't pay for a build)
   snapshot.json.gz      the save (game.load_checkpoint, the journal after it replayed), stripped of players; without
                         its Prosperity report (society.report: the importing server works it out again)
   SHA256SUMS            sha256 of every file above
 
 Out: every game.* table (the snapshot is one document, imported with game.save_checkpoint), dm.*, admin.*, Atlas's
-source, old builds, live.npc_state (newer rows would overwrite purses), live.game_changes, keys and passwords.
+edit log and editors (world.edits, world.editors), old builds, live.npc_state (newer rows would overwrite purses),
+live.game_changes, keys and passwords. The scan (as the export runs it) also holds every name the source's author
+columns and accounts give (world.builds, world.edits, world.editors, the DM tool's accounts, actions and audit,
+admin's releases and server state, Database/dm-accounts.txt, this computer's login) out of the package, and the
+shipped author columns (a voice's writer, a visitor's approver, a relation's updater) to the words a package carries.
 
 The strip is a table (SECTIONS) of small functions, one for each top-level section of the save. A section the table
 doesn't name stops the export (a section added to the game later can't slip through unstripped) unless it is listed
@@ -73,8 +89,11 @@ import economy_contract
 import world_db as W
 
 ROOT = Path(__file__).resolve().parent.parent
-FORMAT = 1
-PARTS = ('world.json.gz', 'live.json.gz', 'build.tar.gz', 'snapshot.json.gz')
+FORMAT = 2
+READS = (1, 2)                      # Format 1: slice 1's packages, without the map source (read as ever).
+PARTS = ('world.json.gz', 'live.json.gz', 'build.tar.gz', 'snapshot.json.gz', 'terrain.json.gz', 'map.json.gz')
+NEEDED = ('world.json.gz', 'live.json.gz', 'build.tar.gz')
+SOURCE_PARTS = ('terrain.json.gz', 'map.json.gz')   # (Format 2's: the map's source, doc 78, 10.1.)
 SUMS = 'SHA256SUMS'
 MANIFEST = 'package.json'
 SETTING = 'package'                 # admin.settings key recording the package a database was made from.
@@ -828,15 +847,19 @@ def money_warnings(doc: dict) -> list[str]:
     return []
 
 
-def scan(snapshot: dict | None, rows: dict, usernames=(), names=(), allowed_tables=None, limit=40) -> tuple[list, list]:
+def scan(snapshot: dict | None, rows: dict, usernames=(), names=(), allowed_tables=None, limit=40,
+         authors=()) -> tuple[list, list]:
     """(errors, warnings): player ids (wolf-, player-, acct-, dev:, Chapters) and DM tool accounts (dm:<name>) in any
     key or string of the snapshot or a shipped row; a source username (a player's or a DM tool's) as a whole value or a
     part of a compound key; the accounts' limits (money()); and the names players chose (characters', Chapters', camps') in free text
     (warnings). A username that is also one of the world's own identifiers (a resident, an account, an item, an area)
     is a warning; so is one that is a word the game uses (vocabulary()), except in a field that holds account keys
-    (account_field)."""
+    (account_field). `authors`: the names the source's author columns and accounts give (author_names, doc 78, 10.1),
+    held as usernames are, and warned of in free text. The shipped author columns hold only a package's own words
+    (author_problems)."""
     errors, warnings = [], []
-    usernames = {u for u in usernames if u}
+    authors = {a for a in authors if a}
+    usernames = {u for u in usernames if u} | authors
     ambient = set()                 # (World identifiers a username may happen to equal: a warning, not an error.)
     if snapshot:
         ambient |= {e.get('id') for e in snapshot.get('npcs', []) if isinstance(e, dict)}
@@ -848,6 +871,7 @@ def scan(snapshot: dict | None, rows: dict, usernames=(), names=(), allowed_tabl
             ambient |= {r[0] for r in table_rows}
     words = vocabulary() if usernames else frozenset()
     name_res = [(n, re.compile(r'\b' + re.escape(n) + r'\b')) for n in sorted({n for n in names if n and len(n) > 1})]
+    author_res = [(a, re.compile(r'(?<![A-Za-z0-9_])' + re.escape(a) + r'(?![A-Za-z0-9_])', re.I)) for a in sorted(authors)]
 
     def check(where, value):
         for path, text, field in _walk(value, where):
@@ -872,6 +896,10 @@ def scan(snapshot: dict | None, rows: dict, usernames=(), names=(), allowed_tabl
                 if name_re.search(text):
                     warnings.append(f'{path}: holds a name a player chose ("{name}")')
                     break
+            for _, author_re in author_res:
+                if text not in usernames and author_re.search(text):
+                    warnings.append(f'{path}: holds a name an author column or account of the source gives')
+                    break
 
     if snapshot is not None:
         check('snapshot', snapshot)
@@ -887,6 +915,7 @@ def scan(snapshot: dict | None, rows: dict, usernames=(), names=(), allowed_tabl
         check(table, table_rows)
     errors.extend(economy_words(rows.get('live.economy')))
     errors.extend(economy_rows_problems(rows.get('live.economy')))
+    errors.extend(author_problems(rows))
     if len(errors) > limit:
         errors = errors[:limit] + [f'... and {len(errors) - limit} more']
     return errors, warnings
@@ -908,6 +937,100 @@ def without_provenance(table: str, row: dict) -> dict:
         if column in row:
             row[column] = value(row[column])
     return row
+
+
+# The shipped columns that say who wrote a row (PROVENANCE's), and what a package may say there: its own words and an AI
+# model's name, never a person's (doc 78, 10.1: an author column naming someone refuses the package, at the export's scan
+# and at an import's). None is "nobody" (a visitor not approved).
+MODEL_NAME = r'(?:gpt|o[1-9]|claude|gemini|llama|mistral)-?[a-z0-9._-]{0,60}'
+AUTHOR_COLUMNS = {('live.npc_voice', 'written_by'): re.compile(rf'|seed|dm|package|{MODEL_NAME}'),
+                  ('live.story_visitors', 'approved_by'): re.compile('package'),
+                  ('live.faction_relations', 'updated_by'): re.compile('')}
+
+
+def author_problems(rows: dict) -> list[str]:
+    """A shipped author column that names a writer a package never names (a person, an account), each by its path."""
+    errors = []
+    for (table, column), allowed in AUTHOR_COLUMNS.items():
+        for i, row in enumerate(rows.get(table) or []):
+            if not isinstance(row, dict) or column not in row or row[column] is None:
+                continue
+            if not isinstance(row[column], str) or not allowed.fullmatch(row[column]):
+                errors.append(f'{table}[{i}].{column}: names who wrote it, which a package never does (only its own '
+                              'words or an AI model\'s name)')
+    return errors
+
+
+# Where a world records who did something (doc 78, 10.1: "every author column"): the names in them, and the DM tool's
+# accounts file's, are held out of a package by the scan (scan's `authors`).
+AUTHOR_SOURCES = (('world.builds', 'created_by'), ('world.edits', 'editor'), ('world.editors', 'editor'),
+                  ('admin.releases', 'pushed_by'), ('admin.publish_attempts', 'editor'), ('admin.sync_base', 'taken_by'),
+                  ('admin.server_state', 'changed_by'), ('live.faction_relation_log', 'by'),
+                  ('dm.actions', 'requested_by'), ('dm.audit', 'who'), ('dm.stories', 'written_by'),
+                  ('dm.admins', 'username'), ('dm.admins', 'created_by'), ('dm.invites', 'username'),
+                  ('dm.invites', 'created_by'), ('dm.devices', 'username'), ('dm.sessions', 'username'))
+PERSON = re.compile(r'[A-Za-z][A-Za-z0-9_.-]{2,39}')
+# The tools' own names in those columns, and the package's words: never a person's.
+TOOL_AUTHORS = frozenset({'seed', 'package', 'atlas', 'editor', 'world', 'test', 'tests'})
+SERVICE_USERS = frozenset({'root', 'nobody', 'ratw', 'ratw-admin', 'ratw-server', 'ratw-backup', 'postgres'})
+ACCOUNTS_FILE = ROOT / 'Database' / 'dm-accounts.txt'
+
+
+def person_name(value) -> str | None:
+    """A name a person may go by in an author column (an account's, a login's), or None for a tool's ("world_build.py",
+    "world_db new") or a sentence: "dm:fern" and an Editor's "fern#a1b2c3" are "fern"."""
+    if not isinstance(value, str):
+        return None
+    value = value.strip()
+    if value.startswith('dm:'):
+        value = value[3:]
+    value = value.split('#', 1)[0]
+    if not PERSON.fullmatch(value) or value.endswith('.py') or value.lower() in TOOL_AUTHORS:
+        return None
+    return value
+
+
+def accounts_file_names(path: Path = ACCOUNTS_FILE) -> set:
+    """The DM tool's account names in its accounts file (the first word of each account line; never its passwords)."""
+    names = set()
+    try:
+        lines = path.read_text(encoding='utf-8').splitlines()
+    except OSError:
+        return names
+    for line in lines:
+        words = line.split()
+        if len(words) >= 2 and not line.lstrip().startswith('#') and ':' not in words[0]:
+            if (name := person_name(words[0])):
+                names.add(name)
+    return names
+
+
+def login_names() -> set:
+    """This computer's login (the user's own name, as the server's state and the edit log record it)."""
+    names = set()
+    try:
+        import pwd
+        names.add(pwd.getpwuid(os.getuid()).pw_name)
+    except (ImportError, KeyError):
+        pass
+    names |= {os.environ.get(k, '') for k in ('USER', 'LOGNAME')}
+    return {n for n in (person_name(n) for n in names) if n and n not in SERVICE_USERS}
+
+
+def author_names(conn) -> set:
+    """Every person-like name the source's author columns hold (read only), the accounts file's and the login's."""
+    names = accounts_file_names() | login_names()
+    for table, column in AUTHOR_SOURCES:
+        if not conn.execute('SELECT to_regclass(%s) IS NOT NULL', (table,)).fetchone()[0]:
+            continue
+        schema, name = table.split('.')
+        if not conn.execute('SELECT 1 FROM information_schema.columns WHERE table_schema = %s AND table_name = %s '
+                            'AND column_name = %s', (schema, name, column)).fetchone():
+            continue
+        for (value,) in conn.execute(f'SELECT DISTINCT "{column}" FROM {table}').fetchall():
+            if (found := person_name(value)):
+                names.add(found)
+    return names
 
 
 def dm_usernames(conn) -> set:
@@ -1012,9 +1135,10 @@ def read_source(conn, with_snapshot=True, log=print) -> dict:
     live['live.economy'] = [{k: v for k, v in world_sync.normalized(r).items() if k in economy_shipped()}
                             for r in world_sync.read(conn, 'live.economy', world_id).values()]
     out = {'world_id': world_id, 'world': world_row, 'areas': areas, 'live': live,
+           'source': read_map_source(conn, world_id),
            'build': {'id': build[0], 'fingerprint': build[1], 'created_at': build[2].isoformat(), 'manifest': build[3],
                      'cells': cells},
-           'snapshot': None, 'usernames': dm_usernames(conn), 'names': set()}
+           'snapshot': None, 'usernames': dm_usernames(conn), 'names': set(), 'authors': author_names(conn)}
     if with_snapshot:
         text = conn.execute('SELECT game.load_checkpoint(%s)', (world_id,)).fetchone()[0]
         if text is None:
@@ -1090,18 +1214,30 @@ def verify(directory: Path) -> dict:
         if not name or '/' in name or name.startswith('.'):
             raise PackageError(f'{SUMS} has a line that isn\'t "<sha256>  <name>": {line[:80]!r}')
         listed[name] = digest
-    for name in [MANIFEST, 'world.json.gz', 'live.json.gz', 'build.tar.gz']:
+    for name in (MANIFEST, *NEEDED):
         if name not in listed:
             raise PackageError(f'The package has no {name}.')
+    for name in listed:
+        if name not in (MANIFEST, *PARTS):
+            raise PackageError(f'{SUMS} lists {name[:60]!r}, which isn\'t a world package\'s file.')
     for name, digest in listed.items():
         path = directory / name
         if not path.is_file():
             raise PackageError(f'The package lacks {name}.')
         if sha256(path) != digest:
             raise PackageError(f'{name} does not match its checksum: the package is damaged or was changed.')
-    manifest = json.loads((directory / MANIFEST).read_text(encoding='utf-8'))
-    if manifest.get('format') != FORMAT:
-        raise PackageError(f'The package is format {manifest.get("format")!r}; this tool reads format {FORMAT}.')
+    if (directory / MANIFEST).stat().st_size > MB:
+        raise PackageError(f'{MANIFEST} is larger than a package\'s manifest may be.')
+    try:
+        manifest = json.loads((directory / MANIFEST).read_text(encoding='utf-8'))
+    except (UnicodeDecodeError, ValueError) as error:
+        raise PackageError(f'{MANIFEST} isn\'t JSON ({str(error)[:80]}).') from error
+    if not isinstance(manifest, dict) or manifest.get('format') not in READS:
+        format_ = manifest.get('format') if isinstance(manifest, dict) else None
+        raise PackageError(f'The package is format {format_!r}; this tool reads formats '
+                           f'{", ".join(map(str, READS))} (a newer package needs a newer image).')
+    if manifest['format'] >= 2 and not all(p in listed for p in SOURCE_PARTS):
+        raise PackageError('The package is format 2 but has no map source (terrain.json.gz, map.json.gz).')
     return manifest
 
 
@@ -1189,6 +1325,291 @@ def allowed_tables() -> set:
 DEAD_TABLES = {'live.business_settings': 'the store room\'s per-business switch, gone with the store room (doc 79)'}
 
 
+# --------------------------------------------------------------------------- The map's source (doc 78, 10.1; M7)
+
+TERRAIN = 'world.terrain_chunks'
+MAP_TABLES = ('world.cells', 'world.interiors', 'world.links', 'world.resources', 'world.places', 'world.chapters',
+              'world.minimaps')
+SOURCE_TABLES = (TERRAIN,) + MAP_TABLES            # (world_sync.AUTHORED but the world row and its areas: world.json's.)
+PART_OF = {TERRAIN: 'terrain.json.gz', **{t: 'map.json.gz' for t in MAP_TABLES}}
+# Every column a package's world row and map source may hold (world_sync.read's, less a map row's updated_at): an
+# import refuses any other (a later migration's column is added here with it) and leaves out one its database lacks.
+SOURCE_COLUMNS = {
+    'world.worlds': ('id', 'name', 'spawn_area', 'spawn_x', 'spawn_y', 'revision', 'updated_at', 'chunk_size', 'min_x',
+                     'min_y', 'width', 'height'),
+    TERRAIN: ('world_id', 'cx', 'cy', 'size', 'glyphs', 'heights'),
+    'world.cells': ('world_id', 'id', 'kind', 'name', 'description', 'x', 'y', 'width', 'height', 'z', 'outdoors', 'weather',
+                    'light_artificial', 'light_daylight', 'light_tone', 'region', 'chapter', 'claims', 'position', 'letting'),
+    'world.interiors': ('world_id', 'id', 'kind', 'name', 'description', 'width', 'height', 'glyphs', 'heights', 'z',
+                        'outdoors', 'weather', 'light_artificial', 'light_daylight', 'light_tone', 'region', 'chapter',
+                        'claims', 'overview_x', 'overview_y', 'position', 'letting'),
+    'world.links': ('world_id', 'id', 'name', 'kind', 'open', 'a_area', 'a_x', 'a_y', 'b_area', 'b_x', 'b_y', 'position'),
+    'world.resources': ('world_id', 'id', 'kind', 'area', 'x', 'y'),
+    'world.places': ('world_id', 'id', 'name', 'kind', 'area', 'x', 'y'),
+    'world.chapters': ('world_id', 'id', 'name', 'position'),
+    'world.minimaps': ('world_id', 'area', 'width', 'height', 'image'),
+}
+NOT_SHIPPED = ('updated_at',)       # (A map row's timestamp: the importing world's own.)
+MB = 1 << 20
+# Each part's most, packed and unpacked: an import (and the scan) reads no more of a part than this. The map's (doc 78,
+# Progress, "M0b measured"): the terrain 128 MB packed and 512 MB unpacked (DEV's, dense: 0.7 MB and 16 MB; sparse it
+# was 43 MB and 190 MB), the other map tables 8 MB each; the rest far above today's world's (a 46 MB package, 324 MB
+# unpacked, nearly all of it the build).
+PART_MOST = {'world.json.gz': (8 * MB, 64 * MB), 'live.json.gz': (64 * MB, 256 * MB),
+             'snapshot.json.gz': (128 * MB, 1024 * MB), 'terrain.json.gz': (128 * MB, 512 * MB),
+             'map.json.gz': (8 * MB * len(MAP_TABLES), 8 * MB * len(MAP_TABLES)), 'build.tar.gz': (1024 * MB, 4096 * MB)}
+TABLE_MOST = 8 * MB                 # A map table's rows, as JSON (today's largest, world.interiors, 0.65 MB).
+BUILD_FILE_MOST = 64 * MB           # One file of a build (a cell's is about 0.3 MB).
+# Rows a table may hold (Atlas's own limits, map_editor.check_project and section 10.3's: 65,536 cells and interiors,
+# 2,048 links, 128 Chapters), and a row's most as JSON (an interior of 256 x 256 tiles with every height set is about
+# 0.9 MB; a 128-tile terrain chunk at most about 0.4 MB).
+ROWS_MOST = {'world.areas': 65536, TERRAIN: 65536, 'world.cells': 65536, 'world.interiors': 65536, 'world.links': 2048,
+             'world.resources': 4096, 'world.places': 65536, 'world.chapters': 128, 'world.minimaps': 65536}
+ROW_MOST = {TERRAIN: 512 << 10}
+ROW_MOST_ELSE = 1 * MB
+DENSE = '$dense'                    # A terrain chunk's heights as world_store.encode_heights rows (format 2).
+
+
+def read_map_source(conn, world_id) -> dict:
+    """The map's source as Atlas holds it, table by table (world_sync.read's rows as JSON values), each terrain chunk's
+    heights dense where they fit (encode_heights: format 2's)."""
+    import world_store as S
+    import world_sync
+    out = {}
+    for table in MAP_TABLES:
+        if not world_sync.shape(conn, table)[0]:
+            out[table] = []
+            continue
+        found = world_sync.read(conn, table, world_id, skip=NOT_SHIPPED)
+        out[table] = [world_sync.normalized(r) for _, r in sorted(found.items(), key=lambda kv: repr(kv[0]))]
+    # The ground a chunk at a time, its heights made dense as it comes: a whole world's "x,y" objects at once are
+    # about 2.3 GB (doc 78, Progress, "M0b measured").
+    out[TERRAIN] = []
+    columns = [c for c in world_sync.shape(conn, TERRAIN)[0] if c not in NOT_SHIPPED]
+    if columns:
+        with conn.cursor(name='package_terrain') as cur:
+            cur.itersize = 32
+            cur.execute(f'SELECT {", ".join(columns)} FROM {TERRAIN} WHERE world_id = %s ORDER BY cx, cy', (world_id,))
+            for values in cur:
+                row = world_sync.normalized(dict(zip(columns, values)))
+                heights, size = row.get('heights'), row.get('size')
+                if heights and isinstance(size, int):
+                    dense = S.encode_heights(heights, size, size)
+                    if dense is not None:          # (A chunk whose heights don't fit the codes keeps its object.)
+                        row['heights'] = {DENSE: dense}
+                out[TERRAIN].append(row)
+    return out
+
+
+def chunk_heights(row) -> dict:
+    """A package's terrain chunk's heights as the "x,y" object the database holds (dense rows decoded). Raises
+    PackageError for dense rows that aren't the chunk's size or hold a character no height has."""
+    import world_store as S
+    heights = row.get('heights')
+    if isinstance(heights, dict) and set(heights) == {DENSE}:
+        rows, size = heights[DENSE], row.get('size')
+        codes = set(S.HEIGHT_CODES) | {'.'}
+        if (not isinstance(size, int) or not isinstance(rows, list) or len(rows) != size
+                or not all(isinstance(r, str) and len(r) == size and set(r) <= codes for r in rows)):
+            raise PackageError(f'{TERRAIN} {row.get("cx")},{row.get("cy")}: its heights aren\'t a chunk\'s rows of height codes.')
+        return S.decode_heights(rows)
+    if not isinstance(heights, dict):
+        raise PackageError(f'{TERRAIN} {row.get("cx")},{row.get("cy")}: its heights aren\'t an object.')
+    return heights
+
+
+class LazyHeights:
+    """A chunk's dense heights decoded each time they are read (world_store._cut reads a chunk's once a cell it
+    covers), so a whole world's are never held twice over while its project is checked."""
+
+    def __init__(self, row):
+        self.row = {k: row.get(k) for k in ('cx', 'cy', 'size', 'heights')}
+
+    def items(self):
+        return chunk_heights(self.row).items()
+
+
+def read_part(directory: Path, name: str):
+    """A part's JSON, read within its caps (PART_MOST): a part larger than its most, packed or unpacked, is refused
+    before more of it is read."""
+    path = directory / name
+    packed, unpacked = PART_MOST[name]
+    size = path.stat().st_size
+    if size > packed:
+        raise PackageError(f'{name} is {size / MB:.1f} MB; a package\'s may be at most {packed / MB:.0f} MB.')
+    with gzip.open(path, 'rb') as f:
+        data = f.read(unpacked + 1)
+    if len(data) > unpacked:
+        raise PackageError(f'{name} unpacks to more than {unpacked / MB:.0f} MB, a package\'s most.')
+    try:
+        return json.loads(data.decode('utf-8'))
+    except (UnicodeDecodeError, ValueError) as error:
+        raise PackageError(f'{name} isn\'t JSON ({str(error)[:80]}).') from error
+
+
+def read_contents(directory: Path, manifest: dict) -> dict:
+    """Every part of a verified package, within its caps: {world, live, snapshot, source} (source: {table: rows}, None
+    for a format 1 package, which has no map source)."""
+    world = read_part(directory, 'world.json.gz')
+    live = read_part(directory, 'live.json.gz')
+    if not isinstance(world, dict) or not isinstance(live, dict) or not isinstance(live.get('tables'), dict):
+        raise PackageError('The package\'s world or live part isn\'t what a package holds.')
+    snapshot = read_part(directory, 'snapshot.json.gz') if (directory / 'snapshot.json.gz').exists() else None
+    source = None
+    present = [p for p in SOURCE_PARTS if (directory / p).exists()]
+    if present:
+        if len(present) != len(SOURCE_PARTS):
+            raise PackageError(f'The package has {present[0]} without {[p for p in SOURCE_PARTS if p not in present][0]}.')
+        source = {}
+        for part in SOURCE_PARTS:
+            tables = read_part(directory, part)
+            tables = tables.get('tables') if isinstance(tables, dict) else None
+            if not isinstance(tables, dict):
+                raise PackageError(f'{part} isn\'t what a package holds.')
+            for table, rows in tables.items():
+                if PART_OF.get(table) != part:
+                    raise PackageError(f'{part} holds {str(table)[:60]!r}, which a package\'s {part} may not.')
+                source[table] = rows
+    elif manifest.get('format', 1) >= 2:
+        raise PackageError('The package is format 2 but has no map source (terrain.json.gz, map.json.gz).')
+    return {'world': world, 'live': live['tables'], 'snapshot': snapshot, 'source': source}
+
+
+def _row_size(row) -> int:
+    return len(json.dumps(row, ensure_ascii=False, separators=(',', ':')).encode('utf-8'))
+
+
+def shape_problems(contents: dict) -> list[str]:
+    """What an untrusted package holds that no package does (doc 78, 10.1, "Imports are untrusted"): a table or a column
+    off the allowlists, more rows than a table may hold, a row or a table over its size, a row of another world. Each by
+    where it is."""
+    errors = []
+    world = contents['world']
+    row = world.get('world')
+    if not isinstance(row, dict) or not isinstance(row.get('id'), str) or not isinstance(row.get('name'), str):
+        return ['world.json.gz: no world row.']
+    world_id = row['id']
+    extra = sorted(set(row) - set(SOURCE_COLUMNS['world.worlds']))
+    if extra:
+        errors.append(f'world.worlds: columns no package holds ({", ".join(c[:40] for c in extra[:5])}).')
+    areas = world.get('areas')
+    if (not isinstance(areas, list) or len(areas) > ROWS_MOST['world.areas']
+            or not all(isinstance(a, list) and len(a) == 2 and isinstance(a[0], str) and a[1] in ('cell', 'interior')
+                       for a in areas)):
+        errors.append(f'world.areas: not a list of at most {ROWS_MOST["world.areas"]} [id, cell or interior] pairs.')
+    allowed = allowed_tables() - {'world.worlds', 'world.areas'}
+    for table, rows in contents['live'].items():
+        if table in DEAD_TABLES:
+            continue
+        if table not in allowed:
+            errors.append(f'live.json.gz: holds {str(table)[:60]!r}, which a package may not.')
+        elif not isinstance(rows, list) or not all(isinstance(r, dict) for r in rows):
+            errors.append(f'{table}: not a list of rows.')
+        elif any(r.get('world_id', world_id) != world_id for r in rows):
+            errors.append(f'{table}: holds rows of another world.')
+    for table, rows in (contents['source'] or {}).items():
+        if not isinstance(rows, list) or not all(isinstance(r, dict) for r in rows):
+            errors.append(f'{table}: not a list of rows.')
+            continue
+        if len(rows) > ROWS_MOST[table]:
+            errors.append(f'{table}: {len(rows)} rows; a package may hold at most {ROWS_MOST[table]}.')
+            continue
+        columns, most, total = set(SOURCE_COLUMNS[table]), ROW_MOST.get(table, ROW_MOST_ELSE), 0
+        for i, r in enumerate(rows):
+            extra = sorted(set(r) - columns)
+            if extra:
+                errors.append(f'{table}[{i}]: columns no package holds ({", ".join(str(c)[:40] for c in extra[:5])}).')
+                break
+            if r.get('world_id') != world_id:
+                errors.append(f'{table}[{i}]: a row of another world.')
+                break
+            size = _row_size(r)
+            if size > most:
+                errors.append(f'{table}[{i}]: {size} bytes; a row may be at most {most}.')
+                break
+            total += size
+        if table != TERRAIN and total > TABLE_MOST:
+            errors.append(f'{table}: {total / MB:.1f} MB; a package\'s may be at most {TABLE_MOST / MB:.0f} MB.')
+    return errors
+
+
+def scan_rows(contents: dict) -> dict:
+    """The rows the scan reads: the world row and areas, the live tables and the map's source without its ground
+    (glyphs and heights, which are tiles, not text: Atlas's validator holds them)."""
+    rows = {'world.worlds': [contents['world']['world']], 'world.areas': contents['world'].get('areas') or [],
+            **contents['live']}
+    for table, table_rows in (contents['source'] or {}).items():
+        rows[table] = [{k: v for k, v in r.items() if k not in ('glyphs', 'heights')} if isinstance(r, dict) else r
+                       for r in table_rows]
+    return rows
+
+
+# The live tables a project is made of (world_store.project_from_rows), beside the map's source.
+PROJECT_LIVE = ('live.npcs', 'live.profession_slots', 'live.factions', 'live.faction_claims', 'live.patrol_routes',
+                'live.npc_relations', 'live.economy')
+
+
+def map_problems(contents: dict) -> tuple[list[str], list[str]]:
+    """(errors, warnings) of Atlas's validator (map_editor.check_project, as a save and validate_dev run it: no client
+    file limit, the game server streams) on the project the package's rows make, before anything is written. The
+    database alone would take ' \\ and ` as ground (doc 78, Progress, "M0b measured"). None for a package without a
+    map source."""
+    import map_editor
+    import world_store as S
+    import world_sync
+    if contents['source'] is None:
+        return [], []
+    tables = {t: [world_sync.from_json(r) for r in contents['live'].get(t) or []] for t in PROJECT_LIVE}
+    for table in SOURCE_TABLES:
+        tables[table] = [world_sync.from_json(r) for r in contents['source'].get(table) or []]
+    for row in tables[TERRAIN]:
+        heights = row.get('heights')
+        row['heights'] = LazyHeights(row) if isinstance(heights, dict) and set(heights) == {DENSE} else heights
+    try:
+        project = S.project_from_rows(world_sync.from_json(contents['world']['world']), tables)
+        _, warnings = map_editor.check_project(project, for_game=False)
+    except map_editor.ValidationError as error:
+        return list(error.errors), []
+    except PackageError as error:
+        return [str(error)], []
+    except (KeyError, TypeError, ValueError, AttributeError, IndexError) as error:
+        return [f'The map\'s rows don\'t make a world ({type(error).__name__}: {str(error)[:120]}).'], []
+    return [], warnings
+
+
+def unreached(world_row: dict, source: dict) -> list[str]:
+    """The places no door, passage or stairs and no neighbouring cell reaches from the spawn (doc 78, 10.1: unreleased
+    content is removed before export; these are for the user to check), by id."""
+    cells = {r['id']: r for r in source.get('world.cells', [])}
+    areas = set(cells) | {r['id'] for r in source.get('world.interiors', [])}
+    start = world_row.get('spawn_area')
+    if start not in areas:
+        return []
+    ways = {a: set() for a in areas}
+    for link in source.get('world.links', []):
+        if link.get('a_area') in ways and link.get('b_area') in ways:
+            ways[link['a_area']].add(link['b_area'])
+            ways[link['b_area']].add(link['a_area'])
+    edge = sorted(cells.values(), key=lambda c: c['x'])
+    for i, a in enumerate(edge):                        # Cells whose edges touch: walked across.
+        for b in edge[i + 1:]:
+            if b['x'] > a['x'] + a['width']:
+                break
+            side = (a['x'] + a['width'] == b['x'] or b['x'] + b['width'] == a['x']) and \
+                a['y'] < b['y'] + b['height'] and b['y'] < a['y'] + a['height']
+            top = (a['y'] + a['height'] == b['y'] or b['y'] + b['height'] == a['y']) and \
+                a['x'] < b['x'] + b['width'] and b['x'] < a['x'] + a['width']
+            if side or top:
+                ways[a['id']].add(b['id'])
+                ways[b['id']].add(a['id'])
+    seen, todo = {start}, [start]
+    while todo:
+        for nxt in ways[todo.pop()] - seen:
+            seen.add(nxt)
+            todo.append(nxt)
+    return sorted(areas - seen)
+
+
 # --------------------------------------------------------------------------- Export
 
 def export(key: str, out: Path, with_snapshot=True, version=None, log=print, transform=None) -> dict:
@@ -1211,14 +1632,27 @@ def export(key: str, out: Path, with_snapshot=True, version=None, log=print, tra
                     st = strip(source['snapshot'])
                     source['usernames'] |= st.usernames
                     source['names'] |= st.names
-                rows = {'world.worlds': [source['world']], 'world.areas': source['areas'], **source['live']}
-                errors, warnings = scan(source['snapshot'], rows, source['usernames'], source['names'], allowed_tables())
+                contents = {'world': {'world': source['world'], 'areas': source['areas']}, 'live': source['live'],
+                            'source': source['source'], 'snapshot': source['snapshot']}
+                rows = scan_rows(contents)
+                errors, warnings = scan(source['snapshot'], rows, source['usernames'], source['names'],
+                                        allowed_tables() | set(SOURCE_TABLES), authors=source['authors'])
+                errors = shape_problems(contents) + errors
                 if errors:
                     raise PackageError('The scan failed; nothing was written:\n' + '\n'.join(f'  {e}' for e in errors))
+                away = unreached(source['world'], source['source'])
+                if away:
+                    log(f'{len(away)} place(s) no door, passage, stairs or neighbouring cell reaches from the spawn (hidden '
+                        f'or unfinished? remove what isn\'t released before sharing): {", ".join(away[:20])}'
+                        + (f' and {len(away) - 20} more' if len(away) > 20 else '') + '.')
                 sizes = {}
                 sizes['world.json.gz'] = write_json_gz(work / 'world.json.gz', {'world': source['world'],
                                                                                 'areas': source['areas']})
                 sizes['live.json.gz'] = write_json_gz(work / 'live.json.gz', {'tables': source['live']})
+                sizes['terrain.json.gz'] = write_json_gz(work / 'terrain.json.gz',
+                                                         {'tables': {TERRAIN: source['source'][TERRAIN]}})
+                sizes['map.json.gz'] = write_json_gz(work / 'map.json.gz',
+                                                     {'tables': {t: source['source'][t] for t in MAP_TABLES}})
                 if source['snapshot'] is not None:
                     sizes['snapshot.json.gz'] = write_json_gz(work / 'snapshot.json.gz', source['snapshot'])
                 with tarfile.open(work / 'build.tar.gz', 'w:gz', compresslevel=6) as tar:
@@ -1233,6 +1667,8 @@ def export(key: str, out: Path, with_snapshot=True, version=None, log=print, tra
             'protocol': protocol(), 'client_data': client_data(), 'made_at': made.isoformat(timespec='seconds'),
             'compression': 'gzip', 'snapshot': source['snapshot'] is not None,
             'rows': {t: len(r) for t, r in rows.items()},
+            'map_source': True, 'unreached': len(away),
+            'dense_heights': sum(1 for r in source['source'][TERRAIN] if set(r.get('heights') or {}) == {DENSE}),
             'unpacked_bytes': sizes,
             'strip': None if st is None else {'removed': st.removed, 'player_ids_found': st.found,
                                               'accounts_closed': st.closed, 'accounts_dropped': st.dropped,
@@ -1277,8 +1713,8 @@ def pack(directory: Path, out) -> int:
             try:
                 fd = os.open(directory / name, os.O_RDONLY | os.O_NOFOLLOW)
             except FileNotFoundError:
-                if name == 'snapshot.json.gz':
-                    continue
+                if name in PARTS and name not in NEEDED:
+                    continue                    # (No snapshot; a format 1 package's missing map source.)
                 raise PackageError(f'The package has no {name}.')
             with os.fdopen(fd, 'rb') as f:
                 info = os.fstat(f.fileno())
@@ -1341,25 +1777,28 @@ class opened:
             shutil.rmtree(self.temp, ignore_errors=True)
 
 
-def scan_directory(directory: Path, usernames=(), names=()) -> tuple[list, list]:
-    verify(directory)
-    world = read_json_gz(directory / 'world.json.gz')
-    live = read_json_gz(directory / 'live.json.gz')['tables']
-    snapshot = read_json_gz(directory / 'snapshot.json.gz') if (directory / 'snapshot.json.gz').exists() else None
-    rows = {'world.worlds': [world['world']], 'world.areas': world['areas'], **live}
-    return scan(snapshot, rows, usernames, names, allowed_tables())
+def scan_directory(directory: Path, usernames=(), names=(), authors=()) -> tuple[list, list]:
+    """(errors, warnings) of a package directory: its parts within their caps, its tables and columns on the
+    allowlists (shape_problems), and the scan."""
+    manifest = verify(directory)
+    contents = read_contents(directory, manifest)
+    problems = shape_problems(contents)
+    errors, warnings = scan(contents['snapshot'], scan_rows(contents), usernames, names,
+                            allowed_tables() | set(SOURCE_TABLES), authors=authors)
+    return problems + errors, warnings
 
 
-def source_people(key: str) -> tuple[set, set]:
-    """The usernames (its players' and its DM tool's), and the names players chose (characters', Chapters', camps'), of
-    a source world (read only), for scan --source."""
+def source_people(key: str) -> tuple[set, set, set]:
+    """The usernames (its players' and its DM tool's), the names players chose (characters', Chapters', camps'), and
+    the names its author columns give (author_names), of a source world (read only), for scan --source."""
     with W.connect(W.resolve(key), 'owner', options='-c default_transaction_read_only=on') as conn:
         world_id = conn.execute('SELECT id FROM world.worlds').fetchone()
         text = conn.execute('SELECT game.load_checkpoint(%s)', (world_id[0],)).fetchone()[0] if world_id else None
         admins = dm_usernames(conn)
+        authors = author_names(conn)
     doc = json.loads(text) if text else {}
     st = Strip(doc)
-    return st.usernames | admins, st.names
+    return st.usernames | admins, st.names, authors
 
 
 # --------------------------------------------------------------------------- Import (first start)
@@ -1370,9 +1809,16 @@ def database_of(key: str) -> str:
     return f'ratw_{key.replace("-", "_")}'
 
 
-def _write_registry(path: Path, key: str, name: str):
+def kind_of(directory: Path) -> str:
+    """The kind a package's world is registered as (doc 78, 10.2): a dev world served as live when the package carries
+    the map's source (Atlas edits it; the server is still run with --world-kind live), a live world, as slice 1 made
+    them, when it doesn't (a format 1 package: nothing to edit)."""
+    return 'dev' if all((directory / p).exists() for p in SOURCE_PARTS) else 'live'
+
+
+def _write_registry(path: Path, key: str, name: str, kind: str = 'dev'):
     path.parent.mkdir(parents=True, exist_ok=True)
-    entry = {'key': key, 'name': name, 'database': database_of(key), 'kind': 'live'}
+    entry = {'key': key, 'name': name, 'database': database_of(key), 'kind': kind}
     W.check_registry([entry])
     path.write_text('{"worlds": [\n  ' + json.dumps(entry) + '\n]}\n', encoding='utf-8')
 
@@ -1397,23 +1843,64 @@ def _held(database: str) -> str | None:
     return None
 
 
+def _holds_something(key: str, registry: Path) -> bool:
+    """Whether the database world `key` would use holds a world or a package already (read as the superuser, nothing
+    changed): then the import keeps it, or refuses, and never writes the package; otherwise (no database, or one an
+    import stopped part way left empty) the package is checked first."""
+    database = database_of(key)
+    if registry.exists():
+        W.worlds()
+        if key in W.keys():
+            database = W.world(key)['database']
+    return _database_exists(database) and _held(database) is not None
+
+
+def checked_contents(directory: Path, manifest: dict, log=print) -> dict:
+    """An untrusted package (doc 78, 10.1) read and checked, before anything is written: every part within its caps;
+    its tables and columns on the allowlists, its rows within their counts and sizes (shape_problems); the scan as the
+    export runs it (players, DM accounts, the accounts' limits, the economy, the author columns); then Atlas's
+    validator on its map (map_problems). Raises PackageError saying what is wrong."""
+    try:
+        contents = read_contents(directory, manifest)
+    except PackageError as error:
+        raise PackageError(f'{error} The package won\'t do; nothing was written.') from error
+    problems = shape_problems(contents)
+    if not problems:
+        problems, _ = scan(contents['snapshot'], scan_rows(contents), allowed_tables=allowed_tables() | set(SOURCE_TABLES))
+    if problems:
+        raise PackageError('The package won\'t do; nothing was written:\n' + '\n'.join(f'  {p}' for p in problems[:20]))
+    errors, warnings = map_problems(contents)
+    if errors:
+        raise PackageError('The package\'s map won\'t do (Atlas\'s checks); nothing was written:\n'
+                           + '\n'.join(f'  {e}' for e in errors[:20]) + (f'\n  ... and {len(errors) - 20} more' if len(errors) > 20 else ''))
+    if warnings:
+        log(f'note: Atlas\'s checks warn of {len(warnings)} thing(s) in the map, as they do in Atlas (the first: '
+            f'{warnings[0][:200]}).')
+    return contents
+
+
 def import_package(directory: Path, key: str, name: str | None = None, log=print) -> str:
     """First start: world `key`'s database made and the package imported. Returns 'imported'; 'already' (this package
     is in it already); or 'kept' (it was started from another package: an update's image carries a newer one, and the
-    world keeps its own state, with the migrations applied). Raises PackageError if the database holds a world that no
-    package made. A key the registry lacked is registered first (a rerun after a crash part way finds it and completes
-    the import); if the import then fails or is refused, the key is unregistered again and a database this run made is
-    dropped, and an existing database it would take over is first checked to hold no world and no package (_held)."""
+    world keeps its own state, with the migrations applied and the newer package's new seed rows added: seed_update).
+    Raises PackageError if the database holds a world that no package made, and for a package that won't do, which is
+    checked (checked_contents) before anything at all is written: the registry, a database, a migration. A key the
+    registry lacked is registered first (a rerun after a crash part way finds it and completes the import); if the
+    import then fails or is refused, the key is unregistered again and a database this run made is dropped, and an
+    existing database it would take over is first checked to hold no world and no package (_held)."""
     manifest = verify(directory)
-    world = read_json_gz(directory / 'world.json.gz')
-    name = name or world['world'].get('name') or key
+    world = read_part(directory, 'world.json.gz')
+    world = world.get('world') if isinstance(world, dict) else None
+    name = name or (world.get('name') if isinstance(world, dict) else None) or key
     registry = W.registry_file()
+    contents = None if _holds_something(key, registry) else checked_contents(directory, manifest, log)
+    kind = kind_of(directory)
     if not registry.exists():
-        _write_registry(registry, key, name)
+        _write_registry(registry, key, name, kind)
         log(f'Wrote a one-world registry, {registry}.')
     W.worlds()
     if key in W.keys():
-        return _import(directory, key, name, manifest, world, log)
+        return _import(directory, key, name, manifest, contents, log)
     # Registered before its database is made: a rerun after a crash part way finds the key and the database, and
     # completes the migrations (new_world unregistered would refuse a database it didn't register).
     if key in W.ALIASES:
@@ -1427,10 +1914,10 @@ def import_package(directory: Path, key: str, name: str | None = None, log=print
                                f'is {key}; nothing imported (choose another key, or register it by hand if it is this '
                                'world).')
         log(f'{database} is there already, with no world in it (an import stopped part way): completing it.')
-    W.register({'key': key, 'name': name, 'database': database, 'kind': 'live'})
-    log(f'Registered {key} ("{name}", live).')
+    W.register({'key': key, 'name': name, 'database': database, 'kind': kind})
+    log(f'Registered {key} ("{name}", {"a dev world served as live" if kind == "dev" else "live"}).')
     try:
-        return _import(directory, key, name, manifest, world, log)
+        return _import(directory, key, name, manifest, contents, log)
     except BaseException:
         # (What register did, undone, as new_world registers only on success; a crash, which runs no cleanup, leaves
         # both for the rerun.)
@@ -1444,14 +1931,105 @@ def import_package(directory: Path, key: str, name: str | None = None, log=print
         raise
 
 
-def _import(directory: Path, key: str, name: str, manifest: dict, world: dict, log) -> str:
+ORIGINAL_ECONOMY = 'economy_original'   # admin.settings: the world's first live.economy (doc 78, 10.1 and 12.3).
+SEEDED = 'seeded'                       # admin.settings: every seed key the world was ever given (seed_update).
+# The add-only step's tables (doc 78, 12.5 and Q17): what a newer feature brings as new rows, keyed. Never the map,
+# the NPCs or anything placed on the map (an official map's changes never reach a hosted world, 12.5), and never
+# live.economy's keys (a new rule's default comes with the image's Data/Economy files; a key in the package's row is
+# the source's own setting, which an update mustn't impose): only its row, when the world has none.
+SEED_TABLES = ('live.dialects', 'live.figures', 'live.npc_voice')
+
+
+def _seed_key(table: str, row: dict, keys) -> str:
+    return table + '/' + '/'.join(str(row.get(k)) for k in keys if k != 'world_id')
+
+
+def _record(conn, key: str, value) -> None:
+    conn.execute('INSERT INTO admin.settings (key, value) VALUES (%s, %s) ON CONFLICT (key) DO UPDATE SET value = '
+                 'excluded.value', (key, W.Jsonb(value)))
+
+
+def _setting(conn, key: str):
+    row = conn.execute('SELECT value FROM admin.settings WHERE key = %s', (key,)).fetchone()
+    return row[0] if row else None
+
+
+def seed_keys(conn, live: dict) -> list[str]:
+    """The seed keys a package's rows give (SEED_TABLES), for the record."""
+    import world_sync
+    out = []
+    for table in SEED_TABLES:
+        if world_sync.shape(conn, table)[0]:
+            keys = world_sync.shape(conn, table)[1]
+            out += [_seed_key(table, r, keys) for r in live.get(table) or [] if isinstance(r, dict)]
+    return sorted(set(out))
+
+
+def seed_update(conn, directory: Path, manifest: dict, log) -> dict:
+    """The add-only step on an update (doc 78, 12.5; Q17's (a)): the image's newer package's seed rows (SEED_TABLES) that
+    the world has never had are inserted, and nothing it has, or had and removed, is touched: the world records every
+    key it was given (admin.settings 'seeded'). A world from before the record (slice 1's) gets every row it lacks
+    (its hosts could edit none of these tables). A voice for a resident the world hasn't is left out. live.economy: the
+    row only, when the world has none. Also keeps the world's original economy (ORIGINAL_ECONOMY) where it has none.
+    One transaction; {table: rows added}."""
+    import world_sync
+    live = read_part(directory, 'live.json.gz').get('tables') or {}
+    added = {}
+    with conn.transaction():
+        world_id = conn.execute('SELECT id FROM world.worlds').fetchone()[0]
+        record = _setting(conn, SEEDED)
+        seen = set(record.get('keys') or []) if isinstance(record, dict) else None
+        npcs = {r[0] for r in conn.execute('SELECT id FROM live.npcs WHERE world_id = %s', (world_id,)).fetchall()}
+        given = set(seen or ())
+        for table in SEED_TABLES:
+            if not isinstance(live.get(table), list) or not world_sync.shape(conn, table)[0]:
+                continue
+            keys = world_sync.shape(conn, table)[1]
+            have = {_seed_key(table, r, keys) for r in world_sync.read(conn, table, world_id).values()}
+            given |= have
+            for row in live[table]:
+                if not isinstance(row, dict):
+                    continue
+                k = _seed_key(table, row, keys)
+                if k in have or (seen is not None and k in seen):
+                    given.add(k)
+                    continue
+                if table == 'live.npc_voice' and row.get('npc_id') not in npcs:
+                    continue                       # (A voice for a resident this world hasn't got.)
+                row = {**row, 'world_id': world_id}
+                if table == 'live.figures' and row.get('npc_id') and row['npc_id'] not in npcs:
+                    row['npc_id'] = None             # (Someone known of, not yet here.)
+                author = AUTHOR_COLUMNS.get((table, 'written_by'))
+                if author and not author.fullmatch(str(row.get('written_by') or '')):
+                    row['written_by'] = 'package'
+                world_sync.write(conn, table, _fit(conn, table, world_sync.stored(table, without_provenance(table, row)), log))
+                added[table] = added.get(table, 0) + 1
+                given.add(k)
+        economy = [r for r in live.get('live.economy') or [] if isinstance(r, dict)]
+        if economy and not conn.execute('SELECT 1 FROM live.economy WHERE world_id = %s', (world_id,)).fetchone():
+            if not (economy_rows_problems(economy) + economy_words(economy)):
+                world_sync.write(conn, 'live.economy',
+                                 _fit(conn, 'live.economy', world_sync.stored('live.economy', {**economy[0], 'world_id': world_id}), log))
+                added['live.economy'] = 1
+        _record(conn, SEEDED, {'keys': sorted(given), 'package': manifest.get('version'),
+                               'at': datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds')})
+        if _setting(conn, ORIGINAL_ECONOMY) is None and economy:
+            # (A world imported before its import kept one: the image's package's, said so.)
+            _record(conn, ORIGINAL_ECONOMY, {'row': {k: v for k, v in economy[0].items() if k != 'world_id'},
+                                             'package': manifest.get('version'), 'from': 'update'})
+    log(f'The add-only step: ' + (', '.join(f'{n} new {t}' for t, n in sorted(added.items())) if added else
+                                   'no new seed rows') + f' from package {manifest.get("version")}.')
+    return added
+
+
+def _import(directory: Path, key: str, name: str, manifest: dict, contents: dict | None, log) -> str:
+    import psycopg
     import world_sync
     entry = W.world(key)
-    if entry['kind'] != 'live':
-        raise PackageError(f'{key} is a {entry["kind"]} world; a package is imported into a live world.')
+    kind = entry['kind']
     W.ensure_roles([entry['database']] if _database_exists(entry['database']) else [])
     if not _database_exists(entry['database']):
-        W.new_world(key, name, 'live', registered=True, log=log)
+        W.new_world(key, name, kind, registered=True, log=log)
         W.ensure_roles([entry['database']])
     with W.connect(key, 'owner') as conn:
         W.migrate(conn)
@@ -1465,55 +2043,88 @@ def _import(directory: Path, key: str, name: str, manifest: dict, world: dict, l
                 f'its own state; the image carries package {manifest["version"]} ({manifest["id"]}), which is not '
                 'applied to an existing world; to start fresh from the new package run docker compose down -v (this '
                 'deletes the world).')
+            seed_update(conn, directory, manifest, log)
             return 'kept'
         worlds = conn.execute('SELECT id FROM world.worlds').fetchall()
         if worlds:
             raise PackageError(f'{key} already holds a world ({worlds[0][0]}) that no package made; nothing imported.')
+        if contents is None:
+            contents = checked_contents(directory, manifest, log)
         # (A database made by a run that stopped part way: what new_world does after making it, again; both idempotent.)
-        W.grant_connect(entry['database'], 'live')
+        W.grant_connect(entry['database'], kind)
         W.seed_publish_password(conn)
-        live = read_json_gz(directory / 'live.json.gz')['tables']
-        snapshot_path = directory / 'snapshot.json.gz'
-        snapshot = read_json_gz(snapshot_path) if snapshot_path.exists() else None
+        world, live, snapshot, source = contents['world'], contents['live'], contents['snapshot'], contents['source']
         world_id = world['world']['id']
-        # (Its economy row checked before anything is written: an untrusted package's bad one refused with its path.)
-        if problems := economy_rows_problems(live.get('live.economy')) + economy_words(live.get('live.economy')):
-            raise PackageError('The package\'s economy won\'t do:\n' + '\n'.join(f'  {p}' for p in problems[:20]))
         counts = {}
-        with conn.transaction():
-            conn.execute('SET CONSTRAINTS ALL DEFERRED')
-            world_sync.write(conn, 'world.worlds', _fit(conn, 'world.worlds', world_sync.from_json(world['world']), log))
-            with conn.cursor() as cur:
-                cur.executemany('INSERT INTO world.areas (world_id, id, kind) VALUES (%s, %s, %s)',
-                                [(world_id, a, k) for a, k in world['areas']])
-            order = [s.table for s in live_specs()] + ['live.economy']
-            for table in sorted(live, key=lambda t: order.index(t) if t in order else len(order)):
-                if table in DEAD_TABLES:
-                    log(f'note: {table} ({DEAD_TABLES[table]}): its {len(live[table])} row(s) are left out.')
-                    continue
-                if table not in allowed_tables() or table.startswith('world.'):
-                    raise PackageError(f'The package holds {table}, which a package may not.')
-                if not world_sync.shape(conn, table)[0]:
-                    log(f'note: this database has no {table}; its {len(live[table])} row(s) are left out.')
-                    continue
-                for row in live[table]:
-                    world_sync.write(conn, table, _fit(conn, table, world_sync.stored(table, row), log))
-                    if table == 'live.patrol_routes':
-                        for post in row.get('posts', []):
-                            conn.execute('INSERT INTO live.patrol_posts (world_id, route_id, seq, area, x, y) '
-                                         'VALUES (%s, %s, %s, %s, %s, %s)',
-                                         (world_id, row['id'], post['seq'], post['area'], post['x'], post['y']))
-                counts[table] = len(live[table])
-            build_id, cells = import_build(conn, world_id, directory / 'build.tar.gz', manifest)
-            if snapshot is not None:
-                conn.execute('SELECT game.save_checkpoint(%s, %s, %s)',
-                             (world_id, int(snapshot.get('revision') or 0), json.dumps(snapshot, ensure_ascii=False)))
-            record = {k: manifest.get(k) for k in ('id', 'version', 'source', 'made_at', 'protocol', 'client_data')}
-            record['imported_at'] = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds')
-            conn.execute('INSERT INTO admin.settings (key, value) VALUES (%s, %s)', (SETTING, W.Jsonb(record)))
-    log(f'{key}: imported package {manifest["version"]}: world {world_id}, {len(world["areas"])} areas, build {build_id} '
-        f'({cells} cells), {sum(counts.values())} seed rows' + (', the snapshot' if snapshot is not None else ', no snapshot')
-        + '.')
+        try:
+            with conn.transaction():
+                conn.execute('SET CONSTRAINTS ALL DEFERRED')
+                world_sync.write(conn, 'world.worlds', _fit(conn, 'world.worlds', world_sync.from_json(world['world']), log))
+                with conn.cursor() as cur:
+                    cur.executemany('INSERT INTO world.areas (world_id, id, kind) VALUES (%s, %s, %s)',
+                                    [(world_id, a, k) for a, k in world['areas']])
+                # The map's source (format 2: doc 78, 10.1), as Atlas holds it.
+                for table in SOURCE_TABLES:
+                    rows = (source or {}).get(table) or []
+                    if rows and not world_sync.shape(conn, table)[0]:
+                        log(f'note: this database has no {table}; its {len(rows)} row(s) are left out.')
+                        continue
+                    for row in rows:
+                        stored = world_sync.from_json(row)
+                        if table == TERRAIN:
+                            stored['heights'] = chunk_heights(row)
+                        world_sync.write(conn, table, _fit(conn, table, stored, log))
+                    counts[table] = len(rows)
+                order = [s.table for s in live_specs()] + ['live.economy']
+                for table in sorted(live, key=lambda t: order.index(t) if t in order else len(order)):
+                    if table in DEAD_TABLES:
+                        log(f'note: {table} ({DEAD_TABLES[table]}): its {len(live[table])} row(s) are left out.')
+                        continue
+                    if table not in allowed_tables() or table.startswith('world.'):
+                        raise PackageError(f'The package holds {table}, which a package may not.')
+                    if not world_sync.shape(conn, table)[0]:
+                        log(f'note: this database has no {table}; its {len(live[table])} row(s) are left out.')
+                        continue
+                    for row in live[table]:
+                        world_sync.write(conn, table, _fit(conn, table, world_sync.stored(table, row), log))
+                        if table == 'live.patrol_routes':
+                            for post in row.get('posts', []):
+                                conn.execute('INSERT INTO live.patrol_posts (world_id, route_id, seq, area, x, y) '
+                                             'VALUES (%s, %s, %s, %s, %s, %s)',
+                                             (world_id, row['id'], post['seq'], post['area'], post['x'], post['y']))
+                    counts[table] = len(live[table])
+                build_id, cells = import_build(conn, world_id, directory / 'build.tar.gz', manifest)
+                if snapshot is not None:
+                    conn.execute('SELECT game.save_checkpoint(%s, %s, %s)',
+                                 (world_id, int(snapshot.get('revision') or 0), json.dumps(snapshot, ensure_ascii=False)))
+                # (Settled now, not at commit, so a package whose rows don't fit together is refused with why: what the
+                # laptop's import path runs and Atlas's save would.)
+                conn.execute('SET CONSTRAINTS ALL IMMEDIATE')
+                if found := world_sync.orphans(conn, world_id):
+                    raise PackageError('The package places things where its map has nothing:\n'
+                                       + '\n'.join(f'  {f}' for f in found[:20]))
+                record = {k: manifest.get(k) for k in ('id', 'version', 'source', 'made_at', 'protocol', 'client_data',
+                                                       'format')}
+                record['map_source'] = source is not None
+                record['imported_at'] = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds')
+                conn.execute('INSERT INTO admin.settings (key, value) VALUES (%s, %s)', (SETTING, W.Jsonb(record)))
+                # The world's original economy, fixed, for "Reset economy rules" after updates (doc 78, 10.1 and 12.3);
+                # and the seed keys it was given, for the add-only step's (seed_update).
+                economy = [r for r in live.get('live.economy') or [] if isinstance(r, dict)]
+                if economy:
+                    _record(conn, ORIGINAL_ECONOMY, {'row': {k: v for k, v in economy[0].items() if k != 'world_id'},
+                                                     'package': manifest.get('version'), 'from': 'import'})
+                _record(conn, SEEDED, {'keys': seed_keys(conn, live), 'package': manifest.get('version'),
+                                       'at': record['imported_at']})
+        except psycopg.Error as error:
+            first = (str(error).strip().splitlines() or [''])[0]
+            raise PackageError(f'The package\'s rows don\'t fit together, nothing was written ({type(error).__name__}: '
+                               f'{first[:300]}).') from error
+    log(f'{key}: imported package {manifest["version"]}: world {world_id}, {len(world["areas"])} areas'
+        + (f', the map\'s source ({counts.get(TERRAIN, 0)} terrain chunks, {counts.get("world.cells", 0)} cells, '
+           f'{counts.get("world.interiors", 0)} interiors)' if source is not None else ', no map source (format 1)')
+        + f', build {build_id} ({cells} cells), {sum(v for t, v in counts.items() if not t.startswith("world."))} seed rows'
+        + (', the snapshot' if snapshot is not None else ', no snapshot') + '.')
     return 'imported'
 
 
@@ -1546,10 +2157,17 @@ def import_build(conn, world_id, path: Path, manifest: dict) -> tuple[int, int]:
                                 batch)
             batch.clear()
 
+    packed, most = PART_MOST['build.tar.gz']
+    if path.stat().st_size > packed:
+        raise PackageError(f'build.tar.gz is larger than a package\'s build may be ({packed / MB:.0f} MB).')
+    total = 0
     with tarfile.open(path, 'r:gz') as tar:
         for member in tar:
             if not member.isfile():
                 continue
+            total += member.size
+            if member.size > BUILD_FILE_MOST or total > most:
+                raise PackageError(f'build.tar.gz holds more than a build may ({member.name[:60]!r}: {member.size} bytes).')
             text = tar.extractfile(member).read().decode('utf-8')
             if member.name == 'world.ratw':
                 world_file = text
@@ -1632,9 +2250,9 @@ def main(argv=None) -> int:
             m = unpack(args.file, args.out)
             print(f'Package {m["version"]} ({m["id"]}) unpacked to {args.out}.')
         elif args.command == 'scan':
-            usernames, names = source_people(args.source) if args.source else ((), ())
+            usernames, names, authors = source_people(args.source) if args.source else ((), (), ())
             with opened(args.directory) as directory:
-                errors, warnings = scan_directory(directory, usernames, names)
+                errors, warnings = scan_directory(directory, usernames, names, authors)
             for w in warnings[:40]:
                 print(f'warning: {w}')
             if errors:
