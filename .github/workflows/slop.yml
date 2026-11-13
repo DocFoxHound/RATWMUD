@@ -8,15 +8,19 @@
 # `tauri build` then embeds Client/dist (frontendDist) and Editor/dist (build.rs). The shared recipe installs WebKitGTK
 # and GTK on Linux itself.
 #
-# publish: false builds and checks only (no release, nothing sent to SLAPorSLOP; the files stay a day as the run's
-# artifacts). Switch it to true (or remove the line) to publish: every push to ridgemere2 then makes a numbered build
-# release, and a v* tag a versioned one.
+# It publishes: a `v*` tag (git tag v0.1.1 && git push origin v0.1.1) makes a GitHub release with the files and sends
+# it to SLAPorSLOP, as does Run workflow on the Actions tab. Pushes to ridgemere2 don't publish (every push would be a
+# release for players); to try a build without publishing, run it by hand with `publish` set to false.
 name: Slop Build
 on:
   push:
-    branches: [ridgemere2]
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish (a release, sent to SLAPorSLOP); false builds and checks only"
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -34,4 +38,4 @@ jobs:
       build-command: npm --prefix ../Client ci && npm --prefix ../Editor ci && npm --prefix ../Editor run build && npm --prefix ../Client run build
       platforms: windows,linux
       linux-packages: deb,rpm
-      publish: false
+      publish: ${{ github.event_name != 'workflow_dispatch' || inputs.publish }}
