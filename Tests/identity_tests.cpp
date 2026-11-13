@@ -116,6 +116,9 @@ void theCommand(const std::string& command)
         R"({"check":"look","appearance":)" + Look.substr(0, Look.size() - 1) + R"(,"build":"lean","fur":{"coat":["russet","tan","cream"],"eyes":"hazel","zones":{"legs":["silver","mist","snow"]}}}})",
         R"({"check":"look","appearance":)" + Look.substr(0, Look.size() - 1) + R"(,"fur":{"coat":["russet","tan","#39ff14"],"eyes":"hazel"}}})",
         R"({"check":"wolf","wolf":{"name":"Ash","age":7,"appearance":)" + Look.substr(0, Look.size() - 1) + R"(,"fur":{"coat":["russet","tan","neon"],"eyes":"hazel"}}}})",
+        // The build is a size (small, medium, large); the older names still read; nothing else does.
+        R"({"check":"look","appearance":)" + Look.substr(0, Look.size() - 1) + R"(,"build":"large","fur":{"coat":["russet","tan","cream"],"eyes":"hazel"}}})",
+        R"({"check":"look","appearance":)" + Look.substr(0, Look.size() - 1) + R"(,"build":"huge"}})",
     });
     expect(r[0].boolean("ok") && r[0].number("version") == 1, "version");
     const auto& wolf = r[1]["wolf"];
@@ -140,6 +143,7 @@ void theCommand(const std::string& command)
                r[17]["appearance"]["fur"]["coat"].items().size() == 3 && r[17]["appearance"]["fur"]["zones"]["legs"].items().size() == 3,
            "a painted look, kept whole: " + json::dump(r[17]));
     expect(!r[18].boolean("ok") && !r[19].boolean("ok"), "a look or a wolf with fur off the palette is refused");
+    expect(r[20].boolean("ok") && r[20]["appearance"].string("build") == "large" && !r[21].boolean("ok"), "a size is a build; an unknown build is refused: " + json::dump(r[20]));
     // The creator's rules for central's GET /rules: the families, as a world's lobby sends them.
     const auto& families = r[16]["gifts"]["families"];
     expect(r[16].boolean("ok") && families.isArray() && families.size() == 8, "the rules: eight families " + json::dump(r[16]).substr(0, 200));

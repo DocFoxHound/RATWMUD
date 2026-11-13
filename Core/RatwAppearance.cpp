@@ -118,6 +118,14 @@ bool validFur(const Fur& fur)
     return true;
 }
 
+bool knownBuild(const std::string& build)
+{
+    for (const auto* known : {"small", "medium", "large", "lean", "average", "heavy"})
+        if (build == known)
+            return true;
+    return false;
+}
+
 bool validAppearance(const Appearance& appearance)
 {
     if (appearance.fur.chosen() && !validFur(appearance.fur))
@@ -125,7 +133,7 @@ bool validAppearance(const Appearance& appearance)
     for (const auto* colour : {&appearance.coat, &appearance.gradientTint, &appearance.markingTint, &appearance.eyes})
         if (!colour->empty() && !hexColour(*colour))
             return false;
-    if (!appearance.build.empty() && appearance.build != "lean" && appearance.build != "average" && appearance.build != "heavy")
+    if (!appearance.build.empty() && !knownBuild(appearance.build))
         return false;
     if (appearance.markings.size() > MaxMarkings)
         return false;

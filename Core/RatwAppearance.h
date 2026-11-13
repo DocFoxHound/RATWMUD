@@ -19,8 +19,8 @@ constexpr std::size_t MaxMarkings = 6;
 extern const char* const MarkingMasks[];       // "socks", "stockings", "blaze", ... (null-terminated)
 bool knownMarking(const std::string& mask);
 
-// The painted wolf (Docs/Design/81-painted-wolves.md): one of three paintings (the appearance's `build`) coloured with
-// the player's fur. Three fur colours for the whole coat (the painting's dark, mid and light fur), an eye colour, and
+// The painted wolf (Docs/Design/81-painted-wolves.md): one of three sizes of painting (the appearance's `build`)
+// coloured with the player's fur. Three fur colours for the whole coat (the painting's dark, mid and light fur), an eye colour, and
 // for any of the eight fur zones three colours of its own. Every colour is an id in the palette
 // (Data/Wolves/palette.json), never a colour itself: nothing outside the palette can be kept.
 struct FurCoat
@@ -49,9 +49,14 @@ struct Appearance
     // Phase 9 (all optional; empty means the palette above): free colours, eyes, build and layered markings.
     std::string coat, gradientTint, markingTint, eyes, build;
     std::vector<Marking> markings;
-    // The painted look (doc 81), when chosen: see Fur below. `build` picks the painting: lean, average or heavy.
+    // The painted look (doc 81), when chosen: see Fur below. `build` is the size it is painted as: small, medium or
+    // large (the creator writes the stature that goes with it: short, average, tall). The names it held before the
+    // sizes still read, and a wolf saved with one keeps it: lean (painted large), average (small), heavy (medium).
     Fur fur;
 };
+
+// A build an appearance may hold: a size, or one of the older names.
+bool knownBuild(const std::string& build);
 bool hexColour(const std::string& s);             // "#rrggbb", lower case.
 
 // Stable palette indices are persisted, rather than arbitrary client colors.

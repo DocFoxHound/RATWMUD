@@ -397,8 +397,13 @@ button.rpg-slot:disabled { cursor: not-allowed; opacity: .75; }
 .marking-row input[type=color] { width: 54px; height: 36px; padding: 0; border: none; background: none; }
 .door .marking-row .small { padding: 8px 0; background: var(--raised); color: var(--paper); }
 
-/* The painted wolves (doc 81): the wolf's card, the faces on the roster, the builds, the fur pickers and the zones. */
+/* The painted wolves (doc 81): the wolf's profile, its face beside its name (a preview card) and in the roster's list,
+   the sizes, the fur pickers and the zones. */
 .door .portrait.painted { image-rendering: auto; }
+.wolf-id { display: flex; align-items: center; gap: 18px; }
+.wolf-id .wolf-face { width: 116px; height: 138px; flex: none; }
+.wolf-id-text { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.wolf-id-text .name { overflow-wrap: anywhere; }
 .door .slot.with-face { flex-direction: row; align-items: center; gap: 14px; padding: 8px 14px; }
 .door .slot .slot-face { width: 54px; height: 54px; flex: none; }
 .door .slot .slot-text { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-size: 20px; opacity: 1; }

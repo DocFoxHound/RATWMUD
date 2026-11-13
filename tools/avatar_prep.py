@@ -1,27 +1,30 @@
 #!/usr/bin/env python3
 """The painted wolves' art, made ready for the client (Docs/Design/81-painted-wolves.md).
 
-From each source painting (a wolf's profile and its face, in watercolour on paper) this writes, into the client's
-assets, for the profile and for the face:
+The paintings (Data/Wolves/sources) are watercolours already cut out, on a transparent ground: one face, shared by
+every wolf, and three profiles, the three sizes a wolf can be (small, medium, large), all painted at one scale. This
+writes, into the client's assets, for the face and for each profile:
 
-  <build>-<view>.png       the wolf cut from the paper: transparent around it, the paper's smudges gone
-  <build>-<view>-map.png   where the colours go, one value per pixel of the cut-out:
+  face.png, <size>-profile.png            the painting, its stray specks gone. The three profiles are set in one frame
+                                          (the large wolf's, the paws on one ground line), so drawn alike they keep
+                                          the sizes they were painted at.
+  face-map.png, <size>-profile-map.png    where the colours go, one value per pixel of the picture:
                              red    two fur zones, the low four bits and the high four bits (the palette file's `zones`, in order)
                              green  how much of the second zone, 0-255 (the feather between two zones)
                              blue   0 fur; 1-127 ink (the nose, the mouth, the eyes' rims and pupils: kept as
                                     painted), by strength; 128-255 the iris (tinted with the eye colour), by strength
 
-  python3 tools/avatar_prep.py                      the three builds from Data/Wolves/sources
-  python3 tools/avatar_prep.py lean=new/lean.png    one build from another painting (the rest from the sources)
+  python3 tools/avatar_prep.py                      the face and the three sizes from Data/Wolves/sources
+  python3 tools/avatar_prep.py large=new/large.png  one painting from another file (the rest from the sources)
   python3 tools/avatar_prep.py --overlay DIR        also the zones laid over each wolf, to check by eye
-  python3 tools/avatar_prep.py --grid DIR           also each cut-out under a grid, for placing outlines
-  python3 tools/avatar_prep.py --sheet FILE         the palette sheet: every colour by name, each build in six coats
+  python3 tools/avatar_prep.py --grid DIR           also each painting under a grid, for placing outlines
+  python3 tools/avatar_prep.py --sheet FILE         the palette sheet: every colour by name, the three sizes in six coats
 
-The zones follow the painted fur. The painting is cut into its tone patches (joined dark, mid and light fur); each
-patch goes to the zone that the hand-placed outlines (tools/avatar_outlines.json) put most of it in; a patch lying
-across two zones is cut along the outline; the edges are feathered. An outline is a polygon in the cut-out's own frame
-(hundredths of its width and of its height), so the same outlines fit a larger copy of the same painting; a new painting needs
-its outlines placed again (--grid, then --overlay to check).
+The zones follow the painted fur. Hand-placed outlines (tools/avatar_outlines.json) say where each zone lies; each
+keeps its core, and the band between cores is given out along the fur's own edges of tone, then feathered. An outline
+is a polygon in the painting's own frame (hundredths of the width and of the height of the wolf, cropped to itself), so
+the same outlines fit a larger copy of the same painting; a new painting needs its outlines placed again (--grid, then
+--overlay to check).
 
 Needs numpy and Pillow.
 """
@@ -40,8 +43,10 @@ SOURCES = ROOT / 'Data/Wolves/sources'
 OUTLINES = ROOT / 'tools/avatar_outlines.json'
 PALETTE = ROOT / 'Data/Wolves/palette.json'
 ASSETS = ROOT / 'Client/src/assets/wolves'
-BUILDS = ('lean', 'average', 'heavy')
-VIEWS = ('profile', 'face')
+SIZES = ('small', 'medium', 'large')                    # The three profiles, as painted: the appearance's `build`.
+PAINTINGS = ('face',) + SIZES
+MARGIN = 6                                              # Clear pixels kept around a painting.
+SCALE = 1.0                                             # The brush sizes below are for a profile about 950 pixels wide.
 # The zones, in the order the maps number them: the palette file's (the client reads the same list).
 ZONES = tuple(z['id'] for z in json.loads(PALETTE.read_text(encoding='utf-8'))['zones'])
 # Where the ramp's stops lie on the painting's luminance: black, the dark fur, the mid fur, the light fur, white.
@@ -128,49 +133,30 @@ def font(size: int):
 
 # ---------------------------------------------------------------------------------------------- Cutting the wolf out
 
-def cut(source: Path) -> dict[str, tuple[np.ndarray, np.ndarray]]:
-    """The profile and the face of a painting, each as (rgb 0-255 float, alpha 0-1), cropped to the wolf with a margin.
+def cut(source: Path) -> tuple[np.ndarray, np.ndarray]:
+    """A painting as (rgb 0-255 float, alpha 0-1), cropped to the wolf with a margin.
 
-    The wolf is what is far from the paper's colour, in the two largest joined parts that keep clear of the picture's
-    edge (the paper's smudges are smaller, fainter, or run off the edge). The left one is the profile."""
-    im = np.asarray(Image.open(source).convert('RGB')).astype(np.float32)
-    h, w, _ = im.shape
-    c = max(8, w // 64)
-    corners = np.concatenate([im[:c, :c], im[:c, -c:], im[-c:, :c], im[-c:, -c:]]).reshape(-1, 3)
-    paper = np.median(corners, axis=0)
-    far = np.sqrt(((im - paper) ** 2).sum(-1))
-    scale = w / 1536                                        # Sizes below are for a painting 1536 wide.
-    solid = np.asarray(Image.fromarray(((far > 13) * 255).astype(np.uint8)).filter(ImageFilter.MedianFilter(5))) > 0
-    parts, count = label(solid)
+    The alpha is the painting's own. Stray specks go: only the largest joined part is kept, with its thin edge."""
+    im = np.asarray(Image.open(source).convert('RGBA')).astype(np.float32)
+    rgb, alpha = im[..., :3], im[..., 3] / 255
+    parts, count = label(alpha > 0.03)
+    if not count:
+        raise SystemExit(f'{source}: nothing painted (the picture is all transparent).')
     sizes = np.bincount(parts.ravel(), minlength=count + 1)
-    edge = set(np.unique(np.concatenate([parts[0], parts[-1], parts[:, 0], parts[:, -1]])).tolist())
-    # A smudge is faint all through; fur has dark in it.
-    lum = im @ LUMA
-    darkest = np.full(count + 1, 255.0)
-    np.minimum.at(darkest, parts.ravel(), blur(lum / 255, 2 * scale).ravel() * 255)
-    kept = [i for i in np.argsort(-sizes).tolist() if i and i not in edge and darkest[i] < 90 and sizes[i] > 4000 * scale * scale][:2]
-    if len(kept) != 2:
-        raise SystemExit(f'{source}: expected a profile and a face, found {len(kept)} wolf-like part(s).')
-    out = {}
-    boxes = []
-    for i in kept:
-        ys, xs = np.nonzero(parts == i)
-        boxes.append((xs.min(), i))
-    for view, (_, i) in zip(VIEWS, sorted(boxes)):
-        part = parts == i
-        # Fringe: the wash thins into the paper around the part. Alpha by how far from the paper, near the part only.
-        near = grow(part, max(1, round(3 * scale)))
-        alpha = np.clip((far - 14) / 26, 0, 1) * near
-        alpha = np.maximum(alpha, grow(part, -max(1, round(2 * scale))).astype(np.float32))       # Pale fur inside stays whole.
-        alpha = blur(alpha, 0.6 * scale)
-        # The paper taken back out of the thin edge, so a pale rim doesn't follow the wolf onto a dark page.
-        a = np.maximum(alpha, 0.35)[..., None]
-        rgb = np.where(alpha[..., None] > 0.02, (im - paper * (1 - a)) / a, im).clip(0, 255)
-        ys, xs = np.nonzero(alpha > 0.02)
-        m = max(2, round(6 * scale))
-        y0, y1, x0, x1 = max(0, ys.min() - m), min(h, ys.max() + 1 + m), max(0, xs.min() - m), min(w, xs.max() + 1 + m)
-        out[view] = (rgb[y0:y1, x0:x1], alpha[y0:y1, x0:x1])
-    return out
+    sizes[0] = 0
+    alpha = np.where(parts == sizes.argmax(), alpha, 0)
+    ys, xs = np.nonzero(alpha > 0)
+    y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
+    pad = ((MARGIN, MARGIN), (MARGIN, MARGIN))
+    return np.pad(rgb[y0:y1, x0:x1], pad + ((0, 0),)), np.pad(alpha[y0:y1, x0:x1], pad)
+
+
+def framed(view: tuple, frame: tuple[int, int]) -> tuple:
+    """A profile and its map set in the frame all three share: centred, standing on the frame's ground line."""
+    fh, fw = frame
+    h, w = view[1].shape
+    top, left = fh - h, (fw - w) // 2
+    return tuple(np.pad(a, ((top, 0), (left, fw - w - left)) + ((0, 0),) * (a.ndim - 2)) for a in view)
 
 
 # ---------------------------------------------------------------------------------------------- Zones
@@ -178,7 +164,7 @@ def cut(source: Path) -> dict[str, tuple[np.ndarray, np.ndarray]]:
 def settle(drawn: np.ndarray, lum: np.ndarray, inside: np.ndarray, scale: float) -> np.ndarray:
     """The drawn zones with their boundaries moved onto the painting's own edges.
 
-    Each zone keeps its core (what lies well inside its outline). The band between the cores is given out again from
+    Each zone keeps its core (what lies well inside its outline, and in a narrow part what lies a little inside). The band between the cores is given out again from
     the cores outwards, cheapest way first, where stepping across a change of tone is dear and along a patch of one tone
     is nearly free: so two zones meet where a dark patch meets a pale one, if there is such an edge near the outline,
     and at the outline where there is none."""
@@ -187,18 +173,14 @@ def settle(drawn: np.ndarray, lum: np.ndarray, inside: np.ndarray, scale: float)
     reach = max(2, round(22 * scale))
     soft = np.asarray(Image.fromarray(lum.clip(0, 255).astype(np.uint8)).filter(ImageFilter.MedianFilter(2 * max(1, round(scale)) + 1))).astype(np.float32)
     core = np.zeros(drawn.shape, bool)
+    # A narrow part (a leg, a muzzle) keeps a core too: where no deep core is near, less is taken from the edge.
+    depths = [reach, round(reach * 0.6), round(reach * 0.35), 2]
     for z in range(len(ZONES)):
-        parts, count = label(drawn == z)
-        for i in range(1, count + 1):
-            part = parts == i
-            if not (part & inside).any():
-                continue
-            # A small zone (a muzzle) keeps a core too: less is taken from its edge.
-            for r in (reach, round(reach * 0.6), round(reach * 0.35), 2):
-                kept = grow(part, -max(1, r))
-                if (kept & inside).sum() >= 0.3 * (part & inside).sum() or r == 2:
-                    core |= kept
-                    break
+        part = (drawn == z) & inside
+        kept = grow(part, -depths[0])
+        for depth in depths[1:]:
+            kept |= grow(part, -depth) & ~grow(kept, depths[0] - depth + 2)
+        core |= kept
     zone = np.where(core, drawn, -1).astype(np.int32)
     zone[~inside] = -2                                      # Never entered.
     cost = np.full(drawn.shape, np.inf, np.float32)
@@ -233,11 +215,11 @@ def settle(drawn: np.ndarray, lum: np.ndarray, inside: np.ndarray, scale: float)
     return out
 
 
-def zone_map(rgb: np.ndarray, alpha: np.ndarray, outlines: dict, view: str, scale: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def zone_map(rgb: np.ndarray, alpha: np.ndarray, outlines: dict, face: bool, scale: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """(first zone, second zone, how much of the second 0-1) for every pixel: the outlines, settled on the fur."""
     shape = alpha.shape
     inside = alpha > 0.02
-    base = ZONES.index('sides' if view == 'profile' else 'head')
+    base = ZONES.index('head' if face else 'sides')
     drawn = np.full(shape, base, np.int32)
     for entry in outlines.get('zones', []):
         drawn[polygon_mask(shape, entry['outline'])] = ZONES.index(entry['zone'])
@@ -267,35 +249,40 @@ def zone_map(rgb: np.ndarray, alpha: np.ndarray, outlines: dict, view: str, scal
 
 def features(rgb: np.ndarray, alpha: np.ndarray, outlines: dict, scale: float) -> np.ndarray:
     """The map's blue: the iris (128-255) where the painting is amber, and ink (1-127) where the outlines' `ink` regions
-    are dark (the nose and mouth, the eyes' rims and pupils)."""
+    are dark (the nose and mouth, the eyes' rims and pupils). An ink region is an outline, or {"outline", "below"}: only
+    paint darker than `below` (84 unless given) is ink, so an eye's outline can lie on dark fur and keep only its rim."""
     r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
     lum = rgb @ LUMA
     iris = blur(((r > 140) & (r - b > 85) & (g > 80) & (alpha > 0.5)).astype(np.float32), 0.8 * scale)
-    region = np.zeros(alpha.shape, bool)
-    for points in outlines.get('ink', []):
-        region |= polygon_mask(alpha.shape, points)
-    ink = np.clip((84 - lum) / 34, 0, 1) * blur(region.astype(np.float32), 1.5 * scale) * (1 - np.clip(iris * 3, 0, 1))
+    ink = np.zeros(alpha.shape, np.float32)
+    for entry in outlines.get('ink', []):
+        points, below = (entry['outline'], entry.get('below', 84)) if isinstance(entry, dict) else (entry, 84)
+        region = blur(polygon_mask(alpha.shape, points).astype(np.float32), 1.5 * scale)
+        ink = np.maximum(ink, np.clip((below - lum) / (0.4 * below), 0, 1) * region)
+    ink *= 1 - np.clip(iris * 3, 0, 1)
     out = np.zeros(alpha.shape, np.uint8)
     out[ink > 0.02] = (1 + ink[ink > 0.02] * 126).astype(np.uint8)
     out[iris > 0.02] = (128 + iris[iris > 0.02] * 127).astype(np.uint8)
     return out
 
 
-def write_assets(build: str, source: Path, outlines: dict, out: Path) -> dict:
-    views = cut(source)
-    scale = Image.open(source).width / 1536
-    made = {}
-    for view, (rgb, alpha) in views.items():
-        o = outlines.get(build, {}).get(view, {})
-        first, second, share = zone_map(rgb, alpha, o, view, scale)
-        blue = features(rgb, alpha, o, scale)
-        rgba = np.dstack([rgb, alpha * 255]).round().clip(0, 255).astype(np.uint8)
-        rgba[alpha <= 0.02] = 0
-        Image.fromarray(rgba).save(out / f'{build}-{view}.png', optimize=True)
-        packed = np.dstack([first | (second << 4), (share * 255).round().astype(np.uint8), blue])
-        Image.fromarray(packed).save(out / f'{build}-{view}-map.png', optimize=True)
-        made[view] = (rgb, alpha, first, second, share, blue)
-    return made
+def prepare(name: str, source: Path, outlines: dict) -> tuple:
+    """A painting with its zones, ink and eyes: (rgb, alpha, first zone, second zone, share of the second, blue)."""
+    rgb, alpha = cut(source)
+    o = outlines.get(name, {})
+    first, second, share = zone_map(rgb, alpha, o, name == 'face', SCALE)
+    return rgb, alpha, first, second, share, features(rgb, alpha, o, SCALE)
+
+
+def write_assets(name: str, view: tuple, out: Path) -> None:
+    rgb, alpha, first, second, share, blue = view
+    stem = name if name == 'face' else f'{name}-profile'
+    rgba = np.dstack([rgb, alpha * 255]).round().clip(0, 255).astype(np.uint8)
+    rgba[alpha <= 0] = 0
+    Image.fromarray(rgba).save(out / f'{stem}.png', optimize=True)
+    packed = np.dstack([first | (second << 4), (share * 255).round().astype(np.uint8), blue])
+    packed[alpha <= 0] = 0
+    Image.fromarray(packed).save(out / f'{stem}-map.png', optimize=True)
 
 
 # ---------------------------------------------------------------------------------------------- Recolouring (as fur.ts)
@@ -363,8 +350,9 @@ def grid(view: tuple, zoom: int = 2) -> Image.Image:
     return img
 
 
-def sheet(made: dict[str, dict], palette: dict, file: Path) -> None:
-    """The palette sheet: every fur and eye colour by name, then each build in six sample coats."""
+def sheet(made: dict[str, tuple], palette: dict, file: Path) -> None:
+    """The palette sheet: every fur and eye colour by name, then the face and the three sizes (in their shared frame, so
+    at the sizes they were painted) in six sample coats."""
     fur = {c['id']: c for c in palette['fur']}
     eye = {c['id']: c for c in palette['eyes']}
     coats = palette['coats'][:6]
@@ -377,9 +365,11 @@ def sheet(made: dict[str, dict], palette: dict, file: Path) -> None:
     names = list(groups)
     group_rows = (len(names) + 1) // 2
     top = pad + 74 + (group_rows + 1) * (cell_h + 30) + 26
-    wolf_w = (width - 2 * pad) // 3
-    scale_of = {b: (wolf_w - 36) / (made[b]['profile'][0].shape[1] + made[b]['face'][0].shape[1] * 0.8 + 12) for b in BUILDS}
-    row_h = int(max(made[b]['profile'][0].shape[0] * scale_of[b] for b in BUILDS)) + 62
+    face_w = 210
+    wolf_w = (width - 2 * pad - face_w) // 3
+    scale = (wolf_w - 24) / made['large'][0].shape[1]
+    face_scale = (face_w - 40) / made['face'][0].shape[1]
+    row_h = int(made['large'][0].shape[0] * scale) + 62
     img = Image.new('RGB', (width, top + row_h * len(coats) + pad), paper)
     d = ImageDraw.Draw(img)
     big, mid, small = font(36), font(20), font(15)
@@ -399,8 +389,8 @@ def sheet(made: dict[str, dict], palette: dict, file: Path) -> None:
         swatches(name, groups[name], pad + (i % 2) * ((width - 2 * pad) // 2 + 10), y + (i // 2) * (cell_h + 30), cell_w)
     swatches('Eyes', palette['eyes'], pad, y + group_rows * (cell_h + 30), (width - 2 * pad - gap * (len(palette['eyes']) - 1)) // len(palette['eyes']))
     y = top
-    for k, b in enumerate(BUILDS):
-        d.text((pad + k * wolf_w, y - 4), b.upper(), fill=faint, font=small)
+    for k, b in enumerate(PAINTINGS):
+        d.text((pad + (face_w + (k - 1) * wolf_w if k else 0), y - 4), ('the face' if b == 'face' else b).upper(), fill=faint, font=small)
     y += 26
     for coat in coats:
         hexes = [fur[i]['hex'] for i in coat['coat']]
@@ -408,13 +398,11 @@ def sheet(made: dict[str, dict], palette: dict, file: Path) -> None:
         words = ', '.join(fur[i]['name'].lower() for i in coat['coat'])
         d.text((pad, y), f"{coat['name']}  ·  {words}; {eye[coat['eyes']]['name'].lower()} eyes" +
                (f"; with their own colours: {', '.join(z.replace('_', ' ') for z in zones)}" if zones else ''), fill=ink, font=mid)
-        for k, b in enumerate(BUILDS):
-            x = pad + k * wolf_w
-            for view, sub in (('profile', 1.0), ('face', 0.8)):
-                pic = Image.fromarray(recolour(made[b][view], hexes, eye[coat['eyes']]['hex'], zones))
-                pic = pic.resize((max(1, int(pic.width * scale_of[b] * sub)), max(1, int(pic.height * scale_of[b] * sub))), Image.LANCZOS)
-                img.paste(pic, (x, y + 34), pic)
-                x += pic.width + 12
+        for k, b in enumerate(PAINTINGS):
+            by = face_scale if b == 'face' else scale
+            pic = Image.fromarray(recolour(made[b], hexes, eye[coat['eyes']]['hex'], zones))
+            pic = pic.resize((max(1, int(pic.width * by)), max(1, int(pic.height * by))), Image.LANCZOS)
+            img.paste(pic, (pad + (face_w + (k - 1) * wolf_w if k else 0), y + 34 + (row_h - 62 - pic.height) // (2 if b == 'face' else 1)), pic)
         y += row_h
     img.save(file)
 
@@ -423,33 +411,39 @@ def sheet(made: dict[str, dict], palette: dict, file: Path) -> None:
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.split('\n')[0])
-    p.add_argument('sources', nargs='*', help='build=painting, e.g. lean=art/lean.png (default: Data/Wolves/sources/<build>.*)')
+    p.add_argument('sources', nargs='*', help='painting=file, e.g. large=art/large.png (default: Data/Wolves/sources/<painting>.*)')
     p.add_argument('--outlines', type=Path, default=OUTLINES)
     p.add_argument('--out', type=Path, default=ASSETS)
     p.add_argument('--overlay', type=Path, help='a folder for the zone overlays')
-    p.add_argument('--grid', type=Path, help='a folder for the cut-outs under a grid')
+    p.add_argument('--grid', type=Path, help='a folder for the paintings under a grid')
     p.add_argument('--sheet', type=Path, help='write the palette sheet here')
     args = p.parse_args()
     given = dict(s.split('=', 1) for s in args.sources)
-    if set(given) - set(BUILDS):
-        p.error(f'builds are {", ".join(BUILDS)}')
+    if set(given) - set(PAINTINGS):
+        p.error(f'paintings are {", ".join(PAINTINGS)}')
     outlines = json.loads(args.outlines.read_text(encoding='utf-8')) if args.outlines.exists() else {}
     args.out.mkdir(parents=True, exist_ok=True)
     made = {}
-    for build in BUILDS:
-        source = Path(given[build]) if build in given else next(iter(sorted(SOURCES.glob(f'{build}.*'))), None)
+    for name in PAINTINGS:
+        source = Path(given[name]) if name in given else next(iter(sorted(SOURCES.glob(f'{name}.*'))), None)
         if not source or not source.exists():
-            p.error(f'no painting for the {build} build')
-        made[build] = write_assets(build, source, outlines, args.out)
-        for view in VIEWS:
-            h, w = made[build][view][1].shape
-            print(f'{build}-{view}: {w}x{h}')
-            if args.overlay:
-                args.overlay.mkdir(parents=True, exist_ok=True)
-                overlay(made[build][view]).save(args.overlay / f'{build}-{view}-zones.png')
-            if args.grid:
-                args.grid.mkdir(parents=True, exist_ok=True)
-                grid(made[build][view], 2 if view == 'profile' else 4).save(args.grid / f'{build}-{view}-grid.png')
+            p.error(f'no painting for the {name}')
+        made[name] = prepare(name, source, outlines)
+        if args.overlay:
+            args.overlay.mkdir(parents=True, exist_ok=True)
+            overlay(made[name]).save(args.overlay / f'{name}-zones.png')
+        if args.grid:
+            args.grid.mkdir(parents=True, exist_ok=True)
+            grid(made[name], 4 if name == 'face' else 2).save(args.grid / f'{name}-grid.png')
+    # The profiles in one frame: the largest wolf's, each standing on its ground line.
+    frame = (max(made[n][1].shape[0] for n in SIZES), max(made[n][1].shape[1] for n in SIZES))
+    for name in PAINTINGS:
+        own = made[name][1].shape
+        if name != 'face':
+            made[name] = framed(made[name], frame)
+        write_assets(name, made[name], args.out)
+        h, w = made[name][1].shape
+        print(f'{name}: {own[1]}x{own[0]}' + ('' if name == 'face' else f' in {w}x{h}'))
     if args.sheet:
         sheet(made, json.loads(PALETTE.read_text(encoding='utf-8')), args.sheet)
         print(f'palette sheet: {args.sheet}')
