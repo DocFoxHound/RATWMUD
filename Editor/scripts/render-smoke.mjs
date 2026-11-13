@@ -24,8 +24,11 @@ try {
         'Prosperity (no town purses)': ["No town keeps a purse of its own in this world: the realm's treasury is the only one"],
         // (Doc 78, M5: My world, the owner's with the folder and the stops, a co-builder's without.)
         'My world (owner)': ['7 wolves in the world', 'Last backup 3 h ago', 'Back up now', 'Copy restore steps', 'nearly full',
-            'The world folder', 'a cloud service copies', 'The world keeps stopping', '3F2A 9C10', 'Asked for a backup', 'Something went wrong?'],
-        'My world (dm)': ['Your sign-ins', 'are for its owner', 'Only the world&#x27;s owner can do this.'],
+            'The world folder', 'a cloud service copies', 'The world keeps stopping', '3F2A 9C10', 'Asked for a backup', 'Something went wrong?',
+            // (M9: Share my world, ready: the file, its size and where it is.)
+            'Share my world', 'Ready: ashfall-2026-11-12.ratwpkg (46 MB)', 'C:\\Users\\Ann\\OneDrive\\ratw-world\\manage\\shared\\ashfall-2026-11-12.ratwpkg'],
+        'My world (dm)': ['Your sign-ins', 'are for its owner', 'Only the world&#x27;s owner can do this.', 'Making the file…'],
+        'My world (share failed)': ['the disk that holds the world folder is nearly full (300 MB free; making the file needs about 1.3 GB)'],
     };
     const absent = {'My world (dm)': ['The world folder', 'OneDrive', 'exit 139']};
     if (process.env.RENDER_DUMP) for (const [name, text] of Object.entries(html)) console.log(`== ${name}\n${text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 700)}`);

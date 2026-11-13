@@ -166,10 +166,13 @@ and two ports of its own:
 
 In the game's EDITOR box, the second world is `127.0.0.1:17790`.
 
-## Never zip this folder to send it (section 24)
+## Never zip this folder to send it; Share my world instead (section 24)
 
 Once the world has run, this folder holds your host token (`.env`), an Editor code (`manage/first-editor.txt`) and
-players' data (`backups/`). Send a friend the package from the game's team instead.
+players' data (`backups/`). To share the world itself, the owner uses **Share my world** in the Editor's My world tab:
+the world writes one file of itself, without its players, Editor accounts, token or keys, into `manage/shared/`
+(`<world>-<date>.ratwpkg`, the newest 3 kept). Until map editing comes it carries the map as built, not the map's
+editing source. To help a friend host, send them the package from the game's team.
 
 ## Starting again from scratch (section 23)
 
@@ -180,7 +183,8 @@ deletes the world, its database, its passwords and its Editor accounts and key f
 ## Building the image (developers)
 
 From the repository: `bash Package/stage.sh --world EXPORT_DIR --build`, where `EXPORT_DIR` comes from
-`python3 tools/world_package.py export --world KEY --out EXPORT_DIR`. It stages into `build-package/context` (never
+`python3 tools/world_package.py export --world KEY --out EXPORT_DIR` (or, for a host's shared file,
+`python3 tools/world_package.py unpack FILE.ratwpkg --out EXPORT_DIR`). It stages into `build-package/context` (never
 build from the repository's root) and tags `ratw-world:latest` (`--tag NAME` for another). The Editor bundle is signed
 with the release key (`bash Package/stage.sh --make-release-key`, once; `--no-editor` stages without it). The folder to
 send a host: `python3 Package/host_folder.py --out DIR [--zip DIR.zip]`; the image beside it from

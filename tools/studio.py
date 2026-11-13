@@ -603,6 +603,7 @@ HOSTED_ROUTES = {
     ('POST', '/api/world/restart'): OWNER,           # A `restart` request file for the root entrypoint (doc 78, 6.5).
     ('POST', '/api/world/backup'): OWNER,            # A backup now: a `backup-by-hand` request (doc 78, 12.1; M5).
     ('POST', '/api/world/pin'): OWNER,               # A pin on one backup (at most 5, each 90 days): `pin-STAMP`.
+    ('POST', '/api/world/share'): OWNER,             # Share my world: a `share` request (doc 78, 10.5; M9).
     # The DM suite. Reads for everyone signed in; reports (players' words as evidence) from dm.
     **{('GET', f'/api/dm/{p}'): VIEWER for p in _DM_READS},
     ('GET', '/api/dm/reports'): DM_ROLE,
@@ -1344,6 +1345,8 @@ AI_MONTHLY_TOKENS = 20_000_000
 # million tokens, input and output), for "a rough cost a story".
 STORY_TOKENS = (3000, 700)
 AI_PRICES = {'gpt-5.4-mini': (0.75, 4.50), 'gpt-5.4-nano': (0.20, 1.25), 'gpt-5.6-luna': (0.20, 1.20)}
+NO_SHARE = ('This world\'s package is older than Share my world: update it (keep world.toml, .env, manage and backups), '
+            'then docker compose up -d.')
 NO_BACKUPS = ('This world has no backup service yet: take the new compose.yaml from the package (keep .env and world.toml), '
               'then docker compose up -d.')
 SETTINGS_SHOWN = ('player_limit', 'workers')     # And cheats and [editor] enabled: the settings view's allowlist.
@@ -1549,6 +1552,14 @@ class Hosted:
         try:
             import world_admin
             return world_admin.read_backups(self.folder, time.time())
+        except Exception:  # noqa: BLE001 - nothing to show.
+            return None
+
+    def share(self) -> dict | None:
+        """Share my world as the root entrypoint last wrote it (share.json, checked): None with an older package."""
+        try:
+            import world_admin
+            return world_admin.read_share(self.folder, time.time())
         except Exception:  # noqa: BLE001 - nothing to show.
             return None
 
@@ -1795,7 +1806,27 @@ class HostedStudio:
             return {'ok': True, 'asked': True}
         if path == '/api/world/pin':
             return self.pin(who, data)
+        if path == '/api/world/share':
+            return self.share_world(who)
         return None
+
+    def share_world(self, who) -> dict:
+        """Share my world (doc 78, 10.5; M9): a `share` request for the root entrypoint, which exports the world with
+        every player taken out into one file in manage/shared/. One at a time (one being made, or a request waiting for
+        root, refuses another), at most three an hour."""
+        import world_admin
+        share = self.hosted.share()
+        if share is None:
+            raise D.DMError(NO_SHARE, 409)
+        if share['state'] == 'working' or share['waiting']:
+            raise D.DMError('Your world\'s file is being made now: one at a time.', 409)
+        if share['thisHour'] >= share['perHour']:
+            raise D.DMError(f'Your world has been shared {share["thisHour"]} times this hour, the most an hour: try again '
+                            'later.', 429)
+        world_admin.request_root('share', self.hosted.folder)
+        self.studio.dm.log(who, self.hosted.world, 'server.share', self.hosted.world,
+                           'Asked for a file of the world to share, without its players.')
+        return {'ok': True, 'asked': True}
 
     def pin(self, who, data) -> dict:
         """A pin on one backup, or off (doc 78, 12.1): at most five pinned, each kept 90 days. Its name is checked against
@@ -1865,7 +1896,7 @@ class HostedStudio:
         out = {'world': one, 'name': self.studio.hosted_status()['name'], 'package': str(self.hosted.settings().get('package') or '')[:40],
                'status': self.studio.hosted_status(), 'settings': self.hosted.shown_settings(), 'ai': self.ai_state(),
                'history': history, 'signIns': sign_ins, 'fingerprint': self.hosted.fingerprint(), 'owner': owner,
-               'backups': self.hosted.backups(), 'wolves': self.hosted.wolves()}
+               'backups': self.hosted.backups(), 'wolves': self.hosted.wolves(), 'share': self.hosted.share()}
         if owner:
             out.update(folder=self.hosted.folder_path(), exits=self.hosted.exits())
         return out

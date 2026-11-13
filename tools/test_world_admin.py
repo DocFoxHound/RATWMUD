@@ -1771,6 +1771,18 @@ class HostedStudioPort(PortBase):
         self.assertFalse(any(h['action'].startswith('login') for h in mine['history']), 'sign-ins are their own list')
         self.assertIn('Closed by pell from [address].', {h['detail'] for h in theirs['history']})
         self.assertIn('wolves', mine)
+        # M9: Share my world (the state for everyone; the request the owner's, kind-only, and in the history).
+        self.assertIsNone(mine['share'], 'an older package: no share.json')
+        (self.folder.path / 'share.json').write_text(json.dumps({'v': 1, 'state': 'ready', 'at': 5, 'recent': [],
+                                                                 'file': 'ashfall-2026-11-12.ratwpkg', 'size': 7,
+                                                                 'files': [{'name': 'ashfall-2026-11-12.ratwpkg', 'size': 7, 'at': 5}]}))
+        self.assertEqual(call(self.port, 'GET', '/api/world', token=fern)[2]['share']['file'], 'ashfall-2026-11-12.ratwpkg')
+        self.assertEqual(call(self.port, 'POST', '/api/world/share', {}, token=fern)[0], 403)
+        status, _, asked = call(self.port, 'POST', '/api/world/share', {}, token=owner)
+        self.assertEqual((status, asked), (200, {'ok': True, 'asked': True}))
+        self.assertIn('share', {p.name.split('.')[0] for p in (self.folder.path / 'requests').iterdir()})
+        self.assertEqual(call(self.port, 'POST', '/api/world/share', {}, token=owner)[0], 409, 'one at a time')
+        self.assertIn('server.share', {h['action'] for h in call(self.port, 'GET', '/api/world', token=owner)[2]['history']})
 
     def test_the_ai_without_a_key_its_caps_and_the_month_s_budget(self):
         dm = self.signed('fern', 'dm')['token']

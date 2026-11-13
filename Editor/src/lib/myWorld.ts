@@ -64,6 +64,7 @@ export function historyWords(action: string): string {
     const known: Record<string, string> = {
         'server.maintenance': 'Closed the world', 'server.running': 'Opened the world', 'server.restart': 'Asked for a restart',
         'server.backup': 'Asked for a backup', 'server.backup.pin': 'Pinned a backup', 'server.backup.unpin': 'Unpinned a backup',
+        'server.share': 'Shared the world (a file without its players)',
         'account.add': 'Added an Editor account', 'account.reset': 'Reset an Editor account', 'account.role': 'Changed an account\'s role',
         'account.wolves': 'Changed who may act on players\' wolves', 'account.disable': 'Turned an account off',
         'account.enable': 'Turned an account on', 'account.remove': 'Removed an Editor account',
@@ -71,4 +72,42 @@ export function historyWords(action: string): string {
     };
     const plain = action.replace(/[._]/g, ' ');
     return known[action] ?? plain.charAt(0).toUpperCase() + plain.slice(1);
+}
+
+/** Share my world (doc 78, 10.5; M9): what goes in the file, and what never does. Until map editing comes (M7), a
+ *  package carries the map as built, not the map's source, so the file can be played but its map can't be edited. */
+export const SHARE_HOLDS = [
+    'the map, as the world plays it (its land, towns, buildings and rooms)',
+    'the residents: who they are, where they live and work, their families, their backstories and what they remember of each other',
+    'the economy: its settings, rules, seasons and the realm\'s treasury (shops\' and residents\' purses are worked out afresh when it starts)',
+    'your changes with the DM tool: residents, routes, factions, talk, the economy\'s settings and rules',
+    'the calendar, seasons and festivals',
+];
+export const SHARE_NEVER = [
+    'any player: no wolf, nor its money, goods, home, letters, friends or Chapter',
+    'anything players said or wrote, and their internet addresses',
+    'your Editor accounts, their passwords, devices and sign-ins',
+    'the DM tool\'s history and the residents\' life stories written with the AI',
+    'your host token, your AI key, the Editor\'s certificate key, your backups',
+];
+export const SHARE_NOT_YET = 'The map\'s editing source isn\'t in it yet: whoever gets the file can play the world as it is, ' +
+    'but its map can\'t be changed in the map editor until map editing comes in a later update.';
+
+/** Where the shared file is, in the host's words: the world folder's path when known, Windows or Linux style. */
+export function sharedPath(folder: string, file: string): string {
+    if (!folder) return `manage/shared/${file} in your world folder`;
+    return windowsFolder(folder) ? `${folder.replace(/[\\/]+$/, '')}\\manage\\shared\\${file}` : `${folder.replace(/\/+$/, '')}/manage/shared/${file}`;
+}
+
+/** A share's failure, said plainly. */
+export function shareProblem(p: {code: string; free: number | null; need: number | null; where: string | null} | null | undefined): string {
+    if (!p) return '';
+    switch (p.code) {
+        case 'disk': return `The file wasn't made: ${p.where === 'docker' ? 'the disk Docker keeps its storage on' : 'the disk that holds the world folder'} ` +
+            `is nearly full${p.free !== null && p.need !== null ? ` (${size(p.free)} free; making the file needs about ${size(p.need)})` : ''}. ` +
+            'Free some space, or delete old files from manage/shared, then try again.';
+        case 'folder': return 'The world folder has no manage folder (an older compose.yaml): take the new compose.yaml from the package ' +
+            '(keep .env and world.toml), make an empty folder called manage beside it, then docker compose up -d.';
+        default: return 'The file wasn\'t made: the export failed. In the world folder, docker compose logs world says why (its lines start RATW_SHARE).';
+    }
 }
