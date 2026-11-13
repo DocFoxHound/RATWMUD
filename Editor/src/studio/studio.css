@@ -90,6 +90,9 @@
 .takes-publish { color: #e0b96a; }
 .publish-choices { display: grid; gap: 8px; margin: 10px 0; }
 .publish-choices label { display: flex; gap: 8px; align-items: flex-start; }
+/* (The page's inputs are as wide as their box: a radio button is its own size, at its label's start.) */
+.publish-choices input[type=radio] { width: auto; flex: none; margin: 3px 0 0; padding: 0; accent-color: var(--amber); }
+.publish-choices label > span { flex: 1; min-width: 0; }
 .publish-choices label.off { opacity: .6; }
 .publish-choices small { display: block; color: var(--faint); }
 .publish-problems { margin: 6px 0; padding-left: 18px; }

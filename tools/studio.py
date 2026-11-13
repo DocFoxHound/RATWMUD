@@ -594,7 +594,7 @@ _DM_WRITES = ('actions', 'live/move', 'live/action', 'live/visit', 'live/leave',
               'prosperity/act', 'festivals/call', 'reports/decide', 'chronicle/story', 'npcs/life', 'chapters/decide',
               *(f'economy/{k}' for k in ECONOMY_KINDS))
 _ATLAS_READS = ('live/world', 'live/ground', 'live/camps', 'roster', 'ai', 'economy')
-_ATLAS_WRITES = ('validate', 'live/edit', 'live/sync', 'roster', 'roster/plan', 'roster/preview', 'roster/generate',
+_ATLAS_WRITES = ('live/edit', 'live/sync', 'roster', 'roster/plan', 'roster/generate',
                  *(f'economy/{k}' for k in ECONOMY_KINDS))
 HOSTED_ROUTES = {
     # The studio's own, and hosted mode's: the session (the page's world and role), the AI's use, My world.
@@ -641,6 +641,10 @@ HOSTED_DENIED = {
     ('GET', '/api/atlas/session'): "Atlas's editor token: the Editor session stands for it",
     ('GET', '/api/atlas/demo'): 'not needed',
     ('POST', '/api/atlas/export'): 'exports to files',
+    # (R2: both load the whole world into the helper, 3.5 GB at today's size, with no memory check; the hosted page
+    # asks neither, and Publish's child checks the map under its own limit.)
+    ('POST', '/api/atlas/validate'): 'Publish checks the map (in its own process, under a memory limit)',
+    ('POST', '/api/atlas/roster/preview'): 'loads the whole world; the page asks roster/plan',
     ('POST', '/api/atlas/playtest'): 'playtests (play.sh)',
     ('GET', '/api/atlas/sync/diff'): 'Update from live', ('POST', '/api/atlas/sync/pull'): 'Update from live',
     ('GET', '/api/atlas/play/server'): 'Play', ('POST', '/api/atlas/play/server/start'): 'Play (live.sh)',
@@ -1700,7 +1704,7 @@ class HostedStudio:
         try:
             return self.answer(session, method, path, query or '', headers or {}, body or b'')
         except D.DMError as error:
-            return self._json(error.status, {'error': str(error)})
+            return self._json(error.status, {'error': str(error), **(getattr(error, 'extra', None) or {})})
         except Exception as error:  # noqa: BLE001 - say what kind, never the request's values (I15).
             return self._json(500, {'error': f'The Editor could not answer ({type(error).__name__}).'})
 
@@ -1792,6 +1796,18 @@ class HostedStudio:
                 place = None
             if place:
                 raise D.DMError(AHEAD_OF_MAP.format(place=place), 409)
+        if data and path == '/api/atlas/live/edit' and self._dev():
+            # (The map editor's own edits of residents and routes: the same rule, to the tile.)
+            try:
+                problem = self.publisher.ahead_ops(data.get('ops'))
+            except Exception:  # noqa: BLE001 - as above.
+                problem = None
+            if problem:
+                refusal = D.DMError(problem, 409)
+                # (As live_edit's own refusals: the values as they stand, so the page puts its picture back.)
+                refusal.extra = {'current': {op['key']: op.get('before') for op in data.get('ops') or []
+                                             if isinstance(op, dict) and isinstance(op.get('key'), str)}}
+                raise refusal
         if path == '/api/dm/reports/decide':
             host = self.hosted.host_account()
             found = next((r for r in self.studio.dm.reports(self.hosted.world).get('reports', [])
@@ -1853,9 +1869,7 @@ class HostedStudio:
                 return self._json(200, self.publisher.open_all(who))
             if path == '/api/atlas/map/rebuild':
                 # The update rebuild's answer (12.5): with the unpublished changes, or discarding them first.
-                if data.get('discard') is True:
-                    self.publisher.discard(who)
-                return self._json(200, {'ok': True, 'job': self.publisher.start(who, 'later', rebuild=True)})
+                return self._json(200, {'ok': True, 'job': self.publisher.rebuild(who, data.get('discard') is True)})
         except world_publish.Refused as refused:
             return self._json(refused.status, {'error': refused.errors[0]['text'] if refused.errors else 'Refused.',
                                                'errors': refused.errors})

@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -157,6 +158,15 @@ def source_problems(conn, world_id) -> list[dict]:
     return found
 
 
+def _float(text):
+    """A saved number, or None when the save holds something else there (a cast in SQL would stop the whole read)."""
+    try:
+        value = float(text)
+    except (TypeError, ValueError):
+        return None
+    return value if value == value and abs(value) < 1e9 else None
+
+
 def read_saved(conn, world_id) -> dict:
     """What the world's save says that a new map could strand (as ratw_dm, which reads game.*): every wolf's place
     (online or away: game.characters), the leases (game.lodgings), the stalls and the doors' states (the checkpoint)."""
@@ -164,13 +174,13 @@ def read_saved(conn, world_id) -> dict:
         return conn.execute('SELECT to_regclass(%s) IS NOT NULL', (name,)).fetchone()[0]
     out = {'wolves': [], 'leases': [], 'stalls': [], 'doors': {}}
     if table('game.characters'):
-        out['wolves'] = [{'id': r[0], 'name': r[1] or r[0], 'cell': r[2], 'x': r[3], 'y': r[4]} for r in conn.execute(
-            """SELECT key, data->>'name', data->>'cell', (data->>'x')::float8, (data->>'y')::float8 FROM game.characters
+        out['wolves'] = [{'id': r[0], 'name': r[1] or r[0], 'cell': r[2], 'x': _float(r[3]), 'y': _float(r[4])} for r in conn.execute(
+            """SELECT key, data->>'name', data->>'cell', data->>'x', data->>'y' FROM game.characters
                WHERE world_id = %s AND data ? 'cell'""", (world_id,)).fetchall()]
     if table('game.lodgings'):
-        out['leases'] = [{'id': r[0], 'holder': r[1], 'cell': r[2], 'kind': r[3] or 'lodging', 'x': r[4], 'y': r[5]}
+        out['leases'] = [{'id': r[0], 'holder': r[1], 'cell': r[2], 'kind': r[3] or 'lodging', 'x': _float(r[4]), 'y': _float(r[5])}
                          for r in conn.execute(
-            """SELECT key, data->>'holder', data->>'cell', data->>'kind', (data->>'x')::float8, (data->>'y')::float8
+            """SELECT key, data->>'holder', data->>'cell', data->>'kind', data->>'x', data->>'y'
                FROM game.lodgings WHERE world_id = %s AND coalesce(data->>'cell', '') <> ''""", (world_id,)).fetchall()]
     if table('game.checkpoints'):
         row = conn.execute("""SELECT payload::jsonb #> '{people,stalls}', payload::jsonb -> 'doors' FROM game.checkpoints
@@ -196,12 +206,15 @@ class MapView:
             self.ids = {r[0] for r in conn.execute('SELECT cell_id FROM world.build_cells WHERE build_id = %s', (build_id,))}
             manifest = conn.execute("SELECT files->>'world.ratw' FROM world.builds WHERE id = %s", (build_id,)).fetchone()[0]
         self.doors = {}
-        for line in manifest.splitlines():
+        for line in manifest.split('\n'):        # (Not splitlines: a name may hold U+2028, which is no line end here.)
             if line.startswith('door '):
-                f = shlex.split(line)
-                if len(f) >= 15:
-                    self.doors[f[1]] = {'name': f[2], 'cell': f[3], 'x': float(f[4]), 'y': float(f[5]),
-                                        'open': f[10] == '1', 'passage': f[13] == '1' or f[1].startswith('stairs_')}
+                try:
+                    f = shlex.split(line)
+                    if len(f) >= 15:
+                        self.doors[f[1]] = {'name': f[2], 'cell': f[3], 'x': float(f[4]), 'y': float(f[5]),
+                                            'open': f[10] == '1', 'passage': f[13] == '1' or f[1].startswith('stairs_')}
+                except ValueError:
+                    continue
         self._grids = {}
 
     def grid(self, cell):
@@ -212,14 +225,14 @@ class MapView:
                 row = self._conn.execute('SELECT body FROM world.build_cells WHERE build_id = %s AND cell_id = %s',
                                          (self._build, cell)).fetchone()
                 body = row[0] if row else None
-            self._grids[cell] = body.partition('\ngrid:\n')[2].splitlines() if body else None
+            self._grids[cell] = body.partition('\ngrid:\n')[2].split('\n') if body else None
         return self._grids[cell]
 
     def stands(self, cell, x, y, doors=None) -> bool:
         """Whether someone can stand at (x, y) of a place: there is ground there, and (given the save's door states,
         `doors`) no closed door over it."""
         grid = self.grid(cell)
-        if grid is None or x is None or y is None:
+        if grid is None or x is None or y is None or x != x or y != y or abs(x) > 1e9 or abs(y) > 1e9:
             return False
         tx, ty = int(x // 1), int(y // 1)
         if not (0 <= ty < len(grid) and 0 <= tx < len(grid[ty])) or grid[ty][tx] in self.solid_glyphs:
@@ -242,7 +255,8 @@ def saved_problems(view: MapView, saved: dict) -> tuple[list[dict], list[dict]]:
         if lease['cell'] not in view.ids:
             errors.append({'text': f'{lease["holder"] or "A wolf"} rents a {lease["kind"]} in {lease["cell"]}, which this map '
                                    'removes. End the lease first (the DM tool), or keep the place.'})
-        elif lease['x'] is not None and lease['y'] is not None and not view.stands(lease['cell'], lease['x'], lease['y']):
+        elif (lease['x'] is not None and lease['y'] is not None and lease['x'] >= 0 and lease['y'] >= 0   # (A whole place's
+              and not view.stands(lease['cell'], lease['x'], lease['y'])):                                  # has no bed: -1, -1.)
             errors.append({'text': f'{lease["holder"] or "A wolf"} rents a {lease["kind"]} in {lease["cell"]}, and this map '
                                    'builds over its spot. End the lease first, or keep the spot clear.',
                            'cell': lease['cell'], 'x': lease['x'], 'y': lease['y']})
@@ -270,6 +284,36 @@ def saved_problems(view: MapView, saved: dict) -> tuple[list[dict], list[dict]]:
     return errors, warnings
 
 
+def located(text: str, project) -> dict:
+    """A validator's problem with its place for "Show me" (doc 78, 10.3, step 1), where its words name one: the spawn,
+    a cell or interior, a door or stairs (its first side), or a resident (where they work, else live). The validator
+    says what is wrong in words alone (tools/map_editor.py: check_project and the export)."""
+    out = {'text': str(text)}
+    if not isinstance(project, dict):
+        return out
+    try:
+        spot = None
+        if re.match(r'(Spawn\b|Choose a player spawn)', out['text']):
+            spot = project.get('spawn')
+        else:
+            words = set(re.findall(r'[A-Za-z0-9_-]{2,80}', out['text']))
+            areas = {a['id'] for a in (project.get('cells') or []) + (project.get('rooms') or [])} & words
+            if areas:
+                spot = {'cell': sorted(areas, key=out['text'].index)[0]}
+            else:
+                link = next((l for l in project.get('links') or [] if l.get('id') in words), None)
+                person = next((n for n in project.get('people') or [] if n.get('id') in words or n.get('name') in out['text']), None)
+                field = next((k for k in ('home', 'work', 'evening') if re.search(rf'\b{k}\b', out['text'])), None)
+                spot = (link or {}).get('a') or (person or {}).get(field) or (person or {}).get('work') or (person or {}).get('home')
+        if isinstance(spot, dict) and isinstance(spot.get('cell'), str) and spot['cell']:
+            out['cell'] = spot['cell']
+            if all(isinstance(spot.get(k), (int, float)) and not isinstance(spot.get(k), bool) for k in ('x', 'y')):
+                out['x'], out['y'] = spot['x'], spot['y']
+    except (TypeError, KeyError, ValueError, AttributeError):
+        pass
+    return out
+
+
 # ------------------------------------------------------------------------------------------------------ the child
 
 def _say(**line) -> None:
@@ -287,7 +331,9 @@ def child(key: str, by: str, dbname: str | None = None) -> int:
         resource.setrlimit(resource.RLIMIT_AS, (CHILD_LIMIT, CHILD_LIMIT))
     except (ValueError, OSError):
         pass
+    _dies_with_parent()
     extra = {'dbname': dbname} if dbname else {}
+    loaded = {}
     try:
         _say(step='checking')
         with world_db.connect(key, 'dm', **extra) as dm:
@@ -312,9 +358,13 @@ def child(key: str, by: str, dbname: str | None = None) -> int:
                 _say(step='building', done=done, of=of)
 
             with conn.transaction():
+                # One snapshot for the whole load (about 10 s of reads): an edit saved meanwhile is in the build whole or
+                # not at all, and counted to match (R2: read committed could build half of one).
+                conn.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ')
                 through = world_build.newest_edit(conn, world[0]) if world_build.publish_columns(conn) else None
                 _say(step='loading')
                 project, _ = S.load_world(conn, world[0])
+                loaded['project'] = project
                 _say(step='validating')
                 build_id, cells = world_build.build(conn, by, project=project, edits_through=through, progress=tick, check=check)
                 try:
@@ -325,7 +375,7 @@ def child(key: str, by: str, dbname: str | None = None) -> int:
         _say(result={'ok': True, 'build': build_id, 'cells': cells, 'errors': [], 'warnings': warnings})
         return 0
     except map_editor.ValidationError as error:
-        _say(result={'ok': False, 'errors': [{'text': e} for e in error.errors][:200], 'warnings': []})
+        _say(result={'ok': False, 'errors': [located(e, loaded.get('project')) for e in error.errors[:200]], 'warnings': []})
         return 3
     except Refused as error:
         _say(result={'ok': False, 'errors': error.errors[:200], 'warnings': []})
@@ -337,6 +387,31 @@ def child(key: str, by: str, dbname: str | None = None) -> int:
     except (world_db.DatabaseError, S.StoreError) as error:
         _say(result={'ok': False, 'errors': [{'text': f'The map could not be built: {error}'}], 'warnings': []})
         return 1
+    except psycopg.errors.SerializationFailure:
+        _say(result={'ok': False, 'errors': [{'text': 'The map was changed while it was being built: nothing was published. '
+                                                      'Publish again.'}], 'warnings': []})
+        return 3
+    except Exception as error:  # noqa: BLE001 - said, never a bare "exit 1" (its stderr goes nowhere); nothing was stored.
+        _say(result={'ok': False, 'errors': [{'text': f'The map could not be built ({type(error).__name__}): nothing was '
+                                                      'changed.'}], 'warnings': []})
+        return 1
+
+
+def _dies_with_parent() -> None:
+    """The child never outlives the helper (or the entrypoint) that started it (R2): a build finishing with nobody to
+    move the world onto it would lose the host's choice. Linux's PR_SET_PDEATHSIG; and its own alarm past the limit."""
+    import signal
+    try:
+        import ctypes
+        ctypes.CDLL(None, use_errno=True).prctl(1, int(signal.SIGKILL), 0, 0, 0)        # (PR_SET_PDEATHSIG.)
+        if os.getppid() == 1:
+            os._exit(1)
+    except (OSError, AttributeError, ValueError):
+        pass
+    try:
+        signal.alarm(CHILD_SECONDS + 60)
+    except (OSError, ValueError, AttributeError):
+        pass
 
 
 def run_child(key: str, by: str, on_step=None, dbname: str | None = None, seconds: float = CHILD_SECONDS, env=None) -> dict:
@@ -418,10 +493,45 @@ def discard(conn, editor: str) -> dict:
     return {'discarded': len(rows), 'keys': len(first)}
 
 
+def residents_problems(conn, view: MapView, world_id) -> list[dict]:
+    """The residents' and the patrols' places against a map the world would go back to: one who has since been given a
+    home, a work place or a post where that map has no ground (a room made after it, a wall it still has) would stop
+    the game server loading the world at all ("Place for ... is missing, off-center or on solid terrain"). The first
+    twenty, each with its place."""
+    found = []
+
+    def check(who, what, area, x, y):
+        if area is None or x is None or y is None or len(found) >= 20:
+            return
+        if area not in view.ids:
+            found.append({'text': f'{who} {what} in {area}, which the previous map doesn\'t have. Move them first (the map '
+                                  'editor\'s People), or keep this map.'})
+        elif not view.stands(area, x + 0.5, y + 0.5):
+            found.append({'text': f'{who} {what} in {area} where the previous map has a wall. Move them first (the map '
+                                  'editor\'s People), or keep this map.', 'cell': area, 'x': x, 'y': y})
+    places = 'home_area, home_x, home_y, work_area, work_x, work_y, evening_area, evening_x, evening_y'
+    rows = conn.execute(f'SELECT name, {places} FROM live.npcs WHERE world_id = %s ORDER BY id', (world_id,)).fetchall()
+    rows += conn.execute(f'''SELECT c.name, {", ".join("s." + p.strip() for p in places.split(","))}
+                             FROM live.profession_slots s JOIN live.characters c ON c.status = 'active'
+                              AND c.assignment = jsonb_build_object('world', s.world_id, 'slot', s.id)
+                             WHERE s.world_id = %s ORDER BY s.id''', (world_id,)).fetchall()
+    for name, *spots in rows:
+        for what, at in (('lives', 0), ('works', 3), ('spends the evening', 6)):
+            check(name, what, *spots[at:at + 3])
+    for name, area, x, y in conn.execute('''SELECT r.name, p.area, p.x, p.y FROM live.patrol_posts p JOIN live.patrol_routes r
+                                            ON r.world_id = p.world_id AND r.id = p.route_id WHERE p.world_id = %s
+                                            ORDER BY r.id, p.seq''', (world_id,)).fetchall():
+        check(f'The patrol {name}', 'has a post', area, x, y)
+    return found
+
+
 def back_problems(conn, dm_conn, build_id) -> tuple[list[dict], list[dict]]:
-    """Publish's checks the other way (doc 78, 12.3): the world's save against the previous map."""
+    """Publish's checks the other way (doc 78, 12.3): the world's save, and its residents' places, against the previous
+    map."""
     world = conn.execute('SELECT id FROM world.worlds').fetchone()
-    return saved_problems(MapView(conn=conn, build_id=build_id), read_saved(dm_conn, world[0]))
+    view = MapView(conn=conn, build_id=build_id)
+    errors, warnings = saved_problems(view, read_saved(dm_conn, world[0]))
+    return errors + residents_problems(conn, view, world[0]), warnings
 
 
 def unpublished_places(conn) -> set:
@@ -431,6 +541,27 @@ def unpublished_places(conn) -> set:
         return set()
     return {r[0] for r in conn.execute('''SELECT id FROM world.areas a WHERE NOT EXISTS
         (SELECT 1 FROM world.build_cells c WHERE c.build_id = %s AND c.cell_id = a.id)''', (build['id'],))}
+
+
+AHEAD_PLACE = ('Publish the map first: {who} would be in {place}, which is in the map editor and not yet in the world '
+               'players are in (the Publish page).')
+AHEAD_TILE = ('Publish the map first: {who} would stand in {place} where the world players are in has a wall or no '
+              'ground yet (the Publish page).')
+
+
+def _spots(value, depth=0):
+    """Every {cell, x, y} in a resident's or a route's value (home, work, evening, a route's posts)."""
+    if depth > 6:
+        return
+    if isinstance(value, dict):
+        cell, x, y = value.get('cell'), value.get('x'), value.get('y')
+        if isinstance(cell, str) and cell and all(isinstance(v, (int, float)) and not isinstance(v, bool) and abs(v) < 1e9 for v in (x, y)):
+            yield {'cell': cell, 'x': x, 'y': y}
+        for v in value.values():
+            yield from _spots(v, depth + 1)
+    elif isinstance(value, list):
+        for v in value[:2000]:
+            yield from _spots(v, depth + 1)
 
 
 def strings(value):
@@ -456,13 +587,23 @@ def newest(conn) -> dict:
             'reads': list(world_build.READS)}
 
 
-def fallback(conn) -> dict:
+def fallback(conn, good=None) -> dict:
     """The newest build didn't start (doc 78, 12.4): it is marked failed and the previous map published again under a new
-    id. {failed, now} or {failed, now: None, why} when there is no previous map to go back to."""
+    id. {failed, now} or {failed, now: None, why} when there is no previous map to go back to. `good`: the build the
+    server last ran well on (the entrypoint's note), gone back to when it is older, unfailed, readable and still has its
+    cells (R2: after two bad maps in a row the one before the newest is bad too)."""
     build = newest_build(conn)
     if not build:
         return {'failed': None, 'now': None, 'why': 'no build'}
-    before = world_build.previous(conn)
+    before = None
+    if isinstance(good, int) and world_build.publish_columns(conn):
+        row = conn.execute('''SELECT b.id FROM world.builds b WHERE b.id = %s AND b.id < %s AND NOT b.failed
+                              AND b.format = ANY(%s) AND coalesce(b.copy_of, b.id) <> %s
+                              AND EXISTS (SELECT 1 FROM world.build_cells c WHERE c.build_id = b.id)''',
+                           (good, build['id'], list(world_build.READS), build['copyOf'] or build['id'])).fetchone()
+        before = row[0] if row else None
+    if before is None:
+        before = world_build.previous(conn)
     if before is None:
         return {'failed': build['id'], 'now': None, 'why': 'no previous map'}
     made, _ = world_build.republish(conn, before, 'fallback', failed=build['id'])
@@ -483,6 +624,7 @@ class Publisher:
         self.job: dict | None = None
         self.thread: threading.Thread | None = None
         self._ahead = (None, set())
+        self._view, self._view_lock = (None, None), threading.Lock()
 
     # -- what the page shows ----------------------------------------------------------------------------------------
     def host_only(self) -> tuple[bool, str]:
@@ -533,15 +675,48 @@ class Publisher:
             return None
         return next((s for s in strings(body) if s in places), None)
 
+    def ahead_ops(self, ops) -> str | None:
+        """Atlas's own edit of a resident or a patrol route (the live layers: they reach the game without a build) that
+        puts someone where the map players are in has no ground: in a place not published yet, or on a tile that map
+        walls (the closing run: the game server then refuses the whole world at its next start, "Place for ... is
+        missing, off-center or on solid terrain"). Why, in words, or None. Map edits themselves wait for Publish."""
+        if not isinstance(ops, list):
+            return None
+        spots = []
+        for op in ops:
+            key = op.get('key') if isinstance(op, dict) else None
+            if isinstance(key, str) and key.partition(':')[0] in ('person', 'route') and op.get('after') is not None:
+                name = op['after'].get('name') if isinstance(op['after'], dict) else None
+                spots += [(name if isinstance(name, str) and name else key.partition(':')[2], spot) for spot in _spots(op['after'])]
+        if not spots:
+            return None
+        with self._view_lock, self.connect_editor() as conn:
+            build = newest_build(conn)
+            if not build:
+                return None
+            if self._view[0] != build['id']:
+                self._view = (build['id'], MapView(conn=conn, build_id=build['id']))
+            view = self._view[1]
+            view._conn = conn
+            try:
+                for who, spot in spots[:400]:
+                    if spot['cell'] not in view.ids:
+                        return AHEAD_PLACE.format(who=who[:60], place=spot['cell'][:80])
+                    if not view.stands(spot['cell'], spot['x'] + 0.5, spot['y'] + 0.5):
+                        return AHEAD_TILE.format(who=who[:60], place=spot['cell'][:80])
+            finally:
+                view._conn = None
+        return None
+
     # -- the acts -----------------------------------------------------------------------------------------------------
     def _busy(self):
         if self.job and self.job['step'] not in ('done', 'refused', 'failed'):
             raise Refused(['The map is being published now: one at a time.'], 409)
 
-    def _this_hour(self, account: str) -> int:
+    def _this_hour(self, account: str, action: str = 'map.publish') -> int:
         with self.connect_dm() as conn:
-            return conn.execute("""SELECT count(*) FROM dm.audit WHERE action = 'map.publish' AND at > %s
-                                   AND split_part(who, '#', 1) = %s""", (self.clock() - 3600, account.split('#')[0])).fetchone()[0]
+            return conn.execute("""SELECT count(*) FROM dm.audit WHERE action = %s AND at > %s
+                                   AND split_part(who, '#', 1) = %s""", (action, self.clock() - 3600, account.split('#')[0])).fetchone()[0]
 
     def start(self, who: dict, restart: str, rebuild: bool = False) -> dict:
         """Publish: refused at once when another runs, the account has published 6 times this hour, memory is short, the
@@ -554,17 +729,35 @@ class Publisher:
                 can, why = self.host_only()
                 if not can:
                     raise Refused([why], 409)
-            if self._this_hour(who['username']) >= AN_HOUR:
+            if not rebuild and self._this_hour(who['username']) >= AN_HOUR:
                 raise Refused([f'You have published {AN_HOUR} times this hour, the most an hour: try again later.'], 429)
             m = self.read_memory()
             if not m['ok']:
                 raise Refused([f'Publishing needs about {gb(m["need"])} of memory free; this world has {gb(m["free"])}.'], 409)
+            self.log(who, 'map.publish', self.world, f'Published the map ({ {"host": "open only to the host", "now": "now", "later": "when everyone has left"}[restart]}).')
             self.job = {'id': int(self.clock() * 1000), 'by': who['username'].split('#')[0], 'at': self.clock(), 'step': 'backup',
                         'done': 0, 'of': 0, 'errors': [], 'warnings': [], 'build': None, 'restart': restart, 'rebuild': rebuild}
-            self.log(who, 'map.publish', self.world, f'Published the map ({ {"host": "open only to the host", "now": "now", "later": "when everyone has left"}[restart]}).')
             self.thread = threading.Thread(target=self._work, args=(who, restart), daemon=True)
             self.thread.start()
             return dict(self.job)
+
+    def rebuild(self, who: dict, discard_first: bool = False) -> dict:
+        """The update rebuild's answer (doc 78, 12.5): the map built again for a server that can't load it as built, with
+        the unpublished changes or discarding them first. Only when the newest build is in fact unreadable. Outside the
+        hourly count (the closing run: the world is down until it is rebuilt, and an owner who had published six times
+        that hour couldn't start it), and nothing is discarded before the rebuild is known to be able to start."""
+        with self.connect_editor() as conn:
+            build = newest_build(conn)
+        if not build or build['format'] in world_build.READS:
+            raise Refused(['The map doesn\'t need rebuilding: this world\'s server loads it as it is.'], 409)
+        with self.lock:
+            self._busy()
+        m = self.read_memory()
+        if not m['ok']:
+            raise Refused([f'Rebuilding needs about {gb(m["need"])} of memory free; this world has {gb(m["free"])}.'], 409)
+        if discard_first:
+            self.discard(who)
+        return self.start(who, 'later', rebuild=True)
 
     def _set(self, **fields):
         with self.lock:
@@ -585,28 +778,43 @@ class Publisher:
             self._set(build=result.get('build'), cells=result.get('cells'), warnings=result.get('warnings') or [])
             if restart != 'later':
                 self._set(step='restarting')
-                self.move(who['username'], 'host_only' if restart == 'host' else 'running',
-                          'A new map is being published: back in a minute.')
+                kept = self.move(who, 'host_only' if restart == 'host' else 'running',
+                                 'A new map is being published: back in a minute.')
+                if kept:
+                    self._set(warnings=(self.job.get('warnings') or []) + [{'text': kept}])
             self._set(step='done')
         except Exception as error:  # noqa: BLE001 - the job says it failed, never why in the request's words.
             self._set(step='failed', errors=[{'text': f'Publishing stopped ({type(error).__name__}). Nothing else was changed.'}])
 
-    def move(self, by: str, then: str, note: str) -> None:
+    def move(self, who: dict, then: str, note: str) -> str | None:
         """The world onto its newest map now: closed with its minute's warning (maintenance, exit 76), and once the
-        entrypoint says its server has stopped, set to `then` (running, or host_only), which starts it again."""
+        entrypoint says its server has stopped, set to `then` (running, or host_only), which starts it again. Closing and
+        opening the world are its owner's (R2): a world the owner closed stays closed for anyone else, and one open only
+        to its host stays so; then what was kept is returned in words, for the job."""
         import world_sync
+        by, owner = who['username'], who.get('role') == 'owner'
         server = self.hosted.server() if self.hosted is not None else None
         with self.connect_dm() as conn:
+            was = world_sync.server_state(conn)['state']
+            if was == 'maintenance' and not owner:
+                return 'The world is closed, and it stays closed: it starts on this map when its owner opens it (My world).'
+            kept = None
+            if was == 'host_only' and then == 'running' and not owner:
+                then, kept = 'host_only', 'The world stays open only to its host, on this map: its owner opens it to everyone.'
             world_sync.set_state(conn, 'maintenance', by, note)
-        if server is not None and server.get('up'):
-            deadline = self.clock() + CLOSE_WAIT
-            while self.clock() < deadline:
-                now = self.hosted.server()
-                if now is None or (not now.get('up') and now.get('reason') in ('closed', 'exit', 'world.toml')):
-                    break
-                self.sleep(1)
-        with self.connect_dm() as conn:
-            world_sync.set_state(conn, then, by, '' if then == 'running' else 'Open only to the host: a new map is being looked at.')
+        try:
+            if server is not None and server.get('up'):
+                deadline = self.clock() + CLOSE_WAIT
+                while self.clock() < deadline:
+                    now = self.hosted.server()
+                    if now is None or (not now.get('up') and now.get('reason') in ('closed', 'exit', 'world.toml')):
+                        break
+                    self.sleep(1)
+        finally:
+            # (Whatever stopped the wait, the world isn't left closed by a Publish.)
+            with self.connect_dm() as conn:
+                world_sync.set_state(conn, then, by, '' if then == 'running' else 'Open only to the host: a new map is being looked at.')
+        return kept
 
     def open_all(self, who: dict) -> dict:
         """"Open to everyone", after a look at the new map alone."""
@@ -621,8 +829,8 @@ class Publisher:
     def discard(self, who: dict) -> dict:
         with self.lock:
             self._busy()
-        with self.connect_editor() as conn:
-            out = discard(conn, who['username'].split('#')[0])
+            with self.connect_editor() as conn:
+                out = discard(conn, who['username'].split('#')[0])
         self.log(who, 'map.discard', self.world, f'Discarded {out["discarded"]} unpublished map changes.')
         return {'ok': True, **out}
 
@@ -633,25 +841,29 @@ class Publisher:
         import world_sync
         with self.lock:
             self._busy()
-        with self.connect_editor() as conn, self.connect_dm() as dm:
-            before = world_build.previous(conn)
-            if before is None:
-                raise Refused(['There is no previous map to go back to.'], 409)
-            errors, warnings = back_problems(conn, dm, before)
-            if errors:
-                raise Refused(errors)
-            was = world_sync.server_state(dm)['state']
-            made, _ = world_build.republish(conn, before, f'Editor: {who["username"].split("#")[0]}'[:60])
-            out = {'ok': True, 'build': made, 'warnings': warnings}
-            if discard_too:
-                out.update(discard(conn, who['username'].split('#')[0]))
+            if self._this_hour(who['username'], 'map.back') >= AN_HOUR:
+                raise Refused([f'The world has gone back {AN_HOUR} times this hour, the most an hour: try again later.'], 429)
+            with self.connect_editor() as conn, self.connect_dm() as dm:
+                before = world_build.previous(conn)
+                if before is None:
+                    raise Refused(['There is no previous map to go back to.'], 409)
+                errors, warnings = back_problems(conn, dm, before)
+                if errors:
+                    raise Refused(errors)
+                was = world_sync.server_state(dm)['state']
+                # (One change: a discard that is refused leaves the map where it was, R2.)
+                with conn.transaction():
+                    made, _ = world_build.republish(conn, before, f'Editor: {who["username"].split("#")[0]}'[:60])
+                    out = {'ok': True, 'build': made, 'warnings': warnings}
+                    if discard_too:
+                        out.update(discard(conn, who['username'].split('#')[0]))
         self.log(who, 'map.back', self.world, 'Went back to the previous map' + (', discarding the unpublished changes.' if discard_too else '.'))
-        threading.Thread(target=self._moved, args=(who['username'], 'host_only' if was == 'host_only' else 'running'), daemon=True).start()
+        threading.Thread(target=self._moved, args=(who, 'host_only' if was == 'host_only' else 'running'), daemon=True).start()
         return out
 
-    def _moved(self, by, then):
+    def _moved(self, who, then):
         try:
-            self.move(by, then, 'The world is going back to its previous map: back in a minute.')
+            self.move(who, then, 'The world is going back to its previous map: back in a minute.')
         except Exception:  # noqa: BLE001 - the world stays closed; My world's Open opens it.
             pass
 
@@ -672,6 +884,7 @@ def main(argv=None) -> int:
     parser.add_argument('--world', default='world')
     parser.add_argument('--by', default='Editor')
     parser.add_argument('--dbname', help='tests: a database by name, in place of the world\'s own')
+    parser.add_argument('--good', type=int, help='fallback: the build the server last ran well on')
     args = parser.parse_args(argv)
     if args.command == 'child':
         return child(args.world, args.by, args.dbname)
@@ -681,7 +894,7 @@ def main(argv=None) -> int:
     extra = {'dbname': args.dbname} if args.dbname else {}
     try:
         with world_db.connect(args.world, 'editor', **extra) as conn:
-            print(json.dumps(newest(conn) if args.command == 'newest' else fallback(conn)))
+            print(json.dumps(newest(conn) if args.command == 'newest' else fallback(conn, args.good)))
     except (world_db.DatabaseError, S.StoreError) as error:
         print(json.dumps({'error': str(error)[:300]}))
         return 1

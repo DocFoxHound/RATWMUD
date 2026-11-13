@@ -113,6 +113,7 @@ TOML_RETRY = (5, 30, 120)                       # A broken world.toml read again
                                                 # (its own count: it never adds to the crash backoff).
 SERVER_REASONS = ('starting', 'running', 'restarting', 'exit', 'world.toml', 'closed')   # (server.json's "reason".)
 MAINTENANCE_POLL = float(os.environ.get('RATW_MAINTENANCE_POLL', '5'))
+LISTENING = 'RATW server listening on port'      # The server's line once its map is loaded and its port open.
 STARTED_WELL = 120                              # A server up this long has started on its map (doc 78, 12.4's fallback).
 MEMORY_POLL = 30                                # An update's rebuild short of memory looks again this often (12.5).
 STOP_WAIT = 80                                  # A restart's SIGTERM, then this long to save (compose gives 90 s).
@@ -1046,12 +1047,13 @@ def admin_tool(args: list[str], port: int) -> subprocess.CompletedProcess:
                           capture_output=True, text=True, timeout=120, **run_as(EDITOR_USER))
 
 
-def map_tool(command: str, port: int, timeout: float = 120) -> dict | None:
+def map_tool(command: str, port: int, timeout: float = 120, good: int | None = None) -> dict | None:
     """tools/world_publish.py as the helper's user and the editor role (doc 78, 12.4 and 12.5): `newest` (the newest
     build, and whether this package's server loads its format), `fallback` (the previous map published again), `memory`
     (whether there is room to build), `child` (validate and build). Its last JSON line, or None when it said none."""
     try:
-        done = subprocess.run([sys.executable, str(TOOLS / 'world_publish.py'), command, '--world', KEY, '--by', 'update'],
+        done = subprocess.run([sys.executable, str(TOOLS / 'world_publish.py'), command, '--world', KEY, '--by', 'update',
+                               *(['--good', str(good)] if good is not None else [])],
                               cwd=ADMIN, env=admin_env(port), capture_output=True, text=True, timeout=timeout,
                               **run_as(EDITOR_USER))
     except (OSError, subprocess.SubprocessError):
@@ -1067,9 +1069,17 @@ def map_tool(command: str, port: int, timeout: float = 120) -> dict | None:
     return None
 
 
+def good_build_path() -> Path:
+    """Where the note of the build the server last ran well on is kept: root's requests volume (a dot file the backup
+    service passes over, as root_mark's), so it outlives the container. (The closing run: kept in the container's own
+    layer, it was gone after every update, and two crashes that had nothing to do with the map then sent a good map
+    back to the one before.)"""
+    return BACKUP_REQUESTS / '.good-build'
+
+
 def good_build() -> int | None:
-    """The build the server last ran well on (kept across container starts)."""
-    text_ = read_small(STATE / 'good-build')
+    """The build the server last ran well on (kept across container starts and updates)."""
+    text_ = read_small(good_build_path()) or read_small(STATE / 'good-build')
     return int(text_.strip()) if text_ and text_.strip().isdigit() else None
 
 
@@ -1118,9 +1128,10 @@ def rebuild_after_update(port: int) -> bool:
     if state.get('readable'):
         write_rebuild(None)
         return False
-    if state.get('unpublished'):
-        write_rebuild({'needed': True, 'unpublished': state['unpublished']})
-        say(f'this update needs the map rebuilt, and {state["unpublished"]} map change(s) are not published: they would go '
+    if state.get('unpublished') is None or state['unpublished'] > 0:
+        # (None: this world's changes aren't counted yet, so there may be some: the host is asked all the same.)
+        write_rebuild({'needed': True, 'unpublished': state.get('unpublished')})
+        say(f'this update needs the map rebuilt, and {state.get("unpublished") or "some"} map change(s) are not published: they would go '
             'live. The Editor asks (the map editor\'s Publish page): rebuild with them, or discard them first. The world '
             'starts once it is rebuilt.')
         return True
@@ -1316,10 +1327,13 @@ def seconds_words(seconds: float) -> str:
     return f'{int(seconds)} s' if seconds < 60 else f'{int(seconds // 60)} minute{"s" if seconds >= 120 else ""}'
 
 
-def pass_lines(stream, kept) -> None:
-    """The server's lines into the container's log, as they come, under RATW_SERVER, the last few kept for exits.json."""
+def pass_lines(stream, kept, heard=None) -> None:
+    """The server's lines into the container's log, as they come, under RATW_SERVER, the last few kept for exits.json.
+    `heard` (an Event) is set once the server says it is listening: it loaded its map."""
     for line in child_lines(stream):
         child_say('RATW_SERVER', line)
+        if heard is not None and LISTENING in line:
+            heard.set()
         if line.strip():
             kept.append(LOG_UNSAFE.sub('', line.rstrip('\n'))[:400])
 
@@ -1933,15 +1947,16 @@ class Supervisor:
             return
         self.good = self.build
         try:
-            write_file(STATE / 'good-build', f'{self.build}\n', None, 0o644)
+            write_file(good_build_path(), f'{self.build}\n', None, 0o644)
         except OSError as error:
             say(f'warning: the map that started couldn\'t be noted ({error.strerror})')
 
     def fall_back(self) -> bool:
-        """A new map that didn't start twice (doc 78, 12.4): the previous map published again under a new id (as the
-        helper's user and the editor role); fallback.json tells the Editor. False: there is no previous map."""
+        """A new map that didn't start twice (doc 78, 12.4): the map the server last ran well on, else the previous one,
+        published again under a new id (as the helper's user and the editor role); fallback.json tells the Editor. False:
+        there is no previous map."""
         self.build_failures = 0
-        out = map_tool('fallback', self.editor_port, 300)
+        out = map_tool('fallback', self.editor_port, 300, good=self.good)
         if not out or not out.get('now'):
             say(f'the world\'s map (build {self.build}) didn\'t start, and there is no previous map to go back to'
                 + ('' if out else ' (the database didn\'t answer)'))
@@ -1961,17 +1976,20 @@ class Supervisor:
         s = self.s
         workers = s['workers'] if s['workers'] is not None else default_workers()
         say('starting the world server')
+        # (Read before the server starts: a build published while it starts is not the one it loaded.)
+        self.build = (map_tool('newest', self.editor_port, 30) or {}).get('build')
         self.server = server = subprocess.Popen(
             server_command(s, self.port, self.agent_dir, self.dialogue, workers), cwd=STATE,
             env=child_env(RATW_DATABASE_URL=self.database_url), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             text=True, encoding='utf-8', errors='replace', **run_as(SERVER_USER))
         self.server.lines = collections.deque(maxlen=EXIT_LINES)
-        self.server.tee = threading.Thread(target=pass_lines, args=(self.server.stdout, self.server.lines), daemon=True)
+        self.server.heard = threading.Event()
+        self.server.tee = threading.Thread(target=pass_lines, args=(self.server.stdout, self.server.lines, self.server.heard),
+                                           daemon=True)
         self.server.tee.start()
         self.started_at = self.clock()
         self.stop_by = None
         server_state(True, 'running', self.code, self.failures)
-        self.build = (map_tool('newest', self.editor_port, 30) or {}).get('build')
 
     def record_exit(self, process, code: int) -> None:
         """exits.json in the admin volume: the server's last exits, each with its last lines, for the owner's "the world
@@ -2002,8 +2020,11 @@ class Supervisor:
             self.failures, self.next_start = 0, now
             server_state(False, 'restarting', code)
             return
-        if code in (RELEASE_EXIT, MAINTENANCE_EXIT):
-            self.ran_well()                           # (It left by itself, saved: it had started.)
+        heard = getattr(process, 'heard', None)
+        if code in (RELEASE_EXIT, MAINTENANCE_EXIT) and (heard is None or heard.is_set()):
+            # It left by itself, saved, after loading its map. (A server that finds the world closed leaves with 76
+            # before it loads anything: that says nothing of the map, R2.)
+            self.ran_well()
         if code == RELEASE_EXIT:
             say('the server stopped for a new release; starting it again')
             self.failures, self.next_start = 0, now
@@ -2017,7 +2038,9 @@ class Supervisor:
             return
         if ran >= STABLE:
             self.failures = 0
-        if self.build is not None and self.build != self.good and ran < STARTED_WELL:
+        # (Only from a map newer than one known to run: with no such note (a first start, an old world folder) a crash
+        # says nothing of the map, and there is nothing known good to go back to.)
+        if self.build is not None and self.good is not None and self.build != self.good and ran < STARTED_WELL:
             self.build_failures += 1
             if self.build_failures >= 2 and self.fall_back():
                 self.failures, self.next_start = 0, now

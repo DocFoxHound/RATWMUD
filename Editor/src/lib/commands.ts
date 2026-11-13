@@ -2,6 +2,7 @@
 // shortcuts all read this list, so they never drift apart.
 import * as M from '../model/model.mjs';
 import {api, download} from './api';
+import {hosted} from './hosted';
 import {ELEVATION_LABEL, ELEVATION_MODES, nextElevation} from './elevation';
 import {glyphRender, setPlainAscii} from './glyphFont';
 import {planRoad} from './roads';
@@ -82,7 +83,7 @@ const tool = (id: Tool, label: string, key: string, group: string): Command => (
 
 const selectedCells = () => { const s = getState().selection; return s?.kind === 'cells' ? s.ids : []; };
 
-export const COMMANDS: Command[] = [
+const ALL_COMMANDS: Command[] = [
     {id: 'file.import', label: 'Import a .cell file as an interior…', menu: 'File', group: 'a', keys: 'Ctrl+O', match: ctrl('o'), run: importCellFile},
     {id: 'file.save', label: 'Save status', menu: 'File', group: 'b', keys: 'Ctrl+S', match: ctrl('s'), run: saveProject},
     {id: 'file.saveas', label: 'Download a copy (atlas JSON)', menu: 'File', group: 'b', keys: 'Ctrl+Shift+S', match: ctrl('s', true), run: async () => {
@@ -175,7 +176,10 @@ export const COMMANDS: Command[] = [
         enabled: () => getState().tool === 'cell', run: () => setState(s => ({cellSize: {w: s.cellSize.h, h: s.cellSize.w}}))},
     {id: 'help.shortcuts', label: 'Keyboard shortcuts', menu: 'Help', keys: '?', match: e => e.key === '?', run: () => setState({dialog: 'shortcuts'})},
     {id: 'help.about', label: 'How worlds reach the game', menu: 'Help', run: () => setState({dialog: 'about'})},
+    // A host's Editor (doc 78; the closing run): Play and the ZIP export are the laptop's (the world is played from the
+    // game, and its file is My world's Share); the map reaches players through the Publish page.
 ];
+export const COMMANDS: Command[] = ALL_COMMANDS.filter(c => !hosted || !['file.play', 'file.export'].includes(c.id));
 
 function isRoomSelected() {
     const ids = selectedCells();

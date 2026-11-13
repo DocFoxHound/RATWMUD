@@ -692,6 +692,9 @@ SECTIONS = {
     'accounts': drop_section,       # (Left out, not emptied: an empty list of the wrong kind of accounts is refused.)
     'players': empty_section,
     'director': drop_section,       # (The operator bridge's own identity and receipts: a new world makes its own.)
+    # (The host's account as this world last knew it (doc 78's R1: kept so a host with a bad token isn't a stranger).
+    # The closing run of slice 2: any world that had been on central failed to share over it.)
+    'lastHost': drop_section,
     # (Maps keyed by player, Core/RatwCheckpoint.cpp: a key per player who sent a command, heard a scene, chose an
     # alias; companions are resident -> the player who hired them; notes are kept as the game was given them.)
     'aliases': clear_section,
@@ -1134,10 +1137,13 @@ def read_source(conn, with_snapshot=True, log=print) -> dict:
     # (live.economy's kept columns only, doc 79, 14: the dead ones stay behind, D20.)
     live['live.economy'] = [{k: v for k, v in world_sync.normalized(r).items() if k in economy_shipped()}
                             for r in world_sync.read(conn, 'live.economy', world_id).values()]
+    # The map edits the source holds that its newest build lacks (doc 78, 10.3): None when the build was made before
+    # they were counted. The importing world's count starts from it (import_package).
+    import world_publish
     out = {'world_id': world_id, 'world': world_row, 'areas': areas, 'live': live,
            'source': read_map_source(conn, world_id),
            'build': {'id': build[0], 'fingerprint': build[1], 'created_at': build[2].isoformat(), 'manifest': build[3],
-                     'cells': cells},
+                     'cells': cells, 'unpublished': world_publish.unpublished(conn)['count']},
            'snapshot': None, 'usernames': dm_usernames(conn), 'names': set(), 'authors': author_names(conn)}
     if with_snapshot:
         text = conn.execute('SELECT game.load_checkpoint(%s)', (world_id,)).fetchone()[0]
@@ -1443,7 +1449,7 @@ def read_part(directory: Path, name: str):
         raise PackageError(f'{name} unpacks to more than {unpacked / MB:.0f} MB, a package\'s most.')
     try:
         return json.loads(data.decode('utf-8'))
-    except (UnicodeDecodeError, ValueError) as error:
+    except (UnicodeDecodeError, ValueError, RecursionError) as error:
         raise PackageError(f'{name} isn\'t JSON ({str(error)[:80]}).') from error
 
 
@@ -1530,6 +1536,42 @@ def shape_problems(contents: dict) -> list[str]:
             total += size
         if table != TERRAIN and total > TABLE_MOST:
             errors.append(f'{table}: {total / MB:.1f} MB; a package\'s may be at most {TABLE_MOST / MB:.0f} MB.')
+    return errors + size_problems(row, contents['source'] or {})
+
+
+SIDE_MOST = 4096                    # A cell's or an interior's side, in tiles (today's cells are 256).
+TILES_MOST = 256 * 1024 * 1024      # All the cells' tiles together (today's world: 15.8 million).
+AWAY_MOST = 4_000_000               # How far from the origin a cell may lie, in tiles.
+
+
+def size_problems(world_row: dict, source: dict) -> list[str]:
+    """The numbers the map's rows give for sizes and places, held to what a world has, before the rows are made into a
+    project (R2: a cell 2,000,000,000 tiles wide made the check itself build that much ground, and take the computer's
+    memory with it). A list of what is wrong, the first of each table."""
+    whole = lambda v, low, high: type(v) is int and low <= v <= high
+    errors = []
+    chunk = world_row.get('chunk_size', 128)
+    if not whole(chunk, 8, 1024):
+        return ['world.worlds: chunk_size is a whole number from 8 to 1024.']
+    tiles = 0
+    for i, r in enumerate(source.get('world.cells') or []):
+        if not (whole(r.get('width'), 1, SIDE_MOST) and whole(r.get('height'), 1, SIDE_MOST)
+                and whole(r.get('x'), -AWAY_MOST, AWAY_MOST) and whole(r.get('y'), -AWAY_MOST, AWAY_MOST)):
+            errors.append(f'world.cells[{i}]: a cell is 1 to {SIDE_MOST} tiles a side, within {AWAY_MOST} tiles of the origin.')
+            break
+        tiles += r['width'] * r['height']
+    if tiles > TILES_MOST:
+        errors.append(f'world.cells: {tiles} tiles in all; a package\'s map may hold at most {TILES_MOST}.')
+    for i, r in enumerate(source.get('world.interiors') or []):
+        if not (whole(r.get('width'), 1, SIDE_MOST) and whole(r.get('height'), 1, SIDE_MOST)
+                and isinstance(r.get('glyphs'), str) and len(r['glyphs']) == r['width'] * r['height']):
+            errors.append(f'world.interiors[{i}]: an interior is 1 to {SIDE_MOST} tiles a side, with a glyph for each tile.')
+            break
+    for i, r in enumerate(source.get(TERRAIN) or []):
+        if not (r.get('size') == chunk and whole(r.get('cx'), -AWAY_MOST, AWAY_MOST) and whole(r.get('cy'), -AWAY_MOST, AWAY_MOST)
+                and isinstance(r.get('glyphs'), str) and len(r['glyphs']) == chunk * chunk):
+            errors.append(f'{TERRAIN}[{i}]: a chunk is {chunk} tiles a side (the world\'s chunk size), with a glyph for each tile.')
+            break
     return errors
 
 
@@ -1572,7 +1614,7 @@ def map_problems(contents: dict) -> tuple[list[str], list[str]]:
         return list(error.errors), []
     except PackageError as error:
         return [str(error)], []
-    except (KeyError, TypeError, ValueError, AttributeError, IndexError) as error:
+    except (KeyError, TypeError, ValueError, AttributeError, IndexError, MemoryError, RecursionError, OverflowError) as error:
         return [f'The map\'s rows don\'t make a world ({type(error).__name__}: {str(error)[:120]}).'], []
     return [], warnings
 
@@ -1645,6 +1687,10 @@ def export(key: str, out: Path, with_snapshot=True, version=None, log=print, tra
                     log(f'{len(away)} place(s) no door, passage, stairs or neighbouring cell reaches from the spawn (hidden '
                         f'or unfinished? remove what isn\'t released before sharing): {", ".join(away[:20])}'
                         + (f' and {len(away) - 20} more' if len(away) > 20 else '') + '.')
+                if source['build'].get('unpublished'):
+                    log(f'{source["build"]["unpublished"]} map change(s) in this world are not published: the package '
+                        'carries them in its map\'s source, and the world started from it shows them once it publishes '
+                        '(publish first to send the map as players have it).')
                 sizes = {}
                 sizes['world.json.gz'] = write_json_gz(work / 'world.json.gz', {'world': source['world'],
                                                                                 'areas': source['areas']})
@@ -1663,7 +1709,8 @@ def export(key: str, out: Path, with_snapshot=True, version=None, log=print, tra
             'version': version or f'{key}-b{source["build"]["id"]}-{made:%Y%m%d%H%M}',
             'source': key, 'world_id': source['world_id'],
             'build': {'id': source['build']['id'], 'fingerprint': source['build']['fingerprint'],
-                      'made': source['build']['created_at'], 'cells': source['build']['cells']},
+                      'made': source['build']['created_at'], 'cells': source['build']['cells'],
+                      'unpublished': source['build'].get('unpublished')},
             'protocol': protocol(), 'client_data': client_data(), 'made_at': made.isoformat(timespec='seconds'),
             'compression': 'gzip', 'snapshot': source['snapshot'] is not None,
             'rows': {t: len(r) for t, r in rows.items()},
@@ -1737,7 +1784,7 @@ def unpack(file: Path, directory: Path) -> dict:
     try:
         with tarfile.open(file, mode='r:') as tar:
             for member in tar:
-                if member.name not in PACK_NAMES or member.name in seen or not member.isreg():
+                if member.name not in PACK_NAMES or member.name in seen or not member.isreg() or member.size < 0:
                     raise PackageError(f'{file.name} holds {member.name[:60]!r}, which isn\'t a world package\'s file.')
                 total += member.size
                 if total > PACK_MOST:
@@ -1746,7 +1793,7 @@ def unpack(file: Path, directory: Path) -> dict:
                 source = tar.extractfile(member)
                 with open(directory / member.name, 'xb') as target:
                     shutil.copyfileobj(source, target, 1 << 20)
-    except tarfile.ReadError as error:
+    except (tarfile.TarError, EOFError) as error:
         raise PackageError(f'{file.name} isn\'t a packed world package ({error}).') from error
     if MANIFEST not in seen or SUMS not in seen:
         raise PackageError(f'{file.name} has no {MANIFEST if MANIFEST not in seen else SUMS}: not a world package.')
@@ -2094,6 +2141,16 @@ def _import(directory: Path, key: str, name: str, manifest: dict, contents: dict
                                              (world_id, row['id'], post['seq'], post['area'], post['x'], post['y']))
                     counts[table] = len(live[table])
                 build_id, cells = import_build(conn, world_id, directory / 'build.tar.gz', manifest)
+                # "N map changes not published" starts at none (doc 78, 10.3; the closing run found a new world saying
+                # "counted from the next Publish", with no Discard): the build is the source's, as far as the package
+                # says. A package whose source was ahead of its build says how far, and that world counts from its first
+                # Publish (the edits themselves, world.edits, never ship).
+                import world_build
+                ahead = manifest.get('build', {}).get('unpublished') if isinstance(manifest.get('build'), dict) else None
+                if source is not None and world_build.publish_columns(conn) and not (
+                        isinstance(ahead, int) and not isinstance(ahead, bool) and ahead > 0):
+                    conn.execute('UPDATE world.builds SET edits_through = %s WHERE id = %s',
+                                 (world_build.newest_edit(conn, world_id), build_id))
                 if snapshot is not None:
                     conn.execute('SELECT game.save_checkpoint(%s, %s, %s)',
                                  (world_id, int(snapshot.get('revision') or 0), json.dumps(snapshot, ensure_ascii=False)))

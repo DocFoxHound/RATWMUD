@@ -381,6 +381,13 @@ class StripTest(unittest.TestCase):
         self.assertEqual(self.st.names, {'Ash Tallow', 'The Iron Fangs', "The Iron Fangs's camp"})
         self.assertGreater(self.st.found['society'], 0)
 
+    def test_the_hosts_account_is_never_packaged(self):
+        """The closing run of doc 78's slice 2: a world that had been on central keeps its host's account in its save
+        (lastHost: R1), which the strip didn't know, so Share my world failed on every listed world."""
+        doc = save(lastHost='acct-' + 'a' * 32)
+        P.strip(doc)
+        self.assertNotIn('lastHost', doc)
+
     def test_an_unknown_section_stops_it(self):
         with self.assertRaisesRegex(P.PackageError, 'newThing'):
             P.strip(save(newThing={}))
@@ -1072,6 +1079,9 @@ class EndToEndTest(unittest.TestCase):
         with W.connect(key, 'owner') as conn:
             record = conn.execute("SELECT value FROM admin.settings WHERE key = 'package'").fetchone()[0]
             self.assertEqual((record['format'], record['map_source']), (2, True))
+            # (The closing run: a new world's count starts at none, so its first edit reads "1 map change not published".)
+            import world_publish
+            self.assertEqual(world_publish.unpublished(conn)['count'], 0)
             original = conn.execute("SELECT value FROM admin.settings WHERE key = %s", (P.ORIGINAL_ECONOMY,)).fetchone()[0]
             self.assertEqual(original['from'], 'import')
             seeded = conn.execute("SELECT value FROM admin.settings WHERE key = %s", (P.SEEDED,)).fetchone()[0]
@@ -1154,8 +1164,19 @@ class EndToEndTest(unittest.TestCase):
 
         def huge(parts):
             parts['map.json.gz']['tables']['world.cells'][0]['description'] = 'x' * (2 << 20)
+        # (R2: sizes are held before the rows are made into a project: a cell two thousand million tiles wide made the
+        # check itself build that much ground.)
+        def giant(parts):
+            parts['map.json.gz']['tables']['world.cells'][0]['width'] = 2_000_000_000
+
+        def chunk(parts):
+            parts['terrain.json.gz']['tables'][P.TERRAIN][0]['size'] = 1
+
+        def room(parts):
+            parts['map.json.gz']['tables']['world.interiors'][0]['height'] = 10 ** 9
         cases = {'glyph': (glyph, "terrain must be"), 'table': (table, 'world.editors'), 'column': (column, 'secret'),
-                 'author': (author, 'names who wrote it'), 'huge': (huge, 'a row may be at most')}
+                 'author': (author, 'names who wrote it'), 'huge': (huge, 'a row may be at most'),
+                 'giant': (giant, 'a cell is 1 to'), 'chunk': (chunk, 'a chunk is'), 'room': (room, 'an interior is 1 to')}
         before = W.registry_file().read_text()
         refuse = lambda *_, **__: (_ for _ in ()).throw(AssertionError('written before the checks'))
         for name, (change, said) in cases.items():

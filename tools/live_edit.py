@@ -296,6 +296,10 @@ class Batch:
             if not room['dirty'] or room['meta'] is None:
                 continue
             meta, width, height = room['meta'], room['meta']['width'], room['meta']['height']
+            # (Held before its rows are made: a room a thousand million tiles a side would be built here, in the
+            # editor's process, holding the world's row meanwhile: doc 78's R2.)
+            if not all(type(v) is int and 1 <= v <= 4096 for v in (width, height)):
+                raise Rejected(f'An interior is 1 to 4096 tiles a side ({rid}).', {})
             terrain = [''.join(room['tiles'].get((x, y), '.') for x in range(width)) for y in range(height)]
             heights = {f'{x},{y}': h for (x, y), h in sorted(room['heights'].items(), key=lambda kv: kv[0][::-1])
                        if x < width and y < height}

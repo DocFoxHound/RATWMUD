@@ -88,7 +88,7 @@ export function PublishPage({me}: {me: Me}) {
                     })}
                 </div>
                 <p><button className="primary" data-action="publish" disabled={!!why} title={why || undefined}
-                    onClick={() => void act(() => dmApi.mapPublish(choice), 'Publishing…')}>Publish{count ? ` ${count} ${count === 1 ? 'change' : 'changes'}` : ''}</button>
+                    onClick={() => void act(() => dmApi.mapPublish(choice), '')}>Publish{count ? ` ${count} ${count === 1 ? 'change' : 'changes'}` : ''}</button>
                     {' '}<span className="hint">At most {state.perHour} an hour for each account.</span></p>
                 {job && <div className="my-world-steps" data-job>
                     <p className={job.step === 'refused' || job.step === 'failed' ? 'error' : undefined}><strong>{jobLine(job)}</strong>

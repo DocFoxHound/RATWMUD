@@ -10,6 +10,7 @@ import {formatHeight, tileHeight} from '../lib/elevation';
 import {getState, isRosterDirty, openView, selectThing, setState, setWorkspace, TOOL_SPACE, useStore, useTool, type MapSpace, type Tool, type Workspace} from '../lib/store';
 import {placeLabel, surfaceFor} from '../lib/surface';
 import {atlasWorld, type AtlasWorld} from '../lib/api';
+import {hosted} from '../lib/hosted';
 
 // --------------------------------------------------------------------------- Menu bar
 
@@ -71,8 +72,9 @@ export function TopBar() {
             <div className="top-actions">
                 <EditorsOnline />
                 <button className={checks.errors.length ? 'status-chip bad' : 'status-chip ok'} onClick={() => setState({selection: null})}
-                    title="Open the Problems panel">{checks.errors.length ? `${checks.errors.length} problem${checks.errors.length > 1 ? 's' : ''}` : 'Ready to play'}</button>
-                <button className="play" onClick={() => setState({dialog: 'play'})} title="Ctrl+Enter">▶ Play</button>
+                    title="Open the Problems panel">{checks.errors.length ? `${checks.errors.length} problem${checks.errors.length > 1 ? 's' : ''}` : hosted ? 'No problems' : 'Ready to play'}</button>
+                {/* (A host's world is played from the game; its map goes to players through the Publish page.) */}
+                {!hosted && <button className="play" onClick={() => setState({dialog: 'play'})} title="Ctrl+Enter">▶ Play</button>}
             </div>
         </header>
     );
@@ -288,7 +290,9 @@ const savedProblemsHeight = () => {
 
 export function ProblemsPanel() {
     const project = useStore(s => s.project);
-    const {errors, warnings} = useMemo(() => M.validate(project), [project]);
+    const checked = useMemo(() => M.validate(project), [project]);
+    // (The two notes about a file export's size are the laptop's Play: a host's world is streamed, whatever its size.)
+    const errors = checked.errors, warnings = hosted ? checked.warnings.filter(w => !w.includes('a file export holds')) : checked.warnings;
     const [open, setOpen] = useState(true);
     // The list's height when open: drag the top edge to resize it; double-click the edge for compact or tall.
     const [height, setHeight] = useState(savedProblemsHeight);
@@ -313,7 +317,7 @@ export function ProblemsPanel() {
                 title="Drag to resize · double-click for compact or tall" onPointerDown={drag}
                 onDoubleClick={() => keep(height > 200 ? 120 : window.innerHeight * .45)} />}
             <button className="problems-head" onClick={() => setOpen(!open)}>
-                <b className={errors.length ? 'bad' : 'warn'}>{errors.length ? `${errors.length} must be fixed before export` : 'Checks passed'}</b>
+                <b className={errors.length ? 'bad' : 'warn'}>{errors.length ? `${errors.length} must be fixed before ${hosted ? 'Publish' : 'export'}` : 'Checks passed'}</b>
                 {warnings.length > 0 && <span>{warnings.length} note{warnings.length > 1 ? 's' : ''}</span>}
                 <span className="chev">{open ? '▾' : '▸'}</span>
             </button>

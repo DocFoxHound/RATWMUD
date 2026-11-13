@@ -1099,8 +1099,11 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
     for (const auto& [id, claims] : liveClaims)
     {
         auto* c = candidate.cell(id);
+        // The live tables can be ahead of the map: a place a host has made in the map editor and not published yet has
+        // its claims there already (doc 78, 10.3; the closing run: a new interior stopped the world starting). Its claims
+        // wait with it.
         if (!c)
-            return reject("Claims reference an unknown cell or interior: " + id);
+            continue;
         for (const auto& claim : claims) if (!candidate.factions_.count(claim))
             return reject("Claims reference an unknown faction: " + claim);
         c->factionClaims = claims;

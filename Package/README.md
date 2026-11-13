@@ -18,6 +18,7 @@ it as a file (say `ratw-world.tar`).
   plugin. No Mac.
 - About 250 MB to download, about 1.5 GB of disk to start with (and 2 GB free beyond that for backups), and about
   1 GB of memory with nobody playing.
+- To change your map: **2 GB to play; 5 GB more to Publish**, so a computer with 16 GB (section 28).
 - A game account approved as a host, and the game's desktop client.
 - Port **7788** (TCP) forwarded on your router to this computer.
 
@@ -71,7 +72,7 @@ connection is behind carrier-grade NAT: ask your provider for a public IPv4 addr
 4. Choose your own password: at least 12 characters, without your account's or your world's name, not a common one,
    and used for this world only. The file then says "Used".
 5. The Editor menu: **DM** opens the Dungeon Master tool. Its **My world** tab closes, opens and restarts the world,
-   and holds its backups.
+   and holds its backups. **ATLAS** opens the map editor (below).
 
 The code works for 7 days; after that the world writes a new one the next time it starts.
 
@@ -105,7 +106,7 @@ CERTIFICATE HAS CHANGED"**, don't sign in: section 13 says when that is expected
 ## Co-builders (sections 14-15)
 
 On the Editor menu, **EDITOR ACCOUNTS** (your password is asked again), **ADD A CO-BUILDER**: a name and a role
-(`viewer` watches, `dm` runs events and NPCs, `builder` also the map later). The game shows their **Editor code**
+(`viewer` watches, `dm` runs events and NPCs, `builder` also the map and Publish). The game shows their **Editor code**
 once: pass it on privately, never in a group chat. It works once, for 72 hours. They need the game's desktop client
 and your Editor port open to them. Owners are made only here: `docker compose exec world ratw-editor add NAME --role
 owner`.
@@ -142,6 +143,20 @@ makes a safety copy, puts the backup back and starts the world again.
 - Logs: `docker compose logs world`, `docker compose logs backup`.
 - The host's commands in the game: press the ` key, then `/help`.
 
+## Changing your map: the map editor and Publish (section 28)
+
+- **ATLAS** on the Editor menu (for `builder` and `owner`) opens the map editor. Its Map page's changes **wait for
+  Publish**: players don't see them until you publish. Residents, factions and the economy are **live now**.
+- The **Publish** page says "3 map changes not published" and whether this computer can publish. **Publish** makes a
+  backup, checks the map (each problem in plain words, with **Show me**), builds it (a minute or two) and moves the world
+  onto it: **Open only to me** (you look first, then **Open to everyone**), **Now, with a minute's warning**, or **When
+  everyone has left**. If anything is wrong, nothing is changed. At most 6 an hour for each account.
+- **Memory: 2 GB to play; 5 GB more to Publish.** On a 16 GB Windows PC, give Docker 12 GB once: in Notepad make
+  `%UserProfile%\.wslconfig` (saved as "All files", no `.txt`) holding the two lines `[wsl2]` and `memory=12GB`; in
+  PowerShell type `wsl --shutdown`; quit Docker Desktop and start it again. An 8 GB PC can't Publish today's map.
+- Under **Undo**: **Go back to the previous map…** (players get a minute; nothing they did is lost) and **Discard
+  unpublished changes…**. A new map that won't start goes back to the previous one by itself, and the page says so.
+
 ## Updates (section 20)
 
 Load the new image file, then start the world on it:
@@ -171,8 +186,8 @@ In the game's EDITOR box, the second world is `127.0.0.1:17790`.
 Once the world has run, this folder holds your host token (`.env`), an Editor code (`manage/first-editor.txt`) and
 players' data (`backups/`). To share the world itself, the owner uses **Share my world** in the Editor's My world tab:
 the world writes one file of itself, without its players, Editor accounts, token or keys, into `manage/shared/`
-(`<world>-<date>.ratwpkg`, the newest 3 kept). Until map editing comes it carries the map as built, not the map's
-editing source. To help a friend host, send them the package from the game's team.
+(`<world>-<date>.ratwpkg`, the newest 3 kept). It carries the map as players have it and the map editor's copy beside
+it (publish first to send them the same). To help a friend host, send them the package from the game's team.
 
 ## Starting again from scratch (section 23)
 

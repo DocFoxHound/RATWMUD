@@ -633,7 +633,15 @@ void factionClaims()
     expect(loaded.ok, "A world with live claims loads: " + loaded.message);
     expect(world.cell("town")->factionClaims == std::vector<std::string>{"watch"}, "The town is claimed by the watch");
     expect(world.cell("shop")->factionClaims.empty(), "The shop is claimed by nobody");
-    for (const auto* bad : {"claims \"town\" 1 \"nobody\"\n", "claims \"nowhere\" 0\n", "claims \"town\" 0\nclaims \"town\" 0\n"})
+    // (Doc 78, 10.3: the claims of a place the map lacks wait for it: a host's new interior, not published yet.)
+    {
+        auto ahead = files;
+        ahead["world.ratw"] += "claims \"nowhere\" 1 \"watch\"\n";
+        World later;
+        expect(later.loadWorldFiles(ahead, "ahead").ok && later.cell("town")->factionClaims == std::vector<std::string>{"watch"},
+               "Claims of a place the map doesn't have yet are skipped, and the world loads");
+    }
+    for (const auto* bad : {"claims \"town\" 1 \"nobody\"\n", "claims \"town\" 0\nclaims \"town\" 0\n"})
         expect(!World().loadWorldFiles({{"world.ratw", files["world.ratw"].substr(0, files["world.ratw"].find("claims ")) + bad}}, "bad").ok,
                std::string("Refused: ") + bad);
     auto running = town();

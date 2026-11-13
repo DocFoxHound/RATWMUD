@@ -19,7 +19,7 @@ import {ENDED_TEXT, goTo, hosted, reloadApp, RESTARTING_TEXT, sessionEnded, watc
 import {EconomyControls} from './EconomyControls';
 import {PublishPage} from './PublishPage';
 import {BADGE, pageTakes, showFrom} from '../lib/publish';
-import {focusPlace, useStore} from '../lib/store';
+import {openView, toast, useStore} from '../lib/store';
 
 type Suite = 'atlas' | 'dm';
 type AtlasPage = 'workshop' | 'npcs' | 'factions' | 'economy' | 'sync' | 'publish';
@@ -180,7 +180,11 @@ function Workshop({me}: {me: Me}) {
         const place = showFrom(window.location.search);
         if (!place || shown.current || ![...project.cells, ...project.rooms].some(c => c.id === place.cell)) return;
         shown.current = true;
-        focusPlace(place);
+        // (The closing run: from the world's overview focusPlace opens nothing for a world cell, so "Show me" landed on
+        // the whole map. The place itself is opened, and where in it is said.)
+        const found = [...project.cells, ...project.rooms].find(c => c.id === place.cell);
+        openView({kind: 'cell', id: place.cell});
+        toast(`${found?.name ?? place.cell}${place.x || place.y ? `, at ${place.x}, ${place.y}` : ''}: the problem is here.`);
     }, [project]);
     return <App />;
 }

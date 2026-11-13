@@ -1741,7 +1741,7 @@ class StandInPublisher:
     """tools/world_publish.py's Publisher, recorded: what the hosted routes hand it."""
 
     def __init__(self):
-        self.calls, self.place, self.refuse = [], None, None
+        self.calls, self.place, self.refuse, self.spot = [], None, None, None
 
     def _did(self, name, *args):
         self.calls.append((name, *args))
@@ -1758,8 +1758,14 @@ class StandInPublisher:
     def ahead(self, body):
         return self.place
 
+    def ahead_ops(self, ops):
+        return self.spot
+
     def start(self, who, restart, rebuild=False):
         return self._did('start', who['username'], restart, rebuild)
+
+    def rebuild(self, who, discard_first=False):
+        return self._did('rebuild', who['username'], discard_first)
 
     def back(self, who, discard_too=False):
         return self._did('back', discard_too)
@@ -1792,7 +1798,7 @@ class HostedPublishTests(HostedBase):
         self.assertEqual(self.call('POST', '/api/atlas/map/rebuild', {'discard': True}, role='builder')[0], 403, 'the owner\'s')
         self.assertEqual(self.call('POST', '/api/atlas/map/rebuild', {'discard': True}, role='owner')[0], 200)
         self.assertEqual(pub.calls, [('start', 'pell#a1b2c3', 'host', False), ('back', True), ('discard',), ('open',),
-                                     ('discard',), ('start', 'pell#a1b2c3', 'later', True)])
+                                     ('rebuild', 'pell#a1b2c3', True)])
         pub.refuse = world_publish.Refused([{'text': 'A wolf rents a flat in old_inn.', 'cell': 'old_inn', 'x': 2, 'y': 3}])
         status, data = self.call('POST', '/api/atlas/map/back', {}, role='builder')
         self.assertEqual((status, data['error'], data['errors'][0]['cell']), (422, 'A wolf rents a flat in old_inn.', 'old_inn'))
@@ -1817,6 +1823,17 @@ class HostedPublishTests(HostedBase):
         self.assertEqual(status, 409)
         self.assertIn('Publish the map first: new_inn', data['error'])
         self.assertEqual(len([c for c in self.dm.calls if c[0] == 'queue' or 'npc.move' in str(c)]), 1, 'the refused act reached nothing')
+        # The map editor's own edit of a resident (the closing run: accepted, it stopped the game server at its next
+        # start): refused the same way, with the values as they stand so the page puts its picture back.
+        edit = {'clientId': 'c1', 'label': 'Mara moves', 'ops': [{'key': 'person:mara', 'before': {'id': 'mara', 'home': {'cell': 'town', 'x': 1, 'y': 1}},
+                                                                   'after': {'id': 'mara', 'home': {'cell': 'new_inn', 'x': 1, 'y': 1}}}]}
+        pub.spot = 'Publish the map first: Mara would be in new_inn, which is in the map editor and not yet in the world players are in (the Publish page).'
+        status, data = self.call('POST', '/api/atlas/live/edit', edit, role='builder')
+        self.assertEqual((status, data['error']), (409, pub.spot))
+        self.assertEqual(data['current'], {'person:mara': edit['ops'][0]['before']})
+        self.assertEqual(getattr(self.atlas_world, 'edits', []), [], 'nothing was written')
+        pub.spot = None
+        self.assertEqual(self.call('POST', '/api/atlas/live/edit', edit, role='builder')[0], 200)
 
     def test_no_publish_without_a_backup(self):
         self.assertEqual(self.hosted._backup_first(wait=0), ST.NO_BACKUP_NO_PUBLISH, 'an old compose.yaml: no backup service')

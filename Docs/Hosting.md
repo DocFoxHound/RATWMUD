@@ -16,8 +16,8 @@ A few words this guide uses:
   goods, home, friends) stays in your world.
 - **The world folder** is the folder you unpack the package into (section 4). Every command in this guide is typed in
   it.
-- **The Editor** is your world's own tools: the Dungeon Master tool (the DM tool) now, and a map editor later. You
-  reach it with the **EDITOR** button on the game's main menu (section 10).
+- **The Editor** is your world's own tools: the Dungeon Master tool (the DM tool) and the map editor (Atlas). You
+  reach it with the **EDITOR** button on the game's main menu (section 10). Changing your map is section 28.
 
 Where things stand:
 - This is the first version. During the closed beta, an account can host only once the game's team has approved it,
@@ -59,6 +59,7 @@ Contents:
 25. Being the host in the game
 26. What you can see, and your duties
 27. Something went wrong
+28. Changing your map: the map editor and Publish
 
 ---
 
@@ -113,6 +114,10 @@ So keep room to spare. The world saves itself by copying itself in memory for a 
 twice the world's memory. A computer with 4 GB of memory free for the world should be comfortable, but that is a guess.
 On Windows, Docker runs inside a small Linux machine (WSL 2), which may use at most half of your computer's memory
 (section 3 says how to give it more).
+
+**To change your map you need more: 2 GB to play; 5 GB more to Publish.** Publishing a changed map builds the whole
+map again, which takes about 5 GB of memory for a minute or two. A computer with 16 GB can do it, after one small
+change (section 28, "Memory to Publish"). A computer with 8 GB can host and play, but can't Publish today's map.
 
 **At least 2 GB free on the disk** after all that: a backup that would leave less is refused (section 19).
 
@@ -174,7 +179,8 @@ and a small part that asks your router to open the port). You don't need to know
    for "Windows automatic sign-in"), or set Windows Update's **active hours** and pause its restarts while you host.
    A rented Linux server (a VPS) is the way to run fully unattended.
 6. Memory: Docker's Linux machine (WSL 2) may use at most half of the computer's memory, and Docker Desktop's
-   settings have no slider for it. If the computer has less than about 12 GB, give it more: make a plain-text file
+   settings have no slider for it. (To change your map on a 16 GB computer, section 28's "Memory to Publish" gives
+   these steps with `memory=12GB`.) If the computer has less than about 12 GB, give it more: make a plain-text file
    called `.wslconfig` (not `.wslconfig.txt`) in your user folder (`%UserProfile%`, for example `C:\Users\you`),
    holding
 
@@ -628,7 +634,8 @@ After signing in you see your world's name and address, and:
 - for the owner, "N failed sign-ins today" when there were any, and a line for every Editor account change since your
   last visit;
 - **DM**: opens the Dungeon Master tool in the Editor window;
-- **ATLAS**: the map editor, greyed: "Map editing comes in a later update.";
+- **ATLAS**: opens the map editor in the Editor window (section 28). For `builder` and `owner` accounts; others see it
+  greyed: "Your account is for the DM tool only.";
 - **EDITOR ACCOUNTS** (the owner only: section 14), **Change my password**, **Sign out**, **Back to the main menu**.
 
 The Editor window keeps working while you go back to the main menu and play. If the world restarts, the window says
@@ -639,7 +646,7 @@ sign in again from the Editor menu." Sign in again as the same account and the w
 
 | Tab | What it does | When it takes effect |
 |---|---|---|
-| **LIVE** | The world as it is now: who is where, visitors, rumours, notices, festivals, the latest events and the calendar. (The map's picture itself comes with map editing, in a later update: until then the map area says so, and Find someone and the side panel do the work.) | At once |
+| **LIVE** | The world as it is now: who is where, visitors, rumours, notices, festivals, the latest events and the calendar. (A world started from an older package has no map picture here: its map area says so, and Find someone and the side panel do the work.) | At once |
 | **NPC Life** | Each resident's life: kill, revive, protect, move, their story | At once |
 | **Chapters** | Players' Chapters: treaties, House requests | At once |
 | **Players** | The wolves in your world: storytellers, reports, and (for the owner and those allowed) acting on a wolf | At once |
@@ -669,6 +676,8 @@ The **My world** tab is about the world itself. At the top: how many wolves are 
 - **History**: every change made with the Editor, newest first, with the account that made it; **Sign-ins**.
 - **Share my world**: one file of your world without its players, made into `manage\shared` in the world folder
   (section 24). The owner's only.
+- **The map**: "3 map changes not published" (or "Every map change is published"), and whether this computer can
+  publish: "This computer can publish map changes." or what it lacks (section 28).
 - For the owner only: **the world folder**'s path (with a warning if it looks like a OneDrive, Dropbox, Google Drive or
   iCloud folder), and, if the world's server keeps stopping, its last lines.
 - **Something went wrong?**: a short table of what to do (section 27).
@@ -825,7 +834,7 @@ account of their own, with a **role**:
 |---|---|
 | `viewer` | Watch the DM tool. Can't change anything. |
 | `dm` | Run events and NPCs, the economy, Chapters and storytellers. Can't touch the map, My world's actions or accounts. |
-| `builder` | All a `dm` can, and the map once map editing comes. Can't touch My world's actions or accounts. |
+| `builder` | All a `dm` can, and the map: the map editor and Publish (section 28). Can't touch My world's actions or accounts, and can't open a world you closed. |
 | `owner` | Everything, including Editor accounts and My world (closing, restarting, backups). |
 
 **Acting on players' wolves** (killing, injuring, moving or bringing one back) is for the owner, and for accounts you
@@ -1068,6 +1077,12 @@ It doesn't change your world's map or residents: a new package's world is only f
 
 A world on an older game version stays on the list, but players whose game is newer see "This world is older than
 your client: its host needs to update it", and can't join it. So update when a new version comes out.
+
+**If the update's server can't read your map as it was built**, the world builds the map again by itself when it
+starts. That takes Publish's memory (section 28): if there isn't enough, the log and the Editor say so, nothing is
+changed, and the world waits until there is. If you have map changes that aren't published, it doesn't decide for you:
+the map editor's Publish page says "This update needs your map rebuilt", with **Rebuild with my changes** and **Discard
+them, then rebuild** (the owner's).
 
 **If the update comes with a new folder** (a new `compose.yaml` or new scripts): copy `compose.yaml` and the four
 scripts over the old ones. **Keep** your `world.toml`, `.env`, `manage` and `backups`. Then `docker compose up -d`.
@@ -1397,6 +1412,10 @@ First look at the log: `docker compose logs world`. Find the message below (the 
 | An NPC action in the DM tool was a mistake | Its opposite action, where one exists (each question says whether there is one) | Nothing |
 | A player's wolf was hurt by mistake | Bring it back, or move it back (Players, or LIVE) | The player's lost time |
 | The economy went wrong | The Economy tab: move the steering slider back, or undo the edict or rule you changed | The rules you changed |
+| A map change was a mistake, and isn't published | The map editor's Undo (Ctrl+Z) as you work; or the Publish page's **Discard unpublished changes…** (section 28) | Your unpublished map changes |
+| A published map was a mistake | The Publish page's **Go back to the previous map…** (section 28) | Nothing players did; a minute's closing |
+| A new map won't start | Nothing: after two tries the world goes back to the previous map by itself, and the Publish page says so (section 28) | Nothing |
+| "This computer can't publish yet" | Close other programs, or give Docker more memory (section 28, "Memory to Publish") | Nothing |
 | The world keeps stopping | My world's last lines; `docker compose logs world`; a restore if nothing else helps (section 19) | Depends |
 | Everything is broken | `restore.bat` or `restore.sh` with a backup (section 19) | **Everything every player did since that backup** |
 | The Editor can't connect | The next table | Nothing |
@@ -1546,3 +1565,162 @@ Read the `RATW_AGENT world agent:` lines in the log, or the reason on the Host p
 
 Save the log to a file: `docker compose logs world > world-log.txt`. Read it through first: it holds players'
 internet addresses. Send the log, never the world folder (section 24).
+
+---
+
+## 28. Changing your map: the map editor and Publish
+
+Your world's map is yours to change: the land, the buildings and rooms, the doors, where new wolves start. You change
+it in the **map editor** (Atlas). Players see your changes when you **Publish**.
+
+A world started from an older package (before map editing) can't be edited this way: ATLAS says so. A world started
+from this version's package can.
+
+### Opening the map editor
+
+1. In the game, press **EDITOR** and sign in (section 10).
+2. On the Editor menu, press **ATLAS**. The map editor opens in the Editor window.
+
+ATLAS is for `builder` and `owner` accounts (section 14). Along the top are its pages: **Map**, **NPCs & areas**,
+**Factions**, **Economy** and **Publish**.
+
+### Two kinds of change
+
+Beside the pages' names is a small badge. It tells you when your changes reach players:
+
+- **Waits for Publish** (the Map page): the land, cells, buildings and rooms, doors and stairs, the starting place. What
+  you save here changes the map in the map editor only. Players see it after you Publish.
+- **Live now** (NPCs & areas, Factions, Economy, and all of the DM tool): players see it within about a second.
+
+Every change you make is saved as you make it ("All changes saved" at the top). You don't need to press Save, and you
+can close the window and come back later.
+
+**Residents can't move into a place that isn't published yet.** If you make a new room and then give a resident a home
+in it, the map editor says "Publish the map first". Publish, then place the resident. The same goes for ground you have
+just opened up where the published map still has a wall.
+
+**You can't add new kinds of ground.** The map editor paints with the game's own kinds (grass, water, walls, floors and
+so on). That is what keeps your world on the world list and players' games in step with it.
+
+### What "not published" means
+
+The Publish page, and My world, say how many of your map changes players can't see yet:
+
+- "**3 map changes not published**": the map editor holds three changes the world players are in doesn't have.
+- "**Every map change is published**": players see the map exactly as the map editor has it.
+
+Unpublished changes are safe. They stay in the map editor through restarts, updates and backups until you publish or
+discard them.
+
+### Publishing
+
+1. In the map editor, open the **Publish** page.
+2. Read the line under "Publish the map". It must say "**This computer can publish map changes.**" If it says "This
+   computer can't publish yet", see "Memory to Publish" below.
+3. Choose how the world moves onto the new map (the three choices below).
+4. Press **Publish 3 changes** (the button says how many).
+
+Then the page shows each step: "Making a backup first…", "Reading the map…", "Checking the map…", "Building the map…
+40%", "Saving the new map…", "Moving the world onto the new map…", and at the end "Published (map 5)". It takes about
+a minute or two. You can keep the window open or close it.
+
+**If something is wrong with the map, nothing is changed.** The page says "Not published: one thing needs putting
+right first", and lists each problem in plain words, for example "Spawn must be on walkable terrain" (you put a wall
+where new wolves start). Press **Show me** beside a problem: the map editor opens the place. Put it right, go back to
+the Publish page and press Publish again.
+
+Publish also checks the world as players left it. If a wolf rents a bed or keeps a market stall where your new map has
+a wall, it stops and says who and where. Wolves who were last standing where the new map has a wall are fine: they wake
+at the world's starting place, and the page tells you how many.
+
+Each account can Publish at most 6 times an hour. Only one Publish runs at a time.
+
+Publish needs your world's backups: it makes one first ("before a map was published"). If the page says this world
+folder has no backup service, take the new `compose.yaml` from the package (section 20).
+
+### The three choices
+
+- **Open only to me** (best for your first Publish, and for big changes). Players get a minute's warning. The world
+  closes, starts on the new map, and lets in **only you**: the host's own game account, the one your world belongs to
+  on central. Join your world from the game as you always do and walk around the new map. Other players are told "This
+  world is open only to its host just now: a new map is being looked at. Try again soon." When you have looked, go
+  back to the Publish page. It says "The world is open only to you", with two buttons:
+  - **Open to everyone**: players can come in at once.
+  - **Go back to the previous map…**: if you don't like what you see (below).
+
+  This choice needs your host token to be valid (section 5). If it is greyed, the page says why. Just after the world
+  starts it can be greyed for up to a minute: press **Refresh**.
+- **Now, with a minute's warning.** Players are told and given a minute. The world closes, starts on the new map, and
+  opens again by itself. About a minute and a half in all.
+- **When everyone has left.** Nobody is interrupted. The new map waits, and the world moves onto it the next time
+  nobody is in it. Players are told a new version has been made.
+
+If the owner has closed the world (My world's Close), a co-builder's Publish leaves it closed. It starts on the new map
+when the owner opens it.
+
+### Memory to Publish
+
+**2 GB to play; 5 GB more to Publish.** Publishing builds the whole map again. For a minute or two that takes about
+5 GB of memory on top of what the world uses to run.
+
+- **A computer with 32 GB or more:** nothing to do.
+- **A computer with 16 GB, on Windows:** do the steps below once. Windows gives Docker half of the computer's memory
+  (8 GB), which is only just enough. Give it 12 GB:
+  1. Open **Notepad**.
+  2. Type these two lines, exactly:
+
+         [wsl2]
+         memory=12GB
+
+  3. Choose **File**, **Save as**. In **File name** type `%UserProfile%\.wslconfig` and in **Save as type** choose
+     **All files**. Press **Save**. (The name starts with a dot and must not end in `.txt`. If you made this file
+     before, in section 3, open it and change its `memory=` line instead.)
+  4. Open **PowerShell** and type:
+
+         wsl --shutdown
+
+  5. Quit Docker Desktop (right-click its whale icon near the clock, **Quit Docker Desktop**) and start it again. Your
+     world starts again by itself after a minute.
+  6. Open the Publish page again. It should say "This computer can publish map changes."
+- **A computer with 8 GB can't Publish today's map.** It can still run the world, and you can still change residents,
+  factions and the economy (they are live). To change the map you need a computer with 16 GB.
+- **On Linux** there is nothing to set: the computer needs about 5 GB of memory free when you press Publish.
+
+If the page says "This computer can't publish yet: publishing needs about 5.0 GB of memory free, and this world has
+3.1 GB", close other programs (a browser with many tabs, a game) and press **Refresh**. If memory runs out during a
+Publish all the same, the page says "The build did not finish: it ran out of memory. Nothing was changed." Your world
+keeps running on its old map.
+
+### Going back to the previous map
+
+If a published map turns out wrong:
+
+1. Open the map editor's **Publish** page.
+2. Under **Undo**, press **Go back to the previous map…**
+3. Read what it says. Tick **Also discard my unpublished map changes** if you want the map editor put back too. If you
+   leave it unticked, your edits stay in the map editor and the next Publish brings them back.
+4. Press **Go back**.
+
+Players get a minute's warning; the world closes and starts again on the map it had before the last Publish. Nothing
+players did is lost. The button is greyed when there is no previous map to go back to (the world keeps the last few).
+
+### Discarding changes you haven't published
+
+Under **Undo**, **Discard unpublished changes…** puts the map editor back to the map as it was last published. It asks
+first, and it can't be undone. Nothing players did is touched. While you work, the map editor's own Undo (Ctrl+Z) takes
+back one step at a time.
+
+### If a new map won't start
+
+It shouldn't happen: Publish checks the map first. If it does, you don't have to do anything. After two failed starts
+the world goes back to the previous map by itself, in about half a minute, and opens again. The Publish page then says
+"**The last map didn't start**: Your last map didn't start; the world went back to the previous map. Your edits are
+kept." Your changes are still in the map editor, unpublished. Tell the game's team (the page names the map that failed,
+which is kept for them), then put the edit right and publish again, or discard the changes.
+
+### Share my world carries the map editor's map
+
+The file **Share my world** makes (section 24) holds your map as players have it, and the map editor's own copy beside
+it, so a world made from your file can be edited in the map editor too. If you have changes that aren't published, they
+go along in the map editor's copy, not in the map players get: publish first if you want to send the map as your
+players have it.

@@ -854,9 +854,12 @@ class Loop(Folders):
         (tools/world_publish.py fallback) and started at once; a map that ran two minutes is trusted."""
         tools = []
 
-        def tool(command, port, timeout=120):
+        def tool(command, port, timeout=120, good=None):
             tools.append(command)
+            if command == 'fallback':
+                goods.append(good)
             return {'failed': 7, 'now': 8} if command == 'fallback' else {'build': 7}
+        goods = []
         with mock.patch.object(E, 'map_tool', side_effect=tool):
             self.run_until(1)
             self.world.build, self.world.good = 7, 6            # (A new map, never run on.)
@@ -868,24 +871,64 @@ class Loop(Folders):
             self.assertEqual((len(self.servers), tools.count('fallback')), (3, 1), 'two: back to the previous map, at once')
             fell = json.loads((E.ADMIN / 'fallback.json').read_text())
             self.assertEqual((fell['failed'], fell['now']), (7, 8))
+            self.assertEqual(goods, [6], 'the map it last ran well on is named (R2)')
             self.assertIn('goes back to the previous map', self.output)
             self.assertIn('Your edits are kept', self.output)
             self.world.build = 8
             self.now += E.STARTED_WELL
             self.quiet(self.world.step)
-            self.assertEqual((self.world.good, (E.STATE / 'good-build').read_text()), (8, '8\n'), 'it ran: trusted')
+            self.assertEqual((self.world.good, E.good_build_path().read_text()), (8, '8\n'), 'it ran: trusted')
+            self.assertEqual(E.good_build_path().parent, E.BACKUP_REQUESTS, 'kept in root\'s volume, past an update')
             self.assertEqual(E.good_build(), 8, 'and remembered across container starts')
             for _ in range(2):                                   # (Crashes on a map that had started are only crashes.)
                 self.servers[-1].code = 1
                 self.run_until(40)
             self.assertEqual(tools.count('fallback'), 1)
         # No previous map: said, and the backoff goes on.
-        with mock.patch.object(E, 'map_tool', side_effect=lambda c, p, t=120: {'failed': 9, 'now': None} if c == 'fallback' else {}):
+        with mock.patch.object(E, 'map_tool', side_effect=lambda c, p, t=120, good=None: {'failed': 9, 'now': None} if c == 'fallback' else {}):
             self.world.build, self.world.good, self.world.build_failures = 9, 8, 1
             self.servers[-1].code = 1
             self.quiet(self.world.step)
             self.assertIn('no previous map to go back to', self.output)
             self.assertGreater(self.world.next_start, self.now)
+
+    def test_no_fallback_without_a_map_known_to_run(self):
+        """The closing run: after an update the note of the good map was gone, and two crashes that had nothing to do with
+        the map sent a good map back to the one before. With no map known to run, crashes are only crashes."""
+        tools = []
+        with mock.patch.object(E, 'map_tool', side_effect=lambda c, p, t=120, good=None: tools.append(c) or {'build': 7}):
+            self.run_until(1)
+            self.world.build, self.world.good = 7, None
+            for _ in range(3):
+                self.servers[-1].code = 2
+                self.run_until(40)
+        self.assertNotIn('fallback', tools)
+
+    def test_a_server_that_left_before_loading_its_map_proves_nothing(self):
+        """R2: a Publish "now" with nobody in the world: the server leaves for the new build (75), its next start finds
+        the world closed and leaves with 76 before loading anything. That start must not mark the new map as one it ran
+        well on, or a map that then crashes would never fall back. A server that had said it was listening does."""
+        import threading
+        with mock.patch.object(E, 'map_tool', side_effect=lambda c, p, t=120, good=None: {'build': 9}):
+            self.run_until(1)
+            self.world.build, self.world.good = 9, 8
+            self.servers[-1].heard = threading.Event()         # (Never listened.)
+            self.servers[-1].code = E.MAINTENANCE_EXIT
+            self.quiet(self.world.step)
+            self.assertEqual(self.world.good, 8, 'closed before it loaded: not trusted')
+            self.state = 'running'
+            self.run_until(6)
+            self.world.build = 9
+            self.servers[-1].heard = threading.Event()
+            self.servers[-1].heard.set()
+            self.servers[-1].code = E.MAINTENANCE_EXIT
+            self.quiet(self.world.step)
+            self.assertEqual(self.world.good, 9, 'it had loaded its map and left by itself')
+        lines, heard = [], threading.Event()
+        self.quiet(E.pass_lines, io.StringIO('RATW_TALK voices\n'), lines, heard)
+        self.assertFalse(heard.is_set())
+        self.quiet(E.pass_lines, io.StringIO('RATW server listening on port 7788 (0.0.0.0); ready in 3.5 s\n'), lines, heard)
+        self.assertTrue(heard.is_set())
 
     def test_an_update_whose_server_cant_load_the_map_rebuilds_or_asks(self):
         """Doc 78, 12.5 (M8): memory is checked before the migrations and said plainly when short; nothing unpublished,
@@ -893,7 +936,7 @@ class Loop(Folders):
         answers = {'newest': {'build': 7, 'format': 1, 'readable': True, 'unpublished': 0}, 'memory': {'ok': True}}
         asked = []
 
-        def tool(command, port, timeout=120):
+        def tool(command, port, timeout=120, good=None):
             asked.append(command)
             return answers.get(command)
         with mock.patch.object(E, 'map_tool', side_effect=tool):
@@ -919,6 +962,11 @@ class Loop(Folders):
             self.assertEqual(json.loads((E.ADMIN / 'rebuild.json').read_text()), {'needed': True, 'unpublished': 3})
             self.assertNotIn('child', asked)
             self.assertIn('rebuild with them, or discard them first', self.output)
+            # (R2: a world whose changes aren't counted yet may have some: asked all the same.)
+            answers['newest'] = {'build': 7, 'format': 1, 'readable': False, 'unpublished': None}
+            self.assertTrue(self.quiet(E.rebuild_after_update, 17789))
+            self.assertEqual(json.loads((E.ADMIN / 'rebuild.json').read_text()), {'needed': True, 'unpublished': None})
+            self.assertNotIn('child', asked)
             # Nothing unpublished: rebuilt here.
             answers['newest'] = {'build': 7, 'format': 1, 'readable': False, 'unpublished': 0}
             answers['child'] = {'ok': True, 'build': 8}

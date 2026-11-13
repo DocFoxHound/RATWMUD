@@ -88,10 +88,36 @@ class PureTests(unittest.TestCase):
         self.assertEqual(len(warnings), 1)
         self.assertIn('1 wolf last stood where this map has a wall', warnings[0]['text'])
         self.assertIn('Ada', warnings[0]['text'], 'the wolf in a wall; one in a place gone wakes at the spawn by itself')
+        # (R2: a whole place's lease has no bed (Core saves -1, -1): only its place is checked; a name holding U+2028
+        # is one line of the manifest still, and a line that won't parse is no door; a save's odd numbers stand nowhere.)
+        whole = {**saved, 'stalls': [], 'leases': [{'id': 'l4', 'holder': 'wolf-2', 'cell': 'town', 'kind': 'place', 'x': -1.0, 'y': -1.0}]}
+        self.assertEqual(P.saved_problems(view, whole)[0], [])
+        odd = 'door "link_o_a" "Old\u2028door" "town" 2.5 1.5 "shop" 1.5 1.5 "link_o_b" 0 0 0 0 "-"\ndoor "broken'
+        self.assertEqual(list(P.MapView(files=files_of(['#####', '#...#', '#####'], [odd])).doors), ['link_o_a'])
+        self.assertFalse(view.stands('town', float('nan'), 1.5))
+        self.assertFalse(view.stands('town', float('inf'), 1.5))
+        self.assertEqual((P._float('1.5'), P._float('abc'), P._float(None), P._float('NaN'), P._float('1e400')), (1.5, None, None, None, None))
         steps = door.replace(' 0 0 0 0 "-"', ' 1 0 0 1 "-"')
         errors, _ = P.saved_problems(P.MapView(files=files_of(['#####', '#...#', '#####'], [steps])), {**saved, 'leases': [], 'stalls': []})
         self.assertEqual(len(errors), 1)
         self.assertIn('open steps, which can\'t be closed', errors[0]['text'])
+
+    def test_a_validators_problem_gets_its_place(self):
+        """The closing run: "Spawn must be on walkable terrain" came with no "Show me". The validator's words name the
+        place; located() finds it in the project."""
+        project = {'spawn': {'cell': 'w_1', 'x': 104, 'y': 56}, 'cells': [{'id': 'w_1'}, {'id': 'w_2'}],
+                   'rooms': [{'id': 'rm_inn'}], 'links': [{'id': 'rm_inn_door', 'a': {'cell': 'w_2', 'x': 7, 'y': 9}, 'b': {'cell': 'rm_inn', 'x': 1, 'y': 1}}],
+                   'people': [{'id': 'rm_ivo', 'name': 'Ivo Tarmarsh', 'home': {'cell': 'rm_inn', 'x': 3, 'y': 1},
+                               'work': {'cell': 'w_1', 'x': 92, 'y': 34}, 'evening': {'cell': 'w_2', 'x': 2, 'y': 4}}]}
+        at = lambda text: {k: v for k, v in P.located(text, project).items() if k != 'text'}
+        self.assertEqual(at('Spawn must be on walkable terrain, away from a link endpoint.'), {'cell': 'w_1', 'x': 104, 'y': 56})
+        self.assertEqual(at('World cells w_2 and w_1 overlap.'), {'cell': 'w_2'})
+        self.assertEqual(at('rm_inn_door: a has no clear, height-compatible neighboring arrival tile.'), {'cell': 'w_2', 'x': 7, 'y': 9})
+        self.assertEqual(at('Person rm_ivo evening: tile is solid.'), {'cell': 'w_2', 'x': 2, 'y': 4})
+        self.assertEqual(at('Person rm_ivo: band must be destitute, poor, comfortable, rich or null.'), {'cell': 'w_1', 'x': 92, 'y': 34})
+        self.assertEqual(at('economy.rules must be {rule: whole number}.'), {})
+        self.assertEqual(P.located('Spawn is outside its cell.', None), {'text': 'Spawn is outside its cell.'})
+        self.assertEqual(P.located('Spawn is outside its cell.', {'spawn': 7, 'cells': 'x'}), {'text': 'Spawn is outside its cell.'})
 
     def test_the_build_format_is_the_servers(self):
         header = (ROOT / 'Core' / 'RatwGame.h').read_text(encoding='utf-8')
@@ -248,6 +274,19 @@ class PublishTests(unittest.TestCase):
         self.assertEqual(B.previous(self.conn), self.first)
         with self.conn.transaction(), self.dm() as dm:
             self.assertEqual(P.back_problems(self.conn, dm, self.first), ([], []))
+        # (The closing run: a resident given a home since, where the previous map has a wall or no such place, would
+        # stop the game server loading the world on it: going back says who, first.)
+        home = self.conn.execute('SELECT id, home_area, home_x, home_y FROM live.npcs ORDER BY id LIMIT 1').fetchone()
+        self.conn.execute("UPDATE live.npcs SET home_area = 'town', home_x = 30, home_y = 22 WHERE id = %s", (home[0],))
+        view = P.MapView(conn=self.conn, build_id=second)
+        found = P.residents_problems(self.conn, view, 'greyfen')
+        self.assertEqual(len(found), 1, found)
+        self.assertIn('where the previous map has a wall', found[0]['text'])
+        self.assertEqual((found[0]['cell'], found[0]['x'], found[0]['y']), ('town', 30, 22))
+        with self.conn.transaction(), self.dm() as dm:
+            self.assertEqual(P.back_problems(self.conn, dm, self.first), ([], []), 'the first map has ground there')
+        self.conn.execute('UPDATE live.npcs SET home_area = %s, home_x = %s, home_y = %s WHERE id = %s', (*home[1:], home[0]))
+        self.assertEqual(P.residents_problems(self.conn, view, 'greyfen'), [])
         out = P.fallback(self.conn)                             # (The second build "didn't start".)
         self.assertEqual(out['failed'], second)
         third = out['now']
@@ -260,6 +299,16 @@ class PublishTests(unittest.TestCase):
         self.assertEqual(P.unpublished(self.conn)['count'], 1, 'the edit is kept, unpublished')
         self.assertIsNone(B.previous(self.conn), 'going back twice never goes forward to the failed map')
         self.assertTrue(P.newest(self.conn)['readable'])
+        # (R2: after two bad maps in a row the one before the newest is bad too: the fallback goes to the map the server
+        # last ran well on, when the entrypoint names it and it is still there.)
+        self.edit('tile:31,22', '#')
+        fourth, _ = B.build(self.conn, 'test')
+        fifth, _ = B.build(self.conn, 'test')
+        out = P.fallback(self.conn, good=third)
+        self.assertEqual((out['failed'], self.conn.execute('SELECT copy_of FROM world.builds WHERE id = %s', (out['now'],)).fetchone()[0]),
+                         (fifth, self.first), 'the good map (itself a copy of the first), not the fourth')
+        self.assertEqual(P.fallback(self.conn, good=out['now'])['why'], 'no previous map', 'never onto the map that just failed')
+        third = out['now']
         self.conn.execute('UPDATE world.builds SET format = %s WHERE id = %s', (B.BUILD_FORMAT + 2, third))
         self.assertFalse(P.newest(self.conn)['readable'], 'a format this server doesn\'t load')
 
@@ -336,6 +385,58 @@ class PublishTests(unittest.TestCase):
         self.assertEqual(refused.exception.status, 429)
         pub.start({'username': 'wren#aa11bb', 'role': 'builder'}, 'later')
         self.assertEqual(self.finished(pub)['by'], 'wren')
+        # The update rebuild's answer: only for a map this server can't load, outside the hourly count (the world is
+        # down until then), and nothing discarded when it can't start.
+        with self.assertRaises(P.Refused) as refused:
+            pub.rebuild(WHO)
+        self.assertIn('doesn\'t need rebuilding', str(refused.exception))
+        self.conn.execute('UPDATE world.builds SET format = %s WHERE id = (SELECT max(id) FROM world.builds)', (B.BUILD_FORMAT + 2,))
+        self.edit('tile:31,22', '#')
+        short = self.publisher(free=3 * P.GIB)
+        with self.assertRaises(P.Refused):
+            short.rebuild(WHO, True)
+        self.assertEqual(P.unpublished(self.conn)['count'], 1, 'short of memory: nothing was discarded')
+        pub.rebuild(WHO, True)
+        job = self.finished(pub)
+        self.assertEqual((job['step'], job['rebuild']), ('done', True), job)
+        self.assertNotEqual(self.now('tile:31,22'), '#', 'discarded first, then rebuilt')
+        self.assertTrue(P.newest(self.conn)['readable'])
+
+    def test_closing_and_opening_stay_the_owners(self):
+        """R2: /api/dm/server/maintenance is the owner's. A builder's Publish "now" (or going back) on a world its owner
+        closed leaves it closed, and on one open only to its host leaves it so; the owner's own Publish opens it."""
+        builder = {'username': 'wren#aa11bb', 'role': 'builder'}
+        pub = self.publisher(hosted=Hosted(host='acct-' + 'a' * 32))
+        with self.owner() as owner:
+            owner.execute("UPDATE admin.server_state SET state = 'maintenance', note = 'Closed by the owner'")
+        self.edit('tile:30,22', '#')
+        pub.start(builder, 'now')
+        job = self.finished(pub)
+        self.assertEqual((job['step'], self.server_state()), ('done', 'maintenance'), job)
+        self.assertIn('stays closed', job['warnings'][-1]['text'])
+        pub.back(builder)
+        pub.thread and pub.thread.join(5)
+        time.sleep(0.3)
+        self.assertEqual(self.server_state(), 'maintenance', 'going back opens nothing either')
+        with self.owner() as owner:
+            owner.execute("UPDATE admin.server_state SET state = 'host_only'")
+        pub.start(builder, 'now')
+        job = self.finished(pub)
+        self.assertEqual(self.server_state(), 'host_only', job)
+        self.assertIn('stays open only to its host', job['warnings'][-1]['text'])
+        with self.owner() as owner:
+            owner.execute("UPDATE admin.server_state SET state = 'maintenance'")
+        pub.start(WHO, 'now')
+        self.assertEqual((self.finished(pub)['step'], self.server_state()), ('done', 'running'), 'the owner\'s own')
+
+    def test_a_failed_audit_row_leaves_no_job(self):
+        """R2: the job was set before its audit row, so a failed write left a job nobody ran and every later Publish
+        refused as busy."""
+        pub = self.publisher()
+        pub.log = lambda *a: (_ for _ in ()).throw(RuntimeError('no audit'))
+        with self.assertRaises(RuntimeError):
+            pub.start(WHO, 'later')
+        self.assertIsNone(pub.job)
 
     def test_going_back_and_live_edits_ahead_of_the_map(self):
         pub = self.publisher()
@@ -356,6 +457,23 @@ class PublishTests(unittest.TestCase):
                              VALUES ('greyfen', 2, 'pell', 'test', 'a room', 'room:new_inn', 'null', '{}')""")
         self.assertEqual(pub.ahead({'kind': 'npc.move', 'home': {'cell': 'new_inn', 'x': 3}}), 'new_inn')
         self.assertIsNone(pub.ahead({'note': 'the new inn'}))
+        # The map editor's own edits of residents and routes, to the tile (the closing run: Ivo's evening in a room not
+        # published, accepted, stopped the game server at its next start).
+        person = lambda **places: [{'key': 'person:ivo', 'before': None, 'after': {'id': 'ivo', 'name': 'Ivo Tarmarsh', **places}}]
+        self.assertIn('Ivo Tarmarsh would be in new_inn', pub.ahead_ops(person(evening={'cell': 'new_inn', 'x': 2, 'y': 2})))
+        grid = self.conn.execute("SELECT body FROM world.build_cells WHERE build_id = %s AND cell_id = 'town'",
+                                 (P.newest_build(self.conn)['id'],)).fetchone()[0].partition('\ngrid:\n')[2].split('\n')
+        wall = next((x, y) for y, row in enumerate(grid) for x, g in enumerate(row) if g == '#')
+        open_ = next((x, y) for y, row in enumerate(grid) for x, g in enumerate(row) if g == '.')
+        self.assertIn('has a wall or no ground', pub.ahead_ops(person(home={'cell': 'town', 'x': wall[0], 'y': wall[1]})))
+        self.assertIsNone(pub.ahead_ops(person(home={'cell': 'town', 'x': open_[0], 'y': open_[1]})))
+        self.assertIn('would be in new_inn', pub.ahead_ops([{'key': 'route:beat', 'before': None, 'after': {
+            'id': 'beat', 'name': 'The beat', 'posts': [{'cell': 'town', 'x': open_[0], 'y': open_[1]}, {'cell': 'new_inn', 'x': 1, 'y': 1}]}}]))
+        self.assertIsNone(pub.ahead_ops([{'key': 'room:new_inn', 'before': None, 'after': {'id': 'new_inn'}},
+                                         {'key': 'tile:1,1', 'before': None, 'after': '#'},
+                                         {'key': 'person:ivo', 'before': {'home': {'cell': 'new_inn', 'x': 1, 'y': 1}}, 'after': None}]),
+                          'map edits wait for Publish; a resident removed stands nowhere')
+        self.assertIsNone(pub.ahead_ops('nonsense'))
 
 
 if __name__ == '__main__':

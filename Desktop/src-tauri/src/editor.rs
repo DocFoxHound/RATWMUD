@@ -891,6 +891,12 @@ pub async fn editor_open(suite: String, app: AppHandle, editor: Ed<'_>) -> Resul
             None => return Ok(refused("signed-out")),
         }
     }
+    // The signed list is read afresh each time a tool is opened: the world may have been updated since this session
+    // signed in (doc 78's closing run: after an update the window said "isn't an official RATW build" until the host
+    // signed in again, the page's files no longer matching the list fetched before it).
+    if let Some(s) = e.inner.lock().unwrap().session.as_mut() {
+        s.manifest = None;
+    }
     let checked = { let e = e.clone(); blocking(move || match e.manifest() { Ok(_) => json!({"ok": true}), Err(v) => v }).await? };
     if checked["ok"] != true {
         return Ok(checked);

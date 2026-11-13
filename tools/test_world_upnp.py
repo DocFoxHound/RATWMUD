@@ -635,7 +635,8 @@ class HookTests(unittest.TestCase):
 
     def test_the_bundle_runs_it_from_the_hosts_network_with_world_toml_alone(self):
         compose = (HERE.parent / 'Package' / 'compose.yaml').read_text()
-        service = compose[compose.index('\n  upnp:\n'):compose.index('\n  db:\n')]
+        # (Up to the next service: the backup service (M5), which does hold the database's secrets, comes after it.)
+        service = compose[compose.index('\n  upnp:\n'):compose.index('\n  backup:\n')]
         self.assertIn('network_mode: host', service)
         self.assertIn('"/opt/ratw/tools/world_upnp.py", "hold", "--port", "${RATW_PORT:-7788}"', service)
         self.assertIn('        source: ./world.toml\n        target: /etc/ratw-upnp/world.toml\n        read_only: true\n'

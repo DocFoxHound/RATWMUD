@@ -1954,8 +1954,8 @@ answers out of the box, not whether managing from anywhere works.
 
 ## Progress
 
-Slice 1 done (M0a to M6, 2026-11-12, below); slice 2: M0b measured (D2 decided), M9, M7 and M8 built; the Docker and
-desktop end to end of M7 and M8, R2 and M10 not yet.
+Slice 1 done (M0a to M6, 2026-11-12, below); slice 2 done (M0b, M9, M7, M8, then the closing run with R2 and M10's
+guide: the last entry); its Windows run is the user's.
 
 - **2026-11-08: the user's decisions.** "Go with the recommendations": all 21 decisions in section 17 take their
   recommendation (among them: the Editor answers only on the world's own computer until the host opens it; roles
@@ -3305,6 +3305,26 @@ desktop end to end of M7 and M8, R2 and M10 not yet.
   - Tests (one run, `s2stage` dropped): `test_world_publish` 10 (new), `test_studio`, `test_world_build`,
     `test_map_editor`, `Package/test_package` 83, the Editor's `lib` 87, the client's `editor`, `world_tests`,
     `ticket_tests`, `maintenance_tests`, M7's real-server test on this build.
+- **2026-11-12: Slice 2 done** (the closing run, R2 and its fixes, M10's guide: Hosting.md 28), on `r2-editor` after
+  M8. One Core change, no migration. **The run** (rootless Docker, a format 2 package from a DEV export, a throwaway
+  central for tickets, the e2e desktop app in a headless KWin; 9 screenshots, `shots-slice2/`): every item of M8's list
+  passed once fixed; a Publish took 72-140 s. **Found and fixed** (tested): a new world's count read "counted from the
+  next Publish", with no Discard (import sets `edits_through`); **a new interior with a claim stopped the world at its
+  next start** (Core skips claims of a place its map lacks; resident and route edits ahead of the map are refused, to
+  the tile; going back checks residents' places); **Share my world failed on every world that had been on central**
+  (`lastHost` unknown to the strip); the good-map note was lost at each update, so two unrelated crashes sent a good
+  map back (now in root's requests volume; no fallback without a map known to run); the update rebuild held by the
+  hourly limit; no "Show me" on a validator's problem, and it opened no world cell; the Publish page's radio buttons;
+  "isn't an official RATW build" after an update until signing in again; Play and the ZIP export in a host's Atlas.
+  - **R2, fixed:** a whole-place lease (x = -1) refused every Publish; a 76 exit before loading marked a build good; a
+    builder's Publish opened a world its owner closed; a memory bomb in the import's own check; a build torn by an edit
+    (one snapshot now); a wedged job; U+2028 in a name; `validate` loading the world into the helper (denied).
+  - **Left:** an imported package's shipped build isn't checked against its source; Core refuses a whole world over one
+    resident's bad place; the good map's cells go after three newer builds; M8's partials accepted (wolves do wake).
+  - **Tests** (one run): ctest 89 (and the Postgres client's 24 checks), the 41 `tools/test_*.py` (896 tests),
+    `test_package` 85, `cargo test` 63, Client 163, Editor 78 + 87 with typechecks, build and smoke, `test:editor` 1.
+  - **On your Windows PC:** M0b's Docker Desktop memory checks (its entry's list, with `memory=12GB`), then Hosting.md
+    28 as a host: an edit, the memory line, Publish open only to me (timed), Open to everyone, go back.
 
 ## Review (2026-11-08)
 
