@@ -1228,6 +1228,44 @@ does, a restore re-applies every deletion made since the dump, from a dated list
 add; the tools send story inputs (a chronicle and a description) to the host's AI provider; deleted wolves must also
 be forgotten in `dm.stories` and `dm.audit`.
 
+**As built (M6).** The client says it on the world list and on the first-arrival page of any world that isn't
+official (`HOST_SEES` in `Client/src/net/worlds.ts`), word for word:
+
+> A community world is run by its host. The host can read everything you say and do there, and sees your internet
+> address; co-builders they add see what the host's tools show. Your wolf's name is the same on every world.
+
+Each listed world's status line adds "AI used" (central's `voices`, or the world's `/status`) and "cheats on". A world
+joined by its address alone is told as a community world.
+
+**The privacy page's lines, for doc 77 Phase 7** (no privacy page exists yet; these go on it as they stand):
+- "Community worlds are run by their hosts, not by us. A host can read everything you say and do in their world,
+  including world chat, private messages and letters there, and sees the internet address you connect from. People the
+  host lets help run the world see what the host's tools show them. The tools hide some things on purpose (who
+  reported someone, your words to the world's residents, your address), but they can't stop the host reading the
+  world's own database."
+- "Your wolf's name is the same on every world, so hosts can recognise your wolf. A world knows your account only by an
+  id of its own: it can't see your account name, email address or password, or link your wolves together."
+- "Central learns which of your wolves are on which community world, to list the world's players and to sign you in."
+- "A world marked 'AI used' sends what you say to its residents, and some of what its host's tools look at, to the
+  host's AI provider under the host's account."
+- "Backups: a community world keeps backups of itself on its host's computer, a daily one for about a week and others
+  for at most 90 days. A wolf you delete can stay in them that long."
+- "We never ask for your password inside a world, and neither should anyone in one."
+
+**Host-terms additions, for doc 77 Phase 7** (beside the ones above):
+- The host answers for their world's data, on their computer and in its backups, and for every co-builder they add,
+  whatever that co-builder does with the tools.
+- The host doesn't publish or pass on players' messages, letters or addresses, and doesn't use the Editor to dig into
+  them; the Editor's filters are a courtesy, not a licence.
+- With an AI key, the host is the one sending players' words to the AI provider and must say so (the listing's "AI
+  used" does it for them).
+- The host keeps the world folder, its backups, the host token and every Editor code private, and doesn't share the
+  folder itself (Hosting.md, section 24).
+- When central tells a world a wolf was deleted (doc 77, Phase 7), the host's world forgets it in `dm.stories` and
+  `dm.audit` too, and backups older than the deletion age out within 90 days (the backup service's cap).
+- The host never asks a player for their game password, and makes no resident that does.
+- The terms name the duties; delisting (and, for an account, a ban) is the remedy.
+
 ## 10. Map editing (slice 2)
 
 ### 10.1 What ships
@@ -2848,6 +2886,176 @@ M1, M2a, M2b, M3 and M4 built, the R1 review's findings fixed (security, and the
     - "Back to the previous map" and Publish's backup are slice 2's (the `backup-before-publish` request already
       works).
     - The guide's full M6 pass.
+
+- **2026-11-12: M6 built: slice 1 done** (Guide and end to end), on `r2-editor` after M5 (from 0082d8c). No C++ and no
+  migration changed. Every item of section 14's M6 row:
+  - **The hosting guide** (`Docs/Hosting.md`, rewritten for a non-technical Windows host: Windows first, Linux beside
+    it, every Editor screen's own words and buttons): a ten-step "first day" at the top, then 28 numbered sections. Each
+    of the row's items has a findable place: the first sign-in with the Editor code (10); the Editor menu, the DM tool's
+    tabs and My world (11); opening the port at home, from outside with the phone-hotspot test, Private networks, the
+    firewall rule for 17789, the VPS warning, turning it off (12); the fingerprint, FIRST CONNECTION, the red screen,
+    signed rotation and `--leaked` (13); co-builders and roles (14); Editor codes as secrets (15); the reset script and
+    every `ratw-editor` command (16); cheats in plain words (17); AI use and the Editor's caps (18); backups, pins and
+    `restore.bat` question by question (19); updates, and a world from before the Editor (20); a second world with both
+    ports (22); moving computers (23); never zip the world folder (24); privacy duties (26); and "something went wrong"
+    (27: section 12.6's rows that exist in slice 1, the Editor's can't-connect and sign-in messages in order, Docker's
+    port-collision messages for 17789 and 7788). `Package/README.md` is its short version, pointing at the sections.
+    `Package/world.toml`'s two stale pointers are mended.
+  - **The privacy page and join screen lines.** The world list and the first-arrival page of any world that isn't
+    official now say section 9's truth (`HOST_SEES`), and each listed world's status line adds "AI used" and "cheats on"
+    (central's `voices` and `cheats`, which the client dropped before). The privacy page doesn't exist yet: its lines
+    are in section 9, for doc 77 Phase 7.
+  - **Host-terms additions for doc 77 Phase 7:** section 9.
+  - **The full run** (below) and **the Windows run** (user-bound: the checklist at the end).
+  - **The full run on this laptop** (rootless Docker 29.3.1, Compose 5.1.1; the e2e desktop app in a headless
+    `kwin_wayland --virtual --no-lockscreen` under its own `dbus-run-session`, WebKitGTK with
+    `WEBKIT_DISABLE_DMABUF_RENDERER=1`; screenshots by spectacle; `~/.config` restored afterwards). DEV exported
+    read-only twice (`s2stage-m6-a` and `-b`), staged with a throwaway release key made by `stage.sh
+    --make-release-key` (the debug app trusting it through `RATW_EDITOR_DEV_KEY`), built as `ratw-world-s2stage-m6` and
+    `-m6b`, saved with `docker save` and loaded from the tar as a host would; the host folder from `host_folder.py
+    --zip`, unzipped. No central: the worlds ran unlisted (no host token), which the Editor doesn't need. Following the
+    guide step by step:
+    - **A doc 77 world updated to the Editor package:** a world from the doc 77 image (`ratw-world:latest`, migrations
+      to 0060) with its own compose (4ce8b3d), as a second world (`RATW_PORT=7789`); then section 20's steps (the new
+      compose and scripts, `manage` and `backups`, the image). The backup service made a daily and a before-update dump
+      at migration 0060, the four migrations ran, the owner appeared in `first-editor.txt`, the world was kept.
+    - **A port collision, for real:** that second world had taken 17789, so the first world's `up -d` failed with
+      "Bind for 127.0.0.1:17789 failed: port is already allocated". The second-world recipe's `RATW_EDITOR_PORT=17790`
+      went into the second world's `.env`.
+    - **First sign-in from the code** (screens 2, 4, 4b, the menu; a breached password and one with the world's name
+      refused; `first-editor.txt` "Used" within seconds), **DM** in the Editor window.
+    - **A live NPC edit** (NPC Life: kill and revive Ivo Tarmarsh, applied by the server: `RATW_DM_ACTION npc.kill ...
+      by host-3imb#...`), **an economy lever** (Prosperity +30, "a good harvest": `economy.sync ... in force`), **close
+      and open** (My world; the pill "Closed for changes"; the server back within seconds).
+    - **A co-builder from a second client with a code:** `RATW_EDITOR_BIND=0.0.0.0` and `up -d` (the owner's window
+      reconnected), EDITOR ACCOUNTS behind the password again, `pell` added as `dm`, the code shown once with "It
+      doesn't include your world's address"; a second app with its own data directory pasted it, was asked for the
+      address, typed the laptop's home address, signed in, chose a password; ATLAS "for the DM tool only"; My world
+      read-only with every action greyed and its reason.
+    - **A password spray** (40 wrong passwords for the owner from a new device, from the home address and 40 from
+      127.0.0.1, which the helper sees as one gateway): five 401s, then 429s and dropped connections; the owner's known
+      device signed in at once; a new computer typing pell's right password was held ("Too many tries from here: wait 15
+      minutes"); an Editor code (`ratw-editor invite pell --address ...`) on that same new computer got through.
+    - **A backup during a busy world** (BACK UP NOW with 60 DM acts fired at once: the backup made in a second, the
+      acts applied or refused one by one, the server's worst tick 37.6 ms, p99 1.4 ms), then **a restore keeping
+      accounts** (`restore.sh`, a co-builder added after the backup kept, every session ended, the Editor window saying
+      so, signing in again).
+    - **A server crash with the helper still up** (`kill -SEGV` on the server, twice): the hello answered throughout,
+      the menu's pill "Keeps stopping (exit 139): starts again in 24 s", the server back on its own.
+    - **An image update keeping the fingerprint** (package `-b`: `docker load`, the new compose and scripts, `up -d`):
+      a before-update backup, the world kept, the fingerprint and the three accounts the same.
+    - **A signed rotation moving quietly** (`ratw-editor new-certificate`): the co-builder's client said "Ashfall Vale
+      has a new certificate, signed by its old one"; `manage/editor-certificate.txt` had the new fingerprint at once.
+      **A changed key refused** (`--leaked`): the owner's client (which had missed the rotation) showed the red screen
+      with both fingerprints; forgotten by the world's name, FIRST CONNECTION, trusted.
+    - **The second world with both ports:** its own reset script's code (`127.0.0.1:17790`) signed in to it beside the
+      first world.
+    - Afterwards: both projects `down -v`, both images removed (the doc 77 image and `postgres:18` were there before
+      and stay), `/tmp` cleaned; Docker's build cache is left. DEV only read; PROD and old DEV untouched.
+  - **What the run found, and fixed** (each with a test unless said):
+    - **The zip's two folders unzipped as 0600** (`drw-------`): nobody could open `manage` to read the first code.
+      `host_folder.py` gives them a folder's mode, 0755 (`test_package`: the modes, and a real `unzip`).
+    - **After a refused `up -d`** (the port collision), a plain `up -d` started the world with no network at all: it
+      waited for "db" for ever. The log now says "This part of the world isn't on its network: type docker compose down,
+      then docker compose up -d (your world is kept)", and the guide's collision rows say `down` then `up -d`.
+    - **The LIVE, NPC Life and Chapters maps were black** in a packaged world: a slice-1 package has no map source
+      (`world.cells`, `world.terrain_chunks` come with M7), so `/api/dm/world` has no cells. They now say so in place of
+      the map (`NO_MAP_YET`: "This world's map picture comes with map editing, in a later update ..."). R1's and M5's
+      runs used DEV copies, which have the source.
+    - **NPC Life's kill, revive and band asked without the opposite** (M5's wording reached only the LIVE tab): now
+      `sureText` with `npc.kill`, `npc.revive` and a new `band.override`.
+    - **After a signed rotation, screen 4's account was empty** (the shell gave the rotated pin no username); it keeps
+      the last one (`cargo test`: a rotation signed by the old key, through a stand-in world).
+    - **`ratw-editor new-certificate` left `manage/editor-certificate.txt` on the old fingerprint** until the next
+      start, while the red screen says to compare with it: root rewrites it now (`test_world_admin`).
+    - **The accounts screen:** "Checking your password…" stayed under the list; the role's line sat between the owner's
+      row and the form, reading like the owner's; "Add pell as a dm?". **The menu's pill** was the same green for
+      "Keeps stopping" as for "Open": now the warning colour (`pillIsWell`). **Screen 4's footer** told a co-builder to
+      double-click a script on a computer they don't have: it now says to ask the owner first. The FIRST CONNECTION
+      screen no longer offers the log line, and the red screen says "lost its storage", not "a lost volume". The builder
+      role's line no longer promises map publishing in slice 1.
+    - **`restore.sh` and `.bat`** printed Compose's "Container ... Creating" lines between the questions
+      (`COMPOSE_PROGRESS=quiet`), and a backup name that doesn't exist now ends "Nothing was changed." too.
+    - **The guide, against the run:** a second world from before the Editor needs `RATW_EDITOR_PORT=17790` before it
+      updates; "too many tries" points at `ratw-editor invite` (the password stays); a code made before the second
+      world had its own port meets the first world's key (the red screen) and needs a new one from its own reset
+      script; LIVE's map picture is later; restoring an older backup puts the accounts back at the start.
+  - **As M5's checker** (trying to break it):
+    - **A restore of a backup from before migration 0063 keeping today's accounts failed** (a real bug): the restored
+      `dm.admins` still had 0013's role CHECK (`viewer`, `dm`, `admin`), so putting back an `owner` broke the
+      transaction; the script said the restore didn't finish and the world had the backup's accounts. The doc 77 world's
+      had none, so the next start made a brand-new owner and the host's three accounts were gone. Now, for a backup
+      from an older migration level, the backup service keeps today's accounts in the `requests` volume
+      (`.kept-accounts.json`, root's, 0600), says "your world brings it up to date when it starts, and then puts your
+      Editor accounts back as they were", and the entrypoint puts them back after the migrations and before the first
+      owner (`put_back_accounts`: one transaction, today's columns, every session ended; a broken file set aside as
+      `.kept-accounts.failed.json` and said). Run again: "put back the 2 Editor account(s) the restore kept". A backup at
+      0063 into 0064 (same `dm` columns) still puts them back at once. Tests: `test_package`'s `KeptAccounts` on a
+      throwaway database.
+    - **Backups outlived section 9's promise:** "the 5 newest of the rest" had no age limit, so a before-update dump
+      could keep a deleted wolf for ever on a world seldom updated. Now no unpinned backup outlives 90 days but the newest
+      (`test_package`: the backup service's `prune` run in Perl on postgres:18).
+    - **`reset-editor-password`** refused "Pell" (capitals). Now made small (`${name,,}`; the `.bat` lets capitals pass
+      its character check, then lowers them, so nothing typed is ever expanded outside quotes); `&echo HACKED` typed as a
+      name, a number or an answer still runs nothing (`test_package`, and the Windows job's checks).
+    - Held up: restore refusals (a number out of range, letters, `1;touch`, `$(touch)`, "restore" in lower case, an
+      empty answer, a name with `;`, an unknown name: each "Nothing was changed", the world started again); pins (pin,
+      unpin, Copy restore steps); the free-disk check (df on the bind mount gave the host disk's 30.7 GB); My world for
+      the owner and for a `dm` (greyed with reasons, no folder, own sign-ins only); a backup in a busy world.
+    - Not tried here: confirmations naming a player's wolf (no central, so no player could join a ticket-mode world:
+      `acts.test.ts` covers the words); the viewer and builder roles' My world in the app (`test_studio` covers them).
+  - **Screenshots** (31, `/home/martinb/.claude/jobs/ee03c49e/tmp/shots-m6/`): the main menu; the Editor's screen 2;
+    the code pasted; sign-in from the code; 4b refusing a breached password and the world's name; the menu; LIVE and
+    NPC Life before the fix (black); NPC killed; Economy, and its lever set; My world (owner); the world closed;
+    EDITOR ACCOUNTS; adding a co-builder; the co-builder's code shown once; the second client asked for the address;
+    its sign-in; its menu; My world as `dm`; FIRST CONNECTION from a bare address; a new device held off during the
+    spray; a code getting through it; "session ended" after the restore; the crash pill; LIVE after the fix; the
+    rotation notice (before the username fix); the red screen; the second world on 17790; a pinned backup.
+  - **Tests** (one run, `RATW_TEST_DB_TAG=s2stage_`, `RATW_TEST_KEY_PREFIX=s2stage`): `Package/test_package.py` **73** (new: today's accounts put back after an older
+    backup's migrations, and a broken file set aside, on a throwaway database; a container off its network told how to
+    mend it; no unpinned backup past 90 days, `prune` run in Perl on postgres:18; the zip's folders 0755 through a real
+    `unzip`; the reset script making capitals small); `tools/test_world_admin.py` 103 (`new-certificate` rewriting
+    `manage/editor-certificate.txt`); `test_studio` 76; `test_dungeon_master` 54; Client **162** and typecheck (new: "AI
+    used" and "cheats on", `HOST_SEES`, the pill's warning colour); Editor 78 + **80**, typecheck, build and render smoke
+    (16 panels; new: `NO_MAP_YET`, NPC Life's opposites); `cargo test` **63** (new: a signed rotation keeps the last
+    username); `npm run test:editor` 1 of 1 (33 s, in a headless KWin of its own). No ctest: no C++ changed. No `s2stage`
+    database, `/tmp` file, container, volume, image or process left.
+  - **What slice 1 delivers:** a host runs their own world from the package and manages it from the game's main menu:
+    EDITOR, an Editor code or an address, a pinned TLS 1.3 key (signed rotation, a red screen for a changed key), the
+    world's own Editor accounts with roles, codes, device tokens and sign-in lanes a spray can't use to lock the owner
+    out, the DM tool in a signed, sandboxed Editor window (LIVE, NPC Life, Chapters, Players, Prosperity, Economy, Server
+    Health, My world), closing, opening and restarting the world, automatic backups with pins, restore and reset scripts
+    for Windows and Linux, a server that crashes without taking the Editor with it, updates that keep the world, its
+    key and its accounts, the hosting guide, and players told the truth about community worlds.
+  - **On your Windows PC** (user-bound):
+    1. Make the release key: `bash Package/stage.sh --make-release-key`, keep a copy of
+       `~/.config/ratw/editor-release-key.pem` beside central's keys, paste the printed line into `RELEASE_KEYS` in
+       `Desktop/src-tauri/src/editor/bundle.rs`, and release the client (until then a release build opens no world's
+       Editor; a debug build with `RATW_EDITOR_DEV_KEY` does).
+    2. M0a's Docker Desktop checks: Docker Desktop running, then in a checkout of `r2-editor-m0a`,
+       `pwsh Desktop/spike-editor/windows_facts.ps1 -Keep`; open `http://<the PC's LAN address>:47789/` from a phone or
+       a second computer (the peer address Docker Desktop shows, IPv6 through a `0.0.0.0` publish, `chown`/`chmod` into
+       a Windows-folder bind mount, `netsh int ipv4 show excludedportrange protocol=tcp` with WSL2 up, WebView2's
+       second and third downloads).
+    3. M5's: which disk `df` reports for a Windows-folder bind mount (My world's "free on that disk" should match the
+       drive in Explorer) and whether `chown`/`chmod` there work (the backups' owner and 0600).
+    4. Then follow `Docs/Hosting.md` from section 0 as a host, on the PC: the zip extracted with Explorer, `docker load`,
+       `world.toml` and `.env` in Notepad ("All files"), `up -d`, the code from `manage\first-editor.txt`, DM; My world's
+       folder path (`C:\...`) and its synced-folder warning; double-click `restore.bat` and `reset-editor-password.bat`;
+       `RATW_EDITOR_BIND=0.0.0.0`, the Private network setting and the firewall rule; **from a second computer at home**
+       with a co-builder's code; the "ports are not available" wording if 17789 is reserved; the Windows menu path to
+       Private network (not checked here).
+  - **Follow-ups:** LIVE's and NPC Life's map picture needs the map source (M7), and NPC Life's moves pick a tile on
+    it; the crash pill says "exit 139" where the log says "exit -11"; the pill read "Not answering" for a moment while a
+    restored world started; a new owner's first visit lists their own two account changes; a pasted code whose world
+    isn't at its address shows the red screen (right, but it could say "another world answers here" when the hello's
+    world id differs, without letting anyone sign in); section 12.6's "Reset economy rules" and "back to the previous
+    map" are slice 2's; R1's lows left as before (the Mind's own user, rotations without an expiry, a cap on proxy
+    replies in flight).
+  - **Hours:** slice 1 took about 6½ hours of wall-clock time (11:55 to about 18:30 on 2026-11-12) and about 12-13
+    agent-hours across its lanes (M1 and M0a about half an hour each; M2a about 1¼ h; M2b, M3 and M4 about an hour each,
+    side by side; the lanes wired and R1's review and two repair lanes about 4; M5 about 1; M6 about 1½), against 15-20
+    expected and 35-45 planned.
 
 ## Review (2026-11-08)
 
