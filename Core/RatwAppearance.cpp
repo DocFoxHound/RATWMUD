@@ -35,8 +35,93 @@ bool hexColour(const std::string& s)
     return true;
 }
 
+namespace
+{
+struct PaletteEntry
+{
+    const char* id;
+    const char* name;
+    int rgb;
+};
+constexpr PaletteEntry FurPalette[] = {
+#define RATW_FUR(id, name, rgb) {id, name, rgb},
+#define RATW_EYE(id, name, rgb)
+#define RATW_FUR_ZONE(id, name)
+#include "RatwFurPalette.inc"
+#undef RATW_FUR
+#undef RATW_EYE
+#undef RATW_FUR_ZONE
+};
+constexpr PaletteEntry EyePalette[] = {
+#define RATW_FUR(id, name, rgb)
+#define RATW_EYE(id, name, rgb) {id, name, rgb},
+#define RATW_FUR_ZONE(id, name)
+#include "RatwFurPalette.inc"
+#undef RATW_FUR
+#undef RATW_EYE
+#undef RATW_FUR_ZONE
+};
+constexpr const char* FurZoneIds[] = {
+#define RATW_FUR(id, name, rgb)
+#define RATW_EYE(id, name, rgb)
+#define RATW_FUR_ZONE(id, name) id,
+#include "RatwFurPalette.inc"
+#undef RATW_FUR
+#undef RATW_EYE
+#undef RATW_FUR_ZONE
+};
+const PaletteEntry* furEntry(const std::string& id)
+{
+    for (const auto& entry : FurPalette)
+        if (id == entry.id)
+            return &entry;
+    return nullptr;
+}
+bool furCoat(const FurCoat& coat) { return furColour(coat.dark) && furColour(coat.mid) && furColour(coat.light); }
+} // namespace
+
+bool furColour(const std::string& id) { return furEntry(id) != nullptr; }
+const char* furColourName(const std::string& id)
+{
+    const auto* entry = furEntry(id);
+    return entry ? entry->name : "";
+}
+int furColourRgb(const std::string& id)
+{
+    const auto* entry = furEntry(id);
+    return entry ? entry->rgb : -1;
+}
+
+bool eyeColour(const std::string& id)
+{
+    for (const auto& entry : EyePalette)
+        if (id == entry.id)
+            return true;
+    return false;
+}
+
+bool furZone(const std::string& id)
+{
+    for (const auto* zone : FurZoneIds)
+        if (id == zone)
+            return true;
+    return false;
+}
+
+bool validFur(const Fur& fur)
+{
+    if (!furCoat(fur.coat) || !eyeColour(fur.eyes))
+        return false;
+    for (const auto& [zone, coat] : fur.zones)
+        if (!furZone(zone) || !furCoat(coat))
+            return false;
+    return true;
+}
+
 bool validAppearance(const Appearance& appearance)
 {
+    if (appearance.fur.chosen() && !validFur(appearance.fur))
+        return false;
     for (const auto* colour : {&appearance.coat, &appearance.gradientTint, &appearance.markingTint, &appearance.eyes})
         if (!colour->empty() && !hexColour(*colour))
             return false;

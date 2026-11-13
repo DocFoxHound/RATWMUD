@@ -50,13 +50,68 @@ Value appearance(const Appearance& a)
         }
         o.add("markings", list);
     }
+    // The painted look (doc 81), only when chosen: the coat's three fur ids, the eyes' id, and each zone's own three.
+    if (a.fur.chosen())
+    {
+        const auto three = [](const FurCoat& coat) {
+            auto list = Value::array();
+            list.push(coat.dark);
+            list.push(coat.mid);
+            list.push(coat.light);
+            return list;
+        };
+        auto fur = Value::object();
+        fur.add("coat", three(a.fur.coat));
+        fur.add("eyes", a.fur.eyes);
+        if (!a.fur.zones.empty())
+        {
+            auto zones = Value::object();
+            for (const auto& [zone, coat] : a.fur.zones)
+                zones.add(zone, three(coat));
+            fur.add("zones", zones);
+        }
+        o.add("fur", fur);
+    }
     return o;
 }
 
+namespace
+{
+// Three palette ids, as they are kept: ["dark", "mid", "light"]. (Whether each is in the palette: validAppearance.)
+bool readFurCoat(const Value& list, FurCoat& out)
+{
+    if (!list.isArray() || list.items().size() != 3)
+        return false;
+    for (const auto& id : list.items())
+        if (!id.isString() || id.asString().empty() || id.asString().size() > 16)
+            return false;
+    out = {list.items()[0].asString(), list.items()[1].asString(), list.items()[2].asString()};
+    return true;
+}
+
+bool readFur(const Value& o, Fur& out)
+{
+    if (!o.isObject() || o.size() < 2 || o.size() > 3 || !o["eyes"].isString() || o["eyes"].asString().size() > 16 ||
+        !readFurCoat(o["coat"], out.coat))
+        return false;
+    out.eyes = o["eyes"].asString();
+    if (o.size() == 3)
+    {
+        const auto* zones = o.find("zones");
+        if (!zones || !zones->isObject() || zones->size() == 0 || zones->size() > 16)
+            return false;                           // (No empty "zones": one look has one form.)
+        for (const auto& [zone, coat] : zones->fields())
+            if (zone.empty() || zone.size() > 16 || out.zones.count(zone) || !readFurCoat(coat, out.zones[zone]))
+                return false;
+    }
+    return true;
+}
+} // namespace
+
 bool readAppearance(const Value& o, Appearance& out)
 {
-    // The nine fields every appearance has, and phase 9's optional ones; nothing else.
-    static const std::set<std::string> optional{"coat", "gradientTint", "markingTint", "eyes", "build", "markings"};
+    // The nine fields every appearance has, phase 9's optional ones and the painted look (doc 81); nothing else.
+    static const std::set<std::string> optional{"coat", "gradientTint", "markingTint", "eyes", "build", "markings", "fur"};
     if (!o.isObject() || o.size() < 9 || o.size() > 9 + optional.size())
         return false;
     for (const auto& [key, value] : o.fields())
@@ -84,6 +139,8 @@ bool readAppearance(const Value& o, Appearance& out)
             a.markings.push_back(mark);
         }
     }
+    if (const auto* fur = o.find("fur"); fur && !readFur(*fur, a.fur))
+        return false;
     const auto id = [&](const char* key, std::string& into) {
         const auto* v = o.find(key);
         if (!v || !v->isString() || v->asString().empty() || v->asString().size() > 16)

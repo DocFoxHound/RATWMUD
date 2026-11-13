@@ -108,6 +108,37 @@ int main()
             check(validAppearance(a), "Both blend amounts accept inclusive normalized range");
         }
 
+        // The painted look (doc 81): palette ids only, whole or not at all, and still descriptive only.
+        check(!defaults.fur.chosen(), "An older wolf has no painted look");
+        auto painted = defaults;
+        painted.build = "heavy";
+        painted.fur.coat = {"black", "charcoal", "silver"};
+        painted.fur.eyes = "gold";
+        painted.fur.zones["muzzle"] = {"silver", "mist", "snow"};
+        check(painted.fur.chosen() && validFur(painted.fur) && validAppearance(painted) &&
+                  shoulderHeightCm(painted, 18) == shoulderHeightCm(defaults, 18),
+              "A painted look in palette colours is valid and changes no measure");
+        for (const auto* zone : {"back", "sides", "chest", "legs", "tail", "tail_tip", "head", "muzzle"})
+            check(furZone(zone), "The eight fur zones are known");
+        for (const auto* bad : {"", "Black", "#1e1d1c", "neon", "amber", "black ", "tail_tip"})
+        {
+            auto a = painted; a.fur.coat.dark = bad;
+            check(!validAppearance(a) && shoulderHeightCm(a, 18) == 0, "A fur colour off the palette is refused");
+            a = painted; a.fur.zones["legs"] = {"soot", bad, "cream"};
+            check(!validAppearance(a), "A zone's colour off the palette is refused");
+        }
+        for (const auto* bad : {"", "Gold", "#dcbb5a", "violet", "soot"})
+        {
+            auto a = painted; a.fur.eyes = bad;
+            check(!validAppearance(a), "An eye colour off the palette is refused");
+        }
+        {
+            auto a = painted; a.fur.zones["wings"] = {"soot", "ash", "cream"};
+            check(!validAppearance(a), "An unknown zone is refused");
+            a = defaults; a.fur.zones["legs"] = {"soot", "ash", "cream"};
+            check(!validAppearance(a), "Zones with no coat are no painted look");
+        }
+
         for (int age : {0, 6, 12}) check(lifeStage(age) == LifeStage::Young, "Young age boundary");
         for (int age : {13, 17}) check(lifeStage(age) == LifeStage::Adolescent, "Adolescent age boundary");
         for (int age : {18, 64}) check(lifeStage(age) == LifeStage::Adult, "Adult age boundary");

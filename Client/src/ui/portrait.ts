@@ -5,6 +5,7 @@ import {CoatColors} from './theme.ts';
 import {isObject, type Json} from '../game/json.ts';
 import {drawWolf} from './wolfArt.ts';
 import {artCache} from './artwork.ts';
+import {readFur, type Fur} from './fur.ts';
 
 export interface Appearance {
     species: string;
@@ -23,6 +24,8 @@ export interface Appearance {
     eyes?: string;
     build?: string;
     markings?: Array<{mask: string; color: string; opacity: number}>;
+    // The painted look (doc 81; fur.ts), when chosen: palette ids. `build` picks which of the three paintings.
+    fur?: Fur;
 }
 
 const hex = (v: unknown): v is string => typeof v === 'string' && /^#[0-9a-f]{6}$/.test(v);
@@ -61,6 +64,11 @@ export function readAppearance(o: unknown): Appearance | null {
             if (!isObject(m) || !MarkingMasks.includes(m.mask as string) || !hex(m.color) || !amount(m.opacity)) return null;
             out.markings.push({mask: m.mask as string, color: m.color as string, opacity: m.opacity as number});
         }
+    }
+    if (a.fur !== undefined) {
+        const fur = readFur(a.fur);
+        if (!fur) return null;
+        out.fur = fur;
     }
     return out;
 }

@@ -94,6 +94,80 @@ void appearanceV2Tests()
     expect(wire::appearance(unusualAppearance()).size() == 9, "an older appearance keeps its nine fields");
 }
 
+// The painted look (Docs/Design/81-painted-wolves.md): the coat's three fur colours, the eyes and each zone's own three,
+// all palette ids; one form, strictly read; nothing off the palette.
+void furTests()
+{
+    const auto parsed = [](const std::string& text) {
+        Value v;
+        std::string error;
+        expect(json::parse(text, v, error), "JSON: " + error + " in " + text);
+        return v;
+    };
+    Appearance a = unusualAppearance();
+    a.build = "heavy";
+    a.fur.coat = {"soot", "ash", "cream"};
+    a.fur.eyes = "amber";
+    a.fur.zones["legs"] = {"silver", "mist", "snow"};
+    a.fur.zones["tail_tip"] = {"black", "soot", "charcoal"};
+    expect(validAppearance(a), "a painted look is valid");
+    const auto j = wire::appearance(a);
+    expect(j.size() == 11 && j["fur"].size() == 3 && j["fur"]["coat"].items().size() == 3 && j["fur"].string("eyes") == "amber" &&
+               j["fur"]["zones"].size() == 2 && j["fur"]["zones"]["legs"].items()[2].asString() == "snow",
+           "the painted look is written whole: " + json::dump(j));
+    Appearance back;
+    expect(wire::readAppearance(j, back) && back.build == "heavy" && back.fur.coat.dark == "soot" && back.fur.coat.mid == "ash" &&
+               back.fur.coat.light == "cream" && back.fur.eyes == "amber" && back.fur.zones.size() == 2 &&
+               back.fur.zones.at("tail_tip").dark == "black" && back.fur.zones.at("legs").mid == "mist",
+           "it reads back as chosen");
+    expect(json::dump(wire::appearance(back)) == json::dump(j), "and is written the same again");
+    Appearance plain = a;
+    plain.fur.zones.clear();
+    expect(wire::appearance(plain)["fur"].size() == 2 && wire::readAppearance(wire::appearance(plain), back) && back.fur.zones.empty(),
+           "a coat with no zones of its own says no zones");
+    const auto refused = [&](const std::string& fur, const std::string& what) {
+        auto v = wire::appearance(unusualAppearance());
+        v.add("fur", parsed(fur));
+        expect(!wire::readAppearance(v, back), "refused: " + what);
+    };
+    const auto accepted = [&](const std::string& fur, const std::string& what) {
+        auto v = wire::appearance(unusualAppearance());
+        v.add("fur", parsed(fur));
+        expect(wire::readAppearance(v, back), "accepted: " + what);
+    };
+    accepted(R"({"coat":["black","black","black"],"eyes":"ice"})", "one colour three times");
+    accepted(R"({"coat":["soot","ash","cream"],"eyes":"amber","zones":{"back":["rust","sand","ivory"],"sides":["rust","sand","ivory"],"chest":["rust","sand","ivory"],"legs":["rust","sand","ivory"],"tail":["rust","sand","ivory"],"tail_tip":["rust","sand","ivory"],"head":["rust","sand","ivory"],"muzzle":["rust","sand","ivory"]}})",
+             "all eight zones their own");
+    refused(R"({"coat":["soot","ash","neon"],"eyes":"amber"})", "a fur colour not in the palette");
+    refused(R"({"coat":["soot","ash","#ff00ff"],"eyes":"amber"})", "a colour, not an id");
+    refused(R"({"coat":["soot","ash","amber"],"eyes":"amber"})", "an eye colour as fur");
+    refused(R"({"coat":["soot","ash","cream"],"eyes":"soot"})", "a fur colour as eyes");
+    refused(R"({"coat":["soot","ash","cream"],"eyes":"purple"})", "an eye colour not in the palette");
+    refused(R"({"coat":["soot","ash"],"eyes":"amber"})", "two fur colours");
+    refused(R"({"coat":["soot","ash","cream","snow"],"eyes":"amber"})", "four fur colours");
+    refused(R"({"coat":["soot","ash",3],"eyes":"amber"})", "a number for a colour");
+    refused(R"({"coat":"soot","eyes":"amber"})", "a coat that is no list");
+    refused(R"({"coat":["soot","ash","cream"]})", "no eyes");
+    refused(R"({"eyes":"amber","zones":{"legs":["soot","ash","cream"]}})", "no coat");
+    refused(R"({"coat":["soot","ash","cream"],"eyes":"amber","zones":{}})", "empty zones");
+    refused(R"({"coat":["soot","ash","cream"],"eyes":"amber","zones":{"wings":["soot","ash","cream"]}})", "an unknown zone");
+    refused(R"({"coat":["soot","ash","cream"],"eyes":"amber","zones":{"legs":["soot","ash"]}})", "a zone with two colours");
+    refused(R"({"coat":["soot","ash","cream"],"eyes":"amber","zones":{"legs":["soot","ash","lime"]}})", "a zone colour not in the palette");
+    refused(R"({"coat":["soot","ash","cream"],"eyes":"amber","zones":[["soot","ash","cream"]]})", "zones as a list");
+    refused(R"({"coat":["soot","ash","cream"],"eyes":"amber","template":"heavy"})", "an unknown field");
+    refused(R"({"coat":["soot","ash","cream"],"eyes":"amber","zones":{"legs":["soot","ash","cream"]},"extra":1})", "a fourth field");
+    refused(R"("timber")", "a look that is no object");
+    Fur half;
+    half.eyes = "amber";
+    Appearance broken = unusualAppearance();
+    broken.fur = half;
+    expect(!validAppearance(broken), "eyes with no coat are no painted look");
+    expect(furColour("russet") && !furColour("amber") && eyeColour("amber") && !eyeColour("russet") && furZone("tail_tip") && !furZone("ears") &&
+               std::string(furColourName("slate")) == "Slate blue" && furColourRgb("black") == 0x1e1d1c && furColourRgb("nothing") == -1 &&
+               std::string(furColourName("nothing")).empty(),
+           "the palette answers by id");
+}
+
 void appearanceTests()
 {
     const auto canonical = wire::appearance(unusualAppearance());
@@ -630,6 +704,7 @@ int main()
     {
         appearanceTests();
         appearanceV2Tests();
+        furTests();
         publicEntityTests();
         privateTests();
         persistTests();
