@@ -6,13 +6,12 @@ import {clockLabel, fightTips, meterNow, myTurn, nextAim, secondsToTurn, termsWo
 import {lawLabel} from '../../game/labels.ts';
 import {arr, bool, isObject, num, obj, str, type Json} from '../../game/json.ts';
 import type {GameState} from '../../game/state.ts';
-import {drawPortrait, type Portraits} from '../portrait.ts';
+import {drawPortrait, type Portraits, type PortraitView} from '../portrait.ts';
 import {icon} from '../icons.ts';
 import {button, el, setClass, setStyle, setText, show} from './dom.ts';
 import {noRect} from './story.ts';
 import {drawGear, gearDoll} from './gear.ts';
 
-const ageOf = (stage: string) => (stage === 'young' ? 6 : stage === 'adolescent' ? 13 : stage === 'old' ? 65 : 18);
 
 /** How a fight ended, as shown after it (doc 37, phase 4). */
 interface Ended {
@@ -43,22 +42,25 @@ interface Action {
 }
 
 /**
- * A wolf's portrait, drawn again only when its look changes. `head` crops to the head and shoulders (the portrait is a
- * side view facing right), for the round faces of the turn order.
+ * A wolf's portrait (doc 81), drawn again only when its look changes (or a painting arrives): the painted wolf in its
+ * own fur, from the painted wolves' cache at this size, never repainted per frame. `view` says which painting: the
+ * face for the round chips of the turn order, the profile where there is width (the cards, the face-off); `flip` turns
+ * a profile to face right (the left of the face-off, toward the other side).
  */
 class Face {
     readonly canvas: HTMLCanvasElement;
     private drawn = '';
-    constructor(parent: HTMLElement, className: string, w: number, h: number, private head = false) {
+    constructor(parent: HTMLElement, className: string, w: number, h: number, private view: PortraitView = 'profile', private flip = false) {
         this.canvas = el('canvas', className, parent);
         this.canvas.width = w;
         this.canvas.height = h;
     }
     draw(portraits: Portraits, f: FighterView) {
-        const key = JSON.stringify([f.appearance, f.lifeStage, f.animal?.species ?? '']);
+        const key = JSON.stringify([f.appearance, f.animal?.species ?? '', portraits.version]);
         if (key === this.drawn) return;
         const c = this.canvas.getContext('2d');
         if (!c) return;
+        this.drawn = key;
         c.clearRect(0, 0, this.canvas.width, this.canvas.height);
         const w = this.canvas.width, h = this.canvas.height;
         if (f.animal) {
@@ -68,12 +70,11 @@ class Face {
             c.textAlign = 'center';
             c.textBaseline = 'middle';
             c.fillText(f.animal.glyph, w / 2, h / 2);
-            this.drawn = key;
             return;
         }
-        const drawn = this.head ? drawPortrait(c, portraits, f.appearance, ageOf(f.lifeStage), -w * 1.15, -h * 0.12, w * 2.3, h * 1.56)
-            : drawPortrait(c, portraits, f.appearance, ageOf(f.lifeStage), -w * 0.12, -h * 0.16, w * 1.24, h * 1.3);
-        if (drawn) this.drawn = key;
+        // The round chip is cut to a circle (styles.css): its paper square, the face kept inside the circle.
+        if (this.view === 'face') drawPortrait(c, portraits, f.appearance, 0, 0, w, h, undefined, {view: 'face', radius: 0, pad: 0.1});
+        else drawPortrait(c, portraits, f.appearance, 0, 0, w, h, undefined, {view: 'profile', pad: 0.05, flip: this.flip});
     }
 }
 
@@ -234,7 +235,7 @@ export class CombatScreen {
             let chip = this.chips.get(f.id);
             if (!chip) {
                 const root = el('div', 'strip-chip');
-                const face = new Face(root, 'strip-face', 64, 64, true);
+                const face = new Face(root, 'strip-face', 64, 64, 'face');
                 const when = el('span', 'strip-when', root);
                 root.addEventListener('mouseenter', () => (s.highlight = f.id));
                 root.addEventListener('mouseleave', () => {
@@ -436,7 +437,7 @@ export class CombatScreen {
         const s = this.s;
         const root = el('div', 'fcard');
         const left = el('div', 'fcard-left', root);
-        const face = new Face(left, 'fcard-face', 96, 66);
+        const face = new Face(left, 'fcard-face', 152, 104);
         const gear = gearDoll(left, 'fcard-gear');
         const body = el('div', 'fcard-body', root);
         const top = el('div', 'fcard-top', body);
@@ -805,7 +806,7 @@ export class CombatScreen {
             const col = el('div', `versus-side ${cls}`, card);
             for (const f of fighters.slice(0, 3)) {
                 const who = el('div', 'versus-who', col);
-                new Face(who, 'versus-face', 120, 82).draw(this.portraits, f);
+                new Face(who, 'versus-face', 240, 164, 'profile', cls !== 'foe').draw(this.portraits, f);
                 el('div', 'versus-name', who, f.id === s.selfId ? 'You' : f.name);
             }
             if (fighters.length > 3) el('div', 'muted small', col, `and ${fighters.length - 3} more`);

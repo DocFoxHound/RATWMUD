@@ -469,14 +469,16 @@ export class Hud {
                 drawGear(r.gear, e.gear);
                 show(r.gear, e.gear.length > 0);
             }
-            const look = JSON.stringify([e.appearance, e.lifeStage, e.artwork, !!artCache.get(e.artwork)]);
+            // The wolf's painted face in its own fur (doc 81), or its uploaded picture: painted again only when the look
+            // changes (each look at this size is kept by the painted wolves, so dozens in sight cost one paint each).
+            const look = JSON.stringify([e.appearance, e.artwork, !!artCache.get(e.artwork), this.portraits.version]);
             if (r.drawn !== look) {
                 const c = r.portrait.getContext('2d');
                 if (c) {
                     c.clearRect(0, 0, r.portrait.width, r.portrait.height);
-                    const age = e.lifeStage === 'young' ? 6 : e.lifeStage === 'adolescent' ? 13 : e.lifeStage === 'old' ? 65 : 18;
-                    // Drawn once its sheet has loaded; until then the row shows its initial.
-                    if (drawPortrait(c, this.portraits, e.appearance, age, 0, 0, r.portrait.width, r.portrait.height, e.artwork)) r.drawn = look;
+                    // Nothing for a hunt's game (no appearance) or until the paintings have arrived (the version changes).
+                    drawPortrait(c, this.portraits, e.appearance, 0, 0, r.portrait.width, r.portrait.height, e.artwork, {view: 'face', pad: 0.04});
+                    r.drawn = look;
                 }
             }
         }

@@ -2,7 +2,8 @@
 // dialogs (they were drawn on the canvas); built again only when what they show changes.
 import {css} from '../color.ts';
 import {speakingColor} from '../theme.ts';
-import {drawPortrait, type Portraits} from '../portrait.ts';
+import {drawPortrait, paintedLook, type Portraits} from '../portrait.ts';
+import {BuildNames, type Build} from '../fur.ts';
 import {arr, bool, clamp, countText, envNumber, isObject, num, obj, str, wholeCount, type Json} from '../../game/json.ts';
 import {postureLabel, restLabel, readLoad, loadLabel, loadCost, weightLabel} from '../../game/labels.ts';
 import type {GameState} from '../../game/state.ts';
@@ -56,12 +57,28 @@ interface Doll {
     jewellery: {spot: string; item: string; name: string}[];
     mouth: string;
     appearance: Json | null;
-    age: number;
     artwork: string;
     editable: boolean;
     fight: GameState['battle'];
     self: Json | null;
 }
+
+/** Where each fur spot (Core/RatwItems.h FurSpots) sits on each size's profile, in the paintings' shared frame (961 by
+ *  595 pixels; Client/src/assets/wolves). The paintings face left, so the near legs are the wolf's left. */
+const FurSpotsAt: Record<Build, Record<string, [number, number]>> = {
+    small: {ears: [201, 212], crown: [190, 260], ruff: [228, 358], chest: [316, 398], back: [447, 296], foreleg_left: [387, 507],
+        foreleg_right: [303, 507], hindleg_left: [663, 507], hindleg_right: [561, 507], tail: [708, 390]},
+    medium: {ears: [123, 130], crown: [116, 178], ruff: [165, 290], chest: [258, 339], back: [406, 223], foreleg_left: [315, 490],
+        foreleg_right: [229, 490], hindleg_left: [687, 490], hindleg_right: [553, 490], tail: [743, 345]},
+    large: {ears: [96, 32], crown: [84, 72], ruff: [125, 195], chest: [252, 264], back: [400, 140], foreleg_left: [292, 470],
+        foreleg_right: [224, 470], hindleg_left: [727, 470], hindleg_right: [585, 470], tail: [765, 282]},
+};
+/** A fur spot's name: the fur zone it is in (doc 81's eight), then the part where that says too little. */
+const FurSpotNames: Record<string, string> = {
+    ears: 'HEAD · EARS', crown: 'HEAD · CROWN', ruff: 'CHEST · RUFF', chest: 'CHEST AND BELLY', back: 'BACK',
+    foreleg_left: 'LEGS · LEFT FORE', foreleg_right: 'LEGS · RIGHT FORE', hindleg_left: 'LEGS · LEFT HIND', hindleg_right: 'LEGS · RIGHT HIND',
+    tail: 'TAIL',
+};
 
 export class Dialogs {
     private s: GameState;
@@ -89,7 +106,7 @@ export class Dialogs {
             if (e.target === this.overlay) state.activate({rect: noRect, action: 'close', target: ''});
         });
         this.overlay.style.display = 'none';
-        portraits.onReady = () => (this.key = '');
+        portraits.listen(() => (this.key = ''));       // A painting arrived: the open sheet is built again with it.
     }
 
     update() {
@@ -164,13 +181,39 @@ export class Dialogs {
         el('h1', '', this.panel, title);
     }
 
-    private portrait(parent: HTMLElement, appearance: Json | null, age: number, artwork = '') {
-        const canvas = el('canvas', 'portrait', parent);
-        canvas.width = 500;
-        canvas.height = 340;
+    /** A wolf as character select shows one (doc 81): its painted face beside a line or two, its profile below, both in
+     *  its own fur; or, where there is one to show, its uploaded picture in place of both, the lines under it. */
+    private portrait(parent: HTMLElement, appearance: Json | null, artwork: string, lines: string[]) {
+        if (artwork && artCache.get(artwork)) {
+            const canvas = el('canvas', 'portrait', parent);
+            canvas.width = 500;
+            canvas.height = 340;
+            const c = canvas.getContext('2d');
+            if (c) drawPortrait(c, this.portraits, appearance, 0, 0, canvas.width, canvas.height, artwork);
+            for (const line of lines) el('div', 'label muted', parent, line);
+            return;
+        }
+        const id = el('div', 'wolf-id', parent);
+        const face = el('canvas', 'wolf-face', id);
+        face.width = 232;
+        face.height = 276;
+        const f = face.getContext('2d');
+        if (f) drawPortrait(f, this.portraits, appearance, 0, 0, face.width, face.height, undefined, {view: 'face'});
+        const text = el('div', 'wolf-id-text', id);
+        for (const line of lines) el('div', 'label muted', text, line);
+        const canvas = el('canvas', 'portrait painted', parent);
+        canvas.width = 720;
+        canvas.height = 446;
         const c = canvas.getContext('2d');
-        if (c) drawPortrait(c, this.portraits, appearance, age, 0, 0, canvas.width, canvas.height, artwork || undefined);
-        return canvas;
+        if (c) drawPortrait(c, this.portraits, appearance, 0, 0, canvas.width, canvas.height);
+    }
+
+    /** Its size and its height at the shoulder, as beside a portrait in the creator ("LARGE · 85 CM AT SHOULDER"):
+     *  the size is the painting's, so the words agree with the picture. */
+    private sizeLine(appearance: Json | null, heightCm: number): string {
+        const look = paintedLook(appearance);
+        return [look ? BuildNames[look.build].toUpperCase() : '', heightCm > 0 ? `${heightCm.toFixed(0)} CM AT SHOULDER` : '']
+            .filter(Boolean).join(' · ');
     }
 
     private character(self: Json | null) {
@@ -192,12 +235,10 @@ export class Dialogs {
             `(${envNumber(self, 'effectiveDexterity', 0, 100, dex).toFixed(1)} effective)   WISDOM ${envNumber(self, 'wisdom', 0, 100, 50).toFixed(0)}`);
         const cols = el('div', 'sheet-cols', this.panel);
         const left = el('div', 'sheet-col', cols);
-        this.portrait(left, this.s.portraitAppearance(), this.s.portraitAge(), str(self, 'artwork'));
+        this.portrait(left, this.s.portraitAppearance(), str(self, 'artwork'),
+            [this.sizeLine(this.s.portraitAppearance(), num(self, 'shoulderHeightCm')) || 'YOUR SAVED APPEARANCE']);
         if (str(self, 'artworkStatus') === 'pending')
             el('div', 'label gold', left, 'YOUR PORTRAIT IS WAITING FOR A DUNGEON MASTER · ONLY YOU SEE IT');
-        el('div', 'label muted', left, num(self, 'shoulderHeightCm') > 0
-            ? `${str(obj(self, 'appearance'), 'stature', 'average').toUpperCase()} STATURE · ${num(self, 'shoulderHeightCm').toFixed(0)} CM AT SHOULDER`
-            : 'YOUR SAVED APPEARANCE');
         const right = el('div', 'sheet-col', cols);
         el('div', 'label gold', right, 'PRESENT STATE');
         el('div', 'big', right, postureLabel(self));
@@ -974,7 +1015,7 @@ export class Dialogs {
             jewellery: arr(self, 'jewellery').filter(p => Array.isArray(p) && p.length === 2)
                 .map(p => ({spot: String((p as Json[])[0]), item: String((p as Json[])[1]), name: nameOf(String((p as Json[])[1]))})),
             mouth: mouth ? nameOf(mouth) : '',
-            appearance: obj(self, 'appearance'), age: num(self, 'age', 18), artwork: this.ownArtwork(self),
+            appearance: obj(self, 'appearance'), artwork: this.ownArtwork(self),
             editable: true, fight, self,
         };
     }
@@ -984,27 +1025,27 @@ export class Dialogs {
         const equipment = obj(inspected, 'equipment');
         const worn: Record<string, string> = {};
         for (const [slot, piece] of Object.entries(obj(equipment, 'worn') ?? {})) if (isObject(piece)) worn[slot] = str(piece, 'name');
-        const stage = str(inspected, 'lifeStage', 'adult');
         return {
             worn, starterSide: '', starterName: '',
             jewellery: arr(equipment, 'jewellery').filter(isObject).map(p => ({spot: str(p, 'spot'), item: str(p, 'id'), name: str(p, 'name')})),
             mouth: str(obj(equipment, 'mouth'), 'name'),
-            appearance: obj(inspected, 'appearance'), age: stage === 'young' ? 6 : stage === 'adolescent' ? 13 : stage === 'old' ? 65 : 18,
-            artwork: str(inspected, 'artwork'), editable: false, fight: null, self: null,
+            appearance: obj(inspected, 'appearance'), artwork: str(inspected, 'artwork'), editable: false, fight: null, self: null,
         };
     }
 
     /** The wolf and what it wears (doc 35, 1.1): its portrait (as on its card: the uploaded picture where there is one,
-     * else the wolf as it looks) between the wear slots, the muzzle beneath, and the fur spots where jewellery is
-     * clipped. One's own: a click on something worn takes it off. Another's: to look at only. */
+     * else its painted profile in its own fur, doc 81) between the wear slots, the muzzle beneath, and the fur spots where
+     * jewellery is clipped. One's own: a click on something worn takes it off. Another's: to look at only. */
     private paperDoll(parent: HTMLElement, doll: Doll) {
         const sides = el('div', 'rpg-doll-grid', parent);
         const leftSlots = el('div', 'rpg-slots', sides);
         const figure = el('div', 'rpg-figure', sides);
-        const canvas = el('canvas', 'portrait', figure);
-        canvas.width = canvas.height = 420;
+        const own = !!doll.artwork && !!artCache.get(doll.artwork);
+        const canvas = el('canvas', own ? 'portrait' : 'portrait painted', figure);
+        canvas.width = own ? 420 : 480;
+        canvas.height = own ? 420 : 300;
         const c = canvas.getContext('2d');
-        if (c) drawPortrait(c, this.portraits, doll.appearance, doll.age, 0, 0, canvas.width, canvas.height, doll.artwork || undefined);
+        if (c) drawPortrait(c, this.portraits, doll.appearance, 0, 0, canvas.width, canvas.height, doll.artwork || undefined, {pad: 0.04});
         const rightSlots = el('div', 'rpg-slots', sides);
         const slot = (parent: HTMLElement, name: string, holds: string, filled = '', onClick?: () => void, disabled = false, hint = '') => {
             const box = el(onClick ? 'button' : 'div', `rpg-slot${filled ? ' filled' : ''}`, parent) as HTMLElement;
@@ -1042,30 +1083,27 @@ export class Dialogs {
         this.furSpots(parent, doll);
     }
 
-    /** Jewellery at its fur spots (doc 35): a wolf in outline with a marker at each spot, how many pieces are there, and
-     * the chosen spot's pieces (one's own, to unclip). */
+    /** Jewellery at its fur spots (doc 35): the wolf's painted profile (doc 81, in its own fur) with a marker at each
+     * spot, how many pieces are there, and the chosen spot's pieces (one's own, to unclip). Each spot is named by the
+     * fur zone it sits in (the eight zones, doc 81), then the part ("HEAD · EARS"). */
     private furSpots(parent: HTMLElement, doll: Doll) {
         const pieces = doll.jewellery;
         const box = this.box(parent, `JEWELLERY · ${pieces.length ? `${pieces.length} PIECE${pieces.length === 1 ? '' : 'S'}` : 'NONE'}`);
         const wrap = el('div', 'rpg-fur', box);
+        const figure = el('div', 'rpg-fur-figure', wrap);
+        // The painting in its frame, the frame filling the canvas, so the markers (in the frame's pixels) sit on it.
+        const canvas = el('canvas', 'rpg-fur-wolf', figure);
+        canvas.width = 480;
+        canvas.height = 297;
+        const c = canvas.getContext('2d');
+        if (c) drawPortrait(c, this.portraits, doll.appearance, 0, 0, canvas.width, canvas.height, undefined, {pad: 0, radius: 6});
         const ns = 'http://www.w3.org/2000/svg';
         const svg = document.createElementNS(ns, 'svg');
-        svg.setAttribute('viewBox', '0 0 300 150');
+        svg.setAttribute('viewBox', '0 0 961 595');
         svg.setAttribute('class', 'rpg-fur-svg');
-        wrap.appendChild(svg);
-        const outline = document.createElementNS(ns, 'path');
-        // A wolf standing, facing right: tail, back, neck, head and ears, muzzle, chest, legs.
-        outline.setAttribute('d', 'M38 62 C22 70 14 92 20 104 C28 96 36 84 52 76 C70 66 96 58 140 58 C170 58 192 54 206 46 ' +
-            'L214 26 L222 40 L230 24 L236 44 C248 48 262 56 274 62 L276 70 C262 72 248 72 238 74 C232 86 224 96 214 102 ' +
-            'L214 140 L204 140 L202 106 C196 108 188 110 180 110 L178 140 L168 140 L168 108 C140 112 110 112 88 106 ' +
-            'L84 140 L74 140 L72 100 C66 96 62 92 60 86 L56 140 L46 140 L48 84 C46 76 44 70 38 62 Z');
-        outline.setAttribute('class', 'rpg-fur-wolf');
-        svg.appendChild(outline);
-        const at: Record<string, [number, number, string]> = {
-            ears: [226, 34, 'EARS'], crown: [240, 50, 'CROWN'], ruff: [214, 70, 'RUFF'], chest: [222, 92, 'CHEST'], back: [130, 62, 'BACK'],
-            foreleg_left: [208, 128, 'L FORE'], foreleg_right: [174, 128, 'R FORE'], hindleg_left: [80, 128, 'L HIND'],
-            hindleg_right: [52, 128, 'R HIND'], tail: [26, 92, 'TAIL'],
-        };
+        figure.appendChild(svg);
+        const where = FurSpotsAt[paintedLook(doll.appearance)?.build ?? 'medium'];
+        const at: Record<string, [number, number, string]> = Object.fromEntries(Object.entries(where).map(([spot, [x, y]]) => [spot, [x, y, FurSpotNames[spot]]]));
         if (!at[this.spot]) this.spot = '';
         for (const [spot, [x, y, label]] of Object.entries(at)) {
             const here = pieces.filter(p => p.spot === spot);
@@ -1074,12 +1112,12 @@ export class Dialogs {
             const dot = document.createElementNS(ns, 'circle');
             dot.setAttribute('cx', String(x));
             dot.setAttribute('cy', String(y));
-            dot.setAttribute('r', here.length ? '8' : '5');
+            dot.setAttribute('r', here.length ? '26' : '16');
             g.appendChild(dot);
             if (here.length) {
                 const n = document.createElementNS(ns, 'text');
                 n.setAttribute('x', String(x));
-                n.setAttribute('y', String(y + 3.5));
+                n.setAttribute('y', String(y + 10));
                 n.textContent = String(here.length);
                 g.appendChild(n);
             }
@@ -1434,13 +1472,12 @@ export class Dialogs {
             const cols = el('div', 'sheet-cols', this.panel);
             const left = el('div', 'sheet-col', cols);
             const inspected = s.inspectedCharacter;
-            this.portrait(left, s.portraitAppearance(), s.portraitAge(), str(inspected, 'artwork'));
+            this.portrait(left, s.portraitAppearance(), str(inspected, 'artwork'), [str(inspected, 'lifeStage', 'adult').toUpperCase(),
+                this.sizeLine(s.portraitAppearance(), num(inspected, 'shoulderHeightCm'))].filter(Boolean));
             if (str(inspected, 'artwork')) {
                 const report = button('Report this portrait', 'secondary', left, () => s.reportPortrait(str(inspected, 'artwork')));
                 report.title = 'If a picture is not fit to be seen, a Dungeon Master will look at it again.';
             }
-            el('div', 'label sage', left, str(inspected, 'lifeStage', 'adult').toUpperCase() + (num(inspected, 'shoulderHeightCm') > 0
-                ? ` · ${num(inspected, 'shoulderHeightCm').toFixed(0)} CM AT SHOULDER` : ''));
             el('p', 'pre', el('div', 'sheet-col', cols), s.inspectedText);
         } else el('p', 'pre', this.panel, s.inspectedText);
         // How they regard this wolf (doc 32, 1.4).

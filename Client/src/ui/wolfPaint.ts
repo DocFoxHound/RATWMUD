@@ -69,7 +69,7 @@ export class PaintedWolves {
         };
         const picture = read(s.picture, true), map = read(s.map, false);
         if (!picture || !map) return null;
-        if (this.sources.size > 24) this.sources.clear();
+        forgetOldest(this.sources, 48);
         const source = {width, height, picture, map};
         this.sources.set(key, source);
         return source;
@@ -83,7 +83,11 @@ export class PaintedWolves {
         const height = Math.max(1, Math.round(width / aspect));
         const key = `${painting}-${width}x${height}-${JSON.stringify([fur.coat, fur.eyes, fur.zones ?? null])}`;
         const kept = this.made.get(key);
-        if (kept) return kept;
+        if (kept) {
+            this.made.delete(key);              // (Used: the newest again.)
+            this.made.set(key, kept);
+            return kept;
+        }
         const source = this.source(painting, width, height);
         if (!source) return null;
         const canvas = document.createElement('canvas');
@@ -94,7 +98,7 @@ export class PaintedWolves {
         const image = c.createImageData(width, height);
         paintFur(source, zoneRamps(fur), eyeRgb(fur.eyes), image.data);
         c.putImageData(image, 0, 0);
-        if (this.made.size > 96) this.made.clear();
+        forgetOldest(this.made, 256);
         this.made.set(key, canvas);
         return canvas;
     }
@@ -115,6 +119,12 @@ export class PaintedWolves {
         paper(ctx, x, y, w, h, Math.min(w, h) * (painting === 'face' ? 0.14 : 0.06));
         return this.draw(ctx, painting, fur, x + pad, y + pad, w - 2 * pad, h - 2 * pad);
     }
+}
+
+/** Keeps a cache under its size: the longest kept goes first (a Map keeps the order things were put in). In a town
+ *  the In Sight list and a fight's cards hold dozens of looks at a few sizes each, so one more never clears the rest. */
+function forgetOldest<T>(cache: Map<string, T>, most: number) {
+    while (cache.size >= most) cache.delete(cache.keys().next().value!);
 }
 
 function paper(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, radius: number) {

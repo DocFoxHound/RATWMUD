@@ -1,10 +1,10 @@
 # 81. Painted wolves
 
 A wolf's avatar is watercolour: a profile in one of three sizes and a face (one painting, shared by every wolf),
-coloured with fur the player chooses: in the creator and on the character select screen now; the other places that
-draw a wolf are listed last. The face and the profile are separate pictures: the creator and the other preview cards
-show the face as a portrait beside the wolf's name and the profile below; the roster shows each wolf's face in its
-list and the selected wolf's profile on its card.
+coloured with fur the player chooses: everywhere the game shows a wolf's portrait (the places are listed in "In the
+game" below). The face and the profile are separate pictures: the creator and the other preview cards show the face as
+a portrait beside the wolf's name and the profile below; the roster shows each wolf's face in its list and the
+selected wolf's profile on its card.
 
 **The technique.** The painting is kept as brushwork; only its colours change. Each pixel's luminance goes through a
 ramp of three fur colours: the painting's dark fur (luminance about 38) becomes the player's dark colour, its mid
@@ -62,9 +62,22 @@ the rim is kept and the dark fur round it is not. A larger copy of the same pain
 different painting needs its outlines placed again (`--grid DIR` to read coordinates, `--overlay DIR` to check).
 `--sheet FILE`: the palette sheet.
 
-**Left.** The user asked for the status screen and equipment next. Still code-drawn (`ui/wolfArt.ts` through
-`drawPortrait`): the character sheet, the inspection card and the equipment doll (`ui/hud/dialogs.ts`), the scene's
-portraits (`hud.ts`), the fight's figures (`combat.ts`), the story panel (`story.ts`); the map's W is a glyph. Open:
-one age and one species painted (species is words; the sheet still says the stature, which the creator keeps in
-step with the size); claws take the legs' fur; NPCs and Atlas's
-roster get the derived look only; the client has no screen to change a wolf's look after creation.
+**In the game** (2026-11-13), every portrait is the painted wolf in that wolf's own fur, players' and residents'
+alike, through `drawPortrait` (`ui/portrait.ts`), with an uploaded portrait (doc 29) still first where one was shown;
+a wolf saved before the painted wolves, and any resident without `fur`, gets the derived look (`furOf`), at its
+size (`buildOf`). The face where the space is small or square: the In Sight list's thumbnails, the fight's round turn
+chips (drawn, though hidden while the cards show the order), the hover card of who is in a scene. The profile where it
+is wide: the fight's cards (acting now and coming up) and the face-off before a fight (one's own side turned to face
+the other). Both, as on character select, on the character sheet and the closer look at another wolf: the face
+beside its size and height ("LARGE · 85 CM AT SHOULDER"; the sheet no longer says the stature), the profile below.
+The equipment page's doll stands the profile between the wear slots, and its jewellery map is the profile with a
+marker at each fur spot, placed per size and named by the zone it lies in ("HEAD · EARS", "LEGS · LEFT FORE": the
+paintings face left, so the near legs are the left); the spots themselves (`Core/RatwItems.h`) are unchanged. Hunt
+game keeps its glyph. Each look is painted once at the size it is shown and kept (`PaintedWolves`, the longest unused
+forgotten first), and each place draws again only when the look changes or a painting arrives (`Portraits.version`):
+with 34 wolves in sight the page's work per frame was 1.3 ms at the median and 2.3 ms at p99 (1.0 and 1.6 with 12).
+The code-drawn wolf (`ui/wolfArt.ts`) is gone; the Editor's NPC pages draw from `Data/Portraits` themselves.
+
+**Left.** The map's W is a glyph. Open: one age and one species painted (species is words; a pup is painted as an
+adult); claws take the legs' fur; Atlas's roster gets the derived look only; the client has no screen to change a
+wolf's look after creation.

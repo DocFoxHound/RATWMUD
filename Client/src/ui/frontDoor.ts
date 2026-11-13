@@ -13,7 +13,6 @@
 import {drawPortrait, lifeStage, Portraits, readAppearance, shoulderHeightCm} from './portrait.ts';
 import {buildOf, BuildNames, Builds, BuildStature, EyeColours, eyeName, FurColours, furHex, furName, furOf, FurZones, olderLook, ReadyCoats, zoneName,
     type Build, type Fur, type FurCoat, type ReadyCoat} from './fur.ts';
-import {PaintedWolves} from './wolfPaint.ts';
 import {artCache, sendPortrait, squarePixels} from './artwork.ts';
 import {ask, askText} from './dialog.ts';
 import {EditorDoor} from './editorDoor.ts';
@@ -209,7 +208,7 @@ export class FrontDoor {
     private status: HTMLParagraphElement;
     private password: HTMLInputElement | null = null;
     private portraits = new Portraits();
-    private wolves = new PaintedWolves();
+    private wolves = this.portraits.wolves;
     private portraitCanvas: HTMLCanvasElement | null = null;     // The wolf's profile (or a player's own picture).
     private faceCanvas: HTMLCanvasElement | null = null;         // The wolf's face, where a page shows it beside the name.
     private pagePainters: Array<() => void> = [];        // The page's other painted wolves (the roster's faces).
@@ -247,11 +246,10 @@ export class FrontDoor {
         this.root = el('div', {className: 'door'}, stage);
         this.root.dataset.mode = this.mode;
         parent.append(this.root);
-        this.portraits.onReady = () => this.drawPortrait();
-        this.wolves.onReady = () => {
+        this.portraits.listen(() => {
             this.drawPortrait();
             for (const paint of [...this.pagePainters, ...this.panelPainters]) paint();
-        };
+        });
         artCache.onReady = () => this.drawPortrait();
         this.timer = window.setInterval(() => this.tick(), 500);
         window.addEventListener('keydown', this.onKey);
@@ -1841,7 +1839,7 @@ export class FrontDoor {
         // A player's own picture where there is one to show (doc 29, phase 9); else the painted wolf (doc 81): its
         // profile, in its fur. (Nothing until the paintings have arrived: they draw this again.)
         const look = readAppearance(appearance);
-        if (artwork && artCache.get(artwork)) drawPortrait(c, this.portraits, appearance, age, 0, 0, canvas.width, canvas.height, artwork);
+        if (artwork && artCache.get(artwork)) drawPortrait(c, this.portraits, appearance, 0, 0, canvas.width, canvas.height, artwork);
         else if (!look) {
             c.fillStyle = '#a6a699';
             c.font = '32px sans-serif';

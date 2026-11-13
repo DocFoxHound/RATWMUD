@@ -5,8 +5,8 @@ import {clientDataHash, protocol} from './build-info.mjs';
 
 const data = resolve(import.meta.dirname, '../Data');
 
-// The fonts live in Data/ (the server and tools read them too); the build copies them in. (The portrait sheets are no
-// longer copied: the page draws its wolves in code, ui/wolfArt.ts, and never loaded them.)
+// The fonts live in Data/ (the server and tools read them too); the build copies them in. (The portrait sheets are not
+// copied: the page's wolves are the painted ones in src/assets/wolves, doc 81, which the build bundles itself.)
 function gameData(): Plugin {
     const files = () => [
         ...['DejaVuSansMono.ttf', 'DejaVuSansMono-LICENSE.txt', 'Roboto-Regular.ttf', 'Roboto-Medium.ttf', 'Roboto-LICENSE.txt']
