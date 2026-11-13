@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import {join, resolve} from 'node:path';
 
-export const ClientDataFiles = ['Data/Terrain/terrain.json', 'Core/RatwTerrainCatalog.inc', 'Core/RatwStep.h', 'Core/RatwStep.cpp',
+export const ClientDataFiles = ['Data/Terrain/terrain.json', 'Core/RatwTerrainCatalog.inc', 'Core/RatwFurPalette.inc', 'Core/RatwStep.h', 'Core/RatwStep.cpp',
     'Client/wasm/walk.cpp', 'Core/RatwPack.h', 'Core/RatwPack.cpp', 'Core/RatwMotionCore.h', 'Core/RatwMotionCore.cpp', 'Core/RatwLink.h'];
 
 const repository = resolve(import.meta.dirname, '..');

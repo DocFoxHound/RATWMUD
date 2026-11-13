@@ -397,6 +397,39 @@ button.rpg-slot:disabled { cursor: not-allowed; opacity: .75; }
 .marking-row input[type=color] { width: 54px; height: 36px; padding: 0; border: none; background: none; }
 .door .marking-row .small { padding: 8px 0; background: var(--raised); color: var(--paper); }
 
+/* The painted wolves (doc 81): the wolf's card, the faces on the roster, the builds, the fur pickers and the zones. */
+.door .portrait.painted { image-rendering: auto; }
+.door .slot.with-face { flex-direction: row; align-items: center; gap: 14px; padding: 8px 14px; }
+.door .slot .slot-face { width: 54px; height: 54px; flex: none; }
+.door .slot .slot-text { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-size: 20px; opacity: 1; }
+.build-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.door .build-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px; background: var(--raised); color: var(--paper);
+    font-size: 15px; font-weight: 400; border: 2px solid transparent; }
+.door .build-card canvas { width: 100%; height: auto; }
+.door .build-card.chosen { border-color: var(--gold); }
+.ready-coats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.door .ready-coat { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 4px; background: var(--raised); color: var(--paper);
+    font-size: 13px; font-weight: 400; }
+.door .fur-dots { display: inline-flex; gap: 3px; }
+.door .fur-dots i, .door .fur-chip i { display: inline-block; width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(0,0,0,.45); }
+.fur-picker { display: flex; flex-direction: column; gap: 10px; }
+.fur-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.door .fur-chip { display: grid; grid-template-columns: 24px 1fr; column-gap: 9px; align-items: center; text-align: left; padding: 7px 10px;
+    background: var(--raised); color: var(--paper); font-weight: 400; border: 2px solid transparent; }
+.door .fur-chip i { grid-row: span 2; width: 24px; height: 24px; }
+.door .fur-chip span { font-size: 12px; color: var(--muted); letter-spacing: .03em; }
+.door .fur-chip strong { font-size: 15px; font-weight: 500; }
+.door .fur-chip.active { border-color: var(--gold); }
+.creator-panel .zone-row { display: flex; flex-direction: column; gap: 10px; margin-top: -8px; padding: 7px 10px; background: rgba(255,255,255,.035); border-radius: 3px; }
+.zone-head { display: flex; align-items: center; gap: 10px; }
+.zone-head strong { flex: 1; font-weight: 400; font-size: 17px; }
+.door .zone-head select { font-size: 16px; padding: 6px 8px; }
+.door .zone-edit { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--raised); color: var(--paper);
+    font-size: 14px; font-weight: 400; }
+.door .fur-picker .swatch, .door .eye-grid .swatch { width: 100%; height: 30px; }
+.swatch-grid.eye-grid { grid-template-columns: repeat(11, 1fr); }
+.door .swatch-grid.eye-grid .swatch { height: 40px; }
+
 /* The Gift tab (doc 43): the classification, the eight families, and the chosen one's abilities. */
 .gift-heading { color: var(--gold); font-size: 15px; letter-spacing: .03em; margin: 4px 0 -6px !important; }
 .gift-tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }

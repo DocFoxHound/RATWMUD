@@ -10,40 +10,61 @@
 // listed). In central mode its commands go to the client (client.ts), which answers with lobby events of the
 // same shape. In the desktop client (not on a Mac, not in a browser) EDITOR on the sign-in, roster and Host pages opens
 // the Editor's screens (editorDoor.ts, Docs/Design/78): a host's way into their own world's tools.
-import {CoatNames} from './theme.ts';
-import {colourWords} from './color.ts';
 import {drawPortrait, lifeStage, Portraits, readAppearance, shoulderHeightCm} from './portrait.ts';
-import {MaskNames, Masks} from './wolfArt.ts';
+import {buildOf, BuildNames, Builds, EyeColours, eyeName, FurColours, furHex, furName, furOf, FurZones, olderLook, ReadyCoats, zoneName,
+    type Build, type Fur, type FurCoat, type ReadyCoat} from './fur.ts';
+import {PaintedWolves} from './wolfPaint.ts';
 import {artCache, sendPortrait, squarePixels} from './artwork.ts';
 import {ask, askText} from './dialog.ts';
 import {EditorDoor} from './editorDoor.ts';
 import {hostOf, type EditorBridge} from '../net/editor.ts';
 import {HOST_SEES} from '../net/worlds.ts';
 
+// The painted wolf in the creator (Docs/Design/81-painted-wolves.md): a build (which of the three paintings), the
+// coat's three fur colours, the eyes, and any fur zone's own three: all from the palette.
 
-// Natural coats, pale to dark (doc 29, phase 9); any colour is also allowed.
-const CoatSwatches = ['#f4efe6', '#e8e1d3', '#ddd2bd', '#cfc0a2', '#c2ab84', '#b39a72', '#a3865f', '#8e7350', '#7a6142', '#655037',
-    '#52412d', '#3d3125', '#2a221b', '#1a1612', '#e1d9c6', '#c8ccca', '#adb3b2', '#939a99', '#777d7b', '#5f6563', '#484d4c', '#303534',
-    '#d9b48a', '#c9945e', '#b5733f', '#a26843', '#8f4f2a', '#7a3f22', '#c26b3a', '#d98a52', '#e0a86e', '#bfa27a', '#9c8a6a', '#8e8271',
-    '#6b5a48', '#4f4236', '#d6c7a8', '#c4b393', '#a99a7c', '#e6d2b0', '#cfb184', '#b08d5f', '#94704a', '#7b5a3b', '#5e442e', '#45331f',
-    '#ece7df', '#bcb4a8'];
-const EyeSwatches = ['#d9a441', '#c8902e', '#e3c35a', '#a0702a', '#7a5228', '#5a3a1e', '#8a9a3a', '#6a8a4a', '#5f9fd0', '#8fb8d8',
-    '#a9b3b8', '#3a2a1a'];
+/** A draft's fur: what it has chosen, or what its older fields come to (fur.ts); a copy, to change. */
+function draftFur(d: Json): Fur {
+    const a = readAppearance(d);
+    const fur: Fur = a ? furOf(a) : {coat: ReadyCoats[0].coat as FurCoat, eyes: ReadyCoats[0].eyes};
+    const zones = Object.entries(fur.zones ?? {}).map(([zone, coat]) => [zone, [...coat]]);
+    return {coat: [...fur.coat], eyes: fur.eyes, ...(zones.length ? {zones: Object.fromEntries(zones)} : {})};
+}
 
-/** A whole new look at random (keeping the name and age). */
+function draftBuild(d: Json): Build {
+    const a = readAppearance(d);
+    return a ? buildOf(a) : 'average';
+}
+
+/** Puts a painted look on a draft: the build and the fur, and the older fields in step with them (the coat's colour
+ *  and the eyes in words, the wolf on the sheet: fur.ts olderLook). */
+function wear(d: Json, fur: Fur, build: Build) {
+    const zones = Object.entries(fur.zones ?? {});
+    d.build = build;
+    d.fur = {coat: [...fur.coat], eyes: fur.eyes, ...(zones.length ? {zones: Object.fromEntries(zones.map(([zone, coat]) => [zone, [...coat]]))} : {})};
+    const older = olderLook(fur);
+    Object.assign(d, {coat: older.coat, gradientTint: older.gradientTint, eyes: older.eyes, pattern: 'solid'});
+    delete d.markingTint;
+    if (older.markings.length) d.markings = older.markings;
+    else delete d.markings;
+}
+
+const readyFur = (c: ReadyCoat): Fur => ({coat: c.coat as FurCoat, eyes: c.eyes, ...(c.zones ? {zones: c.zones as Record<string, FurCoat>} : {})});
+
+/** "soot, ash and cream" */
+const coatWords = (coat: FurCoat) => `${furName(coat[0])}, ${furName(coat[1])} and ${furName(coat[2])}`.toLowerCase();
+
+/** A whole new look at random (keeping the name and age): a build, a natural coat, sometimes a zone or two of another
+ *  coat's colours, and eyes. */
 function randomiseAppearance(d: Json) {
     const pick = <T>(list: readonly T[]) => list[Math.floor(Math.random() * list.length)];
     d.species = pick(Choices.species);
     d.sex = pick(Choices.sex);
     d.stature = pick(Choices.stature);
-    d.build = pick(['lean', 'average', 'average', 'heavy']);
-    d.coat = pick(CoatSwatches);
-    d.gradientTint = pick(CoatSwatches);
-    d.gradientAmount = Math.round(Math.random() * 10) / 10;
-    d.eyes = pick(EyeSwatches);
-    const count = Math.floor(Math.random() * 4);
-    if (count) d.markings = Array.from({length: count}, () => ({mask: pick(Masks), color: pick(CoatSwatches), opacity: 0.7 + Math.round(Math.random() * 3) / 10}));
-    else delete d.markings;
+    const fur = readyFur(pick(ReadyCoats));
+    const zones: Record<string, FurCoat> = {...(fur.zones ?? {})};
+    for (let i = Math.floor(Math.random() * 3); i > 0; --i) zones[pick(FurZones).id] = pick(ReadyCoats).coat as FurCoat;
+    wear(d, {coat: fur.coat, eyes: pick(EyeColours).id, zones}, pick(Builds));
 }
 import {arr, bool, isObject, num, obj, str, type Json} from '../game/json.ts';
 import {newCommandId} from '../net/session.ts';
@@ -181,7 +202,12 @@ export class FrontDoor {
     private status: HTMLParagraphElement;
     private password: HTMLInputElement | null = null;
     private portraits = new Portraits();
+    private wolves = new PaintedWolves();
     private portraitCanvas: HTMLCanvasElement | null = null;
+    private pagePainters: Array<() => void> = [];        // The page's other painted wolves (the roster's faces).
+    private panelPainters: Array<() => void> = [];       // The creator panel's (the builds to choose from).
+    private furSlot: Record<string, number> = {};        // Which of a picker's three colours is being chosen.
+    private openZone = '';                               // The fur zone whose own colours are open.
     private timer: number;
     private send: (command: Json) => void;
 
@@ -214,6 +240,10 @@ export class FrontDoor {
         this.root.dataset.mode = this.mode;
         parent.append(this.root);
         this.portraits.onReady = () => this.drawPortrait();
+        this.wolves.onReady = () => {
+            this.drawPortrait();
+            for (const paint of [...this.pagePainters, ...this.panelPainters]) paint();
+        };
         artCache.onReady = () => this.drawPortrait();
         this.timer = window.setInterval(() => this.tick(), 500);
         window.addEventListener('keydown', this.onKey);
@@ -390,6 +420,8 @@ export class FrontDoor {
         if (page !== 'host') this.hostToken = this.hostTokenWorld = '';
         this.page = page;
         this.portraitCanvas = null;
+        this.pagePainters = [];
+        this.panelPainters = [];
         this.password = null;
         this.worldLines.clear();
         // The Editor's password boxes are emptied whenever its screen is left or drawn again.
@@ -564,6 +596,21 @@ export class FrontDoor {
             const b = el('button', {type: 'button', className: `slot${id && id === this.selectedId ? ' selected' : ''}`},
                 el('strong', {}, c ? str(c, 'name') : '+  Create a character'),
                 el('span', {}, c ? `Age ${age.toFixed(0)} · ${stageName(age)}${this.caption(c, ' · ')}` : `Empty slot ${i + 1} of 6`));
+            // Each wolf's painted face beside its name (doc 81).
+            const look = c ? readAppearance(obj(c, 'appearance')) : null;
+            if (look) {
+                const face = el('canvas', {className: 'slot-face', width: 128, height: 128});
+                const paint = () => {
+                    const g = face.getContext('2d');
+                    if (!g) return;
+                    g.clearRect(0, 0, face.width, face.height);
+                    this.wolves.drawOnPaper(g, buildOf(look), furOf(look), 'face', 0, 0, face.width, face.height);
+                };
+                this.pagePainters.push(paint);
+                paint();
+                b.classList.add('with-face');
+                b.replaceChildren(face, el('span', {className: 'slot-text'}, ...Array.from(b.childNodes)));
+            }
             b.addEventListener('click', () => {
                 if (this.busy) return;
                 if (!id) this.startCreation();
@@ -598,7 +645,7 @@ export class FrontDoor {
         }
         const c = this.selected();
         const age = num(c, 'age', 18);
-        const canvas = el('canvas', {className: 'portrait', width: 480, height: 330});
+        const canvas = el('canvas', {className: 'portrait painted', width: 960, height: 660});
         this.portraitCanvas = c ? canvas : null;
         const enter = this.button(this.mode === 'central' ? 'CHOOSE A WORLD' : 'ENTER THE WORLD', () => this.enter(), true);
         enter.disabled = !c;
@@ -752,7 +799,7 @@ export class FrontDoor {
                     this.setMessage('Asking central for the worlds…');
                     this.submit({type: 'worlds_show', wolf: this.selectedId});
                 })));
-        const canvas = el('canvas', {className: 'portrait', width: 480, height: 330});
+        const canvas = el('canvas', {className: 'portrait painted', width: 960, height: 660});
         this.portraitCanvas = wolf ? canvas : null;
         const side = el('section', {className: 'door-card door-preview'},
             el('h2', {className: 'name'}, str(wolf, 'name')),
@@ -949,7 +996,7 @@ export class FrontDoor {
     private arrivePage(): HTMLElement {
         const nameHeading = el('h2', {className: 'name'}, this.draftName);
         const summary = el('p', {className: 'sage large pre'}, this.describe());
-        const canvas = el('canvas', {className: 'portrait', width: 480, height: 330});
+        const canvas = el('canvas', {className: 'portrait painted', width: 960, height: 660});
         this.portraitCanvas = canvas;
         const tabNames: Array<[string, string]> = [...(this.draftFamily ? [['gift', 'Gift'] as [string, string]] : []), ['strengths', 'Strengths'],
             ...(this.starts.length ? [['arrival', 'Arrival'] as [string, string]] : []), ...(this.ties.length ? [['tie', 'Tie'] as [string, string]] : [])];
@@ -1101,16 +1148,18 @@ export class FrontDoor {
         const draft = this.draftAppearance ?? {};
         const nameHeading = el('h2', {className: 'name'}, this.draftName || 'Your wolf');
         const summary = el('p', {className: 'sage large pre'}, this.describe());
-        const canvas = el('canvas', {className: 'portrait', width: 480, height: 330});
+        const canvas = el('canvas', {className: 'portrait painted', width: 960, height: 660});
         this.portraitCanvas = canvas;
         const refresh = () => {
             summary.textContent = this.describe();
             this.drawPortrait();
         };
         const fields = el('div', {className: 'door-fields'});
-        // Colours in words, never their codes (R1).
-        const coat = () => (str(draft, 'coat') ? colourWords(str(draft, 'coat')) : CoatNames[Math.min(7, Math.max(0, Math.trunc(num(draft, 'baseColor'))))].toLowerCase());
-        const eyes = () => colourWords(str(draft, 'eyes') || 'amber', 'eyes');
+        // Colours in words, never their codes (R1): the palette's names.
+        const fur = draftFur(draft), build = draftBuild(draft);
+        const zones = Object.keys(fur.zones ?? {}).map(zoneName);
+        const coatLines = [el('p', {className: 'muted'}, `Coat: ${coatWords(fur.coat)} · ${eyeName(fur.eyes).toLowerCase()} eyes`),
+            el('p', {className: 'muted'}, zones.length ? `With their own colours: ${zones.join(', ').toLowerCase()}` : 'One coat all over.')];
         if (!reviewOnly) fields.append(this.creatorFields(draft, refresh, nameHeading));
         else if (this.mode === 'central') {
             const family = arr(this.gifts, 'families').filter(isObject).find(f => str(f, 'id') === this.draftFamily);
@@ -1118,25 +1167,19 @@ export class FrontDoor {
                 el('h2', {}, 'Review your wolf'),
                 el('p', {className: 'gold name'}, this.draftName),
                 el('p', {className: 'large pre'}, `${title(str(draft, 'species'))} wolf · ${title(str(draft, 'sex'))}\nAge ${this.draftAge} · ` +
-                    `${stageName(this.draftAge)}\n${title(str(draft, 'stature'))} stature · ${title(str(draft, 'pattern'))} markings`),
-                el('p', {className: 'muted'}, `Coat: ${coat()} · eyes ${eyes()} · build ${title(str(draft, 'build') || 'average')}`),
+                    `${stageName(this.draftAge)}\n${title(str(draft, 'stature'))} stature · ${BuildNames[build]} build`),
+                ...coatLines,
                 el('p', {className: family ? 'gold' : 'muted'}, family ? `Gift: the ${str(family, 'name')} family. In each world your wolf arrives Gifted or Quickened, as that world allows.`
                     : 'Gift: none. Your wolf is Normal in every world.'),
                 el('p', {className: 'muted large'}, 'Creating saves this wolf to your account on central: their name, age, sex and Gift never change; their ' +
                     'look can. Where they arrive, whom they know, and their strengths are chosen in each world, the first time they go there.'));
         } else {
-            const colour = (field: string) => CoatNames[Math.min(7, Math.max(0, Math.trunc(num(draft, field))))];
             fields.append(
                 el('h2', {}, 'Review your wolf'),
                 el('p', {className: 'gold name'}, this.draftName),
                 el('p', {className: 'large pre'}, `${title(str(draft, 'species'))} wolf · ${title(str(draft, 'sex'))}\nAge ${this.draftAge} · ` +
-                    `${stageName(this.draftAge)}\n${title(str(draft, 'stature'))} stature · ${title(str(draft, 'pattern'))} markings`),
-                el('p', {className: 'muted'}, `Coat: ${coat()}`),
-                el('p', {className: 'muted'}, `Belly and legs: ${str(draft, 'gradientTint') ? colourWords(str(draft, 'gradientTint')) : colour('gradientColor').toLowerCase()}`),
-                el('p', {className: 'muted'}, Array.isArray(draft.markings) && draft.markings.length
-                    ? `Markings: ${(draft.markings as Json[]).map(m => MaskNames[str(m, 'mask')] ?? str(m, 'mask')).join(', ')}`
-                    : `Markings: ${title(str(draft, 'pattern'))}, ${colour('markingColor').toLowerCase()}`),
-                el('p', {className: 'muted'}, `Build: ${title(str(draft, 'build') || 'average')} · eyes ${eyes()}`),
+                    `${stageName(this.draftAge)}\n${title(str(draft, 'stature'))} stature · ${BuildNames[build]} build`),
+                ...coatLines,
                 ...this.giftReview(),
                 ...this.buildReview(),
                 ...(this.draftStart ? [el('p', {className: 'muted'}, `Arrives in: ${this.startName(this.draftStart)}`)] : []),
@@ -1158,15 +1201,15 @@ export class FrontDoor {
 
     private creatorTab = 'body';
 
-    /** The creator's controls, in tabs (doc 29, phase 9): body, coat, markings, eyes, name and age. */
+    /** The creator's controls, in tabs (doc 29, phase 9; doc 81): body, coat, fur zones, eyes, name and age. */
     private creatorFields(draft: Json, refresh: () => void, nameHeading: HTMLElement): HTMLElement {
         const wrap = el('div', {className: 'creator'});
         const tabs = el('div', {className: 'creator-tabs'});
         const panel = el('div', {className: 'creator-panel'});
         // Central mode (doc 77, 3.1): the wolf's identity only; the strengths, the town and the tie are each world's.
         const tabNames: Array<[string, string]> = this.mode === 'central'
-            ? [['body', 'Body'], ['coat', 'Coat'], ['markings', 'Markings'], ['eyes', 'Eyes'], ['gift', 'Gift'], ['name', 'Name & age']]
-            : [['body', 'Body'], ['coat', 'Coat'], ['markings', 'Markings'], ['eyes', 'Eyes'], ['gift', 'Gift'],
+            ? [['body', 'Body'], ['coat', 'Coat'], ['markings', 'Fur zones'], ['eyes', 'Eyes'], ['gift', 'Gift'], ['name', 'Name & age']]
+            : [['body', 'Body'], ['coat', 'Coat'], ['markings', 'Fur zones'], ['eyes', 'Eyes'], ['gift', 'Gift'],
                 ['strengths', 'Strengths'], ...(this.starts.length ? [['arrival', 'Arrival'] as [string, string]] : []),
                 ...(this.ties.length ? [['tie', 'Tie'] as [string, string]] : []), ['name', 'Name & age']];
         if (!tabNames.some(([id]) => id === this.creatorTab)) this.creatorTab = 'body';
@@ -1180,6 +1223,7 @@ export class FrontDoor {
                 });
                 return b;
             }));
+            this.panelPainters = [];
             panel.replaceChildren(...this.creatorPanel(this.creatorTab, draft, () => {
                 refresh();
                 render();
@@ -1207,47 +1251,123 @@ export class FrontDoor {
             });
             return el('label', {}, el('span', {}, caption), select);
         };
-        const swatches = (field: string, caption: string, colours: string[], allowCustom = true) => {
-            const row = el('div', {className: 'swatch-grid'});
-            for (const hex of colours) {
-                const b = el('button', {type: 'button', title: hex, className: str(draft, field) === hex ? 'swatch chosen' : 'swatch'});
-                b.style.background = hex;
-                b.addEventListener('click', () => {
-                    draft[field] = hex;
-                    changed();
-                });
-                row.append(b);
-            }
-            const items: Array<Node> = [el('span', {}, caption), row];
-            if (allowCustom) {
-                const custom = el('input', {type: 'color', value: str(draft, field) || colours[0], title: 'Any colour'});
-                custom.addEventListener('change', () => {
-                    draft[field] = custom.value.toLowerCase();
-                    changed();
-                });
-                items.push(el('label', {className: 'custom-colour'}, el('span', {}, 'or any colour'), custom));
-            }
-            return el('div', {className: 'field'}, ...items);
+        const fur = draftFur(draft), build = draftBuild(draft);
+        const wearing = (next: Fur, nextBuild: Build = build) => {
+            wear(draft, next, nextBuild);
+            changed();
         };
-        const amount = (field: string, caption: string) => {
-            const label = el('span', {}, `${caption} · ${Math.round(num(draft, field) * 100)}%`);
-            const slider = el('input', {type: 'range', min: '0', max: '1', step: '0.05', value: String(num(draft, field))});
-            slider.addEventListener('input', () => {
-                draft[field] = Number(slider.value);
-                label.textContent = `${caption} · ${Math.round(Number(slider.value) * 100)}%`;
-                this.drawPortrait();
+        const swatch = (id: string, name: string, hex: string, chosen: boolean, choose: () => void) => {
+            const b = el('button', {type: 'button', title: name, className: chosen ? 'swatch chosen' : 'swatch'});
+            b.style.background = hex;
+            b.dataset.colour = id;
+            b.addEventListener('click', choose);
+            return b;
+        };
+        const dot = (id: string) => {
+            const i = el('i', {title: furName(id)});
+            i.style.background = furHex(id);
+            return i;
+        };
+        // Three fur colours (the painting's dark, mid and light fur): a chip each, and the palette for the one in hand.
+        const furPicker = (key: string, coat: FurCoat, set: (coat: FurCoat) => void): HTMLElement => {
+            const slot = Math.min(2, Math.max(0, this.furSlot[key] ?? 0));
+            const chips = el('div', {className: 'fur-chips'});
+            ['Dark fur', 'Mid fur', 'Light fur'].forEach((label, i) => {
+                const chip = el('button', {type: 'button', className: i === slot ? 'fur-chip active' : 'fur-chip'},
+                    dot(coat[i]), el('span', {}, label), el('strong', {}, furName(coat[i])));
+                chip.dataset.slot = String(i);
+                chip.addEventListener('click', () => {
+                    this.furSlot[key] = i;
+                    changed();
+                });
+                chips.append(chip);
             });
-            return el('label', {}, label, slider);
+            const grid = el('div', {className: 'swatch-grid'});
+            for (const c of FurColours)
+                grid.append(swatch(c.id, c.name, c.hex, coat[slot] === c.id, () => {
+                    const next: FurCoat = [...coat];
+                    next[slot] = c.id;
+                    set(next);
+                }));
+            return el('div', {className: 'fur-picker'}, chips, grid);
         };
-        if (tab === 'body')
-            return [el('div', {className: 'pair'}, choice('species', 'SPECIES', Choices.species), choice('sex', 'SEX', Choices.sex)),
-                el('div', {className: 'pair'}, choice('build', 'BUILD', ['lean', 'average', 'heavy'], 'average'),
-                    choice('stature', 'STATURE · APPEARANCE ONLY', Choices.stature)),
-                el('p', {className: 'muted'}, 'Species and sex shape the frame; build and stature change how it carries itself. None of it changes skills.')];
-        if (tab === 'coat')
-            return [swatches('coat', 'COAT', CoatSwatches), swatches('gradientTint', 'BELLY AND LEGS', CoatSwatches),
-                amount('gradientAmount', 'HOW FAR THE BELLY COLOUR REACHES')];
-        if (tab === 'eyes') return [swatches('eyes', 'EYES', EyeSwatches)];
+        if (tab === 'body') {
+            // The three paintings, each in the coat chosen so far.
+            const cards = el('div', {className: 'build-cards'});
+            for (const b of Builds) {
+                const canvas = el('canvas', {width: 360, height: 230});
+                const card = el('button', {type: 'button', className: b === build ? 'build-card chosen' : 'build-card'}, canvas, el('span', {}, BuildNames[b]));
+                card.dataset.build = b;
+                card.addEventListener('click', () => wearing(fur, b));
+                const paint = () => {
+                    const g = canvas.getContext('2d');
+                    if (!g) return;
+                    g.clearRect(0, 0, canvas.width, canvas.height);
+                    this.wolves.drawOnPaper(g, b, fur, 'profile', 0, 0, canvas.width, canvas.height);
+                };
+                this.panelPainters.push(paint);
+                paint();
+                cards.append(card);
+            }
+            return [el('div', {className: 'field'}, el('span', {}, `BUILD · ${BuildNames[build].toUpperCase()}`), cards),
+                el('div', {className: 'pair'}, choice('sex', 'SEX', Choices.sex), choice('stature', 'STATURE · IN WORDS', Choices.stature)),
+                choice('species', 'SPECIES · IN WORDS', Choices.species),
+                el('p', {className: 'muted'}, 'The build chooses the painting. Species and stature are told in words and on the character sheet. None of it changes skills.')];
+        }
+        if (tab === 'coat') {
+            const ready = el('div', {className: 'ready-coats'});
+            for (const c of ReadyCoats) {
+                const b = el('button', {type: 'button', className: 'ready-coat'}, el('span', {className: 'fur-dots'}, ...c.coat.map(dot)), el('span', {}, c.name));
+                b.dataset.coat = c.id;
+                b.addEventListener('click', () => wearing(readyFur(c)));
+                ready.append(b);
+            }
+            return [el('div', {className: 'field'}, el('span', {}, 'A COAT TO START FROM'), ready),
+                el('div', {className: 'field'}, el('span', {}, 'THE COAT · THREE FUR COLOURS'), furPicker('coat', fur.coat, coat => wearing({...fur, coat}))),
+                el('p', {className: 'muted'}, 'The painting keeps its brushwork: its dark, mid and light fur take your three colours. Any fur zone can have three of its own.')];
+        }
+        if (tab === 'markings') {                  // (The tab keeps its older id; it is the fur zones now.)
+            const rows: HTMLElement[] = [el('p', {className: 'muted'}, 'Each part of the coat wears the coat\'s three colours, or three of its own.')];
+            for (const z of FurZones) {
+                const own = fur.zones?.[z.id];
+                const select = el('select', {});
+                select.append(el('option', {value: 'coat', textContent: 'As the coat'}), el('option', {value: 'own', textContent: 'Its own colours'}));
+                select.value = own ? 'own' : 'coat';
+                select.dataset.zone = z.id;
+                select.addEventListener('change', () => {
+                    const zones = {...(fur.zones ?? {})};
+                    if (select.value === 'own') {
+                        zones[z.id] = [...fur.coat];
+                        this.openZone = z.id;
+                    } else delete zones[z.id];
+                    wearing({...fur, zones});
+                });
+                const open = own !== undefined && this.openZone === z.id;
+                const head = el('div', {className: 'zone-head'}, el('strong', {}, z.name));
+                if (own) {
+                    const edit = el('button', {type: 'button', className: 'zone-edit'}, el('span', {className: 'fur-dots'}, ...own.map(dot)), el('span', {}, open ? 'Done' : 'Change'));
+                    edit.dataset.zone = z.id;
+                    edit.addEventListener('click', () => {
+                        this.openZone = open ? '' : z.id;
+                        changed();
+                    });
+                    head.append(edit);
+                }
+                head.append(select);
+                const row = el('div', {className: open ? 'zone-row open' : 'zone-row'}, head);
+                if (own && open) {
+                    row.append(furPicker(`zone:${z.id}`, own, coat => wearing({...fur, zones: {...fur.zones, [z.id]: coat}})));
+                    queueMicrotask(() => row.scrollIntoView({block: 'nearest'}));      // (Its palette, in sight.)
+                }
+                rows.push(row);
+            }
+            return rows;
+        }
+        if (tab === 'eyes') {
+            const grid = el('div', {className: 'swatch-grid eye-grid'});
+            for (const c of EyeColours) grid.append(swatch(c.id, c.name, c.hex, fur.eyes === c.id, () => wearing({...fur, eyes: c.id})));
+            return [el('div', {className: 'field'}, el('span', {}, `EYES · ${eyeName(fur.eyes).toUpperCase()}`), grid)];
+        }
         if (tab === 'gift') return this.mode === 'central' ? this.familyPanel(changed) : this.giftPanel(changed);
         if (tab === 'strengths') return this.strengthsPanel(changed);
         if (tab === 'arrival') return this.arrivalPanel(changed);
@@ -1275,51 +1395,7 @@ export class FrontDoor {
             });
             return [el('label', {}, el('span', {}, 'CHARACTER NAME'), name), el('label', {}, el('span', {}, 'STARTING AGE · 6–99'), age)];
         }
-        // Markings: up to six layers, each a shape, a colour and a strength; the first is painted first.
-        const list = Array.isArray(draft.markings) ? (draft.markings as Json[]) : [];
-        const rows: HTMLElement[] = [el('p', {className: 'muted'}, list.length ? 'Each marking is painted over the last. Up to six.'
-            : `No markings chosen: the ${str(draft, 'pattern')} pattern is shown. Add markings to paint your own.`)];
-        list.forEach((m, i) => {
-            const mask = el('select', {});
-            for (const id of Masks) mask.append(el('option', {value: id, textContent: MaskNames[id]}));
-            mask.value = str(m, 'mask');
-            mask.addEventListener('change', () => {
-                m.mask = mask.value;
-                changed();
-            });
-            const colour = el('input', {type: 'color', value: str(m, 'color')});
-            colour.addEventListener('change', () => {
-                m.color = colour.value.toLowerCase();
-                changed();
-            });
-            const strength = el('input', {type: 'range', min: '0.1', max: '1', step: '0.05', value: String(num(m, 'opacity', 1))});
-            strength.addEventListener('input', () => {
-                m.opacity = Number(strength.value);
-                this.drawPortrait();
-            });
-            const remove = el('button', {type: 'button', className: 'small', textContent: '×', title: 'Remove'});
-            remove.addEventListener('click', () => {
-                list.splice(i, 1);
-                if (!list.length) delete draft.markings;
-                changed();
-            });
-            const up = el('button', {type: 'button', className: 'small', textContent: '↑', title: 'Paint earlier', disabled: i === 0});
-            up.addEventListener('click', () => {
-                [list[i - 1], list[i]] = [list[i], list[i - 1]];
-                changed();
-            });
-            rows.push(el('div', {className: 'marking-row'}, mask, colour, strength, up, remove));
-        });
-        if (list.length < 6) {
-            const add = el('button', {type: 'button', className: 'secondary', textContent: '+ Add a marking'});
-            add.addEventListener('click', () => {
-                draft.markings = [...list, {mask: 'socks', color: '#f2ede2', opacity: 1}];
-                changed();
-            });
-            rows.push(add);
-        }
-        rows.push(choice('pattern', 'PATTERN (WITHOUT MARKINGS)', Choices.pattern));
-        return rows;
+        return [];
     }
 
     /** The Gift tab (doc 43): Normal, Gifted or Quickened, then one of the eight families, with every ability it gives. */
@@ -1670,11 +1746,19 @@ export class FrontDoor {
             el('p', {className: 'muted'}, str(obj(f, this.draftTier), 'best'))];
     }
 
+    /** The draft's painted look written down, if it never was (a draft no colour was picked for): a wolf is kept with
+     *  the fur it was shown in. */
+    private settleLook() {
+        const d = this.draftAppearance;
+        if (d && !isObject(d.fur) && readAppearance(d)) wear(d, draftFur(d), draftBuild(d));
+    }
+
     private review() {
         this.draftName = this.draftName.trim();
         if (this.draftName.length < 2 || this.draftName.length > 32)
             return this.setMessage('Choose a character name between 2 and 32 characters. The authority validates the final name.', true);
         if (this.mode === 'central') {
+            this.settleLook();
             this.setMessage('Review your wolf. Creating saves them to your account; they enter no world yet.');
             this.show('review');
             return;
@@ -1699,12 +1783,14 @@ export class FrontDoor {
             this.show('creator');
             return this.setMessage(`A ${title(this.draftTier)} wolf needs a Gift family: choose one of the eight.`, true);
         }
+        this.settleLook();
         this.setMessage('Review your choices. Confirming creates a persistent character; it does not enter the world yet.');
         this.show('review');
     }
 
     private create() {
         if (this.busy || !this.draftAppearance || this.page !== 'review') return;
+        this.settleLook();
         if (this.mode === 'central') {
             const wolf: Json = {type: 'wolf_create', name: this.draftName, age: this.draftAge, appearance: this.draftAppearance};
             if (this.draftFamily) wolf.family = this.draftFamily;
@@ -1738,14 +1824,15 @@ export class FrontDoor {
         const appearance = creating ? this.draftAppearance : obj(this.selected(), 'appearance');
         const age = creating ? this.draftAge : num(this.selected(), 'age', 18);
         const artwork = creating ? undefined : str(this.selected(), 'artwork') || undefined;
-        if (!drawPortrait(c, this.portraits, appearance, age, 0, 0, canvas.width, canvas.height, artwork)) {
-            const a = readAppearance(appearance);
-            if (!a || this.portraits.failed(a.species)) {
-                c.fillStyle = '#a6a699';
-                c.font = '16px sans-serif';
-                c.fillText('Portrait unavailable', 12, 24);
-            }
-        }
+        // A player's own picture where there is one to show (doc 29, phase 9); else the painted wolf (doc 81): its
+        // profile and its face, in its fur. (Nothing until the paintings have arrived: they draw this again.)
+        const look = readAppearance(appearance);
+        if (artwork && artCache.get(artwork)) drawPortrait(c, this.portraits, appearance, age, 0, 0, canvas.width, canvas.height, artwork);
+        else if (!look) {
+            c.fillStyle = '#a6a699';
+            c.font = '32px sans-serif';
+            c.fillText('Portrait unavailable', 24, 48);
+        } else this.wolves.drawCard(c, buildOf(look), furOf(look), 0, 0, canvas.width, canvas.height);
         canvas.dataset.stage = lifeStage(age);
     }
 }
