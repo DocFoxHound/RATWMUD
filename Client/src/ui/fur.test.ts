@@ -3,7 +3,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {buildOf, coatOf, EyeColours, FurColours, furOf, furRamp, furRgb, FurZones, hexRgb, isEyeColour, isFurColour, nearestEye, nearestFur,
+import {buildOf, BuildNames, Builds, BuildStature, coatOf, EyeColours, FurColours, furOf, furRamp, furRgb, FurZones, hexRgb, isEyeColour, isFurColour, nearestEye, nearestFur,
     olderLook, paintFur, RampStops, readFur, ReadyCoats, zoneRamps, type Fur, type FurSource, type OlderLook, type Rgb} from './fur.ts';
 import {readAppearance} from './portrait.ts';
 
@@ -87,6 +87,8 @@ test('a wolf\'s fur is checked as the server checks it', () => {
         {coat: ['soot', 'ash', 'cream'], eyes: 'amber', zones: {legs: ['soot', 'ash']}}, {coat: ['soot', 'ash', 'cream'], eyes: 'amber', extra: 1}])
         assert.equal(readFur(bad), null, JSON.stringify(bad));
     assert.ok(readAppearance({...nine, build: 'heavy', fur: {coat: ['soot', 'ash', 'cream'], eyes: 'amber'}})?.fur);
+    for (const build of ['small', 'medium', 'large', 'lean', 'average', 'heavy']) assert.ok(readAppearance({...nine, build}), `${build} is a build`);
+    assert.equal(readAppearance({...nine, build: 'huge'}), null, 'an unknown build is no look');
     assert.equal(readAppearance({...nine, fur: {coat: ['soot', 'ash', 'lime'], eyes: 'amber'}}), null, 'a look off the palette is no look');
     assert.equal(readAppearance(nine)?.fur, undefined, 'an older look has none');
 });
@@ -110,12 +112,15 @@ test('an older wolf is painted from what it had: nearest palette colours, markin
     assert.equal(nearestEye('#d9a441'), 'amber');
     assert.deepEqual(coatOf(furRgb('charcoal')).map(isFurColour), [true, true, true]);
     assert.equal(coatOf(furRgb('charcoal'))[1], 'charcoal');
-    // The painting: its build; without one, tall or slender is lean.
-    assert.equal(buildOf({...older, build: 'heavy'}), 'heavy');
-    assert.equal(buildOf(older), 'average');
-    assert.equal(buildOf({...older, stature: 'tall'}), 'lean');
-    assert.equal(buildOf({...older, species: 'maned'}), 'lean');
-    assert.equal(buildOf({...older, stature: 'tall', fur: {coat: ['soot', 'ash', 'cream'], eyes: 'amber'}}), 'average', 'a painted wolf with no build is average');
+    // The painting: the size its build names; an older build's name keeps the painting that took its place; with no
+    // build, its stature.
+    assert.deepEqual(Builds.map(b => [b, BuildNames[b], BuildStature[b]]), [['small', 'Small', 'short'], ['medium', 'Medium', 'average'], ['large', 'Large', 'tall']]);
+    for (const size of Builds) assert.equal(buildOf({...older, stature: 'average', build: size}), size);
+    assert.deepEqual(['lean', 'heavy', 'average'].map(build => buildOf({...older, stature: 'short', build})), ['large', 'medium', 'small'],
+        'a wolf saved with one of the first paintings keeps it, whatever its stature');
+    assert.equal(buildOf(older), 'medium');
+    assert.equal(buildOf({...older, stature: 'tall'}), 'large');
+    assert.equal(buildOf({...older, stature: 'short', fur: {coat: ['soot', 'ash', 'cream'], eyes: 'amber'}}), 'small', 'a painted wolf with no build, too');
     // A chosen fur is kept as chosen, and the older fields are written to match it.
     const chosen: Fur = {coat: ['black', 'charcoal', 'silver'], eyes: 'gold', zones: {legs: ['silver', 'mist', 'snow'], tail: ['rust', 'sand', 'ivory']}};
     assert.equal(furOf({...older, fur: chosen}), chosen);
@@ -123,6 +128,24 @@ test('an older wolf is painted from what it had: nearest palette colours, markin
     assert.match(o.coat, /^#[0-9a-f]{6}$/);
     assert.equal(o.gradientTint, '#adb1b0');
     assert.deepEqual(o.markings.map(m => m.mask), ['stockings'], 'a zone an older marking can stand for is one');
-    assert.ok(readAppearance({...nine, pattern: 'solid', build: 'lean', fur: chosen, coat: o.coat, gradientTint: o.gradientTint, eyes: o.eyes, markings: o.markings}),
+    assert.ok(readAppearance({...nine, pattern: 'solid', build: 'large', stature: 'tall', fur: chosen, coat: o.coat, gradientTint: o.gradientTint, eyes: o.eyes, markings: o.markings}),
         'and with them the look is one the server takes');
+});
+
+test('the paintings: one face, and a profile for each size in one shared frame, each with its map', () => {
+    // A PNG's width and height are the two big-endian numbers after its signature and the IHDR chunk's head.
+    const size = (name: string) => {
+        const bytes = readFileSync(new URL(`../assets/wolves/${name}.png`, import.meta.url));
+        assert.equal(bytes.toString('latin1', 1, 4), 'PNG', name);
+        return [bytes.readUInt32BE(16), bytes.readUInt32BE(20)];
+    };
+    const frame = size('large-profile');
+    for (const build of Builds) {
+        assert.deepEqual(size(`${build}-profile`), frame, `the ${build} profile is in the shared frame (tools/avatar_prep.py), so the sizes keep their scale`);
+        assert.deepEqual(size(`${build}-profile-map`), frame);
+    }
+    assert.ok(frame[0] > frame[1], 'a profile is wider than tall');
+    const face = size('face');
+    assert.deepEqual(size('face-map'), face);
+    assert.ok(face[1] > face[0], 'the face is taller than wide');
 });

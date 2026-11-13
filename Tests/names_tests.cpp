@@ -71,6 +71,8 @@ void aliasesAndLooks()
     b.baseColor = 0;
     b.build = "heavy";
     expect(names::describe(b, 70) == "a heavy old cream wolf", "another: " + names::describe(b, 70));
+    b.build = "medium";
+    expect(names::describe(b, 70) == "an old cream wolf", "a size is told by the stature, never as a build: " + names::describe(b, 70));
     b.build = "";
     expect(names::describe(b, 70) == "an old cream wolf", "an, before a vowel: " + names::describe(b, 70));
     b.markings.push_back({"blaze", "#2a2b2c", .9});

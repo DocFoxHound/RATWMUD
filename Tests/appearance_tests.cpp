@@ -118,6 +118,18 @@ int main()
         check(painted.fur.chosen() && validFur(painted.fur) && validAppearance(painted) &&
                   shoulderHeightCm(painted, 18) == shoulderHeightCm(defaults, 18),
               "A painted look in palette colours is valid and changes no measure");
+        // The build is the painting's size; the names it held before the sizes still read.
+        for (const auto* build : {"small", "medium", "large", "lean", "average", "heavy"})
+        {
+            painted.build = build;
+            check(validAppearance(painted), "A size, or an older build's name, is a build");
+        }
+        for (const auto* build : {"huge", "Large", "tall"})
+        {
+            painted.build = build;
+            check(!validAppearance(painted), "Anything else is no build");
+        }
+        painted.build = "large";
         for (const auto* zone : {"back", "sides", "chest", "legs", "tail", "tail_tip", "head", "muzzle"})
             check(furZone(zone), "The eight fur zones are known");
         for (const auto* bad : {"", "Black", "#1e1d1c", "neon", "amber", "black ", "tail_tip"})

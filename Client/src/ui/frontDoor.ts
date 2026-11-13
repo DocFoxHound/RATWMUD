@@ -11,7 +11,7 @@
 // same shape. In the desktop client (not on a Mac, not in a browser) EDITOR on the sign-in, roster and Host pages opens
 // the Editor's screens (editorDoor.ts, Docs/Design/78): a host's way into their own world's tools.
 import {drawPortrait, lifeStage, Portraits, readAppearance, shoulderHeightCm} from './portrait.ts';
-import {buildOf, BuildNames, Builds, EyeColours, eyeName, FurColours, furHex, furName, furOf, FurZones, olderLook, ReadyCoats, zoneName,
+import {buildOf, BuildNames, Builds, BuildStature, EyeColours, eyeName, FurColours, furHex, furName, furOf, FurZones, olderLook, ReadyCoats, zoneName,
     type Build, type Fur, type FurCoat, type ReadyCoat} from './fur.ts';
 import {PaintedWolves} from './wolfPaint.ts';
 import {artCache, sendPortrait, squarePixels} from './artwork.ts';
@@ -20,7 +20,7 @@ import {EditorDoor} from './editorDoor.ts';
 import {hostOf, type EditorBridge} from '../net/editor.ts';
 import {HOST_SEES} from '../net/worlds.ts';
 
-// The painted wolf in the creator (Docs/Design/81-painted-wolves.md): a build (which of the three paintings), the
+// The painted wolf in the creator (Docs/Design/81-painted-wolves.md): a size (which of the three profiles), the
 // coat's three fur colours, the eyes, and any fur zone's own three: all from the palette.
 
 /** A draft's fur: what it has chosen, or what its older fields come to (fur.ts); a copy, to change. */
@@ -33,14 +33,23 @@ function draftFur(d: Json): Fur {
 
 function draftBuild(d: Json): Build {
     const a = readAppearance(d);
-    return a ? buildOf(a) : 'average';
+    return a ? buildOf(a) : 'medium';
 }
 
-/** Puts a painted look on a draft: the build and the fur, and the older fields in step with them (the coat's colour
- *  and the eyes in words, the wolf on the sheet: fur.ts olderLook). */
+/** "Medium · 76 cm at shoulder": a wolf's size as its painting shows it, and the height that goes with that size. */
+function sizeWords(d: Json | null, age: number): string {
+    const a = readAppearance(d);
+    if (!a) return '';
+    const size = buildOf(a);
+    return `${BuildNames[size]} · ${shoulderHeightCm({...a, stature: BuildStature[size]}, age).toFixed(0)} cm at shoulder`;
+}
+
+/** Puts a painted look on a draft: the size (the build, and the stature that goes with it) and the fur, and the
+ *  older fields in step with them (the coat's colour and the eyes in words, the wolf on the sheet: fur.ts olderLook). */
 function wear(d: Json, fur: Fur, build: Build) {
     const zones = Object.entries(fur.zones ?? {});
     d.build = build;
+    d.stature = BuildStature[build];
     d.fur = {coat: [...fur.coat], eyes: fur.eyes, ...(zones.length ? {zones: Object.fromEntries(zones.map(([zone, coat]) => [zone, [...coat]]))} : {})};
     const older = olderLook(fur);
     Object.assign(d, {coat: older.coat, gradientTint: older.gradientTint, eyes: older.eyes, pattern: 'solid'});
@@ -54,13 +63,12 @@ const readyFur = (c: ReadyCoat): Fur => ({coat: c.coat as FurCoat, eyes: c.eyes,
 /** "soot, ash and cream" */
 const coatWords = (coat: FurCoat) => `${furName(coat[0])}, ${furName(coat[1])} and ${furName(coat[2])}`.toLowerCase();
 
-/** A whole new look at random (keeping the name and age): a build, a natural coat, sometimes a zone or two of another
+/** A whole new look at random (keeping the name and age): a size, a natural coat, sometimes a zone or two of another
  *  coat's colours, and eyes. */
 function randomiseAppearance(d: Json) {
     const pick = <T>(list: readonly T[]) => list[Math.floor(Math.random() * list.length)];
     d.species = pick(Choices.species);
     d.sex = pick(Choices.sex);
-    d.stature = pick(Choices.stature);
     const fur = readyFur(pick(ReadyCoats));
     const zones: Record<string, FurCoat> = {...(fur.zones ?? {})};
     for (let i = Math.floor(Math.random() * 3); i > 0; --i) zones[pick(FurZones).id] = pick(ReadyCoats).coat as FurCoat;
@@ -113,7 +121,6 @@ export interface DoorOptions {
 const Choices: Record<string, string[]> = {
     species: ['timber', 'maned', 'arctic', 'red', 'ethiopian'],
     sex: ['female', 'male'],
-    stature: ['short', 'average', 'tall'],
     pattern: ['solid', 'saddle', 'mantle', 'piebald'],
 };
 const title = (v: string) => (v ? v[0].toUpperCase() + v.slice(1) : v);
@@ -203,7 +210,8 @@ export class FrontDoor {
     private password: HTMLInputElement | null = null;
     private portraits = new Portraits();
     private wolves = new PaintedWolves();
-    private portraitCanvas: HTMLCanvasElement | null = null;
+    private portraitCanvas: HTMLCanvasElement | null = null;     // The wolf's profile (or a player's own picture).
+    private faceCanvas: HTMLCanvasElement | null = null;         // The wolf's face, where a page shows it beside the name.
     private pagePainters: Array<() => void> = [];        // The page's other painted wolves (the roster's faces).
     private panelPainters: Array<() => void> = [];       // The creator panel's (the builds to choose from).
     private furSlot: Record<string, number> = {};        // Which of a picker's three colours is being chosen.
@@ -419,7 +427,7 @@ export class FrontDoor {
         // A host token is shown once: leaving the Host page forgets it.
         if (page !== 'host') this.hostToken = this.hostTokenWorld = '';
         this.page = page;
-        this.portraitCanvas = null;
+        this.portraitCanvas = this.faceCanvas = null;
         this.pagePainters = [];
         this.panelPainters = [];
         this.password = null;
@@ -604,7 +612,7 @@ export class FrontDoor {
                     const g = face.getContext('2d');
                     if (!g) return;
                     g.clearRect(0, 0, face.width, face.height);
-                    this.wolves.drawOnPaper(g, buildOf(look), furOf(look), 'face', 0, 0, face.width, face.height);
+                    this.wolves.drawOnPaper(g, 'face', furOf(look), 0, 0, face.width, face.height);
                 };
                 this.pagePainters.push(paint);
                 paint();
@@ -671,8 +679,8 @@ export class FrontDoor {
         if (beside.length) go = el('div', {className: 'door-actions roster-actions'}, ...beside, enter);
         const detail = el('section', {className: 'door-card door-detail'},
             el('h2', {className: 'name'}, str(c, 'name', 'An unwritten story')),
-            el('p', {className: 'muted large'}, c ? `${stageName(age)} · age ${age.toFixed(0)} · ${title(str(obj(c, 'appearance'), 'species', 'timber'))} wolf` +
-                this.caption(c, ' · ')
+            el('p', {className: 'muted large pre'}, c ? `${stageName(age)} · age ${age.toFixed(0)} · ${title(str(obj(c, 'appearance'), 'species', 'timber'))} wolf` +
+                this.caption(c, ' · ') + (sizeWords(obj(c, 'appearance'), age) ? `\n${sizeWords(obj(c, 'appearance'), age)}` : '')
                 : 'Choose an empty slot to make your first wolf.'),
             canvas,
             ...below,
@@ -802,8 +810,8 @@ export class FrontDoor {
         const canvas = el('canvas', {className: 'portrait painted', width: 960, height: 660});
         this.portraitCanvas = wolf ? canvas : null;
         const side = el('section', {className: 'door-card door-preview'},
-            el('h2', {className: 'name'}, str(wolf, 'name')),
-            el('p', {className: 'muted large'}, wolf ? `${stageName(num(wolf, 'age', 18))} · age ${num(wolf, 'age', 18).toFixed(0)}${this.caption(wolf, ' · ')}` : ''),
+            this.wolfId(el('h2', {className: 'name'}, str(wolf, 'name')),
+                el('p', {className: 'muted large'}, wolf ? `${stageName(num(wolf, 'age', 18))} · age ${num(wolf, 'age', 18).toFixed(0)}${this.caption(wolf, ' · ')}` : '')),
             canvas,
             el('p', {className: 'muted'}, 'In a world your wolf hasn\'t been to, you choose where they arrive and who they know there. Next time, they go straight in.'),
             el('p', {className: 'muted small'}, HOST_SEES));
@@ -1022,7 +1030,7 @@ export class FrontDoor {
         render();
         const preview = el('section', {className: 'door-card door-preview'},
             el('p', {className: 'gold small'}, `FIRST TIME IN ${this.arriveWorld.toUpperCase()}`),
-            nameHeading, summary, canvas,
+            this.wolfId(nameHeading, summary), canvas,
             el('p', {className: 'muted'}, 'What you choose here is this world\'s: another world asks again.'),
             ...(this.arriveKind === 'official' ? [] : [el('p', {className: 'muted small'}, HOST_SEES)]));
         const actions = el('div', {className: 'door-actions'},
@@ -1136,10 +1144,16 @@ export class FrontDoor {
         this.show('creator');
     }
 
+    /** A wolf's face as its own portrait, beside its name and a line or two (doc 81): the head of a preview card. The
+     *  profile is the card's other picture, below. */
+    private wolfId(...text: HTMLElement[]): HTMLElement {
+        const face = el('canvas', {className: 'wolf-face', width: 232, height: 276});
+        this.faceCanvas = face;
+        return el('div', {className: 'wolf-id'}, face, el('div', {className: 'wolf-id-text'}, ...text));
+    }
+
     private describe(): string {
-        const a = readAppearance(this.draftAppearance);
-        return `${stageName(this.draftAge)} · age ${this.draftAge}\n${title(str(this.draftAppearance, 'stature'))} stature · ` +
-            `${a ? shoulderHeightCm(a, this.draftAge).toFixed(0) : '0'} cm at shoulder` +
+        return `${stageName(this.draftAge)} · age ${this.draftAge}\n${sizeWords(this.draftAppearance, this.draftAge)}` +
             (this.mode === 'central' && this.page !== 'arrive' ? this.caption({family: this.draftFamily}, '\n')
                 : giftCaption({gift: this.draftFamily, quickened: this.draftTier === 'quickened'}, this.gifts, '\n'));
     }
@@ -1156,7 +1170,7 @@ export class FrontDoor {
         };
         const fields = el('div', {className: 'door-fields'});
         // Colours in words, never their codes (R1): the palette's names.
-        const fur = draftFur(draft), build = draftBuild(draft);
+        const fur = draftFur(draft);
         const zones = Object.keys(fur.zones ?? {}).map(zoneName);
         const coatLines = [el('p', {className: 'muted'}, `Coat: ${coatWords(fur.coat)} · ${eyeName(fur.eyes).toLowerCase()} eyes`),
             el('p', {className: 'muted'}, zones.length ? `With their own colours: ${zones.join(', ').toLowerCase()}` : 'One coat all over.')];
@@ -1167,7 +1181,7 @@ export class FrontDoor {
                 el('h2', {}, 'Review your wolf'),
                 el('p', {className: 'gold name'}, this.draftName),
                 el('p', {className: 'large pre'}, `${title(str(draft, 'species'))} wolf · ${title(str(draft, 'sex'))}\nAge ${this.draftAge} · ` +
-                    `${stageName(this.draftAge)}\n${title(str(draft, 'stature'))} stature · ${BuildNames[build]} build`),
+                    `${stageName(this.draftAge)}\n${sizeWords(draft, this.draftAge)}`),
                 ...coatLines,
                 el('p', {className: family ? 'gold' : 'muted'}, family ? `Gift: the ${str(family, 'name')} family. In each world your wolf arrives Gifted or Quickened, as that world allows.`
                     : 'Gift: none. Your wolf is Normal in every world.'),
@@ -1178,7 +1192,7 @@ export class FrontDoor {
                 el('h2', {}, 'Review your wolf'),
                 el('p', {className: 'gold name'}, this.draftName),
                 el('p', {className: 'large pre'}, `${title(str(draft, 'species'))} wolf · ${title(str(draft, 'sex'))}\nAge ${this.draftAge} · ` +
-                    `${stageName(this.draftAge)}\n${title(str(draft, 'stature'))} stature · ${BuildNames[build]} build`),
+                    `${stageName(this.draftAge)}\n${sizeWords(draft, this.draftAge)}`),
                 ...coatLines,
                 ...this.giftReview(),
                 ...this.buildReview(),
@@ -1189,7 +1203,7 @@ export class FrontDoor {
         }
         const preview = el('section', {className: 'door-card door-preview'},
             el('p', {className: 'gold small'}, reviewOnly ? 'CREATION REVIEW' : 'LIVE APPEARANCE PREVIEW'),
-            nameHeading, summary, canvas,
+            this.wolfId(nameHeading, summary), canvas,
             el('p', {className: 'muted pre'}, 'Young 6–12 · Adolescent 13–17\nAdult 18–64 · Old 65+'),
             el('p', {className: 'muted'}, 'Your wolf\'s portrait. In the world they are drawn as a W on the map; how they move and act is yours to tell.'));
         const actions = el('div', {className: 'door-actions'},
@@ -1292,7 +1306,7 @@ export class FrontDoor {
             return el('div', {className: 'fur-picker'}, chips, grid);
         };
         if (tab === 'body') {
-            // The three paintings, each in the coat chosen so far.
+            // The three sizes, each in the coat chosen so far, at the sizes they were painted.
             const cards = el('div', {className: 'build-cards'});
             for (const b of Builds) {
                 const canvas = el('canvas', {width: 360, height: 230});
@@ -1303,16 +1317,16 @@ export class FrontDoor {
                     const g = canvas.getContext('2d');
                     if (!g) return;
                     g.clearRect(0, 0, canvas.width, canvas.height);
-                    this.wolves.drawOnPaper(g, b, fur, 'profile', 0, 0, canvas.width, canvas.height);
+                    this.wolves.drawOnPaper(g, b, fur, 0, 0, canvas.width, canvas.height);
                 };
                 this.panelPainters.push(paint);
                 paint();
                 cards.append(card);
             }
-            return [el('div', {className: 'field'}, el('span', {}, `BUILD · ${BuildNames[build].toUpperCase()}`), cards),
-                el('div', {className: 'pair'}, choice('sex', 'SEX', Choices.sex), choice('stature', 'STATURE · IN WORDS', Choices.stature)),
-                choice('species', 'SPECIES · IN WORDS', Choices.species),
-                el('p', {className: 'muted'}, 'The build chooses the painting. Species and stature are told in words and on the character sheet. None of it changes skills.')];
+            return [el('div', {className: 'field'}, el('span', {}, `SIZE · ${BuildNames[build].toUpperCase()}`), cards),
+                el('div', {className: 'pair'}, choice('sex', 'SEX', Choices.sex), choice('species', 'SPECIES · IN WORDS', Choices.species)),
+                el('p', {className: 'muted'}, 'The size is the wolf you see: its painting, its stature and its height at the shoulder. Species is told in ' +
+                    'words and on the character sheet. None of it changes skills.')];
         }
         if (tab === 'coat') {
             const ready = el('div', {className: 'ready-coats'});
@@ -1825,14 +1839,20 @@ export class FrontDoor {
         const age = creating ? this.draftAge : num(this.selected(), 'age', 18);
         const artwork = creating ? undefined : str(this.selected(), 'artwork') || undefined;
         // A player's own picture where there is one to show (doc 29, phase 9); else the painted wolf (doc 81): its
-        // profile and its face, in its fur. (Nothing until the paintings have arrived: they draw this again.)
+        // profile, in its fur. (Nothing until the paintings have arrived: they draw this again.)
         const look = readAppearance(appearance);
         if (artwork && artCache.get(artwork)) drawPortrait(c, this.portraits, appearance, age, 0, 0, canvas.width, canvas.height, artwork);
         else if (!look) {
             c.fillStyle = '#a6a699';
             c.font = '32px sans-serif';
             c.fillText('Portrait unavailable', 24, 48);
-        } else this.wolves.drawCard(c, buildOf(look), furOf(look), 0, 0, canvas.width, canvas.height);
+        } else this.wolves.drawOnPaper(c, buildOf(look), furOf(look), 0, 0, canvas.width, canvas.height);
         canvas.dataset.stage = lifeStage(age);
+        // The face, where the page shows it as its own portrait.
+        const face = this.faceCanvas, f = face?.getContext('2d');
+        if (face && f) {
+            f.clearRect(0, 0, face.width, face.height);
+            if (look) this.wolves.drawOnPaper(f, 'face', furOf(look), 0, 0, face.width, face.height);
+        }
     }
 }

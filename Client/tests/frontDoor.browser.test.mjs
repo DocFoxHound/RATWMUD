@@ -194,6 +194,53 @@ test('earned Gift tiers: locked cards say what they take, and a locked choice is
     await door(`(d.tiers = null, d.draftTier = 'normal', d.draftFamily = '')`);
 });
 
+test('painted wolves: three sizes, the words agree with the painting, the face its own portrait (doc 81)', async () => {
+    await door(`(d.busy = false, d.receive({type: 'lobby', stage: 'characters', ok: true, characters: []}))`);
+    await page.evaluate(`window.ratw.page('creator')`);
+    await page.evaluate(`document.querySelector('.creator-tabs [data-tab=body]').click()`);
+    const cards = () => page.evaluate(`[...document.querySelectorAll('.build-card')].map(c => [c.dataset.build, c.textContent, c.classList.contains('chosen')])`);
+    assert.deepEqual(await cards(), [['small', 'Small', false], ['medium', 'Medium', true], ['large', 'Large', false]], 'smallest first; a new wolf is medium');
+    assert.equal(await page.evaluate(`[...document.querySelectorAll('.creator-panel select')].length`), 2, 'sex and species: stature goes with the size');
+    const summary = () => page.evaluate(`document.querySelector('.door-preview .wolf-id-text .pre').textContent`);
+    assert.match(await summary(), /Medium · 76 cm at shoulder/);
+    await page.evaluate(`document.querySelector('.build-card[data-build=large]').click()`);
+    assert.deepEqual(await door('[d.draftAppearance.build, d.draftAppearance.stature]'), ['large', 'tall'], 'the size is kept as the build, with its stature');
+    assert.match(await summary(), /Large · 85 cm at shoulder/);
+    assert.doesNotMatch(await summary(), /stature/i);
+    await page.evaluate(`document.querySelector('.build-card[data-build=small]').click()`);
+    assert.deepEqual(await door('[d.draftAppearance.build, d.draftAppearance.stature]'), ['small', 'short']);
+    assert.match(await summary(), /Small · 67 cm at shoulder/);
+    assert.ok(await door(`!!d.draftAppearance.fur`), 'choosing a size keeps the painted look');
+    // The face is its own picture beside the name; the profile is the card's other one. Both are painted.
+    await page.waitFor(`(() => { const lit = c => c && [...c.getContext('2d').getImageData(0, 0, c.width, c.height).data].some(v => v);
+        return lit(document.querySelector('.door-preview .wolf-id canvas.wolf-face')) && lit(document.querySelector('.door-preview canvas.portrait')) &&
+            [...document.querySelectorAll('.build-card canvas')].every(lit); })()`);
+    // The sizes keep the scale they were painted at: the small wolf's card has less wolf in it than the large one's.
+    const painted = build => page.evaluate(`(() => { const c = document.querySelector('.build-card[data-build=${build}] canvas');
+        const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let top = c.height;
+        for (let i = 0; i < d.length; i += 4) if (Math.abs(d[i] - 0xe6) + Math.abs(d[i + 1] - 0xdc) + Math.abs(d[i + 2] - 0xcb) > 60 && d[i + 3] > 200) { top = Math.floor(i / 4 / c.width); break; }
+        return c.height - top; })()`);
+    const [small, medium, large] = [await painted('small'), await painted('medium'), await painted('large')];
+    assert.ok(small < medium && medium < large, `the small wolf stands lower than the medium, the medium than the large (${small}, ${medium}, ${large})`);
+    // On the roster: a face for each wolf in the list, the selected wolf's profile on its card, and words that say
+    // the size painted; a wolf saved with one of the first paintings keeps the painting that took its place.
+    const look = await door('({...d.draftAppearance})');
+    const wolves = [{id: 'w1', name: 'Tall', age: 30, appearance: {...look, build: 'lean', stature: 'average'}},
+        {id: 'w2', name: 'Stocky', age: 30, appearance: {...look, build: 'average', stature: 'average'}},
+        {id: 'w3', name: 'Third', age: 30, appearance: {...look, build: 'heavy', stature: 'average'}}];
+    await door(`(d.busy = false, d.receive({type: 'lobby', stage: 'characters', ok: true, characters: ${JSON.stringify(wolves)}}))`);
+    assert.equal(await door('d.page'), 'roster');
+    assert.equal(await page.evaluate(`document.querySelectorAll('.slot canvas.slot-face').length`), 3, 'each wolf\'s face is its avatar');
+    assert.equal(await page.evaluate(`document.querySelectorAll('.door-detail canvas').length`), 1, 'the card has the profile alone');
+    const detail = async id => {
+        await door(`(d.selectedId = '${id}', d.show('roster'))`);
+        return page.evaluate(`document.querySelector('.door-detail .muted').textContent`);
+    };
+    assert.match(await detail('w1'), /Large · 85 cm/, 'the old lean painting is the large wolf');
+    assert.match(await detail('w2'), /Small · 67 cm/, 'the old average painting is the small wolf');
+    assert.match(await detail('w3'), /Medium · 76 cm/, 'the old heavy painting is the medium wolf');
+});
+
 test('signing out forgets the roster and any draft', async () => {
     await door(`(d.busy = false, d.receive({type: 'lobby', stage: 'login', ok: true, characters: []}))`);
     assert.equal(await door('d.characters.length'), 0);

@@ -24,7 +24,7 @@ export interface Appearance {
     eyes?: string;
     build?: string;
     markings?: Array<{mask: string; color: string; opacity: number}>;
-    // The painted look (doc 81; fur.ts), when chosen: palette ids. `build` picks which of the three paintings.
+    // The painted look (doc 81; fur.ts), when chosen: palette ids. `build` is the size it is painted as (fur.ts buildOf).
     fur?: Fur;
 }
 
@@ -54,7 +54,7 @@ export function readAppearance(o: unknown): Appearance | null {
         out[key] = a[key] as string;
     }
     if (a.build !== undefined) {
-        if (!['lean', 'average', 'heavy'].includes(a.build as string)) return null;
+        if (!['small', 'medium', 'large', 'lean', 'average', 'heavy'].includes(a.build as string)) return null;
         out.build = a.build as string;
     }
     if (a.markings !== undefined) {

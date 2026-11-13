@@ -16,9 +16,15 @@ export interface Fur {
     eyes: string;                          // An eye palette id.
     zones?: Record<string, FurCoat>;       // A zone's own colours; a zone not here wears the coat.
 }
-export type Build = 'lean' | 'average' | 'heavy';
-export const Builds: readonly Build[] = ['lean', 'average', 'heavy'];
-export const BuildNames: Record<Build, string> = {lean: 'Lean', average: 'Average', heavy: 'Heavy'};
+/** Which profile a wolf is painted as: its size (the appearance's `build`), smallest first. */
+export type Build = 'small' | 'medium' | 'large';
+export const Builds: readonly Build[] = ['small', 'medium', 'large'];
+export const BuildNames: Record<Build, string> = {small: 'Small', medium: 'Medium', large: 'Large'};
+/** The stature that goes with a size: the creator writes both, so the height and the words agree with the painting. */
+export const BuildStature: Record<Build, string> = {small: 'short', medium: 'average', large: 'tall'};
+/** What `build` held before the sizes (the first three paintings' names): a wolf saved with one keeps the painting
+ *  that took its place. */
+const OlderBuilds: Record<string, Build> = {lean: 'large', heavy: 'medium', average: 'small'};
 export type Rgb = [number, number, number];
 
 const furById = new Map(FurColours.map(c => [c.id, c]));
@@ -197,11 +203,12 @@ export interface OlderLook {
     fur?: Fur;
 }
 
-/** Which of the three paintings a wolf is: its build; for an older wolf with none, a tall or slender one is lean. */
+/** Which size a wolf is painted as: its build (an older build's name as the painting that took its place); with
+ *  none, its stature (short, average, tall). */
 export function buildOf(a: OlderLook): Build {
-    if (a.build === 'lean' || a.build === 'heavy' || a.build === 'average') return a.build;
-    if (a.fur) return 'average';
-    return a.stature === 'tall' || a.species === 'maned' || a.species === 'ethiopian' || a.species === 'red' ? 'lean' : 'average';
+    if (a.build === 'small' || a.build === 'medium' || a.build === 'large') return a.build;
+    if (a.build && OlderBuilds[a.build]) return OlderBuilds[a.build];
+    return a.stature === 'tall' ? 'large' : a.stature === 'short' ? 'small' : 'medium';
 }
 
 /**
