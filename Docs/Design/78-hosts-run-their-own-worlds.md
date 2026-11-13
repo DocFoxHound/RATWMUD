@@ -3018,7 +3018,9 @@ M1, M2a, M2b, M3 and M4 built, the R1 review's findings fixed (security, and the
     `manage/editor-certificate.txt`); `test_studio` 76; `test_dungeon_master` 54; Client **162** and typecheck (new: "AI
     used" and "cheats on", `HOST_SEES`, the pill's warning colour); Editor 78 + **80**, typecheck, build and render smoke
     (16 panels; new: `NO_MAP_YET`, NPC Life's opposites); `cargo test` **63** (new: a signed rotation keeps the last
-    username); `npm run test:editor` 1 of 1 (33 s, in a headless KWin of its own). No ctest: no C++ changed. No `s2stage`
+    username); `npm run test:editor` 1 of 1 (33 s, in a headless KWin of its own); `desktop-windows.yml` on `r2-editor`
+    (run 43343012199): the client (`cargo test`, the release build) and the `.bat` scripts in cmd.exe (with the new
+    capitals and quote-injection cases) both passed. No ctest: no C++ changed. No `s2stage`
     database, `/tmp` file, container, volume, image or process left.
   - **What slice 1 delivers:** a host runs their own world from the package and manages it from the game's main menu:
     EDITOR, an Editor code or an address, a pinned TLS 1.3 key (signed rotation, a red screen for a changed key), the
