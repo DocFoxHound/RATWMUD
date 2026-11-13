@@ -11,7 +11,7 @@
 // world's words. The password goes to the shell once and its box is cleared at once; the shell keeps the session.
 import {ask, askText} from './dialog.ts';
 import {ago, bannerText, coBuilderNote, connectRefusal, EDITOR_PORT, firstTimeNote, fromWhere, hostOf, isCode, newPasswordProblem,
-    resetCommand, ROLE_LINES, settingUp, signInRefusal, signsInWithCode, statusPill, type AuditBanner, type Connected, type EditorAccount,
+    lastBackupText, resetHow, ROLE_LINES, settingUp, signInRefusal, signsInWithCode, statusPill, type AuditBanner, type Connected, type EditorAccount,
     type EditorBridge, type EditorHello, type EditorSession, type RecentWorld} from '../net/editor.ts';
 
 type Screen = 'address' | 'key' | 'sign-in' | 'password' | 'menu';
@@ -424,7 +424,7 @@ export class EditorDoor {
                 'password are in manage/first-editor.txt in your world folder. Pasting the Editor code from that file is easiest.')] : []),
             ...(fromCode ? [el('p', {className: 'sage'}, 'Your Editor code carries the one-time password: just sign in.')] : []),
             form,
-            el('p', {className: 'muted small'}, `Lost your password? On the world's computer, in the world folder, type: ${resetCommand(this.username)}`),
+            el('p', {className: 'muted small'}, `Lost your password? On the world's computer, ${resetHow(this.username)}.`),
             el('div', {className: 'grow'}),
             el('div', {className: 'door-actions'}, this.button('Back', () => { this.screen = 'address'; this.notice = ''; this.redraw(); })));
         return el('div', {className: 'door-row'}, card);
@@ -518,6 +518,8 @@ export class EditorDoor {
         }
         const pill = el('span', {className: 'world-kind editor-pill'}, statusPill(this.hello));
         pill.dataset.pill = '1';
+        const backup = el('p', {className: 'muted small'}, lastBackupText(this.hello));
+        backup.dataset.lastBackup = '1';
         const dm = this.button('DM', () => void this.openTool('dm'), 'primary');
         dm.dataset.action = 'editor-dm';
         const atlas = this.button('ATLAS', () => undefined, 'primary');
@@ -541,6 +543,7 @@ export class EditorDoor {
         const card = el('section', {className: `door-card door-form editor-card editor-menu${this.accounts ? ' with-accounts' : ''}`},
             el('div', {className: 'world-title'}, el('strong', {}, s.name || 'Your world'), pill),
             el('p', {className: 'muted'}, s.address),
+            backup,
             facts,
             ...(this.notice ? [el('p', {className: 'gold editor-notice'}, this.notice)] : []),
             ...(owner && this.failedToday ? [el('p', {className: 'gold'}, `${this.failedToday} failed sign-in${this.failedToday === 1 ? '' : 's'} today`)] : []),
@@ -558,6 +561,8 @@ export class EditorDoor {
         this.hello = r.ok ? r.hello : null;
         const pill = document.querySelector<HTMLElement>('[data-pill]');
         if (pill) pill.textContent = statusPill(this.hello);
+        const backup = document.querySelector<HTMLElement>('[data-last-backup]');
+        if (backup) backup.textContent = lastBackupText(this.hello);
     }
 
     private async openTool(suite: 'dm' | 'atlas') {

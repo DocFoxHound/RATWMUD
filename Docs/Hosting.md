@@ -581,8 +581,53 @@ token stay the same.
 
 ## 12. Backups
 
-**There is no backup command yet.** A later version plans one. Until then, you can copy the world's data by hand, as
-below. Do it before an update, and before anything you're unsure of.
+**The world backs itself up** (a separate service in `compose.yaml`, `backup`) into the `backups` folder in the world's
+folder:
+- when it starts, and whenever the newest daily backup is over a day old (a computer that is off at night still gets
+  one each day it runs);
+- before an update changes the world's database (a new package or new migrations);
+- when you ask: the Editor's **My world** tab, **BACK UP NOW** (the world's owner).
+
+It keeps the 7 newest daily backups, the 5 newest of the rest, and up to 5 you **pin** in My world, each for 90 days.
+Each backup is a `ratw-DATE-WHY.dump` with a `.json` beside it saying which world, package and map it came from. The
+map itself, most of the database, is saved once per map (`build-N.cells.gz`), not in every backup: a daily backup of a
+quiet world is about a megabyte.
+
+Before each one the service checks the disk: a backup that would leave less than 2 GB free is refused, and My world
+says so. Free some space (or delete old files from `backups`); `RATW_BACKUP_MIN_FREE_MB` in `.env` changes the limit.
+`docker compose logs backup` says what it did; `docker compose run --rm backup list` lists the backups.
+
+**Keep backups private.** They hold everything in your world, players' messages too, and the Editor accounts'
+password hashes. On Windows, keep the world's folder inside your own user folder, and never in OneDrive, Dropbox or
+another folder a cloud service copies (My world shows the owner the folder's path, and warns when it looks like one).
+
+### Putting the world back to a backup
+
+Double-click **`restore.bat`** (Windows) or run **`./restore.sh`** (Linux) in the world's folder. It:
+1. lists the backups, newest first, and asks which one (type its number);
+2. says plainly what it means: "This puts your world back to DATE. Everything players did since then is lost", and
+   asks you to type `RESTORE`;
+3. asks whether to keep your Editor accounts as they are now (the default: a co-builder you removed, an old password
+   or a forgotten device doesn't come back) or to take the backup's;
+4. stops the world (it saves first), makes a **safety copy** of it as it is now (in `backups`, "before a restore"),
+   puts the backup back, ends every Editor session, prints the Editor accounts the world now has, and starts the world
+   again.
+
+It refuses, changing nothing: while the world is still running (it says to `docker compose stop world` first), a
+backup from another world, a damaged one, one whose map file is missing, and one made by a newer package than the
+world's (update the world first). A backup from an older package is brought up to date when the world next starts.
+If you took the backup's Editor accounts, `manage/first-editor.txt` says which accounts the world has now; a lost
+password is then `reset-editor-password` (section 15).
+
+In My world, each backup has **Copy restore steps**: the lines for PowerShell and for a terminal that run the restore
+for that backup (`.\restore.bat ratw-...` in the world's folder). A restore is never started from the Editor itself:
+only on the world's computer.
+
+### Copying everything by hand (moving to another computer)
+
+The backups above hold the world's database. To move a world to another computer, or keep a copy of everything
+(the database's own passwords and the Editor's key and certificate too), copy Docker's storage by hand while the
+world is stopped:
 
 This copies three of Docker's storage areas ("volumes"): the database (`pgdata`), its passwords (`secrets`) and the
 Editor's key and certificate (`admin`). You need the first two: a database without its own passwords can't be opened
@@ -594,7 +639,7 @@ seconds, and a restore brought the world back as it was. It hasn't been tested o
 The commands below use the names for a world in its usual folder: `ratw-world_pgdata`, `ratw-world_secrets` and
 `ratw-world_admin`. A second world (section 14) has its own names: `docker volume ls` lists them.
 
-### Making a backup
+#### Making a copy
 
 In the world's folder:
 
@@ -623,7 +668,7 @@ On Linux the command above makes the file readable by you alone. (With Docker En
 to root: use `sudo` to copy it elsewhere.) On Windows, keep the world's folder, or at least its backups, inside your
 own user folder, where other accounts on the computer can't open them.
 
-### Restoring a backup
+#### Putting a copy back
 
 This replaces your world with the one in the backup.
 
@@ -653,8 +698,8 @@ This replaces your world with the one in the backup.
    script, and the database then never comes up. Checked 2026-11-12, Compose 5.1.1.)
 
 The log then says `world already holds package ...; nothing to do.`: your world is back, with its Editor accounts and,
-if the backup holds `admin`, the same Editor fingerprint. `manage/first-editor.txt` may still hold an account from the
-world you replaced: it no longer works.
+if the copy holds `admin`, the same Editor fingerprint. `manage/first-editor.txt` may still hold an account from the
+world you replaced: it no longer works (`reset-editor-password` gives a new one).
 
 ---
 
@@ -764,7 +809,11 @@ code: if they match, trust it. `docker compose exec world ratw-editor fingerprin
 start (`RATW_PACKAGE Editor certificate: ...`), but compare with the file or `ratw-editor fingerprint`: those come from
 the world itself, not from a line any part of it could print.
 
-**Lost your password, or "too many tries":** on the world's computer, in its folder:
+**Lost your password, or "too many tries":** on the world's computer, while the world runs, double-click
+`reset-editor-password.bat` (Windows) or run `./reset-editor-password.sh` in the world's folder. It lists the Editor
+accounts, asks which one, and shows a new one-time password and Editor code, also written into
+`manage/first-editor.txt`. The account's sessions end and its devices are forgotten; it chooses a new password at its
+next sign-in. Or type, in the world's folder:
 
     docker compose exec world ratw-editor list
     docker compose exec world ratw-editor reset NAME     # a new one-time password and Editor code

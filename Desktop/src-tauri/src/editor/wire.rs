@@ -170,10 +170,16 @@ pub fn read_server_up(body: &[u8]) -> Option<ServerUp> {
     value.get("server").and_then(Value::as_object).and_then(read_server)
 }
 
-/// What the main window is told of a hello: its checked fields and the server's state (null when the world gave none).
+/// What the main window is told of a hello: its checked fields, the server's state (null when the world gave none), and
+/// the menu's two numbers (doc 78, section 2; M5): the wolves in the world (0-100,000) and the newest backup's age in
+/// seconds (at most ten years); each null when absent or not a whole number in range.
 pub fn hello_page(hello: &Hello, body: &[u8]) -> Value {
     let mut page = hello.page();
     page["server"] = serde_json::to_value(read_server_up(body)).unwrap_or(Value::Null);
+    let value: Value = serde_json::from_slice(body).unwrap_or(Value::Null);
+    let whole = |key: &str, most: u64| value.get(key).and_then(Value::as_u64).filter(|n| *n <= most).map(Value::from).unwrap_or(Value::Null);
+    page["wolves"] = whole("wolves", 100_000);
+    page["lastBackup"] = whole("lastBackup", 10 * 365 * 86_400);
     page
 }
 
@@ -416,6 +422,16 @@ mod tests {
         assert_eq!(page_of(json!({"server": {"up": false, "reason": "<b>crashed</b>"}}))["server"], Value::Null);
         assert_eq!(page_of(json!({"server": {"reason": "exit"}}))["server"], Value::Null);
         assert_eq!(page_of(json!({"server": "up"}))["server"], Value::Null);
+        // The menu's wolves and last backup (M5): whole numbers in range, else null; never anything else.
+        let page = page_of(json!({"wolves": 7, "lastBackup": 10800}));
+        assert_eq!((page["wolves"].clone(), page["lastBackup"].clone()), (json!(7), json!(10800)));
+        let page = page_of(json!({"wolves": 100_001, "lastBackup": 400_000_000u64}));
+        assert_eq!((page["wolves"].clone(), page["lastBackup"].clone()), (Value::Null, Value::Null));
+        for odd in [json!(-1), json!(1.5), json!("7"), json!(null), json!({"n": 7})] {
+            let page = page_of(json!({"wolves": odd.clone(), "lastBackup": odd}));
+            assert_eq!((page["wolves"].clone(), page["lastBackup"].clone()), (Value::Null, Value::Null));
+        }
+        assert_eq!(page_of(json!({}))["lastBackup"], Value::Null);
         assert_eq!(read(hello(json!({"progress": {"code": "slow", "percent": 100}}))).unwrap().progress.code, "slow");
         // Refused outright: no world id, an unknown kind, too long, not JSON.
         assert!(read(hello(json!({"world": "world-x"}))).is_err());

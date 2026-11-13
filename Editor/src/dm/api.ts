@@ -378,6 +378,12 @@ export const dmApi = {
     writeStory: (target: Target, id: string) => call<Chronicle>(`${at(target)}chronicle/story`, {target, id}),
     /** A host's Editor: asks the package to restart the world (doc 78, 6.5: the world saves, stops and starts again). */
     restart: () => call<{ok: boolean; restarting: boolean}>('api/world/restart', {}),
+    /** A host's Editor: My world (doc 78, 2 and 7): status, settings, AI use, history, backups; the owner's own views. */
+    myWorld: () => call<MyWorld>('api/world'),
+    /** A host's Editor: a backup now (the package's backup service, doc 78, 12.1). */
+    backupNow: () => call<{ok: boolean; asked: boolean}>('api/world/backup', {}),
+    /** A host's Editor: pins one backup (kept 90 days, at most five) or unpins it. */
+    pin: (name: string, pinned: boolean) => call<{ok: boolean; name: string; pinned: boolean}>('api/world/pin', {name, pinned}),
     /** Whether the studio answers (a host's Editor, while its world restarts). */
     ping: () => call<unknown>('api/studio/ping'),
     /** A host's Editor: the AI's state (doc 78, 7). */
@@ -455,6 +461,24 @@ export const dmApi = {
     },
 };
 
+/** One backup, as the package's backup service lists it (doc 78, 12.1): its name (ratw-STAMP-KIND), why it was made,
+ *  when (seconds), its size, the package and migration level it came from, and its pin's end. */
+export interface BackupItem { name: string; kind: string; at: number; size: number | null; package: string; migration: string; pinnedUntil: number | null }
+/** The world's backups: the newest first, the pins and their cap, the backups' disk, the last problem (a refusal). */
+export interface Backups {
+    at: number | null; last: BackupItem | null; backups: BackupItem[]; pins: number; pinCap: number; working: string | null;
+    problem: {code: 'disk' | 'failed' | 'pins' | 'database'; at: number | null; free: number | null} | null;
+    disk: {free: number | null; used: number | null; minFree: number | null};
+}
+/** My world (doc 78, 2 and 7; tools/studio.py's HostedStudio.my_world). `folder`, `exits` and addresses in `signIns`:
+ *  the owner's alone. */
+export interface MyWorld {
+    world: string; name: string; package: string; status: ServerStatus; owner: boolean; fingerprint: string; wolves: number | null;
+    settings: {player_limit: number | null; workers: number | null; cheats: 'off' | 'host' | 'everyone'; editor: {enabled: boolean}};
+    ai: AiState; history: {at: number; action: string; target: string; detail: string; who: string}[];
+    signIns: {at: number; account: string; detail: string}[]; backups: Backups | null;
+    folder?: string; exits?: {at: number | null; code: number | null; lines: string[]}[];
+}
 /** The host's tools' AI (doc 78, 7): whether it can be used now and why not, the day's calls against the caps, the
  *  month's tokens against the budget, and a rough cost a story (dollars). */
 export interface AiState {

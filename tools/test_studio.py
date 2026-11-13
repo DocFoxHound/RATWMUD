@@ -13,6 +13,7 @@ import os
 import re
 from pathlib import Path
 import tempfile
+import time
 import threading
 import unittest
 
@@ -1483,7 +1484,8 @@ def served_routes():
 
 
 # The routes HostedStudio answers itself (not the studio's handlers).
-HOSTED_OWN = {('GET', '/api/studio/ai'), ('GET', '/api/world'), ('POST', '/api/world/restart')}
+HOSTED_OWN = {('GET', '/api/studio/ai'), ('GET', '/api/world'), ('POST', '/api/world/restart'), ('POST', '/api/world/backup'),
+              ('POST', '/api/world/pin')}
 
 
 class HostedAllowlistTests(HostedBase):
@@ -1614,6 +1616,27 @@ class HostedAllowlistTests(HostedBase):
         self.assertEqual([p.read_text() for p in made], ['restart\n'], 'a kind-only request for the root entrypoint')
         self.assertEqual(self.dm.calls[-1][0], 'log')
         self.assertEqual(self.sync.calls, [], 'never through the sync engine (the publisher)')
+
+    def test_backups_by_hand_and_pins_are_the_owner_s_and_capped(self):
+        """Doc 78, 12.1 (M5): a backup now and a pin are kind-only requests (a pin names only the backup's time), the
+        owner's; a sixth pin is refused here before the backup service would; no backup service, no requests."""
+        self.assertEqual(self.call('POST', '/api/world/backup', role='owner'), (409, {'error': ST.NO_BACKUPS}))
+        now = int(time.time())
+        items = [{'name': f'ratw-2026111{i}T140300Z-daily', 'at': now - i * 86400, 'size': 1000,
+                  'pinnedUntil': now + 86400 if i < 5 else None} for i in range(6)]
+        (self.folder / 'backups.json').write_text(json.dumps({'v': 1, 'at': now, 'backups': items, 'disk': {}}))
+        for role in ('viewer', 'dm', 'builder'):
+            self.assertEqual(self.call('POST', '/api/world/backup', role=role)[0], 403, role)
+            self.assertEqual(self.call('POST', '/api/world/pin', {'name': items[5]['name'], 'pinned': True}, role=role)[0], 403)
+        self.assertEqual(self.call('POST', '/api/world/backup', role='owner'), (200, {'ok': True, 'asked': True}))
+        status, data = self.call('POST', '/api/world/pin', {'name': items[5]['name'], 'pinned': True}, role='owner')
+        self.assertEqual((status, data['error']), (409, '5 backups are pinned already: unpin one first.'))
+        self.assertEqual(self.call('POST', '/api/world/pin', {'name': 'ratw-x/../../etc', 'pinned': True}, role='owner')[0], 404)
+        self.assertEqual(self.call('POST', '/api/world/pin', {'name': items[0]['name'], 'pinned': False}, role='owner')[0], 200)
+        made = sorted(p.read_text() for p in (self.folder / 'requests').iterdir())
+        self.assertEqual(made, ['backup-by-hand\n', 'unpin-20261110T140300Z\n'])
+        shown = ST.Hosted(folder=self.folder).backups()        # (What My world shows: test_world_admin reads it whole.)
+        self.assertEqual((shown['pins'], shown['last']['name'], shown['pinCap']), (5, items[0]['name'], 5))
 
     def test_page_files_are_the_built_app_only(self):
         status, kind = self.hosted({'username': 'pell#a1b2c3', 'role': 'viewer'}, 'GET', '/', '', {}, b'')[:2]

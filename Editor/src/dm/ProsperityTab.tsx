@@ -9,7 +9,7 @@ import {Fragment, useCallback, useEffect, useState} from 'react';
 import {atLeast, dmApi, type EconomyActKind, type Me, type ProsperityView, type Target, worldLabel} from './api';
 import {BANDS, HARVEST_WORDS, GRANT_MOST, CAUSE_MOST, reasonWords} from '../lib/economyContract';
 import {clock, dayLabel} from '../lib/economy';
-import {awaitOutcome} from '../lib/acts';
+import {awaitOutcome, sureText} from '../lib/acts';
 
 const p = (n: number | null | undefined) => n === null || n === undefined ? '—' : `${Math.round(n).toLocaleString()}p`;
 const signed = (n: number) => `${n > 0 ? '+' : ''}${n}`;
@@ -196,7 +196,8 @@ export function ProsperityTab({me, target, initial}: {me: Me; target: Target; in
                         placeholder="for ringing the bell" onChange={e => set({reason: e.target.value})} /></label>
                     <button className="primary" disabled={locked || !draft.who || !whole(draft.coins) || !draft.reason.trim()} onClick={() => {
                         const coins = whole(draft.coins), name = players.find(c => c.id === draft.who)?.name ?? draft.who;
-                        if (window.confirm(`${coins > 0 ? `Grant ${name} ${coins}p` : `Fine ${name} ${-coins}p`}: ${draft.reason}?`))
+                        if (window.confirm(sureText(`${coins > 0 ? `Grant ${name} ${coins}p` : `Fine ${name} ${-coins}p`} (${draft.reason})`, worldLabel(target),
+                            coins > 0 ? 'grant' : 'fine', name, !!me.hosted)))
                             void act('character.grant', draft.who, {coins, reason: draft.reason}, coins > 0 ? `${name} granted` : `${name} fined`);
                     }}>{whole(draft.coins) < 0 ? 'Fine' : 'Grant'}</button>
                     <p className="hint">A grant is new money, capped a player a day by the world; a fine is never more than they carry.</p>

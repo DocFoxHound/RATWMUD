@@ -2,13 +2,16 @@
 # this file runs nothing. GitHub offers "Run workflow" only for a workflow file on the default branch
 # (codex/mvp-foundation); the jobs check out the branch or tag they build, whatever branch the file is started from.
 #
-# Two jobs:
+# Three jobs:
 # - client: the real desktop client from a branch (default r2-desktop): Client/ built and bundled, `cargo test`, the
 #   release build and its NSIS installer. Uploads the installer and the bare .exe for the user's Windows PC.
 # - spike: doc 77 Phase 0's transport spike from the tag desktop-spike-phase0 (b7aed3d): the stand-in world on
 #   loopback and on the runner's own address, the spike app once (it runs the page's transport tests and quits).
 #   Uploads its .exe and results (spike/out/*.jsonl). Whether a GitHub runner can show a WebView2 window at all is
 #   part of what it finds out; the user's own PC is the real check (doc 77, Phase 0, "Still to check").
+# - scripts: the world folder's restore.bat and reset-editor-password.bat (doc 78, M5) in cmd.exe from the same branch,
+#   against a stand-in docker.exe (Package/testdata/windows-scripts.ps1): every step, refusals, and typed input cmd
+#   could read as a command.
 
 name: desktop-windows
 
@@ -58,6 +61,17 @@ jobs:
           path: |
             Desktop/src-tauri/target/release/ratw-desktop.exe
             Desktop/src-tauri/target/release/bundle/nsis/*.exe
+
+  scripts:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - name: The host's .bat scripts in cmd.exe (Docs/Design/78, M5)
+        shell: pwsh
+        run: ./Package/testdata/windows-scripts.ps1
 
   spike:
     if: ${{ inputs.spike }}

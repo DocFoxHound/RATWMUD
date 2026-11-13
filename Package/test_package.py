@@ -23,6 +23,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from unittest import mock
 import zipfile
@@ -524,8 +525,8 @@ class Editor(Folders):
             self.quiet(world.act, kind)
         used = (E.MANAGE / 'first-editor.txt').read_text()
         self.assertTrue(used.startswith('Used. Lost your password?'))
-        self.assertIn('docker compose exec world ratw-editor reset NAME', used)
-        self.assertNotIn('reset-editor-password', used, 'that script is M5\'s: until then, the command')
+        self.assertIn('docker compose exec world ratw-editor reset NAME', used, 'the command stays, as the fallback')
+        self.assertIn('Double-click reset-editor-password in this folder', used, 'M5: the script first')
         self.assertNotIn('p' * 20, (E.MANAGE / 'first-editor.txt').read_text())
 
     def test_the_first_owner_is_logged_by_its_file_never_its_password(self):
@@ -565,6 +566,21 @@ class Editor(Folders):
             (requests / f'.restart.{i:012x}.1234').write_text('')
         (requests / 'restart.0123456789ab').write_text('')
         self.assertEqual(self.quiet(E.take_requests), ['restart'])
+
+    def test_a_pin_on_a_backup_is_a_request_by_its_time_alone(self):
+        """Doc 78, 12.1 (M5): pin-STAMP and unpin-STAMP pass to the backup service; anything else like them is odd."""
+        requests = E.ADMIN / 'requests'
+        for name in ('pin-20261112T140300Z.0123456789ab', 'unpin-20261111T090000Z.0123456789ab',
+                     'pin-ratw-20261112T140300Z-daily.0123456789ab', 'pin-..x.0123456789ab'):
+            (requests / name).write_text('')
+        kinds = self.quiet(E.take_requests)
+        self.assertEqual(kinds, ['pin-20261112T140300Z', 'unpin-20261111T090000Z'])
+        self.assertIn('2 odd file(s)', self.output)
+        world = E.Supervisor(7788, 17789, self.dir, self.dir)
+        for kind in kinds:
+            self.quiet(world.act, kind)
+        self.assertEqual(sorted(p.name.split('.')[0] for p in E.BACKUP_REQUESTS.iterdir() if not p.name.startswith('.')),
+                         ['pin-20261112T140300Z', 'unpin-20261111T090000Z'])
 
     def test_a_backup_request_goes_to_the_backup_service_once(self):
         self.assertTrue(self.quiet(E.pass_backup, 'backup-by-hand'))
@@ -919,6 +935,172 @@ class FirstStart(Folders):
             self.assertIsNone(self.quiet(E.first_settings, 17789, lambda: self.now, stop))
 
 
+class Backups(Folders):
+    """Doc 78, 12.1 (M5): the backup service's state copied, checked, for the Editor; an update's backup asked for and
+    waited on; the package the world last ran, recorded."""
+
+    def status(self, body):
+        (E.BACKUP_REQUESTS / '.backup-status.json').write_text(json.dumps(body))
+
+    def test_the_backup_service_s_state_reaches_the_editor_checked(self):
+        self.assertIsNone(E.mirror_backups())
+        self.assertFalse((E.ADMIN / 'backups.json').exists(), 'no backup service: nothing written')
+        self.status({'v': 1, 'at': 10, 'working': 'rm -rf', 'problem': {'code': 'disk', 'at': 9, 'free': 5, 'extra': 'x'},
+                     'disk': {'free': 5, 'used': 7, 'minFree': 2048, 'path': '/etc'},
+                     'backups': [{'name': 'ratw-20261112T140300Z-daily', 'at': 9, 'size': 3, 'package': '1.0;rm', 'migration': '64x'},
+                                 {'name': '/etc/passwd', 'at': 1}, {'name': 'ratw-20261112T140300Z-daily', 'at': -1}]})
+        text = self.quiet(E.mirror_backups)
+        copied = json.loads((E.ADMIN / 'backups.json').read_text())
+        self.assertEqual(copied, json.loads(text))
+        self.assertEqual(copied['backups'], [{'name': 'ratw-20261112T140300Z-daily', 'kind': 'daily', 'at': 9, 'size': 3,
+                                              'pinnedUntil': None, 'package': '1.0rm', 'migration': '64'}])
+        self.assertEqual((copied['working'], copied['problem'], copied['disk']),
+                         (None, {'code': 'disk', 'at': 9, 'free': 5}, {'free': 5, 'used': 7, 'minFree': 2048}))
+        self.assertEqual(stat.S_IMODE((E.ADMIN / 'backups.json').stat().st_mode), 0o644)
+        self.assertEqual(self.quiet(E.mirror_backups, text), text)
+
+    def test_the_world_image_s_facts_for_the_backup_service(self):
+        self.quiet(E.write_world_image, {'world_id': WORLD})
+        image = json.loads((E.BACKUP_REQUESTS / '.world-image.json').read_text())
+        self.assertEqual((image['world'], image['migrations']), (WORLD, max(v for v, _, _ in E.tools_module('world_db').migration_files())))
+        self.assertTrue(E.BACKUP_REQUESTS.joinpath('.world-image.json').name.startswith('.'), 'a dot name: never a request')
+
+    def test_an_update_s_backup_is_asked_for_and_waited_on(self):
+        clock = [0.0]
+
+        def sleep(_):
+            clock[0] += 1
+            for request in E.BACKUP_REQUESTS.glob('before-update.*'):
+                tag = request.name.split('.')[1]
+                request.unlink()
+                (E.BACKUP_REQUESTS / f'.result.{tag}').write_text('{"ok": true, "name": "ratw-20261112T140300Z-before-update"}')
+        answer = self.quiet(E.ask_backup, 'before-update', 60, 10, lambda: clock[0], sleep)
+        self.assertEqual(answer, {'ok': True, 'name': 'ratw-20261112T140300Z-before-update'})
+        self.assertEqual([p.name for p in E.BACKUP_REQUESTS.iterdir() if p.name.startswith(('before', '.result'))], [])
+        # No backup service (an old compose.yaml): given up on once nothing has answered for a while, the request gone.
+        clock[0] = 0.0
+        answer = self.quiet(E.ask_backup, 'before-update', 600, 10, lambda: clock[0], lambda _: clock.__setitem__(0, clock[0] + 1))
+        self.assertIsNone(answer)
+        self.assertEqual(list(E.BACKUP_REQUESTS.glob('before-update.*')), [])
+        # A backup service that says it is alive is waited for past that.
+        clock[0] = 0.0
+        self.status({'v': 1, 'at': int(time.time()), 'backups': []})
+        def later(_):
+            clock[0] += 1
+            if clock[0] == 30:
+                tag = next(E.BACKUP_REQUESTS.glob('before-update.*')).name.split('.')[1]
+                (E.BACKUP_REQUESTS / f'.result.{tag}').write_text('{"ok": false, "code": "disk"}')
+        self.assertEqual(self.quiet(E.ask_backup, 'before-update', 600, 10, lambda: clock[0], later), {'ok': False, 'code': 'disk'})
+
+    def test_an_update_backs_up_first_only_when_the_package_or_migrations_changed(self):
+        asked = []
+        with mock.patch.object(E, 'package_version', return_value='2.0'), \
+                mock.patch.object(E, 'ask_backup', side_effect=lambda kind: asked.append(kind) or {'ok': True, 'name': 'ratw-x'}):
+            for ran, backs_up in ((None, False), ({'version': '2.0', 'migrations': '0064', 'pending': []}, False),
+                                  ({'version': '1.0', 'migrations': '0064', 'pending': []}, True),
+                                  ({'version': '2.0', 'migrations': '0064', 'pending': ['0065']}, True),
+                                  ({'version': '', 'migrations': '', 'pending': []}, True)):
+                asked.clear()
+                with mock.patch.object(E, 'last_run', return_value=ran):
+                    self.quiet(E.update_backup, {'world_id': WORLD})
+                self.assertEqual(asked, ['before-update'] if backs_up else [], ran)
+            with mock.patch.object(E, 'last_run', return_value={'version': '1.0', 'migrations': '', 'pending': []}), \
+                    mock.patch.object(E, 'ask_backup', return_value=None):
+                self.quiet(E.update_backup, {'world_id': WORLD})
+            self.assertIn('no backup was made before the update: the backup service didn\'t answer', self.output)
+            with mock.patch.object(E, 'last_run', return_value={'version': '1.0', 'migrations': '', 'pending': []}), \
+                    mock.patch.object(E, 'ask_backup', return_value={'ok': False, 'code': 'disk'}):
+                self.quiet(E.update_backup, {'world_id': WORLD})
+            self.assertIn('the disk is nearly full', self.output)
+
+
+class Scripts(unittest.TestCase):
+    """The host's double-click scripts (doc 78, 3.6 and 12.2): restore and reset-editor-password, run here against a
+    stand-in docker (testdata/fake-docker.sh); the .bat files read for the same steps (desktop-windows.yml runs them on
+    Windows against a stand-in docker.exe)."""
+
+    def run_script(self, name, answers, *args, refuse=False):
+        with tempfile.TemporaryDirectory(prefix='s2stage-m5-') as folder:
+            world = Path(folder) / 'world'
+            world.mkdir()
+            shutil.copy(HERE / name, world / name)
+            (world / 'compose.yaml').write_text('name: ratw-world\n')
+            bin_ = Path(folder) / 'bin'
+            bin_.mkdir()
+            shutil.copy(HERE / 'testdata' / 'fake-docker.sh', bin_ / 'docker')
+            log = Path(folder) / 'calls'
+            env = {**os.environ, 'PATH': f'{bin_}:{os.environ["PATH"]}', 'FAKE_LOG': str(log), **({'FAKE_REFUSE': '1'} if refuse else {})}
+            done = subprocess.run(['bash', str(world / name), *args], input=answers, env=env, capture_output=True, text=True,
+                                  timeout=60)
+            return done, log.read_text().splitlines() if log.exists() else []
+
+    def test_the_shell_scripts_parse(self):
+        for name in ('restore.sh', 'reset-editor-password.sh'):
+            self.assertEqual(subprocess.run(['bash', '-n', str(HERE / name)]).returncode, 0, name)
+            self.assertTrue(os.access(HERE / name, os.X_OK), name)
+
+    def test_restore_asks_says_what_is_lost_stops_the_world_and_keeps_accounts(self):
+        done, calls = self.run_script('restore.sh', '1\nRESTORE\n\n')
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertIn('Everything players did since then is lost', done.stdout)
+        self.assertEqual(calls, ['compose version', 'compose stop backup', 'compose run --rm -T backup list',
+                                 'compose run --rm -T backup name 1', 'compose run --rm -T backup show ratw-20261112T140300Z-by-hand',
+                                 'compose stop world', 'compose run --rm -T backup restore ratw-20261112T140300Z-by-hand --keep-accounts',
+                                 'compose up -d'])
+        done, calls = self.run_script('restore.sh', 'RESTORE\nb\n', 'ratw-20261112T140300Z-by-hand')
+        self.assertEqual(calls[-2], 'compose run --rm -T backup restore ratw-20261112T140300Z-by-hand --take-accounts')
+
+    def test_restore_changes_nothing_unless_told_restore(self):
+        for answers in ('\n', '1\nyes\n', '1;rm -rf ~\n', '9\n'):
+            done, calls = self.run_script('restore.sh', answers)
+            self.assertIn('Nothing was changed.', done.stdout + done.stderr, answers)
+            self.assertFalse(any('stop world' in c or ' restore ' in c for c in calls), (answers, calls))
+            self.assertEqual(calls[-1], 'compose up -d', 'the backup service is started again')
+        done, calls = self.run_script('restore.sh', '', 'ratw-$(touch x)')
+        self.assertIn('isn\'t a backup\'s name', done.stdout)
+        done, calls = self.run_script('restore.sh', '1\nRESTORE\n\n', refuse=True)
+        self.assertNotEqual(done.returncode, 0)
+        self.assertIn("The restore didn't finish", done.stdout)
+        self.assertEqual(calls[-1], 'compose up -d', 'the world is started again after a refusal')
+
+    def test_reset_editor_password_lists_asks_and_writes_the_file(self):
+        done, calls = self.run_script('reset-editor-password.sh', 'host-k7q2\n')
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertEqual(calls, ['compose version', 'compose exec -T world true', 'compose exec -T world ratw-editor list',
+                                 'compose exec -T world ratw-editor reset host-k7q2 --write-file'])
+        self.assertIn('ratw-editor:abc', done.stdout)
+        self.assertIn('manage/first-editor.txt', done.stdout)
+        done, calls = self.run_script('reset-editor-password.sh', 'Host K7Q2; rm\n')
+        self.assertIn('Nothing was changed', done.stdout)
+        self.assertFalse(any('reset' in c for c in calls))
+
+    def test_the_bat_files_take_the_same_steps_in_cmd(self):
+        for name in ('restore.bat', 'reset-editor-password.bat'):
+            raw = (HERE / name).read_bytes()
+            self.assertNotIn(b'\n', raw.replace(b'\r\n', b''), f'{name}: CRLF line ends, as cmd.exe wants')
+            text = raw.decode('ascii')
+            for words in ('@echo off', 'cd /d "%~dp0"', '\r\npause\r\n', 'setlocal EnableDelayedExpansion'):
+                self.assertIn(words, text, name)
+            self.assertNotIn('!', text.replace('!NAME!', '').replace('!NUMBER!', '').replace('!SURE!', '').replace('!WHICH:~0,1!', ''),
+                             f'{name}: "!" is read by delayed expansion: none in the words')
+        restore = (HERE / 'restore.bat').read_text()
+        for step in ('docker compose stop backup', 'docker compose run --rm -T backup list', 'backup name %NUMBER%',
+                     'backup show %NAME%', 'docker compose stop world', 'backup restore %NAME% %ACCOUNTS%', 'docker compose up -d',
+                     '"--take-accounts"' if False else '--take-accounts', 'RESTORE'):
+            self.assertIn(step, restore)
+        self.assertIn('docker compose exec -T world ratw-editor reset %NAME% --write-file', (HERE / 'reset-editor-password.bat').read_text())
+
+    @unittest.skipUnless(shutil.which('docker'), 'needs docker (the postgres:18 image)')
+    def test_the_backup_service_s_perl_compiles_on_postgres_18(self):
+        found = subprocess.run(['docker', 'image', 'inspect', 'postgres:18'], capture_output=True)
+        if found.returncode != 0:
+            self.skipTest('no postgres:18 image here')
+        done = subprocess.run(['docker', 'run', '--rm', '--network', 'none', '-v', f'{HERE}:/p:ro', '--entrypoint', 'perl',
+                               'postgres:18', '-c', '/p/ratw-backup.pl'], capture_output=True, text=True, timeout=120)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertIn('syntax OK', done.stderr)
+
+
 class HostFolder(unittest.TestCase):
     def test_the_folder_ships_empty_manage_and_backups(self):
         """Doc 78, 6.3: so Docker doesn't make them itself (root's, on Linux)."""
@@ -929,7 +1111,10 @@ class HostFolder(unittest.TestCase):
             out = Path(folder) / 'my-world'
             H.make(out)
             self.assertEqual(sorted(p.name for p in out.iterdir()),
-                             ['Hosting.md', 'README.md', 'backups', 'compose.yaml', 'manage', 'world.toml'])
+                             ['Hosting.md', 'README.md', 'backups', 'compose.yaml', 'manage', 'reset-editor-password.bat',
+                              'reset-editor-password.sh', 'restore.bat', 'restore.sh', 'world.toml'])
+            self.assertTrue(os.access(out / 'restore.sh', os.X_OK) and os.access(out / 'reset-editor-password.sh', os.X_OK))
+            self.assertNotIn(b'\n', (out / 'restore.bat').read_bytes().replace(b'\r\n', b''), 'the .bat files are CRLF')
             self.assertEqual(list((out / 'manage').iterdir()) + list((out / 'backups').iterdir()), [])
             H.zip_folder(out, Path(folder) / 'my-world.zip')
             with zipfile.ZipFile(Path(folder) / 'my-world.zip') as archive:
@@ -937,6 +1122,9 @@ class HostFolder(unittest.TestCase):
             self.assertIn('my-world/manage/', names)
             self.assertIn('my-world/backups/', names)
             self.assertIn('my-world/compose.yaml', names)
+            with zipfile.ZipFile(Path(folder) / 'my-world.zip') as archive:
+                modes = {i.filename: (i.external_attr >> 16) & 0o777 for i in archive.infolist()}
+            self.assertEqual((modes['my-world/restore.sh'], modes['my-world/restore.bat']), (0o755, 0o644), 'unzipped, .sh runs')
             with self.assertRaises(SystemExit):
                 H.make(out)                                  # (Never into a folder that holds something.)
 
@@ -1046,6 +1234,22 @@ class EditorBundle(unittest.TestCase):
 
 
 class Compose(unittest.TestCase):
+    def test_the_backup_service(self):
+        """Doc 78, 12.1 (M5): postgres:18 (its pg_dump matches the server), the program inline and the same as
+        Package/ratw-backup.pl, backups/ and manage/ here, the passwords read-only, the requests volume."""
+        spec_ = importlib.util.spec_from_file_location('host_folder', HERE / 'host_folder.py')
+        H = importlib.util.module_from_spec(spec_)
+        spec_.loader.exec_module(H)
+        compose = (HERE / 'compose.yaml').read_text()
+        self.assertEqual(H.inline_program(compose), (HERE / 'ratw-backup.pl').read_text(),
+                         'compose.yaml\'s backup-run differs from Package/ratw-backup.pl: python3 Package/host_folder.py --sync-compose')
+        backup = compose[compose.index('\n  backup:\n'):compose.index('\n  db:\n')]
+        for line in ('image: postgres:18', 'entrypoint: ["perl", "/ratw/backup.pl"]', 'command: ["serve"]', 'target: /ratw/backup.pl',
+                     '- ./backups:/backups', '- ./manage:/manage', '- secrets:/run/ratw-secrets:ro', '- requests:/requests',
+                     'condition: service_healthy', 'RATW_BACKUP_MIN_FREE_MB: ${RATW_BACKUP_MIN_FREE_MB:-2048}', 'cap_drop: [ALL]'):
+            self.assertIn(line, backup)
+        self.assertNotIn('ports:', backup)
+
     def test_the_editor_is_published_to_this_computer_alone_by_default(self):
         """Doc 78, 3.2 and Q1 (D1: IPv4; 0.0.0.0 opens it); the admin and requests volumes; ./manage; RATW_EDITOR_PORT
         passed in for the files."""
@@ -1067,7 +1271,7 @@ class Compose(unittest.TestCase):
                       compose)
         services = compose[compose.index('\nservices:'):compose.index('\nvolumes:')]
         names = re.findall(r'^  ([a-z]+):$', services, re.M)
-        self.assertEqual(names, ['world', 'upnp', 'db'])
+        self.assertEqual(names, ['world', 'upnp', 'backup', 'db'])
         self.assertEqual(services.count('    logging: *logging\n'), len(names))
 
     def test_the_image_has_the_editors_user_and_folders(self):

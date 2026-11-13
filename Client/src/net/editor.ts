@@ -16,6 +16,10 @@ export interface EditorHello {
     setupPending: boolean;
     /** The game server as the world's entrypoint last saw it (null: it said nothing, e.g. still setting up). */
     server?: ServerUp | null;
+    /** The wolves in the world now (the game's public count; null while its server is down or doesn't say), and the
+     *  newest backup's age in seconds (null: none yet, or a package without the backup service). Doc 78, section 2. */
+    wolves?: number | null;
+    lastBackup?: number | null;
 }
 
 /** The hello's word on the game server (Package/entrypoint.py's server.json, through the helper and the shell). */
@@ -209,8 +213,7 @@ export function signInRefusal(r: Refusal): string {
         case 'wrong': return 'Wrong name or password.';
         case 'wait': return `Too many tries from here: wait ${minutes(r.minutes)}.`;
         case 'disabled': return 'This account is turned off: ask the world\'s owner.';
-        case 'expired': return 'That one-time password has expired: ask the world\'s owner for a new code, or on the world\'s computer, in ' +
-            `the world folder, type: ${resetCommand()}`;
+        case 'expired': return `That one-time password has expired: ask the world's owner for a new code, or on the world's computer ${resetHow()}`;
         case 'approve': return 'This world asks for an Editor code to sign in from a new computer: ask its owner for one (or, on the world\'s ' +
             'computer, run ratw-editor invite).';
         case 'full': return 'Too many people signed in to this world\'s Editor: try again later.';
@@ -225,7 +228,7 @@ export function signInRefusal(r: Refusal): string {
         case 'wrong-password': return 'That isn\'t your password.';
         case 'step-up': return 'Type your password again first.';
         case 'owner-only': return 'Only the world\'s owner manages Editor accounts.';
-        case 'owner-account': return `An owner's account is reset only on the world's computer: in the world folder, type ${resetCommand()}`;
+        case 'owner-account': return `An owner's account is reset only on the world's computer: ${resetHow()}`;
         case 'last-owner': return 'The last owner can\'t be removed or turned off.';
         case 'no-account': return 'There is no such Editor account.';
         case 'exists': return 'There is an Editor account by that name already.';
@@ -252,10 +255,15 @@ export function passwordProblem(reason: string): string {
     }
 }
 
-/** How a lost Editor password is reset, on the world's computer in its folder (doc 78, 3.6). The package's
- *  reset-editor-password script comes with M5; until then, the compose command. */
+/** The command that resets an Editor account, on the world's computer in its folder (doc 78, 3.6). */
 export function resetCommand(username = ''): string {
     return `docker compose exec world ratw-editor reset ${username || 'NAME'}`;
+}
+
+/** How a lost Editor password is reset, in the host's words: the package's script first (a double-click), the command
+ *  as the fallback (doc 78, 3.6; M5). */
+export function resetHow(username = ''): string {
+    return `double-click reset-editor-password in the world folder (or there type: ${resetCommand(username)})`;
 }
 
 /** Checked before sending (the world checks again): length, and the two passwords the same. */
@@ -302,8 +310,20 @@ export function statusPill(hello: EditorHello | null): string {
     if (hello.progress.code !== 'ready') return `Setting up ${Math.round(hello.progress.percent)}%`;
     const down = serverDown(hello.server);
     if (down) return down;
-    return ({running: 'Open', maintenance: 'Closed for changes', host_only: 'Open only to you'} as Record<string, string>)[hello.serverState]
+    const state = ({running: 'Open', maintenance: 'Closed for changes', host_only: 'Open only to you'} as Record<string, string>)[hello.serverState]
         ?? (hello.server?.up ? 'Open' : 'Starting…');
+    // "Open · 7 wolves" (section 2's pill): the count only while the world is open and its server says one.
+    const wolves = typeof hello.wolves === 'number' && state.startsWith('Open') ? hello.wolves : null;
+    return wolves === null ? state : `${state} · ${wolves} ${wolves === 1 ? 'wolf' : 'wolves'}`;
+}
+
+/** Screen 5's "Last backup 3 h ago" (section 2), from the hello's age in seconds; '' when the world says nothing (a
+ *  package without the backup service). */
+export function lastBackupText(hello: EditorHello | null): string {
+    if (!hello || !('lastBackup' in hello) || hello.lastBackup === undefined) return '';
+    if (hello.lastBackup === null) return 'No backup yet';
+    const n = hello.lastBackup;
+    return n < 90 ? 'Last backup just now' : n >= 36 * 3600 ? `Last backup ${Math.round(n / 86400)} days ago` : `Last backup ${inTime(n)} ago`;
 }
 
 /** Screen 4: whether SIGN IN uses the one-time password the pasted Editor code carries. A session that has ended (or any

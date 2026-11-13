@@ -57,3 +57,18 @@ test('the players\' hover shows goods, not "+0 -0"', () => {
     assert.equal(reasonWords('trade', [0, 4, 1, 0]), 'trade: +0p -4p, goods +1p -0p');
     assert.equal(reasonWords('old save', [3, 1]), 'old save: +3p -1p');
 });
+
+test('a confirmation names the wolf and says whether there is an opposite (doc 78, 12.3)', async () => {
+    const {sureText, greyed, OPPOSITES} = await import('./acts.ts');
+    const kill = sureText('Kill Ada', 'Ashfall', 'character.kill', 'Ada', true);
+    assert.match(kill, /^Kill Ada on Ashfall\?/);
+    assert.match(kill, /Ada is a player's wolf: its player is told in the game\./);
+    assert.match(kill, /Its opposite: Resurrect/);
+    const tie = sureText('End Ada\'s tie', 'Ashfall', 'tie.end', 'Ada');
+    assert.match(tie, /Ada is a player's wolf\.\n/);
+    assert.match(tie, /It has no opposite: it can't be undone from here\./);
+    assert.equal(sureText('Do it', 'Ashfall', 'unknown.kind'), 'Do it on Ashfall?', 'an unlisted act says nothing of an opposite');
+    assert.ok(Object.values(OPPOSITES).every(o => o === null || (o.length > 3 && !o.endsWith('.'))));
+    assert.equal(greyed([false, 'a'], [true, 'b'], [true, 'c']), 'b');
+    assert.equal(greyed([false, 'a']), '');
+});

@@ -8,8 +8,10 @@ updates, backups, the host's commands, your duties, and a table of what each err
 version.
 
 During the closed beta the game's team sends you this folder, the world image as a file (say `ratw-world.tar`), and
-central's address. The folder holds `compose.yaml`, `world.toml`, this file, `Hosting.md`, and two empty folders,
-`manage` (where the world puts your Editor account, below) and `backups`. Keep them.
+central's address. The folder holds `compose.yaml`, `world.toml`, this file, `Hosting.md`, four scripts to
+double-click (`restore` and `reset-editor-password`, each as `.bat` for Windows and `.sh` for Linux), and two empty
+folders, `manage` (where the world puts your Editor account, below) and `backups` (where it puts its backups). Keep
+them.
 
 ## What you need
 
@@ -69,12 +71,14 @@ world keeps its own Editor accounts, and nobody else's computer reaches it until
 3. The one-time password works for 7 days. If it wasn't used by then, the world writes a new one the next time it
    starts.
 
-Lost your password? On the world's computer, in this folder:
+Lost your password, or "too many tries"? On the world's computer, while the world runs, double-click
+`reset-editor-password.bat` (Windows) or run `./reset-editor-password.sh` in this folder. It lists your Editor
+accounts, asks which one, and shows a new one-time password and Editor code (also written into
+`manage/first-editor.txt`). The same, typed:
 
     docker compose exec world ratw-editor list
     docker compose exec world ratw-editor reset NAME
-
-`reset` shows a new Editor code. `manage/editor-certificate.txt` holds the Editor's fingerprint, which the game shows
+ `manage/editor-certificate.txt` holds the Editor's fingerprint, which the game shows
 the first time you connect from a computer without an Editor code: compare them.
 
 **From another computer** (at home, or from outside): the Editor port, 17789, answers only on this computer until you
@@ -134,11 +138,29 @@ can't join, so update when a new version comes out.
 
 ## Backups
 
-There is no backup command yet. The guide (section 12) gives the commands to copy the world's database and its
-passwords to a file while the world is stopped, and to put them back.
+The world backs itself up into `backups/` here: when it starts and every day (whenever the newest daily one is over a
+day old), before an update changes its database, and when you ask in the Editor (My world, BACK UP NOW). It keeps the
+7 newest daily ones, the 5 newest of the rest, and up to 5 you pin in My world (each for 90 days). Each map is saved
+once (`build-N.cells.gz`), not in every backup. A backup that would leave less than 2 GB free on the disk is refused,
+and My world says so (`RATW_BACKUP_MIN_FREE_MB` in `.env` changes that). `docker compose run --rm backup list` lists
+them.
+
+**To put the world back to a backup:** double-click `restore.bat` (Windows) or run `./restore.sh` in this folder. It
+lists the backups, asks which one, says what you lose ("Everything players did since then is lost") and asks you to
+type RESTORE. Then it stops the world, makes a safety copy of it as it is now, puts the backup back, and starts it
+again. It keeps your Editor accounts as they are now unless you choose the backup's, and ends every Editor session.
+It refuses a backup from another world, a damaged one, and one made by a newer package. My world's "Copy restore
+steps" gives the line for one backup (`restore.bat NAME`).
+
+**Keep `backups/` private:** the backups hold players' messages and the Editor accounts' password hashes. Don't keep
+this folder in OneDrive, Dropbox or another folder a cloud service copies.
+
+The guide (section 12) also says how to copy the whole of the world's storage by hand (to move it to another
+computer).
 
 ## Settings beside compose.yaml (`.env`)
 
+- `RATW_BACKUP_MIN_FREE_MB`: a backup is refused if it would leave less free than this on the disk (default 2048).
 - `RATW_PORT`: the port (default 7788), a number from 1 to 65535. It is the same inside the container and out.
 - `RATW_HOST_TOKEN`: the host token (or a file of its own, named by `token_file` in `world.toml`).
 - `RATW_IMAGE`: the world image, if you were given another one.
@@ -181,5 +203,6 @@ into `build-package/context` (never build from the repository's root: it is abou
 (the migrations only; the server then says the database has no world build).
 
 The folder to send a host: `python3 Package/host_folder.py --out DIR [--zip DIR.zip]` (this file, `compose.yaml`,
-`world.toml`, `Hosting.md`, and the empty `manage` and `backups` folders, which a zip keeps); the image beside it, from
+`world.toml`, `Hosting.md`, the restore and reset-editor-password scripts, and the empty `manage` and `backups`
+folders, which a zip keeps); the image beside it, from
 `docker save ratw-world:latest -o ratw-world.tar`.

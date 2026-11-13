@@ -3,7 +3,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {ago, bannerText, cantConnect, coBuilderNote, connectRefusal, firstTimeNote, fromWhere, hostOf, inTime, isCode, newPasswordProblem, onMac,
-    passwordProblem, portOf, resetCommand, serverDown, settingUp, shellEditor, signInRefusal, signsInWithCode, statusPill, type EditorHello,
+    lastBackupText, passwordProblem, portOf, resetCommand, resetHow, serverDown, settingUp, shellEditor, signInRefusal, signsInWithCode, statusPill, type EditorHello,
     type ServerUp} from './editor.ts';
 
 const hello = (over: Partial<EditorHello> = {}): EditorHello => ({world: 'world-' + 'a'.repeat(32), name: 'Ashfall', package: '1', editorApi: 1,
@@ -81,12 +81,13 @@ test('signing in: every refusal is the client\'s own words', () => {
     assert.equal(signInRefusal({ok: false, error: 'wait', minutes: 15}), 'Too many tries from here: wait 15 minutes.');
     assert.equal(signInRefusal({ok: false, error: 'wait', minutes: 1}), 'Too many tries from here: wait 1 minute.');
     assert.match(signInRefusal({ok: false, error: 'disabled'}), /turned off: ask the world's owner/);
-    // (The reset-editor-password script is M5's: until then the screens name the compose command.)
+    // (M5: the reset-editor-password script first, the compose command kept as the fallback.)
     for (const error of ['expired', 'owner-account']) {
-        assert.ok(signInRefusal({ok: false, error}).endsWith('docker compose exec world ratw-editor reset NAME'), error);
-        assert.ok(!signInRefusal({ok: false, error}).includes('reset-editor-password'), error);
+        assert.ok(signInRefusal({ok: false, error}).includes('double-click reset-editor-password in the world folder'), error);
+        assert.ok(signInRefusal({ok: false, error}).includes('docker compose exec world ratw-editor reset NAME'), error);
     }
     assert.equal(resetCommand('pell'), 'docker compose exec world ratw-editor reset pell');
+    assert.equal(resetHow('pell'), 'double-click reset-editor-password in the world folder (or there type: docker compose exec world ratw-editor reset pell)');
     assert.equal(signInRefusal({ok: false, error: 'database'}), 'Your world answered, but its database is slow: try again in a minute.');
     assert.match(signInRefusal({ok: false, error: 'full'}), /Too many people signed in/);
     assert.match(signInRefusal({ok: false, error: 'unsigned'}), /isn't an official RATW build/);
@@ -109,6 +110,16 @@ test('a new password is checked before it is sent', () => {
 
 test('the status pill and "still setting up"', () => {
     assert.equal(statusPill(hello()), 'Open');
+    // Section 2's "Open · 7 wolves", only while it is open; "Last backup 3 h ago" (M5: the hello carries both).
+    assert.equal(statusPill(hello({wolves: 7})), 'Open · 7 wolves');
+    assert.equal(statusPill(hello({wolves: 1, serverState: 'host_only'})), 'Open only to you · 1 wolf');
+    assert.equal(statusPill(hello({wolves: 7, serverState: 'maintenance'})), 'Closed for changes');
+    assert.equal(statusPill(hello({wolves: null})), 'Open');
+    assert.equal(lastBackupText(hello({lastBackup: 3 * 3600})), 'Last backup 3 h ago');
+    assert.equal(lastBackupText(hello({lastBackup: 30})), 'Last backup just now');
+    assert.equal(lastBackupText(hello({lastBackup: 3 * 86400})), 'Last backup 3 days ago');
+    assert.equal(lastBackupText(hello({lastBackup: null})), 'No backup yet');
+    assert.equal(lastBackupText(hello()), '', 'an older package says nothing');
     assert.equal(statusPill(hello({serverState: 'maintenance'})), 'Closed for changes');
     assert.equal(statusPill(hello({serverState: 'host_only'})), 'Open only to you');
     assert.equal(statusPill(hello({progress: {code: 'importing', percent: 40}})), 'Setting up 40%');

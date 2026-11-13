@@ -12,6 +12,8 @@ import {ImportsPanel} from './studio/ImportsPanel';
 import {StatusPanel} from './studio/StatusPanel';
 import {MarketPanel} from './studio/MarketPanel';
 import {ProsperityTab} from './dm/ProsperityTab';
+import {MyWorldTab} from './dm/MyWorldTab';
+import type {MyWorld} from './dm/api';
 
 const none = () => {};
 const view = (slim: boolean): EconomyData => ({
@@ -60,6 +62,22 @@ const prosperity: ProsperityView = {
         {at: 'game day 39', kind: 'ripple', text: 'bread at Greyfen dearer by 0.35'}],
 };
 
+const now = Math.floor(Date.now() / 1000);
+const myWorld = (owner: boolean): MyWorld => ({
+    world: 'world', name: 'Ashfall', package: '0.4.2', owner, fingerprint: '3F2A 9C10 5B7E 0D41 A6C3 22F9 8E05 77D1', wolves: 7,
+    status: {key: 'world', name: 'Ashfall', kind: 'live', world: null, server: {state: 'running', by: '', at: '', note: ''}, serverRunning: true,
+        release: 0, live: 'world', warning: '', hosted: true, hostServer: {up: true, reason: 'running', code: null, failures: 0, retryIn: null}},
+    settings: {player_limit: 40, workers: null, cheats: 'off', editor: {enabled: true}},
+    ai: {available: false, reason: 'Needs an AI key in world.toml.', today: {story: 0, roster: 0}, caps: {story: 100, roster: 20}, month: null, costPerStory: null, model: ''},
+    history: [{at: now - 60, action: 'server.backup', target: 'world', detail: 'Asked for a backup.', who: 'host-k7q2#3f2a1c'}],
+    signIns: [{at: now - 120, account: 'host-k7q2', detail: owner ? 'Signed in from this computer.' : 'Signed in.'}],
+    backups: {at: now, last: {name: 'ratw-20261112T140300Z-by-hand', kind: 'by-hand', at: now - 3 * 3600, size: 820000, package: '0.4.2', migration: '0064', pinnedUntil: null},
+        backups: [{name: 'ratw-20261112T140300Z-by-hand', kind: 'by-hand', at: now - 3 * 3600, size: 820000, package: '0.4.2', migration: '0064', pinnedUntil: null},
+            {name: 'ratw-20261111T090000Z-daily', kind: 'daily', at: now - 30 * 3600, size: 810000, package: '0.4.2', migration: '0064', pinnedUntil: now + 80 * 86400}],
+        pins: 1, pinCap: 5, working: null, problem: {code: 'disk', at: now, free: 1024 ** 3}, disk: {free: 1024 ** 3, used: 90 * 1024 ** 2, minFree: 2 * 1024 ** 3}},
+    ...(owner ? {folder: 'C:\\Users\\Ann\\OneDrive\\ratw-world', exits: [{at: now - 600, code: 139, lines: ['the world server stopped']}]} : {}),
+} as unknown as MyWorld);
+
 export function renderAll(): Record<string, string> {
     const me = {username: 'dm-user', role: 'dm'} as unknown as Me;
     const out: Record<string, string> = {};
@@ -75,5 +93,7 @@ export function renderAll(): Record<string, string> {
     out['Prosperity'] = renderToString(<ProsperityTab me={me} target="dev" initial={prosperity} />);
     // (A world with no town purses of its own, as Ridgemere 2.0: the realm's treasury, and a word why the table is empty.)
     out['Prosperity (no town purses)'] = renderToString(<ProsperityTab me={me} target="dev" initial={{...prosperity, towns: [], treasury: 1200}} />);
+    out['My world (owner)'] = renderToString(<MyWorldTab me={{username: 'host-k7q2#3f2a1c', role: 'owner', hosted: true} as Me} initial={myWorld(true)} />);
+    out['My world (dm)'] = renderToString(<MyWorldTab me={{username: 'pell#3f2a1c', role: 'dm', hosted: true} as Me} initial={myWorld(false)} />);
     return out;
 }

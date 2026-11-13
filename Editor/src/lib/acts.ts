@@ -36,3 +36,57 @@ export async function awaitSync<S extends {id: number; status: string}>(
     }
     return last;
 }
+
+// ---------------------------------------------------------------------------------------------- confirmations
+// Docs/Design/78, 12.3 (Phase M5): each confirmation names who it acts on (a player's wolf by its name, said to be one)
+// and says whether the act has an opposite, so a host knows before the click whether a mistake can be put right.
+
+/** The opposite of each DM act, where one exists (and where on the page it is); null where none does. */
+export const OPPOSITES: Record<string, string | null> = {
+    'character.kill': 'Resurrect, on the same panel (the time they lose doesn\'t come back)',
+    'character.resurrect': 'Kill',
+    'character.move': null,
+    'injury.add': 'Take away, beside the injury',
+    'injury.remove': 'Give injury',
+    'gift.give': 'Take Gift away',
+    'gift.take': 'Make Gifted or Make Quickened',
+    'unlock.grant.gifted': null,
+    'unlock.grant.quickened': 'Revoke Quickened',
+    'unlock.revoke': 'Grant Quickened',
+    'unlock.hold': 'Release unlocks',
+    'unlock.release': 'Hold unlocks',
+    'mentor.revoke': 'Restore mentoring',
+    'mentor.restore': 'Revoke mentoring',
+    'tie.end': null,
+    'bandits.call': null,
+    'npc.kill': 'Revive',
+    'npc.revive': 'Kill',
+    'npc.leave': null,
+    'visitor.bring': 'Send away',
+    'project.remove': null,
+    'project.cancel': null,
+    'project.complete': null,
+    'grant': 'a fine of the same coins',
+    'fine': 'a grant of the same coins',
+    'prices.reset': null,
+    'festival.call': null,
+    'report.decide': null,
+    'chapter.decide': null,
+};
+
+/** A confirmation's words: what, on which world; a player's wolf named as one (and, in a host's Editor, that its player
+ *  is told in the game); then the act's opposite, or that it has none. */
+export function sureText(what: string, world: string, act: string, wolf?: string | null, told = false): string {
+    const opposite = OPPOSITES[act];
+    const lines = [`${what} on ${world}?`];
+    if (wolf) lines.push(`${wolf} is a player's wolf${told ? ': its player is told in the game' : ''}.`);
+    lines.push(opposite === undefined ? '' : opposite ? `Its opposite: ${opposite}.`
+        : 'It has no opposite: it can\'t be undone from here.');
+    return lines.filter(Boolean).join('\n\n');
+}
+
+/** A button's reason for being greyed: the first of `why` whose condition holds, or '' (enabled). For `disabled` and
+ *  `title` both, so a greyed button always says why (doc 78, M5). */
+export function greyed(...why: [boolean, string][]): string {
+    return why.find(([on]) => on)?.[1] ?? '';
+}

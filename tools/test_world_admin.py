@@ -400,6 +400,28 @@ class Requests(unittest.TestCase):
             self.assertEqual(oct(path.stat().st_mode & 0o777), '0o600')
             with self.assertRaises(ValueError):
                 A.request_root('../../etc/passwd', Path(temp))
+            # A pin names one backup by its time only (doc 78, 12.1; M5).
+            self.assertEqual(A.request_root('pin-20261112T140300Z', Path(temp)).read_text(), 'pin-20261112T140300Z\n')
+            for odd in ('pin-ratw-20261112T140300Z-daily', 'pin-20261112T140300Z/..', 'unpin-2026', 'pin-'):
+                with self.assertRaises(ValueError):
+                    A.request_root(odd, Path(temp))
+
+    def test_the_backups_state_is_checked_again(self):
+        with tempfile.TemporaryDirectory() as temp:
+            folder, now = Path(temp), time.time()
+            self.assertIsNone(A.read_backups(folder, now), 'no backup service: nothing said')
+            (folder / 'backups.json').write_text(json.dumps({'v': 1, 'at': 5, 'working': 'evil', 'backups': [
+                {'name': 'ratw-20261112T140300Z-by-hand', 'at': int(now) - 60, 'size': 9, 'package': '1.2<b>', 'migration': '0064',
+                 'pinnedUntil': int(now) + 100},
+                {'name': '../../etc/passwd', 'at': 1}, {'name': 'ratw-20261111T140300Z-daily', 'at': 'yesterday'},
+                {'name': 'ratw-20261110T140300Z-daily', 'at': 3, 'pinnedUntil': 4}],
+                'problem': {'code': '<script>', 'at': 3, 'free': -1}, 'disk': {'free': 10, 'used': 'x'}}))
+            got = A.read_backups(folder, now)
+            self.assertEqual([b['name'] for b in got['backups']], ['ratw-20261112T140300Z-by-hand', 'ratw-20261110T140300Z-daily'])
+            self.assertEqual((got['last']['package'], got['pins'], got['backups'][1]['pinnedUntil'], got['working']),
+                             ('1.2b', 1, None, None), 'a pin that ran out is no pin')
+            self.assertEqual((got['problem'], got['disk']), ({'code': 'failed', 'at': 3, 'free': None},
+                                                             {'free': 10, 'used': None, 'minFree': None}))
 
 
 # ------------------------------------------------------------------------------------------- migration 0063 and I11
@@ -605,6 +627,32 @@ class SigningIn(SignInBase):
         self.assertEqual(self.core.hello_now()['kind'], 'official')
 
 
+@contextlib.contextmanager
+def http_status(body: dict):
+    """A stand-in game server's /status on loopback: its port."""
+    import http.server
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            out = json.dumps(body).encode()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Length', str(len(out)))
+            self.end_headers()
+            self.wfile.write(out)
+
+        def log_message(self, *_):
+            pass
+    server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield server.server_port
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
 class HelloServer(SignInBase):
     """R1, H2 and M-a: the game server's state from the entrypoint's server.json, and a database that doesn't answer."""
 
@@ -627,6 +675,24 @@ class HelloServer(SignInBase):
         self.write(up=True, reason='<b>exploded</b>')
         self.assertNotIn('server', self.core.hello_now())
         self.write(up=False, reason='closed', code=76, failures=0, retryAt=None)
+        self.assertLessEqual(len(json.dumps(self.core.hello_now())), A.HELLO_MOST)
+
+    def test_the_menu_s_wolves_and_last_backup(self):
+        """Section 2's "Open · 7 wolves" and "Last backup 3 h ago" (M5): the game's own public count on loopback, and the
+        newest backup's age; neither while unknown, and no wolves asked of a server that is down."""
+        hello = self.core.hello_now()
+        self.assertEqual((hello['wolves'], hello['lastBackup']), (None, None))
+        (self.folder.path / 'backups.json').write_text(json.dumps({'v': 1, 'at': 1, 'backups': [
+            {'name': 'ratw-20261112T140300Z-daily', 'at': int(time.time()) - 3 * 3600}]}))
+        with http_status({'ratw': 'world', 'players': 7}) as port, mock.patch.dict(os.environ, {'RATW_PORT': str(port)}):
+            A._WOLVES['at'] = float('-inf')
+            self.write(up=True, reason='running', code=None, failures=0, retryAt=None)
+            hello = self.core.hello_now()
+            self.assertEqual(hello['wolves'], 7)
+            self.assertAlmostEqual(hello['lastBackup'], 3 * 3600, delta=5)
+            A._WOLVES['at'] = float('-inf')
+            self.write(up=False, reason='exit', code=11, failures=1, retryAt=None)
+            self.assertIsNone(self.core.hello_now()['wolves'], 'down: not asked')
         self.assertLessEqual(len(json.dumps(self.core.hello_now())), A.HELLO_MOST)
 
     def test_a_database_that_doesnt_answer_gets_a_hello_in_two_seconds(self):
@@ -1689,6 +1755,21 @@ class HostedStudioPort(PortBase):
                          'only their own sign-ins, without addresses')
         for secret in ('rh_', 'npc-ai', 'api_key'):
             self.assertNotIn(secret, json.dumps(mine))
+        # M5: the backups and the history (everyone; account changes the owner's alone, no address in others' details).
+        self.assertIsNone(mine['backups'], 'no backup service: none')
+        (self.folder.path / 'backups.json').write_text(json.dumps({'v': 1, 'at': 1, 'backups': [
+            {'name': 'ratw-20261112T140300Z-daily', 'at': 100, 'size': 5}]}))
+        owner_sql("""INSERT INTO dm.audit (at, action, target, detail, who) VALUES
+                     (1, 'account.add', 'fern', 'Added from 192.0.2.7.', 'pell#abc123'),
+                     (2, 'server.maintenance', 'world', 'Closed by pell from 192.0.2.7.', 'pell#abc123')""")
+        mine = call(self.port, 'GET', '/api/world', token=owner)[2]
+        theirs = call(self.port, 'GET', '/api/world', token=fern)[2]
+        self.assertEqual((mine['backups']['last']['name'], theirs['backups']['last']['name']), ('ratw-20261112T140300Z-daily',) * 2)
+        self.assertIn('account.add', {h['action'] for h in mine['history']})
+        self.assertNotIn('account.add', {h['action'] for h in theirs['history']})
+        self.assertFalse(any(h['action'].startswith('login') for h in mine['history']), 'sign-ins are their own list')
+        self.assertIn('Closed by pell from [address].', {h['detail'] for h in theirs['history']})
+        self.assertIn('wolves', mine)
 
     def test_the_ai_without_a_key_its_caps_and_the_month_s_budget(self):
         dm = self.signed('fern', 'dm')['token']
@@ -1816,6 +1897,22 @@ class Process(unittest.TestCase):
         self.assertIn('i', A.read_code(invite.stdout.strip().splitlines()[-1]))
         self.assertEqual(self.cli('reset', 'ferro').returncode, 0)
         self.assertEqual(owner_sql('SELECT count(*) FROM dm.locks')[0][0], 0)
+        # reset-editor-password's: the code shown, and written into manage/first-editor.txt with this computer's
+        # address and the host's port (M5).
+        manage = self.folder.path / 'manage'
+        manage.mkdir()
+        written = subprocess.run([sys.executable, str(TOOLS / 'world_admin.py'), '--admin-dir', str(self.folder.path), 'reset', 'ferro',
+                                  '--write-file'], env={**self.env, 'RATW_MANAGE_DIR': str(manage), 'RATW_EDITOR_PORT': '17790'},
+                                 capture_output=True, text=True, timeout=60)
+        self.assertEqual(written.returncode, 0, written.stderr)
+        text = (manage / 'first-editor.txt').read_text()
+        shown = written.stdout.strip().splitlines()
+        self.assertIn('Your Editor account: ferro', text)
+        self.assertIn(next(l for l in shown if l.startswith('ratw-editor:')), text)
+        self.assertEqual(A.read_code(next(l for l in shown if l.startswith('ratw-editor:')))['a'], '127.0.0.1:17790')
+        self.assertIn('made by reset-editor-password', text)
+        self.assertEqual(oct((manage / 'first-editor.txt').stat().st_mode & 0o777), '0o600')
+        self.assertEqual(self.cli('reset', 'nobody', '--write-file').returncode, 1)
         self.assertEqual(self.cli('add', 'root', '--role', 'admin').returncode, 2, 'never admin')
         owner_sql("INSERT INTO dm.sessions (token_hash, username, expires_at) VALUES ('t', 'ferro', now() + interval '1 hour')")
         self.assertEqual(self.cli('sign-out-all').returncode, 0)

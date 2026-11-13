@@ -19,6 +19,10 @@ Prints one JSON line when listening: {port, code, owner, fingerprint, admin, dat
               on the world's own computer for someone elsewhere)
   log         prints {"log": [...]} (the studio's requests so far)
   actions     prints {"actions": [...], "audit": [...]} (dm.actions and dm.audit's acts: who asked for what)
+  requests    prints {"requests": [...]} (the kind-only requests the helper left for the root entrypoint)
+
+The world's game server is a stand-in /status on loopback saying 3 players (the hello's wolves), and the backup service's
+state as the entrypoint copies it (backups.json: one backup 3 hours old), for My world and the menu's line (M5).
   quit        stops; the database is dropped and the admin directory removed (also on end of input)
 """
 from __future__ import annotations
@@ -34,6 +38,7 @@ import shutil
 import sys
 import tempfile
 import threading
+import time
 
 TOOLS = Path(__file__).resolve().parents[2] / 'tools'
 sys.path.insert(0, str(TOOLS))
@@ -57,6 +62,26 @@ def seed(database: str) -> None:
                                       'strength': 55, 'dexterity': 61, 'wisdom': 33, 'stamina': 90, 'posture': 'standing'}]}
     with W.connect('world', 'game', dbname=database) as game:
         game.execute('SELECT game.save_checkpoint(%s, 1, %s)', ('greyfen', json.dumps(save)))
+
+
+def game_status(players: int) -> int:
+    """A stand-in game server's public /status on loopback (the helper asks it for the wolves): its port."""
+    import http.server
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            out = json.dumps({'ratw': 'world', 'players': players}).encode()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Length', str(len(out)))
+            self.end_headers()
+            self.wfile.write(out)
+
+        def log_message(self, *_):
+            pass
+    server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    return server.server_port
 
 
 def recorded(app, log: list):
@@ -93,8 +118,17 @@ def main() -> int:
         seed(database)
         A.make_certificate(admin)
         (admin / 'settings.json').write_text(json.dumps({'name': 'Ashfall Vale', 'package': 'e2e', 'cheats': 'off',
-                                                         'player_limit': 40, 'workers': 2, 'editor': {}}))
+                                                         'player_limit': 40, 'workers': 2, 'editor': {},
+                                                         'folder': '/home/host/ratw-world'}))
         (admin / 'progress.json').write_text(json.dumps({'code': 'ready', 'percent': 100}))
+        now = int(time.time())
+        (admin / 'server.json').write_text(json.dumps({'up': True, 'reason': 'running', 'code': None, 'failures': 0,
+                                                       'retryAt': None, 'at': now}))
+        (admin / 'backups.json').write_text(json.dumps({'v': 1, 'at': now, 'problem': None, 'working': None,
+            'disk': {'free': 50 * 1024 ** 3, 'used': 900 * 1024, 'minFree': 2 * 1024 ** 3},
+            'backups': [{'name': time.strftime('ratw-%Y%m%dT%H%M%SZ-daily', time.gmtime(now - 3 * 3600)), 'kind': 'daily',
+                         'at': now - 3 * 3600, 'size': 900 * 1024, 'package': 'e2e', 'migration': '0064', 'pinnedUntil': None}]}))
+        os.environ['RATW_PORT'] = str(game_status(3))
         connect = lambda: W.connect('world', 'dm', dbname=database)  # noqa: E731
         with connect() as conn:
             first = A.ensure_first_owner(conn)
@@ -135,6 +169,9 @@ def main() -> int:
                         "SELECT action, target, who FROM dm.audit WHERE action NOT LIKE 'login%' AND action NOT LIKE 'editor.%'"
                         ' ORDER BY sequence').fetchall()]
                 print(json.dumps({'actions': actions, 'audit': audit}), flush=True)
+            elif command == 'requests':
+                print(json.dumps({'requests': sorted(p.read_text().strip() for p in (admin / 'requests').glob('*')
+                                                     if not p.name.startswith('.'))}), flush=True)
             elif command == 'quit':
                 break
         asyncio.run_coroutine_threadsafe(server.stop(), loop).result(10)

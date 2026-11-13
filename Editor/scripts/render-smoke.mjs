@@ -22,13 +22,20 @@ try {
         'Imports (before 0061)': ['0061'], 'Status (before 0061)': ['0061'], 'Market (before 0061)': ['0061'],
         'Prosperity': ['Greyfen', '11:30', 'refused by the game', 'the Gull', 'The orchards', 'Trencher bread', "The realm's treasury"],
         'Prosperity (no town purses)': ["No town keeps a purse of its own in this world: the realm's treasury is the only one"],
+        // (Doc 78, M5: My world, the owner's with the folder and the stops, a co-builder's without.)
+        'My world (owner)': ['7 wolves in the world', 'Last backup 3 h ago', 'Back up now', 'Copy restore steps', 'nearly full',
+            'The world folder', 'a cloud service copies', 'The world keeps stopping', '3F2A 9C10', 'Asked for a backup', 'Something went wrong?'],
+        'My world (dm)': ['Your sign-ins', 'are for its owner', 'Only the world&#x27;s owner can do this.'],
     };
+    const absent = {'My world (dm)': ['The world folder', 'OneDrive', 'exit 139']};
     if (process.env.RENDER_DUMP) for (const [name, text] of Object.entries(html)) console.log(`== ${name}\n${text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 700)}`);
     for (const [name, text] of Object.entries(html)) {
         assert.ok(text.length > 100, `${name}: rendered`);
         const plain = text.replace(/<!--.*?-->/g, '').replace(/<[^>]+>/g, ' ').replace(/&#x27;/g, "'").replace(/\s+/g, ' ');
         for (const words of expect[name] ?? [])
-            assert.ok(plain.includes(words), `${name}: shows "${words}"`);
+            assert.ok(plain.includes(words) || text.includes(words), `${name}: shows "${words}"`);
+        for (const words of absent[name] ?? [])
+            assert.ok(!plain.includes(words), `${name}: doesn't show "${words}"`);
     }
     console.log(`render smoke: ${Object.keys(html).length} panels rendered: ${Object.keys(html).join(', ')}`);
 } finally {

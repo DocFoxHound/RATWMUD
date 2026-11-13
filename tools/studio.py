@@ -601,6 +601,8 @@ HOSTED_ROUTES = {
     ('GET', '/api/studio/ping'): VIEWER, ('GET', '/api/studio/session'): VIEWER, ('GET', '/api/studio/ai'): VIEWER,
     ('GET', '/api/world'): VIEWER,                   # My world: everyone reads it; the owner-only parts for the owner.
     ('POST', '/api/world/restart'): OWNER,           # A `restart` request file for the root entrypoint (doc 78, 6.5).
+    ('POST', '/api/world/backup'): OWNER,            # A backup now: a `backup-by-hand` request (doc 78, 12.1; M5).
+    ('POST', '/api/world/pin'): OWNER,               # A pin on one backup (at most 5, each 90 days): `pin-STAMP`.
     # The DM suite. Reads for everyone signed in; reports (players' words as evidence) from dm.
     **{('GET', f'/api/dm/{p}'): VIEWER for p in _DM_READS},
     ('GET', '/api/dm/reports'): DM_ROLE,
@@ -1342,6 +1344,8 @@ AI_MONTHLY_TOKENS = 20_000_000
 # million tokens, input and output), for "a rough cost a story".
 STORY_TOKENS = (3000, 700)
 AI_PRICES = {'gpt-5.4-mini': (0.75, 4.50), 'gpt-5.4-nano': (0.20, 1.25), 'gpt-5.6-luna': (0.20, 1.20)}
+NO_BACKUPS = ('This world has no backup service yet: take the new compose.yaml from the package (keep .env and world.toml), '
+              'then docker compose up -d.')
 SETTINGS_SHOWN = ('player_limit', 'workers')     # And cheats and [editor] enabled: the settings view's allowlist.
 # What leaves a log line shown to the owner: addresses and anything that looks like a token or key.
 _SCRUB = ((re.compile(r'\b\d{1,3}(?:\.\d{1,3}){3}(?::\d{1,5})?\b'), '[address]'),
@@ -1528,6 +1532,26 @@ class Hosted:
         except Exception:  # noqa: BLE001 - no state to show.
             return None
 
+    def wolves(self) -> int | None:
+        """The wolves in the world now (the game server's public /status count), None while it is down."""
+        server = self.server()
+        if server is not None and not server.get('up'):
+            return None
+        try:
+            import world_admin
+            return world_admin.game_wolves()
+        except Exception:  # noqa: BLE001 - not known.
+            return None
+
+    def backups(self) -> dict | None:
+        """The world's backups as the backup service last told the entrypoint (backups.json, checked): None when there is
+        no backup service (an older compose.yaml)."""
+        try:
+            import world_admin
+            return world_admin.read_backups(self.folder, time.time())
+        except Exception:  # noqa: BLE001 - nothing to show.
+            return None
+
     def fingerprint(self) -> str:
         try:
             import world_admin
@@ -1687,7 +1711,7 @@ class HostedStudio:
         if path.startswith('/api/atlas/') and not self._dev():
             return self._json(409, {'error': ATLAS_LATER})
         body = self.check(who, path, data, body)
-        own = self.own(who, method, path)
+        own = self.own(who, method, path, data)
         if own is not None:
             return self._json(200, own)
         tool = 'story' if path == '/api/dm/chronicle/story' else 'roster' if path == '/api/atlas/roster/generate' else None
@@ -1749,7 +1773,7 @@ class HostedStudio:
                 return json.dumps({**data, 'id': whole[0]}).encode('utf-8')
         return body
 
-    def own(self, who, method, path):
+    def own(self, who, method, path, data=None):
         """Hosted mode's own routes: the session, the AI's use, My world and its restart. None: not one of them."""
         if path == '/api/studio/session':
             return {**self.studio.hosted_session(who), 'ai': self.ai_state()}
@@ -1762,7 +1786,36 @@ class HostedStudio:
             world_admin.request_root('restart', self.hosted.folder)
             self.studio.dm.log(who, self.hosted.world, 'server.restart', self.hosted.world, 'Asked for a restart.')
             return {'ok': True, 'restarting': True}
+        if path == '/api/world/backup':
+            import world_admin
+            if self.hosted.backups() is None:
+                raise D.DMError(NO_BACKUPS, 409)
+            world_admin.request_root('backup-by-hand', self.hosted.folder)
+            self.studio.dm.log(who, self.hosted.world, 'server.backup', self.hosted.world, 'Asked for a backup.')
+            return {'ok': True, 'asked': True}
+        if path == '/api/world/pin':
+            return self.pin(who, data)
         return None
+
+    def pin(self, who, data) -> dict:
+        """A pin on one backup, or off (doc 78, 12.1): at most five pinned, each kept 90 days. Its name is checked against
+        the backups the world has; only its time goes into the request."""
+        import world_admin
+        data = data if isinstance(data, dict) else {}
+        name, on = str(data.get('name') or ''), data.get('pinned') is True
+        backups = self.hosted.backups()
+        if backups is None:
+            raise D.DMError(NO_BACKUPS, 409)
+        found = next((b for b in backups['backups'] if b['name'] == name), None)
+        match = world_admin.BACKUP_NAME.match(name)
+        if found is None or match is None:
+            raise D.DMError('There is no such backup.', 404)
+        if on and not found['pinnedUntil'] and backups['pins'] >= backups['pinCap']:
+            raise D.DMError(f'{backups["pinCap"]} backups are pinned already: unpin one first.', 409)
+        world_admin.request_root(f'{"pin" if on else "unpin"}-{match.group(1)}', self.hosted.folder)
+        self.studio.dm.log(who, self.hosted.world, 'server.backup.pin' if on else 'server.backup.unpin', name,
+                           'Pinned a backup (kept 90 days).' if on else 'Unpinned a backup.')
+        return {'ok': True, 'name': name, 'pinned': on}
 
     def ai_state(self) -> dict:
         try:
@@ -1792,12 +1845,16 @@ class HostedStudio:
         (scrubbed) and every account's sign-ins with addresses; others see only their own sign-ins, without addresses."""
         owner = who['role'] == 'owner'
         one = self.hosted.world
+        local = self.hosted.local_addresses()
         with self.studio.dm.connect(one) as conn:
-            history = [{'at': r[0], 'action': r[1], 'detail': r[2], 'who': r[3]} for r in conn.execute(
-                """SELECT at, action, detail, who FROM dm.audit WHERE action LIKE 'server.%%'
-                   ORDER BY sequence DESC LIMIT 50""").fetchall()]
+            # History (doc 78, 12.3): dm.audit, newest first, with the Editor account that made each change. Sign-ins are
+            # their own list; account changes are the owner's alone; others see no address in a detail.
+            history = [{'at': r[0], 'action': r[1], 'target': r[2], 'who': r[4],
+                        'detail': self.hosted.this_computer(r[3], local) if owner else scrub(str(r[3] or ''))}
+                       for r in conn.execute(
+                """SELECT at, action, target, detail, who FROM dm.audit WHERE action NOT LIKE 'login%%'
+                   AND (%s OR action NOT LIKE 'account.%%') ORDER BY sequence DESC LIMIT 100""", (owner,)).fetchall()]
             if owner:
-                local = self.hosted.local_addresses()
                 sign_ins = [{'at': r[0], 'account': r[1], 'detail': self.hosted.this_computer(r[2], local)} for r in conn.execute(
                     """SELECT at, target, detail FROM dm.audit WHERE action IN ('login', 'login.failed', 'login.failed.folded')
                        ORDER BY sequence DESC LIMIT 50""").fetchall()]
@@ -1807,7 +1864,8 @@ class HostedStudio:
                        ORDER BY sequence DESC LIMIT 20""", (who.get('account', ''),)).fetchall()]
         out = {'world': one, 'name': self.studio.hosted_status()['name'], 'package': str(self.hosted.settings().get('package') or '')[:40],
                'status': self.studio.hosted_status(), 'settings': self.hosted.shown_settings(), 'ai': self.ai_state(),
-               'history': history, 'signIns': sign_ins, 'fingerprint': self.hosted.fingerprint(), 'owner': owner}
+               'history': history, 'signIns': sign_ins, 'fingerprint': self.hosted.fingerprint(), 'owner': owner,
+               'backups': self.hosted.backups(), 'wolves': self.hosted.wolves()}
         if owner:
             out.update(folder=self.hosted.folder_path(), exits=self.hosted.exits())
         return out

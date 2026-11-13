@@ -20,6 +20,8 @@ import {ArtworkPanel} from './ArtworkPanel';
 import {ReportsPanel} from './ReportsPanel';
 import {StorytellersPanel} from './StorytellersPanel';
 import {LifePanel} from './LifePanel';
+import {MyWorldTab} from './MyWorldTab';
+import {greyed, sureText} from '../lib/acts';
 import {isLive, worldName, dmApi, cheatsOff, wolvesOff, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target, type Tie, worldLabel} from './api';
 
 type Tab = 'npcs' | 'chapters' | 'stories' | 'players' | 'live' | 'health' | 'prosperity' | 'economy' | 'server';
@@ -66,8 +68,9 @@ export function SignIn({onSignedIn}: {onSignedIn: (me: Me) => void}) {
 export function DmSuite({me, target}: {me: Me; target: Target}) {
     const [tab, setTab] = useState<Tab>('live');
     const current = TABS.find(t => t.id === tab)!;
-    // A host's Editor (doc 78, 7): one world, no imports or releases; its server tab is Close and Open.
-    const tabs = me.hosted ? TABS.map(t => t.id === 'server' ? {...t, label: 'Server', icon: '⏻'} : t) : TABS;
+    // A host's Editor (doc 78, 2 and 7): one world, no imports or releases; its server tab is My world (status, Close and
+    // Open, Restart, backups, settings, AI use, history).
+    const tabs = me.hosted ? TABS.map(t => t.id === 'server' ? {...t, label: 'My world', icon: '⌂'} : t) : TABS;
     return <div className={isLive(target) ? 'app dm prod' : 'app dm dev'}>
         <header className="topbar dm-tabs">
             <div className="workspace-tabs" role="tablist">
@@ -80,7 +83,7 @@ export function DmSuite({me, target}: {me: Me; target: Target}) {
             : tab === 'npcs' ? <NpcTab me={me} target={target} key={target} suite="dm" />
             : tab === 'chapters' ? <ChaptersTab me={me} target={target} key={target} />
             : tab === 'health' ? <HealthTab target={target} key={target} />
-            : tab === 'server' ? <ServerTab me={me} target={target} key={target} />
+            : tab === 'server' ? (me.hosted ? <MyWorldTab me={me} key={target} /> : <ServerTab me={me} target={target} key={target} />)
             : tab === 'prosperity' ? <ProsperityTab target={target} key={target} me={me} />
             : tab === 'economy' ? <EconomyTab target={target} key={target} me={me} />
             : current.ready ? <PlayersTab me={me} target={target} key={target} />
@@ -207,9 +210,12 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
     const canAct = me.role !== 'viewer';
     // A host's Editor (doc 78, 8): greyed with why, not refused as errors.
     const noWolves = wolvesOff(me), noCheats = cheatsOff(me);
+    // Each confirmation names the wolf (a player's, and in a host's Editor that its player is told) and says whether the
+    // act has an opposite (doc 78, 12.3).
+    const sure = (what: string, act: string) => !isLive(target) || window.confirm(sureText(what, worldName(target), act, character.name, !!me.hosted));
     const act = async (kind: 'character.kill' | 'character.resurrect') => {
         const verb = kind === 'character.kill' ? 'Kill' : 'Resurrect';
-        if (isLive(target) && !window.confirm(`${verb} ${character.name} on ${worldName(target)}?`)) return;
+        if (!sure(`${verb} ${character.name}`, kind)) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, kind, character.id, reason); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
@@ -219,7 +225,7 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
     const [family, setFamily] = useState(character.gift || 'fire');
     const gift = async (kind: string, quickened: boolean) => {
         const words = kind ? (quickened ? `Make Quickened (${kind})` : `Give the Gift (${kind}) to`) : 'Take the Gift from';
-        if (isLive(target) && !window.confirm(`${words} ${character.name} on ${worldName(target)}?`)) return;
+        if (!sure(`${words} ${character.name}`, kind ? 'gift.give' : 'gift.take')) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, 'character.gift', character.id, reason, {gift: kind, quickened}); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
@@ -227,7 +233,7 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
     };
     // An account's earned Gift tiers (doc 49, Phase 5): grant or revoke a tier, or hold new unlocks (in place of reports).
     const unlock = async (op: 'grant' | 'revoke' | 'hold' | 'release', tier: '' | 'gifted' | 'quickened', words: string) => {
-        if (isLive(target) && !window.confirm(`${words} on ${worldName(target)}?`)) return;
+        if (!sure(words, op === 'grant' ? `unlock.grant.${tier}` : `unlock.${op}`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, 'account.unlock', character.id, reason, {op, tier}); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
@@ -236,7 +242,7 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
     // Mentoring (doc 52): turned off for the account until restored (an upheld report also turns it off), or restored.
     const mentor = async (revoke: boolean) => {
         const words = `${revoke ? 'Turn off' : 'Restore'} mentoring for ${character.account?.name ?? character.name}`;
-        if (isLive(target) && !window.confirm(`${words} on ${worldName(target)}?`)) return;
+        if (!sure(words, revoke ? 'mentor.revoke' : 'mentor.restore')) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, revoke ? 'mentor.revoke' : 'mentor.restore', character.id, reason); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
@@ -244,7 +250,7 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
     };
     // A tie (doc 52): ended for them, as the newcomer or the mentor.
     const endTie = async () => {
-        if (isLive(target) && !window.confirm(`End ${character.name}'s tie on ${worldName(target)}?`)) return;
+        if (!sure(`End ${character.name}'s tie`, 'tie.end')) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, 'tie.end', character.id, reason); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
@@ -260,7 +266,7 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
     };
     // Bandits called up near them (doc 33): a small camp a few strides off, for a fight that isn't with townsfolk.
     const callBandits = async (count: number) => {
-        if (isLive(target) && !window.confirm(`Call ${count} bandit${count > 1 ? 's' : ''} near ${character.name} on ${worldName(target)}?`)) return;
+        if (!sure(`Call ${count} bandit${count > 1 ? 's' : ''} near ${character.name}`, 'bandits.call')) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, 'bandits.call', character.id, reason, {count}); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
@@ -269,7 +275,7 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
     // Injuries (doc 38, phase 5): a correction, or a storyline's wound; given or taken away, online or offline.
     const [injuryType, setInjuryType] = useState('cracked_rib'), [injurySeverity, setInjurySeverity] = useState(2), [injurySide, setInjurySide] = useState('');
     const injure = async (payload: {add: string; severity: number; side: string} | {remove: string}, words: string) => {
-        if (isLive(target) && !window.confirm(`${words} on ${worldName(target)}?`)) return;
+        if (!sure(words, 'add' in payload ? 'injury.add' : 'injury.remove')) return;
         setBusy(true); setProblem('');
         try { await dmApi.act(target, 'character.injury', character.id, reason, payload); setReason(''); onAct(); }
         catch (error) { setProblem((error as Error).message); }
@@ -277,6 +283,10 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
     };
     const injuryName = (i: Injury) => `${i.type.replace(/_acute$/, '').replace(/_/g, ' ')}${i.side ? ` (${i.side})` : ''}`;
     const pending = actions.some(a => a.status === 'queued');
+    const waiting = 'Waiting for the game server to apply the last action.';
+    const killWhy = greyed([busy, 'Working…'], [pending, waiting], [!!noWolves, noWolves], [character.dead, `${character.name} is dead already.`]);
+    const raiseWhy = greyed([busy, 'Working…'], [pending, waiting], [!!noWolves, noWolves], [!character.dead, `${character.name} is alive.`]);
+    const banditWhy = greyed([busy, 'Working…'], [pending, waiting], [character.dead, `${character.name} is dead.`]);
     const stat = (label: string, v: number | null, digits = 0) => <div><b>{v === null || v === undefined ? '—' : v.toFixed(digits)}</b><span>{label}</span></div>;
     return <div className="dm-panel">
         <header><div><small>{character.dead ? 'DEAD' : 'PLAYER CHARACTER'}</small><h2>{character.name}</h2></div>
@@ -329,10 +339,11 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
         {canAct ? <>
             <label className="field"><span>Reason (for the audit log)</span><input value={reason} maxLength={500} onChange={e => setReason(e.target.value)} placeholder="Optional" /></label>
             <div className="button-grid" title={noWolves || undefined}>
-                <button className="danger" disabled={busy || pending || !!noWolves || character.dead} onClick={() => void act('character.kill')}>✝ Kill</button>
-                <button disabled={busy || pending || !!noWolves || !character.dead} onClick={() => void act('character.resurrect')}>Resurrect</button>
+                <button className="danger" disabled={!!killWhy} title={killWhy || undefined} onClick={() => void act('character.kill')}>✝ Kill</button>
+                <button disabled={!!raiseWhy} title={raiseWhy || undefined} onClick={() => void act('character.resurrect')}>Resurrect</button>
             </div>
-            {noWolves && <p className="hint">{noWolves}</p>}
+            {noWolves && <p className="hint">Kill, Resurrect, injuries and moves: {noWolves}</p>}
+            {pending && <p className="hint">{waiting}</p>}
             <div className="button-grid" title={noCheats || undefined}>
                 <label className="field"><span>Gift family</span>
                     <select value={family} onChange={e => setFamily(e.target.value)}>
@@ -359,8 +370,8 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
                     `Give ${character.name} a ${injuryType.replace(/_acute$/, '').replace(/_/g, ' ')}`)}>Give injury</button>
             </div>
             <div className="button-grid">
-                <button disabled={busy || pending || character.dead} onClick={() => void callBandits(1)}>Call a bandit near them</button>
-                <button disabled={busy || pending || character.dead} onClick={() => void callBandits(3)}>Call three bandits</button>
+                <button disabled={!!banditWhy} title={banditWhy || undefined} onClick={() => void callBandits(1)}>Call a bandit near them</button>
+                <button disabled={!!banditWhy} title={banditWhy || undefined} onClick={() => void callBandits(3)}>Call three bandits</button>
             </div>
             <p className="hint">The game server applies it within a second, online or offline. Nothing happens until a {worldLabel(target)} server is running; unapplied actions expire after ten minutes.</p>
         </> : <p className="hint">Your account can view but not change the world.</p>}

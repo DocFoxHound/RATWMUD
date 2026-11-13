@@ -147,7 +147,9 @@ test('the Editor: a code, a password, the menu, accounts, the window, a rotation
     await onScreen('menu');
     assert.equal(await page.evaluate(`[...document.querySelectorAll('input[type=password]')].every(p => p.value === '')`), true);
     assert.match(await page.evaluate(`document.querySelector('.editor-menu').textContent`), new RegExp(`Signed in as ${owner} \\(owner\\)`));
-    await page.waitFor(`document.querySelector('[data-pill]').textContent === 'Open'`);
+    // Section 2's pill and line (M5): "Open · 3 wolves" (the game's own count) and "Last backup 3 h ago".
+    await page.waitFor(`document.querySelector('[data-pill]').textContent === 'Open · 3 wolves'`);
+    assert.equal(await page.evaluate(`document.querySelector('[data-last-backup]').textContent`), 'Last backup 3 h ago');
 
     // The pin store: by key, the address an alias; no secret in it. The device token: a file of its own, 0600.
     const pins = readFileSync(join(data, 'editor-worlds.json'), 'utf8');
@@ -215,6 +217,22 @@ test('the Editor: a code, a password, the menu, accounts, the window, a rotation
     assert.ok(acted.audit.some(a => a.action === 'prices.reset' && by.test(a.who)), JSON.stringify(acted.audit));
     const acts = (await tell('log')).log.filter(l => l.method === 'POST');
     assert.deepEqual(acts.map(l => `${l.path} ${l.status}`), ['/api/dm/prosperity/act 200']);
+    // My world (M5): the owner's tab, with the backups, the world folder and the history; a backup asked for is a
+    // kind-only request for the root entrypoint, and "Copy restore steps" gives both shells' lines.
+    await inEditor(`(() => { const t = [...document.querySelectorAll('[role=tab]')].find(b => b.textContent.includes('My world')); t.click(); return true; })()`);
+    for (let i = 0; i < 100 && !(await inEditor(`!!document.querySelector('[data-last-backup]')`)); i++) await sleep(200);
+    const mine = await inEditor(`document.querySelector('.my-world').textContent`);
+    for (const words of ['3 wolves in the world', 'Last backup 3 h ago', 'Back up now', 'Copy restore steps', '/home/host/ratw-world', 'Prices reset']) {
+        assert.ok(mine.includes(words), `My world shows "${words}"`);
+    }
+    await inEditor(`(() => { document.querySelector('button[data-action=backup-now]').click(); return true; })()`);
+    for (let i = 0; i < 50 && !(await inEditor(`document.querySelector('.my-world').textContent.includes('Asked: the backup service')`)); i++) await sleep(200);
+    assert.deepEqual((await tell('requests')).requests, ['backup-by-hand']);
+    await inEditor(`(() => { document.querySelector('button[data-action=restore-steps]').click(); return true; })()`);
+    for (let i = 0; i < 50 && !(await inEditor(`!!document.querySelector('[data-restore-steps]')`)); i++) await sleep(200);
+    const steps = await inEditor(`document.querySelector('[data-restore-steps]').textContent`);
+    assert.match(steps, /cd '\/home\/host\/ratw-world' && \.\/restore\.sh ratw-\d{8}T\d{6}Z-daily/);
+    assert.match(steps, /Set-Location -LiteralPath '\/home\/host\/ratw-world'/);
     // No shell command answers the Editor window (no capability names it), and nothing secret is in its page.
     for (const [command, args] of [['editor_state', {}], ['central_call', {method: 'GET', path: '/worlds'}], ['plugin:window|set_title', {label: 'editor', value: 'x'}],
         ['plugin:event|emit', {event: 'editor-session', payload: {state: 'ended'}}], ['plugin:window|set_fullscreen', {label: 'editor', value: true}],

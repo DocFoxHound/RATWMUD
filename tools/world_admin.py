@@ -64,6 +64,7 @@ import gzip
 import hashlib
 import heapq
 import hmac
+import io
 import ipaddress
 import itertools
 import json
@@ -100,6 +101,12 @@ PROGRESS_CODES = ('starting', 'database', 'importing', 'migrating', 'building', 
 # The game server's state as the entrypoint writes it (server.json), for the hello's pill (doc 78, section 2).
 SERVER_REASONS = ('starting', 'running', 'restarting', 'exit', 'world.toml', 'closed')
 REQUEST_KINDS = ('restart', 'backup-before-publish', 'backup-by-hand', 'share', 'first-editor-used')
+# A pin on one backup, by its time (the backup service's name ratw-STAMP-KIND): the only request that names anything,
+# and only by that pattern (doc 78, 12.1; M5).
+PIN_REQUEST = re.compile(r'^(?:pin|unpin)-\d{8}T\d{6}Z$')
+BACKUP_NAME = re.compile(r'^ratw-(\d{8}T\d{6}Z)-(daily|by-hand|before-publish|before-update|before-restore)$')
+BACKUP_KINDS = ('daily', 'by-hand', 'before-publish', 'before-update', 'before-restore')
+MANAGE_DIR = Path(os.environ.get('RATW_MANAGE_DIR', '/var/ratw/manage'))   # The world folder's manage/ (root's, inside).
 
 # Passwords and secrets.
 MIN_PASSWORD, MAX_PASSWORD = 12, 256
@@ -562,9 +569,65 @@ def read_server_state(folder: Path, now: float) -> dict | None:
     return {'up': raw.get('up') is True, 'reason': raw['reason'], 'code': code, 'failures': failures, 'retryIn': retry_in}
 
 
+def read_backups(folder: Path, now: float) -> dict | None:
+    """The backups as the root entrypoint copied them from the backup service (backups.json, checked there and again
+    here): the newest, the list, the pins, the disk and the last problem. None when there is none (an older package, or
+    a compose.yaml without the backup service)."""
+    raw = _read_json(folder / 'backups.json')
+    if raw.get('v') != 1:
+        return None
+    whole = lambda v: isinstance(v, int) and not isinstance(v, bool) and v >= 0
+    items = []
+    for b in raw.get('backups') or []:
+        if isinstance(b, dict) and isinstance(b.get('name'), str) and BACKUP_NAME.match(b['name']) and whole(b.get('at')):
+            items.append({'name': b['name'], 'kind': BACKUP_NAME.match(b['name']).group(2), 'at': b['at'],
+                          'size': b['size'] if whole(b.get('size')) else None,
+                          'package': re.sub(r'[^A-Za-z0-9._+-]', '', str(b.get('package') or ''))[:40],
+                          'migration': re.sub(r'[^0-9]', '', str(b.get('migration') or ''))[:6],
+                          'pinnedUntil': b['pinnedUntil'] if whole(b.get('pinnedUntil')) and b['pinnedUntil'] > now else None})
+    items = items[:60]
+    problem = raw.get('problem') if isinstance(raw.get('problem'), dict) else None
+    if problem is not None:
+        problem = {'code': problem.get('code') if problem.get('code') in ('disk', 'failed', 'pins', 'database') else 'failed',
+                   'at': problem['at'] if whole(problem.get('at')) else None,
+                   'free': problem['free'] if whole(problem.get('free')) else None}
+    disk = raw.get('disk') if isinstance(raw.get('disk'), dict) else {}
+    return {'at': raw['at'] if whole(raw.get('at')) else None, 'last': items[0] if items else None, 'backups': items,
+            'pins': sum(1 for b in items if b['pinnedUntil']), 'pinCap': 5, 'problem': problem,
+            'working': raw.get('working') if raw.get('working') in BACKUP_KINDS else None,
+            'disk': {k: disk[k] if whole(disk.get(k)) else None for k in ('free', 'used', 'minFree')}}
+
+
+_WOLVES = {'at': float('-inf'), 'count': None}
+
+
+def game_wolves(fetch: bool = True) -> int | None:
+    """The wolves in the world now: the game server's own public /status count, on this container's loopback (its game
+    port, RATW_PORT), asked at most every 5 seconds and for 0.3 s at most (never with fetch=False: the event loop's
+    callers take the last count). None when it doesn't answer or doesn't say."""
+    now = time.monotonic()
+    if now - _WOLVES['at'] < 5 or not fetch:
+        return _WOLVES['count']
+    count = None
+    port = os.environ.get('RATW_PORT', '7788').strip()
+    if port.isdigit():
+        import urllib.request
+        try:
+            opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+            with opener.open(f'http://127.0.0.1:{int(port)}/status', timeout=0.3) as reply:
+                value = json.loads(reply.read(64 * 1024))
+            players = value.get('players') if isinstance(value, dict) else None
+            count = players if isinstance(players, int) and not isinstance(players, bool) and 0 <= players <= 100000 else None
+        except (OSError, ValueError):
+            count = None
+    _WOLVES.update(at=now, count=count)
+    return count
+
+
 def request_root(kind: str, folder: Path = None) -> Path:
-    """A request to the root entrypoint: a file in requests/ naming only a kind (doc 78, 6.5; I7)."""
-    if kind not in REQUEST_KINDS:
+    """A request to the root entrypoint: a file in requests/ naming only a kind (doc 78, 6.5; I7), or a pin on a backup
+    by its time (PIN_REQUEST)."""
+    if kind not in REQUEST_KINDS and not PIN_REQUEST.match(kind):
         raise ValueError(f'unknown request {kind!r}')
     directory = (folder or ADMIN_DIR) / 'requests'
     directory.mkdir(mode=0o700, exist_ok=True)
@@ -993,7 +1056,13 @@ class Core:
     def server_now(self) -> dict | None:
         return read_server_state(self.folder, self.clock())
 
-    def _hello_body(self, progress: dict | None, state: str, pending: bool) -> dict:
+    def wolves_now(self, server: dict | None, fetch: bool = True) -> int | None:
+        """The wolves in the world now (game_wolves), None while the server is down."""
+        if server is not None and not server.get('up'):
+            return None
+        return game_wolves(fetch)
+
+    def _hello_body(self, progress: dict | None, state: str, pending: bool, fetch: bool = True) -> dict:
         official = self.settings.official()
         if progress is None:
             progress = {'code': 'ready' if self._ready else 'migrating', 'percent': 100 if self._ready else 90}
@@ -1004,6 +1073,12 @@ class Core:
         server = self.server_now()
         if server is not None:
             hello['server'] = server
+        # The menu's "Open · 7 wolves" and "Last backup 3 h ago" (doc 78, section 2): the game's own public /status
+        # count, and the newest backup's age in seconds (never its name or the list: those are behind a session).
+        hello['wolves'] = self.wolves_now(server, fetch)
+        backups = read_backups(self.folder, time.time())
+        last = (backups or {}).get('last')
+        hello['lastBackup'] = max(0, int(time.time() - last['at'])) if last else None
         rotation = _read_json(self.folder / 'rotation.json')
         if rotation.get('spki') and rotation.get('signature'):
             hello['rotation'] = {k: str(rotation[k]) for k in ('spki', 'signature', 'previous', 'algorithm') if k in rotation}
@@ -1052,7 +1127,7 @@ class Core:
         try:
             return await asyncio.wait_for(asyncio.shield(asyncio.wrap_future(work)), HELLO_WAIT)
         except asyncio.TimeoutError:
-            return self._hello_body(self._slow(self.settings.progress()), 'unknown', False)
+            return self._hello_body(self._slow(self.settings.progress()), 'unknown', False, fetch=False)
 
     def _open(self) -> None:
         if self.settings.official():
@@ -1536,7 +1611,8 @@ class Core:
             elif verb == 'reset':
                 if _target_role(conn, username) == 'owner':
                     raise EditorError(403, 'owner-account', "An owner's account is reset only on the world's computer: "
-                                                            'docker compose exec world ratw-editor reset NAME.')
+                                                            'double-click reset-editor-password in the world folder, or '
+                                                            'type docker compose exec world ratw-editor reset NAME.')
                 password, invite = reset_account(conn, username, who)
                 result = {'code': self._code(username, password, invite)}
             elif verb == 'role':
@@ -2055,7 +2131,7 @@ def _read_dm_password() -> str | None:
     return None
 
 
-def _as_admin(argv: list[str]) -> int | None:
+def _as_admin(argv: list[str], capture: bool = False):
     """As root (`docker compose exec`): read the dm password, then run again as ratw-admin. None: already not root.
     (Whatever the environment says: RATW_EDITOR_DROPPED only marks the child, it never skips the drop. R1 review.)"""
     if os.geteuid() != 0:
@@ -2074,8 +2150,69 @@ def _as_admin(argv: list[str]) -> int | None:
     env.update(RATW_DM_PASSWORD=password, RATW_EDITOR_DROPPED='1', HOME=str(ADMIN_DIR))
     if (ADMIN_DIR / 'worlds.json').exists():
         env.update(RATW_WORLDS_FILE=str(ADMIN_DIR / 'worlds.json'), RATW_WORLDS_LOCAL=str(ADMIN_DIR / 'worlds.local.json'))
-    return subprocess.run([sys.executable, str(Path(__file__).resolve()), *argv], env=env, user=account.pw_uid,
-                          group=account.pw_gid, extra_groups=[]).returncode
+    done = subprocess.run([sys.executable, str(Path(__file__).resolve()), *argv], env=env, user=account.pw_uid,
+                          group=account.pw_gid, extra_groups=[], **({'stdout': subprocess.PIPE, 'text': True} if capture else {}))
+    return (done.returncode, done.stdout) if capture else done.returncode
+
+
+def reset_to_file(argv: list[str], args) -> int:
+    """`ratw-editor reset NAME --write-file` (the reset-editor-password scripts, doc 78, 3.6): the reset as ratw-admin,
+    its code shown, then written by root into manage/first-editor.txt (the world folder's, its owner's, 0600), with this
+    computer's address and the host's Editor port in the code."""
+    rest = [a for a in argv if a != '--write-file']
+    if args.address is None:
+        rest += ['--address', f'127.0.0.1:{host_port()}']
+    if os.geteuid() == 0:
+        done = _as_admin(rest, capture=True)
+        code, out = done if isinstance(done, tuple) else (done, '')
+    else:
+        found = io.StringIO()
+        with contextlib.redirect_stdout(found):
+            code = main(rest)
+        out = found.getvalue()
+    print(out, end='')
+    if code != 0:
+        return code
+    password = re.search(r'^One-time password: (\S+)$', out, re.M)
+    editor_code = re.search(r'^(ratw-editor:\S+)$', out, re.M)
+    if not editor_code:
+        return code
+    until = time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime(time.time() + CODE_HOURS * 3600))
+    text = (f'A new one-time password for {args.name}, made by reset-editor-password on '
+            f'{time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime())}.\n\n'
+            f'Your Editor account: {args.name}\n'
+            + (f'One-time password: {password.group(1)}\n' if password else '') +
+            '\nEasiest: open the game, press EDITOR, and paste this Editor code:\n\n'
+            f'{editor_code.group(1)}\n\n'
+            f'Or use the address 127.0.0.1:{host_port()} with the name and password above, on this computer.\n'
+            'You\'ll choose your own password next.\n\n'
+            f'The password and the code work for {CODE_HOURS} hours, until {until}.\n'
+            'Keep this file to yourself: whoever has the code can take this account once.\n')
+    if not write_manage_file('first-editor.txt', text):
+        print('(This compose.yaml has no manage folder, so the code isn\'t in manage/first-editor.txt: it is above.)')
+    return 0
+
+
+def write_manage_file(name: str, text: str) -> bool:
+    """A file in the world folder's manage/ (root's inside the container), made new and renamed into place, the folder's
+    owner's (so the host can open it), 0600. False when there is no such folder (an old compose.yaml)."""
+    folder = MANAGE_DIR
+    if not folder.is_dir() or (os.geteuid() == 0 and not os.path.ismount(folder)):
+        return False
+    info = os.stat(folder)
+    temporary = folder / f'.{name}.{secrets.token_hex(6)}'
+    fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as out:
+            with contextlib.suppress(OSError):
+                os.fchown(out.fileno(), info.st_uid, info.st_gid)
+                os.fchmod(out.fileno(), 0o600)
+            out.write(text)
+        os.replace(temporary, folder / name)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
+    return True
 
 
 def _connect_cli():
@@ -2109,6 +2246,9 @@ def main(argv: list[str] | None = None) -> int:
         command = sub.add_parser(name, help=words)
         command.add_argument('name')
         command.add_argument('--address', default=None)
+        if name == 'reset':
+            # (reset-editor-password: the code also into manage/first-editor.txt, which only root can write.)
+            command.add_argument('--write-file', action='store_true', help='also write the code into manage/first-editor.txt')
     for name in ('disable', 'enable', 'remove'):
         sub.add_parser(name).add_argument('name')
     sub.add_parser('sign-out-all', help='end every Editor session and forget every device')
@@ -2131,6 +2271,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == 'fingerprint':
         print(certificate_text(folder), end='')
         return 0
+    if args.command == 'reset' and args.write_file:
+        return reset_to_file(argv, args)
     dropped = _as_admin(argv)
     if dropped is not None:
         return dropped
@@ -2168,6 +2310,8 @@ def main(argv: list[str] | None = None) -> int:
                 print(json.dumps(made_owner))
                 return 0
             if args.command == 'list':
+                if not list_accounts(conn):
+                    print('No Editor accounts yet: the world makes its owner when it starts (manage/first-editor.txt).')
                 for account in list_accounts(conn):
                     state = ('off' if account['disabled'] else 'not yet claimed' if account['unclaimed']
                              else 'on a one-time password' if account['mustChange'] else 'on')

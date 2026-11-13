@@ -11,6 +11,7 @@ import {Hint} from '../components/fields';
 import {useWorld} from './world';
 import {eventLine} from '../lib/liveWords';
 import {actorName} from '../lib/hosted';
+import {sureText} from '../lib/acts';
 import {CalendarPanel} from './CalendarPanel';
 import {MapView, type Marker, type Mode, type Overlay} from './MapView';
 import {areaColor, idFrom} from './LayerPanels';
@@ -117,7 +118,7 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
     }, [on, readProjects]);
     const projectAct = (kind: string, id: string, payload?: Record<string, unknown>) => {
         const words: Record<string, string> = {'project.remove': 'Take down', 'project.cancel': 'Cancel (gifts returned)', 'project.complete': 'Complete'};
-        if (words[kind] && !window.confirm(`${words[kind]} ${(projects ?? []).find(p => p.id === id)?.title ?? id} on ${worldLabel(target)}?`)) return;
+        if (words[kind] && !window.confirm(sureText(`${words[kind]} ${(projects ?? []).find(p => p.id === id)?.title ?? id}`, worldLabel(target), kind))) return;
         setBusy(true);
         dmApi.liveAction(target, kind, id, payload).then(() => { setNote(`${kind} sent: the game applies it within seconds.`); void readProjects(); })
             .catch(e => setProblem((e as Error).message)).finally(() => setBusy(false));
@@ -243,7 +244,9 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
         catch (error) { setNote((error as Error).message); }
         finally { setBusy(false); }
     };
-    const sure = (what: string) => !prod || window.confirm(`${what} on ${worldName(target)}?`);
+    // A confirmation names a player's wolf as one and says whether the act has an opposite (doc 78, 12.3).
+    const sure = (what: string, act = '', wolf: string | null = null) => !prod || window.confirm(sureText(what, worldName(target), act, wolf, !!me.hosted));
+    const wolfOf = (who: LivePerson) => (who[2] === 'p' || who[2] === 'o' ? who[1] : null);
     const onMapClick = (place: Place | null, marker: Marker | null) => {
         if (pick) {
             if (!place) { setNote('Choose a tile inside a place.'); return; }
@@ -265,13 +268,14 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
     };
     const npcKind = (p: LivePerson) => (p[2] === 'p' || p[2] === 'o' ? 'character.move' : 'npc.move') as 'npc.move' | 'character.move';
     const moveTo = (who: LivePerson, place: Place) => {
-        if (!sure(`Move ${who[1]} to ${placeName(place.cell)} ${place.x}, ${place.y}`)) return;
+        if (!sure(`Move ${who[1]} to ${placeName(place.cell)} ${place.x}, ${place.y}`, 'character.move', wolfOf(who))) return;
         void run(() => dmApi.move(target, npcKind(who), who[0], place), `Moving ${who[1]}: waiting for the game server…`);
     };
     /** Brings the dead back, then puts them on the tile: two actions the server takes in order. */
     const reviveAt = (who: LivePerson, place: Place) => {
         const npc = npcKind(who) === 'npc.move';
-        if (!sure(`${npc ? 'Revive' : 'Resurrect'} ${who[1]} at ${placeName(place.cell)} ${place.x}, ${place.y}`)) return;
+        if (!sure(`${npc ? 'Revive' : 'Resurrect'} ${who[1]} at ${placeName(place.cell)} ${place.x}, ${place.y}`,
+            npc ? 'npc.revive' : 'character.resurrect', wolfOf(who))) return;
         void run(async () => {
             await (npc ? dmApi.npcLife(target, who[0], false) : dmApi.act(target, 'character.resurrect', who[0], ''));
             await dmApi.move(target, npcKind(who), who[0], place);
@@ -291,7 +295,7 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
             const like = npcs?.people.find(p => p.id === spawn.copy);
             const name = spawn.name.trim() || like?.name || '';
             if (!name) { setNote('Give the visitor a name.'); return; }
-            if (!sure(`Bring ${name} to ${placeName(spawn.place.cell)} for ${spawn.minutes} minutes`)) return;
+            if (!sure(`Bring ${name} to ${placeName(spawn.place.cell)} for ${spawn.minutes} minutes`, 'visitor.bring')) return;
             void run(async () => { await dmApi.visit(target, name, spawn.place, spawn.minutes, spawn.copy); setSpawn(null); },
                 `${name} is on the way: waiting for the game server…`);
             return;
@@ -308,11 +312,12 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
         void run(async () => { await dmApi.saveNpc(target, newcomer); setSpawn(null); setNpcs(null); },
             `${name} is written to the ${worldLabel(target)} world; a running game server brings them in within a second.`);
     };
-    const sendAway = (p: LivePerson) => sure(`Send ${p[1]} away`) &&
+    const sendAway = (p: LivePerson) => sure(`Send ${p[1]} away`, 'npc.leave') &&
         void run(() => dmApi.leave(target, p[0]), `Sending ${p[1]} away: waiting for the game server…`);
     const life = (p: LivePerson, kill: boolean) => {
         const npc = p[2] === 'n' || p[2] === 'r';
-        if (!sure(`${kill ? 'Kill' : npc ? 'Revive' : 'Resurrect'} ${p[1]}`) || (kill && prod && !window.confirm(`Really kill ${p[1]}?`))) return;
+        if (!sure(`${kill ? 'Kill' : npc ? 'Revive' : 'Resurrect'} ${p[1]}`, kill ? (npc ? 'npc.kill' : 'character.kill') : npc ? 'npc.revive' : 'character.resurrect',
+            npc ? null : p[1]) || (kill && prod && !window.confirm(`Really kill ${p[1]}?`))) return;
         void run(() => npc ? dmApi.npcLife(target, p[0], kill) : dmApi.act(target, kill ? 'character.kill' : 'character.resurrect', p[0], ''),
             `${kill ? 'Killing' : 'Bringing back'} ${p[1]}: waiting for the game server…`);
     };

@@ -9,6 +9,7 @@ import {gameUrl} from '../lib/api';
 import {buildChoices, defaultPicks, letGoText, prunePicks, replaceMapText, type ImportPlan, type ImportResult, type Picks, type Release,
     type ServerStatus, type SyncWorld} from '../lib/sync';
 import {ChangeGroups, ConflictList, Problems, SummaryTable, when} from '../studio/SyncViews';
+import {greyed} from '../lib/acts';
 import {actorName, CLOSED_TEXT, hosted as hostedPage, hostServerDown, reloadApp, RUNNING_TEXT} from '../lib/hosted';
 
 const LABELS = {dev: 'Import dev\'s', live: 'Keep live\'s'} as const;
@@ -113,7 +114,7 @@ function ServerPanel({status, canAct, onChanged, hosted = false}: {status: Serve
 
 /** The hosted Server tab: the world's state in the host's words (the package's own word on its game server first: it
  *  never says Running while the server is down), Close and Open, and Restart (the package saves, stops and starts it). */
-function HostedServerPanel({status, canAct, onChanged, reload}: {status: ServerStatus; canAct: boolean; onChanged: (s: ServerStatus) => void;
+export function HostedServerPanel({status, canAct, onChanged, reload}: {status: ServerStatus; canAct: boolean; onChanged: (s: ServerStatus) => void;
     reload: () => Promise<ServerStatus | null>}) {
     const [note, setNote] = useState(''), [busy, setBusy] = useState(false), [problem, setProblem] = useState('');
     // Restart asked: "Restarting…" until the package says the server is up again (or, from an older package that says
@@ -135,8 +136,8 @@ function HostedServerPanel({status, canAct, onChanged, reload}: {status: ServerS
 
     const set = async (on: boolean) => {
         const ask = on
-            ? `Close ${status.name}?\n\nPlayers get a 60-second warning, then the world saves and stops. It stays closed until you open it again.`
-            : `Open ${status.name} again?\n\nThe world's game server starts within a few seconds, and players can join.`;
+            ? `Close ${status.name}?\n\nPlayers get a 60-second warning, then the world saves and stops. It stays closed until you open it again.\n\nIts opposite: Open the world, here.`
+            : `Open ${status.name} again?\n\nThe world's game server starts within a few seconds, and players can join.\n\nIts opposite: Close the world, here.`;
         if (!window.confirm(ask)) return;
         setBusy(true); setProblem('');
         try { onChanged({...status, ...(await dmApi.maintenance(status.key, on, note))}); setNote(''); }
@@ -144,13 +145,16 @@ function HostedServerPanel({status, canAct, onChanged, reload}: {status: ServerS
         finally { setBusy(false); }
     };
     const restart = async () => {
-        if (!window.confirm(`Restart ${status.name}?\n\nPlayers get a warning; the world saves, stops and starts again. The Editor stays open.`)) return;
+        if (!window.confirm(`Restart ${status.name}?\n\nPlayers get a warning; the world saves, stops and starts again. The Editor stays open.\n\nIt needs no opposite: the world comes back as it was saved.`)) return;
         setBusy(true); setProblem('');
         try { await dmApi.restart(); setRestarting({at: Date.now(), seenDown: false}); void reload(); }
         catch (error) { setProblem((error as Error).message); }
         finally { setBusy(false); }
     };
     const line = restarting ? 'Restarting…' : maintenance ? CLOSED_TEXT : down || RUNNING_TEXT;
+    // Greyed with why (doc 78, M5).
+    const why = greyed([!canAct, 'Closing, opening and restarting the world is for its owner.'], [busy, 'Working…'],
+                       [!!restarting, 'The world is restarting.']);
     const tone = restarting || down ? 'sync-state maintenance' : maintenance ? 'sync-state maintenance' : 'sync-state running';
     return <section className="sync-card">
         <h3>The server</h3>
@@ -165,13 +169,13 @@ function HostedServerPanel({status, canAct, onChanged, reload}: {status: ServerS
         {!maintenance ? <>
             <label className="field"><span>Note for players and the history (optional)</span>
                 <input value={note} maxLength={400} placeholder="e.g. Adding houses to the market; back within the hour." onChange={e => setNote(e.target.value)} /></label>
-            <button className="publish" disabled={!canAct || busy || !!restarting} onClick={() => void set(true)}>{busy ? 'Closing…' : '⏸ Close the world'}</button>
+            <button className="publish" disabled={!!why} title={why || undefined} onClick={() => void set(true)}>{busy ? 'Closing…' : '⏸ Close the world'}</button>
             <p className="hint">Players get a 60-second warning (and another at 10 seconds); then the world saves and stops.</p>
-        </> : <button className="primary" disabled={!canAct || busy || !!restarting} onClick={() => void set(false)}>{busy ? 'Opening…' : '▶ Open the world'}</button>}
+        </> : <button className="primary" disabled={!!why} title={why || undefined} onClick={() => void set(false)}>{busy ? 'Opening…' : '▶ Open the world'}</button>}
         <h3>Restart</h3>
         <p className="hint">The world saves, stops and starts again, reading world.toml afresh (after you change it). Players get a warning
             first. The Editor stays open.</p>
-        <button disabled={!canAct || busy || !!restarting} data-action="server-restart" onClick={() => void restart()}>{restarting ? 'Restarting…' : '⟳ Restart the world'}</button>
+        <button disabled={!!why} title={why || undefined} data-action="server-restart" onClick={() => void restart()}>{restarting ? 'Restarting…' : '⟳ Restart the world'}</button>
     </section>;
 }
 

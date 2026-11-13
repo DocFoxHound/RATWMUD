@@ -20,6 +20,8 @@ whole world:
    the migrations and keeps the world as it is, even when this image carries another package (an update keeps the
    world's own state; `docker compose down -v` starts afresh). Only a real failure stops the start.
    RATW_PACKAGE_IMPORT=skip instead only applies the migrations (an image built without a world export).
+   Before the migrations of an update (this image's package or migrations differ from what the world last ran, which
+   is recorded in its database as admin.settings' package.ran), the backup service makes a backup first (doc 78, 12.1).
    Then the first Editor account (the owner), when the world has none: its name, one-time password and Editor code
    go to manage/first-editor.txt, never to the log. A start 7 days later with it still unclaimed renews them.
 4. With an AI key, writes the NPC Mind's config (tools/npc_bridge.py's format, mode 0600) and starts the Mind on
@@ -41,7 +43,8 @@ whole world:
    goes to the admin volume (server.json: up, why not, the last exit, the next try) for the Editor's status pill.
 7. Acts on the helper's requests (files in the admin volume's requests/ that name only a kind, never a path or a
    command: doc 78, 6.5 and I7): `restart` (the server stops, saving, and starts again, world.toml read first),
-   `backup-by-hand` and `backup-before-publish` (passed on to the backup service through the `requests` volume),
+   `backup-by-hand`, `backup-before-publish` and a pin on one backup (`pin-STAMP`, `unpin-STAMP`: passed on to the
+   backup service through the `requests` volume),
    `share` (not built yet: doc 78, M9), `first-editor-used` (manage/first-editor.txt emptied: the owner chose a
    password). A Mind or agent or Editor helper that stops on its own is started again (at most once a minute).
 8. UPnP (world.toml's [network] upnp, default true) isn't tried here: this container is on Docker's own network, from
@@ -121,15 +124,20 @@ HELPER, SERVER_USER, EDITOR_USER = 'ratw', 'ratw-server', 'ratw-admin'
 # socket cheats (Gifts and goods from nothing) and the Dev Console.
 CHEATS = {'off': [], 'host': ['--host-cheats'], 'everyone': ['--dev-tools']}
 # What the helper may ask of root (tools/world_admin.py: REQUEST_KINDS), as `KIND.<12 hex>` files in requests/.
-REQUEST = re.compile(r'^(restart|backup-before-publish|backup-by-hand|share|first-editor-used)\.[0-9a-f]{12}$')
+REQUEST = re.compile(r'^(restart|backup-before-publish|backup-by-hand|share|first-editor-used|(?:pin|unpin)-\d{8}T\d{6}Z)'
+                     r'\.[0-9a-f]{12}$')
+BACKUP_NAME = re.compile(r'^ratw-\d{8}T\d{6}Z-(daily|by-hand|before-publish|before-update|before-restore)$')
 REQUESTS_A_TICK = 64
 LINE_MOST = 4096                                # A child's output is read in lines of at most this many characters.
 # What a child's line may not carry into the container's log: control characters (a terminal's escapes, line and page
 # breaks) and the invisible and direction marks (doc 78's R1 review, security 10: a forged "Editor certificate:" line).
 LOG_UNSAFE = re.compile('[\x00-\x08\x0a-\x1f\x7f-\x9f\u00ad\u061c\u180e\u200b-\u200f\u2028-\u202e\u2060-\u2069\ufeff]')
 EXIT_LINES, EXITS_KEPT = 20, 10                 # exits.json: the server's last exits, each with its last lines.
-BACKUPS_WAITING = 4                             # Backup requests left for the backup service, at most.
-FIRST_EDITOR_USED = ('Used. Lost your password? In this folder, type:\n\n'
+BACKUPS_WAITING = 8                             # Backup requests left for the backup service, at most.
+UPDATE_BACKUP_WAIT, UPDATE_BACKUP_UNCLAIMED = 1800, 120   # An update's backup: waited for this long; given up on if the
+                                                # backup service shows no sign of life (an old compose.yaml) for this long.
+FIRST_EDITOR_USED = ('Used. Lost your password? Double-click reset-editor-password in this folder\n'
+                     '(reset-editor-password.bat on Windows, reset-editor-password.sh elsewhere), or type:\n\n'
                      '    docker compose exec world ratw-editor reset NAME\n\n'
                      '(NAME is your Editor account; docker compose exec world ratw-editor list shows them.)\n')
 
@@ -1213,8 +1221,155 @@ def pass_backup(kind: str, directory: Path | None = None) -> bool:
         say(f'a backup ({kind}) was asked for; one is already waiting for the backup service')
         return False
     write_file(directory / f'{kind}.{secrets.token_hex(6)}', kind + '\n', None, 0o600)
-    say(f'a backup ({kind}) was asked for by the Editor: passed to the backup service')
+    say(f'{"a pin on a backup" if kind.startswith(("pin-", "unpin-")) else f"a backup ({kind})"} was asked for by the '
+        'Editor: passed to the backup service')
     return True
+
+
+# --------------------------------------------------------------------------------------------- the backups (doc 78, 12.1)
+
+def backups_view(raw: dict) -> dict | None:
+    """The backup service's state (.backup-status.json in the requests volume) as the Editor may see it, checked: names
+    by their pattern, kinds, whole numbers; anything else dropped. None if it isn't one."""
+    if not isinstance(raw, dict) or raw.get('v') != 1:
+        return None
+    whole = lambda v: v if isinstance(v, int) and not isinstance(v, bool) and v >= 0 else None
+    items = []
+    for b in (raw.get('backups') or [])[:60]:
+        if isinstance(b, dict) and isinstance(b.get('name'), str) and BACKUP_NAME.match(b['name']) and whole(b.get('at')):
+            items.append({'name': b['name'], 'kind': BACKUP_NAME.match(b['name']).group(1), 'at': b['at'],
+                          'size': whole(b.get('size')), 'pinnedUntil': whole(b.get('pinnedUntil')),
+                          'package': re.sub(r'[^A-Za-z0-9._+-]', '', str(b.get('package') or ''))[:40],
+                          'migration': re.sub(r'[^0-9]', '', str(b.get('migration') or ''))[:6]})
+    problem = raw.get('problem') if isinstance(raw.get('problem'), dict) else None
+    if problem is not None:
+        problem = {'code': problem.get('code') if problem.get('code') in ('disk', 'failed', 'pins', 'database') else 'failed',
+                   'at': whole(problem.get('at')), 'free': whole(problem.get('free'))}
+    disk = raw.get('disk') if isinstance(raw.get('disk'), dict) else {}
+    return {'v': 1, 'at': whole(raw.get('at')), 'backups': items, 'problem': problem,
+            'working': raw.get('working') if raw.get('working') in ('daily', 'by-hand', 'before-publish', 'before-update',
+                                                                      'before-restore') else None,
+            'disk': {k: whole(disk.get(k)) for k in ('free', 'used', 'minFree')}}
+
+
+def mirror_backups(known: str | None = None) -> str | None:
+    """The backup service's state copied, checked, into the admin volume (backups.json) for the Editor's My world and
+    the hello's "Last backup". Returns what was written."""
+    view = backups_view(json_or_none(read_small(BACKUP_REQUESTS / '.backup-status.json', 256 * 1024)))
+    text_ = json.dumps(view) + '\n' if view is not None else None
+    if text_ is not None and text_ != known:
+        try:
+            write_file(ADMIN / 'backups.json', text_, None, 0o644)
+        except OSError as error:
+            say(f'warning: the backups\' state couldn\'t be copied for the Editor ({error.strerror})')
+            return known
+    return text_ if text_ is not None else known
+
+
+def json_or_none(raw: str | None):
+    try:
+        return json.loads(raw) if raw else None
+    except ValueError:
+        return None
+
+
+def latest_migration() -> str:
+    """This image's newest migration (tools/world_db.py's files): '0064'."""
+    try:
+        return max(v for v, _, _ in tools_module('world_db').migration_files())
+    except (ValueError, OSError):
+        return ''
+
+
+def write_world_image(s: dict) -> None:
+    """What this image is, for the backup service's restore (its refusal of a dump from a newer package) and its
+    manifests (the world's id): .world-image.json in the requests volume (a dot name: not a request)."""
+    body = {'package': package_version(), 'migrations': latest_migration(), 'world': s['world_id']}
+    try:
+        write_file(BACKUP_REQUESTS / '.world-image.json', json.dumps(body) + '\n', None, 0o600)
+    except OSError as error:
+        say(f'warning: the world image\'s facts couldn\'t be written for the backup service ({error.strerror})')
+
+
+def last_run() -> dict | None:
+    """What the world's database last ran: {'version', 'migrations', 'pending'} (version '' for a world from before this
+    was recorded), or None when it holds no world yet (a first start: nothing to back up)."""
+    world_db = tools_module('world_db')
+    try:
+        with world_db.connect(KEY, 'owner') as conn:
+            if not conn.execute("SELECT to_regclass('admin.settings') IS NOT NULL").fetchone()[0]:
+                return None
+            rows = dict(conn.execute("SELECT key, value FROM admin.settings WHERE key IN ('package', 'package.ran')").fetchall())
+            if not rows:
+                return None
+            applied = set(world_db.applied_migrations(conn))
+    except Exception as error:  # noqa: BLE001 - (psycopg's own errors too): said; the start goes on.
+        say(f'warning: what the world last ran couldn\'t be read ({type(error).__name__}): no backup before migrating')
+        return None
+    ran = rows.get('package.ran') if isinstance(rows.get('package.ran'), dict) else {}
+    pending = [v for v, _, _ in world_db.migration_files() if v not in applied]
+    return {'version': str(ran.get('version') or ''), 'migrations': str(ran.get('migrations') or ''), 'pending': pending}
+
+
+def record_run(s: dict) -> None:
+    """admin.settings' package.ran: the package and migrations this world now runs, and its id (doc 78, 12.1: an update
+    is told by it, and a restored dump brings back the one it ran)."""
+    world_db = tools_module('world_db')
+    value = {'version': package_version(), 'migrations': latest_migration(), 'world': s['world_id'],
+             'at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
+    try:
+        with world_db.connect(KEY, 'owner') as conn:
+            conn.execute("""INSERT INTO admin.settings (key, value) VALUES ('package.ran', %s::jsonb)
+                            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()""", (json.dumps(value),))
+    except Exception as error:  # noqa: BLE001 - said; the next start backs up again, which is harmless.
+        say(f'warning: the package this world runs couldn\'t be recorded ({type(error).__name__})')
+
+
+def ask_backup(kind: str, wait: float = UPDATE_BACKUP_WAIT, unclaimed: float = UPDATE_BACKUP_UNCLAIMED, clock=time.monotonic,
+               sleep=time.sleep) -> dict | None:
+    """A backup asked of the backup service and waited for: its answer ({ok, name} or {ok: false, code}), or None if it
+    never answered (no backup service: an old compose.yaml; or it took longer than `wait`)."""
+    tag = secrets.token_hex(6)
+    request, answer = BACKUP_REQUESTS / f'{kind}.{tag}', BACKUP_REQUESTS / f'.result.{tag}'
+    write_file(request, kind + '\n', None, 0o600)
+    started = clock()
+    while not stopping:
+        found = json_or_none(read_small(answer, 4096))
+        if isinstance(found, dict):
+            with contextlib.suppress(OSError):
+                answer.unlink()
+            return found
+        alive = backups_view(json_or_none(read_small(BACKUP_REQUESTS / '.backup-status.json', 256 * 1024)))
+        fresh = alive is not None and alive['at'] is not None and time.time() - alive['at'] < unclaimed
+        if clock() - started > wait or (clock() - started > unclaimed and os.path.lexists(request) and not fresh):
+            with contextlib.suppress(OSError):
+                request.unlink()
+            return None
+        sleep(1)
+    return None
+
+
+def update_backup(s: dict) -> None:
+    """Before an update's migrations: a backup, when this image's package or migrations differ from what the world last
+    ran (doc 78, 12.1). Refused (a nearly full disk) or not answered (no backup service): said plainly, and the world
+    starts anyway (migrations change schema only; a world that won't start helps nobody)."""
+    ran = last_run()
+    if ran is None:
+        return
+    if ran['version'] == package_version() and not ran['pending']:
+        return
+    say(f'this package ({package_version() or "?"}, {len(ran["pending"])} new migration(s)) differs from what the world '
+        f'last ran ({ran["version"] or "an older package"}): a backup first')
+    progress('migrating', 10)
+    answer = ask_backup('before-update')
+    if answer is None:
+        say('warning: no backup was made before the update: the backup service didn\'t answer (this compose.yaml may '
+            'be older than it: take the new one from the package, keeping .env and world.toml)')
+    elif not answer.get('ok'):
+        say('warning: no backup was made before the update' + (': the disk is nearly full (see the backup service\'s '
+            'log: docker compose logs backup)' if answer.get('code') == 'disk' else ' (docker compose logs backup says why)'))
+    else:
+        say(f'made a backup before the update: backups/{answer.get("name")}.dump')
 
 
 class Supervisor:
@@ -1246,6 +1401,7 @@ class Supervisor:
         self.next_count = 0.0
         self.code = 0
         self.toml = TomlRetry()
+        self.backups: str | None = None
 
     # -- the helpers -------------------------------------------------------------------------------------------
     def apply_editor(self, s: dict) -> None:
@@ -1276,6 +1432,7 @@ class Supervisor:
         self.s = s
         write_registry(s['name'])
         write_admin_settings(s, self.editor_port)
+        write_world_image(s)
         text_ = json.dumps(mind_settings(s), sort_keys=True)
         if text_ != self.mind_text:
             if self.mind is not None:
@@ -1312,6 +1469,7 @@ class Supervisor:
         for kind in take_requests():
             self.act(kind)
         self.central = mirror_central(self.central)
+        self.backups = mirror_backups(self.backups)
         if self.editor is not None and official():
             say('stopping the Editor\'s helper: this world is official')
             self.editor.stop()
@@ -1329,7 +1487,7 @@ class Supervisor:
             say('a restart was asked for by the Editor: the world saves, stops and starts again')
             self.restart = True
             server_state(False, 'restarting', self.code)
-        elif kind in ('backup-by-hand', 'backup-before-publish'):
+        elif kind in ('backup-by-hand', 'backup-before-publish') or kind.startswith(('pin-', 'unpin-')):
             pass_backup(kind)
         elif kind == 'share':
             say('sharing the world was asked for by the Editor, but it isn\'t built yet (Docs/Design/78, M9)')
@@ -1553,10 +1711,14 @@ def main() -> int:
     write_admin_settings(s, port_e)
     world.central = mirror_central()
     world.apply_editor(s)
+    write_world_image(s)
+    world.backups = mirror_backups()
     progress('database', 5)
     wait_for_database()
+    update_backup(s)
     progress('importing', 20)
     import_world(s['name'])
+    record_run(s)
     if stopping:
         if world.editor is not None:
             world.editor.stop()
