@@ -7,7 +7,7 @@ on the dev server since 2026-11-13.
   use, until the game has a domain of its own.
 - **Server:** 188.68.41.241 (Fedora 44). It hosts other projects too: leave their accounts, containers and Caddy
   sites alone.
-- **Not yet:** backups of central's database, the address built into the client, and doc 77's "Going public" phase
+- **Not yet:** backups of central's database, and doc 77's "Going public" phase
   (the legal pages, the age gate's page, the official world beside it).
 
 ## What is where
@@ -61,8 +61,9 @@ restarts the service and prints `/health`. Central migrates its database when it
 
 ## Using it
 
-- **The desktop client:** start it with `--central https://ratw.188-68-41-241.sslip.io` (its built-in address is
-  still `http://127.0.0.1:7790`, `Desktop/src-tauri/src/central.rs`, `BUILT_IN`).
+- **The desktop client:** this is its built-in address (`Desktop/src-tauri/src/central.rs`, `BUILT_IN`), so an
+  installed client uses it with nothing to set. A central on your own computer, for development:
+  `--central http://127.0.0.1:7790`.
 - **A world:** register it on central (`worlds add`, then `worlds token`), then start the server in ticket mode
   (`--central https://ratw.188-68-41-241.sslip.io --world-id ID`) with the world agent holding the token. Central
   lists a world only when it can call the world back on a public address.
