@@ -1426,7 +1426,8 @@ class Port(PortBase):
         status, headers, hello = call(self.port, 'GET', '/editor/hello')
         self.assertEqual(status, 200)
         self.assertLessEqual(int(headers['content-length']), A.HELLO_MOST)
-        self.assertEqual(set(hello), {'world', 'name', 'package', 'editorApi', 'kind', 'serverState', 'progress', 'setupPending'})
+        self.assertEqual(set(hello), {'world', 'name', 'package', 'editorApi', 'kind', 'serverState', 'progress', 'setupPending',
+                                     'wolves', 'lastBackup'})   # (M5: the menu's two numbers, public as /status is.)
         self.assertEqual((hello['kind'], hello['setupPending'], hello['editorApi']), ('community', True, 1))
         self.assertEqual(hello['name'], 'evil' + 'n' * 36)
         self.assertEqual(hello['progress'], {'code': 'ready', 'percent': 100})

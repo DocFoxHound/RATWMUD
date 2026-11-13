@@ -74,3 +74,4 @@ foreach ($answers in @(@('Host K7Q2'), @('pell&echo HACKED>hacked.txt'), @('')))
 Remove-Item -Recurse -Force $work -ErrorAction SilentlyContinue
 if ($failures) { throw "$failures check(s) failed" }
 Write-Host 'all the scripts'' checks passed'
+exit 0      # (Else the step takes cmd's last exit code: the last case ends in pause on an empty answer.)
