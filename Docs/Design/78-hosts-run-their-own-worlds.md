@@ -1902,8 +1902,8 @@ answers out of the box, not whether managing from anywhere works.
 
 ## Progress
 
-M1, M2a, M2b, M3 and M4 built, and the R1 review's findings fixed (security, and the host's experience, merged on
-`r2-editor`) (2026-11-12, below); the rest not yet.
+M1, M2a, M2b, M3 and M4 built, the R1 review's findings fixed (security, and the host's experience, merged on
+`r2-editor`), and M5 built (2026-11-12, below); the rest not yet.
 
 - **2026-11-08: the user's decisions.** "Go with the recommendations": all 21 decisions in section 17 take their
   recommendation (among them: the Editor answers only on the world's own computer until the host opens it; roles
@@ -2671,6 +2671,183 @@ M1, M2a, M2b, M3 and M4 built, and the R1 review's findings fixed (security, and
     skipped, as before; it takes its server from `RATW_TEST_SERVER`), `test_map_editor` 52; `Package/test_package.py`
     57; `cargo test` 62; Client 161, typecheck and build; Editor 78 + 76, typecheck, build and render smoke (14
     panels); `npm run test:editor` 1 of 1 (32 s).
+
+- **2026-11-12: M5 built (Host basics and backups),** on `r2-editor` after R1 (from 7c69750). No C++ and no migration
+  changed. Every item of section 14's M5 row:
+  - **My world** (`Editor/src/dm/MyWorldTab.tsx`): in a host's Editor the DM tool's Server tab is now **My world**.
+    At the top "N wolves in the world · Last backup 3 h ago". Then, in order:
+    - the status pill's words (the package's own word on its server, never "Running" while it is down: R1's H2), with
+      Close and Open and Restart (R1's hosted Server panel, moved here; the owner's; others see them greyed, with why);
+    - **Backups**: the newest (why, size), one being made now, the last refusal in plain words, the folder's use and the
+      disk's free space, BACK UP NOW, each backup with Pin/Unpin (greyed at the cap, with why) and **Copy restore
+      steps**;
+    - **Settings** (the allowlist: `player_limit`, `workers`, `cheats` in words, `[editor] enabled`; "change them in
+      world.toml, then Restart");
+    - **AI use** (today's stories and rosters against the caps, the month's tokens against the budget, the no-key
+      reason), the version, and the certificate's fingerprint;
+    - **History** (`dm.audit` newest first, 100 rows, with the Editor account; sign-ins in a list of their own; account
+      changes for the owner alone; others' details without addresses) and **Sign-ins** (the owner's all, with
+      addresses; others only their own);
+    - owner only: **the world folder's path**, with a warning when it looks like a synced one (OneDrive, Dropbox, Google
+      Drive, iCloud), and the server's last stops with their scrubbed lines ("The world keeps stopping" after two in a
+      row);
+    - **Something went wrong?**: section 12.6's rows that exist in slice 1.
+    Hosted mode's new routes (`tools/studio.py`): `POST /api/world/backup` and `POST /api/world/pin` (owner; a pin over
+    the cap is refused there, 409, before the backup service would refuse it too). `GET /api/world` gains `backups`,
+    `wolves` and the wider history.
+  - **Confirmations naming the wolf, and opposite actions** (`Editor/src/lib/acts.ts`: `OPPOSITES`, `sureText`). Each
+    act on a player's wolf names the wolf as a player's ("its player is told in the game" in a host's Editor) and gives
+    its opposite or says it has none. That covers kill and resurrect, Gifts, tiers, holds, mentoring, ties, bandits,
+    injuries, moves, and grants and fines. NPC kill and revive, visitors, send away, projects, and Close, Open and
+    Restart are worded the same way.
+  - **Disabled with reason** (`greyed`): the Players tab's Kill, Resurrect and bandits say why they are greyed (dead
+    already, alive, waiting for the server, the wolves flag). So do My world's actions, pins and steps (not the owner,
+    the cap), and Close, Open and Restart.
+  - **The backup service** (compose's `backup`, on `postgres:18`): the program is `Package/ratw-backup.pl`, in Perl
+    because that image has Perl with JSON::PP and Digest::SHA but no Python. compose.yaml carries it inline (configs
+    `backup-run`, every `$` doubled): `python3 Package/host_folder.py --sync-compose` writes it there, and a test fails
+    while the two differ.
+    - It waits for the world to be set up, then makes a backup on start and whenever the newest daily one is over 24
+      hours old (checked every 5 s). It acts on requests (by hand, before a Publish, before an update, pins) and prunes:
+      the 7 newest dailies, the 5 newest of the rest, and up to 5 pins of 90 days each.
+    - **Build files:** each build's cells are saved once, as `build-N.cells.gz` (gzipped COPY text, since pg_dump can't
+      take one build's rows), with a manifest. They are kept while a kept dump or the world needs them. Dumps are
+      `pg_dump -Fc` as `ratw_owner` without `world.build_cells`' rows.
+    - **Manifests:** world id, package, migration level, the build and every build file it needs with their SHA-256,
+      its own SHA-256 and size, and the pin.
+    - **The free-disk check** comes before each dump and build file: a file that would leave under
+      `RATW_BACKUP_MIN_FREE_MB` (2048) is refused, said plainly, shown in My world, and the service's own dumps wait 10
+      minutes before trying again.
+    - Each file is made the `backups` folder owner's, 0600. The service's state goes to `.backup-status.json` in the
+      `requests` volume; the entrypoint checks it and copies it to the admin volume (`backups.json`), and the helper
+      checks it again.
+  - **Pins are the only request that names anything:** `pin-STAMP` and `unpin-STAMP`, the backup's time only, checked
+    against the same pattern by the helper (`PIN_REQUEST`), root (`REQUEST`) and the backup service.
+  - **The pre-migration backup.** The entrypoint records what the world ran in its database (`admin.settings`'
+    `package.ran`: version, migrations, world id, when; a restored dump brings back its own). When this image's package
+    or migrations differ, it asks the backup service for `before-update` and waits for it before the import's
+    migrations. Refused (the disk) or never answered (no backup service: an old compose.yaml, given up on once its
+    state is two minutes stale), it says so plainly and migrates anyway: migrations change schema only, and a world
+    that won't start helps nobody. It also writes `.world-image.json` (the package, the newest migration, the world id)
+    for the restore's checks.
+  - **`restore.sh` and `restore.bat`** (both in the world folder, both through the backup service's `restore`):
+    - they list the backups and ask for a number (or take a name: Copy restore steps), say "This puts your world back
+      to DATE (3 hours ago, by hand). Everything players did since then is lost", want RESTORE typed, and ask "Keep
+      your Editor accounts as they are now (recommended), or take the ones in the backup?";
+    - then they stop the world and run the restore, and start the world again whatever happened.
+    - **Its refusals,** each changing nothing: a running world (live `ratw_game` or `ratw_dm` connections, with the
+      stop command), another world's dump (the manifest's world id against the database's, else the image's), a
+      damaged one (its SHA-256), a newer package (its migration level above the image's), and a missing or damaged map
+      file.
+    - **The safety dump** comes first (`before-restore`): if it can't be made, nothing changes. The backup being put
+      back is held from its pruning.
+    - **Kept accounts:** today's `dm.admins`, `dm.devices`, `dm.invites` and `dm.locks` are put back over the
+      backup's, the columns both have, in one transaction. Either way every `dm.sessions` row is deleted and the
+      world's accounts are printed.
+    - The `.bat` compares everything typed under delayed expansion and checks numbers and names character by
+      character, so nothing typed is read as a command.
+  - **After a restore that takes the backup's accounts,** `manage/first-editor.txt` is rewritten to say which accounts
+    the world has and how to reset one (M2b's open point). Kept accounts leave it as it was, still true. A backup with
+    no accounts gets a new owner at the next start, as ever.
+  - **`reset-editor-password.sh` and `.bat`:** they check the world runs, list the accounts, ask which one, run
+    `ratw-editor reset NAME --write-file`, show the code and wait before closing. `--write-file` is new: root runs the
+    reset as `ratw-admin`, then writes the code into `manage/first-editor.txt` (the folder owner's, 0600), with
+    `127.0.0.1` and the host's Editor port in the code.
+  - **R1's wording:** screen 4's footer, the expired and owner-account refusals, and first-editor.txt's "Used" now name
+    the script first and keep `docker compose exec world ratw-editor reset NAME` as the fallback (`resetHow`; the
+    helper's owner-account sentence too).
+  - **The menu's "· N wolves" and "Last backup"** (M4 couldn't show them, because the hello lacked them). The hello now
+    carries `wolves` and `lastBackup`:
+    - `wolves` is the game server's own public `/status` count, asked on the container's loopback at most every 5 s for
+      0.3 s, never from the event loop, and null while the server is down;
+    - `lastBackup` is the newest backup's age in seconds.
+    The shell passes both through as whole numbers in range, or null (`wire::hello_page`). Screen 5 shows "Open · 7
+    wolves" (only while open) and "Last backup 3 h ago".
+  - **Docs:** `Package/README.md` (the scripts in the folder, Backups, the lost password) and `Docs/Hosting.md`. The
+    guide's section 12 is rewritten; its by-hand copy of the volumes stays, as "moving to another computer". Its lost
+    password section names the script.
+  - **Differences from the plan, decided here:**
+    - build files are `build-N.cells.gz`, not `.dump`;
+    - "the last 5 automatic ones" is read as the 5 newest that aren't dailies (by hand, and before an update, a Publish
+      or a restore); a safety copy can therefore push out the oldest unpinned one;
+    - an update whose backup is refused still migrates (above);
+    - the public hello now says the wolves (as `/status` does) and the last backup's age, never its name or the list.
+  - **Found and fixed on the way:**
+    - `docker compose run -T` and `exec -T` read the script's stdin, so a script's typed answers were swallowed (the
+      first run's restore said "Nothing was changed"). Every docker call in the four scripts now gets an empty stdin,
+      and the stand-in dockers read stdin, so the tests catch it.
+    - A safety copy's pruning could delete the very backup being restored (the oldest of "the rest"); that backup is
+      now held.
+    - `* text=auto` would check the `.bat` files out with LF on Linux, and cmd mishandles labels in those: now `*.bat
+      text eol=crlf`, and `host_folder.py` writes them CRLF.
+    - The service tried a refused map file again every minute: it now waits 10 minutes.
+  - **End to end** (rootless Docker 29.3.1, Compose 5.1.1). DEV was exported read-only as package `s2stage-m5-a`,
+    staged `--no-editor` and built as `ratw-world-s2stage-m5`. The host folder came from `host_folder.py`, project
+    `s2stage-m5`, ports 7795/17795. `world` and `backup` were started; upnp only by the scripts' `up -d`, and its log
+    said no router answered.
+    - **On start:** the backup service saved build 1's map once (80.8 MB, 1,212 cells) and made the first daily dump
+      (1.3 MB), both the host user's and 0600, its manifest with the world id from `package.ran`. The hello said
+      `wolves: 0, lastBackup: 30`.
+    - **The owner, through a small TLS 1.3 client** (signed in from `first-editor.txt`, password chosen, the file then
+      "Used ... Double-click reset-editor-password ..."):
+      - My world: settings, AI's no-key state, history, sign-ins "from this computer", backups, the folder
+        `/tmp/m5/world`, the fingerprint;
+      - BACK UP NOW made `...-by-hand` within seconds;
+      - five more by hand pruned the others to 5;
+      - five pins, then a sixth refused (409); a pin request dropped straight into the requests volume was refused by
+        the service too (`{"code": "pins"}`); pinned ones survived the next six backups' pruning;
+      - Close (exit 76, hello `maintenance`/`closed`) and Open (running again), and Restart (back within 3 s).
+    - **A `dm` account (`pell`):** My world without `folder` or `exits`, with no account rows in its history and only
+      its own sign-ins; BACK UP NOW, Pin, Restart and Close all 403.
+    - **The restore's refusals,** run straight against the backup service: a running world, another world's dump, a
+      damaged one, a newer package (migration 0099), a missing map, and an unknown name. Each said why and "Nothing was
+      changed", and none made a safety copy.
+    - **`restore.sh`, keeping accounts** (with two accounts added after the backup): the safety copy, the world put
+      back (its later audit rows gone), the accounts kept as they were, every old session 401.
+    - **`restore.sh NAME`, taking the backup's accounts:** only the owner left, and `first-editor.txt` rewritten with
+      the accounts, the host user's.
+    - **Restoring the oldest of "the rest":** after the hold fix it survived its own safety copy.
+    - **`reset-editor-password.sh`:** the list, the reset, the code (`127.0.0.1:17795` in it) shown and in
+      `first-editor.txt`; the one-time password then signed in, on must-change.
+    - **An update** (the same export as `s2stage-m5-b`, image `ratw-world-s2stage-m5b`, `up -d`): "this package
+      (s2stage-m5-b, 0 new migration(s)) differs from what the world last ran (s2stage-m5-a): a backup first", then
+      `made a backup before the update: backups/ratw-...-before-update.dump`, then the import. A plain restart made no
+      such backup.
+    - **The free-disk refusal** (a 1.5 GB tmpfs over the service's `/backups`, through a compose override with
+      `!override`): "refused: build 1's map (about 41.8 MB) wasn't saved: the backups' disk has 1500.0 MB free, and at
+      least 2048 MB must stay free ...", once, not every minute. A by-hand request was refused the same way; My world
+      showed `problem: disk` with the free bytes, and the hello's `lastBackup` was null.
+    Afterwards `down -v`, both images removed, `/tmp/m5` removed. Docker's build cache is left.
+  - **Windows** (`desktop-windows.yml`'s new `scripts` job: the `.bat` files in cmd.exe against a stand-in
+    `docker.exe` compiled from `Package/testdata/FakeDocker.cs`, in a world folder whose path has a space and
+    brackets). Run 43335080539: all 33 checks passed. They covered every step in order, keep and take, nothing changed
+    without RESTORE or a known number, a refusal starting the world again, reset listing, resetting and writing, and
+    `&echo HACKED>hacked.txt` typed as a number, an answer and an account name never running. The step itself failed:
+    pwsh exits with cmd's last code, so the script now ends `exit 0`. Run 43335956448 (with it): `scripts` success.
+    The first run's `client` job (`cargo test` and the release build, with the hello change): success (at a8865c2).
+  - **Tests** (one run, `RATW_TEST_DB_TAG=s2stage_`, `RATW_TEST_KEY_PREFIX=s2stage`): `Package/test_package.py` **69**
+    (new: pins as requests, the backups' state copied and checked, the image's facts, an update's backup asked for,
+    waited on, given up on and refused, backing up only when the package or migrations changed, the backup service in compose and the
+    inline program the same as `ratw-backup.pl`, the scripts run against a stand-in docker, the `.bat` files' steps and
+    line ends, the Perl compiling on postgres:18, the host folder's scripts runnable in the folder and the zip);
+    `tools/test_world_admin.py` **103** (new: pin requests, the backups' state checked again, the menu's wolves and last
+    backup, My world's backups and history by role, `reset --write-file`); `test_studio` **76** (new: backups by hand
+    and pins, the owner's and capped); `test_dungeon_master` 54; Client **161** and typecheck; Editor 78 + **79** (new:
+    confirmations and greyed reasons, My world's words and restore steps), typecheck, build and render smoke (**16**
+    panels: My world for the owner and for a `dm`); `cargo test` **62** (the hello's two numbers checked); `npm run
+    test:editor` 1 of 1 (32 s: the menu's "Open · 3 wolves" and "Last backup 3 h ago", My world in the Editor window,
+    BACK UP NOW as a kind-only request, Copy restore steps). No ctest: no C++ changed. The run's two failures were
+    repaired and those suites run again: `test_world_admin`'s exact hello fields (now with `wolves` and
+    `lastBackup`), and the end-to-end test's request list (its stand-in has no root to take `first-editor-used`). No
+    `s2stage` database, `/tmp` file, container, volume, image or process left; DEV only read (the export), PROD and old
+    DEV untouched.
+  - **Not done, and for later:**
+    - Docker Desktop is untried: `df` on a Windows-folder bind mount (which disk it reports), and `chown`/`chmod` there
+      (the service ignores their failures).
+    - A restore from inside the Editor stays out (Q14).
+    - "Back to the previous map" and Publish's backup are slice 2's (the `backup-before-publish` request already
+      works).
+    - The guide's full M6 pass.
 
 ## Review (2026-11-08)
 
