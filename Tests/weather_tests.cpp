@@ -188,32 +188,40 @@ void actualPerceptionAndPrivacy()
     observer.position = {10.5, 20.5};
     source.position = {30.5, 20.5};
     const std::size_t distantTile = static_cast<std::size_t>(20 * 80 + 30);
+    // The whole screen (Docs/Design/80-the-whole-screen.md): night and weather no longer take ground or wolves off
+    // a player's screen. They still decide what its wolf makes out: who it can name by sight, and whether it spots
+    // one hiding.
     const auto darkness = world.snapshot("observer");
-    expect(!contains(darkness, "source") && world.visionClarity("observer", "source") == 0 &&
+    expect(contains(darkness, "source") && world.visionClarity("observer", "source") == 0 &&
                !world.perceive("observer", "source").identifiable,
-           "Night omits distant wolves and prevents visual identity and actions");
-    expect(!darkness.visibleTiles[distantTile] && !darkness.rememberedTiles[distantTile] &&
-               darkness.cell.tiles[distantTile].glyph == ' ',
-           "Night does not transmit or memorize never-seen distant terrain");
+           "Night shows a distant wolf on the screen, though the observer's own eyes can't make it out");
+    expect(darkness.visibleTiles[distantTile] && darkness.cell.tiles[distantTile].glyph == '.',
+           "Night shows the screen's distant terrain as it is");
     expect(near(darkness.environment.sight, world.environmentAt("tavern").sight),
-           "The snapshot describes the same environment used to filter its entities");
+           "The snapshot describes the same environment used to spot those hiding");
     const double nightHearing = world.hearingClarity("observer", "source");
     world.setTimeOfDay(12);
     const auto daylight = world.snapshot("observer");
     expect(contains(daylight, "source") && daylight.visibleTiles[distantTile] &&
                world.visionClarity("observer", "source") > 0,
-           "Daylight really expands visible wolves and terrain, not merely brightness");
+           "Daylight shows the same wolves and terrain, and lets the observer's eyes reach them");
     expect(near(world.hearingClarity("observer", "source"), nightHearing),
            "Actual speech clarity is independent of darkness");
+    // Sneaking is kept (doc 40): a crouching wolf is sent only once made out, by day from close, at night from closer.
+    source.posture = "crouching";
+    expect(!contains(world.snapshot("observer"), "source"), "A crouching wolf twenty tiles off is not sent by day");
+    source.position = {16.5, 20.5};
+    expect(contains(world.snapshot("observer"), "source"), "Within a crouch's detection range by day it is sent");
     world.setTimeOfDay(0);
-    const auto remembered = world.snapshot("observer");
-    expect(!remembered.visibleTiles[distantTile] && remembered.rememberedTiles[distantTile] &&
-               remembered.cell.tiles[distantTile].glyph == '.' && !contains(remembered, "source"),
-           "Known terrain stays dimly remembered at night without leaking live actors");
-
+    expect(!contains(world.snapshot("observer"), "source") && world.snapshot("observer").visibleTiles[distantTile],
+           "At night the same crouching wolf is not sent, though the ground is");
     world.setTimeOfDay(12);
     world.setWeather("tavern", Weather::Fog);
-    expect(!contains(world.snapshot("observer"), "source"), "Fog culls distant entities server-side");
+    expect(!contains(world.snapshot("observer"), "source"), "Fog hides a crouching wolf server-side that clear air shows");
+    source.posture = "standing";
+    source.position = {30.5, 20.5};
+    expect(contains(world.snapshot("observer"), "source") && world.snapshot("observer").visibleTiles[distantTile],
+           "Fog takes neither a standing wolf nor the ground off the screen");
     world.setWeather("tavern", Weather::Clear);
     const double clearSpeech = world.hearingClarity("observer", "source");
     world.setWeather("tavern", Weather::Rain);

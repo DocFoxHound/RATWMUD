@@ -36,7 +36,7 @@ Result Game::partyInvite(const std::string& from, const std::string& to)
 {
     const auto* them = world_.entity(to);
     // Only a wolf you can see, and only a player: companions who are NPCs come with Phase 3 (doc 32).
-    if (!them || them->npc || them->dead || (to != from && world_.visionClarity(from, to) <= 0))
+    if (!them || them->npc || them->dead || (to != from && !world_.shown(from, to)))
         return {false, "You can only invite a wolf you can see.", to};
     if (!clientOf(to) || blocked(from, to))
         return {false, "They are not here to answer.", to};   // (Blocked either way: the ordinary refusal, doc 50.)

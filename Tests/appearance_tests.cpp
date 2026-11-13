@@ -154,8 +154,14 @@ int main()
         q.position = {22.5, 6.5}; p.position = {26.5, 6.5};
         check(world.visionClarity(q.id, p.id) == 0 && world.hearingClarity(q.id, p.id, Voice::Yell) > 0,
               "Opaque barrier fixture allows anonymous hearing but no visual identity");
+        // The whole screen (doc 80): one standing behind the barrier is on the screen, coat and all; one hiding
+        // there is not sent, and can't be inspected.
+        check(actor(world.snapshot(q.id), p.id) && world.interact(q.id, p.id, "inspect").ok,
+              "An actor behind a barrier on the screen is shown and may be looked at");
+        p.posture = "crouching";
         check(!actor(world.snapshot(q.id), p.id) && !world.interact(q.id, p.id, "inspect").ok,
-              "Hearing cannot disclose an unseen actor's appearance or unlock forged inspection");
+              "Hearing cannot disclose a hidden actor's appearance or unlock forged inspection");
+        p.posture = "standing";
         check(!world.perceive(q.id, p.id, Voice::Yell).identifiable,
               "Anonymous voice remains anonymous regardless of distinctive coat");
         p.cellId = "exterior"; p.position = {16.5, 1.5};

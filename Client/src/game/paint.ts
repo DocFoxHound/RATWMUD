@@ -7,6 +7,7 @@ import {arr, bool, boundedNum, clamp, isObject, num, obj, objects, str, wholeCou
 import {elevationLabel, windLabel} from './labels.ts';
 import {Size as SheetSize, type Art, type Sheets} from './weatherArt.ts';
 import type {GameState} from './state.ts';
+import {screenRect, screenTile} from './screen.ts';
 import {apart, chanceFrom, coverTile, coneTiles, FamilyColours, giftArea, myTurn, octantGap, pathTo, placeAt, stepToward, strikeFrom, type BattleView,
     type FighterView} from './battle.ts';
 import type {Mark} from './fightFx.ts';
@@ -401,23 +402,8 @@ export class GamePainter {
                 }
                 for (const m of this.weatherMarks())
                     p.lines([[m.x - m.size, m.y - 1], [m.x, m.y + m.size * 0.35], [m.x + m.size, m.y - 1]], rgb(0x9dbaca, m.alpha), 0.8);
-                // In the dark, the ground beyond a wolf's own sight sinks into night around it.
-                const selfView = s.entities.get(s.selfId);
-                if (darkness > 0.3 && selfView) {
-                    const night = rgb(0x02050c, (darkness - 0.3) / 0.7 * 0.6);
-                    const radius = clamp(27 * e.sight, 4, 30) * s.tileSize;
-                    const cx = s.mapOrigin[0] + selfView.x * s.tileSize, cy = s.mapOrigin[1] + selfView.y * s.tileSize;
-                    const lowX = cx - radius, lowY = cy - radius, highX = cx + radius, highY = cy + radius;
-                    const c = p.ctx;
-                    c.save();
-                    c.globalAlpha = Math.min(1, night.a);
-                    c.drawImage(this.sheets.get('pool', css(withAlpha(night, 1))), lowX, lowY, highX - lowX, highY - lowY);
-                    c.restore();
-                    p.box(b.left, b.top, w, Math.max(0, lowY - b.top), night);
-                    p.box(b.left, highY, w, Math.max(0, b.bottom - highY), night);
-                    p.box(b.left, lowY, Math.max(0, lowX - b.left), highY - lowY, night);
-                    p.box(highX, lowY, Math.max(0, b.right - highX), highY - lowY, night);
-                }
+                // (No night closing in round the wolf's own sight: the whole screen is shown, doc 80. The night is
+                // the ground's tint, in terrainLayer.ts, the same all over.)
                 const flash = this.lightningFlash();
                 if (flash > 0) p.box(b.left, b.top, w, h, rgb(0xdfe8f5, flash));
             });
@@ -1081,7 +1067,8 @@ export class GamePainter {
         const mapW = map.right - map.left, mapH = map.bottom - map.top;
         // A small room fills the map (up to 28 pixels a tile); anything larger shows at the chosen zoom.
         const fit = Math.min(mapW * 0.92 / s.cellWidth, mapH * 0.9 / s.cellHeight);
-        s.tileSize = Math.max(ZoomTiles[s.zoom] ?? 22, Math.min(28, fit));
+        // And never so small that the map would show more than the screen the server sends whole (doc 80, screen.ts).
+        s.tileSize = Math.max(ZoomTiles[s.zoom] ?? 22, Math.min(28, fit), screenTile(mapW, mapH));
         const fight = this.fightFrame(mapW, mapH);
         if (fight) s.tileSize = fight.tile;
         // A cell that fits is centred; a larger one follows the wolf, stopping at the edges of what can be shown (the
@@ -1096,6 +1083,16 @@ export class GamePainter {
             if (span <= high - low || !me) return center - ((first + last + 1) / 2) * s.tileSize;
             return clamp(center - self * s.tileSize, high - (last + 1) * s.tileSize, low - first * s.tileSize);
         };
+        // Looking around stays on the screen (doc 80): the map is never panned past the rectangle shown whole.
+        if (!fight && me) {
+            const r = screenRect(me.x, me.y, s.cellWidth, s.cellHeight, s.fringe);
+            const keep = (i: 0 | 1, base: number, low: number, high: number, first: number, last: number) => {
+                const least = high - (last + 1) * s.tileSize - base, most = low - first * s.tileSize - base;
+                if (least <= most) s.mapPan[i] = clamp(s.mapPan[i], least, most);
+            };
+            keep(0, axis(viewX, map.left, map.right, ground.x0, ground.x1, me.x), map.left, map.right, r.x0, r.x1);
+            keep(1, axis(viewY, map.top, map.bottom, ground.y0, ground.y1, me.y), map.top, map.bottom, r.y0, r.y1);
+        }
         const [shakeX, shakeY] = fight ? s.fx.shake(s.clock, s.reducedMotion) : [0, 0];
         s.mapOrigin = fight ? [viewX - fight.cx * s.tileSize + s.mapPan[0] + shakeX, viewY - fight.cy * s.tileSize + s.mapPan[1] + shakeY]
             : [axis(viewX, map.left, map.right, ground.x0, ground.x1, me?.x ?? 0) + s.mapPan[0],

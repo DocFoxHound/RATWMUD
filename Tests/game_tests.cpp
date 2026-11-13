@@ -36,6 +36,7 @@ void expect(bool condition, const std::string& message)
 struct Client final : game::Connection
 {
     std::vector<json::Value> events, snapshots;
+    std::string wire;                               // The last snapshot as it came over the wire, before it was filled.
     std::size_t motions = 0;
     json::Value lastMotion;
     sections::Cache cache;
@@ -52,6 +53,7 @@ struct Client final : game::Connection
         json::Value v;
         std::string error;
         expect(json::parse(text, v, error), "snapshots are JSON: " + error);
+        wire = text;
         const bool whole = sections::fill(v, cache);   // As a client puts back what it holds.
         expect(whole, "a snapshot can be filled from what the client holds");
         snapshots.push_back(v);
@@ -1492,6 +1494,74 @@ void talkTargets()
     g.disconnect(&ash);
 }
 
+void theWholeScreenOnTheWire()
+{
+    // Docs/Design/80-the-whole-screen.md, through the game: what a player's client is sent is its whole screen (the
+    // ground as seen, the wolves and fixtures on it, in the dark and behind a closed door), but nothing at all of one
+    // hiding from it: not hidden by the page, absent from the message.
+    game::Options o;
+    o.tiesOptional = true;
+    o.hiddenNames = false;
+    o.devIdentity = true;
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "starts: " + problem);
+    Client ada, bo;
+    ada.id = 90;
+    bo.id = 91;
+    for (auto* c : {&ada, &bo})
+        g.connect(c);
+    g.command(&ada, cmd({{"type", "hello"}, {"id", "ada"}, {"name", "Ada"}}));
+    g.command(&bo, cmd({{"type", "hello"}, {"id", "bo"}, {"name", "Bo"}}));
+    auto* a = g.world().entity(ada.entityId);
+    auto* b = g.world().entity(bo.entityId);
+    b->cellId = a->cellId = "tavern";
+    a->position = {22.5, 6.5};
+    b->position = {26.5, 6.5};                      // In the pantry, its door closed between them.
+    g.world().setTimeOfDay(0);
+    g.world().setLighting("tavern", 0, 0, "warm");  // At night, the room unlit.
+    run(g, ada, .5);
+    const auto sentTo = [&](Client& c, const std::string& id) {
+        for (const auto& e : c.snapshots.back().array("entities"))
+            if (e.string("id") == id)
+                return true;
+        return false;
+    };
+    const auto fixtures = [&] {
+        std::size_t n = 0;
+        for (const Door* d : g.world().doorsIn("tavern"))
+            n += !(d->passage && d->boundary);
+        return n;
+    };
+    expect(g.world().visionClarity(ada.entityId, bo.entityId) == 0 && sentTo(ada, bo.entityId),
+           "a wolf standing behind a closed door in the dark is sent");
+    std::size_t tiles = 0, unseen = 0;
+    for (const auto& row : ada.snapshots.back().array("visibility"))
+        for (const char ch : row.asString())
+        {
+            ++tiles;
+            unseen += ch != '2';
+        }
+    expect(tiles == 32 * 24 && unseen == 0, "every tile of the room is sent as seen: " + std::to_string(unseen) + " of " + std::to_string(tiles) + " not");
+    expect(ada.snapshots.back().array("doors").size() == fixtures(), "and every fixture in it");
+    // Crouched: gone from the message altogether, the snapshot as the client holds it and the bytes that came.
+    b->posture = "crouching";
+    run(g, ada, .5);
+    expect(!sentTo(ada, bo.entityId), "a wolf crouched out of sight is not among those sent");
+    expect(json::dump(ada.snapshots.back()).find(bo.entityId) == std::string::npos && ada.wire.find(bo.entityId) == std::string::npos,
+           "nothing of it is in the message: no record for the page to hide");
+    expect(json::dump(motion::frame(g.world(), ada.entityId)).find(bo.entityId) == std::string::npos, "nor in the motion frames between");
+    expect(sentTo(bo, bo.entityId) || (run(g, bo, .3), sentTo(bo, bo.entityId)), "(its own player still has it)");
+    // Made out (beside her, the pantry open and lit): sent again, as ever.
+    g.world().setLighting("tavern", 1, 1, "warm");
+    expect(g.world().interact(ada.entityId, "door_pantry", "open").ok, "the pantry opens");
+    b->position = {24.5, 6.5};
+    run(g, ada, .5);
+    expect(g.world().visionClarity(ada.entityId, bo.entityId) > 0 && sentTo(ada, bo.entityId), "once made out, it is sent");
+    for (auto* c : {&ada, &bo})
+        g.disconnect(c);
+}
+
 void fightsThroughTheGame()
 {
     // Docs/Design/33-combat.md, through commands and snapshots: a challenge, the arena in the snapshot, turns, and an
@@ -2125,6 +2195,7 @@ int main()
         mismatchedOwnersAreRefused();
         theJournalKeepsWhatACrashWouldLose();
         aRestoresQuarantineSurvivesACrash();
+        theWholeScreenOnTheWire();
         fightsThroughTheGame();
         swordsMuffleAndBodiesLinger();
         aSermonOnRestday();

@@ -639,7 +639,7 @@ Value Game::fightsInView(const Entity& self) const
             x1 = std::max(x1, e->position.x);
             y1 = std::max(y1, e->position.y);
             sides[f.side] += f.status == "fighting";
-            seen = seen || world_.visionClarity(self, *e, world_.sightRange(self)) > 0;
+            seen = seen || world_.shown(self, *e, world_.sightRange(self), world_.screenOf(self));
         }
         if (!seen)
             continue;

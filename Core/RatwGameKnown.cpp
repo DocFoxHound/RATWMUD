@@ -376,7 +376,7 @@ bool Game::knownCommand(Connection* c, const json::Value& j, Result& result)
     const auto entry = list.find(target);
     // A wolf one can see, or one already on the list (a resident joins it by being tagged or noted).
     const bool reachable = entry != list.end() ||
-                           (!target.empty() && target != owner && world_.entity(target) && world_.visionClarity(owner, target) > 0);
+                           (!target.empty() && target != owner && world_.entity(target) && world_.shown(owner, target));
     if (verb == "list")
     {
         sendKnown(c);
