@@ -3,7 +3,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {ago, bannerText, cantConnect, coBuilderNote, connectRefusal, firstTimeNote, fromWhere, hostOf, inTime, isCode, newPasswordProblem, onMac,
-    lastBackupText, passwordProblem, portOf, resetCommand, resetHow, serverDown, settingUp, shellEditor, signInRefusal, signsInWithCode, statusPill, type EditorHello,
+    atlasOffer, lastBackupText, passwordProblem, portOf, resetCommand, resetHow, serverDown, settingUp, shellEditor, signInRefusal, signsInWithCode, statusPill, type EditorHello,
     type ServerUp} from './editor.ts';
 
 const hello = (over: Partial<EditorHello> = {}): EditorHello => ({world: 'world-' + 'a'.repeat(32), name: 'Ashfall', package: '1', editorApi: 1,
@@ -178,4 +178,11 @@ test('the pill is drawn as a warning unless the world is open (M6\'s run: "Keeps
     assert.equal(pillIsWell('Open only to you'), true);
     for (const text of ['Keeps stopping (exit 139): starts again in 21 s', 'Closed for changes', 'Not answering', 'Setting up 40%', 'Restarting…'])
         assert.equal(pillIsWell(text), false, text);
+});
+
+test('ATLAS is for builder and owner accounts', () => {
+    assert.ok(atlasOffer('owner').enabled && atlasOffer('builder').enabled);
+    assert.match(atlasOffer('builder').why, /map editor/);
+    for (const role of ['dm', 'viewer', 'admin', ''])
+        assert.deepEqual(atlasOffer(role), {enabled: false, why: 'Your account is for the DM tool only.'}, role);
 });

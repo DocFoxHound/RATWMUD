@@ -41,6 +41,11 @@ whole world:
    checking the world's state every 5 seconds, until the Editor or the DM opens it; any other code starts it again
    after 5 s, 30 s, 2 minutes, then every 10 minutes (back to 5 s once it has run for 10 minutes). The server's state
    goes to the admin volume (server.json: up, why not, the last exit, the next try) for the Editor's status pill.
+   A new map that won't start falls back by itself (doc 78, 12.4; M8): a server that stops twice within two minutes of
+   starting on a build it has never run well on has the previous map published again (tools/world_publish.py fallback,
+   as the Editor's helper's user and the editor role) and starts on that; fallback.json tells the Editor. And an update
+   whose server can't load the map's build format (12.5) checks memory before migrating, rebuilds the map itself when
+   nothing is unpublished, and otherwise waits for the Editor's answer (rebuild.json), the helper up meanwhile.
 7. Acts on the helper's requests (files in the admin volume's requests/ that name only a kind, never a path or a
    command: doc 78, 6.5 and I7): `restart` (the server stops, saving, and starts again, world.toml read first),
    `backup-by-hand`, `backup-before-publish` and a pin on one backup (`pin-STAMP`, `unpin-STAMP`: passed on to the
@@ -108,6 +113,8 @@ TOML_RETRY = (5, 30, 120)                       # A broken world.toml read again
                                                 # (its own count: it never adds to the crash backoff).
 SERVER_REASONS = ('starting', 'running', 'restarting', 'exit', 'world.toml', 'closed')   # (server.json's "reason".)
 MAINTENANCE_POLL = float(os.environ.get('RATW_MAINTENANCE_POLL', '5'))
+STARTED_WELL = 120                              # A server up this long has started on its map (doc 78, 12.4's fallback).
+MEMORY_POLL = 30                                # An update's rebuild short of memory looks again this often (12.5).
 STOP_WAIT = 80                                  # A restart's SIGTERM, then this long to save (compose gives 90 s).
 WORLD_ID = re.compile(r'^world-[0-9a-f]{32}$')
 USERNAME = re.compile(r'^[a-z][a-z0-9_-]{2,31}$')     # (The DM tool's rule, 0013_dungeon_master.sql.)
@@ -1039,6 +1046,98 @@ def admin_tool(args: list[str], port: int) -> subprocess.CompletedProcess:
                           capture_output=True, text=True, timeout=120, **run_as(EDITOR_USER))
 
 
+def map_tool(command: str, port: int, timeout: float = 120) -> dict | None:
+    """tools/world_publish.py as the helper's user and the editor role (doc 78, 12.4 and 12.5): `newest` (the newest
+    build, and whether this package's server loads its format), `fallback` (the previous map published again), `memory`
+    (whether there is room to build), `child` (validate and build). Its last JSON line, or None when it said none."""
+    try:
+        done = subprocess.run([sys.executable, str(TOOLS / 'world_publish.py'), command, '--world', KEY, '--by', 'update'],
+                              cwd=ADMIN, env=admin_env(port), capture_output=True, text=True, timeout=timeout,
+                              **run_as(EDITOR_USER))
+    except (OSError, subprocess.SubprocessError):
+        return None
+    for line in reversed(done.stdout.splitlines()):
+        try:
+            value = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(value, dict) and 'error' not in value:
+            return value.get('result', value) if command == 'child' else value
+        break
+    return None
+
+
+def good_build() -> int | None:
+    """The build the server last ran well on (kept across container starts)."""
+    text_ = read_small(STATE / 'good-build')
+    return int(text_.strip()) if text_ and text_.strip().isdigit() else None
+
+
+def write_rebuild(value: dict | None) -> None:
+    """rebuild.json in the admin volume: the update rebuild's question for the Editor (doc 78, 12.5); None removes it."""
+    try:
+        if value is None:
+            (ADMIN / 'rebuild.json').unlink(missing_ok=True)
+        else:
+            write_file(ADMIN / 'rebuild.json', json.dumps(value) + '\n', None, 0o644)
+    except OSError as error:
+        say(f'warning: the rebuild\'s state couldn\'t be written ({error.strerror})')
+
+
+def rebuild_before_update(port: int, sleep=time.sleep) -> bool:
+    """Before the migrations (doc 78, 12.5): whether this package's server can't load the newest build's format, so the
+    map must be rebuilt. If it must and memory is short, that is said plainly (the log, and rebuild.json for the Editor)
+    and looked at again every half minute, rather than migrating and then stopping in a loop. False: no rebuild (or no
+    world yet)."""
+    state = map_tool('newest', port)
+    if not state or state.get('build') is None or state.get('readable'):
+        return False
+    say(f'this update\'s server can\'t load the map as it was built (build {state["build"]}, format {state.get("format")}): '
+        'the map has to be built again')
+    said = False
+    while not stopping:
+        memory = map_tool('memory', port) or {'ok': True}
+        if memory.get('ok'):
+            return True
+        if not said:
+            gb = lambda n: '?' if n is None else f'{n / (1 << 30):.1f} GB'
+            say(f'the map can\'t be rebuilt yet: building needs about {gb(memory.get("need"))} of memory free, and this '
+                f'world has {gb(memory.get("free"))}. Give Docker more memory (the hosting guide: "Memory to Publish"); '
+                'the world waits, and nothing has been changed.')
+            said = True
+        write_rebuild({'needed': True, 'memory': memory, 'unpublished': state.get('unpublished')})
+        progress('stopped', 0)
+        sleep(MEMORY_POLL)
+    return True
+
+
+def rebuild_after_update(port: int) -> bool:
+    """After the migrations: the rebuild itself when nothing is unpublished; with unpublished changes it is the host's to
+    answer (they would go live), so rebuild.json asks through the Editor. True: the server waits for a build it loads."""
+    state = map_tool('newest', port) or {}
+    if state.get('readable'):
+        write_rebuild(None)
+        return False
+    if state.get('unpublished'):
+        write_rebuild({'needed': True, 'unpublished': state['unpublished']})
+        say(f'this update needs the map rebuilt, and {state["unpublished"]} map change(s) are not published: they would go '
+            'live. The Editor asks (the map editor\'s Publish page): rebuild with them, or discard them first. The world '
+            'starts once it is rebuilt.')
+        return True
+    say('rebuilding the map for this update (nothing is unpublished)')
+    progress('building', 60)
+    result = map_tool('child', port, timeout=900) or {}
+    if result.get('ok'):
+        say(f'the map is rebuilt (build {result.get("build")})')
+        write_rebuild(None)
+        return False
+    why = '; '.join(e.get('text', '') for e in (result.get('errors') or [])[:3] if isinstance(e, dict)) or 'it did not finish'
+    write_rebuild({'needed': True, 'unpublished': 0, 'failed': why[:400]})
+    say(f'the map couldn\'t be rebuilt ({why[:400]}). The Editor\'s map editor shows what to put right; the world starts '
+        'once it is rebuilt.')
+    return True
+
+
 def certificate(s: dict, port: int) -> str | None:
     """The world's Editor key and certificate, made once (doc 78, 6.4); its fingerprint in the log at every start and
     in manage/editor-certificate.txt. None if it couldn't be made."""
@@ -1724,6 +1823,12 @@ class Supervisor:
         self.toml = TomlRetry()
         self.backups: str | None = None
         self.share = Share(clock)
+        # The map (doc 78, 12.4 and 12.5): the newest build when the server last started, the one it last ran well on,
+        # its failed starts in a row on a build it never ran well on, and whether it waits for a rebuild.
+        self.build: int | None = None
+        self.good = good_build()
+        self.build_failures = 0
+        self.rebuild_wait = False
 
     # -- the helpers -------------------------------------------------------------------------------------------
     def apply_editor(self, s: dict) -> None:
@@ -1798,6 +1903,8 @@ class Supervisor:
             self.editor.stop()
             self.editor = None
         now = self.clock()
+        if self.server is not None and self.build != self.good and now - self.started_at >= STARTED_WELL:
+            self.ran_well()
         if now >= self.next_count:
             self.next_count = now + 60
             try:
@@ -1818,6 +1925,36 @@ class Supervisor:
             if write_manage('first-editor.txt', FIRST_EDITOR_USED):
                 say('the first Editor account has its own password now: manage/first-editor.txt is emptied')
 
+    # -- the map ---------------------------------------------------------------------------------------------------
+    def ran_well(self) -> None:
+        """The server started on its build and stayed up: that build is the one to trust."""
+        self.build_failures = 0
+        if self.build is None or self.build == self.good:
+            return
+        self.good = self.build
+        try:
+            write_file(STATE / 'good-build', f'{self.build}\n', None, 0o644)
+        except OSError as error:
+            say(f'warning: the map that started couldn\'t be noted ({error.strerror})')
+
+    def fall_back(self) -> bool:
+        """A new map that didn't start twice (doc 78, 12.4): the previous map published again under a new id (as the
+        helper's user and the editor role); fallback.json tells the Editor. False: there is no previous map."""
+        self.build_failures = 0
+        out = map_tool('fallback', self.editor_port, 300)
+        if not out or not out.get('now'):
+            say(f'the world\'s map (build {self.build}) didn\'t start, and there is no previous map to go back to'
+                + ('' if out else ' (the database didn\'t answer)'))
+            return False
+        try:
+            write_file(ADMIN / 'fallback.json', json.dumps({'at': round(time.time(), 3), 'failed': out.get('failed'),
+                                                            'now': out['now']}) + '\n', None, 0o644)
+        except OSError as error:
+            say(f'warning: the fallback couldn\'t be noted for the Editor ({error.strerror})')
+        say(f'the new map (build {out.get("failed")}) didn\'t start twice: the world goes back to the previous map '
+            f'(published again as build {out["now"]}). Your edits are kept; the failing build stays for the bug report.')
+        return True
+
     # -- the server --------------------------------------------------------------------------------------------
     def start_server(self) -> None:
         global server
@@ -1834,6 +1971,7 @@ class Supervisor:
         self.started_at = self.clock()
         self.stop_by = None
         server_state(True, 'running', self.code, self.failures)
+        self.build = (map_tool('newest', self.editor_port, 30) or {}).get('build')
 
     def record_exit(self, process, code: int) -> None:
         """exits.json in the admin volume: the server's last exits, each with its last lines, for the owner's "the world
@@ -1864,6 +2002,8 @@ class Supervisor:
             self.failures, self.next_start = 0, now
             server_state(False, 'restarting', code)
             return
+        if code in (RELEASE_EXIT, MAINTENANCE_EXIT):
+            self.ran_well()                           # (It left by itself, saved: it had started.)
         if code == RELEASE_EXIT:
             say('the server stopped for a new release; starting it again')
             self.failures, self.next_start = 0, now
@@ -1877,6 +2017,14 @@ class Supervisor:
             return
         if ran >= STABLE:
             self.failures = 0
+        if self.build is not None and self.build != self.good and ran < STARTED_WELL:
+            self.build_failures += 1
+            if self.build_failures >= 2 and self.fall_back():
+                self.failures, self.next_start = 0, now
+                server_state(False, 'restarting', code)
+                return
+        else:
+            self.build_failures = 0
         delay = BACKOFF[min(self.failures, len(BACKOFF) - 1)]
         self.failures += 1
         self.next_start = now + delay
@@ -1886,6 +2034,16 @@ class Supervisor:
     def due(self) -> bool:
         """Whether a stopped server should start now."""
         now = self.clock()
+        if self.rebuild_wait:
+            # An update's rebuild the Editor is asked about (doc 78, 12.5): the server starts once a build it loads is there.
+            if now < self.next_poll:
+                return False
+            self.next_poll = now + MAINTENANCE_POLL
+            if not (map_tool('newest', self.editor_port, 30) or {}).get('readable'):
+                return False
+            say('the map is rebuilt: starting the world server')
+            self.rebuild_wait = False
+            write_rebuild(None)
         if self.restart:
             self.restart, self.closed = False, False
             return True
@@ -2039,10 +2197,13 @@ def main() -> int:
     world.backups = mirror_backups()
     progress('database', 5)
     wait_for_database()
+    rebuild = rebuild_before_update(port_e)           # (Memory first, before anything is migrated: doc 78, 12.5.)
     update_backup(s)
     progress('importing', 20)
     import_world(s['name'])
     world_kind_after_import(s['name'])
+    if rebuild and not stopping:
+        world.rebuild_wait = rebuild_after_update(port_e)
     record_run(s)
     put_back_accounts()
     if stopping:

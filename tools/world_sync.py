@@ -107,7 +107,7 @@ MAINTENANCE_CHANNEL = 'ratw_maintenance'
 MAINTENANCE_EXIT = 76                # The game server's exit status when its world closes for maintenance.
 PUBLISH_LOCK = 0x52415457            # Advisory lock key ("RATW") held by an import, a rollback or a pull.
 OWNER_LOCK = (1380013143, 1)         # The game server's own lock on its world (Core/RatwGameOwner.cpp).
-STATES = ('running', 'maintenance')
+STATES = ('running', 'maintenance', 'host_only')   # (host_only: open only to the host, doc 78, 10.3; migration 0065.)
 
 
 class PublishError(S.StoreError):
@@ -1085,7 +1085,7 @@ def server_holder(conn) -> dict | None:
 
 def set_state(conn, state, editor='', note=''):
     if state not in STATES:
-        raise PublishError(f'A server state is running or maintenance, not {state!r}.')
+        raise PublishError(f'A server state is running, maintenance or host_only, not {state!r}.')
     if not shape(conn, 'admin.server_state')[0]:
         raise PublishError('This world has no server state yet: python3 tools/world_db.py migrate (migration 0054).')
     conn.execute('UPDATE admin.server_state SET state = %s, changed_by = %s, changed_at = now(), note = %s',

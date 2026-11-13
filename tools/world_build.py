@@ -34,6 +34,11 @@ import world_store as S
 
 KEEP_CELLS = 3          # Builds whose cell rows are kept (the server loads the newest; a restart mid-push the one before).
 ANNOUNCE = 'ratw_release'   # The game server listens here for a newer build (a release's, or a dev world's).
+# The build-format number (doc 78, 12.5; migration 0065's world.builds.format): what this exporter writes, and what this
+# package's game server loads: the current format and the one before it, so a format bump doesn't force a rebuild (Core's
+# build::WorldBuildFormat says the same: tools/test_world_publish.py holds them together).
+BUILD_FORMAT = 1
+READS = tuple(f for f in (BUILD_FORMAT, BUILD_FORMAT - 1) if f >= 1)
 
 
 # Everything a build is made from besides the world's own tables (whose revision rises with every edit): the live
@@ -77,20 +82,43 @@ def current(conn):
     return row[0], row[2]
 
 
-def build(conn, created_by='', release=None):
-    """Exports the database's world, records roster assignments, stores the build. Returns its ID and file count."""
+def publish_columns(conn) -> bool:
+    """Whether world.builds has Publish's columns (migration 0065: edits_through, format, copy_of, failed)."""
+    return bool(conn.execute("""SELECT 1 FROM information_schema.columns
+                                WHERE table_schema = 'world' AND table_name = 'builds' AND column_name = 'edits_through'""").fetchone())
+
+
+def newest_edit(conn, world_id) -> int:
+    return conn.execute('SELECT coalesce(max(seq), 0) FROM world.edits WHERE world_id = %s', (world_id,)).fetchone()[0]
+
+
+def build(conn, created_by='', release=None, project=None, edits_through=None, progress=None, check=None):
+    """Exports the database's world, records roster assignments, stores the build. Returns its ID and file count.
+    `project`: the world as the caller already loaded it on this connection (Publish validates it first, and a load is
+    10 s and 3.4 GB: doc 78, M0b), with `edits_through` the newest edit read before that load; `progress`: export_files';
+    `check(files)`: called with the build's files before anything is stored, and may raise to refuse it."""
     with conn.transaction():
         world_id = conn.execute('SELECT id FROM world.worlds').fetchone()
         if not world_id:
             raise S.StoreError('There is no world in this database to build.')
-        project, _ = S.load_world(conn, world_id[0])
+        columns = publish_columns(conn)
+        if project is None:
+            # (Read before the world: an edit landing between the two is in the build and counted unpublished, never
+            # the other way.)
+            edits_through = newest_edit(conn, world_id[0]) if columns else None
+            project, _ = S.load_world(conn, world_id[0])
         roster = S.load_roster(conn)
-        files, updated, _ = map_editor.export_files(project, roster, with_roster=True, stream=True)
+        files, updated, _ = map_editor.export_files(project, roster, with_roster=True, stream=True, progress=progress)
+        if check:
+            check(files)
         if updated != roster:
             S.save_roster(conn, updated)
         build_id = conn.execute('''INSERT INTO world.builds (world_id, release, created_by, files) VALUES (%s, %s, %s, %s)
                                    RETURNING id''', (world_id[0], release, created_by[:60],
                                                        S.Jsonb({'world.ratw': files['world.ratw']}))).fetchone()[0]
+        if columns:
+            conn.execute('UPDATE world.builds SET edits_through = %s, format = %s WHERE id = %s',
+                         (edits_through, BUILD_FORMAT, build_id))
         if fingerprints_supported(conn):
             # Taken after the roster assignments are saved: a rebuild of this very state would change nothing.
             conn.execute('UPDATE world.builds SET fingerprint = %s WHERE id = %s',
@@ -108,6 +136,44 @@ def build(conn, created_by='', release=None):
             conn.execute('SELECT pg_notify(%s, %s)', (ANNOUNCE, json.dumps({'world': world_id[0], 'release': None,
                                                                              'kind': 'build', 'build': build_id})))
     return build_id, len(rows)
+
+
+def previous(conn):
+    """The build "Back to the previous map" goes to (doc 78, 12.3): the newest one older than the map now served (the
+    newest build, or the one it copies: going back twice goes further back, never forward again) that didn't fail to
+    start, is of a format the server loads and still has its cells. None: there is none."""
+    if not publish_columns(conn):
+        return None
+    newest = conn.execute('SELECT coalesce(copy_of, id) FROM world.builds ORDER BY id DESC LIMIT 1').fetchone()
+    if not newest:
+        return None
+    row = conn.execute('''SELECT b.id FROM world.builds b WHERE b.id < %s AND NOT b.failed
+                          AND b.format = ANY(%s) AND EXISTS (SELECT 1 FROM world.build_cells c WHERE c.build_id = b.id)
+                          ORDER BY b.id DESC LIMIT 1''', (newest[0], list(READS))).fetchone()
+    return row[0] if row else None
+
+
+def republish(conn, build_id, created_by='', failed=None):
+    """A build published again under a new id (the server takes only newer builds): its manifest and cells copied, its
+    edits_through kept (the source's later edits stay unpublished), announced as a build is. `failed`: a build to mark as
+    one the server didn't start on. Returns the new id and its cell count."""
+    with conn.transaction():
+        if failed is not None:
+            conn.execute('UPDATE world.builds SET failed = true WHERE id = %s', (failed,))
+        row = conn.execute('''INSERT INTO world.builds (world_id, release, created_by, files, edits_through, format, copy_of)
+                              SELECT world_id, NULL, %s, files, edits_through, format, coalesce(copy_of, id) FROM world.builds
+                              WHERE id = %s RETURNING id, world_id''', (created_by[:60], build_id)).fetchone()
+        if not row:
+            raise S.StoreError(f'There is no build {build_id} to publish again.')
+        cells = conn.execute('''INSERT INTO world.build_cells (build_id, cell_id, header, body, seams)
+                                SELECT %s, cell_id, header, body, seams FROM world.build_cells WHERE build_id = %s''',
+                             (row[0], build_id)).rowcount
+        if not cells:
+            raise S.StoreError(f"Build {build_id} no longer has its cells: it can't be published again.")
+        conn.execute('''DELETE FROM world.build_cells WHERE build_id NOT IN
+                        (SELECT id FROM world.builds ORDER BY id DESC LIMIT %s)''', (KEEP_CELLS,))
+        announce(conn, row[0], row[1])
+    return row[0], cells
 
 
 def announce(conn, build_id, world_id):

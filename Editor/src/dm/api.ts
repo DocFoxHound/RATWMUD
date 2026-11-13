@@ -6,6 +6,7 @@ import type {Chronicle} from '../lib/chronicle';
 import type {BuildStatus, Choice, ImportPlan, ImportResult, MapPair, Release, ServerStatus, SyncItem, SyncWorld} from '../lib/sync';
 import type {EconomyActKind, EconomyReply, EconomyView, ProsperityReport} from '../lib/economyContract';
 import {ENDED_TEXT, headingFor, hosted, mayCall, RESTARTING_ACT, restartingReply, setEnded, setRestarting} from '../lib/hosted';
+import type {MapSummary, PublishJob, PublishProblem, PublishState, Restart} from '../lib/publish';
 export type {EconomyActKind} from '../lib/economyContract';
 
 /** A world's key (Database/worlds.json, doc 66): any registered world, live or dev. */
@@ -121,10 +122,15 @@ export class DmError extends Error {
     readonly conflicts: SyncItem[] | null;
     /** Two worlds on different maps (doc 66, "The same map"): both maps, as the engine names them. */
     readonly maps: MapPair | null;
+    /** Publish's problems (doc 78, 10.3): each in plain words, with its place for "Show me" when it has one. */
+    readonly problems: PublishProblem[];
     constructor(message: string, status: number, data: {errors?: unknown; conflicts?: unknown; maps?: unknown} = {}) {
         super(message);
         this.status = status;
-        this.errors = Array.isArray(data.errors) ? data.errors.map(String) : [];
+        const listed: unknown[] = Array.isArray(data.errors) ? data.errors : [];
+        const told = (e: unknown): e is PublishProblem => !!e && typeof e === 'object' && typeof (e as {text?: unknown}).text === 'string';
+        this.problems = listed.filter(told);
+        this.errors = listed.map(e => (told(e) ? e.text : String(e)));
         this.conflicts = Array.isArray(data.conflicts) ? data.conflicts as SyncItem[] : null;
         this.maps = data.maps && typeof data.maps === 'object' ? data.maps as MapPair : null;
     }
@@ -386,6 +392,15 @@ export const dmApi = {
     pin: (name: string, pinned: boolean) => call<{ok: boolean; name: string; pinned: boolean}>('api/world/pin', {name, pinned}),
     /** A host's Editor: Share my world (doc 78, 10.5): a file of the world without its players, in manage/shared/. */
     shareWorld: () => call<{ok: boolean; asked: boolean}>('api/world/share', {}),
+    /** A host's Editor: Publish (doc 78, 10.3, 12.3, 12.5; tools/world_publish.py): the count of unpublished map changes,
+     *  the memory line and the job; Publish with how the world moves onto the new map; back to the previous map; discard
+     *  the unpublished changes; open to everyone; the update rebuild's answer. */
+    mapState: () => call<PublishState>('api/atlas/map'),
+    mapPublish: (restart: Restart) => call<{ok: boolean; job: PublishJob}>('api/atlas/map/publish', {restart}),
+    mapBack: (discard: boolean) => call<{ok: boolean; build: number; warnings?: PublishProblem[]}>('api/atlas/map/back', {discard}),
+    mapDiscard: () => call<{ok: boolean; discarded: number; keys: number}>('api/atlas/map/discard', {}),
+    mapOpen: () => call<{ok: boolean}>('api/atlas/map/open', {}),
+    mapRebuild: (discard: boolean) => call<{ok: boolean; job: PublishJob}>('api/atlas/map/rebuild', {discard}),
     /** Whether the studio answers (a host's Editor, while its world restarts). */
     ping: () => call<unknown>('api/studio/ping'),
     /** A host's Editor: the AI's state (doc 78, 7). */
@@ -488,6 +503,9 @@ export interface MyWorld {
     settings: {player_limit: number | null; workers: number | null; cheats: 'off' | 'host' | 'everyone'; editor: {enabled: boolean}};
     ai: AiState; history: {at: number; action: string; target: string; detail: string; who: string}[];
     signIns: {at: number; account: string; detail: string}[]; backups: Backups | null; share?: ShareState | null;
+    /** The map (doc 78, 10.3, "shown before the host starts"): the unpublished count and whether this computer can
+     *  publish; null on a world without its map's source. */
+    map?: MapSummary | null;
     folder?: string; exits?: {at: number | null; code: number | null; lines: string[]}[];
 }
 /** The host's tools' AI (doc 78, 7): whether it can be used now and why not, the day's calls against the caps, the

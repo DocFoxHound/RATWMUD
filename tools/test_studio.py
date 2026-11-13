@@ -1404,6 +1404,10 @@ class HostedAtlasWorld:
         self.loads.append(lean)
         return {'project': {}, 'seq': 0, 'gameSeq': 0, 'bands': True}
 
+    def edit(self, data):
+        self.edits = getattr(self, 'edits', []) + [data]
+        return {'seq': 1}
+
 
 HOSTED_REGISTRY = {'worlds': [
     {'key': 'world', 'name': 'Ashfall Vale', 'database': 'ratw_test_s2stage_no_such_database', 'kind': 'live'},
@@ -1485,7 +1489,8 @@ def served_routes():
 
 # The routes HostedStudio answers itself (not the studio's handlers).
 HOSTED_OWN = {('GET', '/api/studio/ai'), ('GET', '/api/world'), ('POST', '/api/world/restart'), ('POST', '/api/world/backup'),
-              ('POST', '/api/world/pin'), ('POST', '/api/world/share')}
+              ('POST', '/api/world/pin'), ('POST', '/api/world/share'),
+              ('GET', '/api/atlas/map'), *(('POST', f'/api/atlas/map/{act}') for act in ('publish', 'back', 'discard', 'open', 'rebuild'))}
 
 
 class HostedAllowlistTests(HostedBase):
@@ -1730,6 +1735,106 @@ class HostedAllowlistTests(HostedBase):
         view.headers = hc.parse_headers(io.BytesIO(b'Host: evil.example\r\n\r\n'))
         view.server = type('S', (), {'server_port': 8765})()
         self.assertFalse(view.trusted())
+
+
+class StandInPublisher:
+    """tools/world_publish.py's Publisher, recorded: what the hosted routes hand it."""
+
+    def __init__(self):
+        self.calls, self.place, self.refuse = [], None, None
+
+    def _did(self, name, *args):
+        self.calls.append((name, *args))
+        if self.refuse:
+            raise self.refuse
+        return {'ok': True}
+
+    def state(self):
+        return {'unpublished': {'count': 2}, 'job': None}
+
+    def summary(self):
+        return {'unpublished': 2, 'memory': {'ok': True, 'words': 'This computer can publish map changes.'}}
+
+    def ahead(self, body):
+        return self.place
+
+    def start(self, who, restart, rebuild=False):
+        return self._did('start', who['username'], restart, rebuild)
+
+    def back(self, who, discard_too=False):
+        return self._did('back', discard_too)
+
+    def discard(self, who):
+        return self._did('discard')
+
+    def open_all(self, who):
+        return self._did('open')
+
+
+class HostedPublishTests(HostedBase):
+    """Doc 78, 10.3 and 12.3 (Phase M8): Publish's routes are the builder's on a world with its map's source (the update
+    rebuild's answer the owner's), a refusal comes back with each problem, Atlas's edits are the signed-in account's,
+    a live edit ahead of the map is refused, and there is no Publish without a backup."""
+
+    def test_publish_is_the_builder_s_on_a_world_with_its_map_source(self):
+        import world_publish
+        self.assertEqual(self.call('GET', '/api/atlas/map', role='dm')[0], 403)
+        self.assertEqual(self.call('GET', '/api/atlas/map', role='builder'), (409, {'error': ST.ATLAS_LATER}))
+        self.assertIsNone(self.hosted.map_summary(), 'a world without its map\'s source has no map lines')
+        self.make('devworld')
+        pub = self.hosted.publisher = StandInPublisher()
+        self.assertEqual(self.call('GET', '/api/atlas/map', role='builder'), (200, {'unpublished': {'count': 2}, 'job': None}))
+        self.assertEqual(self.hosted.map_summary()['unpublished'], 2, 'My world\'s count')
+        self.assertEqual(self.call('POST', '/api/atlas/map/publish', {'restart': 'host'}, role='builder')[0], 200)
+        self.assertEqual(self.call('POST', '/api/atlas/map/back', {'discard': True}, role='builder')[0], 200)
+        self.assertEqual(self.call('POST', '/api/atlas/map/discard', {}, role='builder')[0], 200)
+        self.assertEqual(self.call('POST', '/api/atlas/map/open', {}, role='builder')[0], 200)
+        self.assertEqual(self.call('POST', '/api/atlas/map/rebuild', {'discard': True}, role='builder')[0], 403, 'the owner\'s')
+        self.assertEqual(self.call('POST', '/api/atlas/map/rebuild', {'discard': True}, role='owner')[0], 200)
+        self.assertEqual(pub.calls, [('start', 'pell#a1b2c3', 'host', False), ('back', True), ('discard',), ('open',),
+                                     ('discard',), ('start', 'pell#a1b2c3', 'later', True)])
+        pub.refuse = world_publish.Refused([{'text': 'A wolf rents a flat in old_inn.', 'cell': 'old_inn', 'x': 2, 'y': 3}])
+        status, data = self.call('POST', '/api/atlas/map/back', {}, role='builder')
+        self.assertEqual((status, data['error'], data['errors'][0]['cell']), (422, 'A wolf rents a flat in old_inn.', 'old_inn'))
+        pub.refuse = world_publish.Refused(['One at a time.'], 409)
+        self.assertEqual(self.call('POST', '/api/atlas/map/publish', {'restart': 'now'}, role='builder')[0], 409)
+
+    def test_atlas_edits_are_the_signed_in_account_s(self):
+        self.make('devworld')
+        status, data = self.call('POST', '/api/atlas/live/edit', {'clientId': 'c1', 'editor': 'Someone Else', 'label': 'a wall',
+                                                                  'ops': [{'key': 'tile:1,1', 'before': None, 'after': '#'}]}, role='builder')
+        self.assertEqual(status, 200, data)
+        self.assertEqual(self.atlas_world.edits[0]['editor'], 'pell', 'the session\'s account, whatever the page said')
+        self.assertEqual(self.call('POST', '/api/atlas/live/edit', {'clientId': 'c1', 'ops': []}, role='dm')[0], 403)
+
+    def test_a_live_edit_ahead_of_the_map_is_refused(self):
+        self.make('devworld')
+        pub = self.hosted.publisher = StandInPublisher()
+        act = {'kind': 'npc.move', 'characterId': 'mara', 'cell': 'new_inn'}
+        self.assertEqual(self.call('POST', '/api/dm/actions', act)[0], 200)
+        pub.place = 'new_inn'
+        status, data = self.call('POST', '/api/dm/actions', act)
+        self.assertEqual(status, 409)
+        self.assertIn('Publish the map first: new_inn', data['error'])
+        self.assertEqual(len([c for c in self.dm.calls if c[0] == 'queue' or 'npc.move' in str(c)]), 1, 'the refused act reached nothing')
+
+    def test_no_publish_without_a_backup(self):
+        self.assertEqual(self.hosted._backup_first(wait=0), ST.NO_BACKUP_NO_PUBLISH, 'an old compose.yaml: no backup service')
+        now = int(time.time())
+        state = {'v': 1, 'at': now, 'backups': [], 'disk': {}}
+        (self.folder / 'backups.json').write_text(json.dumps(state))
+        self.assertIn('in time', self.hosted._backup_first(wait=0))
+        self.assertEqual([p.name.split('.')[0] for p in (self.folder / 'requests').iterdir()], ['backup-before-publish'])
+
+        def made(_seconds):
+            stamp = time.strftime('%Y%m%dT%H%M%SZ', time.gmtime(now))
+            (self.folder / 'backups.json').write_text(json.dumps({**state, 'backups': [
+                {'name': f'ratw-{stamp}-before-publish', 'at': now + 1, 'size': 9}]}))
+        self.assertIsNone(self.hosted._backup_first(wait=30, sleep=made), 'the dump is there: Publish goes on')
+
+        def full(_seconds):
+            (self.folder / 'backups.json').write_text(json.dumps({**state, 'problem': {'code': 'disk', 'at': now + 1, 'free': 5}}))
+        self.assertIn('nearly full', self.hosted._backup_first(wait=30, sleep=full))
 
 
 class HostedPrivacyTests(HostedBase):

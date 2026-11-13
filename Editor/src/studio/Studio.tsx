@@ -7,7 +7,7 @@
 //   DM     runs the live world (the live server's; its Server & import tab switches it, in maintenance): DmSuite.
 // Each suite and page is its own page load (?suite=atlas&page=npcs): their maps share one lazy-ground list
 // (lib/lazyGround.ts), and Atlas's live session runs for as long as the page does.
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {App} from '../App';
 import {DmSuite, SignIn} from '../dm/DmApp';
 import {NpcTab} from '../dm/NpcTab';
@@ -17,16 +17,23 @@ import {colorFor, saveIdentity, savedIdentity} from '../lib/live';
 import {UpdateFromLive} from './UpdateFromLive';
 import {ENDED_TEXT, goTo, hosted, reloadApp, RESTARTING_TEXT, sessionEnded, watchRestarting, watchSession, worldRestarting} from '../lib/hosted';
 import {EconomyControls} from './EconomyControls';
+import {PublishPage} from './PublishPage';
+import {BADGE, pageTakes, showFrom} from '../lib/publish';
+import {focusPlace, useStore} from '../lib/store';
 
 type Suite = 'atlas' | 'dm';
-type AtlasPage = 'workshop' | 'npcs' | 'factions' | 'economy' | 'sync';
+type AtlasPage = 'workshop' | 'npcs' | 'factions' | 'economy' | 'sync' | 'publish';
 const ATLAS_PAGES: {id: AtlasPage; label: string; title: string}[] = [
     {id: 'workshop', label: 'Workshop', title: 'The map, interiors, people and characters'},
     {id: 'npcs', label: 'NPCs & areas', title: 'NPCs with their patrol routes, painted areas, spawn rules, voices, dialects and figures'},
     {id: 'factions', label: 'Factions', title: 'Factions, their territory, members and relations'},
     {id: 'economy', label: 'Economy', title: 'Economy: the slider and its cause, the rules, the seasons, the ships, the bands and the street'},
     {id: 'sync', label: '⇩ Update from live', title: 'Take the live world\'s changes into this copy of it, choosing where both changed'},
+    {id: 'publish', label: 'Publish', title: 'Make your map changes the map players are in; go back to the previous map; discard changes'},
 ];
+/** A host's Editor (doc 78): its map editor's pages. No Update from live (one world); Publish instead (M8). */
+const HOSTED_PAGES: AtlasPage[] = ['workshop', 'npcs', 'factions', 'economy', 'publish'];
+const HOSTED_LABELS: Partial<Record<AtlasPage, string>> = {workshop: 'Map'};
 
 export function Studio() {
     const [me, setMe] = useState<Me | null>(null);
@@ -84,7 +91,10 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
     const asked = url.get('suite');
     const wanted: Suite = asked === 'atlas' || asked === 'dm' ? asked : session.suite;
     const suite: Suite = wanted === 'atlas' && !session.atlas.available ? 'dm' : wanted;
-    const page = ATLAS_PAGES.find(p => p.id === url.get('page'))?.id ?? 'workshop';
+    const pages = ATLAS_PAGES.filter(p => (session.hosted ? HOSTED_PAGES.includes(p.id) : p.id !== 'publish'));
+    const page = pages.find(p => p.id === url.get('page'))?.id ?? 'workshop';
+    // Live now, or Waits for Publish (doc 78, 11): what this page's Save buttons do, said beside the page's name.
+    const badge = session.hosted ? pageTakes(suite, page) : null;
     const atlasKey = session.atlas.world.key;
     const live = session.dm.live;
     const dmKey = session.dm.world ?? live;          // The DM's world: its own choice, else the live server's.
@@ -116,17 +126,23 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
                 <button role="radio" aria-checked={suite === 'dm'} className={suite === 'dm' ? 'on' : ''} title="Dungeon Master: running the live world"
                     onClick={() => suite !== 'dm' && go('dm')}>DM</button>
             </div>
-            {session.hosted ? <span className="studio-world" title="This Editor works on its own world only (Docs/Design/78, 7)">
-                <span>World</span><b>{session.dm.worlds[0]?.name ?? dmKey}</b>
-                {!session.atlas.available && session.atlas.reason && <small>{session.atlas.reason}</small>}
-            </span> : suite === 'atlas' ? <>
+            {session.hosted ? <>
+                <span className="studio-world" title="This Editor works on its own world only (Docs/Design/78, 7)">
+                    <span>World</span><b>{session.dm.worlds[0]?.name ?? dmKey}</b>
+                    {!session.atlas.available && session.atlas.reason && <small>{session.atlas.reason}</small>}
+                </span>
+                {suite === 'atlas' && <div className="segmented" role="tablist" aria-label="Map editor page">{pages.map(p =>
+                    <button key={p.id} role="tab" aria-selected={page === p.id} className={page === p.id ? 'on' : ''} title={p.title}
+                        onClick={() => page !== p.id && go('atlas', p.id)}>{HOSTED_LABELS[p.id] ?? p.label}</button>)}</div>}
+                {badge && <span className={`takes-badge takes-${badge}`} title={BADGE[badge].title} data-takes={badge}>{BADGE[badge].label}</span>}
+            </> : suite === 'atlas' ? <>
                 <label className="studio-world" title="Atlas's world: the dev world Atlas edits, and local and scratch servers play">
                     <span>Dev world</span>
                     <select value={atlasKey} disabled={busy || hosted} onChange={e => void switchAtlas(e.target.value)}>
                         {session.atlas.worlds.map(w => <option key={w.key} value={w.key}>{w.name} · {w.key}{w.upstream ? ` (copy of ${w.upstream})` : ''}</option>)}
                     </select>
                 </label>
-                <div className="segmented" role="tablist" aria-label="Atlas page">{ATLAS_PAGES.map(p =>
+                <div className="segmented" role="tablist" aria-label="Atlas page">{pages.map(p =>
                     <button key={p.id} role="tab" aria-selected={page === p.id} className={page === p.id ? 'on' : ''}
                         title={p.id === 'sync' && !session.atlas.world.upstream ? `${session.atlas.world.name} has no upstream live world: a side project, with nothing to update from` : p.title}
                         onClick={() => page !== p.id && go('atlas', p.id)}>{p.label}</button>)}</div>
@@ -148,6 +164,7 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
             : page === 'workshop' ? <Workshop me={me} />
             : page === 'sync' ? <div className="app dm dev"><UpdateFromLive me={me} onWorkshop={() => go('atlas')} /></div>
             : page === 'economy' ? <div className="app dm dev"><EconomyControls me={me} /></div>
+            : page === 'publish' ? <div className="app dm dev"><PublishPage me={me} /></div>
             : <div className="app dm dev">{page === 'npcs' ? <NpcTab me={me} target={atlasKey} suite="atlas" />
                 : <FactionsTab me={me} target={atlasKey} />}</div>}
     </div>;
@@ -157,5 +174,13 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
  *  browser was given another. */
 function Workshop({me}: {me: Me}) {
     useState(() => { if (!savedIdentity()) saveIdentity({name: me.username, color: colorFor(me.username)}); return 0; });
+    // Publish's "Show me" (?show=PLACE,X,Y; doc 78, 10.3): the place opened once the world holding it has loaded.
+    const project = useStore(s => s.project), shown = useRef(false);
+    useEffect(() => {
+        const place = showFrom(window.location.search);
+        if (!place || shown.current || ![...project.cells, ...project.rooms].some(c => c.id === place.cell)) return;
+        shown.current = true;
+        focusPlace(place);
+    }, [project]);
     return <App />;
 }

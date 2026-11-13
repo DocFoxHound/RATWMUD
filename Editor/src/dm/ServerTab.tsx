@@ -10,7 +10,7 @@ import {buildChoices, defaultPicks, letGoText, prunePicks, replaceMapText, type 
     type ServerStatus, type SyncWorld} from '../lib/sync';
 import {ChangeGroups, ConflictList, Problems, SummaryTable, when} from '../studio/SyncViews';
 import {greyed} from '../lib/acts';
-import {actorName, CLOSED_TEXT, hosted as hostedPage, hostServerDown, reloadApp, RUNNING_TEXT} from '../lib/hosted';
+import {actorName, CLOSED_TEXT, hosted as hostedPage, hostServerDown, reloadApp, HOST_ONLY_TEXT, RUNNING_TEXT} from '../lib/hosted';
 
 const LABELS = {dev: 'Import dev\'s', live: 'Keep live\'s'} as const;
 type Plan = Awaited<ReturnType<typeof dmApi.importPlan>>;
@@ -151,7 +151,9 @@ export function HostedServerPanel({status, canAct, onChanged, reload}: {status: 
         catch (error) { setProblem((error as Error).message); }
         finally { setBusy(false); }
     };
-    const line = restarting ? 'Restarting…' : maintenance ? CLOSED_TEXT : down || RUNNING_TEXT;
+    // (Open only to the host, after a Publish: doc 78, 10.3. The map editor's Publish page opens it to everyone.)
+    const hostOnly = (status.server.state as string) === 'host_only';
+    const line = restarting ? 'Restarting…' : maintenance ? CLOSED_TEXT : down || (hostOnly ? HOST_ONLY_TEXT : RUNNING_TEXT);
     // Greyed with why (doc 78, M5).
     const why = greyed([!canAct, 'Closing, opening and restarting the world is for its owner.'], [busy, 'Working…'],
                        [!!restarting, 'The world is restarting.']);

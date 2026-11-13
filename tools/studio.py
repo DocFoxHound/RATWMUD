@@ -611,6 +611,11 @@ HOSTED_ROUTES = {
     # overrides; the live acts, grants and fines and band overrides, through prosperity/act and actions) among them.
     **{('POST', f'/api/dm/{p}'): DM_ROLE for p in _DM_WRITES},
     ('POST', '/api/dm/server/maintenance'): OWNER,   # Close and Open (migration 0062's grant to ratw_dm).
+    # Publish (doc 78, 10.3 and 12.3; M8; tools/world_publish.py): the count, the memory line and the job; Publish with
+    # its restart choice; back to the previous map; discard; open to everyone; the update rebuild's answer (the owner's).
+    ('GET', '/api/atlas/map'): BUILDER, ('POST', '/api/atlas/map/publish'): BUILDER,
+    ('POST', '/api/atlas/map/back'): BUILDER, ('POST', '/api/atlas/map/discard'): BUILDER,
+    ('POST', '/api/atlas/map/open'): BUILDER, ('POST', '/api/atlas/map/rebuild'): OWNER,
     # Atlas: builder and up (Q2); its live layers on Atlas's world (the DM's NPC, layer, faction and talk methods).
     **{('GET', f'/api/atlas/{p}'): BUILDER for p in _ATLAS_READS},
     **{('POST', f'/api/atlas/{p}'): BUILDER for p in _ATLAS_WRITES},
@@ -628,7 +633,7 @@ HOSTED_DENIED = {
     ('POST', '/api/dm/logout'): 'the Editor signs out through /editor/logout',
     ('POST', '/api/dm/server/switch'): 'one world',
     ('POST', '/api/dm/server/start'): 'starts tools/live.sh',
-    ('POST', '/api/dm/server/rebuild'): 'connects as editor; slice 2 (Publish)',
+    ('POST', '/api/dm/server/rebuild'): 'Publish makes the builds (/api/atlas/map/publish)',
     ('GET', '/api/dm/import/plan'): 'imports', ('POST', '/api/dm/import'): 'imports',
     ('GET', '/api/dm/releases'): 'releases', ('POST', '/api/dm/rollback'): 'rollback',
     ('GET', '/api/dm/artwork'): 'portrait uploads are off on community worlds',
@@ -1321,7 +1326,14 @@ def make_handler(studio: Studio):
 # ids, reports without their reporter and never about the host's own wolves, NPC conversations without the players'
 # words). The user's own studio (Studio without `hosted`) is untouched by any of it.
 
-ATLAS_LATER = 'Map editing comes in a later update.'
+ATLAS_LATER = ('This world came without its map\'s editing source (an older package), so its map can\'t be edited here: a '
+               'world started from a newer package can.')
+AHEAD_OF_MAP = ('Publish the map first: {place} is in the map editor, and the world players are in doesn\'t have it yet '
+                '(the map editor\'s Publish page).')
+NO_BACKUP_NO_PUBLISH = ('Publish makes a backup first, and this world folder has no backup service: take the new compose.yaml '
+                        'from the package (keep .env and world.toml), then docker compose up -d.')
+# Residents' edits that may name a place (doc 78, 10.3, "Live edits can't run ahead of the map").
+PLACING_ROUTES = ('/api/dm/actions', '/api/dm/live/move', '/api/dm/live/action')
 CHEATS_OFF = ('Set cheats in world.toml ("host" or "everyone"); the world will then be listed "cheats on".')
 WOLVES_REASON = ("Acting on players' wolves (kill, injure, move, bring back) needs the world's owner, or an account the "
                  'owner marked "may act on players\' wolves".')
@@ -1658,6 +1670,10 @@ class HostedStudio:
                              economy=economy, builds=None, servers=Servers(refused), choose_dm=refused, hosted=hosted)
         self.handler = make_handler(self.studio)
         self.ai = HostedAI(hosted, lambda: self.studio.dm.connect(one))
+        import world_publish
+        self.publisher = world_publish.Publisher(
+            one, lambda: world_db.connect(one, 'editor'), lambda: self.studio.dm.connect(one), hosted,
+            request_backup=self._backup_first, log=lambda who, action, target, detail: self.studio.dm.log(who, one, action, target, detail))
         self._local = threading.local()
         if getattr(self.studio.dm, 'ai_audit', 'absent') is None:
             self.studio.dm.ai_audit = self._ai_seen
@@ -1722,6 +1738,8 @@ class HostedStudio:
         if path.startswith('/api/atlas/') and not self._dev():
             return self._json(409, {'error': ATLAS_LATER})
         body = self.check(who, path, data, body)
+        if path.startswith('/api/atlas/map'):
+            return self.publish(who, path, data)
         own = self.own(who, method, path, data)
         if own is not None:
             return self._json(200, own)
@@ -1767,6 +1785,13 @@ class HostedStudio:
                 raise D.DMError(f'{kind} is a cheat on a community world. {CHEATS_OFF}', 403)
             if kind in WOLF_KINDS and not who['mayActOnWolves']:
                 raise D.DMError(WOLVES_REASON, 403)
+        if data and (path in PLACING_ROUTES or path.startswith('/api/atlas/layers/')) and self._dev():
+            try:
+                place = self.publisher.ahead(data)
+            except Exception:  # noqa: BLE001 - the check can't be made just now: the game's own refusals still stand.
+                place = None
+            if place:
+                raise D.DMError(AHEAD_OF_MAP.format(place=place), 409)
         if path == '/api/dm/reports/decide':
             host = self.hosted.host_account()
             found = next((r for r in self.studio.dm.reports(self.hosted.world).get('reports', [])
@@ -1809,6 +1834,57 @@ class HostedStudio:
         if path == '/api/world/share':
             return self.share_world(who)
         return None
+
+    def publish(self, who, path, data):
+        """Publish's routes (doc 78, 10.3, 12.3, 12.5; tools/world_publish.py). A refusal comes back with its status and
+        each problem in plain words ({error, errors: [{text, cell?, x?, y?}]}: the page's "Show me")."""
+        import world_publish
+        data = data if isinstance(data, dict) else {}
+        try:
+            if path == '/api/atlas/map':
+                return self._json(200, self.publisher.state())
+            if path == '/api/atlas/map/publish':
+                return self._json(200, {'ok': True, 'job': self.publisher.start(who, str(data.get('restart') or ''))})
+            if path == '/api/atlas/map/back':
+                return self._json(200, self.publisher.back(who, data.get('discard') is True))
+            if path == '/api/atlas/map/discard':
+                return self._json(200, self.publisher.discard(who))
+            if path == '/api/atlas/map/open':
+                return self._json(200, self.publisher.open_all(who))
+            if path == '/api/atlas/map/rebuild':
+                # The update rebuild's answer (12.5): with the unpublished changes, or discarding them first.
+                if data.get('discard') is True:
+                    self.publisher.discard(who)
+                return self._json(200, {'ok': True, 'job': self.publisher.start(who, 'later', rebuild=True)})
+        except world_publish.Refused as refused:
+            return self._json(refused.status, {'error': refused.errors[0]['text'] if refused.errors else 'Refused.',
+                                               'errors': refused.errors})
+        except S.StoreError as error:
+            return self._json(409, {'error': str(error), 'errors': [{'text': str(error)}]})
+        return self._json(404, {'error': 'Not found.'})
+
+    def _backup_first(self, wait: float = None, sleep=time.sleep) -> str | None:
+        """Publish's step 2: a `backup-before-publish` request to the backup service, and the wait for its dump. None:
+        made; else why there is no Publish (no backup service, a full disk, no answer)."""
+        import world_admin
+        import world_publish
+        if self.hosted.backups() is None:
+            return NO_BACKUP_NO_PUBLISH
+        asked = time.time()
+        world_admin.request_root('backup-before-publish', self.hosted.folder)
+        deadline = asked + (world_publish.BACKUP_WAIT if wait is None else wait)
+        while time.time() < deadline:
+            sleep(2)
+            now = self.hosted.backups() or {}
+            if any(b['kind'] == 'before-publish' and b['at'] >= asked - 5 for b in now.get('backups') or []):
+                return None
+            problem = now.get('problem')
+            if problem and (problem.get('at') or 0) >= asked - 5:
+                if problem['code'] == 'disk':
+                    return ('The backup before Publish was refused: the disk that holds the world folder\'s backups is nearly '
+                            'full. Free some space, or delete old files from backups, then Publish again.')
+                return 'The backup before Publish failed (in the world folder, docker compose logs backup says why): nothing was published.'
+        return 'The backup service didn\'t make the backup before Publish in time: nothing was published. Is it running (docker compose ps)?'
 
     def share_world(self, who) -> dict:
         """Share my world (doc 78, 10.5; M9): a `share` request for the root entrypoint, which exports the world with
@@ -1896,10 +1972,21 @@ class HostedStudio:
         out = {'world': one, 'name': self.studio.hosted_status()['name'], 'package': str(self.hosted.settings().get('package') or '')[:40],
                'status': self.studio.hosted_status(), 'settings': self.hosted.shown_settings(), 'ai': self.ai_state(),
                'history': history, 'signIns': sign_ins, 'fingerprint': self.hosted.fingerprint(), 'owner': owner,
-               'backups': self.hosted.backups(), 'wolves': self.hosted.wolves(), 'share': self.hosted.share()}
+               'backups': self.hosted.backups(), 'wolves': self.hosted.wolves(), 'share': self.hosted.share(),
+               'map': self.map_summary()}
         if owner:
             out.update(folder=self.hosted.folder_path(), exits=self.hosted.exits())
         return out
+
+    def map_summary(self) -> dict | None:
+        """My world's map lines (doc 78, 10.3, "shown before the host starts"): the unpublished count and whether this
+        computer can publish. None on a world without its map's source."""
+        if not self._dev():
+            return None
+        try:
+            return self.publisher.summary()
+        except Exception:  # noqa: BLE001 - not known just now.
+            return None
 
     # -- the studio without a socket ------------------------------------------------------------------------------------
     def drive(self, who, method, path, query, body, content_type):

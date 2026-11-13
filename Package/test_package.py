@@ -849,6 +849,93 @@ class Loop(Folders):
         self.run_until(31)
         self.assertEqual(len(self.servers), 1)
 
+    def test_a_new_map_that_will_not_start_falls_back_by_itself(self):
+        """Doc 78, 12.4 (M8): two failed starts on a build never run well on, and the previous map is published again
+        (tools/world_publish.py fallback) and started at once; a map that ran two minutes is trusted."""
+        tools = []
+
+        def tool(command, port, timeout=120):
+            tools.append(command)
+            return {'failed': 7, 'now': 8} if command == 'fallback' else {'build': 7}
+        with mock.patch.object(E, 'map_tool', side_effect=tool):
+            self.run_until(1)
+            self.world.build, self.world.good = 7, 6            # (A new map, never run on.)
+            self.servers[-1].code = 1
+            self.run_until(6)
+            self.assertEqual((len(self.servers), tools.count('fallback')), (2, 0), 'one failed start: tried again')
+            self.servers[-1].code = 1
+            self.run_until(1)
+            self.assertEqual((len(self.servers), tools.count('fallback')), (3, 1), 'two: back to the previous map, at once')
+            fell = json.loads((E.ADMIN / 'fallback.json').read_text())
+            self.assertEqual((fell['failed'], fell['now']), (7, 8))
+            self.assertIn('goes back to the previous map', self.output)
+            self.assertIn('Your edits are kept', self.output)
+            self.world.build = 8
+            self.now += E.STARTED_WELL
+            self.quiet(self.world.step)
+            self.assertEqual((self.world.good, (E.STATE / 'good-build').read_text()), (8, '8\n'), 'it ran: trusted')
+            self.assertEqual(E.good_build(), 8, 'and remembered across container starts')
+            for _ in range(2):                                   # (Crashes on a map that had started are only crashes.)
+                self.servers[-1].code = 1
+                self.run_until(40)
+            self.assertEqual(tools.count('fallback'), 1)
+        # No previous map: said, and the backoff goes on.
+        with mock.patch.object(E, 'map_tool', side_effect=lambda c, p, t=120: {'failed': 9, 'now': None} if c == 'fallback' else {}):
+            self.world.build, self.world.good, self.world.build_failures = 9, 8, 1
+            self.servers[-1].code = 1
+            self.quiet(self.world.step)
+            self.assertIn('no previous map to go back to', self.output)
+            self.assertGreater(self.world.next_start, self.now)
+
+    def test_an_update_whose_server_cant_load_the_map_rebuilds_or_asks(self):
+        """Doc 78, 12.5 (M8): memory is checked before the migrations and said plainly when short; nothing unpublished,
+        the entrypoint rebuilds; with unpublished changes it asks through the Editor and the server waits."""
+        answers = {'newest': {'build': 7, 'format': 1, 'readable': True, 'unpublished': 0}, 'memory': {'ok': True}}
+        asked = []
+
+        def tool(command, port, timeout=120):
+            asked.append(command)
+            return answers.get(command)
+        with mock.patch.object(E, 'map_tool', side_effect=tool):
+            self.assertFalse(self.quiet(E.rebuild_before_update, 17789), 'a build the server loads: nothing to do')
+            answers['newest'] = None
+            self.assertFalse(self.quiet(E.rebuild_before_update, 17789), 'no world yet')
+            answers['newest'] = {'build': 7, 'format': 1, 'readable': False, 'unpublished': 3}
+            answers['memory'] = {'ok': False, 'need': 5 << 30, 'free': 2 << 30}
+            waits = []
+
+            def sleep(seconds):
+                waits.append(seconds)
+                self.assertEqual(json.loads((E.ADMIN / 'rebuild.json').read_text())['memory']['free'], 2 << 30)
+                self.assertEqual(json.loads((E.ADMIN / 'progress.json').read_text())['code'], 'stopped')
+                if len(waits) == 2:
+                    answers['memory'] = {'ok': True}
+            self.assertTrue(self.quiet(E.rebuild_before_update, 17789, sleep))
+            self.assertEqual(waits, [E.MEMORY_POLL] * 2, 'it waits rather than restarting in a loop')
+            self.assertIn('needs about 5.0 GB of memory free, and this world has 2.0 GB', self.output)
+            self.assertEqual(self.output.count('can\'t be rebuilt yet'), 1, 'said once')
+            # After the migrations: unpublished changes are the host's to answer.
+            self.assertTrue(self.quiet(E.rebuild_after_update, 17789))
+            self.assertEqual(json.loads((E.ADMIN / 'rebuild.json').read_text()), {'needed': True, 'unpublished': 3})
+            self.assertNotIn('child', asked)
+            self.assertIn('rebuild with them, or discard them first', self.output)
+            # Nothing unpublished: rebuilt here.
+            answers['newest'] = {'build': 7, 'format': 1, 'readable': False, 'unpublished': 0}
+            answers['child'] = {'ok': True, 'build': 8}
+            self.assertFalse(self.quiet(E.rebuild_after_update, 17789))
+            self.assertFalse((E.ADMIN / 'rebuild.json').exists())
+            answers['child'] = {'ok': False, 'errors': [{'text': 'The starting place is in a wall.'}]}
+            self.assertTrue(self.quiet(E.rebuild_after_update, 17789))
+            self.assertEqual(json.loads((E.ADMIN / 'rebuild.json').read_text())['failed'], 'The starting place is in a wall.')
+            # The server waits for a build it loads, asked every 5 s; then starts.
+            self.world.rebuild_wait = True
+            self.run_until(12)
+            self.assertEqual(self.servers, [])
+            answers['newest'] = {'build': 9, 'format': 1, 'readable': True, 'unpublished': 0}
+            self.run_until(6)
+            self.assertEqual(len(self.servers), 1)
+            self.assertFalse((E.ADMIN / 'rebuild.json').exists())
+
     def test_a_broken_world_toml_has_its_own_schedule_apart_from_the_crash_backoff(self):
         """R1: tried again after 5 s, 30 s, 2 minutes, then every 2 minutes; a crash afterwards waits 5 s, not 2 minutes."""
         self.settings = None

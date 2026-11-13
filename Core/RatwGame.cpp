@@ -614,14 +614,22 @@ bool Game::loadFromDatabase(std::string& problem)
     }
     if (options_.scratch)
         worldDb_.exec("SET default_transaction_read_only = on");   // Whatever slips through is refused by the database.
-    else if (std::string why; maintenanceState(why) == 1)
+    else
     {
-        // (A scratch server writes nothing and may look at a world in maintenance; the real one waits: tools/live.sh.)
-        problem = "the " + options_.database + " world is closed for maintenance" + (why.empty() ? "" : " (" + why + ")") +
-                  "; its server starts once it is opened again (the DM, or python3 tools/world_sync.py maintenance " +
-                  options_.database + " off).";
-        exit_ = MaintenanceExit;
-        return false;
+        std::string why;
+        const int state = maintenanceState(why);
+        hostOnly_ = state == 2;                     // (Open only to the host: doc 78, 10.3.)
+        if (state == 1)
+        {
+            // (A scratch server writes nothing and may look at a world in maintenance; the real one waits: tools/live.sh.)
+            problem = "the " + options_.database + " world is closed for maintenance" + (why.empty() ? "" : " (" + why + ")") +
+                      "; its server starts once it is opened again (the DM, or python3 tools/world_sync.py maintenance " +
+                      options_.database + " off).";
+            exit_ = MaintenanceExit;
+            return false;
+        }
+        if (hostOnly_)
+            note("info", "RATW_HOST_ONLY the world is open only to its host");
     }
     const auto build = worldDb_.exec("SELECT w.id, b.id, coalesce(b.release, 0), b.files::text FROM world.worlds w "
                                      "JOIN world.builds b ON b.world_id = w.id ORDER BY b.id DESC LIMIT 1");
@@ -648,6 +656,16 @@ bool Game::loadFromDatabase(std::string& problem)
             return false;
         }
         worldFiles_[name] = text.asString();
+    }
+    // The build's format (doc 78, 12.5): a world before migration 0065 has no number, which is format 1.
+    if (const auto format = worldDb_.exec("SELECT format FROM world.builds WHERE id = " + *row[1]);
+        format.ok && !format.rows.empty() && format.rows[0][0] && !readsBuildFormat(std::atoi(format.rows[0][0]->c_str())))
+    {
+        problem = "RATW_BUILD_FORMAT build " + *row[1] + " is in map format " + *format.rows[0][0] + ", and this server loads " +
+                  (WorldBuildFormat > 1 ? std::to_string(WorldBuildFormat - 1) + " and " : std::string()) +
+                  std::to_string(WorldBuildFormat) + ": the map has to be built again (Publish, or python3 tools/world_build.py " +
+                  options_.database + ").";
+        return false;
     }
     worldFiles_["world.ratw"] = withoutPeople(worldFiles_["world.ratw"]);
     liveWorldId_ = *row[0];
@@ -880,7 +898,7 @@ int Game::maintenanceState(std::string& why)
     if (!state.ok || state.rows.empty() || !state.rows[0][0])
         return -1;                                  // (Unreadable, or a world without migration 0054: taken as open.)
     why = state.rows[0][1] ? *state.rows[0][1] : "";
-    return *state.rows[0][0] == "maintenance" ? 1 : 0;
+    return *state.rows[0][0] == "maintenance" ? 1 : *state.rows[0][0] == "host_only" ? 2 : 0;
 }
 
 void Game::beginMaintenance(const std::string& why)
@@ -924,8 +942,16 @@ void Game::watchMaintenance(double real)
             const int state = maintenanceState(why);
             if (state == 1)
                 beginMaintenance(why);
-            else if (state == 0)
+            else if (state == 0 || state == 2)
+            {
                 endMaintenance();                   // (Not if it couldn't be read: a closing goes on.)
+                if (hostOnly_ != (state == 2))
+                {
+                    hostOnly_ = state == 2;         // (Nobody is sent out: whoever is in stays; only new tickets are held.)
+                    note("info", hostOnly_ ? "RATW_HOST_ONLY the world is open only to its host"
+                                           : "RATW_HOST_ONLY the world is open to everyone again");
+                }
+            }
         }
     }
     if (!closingForMaintenance())

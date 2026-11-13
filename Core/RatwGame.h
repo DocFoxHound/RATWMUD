@@ -340,6 +340,14 @@ class Game
     // world is saved and the host exits with MaintenanceExit. Called off again before then, play goes on.
     static constexpr int MaintenanceExit = 76;
     static constexpr double MaintenanceGrace = 60;
+    // Open only to the host (doc 78, 10.3; migration 0065's host_only state): the server runs, and a ticket-mode world
+    // admits only its host's tickets (a first look at a new map). Without central there is no host to know: it is open.
+    bool hostOnly() const { return hostOnly_; }
+    void hostOnly(bool on) { hostOnly_ = on; }      // (The state as read; tests set it.)
+    // The build-format number (doc 78, 12.5; world.builds.format, tools/world_build.py's BUILD_FORMAT): this server
+    // loads the current format and the one before it, so a format bump doesn't force a rebuild.
+    static constexpr int WorldBuildFormat = 1;
+    static bool readsBuildFormat(int format) { return format >= 1 && (format == WorldBuildFormat || format == WorldBuildFormat - 1); }
     void beginMaintenance(const std::string& why);
     void endMaintenance();
     bool closingForMaintenance() const { return maintenanceLeft_ >= 0; }
@@ -1768,9 +1776,10 @@ class Game
     // Closing for maintenance: seconds of grace left (-1: not closing), the last reminder given, and whether the
     // database's state is due to be read (a notification came, or the minute's check).
     double maintenanceLeft_ = -1, maintenanceReminded_ = 0, maintenanceAccumulator_ = 0;
-    bool maintenanceCheck_ = false;
+    bool maintenanceCheck_ = false, hostOnly_ = false;
     void watchMaintenance(double real);
-    // The world's server state from admin.server_state: 1 maintenance (and why), 0 running, -1 unreadable.
+    // The world's server state from admin.server_state: 1 maintenance (and why), 0 running, 2 open only to the host,
+    // -1 unreadable.
     int maintenanceState(std::string& why);
     std::mt19937_64 random_;
     std::shared_ptr<bool> alive_ = std::make_shared<bool>(true);   // Answers arriving after the game is gone are dropped.

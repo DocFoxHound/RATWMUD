@@ -197,6 +197,14 @@ export function connectRefusal(r: Refusal): string[] {
 
 const SLOW = 'Your world answered, but its database is slow: try again in a minute.';
 
+/** ATLAS on the Editor menu (doc 78, section 2 and Q2; M8): the map editor, for builder and owner accounts. A world
+ *  whose package came without its map's source says so in the Editor window itself. */
+export function atlasOffer(role: string): {enabled: boolean; why: string} {
+    if (role === 'builder' || role === 'owner')
+        return {enabled: true, why: 'The map editor: the land, buildings and rooms, where residents live and work, and Publish.'};
+    return {enabled: false, why: 'Your account is for the DM tool only.'};
+}
+
 /** "still setting up (40%)", or '' once it is ready. */
 export function settingUp(hello: EditorHello): string {
     if (hello.progress.code === 'ready') return '';

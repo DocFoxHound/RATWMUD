@@ -1954,7 +1954,8 @@ answers out of the box, not whether managing from anywhere works.
 
 ## Progress
 
-Slice 1 done (M0a to M6, 2026-11-12, below); slice 2 begun: M0b measured (D2 decided), M9 and M7 built; the rest not yet.
+Slice 1 done (M0a to M6, 2026-11-12, below); slice 2: M0b measured (D2 decided), M9, M7 and M8 built; the Docker and
+desktop end to end of M7 and M8, R2 and M10 not yet.
 
 - **2026-11-08: the user's decisions.** "Go with the recommendations": all 21 decisions in section 17 take their
   recommendation (among them: the Editor answers only on the world's own computer until the host opens it; roles
@@ -3281,6 +3282,29 @@ Slice 1 done (M0a to M6, 2026-11-12, below); slice 2 begun: M0b measured (D2 dec
     source equal to `load_world`, an edit as editor, build, NOTIFY and exit 75 in a real server; format 1; five hostile
     packages refused before anything is written; the add-only step), `Package/test_package` 81, `test_world_db` 50,
     `test_world_store` 23, the Editor's `myWorld` test.
+- **2026-11-12: M8 built (Atlas and Publish),** on `r2-editor` after M7. Migration **0065** (`world.builds`:
+  `edits_through`, `format`, `copy_of`, `failed`; `admin.server_state` takes `host_only`), applied to DEV.
+  - **Publish** (`tools/world_publish.py`; routes `/api/atlas/map*`, builder and up): 6 an hour an account, the memory
+    check (5 GB free; shown on the Publish page and in My world beforehand), a before-publish backup or a refusal, then
+    **one child** (RLIMIT_AS 6 GiB, 10 minutes) that checks and builds on one load: row limits, orphans, the validator,
+    constraints, and the save against the new map (leases, stalls, a closed door made steps: refused with "Show me";
+    wolves on a tile now solid: a warning). Refused, starved or stopped, it leaves nothing.
+  - **Onto the new map:** open only to me (`host_only`: Core admits only the host's tickets; greyed without a valid
+    token), now with a minute's warning, or when everyone has left. Then "Open to everyone", "Go back to the previous
+    map" (the old build under a new id, checked the other way), "Discard unpublished changes".
+  - **Core:** `World::restore` wakes a wolf at the spawn when its saved tile is solid, under a closed door or beyond a
+    smaller place; the build-format number (the current and the previous load, else `RATW_BUILD_FORMAT`).
+  - **The entrypoint:** two failed starts on a new build publish the previous map again (`fallback.json`); an update
+    whose server can't load the build checks memory before migrating, rebuilds, or asks the Editor (`rebuild.json`).
+  - **The Editor:** ATLAS on the client's menu (builder, owner); the hosted pages Map, NPCs, Factions, Economy, Publish;
+    Atlas's edits carry the session's account; a live edit ahead of the map is refused; the Live now / Waits for Publish
+    badge beside the page's name.
+  - **Less than the plan:** one badge a page, not one a Save button; only row counts of the client's limits; "can't
+    rebuild: memory" reaches the hello as `stopped`; a lease in the way is refused, never refunded; no Docker or
+    desktop run (the closing run's).
+  - Tests (one run, `s2stage` dropped): `test_world_publish` 10 (new), `test_studio`, `test_world_build`,
+    `test_map_editor`, `Package/test_package` 83, the Editor's `lib` 87, the client's `editor`, `world_tests`,
+    `ticket_tests`, `maintenance_tests`, M7's real-server test on this build.
 
 ## Review (2026-11-08)
 

@@ -885,14 +885,17 @@ def slot_plan(request, roster_data):
     return plan, warnings
 
 
-def export_files(value, roster_data=None, with_roster=False, stream=False):
-    """Builds the runtime files. with_roster also returns (files, updated roster, plan).
+def export_files(value, roster_data=None, with_roster=False, stream=False, progress=None):
+    """Builds the runtime files. with_roster also returns (files, updated roster, plan). `progress(step, done, of)` is
+    told how far it is (Publish's ticks, doc 78, 10.3): 'checked' once the world is valid, then 'cells' as they are written.
 
     stream builds the layout the game server streams from the database (no size limit): a "RATW_WORLD 3" manifest
     that names each cell with an "area" record, lists which cells each one's seams lead to ("exits"), and keeps
     only explicit doors; each cell's file under cells/ID.cell and its side of every seam under seams/ID.
     """
     p, warnings = check_project(value, for_game=not stream)
+    if progress:
+        progress('checked', 0, 0)
     if roster_data is None:
         roster_data = roster_lib.load()
     updated_roster, plan, slot_people, slot_warnings = resolve_slots(p, roster_data)
@@ -955,7 +958,9 @@ def export_files(value, roster_data=None, with_roster=False, stream=False):
         manifest.append(f'faction {quote(faction["id"])} {quote(faction["name"])} {quote(faction["color"])}')
     for chapter in p.get('chapters', []):
         manifest.append(f'chapter {quote(chapter["id"])} {quote(chapter["name"])}')
-    for c in by_id.values():
+    for done, c in enumerate(by_id.values()):
+        if progress and done % 50 == 0:
+            progress('cells', done, len(by_id))
         rows = [list(row) for row in cell_rows(p, c)]
         overrides = {}
         for y, row in enumerate(rows):
@@ -1451,6 +1456,10 @@ def make_handler(roster_path=None, launcher=launch_game, ai_config_path=None, wo
                 if path in ('/api/live/edit', '/api/live/sync'):
                     if not isinstance(data, dict):
                         raise ValueError('Bad request.')
+                    if hosted:
+                        # A host's Editor (doc 78, M8): the edit is the signed-in account's, whatever the page says.
+                        session = getattr(self, 'editor_session', None) or {}
+                        data['editor'] = str(session.get('account') or session.get('username') or '').split('#')[0][:60]
                     try:
                         return self.reply(200, live().edit(data) if path == '/api/live/edit' else live().sync(data))
                     except HostError as error:

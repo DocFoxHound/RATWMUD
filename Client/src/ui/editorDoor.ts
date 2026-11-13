@@ -10,7 +10,7 @@
 // Everything is drawn as text (textContent, never markup): a world's name, its errors and its account names are a
 // world's words. The password goes to the shell once and its box is cleared at once; the shell keeps the session.
 import {ask, askText} from './dialog.ts';
-import {ago, bannerText, coBuilderNote, connectRefusal, EDITOR_PORT, firstTimeNote, fromWhere, hostOf, isCode, newPasswordProblem,
+import {ago, atlasOffer, bannerText, coBuilderNote, connectRefusal, EDITOR_PORT, firstTimeNote, fromWhere, hostOf, isCode, newPasswordProblem,
     lastBackupText, resetHow, ROLE_LINES, settingUp, signInRefusal, signsInWithCode, pillIsWell, statusPill, type AuditBanner, type Connected, type EditorAccount,
     type EditorBridge, type EditorHello, type EditorSession, type RecentWorld} from '../net/editor.ts';
 
@@ -523,9 +523,11 @@ export class EditorDoor {
         backup.dataset.lastBackup = '1';
         const dm = this.button('DM', () => void this.openTool('dm'), 'primary');
         dm.dataset.action = 'editor-dm';
-        const atlas = this.button('ATLAS', () => undefined, 'primary');
-        atlas.disabled = true;
-        const atlasWhy = s.role === 'dm' || s.role === 'viewer' ? 'Your account is for the DM tool only.' : 'Map editing comes in a later update.';
+        const offer = atlasOffer(s.role);
+        const atlas = this.button('ATLAS', () => void this.openTool('atlas'), 'primary');
+        atlas.dataset.action = 'editor-atlas';
+        atlas.disabled = !offer.enabled;
+        const atlasWhy = offer.why;
         const tools = el('div', {className: 'editor-tools'},
             el('div', {className: 'editor-tool'}, dm, el('p', {className: 'muted'}, 'The Dungeon Master tool: NPCs, events, the economy, players and their decisions.')),
             el('div', {className: 'editor-tool'}, atlas, el('p', {className: 'muted'}, atlasWhy)));

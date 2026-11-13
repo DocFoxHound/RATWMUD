@@ -136,6 +136,7 @@ export function hostServerDown(h: HostServer | null | undefined): string {
 }
 
 export const RUNNING_TEXT = 'Running: players can join.';
+export const HOST_ONLY_TEXT = 'Open only to the host: a new map is being looked at. "Open to everyone" is on the map editor\'s Publish page.';
 export const CLOSED_TEXT = 'Closed: players can\'t join until you open it again.';
 
 // ---------------------------------------------------------------------------------------------------- words

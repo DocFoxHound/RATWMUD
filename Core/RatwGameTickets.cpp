@@ -302,6 +302,14 @@ void Game::ticketHello(Connection* c, const Value& j)
         ticketLobby(c, false, WorldBannedMessage, "world_banned");
         return;
     }
+    if (hostOnly_ && (hostSub_.empty() || claims.account != hostSub_))
+    {
+        // Open only to the host (doc 78, 10.3): the host is looking at a new map first. With no host known (host.json
+        // names none: a bad token), nobody is let in, which is why the Editor greys the choice without a valid token.
+        note("info", "RATW_TICKET refused " + claims.wolf + ": the world is open only to its host");
+        ticketLobby(c, false, "This world is open only to its host just now: a new map is being looked at. Try again soon.", "host_only");
+        return;
+    }
     std::size_t inWorld = 0;
     for (const auto* other : clients_)
         inWorld += other->entityId.empty() ? 0 : 1;

@@ -11,6 +11,7 @@ import {greyed} from '../lib/acts';
 import {ago, BACKUP_WHY, backupProblem, historyWords, lastBackupLine, restoreSteps, SHARE_HOLDS, SHARE_NEVER, SHARE_NOT_YET, sharedPath,
     shareProblem, size, syncedFolder, windowsFolder} from '../lib/myWorld';
 import {HostedServerPanel} from './ServerTab';
+import {unpublishedLine} from '../lib/publish';
 
 const at = (seconds: number | null | undefined) => (seconds ? new Date(seconds * 1000).toLocaleString() : '—');
 const CHEATS: Record<string, string> = {
@@ -45,6 +46,12 @@ export function MyWorldTab({me, initial}: {me: Me; initial?: MyWorld}) {
             {!owner && <p className="hint">Closing, opening and restarting the world, and its backups, are for its owner. You see them as they are.</p>}
             <BackupsCard world={world} owner={owner} ownerOnly={ownerOnly} reload={load} />
             <ShareCard world={world} owner={owner} ownerOnly={ownerOnly} reload={load} />
+            {world.map && <section className="sync-card" data-map>
+                <h3>The map</h3>
+                <p>{unpublishedLine(world.map.unpublished)}.</p>
+                <p className={world.map.memory.ok ? 'hint' : 'error'}>{world.map.memory.words}</p>
+                <p className="hint">Map changes are made in the map editor (Atlas, at the top) and reach players with Publish, on its Publish page.</p>
+            </section>}
             <section className="sync-card">
                 <h3>Settings</h3>
                 <table className="dm-table"><tbody>

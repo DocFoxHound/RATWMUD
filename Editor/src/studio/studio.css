@@ -83,3 +83,14 @@
 .hosted-ended { position: fixed; top: 0; left: 0; right: 0; z-index: 50; padding: 10px 16px; background: #c9714f; color: #141613;
     font-weight: 600; text-align: center; }
 .hosted-restarting { background: #c9a24f; }
+
+/* Publish (doc 78, 10.3; M8) and the Live now / Waits for Publish badge (section 11). */
+.takes-badge { padding: 2px 8px; border-radius: 10px; font-size: 11px; letter-spacing: .3px; white-space: nowrap; border: 1px solid var(--line, #3a3f38); }
+.takes-live { color: #a8c7ad; }
+.takes-publish { color: #e0b96a; }
+.publish-choices { display: grid; gap: 8px; margin: 10px 0; }
+.publish-choices label { display: flex; gap: 8px; align-items: flex-start; }
+.publish-choices label.off { opacity: .6; }
+.publish-choices small { display: block; color: var(--faint); }
+.publish-problems { margin: 6px 0; padding-left: 18px; }
+.publish-problems li { margin: 4px 0; }

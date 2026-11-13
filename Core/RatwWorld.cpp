@@ -6623,9 +6623,38 @@ Result World::restore(const PersistedWorld& saved)
         }
         return true;
     };
+    // A map published since the save (Docs/Design/78, M0b and M8): a wolf, online or away, whose saved tile the new map
+    // makes solid, covers with a closed door or leaves outside a resized place wakes at the spawn, as one from a place
+    // gone does; no map edit can stop a world starting. Anything malformed (no such number, a bad body) is still refused.
+    constexpr double MaxSavedTile = 65536;
+    const auto standsNowhere = [&](const Entity& e) {
+        const auto* c = cell(e.cellId);
+        if (!c || !finite(e.position))
+            return false;
+        if (e.position.x < 0 || e.position.y < 0 || e.position.x >= MaxSavedTile || e.position.y >= MaxSavedTile)
+            return false;                           // (No place was ever that wide: a corrupt save, refused below.)
+        if (e.position.x >= c->width || e.position.y >= c->height)
+            return true;                            // (A place made smaller.)
+        for (Vec2 p : {e.position, Vec2{e.position.x - Radius, e.position.y}, Vec2{e.position.x + Radius, e.position.y},
+                       Vec2{e.position.x, e.position.y - Radius}, Vec2{e.position.x, e.position.y + Radius}})
+        {
+            const auto* t = c->tile(int(std::floor(p.x)), int(std::floor(p.y)));
+            if (!t || t->solid)
+                return true;
+            for (const Door* d : doorsIn(e.cellId))
+                if (!effectiveDoors[d->id] && doorCovers(*d, p))
+                    return true;
+        }
+        return false;
+    };
     std::set<std::string> ids;
-    for (const auto& e : state.players)
+    for (auto& e : state.players)
     {
+        if (standsNowhere(e))
+        {
+            e.cellId = spawnCell_;
+            e.position = spawnPosition_;
+        }
         if (e.id.empty() || e.npc || !ids.insert(e.id).second || (entity(e.id) && entity(e.id)->npc) || !validActor(e))
             return {false, "Invalid saved player.", e.id};
     }

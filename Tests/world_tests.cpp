@@ -145,7 +145,8 @@ void restoreOverARebuiltWorld()
     saved.weather["tavern"] = static_cast<Weather>(99);
     expect(!w.restore(saved).ok, "A bad entry for a place that is there is still refused");
     // A whole world replaced (Docs/Design/60): a player who stood in a place it no longer has wakes at the spawn; one
-    // who stands where they were stays; one stood in a wall of a place that is there is still refused.
+    // who stands where they were stays; one stood in a wall of a place that is there wakes at the spawn too (a map
+    // published since the save: Docs/Design/78, M8), and one whose saved place is no number at all is still refused.
     World v;
     const Vec2 spawn = v.addPlayer("ada", "Ada").position;
     v.addPlayer("bo", "Bo");
@@ -164,7 +165,19 @@ void restoreOverARebuiltWorld()
     for (auto& e : old.players)
         if (e.id == "bo")
             e.position = {.5, .5};                     // (In the wall's corner.)
-    expect(!v.restore(old).ok, "one in a wall of a place that is there is still refused");
+    const auto walled = v.restore(old);
+    expect(walled.ok, "A save whose player stood where the map now has a wall restores: " + walled.message);
+    expect(v.entity("bo") && v.entity("bo")->cellId == "tavern" && v.entity("bo")->position.x == spawn.x &&
+               v.entity("bo")->position.y == spawn.y, "a player on a tile now solid wakes at the spawn");
+    expect(v.entity("cy") && v.entity("cy")->position.x == spawn.x + 1, "and the others stay where they were");
+    for (auto& e : old.players)
+        if (e.id == "bo")
+            e.position = {4000.5, 4000.5};             // (Beyond the place's edge: a place made smaller.)
+    expect(v.restore(old).ok && v.entity("bo")->position.x == spawn.x, "one beyond a smaller place's edge wakes at the spawn");
+    for (auto& e : old.players)
+        if (e.id == "bo")
+            e.position = {std::numeric_limits<double>::quiet_NaN(), 1};
+    expect(!v.restore(old).ok, "a saved place that is no number is still refused");
 }
 void continuousMovement()
 {
@@ -1117,12 +1130,19 @@ void malformedPersistence()
     bad.doorStates["stairs_up"] = false;
     bad.doorStates["stairs_down"] = false;
     reject(bad, "Reject closed door state for permanent open steps");
-    bad = saved;
-    bad.players[0].position = {23.5, 6.5};
-    reject(bad, "Reject actor embedded in saved-closed pantry threshold");
-    bad = saved;
-    bad.players[0].position = {1.01, 12.5};
-    reject(bad, "Reject actor core intersecting solid wall");
+    {
+        // A map published since the save (Docs/Design/78, M8): a wolf under a door the save holds closed, or in a wall,
+        // wakes at the spawn, and the world still starts.
+        World moved;
+        bad = saved;
+        bad.players[0].position = {23.5, 6.5};
+        expect(moved.restore(bad).ok && moved.entity("p") && moved.entity("p")->position.x != 23.5,
+               "An actor embedded in a saved-closed pantry threshold wakes at the spawn");
+        bad = saved;
+        bad.players[0].position = {1.01, 12.5};
+        expect(moved.restore(bad).ok && moved.entity("p") && moved.entity("p")->position.x != 1.01,
+               "An actor whose core intersects a solid wall wakes at the spawn");
+    }
     bad = saved;
     bad.players[0].hearing = -1;
     reject(bad, "Reject negative saved hearing sensitivity");

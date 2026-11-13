@@ -1158,6 +1158,28 @@ void theHostDecidesKicksBansAndSilences()
         say(g, &b2, hello(f.ticket(Wolf2, Acct2, "Moss Hollow")));
         expect(b2.entityId == Wolf2, "and the unbanned one comes back: " + b2.message());
 
+        // Open only to the host (doc 78, 10.3; the host_only state): whoever is in stays, a new ticket that isn't the
+        // host's is held at hello, the host's own is let in; open again, everyone is.
+        g.hostOnly(true);
+        Client h1, h2, h3;
+        h1.id = 21;
+        h2.id = 22;
+        h3.id = 23;
+        for (auto* x : {&h1, &h2, &h3})
+            g.connect(x);
+        const std::string wolfLate = "wolf-" + std::string(31, 'e') + "1", wolfHost = "wolf-" + std::string(31, 'e') + "2";
+        say(g, &h1, hello(f.ticket(wolfLate, acct3, "Birch")));
+        expect(h1.accountUsername.empty() && h1.entityId.empty() && h1.code() == "host_only",
+               "a ticket that isn't the host's is held while the world is open only to its host: " + h1.message());
+        expect(c.entityId == Wolf3, "whoever was in stays");
+        say(g, &h2, hello(f.ticket(wolfHost, Acct1, "Ash")));
+        expect(h2.accountUsername == Acct1 && h2.code() != "host_only", "the host's own ticket is let in: " + h2.message());
+        g.hostOnly(false);
+        say(g, &h3, hello(f.ticket(wolfLate, acct3, "Birch")));
+        expect(h3.accountUsername == acct3, "open to everyone again, the same wolf is let in: " + h3.message());
+        for (auto* x : {&h1, &h2, &h3})
+            g.disconnect(x);
+
         // The host changes: the old host's wolf loses the commands as the world next looks (ticketFiles, about every
         // 5 s, as the server calls it), and its page is told.
         double files = 1000;
