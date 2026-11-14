@@ -1,8 +1,8 @@
 // Market stalls (Docs/Design/54-gathering-places.md, 3; Phase 4). On Marketday from 7 to 2, in fair weather, a wolf
 // standing at a free stall spot on a city's square (World::stallSpots) may rent it for the morning: 3p to the town's
 // treasury, at most 6 a square (half its spots, in a square with fewer than 12), one a wolf. A spot let to a player is
-// left out of the merchants' plan that day (World::setLetStalls), so they set up at the others (two may share, as
-// before). Wares go from the purse into the stall (`stall:<id>`), so nothing listed can be sold elsewhere, given or
+// left out of the merchants' plan that day (World::setLetStalls), so they set up at the others (one to a spot; a keeper
+// the spots run out for keeps its shop). Wares go from the purse into the stall (`stall:<id>`), so nothing listed can be sold elsewhere, given or
 // eaten until it is taken off; each has a price apiece (1p or more, no top: the user, 2026-10-30) the keeper may change at any time. A buyer within 2
 // tiles buys only while the keeper stands within 3 tiles of the stall and has stirred in the last 10 minutes: face to
 // face. Goods and coins move at once (Society::shift, "stall sale", with the 64 kinds a purse may hold). At 2 the stall

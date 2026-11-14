@@ -3,6 +3,7 @@
 #include "RatwCheckpoint.h"
 #include "RatwWorld.h"
 
+#include <algorithm>
 #include <optional>
 
 #include <cmath>
@@ -147,6 +148,163 @@ void restdayService()
     expect(w.setTimeOfDay(12).ok, "Noon");
     run(w, 30);
     expect(life(w, "maple").task != "preaching", "The service is over by noon");
+}
+
+// A resident's line in Greyfen's world file (where it starts, and the line), and a change to a line.
+std::pair<std::size_t, std::string> residentLine(const std::string& manifest, const std::string& id)
+{
+    const auto at = manifest.find("resident \"" + id + "\"");
+    expect(at != std::string::npos, id + " is in Greyfen");
+    return {at, manifest.substr(at, manifest.find('\n', at) + 1 - at)};
+}
+void change(std::string& text, const std::string& from, const std::string& to)
+{
+    const auto at = text.find(from);
+    expect(at != std::string::npos, "found " + from);
+    text.replace(at, from.size(), to);
+}
+// A cell file's grid row `y` made `row`.
+void gridRow(std::string& cell, int y, const std::string& row)
+{
+    auto at = cell.find("grid:\n") + 6;
+    for (int i = 0; i < y; ++i)
+        at = cell.find('\n', at) + 1;
+    expect(cell[at] == '#' && cell.find('\n', at) == at + row.size(), "a grid row of the same width");
+    cell.replace(at, row.size(), row);
+}
+
+// Restday's service fits its churches (the user, 2026-11-14: a third of Ridgemere, 199 wolves, was sent into the Chapter
+// House's sixty seats and stood on 56 tiles, the Cathedral and the Chapel of the Tide empty). Greyfen with two chapels
+// with pews built, Maple's in the Long House and Hazel's shrine in Birchwall Cottage, and 120 more townsfolk, half living
+// in each. Each church takes at most its seats (the open floor beside its pews), one wolf to a tile; each goes to the
+// nearest with a seat free; those left over keep their Restday; and each chapel's keeper preaches in her own.
+void restdayChurchesFit()
+{
+    auto files = greyfenFiles();
+    auto& manifest = files["world.ratw"];
+    const auto [mapleAt, mapleLine] = residentLine(manifest, "maple");
+    auto maple = mapleLine, hazel = mapleLine;
+    change(maple, "\"telling stories by the fountain\"", "\"keeps the chapel\"");
+    change(maple, "\"town\" 33.5 20.5", "\"longhouse\" 17.5 9.5");
+    change(hazel, "resident \"maple\" \"Maple\"", "resident \"hazel\" \"Hazel\"");
+    change(hazel, "\"telling stories by the fountain\"", "\"keeps the shrine\"");
+    change(hazel, "\"town\" 33.5 20.5", "\"cottage\" 5.5 2.5");
+    manifest.replace(mapleAt, mapleLine.size(), maple + hazel);
+    const auto [lindenAt, linden] = residentLine(manifest, "linden");
+    std::map<std::string, std::string> homeOf;
+    for (int k = 0; k < 120; ++k)
+    {
+        const std::string id = "flock" + std::to_string(100 + k);
+        auto f = linden;
+        change(f, "resident \"linden\" \"Linden\"", "resident \"" + id + "\" \"Flock " + std::to_string(k) + "\"");
+        if (k % 2)
+            change(f, "\"cottage\" 9.5 7.5", "\"longhouse\" 21.5 6.5");
+        homeOf[id] = k % 2 ? "longhouse" : "cottage";
+        manifest.insert(lindenAt, f);
+    }
+    gridRow(files["cells/longhouse.cell"], 2, "#...pppp........pppp...#");
+    gridRow(files["cells/cottage.cell"], 7, "#..pppppp..#");
+    World w;
+    const auto loaded = w.loadWorldFiles(files, "greyfen");
+    expect(loaded.ok, "Greyfen with two chapels loads: " + loaded.message);
+    expect(w.advanceCalendar(6 - std::floor(w.calendarDays())).ok && w.setTimeOfDay(10).ok, "Restday, mid-service");
+    run(w, 3);
+    // Each church's seats: the open tiles beside its pews, off its pulpit (2.5 tiles) and the posts.
+    std::map<std::string, std::size_t> seats;
+    for (const auto& [room, pulpit] : {std::pair{std::string("longhouse"), Vec2{17.5, 9.5}}, std::pair{std::string("cottage"), Vec2{5.5, 2.5}}})
+    {
+        const auto* c = w.cell(room);
+        for (int y = 1; y < c->height - 1; ++y)
+            for (int x = 1; x < c->width - 1; ++x)
+            {
+                bool beside = false;
+                for (const auto [dx, dy] : {std::pair{0, 1}, std::pair{0, -1}, std::pair{1, 0}, std::pair{-1, 0}})
+                    beside = beside || c->tile(x + dx, y + dy)->glyph == 'p';
+                seats[room] += beside && !c->tile(x, y)->solid && std::hypot(x + .5 - pulpit.x, y + .5 - pulpit.y) >= 2.5;
+            }
+    }
+    expect(life(w, "maple").task == "preaching" && life(w, "maple").goalCell == "longhouse", "Maple preaches in the Long House");
+    expect(life(w, "hazel").task == "preaching" && life(w, "hazel").goalCell == "cottage",
+           "Hazel preaches in her shrine (" + life(w, "hazel").task + " in " + life(w, "hazel").goalCell + ")");
+    const auto today = std::int64_t(std::floor(w.calendarDays()));
+    std::set<std::string> tiles;
+    std::map<std::string, std::size_t> seated;
+    std::size_t goers = 0;
+    for (const auto& [id, r] : w.society().state().residents)
+    {
+        goers += r.role == "civilian" && id != "maple" && id != "hazel" && Society::goesToChurch(id, today);
+        if (r.task != "at church" && r.task != "preaching")
+            continue;
+        expect(tiles.insert(r.goalCell + " " + std::to_string(int(r.goalX)) + "," + std::to_string(int(r.goalY))).second,
+               id + " has a tile of its own at the service (" + r.goalCell + ")");
+        if (r.task == "at church")
+            ++seated[r.goalCell];
+    }
+    expect(goers > seats["longhouse"] + seats["cottage"], "More go this week than the churches seat (" + std::to_string(goers) + ")");
+    for (const auto& room : {"longhouse", "cottage"})
+        expect(seated[room] == seats[room], std::string(room) + " is full to its seats, no more: " + std::to_string(seated[room]) + " of " +
+                                                std::to_string(seats[room]));
+    // Each in the nearest with a seat free: a full church's overflow goes to the other; and both are full, so the
+    // rest keep their Restday.
+    std::size_t away = 0;
+    for (const auto& [id, home] : homeOf)
+        if (const auto& r = life(w, id); r.task == "at church")
+            away += r.goalCell != home;
+    expect(away <= seats["longhouse"] + seats["cottage"] && seated["longhouse"] + seated["cottage"] < goers, "the rest keep their Restday");
+    for (const auto& [id, home] : homeOf)
+        if (const auto& r = life(w, id); r.task == "at church" && r.goalCell != home)
+            expect(seated[home] == seats[home], id + " sits in the other church only because its own is full");
+}
+
+// Marketday's stalls, one keeper to a spot (the user, 2026-11-14: about four of Ridgemere's stallholders on each of Market
+// Square's spots). Greyfen with twenty more shopkeepers in Tallow & Twine than the square has spots: each spot gets one
+// keeper, the rest keep their shops, and Brann, whose forge is in the open, keeps his own place.
+void stallsOneEach()
+{
+    auto files = greyfenFiles();
+    auto& manifest = files["world.ratw"];
+    const auto [wrenAt, wren] = residentLine(manifest, "wren");
+    for (int k = 0; k < 20; ++k)
+    {
+        auto keeper = wren;
+        change(keeper, "resident \"wren\" \"Wren\"", "resident \"keeper" + std::to_string(100 + k) + "\" \"Keeper " + std::to_string(k) + "\"");
+        change(keeper, "\"shop\" 15.5 4.5", "\"shop\" " + std::to_string(2 + k % 16) + ".5 " + std::to_string(6 + k / 16) + ".5");
+        manifest.insert(wrenAt, keeper);
+    }
+    World w;
+    const auto loaded = w.loadWorldFiles(files, "greyfen");
+    expect(loaded.ok, "Greyfen with more shopkeepers loads: " + loaded.message);
+    buildStalls(w);
+    expect(w.advanceCalendar(5 - std::floor(w.calendarDays())).ok && w.setTimeOfDay(9).ok, "Marketday morning");
+    run(w, 3);
+    const auto plan = w.dayPlan("greyfen");
+    expect(plan.kind == "market" && plan.stalls.size() >= 4 && plan.stalls.size() < 21, "A market with fewer spots than keepers (" +
+                                                                                            std::to_string(plan.stalls.size()) + ")");
+    std::set<std::string> spots;
+    std::size_t atStalls = 0, inShops = 0;
+    for (const auto& [id, r] : w.society().state().residents)
+    {
+        const auto* job = w.society().jobOf(id);
+        if (r.task != "trade" || !job || job->work.cell != "shop")
+            continue;
+        if (r.goalCell == "shop")
+        {
+            ++inShops;
+            expect(r.goalX == job->work.x && r.goalY == job->work.y, id + " keeps its own shop");
+            continue;
+        }
+        ++atStalls;
+        const bool stall = std::any_of(plan.stalls.begin(), plan.stalls.end(),
+                                       [&](const Spot& s) { return s.cell == r.goalCell && s.x == r.goalX && s.y == r.goalY; });
+        expect(stall && spots.insert(r.goalCell + " " + std::to_string(r.goalX) + "," + std::to_string(r.goalY)).second,
+               id + " has a stall spot of its own (" + std::to_string(r.goalX) + ", " + std::to_string(r.goalY) + ")");
+    }
+    expect(atStalls == plan.stalls.size() && inShops == 21 - plan.stalls.size(),
+           "Every spot taken, one keeper each, the rest in their shops (" + std::to_string(atStalls) + " at stalls, " +
+               std::to_string(inShops) + " in shops)");
+    expect(life(w, "brann").task == "trade" && life(w, "brann").goalCell == "town" && life(w, "brann").goalX == 20.5 &&
+               life(w, "brann").goalY == 17.5,
+           "Brann keeps his forge in the open (" + std::to_string(life(w, "brann").goalX) + ", " + std::to_string(life(w, "brann").goalY) + ")");
 }
 
 void restday()
@@ -415,7 +573,9 @@ int main()
         theWeek();
         restday();
         restdayService();
+        restdayChurchesFit();
         marketday();
+        stallsOneEach();
         childrenOnMarketday();
         cityMarkets();
         festivals();

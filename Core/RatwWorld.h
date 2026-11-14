@@ -1984,21 +1984,32 @@ class World
         hunted_.clear();
         return out;
     }
-
-  private:
-    std::set<std::string> letStalls_;
-    std::map<std::string, Seat> seated_;
-    std::vector<HuntedNote> hunted_;
-    // A community's church (doc 42, Phase 6): its clergy's place of work, its seats and its pulpit; worked out each day.
+    // A community's places of worship (doc 42, Phase 6): the rooms indoors where its clergy work that have pews built
+    // (`p`), else the first room its clergy work in (a hall kept as a chapel); each with its pulpit (its first clergy post's
+    // place) and its seats, one wolf to a tile: the open floor beside its pews, else every other tile of its open floor
+    // (at most ChapelSeats), the front first. The first is the community's chapel (its dole's steps, its weddings).
+    // Worked out each day.
     struct Chapel
     {
         bool found = false;
         Spot pulpit;
         std::vector<Spot> pews;
     };
-    std::map<std::string, Chapel> chapels_;
+    static constexpr int ChapelSeats = 60;
+    const std::vector<Chapel>& churches(const std::string& community);
+
+  private:
+    std::set<std::string> letStalls_;
+    std::map<std::string, Seat> seated_;
+    std::vector<HuntedNote> hunted_;
+    std::map<std::string, std::vector<Chapel>> chapels_;
     std::int64_t chapelsDay_ = -1;
     const Chapel& chapel(const std::string& community);
+    // Restday's places at the service (LifeDay::service), kept for the day and the roster's places.
+    std::shared_ptr<const std::unordered_map<std::string, ServicePlace>> service_;
+    std::int64_t serviceDay_ = -1;
+    std::uint64_t serviceKey_ = 0;
+    void seatService(LifeDay& day, std::int64_t today);
     void planDays();
     std::int64_t crimeHour_ = -1;
     std::map<std::string, double> stealReady_;              // When each may try again.

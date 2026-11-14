@@ -616,8 +616,20 @@ their profit goes to it, and each shop's manager is paid a wage.
     First Oath* (Upper Accord).
 
   Each church takes them in turn from its own place in the list, so none repeats within four weeks.
+- **Every church, one wolf to a seat** (repaired 2026-11-14, the user's go-ahead): in Ridgemere 2.0 the first clergy
+  room was the Chapter House, and the city's whole third, 199 wolves, went into its sixty seats on 56 tiles (seats by a
+  hash of each wolf, every clergy on its one pulpit), while the Cathedral's and the Chapel of the Tide's pews stood
+  empty. Now a community's places of worship (`World::churches`) are the rooms its clergy work in that have pews built
+  (`p`), else its first such room as before; each one's seats are the open floor beside its pews (else every other
+  open tile, at most `ChapelSeats`, 60), the front first. Once a day (`World::seatService`, into `LifeDay::service`) each
+  church's first post held preaches at its pulpit, its other clergy serve at their own posts ("at church"), and the
+  week's third, in a lottery of the day, each takes a seat of its own in the nearest church (by where its home's door
+  comes out) with one free; those left without keep their Restday. The community's chapel (its dole's steps, its
+  weddings) is the first of them. On DEV build 73: Chapter House 11 seats, Cathedral 242, Chapel of the Tide 47.
 - Tests: `schedules_tests` `restdayService` (Greyfen with a chapel: the preacher, some of the town and not all, the
-  plate, over by noon); `game_tests` `aSermonOnRestday` (a player in the chapel hears the sermon begin).
+  plate, over by noon), `restdayChurchesFit` (two chapels with pews and 120 more townsfolk: each full to its seats and
+  no more, a tile each, the nearest with room, the rest at home, each keeper preaching in her own); `game_tests`
+  `aSermonOnRestday` (a player in the chapel hears the sermon begin).
 - **Not yet:** the devout going more often than others, and sermons that answer the town's news (a death, a raid).
 
 - **The service.** On Restday morning (9 to 11), a share of each town (a third, varying by wolf and week; the devout
