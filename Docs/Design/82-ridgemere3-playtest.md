@@ -2,6 +2,15 @@
 
 Ridgemere3 is the active development world for a console-style character map, reminiscent of old MUD and MUSH clients. Repeat monospaced characters to make terrain textures (`:` for moss, punctuation for grass), visible blocked trunk footprints (`||`), layered canopies (`^`), walls (`#`) and roofs (`/` or `=`). Colour and dark tile backgrounds may support the text, but painted rectangles, geometric trunks and roof illustrations must not become the objects themselves. Do not commission or generate raster artwork for this map pass. A tree has a solid trunk tile and a canopy above it; a building has a solid footprint and an overhead roof. Keep the player's amber `[W]` visible behind overhead layers. Preserve room interiors and their doors while making exterior footprints legible.
 
+## Visual audit, 2026-11-14
+
+- Captured the actual client against a read-only Ridgemere3 scratch server (world build 74) in `w_ridgemere_1_1`, around local `(95–104, 56–59)`, at daylight and rainy night, with 22 and 28 pixels per tile. The amber `[W]` remains visible behind a tree canopy and a roof edge.
+- Rendered actual build-74 terrain from `w_ridgemere_2_0` (Rainward Woods, North) at 24 pixels per tile, local `(120–149, 120–137)`, and at editor scale, 12 pixels per tile, local `(105–164, 111–146)`, using the shared character texture routines. This checks the map data and low-zoom fallback; it is not a screenshot of the Atlas UI.
+- At player scale, dense canopies overlap each other and the moss beneath them. The blocked `||` trunk footprint becomes hard to locate, despite moss and trunks having different characters. The many `&` fern glyphs add a regular noise pattern.
+- At editor scale, blocked trees collapse to `T` and moss to `:`, which are distinguishable, but dense forest still lacks a clear passable route at a glance.
+- In the city, broad roofs read as uninterrupted repeated `/` fields. Roof eaves and doors need a stronger building edge and entrance cue. Rainy night leaves the ground and roof characters faint against their backgrounds.
+- Before changing these patterns, inspect a forest location and zoom levels in the actual Atlas UI and capture a player standing behind a canopy in the live forest client. The current forest capture is data-backed but does not include the complete app presentation.
+
 ## Playtest observations, 2026-11-14
 
 - The minimap switches between World Map and Local Map.
