@@ -2,7 +2,7 @@
 export const treeCodes = new Set(['P', 'Y', '$', '1', '2', '@']);
 const roofCodes = new Set(['Z', 'L', 'Q', 'V', '[']);
 const wallCodes = new Set(['#', 'H', 'M', ']', 'j']);
-const openTextures = new Set(['.', 'd', '/', '_', 'f', ',', '"', '!', ';', 'r', 's', '*', '0', 'D', '-', '3', '5', '4']);
+const openTextures = new Set(['.', 'd', '/', '_', 'f', ',', '"', '!', '&', 'B', ';', 'r', 's', '*', '0', 'D', '-', '3', '5', '4']);
 
 const hash = (x: number, y: number) => (Math.imul(x + 1013, 1597334677) ^ Math.imul(y + 2047, 3812015801)) >>> 0;
 
@@ -16,7 +16,8 @@ export function paintBlockTile(c: CanvasRenderingContext2D, code: string, x: num
     c.textAlign = 'center'; c.textBaseline = 'middle';
     if (tile < 15) {
         c.font = Math.max(6, Math.floor(tile * .7)) + 'px monospace';
-        const mark = treeCodes.has(code) ? 'T' : roofCodes.has(code) || wallCodes.has(code) ? '#' : code === '!' ? ':' : '.';
+        const mark = treeCodes.has(code) ? 'T' : roofCodes.has(code) || wallCodes.has(code) ? '#'
+            : code === '!' ? ':' : code === '&' ? 'v' : code === 'B' ? '*' : '.';
         c.fillText(mark, px + tile / 2, py + tile / 2);
         c.restore();
         return true;
@@ -28,6 +29,8 @@ export function paintBlockTile(c: CanvasRenderingContext2D, code: string, x: num
     else if (code === 'j') lines = ['|[]|', '|__|'];
     else if (wallCodes.has(code)) lines = ['####', '#::#'];
     else if (code === '!') lines = hash(x, y) & 1 ? ['::::', ':.:.'] : [':.:.', '::::'];
+    else if (code === '&') lines = hash(x, y) & 1 ? [' v  ', ';v; '] : ['  v ', ' ;v;'];
+    else if (code === 'B') lines = hash(x, y) & 1 ? [' ** ', '*::*'] : ['* * ', ' ** '];
     else if (code === ',' || code === '"' || code === ';' || code === '4') lines = hash(x, y) & 1 ? ["'  ,", ", ' "] : [",  '", "' , "];
     else if (code === 'd' || code === '.' || code === '/' || code === '-') lines = ['....', '. ..'];
     else lines = [' .  ', '  . '];
