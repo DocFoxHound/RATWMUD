@@ -208,6 +208,11 @@ with scent. The place panel shows them as now.
   stalls a square, one a wolf *(placeholders)*.
 - **Free spots** are those no merchant is sent to that day. `tradingAt` needs one check (skip a spot let to a player),
   agreed with the economy session that owns `RatwResidents.cpp`. The phase can't ship without it.
+  *(Repaired 2026-11-14, the user's go-ahead: merchants went to spots by a hash of their ids, a hundred of Ridgemere's
+  keepers on its squares' 38 spots, up to six on one. Now a stallholder whose post is on the square (in its stalls'
+  cell, within 40 tiles of one) keeps its own stall, and the keepers of the other shops take their square's spots one
+  to a spot, in a lottery of the day; those the spots run out for keep their shops (`Society::decideAuthored`,
+  `stallOf`). Test: `schedules_tests` `stallsOneEach`.)*
 - **Wares:** goods from the purse, each with a price (1 to 999p). They stay in the purse, reserved by the listing
   (`Stall{spot, keeper, wares[{item, quantity, price}]}`): a reserved good can't be sold elsewhere, given or eaten
   without taking it off.

@@ -285,15 +285,20 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
     const auto pick = [](const std::vector<Spot>& spots, const std::string& id) -> const Spot* {
         return spots.empty() ? nullptr : &spots[std::hash<std::string>{}(id) % spots.size()];
     };
+    // Restday's service: one's place at it (World::planDays), or null.
+    const auto serviceOf = [&](const std::string& id) -> const ServicePlace* {
+        if (!day_.service)
+            return nullptr;
+        const auto found = day_.service->find(id);
+        return found == day_.service->end() ? nullptr : &found->second;
+    };
     // Where a merchant trades now: a stall on the square on Marketday mornings (unless the weather is foul), else the
     // shop. Only a city has stalls built (Docs/Design/39), and its own stallholders keep them every day; a town has
-    // none, and no market day. (Asked before the threads decide: places are kept as they're first asked.)
+    // none, and no market day. Each keeper has a stall spot of its own (stallOf, below, before the threads decide).
+    std::unordered_map<std::string, const Spot*> stallOf;
     const auto tradingAt = [&](const Position& p, const std::string& holder) -> Spot {
-        const auto* nearest = marketPlan(p.work.cell, p.work.x, p.work.y);
-        const auto& plan = nearest ? *nearest : planFor(p.work.cell);
-        if (plan.kind == "market"sv && !plan.foul && hour >= 7 && hour < 14)
-            if (const auto* stall = pick(plan.stalls, holder))
-                return *stall;
+        if (const auto found = stallOf.find(holder); found != stallOf.end())
+            return *found->second;
         return p.work;
     };
     atStall_.clear();
@@ -347,6 +352,38 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
                 ++body;
             if (body != bodies.end() && body->first == id)
                 bodyOf[i] = &body->second;
+        }
+    }
+    // Marketday's stalls (doc 54, 3), from seven to two in fair weather: a stallholder (a post on the square, among its
+    // stalls) keeps its own stall; the keepers of the other shops take their market square's stall spots, one to a spot,
+    // in a lottery of the day, and those the spots run out for keep their shops. (Each sent to a spot by a hash of its
+    // id, they were: in Ridgemere 2.0 a hundred keepers on 38 spots, up to six on one.)
+    if (hour >= 7 && hour < 14)
+    {
+        constexpr double StallReach = 40;           // (As far as a square's stalls reach from its middle: fillSquare.)
+        std::vector<std::tuple<const DayPlan*, std::uint64_t, const std::string*>> keepers;
+        for (const auto& shop : shopkeeping_)
+        {
+            const auto& work = shop.position->work;
+            if (shop.holder->empty())
+                continue;                           // (Shut.)
+            const auto* nearest = marketPlan(work.cell, work.x, work.y);
+            const auto& plan = nearest ? *nearest : planFor(work.cell);
+            if (plan.kind != "market"sv || plan.foul ||
+                std::any_of(plan.stalls.begin(), plan.stalls.end(), [&](const Spot& s) {
+                    return s.cell == work.cell && std::hypot(s.x - work.x, s.y - work.y) <= StallReach;
+                }))
+                continue;                           // (No market, or a stall of its own on the square.)
+            keepers.emplace_back(&plan, std::hash<std::string>{}(shop.position->id + "|stall|" + std::to_string(today)), shop.holder);
+        }
+        std::sort(keepers.begin(), keepers.end());
+        std::size_t next = 0;
+        for (std::size_t i = 0; i < keepers.size(); ++i)
+        {
+            const auto* plan = std::get<0>(keepers[i]);
+            next = i && std::get<0>(keepers[i - 1]) == plan ? next + 1 : 0;
+            if (next < plan->stalls.size())
+                stallOf.emplace(*std::get<2>(keepers[i]), &plan->stalls[next]);
         }
     }
     // Each shop's keeper: where it trades now (worked out here, before the threads), and whether it is there keeping it.
@@ -477,8 +514,10 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         goal = {life.homeCell, life.homeX, life.homeY};
         if (const auto* bed = rec.bed; bed && bed->cell == life.homeCell)
             goal = *bed;                            // Their place on a bed at home (doc 36).
-        // Marketday: each of the townsfolk goes for an hour, some time between eight and one.
-        const auto visit = [&] { return 8 + int(std::hash<std::string>{}(id + "market") % 5); };
+        // Marketday: each of the townsfolk goes for an hour, some time between eight and one; a child with its friend
+        // group, in the group's hour (below: they meet at one place there).
+        const std::string& friends = body.age < 16 && !learning ? friendGroup(id) : id;
+        const auto visit = [&] { return 8 + int(std::hash<std::string>{}((friends.empty() ? id : friends) + "market") % 5); };
         const bool marketHour = plan.kind == "market"sv && !plan.foul && !plan.crowd.empty() && !guard && !merchantRole &&
                                 hour >= visit() && hour < visit() + 1;
         c.routeGoal = false;
@@ -508,22 +547,15 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             c.routeGoal = patrols;
             reason = "On watch for the town.";
         }
-        else if (plan.kind == "rest"sv && !plan.pews.empty() && hour >= ServiceStart && hour < ServiceEnd && !guard &&
-                 (clergy(job->title) || goesToChurch(id, today)))
+        else if (const auto* at = plan.kind == "rest"sv && hour >= ServiceStart && hour < ServiceEnd && !guard ? serviceOf(id) : nullptr)
         {
-            // Restday's service: the clergy at the pulpit, a third of the town on the benches.
-            if (clergy(job->title))
-            {
-                task = "preaching";
-                goal = plan.pulpit;
-                reason = "Restday: preaching to the town.";
-            }
-            else
-            {
-                task = "at church";
-                goal = *pick(plan.pews, id);
-                reason = "Restday: at the morning service.";
-            }
+            // Restday's service: a preacher at each church's pulpit, its other clergy at their posts, and a third of the
+            // town each on a seat of its own (World::planDays: the nearest church with room; the rest keep their Restday).
+            goal = at->at;
+            task = at->role == ServicePlace::Preaching ? "preaching" : "at church";
+            reason = at->role == ServicePlace::Preaching ? "Restday: preaching to the town."
+                     : at->role == ServicePlace::Serving ? "Restday: serving at the morning service."
+                                                          : "Restday: at the morning service.";
         }
         else if (merchantRole && onHours)
         {
@@ -625,15 +657,17 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             if (task == "sleep"sv)
                 reason = "Resting on the road; home is far behind.";
         }
-        // Children keep together (the user, 2026-10-05): at play and in the evenings a friend group meets at one place.
-        if (body.age < 16 && !learning && !guard && !merchantRole && (task == job->title || task == "socialize"sv))
-            if (const auto& group = friendGroup(id); !group.empty())
-                if (const auto* meet = pick(plan.crowd, group))
-                {
-                    goal = *meet;
-                    c.routeGoal = false;
-                    reason = task == "socialize"sv ? "Out with friends for the evening." : "Playing with friends.";
-                }
+        // Children keep together (the user, 2026-10-05): a friend group meets at one place on the square. Only in its hour
+        // at the market (the square's crowd is there only on Marketday): at play and in the evenings too, it put every
+        // child of Ridgemere's city, a hundred and more, on the one square from nine in the morning to ten at night, out
+        // of school (the crowd the user saw, 2026-11-13).
+        if (task == "at the market"sv && &friends != &id && !friends.empty())
+            if (const auto* meet = pick(plan.crowd, friends))
+            {
+                goal = *meet;
+                c.routeGoal = false;
+                reason = "Marketday: with friends at the market.";
+            }
         // A civilian with a wander area roams it during work hours and evenings, moving on every half hour.
         if (!r->wander.empty() && !guard && !merchantRole && (task == job->title || task == "socialize"sv))
         {

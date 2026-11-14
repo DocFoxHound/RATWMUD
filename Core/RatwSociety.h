@@ -137,9 +137,24 @@ struct Markets
         return best;
     }
 };
+// One's place at Restday's service (World::planDays): a preacher at its church's pulpit, the church's other clergy at
+// their own posts, and the townsfolk going that week each on a seat of its own in the nearest of their community's
+// churches with one free (a full city's rest stay home or keep their Restday).
+struct ServicePlace
+{
+    enum Role : std::uint8_t
+    {
+        Seated,
+        Preaching,
+        Serving
+    };
+    Spot at;
+    Role role = Seated;
+};
 struct LifeDay
 {
     std::map<std::string, DayPlan> plans;           // By community (a region), and a city's other markets ("<city>#1"...).
+    std::shared_ptr<const std::unordered_map<std::string, ServicePlace>> service;   // By resident (null: nobody's).
     std::shared_ptr<const Markets> markets;         // (Null: one market to a community.)
     std::function<std::string(const std::string& cell)> communityOf;
     // The House whose district a cell is in (by the House's name: "Greatly"; "" for none; World::districtHouse: the cell's

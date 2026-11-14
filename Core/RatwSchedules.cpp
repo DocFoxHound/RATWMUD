@@ -192,7 +192,7 @@ void World::fillSquare(MarketSquare& sq, std::string at, Vec2 where)
             }
 }
 
-const World::Chapel& World::chapel(const std::string& community)
+const std::vector<World::Chapel>& World::churches(const std::string& community)
 {
     const auto today = std::int64_t(std::floor(calendarDays_));
     if (today != chapelsDay_)
@@ -202,31 +202,185 @@ const World::Chapel& World::chapel(const std::string& community)
     }
     if (const auto found = chapels_.find(community); found != chapels_.end())
         return found->second;
-    auto& ch = chapels_[community];
+    auto& list = chapels_[community];
     if (community.empty())
-        return ch;
-    // The church is where the town's clergy work (a priest's, a chapel keeper's post): the first such indoors.
+        return list;
+    // The rooms indoors its clergy work in (a priest's, a chapel keeper's post), in the order of their first posts, and
+    // which of them have pews built: those are its places of worship; without any, the first room alone (a hall kept as
+    // a chapel). In Ridgemere 2.0 all its clergy's rooms were one "chapel" (the Chapter House, the first), sixty seats on
+    // 56 tiles for about 200 wolves, while the Cathedral's 189 pews and the Chapel of the Tide's stood empty.
+    std::vector<const Position*> firsts;
+    std::vector<bool> pewed;
     for (const auto& p : society_.positions())
     {
-        if (!Society::clergy(p.title) || lawTown(p.work.cell) != community)
+        if (!Society::clergy(p.title) || lawTown(p.work.cell) != community ||
+            std::any_of(firsts.begin(), firsts.end(), [&](const Position* f) { return f->work.cell == p.work.cell; }))
             continue;
         const auto* c = cell(p.work.cell);
-        if (!c || c->outdoors || !ensureLoaded(p.work.cell).ok)
+        if (!c || c->outdoors || !ensureLoaded(p.work.cell).ok || !(c = cell(p.work.cell)))
             continue;
-        c = cell(p.work.cell);
-        ch.found = true;
-        ch.pulpit = p.work;
-        // Its seats: open floor a few strides from the pulpit, up to sixty of them.
-        for (int y = 1; y < c->height - 1 && ch.pews.size() < 60; ++y)
-            for (int x = 1; x < c->width - 1 && ch.pews.size() < 60; ++x)
-            {
-                const Vec2 at{x + .5, y + .5};
-                if (std::hypot(at.x - p.work.x, at.y - p.work.y) >= 2.5 && passable(p.work.cell, at))
-                    ch.pews.push_back({p.work.cell, at.x, at.y});
-            }
-        break;
+        firsts.push_back(&p);
+        pewed.push_back(std::any_of(c->tiles.begin(), c->tiles.end(), [](const Tile& t) { return t.glyph == 'p'; }));
     }
-    return ch;
+    const bool anyPews = std::find(pewed.begin(), pewed.end(), true) != pewed.end();
+    for (std::size_t i = 0; i < firsts.size(); ++i)
+    {
+        if (anyPews ? !pewed[i] : i > 0)
+            continue;
+        const auto& at = firsts[i]->work;
+        const auto* c = cell(at.cell);
+        std::set<std::pair<int, int>> posts;        // (Where its clergy and anyone else working there stand.)
+        for (const auto& p : society_.positions())
+            if (p.work.cell == at.cell)
+                posts.insert({int(std::floor(p.work.x)), int(std::floor(p.work.y))});
+        Chapel ch;
+        ch.found = true;
+        ch.pulpit = at;
+        for (int y = 1; y < c->height - 1; ++y)
+            for (int x = 1; x < c->width - 1; ++x)
+            {
+                const Vec2 p{x + .5, y + .5};
+                const bool beside = [&] {
+                    for (const auto [dx, dy] : {std::pair{0, 1}, std::pair{0, -1}, std::pair{1, 0}, std::pair{-1, 0}})
+                        if (const auto* t = c->tile(x + dx, y + dy); t && t->glyph == 'p')
+                            return true;
+                    return false;
+                }();
+                if ((pewed[i] ? beside : (x + y) % 2 == 0) && std::hypot(p.x - at.x, p.y - at.y) >= 2.5 && passable(at.cell, p) &&
+                    !posts.count({x, y}) && !inDoorway(at.cell, p))
+                    ch.pews.push_back({at.cell, p.x, p.y});
+            }
+        // The front first (nearest the pulpit), so a half-full church fills from the front.
+        std::stable_sort(ch.pews.begin(), ch.pews.end(), [&](const Spot& a, const Spot& b) {
+            return std::hypot(a.x - at.x, a.y - at.y) < std::hypot(b.x - at.x, b.y - at.y);
+        });
+        if (!pewed[i] && ch.pews.size() > std::size_t(ChapelSeats))
+            ch.pews.resize(std::size_t(ChapelSeats));
+        list.push_back(std::move(ch));
+    }
+    return list;
+}
+
+const World::Chapel& World::chapel(const std::string& community)
+{
+    static const Chapel none;
+    const auto& list = churches(community);
+    return list.empty() ? none : list.front();
+}
+
+void World::seatService(LifeDay& day, std::int64_t today)
+{
+    // Restday's service (doc 42, Phase 6): where each one is at it, worked out once a day (and again if the roster's places
+    // move). In each community keeping Restday: in each of its churches the first clergy post held preaches at the pulpit
+    // and its other clergy serve at their own posts; the townsfolk going this week (Society::goesToChurch: a third, never
+    // the Watch, never clergy) take a seat each, in a lottery of the day, in the nearest church with one free. Those left
+    // without one keep their Restday (home, a walk, family, the tavern).
+    const auto key = society_.placesRevision();
+    if (!service_ || serviceDay_ != today || serviceKey_ != key)
+    {
+        serviceDay_ = today;
+        serviceKey_ = key;
+        auto service = std::make_shared<std::unordered_map<std::string, ServicePlace>>();
+        // Where a place is on the map: an outdoor spot by its cell's corner, an interior by where its way out comes out
+        // into the open (the fewest doors out: an upstairs room by its house's door), else by its own corner.
+        std::unordered_map<std::string, std::vector<const Door*>> doorsFrom;
+        for (const auto& [id, d] : doors_)
+            if (!d.targetCell.empty() && d.targetCell != d.cellId)
+                doorsFrom[d.cellId].push_back(&d);
+        std::unordered_map<std::string, Vec2> outside;
+        const auto mapAt = [&](const std::string& cellId, double x, double y) -> Vec2 {
+            const auto* c = cell(cellId);
+            if (!c)
+                return {x, y};
+            if (c->outdoors)
+                return {c->worldX + x, c->worldY + y};
+            auto [found, fresh] = outside.try_emplace(cellId, Vec2{c->worldX + x, c->worldY + y});
+            if (fresh)
+            {
+                std::vector<std::string> queue{cellId};
+                std::set<std::string> seen{cellId};
+                bool out = false;
+                for (std::size_t at = 0; at < queue.size() && at < 16 && !out; ++at)
+                    if (const auto from = doorsFrom.find(queue[at]); from != doorsFrom.end())
+                        for (const Door* d : from->second)
+                        {
+                            const auto* to = cell(d->targetCell);
+                            if (to && to->outdoors)
+                            {
+                                found->second = {to->worldX + d->arrival.x, to->worldY + d->arrival.y};
+                                out = true;
+                                break;
+                            }
+                            if (to && seen.insert(d->targetCell).second)
+                                queue.push_back(d->targetCell);
+                        }
+            }
+            return found->second;
+        };
+        std::map<std::string, std::vector<std::pair<std::uint64_t, std::string>>> goers;   // By community: lot, resident.
+        for (const auto& [id, life] : society_.state().residents)
+        {
+            const auto plan = day.plans.find(lawTown(life.homeCell));
+            if (plan == day.plans.end() || plan->first.empty() || plan->second.kind != "rest" || !Society::goesToChurch(id, today))
+                continue;
+            if (const auto* job = society_.jobOf(id); job && (job->role == "guard" || Society::clergy(job->title)))
+                continue;
+            if (const auto* e = entity(id); e && e->dead)
+                continue;
+            goers[plan->first].push_back({std::hash<std::string>{}(id + "|pew|" + std::to_string(today)), id});
+        }
+        for (auto& [community, list] : goers)
+        {
+            const auto& rooms = churches(community);
+            if (rooms.empty())
+                continue;
+            std::vector<std::size_t> taken(rooms.size(), 0);
+            std::vector<Vec2> where;
+            for (const auto& room : rooms)
+                where.push_back(mapAt(room.pulpit.cell, room.pulpit.x, room.pulpit.y));
+            std::sort(list.begin(), list.end());
+            for (const auto& [lot, id] : list)
+            {
+                const auto& life = society_.state().residents.at(id);
+                const auto home = mapAt(life.homeCell, life.homeX, life.homeY);
+                std::size_t best = rooms.size();
+                for (std::size_t r = 0; r < rooms.size(); ++r)
+                    if (taken[r] < rooms[r].pews.size() &&
+                        (best == rooms.size() ||
+                         std::hypot(where[r].x - home.x, where[r].y - home.y) < std::hypot(where[best].x - home.x, where[best].y - home.y)))
+                        best = r;
+                if (best < rooms.size())
+                    (*service)[id] = {rooms[best].pews[taken[best]++], ServicePlace::Seated};
+            }
+        }
+        // The clergy: each church's first post held preaches; the others there serve at their own posts.
+        for (const auto& [community, plan] : day.plans)
+        {
+            if (community.empty() || community.find('#') != std::string::npos || plan.kind != "rest")
+                continue;
+            const auto& rooms = churches(community);
+            std::set<std::string> preached;
+            for (const auto& p : society_.positions())
+            {
+                if (!Society::clergy(p.title))
+                    continue;
+                const auto room = std::find_if(rooms.begin(), rooms.end(), [&](const Chapel& ch) { return ch.pulpit.cell == p.work.cell; });
+                if (room == rooms.end())
+                    continue;
+                const auto held = society_.state().careers.positions.find(p.id);
+                if (held == society_.state().careers.positions.end() || held->second.holder.empty())
+                    continue;
+                if (const auto* e = entity(held->second.holder); e && e->dead)
+                    continue;
+                if (preached.insert(room->pulpit.cell).second)
+                    (*service)[held->second.holder] = {room->pulpit, ServicePlace::Preaching};
+                else
+                    (*service)[held->second.holder] = {p.work, ServicePlace::Serving};
+            }
+        }
+        service_ = std::move(service);
+    }
+    day.service = service_;
 }
 
 DayPlan World::dayPlan(const std::string& community)
@@ -463,6 +617,7 @@ void World::planDays()
         day.plans.emplace(community, std::move(plan));
     }
     day.markets = markets_;
+    seatService(day, today);
     if (festivalsBegun_.size() > 4096)
         festivalsBegun_.clear();
     day.communityOf = [this](const std::string& cellId) { return lawTown(cellId); };
