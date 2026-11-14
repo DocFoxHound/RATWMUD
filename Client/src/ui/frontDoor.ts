@@ -343,7 +343,10 @@ export class FrontDoor {
         this.root.classList.remove('busy');
         const ok = event.ok === true;
         const next = str(event, 'stage', 'login');
-        this.setMessage(str(event, 'message'), !ok);
+        // A password world's lobby says "local development accounts only" with every answer that has nothing else to
+        // say; the footnote under the page says it already, so it isn't said twice.
+        const said = str(event, 'message');
+        this.setMessage(ok && event.localOnly === true && /^Local development accounts only\b/.test(said) ? '' : said, !ok);
         if (this.password) this.password.value = '';
         if (next === 'worlds') {
             // Central mode: the server list (client.ts).
@@ -749,16 +752,22 @@ export class FrontDoor {
         }
         // The account's handle (doc 50): the name friends and circles see, never the sign-in name. (Per world: in
         // central mode a world asks at the first arrival, doc 77 Q5.)
+        // (Shown in the page's card, under the wolf: the slots' column has no room for it.)
+        let handleBox: HTMLElement | null = null;
         if (this.mode === 'world' && this.account && !str(this.account, 'handle')) {
-            const handle = el('input', {className: 'door-input', placeholder: 'Choose a handle (not your sign-in name)', maxLength: 24});
+            const handle = el('input', {type: 'text', className: 'door-input', placeholder: 'Choose a handle (not your sign-in name)', maxLength: 24});
             handle.dataset.handle = '1';
-            slots.append(el('div', {className: 'door-handle'},
+            const save = this.button('SAVE HANDLE', () => {
+                this.setMessage('Saving your handle…');
+                this.submit({type: 'account_handle', handle: handle.value});
+            });
+            handle.addEventListener('keydown', e => {
+                if (e.key === 'Enter') save.click();
+            });
+            handleBox = el('div', {className: 'door-handle'},
                 el('p', {className: 'gold small'}, 'YOUR HANDLE'),
                 el('p', {className: 'muted small'}, 'Friends and circles will know you by it. It is never shown to strangers, and it can\'t be your sign-in name.'),
-                handle, this.button('Save handle', () => {
-                    this.setMessage('Saving your handle…');
-                    this.submit({type: 'account_handle', handle: handle.value});
-                })));
+                el('div', {className: 'door-handle-row'}, handle, save));
         }
         slots.append(el('div', {className: 'grow'}));
         if (central) slots.append(this.backButton('Back to the main menu', 'menu', 'menu'));
@@ -795,6 +804,7 @@ export class FrontDoor {
                 : 'Choose an empty slot to make your first wolf.'),
             canvas,
             ...below,
+            ...(handleBox ? [handleBox] : []),
             ...(go ? [go] : []));
         return el('div', {className: 'door-row'}, slots, detail);
     }

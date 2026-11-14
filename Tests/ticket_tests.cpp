@@ -660,6 +660,31 @@ void wolvesJoinArriveAndComeStraightBack()
         std::string problem;
         expect(!g.start(problem), "a password world won't start on a ticket world's accounts");
     }
+    // But a scratch server writes nothing: on the same save it sets the ticket accounts aside, says so, and signs in
+    // with passwords as a fresh world would; the save is left as it was.
+    {
+        const auto before = std::filesystem::last_write_time(save);
+        game::Options plain;
+        plain.tiesOptional = true;
+        plain.hiddenNames = false;
+        plain.savePath = save;
+        plain.scratch = true;
+        game::Game g(plain);
+        std::string said;
+        g.log = [&said](const char*, const std::string& line) { said += line + "\n"; };
+        std::string problem;
+        expect(g.start(problem), "a scratch password server starts on a ticket world's save: " + problem);
+        expect(said.find("RATW_SCRATCH_ACCOUNTS") != std::string::npos, "and says it set the accounts aside: " + said);
+        Client a;
+        a.id = 13;
+        g.connect(&a);
+        say(g, &a, cmd({{"type", "auth_register"}, {"username", "wren"}, {"password", "a long enough password"}}));
+        g.settle();
+        expect(a.accountUsername == "wren", "and registers a local account");
+        g.disconnect(&a);
+        g.save();
+        expect(std::filesystem::last_write_time(save) == before, "and the ticket save is left as it was");
+    }
     const auto passwordSave = (f.dir / "password.json").string();
     {
         game::Options plain;

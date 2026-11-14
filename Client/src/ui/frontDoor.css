@@ -115,6 +115,26 @@
 .door .slot .slot-face { width: 62px; height: 62px; }
 .door .build-card { background: rgba(41, 55, 47, .6); }
 .door-detail .roster-choices { margin-top: 4px; }
+/* A world's roster (password mode): the title screen's dusk behind it, the slots and the card in its frames, and
+   the column always inside the page (never over the footnote). */
+.door[data-page=roster] { background: radial-gradient(ellipse 80% 70% at 28% 30%, var(--door-glow) 0%, #152022 48%, var(--door-deep) 100%); }
+.door[data-page=roster] .door-slots { min-height: 0; overflow-y: auto; }
+.door[data-page=roster] .slot { flex: none; padding: 11px 20px; background: rgba(41, 55, 47, .72); border: 1px solid var(--door-line);
+    border-left: 4px solid transparent; border-radius: 4px; }
+.door[data-page=roster] .slot:hover:not(.selected) { background: rgba(48, 64, 56, .9); border-left-color: var(--sage); }
+.door[data-page=roster] .slot.selected { background: var(--gold); color: var(--ink); border-left-color: var(--paper); }
+.door[data-page=roster] .door-slots > button.secondary { flex: none; background: transparent; color: var(--muted);
+    border: 1px solid var(--door-line); border-radius: 4px; }
+.door[data-page=roster] .door-slots > button.secondary:hover { color: var(--paper); background: rgba(41, 55, 47, .6); }
+.door[data-page=roster] .door-detail { background: rgba(16, 24, 25, .82); border: 1px solid var(--door-line); border-radius: 6px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .45); }
+.door[data-page=roster] .door-footnote { margin-top: 6px; }
+.door[data-page=roster] .door-detail > button.primary { letter-spacing: .12em; }
+.door .door-handle { flex: none; gap: 8px; margin: 8px 0 16px; padding: 16px 20px; background: rgba(10, 15, 16, .55);
+    border: 1px solid var(--door-line); border-left: 4px solid var(--gold); border-radius: 4px; }
+.door-handle-row { display: flex; gap: 12px; align-items: stretch; }
+.door .door-handle-row input { flex: 1; min-width: 0; font-size: 19px; padding: 10px 12px; }
+.door .door-handle-row button { flex: none; margin: 0; padding: 10px 20px; font-size: 15px; letter-spacing: .12em; }
 .door .roster-actions { justify-content: flex-end; }
 .door .roster-actions button.primary { flex: none; min-width: 220px; }
 

@@ -1425,11 +1425,17 @@ export class GamePainter {
         else this.drawFights(ox, oy, tile);
         this.drawEnvironment(true);
         // Words on the map, kept to its corners: wind and height top left, travel and turning along the bottom.
+        // Each on a small dark backing, so the glyphs under them never muddle them.
         const L = map.left + 14, T = map.top + 12, B = map.bottom;
-        p.text(L, T, 'N ^', 10, Muted, true);
+        const label = (x: number, y: number, words: string, size: number, mono: boolean) => {
+            const [w, h] = p.measure(words, size, mono);
+            p.box(x - 5, y - 2, w + 10, h + 3, withAlpha(Ink, 0.9));
+            p.text(x, y, words, size, Muted, mono);
+        };
+        label(L, T, 'N ^', 10, true);
         if (!s.battle) {                                            // (In a fight, the turn order has the top.)
-            p.text(L + 46, T, windLabel(s.outdoors, s.windStrength, s.windDirection, s.windVariable), 9, Muted);
-            p.text(L, T + 18, elevationLabel(s.selfHeight()), 8, Muted, true);
+            label(L + 46, T, windLabel(s.outdoors, s.windStrength, s.windDirection, s.windVariable), 9, false);
+            label(L, T + 18, elevationLabel(s.selfHeight()), 8, true);
         }
         const travel = obj(s.snapshot, 'travel');
         if (bool(travel, 'active') || bool(travel, 'paused')) {

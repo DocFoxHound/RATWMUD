@@ -577,8 +577,13 @@ export class Hud {
         const ring = el('div', 'radial-ring', this.menu);
         setStyle(ring, 'width', `${radius * 2}px`);
         setStyle(ring, 'height', `${radius * 2}px`);
-        const centre = button(s.contextName || '…', 'radial-centre', this.menu, () => (s.contextTarget = ''));
-        centre.title = 'Close (Esc)';
+        // The name in the middle, at most three lines (smaller for a long one, an ellipsis past that); the whole of it
+        // in the tooltip.
+        const name = s.contextName || '…';
+        const centre = button('', `radial-centre${name.length > 34 ? ' longest' : name.length > 18 ? ' long' : ''}`, this.menu,
+            () => (s.contextTarget = ''));
+        el('span', 'radial-name', centre, name);
+        centre.title = `${name}\nClose (Esc)`;
         s.contextActions.forEach((action, i) => {
             const onRight = i < right, k = onRight ? right : n - right, j = onRight ? i : n - 1 - i;
             const spread = Math.min(72, 14 * k), angle = k > 1 ? (-spread + (2 * spread * j) / (k - 1)) * Math.PI / 180 : 0;

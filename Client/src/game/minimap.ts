@@ -219,7 +219,9 @@ export class MapRenderer {
                 c.fillStyle = p.current ? 'rgba(168,194,166,0.18)' : 'rgba(139,155,145,0.12)';
                 c.fillRect(x, y, w, h);
             }
-            if (realm && !p.current) continue;     // (Over the whole realm, a place's edge is only clutter.)
+            // (Over the whole realm a place's edge is only clutter, the wolf's own too: its box ran across the map
+            // zoomed in, and the wolf's mark says where it is.)
+            if (realm) continue;
             c.strokeStyle = p.current ? 'rgba(217,182,123,0.6)' : p.visible ? 'rgba(168,194,166,0.35)' : 'rgba(139,155,145,0.18)';
             c.lineWidth = 1;
             c.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
@@ -388,7 +390,7 @@ export class MapRenderer {
             c.closePath();
             c.fill();
         }
-        if (labels && realm) this.drawNames(c, realm, scale, toX, toY, iconAt);
+        if (labels && realm) this.drawNames(c, box, realm, scale, toX, toY, iconAt);
         else if (labels) {
             c.font = '12px sans-serif';
             c.textBaseline = 'top';
@@ -414,10 +416,18 @@ export class MapRenderer {
      * the names of the areas and towns"): larger places first and from further out, each where it doesn't cover one
      * already written; close in, the buildings' names under their icons.
      */
-    private drawNames(c: CanvasRenderingContext2D, realm: RealmMap, scale: number, toX: (x: number) => number, toY: (y: number) => number,
-        icons: {x: number; y: number; name: string; kind: string}[]) {
+    private drawNames(c: CanvasRenderingContext2D, box: {x: number; y: number; w: number; h: number}, realm: RealmMap, scale: number,
+        toX: (x: number) => number, toY: (y: number) => number, icons: {x: number; y: number; name: string; kind: string}[]) {
         const taken: {l: number; t: number; r: number; b: number}[] = [];
         const free = (l: number, t: number, r: number, b: number) => !taken.some(o => l < o.r && r > o.l && t < o.b && b > o.t);
+        // A name stays inside the map: moved in from an edge it would cross (a place near the edge keeps its name), and
+        // left out if it doesn't fit, or its place is further off than half its width (it isn't on the map).
+        const inside = (x: number, y: number, w: number, h: number): number | null => {
+            const pad = 6, half = w / 2;
+            if (w + 2 * pad > box.w || y - h / 2 < box.y + 2 || y + h / 2 > box.y + box.h - 2) return null;
+            if (x < box.x - half || x > box.x + box.w + half) return null;
+            return Math.max(box.x + pad + half, Math.min(box.x + box.w - pad - half, x));
+        };
         c.save();
         c.textAlign = 'center';
         c.textBaseline = 'middle';
@@ -433,8 +443,8 @@ export class MapRenderer {
             const words = style.spacing ? l.name.toUpperCase() : l.name;
             c.font = style.font;
             const w = c.measureText(words).width + (style.spacing ? words.length * 1.5 : 0), h = l.rank === 0 ? 18 : 15;
-            const x = toX(l.x), y = toY(l.y);
-            if (!free(x - w / 2 - 4, y - h / 2, x + w / 2 + 4, y + h / 2)) continue;
+            const y = toY(l.y), x = inside(toX(l.x), y, w, h);
+            if (x === null || !free(x - w / 2 - 4, y - h / 2, x + w / 2 + 4, y + h / 2)) continue;
             taken.push({l: x - w / 2 - 4, t: y - h / 2, r: x + w / 2 + 4, b: y + h / 2});
             if ('letterSpacing' in c) (c as unknown as {letterSpacing: string}).letterSpacing = style.spacing ? '1.5px' : '0px';
             c.strokeStyle = 'rgba(8,12,13,0.85)';
@@ -448,14 +458,14 @@ export class MapRenderer {
             c.font = "11px 'RATW Sans', sans-serif";
             for (const i of icons) {
                 if (i.kind === 'house') continue;
-                const w = c.measureText(i.name).width, y = i.y + 14;
-                if (!free(i.x - w / 2 - 2, y - 7, i.x + w / 2 + 2, y + 7)) continue;
-                taken.push({l: i.x - w / 2 - 2, t: y - 7, r: i.x + w / 2 + 2, b: y + 7});
+                const w = c.measureText(i.name).width, y = i.y + 14, x = inside(i.x, y, w, 14);
+                if (x === null || !free(x - w / 2 - 2, y - 7, x + w / 2 + 2, y + 7)) continue;
+                taken.push({l: x - w / 2 - 2, t: y - 7, r: x + w / 2 + 2, b: y + 7});
                 c.strokeStyle = 'rgba(8,12,13,0.85)';
                 c.lineWidth = 3;
-                c.strokeText(i.name, i.x, y);
+                c.strokeText(i.name, x, y);
                 c.fillStyle = '#e7dcc4';
-                c.fillText(i.name, i.x, y);
+                c.fillText(i.name, x, y);
             }
         }
         c.restore();

@@ -6469,7 +6469,26 @@ void Game::load(const std::string& payload)
         return;
     }
     accounts::Accounts restored(accounts_.kind());   // (One kind or the other, as this world keeps: doc 77, 5.1.)
-    if (document.has("accounts") && !restored.restore(state.accounts))
+    bool accountsSetAside = false;
+    const bool accountsBad = document.has("accounts") && !restored.restore(state.accounts);
+    if (accountsBad && options_.scratch)
+    {
+        // A scratch server writes nothing, so a save of the other kind (a laptop world run with --central holds ticket
+        // accounts, and a scratch server signs in with passwords) needn't stop it: its accounts are set aside for this
+        // run and it starts with fresh ones of its own kind. Only a save that is valid as the other kind; a broken one
+        // is refused as ever. The saved wolves stay in the world, unowned, until the real server owns them again.
+        accounts::Accounts other(accounts_.kind() == accounts::AccountKind::Central ? accounts::AccountKind::Password
+                                                                                     : accounts::AccountKind::Central);
+        if (other.restore(state.accounts))
+        {
+            accountsSetAside = true;
+            restored = accounts::Accounts(accounts_.kind());
+            note("info", std::string("RATW_SCRATCH_ACCOUNTS the save's ") + (ticketMode() ? "password" : "central (ticket)") +
+                             " accounts are set aside on this scratch server; it starts with fresh " +
+                             (ticketMode() ? "ticket" : "local") + " accounts (nothing is written back).");
+        }
+    }
+    if (accountsBad && !accountsSetAside)
     {
         storageReady_ = false;
         note("error", ticketMode() ? "RATW the save's accounts are not ticket accounts (a world never mixes them: doc 77); preserved and autosave disabled."
@@ -6487,7 +6506,7 @@ void Game::load(const std::string& payload)
     std::set<std::string> characterIds;
     for (const auto& player : saved.players)
         characterIds.insert(player.id);
-    if (!restored.referencesOnly(characterIds))
+    if (!accountsSetAside && !restored.referencesOnly(characterIds))
     {
         storageReady_ = false;
         note("error", "RATW character/account ownership is incomplete; autosave disabled.");

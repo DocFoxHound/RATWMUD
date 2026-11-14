@@ -77,7 +77,8 @@ export class StoryPanel {
         this.private_.title = 'Private messages with your friends, out of character, wherever they are';
         this.circleTabs = el('span', 'circle-tabs', tabs);   // One tab a circle (doc 50).
         // The place, one line (the user's notes, 2026-11-14): its name and the start of its description; the whole of it
-        // over the story on arriving (for a few seconds), on the pointer, or kept open with a click.
+        // under it on arriving (for a few seconds, pushing the story down), over the story on the pointer, or kept open
+        // with a click.
         this.placeLine = el('div', 'place-line', this.root);
         const placeHead = el('div', 'place-head', this.placeLine);
         this.place = el('h2', 'place', placeHead);
