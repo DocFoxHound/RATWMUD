@@ -2,11 +2,12 @@
  * Building templates for addBuilding(). Interiors are drawn with the street
  * door (+) on the bottom edge; the model flips them for north-facing doors.
  * footprint: [width, height] of the solid block stamped on the world canvas.
+ * roof: the solid exterior roof tile inside its wall rim; the interior remains a separate room.
  * beds / counter: interior tile coordinates offered as home and work places.
  */
 export const BUILDINGS = [
     {
-        id: 'shop', name: 'General store', footprint: [14, 9], open: true,
+        id: 'shop', name: 'General store', footprint: [14, 9], roof: 'L', open: true,
         description: 'Shelves of candles, rope, dried herbs and wrapped meals. A long counter keeps goods and customers politely apart.',
         lighting: {artificial: 1, daylightAccess: 0.6, tone: 'warm'}, counter: [15, 4], beds: [],
         interior: [
@@ -25,7 +26,7 @@ export const BUILDINGS = [
         ],
     },
     {
-        id: 'house', name: 'House', footprint: [8, 7], open: false,
+        id: 'house', name: 'House', footprint: [8, 7], roof: 'L', open: false,
         description: 'A tidy two-room house with a sleeping mat and a worn table.',
         lighting: {artificial: 0.8, daylightAccess: 0.5, tone: 'warm'}, beds: [[10, 3]],
         interior: [
@@ -41,7 +42,7 @@ export const BUILDINGS = [
         ],
     },
     {
-        id: 'cottage', name: 'Family cottage', footprint: [8, 7], open: false,
+        id: 'cottage', name: 'Family cottage', footprint: [8, 7], roof: 'L', open: false,
         description: 'A low family cottage with a shared table and two sleeping nooks along the back wall.',
         lighting: {artificial: 0.8, daylightAccess: 0.5, tone: 'warm'}, beds: [[2, 2], [9, 2]],
         interior: [
@@ -58,7 +59,7 @@ export const BUILDINGS = [
         ],
     },
     {
-        id: 'lodging', name: 'Lodging hall', footprint: [17, 9], open: false,
+        id: 'lodging', name: 'Lodging hall', footprint: [17, 9], roof: 'Q', open: false,
         description: 'A shared lodging hall. Screened sleeping bays line the back wall behind a long communal table.',
         lighting: {artificial: 1, daylightAccess: 0.4, tone: 'warm'}, beds: [[2, 2], [6, 2], [11, 2], [17, 2], [21, 2]],
         interior: [
@@ -77,7 +78,7 @@ export const BUILDINGS = [
         ],
     },
     {
-        id: 'barracks', name: 'Barracks', footprint: [17, 10], open: true,
+        id: 'barracks', name: 'Barracks', footprint: [17, 10], roof: 'Z', open: true,
         description: 'Bunk bays with straw ticks, a rack of staves and a scarred mess table. The captain keeps a partitioned room.',
         lighting: {artificial: 1, daylightAccess: 0.3, tone: 'neutral'}, beds: [[3, 2], [6, 2], [9, 2], [12, 2], [16, 2], [22, 2]],
         interior: [
@@ -98,7 +99,7 @@ export const BUILDINGS = [
         ],
     },
     {
-        id: 'tavern', name: 'Tavern', footprint: [16, 10], open: true,
+        id: 'tavern', name: 'Tavern', footprint: [16, 10], roof: 'L', open: true,
         description: 'Warm ash and steeping juniper cling to the rafters. Low tables and broad resting mats gather around the hearth.',
         lighting: {artificial: 1, daylightAccess: 0.5, tone: 'warm'}, counter: [9, 5], beds: [[26, 3], [28, 6]],
         interior: [

@@ -222,7 +222,7 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
     else if (intent.id == "job")
     {
         std::string doing = spec ? spec->workLabel : std::string();
-        if (!willName(npcId, playerId))                    // Not to them, not yet (doc 32).
+        if (!knowsName(playerId, npcId) && !willName(npcId, playerId))
             answer = !doing.empty() ? "My name's my own business. I spend my days " + doing + "." : "My name's my own business.";
         else if (job && job->role == "guard")
             answer = "I'm " + npc->name + ", of the watch.";

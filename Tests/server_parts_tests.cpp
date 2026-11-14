@@ -500,6 +500,16 @@ void mindTests()
     expect(!weather.environment.empty() && reply == weather.environment && mind::lower(reply).find("snow") != std::string::npos,
            "the weather is described as it is: " + reply);
     expect(mind::lower(reply).find("rain") == std::string::npos, "and snow is never called rain");
+    mind::Context introduced = c;
+    introduced.playerName = "Briar";
+    introduced.heardText = "Okay, my name is Briar";
+    introduced.greeting = "Good day to you. I keep bees at Heatherside.";
+    expect(mind::Client::authoredReply(introduced) == "Good to meet you, Briar. What brings you here?",
+           "An introduction is acknowledged instead of repeating the resident's greeting");
+    introduced.heardText = "Tell me about your work";
+    introduced.memory = "We have spoken before.";
+    expect(mind::Client::authoredReply(introduced).find(introduced.greeting) == std::string::npos,
+           "A continuing conversation does not repeat its doorstep line");
 
     std::string error;
     expect(sys::zlibAvailable(error), "zlib loads: " + error);

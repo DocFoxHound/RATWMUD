@@ -67,7 +67,16 @@ test('the map runs on over a seam: the ground round the cell is read, drawn and 
     s.hits = [];
     s.mouseDown([65, 15], true, false, false);
     const path = commands.find(c => c.type === 'path');
-    assert.ok(path && (path.x as number) > Width, 'a click past the edge heads there (the server walks it to the seam)');
+    assert.ok(path && (path.x as number) > Width, 'a click on neighbouring ground asks for the precise destination');
+    const count = commands.length;
+    s.mapOrigin = [20, 20];
+    s.mouseDown([5, 5], true, false, false);
+    assert.equal(commands.length, count, 'unknown fringe ground does not send an unreachable route');
+    s.heldKeys.add('KeyD');
+    s.applySnapshot({cell: {id: 'next', width: Width, height: Height, outdoors: true, rows: cellRows},
+        self: {id: 'self', x: .5, y: 1.5}, entities: [], doors: [], time: 1, cellGeneration: 2} as Json);
+    assert.ok(s.heldKeys.has('KeyD'), 'a held direction survives an outdoor cell crossing');
+    s.heldKeys.clear();
     // Away from the edge the server sends none: the band is let go.
     s.applySnapshot({cell: {id: 'field', width: Width, height: Height, outdoors: true, rows: cellRows}, self: {id: 'self', x: 3.5, y: 1.5},
         entities: [], doors: [], time: 1, cellGeneration: 1} as Json);

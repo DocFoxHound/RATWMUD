@@ -8,6 +8,7 @@ import {drawnGlyph, glyphRender, GLYPH_STACK} from './glyphFont';
 import type {Surface} from './surface';
 import {heightGrid, shadeAt, type Camera} from './elevation';
 import {DETAIL_FROM, groundPending, PREVIEW_STEP, previewOf, want} from './lazyGround';
+import {paintBlockTile} from '../../../Data/Visuals/blockTexture.ts';
 
 export const DIRECT_ABOVE = 15;          // Above this many screen pixels per tile, draw glyphs directly (crisp).
 export const FONT = GLYPH_STACK;
@@ -38,6 +39,7 @@ export function drawTile(g: CanvasRenderingContext2D, cell: AnyCell, x: number, 
         if (tint) { g.fillStyle = tint; g.fillRect(px, py, s + .5, s + .5); }
         if (light) { g.fillStyle = light; g.fillRect(px, py, s + .5, s + .5); }
     }
+    if (s >= 6 && paintBlockTile(g, glyph, x, y, px, py, s, info.fg)) return;
     if (glyphs) drawGlyph(g, info, px, py, s);
 }
 /** A catalog tile's glyph centred in the s-pixel tile at px, py (the font set by glyphFont); nothing until the font has loaded. */

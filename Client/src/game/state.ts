@@ -266,6 +266,7 @@ export class GameState {
     environment = defaultEnvironment();
     chat = false;
     worldMap = false;
+    tracking = false;
     reducedMotion = false;
     flatWorld = false;
     typingSent = false;
@@ -408,7 +409,8 @@ export class GameState {
         const newId = str(cell, 'id', str(s, 'cellId', this.cellId));
         const generation = Math.trunc(num(s, 'cellGeneration', -1));
         if (newId !== this.cellId || generation !== this.cellGeneration) {
-            this.heldKeys.clear();
+            // Keep a held direction only across an outdoor seam. Interior doors and map reloads release it.
+            if (newId === this.cellId || !this.outdoors || !bool(cell, 'outdoors')) this.heldKeys.clear();
             this.mapPan = [0, 0];
             this.contextTarget = '';
             this.facingPreview = false;
@@ -1366,7 +1368,7 @@ export class GameState {
         }
         // A wolf out of sight is no longer spoken to.
         if (this.talkTargets.some(id => !this.entities.has(id))) this.talkTargets = this.talkTargets.filter(id => this.entities.has(id));
-        const settle = Math.exp(-delta / 0.12);
+        const settle = Math.exp(-delta / 0.28);
         this.cameraShift = [this.cameraShift[0] * settle, this.cameraShift[1] * settle];
         if (Math.abs(this.cameraShift[0]) + Math.abs(this.cameraShift[1]) < 0.5) this.cameraShift = [0, 0];
         if (!this.canFaceAt(this.hover)) this.facingPreview = false;
@@ -2282,6 +2284,10 @@ export class GameState {
             // Past the edge, on the ground round the cell (doc 70): the server heads for the seam there.
             const extent = this.battle ? {x0: 0, y0: 0, x1: this.cellWidth - 1, y1: this.cellHeight - 1} : this.groundExtent();
             if (wx < extent.x0 || wy < extent.y0 || wx >= extent.x1 + 1 || wy >= extent.y1 + 1) return 'map';
+            if (!this.battle && !this.inCell(Math.floor(wx), Math.floor(wy)) && this.glyphAt(Math.floor(wx), Math.floor(wy)) === ' ') {
+                this.showToast('That ground is not visible from here. Move closer to the seam.');
+                return 'map';
+            }
             if (this.battle) {
                 this.arenaClick(Math.floor(wx), Math.floor(wy));
                 return 'map';
@@ -2329,6 +2335,13 @@ export class GameState {
             this.contextTarget = '';
         } else if (a === 'world') {
             this.worldMap = true;
+            this.contextTarget = '';
+        } else if (a === 'track') {
+            this.tracking = !this.tracking;
+            if (this.tracking) {
+                this.worldMap = false;
+                this.sendAction('smell');
+            }
             this.contextTarget = '';
         } else if (a === 'world_zoom') {
             if (h.target === 'fit') {

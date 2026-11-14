@@ -17,6 +17,7 @@ namespace
 constexpr double LookEvery = 5;                     // World seconds between looks for an exchange.
 constexpr std::size_t AtOnce = 3;                   // Exchanges under way across the world.
 constexpr double Apart = 5;                         // Tiles: walk further apart and the exchange stops.
+constexpr double ConversationQuiet = 60;            // Give a player's conversation room before more ambient speech.
 
 } // namespace
 
@@ -30,7 +31,8 @@ void Game::ambient(double dt)
         const auto* b = world_.entity(it->pick.listener);
         const bool broken = !a || !b || a->dead || b->dead || a->cellId != b->cellId || a->offstage || b->offstage ||
                             std::hypot(a->position.x - b->position.x, a->position.y - b->position.y) > Apart ||
-                            pendingNpc_.count(a->id) || pendingNpc_.count(b->id);
+                            pendingNpc_.count(a->id) || pendingNpc_.count(b->id) ||
+                            (lastChat_.count(it->pick.hearer) && now - lastChat_.at(it->pick.hearer) < ConversationQuiet);
         if (broken || (it->voiced && it->lines.empty()))
         {
             it = ambient_.erase(it);
@@ -56,7 +58,7 @@ void Game::ambient(double dt)
     exchangeLookIn_ = 0;
     std::vector<std::string> listeners;
     for (const auto* c : clients_)
-        if (!c->entityId.empty())
+        if (!c->entityId.empty() && (!lastChat_.count(c->entityId) || now - lastChat_.at(c->entityId) >= ConversationQuiet))
             listeners.push_back(c->entityId);
     if (listeners.empty())
         return;
@@ -265,12 +267,14 @@ void Game::barks(double dt)
         const auto* player = world_.entity(c->entityId);
         if (!player || player->dead)
             continue;
-        if (const auto last = barkLast_.find(player->cellId); last != barkLast_.end() && now - last->second < 25)
+        if (lastChat_.count(player->id) && now - lastChat_.at(player->id) < ConversationQuiet)
+            continue;
+        if (const auto last = barkLast_.find(player->cellId); last != barkLast_.end() && now - last->second < 75)
             continue;
         std::vector<const Entity*> near;
         for (const auto& [id, e] : world_.entities())
             if (e.npc && !e.dead && !e.transient && !e.offstage && e.cellId == player->cellId && !busy.count(id) &&
-                e.speakingUntil <= now && e.posture != "lying" &&
+                e.speakingUntil <= now && npcLastSpeech_[id] + 90 <= now && e.posture != "lying" &&
                 std::hypot(e.position.x - player->position.x, e.position.y - player->position.y) <= 14 &&
                 world_.hearingClarity(player->id, id, Voice::Speak) >= .5)
                 near.push_back(&e);

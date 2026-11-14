@@ -27,8 +27,13 @@ bool Game::knowsName(const std::string& viewer, const std::string& id) const
 {
     if (!options_.hiddenNames || viewer == id)
         return true;
-    if (const auto* e = world_.entity(id); e && e->transient)
-        return true;                                  // Folk of the road go by what they are ("Bandit").
+    if (const auto* e = world_.entity(id); e && e->npc)
+    {
+        if (e->transient)
+            return true;
+        if (const auto* looking = world_.entity(viewer); looking && !looking->npc)
+            return true;                              // Players see resident names up front; players still introduce themselves.
+    }
     return known_.knows(viewer, id);
 }
 

@@ -486,6 +486,19 @@ void keptAcrossARestart()
     }
     std::remove(save.c_str());
 }
+void residentsHaveNamesUpFront()
+{
+    World3 w(options());
+    auto* scout = w.g.world().entity("npc_scout");
+    const auto* ada = w.g.world().entity(w.adaId);
+    expect(scout && ada, "Authored resident and player exist");
+    scout->cellId = ada->cellId;
+    scout->position = {ada->position.x + 1, ada->position.y};
+    scout->offstage = false;
+    w.tick(.5);
+    const auto* seen = w.ada.seen("npc_scout");
+    expect(seen && seen->string("name") == scout->name, "Residents are named immediately, while player introductions remain private");
+}
 } // namespace
 
 int main()
@@ -497,6 +510,7 @@ int main()
         notesTagsAndMarks();
         aSceneAndItsRecaps();
         keptAcrossARestart();
+        residentsHaveNamesUpFront();
     }
     catch (const std::exception& e)
     {

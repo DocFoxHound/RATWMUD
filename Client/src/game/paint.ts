@@ -15,6 +15,7 @@ import {fitScale, MapRenderer, wolfInWorld} from './minimap.ts';
 import {realmFit} from './realm.ts';
 import {bubbleText, dotLift, stackBubbles, type BubbleBox} from './bubbles.ts';
 import {drawPortrait, type Portraits} from '../ui/portrait.ts';
+import {paintUpperTiles} from '../../../Data/Visuals/blockTexture.ts';
 
 /** How a home's stores are drawn (doc 36). */
 const StoreGlyphs: Record<string, string> = {larder: '%', chest: '=', wardrobe: 'H', woodpile: '#'};
@@ -1224,9 +1225,10 @@ export class GamePainter {
         const cell = obj(s.snapshot, 'cell');
         this.drawEnvironment(false);
         // Only the tiles on screen (and a margin, kept offscreen) are drawn: a large cell has tens of thousands more.
-        this.terrain.draw(p, s, {x0: Math.max(ground.x0, Math.floor((map.left - ox) / tile) - 1),
+        const terrainView = {x0: Math.max(ground.x0, Math.floor((map.left - ox) / tile) - 1),
             y0: Math.max(ground.y0, Math.floor((map.top - oy) / tile) - 1), x1: Math.min(ground.x1, Math.ceil((map.right - ox) / tile) + 1),
-            y1: Math.min(ground.y1, Math.ceil((map.bottom - oy) / tile) + 1)}, ox, oy, tile);
+            y1: Math.min(ground.y1, Math.ceil((map.bottom - oy) / tile) + 1)};
+        this.terrain.draw(p, s, terrainView, ox, oy, tile);
         // Actions come only from doors and wolves the server shows.
         const night = 1 - s.environment.illumination;
         for (const door of objects(s.snapshot, 'doors')) {
@@ -1322,10 +1324,10 @@ export class GamePainter {
                 if (!Array.isArray(t) || t.length < 2) continue;
                 const tx = Number(t[0]), ty = Number(t[1]);
                 const x = ox + tx * tile, y = oy + ty * tile;
-                p.box(x + 1, y + 1, tile - 2, tile - 2, withAlpha(tint, fresh ? 0.16 : 0.08));
+                p.box(x + 1, y + 1, tile - 2, tile - 2, withAlpha(tint, s.tracking ? fresh ? 0.35 : 0.2 : fresh ? 0.16 : 0.08));
                 const size = clamp(Math.round(tile * 0.45), 8, 12);
                 const [gw, gh] = p.measure('∴', size, true);
-                p.text(x + tile / 2 - gw / 2, y + tile / 2 - gh / 2, '∴', size, withAlpha(tint, fresh ? 0.55 : 0.3), true);
+                p.text(x + tile / 2 - gw / 2, y + tile / 2 - gh / 2, '∴', size, withAlpha(tint, s.tracking ? fresh ? 0.95 : 0.7 : fresh ? 0.55 : 0.3), true);
                 if (!named && s.hover[0] >= x && s.hover[0] < x + tile && s.hover[1] >= y && s.hover[1] < y + tile) {
                     named = true;
                     const label = `${str(track, 'name', 'game')}'s trail · ${fresh ? 'fresh' : 'old'}`;
@@ -1399,6 +1401,24 @@ export class GamePainter {
             if (Math.hypot(x - s.hover[0], y - s.hover[1]) < 20) hovered = view.id;
         }
         s.hoveredEntity = hovered;
+        if (!s.battle && s.outdoors && !s.plainGlyphs) {
+            const covered = paintUpperTiles(p.ctx, terrainView, ox, oy, tile,
+                (x, y) => s.seenAt(x, y) === '0' ? undefined : s.glyphAt(x, y), s.environment.illumination);
+            const self = s.entities.get(s.selfId);
+            if (self) {
+                const x = ox + self.x * tile, y = oy + self.y * tile;
+                const radius = Math.min(12, tile * .38);
+                if (covered.some(r => x + radius >= r.left && x - radius <= r.right && y + radius >= r.top && y - radius <= r.bottom)) {
+                    const c = p.ctx;
+                    c.save();
+                    c.font = font(clamp(Math.round(tile * .56), 11, 15), true);
+                    c.textAlign = 'center'; c.textBaseline = 'middle';
+                    c.lineWidth = 3; c.strokeStyle = css(Ink); c.strokeText('[W]', x, y);
+                    c.fillStyle = css(withAlpha(Amber, .88)); c.fillText('[W]', x, y);
+                    c.restore();
+                }
+            }
+        }
         if (!s.battle) this.drawBubbles(ox, oy, tile);
         // Where one's tie was when it was made (doc 52), for a while: a faint ring, never where they've gone since.
         const tieMark = obj(obj(obj(s.snapshot, 'self'), 'tie'), 'marker');

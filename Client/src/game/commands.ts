@@ -31,6 +31,8 @@ export const Commands: SlashCommand[] = [
     {name: 'listen', help: 'Listen to what is around you', key: 'L', wheel: 'Listen', run: s => s.sendAction('listen')},
     {name: 'look', help: 'Look around: what is here and who', wheel: 'Look', run: s => s.sendAction('look')},
     {name: 'smell', help: 'Take in the scents here', wheel: 'Smell', run: s => s.sendAction('smell')},
+    {name: 'track', help: 'Toggle tracking: smell for trails, follow their marks, then hunt', wheel: 'Track game', when: notFighting,
+        run: page('track')},
     {name: 'wait', help: 'Wait a moment, doing nothing', wheel: 'Wait', run: s => s.sendAction('wait')},
     {name: 'sit', help: 'Sit down (written in the story)', wheel: 'Sit', story: true, when: notFighting, run: s => s.sendAction('sit')},
     {name: 'lay', help: 'Lie down: six hours in a bed is a full rest', wheel: 'Lie down', story: true, when: notFighting, run: s => s.sendAction('lay')},

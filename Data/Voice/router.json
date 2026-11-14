@@ -5,7 +5,7 @@
     {
       "id": "greet",
       "patterns": [
-        "(hi|hello|hey|hiya|greetings|well met|hail|good (morning|afternoon|evening|day)|morning|evening)( (there|friend|again|all|to you))?"
+        "(uh |um )?(hi|hello|hey|hiya|greetings|well met|hail|good (morning|afternoon|evening|day)|morning|evening)( (there|friend|again|all|to you))?"
       ]
     },
     {

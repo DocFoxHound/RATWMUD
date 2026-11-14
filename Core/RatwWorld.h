@@ -2662,6 +2662,8 @@ class World
     std::map<std::string, ObservedTile> lastObserved_;
     // Explicit portal actions wait for posture changes, but are never saved.
     std::map<std::string, std::string> pendingPortals_;
+    // A click on visible ground across an outdoor seam continues to that ground after the crossing.
+    std::map<std::string, std::pair<std::string, Vec2>> crossClickGoals_;
     std::map<std::string, TravelState> travels_;
     // Transient route execution bookkeeping; never restored from a save.
     std::map<std::string, std::string> travelLegCells_;

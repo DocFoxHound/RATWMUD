@@ -95,6 +95,10 @@ export class Hud {
     private keysHelp: HTMLElement;
     private localTab: HTMLButtonElement;
     private worldTab: HTMLButtonElement;
+    private trackTab: HTMLButtonElement;
+    private trackingHint: HTMLElement;
+    private trackingWords: HTMLElement;
+    private huntButton: HTMLButtonElement;
     readonly looking: HTMLElement;
     // The side
     private sightList: HTMLElement;
@@ -181,6 +185,8 @@ export class Hud {
         button('+', 'tab zoom', views, () => act('zoom', 'in')).title = 'Zoom in (=)';
         this.localTab = button('LOCAL MAP', 'tab', views, () => act('local'));
         this.worldTab = button('WORLD MAP', 'tab', views, () => act('world'));
+        this.trackTab = button('TRACK', 'tab', views, () => act('track'));
+        this.trackTab.title = 'Track game: smell for trails, follow their marks, then hunt';
         // The keys, on the pointer (what the bottom bar used to say).
         this.keysHelp = el('span', 'env-icon keys-help', head);
         setIcon(this.keysHelp, NavIcons.help, MapKeys);
@@ -188,6 +194,9 @@ export class Hud {
         this.canvas = el('canvas', '', this.mapWrap);
         this.canvas.tabIndex = 0;
         this.canvas.setAttribute('aria-label', 'The world. WASD to move, Enter to write, right-click for what you can do.');
+        this.trackingHint = el('div', 'tracking-hint', center);
+        this.trackingWords = el('span', '', this.trackingHint);
+        this.huntButton = button('HUNT', 'act', this.trackingHint, () => state.send({type: 'hunt'}));
         this.fight = new FightPanel(center, state);
         this.tie = new TiePanel(center, state);
         this.looking = el('div', 'looking muted', center);
@@ -216,17 +225,20 @@ export class Hud {
         show(this.tellerButton, false);
         this.devButton = page('dev', 'DEV CONSOLE', 'The Dev Console (`): commands for Dungeon Masters', () => act('dev_console'));
         show(this.devButton, false);
-        // The minimap (doc 29, phase 8): the country around; the wheel zooms it, a click opens the World Map.
+        // The minimap switches between the local and world views.
         const mini = el('section', 'panel minimap', side);
         this.minimap = el('canvas', '', mini);
         this.minimap.title = 'The country around · wheel to zoom · click for the World Map';
         this.minimap.addEventListener('mousedown', e => e.preventDefault());
-        this.minimap.addEventListener('click', () => act('world'));
+        this.minimap.addEventListener('click', () => act(state.worldMap ? 'local' : 'world'));
         // Pointing at an open scene's mark says what it is (doc 51): "3 wolves at the Wharf tavern · open".
         this.minimap.addEventListener('mousemove', e => {
             const r = this.minimap.getBoundingClientRect();
             const near = this.mapRenderer.sceneMarks.find(m => Math.hypot(m.x - (e.clientX - r.left), m.y - (e.clientY - r.top)) < 9);
-            this.minimap.title = near ? near.text : 'The country around · wheel to zoom · click for the World Map';
+            this.minimap.title = near ? near.text : `The country around · wheel to zoom · click for the ${state.worldMap ? 'Local' : 'World'} Map`;
+        });
+        this.minimap.addEventListener('mouseleave', () => {
+            this.minimap.title = `The country around · wheel to zoom · click for the ${state.worldMap ? 'Local' : 'World'} Map`;
         });
         this.minimap.addEventListener('wheel', e => {
             e.preventDefault();
@@ -311,6 +323,18 @@ export class Hud {
         this.updateSurroundings();
         setClass(this.localTab, 'active', !s.worldMap);
         setClass(this.worldTab, 'active', s.worldMap);
+        setClass(this.trackTab, 'active', s.tracking);
+        const wild = obj(snapshot, 'wild');
+        const tracks = arr(wild, 'tracks');
+        const trackingText = !s.outdoors ? 'TRACKING · Go outdoors to find game.'
+            : tracks.length ? `TRACKING · ${tracks.length} trail${tracks.length === 1 ? '' : 's'} found. Follow the ∴ marks; fresh tracks improve a hunt.`
+            : bool(wild, 'hunt') ? 'TRACKING · Smell to reveal trails, follow ∴, then HUNT. Sitting is optional.'
+            : `TRACKING · ${str(wild, 'huntWhy', 'Find wild ground with game.')}`;
+        setText(this.trackingWords, trackingText);
+        show(this.trackingHint, s.tracking && !s.worldMap && !s.battle);
+        show(this.huntButton, bool(wild, 'hunt'));
+        if (this.minimap.title.startsWith('The country around'))
+            this.minimap.title = `The country around · wheel to zoom · click for the ${s.worldMap ? 'Local' : 'World'} Map`;
         this.story.update();
         this.updateSight();
         this.updateStatus(self);

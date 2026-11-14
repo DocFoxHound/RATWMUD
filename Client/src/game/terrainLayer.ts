@@ -7,6 +7,7 @@ import type {Painter, Point} from '../ui/painter.ts';
 import {font, pixels, Sage} from '../ui/theme.ts';
 import {clamp} from './json.ts';
 import {TERRAIN} from './terrain.generated.mjs';
+import {paintBlockTile} from '../../../Data/Visuals/blockTexture.ts';
 import type {GameState} from './state.ts';
 
 export interface TerrainLook {
@@ -153,6 +154,10 @@ export class GroundPainter {
                     c.fillRect(px, py, tile, tile);
                 }
                 const lift = clamp(rise, -2, 2);
+                if (!s.plainGlyphs && paintBlockTile(c, code, x, y, px, py - lift, tile, style.color, e.illumination)) {
+                    currentFill = '';
+                    continue;
+                }
                 if (currentFill !== style.color) c.fillStyle = currentFill = style.color;
                 if (style.fill > 0) c.fillRect(px, py - lift, tile, tile);
                 else {

@@ -106,6 +106,10 @@ std::string Client::authoredReply(const Context& c)
 {
     const std::string heard = lower(c.heardText);
     const auto has = [&](const char* word) { return heard.find(word) != std::string::npos; };
+    const std::string named = lower(c.playerName);
+    if (has("my name is ") || (!named.empty() && (heard.find("i'm " + named) != std::string::npos ||
+                                                       heard.find("i am " + named) != std::string::npos)))
+        return "Good to meet you, " + c.playerName + ". What brings you here?";
     if (has("remember"))
     {
         const std::string& recalled = c.recollection.empty() ? c.memory : c.recollection;
@@ -130,11 +134,11 @@ std::string Client::authoredReply(const Context& c)
         return "Give me a moment to set this clasp aside. Small work needs a still paw, and a story deserves my attention.";
     if (c.npcId == "npc_scribe")
         return "Tell it in your own order. I would rather understand what happened than hurry you toward an ending.";
-    if (!c.greeting.empty())
+    if (!c.greeting.empty() && c.memory.empty())
         return c.greeting;
     if (!c.memory.empty())
-        return "Good to hear your voice again, " + c.playerName + ". There is a warm place by the hearth if you want to stay and talk.";
-    return "Welcome, " + c.playerName + ". I'm " + c.name + ". Settle by the hearth; the Bent Bough has room for a story.";
+        return "I'm listening, " + c.playerName + ". Tell me more.";
+    return "Hello. What brings you here?";
 }
 
 namespace

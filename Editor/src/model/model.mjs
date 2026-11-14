@@ -1228,8 +1228,15 @@ export function addBuilding(project, template, cellId, x, y, side = 'S', name = 
         const doorOut = {cell: cellId, x: x + Math.floor(fw / 2), y: flip ? y : y + fh - 1};
         const front = {x: doorOut.x, y: flip ? doorOut.y - 1 : doorOut.y + 1};
         if (!walkable(glyphAt(next, c, front.x, front.y))) fail('The tile in front of the door must be open ground.');
-        c.terrain = c.terrain.map((row, ry) => ry < y || ry >= y + fh ? row
-            : row.slice(0, x) + (ry === doorOut.y ? '#'.repeat(doorOut.x - x) + '+' + '#'.repeat(fw - 1 - (doorOut.x - x)) : '#'.repeat(fw)) + row.slice(x + fw));
+        const roof = template.roof ?? 'L';
+        if (!terrainTile(roof)?.solid) fail('Building roof must block movement.');
+        c.terrain = c.terrain.map((row, ry) => {
+            if (ry < y || ry >= y + fh) return row;
+            const border = ry === y || ry === y + fh - 1;
+            const block = Array.from({length: fw}, (_, dx) => ry === doorOut.y && x + dx === doorOut.x ? '+'
+                : border || dx === 0 || dx === fw - 1 ? '#' : roof).join('');
+            return row.slice(0, x) + block + row.slice(x + fw);
+        });
         const doorRow = flip ? 0 : rows.length - 1;
         const doorX = rows[doorRow].indexOf('+');
         if (doorX < 0) fail('Template interior needs a + door on its street edge.');

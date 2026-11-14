@@ -2010,6 +2010,7 @@ Result World::move(const std::string& id, double dx, double dy)
     else if (!issuingTravel_ && travelState(id).active)
         return {true, "Travel continues.", {}};
     a->path.clear();
+    crossClickGoals_.erase(id);
     pendingPortals_.erase(id);
     a->input = length({dx, dy}) > 1.0 ? normalized({dx, dy}) : Vec2{dx, dy};
     if (length(a->input) > Epsilon)
@@ -2275,6 +2276,7 @@ Result World::stop(const std::string& id)
     if (!issuingTravel_)
         cancelTravel(id);
     a->path.clear();
+    crossClickGoals_.erase(id);
     a->input = {};
     a->velocity = {};
     pendingPortals_.erase(id);
@@ -2349,6 +2351,7 @@ Result World::moveTo(const std::string& id, double x, double y)
         return {false, "Missing cell.", {}};
     if (!issuingTravel_)
         cancelTravel(id);
+    crossClickGoals_.erase(id);
     a->input = {};
     a->path.clear();
     a->velocity = {};
@@ -2381,6 +2384,43 @@ Result World::moveTo(const std::string& id, double x, double y)
             exit = &d;
             goal = d.position;
             break;
+        }
+    }
+    // The fringe is real neighbouring ground. A click there chooses a reachable seam on the correct edge, even if
+    // the clicked tile is several rows from its narrow opening. Keep the exact destination for after the crossing.
+    std::pair<std::string, Vec2> across;
+    if (c->outdoors && (x < 0 || y < 0 || x >= c->width || y >= c->height) &&
+        x >= -Fringe::Band && y >= -Fringe::Band && x < c->width + Fringe::Band && y < c->height + Fringe::Band)
+    {
+        const Vec2 worldGoal{c->worldX + x, c->worldY + y};
+        const Door* nearest = nullptr;
+        double best = 1e18;
+        for (const Door* door : doorsIn(a->cellId))
+        {
+            const auto& d = *door;
+            const auto* next = d.boundary && d.passage && d.open ? cell(d.targetCell) : nullptr;
+            if (!next || !next->outdoors || next->worldZ != c->worldZ || worldGoal.x < next->worldX ||
+                worldGoal.y < next->worldY || worldGoal.x >= next->worldX + next->width ||
+                worldGoal.y >= next->worldY + next->height)
+                continue;
+            const bool side = d.edge == 'N' ? y < 0 : d.edge == 'S' ? y >= c->height :
+                              d.edge == 'W' ? x < 0 : d.edge == 'E' ? x >= c->width : false;
+            if (!side)
+                continue;
+            const double lateral = (d.edge == 'N' || d.edge == 'S') ? std::abs(x - d.position.x) : std::abs(y - d.position.y);
+            if (lateral < best)
+                best = lateral, nearest = &d;
+        }
+        if (nearest)
+        {
+            exit = nearest;
+            goal = nearest->position;
+            const auto* next = cell(nearest->targetCell);
+            const Vec2 local{worldGoal.x - next->worldX, worldGoal.y - next->worldY};
+            // A pointer just over the border names the crossing itself; routing to that edge tile again would
+            // immediately select the reciprocal seam and send the wolf back.
+            if (local.x >= 1 && local.y >= 1 && local.x < next->width - 1 && local.y < next->height - 1)
+                across = {nearest->targetCell, local};
         }
     }
     // A click on a door itself, on its own tile (the user, 2026-11-14: "I can't click into a doorway"), walks into it as
@@ -2460,6 +2500,8 @@ Result World::moveTo(const std::string& id, double x, double y)
         path.push_back(beyond);
     }
     a->path = std::move(path);
+    if (!across.first.empty())
+        crossClickGoals_[id] = across;
     prepareMovement(*a);
     return {true, "Following a route.", {}};
 }
@@ -2486,6 +2528,10 @@ void World::transition(Entity& a, const Door& d)
     const auto* destination = cell(d.targetCell);
     if (!destination)
         return;
+    const auto click = crossClickGoals_.find(a.id);
+    const auto onward = click != crossClickGoals_.end() && click->second.first == d.targetCell
+                            ? click->second.second : Vec2{-1, -1};
+    crossClickGoals_.erase(a.id);
     Vec2 arrival = d.arrival;
     if (d.passage && d.boundary && d.edge != '-')
     {
@@ -2509,6 +2555,12 @@ void World::transition(Entity& a, const Door& d)
     a.transitioned = true;
     if (!a.npc)
         observe(a.id);
+    if (onward.x >= 0 && onward.y >= 0)
+    {
+        const auto result = moveTo(a.id, onward.x, onward.y);
+        if (!result.ok)
+            notice(a.id, result.message);
+    }
 }
 
 Result World::interact(const std::string& id, const std::string& target, const std::string& verb)
@@ -2807,7 +2859,10 @@ void World::integrate(Entity& a, double dt)
                 }
             }
             if (blocked && !a.path.empty())
+            {
                 a.path.clear();                    // A route invalidated by a newly closed door must not resume by itself.
+                crossClickGoals_.erase(a.id);
+            }
             const Vec2 actual{accepted.x - a.position.x, accepted.y - a.position.y};
             if (length(actual) > Epsilon)
             {
@@ -2877,15 +2932,20 @@ bool World::throughDoor(Entity& a, const Cell& c, Vec2 direction, Vec2 proposed,
         return edge == 'N' ? end.y < 0 : edge == 'S' ? end.y > c.height : edge == 'W' ? end.x < 0 : end.x > c.width;
     };
     // Crossing an edge needs the step to end within a body of that edge; most steps are nowhere near one.
-    const bool nearEdge = proposed.y < Radius || proposed.y >= c.height - Radius || proposed.x < Radius ||
-                          proposed.x >= c.width - Radius;
+    const bool nearEdge = proposed.y < 1 || proposed.y >= c.height - 1 || proposed.x < 1 ||
+                          proposed.x >= c.width - 1;
     static const std::vector<Door*> NoDoors;
     for (const Door* door : nearEdge ? doorsIn(a.cellId) : NoDoors)
     {
         const auto& d = *door;
         if (!d.portal || !d.boundary || !d.open || !leaving(d.edge))
             continue;
-        const bool crossed = d.edge == 'N'   ? proposed.y < Radius
+        const bool routedOut = d.passage && !a.path.empty() && distance(a.position, d.position) < .6 &&
+                               (d.edge == 'N' ? a.path.back().y < 0 && direction.y < 0
+                                : d.edge == 'S' ? a.path.back().y > c.height && direction.y > 0
+                                : d.edge == 'W' ? a.path.back().x < 0 && direction.x < 0
+                                : d.edge == 'E' ? a.path.back().x > c.width && direction.x > 0 : false);
+        const bool crossed = routedOut || (d.edge == 'N'   ? proposed.y < Radius
                              : d.edge == 'S' ? proposed.y >= c.height - Radius
                              : d.edge == 'W' ? proposed.x < Radius
                              : d.edge == 'E'
@@ -2893,7 +2953,7 @@ bool World::throughDoor(Entity& a, const Cell& c, Vec2 direction, Vec2 proposed,
                                  : (d.position.y < 1 && proposed.y < Radius) ||
                                        (d.position.y > c.height - 1 && proposed.y >= c.height - Radius) ||
                                        (d.position.x < 1 && proposed.x < Radius) ||
-                                       (d.position.x > c.width - 1 && proposed.x >= c.width - Radius);
+                                       (d.position.x > c.width - 1 && proposed.x >= c.width - Radius));
         const bool horizontal = d.edge == 'N' || d.edge == 'S' ||
                                 (d.edge == '-' && (d.position.y < 1 || d.position.y > c.height - 1));
         const double lateral = horizontal ? proposed.x : proposed.y;

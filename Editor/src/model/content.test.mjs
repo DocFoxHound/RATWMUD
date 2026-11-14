@@ -194,6 +194,8 @@ test('every building template places a valid, linked building facing either way'
         if (placed.counter) assert.ok(!'#T='.includes(cellTerrain(p, room.id)[placed.counter.y][placed.counter.x]), 'counter spot on floor');
         assert.deepEqual(validate(p).errors, [], `${template.id} ${side}`);
         assert.equal(p.cells[0].terrain[side === 'S' ? 2 + fh - 1 : 40 - fh - 2][4 + Math.floor(fw / 2)], '+');
+        assert.equal(p.cells[0].terrain[side === 'S' ? 3 : 40 - fh - 1][5], template.roof,
+            `${template.id} ${side}: roof fills the solid exterior, apart from its wall rim`);
     }
     assert.equal(buildingById('shop').name, 'General store');
 });

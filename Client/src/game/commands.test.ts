@@ -30,7 +30,7 @@ const typed = (s: ReturnType<typeof onTheMap>['state'], text: string) => {
 test('slash commands: "/" lists them, the list narrows as one types, Tab completes, a bare one runs and is never said', () => {
     const {state: s, commands} = onTheMap();
     const all = slashSuggestions(s, '/').map(c => c.name);
-    for (const name of ['listen', 'look', 'smell', 'wait', 'sit', 'lay', 'howl', 'groom', 'pose', 'me', 'character', 'inventory', 'map'])
+    for (const name of ['listen', 'look', 'smell', 'track', 'wait', 'sit', 'lay', 'howl', 'groom', 'pose', 'me', 'character', 'inventory', 'map'])
         assert.ok(all.includes(name), `/${name} is listed`);
     assert.ok(!all.includes('forage') && !all.includes('hunt') && !all.includes('perform') && !all.includes('board'),
         'what this place does not allow is not listed');
@@ -62,6 +62,10 @@ test('slash commands: "/" lists them, the list narrows as one types, Tab complet
     typed(s, '/sme');
     s.composerKey({code: 'Enter'});
     assert.deepEqual(commands.at(-1), {type: 'action', action: 'smell', target: ''}, 'Enter on a part of one completes and runs it');
+    typed(s, '/track');
+    s.composerKey({code: 'Enter'});
+    assert.equal(s.tracking, true);
+    assert.deepEqual(commands.at(-1), {type: 'action', action: 'smell', target: ''});
 
     typed(s, '/howl');
     s.composerKey({code: 'Enter'});

@@ -168,8 +168,17 @@ void validImportAndMovement()
     expect(player.cellId == "west" && near(player.position.y, 3.72), "Reciprocal seam returns through the same point");
     player.position = {5.5, 3.5};
     expect(world.moveTo("tester", 8.1, 3.5).ok, "Click beyond edge accepts reachable seam");
-    tick(world, 2);
-    expect(player.cellId == "east" && player.path.empty(), "Click path crosses and stops");
+    const auto beforeClickPath = player.path.size();
+    tick(world, 4);
+    expect(player.cellId == "east" && player.path.empty(), "Click path crosses and stops (" + player.cellId + " at " +
+           std::to_string(player.position.x) + ", " + std::to_string(player.position.y) + "; path " +
+           std::to_string(player.path.size()) + "; before " + std::to_string(beforeClickPath) + ")");
+    player.cellId = "west";
+    player.position = {5.5, 5.5};
+    expect(world.moveTo("tester", 9.5, 5.5).ok, "Click on neighbouring ground finds the seam away from the pointer");
+    tick(world, 10);
+    expect(player.cellId == "east" && near(player.position.x, 1.5) && near(player.position.y, 5.5),
+           "Click continues to its precise destination after the seam");
     player.cellId = "west";
     player.position = {3.5, 4.5};
     expect(!world.door("link_a")->open, "Explicit door starts closed");

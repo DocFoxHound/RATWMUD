@@ -11,6 +11,7 @@ import {commit, getState, openView, setState, toast, useStore, useTool, type Edi
 import type {Editor} from '../lib/live';
 import {surfaceFor, type Surface} from '../lib/surface';
 import {drawGlyph, drawGround, drawWays, glyphFont, swatch, visibleTiles, type Camera} from '../lib/ground';
+import {paintBlockTile, paintUpperTiles} from '../../../Data/Visuals/blockTexture.ts';
 import {planRoad} from '../lib/roads';
 import {drawRelief} from '../lib/elevation';
 import {ElevationControl} from './Elevation';
@@ -134,6 +135,10 @@ export function MapCanvas() {
         // Ground, cell by cell and only what is in view. Where no cell is, there is no ground: the background shows.
         drawGround(g, surface, camera, size.w, size.h, elevation !== 'off');
         drawRelief(g, surface, camera, size.w, size.h, elevation);
+        if (surface.kind === 'world' && s >= 9) {
+            const view = visibleTiles(camera, size.w, size.h);
+            paintUpperTiles(g, view, ox, oy, s, (x, y) => surface.glyph(x, y));
+        }
         if (surface.kind !== 'world') {
             g.strokeStyle = '#3c4a41'; g.lineWidth = 1;
             g.strokeRect(ox - .5, oy - .5, surface.width * s + 1, surface.height * s + 1);
@@ -159,7 +164,9 @@ export function MapCanvas() {
             if (['brush', 'rect', 'line'].includes(tool)) {
                 const info = glyphInfo(st.glyph);
                 g.fillStyle = s >= 7 ? info.bg : swatch(info); g.fillRect(ox + tx * s, oy + ty * s, s, s);
-                if (s >= 7) { glyphFont(g, s); drawGlyph(g, info, ox + tx * s, oy + ty * s, s); }
+                if (s >= 7 && !paintBlockTile(g, st.glyph, tx, ty, ox + tx * s, oy + ty * s, s, info.fg)) {
+                    glyphFont(g, s); drawGlyph(g, info, ox + tx * s, oy + ty * s, s);
+                }
             }
             g.strokeStyle = 'rgba(240,215,154,.9)'; g.lineWidth = 1.5; g.strokeRect(ox + tx * s + .75, oy + ty * s + .75, s - 1.5, s - 1.5);
         }

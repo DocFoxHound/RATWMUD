@@ -78,6 +78,8 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .map canvas { position: absolute; inset: 0; outline: none; cursor: default; }
 .looking { min-height: 20px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .looking .what { color: var(--paper); font-weight: 500; }
+.tracking-hint { min-height: 28px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 10px; color: var(--gold); background: #202d28; border: 1px solid #405344; font-size: 12px; letter-spacing: .02em; }
+.tracking-hint .act { padding: 4px 10px; }
 .act { padding: 7px 12px; font-size: 13px; }
 
 .side { grid-area: side; display: flex; flex-direction: column; gap: 10px; min-height: 0; padding: 10px 12px 8px 0; }
