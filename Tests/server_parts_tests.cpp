@@ -12,6 +12,8 @@
 #include "RatwSystemLibs.h"
 #include "RatwWeb.h"
 #include "RatwWire.h"
+#include "RatwRealmMap.h"
+#include "RatwJsonDoc.h"
 
 #include <arpa/inet.h>
 #include <atomic>
@@ -1118,6 +1120,65 @@ void artworkTests()
     std::filesystem::remove_all(dir);
 }
 
+// The realm's map, whole (RatwRealmMap.h): every cell's ground sampled down, names by rank, buildings at their middles.
+void realmMapTests()
+{
+    expect(realm::gridRows("id: a\nname: A\ngrid:\n..#\r\n,,,\n") == std::vector<std::string>{"..#", ",,,"}, "a cell file's rows");
+    expect(realm::kindOf("The Grey Goose cooking for Northgate") == "inn", "a cook at a named inn makes it an inn");
+    expect(realm::kindOf("The Oasis Inn") == "inn" && realm::kindOf("Larkfield Smithy village smith") == "smith", "inns, smiths");
+    expect(realm::kindOf("The Penny Loaf baker at The Penny Loaf") == "bakery" && realm::kindOf("The Chapel of the Tide") == "church",
+           "bakers, chapels");
+    expect(realm::kindOf("The Watch Post") == "watch" && realm::kindOf("Frosthollow Stores") == "store", "the Watch, stores");
+    expect(realm::kindOf("Moss House") == "house" && realm::kindOf("Zzyzx").empty(), "houses; nothing to say of an odd name");
+    // A building: a block of walls 6 wide and 3 deep, its door in the middle of its south wall, the street below.
+    const std::vector<std::string> rows{",,,,,,,,,,", ",,######,,", ",,######,,", ",,###+##,,", "..........", ",,,,,,,,,,"};
+    double mx = 0, my = 0;
+    realm::footprintMiddle(rows, 5.5, 3.5, 6, 3, mx, my);
+    expect(std::abs(mx - 5) < .01 && std::abs(my - 2.5) < .01,
+           "the footprint's middle, from its door: " + std::to_string(mx) + "," + std::to_string(my));
+    // Two cells side by side, one fetched from its file; a town of two buildings in the east one.
+    realm::Input in;
+    in.build = "build-7";
+    in.cells.push_back({"west", "The Larkdowns, North-west", "larkdowns", 8, 6, 0, 0, std::vector<std::string>(6, std::string(8, ','))});
+    in.cells.push_back({"east", "Greyfen Crossing", "greyfen", 10, 6, 8, 0, {}});
+    in.cells.push_back({"south", "The Larkdowns, the Upper Mere", "larkdowns", 18, 4, 0, 6, std::vector<std::string>(4, std::string(18, '~'))});
+    in.doors.push_back({"east", "shop", "Tallow & Twine, the ground floor", "greyfen", "Tallow & Twine keeping shop", 5.5, 3.5, 6, 3});
+    in.doors.push_back({"east", "shop", "Tallow & Twine, the ground floor", "greyfen", "", 2.5, 3.5, 6, 3});
+    int fetched = 0;
+    const auto text = realm::build(in, [&](const std::string& id, std::string& body) {
+        ++fetched;
+        if (id != "east")
+            return false;
+        body = "id: east\ngrid:\n";
+        for (const auto& r : rows)
+            body += r + "\n";
+        return true;
+    }, {}, 9);
+    json::Value j;
+    std::string error;
+    expect(json::parse(text, j, error), "the map is JSON: " + error);
+    expect(fetched == 1, "only the cell without its rows at hand is fetched");
+    expect(j.string("type") == "realmMap" && j.string("build") == "build-7", "it says what it is, and of which build");
+    expect(j.number("step") == 2 && j.number("cols") == 9 && j.number("rows") == 5, "sampled down to the most a side (18 x 10 by 2)");
+    const auto ground = j.string("ground");
+    expect(ground.size() == 45 && ground[0] == ',' && ground[4 * 9] == '~', "every cell's ground, sampled: " + ground);
+    expect(ground[1 * 9 + 6] == '#', "walls weigh more, so a building shows when small");
+    bool region = false, town = false, place = false, compass = false;
+    for (const auto& l : j["labels"].items())
+    {
+        region = region || (l.string("n") == "The Larkdowns" && l.number("r") == 0);
+        town = town || (l.string("n") == "Greyfen Crossing" && l.number("r") == 1 && std::abs(l.number("x") - 13) < .01);
+        place = place || (l.string("n") == "The Upper Mere" && l.number("r") == 2);
+        compass = compass || l.string("n") == "North-west";
+    }
+    expect(region && town && place && !compass, "regions, towns and places named, larger first, and no bare compass words");
+    expect(j["buildings"].size() == 1, "a building once, however many doors");
+    const auto& b = j["buildings"].items().front();
+    expect(b.string("n") == "Tallow & Twine" && b.string("k") == "store" && std::abs(b.number("x") - 13) < .01 &&
+               std::abs(b.number("y") - 2.5) < .01,
+           "at its footprint's middle in the world, named and said what it is");
+}
+
 int main()
 {
     try
@@ -1133,6 +1194,7 @@ int main()
         motionTests();
         directorTests();
         webTests();
+        realmMapTests();
     }
     catch (const std::exception& error)
     {

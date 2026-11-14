@@ -382,6 +382,46 @@ void transitions()
     expect(!w.interact("p", "door_pantry", "open").ok, "Cannot interact across stored cells");
     expect(!w.interact("p", "door_yard", "teleport").ok, "Unknown verbs rejected");
 }
+// A click on a door's own tile walks into it as the keys do (the user, 2026-11-14: "I can't click into a doorway").
+void doorClicks()
+{
+    {
+        World w;
+        auto& p = player(w);
+        p.position = {24.5, 4.5};
+        expect(w.moveTo("p", 28.5, 4.5).ok, "A click on open stairs is a route");
+        advance(w, 4);
+        expect(p.cellId == "loft", "and the wolf goes up them, as walking into them does");
+    }
+    {
+        World w;
+        auto& p = player(w);
+        p.position = {16.5, 20.5};
+        expect(!w.door("door_main")->open, "(The yard door starts closed.)");
+        const auto clicked = w.moveTo("p", 16.7, 23.4);
+        expect(clicked.ok && clicked.targetId == "door_main", "A click on a closed door's own tile heads through it");
+        advance(w, 3);
+        expect(p.cellId == "exterior", "and pushes it open on arrival, as walking into it does");
+        expect(w.door("door_main")->open && w.door("door_yard")->open, "the door and its pair open");
+    }
+    {
+        World w;
+        auto& p = player(w);
+        p.position = {16.5, 20.5};
+        const_cast<Door*>(w.door("door_main"))->locked = true;   // (No setter: a test of the rule alone.)
+        w.moveTo("p", 16.5, 23.5);
+        advance(w, 3);
+        expect(p.cellId == "tavern" && !w.door("door_main")->open, "A locked door is only approached");
+    }
+    {
+        World w;
+        auto& p = player(w);
+        p.position = {19.5, 6.5};
+        w.moveTo("p", 23.5, 6.5);
+        advance(w, 4);
+        expect(!w.door("door_pantry")->open, "A door within a place (no way through to another) still opens only when asked");
+    }
+}
 // Bodies (step::BodyRadius): wolves crowd and nudge each other but never stand on top of one another.
 void bodies()
 {
@@ -2071,6 +2111,7 @@ int main()
         postureMovement();
         clickPathing();
         transitions();
+        doorClicks();
         bodies();
         heldAtATurn();
         aQueueStandsStill();

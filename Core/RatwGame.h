@@ -43,6 +43,7 @@
 #include "RatwTickets.h"
 #include "RatwWorld.h"
 
+#include <atomic>
 #include <cstdint>
 #include <deque>
 #include <filesystem>
@@ -50,9 +51,11 @@
 #include <fstream>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <random>
 #include <set>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace ratw::game
@@ -1767,6 +1770,17 @@ class Game
     std::int64_t loadedBuild_ = 0, pendingBuild_ = 0, pendingRelease_ = 0;   // (A newer build announced; its release, if any.)
     std::map<std::string, std::string> worldFiles_, cellHeaders_;
     std::map<std::string, std::pair<std::string, std::string>> exportCells_;   // A world export's cells: body, seams.
+    // The realm's map, whole (RatwRealmMap.h): made once, on a thread of its own, and sent to a client that asks for it
+    // (`realmMap`), at most a few times a connection; never in a snapshot.
+    void startRealmMap();
+    void realmMapCommand(Connection* c);
+    std::thread realmThread_;
+    std::atomic<bool> realmStop_{false};
+    mutable std::mutex realmLock_;
+    std::shared_ptr<const std::string> realmJson_;     // The event, once made.
+    std::map<std::uint64_t, int> realmSent_;           // How many times each connection has had it.
+    double realmSeconds_ = 0;                          // How long it took to make (realmLock_).
+    bool realmNoted_ = false;
     std::string liveWorldId_;
     std::unique_ptr<health::Recorder> health_;                         // Server health kept (RatwHealth.h).
     std::unique_ptr<watch::Feed> watch_;                               // The LIVE map's positions (doc 34); a database world only.
