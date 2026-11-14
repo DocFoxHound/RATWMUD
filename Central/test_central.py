@@ -388,12 +388,39 @@ class Wolves(Base):
                  {'name': 'Ash', 'age': 7, 'appearance': LOOK, 'family': 'death_walker'},
                  {'name': 'Ash', 'age': 7, 'appearance': LOOK, 'tier': 'quickened'},
                  {'name': 'Ash', 'age': 7, 'appearance': LOOK, 'profile': {'glances': 'no'}},
-                 {'name': 7, 'age': 7, 'appearance': LOOK}]
+                 {'name': 7, 'age': 7, 'appearance': LOOK},
+                 {'name': 'Abcdefghijklmnopqrstuvwxy', 'age': 7, 'appearance': LOOK},      # (25: the limit is 24.)
+                 {'name': 'Ash', 'age': 7, 'appearance': LOOK, 'choices': {'tie': 'no_such_starter'}},
+                 {'name': 'Ash', 'age': 7, 'appearance': LOOK, 'choices': {'grades': {}, 'specialty': 'tracker'}}]
         for body in cases:
             status, reply = self.call('create_wolf', body, self.token)
             self.assertEqual(status, 400, (body, reply))
             self.assertTrue(reply['error'])
         self.assertEqual(self.call('list_wolves', token=self.token)[1]['wolves'], [])
+
+    def test_a_new_name_is_at_most_24_characters(self):
+        wolf = self.wolf(self.token, 'Abcdefghijklmnopqrstuvwx')
+        self.assertEqual(len(wolf['name']), 24)
+
+    def test_strengths_and_tie_are_kept_with_the_wolf(self):
+        status, reply = self.call('create_wolf', {'name': 'Ash', 'age': 7, 'appearance': LOOK, 'family': 'fire',
+                                                  'choices': {'grades': {'strength': 'strong', 'wisdom': 'weak',
+                                                                         'hearing': 'plain'}, 'tie': 'river'}},
+                                  self.token)
+        self.assertEqual(status, 200, reply)
+        wolf = reply['wolf']
+        self.assertEqual(wolf['choices'], {'grades': {'strength': 'strong', 'wisdom': 'weak'}, 'tie': 'river'})
+        self.assertEqual(self.wolf(self.token, 'Birch')['choices'], {}, 'none given, none kept')
+        status, reply = self.call('patch_wolf', {'revision': 1, 'choices': {'grades': {'smell': 'strong'}, 'tie': ''}},
+                                  self.token, None, wolf['id'])
+        self.assertEqual(status, 200, reply)
+        self.assertEqual((reply['wolf']['choices'], reply['wolf']['revision']), ({'grades': {'smell': 'strong'}, 'tie': ''}, 2))
+        status, reply = self.call('patch_wolf', {'revision': 2, 'choices': {'grades': {'strength': 'strong', 'smell': 'strong',
+                                                                                       'hearing': 'strong'}}},
+                                  self.token, None, wolf['id'])
+        self.assertEqual((status, reply['code']), (400, 'invalid_choices'), 'over the budget')
+        listed = self.call('list_wolves', token=self.token)[1]['wolves']
+        self.assertEqual(next(w for w in listed if w['id'] == wolf['id'])['choices']['grades'], {'smell': 'strong'})
 
     def test_names_are_unique_across_central(self):
         self.wolf(self.token, 'Ash Tallow')
@@ -778,6 +805,10 @@ class ClientViews(Base):
         self.assertIn('fire', [f['id'] for f in families])
         self.assertTrue(all('gifted' in f and 'quickened' in f for f in families))
         self.assertEqual((reply['slots'], reply['ages']), (6, [6, 99]))
+        self.assertEqual(reply['nameMost'], 24)
+        self.assertEqual(len(reply['creation']['attributes']), 7)
+        self.assertTrue(reply['ties'] and all(t['id'] and t['line'] for t in reply['ties']))
+        self.assertGreater(reply['unlocks']['quickened']['level'], reply['unlocks']['gifted']['level'])
 
 
 # --------------------------------------------------------------------------- The word filter (doc 77, 7; Phase 4)

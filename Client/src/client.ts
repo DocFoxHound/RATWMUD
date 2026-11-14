@@ -40,6 +40,7 @@ export class ClientApp {
     account: Json | null = null;
     wolves: Json[] = [];
     gifts: Json | null = null;
+    rules: Json = {};                                // Central's creator rules beyond the families: strengths, ties, unlocks, the name limit.
     listed: ListedWorld[] = [];
     hostWorlds: HostWorld[] = [];                    // The Host page: the account's own worlds, and how many it may have.
     hostMost = 3;
@@ -98,7 +99,7 @@ export class ClientApp {
         return this.door;
     }
 
-    private lobby(stage: 'login' | 'characters' | 'worlds', ok: boolean, text: string) {
+    private lobby(stage: 'login' | 'characters' | 'worlds', ok: boolean, text: string, home = false) {
         const door = this.door ?? this.newDoor();
         if (stage === 'login') {
             door.receive({type: 'lobby', stage: 'login', ok, message: text});
@@ -106,9 +107,9 @@ export class ClientApp {
         }
         door.receive({type: 'lobby', stage: 'characters', ok: stage === 'characters' ? ok : true, message: stage === 'characters' ? text : '',
             characters: this.wolves.map(w => ({id: str(w, 'id'), name: str(w, 'name'), age: num(w, 'age', 18), appearance: w.appearance,
-                family: str(w, 'family')})),
-            host: this.account?.host === true,
-            ...(this.gifts ? {gifts: this.gifts} : {})});
+                family: str(w, 'family'), choices: isObject(w.choices) ? w.choices : {}})),
+            host: this.account?.host === true, who: str(this.account, 'username'), home,
+            ...(this.gifts ? {gifts: this.gifts} : {}), ...this.rules});
         if (this.wolf && this.wolves.some(w => str(w, 'id') === this.wolf)) door.selectedId = this.wolf;
         if (stage === 'worlds') {
             door.receive({type: 'lobby', stage: 'worlds', ok, message: text, wolf: this.wolf, lost: this.lost?.id ?? '', worlds: this.doorWorlds()});
@@ -150,7 +151,8 @@ export class ClientApp {
             const listed = this.listed.find(w => w.id === t.id) ?? null;
             out.push({id: t.id, name: t.name, kind: t.kind, address: addressText(t.address), host: t.host ? shownAddress(t.address, t.host) : '',
                 secure: t.address.secure, description: t.description,
-                region: listed?.region ?? '', tags: listed?.tags ?? [], fit: fit.fit, note: fit.note, status: statusLine(status, listed)});
+                region: listed?.region ?? '', tags: listed?.tags ?? [], fit: fit.fit, note: fit.note, status: statusLine(status, listed),
+                ...serverColumns(status, listed)});
         };
         for (const w of this.listed) {
             const t = this.targetOf(w);
@@ -174,14 +176,14 @@ export class ClientApp {
         // A world that answers with another id than central's is not that world: say nothing of it.
         this.statuses.set(w.id, status && status.id === w.id ? status : null);
         const fit = compatibility(ClientBuild, this.statuses.get(w.id) ?? null, w.protocol);
-        this.door?.updateWorld(w.id, statusLine(this.statuses.get(w.id), w), fit.fit, fit.note);
+        this.door?.updateWorld(w.id, statusLine(this.statuses.get(w.id), w), fit.fit, fit.note, serverColumns(this.statuses.get(w.id), w));
     }
 
     /** What went wrong, on the page the door is showing. */
     private fail(text: string) {
         const page = this.door?.page ?? 'login';
         if (page === 'login' || page === 'register') this.lobby('login', false, text);
-        else if (page === 'worlds' || page === 'arrive') this.lobby('worlds', false, text);
+        else if (page === 'servers' || page === 'pick' || page === 'arrive') this.lobby('worlds', false, text);
         else if (page === 'host') this.hostLobby(false, text);
         else this.lobby('characters', false, text);
     }
@@ -199,7 +201,7 @@ export class ClientApp {
                 const month = typeof c.birth_month === 'number' ? c.birth_month : null;
                 const reply = await this.central.register(str(c, 'username'), str(c, 'password'), num(c, 'birth_year'), month, c.remember === true);
                 this.account = isObject(reply.account) ? reply.account : null;
-                await this.signedIn('Your account is made. Choose an empty slot to make your first wolf.');
+                await this.signedIn('Your account is made. Make your first wolf in the Character Editor.');
             } else if (type === 'auth_logout') {
                 try {
                     await this.central.logout();
@@ -213,10 +215,20 @@ export class ClientApp {
             } else if (type === 'wolf_create') {
                 const wolf: Json = {name: c.name, age: c.age, appearance: c.appearance};
                 if (str(c, 'family')) wolf.family = str(c, 'family');
+                if (isObject(c.choices)) wolf.choices = c.choices;
                 const made = await this.central.createWolf(wolf);
                 this.wolves = await this.central.wolves();
                 this.wolf = str(made, 'id');
-                this.lobby('characters', true, `${str(made, 'name')} is made. Choose a world when you are ready.`);
+                this.lobby('characters', true, `${str(made, 'name')} is made. Play from SERVERS on the main menu when you are ready.`);
+            } else if (type === 'wolf_choices') {
+                // A wolf's strengths and tie (the Character Editor), kept on central for each world's first arrival.
+                const id = str(c, 'id');
+                const wolf = this.wolves.find(w => str(w, 'id') === id);
+                if (!wolf) return this.lobby('characters', false, 'That wolf is not on this account any more.');
+                await this.central.patchWolf(id, num(wolf, 'revision', 1), {choices: isObject(c.choices) ? c.choices : {}});
+                this.wolves = await this.central.wolves();
+                this.wolf = id;
+                this.lobby('characters', true, `${str(wolf, 'name')}'s strengths and tie are saved.`);
             } else if (type === 'wolf_delete') {
                 const id = str(c, 'id');
                 const name = str(this.wolves.find(w => str(w, 'id') === id), 'name', 'The wolf');
@@ -229,7 +241,7 @@ export class ClientApp {
                 this.wolf = str(c, 'wolf', this.wolf);
                 this.listed = await this.central.worlds();
                 this.statuses.clear();
-                this.lobby('worlds', true, this.listed.length ? 'Choose a world.' : '');
+                this.lobby('worlds', true, this.listed.length ? 'Choose a server, then the wolf to play there.' : '');
             } else if (type === 'host_show') {
                 await this.loadHostWorlds();
                 this.hostLobby(true, this.hostWorlds.length ? '' : 'You have no worlds yet. Give one a name to make it.');
@@ -272,13 +284,17 @@ export class ClientApp {
             try {
                 const rules = await this.central.rules();
                 this.gifts = isObject(rules.gifts) ? rules.gifts : null;
+                this.rules = {};
+                for (const key of ['creation', 'unlocks'] as const) if (isObject(rules[key])) this.rules[key] = rules[key];
+                if (Array.isArray(rules.ties)) this.rules.ties = rules.ties.filter(isObject);
+                if (typeof rules.nameMost === 'number') this.rules.nameMost = rules.nameMost;
             } catch {
                 // (The creator says the families haven't arrived; everything else works.)
             }
         }
         this.wolves = await this.central.wolves();
         if (!this.wolves.some(w => str(w, 'id') === this.wolf)) this.wolf = str(this.wolves[0], 'id');
-        this.lobby('characters', true, this.wolves.length ? text : `${text}`);
+        this.lobby('characters', true, text, true);
     }
 
     private signedOut(text: string, ok = true) {
@@ -418,6 +434,14 @@ export class ClientApp {
         this.toDoor();
         connection?.close();
     }
+}
+
+/** The server browser's columns for a world: wolves in it and its limit, the round trip, and whether it answered (its
+ *  own /status, else central's count). */
+function serverColumns(s: WorldStatus | null | undefined, listed: ListedWorld | null) {
+    const marks = [...((s?.voices || listed?.voices) ? ['AI used'] : []), ...((s?.cheats || listed?.cheats) ? ['cheats on'] : [])];
+    if (s) return {players: s.players, limit: s.limit || null, ping: s.ms, answer: 'yes', marks};
+    return {players: listed ? listed.players : null, limit: listed?.limit || null, ping: null, answer: s === null ? 'no' : 'asking', marks};
 }
 
 function message(error: unknown): string {

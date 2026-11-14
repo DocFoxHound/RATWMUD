@@ -3,9 +3,10 @@
 // (Desktop/tests/app.test.mjs: the Tauri window, driven through its e2e hook). `page` has evaluate(expression) and
 // waitFor(expression, seconds); `h` is tests/harness.mjs's central and world.
 //
-// Register (the age gate), make a wolf with a Gift family (the identity tabs only), the world list from central, join,
-// the world's first-arrival screen (tier, strengths, town, tie), in the world, leave back to the list, rejoin straight
-// in (by the address box), the world going down (Reconnect), delete the wolf, sign out, sign in, delete the account.
+// Register (the age gate), the main menu, make a wolf with a Gift family, its strengths and its tie (the Character
+// Editor), change them, the server browser from central, a server then the wolf, the world's first-arrival screen (the
+// tier and the town; the strengths and tie the wolf's own), in the world, leave back to the servers, rejoin straight in
+// (by the address box), the world going down (Reconnect), delete the wolf, sign out, sign in, delete the account.
 import assert from 'node:assert/strict';
 
 export const PASSWORD = 'a long test password';
@@ -67,21 +68,41 @@ export async function clientFlow(page, h, {native = false} = {}) {
     await fill('input[name=password]', PASSWORD);
     await fill('input[name=birthYear]', '1990');
     await page.evaluate(`document.querySelector('form.door-login').requestSubmit()`);
-    await waitDoor(`d.page === 'roster' && !d.busy`);
+    await waitDoor(`d.page === 'menu' && !d.busy`);
     assert.equal(await door('d.characters.length'), 0);
     assert.equal(await page.evaluate(`document.querySelector('input[type=password]')`), null, 'no password box left');
+    // The main menu (the user, 2026-11-14): Servers, the Character Editor, the Editor and the Dungeon Master.
+    assert.deepEqual(await page.evaluate(`[...document.querySelectorAll('.menu-tile')].map(b => b.dataset.action)`),
+        ['servers', 'characters', 'editor', 'dungeon-master']);
+    assert.equal(await page.evaluate(`document.querySelector('.menu-tile[data-action=editor]').disabled`), !native, 'the Editor is the desktop client\'s');
 
-    // The creator: the identity tabs only, and a Gift family.
-    await page.evaluate(`window.ratw.page('creator')`);
+    // The Character Editor's creator: the wolf's identity, its Gift, its strengths and its tie.
+    await click('button[data-action=characters]');
+    await waitDoor(`d.page === 'roster'`);
+    assert.equal(await page.evaluate(`document.querySelector('button[data-action=editor]')`), null, 'no Editor button here');
+    await page.evaluate(`document.querySelector('.slot').click()`);
     assert.equal(await door('d.page'), 'creator');
     assert.deepEqual(await page.evaluate(`[...document.querySelectorAll('.creator-tabs .tab')].map(b => b.dataset.tab)`),
-        ['body', 'coat', 'markings', 'eyes', 'gift', 'name'], 'Arrival, Tie and Strengths are each world\'s');
+        ['body', 'coat', 'markings', 'eyes', 'gift', 'strengths', 'tie', 'name'], 'the strengths and the tie are the wolf\'s own; the town is each world\'s');
+    assert.deepEqual(await page.evaluate(`[...document.querySelectorAll('.door-actions button')].map(b => b.textContent)`),
+        ['Back to the main menu', 'REVIEW CHARACTER'], 'no Choose a World, no Editor');
     await click('.creator-tabs [data-tab=gift]');
+    assert.deepEqual(await page.evaluate(`[...document.querySelectorAll('.gift-card')].map(b => [b.dataset.tier, b.disabled])`),
+        [['normal', false], ['gifted', false], ['quickened', true]], 'Quickened is each world\'s, greyed here');
+    assert.match(await page.evaluate(`document.querySelector('.gift-card[data-tier=quickened]').textContent`), /social level 8/);
+    await click('.gift-card[data-tier=gifted]');
     assert.equal(await page.evaluate(`document.querySelectorAll('.gift-family').length`), 8, 'the families come from central');
     await click('.gift-family[data-family=fire]');
     assert.equal(await door('d.draftFamily'), 'fire');
+    await click('.creator-tabs [data-tab=strengths]');
+    assert.equal(await page.evaluate(`document.querySelectorAll('.build-row').length`), 7, 'the attributes come from central');
+    await click('.build-chip[data-preset=hunter]');
+    await click('.creator-tabs [data-tab=tie]');
+    const tie = await page.evaluate(`document.querySelectorAll('.tie-list [data-tie]')[1].dataset.tie`);
+    await click(`.tie-list [data-tie="${tie}"]`);
     await click('.creator-tabs [data-tab=name]');
-    await fill('.creator-panel input[type=text]', 'emberline');
+    assert.equal(await page.evaluate(`document.querySelector('input[name=wolfName]').maxLength`), 24, 'a name is at most 24 characters');
+    await fill('input[name=wolfName]', 'emberline');
     assert.equal(await door('d.draftName'), 'Emberline');
     await clickText('REVIEW CHARACTER');
     assert.equal(await door('d.page'), 'review');
@@ -90,25 +111,41 @@ export async function clientFlow(page, h, {native = false} = {}) {
     await waitDoor(`d.page === 'roster' && d.characters.length === 1 && !d.busy`);
     assert.equal(await door('d.characters[0].name'), 'Emberline');
     assert.match(await page.evaluate(`document.querySelector('.slot.selected').textContent`), /Fire family/);
+    assert.deepEqual(await door('d.characters[0].choices'), {grades: {smell: 'strong', hearing: 'strong', dexterity: 'strong', wisdom: 'weak'}, tie},
+        'the strengths and the tie are kept with the wolf on central');
+    // ...and changed later, from the selected wolf.
+    await click('button[data-action=choices]');
+    await waitDoor(`d.page === 'choices'`);
+    await click('.build-row[data-attribute=strength] .build-grade[data-grade=weak]');
+    await click('button[data-action=save-choices]');
+    await waitDoor(`d.page === 'roster' && !d.busy`);
+    assert.equal(await door('d.characters[0].choices.grades.strength'), 'weak');
 
-    // The world list from central: the test world, its status asked of the world itself.
-    await click('button[data-action=enter]');
-    await waitDoor(`d.page === 'worlds' && !d.busy`);
+    // The servers from central: the test world, its status asked of the world itself.
+    await click('button[data-action=menu]');
+    await waitDoor(`d.page === 'menu'`);
+    await click('button[data-action=servers]');
+    await waitDoor(`d.page === 'servers' && !d.busy`);
     assert.equal(await door('d.worlds.length'), 1);
     assert.equal(await door('d.worlds[0].id'), h.world.id);
-    await page.waitFor(`document.querySelector('.world-status')?.textContent.includes('of 100 wolves')`);
+    await page.waitFor(`document.querySelector('.server-ping')?.textContent.includes('ms')`);
+    assert.equal(await page.evaluate(`document.querySelector('.server-players').textContent`), '0 / 100');
     assert.equal(await door('d.worlds[0].fit'), 'ok', 'same protocol and client-data hash as the world');
 
-    // Join: a ticket, hello{ticket, protocol}, the world's first-arrival screen.
-    await click(`button[data-world="${h.world.id}"]`);
+    // Join: the server, then the wolf; a ticket, hello{ticket, protocol}, the world's first-arrival screen.
+    await click(`tr[data-world="${h.world.id}"]`);
+    await click('button[data-action=server-join]');
+    await waitDoor(`d.page === 'pick'`);
+    await click('.pick-card');
+    await click('button[data-action=play]');
     await waitDoor(`d.page === 'arrive'`, 30);
-    const startsHere = await door('d.starts.length');
     assert.deepEqual(await page.evaluate(`[...document.querySelectorAll('.creator-tabs .tab')].map(b => b.dataset.tab)`),
-        ['gift', 'strengths', ...(startsHere ? ['arrival'] : []), 'tie'], "the world's own choices (the demo world has no start towns)");
-
+        ['gift', 'arrival'], 'the world asks the tier and the town only');
     assert.deepEqual(await door('d.tierChoices'), ['gifted', 'quickened'], 'a wolf with a family arrives Gifted or Quickened');
     assert.equal(await door('d.draftTier'), 'gifted');
     assert.equal(await door('d.arriveWolf.name'), 'Emberline');
+    assert.equal(await door('d.draftGrades.strength'), 'weak', 'the wolf\'s own strengths go with it');
+    assert.equal(await door('d.draftTie'), tie, 'and its tie');
     await clickText('ARRIVE');
     await waitGame();
     assert.equal(await page.evaluate('window.ratw.shell.inWorld'), true);
@@ -122,30 +159,35 @@ export async function clientFlow(page, h, {native = false} = {}) {
     await page.evaluate(`window.dispatchEvent(new KeyboardEvent('keydown', {code: 'KeyC', key: 'c', ctrlKey: true, bubbles: true}))`);
     assert.equal(await page.evaluate('window.ratw.game().state.modal'), '', 'Ctrl+C leaves the character sheet shut');
 
-    // Leave: back to the world list.
+    // Leave: back to the servers.
     await page.evaluate('window.ratw.game().state.leaveCharacter()');
-    await waitDoor(`d.page === 'worlds' && !d.busy`, 20);
+    await waitDoor(`d.page === 'servers' && !d.busy`, 20);
     assert.match(await message(), /left the world/);
     assert.equal(await page.evaluate('window.ratw.shell.inWorld'), false);
 
     // Rejoin, by the address box this time: straight in, no arrival screen.
     await fill('input[name=address]', `127.0.0.1:${h.world.port}`);
     await page.evaluate(`document.querySelector('form.world-direct').requestSubmit()`);
+    await waitDoor(`d.page === 'pick'`);
+    await click('.pick-card');
+    await click('button[data-action=play]');
     await waitGame();
     assert.match(await page.evaluate(`JSON.stringify(window.ratw.game().state.snapshot.self)`), /Emberline/);
 
     // The world goes down: the list again, with Reconnect.
     await h.stopWorld();
-    await waitDoor(`d.page === 'worlds'`, 30);
+    await waitDoor(`d.page === 'servers'`, 30);
     assert.match(await message(), /connection to Client Test Hollow was lost/);
     assert.equal(await door('d.lostWorld'), h.world.id);
-    assert.equal(await page.evaluate(`document.querySelector('button[data-world="${h.world.id}"]').textContent`), 'RECONNECT');
-    await click(`button[data-world="${h.world.id}"]`);
-    await waitDoor(`!d.busy && d.page === 'worlds'`, 30);
+    assert.equal(await page.evaluate(`document.querySelector('button[data-action=server-join]').textContent`), 'RECONNECT');
+    await click('button[data-action=server-join]');
+    await waitDoor(`!d.busy && d.page === 'servers'`, 30);
     assert.match(await message(), /Could not reach Client Test Hollow/, 'a new ticket, but nobody answers');
 
     // Delete the wolf (the password asked again, in the page's own dialog), then sign out and back in.
-    await clickText('Back to your wolves');
+    await click('button[data-action=menu]');
+    await click('button[data-action=characters]');
+    await waitDoor(`d.page === 'roster'`);
     // The page's own dialog: Tab stays in it, and Enter on a focused Cancel doesn't confirm.
     await click('button[data-action=delete-wolf]');
     await page.waitFor(`document.querySelector('.ratw-dialog')`);
@@ -169,14 +211,16 @@ export async function clientFlow(page, h, {native = false} = {}) {
     await waitDoor('!d.busy && d.characters.length === 0');
     assert.match(await message(), /Emberline is deleted/);
     // The user makes this account a host (Q11: approved hosts); it shows from the next sign-in.
+    await click('button[data-action=menu]');
+    await waitDoor(`d.page === 'menu'`);
     assert.equal(await page.evaluate(`document.querySelector('button[data-action=host]')`), null, 'no Host page before');
     h.flagHost('clientwolf');
-    await clickText('Sign out of account');
+    await click('button[data-action=sign-out]');
     await waitDoor(`d.page === 'login' && !d.busy`);
     await fill('input[name=username]', 'clientwolf');
     await fill('input[name=password]', PASSWORD);
     await page.evaluate(`document.querySelector('form.door-login').requestSubmit()`);
-    await waitDoor(`d.page === 'roster' && !d.busy`);
+    await waitDoor(`d.page === 'menu' && !d.busy`);
 
     // The Host page (doc 77, 3.2 and Phase 4): make a world, its token shown once; a refused name; a new token; remove it.
     await click('button[data-action=host]');
@@ -203,7 +247,7 @@ export async function clientFlow(page, h, {native = false} = {}) {
     await waitDoor(`!d.busy && d.hostWorlds.length === 0`);
     assert.equal(await door('d.hostToken'), '', 'its token gone with it');
     await click('button[data-action=host-back]');
-    await waitDoor(`d.page === 'roster'`);
+    await waitDoor(`d.page === 'menu'`);
 
     // Delete the account.
     await click('button[data-action=delete-account]');

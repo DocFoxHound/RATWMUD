@@ -312,6 +312,11 @@ export class Central {
         const reply = await this.ask('POST', '/wolves', wolf);
         return isJson(reply.wolf) ? reply.wolf : {};
     }
+    /** The look, the profile or the strengths and tie changed (the wolf at `revision`: central refuses a stale one). */
+    async patchWolf(id: string, revision: number, changes: Json): Promise<Json> {
+        const reply = await this.ask('PATCH', `/wolves/${id}`, {revision, ...changes});
+        return isJson(reply.wolf) ? reply.wolf : {};
+    }
     deleteWolf(id: string, password: string) {
         return this.ask('DELETE', `/wolves/${id}`, {password});
     }

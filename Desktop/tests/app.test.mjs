@@ -86,7 +86,7 @@ test('the app: the whole flow, the page kept to itself, and a remembered sign-in
         await fill('input[name=birthYear]', '1990');
         await page.evaluate(`(() => { document.querySelector('input[name=remember]').checked = true; return true; })()`);
         await page.evaluate(`document.querySelector('form.door-login').requestSubmit()`);
-        await waitDoor(`d.page === 'roster' && !d.busy`);
+        await waitDoor(`d.page === 'menu' && !d.busy`);
         const kept = readdirSync(data).filter(f => f.endsWith('.token'));
         assert.equal(kept.length, 1, 'one remembered sign-in');
         const token = readFileSync(join(data, kept[0]), 'utf8');
@@ -105,7 +105,7 @@ test('the app: the whole flow, the page kept to itself, and a remembered sign-in
         // A new launch: straight back in.
         page = await open();
         const again = on(page, h);
-        await again.waitDoor(`d.page === 'roster' && !d.busy`, 20);
+        await again.waitDoor(`d.page === 'menu' && !d.busy`, 20);
         assert.match(await again.message(), /Welcome back, rememberedwolf/);
         assert.equal((await page.evaluate(`window.__TAURI__.core.invoke('central_info')`)).remembered, true);
         const resumed = await page.evaluate(`window.__TAURI__.core.invoke('central_resume')`);
@@ -114,7 +114,7 @@ test('the app: the whole flow, the page kept to itself, and a remembered sign-in
         assert.ok(tokenFree(await page.evaluate('window.__e2eReplies')), 'no token in a resume\'s reply');
 
         // Signing out forgets it; the next launch asks again.
-        await page.evaluate(`[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Sign out of account').click()`);
+        await page.evaluate(`document.querySelector('button[data-action=sign-out]').click()`);
         await again.waitDoor(`d.page === 'login' && !d.busy`);
         assert.deepEqual(readdirSync(data).filter(f => f.endsWith('.token')), [], 'forgotten');
         assert.deepEqual(await page.evaluate('window.__e2eErrors'), [], 'no exceptions in the page');

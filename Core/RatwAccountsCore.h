@@ -24,6 +24,8 @@ constexpr std::size_t AccountLimit = 4096;   // (Doc 50: room for a thousand pla
 bool normalizeUsername(const std::string& input, std::string& normalized);
 bool validPassword(const std::string& password);
 bool validDisplayName(const std::string& name);
+// How long a text is as the rules count it: UTF-16 code units (as a browser's string length does).
+std::size_t textUnits(const std::string& text);
 bool validCommandId(const std::string& id);
 bool isLoopbackAddress(const std::string& address);
 std::string fingerprint(const std::string& value);   // SHA-256, hex.

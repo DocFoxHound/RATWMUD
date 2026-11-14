@@ -53,6 +53,7 @@ export class EditorDoor {
     newCodeFor = '';
     recent: RecentWorld[] = [];
     busy = false;
+    private pendingTool: '' | 'dm' = '';    // DUNGEON MASTER on the main menu: the tool to open once the Editor menu is reached.
     private waitTimer = 0;
     private statusTimer = 0;
     private shown: Screen | null = null;    // The screen last drawn: the status line is cleared when it changes...
@@ -110,6 +111,19 @@ export class EditorDoor {
         this.redraw();
     }
 
+    /** DUNGEON MASTER on the main menu: the DM tool is the Editor's (doc 78, screen 5), for a world this player hosts or
+     *  helps run, after its Editor sign-in. With a session open, the DM tool opens now; otherwise the Editor's screens,
+     *  and the DM tool opens once the sign-in reaches the Editor menu. */
+    async openDm() {
+        this.pendingTool = 'dm';
+        await this.open();
+        if (this.screen !== 'menu') {
+            this.say('The Dungeon Master tool is your world\'s, in the Editor: connect to your world and sign in with its Editor account; ' +
+                'the DM tool opens after.', false, true);
+            this.redraw();
+        }
+    }
+
     /** The Host page's EDITOR on a community row: this computer first, if the world there is that row's world (a host
      *  at home often can't reach their own public address); otherwise screen 2 with the listed host and the Editor port. */
     async openFor(worldId: string, listedAddress: string) {
@@ -133,6 +147,7 @@ export class EditorDoor {
     }
 
     leave() {
+        this.pendingTool = '';
         this.stopTimers();
         this.wipe();
         this.host.message('');
@@ -512,6 +527,11 @@ export class EditorDoor {
 
     private menuScreen(): HTMLElement {
         const s = this.session!;
+        if (this.pendingTool) {
+            const tool = this.pendingTool;
+            this.pendingTool = '';
+            queueMicrotask(() => void this.openTool(tool));
+        }
         if (!this.statusTimer) {
             void this.refreshStatus();
             this.statusTimer = window.setInterval(() => { if (this.screen === 'menu') void this.refreshStatus(); }, 15000);

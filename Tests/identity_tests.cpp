@@ -40,6 +40,13 @@ void theRules()
     expect(identity::name("A").empty(), "one character is too short");
     expect(identity::name(std::string(33, 'a')).empty(), "33 characters is too long");
     expect(identity::name("Ash\x01").empty(), "control characters are refused");
+    // A new wolf's name is at most 24 characters (the user, 2026-11-14); a wolf made before keeps a longer one.
+    expect(identity::NewNameMost == 24, "the new name limit is 24");
+    expect(identity::newName(std::string(24, 'a')) == "A" + std::string(23, 'a'), "24 characters make a new name");
+    expect(identity::newName(std::string(25, 'a')).empty(), "25 characters are too many for a new wolf");
+    expect(identity::name(std::string(25, 'a')) == "A" + std::string(24, 'a'), "but an older wolf's 25 still reads");
+    expect(identity::newName("  " + std::string(24, 'b') + "  ") == "B" + std::string(23, 'b'), "counted after trimming");
+    expect(identity::newName("\xc3\xa9" + std::string(23, 'x')).size() == 25, "a letter beyond ASCII counts one");
     expect(identity::age(parsed(R"({"age": 6})")) == 6 && identity::age(parsed(R"({"age": 99})")) == 99, "6 and 99");
     for (const char* bad : {R"({"age": 5})", R"({"age": 100})", R"({"age": 7.5})", R"({"age": "7"})", R"({})"})
         expect(identity::age(parsed(bad)) < 0, std::string("age refused: ") + bad);
@@ -119,6 +126,14 @@ void theCommand(const std::string& command)
         // The build is a size (small, medium, large); the older names still read; nothing else does.
         R"({"check":"look","appearance":)" + Look.substr(0, Look.size() - 1) + R"(,"build":"large","fur":{"coat":["russet","tan","cream"],"eyes":"hazel"}}})",
         R"({"check":"look","appearance":)" + Look.substr(0, Look.size() - 1) + R"(,"build":"huge"}})",
+        // 22-23: the name limit for a new wolf; 24-28: a wolf's own strengths and tie (the character editor).
+        R"({"check":"wolf","wolf":{"name":"Abcdefghijklmnopqrstuvwx","age":7,"appearance":)" + Look + "}}",
+        R"({"check":"wolf","wolf":{"name":"Abcdefghijklmnopqrstuvwxy","age":7,"appearance":)" + Look + "}}",
+        R"({"check":"choices","choices":{"grades":{"strength":"strong","wisdom":"weak","hearing":"plain"},"tie":"river"}})",
+        R"({"check":"choices","family":"fire","choices":{}})",
+        R"({"check":"choices","choices":{"tie":"no_such_starter"}})",
+        R"({"check":"choices","choices":{"grades":{},"specialty":"tracker"}})",
+        R"({"check":"choices","choices":{"grades":{"strength":"strong","smell":"strong","hearing":"strong"}}})",
     });
     expect(r[0].boolean("ok") && r[0].number("version") == 1, "version");
     const auto& wolf = r[1]["wolf"];
@@ -151,6 +166,19 @@ void theCommand(const std::string& command)
     for (const auto& f : families.items())
         fire = fire || (f.string("id") == "fire" && f["gifted"].isObject() && f["quickened"].isObject());
     expect(fire, "a family with its gifted and quickened sides");
+    // ...the strengths and the story starters, the name limit and the earned tiers' thresholds (the character editor).
+    expect(r[16]["creation"]["attributes"].isArray() && r[16]["creation"]["attributes"].size() == 7, "the rules: seven attributes");
+    expect(r[16]["ties"].isArray() && r[16]["ties"].size() > 0 && !r[16]["ties"].items()[0].string("line").empty(), "the rules: the ties");
+    expect(r[16].number("nameMost") == 24, "the rules: the name limit");
+    expect(r[16]["unlocks"]["quickened"].number("level") > r[16]["unlocks"]["gifted"].number("level"), "the rules: the tiers' thresholds");
+    expect(r[22].boolean("ok") && r[22]["wolf"].string("name").size() == 24, "a 24-character name is made: " + json::dump(r[22]));
+    expect(!r[23].boolean("ok") && r[23].string("error").find("2\xe2\x80\x93" "24") != std::string::npos, "25 characters are refused: " + json::dump(r[23]));
+    const auto& choices = r[24]["choices"];
+    expect(r[24].boolean("ok") && choices["grades"].string("strength") == "strong" && choices["grades"].string("wisdom") == "weak" &&
+               !choices["grades"].has("hearing") && choices.string("tie") == "river", "a wolf's choices, canonical: " + json::dump(r[24]));
+    expect(r[25].boolean("ok") && r[25]["choices"].string("tie").empty(), "none is fine, with a family too");
+    expect(!r[26].boolean("ok") && !r[27].boolean("ok"), "an unknown tie, and a specialty, are refused");
+    expect(!r[28].boolean("ok"), "a build over the budget is refused: " + json::dump(r[28]));
 }
 } // namespace
 

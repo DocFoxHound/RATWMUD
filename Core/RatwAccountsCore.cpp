@@ -90,6 +90,11 @@ bool validPassword(const std::string& password)
     return units(password) <= 128 && !control(password) && password.size() >= 12 && password.size() <= 128;
 }
 
+std::size_t textUnits(const std::string& text)
+{
+    return units(text);
+}
+
 bool validDisplayName(const std::string& name)
 {
     const auto space = [](char c) { return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' || c == '\v'; };

@@ -441,7 +441,7 @@ class Central:
     def _public_wolf(wolf: dict) -> dict:
         return {'id': wolf['id'], 'name': wolf['name'], 'sex': wolf['sex'], 'age': wolf['age'],
                 'appearance': wolf['appearance'], 'family': wolf['family'], 'profile': wolf['profile'],
-                'revision': wolf['revision'], 'created': wolf['created_at'], 'updated': wolf['updated_at']}
+                'choices': wolf.get('choices') or {}, 'revision': wolf['revision'], 'created': wolf['created_at'], 'updated': wolf['updated_at']}
 
     def call(self, method, *args) -> tuple[int, dict]:
         """Runs a call, turning a Reply into its answer."""
@@ -567,12 +567,13 @@ class Central:
         return ok(wolves=[self._public_wolf(w) for w in self.store.wolves(account['id'])], slots=WOLF_SLOTS)
 
     def create_wolf(self, address: str, token, body: dict) -> tuple[int, dict]:
-        """{"name", "age", "appearance", "family"?, "profile"?: fields} -> the wolf, as ratw_identity made it."""
+        """{"name", "age", "appearance", "family"?, "profile"?: fields, "choices"?: {"grades", "tie"}} -> the wolf, as
+        ratw_identity made it. The choices are the wolf's strengths and tie, given to each world at its first arrival."""
         _, account = self._account(token)
         self._limit(('changes', account['id']), self.settings.limits.changes_per_account, 'attempts')
-        unknown = set(body) - {'name', 'age', 'appearance', 'family', 'profile'}
+        unknown = set(body) - {'name', 'age', 'appearance', 'family', 'profile', 'choices'}
         if unknown:
-            raise refused(400, 'A wolf is a name, an age, a look, a Gift family and a profile; not ' +
+            raise refused(400, 'A wolf is a name, an age, a look, a Gift family, a profile and its choices; not ' +
                           ', '.join(sorted(unknown)) + '.', 'invalid')
         wolf_in = {k: body[k] for k in ('name', 'age', 'appearance', 'family') if k in body}
         name_refused = refused(400, 'That name is not allowed. Choose another.', 'name_refused')
@@ -597,10 +598,11 @@ class Central:
             if not made.get('ok'):
                 raise refused(400, made.get('error', 'That profile cannot be saved.'), 'invalid_profile')
             profile = made['profile']
+        choices = self._choices(wolf['family'], body['choices']) if body.get('choices') is not None else {}
         self._limit(('wolves', account['id']), self.settings.limits.wolves_per_account, 'new wolves')
         record = {'id': 'wolf-' + secrets.token_hex(16), 'account_id': account['id'], 'name': wolf['name'],
                   'name_key': name_key(wolf['name']), 'sex': wolf['sex'], 'age': int(wolf['age']),
-                  'appearance': wolf['appearance'], 'family': wolf['family'], 'profile': profile}
+                  'appearance': wolf['appearance'], 'family': wolf['family'], 'profile': profile, 'choices': choices}
         try:
             full = self.store.create_wolf(record, WOLF_SLOTS, self.clock())
         except Conflict:
@@ -608,6 +610,13 @@ class Central:
         if full:
             raise refused(409, f'An account has at most {WOLF_SLOTS} wolves.', 'full')
         return ok(wolf=self._public_wolf(self.store.wolf(record['id'])))
+
+    def _choices(self, family: str, given) -> dict:
+        """A wolf's strengths and tie, as ratw_identity's "choices" check makes them (refused with its words)."""
+        checked = self.identity.choices(family, given)
+        if not checked.get('ok'):
+            raise refused(400, checked.get('error', 'Those strengths cannot be saved.'), 'invalid_choices')
+        return checked['choices']
 
     def name_free(self, address: str, token, body: dict) -> tuple[int, dict]:
         """{"name"} -> whether a new wolf could take it (the creator's hint; the create is what decides)."""
@@ -619,21 +628,23 @@ class Central:
         return ok(free=self.store.name_free(name_key(name.strip()), self.clock()))
 
     def patch_wolf(self, address: str, token, body: dict, wolf_id: str) -> tuple[int, dict]:
-        """{"revision", "appearance"?, "profile"?: fields}: the look (never the sex) and the roleplay profile may
-        change; the name, sex, age and family never do."""
+        """{"revision", "appearance"?, "profile"?: fields, "choices"?}: the look (never the sex), the roleplay profile
+        and the strengths and tie may change; the name, sex, age and family never do."""
         _, account = self._account(token)
         self._limit(('changes', account['id']), self.settings.limits.changes_per_account, 'changes')
         wolf = self.store.wolf(wolf_id) if WOLF_ID.match(wolf_id or '') else None
         if wolf is None or wolf['account_id'] != account['id']:
             raise refused(404, 'That wolf is not on this account.', 'not_found')
-        unknown = set(body) - {'revision', 'appearance', 'profile'}
+        unknown = set(body) - {'revision', 'appearance', 'profile', 'choices'}
         if unknown:
-            raise refused(400, 'Only the look and the profile can change: ' + ', '.join(sorted(unknown)) + ' cannot.',
-                          'immutable')
+            raise refused(400, 'Only the look, the profile and the strengths and tie can change: ' +
+                          ', '.join(sorted(unknown)) + ' cannot.', 'immutable')
         revision = body.get('revision')
         if not isinstance(revision, int) or isinstance(revision, bool):
             raise refused(400, 'Say which revision of the wolf you are changing.', 'invalid')
-        appearance = profile = None
+        appearance = profile = choices = None
+        if body.get('choices') is not None:
+            choices = self._choices(wolf['family'], body['choices'])
         if 'appearance' in body:
             looked = self.identity.look(body['appearance'])
             if not looked.get('ok'):
@@ -646,9 +657,9 @@ class Central:
             if not made.get('ok'):
                 raise refused(400, made.get('error', 'That profile cannot be saved.'), 'invalid_profile')
             profile = made['profile']
-        if appearance is None and profile is None:
+        if appearance is None and profile is None and choices is None:
             return ok(wolf=self._public_wolf(wolf))
-        changed = self.store.update_wolf(wolf_id, revision, self.clock(), appearance, profile)
+        changed = self.store.update_wolf(wolf_id, revision, self.clock(), appearance, profile, choices)
         if changed is None:
             raise refused(409, 'The wolf was changed elsewhere. Reload it and try again.', 'stale')
         return ok(wolf=self._public_wolf(changed))
@@ -706,13 +717,17 @@ class Central:
     # ---------------------------------------------------------------- What the client shows
 
     def rules(self, address: str, token, body: dict) -> tuple[int, dict]:
-        """The creator's identity rules (doc 77, 3.1): the Gift families, from the game's own Data/ through
-        ratw_identity, as a world's lobby sends them; the slots and the ages. Public; asked once and kept."""
+        """The creator's identity rules (doc 77, 3.1): the Gift families, the strengths and the story starters, from
+        the game's own Data/ through ratw_identity, as a world's lobby sends them; the name limit, the earned tiers'
+        thresholds, the slots and the ages. Public; asked once and kept."""
         if self._rules is None:
             got = self.identity.rules()
             if not got.get('ok') or not isinstance(got.get('gifts'), dict):
                 raise refused(503, 'The creator\'s rules cannot be read just now.', 'identity_unavailable')
             self._rules = {'gifts': got['gifts'], 'slots': WOLF_SLOTS, 'ages': [6, 99]}
+            for key in ('creation', 'ties', 'nameMost', 'unlocks'):
+                if key in got:
+                    self._rules[key] = got[key]
         return ok(**self._rules)
 
     def list_worlds(self, address: str, token, body: dict) -> tuple[int, dict]:

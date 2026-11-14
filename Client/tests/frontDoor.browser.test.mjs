@@ -69,7 +69,10 @@ test('creating a character: an explicit review, one request, retried under its o
     await page.evaluate(`window.ratw.page('creator')`);
     assert.equal(await door('d.page'), 'creator');
     assert.equal(await door('d.draftAge'), 18);
-    assert.equal(await door('Object.keys(d.draftAppearance).length'), 9, 'all nine appearance fields');
+    assert.deepEqual(await door(`['species', 'sex', 'stature', 'pattern', 'baseColor', 'gradientColor', 'markingColor', 'gradientAmount', 'patternAmount']
+        .filter(k => !(k in d.draftAppearance))`), [], 'all nine appearance fields');
+    assert.equal(await door('d.draftAppearance.species'), 'timber', 'no species to choose: a timber wolf, as the data needs one');
+    assert.deepEqual(await door('d.draftAppearance.fur'), {coat: ['soot', 'ash', 'cream'], eyes: 'amber'}, 'the first ready coat, no zones of its own');
     await door(`(d.draftName = '  Briar  ', d.draftAge = 12, Object.assign(d.draftAppearance, {species: 'maned', pattern: 'saddle', baseColor: 6}))`);
     await door('d.review()');
     assert.equal(await door('d.draftName'), 'Briar', 'the name is trimmed');
@@ -135,7 +138,7 @@ test('choosing a Gift: the tier, one of eight families, its abilities, and the c
     assert.equal((await sent()).at(-1).gift, undefined, 'a Normal wolf sends no Gift');
 });
 
-test('strengths and weaknesses: a preset, the budget, a specialty, and the build sent (doc 49)', async () => {
+test('strengths and weaknesses: a preset, the budget, and the build sent, with no specialty (doc 49; the user, 2026-11-14)', async () => {
     // The creator's copy as the server builds it (practice::creationCatalog) from Data/Progression.
     const data = name => JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'Data', 'Progression', name), 'utf8'));
     const creationFile = data('creation.json'), skills = data('skills.json');
@@ -149,7 +152,8 @@ test('strengths and weaknesses: a preset, the budget, a specialty, and the build
     assert.ok(await page.evaluate(`document.body.innerText.includes('POINTS LEFT: 2')`), 'two points to spend');
     await page.evaluate(`document.querySelector('.build-chip[data-preset=hunter]').click()`);
     assert.deepEqual(await door('d.draftGrades'), {smell: 'strong', hearing: 'strong', dexterity: 'strong', wisdom: 'weak'}, 'the Hunter preset fills it');
-    assert.equal(await door('d.draftSpecialty'), 'tracker', 'with its specialty');
+    assert.equal(await count('.build-chip[data-specialty]'), 0, 'no specialty: it did nothing');
+    assert.ok(!(await page.evaluate(`document.body.innerText`)).includes('SPECIALTY'));
     assert.ok(await page.evaluate(`document.body.innerText.includes('POINTS LEFT: 0')`), 'and spends the budget');
     assert.ok(await page.evaluate(`document.querySelector('.build-row[data-attribute=strength] .build-grade[data-grade=strong]').disabled`),
         'a fourth strength is out of reach');
@@ -157,12 +161,11 @@ test('strengths and weaknesses: a preset, the budget, a specialty, and the build
         'each grade says where it starts and how far it grows');
     await page.evaluate(`document.querySelector('.build-row[data-attribute=strength] .build-grade[data-grade=weak]').click()`);
     assert.ok(await page.evaluate(`document.body.innerText.includes('POINTS LEFT: 1')`), 'a weakness gives a point back');
-    await page.evaluate(`document.querySelector('.build-chip[data-specialty=fighter]').click()`);
     await door(`(d.draftName = 'Brindle', d.review())`);
-    assert.ok(await page.evaluate(`document.body.innerText.includes('Specialty: Fighter')`), 'the review lists the build');
+    assert.match(await page.evaluate(`document.body.innerText`), /Strong: Smell, Hearing, Dexterity · Weak: (Wisdom, Strength|Strength, Wisdom)/, 'the review lists the build');
     await door('d.create()');
     const sentBuild = (await sent()).at(-1).build;
-    assert.equal(sentBuild.specialty, 'fighter', 'the build is sent with the creation');
+    assert.equal(sentBuild.specialty, undefined, 'the build is sent with the creation, no specialty');
     assert.equal(sentBuild.grades.strength, 'weak');
     await door(`(d.busy = false, d.receive({type: 'lobby', stage: 'characters', ok: true, characters: []}))`);
     await page.evaluate(`window.ratw.page('creator')`);
@@ -170,7 +173,7 @@ test('strengths and weaknesses: a preset, the budget, a specialty, and the build
     assert.equal((await sent()).at(-1).build, undefined, 'a plain wolf sends no build');
 });
 
-test('earned Gift tiers: locked cards say what they take, and a locked choice is refused at review (doc 49)', async () => {
+test('earned Gift tiers: three cards, the locked ones greyed with the reason, and a locked choice refused at review (doc 49)', async () => {
     const catalog = JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'Data', 'Gifts', 'families.json'), 'utf8'));
     const gifts = {tiers: catalog.tiers, families: catalog.families.filter(f => !f.npcOnly)};
     const tiers = {gifted: {open: false, progress: [{measure: 'socialLevel', have: 1, need: 3, label: 'Social level 1 of 3'},
@@ -182,12 +185,18 @@ test('earned Gift tiers: locked cards say what they take, and a locked choice is
         tiers: ${JSON.stringify(tiers)}}))`);
     await page.evaluate(`window.ratw.page('creator')`);
     await page.evaluate(`[...document.querySelectorAll('.creator-tabs .tab')].find(b => b.textContent === 'Gift').click()`);
-    assert.equal(await page.evaluate(`document.querySelectorAll('.gift-card.locked').length`), 2, 'Gifted and Quickened locked');
+    assert.deepEqual(await page.evaluate(`[...document.querySelectorAll('.gift-card')].map(b => [b.dataset.tier, b.disabled, b.classList.contains('locked')])`),
+        [['normal', false, false], ['gifted', true, true], ['quickened', true, true]], 'Gifted and Quickened greyed');
     assert.ok(await page.evaluate(`document.querySelector('.gift-card[data-tier=quickened]').textContent.includes('Stars: 62 of 100')`),
         'a locked card says what it takes');
+    assert.ok(await page.evaluate(`document.querySelector('.gift-card[data-tier=gifted]').textContent.includes("Gifted isn't open to your account yet")`),
+        'and why');
     await page.evaluate(`document.querySelector('.gift-card[data-tier=gifted]').click()`);
-    assert.equal(await page.evaluate(`document.querySelectorAll('.gift-family').length`), 8, 'its families can still be read');
-    await page.evaluate(`document.querySelector('.gift-family[data-family=water]').click()`);
+    assert.equal(await door('d.draftTier'), 'normal', 'a greyed tier can\'t be chosen');
+    // Gifted opened, Quickened not: only Quickened greyed.
+    await door(`(d.tiers = {gifted: {open: true}, quickened: ${JSON.stringify(tiers.quickened)}}, d.show('creator'), 1)`);
+    assert.deepEqual(await page.evaluate(`[...document.querySelectorAll('.gift-card')].map(b => b.disabled)`), [false, false, true]);
+    await door(`(d.tiers = ${JSON.stringify(tiers)}, d.draftTier = 'gifted', d.draftFamily = 'water', 1)`);
     await door(`(d.draftName = 'Hopeful', d.review())`);
     assert.equal(await door('d.page'), 'creator', 'a locked tier is refused at review');
     assert.ok((await door('d.message')).startsWith("Gifted isn't open to your account yet"), 'and says why');
@@ -200,7 +209,7 @@ test('painted wolves: three sizes, the words agree with the painting, the face i
     await page.evaluate(`document.querySelector('.creator-tabs [data-tab=body]').click()`);
     const cards = () => page.evaluate(`[...document.querySelectorAll('.build-card')].map(c => [c.dataset.build, c.textContent, c.classList.contains('chosen')])`);
     assert.deepEqual(await cards(), [['small', 'Small', false], ['medium', 'Medium', true], ['large', 'Large', false]], 'smallest first; a new wolf is medium');
-    assert.equal(await page.evaluate(`[...document.querySelectorAll('.creator-panel select')].length`), 2, 'sex and species: stature goes with the size');
+    assert.equal(await page.evaluate(`[...document.querySelectorAll('.creator-panel select')].length`), 1, 'sex alone: no species (the user, 2026-11-14); stature goes with the size');
     const summary = () => page.evaluate(`document.querySelector('.door-preview .wolf-id-text .pre').textContent`);
     assert.match(await summary(), /Medium · 76 cm at shoulder/);
     await page.evaluate(`document.querySelector('.build-card[data-build=large]').click()`);
@@ -218,10 +227,14 @@ test('painted wolves: three sizes, the words agree with the painting, the face i
     // The sizes keep the scale they were painted at: the small wolf's card has less wolf in it than the large one's.
     const painted = build => page.evaluate(`(() => { const c = document.querySelector('.build-card[data-build=${build}] canvas');
         const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let top = c.height;
-        for (let i = 0; i < d.length; i += 4) if (Math.abs(d[i] - 0xe6) + Math.abs(d[i + 1] - 0xdc) + Math.abs(d[i + 2] - 0xcb) > 60 && d[i + 3] > 200) { top = Math.floor(i / 4 / c.width); break; }
+        for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200) { top = Math.floor(i / 4 / c.width); break; }
         return c.height - top; })()`);
     const [small, medium, large] = [await painted('small'), await painted('medium'), await painted('large')];
     assert.ok(small < medium && medium < large, `the small wolf stands lower than the medium, the medium than the large (${small}, ${medium}, ${large})`);
+    // No paper card behind the wolves (the user, 2026-11-14): the canvases' corners are clear.
+    const corners = await page.evaluate(`[...document.querySelectorAll('.door-preview canvas, .build-card canvas')].map(c => {
+        const g = c.getContext('2d'); return [[1, 1], [c.width - 2, 1], [1, c.height - 2]].map(([x, y]) => g.getImageData(x, y, 1, 1).data[3]); }).flat()`);
+    assert.ok(corners.length >= 15 && corners.every(a => a === 0), `the wolves are drawn on nothing (${corners})`);
     // On the roster: a face for each wolf in the list, the selected wolf's profile on its card, and words that say
     // the size painted; a wolf saved with one of the first paintings keeps the painting that took its place.
     const look = await door('({...d.draftAppearance})');
@@ -239,6 +252,40 @@ test('painted wolves: three sizes, the words agree with the painting, the face i
     assert.match(await detail('w1'), /Large · 85 cm/, 'the old lean painting is the large wolf');
     assert.match(await detail('w2'), /Small · 67 cm/, 'the old average painting is the small wolf');
     assert.match(await detail('w3'), /Medium · 76 cm/, 'the old heavy painting is the medium wolf');
+});
+
+test('fur zones: every zone in the coat\'s colours, one changed right there, and its Reset (the user, 2026-11-14)', async () => {
+    await door(`(d.busy = false, d.receive({type: 'lobby', stage: 'characters', ok: true, characters: []}))`);
+    await page.evaluate(`window.ratw.page('creator')`);
+    await page.evaluate(`document.querySelector('.creator-tabs [data-tab=markings]').click()`);
+    assert.equal(await page.evaluate(`document.querySelectorAll('.creator-panel select').length`), 0, 'no dropdown');
+    const zoneNames = () => page.evaluate(`[...document.querySelectorAll('.zone-row[data-zone=legs] .fur-chip strong')].map(s => s.textContent)`);
+    const coatNames = await page.evaluate(`[...document.querySelectorAll('.zone-row[data-zone=back] .fur-chip strong')].map(s => s.textContent)`);
+    assert.deepEqual(await zoneNames(), coatNames, 'a zone starts as the coat');
+    assert.equal(await page.evaluate(`document.querySelector('.zone-row[data-zone=legs] .zone-reset').disabled`), true, 'nothing to reset yet');
+    await page.evaluate(`document.querySelector('.zone-row[data-zone=legs] .fur-chip[data-slot="2"]').click()`);
+    await page.evaluate(`document.querySelector('.zone-row[data-zone=legs] .swatch[data-colour=snow]').click()`);
+    const legs = await door('d.draftAppearance.fur.zones.legs');
+    assert.equal(legs[2], 'snow', 'the light fur of the legs changed');
+    assert.deepEqual(legs.slice(0, 2), (await door('d.draftAppearance.fur.coat')).slice(0, 2), 'the rest the coat\'s');
+    assert.equal((await zoneNames())[2], 'Snow');
+    assert.equal(await page.evaluate(`document.querySelector('.zone-row[data-zone=legs] .zone-reset').disabled`), false);
+    await page.evaluate(`document.querySelector('.zone-row[data-zone=legs] .zone-reset').click()`);
+    assert.equal(await door('d.draftAppearance.fur.zones'), undefined, 'Reset: the coat\'s scheme again');
+    assert.deepEqual(await zoneNames(), coatNames);
+});
+
+test('a name is at most 24 characters, in the box and at review', async () => {
+    await page.evaluate(`document.querySelector('.creator-tabs [data-tab=name]').click()`);
+    assert.equal(await page.evaluate(`document.querySelector('input[name=wolfName]').maxLength`), 24);
+    await fill('input[name=wolfName]', 'a'.repeat(30));
+    assert.equal(await door('d.draftName.length'), 24, 'typed beyond 24, kept at 24');
+    await door(`(d.draftName = '${'B'.repeat(25)}', d.review())`);
+    assert.equal(await door('d.page'), 'creator', 'a longer name (a tool\'s draft) is refused at review');
+    assert.match(await door('d.message'), /2 to 24/);
+    await door(`(d.draftName = '${'B'.repeat(24)}', d.review())`);
+    assert.equal(await door('d.page'), 'review', '24 is fine');
+    await page.key('Escape');
 });
 
 test('signing out forgets the roster and any draft', async () => {

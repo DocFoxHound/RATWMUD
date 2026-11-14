@@ -1,0 +1,148 @@
+/* The front door, redesigned (the user's notes, 2026-11-14; ui/frontDoor.ts): a game's title screen, the main menu, the
+   server browser, the wolf for a server, and the Character Editor. Loaded after styles.css: what is here wins over the
+   older door rules there. The painted wolves stand on nothing: no paper card behind them. */
+
+.door { --door-glow: #2a3d37; --door-deep: #0b1112; --door-line: rgba(217, 182, 123, .22); }
+.door[data-page=login], .door[data-page=register], .door[data-page=menu], .door[data-page=servers], .door[data-page=pick] {
+    background: radial-gradient(ellipse 80% 70% at 28% 30%, var(--door-glow) 0%, #152022 48%, var(--door-deep) 100%); }
+.door[data-page=login] .door-header, .door[data-page=register] .door-header, .door[data-page=menu] .door-header,
+.door[data-page=servers] .door-header, .door[data-page=pick] .door-header { display: none; }
+.door-header { margin-bottom: 18px; }
+.door-title h1 { font-size: 26px; font-weight: 500; letter-spacing: .14em; color: var(--gold); }
+.door-status { position: relative; z-index: 3; }
+.door .door-actions button, .door .window-foot button { margin-top: 0; margin-bottom: 0; }
+.door .door-actions { align-items: stretch; }
+.door-footnote { position: relative; z-index: 3; }
+
+/* The title screen. */
+.title-screen, .menu-screen, .servers-screen { position: relative; flex: 1; min-height: 0; display: flex; }
+.title-art, .menu-art { position: absolute; left: -42px; bottom: -6px; width: 1040px; height: auto; pointer-events: none; z-index: 0;
+    filter: drop-shadow(0 18px 30px rgba(0, 0, 0, .45)); }
+.menu-art { left: auto; right: -30px; bottom: 70px; width: 740px; opacity: .95; }
+.title-brand { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 14px; padding: 36px 0 0 6px; }
+.title-kicker { margin: 0 !important; color: var(--sage); font-size: 15px !important; letter-spacing: .32em; }
+.title-name, .menu-name { margin: 0; font-family: 'RATW Sans', Roboto, sans-serif; font-weight: 500; text-transform: uppercase;
+    letter-spacing: .05em; line-height: .98; color: #ecd9ad;
+    background: linear-gradient(180deg, #f6e7c4 0%, #d9b67b 58%, #a9844a 100%); -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; filter: drop-shadow(0 4px 18px rgba(0, 0, 0, .55)); }
+.title-name { font-size: 104px; }
+.title-name::after { content: ''; display: block; width: 180px; height: 3px; margin-top: 26px; background: linear-gradient(90deg, var(--gold), transparent); }
+.title-side { position: absolute; right: 8px; top: 50%; transform: translateY(-52%); z-index: 2; display: flex; flex-direction: column; gap: 18px; width: 470px; }
+.door .title-card { width: auto; align-self: stretch; padding: 34px 36px 28px; background: rgba(16, 24, 25, .82); border: 1px solid var(--door-line);
+    border-radius: 6px; box-shadow: 0 24px 60px rgba(0, 0, 0, .5); backdrop-filter: blur(6px); }
+.door .title-card h2 { font-size: 30px; font-weight: 500; letter-spacing: .02em; margin-bottom: 22px; }
+.door .title-card label { margin-bottom: 18px; }
+.door .title-card button.primary { margin-top: 6px; padding: 16px 18px; font-size: 18px; letter-spacing: .12em; }
+.door .title-card button.secondary { background: transparent; color: var(--muted); padding: 10px; font-weight: 400; }
+.door .title-card button.secondary:hover { color: var(--paper); }
+.title-editor { display: flex; align-items: center; gap: 14px; padding: 0 4px; color: var(--muted); font-size: 15px; }
+.door .title-editor button { margin: 0; padding: 10px 18px; font-size: 14px; letter-spacing: .14em; background: rgba(41, 55, 47, .85);
+    border: 1px solid var(--door-line); }
+.title-edition { position: absolute; left: 6px; bottom: 0; z-index: 1; margin: 0 !important; color: var(--gold); opacity: .75;
+    font-size: 13px !important; letter-spacing: .16em; }
+.door[data-page=login] .door-status, .door[data-page=register] .door-status { text-align: right; padding-right: 8px; }
+
+/* The main menu. */
+.menu-brand { position: absolute; left: 6px; top: 22px; z-index: 1; display: flex; flex-direction: column; gap: 10px; }
+.menu-name { font-size: 46px; }
+.menu-tiles { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 14px; width: 600px; margin: 150px 0 92px 0; }
+.door .menu-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; text-align: left; padding: 22px 30px; flex: 1;
+    background: linear-gradient(90deg, rgba(24, 34, 34, .92), rgba(24, 34, 34, .62)); color: var(--paper); border: 1px solid var(--door-line);
+    border-left: 4px solid var(--gold); border-radius: 4px; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); transition: transform .12s ease, background .12s ease; }
+.door .menu-tile strong { font-size: 30px; font-weight: 500; letter-spacing: .12em; color: #f1e2bf; }
+.door .menu-tile span { font-size: 16px; font-weight: 400; color: var(--muted); line-height: 1.35; }
+.door .menu-tile:hover:not(:disabled) { transform: translateX(6px); background: linear-gradient(90deg, rgba(48, 64, 56, .95), rgba(36, 48, 44, .7)); }
+.door .menu-tile:disabled { opacity: .5; border-left-color: #5a6a62; cursor: not-allowed; }
+.menu-footer { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; display: flex; align-items: center; gap: 18px; padding-top: 14px;
+    border-top: 1px solid var(--door-line); }
+.menu-footer p { flex: 1; margin: 0 !important; }
+.menu-actions { display: flex; gap: 10px; }
+.door .menu-actions button { margin: 0; padding: 10px 16px; font-size: 14px; background: rgba(41, 55, 47, .8); }
+.door .menu-actions button[data-action=delete-account] { background: transparent; color: #d99a7e; }
+
+/* The server browser: a window over the main menu. */
+.server-window { position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; gap: 12px; min-height: 0; margin: 4px 40px 0;
+    padding: 22px 26px 18px; background: rgba(15, 22, 23, .94); border: 1px solid var(--door-line); border-radius: 6px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, .6); }
+.window-head { display: flex; align-items: center; gap: 16px; }
+.door .window-head h2 { margin: 0; font-size: 30px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: #f1e2bf; }
+.window-head .grow, .window-foot .grow { flex: 1; }
+.door .window-head button { margin: 0; padding: 9px 16px; font-size: 14px; }
+.door .window-head button.window-close { width: 42px; padding: 6px 0; font-size: 24px; line-height: 1; background: transparent; color: var(--muted); }
+.door .window-head button.window-close:hover { color: var(--paper); background: var(--raised); }
+.server-scroll { flex: 1; min-height: 0; overflow-y: auto; border: 1px solid #263431; border-radius: 4px; background: rgba(10, 15, 16, .6); }
+.server-table { width: 100%; border-collapse: collapse; font-size: 16px; }
+.server-table th { position: sticky; top: 0; z-index: 1; text-align: left; padding: 10px 14px; background: #1a2526; color: var(--gold);
+    font-size: 13px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; border-bottom: 1px solid #2c3b37; }
+.server-table td { padding: 12px 14px; vertical-align: top; border-bottom: 1px solid #1f2b29; }
+.server-row { cursor: pointer; }
+.server-row:hover td { background: rgba(41, 55, 47, .45); }
+.server-row.chosen td { background: color-mix(in srgb, var(--gold) 14%, #1d2928); }
+.server-row.chosen td:first-child { box-shadow: inset 4px 0 0 var(--gold); }
+.server-row.unfit { opacity: .5; }
+.server-row:focus-visible { outline: 2px solid var(--sage); outline-offset: -2px; }
+.server-name strong { display: flex; align-items: center; gap: 10px; font-size: 19px; font-weight: 500; }
+.door .server-name p { margin: 3px 0 0; }
+.server-players, .server-ping { white-space: nowrap; font-family: 'RATW Mono', monospace; font-size: 15px; }
+.server-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.server-tag { font-size: 12px; padding: 2px 8px; border-radius: 10px; background: #233130; color: var(--sage); white-space: nowrap; }
+.world-kind.lost { color: var(--ink); background: #e0a36a; }
+.door .server-empty { padding: 24px; margin: 0; }
+.window-foot { display: flex; align-items: flex-end; gap: 22px; }
+.window-foot .world-direct { flex: 1; }
+.door .window-foot .door-actions { margin: 0; }
+.door .window-foot .door-actions button.primary { min-width: 180px; }
+.door .server-window > p.small { margin: 0; }
+
+/* The wolf for a server. */
+.pick-window { margin: 30px 120px 10px; }
+.door .pick-window > p.muted { margin: 0; }
+.pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; padding: 18px; }
+.door .pick-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 10px 16px; background: rgba(41, 55, 47, .55);
+    color: var(--paper); border: 2px solid transparent; border-radius: 6px; font-weight: 400; }
+.door .pick-card canvas { width: 160px; height: 190px; }
+.door .pick-card strong { font-size: 21px; font-weight: 500; }
+.door .pick-card span { font-size: 14px; color: var(--muted); text-align: center; }
+.door .pick-card:hover { background: rgba(48, 64, 56, .8); }
+.door .pick-card.chosen { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 14%, #1d2928); }
+.pick-none { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px; }
+
+/* The Character Editor: the roster, the creator, a wolf's strengths and tie. Wolves on nothing, faces larger. */
+.door .portrait.painted { image-rendering: auto; background: none; }
+.door-preview { width: 560px; }
+.wolf-id { align-items: flex-end; gap: 20px; }
+.wolf-id .wolf-face { width: 220px; height: 262px; flex: none; filter: drop-shadow(0 8px 16px rgba(0, 0, 0, .4)); }
+.door .slot .slot-face { width: 62px; height: 62px; }
+.door .build-card { background: rgba(41, 55, 47, .6); }
+.door-detail .roster-choices { margin-top: 4px; }
+.door .roster-actions { justify-content: flex-end; }
+.door .roster-actions button.primary { flex: none; min-width: 220px; }
+
+/* The fur zones: every zone in the coat's colours, changed right there, Reset to the coat's (no dropdown). */
+.creator-panel .zone-row { margin-top: -6px; padding: 9px 12px; gap: 10px; border-left: 3px solid transparent; }
+.creator-panel .zone-row.own { border-left-color: var(--sage); }
+.creator-panel .zone-row.open { background: rgba(255, 255, 255, .06); }
+.zone-head { gap: 12px; }
+.zone-title { display: flex; flex-direction: column; gap: 2px; width: 150px; flex: none; }
+.zone-title strong { font-weight: 500; font-size: 16px; }
+.zone-title small { font-size: 12px; letter-spacing: .03em; }
+.zone-head .fur-chips { flex: 1; }
+.door .zone-head .fur-chip { padding: 5px 8px; }
+.door .zone-head .fur-chip strong { font-size: 14px; }
+.door .zone-reset { margin: 0; padding: 7px 12px; font-size: 13px; font-weight: 400; background: transparent; color: var(--sage);
+    border: 1px solid #3a4a44; }
+.door .zone-reset:disabled { opacity: .3; }
+.swatch-grid.fur-grid { grid-template-columns: repeat(14, 1fr); gap: 4px; }
+.door .swatch-grid.fur-grid .swatch { height: 26px; }
+.swatch-grid.eye-grid { grid-template-columns: repeat(12, 1fr); gap: 8px; }
+.door .swatch-grid.eye-grid .swatch { height: 44px; border-radius: 50%; box-shadow: inset 0 0 0 3px rgba(0, 0, 0, .35); }
+
+/* The Gift: three cards, greyed with the reason where the account hasn't opened them. */
+.door .gift-card:disabled { opacity: 1; cursor: not-allowed; background: rgba(41, 55, 47, .35); }
+.door .gift-card.locked strong { color: var(--muted); }
+.door .gift-card .gift-reason { font-size: 13px; line-height: 1.35; color: #d8b98a; }
+.arrive-own { display: flex; flex-direction: column; gap: 6px; padding-top: 10px; border-top: 1px solid var(--raised); }
+.door .arrive-own p { margin: 0; }
+
+/* The name: its limit shown as it is typed. */
+.door-fields label .name-count { align-self: flex-end; font-size: 13px; margin-top: -4px; }

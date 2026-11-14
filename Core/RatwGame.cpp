@@ -2745,13 +2745,13 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
     if (type == "character_create")
     {
         // The identity's rules (name, age, look, Gift) are RatwIdentity's, shared with central's ratw_identity (doc 77).
-        const std::string name = identity::name(j.string("name"));
+        const std::string name = identity::newName(j.string("name"));
         const double age = identity::age(j);
         Appearance appearance;
         const std::string commandId = j.string("commandId");
         if (name.empty() || age < 0 || !wire::readAppearance(j["appearance"], appearance) || !accounts::validCommandId(commandId))
         {
-            lobby(c, false, "Choose a 2\xe2\x80\x93" "32 character name, a whole age from 6\xe2\x80\x93" "99, and a complete valid wolf appearance.");
+            lobby(c, false, "Choose a 2\xe2\x80\x93" "24 character name, a whole age from 6\xe2\x80\x93" "99, and a complete valid wolf appearance.");
             return true;
         }
         // The Gift (doc 43): {"tier": "normal" | "gifted" | "quickened", "family": a playable family}; none is Normal.
