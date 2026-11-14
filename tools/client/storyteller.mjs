@@ -103,8 +103,8 @@ try {
     await click(ash, '×');
     // A storyteller: a tale written and begun.
     await ash.evaluate(`${S}.send({type: 'storyteller', verb: 'approve'})`);
-    check(!!await ash.waitFor(`[...document.querySelectorAll('button')].some(b => b.textContent.trim() === 'STORYTELLER' && b.offsetParent)`, 10), 'the STORYTELLER button');
-    await click(ash, 'STORYTELLER');
+    check(!!await ash.waitFor(`document.querySelector('.nav-button.storyteller')?.offsetParent`, 10), 'the STORYTELLER button');
+    await ash.evaluate(`document.querySelector('.nav-button.storyteller').click()`);
     check(!!await ash.waitFor(`document.body.innerText.includes('WRITE A NEW TALE')`, 10), 'the STORYTELLER page');
     await ash.evaluate(`(() => {
         document.querySelector('details.letter-sheet').open = true;
@@ -139,7 +139,7 @@ try {
     await sleep(300);
     await bo.screenshot(`${OUT}/3-the-story-in-the-log.png`);
     // The end card, and Bo's star.
-    await click(ash, 'STORYTELLER');
+    await ash.evaluate(`document.querySelector('.nav-button.storyteller').click()`);
     await ash.waitFor(`document.body.innerText.includes('END · DONE')`, 10);
     await click(ash, 'END · DONE');
     check(!!await bo.waitFor(`document.body.innerText.includes('THE TALE ENDS')`, 15), 'Bo\'s end card');

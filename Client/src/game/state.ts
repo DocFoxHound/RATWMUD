@@ -26,6 +26,7 @@ export interface EncounterView {
 }
 import {inParty, readParty, type PartyView} from './party.ts';
 import {askText} from '../ui/dialog.ts';
+import {commandToRun, runCommand, slashSuggestions, wheelCommands} from './commands.ts';
 
 export interface Post {
     id: string;
@@ -51,7 +52,11 @@ export interface Post {
     // door and place, with its colour. Absent for ordinary talk, a Private scene's included.
     scene?: {mine: boolean; colour: string; openness: string; place: string};
     sequence?: number;          // The line's number, for muting, blocking or reporting its author (doc 50): never their id.
+    face?: {appearance: Json | null; artwork: string};   // The speaker's look when it was said: its face beside the line.
 }
+
+/** The ground's wheel (a right-click on the map, on no one): its menu's target. */
+export const GroundTarget = '@here';
 
 export interface Hit {
     rect: Rect;
@@ -236,6 +241,7 @@ export class GameState {
     contextKind = '';
     contextPoint: [number, number] = [0, 0];
     contextActions: string[] = [];
+    slashPick = 0;                          // The command chosen in the list under the box (commands.ts).
     tileRows: string[] = [];
     visibilityRows: string[] = [];
     tileHeights: Float32Array = new Float32Array(0);
@@ -1260,6 +1266,17 @@ export class GameState {
         const own = (post.speaker === str(obj(this.snapshot, 'self'), 'name') && !bool(e, 'anonymous')) || !!post.outgoing;
         post.revealed = post.system || own || post.channel !== 'ic' ? post.text.length : 0;
         if (type === 'error') this.showToast(post.text);
+        // Whose face goes beside it (the user's notes, 2026-11-14): the wolf in sight by the name it is known by here (a
+        // line carries no author's id, by design; strangers alike are numbered as in sight, "A dun wolf (2)"), oneself
+        // included; none for the world's lines, a voice not put to a wolf, or a name that could be either of two.
+        if (!post.system && !post.faint && !bool(e, 'anonymous')) {
+            const name = post.speaker.toLowerCase(), others = [...this.entities.values()].filter(v => !v.self);
+            const exact = others.filter(v => v.name.toLowerCase() === name);
+            const named = own ? [this.entities.get(this.selfId)].filter((v): v is EntityView => !!v)
+                : exact.length ? exact : others.filter(v => v.name.replace(/ \(\d+\)$/, '').toLowerCase() === name);
+            const who = named.length === 1 ? named[0] : undefined;
+            if (who && (who.appearance || who.artwork)) post.face = {appearance: who.appearance, artwork: who.artwork};
+        }
         this.posts.push(post);
         if (this.posts.length > 300) this.posts.splice(0, this.posts.length - 300);
         this.transcriptScroll = 0;
@@ -1673,6 +1690,15 @@ export class GameState {
 
     submitPost() {
         const text = this.composer.text.trim();
+        // A game command (commands.ts): run here, never said. (A Dungeon Master's Dev Console keeps its own names.)
+        const command = commandToRun(this, text);
+        if (command && !(this.isDungeonMaster() && this.devCommands.some(([name]) => name.slice(1).toLowerCase() === command.command.name))) {
+            this.composer.text = '';
+            this.slashPick = 0;
+            this.setChat(false);
+            command.command.run!(this, command.arg);
+            return;
+        }
         if (text.startsWith('/') && this.isDungeonMaster()) {
             // A Dungeon Master's slash command goes to the Dev Console, never into the world as words.
             this.composer.text = '';
@@ -1686,13 +1712,6 @@ export class GameState {
             // A storyteller's (or a participant's dice): to the tale, never said aloud (doc 58, 5).
             this.composer.text = '';
             this.send(story);
-            this.setChat(false);
-            return;
-        }
-        if (text === '/howl') {
-            // The gathering howl (doc 51): a command, not words.
-            this.composer.text = '';
-            this.send({type: 'howl'});
             this.setChat(false);
             return;
         }
@@ -1720,6 +1739,22 @@ export class GameState {
 
     /** A key in the composer; true when the game took it. */
     composerKey(k: KeyInput): boolean {
+        // The command list under the box (commands.ts): Up and Down choose, Tab completes, Enter runs a bare one.
+        const suggestions = this.chat ? slashSuggestions(this, this.composer.text) : [];
+        if (suggestions.length) {
+            if (k.code === 'ArrowUp' || k.code === 'ArrowDown') {
+                this.slashPick = (this.slashPick + (k.code === 'ArrowDown' ? 1 : -1) + suggestions.length) % suggestions.length;
+                return true;
+            }
+            const picked = suggestions[Math.min(this.slashPick, suggestions.length - 1)];
+            const typed = this.composer.text.trim().toLowerCase();
+            const exact = suggestions.some(c => `/${c.name}` === typed);
+            if (k.code === 'Tab' || ((k.code === 'Enter' || k.code === 'NumpadEnter') && !k.shift && !exact && typed.length > 1)) {
+                this.composer.text = `/${picked.name}${picked.args ? ' ' : ''}`;
+                this.slashPick = 0;
+                if (k.code === 'Tab' || picked.args) return true;
+            }
+        } else this.slashPick = 0;
         if (k.code === 'Escape') {
             this.setChat(false);
             return true;
@@ -1860,9 +1895,14 @@ export class GameState {
             return true;
         }
         if (this.contextTarget) {
-            const choice = /^(?:Digit|Numpad)([1-6])$/.exec(code);
+            const choice = /^(?:Digit|Numpad)([1-9])$/.exec(code);
             if (choice && this.contextActions[+choice[1] - 1] !== undefined) {
                 const picked = this.contextActions[+choice[1] - 1];
+                if (this.contextTarget === GroundTarget) {
+                    this.contextTarget = '';
+                    runCommand(this, picked);
+                    return true;
+                }
                 if (picked === 'challenge' || picked.startsWith('challenge:')) {
                     this.activate({rect: rect(0, 0, 0, 0), action: 'context', target: picked});
                     return true;
@@ -1972,6 +2012,14 @@ export class GameState {
         const me = this.entities.get(this.selfId);
         const near = me ? [...this.entities.values()].filter(e => e.kind === 'npc' && !e.self && Math.hypot(e.x - me.x, e.y - me.y) <= 6) : [];
         return {targets, nearby: near.length === 1 ? near[0] : null};
+    }
+
+    /** The ground's wheel: what one can do here, on no one (commands.ts). */
+    openGroundWheel() {
+        this.contextTarget = GroundTarget;
+        this.contextName = 'Here';
+        this.contextKind = 'ground';
+        this.contextActions = wheelCommands(this).map(c => c.name);
     }
 
     /** A wolf's menu, opened from a panel (the In Sight list) at a point on the page. */
@@ -2125,6 +2173,19 @@ export class GameState {
                 this.sendFacing(point);
                 this.updateFacingPreview(point, alt);
             } else this.facingPreview = false;
+            return 'map';
+        }
+        if (!left && !this.battle && !this.worldMap && !this.modal && contains(this.mapRect, point[0], point[1])) {
+            // A right-click (the user's notes, 2026-11-14): a wolf's or a door's wheel of actions, else the ground's.
+            this.facingPreview = false;
+            if (this.chat) this.setChat(false);
+            const hit = [...this.hits].reverse().find(h => h.action === 'target' && contains(h.rect, point[0], point[1]));
+            if (hit) this.activate(hit);
+            else this.openGroundWheel();
+            if (this.contextTarget) {
+                this.contextPage = null;
+                this.contextPoint = point;
+            }
             return 'map';
         }
         for (let i = this.hits.length - 1; i >= 0; --i)
@@ -2340,6 +2401,11 @@ export class GameState {
         } else if (a === 'ground') {
             this.sendAction('take', h.target);
         } else if (a === 'context') {
+            if (this.contextTarget === GroundTarget) {
+                this.contextTarget = '';
+                runCommand(this, h.target);
+                return;
+            }
             if (this.askFirst(h.target)) return;
             // A challenge names its terms (doc 37): the menu offers them, the default first.
             if (h.target === 'challenge') {

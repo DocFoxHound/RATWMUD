@@ -1,0 +1,92 @@
+/* The game screen's parts from the user's notes of 2026-11-14 (ui/hud/hud.ts, story.ts, gear.ts): the surroundings bar's
+   pictures, the pages' buttons at the top of the side, the wheel a right-click opens, the commands under the box where one
+   writes, the story's faces and its one-line place, and what a wolf wears as pictures. The rest is in styles.css. */
+
+/* The surroundings bar: the time of day, the weather, the senses, and the keys on the pointer. */
+.map-head { min-height: 30px; }
+.env-icons { display: flex; align-items: center; gap: 6px; flex: none; }
+.env-icon { display: inline-flex; width: 24px; height: 24px; flex: none; cursor: help; border-radius: 4px; }
+.env-icon svg { width: 100%; height: 100%; display: block; }
+.env-icon:hover { background: var(--raised); }
+.senses-icons { gap: 4px; padding-left: 8px; border-left: 1px solid #34443e; }
+.sense-icon { width: 22px; height: 22px; opacity: .9; }
+.sense-icon.alert { background: color-mix(in srgb, var(--gold) 22%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 60%, transparent); }
+.sense-icon.alert svg path, .sense-icon.alert svg ellipse:first-of-type { stroke: var(--gold); }
+.keys-help { width: 22px; height: 22px; color: var(--muted); margin-left: 4px; }
+.day-kind { white-space: nowrap; }
+.map-head .tabs { flex: none; }
+.map-titles { flex: 1; }
+@media (max-width: 1400px) { .map-titles > .label:first-child { display: none; } }
+
+/* The pages, where the top bar was: a row of small buttons at the top of the side. */
+.side-nav { display: flex; gap: 2px; justify-content: space-between; flex: none; background: var(--panel); border: 1px solid #2a3833;
+    border-radius: 3px; padding: 3px 4px; }
+.game .nav-button { position: relative; width: 32px; height: 30px; padding: 4px 5px; color: var(--muted); }
+.game .nav-button:hover { color: var(--paper); }
+.game .nav-button.active { color: var(--gold); }
+.nav-button svg { width: 100%; height: 100%; display: block; }
+.nav-count { position: absolute; top: 0; right: 0; min-width: 14px; height: 14px; border-radius: 7px; background: var(--gold); color: var(--ink);
+    font: 10px/14px 'RATW Mono', monospace; text-align: center; }
+.nav-count:empty { display: none; }
+.game.fight-mode .side > .side-nav { display: flex !important; order: 0; }
+
+/* The wheel: the target's name in the middle, its actions round it, each name reading outward from the ring. */
+.game .menu.radial { width: 0; height: 0; padding: 0; border: none; background: none; box-shadow: none; overflow: visible; }
+.radial-ring { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none;
+    border: 1px dashed color-mix(in srgb, var(--gold) 35%, transparent); background: radial-gradient(circle, rgba(17, 25, 27, .55) 0, rgba(17, 25, 27, .15) 70%, transparent 71%); }
+.game .radial-centre { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); width: 78px; height: 78px; border-radius: 50%;
+    background: var(--panel); border: 1px solid color-mix(in srgb, var(--gold) 60%, transparent); color: var(--gold); font-weight: 500; font-size: 13px;
+    line-height: 1.2; padding: 6px; overflow: hidden; overflow-wrap: anywhere; box-shadow: 0 4px 18px rgba(0, 0, 0, .45); }
+.game .radial-item { position: absolute; display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; padding: 5px 11px 5px 6px;
+    background: rgba(24, 33, 34, .96); border: 1px solid #3a4a44; border-radius: 15px; color: var(--sage); font-size: 14px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, .4); }
+.radial-item.east { transform: translate(-6px, -50%); }
+.radial-item.west { transform: translate(calc(-100% + 6px), -50%); flex-direction: row-reverse; padding: 5px 6px 5px 11px; }
+.game .radial-item:hover { background: var(--raised); border-color: color-mix(in srgb, var(--gold) 60%, transparent); color: var(--paper); }
+.radial-item.armed { color: #e0695e; border-color: #e0695e; }
+.radial-key { width: 18px; height: 18px; border-radius: 50%; background: #2a3833; color: var(--muted); font: 11px/18px 'RATW Mono', monospace;
+    text-align: center; flex: none; }
+
+/* The commands under the box where one writes ("/" lists them). */
+.slash-list { display: flex; flex-direction: column; gap: 1px; max-height: 260px; overflow-y: auto; background: var(--ink);
+    border: 1px solid color-mix(in srgb, var(--sage) 45%, transparent); border-radius: 3px; padding: 4px; }
+.slash-row { display: grid; grid-template-columns: minmax(96px, max-content) 1fr auto; gap: 10px; align-items: baseline; padding: 3px 8px;
+    border-radius: 2px; cursor: pointer; font-size: 13px; }
+.slash-row.picked, .slash-row:hover { background: var(--raised); }
+.slash-name { font-family: 'RATW Mono', monospace; color: var(--sage); white-space: nowrap; }
+.slash-name .args { color: var(--muted); }
+.slash-help { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slash-key { font: 11px 'RATW Mono', monospace; color: var(--gold); }
+.slash-foot { padding: 3px 8px 1px; }
+
+/* The place: one line over the story, its description over the feed when opened (a click keeps it open). */
+.place-line { position: relative; flex: none; }
+.place-head { display: flex; align-items: baseline; gap: 10px; min-width: 0; cursor: pointer; user-select: none; padding: 2px 0; }
+.place-head .place { margin: 0; font-size: 17px; font-weight: 500; white-space: nowrap; flex: none; max-width: 60%; overflow: hidden; text-overflow: ellipsis; }
+.place-head .place-gist { flex: 1; min-width: 0; color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.place-head .place-more { color: var(--muted); font-size: 11px; flex: none; }
+.place-line .scene { position: absolute; z-index: 6; left: -6px; right: -6px; top: 100%; max-height: 40vh; overflow-y: auto; padding: 8px 10px;
+    background: rgba(24, 33, 34, .98); border: 1px solid #34443e; border-radius: 3px; box-shadow: 0 8px 22px rgba(0, 0, 0, .5); display: none; }
+.place-line.open .scene, .place-line:hover .scene { display: block; }
+.place-line.open .place-gist { visibility: hidden; }
+
+/* The story, close together: the speaker's face on the left, the name above the words. */
+.game .feed { gap: 3px; }
+.game .post { padding: 2px 0 2px 8px; }
+.game .post .speaker { margin-bottom: 0; line-height: 1.35; }
+.game .post .words { line-height: 1.4; }
+.post.with-face { display: grid; grid-template-columns: 30px minmax(0, 1fr); column-gap: 8px; }
+.post.with-face > .post-face { grid-row: 1 / span 3; width: 30px; height: 30px; margin-top: 1px; }
+.post.with-face > :not(.post-face) { grid-column: 2; }
+
+/* What a wolf wears and wields: a row of small pictures, nothing when bare. */
+.gear-doll { display: flex; flex-wrap: wrap; gap: 1px; align-items: center; justify-content: center; }
+.gear-doll.bare { display: none; }
+.gear-icon { display: inline-flex; width: 20px; height: 20px; flex: none; }
+.gear-icon svg { width: 100%; height: 100%; display: block; }
+.sight-gear { width: auto; height: auto; max-width: 66px; }
+.fcard-gear { width: 76px; height: auto; min-height: 0; }
+
+/* The wolves over the screen (the user's art is transparent): no card or square behind any portrait in the game. */
+.game .thumb, .game .scene-who-face, .game .strip-face, .game .post-face { background: none; }
+.game .sheet .portrait.painted, .game .sheet .wolf-face, .game .rpg-figure .portrait, .game .rpg-fur-wolf, .game .fcard-face { background: none; border: none; }

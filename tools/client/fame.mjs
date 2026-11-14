@@ -112,7 +112,7 @@ try {
     check(!!greeting, `the keeper greets her by the deed: ${greeting}`);
     await ash.screenshot(`${OUT}/1-greeted-by-the-deed.png`);
     // The sheet: what folk call her, and who first said it.
-    await ash.evaluate(`[...document.querySelectorAll('button')].find(b => b.textContent === 'CHARACTER').click()`);
+    await ash.evaluate(`document.querySelector('.nav-button.character').click()`);
     const row = await ash.waitFor(`(document.body.innerText.match(/WHAT FOLK CALL YOU\\s+[^\\n]*/) || [''])[0]`, 10);
     check(row.includes(nick) && /first said by/.test(row), `the sheet's row: ${row}`);
     await ash.screenshot(`${OUT}/2-what-folk-call-you.png`);

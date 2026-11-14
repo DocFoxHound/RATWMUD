@@ -9,8 +9,11 @@ import {button, el, setClass, setText, show} from './dom.ts';
 import {arr, bool, isObject, num, obj, str} from '../../game/json.ts';
 import {sceneNeedsLabel, sceneQuietLabel} from '../../game/labels.ts';
 import {ask} from '../dialog.ts';
+import {slashSuggestions} from '../../game/commands.ts';
 
 const MaxShown = 300;
+const PlaceOpenFor = 8;                 // Seconds the place's description stays open on arriving, before it folds to one line.
+const FaceSize = 60;                    // A face beside a line, drawn at twice its 30 px for a sharp picture.
 
 export class StoryPanel {
     readonly root: HTMLElement;
@@ -19,7 +22,14 @@ export class StoryPanel {
     readonly targets: HTMLElement;          // Talk targets (phase 4) sit above the composer.
     private s: GameState;
     private place: HTMLElement;
+    private placeLine: HTMLElement;
+    private placeGist: HTMLElement;
     private scene: HTMLElement;
+    private placeShown = '';                // The place whose description was last opened on arriving.
+    private placeUntil = 0;                 // Open until then (the clock), unless pinned with a click.
+    private placePinned = false;
+    private slashList: HTMLElement;
+    private slashKey = '';
     private feedLabel: HTMLElement;
     private sceneBar: HTMLElement;
     private sceneKey = '';
@@ -41,7 +51,8 @@ export class StoryPanel {
     private volume: HTMLButtonElement;
     private hint: HTMLElement;
     private recover: HTMLButtonElement;
-    private shown = new Map<Post, {row: HTMLElement; text: HTMLElement; revealed: number; version?: number; lines?: HTMLElement}>();
+    private shown = new Map<Post, {row: HTMLElement; text: HTMLElement; revealed: number; version?: number; lines?: HTMLElement;
+        face?: HTMLCanvasElement; faceDrawn?: number}>();
     private channel = '';
     private stick = true;                   // Following the newest post (until the reader scrolls up).
 
@@ -65,8 +76,22 @@ export class StoryPanel {
         this.private_ = button('PRIVATE', 'tab', tabs, () => state.activate({rect: noRect, action: 'private', target: ''}));
         this.private_.title = 'Private messages with your friends, out of character, wherever they are';
         this.circleTabs = el('span', 'circle-tabs', tabs);   // One tab a circle (doc 50).
-        this.place = el('h2', 'place', this.root);
-        this.scene = el('p', 'scene', this.root);
+        // The place, one line (the user's notes, 2026-11-14): its name and the start of its description; the whole of it
+        // over the story on arriving (for a few seconds), on the pointer, or kept open with a click.
+        this.placeLine = el('div', 'place-line', this.root);
+        const placeHead = el('div', 'place-head', this.placeLine);
+        this.place = el('h2', 'place', placeHead);
+        this.placeGist = el('span', 'place-gist', placeHead);
+        el('span', 'place-more', placeHead, '▾');
+        placeHead.title = 'The place: click to keep its description open, or to fold it';
+        placeHead.addEventListener('mousedown', e => e.preventDefault());
+        placeHead.addEventListener('click', () => {
+            const open = this.placeLine.classList.contains('open');
+            this.placePinned = !open;
+            this.placeUntil = 0;
+            setClass(this.placeLine, 'open', !open);
+        });
+        this.scene = el('p', 'scene', this.placeLine);
         this.sceneBar = el('div', 'scene-bar', this.root);
         const feedHead = el('div', 'feed-head', this.root);
         this.feedLabel = el('div', 'label muted feed-label', feedHead);
@@ -90,6 +115,9 @@ export class StoryPanel {
         });
         this.statusChip.title = 'Your status, shown to others in In Sight and on hover: in character, looking for a scene, or out of character.';
         this.targets = el('div', 'talk-targets', this.root);
+        // The commands, while one is being typed (game/commands.ts): Up and Down choose, Tab completes, a click too.
+        this.slashList = el('div', 'slash-list', this.root);
+        show(this.slashList, false);
         const row = el('div', 'composer-row', this.root);
         this.volume = button('SPEAK', 'volume', row, () => state.activate({rect: noRect, action: 'volume', target: ''}));
         this.textarea = el('textarea', 'composer', row);
@@ -102,10 +130,14 @@ export class StoryPanel {
     update() {
         const s = this.s;
         setText(this.place, s.cellName);
+        this.updatePlace();
+        this.updateSlash();
         const status = str(s.profileOwn, 'status', 'ic');
         setText(this.statusChip, status === 'lfs' ? 'LOOKING FOR A SCENE' : status === 'ooc' ? 'OUT OF CHARACTER' : status === 'storyteller' ? 'STORYTELLER' : 'IN CHARACTER');
         setClass(this.statusChip, 'lfs', status === 'lfs');
-        setText(this.scene, s.sceneDescription || (s.selfId ? 'No scene description has been authored yet.' : 'Connecting to the persistent world…'));
+        const description = s.sceneDescription || (s.selfId ? 'No scene description has been authored yet.' : 'Connecting to the persistent world…');
+        setText(this.scene, description);
+        setText(this.placeGist, description);
         setClass(this.ic, 'active', s.channel === 'ic');
         setClass(this.ooc, 'active', s.channel === 'ooc');
         setClass(this.party, 'active', s.channel === 'party');
@@ -130,7 +162,7 @@ export class StoryPanel {
         setClass(this.mode, 'sage', s.chat);
         setClass(this.mode, 'muted', !s.chat);
         setText(this.volume, s.volume.toUpperCase());
-        setText(this.hint, s.channel === 'ic' ? 'SHIFT + ENTER newline · ESC keep draft · /pose /me /sit /lay /stand'
+        setText(this.hint, s.channel === 'ic' ? 'SHIFT + ENTER newline · ESC keep draft · / for commands'
             : s.channel === 'party' ? 'SHIFT + ENTER newline · ESC keep draft · heard by your party in earshot, and by anyone close'
             : s.channel === 'partyooc' ? 'SHIFT + ENTER newline · ESC keep draft · out of character · your party, anywhere'
             : s.channel === 'chapter' ? 'SHIFT + ENTER newline · ESC keep draft · heard by your Chapter in earshot, and by anyone close'
@@ -144,6 +176,44 @@ export class StoryPanel {
         this.updateTargets();
         this.updateScene();
         this.updateFeed();
+    }
+
+    /** The place's description: open for a few seconds on arriving somewhere new, then one line again (unless pinned). */
+    private updatePlace() {
+        const s = this.s;
+        if (s.cellName && s.cellName !== this.placeShown) {
+            this.placeShown = s.cellName;
+            this.placeUntil = s.clock + PlaceOpenFor;
+        }
+        if (!this.placePinned) setClass(this.placeLine, 'open', s.clock < this.placeUntil && !s.battle);
+    }
+
+    /** The commands that fit what is typed so far, the chosen one lit; hidden unless a command is being typed. */
+    private updateSlash() {
+        const s = this.s;
+        const list = s.chat ? slashSuggestions(s, s.composer.text) : [];
+        const picked = list.length ? Math.min(s.slashPick, list.length - 1) : -1;
+        const key = JSON.stringify([list.map(c => c.name), picked]);
+        if (key === this.slashKey) return;
+        this.slashKey = key;
+        show(this.slashList, list.length > 0);
+        this.slashList.replaceChildren();
+        list.forEach((c, i) => {
+            const row = el('div', `slash-row${i === picked ? ' picked' : ''}`, this.slashList);
+            const name = el('span', 'slash-name', row, `/${c.name}`);
+            if (c.args) el('span', 'args', name, ` ${c.args}`);
+            el('span', 'slash-help', row, c.help);
+            el('span', 'slash-key', row, c.key ?? '');
+            row.dataset.command = c.name;
+            row.addEventListener('mousedown', e => {
+                e.preventDefault();            // (The box keeps the keyboard.)
+                s.composer.text = `/${c.name}${c.args ? ' ' : ''}`;
+                s.slashPick = 0;
+                if (!c.args) s.submitPost();
+            });
+            if (i === picked) requestAnimationFrame(() => row.scrollIntoView({block: 'nearest'}));
+        });
+        if (list.length) el('div', 'label muted slash-foot', this.slashList, '↑ ↓ CHOOSE · TAB COMPLETE · ENTER USE · ESC CLOSE');
     }
 
     /** The scene this wolf is in, and the one just ended: its pay, stars to give, a Story to begin (doc 32, 1.1–1.2). */
@@ -436,6 +506,13 @@ export class StoryPanel {
                     row.classList.add(post.scene.mine ? 'scene-mine' : 'scene-other');
                     row.style.setProperty('--scene', post.scene.colour);
                 }
+                // The speaker's painted face (or uploaded picture) on the left, as In Sight shows it; none for the world's lines.
+                let face: HTMLCanvasElement | undefined;
+                if (post.face && this.portraits) {
+                    row.classList.add('with-face');
+                    face = el('canvas', 'post-face', row);
+                    face.width = face.height = FaceSize;
+                }
                 const speaker = el('div', 'speaker', row, post.speaker.toUpperCase());
                 // Whom it was for: "→ you" stands out, so a reply meant for the player is never lost in a crowd.
                 if (post.to.length) el('span', post.to.includes('you') ? 'to you' : 'to', speaker, `  →  ${post.to.join(', ')}`);
@@ -452,7 +529,7 @@ export class StoryPanel {
                 }
                 const text = el('div', 'words', row);
                 this.feed.append(row);
-                this.shown.set(post, shown = {row, text, revealed: -1});
+                this.shown.set(post, shown = {row, text, revealed: -1, face, faceDrawn: -1});
                 if (post.encounter) {
                     // One entry per fight (doc 18): the latest, and the whole of it on Expand.
                     const enc = post.encounter;
@@ -468,6 +545,15 @@ export class StoryPanel {
                     shown.lines = lines;
                 }
                 added = true;
+            }
+            if (shown.face && post.face && this.portraits && shown.faceDrawn !== this.portraits.version) {
+                // Painted once its paintings have arrived (and again should more arrive: the version counts them).
+                const c = shown.face.getContext('2d');
+                if (c) {
+                    c.clearRect(0, 0, FaceSize, FaceSize);
+                    drawPortrait(c, this.portraits, post.face.appearance, 0, 0, FaceSize, FaceSize, post.face.artwork || undefined, {view: 'face', pad: 0.02});
+                }
+                shown.faceDrawn = this.portraits.version;
             }
             if (post.encounter && shown.lines && shown.version !== post.encounter.version) {
                 const lines = shown.lines, atEnd = lines.scrollTop + lines.clientHeight >= lines.scrollHeight - 4;
