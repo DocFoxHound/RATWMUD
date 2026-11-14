@@ -43,7 +43,7 @@ target_include_directories(ratw_core PUBLIC Core)
 # Where the item catalog is found when neither RATW_DATA_DIR nor a Data/ above the working directory says (doc 35).
 target_compile_definitions(ratw_core PRIVATE RATW_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 # Doc 79, Phase 2: the bands (Data/Economy/status.json) and the staged accounts.
-target_sources(ratw_core PRIVATE Core/RatwStatus.cpp Core/RatwStagedAccounts.cpp)
+target_sources(ratw_core PRIVATE Core/RatwStatus.cpp Core/RatwStagedAccounts.cpp Core/RatwRealmMap.cpp Core/RatwGameRealm.cpp)
 if(MSVC)
   target_compile_options(ratw_core PRIVATE /W4)
 else()

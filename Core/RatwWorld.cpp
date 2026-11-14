@@ -2383,6 +2383,43 @@ Result World::moveTo(const std::string& id, double x, double y)
             break;
         }
     }
+    // A click on a door itself, on its own tile (the user, 2026-11-14: "I can't click into a doorway"), walks into it as
+    // the keys do (throughDoor): to the open ground beside it, then on into it, so an open doorway or stairs is gone
+    // through and a closed door the wolf may open (not locked) is pushed open on arrival, even where the door stands in
+    // a wall the route search won't enter. A click past a closed door still only goes as far as it; a locked one is
+    // approached, as before.
+    for (const Door* door : doorsIn(a->cellId))
+        if (door->portal && !door->locked && !(door->passage && door->boundary) && cell(door->targetCell) &&
+            std::floor(x) == std::floor(door->position.x) && std::floor(y) == std::floor(door->position.y) &&
+            (!door->open || findPath(*a, goal).empty()))
+        {
+            const int dx = int(std::floor(door->position.x)), dy = int(std::floor(door->position.y));
+            std::vector<Vec2> best;
+            bool found = false;
+            double shortest = 1e18;
+            for (const auto& [sx, sy] : {std::pair{0, 1}, {0, -1}, {1, 0}, {-1, 0}})
+            {
+                const Vec2 beside{dx + sx + .5, dy + sy + .5};
+                if (!passable(a->cellId, beside, c->tile(dx + sx, dy + sy)))
+                    continue;
+                const bool there = distance(a->position, beside) < .05;
+                auto route = there ? std::vector<Vec2>{} : findPath(*a, beside);
+                if (!there && route.empty())
+                    continue;
+                double length = 0;
+                Vec2 from = a->position;
+                for (const auto& p : route)
+                    length += distance(from, p), from = p;
+                if (length < shortest)
+                    shortest = length, best = std::move(route), found = true;
+            }
+            if (!found)
+                break;
+            best.push_back(door->position);
+            a->path = std::move(best);
+            prepareMovement(*a);
+            return {true, "Heading through " + door->name + ".", door->id};
+        }
     auto path = findPath(*a, goal);
     if (path.empty())
     {

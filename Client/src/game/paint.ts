@@ -6,12 +6,15 @@ import {Amber, Blue, Ink, Line, Muted, Panel, Paper, Raised, Sage, Scent, speaki
 import {arr, bool, boundedNum, clamp, isObject, num, obj, objects, str, wholeCount, wrapCoordinate, type Json} from './json.ts';
 import {elevationLabel, windLabel} from './labels.ts';
 import {Size as SheetSize, type Art, type Sheets} from './weatherArt.ts';
-import type {GameState} from './state.ts';
+import type {EntityView, GameState} from './state.ts';
 import {screenRect, screenTile} from './screen.ts';
 import {apart, chanceFrom, coverTile, coneTiles, FamilyColours, giftArea, myTurn, octantGap, pathTo, placeAt, stepToward, strikeFrom, type BattleView,
     type FighterView} from './battle.ts';
 import type {Mark} from './fightFx.ts';
-import {fitScale, MapRenderer, MapScales} from './minimap.ts';
+import {fitScale, MapRenderer, wolfInWorld} from './minimap.ts';
+import {realmFit} from './realm.ts';
+import {bubbleText, dotLift, stackBubbles, type BubbleBox} from './bubbles.ts';
+import {drawPortrait, type Portraits} from '../ui/portrait.ts';
 
 /** How a home's stores are drawn (doc 36). */
 const StoreGlyphs: Record<string, string> = {larder: '%', chest: '=', wardrobe: 'H', woodpile: '#'};
@@ -64,6 +67,9 @@ export class GamePainter {
     private lastCell = '';
     private lastSelfScreen: Point | null = null;
 
+    /** The painted wolves' faces, for the speech bubbles (view.ts gives the page's; tests may leave it out). */
+    portraits: Portraits | null = null;
+
     constructor(state: GameState, painter: Painter, sheets: Sheets, surfaces?: SurfaceFactory) {
         this.s = state;
         this.p = painter;
@@ -88,11 +94,33 @@ export class GamePainter {
         else this.drawLocal();
     }
 
-    /** The World Map (M): the country around, as the minimap draws it but filling the map, named, zoomed and panned. */
+    /**
+     * The World Map (M): the whole realm (the user, 2026-11-14), every place's ground whether seen or not, with what the
+     * wolf remembers and sees over it in detail; zoomed with the wheel (about the pointer) or the buttons, panned by
+     * dragging, and named as it is zoomed in: regions first, then towns, districts, and close in the buildings.
+     */
     private drawCountry(width: number, height: number) {
         const s = this.s, p = this.p;
-        const scale = s.worldZoom < 0 ? fitScale(s.snapshot, width, height) : MapScales[s.worldZoom] ?? 1;
+        s.worldFit = realmFit(s.realm, width, height) || fitScale(s.snapshot, width, height);
+        const scale = s.worldScale > 0 ? s.worldScale : s.worldFit;
+        // Fitted, the realm's middle is the map's middle (as a pan from the wolf, so zooming in goes on from there).
+        if (s.worldScale <= 0 && s.realm) {
+            const at = wolfInWorld(s), r = s.realm;
+            s.worldPan = [r.x0 + r.cols * r.step / 2 - at[0], r.y0 + r.rows * r.step / 2 - at[1]];
+        }
+        s.worldScaleShown = scale;
         this.map.draw(p.ctx, s, {x: 0, y: 0, w: width, h: height}, scale, s.worldPan, true);
+        // Zoom: in, out, and the whole realm again.
+        const button = (y: number, label: string, target: string) => {
+            p.box(width - 46, y, 32, 30, Panel);
+            p.frame(width - 46, y, 32, 30, Line);
+            const [lw, lh] = p.measure(label, 13, true);
+            p.text(width - 30 - lw / 2, y + 15 - lh / 2, label, 13, Paper, true);
+            s.hits.push({rect: rect(width - 46, y, width - 14, y + 30), action: 'world_zoom', target});
+        };
+        button(56, '+', 'in');
+        button(90, '−', 'out');
+        button(124, '⤢', 'fit');
         const tab = (x: number, label: string, action: string, active: boolean) => {
             p.box(x, 12, 130, 30, active ? Raised : Panel);
             p.frame(x, 12, 130, 30, active ? Sage : Line);
@@ -101,7 +129,8 @@ export class GamePainter {
         };
         tab(width - 290, 'NEARBY', 'nearby', true);
         tab(width - 150, 'KNOWN ROUTES', 'atlas', false);
-        p.text(14, height - 26, 'WHEEL zoom · SHIFT/CTRL+WHEEL pan · BRIGHT seen · DIM remembered · DARK unexplored', 9, Muted, true);
+        p.text(14, height - 26, s.realm ? 'WHEEL or + − zoom · DRAG to pan · names show as you zoom in · BRIGHT seen'
+            : 'WHEEL zoom · DRAG pan · BRIGHT seen · DIM remembered · DARK unexplored (the whole realm is on its way)', 9, Muted, true);
     }
 
     /**
@@ -408,6 +437,90 @@ export class GamePainter {
                 if (flash > 0) p.box(b.left, b.top, w, h, rgb(0xdfe8f5, flash));
             });
         });
+    }
+
+    /**
+     * Speech over the wolves (the user, 2026-11-14): while one writes, three dots bobbing in a wave; once a line is
+     * said, what was said, up to a length and then "…", for a few seconds (longer for longer lines), in the speaker's
+     * own chat colour, with their painted face at the bubble's left. Bubbles stack upward rather than cover each other.
+     */
+    private drawBubbles(ox: number, oy: number, tile: number) {
+        const s = this.s, p = this.p, c = p.ctx;
+        type Bubble = {view: EntityView; lines: string[]; alpha: number; typing: boolean};
+        const bubbles: Bubble[] = [];
+        for (const view of s.entities.values()) {
+            const saying = view.said && (view.saidUntil ?? 0) > s.clock;
+            if (saying) {
+                const left = (view.saidUntil ?? 0) - s.clock;
+                bubbles.push({view, lines: [], alpha: clamp(left / 0.8, 0, 1) * clamp((s.clock - (view.saidAt ?? 0)) / 0.15, 0, 1), typing: false});
+            } else if (view.typing) bubbles.push({view, lines: [], alpha: 1, typing: true});
+        }
+        if (!bubbles.length) return;
+        // Newest last, so the newest stays nearest its wolf; at most six at once.
+        bubbles.sort((a, b) => (a.typing ? 1e9 : a.view.saidAt ?? 0) - (b.typing ? 1e9 : b.view.saidAt ?? 0));
+        const shown = bubbles.slice(-6);
+        const face = 26, pad = 6, textSize = 9.5, lineHeight = 14, maxText = 236;
+        c.save();
+        c.font = font(textSize);
+        const wanted: BubbleBox[] = shown.map(b => {
+            const x = ox + b.view.x * tile, y = oy + b.view.y * tile;
+            if (b.typing) return {x: x - (face + pad * 3 + 26) / 2, y: y - 22 - (face + pad), w: face + pad * 3 + 26, h: face + pad};
+            b.lines = wrapWords(c, bubbleText(b.view.said ?? ''), maxText);
+            const w = Math.max(...b.lines.map(l => c.measureText(l).width));
+            const h = Math.max(face, b.lines.length * lineHeight) + pad;
+            const bw = face + pad * 3 + w;
+            return {x: x - bw / 2, y: y - 22 - h, w: bw, h};
+        });
+        const placed = stackBubbles(wanted);
+        shown.forEach((b, i) => {
+            const box = placed[i], view = b.view, colour = speakingColor(b.typing ? view.color : view.saidColor ?? view.color);
+            const x = ox + view.x * tile;
+            c.globalAlpha = b.alpha;
+            // The bubble, with its tail down to the wolf when it sits right over it.
+            c.beginPath();
+            c.roundRect(box.x, box.y, box.w, box.h, 7);
+            if (box.y === wanted[i].y) {
+                c.moveTo(x - 5, box.y + box.h);
+                c.lineTo(x, box.y + box.h + 6);
+                c.lineTo(x + 5, box.y + box.h);
+            }
+            c.fillStyle = 'rgba(17,25,27,0.92)';
+            c.fill();
+            c.strokeStyle = css(withAlpha(colour, 0.75));
+            c.lineWidth = 1.2;
+            c.stroke();
+            if (box.y !== wanted[i].y) {
+                // Moved up out of another's way: a faint line down to its wolf, so whose it is still shows.
+                c.beginPath();
+                c.moveTo(Math.max(box.x + 8, Math.min(box.x + box.w - 8, x)), box.y + box.h);
+                c.lineTo(x, oy + view.y * tile - 12);
+                c.strokeStyle = css(withAlpha(colour, 0.4));
+                c.lineWidth = 1;
+                c.stroke();
+            }
+            const fx = box.x + pad, fy = box.y + (box.h - face) / 2;
+            if (!this.portraits || !drawPortrait(c, this.portraits, view.appearance, fx, fy, face, face, view.artwork, {view: 'face', paper: false})) {
+                c.fillStyle = css(withAlpha(colour, 0.25));
+                c.beginPath();
+                c.arc(fx + face / 2, fy + face / 2, face / 2 - 1, 0, Math.PI * 2);
+                c.fill();
+            }
+            c.fillStyle = css(colour);
+            if (b.typing) {
+                for (let d = 0; d < 3; ++d) {
+                    const lift = s.reducedMotion ? 0 : dotLift(s.clock, d);
+                    c.beginPath();
+                    c.arc(fx + face + pad + 5 + d * 8, box.y + box.h / 2 + 1 - lift, 2.4, 0, Math.PI * 2);
+                    c.fill();
+                }
+            } else {
+                c.font = font(textSize);
+                c.textBaseline = 'middle';
+                const top = box.y + box.h / 2 - ((b.lines.length - 1) * lineHeight) / 2;
+                b.lines.forEach((line, n) => c.fillText(line, fx + face + pad, top + n * lineHeight));
+            }
+        });
+        c.restore();
     }
 
     private drawScent(sx: number, sy: number) {
@@ -1115,11 +1228,25 @@ export class GamePainter {
             y0: Math.max(ground.y0, Math.floor((map.top - oy) / tile) - 1), x1: Math.min(ground.x1, Math.ceil((map.right - ox) / tile) + 1),
             y1: Math.min(ground.y1, Math.ceil((map.bottom - oy) / tile) + 1)}, ox, oy, tile);
         // Actions come only from doors and wolves the server shows.
+        const night = 1 - s.environment.illumination;
         for (const door of objects(s.snapshot, 'doors')) {
             const x = ox + num(door, 'x') * tile, y = oy + num(door, 'y') * tile;
-            p.box(x - 8, y - 10, 17, 22, Ink);
-            p.text(x - 7, y - 10, bool(door, 'open') ? '/' : '+', 17, Amber, true);
-            p.frame(x - 11, y - 13, 23, 27, withAlpha(Amber, 0.25));
+            if (isStairs(s.glyphAt(Math.floor(num(door, 'x')), Math.floor(num(door, 'y'))), str(door, 'name'))) {
+                // Stairs are the ground's own steps (the user, 2026-11-14: "stairs are glowing at night and it's
+                // confusing"): no lit door marker over them, only a faint edge round their tile, as dim as the night
+                // makes the ground, so they read as stairs and can still be found.
+                const x0 = ox + Math.floor(num(door, 'x')) * tile, y0 = oy + Math.floor(num(door, 'y')) * tile;
+                p.ctx.save();
+                p.ctx.strokeStyle = css(withAlpha(Paper, 0.32 - night * 0.14));
+                p.ctx.lineWidth = 1;
+                p.ctx.setLineDash?.([3, 2]);
+                p.ctx.strokeRect(x0 + 1.5, y0 + 1.5, tile - 3, tile - 3);
+                p.ctx.restore();
+            } else {
+                p.box(x - 8, y - 10, 17, 22, Ink);
+                p.text(x - 7, y - 10, bool(door, 'open') ? '/' : '+', 17, Amber, true);
+                p.frame(x - 11, y - 13, 23, 27, withAlpha(Amber, 0.25));
+            }
             s.hits.push({rect: rect(x - 15, y - 16, x + 15, y + 16), action: 'target', target: str(door, 'id')});
         }
         // A Chapter's camps, Halls and Holds (doc 32, 5.7): its colour; dim while being built; grey in ruin.
@@ -1249,13 +1376,6 @@ export class GamePainter {
                 this.turnedText(x + Math.cos(s.previewFacing) * reach, y + Math.sin(s.previewFacing) * reach, '>', 10, withAlpha(color, 0.32),
                     s.previewFacing);
             s.hits.push({rect: rect(x - 14, y - 14, x + 14, y + 14), action: 'target', target: view.id});
-            if (view.typing || s.clock - view.spokenAt < 4) {
-                const alpha = view.typing ? 1 : clamp((4 - (s.clock - view.spokenAt)) / 1.2, 0, 1);
-                const bx = x - 16, by = y - 39;
-                p.box(bx, by, 32, 20, withAlpha(Panel, alpha));
-                p.frame(bx, by, 32, 20, withAlpha(speakingColor(view.color), alpha * 0.6));
-                p.text(bx + 6, by - 1, view.typing ? '...' : "''", 13, withAlpha(speakingColor(view.color), alpha), true);
-            }
             // Spoken to: a dashed gold ring that stays while they are chosen.
             if (s.talkTargets.includes(view.id)) {
                 const c = p.ctx;
@@ -1279,6 +1399,7 @@ export class GamePainter {
             if (Math.hypot(x - s.hover[0], y - s.hover[1]) < 20) hovered = view.id;
         }
         s.hoveredEntity = hovered;
+        if (!s.battle) this.drawBubbles(ox, oy, tile);
         // Where one's tie was when it was made (doc 52), for a while: a faint ring, never where they've gone since.
         const tieMark = obj(obj(obj(s.snapshot, 'self'), 'tie'), 'marker');
         if (tieMark && str(tieMark, 'cell') === s.cellId && !s.battle) {
@@ -1656,3 +1777,24 @@ const FxGlyphs: Record<string, [string, string]> = {
     cracked: ['×', '#b8956a'], warmed: ['+', '#ffb35c'], washed: ['°', '#7fb8ea'], thirsty: ['°', '#5aa0d8'], dehydrated: ['°', '#5aa0d8'],
     heavy: ['▾', '#a294c4'], double_vision: ['∞', '#dcbc58'], hoarse: ['·', '#c493d8'],
 };
+
+/** A door that is a flight of stairs: on a stairs tile, or named so ("Rope End stairs", "Loft steps"). */
+export function isStairs(glyph: string, name: string): boolean {
+    return glyph === '^' || /\b(stairs?|steps)\b/i.test(name);
+}
+
+/** Words broken into lines no wider than `width` (the context's font), three at most (the last trails off). */
+function wrapWords(c: CanvasRenderingContext2D, text: string, width: number): string[] {
+    const lines: string[] = [];
+    let line = '';
+    for (const word of text.split(' ')) {
+        const next = line ? `${line} ${word}` : word;
+        if (line && c.measureText(next).width > width) {
+            lines.push(line);
+            line = word;
+        } else line = next;
+    }
+    if (line) lines.push(line);
+    if (lines.length > 3) return [...lines.slice(0, 2), lines[2] + (lines[2].endsWith('…') ? '' : '…')];
+    return lines;
+}

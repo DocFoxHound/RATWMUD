@@ -255,10 +255,10 @@ Result Game::reviewArtwork(const std::string& id, const std::string& decision, c
     return {true, "Portrait " + m.status + ".", {}};
 }
 
-void Game::addSpeaker(json::Value& line, const std::string& listener, const std::string& speaker) const
+void Game::addSpeaker(json::Value& line, const std::string& listener, const std::string& speaker, bool identifiable) const
 {
     const auto* who = world_.entity(speaker);
-    if (!who || (listener != speaker && !world_.shown(listener, speaker)))
+    if (!who || (listener != speaker && (!identifiable || !world_.shown(listener, speaker))))
     {
         for (const char* key : {"speakerId", "appearance", "artwork"})
             line.erase(key);

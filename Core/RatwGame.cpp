@@ -338,6 +338,9 @@ Game::Game(Options options)
 Game::~Game()
 {
     *alive_ = false;
+    realmStop_ = true;
+    if (realmThread_.joinable())
+        realmThread_.join();
     reapSnapshot(true);
     if (store_)
     {
@@ -590,6 +593,7 @@ bool Game::start(std::string& problem)
                      std::string(options_.scratch ? "none (scratch: read from " + (live ? options_.database + " database" : options_.savePath) + ")"
                                  : live ? options_.database + " database" : options_.savePath.empty() ? "memory" : options_.savePath) +
                      "; dialogue=" + mind_.label());
+    startRealmMap();                                // (The realm's map, whole, made off the game thread: RatwRealmMap.h.)
     return true;
 }
 
@@ -2261,6 +2265,7 @@ void Game::disconnect(Connection* c)
     waiting_.erase(std::remove_if(waiting_.begin(), waiting_.end(), [c](const Waiting& w) { return w.c == c; }), waiting_.end());
     c->clientWalking = false;
     cellRows_.erase(c);
+    realmSent_.erase(c->id);
     if (holding_ == c)
         holding_ = nullptr;
 }
@@ -4614,8 +4619,9 @@ std::vector<std::string> Game::publish(const std::string& author, const ParsedPo
         if (post.speech && !speaker->mouth.empty())
             e.add("muffled", true);                // Words around a sword held in the jaws (doc 33).
         // The speaker's id and look only to a listener shown them (doc 80): a voice heard and not seen, even one known by
-        // name, carries nothing to tie it to a wolf the listener can't see.
-        addSpeaker(e, listener, author);
+        // name, carries nothing to tie it to a wolf the listener can't see. The same id puts the line's speech bubble over
+        // that wolf on the map (the user, 2026-11-14); a voice not put to a wolf ("A voice") carries none.
+        addSpeaker(e, listener, author, listener == author || sense.identifiable);
         auto output = Value::array();
         std::string text, told;                    // (told: for a scene's story, its actions *starred*, its words "quoted".)
         for (const auto& segment : segments)
@@ -5237,6 +5243,8 @@ void Game::command(Connection* c, const std::string& raw)
         result = world_.cancelTravel(id);
         report = true;
     }
+    else if (type == "realmMap")
+        realmMapCommand(c);                         // The realm's map, whole (RatwRealmMap.h).
     else if (type == "typing")
     {
         player->typing = j.boolean("active");

@@ -25,6 +25,8 @@ export interface EncounterView {
     version: number;
 }
 import {inParty, readParty, type PartyView} from './party.ts';
+import {readRealm, type RealmMap} from './realm.ts';
+import {bubbleSeconds, bubbleText, spokenWords} from './bubbles.ts';
 import {askText} from '../ui/dialog.ts';
 import {commandToRun, runCommand, slashSuggestions, wheelCommands} from './commands.ts';
 
@@ -101,6 +103,11 @@ export interface EntityView {
     mentorFree: boolean;        // ...and, for a newcomer's eyes, is free to take one now: marked on the map.
     groomed?: boolean;          // Freshly groomed by another (doc 55, 7): anyone who looks sees it.
     placed?: boolean;           // The own wolf has been drawn once (it then eases instead of jumping).
+    // The last line heard from them, for its bubble over them (bubbles.ts), while it lasts; its colour is theirs.
+    said?: string;
+    saidAt?: number;
+    saidUntil?: number;
+    saidColor?: number;
 }
 
 /** The composer, a real text box on the page (or a stand-in in tests). */
@@ -121,7 +128,8 @@ export interface KeyInput {
 const MovementKeys = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
 const BodyWidth = 0.5;                                  // Two wolves' bodies (Core/RatwStep.h: twice BodyRadius).
 const MaxTargets = 4;
-const MapScalesForPan = [0.25, 0.5, 1, 2, 4, 8];    // As minimap.ts MapScales (kept here so state has no drawing import).
+// The World Map's scales (pixels a tile): from the whole realm on a screen to eight pixels a tile.
+export const WorldScaleMin = 0.02, WorldScaleMax = 8;
 /** The story column's presets (CSS pixels): balanced, wide, text-first, compact. */
 export const StoryWidths = [460, 600, 760, 360];
 const KnownWeather = ['overcast', 'rain', 'storm', 'fog', 'snow', 'sandstorm'];
@@ -337,8 +345,19 @@ export class GameState {
     talkTargets: string[] = []; // Whom the player is speaking to (up to four), until they leave sight or are let go.
     // The regional weather over the cell (doc 29, phase 7): a letter (kind) and a digit (strength) every `step` tiles.
     weatherField: {cols: number; rows: number; step: number; kinds: string; amounts: string} | null = null;
-    worldZoom = -1;             // The World Map's scale (minimap.ts MapScales; -1 fits the known places), and its pan (tiles).
+    // The World Map's scale (pixels a tile; 0 fits the whole realm, or the known places without it), its pan (tiles from
+    // the wolf), and as last drawn: the scale fitted and in use, for the wheel and dragging (paint.ts sets them).
+    worldScale = 0;
     worldPan: [number, number] = [0, 0];
+    worldFit = 1;
+    worldScaleShown = 1;
+    private worldDrag: {from: [number, number]; pan: [number, number]} | null = null;
+    // The realm's map, whole (realm.ts): asked for once in the world, kept for the session.
+    realm: RealmMap | null = null;
+    private realmAsked = -100;
+    private realmAsks = 0;
+    // Where the wolf last stood outdoors, in world tiles: the World Map centres there while it is indoors.
+    lastOutdoors: [number, number] | null = null;
     miniZoom = 3;               // The minimap's scale (2 pixels a tile).
     inspectedText = '';
     // Fights (Docs/Design/33-combat.md): the arena this wolf fights in or watches, the red squares in sight, a
@@ -1061,6 +1080,10 @@ export class GameState {
             this.applySnapshot(e);
             return;
         }
+        if (type === 'realmMap') {
+            if (!bool(e, 'pending')) this.realm = readRealm(e) ?? this.realm;
+            return;
+        }
         if (type === 'safety') {
             this.safetyMarks = objects(e, 'marks');
             return;
@@ -1282,8 +1305,20 @@ export class GameState {
         this.posts.push(post);
         if (this.posts.length > 300) this.posts.splice(0, this.posts.length - 300);
         this.transcriptScroll = 0;
-        const view = this.entities.get(str(e, 'sourceId', str(e, 'entityId')));
-        if (view) view.spokenAt = this.clock;
+        const view = this.entities.get(str(e, 'speakerId', str(e, 'entityId')));
+        if (view) {
+            view.spokenAt = this.clock;
+            // Its bubble (the user, 2026-11-14): what was said, as far as this wolf heard it (the server sends only
+            // that, and the speaker's id only when this wolf's screen shows them), trailing off past a length.
+            const words = post.channel === 'ic' && !post.faint && post.kind === 'roleplay'
+                ? bubbleText(spokenWords(segments.map(part => ({kind: str(part, 'kind'), text: str(part, 'text')})), post.text)) : '';
+            if (words) {
+                view.said = words;
+                view.saidAt = this.clock;
+                view.saidUntil = this.clock + bubbleSeconds(words);
+                view.saidColor = post.color;
+            }
+        }
     }
 
     // ------------------------------------------------------------------ Time
@@ -1291,6 +1326,7 @@ export class GameState {
     /** Once a frame: `time` is seconds since the page opened, `delta` since the last frame. */
     tick(time: number, delta: number) {
         this.clock = time;
+        this.askForRealm();
         // The fight's sounds (doc 37, phase 3): played by the page's sound (ui/sound.ts), if it has one.
         for (const cue of this.fx.takeCues()) this.onCue?.(cue);
         this.motionClock += Math.max(0, delta);
@@ -2084,8 +2120,33 @@ export class GameState {
         this.sendMove();
     }
 
+    /** The realm's map, once in the world: asked for again while the server is still making it, a few times at most. */
+    private askForRealm() {
+        if (this.realm || !this.selfId || !this.snapshot || this.realmAsks >= 8 || this.clock - this.realmAsked < 6) return;
+        this.realmAsked = this.clock;
+        ++this.realmAsks;
+        this.send({type: 'realmMap'});
+    }
+
+    /** The World Map zoomed by `factor` about a point on the map (the pointer, or its middle). */
+    zoomWorld(factor: number, about?: [number, number]) {
+        const scale = this.worldScale > 0 ? this.worldScale : this.worldFit;
+        const next = clamp(scale * factor, WorldScaleMin, WorldScaleMax);
+        const m = this.mapRect;
+        const cx = (m.left + m.right) / 2, cy = (m.top + m.bottom) / 2;
+        const [px, py] = about ?? [cx, cy];
+        // The world point under the pointer stays under it.
+        this.worldPan = [clamp(this.worldPan[0] + (px - cx) / scale - (px - cx) / next, -9000, 9000),
+            clamp(this.worldPan[1] + (py - cy) / scale - (py - cy) / next, -9000, 9000)];
+        this.worldScale = next;
+    }
+
     mouseMove(point: [number, number], alt: boolean) {
         this.hover = point;
+        if (this.worldDrag) {
+            const k = this.worldScaleShown || 1, d = this.worldDrag;
+            this.worldPan = [clamp(d.pan[0] - (point[0] - d.from[0]) / k, -9000, 9000), clamp(d.pan[1] - (point[1] - d.from[1]) / k, -9000, 9000)];
+        }
         this.updateFacingPreview(point, alt);
         if (this.faceDrag) {
             const c = this.ownTokenCentre();
@@ -2103,6 +2164,7 @@ export class GameState {
 
     /** The button let go: a drag from one's wolf turns it that way; a plain click on its tile is a click as ever. */
     mouseUp() {
+        this.worldDrag = null;
         const start = this.faceDrag;
         if (!start) return;
         const dir = this.faceDragDir;
@@ -2136,11 +2198,12 @@ export class GameState {
             return true;
         }
         if (contains(this.mapRect, point[0], point[1]) && this.worldMap && !this.travelAtlas && !this.chat) {
-            if (this.worldZoom < 0) this.worldZoom = 2;
-            const step = 200 / (MapScalesForPan[this.worldZoom] ?? 1);
-            if (ctrl) this.worldPan[0] = clamp(this.worldPan[0] + delta * step, -3000, 3000);
-            else if (shift) this.worldPan[1] = clamp(this.worldPan[1] + delta * step, -3000, 3000);
-            else if (delta) this.worldZoom = clamp(this.worldZoom + (delta > 0 ? 1 : -1), 0, MapScalesForPan.length - 1);
+            // The wheel zooms about the pointer (the user, 2026-11-14: "The map of the world should be zoom-able");
+            // Shift or Ctrl with it pans, as before; dragging pans too (mouseDown).
+            const step = 200 / (this.worldScaleShown || 1);
+            if (ctrl) this.worldPan[0] = clamp(this.worldPan[0] + delta * step, -9000, 9000);
+            else if (shift) this.worldPan[1] = clamp(this.worldPan[1] + delta * step, -9000, 9000);
+            else if (delta) this.zoomWorld(Math.pow(1.25, delta), point);
             return true;
         }
         if (contains(this.mapRect, point[0], point[1]) && this.worldMap && this.travelAtlas && !this.chat) {
@@ -2192,10 +2255,18 @@ export class GameState {
         }
         for (let i = this.hits.length - 1; i >= 0; --i)
             if (contains(this.hits[i].rect, point[0], point[1])) {
+                // A left click on a door walks into it, as the keys do (the user, 2026-11-14: "I can't click into a
+                // doorway"); its menu is a right click away.
+                if (left && this.hits[i].action === 'target' && this.walkIntoDoor(this.hits[i].target)) return 'map';
                 this.activate(this.hits[i]);
                 return this.chat && !this.modal ? 'composer' : 'map';
             }
         if (this.modal) return 'map';
+        if (left && this.worldMap && !this.travelAtlas && contains(this.mapRect, point[0], point[1])) {
+            this.worldDrag = {from: point, pan: [this.worldPan[0], this.worldPan[1]]};
+            this.contextTarget = '';
+            return 'map';
+        }
         if (!this.worldMap && contains(this.mapRect, point[0], point[1])) {
             this.facingPreview = false;
             this.contextTarget = '';
@@ -2214,6 +2285,20 @@ export class GameState {
         }
         this.contextTarget = '';
         return 'map';
+    }
+
+    /** Walks into a door the snapshot shows, by its id: to it and through it (the server opens a closed one the wolf
+     *  may open, as walking into it does). False if it is no door, or not now (a fight, the World Map). */
+    walkIntoDoor(id: string): boolean {
+        if (this.battle || this.worldMap) return false;
+        const door = objects(this.snapshot, 'doors').find(d => str(d, 'id') === id);
+        if (!door) return false;
+        this.facingPreview = false;
+        this.contextTarget = '';
+        if (this.chat) this.setChat(false);
+        this.movementPending = true;
+        this.send({type: 'path', x: num(door, 'x'), y: num(door, 'y')});
+        return true;
     }
 
     activate(h: Hit) {
@@ -2238,6 +2323,11 @@ export class GameState {
         } else if (a === 'world') {
             this.worldMap = true;
             this.contextTarget = '';
+        } else if (a === 'world_zoom') {
+            if (h.target === 'fit') {
+                this.worldScale = 0;
+                this.worldPan = [0, 0];
+            } else this.zoomWorld(h.target === 'in' ? 1.6 : 1 / 1.6);
         } else if (a === 'nearby' || a === 'atlas') {
             this.worldMap = true;
             this.travelAtlas = a === 'atlas';
