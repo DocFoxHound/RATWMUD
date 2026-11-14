@@ -79,7 +79,7 @@ def drop_database(dbname: str) -> None:
 
 
 ACCOUNT = 'id, username, password, created_at, banned, host, admin'
-WOLF = 'id, account_id, name, name_key, sex, age, appearance, family, profile, revision, created_at, updated_at'
+WOLF = 'id, account_id, name, name_key, sex, age, appearance, family, profile, choices, revision, created_at, updated_at'
 SESSION = 'id, account_id, access_expires, refresh_expires, remember, created_at, refreshed_at'
 
 
@@ -293,19 +293,23 @@ class Store:
                 raise Conflict('name')
             try:
                 conn.execute('INSERT INTO central.wolves (id, account_id, name, name_key, sex, age, appearance, '
-                             'family, profile, revision, created_at, updated_at) '
-                             'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,1,%s,%s)',
+                             'family, profile, choices, revision, created_at, updated_at) '
+                             'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,1,%s,%s)',
                              (wolf['id'], wolf['account_id'], wolf['name'], wolf['name_key'], wolf['sex'],
                               wolf['age'], world_db.Jsonb(wolf['appearance']), wolf['family'],
-                              world_db.Jsonb(wolf['profile']), ts(now), ts(now)))
+                              world_db.Jsonb(wolf['profile']), world_db.Jsonb(wolf.get('choices') or {}), ts(now), ts(now)))
             except psycopg.errors.UniqueViolation as error:
                 raise Conflict('name') from error
         return None
 
-    def update_wolf(self, wolf_id: str, revision: int, now: float, appearance=None, profile=None) -> dict | None:
-        """Changes the look and/or profile if the wolf is still at `revision`; the wolf afterwards, or None if it
-        changed meanwhile (or is gone)."""
+    def update_wolf(self, wolf_id: str, revision: int, now: float, appearance=None, profile=None,
+                    choices=None) -> dict | None:
+        """Changes the look, the profile and/or the choices (strengths and tie) if the wolf is still at `revision`;
+        the wolf afterwards, or None if it changed meanwhile (or is gone)."""
         sets, values = ['revision = revision + 1', 'updated_at = %s'], [ts(now)]
+        if choices is not None:
+            sets.append('choices = %s')
+            values.append(world_db.Jsonb(choices))
         if appearance is not None:
             sets.append('appearance = %s')
             values.append(world_db.Jsonb(appearance))

@@ -31,8 +31,8 @@ laptop it runs on loopback for development: worlds and the client reach it with 
 The calls (JSON bodies; `Authorization: Bearer ACCESS_TOKEN` where an account is needed):
   POST /account/register {username, password, birth_year, birth_month?, remember?}   POST /account/login {username,
   password, remember?}   POST /account/refresh {refresh_token}   POST /account/logout {everywhere?}   GET /account
-  DELETE /account {password}   GET /wolves   POST /wolves {name, age, appearance, family?, profile?}
-  PATCH /wolves/WOLF_ID {revision, appearance?, profile?}   DELETE /wolves/WOLF_ID {password}   POST /wolves/name {name}   POST /tickets {world, wolf}
+  DELETE /account {password}   GET /wolves   POST /wolves {name, age, appearance, family?, profile?, choices?}
+  PATCH /wolves/WOLF_ID {revision, appearance?, profile?, choices?}   DELETE /wolves/WOLF_ID {password}   POST /wolves/name {name}   POST /tickets {world, wolf}
   GET /keys   GET /health   GET /rules (the creator's Gift families)   GET /worlds (the list)
 The Host page's calls (an account with the host flag): GET /host/worlds   POST /host/worlds {name}
   POST /host/worlds/WORLD_ID/token   DELETE /host/worlds/WORLD_ID

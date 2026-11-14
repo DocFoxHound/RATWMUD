@@ -11,7 +11,7 @@ const older: OlderLook = {species: 'timber', stature: 'average', pattern: 'saddl
     gradientAmount: 0.35, patternAmount: 0.55};
 const nine = {...older, sex: 'male'};
 
-test('the palette: one file, about thirty muted fur colours and ten natural eyes, every ready coat made of them', () => {
+test('the palette: one file, about fifty-five muted fur colours and twenty-odd eyes (vivid allowed), every ready coat made of them', () => {
     const file = JSON.parse(readFileSync(new URL('../../../Data/Wolves/palette.json', import.meta.url), 'utf8'));
     assert.deepEqual(FurColours.map(c => [c.id, c.name, c.group, c.hex]), file.fur.map((c: any) => [c.id, c.name, c.group, c.hex]), 'run tools/fur_palette.py');
     assert.deepEqual(EyeColours.map(c => [c.id, c.hex]), file.eyes.map((c: any) => [c.id, c.hex]));
@@ -22,11 +22,11 @@ test('the palette: one file, about thirty muted fur colours and ten natural eyes
     assert.deepEqual([...core.matchAll(/^RATW_EYE\("([a-z_]+)"/gm)].map(m => m[1]), EyeColours.map(c => c.id));
     assert.deepEqual([...core.matchAll(/^RATW_FUR_ZONE\("([a-z_]+)"/gm)].map(m => m[1]), FurZones.map(z => z.id));
     assert.deepEqual(FurZones.map(z => z.id), ['back', 'sides', 'chest', 'legs', 'tail', 'tail_tip', 'head', 'muzzle']);
-    assert.ok(FurColours.length >= 28 && FurColours.length <= 36 && EyeColours.length >= 9 && EyeColours.length <= 12);
+    assert.ok(FurColours.length >= 50 && FurColours.length <= 60 && EyeColours.length >= 20 && EyeColours.length <= 24);
     assert.equal(new Set(FurColours.map(c => c.id)).size, FurColours.length);
     const spread = (hex: string) => Math.max(...hexRgb(hex)) - Math.min(...hexRgb(hex));
     for (const c of FurColours) assert.ok(spread(c.hex) <= 100, `${c.name} is muted`);
-    for (const c of EyeColours) assert.ok(spread(c.hex) <= 160, `${c.name} eyes are natural`);
+    assert.ok(EyeColours.some(c => spread(c.hex) > 160), 'some eyes are vivid (the user, 2026-11-14)');
     for (const group of ['Blacks and charcoals', 'Greys and silvers', 'Whites and creams', 'Tans and buffs', 'Browns', 'Russets and muted reds',
         'Ochres and golds', 'Slate and dusk blues', 'Green-greys'])
         assert.ok(FurColours.some(c => c.group === group), group);

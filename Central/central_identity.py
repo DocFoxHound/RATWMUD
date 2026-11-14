@@ -103,6 +103,9 @@ class Identity:
     def profile(self, saved: dict | None, fields) -> dict:
         return self.check({'check': 'profile', 'profile': saved, 'fields': fields})
 
+    def choices(self, family: str, choices) -> dict:
+        return self.check({'check': 'choices', 'family': family, 'choices': choices})
+
     def rules(self) -> dict:
         return self.check({'check': 'rules'})
 

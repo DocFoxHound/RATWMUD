@@ -28,10 +28,11 @@ painted by its stature.
 cheeks; on the face, head (with the ears) and muzzle and cheeks (with the pale ruff under the chin). Each wears the
 coat's three colours or three of its own. A zone map says, per pixel, which two zones meet and how much of each.
 
-**The palette's rule:** earthy, natural, muted; no neon. `Data/Wolves/palette.json` is the one list: 34 fur colours
-(blacks, greys, whites and creams, tans, browns, russets, ochres, slate and dusk blues, green-greys), 11 eye colours,
-the zones and ten ready-made coats. `tools/fur_palette.py` checks it (a fur colour's channels at most 100 apart, an
-eye's 160) and writes `Core/RatwFurPalette.inc` and `Client/src/ui/furPalette.generated.ts`. A wolf keeps palette ids,
+**The palette's rule:** fur is earthy, natural, muted; no neon. Eyes may be vivid (the user, 2026-11-14).
+`Data/Wolves/palette.json` is the one list: 56 fur colours (blacks, greys, whites and creams, tans, browns, russets,
+ochres, slate and dusk blues, green-greys), 23 eye colours (the natural ones, and bright greens, blues, golds, reds,
+violets and a moon white), the zones and ten ready-made coats. `tools/fur_palette.py` checks it (a fur colour's
+channels at most 100 apart) and writes `Core/RatwFurPalette.inc` and `Client/src/ui/furPalette.generated.ts`. A wolf keeps palette ids,
 never colours; an id in use is never removed or renamed. The palette is in the client-data hash.
 
 **The data.** The appearance gains one optional field, checked in `Core/RatwAppearance` and `wire::readAppearance`,

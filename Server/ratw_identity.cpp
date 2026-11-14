@@ -12,8 +12,13 @@
 //       -> {"ok": true, "profile": {...}}: the saved profile (or a new one) with the fields applied, as the game saves it
 //   {"check": "build", "tier": "normal"?, "family": ""?, "build": {...}}
 //       -> {"ok": true, "build": {"grades": {...}, "specialty": "..."}} (for a world's first arrival, doc 77, Q12 (a))
-//   {"check": "rules"}                                 -> {"ok": true, "gifts": {...}}: what the creator shows of the
-//          identity's rules (the Gift families, as a world's lobby sends them), for central's GET /rules (doc 77, 3.1)
+//   {"check": "choices", "family": ""?, "choices": {"grades"?: {...}, "tie"?: "..."}}
+//       -> {"ok": true, "choices": {"grades": {...}, "tie": "..."}}: the wolf's own strengths and tie, kept with it on
+//          central and sent at each world's first arrival (the user, 2026-11-14: set in the character editor)
+//   {"check": "rules"}                                 -> {"ok": true, "gifts": {...}, "creation": {...}, "ties": [...],
+//          "nameMost": 24, "unlocks": {...}}: what the creator shows of the identity's rules (the Gift families, the
+//          strengths and the story starters, as a world's lobby sends them; the earned tiers' thresholds), for central's
+//          GET /rules (doc 77, 3.1)
 //   {"check": "version"}                               -> {"ok": true, "version": 1}
 // A refusal is {"ok": false, "error": "..."}, with the words creation uses. A line that isn't JSON is refused the same
 // way. Data/ comes from RATW_DATA_DIR, else the working directory or above it, else the source tree.
@@ -21,7 +26,9 @@
 #include "RatwGifts.h"
 #include "RatwIdentity.h"
 #include "RatwJsonDoc.h"
+#include "RatwNewcomers.h"
 #include "RatwPeople.h"
+#include "RatwStanding.h"
 #include "RatwWire.h"
 
 #include <iostream>
@@ -81,6 +88,65 @@ Value check(const Value& request)
         auto o = Value::object();
         o.add("ok", true);
         o.add("gifts", gifts::creatorCatalog());
+        o.add("creation", practice::creationCatalog());
+        auto ties = Value::array();
+        for (const auto& starter : newcomers::tieRules().starters)
+        {
+            auto t = Value::object();
+            t.add("id", starter.id);
+            t.add("line", starter.newcomer);
+            ties.push(t);
+        }
+        o.add("ties", ties);
+        o.add("nameMost", identity::NewNameMost);
+        // The earned tiers (doc 49): what a world's standing asks of an account before each opens there.
+        const auto& t = standing::thresholds();
+        auto gifted = Value::object();
+        gifted.add("level", t.giftedLevel);
+        gifted.add("scenes", t.giftedScenes);
+        auto quickened = Value::object();
+        quickened.add("level", t.quickenedLevel);
+        quickened.add("stars", t.quickenedStars);
+        quickened.add("givers", t.quickenedGivers);
+        quickened.add("stories", t.quickenedStories);
+        auto unlocks = Value::object();
+        unlocks.add("gifted", gifted);
+        unlocks.add("quickened", quickened);
+        o.add("unlocks", unlocks);
+        return o;
+    }
+    if (what == "choices")
+    {
+        // A wolf's own strengths and tie (no specialty: it did nothing, the user 2026-11-14), checked as a world's
+        // arrival checks them: the grades within the budget of a Normal or a Gifted wolf, the tie one of the starters.
+        const auto& given = request["choices"];
+        if (!only(given, {"grades", "tie"}))
+            return refuse("A wolf's choices are its strengths and its tie, and nothing else.");
+        std::string family;
+        if (!identity::family(request.find("family"), family))
+            return refuse("Choose one of the eight Gift families, or none.");
+        auto build = Value::object();
+        if (const auto* grades = given.find("grades"))
+            build.add("grades", *grades);
+        practice::Build checked;
+        std::string why;
+        if (!practice::checkBuild(build, family.empty() ? "normal" : "gifted", checked, why))
+            return refuse(why);
+        const auto* tieValue = given.find("tie");
+        if (tieValue && !tieValue->isString())
+            return refuse("Choose one of the story starters for your tie.");
+        const std::string tie = tieValue ? tieValue->asString() : std::string();
+        if (!tie.empty() && !newcomers::starter(tie))
+            return refuse("Choose one of the story starters for your tie.");
+        auto grades = Value::object();
+        for (const auto& [attribute, grade] : checked.grades)
+            grades.add(attribute, grade);
+        auto out = Value::object();
+        out.add("grades", grades);
+        out.add("tie", tie);
+        auto o = Value::object();
+        o.add("ok", true);
+        o.add("choices", out);
         return o;
     }
     if (what == "wolf")
@@ -89,11 +155,11 @@ Value check(const Value& request)
         if (!only(w, {"name", "age", "appearance", "family"}))
             return refuse("A wolf is a name, an age, an appearance and a Gift family, and nothing else.");
         const auto* rawName = w.find("name");
-        const std::string name = rawName && rawName->isString() ? identity::name(rawName->asString()) : std::string();
+        const std::string name = rawName && rawName->isString() ? identity::newName(rawName->asString()) : std::string();
         const double age = identity::age(w);
         Appearance a;
         if (name.empty() || age < 0 || !wire::readAppearance(w["appearance"], a))
-            return refuse("Choose a 2\xe2\x80\x93" "32 character name, a whole age from 6\xe2\x80\x93" "99, and a complete valid wolf appearance.");
+            return refuse("Choose a 2\xe2\x80\x93" "24 character name, a whole age from 6\xe2\x80\x93" "99, and a complete valid wolf appearance.");
         std::string family;
         if (!identity::family(w.find("family"), family))
             return refuse("Choose one of the eight Gift families, or none.");
@@ -157,7 +223,7 @@ Value check(const Value& request)
         o.add("build", b);
         return o;
     }
-    return refuse("Unknown check: use wolf, look, profile, build, rules or version.");
+    return refuse("Unknown check: use wolf, look, profile, build, choices, rules or version.");
 }
 } // namespace
 

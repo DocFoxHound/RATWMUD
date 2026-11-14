@@ -18,6 +18,12 @@ std::string name(const std::string& given)
     return accounts::validDisplayName(n) ? n : std::string();
 }
 
+std::string newName(const std::string& given)
+{
+    std::string n = name(given);
+    return accounts::textUnits(n) <= std::size_t(NewNameMost) ? n : std::string();
+}
+
 double age(const json::Value& o, const std::string& key)
 {
     const double a = wire::strictNumber(o, key, -1);

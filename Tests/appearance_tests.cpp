@@ -139,7 +139,7 @@ int main()
             a = painted; a.fur.zones["legs"] = {"soot", bad, "cream"};
             check(!validAppearance(a), "A zone's colour off the palette is refused");
         }
-        for (const auto* bad : {"", "Gold", "#dcbb5a", "violet", "soot"})
+        for (const auto* bad : {"", "Gold", "#dcbb5a", "neon_pink", "soot"})
         {
             auto a = painted; a.fur.eyes = bad;
             check(!validAppearance(a), "An eye colour off the palette is refused");
