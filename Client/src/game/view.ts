@@ -121,6 +121,7 @@ export class GameView {
         const sheets = new Sheets();
         sheets.warm();
         this.painter = new GamePainter(this.state, new Painter(this.canvas.getContext('2d')!), sheets);
+        this.painter.portraits = portraits;   // (The painted faces in the speech bubbles.)
         this.listen();
         // Glyphs measured before the game's fonts arrive would sit off centre: measure again once they have.
         document.fonts?.ready.then(() => this.painter.terrain.invalidate());

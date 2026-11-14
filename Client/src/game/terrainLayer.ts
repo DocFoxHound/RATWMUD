@@ -175,6 +175,10 @@ export class GroundPainter {
         if (dark > 0) {
             color = lerp(color, withAlpha(rgb(0x8195ad), color.a), dark * 0.28);
             color = withAlpha(scale(color, 1 - dark * 0.27), color.a);
+            // Stairs' pale gold is the brightest thing on a floor: at night it stood out like a lamp (the user,
+            // 2026-11-14: "stairs are glowing at night and it's confusing"). Dimmed toward the floor's own colours,
+            // they stay steps, not a light.
+            if (info?.kind === 'stairs') color = withAlpha(scale(lerp(color, rgb(0x8d8878), dark * 0.5), 1 - dark * 0.3), color.a);
         }
         // The lie of the land (the slope's facing): a dune's steep face, a valley's far side, in shade, the slopes
         // turned to the light a little brighter, in the glyphs as in the floor, so the shape reads in remembered
@@ -216,11 +220,13 @@ export class GroundPainter {
             c.lineCap = 'round';
             c.stroke();
         };
-        const contour = css(rgb(0xc9bf9a, 0.2));
+        // At night the warm lines are dimmer too, as the ground is: a stair's edges never glow (the user, 2026-11-14).
+        const night = 1 - s.environment.illumination;
+        const contour = css(rgb(0xc9bf9a, 0.2 * (1 - night * 0.4)));
         const contourRemembered = css(rgb(0xc9bf9a, 0.1));
-        const ramp = css(rgb(0xd8b877, 0.34));
+        const ramp = css(rgb(0xd8b877, 0.34 * (1 - night * 0.6)));
         const shadow = css(rgb(0x04070a, 0.4));
-        const rim = css(rgb(0xe9d2a0, 0.55));
+        const rim = css(rgb(0xe9d2a0, 0.55 * (1 - night * 0.45)));
         for (let y = w.y0; y <= w.y1; ++y) {
             for (let x = w.x0; x <= w.x1; ++x)
                 for (let d = 0; d < 2; ++d) {

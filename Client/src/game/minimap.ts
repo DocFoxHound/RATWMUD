@@ -5,6 +5,8 @@
 import {arr, bool, isObject, num, obj, objects, str, type Json} from './json.ts';
 import {terrainInfo, type Surface, type SurfaceFactory} from './terrainLayer.ts';
 import type {GameState} from './state.ts';
+import {HouseIconScale, IconScale, labelsAt, type RealmMap} from './realm.ts';
+import {drawMapIcon} from './mapIcons.ts';
 
 /** Pixels a tile, closest last. */
 export const MapScales = [0.25, 0.5, 1, 2, 4, 8];
@@ -63,8 +65,20 @@ export function placesOf(snapshot: Json | null): Place[] {
     return out;
 }
 
+/** Where the wolf is in the world, in tiles (outdoors, its own place's corner plus where it stands in it); indoors, where
+ *  it last stood outdoors if known, else where its place is said to be. */
+export function wolfInWorld(s: GameState): [number, number] {
+    const here = placesOf(s.snapshot).find(p => p.current);
+    const me = s.entities.get(s.selfId);
+    const cell = isObject(s.snapshot?.cell) ? s.snapshot!.cell as Json : null;
+    const at: [number, number] = [(here?.x ?? num(cell, 'x')) + (me?.x ?? s.cellWidth / 2), (here?.y ?? num(cell, 'y')) + (me?.y ?? s.cellHeight / 2)];
+    if (s.outdoors) return at;
+    return s.lastOutdoors ?? at;
+}
+
 export class MapRenderer {
     private pictures = new Map<string, {key: string; surface: Surface}>();
+    private realmPicture: {realm: RealmMap; surface: Surface} | null = null;
     private current: {rows: unknown; visibility: unknown; fringe: unknown; surface: Surface | null; at: number} =
         {rows: null, visibility: null, fringe: null, surface: null, at: -1};
     private surfaces: SurfaceFactory;
@@ -93,6 +107,26 @@ export class MapRenderer {
         surface.ctx.putImageData(image, 0, 0);
         if (this.pictures.size > 64) this.pictures.clear();
         this.pictures.set(p.id, {key, surface});
+        return surface;
+    }
+
+    /** The whole realm's ground as a picture, a pixel a sample, made once per map. */
+    private realmSurface(realm: RealmMap): Surface | null {
+        if (this.realmPicture?.realm === realm) return this.realmPicture.surface;
+        const surface = this.surfaces(realm.cols, realm.rows);
+        if (!surface) return null;
+        const image = surface.ctx.createImageData(realm.cols, realm.rows);
+        const g = realm.ground;
+        for (let i = 0; i < g.length; ++i) {
+            const c = colourOf(g[i]);
+            if (!c) continue;
+            image.data[i * 4] = Math.round(c[0] * 0.6);
+            image.data[i * 4 + 1] = Math.round(c[1] * 0.6);
+            image.data[i * 4 + 2] = Math.round(c[2] * 0.6);
+            image.data[i * 4 + 3] = 255;
+        }
+        surface.ctx.putImageData(image, 0, 0);
+        this.realmPicture = {realm, surface};
         return surface;
     }
 
@@ -148,8 +182,13 @@ export class MapRenderer {
         const here = places.find(p => p.current);
         const me = s.entities.get(s.selfId);
         const cell = isObject(s.snapshot?.cell) ? s.snapshot!.cell as Json : null;
-        const cx = (here?.x ?? num(cell, 'x')) + (me?.x ?? s.cellWidth / 2) + pan[0];
-        const cy = (here?.y ?? num(cell, 'y')) + (me?.y ?? s.cellHeight / 2) + pan[1];
+        if (s.outdoors && here && me) s.lastOutdoors = [here.x + me.x, here.y + me.y];
+        // The World Map is the whole realm (labels: it is the World Map): centred where the wolf last stood outdoors,
+        // even from indoors. The minimap stays on the wolf's own place.
+        const realm = labels ? s.realm : null;
+        const centre: [number, number] = realm ? wolfInWorld(s)
+            : [(here?.x ?? num(cell, 'x')) + (me?.x ?? s.cellWidth / 2), (here?.y ?? num(cell, 'y')) + (me?.y ?? s.cellHeight / 2)];
+        const cx = centre[0] + pan[0], cy = centre[1] + pan[1];
         const toX = (wx: number) => box.x + box.w / 2 + (wx - cx) * scale;
         const toY = (wy: number) => box.y + box.h / 2 + (wy - cy) * scale;
         c.save();
@@ -159,6 +198,15 @@ export class MapRenderer {
         c.fillStyle = '#0b1213';
         c.fillRect(box.x, box.y, box.w, box.h);
         c.imageSmoothingEnabled = scale < 1;
+        // The whole realm under it all (the World Map): every place's ground, seen or not (the user, 2026-11-14), and
+        // over it what this wolf remembers, in its own detail, and what it sees, bright.
+        const ground = realm ? this.realmSurface(realm) : null;
+        if (realm && ground) {
+            // (Smoothed when magnified: a sample is several tiles, and blocks of them read as noise, not land.)
+            c.imageSmoothingEnabled = true;
+            c.drawImage(ground.canvas, toX(realm.x0), toY(realm.y0), realm.cols * realm.step * scale, realm.rows * realm.step * scale);
+            c.imageSmoothingEnabled = scale < 1;
+        }
         // Remembered places first, then the wolf's own on top: with the ground round it past a seam (the band), which
         // carries what it sees in the places beside while it is near them (their own pictures are kept as they were).
         for (const p of [...places.filter(p => !p.current), ...places.filter(p => p.current)]) {
@@ -171,6 +219,7 @@ export class MapRenderer {
                 c.fillStyle = p.current ? 'rgba(168,194,166,0.18)' : 'rgba(139,155,145,0.12)';
                 c.fillRect(x, y, w, h);
             }
+            if (realm && !p.current) continue;     // (Over the whole realm, a place's edge is only clutter.)
             c.strokeStyle = p.current ? 'rgba(217,182,123,0.6)' : p.visible ? 'rgba(168,194,166,0.35)' : 'rgba(139,155,145,0.18)';
             c.lineWidth = 1;
             c.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
@@ -187,6 +236,20 @@ export class MapRenderer {
                     c.fillRect(toX(here.x + xx * f.step - f.step / 2), toY(here.y + yy * f.step - f.step / 2), f.step * scale, f.step * scale);
                 }
         }
+        // What each building is (the user, 2026-11-14), an icon over its footprint's middle once close enough to read:
+        // on the World Map, and on the minimap outdoors (indoors its picture is the room's, not the street's).
+        const buildingsFrom = s.realm && (labels || s.outdoors) ? s.realm : null;
+        const iconAt: {x: number; y: number; name: string; kind: string}[] = [];
+        if (buildingsFrom && scale >= IconScale) {
+            const size = Math.max(12, Math.min(16, scale * 4));
+            for (const b of buildingsFrom.buildings) {
+                if (!b.kind || (b.kind === 'house' && scale < HouseIconScale)) continue;
+                const x = toX(b.x), y = toY(b.y);
+                if (x < box.x - size || y < box.y - size || x > box.x + box.w + size || y > box.y + box.h + size) continue;
+                if (drawMapIcon(c, b.kind, x, y, size, 0.95)) iconAt.push({x, y, name: b.name, kind: b.kind});
+            }
+        }
+        this.icons = iconAt;
         // Doors of the wolf's place, then the wolves it can see, then the wolf.
         const ox = here?.x ?? num(cell, 'x'), oy = here?.y ?? num(cell, 'y');
         for (const d of objects(s.snapshot, 'doors')) {
@@ -325,7 +388,8 @@ export class MapRenderer {
             c.closePath();
             c.fill();
         }
-        if (labels) {
+        if (labels && realm) this.drawNames(c, realm, scale, toX, toY, iconAt);
+        else if (labels) {
             c.font = '12px sans-serif';
             c.textBaseline = 'top';
             for (const p of places) {
@@ -339,6 +403,61 @@ export class MapRenderer {
         c.font = '11px monospace';
         c.textBaseline = 'top';
         c.fillText('N ^', box.x + 6, box.y + 5);
+        c.restore();
+    }
+
+    /** Where the last draw put buildings' icons (box pixels), and what each is: for the pointer. */
+    icons: {x: number; y: number; name: string; kind: string}[] = [];
+
+    /**
+     * The realm's names on the World Map (the user, 2026-11-14: "when the player zooms in close enough they should see
+     * the names of the areas and towns"): larger places first and from further out, each where it doesn't cover one
+     * already written; close in, the buildings' names under their icons.
+     */
+    private drawNames(c: CanvasRenderingContext2D, realm: RealmMap, scale: number, toX: (x: number) => number, toY: (y: number) => number,
+        icons: {x: number; y: number; name: string; kind: string}[]) {
+        const taken: {l: number; t: number; r: number; b: number}[] = [];
+        const free = (l: number, t: number, r: number, b: number) => !taken.some(o => l < o.r && r > o.l && t < o.b && b > o.t);
+        c.save();
+        c.textAlign = 'center';
+        c.textBaseline = 'middle';
+        c.lineJoin = 'round';
+        const styles = [
+            {font: "600 15px 'RATW Sans', sans-serif", fill: '#e7dcc4', spacing: true},
+            {font: "600 13px 'RATW Sans', sans-serif", fill: '#d9b67b', spacing: false},
+            {font: "12px 'RATW Sans', sans-serif", fill: '#c4cfc6', spacing: false},
+            {font: "11px 'RATW Sans', sans-serif", fill: '#e7dcc4', spacing: false},
+        ];
+        for (const l of labelsAt(realm, scale)) {
+            const style = styles[Math.min(3, l.rank)];
+            const words = style.spacing ? l.name.toUpperCase() : l.name;
+            c.font = style.font;
+            const w = c.measureText(words).width + (style.spacing ? words.length * 1.5 : 0), h = l.rank === 0 ? 18 : 15;
+            const x = toX(l.x), y = toY(l.y);
+            if (!free(x - w / 2 - 4, y - h / 2, x + w / 2 + 4, y + h / 2)) continue;
+            taken.push({l: x - w / 2 - 4, t: y - h / 2, r: x + w / 2 + 4, b: y + h / 2});
+            if ('letterSpacing' in c) (c as unknown as {letterSpacing: string}).letterSpacing = style.spacing ? '1.5px' : '0px';
+            c.strokeStyle = 'rgba(8,12,13,0.85)';
+            c.lineWidth = 3.5;
+            c.strokeText(words, x, y);
+            c.fillStyle = style.fill;
+            c.fillText(words, x, y);
+        }
+        if ('letterSpacing' in c) (c as unknown as {letterSpacing: string}).letterSpacing = '0px';
+        if (scale >= 4) {
+            c.font = "11px 'RATW Sans', sans-serif";
+            for (const i of icons) {
+                if (i.kind === 'house') continue;
+                const w = c.measureText(i.name).width, y = i.y + 14;
+                if (!free(i.x - w / 2 - 2, y - 7, i.x + w / 2 + 2, y + 7)) continue;
+                taken.push({l: i.x - w / 2 - 2, t: y - 7, r: i.x + w / 2 + 2, b: y + 7});
+                c.strokeStyle = 'rgba(8,12,13,0.85)';
+                c.lineWidth = 3;
+                c.strokeText(i.name, i.x, y);
+                c.fillStyle = '#e7dcc4';
+                c.fillText(i.name, i.x, y);
+            }
+        }
         c.restore();
     }
 }
