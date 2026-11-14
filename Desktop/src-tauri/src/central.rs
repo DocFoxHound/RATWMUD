@@ -51,6 +51,7 @@ pub fn allowed(method: &str, path: &str) -> bool {
         ("/account/login", &["POST"]),
         ("/account/logout", &["POST"]),
         ("/account", &["GET", "DELETE"]),
+        ("/account/quickened/announced", &["POST"]),   // (The Quickened fanfare shown: doc 49, 9.1.)
         ("/wolves", &["GET", "POST"]),
         ("/wolves/name", &["POST"]),
         ("/tickets", &["POST"]),
@@ -428,6 +429,8 @@ mod tests {
     fn only_the_clients_calls() {
         assert!(allowed("POST", "/account/login"));
         assert!(allowed("DELETE", "/account"));
+        assert!(allowed("POST", "/account/quickened/announced"));
+        assert!(!allowed("GET", "/account/quickened/announced"));
         assert!(allowed("GET", "/worlds"));
         assert!(allowed("DELETE", "/wolves/wolf-0123456789abcdef0123456789abcdef"));
         assert!(!allowed("DELETE", "/wolves/wolf-0123456789ABCDEF0123456789abcdef"));

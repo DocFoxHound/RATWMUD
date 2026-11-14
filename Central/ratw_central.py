@@ -31,7 +31,8 @@ laptop it runs on loopback for development: worlds and the client reach it with 
 The calls (JSON bodies; `Authorization: Bearer ACCESS_TOKEN` where an account is needed):
   POST /account/register {username, password, birth_year, birth_month?, remember?}   POST /account/login {username,
   password, remember?}   POST /account/refresh {refresh_token}   POST /account/logout {everywhere?}   GET /account
-  DELETE /account {password}   GET /wolves   POST /wolves {name, age, appearance, family?, profile?, choices?}
+  POST /account/quickened/announced   DELETE /account {password}   GET /wolves
+  POST /wolves {name, age, appearance, family?, quickened?, profile?, choices?}
   PATCH /wolves/WOLF_ID {revision, appearance?, profile?, choices?}   DELETE /wolves/WOLF_ID {password}   POST /wolves/name {name}   POST /tickets {world, wolf}
   GET /keys   GET /health   GET /rules (the creator's Gift families)   GET /worlds (the list)
 The Host page's calls (an account with the host flag): GET /host/worlds   POST /host/worlds {name}
@@ -83,6 +84,7 @@ def routes(central: central_service.Central) -> dict:
         ('POST', '/account/logout'): central.logout,
         ('DELETE', '/account'): central.delete_account,
         ('GET', '/account'): central.me,
+        ('POST', '/account/quickened/announced'): central.quickened_announced,
         ('GET', '/wolves'): central.list_wolves,
         ('POST', '/wolves'): central.create_wolf,
         ('POST', '/wolves/name'): central.name_free,

@@ -68,6 +68,7 @@ export interface WorldStatus {
     voices: boolean;
     cheats: boolean;
     private: boolean;
+    quickenedWolves: boolean;    // Doc 49, 9.1: false when the host keeps Quickened wolves out.
     ms: number;              // The round trip the client measured.
 }
 
@@ -79,7 +80,7 @@ export function readStatus(body: unknown, ms: number): WorldStatus | null {
     const count = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? Math.max(0, Math.trunc(v)) : 0);
     return {id: b.id, name: text(b.name, 48), kind: b.kind === 'official' ? 'official' : 'community', protocol: b.protocol,
         clientData: text(b.clientData, 64), players: count(b.players), limit: count(b.limit), voices: b.voices === true,
-        cheats: b.cheats === true, private: b.private === true, ms: Math.max(0, Math.round(ms))};
+        cheats: b.cheats === true, private: b.private === true, quickenedWolves: b.quickenedWolves !== false, ms: Math.max(0, Math.round(ms))};
 }
 
 /** What the world list says of a world's status: until the world's own /status answers, central's count. "AI used"
@@ -129,4 +130,25 @@ export async function fetchStatus(a: WorldAddress, invoke: (<T>(command: string,
     } catch {
         return null;
     }
+}
+
+/** What central's listing adds to a world's columns (net/central.ts, ListedWorld). */
+export interface ColumnsListing {
+    players: number;
+    limit: number;
+    voices: boolean;
+    cheats: boolean;
+    quickenedWolves: boolean;
+}
+
+/** The server browser's columns for a world: wolves in it and its limit, the round trip, whether it answered (its own
+ *  /status, else central's count), and its marks ("AI used", "cheats on", "No Quickened"). */
+export function serverColumns(s: WorldStatus | null | undefined, listed: ColumnsListing | null) {
+    // Quickened wolves kept out (doc 49, 9.1) by central's listing or the world's own status: "No Quickened".
+    const quickenedWolves = s?.quickenedWolves !== false && listed?.quickenedWolves !== false;
+    const marks = [...((s?.voices || listed?.voices) ? ['AI used'] : []), ...((s?.cheats || listed?.cheats) ? ['cheats on'] : []),
+        ...(quickenedWolves ? [] : ['No Quickened'])];
+    if (s) return {players: s.players, limit: s.limit || null, ping: s.ms, answer: 'yes', marks, quickenedWolves};
+    return {players: listed ? listed.players : null, limit: listed?.limit || null, ping: null, answer: s === null ? 'no' : 'asking', marks,
+        quickenedWolves};
 }

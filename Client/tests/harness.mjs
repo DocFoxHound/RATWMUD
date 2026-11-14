@@ -115,6 +115,16 @@ export async function startHarness({cors = [], database = 'ratw_central_clientte
             execFileSync('python3', [join(root, 'Central', 'ratw_central.py'), 'accounts', 'flag', username, '--host'],
                 {cwd: root, env: {...process.env, ...env}, encoding: 'utf8'});
         },
+        /** Gives an account Quickened (doc 49, 9.1), as an official world's heartbeat records it on central. */
+        unlockQuickened(username) {
+            python(`
+import central_store
+s = central_store.Store(${JSON.stringify(database)})
+with s.connection() as conn:
+    assert conn.execute("UPDATE central.accounts SET quickened_at = now(), quickened_world = %s WHERE username = %s",
+                        ('world-' + '0' * 32, ${JSON.stringify(username)})).rowcount == 1
+s.close()`, env);
+        },
         /** Stops the world alone (a world going down mid-game). */
         async stopWorld() {
             const c = harness.world.process;

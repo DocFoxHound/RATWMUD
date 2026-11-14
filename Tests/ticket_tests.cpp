@@ -260,16 +260,22 @@ void theCheckerKeepsEveryRule()
         expect(admitted(k.sign(c)), "a claim the world doesn't know is ignored");
     }
     {
-        // The account's Quickened, from central (doc 49, 9.1): optional, and false when it isn't there.
-        expect(admitted(k.sign(claims(now))) && !got.quickened, "a ticket without `quickened` (an older central): not open");
+        // The wolf's tier, as central made it (doc 49, 9.1): optional (an older central: Gifted with a family, Normal
+        // without), else the one its family allows. An older central's account `quickened` is ignored.
+        expect(admitted(k.sign(claims(now))) && got.tier == "gifted", "no `tier` and a family: Gifted");
         auto c = claims(now);
-        c.add("quickened", true);
-        expect(admitted(k.sign(c)) && got.quickened, "`quickened`: true says the account has it: " + why);
+        c.set("gift", "");
+        expect(admitted(k.sign(c)) && got.tier == "normal", "no `tier` and no family: Normal");
         c = claims(now);
-        c.add("quickened", false);
-        expect(admitted(k.sign(c)) && !got.quickened, "and false that it hasn't");
+        c.add("tier", "quickened");
+        expect(admitted(k.sign(c)) && got.tier == "quickened", "`tier`: a Quickened wolf: " + why);
+        c = claims(now);
+        c.add("quickened", true);
+        expect(admitted(k.sign(c)) && got.tier == "gifted", "an older central's account `quickened` makes no wolf Quickened");
     }
-    refusedWith([](Value& c) { c.add("quickened", "yes"); }, "a `quickened` that isn't true or false");
+    refusedWith([](Value& c) { c.add("tier", "normal"); }, "a Normal tier with a family");
+    refusedWith([](Value& c) { c.set("gift", ""); c.add("tier", "quickened"); }, "a Quickened tier without a family");
+    refusedWith([](Value& c) { c.add("tier", 7); }, "a tier that isn't a word");
     tickets::Checker official;
     official.configure(World1, true, started);
     official.setKeys(tickets::readKeys(jwks({&k})));
@@ -529,15 +535,14 @@ void wolvesJoinArriveAndComeStraightBack()
                    lobby->object("gifts").array("families").size() == 8 && !lobby->object("creation").isNull() &&
                    !lobby->object("tiers").isNull() && lobby->boolean("firstCharacter"),
                "which shows the wolf from the ticket, and the tiers, strengths, starts and ties to choose from");
-        expect(lobby->array("tierChoices").size() == 2 && lobby->array("tierChoices")[0].asString() == "gifted",
-               "a wolf with a family chooses Gifted or Quickened");
-        say(g, &a, cmd({{"type", "character_arrive"}, {"commandId", "arrive-1"}}));
-        expect(a.code() == "invalid" && g.characters().empty(), "a wolf with a family can't arrive without a tier");
+        expect(lobby->array("tierChoices").size() == 1 && lobby->array("tierChoices")[0].asString() == "gifted",
+               "a wolf with a family and no Quickened is Gifted: nothing else is offered (doc 49, 9.1)");
         say(g, &a, cmd({{"type", "character_arrive"}, {"commandId", "arrive-1"}, {"tier", "normal"}}));
-        expect(a.code() == "invalid" && g.characters().empty(), "nor Normal (the user, 2026-11-07: only Normal wolves have no family)");
+        expect(a.code() == "invalid" && g.characters().empty(), "it can't arrive Normal (the user, 2026-11-07: only Normal wolves have no family)");
         say(g, &a, cmd({{"type", "character_arrive"}, {"commandId", "arrive-1"}, {"tier", "quickened"}}));
-        expect(!a.last("lobby")->boolean("ok") && a.stage() == "arrive" && g.characters().empty(),
-               "Quickened, which this account hasn't earned here, is refused (doc 49): " + a.message());
+        expect(!a.last("lobby")->boolean("ok") && a.stage() == "arrive" && g.characters().empty() &&
+                   a.message().find("Character Editor") != std::string::npos,
+               "nor Quickened: that is chosen for a new wolf in the Character Editor (doc 49, 9.1): " + a.message());
         say(g, &a, cmd({{"type", "character_arrive"}, {"commandId", "arrive-1"}, {"tier", "gifted"}, {"name", "Other"}}));
         expect(a.code() == "invalid", "an arrival can't rename the wolf");
         const auto treasuryBefore = g.world().society().account("treasury")->cash;
@@ -637,7 +642,7 @@ void wolvesJoinArriveAndComeStraightBack()
                "a ticket issued before the restart is refused: " + a.message());
         say(g, &a, hello(f.ticket()));
         expect(a.entityId == Wolf1, "a new one brings the wolf straight in");
-        // Earned standing opens the tier at a first arrival here.
+        // Standing earned here turns no arriving wolf Quickened (doc 49, 9.1: the ticket's tier decides).
         Client e;
         e.id = 10;
         g.connect(&e);
@@ -645,8 +650,11 @@ void wolvesJoinArriveAndComeStraightBack()
         const std::string wolf4 = "wolf-44444444444444444444444444444444";
         say(g, &e, hello(f.ticket(wolf4, Acct1, "Sedge")));
         say(g, &e, cmd({{"type", "character_arrive"}, {"commandId", "s1"}, {"tier", "quickened"}}));
-        expect(e.entityId == wolf4 && g.characters().at(wolf4).gift == "fire" && g.characters().at(wolf4).quickened,
-               "an account that has earned Quickened here may arrive Quickened, in its ticket's family: " + e.message());
+        expect(e.entityId.empty() && !g.characters().count(wolf4),
+               "an account whose standing here opened Quickened still can't arrive a Gifted wolf Quickened: " + e.message());
+        say(g, &e, cmd({{"type", "character_arrive"}, {"commandId", "s1"}}));
+        expect(e.entityId == wolf4 && g.characters().at(wolf4).gift == "fire" && !g.characters().at(wolf4).quickened,
+               "it arrives as its ticket says, Gifted, in its family: " + e.message());
         say(g, &e, cmd({{"type", "character_leave"}}));
         // A wolf with no family is Normal, everywhere.
         Client n;
@@ -801,17 +809,19 @@ Value readJson(const std::filesystem::path& path)
 }
 
 // bans.json as the world agent writes it: whole, then renamed into place.
-void theAccountsQuickenedOpensItInEveryWorld()
+void aWolfsQuickenedComesFromItsTicket()
 {
-    // Doc 49, 9.1 (the user, 2026-11-14: "once per the whole account, not once per world"): a ticket's `quickened`
-    // opens Quickened at a first arrival in a world whose own standing hasn't; without it, this world's standing
-    // decides as before; a Dungeon Master's hold here holds it too. An official world lists its own Quickened
-    // accounts' wolves in unlocks.json for the heartbeat; a community world lists none.
+    // Doc 49, 9.1 (the user, 2026-11-14): an unlocked account makes a Quickened wolf in the Character Editor; it isn't
+    // offered on arrival. The world takes the tier from the ticket (`tier`), whatever its own standing says; a world
+    // with Quickened wolves off (--no-quickened-wolves) says so in /status and refuses one at the hello. Quickened
+    // opening here is a fanfare on an official world (its unlocks.json takes it to central) and none on a community
+    // world, whose unlocks stay its own.
     Fixture f;
-    const auto official = [](bool quickened) {
-        return [quickened](Value& c) {
+    const auto official = [](const std::string& tier) {
+        return [tier](Value& c) {
             c.set("kind", "official");
-            c.add("quickened", quickened);
+            if (!tier.empty())
+                c.add("tier", tier);
         };
     };
     std::filesystem::path unlocks = f.dir / "unlocks.json";
@@ -820,62 +830,88 @@ void theAccountsQuickenedOpensItInEveryWorld()
         f.wire(g);
         std::string problem;
         expect(g.start(problem), "an official ticket world starts: " + problem);
+        expect(g.worldStatus().boolean("quickenedWolves"), "its /status says Quickened wolves may join");
         Client a;
         a.id = 1;
         g.connect(&a);
-        say(g, &a, hello(f.ticket(Wolf1, Acct1, "Wren Reed", official(false))));
-        expect(a.stage() == "arrive" && !a.last("lobby")->object("tiers").object("quickened").boolean("open"),
-               "without the account's Quickened, the arrival shows it locked: " + a.message());
+        say(g, &a, hello(f.ticket(Wolf1, Acct1, "Wren Reed", [](Value& c) {
+            c.set("kind", "official");
+            c.add("quickened", true);                // (An older central's account flag: no wolf is Quickened by it.)
+        })));
+        expect(a.stage() == "arrive" && a.last("lobby")->array("tierChoices").size() == 1 &&
+                   a.last("lobby")->array("tierChoices")[0].asString() == "gifted",
+               "a Gifted wolf's arrival offers no Quickened: " + json::dump(a.last("lobby")->array("tierChoices")));
         say(g, &a, cmd({{"type", "character_arrive"}, {"commandId", "q0"}, {"tier", "quickened"}}));
-        expect(a.entityId.empty() && g.characters().empty(), "and refuses it, by this world's standing");
+        expect(a.entityId.empty() && g.characters().empty(), "and refuses it: " + a.message());
         g.disconnect(&a);
         Client b;
         b.id = 2;
         g.connect(&b);
-        say(g, &b, hello(f.ticket(Wolf1, Acct1, "Wren Reed", official(true))));
-        const auto& tiers = b.last("lobby")->object("tiers");
-        expect(b.stage() == "arrive" && tiers.object("quickened").boolean("open") && tiers.object("quickened").string("by") == "account",
-               "with it, the arrival shows Quickened open, by the account: " + json::dump(tiers));
-        say(g, &b, cmd({{"type", "character_arrive"}, {"commandId", "q1"}, {"tier", "quickened"}}));
+        say(g, &b, hello(f.ticket(Wolf1, Acct1, "Wren Reed", official("quickened"))));
+        expect(b.stage() == "arrive" && b.last("lobby")->array("tierChoices").size() == 1 &&
+                   b.last("lobby")->array("tierChoices")[0].asString() == "quickened" &&
+                   b.last("lobby")->object("wolf").string("tier") == "quickened",
+               "a Quickened wolf's arrival shows it Quickened, the one choice: " + b.message());
+        say(g, &b, cmd({{"type", "character_arrive"}, {"commandId", "q1"}, {"tier", "gifted"}}));
+        expect(b.entityId.empty() && b.code() == "invalid", "it can't arrive Gifted instead: " + b.message());
+        say(g, &b, cmd({{"type", "character_arrive"}, {"commandId", "q1"}}));
         expect(b.entityId == Wolf1 && g.characters().at(Wolf1).quickened,
-               "and the wolf arrives Quickened, in a world where the account earned nothing: " + b.message());
-        // A Dungeon Master's hold here holds the account's Quickened here too.
+               "it arrives Quickened, in a world where the account earned nothing: " + b.message());
+        // The fanfare: Quickened opens for the account here (a DM's grant) while its wolf is in the world.
+        const auto before = b.events.size();
+        expect(g.unlockTier(Acct1, "gifted", "grant", "dm:test").ok && g.unlockTier(Acct1, "quickened", "grant", "dm:test").ok,
+               "the DM grants the account Quickened here");
+        const Value* fanfare = b.last("fanfare");
+        expect(fanfare && b.events.size() > before && fanfare->string("kind") == "quickened" && fanfare->boolean("everywhere") &&
+                   fanfare->string("text").find("Character Editor") != std::string::npos,
+               "its wolf gets the fanfare, for the whole account");
+        std::size_t fanfares = 0;
+        for (const auto& e : b.events)
+            fanfares += e.string("type") == "fanfare" ? 1 : 0;
+        expect(g.unlockTier(Acct1, "quickened", "grant", "dm:test").ok, "granted again");
+        std::size_t again = 0;
+        for (const auto& e : b.events)
+            again += e.string("type") == "fanfare" ? 1 : 0;
+        expect(fanfares == 1 && again == 1, "once: a grant of what is open already is no new fanfare");
+        say(g, &b, cmd({{"type", "character_leave"}}));
+        g.disconnect(&b);
+        // unlocks.json: what this world's own standing opened, and only for accounts not held.
+        expect(g.writeUnlocks(problem), "unlocks.json is written: " + problem);
+        auto list = readJson(unlocks);
+        expect(list.string("world") == World1 && list.array("quickened").size() == 1 && list.array("quickened")[0].asString() == Wolf1,
+               "it names the account's wolves, for central: " + json::dump(list));
         Client c;
         c.id = 3;
         g.connect(&c);
-        say(g, &c, hello(f.ticket(Wolf2, Acct2, "Moss", official(false))));
-        say(g, &c, cmd({{"type", "character_arrive"}, {"commandId", "m1"}, {"tier", "gifted"}}));
+        say(g, &c, hello(f.ticket(Wolf2, Acct2, "Moss", official("gifted"))));
+        say(g, &c, cmd({{"type", "character_arrive"}, {"commandId", "m1"}}));
         expect(c.entityId == Wolf2 && !g.characters().at(Wolf2).quickened, "a second account's wolf arrives Gifted: " + c.message());
-        say(g, &c, cmd({{"type", "character_leave"}}));
-        g.disconnect(&c);
         expect(g.unlockTier(Acct2, "", "hold", "dm:test").ok, "the DM holds the second account's unlocks");
-        const std::string wolf4 = "wolf-44444444444444444444444444444444";
-        Client d;
-        d.id = 4;
-        g.connect(&d);
-        say(g, &d, hello(f.ticket(wolf4, Acct2, "Sedge", official(true))));
-        expect(d.stage() == "arrive" && !d.last("lobby")->object("tiers").object("quickened").boolean("open"),
-               "a held account's Quickened from central stays shut here: " + d.message());
-        say(g, &d, cmd({{"type", "character_arrive"}, {"commandId", "s1"}, {"tier", "quickened"}}));
-        expect(d.entityId.empty() && !g.characters().count(wolf4), "and is refused: " + d.message());
-        g.disconnect(&d);
-        // unlocks.json: only what this world's own standing opened (the account Quickened by central's word earned
-        // nothing here), and only for accounts not held.
-        g.ticketFiles();
-        expect(std::filesystem::exists(unlocks) && readJson(unlocks).string("world") == World1 &&
-                   readJson(unlocks).array("quickened").empty(),
-               "an official world writes unlocks.json, empty while nobody's standing here opened Quickened");
-        expect(g.unlockTier(Acct1, "gifted", "grant", "dm:test").ok && g.unlockTier(Acct1, "quickened", "grant", "dm:test").ok,
-               "the DM grants the first account Quickened here");
-        expect(g.writeUnlocks(problem), "written again: " + problem);
-        auto list = readJson(unlocks);
-        expect(list.array("quickened").size() == 1 && list.array("quickened")[0].asString() == Wolf1,
-               "it names the account's wolves, for central: " + json::dump(list));
-        expect(g.unlockTier(Acct2, "quickened", "grant", "dm:test").ok && g.writeUnlocks(problem) &&
+        expect(g.unlockTier(Acct2, "quickened", "grant", "dm:test").ok && !c.last("fanfare") && g.writeUnlocks(problem) &&
                    readJson(unlocks).array("quickened").size() == 1,
-               "a held account's grant isn't sent central");
+               "a held account's grant is no fanfare, and isn't sent central: " + json::dump(readJson(unlocks)) + problem +
+                   (c.last("fanfare") ? " (a fanfare)" : ""));
     }
     std::filesystem::remove(unlocks);
+    {
+        // Quickened wolves off: listed so, and refused at the hello (central refuses their tickets first).
+        auto o = f.options(true);
+        o.central.quickenedWolves = false;
+        game::Game g(o);
+        f.wire(g);
+        std::string problem;
+        expect(g.start(problem), "a world without Quickened wolves starts: " + problem);
+        expect(!g.worldStatus().boolean("quickenedWolves", true), "its /status says so: " + json::dump(g.worldStatus()));
+        Client a;
+        a.id = 1;
+        g.connect(&a);
+        say(g, &a, hello(f.ticket(Wolf1, Acct1, "Wren Reed", official("quickened"))));
+        expect(a.entityId.empty() && a.code() == "quickened_off" && a.accountUsername.empty() &&
+                   a.message().find("doesn't take Quickened wolves") != std::string::npos,
+               "a Quickened wolf is refused: " + a.message());
+        say(g, &a, hello(f.ticket(Wolf2, Acct2, "Moss", official("gifted"))));
+        expect(a.stage() == "arrive", "a Gifted wolf is let in: " + a.message());
+    }
     {
         game::Game g(f.options(false));
         f.wire(g);
@@ -884,14 +920,15 @@ void theAccountsQuickenedOpensItInEveryWorld()
         Client a;
         a.id = 1;
         g.connect(&a);
-        say(g, &a, hello(f.ticket(Wolf3, Acct1, "Fern", [](Value& c) { c.add("quickened", true); })));
-        say(g, &a, cmd({{"type", "character_arrive"}, {"commandId", "f1"}, {"tier", "quickened"}}));
-        expect(a.entityId == Wolf3 && g.characters().at(Wolf3).quickened, "a community world honours the account's Quickened too");
+        say(g, &a, hello(f.ticket(Wolf3, Acct1, "Fern", [](Value& c) { c.add("tier", "quickened"); })));
+        say(g, &a, cmd({{"type", "character_arrive"}, {"commandId", "f1"}}));
+        expect(a.entityId == Wolf3 && g.characters().at(Wolf3).quickened, "a community world takes a Quickened wolf as it was made");
         expect(g.unlockTier(Acct1, "gifted", "grant", "dm:test").ok && g.unlockTier(Acct1, "quickened", "grant", "dm:test").ok,
                "its host grants Quickened here");
+        expect(!a.last("fanfare"), "with no fanfare: a community world's Quickened opens nothing on central");
         g.ticketFiles();
         expect(!g.writeUnlocks(problem) && !std::filesystem::exists(unlocks),
-               "but a community world's unlocks stay its own: no unlocks.json (" + problem + ")");
+               "and its unlocks stay its own: no unlocks.json (" + problem + ")");
     }
 }
 
@@ -1654,7 +1691,7 @@ int main()
         theArrivalLimitsHold();
         aNewKeyIsFetchedWhenATicketNamesIt();
         theAgentsFilesCountTheWolvesAndCarryCentralsBans();
-        theAccountsQuickenedOpensItInEveryWorld();
+        aWolfsQuickenedComesFromItsTicket();
         aScratchServerWritesNoOnlineFile();
         theHostDecidesKicksBansAndSilences();
         theHostsToolsKeepTheCommunityGuards();

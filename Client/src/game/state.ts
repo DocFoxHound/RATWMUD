@@ -389,6 +389,8 @@ export class GameState {
     private arenaSightRows: string[] = [];
     toast = '';
     toastUntil = 0;
+    // A fanfare (doc 49, 9.1: Quickened opened for the account): a banner in the middle of the screen until closed.
+    fanfare: {kind: string; kicker: string; title: string; text: string} | null = null;
 
     readonly send: (command: Json) => void;
     readonly composer: Composer;
@@ -1112,6 +1114,11 @@ export class GameState {
         }
         if (type === 'introducePrompt') {
             this.introducePrompt = {target: str(e, 'target'), text: str(e, 'text'), until: this.clock + num(e, 'seconds', 120)};
+            return;
+        }
+        if (type === 'fanfare') {
+            this.fanfare = {kind: str(e, 'kind'), kicker: str(e, 'kicker', 'QUICKENED IS OPEN'), title: str(e, 'title', 'Your name runs ahead of you.'),
+                text: str(e, 'text')};
             return;
         }
         if (type === 'tieOffer') {

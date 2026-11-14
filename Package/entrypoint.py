@@ -284,6 +284,8 @@ def read_settings() -> dict:
         'arrivals_per_hour': number(world, 'arrivals_per_hour', None, 1, 100000),
         'private': flag(world, 'private'),
         'cheats': text(world, 'cheats', 'off', 16),
+        # Quickened wolves may join (doc 49, 9.1): on unless the host turns them off; listed "No Quickened" when off.
+        'quickened_wolves': flag(world, 'quickened_wolves', True),
         'world_id': text(world, 'id', most=64),
         'central': text(central, 'url', most=512).rstrip('/'),
         'token_file': text(central, 'token_file', most=1024),
@@ -917,7 +919,7 @@ def admin_settings(s: dict, port: int) -> dict:
     """settings.json, the helper's copy of world.toml (doc 78, 6.5): no host token, no AI key, no file names."""
     return {'name': s['name'], 'world_id': s['world_id'], 'description': s['description'], 'region': s['region'],
             'tags': s['tags'], 'player_limit': s['player_limit'], 'arrivals_per_hour': s['arrivals_per_hour'],
-            'cheats': s['cheats'], 'central': s['central'], 'host': s['host'], 'secure': s['secure'],
+            'cheats': s['cheats'], 'quickened_wolves': s.get('quickened_wolves', True), 'central': s['central'], 'host': s['host'], 'secure': s['secure'],
             'has_token': bool(s['token']), 'workers': s['workers'], 'upnp': s['upnp'],
             'ai': {'key': bool(s['ai_key']), 'models': s['models'], 'cost_mode': s['cost_mode'],
                    **({'monthly_tokens': s['monthly_tokens']} if s.get('monthly_tokens') is not None else {})},
@@ -1308,6 +1310,8 @@ def server_command(s: dict, port: int, agent_dir: Path, dialogue: bool, workers:
     # (No --dm-directory: nothing in the container reads what the server would write there, and the legacy
     # Storykeeper stays unstarted: Docs/Design/78, Q18.)
     command += CHEATS[s.get('cheats', 'off')]
+    if s.get('quickened_wolves', True) is False:
+        command.append('--no-quickened-wolves')     # (Doc 49, 9.1: world.toml's quickened_wolves = false.)
     if s['arrivals_per_hour']:
         command += ['--arrivals-per-hour', str(s['arrivals_per_hour'])]
     if dialogue:

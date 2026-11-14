@@ -126,8 +126,12 @@ def verify(token: str, keys: dict[str, bytes], world: str, now: float, world_sta
                         ('kind', str), ('look', dict), ('gift', str), ('age', int), ('iat', int), ('exp', int)):
         if not isinstance(claims.get(field), kind) or isinstance(claims.get(field), bool):
             raise TicketError(f'missing or malformed {field}')
-    if 'quickened' in claims and not isinstance(claims['quickened'], bool):
-        raise TicketError('missing or malformed quickened')
+    # The wolf's Gift tier (doc 49, 9.1): optional (an older central's ticket has none: Normal without a family, else
+    # Gifted), and when there, the one its family allows.
+    allowed = ('normal',) if not claims['gift'] else ('gifted', 'quickened')
+    if 'tier' in claims and claims['tier'] not in allowed:
+        raise TicketError('missing or malformed tier')
+    claims.setdefault('tier', allowed[0])
     if claims['aud'] != world:
         raise TicketError('ticket for another world')
     if now > claims['exp'] + leeway:

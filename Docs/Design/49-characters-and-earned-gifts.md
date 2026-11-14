@@ -327,34 +327,66 @@ Each character carries `progressVersion` (saved); each phase that changes charac
   account's character IDs and no verifiers, so the DM tools may read it, unlike `game.accounts`.
 - **Quickened keeps the setting's cost** (agreed): rare, feared, watched by Wardens (`wardenAttention`).
 
-#### 9.1 Quickened for the whole account, on central (the user, 2026-11-14)
+#### 9.1 Quickened for the whole account, chosen in the Character Editor (the user, 2026-11-14)
 
 > "Once per the whole account, not once per world."
+>
+> "Once it's unlocked the user should be notified in a bit of a fanfare announcement about it, but then they can create
+> a quickened wolf character in the character editor. They'll be allowed to join any server that doesn't have Quickened
+> Wolves disabled. This isn't offered to a user when they join a server, it's unlocked and they can then choose it in
+> the character customizer."
 
 On central's worlds (ticket mode, doc 77) Quickened is a fact of the central account, earned once and open in every
-world; password-mode worlds (DEV, scratch servers, a standalone laptop world) keep the per-world rule above unchanged.
+world, and a **Quickened wolf** is made so in the Character Editor, for good. Password-mode worlds (DEV, scratch
+servers, a standalone laptop world) keep the per-world rule above unchanged (the lobby's tiers; Quickened chosen at
+`character_create` once this world's standing opened it).
 
 - **What earns it:** the same measures as above (Gifted, social level 8, 100 stars from 30 different wolves, 2 closed
   Stories, no upheld reports), met in an **official** world's standing, or a Dungeon Master's grant there. Only an
-  official world's word is taken: a community host runs its own server and could name anyone. A community world still
-  opens Quickened for its own arrivals by its own standing, as before; that stays in that world.
+  official world's word is taken: a community host runs its own server and could name anyone. A community world's own
+  standing opens nothing on central (and its arrivals take the tier from the ticket, below).
 - **How central hears:** an official world writes `unlocks.json` in the world agent's directory when it changes
   (`Game::writeUnlocks`: the wolves of every account whose standing there has Quickened open, not held, the latest
   first, at most 1,000); the agent (`tools/world_agent.py`) sends them as the heartbeat's `quickened`; central
   (`Central.heartbeat`, `Store.record_quickened`) sets `central.accounts.quickened_at` and `quickened_world`
   (migration `Central/migrations/0005`) on each account owning one of those wolves, if that wolf has a ticket to that
-  world central still keeps (30 days). Recorded once and kept; a community world's list is ignored.
-- **How it flows:** central puts `quickened: true|false` in every ticket (any world, any of the account's wolves) and
-  in the account (`/account/login`, `/account/refresh`, `GET /account`). A world's ticket check (`tickets::Claims`)
-  reads it (missing: false; anything but a bool: refused). At a first arrival, Quickened is open when this world's
-  standing opened it **or** the ticket says the account has it (`Game::quickenedByCentral`), unless this world's
-  Dungeon Master holds the account's unlocks; the arrival's `tiers` shows it open, `by: "account"`. The client's
-  Character Editor (central mode) un-greys Quickened when the account has it (`tierCards(..., quickened)`), and asks
-  central again on leaving a world.
-- **Older pieces:** an older central sends no `quickened` (a world reads false: its own standing decides, as before);
-  an older world ignores the claim; an older central ignores the heartbeat's field; an older client keeps Quickened
-  greyed in the Character Editor but still arrives Quickened where the world's arrival offers it.
-- **Not built:** revoking it on central (a DM's revoke in a world takes it back only there), and an admin command for it.
+  world central still keeps (30 days). Recorded once and kept; a community world's list is ignored. The account shows
+  it as `quickened` (`/account/login`, `/account/refresh`, `GET /account`).
+- **The fanfare, once:** in the world, at the moment its standing opens Quickened (earned, or a DM's grant; not while
+  the account is held), each of the account's wolves there gets a story line and a `fanfare` event (`{kind:
+  "quickened", kicker, title, text, everywhere}`, `Game::announceQuickened`) that the client shows as a banner in the
+  middle of the screen until it is closed (`GameState.fanfare`, `hud.ts`). An official world's says "your whole
+  account, in every world"; a password world's says "in this world"; a community ticket world sends none. On the front
+  door, the first time the client sees the account unlocked and not yet announced (`quickened_announced` false), a
+  centred overlay (`FrontDoor.showFanfare`, `.fanfare` in `frontDoor.css`) says so, with **MAKE A QUICKENED WOLF** (the
+  creator, Quickened chosen) and **Later**. Either, or the in-world banner arriving, tells central
+  (`POST /account/quickened/announced`: `central.accounts.quickened_announced_at`, migration `0006`), so it shows once
+  per account, not per device. (The mark may come before central records the unlock itself: the world's banner is
+  at once, its heartbeat follows within a minute or so.)
+- **Choosing it:** the Character Editor's Quickened card un-greys when the account has it (`tierCards(...,
+  quickened)`; the client asks central again on leaving a world), and a wolf made with it is sent as `quickened: true`
+  (`POST /wolves`). Central keeps it on the wolf (`central.wolves.quickened`, migration `0006`), shows it with the
+  wolf, and **refuses** it for an account without Quickened (403 `quickened_locked`) or a wolf without a Gift family;
+  it never changes afterwards (`PATCH` refuses it as immutable).
+- **Not offered on arrival:** every ticket carries the wolf's `tier` (`normal` without a family; `gifted`, or
+  `quickened` if it was made so). A world's ticket check (`tickets::Claims::tier`) takes it (missing: Normal or
+  Gifted, as the family says; one the family doesn't allow: refused). The first arrival's `tierChoices` is that one
+  tier, the client shows no Gift tab, and an arrival naming another tier is refused; this world's standing turns no
+  arriving wolf Quickened. The earlier account-wide `quickened` claim (43c23fd) is no longer sent, and ignored if seen.
+- **A world's switch, "Quickened wolves"** (default allowed): `[world] quickened_wolves = false` in a hosted world's
+  `world.toml` (Package/entrypoint.py gives the server `--no-quickened-wolves`; an official world's launcher passes the
+  flag itself). The server says `quickenedWolves: false` in `GET /status`; the world agent sends it with the heartbeat;
+  central keeps it in the listing and shows it in `GET /worlds` (`quickenedWolves`); the client's server browser tags
+  the world **No Quickened** (`serverColumns`) and greys a Quickened wolf for it on the wolf-for-a-server page, saying
+  why. Central refuses a Quickened wolf's ticket there (403 `quickened_off`), and the world refuses one at the hello
+  (`quickened_off`) as a backstop. The Editor's My world tab shows the setting (change it in `world.toml`, then
+  restart).
+- **Older pieces:** missing fields read as not unlocked and allowed: an older central sends no `tier` (a world reads
+  Gifted or Normal) and no `quickened_announced` (the client shows the fanfare, and its mark is not kept); an older
+  world sends no `quickenedWolves` (allowed) and ignores `tier` (it offers Gifted or Quickened by its own standing, as
+  43c23fd did); an older client never makes a Quickened wolf and arrives with the one tier the world offers.
+- **Not built:** revoking it on central (a DM's revoke in a world takes it back only there), an admin command for it,
+  and making an existing wolf Quickened (a new wolf is made).
 
 ### 10. Wire messages
 

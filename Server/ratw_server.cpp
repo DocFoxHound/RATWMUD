@@ -21,7 +21,8 @@
 //            --speed max (no cap while nobody is connected: ticks back to back, as fast as the machine goes; 1000 while
 //            anyone is; /speed max in the Dev Console; Game::setSpeedMax, doc 69)
 //   ticket mode (Docs/Design/77-central-accounts-and-hosted-worlds.md, 5 and 5.1; opt-in): --central URL --world-id ID
-//            --central-keys FILE [--official] [--world-name NAME] [--player-limit N] [--arrivals-per-hour N]. Wolves
+//            --central-keys FILE [--official] [--world-name NAME] [--player-limit N] [--arrivals-per-hour N]
+//            [--no-quickened-wolves] (world.toml's quickened_wolves = false: no Quickened wolf joins, doc 49, 9.1). Wolves
 //            join with tickets from central, checked with central's keys (FILE, kept by tools/world_agent.py keys);
 //            no passwords, from loopback or anywhere; any Origin; no page (--web is refused) and GET /status answers
 //            (doc 5.1's fields, 2 KB at most, Access-Control-Allow-Origin: *). Refuses --dev-identity, and --dev-tools,
@@ -656,7 +657,7 @@ void usage()
                  "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--talk-data DIR] [--voice-log FILE] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--host-cheats] [--away-break SECONDS] [--dev-identity] [--open-tiers] [--full-snapshots]\n"
                  "                   [--for SECONDS] [--perf-log SECONDS] [--workers N] [--speed N|max] [--scratch [--idle-exit SECONDS]]\n"
                  "                   [--central URL --world-id ID --central-keys FILE [--official] [--world-name NAME] [--player-limit N]\n"
-                 "                    [--arrivals-per-hour N]]   (ticket mode: Docs/Design/77)\n";
+                 "                    [--arrivals-per-hour N] [--no-quickened-wolves]]   (ticket mode: Docs/Design/77)\n";
 }
 
 void blocking(int fd, bool on)
@@ -716,6 +717,7 @@ int main(int argc, char** argv)
         else if (a == "--world-name") options.central.worldName = next();
         else if (a == "--player-limit") options.central.playerLimit = std::atoi(next().c_str());
         else if (a == "--arrivals-per-hour") options.central.arrivalsPerHour = std::atoi(next().c_str());
+        else if (a == "--no-quickened-wolves") options.central.quickenedWolves = false;
         else if (a == "--speed")
         {
             const auto asked = next();

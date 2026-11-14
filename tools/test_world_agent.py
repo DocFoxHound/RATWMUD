@@ -92,7 +92,7 @@ class Fake:
 def world_status(world_id=WORLD, **change):
     status = {'ratw': 'world', 'id': world_id, 'name': 'Test Hollow', 'kind': 'community', 'protocol': 1,
               'build': 'abc1234', 'clientData': '0' * 32, 'players': 2, 'limit': 40, 'voices': False,
-              'private': False, 'cheats': True}
+              'private': False, 'cheats': True, 'quickenedWolves': False}
     status.update(change)
     return status
 
@@ -190,7 +190,7 @@ class AgentTests(unittest.TestCase):
         body = call['body']
         self.assertEqual(body, {'port': self.world.port, 'name': 'Test Hollow', 'protocol': 1, 'build': 'abc1234',
                                 'clientData': '0' * 32, 'limit': 40, 'voices': False, 'cheats': True,
-                                'private': False, 'secure': False, 'description': 'A quiet hollow.', 'region': 'EU',
+                                'private': False, 'quickenedWolves': False, 'secure': False, 'description': 'A quiet hollow.', 'region': 'EU',
                                 'tags': ['rp', 'slow'], 'host': 'hollow.example.net', 'online': [WOLF1, WOLF2]})
         self.assertNotIn('id', body, "the world's id comes from the token, not the body")
         bans = json.loads((self.dir / 'bans.json').read_text())

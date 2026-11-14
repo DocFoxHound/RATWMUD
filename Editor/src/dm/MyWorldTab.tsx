@@ -58,6 +58,8 @@ export function MyWorldTab({me, initial}: {me: Me; initial?: MyWorld}) {
                     <tr><th>Players at once</th><td>{world.settings.player_limit ?? 'the default (40)'}</td></tr>
                     <tr><th>Worker threads</th><td>{world.settings.workers ?? 'chosen by the world (its computer\'s CPUs)'}</td></tr>
                     <tr><th>Cheats</th><td>{CHEATS[world.settings.cheats] ?? world.settings.cheats}</td></tr>
+                    <tr><th>Quickened wolves</th><td>{world.settings.quickened_wolves === false
+                        ? 'kept out (listed "No Quickened")' : 'may join'}</td></tr>
                     <tr><th>The Editor</th><td>{world.settings.editor.enabled ? 'on' : 'off'}</td></tr>
                 </tbody></table>
                 <p className="hint">These are world.toml's, in the world folder. Change them there, then Restart (above).</p>

@@ -4,7 +4,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {agoText, allowedCall, baseUrl, Central, CentralError, envLine, readHostWorld, readListedWorld, shellWord, worldTomlLines,
     ShellCentral, type CentralReply, type CentralTransport} from './central.ts';
-import {HOST_SEES, parseAddress, shownAddress, statusLine} from './worlds.ts';
+import {HOST_SEES, parseAddress, readStatus, serverColumns, shownAddress, statusLine} from './worlds.ts';
 import type {Json} from '../game/json.ts';
 
 const World = 'world-0123456789abcdef0123456789abcdef';
@@ -26,6 +26,8 @@ test('the Host page\'s calls are allowed, and the world\'s own calls are not', (
     assert.ok(!allowedCall('POST', '/account/refresh'), 'refreshing is the shell\'s');
     // What was allowed before still is.
     assert.ok(allowedCall('GET', '/worlds'));
+    assert.ok(allowedCall('POST', '/account/quickened/announced'), 'the Quickened fanfare shown (doc 49, 9.1)');
+    assert.ok(!allowedCall('GET', '/account/quickened/announced'));
     assert.ok(allowedCall('DELETE', '/wolves/wolf-0123456789abcdef0123456789abcdef'));
     assert.ok(!allowedCall('GET', '/wolves/wolf-0123456789abcdef0123456789abcdef'));
 });
@@ -40,6 +42,8 @@ test('central\'s list carries the count and the listing until a world\'s own sta
     assert.deepEqual(w.tags, ['roleplay', 'x'.repeat(16)]);
     assert.equal(w.region, 'EU');
     assert.equal(w.voices, true);
+    assert.equal(w.quickenedWolves, true, 'nothing said: Quickened wolves may join (doc 49, 9.1)');
+    assert.equal(readListedWorld({id: World, address: 'a:1', quickenedWolves: false})?.quickenedWolves, false);
     assert.equal(readListedWorld({id: 'world-nope', address: '1.2.3.4:7788'}), null);
     assert.equal(readListedWorld({id: World}), null, 'no address, not joinable');
     assert.equal(readListedWorld({id: World, address: 'a:1', kind: 'official?'})?.kind, 'community', 'only central says official');
@@ -49,13 +53,27 @@ test('central\'s list carries the count and the listing until a world\'s own sta
     // "AI used" and "cheats on" from central's listing until the world answers, and from either afterwards (doc 78, 9).
     assert.equal(statusLine(undefined, {...w, voices: false, cheats: true}), '3 of 40 wolves · asking… · cheats on');
     assert.match(statusLine({id: World, name: '', kind: 'community', protocol: 1, clientData: '', players: 5, limit: 40, voices: true,
-        cheats: false, private: false, ms: 12}, w), /^5 of 40 wolves · 12 ms · AI used$/);
+        cheats: false, private: false, quickenedWolves: true, ms: 12}, w), /^5 of 40 wolves · 12 ms · AI used$/);
     assert.match(statusLine({id: World, name: '', kind: 'community', protocol: 1, clientData: '', players: 5, limit: 40, voices: false,
-        cheats: false, private: false, ms: 12}, {...w, voices: false, cheats: true}), /^5 of 40 wolves · 12 ms · cheats on$/);
+        cheats: false, private: false, quickenedWolves: true, ms: 12}, {...w, voices: false, cheats: true}), /^5 of 40 wolves · 12 ms · cheats on$/);
     assert.match(HOST_SEES, /read everything you say and do there, and sees your internet address/);
     assert.equal(statusLine(null, w), 'Not answering');
     assert.match(statusLine({id: World, name: '', kind: 'community', protocol: 1, clientData: '', players: 5, limit: 40, voices: false,
-        cheats: false, private: false, ms: 12}, {...w, voices: false}), /^5 of 40 wolves · 12 ms$/);
+        cheats: false, private: false, quickenedWolves: true, ms: 12}, {...w, voices: false}), /^5 of 40 wolves · 12 ms$/);
+});
+
+test('a world says whether Quickened wolves may join, allowed when it says nothing (doc 49, 9.1)', () => {
+    const status = {ratw: 'world', id: World, protocol: 1, players: 1, limit: 40};
+    assert.equal(readStatus(status, 5)?.quickenedWolves, true, 'an older world: allowed');
+    assert.equal(readStatus({...status, quickenedWolves: false}, 5)?.quickenedWolves, false);
+    assert.equal(readStatus({...status, quickenedWolves: 'no'}, 5)?.quickenedWolves, true, 'only false keeps them out');
+    // The server browser's tag: "No Quickened", from central's listing until the world answers, and from either after.
+    const listed = {players: 1, limit: 40, voices: false, cheats: false, quickenedWolves: false};
+    assert.deepEqual(serverColumns(undefined, listed).marks, ['No Quickened']);
+    assert.equal(serverColumns(undefined, listed).quickenedWolves, false);
+    assert.deepEqual(serverColumns(readStatus(status, 5), {...listed, quickenedWolves: true}).marks, [], 'allowed: no tag');
+    assert.deepEqual(serverColumns(readStatus({...status, quickenedWolves: false, cheats: true}, 5), {...listed, quickenedWolves: true}).marks,
+        ['cheats on', 'No Quickened'], 'the world\'s own word too');
 });
 
 test('a host\'s worlds read as the Host page shows them', () => {

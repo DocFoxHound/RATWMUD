@@ -120,6 +120,10 @@ export class Hud {
     private menu: HTMLElement;
     private menuKey = '';
     private toast: HTMLElement;
+    private fanfare: HTMLElement;       // A fanfare (doc 49, 9.1: Quickened opened): centred, until it is closed.
+    private fanfareKicker: HTMLElement;
+    private fanfareTitle: HTMLElement;
+    private fanfareText: HTMLElement;
     private minimap: HTMLCanvasElement;
     private mapRenderer = new MapRenderer(pageSurface);
     private tooltip: HTMLElement;
@@ -279,6 +283,14 @@ export class Hud {
 
         this.menu = el('div', 'menu radial', this.root);
         this.toast = el('div', 'toast', this.root);
+        this.fanfare = el('div', 'hud-fanfare', this.root);
+        const card = el('div', 'hud-fanfare-card', this.fanfare);
+        el('div', 'hud-fanfare-sigil', card);
+        this.fanfareKicker = el('div', 'hud-fanfare-kicker', card);
+        this.fanfareTitle = el('div', 'hud-fanfare-title', card);
+        this.fanfareText = el('p', 'hud-fanfare-text', card);
+        button('Onward', 'hud-fanfare-close', card, () => { state.fanfare = null; });
+        show(this.fanfare, false);
         this.tooltip = el('div', 'tooltip', this.root);
         this.tipWhat = el('div', 'what', this.tooltip);
         this.tipWhy = el('div', 'why', this.tooltip);
@@ -330,6 +342,12 @@ export class Hud {
         this.drawMinimap();
         show(this.toast, s.clock < s.toastUntil);
         setText(this.toast, s.toast);
+        show(this.fanfare, !!s.fanfare);
+        if (s.fanfare) {
+            setText(this.fanfareKicker, s.fanfare.kicker);
+            setText(this.fanfareTitle, s.fanfare.title);
+            setText(this.fanfareText, s.fanfare.text);
+        }
         this.dialogs.update();
     }
 

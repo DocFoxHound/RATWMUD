@@ -9,7 +9,7 @@
 import {Central, CentralError, type HostWorld, type ListedWorld} from './net/central.ts';
 import {Connection} from './net/connection.ts';
 import {ClientBuild} from './net/build.ts';
-import {addressText, compatibility, fetchStatus, isLoopback, parseAddress, shownAddress, socketUrl, statusLine, type WorldAddress,
+import {addressText, compatibility, fetchStatus, isLoopback, parseAddress, serverColumns, shownAddress, socketUrl, statusLine, type WorldAddress,
     type WorldStatus} from './net/worlds.ts';
 import type {SessionView} from './net/session.ts';
 import {FrontDoor, type DoorWorld} from './ui/frontDoor.ts';
@@ -58,6 +58,7 @@ export class ClientApp {
     private footnote: string;
     private relay: string | null = null;             // The shell's loopback relay (only with --relay, doc 77 D1).
     private editor: EditorBridge | null;             // The shell's Editor (doc 78): the desktop client, not on a Mac.
+    private fanfareShown = false;                    // The Quickened fanfare shown this launch (central marks it too).
 
     constructor(app: HTMLElement, central: Central, shell: Shell) {
         this.app = app;
@@ -107,8 +108,9 @@ export class ClientApp {
         }
         door.receive({type: 'lobby', stage: 'characters', ok: stage === 'characters' ? ok : true, message: stage === 'characters' ? text : '',
             characters: this.wolves.map(w => ({id: str(w, 'id'), name: str(w, 'name'), age: num(w, 'age', 18), appearance: w.appearance,
-                family: str(w, 'family'), choices: isObject(w.choices) ? w.choices : {}})),
-            host: this.account?.host === true, quickened: this.account?.quickened === true, who: str(this.account, 'username'), home,
+                family: str(w, 'family'), quickened: w.quickened === true, choices: isObject(w.choices) ? w.choices : {}})),
+            host: this.account?.host === true, quickened: this.account?.quickened === true, quickenedFanfare: this.takeFanfare(),
+            who: str(this.account, 'username'), home,
             ...(this.gifts ? {gifts: this.gifts} : {}), ...this.rules});
         if (this.wolf && this.wolves.some(w => str(w, 'id') === this.wolf)) door.selectedId = this.wolf;
         if (stage === 'worlds') {
@@ -215,6 +217,7 @@ export class ClientApp {
             } else if (type === 'wolf_create') {
                 const wolf: Json = {name: c.name, age: c.age, appearance: c.appearance};
                 if (str(c, 'family')) wolf.family = str(c, 'family');
+                if (c.quickened === true) wolf.quickened = true;     // (Doc 49, 9.1: central refuses it for a locked account.)
                 if (isObject(c.choices)) wolf.choices = c.choices;
                 const made = await this.central.createWolf(wolf);
                 this.wolves = await this.central.wolves();
@@ -237,6 +240,8 @@ export class ClientApp {
                 if (this.wolf === id) this.wolf = str(this.wolves[0], 'id');
                 if (this.door) this.door.selectedId = this.wolf;
                 this.lobby('characters', true, `${name} is deleted.`);
+            } else if (type === 'quickened_announced') {
+                await this.announced();
             } else if (type === 'worlds_show') {
                 this.wolf = str(c, 'wolf', this.wolf);
                 this.listed = await this.central.worlds();
@@ -300,6 +305,7 @@ export class ClientApp {
     private signedOut(text: string, ok = true) {
         this.closeConnection();
         this.account = null;
+        this.fanfareShown = false;
         this.wolves = [];
         this.wolf = '';
         this.listed = [];
@@ -353,7 +359,12 @@ export class ClientApp {
             enter: () => this.entered(connection),
             snapshot: snapshot => this.play?.game.applySnapshot(snapshot),
             motion: frame => this.play?.game.applyMotion(frame),
-            event: event => this.play?.game.receiveEvent(event),
+            event: event => {
+                // Quickened opened in this world (an official world's, for the whole account): the game shows the
+                // banner, and central marks the fanfare shown, so the front door doesn't show it again (doc 49, 9.1).
+                if (str(event, 'type') === 'fanfare' && str(event, 'kind') === 'quickened' && event.everywhere === true) void this.announced();
+                this.play?.game.receiveEvent(event);
+            },
             artwork: event => {
                 if (event.type === 'artwork') artCache.receive(event);
                 this.play?.game.artworkEvent(event);
@@ -438,8 +449,29 @@ export class ClientApp {
             if (!account) return;
             this.account = account;
             if (this.door) this.door.accountQuickened = account.quickened === true;
+            if (this.door && this.takeFanfare()) this.door.showFanfare();
         } catch {
             // (The next sign-in shows it.)
+        }
+    }
+
+    /** The account's Quickened fanfare, if it is due (doc 49, 9.1: it has Quickened, and no device has shown it yet):
+     *  true once, for the door to show. */
+    private takeFanfare(): boolean {
+        const due = this.account?.quickened === true && this.account?.quickened_announced !== true && !this.fanfareShown;
+        if (due) this.fanfareShown = true;
+        return due;
+    }
+
+    /** The fanfare was shown: central keeps the mark, once for the account. Quietly tried again at the next sign-in. */
+    private async announced() {
+        this.fanfareShown = true;
+        if (this.account) this.account = {...this.account, quickened_announced: true};
+        try {
+            const account = await this.central.announcedQuickened();
+            if (account) this.account = account;
+        } catch {
+            // (Not marked: shown once more at a later sign-in.)
         }
     }
 
@@ -449,14 +481,6 @@ export class ClientApp {
         this.toDoor();
         connection?.close();
     }
-}
-
-/** The server browser's columns for a world: wolves in it and its limit, the round trip, and whether it answered (its
- *  own /status, else central's count). */
-function serverColumns(s: WorldStatus | null | undefined, listed: ListedWorld | null) {
-    const marks = [...((s?.voices || listed?.voices) ? ['AI used'] : []), ...((s?.cheats || listed?.cheats) ? ['cheats on'] : [])];
-    if (s) return {players: s.players, limit: s.limit || null, ping: s.ms, answer: 'yes', marks};
-    return {players: listed ? listed.players : null, limit: listed?.limit || null, ping: null, answer: s === null ? 'no' : 'asking', marks};
 }
 
 function message(error: unknown): string {

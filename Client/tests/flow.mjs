@@ -111,11 +111,12 @@ export async function clientFlow(page, h, {native = false} = {}) {
     assert.equal(await door('d.draftName'), 'Emberline');
     await clickText('REVIEW CHARACTER');
     assert.equal(await door('d.page'), 'review');
-    assert.match(await page.evaluate(`document.querySelector('.door-fields').textContent`), /Fire family/);
+    assert.match(await page.evaluate(`document.querySelector('.door-fields').textContent`), /Gifted · Fire/);
     await clickText('CONFIRM & CREATE');
     await waitDoor(`d.page === 'roster' && d.characters.length === 1 && !d.busy`);
     assert.equal(await door('d.characters[0].name'), 'Emberline');
-    assert.match(await page.evaluate(`document.querySelector('.slot.selected').textContent`), /Fire family/);
+    assert.match(await page.evaluate(`document.querySelector('.slot.selected').textContent`), /Gifted · Fire/);
+    assert.equal(await door('d.characters[0].quickened'), false, 'a Gifted wolf, as it was made');
     assert.deepEqual(await door('d.characters[0].choices'), {grades: {smell: 'strong', hearing: 'strong', dexterity: 'strong', wisdom: 'weak'}, tie},
         'the strengths and the tie are kept with the wolf on central');
     // ...and changed later, from the selected wolf.
@@ -145,8 +146,8 @@ export async function clientFlow(page, h, {native = false} = {}) {
     await click('button[data-action=play]');
     await waitDoor(`d.page === 'arrive'`, 30);
     assert.deepEqual(await page.evaluate(`[...document.querySelectorAll('.creator-tabs .tab')].map(b => b.dataset.tab)`),
-        ['gift', 'arrival'], 'the world asks the tier and the town only');
-    assert.deepEqual(await door('d.tierChoices'), ['gifted', 'quickened'], 'a wolf with a family arrives Gifted or Quickened');
+        ['arrival'], 'the world asks the town only: the tier is the wolf\'s own (doc 49, 9.1)');
+    assert.deepEqual(await door('d.tierChoices'), ['gifted'], 'a Gifted wolf arrives Gifted: Quickened is never offered on arrival');
     assert.equal(await door('d.draftTier'), 'gifted');
     assert.equal(await door('d.arriveWolf.name'), 'Emberline');
     assert.equal(await door('d.draftGrades.strength'), 'weak', 'the wolf\'s own strengths go with it');
@@ -188,6 +189,60 @@ export async function clientFlow(page, h, {native = false} = {}) {
     await click('button[data-action=server-join]');
     await waitDoor(`!d.busy && d.page === 'servers'`, 30);
     assert.match(await message(), /Could not reach Client Test Hollow/, 'a new ticket, but nobody answers');
+
+    // Quickened for the account (doc 49, 9.1): once an official world records it on central, the next sign-in shows the
+    // fanfare, once for the account; MAKE A QUICKENED WOLF opens the creator with the Quickened card open.
+    h.unlockQuickened('clientwolf');
+    await click('button[data-action=menu]');
+    await waitDoor(`d.page === 'menu'`);
+    assert.equal(await page.evaluate(`document.querySelector('.fanfare')`), null, 'not before central says so');
+    await click('button[data-action=sign-out]');
+    await waitDoor(`d.page === 'login' && !d.busy`);
+    await fill('input[name=username]', 'clientwolf');
+    await fill('input[name=password]', PASSWORD);
+    await page.evaluate(`document.querySelector('form.door-login').requestSubmit()`);
+    await waitDoor(`d.page === 'menu' && !d.busy`);
+    await page.waitFor(`document.querySelector('.fanfare .fanfare-title')`);
+    assert.match(await page.evaluate(`document.querySelector('.fanfare').textContent`), /QUICKENED IS OPEN.*whole account, in every world/);
+    assert.doesNotMatch(await page.evaluate(`document.querySelector('.fanfare').textContent`), /\bdogs?\b/i);
+    await click('button[data-action=fanfare-make]');
+    await waitDoor(`d.page === 'creator'`);
+    assert.equal(await page.evaluate(`document.querySelector('.fanfare')`), null, 'closed');
+    assert.deepEqual(await page.evaluate(`[...document.querySelectorAll('.gift-card')].map(b => [b.dataset.tier, b.disabled])`),
+        [['normal', false], ['gifted', false], ['quickened', false]], 'the Quickened card is open now');
+    assert.equal(await door('d.draftTier'), 'quickened');
+    await click('.gift-family[data-family=fire]');
+    await click('.creator-tabs [data-tab=name]');
+    await fill('input[name=wolfName]', 'Cinderquick');
+    await clickText('REVIEW CHARACTER');
+    assert.match(await page.evaluate(`document.querySelector('.door-fields').textContent`), /Quickened · Fire/);
+    await clickText('CONFIRM & CREATE');
+    await waitDoor(`d.page === 'roster' && d.characters.length === 2 && !d.busy`);
+    assert.equal(await door(`d.characters.find(c => c.name === 'Cinderquick').quickened`), true, 'saved Quickened on central');
+    // A world whose host keeps Quickened wolves out: the wolf is greyed for it, and says why.
+    await door(`(d.pickWorld = {id: 'world-${'1'.repeat(32)}', name: 'Closed Hollow', kind: 'community', address: '127.0.0.1:1', host: '',
+        secure: false, description: '', region: '', tags: [], fit: 'ok', note: '', status: '', marks: ['No Quickened'], quickenedWolves: false},
+        d.show('pick'), 1)`);
+    assert.deepEqual(await page.evaluate(`[...document.querySelectorAll('.pick-card')].map(b => [b.querySelector('strong').textContent, b.disabled])`),
+        [['Emberline', false], ['Cinderquick', true]]);
+    assert.match(await page.evaluate(`document.querySelector('.pick-card.barred').textContent`), /Closed Hollow keeps Quickened wolves out/);
+    await door(`(d.pickWorld = null, d.show('roster'), 1)`);
+    // Shown once for the account: the next sign-in (any device) doesn't show it again.
+    await click('button[data-action=menu]');
+    await click('button[data-action=sign-out]');
+    await waitDoor(`d.page === 'login' && !d.busy`);
+    await fill('input[name=username]', 'clientwolf');
+    await fill('input[name=password]', PASSWORD);
+    await page.evaluate(`document.querySelector('form.door-login').requestSubmit()`);
+    await waitDoor(`d.page === 'menu' && !d.busy`);
+    assert.equal(await page.evaluate(`document.querySelector('.fanfare')`), null, 'announced once, for the account');
+    await click('button[data-action=characters]');
+    await waitDoor(`d.page === 'roster'`);
+    await page.evaluate(`[...document.querySelectorAll('.slot')].find(s => s.textContent.includes('Cinderquick')).click()`);
+    await click('button[data-action=delete-wolf]');
+    await answerDialog(PASSWORD);
+    await waitDoor('!d.busy && d.characters.length === 1');
+    await page.evaluate(`[...document.querySelectorAll('.slot')].find(s => s.textContent.includes('Emberline')).click()`);
 
     // Delete the wolf (the password asked again, in the page's own dialog), then sign out and back in.
     await click('button[data-action=menu]');

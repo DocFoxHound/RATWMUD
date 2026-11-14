@@ -994,27 +994,59 @@ void Game::checkUnlocks(const std::string& account)
     measures_[account] = m;
     const auto& t = standing::thresholds();
     std::vector<std::string> told;
+    bool quickened = false, changed = false;
     if (!r.hold && r.giftedAt < 0 && standing::meetsGifted(m, t))
     {
         r.giftedAt = now();
         r.giftedBy = "earned";
+        changed = true;
         told.push_back("Wolves have noticed your roleplay. You may now create Gifted wolves.");
     }
     if (!r.hold && r.giftedAt >= 0 && r.quickenedAt < 0 && standing::meetsQuickened(m, t))
     {
         r.quickenedAt = now();
         r.quickenedBy = "earned";
-        told.push_back("Your roleplay is spoken of far and wide. You may now create Quickened wolves.");
+        quickened = true;
     }
     if (!told.empty())
-    {
         for (const auto& id : accounts_.characters(account))
             if (auto* c = clientOf(id))
                 for (const auto& line : told)
                     system(c, line);
+    if (quickened)
+        announceQuickened(account);
+    if (quickened || changed)
         saveSoon();
-    }
     tiersViews_[account] = tiersView(account);
+}
+
+void Game::announceQuickened(const std::string& account)
+{
+    // The fanfare (doc 49, 9.1; the user, 2026-11-14: "Once it's unlocked the user should be notified in a bit of a
+    // fanfare announcement about it"): a line in the story, and a banner the client shows in the middle of the screen,
+    // to each of the account's wolves here now. On an official world it is the whole account's (the heartbeat takes it
+    // to central); on a password world, this world's. A community world's standing opens nothing on central (and its
+    // arrivals take the tier from the ticket), so it announces nothing.
+    if (communityWorld())
+        return;
+    const bool everywhere = ticketMode();
+    const std::string text = everywhere
+        ? "Wolves across the realm speak of you. Quickened is open to your whole account, in every world: shape a Quickened "
+          "wolf in the Character Editor."
+        : "Wolves here speak of you. Quickened is open to your account in this world: you may now create Quickened wolves.";
+    auto e = Value::object();
+    e.add("type", "fanfare");
+    e.add("kind", "quickened");
+    e.add("kicker", "QUICKENED IS OPEN");
+    e.add("title", "Your name runs ahead of you.");
+    e.add("text", text);
+    e.add("everywhere", everywhere);
+    for (const auto& id : accounts_.characters(account))
+        if (auto* c = clientOf(id))
+        {
+            system(c, "Your roleplay is spoken of far and wide. " + text);
+            send(c, e);
+        }
 }
 
 Result Game::unlockTier(const std::string& account, const std::string& tier, const std::string& op, const std::string& by)
@@ -1032,6 +1064,7 @@ Result Game::unlockTier(const std::string& account, const std::string& tier, con
     r.account = account;
     double& at = tier == "quickened" ? r.quickenedAt : r.giftedAt;
     std::string& how = tier == "quickened" ? r.quickenedBy : r.giftedBy;
+    const bool opens = op == "grant" && tier == "quickened" && r.quickenedAt < 0 && !r.hold;
     if (op == "grant")
     {
         at = now();
@@ -1044,6 +1077,8 @@ Result Game::unlockTier(const std::string& account, const std::string& tier, con
     }
     else
         r.hold = op == "hold";
+    if (opens)
+        announceQuickened(account);                 // (A Dungeon Master's grant is a fanfare too: doc 49, 9.1.)
     checkUnlocks(account);
     saveSoon();
     return {true, "Account " + account + ": " + op + (tier.empty() || op == "hold" || op == "release" ? std::string() : " " + tier) + ".", {}};

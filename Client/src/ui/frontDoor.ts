@@ -99,7 +99,8 @@ export interface DoorWorld {
     limit?: number | null;
     ping?: number | null;
     answer?: string;         // 'asking' | 'yes' | 'no'
-    marks?: string[];        // "AI used", "cheats on"
+    marks?: string[];        // "AI used", "cheats on", "No Quickened"
+    quickenedWolves?: boolean;   // Quickened wolves may join (doc 49, 9.1): false when its host keeps them out.
 }
 
 /** One of a host's own worlds, on the Host page (client.ts makes these from GET /host/worlds). */
@@ -184,6 +185,7 @@ export class FrontDoor {
     tiers: Json | null = null;               // Which Gift tiers the account has earned, and what the rest need (doc 49).
     unlocks: Json | null = null;             // Central mode: what a world's standing asks before each tier opens (doc 49).
     accountQuickened = false;                // Central mode: the account has Quickened, for every world (doc 49, 9.1).
+    private fanfare: HTMLElement | null = null;  // The Quickened fanfare, over whatever page, until it is closed.
     nameMost = NameMost;                     // A new wolf's name, at most (central's rules say; 24).
     account: Json | null = null;             // The account as a person (doc 50): its handle, asked for when it has none.
     starts: Json[] = [];                     // Where a new wolf may arrive (doc 52): each town, the busiest preselected.
@@ -302,6 +304,11 @@ export class FrontDoor {
     private onKey = (e: KeyboardEvent) => {
         if (e.code !== 'Escape' || this.busy) return;
         if (document.querySelector('.ratw-dialog')) return;
+        if (this.fanfare) {
+            e.preventDefault();
+            this.fanfare.querySelector<HTMLButtonElement>('[data-action=fanfare-close]')?.click();
+            return;
+        }
         if (this.page === 'editor') {
             e.preventDefault();
             this.editorDoor?.leave();
@@ -358,7 +365,8 @@ export class FrontDoor {
                     address: str(w, 'address'), host: str(w, 'host'), secure: bool(w, 'secure'), description: str(w, 'description'), region: str(w, 'region'),
                     tags: arr(w, 'tags').filter((t): t is string => typeof t === 'string'), fit: str(w, 'fit', 'unknown'),
                     note: str(w, 'note'), status: str(w, 'status'), players: count(w.players), limit: count(w.limit), ping: count(w.ping),
-                    answer: str(w, 'answer', 'asking'), marks: arr(w, 'marks').filter((t): t is string => typeof t === 'string')};
+                    answer: str(w, 'answer', 'asking'), marks: arr(w, 'marks').filter((t): t is string => typeof t === 'string'),
+                    quickenedWolves: w.quickenedWolves !== false};
             });
             if (str(event, 'wolf')) this.worldsWolf = str(event, 'wolf');
             this.lostWorld = str(event, 'lost');
@@ -449,6 +457,7 @@ export class FrontDoor {
             else if (keepPage) this.show(this.page);
             else if (this.mode === 'central' && this.page === 'menu' && ok) this.show('menu');
             else this.show('roster');
+            if (this.mode === 'central' && event.quickenedFanfare === true) this.showFanfare();
         } else {
             const wasIn = this.stage === 'characters';
             this.stage = 'login';
@@ -460,6 +469,8 @@ export class FrontDoor {
             this.hostToken = this.hostTokenWorld = '';
             this.pickWorld = null;
             this.pickAddress = '';
+            this.fanfare?.remove();
+            this.fanfare = null;
             if (wasIn || (this.page !== 'login' && this.page !== 'register')) {
                 this.draftAppearance = null;
                 this.draftName = '';
@@ -710,6 +721,43 @@ export class FrontDoor {
                 el('div', {className: 'menu-actions'}, ...actions)));
     }
 
+    /** The Quickened fanfare (doc 49, 9.1; the user, 2026-11-14: "notified in a bit of a fanfare announcement"): once
+     *  for the account, when central first says it has Quickened and no device has shown it. Over whatever page, until
+     *  it is closed; closing it tells central (client.ts), so no other device shows it again. */
+    showFanfare() {
+        if (this.mode !== 'central' || this.fanfare) return;
+        const close = (then: () => void) => {
+            this.fanfare?.remove();
+            this.fanfare = null;
+            this.send({type: 'quickened_announced'});
+            then();
+        };
+        const make = this.button('MAKE A QUICKENED WOLF', () => close(() => {
+            this.accountQuickened = true;
+            if (this.characters.length >= 6) return this.show('roster');
+            this.startCreation();
+            this.draftTier = 'quickened';
+            this.creatorTab = 'gift';
+            this.show('creator');
+        }), true);
+        make.dataset.action = 'fanfare-make';
+        const later = this.button('Later', () => close(() => this.show(this.page)));
+        later.dataset.action = 'fanfare-close';
+        const card = el('section', {className: 'fanfare-card'},
+            el('div', {className: 'fanfare-sigil'}),
+            el('p', {className: 'fanfare-kicker'}, 'QUICKENED IS OPEN'),
+            el('h2', {className: 'fanfare-title'}, 'Your name runs ahead of you.'),
+            el('p', {className: 'fanfare-text'}, 'Wolves across the realm speak of you. Quickened is open to your whole account, in every world: ' +
+                'shape a Quickened wolf in the Character Editor.'),
+            el('p', {className: 'fanfare-note muted small'}, 'Rare and feared, and watched by the Wardens. A world\'s host may keep Quickened wolves out.'),
+            el('div', {className: 'door-actions fanfare-actions'}, later, make));
+        this.fanfare = el('div', {className: 'fanfare'}, card);
+        this.fanfare.setAttribute('role', 'dialog');
+        this.fanfare.setAttribute('aria-label', 'Quickened is open');
+        this.root.append(this.fanfare);
+        make.focus({preventScroll: true});
+    }
+
     private openServers() {
         this.setMessage('Asking central for the servers…');
         this.submit({type: 'worlds_show'});
@@ -824,13 +872,12 @@ export class FrontDoor {
         return `Strong: ${listed('strong') || 'none'} · Weak: ${listed('weak') || 'none'}`;
     }
 
-    /** "Gifted · Water" (a world's character), or "Water family" (a wolf on central, whose tier each world gives). */
+    /** "Gifted · Water" (a world's character, or a wolf on central, whose tier is its own: doc 49, 9.1), or "Normal". */
     private caption(c: Json | null, before: string): string {
         if (this.mode === 'world') return giftCaption(c, this.gifts, before);
         const family = str(c, 'family');
         if (!family) return `${before}Normal`;
-        const f = arr(this.gifts, 'families').filter(isObject).find(x => str(x, 'id') === family);
-        return `${before}${str(f, 'name', title(family))} family`;
+        return giftCaption({gift: family, quickened: c?.quickened === true}, this.gifts, before);
     }
 
     /** Central mode: one wolf deleted, the account kept; the password asked again (central does too). */
@@ -1083,6 +1130,9 @@ export class FrontDoor {
         const w = this.pickWorld;
         const where = w ? w.name : this.pickAddress;
         const grid = el('div', {className: 'pick-grid'});
+        // A world whose host keeps Quickened wolves out (doc 49, 9.1): its Quickened wolves are greyed, and say why.
+        const barred = (c: Json | null) => w?.quickenedWolves === false && c?.quickened === true;
+        if (barred(this.selected())) this.selectedId = str(this.characters.find(c => !barred(c)) ?? null, 'id');
         for (const c of this.characters) {
             const id = str(c, 'id');
             const face = el('canvas', {className: 'pick-face', width: 320, height: 380});
@@ -1098,9 +1148,11 @@ export class FrontDoor {
                 paint();
             }
             const age = num(c, 'age', 18);
-            const card = el('button', {type: 'button', className: `pick-card${id === this.selectedId ? ' chosen' : ''}`},
-                face, el('strong', {}, str(c, 'name')), el('span', {}, `${stageName(age)} · age ${age.toFixed(0)}${this.caption(c, ' · ')}`));
+            const card = el('button', {type: 'button', className: `pick-card${id === this.selectedId ? ' chosen' : ''}${barred(c) ? ' barred' : ''}`},
+                face, el('strong', {}, str(c, 'name')), el('span', {}, `${stageName(age)} · age ${age.toFixed(0)}${this.caption(c, ' · ')}`),
+                ...(barred(c) ? [el('small', {className: 'pick-barred'}, `${where} keeps Quickened wolves out`)] : []));
             card.dataset.wolf = id;
+            card.disabled = barred(c);
             card.addEventListener('click', () => {
                 this.selectedId = id;
                 for (const other of grid.querySelectorAll('.pick-card')) other.classList.toggle('chosen', other === card);
@@ -1302,10 +1354,9 @@ export class FrontDoor {
 
     // ------------------------------------------------------------------ A first arrival in a world (central mode)
 
-    /** What a world asks when a wolf first comes (doc 77, 3.1 step 5; Q12 (a)): the tier (a wolf with a Gift family
-     *  arrives Gifted or Quickened, as this world's standing allows; one without is Normal) and the town. The strengths
-     *  and the tie are the wolf's own, from the Character Editor (the user, 2026-11-14). The world opens the purse and
-     *  places the wolf. */
+    /** What a world asks when a wolf first comes (doc 77, 3.1 step 5; Q12 (a)): the town. The tier is the wolf's own, as
+     *  it was made in the Character Editor (doc 49, 9.1: shown, never offered), and so are the strengths and the tie (the
+     *  user, 2026-11-14). The world opens the purse and places the wolf. */
     private arrivePage(): HTMLElement {
         const nameHeading = el('h2', {className: 'name'}, this.draftName);
         const summary = el('p', {className: 'sage large pre'}, this.describe());
@@ -1378,7 +1429,7 @@ export class FrontDoor {
             row.append(b);
         }
         const out: HTMLElement[] = [el('p', {className: 'muted'}, `Your wolf's Gift is the ${str(family, 'name', title(this.draftFamily))} family. ` +
-            'Here they arrive Gifted or Quickened: Quickened opens once your account has earned it, in any official world.'),
+            'Here they arrive as they were made in the Character Editor.'),
             el('span', {className: 'gift-heading'}, 'IN THIS WORLD'), row];
         if (family) out.push(this.giftDetails(family));
         return out;
@@ -1459,7 +1510,7 @@ export class FrontDoor {
 
     private describe(): string {
         return `${stageName(this.draftAge)} · age ${this.draftAge}\n${sizeWords(this.draftAppearance, this.draftAge)}` +
-            (this.mode === 'central' && this.page !== 'arrive' ? this.caption({family: this.draftFamily}, '\n')
+            (this.mode === 'central' && this.page !== 'arrive' ? this.caption({family: this.draftFamily, quickened: this.draftTier === 'quickened'}, '\n')
                 : giftCaption({gift: this.draftFamily, quickened: this.draftTier === 'quickened'}, this.gifts, '\n'));
     }
 
@@ -1487,7 +1538,9 @@ export class FrontDoor {
                 el('p', {className: 'gold name'}, this.draftName),
                 el('p', {className: 'large pre'}, `${title(str(draft, 'sex'))}\nAge ${this.draftAge} · ${stageName(this.draftAge)}\n${sizeWords(draft, this.draftAge)}`),
                 ...coatLines,
-                el('p', {className: family ? 'gold' : 'muted'}, family ? `Gift: the ${str(family, 'name')} family. In each world your wolf arrives Gifted, or Quickened where that world allows.`
+                el('p', {className: family ? 'gold' : 'muted'}, family ? `Gift: ${this.draftTier === 'quickened' ? 'Quickened' : 'Gifted'} · ${str(family, 'name')}. Your wolf is ` +
+                    `${this.draftTier === 'quickened' ? 'Quickened' : 'Gifted'} in every world, for good` +
+                    `${this.draftTier === 'quickened' ? ' (a world\'s host may keep Quickened wolves out).' : '.'}`
                     : 'Gift: none. Your wolf is Normal in every world.'),
                 ...this.buildReview(),
                 ...(this.ties.length ? [el('p', {className: 'muted'}, `Tie: ${this.draftTie ? this.tieLine(this.draftTie) : 'none'}`)] : []),
@@ -1761,7 +1814,8 @@ export class FrontDoor {
         const out: HTMLElement[] = [el('span', {className: 'gift-heading'}, 'CLASSIFICATION'), tierRow];
         if (this.draftTier === 'normal') {
             out.push(el('p', {className: 'muted'}, this.mode === 'central'
-                ? 'Most wolves have no Gift: they are Normal in every world. Choose Gifted to give your wolf one of the eight Gift families.'
+                ? `Most wolves have no Gift: they are Normal in every world. Choose Gifted${this.accountQuickened ? ' or Quickened' : ''} ` +
+                    'to give your wolf one of the eight Gift families. A wolf\'s Gift is chosen here, once, and it is the same in every world.'
                 : 'Most wolves have no Gift. Choose Gifted or Quickened to pick one of the eight Gift families.'));
             return out;
         }
@@ -2000,10 +2054,11 @@ export class FrontDoor {
         return str(this.starts.find(t => str(t, 'id') === id), 'name', title(id));
     }
 
-    /** At a first arrival only Quickened waits on this world's standing: a wolf with a family can't arrive Normal, so
-     *  Gifted is always open to it (doc 77, Phase 2; Core/RatwGameTickets.cpp, arrive). */
+    /** A tier the arriving wolf can't take here. A world that names one tier names the wolf's own, from its ticket (doc
+     *  49, 9.1): never locked. Only an older world offers a choice, Gifted or Quickened, the second by its own standing
+     *  (doc 77, Phase 2). */
     private arriveLocked(tier: string): boolean {
-        if (tier !== 'quickened') return false;
+        if (tier !== 'quickened' || this.tierChoices.length <= 1) return false;
         const t = obj(this.tiers, tier);
         return !!t && t.open === false;
     }
@@ -2055,6 +2110,7 @@ export class FrontDoor {
             const wolf: Json = {type: 'wolf_create', name: this.draftName, age: this.draftAge, appearance: this.draftAppearance,
                 choices: {grades: {...this.draftGrades}, tie: this.draftTie}};
             if (this.draftFamily) wolf.family = this.draftFamily;
+            if (this.draftFamily && this.draftTier === 'quickened') wolf.quickened = true;   // (For good: doc 49, 9.1.)
             this.setMessage('Creating your wolf…');
             this.submit(wolf);
             return;

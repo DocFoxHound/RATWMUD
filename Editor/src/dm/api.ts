@@ -500,7 +500,8 @@ export interface ShareState {
  *  the owner's alone. */
 export interface MyWorld {
     world: string; name: string; package: string; status: ServerStatus; owner: boolean; fingerprint: string; wolves: number | null;
-    settings: {player_limit: number | null; workers: number | null; cheats: 'off' | 'host' | 'everyone'; editor: {enabled: boolean}};
+    settings: {player_limit: number | null; workers: number | null; cheats: 'off' | 'host' | 'everyone'; quickened_wolves?: boolean;
+        editor: {enabled: boolean}};
     ai: AiState; history: {at: number; action: string; target: string; detail: string; who: string}[];
     signIns: {at: number; account: string; detail: string}[]; backups: Backups | null; share?: ShareState | null;
     /** The map (doc 78, 10.3, "shown before the host starts"): the unpublished count and whether this computer can

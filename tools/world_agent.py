@@ -331,7 +331,7 @@ def read_token(token_file: Path | None) -> str:
 
 # What the heartbeat takes from the server's own /status, by type (anything else there is left out).
 STATUS_FIELDS = {'name': str, 'protocol': int, 'build': str, 'clientData': str, 'limit': int, 'voices': bool,
-                 'cheats': bool, 'private': bool}
+                 'cheats': bool, 'private': bool, 'quickenedWolves': bool}   # (quickenedWolves: doc 49, 9.1.)
 
 
 class Agent:

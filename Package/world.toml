@@ -21,6 +21,9 @@ private = false
 # Gift tiers by hand, and reward your own wolves; players get no cheats. "everyone": EVERY PLAYER can give themselves
 # Gifts and goods from nothing, as on a test world. Either of the last two lists the world "cheats on".
 cheats = "off"
+# Quickened wolves (Docs/Design/49, 9.1): true (the default) lets them join; false keeps them out, and central's server
+# list shows the world "No Quickened".
+quickened_wolves = true
 # This world's id on central, shown on the Host page beside its host token ("world-" and 32 letters and digits).
 # Needed when the world is on central (below).
 id = ""

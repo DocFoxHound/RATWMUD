@@ -78,8 +78,10 @@ def drop_database(dbname: str) -> None:
         su.execute(sql.SQL('DROP DATABASE IF EXISTS {} WITH (FORCE)').format(sql.Identifier(dbname)))
 
 
-ACCOUNT = 'id, username, password, created_at, banned, host, admin, quickened_at, quickened_world'
-WOLF = 'id, account_id, name, name_key, sex, age, appearance, family, profile, choices, revision, created_at, updated_at'
+ACCOUNT = ('id, username, password, created_at, banned, host, admin, quickened_at, quickened_world, '
+           'quickened_announced_at')
+WOLF = ('id, account_id, name, name_key, sex, age, appearance, family, profile, choices, revision, created_at, updated_at, '
+        'quickened')
 SESSION = 'id, account_id, access_expires, refresh_expires, remember, created_at, refreshed_at'
 
 
@@ -88,7 +90,8 @@ def _account(row) -> dict | None:
         return None
     keys = ACCOUNT.split(', ')
     out = dict(zip(keys, row))
-    out['created_at'], out['quickened_at'] = epoch(out['created_at']), epoch(out['quickened_at'])
+    for key in ('created_at', 'quickened_at', 'quickened_announced_at'):
+        out[key] = epoch(out[key])
     return out
 
 
@@ -293,11 +296,12 @@ class Store:
                 raise Conflict('name')
             try:
                 conn.execute('INSERT INTO central.wolves (id, account_id, name, name_key, sex, age, appearance, '
-                             'family, profile, choices, revision, created_at, updated_at) '
-                             'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,1,%s,%s)',
+                             'family, profile, choices, revision, created_at, updated_at, quickened) '
+                             'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,1,%s,%s,%s)',
                              (wolf['id'], wolf['account_id'], wolf['name'], wolf['name_key'], wolf['sex'],
                               wolf['age'], world_db.Jsonb(wolf['appearance']), wolf['family'],
-                              world_db.Jsonb(wolf['profile']), world_db.Jsonb(wolf.get('choices') or {}), ts(now), ts(now)))
+                              world_db.Jsonb(wolf['profile']), world_db.Jsonb(wolf.get('choices') or {}), ts(now), ts(now),
+                              wolf.get('quickened') is True))
             except psycopg.errors.UniqueViolation as error:
                 raise Conflict('name') from error
         return None
@@ -471,6 +475,14 @@ class Store:
                 '    SELECT w.account_id FROM central.wolves w WHERE w.id = ANY(%s) AND EXISTS ('
                 '        SELECT 1 FROM central.tickets t WHERE t.wolf_id = w.id AND t.world_id = %s)) '
                 'RETURNING a.id', (ts(now), world_id, list(wolves), world_id)).fetchall()]
+
+    def announce_quickened(self, account_id: str, now: float) -> bool:
+        """The account's Quickened announcement has been shown (doc 49, 9.1: the client's fanfare, once per account):
+        marked now unless it was already. True if this marked it. It may come before central records Quickened itself
+        (the world's banner shows at once; its heartbeat brings the unlock here within a minute or so)."""
+        with self.connection() as conn:
+            return conn.execute('UPDATE central.accounts SET quickened_announced_at = %s '
+                                'WHERE id = %s AND quickened_announced_at IS NULL', (ts(now), account_id)).rowcount == 1
 
     def ticketed_wolves(self, world_id: str, wolves: list[str], since: float) -> set[str]:
         """Which of these wolves count as online at this world (the honest count): its latest ticket from central, to

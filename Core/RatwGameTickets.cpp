@@ -151,6 +151,7 @@ Value Game::worldStatus() const
     o.add("voices", !options_.dialogueEndpoint.empty());
     o.add("private", false);                        // (Private worlds, Q9: a password kept on central, later.)
     o.add("cheats", cheatsOn());                    // (Dev tools, or the host's: listed "cheats on", doc 77, 5; doc 78, 8.)
+    o.add("quickenedWolves", options_.central.quickenedWolves);   // (Doc 49, 9.1: listed "No Quickened" when false.)
     return o;
 }
 
@@ -158,7 +159,7 @@ void Game::forgetTicket(Connection* c)
 {
     c->ticketWolf.clear();
     c->ticketIdentity = Value();
-    c->ticketQuickened = false;
+    c->ticketTier.clear();
     if (ticketMode())
         c->accountUsername.clear();                 // (A ticket's account lasts as long as its wolf is here.)
 }
@@ -195,27 +196,14 @@ void Game::ticketLobby(Connection* c, bool ok, const std::string& message, const
     {
         // The arrival (doc 77, 5.1): what today's creator asked that isn't the wolf's identity, which came in the ticket.
         e.add("wolf", c->ticketIdentity);
-        auto choices = Value::array();              // (No family: Normal only; a family: Gifted or Quickened.)
-        if (c->ticketIdentity.string("family").empty())
-            choices.push("normal");
-        else
-        {
-            choices.push("gifted");
-            choices.push("quickened");
-        }
+        // The tier is the wolf's own, made on central (doc 49, 9.1; the user, 2026-11-14: "This isn't offered to a user
+        // when they join a server"): one choice, the ticket's. (An older client shows the one and sends it.)
+        auto choices = Value::array();
+        choices.push(c->ticketTier);
         e.add("tierChoices", choices);
         e.add("gifts", gifts::creatorCatalog());
         e.add("creation", practice::creationCatalog());
-        auto tiers = tiersView(account);
-        if (quickenedByCentral(c) && !tiers.object("quickened").boolean("open"))
-        {
-            auto q = Value::object();                // (Opened for the whole account, on central: doc 49, 9.1.)
-            q.add("open", true);
-            q.add("by", "account");
-            q.add("progress", Value::array());
-            tiers.set("quickened", q);
-        }
-        e.add("tiers", tiers);
+        e.add("tiers", tiersView(account));
         e.add("account", accountView(account));
         e.add("starts", startsView());
         e.add("firstCharacter", accounts_.characters(account).empty());
@@ -313,6 +301,15 @@ void Game::ticketHello(Connection* c, const Value& j)
         ticketLobby(c, false, WorldBannedMessage, "world_banned");
         return;
     }
+    if (claims.tier == "quickened" && !options_.central.quickenedWolves)
+    {
+        // The host has turned Quickened wolves off (doc 49, 9.1): central refuses their tickets here, and so does the
+        // world, in case central's list was behind (a ticket asked just before the switch was seen).
+        note("info", "RATW_TICKET refused " + claims.wolf + ": a Quickened wolf, and this world takes none");
+        ticketLobby(c, false, "This world doesn't take Quickened wolves (its host has turned them off). Choose another wolf, "
+                              "or another world.", "quickened_off");
+        return;
+    }
     if (hostOnly_ && (hostSub_.empty() || claims.account != hostSub_))
     {
         // Open only to the host (doc 78, 10.3): the host is looking at a new map first. With no host known (host.json
@@ -344,8 +341,9 @@ void Game::ticketHello(Connection* c, const Value& j)
     identity.add("sex", claims.sex);
     identity.add("appearance", claims.look);
     identity.add("family", claims.family);
+    identity.add("tier", claims.tier);
     c->ticketIdentity = identity;
-    c->ticketQuickened = claims.quickened;
+    c->ticketTier = claims.tier;
     note("info", "RATW_TICKET admitted " + claims.wolf + " (" + claims.kind + ")");
     const auto saved = characters_.find(claims.wolf);
     if (owner.empty() || saved == characters_.end())
@@ -382,7 +380,7 @@ void Game::ticketHello(Connection* c, const Value& j)
 bool Game::arrive(Connection* c, const Value& j)
 {
     // character_arrive{commandId, start?, tie?, tier?, build?} (doc 77, 5.1): the rest of today's character_create, once
-    // per world: where the wolf arrives, the tie, the tier (gated by this world's standing) and the strengths; then the
+    // per world: where the wolf arrives, the tie and the strengths (the tier is the ticket's: doc 49, 9.1); then the
     // purse opens with the welcome (Society::addPlayer), the receipt is kept, and the wolf comes in.
     if (!c->entityId.empty())
     {
@@ -420,20 +418,17 @@ bool Game::arrive(Connection* c, const Value& j)
     }
     const auto& identity = c->ticketIdentity;
     const std::string family = identity.string("family");
-    // The tier (the user, 2026-11-07): a wolf with no Gift family is Normal, everywhere; a wolf with one arrives Gifted
-    // or Quickened, never Normal; Quickened only where this account's standing here has opened it, or its account on
-    // central has (the ticket's `quickened`: doc 49, 9.1).
-    const auto* tierValue = j.find("tier");
-    const std::string tier = !tierValue ? (family.empty() ? std::string("normal") : std::string())
-                             : tierValue->isString() ? tierValue->asString() : std::string();
-    if (family.empty() && tier != "normal")
+    // The tier (the user, 2026-11-07 and 2026-11-14; doc 49, 9.1): the wolf's own, as central made it and its ticket
+    // says: Normal without a Gift family; Gifted with one, or Quickened if it was made Quickened in the Character Editor
+    // (which central allows only once the account has Quickened). Nothing is chosen here, and this world's standing
+    // turns no arriving wolf Quickened. An arrival may still name the tier (older clients do); another one is refused.
+    const std::string tier = c->ticketTier.empty() ? (family.empty() ? "normal" : "gifted") : c->ticketTier;
+    if (const auto* tierValue = j.find("tier"); tierValue && !(tierValue->isString() && tierValue->asString() == tier))
     {
-        ticketLobby(c, false, "Your wolf has no Gift family, so they arrive as Normal.", "invalid");
-        return true;
-    }
-    if (!family.empty() && tier != "gifted" && tier != "quickened")
-    {
-        ticketLobby(c, false, "Your wolf has a Gift family: choose Gifted or Quickened.", "invalid");
+        ticketLobby(c, false, tier == "normal" ? "Your wolf has no Gift family, so they arrive as Normal."
+                              : tier == "gifted" ? "Your wolf is Gifted. Quickened is chosen for a new wolf in the Character Editor, "
+                                                   "once your account has opened it."
+                                                 : "Your wolf is Quickened, as they were made.", "invalid");
         return true;
     }
     std::string start, tie;
@@ -660,14 +655,6 @@ bool Game::writeUnlocks(std::string& problem)
         return false;
     unlocksWritten_ = listed;
     return true;
-}
-
-bool Game::quickenedByCentral(const Connection* c) const
-{
-    if (!c || !ticketMode() || !c->ticketQuickened || c->accountUsername.empty())
-        return false;
-    const auto record = standing_.find(c->accountUsername);
-    return record == standing_.end() || !record->second.hold;
 }
 
 bool Game::reloadBans(std::string& problem)

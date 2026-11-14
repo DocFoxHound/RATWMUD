@@ -283,7 +283,8 @@ class JoinByTicket(unittest.TestCase):
         alpha.send({'type': 'hello', 'ticket': ticket, 'protocol': PROTOCOL})
         arrive = alpha.lobby(stage='arrive')
         self.assertEqual(arrive['wolf']['name'], 'Alder Join')
-        self.assertEqual(arrive['tierChoices'], ['gifted', 'quickened'])
+        self.assertEqual(arrive['tierChoices'], ['gifted'], "the wolf's own tier, from its ticket: nothing offered (doc 49, 9.1)")
+        self.assertIs(status['quickenedWolves'], True, 'Quickened wolves allowed unless the host turns them off')
         entered = self.arrive(alpha, arrive, 'alpha-1', 'gifted')
         self.assertEqual(entered.get('id'), alpha_wolf, entered)
 
@@ -338,7 +339,12 @@ class JoinByTicket(unittest.TestCase):
         self.assertEqual({w for e in accounts['entries'] for w in e['characters']}, {alpha_wolf, bravo_wolf})
         for username in USERNAMES:
             self.assertNotIn(username, text, 'no username anywhere in the save')
-        for word in ('"salt"', '"verifier"', PASSWORD):
+        # No password verifier anywhere: not on an account (the economy has salt goods now, so "salt" alone is no
+        # marker), no 32-byte salt as a password's is written, no verifier, never the password.
+        for entry in accounts['entries']:
+            self.assertFalse({'salt', 'verifier', 'iterations'} & set(entry), 'a central account keeps no verifier')
+        self.assertIsNone(re.search(r'"salt"\s*:\s*"[0-9a-f]{64}"', text), "no password's salt")
+        for word in ('"verifier"', PASSWORD):
             self.assertNotIn(word, text)
 
 

@@ -166,3 +166,35 @@
 
 /* The name: its limit shown as it is typed. */
 .door-fields label .name-count { align-self: flex-end; font-size: 13px; margin-top: -4px; }
+
+/* The Quickened fanfare (doc 49, 9.1): once for the account, over whatever page, until it is closed. The title screen's
+   dusk, a gold ring that kindles, the menu's lettering. */
+.fanfare { position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse 60% 55% at 50% 46%, rgba(217, 182, 123, .16) 0%, rgba(11, 17, 18, .84) 55%, rgba(6, 10, 11, .94) 100%);
+    animation: fanfare-in .6s ease-out both; }
+.fanfare-card { position: relative; width: 760px; padding: 54px 64px 40px; text-align: center; transform: scale(var(--door-scale));
+    background: linear-gradient(180deg, rgba(24, 34, 34, .96), rgba(14, 21, 22, .97)); border: 1px solid var(--door-line);
+    border-top: 3px solid var(--gold); border-radius: 6px; box-shadow: 0 0 0 1px rgba(0, 0, 0, .4), 0 40px 120px rgba(0, 0, 0, .7),
+    0 0 90px rgba(217, 182, 123, .18); animation: fanfare-rise .8s cubic-bezier(.2, .8, .2, 1) both; }
+.fanfare-sigil { width: 96px; height: 96px; margin: -102px auto 18px; border-radius: 50%;
+    background: radial-gradient(circle, #f6e7c4 0%, #d9b67b 34%, rgba(217, 182, 123, .25) 58%, transparent 70%);
+    box-shadow: 0 0 40px rgba(246, 231, 196, .55), 0 0 0 2px rgba(217, 182, 123, .65), 0 0 0 9px rgba(217, 182, 123, .12);
+    animation: fanfare-kindle 2.6s ease-in-out infinite; }
+.door .fanfare-kicker { margin: 0 0 12px; color: var(--sage); font-size: 15px; letter-spacing: .34em; }
+.door .fanfare-title { margin: 0 0 20px; font-family: 'RATW Sans', Roboto, sans-serif; font-size: 44px; font-weight: 500; line-height: 1.04;
+    letter-spacing: .02em; background: linear-gradient(180deg, #f6e7c4 0%, #d9b67b 58%, #a9844a 100%); -webkit-background-clip: text;
+    background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 4px 18px rgba(0, 0, 0, .55)); }
+.door .fanfare-text { margin: 0 auto 14px; max-width: 580px; color: var(--paper); font-size: 20px; line-height: 1.45; }
+.door .fanfare-note { margin: 0 auto 28px; max-width: 560px; }
+.door .fanfare-actions { justify-content: center; gap: 14px; }
+.door .fanfare-actions button { margin: 0; padding: 14px 22px; font-size: 16px; letter-spacing: .12em; }
+.door .fanfare-actions button.primary { min-width: 280px; }
+@keyframes fanfare-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fanfare-rise { from { opacity: 0; transform: translateY(26px) scale(calc(var(--door-scale) * .96)); } }
+@keyframes fanfare-kindle { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.25); } }
+@media (prefers-reduced-motion: reduce) { .fanfare, .fanfare-card, .fanfare-sigil { animation: none; } }
+
+/* A wolf a server keeps out (its host's Quickened switch, doc 49, 9.1). */
+.door .pick-card.barred { opacity: .5; cursor: not-allowed; }
+.door .pick-card.barred:hover { background: rgba(41, 55, 47, .55); }
+.door .pick-card .pick-barred { color: #d99a7e; font-size: 13px; text-align: center; }

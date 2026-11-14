@@ -282,6 +282,7 @@ mistake (see the log)".
 | `arrivals_per_hour` | At most this many new wolves may arrive for the first time each hour. | A whole number from 1 to 100000. If left out, the server's own: 600. Each account may also bring at most 3 new wolves an hour. |
 | `private` | A private world, with a password kept on central. | **Not built yet.** Leave it `false`. If set to `true`, the log warns and the world is listed as public. |
 | `cheats` | `"off"`, `"host"` or `"everyone"`. | If left out: `"off"`. Section 17 says what each means. Anything but `"off"` lists your world "cheats on". |
+| `quickened_wolves` | Whether Quickened wolves may join your world. | `true` or `false`. If left out: `true`. With `false` the server list shows your world "No Quickened", central gives no Quickened wolf a ticket to it, and the world turns one away too. Change it, then restart the world. |
 | `id` | Your world's id, from the Host page (section 2). | **Needed.** `"world-"` and 32 letters and digits. |
 
 ### `[central]`: the game's service
@@ -668,7 +669,7 @@ The **My world** tab is about the world itself. At the top: how many wolves are 
 - **Backups**: the newest, one being made now, the last refusal in plain words, the space the backups use and the
   disk's free space; **⤓ Back up now**; each backup with **Pin** (kept 90 days; at most 5 pinned) and **Copy restore
   steps** (section 19).
-- **Settings**: players at once, worker threads, cheats and the Editor, as `world.toml` says. "Change them there, then
+- **Settings**: players at once, worker threads, cheats, Quickened wolves and the Editor, as `world.toml` says. "Change them there, then
   Restart."
 - **AI use**: today's life stories against the day's limit, and the month's tokens against `monthly_tokens`
   (section 18).

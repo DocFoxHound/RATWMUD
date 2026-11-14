@@ -987,7 +987,8 @@ class ServerList(Base):
                                             'address': f'127.0.0.1:{stand_in.port}', 'host': None, 'secure': False,
                                             'protocol': 1,
                                             'description': 'A quiet valley.', 'players': 0, 'limit': 40,
-                                            'region': 'EU', 'tags': ['rp', 'slow'], 'voices': True, 'cheats': False}])
+                                            'region': 'EU', 'tags': ['rp', 'slow'], 'voices': True, 'cheats': False,
+                                        'quickenedWolves': True}])
         self.clock.advance(60)
         self.assertTrue(self.beat(host_token, stand_in.port, name='Greyfen Vale')[1]['listed'])
         self.assertEqual(len(stand_in.seen), 1, 'checked again only after 10 minutes')
@@ -1378,8 +1379,8 @@ class ServerList(Base):
         ash, ember = self.wolf(a, 'Ash Tallow')['id'], self.wolf(a, 'Ember')['id']
         bramble = self.wolf(b, 'Bramble')['id']
         ticket = self.call('ticket', {'world': official, 'wolf': ash}, a)[1]['ticket']
-        self.assertIs(ct.verify(ticket, keys(), official, self.clock(), self.clock() - 10, {})['quickened'], False,
-                      'a ticket says so: not yet')
+        self.assertNotIn('quickened', ct.verify(ticket, keys(), official, self.clock(), self.clock() - 10, {}),
+                         "a ticket carries the wolf's tier, never the account's unlock")
         self.assertEqual(self.call('ticket', {'world': community, 'wolf': bramble}, b)[0], 200)
         # A community world's word is not taken (its host could name anyone), nor an official world's for a wolf
         # that never had a ticket there.
@@ -1405,9 +1406,86 @@ class ServerList(Base):
         self.assertIs(self.call('me', {}, a)[1]['account']['quickened'], True)
         for world, wolf in ((community, ember), (official, ash)):
             ticket = self.call('ticket', {'world': world, 'wolf': wolf}, a)[1]['ticket']
-            self.assertIs(ct.verify(ticket, keys(), world, self.clock(), self.clock() - 10, {})['quickened'], True,
-                          'every ticket after, to any world, for any of its wolves')
+            self.assertEqual(ct.verify(ticket, keys(), world, self.clock(), self.clock() - 10, {})['tier'], 'normal',
+                             "the account's wolves stay as they were made: Quickened is chosen for a new wolf")
         self.assertIs(self.call('login', {'username': 'birch', 'password': PASSWORD})[1]['account']['quickened'], False)
+
+    def unlock(self, account_id):
+        """The account has Quickened (as an official world's heartbeat records it: the test above)."""
+        with STORE.connection() as conn:
+            conn.execute('UPDATE central.accounts SET quickened_at = now(), quickened_world = %s WHERE id = %s',
+                         ('world-' + '0' * 32, account_id))
+
+    def test_a_quickened_wolf_is_made_in_the_character_editor_once_the_account_has_quickened(self):
+        """Doc 49, 9.1 (the user, 2026-11-14): once unlocked, the player makes a Quickened wolf in the Character Editor;
+        it isn't offered on arrival. Central refuses one for a locked account (not only the client), and one without a
+        Gift family; the wolf keeps it for good; its tickets say its tier, which every world takes."""
+        world, _ = self.make()
+        keys = lambda: ct.public_keys(self.keys.jwks(self.clock()))   # noqa: E731
+        reply = self.register('ash')
+        account, a = reply['account']['id'], reply['access_token']
+        status, refusal = self.call('create_wolf', {'name': 'Ember', 'age': 7, 'appearance': LOOK, 'family': 'fire',
+                                                     'quickened': True}, a)
+        self.assertEqual((status, refusal['code']), (403, 'quickened_locked'), 'a locked account: refused by central')
+        self.assertEqual(self.call('create_wolf', {'name': 'Ember', 'age': 7, 'appearance': LOOK, 'family': 'fire',
+                                                   'quickened': 'yes'}, a)[0], 400)
+        self.unlock(account)
+        status, refusal = self.call('create_wolf', {'name': 'Ember', 'age': 7, 'appearance': LOOK, 'quickened': True}, a)
+        self.assertEqual((status, refusal['code']), (400, 'invalid'), 'a Quickened wolf needs a Gift family')
+        ember = self.wolf(a, 'Ember', family='fire', quickened=True)
+        self.assertIs(ember['quickened'], True)
+        birch, plain = self.wolf(a, 'Birch', family='seer'), self.wolf(a, 'Plain')
+        self.assertIs(birch['quickened'], False, 'Gifted unless chosen')
+        self.assertEqual([w['quickened'] for w in self.call('list_wolves', {}, a)[1]['wolves']], [True, False, False])
+        status, refusal = self.call('patch_wolf', {'revision': ember['revision'], 'quickened': False}, a, None, ember['id'])
+        self.assertEqual((status, refusal['code']), (400, 'immutable'), 'kept for good')
+        for wolf, tier in ((ember, 'quickened'), (birch, 'gifted'), (plain, 'normal')):
+            ticket = self.call('ticket', {'world': world, 'wolf': wolf['id']}, a)[1]['ticket']
+            self.assertEqual(ct.verify(ticket, keys(), world, self.clock(), self.clock() - 10, {})['tier'], tier)
+
+    def test_the_quickened_announcement_is_marked_once_for_the_account(self):
+        """Doc 49, 9.1: the fanfare shows once per account, not per device: the client says it has shown it, and the
+        account says so from then on, on every sign-in."""
+        reply = self.register('ash')
+        account, a = reply['account']['id'], reply['access_token']
+        self.assertIs(reply['account']['quickened_announced'], False)
+        self.unlock(account)
+        login = self.call('login', {'username': 'ash', 'password': PASSWORD})[1]
+        self.assertEqual((login['account']['quickened'], login['account']['quickened_announced']), (True, False),
+                         'unlocked and not yet announced: the front door shows the fanfare')
+        status, marked = self.call('quickened_announced', {}, login['access_token'])
+        self.assertEqual((status, marked['account']['quickened_announced']), (200, True))
+        first = STORE.account(account)['quickened_announced_at']
+        self.clock.advance(60)
+        self.assertEqual(self.call('quickened_announced', {}, login['access_token'])[0], 200)
+        self.assertEqual(STORE.account(account)['quickened_announced_at'], first, 'marked once, kept')
+        again = self.call('login', {'username': 'ash', 'password': PASSWORD})[1]
+        self.assertIs(again['account']['quickened_announced'], True, 'another device: not again')
+        self.assertEqual(self.call('quickened_announced', {}, None)[0], 401, 'signed in only')
+
+    def test_a_world_with_quickened_wolves_off_is_listed_so_and_refuses_their_tickets(self):
+        """Doc 49, 9.1: a world's host may turn Quickened wolves off (world.toml's quickened_wolves); the heartbeat says
+        so, the list shows it, and central refuses a Quickened wolf's ticket there with a clear message. An older
+        world's heartbeat says nothing: allowed."""
+        world, token = self.make()
+        stand_in = self.stand_in(world)
+        reply = self.register('ash')
+        account, a = reply['account']['id'], reply['access_token']
+        self.unlock(account)
+        ember, birch = self.wolf(a, 'Ember', family='fire', quickened=True)['id'], self.wolf(a, 'Birch', family='seer')['id']
+        self.assertEqual(self.beat(token, stand_in.port)[0], 200)
+        self.assertIs([w for w in self.call('list_worlds')[1]['worlds'] if w['id'] == world][0]['quickenedWolves'], True,
+                      'none said: allowed')
+        self.assertEqual(self.call('ticket', {'world': world, 'wolf': ember}, a)[0], 200)
+        self.assertEqual(self.beat(token, stand_in.port, quickenedWolves='no')[0], 400, 'true or false')
+        self.assertEqual(self.beat(token, stand_in.port, quickenedWolves=False)[0], 200)
+        self.assertIs([w for w in self.call('list_worlds')[1]['worlds'] if w['id'] == world][0]['quickenedWolves'], False)
+        status, refusal = self.call('ticket', {'world': world, 'wolf': ember}, a)
+        self.assertEqual((status, refusal['code']), (403, 'quickened_off'))
+        self.assertIn('does not take Quickened wolves', refusal['error'])
+        self.assertEqual(self.call('ticket', {'world': world, 'wolf': birch}, a)[0], 200, 'a Gifted wolf goes in')
+        self.assertEqual(self.beat(token, stand_in.port, quickenedWolves=True)[0], 200)
+        self.assertEqual(self.call('ticket', {'world': world, 'wolf': ember}, a)[0], 200, 'turned on again')
 
     def test_the_heartbeat_names_a_community_worlds_host_and_no_host_for_an_official_world(self):
         community, community_token = self.make()

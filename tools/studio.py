@@ -1365,7 +1365,7 @@ NO_SHARE = ('This world\'s package is older than Share my world: update it (keep
             'then docker compose up -d.')
 NO_BACKUPS = ('This world has no backup service yet: take the new compose.yaml from the package (keep .env and world.toml), '
               'then docker compose up -d.')
-SETTINGS_SHOWN = ('player_limit', 'workers')     # And cheats and [editor] enabled: the settings view's allowlist.
+SETTINGS_SHOWN = ('player_limit', 'workers')     # And cheats, quickened_wolves and [editor] enabled: the allowlist.
 # What leaves a log line shown to the owner: addresses and anything that looks like a token or key.
 _SCRUB = ((re.compile(r'\b\d{1,3}(?:\.\d{1,3}){3}(?::\d{1,5})?\b'), '[address]'),
           (re.compile(r'(?<![\w:])(?:[0-9A-Fa-f]{1,4}:){3,7}[0-9A-Fa-f]{1,4}(?![\w:])|(?<![\w:])[0-9A-Fa-f:]*::[0-9A-Fa-f:]*[0-9A-Fa-f](?![\w:])'), '[address]'),
@@ -1482,6 +1482,7 @@ class Hosted:
             out[name] = value if isinstance(value, int) and not isinstance(value, bool) else None
         editor = self.settings().get('editor')
         out['cheats'] = self.cheats()
+        out['quickened_wolves'] = self._setting('quickened_wolves') is not False     # (Doc 49, 9.1: on unless off.)
         out['editor'] = {'enabled': not (isinstance(editor, dict) and editor.get('enabled') is False)}
         return out
 

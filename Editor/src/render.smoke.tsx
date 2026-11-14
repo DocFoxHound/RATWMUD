@@ -67,7 +67,7 @@ const myWorld = (owner: boolean): MyWorld => ({
     world: 'world', name: 'Ashfall', package: '0.4.2', owner, fingerprint: '3F2A 9C10 5B7E 0D41 A6C3 22F9 8E05 77D1', wolves: 7,
     status: {key: 'world', name: 'Ashfall', kind: 'live', world: null, server: {state: 'running', by: '', at: '', note: ''}, serverRunning: true,
         release: 0, live: 'world', warning: '', hosted: true, hostServer: {up: true, reason: 'running', code: null, failures: 0, retryIn: null}},
-    settings: {player_limit: 40, workers: null, cheats: 'off', editor: {enabled: true}},
+    settings: {player_limit: 40, workers: null, cheats: 'off', quickened_wolves: true, editor: {enabled: true}},
     ai: {available: false, reason: 'Needs an AI key in world.toml.', today: {story: 0, roster: 0}, caps: {story: 100, roster: 20}, month: null, costPerStory: null, model: ''},
     history: [{at: now - 60, action: 'server.backup', target: 'world', detail: 'Asked for a backup.', who: 'host-k7q2#3f2a1c'}],
     signIns: [{at: now - 120, account: 'host-k7q2', detail: owner ? 'Signed in from this computer.' : 'Signed in.'}],

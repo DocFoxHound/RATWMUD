@@ -200,6 +200,12 @@ def whole_seconds(value: float | None) -> int | None:
     return None if value is None else int(value)
 
 
+def wolf_tier(wolf: dict) -> str:
+    """A wolf's Gift tier, as its ticket says it (doc 49, 9.1): no family, Normal; a family, Gifted, or Quickened if it
+    was made so in the Character Editor."""
+    return 'normal' if not wolf.get('family') else 'quickened' if wolf.get('quickened') is True else 'gifted'
+
+
 def listing_refused(fields: dict, kind: str) -> str:
     """'' if a world's name and listing text may be shown; else why not. The word filter for every world; and a
     community world can't call itself official or use the game's name (doc 77, 7: the badge is central's), in its
@@ -435,14 +441,18 @@ class Central:
 
     @staticmethod
     def _public_account(account: dict) -> dict:
+        # `quickened`: the account has Quickened, for every world (doc 49, 9.1); `quickened_announced`: the client has
+        # shown its fanfare (once per account, POST /account/quickened/announced).
         return {'id': account['id'], 'username': account['username'], 'host': account['host'],
-                'admin': account['admin'], 'quickened': account.get('quickened_at') is not None}
+                'admin': account['admin'], 'quickened': account.get('quickened_at') is not None,
+                'quickened_announced': account.get('quickened_announced_at') is not None}
 
     @staticmethod
     def _public_wolf(wolf: dict) -> dict:
         return {'id': wolf['id'], 'name': wolf['name'], 'sex': wolf['sex'], 'age': wolf['age'],
                 'appearance': wolf['appearance'], 'family': wolf['family'], 'profile': wolf['profile'],
-                'choices': wolf.get('choices') or {}, 'revision': wolf['revision'], 'created': wolf['created_at'], 'updated': wolf['updated_at']}
+                'choices': wolf.get('choices') or {}, 'quickened': wolf.get('quickened') is True,
+                'revision': wolf['revision'], 'created': wolf['created_at'], 'updated': wolf['updated_at']}
 
     def call(self, method, *args) -> tuple[int, dict]:
         """Runs a call, turning a Reply into its answer."""
@@ -561,6 +571,14 @@ class Central:
         _, account = self._account(token)
         return ok(account=self._public_account(account))
 
+    def quickened_announced(self, address: str, token, body: dict) -> tuple[int, dict]:
+        """POST /account/quickened/announced {}: the client has shown this account's Quickened fanfare (doc 49, 9.1),
+        on the front door or in a world as it opened, so no device shows it again. The account afterwards."""
+        _, account = self._account(token)
+        self._limit(('changes', account['id']), self.settings.limits.changes_per_account, 'changes')
+        self.store.announce_quickened(account['id'], self.clock())
+        return ok(account=self._public_account(self.store.account(account['id'])))
+
     # ---------------------------------------------------------------- Wolves
 
     def list_wolves(self, address: str, token, body: dict) -> tuple[int, dict]:
@@ -568,14 +586,24 @@ class Central:
         return ok(wolves=[self._public_wolf(w) for w in self.store.wolves(account['id'])], slots=WOLF_SLOTS)
 
     def create_wolf(self, address: str, token, body: dict) -> tuple[int, dict]:
-        """{"name", "age", "appearance", "family"?, "profile"?: fields, "choices"?: {"grades", "tie"}} -> the wolf, as
-        ratw_identity made it. The choices are the wolf's strengths and tie, given to each world at its first arrival."""
+        """{"name", "age", "appearance", "family"?, "quickened"?, "profile"?: fields, "choices"?: {"grades", "tie"}} ->
+        the wolf, as ratw_identity made it. The choices are the wolf's strengths and tie, given to each world at its
+        first arrival. `quickened` (doc 49, 9.1): a Quickened wolf, for good, which needs a Gift family and an account
+        that has Quickened; every world takes the wolf's tier from its ticket."""
         _, account = self._account(token)
         self._limit(('changes', account['id']), self.settings.limits.changes_per_account, 'attempts')
-        unknown = set(body) - {'name', 'age', 'appearance', 'family', 'profile', 'choices'}
+        unknown = set(body) - {'name', 'age', 'appearance', 'family', 'quickened', 'profile', 'choices'}
         if unknown:
-            raise refused(400, 'A wolf is a name, an age, a look, a Gift family, a profile and its choices; not ' +
-                          ', '.join(sorted(unknown)) + '.', 'invalid')
+            raise refused(400, 'A wolf is a name, an age, a look, a Gift family, Quickened or not, a profile and its '
+                          'choices; not ' + ', '.join(sorted(unknown)) + '.', 'invalid')
+        quickened = body.get('quickened', False)
+        if quickened is None:
+            quickened = False
+        if not isinstance(quickened, bool):
+            raise refused(400, 'Quickened is true or false.', 'invalid')
+        if quickened and account.get('quickened_at') is None:
+            raise refused(403, 'Your account has not opened Quickened yet: it opens once, for every world, with '
+                               'standing earned in an official world.', 'quickened_locked')
         wolf_in = {k: body[k] for k in ('name', 'age', 'appearance', 'family') if k in body}
         name_refused = refused(400, 'That name is not allowed. Choose another.', 'name_refused')
         hidden = refused(400, "A wolf's name cannot hold invisible or decorative characters (zero-width spaces, "
@@ -599,11 +627,14 @@ class Central:
             if not made.get('ok'):
                 raise refused(400, made.get('error', 'That profile cannot be saved.'), 'invalid_profile')
             profile = made['profile']
+        if quickened and not wolf['family']:
+            raise refused(400, 'A Quickened wolf needs a Gift family: choose one of the eight.', 'invalid')
         choices = self._choices(wolf['family'], body['choices']) if body.get('choices') is not None else {}
         self._limit(('wolves', account['id']), self.settings.limits.wolves_per_account, 'new wolves')
         record = {'id': 'wolf-' + secrets.token_hex(16), 'account_id': account['id'], 'name': wolf['name'],
                   'name_key': name_key(wolf['name']), 'sex': wolf['sex'], 'age': int(wolf['age']),
-                  'appearance': wolf['appearance'], 'family': wolf['family'], 'profile': profile, 'choices': choices}
+                  'appearance': wolf['appearance'], 'family': wolf['family'], 'profile': profile, 'choices': choices,
+                  'quickened': quickened}
         try:
             full = self.store.create_wolf(record, WOLF_SLOTS, self.clock())
         except Conflict:
@@ -630,7 +661,7 @@ class Central:
 
     def patch_wolf(self, address: str, token, body: dict, wolf_id: str) -> tuple[int, dict]:
         """{"revision", "appearance"?, "profile"?: fields, "choices"?}: the look (never the sex), the roleplay profile
-        and the strengths and tie may change; the name, sex, age and family never do."""
+        and the strengths and tie may change; the name, sex, age, family and Quickened never do."""
         _, account = self._account(token)
         self._limit(('changes', account['id']), self.settings.limits.changes_per_account, 'changes')
         wolf = self.store.wolf(wolf_id) if WOLF_ID.match(wolf_id or '') else None
@@ -701,13 +732,19 @@ class Central:
         wolf = self.store.wolf(wolf_id)
         if wolf is None or wolf['account_id'] != account['id']:
             raise refused(404, 'That wolf is not on this account.', 'not_found')
+        # A world's host may turn Quickened wolves off (doc 49, 9.1: world.toml's quickened_wolves, in its heartbeat);
+        # the world refuses one too, as a backstop.
+        listing = world['listing'] if isinstance(world.get('listing'), dict) else {}
+        if wolf.get('quickened') is True and listing.get('quickenedWolves') is False:
+            raise refused(403, f'{listing.get("name") or world["name"]} does not take Quickened wolves (its host has '
+                               'turned them off). Choose another wolf, or another world.', 'quickened_off')
         self._limit(('tickets-world', world_id), self.settings.limits.tickets_per_world, 'joins to this world')
         now = int(self.clock())
         sub = account['id'] if world['kind'] == 'official' else \
             central_tickets.pairwise_id(self.keys.pairwise_secret(), account['id'], world_id)
         claims = {'sub': sub, 'wolf': wolf['id'], 'name': wolf['name'], 'sex': wolf['sex'], 'age': wolf['age'],
                   'look': wolf['appearance'], 'gift': wolf['family'], 'aud': world_id, 'kind': world['kind'],
-                  'quickened': account.get('quickened_at') is not None,
+                  'tier': wolf_tier(wolf),
                   'jti': secrets.token_hex(16), 'iat': now, 'exp': now + central_tickets.LIFETIME}
         # Signed at central's own clock, not the whole second the claims carry: in the second a key was made its
         # activation is still ahead of int(now), and the ring would make a second, unpublished key for this ticket
@@ -750,7 +787,8 @@ class Central:
                      'description': listing.get('description', ''), 'players': w['players'],
                      'limit': listing.get('limit'), 'region': listing.get('region', ''),
                      'tags': listing.get('tags', []), 'voices': listing.get('voices') is True,
-                     'cheats': listing.get('cheats') is True}
+                     'cheats': listing.get('cheats') is True,
+                     'quickenedWolves': listing.get('quickenedWolves') is not False}
             if secure:
                 entry['ip'] = w['address']
             out.append(entry)
@@ -829,6 +867,12 @@ class Central:
             if not isinstance(value, bool):
                 bad(f'{key} (true or false)')
             out[key] = value
+        quickened_wolves = body.get('quickenedWolves', True)    # (Doc 49, 9.1: an older world sends none: allowed.)
+        if quickened_wolves is None:
+            quickened_wolves = True
+        if not isinstance(quickened_wolves, bool):
+            bad('quickenedWolves (true or false)')
+        out['quickenedWolves'] = quickened_wolves
         protocol = body.get('protocol')
         if not whole_number(protocol, 0, 2 ** 31 - 1):
             bad('protocol')
@@ -923,7 +967,7 @@ class Central:
         counted = self.store.ticketed_wolves(world['id'], online, now - TICKETS_COUNTED)
         online = [w for w in online if w in counted][:fields['limit'] or ONLINE_MOST]
         listing = {k: fields[k] for k in ('name', 'description', 'region', 'tags', 'limit', 'private', 'voices',
-                                          'cheats', 'secure', 'protocol', 'build', 'clientData')}
+                                          'cheats', 'secure', 'protocol', 'build', 'clientData', 'quickenedWolves')}
         if not self.store.heartbeat(world['id'], world['token_hash'], now, str(ip), port, host, listing, online,
                                     check):
             # (Its token was replaced or revoked, or the world delisted, while central called it back.)

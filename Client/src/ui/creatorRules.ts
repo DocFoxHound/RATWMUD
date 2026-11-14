@@ -69,10 +69,10 @@ export function quickenedNeeds(unlocks: Json | null): string {
 /** The three tiers, by the game's unlock rules (doc 49; doc 77, Q12 (a); Core/RatwGame.cpp, arrivalChoices):
  *   - on a world (a browser on a password world): Gifted and Quickened open as the account's standing there has opened
  *     them (`tiers`, the lobby's tiersView); Quickened needs Gifted too; an older server that sends none: all open.
- *   - on central (the desktop client): the tier is each world's, at the first arrival; a wolf with a Gift family arrives
- *     Gifted anywhere, so Gifted is open to every account; Quickened is the account's, once for every world (doc 49,
- *     9.1; the user, 2026-11-14): open when central says the account has it (`quickened`), else greyed, with what an
- *     official world asks. */
+ *   - on central (the desktop client): the tier is the wolf's own, chosen here and kept by central (doc 49, 9.1; the
+ *     user, 2026-11-14: "This isn't offered to a user when they join a server"); a wolf with a Gift family is Gifted
+ *     anywhere, so Gifted is open to every account; Quickened is the account's, once for every world: open when central
+ *     says the account has it (`quickened`), else greyed, with what an official world asks. */
 export function tierCards(mode: 'world' | 'central', tiers: Json | null, unlocks: Json | null = null, quickened = false): TierCard[] {
     return Tiers.map(tier => {
         if (tier === 'normal') return {tier, open: true, reason: '', progress: []};
@@ -80,7 +80,7 @@ export function tierCards(mode: 'world' | 'central', tiers: Json | null, unlocks
             if (tier === 'gifted' || quickened) return {tier, open: true, reason: '', progress: []};
             return {tier, open: false, progress: [],
                 reason: `Quickened opens for your whole account, in every world, once it has ${quickenedNeeds(unlocks)} ` +
-                    'in an official world. Give your wolf a Gift family: they arrive Gifted until then.'};
+                    'in an official world. Then you can make Quickened wolves here; until then, a wolf with a Gift family is Gifted.'};
         }
         const t = obj(tiers, tier);
         const lines = (x: Json | null) => arr(x, 'progress').filter(isObject).map(p => str(p, 'label')).filter(Boolean);

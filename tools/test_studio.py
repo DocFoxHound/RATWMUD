@@ -1939,10 +1939,12 @@ class HostedPrivacyTests(HostedBase):
         self.settings(cheats='everyone', player_limit=40, workers=3, host_token='rh_' + 'x' * 40, ai_key='sk-secret',
                       editor={'enabled': True, 'owner': 'host-k7q2'}, ai={'key': 'sk-secret', 'monthly_tokens': 5})
         shown = ST.Hosted('world', self.folder).shown_settings()
-        self.assertEqual(shown, {'player_limit': 40, 'workers': 3, 'cheats': 'everyone', 'editor': {'enabled': True}})
-        self.settings(world={'cheats': 'nonsense', 'player_limit': 'many'})
+        self.assertEqual(shown, {'player_limit': 40, 'workers': 3, 'cheats': 'everyone', 'quickened_wolves': True,
+                                 'editor': {'enabled': True}})
+        self.settings(world={'cheats': 'nonsense', 'player_limit': 'many', 'quickened_wolves': False})
         self.assertEqual(ST.Hosted('world', self.folder).shown_settings(),
-                         {'player_limit': None, 'workers': None, 'cheats': 'off', 'editor': {'enabled': True}})
+                         {'player_limit': None, 'workers': None, 'cheats': 'off', 'quickened_wolves': False,
+                          'editor': {'enabled': True}})
 
     def test_log_lines_for_the_owner_lose_addresses_and_tokens(self):
         line = ('2026-11-12 10:00:01 player 203.0.113.9:51234 and 2001:db8::7 with rh_' + 'k' * 30 + ' and Bearer '

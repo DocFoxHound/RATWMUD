@@ -88,6 +88,15 @@ class Settings(unittest.TestCase):
         self.assertEqual((s['name'], s['central'], s['token'], s['cheats']),
                          ('My Ridgemere', 'https://central.example.org', '', 'off'))
 
+    def test_quickened_wolves_are_on_unless_world_toml_turns_them_off(self):
+        """Doc 49, 9.1: [world] quickened_wolves, true or false, default true; anything else stops the start."""
+        self.write(SETTINGS)
+        self.assertIs(self.settings()['quickened_wolves'], True)
+        self.write(SETTINGS.replace('[central]', 'quickened_wolves = false\n[central]'))
+        self.assertIs(self.settings()['quickened_wolves'], False)
+        self.write(SETTINGS.replace('[central]', 'quickened_wolves = "no"\n[central]'))
+        self.refused('quickened_wolves must be true or false')
+
     def test_cheats_are_off_host_or_everyone(self):
         """Doc 78, 8 (Phase M1): world.toml's cheats alone, default off; anything else stops the start."""
         self.write(SETTINGS)
@@ -213,6 +222,14 @@ class Children(unittest.TestCase):
         self.assertIn('--central', command)
         self.assertEqual(command[command.index('--world-name') + 1], 'Wolf Hollow')
         self.assertNotIn('--web', command)
+
+    def test_quickened_wolves_off_gives_the_server_its_flag(self):
+        """Doc 49, 9.1: world.toml's quickened_wolves = false gives --no-quickened-wolves (the server then says so in
+        /status, for central's list); on, or left out, none."""
+        for value, flags in ((None, []), (True, []), (False, ['--no-quickened-wolves'])):
+            s = dict(self.s) if value is None else {**self.s, 'quickened_wolves': value}
+            command = E.server_command(s, 7788, self.dir / 'agent', False, 2)
+            self.assertEqual([c for c in command if c == '--no-quickened-wolves'], flags, value)
 
     def test_the_server_takes_its_cheats_from_world_toml_and_no_dm_directory(self):
         """Doc 78, 8 and Q18 (Phase M1): off gives no cheat flag, host --host-cheats, everyone --dev-tools; never

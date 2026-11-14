@@ -96,3 +96,27 @@
 /* The wolves over the screen (the user's art is transparent): no card or square behind any portrait in the game. */
 .game .thumb, .game .scene-who-face, .game .strip-face, .game .post-face { background: none; }
 .game .sheet .portrait.painted, .game .sheet .wolf-face, .game .rpg-figure .portrait, .game .rpg-fur-wolf, .game .fcard-face { background: none; border: none; }
+
+/* A fanfare (doc 49, 9.1: Quickened opened for the account): a banner in the middle of the screen, over the map, until
+   it is closed. The front door's gold lettering and ring (ui/frontDoor.css, .fanfare). */
+.hud-fanfare { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; pointer-events: none;
+    background: radial-gradient(ellipse 55% 45% at 50% 46%, rgba(217, 182, 123, .14) 0%, rgba(8, 12, 13, .55) 60%, rgba(6, 10, 11, .72) 100%);
+    animation: hud-fanfare-in .6s ease-out both; }
+.hud-fanfare-card { pointer-events: auto; width: min(640px, calc(100vw - 32px)); padding: 46px 48px 30px; text-align: center;
+    background: linear-gradient(180deg, rgba(24, 34, 34, .97), rgba(14, 21, 22, .97)); border: 1px solid rgba(217, 182, 123, .22);
+    border-top: 3px solid var(--gold); border-radius: 6px; box-shadow: 0 30px 100px rgba(0, 0, 0, .65), 0 0 80px rgba(217, 182, 123, .16);
+    animation: hud-fanfare-rise .8s cubic-bezier(.2, .8, .2, 1) both; }
+.hud-fanfare-sigil { width: 76px; height: 76px; margin: -84px auto 16px; border-radius: 50%;
+    background: radial-gradient(circle, #f6e7c4 0%, #d9b67b 34%, rgba(217, 182, 123, .25) 58%, transparent 70%);
+    box-shadow: 0 0 36px rgba(246, 231, 196, .5), 0 0 0 2px rgba(217, 182, 123, .6), 0 0 0 8px rgba(217, 182, 123, .12); }
+.hud-fanfare-kicker { color: var(--sage); font-size: 13px; letter-spacing: .32em; margin-bottom: 10px; }
+.hud-fanfare-title { font-size: 40px; font-weight: 500; line-height: 1.05; margin-bottom: 16px;
+    background: linear-gradient(180deg, #f6e7c4 0%, #d9b67b 58%, #a9844a 100%); -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; }
+.hud-fanfare-text { color: var(--paper); font-size: 17px; line-height: 1.45; margin: 0 auto 22px; max-width: 520px; }
+.hud-fanfare-close { min-width: 180px; padding: 11px 20px; letter-spacing: .14em; text-transform: uppercase; color: #f1e2bf;
+    background: rgba(217, 182, 123, .14); border: 1px solid rgba(217, 182, 123, .55); border-radius: 4px; cursor: pointer; }
+.hud-fanfare-close:hover { background: rgba(217, 182, 123, .26); }
+@keyframes hud-fanfare-in { from { opacity: 0; } }
+@keyframes hud-fanfare-rise { from { opacity: 0; transform: translateY(22px) scale(.96); } }
+@media (prefers-reduced-motion: reduce) { .hud-fanfare, .hud-fanfare-card { animation: none; } }

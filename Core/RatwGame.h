@@ -85,7 +85,7 @@ class Connection
     // leaves; and how many hellos this connection has sent.
     std::string ticketWolf;
     json::Value ticketIdentity;
-    bool ticketQuickened = false;                             // The ticket's `quickened`: the account's, on central.
+    std::string ticketTier;                                   // The ticket's `tier`: the wolf's, made on central.
     int hellos = 0;
     std::string motionSession, motionCell;
     int motionGeneration = 0;
@@ -225,6 +225,9 @@ struct Options
         // First arrivals (each makes an economy account and a welcome: doc 77, 5.1): at most so many an hour in the
         // world, and an hour for one account. First guesses.
         int arrivalsPerHour = 600, accountArrivalsPerHour = 3;
+        // Quickened wolves may join (doc 49, 9.1; --no-quickened-wolves, world.toml's quickened_wolves = false: off).
+        // Said in GET /status (`quickenedWolves`), so central lists it and refuses their tickets; refused here too.
+        bool quickenedWolves = true;
     } central;
 };
 
@@ -286,9 +289,10 @@ class Game
     // standing here has opened Quickened, the latest first]}, which the agent's heartbeat sends central so the account
     // has Quickened in every world. Written when it changes (looked at as online.json is), whole and atomically.
     bool writeUnlocks(std::string& problem);
-    // Quickened open to this connection's account by central's word (its ticket), unless this world's Dungeon Master
-    // holds the account's unlocks.
-    bool quickenedByCentral(const Connection* c) const;
+    // Quickened has just opened for this account (earned, or a Dungeon Master's grant): its wolves here are told, with a
+    // fanfare where it counts (doc 49, 9.1): on an official world (for the whole account, every world) or a password
+    // world (here). A community world's own standing opens nothing on central, so it says nothing.
+    void announceQuickened(const std::string& account);
     bool reloadBans(std::string& problem);
     bool bannedByCentral(const std::string& account) const { return centralBans_.count(account) > 0; }
     // The world's host (doc 77, 3.2): host.json in the same directory, {"at", "host": the host account's ticket `sub`

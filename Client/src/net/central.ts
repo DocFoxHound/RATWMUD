@@ -33,6 +33,7 @@ export interface CentralTransport {
 export function allowedCall(method: string, path: string): boolean {
     const exact: Record<string, string[]> = {
         '/account/register': ['POST'], '/account/login': ['POST'], '/account/logout': ['POST'], '/account': ['GET', 'DELETE'],
+        '/account/quickened/announced': ['POST'],      // (The Quickened fanfare shown: doc 49, 9.1.)
         '/wolves': ['GET', 'POST'], '/wolves/name': ['POST'], '/tickets': ['POST'], '/worlds': ['GET'], '/rules': ['GET'],
         '/health': ['GET'], '/host/worlds': ['GET', 'POST'],
     };
@@ -195,6 +196,7 @@ export interface ListedWorld {
     tags: string[];
     voices: boolean;
     cheats: boolean;
+    quickenedWolves: boolean;    // Quickened wolves may join (doc 49, 9.1): false only when its host turned them off.
 }
 
 /** One of the account's own worlds, on the Host page (doc 77, 3.2 and 7). */
@@ -257,7 +259,7 @@ export function readListedWorld(w: Json): ListedWorld | null {
         protocol: typeof w.protocol === 'number' ? w.protocol : null, description: text(w.description, 300),
         players: count(w.players), limit: count(w.limit), region: text(w.region, 32),
         tags: (Array.isArray(w.tags) ? w.tags : []).filter((t): t is string => typeof t === 'string').slice(0, 5).map(t => t.slice(0, 16)),
-        voices: w.voices === true, cheats: w.cheats === true};
+        voices: w.voices === true, cheats: w.cheats === true, quickenedWolves: w.quickenedWolves !== false};
 }
 
 /** One of the account's worlds from GET /host/worlds, or null when it isn't one. */
@@ -307,6 +309,11 @@ export class Central {
     /** The signed-in account (its name, host and admin flags, and whether it has Quickened: doc 49, 9.1). */
     async account(): Promise<Json | null> {
         const reply = await this.ask('GET', '/account');
+        return isJson(reply.account) ? reply.account : null;
+    }
+    /** The account's Quickened fanfare has been shown (doc 49, 9.1): central marks it, so no device shows it again. */
+    async announcedQuickened(): Promise<Json | null> {
+        const reply = await this.ask('POST', '/account/quickened/announced', {});
         return isJson(reply.account) ? reply.account : null;
     }
     async wolves(): Promise<Json[]> {
