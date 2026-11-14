@@ -967,8 +967,10 @@ What was built (the user's decisions are marked *user*):
 - **Subsidies** (*user*: towns and churches keep industry turning): a business that can't pay a worker's wage has it paid
   by its town's treasury, if that holds over twice the lean line a head, or else its church, if it holds over twice its
   floor (`subsidiser`). Farms short of hands get hands posted as odd jobs (above).
-- **Children's friend groups** (*user*): each town's children (4 to 15), by age, in fours, rebuilt each day. At play and
-  in the evenings a group meets at one place on the square. On odd jobs a child joins a friend's job first, then one
+- **Children's friend groups** (*user*): each town's children (4 to 15), by age, in fours, rebuilt each day. On
+  Marketday a group goes to the market together, in the group's hour, and meets at one place on the square (until
+  2026-11-13 at play and in the evenings too: in Ridgemere 2.0 that put every child of the city on the one square from
+  nine to ten at night, out of school, the crowd the user saw). On odd jobs a child joins a friend's job first, then one
   with room for a party.
 - **Wages follow takings** (*user*): each day a shop shares `TakingsShare` (3) tenths of what it took in among its help,
   on top of their wages, as far as its till can (keeping half its float; a keeper's own purse, its food money).

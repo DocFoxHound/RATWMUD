@@ -477,8 +477,10 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         goal = {life.homeCell, life.homeX, life.homeY};
         if (const auto* bed = rec.bed; bed && bed->cell == life.homeCell)
             goal = *bed;                            // Their place on a bed at home (doc 36).
-        // Marketday: each of the townsfolk goes for an hour, some time between eight and one.
-        const auto visit = [&] { return 8 + int(std::hash<std::string>{}(id + "market") % 5); };
+        // Marketday: each of the townsfolk goes for an hour, some time between eight and one; a child with its friend
+        // group, in the group's hour (below: they meet at one place there).
+        const std::string& friends = body.age < 16 && !learning ? friendGroup(id) : id;
+        const auto visit = [&] { return 8 + int(std::hash<std::string>{}((friends.empty() ? id : friends) + "market") % 5); };
         const bool marketHour = plan.kind == "market"sv && !plan.foul && !plan.crowd.empty() && !guard && !merchantRole &&
                                 hour >= visit() && hour < visit() + 1;
         c.routeGoal = false;
@@ -625,15 +627,17 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             if (task == "sleep"sv)
                 reason = "Resting on the road; home is far behind.";
         }
-        // Children keep together (the user, 2026-10-05): at play and in the evenings a friend group meets at one place.
-        if (body.age < 16 && !learning && !guard && !merchantRole && (task == job->title || task == "socialize"sv))
-            if (const auto& group = friendGroup(id); !group.empty())
-                if (const auto* meet = pick(plan.crowd, group))
-                {
-                    goal = *meet;
-                    c.routeGoal = false;
-                    reason = task == "socialize"sv ? "Out with friends for the evening." : "Playing with friends.";
-                }
+        // Children keep together (the user, 2026-10-05): a friend group meets at one place on the square. Only in its hour
+        // at the market (the square's crowd is there only on Marketday): at play and in the evenings too, it put every
+        // child of Ridgemere's city, a hundred and more, on the one square from nine in the morning to ten at night, out
+        // of school (the crowd the user saw, 2026-11-13).
+        if (task == "at the market"sv && &friends != &id && !friends.empty())
+            if (const auto* meet = pick(plan.crowd, friends))
+            {
+                goal = *meet;
+                c.routeGoal = false;
+                reason = "Marketday: with friends at the market.";
+            }
         // A civilian with a wander area roams it during work hours and evenings, moving on every half hour.
         if (!r->wander.empty() && !guard && !merchantRole && (task == job->title || task == "socialize"sv))
         {

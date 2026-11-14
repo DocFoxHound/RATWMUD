@@ -204,6 +204,71 @@ void marketday()
     expect(life(foul, "wren").goalCell == "shop", "the stalls don't go out");
 }
 
+// Children on Marketday (the crowd the user saw in Ridgemere, 2026-11-13): Greyfen with six children, two friend groups.
+// A group goes to the market together for its hour and meets at one place there; the rest of the day, school or play
+// and the evening, is a child's own, not on the square: before, every child spent the whole day and the evening there.
+void childrenOnMarketday()
+{
+    auto files = greyfenFiles();
+    auto& manifest = files["world.ratw"];
+    const auto line = manifest.find("resident \"fennel\"");
+    expect(line != std::string::npos, "Fennel is in Greyfen");
+    const auto fennel = manifest.substr(line, manifest.find('\n', line) + 1 - line);
+    std::vector<std::string> kids;
+    for (int k = 0; k < 6; ++k)
+    {
+        const std::string id = "kid" + std::to_string(k);
+        auto kid = fennel;
+        kid.replace(0, std::string("resident \"fennel\" \"Fennel\"").size(), "resident \"" + id + "\" \"Kid " + std::to_string(k) + "\"");
+        kid.replace(kid.find(" 23 \"red\""), 4, " 10 ");
+        manifest.insert(line, kid);
+        kids.push_back(id);
+    }
+    const auto day = [&](double hour) {
+        World h;
+        expect(h.loadWorldFiles(files, "greyfen").ok, "Greyfen with children loads");
+        buildStalls(h);
+        expect(h.advanceCalendar(5 - std::floor(h.calendarDays())).ok && h.setTimeOfDay(hour).ok, "Marketday, the hour set");
+        run(h, 3);
+        return h;
+    };
+    std::map<std::string, std::string> hourOf, spotOf;   // Each child's hour at the market, and where it went.
+    for (double hour = 8.5; hour < 13; hour += 1)
+    {
+        auto h = day(hour);
+        for (const auto& id : kids)
+            if (const auto& r = life(h, id); r.task == "at the market")
+            {
+                expect(!hourOf.count(id), id + " goes to the market for one hour");
+                hourOf[id] = std::to_string(hour);
+                spotOf[id] = r.goalCell + " " + std::to_string(r.goalX) + "," + std::to_string(r.goalY);
+                expect(r.reason == "Marketday: with friends at the market.", id + " is there with friends: " + r.reason);
+            }
+    }
+    expect(hourOf.size() == kids.size(), "Every child goes to the market (" + std::to_string(hourOf.size()) + " of 6)");
+    {
+        const auto h = day(9);
+        for (const auto& a : kids)
+            for (const auto& b : kids)
+                if (h.society().friendGroup(a) == h.society().friendGroup(b))
+                    expect(hourOf[a] == hourOf[b] && spotOf[a] == spotOf[b], a + " and " + b + ", friends, go together and meet at one place");
+    }
+    for (const double hour : {15.5, 19.5})
+    {
+        auto h = day(hour);
+        const auto plan = h.dayPlan("greyfen");
+        for (const auto& id : kids)
+        {
+            const auto& r = life(h, id);
+            bool square = false;
+            for (const auto& s : plan.crowd)
+                square = square || (r.goalCell == s.cell && r.goalX == s.x && r.goalY == s.y);
+            expect(!square && r.reason.find("friends") == std::string::npos,
+                   id + " is not kept on the square at " + std::to_string(hour) + ": " + r.task + " (" + r.reason + ")");
+        }
+    }
+}
+
 // A city of several markets (Docs/Design/60-the-new-map.md): Greyfen with Aster keeping stalls of her own at the far
 // east end of the street, beyond the reach of Brann's square by the shop. Each keeps its own Marketday: the shopkeeper
 // sets up at the one nearest her shop, and the townsfolk go to the one nearest home.
@@ -351,6 +416,7 @@ int main()
         restday();
         restdayService();
         marketday();
+        childrenOnMarketday();
         cityMarkets();
         festivals();
         weather();
