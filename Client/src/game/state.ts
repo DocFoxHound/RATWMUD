@@ -52,6 +52,7 @@ export interface Post {
     // door and place, with its colour. Absent for ordinary talk, a Private scene's included.
     scene?: {mine: boolean; colour: string; openness: string; place: string};
     sequence?: number;          // The line's number, for muting, blocking or reporting its author (doc 50): never their id.
+    speakerId?: string;         // Who said it, only when this wolf could see them say it (doc 80); absent otherwise.
     face?: {appearance: Json | null; artwork: string};   // The speaker's look when it was said: its face beside the line.
 }
 
@@ -1266,16 +1267,17 @@ export class GameState {
         const own = (post.speaker === str(obj(this.snapshot, 'self'), 'name') && !bool(e, 'anonymous')) || !!post.outgoing;
         post.revealed = post.system || own || post.channel !== 'ic' ? post.text.length : 0;
         if (type === 'error') this.showToast(post.text);
-        // Whose face goes beside it (the user's notes, 2026-11-14): the wolf in sight by the name it is known by here (a
-        // line carries no author's id, by design; strangers alike are numbered as in sight, "A dun wolf (2)"), oneself
-        // included; none for the world's lines, a voice not put to a wolf, or a name that could be either of two.
-        if (!post.system && !post.faint && !bool(e, 'anonymous')) {
-            const name = post.speaker.toLowerCase(), others = [...this.entities.values()].filter(v => !v.self);
-            const exact = others.filter(v => v.name.toLowerCase() === name);
-            const named = own ? [this.entities.get(this.selfId)].filter((v): v is EntityView => !!v)
-                : exact.length ? exact : others.filter(v => v.name.replace(/ \(\d+\)$/, '').toLowerCase() === name);
-            const who = named.length === 1 ? named[0] : undefined;
-            if (who && (who.appearance || who.artwork)) post.face = {appearance: who.appearance, artwork: who.artwork};
+        // Whose face goes beside it (the user's notes, 2026-11-14): the speaker's own, by the id the line carries, with the
+        // look it had when it was said (or, failing that, as In Sight has it). The server puts both on a line only while
+        // this wolf is shown the speaker (doc 80); none for the world's lines, a voice not put to a wolf, or an older
+        // server's line (no id: no face, never a guess by name).
+        const speakerId = str(e, 'speakerId');
+        if (speakerId && !post.system && !post.faint && !bool(e, 'anonymous')) {
+            post.speakerId = speakerId;
+            const known = this.entities.get(speakerId);
+            const appearance = obj(e, 'appearance') ?? known?.appearance ?? null;
+            const artwork = str(e, 'artwork') || (known?.artwork ?? '');
+            if (appearance || artwork) post.face = {appearance, artwork};
         }
         this.posts.push(post);
         if (this.posts.length > 300) this.posts.splice(0, this.posts.length - 300);

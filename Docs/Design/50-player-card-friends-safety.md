@@ -277,8 +277,9 @@ in-character organisation.
 **Report** (a report to the DM app, with evidence):
 
 - **From the card** (a wolf you can see) or **from a chat line** (any line you received, by its sequence number). The
-  wire carries no author ID for lines (`Game::publish` leaves it out on purpose), so the server finds the author in the
-  reporter's own record of what they received; the page never learns who wrote an anonymous line.
+  wire carries a line's author ID only to a listener shown the author (`Game::addSpeaker`, doc 80: for the face beside
+  the line), never on an anonymous one, so the server finds the author in the reporter's own record of what they
+  received; the page never learns who wrote an anonymous line.
 - **What you heard is kept as evidence** (agreed, doc 48 decision 34: the one exception to doc 08's no-prose rule). Each
   connected player has a short record of the lines delivered to them: the last 60 lines within 30 minutes
   *(placeholders)*, with sequence, time, author, channel and the text as they received it. In memory only, never saved.

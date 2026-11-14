@@ -179,6 +179,7 @@ void Game::partyChat(Connection* c, const Entity& speaker, const std::string& te
         if (auto* other = clientOf(m); other && !hides(m, speaker.id))   // (Muted or blocked: doc 50.)
         {
             e.set("speaker", names::capitalised(labelFor(m, speaker.id)));
+            addSpeaker(e, m, speaker.id);
             send(other, e);
             if (m != speaker.id)
                 heardLine(m, e.number("sequence"), speaker.id, channel, text);

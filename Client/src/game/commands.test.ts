@@ -6,7 +6,7 @@ import {testGame} from './testing.ts';
 import {Commands, parseSlash, slashSuggestions, wheelCommands} from './commands.ts';
 import {GroundTarget} from './state.ts';
 import {rect} from '../ui/painter.ts';
-import type {Json} from './json.ts';
+import {str, type Json} from './json.ts';
 import {gearIconFor, senseLevel, timeOfDay, weatherIcon} from '../ui/hud/hudIcons.ts';
 
 function onTheMap(self: Json = {}) {
@@ -184,25 +184,28 @@ test('the surroundings bar\'s pictures: the time of day, the weather, the senses
     assert.equal(gearIconFor('neck', 'Steel gorget', false), 'collar');
 });
 
-test('the story\'s faces: a line from a wolf in sight carries its look; the world\'s, a hidden voice\'s and a shared name\'s none', () => {
+test('the story\'s faces: from the speaker the line names by id, never by a name; none for the world, a hidden voice or an older server', () => {
     const {state: s, snapshot} = onTheMap();
-    const look = {fur: {base: '#808080'}};
-    (snapshot.entities as Json[])[1].appearance = look;
+    const look = {fur: {base: '#808080'}}, other = {fur: {base: '#303030'}};
+    const bram = (snapshot.entities as Json[])[1];
+    bram.appearance = look;
+    // Two in sight by one name: each line still has its own speaker's face.
+    (snapshot.entities as Json[]).push({id: 'bram2', name: str(bram, 'name'), x: 9, y: 9, npc: true, appearance: other});
     s.applySnapshot(snapshot);
-    s.receiveEvent({type: 'roleplay', id: 'r1', channel: 'ic', speaker: 'Bram', text: '"Morning."', segments: [{kind: 'speech', text: 'Morning.'}]});
-    assert.deepEqual(s.posts.at(-1)!.face, {appearance: look, artwork: ''}, 'by the name it is known by here');
-    s.receiveEvent({type: 'roleplay', id: 'r2', channel: 'ic', speaker: 'A voice', anonymous: true, text: 'Hm.'});
+    const said = (id: string, extra: Json) => s.receiveEvent({type: 'roleplay', id, channel: 'ic', speaker: str(bram, 'name'), text: 'Hm.', ...extra});
+    said('r1', {speakerId: str(bram, 'id')});
+    assert.equal(s.posts.at(-1)!.speakerId, str(bram, 'id'));
+    assert.deepEqual(s.posts.at(-1)!.face, {appearance: look, artwork: ''}, 'by its id, as In Sight has it');
+    said('r2', {speakerId: 'bram2'});
+    assert.deepEqual(s.posts.at(-1)!.face?.appearance, other, 'the other of the same name: its own face');
+    said('r3', {speakerId: 'gone', appearance: {fur: {base: '#101010'}}, artwork: 'art-1'});
+    assert.deepEqual(s.posts.at(-1)!.face, {appearance: {fur: {base: '#101010'}}, artwork: 'art-1'}, 'one not in the list: the look the line carries');
+    said('r4', {speakerId: 'bram2', appearance: look});
+    assert.deepEqual(s.posts.at(-1)!.face?.appearance, look, 'the line\'s look first (as it was when said)');
+    said('r5', {});
+    assert.equal(s.posts.at(-1)!.face, undefined, 'no id (an older server, or a speaker not seen): no face, no guess by name');
+    s.receiveEvent({type: 'roleplay', id: 'r6', channel: 'ic', speaker: 'A voice', anonymous: true, text: 'Hm.', speakerId: 'bram2'});
     assert.equal(s.posts.at(-1)!.face, undefined, 'a voice not put to a wolf');
-    s.receiveEvent({type: 'system', id: 'r3', text: 'The bell rings.'});
+    s.receiveEvent({type: 'system', id: 'r7', text: 'The bell rings.'});
     assert.equal(s.posts.at(-1)!.face, undefined, "the world's own lines");
-    (snapshot.entities as Json[]).push({id: 'bram2', name: 'Bram (2)', x: 9, y: 9, npc: true, appearance: {fur: {base: '#303030'}}});
-    s.applySnapshot(snapshot);
-    s.receiveEvent({type: 'roleplay', id: 'r4', channel: 'ic', speaker: 'Bram (2)', text: 'And again.'});
-    assert.deepEqual(s.posts.at(-1)!.face?.appearance, {fur: {base: '#303030'}}, 'strangers alike, numbered as in sight: that one');
-    s.receiveEvent({type: 'roleplay', id: 'r5', channel: 'ic', speaker: 'Bram', text: 'Again.'});
-    assert.deepEqual(s.posts.at(-1)!.face?.appearance, look, 'and the first');
-    (snapshot.entities as Json[]).push({id: 'bram3', name: 'Bram', x: 10, y: 9, npc: true, appearance: look});
-    s.applySnapshot(snapshot);
-    s.receiveEvent({type: 'roleplay', id: 'r6', channel: 'ic', speaker: 'Bram', text: 'Who?'});
-    assert.equal(s.posts.at(-1)!.face, undefined, 'two in sight by one name: no guessing');
 });

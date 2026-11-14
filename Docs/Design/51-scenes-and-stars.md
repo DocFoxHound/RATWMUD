@@ -61,7 +61,8 @@ combat.ts`, `summarise` and `buildResult`) sums "dealt" and "taken" from the log
 `turnsTaken`. The review says "roleplay in a fight pays twice".
 
 **Speech:** `Game::publish` (`Core/RatwGame.cpp`) sends each listener a `roleplay` event with `party` or `chapter`
-flags, no author ID, and the speaker as that listener knows them (`Game::labelFor`). The client (`state.ts`) fades only
+flags, the speaker as that listener knows them (`Game::labelFor`), and the author's ID and look only while that listener
+is shown them (`Game::addSpeaker`, doc 80). The client (`state.ts`) fades only
 "words too far off to make out". Nothing marks a line as part of a scene.
 
 **Sound:** `World::hearingClarity`: whisper 2 tiles, speech 16, yell 32, times hearing and weather; a yell crosses
