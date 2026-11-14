@@ -28,7 +28,9 @@ json::Value Game::gearView(const Entity& e) const
         piece("mouth", Society::itemName(e.mouth == "sword" ? World::swordHeld(e) : e.mouth), true, 0);
     for (const char* slot : items::WearSlots)
         if (const auto found = e.worn.find(slot); found != e.worn.end())
-            if (const auto* item = items::wearable(found->second); item && (item->protect > 0 || item->category == "weapon"))
+            // Armour, a weapon, or a hat (the user's notes 2026-11-14: a straw hat shows on the card's icons too).
+            if (const auto* item = items::wearable(found->second);
+                item && (item->protect > 0 || item->category == "weapon" || item->category == "hat"))
                 piece(slot, item->name, item->category == "weapon", item->protect);
     return gear;
 }

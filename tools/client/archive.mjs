@@ -100,7 +100,7 @@ try {
         if (!there) await sleep(1500);
     }
     check(there, 'Ash reaches the clerk: ARCHIVE WORK');
-    await ash.evaluate(`[...document.querySelectorAll('.actions button')].find(b => b.textContent === 'Archive work').click()`);
+    await ash.evaluate(`${S}.setChat(true); ${S}.composer.text = '/archive'; ${S}.submitPost()`);
     check(!!await ash.waitFor(`document.body.innerText.includes('HAND THEM IN')`, 10), 'six records to sort, in the sheet');
     await ash.screenshot(`${OUT}/1-records-to-sort.png`);
     // Sort them by their clues, moving one up at a time (as a player would).

@@ -58,7 +58,7 @@ try {
     await ada.evaluate(`(() => { const i = document.querySelector('[data-field="friend-handle"]'); i.value = 'Bobbin'; })()`);
     await clickButton(ada, 'ASK TO BE FRIENDS');
     check(await until(ada, `${S}.friendRequestsOut.length === 1`), 'the request is waiting');
-    check(await until(bo, `[...document.querySelectorAll('button')].some(b => b.textContent === 'FRIENDS · 1')`), 'Bo sees it counted on the menu');
+    check(await until(bo, `document.querySelector('.nav-button.friends .nav-count')?.textContent === '1'`), 'Bo sees it counted on the menu');
     await clickButton(bo, 'FRIENDS · 1');
     check(await until(bo, `document.body.innerText.includes('ASKING YOU') && document.body.innerText.includes('Adder')`), 'and in FRIENDS');
     await bo.screenshot(`${OUT}/1-a-request.png`);
@@ -118,7 +118,7 @@ try {
     await ada.evaluate(`document.querySelector('[data-field="circle-invite"]').value = 'Bobbin'`);
     await clickButton(ada, 'INVITE');
     check(await until(bo, `${S}.circleInvites.some(i => i.name === 'Moot Night' && i.from === 'Adder')`), 'Bo is invited');
-    check(await until(bo, `[...document.querySelectorAll('button')].some(b => b.textContent === 'FRIENDS · 1')`), 'counted on his menu');
+    check(await until(bo, `document.querySelector('.nav-button.friends .nav-count')?.textContent === '1'`), 'counted on his menu');
     await clickButton(bo, 'FRIENDS · 1');
     await until(bo, `document.querySelector('[data-tab="circles"]')`);
     await bo.evaluate(`document.querySelector('[data-tab="circles"]').click()`);

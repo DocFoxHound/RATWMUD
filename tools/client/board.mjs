@@ -100,7 +100,7 @@ try {
         return false;
     };
     check(await goTo(ash), 'Ash reaches the board by the square');
-    await ash.evaluate(`[...document.querySelectorAll('.actions button')].find(b => b.textContent === 'Read the board').click()`);
+    await ash.evaluate(`${S}.setChat(true); ${S}.composer.text = '/board'; ${S}.submitPost()`);
     await ash.waitFor(`document.querySelector('[data-field="notice-text"]')`, 10);
     await ash.evaluate(`(() => { const set = (f, v) => { const e = document.querySelector('[data-field="' + f + '"]'); e.value = v; };
         set('notice-kind', 'seeking'); set('notice-what-type', 'item'); set('notice-what', 'honey'); set('notice-text', 'Seeking good honey, will pay fair.');
@@ -110,7 +110,7 @@ try {
     const pinned = await ash.waitFor(`(document.body.innerText.match(/You pin your notice[^\\n]*/) || [''])[0]`, 10);
     check(/1p to the town/.test(pinned), `pinned: ${pinned}`);
     check(await goTo(bo), 'Bo reaches the board');
-    await bo.evaluate(`[...document.querySelectorAll('.actions button')].find(b => b.textContent === 'Read the board').click()`);
+    await bo.evaluate(`${S}.setChat(true); ${S}.composer.text = '/board'; ${S}.submitPost()`);
     const notice = await bo.waitFor(`[...document.querySelectorAll('.letter')].map(n => n.innerText).find(t => /good honey/.test(t))`, 10);
     check(/SEEKING/.test(notice) && /Seeking: honey/.test(notice) && /A wolf's scent you don't know/.test(notice), `Bo reads it: ${notice}`);
     await bo.screenshot(`${OUT}/2-reading-the-board.png`);

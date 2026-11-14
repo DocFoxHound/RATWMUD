@@ -1937,6 +1937,11 @@ class Game
     const art::Meta* portraitOf(const std::string& character) const;
     // The portrait `viewer` may see of `character` ("" for none): approved, or their own.
     std::string visiblePortrait(const std::string& character, const std::string& viewer) const;
+    // Who said a line, on that listener's copy (the user's notes, 2026-11-14): the speaker's id and look (and portrait),
+    // so the story puts its own face beside it, only while the listener is shown the speaker (World::shown, doc 80) or
+    // is the speaker; otherwise (an unseen sneaker, one off its screen, a voice through a wall) nothing. Clears them
+    // when not, so one event reused for several listeners never carries another's.
+    void addSpeaker(json::Value& line, const std::string& listener, const std::string& speaker) const;
     // Armour and weapons someone has on, for the cards' little dolls (doc 35): [{place, name, weapon?, protect?}].
     json::Value gearView(const Entity& e) const;
     std::map<std::string, std::deque<std::string>> recentScenes_;   // By cell: scenes said there lately.

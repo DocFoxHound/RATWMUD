@@ -92,7 +92,8 @@ export type PortraitView = 'face' | 'profile';
 
 export interface PortraitOptions {
     view?: PortraitView;        // The profile unless said.
-    paper?: boolean;            // On the paintings' paper (rounded), else on nothing: what is behind shows. On unless said.
+    paper?: boolean;            // On the paintings' paper (rounded), else on nothing: what is behind shows. Off unless said:
+                                // the wolves are transparent and stand over the screen (the user's notes, 2026-11-14).
     radius?: number;            // The paper's corners, in pixels (a fraction of the box's shorter side by default).
     pad?: number;               // The margin round the painting, as a share of the box's shorter side (0.07).
     flip?: boolean;             // Facing right (the paintings face left): the left of a face-off.
@@ -132,7 +133,7 @@ export function paintedLook(appearanceJson: unknown): {fur: Fur; build: Build} |
 
 /**
  * Draws a portrait into a box: an uploaded picture the viewer may see (doc 29, phase 9), square and centred; else the
- * painted wolf in its own fur (doc 81), its face or its profile, on its paper. The profiles share one frame, so a small
+ * painted wolf in its own fur (doc 81), its face or its profile, over what is behind (on its paper only if asked). The profiles share one frame, so a small
  * wolf stands smaller than a large one in boxes of one size. False if there is nothing to draw (yet): no appearance (a
  * hunt's game), or the paintings still on their way.
  */
@@ -154,7 +155,7 @@ export function drawPortrait(ctx: CanvasRenderingContext2D, portraits: Portraits
     if (!wolves.aspect(painting)) return false;
     const short = Math.min(w, h), pad = short * (options.pad ?? 0.07);
     ctx.save();
-    if (options.paper !== false) {
+    if (options.paper === true) {
         ctx.fillStyle = WolfPaper;
         ctx.beginPath();
         ctx.roundRect(x, y, w, h, options.radius ?? short * (painting === 'face' ? 0.14 : 0.06));

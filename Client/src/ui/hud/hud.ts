@@ -1,12 +1,17 @@
-// The screen around the map (Docs/Design/29-client-polish.md, phase 2): a slim top bar, the story column on the left
-// (story.ts), the map in the middle with its header and actions, and on the right who is in sight and how the wolf is
-// doing. Plain HTML, updated in place each frame; the map itself is the canvas (game/paint.ts).
+// The screen around the map (Docs/Design/29-client-polish.md, phase 2; the user's notes, 2026-11-14): the story column
+// on the left (story.ts), the map in the middle under its "Your surroundings" bar (the place, the time of day and the
+// weather as pictures, the senses), and on the right the pages' buttons, the minimap, who is in sight and how the wolf is
+// doing. No top bar, no actions panel, no bottom bar: what one does is a slash command or on the wheel a right-click
+// opens (game/commands.ts). Plain HTML, updated in place each frame; the map itself is the canvas (game/paint.ts).
 import {css, rgb} from '../color.ts';
 import {Amber, Blue, Sage} from '../theme.ts';
 import {drawPortrait, type Portraits} from '../portrait.ts';
 import {arr, bool, boundedNum, clamp, envNumber, isObject, num, obj, str} from '../../game/json.ts';
-import {calendarLabel, dayLabel, environmentEffectsLabel, environmentLabel, lawLabel, moonLabel, paceLabel, postureLabel, restLabel, scentLabel, readLoad, loadCost} from '../../game/labels.ts';
-import type {EntityView, GameState} from '../../game/state.ts';
+import {dayLabel, lawLabel, paceLabel, postureLabel, restLabel, scentLabel, readLoad, loadCost} from '../../game/labels.ts';
+import {GroundTarget, type EntityView, type GameState} from '../../game/state.ts';
+import {Commands} from '../../game/commands.ts';
+import {NavIcons, SenseIcons, TimeIcons, WeatherIcons, senseLevel, timeOfDay, weatherIcon, type NavIcon, type Sense} from './hudIcons.ts';
+import './hud.css';
 import {describeWolf, lookAt, type Look} from '../../game/look.ts';
 import {Dialogs} from './dialogs.ts';
 import {MapRenderer, MapScales} from '../../game/minimap.ts';
@@ -34,6 +39,21 @@ const Arrows = ['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'];
 /** Menu entries that aren't their own action's name: a challenge's terms (doc 37). */
 const MenuWords: Record<string, string> = {'challenge:yield': 'Duel until one yields', 'challenge:blood': 'Duel to first blood',
     'challenge:spar': 'Spar (bruises only)', 'challenge:death': 'Fight until one goes down'};
+const MapKeys = 'WASD move · CLICK walk there · RIGHT-CLICK what you can do here, or with someone · ALT+CLICK turn · WHEEL / PgUp PgDn pace · ' +
+    'SHIFT/CTRL+WHEEL pan · +/− zoom · M map · E nearest · L listen · C character · I belongings · ENTER write · / commands';
+const FightKeys = 'CLICK a tile to move (waiting: to plan) · CLICK a foe to strike · WHEEL pace · 1–9 actions · C stalk · Z aim · G guard · ' +
+    'F shove · R rest · SPACE end turn · Q / E turn · ENTER write';
+
+const icons = new WeakMap<HTMLElement, string>();
+/** Puts one of the pictures (hudIcons.ts) in an element, only when it changed, with its words for the pointer. */
+function setIcon(e: HTMLElement, svg: string, words: string) {
+    if (icons.get(e) !== svg) {
+        icons.set(e, svg);
+        e.innerHTML = svg;
+    }
+    if (e.title !== words) e.title = words;
+    if (e.getAttribute('aria-label') !== words) e.setAttribute('aria-label', words);
+}
 
 /** "Tell of Ash" / "Vouch for Ash": the Wardens' menu (doc 53, 4), by the names the wolf knows them by. */
 function wardensWords(s: GameState, action: string): string {
@@ -66,15 +86,13 @@ export class Hud {
     private s: GameState;
     private portraits: Portraits;
     private dialogs: Dialogs;
-    // Top bar
-    private calendar: HTMLElement;
-    private weather: HTMLElement;
-    private moon: HTMLElement;
-    private day: HTMLElement;
-    private live: HTMLElement;
-    // Map header and actions
+    // The surroundings bar: the place, the time of day, the weather, what kind of day, the senses.
     private mapPlace: HTMLElement;
-    private effects: HTMLElement;
+    private timeIcon: HTMLElement;
+    private weatherIcon: HTMLElement;
+    private day: HTMLElement;
+    private senseIcons = new Map<Sense, HTMLElement>();
+    private keysHelp: HTMLElement;
     private localTab: HTMLButtonElement;
     private worldTab: HTMLButtonElement;
     readonly looking: HTMLElement;
@@ -94,7 +112,6 @@ export class Hud {
     private manaRow: HTMLElement;
     private manaLabel: HTMLElement;
     private manaFill: HTMLElement;
-    private senses: HTMLElement;
     private load: HTMLElement;          // A heavy load or too much (doc 35, 1.2): only then.
     private who: HTMLElement;
     private posture: HTMLElement;
@@ -112,12 +129,10 @@ export class Hud {
     private lookWhy: HTMLElement;
     private lookKey = '';
     private lookSince = 0;
-    private connection: HTMLElement;
     private resizer: HTMLElement;
     private fight: FightPanel;
     private tie: TiePanel;
     private combat: CombatScreen;
-    private help: HTMLElement;
     private party: PartyPanel;
     private place: PlacePanel;
     private lodging!: LodgingPanel;
@@ -130,46 +145,13 @@ export class Hud {
     private devConsole: DevConsole;
     private devButton: HTMLButtonElement;
     private friendsButton: HTMLButtonElement;
-    private howlButton: HTMLButtonElement;
-    private huntButton!: HTMLButtonElement;          // Out in the wild (doc 41): set out after game, forage, give up.
-    private forageButton!: HTMLButtonElement;
-    private leaveHuntButton!: HTMLButtonElement;
-    private postButton!: HTMLButtonElement;
-    private performButton!: HTMLButtonElement;
-    private boardButton!: HTMLButtonElement;
-    private archiveButton!: HTMLButtonElement;
-    private copyButton!: HTMLButtonElement;
+    private friendsCount: HTMLElement;
 
     constructor(parent: HTMLElement, state: GameState, portraits: Portraits) {
         this.s = state;
         this.portraits = portraits;
         const act = (action: string, target = '') => state.activate({rect: noRect, action, target});
         this.root = el('div', 'game', parent);
-
-        const top = el('header', 'topbar', this.root);
-        const brand = el('div', 'brand', top);
-        el('span', 'mark', brand, '◭');
-        el('span', 'title', brand, 'RUN AGAINST THE WORLD');
-        const when = el('div', 'when', top);
-        this.calendar = el('span', 'label sage', when);
-        this.weather = el('span', 'muted', when);
-        this.moon = el('span', 'label muted', when);
-        this.day = el('span', 'label gold', when);
-        const menu = el('nav', 'top-actions', top);
-        button('CHARACTER', 'top', menu, () => act('character'));
-        button('CHAPTER', 'top', menu, () => act('chapter_window'));
-        button('INVENTORY', 'top', menu, () => act('inventory'));
-        button('JOURNAL', 'top', menu, () => state.send({type: 'journal'})).title = 'Your stories under way, and what you have found out (docs 54, 58)';
-        // Friends (doc 50): the count of requests waiting, when there are any.
-        this.friendsButton = button('FRIENDS', 'top', menu, () => act('people'));
-        button('SETTINGS', 'top', menu, () => act('settings'));
-        // Only for a player marked Dungeon Master (the Dungeon Master app): the Dev Console, also the ` key.
-        this.tellerButton = button('STORYTELLER', 'top', menu, () => act('storyteller'));   // (Approved storytellers: doc 58.)
-        show(this.tellerButton, false);
-        this.devButton = button('DEV CONSOLE', 'top dev', menu, () => act('dev_console'));
-        this.devButton.title = 'The Dev Console (`): commands for Dungeon Masters';
-        show(this.devButton, false);
-        this.live = el('span', 'live label', top, '…');
 
         this.story = new StoryPanel(this.root, state, portraits);
         this.resizer = el('div', 'resizer', this.root);
@@ -182,50 +164,54 @@ export class Hud {
         const titles = el('div', 'map-titles', head);
         el('span', 'label gold', titles, 'YOUR SURROUNDINGS');
         this.mapPlace = el('span', 'map-place', titles);
-        this.effects = el('span', 'label muted effects', titles);
+        // The time of day and the weather as pictures, their words on the pointer (no clock, no year, no day count).
+        const env = el('div', 'env-icons', head);
+        this.timeIcon = el('span', 'env-icon time-icon', env);
+        this.weatherIcon = el('span', 'env-icon weather-icon', env);
+        this.day = el('span', 'label gold day-kind', env);
+        // The senses here (sight, hearing, scent) as an eye, an ear and a nose, open or closed as they work.
+        const senses = el('div', 'env-icons senses-icons', head);
+        for (const sense of ['sight', 'hearing', 'scent'] as const) this.senseIcons.set(sense, el('span', `env-icon sense-icon ${sense}`, senses));
         const views = el('div', 'tabs', head);
         button('−', 'tab zoom', views, () => act('zoom', 'out')).title = 'Zoom out (−)';
         button('+', 'tab zoom', views, () => act('zoom', 'in')).title = 'Zoom in (=)';
         this.localTab = button('LOCAL MAP', 'tab', views, () => act('local'));
         this.worldTab = button('WORLD MAP', 'tab', views, () => act('world'));
+        // The keys, on the pointer (what the bottom bar used to say).
+        this.keysHelp = el('span', 'env-icon keys-help', head);
+        setIcon(this.keysHelp, NavIcons.help, MapKeys);
         this.mapWrap = el('div', 'map', center);
         this.canvas = el('canvas', '', this.mapWrap);
         this.canvas.tabIndex = 0;
-        this.canvas.setAttribute('aria-label', 'The world. WASD to move, Enter to write.');
+        this.canvas.setAttribute('aria-label', 'The world. WASD to move, Enter to write, right-click for what you can do.');
         this.fight = new FightPanel(center, state);
         this.tie = new TiePanel(center, state);
         this.looking = el('div', 'looking muted', center);
         el('span', 'label muted', this.looking, 'LOOKING AT  ');
         this.lookWhat = el('span', 'what', this.looking);
         this.lookWhy = el('span', '', this.looking);
-        const actions = el('div', 'actions', center);
-        el('span', 'label muted', actions, 'ACTIONS');
-        button('Listen  L', 'act', actions, () => act('listen'));
-        button('Look', 'act', actions, () => act('look'));
-        button('Smell', 'act', actions, () => act('smell'));
-        button('Wait', 'act', actions, () => act('wait'));
-        button('Sit', 'act', actions, () => act('sit'));
-        button('Lie down', 'act', actions, () => act('lay')).title = 'Rest: six hours lying in a bed is a full rest';
-        // The gathering howl (doc 51): call others from across the country; resting between howls.
-        this.howlButton = button('Howl', 'act', actions, () => act('howl'));
-        this.forageButton = button('Forage', 'act', actions, () => act('forage'));
-        this.huntButton = button('Hunt', 'act', actions, () => act('hunt'));
-        this.leaveHuntButton = button('Give up hunt', 'act', actions, () => act('leaveHunt'));
-        // A training ground (doc 53): practice with no partner.
-        this.postButton = button('Practise at the post', 'act', actions, () => act('post'));
-        // The town's notice board (doc 54): read it from beside it.
-        this.boardButton = button('Read the board', 'act', actions, () => act('board'));
-        this.archiveButton = button('Archive work', 'act', actions, () => state.send({type: 'archive', verb: 'ask'}));
-        this.archiveButton.title = 'Ask the keeper of records for records to sort (2p, four a day)';
-        this.copyButton = button('Copy a page', 'act', actions, () => state.send({type: 'archive', verb: 'ask', kind: 'copy'}));
-        this.copyButton.title = 'Five minutes sitting at a desk here (2p)';
-        // Performing in a common room (doc 54): those resting there rest better for it.
-        this.performButton = button('Perform', 'act', actions, () => act('perform'));
-        // Grooming oneself (doc 55, 7): once a game day, half of every effect for two hours.
-        button('Groom yourself', 'act', actions, () => act('groomSelf')).title =
-            'Once a game day: for two hours a little less scent, and half of what a grooming by another does';
-
         const side = el('aside', 'side', this.root);
+        // The pages (what the top bar held): small buttons with their pictures, their names on the pointer.
+        const nav = el('nav', 'side-nav', side);
+        const page = (icon: NavIcon, label: string, tip: string, run: () => void) => {
+            const b = button('', `nav-button ${icon}`, nav, run);
+            setIcon(b, NavIcons[icon], tip);
+            b.dataset.page = label;
+            return b;
+        };
+        page('character', 'CHARACTER', 'Character (C)', () => act('character'));
+        page('chapter', 'CHAPTER', 'Chapter', () => act('chapter_window'));
+        page('inventory', 'INVENTORY', 'Inventory (I)', () => act('inventory'));
+        page('journal', 'JOURNAL', 'Journal: your stories under way, and what you have found out', () => state.send({type: 'journal'}));
+        // Friends (doc 50): the count of requests waiting, when there are any.
+        this.friendsButton = page('friends', 'FRIENDS', 'Friends', () => act('people'));
+        this.friendsCount = el('span', 'nav-count', this.friendsButton);
+        page('settings', 'SETTINGS', 'Settings', () => act('settings'));
+        // Approved storytellers (doc 58); a player marked Dungeon Master (the Dungeon Master app): the Dev Console, also `.
+        this.tellerButton = page('storyteller', 'STORYTELLER', 'Storyteller: your tales', () => act('storyteller'));
+        show(this.tellerButton, false);
+        this.devButton = page('dev', 'DEV CONSOLE', 'The Dev Console (`): commands for Dungeon Masters', () => act('dev_console'));
+        show(this.devButton, false);
         // The minimap (doc 29, phase 8): the country around; the wheel zooms it, a click opens the World Map.
         const mini = el('section', 'panel minimap', side);
         this.minimap = el('canvas', '', mini);
@@ -290,12 +276,8 @@ export class Hud {
             part.title = 'Your status, belongings and equipment (click)';
             part.addEventListener('click', () => act('status'));
         }
-        this.senses = el('div', 'senses small', status);
 
-        const help = el('footer', 'helpbar', this.root);
-        this.help = el('span', 'label muted', help);
-        this.connection = el('span', 'sage small', help);
-        this.menu = el('div', 'menu', this.root);
+        this.menu = el('div', 'menu radial', this.root);
         this.toast = el('div', 'toast', this.root);
         this.tooltip = el('div', 'tooltip', this.root);
         this.tipWhat = el('div', 'what', this.tooltip);
@@ -312,18 +294,11 @@ export class Hud {
     update() {
         const s = this.s, snapshot = s.snapshot, self = obj(snapshot, 'self');
         setStyle(this.root, '--story', `${s.storyWidth}px`);
-        setText(this.calendar, calendarLabel(snapshot));
-        setText(this.weather, environmentLabel(s.environment.hour, s.environment.phase, s.environment.weather, s.outdoors, s.environment.intensity));
-        setText(this.moon, moonLabel(snapshot));
-        setText(this.day, dayLabel(snapshot).slice(0, 30));
-        setText(this.live, snapshot ? '● LIVE' : '…');
-        setClass(this.live, 'on', !!snapshot);
         setText(this.mapPlace, s.cellName);
         if (this.mapPlace.title !== s.cellName) this.mapPlace.title = s.cellName;   // (The whole name, if it is cut.)
-        setText(this.effects, environmentEffectsLabel(s.environment, s.outdoors, s.reducedMotion));
+        this.updateSurroundings();
         setClass(this.localTab, 'active', !s.worldMap);
         setClass(this.worldTab, 'active', s.worldMap);
-        setText(this.connection, str(snapshot, 'connection', 'Connecting to the world…'));
         this.story.update();
         this.updateSight();
         this.updateStatus(self);
@@ -332,9 +307,7 @@ export class Hud {
         // In a fight the screen is about the fight: what isn't steps aside (styles.css, .fight-mode).
         const fighting = !!s.battle;
         setClass(this.root, 'fight-mode', fighting);
-        setText(this.help, fighting && s.battle?.observer ? 'WATCHING A FIGHT · ENTER write'
-            : fighting ? 'CLICK a tile to move (waiting: to plan) · CLICK a foe to strike · WHEEL pace · 1–9 actions · C stalk · Z aim · G guard · F shove · R rest · SPACE end turn · Q / E turn · ENTER write'
-            : 'WASD move · CLICK path · ALT+CLICK turn · WHEEL / PgUp PgDn pace · SHIFT/CTRL+WHEEL pan · +/− zoom · M map · E nearest');
+        setIcon(this.keysHelp, NavIcons.help, fighting && s.battle?.observer ? 'WATCHING A FIGHT · ENTER write' : fighting ? FightKeys : MapKeys);
         this.combat.update();
         this.fight.update();
         this.tie.update();
@@ -346,39 +319,11 @@ export class Hud {
         this.table.update();
         this.festival.update();
         this.camp.update();
-        {
-            // Out in the wild (doc 41): hunting and foraging where the ground allows; giving up a hunt while in one.
-            const wild = obj(s.snapshot, 'wild');
-            const hunting = !!s.battle?.hunt && !s.battle.observer;
-            show(this.huntButton, !fighting && bool(wild, 'hunt'));
-            show(this.forageButton, !fighting && bool(wild, 'forage'));
-            show(this.leaveHuntButton, hunting && !s.battle?.over);
-            show(this.postButton, !fighting && bool(obj(s.snapshot, 'self'), 'trainingGround'));
-            show(this.performButton, !fighting && bool(obj(s.snapshot, 'self'), 'commonRoom'));
-            show(this.boardButton, !fighting && bool(obj(s.snapshot, 'self'), 'nearBoard'));
-            const archive = obj(obj(s.snapshot, 'self'), 'archive');
-            show(this.archiveButton, !fighting && !!archive && !str(archive, 'task'));
-            const copying = str(archive, 'task') === 'copy';
-            show(this.copyButton, !fighting && !!archive && (!str(archive, 'task') || copying));
-            this.copyButton.disabled = copying;
-            this.copyButton.textContent = copying ? `Copying · ${num(archive, 'copied')}% (sit to work)` : 'Copy a page';
-            if (archive) {                          // (What the keeper pays, at the town's day: the server's.)
-                this.archiveButton.title = `Ask the keeper of records for records to sort (${num(archive, 'pay', 2)}p, four a day)`;
-                this.copyButton.title = `Five minutes sitting at a desk here (${num(archive, 'pay', 2)}p)`;
-            }
-            this.performButton.textContent = str(obj(s.snapshot, 'self'), 'performing') ? 'Stop performing' : 'Perform';
-            this.performButton.title = 'Sing, tell a tale, or play an instrument you carry; keep at it (say or do something every two minutes). ' +
-                'Those resting in the room rest better.';
-            this.forageButton.title = 'Forage ' + str(wild, 'forageWhat');
-            this.huntButton.title = 'Go out after game: a hunt, like a fight, against what lives here';
-        }
         show(this.devButton, s.hasConsole());
         show(this.tellerButton, str(obj(obj(s.snapshot, 'self'), 'storyteller'), 'state') === 'approved');
         const waiting = s.friendRequestsIn.length + s.circleInvites.length;   // (Friend requests and circle invitations.)
-        const howlIn = num(obj(obj(s.snapshot, 'self'), 'social'), 'howlIn');
-        this.howlButton.disabled = howlIn > 0;
-        this.howlButton.title = howlIn > 0 ? `Your voice needs a rest: ${Math.ceil(howlIn / 60)} min` : 'Howl: call others from across the country (/howl)';
-        setText(this.friendsButton, waiting ? `FRIENDS · ${waiting}` : 'FRIENDS');
+        setText(this.friendsCount, waiting ? String(waiting) : '');
+        this.friendsButton.title = waiting ? `Friends · ${waiting} waiting` : 'Friends';
         setClass(this.friendsButton, 'unread', waiting > 0);
         setClass(this.devButton, 'active', s.devConsole);
         this.devConsole.update();
@@ -573,10 +518,36 @@ export class Hud {
             setText(this.staminaNote, rate < -0.01 ? `DRAINING ${(-rate).toFixed(1)}/s · ease pace for distance`
                 : rate > 0.01 ? (stamina >= 99.95 ? 'FULL' : `RECOVERING +${rate.toFixed(1)}/s`) : 'STEADY · sustainable travel');
         }
-        setText(this.senses, `HEARING · ${s.movementHeard ? 'unseen pawsteps' : 'no unseen steps'}   ·   ${scentLabel(s.scentCues)}`);
     }
 
-    // ------------------------------------------------------------------ The action menu
+    // ------------------------------------------------------------------ The surroundings bar
+
+    /** The time of day and the weather as pictures (their words on the pointer), the kind of day, and the senses. */
+    private updateSurroundings() {
+        const s = this.s, e = s.environment;
+        const calendar = obj(obj(obj(s.snapshot, 'cell'), 'environment'), 'calendar');
+        const time = timeOfDay(e.hour, e.phase);
+        const moon = str(calendar, 'moonName').toLowerCase();
+        const when = [time.words, str(calendar, 'weekday'), str(calendar, 'season').toLowerCase(),
+            e.phase === 'night' && moon ? `a ${moon}` : ''].filter(Boolean).join(' · ');
+        setIcon(this.timeIcon, TimeIcons[time.icon], when);
+        const weather = weatherIcon(e.weather, e.intensity, s.outdoors);
+        const light = s.outdoors ? '' : e.illumination < 0.25 ? 'Unlit' : e.glowStrength > 0.05 ? `${upperFirst(e.lightingTone)} light` : '';
+        setIcon(this.weatherIcon, WeatherIcons[weather.icon], [weather.words, light].filter(Boolean).join(' · '));
+        const day = dayLabel(s.snapshot);
+        setText(this.day, day);
+        show(this.day, !!day);
+        const sense = (which: Sense, value: number, extra = '', alert = false) => {
+            const icon = this.senseIcons.get(which)!, level = senseLevel(which, value);
+            setIcon(icon, SenseIcons[which][level.level], extra ? `${level.words}\n${extra}` : level.words);
+            setClass(icon, 'alert', alert);
+        };
+        sense('sight', e.sight);
+        sense('hearing', e.hearing, s.movementHeard ? 'Unseen pawsteps nearby' : 'No unseen steps', s.movementHeard);
+        sense('scent', e.scent, upperFirst(scentLabel(s.scentCues).replace(/^SCENT · /, '')), s.scentCues.length > 0);
+    }
+
+    // ------------------------------------------------------------------ The wheel (a right-click, or a row of In Sight)
 
     private updateMenu() {
         const s = this.s;
@@ -586,29 +557,57 @@ export class Hud {
             this.menuKey = '';
             return;
         }
-        const key = JSON.stringify([s.contextTarget, s.contextName, s.contextActions, s.contextPage, s.contextPoint, s.armed]);
+        const ground = s.contextTarget === GroundTarget;
+        const howlIn = num(obj(obj(s.snapshot, 'self'), 'social'), 'howlIn');
+        const key = JSON.stringify([s.contextTarget, s.contextName, s.contextActions, s.contextPage, s.contextPoint, s.armed, ground && howlIn > 0,
+            window.innerWidth, window.innerHeight]);
         if (key === this.menuKey) return;
         this.menuKey = key;
         this.menu.replaceChildren();
-        el('div', 'menu-title', this.menu, s.contextName);
-        s.contextActions.forEach((action, i) =>
-            button(`${i + 1}  ${s.armed === `${action}|${s.contextTarget}` ? 'Attack · sure? (a crime)'
-                : action.startsWith('vouch:') ? `Vouch for ${s.entities.get(action.slice(6))?.name ?? 'them'}`
-                : action.startsWith('wardens-') ? wardensWords(s, action)
-                : action.startsWith('trouble:') ? action.slice(action.indexOf('|') + 1)   // (A resident's trouble, as the server words it: doc 57.)
-                : action === 'vouch' ? 'Vouch for…' : MenuWords[action] ?? upperFirst(action)}`,
-                `menu-item${s.armed === `${action}|${s.contextTarget}` ? ' armed' : ''}`, this.menu,
-                () => s.activate({rect: noRect, action: 'context', target: action})));
-        // On the map, beside what was clicked; from a panel, at the pointer. Kept on screen either way.
+        const words = (action: string) => s.armed === `${action}|${s.contextTarget}` ? 'Attack · sure? (a crime)'
+            : ground ? Commands.find(c => c.name === action)?.wheel ?? upperFirst(action)
+            : action.startsWith('vouch:') ? `Vouch for ${s.entities.get(action.slice(6))?.name ?? 'them'}`
+            : action.startsWith('wardens-') ? wardensWords(s, action)
+            : action.startsWith('trouble:') ? action.slice(action.indexOf('|') + 1)   // (A resident's trouble, as the server words it: doc 57.)
+            : action === 'vouch' ? 'Vouch for…' : MenuWords[action] ?? upperFirst(action);
+        // Round the middle, clockwise from the top: half down the right, half up the left, each name reading outward
+        // from the ring, so long ones never cross. The digits 1–9 choose too.
+        const n = s.contextActions.length, right = Math.ceil(n / 2), most = Math.max(right, n - right);
+        const radius = Math.max(72, most * 19);
+        const ring = el('div', 'radial-ring', this.menu);
+        setStyle(ring, 'width', `${radius * 2}px`);
+        setStyle(ring, 'height', `${radius * 2}px`);
+        const centre = button(s.contextName || '…', 'radial-centre', this.menu, () => (s.contextTarget = ''));
+        centre.title = 'Close (Esc)';
+        s.contextActions.forEach((action, i) => {
+            const onRight = i < right, k = onRight ? right : n - right, j = onRight ? i : n - 1 - i;
+            const spread = Math.min(72, 14 * k), angle = k > 1 ? (-spread + (2 * spread * j) / (k - 1)) * Math.PI / 180 : 0;
+            const x = Math.cos(angle) * radius * (onRight ? 1 : -1), y = Math.sin(angle) * radius;
+            const armed = s.armed === `${action}|${s.contextTarget}`;
+            const item = button('', `menu-item radial-item ${onRight ? 'east' : 'west'}${armed ? ' armed' : ''}`, this.menu,
+                () => s.activate({rect: noRect, action: 'context', target: action}));
+            if (i < 9) el('span', 'radial-key', item, String(i + 1));
+            el('span', 'radial-word', item, words(action));
+            item.dataset.action = action;
+            setStyle(item, 'left', `${x.toFixed(1)}px`);
+            setStyle(item, 'top', `${y.toFixed(1)}px`);
+            const command = ground ? Commands.find(c => c.name === action) : undefined;
+            if (command) item.title = `/${command.name}${command.key ? ` · ${command.key}` : ''} · ${command.help}`;
+            if (ground && action === 'howl' && howlIn > 0) {
+                item.disabled = true;
+                item.title = `Your voice needs a rest: ${Math.ceil(howlIn / 60)} min`;
+            }
+        });
+        // At the pointer (on the map) or where the row was clicked; the whole wheel kept on screen.
         let x: number, y: number;
         if (s.contextPage) [x, y] = s.contextPage;
         else {
             const r = this.canvas.getBoundingClientRect();
             [x, y] = [r.left + s.contextPoint[0], r.top + s.contextPoint[1]];
         }
-        const height = 50 + s.contextActions.length * 34;
-        setStyle(this.menu, 'left', `${Math.max(8, Math.min(window.innerWidth - 210, x))}px`);
-        setStyle(this.menu, 'top', `${Math.max(8, Math.min(window.innerHeight - height - 8, y))}px`);
+        const reach = radius + 170;
+        setStyle(this.menu, 'left', `${Math.max(reach, Math.min(window.innerWidth - reach, x))}px`);
+        setStyle(this.menu, 'top', `${Math.max(radius + 24, Math.min(window.innerHeight - radius - 24, y))}px`);
     }
 
     // ------------------------------------------------------------------ Widening the story or the map

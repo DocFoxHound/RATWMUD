@@ -72,7 +72,7 @@ class Face {
             c.fillText(f.animal.glyph, w / 2, h / 2);
             return;
         }
-        // The round chip is cut to a circle (styles.css): its paper square, the face kept inside the circle.
+        // The round chip is cut to a circle (styles.css), the face kept inside it, over the chip's own colour.
         if (this.view === 'face') drawPortrait(c, portraits, f.appearance, 0, 0, w, h, undefined, {view: 'face', radius: 0, pad: 0.1});
         else drawPortrait(c, portraits, f.appearance, 0, 0, w, h, undefined, {view: 'profile', pad: 0.05, flip: this.flip});
     }

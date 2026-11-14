@@ -1,6 +1,6 @@
 // The gathering howl in the real page (Docs/Design/51-scenes-and-stars.md, Phase 6): Ash howls; Bo, near, hears it
 // (a sound, a line, a mark at the minimap's edge) and joins with JOIN THE HOWL; Cy sees one mark for the chorus, of two
-// wolves; Ash's Howl button rests. Screenshots go to artifacts/screenshots/howl/.
+// wolves; Ash's voice rests. Screenshots go to artifacts/screenshots/howl/.
 //
 //   node tools/client/howl.mjs [OUT]           (RATW_SERVER: the server binary; RATW_WEB: the built page, Client/dist by default)
 import {spawn} from 'node:child_process';
@@ -42,8 +42,8 @@ try {
     const ash = await open('ash'), bo = await open('bo'), cy = await open('cy');
     const until = (page, condition, seconds = 8) => page.waitFor(condition, seconds).then(() => true).catch(() => false);
     await sleep(800);
-    await ash.evaluate(`[...document.querySelectorAll('button')].find(b => b.textContent === 'Howl').click()`);
-    check(await until(ash, `${S}.posts.some(p => p.text === 'You howl.')`), 'Ash howls from the Howl button');
+    await ash.evaluate(`${S}.setChat(true); ${S}.composer.text = '/howl'; ${S}.submitPost()`);
+    check(await until(ash, `${S}.posts.some(p => p.text === 'You howl.')`), 'Ash howls with /howl');
     check(await until(bo, `${S}.howls.size === 1 && [...${S}.howls.values()][0].canJoin`), 'Bo hears it, near enough to join');
     check(await until(bo, `${S}.posts.some(p => /A howl rises to the/.test(p.text))`), 'with a line where he writes');
     check(await until(bo, `/A HOWL TO THE [\\s\\S]*JOIN THE HOWL/.test(document.querySelector('.scene-bar')?.innerText ?? '')`), 'and JOIN THE HOWL');
@@ -51,7 +51,7 @@ try {
     await bo.evaluate(`[...document.querySelectorAll('.howl-call button')].find(b => b.textContent === 'JOIN THE HOWL').click()`);
     check(await until(bo, `${S}.posts.some(p => p.text === 'You join the howl.')`), 'Bo joins the howl');
     check(await until(cy, `${S}.howls.size === 1 && [...${S}.howls.values()][0].wolves === 2`), 'Cy: one mark for the chorus, of two wolves');
-    check(await until(ash, `[...document.querySelectorAll('button')].find(b => b.textContent === 'Howl')?.disabled === true`), "Ash's voice rests");
+    check(await until(ash, `${S}.snapshot.self.social?.howlIn > 0`), "Ash's voice rests");
     await cy.screenshot(`${OUT}/2-the-chorus-cy.png`);
     for (const page of [ash, bo, cy]) {
         const errors = page.console.filter(l => /EXCEPTION|error/i.test(l));

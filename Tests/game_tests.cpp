@@ -1562,6 +1562,88 @@ void theWholeScreenOnTheWire()
         g.disconnect(c);
 }
 
+void theSpeakersFaceOnTheLine()
+{
+    // The user's notes (2026-11-14): a line in the story carries who said it (its id, look and portrait) for its face,
+    // only to a listener shown the speaker (doc 80). A wolf crouched unseen and a voice from another room carry none.
+    game::Options o;
+    o.tiesOptional = true;
+    o.hiddenNames = false;
+    o.devIdentity = true;
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "starts: " + problem);
+    Client ada, bo, cy;
+    ada.id = 95;
+    bo.id = 96;
+    cy.id = 97;
+    for (auto* c : {&ada, &bo, &cy})
+        g.connect(c);
+    g.command(&ada, cmd({{"type", "hello"}, {"id", "ada"}, {"name", "Ada"}}));
+    g.command(&bo, cmd({{"type", "hello"}, {"id", "bo"}, {"name", "Bo"}}));
+    g.command(&cy, cmd({{"type", "hello"}, {"id", "cy"}, {"name", "Cy"}}));
+    auto* a = g.world().entity(ada.entityId);
+    auto* b = g.world().entity(bo.entityId);
+    auto* c = g.world().entity(cy.entityId);
+    a->cellId = b->cellId = c->cellId = "tavern";
+    a->position = {22.5, 6.5};
+    b->position = {24.5, 6.5};
+    c->position = {21.5, 8.5};
+    c->name = b->name;                              // Two in sight by one name.
+    c->appearance->coat = "#202020";
+    b->appearance->coat = "#e8d8b0";
+    g.world().setLighting("tavern", 1, 1, "warm");
+    run(g, ada, .5);
+    int n = 0;
+    const auto say = [&](Client& who, const std::string& words, const std::string& volume = "speak") {
+        ada.events.clear();
+        g.command(&who, cmd({{"type", "chat"}, {"text", "\"" + words + "\""}, {"volume", volume}, {"commandId", "f" + std::to_string(++n)}}));
+        run(g, ada, .2);
+        for (const auto& e : ada.events)
+            if (e.string("type") == "roleplay" && e.string("text").find(words) != std::string::npos)
+                return e;
+        return json::Value();
+    };
+    auto line = say(bo, "Morning.");
+    expect(line.string("speakerId") == bo.entityId && line.string("speaker") == "Bo", "a seen speaker's line carries their id: " + json::dump(line));
+    expect(line["appearance"].string("coat") == "#e8d8b0", "and their look, for the face: " + json::dump(line["appearance"]));
+    line = say(cy, "And to you.");
+    expect(line.string("speakerId") == cy.entityId && line.string("speaker") == "Bo" && line["appearance"].string("coat") == "#202020",
+           "the other of the same name: their own id and face: " + json::dump(line));
+    line = say(ada, "Hello both.");
+    expect(line.string("speakerId") == ada.entityId, "one's own line, one's own id");
+    // Crouched and unseen (in the dark pantry, its door shut): heard, but not put to anyone, and nothing to tie it to Bo.
+    b->position = {26.5, 6.5};
+    b->posture = "crouching";
+    g.world().setTimeOfDay(0);
+    g.world().setLighting("tavern", 0, 0, "warm");
+    run(g, ada, .5);
+    expect(!g.world().shown(ada.entityId, bo.entityId), "(Bo is hidden from Ada)");
+    line = say(bo, "Psst.", "yell");
+    expect(line.isObject(), "Ada hears the hidden wolf");
+    expect(!line.has("speakerId") && !line.has("appearance") && !line.has("artwork") &&
+               json::dump(line).find(bo.entityId) == std::string::npos,
+           "a hidden sneaker's line carries no id or look: " + json::dump(line));
+    // Off her screen: a yell from the next room, through its door.
+    b->posture = "standing";
+    const Door* way = nullptr;
+    for (const Door* d : g.world().doorsIn("tavern"))
+        if (d->portal && !d->targetCell.empty() && d->targetCell != "tavern")
+            way = d;
+    expect(way != nullptr, "the tavern has a way out");
+    a->cellId = way->targetCell;
+    a->position = way->arrival;
+    c->position = way->position;
+    run(g, ada, .5);
+    expect(!g.world().shown(ada.entityId, cy.entityId), "(Cy is off Ada's screen)");
+    line = say(cy, "Anyone out there?", "yell");
+    expect(line.isObject(), "Ada hears the yell from the next room");
+    expect(!line.has("speakerId") && !line.has("appearance") && json::dump(line).find(cy.entityId) == std::string::npos,
+           "an off-screen speaker's line carries no id or look: " + json::dump(line));
+    for (auto* cl : {&ada, &bo, &cy})
+        g.disconnect(cl);
+}
+
 void fightsThroughTheGame()
 {
     // Docs/Design/33-combat.md, through commands and snapshots: a challenge, the arena in the snapshot, turns, and an
@@ -2196,6 +2278,7 @@ int main()
         theJournalKeepsWhatACrashWouldLose();
         aRestoresQuarantineSurvivesACrash();
         theWholeScreenOnTheWire();
+        theSpeakersFaceOnTheLine();
         fightsThroughTheGame();
         swordsMuffleAndBodiesLinger();
         aSermonOnRestday();

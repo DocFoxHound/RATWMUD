@@ -254,4 +254,21 @@ Result Game::reviewArtwork(const std::string& id, const std::string& decision, c
                                             : "Your portrait was not approved" + (reason.empty() ? std::string(".") : ": " + reason));
     return {true, "Portrait " + m.status + ".", {}};
 }
+
+void Game::addSpeaker(json::Value& line, const std::string& listener, const std::string& speaker) const
+{
+    const auto* who = world_.entity(speaker);
+    if (!who || (listener != speaker && !world_.shown(listener, speaker)))
+    {
+        for (const char* key : {"speakerId", "appearance", "artwork"})
+            line.erase(key);
+        return;
+    }
+    line.set("speakerId", who->id);
+    line.set("appearance", wire::appearance(who->appearance));
+    if (const auto portrait = who->npc ? std::string() : visiblePortrait(who->id, listener); !portrait.empty())
+        line.set("artwork", portrait);
+    else
+        line.erase("artwork");
+}
 } // namespace ratw::game

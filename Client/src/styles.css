@@ -11,11 +11,12 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
     font-family: 'RATW Sans', Roboto, 'Segoe UI', Arial, sans-serif; }
 #app { position: fixed; inset: 0; }
 
-/* The game (Docs/Design/29-client-polish.md, phase 2): a slim top bar, the story column, the map, and who is in sight. */
+/* The game (Docs/Design/29-client-polish.md, phase 2): the story column, the map, and who is in sight; no top or bottom
+   bar (the user's notes, 2026-11-14: the pages' buttons are at the top of the side, ui/hud/hud.css). */
 .game-root { position: absolute; inset: 0; }
 .game { position: absolute; inset: 0; display: grid; --story: 460px; --side: 300px;
-    grid-template-columns: var(--story) 6px minmax(360px, 1fr) var(--side); grid-template-rows: 52px minmax(0, 1fr) 30px;
-    grid-template-areas: "top top top top" "story resize center side" "help help help help"; }
+    grid-template-columns: var(--story) 6px minmax(360px, 1fr) var(--side); grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: "story resize center side"; }
 @media (max-width: 1250px) { .game { --side: 250px; } }
 .game .label { font-size: 11px; letter-spacing: .08em; font-family: 'RATW Mono', monospace; }
 .game .muted { color: var(--muted); }
@@ -27,19 +28,8 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .game button:hover { background: var(--raised); }
 .game button:disabled { opacity: .35; cursor: default; background: transparent; }
 
-.topbar { grid-area: top; display: flex; align-items: center; gap: 28px; padding: 0 18px; background: #151f20;
-    border-bottom: 1px solid #34443e; min-width: 0; }
-.brand { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
-.brand .mark { color: var(--gold); font-size: 22px; }
-.brand .title { font-weight: 500; letter-spacing: .04em; font-size: 15px; }
-.when { flex: 1; display: flex; gap: 18px; align-items: baseline; min-width: 0; overflow: hidden; white-space: nowrap; font-size: 13px; }
-.top-actions { display: flex; gap: 4px; }
-.top-actions .top { padding: 8px 12px; font-size: 12px; letter-spacing: .05em; }
-.live { color: var(--gold); }
-.live.on { color: var(--sage); }
-
 .story { grid-area: story; display: flex; flex-direction: column; min-height: 0; background: var(--panel);
-    border-right: 1px solid #34443e; padding: 14px 18px 10px; gap: 8px; }
+    border-right: 1px solid #34443e; padding: 10px 16px 10px; gap: 6px; }
 .story-head { display: flex; justify-content: space-between; align-items: center; }
 .tabs { display: flex; gap: 4px; align-items: center; }
 .tab { padding: 7px 11px; font-size: 12px; letter-spacing: .04em; white-space: nowrap; }
@@ -47,7 +37,7 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .tab.zoom { width: 30px; padding: 7px 0; font-size: 15px; }
 .place { margin: 4px 0 0; font-size: 24px; font-weight: 500; }
 .scene { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; max-height: 7.2em; overflow-y: auto; flex: none; }
-.feed-label { border-top: 1px solid #34443e; padding-top: 10px; }
+.feed-label { border-top: 1px solid #34443e; padding-top: 6px; }
 .feed { flex: 1; min-height: 80px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding-right: 6px;
     scrollbar-color: #34443e transparent; }
 .feed-empty { color: var(--muted); font-size: 15px; line-height: 1.8; margin: 12px 8px; }
@@ -88,8 +78,6 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .map canvas { position: absolute; inset: 0; outline: none; cursor: default; }
 .looking { min-height: 20px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .looking .what { color: var(--paper); font-weight: 500; }
-.actions { display: flex; gap: 6px; align-items: center; border-top: 1px solid #34443e; padding-top: 8px; flex-wrap: wrap; }
-.actions .label { margin-right: 8px; }
 .act { padding: 7px 12px; font-size: 13px; }
 
 .side { grid-area: side; display: flex; flex-direction: column; gap: 10px; min-height: 0; padding: 10px 12px 8px 0; }
@@ -134,7 +122,7 @@ html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper
 .party-name { color: var(--gold); }
 .party-tools, .party-foot { display: flex; gap: 4px; flex-wrap: wrap; }
 .party-foot { margin-top: 6px; }
-.thumb { width: 44px; height: 44px; flex: none; background: var(--ink); border-radius: 3px; }
+.thumb { width: 44px; height: 44px; flex: none; border-radius: 3px; }
 .sight-text { flex: 1; min-width: 0; }
 .sight-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sight-detail { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -385,7 +373,7 @@ button.rpg-slot:disabled { cursor: not-allowed; opacity: .75; }
 .door-actions { display: flex; gap: 16px; margin-top: 18px; }
 .door-actions button { margin: 0; }
 .door-actions button.primary { flex: 1; }
-@media (max-width: 1400px) { .map-titles > .label:first-child { display: none; } .map-titles .effects { display: none; } }
+
 
 /* The creator (doc 29, phase 9): tabs, swatches, markings. */
 .creator { display: flex; flex-direction: column; gap: 14px; }
@@ -518,8 +506,8 @@ button.fight-who { padding: 2px 6px; text-decoration: underline dotted; cursor: 
 /* The fight screen (Docs/Design/37-combat-feel.md, phase 1): while fighting or watching, the screen is about the fight. */
 .icon { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
     vertical-align: -0.15em; flex: none; }
-.fight-mode .side > :not(.fight-cards), .fight-mode .center > .actions, .fight-mode .center > .looking,
-.fight-mode .map-head .tabs, .fight-mode .map-head .effects, .fight-mode .story .scene, .fight-mode .story .scene-bar { display: none !important; }
+.fight-mode .side > :not(.fight-cards), .fight-mode .center > .looking,
+.fight-mode .map-head .tabs, .fight-mode .story .scene, .fight-mode .story .scene-bar { display: none !important; }
 .fight-mode .story .place { font-size: 18px; }
 /* In a fight one's pace and stamina stay in view, under the cards: they are how far the next move goes and what it costs. */
 .fight-mode .side > .panel.status { display: block !important; order: 2; flex: none; }

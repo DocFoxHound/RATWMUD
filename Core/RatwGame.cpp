@@ -4604,11 +4604,18 @@ std::vector<std::string> Game::publish(const std::string& author, const ParsedPo
         e.add("sequence", event);
         e.add("color", speaker->speakingColor);
         e.add("anonymous", !sense.identifiable);
-        // By the name the listener knows them by, or as they look (doc 32).
-        e.add("speaker", sense.identifiable ? names::capitalised(labelFor(listener, author)) : std::string("A voice"));
+        // By the name the listener knows them by, or as they look (doc 32), numbered as the listener's screen numbers
+        // wolves alike ("A dun wolf (2)", doc 80), so the name matches the one in the In Sight list.
+        std::string label = sense.identifiable ? labelFor(listener, author) : std::string();
+        if (sense.identifiable && listener != author && !knowsName(listener, author))
+            if (const auto called = strangerNames(listener); called.count(author))
+                label = called.at(author);
+        e.add("speaker", sense.identifiable ? names::capitalised(label) : std::string("A voice"));
         if (post.speech && !speaker->mouth.empty())
             e.add("muffled", true);                // Words around a sword held in the jaws (doc 33).
-        // Deliberately no author ID: even anonymous records can't be tied to hidden actors.
+        // The speaker's id and look only to a listener shown them (doc 80): a voice heard and not seen, even one known by
+        // name, carries nothing to tie it to a wolf the listener can't see.
+        addSpeaker(e, listener, author);
         auto output = Value::array();
         std::string text, told;                    // (told: for a scene's story, its actions *starred*, its words "quoted".)
         for (const auto& segment : segments)
@@ -6140,6 +6147,7 @@ void Game::command(Connection* c, const std::string& raw)
                 if (const auto* actor = world_.entity(other->entityId); actor && actor->cellId == player->cellId && !hides(other->entityId, id))
                 {
                     e.set("speaker", names::capitalised(labelFor(other->entityId, id)));
+                    addSpeaker(e, other->entityId, id);
                     send(other, e);
                     if (other->entityId != id)
                         heardLine(other->entityId, e.number("sequence"), id, "ooc", text);
