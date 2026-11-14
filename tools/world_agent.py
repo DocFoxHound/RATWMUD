@@ -12,6 +12,9 @@ The world's own agent. DIR is the agent directory: the server runs with --centra
 two talk through files there, each written whole and atomically (a temporary file, then a rename):
 - DIR/central-keys.json, kept here as `keys` keeps its FILE (below), with DIR/central-keys.json.wanted;
 - DIR/online.json, written by the server about every 15 s: {"world", "at", "players", "online": [wolf ids]};
+- DIR/unlocks.json, written by an official world's server when it changes: {"world", "at", "quickened": [the wolves of
+  every account whose standing there has opened Quickened]}, sent with each heartbeat so central gives those accounts
+  Quickened in every world (Docs/Design/49-characters-and-earned-gifts.md, 9.1). None, or another world's: none sent.
 - DIR/bans.json, written here from each heartbeat's reply: {"at", "accounts": [the ticket `sub` of every account
   central has banned, as this world sees it]}. The server refuses a banned account's hello, and sends out a banned
   wolf already in the world.
@@ -85,6 +88,7 @@ WANTED_EVERY = 60
 WOLF = re.compile(r'^wolf-[0-9a-f]{32}$')
 ONLINE_FRESH = 60                             # An online.json older than this is a stopped server's: nobody counted.
 MOST_ONLINE = 10000
+MOST_QUICKENED = 1000                         # unlocks.json's wolves in one heartbeat (central takes as many).
 TOKEN = re.compile(r'^[\x21-\x7e]{1,256}$')   # (Printable, no spaces: a token pasted whole.)
 
 
@@ -418,7 +422,21 @@ class Agent:
                 out[field] = value
         out.update(self.extra)
         out['online'] = self.online(status['id'])
+        quickened = self.quickened(status['id'])
+        if quickened:
+            out['quickened'] = quickened
         return out
+
+    def quickened(self, world_id: str) -> list[str]:
+        """The wolves of the accounts whose standing in this world opened Quickened, from the server's unlocks.json
+        (an official world's; doc 49, 9.1): none if there is none, it can't be read or it names another world."""
+        try:
+            value = json.loads((self.dir / 'unlocks.json').read_text(encoding='utf-8'))
+        except (OSError, UnicodeDecodeError, ValueError):
+            return []
+        if not isinstance(value, dict) or value.get('world') != world_id or not isinstance(value.get('quickened'), list):
+            return []
+        return [w for w in value['quickened'] if isinstance(w, str) and WOLF.match(w)][:MOST_QUICKENED]
 
     def write_bans(self, bans) -> None:
         accounts = sorted({b for b in bans if isinstance(b, str) and 0 < len(b) <= 64}) if isinstance(bans, list) else []

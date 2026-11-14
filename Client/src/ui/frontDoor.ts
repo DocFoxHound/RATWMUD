@@ -183,6 +183,7 @@ export class FrontDoor {
     creation: Json | null = null;            // Strengths and weaknesses (doc 49): grades, budget, presets.
     tiers: Json | null = null;               // Which Gift tiers the account has earned, and what the rest need (doc 49).
     unlocks: Json | null = null;             // Central mode: what a world's standing asks before each tier opens (doc 49).
+    accountQuickened = false;                // Central mode: the account has Quickened, for every world (doc 49, 9.1).
     nameMost = NameMost;                     // A new wolf's name, at most (central's rules say; 24).
     account: Json | null = null;             // The account as a person (doc 50): its handle, asked for when it has none.
     starts: Json[] = [];                     // Where a new wolf may arrive (doc 52): each town, the busiest preselected.
@@ -428,6 +429,7 @@ export class FrontDoor {
             if (isObject(event.creation)) this.creation = event.creation;
             if (isObject(event.tiers)) this.tiers = event.tiers;
             if (isObject(event.unlocks)) this.unlocks = event.unlocks;
+            if (this.mode === 'central') this.accountQuickened = event.quickened === true;
             if (typeof event.nameMost === 'number' && event.nameMost >= 2) this.nameMost = event.nameMost;
             if (isObject(event.account)) this.account = event.account;
             if (typeof event.who === 'string') this.who = event.who;
@@ -1376,7 +1378,7 @@ export class FrontDoor {
             row.append(b);
         }
         const out: HTMLElement[] = [el('p', {className: 'muted'}, `Your wolf's Gift is the ${str(family, 'name', title(this.draftFamily))} family. ` +
-            'Here they arrive Gifted or Quickened: Quickened opens with standing earned in this world.'),
+            'Here they arrive Gifted or Quickened: Quickened opens once your account has earned it, in any official world.'),
             el('span', {className: 'gift-heading'}, 'IN THIS WORLD'), row];
         if (family) out.push(this.giftDetails(family));
         return out;
@@ -1731,7 +1733,7 @@ export class FrontDoor {
     private giftPanel(changed: () => void): HTMLElement[] {
         const tiers = obj(this.gifts, 'tiers');
         const families = arr(this.gifts, 'families').filter(isObject);
-        const cards = tierCards(this.mode, this.tiers, this.unlocks);
+        const cards = tierCards(this.mode, this.tiers, this.unlocks, this.accountQuickened);
         // A tier chosen before its lock was known (a draft from a tool, a lobby that came later) goes back to Normal.
         if (cards.some(c => c.tier === this.draftTier && !c.open)) {
             this.draftTier = 'normal';
@@ -2032,7 +2034,7 @@ export class FrontDoor {
         this.draftName = this.draftName.trim();
         const nameWrong = nameProblem(this.draftName, this.nameMost);
         if (nameWrong) return this.sendBack('name', `${nameWrong} The authority validates the final name.`);
-        const locked = tierCards(this.mode, this.tiers, this.unlocks).find(c => c.tier === this.draftTier && !c.open);
+        const locked = tierCards(this.mode, this.tiers, this.unlocks, this.accountQuickened).find(c => c.tier === this.draftTier && !c.open);
         if (locked) return this.sendBack('gift', locked.reason);
         if (this.draftTier !== 'normal' && !this.draftFamily)
             return this.sendBack('gift', `A ${title(this.draftTier)} wolf needs a Gift family: choose one of the eight.`);

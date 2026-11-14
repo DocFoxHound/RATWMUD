@@ -78,7 +78,7 @@ def drop_database(dbname: str) -> None:
         su.execute(sql.SQL('DROP DATABASE IF EXISTS {} WITH (FORCE)').format(sql.Identifier(dbname)))
 
 
-ACCOUNT = 'id, username, password, created_at, banned, host, admin'
+ACCOUNT = 'id, username, password, created_at, banned, host, admin, quickened_at, quickened_world'
 WOLF = 'id, account_id, name, name_key, sex, age, appearance, family, profile, choices, revision, created_at, updated_at'
 SESSION = 'id, account_id, access_expires, refresh_expires, remember, created_at, refreshed_at'
 
@@ -88,7 +88,7 @@ def _account(row) -> dict | None:
         return None
     keys = ACCOUNT.split(', ')
     out = dict(zip(keys, row))
-    out['created_at'] = epoch(out['created_at'])
+    out['created_at'], out['quickened_at'] = epoch(out['created_at']), epoch(out['quickened_at'])
     return out
 
 
@@ -456,6 +456,21 @@ class Store:
     def banned_accounts(self) -> list[str]:
         with self.connection() as conn:
             return [r[0] for r in conn.execute('SELECT id FROM central.accounts WHERE banned ORDER BY id').fetchall()]
+
+    def record_quickened(self, world_id: str, wolves: list[str], now: float) -> list[str]:
+        """Quickened for the whole account (doc 49, 9.1), from an official world's heartbeat: each account owning one of
+        these wolves, if that wolf has a ticket to this world central still keeps (30 days: a world names only its own
+        visitors; one named again after its wolf's next visit is taken then), gets Quickened now, from this world,
+        unless it has it already. The accounts newly given it."""
+        if not wolves:
+            return []
+        with self.connection() as conn:
+            return [r[0] for r in conn.execute(
+                'UPDATE central.accounts a SET quickened_at = %s, quickened_world = %s '
+                'WHERE a.quickened_at IS NULL AND a.id IN ('
+                '    SELECT w.account_id FROM central.wolves w WHERE w.id = ANY(%s) AND EXISTS ('
+                '        SELECT 1 FROM central.tickets t WHERE t.wolf_id = w.id AND t.world_id = %s)) '
+                'RETURNING a.id', (ts(now), world_id, list(wolves), world_id)).fetchall()]
 
     def ticketed_wolves(self, world_id: str, wolves: list[str], since: float) -> set[str]:
         """Which of these wolves count as online at this world (the honest count): its latest ticket from central, to

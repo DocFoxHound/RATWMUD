@@ -304,6 +304,11 @@ export class Central {
     deleteAccount(password: string) {
         return this.ask('DELETE', '/account', {password});
     }
+    /** The signed-in account (its name, host and admin flags, and whether it has Quickened: doc 49, 9.1). */
+    async account(): Promise<Json | null> {
+        const reply = await this.ask('GET', '/account');
+        return isJson(reply.account) ? reply.account : null;
+    }
     async wolves(): Promise<Json[]> {
         const reply = await this.ask('GET', '/wolves');
         return Array.isArray(reply.wolves) ? reply.wolves.filter(isJson) : [];

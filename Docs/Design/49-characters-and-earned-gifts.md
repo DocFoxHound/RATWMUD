@@ -327,6 +327,35 @@ Each character carries `progressVersion` (saved); each phase that changes charac
   account's character IDs and no verifiers, so the DM tools may read it, unlike `game.accounts`.
 - **Quickened keeps the setting's cost** (agreed): rare, feared, watched by Wardens (`wardenAttention`).
 
+#### 9.1 Quickened for the whole account, on central (the user, 2026-11-14)
+
+> "Once per the whole account, not once per world."
+
+On central's worlds (ticket mode, doc 77) Quickened is a fact of the central account, earned once and open in every
+world; password-mode worlds (DEV, scratch servers, a standalone laptop world) keep the per-world rule above unchanged.
+
+- **What earns it:** the same measures as above (Gifted, social level 8, 100 stars from 30 different wolves, 2 closed
+  Stories, no upheld reports), met in an **official** world's standing, or a Dungeon Master's grant there. Only an
+  official world's word is taken: a community host runs its own server and could name anyone. A community world still
+  opens Quickened for its own arrivals by its own standing, as before; that stays in that world.
+- **How central hears:** an official world writes `unlocks.json` in the world agent's directory when it changes
+  (`Game::writeUnlocks`: the wolves of every account whose standing there has Quickened open, not held, the latest
+  first, at most 1,000); the agent (`tools/world_agent.py`) sends them as the heartbeat's `quickened`; central
+  (`Central.heartbeat`, `Store.record_quickened`) sets `central.accounts.quickened_at` and `quickened_world`
+  (migration `Central/migrations/0005`) on each account owning one of those wolves, if that wolf has a ticket to that
+  world central still keeps (30 days). Recorded once and kept; a community world's list is ignored.
+- **How it flows:** central puts `quickened: true|false` in every ticket (any world, any of the account's wolves) and
+  in the account (`/account/login`, `/account/refresh`, `GET /account`). A world's ticket check (`tickets::Claims`)
+  reads it (missing: false; anything but a bool: refused). At a first arrival, Quickened is open when this world's
+  standing opened it **or** the ticket says the account has it (`Game::quickenedByCentral`), unless this world's
+  Dungeon Master holds the account's unlocks; the arrival's `tiers` shows it open, `by: "account"`. The client's
+  Character Editor (central mode) un-greys Quickened when the account has it (`tierCards(..., quickened)`), and asks
+  central again on leaving a world.
+- **Older pieces:** an older central sends no `quickened` (a world reads false: its own standing decides, as before);
+  an older world ignores the claim; an older central ignores the heartbeat's field; an older client keeps Quickened
+  greyed in the Character Editor but still arrives Quickened where the world's arrival offers it.
+- **Not built:** revoking it on central (a DM's revoke in a world takes it back only there), and an admin command for it.
+
 ### 10. Wire messages
 
 - **Lobby** (`Game::lobby`), beside `gifts`: `creation` (attributes with each grade's start and cap, budget, costs,

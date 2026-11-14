@@ -60,8 +60,13 @@ test('the Gift tiers: Normal, Gifted and Quickened, each greyed with the reason 
     assert.deepEqual(open(odd), [['normal', true], ['gifted', false], ['quickened', false]]);
     assert.equal(odd[2].reason, 'Gifted first.');
     assert.deepEqual(open(tierCards('world', {gifted: {open: true}, quickened: {open: true}})), [['normal', true], ['gifted', true], ['quickened', true]]);
-    // On central the tier is each world's: Gifted is open to any wolf with a family; Quickened is a world's, never here.
+    // On central: Gifted is open to any wolf with a family; Quickened is the account's, once for every world (doc 49,
+    // 9.1): greyed with what it asks until central says the account has it, then open.
     const central = tierCards('central', null, {quickened: {level: 8, stars: 100, givers: 30, stories: 2}});
     assert.deepEqual(open(central), [['normal', true], ['gifted', true], ['quickened', false]]);
     assert.match(central[2].reason, /social level 8, 100 stars from 30 different wolves and 2 closed Stories/);
+    assert.match(central[2].reason, /whole account, in every world/);
+    const opened = tierCards('central', null, {quickened: {level: 8}}, true);
+    assert.deepEqual(open(opened), [['normal', true], ['gifted', true], ['quickened', true]], 'the account has it: open');
+    assert.equal(opened[2].reason, '');
 });

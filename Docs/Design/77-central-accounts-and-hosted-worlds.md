@@ -1106,7 +1106,9 @@ What was built:
   the account's first wolf for doc 52; then the wolf comes in. Name, age, look and family come from the ticket, and
   can't be given here. **The tier (the user's decision above):** no family, Normal only; a family, Gifted or Quickened.
   Gifted is open to such a wolf (it can't arrive Normal), and **Quickened is gated by this world's standing as today**
-  (doc 49).
+  (doc 49). *Changed 2026-11-14 (the user: "once per the whole account, not once per world"):* Quickened is also open
+  when the ticket's `quickened` says the account has it, which central records from official worlds' heartbeats (doc
+  49, 9.1).
 - **Straight in after:** a ticket for a wolf that has arrived brings it in at once. The **look is refreshed from each
   ticket**; the name never changes (a different name on central is logged and the world's kept); a ticket whose sex
   differs from the world's wolf is refused. A wolf owned by another account here is refused. One wolf per account in

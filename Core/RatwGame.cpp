@@ -2846,8 +2846,10 @@ bool Game::arrivalChoices(Connection* c, const Value& j, const std::string& tier
 {
     // Earned Gift tiers (doc 49, Phase 5): a tier the account hasn't opened is refused, with what it still needs. A
     // ticket's wolf with a Gift family must arrive Gifted or Quickened (the user, 2026-11-07: only Normal wolves have
-    // no family), so in ticket mode Gifted is open to it and only Quickened waits on this world's standing.
-    if (tier != "normal" && !options_.openTiers && !(ticketMode() && tier == "gifted"))
+    // no family), so in ticket mode Gifted is open to it and only Quickened waits: on this world's standing, or on the
+    // account's on central (the ticket's `quickened`, doc 49, 9.1), which opens it in every world.
+    if (tier != "normal" && !options_.openTiers && !(ticketMode() && tier == "gifted") &&
+        !(tier == "quickened" && quickenedByCentral(c)))
     {
         const auto record = standing_.find(c->accountUsername);
         const standing::Record r = record == standing_.end() ? standing::Record{} : record->second;

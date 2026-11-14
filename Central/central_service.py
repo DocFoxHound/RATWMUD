@@ -60,6 +60,7 @@ TICKETS_COUNTED = 86400             # A wolf online counts if its latest ticket 
                                     # recently, and it and its account are in good standing.
 HOST_WORLDS = 3                     # Worlds an account may host (not counting removed ones).
 ONLINE_MOST = 10000
+QUICKENED_MOST = 1000               # A heartbeat's Quickened wolves (doc 49, 9.1; the world sends as many).
 HOST_NAME = re.compile(r'^(?=.{1,253}$)([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}'
                        r'[A-Za-z0-9])?)*\.?$')
 CGNAT = ipaddress.ip_network('100.64.0.0/10')
@@ -435,7 +436,7 @@ class Central:
     @staticmethod
     def _public_account(account: dict) -> dict:
         return {'id': account['id'], 'username': account['username'], 'host': account['host'],
-                'admin': account['admin']}
+                'admin': account['admin'], 'quickened': account.get('quickened_at') is not None}
 
     @staticmethod
     def _public_wolf(wolf: dict) -> dict:
@@ -706,6 +707,7 @@ class Central:
             central_tickets.pairwise_id(self.keys.pairwise_secret(), account['id'], world_id)
         claims = {'sub': sub, 'wolf': wolf['id'], 'name': wolf['name'], 'sex': wolf['sex'], 'age': wolf['age'],
                   'look': wolf['appearance'], 'gift': wolf['family'], 'aud': world_id, 'kind': world['kind'],
+                  'quickened': account.get('quickened_at') is not None,
                   'jti': secrets.token_hex(16), 'iat': now, 'exp': now + central_tickets.LIFETIME}
         # Signed at central's own clock, not the whole second the claims carry: in the second a key was made its
         # activation is still ahead of int(now), and the ring would make a second, unpublished key for this ticket
@@ -845,6 +847,12 @@ class Central:
         if not isinstance(online, list) or len(online) > ONLINE_MOST:
             bad(f'online (a list of at most {ONLINE_MOST} wolf ids)')
         out['online'] = list(dict.fromkeys(w for w in online if isinstance(w, str) and WOLF_ID.match(w)))
+        quickened = body.get('quickened', [])
+        if quickened is None:
+            quickened = []
+        if not isinstance(quickened, list) or len(quickened) > QUICKENED_MOST:
+            bad(f'quickened (a list of at most {QUICKENED_MOST} wolf ids)')
+        out['quickened'] = list(dict.fromkeys(w for w in quickened if isinstance(w, str) and WOLF_ID.match(w)))
         why = listing_refused(out, kind)
         if why:
             raise refused(400, why, 'name_refused')
@@ -886,7 +894,8 @@ class Central:
         is where the request came from, never a field. Central calls the world back (GET /status) before first
         listing, every 10 minutes, and when its address changes. The reply says whether it is listed (and why not),
         the honest count, central's bans as this world sees them (each banned account's ticket `sub` here), and
-        central's clock."""
+        central's clock. An official world's `quickened` wolves give their accounts Quickened in every world (doc 49,
+        9.1)."""
         world = self._world_token(token, address)
         fields = self._listing(body, world['kind'])
         now = self.clock()
@@ -910,6 +919,7 @@ class Central:
                 why = self.call_back(ip, port, host, secure, world['id'])
                 check = {'reachable': not why, 'note': why, 'address': seen}
         online = fields.pop('online')
+        quickened = fields.pop('quickened')
         counted = self.store.ticketed_wolves(world['id'], online, now - TICKETS_COUNTED)
         online = [w for w in online if w in counted][:fields['limit'] or ONLINE_MOST]
         listing = {k: fields[k] for k in ('name', 'description', 'region', 'tags', 'limit', 'private', 'voices',
@@ -919,6 +929,10 @@ class Central:
             # (Its token was replaced or revoked, or the world delisted, while central called it back.)
             raise refused(401, 'Central does not know this host token (it was revoked, replaced or never made). Make a '
                                'new one on the Host page.', 'bad_token')
+        # Quickened for the whole account (doc 49, 9.1): the wolves of the accounts whose standing in this world has
+        # opened it. Only an official world's word is taken: a community host could name anyone.
+        if quickened and world['kind'] == 'official':
+            self.store.record_quickened(world['id'], quickened, now)
         banned = self.store.banned_accounts()
         if world['kind'] != 'official' and banned:
             secret = self.keys.pairwise_secret()

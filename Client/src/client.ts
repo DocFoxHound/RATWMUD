@@ -108,7 +108,7 @@ export class ClientApp {
         door.receive({type: 'lobby', stage: 'characters', ok: stage === 'characters' ? ok : true, message: stage === 'characters' ? text : '',
             characters: this.wolves.map(w => ({id: str(w, 'id'), name: str(w, 'name'), age: num(w, 'age', 18), appearance: w.appearance,
                 family: str(w, 'family'), choices: isObject(w.choices) ? w.choices : {}})),
-            host: this.account?.host === true, who: str(this.account, 'username'), home,
+            host: this.account?.host === true, quickened: this.account?.quickened === true, who: str(this.account, 'username'), home,
             ...(this.gifts ? {gifts: this.gifts} : {}), ...this.rules});
         if (this.wolf && this.wolves.some(w => str(w, 'id') === this.wolf)) door.selectedId = this.wolf;
         if (stage === 'worlds') {
@@ -426,6 +426,21 @@ export class ClientApp {
         this.play = null;
         this.shell.inWorld = false;
         if (!this.door) this.newDoor();
+        void this.refreshAccount();
+    }
+
+    /** The account again from central: a world may have opened Quickened for it meanwhile (doc 49, 9.1), which the
+     *  Character Editor shows. Quietly kept as it was if central can't be asked. */
+    private async refreshAccount() {
+        if (!this.account) return;
+        try {
+            const account = await this.central.account();
+            if (!account) return;
+            this.account = account;
+            if (this.door) this.door.accountQuickened = account.quickened === true;
+        } catch {
+            // (The next sign-in shows it.)
+        }
     }
 
     private closeConnection() {

@@ -10,7 +10,7 @@
 //   - `aud` this world's id, `kind` this world's kind, `exp` not passed and `iat` not ahead (both with the leeway for
 //     a home machine's clock), `iat` not before this world started, and a lifetime of at most MaxLifetime;
 //   - the identity in the game's own forms (identity::name, wire::readAppearance, identity::family), the sex the
-//     look's own; `wolf` a wolf id, `sub` an account id;
+//     look's own; `wolf` a wolf id, `sub` an account id; `quickened`, if there, true or false;
 //   - each `jti` admitted once, remembered until its `exp` plus the leeway (a restart is covered by the `iat` rule).
 //
 // Base64url is strict: the URL alphabet, no padding, no stray bits, so one ticket has one spelling.
@@ -42,6 +42,10 @@ struct Claims
     json::Value look;                               // The appearance, as central keeps it (wire::appearance's form).
     std::string world, kind, jti;
     double issued = 0, expires = 0;
+    // `quickened`: central's word that the account has opened Quickened, for every world (the user, 2026-11-14: "once
+    // per the whole account, not once per world"; doc 49, 9.1). Optional: a ticket without it (an older central) is
+    // false. Anything but true or false there is refused.
+    bool quickened = false;
 };
 
 // Central's public keys: {kid: raw Ed25519 key}, from a JWK set as GET /keys serves it (the world agent keeps a copy

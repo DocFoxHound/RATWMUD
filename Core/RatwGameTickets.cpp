@@ -30,6 +30,7 @@ constexpr double ArrivalWindow = 3600;              // The arrival limits count 
 constexpr double OnlineEvery = 15;                  // online.json is written this often (seconds)...
 constexpr double BansEvery = 5;                     // ...and bans.json looked at this often.
 constexpr std::uintmax_t MaxBansFile = 8u << 20;    // (Many bans fit: an account's id is 37 bytes.)
+constexpr std::size_t MaxUnlocksListed = 1000;      // unlocks.json's wolves (central takes as many in a heartbeat).
 const char* const BannedMessage = "This account is banned from central's worlds.";
 const char* const WorldBannedMessage = "This account is banned from this world by its host.";
 
@@ -157,6 +158,7 @@ void Game::forgetTicket(Connection* c)
 {
     c->ticketWolf.clear();
     c->ticketIdentity = Value();
+    c->ticketQuickened = false;
     if (ticketMode())
         c->accountUsername.clear();                 // (A ticket's account lasts as long as its wolf is here.)
 }
@@ -204,7 +206,16 @@ void Game::ticketLobby(Connection* c, bool ok, const std::string& message, const
         e.add("tierChoices", choices);
         e.add("gifts", gifts::creatorCatalog());
         e.add("creation", practice::creationCatalog());
-        e.add("tiers", tiersView(account));
+        auto tiers = tiersView(account);
+        if (quickenedByCentral(c) && !tiers.object("quickened").boolean("open"))
+        {
+            auto q = Value::object();                // (Opened for the whole account, on central: doc 49, 9.1.)
+            q.add("open", true);
+            q.add("by", "account");
+            q.add("progress", Value::array());
+            tiers.set("quickened", q);
+        }
+        e.add("tiers", tiers);
         e.add("account", accountView(account));
         e.add("starts", startsView());
         e.add("firstCharacter", accounts_.characters(account).empty());
@@ -334,6 +345,7 @@ void Game::ticketHello(Connection* c, const Value& j)
     identity.add("appearance", claims.look);
     identity.add("family", claims.family);
     c->ticketIdentity = identity;
+    c->ticketQuickened = claims.quickened;
     note("info", "RATW_TICKET admitted " + claims.wolf + " (" + claims.kind + ")");
     const auto saved = characters_.find(claims.wolf);
     if (owner.empty() || saved == characters_.end())
@@ -409,7 +421,8 @@ bool Game::arrive(Connection* c, const Value& j)
     const auto& identity = c->ticketIdentity;
     const std::string family = identity.string("family");
     // The tier (the user, 2026-11-07): a wolf with no Gift family is Normal, everywhere; a wolf with one arrives Gifted
-    // or Quickened, never Normal, Quickened only where this account's standing here has opened it (doc 49).
+    // or Quickened, never Normal; Quickened only where this account's standing here has opened it, or its account on
+    // central has (the ticket's `quickened`: doc 49, 9.1).
     const auto* tierValue = j.find("tier");
     const std::string tier = !tierValue ? (family.empty() ? std::string("normal") : std::string())
                              : tierValue->isString() ? tierValue->asString() : std::string();
@@ -529,6 +542,15 @@ void Game::ticketFiles()
                                                    : "RATW_ONLINE online.json can't be written (" + trouble +
                                                          "): central will count nobody here");
         onlineFailing_ = !wrote;
+        if (options_.central.official)
+        {
+            const bool fine = writeUnlocks(trouble);
+            if (fine == unlocksFailing_)            // (Said once when it starts failing, and once when it mends.)
+                note(fine ? "info" : "warning", fine ? "RATW_UNLOCKS unlocks.json is written again"
+                                                     : "RATW_UNLOCKS unlocks.json can't be written (" + trouble +
+                                                           "): central hears of no new Quickened accounts");
+            unlocksFailing_ = !fine;
+        }
     }
     if (at - bansCheckedAt_ >= BansEvery)
     {
@@ -569,11 +591,16 @@ bool Game::writeOnline(std::string& problem)
     o.add("at", std::floor(ticketNow()));
     o.add("players", wolves.size());
     o.add("online", online);
-    const auto path = agentFile("online.json");
-    const auto temp = agentFile(".online.json." + std::to_string(::getpid()) + ".new");
+    return writeAgentFile("online.json", o, problem);
+}
+
+bool Game::writeAgentFile(const std::string& name, const Value& doc, std::string& problem)
+{
+    const auto path = agentFile(name);
+    const auto temp = agentFile("." + name + "." + std::to_string(::getpid()) + ".new");
     {
         std::ofstream out(temp, std::ios::binary | std::ios::trunc);
-        out << json::dump(o) << '\n';
+        out << json::dump(doc) << '\n';
         out.close();
         if (!out)
         {
@@ -592,6 +619,55 @@ bool Game::writeOnline(std::string& problem)
         return false;
     }
     return true;
+}
+
+bool Game::writeUnlocks(std::string& problem)
+{
+    // unlocks.json (doc 49, 9.1): the wolves of every account whose standing here has opened Quickened (earned, or a
+    // Dungeon Master's grant; not while the account is held), the latest first and at most MaxUnlocksListed, for the
+    // agent's heartbeat. Central records Quickened on those accounts, for every world, from official worlds only (a
+    // community host could write anything here), so a community world writes none. Written only when it changed.
+    if (!ticketMode() || !options_.central.official)
+    {
+        problem = ticketMode() ? "a community world's unlocks stay its own" : "not in ticket mode";
+        return false;
+    }
+    if (options_.scratch)
+    {
+        problem = "a scratch server writes nothing";
+        return false;
+    }
+    std::vector<std::pair<double, std::string>> opened;
+    for (const auto& [account, r] : standing_)
+        if (!r.hold && r.quickenedAt >= 0)
+            for (const auto& wolf : accounts_.characters(account))
+                if (tickets::wolfId(wolf))
+                    opened.emplace_back(r.quickenedAt, wolf);
+    std::sort(opened.begin(), opened.end(), [](const auto& a, const auto& b) {
+        return a.first != b.first ? a.first > b.first : a.second < b.second;
+    });
+    auto list = Value::array();
+    for (std::size_t i = 0; i < opened.size() && i < MaxUnlocksListed; ++i)
+        list.push(opened[i].second);
+    const std::string listed = json::dump(list);
+    if (listed == unlocksWritten_)
+        return true;
+    auto o = Value::object();
+    o.add("world", options_.central.worldId);
+    o.add("at", std::floor(ticketNow()));
+    o.add("quickened", list);
+    if (!writeAgentFile("unlocks.json", o, problem))
+        return false;
+    unlocksWritten_ = listed;
+    return true;
+}
+
+bool Game::quickenedByCentral(const Connection* c) const
+{
+    if (!c || !ticketMode() || !c->ticketQuickened || c->accountUsername.empty())
+        return false;
+    const auto record = standing_.find(c->accountUsername);
+    return record == standing_.end() || !record->second.hold;
 }
 
 bool Game::reloadBans(std::string& problem)

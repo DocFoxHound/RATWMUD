@@ -88,8 +88,13 @@ export async function clientFlow(page, h, {native = false} = {}) {
         ['Back to the main menu', 'REVIEW CHARACTER'], 'no Choose a World, no Editor');
     await click('.creator-tabs [data-tab=gift]');
     assert.deepEqual(await page.evaluate(`[...document.querySelectorAll('.gift-card')].map(b => [b.dataset.tier, b.disabled])`),
-        [['normal', false], ['gifted', false], ['quickened', true]], 'Quickened is each world\'s, greyed here');
+        [['normal', false], ['gifted', false], ['quickened', true]], 'Quickened greyed: the account hasn\'t opened it');
     assert.match(await page.evaluate(`document.querySelector('.gift-card[data-tier=quickened]').textContent`), /social level 8/);
+    // Once an official world opens Quickened for the account (doc 49, 9.1), central says so and it opens here.
+    await door(`(d.accountQuickened = true, d.show('creator'), 1)`);
+    assert.equal(await page.evaluate(`document.querySelector('.gift-card[data-tier=quickened]').disabled`), false,
+        'the account has Quickened: open for every world');
+    await door(`(d.accountQuickened = false, d.show('creator'), 1)`);
     await click('.gift-card[data-tier=gifted]');
     assert.equal(await page.evaluate(`document.querySelectorAll('.gift-family').length`), 8, 'the families come from central');
     await click('.gift-family[data-family=fire]');

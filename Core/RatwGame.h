@@ -85,6 +85,7 @@ class Connection
     // leaves; and how many hellos this connection has sent.
     std::string ticketWolf;
     json::Value ticketIdentity;
+    bool ticketQuickened = false;                             // The ticket's `quickened`: the account's, on central.
     int hellos = 0;
     std::string motionSession, motionCell;
     int motionGeneration = 0;
@@ -281,6 +282,13 @@ class Game
     void ticketFiles();
     std::function<double()> ticketFilesClock;       // (Tests: the seconds ticketFiles' periods count; else monotonic.)
     bool writeOnline(std::string& problem);
+    // unlocks.json (official worlds only; doc 49, 9.1): {"world", "at", "quickened": [the wolves of every account whose
+    // standing here has opened Quickened, the latest first]}, which the agent's heartbeat sends central so the account
+    // has Quickened in every world. Written when it changes (looked at as online.json is), whole and atomically.
+    bool writeUnlocks(std::string& problem);
+    // Quickened open to this connection's account by central's word (its ticket), unless this world's Dungeon Master
+    // holds the account's unlocks.
+    bool quickenedByCentral(const Connection* c) const;
     bool reloadBans(std::string& problem);
     bool bannedByCentral(const std::string& account) const { return centralBans_.count(account) > 0; }
     // The world's host (doc 77, 3.2): host.json in the same directory, {"at", "host": the host account's ticket `sub`
@@ -547,7 +555,10 @@ class Game
     std::string lastHostSub_;                        // The last host host.json named (the checkpoint's lastHost): guarded only.
     double onlineWrittenAt_ = -1e9, bansCheckedAt_ = -1e9;
     bool onlineFailing_ = false;
+    std::string unlocksWritten_;                     // unlocks.json's list as last written ("" before the first).
+    bool unlocksFailing_ = false;
     std::filesystem::path agentFile(const std::string& name) const;
+    bool writeAgentFile(const std::string& name, const json::Value& doc, std::string& problem);
     void sendOutBanned();
     void sendOut(Connection* c, const std::string& message, const std::string& code);
     std::deque<double> arrivals_;

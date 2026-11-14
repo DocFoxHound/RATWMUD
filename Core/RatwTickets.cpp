@@ -206,6 +206,10 @@ Verdict Checker::check(const std::string& ticket, double now, Claims& claims, st
         return refuse("malformed identity");
     claims.age = int(age);
     claims.look = wire::appearance(look);
+    const auto* quickened = body.find("quickened");
+    if (quickened && !quickened->isBool())
+        return refuse("malformed claims");
+    claims.quickened = quickened && quickened->asBool();
     // Once only. What is remembered is forgotten once it could no longer be admitted anyway.
     if (now >= nextPrune_)
     {

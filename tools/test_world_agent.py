@@ -281,6 +281,27 @@ class AgentTests(unittest.TestCase):
         self.assertTrue(any('more than a minute old' in line for line in self.lines))
         self.assertTrue(any('another world' in line for line in self.lines))
 
+    def test_an_official_worlds_quickened_accounts_go_with_the_heartbeat(self):
+        """Doc 49, 9.1: unlocks.json's wolves (the accounts whose standing in this world opened Quickened) go with each
+        heartbeat, for central to give those accounts Quickened in every world; none without the file, from another
+        world's, or unreadable; never more than MOST_QUICKENED."""
+        a = self.make()
+        a.heartbeat()
+        self.assertNotIn('quickened', self.fake.calls('/worlds/heartbeat')[-1]['body'], 'no unlocks.json: none sent')
+        unlocks = self.dir / 'unlocks.json'
+        unlocks.write_text(json.dumps({'world': WORLD, 'at': 1, 'quickened': [WOLF2, 'not-a-wolf', 7, WOLF1]}))
+        a.heartbeat()
+        self.assertEqual(self.fake.calls('/worlds/heartbeat')[-1]['body']['quickened'], [WOLF2, WOLF1])
+        unlocks.write_text(json.dumps({'world': OTHER, 'at': 1, 'quickened': [WOLF1]}))
+        a.heartbeat()
+        self.assertNotIn('quickened', self.fake.calls('/worlds/heartbeat')[-1]['body'], "another world's: none")
+        unlocks.write_text('{not json')
+        a.heartbeat()
+        self.assertNotIn('quickened', self.fake.calls('/worlds/heartbeat')[-1]['body'], 'unreadable: none')
+        unlocks.write_text(json.dumps({'world': WORLD, 'at': 1, 'quickened': [WOLF1] * (agent.MOST_QUICKENED + 5)}))
+        a.heartbeat()
+        self.assertEqual(len(self.fake.calls('/worlds/heartbeat')[-1]['body']['quickened']), agent.MOST_QUICKENED)
+
     def test_the_listing_is_logged_when_it_changes_only(self):
         a = self.make()
         for _ in range(3):

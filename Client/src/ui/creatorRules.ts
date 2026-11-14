@@ -58,7 +58,8 @@ export interface TierCard {
 
 const Tiers = ['normal', 'gifted', 'quickened'] as const;
 
-/** What a world's standing asks before Quickened opens there (doc 49; standing.json's "unlocks", sent in central's rules). */
+/** What an official world's standing asks before Quickened opens for the account (doc 49; standing.json's "unlocks",
+ *  sent in central's rules). */
 export function quickenedNeeds(unlocks: Json | null): string {
     const q = obj(unlocks, 'quickened');
     return `Gifted open, social level ${num(q, 'level', 8)}, ${num(q, 'stars', 100)} stars from ${num(q, 'givers', 30)} different wolves ` +
@@ -69,16 +70,17 @@ export function quickenedNeeds(unlocks: Json | null): string {
  *   - on a world (a browser on a password world): Gifted and Quickened open as the account's standing there has opened
  *     them (`tiers`, the lobby's tiersView); Quickened needs Gifted too; an older server that sends none: all open.
  *   - on central (the desktop client): the tier is each world's, at the first arrival; a wolf with a Gift family arrives
- *     Gifted anywhere, so Gifted is open to every account; Quickened opens only in a world whose standing has opened it,
- *     so it is never chosen here (greyed, with what a world asks). */
-export function tierCards(mode: 'world' | 'central', tiers: Json | null, unlocks: Json | null = null): TierCard[] {
+ *     Gifted anywhere, so Gifted is open to every account; Quickened is the account's, once for every world (doc 49,
+ *     9.1; the user, 2026-11-14): open when central says the account has it (`quickened`), else greyed, with what an
+ *     official world asks. */
+export function tierCards(mode: 'world' | 'central', tiers: Json | null, unlocks: Json | null = null, quickened = false): TierCard[] {
     return Tiers.map(tier => {
         if (tier === 'normal') return {tier, open: true, reason: '', progress: []};
         if (mode === 'central') {
-            if (tier === 'gifted') return {tier, open: true, reason: '', progress: []};
+            if (tier === 'gifted' || quickened) return {tier, open: true, reason: '', progress: []};
             return {tier, open: false, progress: [],
-                reason: `Quickened opens in each world on its own, once your account there has ${quickenedNeeds(unlocks)}. ` +
-                    'Give your wolf a Gift family: in a world that has opened it, they may arrive Quickened.'};
+                reason: `Quickened opens for your whole account, in every world, once it has ${quickenedNeeds(unlocks)} ` +
+                    'in an official world. Give your wolf a Gift family: they arrive Gifted until then.'};
         }
         const t = obj(tiers, tier);
         const lines = (x: Json | null) => arr(x, 'progress').filter(isObject).map(p => str(p, 'label')).filter(Boolean);

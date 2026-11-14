@@ -1360,6 +1360,55 @@ class ServerList(Base):
         self.assertEqual(self.beat(official_token, official_stand_in.port)[1]['bans'], [account],
                          'an official world gets the account id')
 
+    def test_an_official_world_gives_its_quickened_accounts_quickened_everywhere(self):
+        """Doc 49, 9.1 (the user, 2026-11-14: once per the whole account, not once per world): an official world's
+        heartbeat names the wolves whose accounts' standing there opened Quickened; central records it on the account
+        (kept, with the world), shows it with the account, and puts it in every ticket after, to any world. Only an
+        official world's word, and only for its own visitors."""
+        community, community_token = self.make()
+        official = 'world-' + secrets.token_hex(16)
+        STORE.add_world(official, 'Ridgemere', 'official', self.clock())
+        official_token = cs.new_host_token()
+        STORE.set_world_token(official, cs.token_hash(official_token), self.clock())
+        keys = lambda: ct.public_keys(self.keys.jwks(self.clock()))   # noqa: E731
+        reply = self.register('ash')
+        account, a = reply['account']['id'], reply['access_token']
+        self.assertIs(reply['account']['quickened'], False, 'a new account has not')
+        b = self.register('birch')['access_token']
+        ash, ember = self.wolf(a, 'Ash Tallow')['id'], self.wolf(a, 'Ember')['id']
+        bramble = self.wolf(b, 'Bramble')['id']
+        ticket = self.call('ticket', {'world': official, 'wolf': ash}, a)[1]['ticket']
+        self.assertIs(ct.verify(ticket, keys(), official, self.clock(), self.clock() - 10, {})['quickened'], False,
+                      'a ticket says so: not yet')
+        self.assertEqual(self.call('ticket', {'world': community, 'wolf': bramble}, b)[0], 200)
+        # A community world's word is not taken (its host could name anyone), nor an official world's for a wolf
+        # that never had a ticket there.
+        self.assertEqual(self.beat(community_token, self.stand_in(community).port, quickened=[bramble])[0], 200)
+        self.assertIsNone(STORE.account_by_username('birch')['quickened_at'], "a community world's word is not taken")
+        stand_in = self.stand_in(official)
+        self.assertEqual(self.beat(official_token, stand_in.port, quickened=[bramble, 'wolf-NOTHEX', 7])[0], 200)
+        self.assertIsNone(STORE.account_by_username('birch')['quickened_at'], 'nor for a wolf that never came there')
+        self.assertEqual(self.beat(official_token, stand_in.port, quickened='wolf')[0], 400, 'a list, or refused')
+        self.assertEqual(self.beat(official_token, stand_in.port, quickened=[ash] * (cs.QUICKENED_MOST + 1))[0], 400)
+        # The official world's word: the account has it, with the world, from then on.
+        self.assertEqual(self.beat(official_token, stand_in.port, quickened=[ash])[0], 200)
+        stored = STORE.account(account)
+        self.assertEqual((stored['quickened_at'], stored['quickened_world']), (self.clock(), official))
+        self.clock.advance(60)
+        self.beat(official_token, stand_in.port, quickened=[ash])
+        self.assertEqual(STORE.account(account)['quickened_at'], self.clock() - 60, 'recorded once, kept')
+        self.beat(official_token, stand_in.port, quickened=[])
+        self.assertIsNotNone(STORE.account(account)['quickened_at'], 'and kept when the world no longer names it')
+        login = self.call('login', {'username': 'ash', 'password': PASSWORD})[1]
+        a = login['access_token']
+        self.assertIs(login['account']['quickened'], True, 'the account shows it (the Character Editor)')
+        self.assertIs(self.call('me', {}, a)[1]['account']['quickened'], True)
+        for world, wolf in ((community, ember), (official, ash)):
+            ticket = self.call('ticket', {'world': world, 'wolf': wolf}, a)[1]['ticket']
+            self.assertIs(ct.verify(ticket, keys(), world, self.clock(), self.clock() - 10, {})['quickened'], True,
+                          'every ticket after, to any world, for any of its wolves')
+        self.assertIs(self.call('login', {'username': 'birch', 'password': PASSWORD})[1]['account']['quickened'], False)
+
     def test_the_heartbeat_names_a_community_worlds_host_and_no_host_for_an_official_world(self):
         community, community_token = self.make()
         hazel = STORE.world(community)['host_account']
