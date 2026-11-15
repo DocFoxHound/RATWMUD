@@ -39,10 +39,12 @@ function city(x: number, y: number) {
     s.applySnapshot(snapshot(0, [x, y]));
     s.tick(0.016, 0.016);
     const painted: TileWindow[] = [];
+    const lights: number[] = [];                    // The light each of those was drawn in.
     const ground = (g.painter.terrain as unknown as {ground: {paint: (...a: unknown[]) => void}}).ground;
     const paint = ground.paint.bind(ground);
     ground.paint = (...a: unknown[]) => {
         painted.push({...(a[2] as TileWindow)});
+        lights.push(a[6] as number);
         paint(...a);
     };
     const frame = () => draw(g.painter, 'drawLocal');
@@ -52,7 +54,7 @@ function city(x: number, y: number) {
         me.y += dy;
         frame();
     };
-    return {...g, s, painted, frame, walk, snapshot, fringeRows};
+    return {...g, s, painted, lights, frame, walk, snapshot, fringeRows};
 }
 
 test('walking near an edge, the screen\'s edge moving over the band far off the map never redraws the ground', () => {
@@ -102,6 +104,33 @@ test('walking on past the ground copy moves it on, drawing only the new strip an
     c.s.zoom = (c.s.zoom + 1) % 4;                               // A new tile size: drawn whole, as ever.
     c.frame();
     assert.ok(c.painter.terrain.rebuilds >= 1);
+});
+
+test('a fade into a darker cell draws the ground once, in the light it fades to; strips walked on are in that light', () => {
+    // (r3-light drew the copy again at each twenty-fifth of the fade, up to 25 whole redraws a crossing; the fade is
+    // now laid over the one copy, and a strip drawn mid-fade is in the copy's light, never a band brighter than it.)
+    const c = city(128.5, 128.5);
+    c.s.clock = 1;
+    c.frame();
+    assert.equal(c.painter.terrain.rebuilds, 1);
+    c.s.environment = {...c.s.environment, illumination: 0.08};
+    c.painted.length = 0;
+    c.lights.length = 0;
+    for (let i = 0; i < 10; ++i) {
+        c.s.clock += 0.1;
+        c.walk(1, 0);
+    }
+    assert.ok(c.s.ambient.env.illumination > 0.3, `still fading (${c.s.ambient.env.illumination.toFixed(2)})`);
+    assert.equal(c.painter.terrain.rebuilds, 2, 'drawn whole once, for the light it fades to');
+    assert.equal(c.painter.terrain.scrolls, 1, 'and moved on as the wolf walked, mid-fade');
+    assert.deepEqual(c.lights, [0.08, 0.08], 'the copy and its new strip both in the night\'s light');
+    assert.ok((c.painter.terrain as unknown as {relitCopy: unknown}).relitCopy, 'the fade laid over the copy, in a canvas of its own');
+    for (let i = 0; i < 80; ++i) {
+        c.s.clock += 0.1;
+        c.frame();
+    }
+    assert.equal(c.s.ambient.env.illumination, 0.08);
+    assert.equal(c.painter.terrain.rebuilds, 2, 'never drawn whole again through the fade');
 });
 
 test('shading a row of the map cuts the made shadings: the same as shading it afresh', () => {

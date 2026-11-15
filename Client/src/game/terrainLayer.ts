@@ -8,7 +8,7 @@ import {font, pixels, Sage} from '../ui/theme.ts';
 import {clamp} from './json.ts';
 import {TERRAIN} from './terrain.generated.mjs';
 import {paintBlockTile, treeCodes, trunkColor} from '../../../Data/Visuals/blockTexture.ts';
-import {lampsLit, lightOf, LightSources, nightColor, poolAt, type LightSource} from './lights.ts';
+import {lampsLit, lightOf, LightSources, nightColor, nightLevel, poolAt, type LightSource} from './lights.ts';
 import type {GameState} from './state.ts';
 
 export interface TerrainLook {
@@ -195,7 +195,8 @@ function over(top: Color, bottom: Color): Color {
  * The light the ground is drawn in: the eased look of the sky (ambient.ts, so a seam never snaps it), in steps of a
  * twenty-fifth, so a fade between cells redraws the cached ground a few times rather than every frame.
  */
-export const groundIllumination = (s: GameState) => Math.round(clamp(s.ambient.env.illumination, 0, 1) * 25) / 25;
+export const lightStep = (illumination: number) => Math.round(clamp(illumination, 0, 1) * 25) / 25;
+export const groundIllumination = (s: GameState) => lightStep(s.ambient.env.illumination);
 
 /** The light sources shining on a window: how strongly each tile is lit and by which (the strongest) of them. */
 class Pools {
@@ -229,6 +230,7 @@ class Pools {
     }
 
     at(x: number, y: number): [number, string] {
+        if (x < this.w.x0 || x > this.w.x1 || y < this.w.y0 || y > this.w.y1) return [0, ''];
         const at = (y - this.w.y0) * (this.w.x1 - this.w.x0 + 1) + (x - this.w.x0);
         return [this.glow[at] ?? 0, this.by[at] ?? ''];
     }
@@ -240,12 +242,15 @@ export class GroundPainter {
     private widths = new Map<string, number>();
     private lines = new Map<string, string>();
 
-    paint(c: CanvasRenderingContext2D, s: GameState, w: TileWindow, ox: number, oy: number, tile: number) {
-        const dark = 1 - groundIllumination(s);
+    /** `illumination` is the light the ground is drawn in (by default the eased sky's, in its steps). */
+    paint(c: CanvasRenderingContext2D, s: GameState, w: TileWindow, ox: number, oy: number, tile: number,
+          illumination = groundIllumination(s)) {
+        const dark = 1 - illumination;
         // The night is one rule for every glyph, texture, floor and edge (lights.ts); only light sources shine through
         // it, and their pools light the ground round them: lit at dusk and night, from the lamps the wolf knows of.
         const lit = lampsLit(dark);
-        const pools = new Pools(s, w, lit);
+        // (A tile past the window's far sides too: an edge there is coloured by the tile beyond it.)
+        const pools = new Pools(s, {x0: w.x0, y0: w.y0, x1: w.x1 + 1, y1: w.y1 + 1}, lit);
         const ground = s.selfHeight();
         if (this.styles.size > 20000) this.styles.clear();
         let currentFont = '', currentFill = '';
@@ -461,6 +466,8 @@ export class TerrainLayer {
     scrolls = 0;                        // How often the copy was moved on with only its new edge drawn (scroll).
     private surface: Surface | null = null;
     private spare: Surface | null = null;   // The other copy, drawn into when the view moves on (scroll).
+    private relitCopy: Surface | null = null;   // The copy brightened or dimmed to the sky as it fades (relit).
+    private level = 1;                  // The light the copy is drawn in (lightStep).
     private region: TileWindow = {x0: 0, y0: 0, x1: -1, y1: -1};
     private key = '';
     private rows: string[] | null = null;
@@ -484,7 +491,10 @@ export class TerrainLayer {
     draw(target: Painter, s: GameState, view: TileWindow, ox: number, oy: number, tile: number) {
         const c = target.ctx;
         const k = deviceScale(c);
-        const key = [s.cellId, s.cellGeneration, tile, k, s.plainGlyphs, s.selfHeight(), groundIllumination(s),
+        // The copy is drawn in the light the sky is fading to (the server's, in its steps), not in each step of the
+        // fade: a crossing into a darker or lighter cell draws it once, and the fade itself is laid over it (relit).
+        const level = lightStep(s.environment.illumination);
+        const key = [s.cellId, s.cellGeneration, tile, k, s.plainGlyphs, s.selfHeight(), level,
             s.cellWidth, s.cellHeight, s.fringe].join('|');
         const inside = view.x0 >= this.region.x0 && view.y0 >= this.region.y0 && view.x1 <= this.region.x1 && view.y1 <= this.region.y1;
         const fringe = [s.fringeRows, s.fringeVisibility, s.fringeHeights];
@@ -493,6 +503,7 @@ export class TerrainLayer {
             sameFringe(this.fringe, fringe, this.region, s.fringe, s.cellWidth, s.cellHeight);
         if (!same || !inside) {
             // Walked on past the copy, the ground in it as it was: the copy moves on, and only what it hadn't is drawn.
+            this.level = level;
             if (!(same && this.scroll(s, view, tile, k)) && !this.rebuild(s, view, tile, k)) {
                 this.key = '';
                 this.ground.paint(c, s, view, ox, oy, tile);
@@ -504,10 +515,47 @@ export class TerrainLayer {
             this.heights = s.tileHeights;
             this.fringe = fringe;
         }
-        const surface = this.surface!;
+        const surface = this.relit(this.surface!, s.ambient.env.illumination);
         // Whole device pixels only, so glyphs stay crisp however the camera moves.
         const [x, y] = snapToDevice(c, ox + this.region.x0 * tile - Pad / k, oy + this.region.y0 * tile - Pad / k);
         c.drawImage(surface.canvas, x, y, surface.canvas.width / k, surface.canvas.height / k);
+    }
+
+    /**
+     * The copy as bright as the sky is now, while it fades toward the light the copy is drawn in (ambient.ts eases it
+     * over a few seconds after a crossing): the night rule keeps `nightLevel` of every colour's brightness as the eye
+     * sees it, so the fade is that ratio, laid over the copy's own pixels (dimmed by a see-through black atop them,
+     * brightened by the copy added to itself). One copy and two blits a frame, where drawing the copy again at each
+     * twenty-fifth of the fade cost a whole redraw (20-30 ms in the city) up to 25 times a crossing; and a strip drawn
+     * as the wolf walks on is in the copy's light like the rest, so it is faded with it, never a band of its own.
+     * The copy itself when the sky is in its step (or there is no second canvas).
+     */
+    private relit(surface: Surface, illumination: number): Surface {
+        const shown = clamp(illumination, 0, 1);
+        if (lightStep(shown) === this.level) return surface;
+        const ratio = nightLevel(1 - shown) / nightLevel(1 - this.level);
+        const {width, height} = surface.canvas;
+        let to = this.relitCopy;
+        if (!to || to.canvas.width !== width || to.canvas.height !== height) to = this.relitCopy = this.factory(width, height);
+        if (!to) return surface;
+        const c = to.ctx;
+        c.save();
+        c.setTransform(1, 0, 0, 1, 0, 0);
+        c.globalCompositeOperation = 'copy';
+        c.drawImage(surface.canvas, 0, 0);
+        if (ratio < 1) {
+            c.globalCompositeOperation = 'source-atop';
+            c.fillStyle = `rgba(0, 0, 0, ${(1 - ratio).toFixed(4)})`;
+            c.fillRect(0, 0, width, height);
+        } else {
+            c.globalCompositeOperation = 'lighter';
+            for (let more = ratio - 1; more > 0.002; more -= 1) {
+                c.globalAlpha = Math.min(1, more);
+                c.drawImage(surface.canvas, 0, 0);
+            }
+        }
+        c.restore();
+        return to;
     }
 
     /** The tiles a copy for `view` holds: the view and Margin round it, on the ground there is. */
@@ -570,7 +618,7 @@ export class TerrainLayer {
             c.rect(x0, y0, x1 - x0, y1 - y0);
             c.clip();
             c.setTransform(k, 0, 0, k, Pad, Pad);
-            this.ground.paint(c, s, tiles, -region.x0 * tile, -region.y0 * tile, tile);
+            this.ground.paint(c, s, tiles, -region.x0 * tile, -region.y0 * tile, tile, this.level);
             c.restore();
         }
         this.spare = from;
@@ -593,7 +641,7 @@ export class TerrainLayer {
         c.setTransform(1, 0, 0, 1, 0, 0);
         c.clearRect(0, 0, width, height);
         c.setTransform(k, 0, 0, k, Pad, Pad);
-        this.ground.paint(c, s, region, -region.x0 * tile, -region.y0 * tile, tile);
+        this.ground.paint(c, s, region, -region.x0 * tile, -region.y0 * tile, tile, this.level);
         this.region = region;
         ++this.rebuilds;
         return true;
