@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {bandFits, bandSpot} from './fringe.ts';
 import {Walker} from './walker.ts';
-import {testGame, draw, fakeContext, paintPart} from './testing.ts';
+import {testGame, draw, fakeContext, paintPart, settleAmbient} from './testing.ts';
 import {MapRenderer} from './minimap.ts';
 import {GamePainter} from './paint.ts';
 import {Painter} from '../ui/painter.ts';
@@ -176,6 +176,7 @@ test('the weather falls on the band as on the cell beside it', () => {
     const b = paintPart<{left: number; top: number; right: number; bottom: number}>(painter, 'cellBounds');
     assert.deepEqual([b.left, b.top, b.right, b.bottom], [200 - band * tile, 200 - band * tile, 200 + (side + band) * tile, 200 + (side + band) * tile],
         'the weather is drawn over the band');
+    settleAmbient(painter);
     assert.ok((painter as unknown as {drawFieldWeather: (r: typeof b) => boolean}).drawFieldWeather(b));
     assert.equal(cuts.length, 1, 'one mask, for the rain');
     const [x, y, w, h] = cuts[0];

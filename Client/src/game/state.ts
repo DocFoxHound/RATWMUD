@@ -5,6 +5,7 @@ import {arr, bool, boundedNum, clamp, envNumber, explicitTrue, isObject, num, ob
 import type {LetterDraft} from '../ui/hud/letters.ts';
 import {heightFromChar, type EnvironmentView, type ScentCue} from './labels.ts';
 import {MotionBuffer} from './motionBuffer.ts';
+import {Ambient} from './ambient.ts';
 import {contains, rect, type Rect} from '../ui/painter.ts';
 import {FarAway, type MotionFrame} from '../net/motion.ts';
 import type {DoorState, FringeGround, Walker} from './walker.ts';
@@ -203,6 +204,8 @@ export class GameState {
     // After a change of cell, the camera starts where the last one left the wolf on screen and slides home.
     cameraShift: [number, number] = [0, 0];
     clock = 0;
+    // The look of the sky the map is drawn in: the environment eased across cell seams (ambient.ts; paint.ts updates it).
+    readonly ambient = new Ambient();
     lastTyping = -100;
     lastTypingSent = -100;
     lastMove = -100;
