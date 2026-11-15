@@ -15,6 +15,10 @@ of up to half a height, or a whole one onto or off stairs or a slope). Three thi
 - closed path: an obstacle standing across a path with walls or other obstacles on both its sides, so the path has no
   open tile of width there, and going round is a long way (more than DETOUR tiles longer than walking through).
 - steep step: two path tiles side by side whose heights differ more than a wolf may step between them.
+- lamp in the way: a street lamp standing on a street's walking line. A lamp that interrupts a run of path tiles must
+  stand in the street's edge row (against a building, a wall, water or the ground beyond the paving) and leave at least
+  STREET_CLEAR open path tiles across the street beside it, so a straight walk along any street is never blocked by it.
+  A street narrower than that gets its lamps beside it, off the paving, never in it.
 
 fix(grid) clears each cut off or closed path (moving a prop aside where there is room, and clearing other obstacles) until
 the check passes. tools/refresh_ridgemere3_map.py uses it on the world; tools/test_path_check.py checks the rules.
@@ -42,6 +46,8 @@ OBSTACLE = frozenset(c for c in SOLID if TC.BY_CODE[c]['kind'] in ('feature', 't
 MOVABLE = frozenset("OxuTp=<yNtqgl'iK")
 WATER = frozenset(c for c, t in TC.BY_CODE.items() if t['kind'] == 'water')
 DETOUR = 8
+LAMP = "'"                                     # The street lamp (glyph †).
+STREET_CLEAR = 2                               # Open path tiles a lamp on a street must leave beside it.
 SEALED = 'sealed yard'                         # A note, not a failure.
 FREE_STEP, RAMP_STEP = .5, 1.
 
@@ -286,6 +292,13 @@ def check(grid):
         (ax, ay), (bx, by), tiles = run
         report('closed path', tiles[0][0], tiles[0][1],
                f'{"".join(grid.at(*t) for t in tiles)} across the path from ({ax},{ay}) to ({bx},{by})', tiles)
+    # Lamps on a street's walking line.
+    for y in range(grid.y0, grid.y1):
+        for x in range(grid.x0, grid.x1):
+            if grid.at(x, y) == LAMP:
+                why = in_the_way(grid, x, y)
+                if why:
+                    report(LAMP_IN_THE_WAY, x, y, f'a street lamp {why}')
     # Steep steps between path tiles.
     for y in range(grid.y0, grid.y1):
         for x in range(grid.x0, grid.x1):
@@ -298,6 +311,48 @@ def check(grid):
                     report('steep step', x, y, f'height {grid.h_at(x, y)} beside {grid.h_at(nx, ny)} at ({nx},{ny})')
                     problems[-1]['to'] = [nx, ny]
     return problems
+
+
+LAMP_IN_THE_WAY = 'lamp in the way'
+
+
+def street_tile(grid, x, y) -> bool:
+    """Open path one walks a street by (a street, road, footpath, flagstones, packed earth, a doorway...)."""
+    return grid.at(x, y) in PATH and grid.walkable(x, y)
+
+
+def street_edge(grid, x, y) -> bool:
+    """Whether (x, y) bounds a street: a building, a wall, water, the ground beyond the paving, the box's edge. Another
+    prop or lamp is not an edge (it stands in the street too)."""
+    g = grid.at(x, y)
+    if g is None:
+        return True
+    if g in OBSTACLE:
+        return False
+    return not grid.walkable(x, y) or g not in PATH
+
+
+def in_the_way(grid, x, y):
+    """Why something solid at (x, y) would stand on a street's walking line, or None. It is in a street's line along an
+    axis when the tiles before and after it on that axis are both street; then it must have an edge on one side across
+    the street, and at least STREET_CLEAR street tiles on the other."""
+    for dx, dy in ((1, 0), (0, 1)):
+        if not (street_tile(grid, x - dx, y - dy) and street_tile(grid, x + dx, y + dy)):
+            continue
+        run = 'an east-west' if dx else 'a north-south'
+        px, py = dy, dx                         # (Across the street.)
+        e1, e2 = street_edge(grid, x + px, y + py), street_edge(grid, x - px, y - py)
+        if e1 and e2:
+            return f'fills {run} street one tile wide'
+        if not e1 and not e2:
+            return 'stands in the middle of a street, with no edge beside it'
+        sx, sy = (-px, -py) if e1 else (px, py)
+        clear = 0
+        while clear < STREET_CLEAR and street_tile(grid, x + sx * (clear + 1), y + sy * (clear + 1)):
+            clear += 1
+        if clear < STREET_CLEAR:
+            return f'leaves {run} street only {clear} tile wide beside it'
+    return None
 
 
 def failures(problems):
@@ -428,6 +483,8 @@ def harmless(grid, x, y, avoid, streets=True):
         return False                         # (First choice: off the cobbles and bridges.)
     if any(abs(x - dx) + abs(y - dy) <= 2 for dx, dy in grid.doors):
         return False
+    if in_the_way(grid, x, y):
+        return False                         # (At a street's edge, never on its walking line.)
     sides = [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
     open_sides = [p for p in sides if grid.walkable(*p)]
     if len(open_sides) < 2 or len(open_sides) == 4:

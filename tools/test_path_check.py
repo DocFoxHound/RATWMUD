@@ -3,6 +3,7 @@ import collections
 import unittest
 
 import path_check as PC
+import refresh_ridgemere3_map as RM
 
 
 def project(rows, heights=None, doors=()):
@@ -114,6 +115,93 @@ class PathCheckTest(unittest.TestCase):
         problems = PC.check(grid(project(rows, doors=[(3, 2)])))
         self.assertEqual(self.kinds(problems), {'cut off': 1})
         self.assertEqual(problems[0]['blockers'], [])
+
+
+# A cobbled street four tiles wide between two rows of buildings, a two-tile lane north of them, a one-tile alley
+# through the northern row, and a dirt road with grass beside it.
+STREETS = [
+    '########################',
+    '#______________________#',
+    '#______________________#',
+    '####_###################',
+    '#ZZZ_ZZZZZZZZZZZZZZZZZZ#',
+    '########################',
+    '________________________',
+    '________________________',
+    '________________________',
+    '________________________',
+    '########################',
+    ',,,,,,,,,,,,,,,,,,,,,,,,',
+    'dddddddddddddddddddddddd',
+    'dddddddddddddddddddddddd',
+    ',,,,,,,,,,,,,,,,,,,,,,,,',
+    ',,,,,,,,,,,,,,,,,,,,,,,,',
+]
+
+
+class LampTest(unittest.TestCase):
+    def lamp_problems(self, rows):
+        return [p for p in PC.check(grid(project(rows))) if p['kind'] == PC.LAMP_IN_THE_WAY]
+
+    def test_lamp_at_a_wide_streets_edge_passes(self):
+        self.assertEqual(self.lamp_problems(put(STREETS, 10, 6, "'")), [])
+        self.assertEqual(self.lamp_problems(put(STREETS, 10, 9, "'")), [])
+
+    def test_lamp_on_a_wide_streets_walking_line_fails(self):
+        # One tile in from the edge: an open tile beside it, so no closed path, but it stands in the way of a straight
+        # walk along the street.
+        rows = put(STREETS, 10, 7, "'")
+        self.assertEqual([p['kind'] for p in PC.failures(PC.check(grid(project(rows))))], [PC.LAMP_IN_THE_WAY])
+        self.assertIn('middle', self.lamp_problems(rows)[0]['what'])
+
+    def test_lamp_across_a_streets_line_north_south_fails(self):
+        rows = [r[:12] for r in STREETS[5:11]]          # The wide street, cut to twelve tiles.
+        rows = [''.join(r[x] if x < 12 else '#' for x in range(12)) for r in rows]
+        rows = [''.join(row[y] for row in rows) for y in range(12)]   # Turned: now it runs north-south.
+        self.assertTrue(self.lamp_problems(put(rows, 2, 6, "'")))
+        self.assertEqual(self.lamp_problems(put(rows, 1, 6, "'")), [])
+
+    def test_lamp_in_a_two_tile_lane_fails_even_at_its_edge(self):
+        problems = self.lamp_problems(put(STREETS, 10, 1, "'"))
+        self.assertEqual(len(problems), 1)
+        self.assertIn('only 1 tile wide', problems[0]['what'])
+
+    def test_lamp_in_a_one_tile_alley_fails(self):
+        problems = self.lamp_problems(put(STREETS, 4, 3, "'"))
+        self.assertEqual(len(problems), 1)
+        self.assertIn('one tile wide', problems[0]['what'])
+
+    def test_lamp_on_the_grass_beside_a_road_passes_and_on_the_road_fails(self):
+        self.assertEqual(self.lamp_problems(put(STREETS, 10, 11, "'")), [])
+        self.assertTrue(self.lamp_problems(put(STREETS, 10, 13, "'")))
+
+    def test_props_are_never_carried_onto_a_walking_line(self):
+        g = grid(project(STREETS))
+        self.assertFalse(PC.harmless(g, 10, 7, set()))
+        self.assertTrue(PC.harmless(g, 10, 6, set()))
+
+    def test_lamps_in_the_way_are_carried_to_the_edge_once(self):
+        rows = put(put(STREETS, 3, 7, "'"), 22, 13, "'")
+        p = project(rows)
+        g = grid(p)
+        counts, moves = collections.Counter(), []
+        self.assertEqual(RM.move_lamps(g, {'_', 'd'}, frozenset(',_d'), counts, moves, 'test'), 2)
+        g.commit()
+        terrain = p['cells'][0]['terrain']
+        self.assertEqual((terrain[7][3], terrain[13][22]), ('_', 'd'))
+        lamps = {(x, y) for y, r in enumerate(terrain) for x, c in enumerate(r) if c == "'"}
+        self.assertEqual(lamps, {(3, 6), (22, 14)})          # (The street's edge row; the grass beside the road.)
+        self.assertEqual(self.lamp_problems(terrain), [])
+        self.assertEqual(RM.move_lamps(grid(p), {'_', 'd'}, frozenset(',_d'), counts, moves, 'test'), 0)
+
+    def test_new_lamps_stand_only_at_edges(self):
+        p = project(STREETS)
+        g = grid(p)
+        RM.place_lamps(g, {'_', 'd'}, frozenset(',_d'), collections.Counter(), 'test')
+        g.commit()
+        terrain = p['cells'][0]['terrain']
+        self.assertTrue(any("'" in r for r in terrain))
+        self.assertEqual(PC.failures(PC.check(grid(p))), [])
 
 
 if __name__ == '__main__':
