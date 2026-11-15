@@ -10,6 +10,10 @@ a few threads of its own: sign-ins past that wait their turn (doc 77, 4.3: queue
 The server list (doc 77, 7; Phase 4): host tokens, the world agent's heartbeat and leave, central's call-back to a
 world's /status, the honest player count, the bans each world is told, the Host page's calls, and the word filter
 (central_words) on usernames, wolf names and world listings.
+
+Approved worlds (doc 77, 7.1): each heartbeat's fingerprints against the signed releases central knows
+(central_releases), play time, the world's star claims and the givers' own confirmations (POST /stars/confirm), and the
+evidence an approved community world's Quickened unlock needs; flags and holds when a world loses approval.
 """
 from __future__ import annotations
 
@@ -29,6 +33,7 @@ import threading
 import time
 import unicodedata
 
+import central_releases
 import central_store
 from central_store import Conflict
 import central_tickets
@@ -61,6 +66,21 @@ TICKETS_COUNTED = 86400             # A wolf online counts if its latest ticket 
 HOST_WORLDS = 3                     # Worlds an account may host (not counting removed ones).
 ONLINE_MOST = 10000
 QUICKENED_MOST = 1000               # A heartbeat's Quickened wolves (doc 49, 9.1; the world sends as many).
+# Approved worlds (doc 77, 7.1; doc 49, 9.2). Every number a placeholder for the user.
+STARS_MOST = 1000                   # A heartbeat's stars (the world's stars.json lists as many).
+STAR_KINDS = ('gold', 'story', 'festival')
+SHA256 = re.compile(r'^[0-9a-f]{64}$')
+STAR_ID = re.compile(r'^star-[0-9a-f]{1,32}$')
+PLAY_STEP_MOST = 2 * HEARTBEAT_EVERY  # One heartbeat adds at most this much play time (a gap counts for nothing).
+UNLOCK_PLAY = 10 * 3600             # An approved world's unlock: its account has played there this long...
+GIVER_PLAY = 3600                   # ...and each star counts only from a giver account that has played there this long.
+STAR_MATCH_BEFORE = 120             # A star's claim is matched to a giver's confirmation heard up to this long after
+STAR_MATCH_AFTER = 900              # it, or this long before (the world writes stars.json every 15 s, the agent sends
+                                    # it each minute; a missed heartbeat or two is allowed for).
+UNLOCK_RATE_DAYS = 7                # An approved world claiming more than UNLOCK_RATE_MOST new Quickened accounts in
+UNLOCK_RATE_MOST = 5                # UNLOCK_RATE_DAYS days loses approval (held until an admin lets it go).
+FLAG_DAYS = 30                      # A world losing approval has the unlocks it gave in these days flagged for review.
+EVIDENCE_PER_BEAT = 50              # Waiting unlocks whose evidence one heartbeat looks at (the longest waiting first).
 HOST_NAME = re.compile(r'^(?=.{1,253}$)([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}'
                        r'[A-Za-z0-9])?)*\.?$')
 CGNAT = ipaddress.ip_network('100.64.0.0/10')
@@ -308,6 +328,7 @@ class Limits:
     heartbeats_per_token: tuple = (10, 60)          # (per world: the token's world, whichever token it has)
     bad_tokens_per_address: tuple = (30, 60)        # unknown host tokens, per address (per /64 for IPv6)
     host_changes_per_account: tuple = (30, 3600)
+    star_confirmations_per_account: tuple = (120, 3600)
 
 
 class RateLimiter:
@@ -788,7 +809,9 @@ class Central:
                      'limit': listing.get('limit'), 'region': listing.get('region', ''),
                      'tags': listing.get('tags', []), 'voices': listing.get('voices') is True,
                      'cheats': listing.get('cheats') is True,
-                     'quickenedWolves': listing.get('quickenedWolves') is not False}
+                     'quickenedWolves': listing.get('quickenedWolves') is not False,
+                     # Approved (doc 77, 7.1): progress here counts for the whole account (official, or approved).
+                     'approved': w['kind'] == 'official' or w['approved'] is True}
             if secure:
                 entry['ip'] = w['address']
             out.append(entry)
@@ -897,6 +920,37 @@ class Central:
         if not isinstance(quickened, list) or len(quickened) > QUICKENED_MOST:
             bad(f'quickened (a list of at most {QUICKENED_MOST} wolf ids)')
         out['quickened'] = list(dict.fromkeys(w for w in quickened if isinstance(w, str) and WOLF_ID.match(w)))
+        # Approved worlds (doc 77, 7.1): the server's progression switch (its /status; an older server sends none:
+        # None), the fingerprints of what the world runs, and the stars it says were given there.
+        open_tiers = body.get('openTiers')
+        if open_tiers is not None and not isinstance(open_tiers, bool):
+            bad('openTiers (true or false)')
+        out['openTiers'] = open_tiers
+        prints = body.get('fingerprints')
+        if prints is not None:
+            if not isinstance(prints, dict):
+                bad('fingerprints')
+            prints = {k: prints.get(k) if isinstance(prints.get(k), str) and SHA256.match(prints[k]) else None
+                      for k in ('server', 'agent', 'fingerprints', 'rules')}
+        out['fingerprints'] = prints
+        stars = body.get('stars', [])
+        if stars is None:
+            stars = []
+        if not isinstance(stars, list) or len(stars) > STARS_MOST:
+            bad(f'stars (a list of at most {STARS_MOST})')
+        out['stars'], seen = [], set()
+        for star in stars:
+            if not isinstance(star, dict) or not isinstance(star.get('id'), str) or not STAR_ID.match(star['id']) or \
+                    star['id'] in seen or not isinstance(star.get('from'), str) or not WOLF_ID.match(star['from']) or \
+                    not isinstance(star.get('to'), str) or not WOLF_ID.match(star['to']) or \
+                    star['from'] == star['to'] or star.get('kind') not in STAR_KINDS or \
+                    not isinstance(star.get('counted'), bool):
+                continue                                # (One the world got wrong is left out, not the heartbeat.)
+            at = star.get('at')
+            at = at if isinstance(at, (int, float)) and not isinstance(at, bool) and 0 < at < 2 ** 40 else None
+            seen.add(star['id'])
+            out['stars'].append({'id': star['id'], 'from': star['from'], 'to': star['to'], 'kind': star['kind'],
+                                 'counted': star['counted'], 'at': at})
         why = listing_refused(out, kind)
         if why:
             raise refused(400, why, 'name_refused')
@@ -939,7 +993,9 @@ class Central:
         listing, every 10 minutes, and when its address changes. The reply says whether it is listed (and why not),
         the honest count, central's bans as this world sees them (each banned account's ticket `sub` here), and
         central's clock. An official world's `quickened` wolves give their accounts Quickened in every world (doc 49,
-        9.1)."""
+        9.1); an approved community world's too, with central's own evidence (doc 77, 7.1; doc 49, 9.2), which the
+        heartbeat's play time, `stars` and `fingerprints` feed. The reply says whether central approves the world
+        (`approved`) and why not (`approval`)."""
         world = self._world_token(token, address)
         fields = self._listing(body, world['kind'])
         now = self.clock()
@@ -964,6 +1020,7 @@ class Central:
                 check = {'reachable': not why, 'note': why, 'address': seen}
         online = fields.pop('online')
         quickened = fields.pop('quickened')
+        prints, stars = fields.pop('fingerprints'), fields.pop('stars')
         counted = self.store.ticketed_wolves(world['id'], online, now - TICKETS_COUNTED)
         online = [w for w in online if w in counted][:fields['limit'] or ONLINE_MOST]
         listing = {k: fields[k] for k in ('name', 'description', 'region', 'tags', 'limit', 'private', 'voices',
@@ -973,10 +1030,20 @@ class Central:
             # (Its token was replaced or revoked, or the world delisted, while central called it back.)
             raise refused(401, 'Central does not know this host token (it was revoked, replaced or never made). Make a '
                                'new one on the Host page.', 'bad_token')
-        # Quickened for the whole account (doc 49, 9.1): the wolves of the accounts whose standing in this world has
-        # opened it. Only an official world's word is taken: a community host could name anyone.
-        if quickened and world['kind'] == 'official':
+        # Play time (central's own evidence of who has played where): the time since the last heartbeat, for each
+        # wolf counted online now.
+        if world['last_heartbeat'] is not None:
+            self.store.record_play(world['id'], online, min(now - world['last_heartbeat'], PLAY_STEP_MOST), now)
+        # Approved worlds (doc 77, 7.1), then Quickened for the whole account (doc 49, 9.1 and 9.2): the wolves of the
+        # accounts whose standing in this world has opened it. Only an official or approved world's word is taken, and
+        # an approved world's only with the evidence central checks itself.
+        approved, release, approval = self.approval(world, prints, fields, now)
+        if world['kind'] != 'official':
+            self.store.record_star_claims(world['id'], stars, approved, now)
+        if world['kind'] == 'official':
             self.store.record_quickened(world['id'], quickened, now)
+        elif approved:
+            approved, approval = self.approved_unlocks(world, quickened, release, now)
         banned = self.store.banned_accounts()
         if world['kind'] != 'official' and banned:
             secret = self.keys.pairwise_secret()
@@ -986,7 +1053,146 @@ class Central:
         host = central_tickets.pairwise_id(self.keys.pairwise_secret(), world['host_account'], world['id']) \
             if world['kind'] != 'official' and world['host_account'] else None
         return ok(world=world['id'], kind=world['kind'], listed=not why, reachable=not why, why=why, address=seen,
-                  players=len(online), bans=banned, host=host, time=now, every=HEARTBEAT_EVERY)
+                  players=len(online), bans=banned, host=host, time=now, every=HEARTBEAT_EVERY, approved=approved,
+                  approval=approval)
+
+    # ---------------------------------------------------------------- Approved worlds (doc 77, 7.1)
+
+    def approval(self, world: dict, prints: dict | None, fields: dict, now: float) -> tuple[bool, dict | None, str]:
+        """Whether central takes this world's word on progression now: (approved, the release it matches, why not, in
+        the host's words). An official world always; a community world while it isn't held off (`worlds block`, or the
+        rate rule), its fingerprints match a release central knows that isn't withdrawn, and it runs without cheats or
+        open tiers. Kept on the world; a world that loses approval has its recent unlocks flagged for review."""
+        release, note = None, ''
+        if world['kind'] == 'official':
+            approved = True
+        else:
+            note, release = self._why_not_approved(world, prints, fields)
+            approved = not note
+        self.store.set_approval(world['id'], prints, approved, release['build'] if release else None, note, now)
+        if world.get('approved') and not approved:
+            self.store.flag_unlocks(world['id'], now - FLAG_DAYS * 86400, f'the world lost approval: {note}', now)
+        return approved, release, note
+
+    def _why_not_approved(self, world: dict, prints: dict | None, fields: dict) -> tuple[str, dict | None]:
+        if world.get('approval_blocked'):
+            return f'Central holds this world off approval: {world["approval_blocked"]}', None
+        if not prints:
+            return ('Its world agent sends no fingerprints (an older agent): update the world to the current '
+                    'release.'), None
+        names = {'server': 'its server program', 'agent': 'its world agent', 'fingerprints': 'its fingerprint tool',
+                 'rules': 'its progression rules'}
+        unreadable = [names[k] for k in names if not prints.get(k)]
+        if unreadable:
+            return f'Its world agent could not read {", ".join(unreadable)}.', None
+        releases = self.store.releases()
+        nearest, differ = None, None
+        for r in releases:
+            diff = central_releases.compare(prints, r)
+            if not diff and r['withdrawn_at'] is None:
+                nearest, differ = r, []
+                break
+            if not diff:
+                return (f'It runs release {r["build"]}, which has been withdrawn'
+                        f'{": " + r["withdrawn_note"] if r["withdrawn_note"] else ""}. Update the world.'), None
+            if differ is None or len(diff) < len(differ):
+                nearest, differ = r, diff
+        if differ:
+            said = [names[k] for k in differ]
+            said = ' and '.join([', '.join(said[:-1]), said[-1]] if len(said) > 1 else said)
+            verb = 'differs' if differ in (['server'], ['agent'], ['fingerprints']) else 'differ'
+            return (f'{said[0].upper()}{said[1:]} {verb} from release {nearest["build"]}: it is not an unmodified '
+                    'release of the world image.'), None
+        if nearest is None:
+            return 'Its software is no release central knows (an unreleased or modified world).', None
+        if fields.get('cheats'):
+            return 'Cheats are on (world.toml\'s cheats): progress here stays in this world.', None
+        if fields.get('openTiers') is None:
+            return 'Its server does not say whether every Gift tier is open (an older server): update the world.', None
+        if fields.get('openTiers'):
+            return 'Every Gift tier is open (--open-tiers): progress here stays in this world.', None
+        return '', nearest
+
+    def approved_unlocks(self, world: dict, wolves: list[str], release: dict, now: float) -> tuple[bool, str]:
+        """An approved community world's Quickened unlocks: each claimed account's evidence, checked by central itself
+        (doc 49, 9.2): the wolf had a ticket here (kept 30 days), the account has played here UNLOCK_PLAY, and its
+        wolves received at least the release's Quickened stars, each confirmed by its giver's own client, from at least
+        its number of givers: other accounts in good standing that have played here GIVER_PLAY. Accepted once met;
+        until then it waits, saying what is missing. A world claiming too many new unlocks too fast loses approval
+        (held off until an admin lets it go) and has its recent unlocks flagged. (approved still, why not.)"""
+        claims = self.store.claim_unlocks(world['id'], wolves, now)
+        if self.store.unlocks_claimed(world['id'], now - UNLOCK_RATE_DAYS * 86400) > UNLOCK_RATE_MOST:
+            reason = (f'more than {UNLOCK_RATE_MOST} new Quickened accounts claimed in {UNLOCK_RATE_DAYS} days, which is '
+                      'not plausible for honest play')
+            self.store.block_approval(world['id'], reason, now)
+            self.store.flag_unlocks(world['id'], now - FLAG_DAYS * 86400, f'the world lost approval: {reason}', now)
+            return False, f'Central holds this world off approval: {reason}'
+        waiting = [c for c in claims if c['accepted_at'] is None and c['revoked_at'] is None]
+        waiting.sort(key=lambda c: c['checked_at'] or 0)
+        need = release['manifest'].get('quickened', {})
+        for claim in waiting[:EVIDENCE_PER_BEAT]:
+            missing = self.unlock_evidence(world['id'], claim['account_id'], need)
+            if missing:
+                self.store.note_unlock(world['id'], claim['account_id'], missing, now)
+            else:
+                self.store.accept_unlock(world['id'], claim['account_id'], 'approved', release['build'], now)
+        return True, ''
+
+    def unlock_evidence(self, world_id: str, account_id: str, need: dict) -> str:
+        """'' if central's own evidence backs this account's unlock on this world; else what is missing."""
+        played = self.store.play_seconds(world_id, [account_id]).get(account_id, 0)
+        claims, confirmations = self.store.star_evidence(world_id, account_id)
+        # Each claimed star is matched to one confirmation of the same giver wolf, recipient wolf and kind, heard
+        # within the window; the earliest first.
+        pool: dict[tuple, list] = {}
+        for c in confirmations:
+            pool.setdefault((c[1], c[2], c[3]), []).append(c)
+        matched = []
+        for giver_wolf, recipient_wolf, kind, heard in claims:
+            options = pool.get((giver_wolf, recipient_wolf, kind), [])
+            for i, c in enumerate(options):
+                if heard - STAR_MATCH_AFTER <= c[4] <= heard + STAR_MATCH_BEFORE:
+                    matched.append(options.pop(i))
+                    break
+        givers = {c[0] for c in matched if c[0] != account_id and not c[5]}
+        givers_played = self.store.play_seconds(world_id, sorted(givers))
+        givers = {g for g in givers if givers_played.get(g, 0) >= GIVER_PLAY}
+        stars = sum(1 for c in matched if c[0] in givers)
+        want_stars, want_givers = need.get('stars', 100), need.get('starGivers', 30)
+        missing = []
+        if played < UNLOCK_PLAY:
+            missing.append(f'{played / 3600:.1f} of {UNLOCK_PLAY / 3600:g} hours played here')
+        if stars < want_stars:
+            missing.append(f'{stars} of {want_stars} stars confirmed by their givers')
+        if len(givers) < want_givers:
+            missing.append(f'{len(givers)} of {want_givers} giving accounts that played here')
+        return '; '.join(missing)
+
+    def confirm_star(self, address: str, token, body: dict) -> tuple[int, dict]:
+        """POST /stars/confirm {world, wolf, to, kind}: the giver's own client says, as it gives a star in a world, that
+        its wolf gave one to `to` there (doc 49, 9.2). Central matches a world's star claims against these, so a world
+        can't invent stars from players who never gave them. Only for one's own wolf, while its latest ticket is for
+        that world."""
+        _, account = self._account(token)
+        self._limit(('stars', account['id']), self.settings.limits.star_confirmations_per_account, 'star confirmations')
+        world_id, wolf_id, to, kind = body.get('world'), body.get('wolf'), body.get('to'), body.get('kind')
+        if not all(isinstance(v, str) for v in (world_id, wolf_id, to, kind)) or not WORLD_ID.match(world_id) or \
+                not WOLF_ID.match(wolf_id) or not WOLF_ID.match(to) or kind not in STAR_KINDS or wolf_id == to:
+            raise refused(400, 'Name the world, your wolf, the wolf you starred and the kind of star.', 'invalid')
+        wolf = self.store.wolf(wolf_id)
+        if wolf is None or wolf['account_id'] != account['id']:
+            raise refused(404, 'That wolf is not on this account.', 'not_found')
+        other = self.store.wolf(to)
+        if other is None:
+            raise refused(404, 'There is no such wolf.', 'not_found')
+        if other['account_id'] == account['id']:
+            raise refused(400, 'Not one of your own wolves.', 'own_wolf')
+        now = self.clock()
+        if wolf_id not in self.store.ticketed_wolves(world_id, [wolf_id], now - TICKETS_COUNTED):
+            raise refused(409, 'Your wolf is not in that world (its latest ticket is for another, or none).',
+                          'not_there')
+        self.store.confirm_star(world_id, account['id'], wolf_id, to, kind, now)
+        return ok()
 
     def leave(self, address: str, token, body: dict) -> tuple[int, dict]:
         """POST /worlds/leave: a world's clean shutdown takes it off the list at once."""
@@ -1090,7 +1296,8 @@ class Central:
                 'reachable': bool(w['reachable']), 'why': why,
                 'address': f'{bracketed(w["address"])}:{w["port"]}' if w['address'] and w['port'] else None,
                 'players': w['players'], 'last_heartbeat': whole_seconds(w['last_heartbeat']),
-                'token_created': whole_seconds(w['token_created'])}
+                'token_created': whole_seconds(w['token_created']),
+                'approved': w['kind'] == 'official' or w['approved'] is True, 'approval': w['approval_note'] or ''}
 
     def _hosted(self, account: dict, world_id: str) -> dict:
         world = self.store.world(world_id) if WORLD_ID.match(world_id or '') else None

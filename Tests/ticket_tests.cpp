@@ -11,6 +11,8 @@
 #include "RatwWire.h"
 
 #include <algorithm>
+#include <cmath>
+#include <ctime>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -21,6 +23,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <cmath>
+#include <ctime>
 
 using namespace ratw;
 using json::Value;
@@ -815,7 +818,7 @@ void aWolfsQuickenedComesFromItsTicket()
     // offered on arrival. The world takes the tier from the ticket (`tier`), whatever its own standing says; a world
     // with Quickened wolves off (--no-quickened-wolves) says so in /status and refuses one at the hello. Quickened
     // opening here is a fanfare on an official world (its unlocks.json takes it to central) and none on a community
-    // world, whose unlocks stay its own.
+    // world, which writes its unlocks.json too: central takes it only while it has approved that world (doc 77).
     Fixture f;
     const auto official = [](const std::string& tier) {
         return [tier](Value& c) {
@@ -927,8 +930,67 @@ void aWolfsQuickenedComesFromItsTicket()
                "its host grants Quickened here");
         expect(!a.last("fanfare"), "with no fanfare: a community world's Quickened opens nothing on central");
         g.ticketFiles();
-        expect(!g.writeUnlocks(problem) && !std::filesystem::exists(unlocks),
-               "and its unlocks stay its own: no unlocks.json (" + problem + ")");
+        expect(std::filesystem::exists(unlocks) && g.writeUnlocks(problem), "but it writes unlocks.json: " + problem);
+        const auto list = readJson(unlocks);
+        expect(list.string("world") == World1 && list.array("quickened").size() == 1 && list.array("quickened")[0].asString() == Wolf3,
+               "naming the account's wolf, for central to take only if it approves the world: " + json::dump(list));
+    }
+}
+
+void starsJsonListsTheStarsBetweenTicketWolves()
+{
+    // stars.json (doc 77, approved worlds): the star book's recent stars from one ticket wolf to another, newest first,
+    // for central to match against the givers' own confirmations. Not a scratch server's; /status says --open-tiers.
+    Fixture f;
+    const std::filesystem::path starsFile = f.dir / "stars.json";
+    const auto star = [](const std::string& id, const std::string& from, const std::string& fromAccount, const std::string& to,
+                         const std::string& toAccount, double at) {
+        stars::Star s;
+        s.id = id;
+        s.kind = "gold";
+        s.source = "scene-1";
+        s.giverCharacter = from;
+        s.giverAccount = fromAccount;
+        s.recipientCharacter = to;
+        s.recipientAccount = toAccount;
+        s.at = at;
+        return s;
+    };
+    const double t = double(std::time(nullptr));
+    {
+        game::Game g(f.options(false));
+        f.wire(g);
+        std::string problem;
+        expect(g.start(problem), "a community ticket world starts: " + problem);
+        expect(!g.worldStatus().boolean("openTiers", true), "its /status says every tier is not open by hand");
+        g.starBook().record(star("star-a", Wolf1, Acct1, Wolf2, Acct2, t - 100));
+        g.starBook().record(star("star-b", Wolf2, Acct2, Wolf1, Acct1, t - 50));
+        g.starBook().record(star("star-npc", "npc-giver", "npc-giver", Wolf1, Acct1, t - 10));   // (Not a ticket wolf's.)
+        g.ticketFiles();
+        expect(std::filesystem::exists(starsFile) && g.writeStars(problem), "stars.json is written: " + problem);
+        const auto doc = readJson(starsFile);
+        const auto& list = doc.array("stars");
+        expect(doc.string("world") == World1 && doc.number("at") > 0 && list.size() == 2, "two stars, between wolves: " + json::dump(doc));
+        expect(list[0].string("id") == "star-b" && list[0].string("from") == Wolf2 && list[0].string("to") == Wolf1 &&
+                   list[0].string("kind") == "gold" && list[0].number("at") == std::floor(t - 50) && list[0].find("counted") &&
+                   list[1].string("id") == "star-a" && list[1].string("from") == Wolf1,
+               "the newest first, with who gave it to whom and whether it counted: " + json::dump(doc));
+    }
+    std::filesystem::remove(starsFile);
+    {
+        auto o = f.options(false);
+        o.scratch = true;
+        o.openTiers = true;
+        game::Game g(o);
+        f.wire(g);
+        std::string problem;
+        expect(g.start(problem), "a scratch ticket server with every tier open starts: " + problem);
+        expect(g.worldStatus().boolean("openTiers"), "its /status says every tier is open: " + json::dump(g.worldStatus()));
+        expect(json::dump(g.worldStatus()).size() < 2048, "and stays under 2 KB");
+        g.starBook().record(star("star-c", Wolf1, Acct1, Wolf2, Acct2, t));
+        g.ticketFiles();
+        expect(!g.writeStars(problem) && problem.find("scratch") != std::string::npos && !std::filesystem::exists(starsFile),
+               "a scratch server writes no stars.json: " + problem);
     }
 }
 
@@ -1693,6 +1755,7 @@ int main()
         theAgentsFilesCountTheWolvesAndCarryCentralsBans();
         aWolfsQuickenedComesFromItsTicket();
         aScratchServerWritesNoOnlineFile();
+        starsJsonListsTheStarsBetweenTicketWolves();
         theHostDecidesKicksBansAndSilences();
         theHostsToolsKeepTheCommunityGuards();
         theHostsGuardKeepsToTheLastHostAndCoversItsOtherRewards();

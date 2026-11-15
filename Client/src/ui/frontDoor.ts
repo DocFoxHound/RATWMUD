@@ -19,7 +19,7 @@ import {ask, askText} from './dialog.ts';
 import {EditorDoor} from './editorDoor.ts';
 import {nameProblem, NameMost, resetZone, setZoneColour, tierCards, zoneChanged, zoneCoat} from './creatorRules.ts';
 import {hostOf, type EditorBridge} from '../net/editor.ts';
-import {HOST_SEES} from '../net/worlds.ts';
+import {HOST_SEES, kindBadges} from '../net/worlds.ts';
 import {arr, bool, isObject, num, obj, str, type Json} from '../game/json.ts';
 import {newCommandId} from '../net/session.ts';
 import {agoText, envLine, worldTomlLines} from '../net/central.ts';
@@ -101,6 +101,7 @@ export interface DoorWorld {
     answer?: string;         // 'asking' | 'yes' | 'no'
     marks?: string[];        // "AI used", "cheats on", "No Quickened"
     quickenedWolves?: boolean;   // Quickened wolves may join (doc 49, 9.1): false when its host keeps them out.
+    approved?: boolean;      // Central counts progress there for the whole account (doc 77, approved worlds).
 }
 
 /** One of a host's own worlds, on the Host page (client.ts makes these from GET /host/worlds). */
@@ -366,7 +367,7 @@ export class FrontDoor {
                     tags: arr(w, 'tags').filter((t): t is string => typeof t === 'string'), fit: str(w, 'fit', 'unknown'),
                     note: str(w, 'note'), status: str(w, 'status'), players: count(w.players), limit: count(w.limit), ping: count(w.ping),
                     answer: str(w, 'answer', 'asking'), marks: arr(w, 'marks').filter((t): t is string => typeof t === 'string'),
-                    quickenedWolves: w.quickenedWolves !== false};
+                    quickenedWolves: w.quickenedWolves !== false, approved: w.approved === true};
             });
             if (str(event, 'wolf')) this.worldsWolf = str(event, 'wolf');
             this.lostWorld = str(event, 'lost');
@@ -1033,7 +1034,7 @@ export class FrontDoor {
             const players = el('td', {className: 'server-players'}, this.playersText(w));
             const ping = el('td', {className: 'server-ping'}, this.pingText(w));
             const note = el('p', {className: 'world-note gold'}, w.note);
-            const badges = [el('span', {className: `world-kind ${w.kind === 'official' ? 'official' : ''}`}, w.kind === 'official' ? 'OFFICIAL' : 'COMMUNITY')];
+            const badges = kindBadges(w.kind, w.approved === true).map(b => el('span', {className: `world-kind ${b.className}`, title: b.title}, b.text));
             const tags = [...(w.marks ?? []), ...w.tags, ...(plain ? ['not encrypted'] : [])];
             const row = el('tr', {className: `server-row${this.fits(w) ? '' : ' unfit'}${w.id === this.serverChoice ? ' chosen' : ''}`},
                 el('td', {className: 'server-name'},

@@ -138,6 +138,8 @@ class Central:
         self.kind = 'community'
         self.status = 200
         self.code = ''
+        self.approved = None                    # (Doc 77, 7.1: None, an older central that says nothing of it.)
+        self.approval = ''
         self.lock = threading.Lock()
 
     def heartbeat(self, body, headers):
@@ -146,10 +148,13 @@ class Central:
                 return 401, {'ok': False, 'code': 'bad_token', 'error': 'That host token is not known.'}, {}
             if self.status != 200:
                 return self.status, {'ok': False, 'code': self.code, 'error': 'Refused.'}, {}
-            return 200, {'ok': True, 'world': self.world, 'kind': self.kind, 'listed': self.listed,
-                         'reachable': self.listed, 'why': '' if self.listed else self.why,
-                         'address': '203.0.113.5:7788', 'players': len(body.get('online', [])), 'bans': self.bans,
-                         'host': self.host, 'time': time.time(), 'every': 60}, {}
+            reply = {'ok': True, 'world': self.world, 'kind': self.kind, 'listed': self.listed,
+                     'reachable': self.listed, 'why': '' if self.listed else self.why,
+                     'address': '203.0.113.5:7788', 'players': len(body.get('online', [])), 'bans': self.bans,
+                     'host': self.host, 'time': time.time(), 'every': 60}
+            if self.approved is not None:
+                reply.update(approved=self.approved, approval=self.approval)
+            return 200, reply, {}
 
     def routes(self):
         return {('POST', '/worlds/heartbeat'): self.heartbeat,
@@ -188,6 +193,7 @@ class AgentTests(unittest.TestCase):
         call = self.fake.calls('/worlds/heartbeat')[-1]
         self.assertEqual(call['headers'].get('Authorization'), f'Bearer {TOKEN}')
         body = call['body']
+        self.assertEqual(set(body.pop('fingerprints')), {'v', 'server', 'agent', 'fingerprints', 'rules'})
         self.assertEqual(body, {'port': self.world.port, 'name': 'Test Hollow', 'protocol': 1, 'build': 'abc1234',
                                 'clientData': '0' * 32, 'limit': 40, 'voices': False, 'cheats': True,
                                 'private': False, 'quickenedWolves': False, 'secure': False, 'description': 'A quiet hollow.', 'region': 'EU',
@@ -281,7 +287,7 @@ class AgentTests(unittest.TestCase):
         self.assertTrue(any('more than a minute old' in line for line in self.lines))
         self.assertTrue(any('another world' in line for line in self.lines))
 
-    def test_an_official_worlds_quickened_accounts_go_with_the_heartbeat(self):
+    def test_the_worlds_quickened_accounts_go_with_the_heartbeat(self):
         """Doc 49, 9.1: unlocks.json's wolves (the accounts whose standing in this world opened Quickened) go with each
         heartbeat, for central to give those accounts Quickened in every world; none without the file, from another
         world's, or unreadable; never more than MOST_QUICKENED."""
@@ -301,6 +307,82 @@ class AgentTests(unittest.TestCase):
         unlocks.write_text(json.dumps({'world': WORLD, 'at': 1, 'quickened': [WOLF1] * (agent.MOST_QUICKENED + 5)}))
         a.heartbeat()
         self.assertEqual(len(self.fake.calls('/worlds/heartbeat')[-1]['body']['quickened']), agent.MOST_QUICKENED)
+
+    def test_the_fingerprints_of_what_the_world_runs_go_with_each_heartbeat(self):
+        """Doc 77, 7.1: SHA-256 of the server program, this agent, the fingerprint tool and the progression rules,
+        from the files on disk, the same as a release's manifest computes them; the server's openTiers passed on."""
+        import hashlib
+        fp = agent.world_fingerprints
+        server, data = self.dir / 'ratw_server', self.dir / 'Data'
+        server.write_bytes(b'\x7fELF a server')
+        for name in fp.RULES_FILES:
+            (data / name).parent.mkdir(parents=True, exist_ok=True)
+            (data / name).write_text('{}')
+        (data / 'Progression' / 'standing.json').write_text(json.dumps(
+            {'unlocks': {'quickened': {'stars': 100, 'starGivers': 30}}}))
+        self.status = world_status(openTiers=False)
+        a = self.make(server_binary=server, data_dir=data)
+        a.heartbeat()
+        body = self.fake.calls('/worlds/heartbeat')[-1]['body']
+        sha = lambda path: hashlib.sha256(Path(path).read_bytes()).hexdigest()   # noqa: E731
+        self.assertEqual(body['fingerprints'], {'v': 1, 'server': sha(server), 'agent': sha(agent.__file__),
+                                                'fingerprints': sha(fp.__file__),
+                                                'rules': fp.rules_fingerprint(fp.rules_files(data))})
+        self.assertIs(body['openTiers'], False)
+        manifest = fp.manifest('build-1', server, data)
+        self.assertEqual({k: manifest[k] for k in ('server', 'agent', 'fingerprints', 'rules')},
+                         {k: body['fingerprints'][k] for k in ('server', 'agent', 'fingerprints', 'rules')},
+                         "the release's manifest computes the same")
+        self.assertEqual(manifest['quickened'], {'stars': 100, 'starGivers': 30})
+        (data / 'Gifts' / 'families.json').write_text('{"families": ["every one Quickened"]}')
+        a.heartbeat()
+        changed = self.fake.calls('/worlds/heartbeat')[-1]['body']['fingerprints']
+        self.assertNotEqual(changed['rules'], manifest['rules'], 'a rules file changed changes the rules')
+        self.assertEqual(changed['server'], manifest['server'])
+        server.unlink()
+        a.heartbeat()
+        self.assertIsNone(self.fake.calls('/worlds/heartbeat')[-1]['body']['fingerprints']['server'], 'not found: None')
+        (data / 'Social' / 'social.json').unlink()
+        a.heartbeat()
+        self.assertIsNone(self.fake.calls('/worlds/heartbeat')[-1]['body']['fingerprints']['rules'])
+
+    def test_the_worlds_stars_go_with_the_heartbeat(self):
+        """Doc 77, 7.1: stars.json's stars, for central to match against their givers' confirmations; none without
+        the file, from another world's, or unreadable; badly formed ones left out; never more than MOST_STARS."""
+        a = self.make()
+        a.heartbeat()
+        self.assertNotIn('stars', self.fake.calls('/worlds/heartbeat')[-1]['body'], 'no stars.json: none sent')
+        star = {'id': 'star-0123456789abcdef', 'kind': 'gold', 'from': WOLF1, 'to': WOLF2, 'at': 1794052800,
+                'counted': True}
+        stars = self.dir / 'stars.json'
+        stars.write_text(json.dumps({'world': WORLD, 'at': 1, 'stars': [star, {**star, 'from': 'dev:7'},
+                                                                       {**star, 'id': 'nope'}, 7]}))
+        a.heartbeat()
+        self.assertEqual(self.fake.calls('/worlds/heartbeat')[-1]['body']['stars'], [star])
+        stars.write_text(json.dumps({'world': OTHER, 'at': 1, 'stars': [star]}))
+        a.heartbeat()
+        self.assertNotIn('stars', self.fake.calls('/worlds/heartbeat')[-1]['body'], "another world's: none")
+        stars.write_text('{not json')
+        a.heartbeat()
+        self.assertNotIn('stars', self.fake.calls('/worlds/heartbeat')[-1]['body'])
+        stars.write_text(json.dumps({'world': WORLD, 'at': 1, 'stars': [star] * (agent.MOST_STARS + 5)}))
+        a.heartbeat()
+        self.assertEqual(len(self.fake.calls('/worlds/heartbeat')[-1]['body']['stars']), agent.MOST_STARS)
+
+    def test_centrals_approval_is_logged_when_it_changes(self):
+        a = self.make()
+        a.heartbeat()
+        self.assertFalse(any('approved' in line for line in self.lines), 'an older central says nothing of it')
+        self.central.approved, self.central.approval = False, 'Cheats are on (world.toml\'s cheats).'
+        a.heartbeat()
+        a.heartbeat()
+        self.assertEqual([line for line in self.lines if 'approved' in line],
+                         ["world agent: not approved by central (Cheats are on (world.toml's cheats).): progress here "
+                          'stays in this world'])
+        self.central.approved, self.central.approval = True, ''
+        a.heartbeat()
+        self.assertEqual(self.lines[-1], 'world agent: approved by central: progress here counts for every account '
+                                         'in every world')
 
     def test_the_listing_is_logged_when_it_changes_only(self):
         a = self.make()

@@ -52,6 +52,7 @@ pub fn allowed(method: &str, path: &str) -> bool {
         ("/account/logout", &["POST"]),
         ("/account", &["GET", "DELETE"]),
         ("/account/quickened/announced", &["POST"]),   // (The Quickened fanfare shown: doc 49, 9.1.)
+        ("/stars/confirm", &["POST"]),                 // (A star given, confirmed by its giver: doc 77, approved worlds.)
         ("/wolves", &["GET", "POST"]),
         ("/wolves/name", &["POST"]),
         ("/tickets", &["POST"]),
@@ -431,6 +432,8 @@ mod tests {
         assert!(allowed("DELETE", "/account"));
         assert!(allowed("POST", "/account/quickened/announced"));
         assert!(!allowed("GET", "/account/quickened/announced"));
+        assert!(allowed("POST", "/stars/confirm"));
+        assert!(!allowed("GET", "/stars/confirm"));
         assert!(allowed("GET", "/worlds"));
         assert!(allowed("DELETE", "/wolves/wolf-0123456789abcdef0123456789abcdef"));
         assert!(!allowed("DELETE", "/wolves/wolf-0123456789ABCDEF0123456789abcdef"));

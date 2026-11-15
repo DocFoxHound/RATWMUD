@@ -367,8 +367,11 @@ class Store:
 
     WORLD_FIELDS = ('id', 'name', 'kind', 'host_account', 'delisted', 'address', 'port', 'listing', 'online',
                     'created_at', 'last_heartbeat', 'token_created', 'token_used', 'reachable', 'checked_at',
-                    'check_note', 'check_address', 'host_name', 'players', 'removed')
-    WORLD_TIMES = ('created_at', 'last_heartbeat', 'token_created', 'token_used', 'checked_at')
+                    'check_note', 'check_address', 'host_name', 'players', 'removed', 'fingerprints', 'approved',
+                    'approved_release', 'approval_note', 'approval_changed_at', 'approval_blocked',
+                    'approval_blocked_at')
+    WORLD_TIMES = ('created_at', 'last_heartbeat', 'token_created', 'token_used', 'checked_at', 'approval_changed_at',
+                   'approval_blocked_at')
 
     def _world(self, row, extra: tuple = ()) -> dict | None:
         if row is None:
@@ -465,16 +468,232 @@ class Store:
         """Quickened for the whole account (doc 49, 9.1), from an official world's heartbeat: each account owning one of
         these wolves, if that wolf has a ticket to this world central still keeps (30 days: a world names only its own
         visitors; one named again after its wolf's next visit is taken then), gets Quickened now, from this world,
-        unless it has it already. The accounts newly given it."""
+        unless it has it already, recorded as an accepted unlock ('official'). The accounts newly given it."""
+        given = []
+        for claim in self.claim_unlocks(world_id, wolves, now):
+            if claim['accepted_at'] is None and claim['revoked_at'] is None and \
+                    self.accept_unlock(world_id, claim['account_id'], 'official', None, now):
+                given.append(claim['account_id'])
+        return given
+
+    # ---------------------------------------------------------------- Approved worlds (doc 77, 7.1)
+
+    RELEASE = 'build, server, agent, fingerprints, rules, manifest, key_id, made_at, added_at, withdrawn_at, withdrawn_note'
+
+    def _release(self, row) -> dict | None:
+        if row is None:
+            return None
+        out = dict(zip(self.RELEASE.split(', '), row))
+        for key in ('made_at', 'added_at', 'withdrawn_at'):
+            out[key] = epoch(out[key])
+        return out
+
+    def add_release(self, manifest: dict, key_id: str, now: float) -> str:
+        """A release's manifest (central_releases checked it): 'added'; 'known' if this build is there already with the
+        same fingerprints; 'different' if it is there with others (nothing changes: a build id is never reused)."""
+        made = manifest.get('made')
+        made = ts(made) if isinstance(made, (int, float)) and not isinstance(made, bool) and made > 0 else None
+        with self.connection() as conn, conn.transaction():
+            row = conn.execute('SELECT server, agent, fingerprints, rules FROM central.releases WHERE build = %s',
+                               (manifest['build'],)).fetchone()
+            if row is not None:
+                same = tuple(row) == tuple(manifest[k] for k in ('server', 'agent', 'fingerprints', 'rules'))
+                return 'known' if same else 'different'
+            conn.execute('INSERT INTO central.releases (build, server, agent, fingerprints, rules, manifest, key_id, '
+                         'made_at, added_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)',
+                         (manifest['build'], manifest['server'], manifest['agent'], manifest['fingerprints'],
+                          manifest['rules'], world_db.Jsonb(manifest), key_id, made, ts(now)))
+            return 'added'
+
+    def releases(self) -> list[dict]:
+        with self.connection() as conn:
+            return [self._release(r) for r in conn.execute(
+                f'SELECT {self.RELEASE} FROM central.releases ORDER BY added_at, build').fetchall()]
+
+    def withdraw_release(self, build: str, note: str, now: float) -> bool:
+        with self.connection() as conn:
+            return conn.execute('UPDATE central.releases SET withdrawn_at = %s, withdrawn_note = %s '
+                                'WHERE build = %s AND withdrawn_at IS NULL', (ts(now), note, build)).rowcount == 1
+
+    def set_approval(self, world_id: str, fingerprints: dict | None, approved: bool, release: str | None, note: str,
+                     now: float) -> None:
+        """Central's verdict at a heartbeat (the time it last changed kept unless it changes now)."""
+        with self.connection() as conn:
+            conn.execute('UPDATE central.worlds SET fingerprints = %s, approval_changed_at = CASE WHEN approved = %s '
+                         'THEN approval_changed_at ELSE %s END, approved = %s, approved_release = %s, '
+                         'approval_note = %s WHERE id = %s',
+                         (world_db.Jsonb(fingerprints) if fingerprints is not None else None, approved, ts(now),
+                          approved, release, note, world_id))
+
+    def block_approval(self, world_id: str, reason: str | None, now: float) -> bool:
+        """Holds the world off approval until an admin lets it go (reason None lets it go). Also drops its approval
+        at once."""
+        with self.connection() as conn:
+            if reason is None:
+                return conn.execute('UPDATE central.worlds SET approval_blocked = NULL, approval_blocked_at = NULL '
+                                    'WHERE id = %s', (world_id,)).rowcount == 1
+            return conn.execute('UPDATE central.worlds SET approval_blocked = %s, approval_blocked_at = %s, '
+                                'approval_changed_at = CASE WHEN approved THEN %s ELSE approval_changed_at END, '
+                                'approved = false, approval_note = %s WHERE id = %s',
+                                (reason, ts(now), ts(now), reason, world_id)).rowcount == 1
+
+    def record_play(self, world_id: str, wolves: list[str], seconds: float, now: float) -> None:
+        """The accounts of these (counted) wolves have played `seconds` more here."""
+        if not wolves or seconds <= 0:
+            return
+        with self.connection() as conn:
+            conn.execute('INSERT INTO central.play (world_id, account_id, seconds, first_at, last_at) '
+                         'SELECT %s, account_id, %s, %s, %s FROM central.wolves WHERE id = ANY(%s) GROUP BY account_id '
+                         'ON CONFLICT (world_id, account_id) DO UPDATE SET seconds = central.play.seconds + '
+                         'EXCLUDED.seconds, last_at = EXCLUDED.last_at',
+                         (world_id, float(seconds), ts(now), ts(now), list(wolves)))
+
+    def play_seconds(self, world_id: str, accounts: list[str]) -> dict[str, float]:
+        if not accounts:
+            return {}
+        with self.connection() as conn:
+            return {r[0]: r[1] for r in conn.execute(
+                'SELECT account_id, seconds FROM central.play WHERE world_id = %s AND account_id = ANY(%s)',
+                (world_id, list(accounts))).fetchall()}
+
+    def record_star_claims(self, world_id: str, stars: list[dict], approved: bool, now: float) -> int:
+        """A world's stars (its stars.json), each kept as first heard (central's clock, and whether the world was
+        approved then). How many were new."""
+        if not stars:
+            return 0
+        added = 0
+        with self.connection() as conn, conn.transaction():
+            for s in stars:
+                world_at = ts(s['at']) if s.get('at') is not None else None
+                added += conn.execute(
+                    'INSERT INTO central.star_claims (world_id, star_id, giver_wolf, recipient_wolf, kind, counted, '
+                    'world_at, heard_at, approved) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING',
+                    (world_id, s['id'], s['from'], s['to'], s['kind'], s['counted'], world_at, ts(now),
+                     approved)).rowcount
+        return added
+
+    def confirm_star(self, world_id: str, giver_account: str, giver_wolf: str, recipient_wolf: str, kind: str,
+                     now: float) -> None:
+        with self.connection() as conn:
+            conn.execute('INSERT INTO central.star_confirmations (world_id, giver_account, giver_wolf, recipient_wolf, '
+                         'kind, at) VALUES (%s,%s,%s,%s,%s,%s)',
+                         (world_id, giver_account, giver_wolf, recipient_wolf, kind, ts(now)))
+
+    def star_evidence(self, world_id: str, account_id: str) -> tuple[list[tuple], list[tuple]]:
+        """The stars this world says the account's wolves received there (counted, and heard while it was approved),
+        as (giver wolf, recipient wolf, kind, heard at); and what givers confirmed giving them, as (giver account,
+        giver wolf, recipient wolf, kind, at, giver banned)."""
+        with self.connection() as conn:
+            claims = [(r[0], r[1], r[2], epoch(r[3])) for r in conn.execute(
+                'SELECT c.giver_wolf, c.recipient_wolf, c.kind, c.heard_at FROM central.star_claims c '
+                'JOIN central.wolves w ON w.id = c.recipient_wolf WHERE c.world_id = %s AND w.account_id = %s '
+                'AND c.counted AND c.approved ORDER BY c.heard_at', (world_id, account_id)).fetchall()]
+            confirmations = [(r[0], r[1], r[2], r[3], epoch(r[4]), r[5]) for r in conn.execute(
+                'SELECT f.giver_account, f.giver_wolf, f.recipient_wolf, f.kind, f.at, coalesce(a.banned, true) '
+                'FROM central.star_confirmations f JOIN central.wolves w ON w.id = f.recipient_wolf '
+                'LEFT JOIN central.accounts a ON a.id = f.giver_account '
+                'WHERE f.world_id = %s AND w.account_id = %s ORDER BY f.at, f.id', (world_id, account_id)).fetchall()]
+        return claims, confirmations
+
+    UNLOCK = ('world_id, account_id, wolf_id, tier, first_claimed_at, accepted_at, how, release, note, flagged_at, '
+              'flag_reason, revoked_at, revoked_note, checked_at')
+    UNLOCK_TIMES = ('first_claimed_at', 'accepted_at', 'flagged_at', 'revoked_at', 'checked_at')
+
+    def _unlock(self, row, extra: tuple = ()) -> dict:
+        out = dict(zip(self.UNLOCK.split(', ') + list(extra), row))
+        for key in self.UNLOCK_TIMES:
+            out[key] = epoch(out[key])
+        return out
+
+    def claim_unlocks(self, world_id: str, wolves: list[str], now: float) -> list[dict]:
+        """A world's word that these wolves' accounts opened Quickened there: each account owning one of them that has a
+        ticket to this world central still keeps (30 days), and hasn't Quickened yet, gets an unlock row (first claimed
+        now, if new). The rows of those accounts."""
         if not wolves:
             return []
+        with self.connection() as conn, conn.transaction():
+            conn.execute(
+                'INSERT INTO central.unlocks (world_id, account_id, wolf_id, first_claimed_at) '
+                'SELECT DISTINCT ON (w.account_id) %s, w.account_id, w.id, %s FROM central.wolves w '
+                'JOIN central.accounts a ON a.id = w.account_id '
+                'WHERE w.id = ANY(%s) AND a.quickened_at IS NULL AND EXISTS ('
+                '    SELECT 1 FROM central.tickets t WHERE t.wolf_id = w.id AND t.world_id = %s) '
+                'ORDER BY w.account_id, w.id ON CONFLICT DO NOTHING', (world_id, ts(now), list(wolves), world_id))
+            columns = ', '.join(f'u.{c}' for c in self.UNLOCK.split(', '))
+            return [self._unlock(r) for r in conn.execute(
+                f'SELECT {columns} FROM central.unlocks u JOIN central.accounts a ON a.id = u.account_id '
+                'WHERE u.world_id = %s AND a.quickened_at IS NULL AND u.account_id IN ('
+                '    SELECT account_id FROM central.wolves WHERE id = ANY(%s)) ORDER BY u.first_claimed_at, u.account_id',
+                (world_id, list(wolves))).fetchall()]
+
+    def accept_unlock(self, world_id: str, account_id: str, how: str, release: str | None, now: float) -> bool:
+        """The unlock is accepted: the account has Quickened now, from this world (unless it had it already). True if
+        this gave it."""
+        with self.connection() as conn, conn.transaction():
+            conn.execute("UPDATE central.unlocks SET accepted_at = %s, how = %s, release = %s, note = '', checked_at = %s "
+                         'WHERE world_id = %s AND account_id = %s AND accepted_at IS NULL AND revoked_at IS NULL',
+                         (ts(now), how, release, ts(now), world_id, account_id))
+            return conn.execute('UPDATE central.accounts SET quickened_at = %s, quickened_world = %s '
+                                'WHERE id = %s AND quickened_at IS NULL', (ts(now), world_id, account_id)).rowcount == 1
+
+    def note_unlock(self, world_id: str, account_id: str, note: str, now: float) -> None:
         with self.connection() as conn:
-            return [r[0] for r in conn.execute(
-                'UPDATE central.accounts a SET quickened_at = %s, quickened_world = %s '
-                'WHERE a.quickened_at IS NULL AND a.id IN ('
-                '    SELECT w.account_id FROM central.wolves w WHERE w.id = ANY(%s) AND EXISTS ('
-                '        SELECT 1 FROM central.tickets t WHERE t.wolf_id = w.id AND t.world_id = %s)) '
-                'RETURNING a.id', (ts(now), world_id, list(wolves), world_id)).fetchall()]
+            conn.execute('UPDATE central.unlocks SET note = %s, checked_at = %s WHERE world_id = %s AND account_id = %s',
+                         (note, ts(now), world_id, account_id))
+
+    def unlocks_claimed(self, world_id: str, since: float) -> int:
+        """How many accounts this world first claimed an unlock for since then."""
+        with self.connection() as conn:
+            return conn.execute('SELECT count(*) FROM central.unlocks WHERE world_id = %s AND first_claimed_at >= %s',
+                                (world_id, ts(since))).fetchone()[0]
+
+    def flag_unlocks(self, world_id: str, since: float, reason: str, now: float) -> int:
+        """Marks for review the world's unlocks accepted since then (not already flagged or revoked); they stay in
+        force until an admin revokes them. How many."""
+        with self.connection() as conn:
+            return conn.execute('UPDATE central.unlocks SET flagged_at = %s, flag_reason = %s WHERE world_id = %s AND '
+                                'accepted_at >= %s AND flagged_at IS NULL AND revoked_at IS NULL',
+                                (ts(now), reason, world_id, ts(since))).rowcount
+
+    def unlocks(self, world_id: str | None = None, flagged: bool = False, account_id: str | None = None) -> list[dict]:
+        where, params = [], []
+        if world_id:
+            where.append('u.world_id = %s')
+            params.append(world_id)
+        if account_id:
+            where.append('u.account_id = %s')
+            params.append(account_id)
+        if flagged:
+            where.append('u.flagged_at IS NOT NULL AND u.revoked_at IS NULL')
+        columns = ', '.join(f'u.{c}' for c in self.UNLOCK.split(', '))
+        with self.connection() as conn:
+            return [self._unlock(r, ('username',)) for r in conn.execute(
+                f'SELECT {columns}, a.username FROM central.unlocks u JOIN central.accounts a ON a.id = u.account_id '
+                f'{"WHERE " + " AND ".join(where) if where else ""} ORDER BY u.first_claimed_at, u.account_id',
+                params).fetchall()]
+
+    def clear_unlock_flag(self, world_id: str, account_id: str) -> bool:
+        with self.connection() as conn:
+            return conn.execute("UPDATE central.unlocks SET flagged_at = NULL, flag_reason = '' WHERE world_id = %s AND "
+                                'account_id = %s AND flagged_at IS NOT NULL', (world_id, account_id)).rowcount == 1
+
+    def revoke_unlock(self, world_id: str, account_id: str, note: str, now: float) -> bool:
+        """An admin takes the unlock back (kept, marked revoked). If the account's Quickened came from it, the account
+        keeps Quickened only from another accepted unlock still standing (the earliest), else loses it. Its Quickened
+        wolves already made stay as they are (a wolf's tier never changes). False if there was none to revoke."""
+        with self.connection() as conn, conn.transaction():
+            if conn.execute('UPDATE central.unlocks SET revoked_at = %s, revoked_note = %s WHERE world_id = %s AND '
+                            'account_id = %s AND revoked_at IS NULL', (ts(now), note, world_id, account_id)).rowcount != 1:
+                return False
+            row = conn.execute('SELECT quickened_world FROM central.accounts WHERE id = %s FOR UPDATE',
+                               (account_id,)).fetchone()
+            if row and row[0] == world_id:
+                other = conn.execute('SELECT world_id, accepted_at FROM central.unlocks WHERE account_id = %s AND '
+                                     'accepted_at IS NOT NULL AND revoked_at IS NULL ORDER BY accepted_at LIMIT 1',
+                                     (account_id,)).fetchone()
+                conn.execute('UPDATE central.accounts SET quickened_at = %s, quickened_world = %s WHERE id = %s',
+                             (other[1] if other else None, other[0] if other else None, account_id))
+            return True
 
     def announce_quickened(self, account_id: str, now: float) -> bool:
         """The account's Quickened announcement has been shown (doc 49, 9.1: the client's fanfare, once per account):
@@ -512,7 +731,7 @@ class Store:
 
     # ---------------------------------------------------------------- Housekeeping
 
-    def prune(self, now: float, tickets_kept: float = 30 * 86400) -> dict:
+    def prune(self, now: float, tickets_kept: float = 30 * 86400, stars_kept: float = 365 * 86400) -> dict:
         with self.connection() as conn, conn.transaction():
             return {
                 'sessions': conn.execute('DELETE FROM central.sessions WHERE refresh_expires <= %s',
@@ -521,4 +740,9 @@ class Store:
                 'reserved': conn.execute('DELETE FROM central.reserved_names WHERE until <= %s', (ts(now),)).rowcount,
                 'tickets': conn.execute('DELETE FROM central.tickets WHERE issued_at <= %s',
                                         (ts(now - tickets_kept),)).rowcount,
+                # (Stars are evidence for an unlock that may take months: kept a year.)
+                'star claims': conn.execute('DELETE FROM central.star_claims WHERE heard_at <= %s',
+                                            (ts(now - stars_kept),)).rowcount,
+                'star confirmations': conn.execute('DELETE FROM central.star_confirmations WHERE at <= %s',
+                                                   (ts(now - stars_kept),)).rowcount,
             }

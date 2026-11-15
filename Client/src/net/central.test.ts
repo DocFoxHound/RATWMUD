@@ -2,9 +2,10 @@
 // page's calls (Docs/Design/77-central-accounts-and-hosted-worlds.md, 3.2 and 7).
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {agoText, allowedCall, baseUrl, Central, CentralError, envLine, readHostWorld, readListedWorld, shellWord, worldTomlLines,
-    ShellCentral, type CentralReply, type CentralTransport} from './central.ts';
-import {HOST_SEES, parseAddress, readStatus, serverColumns, shownAddress, statusLine} from './worlds.ts';
+import {agoText, allowedCall, baseUrl, Central, CentralError, envLine, readHostWorld, readListedWorld, shellWord, starConfirmation,
+    worldTomlLines, ShellCentral, type CentralReply, type CentralTransport} from './central.ts';
+import {APPROVED_TITLE, HOST_SEES, kindBadges, parseAddress, readStatus, serverColumns, shownAddress, statusLine,
+    UNAPPROVED_TITLE} from './worlds.ts';
 import type {Json} from '../game/json.ts';
 
 const World = 'world-0123456789abcdef0123456789abcdef';
@@ -28,6 +29,8 @@ test('the Host page\'s calls are allowed, and the world\'s own calls are not', (
     assert.ok(allowedCall('GET', '/worlds'));
     assert.ok(allowedCall('POST', '/account/quickened/announced'), 'the Quickened fanfare shown (doc 49, 9.1)');
     assert.ok(!allowedCall('GET', '/account/quickened/announced'));
+    assert.ok(allowedCall('POST', '/stars/confirm'), 'a star confirmed by its giver (doc 77, approved worlds)');
+    assert.ok(!allowedCall('GET', '/stars/confirm'));
     assert.ok(allowedCall('DELETE', '/wolves/wolf-0123456789abcdef0123456789abcdef'));
     assert.ok(!allowedCall('GET', '/wolves/wolf-0123456789abcdef0123456789abcdef'));
 });
@@ -188,4 +191,51 @@ test('how long since a heartbeat', () => {
     assert.equal(agoText(now - 125, now), '2 min ago');
     assert.equal(agoText(now - 3 * 3600, now), '3 h ago');
     assert.equal(agoText(now - 10 * 86400, now), '2027-01-05');
+});
+
+test('an approved world reads as approved, and anything but true as not (doc 77, approved worlds)', () => {
+    const w = {id: World, name: 'Fen', kind: 'community', address: '203.0.113.5:7788'};
+    assert.equal(readListedWorld({...w, approved: true})?.approved, true);
+    assert.equal(readListedWorld(w)?.approved, false, 'an older central says nothing: not approved');
+    assert.equal(readListedWorld({...w, approved: 'yes'})?.approved, false);
+    assert.equal(readListedWorld({...w, kind: 'official', approved: true})?.approved, true);
+});
+
+test('the server browser marks an approved world APPROVED, and says where progress stays otherwise', () => {
+    assert.deepEqual(kindBadges('community', true).map(b => b.text), ['COMMUNITY', 'APPROVED']);
+    assert.equal(kindBadges('community', true)[1].className, 'approved');
+    assert.equal(kindBadges('community', true)[1].title, APPROVED_TITLE);
+    assert.match(APPROVED_TITLE, /unmodified world software and progression rules.*whole account/);
+    assert.deepEqual(kindBadges('community', false).map(b => b.text), ['COMMUNITY']);
+    assert.equal(kindBadges('community', false)[0].title, UNAPPROVED_TITLE);
+    assert.match(UNAPPROVED_TITLE, /stays in this world/);
+    // An official world is always approved: its own badge says so.
+    assert.deepEqual(kindBadges('official', true).map(b => [b.text, b.className, b.title]), [['OFFICIAL', 'official', APPROVED_TITLE]]);
+});
+
+test('giving a star in a ticket world sends its giver\'s confirmation to central (doc 77, approved worlds)', async () => {
+    const giver = 'wolf-0123456789abcdef0123456789abcdef', other = 'wolf-fedcba9876543210fedcba9876543210';
+    assert.deepEqual(starConfirmation({type: 'social', verb: 'star', session: 's1', target: other}, World, giver),
+        {world: World, wolf: giver, to: other, kind: 'gold'});
+    assert.deepEqual(starConfirmation({type: 'social', verb: 'storystar', story: 'st1', target: other}, World, giver),
+        {world: World, wolf: giver, to: other, kind: 'story'});
+    assert.deepEqual(starConfirmation({type: 'festival', verb: 'star', target: other}, World, giver),
+        {world: World, wolf: giver, to: other, kind: 'festival'});
+    // Nothing for anything else, a target that isn't a central wolf, or no ticket world or wolf.
+    assert.equal(starConfirmation({type: 'social', verb: 'note', target: other}, World, giver), null);
+    assert.equal(starConfirmation({type: 'festival', verb: 'cheer', target: other}, World, giver), null);
+    assert.equal(starConfirmation({type: 'storyteller', verb: 'star', to: other}, World, giver), null);
+    assert.equal(starConfirmation({type: 'social', verb: 'star', target: 'npc_tamsin'}, World, giver), null);
+    assert.equal(starConfirmation({type: 'social', verb: 'star', target: giver}, World, giver), null, 'never oneself');
+    assert.equal(starConfirmation({type: 'social', verb: 'star', target: other}, '', giver), null, 'no ticket world');
+    assert.equal(starConfirmation({type: 'social', verb: 'star', target: other}, World, ''), null, 'no wolf');
+    assert.equal(starConfirmation({type: 'social', verb: 'star', target: other}, World, 'dev:ash'), null);
+    // Sent as the signed-in giver, through the transport (the shell holds the token).
+    const calls: [string, string, Json | undefined][] = [];
+    const transport: CentralTransport = {where: 'test', url: 'http://127.0.0.1:7790', development: true, canRemember: false,
+        call: async (method, path, body) => { calls.push([method, path, body]); return {status: 200, body: {ok: true}}; },
+        resume: async () => ({status: 401, body: {ok: false}})};
+    const body = starConfirmation({type: 'social', verb: 'star', target: other}, World, giver)!;
+    assert.deepEqual(await new Central(transport).confirmStar(body), {ok: true});
+    assert.deepEqual(calls, [['POST', '/stars/confirm', {world: World, wolf: giver, to: other, kind: 'gold'}]]);
 });

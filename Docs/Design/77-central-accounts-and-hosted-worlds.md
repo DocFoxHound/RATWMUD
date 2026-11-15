@@ -473,8 +473,104 @@ official worlds could both write one wolf.
 - **Names.** A word filter at registration, a report button on every listing, and delisting by hand (by world, token
   or host account).
 - **Official badge:** set by central only. Community worlds can't use "official" or the game's name in their own.
+- **Approved mark:** also central's alone (7.1): an official world, or a community world central approves by itself.
 - **Version filter:** the client greys out worlds on a protocol it can't speak, with "needs an update" or "this world
   is older".
+
+### 7.1 Approved worlds (the user, 2026-11-15)
+
+> "I don't think progression should be made only on official worlds. I think there should be 'approved' worlds that
+> are built with an unmodified Atlas, but that should be an automatic thing."
+
+Progression that counts for the whole account (today one thing: Quickened, doc 49, 9.1 and 9.2) comes from an
+**approved** world. Hand-marked official worlds (`worlds add --kind official`) are always approved. A community world
+is approved **by central, by itself, at every heartbeat**, while all of these hold:
+
+1. **Unmodified software.** The world agent sends the world's **fingerprints** with each heartbeat (`fingerprints:
+   {v, server, agent, fingerprints, rules}`, SHA-256 each; `tools/world_fingerprints.py`, computed from the files on
+   disk and kept while a file's size and time don't change): the server program (`ratw_server`), the world agent
+   (`tools/world_agent.py`), the tool that computes them (`tools/world_fingerprints.py`), and the progression rules.
+   They must all equal one **release** central knows that isn't withdrawn.
+2. **Unmodified progression rules.** The rules fingerprint is one SHA-256 over `Data/Progression/standing.json` (the
+   social level curve, social reasons, daily cap and the Gift tiers' thresholds), `Data/Progression/creation.json`
+   (tier costs and limits), `Data/Social/social.json` (stars and scene pay) and `Data/Gifts/families.json` (the
+   families and who may have them). Hosts may change anything Atlas and the Dungeon Master edit (map, NPCs, factions,
+   talk, economy): those live in the world's database, and none of them is a progression rule. **Atlas changes no
+   progression rule** (it writes map items; `Data/` is read-only in the image, doc 78, 11). The two progression
+   switches a host *can* set are not files: cheats (`world.toml` `cheats`, which is also what lets the DM grant Gift
+   tiers or Gifts on a community world: `Game::dmActRefused`) and `--open-tiers`. The server reports both in
+   `/status` (`cheats`, and `openTiers` since 2026-11-15); the agent passes them on, and an approved world has both
+   false. A server that doesn't say `openTiers` (older) isn't approved.
+3. **Central checks the evidence itself** before it accepts an unlock from an approved community world (doc 49, 9.2):
+   the wolf has a ticket to that world (kept 30 days), its account has played there 10 hours, and its wolves received
+   the release's own Quickened stars (its manifest's `quickened.stars`, 100) from its number of givers
+   (`starGivers`, 30), **counting only stars the giver's own client confirmed** (below) from other accounts in good
+   standing that have played there an hour. Play time is central's own: each heartbeat adds the time since the last
+   one (at most two minutes) to every account whose wolf is in its honest online list.
+4. **Losing approval automatically.** At the first heartbeat whose fingerprints no longer match (or a withdrawn
+   release, cheats or open tiers), central drops approval and **flags** the unlocks that world gave in the last 30
+   days. A flagged unlock stays in force until an admin looks at it (`unlocks list --flagged`, then `unlocks revoke`
+   or `unlocks clear`): recorded, never silently deleted. A world claiming more than **5 new Quickened accounts in 7
+   days** (a placeholder) is not plausible for honest play: central holds it off approval (`approval_blocked`) and
+   flags its recent unlocks, until an admin lets it go (`worlds unblock`). A mismatch alone mends itself: matching
+   again approves again.
+5. **Unapproved worlds work normally.** Their own standing opens Quickened there (doc 49, 9), as before; central
+   records none of it. Stars heard from them are kept marked "not approved" and never count.
+
+**Releases.** `bash Package/stage.sh --build` builds the world image, then runs `tools/world_fingerprints.py
+manifest` *inside the image* (the same code, files and paths the world agent will hash) and signs the manifest with
+the release key (Ed25519; the key the Editor bundle is signed with), writing `fingerprints-BUILD.json` beside the
+staged context:
+
+    {"v": 1, "key": "ratw-<16 hex>", "manifest": base64({"v", "build", "made", "server", "agent", "fingerprints",
+     "rules", "rulesFiles": {file: sha256}, "quickened": {"stars", "starGivers"}}), "signature": base64}
+
+Central takes it only when it is signed by a key in `Central/release-keys.json` (public halves only; `stage.sh
+--make-release-key` prints the line), either from `Central/releases/*.json` (deployed with central's code, imported
+when it starts) or at once with `ratw_central.py releases add FILE` (`--unsigned` for a hand-made manifest in
+development). `releases withdraw BUILD` stops a release approving anything (a bad build, or one found to let players
+cheat). A build id is never reused with other fingerprints. Releasing a world image now means: build it with
+`stage.sh --build` (with the release key), ship the image, and put its `fingerprints-BUILD.json` in
+`Central/releases/` (commit it, then `tools/deploy_central.sh`) or `releases add` it on central. Worlds running an
+image central doesn't know yet aren't approved until then. (The world image is built on the release laptop, not by
+GitHub Actions: it needs the world export from the database and the release key, so no workflow builds it; slop.yml
+builds only the desktop client, which approval needs nothing new from.)
+
+**Star confirmations.** When a player gives a star in a world joined with central's ticket (a Gold Star, a Story star
+or a festival star), their client also posts `POST /stars/confirm {world, wolf, to, kind}`, signed in as the giver
+(through the shell in the desktop client), fire and forget. Central keeps it if the wolf is the account's own, its
+latest ticket is for that world (it is there), and `to` is another account's wolf. The world writes `stars.json` (the
+star book's last 30 days between central wolves: id, kind, from, to, at, counted), the agent sends it with the
+heartbeat (at most 1,000), and central keeps each claim as first heard (`central.star_claims`). A claimed star counts
+only when it was counted by the world, heard while the world was approved, and matched one-to-one with a confirmation
+of the same giver wolf, recipient wolf and kind, heard between 15 minutes before and 2 minutes after the claim. A world
+can't invent stars from players who never gave them; a player can't confirm stars the world never recorded.
+
+**What central keeps** (migration `Central/migrations/0007`): `central.releases`; on each world its last fingerprints,
+`approved`, the matched release, why not (`approval_note`, shown on the Host page and in the agent's log), when it
+changed, and `approval_blocked`; `central.play` (seconds per world and account); `central.star_claims` and
+`central.star_confirmations` (kept a year); `central.unlocks` (one row per world and account claimed: first claimed,
+accepted and how, `official` or `approved` with the release, what evidence is missing while it waits, flagged and why,
+revoked and why). `GET /worlds` and the Host page say `approved`; the heartbeat's reply says `approved` and
+`approval`. The client's server browser marks an approved community world **APPROVED** (official worlds are always
+approved, and their badge's title says so).
+
+**Admin commands** (`Central/ratw_central.py`): `releases add|list|withdraw`; `worlds approval|block|unblock WORLD`;
+`unlocks list [--world ID] [--flagged] [--username U]`; `unlocks revoke|clear WORLD USERNAME [--note]`. A revoke
+takes the account's Quickened back if it came from that world (another standing unlock keeps it); the account's
+Quickened wolves already made stay as they are (a wolf's tier never changes; delete one by hand if it must go).
+
+**What this does and doesn't stop (honestly).** Every check rests on what a host's machine reports. The fingerprints
+are computed by the agent on the host's computer, from the files there: a host who modifies the server *and* the agent
+to report a release's fingerprints anyway, or who swaps the server program after the agent hashed it, gets past check
+1, and the files hashed are not proven to be what runs. The rules fingerprint and the switches come from the same
+place. What the checks do: **stop casual tinkering** (any change to the server, the agent or a rules file, cheats on or
+open tiers, and approval is gone, at once and automatically), and **make cheating deliberate and detectable**: a world
+must still produce real unlocks with central's own evidence (real accounts central ticketed there, real play time
+central counted, stars real players confirmed from their own signed-in clients), and an unlock rate past the plausible
+loses approval and flags everything recent for review. A determined host with many real accounts and real play time
+could still farm stars among them; that is the same limit honest counts have (7), answered by account limits,
+reports and an admin's revoke, not by this. Approval is the game's word that a world *appears* unmodified, not proof.
 
 ## 8. The world package (the dedicated server)
 
@@ -1466,6 +1562,18 @@ problems, a fixer, a final verify that followed the guide end to end on this lap
 - Note: commit `a0b5178` ("The Windows workflow…") swept in part of the UPnP builder's unfinished changes to
   `tools/world_agent.py` and `Package/` by mistake (`commit -a` while the builder worked); this entry's commit holds
   the finished versions.
+
+**2026-11-15: approved worlds (7.1; branch `r3-approved`).** The user's design, approved the same day: progression
+counts from any world that passes central's automatic checks, not only official ones. Built: fingerprints
+(`tools/world_fingerprints.py`) sent by the world agent; signed release manifests (`Package/stage.sh --build`,
+`Central/central_releases.py`, `Central/release-keys.json`, `Central/releases/`); central's verdict at each heartbeat,
+play time, star claims (the server's new `stars.json`) and the giver's own confirmation (`POST /stars/confirm`, from
+the client), the unlock evidence, flagging, the rate rule, and the admin commands (migration `0007`); every ticket
+world now writes `unlocks.json`, and `/status` says `openTiers`; the client marks approved worlds. To deploy: central
+(its code and migration 0007, through `tools/deploy_central.sh`), the release key's public half in
+`Central/release-keys.json`, a new world image with its signed `fingerprints-BUILD.json` in `Central/releases/`, and a
+client release for the confirmations and the mark. Every number (10 hours, an hour, 5 a week, the windows) is a
+placeholder.
 
 ## Review (2026-11-07)
 

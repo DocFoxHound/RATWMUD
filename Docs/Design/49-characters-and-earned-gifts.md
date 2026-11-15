@@ -342,16 +342,19 @@ servers, a standalone laptop world) keep the per-world rule above unchanged (the
 `character_create` once this world's standing opened it).
 
 - **What earns it:** the same measures as above (Gifted, social level 8, 100 stars from 30 different wolves, 2 closed
-  Stories, no upheld reports), met in an **official** world's standing, or a Dungeon Master's grant there. Only an
-  official world's word is taken: a community host runs its own server and could name anyone. A community world's own
-  standing opens nothing on central (and its arrivals take the tier from the ticket, below).
-- **How central hears:** an official world writes `unlocks.json` in the world agent's directory when it changes
+  Stories, no upheld reports), met in an **official** world's standing, or a Dungeon Master's grant there; or, since
+  2026-11-15, in an **approved** community world's standing with the evidence central checks itself (9.2). An
+  unapproved community world's own standing opens nothing on central (and its arrivals take the tier from the ticket,
+  below).
+- **How central hears:** a ticket world (official or community, since 2026-11-15) writes `unlocks.json` in the world
+  agent's directory when it changes
   (`Game::writeUnlocks`: the wolves of every account whose standing there has Quickened open, not held, the latest
   first, at most 1,000); the agent (`tools/world_agent.py`) sends them as the heartbeat's `quickened`; central
   (`Central.heartbeat`, `Store.record_quickened`) sets `central.accounts.quickened_at` and `quickened_world`
   (migration `Central/migrations/0005`) on each account owning one of those wolves, if that wolf has a ticket to that
-  world central still keeps (30 days). Recorded once and kept; a community world's list is ignored. The account shows
-  it as `quickened` (`/account/login`, `/account/refresh`, `GET /account`).
+  world central still keeps (30 days). Recorded once and kept, with a row in `central.unlocks` (migration `0007`); a
+  community world's list is taken only as 9.2 says. The account shows it as `quickened` (`/account/login`,
+  `/account/refresh`, `GET /account`).
 - **The fanfare, once:** in the world, at the moment its standing opens Quickened (earned, or a DM's grant; not while
   the account is held), each of the account's wolves there gets a story line and a `fanfare` event (`{kind:
   "quickened", kicker, title, text, everywhere}`, `Game::announceQuickened`) that the client shows as a banner in the
@@ -385,8 +388,44 @@ servers, a standalone laptop world) keep the per-world rule above unchanged (the
   Gifted or Normal) and no `quickened_announced` (the client shows the fanfare, and its mark is not kept); an older
   world sends no `quickenedWolves` (allowed) and ignores `tier` (it offers Gifted or Quickened by its own standing, as
   43c23fd did); an older client never makes a Quickened wolf and arrives with the one tier the world offers.
-- **Not built:** revoking it on central (a DM's revoke in a world takes it back only there), an admin command for it,
-  and making an existing wolf Quickened (a new wolf is made).
+- **Revoking it on central** (since 2026-11-15, 9.2): `ratw_central.py unlocks revoke WORLD USERNAME`. A DM's revoke
+  in a world still takes it back only there. **Not built:** making an existing wolf Quickened (a new wolf is made), or
+  an existing Quickened wolf plain again.
+
+#### 9.2 Quickened from approved worlds (the user, 2026-11-15)
+
+> "I don't think progression should be made only on official worlds. I think there should be 'approved' worlds that
+> are built with an unmodified Atlas, but that should be an automatic thing."
+
+Central approves a community world by itself while it runs a release's own world software and progression rules,
+unmodified, without cheats or open tiers (doc 77, 7.1, which has the whole design and its honest limits). Its
+`unlocks.json` is then taken, but **not on its word alone**: an unlock is accepted only when central's own evidence
+backs it, and waits until it does (the reason in `central.unlocks.note`, read with `unlocks list`):
+
+| Evidence | Needed *(placeholders)* | Where central gets it |
+|---|---|---|
+| The wolf came there | a ticket to that world, kept 30 days | central's own tickets |
+| The account played there | 10 hours (`UNLOCK_PLAY`) | each heartbeat's honest online list: the time since the last heartbeat, at most two minutes |
+| Stars | the release's `quickened.stars` (100), from its `starGivers` (30) distinct accounts | the world's `stars.json` claims, each matched one-to-one with its giver's own confirmation (`POST /stars/confirm`) |
+| Each giver | another account, not banned, that has played there an hour (`GIVER_PLAY`) | central's play time |
+
+So a world's own word covers the measures central can't see (Gifted, social level 8, two closed Stories, no upheld
+reports), and central's covers the ones that a dishonest host could invent: who came, who played, and who really gave
+the stars. A Dungeon Master's grant on a community world needs cheats on (`Game::dmActRefused`), which loses approval;
+milestone stars have no player giver to confirm them, so they don't count on central (they still count in the world).
+Stars given before a giver's client sent confirmations (older clients) don't count either.
+
+- **The client:** the Gold Star, Story star and festival star buttons' commands, in a world joined with a ticket, also
+  post `/stars/confirm {world, wolf, to, kind}` (`starConfirmation`, `ClientApp.confirmStar` through `Play`'s `sent`
+  hook), fire and forget; the desktop shell allows the call (`central.rs`). The server browser marks approved
+  community worlds **APPROVED** (`kindBadges`), with a title saying what that means; an unapproved one's COMMUNITY
+  badge says progress there stays in that world.
+- **The world:** every ticket world writes `unlocks.json` and `stars.json` (`Game::writeStars`: the star book's last
+  30 days between two central wolves, newest first, at most 1,000) and says `openTiers` in `/status`. The fanfare is
+  unchanged: a community world sends none, and the front door shows its overlay once central records the unlock.
+- **Losing approval:** a world that stops matching, or claims more than 5 new Quickened accounts in 7 days, has the
+  unlocks it gave in the last 30 days flagged for review (still in force); an admin revokes or clears each one.
+
 
 ### 10. Wire messages
 

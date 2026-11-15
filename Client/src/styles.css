@@ -858,6 +858,9 @@ button.given { opacity: .6; }
 .world-title strong { font-weight: 500; }
 .world-kind { font-size: 12px; letter-spacing: .06em; padding: 2px 8px; border-radius: 10px; background: var(--ink); color: var(--muted); }
 .world-kind.official { color: var(--ink); background: var(--gold); }
+/* A community world central approved (doc 77, approved worlds): its progress counts for the whole account. */
+.world-kind.approved { color: var(--sage); outline: 1px solid var(--sage); background: transparent; }
+td > .world-kind + .world-kind { margin-left: 6px; }
 .door .world-note:empty { display: none; }
 .world-direct { display: flex; align-items: flex-end; gap: 14px; }
 .world-direct label { flex: 1; display: flex; flex-direction: column; gap: 8px; }

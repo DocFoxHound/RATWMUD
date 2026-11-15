@@ -1,0 +1,4 @@
+{
+  "about": "The release keys whose signed world-image manifests central takes (Central/central_releases.py; Docs/Design/77, 7.1). One entry per key: its id (\"ratw-\" and the first 16 hex of the raw public key's SHA-256) and the raw 32-byte public key in base64, as `bash Package/stage.sh --make-release-key` prints them. Only public halves belong here.",
+  "keys": []
+}

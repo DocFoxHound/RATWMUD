@@ -132,6 +132,21 @@ export async function fetchStatus(a: WorldAddress, invoke: (<T>(command: string,
     }
 }
 
+/** The server browser's word on whether progress in a world counts for the whole account (doc 77, approved worlds):
+ *  central approves an official world, and a community world running a release's own world software and progression
+ *  rules, unmodified (checked at every heartbeat). Elsewhere a world's progress stays its own. */
+export const APPROVED_TITLE = 'Approved: runs the game\'s own unmodified world software and progression rules, so Quickened earned here ' +
+    'counts for your whole account.';
+export const UNAPPROVED_TITLE = 'Not approved: progress here (such as Quickened) stays in this world.';
+
+/** The badges of a world's kind column: OFFICIAL or COMMUNITY, and APPROVED for a community world central approved (an
+ *  official world is always approved: its own badge says so in its title). */
+export function kindBadges(kind: string, approved: boolean): {text: string; className: string; title: string}[] {
+    if (kind === 'official') return [{text: 'OFFICIAL', className: 'official', title: APPROVED_TITLE}];
+    return [{text: 'COMMUNITY', className: '', title: approved ? '' : UNAPPROVED_TITLE},
+        ...(approved ? [{text: 'APPROVED', className: 'approved', title: APPROVED_TITLE}] : [])];
+}
+
 /** What central's listing adds to a world's columns (net/central.ts, ListedWorld). */
 export interface ColumnsListing {
     players: number;

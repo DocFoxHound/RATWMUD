@@ -6,15 +6,20 @@ as is.
 
   RATW_HOST_TOKEN=rh_... python3 tools/world_agent.py run --central URL --dir DIR --world-port PORT
         [--central-dir CDIR] [--token-file FILE] [--description TEXT] [--region TEXT] [--tags a,b] [--host NAME] [--secure] [--every 60]
-        [--upnp-port PORT [--upnp-name NAME]]
+        [--upnp-port PORT [--upnp-name NAME]] [--server-binary PATH] [--data-dir DIR]
 
 The world's own agent. DIR is the agent directory: the server runs with --central-keys DIR/central-keys.json, and the
 two talk through files there, each written whole and atomically (a temporary file, then a rename):
 - DIR/central-keys.json, kept here as `keys` keeps its FILE (below), with DIR/central-keys.json.wanted;
 - DIR/online.json, written by the server about every 15 s: {"world", "at", "players", "online": [wolf ids]};
-- DIR/unlocks.json, written by an official world's server when it changes: {"world", "at", "quickened": [the wolves of
+- DIR/unlocks.json, written by the server (every ticket-mode world) when it changes: {"world", "at", "quickened": [the wolves of
   every account whose standing there has opened Quickened]}, sent with each heartbeat so central gives those accounts
-  Quickened in every world (Docs/Design/49-characters-and-earned-gifts.md, 9.1). None, or another world's: none sent.
+  Quickened in every world (Docs/Design/49-characters-and-earned-gifts.md, 9.1): central takes an official world's
+  word, and an approved community world's with its own evidence (9.2). None, or another world's: none sent.
+- DIR/stars.json, written by the server when it changes: {"world", "at", "stars": [{"id", "kind", "from", "to", "at",
+  "counted"}: the stars given there in the last 30 days between two central wolves, the latest first]}, sent with each
+  heartbeat (at most 1,000) so central can match them against the stars their givers' own clients confirmed (doc 77,
+  7.1: approved worlds). None, or another world's: none sent.
 - DIR/bans.json, written here from each heartbeat's reply: {"at", "accounts": [the ticket `sub` of every account
   central has banned, as this world sees it]}. The server refuses a banned account's hello, and sends out a banned
   wolf already in the world.
@@ -30,8 +35,11 @@ two talk through files there, each written whole and atomically (a temporary fil
   from there. The server never reads it.
 Every --every seconds it posts POST URL/worlds/heartbeat with the host token (Authorization: Bearer): the listing
 fields from the server's own http://127.0.0.1:PORT/status (name, protocol, build, clientData, limit, voices, cheats,
-private), this command's description, region, tags, host name and secure flag, the port, and the wolves in
-online.json (left out if it is more than a minute old or names another world). Central lists the world at the
+private, quickenedWolves, openTiers), this command's description, region, tags, host name and secure flag, the port,
+the wolves in online.json (left out if it is more than a minute old or names another world), and the world's
+fingerprints (tools/world_fingerprints.py: SHA-256 of the server program --server-binary, this agent, the fingerprint
+tool and the progression rules under --data-dir, from the files on disk), by which central approves a world that runs
+an unmodified release (doc 77, 7.1). The agent logs when central's approval changes, and why. Central lists the world at the
 address the heartbeat came from (or the host name, if it resolves there) once it has called the world back; the agent
 logs when the world goes on or off the list, and why. If central's reply names another world than the server's
 /status, the token is for another world: it says so loudly and posts no more. On SIGTERM or SIGINT it posts
@@ -79,6 +87,9 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import world_fingerprints  # noqa: E402
+
 MAX_REPLY = 64 * 1024
 MAX_HEARTBEAT_REPLY = 8 << 20                 # Every ban rides on it (~41 bytes each): the server's MaxBansFile.
 HEARTBEAT_TIMEOUT = 30.0                      # Central may look up a host name and call the world back (5 s) first.
@@ -89,6 +100,8 @@ WOLF = re.compile(r'^wolf-[0-9a-f]{32}$')
 ONLINE_FRESH = 60                             # An online.json older than this is a stopped server's: nobody counted.
 MOST_ONLINE = 10000
 MOST_QUICKENED = 1000                         # unlocks.json's wolves in one heartbeat (central takes as many).
+MOST_STARS = 1000                             # stars.json's stars in one heartbeat (central takes as many).
+STAR = re.compile(r'^star-[0-9a-f]{1,32}$')
 TOKEN = re.compile(r'^[\x21-\x7e]{1,256}$')   # (Printable, no spaces: a token pasted whole.)
 
 
@@ -331,7 +344,8 @@ def read_token(token_file: Path | None) -> str:
 
 # What the heartbeat takes from the server's own /status, by type (anything else there is left out).
 STATUS_FIELDS = {'name': str, 'protocol': int, 'build': str, 'clientData': str, 'limit': int, 'voices': bool,
-                 'cheats': bool, 'private': bool, 'quickenedWolves': bool}   # (quickenedWolves: doc 49, 9.1.)
+                 'cheats': bool, 'private': bool, 'quickenedWolves': bool,    # (quickenedWolves: doc 49, 9.1.)
+                 'openTiers': bool}                                          # (openTiers: doc 77, 7.1.)
 
 
 class Agent:
@@ -340,7 +354,8 @@ class Agent:
     def __init__(self, central: str, directory: Path, world_port: int, token: str, *, description: str | None = None,
                  region: str | None = None, tags: list[str] | None = None, host: str | None = None,
                  secure: bool = False, every: float = 60, keys_every: float = 86400, log=print,
-                 upnp_port: int | None = None, upnp_name: str = '', central_dir: Path | None = None):
+                 upnp_port: int | None = None, upnp_name: str = '', central_dir: Path | None = None,
+                 server_binary: Path | None = None, data_dir: Path | None = None):
         self.central = central.rstrip('/')
         self.dir = directory
         self.central_dir = central_dir          # (central.json: the world's kind and host, where only this user writes.)
@@ -379,6 +394,10 @@ class Agent:
         self.online_note = None
         self.clock_said = False
         self.upnp = Upnp(upnp_port, upnp_name, log)
+        # What the world runs, for its fingerprints (doc 77, 7.1): the server program and the Data directory.
+        self.server_binary = server_binary if server_binary is not None else world_fingerprints.default_server()
+        self.data_dir = data_dir if data_dir is not None else world_fingerprints.default_data()
+        self.approval = None                    # Central's approval, as last said (so each change is said once).
 
     def say(self, state, line: str) -> None:
         if state != self.state:
@@ -425,6 +444,33 @@ class Agent:
         quickened = self.quickened(status['id'])
         if quickened:
             out['quickened'] = quickened
+        stars = self.stars(status['id'])
+        if stars:
+            out['stars'] = stars
+        out['fingerprints'] = world_fingerprints.fingerprints(self.server_binary, self.data_dir,
+                                                              Path(__file__).resolve())
+        return out
+
+    def stars(self, world_id: str) -> list[dict]:
+        """The stars given in this world, from the server's stars.json (doc 77, 7.1): none if there is none, it can't
+        be read or it names another world. Each is passed on as the server wrote it, if it has the right fields."""
+        try:
+            value = json.loads((self.dir / 'stars.json').read_text(encoding='utf-8'))
+        except (OSError, UnicodeDecodeError, ValueError):
+            return []
+        if not isinstance(value, dict) or value.get('world') != world_id or not isinstance(value.get('stars'), list):
+            return []
+        out = []
+        for star in value['stars']:
+            if isinstance(star, dict) and isinstance(star.get('id'), str) and STAR.match(star['id']) and \
+                    all(isinstance(star.get(k), str) and WOLF.match(star[k]) for k in ('from', 'to')) and \
+                    isinstance(star.get('kind'), str) and isinstance(star.get('counted'), bool):
+                at = star.get('at')
+                out.append({'id': star['id'], 'kind': star['kind'], 'from': star['from'], 'to': star['to'],
+                            'counted': star['counted'],
+                            'at': at if isinstance(at, (int, float)) and not isinstance(at, bool) else None})
+            if len(out) >= MOST_STARS:
+                break
         return out
 
     def quickened(self, world_id: str) -> list[str]:
@@ -548,6 +594,15 @@ class Agent:
             self.say(('listed', address), f'listed on central at {address}')
         else:
             self.say(('not listed', why), f'not listed on central: {why or "(no reason given)"}')
+        if isinstance(reply.get('approved'), bool):     # (Doc 77, 7.1; an older central says nothing.)
+            note = reply.get('approval') if isinstance(reply.get('approval'), str) else ''
+            approval = (reply['approved'], note)
+            if approval != self.approval:
+                self.approval = approval
+                self.log('world agent: ' + ('approved by central: progress here counts for every account in every world'
+                                             if reply['approved'] else
+                                             f'not approved by central ({note or "no reason given"}): progress here '
+                                             'stays in this world'))
         clock_off = isinstance(reply.get('time'), (int, float)) and abs(reply['time'] - time.time()) >= 60
         if clock_off and not self.clock_said:
             self.log(f'world agent: this machine\'s clock is {time.time() - reply["time"]:+.0f} s from central\'s: '
@@ -618,6 +673,10 @@ def main(argv=None) -> int:
     run.add_argument('--secure', action='store_true',
                      help='players connect with wss:// (needs --host, and a certificate for it in front of the world)')
     run.add_argument('--every', type=float, default=60, help='seconds between heartbeats (default 60)')
+    run.add_argument('--server-binary', type=Path,
+                     help="the world server program, for its fingerprint (default: RATW_SERVER_BINARY, the image's)")
+    run.add_argument('--data-dir', type=Path,
+                     help="the server's Data directory, for the rules' fingerprint (default: RATW_DATA_DIR, Data/)")
     keys = sub.add_parser('keys', help="keep central's ticket keys in a file for the server")
     keys.add_argument('--central', required=True, help="central's address, http(s)://...")
     keys.add_argument('--out', required=True, type=Path, help='the file (the server\'s --central-keys)')
@@ -654,7 +713,8 @@ def main(argv=None) -> int:
         tags = [t.strip() for t in args.tags.split(',') if t.strip()] if args.tags else None
         agent = Agent(args.central, args.dir, args.world_port, token, description=args.description, region=args.region,
                       tags=tags, host=args.host, secure=args.secure, every=args.every, log=log,
-                      upnp_port=args.upnp_port, upnp_name=args.upnp_name, central_dir=args.central_dir)
+                      upnp_port=args.upnp_port, upnp_name=args.upnp_name, central_dir=args.central_dir,
+                      server_binary=args.server_binary, data_dir=args.data_dir)
         for sig in (signal.SIGTERM, signal.SIGINT):
             signal.signal(sig, lambda *_: agent.stop.set())
         return agent.run()

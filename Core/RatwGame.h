@@ -285,10 +285,15 @@ class Game
     void ticketFiles();
     std::function<double()> ticketFilesClock;       // (Tests: the seconds ticketFiles' periods count; else monotonic.)
     bool writeOnline(std::string& problem);
-    // unlocks.json (official worlds only; doc 49, 9.1): {"world", "at", "quickened": [the wolves of every account whose
+    // unlocks.json (every ticket world; doc 49, 9.1): {"world", "at", "quickened": [the wolves of every account whose
     // standing here has opened Quickened, the latest first]}, which the agent's heartbeat sends central so the account
-    // has Quickened in every world. Written when it changes (looked at as online.json is), whole and atomically.
+    // has Quickened in every world (central takes it from an official world, or an approved one: doc 77). Written when
+    // it changes (looked at as online.json is), whole and atomically.
     bool writeUnlocks(std::string& problem);
+    // stars.json (every ticket world; doc 77, approved worlds): {"world", "at", "stars": [{"id", "kind", "from", "to",
+    // "at", "counted"}]}: the star book's last 30 days of stars between ticket wolves (giver and recipient wolf ids),
+    // newest first, at most 1,000, which central matches against the givers' own confirmations. Written as unlocks.json.
+    bool writeStars(std::string& problem);
     // Quickened has just opened for this account (earned, or a Dungeon Master's grant): its wolves here are told, with a
     // fanfare where it counts (doc 49, 9.1): on an official world (for the whole account, every world) or a password
     // world (here). A community world's own standing opens nothing on central, so it says nothing.
@@ -561,6 +566,8 @@ class Game
     bool onlineFailing_ = false;
     std::string unlocksWritten_;                     // unlocks.json's list as last written ("" before the first).
     bool unlocksFailing_ = false;
+    std::string starsWritten_;                       // stars.json's list as last written.
+    bool starsFailing_ = false;
     std::filesystem::path agentFile(const std::string& name) const;
     bool writeAgentFile(const std::string& name, const json::Value& doc, std::string& problem);
     void sendOutBanned();

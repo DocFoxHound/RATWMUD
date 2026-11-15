@@ -1197,7 +1197,20 @@ hosts honest; it isn't a wall against a host with a modified image or a second a
 
 Disabled cheat actions show in the tool with the reason ("Set `cheats` in `world.toml`; the world will be listed
 'cheats on'"), not as errors. A host can always run a modified image, so "cheats on" only keeps honest hosts honest,
-and the hosting guide says so. What is guaranteed: nothing on a community world reaches central or official progress.
+and the hosting guide says so. What is guaranteed: nothing on a community world reaches central or official progress,
+except through **approval** (below).
+
+**Approved worlds** (the user, 2026-11-15; doc 77, 7.1; doc 49, 9.2). A community world running a released image
+unmodified is approved by central automatically, and Quickened earned there then counts for the player's whole
+account, with central's own evidence (tickets, play time, stars their givers confirmed). What a host does in the
+Editor never costs approval: Atlas, Publish and the Dungeon Master edit the world's database (map, NPCs, factions,
+talk, economy), and **none of them can change a progression rule**; `Data/` (standing, creation, stars and scene pay,
+Gift families) is read-only in the image, and the agent fingerprints it with the server and itself. What does cost
+it: any `cheats` setting but `off` (which is also what the DM's `character.gift` and `account.unlock` need on a
+community world), `--open-tiers`, a modified or locally built server, agent or rules file, or an image whose release
+central doesn't know (yet) or has withdrawn. The world plays the same either way; only whether central records its
+unlocks changes. The agent's log and the Host page say whether the world is approved and why not; the server browser
+marks it APPROVED.
 
 **To check (M0a):** whether a ticket's `gift` claim overwrites a Gift the world set, on the wolf's next `hello`. If it
 does, `character.gift` is pointless on community worlds and the table should say so.
@@ -1418,7 +1431,7 @@ host can touch is "restart only".
 | After Publish | Terrain, cells, interiors, doors, places, resources, roster and profession-slot fills | Publish (10.3) |
 | On the next server start (My world's Restart) | Server settings: `player_limit`, `cheats`, `workers`; `[editor]` | `world.toml`, edited on the host's disk. The entrypoint re-reads `[world]`, `[server]` and `[editor]` before every server start, so Restart applies them; it writes the helper's cleaned copy then, and restarts the helper when `[editor]` changed. My world shows the allowed settings read-only, with "`world.toml` changed since start: Restart to apply". |
 | On `docker compose up -d` | `.env` (ports, `RATW_EDITOR_BIND`, the token file, the image) | `restart` doesn't re-read `.env`; the README's "every day" section changes to say so. |
-| Never through the Editor | `Data/` catalogues: items, Talk, Voice, Terrain | Read-only in the image; they change only with the package |
+| Never through the Editor | `Data/` catalogues: items, Talk, Voice, Terrain; the progression rules (`Data/Progression`, `Data/Social/social.json`, `Data/Gifts`), whose fingerprint keeps a world approved (doc 77, 7.1) | Read-only in the image; they change only with the package |
 
 ## 12. Backups, undo, updates and recovery
 

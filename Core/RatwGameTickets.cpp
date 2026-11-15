@@ -31,6 +31,7 @@ constexpr double OnlineEvery = 15;                  // online.json is written th
 constexpr double BansEvery = 5;                     // ...and bans.json looked at this often.
 constexpr std::uintmax_t MaxBansFile = 8u << 20;    // (Many bans fit: an account's id is 37 bytes.)
 constexpr std::size_t MaxUnlocksListed = 1000;      // unlocks.json's wolves (central takes as many in a heartbeat).
+constexpr std::size_t MaxStarsListed = 1000;        // stars.json's stars, the newest (central takes as many in a heartbeat).
 const char* const BannedMessage = "This account is banned from central's worlds.";
 const char* const WorldBannedMessage = "This account is banned from this world by its host.";
 
@@ -152,6 +153,9 @@ Value Game::worldStatus() const
     o.add("private", false);                        // (Private worlds, Q9: a password kept on central, later.)
     o.add("cheats", cheatsOn());                    // (Dev tools, or the host's: listed "cheats on", doc 77, 5; doc 78, 8.)
     o.add("quickenedWolves", options_.central.quickenedWolves);   // (Doc 49, 9.1: listed "No Quickened" when false.)
+    // Every tier opened by hand (--open-tiers): a progression switch the world agent reports, so central approves no
+    // world that runs with it (doc 77, approved worlds; doc 49, 9.1).
+    o.add("openTiers", options_.openTiers);
     return o;
 }
 
@@ -537,15 +541,20 @@ void Game::ticketFiles()
                                                    : "RATW_ONLINE online.json can't be written (" + trouble +
                                                          "): central will count nobody here");
         onlineFailing_ = !wrote;
-        if (options_.central.official)
-        {
-            const bool fine = writeUnlocks(trouble);
-            if (fine == unlocksFailing_)            // (Said once when it starts failing, and once when it mends.)
-                note(fine ? "info" : "warning", fine ? "RATW_UNLOCKS unlocks.json is written again"
-                                                     : "RATW_UNLOCKS unlocks.json can't be written (" + trouble +
-                                                           "): central hears of no new Quickened accounts");
-            unlocksFailing_ = !fine;
-        }
+        // Every ticket world's unlocks and stars (doc 49, 9.1; doc 77, approved worlds): central takes them from an
+        // official world, or a community world while central has approved it, and ignores them otherwise.
+        const bool fine = writeUnlocks(trouble);
+        if (fine == unlocksFailing_)                // (Said once when it starts failing, and once when it mends.)
+            note(fine ? "info" : "warning", fine ? "RATW_UNLOCKS unlocks.json is written again"
+                                                 : "RATW_UNLOCKS unlocks.json can't be written (" + trouble +
+                                                       "): central hears of no new Quickened accounts");
+        unlocksFailing_ = !fine;
+        const bool starred = writeStars(trouble);
+        if (starred == starsFailing_)               // (Likewise.)
+            note(starred ? "info" : "warning", starred ? "RATW_STARS stars.json is written again"
+                                                       : "RATW_STARS stars.json can't be written (" + trouble +
+                                                             "): central can match none of this world's stars");
+        starsFailing_ = !starred;
     }
     if (at - bansCheckedAt_ >= BansEvery)
     {
@@ -620,11 +629,13 @@ bool Game::writeUnlocks(std::string& problem)
 {
     // unlocks.json (doc 49, 9.1): the wolves of every account whose standing here has opened Quickened (earned, or a
     // Dungeon Master's grant; not while the account is held), the latest first and at most MaxUnlocksListed, for the
-    // agent's heartbeat. Central records Quickened on those accounts, for every world, from official worlds only (a
-    // community host could write anything here), so a community world writes none. Written only when it changed.
-    if (!ticketMode() || !options_.central.official)
+    // agent's heartbeat. Central records Quickened on those accounts, for every world, from an official world, or from
+    // a community world only while central has approved it (doc 77, approved worlds: an unmodified release, its rules
+    // unchanged, and the evidence central checks itself); a community host could write anything here, so central
+    // decides, not this file. Written by every ticket world, only when it changed.
+    if (!ticketMode())
     {
-        problem = ticketMode() ? "a community world's unlocks stay its own" : "not in ticket mode";
+        problem = "not in ticket mode";
         return false;
     }
     if (options_.scratch)
@@ -654,6 +665,52 @@ bool Game::writeUnlocks(std::string& problem)
     if (!writeAgentFile("unlocks.json", o, problem))
         return false;
     unlocksWritten_ = listed;
+    return true;
+}
+
+bool Game::writeStars(std::string& problem)
+{
+    // stars.json (doc 77, approved worlds): the stars of the star book's last 30 days given by one ticket wolf to
+    // another (both wolf ids: central's wolves), the newest first and at most MaxStarsListed, for the agent's heartbeat.
+    // Central counts a star toward an approved world's Quickened only when the giver's own client confirmed it too.
+    // Written only when it changed.
+    if (!ticketMode())
+    {
+        problem = "not in ticket mode";
+        return false;
+    }
+    if (options_.scratch)
+    {
+        problem = "a scratch server writes nothing";
+        return false;
+    }
+    std::vector<const stars::Star*> listed;
+    for (const auto& star : starBook_.recent())
+        if (tickets::wolfId(star.giverCharacter) && tickets::wolfId(star.recipientCharacter))
+            listed.push_back(&star);
+    std::stable_sort(listed.begin(), listed.end(), [](const auto* a, const auto* b) { return a->at > b->at; });
+    auto list = Value::array();
+    for (std::size_t i = 0; i < listed.size() && i < MaxStarsListed; ++i)
+    {
+        auto s = Value::object();
+        s.add("id", listed[i]->id);
+        s.add("kind", listed[i]->kind);
+        s.add("from", listed[i]->giverCharacter);
+        s.add("to", listed[i]->recipientCharacter);
+        s.add("at", std::floor(listed[i]->at));
+        s.add("counted", listed[i]->counted);
+        list.push(s);
+    }
+    const std::string dumped = json::dump(list);
+    if (dumped == starsWritten_)
+        return true;
+    auto o = Value::object();
+    o.add("world", options_.central.worldId);
+    o.add("at", std::floor(ticketNow()));
+    o.add("stars", list);
+    if (!writeAgentFile("stars.json", o, problem))
+        return false;
+    starsWritten_ = dumped;
     return true;
 }
 
