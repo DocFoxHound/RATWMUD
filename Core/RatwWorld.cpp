@@ -2602,27 +2602,30 @@ void World::transition(Entity& a, const Door& d)
 
 bool World::playerDoorLocked(const Door& d) const
 {
-    // Ridgemere's authored interiors are private unless a merchant works there and the shop is open.
-    // The outward door remains usable so a player is never trapped when a shift ends.
-    if (d.cellId.rfind("w_ridgemere_", 0) != 0 || !d.portal || d.boundary || !cell(d.targetCell) ||
-        cell(d.targetCell)->outdoors)
+    // The authored city and cn_ community interiors share the same public-door
+    // rule.  The outward door remains usable when a shop's shift ends.
+    if ((d.cellId.rfind("w_ridgemere_", 0) != 0 && d.targetCell.rfind("cn_", 0) != 0) ||
+        !d.portal || d.boundary || !cell(d.cellId) || !cell(d.cellId)->outdoors ||
+        !cell(d.targetCell) || cell(d.targetCell)->outdoors)
+        return false;
+    const auto& name = cell(d.targetCell)->name;
+    const auto endsIn = [&](const std::string& suffix) {
+        return d.targetCell.size() >= suffix.size() &&
+               d.targetCell.compare(d.targetCell.size() - suffix.size(), suffix.size(), suffix) == 0;
+    };
+    if (endsIn("_inn") || endsIn("_alehouse") || endsIn("_tavern"))
         return false;
     const double hour = std::fmod(calendarDays_ * 24., 24.);
     for (const auto& position : society_.positions())
     {
         if (position.role != "merchant" || position.work.cell != d.targetCell)
             continue;
-        const auto& name = cell(d.targetCell)->name;
-        const bool lodging = d.targetCell.find("_inn") != std::string::npos ||
-                             d.targetCell.find("_alehouse") != std::string::npos ||
-                             d.targetCell.find("_tavern") != std::string::npos ||
-                             name.find("Inn") != std::string::npos ||
-                             name.find("Tavern") != std::string::npos ||
-                             name.find("Alehouse") != std::string::npos ||
-                             position.title.find("taproom") != std::string::npos ||
+        if (name.find("Inn") != std::string::npos ||
+            name.find("Tavern") != std::string::npos ||
+            name.find("Alehouse") != std::string::npos ||
+            position.title.find("taproom") != std::string::npos ||
                              position.title.find("keeping the inn") != std::string::npos ||
-                             position.title.find("lodging") != std::string::npos;
-        if (lodging)
+                             position.title.find("lodging") != std::string::npos)
             return false;
         const double start = position.startHour, end = position.endHour;
         if (start < end ? (hour >= start && hour < end) : (hour >= start || hour < end))

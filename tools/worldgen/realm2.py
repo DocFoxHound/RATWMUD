@@ -2574,6 +2574,11 @@ def expand(project, seed=SEED, report=print, city_cells=None):
     cells = realm.cells(city_cells)
     realm.city_cells = city_cells                       # (kept as the snapshot only once a write has saved: keep_snapshot)
     project['cells'] = cells
+    # The town pass also runs against Ridgemere3's already-built world.  Apply
+    # the same street-front additions to newly generated realms so the map and
+    # the community contract remain reproducible.
+    from .realm2_towns import expand as build_towns
+    build_towns(project, realm.contract, realm)
     realm.result = realm.checks(project, cells, codes, heights)
     return realm
 

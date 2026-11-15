@@ -21,9 +21,17 @@ Ridgemere3 is the active development world for a console-style character map, re
 - Ridgemere3's hosted launcher must start the configured NPC Mind when enabled. An offline launcher was the main cause of repetitive, generic answers in this playtest.
 - Tracking is an explicit local map state: scent reveals `∴` trails, the marks become easier to read, and HUNT starts the existing encounter. Sitting is optional; smelling works without it.
 
-## Town content pass still needed
+## The seven community towns (revision 104 / build 80)
 
-Ridgemere3 already contains the six authored towns Frosthollow, Coldwater, Oakhaven, Mirebridge, Larkfield and Southmeadow, with about 19–22 interior areas each. Their existing world data is more than a name, but the playtest says their streets and density do not yet read as towns. Build them out **in Ridgemere3** with additional distinct building footprints, public destinations and street activity. Audit each town on the local map and at walking scale before adding content, then keep shops, homes, routes, residents and doors aligned. The town pass should use the same console character language as the rest of the map.
+The active communities are the `cn_` places: Coldwater, Larkfield, Southmeadow, Fenshore, Saltwell, Oakhaven and Frosthollow. The old `tn_` interiors and Mirebridge crossroads are historical remnants, not these settlements. Every active community already had streets, a store, an inn or alehouse, homes and 8–45 placed residents. The smaller places were still sparse, and `communities.json` marked all seven as plain regions rather than towns.
+
+`tools/build_ridgemere3_towns.py` added 19 compact street-front houses and five guest inns with upstairs beds. Coldwater and Saltwell already had inns. Every new building has a character-tile footprint, an exterior door onto an existing street, an interior and the appropriate stair link. The original shops, occupied homes, residents and their dialogue records were left alone. The five new guest inns have no new staff posts yet; existing shop and alehouse staff remain at their old workplaces. The community contract now marks all seven as towns so `World::setupTowns` can include them on restart. The same pass runs in fresh realm generation.
+
+Community exterior doors now use the city's player access rule: homes are private, staffed shops open during their merchants' working hours, and inns and alehouses stay open overnight. A guest inn remains open even before a new keeper is assigned. NPCs keep access to their homes and workplaces.
+
+The map editor validated the revision 104 project; `path_check.py` now audits the actual seven `cn_` town bounds and found no blocked paths or doors in any of them. The pre-edit world is backed up at `Saved/Backups/ridgemere3-before-towns-rev103.json.gz` on the development machine. A walking-scale client review of each town, including signs and street activity, remains useful after the rebuilt world is loaded.
+
+The server loaded build 80 after the updated door rule was compiled; build 79 was the first map build of revision 104.
 
 ## Street and access pass, 2026-11-15
 
