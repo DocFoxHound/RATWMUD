@@ -105,6 +105,7 @@ export interface EntityView {
     mentor: boolean;            // Mentors newcomers (doc 52)...
     mentorFree: boolean;        // ...and, for a newcomer's eyes, is free to take one now: marked on the map.
     groomed?: boolean;          // Freshly groomed by another (doc 55, 7): anyone who looks sees it.
+    beyond?: boolean;           // In a cell beside this one, on the screen past a seam (doc 80): placed in this cell's tiles.
     placed?: boolean;           // The own wolf has been drawn once (it then eases instead of jumping).
     // The last line heard from them, for its bubble over them (bubbles.ts), while it lasts; its colour is theirs.
     said?: string;
@@ -612,8 +613,9 @@ export class GameState {
         if (this.walker && this.walkerVersion === walkerBefore.version && this.cellVersion !== walkerBefore.version &&
             this.cellId === walkerBefore.id && this.cellGeneration === walkerBefore.generation &&
             this.cellWidth === walkerBefore.width && this.cellHeight === walkerBefore.height &&
-            this.fringe === walkerBefore.fringe && this.fringeRows === walkerBefore.fringeRows &&
-            this.fringeHeights === walkerBefore.fringeHeights &&
+            this.fringe === walkerBefore.fringe &&
+            ((this.fringeRows === walkerBefore.fringeRows && this.fringeHeights === walkerBefore.fringeHeights) ||
+                this.walker.updateFringe(this.fringe, walkerBefore.fringeRows, this.fringeRows, walkerBefore.fringeHeights, this.fringeHeights)) &&
             this.walker.updateTerrain(walkerBefore.rows, this.tileRows, walkerBefore.heights, this.tileHeights)) {
             this.walker.updateDoors(doors);
             this.walkerVersion = this.cellVersion;
@@ -663,6 +665,7 @@ export class GameState {
             view.mentor = bool(e, 'mentor');
             view.mentorFree = bool(e, 'mentorFree');
             view.groomed = bool(e, 'groomed');
+            view.beyond = !!str(e, 'cell') && str(e, 'cell') !== newId && id !== this.selfId;
             view.gear = objects(e, 'gear').map(g => ({place: str(g, 'place'), name: str(g, 'name'), weapon: bool(g, 'weapon'), protect: num(g, 'protect')}));
             view.actions = arr(e, 'actions').filter((a): a is string => typeof a === 'string');
             if (!view.actions.length) view.actions = ['inspect'];
@@ -2108,7 +2111,7 @@ export class GameState {
     /** A row of the In Sight list clicked: a resident is chosen (or let go) to speak to; anyone else, their menu. */
     sightClicked(id: string, page: [number, number]) {
         const e = this.entities.get(id);
-        if (e && e.kind === 'npc' && e.actions.includes('talk')) this.toggleTarget(id);
+        if (e && e.kind === 'npc' && e.actions.includes('talk') && !e.beyond) this.toggleTarget(id);
         else this.openContextAt(id, page);
     }
 

@@ -1,5 +1,6 @@
 // Streamed worlds (RATW_WORLD 3): every cell's header is always known, but a cell's tiles and seams are in memory
 // only while someone is in it or next to it. A generated 10x10 grid of outdoor cells; a resident commutes across it.
+#include "RatwMotionCore.h"
 #include "RatwWorld.h"
 
 #include <algorithm>
@@ -1204,6 +1205,62 @@ void sightRunsOnAcrossSeams()
            "and seen into");
 }
 
+// Wolves past a seam (doc 80; the user, 2026-11-15: "Transitioning between cells changes who is 'in sight' instantly.
+// 'In sight' should be whoever is within the view screen, not whoever is in the cell"): a player near an edge is sent
+// everyone on its screen in the cells beside, placed in its own cell's tiles, in snapshots and motion frames alike;
+// so walking over the seam changes no one it is shown. Never one hiding there, and far from every edge, no one.
+void wolvesPastASeam()
+{
+    auto f = grid("");
+    auto world = load(f);
+    world.setTimeOfDay(12);
+    auto& ada = world.addPlayer("player-ada", "Ada", "c_0_0", {Side - 2.5, 8.5});
+    auto& bo = world.addPlayer("player-bo", "Bo", "c_1_0", {3.5, 8.5});
+    world.tick(.1);
+    const auto placed = [](const Snapshot& view, const std::string& id) -> const Entity* {
+        for (const auto& e : view.entities)
+            if (e.id == id)
+                return &e;
+        return nullptr;
+    };
+    const auto view = world.snapshot("player-ada", false, true);
+    const auto* seen = placed(view, "player-bo");
+    expect(seen && seen->cellId == "c_1_0" && std::abs(seen->position.x - (Side + 3.5)) < 1e-9 && std::abs(seen->position.y - 8.5) < 1e-9,
+           "A wolf past the seam is sent, where it stands in the observer's own cell's tiles");
+    const auto poseOf = [&](const std::string& observer, const std::string& id, double& x) {
+        const auto frame = motion::frame(world, observer);
+        for (const auto& pose : frame.array("entities"))
+            if (pose.string("id") == id)
+            {
+                x = pose.number("x");
+                return true;
+            }
+        return false;
+    };
+    double x = 0;
+    expect(poseOf("player-ada", "player-bo", x) && std::abs(x - (Side + 3.5)) < 1e-6, "and its motion frames carry it there too");
+    expect(world.actions("player-ada", "player-bo") == std::vector<std::string>{"inspect"} &&
+               world.interact("player-ada", "player-bo", "inspect").ok,
+           "It can be looked at from across the seam");
+    // Over the seam: the same wolves, now in the other cell's tiles.
+    world.moveTo("player-ada", Side + .6, 8.5);
+    for (int i = 0; i < 60 && ada.cellId == "c_0_0"; ++i)
+        world.tick(.1);
+    expect(ada.cellId == "c_1_0", "Ada walks over the seam into c_1_0");
+    const auto* after = placed(world.snapshot("player-ada", false, true), "player-bo");
+    expect(after && after->cellId == "c_1_0", "The wolf she saw past the seam is still sent, now in her own cell");
+    // Back, and Bo crouches: one hiding past a seam is never sent (its detection doesn't reach across one, doc 40).
+    world.moveTo("player-ada", -.6, 8.5);
+    for (int i = 0; i < 60 && ada.cellId == "c_1_0"; ++i)
+        world.tick(.1);
+    expect(ada.cellId == "c_0_0", "Ada walks back");
+    bo.posture = "crouching";
+    world.tick(.1);
+    expect(!placed(world.snapshot("player-ada", false, true), "player-bo") && !poseOf("player-ada", "player-bo", x) &&
+               !world.interact("player-ada", "player-bo", "inspect").ok,
+           "A wolf crouching past the seam is not sent, in snapshots or motion frames");
+}
+
 // The World Map's picture of a place beside the wolf's (its whole ground, which goes whole whenever it changes: 64 KB
 // and more for a realm cell, and the browser keeps every version) stays as it was while the wolf walks by the seam,
 // the band carrying what it sees there, as row edits; in another place, the map has all it saw (the review, doc 70).
@@ -1556,6 +1613,7 @@ int main()
         badSourcesAreRefused();
         aWolfAlwaysStandsOnGround();
         sightRunsOnAcrossSeams();
+        wolvesPastASeam();
         theMapKeepsAPlaceBesideAsItWas();
         aWalkKeepsToTheRoad();
         aVillageComesInAFewATick();

@@ -9,6 +9,7 @@ import {drawPortrait, type Portraits} from '../portrait.ts';
 import {arr, bool, boundedNum, clamp, envNumber, num, obj, str} from '../../game/json.ts';
 import {dayLabel, lawLabel, paceLabel, postureLabel, restLabel, scentLabel, readLoad, loadCost} from '../../game/labels.ts';
 import {GroundTarget, type EntityView, type GameState} from '../../game/state.ts';
+import {inSight} from '../../game/inSight.ts';
 import {Commands} from '../../game/commands.ts';
 import {wheelEntries, wheelInGroup, WheelGroups} from '../../game/wheel.ts';
 import {NavIcons, SenseIcons, TimeIcons, WeatherIcons, senseLevel, timeOfDay, weatherIcon, type NavIcon, type Sense} from './hudIcons.ts';
@@ -19,7 +20,7 @@ import {MapRenderer, MapScales} from '../../game/minimap.ts';
 import {artCache} from '../artwork.ts';
 import {drawGear, gearDoll} from './gear.ts';
 import {pageSurface} from '../../game/terrainLayer.ts';
-import {button, el, setClass, setStyle, setText, show} from './dom.ts';
+import {button, el, setClass, setStyle, setText, setTitle, show} from './dom.ts';
 import {FightPanel} from './fight.ts';
 import {TiePanel} from './tie.ts';
 import {CombatScreen} from './combat.ts';
@@ -96,6 +97,10 @@ export class Hud {
     private sightEmpty: HTMLElement;
     private sightCount: HTMLElement;
     private rows = new Map<string, SightRow>();
+    private sightKey = '';                  // What the In Sight list last showed (updateSight)...
+    private sightSnapshot: unknown = null;  // ...from which snapshot...
+    private sightPortraits = -1;            // ...with which paintings...
+    private sightFilled = -1;               // ...and when its rows were last filled whole.
     private paceLabel: HTMLElement;
     private paceNote: HTMLElement;
     private paceSteps: HTMLElement[] = [];
@@ -407,64 +412,82 @@ export class Hud {
 
     private updateSight() {
         const s = this.s, me = s.entities.get(s.selfId);
-        const others = [...s.entities.values()].filter(e => !e.self);
-        const distance = (e: EntityView) => (me ? Math.hypot(e.x - me.x, e.y - me.y) : 0);
-        others.sort((a, b) => distance(a) - distance(b));
+        const others = inSight(s);
+        // Each frame only what can change between snapshots: who is in the list, in what order, how far and which way
+        // (to the tile), and the rings. What a wolf is (its name, words, gear, face) changes only with a snapshot, or
+        // as the paintings and pictures come in: gone through again then, and once a second besides (doc 31: with a
+        // market's worth in sight, the whole list each frame showed as jitter).
+        const where = (e: EntityView) => {
+            if (!me) return '';
+            const d = Math.hypot(e.x - me.x, e.y - me.y), angle = Math.atan2(e.y - me.y, e.x - me.x);
+            return d < 1.5 ? 'here' : `${Arrows[((Math.round(angle / (Math.PI / 4)) % 8) + 8) % 8]} ${d.toFixed(0)}`;
+        };
+        const places = others.map(where);
+        const key = `${others.map((e, i) => `${e.id}:${places[i]}`).join('|')}#${s.highlight}#${s.hoveredEntity}#${s.talkTargets.join(',')}`;
+        const fresh = s.snapshot !== this.sightSnapshot || this.portraits.version !== this.sightPortraits || s.clock - this.sightFilled >= 1;
+        if (!fresh && key === this.sightKey) return;
+        this.sightKey = key;
+        if (fresh) {
+            this.sightSnapshot = s.snapshot;
+            this.sightPortraits = this.portraits.version;
+            this.sightFilled = s.clock;
+        }
         setText(this.sightCount, others.length ? String(others.length) : '');
         show(this.sightEmpty, !others.length);
         const present = new Set<string>();
         let before: Element | null = this.sightEmpty.nextElementSibling;
-        for (const e of others) {
+        others.forEach((e, i) => {
             present.add(e.id);
             let r = this.rows.get(e.id);
             if (!r) r = this.makeRow(e);
             // Keep the list in order of distance without rebuilding it.
             if (r.row !== before) this.sightList.insertBefore(r.row, before);
             before = r.row.nextElementSibling;
-            // Known wolves (doc 50): ✎ for a note kept on them; • for a profile changed since one last looked.
-            setText(r.name, `${e.name || 'Someone'}${e.nc ? ' ✧' : ''}${e.noted ? ' ✎' : ''}${e.unread ? ' •' : ''}`);
-            r.name.title = [e.nc ? 'New to these parts' : '', e.noted ? 'You keep a note on them' : '',
-                e.unread ? 'Their profile has changed since you last looked' : ''].filter(Boolean).join(' · ');
-            setStyle(r.name, 'color', e.rel === 'chapter' && e.colour ? e.colour
-                : css(e.rel === 'party' ? Amber : e.hostile ? HostileRed : e.kind === 'npc' ? Sage : Blue));
-            const role = e.kind === 'npc' ? (e.work || 'resident') : 'player';
-            // A friend who shares their wolf with you: their handle, subdued, under the name (doc 50).
-            setText(r.detail, [upperFirst(role), e.handle ? `friend · ${e.handle}` : '', e.rel === 'party' ? 'your party' : e.rel === 'chapter' ? 'your Chapter' : '', e.hostile ? (e.why ? `hostile · ${e.why}` : 'hostile') : '',
-                e.mentor ? (e.mentorFree ? 'mentor · free' : 'mentor') : '', StatusWords[e.rp] ?? '', e.walkup ? 'walk-up friendly' : '',
-                e.state && e.state !== 'standing' ? e.state : ''].filter(Boolean).join(' · '));
-            r.row.title = e.currently ? `Currently: ${e.currently}` : '';
-            setClass(r.row, 'hostile', e.hostile);
+            if (fresh || r.drawn === '') this.fillRow(r, e);
             setClass(r.row, 'targeted', s.talkTargets.includes(e.id));
             setClass(r.row, 'highlight', s.highlight === e.id || s.hoveredEntity === e.id);
-            if (me) {
-                const d = distance(e), angle = Math.atan2(e.y - me.y, e.x - me.x);
-                const arrow = Arrows[((Math.round(angle / (Math.PI / 4)) % 8) + 8) % 8];
-                setText(r.where, d < 1.5 ? 'here' : `${arrow} ${d.toFixed(0)}`);
-            }
-            const gearKey = JSON.stringify(e.gear);
-            if (gearKey !== r.gearKey) {
-                r.gearKey = gearKey;
-                drawGear(r.gear, e.gear);
-                show(r.gear, e.gear.length > 0);
-            }
-            // The wolf's painted face in its own fur (doc 81), or its uploaded picture: painted again only when the look
-            // changes (each look at this size is kept by the painted wolves, so dozens in sight cost one paint each).
-            const look = JSON.stringify([e.appearance, e.artwork, !!artCache.get(e.artwork), this.portraits.version]);
-            if (r.drawn !== look) {
-                const c = r.portrait.getContext('2d');
-                if (c) {
-                    c.clearRect(0, 0, r.portrait.width, r.portrait.height);
-                    // Nothing for a hunt's game (no appearance) or until the paintings have arrived (the version changes).
-                    drawPortrait(c, this.portraits, e.appearance, 0, 0, r.portrait.width, r.portrait.height, e.artwork, {view: 'face', pad: 0.04});
-                    r.drawn = look;
-                }
-            }
-        }
+            setText(r.where, places[i]);
+        });
         for (const [id, r] of this.rows)
             if (!present.has(id)) {
                 r.row.remove();
                 this.rows.delete(id);
             }
+    }
+
+    /** What a row says of its wolf, from the snapshot: its name and marks, its words, its gear and its face. */
+    private fillRow(r: SightRow, e: EntityView) {
+        // Known wolves (doc 50): ✎ for a note kept on them; • for a profile changed since one last looked.
+        setText(r.name, `${e.name || 'Someone'}${e.nc ? ' ✧' : ''}${e.noted ? ' ✎' : ''}${e.unread ? ' •' : ''}`);
+        setTitle(r.name, [e.nc ? 'New to these parts' : '', e.noted ? 'You keep a note on them' : '',
+            e.unread ? 'Their profile has changed since you last looked' : ''].filter(Boolean).join(' · '));
+        setStyle(r.name, 'color', e.rel === 'chapter' && e.colour ? e.colour
+            : css(e.rel === 'party' ? Amber : e.hostile ? HostileRed : e.kind === 'npc' ? Sage : Blue));
+        const role = e.kind === 'npc' ? (e.work || 'resident') : 'player';
+        // A friend who shares their wolf with you: their handle, subdued, under the name (doc 50).
+        setText(r.detail, [upperFirst(role), e.handle ? `friend · ${e.handle}` : '', e.rel === 'party' ? 'your party' : e.rel === 'chapter' ? 'your Chapter' : '', e.hostile ? (e.why ? `hostile · ${e.why}` : 'hostile') : '',
+            e.mentor ? (e.mentorFree ? 'mentor · free' : 'mentor') : '', StatusWords[e.rp] ?? '', e.walkup ? 'walk-up friendly' : '',
+            e.state && e.state !== 'standing' ? e.state : '', e.beyond ? 'past the seam' : ''].filter(Boolean).join(' · '));
+        setTitle(r.row, e.currently ? `Currently: ${e.currently}` : '');
+        setClass(r.row, 'hostile', e.hostile);
+        const gearKey = JSON.stringify(e.gear);
+        if (gearKey !== r.gearKey) {
+            r.gearKey = gearKey;
+            drawGear(r.gear, e.gear);
+            show(r.gear, e.gear.length > 0);
+        }
+        // The wolf's painted face in its own fur (doc 81), or its uploaded picture: painted again only when the look
+        // changes (each look at this size is kept by the painted wolves, so dozens in sight cost one paint each).
+        const look = JSON.stringify([e.appearance, e.artwork, !!artCache.get(e.artwork), this.portraits.version]);
+        if (r.drawn !== look) {
+            const c = r.portrait.getContext('2d');
+            if (c) {
+                c.clearRect(0, 0, r.portrait.width, r.portrait.height);
+                // Nothing for a hunt's game (no appearance) or until the paintings have arrived (the version changes).
+                drawPortrait(c, this.portraits, e.appearance, 0, 0, r.portrait.width, r.portrait.height, e.artwork, {view: 'face', pad: 0.04});
+                r.drawn = look;
+            }
+        }
     }
 
     private makeRow(e: EntityView): SightRow {

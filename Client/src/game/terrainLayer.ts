@@ -53,21 +53,49 @@ function sameHeights(a: Float32Array | null, b: Float32Array, w: TileWindow, wid
     return true;
 }
 
-function sameFringe(a: unknown[], b: unknown[]): boolean {
+/** The columns of band row `y` (from -band) that lie in `w`, as [from, to) in that row's characters (doc 70's layout:
+ *  rows above and below the cell whole, those beside it only their two ends, west then east). */
+function bandSlices(y: number, w: TileWindow, band: number, width: number, height: number): Array<[number, number]> {
+    if (y < 0 || y >= height) return [[Math.max(0, w.x0 + band), Math.max(0, Math.min(width + 2 * band, w.x1 + band + 1))]];
+    const out: Array<[number, number]> = [];
+    if (w.x0 < 0) out.push([Math.max(0, w.x0 + band), Math.min(band, w.x1 + band + 1)]);
+    if (w.x1 >= width) out.push([band + Math.max(0, w.x0 - width), band + Math.min(band, w.x1 - width + 1)]);
+    return out;
+}
+
+/**
+ * Whether the band round the cell (its rows, what is seen of them, their heights) is the same in the copy's region as
+ * before. Only the region counts: the screen's edge moves over the band whenever the wolf walks within the screen's
+ * reach of an edge (56 rows above and below, 96 columns to the sides), far outside the copy, and comparing the whole
+ * band redrew the whole copy at every tile walked there (the user, 2026-11-15: "moving up-and-down has jerk frames").
+ */
+function sameFringe(a: unknown[], b: unknown[], w: TileWindow, band: number, width: number, height: number): boolean {
     if (a.length !== b.length) return false;
     if (a.every((v, i) => v === b[i])) return true;
     for (let i = 0; i < a.length; ++i) {
         const old = a[i] as ArrayLike<string | Float32Array> | undefined;
         const now = b[i] as ArrayLike<string | Float32Array> | undefined;
+        if (old === now) continue;
         if (!old || !now || old.length !== now.length) return false;
-        for (let row = 0; row < old.length; ++row) {
-            const x = old[row], y = now[row];
-            if (x === y) continue;
-            if (typeof x === 'string' && typeof y === 'string' && x === y) continue;
-            if (!(x instanceof Float32Array) || !(y instanceof Float32Array) || x.length !== y.length) return false;
-            for (let j = 0; j < x.length; ++j) if (x[j] !== y[j]) return false;
+        if (old.length !== height + 2 * band) {
+            // (Not the band's layout: every row, whole.)
+            for (let row = 0; row < old.length; ++row) if (!sameRow(old[row], now[row], 0, Infinity)) return false;
+            continue;
+        }
+        for (let y = Math.max(-band, w.y0); y <= Math.min(height + band - 1, w.y1); ++y) {
+            if (y >= 0 && y < height && w.x0 >= 0 && w.x1 < width) continue;    // (Inside the cell: no band there.)
+            for (const [from, to] of bandSlices(y, w, band, width, height))
+                if (from < to && !sameRow(old[y + band], now[y + band], from, to)) return false;
         }
     }
+    return true;
+}
+
+function sameRow(x: string | Float32Array | undefined, y: string | Float32Array | undefined, from: number, to: number): boolean {
+    if (x === y) return true;
+    if (typeof x === 'string' && typeof y === 'string') return x.length === y.length && x.slice(from, to) === y.slice(from, to);
+    if (!(x instanceof Float32Array) || !(y instanceof Float32Array) || x.length !== y.length) return false;
+    for (let j = from; j < Math.min(to, x.length); ++j) if (x[j] !== y[j]) return false;
     return true;
 }
 
@@ -318,9 +346,18 @@ function deviceScale(c: CanvasRenderingContext2D): number {
     return t && Number.isFinite(t.a) && t.a > 0 ? t.a : 1;
 }
 
+/** (x, y) in the context's units moved to the nearest whole device pixel, as the context is now set up. */
+export function snapToDevice(c: CanvasRenderingContext2D, x: number, y: number): [number, number] {
+    const t = typeof c.getTransform === 'function' ? c.getTransform() : null;
+    if (!t || !(t.a > 0) || !(t.d > 0)) return [x, y];
+    return [(Math.round(t.a * x + t.e) - t.e) / t.a, (Math.round(t.d * y + t.f) - t.f) / t.d];
+}
+
 export class TerrainLayer {
     rebuilds = 0;                       // For the tests and the frame-time overlay.
+    scrolls = 0;                        // How often the copy was moved on with only its new edge drawn (scroll).
     private surface: Surface | null = null;
+    private spare: Surface | null = null;   // The other copy, drawn into when the view moves on (scroll).
     private region: TileWindow = {x0: 0, y0: 0, x1: -1, y1: -1};
     private key = '';
     private rows: string[] | null = null;
@@ -348,10 +385,12 @@ export class TerrainLayer {
             s.cellWidth, s.cellHeight, s.fringe].join('|');
         const inside = view.x0 >= this.region.x0 && view.y0 >= this.region.y0 && view.x1 <= this.region.x1 && view.y1 <= this.region.y1;
         const fringe = [s.fringeRows, s.fringeVisibility, s.fringeHeights];
-        if (key !== this.key || !inside || !sameRows(this.rows, s.tileRows, this.region) ||
-            !sameRows(this.visibility, s.visibilityRows, this.region) || !sameHeights(this.heights, s.tileHeights, this.region, s.cellWidth) ||
-            !sameFringe(this.fringe, fringe)) {
-            if (!this.rebuild(s, view, tile, k)) {
+        const same = key === this.key && sameRows(this.rows, s.tileRows, this.region) &&
+            sameRows(this.visibility, s.visibilityRows, this.region) && sameHeights(this.heights, s.tileHeights, this.region, s.cellWidth) &&
+            sameFringe(this.fringe, fringe, this.region, s.fringe, s.cellWidth, s.cellHeight);
+        if (!same || !inside) {
+            // Walked on past the copy, the ground in it as it was: the copy moves on, and only what it hadn't is drawn.
+            if (!(same && this.scroll(s, view, tile, k)) && !this.rebuild(s, view, tile, k)) {
                 this.key = '';
                 this.ground.paint(c, s, view, ox, oy, tile);
                 return;
@@ -364,19 +403,82 @@ export class TerrainLayer {
         }
         const surface = this.surface!;
         // Whole device pixels only, so glyphs stay crisp however the camera moves.
-        const t = typeof c.getTransform === 'function' ? c.getTransform() : null;
-        let x = ox + this.region.x0 * tile - Pad / k, y = oy + this.region.y0 * tile - Pad / k;
-        if (t && t.a > 0 && t.d > 0) {
-            x = (Math.round(t.a * x + t.e) - t.e) / t.a;
-            y = (Math.round(t.d * y + t.f) - t.f) / t.d;
-        }
+        const [x, y] = snapToDevice(c, ox + this.region.x0 * tile - Pad / k, oy + this.region.y0 * tile - Pad / k);
         c.drawImage(surface.canvas, x, y, surface.canvas.width / k, surface.canvas.height / k);
     }
 
-    private rebuild(s: GameState, view: TileWindow, tile: number, k: number): boolean {
+    /** The tiles a copy for `view` holds: the view and Margin round it, on the ground there is. */
+    private regionFor(s: GameState, view: TileWindow): TileWindow {
         const g = s.groundExtent();
-        const region: TileWindow = {x0: Math.max(g.x0, view.x0 - Margin), y0: Math.max(g.y0, view.y0 - Margin),
+        return {x0: Math.max(g.x0, view.x0 - Margin), y0: Math.max(g.y0, view.y0 - Margin),
             x1: Math.min(g.x1, view.x1 + Margin), y1: Math.min(g.y1, view.y1 + Margin)};
+    }
+
+    /**
+     * Moves the copy on to the region round `view` without drawing it all again: what it shares with the old one is
+     * copied across, pixel for pixel, and only the ground new to it is drawn, with a tile of the old each side of the
+     * seam between them (a glyph or a ledge's line reaches a little over its tile), cut to that strip. A full redraw
+     * of a city view was 20-30 ms, every eight tiles walked (the user, 2026-11-15: "frame jitter, especially in the
+     * market"); a strip is a fraction of it. False when it can't (a tile not a whole number of device pixels, so the
+     * copy wouldn't land on its pixels; too little in common; no second canvas): then the whole copy is drawn.
+     */
+    private scroll(s: GameState, view: TileWindow, tile: number, k: number): boolean {
+        const old = this.region, from = this.surface, step = tile * k;
+        if (!from || !Number.isInteger(step)) return false;
+        // The same size of copy, moved on to hold the view and Margin past it on the side it left by (so the second
+        // canvas is reused), on the ground there is.
+        const g = s.groundExtent();
+        const shift = (lo: number, hi: number, viewLo: number, viewHi: number, groundLo: number, groundHi: number) =>
+            Math.max(groundLo - lo, Math.min(groundHi - hi, viewLo < lo ? viewLo - Margin - lo : viewHi > hi ? viewHi + Margin - hi : 0));
+        const dx = shift(old.x0, old.x1, view.x0, view.x1, g.x0, g.x1), dy = shift(old.y0, old.y1, view.y0, view.y1, g.y0, g.y1);
+        const region: TileWindow = {x0: old.x0 + dx, x1: old.x1 + dx, y0: old.y0 + dy, y1: old.y1 + dy};
+        if (view.x0 < region.x0 || view.x1 > region.x1 || view.y0 < region.y0 || view.y1 > region.y1 ||
+            region.x0 < g.x0 || region.x1 > g.x1 || region.y0 < g.y0 || region.y1 > g.y1) return false;
+        const ix0 = Math.max(old.x0, region.x0), ix1 = Math.min(old.x1, region.x1);
+        const iy0 = Math.max(old.y0, region.y0), iy1 = Math.min(old.y1, region.y1);
+        if (ix1 - ix0 < 4 || iy1 - iy0 < 4) return false;
+        const width = (region.x1 - region.x0 + 1) * step + Pad * 2, height = (region.y1 - region.y0 + 1) * step + Pad * 2;
+        if (width > MaxSide || height > MaxSide) return false;
+        let to = this.spare;
+        if (!to || to.canvas.width !== width || to.canvas.height !== height) to = this.factory(width, height);
+        if (!to) return false;
+        const c = to.ctx;
+        c.setTransform(1, 0, 0, 1, 0, 0);
+        c.clearRect(0, 0, width, height);
+        c.drawImage(from.canvas, (old.x0 - region.x0) * step, (old.y0 - region.y0) * step);
+        // Device pixels of the edge of tile column x (row y) in the new copy.
+        const px = (x: number) => Pad + (x - region.x0) * step, py = (y: number) => Pad + (y - region.y0) * step;
+        // Where the copy shrank, the old ground past its new edge goes (it would show in the edge's padding).
+        if (region.x0 > old.x0) c.clearRect(0, 0, Pad, height);
+        if (region.x1 < old.x1) c.clearRect(px(region.x1 + 1), 0, width, height);
+        if (region.y0 > old.y0) c.clearRect(0, 0, width, Pad);
+        if (region.y1 < old.y1) c.clearRect(0, py(region.y1 + 1), width, height);
+        const strips: Array<{clip: [number, number, number, number]; tiles: TileWindow}> = [];
+        const all = {x0: region.x0, x1: region.x1, y0: region.y0, y1: region.y1};
+        if (region.x0 < ix0) strips.push({clip: [0, 0, px(ix0 + 1), height], tiles: {...all, x1: Math.min(region.x1, ix0 + 2)}});
+        if (region.x1 > ix1) strips.push({clip: [px(ix1), 0, width, height], tiles: {...all, x0: Math.max(region.x0, ix1 - 1)}});
+        if (region.y0 < iy0) strips.push({clip: [0, 0, width, py(iy0 + 1)], tiles: {...all, y1: Math.min(region.y1, iy0 + 2)}});
+        if (region.y1 > iy1) strips.push({clip: [0, py(iy1), width, height], tiles: {...all, y0: Math.max(region.y0, iy1 - 1)}});
+        for (const {clip: [x0, y0, x1, y1], tiles} of strips) {
+            c.setTransform(1, 0, 0, 1, 0, 0);
+            c.clearRect(x0, y0, x1 - x0, y1 - y0);
+            c.save();
+            c.beginPath();
+            c.rect(x0, y0, x1 - x0, y1 - y0);
+            c.clip();
+            c.setTransform(k, 0, 0, k, Pad, Pad);
+            this.ground.paint(c, s, tiles, -region.x0 * tile, -region.y0 * tile, tile);
+            c.restore();
+        }
+        this.spare = from;
+        this.surface = to;
+        this.region = region;
+        ++this.scrolls;
+        return true;
+    }
+
+    private rebuild(s: GameState, view: TileWindow, tile: number, k: number): boolean {
+        const region = this.regionFor(s, view);
         const width = Math.ceil((region.x1 - region.x0 + 1) * tile * k) + Pad * 2;
         const height = Math.ceil((region.y1 - region.y0 + 1) * tile * k) + Pad * 2;
         if (width <= 0 || height <= 0 || width > MaxSide || height > MaxSide) return false;

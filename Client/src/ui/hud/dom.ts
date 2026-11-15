@@ -28,6 +28,11 @@ export function setText(e: HTMLElement, text: string) {
     e.textContent = text;
 }
 
+/** Sets an element's tooltip only when it changed. */
+export function setTitle(e: HTMLElement, title: string) {
+    if (e.title !== title) e.title = title;
+}
+
 /** Toggles a class only when it changed. */
 export function setClass(e: HTMLElement, name: string, on: boolean) {
     if (e.classList.contains(name) !== on) e.classList.toggle(name, on);

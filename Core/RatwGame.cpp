@@ -4221,6 +4221,11 @@ void Game::sendSnapshot(Connection* c)
                 actions.push("vouch");
         if (e.downedLeft > 0)
             j.set("downed", true);
+        if (e.cellId != view.self.cellId)
+        {
+            actions = Value::array();               // Past a seam (doc 80): on the screen, to be looked at only.
+            actions.push("inspect");
+        }
         j.set("actions", actions);
         if (words.size())
             j.set("words", words);
@@ -6075,7 +6080,7 @@ void Game::command(Connection* c, const std::string& raw)
         {
             const auto* other = world_.entity(target);
             // Missing and hidden characters answer alike, so guessed IDs can't turn anonymous scent into an identity.
-            if (!other || (target != id && !world_.shown(id, target)))
+            if (!other || (target != id && !world_.shown(id, target) && !world_.shownAcross(id, target)))   // (Past a seam too: doc 80.)
             {
                 system(c, "You cannot inspect someone you cannot see.");
                 return;
