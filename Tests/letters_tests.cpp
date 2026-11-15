@@ -547,7 +547,8 @@ void residentLetters()
     t.hours(24);
     t.hours(2);
     auto letters = t.caseOf(t.ash).array("letters");
-    expect(letters.size() == 1 && contains(letters[0].string("by"), "inn"), "the next day, thanks from the fond innkeeper only, by its role: " +
+    // (Signed by name: a player sees a resident's name up front, af4c3e1a's Game::knowsName; the inn's keeper is "Keeper u".)
+    expect(letters.size() == 1 && letters[0].string("by") == w.entity("ui")->name, "the next day, thanks from the fond innkeeper only, by name: " +
                                                                               (letters.empty() ? std::string("none") : letters[0].string("by")));
     t.letter(t.ash, "read", {{"id", letters[0].string("id")}});
     letters = t.caseOf(t.ash).array("letters");

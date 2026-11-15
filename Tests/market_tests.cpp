@@ -1130,7 +1130,8 @@ void theKeepersAnswer()
     for (const auto& [ware, n] : std::map<std::string, int>{{"sickle", 3}, {"nails", 40}})
         if (Society::stock(*s.account(till), ware) < n)
             s.create(till, ware, n - Society::stock(*s.account(till), ware), "test stock");
-    // (Names are hidden here: a resident is spoken of, and speaks, by its work.)
+    // (Names are hidden here, but a player sees a resident's name up front (af4c3e1a, Game::knowsName): the keeper
+    // speaks by name; by its work too, should a world show residents so.)
     const auto ask = [&](const std::string& who, const std::string& name, const std::string& work, const char* id) {
         const auto* npc = w.entity(who);
         town.place(town.ash, 1, npc->position.x + 1, npc->position.y);
@@ -1144,7 +1145,8 @@ void theKeepersAnswer()
         town.run(.5);
         std::string reply;
         for (const auto& e : town.ash.events)
-            if (e.string("type") == "roleplay" && contains(e.string("speaker"), work) && reply.empty())
+            if (e.string("type") == "roleplay" && (contains(e.string("speaker"), name) || contains(e.string("speaker"), work)) &&
+                reply.empty())
                 reply = e.string("text");
         return reply;
     };
