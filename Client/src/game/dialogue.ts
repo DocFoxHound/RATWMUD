@@ -37,6 +37,19 @@ export function dialogueReach(entry: string): number {
     return entry === 'trade' ? 1.8 : 2.5;
 }
 
+/** The giver's dialogue a wheel's work action opens (doc 83, Phase 2), where the server runs the givers' trees: "Ask for
+ *  work" the keeper's list, "Ask about: ..." (offer kNNN) that job, "Ask for missions" the official's board, "Deliver
+ *  ..." and "Hand over the letter" the recipient's hand-in. Null for any other action (it is sent as it was). */
+export function workEntry(action: string): string | null {
+    if (action === 'ask for work') return 'work';
+    if (action === 'ask for missions') return 'missions';
+    const offer = /^offer (\S+)$/.exec(action);
+    if (offer) return `job:${offer[1]}`;
+    const deliver = /^(?:deliver|hand over) (\S+)$/.exec(action);
+    if (deliver) return `deliver:${deliver[1]}`;
+    return null;
+}
+
 /** What the player is doing in the window: the choice picked out, their own words for each choice (drafts), the free
  *  line, and when the current line began (it is written out quickly). */
 export interface DialogueUi {

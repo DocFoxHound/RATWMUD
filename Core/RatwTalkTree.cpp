@@ -61,15 +61,20 @@ bool disjoint(const std::vector<Criterion>& a, const std::vector<Criterion>& b)
 
 const std::set<std::string>& Library::treeActions()
 {
-    // Phase 1 (doc 83): the shop window, the free-talk field, the end, and the existing offer window for a contract
-    // (the work tree and its take/decline replace it in Phase 2).
-    static const std::set<std::string> Actions{"shop", "free", "end", "offer"};
+    // Doc 83: the shop window, the free-talk field and the end (Phase 1); a giver's work: taking it, declining it,
+    // handing it in, giving it back; a faction official's standing, paid report and tithe; and `open <entry>`, the
+    // conversation going on in another tree at its entry (the keeper's "Any work going?" into the work tree) (Phase 2).
+    static const std::set<std::string> Actions{"shop", "free", "end", "take", "decline", "deliver", "give_back",
+                                               "standing", "buy_report", "tithe", "open"};
     return Actions;
 }
 
 const std::set<std::string>& Library::treeLists()
 {
-    static const std::set<std::string> Lists{"here.work"};
+    // here.work: contracts to be had near; here.missions: a faction official's board; here.mine: work the player has
+    // taken that this resident gave out (a market's contracts, an official's missions); here.deliveries: what the player
+    // carries that this resident receives (a letter, a mission's goods or message).
+    static const std::set<std::string> Lists{"here.work", "here.missions", "here.mine", "here.deliveries"};
     return Lists;
 }
 
@@ -381,8 +386,13 @@ bool Library::parseTree(const std::string& text, const std::string& file, std::s
                         fail("after an action: '; then <node>' or '; refused <node>'");
                 }
                 for (const auto& a : c.args)
-                    if (a.rfind("job.", 0) == 0 && c.item != "job")
-                        fail("'" + a + "' needs an each over jobs");
+                    if (a.rfind("job.", 0) == 0 && a != "job.id")
+                        fail("'" + a + "': an action is given the bound job as job.id");
+                if ((c.action == "take" || c.action == "deliver" || c.action == "give_back") &&
+                    (c.args.size() != 1 || c.args[0] != "job.id"))
+                    fail("'" + c.action + "' is given the bound job: 'do " + c.action + " job.id'");
+                if (c.action == "open" && (c.args.size() != 1 || !name(c.args[0])))
+                    fail("'open' names an entry: 'do open <entry>'");
             }
             else if (name(target))
                 c.go = target;

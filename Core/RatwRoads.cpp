@@ -366,6 +366,62 @@ Result World::takeContract(const std::string& player, const std::string& contrac
     return {false, "There is no such work to be had here.", contractId};
 }
 
+std::int64_t World::deliverLetter(Contract& c)
+{
+    const auto* carrier = entity(c.taker);
+    const auto* to = entity(c.target);
+    const auto paid = settleContract(c, "done", c.taker);
+    bonds_.change(c.target, c.taker, {2, 3, 2, 0, 0}, calendarDays_);
+    bonds_.change(c.poster, c.target, {1, 0, 2, 0, 0}, calendarDays_);
+    bonds_.change(c.poster, c.taker, {1, 3, 1, 0, 0}, calendarDays_);
+    if (carrier && to && !carrier->npc)
+        notice(c.taker, "You hand " + to->name + " the letter" +
+                            (paid >= c.reward ? (paid ? " and are paid " + pennies(paid) : std::string()) + "."
+                             : paid ? " and are paid " + pennies(paid) + " of the " + pennies(c.reward) + ": " + DayPaid + ", and the rest goes back."
+                                    : ". Its pay goes back: " + std::string(DayPaid) + "."),
+               true);
+    return paid;
+}
+
+Result World::handOverLetter(const std::string& player, const std::string& contractId)
+{
+    for (auto& c : roads_.contracts)
+        if (c.id == contractId)
+        {
+            if (c.kind != "courier" || c.status != "taken" || c.taker != player)
+                return {false, "You carry no such letter.", c.id};
+            const auto* carrier = entity(player);
+            const auto* to = entity(c.target);
+            if (!carrier || !to || to->dead || carrier->cellId != to->cellId || between(carrier->position, to->position) > 3)
+                return {false, "Go to " + (to ? to->name : std::string("them")) + " first.", c.id};
+            const auto paid = deliverLetter(c);
+            return {true, pennies(paid), c.id};
+        }
+    return {false, "That work is gone.", contractId};
+}
+
+Result World::giveBackContract(const std::string& player, const std::string& contractId)
+{
+    // Free, with no penalty (the user's answer, doc 83): the work is open again, as it was before it was taken.
+    for (auto& c : roads_.contracts)
+        if (c.id == contractId)
+        {
+            if (c.status != "taken" || c.taker != player)
+                return {false, "That isn't work of yours to give back.", c.id};
+            c.status = "open";
+            c.taker.clear();
+            c.byHand = c.nudged = false;
+            for (auto& wagon : roads_.caravans)
+            {
+                wagon.escorts.erase(std::remove(wagon.escorts.begin(), wagon.escorts.end(), player), wagon.escorts.end());
+                wagon.with.erase(player);
+            }
+            recordEvent({"contract given back", player, c.poster, {}, 0, 0, {}, 0, c.reward, c.kind + ": " + c.detail});
+            return {true, "You give back: " + c.detail + ".", c.id};
+        }
+    return {false, "That work is gone.", contractId};
+}
+
 Result World::takeOfferedContract(const std::string& player, const std::string& contractId)
 {
     // Offered by letter (doc 55, 5): the one it was offered to takes it on from wherever they are, while it holds.
@@ -502,16 +558,15 @@ void World::tendRoads()
         }
         if (carrier && to && !to->dead && carrier->cellId == to->cellId && between(carrier->position, to->position) <= 3)
         {
-            const auto paid = settleContract(c, "done", c.taker);
-            bonds_.change(c.target, c.taker, {2, 3, 2, 0, 0}, calendarDays_);
-            bonds_.change(c.poster, c.target, {1, 0, 2, 0, 0}, calendarDays_);
-            bonds_.change(c.poster, c.taker, {1, 3, 1, 0, 0}, calendarDays_);
-            if (!carrier->npc)
-                notice(c.taker, "You hand " + to->name + " the letter" +
-                                    (paid >= c.reward ? (paid ? " and are paid " + pennies(paid) : std::string()) + "."
-                                     : paid ? " and are paid " + pennies(paid) + " of the " + pennies(c.reward) + ": " + DayPaid + ", and the rest goes back."
-                                            : ". Its pay goes back: " + std::string(DayPaid) + "."),
-                       true);
+            // (Taken in the dialogue window: handed over in words, in the recipient's conversation. Told so once.)
+            if (c.byHand && carrier && !carrier->npc)
+            {
+                if (!c.nudged)
+                    notice(c.taker, "Talk to " + to->name + " to hand over the letter.", true);
+                c.nudged = true;
+                continue;
+            }
+            deliverLetter(c);
         }
     }
     const auto today = std::int64_t(std::floor(calendarDays_));

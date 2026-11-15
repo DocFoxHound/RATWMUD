@@ -32,7 +32,7 @@ import {askText} from '../ui/dialog.ts';
 import {commandToRun, runCommand, slashSuggestions, wheelCommands} from './commands.ts';
 import {FlatWheel, wheelEntries, wheelInGroup} from './wheel.ts';
 import {basketKey, shopOf} from './shop.ts';
-import {chooseMessage, dialogueKey, dialogueReach, moveSelection, newDialogueUi, readDialogue, sayMessage, type Dialogue} from './dialogue.ts';
+import {chooseMessage, dialogueKey, dialogueReach, moveSelection, newDialogueUi, readDialogue, sayMessage, workEntry, type Dialogue} from './dialogue.ts';
 
 export interface Post {
     id: string;
@@ -2738,6 +2738,13 @@ export class GameState {
                 this.openDialogue(target, 'talk');
                 return;
             }
+            else if (workEntry(h.target) && this.dialogueWorkServer()) {
+                // A giver's work (doc 83, Phase 2): their dialogue, at the job, the board or the hand-in.
+                const target = this.contextTarget;
+                this.contextTarget = '';
+                this.openDialogue(target, workEntry(h.target) ?? 'talk');
+                return;
+            }
             else if (h.target === 'gather') this.activate({rect: rect(0, 0, 0, 0), action: 'gather', target: ''});
             else this.sendAction(h.target, this.contextTarget);
             this.contextTarget = '';
@@ -2875,9 +2882,16 @@ export class GameState {
         return bool(this.snapshot, 'dialogue');
     }
 
-    /** Talk or Trade on a resident's wheel (doc 83): the dialogue window, opened by the server on the tree's entry. Within
-     *  reach it opens at once; further off, the wolf walks over and it opens on arrival. */
-    openDialogue(target: string, entry: 'trade' | 'talk') {
+    /** Whether the server's givers speak through dialogue trees too (doc 83, Phase 2): the wheel's work opens their
+     *  window, not the offer window or the missions board (an older server keeps those). */
+    dialogueWorkServer(): boolean {
+        return this.dialogueServer() && bool(this.snapshot, 'dialogueWork');
+    }
+
+    /** Talk, Trade or a giver's work on a resident's wheel (doc 83): the dialogue window, opened by the server on the
+     *  tree's entry (trade, talk, work, job:<id>, missions, deliver:<id>). Within reach it opens at once; further off,
+     *  the wolf walks over and it opens on arrival. */
+    openDialogue(target: string, entry: string) {
         const e = this.entities.get(target), me = obj(this.snapshot, 'self');
         if (!e) {
             this.showToast('They are no longer in sight.');
@@ -2945,6 +2959,12 @@ export class GameState {
                 this.send({type: 'path', x: t.x, y: t.y});
                 this.showToast(`Going over to ${t.name}…`);
             }
+            return;
+        }
+        if ((why === 'none' || why === 'gone') && entry && entry !== 'trade' && entry !== 'talk' && this.pendingDialogue?.target === npc) {
+            // A giver's work they can't speak of (taken meanwhile, nothing for them): said in words, nothing opens.
+            this.pendingDialogue = null;
+            this.showToast(str(e, 'text') || 'There is nothing to talk about there.');
             return;
         }
         if (why === 'none' && entry && this.pendingDialogue?.target === npc) {

@@ -97,7 +97,16 @@
     "crowd": ["quiet", "busy", "crowd"],
     "player_near": ["yes", "no"],
     "shop": ["open", "asleep", "bare", "none"],
-    "work": "number"
+    "work": "number",
+    "missions": "number",
+    "mine": "number",
+    "deliveries": "number",
+    "giver": ["yes", "no"],
+    "official": ["yes", "no"],
+    "chapter": ["yes", "no"],
+    "faction": "text",
+    "report_fee": "number",
+    "tithe_fee": "number"
   },
   "topic": {
     "item": "text",
@@ -136,8 +145,19 @@
     "job_title": "text",
     "job_reward": "text",
     "job_id": "text",
-    "job_kind": ["escort", "courier", "bounty"],
-    "job_directions": "text"
+    "job_kind": ["escort", "courier", "bounty", "deliver", "message", "guard"],
+    "job_directions": "text",
+    "job_source": ["contract", "mission"],
+    "job_state": ["open", "taken", "done", "expired", "gone"],
+    "job_allowed": ["yes", "no"],
+    "job_why": "text",
+    "job_ready": ["yes", "no"],
+    "job_due": "text",
+    "job_risk": "text",
+    "job_progress": "text",
+    "job_handover": "text",
+    "job_poster": "text",
+    "job_paid": "text"
   },
   "world": {
     "herbs_price": ["up", "down", "steady"],

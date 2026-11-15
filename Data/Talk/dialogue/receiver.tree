@@ -1,0 +1,34 @@
+# Anyone a job is for (Docs/Design/83-dialogue-trees.md, Phase 2): a courier's letter handed over, a mission's goods or
+# message handed in, and the thanks, with the pay said aloud. Talk with them opens it while the player carries something
+# of theirs (here.deliveries), and so does the wheel's "Hand over the letter" or "Deliver ...". A letter taken in the
+# dialogue window is handed over here, in words, not by standing near. Escorts, bounties and watches finish by
+# themselves. The lines are talk concepts (dlg.receiver.<node>).
+
+tree receiver
+for here.deliveries>0
+priority 5
+entry talk greet
+entry deliver greet
+
+node greet
+say #greet#, #address#. Something for me? | #greet#. #talk_open# | Yes? #talk_open#
+free
+each job in here.deliveries max 3
+choice #job.handover# [topic.job_ready=yes] locked "#job.why#" -> do deliver job.id ; then paid ; refused refused
+choice Goodbye. -> bye
+
+node paid
+say #work_paid# #topic.job_paid.capitalize#.
+say[topic.job_kind=courier] A letter, for me? Thank you. #topic.job_paid.capitalize#, as #topic.job_poster# promised. | From #topic.job_poster#? Thank you kindly. #topic.job_paid.capitalize#, as promised.
+say[topic.job_paid=nothing priority=2] Thank you. There's no pay left in it today, I'm afraid.
+mood pleased
+free
+choice Goodbye. -> bye
+
+node refused
+say #topic.why# | Hm. #topic.why#
+choice Goodbye. -> bye
+
+node bye
+say #farewell#. | #farewell#, #address#. | Mind how you go.
+end

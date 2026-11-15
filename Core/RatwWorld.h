@@ -1136,6 +1136,11 @@ class World
     Result takeContract(const std::string& player, const std::string& contractId);
     Result takeOfferedContract(const std::string& player, const std::string& contractId);
     Result completeContract(const std::string& contractId, const std::string& by);
+    // The dialogue window's work (doc 83, Phase 2): a letter taken by hand, handed to its recipient within reach (paid
+    // as a courier's delivery is); and work given back, free (the user, 2026-11-15): open again for anyone, the taker
+    // gone from its wagon's escort.
+    Result handOverLetter(const std::string& player, const std::string& contractId);
+    Result giveBackContract(const std::string& player, const std::string& contractId);
     // Posts work, the reward set aside from the poster's purse at once (no reward if they can't pay).
     // A poster's contract still open or taken, withdrawn (doc 57: a cancelled project's): the reward left in escrow goes
     // back to the poster. False if there is none.
@@ -2170,6 +2175,7 @@ class World
     void rumoursFromEvent(const WorldEvent& event);
     // (Returns what `paidTo` was paid: less than the reward, or nothing, where the day's rewards cap holds it. Doc 79, 9.3.)
     std::int64_t settleContract(Contract& c, const std::string& status, const std::string& paidTo);
+    std::int64_t deliverLetter(Contract& c);        // (A courier's letter handed over: paid, bonds, told.)
     // Road folk: each one's part, keyed by entity ID ("road:...").
     struct RoadFolk
     {

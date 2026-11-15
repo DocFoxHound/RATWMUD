@@ -78,3 +78,9 @@ shop_sold = Root well with it. | There, it'll last. | Made to keep.
 shop_bye = Shade keep you. | Root well. | Come back by the old oak.
 shop_bare = Picked clean. | Nothing on the bough just now. | Bare as a felled stump.
 talk_open = What's on your mind, old root? | Sit a while. What is it? | Speak slow, I'm listening.
+# A giver's work (doc 83, Phase 2).
+work_offer = There's work, old root, if you'll take it. | I could use a hand under these boughs. | Something needs doing.
+work_taken = Good. Root well and get on. | Good. Steady does it. | Settled, then.
+work_paid = Here, as promised, old root. | Paid, and shade on you. | Fairly done. There you are.
+work_back = No harm done. Another will take it. | Fair enough. It'll grow back. | Better said now, old root.
+work_none = Nothing going, old root. | No work under my roof today. | Nothing needs doing.

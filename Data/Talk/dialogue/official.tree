@@ -1,0 +1,52 @@
+# A faction's official (Docs/Design/83-dialogue-trees.md, Phase 2): the missions board as choices, for a Chapter the
+# faction knows (a mission's details are the work tree's, with the mission bound); a mission's goods or message handed
+# in; what was taken, and giving it back (the work tree's mine); and the Chapter's standing: asked, a report paid for, a
+# tithe. Entered from the wheel's "Ask for missions" (and a resident's "Any missions for us?").
+#
+# here.chapter: the player is of a Chapter (factions deal with no wolf alone). here.faction: its name. A mission locked
+# by standing says why (#job.why#). The lines are talk concepts (dlg.official.<node>).
+
+tree official
+for here.official=yes
+entry missions board
+
+node board
+say #work_offer# This is what #here.faction# wants done. | The board, then. This is what's wanted.
+say[here.missions=0 priority=2] Nothing on the board today. Come back tomorrow.
+say[here.chapter=no priority=5] #here.faction# deals with Chapters, not with one wolf alone.
+mood formal
+each job in here.missions max 4
+choice Ask about: #job.title# (#job.reward#p) [here.chapter=yes topic.job_allowed=yes] locked "#job.why#" -> do open job
+each job in here.deliveries max 2
+choice #job.handover# [topic.job_ready=yes] locked "#job.why#" -> do deliver job.id ; then paid ; refused refused
+choice About what I took on. [here.mine>0] -> do open mine
+choice About our Chapter's standing... [here.chapter=yes] -> standing
+choice Goodbye. -> bye
+
+node standing
+say What of it? | Ask, then. | Go on.
+choice How does #here.faction# hold us? -> do standing ; then answer ; refused refused
+choice I'll pay for a report (#here.report_fee#p). -> do buy_report ; then answer ; refused refused
+choice A tithe, from our Chapter (#here.tithe_fee#p). -> do tithe ; then answer ; refused refused
+choice Back to the board. -> board
+
+node answer
+say #topic.answer#
+choice Anything else? -> board
+choice Goodbye. -> bye
+
+node paid
+say #work_paid# #topic.job_paid.capitalize#. | #work_paid#
+say[topic.job_paid=nothing priority=2] Done, and noted. There's no coin left in it today, I'm afraid.
+mood pleased
+choice Anything else? -> board
+choice Goodbye. -> bye
+
+node refused
+say #topic.why# | Hm. #topic.why#
+choice Anything else? -> board
+choice Goodbye. -> bye
+
+node bye
+say #farewell#. | #farewell#, #address#. | Go well.
+end

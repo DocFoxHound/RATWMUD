@@ -81,3 +81,9 @@ shop_sold = Sold, and full weight. | Done, and fair. | There's a bargain for you
 shop_bye = Good trading. | Fair price, come again. | Back when your purse is heavy.
 shop_bare = Sold out, near enough. | Trade's cleared me out. | Light shelves today.
 talk_open = What's your business? | What are you after? | Speak up, it's market day somewhere.
+# A giver's work (doc 83, Phase 2).
+work_offer = There's work, fair price for it. | I've a job that pays. | Something wants doing, and I'll pay.
+work_taken = Good trade. Don't dawdle. | Done deal, then. | Struck and settled.
+work_paid = Here, fair price, as promised. | Paid to the penny. | Good trading. There you are.
+work_back = No harm done. Another will buy it. | Fair enough. The deal's off, no cost. | Better unsold than spoiled.
+work_none = Nothing on offer today. | No work going, friend. | Nothing worth the price just now.

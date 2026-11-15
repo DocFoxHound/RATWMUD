@@ -152,6 +152,7 @@ Value roads(const RoadsState& r)
         j.add("due", k.due); j.add("detail", k.detail);
         if (!k.offeredTo.empty()) { j.add("offeredTo", k.offeredTo); j.add("offeredUntil", k.offeredUntil); }   // (Doc 55, 5.)
         if (!k.from.empty()) j.add("from", k.from);                     // (An escort's road: doc 79, Phase 4.)
+        if (k.byHand) j.add("byHand", true);                            // (Handed over in words: doc 83, Phase 2.)
         contracts.push(j);
     }
     roads.add("caravans", caravans); roads.add("camps", camps); roads.add("contracts", contracts);
@@ -782,6 +783,7 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             k.offeredTo = j.string("offeredTo");
             k.offeredUntil = num(j, "offeredUntil");
             k.from = j.string("from");
+            k.byHand = j.boolean("byHand");
             saved.roads.contracts.push_back(std::move(k));
         }
     }

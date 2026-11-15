@@ -55,7 +55,7 @@ export function groupOf(action: string, ground = false): WheelGroup {
     if (ground) return Ground[action] ?? 'action';
     if (Exact[action]) return Exact[action];
     if (/^hire for /.test(action)) return 'party';
-    if (/^(take|deliver) /.test(action) || action.startsWith('trouble:') || /^help /.test(action)) return 'work';
+    if (/^(take|offer|deliver|hand over) /.test(action) || action.startsWith('trouble:') || /^help /.test(action)) return 'work';
     if (/^introduce as /.test(action)) return 'social';
     if (/^(pay for a report|give a tithe)/.test(action)) return 'chapter';
     if (action.startsWith('challenge:') || action.startsWith('vouch:') || action.startsWith('wardens-')) return 'action';
@@ -91,6 +91,8 @@ export function actionWords(s: GameState, action: string): string {
     // An id the server gave no words for (an older server): the verb alone, never the id.
     if (action.startsWith('take ')) return 'Take on work';
     if (action.startsWith('deliver ')) return 'Deliver';
+    if (action.startsWith('offer ')) return 'Ask about work';
+    if (action.startsWith('hand over ')) return 'Hand over the letter';
     if (IdLike.test(action)) return upperFirst(action.split(' ')[0]);
     return upperFirst(action);
 }
@@ -99,7 +101,7 @@ export function actionWords(s: GameState, action: string): string {
  *  the work itself (each piece of it is on the wheel, by name). */
 export function wheelActions(s: GameState): string[] {
     const all = [...new Set(s.contextActions)];
-    const work = all.some(a => a.startsWith('take '));
+    const work = all.some(a => a.startsWith('take ') || a.startsWith('offer '));
     const seen = new Set<string>();
     return all.filter(a => {
         if (work && a === 'ask for work') return false;

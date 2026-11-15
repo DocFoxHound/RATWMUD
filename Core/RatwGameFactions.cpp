@@ -330,6 +330,65 @@ void Game::missionTick(double dt, double day)
     }
 }
 
+Result Game::takeMission(const std::string& id, const std::string& missionId)
+{
+    auto* m = factions_.mission(missionId);
+    const auto* chapter = chapters_.of(id);
+    if (!m || m->state != "open")
+        return {false, m && m->taker == id ? "You have taken that on already." : "That mission isn't to be had.", missionId};
+    if (!chapter)
+        return {false, "Factions deal with Chapters, not with one wolf alone.", missionId};
+    const double eff = standingOf(m->faction, chapter->id);
+    const bool allowed = m->tier == 1 ? chapter->level >= 2 && eff >= 15 : chapter->level >= 3 && eff >= 40;
+    if (!allowed)
+        return {false, m->tier == 1 ? "First missions go to a Lodge the faction knows well." : "These go to a Company the faction trusts.", missionId};
+    m->state = "taken";
+    m->taker = id;
+    m->chapter = chapter->id;
+    saveSoon();
+    return {true, "You take it on: " + missionWords(*m, id) + ".", missionId};
+}
+
+Result Game::deliverMission(const std::string& id, const std::string& missionId, std::int64_t& paid)
+{
+    paid = 0;
+    auto* m = factions_.mission(missionId);
+    const auto* me = world_.entity(id);
+    const auto* to = m ? world_.entity(m->kind == "message" ? m->to : m->official) : nullptr;
+    if (!m || m->state != "taken" || m->taker != id)
+        return {false, "You have no such mission.", missionId};
+    if (!me || !to || to->cellId != me->cellId || std::hypot(to->position.x - me->position.x, to->position.y - me->position.y) > 3 ||
+        world_.visionClarity(id, to->id) <= 0)
+        return {false, "Go to " + labelFor(id, to ? to->id : std::string()) + " first.", missionId};
+    if (m->kind == "guard")
+        return {false, "Keeping watch is done by staying there.", missionId};
+    if (m->kind == "deliver")
+    {
+        if (!world_.society().shift(id, m->official, m->item, m->quantity, 0, "faction mission goods"))
+            return {false, "You haven't the goods.", missionId};
+        record(Economy, id);
+    }
+    const auto before = world_.society().cash(id);
+    completeMission(*m, world_.calendarDays());
+    paid = std::max<std::int64_t>(0, world_.society().cash(id) - before);
+    return {true, "The mission is done.", missionId};
+}
+
+Result Game::giveBackMission(const std::string& id, const std::string& missionId)
+{
+    // Free, with no penalty (the user's answer, doc 83): the mission is back on the board for anyone.
+    auto* m = factions_.mission(missionId);
+    if (!m || m->state != "taken" || m->taker != id)
+        return {false, "That isn't work of yours to give back.", missionId};
+    m->state = "open";
+    m->taker.clear();
+    m->chapter.clear();
+    m->held = 0;
+    chapterViewsDirty_ = true;
+    saveSoon();
+    return {true, "You give back: " + missionWords(*m, id) + ".", missionId};
+}
+
 bool Game::factionCommand(Connection* c, const Value& j, Result& result)
 {
     const std::string id = c->entityId, verb = j.string("verb"), target = j.string("target");
@@ -419,52 +478,13 @@ bool Game::factionCommand(Connection* c, const Value& j, Result& result)
         result = {true, {}, target};
     }
     else if (verb == "take")
-    {
-        auto* m = factions_.mission(j.string("mission"));
-        if (!m || m->state != "open")
-            result = {false, "That mission isn't to be had.", {}};
-        else
-        {
-            const double eff = standingOf(m->faction, chapter->id);
-            const bool allowed = m->tier == 1 ? chapter->level >= 2 && eff >= 15 : chapter->level >= 3 && eff >= 40;
-            if (!allowed)
-                result = {false, m->tier == 1 ? "First missions go to a Lodge the faction knows well." : "These go to a Company the faction trusts.", {}};
-            else
-            {
-                m->state = "taken";
-                m->taker = id;
-                m->chapter = chapter->id;
-                result = {true, "You take it on: " + missionWords(*m, id) + ".", {}};
-                saveSoon();
-            }
-        }
-    }
+        result = takeMission(id, j.string("mission"));
     else if (verb == "deliver")
     {
-        auto* m = factions_.mission(j.string("mission"));
-        const auto* to = m ? world_.entity(m->kind == "message" ? m->to : m->official) : nullptr;
-        if (!m || m->state != "taken" || m->taker != id)
-            result = {false, "You have no such mission.", {}};
-        else if (!near(to))
-            result = {false, "Go to " + labelFor(id, to ? to->id : std::string()) + " first.", {}};
-        else if (m->kind == "deliver")
-        {
-            if (!world_.society().shift(id, m->official, m->item, m->quantity, 0, "faction mission goods"))
-                result = {false, "You haven't the goods.", {}};
-            else
-            {
-                record(Economy, id);
-                completeMission(*m, day);
-                result = {true, {}, {}};
-            }
-        }
-        else if (m->kind == "message")
-        {
-            completeMission(*m, day);
-            result = {true, {}, {}};
-        }
-        else
-            result = {false, "Keeping watch is done by staying there.", {}};
+        std::int64_t paid = 0;
+        result = deliverMission(id, j.string("mission"), paid);
+        if (result.ok)
+            result.message.clear();                 // (completeMission has told them.)
     }
     else
         return false;

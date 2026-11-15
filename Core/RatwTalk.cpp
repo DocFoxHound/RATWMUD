@@ -1352,6 +1352,13 @@ bool loadDir(Library& lib, const std::string& dir, bool all, std::string& proble
             add(one);
     }
     readTrees();
+    // A tree's `do open <entry>` goes on in the tree that answers that entry: some tree must.
+    for (const auto& [id, t] : lib.trees())
+        for (const auto& [nodeId, n] : t.nodes)
+            for (const auto& c : n.choices)
+                if (c.action == "open" && !c.args.empty() &&
+                    std::none_of(lib.trees().begin(), lib.trees().end(), [&](const auto& o) { return o.second.entries.count(c.args[0]) > 0; }))
+                    add(t.file + ":" + std::to_string(c.line) + ": no tree has the entry '" + c.args[0] + "'");
     if (!trouble.empty())
     {
         problem = trouble;

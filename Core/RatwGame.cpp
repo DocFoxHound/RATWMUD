@@ -4185,6 +4185,14 @@ void Game::sendSnapshot(Connection* c)
                 if (!factions_.stillCounted(factionId, chapters_.of(view.self.id)->id).empty())
                     actions.push("tell of an expulsion");
             }
+        // A letter taken in the dialogue window is handed over in words (doc 83, Phase 2): its recipient's wheel says so.
+        if (e.npc && near(e))
+            for (const auto& k : world_.roads().contracts)
+                if (k.kind == "courier" && k.status == "taken" && k.byHand && k.taker == view.self.id && k.target == e.id)
+                {
+                    actions.push("hand over " + k.id);
+                    words.set("hand over " + k.id, "Hand over the letter");
+                }
         for (const auto& m : factions_.missions())
             if (m.state == "taken" && m.taker == view.self.id && m.kind != "guard" && (m.kind == "message" ? m.to : m.official) == e.id && near(e))
             {
@@ -4563,7 +4571,10 @@ void Game::sendSnapshot(Connection* c)
             root.add("merchant", m);
         }
     if (!talk_.trees().empty())
+    {
         root.add("dialogue", true);                 // (Trade and Talk open the dialogue window: doc 83.)
+        root.add("dialogueWork", true);             // (And the work on the wheel: its givers' trees, Phase 2.)
+    }
     const auto patch = world_.herbPatchPosition();
     const int patchX = int(patch.x), patchY = int(patch.y);
     if (world_.society().state().enabled && view.self.cellId == world_.herbPatchCell() && view.cell.width > patchX &&
@@ -5722,6 +5733,24 @@ void Game::command(Connection* c, const std::string& raw)
             projectCommand(c, j, result);
         report = true;
     }
+    else if (type == "contract" && options_.devTools)
+    {
+        // Development only (doc 83, Phase 2's look): {"verb": "courier", "poster", "to", "reward"} posts a letter at the
+        // market one stands in, from one resident to another, to be asked about at its keepers.
+        const auto* here = world_.roadMarketOf(player->cellId);
+        const auto* poster = world_.entity(j.string("poster"));
+        const auto* to = world_.entity(j.string("to"));
+        if (j.string("verb") != "courier" || !here || !poster || !to || !poster->npc || !to->npc)
+            result = {false, "A letter needs a market here, a resident to send it and one to receive it.", {}};
+        else
+        {
+            const auto& k = world_.postContract("courier", poster->id, here->id, to->id, std::int64_t(wire::number(j, "reward", 6)), 3,
+                                                "a letter for " + labelFor(id, to->id));
+            result = {true, "Posted " + k.id + ": " + k.detail + " (" + std::to_string(k.reward) + "p).", k.id};
+            record(Roads | Economy, id);
+        }
+        report = true;
+    }
     else if (type == "give" || type == "giveAnswer")
     {
         // Giving (doc 55, 3): {"target", "item", "quantity", "coins"}; the one offered answers {"accept": bool}.
@@ -6049,7 +6078,15 @@ void Game::command(Connection* c, const std::string& raw)
             system(c, list.empty() ? "There is no work to be had here just now." : "Work to be had:" + list);
         }
         else if (action.rfind("offer ", 0) == 0)
-            offerContract(c, target, action.substr(6));   // (The offer window; the dialogue's work choices too: doc 83.)
+            offerContract(c, target, action.substr(6));   // (An older client's offer window: doc 83, Phase 2.)
+        else if (action.rfind("hand over ", 0) == 0)
+        {
+            const auto given = world_.handOverLetter(id, action.substr(10));
+            if (!given.ok)
+                system(c, given.message);
+            else
+                record(Roads | Economy | Character, id);   // (The world told them: "You hand ... the letter".)
+        }
         else if (action.rfind("take ", 0) == 0)
         {
             const auto taken = world_.takeContract(id, action.substr(5));

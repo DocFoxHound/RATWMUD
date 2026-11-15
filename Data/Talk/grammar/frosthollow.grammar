@@ -83,3 +83,9 @@ shop_sold = Wrap it well. | There, against the cold. | Yours, cousin.
 shop_bye = Keep your lamp lit. | Lamp lit, cousin. | Mind the ice.
 shop_bare = Bare as a winter field. | The snow took the rest. | Little left till the thaw.
 talk_open = What brings you to my hearth? | Speak, cousin. | Something the matter?
+# A giver's work (doc 83, Phase 2).
+work_offer = There's work, cousin, if you've the legs for it. | I could use a steady pair of paws. | Something wants doing before the snow.
+work_taken = Good. Don't let it freeze. | Good. Keep your lamp lit on the road. | Settled, then.
+work_paid = Here, as promised, cousin. | Paid, and a warm hearth to you. | Fairly done. There you are.
+work_back = No harm done, cousin. Another will take it. | Fair enough. Better said by the fire. | Better now than in the snow.
+work_none = Nothing going, cousin. | No work this side of the thaw. | Nothing that needs doing.

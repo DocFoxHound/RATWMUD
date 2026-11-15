@@ -5,7 +5,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {testGame} from './testing.ts';
-import {chooseMessage, dialogueKey, moveSelection, newDialogueUi, readDialogue, revealed, sayMessage, wordsFor} from './dialogue.ts';
+import {chooseMessage, dialogueKey, moveSelection, newDialogueUi, readDialogue, revealed, sayMessage, wordsFor, workEntry} from './dialogue.ts';
 import {rect} from '../ui/painter.ts';
 import type {Json} from './json.ts';
 
@@ -16,12 +16,16 @@ const node = (over: Json = {}): Json => ({
         {n: 3, text: 'Any work going?', locked: true, why: 'Nothing going.'}, {n: 4, text: 'Goodbye.'}],
     history: [], ...over});
 
-function onTheMap(dialogue = true) {
+function onTheMap(dialogue = true, work = false) {
     const g = testGame();
     g.state.applySnapshot({cell: {id: 'square', width: 32, height: 24}, self: {id: 'me', name: 'Ash', x: 5, y: 5},
-        entities: [{id: 'me', name: 'Ash', x: 5, y: 5}, {id: 'bram', name: 'Bram', x: 6, y: 5, npc: true, actions: ['talk', 'trade']},
-            {id: 'oda', name: 'Oda', x: 15, y: 5, npc: true, actions: ['talk']}],
-        time: 0, cellGeneration: 1, ...(dialogue ? {dialogue: true} : {})});
+        entities: [{id: 'me', name: 'Ash', x: 5, y: 5},
+            {id: 'bram', name: 'Bram', x: 6, y: 5, npc: true, actions: ['talk', 'trade', 'ask for work', 'offer k12'],
+                words: {'offer k12': 'Ask about: guarding the next wagon from Ridgemere to Oakhaven (12p)'}},
+            {id: 'oda', name: 'Oda', x: 15, y: 5, npc: true, actions: ['talk']},
+            {id: 'moss', name: 'Moss', x: 5, y: 6, npc: true, actions: ['talk', 'ask for missions', 'deliver mission-3', 'hand over k20'],
+                words: {'deliver mission-3': 'Deliver 2 meals', 'hand over k20': 'Hand over the letter'}}],
+        time: 0, cellGeneration: 1, ...(dialogue ? {dialogue: true} : {}), ...(work ? {dialogueWork: true} : {})});
     g.state.mapOrigin = [0, 0];
     g.state.mapRect = rect(0, 0, 640, 480);
     g.state.tileSize = 20;
@@ -143,4 +147,71 @@ test('Talk opens the hub from afar after walking over; an older server keeps the
     old.state.activate({rect: rect(0, 0, 0, 0), action: 'context', target: 'talk'});
     assert.equal(old.commands.filter(c => c.type === 'dialogue_open').length, 0, 'an older server: no dialogue asked for');
     assert.ok(old.commands.some(c => c.type === 'action' && c.action === 'talk'), 'Talk as it was');
+});
+
+test('a giver\'s work: the wheel\'s work opens their dialogue at the job, the board or the hand-in', () => {
+    assert.equal(workEntry('ask for work'), 'work');
+    assert.equal(workEntry('offer k12'), 'job:k12');
+    assert.equal(workEntry('ask for missions'), 'missions');
+    assert.equal(workEntry('deliver mission-3'), 'deliver:mission-3');
+    assert.equal(workEntry('hand over k20'), 'deliver:k20');
+    assert.equal(workEntry('trade'), null);
+    assert.equal(workEntry('take k12'), null, 'an older take is sent as it was');
+    const {state: s, commands} = onTheMap(true, true);
+    for (const [who, action, entry] of [['bram', 'offer k12', 'job:k12'], ['bram', 'ask for work', 'work'], ['moss', 'ask for missions', 'missions'],
+        ['moss', 'deliver mission-3', 'deliver:mission-3'], ['moss', 'hand over k20', 'deliver:k20']] as const) {
+        commands.length = 0;
+        s.openContextAt(who, [120, 100]);
+        s.activate({rect: rect(0, 0, 0, 0), action: 'context', target: action});
+        assert.deepEqual(commands.filter(c => c.type === 'dialogue_open').at(-1), {type: 'dialogue_open', npc: who, entry}, `${action}: ${entry}`);
+        assert.equal(commands.filter(c => c.type === 'action').length, 0, `${action}: no old command`);
+        s.pendingDialogue = null;
+    }
+    // The work, each job in plain words; one the server wouldn't allow, greyed with why.
+    s.receiveEvent(node({tree: 'work', node: 'list', line: 'There\'s work, if you want it.', choices: [
+        {n: 1, text: 'Ask about: guarding the next wagon from Ridgemere to Oakhaven (12p)'},
+        {n: 2, text: 'Ask about: a letter for Oda (5p)', locked: true, why: 'That\'s promised to another for now.'},
+        {n: 3, text: 'Goodbye.'}]}));
+    assert.ok(s.dialogue && s.dialogue.tree === 'work' && s.dialogue.choices[1].locked && s.dialogue.choices[1].why.includes('promised'),
+        'the job list, a locked one with why');
+    assert.equal(s.modal, '', 'no offer window: the dialogue');
+    commands.length = 0;
+    s.keyDown({code: 'Digit2'});
+    assert.equal(commands.filter(c => c.type === 'dialogue_choose').length, 0, 'the locked job sends nothing');
+    s.keyDown({code: 'Digit1'});
+    assert.deepEqual(commands.at(-1), {type: 'dialogue_choose', session: 7, n: 1});
+    // Its details, then take it on (Accept), or not (Decline).
+    s.receiveEvent(node({tree: 'work', node: 'job', line: 'Meet the wagon at the Ridgemere market. It waits for its guards before setting out.',
+        choices: [{n: 1, text: 'I\'ll take it on.'}, {n: 2, text: 'What does it pay, and by when?'}, {n: 3, text: 'Is there any danger in it?'},
+            {n: 4, text: 'Not for me, thanks.'}]}));
+    assert.ok(s.dialogue?.line.startsWith('Meet the wagon'), 'the details');
+    assert.equal(s.dialogueUi.selected, 0, 'a new node: the first choice picked out');
+    commands.length = 0;
+    s.keyDown({code: 'Enter'});
+    assert.deepEqual(commands.at(-1), {type: 'dialogue_choose', session: 7, n: 1}, 'accepted');
+    // Coming back: how it stands, and giving it back.
+    s.receiveEvent(node({tree: 'work', node: 'progress', line: 'The wagon waits at the Ridgemere market for its guards.',
+        choices: [{n: 1, text: 'Remind me what it is.'}, {n: 2, text: 'I can\'t do it after all.'}, {n: 3, text: 'I\'ll get on with it.'}]}));
+    s.dialogueUi.drafts.set(2, 'I am sorry, but I cannot guard that wagon after all.');
+    commands.length = 0;
+    s.keyDown({code: 'Digit2'});
+    assert.deepEqual(commands.at(-1), {type: 'dialogue_choose', session: 7, n: 2, text: 'I am sorry, but I cannot guard that wagon after all.'},
+        'given back, in their own words');
+    s.receiveEvent(node({tree: 'work', node: 'given', line: 'No harm done. I\'ll find another.', note: 'Given back: no harm done.',
+        choices: [{n: 1, text: 'Goodbye.'}]}));
+    assert.equal(s.dialogue?.note, 'Given back: no harm done.');
+    // Taken meanwhile: said in words, nothing opens.
+    s.dialogue = null;
+    s.openDialogue('bram', 'job:k12');
+    s.receiveEvent({type: 'dialogue_close', npc: 'bram', entry: 'job:k12', why: 'gone', text: 'That work has been taken, or isn\'t to be had here.'});
+    assert.equal(s.dialogue, null);
+    assert.equal(s.pendingDialogue, null, 'no walk over, no retry');
+    assert.equal(commands.filter(c => c.type === 'action' && c.action === 'talk').length, 0, 'not the old Talk');
+
+    // A server whose givers don't speak yet (Phase 1): the work on the wheel as it was.
+    const old = onTheMap(true, false);
+    old.state.openContextAt('bram', [120, 100]);
+    old.state.activate({rect: rect(0, 0, 0, 0), action: 'context', target: 'offer k12'});
+    assert.ok(old.commands.some(c => c.type === 'action' && c.action === 'offer k12'), 'the offer window\'s way');
+    assert.equal(old.commands.filter(c => c.type === 'dialogue_open').length, 0);
 });

@@ -139,3 +139,9 @@ shop_bye = Come again. | Come back soon. | Mind how you go.
 shop_bare = My shelves are bare just now. | Not much left, I'm afraid. | Cleared out, near enough.
 shop_asleep = Mm... shut. Come back in the morning. | Zzz... later... the shop's shut. | Mm? Not now. Morning.
 talk_open = What can I do for you? | Something on your mind? | What is it?
+# A giver's work (doc 83, Phase 2): work offered, taken, paid, given back.
+work_offer = There's work, if you want it. | I could use a hand. | Something needs doing.
+work_taken = Good. Don't dawdle. | Good. I'll hold you to it. | That's settled, then.
+work_paid = Here, as promised. | Paid, and well earned. | There you are. Fairly done.
+work_back = No harm done. I'll find another. | Fair enough. Someone else will take it. | Better said now than never.
+work_none = Nothing going just now. | No work today, I'm afraid. | Nothing that needs doing.

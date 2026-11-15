@@ -798,9 +798,21 @@ class Game
     int dialogueNext_ = 1;
     double dialogueLookIn_ = 0;
     void dialogueCommand(Connection* c, const std::string& type, const json::Value& j);
-    // A merchant's contract offered in the offer window ({"type": "missionOffer"}), from the wheel's "offer kNNN" or a
-    // dialogue's work choice; false (and why, to the player) if it can't be asked about here.
+    // A merchant's contract offered in the offer window ({"type": "missionOffer"}), from an older client's "offer kNNN"
+    // (a newer one opens the giver's dialogue at the job: doc 83, Phase 2); false (and why) if it can't be asked here.
     bool offerContract(Connection* c, const std::string& giverId, const std::string& contractId);
+    // A giver's work in the dialogue window (doc 83, Phase 2). The one place a job is put in words for a player: where,
+    // what and how (jobDirections); and its facts for a tree (topic.job_*: title, reward, state, allowed and why, due,
+    // risk, progress, the hand-over's words, ready and why), as the viewer stands with this resident now.
+    std::string jobDirections(const std::string& viewer, const Contract& k) const;
+    std::string jobDirections(const std::string& viewer, const faction::Mission& m) const;
+    talk::Facts jobFacts(const std::string& playerId, const std::string& npcId, const std::string& jobId);
+    // Missions taken, handed in and given back (the board's take, the wheel's deliver, and the dialogue's: one rule).
+    Result takeMission(const std::string& playerId, const std::string& missionId);
+    Result deliverMission(const std::string& playerId, const std::string& missionId, std::int64_t& paid);
+    Result giveBackMission(const std::string& playerId, const std::string& missionId);
+    // Whether a contract is this market's to hear about (given back, asked after): posted for it, or its road's start.
+    bool contractOfMarket(const Contract& k, const std::string& npcId) const;
     void dialogueOpen(Connection* c, const std::string& npcId, const std::string& entry);
     bool dialogueGo(Connection* c, DialogueSession& d, const std::string& node, const std::string& note = {});
     void dialogueSend(Connection* c, const DialogueSession& d, const std::string& note = {});

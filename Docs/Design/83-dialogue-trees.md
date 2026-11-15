@@ -1,7 +1,7 @@
 # 83. Dialogue trees: a window with the NPC's face, and choices to pick
 
 Draft, 2026-11-15, for Ridgemere 3 (`ridgemere3`, doc 82). The user answered the open questions the same day (below,
-"The user's answers"); **Phase 1 is built** (branch r3-dlg1: "Phase 1 as built", under Phases). It adds player-facing
+"The user's answers"); **Phases 1 and 2 are built** (branches r3-dlg1 and r3-dlg2: "as built", under Phases). It adds player-facing
 conversation trees to doc 62's talk library. Doc 62's facts, rules and grammar stay, and so do the router, the NPC
 Mind and free text. A tree is a new way of *asking* the library, through a window the player answers by choosing.
 
@@ -506,6 +506,53 @@ an end-to-end run and one review-and-fix come at the end. The times are rough, f
      - a faction mission locked by standing shows its reason; goods handed in pay out and the mission is done;
      - a courier letter is handed over through the recipient's tree;
      - the existing escort, bounty and watch completions are unchanged.
+   **Phase 2 as built (r3-dlg2, 2026-11-15).**
+   - **The trees:**
+     - `work` (no `for`; entries `work`, `job`, `mine`): the list (`each job in here.work max 4`, "Ask about: <title>
+       (<reward>p)"), a job's details (`#job.directions#`), its pay and time (`#job.reward#`, `#job.due#`), its risks,
+       "I'll take it on." (`take`) and "Not for me, thanks." (`decline`); coming back, `mine` lists the work taken, its
+       progress (`#job.progress#`), "I can't do it after all." (`give_back`). Contracts and faction missions share it: a
+       mission's details are this tree's, reached from the official's board.
+     - `official` (`for here.official=yes`, entry `missions`): the board (`each job in here.missions max 4`, locked by
+       standing with the faction's reason), hand-ins (`here.deliveries`), "About what I took on." (`do open mine`), the
+       Chapter's standing, a paid report and a tithe (`standing`, `buy_report`, `tithe`, the wheel's own handlers).
+     - `receiver` (`for here.deliveries>0`, priority 5, entries `talk` and `deliver`): the letter or the goods handed
+       over, the pay said aloud ("A letter, for me? Thank you. 6 pennies, as Ragnar promised.").
+     - `shop`'s "Any work going?" now goes on in the work tree (`do open work`, shown on `here.giver=yes`: work to be
+       had here, or work of the player's to ask after); the resident hub gains "Any missions for our Chapter?" for an
+       official. Phase 1's `offer` action is gone.
+   - **Actions:** `take`, `decline`, `deliver`, `give_back`, `standing`, `buy_report`, `tithe` and `open <entry>` (the
+     conversation goes on in the tree that answers another entry, with what is bound so far; `talk_check` and the loader
+     refuse an `open` no tree answers). `take`, `deliver` and `give_back` take `job.id`, the bound job.
+   - **Lists and facts** (`facts.json`): lists `here.work`, `here.missions`, `here.mine`, `here.deliveries`; facts
+     `here.missions|mine|deliveries` (counts), `here.giver`, `here.official`, `here.faction`, `here.chapter`,
+     `here.report_fee`, `here.tithe_fee`; the bound job's `topic.job_*`: source (contract, mission), kind, state, allowed
+     and why, ready and why, due, risk, progress, handover, poster, paid. `Game::jobFacts` works them out fresh on every
+     node, so a job taken by someone else meanwhile, lapsed or promised to another is greyed with its reason and refused
+     in words; a choice from an `each` is checked again by its job's id.
+   - **One source of words:** `Game::jobDirections` (contracts and missions; the old offer window uses it too).
+   - **Giving back** (the user's answer 4): `World::giveBackContract` (open again, the taker off any wagon's escort, the
+     reward still in escrow) and `Game::giveBackMission` (back on the board): free, no penalty, only to whoever gave it
+     (the contract's market's keepers, the mission's official).
+   - **Couriers by hand:** a letter taken in the window (`Contract::byHand`, saved) is handed over in the recipient's
+     tree (`World::handOverLetter`, paid as before), not by standing near: standing near says once "Talk to <name> to
+     hand over the letter.", and the recipient's wheel gains "Hand over the letter" (`hand over kNNN`, which an older
+     client sends as a command). Letters taken the old way still complete by standing near.
+   - **The wheel:** where the snapshot says `"dialogueWork": true`, "Ask for work", "Ask about: ...", "Ask for missions",
+     "Deliver ..." and "Hand over the letter" open the giver's window (`work`, `job:<id>`, `missions`, `deliver:<id>`).
+     An older client keeps the old ways: "offer kNNN" still sends the `missionOffer` window, and the board's modal and
+     `deliver mission-N` still work. The new client shows neither the offer window nor the board against a Phase 2
+     server (it keeps them for an older one).
+   - **Development:** `{"type": "contract", "verb": "courier", "poster", "to", "reward"}` (dev tools only) posts a letter
+     at the market one stands in, for looking at the window.
+   - **Tests:** `Tests/dialogue_tests.cpp` (203 checks: no work, the list, details, pay, risk, decline, take with the map
+     mark, already taken, promised to another, lapsed, progress and giving back, the hand-over in the recipient's tree,
+     the board locked by Chapter and standing, a mission taken, goods missing and handed in, a mission given back, the
+     standing asked, an older client's offer window); `Client/src/game/dialogue.test.ts` (the wheel's work entries, the
+     job list, details, give back, an older server).
+   - **Not done:** the `receiver` and `official` lines in the six dialects beyond the `work_*` symbols (Phase 4's pass);
+     the `live.dialects` rows still lack the new symbols.
+
 3. **The other roles** (about 5 h).
    - **Trees:** `resident` (Talk opens the hub), `inn`, `watch`, `master` and `companion`; doc 57's troubles as
      choices.

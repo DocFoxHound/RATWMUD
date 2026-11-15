@@ -192,7 +192,7 @@ struct Settings
 //   choice Let me see your wares. [here.shop=open|bare] -> do shop
 //   choice Any work going? [here.work>0] locked "Nothing going." -> work
 //   each job in here.work max 3
-//     choice Ask about: #job.title# (#job.reward#p) -> do offer job.id
+//     choice Ask about: #job.title# (#job.reward#p) -> job          (the job bound: do take job.id ; then taken)
 //   choice Goodbye. -> bye
 //
 // A node's `say` lines are compiled into rules for the concept dlg.<tree>.<node> (the bare say at score 0, a say[...]
@@ -207,7 +207,7 @@ struct TreeChoice
     std::vector<Criterion> when;
     std::string locked;                   // Shown greyed with this reason when `when` fails ("" hides it).
     std::string go;                       // A node, or "end"; "" when it does an action.
-    std::string action;                   // shop, free, end, offer...
+    std::string action;                   // shop, free, end, take, deliver, give_back, open...
     std::vector<std::string> args;
     std::string then, refused;            // Where an action goes when done, or refused ("" ends / stays).
     std::string each, item;               // An `each` choice: the list ("here.work") and the item's name ("job").

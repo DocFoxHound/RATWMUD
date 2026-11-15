@@ -4,7 +4,8 @@
 # The player's choices are plain words, a default line they may send as it is or rewrite in their own words.
 #
 # here.shop: open, asleep (the keeper is asleep: they mumble, and there is nothing to buy), bare (nothing on the
-# shelf; one may still sell). here.work: contracts this keeper's market offers. topic.meeting: stranger or known;
+# shelf; one may still sell). here.giver: work this keeper's market offers, or work of the player's to ask after (the
+# work tree goes on from "Any work going?": doc 83, Phase 2). topic.meeting: stranger or known;
 # topic.player: the name they were given, if they were.
 
 tree shop
@@ -22,7 +23,7 @@ say[trade=smith] #greet#. Mind the forge. #shop_offer# | #greet#, #address#. Too
 say[trade=brewer] #greet#. Thirsty? #shop_offer# | #greet#, #address#. Ale's good this week.
 mood warm
 choice Let me see your wares. [here.shop=open|bare] -> do shop
-choice Any work going? [here.shop=open|bare here.work>0] -> work
+choice Any work going? [here.shop=open|bare here.giver=yes] -> do open work
 choice What's dear today? [here.shop=open|bare] -> prices
 choice Goodbye. -> bye
 
@@ -31,12 +32,6 @@ ask player.trade
 say #shop_dear# #shop_offer# | Nothing's moved much. #shop_offer#
 choice Let me see your wares. [here.shop=open|bare] -> do shop
 choice Goodbye. -> bye
-
-node work
-say There's this going, if you want it. | Work? Aye, some. | This is what's going.
-each job in here.work max 3
-choice Ask about: #job.title# (#job.reward#p) -> do offer job.id
-choice Never mind. -> greet
 
 node bye
 say #farewell#. | #shop_bye# | #farewell#, #address#.

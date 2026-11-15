@@ -80,3 +80,9 @@ shop_sold = Keep it off the wet. | There, and dry. | Yours, fen-friend.
 shop_bye = Dry feet. | Dry feet to you. | Mind the boards.
 shop_bare = The damp took the rest. | Bare as a drowned field. | Nothing left above the water.
 talk_open = What's floated you here? | Speak up, fen-friend. | What is it?
+# A giver's work (doc 83, Phase 2).
+work_offer = There's work, if you'll wade it. | I could use a fen-friend. | Something needs doing over the boards.
+work_taken = Good. Keep your feet dry. | Good. Don't sink with it. | Settled, then.
+work_paid = Here, as promised. Dry feet. | Paid, fen-friend. | Fairly done. There you are.
+work_back = No harm done. Another will wade it. | Fair enough. It'll keep. | Better back on the boards than in the mud.
+work_none = Nothing going, fen-friend. | The fen's quiet. No work. | Nothing needs doing just now.

@@ -80,3 +80,9 @@ shop_sold = Ripe days to you. | There, and fresh. | Good harvest, that.
 shop_bye = Ripe days. | Good harvest to you. | Come back at the reaping.
 shop_bare = Gleaned to the stubble. | Bare as a winter furrow. | Nothing left till harvest.
 talk_open = What's on your mind, neighbour? | Out with it, then. | Something you're after?
+# A giver's work (doc 83, Phase 2).
+work_offer = There's work, neighbour, if you'll take it. | I could use another pair of paws. | Something wants doing before the reaping.
+work_taken = Good. Don't let it spoil. | Good. Get it in before the rain. | Settled, then.
+work_paid = Here, as promised, neighbour. | Paid, and a good harvest to you. | Fairly done. There you are.
+work_back = No harm done. Another will reap it. | Fair enough. It'll keep a season. | Better now than left to rot.
+work_none = Nothing going, neighbour. | No work till the reaping. | Nothing needs doing just now.

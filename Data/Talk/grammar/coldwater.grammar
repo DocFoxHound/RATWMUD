@@ -79,3 +79,9 @@ shop_sold = There, safe aboard. | Stowed for you. | Off it goes.
 shop_bye = Fair winds. | Calm water to you. | Come back with the tide.
 shop_bare = The tide's taken the lot. | Shelves as bare as low water. | Nothing landed today.
 talk_open = What brings you up from the water? | What is it, neighbour? | Out with it.
+# A giver's work (doc 83, Phase 2).
+work_offer = There's work on the water, if you'll row it. | I could use a steady oar. | Something needs carrying.
+work_taken = Good. Mind the tide. | Good. Don't let it drift. | Settled, then. Off you row.
+work_paid = Here, as promised, shore-friend. | Paid in full, calm water. | Fairly landed. There you are.
+work_back = No harm done. Another boat will take it. | Fair enough. The tide turns. | Better put back than lost at sea.
+work_none = Nothing landed for you today. | The water's quiet. No work. | Nothing needs rowing just now.

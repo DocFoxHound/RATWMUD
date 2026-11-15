@@ -80,6 +80,10 @@ struct Contract
     // Offered by letter to one player first (doc 55, 5): only they may take it, from anywhere, until then.
     std::string offeredTo;
     double offeredUntil = 0;
+    // Taken in the dialogue window (doc 83, Phase 2): a courier's letter is handed over in words, in the recipient's
+    // conversation, not by standing near them. (nudged: told so once, unsaved.)
+    bool byHand = false;
+    bool nudged = false;
 };
 
 // An escort is one road's (doc 79, Phase 4, second repair): the next wagon from one market to its town, and no other

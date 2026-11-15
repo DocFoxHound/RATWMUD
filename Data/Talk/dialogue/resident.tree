@@ -14,6 +14,7 @@ free
 choice What do you do? -> job
 choice Any news? -> news
 choice Let me see your wares. [role=merchant] -> do shop
+choice Any missions for our Chapter? [here.official=yes here.chapter=yes] -> do open missions
 choice Goodbye. -> bye
 
 node job
