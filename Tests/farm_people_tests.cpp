@@ -272,19 +272,24 @@ void theData()
                 else
                     expect(!business, label + " is no business's");
             }
-    // No community is a town yet (`town` false: the user, 2026-11-03): each its own region, kept plain in a world with
-    // its places (World::setupTowns), none in a world without them (the old map's towns of the same names); one made a
-    // town (a later step) is no longer kept plain.
+    // Every community is a town (`town` true since 84b566bb: doc 82, "The seven community towns"; `town` false kept
+    // them plain until then, the user, 2026-11-03), each its own region, so none is kept plain. The rule stays for one
+    // set back to plain: kept plain in a world with its places (World::setupTowns), none in a world without them (the
+    // old map's towns of the same names), and a town again once made one.
     for (const auto& c : people.communities)
-        expect(!c.town && c.region == c.id, c.id + " is no town yet, its own region");
-    const auto all = people.plainRegions([](const std::string&) { return true; });
-    expect(all == std::set<std::string>({"coldwater", "larkfield", "southmeadow", "fenshore", "saltwell", "oakhaven", "frosthollow"}), "the seven kept plain");
-    expect(people.plainRegions([](const std::string&) { return false; }).empty(), "none without their places");
-    expect(people.plainRegions([](const std::string& area) { return area == "cn_saltwell_inn"; }) == std::set<std::string>({"saltwell"}),
+        expect(c.town && c.region == c.id, c.id + " is a town, its own region");
+    expect(people.plainRegions([](const std::string&) { return true; }).empty(), "none kept plain");
+    auto plainer = people;
+    for (auto& c : plainer.communities)
+        c.town = false;
+    const auto all = plainer.plainRegions([](const std::string&) { return true; });
+    expect(all == std::set<std::string>({"coldwater", "larkfield", "southmeadow", "fenshore", "saltwell", "oakhaven", "frosthollow"}),
+           "the seven kept plain, were they no towns");
+    expect(plainer.plainRegions([](const std::string&) { return false; }).empty(), "none without their places");
+    expect(plainer.plainRegions([](const std::string& area) { return area == "cn_saltwell_inn"; }) == std::set<std::string>({"saltwell"}),
            "a community by any of its places");
-    auto later = people;
-    later.communities.front().town = true;
-    expect(!later.plainRegions([](const std::string&) { return true; }).count(later.communities.front().region),
+    plainer.communities.front().town = true;
+    expect(!plainer.plainRegions([](const std::string&) { return true; }).count(plainer.communities.front().region),
            "a community made a town is no longer kept plain");
 }
 

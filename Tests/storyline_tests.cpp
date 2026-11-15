@@ -119,8 +119,9 @@ void inTheGame()
         expect(journal.size() == 1 && journal[0].string("title") == "The debt", "in her journal");
         expect(journal[0]["steps"].items()[0].string("state") == "done" && journal[0]["steps"].items()[1].string("state") == "current",
                "step 1 ticked, step 2 current");
-        expect(contains(journal[0]["steps"].items()[1].string("title"), "Find") && !contains(journal[0]["steps"].items()[1].string("title"), "Neighbour"),
-               "the resident shown as she knows them (not a name she wasn't given): " + journal[0]["steps"].items()[1].string("title"));
+        // (A resident's name shows to a player at once: af4c3e1a, doc 82. A player's would still need an introduction.)
+        expect(contains(journal[0]["steps"].items()[1].string("title"), "Find") && contains(journal[0]["steps"].items()[1].string("title"), "Neighbour"),
+               "the resident shown by name (residents' names show at once): " + journal[0]["steps"].items()[1].string("title"));
         expect(self.object("tracked").string("cell") == cellId(0), "tracked: the marker at u1's work, " + self.object("tracked").string("cell"));
         // Talking to u1 ticks step 2, recognised or not.
         auto* u1 = w.entity("u1");

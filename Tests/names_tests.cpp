@@ -298,19 +298,23 @@ void residentsAndTheirNames()
     auto* r = w.entity(npc);
     r->position = {w.entity(t.ada.entityId)->position.x + 1, w.entity(t.ada.entityId)->position.y + 1};
     t.tick(.3);
-    expect(t.ada.calls(npc) != r->name, "a resident is a stranger at first: " + t.ada.calls(npc));
-    // She introduces herself: the resident knows her name now, and tells his in return.
+    // Residents' names show at once (af4c3e1a, doc 82: "Show resident names immediately. Player names still depend on
+    // introductions."): a player sees the resident's name before any introduction, but the resident learns a player's
+    // only when told it.
+    expect(t.ada.calls(npc) == r->name, "a resident's name shows at once: " + t.ada.calls(npc));
+    expect(t.g.dialogueContext(npc, t.ada.entityId, "hello", true).playerName != "Ada", "but the resident doesn't know hers");
+    // She introduces herself: the resident knows her name now.
     t.say(t.ada, "\"Good day. I'm Ada.\"", {npc});
     t.tick(1);
     expect(t.g.dialogueContext(npc, t.ada.entityId, "hello", true).playerName == "Ada", "the resident knows her name");
-    expect(t.ada.calls(npc) == r->name, "and has given his: " + t.ada.calls(npc) + "\n" + t.ada.said());
-    // Bo, distrusted, asks: the resident keeps their name.
+    expect(t.ada.calls(npc) == r->name, "and his still shows: " + t.ada.calls(npc) + "\n" + t.ada.said());
+    // Bo, distrusted, asks: the resident's name shows all the same, and the resident doesn't learn his.
     w.bonds().change(npc, t.bo.entityId, {0, -60, 0, 0, 0}, w.calendarDays());
     t.place(t.bo, 1, 1.4);
     t.tick(.3);
     t.say(t.bo, "\"What is your name?\"", {npc});
     t.tick(1);
-    expect(t.bo.calls(npc) != r->name, "a resident who distrusts Bo keeps their name from him:\n" + t.bo.said());
+    expect(t.bo.calls(npc) == r->name, "a resident's name shows even to a wolf they distrust:\n" + t.bo.said());
     expect(t.g.dialogueContext(npc, t.bo.entityId, "hello", true).playerName != "Bo", "nor does the resident know his");
     // Cy asks plainly, and is told.
     t.place(t.cy, -1, 1.4);

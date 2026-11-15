@@ -1032,7 +1032,8 @@ void matchmaking()
     master->position = {12.5, 12.5};
     run(1);
     heard = answer(vic, "I'm looking for work, if you know of any.");
-    expect(contains(heard, "Try " + look(vic, "u1")) && contains(heard, "apprentice place"),
+    // (A resident's name shows to a player at once, as it is: af4c3e1a, doc 82. A player is pointed at by their look.)
+    expect(vic.seen("u1") && contains(heard, "Try " + vic.seen("u1")->string("name")) && contains(heard, "apprentice place"),
            "\"looking for work\": a master with a place to fill: " + heard);
     expect(!said(otto, "nods your way") && !said(opal, "nods your way") && !said(bea, "nods your way"),
            "never Out of character, opted out, blocked or busy");

@@ -29,7 +29,7 @@ void expect(bool condition, const std::string& message)
 }
 
 constexpr int Side = 16;
-std::map<int, std::string> named;   // Cells given a map's own ids (communitiesStayPlain: a community's interiors).
+std::map<int, std::string> named;   // Cells given a map's own ids (communitiesAreTowns: a community's interiors).
 std::string id(int i)
 {
     const auto found = named.find(i);
@@ -916,25 +916,25 @@ void travelKeepsToTheRoads()
 
 } // namespace
 
-// The Country's communities are no towns yet (communities.json `town` false; the user, 2026-11-03: doc 71, Phase C
-// Progress): a world with Coldwater's places, its people at home there and its store kept, has one town, the city, when
-// it starts and again after a restart; no stores of Coldwater's own, its people, posts and homes as they were. Since doc
-// 79's Phase 4 it is a market on the roads all the same (D7: trade, wagons and bandits; law stays plain). The old map's towns of the same names (without the communities' interiors) are towns as ever.
-void communitiesStayPlain()
+// The Country's communities are towns (communities.json `town` true since 84b566bb, "Build out Ridgemere3 communities
+// as towns": doc 82, "The seven community towns"; until then `town` false kept them plain, the user, 2026-11-03): a
+// world with Coldwater's places, its people at home there and its store kept, has Coldwater as a town of its own beside
+// the city when it starts, days on and again after a restart, with its own stores; its people, posts and homes as they
+// were. (FarmPeople::plainRegions, the rule that kept a community plain, is farm_people_tests'.)
+void communitiesAreTowns()
 {
     named = {{7, "cn_coldwater_cottage_1"}, {8, "cn_coldwater_store"}};
     auto f = strip("EE.....CC");
     const auto plain = [&](World& w, const std::string& when) {
-        expect(w.towns().empty() && w.society().capital() == "east", "One town, the city, " + when);
-        expect(!w.townOf(id(8)) && w.lawTown(id(8)) == "coldwater" && w.communityOf(id(7)) == "coldwater" &&
+        expect(w.towns().size() == 2 && w.towns()[1].id == "coldwater" && w.towns()[1].store == "stores:coldwater" &&
+                   w.society().capital() == "east",
+               "Coldwater a town beside the city, " + when);
+        expect(w.townOf(id(8)) && w.lawTown(id(8)) == "coldwater" && w.communityOf(id(7)) == "coldwater" &&
                    w.lawTown(id(0)) == "east",
-               "Coldwater a plain place of its own " + when + " (" + w.lawTown(id(8)) + ")");
-        expect(!w.society().account("stores:coldwater") && w.society().treasuryOf("coldwater") == "treasury",
-               "no stores of its own " + when);
-        // (A market for trade, wagons and bandits all the same, plain for law: doc 79, 5.1 and D7. No carters, no wagons.)
-        expect(w.roadMarket("coldwater") && w.roadMarket("east") && w.roadMarketOf(id(8)) && w.roadMarketOf(id(8))->id == "coldwater" &&
-                   w.roads().caravans.empty(),
-               "a market on the roads all the same, " + when);
+               "Coldwater's places are its town's " + when + " (" + w.lawTown(id(8)) + ")");
+        expect(w.society().account("stores:coldwater"), "stores of its own " + when);
+        expect(w.roadMarket("coldwater") && w.roadMarket("east") && w.roadMarketOf(id(8)) && w.roadMarketOf(id(8))->id == "coldwater",
+               "a market on the roads, " + when);
     };
     std::map<std::string, std::string> homes, works;
     const auto people = [](const World& w, std::map<std::string, std::string>& home, std::map<std::string, std::string>& work) {
@@ -1036,7 +1036,7 @@ int main()
         residentsTakeWork();
         shopsSellTheirGoods();
         travelKeepsToTheRoads();
-        communitiesStayPlain();
+        communitiesAreTowns();
         lettersCapped();
     }
     catch (const std::exception& error)
