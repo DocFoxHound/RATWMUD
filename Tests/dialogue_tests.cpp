@@ -494,6 +494,26 @@ void inAGame()
     // A stale session's choice is refused.
     town.g.command(&town.ash, cmd({{"type", "dialogue_choose"}, {"session", 9999}, {"n", 1}}));
     expect(lastOf(town.ash, "dialogue_close")->string("why") == "gone", "a stale session is closed");
+    // (The slice's review.) A choice sent at once after walking off is neither said nor done: the conversation ends
+    // there and then, not at the next second's look.
+    step(3.5);
+    d = open("um", "trade");
+    expect(d, "open again at the counter");
+    town.place(town.ash, 1, 15.0);
+    choose(choiceN(*d, "What's dear today?"));
+    expect(!town.g.dialogueOf(town.ash.entityId) && lastOf(town.ash, "dialogue_close") &&
+               lastOf(town.ash, "dialogue_close")->string("why") == "away" && !lastOf(town.ash, "dialogue"),
+           "walked off: the choice ends it at once");
+    expect(heardFrom(town.bo, town.ash.entityId).empty(), "and its words aren't said");
+    // Opened again within three seconds: the greeting shows in the window, but isn't said aloud again (nor goodbye).
+    step(3.5);
+    d = open("um", "trade");
+    expect(d && !heardFrom(town.bo, "um").empty(), "the greeting heard");
+    town.g.command(&town.ash, cmd({{"type", "dialogue_close"}, {"session", town.g.dialogueOf(town.ash.entityId)->id}, {"why", "bye"}}));
+    d = open("um", "trade");
+    expect(d && !d->string("line").empty() && heardFrom(town.bo, "um").empty(), "opened again at once: the greeting in the window, not aloud");
+    town.g.command(&town.ash, cmd({{"type", "dialogue_close"}, {"session", town.g.dialogueOf(town.ash.entityId)->id}, {"why", "bye"}}));
+    expect(heardFrom(town.bo, "um").empty(), "nor its goodbye");
     fs::remove_all(root);
 }
 

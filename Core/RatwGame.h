@@ -453,6 +453,7 @@ class Game
         std::deque<std::pair<std::string, std::string>> history;   // (who, words): "npc" or "you", the last four lines.
         double changed = 0;
         bool asleepAtOpen = false, inShop = false, awaiting = false;   // awaiting: a free line is being answered.
+        bool quiet = false;                         // Opened again within seconds: its greeting not said aloud.
     };
     const DialogueSession* dialogueOf(const std::string& playerId) const
     {
@@ -804,7 +805,11 @@ class Game
     std::map<std::string, DialogueSession> dialogues_;
     int dialogueNext_ = 1;
     double dialogueLookIn_ = 0;
+    std::map<std::string, double> dialogueOpened_;  // When each player last opened one (dialogueOpen: a quiet reopening).
     void dialogueCommand(Connection* c, const std::string& type, const json::Value& j);
+    // Why a conversation must end now ("" if it goes on): walked away, out of sight, asleep, a fight, downed (doc 83,
+    // decision 9). Checked once a second, and on every choice and line the player sends.
+    std::string dialogueEnding(const std::string& playerId, const DialogueSession& d) const;
     // A merchant's contract offered in the offer window ({"type": "missionOffer"}), from an older client's "offer kNNN"
     // (a newer one opens the giver's dialogue at the job: doc 83, Phase 2); false (and why) if it can't be asked here.
     bool offerContract(Connection* c, const std::string& giverId, const std::string& contractId);

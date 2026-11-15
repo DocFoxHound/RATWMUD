@@ -217,7 +217,7 @@ void Game::noticeIntroduction(const std::string& author, const std::string& list
         if (social_.scenesOf(listener).count(sid))
             social_.moment(sid, {"introduced", author, listener, {}, now()});
     const auto* l = world_.entity(listener);
-    if (l && !l->npc)
+    if (l && !l->npc && names::capitalised(before) != name)   // (Not "Fenwick is Fenwick.": a resident's name shows at once.)
         if (auto* c = clientOf(listener))
             system(c, names::capitalised(before) + " is " + name + ".");
     // A friendly resident told a name gives theirs back, when they next speak to them.

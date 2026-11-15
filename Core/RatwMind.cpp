@@ -107,18 +107,24 @@ std::string Client::authoredReply(const Context& c)
     const std::string heard = lower(c.heardText);
     const auto has = [&](const char* word) { return heard.find(word) != std::string::npos; };
     const std::string named = lower(c.playerName);
+    // Who it speaks to: their name, or "friend" for a wolf known only by their look ("a dun wolf" is no way to address
+    // anyone: "I'm listening, a dun wolf.").
+    const bool look = named.rfind("a ", 0) == 0 || named.rfind("an ", 0) == 0 || named.rfind("the ", 0) == 0;
+    Context to = c;
+    if (look || named.empty())
+        to.playerName = "friend";
     if (has("my name is ") || (!named.empty() && (heard.find("i'm " + named) != std::string::npos ||
                                                        heard.find("i am " + named) != std::string::npos)))
-        return "Good to meet you, " + c.playerName + ". What brings you here?";
+        return "Good to meet you, " + to.playerName + ". What brings you here?";
     if (has("remember"))
     {
         const std::string& recalled = c.recollection.empty() ? c.memory : c.recollection;
         if (!recalled.empty())
-            return "I remember our conversation, " + c.playerName + ". You told me: " + left(recalled, 220);
-        return "We have only just met, " + c.playerName + ". Tell me what you would like me to remember.";
+            return "I remember our conversation, " + to.playerName + ". You told me: " + left(recalled, 220);
+        return "We have only just met, " + to.playerName + ". Tell me what you would like me to remember.";
     }
     if (has("promise") || has("return"))
-        return "I'll remember what you said, " + c.playerName +
+        return "I'll remember what you said, " + to.playerName +
                ". Come back when you can; a promise deserves a conversation when the road is done.";
     if (has("weather") || has("rain") || has("snow") || has("fog") || has("night"))
         return c.environment.empty() ? "We should judge the conditions where we are before taking the road." : c.environment;
@@ -137,7 +143,7 @@ std::string Client::authoredReply(const Context& c)
     if (!c.greeting.empty() && c.memory.empty())
         return c.greeting;
     if (!c.memory.empty())
-        return "I'm listening, " + c.playerName + ". Tell me more.";
+        return "I'm listening, " + to.playerName + ". Tell me more.";
     return "Hello. What brings you here?";
 }
 

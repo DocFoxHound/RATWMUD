@@ -698,6 +698,25 @@ an end-to-end run and one review-and-fix come at the end. The times are rough, f
      the state's start, the pose's range and reduced motion, painted views dropping in); `Tests/dialogue_tests.cpp`: the
      greeting's mood and speaking time, a sleeping keeper sleepy whatever the node says, an unknown mood refused.
 
+**The slice's end (r3-dlg5, 2026-11-15).** Merged with ridgemere2 at 84b566bb (no conflicts). The full suite passes
+(Core ctest 92, the `_pg` suites against the local PostgreSQL; client typecheck, unit, build and browser tests; Editor
+typecheck, build and tests; `talk_check --validate`; `dialect_check.py --world ridgemere3`, 0 failures). Five suites
+had been failing on rules changed elsewhere, and their tests now follow the rules: `names_tests`, `storyline_tests` and
+`newcomer_tests` (a resident's name shows at once since af4c3e1a, doc 82; a player's still waits on an introduction),
+`roads_tests` and `farm_people_tests` (the seven communities are towns since 84b566bb), and the Editor's model and
+glyph tests ('`' is the Sealed frontage tile since 76a4d976, so `\` is their code no tile has). End to end on a
+scratch ridgemere3: Trade, the wares and a purchase; a courier job taken, given back, taken again and handed in; a bed
+at the inn; the watch's law; a rewritten choice paying roleplay experience and free talk answered; the face talking
+then idle, in its mood's frame. The review found, and these are fixed:
+- a choice or free line sent in the second between walking off (or losing sight, a fight, being downed) and the once
+  a second look was still said and done: every choice and line now checks first (`Game::dialogueEnding`);
+- a silenced account could speak through the window: free talk is refused as chat is, and a rewritten choice says the
+  default line; a player's own words in a choice are held to chat's pace;
+- opening and closing the window over and over had the resident greet and say goodbye aloud each time: a window
+  opened again within three seconds greets only in the window;
+- learning a resident's name said "Fenwick Millmarsh is Fenwick Millmarsh." now that their names show at once, and the
+  offline Mind's written answers addressed an unnamed wolf by their look ("I'm listening, a dun wolf."): now "friend".
+
 **At the end:** the full suite, an end-to-end run on a scratch server (`tools/scratch.sh ridgemere3`: buy bread through
 the window, take and finish a courier job, hand in a faction delivery, free talk with the Mind fixture), and one
 review-and-fix. Altogether about 23 hours of agent work, before the user's listen and any animation art.

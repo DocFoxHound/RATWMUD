@@ -972,7 +972,8 @@ bool Game::dialogueGo(Connection* c, DialogueSession& d, const std::string& node
     while (d.history.size() > Kept)
         d.history.pop_front();
     world_.faceTalker(d.npc, playerId);
-    dialogueSpeak(d.npc, playerId, line);
+    if (!d.quiet || d.history.size() > 1)          // (A quiet window's greeting isn't said aloud: dialogueOpen.)
+        dialogueSpeak(d.npc, playerId, line);
     voiced("dialogue", "tree", d.npc);
     dialogueSend(c, d, note);
     if (node.choices.empty())
@@ -1087,6 +1088,12 @@ void Game::dialogueOpen(Connection* c, const std::string& npcId, const std::stri
         refuse("none", "You have nothing for " + who + ".");
         return;
     }
+    // (A resident greets aloud each time one opens, and says goodbye as it closes: a window opened again within three
+    // seconds of the last is quiet, its greeting and goodbye shown only in the window, so opening and closing it over
+    // and over can't fill the room with them.)
+    const auto last = dialogueOpened_.find(playerId);
+    const bool quiet = last != dialogueOpened_.end() && world_.time() - last->second < 3;
+    dialogueOpened_[playerId] = world_.time();
     if (base == "missions")
         missionBoard(faction, npcId, world_.calendarDays());   // (The day's board, as "Ask for missions" made it.)
     if (dialogues_.count(playerId))
@@ -1107,6 +1114,7 @@ void Game::dialogueOpen(Connection* c, const std::string& npcId, const std::stri
     d.tree = t->id;
     const auto* life = world_.society().resident(npcId);
     d.asleepAtOpen = npc->posture == "lying" || (life && life->task == "sleep");
+    d.quiet = quiet;
     if (base == "trade")
         shopWith_[playerId] = npcId;                 // (Its list in the snapshot, before a nearer keeper's.)
     auto& kept = dialogues_[playerId] = std::move(d);
@@ -1120,7 +1128,7 @@ void Game::dialogueClose(const std::string& playerId, const std::string& why, bo
         return;
     const auto d = f->second;
     dialogues_.erase(f);
-    if (sayBye)
+    if (sayBye && !(d.quiet && d.history.size() <= 1))   // (Nor its goodbye, if nothing more was said.)
         if (const auto* t = talk_.tree(d.tree); t && t->nodes.count("bye"))
         {
             DialogueSession last = d;
@@ -1174,6 +1182,13 @@ void Game::dialogueCommand(Connection* c, const std::string& type, const json::V
         dialogueClose(playerId, "gone", false);
         return;
     }
+    // (Checked now, not only once a second: nothing is said or done with a resident one has walked away from, can no
+    // longer see, or is fighting.)
+    if (const auto why = dialogueEnding(playerId, d); !why.empty())
+    {
+        dialogueClose(playerId, why, false);
+        return;
+    }
     if (type == "dialogue_say")
     {
         // Free talk (doc 83, the user's answer 1): the player's own words, said aloud, answered by the resident (the
@@ -1187,6 +1202,12 @@ void Game::dialogueCommand(Connection* c, const std::string& type, const json::V
         if (d.awaiting)
         {
             dialogueSend(c, d, "Let them answer first.");
+            return;
+        }
+        if (std::string until; silenced(playerId, &until))
+        {
+            dialogueSend(c, d, (communityWorld() ? "The host has" : "A Dungeon Master has") + std::string(" silenced your account for another ") +
+                                   until + ".");   // (As chat is: doc 50, 7.)
             return;
         }
         if (lastChat_.count(playerId) && world_.time() - lastChat_[playerId] < 1)
@@ -1247,6 +1268,20 @@ void Game::dialogueCommand(Connection* c, const std::string& type, const json::V
     const auto offered = shown->text;
     const auto bound = still->bound;
     std::string words = oneLine(j.string("text"));
+    // The player's own words are chat: never from a silenced account (it says the default line), and no faster than
+    // chat (the window can't be a way round either).
+    if (!words.empty() && words != offered)
+    {
+        if (silenced(playerId, nullptr))
+            words.clear();
+        else if (lastChat_.count(playerId) && world_.time() - lastChat_[playerId] < .5)
+        {
+            dialogueSend(c, d, "Please leave a moment between lines.");
+            return;
+        }
+        else
+            lastChat_[playerId] = world_.time();
+    }
     if (words.empty())
         words = offered;
     // The choice picks the branch; the words are what the wolf says (the user's answer 1): said aloud, and the player's
@@ -1586,6 +1621,28 @@ std::string Game::dialogueBrief(const std::string& npcId, const std::string& pla
            ". Answer what they said in a line or two. Never take, give, sell or promise anything: only their choices do that.";
 }
 
+std::string Game::dialogueEnding(const std::string& playerId, const DialogueSession& d) const
+{
+    const auto* player = world_.entity(playerId);
+    const auto* npc = world_.entity(d.npc);
+    const auto* life = npc ? world_.society().resident(d.npc) : nullptr;
+    const bool asleep = npc && (npc->posture == "lying" || (life && life->task == "sleep"));
+    if (!clientOf(playerId) || !player || !npc || npc->dead || player->dead)
+        return "gone";
+    if (npc->cellId != player->cellId ||
+        std::hypot(npc->position.x - player->position.x, npc->position.y - player->position.y) > WalkedAway)
+        return "away";
+    if (!world_.shown(playerId, d.npc))
+        return "sight";
+    if (asleep && !d.asleepAtOpen)
+        return "asleep";
+    if (world_.inBattle(playerId) || world_.inBattle(d.npc))
+        return "fight";
+    if (player->downedLeft > 0)
+        return "downed";
+    return {};
+}
+
 void Game::dialogueTick(double dt)
 {
     // Once a second: a conversation ends when the wolf walks away, the resident falls asleep, goes out of sight or
@@ -1601,24 +1658,7 @@ void Game::dialogueTick(double dt)
             d.awaiting = false;                     // (No answer came: the field is theirs again.)
             dialogueSend(clientOf(playerId), d, "No answer.");
         }
-        const auto* player = world_.entity(playerId);
-        const auto* npc = world_.entity(d.npc);
-        const auto* life = npc ? world_.society().resident(d.npc) : nullptr;
-        const bool asleep = npc && (npc->posture == "lying" || (life && life->task == "sleep"));
-        std::string why;
-        if (!clientOf(playerId) || !player || !npc || npc->dead || player->dead)
-            why = "gone";
-        else if (npc->cellId != player->cellId ||
-                 std::hypot(npc->position.x - player->position.x, npc->position.y - player->position.y) > WalkedAway)
-            why = "away";
-        else if (!world_.shown(playerId, d.npc))
-            why = "sight";
-        else if (asleep && !d.asleepAtOpen)
-            why = "asleep";
-        else if (world_.inBattle(playerId) || world_.inBattle(d.npc))
-            why = "fight";
-        else if (player->downedLeft > 0)
-            why = "downed";
+        const auto why = dialogueEnding(playerId, d);
         if (!why.empty())
             ending.emplace_back(playerId, why);
     }
