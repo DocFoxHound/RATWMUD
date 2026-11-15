@@ -932,10 +932,17 @@ test('the map ground is drawn offscreen once and redrawn only when what it shows
     s.applySnapshot({...snapshot, time: 0.2});
     draw(painter, 'drawLocal');
     assert.equal(painter.terrain.rebuilds, 1, 'an unchanged snapshot (the same held parts) keeps it');
+    const cellVersion = (s as unknown as {cellVersion: number}).cellVersion;
     s.applySnapshot({cell: {id: 'glade', width: 32, height: 24, rows: [...rows], heights: []},
         visibility: rows.map(() => '2'.repeat(32)), self: {id: 'me', x: 16, y: 12}, time: 0.3, cellGeneration: 1});
     draw(painter, 'drawLocal');
     assert.equal(painter.terrain.rebuilds, 1, 'fresh snapshot arrays with the same visible ground do not redraw it');
+    assert.equal((s as unknown as {cellVersion: number}).cellVersion, cellVersion,
+        'fresh identical arrays also keep the walking simulator cell');
+    s.applySnapshot({...snapshot, time: 0.31, doors: [{x: 4.5, y: 4.5, open: false}]});
+    s.applySnapshot({...snapshot, time: 0.32, doors: [{x: 4.5, y: 4.5, open: true}]});
+    assert.equal((s as unknown as {cellVersion: number}).cellVersion, cellVersion,
+        'a door state change updates the walker without invalidating the terrain cell');
     const seen = rows.map((_, y) => (y === 3 ? '1' : '2').repeat(32));
     s.applySnapshot({...snapshot, time: 0.4, visibility: seen});
     draw(painter, 'drawLocal');
@@ -947,6 +954,8 @@ test('the map ground is drawn offscreen once and redrawn only when what it shows
         heights: rows.map((_, y) => y === 3 ? 'Q'.repeat(32) : 'P'.repeat(32))}});
     draw(painter, 'drawLocal');
     assert.equal(painter.terrain.rebuilds, 4, 'a changed height in the cached view redraws its relief');
+    assert.ok((s as unknown as {cellVersion: number}).cellVersion > cellVersion,
+        'changed terrain height reloads the walking simulator cell');
 });
 
 test("the player's own wolf answers at once, carried ahead while moving, eased rather than jumped", () => {

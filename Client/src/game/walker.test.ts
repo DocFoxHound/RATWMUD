@@ -37,8 +37,13 @@ test('the walker walks as the server does: speed, walls, sliding, closed doors a
     s = walker.step(5.8, 2.5, 1, 1, 2.6, false, 1, 0.1);
     assert.ok(s.blocked && close(s.x, 5.8) && s.y > 2.5, 'walking at a wall slantwise slides along it');
     assert.ok(!walker.passable(9.5, 1.5, 9.5, 2.5), 'a closed door is not stood in');
-    walker.setCell(12, 6, rows, new Float32Array(72), [{x: 9.5, y: 1.5, open: true}]);
-    assert.ok(walker.passable(9.5, 1.5, 9.5, 2.5), 'an open one is');
+    walker.updateDoors([{x: 9.5, y: 1.5, open: true}]);
+    assert.ok(walker.passable(9.5, 1.5, 9.5, 2.5), 'an open one is, without rebuilding the cell');
+    walker.updateDoors([{x: 9.5, y: 1.5, open: false}]);
+    assert.ok(!walker.passable(9.5, 1.5, 9.5, 2.5), 'a closed one blocks again without rebuilding the cell');
+    const changed = rows.map((r, y) => y === 2 ? r.slice(0, 3) + '#' + r.slice(4) : r);
+    assert.ok(walker.updateTerrain(rows, changed, new Float32Array(72), new Float32Array(72)));
+    assert.ok(!walker.passable(3.5, 2.5, 2.5, 2.5), 'an edited tile blocks without rebuilding the city grid');
     const steep = new Float32Array(72);
     steep[2 * 12 + 3] = 2;                     // A ledge two high at (3, 2).
     walker.setCell(12, 6, rows, steep, []);

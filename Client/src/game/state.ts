@@ -404,6 +404,10 @@ export class GameState {
     // ------------------------------------------------------------------ Receiving
 
     applySnapshot(s: Json) {
+        const walkerBefore = {id: this.cellId, generation: this.cellGeneration, version: this.cellVersion,
+            width: this.cellWidth, height: this.cellHeight,
+            rows: this.tileRows, heights: this.tileHeights, fringe: this.fringe,
+            fringeRows: this.fringeRows, fringeHeights: this.fringeHeights};
         this.snapshot = s;
         const cell = obj(s, 'cell') ?? s;
         const newId = str(cell, 'id', str(s, 'cellId', this.cellId));
@@ -491,14 +495,19 @@ export class GameState {
             const pace = Math.trunc(boundedNum(self, 'pace', 0, 10));
             if (pace === this.requestedPace || this.clock - this.lastPaceRequest > 1.5) this.requestedPace = -1;
         }
-        // The big parts come back as the very same arrays while they are unchanged (sections.ts keeps them), so
-        // their decoded forms are kept too: the map's offscreen ground is redrawn only when something really changed.
+        // Sections can arrive in fresh arrays even when the cell is identical. Keep the decoded terrain and the
+        // walker's cell version until its contents change; loading a 256×256 city cell on each update skips frames.
         const strings = (list: unknown[]) => list.filter((v): v is string => typeof v === 'string');
+        const same = (old: unknown, now: unknown[]) => old === now ||
+            (Array.isArray(old) && old.length === now.length && now.every((value, i) => value === old[i]));
         const rowsSource = arr(cell, 'tiles').length ? arr(cell, 'tiles') : arr(cell, 'rows');
         if (rowsSource !== this.sources.rows || !this.tileRows.length) {
+            const changed = !same(this.sources.rows, rowsSource) || !this.tileRows.length;
             this.sources.rows = rowsSource;
-            this.tileRows = strings(rowsSource);
-            ++this.cellVersion;
+            if (changed) {
+                this.tileRows = strings(rowsSource);
+                ++this.cellVersion;
+            }
         }
         // What the wolf sees: from the server, unless this page works it out itself (Phase 4.6: shadeTerrain).
         const seenSource = arr(s, 'visibility');
@@ -508,13 +517,16 @@ export class GameState {
         }
         const heights = arr(cell, 'heights');
         if (heights !== this.sources.heights || this.tileHeights.length !== this.cellWidth * this.cellHeight) {
+            const changed = !same(this.sources.heights, heights) || this.tileHeights.length !== this.cellWidth * this.cellHeight;
             this.sources.heights = heights;
-            ++this.cellVersion;
-            this.tileHeights = new Float32Array(this.cellWidth * this.cellHeight);
-            for (let y = 0; y < heights.length && y < this.cellHeight; ++y) {
-                const row = heights[y];
-                if (typeof row !== 'string') break;
-                for (let x = 0; x < Math.min(row.length, this.cellWidth); ++x) this.tileHeights[y * this.cellWidth + x] = heightFromChar(row[x]);
+            if (changed) {
+                ++this.cellVersion;
+                this.tileHeights = new Float32Array(this.cellWidth * this.cellHeight);
+                for (let y = 0; y < heights.length && y < this.cellHeight; ++y) {
+                    const row = heights[y];
+                    if (typeof row !== 'string') break;
+                    for (let x = 0; x < Math.min(row.length, this.cellWidth); ++x) this.tileHeights[y * this.cellWidth + x] = heightFromChar(row[x]);
+                }
             }
         }
         // The ground round the cell (doc 70), near an edge: kept as the same arrays while unchanged, like the rows.
@@ -532,18 +544,24 @@ export class GameState {
             }
         } else {
             if (fringeSource !== this.sources.fringe || band !== this.fringe) {
+                const changed = !same(this.sources.fringe, fringeSource) || band !== this.fringe;
                 this.sources.fringe = fringeSource;
                 this.fringe = band;
-                this.fringeRows = fringeRows;
-                ++this.cellVersion;
+                if (changed) {
+                    this.fringeRows = fringeRows;
+                    ++this.cellVersion;
+                }
             }
             if (fringeHeights !== this.sources.fringeHeights || this.fringeHeights.length !== fringeRows.length) {
+                const changed = !same(this.sources.fringeHeights, fringeHeights) || this.fringeHeights.length !== fringeRows.length;
                 this.sources.fringeHeights = fringeHeights;
-                this.fringeHeights = fringeRows.map((row, r) => {
-                    const text = typeof fringeHeights[r] === 'string' ? fringeHeights[r] as string : '';
-                    return Float32Array.from({length: row.length}, (_, c) => heightFromChar(text[c] ?? ''));
-                });
-                ++this.cellVersion;
+                if (changed) {
+                    this.fringeHeights = fringeRows.map((row, r) => {
+                        const text = typeof fringeHeights[r] === 'string' ? fringeHeights[r] as string : '';
+                        return Float32Array.from({length: row.length}, (_, c) => heightFromChar(text[c] ?? ''));
+                    });
+                    ++this.cellVersion;
+                }
             }
             const fringeSeen = arr(s, 'fringeVisibility');
             if (!this.clientSight && fringeSeen !== this.sources.fringeSeen) {
@@ -570,9 +588,19 @@ export class GameState {
             this.visibilityRows = seen.map(r => r.join(''));
         }
         const doors = objects(s, 'doors').map(d => ({x: num(d, 'x'), y: num(d, 'y'), open: bool(d, 'open')}));
-        if (doors.length !== this.doorStates.length || doors.some((d, i) => d.open !== this.doorStates[i].open || d.x !== this.doorStates[i].x)) {
+        if (doors.length !== this.doorStates.length || doors.some((d, i) =>
+            d.open !== this.doorStates[i].open || d.x !== this.doorStates[i].x || d.y !== this.doorStates[i].y)) {
             this.doorStates = doors;
-            ++this.cellVersion;
+            if (this.walker && this.walkerVersion === this.cellVersion) this.walker.updateDoors(doors);
+        }
+        if (this.walker && this.walkerVersion === walkerBefore.version && this.cellVersion !== walkerBefore.version &&
+            this.cellId === walkerBefore.id && this.cellGeneration === walkerBefore.generation &&
+            this.cellWidth === walkerBefore.width && this.cellHeight === walkerBefore.height &&
+            this.fringe === walkerBefore.fringe && this.fringeRows === walkerBefore.fringeRows &&
+            this.fringeHeights === walkerBefore.fringeHeights &&
+            this.walker.updateTerrain(walkerBefore.rows, this.tileRows, walkerBefore.heights, this.tileHeights)) {
+            this.walker.updateDoors(doors);
+            this.walkerVersion = this.cellVersion;
         }
         // A client that can walk its own wolf says so once it is in the world.
         if (self && this.walker && !this.walkAsked) {

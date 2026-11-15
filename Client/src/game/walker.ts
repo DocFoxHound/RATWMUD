@@ -44,6 +44,11 @@ export class Walker {
     private readonly wasm: Exports;
     private width = 0;
     private height = 0;
+    private gridBase = 0;
+    private cellWidth = 0;
+    private cellHeight = 0;
+    private closedDoorTiles = new Set<number>();
+    private blockedTiles = new Set<number>();
     /** The fringe's width: the grid is the cell with that much of the ground round it, the cell's (0, 0) at (band, band). */
     band = 0;
 
@@ -83,10 +88,22 @@ export class Walker {
         this.height = gridHeight;
         this.band = band;
         const base = this.wasm.walk_grid(gridWidth, gridHeight);
-        if (!base && gridWidth * gridHeight > 0) return;
+        if (!base && gridWidth * gridHeight > 0) {
+            this.gridBase = 0;
+            return;
+        }
+        this.gridBase = base;
+        this.cellWidth = width;
+        this.cellHeight = height;
         const floats = new Float32Array(this.wasm.memory.buffer, base, gridWidth * gridHeight * TileBytes / 4);
         const bytes = new Uint8Array(this.wasm.memory.buffer, base, gridWidth * gridHeight * TileBytes);
-        const doorAt = new Set(doors.filter(d => !d.open).map(d => `${Math.floor(d.x)},${Math.floor(d.y)}`));
+        const doorAt = new Set(doors.filter(d => !d.open).map(d => Math.floor(d.y) * width + Math.floor(d.x)));
+        this.closedDoorTiles = doorAt;
+        const blockedAt = new Set([...blocked].map(spot => {
+            const [x, y] = spot.split(',').map(Number);
+            return y * width + x;
+        }));
+        this.blockedTiles = blockedAt;
         for (let gy = 0; gy < gridHeight; ++gy) {
             const y = gy - band;
             const inRows = y >= 0 && y < height;
@@ -112,11 +129,56 @@ export class Walker {
                 floats[f + 2] = terrain.stature;
                 floats[f + 3] = terrain.hides;
                 // (A Chapter's structure stands in the way: doc 32, 5.7. Past the edge, the server walks the wolf.)
-                bytes[b + 16] = terrain.solid || !inCell || blocked.has(`${x},${y}`) ? 1 : 0;
+                bytes[b + 16] = terrain.solid || !inCell || blockedAt.has(y * width + x) ? 1 : 0;
                 bytes[b + 17] = terrain.ramp ? 1 : 0;
-                bytes[b + 18] = inCell && doorAt.has(`${x},${y}`) ? 1 : 0;
+                bytes[b + 18] = inCell && doorAt.has(y * width + x) ? 1 : 0;
                 bytes[b + 19] = terrain.opaque ? 1 : 0;
             }
+        }
+    }
+
+    /** Refresh only newly revealed or edited tiles; moving across a city's view usually changes one distant column. */
+    updateTerrain(previousRows: string[], rows: string[], previousHeights: Float32Array, heights: Float32Array) {
+        if (!this.gridBase || rows.length !== this.cellHeight || previousRows.length !== rows.length ||
+            heights.length !== this.cellWidth * this.cellHeight || previousHeights.length !== heights.length) return false;
+        const floats = new Float32Array(this.wasm.memory.buffer, this.gridBase, this.width * this.height * TileBytes / 4);
+        const bytes = new Uint8Array(this.wasm.memory.buffer, this.gridBase, this.width * this.height * TileBytes);
+        for (let y = 0; y < this.cellHeight; ++y) {
+            const before = previousRows[y] ?? '', after = rows[y] ?? '';
+            for (let x = 0; x < this.cellWidth; ++x) {
+                const cellIndex = y * this.cellWidth + x;
+                if (before[x] === after[x] && previousHeights[cellIndex] === heights[cellIndex]) continue;
+                const terrain = ByCharCode[(after.charCodeAt(x) || 32) & 127];
+                const index = (y + this.band) * this.width + x + this.band, f = index * TileBytes / 4, b = index * TileBytes;
+                floats[f] = heights[cellIndex];
+                floats[f + 1] = terrain.cost;
+                floats[f + 2] = terrain.stature;
+                floats[f + 3] = terrain.hides;
+                bytes[b + 16] = terrain.solid || this.blockedTiles.has(cellIndex) ? 1 : 0;
+                bytes[b + 17] = terrain.ramp ? 1 : 0;
+                bytes[b + 19] = terrain.opaque ? 1 : 0;
+            }
+        }
+        return true;
+    }
+
+    /** Update the door bytes without rebuilding the whole city grid when a resident opens a shop door. */
+    updateDoors(doors: DoorState[]) {
+        if (!this.gridBase) return;
+        const bytes = new Uint8Array(this.wasm.memory.buffer, this.gridBase, this.width * this.height * TileBytes);
+        const at = (index: number) => {
+            const x = index % this.cellWidth, y = Math.floor(index / this.cellWidth);
+            return x >= 0 && y >= 0 && x < this.cellWidth && y < this.cellHeight
+                ? ((y + this.band) * this.width + x + this.band) * TileBytes + 18 : -1;
+        };
+        for (const index of this.closedDoorTiles) {
+            const byte = at(index);
+            if (byte >= 0) bytes[byte] = 0;
+        }
+        this.closedDoorTiles = new Set(doors.filter(d => !d.open).map(d => Math.floor(d.y) * this.cellWidth + Math.floor(d.x)));
+        for (const index of this.closedDoorTiles) {
+            const byte = at(index);
+            if (byte >= 0) bytes[byte] = 1;
         }
     }
 
