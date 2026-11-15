@@ -6,13 +6,20 @@ const openTextures = new Set(['.', 'd', '/', '_', 'f', ',', '"', '!', '&', 'B', 
 
 const hash = (x: number, y: number) => (Math.imul(x + 1013, 1597334677) ^ Math.imul(y + 2047, 3812015801)) >>> 0;
 
-/** Each surface is made from printed characters, never a painted trunk, roof, or texture shape. */
+/** A tree's trunk colour (its characters are drawn in it, not in the tile's foreground). */
+export const trunkColor = (code: string) => code === '2' ? '#ad9b7c' : '#b18b61';
+
+/**
+ * Each surface is made from printed characters, never a painted trunk, roof, or texture shape. `light` multiplies the
+ * characters' alpha (1: as authored); `trunk`, when given, replaces a tree's own trunk colour (the game passes it dimmed
+ * for the night, as it does the foreground).
+ */
 export function paintBlockTile(c: CanvasRenderingContext2D, code: string, x: number, y: number, px: number, py: number,
-                               tile: number, foreground: string, light = 1): boolean {
+                               tile: number, foreground: string, light = 1, trunk?: string): boolean {
     if (!treeCodes.has(code) && !roofCodes.has(code) && !wallCodes.has(code) && !openTextures.has(code)) return false;
     c.save();
-    c.globalAlpha *= 0.55 + light * 0.45;
-    c.fillStyle = treeCodes.has(code) ? code === '2' ? '#ad9b7c' : '#b18b61' : foreground;
+    c.globalAlpha *= light;
+    c.fillStyle = treeCodes.has(code) ? trunk ?? trunkColor(code) : foreground;
     c.textAlign = 'center'; c.textBaseline = 'middle';
     if (tile < 15) {
         c.font = Math.max(6, Math.floor(tile * .7)) + 'px monospace';
@@ -43,13 +50,16 @@ export function paintBlockTile(c: CanvasRenderingContext2D, code: string, x: num
 export interface TextureWindow {x0: number; y0: number; x1: number; y1: number}
 export interface CoveredRect {left: number; top: number; right: number; bottom: number}
 
-/** Character crowns and eaves appear above actors; bounds keep the covered wolf's outline visible. */
+/**
+ * Character crowns and eaves appear above actors; bounds keep the covered wolf's outline visible. `light` multiplies their
+ * alpha (1: as authored; the game passes how much of its brightness the night leaves, Client/src/game/lights.ts).
+ */
 export function paintUpperTiles(c: CanvasRenderingContext2D, view: TextureWindow, ox: number, oy: number, tile: number,
                                 at: (x: number, y: number) => string | undefined, light = 1): CoveredRect[] {
     if (tile < 15) return [];
     const covered: CoveredRect[] = [];
     c.save();
-    c.globalAlpha *= .48 + light * .52;
+    c.globalAlpha *= light;
     c.textAlign = 'center'; c.textBaseline = 'middle';
     c.font = Math.max(7, Math.floor(tile * .36)) + 'px monospace';
     for (let y = view.y0 - 2; y <= view.y1 + 1; ++y) for (let x = view.x0 - 2; x <= view.x1 + 2; ++x) {

@@ -23,6 +23,7 @@ export function fakeContext(): CanvasRenderingContext2D {
         set font(v: string) { font = v; },
         measureText: (text: string) => ({width: text.length * (parseFloat(/([\d.]+)px/.exec(font)?.[1] ?? '16') * 0.55)}),
         createLinearGradient: () => gradient,
+        createRadialGradient: () => gradient,
         createPattern: () => ({setTransform: noop}),
     };
     for (const name of ['fillRect', 'fillText', 'beginPath', 'moveTo', 'lineTo', 'stroke', 'save', 'restore', 'rect', 'clip', 'roundRect',
@@ -69,5 +70,15 @@ export function draw(painter: GamePainter, step: 'drawLocal' | 'drawTravelAtlas'
 }
 export function paintPart<T>(painter: GamePainter, part: 'atmosphere' | 'weatherLayers' | 'weatherMarks' | 'lightningFlash' | 'cellBounds' |
     'visibleCellBounds'): T {
+    // A part asked for on its own is drawn in the sky the server says now: the fade a frame eases through (ambient.ts)
+    // is for whole frames over time, and tested on its own.
+    settleAmbient(painter);
     return (painter as unknown as Record<string, () => T>)[part]();
+}
+
+/** Jumps the eased look of the sky (ambient.ts) straight to what the server says now. */
+export function settleAmbient(painter: GamePainter) {
+    const s = (painter as unknown as {s: GameState}).s;
+    s.ambient.reset();
+    s.ambient.update(s.environment, s.weatherField, s.outdoors, s.clock);
 }

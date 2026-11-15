@@ -19,13 +19,13 @@ import {paintUpperTiles} from '../../../Data/Visuals/blockTexture.ts';
 
 /** How a home's stores are drawn (doc 36). */
 const StoreGlyphs: Record<string, string> = {larder: '%', chest: '=', wardrobe: 'H', woodpile: '#'};
-import {pageSurface, TerrainLayer, terrainInfo, type Surface, type SurfaceFactory} from './terrainLayer.ts';
+import {groundIllumination, pageSurface, TerrainLayer, terrainInfo, type Surface, type SurfaceFactory} from './terrainLayer.ts';
+import {FieldSheetLeast, KindOfLetter, WeatherKinds} from './ambient.ts';
+import {nightColor, nightLevel} from './lights.ts';
 
 // Hostile wolves (doc 32), the same red as a fight's other side.
 const HostileRed = rgb(0xe0695e);
 
-/** The server's weather grid letters (RatwGame.cpp snapshot): kind names as the painter knows them. */
-const KindOfLetter: Record<string, string> = {r: 'rain', f: 'fog', n: 'snow', o: 'overcast', s: 'storm', d: 'sandstorm', c: 'clear'};
 
 export {terrainInfo};
 
@@ -177,23 +177,35 @@ export class GamePainter {
     }
 
     private atmosphere(): Atmosphere {
-        const s = this.s, e = s.environment;
+        const s = this.s, a = s.ambient, e = a.env;
         const result: Atmosphere = {bounds: this.cellBounds(), glowColor: transparent, weatherColor: transparent, darkness: 0,
             glowStrength: 0, weatherStrength: 0, feather: 0, haloRadius: 0};
         if (s.worldMap) return result;
         const shortSide = Math.min(s.cellWidth * s.tileSize, s.cellHeight * s.tileSize);
         result.feather = Math.min(shortSide * 0.23, s.tileSize * 3.6);
         result.haloRadius = Math.min(34, shortSide * 0.12);
+        // All from the eased look (ambient.ts): a crossing fades these rather than swapping them.
         result.darkness = 1 - e.illumination;
         result.glowStrength = s.outdoors ? 0 : e.glowStrength;
-        result.glowColor = e.lightingTone === 'warm' ? rgb(0xeaa34f) : e.lightingTone === 'cool' ? rgb(0x87b7dd) : rgb(0xd8d4bf);
+        result.glowColor = a.glow;
         if (s.outdoors) {
             const weather: Record<string, [number, number]> = {rain: [0x739bb2, 0.17], snow: [0xc8dce5, 0.24], fog: [0xbbcfca, 0.22],
                 overcast: [0x9aa3a8, 0.12], storm: [0x4e6275, 0.24], sandstorm: [0xc79a5c, 0.28]};
-            const w = weather[e.weather] ?? (e.phase === 'dawn' || e.phase === 'dusk' ? [0xd59664, 0.1] as [number, number] : null);
-            if (w) {
-                result.weatherColor = rgb(w[0]);
-                result.weatherStrength = w[1] * (weather[e.weather] ? Math.max(0.25, e.intensity) : 1);
+            // Each kind's edge as strong as its wash now is; dawn and dusk tint the edge where no weather does.
+            let r = 0, g = 0, b = 0, strength = 0, cover = 0;
+            const add = (hex: number, amount: number) => {
+                if (amount <= 0) return;
+                const c = rgb(hex);
+                r += c.r * amount; g += c.g * amount; b += c.b * amount; strength += amount;
+            };
+            for (const [kind, [hex, base]] of Object.entries(weather)) {
+                add(hex, base * a.washes[kind]);
+                cover += a.washes[kind];
+            }
+            add(0xd59664, 0.1 * (a.washes.dawn + a.washes.dusk) * Math.max(0, 1 - cover));
+            if (strength > 0) {
+                result.weatherColor = {r: r / strength, g: g / strength, b: b / strength, a: 1};
+                result.weatherStrength = strength;
             }
         }
         return result;
@@ -201,27 +213,30 @@ export class GamePainter {
 
     private weatherMarks(): WeatherMark[] {
         // Falling rain and snow are sheets (weatherLayers); these are the splashes on the ground beneath them.
-        const s = this.s, e = s.environment;
-        const storm = e.weather === 'storm';
+        const s = this.s, a = s.ambient;
+        const rainy = a.sheets.rain + a.sheets.storm, goal = a.target('rain') + a.target('storm');
+        const storm = a.sheets.storm > a.sheets.rain;
         const marks: WeatherMark[] = [];
-        if (!s.outdoors || s.worldMap || (e.weather !== 'rain' && !storm)) return marks;
+        if (!s.outdoors || s.worldMap || rainy < 0.01) return marks;
+        // As the rain comes on or passes (a crossing into or out of it), its splashes thin with it.
+        const fade = goal > 0 ? Math.min(1, rainy / goal) : Math.min(1, rainy / 0.3);
         const area = this.visibleCellBounds();
         const width = area.right - area.left, height = area.bottom - area.top;
         if (width < 80 || height < 80) return marks;
         const animation = s.reducedMotion ? 0 : s.clock;
-        const count = Math.round((storm ? 56 : 32) * Math.max(0.25, e.intensity));
+        const count = Math.round((storm ? 56 : 32) * Math.max(0.25, Math.min(1, rainy)));
         for (let i = 0; i < count; ++i) {
             const life = wrapCoordinate(animation * (storm ? 1.1 : 0.7) + i * 0.618, 1);
             if (life > 0.62) continue;
             marks.push({x: area.left + 24 + wrapCoordinate(i * 157.3, width - 48), y: area.top + 44 + wrapCoordinate(i * 91.7, height - 68),
-                size: 1 + life * 8, alpha: (1 - life / 0.62) * 0.32});
+                size: 1 + life * 8, alpha: (1 - life / 0.62) * 0.32 * fade});
         }
         return marks;
     }
 
     /** The moving sheets of one kind of weather (by default, the weather where the wolf stands). */
     private weatherLayers(weather = this.s.environment.weather): WeatherLayer[] {
-        const s = this.s, e = s.environment;
+        const s = this.s, e = s.ambient.env;
         const layers: WeatherLayer[] = [];
         if (!s.outdoors || s.worldMap) return layers;
         const t = s.reducedMotion ? 0 : s.clock;
@@ -279,16 +294,23 @@ export class GamePainter {
         // Weak fronts are already represented by the cell's tint. Compositing two full-screen canvases for
         // one- to three-ninths weather cost more than a frame in Ridgemere's broad outdoor views.
         for (let i = 0; i < f.kinds.length; ++i)
-            if (f.kinds[i] !== 'c' && Number(f.amounts[i]) >= 4) letters.add(f.kinds[i]);
+            if (f.kinds[i] !== 'c' && Number(f.amounts[i]) >= FieldSheetLeast) letters.add(f.kinds[i]);
+        const a = s.ambient;
+        // How far a kind in this field has faded in (1 once it has): a crossing brings new weather on over seconds.
+        const fade = (kind: string) => a.target(kind) > 0 ? Math.min(1, a.sheets[kind] / a.target(kind)) : 0;
         // Sunlit clear ground keeps its passing cloud shadows.
-        if (s.environment.weather === 'clear') for (const layer of this.weatherLayers('clear')) this.drawWeatherLayer(b, layer);
+        if (a.sheets.clear > 0.01) for (const layer of this.weatherLayers('clear')) this.drawWeatherLayer(b, layer, undefined, a.sheets.clear);
+        // Weather this field no longer has (the cell just left's rain) fades out evenly over the view.
+        for (const kind of WeatherKinds)
+            if (kind !== 'clear' && a.target(kind) <= 0 && a.sheets[kind] > 0.01)
+                for (const layer of this.weatherLayers(kind)) this.drawWeatherLayer(b, layer, undefined, a.sheets[kind]);
         if (!letters.size) return true;
         // A forced or uniform front has no edge to mask. Draw its glyph sheet straight onto the map;
         // the full-screen offscreen copy is the main cost of rain at night.
         if (letters.size === 1 && f.kinds.split('').every(k => k === f.kinds[0]) &&
             f.amounts.split('').every(a => a === f.amounts[0])) {
             const kind = KindOfLetter[f.kinds[0]] ?? 'clear';
-            const strength = Number(f.amounts[0]) / 9;
+            const strength = Number(f.amounts[0]) / 9 * fade(kind);
             for (const layer of this.weatherLayers(kind)) this.drawWeatherLayer(b, layer, undefined, strength);
             return true;
         }
@@ -301,8 +323,9 @@ export class GamePainter {
         // there as on the ground beside it rather than stopping in a straight line.
         const pad = s.fringe > 0 ? Math.ceil(s.fringe / f.step) : 0;
         for (const letter of letters) {
-            const layers = this.weatherLayers(KindOfLetter[letter] ?? 'clear');
-            if (!layers.length) continue;
+            const kind = KindOfLetter[letter] ?? 'clear', shown = fade(kind);
+            const layers = this.weatherLayers(kind);
+            if (!layers.length || shown <= 0.001) continue;
             oc.setTransform(1, 0, 0, 1, 0, 0);
             oc.globalCompositeOperation = 'source-over';
             oc.clearRect(0, 0, W, H);
@@ -322,6 +345,7 @@ export class GamePainter {
             oc.globalCompositeOperation = 'source-over';
             c.save();
             c.setTransform(1, 0, 0, 1, 0, 0);
+            c.globalAlpha = shown;
             c.drawImage(surface.canvas, 0, 0);
             c.restore();
         }
@@ -355,7 +379,8 @@ export class GamePainter {
     private lightningFlash(): number {
         // Brief, dim and never in reduced motion: a storm cue, not a strobe.
         const s = this.s;
-        if (!s.outdoors || s.worldMap || s.reducedMotion || s.environment.weather !== 'storm') return 0;
+        const storm = s.ambient.sheets.storm;
+        if (!s.outdoors || s.worldMap || s.reducedMotion || storm < 0.05) return 0;
         const period = 7, slot = Math.floor(s.clock / period);
         const x = Math.sin(slot * 12.9898) * 43758.5453;
         const start = (x - Math.floor(x)) * (period - 1);
@@ -363,7 +388,7 @@ export class GamePainter {
         if (since < 0 || since > 0.6) return 0;
         const first = since < 0.07 ? 1 : Math.exp(-(since - 0.07) * 10);
         const second = since > 0.18 && since < 0.24 ? 0.7 : 0;
-        return 0.2 * Math.max(first, second) * Math.max(0.3, s.environment.intensity);
+        return 0.2 * Math.max(first, second) * Math.max(0.3, Math.min(1, storm));
     }
 
     private drawWeatherLayer(area: Rect, layer: WeatherLayer, on?: CanvasRenderingContext2D, alpha = 1) {
@@ -389,7 +414,7 @@ export class GamePainter {
     }
 
     private drawEnvironment(foreground: boolean) {
-        const s = this.s, p = this.p, e = s.environment;
+        const s = this.s, p = this.p, ambient = s.ambient;
         if (s.worldMap) return;
         const map = s.mapRect;
         if (map.right - map.left <= 2 || map.bottom - map.top <= 2) return;
@@ -408,18 +433,25 @@ export class GamePainter {
                     const ground = lerp(rgb(0x1e2c22), rgb(0x0a1225), darkness);
                     const horizon = lerp(rgb(0x343629), rgb(0x152339), darkness);
                     p.gradient(b.left, b.top, w, h, horizon, ground, withAlpha(scale(ground, 0.78), 1), false);
-                    if (e.phase === 'dawn' || e.phase === 'dusk')
-                        p.gradient(b.left, b.top, w, h, rgb(0xd69864, 0.12), rgb(0xc0774b, 0.04), rgb(0x786992, 0.02), e.phase === 'dawn');
-                    p.ctx.save();
-                    p.ctx.globalAlpha = e.weather === 'clear' ? 1 : Math.max(0.25, e.intensity);   // As strong as the weather here.
-                    if (e.weather === 'rain') p.gradient(b.left, b.top, w, h, rgb(0x617a92, 0.08), rgb(0x34495c, 0.07), rgb(0x294859, 0.11), false);
-                    else if (e.weather === 'snow') p.gradient(b.left, b.top, w, h, rgb(0xb4c3ce, 0.09), rgb(0x87a0b8, 0.07), rgb(0xb7c9ce, 0.12), false);
-                    else if (e.weather === 'fog') p.box(b.left, b.top, w, h, rgb(0x9fafac, 0.11));
-                    else if (e.weather === 'overcast') p.box(b.left, b.top, w, h, rgb(0x7d868c, 0.1));
-                    else if (e.weather === 'storm') p.gradient(b.left, b.top, w, h, rgb(0x3c4b5c, 0.18), rgb(0x223040, 0.14), rgb(0x1b2836, 0.2), false);
-                    else if (e.weather === 'sandstorm') p.gradient(b.left, b.top, w, h, rgb(0xc09a62, 0.2), rgb(0xa57b45, 0.16), rgb(0x8c6a3e, 0.22), true);
-                    else if (e.phase === 'day') p.box(b.left, b.top, w, h, rgb(0xffd89a, 0.05 * e.daylight));
-                    p.ctx.restore();
+                    // Each wash as strong as it now is (ambient.ts): crossing from rain into snow, one gives way to the other.
+                    const washes: Array<[string, () => void]> = [
+                        ['dawn', () => p.gradient(b.left, b.top, w, h, rgb(0xd69864, 0.12), rgb(0xc0774b, 0.04), rgb(0x786992, 0.02), true)],
+                        ['dusk', () => p.gradient(b.left, b.top, w, h, rgb(0xd69864, 0.12), rgb(0xc0774b, 0.04), rgb(0x786992, 0.02), false)],
+                        ['rain', () => p.gradient(b.left, b.top, w, h, rgb(0x617a92, 0.08), rgb(0x34495c, 0.07), rgb(0x294859, 0.11), false)],
+                        ['snow', () => p.gradient(b.left, b.top, w, h, rgb(0xb4c3ce, 0.09), rgb(0x87a0b8, 0.07), rgb(0xb7c9ce, 0.12), false)],
+                        ['fog', () => p.box(b.left, b.top, w, h, rgb(0x9fafac, 0.11))],
+                        ['overcast', () => p.box(b.left, b.top, w, h, rgb(0x7d868c, 0.1))],
+                        ['storm', () => p.gradient(b.left, b.top, w, h, rgb(0x3c4b5c, 0.18), rgb(0x223040, 0.14), rgb(0x1b2836, 0.2), false)],
+                        ['sandstorm', () => p.gradient(b.left, b.top, w, h, rgb(0xc09a62, 0.2), rgb(0xa57b45, 0.16), rgb(0x8c6a3e, 0.22), true)],
+                        ['day', () => p.box(b.left, b.top, w, h, rgb(0xffd89a, 0.05))]];
+                    for (const [wash, lay] of washes) {
+                        const amount = ambient.washes[wash];
+                        if (amount <= 0.002) continue;
+                        p.ctx.save();
+                        p.ctx.globalAlpha = Math.min(1, amount);
+                        lay();
+                        p.ctx.restore();
+                    }
                 } else if (darkness > 0.01) p.box(b.left, b.top, w, h, rgb(0x020610, darkness * 0.58));
                 return;
             }
@@ -438,10 +470,10 @@ export class GamePainter {
             }
             p.clip(b, () => {
                 // The regional field (doc 29, phase 7): each kind of weather drawn where it is, as strong as it is there.
-                if (!this.drawFieldWeather(b)) {
-                    const strength = e.weather === 'clear' ? 1 : Math.max(0.2, e.intensity);
-                    for (const layer of this.weatherLayers()) this.drawWeatherLayer(b, layer, undefined, strength);
-                }
+                if (!this.drawFieldWeather(b))
+                    for (const kind of WeatherKinds)
+                        if (ambient.sheets[kind] > 0.01)
+                            for (const layer of this.weatherLayers(kind)) this.drawWeatherLayer(b, layer, undefined, ambient.sheets[kind]);
                 for (const m of this.weatherMarks())
                     p.lines([[m.x - m.size, m.y - 1], [m.x, m.y + m.size * 0.35], [m.x + m.size, m.y - 1]], rgb(0x9dbaca, m.alpha), 0.8);
                 // (No night closing in round the wolf's own sight: the whole screen is shown, doc 80. The night is
@@ -1189,6 +1221,8 @@ export class GamePainter {
 
     private drawLocal() {
         const s = this.s, p = this.p;
+        // The sky's look follows the server's over a few seconds (ambient.ts), so a seam never snaps it.
+        s.ambient.update(s.environment, s.weatherField, s.outdoors, s.clock, s.cellId);
         const map = s.mapRect;
         const mapW = map.right - map.left, mapH = map.bottom - map.top;
         // A small room fills the map (up to 28 pixels a tile); anything larger shows at the chosen zoom.
@@ -1242,7 +1276,9 @@ export class GamePainter {
             y1: Math.min(ground.y1, Math.ceil((map.bottom - oy) / tile) + 1)};
         this.terrain.draw(p, s, terrainView, ox, oy, tile);
         // Actions come only from doors and wolves the server shows.
-        const night = 1 - s.environment.illumination;
+        // Doors and stairs are dimmed by the night as the ground is (lights.ts), a doorway's marker a little less, so it
+        // can still be found: none of them is a light.
+        const night = 1 - groundIllumination(s), markerNight = night * 0.75;
         for (const door of objects(s.snapshot, 'doors')) {
             const x = ox + num(door, 'x') * tile, y = oy + num(door, 'y') * tile;
             if (isStairs(s.glyphAt(Math.floor(num(door, 'x')), Math.floor(num(door, 'y'))), str(door, 'name'))) {
@@ -1251,16 +1287,17 @@ export class GamePainter {
                 // makes the ground, so they read as stairs and can still be found.
                 const x0 = ox + Math.floor(num(door, 'x')) * tile, y0 = oy + Math.floor(num(door, 'y')) * tile;
                 p.ctx.save();
-                p.ctx.strokeStyle = css(withAlpha(Paper, 0.32 - night * 0.14));
+                p.ctx.strokeStyle = css(nightColor(withAlpha(Paper, 0.32), night));
                 p.ctx.lineWidth = 1;
                 p.ctx.setLineDash?.([3, 2]);
                 p.ctx.strokeRect(x0 + 1.5, y0 + 1.5, tile - 3, tile - 3);
                 p.ctx.restore();
             } else {
                 const locked = bool(door, 'locked');
+                const mark = nightColor(locked ? Muted : Amber, markerNight);
                 p.box(x - 8, y - 10, 17, 22, Ink);
-                p.text(x - 7, y - 10, locked ? '×' : bool(door, 'open') ? '/' : '+', 17, locked ? Muted : Amber, true);
-                p.frame(x - 11, y - 13, 23, 27, withAlpha(locked ? Muted : Amber, 0.25));
+                p.text(x - 7, y - 10, locked ? '×' : bool(door, 'open') ? '/' : '+', 17, mark, true);
+                p.frame(x - 11, y - 13, 23, 27, withAlpha(mark, 0.25));
             }
             s.hits.push({rect: rect(x - 15, y - 16, x + 15, y + 16), action: 'target', target: str(door, 'id')});
         }
@@ -1416,7 +1453,7 @@ export class GamePainter {
         s.hoveredEntity = hovered;
         if (!s.battle && s.outdoors && !s.plainGlyphs) {
             const covered = paintUpperTiles(p.ctx, terrainView, ox, oy, tile,
-                (x, y) => s.seenAt(x, y) === '0' ? undefined : s.glyphAt(x, y), s.environment.illumination);
+                (x, y) => s.seenAt(x, y) === '0' ? undefined : s.glyphAt(x, y), nightLevel(1 - groundIllumination(s)));
             const self = s.entities.get(s.selfId);
             if (self) {
                 const x = ox + self.x * tile, y = oy + self.y * tile;
