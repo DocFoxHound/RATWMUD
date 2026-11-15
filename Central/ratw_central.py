@@ -24,6 +24,19 @@ laptop it runs on loopback for development: worlds and the client reach it with 
   python3 Central/ratw_central.py worlds list        listed or not (and why), last heartbeat, reachable, check note,
                                                      players. A world is listed only by its heartbeat (doc 77, 7): run
                                                      the world agent with its token (tools/world_agent.py run)
+  python3 Central/ratw_central.py worlds approval WORLD_ID    whether central approves it (doc 77, 7.1), by which
+                                                     release, why not, and its last fingerprints
+  python3 Central/ratw_central.py worlds block WORLD_ID --reason TEXT | worlds unblock WORLD_ID
+                                                     hold a world off approval (the rate rule does this itself), or let
+                                                     it go
+  python3 Central/ratw_central.py releases add FILE [--unsigned] | releases list | releases withdraw BUILD [--note T]
+                                                     the world-image releases central approves (Package/stage.sh writes
+                                                     each one's signed fingerprints; serve also imports
+                                                     Central/releases/*.json at start)
+  python3 Central/ratw_central.py unlocks list [--world ID] [--flagged] [--username U]
+  python3 Central/ratw_central.py unlocks revoke|clear WORLD_ID USERNAME [--note TEXT]
+                                                     the Quickened unlocks worlds gave (accepted, waiting, flagged);
+                                                     revoke takes one back (kept, marked), clear drops its flag
   python3 Central/ratw_central.py accounts flag USERNAME [--banned|--unbanned] [--host|--no-host] [--admin|--no-admin]
   python3 Central/ratw_central.py accounts set-password USERNAME   (no email in the closed beta: the user resets by hand)
   python3 Central/ratw_central.py db-drop --yes       drop its database
@@ -33,7 +46,7 @@ The calls (JSON bodies; `Authorization: Bearer ACCESS_TOKEN` where an account is
   password, remember?}   POST /account/refresh {refresh_token}   POST /account/logout {everywhere?}   GET /account
   POST /account/quickened/announced   DELETE /account {password}   GET /wolves
   POST /wolves {name, age, appearance, family?, quickened?, profile?, choices?}
-  PATCH /wolves/WOLF_ID {revision, appearance?, profile?, choices?}   DELETE /wolves/WOLF_ID {password}   POST /wolves/name {name}   POST /tickets {world, wolf}
+  PATCH /wolves/WOLF_ID {revision, appearance?, profile?, choices?}   DELETE /wolves/WOLF_ID {password}   POST /wolves/name {name}   POST /tickets {world, wolf}   POST /stars/confirm {world, wolf, to, kind}
   GET /keys   GET /health   GET /rules (the creator's Gift families)   GET /worlds (the list)
 The Host page's calls (an account with the host flag): GET /host/worlds   POST /host/worlds {name}
   POST /host/worlds/WORLD_ID/token   DELETE /host/worlds/WORLD_ID
@@ -62,6 +75,7 @@ from urllib.parse import urlsplit
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import central_identity  # noqa: E402
+import central_releases  # noqa: E402
 import central_service  # noqa: E402
 import central_store  # noqa: E402
 import central_tickets  # noqa: E402
@@ -89,6 +103,7 @@ def routes(central: central_service.Central) -> dict:
         ('POST', '/wolves'): central.create_wolf,
         ('POST', '/wolves/name'): central.name_free,
         ('POST', '/tickets'): central.ticket,
+        ('POST', '/stars/confirm'): central.confirm_star,
         ('GET', '/keys'): central.jwks,
         ('GET', '/rules'): central.rules,
         ('GET', '/worlds'): central.list_worlds,
@@ -301,6 +316,25 @@ def worlds_command(parser, args, store: central_store.Store) -> int:
     if world is None:
         print('no such world', file=sys.stderr)
         return 1
+    if args.action == 'approval':
+        print(json.dumps({'id': world['id'], 'kind': world['kind'],
+                          'approved': world['kind'] == 'official' or world['approved'],
+                          'release': world['approved_release'], 'why': world['approval_note'],
+                          'since': world['approval_changed_at'], 'blocked': world['approval_blocked'],
+                          'fingerprints': world['fingerprints']}))
+        return 0
+    if args.action == 'block':
+        if not args.reason:
+            parser.error('worlds block needs --reason')
+        store.block_approval(world['id'], args.reason, now)
+        flagged = store.flag_unlocks(world['id'], now - central_service.FLAG_DAYS * 86400,
+                                     f'held off approval by hand: {args.reason}', now)
+        print(f'{world["id"]} held off approval; {flagged} recent unlock(s) flagged for review')
+        return 0
+    if args.action == 'unblock':
+        store.block_approval(world['id'], None, now)
+        print(f'{world["id"]} may be approved again (from its next heartbeat)')
+        return 0
     if args.action == 'token':
         if world['removed']:
             print('that world was removed', file=sys.stderr)
@@ -319,6 +353,86 @@ def worlds_command(parser, args, store: central_store.Store) -> int:
         parser.error('worlds set needs --delisted or --listed')
     store.set_world(world['id'], delisted=args.delisted)
     print(f'{world["id"]} {"delisted" if args.delisted else "may be listed (while its heartbeat arrives)"}')
+    return 0
+
+
+def import_releases(store: central_store.Store, keys: dict, directory: Path = central_releases.RELEASES_DIR,
+                    log=print) -> int:
+    """Every signed release manifest in Central/releases/ (deployed with central's code), imported if new. How many."""
+    added = 0
+    for path in sorted(directory.glob('*.json')) if directory.is_dir() else []:
+        try:
+            manifest, kid = central_releases.read_file(path, keys)
+        except (OSError, central_releases.ReleaseError) as error:
+            log(f'central: release {path.name} not imported: {error}')
+            continue
+        outcome = store.add_release(manifest, kid, time.time())
+        if outcome == 'different':
+            log(f'central: release {path.name}: build {manifest["build"]} is known with other fingerprints: kept as it was')
+        added += outcome == 'added'
+    return added
+
+
+def releases_command(parser, args, store: central_store.Store) -> int:
+    now = time.time()
+    if args.action == 'list':
+        for r in store.releases():
+            print(json.dumps({'build': r['build'], 'key': r['key_id'], 'made': r['made_at'], 'added': r['added_at'],
+                              'withdrawn': r['withdrawn_at'], 'note': r['withdrawn_note'], 'server': r['server'],
+                              'agent': r['agent'], 'fingerprints': r['fingerprints'], 'rules': r['rules'],
+                              'quickened': r['manifest'].get('quickened')}))
+        return 0
+    if not args.target:
+        parser.error(f'releases {args.action} needs a {"FILE" if args.action == "add" else "BUILD"}')
+    if args.action == 'withdraw':
+        if not store.withdraw_release(args.target, args.note or '', now):
+            print('no such release, or withdrawn already', file=sys.stderr)
+            return 1
+        print(f'release {args.target} withdrawn: worlds running it are no longer approved (from their next heartbeat)')
+        return 0
+    try:
+        manifest, kid = central_releases.read_file(Path(args.target), central_releases.load_keys(), args.unsigned)
+    except (OSError, central_releases.ReleaseError) as error:
+        print(f'not imported: {error}', file=sys.stderr)
+        return 1
+    outcome = store.add_release(manifest, kid, now)
+    if outcome == 'different':
+        print(f'build {manifest["build"]} is known already with other fingerprints: not changed', file=sys.stderr)
+        return 1
+    print(f'release {manifest["build"]} {"added" if outcome == "added" else "known already"}'
+          f'{" (signed with " + kid + ")" if kid else " (unsigned, by hand)"}')
+    return 0
+
+
+def unlocks_command(parser, args, store: central_store.Store) -> int:
+    now = time.time()
+    account = None
+    username = args.username if args.action == 'list' else args.who
+    if username:
+        account = store.account_by_username(central_service.normalize_username(username) or '')
+        if account is None:
+            print('no such account', file=sys.stderr)
+            return 1
+    if args.action == 'list':
+        for u in store.unlocks(args.world, args.flagged, account['id'] if account else None):
+            print(json.dumps({'world': u['world_id'], 'username': u['username'], 'account': u['account_id'],
+                              'wolf': u['wolf_id'], 'claimed': u['first_claimed_at'], 'accepted': u['accepted_at'],
+                              'how': u['how'], 'release': u['release'], 'waiting_for': u['note'],
+                              'flagged': u['flagged_at'], 'flag': u['flag_reason'], 'revoked': u['revoked_at'],
+                              'revoked_note': u['revoked_note']}))
+        return 0
+    if not args.world or account is None:
+        parser.error(f'unlocks {args.action} needs WORLD_ID and USERNAME')
+    if args.action == 'clear':
+        done = store.clear_unlock_flag(args.world, account['id'])
+    else:
+        done = store.revoke_unlock(args.world, account['id'], args.note or '', now)
+    if not done:
+        print('no such unlock (or nothing to do)', file=sys.stderr)
+        return 1
+    after = store.account(account['id'])
+    print(f'{args.action}: {account["username"]} on {args.world}; the account '
+          f'{"keeps Quickened (from " + after["quickened_world"] + ")" if after["quickened_at"] else "has no Quickened now"}')
     return 0
 
 
@@ -343,13 +457,27 @@ def main(argv=None) -> int:
     keys.add_argument('--now', action='store_true')
     keys.add_argument('--keys', type=Path, default=DEFAULT_KEYS)
     worlds = sub.add_parser('worlds')
-    worlds.add_argument('action', choices=('add', 'token', 'revoke', 'set', 'list'))
-    worlds.add_argument('world', nargs='?', help='the world id (token, revoke, set)')
+    worlds.add_argument('action', choices=('add', 'token', 'revoke', 'set', 'list', 'approval', 'block', 'unblock'))
+    worlds.add_argument('world', nargs='?', help='the world id (token, revoke, set, approval, block, unblock)')
+    worlds.add_argument('--reason', help='why it is held off approval (worlds block)')
     worlds.add_argument('--name')
     worlds.add_argument('--kind', choices=('official', 'community'), default='community')
     worlds.add_argument('--host', help="the username of the account that hosts it (worlds add)")
     worlds.add_argument('--delisted', dest='delisted', action='store_true', default=None)
     worlds.add_argument('--listed', dest='delisted', action='store_false')
+    releases = sub.add_parser('releases')
+    releases.add_argument('action', choices=('add', 'list', 'withdraw'))
+    releases.add_argument('target', nargs='?', help='the signed manifest FILE (add), or the BUILD (withdraw)')
+    releases.add_argument('--unsigned', action='store_true', help='take a manifest nobody signed (by hand)')
+    releases.add_argument('--note', help='why it is withdrawn')
+    unlocks = sub.add_parser('unlocks')
+    unlocks.add_argument('action', choices=('list', 'revoke', 'clear'))
+    unlocks.add_argument('world', nargs='?', help='the world id (revoke, clear)')
+    unlocks.add_argument('who', nargs='?', help='the username (revoke, clear)')
+    unlocks.add_argument('--world', dest='world_filter', help='only this world (list)')
+    unlocks.add_argument('--username', help='only this account (list)')
+    unlocks.add_argument('--flagged', action='store_true', help='only flagged ones still standing (list)')
+    unlocks.add_argument('--note', help='why it is revoked')
     accounts = sub.add_parser('accounts')
     accounts.add_argument('action', choices=('flag', 'set-password'))
     accounts.add_argument('username')
@@ -385,6 +513,12 @@ def main(argv=None) -> int:
         store.migrate()
         if args.command == 'worlds':
             return worlds_command(parser, args, store)
+        if args.command == 'releases':
+            return releases_command(parser, args, store)
+        if args.command == 'unlocks':
+            if args.action == 'list':
+                args.world = args.world_filter
+            return unlocks_command(parser, args, store)
         if args.command == 'accounts':
             account = store.account_by_username(central_service.normalize_username(args.username) or '')
             if account is None:
@@ -412,6 +546,9 @@ def main(argv=None) -> int:
                                       central_identity.Identity(),
                                       settings=central_service.Settings(local_worlds=args.local_worlds))
     store.migrate()
+    added = import_releases(store, central_releases.load_keys(), log=lambda line: print(line, flush=True))
+    if added:
+        print(f'central: {added} new release(s) from {central_releases.RELEASES_DIR}', flush=True)
     for line in central.maintain():
         print(f'central: {line}', flush=True)
     server = Server(central, args.bind, args.port, args.trust_proxy, args.cors).start()

@@ -6,7 +6,7 @@
 //
 // The front door (ui/frontDoor.ts, central mode) sends this its commands and is answered with lobby events of the shape
 // a world's lobby has. Nothing here is kept between launches but what the shell keeps ("remember me").
-import {Central, CentralError, type HostWorld, type ListedWorld} from './net/central.ts';
+import {Central, CentralError, starConfirmation, type HostWorld, type ListedWorld} from './net/central.ts';
 import {Connection} from './net/connection.ts';
 import {ClientBuild} from './net/build.ts';
 import {addressText, compatibility, fetchStatus, isLoopback, parseAddress, serverColumns, shownAddress, socketUrl, statusLine, type WorldAddress,
@@ -50,6 +50,7 @@ export class ClientApp {
     lost: Target | null = null;                      // A world whose connection was lost: Reconnect.
     private direct: Target[] = [];                   // Worlds joined by their address this session.
     private ticket = '';
+    private joinedWolf = '';                         // The wolf the ticket was for (its stars are confirmed as it).
     private keyTries = 0;
     private answered = false;                        // The world has said something on this connection.
     private admitted = false;                        // ...and has taken the ticket (the arrival, or in the world).
@@ -153,7 +154,7 @@ export class ClientApp {
             const listed = this.listed.find(w => w.id === t.id) ?? null;
             out.push({id: t.id, name: t.name, kind: t.kind, address: addressText(t.address), host: t.host ? shownAddress(t.address, t.host) : '',
                 secure: t.address.secure, description: t.description,
-                region: listed?.region ?? '', tags: listed?.tags ?? [], fit: fit.fit, note: fit.note, status: statusLine(status, listed),
+                region: listed?.region ?? '', tags: listed?.tags ?? [], approved: listed?.approved === true, fit: fit.fit, note: fit.note, status: statusLine(status, listed),
                 ...serverColumns(status, listed)});
         };
         for (const w of this.listed) {
@@ -342,6 +343,7 @@ export class ClientApp {
             this.door.setMessage(`Joining ${target.name}: not encrypted, so others on the way can read what you do there.`);
         const ticket = await this.central.ticket(target.id, wolf);
         this.wolf = wolf;
+        this.joinedWolf = wolf;
         this.connect(target, ticket);
     }
 
@@ -427,8 +429,16 @@ export class ClientApp {
         this.door?.destroy();
         this.door = null;
         this.lost = null;
-        this.play ??= new Play(this.app, connection);
+        this.play ??= new Play(this.app, connection, command => this.confirmStar(command));
         this.shell.inWorld = true;
+    }
+
+    /** A star given in a world joined with central's ticket, confirmed to central by its giver (doc 77, approved worlds):
+     *  central counts a world's stars toward Quickened only when their givers said so too. Fire and forget: a refusal
+     *  or no answer is never shown (that star may only not count on central). */
+    private confirmStar(command: Json) {
+        const body = this.target && this.ticket ? starConfirmation(command, this.target.id, this.joinedWolf) : null;
+        if (body) void this.central.confirmStar(body).catch(() => {});
     }
 
     /** Back from the game screen to the door (its state is the client's, so a new door shows it again). */

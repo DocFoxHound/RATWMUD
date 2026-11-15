@@ -429,6 +429,24 @@ Once the log says "listed on central", the game's Host page shows your world as 
 again), and your world is on the world list for everyone. If it says **NOT LISTED**, the reason is beside it, the same
 as in the log.
 
+### Approved: progress that counts everywhere
+
+Central also checks, by itself, whether your world is **approved**: that it runs the game's own world image,
+unmodified (the server, its world agent and the rules that decide progression), with `cheats = "off"`. An approved
+world is marked **APPROVED** on the world list, and a player who opens Quickened there (doc 49's long road of stars and
+Stories) gets it for their whole account, in every world, once central's own checks of their play and their stars
+agree. On a world that isn't approved everything works as normal; progress there just stays in that world.
+
+The log says which, once, and again whenever it changes:
+
+    RATW_AGENT world agent: approved by central: progress here counts for every account in every world
+    RATW_AGENT world agent: not approved by central (Cheats are on (world.toml's cheats): ...): progress here stays in this world
+
+The Host page shows the same. Nothing you do in the Editor (Atlas, Publish, the DM tool's NPCs, factions, talk or
+economy) costs approval. What does: cheats on (section 17), a world image you built or changed yourself, or an image
+older than central knows (update it, section 20). A world whose unlocks come implausibly fast is held off approval
+until the game's team has looked.
+
 ### Joining it yourself
 
 You can join with any of your own wolves, from the list. If your router can't reach your own internet address from
@@ -960,8 +978,9 @@ give. After a change, **⟳ Restart the world**.
 Either of the last two lists your world **"cheats on"** for everyone to see, and the log says so at each start. The
 full in-game Dev Console is never available on a community world.
 
-"Cheats on" keeps honest hosts honest; it isn't a lock. What *is* certain: nothing on your world reaches central or
-any other world, so cheats here never touch a player's progress elsewhere.
+"Cheats on" keeps honest hosts honest; it isn't a lock. What *is* certain: a world with cheats on is never
+approved (section 7), so nothing on it reaches central or any other world, and cheats here never touch a player's
+progress elsewhere.
 
 ---
 
@@ -1535,6 +1554,11 @@ Read the `RATW_AGENT world agent:` lines in the log, or the reason on the Host p
 | `central refused the heartbeat (banned) ...` | Your account is banned. |
 | `central refused the heartbeat (name_refused): ...` | Change the name, description, region or tags in `world.toml`, then `docker compose restart world upnp`. |
 | `... A community world cannot call itself official or use the game's name (Run Against the World, RATW).` | Likewise: change the name or text. |
+| `not approved by central (Its world agent sends no fingerprints ...)` or `(... does not say whether every Gift tier is open (an older server) ...)` | Your world image is older than approval. Update it (section 20). |
+| `not approved by central (Its server program ... differ(s) from release ...: it is not an unmodified release of the world image.)` or `(Its software is no release central knows ...)` | The world doesn't run an image the game's team released, or one central doesn't know yet. Use the image the team sent; a brand-new one is approved once central has its release. |
+| `not approved by central (It runs release ..., which has been withdrawn ...)` | The game's team withdrew that image. Update to the current one. |
+| `not approved by central (Cheats are on ...)` or `(Every Gift tier is open ...)` | Set `cheats = "off"` (section 17), then restart the world. |
+| `not approved by central (Central holds this world off approval: ...)` | The game's team, or central's rule about implausibly many Quickened unlocks, holds your world off approval until they've looked. Ask them. |
 | `The host name ... does not resolve (DNS) ...`, `... is not a public DNS name ...` or `... does not point at this world's address ... alone ...` | Your `host` setting is wrong. Point that name at your internet address alone, or leave `host` out. |
 | `could not reach central: ...` or `central did not answer in time ...` | Your computer can't reach central: your internet connection, a firewall blocking outgoing traffic, or central is down. The agent keeps trying every minute. |
 | `could not fetch central's keys: ...` | The same: central can't be reached. Until the keys come, nobody can join. |

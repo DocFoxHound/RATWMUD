@@ -2,6 +2,7 @@
 // the page's own walking, its poses, and the half-minute line report, which stops with the screen (doc 76, 9: it used
 // to be started on every entry and never stopped).
 import type {Connection} from './net/connection.ts';
+import type {Json} from './game/json.ts';
 import {GameView} from './game/view.ts';
 import {Walker} from './game/walker.ts';
 
@@ -25,9 +26,14 @@ export class Play {
     readonly game: GameView;
     private report: ReturnType<typeof setInterval>;
 
-    constructor(app: HTMLElement, connection: Connection) {
+    /** `sent`, if given, sees every command the game sends to the world, after it is sent (the desktop client's star
+     *  confirmations to central: doc 77, approved worlds). */
+    constructor(app: HTMLElement, connection: Connection, sent?: (command: Json) => void) {
         void loadWalker();
-        const game = new GameView(app, command => connection.submit(command));
+        const game = new GameView(app, command => {
+            connection.submit(command);
+            sent?.(command);
+        });
         this.game = game;
         games.add(game);
         game.netSample = () => connection.netSample();

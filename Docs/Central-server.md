@@ -59,6 +59,27 @@ bash tools/deploy_central.sh            # this checkout's HEAD; or a revision
 It copies the code, `Data/` and the identity checker, swaps them in (the old code stays as `/opt/ratwmud/app.old`),
 restarts the service and prints `/health`. Central migrates its database when it starts.
 
+## Approved worlds (Docs/Design/77, 7.1)
+
+Central approves a community world by itself while its fingerprints match a release it knows. After deploying the
+code that has it (migration `0007`, applied when central starts):
+
+- **The release key's public half** goes in `Central/release-keys.json` (the line `bash Package/stage.sh
+  --make-release-key` prints, or `key_id`/`key_public` of the existing key). Only public halves, ever.
+- **Each world image's release:** `bash Package/stage.sh --build` writes `fingerprints-BUILD.json` (signed) beside its
+  context. Commit it to `Central/releases/` and deploy (central imports every file there when it starts), or import it
+  at once on the server:
+
+  ```
+  ... ratw_central.py releases add /path/to/fingerprints-BUILD.json
+  ... ratw_central.py releases list            # and: releases withdraw BUILD --note "why"
+  ```
+- **Reviewing:** `worlds approval WORLD_ID` (approved, by which release, why not, its last fingerprints);
+  `worlds block WORLD_ID --reason "..."` / `worlds unblock WORLD_ID`; `unlocks list [--flagged] [--world ID]
+  [--username U]`; `unlocks revoke WORLD_ID USERNAME --note "..."` (kept, marked; the account loses Quickened unless
+  another standing unlock gives it) and `unlocks clear WORLD_ID USERNAME` (drops a flag). Run them as the other
+  central commands above.
+
 ## Using it
 
 - **The desktop client:** this is its built-in address (`Desktop/src-tauri/src/central.rs`, `BUILT_IN`), so an

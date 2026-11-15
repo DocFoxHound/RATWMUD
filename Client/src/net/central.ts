@@ -34,6 +34,7 @@ export function allowedCall(method: string, path: string): boolean {
     const exact: Record<string, string[]> = {
         '/account/register': ['POST'], '/account/login': ['POST'], '/account/logout': ['POST'], '/account': ['GET', 'DELETE'],
         '/account/quickened/announced': ['POST'],      // (The Quickened fanfare shown: doc 49, 9.1.)
+        '/stars/confirm': ['POST'],                    // (A star given, confirmed by its giver: doc 77, approved worlds.)
         '/wolves': ['GET', 'POST'], '/wolves/name': ['POST'], '/tickets': ['POST'], '/worlds': ['GET'], '/rules': ['GET'],
         '/health': ['GET'], '/host/worlds': ['GET', 'POST'],
     };
@@ -197,6 +198,8 @@ export interface ListedWorld {
     voices: boolean;
     cheats: boolean;
     quickenedWolves: boolean;    // Quickened wolves may join (doc 49, 9.1): false only when its host turned them off.
+    approved: boolean;       // Central counts its progression for the whole account (official, or an unmodified release's
+                             // software and rules, checked by central: doc 77, approved worlds). Missing: false.
 }
 
 /** One of the account's own worlds, on the Host page (doc 77, 3.2 and 7). */
@@ -259,7 +262,24 @@ export function readListedWorld(w: Json): ListedWorld | null {
         protocol: typeof w.protocol === 'number' ? w.protocol : null, description: text(w.description, 300),
         players: count(w.players), limit: count(w.limit), region: text(w.region, 32),
         tags: (Array.isArray(w.tags) ? w.tags : []).filter((t): t is string => typeof t === 'string').slice(0, 5).map(t => t.slice(0, 16)),
-        voices: w.voices === true, cheats: w.cheats === true, quickenedWolves: w.quickenedWolves !== false};
+        voices: w.voices === true, cheats: w.cheats === true, quickenedWolves: w.quickenedWolves !== false,
+        approved: w.approved === true};
+}
+
+const WolfId = /^wolf-[0-9a-f]{32}$/;
+
+/** What a command sent to a world tells central when it gives a star (doc 77, approved worlds): the giver's own word,
+ *  {world, wolf, to, kind}, which central matches against the stars the world says it recorded; null for any other
+ *  command, a target that isn't a central wolf, or a world or wolf that isn't central's (a password world, a join by
+ *  address without a ticket). */
+export function starConfirmation(command: Json, world: string, wolf: string): Json | null {
+    if (!WorldId.test(world) || !WolfId.test(wolf)) return null;
+    const type = command.type, verb = command.verb;
+    const kind = type === 'social' && verb === 'star' ? 'gold' : type === 'social' && verb === 'storystar' ? 'story'
+        : type === 'festival' && verb === 'star' ? 'festival' : '';
+    const to = command.target;
+    if (!kind || typeof to !== 'string' || !WolfId.test(to) || to === wolf) return null;
+    return {world, wolf, to, kind};
 }
 
 /** One of the account's worlds from GET /host/worlds, or null when it isn't one. */
@@ -315,6 +335,11 @@ export class Central {
     async announcedQuickened(): Promise<Json | null> {
         const reply = await this.ask('POST', '/account/quickened/announced', {});
         return isJson(reply.account) ? reply.account : null;
+    }
+    /** A star this account's wolf gave in a world, confirmed by its giver (starConfirmation's body). Central answers
+     *  {ok: true}; a refusal only means that star may not count on central, so callers never show it. */
+    confirmStar(body: Json) {
+        return this.ask('POST', '/stars/confirm', body);
     }
     async wolves(): Promise<Json[]> {
         const reply = await this.ask('GET', '/wolves');

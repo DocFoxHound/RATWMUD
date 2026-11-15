@@ -886,7 +886,9 @@ def agent_starter(s: dict, port: int, agent_dir: Path, central_dir: Path | None 
             (central_dir / 'central.json').unlink(missing_ok=True)
         command = ['keys', '--central', s['central'], '--out', str(agent_dir / 'central-keys.json')]
     else:
-        command = ['run', '--central', s['central'], '--dir', str(agent_dir), '--world-port', str(port)]
+        command = ['run', '--central', s['central'], '--dir', str(agent_dir), '--world-port', str(port),
+                   # What the world runs, for its fingerprints (doc 77, 7.1: central approves an unmodified release).
+                   '--server-binary', str(SERVER), '--data-dir', str(DATA)]
         if central_dir is not None:
             command += ['--central-dir', str(central_dir)]
         for name in ('description', 'region', 'host'):

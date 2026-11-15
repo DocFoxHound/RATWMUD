@@ -29,6 +29,12 @@
 # the client holds the public half (Desktop/src-tauri/src/editor/bundle.rs, RELEASE_KEYS). --make-release-key makes a
 # key there (0600) and prints the line for RELEASE_KEYS; keep a copy of the file somewhere safe, beside central's keys.
 # The build id is the commit (12 characters), with +dirty if any staged file differs from it; --build-id overrides it.
+# With --build, the release's fingerprints (Docs/Design/77, 7.1: approved worlds) come last: tools/world_fingerprints.py
+# runs inside the built image (the server program, the world agent, the fingerprint tool and the progression rules,
+# exactly as a world will run them) and its manifest is signed with the release key, beside DIR as
+# fingerprints-BUILD.json. Central approves a world whose agent reports these fingerprints once it knows the release:
+# copy the file to Central/releases/ (deployed with central, imported when it starts) or run
+# `ratw_central.py releases add FILE` there. Without a release key it is written unsigned and central won't take it.
 set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 out="$root/build-package/context" world="" build_id="" build=0 tag="ratw-world"
@@ -105,6 +111,22 @@ PY
   echo "stage.sh: the Editor bundle in $dist is signed with $(key_id "$key") (version $version)" >&2
 }
 
+# Signs the release's fingerprint manifest in $1 with the key in $2 (as the Editor bundle is signed): writes $3,
+# {"v", "key", "manifest", "signature"}, which central's `releases add` checks against Central/release-keys.json.
+sign_manifest() {
+  local manifest="$1" key="$2" out="$3" scratch
+  key_outside "$key" || return 2
+  scratch="$(mktemp -d)"
+  openssl pkeyutl -sign -inkey "$key" -rawin -in "$manifest" -out "$scratch/signature"
+  python3 - "$manifest" "$scratch/signature" "$(key_id "$key")" "$out" <<'PY'
+import base64, json, sys
+manifest, signature, key, out = sys.argv[1:5]
+with open(manifest, 'rb') as m, open(signature, 'rb') as s, open(out, 'w', encoding='ascii') as f:
+    f.write(json.dumps({'v': 1, 'key': key, 'manifest': base64.b64encode(m.read()).decode(), 'signature': base64.b64encode(s.read()).decode()}) + '\n')
+PY
+  rm -rf "$scratch"
+}
+
 if [[ -n "$make_key" ]]; then
   [[ "$make_key" != default ]] || make_key="$release_key"
   if [[ -e "$make_key" ]]; then echo "stage.sh: $make_key exists: not replacing a release key" >&2; exit 2; fi
@@ -115,6 +137,8 @@ if [[ -n "$make_key" ]]; then
   echo "stage.sh: made the Editor's release key: $make_key (keep a copy somewhere safe; never in the repository)." >&2
   echo "Put this line in Desktop/src-tauri/src/editor/bundle.rs, RELEASE_KEYS, and release the client:" >&2
   echo "    (\"$(key_id "$make_key")\", \"$(key_public "$make_key")\"),"
+  echo "And for central (it takes release manifests signed with it: Docs/Design/77, 7.1), in Central/release-keys.json's keys:" >&2
+  echo "    {\"id\": \"$(key_id "$make_key")\", \"public\": \"$(key_public "$make_key")\"}" >&2
   exit 0
 fi
 if [[ -n "$sign_only" ]]; then
@@ -227,4 +251,19 @@ fi
 if ((build)); then
   # (Docker's tags take no '+'.)
   docker build --build-arg "RATW_BUILD_ID=$build_id" -t "$tag:${build_id//+/-}" -t "$tag:latest" "$out"
+  # The release's fingerprints, computed inside the image as its world agent computes them (Docs/Design/77, 7.1).
+  release_file="$(dirname "$out")/fingerprints-${build_id}.json"
+  scratch="$(mktemp -d)"
+  docker run --rm --entrypoint python3 "$tag:${build_id//+/-}" /opt/ratw/tools/world_fingerprints.py manifest \
+    --build "$build_id" > "$scratch/manifest"
+  if [[ -f "$release_key" ]]; then
+    sign_manifest "$scratch/manifest" "$release_key" "$release_file"
+    echo "stage.sh: the release's fingerprints, signed with $(key_id "$release_key"): $release_file" >&2
+    echo "stage.sh: for central to approve worlds running this image, copy it to Central/releases/ (and deploy central), or run there: ratw_central.py releases add $(basename "$release_file")" >&2
+  else
+    cp "$scratch/manifest" "$release_file"
+    echo "stage.sh: no release key: the release's fingerprints are unsigned ($release_file); central takes them only by hand (releases add --unsigned)" >&2
+  fi
+  [[ "$build_id" != *+dirty ]] || echo "stage.sh: warning: a +dirty build: release it only if you mean to (its fingerprints match nothing else)" >&2
+  rm -rf "$scratch"
 fi

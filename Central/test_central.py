@@ -34,6 +34,7 @@ import urllib.request
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import central_identity  # noqa: E402
+import central_releases  # noqa: E402
 import central_service as cs  # noqa: E402
 import central_store  # noqa: E402
 import central_tickets as ct  # noqa: E402
@@ -82,7 +83,8 @@ def tearDownModule():
 def wipe():
     with STORE.connection() as conn:
         conn.execute('TRUNCATE central.accounts, central.sessions, central.spent_refresh, central.wolves, '
-                     'central.reserved_names, central.deleted_wolves, central.worlds, central.tickets CASCADE')
+                     'central.reserved_names, central.deleted_wolves, central.worlds, central.tickets, '
+                     'central.releases CASCADE')
 
 
 class Base(unittest.TestCase):
@@ -927,7 +929,8 @@ def free_port() -> int:
         return sock.getsockname()[1]
 
 
-class ServerList(Base):
+class ServerListBase(Base):
+    """Stand-in worlds, a host account and the heartbeat, for the server list's tests."""
     local_worlds = True
 
     def setUp(self):
@@ -966,6 +969,8 @@ class ServerList(Base):
     def listed(self):
         return [w['id'] for w in self.call('list_worlds')[1]['worlds']]
 
+
+class ServerList(ServerListBase):
     def test_a_heartbeat_lists_the_world(self):
         world, host_token = self.make()
         self.assertRegex(host_token, r'^rh_[A-Za-z0-9_-]{43}$')
@@ -980,7 +985,9 @@ class ServerList(Base):
         self.assertEqual(reply, {'ok': True, 'world': world, 'kind': 'community', 'listed': True, 'reachable': True,
                                  'why': '', 'address': f'127.0.0.1:{stand_in.port}', 'players': 0, 'bans': [],
                                  'host': ct.pairwise_id(self.keys.pairwise_secret(), self.host['account']['id'], world),
-                                 'time': self.clock(), 'every': 60})
+                                 'time': self.clock(), 'every': 60, 'approved': False,
+                                 'approval': 'Its world agent sends no fingerprints (an older agent): update the world '
+                                             'to the current release.'})
         self.assertEqual(stand_in.seen, [('/status', f'127.0.0.1:{stand_in.port}')])
         status, reply = self.call('list_worlds')
         self.assertEqual(reply['worlds'], [{'id': world, 'name': 'Greyfen Hollow', 'kind': 'community',
@@ -988,7 +995,7 @@ class ServerList(Base):
                                             'protocol': 1,
                                             'description': 'A quiet valley.', 'players': 0, 'limit': 40,
                                             'region': 'EU', 'tags': ['rp', 'slow'], 'voices': True, 'cheats': False,
-                                        'quickenedWolves': True}])
+                                        'quickenedWolves': True, 'approved': False}])
         self.clock.advance(60)
         self.assertTrue(self.beat(host_token, stand_in.port, name='Greyfen Vale')[1]['listed'])
         self.assertEqual(len(stand_in.seen), 1, 'checked again only after 10 minutes')
@@ -1577,7 +1584,7 @@ class ServerList(Base):
         self.assertEqual(listing['most'], 3)
         view = self.view(first)
         self.assertEqual(set(view), {'id', 'name', 'kind', 'listed', 'reachable', 'why', 'address', 'players',
-                                     'last_heartbeat', 'token_created'})
+                                     'last_heartbeat', 'token_created', 'approved', 'approval'})
         self.assertEqual((view['id'], view['name'], view['kind'], view['listed'], view['address'], view['last_heartbeat'],
                           view['token_created']), (first, 'First Vale', 'community', False, None, None, int(START)))
         self.assertIn('No heartbeat', view['why'])
@@ -1729,6 +1736,338 @@ class ServerList(Base):
             server.stop()
 
 # --------------------------------------------------------------------------- The identity check
+
+# --------------------------------------------------------------------------- Approved worlds (doc 77, 7.1)
+
+NAMES = ('Ash Tallow', 'Birch Moss', 'Cedar Fen', 'Dusk Reed', 'Elder Vane', 'Fern Holt', 'Gorse Lye', 'Heath Rue')
+
+
+class ApprovedWorlds(ServerListBase):
+    """The user, 2026-11-15: progression counts from "approved" worlds, built with an unmodified release, decided
+    automatically. Central approves a community world while its fingerprints match a signed release, it runs without
+    cheats or open tiers, and it accepts an unlock there only with its own evidence: tickets, play time, and stars
+    their givers' own clients confirmed."""
+
+    def setUp(self):
+        super().setUp()
+        from unittest import mock
+        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+        from cryptography.hazmat.primitives import serialization
+        for name, value in (('UNLOCK_PLAY', 600), ('GIVER_PLAY', 300)):
+            patch = mock.patch.object(cs, name, value)
+            patch.start()
+            self.addCleanup(patch.stop)
+        self.private = Ed25519PrivateKey.generate()
+        raw = self.private.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw)
+        self.kid = central_releases.key_id(raw)
+        self.release_keys = {self.kid: raw}
+        self.prints = {'server': 'a' * 64, 'agent': 'b' * 64, 'fingerprints': 'c' * 64, 'rules': 'd' * 64}
+        self.add_release('build-1', self.prints)
+        self.world_id, self.host_token = self.make()
+        self.stand = self.stand_in(self.world_id)
+        self.players = {}
+
+    def manifest(self, build, prints, stars=2, givers=2):
+        return {'v': 1, 'build': build, 'made': int(self.clock()), **prints, 'rulesFiles': {},
+                'quickened': {'stars': stars, 'starGivers': givers}}
+
+    def signed(self, manifest, private=None):
+        data = json.dumps(manifest).encode()
+        return {'v': 1, 'key': self.kid, 'manifest': base64.b64encode(data).decode(),
+                'signature': base64.b64encode((private or self.private).sign(data)).decode()}
+
+    def add_release(self, build, prints, **thresholds):
+        manifest, kid = central_releases.read(self.signed(self.manifest(build, prints, **thresholds)), self.release_keys)
+        self.assertEqual(STORE.add_release(manifest, kid, self.clock()), 'added')
+
+    def approved_beat(self, prints=None, **more):
+        more.setdefault('openTiers', False)
+        status, reply = self.beat(self.host_token, self.stand.port, fingerprints=prints or self.prints, **more)
+        self.assertEqual(status, 200, reply)
+        return reply
+
+    def player(self, n):
+        """Player n: an account with one wolf, ticketed to the world."""
+        name = NAMES[n].split()[0].lower()
+        token = self.register(name)['access_token']
+        wolf = self.wolf(token, NAMES[n])['id']
+        self.assertEqual(self.call('ticket', {'world': self.world_id, 'wolf': wolf}, token)[0], 200)
+        self.players[n] = (STORE.account_by_username(name)['id'], wolf)
+        return self.players[n]
+
+    def sign_in(self, n):
+        return self.call('login', {'username': NAMES[n].split()[0].lower(), 'password': PASSWORD})[1]['access_token']
+
+    def play(self, beats, *ns, **more):
+        """`beats` heartbeats a minute apart with players ns online."""
+        for _ in range(beats):
+            self.clock.advance(60)
+            reply = self.approved_beat(online=[self.players[n][1] for n in ns], **more)
+        return reply
+
+    def give_star(self, giver, recipient, kind='gold', confirm=True, star=None):
+        """The giver's client confirms (now) and the world claims (in its next heartbeat's stars)."""
+        if confirm:
+            status, reply = self.call('confirm_star', {'world': self.world_id, 'wolf': self.players[giver][1],
+                                                       'to': self.players[recipient][1], 'kind': kind},
+                                      self.sign_in(giver))
+            self.assertEqual(status, 200, reply)
+        return {'id': star or 'star-' + secrets.token_hex(8), 'from': self.players[giver][1],
+                'to': self.players[recipient][1], 'kind': kind, 'counted': True, 'at': int(self.clock())}
+
+    def test_the_release_manifest_is_taken_only_signed(self):
+        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+        manifest = self.manifest('build-2', self.prints)
+        with self.assertRaisesRegex(central_releases.ReleaseError, 'not signed'):
+            central_releases.read(manifest, self.release_keys)
+        self.assertEqual(central_releases.read(manifest, self.release_keys, unsigned=True), (manifest, ''))
+        with self.assertRaisesRegex(central_releases.ReleaseError, 'does not match'):
+            central_releases.read(self.signed(manifest, Ed25519PrivateKey.generate()), self.release_keys)
+        with self.assertRaisesRegex(central_releases.ReleaseError, 'not in Central/release-keys.json'):
+            central_releases.read(self.signed(manifest), {})
+        with self.assertRaisesRegex(central_releases.ReleaseError, 'SHA-256 for rules'):
+            central_releases.read(self.signed({**manifest, 'rules': 'nope'}), self.release_keys)
+        with self.assertRaisesRegex(central_releases.ReleaseError, 'Quickened thresholds'):
+            central_releases.read(self.signed({**manifest, 'quickened': {}}), self.release_keys)
+        again, kid = central_releases.read(self.signed(manifest), self.release_keys)
+        self.assertEqual(STORE.add_release(again, kid, self.clock()), 'added')
+        self.assertEqual(STORE.add_release(again, kid, self.clock()), 'known')
+        self.assertEqual(STORE.add_release({**again, 'rules': 'e' * 64}, kid, self.clock()), 'different',
+                         'a build id is never reused')
+        with tempfile.TemporaryDirectory() as folder:
+            keys = Path(folder) / 'release-keys.json'
+            keys.write_text(json.dumps({'keys': [{'id': self.kid, 'public': base64.b64encode(
+                self.release_keys[self.kid]).decode()}, {'id': 'ratw-0000000000000000', 'public': 'AAAA'}]}))
+            self.assertEqual(central_releases.load_keys(keys), self.release_keys, 'a key whose id is wrong is left out')
+            releases = Path(folder) / 'releases'
+            releases.mkdir()
+            (releases / 'fingerprints-build-3.json').write_text(json.dumps(self.signed(self.manifest('build-3', self.prints))))
+            (releases / 'fingerprints-bad.json').write_text(json.dumps(self.manifest('build-4', self.prints)))
+            said = []
+            self.assertEqual(ratw_central.import_releases(STORE, self.release_keys, releases, said.append), 1)
+            self.assertEqual(len(said), 1, 'the unsigned one is said and left out')
+            self.assertEqual([r['build'] for r in STORE.releases()], ['build-1', 'build-2', 'build-3'])
+
+    def test_fingerprints_that_match_a_release_approve_the_world(self):
+        reply = self.beat(self.host_token, self.stand.port)[1]
+        self.assertEqual((reply['approved'], reply['approval']),
+                         (False, 'Its world agent sends no fingerprints (an older agent): update the world to the '
+                                 'current release.'))
+        self.clock.advance(60)
+        reply = self.approved_beat()
+        self.assertEqual((reply['approved'], reply['approval']), (True, ''))
+        self.assertIs(self.call('list_worlds')[1]['worlds'][0]['approved'], True, 'the server browser shows it')
+        self.assertEqual(STORE.world(self.world_id)['approved_release'], 'build-1')
+        self.assertIs(self.view(self.world_id)['approved'], True, 'and the Host page')
+        cases = [({**self.prints, 'rules': 'e' * 64}, {}, 'Its progression rules differ from release build-1'),
+                 ({**self.prints, 'server': 'e' * 64, 'agent': 'f' * 64}, {},
+                  'Its server program and its world agent differ from release build-1'),
+                 ({**self.prints, 'server': None}, {}, 'could not read its server program'),
+                 (self.prints, {'cheats': True}, 'Cheats are on'),
+                 (self.prints, {'openTiers': True}, 'Every Gift tier is open'),
+                 (self.prints, {'openTiers': None}, 'does not say whether every Gift tier is open')]
+        for prints, more, why in cases:
+            self.clock.advance(60)
+            reply = self.approved_beat(prints, **more)
+            self.assertIs(reply['approved'], False, why)
+            self.assertIn(why, reply['approval'])
+            self.assertIs(self.call('list_worlds')[1]['worlds'][0]['approved'], False)
+            self.assertIn(why, self.view(self.world_id)['approval'])
+        self.clock.advance(60)
+        self.assertIs(self.approved_beat()['approved'], True, 'approved again once it matches')
+        STORE.withdraw_release('build-1', 'it let anyone open every tier', self.clock())
+        self.clock.advance(60)
+        reply = self.approved_beat()
+        self.assertEqual((reply['approved'], reply['approval']),
+                         (False, 'It runs release build-1, which has been withdrawn: it let anyone open every tier. '
+                                 'Update the world.'))
+        self.add_release('build-2', {**self.prints, 'rules': 'e' * 64})
+        self.clock.advance(60)
+        self.assertIs(self.approved_beat({**self.prints, 'rules': 'e' * 64})['approved'], True, 'a newer release')
+        # An official world is approved by hand, whatever it sends.
+        official = 'world-' + secrets.token_hex(16)
+        STORE.add_world(official, 'Ridgemere', 'official', self.clock())
+        official_token = cs.new_host_token()
+        STORE.set_world_token(official, cs.token_hash(official_token), self.clock())
+        reply = self.beat(official_token, self.stand_in(official).port)[1]
+        self.assertEqual((reply['approved'], reply['approval']), (True, ''))
+        self.assertEqual({w['id']: w['approved'] for w in self.call('list_worlds')[1]['worlds']},
+                         {official: True, self.world_id: True})
+
+    def test_an_unlock_counts_only_from_an_approved_world_with_central_s_own_evidence(self):
+        ash, birch, cedar = (self.player(n) for n in range(3))
+        # An unapproved world's word is not taken (its stars and play are recorded, its unlocks not at all).
+        self.clock.advance(60)
+        self.beat(self.host_token, self.stand.port, quickened=[ash[1]], fingerprints={**self.prints, 'rules': 'e' * 64},
+                  openTiers=False)
+        self.assertEqual(STORE.unlocks(self.world_id), [])
+        self.assertIsNone(STORE.account(ash[0])['quickened_at'])
+        # Approved, but no evidence yet: it waits, saying what is missing.
+        self.play(1, 0, 1, 2, quickened=[ash[1]])
+        waiting = STORE.unlocks(self.world_id)
+        self.assertEqual([(u['account_id'], u['accepted_at']) for u in waiting], [(ash[0], None)])
+        self.assertEqual(waiting[0]['note'], '0.0 of 0.166667 hours played here; 0 of 2 stars confirmed by their '
+                                             'givers; 0 of 2 giving accounts that played here')
+        self.assertIsNone(STORE.account(ash[0])['quickened_at'])
+        self.play(11, 0, 1, 2)
+        stars = [self.give_star(1, 0), self.give_star(2, 0)]
+        self.clock.advance(30)
+        reply = self.play(1, 0, 1, 2, quickened=[ash[1]], stars=stars)
+        self.assertIs(reply['approved'], True)
+        accepted = STORE.unlocks(self.world_id)[0]
+        self.assertEqual((accepted['how'], accepted['release'], accepted['note'], accepted['accepted_at']),
+                         ('approved', 'build-1', '', self.clock()))
+        account = STORE.account(ash[0])
+        self.assertEqual((account['quickened_at'], account['quickened_world']), (self.clock(), self.world_id))
+        self.assertIs(self.call('login', {'username': 'ash', 'password': PASSWORD})[1]['account']['quickened'], True)
+
+    def test_stars_count_only_when_their_givers_confirmed_them(self):
+        players = [self.player(n) for n in range(6)]
+        self.play(6, 0, 1, 2, 3, 4)          # (Fern, player 5, has played no time here.)
+        # The confirmation call: one's own wolf, in that world, to another account's wolf.
+        birch = self.sign_in(1)
+        body = {'world': self.world_id, 'wolf': players[1][1], 'to': players[0][1], 'kind': 'gold'}
+        for change, code in (({'wolf': players[2][1]}, 404), ({'to': 'wolf-' + 'f' * 32}, 404),
+                             ({'to': players[1][1]}, 400), ({'kind': 'silver'}, 400), ({'world': 'nope'}, 400),
+                             ({'world': 'world-' + 'f' * 32}, 409)):
+            self.assertEqual(self.call('confirm_star', {**body, **change}, birch)[1]['code'],
+                             {404: 'not_found', 400: 'invalid', 409: 'not_there'}[code], change)
+        second = self.wolf(birch, 'Birch Sedge')['id']
+        self.assertEqual(self.call('confirm_star', {**body, 'to': second}, birch)[1]['code'], 'own_wolf')
+        self.assertEqual(self.call('confirm_star', body, birch)[0], 200)
+        self.assertEqual(self.call('confirm_star', body, None)[0], 401, 'signed in as the giver')
+        STORE.confirm_star(self.world_id, players[1][0], players[1][1], players[0][1], 'gold', self.clock())  # (Spent below.)
+        self.clock.advance(60)
+        claims = [
+            self.give_star(1, 0, confirm=False),               # Birch's: confirmed above (twice).
+            self.give_star(2, 0, confirm=False),               # Cedar never confirmed it.
+            self.give_star(3, 0, kind='story'),                # Dusk confirmed a story star...
+            self.give_star(4, 0),                               # Elder's, confirmed, but the world did not count it.
+            self.give_star(5, 0),                               # Fern's, confirmed, but Fern has not played here.
+        ]
+        claims[2]['kind'] = 'gold'                              # ...the world claims a gold one.
+        claims[3]['counted'] = False
+        self.approved_beat(stars=claims)
+        evidence = lambda stars, givers: self.central.unlock_evidence(   # noqa: E731
+            self.world_id, players[0][0], {'stars': stars, 'starGivers': givers})
+        self.assertIn('; 1 of 2 stars confirmed by their givers', evidence(2, 1),
+                      "Birch's alone: Cedar's unconfirmed, Dusk's another kind, Elder's not counted, Fern's no player here")
+        self.assertNotIn('giving accounts', evidence(2, 1))
+        # A second confirmed star from Birch counts as a star, not as another giver.
+        self.approved_beat(stars=[self.give_star(1, 0, confirm=False)])
+        self.assertNotIn('stars confirmed', evidence(2, 2))
+        self.assertIn('1 of 2 giving accounts that played here', evidence(2, 2))
+        # One confirmed long before the world claimed it doesn't count, nor one heard while the world was not approved.
+        self.clock.advance(3600)
+        self.call('confirm_star', {**body, 'wolf': players[2][1]}, self.sign_in(2))
+        self.clock.advance(cs.STAR_MATCH_AFTER + 60)
+        self.approved_beat(stars=[self.give_star(2, 0, confirm=False)])
+        self.call('confirm_star', {**body, 'wolf': players[3][1]}, self.sign_in(3))
+        self.clock.advance(60)
+        self.beat(self.host_token, self.stand.port, stars=[self.give_star(3, 0, confirm=False)])   # (Unapproved.)
+        self.assertIn('1 of 2 giving accounts', evidence(2, 2))
+        # A banned giver's stars stop counting.
+        STORE.set_flags(players[1][0], banned=True)
+        self.assertIn('0 of 2 stars', evidence(2, 2))
+
+    def test_a_world_losing_approval_has_its_recent_unlocks_flagged(self):
+        ash = self.player(0)
+        self.player(1), self.player(2)
+        self.play(11, 0, 1, 2)
+        stars = [self.give_star(1, 0), self.give_star(2, 0)]
+        self.play(1, 0, 1, 2, quickened=[ash[1]], stars=stars)
+        self.assertIsNotNone(STORE.account(ash[0])['quickened_at'])
+        self.assertEqual(STORE.unlocks(self.world_id, flagged=True), [])
+        self.clock.advance(60)
+        reply = self.approved_beat({**self.prints, 'server': 'e' * 64})
+        self.assertIs(reply['approved'], False)
+        flagged = STORE.unlocks(self.world_id, flagged=True)
+        self.assertEqual([u['account_id'] for u in flagged], [ash[0]])
+        self.assertEqual(flagged[0]['flag_reason'], 'the world lost approval: Its server program differs from release '
+                                                    'build-1: it is not an unmodified release of the world image.')
+        self.assertIsNotNone(STORE.account(ash[0])['quickened_at'], 'flagged for review, still in force')
+        self.clock.advance(60)
+        self.assertIs(self.approved_beat()['approved'], True, 'approved again once it matches (not held off)')
+
+    def test_an_implausible_unlock_rate_holds_the_world_off_approval(self):
+        from unittest import mock
+        players = [self.player(n) for n in range(3)]
+        self.play(1, 0, 1, 2, quickened=[players[0][1]])
+        with mock.patch.object(cs, 'UNLOCK_RATE_MOST', 1):
+            reply = self.play(1, 0, 1, 2, quickened=[p[1] for p in players])
+        self.assertIs(reply['approved'], False)
+        self.assertIn('more than 1 new Quickened accounts claimed in 7 days', reply['approval'])
+        world = STORE.world(self.world_id)
+        self.assertIsNotNone(world['approval_blocked'])
+        self.clock.advance(60)
+        reply = self.approved_beat()
+        self.assertEqual(reply['approved'], False, 'held off until an admin lets it go')
+        self.assertTrue(reply['approval'].startswith('Central holds this world off approval'))
+        STORE.block_approval(self.world_id, None, self.clock())
+        self.clock.advance(60)
+        self.assertIs(self.approved_beat()['approved'], True)
+
+    def test_an_admin_reviews_and_revokes_unlocks(self):
+        ash = self.player(0)
+        self.player(1), self.player(2)
+        self.play(11, 0, 1, 2)
+        self.play(1, 0, 1, 2, quickened=[ash[1]], stars=[self.give_star(1, 0), self.give_star(2, 0)])
+        self.assertEqual(STORE.account(ash[0])['quickened_world'], self.world_id)
+        out = io.StringIO()
+        os.environ['RATW_CENTRAL_DBNAME'] = TEST_DB
+        try:
+            def run(*argv):
+                out.seek(0)
+                out.truncate()
+                with __import__('contextlib').redirect_stdout(out), \
+                        __import__('contextlib').redirect_stderr(io.StringIO()):
+                    code = ratw_central.main(list(argv))
+                return code, out.getvalue().strip().splitlines()
+            code, lines = run('worlds', 'block', self.world_id, '--reason', 'a host bragged about a bot')
+            self.assertEqual((code, lines), (0, [f'{self.world_id} held off approval; 1 recent unlock(s) flagged for '
+                                                 'review']))
+            self.assertIs(json.loads(run('worlds', 'approval', self.world_id)[1][0])['approved'], False)
+            code, lines = run('unlocks', 'list', '--flagged')
+            row = json.loads(lines[0])
+            self.assertEqual((code, row['username'], row['how'], row['flag']),
+                             (0, 'ash', 'approved', 'held off approval by hand: a host bragged about a bot'))
+            code, lines = run('unlocks', 'revoke', self.world_id, 'ash', '--note', 'bot stars')
+            self.assertEqual((code, lines[-1]), (0, f'revoke: ash on {self.world_id}; the account has no Quickened now'))
+            self.assertIsNone(STORE.account(ash[0])['quickened_at'])
+            row = json.loads(run('unlocks', 'list', '--username', 'ash')[1][0])
+            self.assertEqual((row['revoked_note'], row['flagged'] is not None), ('bot stars', True), 'kept, marked')
+            self.assertEqual(run('unlocks', 'list', '--flagged')[1], [], 'no longer standing')
+            self.assertEqual(run('unlocks', 'revoke', self.world_id, 'ash')[0], 1, 'once')
+            self.assertEqual(run('worlds', 'unblock', self.world_id)[0], 0)
+            self.clock.advance(60)
+            self.assertIs(self.approved_beat(quickened=[ash[1]])['approved'], True)
+            self.assertIsNone(STORE.account(ash[0])['quickened_at'], 'a revoked unlock is not claimed again')
+            # The releases by hand: a signed file; an unsigned one only with --unsigned.
+            with tempfile.TemporaryDirectory() as folder:
+                signed, bare = Path(folder) / 'signed.json', Path(folder) / 'bare.json'
+                signed.write_text(json.dumps(self.signed(self.manifest('build-9', self.prints))))
+                bare.write_text(json.dumps(self.manifest('build-8', self.prints)))
+                from unittest import mock
+                with mock.patch.object(central_releases, 'load_keys', lambda path=None: self.release_keys):
+                    self.assertEqual(run('releases', 'add', str(signed)), (0, [f'release build-9 added (signed with {self.kid})']))
+                    self.assertEqual(run('releases', 'add', str(bare))[0], 1)
+                    self.assertEqual(run('releases', 'add', str(bare), '--unsigned'),
+                                     (0, ['release build-8 added (unsigned, by hand)']))
+                self.assertEqual([json.loads(r)['build'] for r in run('releases', 'list')[1]], ['build-1', 'build-9', 'build-8'])
+                self.assertEqual(run('releases', 'withdraw', 'build-9', '--note', 'oops')[0], 0)
+                self.assertEqual(run('releases', 'withdraw', 'build-9')[0], 1)
+        finally:
+            os.environ.pop('RATW_CENTRAL_DBNAME', None)
+
+    def test_play_time_counts_from_the_honest_online_list(self):
+        ash, birch = self.player(0), self.player(1)
+        self.play(3, 0)
+        self.clock.advance(600)                       # (A gap: the world was off; it counts at most two minutes.)
+        self.play(1, 0, 1)
+        self.approved_beat(online=[ash[1], 'wolf-' + 'f' * 32])
+        self.assertEqual(STORE.play_seconds(self.world_id, [ash[0], birch[0]]), {ash[0]: 240, birch[0]: 120},
+                         'two minutes, then a gap counted as two minutes; a wolf central never ticketed counts nothing')
+
 
 class IdentityProcess(unittest.TestCase):
     def test_it_comes_back_after_a_crash(self):
