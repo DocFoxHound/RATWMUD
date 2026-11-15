@@ -162,6 +162,42 @@ export class Walker {
         return true;
     }
 
+    /**
+     * Refresh only the tiles of the ground round the cell (doc 70) that changed, as the screen's edge moves over it
+     * (the band's rows as GameState holds them: fringe.ts, bandSpot). False if the grid has no band of that width, for
+     * setCell to make it again. Before, a new band row rebuilt the whole grid (the user, 2026-11-15: jerks walking by a
+     * seam).
+     */
+    updateFringe(band: number, previousRows: string[], rows: string[], previousHeights: Float32Array[], heights: Float32Array[]): boolean {
+        const whole = this.cellWidth + 2 * band;
+        if (!this.gridBase || band <= 0 || band !== this.band || rows.length !== this.cellHeight + 2 * band ||
+            previousRows.length !== rows.length || previousHeights.length !== rows.length || heights.length !== rows.length) return false;
+        if (rows.some((r, i) => r.length !== (i < band || i >= band + this.cellHeight ? whole : 2 * band))) return false;
+        const floats = new Float32Array(this.wasm.memory.buffer, this.gridBase, this.width * this.height * TileBytes / 4);
+        const bytes = new Uint8Array(this.wasm.memory.buffer, this.gridBase, this.width * this.height * TileBytes);
+        for (let r = 0; r < rows.length; ++r) {
+            const before = previousRows[r] ?? '', after = rows[r], hb = previousHeights[r], ha = heights[r];
+            if (before === after && hb === ha) continue;
+            const y = r - band, side = y >= 0 && y < this.cellHeight;
+            for (let j = 0; j < after.length; ++j) {
+                const rise = ha?.[j] ?? 0;
+                if (before[j] === after[j] && (hb?.[j] ?? 0) === rise) continue;
+                const x = !side ? j - band : j < band ? j - band : this.cellWidth + j - band;
+                const terrain = ByCharCode[(after.charCodeAt(j) || 32) & 127];
+                const index = (y + band) * this.width + x + band, f = index * TileBytes / 4, b = index * TileBytes;
+                floats[f] = rise;
+                floats[f + 1] = terrain.cost;
+                floats[f + 2] = terrain.stature;
+                floats[f + 3] = terrain.hides;
+                bytes[b + 16] = 1;                  // (Past the edge, the server walks the wolf: setCell.)
+                bytes[b + 17] = terrain.ramp ? 1 : 0;
+                bytes[b + 18] = 0;
+                bytes[b + 19] = terrain.opaque ? 1 : 0;
+            }
+        }
+        return true;
+    }
+
     /** Update the door bytes without rebuilding the whole city grid when a resident opens a shop door. */
     updateDoors(doors: DoorState[]) {
         if (!this.gridBase) return;

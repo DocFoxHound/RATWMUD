@@ -57,4 +57,8 @@ on those lines. Now it is sent its **whole screen**, and sight decides one thing
   the tick 8,190 → 652 ms over 24,000 ticks; tick mean 1.82 → 1.12 ms, p99 6.16 → 3.80, p99 after the first minute
   5.37 → 3.41, worst after it 19.3 → 17.9 (doc 79's baseline: 1.44, 4.47, 4.20, 16.3); streaming 1,041 → 855 ms.
   Twenty players remembered 472,078 tiles in the two hours (19,661 before).
-- Open: In Sight lists everyone in the rectangle (wider than a small window's map); wolves past a seam aren't sent.
+- 2026-11-15 (`r3-motion`; the user: "'In sight' should be whoever is within the view screen, not whoever is in the
+  cell"): In Sight lists the wolves drawn within the map (`Client/src/game/inSight.ts`), and near a seam the server
+  sends everyone on the screen in the cells beside too (`World::shownBeside`: placed in the observer's cell's tiles,
+  in snapshots and motion frames; never a sneak, whose detection doesn't reach across a seam; only "inspect" there),
+  so crossing a seam changes no one listed. Tests: `stream_tests` `wolvesPastASeam`, `inSight.test.ts`.

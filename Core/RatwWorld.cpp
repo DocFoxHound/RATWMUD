@@ -1414,6 +1414,42 @@ bool World::shown(const std::string& observerId, const std::string& sourceId) co
         return false;
     return o->id == s->id || (o->cellId == s->cellId && shown(*o, *s, sightRange(*o), screenOf(*o)));
 }
+std::vector<World::ShownBeside> World::shownBeside(const Entity& o, const screen::Rect& screen) const
+{
+    std::vector<ShownBeside> out;
+    const auto* c = cell(o.cellId);
+    if (!c || !bandShown(o, *c))
+        return out;
+    for (const auto& b : besideCells(c->id))
+    {
+        const auto* n = cell(b.id);
+        if (!n || !inBand(o, *c, b.dx, b.dy, n->width, n->height))
+            continue;
+        for (const Entity* s : entitiesIn(b.id))
+        {
+            if (s->cellId != b.id || s->id == o.id)
+                continue;
+            const Vec2 at{s->position.x + b.dx, s->position.y + b.dy};
+            if (!screen.holds(at.x, at.y) || (at.x >= 0 && at.y >= 0 && at.x < c->width && at.y < c->height))
+                continue;                           // (Off the screen; or, where cells overlap, over its own ground.)
+            if (sneaking(*s) || (s->transient && !animals_.empty() && animals_.count(s->id)))
+                continue;
+            out.push_back({s, at});
+        }
+    }
+    return out;
+}
+bool World::shownAcross(const std::string& observerId, const std::string& sourceId) const
+{
+    const auto* o = entity(observerId);
+    const auto* s = entity(sourceId);
+    if (!o || !s || o->npc || o->cellId == s->cellId)
+        return false;
+    for (const auto& b : shownBeside(*o, screenOf(*o)))
+        if (b.entity == s)
+            return true;
+    return false;
+}
 std::vector<char> World::screenMask(const Entity& o, const Cell& c, Beyond* beyond) const
 {
     // The whole screen (doc 80): every tile of the rectangle round the wolf, whatever stands between, however dark.
@@ -2679,6 +2715,10 @@ Result World::interact(const std::string& id, const std::string& target, const s
         return {false, "That action is unavailable.", target};
     }
     const auto* other = entity(target);
+    if (other && verb == "inspect" && !a->npc && shownAcross(id, target))
+        return {true,
+                other->name + ": " + other->description + " Currently " + other->posture + (other->state.empty() ? "." : "; " + other->state),
+                target};
     if (other && (a->npc ? visionClarity(id, target) > 0.0 : shown(id, target)))
     {
         if (verb == "inspect")
@@ -2724,6 +2764,8 @@ std::vector<std::string> World::actions(const std::string& id, const std::string
     const auto* e = entity(target);
     if (e && (a->npc ? visionClarity(id, target) > 0.0 : shown(id, target)))
         return {"inspect", "speak"};
+    if (e && shownAcross(id, target))
+        return {"inspect"};                         // (Past a seam: to be looked at, doc 80.)
     return {};
 }
 
@@ -6388,6 +6430,16 @@ Snapshot World::snapshot(const std::string& observerId, bool withTiles, bool obs
             out.entities.push_back(std::move(visible));
         }
     }
+    // And those on the screen past a seam, placed in this cell's tiles (its cellId says they are beside it).
+    if (!o->npc)
+        for (const auto& b : shownBeside(*o, onScreen))
+        {
+            Entity visible = *b.entity;
+            visible.position = b.position;
+            visible.path.clear();
+            visible.input = {};
+            out.entities.push_back(std::move(visible));
+        }
     for (const Door* door : doorsIn(o->cellId))
         if (!(door->passage && door->boundary) && onScreen.holds(door->position.x, door->position.y))
         {

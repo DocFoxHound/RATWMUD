@@ -19,7 +19,7 @@ import {paintUpperTiles} from '../../../Data/Visuals/blockTexture.ts';
 
 /** How a home's stores are drawn (doc 36). */
 const StoreGlyphs: Record<string, string> = {larder: '%', chest: '=', wardrobe: 'H', woodpile: '#'};
-import {pageSurface, TerrainLayer, terrainInfo, type Surface, type SurfaceFactory} from './terrainLayer.ts';
+import {pageSurface, snapToDevice, TerrainLayer, terrainInfo, type Surface, type SurfaceFactory} from './terrainLayer.ts';
 
 // Hostile wolves (doc 32), the same red as a fight's other side.
 const HostileRed = rgb(0xe0695e);
@@ -1232,7 +1232,10 @@ export class GamePainter {
             this.lastCell = cellKey;
             this.lastSelfScreen = [screen[0] + s.cameraShift[0], screen[1] + s.cameraShift[1]];
         }
-        s.mapOrigin = [s.mapOrigin[0] + s.cameraShift[0], s.mapOrigin[1] + s.cameraShift[1]];
+        // On whole device pixels, as the ground's copy is drawn (TerrainLayer): every wolf, mark and bubble then moves
+        // with the ground, pixel for pixel, as the camera follows (never a pixel against it, as the ground stepped
+        // and the rest glided).
+        s.mapOrigin = snapToDevice(p.ctx, s.mapOrigin[0] + s.cameraShift[0], s.mapOrigin[1] + s.cameraShift[1]);
         const [ox, oy] = s.mapOrigin, tile = s.tileSize;
         const cell = obj(s.snapshot, 'cell');
         this.drawEnvironment(false);

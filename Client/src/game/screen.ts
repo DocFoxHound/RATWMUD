@@ -40,7 +40,18 @@ export function screenTile(width: number, height: number): number {
 
 /** A row of glyphs as the map shades it: '2' on the screen (columns `from`..`to` of it), '1' remembered, '0' unknown. */
 export function shadeRow(glyphs: string, from: number, to: number): string {
-    const dim = (part: string) => part.replace(/[^ ]/g, '1').replace(/ /g, '0');
+    // Each row's two shadings are made once and cut to the screen: the page shades every row again at each tile walked,
+    // and a city cell and the ground round it are 350 rows of 350 (doc 31: that, by regular expressions, was a few
+    // milliseconds a step).
+    let both = shadings.get(glyphs);
+    if (!both) {
+        if (shadings.size > 4096) shadings.clear();
+        shadings.set(glyphs, both = [glyphs.replace(/[^ ]/g, '1').replace(/ /g, '0'), glyphs.replace(/[^ ]/g, '2').replace(/ /g, '0')]);
+    }
+    const [dim, lit] = both;
     const a = Math.max(0, Math.min(glyphs.length, from)), b = Math.max(a, Math.min(glyphs.length, to + 1));
-    return dim(glyphs.slice(0, a)) + glyphs.slice(a, b).replace(/[^ ]/g, '2').replace(/ /g, '0') + dim(glyphs.slice(b));
+    if (a >= b) return dim;
+    if (a === 0 && b === glyphs.length) return lit;
+    return dim.slice(0, a) + lit.slice(a, b) + dim.slice(b);
 }
+const shadings = new Map<string, [string, string]>();

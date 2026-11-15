@@ -1560,6 +1560,18 @@ class World
     // the crouch's detection range by the sneak's skill). Never game outside its hunt (doc 41).
     bool shown(const Entity& observer, const Entity& source, double range, const screen::Rect& screen) const;
     bool shown(const std::string& observerId, const std::string& sourceId) const;
+    // The wolves on a player's screen in the cells beside its own (doc 80 across a seam): wherever the band round its
+    // cell carries a cell beside it, everyone there on the screen, each with where it stands in the observer's cell's
+    // tiles (so crossing the seam changes no one shown). Not one hiding (doc 40: its detection never reaches across
+    // a seam, so it is never shown there), nor game outside its hunt. Nothing far from every edge, or indoors.
+    struct ShownBeside
+    {
+        const Entity* entity = nullptr;
+        Vec2 position;                              // In the observer's cell's tiles.
+    };
+    std::vector<ShownBeside> shownBeside(const Entity& observer, const screen::Rect& screen) const;
+    // Whether `sourceId` is on `observerId`'s screen in a cell beside its own (shownBeside): to be looked at only.
+    bool shownAcross(const std::string& observerId, const std::string& sourceId) const;
     // Whether a point of the observer's cell is on its screen.
     bool onScreen(const Entity& observer, Vec2 point) const;
     // Movement sounds only: this never reduces deliberate spoken voice volume.

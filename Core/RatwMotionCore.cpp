@@ -156,6 +156,20 @@ Value frame(const World& world, const std::string& observer, bool full)
                                (isSelf && (!e.path.empty() || std::abs(e.input.x) + std::abs(e.input.y) > .001)));
         poses.push(pose);
     }
+    // And those on its screen past a seam, where its snapshots place them: in its own cell's tiles (World::shownBeside).
+    for (const auto& b : world.shownBeside(*self, screen))
+    {
+        const auto& e = *b.entity;
+        if (!full && std::hypot(b.position.x - self->position.x, b.position.y - self->position.y) > FarAway)
+            continue;
+        auto pose = Value::object();
+        pose.add("id", e.id);
+        pose.add("x", b.position.x);
+        pose.add("y", b.position.y);
+        pose.add("facing", e.facing);
+        pose.add("moving", std::abs(e.velocity.x) + std::abs(e.velocity.y) > .001 || e.postureRemaining > 0);
+        poses.push(pose);
+    }
     root.add("entities", poses);
     root.add("partial", !full);
     return root;
