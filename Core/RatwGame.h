@@ -759,6 +759,9 @@ class Game
     // and the moments in words for a viewer.
     std::map<std::string, std::pair<std::string, std::vector<std::string>>> endedNotes_;
     std::map<std::string, std::string> regardSeen_;
+    // The shop each player chose from a wheel (the shop window's Trade): its keeper's list is the one the snapshot sends
+    // while that keeper is within reach, before a nearer one's. Player id -> keeper id.
+    std::map<std::string, std::string> shopWith_;
     json::Value sceneMoments(const std::string& viewer, const SocialSession& scene) const;
     void meet(const std::string& owner, const std::string& other, const std::string& how);
     void perceivedLine(const std::string& listener, const std::string& who, const std::string& text);

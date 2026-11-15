@@ -29,6 +29,8 @@ import {readRealm, type RealmMap} from './realm.ts';
 import {bubbleSeconds, bubbleText, spokenWords} from './bubbles.ts';
 import {askText} from '../ui/dialog.ts';
 import {commandToRun, runCommand, slashSuggestions, wheelCommands} from './commands.ts';
+import {FlatWheel, wheelEntries, wheelInGroup} from './wheel.ts';
+import {basketKey, shopOf} from './shop.ts';
 
 export interface Post {
     id: string;
@@ -73,6 +75,7 @@ export interface EntityView {
     kind: string;
     state: string;
     actions: string[];
+    words?: Record<string, string>;   // Plain words the server gave for actions that carry an id ("take k460").
     x: number;
     y: number;
     facing: number;
@@ -250,6 +253,19 @@ export class GameState {
     contextKind = '';
     contextPoint: [number, number] = [0, 0];
     contextActions: string[] = [];
+    /** The wheel's open kind (wheel.ts): '' its first ring, a kind's id its actions, '*' a list an action opened. */
+    contextCategory = '';
+    /** The shop window (ui/hud/dialogs.ts, the modal 'trade'; shop.ts): whose shop (a keeper's id, or a player's stall
+     *  with shopStall), the basket (lines by basketKey: how many), the server's quotes for them (by basketKey and
+     *  count), and the last receipts, newest last. */
+    shopStall = false;
+    shopBasket = new Map<string, number>();
+    shopQuotes = new Map<string, {ok: boolean; total: number; text: string}>();
+    private shopAsked = new Set<string>();          // (Quotes asked for and not yet answered.)
+    shopReceipts: {ok: boolean; text: string}[] = [];
+    shopVersion = 0;
+    /** Trade chosen on a keeper out of reach: walking there, the window opening on arrival (until the clock passes). */
+    pendingTrade: {target: string; until: number} | null = null;
     slashPick = 0;                          // The command chosen in the list under the box (commands.ts).
     tileRows: string[] = [];
     visibilityRows: string[] = [];
@@ -650,6 +666,8 @@ export class GameState {
             view.gear = objects(e, 'gear').map(g => ({place: str(g, 'place'), name: str(g, 'name'), weapon: bool(g, 'weapon'), protect: num(g, 'protect')}));
             view.actions = arr(e, 'actions').filter((a): a is string => typeof a === 'string');
             if (!view.actions.length) view.actions = ['inspect'];
+            const words = obj(e, 'words');
+            view.words = words ? Object.fromEntries(Object.entries(words).filter((w): w is [string, string] => typeof w[1] === 'string')) : undefined;
             this.applyPose(view, e, poseTime);
             view.color = Math.trunc(num(e, 'color'));
             view.self = id === this.selfId || bool(e, 'self');
@@ -663,6 +681,16 @@ export class GameState {
             if (!present.has(id) && poseTime >= this.latestMotionTime) this.entities.delete(id);
         this.movementPending = false;
         if (!this.canFaceAt(this.hover)) this.facingPreview = false;
+        // Walking over to trade: the window opens as the keeper's list arrives (within reach), or the walk gives up.
+        if (this.pendingTrade) {
+            const pending = this.pendingTrade;
+            if (str(obj(s, 'merchant'), 'id') === pending.target) this.openShopWindow(false);
+            else if (this.clock > pending.until || this.battle) {
+                this.pendingTrade = null;
+                const e = this.entities.get(pending.target);
+                this.showToast(e ? `${e.name} can't be reached to trade just now.` : 'The keeper is no longer in sight.');
+            }
+        }
         this.applyFight();
     }
 
@@ -1259,6 +1287,24 @@ export class GameState {
         if (type === 'reputation') {
             // Their name about town (doc 32, 1.4), as the residents who know them would put it.
             this.reputation = arr(e, 'lines').filter((l): l is string => typeof l === 'string');
+            return;
+        }
+        if (type === 'tradeQuote') {
+            const quantity = Math.trunc(num(e, 'quantity'));
+            const asked = `${bool(e, 'buy') ? 'buy' : 'sell'}|${str(e, 'item')}|${quantity}`;
+            this.shopAsked.delete(asked);
+            this.shopQuotes.set(asked,
+                {ok: bool(e, 'ok'), total: Math.max(0, Math.trunc(num(e, 'total'))), text: str(e, 'text').slice(0, 120)});
+            ++this.shopVersion;
+            return;
+        }
+        if (type === 'tradeResult') {
+            // The shop window's receipt (the story has the world's line too). Prices move with every trade: quotes again.
+            this.shopReceipts = [...this.shopReceipts, {ok: bool(e, 'ok'), text: str(e, 'text').slice(0, 160)}].slice(-5);
+            this.shopQuotes.clear();
+            this.shopAsked.clear();
+            this.askQuotes();
+            ++this.shopVersion;
             return;
         }
         if (type === 'devResult') {
@@ -1943,7 +1989,8 @@ export class GameState {
                 return true;
             }
             if (this.contextTarget) {
-                this.contextTarget = '';
+                if (wheelInGroup(this)) this.contextCategory = '';      // Back to the kinds first.
+                else this.contextTarget = '';
                 return true;
             }
             if (this.chat) this.setChat(false);
@@ -1971,20 +2018,20 @@ export class GameState {
         }
         if (this.contextTarget) {
             const choice = /^(?:Digit|Numpad)([1-9])$/.exec(code);
-            if (choice && this.contextActions[+choice[1] - 1] !== undefined) {
-                const picked = this.contextActions[+choice[1] - 1];
+            const entry = choice ? wheelEntries(this)[+choice[1] - 1] : undefined;
+            if (entry?.kind === 'group') {
+                this.activate({rect: rect(0, 0, 0, 0), action: 'wheel_group', target: entry.id});
+                return true;
+            }
+            if (entry) {
+                const picked = entry.id;
                 if (this.contextTarget === GroundTarget) {
                     this.contextTarget = '';
                     runCommand(this, picked);
                     return true;
                 }
-                if (picked === 'challenge' || picked.startsWith('challenge:')) {
-                    this.activate({rect: rect(0, 0, 0, 0), action: 'context', target: picked});
-                    return true;
-                }
-                if (this.askFirst(picked)) return true;
-                this.sendAction(this.contextActions[+choice[1] - 1], this.contextTarget);
-                this.contextTarget = '';
+                // As a click on it does (a challenge's terms, vouching, trading, giving...).
+                this.activate({rect: rect(0, 0, 0, 0), action: 'context', target: picked});
                 return true;
             }
         }
@@ -2008,6 +2055,7 @@ export class GameState {
         }
         if (MovementKeys.includes(code)) {
             this.heldKeys.add(code);
+            this.pendingTrade = null;                // (Walking off: no window on arrival.)
             this.sendMove();
             return true;
         }
@@ -2092,6 +2140,7 @@ export class GameState {
     /** The ground's wheel: what one can do here, on no one (commands.ts). */
     openGroundWheel() {
         this.contextTarget = GroundTarget;
+        this.contextCategory = '';
         this.contextName = 'Here';
         this.contextKind = 'ground';
         this.contextActions = wheelCommands(this).map(c => c.name);
@@ -2102,6 +2151,7 @@ export class GameState {
         const e = this.entities.get(id);
         if (!e || e.self) return;
         this.contextTarget = id;
+        this.contextCategory = '';
         this.contextName = e.name;
         this.contextKind = e.kind;
         this.contextActions = e.actions;
@@ -2321,6 +2371,7 @@ export class GameState {
                 return 'map';
             }
             this.movementPending = true;
+            this.pendingTrade = null;
             this.send({type: 'path', x: wx, y: wy});
             return 'map';
         }
@@ -2505,6 +2556,7 @@ export class GameState {
             this.mapPan = [0, 0];
         } else if (a === 'target') {
             this.contextTarget = h.target;
+            this.contextCategory = '';
             this.contextPage = null;
             this.contextPoint = [Math.max(this.mapRect.left, Math.min(this.mapRect.right - 200, h.rect.right + 12)),
                 Math.max(this.mapRect.top, Math.min(this.mapRect.bottom - 260, h.rect.top))];
@@ -2540,6 +2592,24 @@ export class GameState {
             this.sendBattle('face', {dir: Number(h.target)});
         } else if (a === 'ground') {
             this.sendAction('take', h.target);
+        } else if (a === 'shop_qty') {
+            // The shop window's steppers and boxes: "buy|<item>|<count>".
+            const [side, item, count] = h.target.split('|');
+            this.setBasket(side === 'buy', item ?? '', Number(count));
+        } else if (a === 'shop_confirm') this.confirmBasket();
+        else if (a === 'shop_clear') {
+            this.shopBasket.clear();
+            ++this.shopVersion;
+        } else if (a === 'shop_stall') this.openShopWindow(true);
+        else if (a === 'wheel_group') {
+            // A kind on the wheel's first ring: its actions, or its one action done at once.
+            const group = wheelEntries(this).find(e => e.kind === 'group' && e.id === h.target);
+            if (!group) return;
+            if (group.actions.length === 1) this.activate({rect: h.rect, action: 'context', target: group.actions[0]});
+            else this.contextCategory = group.id;
+        } else if (a === 'wheel_back') {
+            if (wheelInGroup(this)) this.contextCategory = '';
+            else this.contextTarget = '';
         } else if (a === 'context') {
             if (this.contextTarget === GroundTarget) {
                 this.contextTarget = '';
@@ -2550,12 +2620,14 @@ export class GameState {
             // A challenge names its terms (doc 37): the menu offers them, the default first.
             if (h.target === 'challenge') {
                 this.contextActions = ['challenge:yield', 'challenge:blood', 'challenge:spar', 'challenge:death'];
+                this.contextCategory = FlatWheel;
                 return;
             }
             // Vouching (doc 52): for which wolf in sight, to this resident.
             if (h.target === 'vouch') {
                 this.contextActions = [...this.entities.values()].filter(e => e.kind !== 'npc' && !e.self).slice(0, 8).map(e => `vouch:${e.id}`);
                 if (!this.contextActions.length) this.showToast('There is no one here to vouch for.');
+                this.contextCategory = FlatWheel;
                 return;
             }
             // Lodging (doc 54): ask this resident for its spare bed.
@@ -2589,6 +2661,7 @@ export class GameState {
                 const seen = arr(obj(this.snapshot, 'self'), 'witnessed').filter(isObject).filter(w => verb === 'vouch' || !bool(w, 'told'));
                 this.contextActions = seen.map(w => `wardens-${verb}:${str(w, 'id')}`);
                 if (!this.contextActions.length) this.showToast(verb === 'tell' ? 'You have told them all you saw.' : 'There is no one to vouch for.');
+                this.contextCategory = FlatWheel;
                 return;
             }
             if (h.target.startsWith('wardens-')) {
@@ -2705,17 +2778,92 @@ export class GameState {
             Math.hypot(num(resource, 'x') - num(self, 'x', -1000), num(resource, 'y') - num(self, 'y', -1000)) <= 1.7;
     }
 
+    /**
+     * Trade on a keeper's wheel: the shop window (shop.ts). Within reach, it opens on their list (the server told whose:
+     * {"type": "shop"}); further off, the wolf walks over and it opens on arrival. (Before 2026-11-15 a keeper more than
+     * two tiles off only said "Trading requires the trader to be awake, visible, and nearby", though the wheel offered
+     * Trade from anywhere in sight: the user's "Trade doesn't seem to work".)
+     */
     openTrade(target: string) {
         const merchant = obj(this.snapshot, 'merchant');
-        if (!target || str(merchant, 'id') !== target) {
-            this.showToast('Trading requires the trader to be awake, visible, and nearby.');
+        if (!target) return;
+        this.contextTarget = '';
+        this.send({type: 'shop', target});
+        if (this.chat) this.setChat(false);
+        if (str(merchant, 'id') === target) {
+            this.openShopWindow(false);
             return;
         }
+        const e = this.entities.get(target);
+        if (!e) {
+            this.showToast('They are no longer in sight.');
+            return;
+        }
+        if (/sleep/i.test(e.state)) {
+            this.showToast(`${e.name} is asleep: the shop is shut until they wake.`);
+            return;
+        }
+        this.pendingTrade = {target, until: this.clock + 20};
+        this.movementPending = true;
+        this.send({type: 'path', x: e.x, y: e.y});
+        this.showToast(`Going over to ${e.name}'s counter…`);
+    }
+
+    /** The shop window, on the keeper's list (or a player's stall the wolf stands at: doc 54, 3). */
+    openShopWindow(stall: boolean) {
         if (this.chat) this.setChat(false);
         this.heldKeys.clear();
         this.sendMove();
+        this.pendingTrade = null;
+        if (this.shopStall !== stall || this.modal !== 'trade') {
+            this.shopBasket.clear();
+            this.shopQuotes.clear();
+            this.shopAsked.clear();
+            this.shopReceipts = [];
+        }
+        this.shopStall = stall;
         this.modal = 'trade';
         this.contextTarget = '';
+        ++this.shopVersion;
+    }
+
+    /** A basket line set to `quantity` (0 takes it out), kept to the shop's step and what there is; a keeper's priced
+     *  by the server. */
+    setBasket(buy: boolean, item: string, quantity: number) {
+        const shop = shopOf(this);
+        const row = shop && (buy ? shop.buy : shop.sell).find(r => r.id === item);
+        const key = basketKey(buy, item);
+        if (!shop || !row || !row.ok || !Number.isFinite(quantity) || quantity < row.step) this.shopBasket.delete(key);
+        else this.shopBasket.set(key, Math.min(row.most, Math.floor(quantity / row.step) * row.step));
+        this.askQuotes();
+        ++this.shopVersion;
+    }
+
+    /** Asks the keeper's price of each basket line not yet quoted (the shop window's totals). */
+    private askQuotes() {
+        const shop = shopOf(this);
+        if (!shop || !shop.quoted) return;
+        for (const [key, quantity] of this.shopBasket) {
+            const buy = key.startsWith('buy|'), item = key.slice(key.indexOf('|') + 1);
+            const asked = `${key}|${quantity}`;
+            if (this.shopQuotes.has(asked) || this.shopAsked.has(asked)) continue;
+            this.shopAsked.add(asked);
+            this.send({type: 'trade_quote', target: shop.id, item, quantity, buy});
+        }
+    }
+
+    /** CONFIRM: the basket's lines as trades, sales first (their coin pays for the buying); each answered by a receipt. */
+    confirmBasket() {
+        const shop = shopOf(this);
+        if (!shop) return;
+        const lines = [...this.shopBasket].filter(([, n]) => n > 0)
+            .map(([key, quantity]) => ({buy: key.startsWith('buy|'), item: key.slice(key.indexOf('|') + 1), quantity}))
+            .sort((a, b) => Number(a.buy) - Number(b.buy));
+        for (const l of lines)
+            this.send(shop.stall ? {type: 'stall', verb: 'buy', id: shop.id, item: l.item, quantity: l.quantity}
+                : {type: 'trade', target: shop.id, item: l.item, quantity: l.quantity, buy: l.buy});
+        this.shopBasket.clear();
+        ++this.shopVersion;
     }
 
     /** The tiles the local map can show: the cell, and the ground round it when there is some (doc 70). */

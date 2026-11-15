@@ -4,6 +4,8 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {testGame} from './testing.ts';
 import {Commands, parseSlash, slashSuggestions, wheelCommands} from './commands.ts';
+import {actionWords, wheelEntries} from './wheel.ts';
+import {basketTotals, shopOf} from './shop.ts';
 import {GroundTarget} from './state.ts';
 import {rect} from '../ui/painter.ts';
 import {str, type Json} from './json.ts';
@@ -127,12 +129,20 @@ test('the wheel: a right-click on the ground offers what the actions panel did, 
     assert.deepEqual(commands.at(-1), {type: 'action', action: 'smell', target: ''});
     assert.equal(s.contextTarget, '', 'and closes');
 
+    // Its first ring is kinds (game/wheel.ts): a digit opens one, a digit there runs its action.
     s.mouseDown([300, 300], false, false, false);
-    s.keyDown({code: `Digit${s.contextActions.indexOf('lay') + 1}`});
+    assert.deepEqual(wheelEntries(s).map(e => e.words), ['Social', 'Senses', 'Rest'], 'the ground\'s kinds, only those with something in them');
+    s.keyDown({code: `Digit${wheelEntries(s).findIndex(e => e.id === 'rest') + 1}`});
+    assert.equal(s.contextCategory, 'rest');
+    assert.deepEqual(wheelEntries(s).map(e => e.words), ['Wait', 'Sit', 'Lie down', 'Groom']);
+    s.keyDown({code: `Digit${wheelEntries(s).findIndex(e => e.id === 'lay') + 1}`});
     assert.deepEqual(commands.at(-1), {type: 'action', action: 'lay', target: ''}, 'its digit runs it');
     s.mouseDown([300, 300], false, false, false);
+    s.activate({rect: rect(0, 0, 0, 0), action: 'wheel_group', target: 'senses'});
     s.keyDown({code: 'Escape'});
-    assert.equal(s.contextTarget, '', 'Esc closes it');
+    assert.ok(s.contextTarget === GroundTarget && (s.contextCategory as string) === '', 'Esc inside a kind goes back to the kinds');
+    s.keyDown({code: 'Escape'});
+    assert.equal(s.contextTarget, '', 'and then closes it');
 
     // On a wolf: its own wheel, the actions the server gives.
     s.hits.push({rect: rect(160, 100, 180, 120), action: 'target', target: 'bram'});
@@ -143,8 +153,10 @@ test('the wheel: a right-click on the ground offers what the actions panel did, 
     s.activate({rect: rect(0, 0, 0, 0), action: 'context', target: 'inspect'});
     assert.deepEqual(commands.at(-1), {type: 'action', action: 'inspect', target: 'bram'});
     s.mouseDown([170, 110], false, false, false);
-    s.keyDown({code: 'Digit1'});
-    assert.deepEqual(commands.at(-1), {type: 'action', action: 'talk', target: 'bram'}, 'its digits too');
+    assert.deepEqual(wheelEntries(s).map(e => [e.words, e.hint]), [['Trade', 'Buy and sell'], ['Social', 'Talk'], ['Look', 'Inspect']],
+        'a keeper\'s kinds, Trade first, each with its one action under it');
+    s.keyDown({code: 'Digit2'});
+    assert.deepEqual(commands.at(-1), {type: 'action', action: 'talk', target: 'bram'}, 'a kind of one action does it at once, by its digit too');
 
     // A left click still walks, and no wheel in a fight or on the World Map.
     s.mouseDown([300, 300], true, false, false);
@@ -212,4 +224,86 @@ test('the story\'s faces: from the speaker the line names by id, never by a name
     assert.equal(s.posts.at(-1)!.face, undefined, 'a voice not put to a wolf');
     s.receiveEvent({type: 'system', id: 'r7', text: 'The bell rings.'});
     assert.equal(s.posts.at(-1)!.face, undefined, "the world's own lines");
+});
+
+test('the wheel in categories, in plain words: no ids, nothing twice (the user, 2026-11-15)', () => {
+    const {state: s} = onTheMap();
+    const keeper = {id: 'ivo', name: 'Ivo Tarmarsh', x: 6, y: 5, npc: true,
+        actions: ['inspect', 'talk', 'trade', 'steal', 'attack', 'ask for work', 'take k458', 'take k459', 'take k460', 'apprentice',
+            'introduce', 'ask to lodge', 'groom', 'give', 'talk', 'deliver m3', 'hire for 5p a day'],
+        words: {'take k458': 'Take on: Clear the bandits from the east road (20p)', 'take k459': 'Take on: Carry a letter to Larkfield (6p)',
+            'deliver m3': 'Deliver 3 bread'}};
+    s.applySnapshot({...s.snapshot!, entities: [{id: 'me', name: 'Ash', x: 5, y: 5}, keeper]});
+    s.openContextAt('ivo', [400, 300]);
+    const groups = wheelEntries(s);
+    assert.deepEqual(groups.map(g => g.words), ['Trade', 'Social', 'Party', 'Work', 'Items', 'Action', 'Look']);
+    const all = groups.flatMap(g => g.actions);
+    assert.equal(all.filter(a => a === 'talk').length, 1, 'talk once');
+    assert.ok(!all.includes('ask for work'), '"Ask for work" goes beside the work itself');
+    const words = all.map(a => actionWords(s, a));
+    for (const w of words) assert.doesNotMatch(w, /\b[a-z]{1,4}\d+\b/i, `no raw id in "${w}"`);
+    assert.ok(words.includes('Take on: Clear the bandits from the east road (20p)'), 'the server\'s words for the work');
+    assert.ok(words.includes('Take on work'), 'work without words from the server: the verb, never "Take k460"');
+    assert.ok(words.includes('Deliver 3 bread'));
+    // Into Work and back: its own actions, numbered from 1.
+    s.activate({rect: rect(0, 0, 0, 0), action: 'wheel_group', target: 'work'});
+    assert.deepEqual(wheelEntries(s).map(e => e.id), ['take k458', 'take k459', 'take k460', 'apprentice', 'deliver m3']);
+    s.activate({rect: rect(0, 0, 0, 0), action: 'wheel_back', target: ''});
+    assert.equal(s.contextCategory, '');
+    // A challenge's terms are a flat list of their own.
+    s.contextActions = ['challenge'];
+    s.activate({rect: rect(0, 0, 0, 0), action: 'context', target: 'challenge'});
+    assert.equal(wheelEntries(s).length, 4);
+    assert.equal(wheelEntries(s)[0].words, 'Duel until one yields');
+});
+
+test('Trade opens the shop window: from afar it walks over first; a basket priced by the server, confirmed as trades', () => {
+    const {state: s, commands} = onTheMap({cash: 30});
+    // Out of reach (no keeper's list in the snapshot): walk over, and no window yet.
+    s.openContextAt('bram', [400, 300]);
+    s.activate({rect: rect(0, 0, 0, 0), action: 'context', target: 'trade'});
+    assert.ok(commands.some(c => c.type === 'shop' && c.target === 'bram'), 'the server told whose list');
+    assert.deepEqual(commands.filter(c => c.type === 'path').at(-1), {type: 'path', x: 8, y: 5}, 'walking over to the keeper');
+    assert.equal(s.modal, '', 'no window until within reach');
+    // Arrived: the keeper's list comes, and the window opens on it.
+    const bread = {id: 'bread', name: 'Bread', quality: 'Common', stock: 30, owned: 4, buyPrice: 2, sellPrice: 1, canBuy: true, canSell: true,
+        listCount: 1, listPrice: 2, buyCount: 1, buyLotPrice: 2, canBuyLot: true, buyReason: 'Available', sellLot: 2, sellLotPrice: 1,
+        canSellLot: true, sellLotReason: 'Available', trend: 0};
+    const oil = {id: 'masking_oil', name: 'Scent-masking oil', stock: 0, owned: 0, buyPrice: 38, sellPrice: 5, canBuy: false, canSell: false,
+        buyReason: 'There is not enough stock.', sellLot: 1, canSellLot: false, sellLotReason: 'There is not enough stock.'};
+    const merchant = {id: 'bram', name: 'Bram', cash: 90, staged: true, buyingToday: 40, items: [bread, oil]};
+    s.applySnapshot({...s.snapshot!, merchant});
+    assert.equal(s.modal, 'trade', 'the shop window');
+    const shop = shopOf(s)!;
+    assert.deepEqual(shop.buy.map(r => [r.id, r.ok]), [['bread', true], ['masking_oil', false]], 'their goods; the empty shelf off');
+    assert.equal(shop.buy[1].reason, 'Out of stock.');
+    assert.deepEqual(shop.sell.map(r => [r.id, r.step]), [['bread', 2]], 'what one carries that they buy, by their lot');
+    // A basket: three loaves bought, two sold; each line quoted by the server.
+    commands.length = 0;
+    s.activate({rect: rect(0, 0, 0, 0), action: 'shop_qty', target: 'buy|bread|3'});
+    s.activate({rect: rect(0, 0, 0, 0), action: 'shop_qty', target: 'sell|bread|3'});
+    assert.deepEqual(commands.filter(c => c.type === 'trade_quote'), [
+        {type: 'trade_quote', target: 'bram', item: 'bread', quantity: 3, buy: true},
+        {type: 'trade_quote', target: 'bram', item: 'bread', quantity: 2, buy: false}], 'priced by the server (sold by the pair)');
+    assert.equal(basketTotals(s, shopOf(s)!).ready, false, 'not before the quotes');
+    s.receiveEvent({type: 'tradeQuote', target: 'bram', item: 'bread', buy: true, quantity: 3, ok: true, total: 7, text: 'Available'});
+    s.receiveEvent({type: 'tradeQuote', target: 'bram', item: 'bread', buy: false, quantity: 2, ok: true, total: 1, text: 'Available'});
+    const t = basketTotals(s, shopOf(s)!);
+    assert.deepEqual([t.pay, t.get, t.after, t.ready], [7, 1, 24, true]);
+    commands.length = 0;
+    s.activate({rect: rect(0, 0, 0, 0), action: 'shop_confirm', target: ''});
+    assert.deepEqual(commands, [{type: 'trade', target: 'bram', item: 'bread', quantity: 2, buy: false},
+        {type: 'trade', target: 'bram', item: 'bread', quantity: 3, buy: true}], 'sold first, then bought');
+    assert.equal(s.shopBasket.size, 0);
+    // Refusals come back plainly, as receipts.
+    s.receiveEvent({type: 'tradeResult', target: 'bram', item: 'bread', buy: true, quantity: 3, ok: false, text: 'You cannot afford that purchase.'});
+    assert.deepEqual(s.shopReceipts.at(-1), {ok: false, text: 'You cannot afford that purchase.'});
+    // Too dear for the purse: no confirming.
+    s.activate({rect: rect(0, 0, 0, 0), action: 'shop_qty', target: 'buy|bread|20'});
+    s.receiveEvent({type: 'tradeQuote', target: 'bram', item: 'bread', buy: true, quantity: 20, ok: false, total: 44, text: 'You cannot afford that purchase.'});
+    const dear = basketTotals(s, shopOf(s)!);
+    assert.ok(!dear.ready && /cannot afford/.test(dear.why), dear.why);
+    // The keeper gone (asleep, away): the window says the counter is unattended.
+    s.applySnapshot({...s.snapshot!, merchant: undefined});
+    assert.equal(shopOf(s), null);
 });
