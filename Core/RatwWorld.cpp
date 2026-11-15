@@ -2429,7 +2429,8 @@ Result World::moveTo(const std::string& id, double x, double y)
     // a wall the route search won't enter. A click past a closed door still only goes as far as it; a locked one is
     // approached, as before.
     for (const Door* door : doorsIn(a->cellId))
-        if (door->portal && !door->locked && !(door->passage && door->boundary) && cell(door->targetCell) &&
+        if (door->portal && !door->locked && (a->npc || !playerDoorLocked(*door)) &&
+            !(door->passage && door->boundary) && cell(door->targetCell) &&
             std::floor(x) == std::floor(door->position.x) && std::floor(y) == std::floor(door->position.y) &&
             (!door->open || findPath(*a, goal).empty()))
         {
@@ -2563,6 +2564,37 @@ void World::transition(Entity& a, const Door& d)
     }
 }
 
+bool World::playerDoorLocked(const Door& d) const
+{
+    // Ridgemere's authored interiors are private unless a merchant works there and the shop is open.
+    // The outward door remains usable so a player is never trapped when a shift ends.
+    if (d.cellId.rfind("w_ridgemere_", 0) != 0 || !d.portal || d.boundary || !cell(d.targetCell) ||
+        cell(d.targetCell)->outdoors)
+        return false;
+    const double hour = std::fmod(calendarDays_ * 24., 24.);
+    for (const auto& position : society_.positions())
+    {
+        if (position.role != "merchant" || position.work.cell != d.targetCell)
+            continue;
+        const auto& name = cell(d.targetCell)->name;
+        const bool lodging = d.targetCell.find("_inn") != std::string::npos ||
+                             d.targetCell.find("_alehouse") != std::string::npos ||
+                             d.targetCell.find("_tavern") != std::string::npos ||
+                             name.find("Inn") != std::string::npos ||
+                             name.find("Tavern") != std::string::npos ||
+                             name.find("Alehouse") != std::string::npos ||
+                             position.title.find("taproom") != std::string::npos ||
+                             position.title.find("keeping the inn") != std::string::npos ||
+                             position.title.find("lodging") != std::string::npos;
+        if (lodging)
+            return false;
+        const double start = position.startHour, end = position.endHour;
+        if (start < end ? (hour >= start && hour < end) : (hour >= start || hour < end))
+            return false;
+    }
+    return true;
+}
+
 Result World::interact(const std::string& id, const std::string& target, const std::string& verb)
 {
     auto* a = entity(id);
@@ -2578,8 +2610,9 @@ Result World::interact(const std::string& id, const std::string& target, const s
         // as an NPC must to see it at all.
         if (d.cellId != a->cellId || (a->npc ? !visiblePoint(*a, d.position) : !onScreen(*a, d.position)))
             return {false, "You cannot see that here.", target};
+        const bool locked = d.locked || (!a->npc && playerDoorLocked(d));
         if (verb == "inspect")
-            return {true, d.name + (d.open ? " is open." : " is closed."), target};
+            return {true, d.name + (locked ? " is locked." : d.open ? " is open." : " is closed."), target};
         if (distance(a->position, d.position) > d.reach)
             return {false, "Move closer to " + d.name + ".", target};
         if (!a->npc && !visiblePoint(*a, d.position))
@@ -2592,7 +2625,7 @@ Result World::interact(const std::string& id, const std::string& target, const s
                     target};
         if (verb == "open" || (verb == "enter" && d.portal && d.open))
         {
-            if (d.locked)
+            if (locked)
                 return {false, "It is locked.", target};
             d.open = true;
             if (!d.linkedDoor.empty() && doors_.count(d.linkedDoor))
@@ -2674,6 +2707,8 @@ std::vector<std::string> World::actions(const std::string& id, const std::string
             out.push_back("listen");
             if (!d->passage && d->id.find("stairs_") != 0)
                 out.push_back("knock");
+            if (d->locked || (!a->npc && playerDoorLocked(*d)))
+                return out;
             if (!d->open)
                 out.push_back("open");
             else
@@ -2808,7 +2843,8 @@ void World::integrate(Entity& a, double dt)
         {
             const auto* d = door(pending->second);
             pendingPortals_.erase(pending);
-            if (d && d->portal && d->open && d->cellId == a.cellId && distance(a.position, d->position) <= d->reach)
+            if (d && d->portal && d->open && (a.npc || !playerDoorLocked(*d)) && d->cellId == a.cellId &&
+                distance(a.position, d->position) <= d->reach)
                 transition(a, *d);
             return;
         }
@@ -2980,7 +3016,7 @@ bool World::throughDoor(Entity& a, const Cell& c, Vec2 direction, Vec2 proposed,
     for (Door* door : ahead ? *ahead : NoDoors)
     {
         auto& d = *door;
-        if (!d.portal || d.locked || (d.passage && d.boundary) ||
+        if (!d.portal || d.locked || (!a.npc && playerDoorLocked(d)) || (d.passage && d.boundary) ||
             !doorCovers(d, lead) || doorCovers(d, a.position) || !cell(d.targetCell))
             continue;
         if (!d.open)
@@ -6356,6 +6392,8 @@ Snapshot World::snapshot(const std::string& observerId, bool withTiles, bool obs
         if (!(door->passage && door->boundary) && onScreen.holds(door->position.x, door->position.y))
         {
             Door visible = *door;
+            if (!o->npc && playerDoorLocked(*door))
+                visible.locked = true;
             // Target anchors/paired fixture IDs are server topology, not UI data.
             visible.arrival = {};
             visible.linkedDoor.clear();

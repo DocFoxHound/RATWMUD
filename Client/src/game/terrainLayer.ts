@@ -34,6 +34,43 @@ export interface TileWindow {
     y1: number;
 }
 
+/** Snapshot decoding may replace arrays without changing any ground in the cached window. */
+function sameRows(a: string[] | null, b: string[], w: TileWindow): boolean {
+    if (a === b) return true;
+    if (!a || a.length !== b.length) return false;
+    for (let y = w.y0; y <= w.y1; ++y)
+        if ((a[y] ?? '').slice(Math.max(0, w.x0), w.x1 + 1) !== (b[y] ?? '').slice(Math.max(0, w.x0), w.x1 + 1))
+            return false;
+    return true;
+}
+
+function sameHeights(a: Float32Array | null, b: Float32Array, w: TileWindow, width: number): boolean {
+    if (a === b) return true;
+    if (!a || a.length !== b.length) return false;
+    for (let y = Math.max(0, w.y0); y <= w.y1; ++y)
+        for (let x = Math.max(0, w.x0); x <= w.x1 && x < width; ++x)
+            if (a[y * width + x] !== b[y * width + x]) return false;
+    return true;
+}
+
+function sameFringe(a: unknown[], b: unknown[]): boolean {
+    if (a.length !== b.length) return false;
+    if (a.every((v, i) => v === b[i])) return true;
+    for (let i = 0; i < a.length; ++i) {
+        const old = a[i] as ArrayLike<string | Float32Array> | undefined;
+        const now = b[i] as ArrayLike<string | Float32Array> | undefined;
+        if (!old || !now || old.length !== now.length) return false;
+        for (let row = 0; row < old.length; ++row) {
+            const x = old[row], y = now[row];
+            if (x === y) continue;
+            if (typeof x === 'string' && typeof y === 'string' && x === y) continue;
+            if (!(x instanceof Float32Array) || !(y instanceof Float32Array) || x.length !== y.length) return false;
+            for (let j = 0; j < x.length; ++j) if (x[j] !== y[j]) return false;
+        }
+    }
+    return true;
+}
+
 export interface Surface {
     canvas: CanvasImageSource & {width: number; height: number};
     ctx: CanvasRenderingContext2D;
@@ -130,7 +167,13 @@ export class GroundPainter {
     paint(c: CanvasRenderingContext2D, s: GameState, w: TileWindow, ox: number, oy: number, tile: number) {
         const e = s.environment;
         const dark = 1 - e.illumination;
-        const darkStep = Math.round(dark * 50);
+        // Authored street lamps light the cached text ground,
+        // so night walking does not add another animated layer or reveal unseen tiles.
+        const lamps: Array<[number, number]> = [];
+        if (dark > 0.1)
+            for (let ly = w.y0 - 4; ly <= w.y1 + 4; ++ly)
+                for (let lx = w.x0 - 4; lx <= w.x1 + 4; ++lx)
+                    if (s.glyphAt(lx, ly) === "'" && s.seenAt(lx, ly) !== '0') lamps.push([lx, ly]);
         const ground = s.selfHeight();
         if (this.styles.size > 20000) this.styles.clear();
         let currentFont = '', currentFill = '';
@@ -145,16 +188,22 @@ export class GroundPainter {
                 const known = seen === '1';
                 const rise = s.heightAt(x, y) - ground;
                 const facing = relief.facing(x, y);
+                let localDark = dark;
+                for (const [lx, ly] of lamps) {
+                    const distance = Math.hypot(x - lx, y - ly);
+                    if (distance < 4) localDark = Math.min(localDark, Math.max(0, dark - (1 - distance / 4) * 0.75));
+                }
+                const darkStep = Math.round(localDark * 50);
                 const key = `${code}|${seen}|${rise}|${facing}|${darkStep}|${s.plainGlyphs ? 1 : 0}`;
                 let style = this.styles.get(key);
-                if (!style) this.styles.set(key, style = this.style(code, known, rise, facing, dark, s.plainGlyphs));
+                if (!style) this.styles.set(key, style = this.style(code, known, rise, facing, localDark, s.plainGlyphs));
                 const px = ox + x * tile, py = oy + y * tile;
                 if (style.floor) {
                     if (currentFill !== style.floor) c.fillStyle = currentFill = style.floor;
                     c.fillRect(px, py, tile, tile);
                 }
                 const lift = clamp(rise, -2, 2);
-                if (!s.plainGlyphs && paintBlockTile(c, code, x, y, px, py - lift, tile, style.color, e.illumination)) {
+                if (!s.plainGlyphs && paintBlockTile(c, code, x, y, px, py - lift, tile, style.color, 1 - localDark)) {
                     currentFill = '';
                     continue;
                 }
@@ -274,9 +323,9 @@ export class TerrainLayer {
     private surface: Surface | null = null;
     private region: TileWindow = {x0: 0, y0: 0, x1: -1, y1: -1};
     private key = '';
-    private rows: unknown = null;
-    private visibility: unknown = null;
-    private heights: unknown = null;
+    private rows: string[] | null = null;
+    private visibility: string[] | null = null;
+    private heights: Float32Array | null = null;
     private fringe: unknown[] = [];
     private ground = new GroundPainter();
     private factory: SurfaceFactory;
@@ -299,8 +348,9 @@ export class TerrainLayer {
             s.cellWidth, s.cellHeight, s.fringe].join('|');
         const inside = view.x0 >= this.region.x0 && view.y0 >= this.region.y0 && view.x1 <= this.region.x1 && view.y1 <= this.region.y1;
         const fringe = [s.fringeRows, s.fringeVisibility, s.fringeHeights];
-        if (key !== this.key || !inside || this.rows !== s.tileRows || this.visibility !== s.visibilityRows || this.heights !== s.tileHeights ||
-            fringe.some((part, i) => part !== this.fringe[i])) {
+        if (key !== this.key || !inside || !sameRows(this.rows, s.tileRows, this.region) ||
+            !sameRows(this.visibility, s.visibilityRows, this.region) || !sameHeights(this.heights, s.tileHeights, this.region, s.cellWidth) ||
+            !sameFringe(this.fringe, fringe)) {
             if (!this.rebuild(s, view, tile, k)) {
                 this.key = '';
                 this.ground.paint(c, s, view, ox, oy, tile);

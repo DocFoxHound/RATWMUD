@@ -276,10 +276,22 @@ export class GamePainter {
         if (!f || !t || !c.canvas || s.worldMap) return false;
         const W = c.canvas.width, H = c.canvas.height;
         const letters = new Set<string>();
-        for (let i = 0; i < f.kinds.length; ++i) if (f.kinds[i] !== 'c' && f.amounts[i] !== '0') letters.add(f.kinds[i]);
+        // Weak fronts are already represented by the cell's tint. Compositing two full-screen canvases for
+        // one- to three-ninths weather cost more than a frame in Ridgemere's broad outdoor views.
+        for (let i = 0; i < f.kinds.length; ++i)
+            if (f.kinds[i] !== 'c' && Number(f.amounts[i]) >= 4) letters.add(f.kinds[i]);
         // Sunlit clear ground keeps its passing cloud shadows.
         if (s.environment.weather === 'clear') for (const layer of this.weatherLayers('clear')) this.drawWeatherLayer(b, layer);
         if (!letters.size) return true;
+        // A forced or uniform front has no edge to mask. Draw its glyph sheet straight onto the map;
+        // the full-screen offscreen copy is the main cost of rain at night.
+        if (letters.size === 1 && f.kinds.split('').every(k => k === f.kinds[0]) &&
+            f.amounts.split('').every(a => a === f.amounts[0])) {
+            const kind = KindOfLetter[f.kinds[0]] ?? 'clear';
+            const strength = Number(f.amounts[0]) / 9;
+            for (const layer of this.weatherLayers(kind)) this.drawWeatherLayer(b, layer, undefined, strength);
+            return true;
+        }
         if (!this.weatherSurface || this.weatherSurface.canvas.width !== W || this.weatherSurface.canvas.height !== H)
             this.weatherSurface = this.surfaces(W, H);
         const surface = this.weatherSurface;
@@ -1245,9 +1257,10 @@ export class GamePainter {
                 p.ctx.strokeRect(x0 + 1.5, y0 + 1.5, tile - 3, tile - 3);
                 p.ctx.restore();
             } else {
+                const locked = bool(door, 'locked');
                 p.box(x - 8, y - 10, 17, 22, Ink);
-                p.text(x - 7, y - 10, bool(door, 'open') ? '/' : '+', 17, Amber, true);
-                p.frame(x - 11, y - 13, 23, 27, withAlpha(Amber, 0.25));
+                p.text(x - 7, y - 10, locked ? '×' : bool(door, 'open') ? '/' : '+', 17, locked ? Muted : Amber, true);
+                p.frame(x - 11, y - 13, 23, 27, withAlpha(locked ? Muted : Amber, 0.25));
             }
             s.hits.push({rect: rect(x - 15, y - 16, x + 15, y + 16), action: 'target', target: str(door, 'id')});
         }

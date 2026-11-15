@@ -932,6 +932,10 @@ test('the map ground is drawn offscreen once and redrawn only when what it shows
     s.applySnapshot({...snapshot, time: 0.2});
     draw(painter, 'drawLocal');
     assert.equal(painter.terrain.rebuilds, 1, 'an unchanged snapshot (the same held parts) keeps it');
+    s.applySnapshot({cell: {id: 'glade', width: 32, height: 24, rows: [...rows], heights: []},
+        visibility: rows.map(() => '2'.repeat(32)), self: {id: 'me', x: 16, y: 12}, time: 0.3, cellGeneration: 1});
+    draw(painter, 'drawLocal');
+    assert.equal(painter.terrain.rebuilds, 1, 'fresh snapshot arrays with the same visible ground do not redraw it');
     const seen = rows.map((_, y) => (y === 3 ? '1' : '2').repeat(32));
     s.applySnapshot({...snapshot, time: 0.4, visibility: seen});
     draw(painter, 'drawLocal');
@@ -939,6 +943,10 @@ test('the map ground is drawn offscreen once and redrawn only when what it shows
     s.plainGlyphs = true;
     draw(painter, 'drawLocal');
     assert.equal(painter.terrain.rebuilds, 3, 'and so does a change of glyphs');
+    s.applySnapshot({...snapshot, time: 0.5, visibility: seen, cell: {id: 'glade', width: 32, height: 24, rows,
+        heights: rows.map((_, y) => y === 3 ? 'Q'.repeat(32) : 'P'.repeat(32))}});
+    draw(painter, 'drawLocal');
+    assert.equal(painter.terrain.rebuilds, 4, 'a changed height in the cached view redraws its relief');
 });
 
 test("the player's own wolf answers at once, carried ahead while moving, eased rather than jumped", () => {

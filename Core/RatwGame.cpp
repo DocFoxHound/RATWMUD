@@ -4224,6 +4224,7 @@ void Game::sendSnapshot(Connection* c)
         j.add("x", d.position.x);
         j.add("y", d.position.y);
         j.add("open", d.open);
+        j.add("locked", d.locked);
         j.add("portal", d.portal);
         auto actions = Value::array();
         for (const auto& a : world_.actions(id, d.id))

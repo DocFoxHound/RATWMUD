@@ -146,14 +146,14 @@ test('the map of the country draws the band round the wolf\'s place, over the pi
 });
 
 test('the weather falls on the band as on the cell beside it', () => {
-    // Rain over a 32-tile cell (a field of 3 x 3 samples, 16 tiles apart) with a band 48 wide: the soft mask that
+    // Varying rain over a 32-tile cell (a field of 3 x 3 samples, 16 tiles apart) with a band 48 wide: the soft mask that
     // cuts the rain down to where it falls reaches over the whole band, its edge samples repeated, not the cell alone.
     const band = 48, step = 16, side = 32, tile = 2;
     const {state: s} = testGame();
     const fringeRows: string[] = [];
     for (let y = -band; y < side + band; ++y) fringeRows.push(','.repeat(y < 0 || y >= side ? side + 2 * band : 2 * band));
     s.applySnapshot({cell: {id: 'field', width: side, height: side, outdoors: true, weather: 'rain', rows: Array(side).fill(','.repeat(side)),
-        fringe: band, fringeRows, weatherField: {step, cols: 3, rows: 3, kinds: 'rrrrrrrrr', amounts: '999999999'}},
+        fringe: band, fringeRows, weatherField: {step, cols: 3, rows: 3, kinds: 'rrrrrrrrr', amounts: '999999998'}},
     self: {id: 'self', x: side - 2.5, y: 16.5}, entities: [], doors: [], time: 0, cellGeneration: 1} as Json);
     assert.equal(s.fringe, band);
     const masks: Array<{width: number; height: number; alpha: number[]}> = [];
@@ -181,5 +181,5 @@ test('the weather falls on the band as on the cell beside it', () => {
     const [x, y, w, h] = cuts[0];
     assert.ok(x <= b.left && y <= b.top && x + w >= b.right && y + h >= b.bottom, `the mask covers the band: ${cuts[0]}`);
     const mask = masks.find(m => m.width === w / (step * tile) && m.height === h / (step * tile));
-    assert.ok(mask && mask.alpha.every(a => a === 255), 'and the rain is as strong over it as at the cell\'s edge');
+    assert.ok(mask && mask.alpha.every(a => a >= 226), 'and the rain stays strong over it as at the cell\'s edge');
 });

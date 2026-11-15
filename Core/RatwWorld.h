@@ -2417,6 +2417,7 @@ class World
     int fightPace(const Entity& e) const;           // The pace a fighter moves at: theirs, an NPC's run, or a walk.
 
   private:
+    bool playerDoorLocked(const Door& door) const;
     std::vector<std::pair<std::string, std::string>> notices_;
     bool noticesMoved_ = false;                     // (Any of notices_ told of something moved: takeNotices.)
     bool noticesCrime_ = false;                     // (Any told of an incident, a warrant or custody: takeNotices.)

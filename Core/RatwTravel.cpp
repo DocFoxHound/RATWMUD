@@ -50,7 +50,8 @@ bool knownConnection(const Door& door, const std::map<std::string, CellMemory>& 
     return pair != doors.end() && pair->second.targetCell == door.cellId && pair->second.cellId == door.targetCell &&
            observed(to->second, pair->second.position);
 }
-Graph knownGraph(const std::map<std::string, CellMemory>& book, const std::map<std::string, Door>& doors)
+template <class Usable>
+Graph knownGraph(const std::map<std::string, CellMemory>& book, const std::map<std::string, Door>& doors, Usable usable)
 {
     Graph graph;
     for (const auto& entry : book)
@@ -59,7 +60,7 @@ Graph knownGraph(const std::map<std::string, CellMemory>& book, const std::map<s
     for (const auto& entry : doors)
     {
         const auto& door = entry.second;
-        if (!knownConnection(door, book, doors))
+        if (!knownConnection(door, book, doors) || !usable(door))
             continue;
         const auto& from = book.at(door.cellId);
         const auto& to = book.at(door.targetCell);
@@ -210,7 +211,7 @@ Result World::travelTo(const std::string& id, const std::string& destination)
     if (destination.empty() || destination.size() > 48 || target == book.end() ||
         target->second.knowledge != Knowledge::Visited)
         return {false, "Choose a place you have visited before.", {}};
-    auto graph = knownGraph(book, doors_);
+    auto graph = knownGraph(book, doors_, [&](const Door& d) { return !d.locked && !playerDoorLocked(d); });
     addSeams(graph, book, exits_);
     const auto routes = routesTo(graph, destination);
     const auto route = routeFrom(routes, actor->cellId, destination);
@@ -288,7 +289,8 @@ void World::updateTravel(Entity& actor)
     if (state.paused)
     {
         const auto* blocker = door(state.nextDoor);
-        if (!blocker || blocker->cellId != actor.cellId || !blocker->open)
+        if (!blocker || blocker->cellId != actor.cellId || !blocker->open || blocker->locked ||
+            playerDoorLocked(*blocker))
             return;
         state.paused = false;
         state.nextDoor.clear();
@@ -311,7 +313,8 @@ void World::updateTravel(Entity& actor)
     if (!state.nextDoor.empty())
     {
         const auto* next = door(state.nextDoor);
-        if (next && next->cellId == actor.cellId && distance(actor.position, next->position) <= next->reach)
+        if (next && !next->locked && !playerDoorLocked(*next) && next->cellId == actor.cellId &&
+            distance(actor.position, next->position) <= next->reach)
         {
             if (!next->open)
             {
@@ -349,7 +352,7 @@ void World::updateTravel(Entity& actor)
         return;
     }
     const auto& book = memories(actor.id);
-    auto graph = knownGraph(book, doors_);
+    auto graph = knownGraph(book, doors_, [&](const Door& d) { return !d.locked && !playerDoorLocked(d); });
     addSeams(graph, book, exits_);
     // Remaining routes cannot immediately double back through this cell.
     const auto routes = routesTo(graph, state.destination, actor.cellId);
@@ -361,7 +364,8 @@ void World::updateTravel(Entity& actor)
     };
     std::vector<const Door*> exits;
     for (const Door* d : doorsIn(actor.cellId))
-        if (knownConnection(*d, book, doors_) && routes.costs.count(d->targetCell))
+        if (!d->locked && !playerDoorLocked(*d) && knownConnection(*d, book, doors_) &&
+            routes.costs.count(d->targetCell))
             exits.push_back(d);
     if (exits.empty())
     {
