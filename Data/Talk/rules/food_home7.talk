@@ -139,7 +139,7 @@ then other: food.opinion
 ## The realm's dishes, where you stand (opinions, so food.opinion fits)
 
 rule e1_fd_claim_fens
-when concept=talk.food here.region=mirebridge
+when concept=talk.food here.region=fens
 cooldown 2d
 say No fish like an eel. I'll argue it with anyone. | Jellied eel's the finest thing the Fens ever made. | A duck off the reed beds, roasted with sage. Nothing better.
 then other: food.opinion
@@ -171,7 +171,7 @@ then other: food.opinion
 rule e1_fd_claim_oakhaven
 when concept=talk.food here.region=oakhaven
 cooldown 2d
-say Mushrooms and venison. The Warmwood feeds you, if you know it. | Wild boar, slow roasted. Nothing finer. | Hazelnuts in the bread. That's how bread should be.
+say Mushrooms and venison. The Rainwood feeds you, if you know it. | Wild boar, slow roasted. Nothing finer. | Hazelnuts in the bread. That's how bread should be.
 then other: food.opinion
 
 rule e1_fd_claim_ridgemere
@@ -560,7 +560,7 @@ then other: food.react
 remember pair: fa=good 2m
 
 rule e1_fa_fens
-when concept=food.answer here.region=mirebridge
+when concept=food.answer here.region=fens
 say Eel. What else? | Duck, if my sling was true. | Eel pie. My mother's eel pie.
 then other: food.react
 remember pair: fa=good 2m
@@ -737,7 +737,7 @@ when concept=food.opinion pair.band=spouses
 say You say that every night, #dear#. | You would say that. | Then you can do the cooking for once.
 
 rule e1_fo_from_fens
-when concept=food.opinion from=mirebridge
+when concept=food.opinion from=mirebridge|fenshore
 say Not compared to an eel. | You've never had a Fen supper. | Back home, we'd put eel in it.
 
 rule e1_fo_from_south
@@ -758,7 +758,7 @@ say Better with mutton. | Can't beat a downs supper. | Have you tried it with mi
 
 rule e1_fo_from_oakhaven
 when concept=food.opinion from=oakhaven
-say Put a mushroom in it and you'd be right. | In the Warmwood we'd say the same, with a bit of boar. | Hazelnuts. It wants hazelnuts.
+say Put a mushroom in it and you'd be right. | In the Rainwood we'd say the same, with a bit of boar. | Hazelnuts. It wants hazelnuts.
 
 rule e1_fo_from_ridgemere
 when concept=food.opinion from=ridgemere
@@ -1213,7 +1213,7 @@ when concept=home.answer here.season=summer here.weather!=rain|storm
 say Close. Can't sleep for the heat. | Cool enough with the shutters closed. | The thatch keeps it cool. Mostly.
 
 rule e1_ha_fens
-when concept=home.answer here.region=mirebridge
+when concept=home.answer here.region=fens
 say Damp to the rafters. Fen house. | Leaning a little more each year. Like me. | The frogs sing under the floor all spring.
 
 rule e1_ha_frosthollow

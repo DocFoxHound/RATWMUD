@@ -1,4 +1,4 @@
-# Oakhaven (Docs/Design/62-talk.md, section 3): the Warmwood. Slow, rooted, warm; trees, roots, bark and shade.
+# Oakhaven (Docs/Design/62-talk.md, section 3): the Rainwood. Slow, rooted, warm; trees, roots, bark and shade.
 # Drafts (phase 3), to be written properly with you (phase 7).
 
 grammar oakhaven
@@ -90,3 +90,20 @@ inn_bed = Upstairs, under the old beams. There's a chest for your things. | Your
 watch_greet = The watch, old root. Speak slow. | Keep the peace and we'll grow along fine.
 church_greet = Shade on you. Come in. | Sit in the shade a while. All are welcome.
 learn_offer = It's a trade that grows on you. | Slow work, but it lasts.
+# The dialogue trees' other words (doc 83, Phase 4): news and gossip there isn't, a trouble that isn't, thanks for
+# help, the way, a resident's work, work turned down, an inn's fire and its helpers, the watch's word, a master's
+# new apprentice, something to hand over; a keeper asleep.
+shop_asleep = Mm... shut, old root... come back at sunup. | Zzz... let a body sleep. Morning.
+news_none = Quiet under the trees. | Nothing's stirred lately. | Not a leaf turned.
+gossip_none = Magpie talk. I keep out of it. | Nothing I'd repeat, old root.
+trouble_none = Nothing that won't grow out. | Nothing, old root.
+trouble_thanks = Shade on you. I won't forget it. | You've a good root in you. Thank you.
+way_ask = Where are you headed, old root? | Lost among the trees?
+job_busy = This and that, slow and steady. | I keep busy, old root.
+work_declined = Suit yourself, old root. | Another season, then.
+inn_rest = Sit a while under the beams. A bed upstairs rests you properly. | Take the bench by the fire, old root.
+watch_noted = Noted. We'll root them out. | Good. The watch thanks you, old root.
+watch_bye = Keep the peace, old root. | Move along, then.
+learn_taken = Good. Be here at sunup, and stay near me while I work. | Then you're my sapling. Stay close.
+receiver_ask = Something for me, old root? | For me? Sit a while.
+inn_helper = I only help here, old root. Ask #here.innkeeper# for a bed. | #here.innkeeper# keeps the house. I carry the cups.

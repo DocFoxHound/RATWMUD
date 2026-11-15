@@ -1113,6 +1113,54 @@ b : Yes.
            "and their values are checked: " + problem);
 }
 
+// Doc 83, Phase 4: the Country's towns speak another's dialect (settings.json, dialect_of), and every symbol a dialogue
+// tree says is in every dialect.
+void theCountrysVoices()
+{
+    Library lib;
+    std::string problem;
+    expect(lib.load(Dir, problem), "the library loads: " + problem);
+    expect(lib.dialectOf("fenshore") == "mirebridge" && lib.dialectOf("saltwell") == "coldwater",
+           "Fenshore speaks as Mirebridge, Saltwell as Coldwater");
+    expect(lib.dialectOf("larkfield") == "larkfield" && lib.dialectOf("") == "", "a town with a dialect speaks its own");
+    // A Fenshore wolf, broad (as Game::talkSpeaker makes them: their grammar layer is the dialect, `from` their town).
+    Query q = moment("talk.smalltalk");
+    q.alone = true;
+    q.a.facts["from"] = "fenshore";
+    q.a.facts["accent"] = "broad";
+    q.a.grammar = {lib.dialectOf("fenshore")};
+    std::set<std::string> said;
+    for (std::uint64_t seed = 1; seed < 40; ++seed)
+    {
+        std::string out;
+        expect(lib.expand("#greet#", q, 0, seed, out), "a greeting expands");
+        said.insert(out);
+    }
+    expect(said.count("Dry feet") || said.count("Dry feet to you") || said.count("Dry feet, dry feet"),
+           "a broad Fenshore wolf greets as the fens do");
+    expect(lib.voiceCard(q.a).find("Grew up in Fenshore") != std::string::npos &&
+               lib.voiceCard(q.a).find("Dry feet") != std::string::npos,
+           "and the model is told where they grew up, with the fens' words: " + lib.voiceCard(q.a));
+    // A Saltwell wolf with no accent left speaks plainly.
+    q.a.facts["from"] = "saltwell";
+    q.a.facts["accent"] = "none";
+    q.a.grammar = {lib.dialectOf("saltwell")};
+    for (std::uint64_t seed = 1; seed < 20; ++seed)
+    {
+        std::string out;
+        lib.expand("#greet#", q, 0, seed, out);
+        expect(out.find("water") == std::string::npos, "no accent, no Coldwater words: " + out);
+    }
+    // The dialogue trees' symbols (doc 83's shop_*, work_*, inn_*, watch_*, the Phase 4 words) in every dialect.
+    for (const char* symbol : {"shop_offer", "shop_asleep", "shop_bye", "talk_open", "work_offer", "work_declined", "inn_offer",
+                               "inn_rest", "inn_helper", "watch_greet", "watch_noted", "watch_bye", "church_greet", "learn_offer",
+                               "learn_taken", "news_none", "gossip_none", "trouble_none", "trouble_thanks", "way_ask", "job_busy",
+                               "receiver_ask", "bless"})
+        for (const auto& g : lib.grammars())
+            if (g.rfind("person:", 0) != 0)
+                expect(lib.symbols(g).count(symbol) > 0, g + " has #" + symbol + "#");
+}
+
 int main()
 {
     try
@@ -1129,6 +1177,7 @@ int main()
         salience();
         theStagedEconomysTalk();
         theForbiddenWord();
+        theCountrysVoices();
     }
     catch (const std::exception& error)
     {

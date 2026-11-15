@@ -540,12 +540,20 @@ void World::talkTown(const std::string& who, std::map<std::string, std::string>&
     facts["here.player_near"] = traveller ? "yes" : "no";
 }
 
+void World::setTalkDialects(std::map<std::string, std::string> dialectOf)
+{
+    talkDialectOf_ = std::move(dialectOf);
+    talkHomes_.clear();
+}
+
 void World::talkOrigin(const std::string& id, std::string& from, std::string& accent) const
 {
-    // Where a resident grew up, and how strongly they still speak like it (doc 62, phase 3). Worked out from who they
-    // are, never stored, so the same resident always has the same: most grew up where they live; of each place's grown
-    // folk about one in seven came from another (one in four in Ridgemere, the city everyone comes to). The old and
-    // the never-moved speak broadest; those settled elsewhere fade.
+    // Where a resident grew up, and how strongly they still speak like it (doc 62, phase 3; doc 83, Phase 4). Worked
+    // out from who they are, never stored, so the same resident always has the same: most grew up where they live; of
+    // each place's grown folk about one in seven came from another (one in four in Ridgemere, the city everyone comes
+    // to). The old and the never-moved speak broadest; those settled elsewhere fade. The places are the realm's seven
+    // dialect regions and the towns that speak another's (talkDialectOf_: Fenshore, Saltwell), of those where somebody
+    // lives in this world: a town erased from the map (Mirebridge on Ridgemere 3) is nobody's birthplace.
     static const std::vector<std::string> Regions{"ridgemere", "frosthollow", "coldwater", "oakhaven", "mirebridge",
                                                   "larkfield", "southmeadow"};
     from.clear();
@@ -554,8 +562,21 @@ void World::talkOrigin(const std::string& id, std::string& from, std::string& ac
     const auto* life = society_.resident(id);
     if (!e || !life)
         return;
+    if (talkHomes_.empty())
+    {
+        std::map<std::string, int> lived;
+        for (const auto& [rid, r] : society_.state().residents)
+            if (!r.homeCell.empty())
+                ++lived[townIdOf(r.homeCell)];
+        for (const auto& r : Regions)
+            if (lived.count(r))
+                talkHomes_.push_back({r, lived[r]});
+        for (const auto& [town, dialect] : talkDialectOf_)
+            if (lived.count(town) && std::none_of(talkHomes_.begin(), talkHomes_.end(), [&](const auto& p) { return p.first == town; }))
+                talkHomes_.push_back({town, lived[town]});
+    }
     const auto home = townIdOf(life->homeCell.empty() ? e->cellId : life->homeCell);
-    if (std::find(Regions.begin(), Regions.end(), home) == Regions.end())
+    if (std::find(Regions.begin(), Regions.end(), home) == Regions.end() && !talkDialectOf_.count(home))
         return;                                     // (Somewhere that is none of the realm's: no dialect of its own.)
     std::uint64_t h = 1469598103934665603ULL;
     for (const unsigned char c : "origin|" + id)
@@ -563,15 +584,25 @@ void World::talkOrigin(const std::string& id, std::string& from, std::string& ac
     h ^= h >> 29;
     const auto stage = lifeStage(e->age);
     const bool grown = stage == LifeStage::Adult || stage == LifeStage::Old;
-    const bool moved = grown && int(h % 100) < (home == "ridgemere" ? 25 : 15);
+    // One who moved came from another place, the more likely the more folk live there (the city's sends most).
+    std::uint64_t others = 0;
+    for (const auto& [place, folk] : talkHomes_)
+        others += place != home ? std::uint64_t(folk) : 0;
+    const bool moved = grown && others > 0 && int(h % 100) < (home == "ridgemere" ? 25 : 15);
     from = home;
     if (moved)
     {
-        std::vector<std::string> others;
-        for (const auto& r : Regions)
-            if (r != home)
-                others.push_back(r);
-        from = others[(h >> 8) % others.size()];
+        auto pick = (h >> 8) % others;
+        for (const auto& [place, folk] : talkHomes_)
+            if (place != home)
+            {
+                if (pick < std::uint64_t(folk))
+                {
+                    from = place;
+                    break;
+                }
+                pick -= std::uint64_t(folk);
+            }
     }
     const int roll = int((h >> 20) % 100);
     if (stage == LifeStage::Old)

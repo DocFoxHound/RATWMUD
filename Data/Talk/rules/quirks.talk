@@ -76,7 +76,7 @@ say That's an old ash. See the lean? | Beech. Beech. Oak. Beech. Lime. | That oa
 rule qk_trees_talk
 when concept=talk.land|talk.smalltalk quirk=knows_every_tree_by_its_shape
 cooldown 2d
-say See that one leaning? Ash. Lightning had it the winter I was wed. | You can tell a hornbeam from a beech a mile off. By the shoulders. | I could walk the Warmwood in the dark and tell you where I was by the trees.
+say See that one leaning? Ash. Lightning had it the winter I was wed. | You can tell a hornbeam from a beech a mile off. By the shoulders. | I could walk the Rainwood in the dark and tell you where I was by the trees.
 then other: quirk.reply
 remember pair: qk=trees 1m
 

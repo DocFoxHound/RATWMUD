@@ -636,7 +636,7 @@ a : I would not. | Once a year, even. | I'm saving.
 
 scene e4_dr_frost_seam
 when topic=dreams here.region=frosthollow
-a : Everyone here dreams of a silver seam. The big one. | My grandsire swore there's a cave of crystal under the pass. | One strike of the pick, and I'm rich. That's the dream.
+a : Everyone here dreams of a silver seam. The big one. | My #grandad# swore there's a cave of crystal under the pass. | One strike of the pick, and I'm rich. That's the dream.
 b[job=miner] #rock : Dream all you like. The rock doesn't care.
 b : Everyone. | Swore? | And then?
 a@rock : Still dream it.
@@ -652,16 +652,16 @@ a : That's the point. | I've heard. | Then a bucket.
 
 scene e4_dr_oak_city
 when topic=dreams here.region=oakhaven
-a : I'd like to see Ridgemere. Just once. All those roofs. | I want to be a forester. Walk the whole Warmwood, every path. | Some day I'll plant a tree my great-grandpups will sit under.
+a : I'd like to see Ridgemere. Just once. All those roofs. | I want to be a forester. Walk the whole Rainwood, every path. | Some day I'll plant a tree my great-grandpups will sit under.
 b[from=ridgemere] #rain : It rains. It always rains. Stay in the woods.
 b : All that noise. | Every path? | That's a good wish.
 a@rain : Rain I've got. I want roofs.
 a : I'd like the noise. | Every one. | Takes a while to come true.
 
 scene e4_dr_mire_dry
-when topic=dreams here.region=mirebridge
+when topic=dreams here.region=fens
 a : A house where the floor's dry. That's my dream. A dry floor. | I'd like one summer without the biting flies. | I want a roof that doesn't need new reeds every year.
-b[from=mirebridge] : Hah. Dream on. We're fen folk.
+b[from=mirebridge|fenshore] : Hah. Dream on. We're fen folk.
 b : Big dream. | You'd miss them. | Slates cost.
 a : The biggest. | I would not. | So I'm told.
 

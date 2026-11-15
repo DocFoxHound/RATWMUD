@@ -1,5 +1,5 @@
 # Current events in town, by region, part two: Larkfield and the downs, Coldwater on Glasswater, Mirebridge in the
-# fens, Southmeadow among the fields, Oakhaven in the Warmwood, and the Ridgemere Watch on the city walls.
+# fens, Southmeadow among the fields, Oakhaven in the Rainwood, and the Ridgemere Watch on the city walls.
 
 # ---------------------------------------------------------------- Larkfield
 
@@ -84,35 +84,35 @@ a : Anything. | Everything. | It does.
 # ---------------------------------------------------------------- Mirebridge
 
 scene et_fh_theft_cures
-when topic=crime topic.kind=theft here.region=mirebridge
+when topic=crime topic.kind=theft here.region=fens
 a : Somebody stole #topic.victim#'s dried bogmyrtle. A season's cures. | Peat stolen off the stacks. Who steals peat? | #topic.victim# was robbed on the fen road at dusk.
 b[healer] : They'll poison themselves with it if they don't know the dose.
 b : A season's work. | Somebody cold. | The fen road's lonely at dusk.
 a : All gone. | Cold and shameless. | Very lonely.
 
 scene et_fh_death_marsh
-when topic=life topic.kind=death here.region=mirebridge
+when topic=life topic.kind=death here.region=fens
 a : #topic.subject# followed the marsh lights. They found them in the bog. | Fever took #topic.subject#. The fen fever. | They're burying #topic.subject# on the dry rise behind the chapel.
 b[old] : Never follow the lights. My grandmother said it, and her grandmother.
 b : Never follow the lights. | That fever's cruel. | Only dry ground left.
 a : Never. | So cruel. | And not much of it.
 
 scene et_fh_newcomer_cure
-when topic=newcomer here.region=mirebridge
+when topic=newcomer here.region=fens
 a : #topic.subject# came for the marsh cures and decided to stay. | #topic.subject# wants to learn the herbs. Brave, in this damp. | #topic.subject# came in by the fen road, soaked to the knees.
 b[healer] : I'll teach them. The fen gives as much as it takes.
 b : The cures work, some of them. | They'll grow webbed paws. | Everyone does, first time.
 a : Some. | Ha! | Every time.
 
 scene et_fh_festival
-when topic=festival here.region=mirebridge
+when topic=festival here.region=fens
 a : They burn peat bonfires for #here.festival#. Smoke for a week. | Reed crowns for #here.festival#! I'm weaving mine. | The river bank's lined with torches for #here.festival#.
 b[child] : My crown's bigger than yours!
 b : Smells like home. | Show me when it's done. | Pretty, on the water.
 a : Smoky home. | Soon. | Reflections everywhere.
 
 scene et_fh_gossip
-when topic=gossip here.region=mirebridge
+when topic=gossip here.region=fens
 a : Bogmyrtle says #topic.subject# #topic.claim#. She's never wrong. | At the peat cutting: #topic.subject# #topic.claim#. | Damp talk, but they say #topic.subject# #topic.claim#.
 b : Bogmyrtle's wrong half the time. | Peat cutters gossip like crows. | Everything's damp here.
 a : Never to her face. | Worse. | Even the talk.
@@ -171,7 +171,7 @@ a : Small and nosy. | Course you did. | Only news all #here.season#.
 
 scene et_hm_newcomer
 when topic=newcomer here.region=oakhaven
-a : #topic.subject# came in through the Warmwood. Nobody comes to Oakhaven by accident. | A newcomer! #topic.subject#! First this #here.season#. | #topic.subject# asked if the carter comes often.
+a : #topic.subject# came in through the Rainwood. Nobody comes to Oakhaven by accident. | A newcomer! #topic.subject#! First this #here.season#. | #topic.subject# asked if the carter comes often.
 b[old] : The last newcomer I liked was my wife. Forty years back.
 b : Then why did they come? | About time! | Ha. Did you tell them the truth?
 a : We'll find out. | Long past time. | I told them to be patient.

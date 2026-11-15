@@ -95,3 +95,20 @@ inn_bed = Upstairs, by the chimney. There's a chest for your things. | Your bed'
 watch_greet = The watch, stone. Speak plain. | Keep the peace, cousin, and we'll get on.
 church_greet = Lamp keep you. Come in. | Warm hearth, and welcome. All are welcome here.
 learn_offer = It's a trade that keeps the hearth lit. | Hard work, but it's honest.
+# The dialogue trees' other words (doc 83, Phase 4): news and gossip there isn't, a trouble that isn't, thanks for
+# help, the way, a resident's work, work turned down, an inn's fire and its helpers, the watch's word, a master's
+# new apprentice, something to hand over; a keeper asleep.
+shop_asleep = Mm... fire's banked... come back at first light. | Zzz... shift's over, cousin. Morning.
+news_none = Quiet as a banked fire. | Nothing new down the valley. | Not a word, cousin.
+gossip_none = Pit-gossip's not for me. | Nothing I'd repeat, cousin.
+trouble_none = Nothing a hearth won't mend. | Nothing, cousin.
+trouble_thanks = Warm hearth to you for that. I won't forget it. | You're sound, cousin. Thank you.
+way_ask = Where to, cousin? | Lost in the valley?
+job_busy = This and that, cousin. | I keep at it.
+work_declined = Suit yourself, cousin. | Another shift, then.
+inn_rest = Sit close to the hearth, cousin. A bed upstairs rests you properly. | Take the bench by the fire. Thaw out.
+watch_noted = Noted, cousin. We'll dig them out. | Good. We'll find them.
+watch_bye = Keep your lamp lit and the peace kept. | Move along, cousin.
+learn_taken = Good. Be here at the shift's start, and stay near me. | Then you're mine to teach, cousin. Stay close.
+receiver_ask = Something for me, cousin? | For me? Come in from the cold.
+inn_helper = I only help here, cousin. Ask #here.innkeeper# for a bed. | #here.innkeeper# keeps the hearth and the rooms. I carry the cups.

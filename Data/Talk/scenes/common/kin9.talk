@@ -161,7 +161,7 @@ a : Then bail with pride. | Only a cat. It swam. | Fish first.
 # ---------------------------------------------------------------- Mirebridge
 
 scene kn_rg_fh_peat_family
-when topic=family pair.band=family|spouses here.region=mirebridge
+when topic=family pair.band=family|spouses here.region=fens
 a : Your back's bent from cutting peat all day. | Grandmother wants to show the pups the herb beds. | The fog came in thick. Keep the pups inside.
 b : The peat's paid for supper. | Good. She knows every plant in the fen. | They'll sulk.
 a : The healer's paid for your back. | And every poison. | Better sulky than lost.
@@ -169,7 +169,7 @@ b : Then we're even. | She'll teach them those too. | I'll tell them a story.
 a : We're never even. | Bright One help us. | The one about the fen lights.
 
 scene kn_rg_fh_friends_herbs
-when topic=friends here.region=mirebridge
+when topic=friends here.region=fens
 a : Found a patch of marshwort by the old bridge. | Will you come gathering tomorrow? | My mate thinks I'm mad, wading in the bog.
 b : Show me. I won't tell. | If you bring the boards. | You are mad.
 a : Swear on your tail. | I'll bring the boards. | Mad and rich, come market day.

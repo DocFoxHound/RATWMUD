@@ -250,7 +250,7 @@ remember pair: on=station 1h
 then other: town.station
 
 rule n7_st_country_city
-when concept=talk.smalltalk|talk.lore self.from=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow here.region=ridgemere
+when concept=talk.smalltalk|talk.lore self.from=frosthollow|coldwater|oakhaven|mirebridge|fenshore|larkfield|southmeadow|saltwell here.region=ridgemere
 cooldown 3d
 say In Ridgemere a beggar sleeps by a lord's gate. At home, the beggar would be fed and the lord would know his name. | Back home rich and poor drink at the same well. Here they've a well each. | Nobody looks at anybody here. At home I'd know every face on this street.
 remember pair: st=country 1h
@@ -258,7 +258,7 @@ remember pair: on=station 1h
 then other: town.station
 
 rule n7_st_town_city
-when concept=talk.smalltalk|talk.lore self.from=ridgemere here.region=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow
+when concept=talk.smalltalk|talk.lore self.from=ridgemere here.region=frosthollow|coldwater|oakhaven|fens|larkfield|southmeadow
 cooldown 3d
 say In the city you can buy anything at any hour. Here they shut when the baker's tired. | I miss the lamps. The whole city lit up on the hill. | Folk here know everything about you. In Ridgemere nobody cared.
 remember pair: st=city 1h

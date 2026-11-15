@@ -91,3 +91,20 @@ inn_bed = Upstairs, snug as a moored boat. There's a chest for your things. | Yo
 watch_greet = The watch. Keep it calm water and we'll get on. | What is it, neighbour? The watch is listening.
 church_greet = Calm water be on you. | Come in from the shore. All are welcome.
 learn_offer = It's a trade that keeps a boat afloat. | Steady as the tide, this work.
+# The dialogue trees' other words (doc 83, Phase 4): news and gossip there isn't, a trouble that isn't, thanks for
+# help, the way, a resident's work, work turned down, an inn's fire and its helpers, the watch's word, a master's
+# new apprentice, something to hand over; a keeper asleep.
+shop_asleep = Mm... boats are in... come back with the tide. | Zzz... shut till morning, shore-friend.
+news_none = Calm water, and no news. | Nothing's washed up lately. | Not a ripple.
+gossip_none = Net-menders' talk. Not for me. | Nothing I'd repeat.
+trouble_none = Nothing the tide won't fix. | Nothing, thank you kindly.
+trouble_thanks = Calm water to you. I won't forget it. | Thank you kindly. That's a full net.
+way_ask = Where are you rowing for? | Where to, shore-friend?
+job_busy = This and that. Mostly the water. | I keep afloat.
+work_declined = Suit yourself. | Another tide, then.
+inn_rest = Dry off by the fire. A bunk upstairs rests you properly, mind. | Take the bench. Nobody'll move you.
+watch_noted = Noted. We'll haul them in. | Good. The watch thanks you.
+watch_bye = Calm water, and keep the peace. | Move along, then.
+learn_taken = Good. Be here when the boats go out, and stay near me. | Then you're crew. Stay close while I work.
+receiver_ask = Something washed up for me? | For me, shore-friend?
+inn_helper = I'm only crew here. Ask #here.innkeeper# for a bunk. | #here.innkeeper# keeps the house. I carry the cups.

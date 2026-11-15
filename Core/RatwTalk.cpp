@@ -327,6 +327,11 @@ bool Library::readSettings(const std::string& text, std::string& problem)
                                    {"ends", &settings_.ends}})
         for (const auto& v : doc.array(key))
             set->insert(v.asString(""));
+    // The towns that speak another's dialect (doc 83, Phase 4): {"fenshore": "mirebridge", ...}.
+    settings_.dialectOf.clear();
+    for (const auto& [town, dialect] : doc.object("dialect_of").fields())
+        if (!town.empty() && dialect.isString() && !dialect.asString().empty())
+            settings_.dialectOf[town] = dialect.asString();
     const double sum = settings_.best + settings_.next + settings_.lower;
     if (settings_.best <= 0 || settings_.next < 0 || settings_.lower < 0 || sum < .99 || sum > 1.01)
     {
@@ -1400,7 +1405,7 @@ bool Library::expandSymbol(const std::string& name, Expansion& x, int depth, std
     };
     // The speaker's dialect is the layer named for where they're from; their accent says how much of it they use: none
     // (plain's words), light (the dialect's word half the time), broad (always, and its .broad words too).
-    const auto dialect = fact(who, "from"), accent = fact(who, "accent");
+    const auto dialect = dialectOf(fact(who, "from")), accent = fact(who, "accent");
     std::vector<const Alt*> alts;
     bool habit = false, pairHabit = false;
     std::string from;
@@ -1571,6 +1576,12 @@ void Library::remembered(const Effect& e, Query& q)
         q.facts[said ? "pair." + e.key : "pair.mem." + e.key] = e.value;
     else if (e.scope == "town")
         q.facts["world.mem." + e.key] = e.value;
+}
+
+std::string Library::dialectOf(const std::string& from) const
+{
+    const auto mapped = settings_.dialectOf.find(from);
+    return mapped == settings_.dialectOf.end() ? from : mapped->second;
 }
 
 Said Library::render(const Entry& e, const Query& q, std::uint64_t seed, Trace* trace, int speaker) const
@@ -1984,7 +1995,7 @@ std::string Library::voiceCard(const Speaker& speaker) const
     {
         auto place = from;
         place[0] = char(std::toupper(static_cast<unsigned char>(place[0])));
-        const auto layer = grammars_.find(from);
+        const auto layer = grammars_.find(dialectOf(from));
         if (layer == grammars_.end())
             card = "Grew up in " + place + ", and speaks the realm's plain common speech.";
         else if (accent == "none")

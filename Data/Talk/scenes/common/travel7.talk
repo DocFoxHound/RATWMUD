@@ -7,11 +7,11 @@
 
 scene e5_tr_one_day
 when topic=travel
-a : One day I'm going to see the whole realm. Every town. | I've a mind to walk the Southway end to end, just to say I have. | If I had a month and a mule, I'd be gone tomorrow.
+a : One day I'm going to see the whole realm. Every town. | I've a mind to walk the South Road end to end, just to say I have. | If I had a month and a mule, I'd be gone tomorrow.
 b[old] #old : That's what I said, once. Then I got a roof, and a back that aches.
 b[carter] #carter : Every town's the same inn with a different name over the door. Take it from me.
 b[young] #young : Can I come? I'll carry the bag!
-b : And who'd mind the house while you're gone? | Your paws would give out before the Warmwood. | You'd be back in a week, missing your bed.
+b : And who'd mind the house while you're gone? | Your paws would give out before the Rainwood. | You'd be back in a week, missing your bed.
 a@old : Then I'll go before I get the roof.
 a@carter : Then I'll judge the inns. Somebody ought to.
 a@young : When you're bigger. Then you can carry the both of us.
@@ -33,8 +33,8 @@ a : If you could go anywhere, #pet#, where would it be? | Close your eyes. You'r
 b[from=frosthollow here.region!=frosthollow] : Up the pass again. Just to breathe that cold, clean air.
 b[from=southmeadow here.region!=southmeadow] : Home to the south. Lie in an orchard and let the apples fall on me.
 b[from=coldwater here.region!=coldwater] : Out on Glasswater at dawn with the mist lifting. Nothing in the world better.
-b[from=mirebridge here.region!=mirebridge] : Back to the fens. Don't laugh. I miss the mist.
-b[from=oakhaven here.region!=oakhaven] : Under the oaks of the Warmwood. Where it's green and warm and quiet.
+b[from=mirebridge|fenshore here.region!=fens] : Back to the fens. Don't laugh. I miss the mist.
+b[from=oakhaven here.region!=oakhaven] : Under the oaks of the Rainwood. Where it's green and warm and quiet.
 b[from=larkfield here.region!=larkfield] : Up on the high downs, with the larks and nothing else.
 b[from=ridgemere here.region!=ridgemere] : The wharf at Ridgemere, first thing, with the boats going out.
 b : Somewhere I've never been. Anywhere. Just to see it. | Somewhere it never rains. | Nowhere. I'm happy here with you.
@@ -245,7 +245,7 @@ a[from=oakhaven] #own : Folk here say Oakhaven's dark. It's not dark. It's shade
 a : Oakhaven's dark. All those trees. You can't see the sky. | They say in Oakhaven the woods move when you aren't looking. | Oakhaven folk talk to trees. I've seen them do it.
 b@own : What's the difference?
 b[from=oakhaven] #oak : We do not talk to trees. We talk near trees. Very different.
-b[woodcutter] #wood : The Warmwood's honest wood. Best oak in the realm.
+b[woodcutter] #wood : The Rainwood's honest wood. Best oak in the realm.
 b : I'd get lost. | Nonsense. | Somebody has to.
 a@own : Shade's friendly. You'd see, if you came.
 a@oak : Near them. Of course.
@@ -253,12 +253,12 @@ a@wood : Every table in the realm says so.
 a : We'd never find you. | So they say. | The trees are probably grateful.
 
 scene e5_tr_about_mirebridge
-when topic=travel here.region!=mirebridge
-a[from=mirebridge] #own : Say what you like about Mirebridge. Folk here do. Nobody makes a remedy like a fen herbwife.
-a : Mirebridge. Wet feet from birth to burial. | They eat eels in Mirebridge. Every day. Every meal. | I went to Mirebridge once. Mist so thick I walked into the chapel.
+when topic=travel here.region!=fens
+a[from=mirebridge|fenshore] #own : Say what you like about #a.from.capitalize#. Folk here do. Nobody makes a remedy like a fen herbwife.
+a : The fens. Wet feet from birth to burial. | They eat eels in Fenshore. Every day. Every meal. | I went to Fenshore once. Mist so thick I walked off the boards.
 b@own : I'll grant you the remedies.
-b[from=mirebridge] #mb : We eat eels because they're good. You've just never had them done right.
-b[healer] #healer : Mirebridge herbs are the best there are. The fens grow everything.
+b[from=mirebridge|fenshore] #mb : We eat eels because they're good. You've just never had them done right.
+b[healer] #healer : Fen herbs are the best there are. The fens grow everything.
 b : Poor souls. | #oath#. | Did you pray while you were in there?
 a@own : You'll grant me more than that, one day.
 a@mb : I'll take your word. I'll not take the eel.
@@ -296,7 +296,7 @@ when topic=travel pair.band=friends|acquaintances
 a : Which is the best town, do you think? Honestly. | If you had to live in any other town but this one, which? | Best town in the realm. Go on, name it.
 b[from=frosthollow here.region!=frosthollow] #home : Frosthollow. You'd say different, but you've not seen the snow at dawn.
 b[from=southmeadow here.region!=southmeadow] #home : Southmeadow. Obviously. Have you seen the orchards?
-b[from=mirebridge here.region!=mirebridge] #home : Mirebridge. Nobody bothers you there. Nobody can find you.
+b[from=mirebridge|fenshore here.region!=fens] #home : #b.from.capitalize#. Nobody bothers you there. Nobody can find you.
 b[from=coldwater here.region!=coldwater] #home : Coldwater. You've not lived till you've eaten trout out of Glasswater.
 b[from=larkfield here.region!=larkfield] #home : Larkfield. Everything's for sale and everyone's talking.
 b : This one, of course. I'm here, aren't I? | Wherever the ale's cheapest. | Wherever my friends are.
@@ -329,16 +329,16 @@ scene e5_tr_homesick_oakhaven
 when topic=travel a.from=oakhaven here.region!=oakhaven
 cooldown 2d
 a : Too much sky here. It makes me dizzy. | I miss the trees. The smell of leaf mould after rain. | Where I come from, the light comes down green.
-b[woodcutter] #wood : There's a stand of trees out past the fields. It's not the Warmwood, but it's trees.
+b[woodcutter] #wood : There's a stand of trees out past the fields. It's not the Rainwood, but it's trees.
 b : There's sky everywhere. | It just smells of #mud# here. | Green light? Sounds like a hangover.
 a@wood : It's a start. I'll walk out there tonight.
 a : Not like this. | Exactly. | It's lovely, you rogue.
 
 scene e5_tr_homesick_mirebridge
-when topic=travel a.from=mirebridge here.region!=mirebridge
+when topic=travel a.from=mirebridge|fenshore here.region!=fens
 cooldown 2d
 a : Everything's so dry here. My skin's cracking under my fur. | No mist in the morning. It feels naked. | Nobody here can cook an eel to save their life.
-b[from=mirebridge] #mb : I bought a jellied eel off a cart last week. I cried. Not from joy.
+b[from=mirebridge|fenshore] #mb : I bought a jellied eel off a cart last week. I cried. Not from joy.
 b : Most folk like dry. | Most folk like seeing where they're going. | Thank the Bright One.
 a@mb : That's what they do to eels up here. It's a crime.
 a : Most folk are wrong. | Overrated. | You'd love a proper eel.
@@ -385,7 +385,7 @@ when topic=travel here.region=ridgemere a.from=ridgemere b.from!=ridgemere b.acc
 cooldown 3d
 a : You've nearly lost your accent, you know. | I can only hear where you're from on certain words. | You sound more like us every year.
 b[from=frosthollow] #word : I still say 'deep' for very. Can't help it.
-b[from=mirebridge] #word : Only when I'm tired. Then the fens come back.
+b[from=mirebridge|fenshore] #word : Only when I'm tired. Then the fens come back.
 b[from=coldwater] #word : I still say 'still water' when I meet folk. They look at me oddly.
 b[from=oakhaven] #word : I still call the little ones saplings. My neighbours think it's sweet.
 b[from=larkfield] #word : I still say 'sold' when I mean yes. Got me into trouble once.

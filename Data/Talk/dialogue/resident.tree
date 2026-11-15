@@ -21,9 +21,9 @@ entry news news
 entry way way
 
 node hub
-say #greet#, #address#. #talk_open# | #greet#. #talk_open# | #talk_open#
+say #greet#. #talk_open# | #talk_open#
 say[topic.meeting=known] #greet#, #topic.player#. #talk_open# | #topic.player#. #talk_open#
-say[here.time=night] It's late, #address#. #talk_open#
+say[here.time=night] It's late. #talk_open#
 free
 choice What's it like around here? -> town
 choice What do you do? -> job
@@ -36,7 +36,7 @@ choice Any missions for our Chapter? [here.official=yes here.chapter=yes] -> do 
 choice Goodbye. -> bye
 
 node town
-say #here.town#? About #here.folk# of us live here, and there are #here.shops# shops. | #here.town#'s home to #here.folk# or so. It does well enough.
+say #here.town#? About #here.folk# of us live here, and there are #here.shops# shops. | #here.town#'s home to #here.folk# or so. It does well enough, #address#.
 say[here.district] This end of #here.town# is the #here.district# district. About #here.folk# of us in the town, #here.shops# shops. | The #here.district# district, this. #here.town# has #here.folk# souls or so.
 say[here.inns=0 priority=1] #here.town#? #here.folk# of us, #here.shops# shops, and no inn, so don't count on a bed.
 say[world.times=hard] Hard times in #here.town#. #here.folk# of us, and not all of us eating well. | #here.town#? Lean, these days. #here.shops# shops, and fewer customers.
@@ -49,7 +49,7 @@ choice Goodbye. -> bye
 
 node job
 ask player.job
-say I keep busy. | This and that. | Work, mostly.
+say #job_busy#
 free
 choice And how's business? [business=thriving|steady|failing] -> business
 choice Heard any news? -> news
@@ -65,7 +65,7 @@ choice Something else... -> do open talk
 choice Goodbye. -> bye
 
 node news
-say Quiet enough, these days. | Nothing worth the telling. | Not that I've heard.
+say #news_none#
 say[world.event_words] It's all talk of #world.event_words#. | Have you heard? #world.event_words.capitalize#.
 say[world.news] Word from #world.news_from#: #world.news#.
 say[world.wagons=raided] A wagon was robbed on the road. Mind yourself out there.
@@ -78,7 +78,7 @@ choice Something else... -> do open talk
 choice Goodbye. -> bye
 
 node gossip
-say I don't hold with gossip. | Nothing I'd repeat. | Not that I've heard.
+say #gossip_none#
 say[here.gossip=yes] They say #topic.subject# #topic.claim#. | Folk say #topic.subject# #topic.claim#. Don't quote me.
 say[here.gossip=yes topic.claim_kind=theft|wanted] Keep your purse close. They say #topic.subject# #topic.claim#.
 say[here.gossip=yes topic.claim_kind=death] Sad news. #topic.subject.capitalize# #topic.claim#.
@@ -90,7 +90,7 @@ choice Goodbye. -> bye
 
 node trouble
 ask player.trouble
-say Oh, nothing worth your time. | Nothing, thank you.
+say #trouble_none#
 free
 each trouble in here.troubles max 2
 choice #trouble.words# -> do trouble trouble.id ; then helped ; refused refused
@@ -98,14 +98,14 @@ choice Something else... -> do open talk
 choice Goodbye. -> bye
 
 node helped
-say Thank you. I won't forget it. | You're kind. Thank you. | I don't know what to say. Thank you.
+say #trouble_thanks#
 mood pleased
 free
 choice Something else... -> do open talk
 choice Goodbye. -> bye
 
 node way
-say Where are you headed? | Where to? | Looking for somewhere?
+say #way_ask#
 say[here.places=0 priority=2] I couldn't tell you, I'm afraid.
 each place in here.places max 6
 choice #place.title# (#place.kind#) -> place
@@ -124,5 +124,5 @@ choice Something else... -> do open talk
 choice Goodbye. -> bye
 
 node bye
-say #farewell#. | #farewell#, #address#. | Mind how you go.
+say #farewell#. | #farewell#, #address#.
 end

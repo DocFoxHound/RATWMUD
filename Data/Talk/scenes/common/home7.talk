@@ -284,7 +284,7 @@ a@plain : It's taken a while already. | On my pay? | No work back home.
 
 scene e1_home_homesick_town
 when topic=home a.from=ridgemere
-a[here.region=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow] : I miss the city. Is that strange? | It's so quiet here I can hear myself think. I hate it. | Back home there was always somebody about.
+a[here.region=frosthollow|coldwater|oakhaven|fens|larkfield|southmeadow] : I miss the city. Is that strange? | It's so quiet here I can hear myself think. I hate it. | Back home there was always somebody about.
 b[from=ridgemere] #city : The noise. I miss the noise. Who'd have thought.
 b #plain : Bit strange. | Thinking's good for you. | There's somebody here. Me.
 a@city : The rain, even. I miss the rain.
@@ -401,9 +401,9 @@ a@plain : It's a puddle with roofs. | It drips by the fire. | Rain, inside and o
 # ---------------------------------------------------------------- Town homes
 
 scene e1_home_fens_stilts
-when topic=home here.region=mirebridge a.homeless=no
+when topic=home here.region=fens a.homeless=no
 a : The river's up. It's lapping at the bottom step. | My floor's lower than the water half the year. | We built the house on stilts. Now it leans.
-b[from=mirebridge] #fen : Fen houses always lean. They're comfortable that way.
+b[from=mirebridge|fenshore] #fen : Fen houses always lean. They're comfortable that way.
 b #plain : Raise the step. | Fens. | All the Fens lean.
 a@fen : So are we.
 a@plain : I raised it last year. | Damp to the bone. | So do I, by evening.

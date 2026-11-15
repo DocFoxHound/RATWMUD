@@ -1,6 +1,6 @@
 # The country, the roads and the year in each of the seven places (doc 62, phase 7), for talk.land, talk.travel and
 # talk.season: Ridgemere's Sound, hills and Rainwood; Frosthollow's Whitefangs, pass and pines; Coldwater's Glasswater
-# and the springs of the Long River; the Warmwood round Oakhaven; the Sallow Fens and the Drowned Delta at Mirebridge;
+# and the springs of the Long River; the Rainwood round Oakhaven; the Sallow Fens and the Drowned Delta at Mirebridge;
 # the Larkdowns round Larkfield; the Sunfields and the Orchard Vale at Southmeadow. Alternatives run in parallel; a
 # tagged reply sets a mark (#x) so the close that follows can answer it (a@x).
 
@@ -70,10 +70,10 @@ scene e5_rg_rm_gates
 when topic=travel here.region=ridgemere
 a : The queue at the South Gate went right back to Rainrun Bridge this morning. | Took the High Road out the East Gate. Uphill the whole first day. | Half the realm comes through the gates on a Marketday.
 b[guard] #guard : We check every cart. It takes the time it takes.
-b[carter] #carter : The Southway's kinder. The High Road's for punishing yourself.
+b[carter] #carter : The South Road's kinder. The High Road's for punishing yourself.
 b : Marketday. | Your legs'll be strong. | And the other half's leaving.
 a@guard : It takes a good deal longer than that.
-a@carter : I'll take the Southway next time and go round.
+a@carter : I'll take the South Road next time and go round.
 a : Every day's Marketday at that gate. | My legs are dead. | Can't blame them.
 
 scene e5_rg_rm_city_from_away
@@ -206,7 +206,7 @@ a : Not on purpose. | I'd say so. | Pretty while it lasts.
 scene e5_rg_cw_river_source
 when topic=land here.region=coldwater
 a : All the Long River runs out of here. Think of that. | The fen folk drink our water, you know. After it's been through the cows. | They say the river's spring is under the lake, deep down.
-b[from=mirebridge] #mb : And by the time it gets to us it's half mud. Thanks for that.
+b[from=mirebridge|fenshore] #mb : And by the time it gets to us it's half mud. Thanks for that.
 b[scholar] #scholar : The river rises from three springs and the lake's spill. I've seen them.
 b : Makes you proud, a bit. | Poor fen folk. | Nobody's ever found it.
 a@mb : You're welcome. We send it with love.
@@ -269,7 +269,7 @@ a : Aren't we all. | Messy too. | Cold and pretty.
 
 scene e5_rg_ok_warmwood
 when topic=land here.region=oakhaven
-a : The Warmwood goes on for days. Oak, then beech, then oak again. | There are glades in the deep wood where the sun comes down like a lamp. | You can walk a week under the trees and never see the sky.
+a : The Rainwood goes on for days. Oak, then beech, then oak again. | There are glades in the deep wood where the sun comes down like a lamp. | You can walk a week under the trees and never see the sky.
 b[woodcutter] #wood : And hazel. You forget the hazel. Everything at the edges is hazel.
 b[old] #old : My father found a glade once. Never found it again. Said it was full of white deer.
 b : I'd be lost in an hour. | Lovely. Where? | Folk have.
@@ -309,9 +309,9 @@ a : I will. | Loud enough. | If we can get at it.
 
 scene e5_rg_ok_southway
 when topic=travel here.region=oakhaven
-a : The Southway's the only road a cart can take in the wet. The rest is bog and roots. | Three days up the Southway to the city. Longest three days there are. | The carter came in by the Riverway from Larkfield. Covered in leaves.
-b[carter] #carter : Ruts deep enough to lose a piglet in. The Southway wants stone.
-b : One road worth the name. | You'd go mad with trees. | That's the Warmwood for you.
+a : The South Road's the only road a cart can take in the wet. The rest is bog and roots. | Three days up the South Road to the city. Longest three days there are. | The carter came in by the River Road from Larkfield. Covered in leaves.
+b[carter] #carter : Ruts deep enough to lose a piglet in. The South Road wants stone.
+b : One road worth the name. | You'd go mad with trees. | That's the Rainwood for you.
 a@carter : The Council says the same every year. Then does nothing.
 a : Suits us. | You don't, if you're from here. | Leaves in everything.
 
@@ -326,7 +326,7 @@ a : You can have it. | Too much air. | Trees are home.
 
 scene e5_rg_ok_autumn
 when topic=season here.region=oakhaven here.season=autumn
-a : The Warmwood's turned. Red, gold, brown. It hurts to look at. | Acorns falling like hail on the roofs. | The foragers are coming back with baskets of mushrooms.
+a : The Rainwood's turned. Red, gold, brown. It hurts to look at. | Acorns falling like hail on the roofs. | The foragers are coming back with baskets of mushrooms.
 b[young] #young : I collected a hundred acorns! For the pigs!
 b : Best sight in the realm. | Mind your head. | Wish I knew their spots.
 a@young : The pigs will love you for ever.
@@ -342,7 +342,7 @@ a : Every year, and every year I forget. | Cool and green. | Tonight.
 
 scene e5_rg_ok_winter
 when topic=season here.region=oakhaven here.season=winter
-a : The woods are bare. You can see right through them now. | Mild winter. It never snows in the Warmwood. Just drips. | Cutting season. The sawmill's loud from dawn.
+a : The woods are bare. You can see right through them now. | Mild winter. It never snows in the Rainwood. Just drips. | Cutting season. The sawmill's loud from dawn.
 b[woodcutter] #wood : The sawmill's had more oak this month than all summer.
 b[from=frosthollow] #fh : You call this winter? Where I grew up, this is spring.
 b : Strange to see so far. | Better than snow. | Every winter.
@@ -353,17 +353,17 @@ a : You can see how small the town is. | Much better. | Louder each year.
 # ===================================================================================== Mirebridge
 
 scene e5_rg_mb_fens
-when topic=land here.region=mirebridge
-a : The fens go on forever. Flat and grey and full of birds. | Somebody stepped off the causeway yesterday. Mud to the hips. | You can't trust the ground here. Solid one day, soup the next.
+when topic=land here.region=fens
+a : The fens go on forever. Flat and grey and full of birds. | Somebody stepped off the boardwalk yesterday. Mud to the hips. | You can't trust the ground here. Solid one day, soup the next.
 b[fisher] #fisher : Know the channels and the fen'll feed you. Don't, and it'll eat you.
-b[from=mirebridge] #mb : The fen's honest. It tells you where it's soft, if you look.
+b[from=mirebridge|fenshore] #mb : The fen's honest. It tells you where it's soft, if you look.
 b : Lovely, in its way. | Did they get out? | That's the fens.
 a@fisher : It's tried to eat me twice.
 a@mb : I look. It still lies to me.
 a : In a damp way. | Lost a boot. | That's home.
 
 scene e5_rg_mb_lights
-when topic=land here.region=mirebridge here.time=dusk|night
+when topic=land here.region=fens here.time=dusk|night
 a : The lights are out on the fen tonight. Look, there by the alders. | Don't follow the lights. My uncle did. | Fen gas, the scholars say. Lights, I say.
 b[piety=devout] #devout : Don't look at them. Say your prayers and look away.
 b[scholar] #scholar : Marsh gas. It catches. That's all.
@@ -373,7 +373,7 @@ a@scholar : Gas doesn't move like that.
 a : Don't point. | Came back a week later. Never spoke of it. | And they're moving.
 
 scene e5_rg_mb_delta
-when topic=land here.region=mirebridge
+when topic=land here.region=fens
 a : Down past the town the river splits and splits till it's all delta. | Nobody goes into the Drowned Delta without a guide. Nobody comes out without one. | There are villages in the Drowned Delta, they say. Drowned ones.
 b[fisher] #fisher : The eels in the delta are as long as you are.
 b[old] #old : The bells. You can hear the drowned bells on still nights.
@@ -383,7 +383,7 @@ a@old : You can't. Can you?
 a : Nor would I. | Nobody argues with it. | So you say.
 
 scene e5_rg_mb_peat
-when topic=land here.region=mirebridge
+when topic=land here.region=fens
 a : Peat-cutting today. My back thinks it's a hundred. | Peat smoke over the whole town. You smell it on your fur for days. | Found a bog-oak in the peat. Black as iron. Older than anything.
 b[laborer] #lab : Peat pays. Barely. But it pays.
 b[crafter] #craft : Bog-oak? I'll buy it off you. Carves like stone.
@@ -393,17 +393,17 @@ a@craft : Make me an offer, then.
 a : Can't. More to cut. | It's in everything. | Sell it, I suppose.
 
 scene e5_rg_mb_roads
-when topic=travel here.region=mirebridge
-a : The Fen Road's under water again past the alders. | Nobody comes to Mirebridge by accident. | Took the Meadow Road south. Dry ground the whole way. I nearly cried.
+when topic=travel here.region=fens
+a : The fen track's under water again past the alders. | Nobody comes to Fenshore by accident. | Took the South Road south. Dry ground the whole way. I nearly cried.
 b[carter] #carter : I take the Fen Road twice a month. Every time I swear it's the last.
-b[from=mirebridge] #mb : We like it that way. Keeps the city out.
+b[from=mirebridge|fenshore] #mb : We like it that way. Keeps the city out.
 b : Again? | Who'd come on purpose? | Dry ground. Imagine.
 a@carter : And every time you come back.
 a@mb : And the tax-men.
 a : Third time this season. | Lost souls, mostly. | Strange feeling.
 
 scene e5_rg_mb_summer
-when topic=season here.region=mirebridge here.season=summer|spring
+when topic=season here.region=fens here.season=summer|spring
 a : Midges. Clouds of them. I'm eaten alive. | The fen's in flower. Yellow flags everywhere. | Warm and wet and humming. The fens in summer.
 b[healer] #healer : Bog myrtle. Rub it in your fur. Keeps them off.
 b : Smoke them out. | Pretty, for once. | And smelling.
@@ -411,8 +411,8 @@ a@healer : I'll smell like a bog. I suppose I already do.
 a : I'd smoke myself out first. | For once. | Always smelling.
 
 scene e5_rg_mb_autumn
-when topic=season here.region=mirebridge here.season=autumn
-a : The eels are running. Every trap in the channels is full. | Fog every morning. Rang the mist bell three times today. | The river's up. The causeways are under at high water.
+when topic=season here.region=fens here.season=autumn
+a : The eels are running. Every trap in the channels is full. | Fog every morning. Rang the mist bell three times today. | The river's up. The low boards are under at high water.
 b[fisher] #fisher : Best eel run in years. Smoke them, salt them, sell them.
 b[priest] #priest : The mist bell's rung itself hoarse this season.
 b : Eel pie, then. | Can't see your own tail. | Stay in, then.
@@ -421,7 +421,7 @@ a@priest : Better hoarse than somebody lost.
 a : Every night till spring. | Or anyone's. | Can't. Work.
 
 scene e5_rg_mb_reeds
-when topic=season here.region=mirebridge here.season=winter
+when topic=season here.region=fens here.season=winter
 a : Reed-cutting. Standing in ice water up to my knees. | The reeds are bundled for thatch. Half the thatch in the realm comes out of here. | Winter on the fen. Nothing moves but the herons.
 b[laborer] #lab : Good reed money this year. Everyone's re-thatching.
 b : Mad work. | Good to know. | And us.
@@ -460,7 +460,7 @@ a : Too dry. | Ducks love it. | It never rests.
 
 scene e5_rg_lf_crossroads
 when topic=travel here.region=larkfield
-a : Every road comes to Larkfield sooner or later. The Downs Road, the Riverway, the South Road. | Carters from every town in the inn tonight. Seven accents at one table. | Larkfield market's where the realm comes to haggle.
+a : Every road comes to Larkfield sooner or later. The Downs Road, the River Road, the South Road. | Carters from every town in the inn tonight. Seven accents at one table. | Larkfield market's where the realm comes to haggle.
 b[carter] #carter : The inn here pulls the best ale on any road. I plan my week round it.
 b[merchant] #merchant : If it's sold anywhere, it's sold here first.
 b : Busy town. | Must be loud. | And to drink.

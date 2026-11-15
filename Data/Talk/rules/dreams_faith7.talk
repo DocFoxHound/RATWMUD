@@ -240,7 +240,7 @@ then other: dreams.reply
 remember pair: e4d=small 2m
 
 rule e4_rd_tell_fen
-when concept=talk.dreams self.from=mirebridge
+when concept=talk.dreams self.from=mirebridge|fenshore
 cooldown 3d
 say Dry boots. That's a fen wolf's whole dream. Dry boots. | A house on a hill. Any hill. | One day I'll live where the floor doesn't squelch.
 then other: dreams.reply
@@ -483,7 +483,7 @@ then other: dreams.reply
 remember pair: e4d=small 2m
 
 rule e4_rd_ans_fen
-when concept=dreams.answer from=mirebridge stage=adult|old
+when concept=dreams.answer from=mirebridge|fenshore stage=adult|old
 say A house on stilts so high the fen gives up. | Boots that stay dry past breakfast. | To grow old somewhere the floor doesn't move.
 then other: dreams.reply
 remember pair: e4d=small 2m
@@ -1090,7 +1090,7 @@ then other: faith.reply
 remember pair: e4k=folk 2m
 
 rule e4_rf_tell_fen
-when concept=talk.faith self.from=mirebridge
+when concept=talk.faith self.from=mirebridge|fenshore
 cooldown 3d
 say Back home we hang a reed knot over the door. Keeps the damp spirits out. | Back home you never call a name across the water after dark. | The old fen folk name every eel-trap. For luck, they say.
 then other: faith.reply
@@ -1113,7 +1113,7 @@ remember pair: e4k=folk 2m
 rule e4_rf_tell_woods
 when concept=talk.faith self.from=oakhaven
 cooldown 3d
-say Back home you ask a tree's leave before you fell it. Out loud. | We plant an acorn for every pup born, back home. Mine's a big oak now. | Some glades in the Warmwood, you lower your voice. Nobody tells you to. You just do.
+say Back home you ask a tree's leave before you fell it. Out loud. | We plant an acorn for every pup born, back home. Mine's a big oak now. | Some glades in the Rainwood, you lower your voice. Nobody tells you to. You just do.
 then other: faith.reply
 remember pair: e4k=folk 2m
 
@@ -1254,7 +1254,7 @@ then other: faith.reply
 remember pair: e4k=folk 2m
 
 rule e4_rf_ans_fen
-when concept=faith.answer from=mirebridge stage=adult|old
+when concept=faith.answer from=mirebridge|fenshore stage=adult|old
 say Chapel, and the Fen Mother's words before I sleep. | Fen folk believe in everything. Safer. | I go. And I never follow the lights. That's my faith.
 then other: faith.reply
 remember pair: e4k=folk 2m
@@ -1466,7 +1466,7 @@ priority 1
 say Up home we'd leave a crust for that. | Lamp lit, crust left. Can't go wrong. | Up home they'd knock on stone, not wood.
 
 rule e4_rf_rep_omen_fen
-when concept=faith.reply pair.mem.e4k=omen from=mirebridge
+when concept=faith.reply pair.mem.e4k=omen from=mirebridge|fenshore
 priority 1
 say Fen folk'd say the same. | Put out milk. Can't hurt. | My gran would've hung a reed knot for that.
 

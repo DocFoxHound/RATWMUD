@@ -1895,9 +1895,12 @@ class World
     std::map<std::string, double> ambientLast_;
     std::map<std::string, std::vector<AmbientNews>> news_;
     std::map<std::string, std::vector<TownNews>> townNews_;      // By town (or region).
+    std::map<std::string, std::string> talkDialectOf_;           // (setTalkDialects.)
+    mutable std::vector<std::pair<std::string, int>> talkHomes_; // The places somebody lives and how many, for talkOrigin (once).
     void noteNews(const WorldEvent& event);
-    std::string townIdOf(const std::string& cellId) const;
   public:
+    // The town a cell is in (its id), else the cell's region: the talk library's here.region.
+    std::string townIdOf(const std::string& cellId) const;
     // The best thing for `a` to talk of with `b` now (gossip, news, the day...), with its tags and blanks; also asked by
     // talk_check (doc 62). An empty kind if there's nothing.
     AmbientTopic ambientTopic(const std::string& a, const std::string& b);
@@ -1911,6 +1914,9 @@ class World
     // Where resident `id` grew up (one of the realm's seven regions; "" for none) and how strongly they speak like it
     // ("none", "light", "broad"): the talk library's `from` and `accent` (doc 62, phase 3).
     void talkOrigin(const std::string& id, std::string& from, std::string& accent) const;
+    // The towns with no dialect of their own and the dialect each speaks (the talk library's settings.json, "dialect_of":
+    // doc 83, Phase 4), so their folk have an origin too.
+    void setTalkDialects(std::map<std::string, std::string> dialectOf);
     // The market's largest moves in shown price where `who` stands (doc 79, 11; Phase 8), as the list shows them to the
     // traveller overhearing (talkHolder_: the listening player's account holder, set by ambientPicks for each listener
     // and by talkFor; else one who has pushed nothing), each read off the nearest shop that sets the good out. At most

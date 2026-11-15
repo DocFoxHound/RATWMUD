@@ -378,7 +378,7 @@ a@guard : You will. You always do.
 a@plain : Whoever's daft enough. | Everyone, by now. Everyone's sure it was someone else. | Half their team.
 
 scene e2_pt_ball_game_parish
-when topic=pastimes here.region=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow
+when topic=pastimes here.region=frosthollow|coldwater|oakhaven|fens|larkfield|southmeadow
 a[here.season=spring|summer] : Is the ball game on this year? Town against the farms? | Last year's ball game went on till dark. | The farms are training. I've seen them.
 b[job=farmer|herder] #farm : We'll win. We carry sheep all year. A ball's nothing.
 b[job=guard] #guard : Mind the walls and the windows.
@@ -722,7 +722,7 @@ a@south : Southmeadow would say that.
 a@plain : Every herder on the downs. | Says everyone who's heard them. | Bells on the sheep, next.
 
 scene e2_pt_mirebridge_punts
-when topic=pastimes here.region=mirebridge
+when topic=pastimes here.region=fens
 a : Punt races on the Long River, Restday. | Lost my pole in the punt race. Stood there, drifting. | Who'll win the eel-throwing this year?
 b[job=fisher] #fisher : Waste of a good Restday, the lot of it. I'll be there.
 b #plain : Who's racing? | Did you get it back? | Whoever's mad enough.
@@ -730,7 +730,7 @@ a@fisher : Course you will.
 a@plain : The ferry crews, and anyone with a punt. | A heron was standing on it. | Mad's the whole fen.
 
 scene e2_pt_mirebridge_fen_songs
-when topic=pastimes here.region=mirebridge
+when topic=pastimes here.region=fens
 a[here.time=dusk|night] : Hear them singing out on the fen? | Somebody's playing the reed pipe out on the boards. | Sing me the one about the lantern-lights.
 b[stage=old] #old : Fen songs. The words are older than anyone knows.
 b[temper=nervy] #nervy : I don't like songs out in the dark.
@@ -741,8 +741,8 @@ a@plain : Coming home happy, then. | A heron with a tune. | Fine. The one about 
 
 scene e2_pt_oakhaven_tree
 when topic=pastimes here.region=oakhaven
-a : The pups climb the big oak like squirrels. | Carving in the Warmwood. Everyone does it here. | I found a dancing ring in the woods. Mushrooms in a circle.
-b[job=woodcutter] #cutter : The Warmwood's older than all of us. Mind it.
+a : The pups climb the big oak like squirrels. | Carving in the Rainwood. Everyone does it here. | I found a dancing ring in the woods. Mushrooms in a circle.
+b[job=woodcutter] #cutter : The Rainwood's older than all of us. Mind it.
 b[temper=nervy] #nervy : The deep wood's not for playing in. Not after dark.
 b #plain : One'll fall. | What do you carve? | Did you step in it?
 a@cutter : I always do.
@@ -799,7 +799,7 @@ when topic=pastimes pair.same_from=yes
 a[here.region=ridgemere from!=ridgemere] : Do you remember the songs from home? | Heard a song from home in the tavern. Nearly cried. | Nobody here dances the way we did at home.
 b[from=frosthollow] #song : The miners' hymn. I still hum it.
 b[from=larkfield] #song : The shearing songs. You never forget those.
-b[from=mirebridge] #song : The fen songs. Every one.
+b[from=mirebridge|fenshore] #song : The fen songs. Every one.
 b[from=southmeadow] #song : The orchard songs. Nobody here knows a single one.
 b[from=oakhaven] #song : The woodcutters' calls. Half song, half shout.
 b[from=coldwater] #song : The boat songs. You row in time or you go round in circles.

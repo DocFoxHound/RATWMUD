@@ -170,27 +170,27 @@ a : Already do. | That's a good week. | Very fine.
 # ---------------------------------------------------------------- Mirebridge
 
 scene em_fh_pr_herbs_ours
-when topic=prices topic.dir=up topic.item=herbs here.region=mirebridge
-a : We grow the herbs. How are they #topic.price# in our own town? | Mirebridge herbs go out by the cartload and come back dearer. | The herbalists sell the best to the city and keep the stems.
+when topic=prices topic.dir=up topic.item=herbs here.region=fens
+a : We grow the herbs. How are they #topic.price# in our own town? | Fen herbs go out by the cartload and come back dearer. | The herb-wives sell the best to the city and keep the stems.
 b : Because the city pays more. | Every cart, every season. | Stems for the locals.
 a : Always the city. | Every season. | Stems and promises.
 b?[healer] : The city pays. We don't. That's the whole of it.
 
 scene em_fh_pr_herbs_cheap
-when topic=prices topic.item=herbs topic.dir=down here.region=mirebridge topic.cause=harvest|dump|players|caravan
-a : Herbs cheap enough to stuff a mattress. | The fen gave a good season. Every shed's full. | #topic.price#. The herbalists are grumbling.
+when topic=prices topic.item=herbs topic.dir=down here.region=fens topic.cause=harvest|dump|players|caravan
+a : Herbs cheap enough to stuff a mattress. | The fen gave a good season. Every shed's full. | #topic.price#. The herb-wives are grumbling.
 b : I'll stuff mine. | Bless the fen. | They always grumble.
 a : Sleep well, then. | For once. | And always eat.
 
 scene em_fh_pr_peat
-when topic=prices topic.dir=up here.region=mirebridge
+when topic=prices topic.dir=up here.region=fens
 a : Peat's wet and supper's dear. A good week for misery. | Can't dry peat, can't cook. Can't cook, buy food. Can't buy food. | Wet feet, wet peat, dear supper.
-b : A good week for marsh lights, too. | That's Mirebridge all over. | And dear everything.
+b : A good week for marsh lights, too. | That's the fens all over. | And dear everything.
 a : Don't follow them. | All over. | And we're hungry.
 b?[laborer] : Cut peat all morning. Wet as a fish.
 
 scene em_sf_pr_river
-when topic=prices topic.dir=down here.region=mirebridge topic.cause=caravan|harvest
+when topic=prices topic.dir=down here.region=fens topic.cause=caravan|harvest
 a : The barges came down the Long River full. Prices fell. | #topic.what# for #topic.price# by the river. | River's been kind this month. Food's cheap.
 b : Bless the river. | River's always cheapest. | Kind for once.
 a : And the bargemen. | And muddiest. | For once.
@@ -232,4 +232,4 @@ when topic=prices topic.dir=up here.region=oakhaven
 a : I'll grow more in the garden. Can't trust the carter's prices. | Every house in Oakhaven should keep a garden. | Herbs and beans from the garden. No pennies needed.
 b : Good idea. | Most do. | Beans again?
 a : About time. | The rest should. | Beans forever.
-b?[old] : The Warmwood fed this town before there was a road. It can again.
+b?[old] : The Rainwood fed this town before there was a road. It can again.

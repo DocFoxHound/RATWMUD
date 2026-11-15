@@ -1,7 +1,7 @@
 # 83. Dialogue trees: a window with the NPC's face, and choices to pick
 
 Draft, 2026-11-15, for Ridgemere 3 (`ridgemere3`, doc 82). The user answered the open questions the same day (below,
-"The user's answers"); **Phases 1, 2 and 3 are built** (branches r3-dlg1, r3-dlg2 and r3-dlg3: "as built", under Phases). It adds player-facing
+"The user's answers"); **Phases 1 to 4 are built** (branches r3-dlg1 to r3-dlg4: "as built", under Phases). It adds player-facing
 conversation trees to doc 62's talk library. Doc 62's facts, rules and grammar stay, and so do the router, the NPC
 Mind and free text. A tree is a new way of *asking* the library, through a window the player answers by choosing.
 
@@ -618,6 +618,51 @@ an end-to-end run and one review-and-fix come at the end. The times are rough, f
    - **Fixes:** every flagged line, the lore warnings sorted into fixed or kept, and every tree rendered in all seven
      voices into `artifacts/talk/dialogue-listen.md` for the user.
    - **Tests:** the lexicon rule; origins at least 70% per town on ridgemere3; `talk_check --validate` clean.
+   **Phase 4 as built (r3-dlg4, 2026-11-15).**
+   - **Where a resident is from** (`World::talkOrigin`): the homes are the seven dialect regions and settings.json's
+     `"dialect_of": {"fenshore": "mirebridge", "saltwell": "coldwater"}`, of the places somebody lives in this world (so
+     the erased Mirebridge is nobody's birthplace on Ridgemere 3). 75% of the city and 85% of a town grew up there; one
+     who moved came from another place in proportion to its folk (the city sends most). A Fenshore wolf's `from` is
+     `fenshore` (their voice card says so, `#self.from.capitalize#` says "Fenshore"); their grammar layer is the dialect
+     (`Library::dialectOf`, used by `Game::talkSpeaker`, `expand` and the voice card). `facts.json` knows fenshore and
+     saltwell for `from`, `here.region` and `accent_of`; groups.talk has `fens = mirebridge fenshore`, `waste = saltwell`,
+     and the two in `towns`, `south`, `countryside` (Fenshore in `warm`); `talk_report.py` counts them.
+   - **Re-derived on ratw_ridgemere3** by `tools/talk_seed.py --world ridgemere3 --reorigin --replace dialects` (re-runnable:
+     a second run changes nothing; the two tables dumped first into the main checkout's Saved/Backups): of the 773
+     residents the server places, 258 seed rows changed (Ridgemere 123 of 599, Coldwater 53 of 66, Larkfield 26 of 36,
+     Fenshore 23 of 23, Saltwell 13 of 13, Southmeadow 8 of 19, Frosthollow 6 of 9, Oakhaven 6 of 8); the 10 written
+     characters and the 310 rows of residents the world doesn't place kept; an accent kept wherever the origin stayed.
+     After: Ridgemere 79% speak its speech, Coldwater 88%, Larkfield 97%, Fenshore 87%, Southmeadow, Saltwell and
+     Oakhaven 100%, Frosthollow 78%. The six live.dialects rows are the files' again, with every symbol of Phases 1-4.
+   - **The check:** `tools/dialect_check.py` (and `tools/dialect_allow.json`, the reviewed exceptions), as designed above:
+     the lexicon (a dialect's own phrases, sayings only standing alone, single words only where marked; ordinary phrases
+     listed), the trees' symbols in every dialect, every tree line rendered in every voice by the new
+     `talk_check --render-trees` (160 characters, nothing unfilled), the regional lines' reach (none only for the erased
+     Mirebridge), and with `--world` the origins (70% a town, 60% the city), the character tables and the live.dialects
+     rows; lore names a warning (kept as `places`, `names` and `legend` with why). ctest `dialect_check` and
+     `dialect_check_rules` (`tools/test_dialect_check.py`); `--listen` writes `artifacts/talk/dialogue-listen.md`, and
+     `tools/dialect_samples.py` a sample of real residents through the shop, resident and work trees.
+   - **The pass:**
+     - the fens' 108 entries gated on Mirebridge play in Fenshore (`here.region=fens`; 169 gates in 39 files, `from=`
+       lists gaining fenshore, and saltwell where a list meant everyone else), their words moved to Fenshore as it is
+       built (the Heron and its fire, boardwalks and stilts, the store, the Mirebridge clay pits; Old Sedge for the
+       herbalist; old Mirebridge spoken of as the drowned town, its chapel and bell under the fen), and "Mirebridge" as
+       a home now the speaker's own town (`#self.from.capitalize#`, `#here.town#`);
+     - old-map names: the Warmwood is the Rainwood (63), the Southway the South Road (22), the Riverway the River Road,
+       the Meadow Road the South Road;
+     - dialect words in the wrong mouths: "my grandsire" to `#grandad#` (6), the fen "dry-footed" to "keep to the boards",
+       seven quoted or literal lines allowed with why;
+     - the trees: 14 new symbols in plain and the six dialects (`news_none`, `gossip_none`, `trouble_none`,
+       `trouble_thanks`, `way_ask`, `job_busy`, `work_declined`, `inn_rest`, `inn_helper`, `watch_noted`, `watch_bye`,
+       `learn_taken`, `receiver_ask`, and `shop_asleep` in the dialects; `bless` in Larkfield), and the trees' plain lines
+       moved onto them; a doubled address ("Good harvest, neighbour. What's on your mind, neighbour?") taken out of
+       seven lines; Larkfield's "customer" only from a trader;
+     - only the keeper lets beds: a helper at an inn (`here.inn_helper`, `here.innkeeper`) keeps the inn tree, with the
+       beds locked "Ask <keeper>: the rooms are theirs to let." and no counter; a master's opening names the trade in a
+       word or two (`here.trade_title`: "smithing", "potting", "keeping a shop"), never the post's whole title.
+   - **Not done:** the rest of the library's 8,500 entries were checked by the lexicon and the lore names only; the
+     character of each line (caste, House) beyond the trees is for the listen with the user. The live world must be
+     restarted for the new origins, the dialect rows and the code.
 5. **Animation hooks** (later; about 2 h for the hooks, and the animation itself unplanned).
    - **Server:** `mood` on each line (from the node's tag or the speaker's `mood` fact) and `speaking` time.
    - **Client:** the face slot gets its own frame loop with nothing yet to animate but a small "speaking" cue: the

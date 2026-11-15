@@ -17,7 +17,13 @@ import re
 
 import talk_files
 
-REGIONS = ['ridgemere', 'frosthollow', 'coldwater', 'oakhaven', 'mirebridge', 'larkfield', 'southmeadow']
+import json
+from pathlib import Path
+
+# The places one may stand and talk (Ridgemere 3: doc 83, Phase 4): the seven dialect regions and the towns that speak
+# another's (settings.json "dialect_of": Fenshore as Mirebridge, Saltwell as Coldwater).
+REGIONS = ['ridgemere', 'frosthollow', 'coldwater', 'oakhaven', 'mirebridge', 'larkfield', 'southmeadow'] + \
+    list(json.loads((Path(__file__).resolve().parent.parent / 'Data' / 'Talk' / 'settings.json').read_text()).get('dialect_of', {}))
 EVENTS = ['prices', 'caravan', 'bandits', 'crime', 'life', 'festival', 'newcomer', 'deed', 'price_cause']
 EVERYDAY = ['smalltalk', 'work', 'family', 'weather', 'lore', 'player', 'gossip', 'news', 'quarrel', 'friends', 'day',
             'food', 'home', 'pastimes', 'animals', 'health', 'memories', 'dreams', 'faith', 'travel', 'land', 'season']

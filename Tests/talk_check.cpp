@@ -18,6 +18,11 @@
 //       Checks .talk and .grammar files against the library's facts, settings, grammars and groups, as Atlas and the
 //       Dungeon Master will before saving a character's table. Exit 1, with the reasons, if any is refused.
 //
+//   talk_check [--data DIR] --render-trees [--json] [--seed N]
+//       Every dialogue tree's NPC lines (Data/Talk/dialogue, doc 83) in every voice: plain and each dialect, at a light
+//       and a broad accent, each alternative filled in with sample facts. Exit 1 if a line comes out longer than 160
+//       characters or with a symbol unfilled (tools/dialect_check.py runs it, and writes the listen sheet from --json).
+//
 //   talk_check [--data DIR] --world KEY|EXPORT_DIR [--run HOURS] --residents [key=value]
 //       Every resident's facts, counted: how many are each job, each wealth, injured... With key=value, those
 //       residents (up to 40) and their facts. With --json, every resident's facts, a JSON object a line.
@@ -99,6 +104,108 @@ void printFacts(const talk::Query& q)
         std::cout << "  " << k << "=" << v << "\n";
 }
 
+// Every tree line in every voice (--render-trees): sample facts for what the trees say, the speaker an adult of each
+// dialect (and plain), light and broad.
+int renderTrees(const talk::Library& lib, std::uint64_t seed, bool asJson)
+{
+    static const std::map<std::string, std::string> Sample{
+        {"topic.why", "Someone else has taken it on."}, {"topic.job_why", "Someone else has taken it on."},
+        {"here.town", "Coldwater"}, {"here.folk", "66"}, {"topic.player", "Ash"}, {"topic.claim", "has been seen at the docks at night"},
+        {"here.take_on_why", "They don't know you well enough to take you on yet."}, {"here.shops", "5"}, {"here.inns", "1"},
+        {"here.service", "from nine in the morning until eleven"}, {"here.fine", "8"},
+        {"here.bed_why", "You have a lodging already."}, {"topic.subject", "Hesta Marl"}, {"topic.job_paid", "twelve pennies"},
+        {"topic.job_reward", "12"}, {"here.bed_night", "3"}, {"topic.job_title", "Carry a letter to Oda Fenn"},
+        {"topic.job_due", "within two days"}, {"here.faction", "the Lodge"}, {"topic.job_poster", "Ragnar"},
+        {"topic.job_handover", "I've a letter for you, from Ragnar."},
+        {"topic.job_directions", "A letter for Oda Fenn, at the Glasswater Inn. She'll be in the taproom of an evening."},
+        {"here.upstairs_night", "14"}, {"here.district", "Greatly"}, {"here.bed_week", "15"}, {"world.news_from", "Ridgemere"},
+        {"world.news", "the Lodge has a new master"}, {"world.event_words", "the horse fair on Marketday"},
+        {"topic.trouble_words", "I'll lend you a few pennies till Restday."}, {"topic.answer", "The Lodge holds you well: trusted."},
+        {"topic.place_way", "The inn's across the green, the door with the lamp. Ask for Loam."},
+        {"topic.place_title", "The Glasswater Inn"}, {"topic.place_kind", "the inn"},
+        {"topic.job_risk", "Bandits have been seen on the East Road. Keep to the daylight."},
+        {"topic.job_progress", "You've the letter still. Oda's at the Glasswater Inn."}, {"here.trade_title", "smithing"},
+        {"here.tithe_fee", "20"}, {"here.report_fee", "5"},
+        {"here.bounty", "There's a price on the bandit camp out by the Greyteeth: 40 pennies to whoever clears it."},
+        {"here.innkeeper", "Loam Pinefell"}, {"topic.greeting", "Welcome to the Glasswater."}};
+    std::vector<std::string> voices{"plain"};
+    for (const auto& g : lib.grammars())
+        if (g != "plain" && g.rfind("person:", 0) != 0)
+            voices.push_back(g);
+    auto out = json::Value::array();
+    int problems = 0;
+    for (const auto& e : lib.entries())
+    {
+        if (e.id.rfind("dlg.", 0) != 0 || e.turns.empty() || e.concepts.empty())
+            continue;
+        const auto concept = *e.concepts.begin();                 // dlg.<tree>.<node>
+        const auto dot = concept.find('.', 4);
+        const auto tree = concept.substr(4, dot - 4), node = concept.substr(dot + 1);
+        std::string criteria;
+        for (const auto& c : e.when)
+            if (c.full != "concept" && c.name != "concept")
+                criteria += (criteria.empty() ? "" : " ") + (c.full.empty() ? c.name : c.full) + (c.op == talk::Criterion::Op::NotIn ? "!=" : "=") +
+                            [&] { std::string v; for (const auto& x : c.values) v += (v.empty() ? "" : "|") + x; return v; }();
+        int alt = 0;
+        for (const auto& variant : e.turns[0].variants)
+            for (const auto& text : variant.texts)
+            {
+                ++alt;
+                for (const auto& voice : voices)
+                    for (const char* accent : {"light", "broad"})
+                    {
+                        if (voice == "plain" && std::string(accent) == "broad")
+                            continue;
+                        talk::Query q;
+                        q.concept = concept;
+                        q.alone = true;
+                        q.a.facts = {{"id", "sample"}, {"name", "Sample"}, {"sex", "female"}, {"stage", "adult"}, {"age", "40"},
+                                     {"job", "smith"}, {"role", "merchant"}, {"trade", "smith"}};
+                        if (voice != "plain")
+                        {
+                            q.a.facts["from"] = voice;
+                            q.a.facts["accent"] = accent;
+                            q.a.grammar.push_back(voice);
+                        }
+                        q.b.facts = {{"id", "player"}, {"name", "Ash"}, {"sex", "male"}, {"stage", "adult"}, {"age", "30"}};
+                        for (const auto& [k, v] : Sample)
+                            q.facts[k] = v;
+                        std::string said, problem;
+                        if (!lib.expand(text, q, 0, seed + std::uint64_t(alt) * 31, said))
+                            problem = "a fact it needs is missing";
+                        else if (said.find('#') != std::string::npos)
+                            problem = "a symbol left unfilled";
+                        else if (said.size() > 160)
+                            problem = "longer than 160 characters (" + std::to_string(said.size()) + ")";
+                        problems += !problem.empty();
+                        if (asJson)
+                        {
+                            auto r = json::Value::object();
+                            r.add("tree", tree);
+                            r.add("node", node);
+                            r.add("rule", e.id);
+                            r.add("alt", alt);
+                            r.add("criteria", criteria);
+                            r.add("voice", voice);
+                            r.add("accent", accent);
+                            r.add("template", text);
+                            r.add("text", said);
+                            if (!problem.empty())
+                                r.add("problem", problem);
+                            out.push(std::move(r));
+                        }
+                        else if (!problem.empty())
+                            std::cout << e.id << " (" << voice << ", " << accent << "): " << problem << ": " << said << "\n";
+                    }
+            }
+    }
+    if (asJson)
+        std::cout << json::dump(out) << "\n";
+    else
+        std::cout << (problems ? std::to_string(problems) + " problems\n" : std::string("every tree line renders in every voice\n"));
+    return problems ? 1 : 0;
+}
+
 int explain(const talk::Library& lib, const talk::Query& q, std::uint64_t seed, int many, bool all)
 {
     printFacts(q);
@@ -167,7 +274,7 @@ int main(int argc, char** argv)
     int many = 0;
     double runHours = 0;
     std::string character, dialect, grammarFile, rulesFile;
-    bool all = false, validating = false, residents = false, asJson = false;
+    bool all = false, validating = false, residents = false, asJson = false, renderingTrees = false;
     for (int i = 1; i < argc; ++i)
     {
         const std::string a = argv[i];
@@ -186,6 +293,8 @@ int main(int argc, char** argv)
             validating = true;
         else if (a == "--residents")
             residents = true;
+        else if (a == "--render-trees")
+            renderingTrees = true;
         else if (a == "--json")
             asJson = true;
         else if (a == "--run")
@@ -248,6 +357,15 @@ int main(int argc, char** argv)
         if (ok)
             std::cout << "ok      " << character << "\n";
         return ok ? 0 : 1;
+    }
+    if (renderingTrees)
+    {
+        if (!lib.load(data, problem))
+        {
+            std::cerr << "the talk library doesn't load:\n" << problem << "\n";
+            return 2;
+        }
+        return renderTrees(lib, seed, asJson);
     }
     if (validating)
     {
@@ -357,6 +475,20 @@ int main(int argc, char** argv)
                 auto line = json::Value::object();
                 for (const auto& [k, v] : q.a.facts)
                     line.add(k, v);
+                // Where they live as the server places them, and the origin the game works out alone (World::talkOrigin,
+                // before any live.npc_voice row): tools/dialect_check.py and talk_seed.py --reorigin read these (doc 83,
+                // Phase 4). Underscored, so no one takes them for the library's facts.
+                const auto* life = g.world().society().resident(id);
+                const auto homeCell = life && !life->homeCell.empty() ? life->homeCell : e.cellId;
+                std::string from, accent;
+                g.world().talkOrigin(id, from, accent);
+                line.add("_home_cell", homeCell);
+                line.add("_home", g.world().townIdOf(homeCell));
+                line.add("_origin_from", from);
+                line.add("_origin_accent", accent);
+                line.add("_work_label", g.world().society().spec(id)->workLabel);
+                if (const auto* post = g.world().society().jobOf(id))
+                    line.add("_post_title", post->title), line.add("_post_role", post->role);
                 std::cout << json::dump(line) << "\n";
                 continue;
             }

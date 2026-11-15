@@ -92,3 +92,20 @@ inn_bed = Upstairs, clean straw and all. There's a chest for your things. | Your
 watch_greet = The watch, neighbour. Out with it. | Keep the peace and we'll all get the harvest in.
 church_greet = Good harvest to you. Come in. | The sun keep you. All are welcome here.
 learn_offer = It's a trade that feeds a family. | Long days, but good ones.
+# The dialogue trees' other words (doc 83, Phase 4): news and gossip there isn't, a trouble that isn't, thanks for
+# help, the way, a resident's work, work turned down, an inn's fire and its helpers, the watch's word, a master's
+# new apprentice, something to hand over; a keeper asleep.
+shop_asleep = Mm... shut till cockcrow. | Zzz... come back at sunup, neighbour.
+news_none = Quiet as a fallow field. | Nothing new since the sowing. | Not that I've heard, neighbour.
+gossip_none = Chaff and chatter. Not for me. | Nothing I'd repeat, neighbour.
+trouble_none = Nothing a good season won't mend. | Nothing, neighbour.
+trouble_thanks = Good harvest to you. I won't forget it. | Bless you, neighbour. Thank you.
+way_ask = Where are you headed, neighbour? | Lost in the lanes?
+job_busy = Whatever the season wants. | This and that, neighbour.
+work_declined = Suit yourself, neighbour. | Another season, then.
+inn_rest = Sit by the fire, neighbour. A bed upstairs rests you properly. | Take the bench. Rest your legs.
+watch_noted = Noted. We'll weed them out. | Good. The watch thanks you, neighbour.
+watch_bye = Keep the peace, neighbour. | Move along, then.
+learn_taken = Good. Be here at first light, and stay near me. | Then you're mine to teach, neighbour. Stay close.
+receiver_ask = Something for me, neighbour? | For me? Well, pick me.
+inn_helper = I only help here, neighbour. Ask #here.innkeeper# for a bed. | #here.innkeeper# keeps the house. I carry the cups.

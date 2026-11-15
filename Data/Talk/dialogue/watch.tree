@@ -17,7 +17,7 @@ entry fine fine
 node hub
 say #watch_greet# | #greet#. #watch_greet# | #greet#, #address#.
 say[here.wanted=yes priority=3] You. You're wanted, #address#: #here.fine# pennies settles it. | Hold there. The watch wants a word, #here.fine# pennies' worth.
-say[on_watch=no] Off duty, #address#. Make it quick. | I'm off watch. What is it?
+say[on_watch=no] Off duty, #address#. Make it quick. | I'm off watch. #talk_open#
 mood formal
 free
 choice What do I owe the watch? [here.wanted=yes] -> fine
@@ -37,7 +37,7 @@ choice Never mind. -> hub
 
 node reported
 say That's nothing new to us. Keep your eyes open, though. | Nothing we don't know. Still, thank you.
-say[topic.reported=yes] Noted. We'll see to it. | Noted. The watch thanks you. | Good. We'll find them.
+say[topic.reported=yes] #watch_noted#
 mood formal
 choice Anything else? -> hub
 choice Goodbye. -> bye
@@ -78,5 +78,5 @@ choice Anything else? -> hub
 choice Goodbye. -> bye
 
 node bye
-say #farewell#. | Move along, then. | Keep the peace.
+say #farewell#. | #watch_bye#
 end

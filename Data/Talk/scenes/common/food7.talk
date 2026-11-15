@@ -484,17 +484,17 @@ a : Seasoning. Yes. | Warm and black. | I scrape it off. Then there's no butter.
 # ---------------------------------------------------------------- The towns' own food
 
 scene e1_food_fens_eels
-when topic=food here.region=mirebridge
+when topic=food here.region=fens
 a : Eel pie on Restday. Like my father, and his. | The eel traps were full this morning. | Smoked eel, jellied eel, eel in a pie. That's the Fens for you.
-b[from=mirebridge] #fen : Nothing better in the realm. I'll hear no word against it.
-b[from!=mirebridge] #stranger : I still can't look an eel in the eye.
+b[from=mirebridge|fenshore] #fen : Nothing better in the realm. I'll hear no word against it.
+b[from!=mirebridge|fenshore] #stranger : I still can't look an eel in the eye.
 b #plain : Long may it last. | Lucky you. | And eel in a stew.
 a@fen : Nor I.
 a@stranger : You don't look. You eat.
 a@plain : Long may it. | I'll bring you one. | Eel in everything.
 
 scene e1_food_fens_reeds
-when topic=food here.region=mirebridge
+when topic=food here.region=fens
 a[here.season=spring|summer] : Duck eggs from the reed beds. Big as your paw. | The wildfowl are thick on the water this year. | Watercress from the ditches. Free, if you don't mind wet feet.
 b[child] #pup : I fell in getting eggs. Mother didn't speak to me all day.
 b #plain : Good eating. | Pot one for me. | Wet feet's the Fens anyway.
@@ -584,9 +584,9 @@ a@plain : Wash it first. | It's the sun. | I won't deny it.
 # ---------------------------------------------------------------- Homesick for home cooking
 
 scene e1_food_homesick_eels
-when topic=food a.from=mirebridge
-a[here.region!=mirebridge] : Nobody here can make an eel pie. Nobody. | I'd give my coat for a plate of Fen eels. | They look at me like I'm mad when I ask for eels.
-b[from=mirebridge] #fen : Same as me. I've a cousin who sends them, smoked.
+when topic=food a.from=mirebridge|fenshore
+a[here.region!=fens] : Nobody here can make an eel pie. Nobody. | I'd give my coat for a plate of Fen eels. | They look at me like I'm mad when I ask for eels.
+b[from=mirebridge|fenshore] #fen : Same as me. I've a cousin who sends them, smoked.
 b #plain : I've never had one. | You'd freeze. | You might be.
 a@fen : Share. I'll owe you.
 a@plain : Your loss. | It'd be worth it. | Mad for eels.
@@ -601,7 +601,7 @@ a@plain : Of water, then. | I do. Every night. | I have. Twice.
 
 scene e1_food_homesick_north
 when topic=food a.from=frosthollow|coldwater
-a[here.region=oakhaven|mirebridge|larkfield|southmeadow] : Too warm for smoked fish down here. I've tried. | I'd swap all this fruit for a bit of black bread. | Nobody makes a broth strong enough here.
+a[here.region=oakhaven|fens|larkfield|southmeadow] : Too warm for smoked fish down here. I've tried. | I'd swap all this fruit for a bit of black bread. | Nobody makes a broth strong enough here.
 b[from=southmeadow] #south : Black bread? On purpose?
 b #plain : Too warm for anything. | Truly? | Ours is fine.
 a@south : On purpose. You'd understand in a snowdrift.
@@ -618,7 +618,7 @@ a@plain : It's goat. | Mutton, pastry, more mutton. | Very funny.
 scene e1_food_newcomer_dish
 when topic=food pair.same_from=no
 a : What do they eat where you're from? | What's the dish of your home, then? | What did your mother cook, back home?
-b[from=mirebridge] #dish : Eels. Mainly eels.
+b[from=mirebridge|fenshore] #dish : Eels. Mainly eels.
 b[from=larkfield] #dish : Mutton. More mutton. Then mutton.
 b[from=southmeadow] #dish : Fruit, cider, bread. And everything else with fruit in.
 b[from=frosthollow] #dish : Whatever keeps. Smoked, salted, dried.

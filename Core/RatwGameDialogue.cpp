@@ -479,8 +479,9 @@ std::vector<talk::Facts> Game::dialogueItems(const std::string& playerId, const 
 
 std::string Game::upstairsOf(const std::string& keeper) const
 {
+    // Only the keeper lets the beds (doc 83, Phase 4): one who holds the inn's till, not a pot hand or a helper there.
     const auto* post = world_.society().jobOf(keeper);
-    const auto* inn = post ? world_.cell(post->work.cell) : nullptr;
+    const auto* inn = post && post->role == "merchant" ? world_.cell(post->work.cell) : nullptr;
     if (!inn)
         return {};
     for (const auto& [id, c] : world_.cells())
@@ -540,6 +541,53 @@ std::vector<talk::Facts> Game::dialoguePlaces(const std::string& npcId)
     return out;
 }
 
+namespace
+{
+// A trade in a word or two, for a master's "Smithing? It's a trade worth knowing." (doc 83, Phase 4): the post's craft
+// where its title names one ("potter at Fenshore Kilns": pottery), else its kind of work (talk::jobCategory), never the
+// whole title ("Smith at Timberland's Anchor Forge").
+std::string tradeWords(const std::string& title, const std::string& role, int age)
+{
+    std::string lower;
+    for (const char ch : title)
+        lower += char(std::tolower(static_cast<unsigned char>(ch)));
+    static const std::vector<std::pair<const char*, const char*>> Crafts{
+        {"carpenter", "carpentry"}, {"joiner", "joinery"}, {"cooper", "coopering"}, {"tailor", "tailoring"},
+        {"weav", "weaving"}, {"loom", "weaving"}, {"potter", "potting"}, {"kiln", "potting"}, {"mason", "masonry"},
+        {"tanner", "tanning"}, {"chandler", "candle-making"}, {"candle", "candle-making"}, {"rope", "rope-making"},
+        {"dye", "dyeing"}, {"glass", "glass-making"}, {"jewel", "jewel-work"}, {"fletcher", "fletching"},
+        {"netmak", "net-making"}, {"boatwright", "boat-building"}, {"shipwright", "ship-building"}, {"plaster", "plastering"},
+        {"soap", "soap-making"}, {"brick", "brick-making"}, {"print", "printing"}, {"paper", "paper-making"},
+        {"distill", "distilling"}, {"still", "distilling"}, {"butcher", "butchery"}, {"cleaver", "butchery"},
+        {"smokehouse", "smoking fish"}, {"salt", "salt-making"}, {"vine", "vine-keeping"}, {"press", "pressing"},
+        {"butter", "dairying"}, {"dairy", "dairying"}, {"eel", "eel-catching"}, {"needle", "needlework"}};
+    // The work's own words first ("potter" of "potter at Fenshore Kilns"), then the whole title where its kind is a craft
+    // ("helping at Wickham's Chandlery"): a place's name ("The Vine and Sickle") never names an innkeeper's trade.
+    const auto at = lower.find(" at ");
+    const auto head = lower.substr(0, at);
+    const auto craft = [&](const std::string& words) -> std::string {
+        for (const auto& [stem, said] : Crafts)
+            if (words.find(stem) != std::string::npos)
+                return said;
+        return {};
+    };
+    if (auto own = craft(head); !own.empty())
+        return own;
+    static const std::map<std::string, std::string> Kinds{
+        {"smith", "smithing"},       {"baker", "baking"},        {"brewer", "brewing"},         {"innkeeper", "innkeeping"},
+        {"cook", "cooking"},         {"farmer", "farming"},      {"herder", "herding"},         {"fisher", "fishing"},
+        {"sailor", "sailing"},       {"miner", "mining"},        {"healer", "healing"},         {"priest", "the church's work"},
+        {"scholar", "clerking"},     {"woodcutter", "woodcutting"}, {"carter", "carting"},       {"servant", "service"},
+        {"official", "clerking"},    {"crafter", "the craft"},   {"laborer", "labouring"},      {"merchant", "keeping a shop"}};
+    const auto kind = talk::jobCategory(title, {}, role.empty() ? std::string("civilian") : role, age);
+    if (kind == "crafter" || kind == "laborer" || kind == "merchant")
+        if (auto own = craft(lower); !own.empty())
+            return own;
+    const auto found = Kinds.find(kind);
+    return found != Kinds.end() ? found->second : std::string("my work");
+}
+} // namespace
+
 void Game::dialogueRoleFacts(const std::string& playerId, const std::string& npcId, talk::Facts& f)
 {
     const auto& society = world_.society();
@@ -591,10 +639,28 @@ void Game::dialogueRoleFacts(const std::string& playerId, const std::string& npc
     // An inn: a bed upstairs, by the night or the week, or the whole upstairs; one lodging a wolf.
     const auto upstairs = upstairsOf(npcId);
     const bool lodging = lodgingOf(playerId) != nullptr;
+    // A helper at an inn (a pot hand, "helping at The Grey Gull Inn") lets no beds: they send the wolf to the keeper.
+    std::string keeper;
+    if (post && post->role != "merchant" && upstairs.empty())
+        for (const auto& p : society.positions())
+            if (p.role == "merchant" && p.work.cell == post->work.cell && p.id != post->id)
+                if (const auto held = society.state().careers.positions.find(p.id); held != society.state().careers.positions.end())
+                    if (const auto* k = world_.entity(held->second.holder); k && !k->dead &&
+                        talk::jobCategory(p.title, {}, "merchant", 40) == "innkeeper")
+                    {
+                        keeper = k->name;
+                        break;
+                    }
     f["here.inn"] = yes(!upstairs.empty());
+    f["here.inn_helper"] = yes(!keeper.empty());
+    if (!keeper.empty())
+        f["here.innkeeper"] = keeper;
     f["here.lodging"] = yes(lodging);
     f["here.bed_ok"] = yes(!upstairs.empty() && !lodging);
-    f["here.bed_why"] = upstairs.empty() ? "We've no rooms to let." : lodging ? "You have a lodging already." : std::string();
+    f["here.bed_why"] = !keeper.empty()    ? "Ask " + keeper + ": the rooms are theirs to let."
+                        : upstairs.empty() ? "We've no rooms to let."
+                        : lodging          ? "You have a lodging already."
+                                           : std::string();
     f["here.bed_night"] = std::to_string(innPrice("bed night"));
     f["here.bed_week"] = std::to_string(innPrice("bed week"));
     f["here.upstairs_night"] = std::to_string(innPrice("whole"));
@@ -603,7 +669,7 @@ void Game::dialogueRoleFacts(const std::string& playerId, const std::string& npc
     const bool master = post && post->role != "guard" && !npc->dead &&
                         society.state().careers.positions.count(post->id) && society.state().careers.positions.at(post->id).apprentice.empty();
     f["here.teaches"] = yes(master);
-    f["here.trade_title"] = post && !post->title.empty() ? post->title : std::string("my work");
+    f["here.trade_title"] = tradeWords(post ? post->title : std::string(), post ? post->role : std::string(), npc->age);
     double regard = 0;
     if (const auto* b = world_.bonds().find(npcId, playerId))
         regard = std::clamp(b->familiarity * .4 + b->affinity * .4 + b->trust * .2, 0.0, 100.0);

@@ -429,3 +429,8 @@ add_test(NAME dialogue_trees COMMAND dialogue_tests)
 add_executable(talk_check Tests/talk_check.cpp)
 target_link_libraries(talk_check PRIVATE ratw_core)
 target_compile_definitions(talk_check PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+# The dialect check on the files (doc 83, Phase 4): the lexicon, the trees' symbols in every dialect, every tree line
+# rendered in every voice (by talk_check), the regional lines' reach; and its own tests.
+add_test(NAME dialect_check COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/dialect_check.py)
+set_tests_properties(dialect_check PROPERTIES DEPENDS talk_check)
+add_test(NAME dialect_check_rules COMMAND python3 -m unittest test_dialect_check WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)

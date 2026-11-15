@@ -109,21 +109,21 @@ a : Every morning. | Always. | Very.
 # ---------------------------------------------------------------- Mirebridge
 
 scene fh_cures
-when topic=work|smalltalk here.region=mirebridge
+when topic=work|smalltalk here.region=fens
 a : People come from all over for the marsh cures. | Bogmyrtle's tonic cured my cough. Or killed it. | Half the cures in the fens are poison, half are miracles.
 b[healer] : The marsh is generous to those who know it.
 b : The fens are famous for it. | Which half? | Pick carefully.
 a : Famous. | Still coughing. | Very.
 
 scene fh_floods
-when topic=smalltalk|weather here.region=mirebridge
+when topic=smalltalk|weather here.region=fens
 a : Water's up to the chapel stones again. | Boots never dry in this town. | The fen road's under water.
 b[old] : It's always under water. That's the fens.
 b : Raised for a reason. | Never. | Wade, then.
 a : Always. | Never. | Ugh.
 
 scene fh_peat
-when topic=work here.region=mirebridge a.job=miner|laborer
+when topic=work here.region=fens a.job=miner|laborer
 a : Cut peat since dawn. | Found an old wooden thing deep in the peat. | Peat's wet; it won't sell.
 b : Back-breaking. | What kind of thing? | Dry it.
 a : Very. | Carved. Old. Strange. | In this weather?

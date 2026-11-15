@@ -1,6 +1,6 @@
 # Caravans and bandits, as each part of the world talks of them (Docs/Design/30-towns-and-talk.md): wet Ridgemere and
-# its Southway and High Road, the climb to Frosthollow, the Larkdowns, the lake at Coldwater, the fens at Mirebridge,
-# Southmeadow's fields and the Warmwood. Blanks: {other}.
+# its the South Road and High Road, the climb to Frosthollow, the Larkdowns, the lake at Coldwater, the fens at Mirebridge,
+# Southmeadow's fields and the Rainwood. Blanks: {other}.
 # Alternatives run in parallel.
 
 # ---------------------------------------------------------------- Ridgemere
@@ -73,7 +73,7 @@ b?[guard] : Orders haven't come. When they do, it's done in a night.
 
 scene em_sr_bd
 when topic=bandits here.region=ridgemere
-a : Bandits on the Southway. As if the rain weren't enough. | The Southway's got robbers and mud. Pick your death. | The Chapel of the Tide will run out of candles at this rate.
+a : Bandits on the South Road. As if the rain weren't enough. | The South Road's got robbers and mud. Pick your death. | The Chapel of the Tide will run out of candles at this rate.
 b : The rain's honest, at least. | I'll take the mud. | Don't say that.
 a : At least. | Slower. | Sorry.
 b?[priest] : Every candle we light, we light with care. Pray we light none this season.
@@ -196,20 +196,20 @@ b?[fisher] : Fog hides more than fish.
 # ---------------------------------------------------------------- Mirebridge
 
 scene em_fh_cv_herbs_out
-when topic=caravan topic.kind=left here.region=mirebridge
+when topic=caravan topic.kind=left here.region=fens
 a : The herb carts went off to #topic.where#, smelling like a meadow. | Our whole herb crop's on the road to #topic.where#. | Wagons left for #topic.where#. The town smells empty without the herbs.
 b : The road will smell lovely. | Pray it arrives. | Empty and boggy.
 a : Lovely and dangerous. | I am. | As always.
 b?[healer] : I kept back what I could. Don't tell the buyer.
 
 scene em_fh_cv_bog
-when topic=caravan topic.kind=arrived here.region=mirebridge
+when topic=caravan topic.kind=arrived here.region=fens
 a : The #topic.where# wagons got stuck on the fen road twice. | Caravan from #topic.where#. Wheels black with peat. | They came in from #topic.where# sinking at every step.
 b : The fen road eats wagons. | Peat everywhere for a week. | Still, they came.
 a : And mules. | Everywhere. | Still.
 
 scene em_fh_bd
-when topic=bandits here.region=mirebridge
+when topic=bandits here.region=fens
 a : Bandits in the fen, they say. Following the lights. | Robbers hide out on the islands in the fen. | Nobody chases bandits into the fen. Nobody comes out.
 b : Let the lights have them. | Good place to hide. | Good. Let them rot.
 a : Let them. | Wet place to hide. | Harsh.

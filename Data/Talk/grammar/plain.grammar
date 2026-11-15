@@ -151,3 +151,19 @@ inn_bed = Upstairs, and mind the step. There's a chest for your things. | Your b
 watch_greet = Move along, unless you've business with the watch. | The watch. What is it? | Keep the peace and we'll get on.
 church_greet = Peace be on you. | Welcome, all are welcome here. | Come in. Rest a while.
 learn_offer = It's a trade worth knowing. | It's honest work, and steady. | It keeps a roof over us.
+# The dialogue trees' other words (doc 83, Phase 4): news and gossip there isn't, a trouble that isn't, thanks for
+# help, the way, a resident's work, work turned down, an inn's fire and its helpers, the watch's word, a master's
+# new apprentice, something to hand over.
+news_none = Quiet enough, these days. | Nothing worth the telling. | Not that I've heard.
+gossip_none = I don't hold with gossip. | Nothing I'd repeat. | Not that I've heard.
+trouble_none = Oh, nothing worth your time. | Nothing, thank you.
+trouble_thanks = Thank you. I won't forget it. | You're kind. Thank you. | I don't know what to say. Thank you.
+way_ask = Where are you headed? | Where to? | Looking for somewhere?
+job_busy = I keep busy. | This and that. | Work, mostly.
+work_declined = Suit yourself. | Another time, then. | As you like.
+inn_rest = Sit by the fire, then. A bed upstairs rests you properly, mind. | Take the bench by the fire. Nobody will move you.
+watch_noted = Noted. We'll see to it. | Noted. The watch thanks you. | Good. We'll find them.
+watch_bye = Move along, then. | Keep the peace.
+learn_taken = Good. Be here when I start, and stay near me while I work. | Then you're mine to teach. Stay close while I work.
+receiver_ask = Something for me? | Yes? Is that for me?
+inn_helper = I only help here. #here.innkeeper# keeps the house, and the rooms are theirs to let. | Ask #here.innkeeper# for a bed. I just carry the cups.

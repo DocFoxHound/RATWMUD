@@ -764,12 +764,12 @@ remember pair: mk=home 2m
 rule e3_mr_from_oakhaven
 when concept=talk.memories from=oakhaven here.region!=oakhaven
 cooldown 2d
-say We used to sleep out under the oaks on hot nights. I miss the sound of the leaves. | In the Warmwood we knew every oak by its name. | The woods after rain. I'd give a week's #wages# to smell that.
+say We used to sleep out under the oaks on hot nights. I miss the sound of the leaves. | In the Rainwood we knew every oak by its name. | The woods after rain. I'd give a week's #wages# to smell that.
 then other: memories.answer
 remember pair: mk=home 2m
 
 rule e3_mr_from_mirebridge
-when concept=talk.memories from=mirebridge here.region!=mirebridge
+when concept=talk.memories from=mirebridge|fenshore here.region!=fens
 cooldown 2d
 say I miss the fen at dusk. The frogs starting up, the mist coming in over the reeds. | Back home, the frogs sang all night. It's too quiet here. | My mother could read the fen mist like a book.
 then other: memories.answer

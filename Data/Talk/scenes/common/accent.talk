@@ -6,8 +6,8 @@ when topic=accent
 a : Not from round here, are you? I can hear it. | That's no #here.town# voice. | You talk like #topic.accent_town#.
 b[from=frosthollow] : #greet#. Frosthollow, under the snow. Born to the lamp.
 b[from=coldwater] : #greet#. Coldwater. The lake follows you about.
-b[from=oakhaven] : #greet#. The Warmwood, aye. Oakhaven.
-b[from=mirebridge] : Dry feet. The fens, yes. Mirebridge. You can hear the mud, can you?
+b[from=oakhaven] : #greet#. The Rainwood, aye. Oakhaven.
+b[from=mirebridge|fenshore] : Dry feet. The fens, yes. #b.from.capitalize#. You can hear the mud, can you?
 b[from=larkfield] : Larkfield. Fair price to you. Can't help it, I was raised on a market cry.
 b[from=southmeadow] : Southmeadow. #greet#! Is it so plain?
 b : #topic.accent_town#, born and raised. | Is it so plain? #topic.accent_town#.

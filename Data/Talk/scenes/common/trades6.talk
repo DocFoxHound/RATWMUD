@@ -170,19 +170,19 @@ a : Twelve and a mule. | Bad-tempered carter, more like. | Horses have it easy.
 # ---------------------------------------------------------------- Mirebridge: peat and herbs in the Sallow Fens
 
 scene tr_fh_peat
-when topic=work here.region=mirebridge
+when topic=work here.region=fens
 a : Cut peat since dawn. My fur's black and my nose is full. | The cuttings filled with water overnight. | Peat stacks are drying nicely.
 b : Warm winter, though. | Bail it. | Good.
 a : Warm winter, black summer. | Bail a bog? | Good, till the rain.
 
 scene tr_fh_herbalist
-when topic=work here.region=mirebridge a.job=healer|merchant|farmer
+when topic=work here.region=fens a.job=healer|merchant|farmer
 a : City herbalists buy our bog moss and sell it as a cure. | Picked sundew till my eyes went cross. | Marsh mallow's in flower. Best week of the year.
 b : At ten times the price. | What's it for? | Pick it all.
 a : Twenty times. | Coughs. And warts. And it eats flies. | Leave some. Next year.
 
 scene tr_fh_fog
-when topic=work|weather here.region=mirebridge
+when topic=work|weather here.region=fens
 a : Fog so thick I walked into the dyke. | Can't see the next tussock. Stayed home. | Fen lights out in the fog again last night.
 b : You smell of it. | Good choice. | Don't follow them.
 a : Bog and shame. | Lost a day's peat, though. | Nobody who follows comes back.
@@ -211,7 +211,7 @@ a : In that cold water? | Ten, and he sweeps the floor for himself. | Fine as sm
 
 scene tr_hm_everyone
 when topic=work|smalltalk here.region=oakhaven
-a : Everyone here has two jobs. Nobody's idle. | Needed a wheelwright. There isn't one. Went to Mirebridge. | Oakhaven has one of everything and none spare.
+a : Everyone here has two jobs. Nobody's idle. | Needed a wheelwright. There isn't one. Went to Larkfield. | Oakhaven has one of everything and none spare.
 b : Two's plenty. | Long walk. | Like life.
 a : Till someone gets ill. | Long walk for a spoke. | Like everything.
 

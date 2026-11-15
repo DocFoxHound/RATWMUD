@@ -91,13 +91,13 @@ b[humour=dry] : I'll have it looked at. | Well, you're very dear to me. | Sound 
 b : Liar. | Liar. | Fair. | Sorry. Not very sorry.
 
 scene r7_fr_best_town
-when topic=friends here.region=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow
+when topic=friends here.region=frosthollow|coldwater|oakhaven|fens|larkfield|southmeadow
 a : There's nowhere in the realm like this town. | I'd never live anywhere else. | You can keep the city. | Everyone thinks their own town's the best. They're wrong. This one is.
 b[from=frosthollow here.region!=frosthollow] : You've not seen Frosthollow under snow. | You've never stood at the top of the pass. | Keep it? I'd give it away. | Frosthollow. Under snow. Then tell me.
 b[from=coldwater here.region!=coldwater] : Not like the lake at dawn. | You've never seen the lake go silver. | The city's no lake. | The lake at dawn. That's the best.
 b[from=southmeadow here.region!=southmeadow] : Southmeadow in blossom? Nothing like it. | You've never smelt the orchards. | Keep it. I'll take an orchard. | Southmeadow. No contest.
-b[from=oakhaven here.region!=oakhaven] : Not like the Warmwood in autumn. | You've never sat under an oak older than the town. | Keep it. Give me the woods. | The Warmwood. Gold and red. Then tell me.
-b[from=mirebridge here.region!=mirebridge] : You've not seen the fens at dawn, with the mist on. | You've never heard the reeds at night. | Keep it. Give me the fens. | Mirebridge. Mist on the water. Nothing like it.
+b[from=oakhaven here.region!=oakhaven] : Not like the Rainwood in autumn. | You've never sat under an oak older than the town. | Keep it. Give me the woods. | The Rainwood. Gold and red. Then tell me.
+b[from=mirebridge|fenshore here.region!=fens] : You've not seen the fens at dawn, with the mist on. | You've never heard the reeds at night. | Keep it. Give me the fens. | #b.from.capitalize#. Mist on the water. Nothing like it.
 b[from=larkfield here.region!=larkfield] : You've not seen the downs in June. | You've never stood on the downs with the larks going up. | Keep it. Give me the downs. | Larkfield on market day. That's the best.
 b[from=ridgemere] : You've not seen the Sound at sunset. | You've never walked the wharf at dawn with the gulls. | Keep the city? I miss it every day. | Ridgemere. The Sound. The ships. No contest.
 b : You've not been anywhere else. | You've never tried. | Who'd want it? | That's what everyone says.

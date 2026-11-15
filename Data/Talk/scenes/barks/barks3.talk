@@ -355,7 +355,7 @@ a : Watch change! | Wall's clear! | Who's on the North Gate? Wake up! | Supply c
 
 scene bk3_new_oakhaven_woods
 when concept=bark here.region=oakhaven
-a : Mind the roots! | Firewood, dry and split! | Mushrooms, fresh from the Warmwood! | Acorns everywhere. Everywhere.
+a : Mind the roots! | Firewood, dry and split! | Mushrooms, fresh from the Rainwood! | Acorns everywhere. Everywhere.
 
 scene bk3_new_southmeadow_orchards
 when concept=bark here.region=southmeadow
@@ -366,7 +366,7 @@ when concept=bark here.region=coldwater
 a : Ice on the shore again. | Smoked lake fish! | Wind off the mountains! Shut the door! | Glasswater's cold enough to stop your heart.
 
 scene bk3_new_mirebridge_bridge
-when concept=bark here.region=mirebridge
+when concept=bark here.region=fens
 a : Eels, live eels! | Mind the bridge, it's slick! | Long River's up again. | Warm and wet. Every day.
 
 scene bk3_new_larkfield_market

@@ -1224,7 +1224,7 @@ remember pair: aa=chat 1h
 then other: town.close
 
 rule n7_aa_newcomer_incomer
-when concept=town.answer pair.mem.ans=newcomer self.from=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow here.region=ridgemere
+when concept=town.answer pair.mem.ans=newcomer self.from=frosthollow|coldwater|oakhaven|mirebridge|fenshore|larkfield|southmeadow|saltwell here.region=ridgemere
 say I was new once. Nobody brought me a pie. | Be kind. I remember my first winter here. | They'll learn. Took me three years to stop getting lost.
 remember pair: aa=chat 1h
 then other: town.close

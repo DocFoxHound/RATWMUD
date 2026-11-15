@@ -408,7 +408,10 @@ bool Game::start(std::string& problem)
     {
         std::string trouble;
         if (talk_.load(talkData, trouble))
+        {
             note("info", "RATW_TALK " + std::to_string(talk_.size()) + " rules and scenes for residents' talk");
+            world_.setTalkDialects(talk_.settings().dialectOf);   // (Fenshore's folk speak as Mirebridge's: doc 83.)
+        }
         else
             note("warn", "RATW_TALK the talk library could not be read; residents keep to authored lines:\n" + trouble);
     }

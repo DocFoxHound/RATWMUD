@@ -53,7 +53,7 @@ remember pair: on=grumble 1h
 then other: town.grumble
 
 rule n7_gr_lamps_town
-when concept=talk.smalltalk|talk.day here.time=dusk|night here.region=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow
+when concept=talk.smalltalk|talk.day here.time=dusk|night here.region=frosthollow|coldwater|oakhaven|fens|larkfield|southmeadow
 cooldown 2d
 say One lamp at the crossroads, and it's out more nights than it's lit. | Walked into the well-head in the dark. The well-head! | You'd think a town with a smithy could keep one lamp burning.
 remember pair: grumble=lamps 3d
@@ -170,7 +170,7 @@ remember pair: on=grumble 1h
 then other: town.grumble
 
 rule n7_gr_city_takes
-when concept=talk.smalltalk|talk.lore here.region=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow self.from!=ridgemere
+when concept=talk.smalltalk|talk.lore here.region=frosthollow|coldwater|oakhaven|fens|larkfield|southmeadow self.from!=ridgemere
 cooldown 2d
 say The city takes our goods cheap and sends back its prices dear. | Ridgemere this, Ridgemere that. Who ever came up from Ridgemere to mend our bridge? | The levy goes down the road to the city and never comes back up it.
 remember pair: grumble=city 3d
@@ -449,7 +449,7 @@ remember pair: ga=agree 1h
 then other: town.close
 
 rule n7_ga_incomer
-when concept=town.grumble self.from=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow here.region=ridgemere pair.mem.gk=mend|works|council
+when concept=town.grumble self.from=frosthollow|coldwater|oakhaven|mirebridge|fenshore|larkfield|southmeadow|saltwell here.region=ridgemere pair.mem.gk=mend|works|council
 cooldown 1d
 say In #self.from.capitalize# we'd have seen to it ourselves by now. | Back home, nobody would stand for it. Well. Nobody would mention it, anyway. | You should see how we do it in #self.from.capitalize#. Badly, but with less talk.
 remember pair: ga=agree 1h

@@ -48,5 +48,5 @@ choice Anything else? -> board
 choice Goodbye. -> bye
 
 node bye
-say #farewell#. | #farewell#, #address#. | Go well.
+say #farewell#. | #farewell#, #address#.
 end

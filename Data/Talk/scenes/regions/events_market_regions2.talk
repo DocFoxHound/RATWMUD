@@ -1,6 +1,6 @@
 # More of each place's market and road talk (Docs/Design/30-towns-and-talk.md), by trade, place and season: Ridgemere's
 # wharf, markets, Houses and salt pans, Frosthollow's snowed-in road, the lake, the river and fens, the downs, the
-# fields and the Warmwood. Blanks: {item}, {price}, {other}. Alternatives run in parallel.
+# fields and the Rainwood. Blanks: {item}, {price}, {other}. Alternatives run in parallel.
 
 # ---------------------------------------------------------------- Ridgemere
 
@@ -13,7 +13,7 @@ b?[fisher] : Good catch this week. Even the Fish Hall can't hold back a full net
 
 scene em_rm2_watch_bandits
 when topic=bandits here.region=ridgemere b.job=guard
-a : The Watch going after the robbers on the Southway? | Is it true the Watch won't leave the walls? | My cousin says the Watch is paid by the Houses to guard the Houses.
+a : The Watch going after the robbers on the South Road? | Is it true the Watch won't leave the walls? | My cousin says the Watch is paid by the Houses to guard the Houses.
 b : Not unless the Council says so. | Our orders are the city. | Your cousin should mind his tongue.
 a : The Council won't. | Lucky city. | He never has.
 
@@ -161,21 +161,21 @@ b?[fisher] : I'll stay in. The fish will keep.
 # ---------------------------------------------------------------- Mirebridge
 
 scene em_sf2_barges
-when topic=caravan topic.kind=arrived here.region=mirebridge
-a : The #topic.where# wagons came in the same day as the river barges. Prices are falling. | Barges and wagons together. The riverside's a madhouse. | Road and river both delivering. A good day for Mirebridge.
+when topic=caravan topic.kind=arrived here.region=fens
+a : The #topic.where# wagons came in the same day as the river barges. Prices are falling. | Barges and wagons together. The riverside's a madhouse. | Road and river both delivering. A good day for Fenshore.
 b : Falling at last. | A rich madhouse. | Rare.
 a : Slowly. | Very rich. | Very rare.
 b?[laborer] : I've carried more sacks today than I have in a month.
 
 scene em_fh2_herbalists
-when topic=prices topic.dir=up topic.item=herbs here.region=mirebridge a.job=healer|merchant
-a : City buyers want our best feverwort and pay half its worth. | I sold the whole drying shed to a Ridgemere buyer. Regretted it by noon. | Herbs dear in the city means herbs gone from Mirebridge.
+when topic=prices topic.dir=up topic.item=herbs here.region=fens a.job=healer|merchant
+a : City buyers want our best feverwort and pay half its worth. | I sold the whole drying shed to a Ridgemere buyer. Regretted it by noon. | Herbs dear in the city means herbs gone from the fens.
 b : Sell to someone else. | Why? | Gone where we need them.
 a : There is no one else. | The price went up by dusk. | Exactly.
 
 scene em_fh2_bog_bandits
-when topic=bandits here.region=mirebridge a.job=laborer|farmer
-a : Cutters found a bandit camp on the far peat. Cold, thank the Bright One. | Somebody's been stealing our peat stacks. | Robbers on the causeway. Nobody's cutting today.
+when topic=bandits here.region=fens a.job=laborer|farmer
+a : Cutters found a bandit camp on the far peat. Cold, thank the Bright One. | Somebody's been stealing our peat stacks. | Robbers on the fen track. Nobody's cutting today.
 b : Cold is good. | Bandits stealing peat? | A day lost.
 a : Cold for now. | Somebody's warm. | Two, maybe.
 

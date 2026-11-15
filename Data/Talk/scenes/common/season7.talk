@@ -373,7 +373,7 @@ a : It is, after this winter. | Braver than me. | More to come, I hope.
 # ---------------------------------------------------------------- Where they grew up, in the season here
 
 scene e5_se_south_in_winter
-when topic=season here.season=winter a.from=southmeadow|oakhaven|mirebridge here.region=ridgemere|frosthollow|coldwater
+when topic=season here.season=winter a.from=southmeadow|oakhaven|mirebridge|fenshore here.region=ridgemere|frosthollow|coldwater
 a : Back home we'd still be eating apples off the tree. | I'll never get used to winter up here. Never. | Snow. Again. In the south we had one snow in my whole life.
 b[from=frosthollow] #frost : This? Lowland weather. You should see a real winter.
 b : You've had time to get used to it. | You'll learn. | Lucky south.
@@ -381,7 +381,7 @@ a@frost : I'll take your word for it, and stay by the fire.
 a : Never. | I won't. | Lucky, yes.
 
 scene e5_se_north_in_summer
-when topic=season here.season=summer a.from=frosthollow|coldwater here.region=southmeadow|oakhaven|mirebridge|larkfield
+when topic=season here.season=summer a.from=frosthollow|coldwater here.region=southmeadow|oakhaven|fens|larkfield
 a : This heat. Up home we'd still have snow on the peaks. | I'm melting. I'm a Frosthollow wolf in an oven. | I sleep in the cellar in summer. Folk think I'm mad.
 b[from=southmeadow] #south : This is cool. You should feel the Sunfields in harvest.
 b : You get used to it. | Drink more water. | You are mad.

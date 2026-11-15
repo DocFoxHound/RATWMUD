@@ -129,7 +129,7 @@ a : What do you miss most? | Do you miss #topic.accent_town#? | Is the food diff
 b[from=frosthollow] #frost : Blood sausage and snow light. You can't get either here.
 b[from=coldwater] #cold : Lake trout, fresh. Everything here tastes of town.
 b[from=oakhaven] #oak : Acorn bread. Don't make the face. It's lovely.
-b[from=mirebridge] #fen : Smoked eel. And quiet. Fens are quiet.
+b[from=mirebridge|fenshore] #fen : Smoked eel. And quiet. Fens are quiet.
 b[from=larkfield] #lark : Lamb with mint, and a market where they shout properly.
 b[from=southmeadow] #south : Apples off the tree. And cider. Oh, the cider.
 b : Everything. | Every day. | Different. Better. | Sleep a week.
@@ -170,20 +170,20 @@ a@road : I wasn't fretting.
 a : We'll see. | Is it. | Hm. | Mind you keep passing.
 
 scene m7_acc_north_south
-when topic=accent a.from=frosthollow|coldwater b.from=southmeadow|larkfield|oakhaven|mirebridge
+when topic=accent a.from=frosthollow|coldwater b.from=southmeadow|larkfield|oakhaven|mirebridge|fenshore
 a : You southerners talk like you've honey in your mouths. | All that sun's made your voice lazy. | Down south you say ten words for one. | Can you even say "snow"?
 b : And you northerners talk like you're rationing words. | Sun makes us cheerful. Try it. | You say one for ten. | Snow. There. Horrible word.
 a : We are. Words are dear. | No. | Good value. | Lovely word.
 
 scene m7_acc_south_north
-when topic=accent a.from=southmeadow|larkfield|oakhaven|mirebridge b.from=frosthollow|coldwater
+when topic=accent a.from=southmeadow|larkfield|oakhaven|mirebridge|fenshore b.from=frosthollow|coldwater
 a : You northerners clip every word. | Do they teach you to talk in the cold, up there? | Smile when you talk. It won't crack your face. | You sound like you're always about to say no.
 b : Saves breath. Breath's warm. | They teach you to talk in a hurry. | It might. | We usually are.
 a : Ha. | Before you freeze. | Try. | No.
 
 scene m7_acc_fens_city
-when topic=accent b.from=mirebridge here.region=ridgemere
-a : Fen voice. I'd know it. | You're from the fens. Is it true you sleep with your feet up? | Mirebridge? You'll miss the eels. | Do fen folk really talk to the marsh lights?
+when topic=accent b.from=mirebridge|fenshore here.region=ridgemere
+a : Fen voice. I'd know it. | You're from the fens. Is it true you sleep with your feet up? | #b.from.capitalize#? You'll miss the eels. | Do fen folk really talk to the marsh lights?
 b : Dry feet to you, then. | Keeps them dry. Try it. | Not the eels. The quiet. | They talk back. That's the trouble.
 a : Dry feet. | I might. | Quiet's rare here. | Gods.
 

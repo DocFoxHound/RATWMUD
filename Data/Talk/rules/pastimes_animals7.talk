@@ -182,7 +182,7 @@ say Sledging on the mine road. | Snowballs, when the shift's done. It's #very# #
 then other: pastimes.react
 
 rule e2_r_pt_own_mirebridge
-when concept=pastimes.own here.region=mirebridge
+when concept=pastimes.own here.region=fens
 say Punting, when the river's kind. | Fen songs on the boards at dusk. | Eel-throwing. Don't ask.
 then other: pastimes.react
 
@@ -198,7 +198,7 @@ then other: pastimes.react
 
 rule e2_r_pt_own_oakhaven
 when concept=pastimes.own here.region=oakhaven
-say Carving. Everyone carves in the Warmwood. | Tracking deer, just for the looking. | Climbing trees. Still. Don't tell anyone.
+say Carving. Everyone carves in the Rainwood. | Tracking deer, just for the looking. | Climbing trees. Still. Don't tell anyone.
 then other: pastimes.react
 
 rule e2_r_pt_own_coldwater
@@ -543,7 +543,7 @@ then other: animals.react
 remember pair: ak=nice 2m
 
 rule e2_r_an_own_mirebridge
-when concept=animals.own here.region=mirebridge
+when concept=animals.own here.region=fens
 say Eels in the trap and frogs in the cellar. | Ducks. The fen's thick with them. | A heron stands on my roof. I've not asked why.
 then other: animals.react
 remember pair: ak=nice 2m

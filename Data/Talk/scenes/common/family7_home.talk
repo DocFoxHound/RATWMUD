@@ -196,7 +196,7 @@ scene f7_home_letter
 when topic=family pair.kin=spouses|parent|siblings|family|household
 a : There's a letter from your sister. | Your uncle's written. A whole page. | Someone's sent word from home. | A carter brought a note for you.
 b[from=frosthollow] : From up the valley? Is the snow in? | From home? They never write unless someone's dead. | Up the valley? Read it. Is the mine still open? | Read it. My eyes are bad. Is anyone dead?
-b[from=coldwater|mirebridge|oakhaven|larkfield|southmeadow] : From home? Give it here. | Read it out. Slowly. | Is it the harvest? Is it bad? | From home? Read it, quick.
+b[from=coldwater|mirebridge|fenshore|oakhaven|larkfield|southmeadow|saltwell] : From home? Give it here. | Read it out. Slowly. | Is it the harvest? Is it bad? | From home? Read it, quick.
 b[old] : My sister? Still alive, then. Good. | Read it to me. Every word. Twice. | Is anyone dead? At my age that's the first question. | Read it slowly. My ears aren't what they were.
 b : Read it out. | What does he want? | Good news or bad? | Who from?
 a : They're well. They say the goat isn't. | Money, mostly. And the roof. | Good, mostly. Somebody married somebody. | Can't read the half of it. There's a pawprint.

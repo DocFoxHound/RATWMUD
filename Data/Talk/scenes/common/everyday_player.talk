@@ -23,7 +23,7 @@ scene ev_pl_coat
 when topic=player topic.known=no
 a : Fine coat on #topic.subject#, isn't it? | Have you ever seen markings like #topic.subject# has? | Look at #topic.subject#. Odd colouring for these parts.
 b[noble] : Common enough, in the south. One sees it at court.
-b[old] : My grandsire had markings like that. Southern blood.
+b[old] : My #grandad# had markings like that. Southern blood.
 b : Very handsome. | Never. | Odd, but fine.
 a : I'd have a coat like that. | Striking. | Fine, yes.
 

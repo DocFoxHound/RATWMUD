@@ -173,6 +173,9 @@ struct Settings
         std::vector<std::string> never;
     };
     std::vector<Salience> salience;
+    // The towns with no dialect of their own, and whose speech is theirs (doc 83, Phase 4: Fenshore speaks as Mirebridge,
+    // Saltwell as Coldwater): settings.json's "dialect_of". A resident's `from` stays where they grew up.
+    std::map<std::string, std::string> dialectOf;
 };
 
 // A dialogue tree (Docs/Design/83-dialogue-trees.md): a conversation a player has with a resident in the dialogue
@@ -295,6 +298,9 @@ public:
     const Entry* find(const std::string& id) const;
     bool has(const std::string& concept) const { return byConcept_.count(concept) > 0; }
     const Settings& settings() const { return settings_; }
+    // The dialect (a grammar layer) of one who grew up in `from`: its own, or settings.json's dialect_of for a town with
+    // none of its own (Fenshore: mirebridge).
+    std::string dialectOf(const std::string& from) const;
     const std::map<std::string, FactKind>& personFacts() const { return person_; }
     const std::map<std::string, FactKind>& sharedFacts() const { return shared_; }
     std::vector<std::string> grammars() const;

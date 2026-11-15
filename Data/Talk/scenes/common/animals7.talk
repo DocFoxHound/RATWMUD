@@ -613,7 +613,7 @@ a@herder : Both at once.
 a@plain : Never. | And forty more today. | The best. Were.
 
 scene e2_an_mirebridge_eels
-when topic=animals here.region=mirebridge
+when topic=animals here.region=fens
 a : Eel-run's started on the Long River. | Herons on every post this morning. | The eel traps were full. Writhing.
 b[job=fisher] #fisher : Smoked eels by the barrel. Good year.
 b[from=ridgemere] #city : I don't know how you eat them. They look like rope that hates you.
@@ -623,7 +623,7 @@ a@city : Rope that tastes of butter.
 a@plain : The town smells of smoke for a month. | One each. Like old magistrates. | Eel pie on Restday.
 
 scene e2_an_mirebridge_herons
-when topic=animals here.region=mirebridge
+when topic=animals here.region=fens
 a : That old heron's been on the same post all week. | Herons took the frog-spawn. All of it. | The bitterns are booming in the reeds.
 b[stage=old] #old : Herons are older than the town. They were here first.
 b[temper=nervy] #nervy : I hate the fen at dusk. Things boom and croak and splash.
@@ -668,7 +668,7 @@ a@plain : Banging since dawn. | Every last one. | And fat with it.
 
 scene e2_an_oakhaven_deer
 when topic=animals here.region=oakhaven
-a : The deer are thick in the Warmwood this year. | A white hart, they say, in the deep wood. | Boar's been at the acorns under the big oaks.
+a : The deer are thick in the Rainwood this year. | A white hart, they say, in the deep wood. | Boar's been at the acorns under the big oaks.
 b[job=woodcutter] #cutter : Deep wood's full of things. I saw a white hart myself, once. Bright as a candle.
 b[temper=nervy] #nervy : The deep wood's no place to go looking for beasts.
 b #plain : Good hunting, then. | Who says? | They always are.

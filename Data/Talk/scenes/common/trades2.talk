@@ -244,7 +244,7 @@ a : And he'll hire someone who won't. | I did. Rain doesn't care. | Someone's fo
 
 scene tr_cart_bandits
 when topic=work a.job=carter
-a : I don't take the forest road after dark. Not any more. | Two carters were robbed last month on the Southway. | Always ride with a crossbow on the seat now.
+a : I don't take the forest road after dark. Not any more. | Two carters were robbed last month on the South Road. | Always ride with a crossbow on the seat now.
 b[guard] : We patrol it. Most days.
 b : Wise. | Where? | Can you hit anything with it?
 a : Wise and alive. | By the old milestone. | Barely. But they don't know that.

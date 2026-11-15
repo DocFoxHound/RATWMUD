@@ -92,3 +92,20 @@ inn_bed = Upstairs, high and dry. There's a chest for your things. | Your bed's 
 watch_greet = The watch, fen-friend. What is it? | Keep your feet dry and the peace kept.
 church_greet = Dry feet to you. Come in. | Come in out of the wet. All are welcome.
 learn_offer = It's a trade that keeps feet dry. | Wet work some days, but honest.
+# The dialogue trees' other words (doc 83, Phase 4): news and gossip there isn't, a trouble that isn't, thanks for
+# help, the way, a resident's work, work turned down, an inn's fire and its helpers, the watch's word, a master's
+# new apprentice, something to hand over; a keeper asleep.
+shop_asleep = Mm... shut... come back when the mist lifts. | Zzz... dry feet... morning.
+news_none = Still as a pool. | Nothing's floated up. | Not a word over the boards.
+gossip_none = Reed-whispers. I don't listen to them. | Nothing I'd repeat.
+trouble_none = Nothing but the damp. | Nothing, thank you kindly.
+trouble_thanks = Dry feet to you. I won't forget it. | Thank you kindly, fen-friend.
+way_ask = Where are you wading to? | Lost on the boards?
+job_busy = This and that. Up to my knees in it. | I keep busy.
+work_declined = Suit yourself. | Another day, then. Dry feet.
+inn_rest = Sit by the fire and dry your feet. A bed upstairs rests you properly. | Take the bench. It's dry there.
+watch_noted = Noted. We'll fish them out. | Good. The watch thanks you.
+watch_bye = Dry feet, and keep the peace. | Move along, then.
+learn_taken = Good. Be here when I start, and keep near me. | Then you're mine to teach. Mind the boards.
+receiver_ask = Something floated in for me? | For me, fen-friend?
+inn_helper = I only help here. Ask #here.innkeeper# for a dry bed. | #here.innkeeper# keeps the house. I carry the cups.

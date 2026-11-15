@@ -573,7 +573,7 @@ b : Find anything? | Every nail? | Restday!
 a : Nothing. This time. | Every one. | Restday. I'll be up all night.
 
 scene w7c_other_towns
-when topic=work here.region=frosthollow|coldwater|oakhaven|mirebridge
+when topic=work here.region=frosthollow|coldwater|oakhaven|fens
 a : In Larkfield, they say, a stall pays twice what it does here. | Ridgemere work pays better, I'm told. | Southmeadow folk work half as hard. All that sun.
 b[from=larkfield] : True. And the rent's three times. | So I'm told. | Southmeadow? They work. Slowly, but they work.
 b[from=southmeadow] : Larkfield charges twice for everything, too. | Ridgemere pays. Ridgemere charges. | Half as hard? Come and pick apples and say that.

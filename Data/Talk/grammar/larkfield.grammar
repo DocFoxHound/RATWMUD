@@ -23,6 +23,8 @@ tag = , eh?
 oath! = Scales and silver | By the market cross | Weights and measures
 # (Phase 7, the rest of plain's words.)
 address = friend | customer
+address[role=guard|civilian] = friend | neighbour
+# (Only a trader calls one "customer": doc 83, Phase 4.)
 address[other.stage=young] = lambkin | young 'un
 bed = my bed | a straw sack
 cold = raw | nippy
@@ -93,3 +95,21 @@ inn_bed = Upstairs, and well worth the coin. There's a chest for your things. | 
 watch_greet = The watch. State your business, friend. | Keep the peace and we'll deal fairly.
 church_greet = Bless you. Come in. | All are welcome here, friend.
 learn_offer = It's a trade that pays its way. | It's honest work, fairly paid.
+# The dialogue trees' other words (doc 83, Phase 4): news and gossip there isn't, a trouble that isn't, thanks for
+# help, the way, a resident's work, work turned down, an inn's fire and its helpers, the watch's word, a master's
+# new apprentice, something to hand over; a keeper asleep.
+shop_asleep = Mm... stall's shut... no sales till morning. | Zzz... come back at market hours.
+news_none = Nothing worth the price. | The market's quiet. | Not that I've heard, friend.
+gossip_none = Market-mouths. Not me. | Nothing I'd sell you.
+trouble_none = Nothing I can't haggle my way out of. | Nothing, friend.
+trouble_thanks = That's worth more than silver. Thank you. | I owe you, friend. I won't forget it.
+way_ask = Where to, friend? | Looking for a stall?
+job_busy = Whatever pays. | A bit of trade, a bit of this.
+work_declined = No sale, then. | Suit yourself, friend.
+inn_rest = Sit by the fire. That's free; the bed upstairs isn't. | Take the bench. Nobody charges for sitting.
+watch_noted = Noted. They'll pay for it. | Good. The watch thanks you, friend.
+watch_bye = Keep the peace and trade fair. | Move along, friend.
+learn_taken = Done. Be here when the stall opens, and stay near me. | Then it's a deal. Stay close while I work.
+receiver_ask = Something for me? I've paid for nothing. | For me, friend?
+inn_helper = I only help here. #here.innkeeper# sets the prices and lets the beds. | Ask #here.innkeeper#. I just carry the cups.
+bless = Good fortune go with you | Bless you, and fair trading

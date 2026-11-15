@@ -5,6 +5,9 @@
 # here.inn: the keeper lets beds upstairs ("<inn>, upstairs" over the inn they keep). here.bed_ok and here.bed_why:
 # whether this wolf may take one (one lodging a wolf). here.bed_night, bed_week, upstairs_night: the prices, as
 # Core/RatwLodgings.cpp has them. A bed that's let, or a full upstairs, is refused in words (#topic.why#).
+#
+# Only the keeper lets the beds (doc 83, Phase 4): a pot hand or a helper at the inn (here.inn_helper, the keeper's name
+# here.innkeeper) gets this tree too, but the beds are shown locked with "Ask <keeper>" and they sell nothing.
 
 tree inn
 for job=innkeeper
@@ -13,10 +16,11 @@ entry talk greet
 entry trade greet
 
 node greet
-say #greet#, #address#. #inn_offer# | #greet#. #inn_offer# | #inn_offer#
+say #greet#. #inn_offer# | #inn_offer#
 say[topic.meeting=known] #greet#, #topic.player#. The usual? | Back again, #topic.player#? #inn_offer#
-say[here.time=night] Late one, #address#? #inn_offer# | Come in, it's a cold night. #inn_offer#
-say[here.shop=asleep priority=10] Mm... we're shut... come back in the morning.
+say[here.time=night] Late one? #inn_offer# | Come in, it's a cold night. #inn_offer#
+say[here.shop=asleep priority=10] #shop_asleep#
+say[here.inn_helper=yes priority=3] #greet#. #inn_helper#
 mood warm
 free
 choice A bed for the night (#here.bed_night#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge bed night ; then roomed ; refused refused
@@ -41,7 +45,7 @@ choice Something to eat or drink. [here.shop=open|bare] -> do shop
 choice Goodbye. -> bye
 
 node rest
-say Sit by the fire, then. A bed upstairs rests you properly, mind. | Take the bench by the fire. Nobody will move you.
+say #inn_rest#
 say[here.lodging=yes] Rest as long as you like. Your bed's upstairs when you want it.
 free
 choice A bed for the night (#here.bed_night#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge bed night ; then roomed ; refused refused
@@ -54,6 +58,6 @@ choice Something to eat or drink. [here.shop=open|bare] -> do shop
 choice Goodbye. -> bye
 
 node bye
-say #farewell#. | #farewell#, #address#. | Come back any time.
+say #farewell#. | #farewell#, #address#. | #shop_bye#
 say[here.shop=asleep priority=10] Mm.
 end

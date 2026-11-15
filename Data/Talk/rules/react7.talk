@@ -222,7 +222,7 @@ cooldown 1h
 say City wolves. No sense. | That's the third fight on this street since Restday. | And the Watch is never here when you want them.
 
 rule x7_fight_town
-when concept=react.fight here.region=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow
+when concept=react.fight here.region=frosthollow|coldwater|oakhaven|fens|larkfield|southmeadow
 cooldown 1h
 say Here? In #here.town#? | Everybody'll know about this by supper. | Their mothers will hear of it. Everyone's mothers will.
 
@@ -493,7 +493,7 @@ cooldown 1h
 say Welcome to the waterfront. | Nobody saw nothing. That's the rule down here. | They'll have sold it twice before the Watch hears.
 
 rule x7_theft_town
-when concept=react.theft here.region=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow
+when concept=react.theft here.region=frosthollow|coldwater|oakhaven|fens|larkfield|southmeadow
 cooldown 1h
 say Not in #here.town#! We don't do that here! | That's no local, mark me. | Everybody'll hear of this by dark.
 
@@ -628,9 +628,9 @@ cooldown 2h
 say Ridgemere weather. As promised. | When doesn't it rain here? | The gutters'll be over the step by dark.
 
 rule x7_rain_mirebridge
-when concept=react.rain here.region=mirebridge
+when concept=react.rain here.region=fens
 cooldown 2h
-say Wetter fens. Just what we needed. | The river'll be up by morning. | Nobody in Mirebridge has been dry since spring.
+say Wetter fens. Just what we needed. | The river'll be up by morning. | Nobody in #here.town# has been dry since spring.
 
 rule x7_rain_frost
 when concept=react.rain here.region=frosthollow|coldwater
@@ -980,7 +980,7 @@ say Stamp the snow off, there's a dear. | Come in, quick, the cold follows you. 
 remember pair: served 7d
 
 rule x7_cust_fens
-when concept=react.customer here.region=mirebridge
+when concept=react.customer here.region=fens
 cooldown 2h
 say Wipe the mud, please. Everyone brings the fen in. | Come in. Mind the wet patch. There's always a wet patch.
 remember pair: served 7d

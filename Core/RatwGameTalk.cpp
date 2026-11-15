@@ -69,7 +69,7 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     {
         f["from"] = from;
         f["accent"] = accent.empty() ? "light" : accent;
-        p.grammar.push_back(from);
+        p.grammar.push_back(talk_.dialectOf(from));   // (A town with no dialect of its own speaks another's: doc 83.)
     }
     // Their people (decision 8), by name: to speak of ("#self.spouse#", "#self.priest#").
     for (const auto& [role, who] : peopleOf(e.id))

@@ -66,7 +66,7 @@ cooldown 6h
 say Glasswater trout! Cold water, sweet flesh! | Lake perch! Lake pike! Fresh from the deep! | Smoked trout, keeps a month!
 
 rule x7_bk_fisher_fens
-when concept=bark self.job=fisher here.region=mirebridge self.working=yes
+when concept=bark self.job=fisher here.region=fens self.working=yes
 cooldown 6h
 say Eels! Live eels, jellied eels! | Pike from the Long River! | Fen eels, fat as your arm!
 
@@ -113,7 +113,7 @@ say Kindling! Get your winter wood before the snow! | Firewood! Oak burns long, 
 rule x7_bk_woodcutter_oakhaven
 when concept=bark self.job=woodcutter here.region=oakhaven self.working=yes
 cooldown 6h
-say Mind your heads, she's coming down! | Old tree, that. Older than the town. | Warmwood oak. You'll not find a better grain anywhere.
+say Mind your heads, she's coming down! | Old tree, that. Older than the town. | Rainwood oak. You'll not find a better grain anywhere.
 
 rule x7_bk_herder_spring
 when concept=bark self.job=herder here.season=spring self.working=yes

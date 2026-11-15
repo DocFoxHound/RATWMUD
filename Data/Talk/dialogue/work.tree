@@ -52,7 +52,7 @@ choice What else is there? [topic.job_source=mission] -> do open missions
 choice Goodbye. -> bye
 
 node declined
-say Suit yourself. | Another time, then. | As you like.
+say #work_declined#
 choice What else is there? [topic.job_source=contract] -> list
 choice What else is there? [topic.job_source=mission] -> do open missions
 choice Goodbye. -> bye
@@ -87,5 +87,5 @@ choice What else is there? [topic.job_source=contract] -> list
 choice Goodbye. -> bye
 
 node bye
-say #farewell#. | #farewell#, #address#. | Mind how you go.
+say #farewell#. | #farewell#, #address#.
 end

@@ -891,6 +891,7 @@ void otherRoles()
     {
         std::ofstream world(fs::path(worldPath) / "world.ratw", std::ios::app);
         world << resident("ug", "Guard u", "guard", "keeping the watch", 0, 10.5, 1, 6.5);
+        world << resident("uh", "Pot hand u", "civilian", "helping at the inn", 0, 13.5, 1, 11.5);   // (Doc 83, Phase 4.)
         auto priest = resident("up", "Mother Ada", "civilian", "tending the chapel", 0, 11.5, 1, 4.5);
         priest.replace(priest.find("\"" + cellId(1) + "\""), cellId(1).size() + 2, "\"c_chapel\"");
         world << priest;
@@ -925,7 +926,7 @@ void otherRoles()
     town.run(6);                                    // (The estates refresh: the upstairs is to let.)
     std::map<std::string, std::tuple<std::string, double, double>> spots{
         {"um", {cellId(1), 8.5, 8.5}}, {"ui", {cellId(1), 10.5, 9.5}}, {"ug", {cellId(1), 9.5, 7.5}}, {"u1", {cellId(1), 10.5, 7.5}},
-        {"u2", {cellId(1), 8.5, 10.5}}, {"up", {"c_chapel", 4.5, 2.5}}};
+        {"u2", {cellId(1), 8.5, 10.5}}, {"up", {"c_chapel", 4.5, 2.5}}, {"uh", {cellId(1), 11.5, 9.5}}};
     std::string ashCell = cellId(1);
     double ashX = 9.5, ashY = 8.5;
     const auto keep = [&] {
@@ -1081,11 +1082,20 @@ void otherRoles()
     d = choose(pick(d, "Something else..."));
     expect(d && d->string("tree") == "inn" && d->string("node") == "greet", "and back to the innkeeper's own: " + show(d));
 
+    // A pot hand at the inn (doc 83, Phase 4): the inn's tree, but only the keeper lets the beds.
+    d = open("uh", "talk");
+    expect(d && d->string("tree") == "inn" && contains(d->string("line"), "Keeper u"), "a helper at the inn sends one to the keeper: " + show(d));
+    bed = d && pick(d, "A bed for the night") > 0 ? &d->array("choices")[std::size_t(pick(d, "A bed for the night") - 1)] : nullptr;
+    expect(bed && bed->boolean("locked") && bed->string("why") == "Ask Keeper u: the rooms are theirs to let.",
+           "and the bed is the keeper's to let: " + show(d));
+    expect(pick(d, "What other rooms") == 0 && pick(d, "Something to eat or drink") == 0, "no rooms, no counter: " + show(d));
+
     // A master: their trade from the hub; taken on only when they know and trust the wolf.
     d = open("um", "talk");
     expect(d && d->string("tree") == "resident" && pick(d, "Could you teach me your trade?") > 0, "the hub offers to learn the trade: " + show(d));
     d = choose(pick(d, "Could you teach me your trade?"));
     expect(d && d->string("tree") == "master" && d->string("node") == "learn" && pick(d, "What does it pay?") > 0, "the master's: " + show(d));
+    expect(!contains(d->string("line"), "the stall"), "the trade in a word, not the post's title: " + show(d));
     const auto* ask = &d->array("choices")[std::size_t(pick(d, "Will you take me on?") - 1)];
     expect(ask->boolean("locked") && contains(ask->string("why"), "know you well enough"), "a stranger: locked, why: " + show(d));
     w.bonds().change("um", town.ash.entityId, {50, 50, 50, 0, 0}, w.calendarDays());

@@ -4,7 +4,8 @@
 # know and trust, a regard of 30). Any work the master's market has goes on in the work tree.
 #
 # here.teaches: they hold a trade (not the watch) and have no apprentice. here.take_on and here.take_on_why: whether
-# they'd take this wolf on now, and why not. here.trade_title: the trade.
+# they'd take this wolf on now, and why not. here.trade_title: the trade in a word or two ("smithing", "potting"), never
+# the post's whole title.
 
 tree master
 entry learn learn
@@ -23,7 +24,7 @@ choice Goodbye. -> bye
 
 node work
 ask player.hours
-say Long days, but honest ones. | Steady work, most days.
+say Long days, but honest ones. #learn_offer# | Steady work, most days. #learn_offer#
 free
 choice What does it pay? -> wages
 choice Will you take me on? [here.take_on=yes] locked "#here.take_on_why#" -> do apprentice ; then taken ; refused refused
@@ -45,7 +46,7 @@ choice What's the work like? -> work
 choice Goodbye. -> bye
 
 node taken
-say Good. Be here when I start, and stay near me while I work. | Then you're mine to teach. Stay close while I work.
+say #learn_taken#
 mood pleased
 choice Goodbye. -> bye
 
@@ -54,5 +55,5 @@ say #topic.why# | Not yet. #topic.why#
 choice Goodbye. -> bye
 
 node bye
-say #farewell#. | #farewell#, #address#. | Mind how you go.
+say #farewell#. | #farewell#, #address#.
 end

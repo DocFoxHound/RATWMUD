@@ -635,12 +635,12 @@ a@wood : Now you tell me.
 a : I'm checking now. | A green one. | Don't laugh.
 
 scene e3_h_fens_ague
-when topic=health here.region=mirebridge
+when topic=health here.region=fens
 a : The fen ague's back. Shivering one day, burning the next. | The mist gets in your chest and stays. | Leeches in the ditch again. I had four on my leg.
 b[healer] #healer : Bark of the willow, and keep out of the evening mist.
-b[from=mirebridge] #mb : Fen folk don't get the ague. We get the ague and carry on.
+b[from=mirebridge|fenshore] #mb : Fen folk don't get the ague. We get the ague and carry on.
 b : Every summer. | That's the fens. | Four! Did you name them?
-a@healer : Keep out of the mist. In Mirebridge.
+a@healer : Keep out of the mist. In #here.town#.
 a@mb : Carry on shivering, aye.
 a : Every summer and most autumns. | It does. | I ate one. No, I didn't.
 

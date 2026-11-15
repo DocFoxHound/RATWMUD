@@ -340,7 +340,7 @@ a : Not like this. | Wise woman. | And drink a lot.
 
 scene e4_fa_charm
 when topic=faith
-a : I carry a wolf's tooth on a string. My grandsire's. | See this bit of red thread on my wrist? Luck. | I've the Bright One's star stamped on a penny. Never spend it.
+a : I carry a wolf's tooth on a string. My #grandad#'s. | See this bit of red thread on my wrist? Luck. | I've the Bright One's star stamped on a penny. Never spend it.
 b[piety=devout] #only : The Bright One's the only luck you need.
 b[honesty=frank] #work : Does it work?
 b : For luck? | Pretty. | I'd spend it.
@@ -384,7 +384,7 @@ a : Paint falls, for one. | A black one. | Hop, then.
 
 scene e4_fa_first_snow
 when topic=faith here.weather=snow
-a : Snow! Catch a flake on your tongue for luck. | Snow on Restday's a blessing, my grandsire said. | Snow's the Bright One tidying up.
+a : Snow! Catch a flake on your tongue for luck. | Snow on Restday's a blessing, my #grandad# said. | Snow's the Bright One tidying up.
 b[stage=young] #three : I caught three! Is that three lucks?
 b : Bit late for me. | He'd say that about anything. | Tidy is the word.
 a@three : At least three.
@@ -602,25 +602,25 @@ a : It's crooked. It works. | It takes something. | Once. I think.
 
 scene e4_fa_oak_wishing
 when topic=faith here.region=oakhaven
-a : Tied a ribbon on the wishing oak this morning. | The Warmwood has its own spirits. Older than chapels. | Never cut a tree with a face in its bark.
+a : Tied a ribbon on the wishing oak this morning. | The Rainwood has its own spirits. Older than chapels. | Never cut a tree with a face in its bark.
 b[job=woodcutter] #face : I've never seen one with a face. I'd still not cut it.
-b[priest] #made : The Bright One made the Warmwood. Every leaf.
+b[priest] #made : The Bright One made the Rainwood. Every leaf.
 b : What did you wish? | Have you seen one? | Never?
 a@face : Wise.
 a@made : Then he made the faces too.
 a : Can't say. | Felt one. | Never. Not even for coin.
 
 scene e4_fa_fen_lights
-when topic=faith here.region=mirebridge
+when topic=faith here.region=fens
 a : Fen lights out on the marsh last night. Don't follow them. | My uncle followed the lights once. Took him three days to come home. | The fen lights are the Drowned, looking for company.
-b[from=mirebridge] : Never follow, never call, never look back. Fen sense.
+b[from=mirebridge|fenshore] : Never follow, never call, never look back. Fen sense.
 b[scholar] #gas : Marsh gas. Burning. I've seen it in a jar.
 b : I won't. | Where'd he go? | Cheerful.
 a@gas : Then why does it follow you?
 a : Good. | Won't say. | It's true.
 
 scene e4_fa_fen_mother
-when topic=faith here.region=mirebridge
+when topic=faith here.region=fens
 a : Put milk on the step for the Fen Mother. Keeps the damp out of the bones. | The Fen Mother takes pups who go near the water. That's what I tell mine. | Old fen folk still say the Fen Mother's prayer before they pole out.
 b[priest] #pretend : I've heard of her. I pretend not to.
 b : Does it? | Does it work? | What's it go?

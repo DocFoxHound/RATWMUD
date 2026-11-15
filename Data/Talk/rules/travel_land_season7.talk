@@ -11,9 +11,9 @@
 #   the road:             talk.travel -> road.react (a worry or a hard road) | travel.longing (wanting to be off)
 #   the country:          talk.land -> land.answer -> land.react
 #   the turning year:     talk.season -> season.answer
-# The map is doc 60's: the Southway runs from Ridgemere's South Gate to Oakhaven, the Fen Road on to Mirebridge, the
+# The map is doc 60's: the South Road runs from Ridgemere's South Gate to Oakhaven, the Fen Road on to Mirebridge, the
 # High Road from the East Gate to Coldwater, the Pass Road up to Frosthollow, the Downs Road from Coldwater to
-# Larkfield, the Riverway from Oakhaven to Larkfield, the South Road to Southmeadow, and the Meadow Road from
+# Larkfield, the River Road from Oakhaven to Larkfield, the South Road to Southmeadow, and the South Road from
 # Mirebridge across the grain country to Southmeadow.
 
 # ===================================================================================== Where are you from?
@@ -57,13 +57,13 @@ remember pair: tf=home 2m
 
 rule e5_from_home_oakhaven
 when concept=travel.from self.from=oakhaven here.region=oakhaven
-say Here, in the Warmwood. Under the oaks. | Oakhaven, and my grandmother before me. | Here. I don't think I'd know what to do with a sky that had no leaves in it. | Here. Born the year the sawmill burned, they tell me.
+say Here, in the Rainwood. Under the oaks. | Oakhaven, and my grandmother before me. | Here. I don't think I'd know what to do with a sky that had no leaves in it. | Here. Born the year the sawmill burned, they tell me.
 then other: travel.from_reply
 remember pair: tf=home 2m
 
 rule e5_from_home_mirebridge
-when concept=travel.from self.from=mirebridge here.region=mirebridge
-say Here. Fen-born, fen-bred, damp all through. | Mirebridge. Where else? | Out on the causeway, the house with the eel traps. | Here. My people have cut reed in these fens longer than anyone's kept count.
+when concept=travel.from self.from=mirebridge|fenshore here.region=fens
+say Here. Fen-born, fen-bred, damp all through. | #self.from.capitalize#. Where else? | Out on the boardwalk, the house with the eel traps. | Here. My people have cut reed in these fens longer than anyone's kept count.
 then other: travel.from_reply
 remember pair: tf=home 2m
 
@@ -100,13 +100,13 @@ remember pair: tf=away 2m
 
 rule e5_from_away_oakhaven
 when concept=travel.from self.from=oakhaven here.region!=oakhaven
-say Oakhaven, in the Warmwood. | The woods. Oakhaven. Too much sky out here for me. | Oakhaven. I grew up under the oaks. | Oakhaven. Sawdust in my fur from the day I was born.
+say Oakhaven, in the Rainwood. | The woods. Oakhaven. Too much sky out here for me. | Oakhaven. I grew up under the oaks. | Oakhaven. Sawdust in my fur from the day I was born.
 then other: travel.from_reply
 remember pair: tf=away 2m
 
 rule e5_from_away_mirebridge
-when concept=travel.from self.from=mirebridge here.region!=mirebridge
-say Mirebridge, in the fens. Go on, say it. | The Sallow Fens. Mirebridge. | Mirebridge. Eels and mist, and proud of it. | Down the Long River, in the fens. Mirebridge.
+when concept=travel.from self.from=mirebridge|fenshore here.region!=fens
+say #self.from.capitalize#, in the fens. Go on, say it. | The Sallow Fens. #self.from.capitalize#. | #self.from.capitalize#. Eels and mist, and proud of it. | Down in the fens. #self.from.capitalize#.
 then other: travel.from_reply
 remember pair: tf=away 2m
 
@@ -156,12 +156,12 @@ then other: travel.home
 
 rule e5_from_reply_oakhaven
 when concept=travel.from_reply other.from=oakhaven pair.mem.tf=away pair.same_from=no
-say Oakhaven? In the Warmwood? I'd lose myself in an hour. | Woods folk. Is it true the old oaks are older than the realm? | All those trees. Doesn't it get dark under them? | Oakhaven. Half the tables in the realm came out of your sawmill, I hear.
+say Oakhaven? In the Rainwood? I'd lose myself in an hour. | Woods folk. Is it true the old oaks are older than the realm? | All those trees. Doesn't it get dark under them? | Oakhaven. Half the tables in the realm came out of your sawmill, I hear.
 then other: travel.home
 
 rule e5_from_reply_mirebridge
-when concept=travel.from_reply other.from=mirebridge pair.mem.tf=away pair.same_from=no
-say Mirebridge! Damp country, I hear. | I've heard about the lights out on the fens at night. | Eel country. I've never been brave enough to eat one. | Mirebridge. How do you build anything on a bog?
+when concept=travel.from_reply other.from=mirebridge|fenshore pair.mem.tf=away pair.same_from=no
+say #other.from.capitalize#! Damp country, I hear. | I've heard about the lights out on the fens at night. | Eel country. I've never been brave enough to eat one. | The fens. How do you build anything on a bog?
 then other: travel.home
 
 rule e5_from_reply_larkfield
@@ -196,7 +196,7 @@ say Green, mostly. Green light, green shade. You stop missing the sky. | Quiet a
 then other: tale.react
 
 rule e5_home_mirebridge
-when concept=travel.home self.from=mirebridge
+when concept=travel.home self.from=mirebridge|fenshore
 say Damp, aye. But the light on the water at dusk, and the reeds whispering. You don't get that on dry ground. | Folk say it's all bog and lights and eels. It is. That's what's good about it. | Everything stands on piles and causeways, and nothing's quite level. You walk with a lean for a month after. | Mist every morning and frogs every night, and folk who mind their own business. I liked that.
 then other: tale.react
 
@@ -242,12 +242,12 @@ then other: tale.react
 
 rule e5_been_moved_oakhaven
 when concept=travel.been self.from=oakhaven here.region!=oakhaven
-say Out of the Warmwood and onto the open road. First time I'd seen a proper horizon. | From Oakhaven. Took me a month to stop ducking under branches that weren't there. | I left the woods for work. The trees didn't miss me.
+say Out of the Rainwood and onto the open road. First time I'd seen a proper horizon. | From Oakhaven. Took me a month to stop ducking under branches that weren't there. | I left the woods for work. The trees didn't miss me.
 then other: tale.react
 
 rule e5_been_moved_mirebridge
-when concept=travel.been self.from=mirebridge here.region!=mirebridge
-say Out of the fens. Took me three days to stop squelching. | Mirebridge to here, on the back of an eel cart. | I left the fens for dry ground. Still not used to it.
+when concept=travel.been self.from=mirebridge|fenshore here.region!=fens
+say Out of the fens. Took me three days to stop squelching. | #self.from.capitalize# to here, on the back of an eel cart. | I left the fens for dry ground. Still not used to it.
 then other: tale.react
 
 rule e5_been_moved_larkfield
@@ -263,7 +263,7 @@ then other: tale.react
 # By what they do and are:
 rule e5_been_carter
 when concept=travel.been self.job=carter
-say Every road in the realm, and every rut in them. | The Southway, the High Road, the Downs Road. Name one I haven't. | Too far, too often. My back knows every pothole between here and Southmeadow.
+say Every road in the realm, and every rut in them. | The South Road, the High Road, the Downs Road. Name one I haven't. | Too far, too often. My back knows every pothole between here and Southmeadow.
 then other: tale.react
 
 rule e5_been_sailor
@@ -278,7 +278,7 @@ then other: tale.react
 
 rule e5_been_soldier
 when concept=travel.been self.job=soldier|guard
-say Marched the Southway twice. My feet still remember. | Escorted a caravan up the Pass Road once. Never again. | Wherever I was sent. You don't ask.
+say Marched the South Road twice. My feet still remember. | Escorted a caravan up the Pass Road once. Never again. | Wherever I was sent. You don't ask.
 then other: tale.react
 
 rule e5_been_priest
@@ -441,7 +441,7 @@ say Mind how you go, that's all. | The roads have always been hard. They'll outl
 
 rule e5_roadr_carter
 when concept=road.react self.job=carter
-say Don't. I'm out on the Riverway myself in the morning. | Same on every road. Ruts, tolls and bad beer. | You learn to sleep on the box. That's the only trick there is.
+say Don't. I'm out on the River Road myself in the morning. | Same on every road. Ruts, tolls and bad beer. | You learn to sleep on the box. That's the only trick there is.
 
 rule e5_roadr_guard
 when concept=road.react self.job=guard|soldier
@@ -505,11 +505,11 @@ then other: land.react
 
 rule e5_land_oakhaven
 when concept=land.answer here.region=oakhaven
-say Trees. Then more trees. Then a clearing, and more trees. | The Warmwood. It gives you everything, if you know where to look. | The oaks are older than the town. Older than the realm, some say.
+say Trees. Then more trees. Then a clearing, and more trees. | The Rainwood. It gives you everything, if you know where to look. | The oaks are older than the town. Older than the realm, some say.
 then other: land.react
 
 rule e5_land_mirebridge
-when concept=land.answer here.region=mirebridge
+when concept=land.answer here.region=fens
 say Half of it's water and the other half's lying about it. | The fens. Step wrong and they keep your boot. | Peat, reed and eel. Rich, if you can stand the damp. | Flat as a plate and twice as wet.
 then other: land.react
 
@@ -598,7 +598,7 @@ say Chalk an inch down. Every furrow turns up flints. | Thin. You plough round t
 then other: land.react
 
 rule e5_land_farmer_mirebridge
-when concept=land.answer self.job=farmer here.region=mirebridge
+when concept=land.answer self.job=farmer here.region=fens
 cooldown 1d
 say Black and wet. Dig a ditch and it fills before supper. | The peat grows anything, if you can keep the water off. | We farm on stilts, near enough.
 then other: land.react
@@ -646,7 +646,7 @@ say The Sound's kind inside the headland and cruel past it. | Seals on the rocks
 then other: land.react
 
 rule e5_land_fisher_mirebridge
-when concept=land.answer self.job=fisher here.region=mirebridge
+when concept=land.answer self.job=fisher here.region=fens
 cooldown 1d
 say The channels shift every spring. Learn them again or lose your boat. | The Long River slows here and goes lazy. The eels love it. | Down past the town it's all delta. Water every way you look.
 then other: land.react
@@ -654,7 +654,7 @@ then other: land.react
 rule e5_land_woodcutter_oakhaven
 when concept=land.answer self.job=woodcutter here.region=oakhaven
 cooldown 1d
-say The Warmwood grows back faster than we cut it. Nearly. | Oak for beams, beech for the fire, hazel for everything else. | There's a stand of oaks past the second clearing nobody cuts. Bad luck. Don't ask why.
+say The Rainwood grows back faster than we cut it. Nearly. | Oak for beams, beech for the fire, hazel for everything else. | There's a stand of oaks past the second clearing nobody cuts. Bad luck. Don't ask why.
 then other: land.react
 
 rule e5_land_woodcutter_frosthollow
@@ -899,12 +899,12 @@ cooldown 1d
 say Ice on the lake and ice on the jetty. I've gone over twice this week. | The boats are hauled up and turned over. Nothing to do but mend nets. | Ice fishing, and lying about how thick it is.
 
 rule e5_season_mirebridge_autumn
-when concept=season.answer here.region=mirebridge here.season=autumn
+when concept=season.answer here.region=fens here.season=autumn
 cooldown 1d
 say The geese are in off the delta. The whole fen honks all night. | Everything's damp. The bread, the bedding, your own tail. | The reedcutters are out. You hear the sickles all over the fen.
 
 rule e5_season_mirebridge_winter
-when concept=season.answer here.region=mirebridge here.season=winter
+when concept=season.answer here.region=fens here.season=winter
 cooldown 1d
 say Peat on the fire, and coughing. That's a fen winter. | The channels skin over with ice, too thin to walk and too thick to row. | Damp gets into your bones out here. Into the bread, too.
 

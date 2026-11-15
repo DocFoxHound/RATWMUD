@@ -43,7 +43,7 @@ a : Same quarrels. Sounds right. | I'd like to have seen it. | I can barely imag
 
 scene ev_muse_names
 when topic=smalltalk
-a : Why did your parents call you #b.name#? | I never liked my name. | If I have a pup I'll name it after my grandsire.
+a : Why did your parents call you #b.name#? | I never liked my name. | If I have a pup I'll name it after my #grandad#.
 b : After a great-aunt. A fearsome one. | What would you rather? | Kind of you.
 a : It suits you, then. | Something with teeth in it. | He'd have liked that.
 

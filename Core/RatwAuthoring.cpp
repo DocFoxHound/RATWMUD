@@ -1253,6 +1253,7 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
     if (!roster.residents.empty() || !roster.unplaced.empty())
         candidate.society_.configure(roster);
     candidate.rebuildFixtureIndex();
+    candidate.talkDialectOf_ = talkDialectOf_;      // (The talk library's, set before the world loads: doc 83.)
     *this = std::move(candidate);
     indexRoads();
     furnishHomes();                                 // Every home's stores, from the start (doc 36).

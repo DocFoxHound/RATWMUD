@@ -11,7 +11,7 @@ entry talk greet
 entry deliver greet
 
 node greet
-say #greet#, #address#. Something for me? | #greet#. #talk_open# | Yes? #talk_open#
+say #greet#. #receiver_ask# | #greet#. #talk_open# | #receiver_ask#
 free
 each job in here.deliveries max 3
 choice #job.handover# [topic.job_ready=yes] locked "#job.why#" -> do deliver job.id ; then paid ; refused refused
@@ -30,5 +30,5 @@ say #topic.why# | Hm. #topic.why#
 choice Goodbye. -> bye
 
 node bye
-say #farewell#. | #farewell#, #address#. | Mind how you go.
+say #farewell#. | #farewell#, #address#.
 end

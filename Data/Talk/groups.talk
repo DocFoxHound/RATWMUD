@@ -1,21 +1,25 @@
-# Region groups for the scenes (Docs/Design/30-towns-and-talk.md; the world of Docs/Design/60): a scene may name a
-# group instead of its towns. Read before every other file.
+# Region groups for the scenes (Docs/Design/30-towns-and-talk.md; the world of Docs/Design/60, and Ridgemere 3's, doc
+# 82): a scene may name a group instead of its towns. Read before every other file.
 #
-# Ridgemere is the only city: the rain city on its hills above Ridgemere Sound, in the north-west. The six towns:
-# Frosthollow (mining, a high snowy valley in the Whitefangs), Coldwater (on Glasswater, under the mountains, where the
-# Long River rises), Oakhaven (the Warmwood), Mirebridge (the Sallow Fens, by the Long River), Larkfield (market town
-# of the Larkdowns), Southmeadow (grain fields and orchards in the far south).
+# Ridgemere is the only city: the rain city on its hills above Ridgemere Sound, in the north-west. The towns:
+# Frosthollow (the mining village under the Whitefangs' pass), Coldwater (a lakeside village north of Glasswater),
+# Oakhaven (at the head of Cedar Sound, under the Rainwood), Larkfield (at the Long River's crossing, among the grain),
+# Southmeadow (a hamlet of the warm Sunfields), and the Country's two (doc 72): Fenshore (a stilt hamlet of the Sallow
+# Fens) and Saltwell (the oasis hamlet of the Red Waste). Mirebridge, the old fen town, was erased (doc 72): the fens'
+# lines are for Fenshore now (`fens`). Fenshore speaks as Mirebridge did and Saltwell as Coldwater (settings.json,
+# dialect_of: doc 83, Phase 4).
 
 group cities = ridgemere
 group rain_coast = ridgemere
-group towns = frosthollow coldwater oakhaven mirebridge larkfield southmeadow
+group towns = frosthollow coldwater oakhaven mirebridge larkfield southmeadow fenshore saltwell
 group north = ridgemere frosthollow coldwater
-group south = oakhaven mirebridge larkfield southmeadow
+group south = oakhaven mirebridge larkfield southmeadow fenshore saltwell
 group mountains = frosthollow coldwater
 group lake = coldwater
-group fens = mirebridge
+group fens = mirebridge fenshore
 group woods = oakhaven
 group downs = larkfield southmeadow
 group farmland = larkfield southmeadow
-group warm = oakhaven mirebridge
-group countryside = oakhaven mirebridge larkfield southmeadow
+group warm = oakhaven mirebridge fenshore
+group countryside = oakhaven mirebridge larkfield southmeadow fenshore saltwell
+group waste = saltwell

@@ -8,8 +8,8 @@ priority 1
 entry talk greet
 
 node greet
-say #church_greet# | #blessing#, #address#. #church_greet# | #bless#. What brings you to us?
-say[here.day=rest] #blessing#. It's Restday: the service is #here.service#. | #church_greet# It's Restday, and all are welcome.
+say #church_greet# | #blessing#. #church_greet# | #bless#. What brings you to us?
+say[here.day=rest] #blessing#. It's Restday: the service is #here.service#. | #church_greet# It's Restday: the service is #here.service#.
 mood calm
 free
 choice When is the service? -> service
@@ -50,5 +50,5 @@ say #topic.why# | Bless you for thinking of it. #topic.why#
 choice Goodbye. -> bye
 
 node bye
-say #blessing#. | #farewell#, #address#. | Go in peace.
+say #blessing#. | #bless#. | #farewell#, #address#.
 end

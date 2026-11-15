@@ -1,6 +1,6 @@
 # The moment (Docs/Design/62-talk.md, phase 7), region by region: each country's weather as only it has it, its own
 # festivals, its places and its tales (Docs/Design/60: Ridgemere on its tiers above the Sound; Frosthollow under the
-# Whitefangs; Coldwater on Glasswater; Oakhaven in the Warmwood; Mirebridge in the Sallow Fens; Larkfield on the
+# Whitefangs; Coldwater on Glasswater; Oakhaven in the Rainwood; Mirebridge in the Sallow Fens; Larkfield on the
 # downs; Southmeadow in the Sunfields and the Orchard Vale). Extends the region files; doesn't repeat them.
 # Drafts, to tune by ear.
 
@@ -113,7 +113,7 @@ b : And we'll pay for it, somehow. | Shrill favours. | Every boat? Even the leak
 a : Always us. | Loud, though. | Especially those. They'll sink prettily. | Like cats at a bowl.
 
 scene m7_rg_from_away_city
-when topic=weather|day here.region=ridgemere a.from=frosthollow|coldwater|oakhaven|mirebridge|larkfield|southmeadow pair.same_from=yes
+when topic=weather|day here.region=ridgemere a.from=frosthollow|coldwater|oakhaven|mirebridge|fenshore|larkfield|southmeadow|saltwell pair.same_from=yes
 a : Another day in the city. Remember the sky at home? | Do you ever get used to all these stairs? | Too many wolves. Can't hear yourself. | Somebody's cooking like my mother did. I followed my nose two streets.
 b : Every day. | Never. | I miss the quiet too. | It gets you like that. Out of nowhere.
 a : We'll go back. One day. | My knees won't. | Quiet's a luxury here. | Every time.
@@ -180,7 +180,7 @@ a : Remember why what? | Mountains bite. | I'll wear my scarf. | Lamp-sure.
 scene m7_fh_summer_short
 when topic=weather|day here.region=frosthollow here.season=summer
 a : Two weeks of summer. Don't blink. | Bilberries up on the slope! Pick them while they last. | Snow's still in the gullies, and it's high summer. | Pups are swimming in the meltwater. Mad things.
-b[from=oakhaven|mirebridge|larkfield|southmeadow] #south : You call this summer? I'm still in my coat.
+b[from=oakhaven|mirebridge|fenshore|larkfield|southmeadow] #south : You call this summer? I'm still in my coat.
 b : Blinked. Missed it. | Pick fast. Summer's short. | Never leaves, that snow. | Mad and blue.
 a@south : Best two weeks in the realm.
 a : Ha. | Paws blue already. | Old friend, that snow. | Blue and happy.
@@ -210,7 +210,7 @@ a@miner : Don't. I've to walk home.
 a : She didn't stay to ask. | And bad breath, I'd say. | Wise. | Nobody'd say.
 
 scene m7_fh_southerner_snow
-when topic=weather here.region=frosthollow here.weather=snow b.from=oakhaven|mirebridge|larkfield|southmeadow
+when topic=weather here.region=frosthollow here.weather=snow b.from=oakhaven|mirebridge|fenshore|larkfield|southmeadow
 a : First winter up here? | You'll want better boots. | Snow getting to you? | You look froze to the marrow.
 b : Is it always like this? Always? | Better everything. | It's in me. In my bones. | I'm a southern wolf. We melt or we freeze. No middle.
 a : Gets worse. | Go see the cobbler. | That's Frosthollow saying hello. | You'll learn the middle.
@@ -251,7 +251,7 @@ a : Always. | I'll dip a paw. | Some joy. | And biting ones.
 scene m7_cw_long_river
 when topic=lore here.region=coldwater
 a : Glasswater gives the Long River its start. Every drop to the fens. | Throw a reed in here and it reaches the Drowned Delta in a month. | They say the river remembers the lake. | Everything in the south drinks our water.
-b[from=mirebridge] #fen : Arrives muddier, I'll tell you that.
+b[from=mirebridge|fenshore] #fen : Arrives muddier, I'll tell you that.
 b : And never thanks us. | Send a letter that way. | Rivers are sentimental. | Fair trade for their apples.
 a@fen : Fens'll do that to anything.
 a : Never. | Cheaper than a carter. | So am I. | Fair enough.
@@ -262,14 +262,14 @@ a : Ribbons on every boat for #here.festival#. | They'll float candles on the la
 b : Boats look happy. | Prettiest thing on the water. | Not me. Not in that cold. | As it should.
 a : Boats are always happy. | Every candle a wish. | Coward. | Always.
 
-# ================================================================ Oakhaven: the Warmwood
+# ================================================================ Oakhaven: the Rainwood
 
 scene m7_oh_canopy_rain
 when topic=weather here.region=oakhaven here.weather=rain
 a : Rain's on the leaves before it's on us. | Under the oaks you hardly feel it. | Hear it? Like a thousand pups tapping. | Drip from the trees long after it stops.
 b[from=ridgemere] #city : In the city you'd be drowned by now.
 b : Best roof in the realm. | Till you step out from under. | Sleepy sound. | Second rain, my granddam called it.
-a@city : The Warmwood keeps us dry.
+a@city : The Rainwood keeps us dry.
 a : Older than any House. | Then soaked. | Makes me yawn. | Good name.
 
 scene m7_oh_autumn_wood
@@ -282,7 +282,7 @@ a : Fat everything. | Coppery. | Which are right? | It is home.
 
 scene m7_oh_storm_wood
 when topic=weather here.region=oakhaven here.weather=storm
-a : Trees groaning. Hear them? | A big limb came down on the Southway. | Keep out from under the old oaks today. | Something cracked out there. Big.
+a : Trees groaning. Hear them? | A big limb came down on the South Road. | Keep out from under the old oaks today. | Something cracked out there. Big.
 b[job=woodcutter] #wood : There'll be oak across every track by morning. Good wood, though.
 b : They're talking. | Road's shut, then. | Old oaks drop limbs out of spite. | Big tree, big crack.
 a@wood : Always good wood, to you.
@@ -296,7 +296,7 @@ a : And winter. | Never catch one. | Sweet. | Drier.
 
 scene m7_oh_story_night
 when topic=lore here.region=oakhaven here.time=dusk|night
-a : The old ones say the Warmwood was one tree once, and the rest are its children. | Ever wonder why there's never beech on the Acorn Inn's fire? Bad luck to burn a beech. | My granddam told of a joiner who carved a door in an oak, and something knocked back. | There's a ring of toadstools by the sawmill. Nobody mows it.
+a : The old ones say the Rainwood was one tree once, and the rest are its children. | Ever wonder why there's never beech on the Acorn Inn's fire? Bad luck to burn a beech. | My granddam told of a joiner who carved a door in an oak, and something knocked back. | There's a ring of toadstools by the sawmill. Nobody mows it.
 b[stage=young] #pup : And then what? Then what?
 b : Big family. | Why bad luck? | Did he open it? | Nobody's that brave.
 a@pup : Then you go to bed, and I'll tell you the rest tomorrow.
@@ -304,7 +304,7 @@ a : And they all argue. | The beech remembers. | His widow did. Once. | Or that 
 
 scene m7_oh_lore_green_wolf
 when topic=lore here.region=oakhaven
-a : They say there's a wolf in the Warmwood made of moss and leaves. | Leave the first honey on a stump. For the wood. | If you get lost, turn your coat inside out. The wood lets you go. | The boundary oak drinks the rain first. Before anyone.
+a : They say there's a wolf in the Rainwood made of moss and leaves. | Leave the first honey on a stump. For the wood. | If you get lost, turn your coat inside out. The wood lets you go. | The boundary oak drinks the rain first. Before anyone.
 b : My cousin met him. Came back quiet. | Stumps get fat, here. | Then everyone sees your lining. | Thirsty oak.
 a : Quiet's the wood. | Fat stumps, lucky town. | Better lining than lost. | Old and greedy.
 
@@ -317,33 +317,33 @@ a : Ha. | I'll mind your feet. | Not one. Pegs. | It's always you.
 # ================================================================ Mirebridge: the Sallow Fens
 
 scene m7_mb_fog_dusk
-when topic=weather here.region=mirebridge here.weather=fog here.time=dusk|night
-a : Mist bell's going. | Fog's come up off the lode quick as a thief. | Lanterns on the causeway look like the other kind. | Can't tell the river from the road.
-b[from=mirebridge] #fen : Stay on the stones. Count them home. | Fen mist. Smell it? Peat and old secrets. | Mind the soft side. It's hungry this time of year.
-b[from=ridgemere|frosthollow|coldwater|larkfield|southmeadow|oakhaven] #stranger : How does anyone find their way in this? | I can't see my paws. Are they still on? | Is that a light out there? Someone's waving.
+when topic=weather here.region=fens here.weather=fog here.time=dusk|night
+a : Mist bell's going. | Fog's come up off the lode quick as a thief. | Lanterns on the boardwalk look like the other kind. | Can't tell the river from the road.
+b[from=mirebridge|fenshore] #fen : Stay on the stones. Count them home. | Fen mist. Smell it? Peat and old secrets. | Mind the soft side. It's hungry this time of year.
+b[from=ridgemere|frosthollow|coldwater|larkfield|southmeadow|oakhaven|saltwell|fenshore] #stranger : How does anyone find their way in this? | I can't see my paws. Are they still on? | Is that a light out there? Someone's waving.
 b : Somebody's out. | It always is. | Count them. If there's one too many, walk faster. | Then stand still.
 a@fen : Forty-one to the inn. | Mostly peat. | Always hungry, that side.
-a@stranger : Slowly. And dry-footed. | Still on. Don't look down. | Don't look at it. Don't wave back.
+a@stranger : Slowly. And keep to the boards. | Still on. Don't look down. | Don't look at it. Don't wave back.
 a : Pray it's no pup. | Thief fog. | There's one too many. | I am.
 
 scene m7_mb_flood
-when topic=weather|day here.region=mirebridge here.weather=rain|storm
+when topic=weather|day here.region=fens here.weather=rain|storm
 a : River's up a stride since yesterday. | Water's at the stilts. | Peat stacks are floating. | The lodes are brimming.
 b[job=farmer|herder] #farm : I've moved the beasts to the knoll.
-b : It'll top the causeway by morning. | Good thing they're stilts. | Fish the peat. | Fen's thirsty, it'll drink.
+b : It'll top the low boards by morning. | Good thing they're stilts. | Fish the peat. | Fen's thirsty, it'll drink.
 a@farm : Bring them to ours if it rises.
 a : We'll be boats again. | Grandad's stilts. | Wet peat. | Fen's never thirsty.
 
 scene m7_mb_summer_stink
-when topic=weather here.region=mirebridge here.season=summer
+when topic=weather here.region=fens here.season=summer
 a : The fen smells this time of year. | Midges in clouds over the lode. | Frogs all night. All night. | Bog's steaming in the heat.
-b[from=mirebridge] #fen : That's the smell of home. Breathe it.
+b[from=mirebridge|fenshore] #fen : That's the smell of home. Breathe it.
 b : Stinks. | Smoke them out. | Lullaby. | Breathing, they say.
 a@fen : I'm breathing through my mouth.
 a : Sweet as a cellar. | With what? | Loud lullaby. | Bad breath.
 
 scene m7_mb_winter_ice
-when topic=weather here.region=mirebridge here.season=winter here.weather=clear|overcast|snow
+when topic=weather here.region=fens here.season=winter here.weather=clear|overcast|snow
 a : Lodes are iced over. You can skate to the river. | Frost on the reeds. Pretty. | The fen's quiet in winter. Even the frogs sleep. | Ice cracks like a whip at night.
 b[stage=young] #pup : Can we skate? Can we?
 b : Mind the soft spots. | Brittle, too. | Don't wake them. | Ice talking.
@@ -351,15 +351,15 @@ a@pup : Near the bank. Only near the bank.
 a : Mind everything. | Like glass. | Never. | Saying what?
 
 scene m7_mb_eel_feast
-when topic=festival here.region=mirebridge
-a : Smoked eel for #here.festival#, eel pie, eel stew. | They'll light the causeway with rushlights. | Everyone lights a twist from the Eel and Lantern's hearth. | Reed boats for the pups to race.
-b[from=oakhaven|larkfield|southmeadow|ridgemere|frosthollow|coldwater] #stranger : Is there anything that isn't eel?
+when topic=festival here.region=fens
+a : Smoked eel for #here.festival#, eel pie, eel stew. | They'll light the boardwalks with rushlights. | Everyone lights a twist from the Heron's hearth. | Reed boats for the pups to race.
+b[from=oakhaven|larkfield|southmeadow|ridgemere|frosthollow|coldwater|saltwell|fenshore] #stranger : Is there anything that isn't eel?
 b : Eel jelly too. | Prettiest road in the realm. | Old fire, new year. | Mine always sinks.
 a@stranger : Bread. Under the eel.
 a : Lovely. | Prettiest. | Every year. | Mine too.
 
 scene m7_mb_lore_delta
-when topic=lore here.region=mirebridge
+when topic=lore here.region=fens
 a : They say the Drowned Delta was a kingdom once. | My uncle found a bronze ring in the peat. Old as anything. | Nobody digs where the reeds grow red. | Peat-cutters found a boat in the bog once. Miles from any water.
 b[honesty=frank|guarded] #frank : The fen's given me nothing but wet boots.
 b : Kingdoms drown. | Sell it. | Why red? | Water moves. Fens remember.

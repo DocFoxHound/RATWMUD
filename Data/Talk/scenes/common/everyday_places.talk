@@ -221,7 +221,7 @@ a : You can see the peaks twice. | Coward. | Everything starts small.
 
 scene ev_new_oakhaven
 when topic=smalltalk here.region=oakhaven
-a : The Warmwood's humming today. Bees in every oak. | Acorns everywhere. The pigs are fat as lords. | A drink at the Acorn Inn after work?
+a : The Rainwood's humming today. Bees in every oak. | Acorns everywhere. The pigs are fat as lords. | A drink at the Acorn Inn after work?
 b[woodcutter] : Warm wood, soft cutting. I'd not swap it for anything.
 b : Warm enough to sleep outside. | Fatter than some lords. | Just the one.
 a : I might. | I've seen thinner. | One. Then one more.
@@ -235,8 +235,8 @@ b : I like the smell. | Follow the reed posts. | Marsh gas, nothing more.
 a : It smells like home. | I nearly walked into the water. | Marsh gas that dances?
 
 scene ev_new_mirebridge
-when topic=smalltalk here.region=mirebridge
-a : The Long River's up over the bridge stones again. | Eels in the traps this morning, thick as your arm. | The Eel and Lantern's damp as a frog's back.
+when topic=smalltalk here.region=fens
+a : The lode's up over the low boards again. | Eels in the traps this morning, thick as your arm. | The Heron's damp as a frog's back.
 b[fisher] : River gives and river takes. Mostly it gives eels.
 b[old] : The fens were here before the town, and they'll be here after.
 b : Mind the planks. | Smoke them, then. | Everything's damp here.

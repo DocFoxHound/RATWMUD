@@ -385,17 +385,17 @@ a : Clearer. You could count the pebbles. | A bird that sounds like a ghost laug
 scene e3_m_from_oakhaven
 when topic=memories a.from=oakhaven here.region!=oakhaven
 cooldown 2d
-a : I grew up under trees older than any town. | In the Warmwood we'd climb the old oaks and sit up there all day. | I miss acorn bread. Nobody here makes it.
-b[from=oakhaven] #oak : My grandmother said every oak in the Warmwood has a name.
+a : I grew up under trees older than any town. | In the Rainwood we'd climb the old oaks and sit up there all day. | I miss acorn bread. Nobody here makes it.
+b[from=oakhaven] #oak : My grandmother said every oak in the Rainwood has a name.
 b : No streets? | Didn't you fall? | Acorn bread?
 a@oak : And she knew most of them.
 a : Paths. Older than streets. | Every summer. Once from the top. | Bitter, then sweet. Like home.
 
 scene e3_m_from_mirebridge
-when topic=memories a.from=mirebridge here.region!=mirebridge
+when topic=memories a.from=mirebridge|fenshore here.region!=fens
 cooldown 2d
 a : In the fens we'd row to school. Or wade. | The Sallow Fens in the mist at dawn. Nothing like it. | My mother could cross the bog blindfold.
-b[from=mirebridge] #mb : Dry feet, as we said. Never once had them.
+b[from=mirebridge|fenshore] #mb : Dry feet, as we said. Never once had them.
 b : Wade? To school? | I'll take your word for it. | Could you?
 a@mb : Not once. Not one day.
 a : With the books on our heads. | It's eerie. You'd love it. | Never. I fell in every time.
@@ -447,7 +447,7 @@ a@wood : No. But they grew back.
 a : Like a funeral, it was. | Smoke in everything. Even the bread. | And the songs.
 
 scene e3_m_mire_bridge
-when topic=memories here.region=mirebridge
+when topic=memories here.region=fens
 a : The year the Long River took the old bridge. We ferried for a year. | Remember the great flood? The water came up to the second step of the chapel. | When I was a pup the fen froze, and we walked out to the eel traps.
 b[old] #old : Things were built to last, then. Not like now.
 b : I remember the ferry. Wet feet every day. | Up to the second step! | Did you get any eels?

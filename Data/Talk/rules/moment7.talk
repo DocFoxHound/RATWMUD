@@ -151,7 +151,7 @@ then other: moment.reply_weather
 remember pair: m7o=pup 2m
 
 rule m7_wx_open_south_in_snow
-when concept=talk.weather here.weather=snow self.from=oakhaven|mirebridge|larkfield|southmeadow
+when concept=talk.weather here.weather=snow self.from=oakhaven|mirebridge|fenshore|larkfield|southmeadow
 cooldown 2d
 say Where I come from this is a story you tell pups. | I didn't know cold went this deep. | How do you live like this? Honestly. How?
 then other: moment.reply_weather
@@ -379,7 +379,7 @@ remember pair: m7=poor 2m
 # By their home: the weather as it falls on one from elsewhere.
 
 rule m7_wx_re_south_snow
-when concept=moment.reply_weather here.weather=snow self.from=oakhaven|mirebridge|larkfield|southmeadow
+when concept=moment.reply_weather here.weather=snow self.from=oakhaven|mirebridge|fenshore|larkfield|southmeadow
 priority 1
 cooldown 1d
 say Back home we'd be mending fences in our shirtsleeves. | At home I'd only seen snow on the far hills. Now it's in my boots. | I keep thinking it'll stop. It never stops.
@@ -410,10 +410,10 @@ then other: moment.close
 remember pair: m7=home 2m
 
 rule m7_wx_re_fen_fog
-when concept=moment.reply_weather here.weather=fog self.from=mirebridge
+when concept=moment.reply_weather here.weather=fog self.from=mirebridge|fenshore
 priority 1
 cooldown 1d
-say This? In the fens this is a clear morning. | Fog's only air with something to say. | You learn to walk by smell in Mirebridge.
+say This? In the fens this is a clear morning. | Fog's only air with something to say. | You learn to walk by smell in the fens.
 then other: moment.close
 remember pair: m7=joke 2m
 
@@ -441,7 +441,7 @@ remember pair: m7=home 2m
 rule m7_wx_re_wood_rain
 when concept=moment.reply_weather here.weather=rain self.from=oakhaven here.region!=oakhaven
 cooldown 1d
-say Under the Warmwood you'd barely feel it. The leaves take it all. | Rain's nicer with a roof of oak over you. | I miss the smell of wet leaf mould. Sounds daft.
+say Under the Rainwood you'd barely feel it. The leaves take it all. | Rain's nicer with a roof of oak over you. | I miss the smell of wet leaf mould. Sounds daft.
 then other: moment.close
 remember pair: m7=home 2m
 
@@ -1552,12 +1552,12 @@ remember pair: m7=hometale 2m
 rule m7_lore_re_from_oak
 when concept=moment.reply_lore self.from=oakhaven here.region!=oakhaven
 cooldown 2d
-say In the Warmwood we'd say an oak saw it. Oaks see everything. | We tell that one round the fire at story night. Better, mind. | My granddam told it with a ghost in it. Always a ghost, in Oakhaven.
+say In the Rainwood we'd say an oak saw it. Oaks see everything. | We tell that one round the fire at story night. Better, mind. | My granddam told it with a ghost in it. Always a ghost, in Oakhaven.
 then other: moment.close
 remember pair: m7=hometale 2m
 
 rule m7_lore_re_from_mire
-when concept=moment.reply_lore self.from=mirebridge here.region!=mirebridge
+when concept=moment.reply_lore self.from=mirebridge|fenshore here.region!=fens
 cooldown 2d
 say In the fens we'd say: don't follow the lights. That's the end of every tale. | Fen folk know a dozen like it, and every one's true. Mostly. | My aunt would spit three times and touch iron.
 then other: moment.close
@@ -1672,14 +1672,14 @@ remember pair: m7=home 2m
 rule m7_home_re_oak
 when concept=moment.reply_home self.from=oakhaven
 priority 1
-say Oakhaven. The Warmwood. Green all summer, and then some. | From under the oaks. We take our time, in Oakhaven. | The Warmwood, aye. Slow talk from a slow wood.
+say Oakhaven. The Rainwood. Green all summer, and then some. | From under the oaks. We take our time, in Oakhaven. | The Rainwood, aye. Slow talk from a slow wood.
 then other: moment.close
 remember pair: m7=home 2m
 
 rule m7_home_re_mire
-when concept=moment.reply_home self.from=mirebridge
+when concept=moment.reply_home self.from=mirebridge|fenshore
 priority 1
-say Mirebridge. The fens. Wet feet, and a wetter voice. | Fen-born. Sallow Fens, by the Long River. Wet feet and long memories. | Mirebridge. Don't make the face. Everyone makes the face.
+say #self.from.capitalize#. The fens. Wet feet, and a wetter voice. | Fen-born. The Sallow Fens. Wet feet and long memories. | #self.from.capitalize#. Don't make the face. Everyone makes the face.
 then other: moment.close
 remember pair: m7=home 2m
 
@@ -1775,14 +1775,14 @@ remember pair: m7=local 2m
 rule m7_home_re_local_oakhaven
 when concept=moment.reply_home self.from=oakhaven here.region=oakhaven
 priority 2
-say From here. Oakhaven, under these very oaks. It's you that's foreign. | This is how we talk in the Warmwood. You'll catch it. | Born a stone's throw off. You're the one from away.
+say From here. Oakhaven, under these very oaks. It's you that's foreign. | This is how we talk in the Rainwood. You'll catch it. | Born a stone's throw off. You're the one from away.
 then other: moment.close
 remember pair: m7=local 2m
 
 rule m7_home_re_local_mirebridge
-when concept=moment.reply_home self.from=mirebridge here.region=mirebridge
+when concept=moment.reply_home self.from=mirebridge|fenshore here.region=fens
 priority 2
-say You're in the fens, friend. This is how the fens talk. | Mirebridge. Here. You'll be from away, no? | My voice is at home. It's yours that's wandered.
+say You're in the fens, friend. This is how the fens talk. | #here.town#. Here. You'll be from away, no? | My voice is at home. It's yours that's wandered.
 then other: moment.close
 remember pair: m7=local 2m
 
