@@ -18,6 +18,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <map>
+#include <set>
 
 namespace ratw::game
 {
@@ -27,6 +28,50 @@ constexpr double Reach = 3;             // Tiles: near enough to open a conversa
 constexpr double WalkedAway = 4;        // Further than this, the conversation ends.
 constexpr std::size_t MostWords = 300;  // Characters of a line the player writes.
 constexpr std::size_t Kept = 4;         // Lines of history kept (two exchanges).
+
+// The face's mood for a word (doc 83, Phase 5): one of Library::faceMoods (the client's Client/src/game/face.ts knows
+// the same), or none. A node's `mood` is one already (the loader checks); the NPC Mind's emotion, free words, is put
+// into the nearest here.
+std::string faceMood(const std::string& word)
+{
+    std::string w;
+    for (const char ch : word)
+    {
+        if (!std::isalpha(static_cast<unsigned char>(ch)))
+        {
+            if (!w.empty())
+                break;                              // (The first word: "annoyed, a little" is annoyed.)
+            continue;
+        }
+        w += char(std::tolower(static_cast<unsigned char>(ch)));
+    }
+    if (talk::Library::faceMoods().count(w))
+        return w;
+    static const std::map<std::string, std::string> Like{
+        {"happy", "pleased"}, {"glad", "pleased"}, {"cheerful", "pleased"}, {"amused", "pleased"}, {"delighted", "pleased"},
+        {"content", "calm"}, {"relaxed", "calm"}, {"neutral", "calm"}, {"patient", "calm"},
+        {"friendly", "warm"}, {"fond", "warm"}, {"affectionate", "warm"}, {"kind", "warm"}, {"grateful", "warm"},
+        {"eager", "keen"}, {"curious", "keen"}, {"excited", "keen"}, {"interested", "keen"},
+        {"polite", "formal"}, {"businesslike", "formal"}, {"stiff", "formal"},
+        {"serious", "stern"}, {"strict", "stern"}, {"grim", "stern"},
+        {"suspicious", "wary"}, {"guarded", "wary"}, {"cautious", "wary"}, {"nervous", "wary"}, {"distrustful", "wary"},
+        {"angry", "cross"}, {"annoyed", "cross"}, {"irritated", "cross"}, {"furious", "cross"}, {"impatient", "cross"},
+        {"hostile", "cross"},
+        {"grieving", "sad"}, {"sorrowful", "sad"}, {"melancholy", "sad"}, {"unhappy", "sad"}, {"lonely", "sad"},
+        {"anxious", "worried"}, {"afraid", "worried"}, {"scared", "worried"}, {"fearful", "worried"}, {"uneasy", "worried"},
+        {"weary", "tired"}, {"exhausted", "tired"}, {"drowsy", "sleepy"}, {"pained", "hurt"}};
+    const auto f = Like.find(w);
+    return f == Like.end() ? std::string() : f->second;
+}
+
+// How long the resident is speaking a line (seconds, for the face: about fourteen characters a second, as speech goes).
+double speakingTime(const std::string& line)
+{
+    std::size_t chars = 0;
+    for (const char ch : line)
+        chars += (static_cast<unsigned char>(ch) & 0xC0) != 0x80;
+    return std::round(std::clamp(double(chars) / 14.0, .6, 10.0) * 10) / 10;
+}
 
 std::string oneLine(std::string s)
 {
@@ -789,6 +834,40 @@ int Game::dialogueExperience(const std::string& playerId, const std::string& npc
     return social_.dialogueLine(playerId, npcId, evidence.words, evidence.contentHash, now(), sequence_++);
 }
 
+std::string Game::dialogueMood(const std::string& npcId, const talk::Query& q, const std::string& tagged) const
+{
+    // The face's mood for a line (doc 83, Phase 5): asleep before anything (a node's tag is for the awake), then the
+    // node's own `mood`, then how the resident is (grieving, hurt, worn out, the Mind's last emotion), then how they feel
+    // about this wolf. None (calm, unmarked) otherwise.
+    const auto fact = [&](const std::string& key) {
+        const auto f = q.a.facts.find(key);
+        return f == q.a.facts.end() ? std::string() : f->second;
+    };
+    const auto* npc = world_.entity(npcId);
+    const auto* life = world_.society().resident(npcId);
+    if (npc && (npc->posture == "lying" || (life && life->task == "sleep")))
+        return "sleepy";
+    if (!faceMood(tagged).empty())
+        return faceMood(tagged);
+    if (world_.society().mourning(npcId))
+        return "sad";
+    if (fact("injured") == "bad")
+        return "hurt";
+    if (fact("tired") == "yes")
+        return "tired";
+    if (const auto mood = npcMood_.find(npcId); mood != npcMood_.end() && !faceMood(mood->second).empty())
+        return faceMood(mood->second);
+    const auto pair = q.facts.find("pair.disposition");
+    const std::string disposition = pair == q.facts.end() ? std::string() : pair->second;
+    if (disposition == "hostile")
+        return "cross";
+    if (disposition == "wary")
+        return "wary";
+    if (disposition == "warm" || disposition == "fond")
+        return "warm";
+    return {};
+}
+
 // ------------------------------------------------------------------ The conversation
 
 void Game::dialogueSend(Connection* c, const DialogueSession& d, const std::string& note)
@@ -816,7 +895,8 @@ void Game::dialogueSend(Connection* c, const DialogueSession& d, const std::stri
     m.add("tree", d.tree);
     m.add("node", d.node);
     m.add("line", d.line);
-    m.add("mood", node->mood);
+    m.add("mood", d.mood);                          // The face (Phase 5): its mood, and how long it speaks the line.
+    m.add("speaking", d.awaiting ? 0.0 : speakingTime(d.line));
     m.add("free", node->free);
     m.add("awaiting", d.awaiting);
     m.add("ends", node->choices.empty());
@@ -884,6 +964,7 @@ bool Game::dialogueGo(Connection* c, DialogueSession& d, const std::string& node
         }
     }
     d.line = line;
+    d.mood = dialogueMood(d.npc, q, node.mood);
     d.awaiting = false;
     d.changed = world_.time();
     d.shown = talk_.choices(node, q, seed, [&](const std::string& list) { return dialogueItems(playerId, d.npc, list); });
@@ -1477,6 +1558,9 @@ void Game::dialogueHeard(const std::string& npcId, const std::string& playerId, 
         return;
     auto& d = f->second;
     d.line = text;
+    // The face's mood with the answer: the emotion the Mind gave it (heed), if it is one the face knows, else as it was.
+    if (const auto mood = npcMood_.find(npcId); mood != npcMood_.end() && !faceMood(mood->second).empty())
+        d.mood = faceMood(mood->second);
     d.awaiting = false;
     d.changed = world_.time();
     d.history.push_back({"npc", text});

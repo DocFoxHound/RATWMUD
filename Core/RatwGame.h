@@ -449,6 +449,7 @@ class Game
         talk::Facts bound;                          // The item chosen from an `each` (topic.job_title...).
         std::vector<talk::ShownChoice> shown;       // The node's choices as last sent.
         std::string line;                           // The resident's last line.
+        std::string mood;                           // The face's mood with it (Phase 5: Game::dialogueMood).
         std::deque<std::pair<std::string, std::string>> history;   // (who, words): "npc" or "you", the last four lines.
         double changed = 0;
         bool asleepAtOpen = false, inShop = false, awaiting = false;   // awaiting: a free line is being answered.
@@ -830,6 +831,8 @@ class Game
     // A reply to free talk, to show in the window of the player who said it (from speakReply).
     void dialogueHeard(const std::string& npcId, const std::string& playerId, const std::string& text);
     std::string dialogueBrief(const std::string& npcId, const std::string& playerId) const;   // (For the Mind.)
+    // The face's mood with a line (doc 83, Phase 5): one of the face slot's moods, or none (Client/src/game/face.ts).
+    std::string dialogueMood(const std::string& npcId, const talk::Query& q, const std::string& tagged) const;
     std::vector<talk::Facts> dialoguePlaces(const std::string& npcId);
     // The upstairs an innkeeper lets beds in ("<inn>, upstairs" over the inn they keep), "" for none.
     std::string upstairsOf(const std::string& keeper) const;

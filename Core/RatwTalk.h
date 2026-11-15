@@ -191,7 +191,7 @@ struct Settings
 //   say[here.shop=asleep priority=10] Mm... shop's shut. Morning.
 //   ask player.trade                           the line from a concept the game answers (a fallback to the says)
 //   free                                       the player may say something of their own here
-//   mood warm                                  sent with the line (the face's animation, later)
+//   mood warm                                  the face's mood with the line (Library::faceMoods: doc 83, Phase 5)
 //   choice Let me see your wares. [here.shop=open|bare] -> do shop
 //   choice Any work going? [here.work>0] locked "Nothing going." -> work
 //   each job in here.work max 3
@@ -292,6 +292,8 @@ public:
     // The actions a tree may do, and the lists an `each` may go through.
     static const std::set<std::string>& treeActions();
     static const std::set<std::string>& treeLists();
+    // The face's moods a node's `mood` may name (doc 83, Phase 5; the client's Client/src/game/face.ts knows the same).
+    static const std::set<std::string>& faceMoods();
 
     std::size_t size() const { return entries_.size(); }
     const std::vector<Entry>& entries() const { return entries_; }

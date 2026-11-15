@@ -20,7 +20,8 @@ export interface Dialogue {
     tree: string;
     node: string;
     line: string;
-    mood: string;
+    mood: string;               // The face's mood with the line (game/face.ts: FaceMoods), or '' at rest.
+    speaking: number;           // Seconds the line is spoken (the face talks that long: Phase 5); 0 from an older server.
     free: boolean;              // Free talk allowed here.
     awaiting: boolean;          // A free line is being answered.
     ends: boolean;              // The last line: no choices.
@@ -80,7 +81,8 @@ export function readDialogue(e: Json): Dialogue {
     const d: Dialogue = {
         session: Math.trunc(num(e, 'session')), npc: str(e, 'npc'), name: str(e, 'name', 'Someone').slice(0, 60),
         role: str(e, 'role').slice(0, 60), place: str(e, 'place').slice(0, 60), appearance: obj(e, 'appearance'),
-        tree: str(e, 'tree'), node: str(e, 'node'), line: str(e, 'line').slice(0, 600), mood: str(e, 'mood'),
+        tree: str(e, 'tree'), node: str(e, 'node'), line: str(e, 'line').slice(0, 600), mood: str(e, 'mood').slice(0, 20),
+        speaking: Math.min(12, Math.max(0, num(e, 'speaking'))),
         free: bool(e, 'free'), awaiting: bool(e, 'awaiting'), ends: bool(e, 'ends'), choices, history,
         note: str(e, 'note').slice(0, 160), inShop: false, wantsShop: false, key: ''};
     d.key = JSON.stringify([d.session, d.node, d.line, choices.map(c => c.text)]);

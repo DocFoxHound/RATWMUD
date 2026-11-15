@@ -163,9 +163,30 @@
 .dialogue-window { position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 6; display: flex; gap: 16px; align-items: flex-start;
     max-height: min(400px, 66%); padding: 12px 14px; background: color-mix(in srgb, var(--panel) 94%, transparent);
     border: 1px solid color-mix(in srgb, var(--gold) 45%, #34443e); border-radius: 6px; box-shadow: 0 8px 28px rgba(0, 0, 0, .45); }
-.dialogue-face, .map .dialogue-face { position: relative; inset: auto; width: 150px; height: 178px; flex: none; border-radius: 14px;
-    background: #2a2620; cursor: default; transition: transform .25s ease-out; }
-.dialogue-face.speaking { transform: translateY(-2px); }
+/* The face (doc 83, Phase 5; game/face.ts): the paper moves by FaceSlot.tick (an inline transform: a bob while talking,
+   a tilt while listening, a breath idle), glows faintly as it speaks (--talk, 0..1), and wears its mood as a tint over
+   the painting and the colour of its frame. Painted expressions later replace the painting, not this. */
+.dialogue-face { --mood: transparent; --mood-tint: transparent; --talk: 0;
+    position: relative; width: 150px; height: 178px; flex: none; border-radius: 14px; overflow: hidden;
+    background: #2a2620; cursor: default; transform-origin: 50% 90%; will-change: transform;
+    box-shadow: 0 0 0 2px var(--mood), 0 0 calc(4px + var(--talk) * 14px) calc(var(--talk) * 3px) color-mix(in srgb, var(--gold) calc(var(--talk) * 60%), transparent); }
+.dialogue-face canvas, .map .dialogue-face canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.dialogue-face-mood { position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+    background: radial-gradient(ellipse at 50% 35%, transparent 45%, var(--mood-tint) 100%); mix-blend-mode: soft-light;
+    transition: background .4s ease; }
+.dialogue-face[data-mood=calm]    { --mood: #7f9f8f; --mood-tint: rgba(127, 159, 143, .55); }
+.dialogue-face[data-mood=warm]    { --mood: #d99a5e; --mood-tint: rgba(232, 150, 80, .7); }
+.dialogue-face[data-mood=pleased] { --mood: #e2c065; --mood-tint: rgba(240, 200, 90, .7); }
+.dialogue-face[data-mood=keen]    { --mood: #9ccf86; --mood-tint: rgba(150, 210, 120, .6); }
+.dialogue-face[data-mood=formal]  { --mood: #a3aec2; --mood-tint: rgba(160, 175, 200, .5); }
+.dialogue-face[data-mood=stern]   { --mood: #8f7d6b; --mood-tint: rgba(70, 55, 45, .7); }
+.dialogue-face[data-mood=wary]    { --mood: #c6a656; --mood-tint: rgba(150, 130, 60, .6); }
+.dialogue-face[data-mood=cross]   { --mood: #cf6656; --mood-tint: rgba(210, 80, 60, .75); }
+.dialogue-face[data-mood=sad]     { --mood: #6f8db5; --mood-tint: rgba(80, 110, 170, .7); }
+.dialogue-face[data-mood=worried] { --mood: #a993c9; --mood-tint: rgba(150, 120, 200, .6); }
+.dialogue-face[data-mood=tired]   { --mood: #8a8476; --mood-tint: rgba(90, 85, 75, .7); }
+.dialogue-face[data-mood=sleepy]  { --mood: #6c79a0; --mood-tint: rgba(60, 70, 120, .8); }
+.dialogue-face[data-mood=hurt]    { --mood: #b4524a; --mood-tint: rgba(170, 60, 50, .7); }
 /* (Stretched to the window's clamped height, so a role's longer list of choices scrolls inside it: doc 83, Phase 3.) */
 .dialogue-words { flex: 1; min-width: 0; min-height: 0; align-self: stretch; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
 .dialogue-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }

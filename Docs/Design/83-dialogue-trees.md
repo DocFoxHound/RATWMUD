@@ -1,7 +1,7 @@
 # 83. Dialogue trees: a window with the NPC's face, and choices to pick
 
 Draft, 2026-11-15, for Ridgemere 3 (`ridgemere3`, doc 82). The user answered the open questions the same day (below,
-"The user's answers"); **Phases 1 to 4 are built** (branches r3-dlg1 to r3-dlg4: "as built", under Phases). It adds player-facing
+"The user's answers"); **Phases 1 to 5 are built** (branches r3-dlg1 to r3-dlg5: "as built", under Phases). It adds player-facing
 conversation trees to doc 62's talk library. Doc 62's facts, rules and grammar stay, and so do the router, the NPC
 Mind and free text. A tree is a new way of *asking* the library, through a window the player answers by choosing.
 
@@ -670,6 +670,33 @@ an end-to-end run and one review-and-fix come at the end. The times are rough, f
    - **What real animation needs,** decided with the user: new face paintings for blinks, an open mouth and a few
      expressions, each with its own zone map so the fur recolour still works (doc 81's `avatar_prep.py` handles any
      painting), or a warp of the one painting (breath, ears, a nod).
+   **Phase 5 as built (r3-dlg5, 2026-11-15).**
+   - **The server** sends with every line `mood` (one of `talk::Library::faceMoods`: calm, warm, pleased, keen, formal,
+     stern, wary, cross, sad, worried, tired, sleepy, hurt; or none, the face at rest) and `speaking` (the seconds the line
+     is spoken: about fourteen characters a second, 0.6 to 10). `Game::dialogueMood` chooses the mood: asleep is sleepy
+     before anything; then the node's `mood` tag; then the resident's state (grieving: sad, badly hurt: hurt, worn out:
+     tired); then the NPC Mind's last emotion (its free words put into the list: "annoyed" is cross, "curious" keen);
+     then how they feel about the wolf (`pair.disposition`: hostile cross, wary wary, warm and fond warm). A free-talk
+     answer carries the Mind's emotion with it. The tree loader refuses a `mood` the face doesn't know.
+   - **The client:** `Client/src/game/face.ts` is the hook, all pure functions: `faceActivity` (talking while the line is
+     spoken, listening while the player's own line is answered or while they write one, idle else), `faceState` (that,
+     the mood, and when the activity began), `facePose` (lift, tilt and scale at a moment: a bob of about two syllables a
+     second while talking, a small tilt of the head listening, a slow breath idle; slower and smaller sleepy, tired, sad
+     or hurt, livelier keen, cross or pleased; still under reduced motion) and `faceFrame` (which painting to draw: always
+     `face` now). `FaceSlot` (`ui/hud/dialogue.ts`) is a box with the canvas and a mood layer: the window calls
+     `setState(faceState(...))` and `tick(now)` every frame (the HUD's frame loop, so there's no second loop to leak);
+     `tick` moves the box by the pose (a CSS transform), sets `--talk` (a faint gold glow pulsing with the bob) and draws
+     `faceFrame`'s painting. The mood is `data-mood`: a tint over the painting (soft light) and the frame's colour
+     (`hud.css`). The shop window's keeper strip stays a still painting.
+   - **Where the animation drops in.** Painted expressions are new portrait views, `face.talk.0`/`face.talk.1` (a mouth,
+     alternating eight times a second while talking), `face.blink` (now and then), `face.mood.<mood>` (at rest), each
+     with its own zone map from `avatar_prep.py` so the fur recolour still works. They are added to `drawPortrait`'s
+     `PortraitView` and `Painting`, and answered by `FaceSlot.hasView`; `faceFrame` already asks for them and falls back to
+     `face` for any that isn't painted. A warp (breath, ears, a nod) takes `facePose`'s numbers, and the state's `since`,
+     as its inputs instead of the CSS transform. Neither is decided: open question 8 stays open.
+   - **Tests:** `Client/src/game/face.test.ts` (the activity by the clock, an older server's lines, moods known and not,
+     the state's start, the pose's range and reduced motion, painted views dropping in); `Tests/dialogue_tests.cpp`: the
+     greeting's mood and speaking time, a sleeping keeper sleepy whatever the node says, an unknown mood refused.
 
 **At the end:** the full suite, an end-to-end run on a scratch server (`tools/scratch.sh ridgemere3`: buy bread through
 the window, take and finish a courier job, hand in a faction delivery, free talk with the Mind fixture), and one

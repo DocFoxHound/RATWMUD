@@ -3,49 +3,84 @@
 // name, work and place, the last exchanges dimmed, their line written out, and the choices numbered. Each choice is a
 // default line the player may send as it is or rewrite: the one picked out shows its words in a field to edit. Where
 // the node allows it, "Say something else..." sends the player's own line (free talk).
-import {drawPortrait, type Portraits} from '../portrait.ts';
+import {drawPortrait, type PortraitView, type Portraits} from '../portrait.ts';
 import type {Json} from '../../game/json.ts';
 import type {GameState} from '../../game/state.ts';
 import {revealed, wordsFor} from '../../game/dialogue.ts';
+import {faceFrame, faceMood, facePose, faceState, poseTransform, type FaceState} from '../../game/face.ts';
 import {button, el, setClass, setText, show} from './dom.ts';
 
-/** The face: the resident's painting in their own fur (doc 81), and a state the window sets with each line, so Phase 5's
- *  animation (blinks, a mouth, moods) only has to draw something different. */
+/** The face: the resident's painting in their own fur (doc 81), in a slot built for animation (doc 83, Phase 5;
+ *  game/face.ts holds the rules). The window gives it a look (setLook) and, each frame, the state of the conversation
+ *  (setState: talking, listening or idle, and a mood); tick() moves the paper by facePose and draws faceFrame's
+ *  painting. Today there is one painting, so the face lifts and nods while it speaks, tilts while it listens, breathes
+ *  idle, and wears its mood as a tint and a frame (data-mood, hud.css). Painted expressions only have to add views that
+ *  `drawPortrait` can paint ('face.talk.0', 'face.blink', 'face.mood.warm'...) and answer them in `hasView`. */
 export class FaceSlot {
+    readonly root: HTMLElement;
     readonly canvas: HTMLCanvasElement;
     private portraits: Portraits;
     private look: Json | null = null;
     private drawn = '';
-    /** What the face is doing (Phase 5 draws it: a mouth while speaking, the mood's expression). */
-    state = {speaking: false, mood: ''};
+    private transform = '';
+    private glow = '';
+    /** What the face is doing (the window sets it with each frame: game/face.ts's faceState). */
+    state: FaceState = {activity: 'idle', mood: '', since: 0, speaking: false};
+    /** The painted views there are (only 'face' until expressions are painted: doc 83, "What real animation needs"). */
+    hasView: (view: string) => boolean = view => view === 'face';
 
     constructor(parent: HTMLElement, portraits: Portraits, className = 'dialogue-face') {
         this.portraits = portraits;
-        this.canvas = el('canvas', className, parent);
+        this.root = el('div', className, parent);
+        this.root.dataset.face = '';
+        this.canvas = el('canvas', '', this.root);
         this.canvas.width = 232;
         this.canvas.height = 276;
-        portraits.listen(() => { this.drawn = ''; this.draw(); });   // (A painting arrived.)
+        el('div', 'dialogue-face-mood', this.root);
+        portraits.listen(() => { this.drawn = ''; this.draw(this.view); });   // (A painting arrived.)
     }
+
+    private view = 'face';
 
     setLook(appearance: Json | null) {
         this.look = appearance;
-        this.draw();
+        this.draw(this.view);
     }
 
-    setState(state: {speaking: boolean; mood: string}) {
-        this.state = state;
-        setClass(this.canvas, 'speaking', state.speaking);
-        this.canvas.dataset.mood = state.mood;
+    /** The state: a FaceState (game/face.ts), or Phase 1's {speaking, mood}. */
+    setState(state: FaceState | {speaking: boolean; mood: string}) {
+        const full: FaceState = 'activity' in state ? state
+            : {activity: state.speaking ? 'talking' : 'idle', mood: faceMood(state.mood), since: this.state.since, speaking: state.speaking};
+        this.state = full;
+        setClass(this.root, 'speaking', full.activity === 'talking');
+        setClass(this.root, 'listening', full.activity === 'listening');
+        if (this.root.dataset.mood !== full.mood) this.root.dataset.mood = full.mood;
+        if (this.root.dataset.activity !== full.activity) this.root.dataset.activity = full.activity;
     }
 
-    private draw() {
-        const key = JSON.stringify(this.look) + this.portraits.version;
+    /** One frame: the paper's pose, the talking glow, and the painting for the moment. */
+    tick(now: number, reduced = false) {
+        const pose = facePose(this.state, now, reduced);
+        const transform = poseTransform(pose);
+        if (transform !== this.transform) this.root.style.transform = this.transform = transform;
+        const glow = this.state.activity === 'talking' && !reduced ? (pose.lift / 4).toFixed(2) : '0';
+        if (glow !== this.glow) this.root.style.setProperty('--talk', this.glow = glow);
+        const view = faceFrame(this.state, now, this.hasView);
+        if (view !== this.view) this.draw(view);
+    }
+
+    private draw(view: string) {
+        this.view = view;
+        const key = JSON.stringify(this.look) + this.portraits.version + view;
         if (key === this.drawn) return;
         const c = this.canvas.getContext('2d');
         if (!c) return;
         c.clearRect(0, 0, this.canvas.width, this.canvas.height);
         // On its paper until the painting arrives, then the painted face over it.
-        if (drawPortrait(c, this.portraits, this.look, 0, 0, this.canvas.width, this.canvas.height, undefined, {view: 'face', paper: true}))
+        // (Only 'face' is painted. A painted expression set adds its views to drawPortrait's PortraitView and Painting,
+        // and to hasView; until then any other view is never asked for.)
+        if (drawPortrait(c, this.portraits, this.look, 0, 0, this.canvas.width, this.canvas.height, undefined,
+            {view: view as PortraitView, paper: true}))
             this.drawn = key;
     }
 }
@@ -118,7 +153,10 @@ export class DialogueWindow {
             this.shownLine = shown;
             setText(this.line, shown ? `“${shown}${shown.length < d.line.length ? '' : '”'}` : '');
         }
-        this.face.setState({speaking: d.awaiting || shown.length < d.line.length, mood: d.mood});
+        // The face (Phase 5): talking while the line is spoken, listening while the player's own line is answered or
+        // written, idle else; moved each frame.
+        this.face.setState(faceState(d, ui, s.clock, this.face.state));
+        this.face.tick(s.clock, s.reducedMotion);
         const key = JSON.stringify([d.key, d.note, d.awaiting, ui.selected, ui.focus, s.dialogueVersion]);
         if (key === this.key) return;
         this.key = key;

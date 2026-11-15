@@ -84,6 +84,15 @@ const std::set<std::string>& Library::treeActions()
     return Actions;
 }
 
+const std::set<std::string>& Library::faceMoods()
+{
+    // Doc 83, Phase 5: the moods the dialogue window's face knows (a tint and a frame now; painted expressions later).
+    // None (calm, unmarked) is the face at rest. The game puts the NPC Mind's free-worded emotions into these too.
+    static const std::set<std::string> Moods{"calm", "warm", "pleased", "keen", "formal", "stern", "wary", "cross",
+                                             "sad", "worried", "tired", "sleepy", "hurt"};
+    return Moods;
+}
+
 const std::set<std::string>& Library::treeLists()
 {
     // here.work: contracts to be had near; here.missions: a faction official's board; here.mine: work the player has
@@ -320,6 +329,8 @@ bool Library::parseTree(const std::string& text, const std::string& file, std::s
         {
             if (!name(rest))
                 fail("a mood is one word");
+            else if (!faceMoods().count(rest))
+                fail("'" + rest + "' is not a mood the face knows (Library::faceMoods)");
             node->mood = rest;
             continue;
         }

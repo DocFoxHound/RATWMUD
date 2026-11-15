@@ -121,6 +121,7 @@ void loading()
     refused("tree t\nentry talk a\nnode a\nsay Hello.\nchoice Bye. -> end\nnode b\nsay Lost.\nchoice Bye. -> end\n", "node b can't be reached");
     refused("tree t\nentry talk a\nnode a\nsay[here.shop=open] Hello.\nchoice Bye. -> end\n", "needs a say without criteria");
     refused("tree t\nentry talk a\nnode a\nsay Hello.\neach job in here.nothing max 3\nchoice x -> end\n", "not a list");
+    refused("tree t\nentry talk a\nnode a\nsay Hello.\nmood jubilant\nchoice Bye. -> end\n", "not a mood the face knows");
     refused("tree t\nentry talk a\nnode a\nsay Hello there, this line is near.\nsay[here.shop=open] " + std::string(170, 'x') + "\nchoice Bye. -> end\n",
             "more than 160");
     {
@@ -326,6 +327,10 @@ void inAGame()
     expect(d->find("appearance") && d->find("appearance")->isObject() && d->string("npc") == "um" && !d->string("name").empty(),
            "with the keeper's face and name");
     const auto line = d->string("line");
+    // The face (Phase 5): the node's mood, and how long the line is spoken (about fourteen characters a second).
+    expect(d->string("mood") == "warm", "the greeting's mood, for the face: " + d->string("mood"));
+    expect(d->number("speaking") >= .6 && std::abs(d->number("speaking") - std::clamp(double(line.size()) / 14, .6, 10.0)) < .2,
+           "the time it speaks the line: " + std::to_string(d->number("speaking")) + " for " + std::to_string(line.size()));
     const auto choices = d->array("choices");
     expect(!choices.empty() && choices.size() <= 4 && choices.front().string("text") == "Let me see your wares." &&
                choices.back().string("text") == "Goodbye.",
@@ -478,6 +483,7 @@ void inAGame()
     d = open("um", "trade");
     expect(d && d->array("choices").size() == 1 && d->array("choices").front().string("text") == "Goodbye.",
            "a sleeping keeper: words, and only goodbye: " + (d ? json::dump(*d) : std::string()));
+    expect(d && d->string("mood") == "sleepy", "a sleeping keeper's face is sleepy, whatever the node's mood");
     w.entity("um")->posture = "standing";
     // Too far to open: the client is told to walk over.
     town.g.command(&town.ash, cmd({{"type", "dialogue_close"}, {"session", town.g.dialogueOf(town.ash.entityId)->id}, {"why", "bye"}}));
