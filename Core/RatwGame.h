@@ -437,7 +437,31 @@ class Game
     Result decideHouse(const std::string& chapterId, const std::string& factionId, bool approve, const std::string& by);
     // What the game says itself to what a player said to an NPC (doc 28), "" when a model should answer: for the voice
     // checks and the review page (tools/ai_review.py) as much as for play.
-    std::string gameAnswer(const std::string& npcId, const std::string& playerId, const std::string& heard, bool identified);
+    // `asIntent`: answer as if the router had found that intent (a dialogue tree's `ask player.<intent>`, doc 83).
+    std::string gameAnswer(const std::string& npcId, const std::string& playerId, const std::string& heard, bool identified,
+                           const std::string& asIntent = {});
+    // A conversation in the dialogue window (Docs/Design/83-dialogue-trees.md; Core/RatwGameDialogue.cpp): at most one
+    // a player, kept here and never saved (a restart closes it). The server runs the tree; the client shows the node.
+    struct DialogueSession
+    {
+        int id = 0;
+        std::string npc, tree, node, entry;
+        talk::Facts bound;                          // The item chosen from an `each` (topic.job_title...).
+        std::vector<talk::ShownChoice> shown;       // The node's choices as last sent.
+        std::string line;                           // The resident's last line.
+        std::deque<std::pair<std::string, std::string>> history;   // (who, words): "npc" or "you", the last four lines.
+        double changed = 0;
+        bool asleepAtOpen = false, inShop = false, awaiting = false;   // awaiting: a free line is being answered.
+    };
+    const DialogueSession* dialogueOf(const std::string& playerId) const
+    {
+        const auto f = dialogues_.find(playerId);
+        return f == dialogues_.end() ? nullptr : &f->second;
+    }
+    // Roleplay experience for a line a player wrote themselves in the dialogue window (doc 83): what it paid (0 for a
+    // default line, a near copy of it, a short or repeated one, or over the day's allowance).
+    int dialogueExperience(const std::string& playerId, const std::string& npcId, const std::string& said,
+                           const std::string& offered);
     // What an NPC Mind is told for a reply to what a player said (also for the review page).
     mind::Context dialogueContext(const std::string& npcId, const std::string& playerId, const std::string& heardText,
                                   bool identified);
@@ -769,6 +793,25 @@ class Game
     // The shop each player chose from a wheel (the shop window's Trade): its keeper's list is the one the snapshot sends
     // while that keeper is within reach, before a nearer one's. Player id -> keeper id.
     std::map<std::string, std::string> shopWith_;
+    // The dialogue window (doc 83; RatwGameDialogue.cpp).
+    std::map<std::string, DialogueSession> dialogues_;
+    int dialogueNext_ = 1;
+    double dialogueLookIn_ = 0;
+    void dialogueCommand(Connection* c, const std::string& type, const json::Value& j);
+    // A merchant's contract offered in the offer window ({"type": "missionOffer"}), from the wheel's "offer kNNN" or a
+    // dialogue's work choice; false (and why, to the player) if it can't be asked about here.
+    bool offerContract(Connection* c, const std::string& giverId, const std::string& contractId);
+    void dialogueOpen(Connection* c, const std::string& npcId, const std::string& entry);
+    bool dialogueGo(Connection* c, DialogueSession& d, const std::string& node, const std::string& note = {});
+    void dialogueSend(Connection* c, const DialogueSession& d, const std::string& note = {});
+    void dialogueClose(const std::string& playerId, const std::string& why, bool sayBye);
+    void dialogueSpeak(const std::string& speaker, const std::string& to, const std::string& words);
+    talk::Query dialogueQuery(const std::string& playerId, const DialogueSession& d);
+    std::vector<talk::Facts> dialogueItems(const std::string& playerId, const std::string& npcId, const std::string& list);
+    void dialogueTick(double dt);
+    // A reply to free talk, to show in the window of the player who said it (from speakReply).
+    void dialogueHeard(const std::string& npcId, const std::string& playerId, const std::string& text);
+    std::string dialogueBrief(const std::string& npcId, const std::string& playerId) const;   // (For the Mind.)
     json::Value sceneMoments(const std::string& viewer, const SocialSession& scene) const;
     void meet(const std::string& owner, const std::string& other, const std::string& how);
     void perceivedLine(const std::string& listener, const std::string& who, const std::string& text);

@@ -95,7 +95,9 @@
     "weekday": "text",
     "festival": "text",
     "crowd": ["quiet", "busy", "crowd"],
-    "player_near": ["yes", "no"]
+    "player_near": ["yes", "no"],
+    "shop": ["open", "asleep", "bare", "none"],
+    "work": "number"
   },
   "topic": {
     "item": "text",
@@ -130,7 +132,12 @@
     "greeting": "text",
     "player": "text",
     "since": "text",
-    "meeting": ["stranger", "known", "returning", "famous", "famous_look"]
+    "meeting": ["stranger", "known", "returning", "famous", "famous_look"],
+    "job_title": "text",
+    "job_reward": "text",
+    "job_id": "text",
+    "job_kind": ["escort", "courier", "bounty"],
+    "job_directions": "text"
   },
   "world": {
     "herbs_price": ["up", "down", "steady"],

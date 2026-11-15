@@ -13,6 +13,7 @@ import {artCache} from '../artwork.ts';
 import {renderLetters} from './letters.ts';
 import {renderBoard} from './board.ts';
 import {renderShop} from './shopWindow.ts';
+import {renderKeeperStrip} from './dialogue.ts';
 import {renderArchive, renderChronicle, renderJournal, renderWelcome} from './archive.ts';
 import {renderCredits, renderStoryteller, storytellerNote} from './storyteller.ts';
 import {nicknameLine, unfinishedLine} from '../../game/fame.ts';
@@ -20,7 +21,7 @@ import {ask, askText} from '../dialog.ts';
 
 /** Social standing is the account's (doc 49): scenes, stars and Stories across all one's wolves. The bar runs from the
  * level's start to the next (an older server sends neither: then a hundred a level, as it was). */
-const SocialWhy = 'Social experience comes from roleplay alone: scenes, Gold Stars and Stories. It is your account\'s, shared by all your wolves. Skills grow by practice instead.';
+const SocialWhy = 'Social experience comes from roleplay alone: scenes, Gold Stars and Stories, and the lines you write in your own words to residents. It is your account\'s, shared by all your wolves. Skills grow by practice instead.';
 function socialShare(self: Json | null): number {
     const xp = num(self, 'socialXp'), from = num(self, 'socialXpLevel', -1), to = num(self, 'socialXpNext', -1);
     return from >= 0 && to > from ? clamp((xp - from) / (to - from), 0, 1) : clamp((xp % 100) / 100, 0, 1);
@@ -136,7 +137,7 @@ export class Dialogs {
             m === 'chapter_window' ? [obj(self, 'chapter'), [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => [e.id, e.name])] : '',
             m === 'inventory' || m === 'trade' || m === 'status' ? [arr(s.snapshot, 'inventory'), obj(s.snapshot, 'merchant'), countText(self, 'cash'), arr(self, 'loans'),
                 obj(s.snapshot, 'resource')] : '',
-            m === 'trade' ? [s.shopVersion, s.shopStall, obj(obj(self, 'stall'), 'here')] : '',
+            m === 'trade' ? [s.shopVersion, s.shopStall, obj(obj(self, 'stall'), 'here'), s.dialogue?.inShop ? [s.dialogue.line, s.dialogue.name] : null] : '',
             m === 'status' ? [self, s.battle && !s.battle.observer ? [s.battle.fighters.find(f => f.id === s.selfId), s.battle.acted, s.battle.turn] : null] : '',
             m === 'settings' ? [s.selectedColor, s.revealSpeed, s.reducedMotion, s.flatWorld, s.plainGlyphs, s.perfOverlay, s.storyWidth,
                 bool(s.snapshot, 'devTools'), s.environment.phase, s.hoverTooltips, s.soundVolume, s.mapScenes, s.howlMarks] : '']);
@@ -1376,6 +1377,7 @@ export class Dialogs {
     }
 
     private trade() {
+        renderKeeperStrip(this.panel, this.s, this.portraits);   // (Opened from a conversation: the keeper's face, doc 83.)
         renderShop(this.panel, this.s);            // The shop window (shopWindow.ts).
     }
 

@@ -1,6 +1,7 @@
 # 83. Dialogue trees: a window with the NPC's face, and choices to pick
 
-Draft, 2026-11-15, for Ridgemere 3 (`ridgemere3`, doc 82). Nothing here is built yet. It adds player-facing
+Draft, 2026-11-15, for Ridgemere 3 (`ridgemere3`, doc 82). The user answered the open questions the same day (below,
+"The user's answers"); **Phase 1 is built** (branch r3-dlg1: "Phase 1 as built", under Phases). It adds player-facing
 conversation trees to doc 62's talk library. Doc 62's facts, rules and grammar stay, and so do the router, the NPC
 Mind and free text. A tree is a new way of *asking* the library, through a window the player answers by choosing.
 
@@ -132,6 +133,30 @@ Mind and free text. A tree is a new way of *asking* the library, through a windo
 - The NPC's face can be shown today. The `missionOffer` message already carries the appearance.
 - **There is no animation.** There is one face painting, with no expressions, no closed eyes and no open mouth.
 
+## The user's answers (2026-11-15)
+
+These are decided, and they overrule the decisions below where the two differ.
+
+1. **Talk opens the window too, with free talk built in.** "It should be a window with free talk, where a player enters
+   their own dialogue for a specific response. Like it shows a default answer, or has a space for a player to type in
+   their own responses. These should count for roleplay experience."
+   - Each choice shows a **default line** the player may send as it is, or **rewrite in their own words** before sending
+     (an editable field, prefilled with the default). A "Say something else..." field takes a line of their own.
+   - The **choice picks the branch**; the words sent are what the wolf says.
+   - A line the player wrote (not the default, not a near copy of it, not trivial or repeated) earns **roleplay
+     experience** (social XP), within the anti-spam rules (Phase 1 as built, below).
+   - Where a node allows free talk, the NPC Mind (the live model) may answer the player's own words. It never performs
+     actions: only a tree's choices do.
+2. **Both sides heard.** The NPC's lines and the player's chosen or written line are both said aloud in the world as
+   ordinary speech: bystanders hear them, with speech's hearing and visibility rules, and the story log's speaker-face
+   rules apply (doc 80).
+3. **Dialects.** Fenshore speaks like Mirebridge and Saltwell like Coldwater. Every resident's dialect is worked out
+   again from Ridgemere 3 (Phase 4's work).
+4. **A taken job or mission can be given back, free** (no penalty), through the giver's dialogue (Phase 2's work).
+
+Still open, for later: a player's home town colouring their choices (open question 6), haggling (7, not in Phase 1)
+and the kind of animation (8).
+
 ## Decisions (mine, for the user to overturn)
 
 1. **One window for every conversation with a resident**, the *dialogue window*. Trade, the work actions and Talk
@@ -156,12 +181,13 @@ Mind and free text. A tree is a new way of *asking* the library, through a windo
    wares, work (only when there is some), "What's dear today?" (one line from the prices facts) and Goodbye.
    Closing the shop window ends the conversation with the keeper's farewell, with no extra click.
 6. **Talk opens the window too,** on the resident's hub: the role's topics, "Say something else..." (free text) and
-   Goodbye. Typing to a talk target without the window still works as it does now.
-7. **Free talk is the only place the live model speaks.** A node marked `free` shows a text field. What is typed there
+   Goodbye. Typing to a talk target without the window still works as it does now. (The user agreed, and added the
+   editable default line on every choice: answer 1.)
+7. **Free talk is the only place the live model speaks** (built in Phase 1, by the user's answer 1). A node marked `free` shows a text field. What is typed there
    goes through `Game::talk` unchanged (router, then `player.*` rules, then the Mind), and the reply appears in the
    window. The Mind is told which node the player is on and what was just offered. It never takes or gives anything:
    only a tree's choices perform actions. Tree lines are never polished by the model.
-8. **What's said in the window is said in the world.** The NPC's line and the chosen choice's words are published as
+8. **What's said in the window is said in the world** (the user's answer 2). The NPC's line and the chosen choice's words are published as
    ordinary speech (`publish`, `Voice::Speak`), so bystanders hear them, the story log keeps them with faces (doc 80's
    speaker id), the NPC's memory records the choice as heard, and storyline `talk` objectives count. The window is a
    way of choosing what to say, not a private channel.
@@ -418,6 +444,54 @@ an end-to-end run and one review-and-fix come at the end. The times are rough, f
        renders; a character table's `self.id` line wins in the window.
      - `market_tests`: Trade → dialogue → shop gives the same quotes.
      - Client: `dialogue.test.ts` (choices, keys, Esc says goodbye, locked reasons).
+   **Phase 1 as built (r3-dlg1, 2026-11-15).**
+   - **The format** is as above, with these settled in the building:
+     - `say[criteria] words`: `priority=N` among the criteria is the rule's priority (a sleeping keeper's mumble is
+       `priority=10`, so it beats a trade's or a resident's own greeting). Every node needs one `say` without criteria
+       (or an `ask`).
+     - `ask player.<intent>`: the node's line is the game's own answer for that intent (`Game::gameAnswer` with the
+       intent given, doc 28's facts in the resident's voice); the node's `say`s are its fallback.
+     - `free` marks a node where the player may say something of their own; `mood <word>` is sent with the line;
+       `end` (or no choices) ends the conversation after the line.
+     - `choice <words> [criteria] [locked "why"] -> <node> | end | do <action> [args] [; then <node>] [; refused
+       <node>]`. `each job in here.work max N` before a choice makes one per contract near; `#job.x#` in a tree is the
+       fact `topic.job_x` (title, reward, id, kind, directions).
+     - Actions in Phase 1: `shop`, `free`, `end`, and `offer` (a bridge: the contract's existing offer window, until
+       Phase 2's `work` tree and `take` replace it).
+     - The loader (`Core/RatwTalkTree.cpp`) writes each `say` as a rule (`dlg.<tree>.<node>.<line>`) and reads choice and
+       `for` criteria with the library's own parser. It refuses an unknown fact, symbol, action, list or node, an
+       unreachable node, a node with no plain `say`, a choice of more than 160 characters, and a `for` overlapping another
+       tree's on the same entry at the same priority. `talk_check --validate` takes `.tree` files.
+     - New facts: `here.shop` (open, asleep, bare, none), `here.work` (a number), `topic.job_*`.
+   - **The trees:** `shop` (Trade: greeting, wares, work if any, what's dear, goodbye; a baker's, smith's and brewer's
+     own greetings; asleep and bare-shelf lines) and `resident` (Talk: the hub with free talk, "What do you do?" by
+     `ask player.job`, "Any news?" by the town's news facts, the wares for a keeper, goodbye). Symbols `shop_offer`,
+     `shop_dear`, `shop_sold`, `shop_bye`, `shop_bare` and `talk_open` in plain and the six dialects (`shop_asleep` in
+     plain). The six `live.dialects` rows in the database don't have them yet, so a dialect there falls back to plain
+     for these words until Phase 4 writes the rows again.
+   - **The server** (`Core/RatwGameDialogue.cpp`): the messages above, and `{"type": "dialogue_shop"}` (the wares: the
+     client opens the shop window, the conversation waits behind it). `dialogue_choose` takes an optional `text`, the
+     player's own words. The snapshot says `"dialogue": true` where trees are loaded, so an older server leaves Trade and
+     Talk as they were, and an older client never asks. Sessions close on walking more than 4 tiles off, the resident
+     falling asleep, going out of sight, a fight, or the player downed.
+   - **Both sides heard:** each line is `publish`ed as ordinary speech (to the other), so bystanders hear it, a hidden
+     speaker is "A voice" with no id or face, and the NPC's memory and storyline `talk` objectives get the player's
+     words. A sale through the shop window has the keeper say `#shop_sold#` (at most once in three seconds); closing the
+     shop window says the farewell.
+   - **Free talk:** `dialogue_say` publishes the player's line and goes through `Game::talk` (router, `player.*`
+     rules, then the Mind, with the node and the choices offered in its scene; told never to take, give or promise
+     anything). `speakReply` shows the answer in the window too.
+   - **Roleplay experience** (`SocialLedger::dialogueLine`, reason `npc_dialogue`, added to `standing.json`'s social
+     reasons): a line the player wrote (a rewritten choice or free talk) pays 2, or 3 at fifteen words or more; never
+     the default, a near copy of it (80% the same words), fewer than five words, the same words twice in a day, two lines
+     within fifteen seconds, more than 12 lines with one resident or 40 in all a day; always inside the social daily cap.
+   - **The client:** `game/dialogue.ts` (state), `ui/hud/dialogue.ts` (the window at the foot of the map, `FaceSlot`
+     with `setLook` and `setState({speaking, mood})`), keys 1-9, Up/Down, Enter, Tab (edit the picked choice's words),
+     Esc (goodbye); WASD still walks. Trade and Talk on the wheel open it, walking over first (a keeper to within 1.8
+     tiles, so the shop's list is there). The shop window opened from it shows the keeper's face and last word. The
+     `mission_offer` window is unchanged.
+   - **Tests:** `Tests/dialogue_tests.cpp` (111 checks) and `Client/src/game/dialogue.test.ts`.
+
 2. **Mission givers** (about 5 h).
    - **Trees:** `work`, `official` and `receiver`.
    - **Actions:** `take`, `decline`, `deliver`, `standing`, `buy_report` and `tithe`, with `Game::jobDirections` as
@@ -463,19 +537,19 @@ review-and-fix. Altogether about 23 hours of agent work, before the user's liste
 
 ## Open questions
 
-1. **Does Talk open the window?** I've decided yes, on the hub with free text inside it, and typing to a talk target
+1. *(Answered: yes, with free talk and an editable default line on every choice.)* **Does Talk open the window?** I've decided yes, on the hub with free text inside it, and typing to a talk target
    still works. The other way is that only Trade and work open it, and Talk stays as it is.
-2. **Are the window's lines said aloud?** I've decided yes, as ordinary speech, so the world hears a purchase being
+2. *(Answered: yes, both sides.)* **Are the window's lines said aloud?** I've decided yes, as ordinary speech, so the world hears a purchase being
    asked for. Would you rather have trade lines quiet (only the two of them)?
-3. **The Country's towns' speech.** Fenshore would speak as Mirebridge and Saltwell as Coldwater, or each could get a
+3. *(Answered: Fenshore as Mirebridge, Saltwell as Coldwater.)* **The Country's towns' speech.** Fenshore would speak as Mirebridge and Saltwell as Coldwater, or each could get a
    dialect of its own (about 70 entries each, with you).
-4. **Working out origins again** changes how about 150 town residents sound. Is that wanted, or should the origins
+4. *(Answered: work every resident's dialect out again from Ridgemere 3.)* **Working out origins again** changes how about 150 town residents sound. Is that wanted, or should the origins
    stay and the residents be moved instead? I recommend working them out again, since DEV isn't precious.
-5. **Giving work back.** Should a player be able to abandon a taken contract or mission in conversation? It would be
+5. *(Answered: yes, free, through the giver's dialogue; Phase 2.)* **Giving work back.** Should a player be able to abandon a taken contract or mission in conversation? It would be
    new, and today a job only expires.
-6. **The player's own voice.** The choices are plain words for now. Later, a player's home town (doc 62, open question
+6. *(Open, later.)* **The player's own voice.** The choices are plain words for now. Later, a player's home town (doc 62, open question
    6) could colour them.
-7. **Haggling.** Not in this design: the server's price ladder decides prices. A choice like "Can you do better?",
+7. *(Open, later; not in Phase 1.)* **Haggling.** Not in this design: the server's price ladder decides prices. A choice like "Can you do better?",
    answered by disposition, could come later.
-8. **The animation:** what kind (blinks and mouths, expressions, the whole head), and whether to paint new frames or
+8. *(Open, later.)* **The animation:** what kind (blinks and mouths, expressions, the whole head), and whether to paint new frames or
    warp the one painting.

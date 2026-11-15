@@ -1,0 +1,39 @@
+# Talk with a resident (Docs/Design/83-dialogue-trees.md): Talk on the wheel opens the dialogue window on the
+# resident's hub. Free talk is built in: the player may say something of their own at any node, and the resident (the
+# NPC Mind, or the library's answers) replies in the window. A choice's words are a default line the player may send
+# as written or rewrite. The resident's lines are talk concepts (dlg.resident.<node>).
+
+tree resident
+entry talk hub
+
+node hub
+say #greet#, #address#. #talk_open# | #greet#. #talk_open# | #talk_open#
+say[topic.meeting=known] #greet#, #topic.player#. #talk_open# | #topic.player#. #talk_open#
+say[here.time=night] It's late, #address#. #talk_open#
+free
+choice What do you do? -> job
+choice Any news? -> news
+choice Let me see your wares. [role=merchant] -> do shop
+choice Goodbye. -> bye
+
+node job
+ask player.job
+say I keep busy. | This and that. | Work, mostly.
+free
+choice Any news? -> news
+choice Goodbye. -> bye
+
+node news
+say Quiet enough, these days. | Nothing worth the telling. | Not that I've heard.
+say[world.event_words] It's all talk of #world.event_words#. | Have you heard? #world.event_words.capitalize#.
+say[world.news] Word from #world.news_from#: #world.news#.
+say[world.wagons=raided] A wagon was robbed on the road. Mind yourself out there.
+say[world.death=recent] We buried one of ours this week. It's been quiet since.
+say[world.wedding=recent] There was a wedding! The whole street turned out.
+free
+choice What do you do? -> job
+choice Goodbye. -> bye
+
+node bye
+say #farewell#. | #farewell#, #address#. | Mind how you go.
+end

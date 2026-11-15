@@ -73,3 +73,10 @@ blessing = Dry feet to you | Keep out of the water | Dry feet and luck
 bless = Dry feet | The fen spare you
 far = over the causeway and beyond | a long wade
 stranger = dry-footer | stranger
+# The dialogue window (doc 83).
+shop_offer = Dry goods, dry feet. Have a look. | What'll it be, fen-friend? | All kept off the damp.
+shop_dear = Everything's dear that's kept dry. | The fen takes its share. | Dear as a dry path.
+shop_sold = Keep it off the wet. | There, and dry. | Yours, fen-friend.
+shop_bye = Dry feet. | Dry feet to you. | Mind the boards.
+shop_bare = The damp took the rest. | Bare as a drowned field. | Nothing left above the water.
+talk_open = What's floated you here? | Speak up, fen-friend. | What is it?

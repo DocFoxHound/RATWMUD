@@ -131,3 +131,11 @@ someday = someday | one day | one fine day
 far = a long way | a fair step | miles off
 stranger = stranger | outsider | newcomer
 journey = journey | trek | long haul
+# The dialogue window's words (Docs/Design/83-dialogue-trees.md): a keeper at the counter, and work offered.
+shop_offer = What'll it be? | What can I get you? | Have a look. | See anything you like?
+shop_dear = Prices are what they are. | Nothing's cheap this week. | Dear as ever, I'm afraid.
+shop_sold = There you are. | Good choice. | Pleasure doing business. | Mind you don't drop it.
+shop_bye = Come again. | Come back soon. | Mind how you go.
+shop_bare = My shelves are bare just now. | Not much left, I'm afraid. | Cleared out, near enough.
+shop_asleep = Mm... shut. Come back in the morning. | Zzz... later... the shop's shut. | Mm? Not now. Morning.
+talk_open = What can I do for you? | Something on your mind? | What is it?

@@ -10,7 +10,7 @@
     {"level": 18, "title": "Renowned"},
     {"level": 25, "title": "Legend"}
   ],
-  "socialReasons": ["qualified_session_settlement", "gold_star", "story_star", "story_closure"],
+  "socialReasons": ["qualified_session_settlement", "gold_star", "story_star", "story_closure", "npc_dialogue"],
   "dailyCap": 150,
   "unlocks": {
     "about": "Earned Gift tiers, per account (doc 49, 9; the user's measures, 2026-10-06). Kept once earned.",

@@ -157,3 +157,45 @@
 @keyframes hud-fanfare-in { from { opacity: 0; } }
 @keyframes hud-fanfare-rise { from { opacity: 0; transform: translateY(22px) scale(.96); } }
 @media (prefers-reduced-motion: reduce) { .hud-fanfare, .hud-fanfare-card { animation: none; } }
+
+/* The dialogue window (Docs/Design/83-dialogue-trees.md; ui/hud/dialogue.ts): a panel at the foot of the map, the
+   resident's face beside their line and the choices. Not a modal: the map shows above it and the world goes on. */
+.dialogue-window { position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 6; display: flex; gap: 16px; align-items: flex-start;
+    max-height: min(330px, 62%); padding: 12px 14px; background: color-mix(in srgb, var(--panel) 94%, transparent);
+    border: 1px solid color-mix(in srgb, var(--gold) 45%, #34443e); border-radius: 6px; box-shadow: 0 8px 28px rgba(0, 0, 0, .45); }
+.dialogue-face, .map .dialogue-face { position: relative; inset: auto; width: 150px; height: 178px; flex: none; border-radius: 14px;
+    background: #2a2620; cursor: default; transition: transform .25s ease-out; }
+.dialogue-face.speaking { transform: translateY(-2px); }
+.dialogue-words { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; max-height: 100%; }
+.dialogue-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.dialogue-head .label { letter-spacing: .08em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.game .dialogue-head .close { position: static; }
+.dialogue-past { display: flex; flex-direction: column; gap: 2px; }
+.dialogue-said { color: var(--muted); font-size: 13px; opacity: .75; }
+.dialogue-said.you { font-style: italic; }
+.dialogue-line { margin: 2px 0 4px; font-size: 17px; line-height: 1.45; color: var(--paper); cursor: pointer; min-height: 1.45em; }
+.dialogue-choices { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.dialogue-choice { display: flex; align-items: center; gap: 10px; padding: 5px 8px; border-radius: 4px; cursor: pointer;
+    border: 1px solid transparent; }
+.dialogue-choice:hover { background: var(--raised); }
+.dialogue-choice.selected { background: var(--raised); border-color: color-mix(in srgb, var(--gold) 55%, transparent); }
+.dialogue-choice.locked { cursor: default; opacity: .55; }
+.dialogue-n { flex: none; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 12px;
+    color: var(--ink); background: var(--gold); font-weight: 600; }
+.dialogue-choice.locked .dialogue-n { background: var(--muted); }
+.dialogue-text { flex: 1; min-width: 0; }
+.dialogue-why { flex: none; }
+.dialogue-input { flex: 1; min-width: 0; box-sizing: border-box; padding: 4px 8px; font: inherit; color: var(--paper);
+    background: var(--ink); border: 1px solid #3a4a44; border-radius: 4px; }
+.dialogue-input:focus { outline: none; border-color: var(--gold); }
+.dialogue-free { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+.dialogue-note { min-height: 0; }
+.dialogue-hint { margin-top: 2px; }
+@media (max-width: 640px) {
+    .dialogue-window { flex-direction: column; left: 6px; right: 6px; bottom: 6px; max-height: 72%; }
+    .dialogue-face { width: 96px; height: 114px; }
+}
+/* The keeper beside the shop window (opened from a conversation). */
+.shop-keeper { display: flex; gap: 12px; align-items: center; margin: 0 0 10px; }
+.shop-keeper-face { width: 64px; height: 76px; flex: none; border-radius: 8px; background: #2a2620; }
+.shop-keeper-line { color: var(--paper); font-style: italic; }

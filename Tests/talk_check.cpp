@@ -14,7 +14,7 @@
 //       phase 6) against the whole library, as the game loads it. Exit 1, with the reasons, if it's refused.
 //   talk_check [--data DIR] --dialect NAME --grammar FILE
 //       Checks a dialect's grammar (live.dialects, decision 7) as the game loads it over the files'.
-//   talk_check [--data DIR] --validate FILE...
+//   talk_check [--data DIR] --validate FILE...      (.talk, .grammar, or a dialogue .tree)
 //       Checks .talk and .grammar files against the library's facts, settings, grammars and groups, as Atlas and the
 //       Dungeon Master will before saving a character's table. Exit 1, with the reasons, if any is refused.
 //
@@ -265,8 +265,10 @@ int main(int argc, char** argv)
             std::stringstream text;
             text << in.rdbuf();
             const auto name = std::filesystem::path(file).filename().string();
-            const bool ok = std::filesystem::path(file).extension() == ".grammar" ? lib.parseGrammar(text.str(), name, problem)
-                                                                                    : lib.parse(text.str(), name, problem);
+            const auto ext = std::filesystem::path(file).extension();
+            const bool ok = ext == ".grammar" ? lib.parseGrammar(text.str(), name, problem)
+                          : ext == ".tree"    ? lib.parseTree(text.str(), name, problem)   // (A dialogue tree: doc 83.)
+                                              : lib.parse(text.str(), name, problem);
             std::cout << (ok ? "ok      " : "REFUSED ") << file << "\n";
             if (!ok)
                 std::cout << problem << "\n", ++refused;

@@ -72,3 +72,10 @@ bless = Calm water | The lake keep you
 far = across the water | a long row
 stranger = shore-stranger | outsider
 journey = voyage | long row
+# The dialogue window (doc 83).
+shop_offer = What'll you have off the boats? | Have a look, shore-friend. | Fresh as the tide.
+shop_dear = The sea sets the prices. | Dear as a calm day. | Rough water, dear goods.
+shop_sold = There, safe aboard. | Stowed for you. | Off it goes.
+shop_bye = Fair winds. | Calm water to you. | Come back with the tide.
+shop_bare = The tide's taken the lot. | Shelves as bare as low water. | Nothing landed today.
+talk_open = What brings you up from the water? | What is it, neighbour? | Out with it.

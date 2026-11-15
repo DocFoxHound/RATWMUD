@@ -66,7 +66,8 @@ void Game::voiced(const char* kind, const char* route, const std::string& npcId)
     voiceLog_.flush();
 }
 
-std::string Game::gameAnswer(const std::string& npcId, const std::string& playerId, const std::string& heard, bool identified)
+std::string Game::gameAnswer(const std::string& npcId, const std::string& playerId, const std::string& heard, bool identified,
+                             const std::string& asIntent)
 {
     if (!voices_.routes())
         return {};
@@ -114,11 +115,11 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
     };
     // The same thing asked again, soon after: "as I said". Never a keeper's prices (doc 79, 11, T17: the list may have
     // moved since; the answer is worked out again).
-    if (!asked.empty() && last.asked == asked && world_.time() - last.at < RepeatWithin && !last.answer.empty() &&
+    if (asIntent.empty() && !asked.empty() && last.asked == asked && world_.time() - last.at < RepeatWithin && !last.answer.empty() &&
         voices_.intent(heard, npc->name).id != "trade")
         if (const auto line = say("repeat", band, {{"answer", last.answer}}); !line.empty())
             return remember(last.answer, line);
-    const auto intent = voices_.intent(heard, npc->name);
+    const auto intent = asIntent.empty() ? voices_.intent(heard, npc->name) : voice::Intent{asIntent, {}};
     if (intent.id.empty())
         return {};
     // A wolf lying hurt, or held in the gaol, isn't met with a doorstep greeting: a model answers what they said.

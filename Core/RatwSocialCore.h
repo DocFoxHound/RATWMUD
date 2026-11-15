@@ -184,6 +184,13 @@ class SocialLedger
     std::set<std::uint64_t> acceptedEvents;
     // Eligible listeners must be connected humans that actually perceived this post.
     int record(SocialPost post, const std::vector<std::string>& eligibleListeners);
+    // A line a player wrote themselves to a resident in the dialogue window (doc 83): roleplay experience, paid at once
+    // (reason "npc_dialogue"), 2 (3 for fifteen words or more), never for fewer than five words, the same words twice
+    // in a day, two lines within fifteen seconds, or past the day's allowance (12 lines with one resident, 40 in all);
+    // inside the daily cap as any social experience. What it paid.
+    int dialogueLine(const std::string& actor, const std::string& npc, int words, std::uint64_t contentHash, double now,
+                     std::uint64_t event);
+    static constexpr int DialogueLinesPerResident = 12, DialogueLinesPerDay = 40;
     int settle(const std::string& session, double now);
     // A fight is a scene of its own (doc 33): its scene's id, and the tag its fighters' words carry (as a party's do).
     static std::string fightScene(const std::string& fight) { return "fight-" + fight; }
@@ -266,6 +273,7 @@ class SocialLedger
             int requested, double now, std::uint64_t event);
     void add(const LedgerEntry& e);
     std::map<std::string, std::vector<std::size_t>> byActor_;
+    std::map<std::string, std::map<std::uint64_t, double>> dialogueHashes_;   // (A player's dialogue lines today: doc 83.)
     std::map<std::string, std::set<std::string>> sceneOf_, openIn_;
     std::map<std::string, std::string> endedOf_;
     void ended(const SocialSession& scene);           // (Out of the indexes: its members' last ended scene.)

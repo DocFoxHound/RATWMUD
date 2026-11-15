@@ -73,3 +73,10 @@ bless = Sun keep you | Good harvest
 someday = some fine harvest | one day
 far = a long walk north | a fair step
 stranger = northerner | stranger
+# The dialogue window (doc 83).
+shop_offer = Fresh from the fields. Have a look. | What'll it be, neighbour? | Ripe and ready.
+shop_dear = A thin harvest makes dear bread. | Dear till the next reaping. | The fields set the price.
+shop_sold = Ripe days to you. | There, and fresh. | Good harvest, that.
+shop_bye = Ripe days. | Good harvest to you. | Come back at the reaping.
+shop_bare = Gleaned to the stubble. | Bare as a winter furrow. | Nothing left till harvest.
+talk_open = What's on your mind, neighbour? | Out with it, then. | Something you're after?

@@ -3038,6 +3038,7 @@ void Game::tick(double dt)
     ambient(real);                                  // (Voices look for something to say by real time.)
     barks(real);
     reactions(real);
+    dialogueTick(real);                             // (The dialogue window's conversations: doc 83.)
     sermons(real);
     // What happened to players that no action of theirs answered (a bandit's blow, a caravan arriving...). A notice can
     // tell of coins the tick moved (an escort's pay as its wagon comes in, a courier's at the letter's hand-over, a
@@ -4561,6 +4562,8 @@ void Game::sendSnapshot(Connection* c)
             m.add("items", goods);
             root.add("merchant", m);
         }
+    if (!talk_.trees().empty())
+        root.add("dialogue", true);                 // (Trade and Talk open the dialogue window: doc 83.)
     const auto patch = world_.herbPatchPosition();
     const int patchX = int(patch.x), patchY = int(patch.y);
     if (world_.society().state().enabled && view.self.cellId == world_.herbPatchCell() && view.cell.width > patchX &&
@@ -4861,6 +4864,7 @@ bool Game::talk(const std::string& npcId, const std::string& playerId, const std
     }
     if (!alsoHeard.empty())
         context.scene += " Others were spoken to at the same time, and just answered: " + mind::left(alsoHeard, 600);
+    context.scene += dialogueBrief(npcId, playerId);   // (Said in the dialogue window: doc 83.)
     memories_.record(npcId, subjectId, {sequence_++, now(), context.playerName, heardText});
     // That they talked, never what was said (that stays in the NPC's memory); an unrecognised voice stays anonymous.
     logEvent("conversation", identified ? playerId : std::string(), npcId);
@@ -5047,6 +5051,8 @@ void Game::speakReply(const std::string& npcId, const std::string& subjectId, bo
         replyingTo_.erase(whom);
     }
     publish(npcId, post, Voice::Speak, to);
+    for (const auto& whom : to)
+        dialogueHeard(npcId, whom, text);         // (Free talk in the dialogue window: the answer shows there too.)
     npcSpokeTo(npcId, subjectId);
     npcLastSpeech_[npcId] = world_.time();
     memories_.record(npcId, subjectId, {sequence_++, now(), npcId, text});
@@ -5345,6 +5351,8 @@ void Game::command(Connection* c, const std::string& raw)
         if (result.ok)
             saveSoon();
     }
+    else if (type.rfind("dialogue_", 0) == 0)
+        dialogueCommand(c, type, j);                // (The dialogue window: doc 83, RatwGameDialogue.cpp.)
     else if (type == "shop")
     {
         // The shop window's keeper (Trade on a wheel): its list before a nearer one's; "" lets the nearest be again.
@@ -5421,6 +5429,21 @@ void Game::command(Connection* c, const std::string& raw)
             receipt.add("quantity", qty);
             receipt.add("ok", result.ok);
             receipt.add("text", result.message);
+            // Bought or sold through a conversation's shop window (doc 83): the keeper's word on it, said aloud (once in
+            // a few seconds, however many lines the basket had).
+            if (auto d = dialogues_.find(id); result.ok && d != dialogues_.end() && d->second.inShop && d->second.npc == j.string("target") &&
+                                              world_.time() - d->second.changed >= 3)
+            {
+                auto q = dialogueQuery(id, d->second);
+                std::string sold;
+                if (talk_.expand("#shop_sold#", q, 0, std::uint64_t(world_.time() * 1000) ^ std::hash<std::string>{}(id), sold) && !sold.empty())
+                {
+                    d->second.changed = world_.time();
+                    d->second.line = sold;
+                    receipt.add("said", sold);
+                    dialogueSpeak(d->second.npc, id, sold);
+                }
+            }
             send(c, receipt);
         }
         if (result.ok && buy && buy->asBool())
@@ -6026,35 +6049,7 @@ void Game::command(Connection* c, const std::string& raw)
             system(c, list.empty() ? "There is no work to be had here just now." : "Work to be had:" + list);
         }
         else if (action.rfind("offer ", 0) == 0)
-        {
-            const auto* giver = world_.entity(target);
-            const auto offered = world_.contractsNear(id);
-            const auto found = std::find_if(offered.begin(), offered.end(), [&](const Contract* k) { return k->id == action.substr(6); });
-            if (!giver || !giver->npc || !world_.society().merchant(target) || giver->cellId != player->cellId ||
-                distanceTo(*giver) > 3 || found == offered.end())
-                system(c, "Ask the merchant about that work in person.");
-            else
-            {
-                const auto& k = **found;
-                auto offer = Value::object();
-                offer.add("type", "missionOffer"); offer.add("contract", k.id);
-                offer.add("giver", names::capitalised(labelFor(id, target)));
-                offer.add("appearance", wire::appearance(giver->appearance));
-                offer.add("title", k.detail); offer.add("reward", double(k.reward));
-                std::string directions;
-                if (k.kind == "escort")
-                    directions = "Meet the wagon at the " + world_.marketWords(k.from.empty()
-                        ? (world_.roadMarketOf(player->cellId) ? world_.roadMarketOf(player->cellId)->id : std::string()) : k.from) +
-                                 " market. It waits for its guards before setting out. Stay within twelve tiles of the wagon along the road to " +
-                                 world_.marketWords(k.town) + "; you must be with it for at least half the route and when it arrives.";
-                else if (k.kind == "courier")
-                    directions = "Carry the letter to " + labelFor(id, k.target) + ". Find them and stand within three tiles to hand it over.";
-                else if (k.kind == "bounty")
-                    directions = "Find the bandit camp on the map and clear it. The bounty is paid to the wolf who defeats the camp.";
-                offer.add("explanation", directions);
-                send(c, offer);
-            }
-        }
+            offerContract(c, target, action.substr(6));   // (The offer window; the dialogue's work choices too: doc 83.)
         else if (action.rfind("take ", 0) == 0)
         {
             const auto taken = world_.takeContract(id, action.substr(5));

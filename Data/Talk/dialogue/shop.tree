@@ -1,0 +1,44 @@
+# The shop (Docs/Design/83-dialogue-trees.md): what a keeper says when a wolf comes to the counter, from Trade on the
+# wheel. Short, as a shop is in any RPG: two clicks to the goods (Trade, then 1 or Enter), four choices at most. The
+# keeper's lines are talk concepts (dlg.shop.<node>): a trade's, a dialect's or a resident's own rule outranks these.
+# The player's choices are plain words, a default line they may send as it is or rewrite in their own words.
+#
+# here.shop: open, asleep (the keeper is asleep: they mumble, and there is nothing to buy), bare (nothing on the
+# shelf; one may still sell). here.work: contracts this keeper's market offers. topic.meeting: stranger or known;
+# topic.player: the name they were given, if they were.
+
+tree shop
+for role=merchant
+entry trade greet
+
+node greet
+say #greet#, #address#. #shop_offer# | #greet#. Looking or buying? | #greet#. #shop_offer#
+say[topic.meeting=known] #greet#, #topic.player#. #shop_offer# | Back again, #topic.player#? #shop_offer#
+say[here.shop=bare priority=2] #greet#. #shop_bare# I'll still buy, mind. | #shop_bare# What are you selling?
+say[here.shop=asleep priority=10] #shop_asleep#
+say[here.shop=asleep trade=baker priority=10] Mm... the ovens are cold... come back at dawn.
+say[trade=baker] #greet#, #address#. Bread's warm. #shop_offer# | #greet#. Loaves and pies, fresh. Looking or buying?
+say[trade=smith] #greet#. Mind the forge. #shop_offer# | #greet#, #address#. Tools or iron?
+say[trade=brewer] #greet#. Thirsty? #shop_offer# | #greet#, #address#. Ale's good this week.
+mood warm
+choice Let me see your wares. [here.shop=open|bare] -> do shop
+choice Any work going? [here.shop=open|bare here.work>0] -> work
+choice What's dear today? [here.shop=open|bare] -> prices
+choice Goodbye. -> bye
+
+node prices
+ask player.trade
+say #shop_dear# #shop_offer# | Nothing's moved much. #shop_offer#
+choice Let me see your wares. [here.shop=open|bare] -> do shop
+choice Goodbye. -> bye
+
+node work
+say There's this going, if you want it. | Work? Aye, some. | This is what's going.
+each job in here.work max 3
+choice Ask about: #job.title# (#job.reward#p) -> do offer job.id
+choice Never mind. -> greet
+
+node bye
+say #farewell#. | #shop_bye# | #farewell#, #address#.
+say[here.shop=asleep priority=10] Mm.
+end

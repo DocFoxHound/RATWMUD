@@ -76,3 +76,10 @@ blessing = Lamp keep you | Keep your lamp lit | Warm hearth to you
 bless = Lamp keep you | Hearth keep you
 far = a long climb | down the valley and over
 stranger = valley-stranger | lowlander
+# The dialogue window (doc 83).
+shop_offer = Come in from the cold and look. | What'll warm you? | Look your fill, cousin.
+shop_dear = Winter's in the prices. | Dear as firewood in a frost. | Nothing's cheap up here.
+shop_sold = Wrap it well. | There, against the cold. | Yours, cousin.
+shop_bye = Keep your lamp lit. | Lamp lit, cousin. | Mind the ice.
+shop_bare = Bare as a winter field. | The snow took the rest. | Little left till the thaw.
+talk_open = What brings you to my hearth? | Speak, cousin. | Something the matter?

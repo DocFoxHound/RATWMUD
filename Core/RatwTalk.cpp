@@ -236,6 +236,7 @@ void Library::clear()
     shared_.clear();
     aliases_.clear();
     settings_ = {};
+    trees_.clear();
 }
 
 const Entry* Library::find(const std::string& id) const
@@ -1297,11 +1298,12 @@ bool loadDir(Library& lib, const std::string& dir, bool all, std::string& proble
     }
     if (!settings(text, problem))
         return false;
-    std::vector<fs::path> grammars, talks;
+    std::vector<fs::path> grammars, talks, trees;
     for (fs::recursive_directory_iterator it(dir, ec), end; it != end && !ec; it.increment(ec))
         if (it->is_regular_file())
-            (it->path().extension() == ".grammar" ? grammars : talks).push_back(it->path());
+            (it->path().extension() == ".grammar" ? grammars : it->path().extension() == ".tree" ? trees : talks).push_back(it->path());
     talks.erase(std::remove_if(talks.begin(), talks.end(), [](const fs::path& p) { return p.extension() != ".talk"; }), talks.end());
+    std::sort(trees.begin(), trees.end());
     // Plain first (every layer stands on it), groups first (every file may use them), then a fixed order.
     const auto first = [](const char* name) {
         return [name](const fs::path& x, const fs::path& y) {
@@ -1326,14 +1328,30 @@ bool loadDir(Library& lib, const std::string& dir, bool all, std::string& proble
         problem = trouble;
         return false;
     }
+    // The dialogue trees (doc 83) after the groups and before the rest, so any rule may speak a tree's concepts.
+    bool treesRead = false;
+    const auto readTrees = [&] {
+        if (treesRead || !all)
+            return;
+        treesRead = true;
+        for (const auto& f : trees)
+        {
+            std::string one;
+            if (readFile(f, text) && !lib.parseTree(text, fs::relative(f, dir, ec).generic_string(), one))
+                add(one);
+        }
+    };
     for (const auto& f : talks)
     {
+        if (f.filename() != "groups.talk")
+            readTrees();
         if (!all && f.filename() != "groups.talk")
             continue;
         std::string one;
         if (readFile(f, text) && !lib.parse(text, fs::relative(f, dir, ec).generic_string(), one))
             add(one);
     }
+    readTrees();
     if (!trouble.empty())
     {
         problem = trouble;

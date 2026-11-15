@@ -175,6 +175,74 @@ struct Settings
     std::vector<Salience> salience;
 };
 
+// A dialogue tree (Docs/Design/83-dialogue-trees.md): a conversation a player has with a resident in the dialogue
+// window, choosing what to say. Written in Data/Talk/dialogue/*.tree beside the library and read by the same loader:
+//
+//   tree shop
+//   for role=merchant                          who may speak it (criteria, as a rule's `when`; self is the resident)
+//   priority 1                                 over a tree whose `for` overlaps this one's
+//   entry trade greet                          the wheel's Trade starts at the node greet
+//
+//   node greet
+//   say #greet#, #address#. Looking or buying? | #greet#. #shop_offer#
+//   say[here.shop=asleep priority=10] Mm... shop's shut. Morning.
+//   ask player.trade                           the line from a concept the game answers (a fallback to the says)
+//   free                                       the player may say something of their own here
+//   mood warm                                  sent with the line (the face's animation, later)
+//   choice Let me see your wares. [here.shop=open|bare] -> do shop
+//   choice Any work going? [here.work>0] locked "Nothing going." -> work
+//   each job in here.work max 3
+//     choice Ask about: #job.title# (#job.reward#p) -> do offer job.id
+//   choice Goodbye. -> bye
+//
+// A node's `say` lines are compiled into rules for the concept dlg.<tree>.<node> (the bare say at score 0, a say[...]
+// scoring its criteria), so any more specific rule anywhere outranks the tree's words: a trade's, a dialect's, a
+// resident's own (`self.id=`). These concepts always take their best tier. A choice's words are the player's default
+// line, plain; its criteria hide it when they fail, or with `locked "why"` show it greyed with the reason. Its target
+// is a node, `end`, or `do <action> [args] [; then <node>] [; refused <node>]`; the actions are a closed list the game
+// performs (Library::treeActions). `#job.x#` in a tree is the bound item's fact (topic.job_x).
+struct TreeChoice
+{
+    std::string words;                    // The player's default line (a template: plain words, the bound item's facts).
+    std::vector<Criterion> when;
+    std::string locked;                   // Shown greyed with this reason when `when` fails ("" hides it).
+    std::string go;                       // A node, or "end"; "" when it does an action.
+    std::string action;                   // shop, free, end, offer...
+    std::vector<std::string> args;
+    std::string then, refused;            // Where an action goes when done, or refused ("" ends / stays).
+    std::string each, item;               // An `each` choice: the list ("here.work") and the item's name ("job").
+    int max = 0;
+    int line = 0;
+};
+struct TreeNode
+{
+    std::string id, concept;              // "greet", "dlg.shop.greet"
+    std::string ask;                      // A concept the game answers first (player.trade); "" for none.
+    std::string mood;
+    bool free = false;
+    std::vector<TreeChoice> choices;
+    int line = 0;
+};
+struct Tree
+{
+    std::string id, file;
+    std::vector<Criterion> who;           // `for`
+    int priority = 0;
+    std::map<std::string, std::string> entries;   // entry -> node
+    std::map<std::string, TreeNode> nodes;
+    std::vector<std::string> order;       // Nodes as written.
+};
+// A choice as the window shows it: its number, the player's default words, and whether it is locked (with why).
+struct ShownChoice
+{
+    int n = 0;
+    std::string text, why;
+    bool locked = false;
+    std::size_t index = 0;                // In the node's choices.
+    int item = -1;                        // An `each` choice's item.
+    Facts bound;                          // That item's facts (topic.job_title...).
+};
+
 // The facts there are, and the values each may take.
 struct FactKind
 {
@@ -203,6 +271,24 @@ public:
     bool setCharacter(const std::string& npc, const std::string& text, std::string& problem);
     // The name a person's own grammar layer has ("p_" and their ID, - as _).
     static std::string personalLayer(const std::string& npc);
+
+    // Dialogue trees (doc 83). One .tree file's text, added to what is loaded (its nodes' lines become rules): false
+    // with the problems, and nothing of it kept. Checked: every fact, symbol, node, action and list known; every node
+    // reachable from an entry (or `bye`); no `for` overlapping another tree's on the same entry without a priority.
+    bool parseTree(const std::string& text, const std::string& file, std::string& problem);
+    const std::map<std::string, Tree>& trees() const { return trees_; }
+    const Tree* tree(const std::string& id) const;
+    // The tree for an entry ("trade", "talk") whose `for` holds of the resident (q.a): the highest priority, then the
+    // most criteria. Null if none.
+    const Tree* treeFor(const std::string& entry, const Query& q) const;
+    // What a node offers now, numbered from 1: hidden choices left out, locked ones greyed, `each` choices one per item
+    // (`items` gives a list's items as facts, at most `max`), at most nine in all.
+    std::vector<ShownChoice> choices(const TreeNode& node, const Query& q, std::uint64_t seed,
+                                     const std::function<std::vector<Facts>(const std::string&)>& items) const;
+    bool holdsAll(const std::vector<Criterion>& when, const Query& q, int speaker = 0) const;
+    // The actions a tree may do, and the lists an `each` may go through.
+    static const std::set<std::string>& treeActions();
+    static const std::set<std::string>& treeLists();
 
     std::size_t size() const { return entries_.size(); }
     const std::vector<Entry>& entries() const { return entries_; }
@@ -287,6 +373,7 @@ private:
     std::map<std::string, FactKind> person_, shared_;       // shared_: by full key ("here.place").
     std::map<std::string, std::string> aliases_;             // "place" -> "here.place"
     Settings settings_;
+    std::map<std::string, Tree> trees_;
 };
 
 // A job title or work label in the talk's job categories ("Master Smith of Westmarch" -> "smith").

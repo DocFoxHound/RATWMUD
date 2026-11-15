@@ -32,6 +32,7 @@ import {askText} from '../ui/dialog.ts';
 import {commandToRun, runCommand, slashSuggestions, wheelCommands} from './commands.ts';
 import {FlatWheel, wheelEntries, wheelInGroup} from './wheel.ts';
 import {basketKey, shopOf} from './shop.ts';
+import {chooseMessage, dialogueKey, dialogueReach, moveSelection, newDialogueUi, readDialogue, sayMessage, type Dialogue} from './dialogue.ts';
 
 export interface Post {
     id: string;
@@ -181,6 +182,13 @@ export class GameState {
     reputation: string[] = [];          // The last answer to "what's said of me about town" (doc 32, 1.4).
     missionBoard: Json | null = null;   // The last faction mission board asked for (doc 32, 4.5).
     missionOffer: Json | null = null;
+    /** The dialogue window (Docs/Design/83-dialogue-trees.md; game/dialogue.ts, ui/hud/dialogue.ts): the conversation
+     *  the server is running with a resident, what the player has picked out and written in it, and one being walked
+     *  over to (opened on arrival). Not a modal: the world goes on, WASD walks (walking off ends it). */
+    dialogue: Dialogue | null = null;
+    dialogueUi = newDialogueUi();
+    dialogueVersion = 0;
+    pendingDialogue: {target: string; entry: string; until: number; asked: boolean; x: number; y: number} | null = null;
     posts: Post[] = [];
     entities = new Map<string, EntityView>();
     motionVisible = new Set<string>();
@@ -688,6 +696,21 @@ export class GameState {
             if (!present.has(id) && poseTime >= this.latestMotionTime) this.entities.delete(id);
         this.movementPending = false;
         if (!this.canFaceAt(this.hover)) this.facingPreview = false;
+        // Walking over to talk or trade: the conversation opens on arrival, or the walk gives up.
+        if (this.pendingDialogue) {
+            const pending = this.pendingDialogue, e = this.entities.get(pending.target), me = obj(s, 'self');
+            if (e && me && !pending.asked && Math.hypot(e.x - num(me, 'x'), e.y - num(me, 'y')) <= dialogueReach(pending.entry)) {
+                pending.asked = true;
+                this.send({type: 'dialogue_open', npc: pending.target, entry: pending.entry});
+            } else if (this.clock > pending.until || this.battle || !e) {
+                this.pendingDialogue = null;
+                this.showToast(e ? `${e.name} can't be reached just now.` : 'They are no longer in sight.');
+            } else if (!pending.asked && Math.hypot(e.x - pending.x, e.y - pending.y) > 1.5) {
+                pending.x = e.x;                      // (They walked on: after them.)
+                pending.y = e.y;
+                this.send({type: 'path', x: e.x, y: e.y});
+            }
+        }
         // Walking over to trade: the window opens as the keeper's list arrives (within reach), or the walk gives up.
         if (this.pendingTrade) {
             const pending = this.pendingTrade;
@@ -1296,6 +1319,10 @@ export class GameState {
             this.modal = 'mission_offer';
             return;
         }
+        if (type === 'dialogue' || type === 'dialogue_close' || type === 'dialogue_shop') {
+            this.dialogueEvent(type, e);
+            return;
+        }
         if (type === 'reputation') {
             // Their name about town (doc 32, 1.4), as the residents who know them would put it.
             this.reputation = arr(e, 'lines').filter((l): l is string => typeof l === 'string');
@@ -1313,6 +1340,10 @@ export class GameState {
         if (type === 'tradeResult') {
             // The shop window's receipt (the story has the world's line too). Prices move with every trade: quotes again.
             this.shopReceipts = [...this.shopReceipts, {ok: bool(e, 'ok'), text: str(e, 'text').slice(0, 160)}].slice(-5);
+            if (this.dialogue && str(e, 'said')) {
+                this.dialogue.line = str(e, 'said').slice(0, 300);      // (The keeper's word on the sale: the shop's strip.)
+                ++this.dialogueVersion;
+            }
             this.shopQuotes.clear();
             this.shopAsked.clear();
             this.askQuotes();
@@ -1421,6 +1452,12 @@ export class GameState {
     /** Once a frame: `time` is seconds since the page opened, `delta` since the last frame. */
     tick(time: number, delta: number) {
         this.clock = time;
+        // The shop window opened from a conversation closed (Esc, ×, or anything else): it ends with the keeper's farewell.
+        if (this.modal !== 'trade' && this.dialogue?.inShop) {
+            this.send({type: 'dialogue_close', session: this.dialogue.session, why: 'shop'});
+            this.dialogue = null;
+            ++this.dialogueVersion;
+        }
         this.askForRealm();
         // The fight's sounds (doc 37, phase 3): played by the page's sound (ui/sound.ts), if it has one.
         for (const cue of this.fx.takeCues()) this.onCue?.(cue);
@@ -1990,6 +2027,7 @@ export class GameState {
             this.castShape();
             return true;
         }
+        if (this.dialogue && !this.modal && !this.chat && !this.contextTarget && !this.devConsole && this.dialogueKeyDown(code)) return true;
         if (code === 'Escape') {
             this.facingPreview = false;
             if (this.devConsole) {
@@ -2068,6 +2106,7 @@ export class GameState {
         if (MovementKeys.includes(code)) {
             this.heldKeys.add(code);
             this.pendingTrade = null;                // (Walking off: no window on arrival.)
+            this.pendingDialogue = null;
             this.sendMove();
             return true;
         }
@@ -2693,6 +2732,12 @@ export class GameState {
                 return;
             }
             if (h.target === 'trade') this.openTrade(this.contextTarget);
+            else if ((h.target === 'talk' || h.target === 'speak') && this.dialogueServer()) {
+                const target = this.contextTarget;
+                this.contextTarget = '';
+                this.openDialogue(target, 'talk');
+                return;
+            }
             else if (h.target === 'gather') this.activate({rect: rect(0, 0, 0, 0), action: 'gather', target: ''});
             else this.sendAction(h.target, this.contextTarget);
             this.contextTarget = '';
@@ -2800,6 +2845,10 @@ export class GameState {
         const merchant = obj(this.snapshot, 'merchant');
         if (!target) return;
         this.contextTarget = '';
+        if (this.dialogueServer()) {
+            this.openDialogue(target, 'trade');       // (The keeper's greeting first: two clicks to the goods, doc 83.)
+            return;
+        }
         this.send({type: 'shop', target});
         if (this.chat) this.setChat(false);
         if (str(merchant, 'id') === target) {
@@ -2821,9 +2870,163 @@ export class GameState {
         this.showToast(`Going over to ${e.name}'s counter…`);
     }
 
+    /** Whether the server runs dialogue trees (doc 83): an older one doesn't say so, and Trade and Talk work as they did. */
+    dialogueServer(): boolean {
+        return bool(this.snapshot, 'dialogue');
+    }
+
+    /** Talk or Trade on a resident's wheel (doc 83): the dialogue window, opened by the server on the tree's entry. Within
+     *  reach it opens at once; further off, the wolf walks over and it opens on arrival. */
+    openDialogue(target: string, entry: 'trade' | 'talk') {
+        const e = this.entities.get(target), me = obj(this.snapshot, 'self');
+        if (!e) {
+            this.showToast('They are no longer in sight.');
+            return;
+        }
+        if (this.chat) this.setChat(false);
+        if (entry === 'trade') this.send({type: 'shop', target});     // (Its list before a nearer keeper's.)
+        const near = !!me && Math.hypot(e.x - num(me, 'x'), e.y - num(me, 'y')) <= dialogueReach(entry);
+        this.pendingDialogue = {target, entry, until: this.clock + 20, asked: near, x: e.x, y: e.y};
+        if (near) this.send({type: 'dialogue_open', npc: target, entry});
+        else {
+            this.movementPending = true;
+            this.send({type: 'path', x: e.x, y: e.y});
+            this.showToast(`Going over to ${e.name}…`);
+        }
+    }
+
+    private dialogueEvent(type: string, e: Json) {
+        if (type === 'dialogue') {
+            const d = readDialogue(e);
+            const changed = !this.dialogue || this.dialogue.key !== d.key;
+            d.inShop = !!this.dialogue?.inShop && this.dialogue.session === d.session;
+            d.wantsShop = !!this.dialogue?.wantsShop && this.dialogue.session === d.session;
+            this.pendingDialogue = null;
+            if (changed) {
+                const reset = !this.dialogue || this.dialogue.session !== d.session || this.dialogue.node !== d.node;
+                const keep = this.dialogueUi;
+                this.dialogueUi = {...newDialogueUi(), lineAt: this.clock, free: reset ? '' : keep.free,
+                    drafts: reset ? new Map() : keep.drafts, selected: reset ? Math.max(0, d.choices.findIndex(c => !c.locked)) : keep.selected};
+                if (this.dialogueUi.selected >= d.choices.length) this.dialogueUi.selected = 0;
+            }
+            this.dialogue = d;
+            this.heldKeys.clear();
+            this.sendMove();
+            if (this.modal === 'mission_offer' || this.modal === 'missions') this.modal = '';
+            ++this.dialogueVersion;
+            return;
+        }
+        if (type === 'dialogue_shop') {
+            // "Let me see your wares.": the shop window, the conversation behind it.
+            const npc = str(e, 'npc');
+            if (this.dialogue && this.dialogue.session === Math.trunc(num(e, 'session'))) {
+                this.dialogue.wantsShop = true;
+                if (str(e, 'note')) this.dialogue.note = str(e, 'note').slice(0, 160);
+            }
+            if (str(obj(this.snapshot, 'merchant'), 'id') === npc) this.openShopWindow(false);
+            else {
+                // Not quite at the counter: a step nearer, and the window opens as the keeper's list arrives.
+                const t = this.entities.get(npc);
+                this.pendingTrade = {target: npc, until: this.clock + 10};
+                if (t) this.send({type: 'path', x: t.x, y: t.y});
+            }
+            ++this.dialogueVersion;
+            return;
+        }
+        // dialogue_close: ended (walked off, asleep, a fight...), or refused before it opened.
+        const why = str(e, 'why'), npc = str(e, 'npc'), entry = str(e, 'entry');
+        if (why === 'far' && this.pendingDialogue?.target === npc) {
+            const t = this.entities.get(npc);
+            this.pendingDialogue.asked = false;
+            if (t) {
+                this.pendingDialogue.x = t.x;
+                this.pendingDialogue.y = t.y;
+                this.movementPending = true;
+                this.send({type: 'path', x: t.x, y: t.y});
+                this.showToast(`Going over to ${t.name}…`);
+            }
+            return;
+        }
+        if (why === 'none' && entry && this.pendingDialogue?.target === npc) {
+            // No tree for them: the old way (the shop window; the talk target).
+            this.pendingDialogue = null;
+            if (entry === 'trade') {
+                this.pendingTrade = {target: npc, until: this.clock + 20};
+                if (str(obj(this.snapshot, 'merchant'), 'id') === npc) this.openShopWindow(false);
+            } else this.sendAction('talk', npc);
+            return;
+        }
+        if (entry) this.pendingDialogue = null;
+        const session = Math.trunc(num(e, 'session', -1));
+        if (this.dialogue && (session < 0 || session === this.dialogue.session)) {
+            const name = this.dialogue.name;
+            this.dialogue = null;
+            ++this.dialogueVersion;
+            const words: Record<string, string> = {away: `You walked away from ${name}.`, asleep: `${name} has fallen asleep.`,
+                sight: `${name} is out of sight.`, fight: 'The conversation is broken off by the fighting.', downed: 'You are down.'};
+            if (words[why]) this.showToast(words[why]);
+        }
+    }
+
+    /** The window's keys (doc 83): 1-9 say a choice, Up and Down pick one out, Enter says it, Tab edits its words, Esc
+     *  says goodbye. Anything else (WASD) goes on to the map. */
+    dialogueKeyDown(code: string): boolean {
+        const d = this.dialogue;
+        if (!d) return false;
+        const k = dialogueKey(code, d);
+        if (!k) return false;
+        const ui = this.dialogueUi;
+        if (k.kind === 'choose') this.chooseDialogue(k.n);
+        else if (k.kind === 'up' || k.kind === 'down') moveSelection(d, ui, k.kind === 'up' ? -1 : 1);
+        else if (k.kind === 'send') {
+            if (d.ends) this.closeDialogue(false);
+            else if (d.choices[ui.selected]) this.chooseDialogue(d.choices[ui.selected].n);
+        } else if (k.kind === 'bye') this.closeDialogue(!d.ends);
+        else if (k.kind === 'edit') ui.focus = 'edit';
+        else if (k.kind === 'free') ui.focus = 'free';
+        else if (k.kind === 'whole') ui.whole = true;
+        ++this.dialogueVersion;
+        return true;
+    }
+
+    /** A choice said: its default line, or the words the player wrote for it. */
+    chooseDialogue(n: number) {
+        const d = this.dialogue;
+        if (!d) return;
+        const message = chooseMessage(d, this.dialogueUi, n);
+        if (!message) {
+            const locked = d.choices.find(c => c.n === n);
+            if (locked?.why) this.showToast(locked.why);
+            return;
+        }
+        this.dialogueUi.focus = '';
+        this.send(message);
+    }
+
+    /** Free talk: the player's own line, said aloud, answered in the window. */
+    sayDialogue(text: string): boolean {
+        const d = this.dialogue;
+        const message = d && sayMessage(d, text);
+        if (!message) return false;
+        this.dialogueUi.free = '';
+        this.dialogueUi.focus = '';
+        this.send(message);
+        return true;
+    }
+
+    /** Esc, or the window's ×: goodbye (the tree's farewell, said aloud), and the window closes. */
+    closeDialogue(sayBye = true) {
+        const d = this.dialogue;
+        if (!d) return;
+        this.send({type: 'dialogue_close', session: d.session, why: sayBye ? 'bye' : 'closed'});
+        this.dialogue = null;
+        ++this.dialogueVersion;
+    }
+
     /** The shop window, on the keeper's list (or a player's stall the wolf stands at: doc 54, 3). */
     openShopWindow(stall: boolean) {
         if (this.chat) this.setChat(false);
+        if (!stall && this.dialogue?.wantsShop) this.dialogue.inShop = true;   // (The conversation waits behind it: doc 83.)
         this.heldKeys.clear();
         this.sendMove();
         this.pendingTrade = null;

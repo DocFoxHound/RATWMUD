@@ -124,7 +124,7 @@ struct Standing
 {
     double stepBase = 100, stepGrowth = 50;
     std::vector<std::pair<int, std::string>> titles{{1, "Stranger"}};
-    std::vector<std::string> socialReasons{"qualified_session_settlement", "gold_star", "story_star", "story_closure"};
+    std::vector<std::string> socialReasons{"qualified_session_settlement", "gold_star", "story_star", "story_closure", "npc_dialogue"};
     int dailyCap = 150;
 };
 const Standing& standing();

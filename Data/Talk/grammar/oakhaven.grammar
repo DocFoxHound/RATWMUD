@@ -71,3 +71,10 @@ bless = Shade keep you | Root and keep you
 someday = some green year | one day
 far = through the wood and out | a long walk
 stranger = outlander | stranger
+# The dialogue window (doc 83).
+shop_offer = Take your time under my roof. | Have a look, old root. | Good wood, good goods.
+shop_dear = Things grow slow, and cost to match. | Dear as heartwood. | The woods don't give it cheap.
+shop_sold = Root well with it. | There, it'll last. | Made to keep.
+shop_bye = Shade keep you. | Root well. | Come back by the old oak.
+shop_bare = Picked clean. | Nothing on the bough just now. | Bare as a felled stump.
+talk_open = What's on your mind, old root? | Sit a while. What is it? | Speak slow, I'm listening.

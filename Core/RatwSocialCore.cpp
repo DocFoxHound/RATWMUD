@@ -1021,6 +1021,33 @@ void SocialLedger::tick(double now)
     stars.erase(std::remove_if(stars.begin(), stars.end(), [&](const SocialStar& s) { return now - s.at > 2 * 86400; }), stars.end());
 }
 
+int SocialLedger::dialogueLine(const std::string& actor, const std::string& npc, int words, std::uint64_t contentHash,
+                               double now, std::uint64_t event)
+{
+    if (words < 5 || !contentHash)
+        return 0;
+    int withThem = 0, today = 0;
+    double last = -1e18;
+    for (const auto i : receiptsOf(actor))
+    {
+        const auto& e = entries[i];
+        if (e.reason != "npc_dialogue" || now - e.at >= 86400)
+            continue;
+        ++today;
+        withThem += e.partner == npc;
+        last = std::max(last, e.at);
+    }
+    if (now - last < 15 || today >= DialogueLinesPerDay || withThem >= DialogueLinesPerResident)
+        return 0;
+    auto& said = dialogueHashes_[actor];
+    for (auto it = said.begin(); it != said.end();)
+        it = now - it->second >= 86400 ? said.erase(it) : std::next(it);
+    if (said.count(contentHash))
+        return 0;
+    said[contentHash] = now;
+    return pay(actor, npc, "npc_dialogue", "dialogue", words >= 15 ? 3 : 2, now, event);
+}
+
 int SocialLedger::level(const std::string& actor) const
 {
     const auto it = points.find(actor);
