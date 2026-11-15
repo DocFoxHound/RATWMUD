@@ -65,6 +65,8 @@ export class GamePainter {
     readonly map: MapRenderer;
     private surfaces: SurfaceFactory;
     private patterns = new WeakMap<CanvasImageSource, CanvasPattern | null>();
+    // Each tinted weather sheet scaled once to the size a layer shows it at, in device pixels (drawWeatherLayer).
+    private scaledSheets = new WeakMap<CanvasImageSource, Map<number, CanvasPattern | null>>();
     private lastCell = '';
     private lastSelfScreen: Point | null = null;
 
@@ -395,6 +397,7 @@ export class GamePainter {
         if (layer.tint.a <= 0.001 || layer.scale <= 0) return;
         const c = on ?? this.p.ctx;
         const sheet = this.sheets.get(layer.art, css(withAlpha(layer.tint, 1)));
+        if (this.drawScaledLayer(c, area, layer, sheet, alpha)) return;
         let pattern = this.patterns.get(sheet);
         if (pattern === undefined) {
             pattern = c.createPattern(sheet, 'repeat');
@@ -411,6 +414,57 @@ export class GamePainter {
         c.fillStyle = pattern;
         c.fillRect(area.left, area.top, area.right - area.left, area.bottom - area.top);
         c.restore();
+    }
+
+    /**
+     * A layer drawn from its sheet scaled ahead to the layer's size in whole device pixels, at a whole device pixel:
+     * the fill is then a straight copy of the sheet's pixels, not each pixel of the map sampled from a scaled sheet.
+     * Snow's three sheets and rain's two, scaled every frame, cost a quarter of the frames walking in Ridgemere's market
+     * by night (raster time, not script: 100 of 366 frames late in snow, none with the sheets scaled ahead). Rain's
+     * slant is still turned as it's drawn. False where there is no offscreen canvas (Node): then drawn the old way.
+     */
+    private drawScaledLayer(c: CanvasRenderingContext2D, area: Rect, layer: WeatherLayer, sheet: CanvasImageSource, alpha: number): boolean {
+        const t = typeof c.getTransform === 'function' ? c.getTransform() : null;
+        const k = t && Number.isFinite(t.a) && t.a > 0 ? t.a : 1;
+        const side = Math.max(16, Math.round(SheetSize * layer.scale * k));
+        let sizes = this.scaledSheets.get(sheet);
+        if (!sizes) this.scaledSheets.set(sheet, sizes = new Map());
+        let pattern = sizes.get(side);
+        if (pattern === undefined) {
+            const surface = this.surfaces(side, side);
+            pattern = null;
+            if (surface) {
+                const sc = surface.ctx;
+                sc.imageSmoothingEnabled = true;
+                sc.imageSmoothingQuality = 'high';
+                // Drawn with its neighbours round it, so the scaled edges blend into the next sheet: still seamless.
+                for (let dy = -1; dy <= 1; ++dy)
+                    for (let dx = -1; dx <= 1; ++dx) sc.drawImage(sheet, dx * side, dy * side, side, side);
+                pattern = c.createPattern(surface.canvas, 'repeat');
+            }
+            if (sizes.size > 8) sizes.clear();
+            sizes.set(side, pattern);
+        }
+        if (!pattern || typeof DOMMatrix === 'undefined') return false;
+        const unit = side / k / SheetSize;          // (The layer's scale, as the sheet's whole pixels make it.)
+        const shiftX = wrapCoordinate(layer.scroll[0], SheetSize) * unit, shiftY = wrapCoordinate(layer.scroll[1], SheetSize) * unit;
+        const cos = Math.cos(layer.angle), sin = Math.sin(layer.angle);
+        const [x, y] = snapToDevice(c, (area.left + area.right) / 2 + cos * shiftX - sin * shiftY,
+            (area.top + area.bottom) / 2 + sin * shiftX + cos * shiftY);
+        const m = new DOMMatrix().translateSelf(x, y);
+        const turned = Math.abs(layer.angle) > 1e-4;
+        if (turned) m.rotateSelf(layer.angle * 180 / Math.PI);
+        pattern.setTransform(m.scaleSelf(1 / k));
+        c.save();
+        // Rain slanted by the wind is turned as it's drawn: each pixel from the nearest of the (already smoothly
+        // scaled) sheet's, which streaks falling fast never show, where blending four for each cost one frame in
+        // twenty walking in the rain at night (none so).
+        if (turned) c.imageSmoothingEnabled = false;
+        c.globalAlpha = Math.min(1, layer.tint.a * alpha);
+        c.fillStyle = pattern;
+        c.fillRect(area.left, area.top, area.right - area.left, area.bottom - area.top);
+        c.restore();
+        return true;
     }
 
     private drawEnvironment(foreground: boolean) {
