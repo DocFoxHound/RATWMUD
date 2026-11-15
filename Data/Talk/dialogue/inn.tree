@@ -1,0 +1,59 @@
+# An innkeeper (Docs/Design/83-dialogue-trees.md, Phase 3): Talk and Trade with the keeper of an inn open this. A bed
+# upstairs (doc 54: a night, a week, or the whole upstairs for the night, to the inn's till), a meal or a drink (the
+# shop window), the news of the house (the resident tree's news), a rest by the fire, goodbye. Short, as a counter is.
+#
+# here.inn: the keeper lets beds upstairs ("<inn>, upstairs" over the inn they keep). here.bed_ok and here.bed_why:
+# whether this wolf may take one (one lodging a wolf). here.bed_night, bed_week, upstairs_night: the prices, as
+# Core/RatwLodgings.cpp has them. A bed that's let, or a full upstairs, is refused in words (#topic.why#).
+
+tree inn
+for job=innkeeper
+priority 2
+entry talk greet
+entry trade greet
+
+node greet
+say #greet#, #address#. #inn_offer# | #greet#. #inn_offer# | #inn_offer#
+say[topic.meeting=known] #greet#, #topic.player#. The usual? | Back again, #topic.player#? #inn_offer#
+say[here.time=night] Late one, #address#? #inn_offer# | Come in, it's a cold night. #inn_offer#
+say[here.shop=asleep priority=10] Mm... we're shut... come back in the morning.
+mood warm
+free
+choice A bed for the night (#here.bed_night#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge bed night ; then roomed ; refused refused
+choice Something to eat or drink. [here.shop=open|bare] -> do shop
+choice What other rooms are there? [here.inn=yes] -> rooms
+choice What's the news of the house? -> do open news
+choice I'll just rest by the fire a while. -> rest
+choice Something else... -> do open chat
+choice Goodbye. -> bye
+
+node rooms
+say A bed's #here.bed_night#p a night, #here.bed_week#p the week. The whole upstairs is #here.upstairs_night#p a night, if nobody's in it.
+choice A bed for the night (#here.bed_night#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge bed night ; then roomed ; refused refused
+choice A bed for the week (#here.bed_week#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge bed week ; then roomed ; refused refused
+choice The whole upstairs, tonight (#here.upstairs_night#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge whole ; then roomed ; refused refused
+choice Not just now. -> greet
+
+node roomed
+say #inn_bed#
+mood pleased
+choice Something to eat or drink. [here.shop=open|bare] -> do shop
+choice Goodbye. -> bye
+
+node rest
+say Sit by the fire, then. A bed upstairs rests you properly, mind. | Take the bench by the fire. Nobody will move you.
+say[here.lodging=yes] Rest as long as you like. Your bed's upstairs when you want it.
+free
+choice A bed for the night (#here.bed_night#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge bed night ; then roomed ; refused refused
+choice Something to eat or drink. [here.shop=open|bare] -> do shop
+choice Goodbye. -> bye
+
+node refused
+say #topic.why# | Sorry, #address#. #topic.why#
+choice Something to eat or drink. [here.shop=open|bare] -> do shop
+choice Goodbye. -> bye
+
+node bye
+say #farewell#. | #farewell#, #address#. | Come back any time.
+say[here.shop=asleep priority=10] Mm.
+end

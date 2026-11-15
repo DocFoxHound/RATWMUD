@@ -4574,6 +4574,7 @@ void Game::sendSnapshot(Connection* c)
     {
         root.add("dialogue", true);                 // (Trade and Talk open the dialogue window: doc 83.)
         root.add("dialogueWork", true);             // (And the work on the wheel: its givers' trees, Phase 2.)
+        root.add("dialogueRoles", true);            // (And the roles' own: Apprentice, Report, Pay fine, Phase 3.)
     }
     const auto patch = world_.herbPatchPosition();
     const int patchX = int(patch.x), patchY = int(patch.y);
@@ -5749,6 +5750,18 @@ void Game::command(Connection* c, const std::string& raw)
             result = {true, "Posted " + k.id + ": " + k.detail + " (" + std::to_string(k.reward) + "p).", k.id};
             record(Roads | Economy, id);
         }
+        report = true;
+    }
+    else if (type == "visit" && options_.devTools)
+    {
+        // Development only (doc 83, Phase 3's look): put one's wolf beside a resident (the DM's move, World::teleport),
+        // to look at their dialogue.
+        const auto* npc = world_.entity(j.string("npc"));
+        result = {false, "No such resident.", {}};
+        if (npc && npc->npc && !npc->dead)
+            for (const auto& [dx, dy] : std::vector<std::pair<double, double>>{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}})
+                if ((result = world_.teleport(id, npc->cellId, npc->position.x + dx, npc->position.y + dy)).ok)
+                    break;
         report = true;
     }
     else if (type == "give" || type == "giveAnswer")

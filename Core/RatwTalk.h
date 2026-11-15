@@ -200,7 +200,7 @@ struct Settings
 // resident's own (`self.id=`). These concepts always take their best tier. A choice's words are the player's default
 // line, plain; its criteria hide it when they fail, or with `locked "why"` show it greyed with the reason. Its target
 // is a node, `end`, or `do <action> [args] [; then <node>] [; refused <node>]`; the actions are a closed list the game
-// performs (Library::treeActions). `#job.x#` in a tree is the bound item's fact (topic.job_x).
+// performs (Library::treeActions). `#job.x#` in a tree is the bound item's fact (topic.job_x); so `#place.x#` and `#trouble.x#`.
 struct TreeChoice
 {
     std::string words;                    // The player's default line (a template: plain words, the bound item's facts).

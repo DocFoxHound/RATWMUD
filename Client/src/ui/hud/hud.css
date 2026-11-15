@@ -161,12 +161,13 @@
 /* The dialogue window (Docs/Design/83-dialogue-trees.md; ui/hud/dialogue.ts): a panel at the foot of the map, the
    resident's face beside their line and the choices. Not a modal: the map shows above it and the world goes on. */
 .dialogue-window { position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 6; display: flex; gap: 16px; align-items: flex-start;
-    max-height: min(330px, 62%); padding: 12px 14px; background: color-mix(in srgb, var(--panel) 94%, transparent);
+    max-height: min(400px, 66%); padding: 12px 14px; background: color-mix(in srgb, var(--panel) 94%, transparent);
     border: 1px solid color-mix(in srgb, var(--gold) 45%, #34443e); border-radius: 6px; box-shadow: 0 8px 28px rgba(0, 0, 0, .45); }
 .dialogue-face, .map .dialogue-face { position: relative; inset: auto; width: 150px; height: 178px; flex: none; border-radius: 14px;
     background: #2a2620; cursor: default; transition: transform .25s ease-out; }
 .dialogue-face.speaking { transform: translateY(-2px); }
-.dialogue-words { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; max-height: 100%; }
+/* (Stretched to the window's clamped height, so a role's longer list of choices scrolls inside it: doc 83, Phase 3.) */
+.dialogue-words { flex: 1; min-width: 0; min-height: 0; align-self: stretch; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
 .dialogue-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .dialogue-head .label { letter-spacing: .08em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .game .dialogue-head .close { position: static; }

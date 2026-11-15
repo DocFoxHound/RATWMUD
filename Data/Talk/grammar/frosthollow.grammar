@@ -89,3 +89,9 @@ work_taken = Good. Don't let it freeze. | Good. Keep your lamp lit on the road. 
 work_paid = Here, as promised, cousin. | Paid, and a warm hearth to you. | Fairly done. There you are.
 work_back = No harm done, cousin. Another will take it. | Fair enough. Better said by the fire. | Better now than in the snow.
 work_none = Nothing going, cousin. | No work this side of the thaw. | Nothing that needs doing.
+# The other roles (doc 83, Phase 3).
+inn_offer = Come in to the hearth, cousin. A bed or a bowl? | Warm yourself. What'll it be? | Bed, bowl or a cup?
+inn_bed = Upstairs, by the chimney. There's a chest for your things. | Your bed's warm upstairs. Keep your lamp lit.
+watch_greet = The watch, stone. Speak plain. | Keep the peace, cousin, and we'll get on.
+church_greet = Lamp keep you. Come in. | Warm hearth, and welcome. All are welcome here.
+learn_offer = It's a trade that keeps the hearth lit. | Hard work, but it's honest.

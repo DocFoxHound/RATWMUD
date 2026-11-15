@@ -1,7 +1,7 @@
 # 83. Dialogue trees: a window with the NPC's face, and choices to pick
 
 Draft, 2026-11-15, for Ridgemere 3 (`ridgemere3`, doc 82). The user answered the open questions the same day (below,
-"The user's answers"); **Phases 1 and 2 are built** (branches r3-dlg1 and r3-dlg2: "as built", under Phases). It adds player-facing
+"The user's answers"); **Phases 1, 2 and 3 are built** (branches r3-dlg1, r3-dlg2 and r3-dlg3: "as built", under Phases). It adds player-facing
 conversation trees to doc 62's talk library. Doc 62's facts, rules and grammar stay, and so do the router, the NPC
 Mind and free text. A tree is a new way of *asking* the library, through a window the player answers by choosing.
 
@@ -564,6 +564,54 @@ an end-to-end run and one review-and-fix come at the end. The times are rough, f
        through the master;
      - bystanders hear both sides; a sneaker who isn't made out hears nothing of the window they can't see (doc 80's
        rules).
+   **Phase 3 as built (r3-dlg3, 2026-11-15).**
+   - **Talk picks the role's tree** on the server (`Library::treeFor("talk")`, by the resident's facts): `receiver`
+     (priority 5, something to hand over), `companion` (4, `here.companion=yes`), `watch` (3, `role=guard`), `inn` (2,
+     `job=innkeeper`; it answers Trade too), `church` (1, `job=priest`), else `resident`. `master` answers `learn`.
+     Every role tree has "Something else..." (`do open chat`: the resident's hub), and the news and the ways are the
+     resident tree's for everyone (`do open news`, `do open way`); the resident's "Something else..." goes back to the
+     role's hub (`do open talk`).
+   - **The trees:**
+     - `resident`: the town (`here.folk`, `here.shops`, `here.inns`, `here.district`: the town's residents, shops and
+       inns, the House whose district it is), "What do you do?" and how business goes (`self.business`), the news, the
+       gossip (`here.gossip`, `topic.subject`/`claim`/`claim_kind`: the freshest belief the resident holds of someone
+       else, a week old at most, half sure at least, never a deed), a trouble (`ask player.trouble`, then doc 57's
+       remedies as choices: `each trouble in here.troubles`, `do trouble trouble.id`), the way (`each place in
+       here.places max 6`: the town's inn, church, watch, smithy, bakery, brewery, healer and office, from the posts and
+       their buildings, the nearest of each kind first, with `Game::wayWords`, which the router's "where" now uses too),
+       and the role links (wares, work, "Could you teach me your trade?", missions).
+     - `inn`: a bed for the night, the rooms (night, week, the whole upstairs, at Core/RatwLodgings.cpp's prices: `do
+       lodge bed night|week`, `do lodge whole`, taken in the upstairs over the inn the keeper keeps, `Game::upstairsOf`),
+       something to eat or drink (the shop), the news of the house, a rest by the fire; a bed locked with why
+       (`here.bed_ok`, `here.bed_why`: one lodging a wolf; no rooms here).
+     - `watch`: a fine only while wanted in this town (`here.wanted`, `here.fine`; `do pay_fine` is `World::payFine`),
+       reporting what one saw (`do report`, `World::report`; `topic.reported` says whether it was news), the law (3p
+       and 8p, as `RatwCrime.cpp` fines), the bounties (`here.bounty`: the open bounty near, its camp and reward, or the
+       camps without one), the way. The wheel's Report and Pay fine open it at `report` and `fine`.
+     - `church`: Restday's service (`here.service`, from `Society::ServiceStart`/`ServiceEnd`), the dole, an offering
+       (`do offering 1|5|20`: the give handler's gift of coins, to the priest), the news.
+     - `master`: the work (`ask player.hours`), the pay (nobody pays a wage to learn; three times as fast beside the
+       master), what it takes, "Will you take me on?" (`do apprentice`, `World::apprentice`; locked with
+       `here.take_on_why`: an apprentice already, learning another trade, not known and trusted enough), any work going.
+       The wheel's Apprentice opens it at `learn`.
+     - `companion`: follow, wait, go home, part ways (`do order follow|wait|home|dismiss`, `Game::orderCompanion`: they
+       answer in their own words and the conversation ends), how they're holding up (`self.tired`, `self.injured`).
+   - **The format:** an `each`'s item is `job`, `place` or `trouble` (`#place.title#` is `topic.place_title`). New actions
+     `report`, `pay_fine`, `lodge`, `apprentice`, `trouble`, `order`, `offering`, with their arguments checked by the loader.
+     New lists `here.places`, `here.troubles`. A choice from an `each` is checked again by its item's id.
+   - **Grammar:** `inn_offer`, `inn_bed`, `watch_greet`, `church_greet` and `learn_offer` in plain and the six dialects.
+     The `live.dialects` rows lack them, as they lack Phase 1 and 2's (Phase 4).
+   - **The wheel:** where the snapshot says `"dialogueRoles": true`, Apprentice, Report and Pay fine open the window at
+     `learn`, `report` and `fine`; Talk is `talk` for anyone (the server chooses). Older servers and clients keep the old
+     ways. The window's choices scroll inside it when a role has more than fit.
+   - **Development:** `{"type": "visit", "npc"}` (dev tools only) puts one's wolf beside a resident (the DM's teleport),
+     for looking at their dialogue.
+   - **Tests:** `Tests/dialogue_tests.cpp` (321 checks: each role tree loads alone and Talk finds it; the fine only while
+     wanted, a bed and an apprenticeship locked with why; in a game, the town by its numbers, the way to a chapel by its
+     door and keeper, a rumour heard, a report with and without a crime seen, a fine paid, a bed taken as the lodging rule
+     takes it, a master taking on a trusted wolf, an offering, a companion's orders); `Client/src/game/dialogue.test.ts`
+     (Talk on any role asks `talk` and shows the role's tree; the roles' wheel entries; an older server).
+
 4. **The dialect check and the pass** (about 5 h, plus the user's listen).
    - **The check:** `tools/dialect_check.py` and the lexicon test.
    - **Origins:** `talk_seed.py --reorigin` on ridgemere3; the `dialect_of` map for Fenshore and Saltwell.

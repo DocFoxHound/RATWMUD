@@ -1,0 +1,82 @@
+# The watch (Docs/Design/83-dialogue-trees.md, Phase 3): Talk with a guard opens this, and so do the wheel's Report and
+# Pay fine. The way to a place (the resident tree's ways), the law, reporting a crime (World::report: what this wolf
+# saw and hasn't told), a fine (only while wanted in this town: World::payFine), the bounties posted, goodbye.
+#
+# here.wanted and here.fine: a warrant for this wolf in this guard's town, and what settles it (the fine and what's to
+# be made good). here.witnessed: the crimes this wolf saw and hasn't told. here.bounty: the bounty posted near (or the
+# bandits on the roads), in words; here.camps: how many camps are out. The fines in the law's words are
+# Core/RatwCrime.cpp's: 3p for a theft or an attempt, 8p for an assault.
+
+tree watch
+for role=guard
+priority 3
+entry talk hub
+entry report crime
+entry fine fine
+
+node hub
+say #watch_greet# | #greet#. #watch_greet# | #greet#, #address#.
+say[here.wanted=yes priority=3] You. You're wanted, #address#: #here.fine# pennies settles it. | Hold there. The watch wants a word, #here.fine# pennies' worth.
+say[on_watch=no] Off duty, #address#. Make it quick. | I'm off watch. What is it?
+mood formal
+free
+choice What do I owe the watch? [here.wanted=yes] -> fine
+choice I want to report a crime. -> crime
+choice What's the law here? -> law
+choice Any bounties posted? -> bounties
+choice Could you tell me the way? -> do open way
+choice Something else... -> do open chat
+choice Goodbye. -> bye
+
+node crime
+say Go on, then. What did you see? | Out with it. Who, and what?
+say[here.witnessed=0 priority=2] Saw something, did you? Go on.
+free
+choice I saw it with my own eyes. -> do report ; then reported ; refused refused
+choice Never mind. -> hub
+
+node reported
+say That's nothing new to us. Keep your eyes open, though. | Nothing we don't know. Still, thank you.
+say[topic.reported=yes] Noted. We'll see to it. | Noted. The watch thanks you. | Good. We'll find them.
+mood formal
+choice Anything else? -> hub
+choice Goodbye. -> bye
+
+node fine
+say You owe #here.fine# pennies: the fine, and what's to be made good. Pay it, or you'll come with us.
+say[here.wanted=no priority=2] You owe the watch nothing. Keep it that way.
+mood stern
+choice I'll pay it (#here.fine#p). [here.wanted=yes] -> do pay_fine ; then paid ; refused refused
+choice Not now. -> hub
+
+node paid
+say Settled. You're free to go. Mind yourself. | That's that, then. Keep out of trouble.
+mood formal
+choice Goodbye. -> bye
+
+node law
+say Steal and it's a fine of three pennies, and what you took paid back. Strike a wolf and it's eight. Pay any of the watch.
+say[here.wanted=yes priority=2] You'd know. Theft's three pennies and the goods back; striking a wolf is eight. Yours is #here.fine#.
+choice And if I can't pay? -> unpaid
+choice Anything else? -> hub
+choice Goodbye. -> bye
+
+node unpaid
+say Then you'll come with us, and sit in the cells until it's settled. | Then it's the cells, until it's paid.
+choice Anything else? -> hub
+choice Goodbye. -> bye
+
+node bounties
+say #here.bounty#
+free
+choice Anything else? -> hub
+choice Goodbye. -> bye
+
+node refused
+say #topic.why# | Hm. #topic.why#
+choice Anything else? -> hub
+choice Goodbye. -> bye
+
+node bye
+say #farewell#. | Move along, then. | Keep the peace.
+end

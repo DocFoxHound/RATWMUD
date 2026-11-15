@@ -1,0 +1,39 @@
+# A companion (Docs/Design/83-dialogue-trees.md, Phase 3): Talk with a resident travelling in the party (doc 32). The
+# party's orders as words (follow, wait, go home, part ways: Game::orderCompanion, which they answer in their own
+# words, and the conversation ends), how they're holding up, goodbye. The wheel keeps the orders too.
+
+tree companion
+for here.companion=yes
+priority 4
+entry talk hub
+entry orders hub
+
+node hub
+say Yes? | What is it? | Lead on, or are we stopping?
+say[here.waiting=yes] Still here. Moving on? | I've kept my place. What now?
+free
+choice Follow me. [here.waiting=yes] -> do order follow ; refused refused
+choice Wait here for me. [here.waiting=no] -> do order wait ; refused refused
+choice How are you holding up? -> holding
+choice Go home for now. -> do order home ; refused refused
+choice We part ways here. -> do order dismiss ; refused refused
+choice Something else... -> do open chat
+choice Goodbye. -> bye
+
+node holding
+say Well enough. Lead on. | I'm fine. Don't fuss.
+say[tired=yes] Tired. We could rest a while. | My legs are done in.
+say[injured=light] A few scrapes. Nothing to stop for.
+say[injured=bad priority=2] I'm hurt, badly. I need to rest.
+free
+choice Follow me. [here.waiting=yes] -> do order follow ; refused refused
+choice Wait here for me. [here.waiting=no] -> do order wait ; refused refused
+choice Goodbye. -> bye
+
+node refused
+say #topic.why#
+choice Goodbye. -> bye
+
+node bye
+say Right. | Lead on. | As you like.
+end

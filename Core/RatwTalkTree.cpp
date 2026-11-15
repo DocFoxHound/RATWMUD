@@ -36,11 +36,23 @@ bool name(const std::string& s)
     return !s.empty() && s.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_") == std::string::npos;
 }
 
+// The items an `each` may go through, each with its facts as #<item>.x# (doc 83): a job (a contract or a mission), a
+// place (the way to it), a trouble (what may be done about one).
+const std::set<std::string>& itemNames()
+{
+    static const std::set<std::string> Items{"job", "place", "trouble"};
+    return Items;
+}
+
 // "#job.title#" in a tree is the bound item's fact, topic.job_title (the library's namespaces are fixed).
 std::string bound(std::string text)
 {
-    for (std::size_t at = text.find("#job."); at != std::string::npos; at = text.find("#job.", at + 1))
-        text.replace(at, 5, "#topic.job_");
+    for (const auto& item : itemNames())
+    {
+        const auto from = "#" + item + ".", to = "#topic." + item + "_";
+        for (std::size_t at = text.find(from); at != std::string::npos; at = text.find(from, at + to.size()))
+            text.replace(at, from.size(), to);
+    }
     return text;
 }
 
@@ -64,8 +76,11 @@ const std::set<std::string>& Library::treeActions()
     // Doc 83: the shop window, the free-talk field and the end (Phase 1); a giver's work: taking it, declining it,
     // handing it in, giving it back; a faction official's standing, paid report and tithe; and `open <entry>`, the
     // conversation going on in another tree at its entry (the keeper's "Any work going?" into the work tree) (Phase 2).
+    // The other roles (Phase 3): the watch's report and fine, an inn's beds (lodge), learning a trade (apprentice), a
+    // trouble's remedy (doc 57), a companion's orders (doc 32), and an offering to a priest (doc 55's gift of coins).
     static const std::set<std::string> Actions{"shop", "free", "end", "take", "decline", "deliver", "give_back",
-                                               "standing", "buy_report", "tithe", "open"};
+                                               "standing", "buy_report", "tithe", "open", "report", "pay_fine", "lodge",
+                                               "apprentice", "trouble", "order", "offering"};
     return Actions;
 }
 
@@ -74,7 +89,10 @@ const std::set<std::string>& Library::treeLists()
     // here.work: contracts to be had near; here.missions: a faction official's board; here.mine: work the player has
     // taken that this resident gave out (a market's contracts, an official's missions); here.deliveries: what the player
     // carries that this resident receives (a letter, a mission's goods or message).
-    static const std::set<std::string> Lists{"here.work", "here.missions", "here.mine", "here.deliveries"};
+    // here.places: places in town worth asking the way to (the inn, the church, the shops...), nearest first;
+    // here.troubles: what this wolf may do, here, about a trouble it has heard of (doc 57).
+    static const std::set<std::string> Lists{"here.work", "here.missions", "here.mine", "here.deliveries", "here.places",
+                                             "here.troubles"};
     return Lists;
 }
 
@@ -315,8 +333,8 @@ bool Library::parseTree(const std::string& text, const std::string& file, std::s
                 fail("an each is 'each <item> in <list> max <1-9>'");
             else if (!treeLists().count(w[2]))
                 fail("'" + w[2] + "' is not a list a tree may go through");
-            else if (w[0] != "job")
-                fail("an each's item is 'job' (its facts are #job.x#)");
+            else if (!itemNames().count(w[0]))
+                fail("an each's item is job, place or trouble (its facts are #job.x#...)");
             each = {w[2], w[0], int(n), number};
             eachOpen = true;
             continue;
@@ -393,6 +411,26 @@ bool Library::parseTree(const std::string& text, const std::string& file, std::s
                     fail("'" + c.action + "' is given the bound job: 'do " + c.action + " job.id'");
                 if (c.action == "open" && (c.args.size() != 1 || !name(c.args[0])))
                     fail("'open' names an entry: 'do open <entry>'");
+                if (c.action == "trouble" && (c.args.size() != 1 || c.args[0] != "trouble.id"))
+                    fail("'trouble' is given the bound trouble: 'do trouble trouble.id'");
+                // lodge bed night|week, lodge whole (an inn's whole upstairs for a night); order follow|wait|home|dismiss;
+                // offering <pennies, 1 to 100>.
+                if (c.action == "lodge" &&
+                    !(c.args.size() == 2 && c.args[0] == "bed" && (c.args[1] == "night" || c.args[1] == "week")) &&
+                    !(c.args.size() == 1 && c.args[0] == "whole"))
+                    fail("'lodge' is 'do lodge bed night', 'do lodge bed week' or 'do lodge whole'");
+                if (c.action == "order" && (c.args.size() != 1 || !(c.args[0] == "follow" || c.args[0] == "wait" ||
+                                                                    c.args[0] == "home" || c.args[0] == "dismiss")))
+                    fail("'order' is follow, wait, home or dismiss");
+                if (c.action == "offering")
+                {
+                    char* end = nullptr;
+                    const long n = c.args.size() == 1 ? std::strtol(c.args[0].c_str(), &end, 10) : 0;
+                    if (c.args.size() != 1 || !end || *end || n < 1 || n > 100)
+                        fail("'offering' gives 1 to 100 pennies: 'do offering 5'");
+                }
+                if ((c.action == "report" || c.action == "pay_fine" || c.action == "apprentice") && !c.args.empty())
+                    fail("'" + c.action + "' takes nothing more");
             }
             else if (name(target))
                 c.go = target;

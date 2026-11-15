@@ -462,6 +462,12 @@ class Game
     // default line, a near copy of it, a short or repeated one, or over the day's allowance).
     int dialogueExperience(const std::string& playerId, const std::string& npcId, const std::string& said,
                            const std::string& offered);
+    // The other roles (doc 83, Phase 3): what a tree knows of the watch, an inn, a master, a priest, a companion, the
+    // town and the resident's gossip, as the player stands with this resident now; the places in town one asks the way
+    // to (here.places), and the troubles this wolf may do something about (here.troubles).
+    void dialogueRoleFacts(const std::string& playerId, const std::string& npcId, talk::Facts& facts);
+    // A resident's kind of work in the talk library's words (talk::jobCategory: innkeeper, priest, guard...).
+    std::string jobCategoryOf(const std::string& npc) const;
     // What an NPC Mind is told for a reply to what a player said (also for the review page).
     mind::Context dialogueContext(const std::string& npcId, const std::string& playerId, const std::string& heardText,
                                   bool identified);
@@ -824,6 +830,12 @@ class Game
     // A reply to free talk, to show in the window of the player who said it (from speakReply).
     void dialogueHeard(const std::string& npcId, const std::string& playerId, const std::string& text);
     std::string dialogueBrief(const std::string& npcId, const std::string& playerId) const;   // (For the Mind.)
+    std::vector<talk::Facts> dialoguePlaces(const std::string& npcId);
+    // The upstairs an innkeeper lets beds in ("<inn>, upstairs" over the inn they keep), "" for none.
+    std::string upstairsOf(const std::string& keeper) const;
+    // Which way a place is from where a resident stands, in words ("The Frozen Lantern is a short walk to the
+    // north-east."), and how far in tiles (-1: they couldn't say). One rule for the router's "where" and a tree's ways.
+    std::string wayWords(const std::string& fromNpc, const std::string& cellId, double& far) const;
     json::Value sceneMoments(const std::string& viewer, const SocialSession& scene) const;
     void meet(const std::string& owner, const std::string& other, const std::string& how);
     void perceivedLine(const std::string& listener, const std::string& who, const std::string& text);
@@ -985,7 +997,6 @@ class Game
     std::map<std::string, PendingMatch> matchPending_;
     std::map<std::string, std::int64_t> matchedHour_;
     std::map<std::string, std::pair<std::int64_t, int>> matchmakerHour_, pointedHour_;
-    std::string jobCategoryOf(const std::string& npc) const;
     bool isMatchmaker(const std::string& npc) const;
     std::string matchmake(const std::string& npc, const std::string& player, const std::string& heard);
     std::string sayMatch(const std::string& npc, const std::string& text, bool modelSaid);
@@ -1209,7 +1220,10 @@ class Game
     std::vector<Lodging> lodgings_;
     std::map<std::string, Hold> holds_;             // By cell.
     std::uint64_t nextLodging_ = 1;
-    bool lodgeCommand(Connection* c, const json::Value& j, Result& result);
+    // `upstairs`: an inn's upstairs to take a bed in from its keeper downstairs (a dialogue's lodge, doc 83, Phase 3),
+    // in place of the room the wolf stands in.
+    bool lodgeCommand(Connection* c, const json::Value& j, Result& result, const std::string& upstairs = {});
+    static std::int64_t innPrice(const std::string& what);   // "bed night", "bed week", "whole": pennies.
     json::Value lodgingView(const std::string& viewer);
     void tendLodgings();
     void endLodging(std::size_t index, const std::string& why, std::int64_t refund);

@@ -66,6 +66,45 @@ void Game::voiced(const char* kind, const char* route, const std::string& npcId)
     voiceLog_.flush();
 }
 
+std::string Game::wayWords(const std::string& fromNpc, const std::string& cellId, double& far) const
+{
+    // A place's position in the world: an outdoor cell's own, an interior's by the door that leads into it from outside.
+    far = -1;
+    const auto where = [&](const std::string& id, Vec2 p, bool& known) {
+        known = false;
+        const auto* c = world_.cell(id);
+        if (!c)
+            return Vec2{};
+        if (c->outdoors)
+        {
+            known = true;
+            return Vec2{c->worldX + p.x, c->worldY + p.y};
+        }
+        for (const auto& [doorId, d] : world_.doors())
+            if (d.targetCell == id)
+                if (const auto* out = world_.cell(d.cellId); out && out->outdoors)
+                {
+                    known = true;
+                    return Vec2{out->worldX + d.position.x, out->worldY + d.position.y};
+                }
+        return Vec2{};
+    };
+    const auto* npc = world_.entity(fromNpc);
+    const auto* c = world_.cell(cellId);
+    if (!npc || !c)
+        return {};
+    if (cellId == npc->cellId)
+        return "You're in " + c->name + " now.";
+    bool fromKnown = false, toKnown = false;
+    const auto from = where(npc->cellId, npc->position, fromKnown);
+    const auto to = where(cellId, {c->width / 2.0, c->height / 2.0}, toKnown);
+    if (!fromKnown || !toKnown)
+        return {};
+    const double dx = to.x - from.x, dy = to.y - from.y;
+    far = std::hypot(dx, dy);
+    return c->name + " is " + (far < 40 ? "close by" : far < 200 ? "a short walk" : "a long way") + " to the " + compass(dx, dy) + ".";
+}
+
 std::string Game::gameAnswer(const std::string& npcId, const std::string& playerId, const std::string& heard, bool identified,
                              const std::string& asIntent)
 {
@@ -256,27 +295,6 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
         }
         // Or a place, by its name: which way, from here.
         if (answer.empty())
-        {
-            const auto where = [&](const std::string& cellId, Vec2 p, bool& known) {
-                // A place's position in the world; an interior by the door that leads into it.
-                known = false;
-                const auto* c = world_.cell(cellId);
-                if (!c)
-                    return Vec2{};
-                if (c->outdoors)
-                {
-                    known = true;
-                    return Vec2{c->worldX + p.x, c->worldY + p.y};
-                }
-                for (const auto& [id, d] : world_.doors())
-                    if (d.targetCell == cellId)
-                        if (const auto* out = world_.cell(d.cellId); out && out->outdoors)
-                        {
-                            known = true;
-                            return Vec2{out->worldX + d.position.x, out->worldY + d.position.y};
-                        }
-                return Vec2{};
-            };
             for (const auto& [id, c] : world_.cells())
             {
                 const auto name = plainWords(c.name);
@@ -287,17 +305,10 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
                     answer = "You're in " + c.name + " now.";
                     break;
                 }
-                bool fromKnown = false, toKnown = false;
-                const auto from = where(npc->cellId, npc->position, fromKnown);
-                const auto to = where(id, {c.width / 2.0, c.height / 2.0}, toKnown);
-                if (!fromKnown || !toKnown)
-                    break;
-                const double dx = to.x - from.x, dy = to.y - from.y, far = std::hypot(dx, dy);
-                answer = c.name + " is " + (far < 40 ? "close by" : far < 200 ? "a short walk" : "a long way") + " to the " +
-                         compass(dx, dy) + ".";
+                double far = -1;
+                answer = wayWords(npcId, id, far);
                 break;
             }
-        }
     }
     else if (intent.id == "wanted")
     {

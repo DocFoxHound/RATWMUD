@@ -32,7 +32,7 @@ import {askText} from '../ui/dialog.ts';
 import {commandToRun, runCommand, slashSuggestions, wheelCommands} from './commands.ts';
 import {FlatWheel, wheelEntries, wheelInGroup} from './wheel.ts';
 import {basketKey, shopOf} from './shop.ts';
-import {chooseMessage, dialogueKey, dialogueReach, moveSelection, newDialogueUi, readDialogue, sayMessage, workEntry, type Dialogue} from './dialogue.ts';
+import {chooseMessage, dialogueKey, dialogueReach, moveSelection, newDialogueUi, readDialogue, roleEntry, sayMessage, workEntry, type Dialogue} from './dialogue.ts';
 
 export interface Post {
     id: string;
@@ -2745,6 +2745,13 @@ export class GameState {
                 this.openDialogue(target, workEntry(h.target) ?? 'talk');
                 return;
             }
+            else if (roleEntry(h.target) && this.dialogueRolesServer()) {
+                // A role's own (doc 83, Phase 3): a master's trade, the watch's crime or fine, in their dialogue.
+                const target = this.contextTarget;
+                this.contextTarget = '';
+                this.openDialogue(target, roleEntry(h.target) ?? 'talk');
+                return;
+            }
             else if (h.target === 'gather') this.activate({rect: rect(0, 0, 0, 0), action: 'gather', target: ''});
             else this.sendAction(h.target, this.contextTarget);
             this.contextTarget = '';
@@ -2886,6 +2893,12 @@ export class GameState {
      *  window, not the offer window or the missions board (an older server keeps those). */
     dialogueWorkServer(): boolean {
         return this.dialogueServer() && bool(this.snapshot, 'dialogueWork');
+    }
+
+    /** Whether the server's roles speak through their trees too (doc 83, Phase 3): Apprentice, Report and Pay fine open
+     *  the master's and the watch's dialogue. */
+    dialogueRolesServer(): boolean {
+        return this.dialogueWorkServer() && bool(this.snapshot, 'dialogueRoles');
     }
 
     /** Talk, Trade or a giver's work on a resident's wheel (doc 83): the dialogue window, opened by the server on the

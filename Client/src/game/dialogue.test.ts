@@ -5,7 +5,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {testGame} from './testing.ts';
-import {chooseMessage, dialogueKey, moveSelection, newDialogueUi, readDialogue, revealed, sayMessage, wordsFor, workEntry} from './dialogue.ts';
+import {chooseMessage, dialogueKey, moveSelection, newDialogueUi, readDialogue, revealed, roleEntry, sayMessage, wordsFor, workEntry} from './dialogue.ts';
 import {rect} from '../ui/painter.ts';
 import type {Json} from './json.ts';
 
@@ -213,5 +213,61 @@ test('a giver\'s work: the wheel\'s work opens their dialogue at the job, the bo
     old.state.openContextAt('bram', [120, 100]);
     old.state.activate({rect: rect(0, 0, 0, 0), action: 'context', target: 'offer k12'});
     assert.ok(old.commands.some(c => c.type === 'action' && c.action === 'offer k12'), 'the offer window\'s way');
+    assert.equal(old.commands.filter(c => c.type === 'dialogue_open').length, 0);
+});
+
+test('the other roles: Talk asks the server, which answers with the role\'s tree; Apprentice, Report and Pay fine open theirs', () => {
+    assert.equal(roleEntry('apprentice'), 'learn');
+    assert.equal(roleEntry('report'), 'report');
+    assert.equal(roleEntry('pay fine'), 'fine');
+    assert.equal(roleEntry('talk'), null, 'Talk is talk, whoever it is');
+    assert.equal(roleEntry('steal'), null);
+    const roles = (roles = true) => {
+        const g = testGame();
+        g.state.applySnapshot({cell: {id: 'square', width: 32, height: 24}, self: {id: 'me', name: 'Ash', x: 5, y: 5},
+            entities: [{id: 'me', name: 'Ash', x: 5, y: 5},
+                {id: 'gil', name: 'Gil', x: 6, y: 5, npc: true, work: 'Sergeant of the watch', actions: ['talk', 'report', 'pay fine']},
+                {id: 'nell', name: 'Nell', x: 5, y: 6, npc: true, work: 'keeping the inn', actions: ['talk', 'trade']},
+                {id: 'hob', name: 'Hob', x: 4, y: 5, npc: true, work: 'smithing', actions: ['talk', 'apprentice']}],
+            time: 0, cellGeneration: 1, dialogue: true, dialogueWork: true, ...(roles ? {dialogueRoles: true} : {})});
+        g.state.mapOrigin = [0, 0];
+        g.state.mapRect = rect(0, 0, 640, 480);
+        g.state.tileSize = 20;
+        return g;
+    };
+    const {state: s, commands} = roles();
+    // Talk with each: the same request, the role's tree in reply (the server picks it by their work).
+    for (const [who, tree, line] of [['gil', 'watch', 'The watch. What is it?'], ['nell', 'inn', 'Bed, board or a drink?'],
+        ['hob', 'resident', 'What can I do for you?']] as const) {
+        commands.length = 0;
+        s.dialogue = null;
+        s.openContextAt(who, [120, 100]);
+        s.activate({rect: rect(0, 0, 0, 0), action: 'context', target: 'talk'});
+        assert.deepEqual(commands.filter(c => c.type === 'dialogue_open').at(-1), {type: 'dialogue_open', npc: who, entry: 'talk'}, `Talk with ${who}`);
+        s.receiveEvent(node({npc: who, tree, node: 'hub', line, free: true, choices: [{n: 1, text: 'Goodbye.'}]}));
+        const shown = s.dialogue as ReturnType<typeof readDialogue> | null;   // (Set by the event, past the null above.)
+        assert.ok(shown && shown.tree === tree && shown.npc === who && shown.free, `${who}: the ${tree} tree, free talk in it`);
+        s.pendingDialogue = null;
+    }
+    // The roles' own actions on the wheel: their dialogue at its entry, not the old command.
+    for (const [who, action, entry] of [['gil', 'report', 'report'], ['gil', 'pay fine', 'fine'], ['hob', 'apprentice', 'learn']] as const) {
+        commands.length = 0;
+        s.dialogue = null;
+        s.openContextAt(who, [120, 100]);
+        s.activate({rect: rect(0, 0, 0, 0), action: 'context', target: action});
+        assert.deepEqual(commands.filter(c => c.type === 'dialogue_open').at(-1), {type: 'dialogue_open', npc: who, entry}, `${action}: ${entry}`);
+        assert.equal(commands.filter(c => c.type === 'action').length, 0, `${action}: no old command`);
+        s.pendingDialogue = null;
+    }
+    // Refused (not the watch after all): said in words, nothing opens, nothing retried.
+    s.openDialogue('hob', 'report');
+    s.receiveEvent({type: 'dialogue_close', npc: 'hob', entry: 'report', why: 'none', text: 'Hob isn\'t of the watch.'});
+    assert.equal(s.dialogue, null);
+    assert.equal(s.pendingDialogue, null);
+    // A server whose roles don't speak yet (Phase 2): the wheel's actions as they were.
+    const old = roles(false);
+    old.state.openContextAt('gil', [120, 100]);
+    old.state.activate({rect: rect(0, 0, 0, 0), action: 'context', target: 'pay fine'});
+    assert.ok(old.commands.some(c => c.type === 'action' && c.action === 'pay fine'), 'Pay fine as it was');
     assert.equal(old.commands.filter(c => c.type === 'dialogue_open').length, 0);
 });

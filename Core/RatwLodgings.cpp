@@ -62,7 +62,12 @@ const Game::Lodging* Game::wholeLodgingAt(const std::string& cell) const
     return nullptr;
 }
 
-bool Game::lodgeCommand(Connection* c, const json::Value& j, Result& result)
+std::int64_t Game::innPrice(const std::string& what)
+{
+    return what == "bed week" ? BedWeek : what == "whole" ? UpstairsNight : BedNight;
+}
+
+bool Game::lodgeCommand(Connection* c, const json::Value& j, Result& result, const std::string& upstairs)
 {
     // {"verb": "bed", "period": "night"|"week"} / "night" / "place", "period" / "ask", "target" (a resident) / "open" /
     // "close" / "guest", "target", "on" / "end" / "put" | "take", "item", "quantity".
@@ -79,7 +84,9 @@ bool Game::lodgeCommand(Connection* c, const json::Value& j, Result& result)
     {
         if (mine != lodgings_.end())
             return result = {false, "You have a lodging already; give it up first.", {}}, true;
-        std::string cell = e->cellId, kind, landlord, account, period = j.string("period", "night");
+        std::string cell = upstairs.empty() ? e->cellId : upstairs, kind, landlord, account, period = j.string("period", "night");
+        if (!upstairs.empty())
+            world_.ensureLoaded(upstairs);           // (Its beds' tiles, for a bed taken from the keeper downstairs.)
         int x = -1, y = -1;
         std::int64_t rent = 0;
         if (verb == "ask")

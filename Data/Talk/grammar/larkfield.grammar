@@ -87,3 +87,9 @@ work_taken = Good trade. Don't dawdle. | Done deal, then. | Struck and settled.
 work_paid = Here, fair price, as promised. | Paid to the penny. | Good trading. There you are.
 work_back = No harm done. Another will buy it. | Fair enough. The deal's off, no cost. | Better unsold than spoiled.
 work_none = Nothing on offer today. | No work going, friend. | Nothing worth the price just now.
+# The other roles (doc 83, Phase 3).
+inn_offer = Bed, board or a drink, fair priced? | Come in, customer. What'll it be? | A bed or a bite, friend?
+inn_bed = Upstairs, and well worth the coin. There's a chest for your things. | Your bed's upstairs. Good trading tomorrow.
+watch_greet = The watch. State your business, friend. | Keep the peace and we'll deal fairly.
+church_greet = Bless you. Come in. | All are welcome here, friend.
+learn_offer = It's a trade that pays its way. | It's honest work, fairly paid.

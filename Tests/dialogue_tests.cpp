@@ -805,6 +805,353 @@ void giversWork()
            "an older client's offer window still works");
     fs::remove_all(root);
 }
+// ------------------------------------------------------------------ The other roles (Phase 3)
+
+void roleTrees()
+{
+    // Each role's tree loads, and validates alone; Talk (and Trade, and the wheel's role entries) finds the right one.
+    auto lib = library();
+    for (const auto* id : {"inn", "watch", "church", "master", "companion", "resident"})
+    {
+        expect(lib.tree(id), std::string("the ") + id + " tree loads");
+        talk::Library one;
+        std::string problem;
+        expect(one.loadFoundation(Data, problem), "the foundation loads");
+        std::ifstream in(Data + "/dialogue/" + id + ".tree");
+        std::stringstream text;
+        text << in.rdbuf();
+        expect(one.parseTree(text.str(), std::string(id) + ".tree", problem), std::string("the ") + id + " tree validates alone: " + problem);
+    }
+    const auto who = [&](const talk::Facts& self, const talk::Facts& here = {}) {
+        auto q = keeperQuery("");
+        q.a.facts = {{"id", "x"}, {"name", "X"}, {"sex", "female"}, {"stage", "adult"}, {"age", "40"}, {"job", "none"}, {"role", "civilian"}};
+        for (const auto& [k, v] : self)
+            q.a.facts[k] = v;
+        q.facts["here.deliveries"] = "0";
+        q.facts["here.companion"] = "no";
+        for (const auto& [k, v] : here)
+            q.facts[k] = v;
+        return q;
+    };
+    const auto talksTo = [&](const talk::Query& q, const std::string& entry = "talk") {
+        const auto* t = lib.treeFor(entry, q);
+        return t ? t->id : std::string("none");
+    };
+    expect(talksTo(who({{"role", "guard"}, {"job", "guard"}})) == "watch", "Talk with a guard: the watch");
+    expect(talksTo(who({{"role", "merchant"}, {"job", "innkeeper"}, {"trade", "innkeeper"}})) == "inn", "with an innkeeper: the inn");
+    expect(talksTo(who({{"role", "merchant"}, {"job", "innkeeper"}}), "trade") == "inn", "Trade with an innkeeper: the inn too");
+    expect(talksTo(who({{"role", "merchant"}, {"job", "baker"}}), "trade") == "shop", "Trade with a baker: the shop");
+    expect(talksTo(who({{"job", "priest"}})) == "church", "with a priest: the church");
+    expect(talksTo(who({{"job", "farmer"}})) == "resident", "with anyone else: the resident's hub");
+    expect(talksTo(who({{"role", "guard"}, {"job", "guard"}}, {{"here.companion", "yes"}})) == "companion", "one in the party: the companion's");
+    expect(talksTo(who({{"job", "priest"}}, {{"here.deliveries", "1"}})) == "receiver", "one with something to hand over: the receiver's");
+    expect(talksTo(who({{"job", "smith"}}), "learn") == "master" && talksTo(who({{"role", "guard"}}), "report") == "watch" &&
+               talksTo(who({{"role", "guard"}}), "fine") == "watch",
+           "the wheel's Apprentice, Report and Pay fine: the master's and the watch's");
+    expect(lib.tree("resident")->entries.count("chat") && lib.tree("resident")->entries.count("news") && lib.tree("resident")->entries.count("way"),
+           "every role's 'Something else...', news and ways go on in the resident's tree");
+    // Only what the server allows: a fine only while wanted; a bed locked, with why, for one who has a lodging; a master
+    // who wouldn't take this wolf on, locked with the reason.
+    const auto none = [](const std::string&) { return std::vector<talk::Facts>{}; };
+    const auto shownOf = [&](const char* tree, const char* node, const talk::Query& q) {
+        std::vector<std::string> out;
+        for (const auto& c : lib.choices(lib.tree(tree)->nodes.at(node), q, 1, none))
+            out.push_back(c.text + (c.locked ? " [" + c.why + "]" : std::string()));
+        return out;
+    };
+    const auto has = [](const std::vector<std::string>& v, const std::string& start) {
+        return std::any_of(v.begin(), v.end(), [&](const std::string& t) { return t.rfind(start, 0) == 0; });
+    };
+    auto guard = who({{"role", "guard"}, {"job", "guard"}}, {{"here.wanted", "no"}, {"here.fine", "0"}});
+    expect(!has(shownOf("watch", "hub", guard), "What do I owe"), "not wanted: no fine offered");
+    guard.facts["here.wanted"] = "yes";
+    guard.facts["here.fine"] = "11";
+    expect(has(shownOf("watch", "hub", guard), "What do I owe"), "wanted: the fine offered");
+    expect(has(shownOf("watch", "fine", guard), "I'll pay it (11p)."), "and what settles it, said");
+    auto keeper = who({{"role", "merchant"}, {"job", "innkeeper"}}, {{"here.inn", "yes"}, {"here.bed_ok", "no"}, {"here.bed_why", "You have a lodging already."},
+                                                                   {"here.bed_night", "2"}, {"here.bed_week", "10"}, {"here.upstairs_night", "8"}});
+    expect(has(shownOf("inn", "greet", keeper), "A bed for the night (2p). [You have a lodging already.]"), "a bed, locked for one lodged already");
+    auto master = who({{"job", "smith"}}, {{"here.teaches", "yes"}, {"here.take_on", "no"}, {"here.take_on_why", "They don't know you well enough to take you on yet."},
+                                          {"here.trade_title", "smith"}, {"here.giver", "no"}});
+    expect(has(shownOf("master", "learn", master), "Will you take me on? [They don't know you well enough"), "the master: locked, why");
+    // The tree format's new pieces, and their refusals.
+    refused("tree t\nentry talk a\nnode a\nsay Hello.\nchoice Bed. -> do lodge bed year\n", "'lodge' is");
+    refused("tree t\nentry talk a\nnode a\nsay Hello.\nchoice Sit. -> do order sit\n", "'order' is");
+    refused("tree t\nentry talk a\nnode a\nsay Hello.\nchoice Coin. -> do offering 500\n", "'offering' gives");
+    refused("tree t\nentry talk a\nnode a\nsay Hello.\nchoice Help. -> do trouble job.id\n", "'trouble' is given");
+    refused("tree t\nentry talk a\nnode a\nsay Hello.\neach cat in here.places max 3\nchoice x -> end\n", "an each's item");
+}
+
+void otherRoles()
+{
+    // A strip with an inn's upstairs, a guard at Ridgemere's market and a priest in a chapel off it (an interior, by a
+    // door: a place one asks the way to).
+    const auto root = fs::temp_directory_path() / ("ratw-dialogue-roles-" + std::to_string(::getpid()));
+    const auto worldPath = writeStrip(root / "world", true);
+    {
+        std::ofstream world(fs::path(worldPath) / "world.ratw", std::ios::app);
+        world << resident("ug", "Guard u", "guard", "keeping the watch", 0, 10.5, 1, 6.5);
+        auto priest = resident("up", "Mother Ada", "civilian", "tending the chapel", 0, 11.5, 1, 4.5);
+        priest.replace(priest.find("\"" + cellId(1) + "\""), cellId(1).size() + 2, "\"c_chapel\"");
+        world << priest;
+        world << "area \"c_chapel\"\nterritory \"c_chapel\" \"ridgemere\" \"-\" 0\n";
+        std::ofstream cell(fs::path(worldPath) / "cells" / "c_chapel.cell");
+        cell << "id: c_chapel\nname: The Chapel\ndescription: Pews and a pulpit.\nworld: 0 200 0\noutdoors: false\nweather: clear\nsize: 10 10\ngrid:\n";
+        for (int y = 0; y < 10; ++y)
+            cell << (y == 9 ? "....+.....\n" : "..........\n");
+        {
+            // The chapel's door in the market's ground.
+            const auto market = fs::path(worldPath) / "cells" / (cellId(1) + ".cell");
+            std::ifstream in(market);
+            std::stringstream text;
+            text << in.rdbuf();
+            auto body = text.str();
+            const auto grid = body.find("grid:\n") + 6;
+            body[grid + 14 * (Side + 1) + 3] = '+';
+            in.close();
+            std::ofstream(market) << body;
+        }
+        world << "door \"chapel_a\" \"The chapel door\" \"" << cellId(1) << "\" 3.5 14.5 \"c_chapel\" 4.5 8.5 \"chapel_b\" 1 0 0 0 \"-\"\n"
+              << "door \"chapel_b\" \"The chapel door\" \"c_chapel\" 4.5 9.5 \"" << cellId(1) << "\" 3.5 13.5 \"chapel_a\" 1 0 0 0 \"-\"\n";
+        std::ofstream(fs::path(worldPath) / "seams" / "c_chapel") << "";
+    }
+    Town town(worldPath, (root / "save").string(), 120, true);
+    auto& w = town.g.world();
+    auto& s = w.society();
+    town.enter(town.ash, 1, "player-ash", "Ash", 1, 9.5);
+    town.enter(town.bo, 2, "player-bo", "Bo", 1, 11.5);
+    town.enter(town.cy, 3, "player-cy", "Cy", 7, 8.5);
+    w.setTimeOfDay(12);
+    town.run(6);                                    // (The estates refresh: the upstairs is to let.)
+    std::map<std::string, std::tuple<std::string, double, double>> spots{
+        {"um", {cellId(1), 8.5, 8.5}}, {"ui", {cellId(1), 10.5, 9.5}}, {"ug", {cellId(1), 9.5, 7.5}}, {"u1", {cellId(1), 10.5, 7.5}},
+        {"u2", {cellId(1), 8.5, 10.5}}, {"up", {"c_chapel", 4.5, 2.5}}};
+    std::string ashCell = cellId(1);
+    double ashX = 9.5, ashY = 8.5;
+    const auto keep = [&] {
+        for (const auto& [id, at] : spots)
+        {
+            auto* e = w.entity(id);
+            e->cellId = std::get<0>(at);
+            e->position = {std::get<1>(at), std::get<2>(at)};
+            e->posture = "standing";
+            w.stop(id);
+        }
+        auto* a = w.entity(town.ash.entityId);
+        a->cellId = ashCell;
+        a->position = {ashX, ashY};
+        town.place(town.bo, 1, 11.5);
+    };
+    const auto step = [&](double seconds = .5) {
+        for (double t = 0; t < seconds; t += .25)
+        {
+            keep();
+            town.run(.25);
+        }
+        keep();
+    };
+    step(1);
+    expect(town.ash.snapshots.back().boolean("dialogueRoles"), "the snapshot says the roles' entries open the window");
+    expect(s.jobOf("ug") && s.jobOf("ug")->role == "guard" && town.g.jobCategoryOf("up") == "priest" && town.g.jobCategoryOf("ui") == "innkeeper",
+           "the fixture: a guard, a priest, an innkeeper");
+    const auto open = [&](const std::string& npc, const std::string& entry) -> const json::Value* {
+        if (const auto* d = town.g.dialogueOf(town.ash.entityId))
+            town.g.command(&town.ash, cmd({{"type", "dialogue_close"}, {"session", d->id}, {"why", "closed"}}));
+        for (auto* c : {&town.ash, &town.bo, &town.cy})
+            c->events.clear();
+        town.g.command(&town.ash, cmd({{"type", "dialogue_open"}, {"npc", npc}, {"entry", entry}}));
+        town.g.settle();
+        return lastOf(town.ash, "dialogue");
+    };
+    const auto choose = [&](int n, const std::string& text = {}) -> const json::Value* {
+        const auto* d = town.g.dialogueOf(town.ash.entityId);
+        expect(d, "a conversation to choose in");
+        for (auto* c : {&town.ash, &town.bo, &town.cy})
+            c->events.clear();
+        auto o = json::Value::object();
+        o.add("type", "dialogue_choose");
+        o.add("session", d->id);
+        o.add("n", n);
+        if (!text.empty())
+            o.add("text", text);
+        town.g.command(&town.ash, json::dump(o));
+        town.g.settle();
+        return lastOf(town.ash, "dialogue");
+    };
+    const auto texts = [](const json::Value* d) {
+        std::string all;
+        if (d)
+            for (const auto& c : d->array("choices"))
+                all += "[" + c.string("text") + (c.boolean("locked") ? " (locked: " + c.string("why") + ")" : std::string()) + "]";
+        return all;
+    };
+    const auto pick = [&](const json::Value* d, const std::string& starts) {
+        if (d)
+            for (const auto& c : d->array("choices"))
+                if (c.string("text").rfind(starts, 0) == 0)
+                    return int(c.number("n"));
+        return 0;
+    };
+    const auto show = [&](const json::Value* d) { return d ? d->string("tree") + "/" + d->string("node") + ": " + d->string("line") + " " + texts(d) : std::string("none"); };
+
+    // The resident's hub: the town from its real numbers; the way to a place, from the world's own posts and doors.
+    auto* d = open("u1", "talk");
+    expect(d && d->string("tree") == "resident" && d->string("node") == "hub", "Talk with a neighbour: the hub: " + show(d));
+    for (const auto* topic : {"What's it like around here?", "What do you do?", "Heard any news?", "Could you tell me the way?", "Goodbye."})
+        expect(pick(d, topic) > 0, std::string("the hub offers: ") + topic + " " + texts(d));
+    talk::Facts facts;
+    town.g.dialogueRoleFacts(town.ash.entityId, "u1", facts);
+    d = choose(pick(d, "What's it like around here?"));
+    expect(d && d->string("node") == "town" && (contains(d->string("line"), facts["here.folk"]) || contains(d->string("line"), facts["here.shops"]) ||
+                                                contains(d->string("line"), "times") || contains(d->string("line"), "doing well")),
+           "the town, by its numbers (" + facts["here.folk"] + " folk, " + facts["here.shops"] + " shops): " + show(d));
+    d = choose(pick(d, "Could you tell me the way?"));
+    expect(d && d->string("node") == "way" && pick(d, "The Chapel (the church)") > 0, "the ways: the chapel among them: " + show(d));
+    d = choose(pick(d, "The Chapel (the church)"));
+    expect(d && d->string("node") == "place" && contains(d->string("line"), "The Chapel is close by to the") &&
+               contains(d->string("line"), "south") && contains(d->string("line"), "Mother Ada"),
+           "the way to it, from where they stand, and who's there: " + show(d));
+    // Gossip: what they've heard lately, of someone else.
+    w.believe("u1", "u2", "stole from Merchant u", "saw it", .9);
+    d = open("u1", "talk");
+    d = choose(pick(d, "Heard any news?"));
+    d = choose(pick(d, "Any gossip going round?"));
+    expect(d && d->string("node") == "gossip" && contains(d->string("line"), "Neighbour u2 stole from Merchant u"),
+           "the gossip is what they heard: " + show(d));
+
+    // The watch: the law, a report (nothing new, then a theft seen), a fine only while wanted.
+    d = open("ug", "talk");
+    expect(d && d->string("tree") == "watch" && pick(d, "What do I owe") == 0 && pick(d, "I want to report a crime.") > 0 &&
+               pick(d, "What's the law here?") > 0 && pick(d, "Any bounties posted?") > 0,
+           "Talk with a guard: the watch, no fine while not wanted: " + show(d));
+    d = choose(pick(d, "Any bounties posted?"));
+    town.g.dialogueRoleFacts(town.ash.entityId, "ug", facts);
+    expect(d && d->string("line") == facts["here.bounty"], "the bounties, as the roads stand: " + show(d));
+    d = open("ug", "report");
+    expect(d && d->string("node") == "crime", "the wheel's Report opens the watch at the crime: " + show(d));
+    d = choose(pick(d, "I saw it with my own eyes."));
+    expect(d && d->string("node") == "reported" && contains(d->string("line"), "nothing new") | contains(d->string("line"), "Nothing we don't know"),
+           "nothing seen: nothing new to them: " + show(d));
+    {
+        Incident inc;
+        inc.id = "inc-test";
+        inc.kind = "theft";
+        inc.offender = "u2";
+        inc.victim = "um";
+        inc.cell = cellId(1);
+        inc.town = w.lawTown(cellId(1));
+        inc.day = w.calendarDays();
+        inc.witnesses.push_back({town.ash.entityId, true, 1, false});
+        w.crime().incidents.push_back(inc);
+    }
+    d = open("ug", "report");
+    d = choose(pick(d, "I saw it with my own eyes."));
+    expect(d && d->string("node") == "reported" && (contains(d->string("line"), "Noted") || contains(d->string("line"), "find them")),
+           "a theft seen: noted: " + show(d));
+    expect(w.crime().incidents.back().witnesses.front().reported, "and the watch has it");
+    w.crime().warrants.push_back({town.ash.entityId, w.lawTown(cellId(1)), {}, {}, 3, w.calendarDays()});
+    const auto cash = s.cash(town.ash.entityId);
+    d = open("ug", "talk");
+    expect(d && pick(d, "What do I owe the watch?") > 0 && contains(d->string("line"), "3"), "wanted: the fine, offered and said: " + show(d));
+    d = choose(pick(d, "What do I owe the watch?"));
+    d = choose(pick(d, "I'll pay it (3p)."));
+    expect(d && d->string("node") == "paid" && !w.warrantFor(town.ash.entityId) && s.cash(town.ash.entityId) == cash - 3,
+           "paid in the window, as Pay fine pays: " + show(d));
+    d = open("ug", "fine");
+    expect(d && d->string("node") == "fine" && pick(d, "I'll pay it") == 0, "and not offered again: " + show(d));
+    town.ash.events.clear();
+    town.g.command(&town.ash, cmd({{"type", "dialogue_open"}, {"npc", "u1"}, {"entry", "report"}}));
+    expect(town.ash.last("dialogue_close") && town.ash.last("dialogue_close")->string("why") == "none", "a neighbour isn't the watch");
+
+    // The inn: a bed upstairs from the keeper downstairs, as the lodging's own rule takes it; then locked, with why.
+    d = open("ui", "talk");
+    expect(d && d->string("tree") == "inn" && pick(d, "A bed for the night (2p).") > 0, "Talk with the innkeeper: the inn: " + show(d));
+    d = open("ui", "trade");
+    expect(d && d->string("tree") == "inn", "Trade with them too: " + show(d));
+    const auto before = s.cash(town.ash.entityId);
+    d = choose(pick(d, "A bed for the night (2p)."));
+    expect(d && d->string("node") == "roomed", "the bed taken: " + show(d));
+    expect(contains(town.ash.said(), "You take a bed for the night (2p)") && s.cash(town.ash.entityId) == before - 2,
+           "as the lodging rule takes it (2p, upstairs): " + town.ash.said());
+    d = open("ui", "talk");
+    const auto* bed = d ? &d->array("choices")[std::size_t(pick(d, "A bed for the night") - 1)] : nullptr;
+    expect(bed && bed->boolean("locked") && bed->string("why") == "You have a lodging already.", "one lodging a wolf: greyed, why: " + show(d));
+    d = choose(pick(d, "What's the news of the house?"));
+    expect(d && d->string("tree") == "resident" && d->string("node") == "news", "the news of the house: " + show(d));
+    d = choose(pick(d, "Something else..."));
+    expect(d && d->string("tree") == "inn" && d->string("node") == "greet", "and back to the innkeeper's own: " + show(d));
+
+    // A master: their trade from the hub; taken on only when they know and trust the wolf.
+    d = open("um", "talk");
+    expect(d && d->string("tree") == "resident" && pick(d, "Could you teach me your trade?") > 0, "the hub offers to learn the trade: " + show(d));
+    d = choose(pick(d, "Could you teach me your trade?"));
+    expect(d && d->string("tree") == "master" && d->string("node") == "learn" && pick(d, "What does it pay?") > 0, "the master's: " + show(d));
+    const auto* ask = &d->array("choices")[std::size_t(pick(d, "Will you take me on?") - 1)];
+    expect(ask->boolean("locked") && contains(ask->string("why"), "know you well enough"), "a stranger: locked, why: " + show(d));
+    w.bonds().change("um", town.ash.entityId, {50, 50, 50, 0, 0}, w.calendarDays());
+    d = open("um", "learn");
+    expect(d && d->string("tree") == "master", "the wheel's Apprentice opens the master's: " + show(d));
+    d = choose(pick(d, "Will you take me on?"));
+    expect(d && d->string("node") == "taken" && s.apprenticedTo(town.ash.entityId) && s.apprenticedTo(town.ash.entityId)->id == s.jobOf("um")->id,
+           "taken on as an apprentice: " + show(d));
+    d = open("ui", "learn");
+    ask = d ? &d->array("choices")[std::size_t(pick(d, "Will you take me on?") - 1)] : nullptr;
+    expect(ask && ask->boolean("locked") && ask->string("why") == "You're learning a trade already.", "one trade at a time: " + show(d));
+
+    // The church: the service's hours, an offering (a gift of coins, to the priest).
+    ashCell = "c_chapel";
+    ashX = 4.5, ashY = 3.5;
+    step(.5);
+    d = open("up", "talk");
+    expect(d && d->string("tree") == "church", "Talk with the priest: the church: " + show(d));
+    d = choose(pick(d, "When is the service?"));
+    expect(d && contains(d->string("line"), "from nine until eleven in the morning"), "the service's hours: " + show(d));
+    d = choose(pick(d, "An offering for the church."));
+    const auto mine = s.cash(town.ash.entityId), theirs = s.cash("up");
+    d = choose(pick(d, "Five pennies."));
+    expect(d && d->string("node") == "thanked" && s.cash(town.ash.entityId) == mine - 5 && s.cash("up") == theirs + 5,
+           "five pennies given: " + show(d));
+    ashCell = cellId(1);
+    ashX = 9.5, ashY = 8.5;
+    step(.5);
+
+    // A companion: the party's orders as words (they answer in their own, and the conversation ends).
+    w.setTimeOfDay(19);
+    spots.erase("u2");
+    step(.5);
+    w.entity("u2")->position = {8.5, 9.5};
+    w.entity("u2")->cellId = cellId(1);
+    w.stop("u2");
+    step(.5);
+    std::string hire;
+    for (const auto& e : town.ash.snapshots.back().array("entities"))
+        if (e.string("id") == "u2")
+            for (const auto& a : e.array("actions"))
+                if (a.isString() && a.asString().rfind("hire for ", 0) == 0)
+                    hire = a.asString();
+    expect(!hire.empty(), "u2 may be hired along");
+    town.ash.events.clear();
+    town.g.command(&town.ash, cmd({{"type", "action"}, {"target", "u2"}, {"action", hire}}));
+    const auto along = [&](const char* fact) {
+        talk::Facts f;
+        town.g.dialogueRoleFacts(town.ash.entityId, "u2", f);
+        return f[fact] == "yes";
+    };
+    expect(along("here.companion"), "the fixture: u2 comes along: " + town.ash.said());
+    w.entity("u2")->position = {8.5, 9.5};
+    w.entity("u2")->cellId = cellId(1);
+    w.stop("u2");
+    d = open("u2", "talk");
+    expect(d && d->string("tree") == "companion" && pick(d, "Wait here for me.") > 0 && pick(d, "Follow me.") == 0,
+           "Talk with a companion: their orders: " + show(d));
+    choose(pick(d, "Wait here for me."));
+    expect(along("here.waiting") && !town.g.dialogueOf(town.ash.entityId), "waiting, and the conversation over");
+    w.entity("u2")->position = {8.5, 9.5};
+    d = open("u2", "orders");
+    expect(d && pick(d, "Follow me.") > 0 && pick(d, "Wait here for me.") == 0, "waiting: follow is offered: " + show(d));
+    expect(s.realBalanced(), "real money balanced");
+    fs::remove_all(root);
+}
 } // namespace
 
 int main()
@@ -816,6 +1163,8 @@ int main()
         ledger();
         inAGame();
         giversWork();
+        roleTrees();
+        otherRoles();
     }
     catch (const std::exception& e)
     {

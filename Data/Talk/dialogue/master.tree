@@ -1,0 +1,58 @@
+# A master's trade (Docs/Design/83-dialogue-trees.md, Phase 3): from a resident's "Could you teach me your trade?" and
+# the wheel's Apprentice. Every trade can be learned (the living-NPC roadmap): the work and its hours, what it pays,
+# what it takes to be taken on, and asking (World::apprentice: a master takes one apprentice at a time, and one they
+# know and trust, a regard of 30). Any work the master's market has goes on in the work tree.
+#
+# here.teaches: they hold a trade (not the watch) and have no apprentice. here.take_on and here.take_on_why: whether
+# they'd take this wolf on now, and why not. here.trade_title: the trade.
+
+tree master
+entry learn learn
+
+node learn
+say #here.trade_title.capitalize#? #learn_offer# What do you want to know? | #learn_offer# Ask away.
+say[here.teaches=no priority=2] I've an apprentice already, I'm afraid. But ask what you like.
+free
+choice What's the work like? -> work
+choice What does it pay? -> wages
+choice What would it take to learn it? -> takes
+choice Will you take me on? [here.take_on=yes] locked "#here.take_on_why#" -> do apprentice ; then taken ; refused refused
+choice Any work going? [here.giver=yes] -> do open work
+choice Something else... -> do open chat
+choice Goodbye. -> bye
+
+node work
+ask player.hours
+say Long days, but honest ones. | Steady work, most days.
+free
+choice What does it pay? -> wages
+choice Will you take me on? [here.take_on=yes] locked "#here.take_on_why#" -> do apprentice ; then taken ; refused refused
+choice Goodbye. -> bye
+
+node wages
+say Nobody pays a wage to learn. You work beside me and learn it three times as fast as alone; what you make, you sell.
+free
+choice What would it take to learn it? -> takes
+choice Will you take me on? [here.take_on=yes] locked "#here.take_on_why#" -> do apprentice ; then taken ; refused refused
+choice Goodbye. -> bye
+
+node takes
+say I take one apprentice at a time, and one I know and trust. You'd do. Ask, and it's settled.
+say[here.take_on=no priority=2] One apprentice at a time, and one I know and trust. #here.take_on_why#
+free
+choice Will you take me on? [here.take_on=yes] locked "#here.take_on_why#" -> do apprentice ; then taken ; refused refused
+choice What's the work like? -> work
+choice Goodbye. -> bye
+
+node taken
+say Good. Be here when I start, and stay near me while I work. | Then you're mine to teach. Stay close while I work.
+mood pleased
+choice Goodbye. -> bye
+
+node refused
+say #topic.why# | Not yet. #topic.why#
+choice Goodbye. -> bye
+
+node bye
+say #farewell#. | #farewell#, #address#. | Mind how you go.
+end

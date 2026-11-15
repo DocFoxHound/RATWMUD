@@ -84,3 +84,9 @@ work_taken = Good. Root well and get on. | Good. Steady does it. | Settled, then
 work_paid = Here, as promised, old root. | Paid, and shade on you. | Fairly done. There you are.
 work_back = No harm done. Another will take it. | Fair enough. It'll grow back. | Better said now, old root.
 work_none = Nothing going, old root. | No work under my roof today. | Nothing needs doing.
+# The other roles (doc 83, Phase 3).
+inn_offer = Sit a while, old root. A bed or a bite? | Come in under the beams. What'll it be? | Bed, board or a cup?
+inn_bed = Upstairs, under the old beams. There's a chest for your things. | Your bed's upstairs. Root well tonight.
+watch_greet = The watch, old root. Speak slow. | Keep the peace and we'll grow along fine.
+church_greet = Shade on you. Come in. | Sit in the shade a while. All are welcome.
+learn_offer = It's a trade that grows on you. | Slow work, but it lasts.

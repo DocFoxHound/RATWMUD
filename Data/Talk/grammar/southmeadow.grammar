@@ -86,3 +86,9 @@ work_taken = Good. Don't let it spoil. | Good. Get it in before the rain. | Sett
 work_paid = Here, as promised, neighbour. | Paid, and a good harvest to you. | Fairly done. There you are.
 work_back = No harm done. Another will reap it. | Fair enough. It'll keep a season. | Better now than left to rot.
 work_none = Nothing going, neighbour. | No work till the reaping. | Nothing needs doing just now.
+# The other roles (doc 83, Phase 3).
+inn_offer = Come in from the fields. Bed, board or a drink? | A bed or a bite, neighbour? | What'll it be?
+inn_bed = Upstairs, clean straw and all. There's a chest for your things. | Your bed's upstairs. Ripe days.
+watch_greet = The watch, neighbour. Out with it. | Keep the peace and we'll all get the harvest in.
+church_greet = Good harvest to you. Come in. | The sun keep you. All are welcome here.
+learn_offer = It's a trade that feeds a family. | Long days, but good ones.

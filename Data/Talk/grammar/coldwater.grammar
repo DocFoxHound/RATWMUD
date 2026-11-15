@@ -85,3 +85,9 @@ work_taken = Good. Mind the tide. | Good. Don't let it drift. | Settled, then. O
 work_paid = Here, as promised, shore-friend. | Paid in full, calm water. | Fairly landed. There you are.
 work_back = No harm done. Another boat will take it. | Fair enough. The tide turns. | Better put back than lost at sea.
 work_none = Nothing landed for you today. | The water's quiet. No work. | Nothing needs rowing just now.
+# The other roles (doc 83, Phase 3).
+inn_offer = Come in off the water. Bed, board or a drink? | Dry off by the fire, shore-friend. | A bunk or a bite?
+inn_bed = Upstairs, snug as a moored boat. There's a chest for your things. | Your bunk's made upstairs. Calm sleep.
+watch_greet = The watch. Keep it calm water and we'll get on. | What is it, neighbour? The watch is listening.
+church_greet = Calm water be on you. | Come in from the shore. All are welcome.
+learn_offer = It's a trade that keeps a boat afloat. | Steady as the tide, this work.

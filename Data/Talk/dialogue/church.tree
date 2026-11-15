@@ -1,0 +1,54 @@
+# A priest (Docs/Design/83-dialogue-trees.md, Phase 3): Talk with a priest opens this. Restday's service (doc 42, its
+# hours: Society::ServiceStart and ServiceEnd, here.service), the Restday dole for the poorest households (doc 79,
+# 10.2), an offering for the church (doc 55's gift of coins, to the priest), the news, goodbye.
+
+tree church
+for job=priest
+priority 1
+entry talk greet
+
+node greet
+say #church_greet# | #blessing#, #address#. #church_greet# | #bless#. What brings you to us?
+say[here.day=rest] #blessing#. It's Restday: the service is #here.service#. | #church_greet# It's Restday, and all are welcome.
+mood calm
+free
+choice When is the service? -> service
+choice What does the church do for the poor? -> poor
+choice An offering for the church. -> offering
+choice Any news? -> do open news
+choice Something else... -> do open chat
+choice Goodbye. -> bye
+
+node service
+say On Restday, #here.service#. All are welcome, and the sermon's short. | Every Restday, #here.service#. Come and sit with us.
+say[here.day=rest] Today, #here.service#. Come in, there's room. | Today: #here.service#. You're welcome to stay.
+free
+choice What does the church do for the poor? -> poor
+choice An offering for the church. -> offering
+choice Goodbye. -> bye
+
+node poor
+say On Restday, the hungriest households are given a day's bread. It's not much, but nobody starves. | Bread on Restday, for the households that have none.
+free
+choice An offering for the church. -> offering
+choice Goodbye. -> bye
+
+node offering
+say Whatever you can spare is welcome. | Every penny feeds someone.
+choice A penny. -> do offering 1 ; then thanked ; refused refused
+choice Five pennies. -> do offering 5 ; then thanked ; refused refused
+choice Twenty pennies. -> do offering 20 ; then thanked ; refused refused
+choice Not today. -> greet
+
+node thanked
+say #blessing#. It will feed someone. | Thank you. #blessing#.
+mood pleased
+choice Goodbye. -> bye
+
+node refused
+say #topic.why# | Bless you for thinking of it. #topic.why#
+choice Goodbye. -> bye
+
+node bye
+say #blessing#. | #farewell#, #address#. | Go in peace.
+end

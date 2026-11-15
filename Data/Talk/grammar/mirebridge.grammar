@@ -86,3 +86,9 @@ work_taken = Good. Keep your feet dry. | Good. Don't sink with it. | Settled, th
 work_paid = Here, as promised. Dry feet. | Paid, fen-friend. | Fairly done. There you are.
 work_back = No harm done. Another will wade it. | Fair enough. It'll keep. | Better back on the boards than in the mud.
 work_none = Nothing going, fen-friend. | The fen's quiet. No work. | Nothing needs doing just now.
+# The other roles (doc 83, Phase 3).
+inn_offer = Come in and dry your feet. Bed, board or a drink? | A bed above the damp, fen-friend? | A bite or a bed?
+inn_bed = Upstairs, high and dry. There's a chest for your things. | Your bed's upstairs, dry as you like.
+watch_greet = The watch, fen-friend. What is it? | Keep your feet dry and the peace kept.
+church_greet = Dry feet to you. Come in. | Come in out of the wet. All are welcome.
+learn_offer = It's a trade that keeps feet dry. | Wet work some days, but honest.

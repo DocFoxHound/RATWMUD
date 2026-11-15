@@ -50,6 +50,13 @@ export function workEntry(action: string): string | null {
     return null;
 }
 
+/** The role's dialogue a wheel's action opens (doc 83, Phase 3), where the server runs the roles' trees: Apprentice a
+ *  master's trade, Report and Pay fine the watch's crime and fine. Null for any other action. (Talk itself opens the
+ *  `talk` entry for anyone: the server answers it with the tree of the resident's role, by their work, or the hub.) */
+export function roleEntry(action: string): string | null {
+    return ({apprentice: 'learn', report: 'report', 'pay fine': 'fine'} as Record<string, string>)[action] ?? null;
+}
+
 /** What the player is doing in the window: the choice picked out, their own words for each choice (drafts), the free
  *  line, and when the current line began (it is written out quickly). */
 export interface DialogueUi {

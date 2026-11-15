@@ -16,6 +16,8 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstdlib>
+#include <map>
 
 namespace ratw::game
 {
@@ -92,15 +94,55 @@ std::string missionGoods(const faction::Mission& m)
     return std::to_string(m.quantity) + (meal ? " meals" : " bundles of herbs");
 }
 
-std::string jobOf(const talk::ShownChoice& s)
-{
-    const auto f = s.bound.find("topic.job_id");
-    return f == s.bound.end() ? std::string() : f->second;
-}
-
 bool isMission(const std::string& id)
 {
     return id.rfind("mission-", 0) == 0;
+}
+
+const char* yes(bool b)
+{
+    return b ? "yes" : "no";
+}
+
+// The id of the item a shown choice was made for (its `each`'s: topic.job_id, topic.place_id...), "" for none.
+std::string itemOf(const talk::ShownChoice& s, const std::string& item)
+{
+    const auto f = s.bound.find("topic." + (item.empty() ? std::string("job") : item) + "_id");
+    return f == s.bound.end() ? std::string() : f->second;
+}
+
+// "nine" for 9, "eleven in the morning" for 11 (a service's hours).
+std::string clockWords(double hour, bool part)
+{
+    static const char* const numbers[] = {"twelve", "one", "two", "three", "four", "five", "six", "seven", "eight",
+                                          "nine", "ten", "eleven"};
+    const int h = int(std::floor(std::fmod(hour + 24, 24)));
+    if (h == 12)
+        return "noon";
+    return std::string(numbers[h % 12]) + (!part ? "" : h < 12 ? " in the morning" : h < 18 ? " in the afternoon" : " in the evening");
+}
+
+// What kind of thing a rumour is (as the residents' own gossip has it, World::ambientTopics): for the lines to answer in
+// kind.
+std::string claimKind(const std::string& c)
+{
+    const auto starts = [&](const char* w) { return c.rfind(w, 0) == 0; };
+    return c == "died" ? "death" : c == "married" ? "marriage"
+           : starts("attacked") || c == "is violent" ? "violence"
+           : starts("stole") || starts("tried to steal") ? "theft"
+           : starts("was attacked") || starts("was robbed") ? "victim"
+           : starts("is wanted") ? "wanted"
+           : c == "keeps promises" ? "promise_kept" : c == "breaks promises" ? "promise_broken"
+           : starts("was prowling") ? "prowling" : "other";
+}
+
+// The places a stranger asks the way to, by the trade that keeps them (doc 83, Phase 3).
+const std::map<std::string, std::string>& placeKinds()
+{
+    static const std::map<std::string, std::string> Kinds{
+        {"innkeeper", "the inn"}, {"priest", "the church"},   {"guard", "the watch"},  {"smith", "the smithy"},
+        {"baker", "the bakery"},  {"brewer", "the brewery"},  {"healer", "the healer"}, {"official", "the town office"}};
+    return Kinds;
 }
 } // namespace
 
@@ -356,6 +398,7 @@ talk::Query Game::dialogueQuery(const std::string& playerId, const DialogueSessi
     facts["here.chapter"] = chapters_.of(playerId) ? "yes" : "no";
     facts["here.report_fee"] = std::to_string(reportFee(playerId));
     facts["here.tithe_fee"] = std::to_string(titheFee(playerId));
+    dialogueRoleFacts(playerId, d.npc, facts);
     for (const auto& [k, v] : d.bound)
         facts[k] = v;
     if (const auto job = d.bound.find("topic.job_id"); job != d.bound.end())
@@ -406,9 +449,221 @@ std::vector<talk::Facts> Game::dialogueItems(const std::string& playerId, const 
             if (m.state == "taken" && m.taker == playerId && m.kind != "guard" && (m.kind == "message" ? m.to : m.official) == npcId)
                 ids.push_back(m.id);
     }
+    else if (list == "here.places")
+        return dialoguePlaces(npcId);
+    else if (list == "here.troubles")
+    {
+        // What this wolf may do here about a trouble it has heard of (doc 57): the wheel's own "trouble:" actions.
+        const auto* self = world_.entity(playerId);
+        const auto* npc = world_.entity(npcId);
+        if (!self || !npc)
+            return out;
+        auto actions = json::Value::array();
+        troubleActions(*self, *npc, std::hypot(npc->position.x - self->position.x, npc->position.y - self->position.y), actions);
+        for (const auto& a : actions.items())
+            if (a.isString())
+            {
+                const auto& action = a.asString();
+                const auto bar = action.find('|');
+                out.push_back({{"topic.trouble_id", action},
+                               {"topic.trouble_words", bar == std::string::npos ? std::string("About that trouble.") : action.substr(bar + 1) + "."}});
+            }
+        return out;
+    }
     for (const auto& id : ids)
         out.push_back(jobFacts(playerId, npcId, id));
     return out;
+}
+
+// ------------------------------------------------------------------ The other roles (doc 83, Phase 3)
+
+std::string Game::upstairsOf(const std::string& keeper) const
+{
+    const auto* post = world_.society().jobOf(keeper);
+    const auto* inn = post ? world_.cell(post->work.cell) : nullptr;
+    if (!inn)
+        return {};
+    for (const auto& [id, c] : world_.cells())
+        if (c.name == inn->name + ", upstairs" && innUpstairs(id))
+            return id;
+    return {};
+}
+
+std::vector<talk::Facts> Game::dialoguePlaces(const std::string& npcId)
+{
+    // The places in this resident's town worth asking the way to: where its innkeepers, priests, watch, smiths, bakers,
+    // brewers, healers and officials work (a building, each once), the nearest six, each with its way in words.
+    std::vector<talk::Facts> out;
+    const auto* npc = world_.entity(npcId);
+    if (!npc)
+        return out;
+    const auto& society = world_.society();
+    const auto town = world_.communityOf(npc->cellId);
+    if (town.empty())
+        return out;
+    std::vector<std::pair<double, talk::Facts>> found;
+    std::set<std::string> seen{npc->cellId};
+    for (const auto& p : society.positions())
+    {
+        if (seen.count(p.work.cell))
+            continue;
+        const auto held = society.state().careers.positions.find(p.id);
+        if (held == society.state().careers.positions.end() || held->second.holder.empty())
+            continue;
+        const auto* c = world_.cell(p.work.cell);
+        if (!c || c->outdoors || world_.communityOf(p.work.cell) != town)
+            continue;
+        const auto kind = talk::jobCategory(p.title, {}, p.role == "merchant" || p.role == "guard" ? p.role : "civilian", 40);
+        const auto words = placeKinds().find(kind);
+        if (words == placeKinds().end())
+            continue;
+        double far = -1;
+        const auto way = wayWords(npcId, p.work.cell, far);
+        if (way.empty() || far < 0)
+            continue;
+        seen.insert(p.work.cell);
+        const auto* keeper = world_.entity(held->second.holder);
+        found.push_back({far, {{"topic.place_id", p.work.cell}, {"topic.place_title", c->name}, {"topic.place_kind", words->second},
+                               {"topic.place_way", way + (keeper && !keeper->dead ? " " + keeper->name + " is there, most days." : std::string())}}});
+    }
+    // The nearest of each kind first (an inn, a church, the watch...), then the nearest others.
+    std::sort(found.begin(), found.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+    std::set<std::string> kinds;
+    std::vector<bool> taken(found.size(), false);
+    for (int pass = 0; pass < 2; ++pass)
+        for (std::size_t i = 0; i < found.size() && out.size() < 6; ++i)
+            if (!taken[i] && (pass == 1 || kinds.insert(found[i].second.at("topic.place_kind")).second))
+            {
+                taken[i] = true;
+                out.push_back(found[i].second);
+            }
+    return out;
+}
+
+void Game::dialogueRoleFacts(const std::string& playerId, const std::string& npcId, talk::Facts& f)
+{
+    const auto& society = world_.society();
+    const auto* npc = world_.entity(npcId);
+    if (!npc)
+        return;
+    const auto* post = society.jobOf(npcId);
+    // The watch: wanted here (and what settles it), crimes this wolf saw and hasn't told, the bounties and the camps.
+    const auto lawTown = world_.lawTown(npc->cellId);
+    bool wanted = false;
+    std::int64_t owed = 0;
+    for (const auto& w : world_.crime().warrants)
+        if (w.person == playerId && !lawTown.empty() && w.town == lawTown)
+            wanted = true, owed = world_.owedBy(w);
+    f["here.wanted"] = yes(wanted);
+    f["here.fine"] = std::to_string(owed);
+    int witnessed = 0;
+    for (const auto& inc : world_.crime().incidents)
+        for (const auto& w : inc.witnesses)
+            witnessed += w.id == playerId && !w.reported && inc.offender != playerId;
+    f["here.witnessed"] = std::to_string(witnessed);
+    int camps = 0;
+    for (const auto& camp : world_.roads().camps)
+        camps += camp.active;
+    f["here.camps"] = std::to_string(camps);
+    {
+        const auto* market = world_.roadMarketOf(npc->cellId);
+        const Contract* bounty = nullptr;
+        for (const auto& k : world_.roads().contracts)
+            if (k.kind == "bounty" && k.status == "open" && (!bounty || (market && (k.town == market->id || k.from == market->id))))
+                bounty = &k;
+        std::string words;
+        if (bounty)
+        {
+            std::string where;
+            for (const auto& camp : world_.roads().camps)
+                if (camp.id == bounty->target)
+                    if (const auto* c = world_.cell(camp.cell))
+                        where = " out by " + c->name;
+            words = "There's a price on the bandit camp" + where + ": " + pennies(bounty->reward) +
+                    " to whoever clears it. The merchants at the market post it.";
+        }
+        else if (camps > 0)
+            words = "There are bandits out on the roads, but nobody's put a price on them just now.";
+        else
+            words = "The roads are quiet. There's no bounty posted.";
+        f["here.bounty"] = words;
+    }
+    // An inn: a bed upstairs, by the night or the week, or the whole upstairs; one lodging a wolf.
+    const auto upstairs = upstairsOf(npcId);
+    const bool lodging = lodgingOf(playerId) != nullptr;
+    f["here.inn"] = yes(!upstairs.empty());
+    f["here.lodging"] = yes(lodging);
+    f["here.bed_ok"] = yes(!upstairs.empty() && !lodging);
+    f["here.bed_why"] = upstairs.empty() ? "We've no rooms to let." : lodging ? "You have a lodging already." : std::string();
+    f["here.bed_night"] = std::to_string(innPrice("bed night"));
+    f["here.bed_week"] = std::to_string(innPrice("bed week"));
+    f["here.upstairs_night"] = std::to_string(innPrice("whole"));
+    // A master: their trade, open to an apprentice (the wheel's rule: not the watch, no apprentice yet); and whether they
+    // would take this wolf on (Society::apprentice: not learning another, known and trusted, a regard of 30).
+    const bool master = post && post->role != "guard" && !npc->dead &&
+                        society.state().careers.positions.count(post->id) && society.state().careers.positions.at(post->id).apprentice.empty();
+    f["here.teaches"] = yes(master);
+    f["here.trade_title"] = post && !post->title.empty() ? post->title : std::string("my work");
+    double regard = 0;
+    if (const auto* b = world_.bonds().find(npcId, playerId))
+        regard = std::clamp(b->familiarity * .4 + b->affinity * .4 + b->trust * .2, 0.0, 100.0);
+    const bool learning = society.apprenticedTo(playerId) != nullptr;
+    f["here.take_on"] = yes(master && !learning && regard >= 30);
+    f["here.take_on_why"] = !master     ? (post && post->role != "guard" ? "They have an apprentice already." : "They've no trade to teach.")
+                            : learning  ? "You're learning a trade already."
+                            : regard < 30 ? "They don't know you well enough to take you on yet."
+                                          : std::string();
+    // A companion in the party (doc 32): waiting or following.
+    const auto* companion = parties_.companion(npcId);
+    const bool along = companion && parties_.together(playerId, npcId);
+    f["here.companion"] = yes(along);
+    f["here.waiting"] = yes(along && companion->waiting);
+    // A priest's Restday (doc 42): the service's hours.
+    f["here.service"] = "from " + clockWords(Society::ServiceStart, false) + " until " + clockWords(Society::ServiceEnd, true);
+    // The town: how many live here, its shops and inns, and whose district this is (a House's: doc 61).
+    f["here.folk"] = f["here.shops"] = f["here.inns"] = "0";
+    if (const auto town = world_.communityOf(npc->cellId); !town.empty())
+    {
+        int folk = 0, shops = 0, inns = 0;
+        for (const auto& [id, life] : society.state().residents)
+            if (!life.homeCell.empty() && world_.communityOf(life.homeCell) == town)
+                if (const auto* e = world_.entity(id); e && !e->dead)
+                    ++folk;
+        for (const auto& p : society.positions())
+            if (p.role == "merchant" && world_.communityOf(p.work.cell) == town)
+                if (const auto held = society.state().careers.positions.find(p.id);
+                    held != society.state().careers.positions.end() && !held->second.holder.empty())
+                {
+                    ++shops;
+                    inns += talk::jobCategory(p.title, {}, "merchant", 40) == "innkeeper";
+                }
+        f["here.folk"] = std::to_string(folk);
+        f["here.shops"] = std::to_string(shops);
+        f["here.inns"] = std::to_string(inns);
+    }
+    if (const auto house = world_.districtHouse(npc->cellId); !house.empty())
+        f["here.district"] = house;
+    // Gossip: the freshest thing this resident has heard of someone else (a week old at most, half sure at least; never
+    // of the two of them, nor a deed, which has its own words: doc 56).
+    f["here.gossip"] = "no";
+    if (const auto* heard = world_.beliefsOf(npcId))
+    {
+        const Belief* best = nullptr;
+        for (const auto& b : *heard)
+            if (b.subject != npcId && b.subject != playerId && b.confidence >= .45 && world_.calendarDays() - b.day <= 7 &&
+                b.claim.rfind("deed:", 0) != 0 && world_.entity(b.subject) && (!best || b.day > best->day))
+                best = &b;
+        if (best)
+        {
+            const auto* about = world_.entity(best->subject);
+            f["here.gossip"] = "yes";
+            f["topic.subject"] = about->npc ? about->name : labelFor(npcId, best->subject);
+            f["topic.claim"] = best->claim;
+            f["topic.claim_kind"] = claimKind(best->claim);
+        }
+    }
+    f["here.places"] = std::to_string(dialoguePlaces(npcId).size());
+    f["here.troubles"] = std::to_string(dialogueItems(playerId, npcId, "here.troubles").size());
 }
 
 // ------------------------------------------------------------------ Said aloud
@@ -602,7 +857,10 @@ void Game::dialogueOpen(Connection* c, const std::string& npcId, const std::stri
     // The entry: trade, talk (Phase 1); a giver's work (Phase 2): work, job:<contract>, missions, mine, deliver:<id>.
     const auto colon = entry.find(':');
     const std::string base = entry.substr(0, colon), arg = colon == std::string::npos ? std::string() : entry.substr(colon + 1);
-    static const std::set<std::string> Entries{"trade", "talk", "work", "job", "missions", "mine", "deliver"};
+    // The other roles (Phase 3): learn (a master's trade: the wheel's Apprentice), report and fine (the watch's: the
+    // wheel's Report and Pay fine), orders (a companion's).
+    static const std::set<std::string> Entries{"trade", "talk", "work", "job", "missions", "mine", "deliver", "learn", "report", "fine",
+                                               "orders"};
     if (!Entries.count(base) || (base == "job" || base == "deliver") == arg.empty())
     {
         refuse("none", "");
@@ -650,6 +908,22 @@ void Game::dialogueOpen(Connection* c, const std::string& npcId, const std::stri
     if (base == "mine" && !merchant && faction.empty())
     {
         refuse("none", who + " gave you no work.");
+        return;
+    }
+    const auto* post = world_.society().jobOf(npcId);
+    if (base == "learn" && (!post || post->role == "guard"))
+    {
+        refuse("none", who + " has no trade to teach.");
+        return;
+    }
+    if ((base == "report" || base == "fine") && !(post && post->role == "guard"))
+    {
+        refuse("none", who + " isn't of the watch.");
+        return;
+    }
+    if (base == "orders" && !(parties_.companion(npcId) && parties_.together(playerId, npcId)))
+    {
+        refuse("none", who + " isn't travelling with you.");
         return;
     }
     const auto listed = [&](const std::string& list) {
@@ -812,8 +1086,9 @@ void Game::dialogueCommand(Connection* c, const std::string& type, const json::V
     q.concept = node->concept;
     const auto now_ = talk_.choices(*node, q, 0, [&](const std::string& list) { return dialogueItems(playerId, d.npc, list); });
     // (The same choice: an `each` one by its job, wherever it now stands in the list, its facts as they are now.)
+    const auto& itemName = node->choices[shown->index].item;
     const auto still = std::find_if(now_.begin(), now_.end(), [&](const talk::ShownChoice& s) {
-        return s.index == shown->index && (shown->item < 0 ? s.item < 0 : s.item >= 0 && jobOf(s) == jobOf(*shown));
+        return s.index == shown->index && (shown->item < 0 ? s.item < 0 : s.item >= 0 && itemOf(s, itemName) == itemOf(*shown, itemName));
     });
     if (still == now_.end() || still->locked)
     {
@@ -1012,6 +1287,90 @@ void Game::dialogueCommand(Connection* c, const std::string& type, const json::V
         if (r.ok)
             d.bound["topic.answer"] = unquoted(r.message);
         finish(r, {});
+        return;
+    }
+    // The other roles (doc 83, Phase 3), each the wheel's own handler.
+    if (choice.action == "report")
+    {
+        // The watch: what this wolf saw and hasn't told (World::report).
+        talk::Facts before;
+        dialogueRoleFacts(playerId, d.npc, before);
+        const auto r = world_.report(playerId, d.npc);
+        if (r.ok)
+        {
+            record(Economy | Crime | Character, playerId);
+            d.bound["topic.reported"] = before["here.witnessed"] != "0" ? "yes" : "no";
+        }
+        finish(r, r.ok && before["here.witnessed"] != "0" ? r.message : std::string());
+        return;
+    }
+    if (choice.action == "pay_fine")
+    {
+        const auto r = world_.payFine(playerId, d.npc);
+        if (r.ok)
+            record(Economy | Crime | Character, playerId);
+        finish(r, r.ok ? r.message : std::string());
+        return;
+    }
+    if (choice.action == "lodge")
+    {
+        // An inn's bed (doc 54): taken from its keeper downstairs, in the upstairs over the inn they keep.
+        const auto upstairs = upstairsOf(d.npc);
+        Result r{false, "There are no rooms to let here.", {}};
+        if (!upstairs.empty())
+        {
+            auto k = json::Value::object();
+            const bool whole = choice.args.size() == 1 && choice.args[0] == "whole";
+            k.add("verb", whole ? "night" : "bed");
+            k.add("period", whole || choice.args.size() < 2 ? std::string("night") : choice.args[1]);
+            lodgeCommand(c, k, r, upstairs);
+        }
+        if (r.ok)
+            system(c, r.message);
+        finish(r, r.ok ? std::string("Your bed is upstairs.") : std::string());
+        return;
+    }
+    if (choice.action == "apprentice")
+    {
+        const auto r = world_.apprentice(playerId, d.npc);
+        if (r.ok)
+        {
+            system(c, r.message);
+            record(Careers | Economy | Character, playerId);
+        }
+        finish(r, r.ok ? r.message : std::string());
+        return;
+    }
+    if (choice.action == "trouble")
+    {
+        // A resident's trouble (doc 57, 3): the remedy the wheel offers, bound from here.troubles.
+        const auto action = d.bound.count("topic.trouble_id") ? d.bound.at("topic.trouble_id") : std::string();
+        const auto r = action.empty() ? Result{false, "About what?", {}} : troubleAction(playerId, d.npc, action);
+        finish(r, r.ok ? r.message : std::string());
+        return;
+    }
+    if (choice.action == "order")
+    {
+        // A companion's orders (doc 32): they answer in their own words, and the conversation ends.
+        const auto& o = choice.args.empty() ? std::string() : choice.args.front();
+        const auto r = orderCompanion(playerId, d.npc, o == "follow" ? "follow me" : o == "wait" ? "wait here" : o == "home" ? "go home" : "dismiss");
+        finish(r, {});
+        return;
+    }
+    if (choice.action == "offering")
+    {
+        // To the church, by its priest: doc 55's gift of coins, by the give handler's rules.
+        Result r;
+        if (jobCategoryOf(d.npc) != "priest")
+            r = {false, "Give that at a church.", {}};
+        else
+        {
+            auto k = json::Value::object();
+            k.add("target", d.npc);
+            k.add("coins", choice.args.empty() ? 1.0 : std::atof(choice.args.front().c_str()));
+            giveCommand(c, k, r);
+        }
+        finish(r, r.ok ? r.message : std::string());
         return;
     }
     if (choice.action == "open")
