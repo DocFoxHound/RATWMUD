@@ -215,6 +215,22 @@ test('crossing a seam eases the sky: light, weather and tints fade over seconds,
     assert.ok(page.env.illumination === 0.1 && page.sheets.rain > 0.9, 'the first cell is not faded into');
 });
 
+test('weather fields of the same kind crossfade at a cell seam', () => {
+    const a = new Ambient();
+    const sky = {weather: 'rain', intensity: 1, phase: 'day', lightingTone: 'neutral', lightSource: 'daylight', hour: 12,
+        daylight: 0.5, illumination: 0.5, artificialLight: 0, daylightAccess: 1, glowStrength: 0, sight: 1,
+        hearing: 1, scent: 1, movement: 1};
+    const first = {cols: 2, rows: 1, step: 16, kinds: 'rc', amounts: '90'};
+    const next = {cols: 2, rows: 1, step: 16, kinds: 'cr', amounts: '09'};
+    a.update(sky, first, true, 1, 'west');
+    a.update(sky, next, true, 1.05, 'east');
+    assert.ok(a.priorSheets.rain > 0.9 && a.fieldMix < 0.1, 'the previous rain remains while the new field starts');
+    a.update(sky, next, true, 2.05, 'east');
+    assert.ok(a.fieldMix > 0.3 && a.fieldMix < 0.5, 'the fields overlap during the fade');
+    a.update(sky, next, true, 5, 'east');
+    assert.equal(a.fieldMix, 1, 'the new field takes over completely');
+});
+
 test('the map eases across a cell crossing: the frame after it is drawn between the two cells\' light', () => {
     const {state: s} = testGame();
     const painter = new GamePainter(s, new Painter(fakeContext()), {get: () => ({})} as unknown as Sheets);

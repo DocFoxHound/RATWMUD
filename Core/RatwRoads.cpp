@@ -494,6 +494,12 @@ void World::tendRoads()
             continue;
         const auto* carrier = entity(c.taker);
         const auto* to = entity(c.target);
+        if (!to || to->dead)
+        {
+            if (carrier && !carrier->npc) notice(c.taker, "The recipient can no longer receive the letter. The courier work has ended.", true);
+            settleContract(c, "expired", {});
+            continue;
+        }
         if (carrier && to && !to->dead && carrier->cellId == to->cellId && between(carrier->position, to->position) <= 3)
         {
             const auto paid = settleContract(c, "done", c.taker);
@@ -567,6 +573,15 @@ bool World::withCaravan(const std::string& who, const Entity& wagon) const
     const auto* e = entity(who);
     if (!e || e->dead)
         return false;
+    // A hired player must actually guard the wagon. A whole neighboring cell was previously counted as present,
+    // even when the player was hundreds of tiles away. Compare world positions so a seam does not break the range.
+    if (!e->npc)
+    {
+        const auto* a = cell(e->cellId), *b = cell(wagon.cellId);
+        return a && b && a->outdoors && b->outdoors && a->worldZ == b->worldZ &&
+               std::hypot(a->worldX + e->position.x - b->worldX - wagon.position.x,
+                          a->worldY + e->position.y - b->worldY - wagon.position.y) <= 12;
+    }
     if (e->cellId == wagon.cellId)
         return true;
     std::set<std::string> near;
@@ -819,6 +834,15 @@ void World::caravanEntered(Caravan& c, const Entity& wagon)
         camp.strength = std::clamp(camp.strength + .5 - .3 * guards, 0.0, strongest);
         camp.lastRaid = calendarDays_;
         c.status = "raided";
+        for (auto& k : roads_.contracts)
+            if (escortOn(k, c.from, c.to) && k.status == "taken" &&
+                std::find(c.escorts.begin(), c.escorts.end(), k.taker) != c.escorts.end())
+            {
+                if (const auto* guard = entity(k.taker); guard && !guard->npc)
+                    notice(k.taker, "The wagon was robbed. Your escort contract has failed.", true);
+                settleContract(k, "expired", {});
+            }
+        c.escorts.clear();
         if (auto* w = entity(wagon.id))
             w->name = "a robbed wagon limping home to " + marketWords(c.from);
         recordEvent({"raid", camp.id, c.to, cellId, 0, 0, c.departure, taken, 0, "the wagon to " + marketWords(c.to) + " was robbed"});
@@ -1238,7 +1262,7 @@ void World::roadsDaily()
         const auto* town = roadMarket(k.town);
         if (camp == roads_.camps.end() || !camp->active)
         {
-            settleContract(k, "done", std::string());
+            settleContract(k, k.status == "taken" ? "expired" : "done", std::string());
             continue;
         }
         const double watch = !town ? 0 : std::min(10.0, town->guards / 3.0);
@@ -1249,7 +1273,7 @@ void World::roadsDaily()
             if (camp->strength <= .5)
             {
                 camp->active = false;
-                settleContract(k, "done", std::string());      // The watch did it: the reward goes back.
+                settleContract(k, k.status == "taken" ? "expired" : "done", std::string()); // The watch did it.
                 if (town)
                     recoverHoard(*camp, society_.treasuryOf(town->id), "recovered from the bandits");
                 recordEvent({"camp cleared", k.town, camp->id, camp->cell, 0, 0, {}, 0, 0, "by the watch"});
@@ -1703,8 +1727,9 @@ void World::clearCamp(BanditCamp& camp, const std::string& by)
     for (auto& k : roads_.contracts)
         if (k.kind == "bounty" && k.target == camp.id && (k.status == "open" || k.status == "taken"))
         {
-            const auto paid = settleContract(k, "done", by);
-            if (k.reward)
+            const bool mine = k.status == "open" || k.taker == by;
+            const auto paid = settleContract(k, mine ? "done" : "expired", mine ? by : std::string());
+            if (mine && k.reward)
                 words += paid >= k.reward ? " The bounty on them, " + pennies(paid) + ", is yours."
                          : paid ? " Of the bounty on them, " + pennies(k.reward) + ", you are paid " + pennies(paid) + ": " + DayPaid +
                                       ", and the rest goes back."

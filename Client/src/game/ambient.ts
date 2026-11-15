@@ -40,6 +40,9 @@ export class Ambient {
     readonly sheets: Record<string, number> = Object.fromEntries(WeatherKinds.map(k => [k, 0]));
     /** How strongly each wash (a kind of weather's tint, dawn, dusk, the sunlit day) is laid on, eased. */
     readonly washes: Record<string, number> = Object.fromEntries(Washes.map(k => [k, 0]));
+    /** The old cell's visible weather, held while the new field fades over it. */
+    readonly priorSheets: Record<string, number> = Object.fromEntries(WeatherKinds.map(k => [k, 0]));
+    fieldMix = 1;
     /** An interior's glow colour, eased. */
     glow: Color = glowOf('neutral');
     private goalSheets: Record<string, number> = Object.fromEntries(WeatherKinds.map(k => [k, 0]));
@@ -55,6 +58,7 @@ export class Ambient {
     reset() {
         this.last = NaN;
         this.cell = '';
+        this.fieldMix = 1;
     }
 
     /**
@@ -64,9 +68,14 @@ export class Ambient {
     update(e: EnvironmentView, field: WeatherFieldView | null, outdoors: boolean, clock: number, cell = '') {
         const dt = clock - this.last;
         const snap = !(dt >= 0 && dt <= LongPause) || (!this.cell && !!cell);
+        if (!snap && cell && this.cell && cell !== this.cell) {
+            for (const kind of WeatherKinds) this.priorSheets[kind] = this.sheets[kind];
+            this.fieldMix = 0;
+        }
         this.last = clock;
         if (cell) this.cell = cell;
         const k = snap ? 1 : 1 - Math.exp(-dt / AmbientSeconds);
+        this.fieldMix = snap ? 1 : Math.min(1, this.fieldMix + dt / (AmbientSeconds * 2.7));
         const ease = (from: number, to: number) => {
             const v = from + (to - from) * k;
             return Math.abs(v - to) < 0.002 ? to : v;

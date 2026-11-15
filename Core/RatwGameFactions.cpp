@@ -3,6 +3,7 @@
 // faction holds, reports asked of its officials, its merchants' prices, its mission boards, and what the NPC Mind and
 // each Chapter member are told.
 #include "RatwGame.h"
+#include "RatwWire.h"
 
 #include <algorithm>
 #include <cmath>
@@ -302,14 +303,30 @@ void Game::missionTick(double dt, double day)
             m.state = "expired";
             continue;
         }
+        if (m.state == "taken")
+        {
+            const auto* worker = world_.entity(m.taker);
+            const auto* recipient = world_.entity(m.kind == "message" ? m.to : m.official);
+            if (!worker || worker->dead || !recipient || recipient->dead)
+            {
+                m.state = "expired";
+                if (auto* cl = clientOf(m.taker)) system(cl, "The mission can no longer be completed.");
+                continue;
+            }
+        }
         // Keeping watch: time in the place counts while the one who took it is there.
         if (m.state == "taken" && m.kind == "guard")
-            if (const auto* e = world_.entity(m.taker); e && clientOf(m.taker) && e->cellId == m.cell && !e->dead && e->downedLeft <= 0)
+        {
+            const auto* e = world_.entity(m.taker);
+            const auto* post = world_.entity(m.official);
+            if (e && post && clientOf(m.taker) && e->cellId == m.cell && e->downedLeft <= 0 &&
+                std::hypot(e->position.x - post->position.x, e->position.y - post->position.y) <= 12)
             {
                 m.held += dt;
-                if (m.held >= m.seconds)
-                    completeMission(m, day);
+                if (m.held >= m.seconds) completeMission(m, day);
             }
+            else m.held = 0;   // A watch is one continuous stretch near the post.
+        }
     }
 }
 
@@ -379,6 +396,8 @@ bool Game::factionCommand(Connection* c, const Value& j, Result& result)
         auto e = Value::object();
         e.add("type", "missions");
         e.add("faction", factions_.find(factionId) ? factions_.find(factionId)->name : factionId);
+        e.add("giver", names::capitalised(labelFor(id, target)));
+        if (const auto* giver = world_.entity(target)) e.add("appearance", wire::appearance(giver->appearance));
         auto list = Value::array();
         for (const auto& m : factions_.missions())
         {
@@ -388,6 +407,8 @@ bool Game::factionCommand(Connection* c, const Value& j, Result& result)
             auto o = Value::object();
             o.add("id", m.id);
             o.add("text", missionWords(m, id));
+            o.add("kind", m.kind);
+            o.add("place", m.place);
             o.add("tier", m.tier);
             o.add("state", m.state);
             o.add("allowed", allowed);

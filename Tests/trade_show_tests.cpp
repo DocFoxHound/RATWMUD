@@ -763,6 +763,14 @@ void anEscortsPayWithinTheDay()
         const auto trip = sent->id;
         w.takeNotices();
         w.takeEvents();
+        if (day == Free)
+        {
+            // The same cell is not enough to count as guarding: the player must be close to the actual wagon.
+            ada->position = {0.5, 0.5};
+            w.tick(1);
+            expect(sent->leg == 0 && sent->with.find("player-ada") == sent->with.end(),
+                   "the wagon waits when its hired guard is far away in the same cell");
+        }
         bool arrived = false;
         std::int64_t said = -1;
         for (int t = 0; t < 1500 && !arrived; ++t)

@@ -127,7 +127,8 @@ export class Dialogs {
                 s.circles, s.circleInvites] : '',
             m === 'stories' ? [s.shelf] : '', m === 'book' ? [s.bookOpen, s.circles] : '',
             m === 'inspect' ? s.safetyMarks : '', m === 'their_equipment' ? [s.inspectedCharacter, this.spot] : '', m === 'character' ? [self, s.reputation] : '',
-            m === 'missions' ? s.missionBoard : '', m === 'letters' ? [s.lettersCase, s.letterDraftVersion, obj(self, 'names'), arr(s.snapshot, 'inventory')] : '',
+            m === 'missions' ? s.missionBoard : '', m === 'mission_offer' ? s.missionOffer : '',
+            m === 'letters' ? [s.lettersCase, s.letterDraftVersion, obj(self, 'names'), arr(s.snapshot, 'inventory')] : '',
             m === 'give' || m === 'lend' ? [s.giveTarget, arr(s.snapshot, 'inventory'), countText(self, 'cash')] : '',
             m === 'board' ? s.boardView : '', m === 'archive' ? s.archiveTask : '', m === 'journal' ? [s.journalView, arr(self, 'journal')] : '',
             m === 'chronicle' ? s.chronicleView : '', m === 'welcome' ? s.welcomeView : '', m === 'credits' ? s.creditsView : '',
@@ -150,6 +151,7 @@ export class Dialogs {
         if (m === 'character') this.character(self);
         else if (m === 'chapter_window') this.chapter(self);
         else if (m === 'missions') this.missions();
+        else if (m === 'mission_offer') this.missionOffer();
         else if (m === 'letters') renderLetters(this.panel, s);
         else if (m === 'give') this.giveSheet();
         else if (m === 'board') renderBoard(this.panel, s);
@@ -608,13 +610,39 @@ export class Dialogs {
             const row = el('div', 'story-row', this.panel);
             el('span', bool(m, 'allowed') ? '' : 'muted', row, str(m, 'text'));
             if (str(m, 'state') === 'taken') el('span', 'label sage', row, 'TAKEN');
-            else if (bool(m, 'allowed')) button('TAKE IT ON', 'small', row, () => {
-                this.s.sendFaction({verb: 'take', mission: str(m, 'id')});
-                this.act('close');
+            else if (bool(m, 'allowed')) button('ASK ABOUT IT', 'small', row, () => {
+                this.s.missionOffer = {...m, source: 'faction', giver: str(board, 'giver'), appearance: obj(board, 'appearance'),
+                    title: str(m, 'text'), explanation: str(m, 'kind') === 'guard'
+                        ? `Go to ${str(m, 'place')} and keep watch within twelve tiles of the official for one continuous stretch. Finish before this day ends.`
+                        : str(m, 'kind') === 'message'
+                            ? `Carry this message to the official at ${str(m, 'place')}. Speak to them before this day ends.`
+                            : 'Bring the requested goods back to the official before this day ends.'};
+                this.s.modal = 'mission_offer';
             });
             else el('span', 'muted small', row, num(m, 'tier') === 1 ? 'for a Lodge they know well' : 'for a Company they trust');
         }
         el('p', 'muted small', this.panel, 'Deliveries and letters are handed over from the recipient\'s menu; a watch is kept by staying there.');
+    }
+
+    private missionOffer() {
+        const offer = this.s.missionOffer;
+        this.heading('WORK OFFERED', str(offer, 'giver', 'Mission giver'));
+        const row = el('div', 'mission-offer', this.panel);
+        const face = el('canvas', 'wolf-face', row);
+        face.width = 232; face.height = 276;
+        const ctx = face.getContext('2d');
+        if (ctx) drawPortrait(ctx, this.portraits, obj(offer, 'appearance'), 0, 0, face.width, face.height, undefined, {view: 'face'});
+        const words = el('div', 'mission-offer-words', row);
+        el('div', 'label gold', words, str(offer, 'title'));
+        el('p', '', words, str(offer, 'explanation'));
+        if (num(offer, 'reward') > 0) el('p', 'muted small', words, `Reward: ${Math.trunc(num(offer, 'reward'))} pennies`);
+        const actions = el('div', 'sheet-actions', this.panel);
+        button('DECLINE', 'secondary', actions, () => { this.s.modal = str(offer, 'source') === 'faction' ? 'missions' : ''; });
+        button('ACCEPT', 'primary', actions, () => {
+            if (str(offer, 'source') === 'faction') this.s.sendFaction({verb: 'take', mission: str(offer, 'id')});
+            else this.s.sendAction(`take ${str(offer, 'contract')}`);
+            this.s.modal = '';
+        });
     }
 
     /** The bookshelf (doc 51, Phase 7): Stories as books, newest at the top, scrolling down through every one; filtered

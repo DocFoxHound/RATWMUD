@@ -180,6 +180,7 @@ export class GameState {
     unreadCircles: Record<string, number> = {};
     reputation: string[] = [];          // The last answer to "what's said of me about town" (doc 32, 1.4).
     missionBoard: Json | null = null;   // The last faction mission board asked for (doc 32, 4.5).
+    missionOffer: Json | null = null;
     posts: Post[] = [];
     entities = new Map<string, EntityView>();
     motionVisible = new Set<string>();
@@ -1288,6 +1289,11 @@ export class GameState {
             // A faction's mission board (doc 32, 4.5).
             this.missionBoard = e;
             this.modal = 'missions';
+            return;
+        }
+        if (type === 'missionOffer') {
+            this.missionOffer = e;
+            this.modal = 'mission_offer';
             return;
         }
         if (type === 'reputation') {

@@ -526,6 +526,45 @@ test('a large cell follows the wolf and stops at its edges', () => {
         s.mapOrigin[1] > s.mapRect.top - 120, 'at a corner it stops at the edge');
 });
 
+test('the outdoor camera keeps following through a seam when adjoining ground is available', () => {
+    const {state: s, painter} = testGame();
+    const rows = Array.from({length: 128}, () => '_'.repeat(128));
+    s.applySnapshot({cell: {id: 'road', width: 128, height: 128, outdoors: true, rows},
+        visibility: rows.map(() => '2'.repeat(128)), self: {id: 'self', x: 2, y: 64}});
+    s.fringe = 48;
+    s.mapRect = rect(584, 199, 1544, 816);
+    draw(painter, 'drawLocal');
+    const me = s.entities.get('self')!;
+    assert.ok(Math.abs(s.mapOrigin[0] + me.x * s.tileSize - (s.mapRect.left + s.mapRect.right) / 2) < 2,
+        'the wolf stays centered as it approaches the neighboring cell');
+});
+
+test('the minimap marks each accepted job and party member, but omits residents', () => {
+    const {state: s} = testGame();
+    s.applySnapshot({cell: {id: 'road', x: 0, y: 0, width: 64, height: 64, outdoors: true},
+        self: {id: 'self', x: 10, y: 10, missions: [
+            {id: 'k1', title: 'Guard the wagon to Oakhaven', cell: 'road', x: 20, y: 20},
+            {id: 'k2', title: 'Carry a letter', cell: 'road', x: 20, y: 20}],
+            party: {id: 'p', leader: 'self', members: [
+                {id: 'self', online: true, cell: 'road', x: 10, y: 10},
+                {id: 'friend', online: true, cell: 'road', x: 14, y: 10, npc: true}]}},
+        entities: [{id: 'resident', kind: 'npc', x: 12, y: 10}, {id: 'friend', kind: 'npc', rel: 'party', x: 14, y: 10}],
+        worldMap: [{id: 'road', name: 'Road', x: 0, y: 0, width: 64, height: 64, knowledge: 'visited', current: true}]});
+    const circles: number[] = [];
+    const record = new Proxy({} as Record<string, unknown>, {
+        get: (_, key) => key === 'arc' ? (x: number) => circles.push(x) : key === 'canvas' ? undefined : () => {},
+        set: () => true,
+    }) as unknown as CanvasRenderingContext2D;
+    const map = new MapRenderer(() => null);
+    map.draw(record, s, {x: 0, y: 0, w: 200, h: 160}, 4);
+    assert.ok(circles.includes(116), 'a party resident has a map marker');
+    assert.ok(!circles.includes(108), 'an ordinary resident has no minimap marker');
+    assert.deepEqual(map.sceneMarks.filter(m => m.text.includes(' · ')).map(m => m.text),
+        ['1 · Guard the wagon to Oakhaven', '2 · Carry a letter']);
+    assert.ok(Math.hypot(map.sceneMarks[0].x - map.sceneMarks[1].x, map.sceneMarks[0].y - map.sceneMarks[1].y) >= 17,
+        'two jobs at one destination keep separate numbered markers');
+});
+
 test('cell atmosphere follows the room, never the viewport; lighting presets for developers only', () => {
     const {state: s, commands, painter} = testGame();
     const env: Json = {hour: 23, phase: 'night', daylight: 0, illumination: 1, artificialLight: 1, daylightAccess: 1, glowStrength: 1,

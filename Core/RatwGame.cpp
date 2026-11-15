@@ -3606,6 +3606,62 @@ void Game::sendSnapshot(Connection* c)
             self.set("journal", journal);           // (Storylines and tales: doc 58, 2.)
         if (const auto tracked = trackedView(id); !tracked.isNull())
             self.set("tracked", tracked);
+        // Every accepted job has its own map destination. Keep the id and words together so several jobs can be
+        // distinguished on the minimap; an escort follows its wagon once it has left the departure market.
+        auto missionMarks = Value::array();
+        for (const auto& k : world_.roads().contracts)
+        {
+            if (k.status != "taken" || k.taker != id)
+                continue;
+            std::string where;
+            double x = 0, y = 0;
+            if (k.kind == "escort")
+            {
+                if (const auto* from = world_.roadMarket(k.from); from)
+                    where = from->market, x = from->marketX, y = from->marketY;
+                for (const auto& wagon : world_.roads().caravans)
+                    if (wagon.kind == "wagon" && wagon.to == k.town && (k.from.empty() || wagon.from == k.from) &&
+                        wagon.status == "travelling" && !wagon.cell.empty() &&
+                        std::find(wagon.escorts.begin(), wagon.escorts.end(), id) != wagon.escorts.end())
+                    {
+                        where = wagon.cell, x = wagon.x, y = wagon.y;
+                        break;
+                    }
+            }
+            else if (k.kind == "courier")
+            {
+                if (const auto* recipient = world_.entity(k.target); recipient)
+                    where = recipient->cellId, x = recipient->position.x, y = recipient->position.y;
+            }
+            else if (k.kind == "bounty")
+                for (const auto& camp : world_.roads().camps)
+                    if (camp.id == k.target && camp.active)
+                    {
+                        where = camp.cell;
+                        if (camp.x >= 0 && camp.y >= 0) x = camp.x, y = camp.y;
+                        else if (const auto* place = world_.cell(where)) x = place->width / 2.0, y = place->height / 2.0;
+                    }
+            if (where.empty()) continue;
+            auto mark = Value::object();
+            mark.add("id", k.id); mark.add("kind", k.kind); mark.add("title", k.detail);
+            mark.add("cell", where); mark.add("x", x); mark.add("y", y);
+            if (const auto* place = world_.cell(where)) mark.add("worldX", place->worldX), mark.add("worldY", place->worldY);
+            missionMarks.push(mark);
+        }
+        for (const auto& m : factions_.missions())
+        {
+            if (m.state != "taken" || m.taker != id) continue;
+            const auto* destination = world_.entity(m.kind == "message" ? m.to : m.official);
+            const std::string where = m.kind == "guard" ? m.cell : destination ? destination->cellId : std::string();
+            if (where.empty()) continue;
+            auto mark = Value::object();
+            mark.add("id", m.id); mark.add("kind", m.kind); mark.add("title", missionWords(m, id));
+            mark.add("cell", where); mark.add("x", destination ? destination->position.x : 0.0);
+            mark.add("y", destination ? destination->position.y : 0.0);
+            if (const auto* place = world_.cell(where)) mark.add("worldX", place->worldX), mark.add("worldY", place->worldY);
+            missionMarks.push(mark);
+        }
+        self.set("missions", missionMarks);
         if (auto teller = storytellerSelf(id); teller.has("state") || teller.boolean("canApply") || teller.has("calls"))
             self.set("storyteller", teller);       // (Standing, tales, calls to answer: doc 58; nothing when there's nothing.)
         if (!projects_.all().empty())
@@ -4087,8 +4143,8 @@ void Game::sendSnapshot(Connection* c)
                 for (std::size_t i = 0; i < work.size() && i < 3; ++i)
                 {
                     // Its words on the wheel, never its id ("take k460"): what the work is, and what it pays.
-                    actions.push("take " + work[i]->id);
-                    words.set("take " + work[i]->id, "Take on: " + (work[i]->detail.size() > 60 ? json::utf8Prefix(work[i]->detail, 57) + "..." : work[i]->detail) +
+                    actions.push("offer " + work[i]->id);
+                    words.set("offer " + work[i]->id, "Ask about: " + (work[i]->detail.size() > 60 ? json::utf8Prefix(work[i]->detail, 57) + "..." : work[i]->detail) +
                                                           (work[i]->reward ? " (" + std::to_string(work[i]->reward) + "p)" : std::string()));
                 }
             }
@@ -5968,6 +6024,36 @@ void Game::command(Connection* c, const std::string& raw)
             for (const auto* k : world_.contractsNear(id))
                 list += "\n  " + k->id + "  " + k->detail + (k->reward ? " (" + std::to_string(k->reward) + " pennies)" : std::string());
             system(c, list.empty() ? "There is no work to be had here just now." : "Work to be had:" + list);
+        }
+        else if (action.rfind("offer ", 0) == 0)
+        {
+            const auto* giver = world_.entity(target);
+            const auto offered = world_.contractsNear(id);
+            const auto found = std::find_if(offered.begin(), offered.end(), [&](const Contract* k) { return k->id == action.substr(6); });
+            if (!giver || !giver->npc || !world_.society().merchant(target) || giver->cellId != player->cellId ||
+                distanceTo(*giver) > 3 || found == offered.end())
+                system(c, "Ask the merchant about that work in person.");
+            else
+            {
+                const auto& k = **found;
+                auto offer = Value::object();
+                offer.add("type", "missionOffer"); offer.add("contract", k.id);
+                offer.add("giver", names::capitalised(labelFor(id, target)));
+                offer.add("appearance", wire::appearance(giver->appearance));
+                offer.add("title", k.detail); offer.add("reward", double(k.reward));
+                std::string directions;
+                if (k.kind == "escort")
+                    directions = "Meet the wagon at the " + world_.marketWords(k.from.empty()
+                        ? (world_.roadMarketOf(player->cellId) ? world_.roadMarketOf(player->cellId)->id : std::string()) : k.from) +
+                                 " market. It waits for its guards before setting out. Stay within twelve tiles of the wagon along the road to " +
+                                 world_.marketWords(k.town) + "; you must be with it for at least half the route and when it arrives.";
+                else if (k.kind == "courier")
+                    directions = "Carry the letter to " + labelFor(id, k.target) + ". Find them and stand within three tiles to hand it over.";
+                else if (k.kind == "bounty")
+                    directions = "Find the bandit camp on the map and clear it. The bounty is paid to the wolf who defeats the camp.";
+                offer.add("explanation", directions);
+                send(c, offer);
+            }
         }
         else if (action.rfind("take ", 0) == 0)
         {

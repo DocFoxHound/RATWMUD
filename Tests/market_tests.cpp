@@ -1090,7 +1090,7 @@ void theShopWindow()
     town.g.command(&town.ash, cmd({{"type", "trade_quote"}, {"target", "ui"}, {"item", "meal"}, {"quantity", 1}, {"buy", true}}));
     expect(town.ash.last("tradeQuote")->string("text") == "No accessible trader is within reach.", "a keeper out of reach quotes nothing");
 
-    // Work on the wheel, in words: "Take on: ..." with its pay, never "take k460" alone.
+    // Work on the wheel opens the merchant's explanation before the player accepts it.
     const auto kid = w.postContract("bounty", "treasury", w.roadMarketOf(cellId(1)) ? w.roadMarketOf(cellId(1))->id : "ridgemere", "camp", 0, 5,
                                    "Clear the bandits from the east road").id;
     settle();
@@ -1100,11 +1100,16 @@ void theShopWindow()
         {
             bool offered = false;
             for (const auto& a : e.array("actions"))
-                offered |= a.asString("") == "take " + kid;
+                offered |= a.asString("") == "offer " + kid;
             if (offered)
-                worded |= e.object("words").string("take " + kid) == "Take on: Clear the bandits from the east road";
+                worded |= e.object("words").string("offer " + kid) == "Ask about: Clear the bandits from the east road";
         }
     expect(worded, "the work's words beside its action");
+    town.g.command(&town.ash, cmd({{"type", "action"}, {"target", "ui"}, {"action", "offer " + kid}}));
+    const auto* offer = town.ash.last("missionOffer");
+    expect(offer && offer->string("contract") == kid && offer->string("giver").size() &&
+               offer->string("explanation").find("bandit camp") != std::string::npos,
+           "the merchant explains the job before it is taken");
     fs::remove_all(root);
 }
 

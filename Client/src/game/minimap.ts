@@ -260,6 +260,7 @@ export class MapRenderer {
         }
         for (const e of s.entities.values()) {
             if (e.self) continue;
+            if (!labels && (e.kind === 'npc' || e.rel === 'party')) continue;
             const x = toX(ox + e.x), y = toY(oy + e.y);
             c.fillStyle = e.rel === 'party' ? '#d9b67b' : e.hostile ? '#e0695e' : e.rel === 'chapter' && e.colour ? e.colour
                 : e.kind === 'npc' ? '#a8c2a6' : '#92bacd';
@@ -295,7 +296,7 @@ export class MapRenderer {
         }
         // Party mates (doc 32): always shown, even out of sight, in any place this wolf knows.
         for (const m of s.party?.members ?? []) {
-            if (m.id === s.selfId || !m.online || s.entities.has(m.id)) continue;
+            if (m.id === s.selfId || !m.online || (labels && s.entities.has(m.id))) continue;
             const place = places.find(p => p.id === m.cell);
             if (!place) continue;
             const x = toX(place.x + m.x), y = toY(place.y + m.y);
@@ -306,9 +307,31 @@ export class MapRenderer {
             c.strokeStyle = '#11191b';
             c.stroke();
         }
+        this.sceneMarks = [];
+        // Each accepted job gets a numbered marker. The number also identifies its description on hover, even when
+        // several jobs point to the same town or wagon. Clamp distant goals to the map edge as the tracked story does.
+        const jobs = arr(obj(s.snapshot, 'self'), 'missions').filter(isObject);
+        const jobPositions: [number, number][] = [];
+        jobs.forEach((job, index) => {
+            const place = places.find(p => p.id === str(job, 'cell'));
+            const worldX = place?.x ?? num(job, 'worldX', NaN), worldY = place?.y ?? num(job, 'worldY', NaN);
+            if (!Number.isFinite(worldX) || !Number.isFinite(worldY)) return;
+            const x = Math.max(box.x + 11, Math.min(box.x + box.w - 11, toX(worldX + num(job, 'x'))));
+            const originalY = Math.max(box.y + 11, Math.min(box.y + box.h - 24, toY(worldY + num(job, 'y'))));
+            let y = originalY;
+            for (let step = 1; step <= 8 && jobPositions.some(([px, py]) => Math.hypot(px - x, py - y) < 17); ++step)
+                y = Math.max(box.y + 11, Math.min(box.y + box.h - 24,
+                    originalY + (step % 2 ? 1 : -1) * Math.ceil(step / 2) * 18));
+            jobPositions.push([x, y]);
+            const n = String(index + 1);
+            c.fillStyle = '#1b2927'; c.strokeStyle = '#f0c581'; c.lineWidth = 2;
+            c.beginPath(); c.roundRect(x - 8, y - 8, 16, 16, 3); c.fill(); c.stroke();
+            c.fillStyle = '#ffe1a1'; c.font = 'bold 11px monospace'; c.textAlign = 'center'; c.textBaseline = 'middle';
+            c.fillText(n, x, y + 0.5); c.textAlign = 'start'; c.lineWidth = 1;
+            this.sceneMarks.push({x, y, text: `${n} · ${str(job, 'title')}`});
+        });
         // Open scenes near (doc 51, §7), when the player has turned them on: a small speech mark in the scene's colour
         // with how many wolves, at their middle or at the door into the place they're in.
-        this.sceneMarks = [];
         if (s.mapScenes)
             for (const o of arr(obj(obj(s.snapshot, 'self'), 'social'), 'openNear').filter(isObject)) {
                 const place = places.find(p => p.id === str(o, 'cell'));
@@ -381,7 +404,11 @@ export class MapRenderer {
                 this.sceneMarks.push({x, y, text: `a howl${h.wolves > 1 ? ` of ${h.wolves} wolves` : ''}${h.status ? ` · ${h.status}` : ''} · ${h.band}`});
             }
         if (me) {
-            const x = toX(ox + me.x), y = toY(oy + me.y), r = 6;
+            const x = toX(ox + me.x), y = toY(oy + me.y), r = labels ? 6 : 8;
+            c.fillStyle = '#0b1213';
+            c.beginPath(); c.arc(x, y, r + 3, 0, Math.PI * 2); c.fill();
+            c.strokeStyle = '#ffe1a1'; c.lineWidth = labels ? 1 : 2;
+            c.beginPath(); c.arc(x, y, r + 1, 0, Math.PI * 2); c.stroke(); c.lineWidth = 1;
             c.fillStyle = '#d9b67b';
             c.beginPath();
             c.moveTo(x + Math.cos(me.facing) * r, y + Math.sin(me.facing) * r);
@@ -400,6 +427,19 @@ export class MapRenderer {
                 c.fillStyle = p.current ? '#d9b67b' : '#8b9b91';
                 c.fillText(p.name, x + 6, y + 5);
             }
+        }
+        if (!labels && jobs.length) {
+            const shown = jobs.slice(0, 3), more = jobs.length > shown.length;
+            const lines = shown.length + Number(more), top = box.y + box.h - lines * 13 - 6;
+            c.fillStyle = 'rgba(11,18,19,0.88)';
+            c.fillRect(box.x + 3, top - 3, box.w - 6, lines * 13 + 6);
+            c.font = '10px monospace'; c.textBaseline = 'top';
+            shown.forEach((job, i) => {
+                c.fillStyle = '#ffe1a1';
+                const title = str(job, 'title');
+                c.fillText(`${i + 1} ${title.length > 30 ? title.slice(0, 29) + '…' : title}`, box.x + 7, top + i * 13);
+            });
+            if (more) c.fillText(`+${jobs.length - shown.length} more jobs`, box.x + 7, top + shown.length * 13);
         }
         c.fillStyle = '#8b9b91';
         c.font = '11px monospace';

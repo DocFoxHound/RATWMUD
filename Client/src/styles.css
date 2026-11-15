@@ -283,6 +283,10 @@ button.rpg-slot:disabled { cursor: not-allowed; opacity: .75; }
 /* The painted wolf (doc 81) on its own paper: no frame of its own. */
 .sheet .portrait.painted { background: none; border: none; image-rendering: auto; }
 .sheet .wolf-id { margin-bottom: 8px; }
+.mission-offer { display: flex; align-items: flex-start; gap: 20px; margin: 8px 0; }
+.mission-offer .wolf-face { width: 116px; height: 138px; flex: none; }
+.mission-offer-words { display: flex; flex-direction: column; gap: 12px; max-width: 55ch; }
+@media (max-width: 520px) { .mission-offer { flex-direction: column; } }
 .sheet-actions { display: flex; gap: 14px; justify-content: flex-end; align-items: center; margin-top: 8px; }
 .sheet .primary { background: var(--raised); padding: 11px 16px; }
 .sheet .primary:hover { outline: 1px solid var(--sage); }

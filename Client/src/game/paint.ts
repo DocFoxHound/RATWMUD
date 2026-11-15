@@ -302,8 +302,14 @@ export class GamePainter {
         const fade = (kind: string) => a.target(kind) > 0 ? Math.min(1, a.sheets[kind] / a.target(kind)) : 0;
         // Sunlit clear ground keeps its passing cloud shadows.
         if (a.sheets.clear > 0.01) for (const layer of this.weatherLayers('clear')) this.drawWeatherLayer(b, layer, undefined, a.sheets.clear);
-        // Weather this field no longer has (the cell just left's rain) fades out evenly over the view.
-        for (const kind of WeatherKinds)
+        // Keep the prior cell's sheets on screen while this cell's field comes in. This also covers two neighboring
+        // fields of the same weather kind, whose masks otherwise changed shape in one frame.
+        if (a.fieldMix < 1) {
+            for (const kind of WeatherKinds)
+                if (kind !== 'clear' && a.priorSheets[kind] > 0.01)
+                    for (const layer of this.weatherLayers(kind))
+                        this.drawWeatherLayer(b, layer, undefined, a.priorSheets[kind] * (1 - a.fieldMix));
+        } else for (const kind of WeatherKinds)
             if (kind !== 'clear' && a.target(kind) <= 0 && a.sheets[kind] > 0.01)
                 for (const layer of this.weatherLayers(kind)) this.drawWeatherLayer(b, layer, undefined, a.sheets[kind]);
         if (!letters.size) return true;
@@ -312,7 +318,7 @@ export class GamePainter {
         if (letters.size === 1 && f.kinds.split('').every(k => k === f.kinds[0]) &&
             f.amounts.split('').every(a => a === f.amounts[0])) {
             const kind = KindOfLetter[f.kinds[0]] ?? 'clear';
-            const strength = Number(f.amounts[0]) / 9 * fade(kind);
+            const strength = Number(f.amounts[0]) / 9 * fade(kind) * a.fieldMix;
             for (const layer of this.weatherLayers(kind)) this.drawWeatherLayer(b, layer, undefined, strength);
             return true;
         }
@@ -347,7 +353,7 @@ export class GamePainter {
             oc.globalCompositeOperation = 'source-over';
             c.save();
             c.setTransform(1, 0, 0, 1, 0, 0);
-            c.globalAlpha = shown;
+            c.globalAlpha = shown * a.fieldMix;
             c.drawImage(surface.canvas, 0, 0);
             c.restore();
         }
@@ -1298,7 +1304,7 @@ export class GamePainter {
             return clamp(center - self * s.tileSize, high - (last + 1) * s.tileSize, low - first * s.tileSize);
         };
         // Looking around stays on the screen (doc 80): the map is never panned past the rectangle shown whole.
-        if (!fight && me) {
+        if (!fight && me && (!s.outdoors || !s.fringe)) {
             const r = screenRect(me.x, me.y, s.cellWidth, s.cellHeight, s.fringe);
             const keep = (i: 0 | 1, base: number, low: number, high: number, first: number, last: number) => {
                 const least = high - (last + 1) * s.tileSize - base, most = low - first * s.tileSize - base;
@@ -1308,9 +1314,12 @@ export class GamePainter {
             keep(1, axis(viewY, map.top, map.bottom, ground.y0, ground.y1, me.y), map.top, map.bottom, r.y0, r.y1);
         }
         const [shakeX, shakeY] = fight ? s.fx.shake(s.clock, s.reducedMotion) : [0, 0];
+        // Outdoors, follow the wolf through a seam. Clamping the camera to the current cell's ground made it stop
+        // before the wolf crossed, even though the adjoining ground was already visible in the fringe.
         s.mapOrigin = fight ? [viewX - fight.cx * s.tileSize + s.mapPan[0] + shakeX, viewY - fight.cy * s.tileSize + s.mapPan[1] + shakeY]
-            : [axis(viewX, map.left, map.right, ground.x0, ground.x1, me?.x ?? 0) + s.mapPan[0],
-                axis(viewY, map.top, map.bottom, ground.y0, ground.y1, me?.y ?? 0) + s.mapPan[1]];
+            : s.outdoors && s.fringe && me ? [viewX - me.x * s.tileSize + s.mapPan[0], viewY - me.y * s.tileSize + s.mapPan[1]]
+                : [axis(viewX, map.left, map.right, ground.x0, ground.x1, me?.x ?? 0) + s.mapPan[0],
+                    axis(viewY, map.top, map.bottom, ground.y0, ground.y1, me?.y ?? 0) + s.mapPan[1]];
         // A crossing keeps the wolf where it was on screen for a moment, then the view slides to where it belongs.
         const cellKey = `${s.cellId}|${s.cellGeneration}`;
         if (me) {
