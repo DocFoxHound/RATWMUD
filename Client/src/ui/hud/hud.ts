@@ -6,10 +6,11 @@
 import {css, rgb} from '../color.ts';
 import {Amber, Blue, Sage} from '../theme.ts';
 import {drawPortrait, type Portraits} from '../portrait.ts';
-import {arr, bool, boundedNum, clamp, envNumber, isObject, num, obj, str} from '../../game/json.ts';
+import {arr, bool, boundedNum, clamp, envNumber, num, obj, str} from '../../game/json.ts';
 import {dayLabel, lawLabel, paceLabel, postureLabel, restLabel, scentLabel, readLoad, loadCost} from '../../game/labels.ts';
 import {GroundTarget, type EntityView, type GameState} from '../../game/state.ts';
 import {Commands} from '../../game/commands.ts';
+import {wheelEntries, wheelInGroup, WheelGroups} from '../../game/wheel.ts';
 import {NavIcons, SenseIcons, TimeIcons, WeatherIcons, senseLevel, timeOfDay, weatherIcon, type NavIcon, type Sense} from './hudIcons.ts';
 import './hud.css';
 import {describeWolf, lookAt, type Look} from '../../game/look.ts';
@@ -37,8 +38,6 @@ const HostileRed = rgb(0xe0695e);
 const upperFirst = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 const Arrows = ['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'];
 /** Menu entries that aren't their own action's name: a challenge's terms (doc 37). */
-const MenuWords: Record<string, string> = {'challenge:yield': 'Duel until one yields', 'challenge:blood': 'Duel to first blood',
-    'challenge:spar': 'Spar (bruises only)', 'challenge:death': 'Fight until one goes down'};
 const MapKeys = 'WASD move · CLICK walk there · RIGHT-CLICK what you can do here, or with someone · ALT+CLICK turn · WHEEL / PgUp PgDn pace · ' +
     'SHIFT/CTRL+WHEEL pan · +/− zoom · M map · E nearest · L listen · C character · I belongings · ENTER write · / commands';
 const FightKeys = 'CLICK a tile to move (waiting: to plan) · CLICK a foe to strike · WHEEL pace · 1–9 actions · C stalk · Z aim · G guard · ' +
@@ -53,14 +52,6 @@ function setIcon(e: HTMLElement, svg: string, words: string) {
     }
     if (e.title !== words) e.title = words;
     if (e.getAttribute('aria-label') !== words) e.setAttribute('aria-label', words);
-}
-
-/** "Tell of Ash" / "Vouch for Ash": the Wardens' menu (doc 53, 4), by the names the wolf knows them by. */
-function wardensWords(s: GameState, action: string): string {
-    const [verb, id] = action.slice('wardens-'.length).split(':');
-    const seen = arr(obj(s.snapshot, 'self'), 'witnessed').filter(isObject).find(w => str(w, 'id') === id);
-    const name = seen ? str(seen, 'name') : 'them';
-    return verb === 'tell' ? `Tell the Wardens of ${name}` : `Vouch for ${name} to the Wardens`;
 }
 
 /** A player's status in words (doc 50): in character needs none. */
@@ -601,46 +592,49 @@ export class Hud {
         }
         const ground = s.contextTarget === GroundTarget;
         const howlIn = num(obj(obj(s.snapshot, 'self'), 'social'), 'howlIn');
-        const key = JSON.stringify([s.contextTarget, s.contextName, s.contextActions, s.contextPage, s.contextPoint, s.armed, ground && howlIn > 0,
-            window.innerWidth, window.innerHeight]);
+        const entries = wheelEntries(s), inGroup = wheelInGroup(s);
+        const key = JSON.stringify([s.contextTarget, s.contextName, s.contextCategory, entries, s.contextPage, s.contextPoint, s.armed,
+            ground && howlIn > 0, window.innerWidth, window.innerHeight]);
         if (key === this.menuKey) return;
         this.menuKey = key;
         this.menu.replaceChildren();
-        const words = (action: string) => s.armed === `${action}|${s.contextTarget}` ? 'Attack · sure? (a crime)'
-            : ground ? Commands.find(c => c.name === action)?.wheel ?? upperFirst(action)
-            : action.startsWith('vouch:') ? `Vouch for ${s.entities.get(action.slice(6))?.name ?? 'them'}`
-            : action.startsWith('wardens-') ? wardensWords(s, action)
-            : action.startsWith('trouble:') ? action.slice(action.indexOf('|') + 1)   // (A resident's trouble, as the server words it: doc 57.)
-            : action === 'vouch' ? 'Vouch for…' : MenuWords[action] ?? upperFirst(action);
+        // Two rings (game/wheel.ts): the kinds of thing to do (Trade, Social, Work...), then the chosen kind's actions.
         // Round the middle, clockwise from the top: half down the right, half up the left, each name reading outward
         // from the ring, so long ones never cross. The digits 1–9 choose too.
-        const n = s.contextActions.length, right = Math.ceil(n / 2), most = Math.max(right, n - right);
-        const radius = Math.max(72, most * 19);
-        const ring = el('div', 'radial-ring', this.menu);
+        const n = entries.length, right = Math.ceil(n / 2), most = Math.max(right, n - right);
+        const radius = Math.max(72, most * (entries.some(e => e.kind === 'group') ? 24 : 19));
+        const ring = el('div', `radial-ring${inGroup ? ' inner' : ''}`, this.menu);
         setStyle(ring, 'width', `${radius * 2}px`);
         setStyle(ring, 'height', `${radius * 2}px`);
         // The name in the middle, at most three lines (smaller for a long one, an ellipsis past that); the whole of it
-        // in the tooltip.
+        // in the tooltip. Inside a kind, the kind under it, and a click goes back to the kinds.
         const name = s.contextName || '…';
         const centre = button('', `radial-centre${name.length > 34 ? ' longest' : name.length > 18 ? ' long' : ''}`, this.menu,
-            () => (s.contextTarget = ''));
+            () => s.activate({rect: noRect, action: 'wheel_back', target: ''}));
         el('span', 'radial-name', centre, name);
-        centre.title = `${name}\nClose (Esc)`;
-        s.contextActions.forEach((action, i) => {
+        const group = inGroup ? WheelGroups.find(g => g.id === s.contextCategory) : undefined;
+        if (group) el('span', 'radial-group', centre, `‹ ${group.words}`);
+        centre.title = group ? `${name}\nBack to all (Esc)` : `${name}\nClose (Esc)`;
+        entries.forEach((entry, i) => {
             const onRight = i < right, k = onRight ? right : n - right, j = onRight ? i : n - 1 - i;
             const spread = Math.min(72, 14 * k), angle = k > 1 ? (-spread + (2 * spread * j) / (k - 1)) * Math.PI / 180 : 0;
             const x = Math.cos(angle) * radius * (onRight ? 1 : -1), y = Math.sin(angle) * radius;
-            const armed = s.armed === `${action}|${s.contextTarget}`;
-            const item = button('', `menu-item radial-item ${onRight ? 'east' : 'west'}${armed ? ' armed' : ''}`, this.menu,
-                () => s.activate({rect: noRect, action: 'context', target: action}));
+            const action = entry.id, isGroup = entry.kind === 'group';
+            const armed = !isGroup && s.armed === `${action}|${s.contextTarget}`;
+            const item = button('', `menu-item radial-item ${onRight ? 'east' : 'west'}${isGroup ? ' group' : ''}${armed ? ' armed' : ''}`, this.menu,
+                () => s.activate({rect: noRect, action: isGroup ? 'wheel_group' : 'context', target: action}));
             if (i < 9) el('span', 'radial-key', item, String(i + 1));
-            el('span', 'radial-word', item, words(action));
-            item.dataset.action = action;
+            // A long one (a piece of work in the keeper's words) on two lines rather than across the page.
+            const words = el('span', 'radial-word', item, armed ? 'Attack · sure? (a crime)' : entry.words);
+            setClass(item, 'wraps', entry.words.length > 34);
+            if (isGroup) el('span', 'radial-hint', words, entry.hint);
+            item.dataset[isGroup ? 'group' : 'action'] = action;
             setStyle(item, 'left', `${x.toFixed(1)}px`);
             setStyle(item, 'top', `${y.toFixed(1)}px`);
-            const command = ground ? Commands.find(c => c.name === action) : undefined;
+            if (isGroup) item.title = entry.actions.length > 1 ? `${entry.words}: ${entry.hint}` : entry.hint;
+            const command = ground && !isGroup ? Commands.find(c => c.name === action) : undefined;
             if (command) item.title = `/${command.name}${command.key ? ` · ${command.key}` : ''} · ${command.help}`;
-            if (ground && action === 'howl' && howlIn > 0) {
+            if (ground && !isGroup && action === 'howl' && howlIn > 0) {
                 item.disabled = true;
                 item.title = `Your voice needs a rest: ${Math.ceil(howlIn / 60)} min`;
             }

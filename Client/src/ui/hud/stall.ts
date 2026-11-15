@@ -5,6 +5,7 @@ import type {GameState} from '../../game/state.ts';
 import {arr, bool, isObject, num, obj, objects, str} from '../../game/json.ts';
 import {button, el, setText, show} from './dom.ts';
 import {ask, askText} from '../dialog.ts';
+import {noRect} from './story.ts';
 
 export class StallPanel {
     readonly root: HTMLElement;
@@ -81,6 +82,9 @@ export class StallPanel {
                 el('span', 'small', row, `${str(w, 'name')} × ${num(w, 'quantity')} · ${num(w, 'price')}p${str(w, 'scent') ? ` · ${str(w, 'scent')}` : ''}`);
                 if (present) button(`BUY · ${num(w, 'price')}p`, 'small', row, () => send({verb: 'buy', id: str(here, 'id'), item: str(w, 'id'), quantity: 1}));
             }
+            // The shop window (shopWindow.ts): counts, the purse and CONFIRM, as at any keeper's.
+            if (present && wares.length)
+                button('OPEN THE SHOP WINDOW', 'small', this.body, () => s.activate({rect: noRect, action: 'shop_stall', target: ''}));
             el('div', 'muted small', this.body, 'Haggle with the keeper in words; they can change a price at any time.');
             return;
         }

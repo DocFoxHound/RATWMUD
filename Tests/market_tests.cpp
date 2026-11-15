@@ -967,6 +967,147 @@ void theWorldsMarkets()
     fs::remove_all(root);
 }
 
+// The shop window (Trade on a keeper's wheel, 2026-11-15): the keeper chosen is the list the snapshot sends while within
+// reach, before a nearer one's; a basket line is quoted as the trade would price it, nothing changing hands; each trade
+// answers the window with its receipt, done or refused in plain words (no money, out of stock, the shop shut while its
+// keeper sleeps); and work a keeper offers reads as words on the wheel, never its id ("take k460").
+void theShopWindow()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-shop-window-" + std::to_string(::getpid()));
+    const auto worldPath = writeStrip(root / "world");
+    Town town(worldPath, (root / "save").string());
+    auto& w = town.g.world();
+    auto& s = w.society();
+    town.enter(town.ash, 1, "player-ash", "Ash", 1, 8.5);
+    const double now = w.calendarDays();
+    w.advanceCalendar(std::floor(now) + 1 + 11. / 24 - now);   // (Late morning: both keepers at their posts.)
+    town.run(3);
+    expect(s.merchant("um") && s.merchant("ui"), "the stall's keeper and the inn's keep shop");
+    // Between the two, the stall's keeper a little nearer.
+    auto* stall = w.entity("um");
+    auto* inn = w.entity("ui");
+    stall->cellId = inn->cellId = cellId(1);
+    stall->position = {9.5, 8.5};
+    inn->position = {11.5, 8.5};
+    const auto between = [&] {
+        auto* me = w.entity(town.ash.entityId);
+        me->cellId = cellId(1);
+        me->position = {10.3, 8.5};
+        w.entity("um")->position = {9.5, 8.5};
+        w.entity("ui")->position = {11.5, 8.5};
+    };
+    // (Put back before each tick, so neither walks out of reach before a snapshot is sent.)
+    const auto settle = [&] {
+        town.ash.snapshots.clear();
+        for (int i = 0; i < 6; ++i)
+        {
+            between();
+            town.run(.25);
+        }
+        between();
+    };
+    settle();
+    const auto merchant = [&] { return town.ash.snapshots.back()["merchant"].string("id"); };
+    expect(merchant() == "um", "the nearest keeper's list, unchosen: " + merchant());
+    town.g.command(&town.ash, cmd({{"type", "shop"}, {"target", "ui"}}));
+    settle();
+    expect(merchant() == "ui", "the inn's list once chosen, though the stall is nearer: " + merchant());
+    town.g.command(&town.ash, cmd({{"type", "shop"}, {"target", ""}}));
+    settle();
+    expect(merchant() == "um", "the nearest again, the choice let go: " + merchant());
+    town.g.command(&town.ash, cmd({{"type", "shop"}, {"target", "ui"}}));
+
+    // A quote: what the trade itself would ask, and nothing moves.
+    const auto till = s.tillOf("ui");
+    if (Society::stock(*s.account(till), "meal") < 10)
+        s.create(till, "meal", 10, "test stock");
+    const auto cash = s.cash(town.ash.entityId);
+    const auto stock = Society::stock(*s.account(till), "meal");
+    between();
+    town.ash.events.clear();
+    town.g.command(&town.ash, cmd({{"type", "trade_quote"}, {"target", "ui"}, {"item", "meal"}, {"quantity", 3}, {"buy", true}}));
+    const auto* quote = town.ash.last("tradeQuote");
+    const auto expected = s.quote(town.ash.entityId, "ui", "meal", 3, true, town.g.accountOf(town.ash.entityId));
+    expect(quote && quote->boolean("ok") && quote->number("total") == double(expected.total) && expected.total > 0 &&
+               quote->string("item") == "meal" && quote->number("quantity") == 3,
+           "three meals quoted at the trade's price: " + (quote ? json::dump(*quote) : std::string("none")));
+    expect(s.cash(town.ash.entityId) == cash && Society::stock(*s.account(till), "meal") == stock, "a quote moves nothing");
+
+    // Bought through the server: the receipt, the purse and the shelf.
+    town.g.command(&town.ash, cmd({{"type", "trade"}, {"target", "ui"}, {"item", "meal"}, {"quantity", 3}, {"buy", true}}));
+    between();
+    town.run(1);                                    // (Its replies wait on the journal.)
+    const auto* bought = town.ash.last("tradeResult");
+    expect(bought && bought->boolean("ok") && bought->number("quantity") == 3 && bought->boolean("buy"),
+           "a receipt for the meals: " + (bought ? json::dump(*bought) : std::string("none")));
+    expect(s.cash(town.ash.entityId) <= cash - expected.total && Society::stock(*s.account(till), "meal") == stock - 3 &&
+               Society::stock(*s.account(town.ash.entityId), "meal") >= 3,
+           "paid for from the purse, off the shelf");
+    // Sold back: the shop pays.
+    const auto before = s.cash(town.ash.entityId);
+    town.g.command(&town.ash, cmd({{"type", "trade"}, {"target", "ui"}, {"item", "meal"}, {"quantity", 1}, {"buy", false}}));
+    between();
+    town.run(1);                                    // (Its replies wait on the journal.)
+    const auto* sold = town.ash.last("tradeResult");
+    expect(sold && sold->boolean("ok") && !sold->boolean("buy") && s.cash(town.ash.entityId) > before,
+           "a meal sold back for coin: " + (sold ? json::dump(*sold) : std::string("none")));
+
+    // Refusals, in plain words. Out of stock: more than the shelf holds.
+    const auto left = Society::stock(*s.account(till), "meal");
+    expect(left + 1 <= 99, "a shelf a basket can empty: " + std::to_string(left));
+    town.g.command(&town.ash, cmd({{"type", "trade_quote"}, {"target", "ui"}, {"item", "meal"}, {"quantity", int(left + 1)}, {"buy", true}}));
+    expect(!town.ash.last("tradeQuote")->boolean("ok") && town.ash.last("tradeQuote")->string("text") == "There is not enough stock.",
+           "more than the shelf holds is quoted as out of stock: " + json::dump(*town.ash.last("tradeQuote")));
+    town.g.command(&town.ash, cmd({{"type", "trade"}, {"target", "ui"}, {"item", "meal"}, {"quantity", int(left + 1)}, {"buy", true}}));
+    between();
+    town.run(1);                                    // (Its replies wait on the journal.)
+    expect(!town.ash.last("tradeResult")->boolean("ok") && town.ash.last("tradeResult")->string("text") == "There is not enough stock.",
+           "and refused: " + json::dump(*town.ash.last("tradeResult")));
+    // Not enough money: the purse emptied into the treasury.
+    expect(s.shift(town.ash.entityId, "treasury", "", 0, s.cash(town.ash.entityId), "test: an empty purse") && s.cash(town.ash.entityId) == 0,
+           "an empty purse");
+    s.openRealBalance();
+    town.g.command(&town.ash, cmd({{"type", "trade"}, {"target", "ui"}, {"item", "meal"}, {"quantity", 1}, {"buy", true}}));
+    between();
+    town.run(1);                                    // (Its replies wait on the journal.)
+    expect(!town.ash.last("tradeResult")->boolean("ok") &&
+               town.ash.last("tradeResult")->string("text") == "You cannot afford that purchase.",
+           "no money, no meal: " + json::dump(*town.ash.last("tradeResult")));
+    // The shop shut: its keeper asleep.
+    w.entity("ui")->posture = "lying";
+    town.g.command(&town.ash, cmd({{"type", "trade"}, {"target", "ui"}, {"item", "meal"}, {"quantity", 1}, {"buy", false}}));
+    between();
+    town.run(1);                                    // (Its replies wait on the journal.)
+    expect(!town.ash.last("tradeResult")->boolean("ok") && town.ash.last("tradeResult")->string("text") == "The trader is sleeping.",
+           "a sleeping keeper sells nothing: " + json::dump(*town.ash.last("tradeResult")));
+    w.entity("ui")->posture = "lying";
+    town.g.command(&town.ash, cmd({{"type", "trade_quote"}, {"target", "ui"}, {"item", "meal"}, {"quantity", 1}, {"buy", false}}));
+    expect(!town.ash.last("tradeQuote")->boolean("ok") && town.ash.last("tradeQuote")->string("text") == "The trader is sleeping.",
+           "nor quotes");
+    // Out of reach: no quote.
+    w.entity("ui")->posture = "standing";
+    w.entity(town.ash.entityId)->position = {2.5, 8.5};
+    town.g.command(&town.ash, cmd({{"type", "trade_quote"}, {"target", "ui"}, {"item", "meal"}, {"quantity", 1}, {"buy", true}}));
+    expect(town.ash.last("tradeQuote")->string("text") == "No accessible trader is within reach.", "a keeper out of reach quotes nothing");
+
+    // Work on the wheel, in words: "Take on: ..." with its pay, never "take k460" alone.
+    const auto kid = w.postContract("bounty", "treasury", w.roadMarketOf(cellId(1)) ? w.roadMarketOf(cellId(1))->id : "ridgemere", "camp", 0, 5,
+                                   "Clear the bandits from the east road").id;
+    settle();
+    bool worded = false;
+    for (const auto& e : town.ash.snapshots.back().array("entities"))
+        if (e.string("id") == "um" || e.string("id") == "ui")
+        {
+            bool offered = false;
+            for (const auto& a : e.array("actions"))
+                offered |= a.asString("") == "take " + kid;
+            if (offered)
+                worded |= e.object("words").string("take " + kid) == "Take on: Clear the bandits from the east road";
+        }
+    expect(worded, "the work's words beside its action");
+    fs::remove_all(root);
+}
+
 // The keeper's answer to "what do you sell?" (Review A; Phase 8 writes it whole, 7.8): a smith names his own wares at
 // the price his list shows, never "I'm out of meals. I'm out of herbs." beside a full list; the inn's keeper still
 // names his meals.
@@ -1726,6 +1867,7 @@ int main(int argc, char** argv)
         theOnePath();
         theWorldsMarkets();
         householdsInTheBoardsMarkets();
+        theShopWindow();
         theKeepersAnswer();
         talkThroughTheRealPath();
         theBoardThroughTheGame();

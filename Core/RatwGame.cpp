@@ -4024,6 +4024,7 @@ void Game::sendSnapshot(Connection* c)
         if (auto gear = gearView(e); !gear.items().empty())
             j.set("gear", std::move(gear));         // Armour and weapons, plain to see (doc 35): the card's little doll.
         auto actions = Value::array();
+        auto words = Value::object();                // Plain words for the actions that carry an id (the wheel's).
         actions.push("inspect");
         if (e.transient)
         {
@@ -4084,7 +4085,12 @@ void Game::sendSnapshot(Connection* c)
                 if (!work.empty())
                     actions.push("ask for work");
                 for (std::size_t i = 0; i < work.size() && i < 3; ++i)
+                {
+                    // Its words on the wheel, never its id ("take k460"): what the work is, and what it pays.
                     actions.push("take " + work[i]->id);
+                    words.set("take " + work[i]->id, "Take on: " + (work[i]->detail.size() > 60 ? json::utf8Prefix(work[i]->detail, 57) + "..." : work[i]->detail) +
+                                                          (work[i]->reward ? " (" + std::to_string(work[i]->reward) + "p)" : std::string()));
+                }
             }
             // Ask to learn their trade: close by, a master with no apprentice, and not already learning one.
             if (const auto* job = world_.society().jobOf(e.id);
@@ -4124,7 +4130,11 @@ void Game::sendSnapshot(Connection* c)
             }
         for (const auto& m : factions_.missions())
             if (m.state == "taken" && m.taker == view.self.id && m.kind != "guard" && (m.kind == "message" ? m.to : m.official) == e.id && near(e))
+            {
                 actions.push("deliver " + m.id);
+                words.set("deliver " + m.id, m.kind == "message" ? std::string("Deliver the message")
+                                                                  : "Deliver " + std::to_string(std::max(1, m.quantity)) + " " + itemLabel(view.self.id, m.item));
+            }
         // Sworn residents (doc 32, Phase 9): asked of a resident by an Officer of a Hall; settled at the Hold.
         if (e.npc && near(e))
             if (const auto* member = chapters_.member(view.self.id); member && member->rank <= chapter::RankOfficer)
@@ -4212,6 +4222,8 @@ void Game::sendSnapshot(Connection* c)
         if (e.downedLeft > 0)
             j.set("downed", true);
         j.set("actions", actions);
+        if (words.size())
+            j.set("words", words);
         entities.push(j);
     }
     root.add("entities", entities);
@@ -4416,6 +4428,12 @@ void Game::sendSnapshot(Connection* c)
                 trader = e;                         // The nearest (a smith and a shopkeeper may share a square).
                 traderAt = d;
             }
+    // The one chosen from its wheel (Trade), while it is within reach: a smith beside the baker's counter is not the
+    // baker's list.
+    if (const auto chosen = shopWith_.find(id); chosen != shopWith_.end())
+        if (const auto* e = world_.entity(chosen->second); e && e->cellId == view.self.cellId && world_.society().merchant(e->id) &&
+                                                           std::hypot(e->position.x - view.self.position.x, e->position.y - view.self.position.y) <= 2)
+            trader = e;
     const auto* traderLife = trader ? world_.society().resident(trader->id) : nullptr;
     if (trader && purse && trader->posture != "lying" && (!traderLife || traderLife->task != "sleep") &&
         world_.visionClarity(id, trader->id) > 0 &&
@@ -5266,6 +5284,49 @@ void Game::command(Connection* c, const std::string& raw)
         if (result.ok)
             saveSoon();
     }
+    else if (type == "shop")
+    {
+        // The shop window's keeper (Trade on a wheel): its list before a nearer one's; "" lets the nearest be again.
+        const auto target = j.string("target");
+        if (target.empty() || !world_.society().merchant(target))
+            shopWith_.erase(id);
+        else
+            shopWith_[id] = target;
+    }
+    else if (type == "trade_quote")
+    {
+        // What a basket line in the shop window would cost or fetch, as the trade itself would price it (the per-piece
+        // ladder: a dozen is not twelve times one). Nothing changes hands. {"type": "tradeQuote", ...} answers.
+        const double qty = wire::strictNumber(j, "quantity", -1);
+        const auto* buy = j.find("buy");
+        const auto target = j.string("target"), item = j.string("item");
+        auto reply = Value::object();
+        reply.add("type", "tradeQuote");
+        reply.add("target", target);
+        reply.add("item", item);
+        reply.add("buy", buy && buy->asBool());
+        reply.add("quantity", qty);
+        const auto* keeper = world_.entity(target);
+        EconomyResult quote{false, "Invalid trade request."};
+        const bool valid = buy && buy->isBool() && qty >= 1 && qty <= 99 && qty == std::floor(qty);
+        if (!valid)
+            quote.message = "Invalid trade request.";
+        else if (!keeper || !world_.society().merchant(target) || keeper->cellId != player->cellId ||
+                 std::hypot(keeper->position.x - player->position.x, keeper->position.y - player->position.y) > 2)
+            quote.message = "No accessible trader is within reach.";
+        else if (const auto* life = world_.society().resident(target); keeper->posture == "lying" || (life && life->task == "sleep"))
+            quote.message = "The trader is sleeping.";
+        else
+        {
+            if (!batching_)
+                world_.ensureTradePoints();
+            quote = world_.society().quote(id, target, item, int(qty), buy->asBool(), accountOf(id));
+        }
+        reply.add("ok", quote.ok);
+        reply.add("total", quote.total);
+        reply.add("text", quote.message);
+        send(c, reply);
+    }
     else if (type == "trade")
     {
         const double qty = wire::strictNumber(j, "quantity", -1);
@@ -5289,6 +5350,18 @@ void Game::command(Connection* c, const std::string& raw)
         if (result.ok && buy && buy->asBool())
             if (const auto* after = world_.society().account(id))
                 afterFactionTrade(id, j.string("target"), before - after->cash);
+        {
+            // The shop window's receipt: the line it sent, done or refused, in the world's words.
+            auto receipt = Value::object();
+            receipt.add("type", "tradeResult");
+            receipt.add("target", j.string("target"));
+            receipt.add("item", j.string("item"));
+            receipt.add("buy", buy && buy->asBool());
+            receipt.add("quantity", qty);
+            receipt.add("ok", result.ok);
+            receipt.add("text", result.message);
+            send(c, receipt);
+        }
         if (result.ok && buy && buy->asBool())
             makersScent(id, j.string("target"), j.string("item"), int(qty));   // (Bought from its maker: doc 55, 4.)
         else if (result.ok && buy && !buy->asBool())
@@ -5480,6 +5553,19 @@ void Game::command(Connection* c, const std::string& raw)
     {
         stallCommand(c, j, result);                 // Market stalls (doc 54, 3).
         report = !result.message.empty();
+        if (j.string("verb") == "buy")
+        {
+            // A player's stall bought from in the shop window: its receipt, as a keeper's trade gives one.
+            auto receipt = Value::object();
+            receipt.add("type", "tradeResult");
+            receipt.add("target", j.string("id"));
+            receipt.add("item", j.string("item"));
+            receipt.add("buy", true);
+            receipt.add("quantity", wire::number(j, "quantity"));
+            receipt.add("ok", result.ok);
+            receipt.add("text", result.message);
+            send(c, receipt);
+        }
     }
     else if (type == "perform")
     {

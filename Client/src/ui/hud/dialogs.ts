@@ -12,6 +12,7 @@ import {noRect} from './story.ts';
 import {artCache} from '../artwork.ts';
 import {renderLetters} from './letters.ts';
 import {renderBoard} from './board.ts';
+import {renderShop} from './shopWindow.ts';
 import {renderArchive, renderChronicle, renderJournal, renderWelcome} from './archive.ts';
 import {renderCredits, renderStoryteller, storytellerNote} from './storyteller.ts';
 import {nicknameLine, unfinishedLine} from '../../game/fame.ts';
@@ -134,6 +135,7 @@ export class Dialogs {
             m === 'chapter_window' ? [obj(self, 'chapter'), [...s.entities.values()].filter(e => e.kind !== 'npc').map(e => [e.id, e.name])] : '',
             m === 'inventory' || m === 'trade' || m === 'status' ? [arr(s.snapshot, 'inventory'), obj(s.snapshot, 'merchant'), countText(self, 'cash'), arr(self, 'loans'),
                 obj(s.snapshot, 'resource')] : '',
+            m === 'trade' ? [s.shopVersion, s.shopStall, obj(obj(self, 'stall'), 'here')] : '',
             m === 'status' ? [self, s.battle && !s.battle.observer ? [s.battle.fighters.find(f => f.id === s.selfId), s.battle.acted, s.battle.turn] : null] : '',
             m === 'settings' ? [s.selectedColor, s.revealSpeed, s.reducedMotion, s.flatWorld, s.plainGlyphs, s.perfOverlay, s.storyWidth,
                 bool(s.snapshot, 'devTools'), s.environment.phase, s.hoverTooltips, s.soundVolume, s.mapScenes, s.howlMarks] : '']);
@@ -142,6 +144,7 @@ export class Dialogs {
         const typing = document.activeElement === this.aliasInput;      // (Kept, and kept focused, as the sheet is rebuilt.)
         this.panel.replaceChildren();
         setClass(this.panel, 'wide', m === 'status');
+        setClass(this.panel, 'shop', m === 'trade');
         const close = button('×', 'close', this.panel, () => this.act('close'));
         close.title = 'Close (Esc)';
         if (m === 'character') this.character(self);
@@ -160,7 +163,7 @@ export class Dialogs {
         else if (m === 'inventory') this.inventory(self);
         else if (m === 'status') this.status(self);
         else if (m === 'their_equipment') this.theirEquipment();
-        else if (m === 'trade') this.trade(self);
+        else if (m === 'trade') this.trade();
         else if (m === 'settings') this.settings();
         else if (m === 'leave_character') this.leave();
         else if (m === 'profile') this.profileEditor();
@@ -1344,57 +1347,8 @@ export class Dialogs {
             button(merchantId === 'npc_keeper' ? 'TRADE WITH THE KEEPER' : 'TRADE WITH THE SHOPKEEPER', 'primary', actions, () => this.act('trade_open', merchantId));
     }
 
-    private trade(self: Json | null) {
-        const s = this.s, merchant = obj(s.snapshot, 'merchant');
-        const available = !!str(merchant, 'id');
-        // A server since doc 79 always sends `staged`. The other branch is kept on purpose for servers from before it (PROD
-        // is still on one, and the desktop client's server list may name others): their keeper has a real purse and
-        // trades one item at a time. It goes once no such server is left.
-        const staged = s.stagedTrade();
-        this.heading(staged ? 'LOCAL TRADE / REAL GOODS' : 'LOCAL TRADE / REAL GOODS & REAL PURSES',
-            available ? str(merchant, 'name', 'The keeper').slice(0, 38) : 'The counter is unattended');
-        if (!available) {
-            el('p', 'muted', this.panel, 'The keeper is no longer awake, visible, and within reach. Return to them to see current stock and offers.');
-            return;
-        }
-        el('p', 'muted', this.panel, staged ? 'Cheap goods go by the dozen. The authority rechecks every offer.' : 'One item per exchange. The authority rechecks every offer.');
-        const purses = el('div', 'purses', this.panel);
-        el('span', 'gold', purses, `YOUR PURSE · ${countText(self, 'cash')} p`);
-        // The staged economy (doc 79, 7.5): what the keeper will still spend today, not its purse.
-        el('span', 'sage', purses, staged ? `BUYING TODAY · ${countText(merchant, 'buyingToday')} p` : `KEEPER'S PURSE · ${countText(merchant, 'cash')} p`);
-        // What this trader deals in, as the server lists it (a shopkeeper: herbs and meals; a smith: swords).
-        for (const good of arr(merchant, 'items').filter(isObject).map(i => str(i, 'id')).filter(Boolean)) {
-            const item = s.tradeItem(good);
-            const card = el('div', 'trade', this.panel);
-            const name = el('div', 'item-name', card, str(item, 'name', good));
-            if (staged) {
-                // ▲ or ▼ where the shown price is a penny or more off its price at rest, with its cause on hover.
-                const trend = typeof item?.trend === 'number' ? item.trend : 0;
-                if (trend !== 0) {
-                    const mark = el('span', trend > 0 ? 'gold' : 'sage', name, trend > 0 ? ' ▲' : ' ▼');
-                    mark.title = str(item, 'trendCause', trend > 0 ? 'dearer than usual' : 'cheaper than usual').slice(0, 80);
-                }
-                const listCount = wholeCount(item, 'listCount', 1, 99);
-                el('div', 'label muted', card, `${listCount > 1 ? `${listCount} FOR ${countText(item, 'listPrice')} p · ` : ''}KEEPER STOCK ${countText(item, 'stock')} · YOU CARRY ${countText(item, 'owned')}`);
-            } else
-                el('div', 'label muted', card, `KEEPER STOCK ${countText(item, 'stock')} · YOU CARRY ${countText(item, 'owned')}`);
-            const row = el('div', 'trade-row', card);
-            for (const buy of [true, false]) {
-                const side = el('div', '', row);
-                const enabled = s.canTradeItem(good, buy);
-                const count = staged ? s.tradeCount(good, buy) : 1;
-                const price = staged ? countText(item, buy ? 'buyLotPrice' : 'sellLotPrice') : countText(item, buy ? 'buyPrice' : 'sellPrice');
-                const b = button(`${buy ? 'BUY' : 'SELL'} ${Math.max(count, 1)} · ${price} p`, 'primary', side,
-                    () => this.act(buy ? 'trade_buy' : 'trade_sell', good));
-                b.disabled = !enabled;
-                el('p', enabled ? 'muted small' : 'gold small', side, enabled
-                    ? (buy ? `Your purse pays for ${count > 1 ? 'the lot' : 'one item'} from the keeper's stock.`
-                           : `The keeper pays for ${count > 1 ? 'the lot' : 'one item'} from your pack.`)
-                    : s.tradeReason(good, buy));
-            }
-        }
-        el('p', 'muted small', this.panel, staged ? "p = silver penny · Prices follow what's bought and sold here, and what the roads bring."
-            : 'p = silver penny · stock, demand, and cash are finite. Prices change as residents gather, cook, buy, and eat.');
+    private trade() {
+        renderShop(this.panel, this.s);            // The shop window (shopWindow.ts).
     }
 
     private settings() {
