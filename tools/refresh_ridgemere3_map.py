@@ -11,7 +11,10 @@
 2. tools/path_check.py walks the city and the six towns: whatever closes a path or a door's approach (a barrel, crates, a
    stall, a fence, a tree...) is moved aside, or cleared where it isn't a thing one carries.
 3. Street lamps (the `'` tile): beside Ridgemere's cobbled streets and each town's roads about every LAMP_SPACING tiles,
-   where a lamp closes nothing. The lamps already standing count.
+   where a lamp closes nothing. The lamps already standing count. A lamp stands at a street's edge, never on its
+   walking line (path_check.in_the_way): one standing in a street is first carried to the nearest edge tile that keeps
+   it MOVED_SPACING from the others (or taken down when there is none within LAMP_MOVE, the gaps being lit
+   afresh after). A prop carried aside here earlier that stands on a walking line is carried to an edge too.
 
 Running it again changes nothing once the world is as it leaves it.
 """
@@ -32,8 +35,13 @@ import path_check as PC
 STREET = 2                                       # The city's one ground height (what its streets already were).
 WALLS = (168, 150, 472, 456)                     # The city wall's outer edge, world tiles [x0, x1) x [y0, y1).
 WALL = 4                                         # Its depth.
-LAMP = "'"
+LAMP = PC.LAMP
 LAMP_SPACING = 16                                # Tiles between lamps along a street (a light pool is about 8 across).
+LAMP_MOVE = 12                                   # How far a lamp in a street's way is carried to the street's edge.
+MOVED_SPACING = 12                               # The least distance a carried lamp keeps from the others.
+# Props this script carried aside in revision 102, before props had to stand at a street's edge (world tiles): the
+# Wharf's cinder yard barrel stood in its two-tile row.
+CARRIED_BEFORE = ((262, 444),)
 TOWN_REACH = 40                                  # A town's lit roads: within this of its doors' middle.
 VERGE = frozenset(',";35.!-0')                   # Ground a town lamp may stand on beside its road.
 
@@ -117,6 +125,8 @@ def lamp_ok(grid, x, y):
     """A lamp may stand here: open ground with open ground on at least three sides, closing no path."""
     if grid.at(x, y) in PC.SOLID or grid.at(x, y) in '+G' or grid.at(x, y) in PC.RAMPS or grid.near_reserved(x, y):
         return False
+    if PC.in_the_way(grid, x, y):
+        return False                           # (At a street's edge, never on its walking line.)
     ring = [(x + dx, y + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1) if dx or dy]
     if any(grid.at(*p) in PC.OBSTACLE for p in ring):
         return False                           # (Never against another prop: no new wall of things.)
@@ -128,6 +138,44 @@ def lamp_ok(grid, x, y):
         if PC.detour(grid, open_sides[0], p, frozenset({(x, y)}), 6) is None:
             return False
     return True
+
+
+def move_lamps(grid, streets, verge, counts, moves, label, reach=None):
+    """Carry each lamp standing on a street's walking line to the nearest edge tile where a lamp may stand, keeping it
+    MOVED_SPACING from the other lamps; take it down when there is none within LAMP_MOVE. The number carried or taken."""
+    lamps = [(x, y) for y in range(grid.y0, grid.y1) for x in range(grid.x0, grid.x1) if grid.at(x, y) == LAMP]
+    offending = [p for p in lamps if PC.in_the_way(grid, *p)]
+    if not offending:
+        return 0
+    standing = set(lamps) - set(offending)
+    for x, y in offending:
+        grid.set(x, y, ground_beside(grid, x, y))
+    spots = lamp_spots(grid, set(streets) | PC.TC.WAYS, verge, reach)   # (A square's flagstones have edges too.)
+    for x, y in offending:
+        near = MOVED_SPACING * MOVED_SPACING
+        best = None
+        for sx, sy in spots:
+            d = (sx - x) ** 2 + (sy - y) ** 2
+            if d > LAMP_MOVE * LAMP_MOVE or (best and d >= best[0]) or grid.at(sx, sy) not in verge:
+                continue
+            if any((sx - lx) ** 2 + (sy - ly) ** 2 < near for lx, ly in standing) or not lamp_ok(grid, sx, sy):
+                continue
+            best = (d, (sx, sy))
+        if best:
+            grid.set(*best[1], LAMP)
+            standing.add(best[1])
+            counts[f'street lamps carried to a street edge ({label})'] += 1
+        else:
+            counts[f'street lamps taken down from a street ({label})'] += 1
+        moves.append((LAMP, (x, y), best[1] if best else None))
+    return len(offending)
+
+
+def carry_props_to_edges(grid, counts, moves):
+    """The props CARRIED_BEFORE that stand on a street's walking line are carried aside again, to a street's edge."""
+    for x, y in CARRIED_BEFORE:
+        if grid.inside(x, y) and grid.at(x, y) in PC.MOVABLE and grid.at(x, y) != LAMP and PC.in_the_way(grid, x, y):
+            PC.clear(grid, [(x, y)], counts, moves)
 
 
 def place_lamps(grid, streets, verge, counts, label, reach=None):
@@ -154,17 +202,19 @@ def refresh(project, log=print):
     for name, grid in PC.settlements(project).items():
         moves = []
         before = PC.check(grid)
-        remaining = PC.fix(grid, counts, moves)
         if name == 'Ridgemere':
             x0, y0, x1, y1 = WALLS
-            place_lamps(grid, {'_', 'd'}, frozenset('f_.d'), counts, name,
-                        reach=lambda x, y: x0 + 4 <= x < x1 - 4 and y0 + 4 <= y < y1 - 4)
+            lamps = ({'_', 'd'}, frozenset('f_.d'), lambda x, y: x0 + 4 <= x < x1 - 4 and y0 + 4 <= y < y1 - 4)
         else:
             doors = [p for p, _ in PC.door_tiles(grid)]
-            if doors:
-                mx, my = statistics.median(p[0] for p in doors), statistics.median(p[1] for p in doors)
-                place_lamps(grid, {'d', '_'}, VERGE, counts, name,
-                            reach=lambda x, y: math.hypot(x - mx, y - my) <= TOWN_REACH)
+            mx, my = (statistics.median(p[0] for p in doors), statistics.median(p[1] for p in doors)) if doors else (0, 0)
+            lamps = ({'d', '_'}, VERGE, lambda x, y: math.hypot(x - mx, y - my) <= TOWN_REACH) if doors else None
+        if lamps:
+            move_lamps(grid, lamps[0], lamps[1], counts, moves, name, reach=lamps[2])
+        carry_props_to_edges(grid, counts, moves)
+        remaining = PC.fix(grid, counts, moves)
+        if lamps:
+            place_lamps(grid, lamps[0], lamps[1], counts, name, reach=lamps[2])
         remaining = PC.failures(PC.fix(grid, counts, moves))
         notes = [p for p in PC.check(grid) if p['kind'] == PC.SEALED]
         grid.commit()
@@ -189,6 +239,8 @@ def main(argv=None) -> int:
     parser.add_argument('--apply', action='store_true')
     parser.add_argument('--file', type=Path, help='a saved project (JSON, or .json.gz) instead of the database')
     parser.add_argument('--out', type=Path, help='with --file: where to write the result')
+    parser.add_argument('--backup-dir', type=Path, default=Path(__file__).resolve().parent.parent / 'Saved' / 'Backups',
+                        help='with --apply: where the pre-edit world is saved (default Saved/Backups, gitignored)')
     args = parser.parse_args(argv)
     if args.file:
         opener = gzip.open if args.file.suffix == '.gz' else open
@@ -205,7 +257,8 @@ def main(argv=None) -> int:
     with world_db.connect(args.world, 'editor') as conn:
         project, revision, seen = world_store.load_world(conn, 'upper_accord', with_seen=True)
         if args.apply:
-            backup = Path('/tmp') / f'{args.world}-before-map-rev{revision}.json.gz'
+            args.backup_dir.mkdir(parents=True, exist_ok=True)
+            backup = args.backup_dir / f'{args.world}-before-map-rev{revision}.json.gz'
             with gzip.open(backup, 'wt') as out:
                 json.dump(project, out, separators=(',', ':'))
             print(f'Backup: {backup}')
