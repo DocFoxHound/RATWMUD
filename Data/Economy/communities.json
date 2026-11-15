@@ -1,7 +1,7 @@
 {
  "format": "ratw-communities",
  "version": 1,
- "about": "The Country's farm steadings and communities as built on the realm (Docs/Design/70, Progress, \"The steadings and the communities\"; doc 71, Phase C), written by tools/worldgen/realm2_places.py with each realm write. Homes and workplaces are interiors (world.interiors / world.areas id; the project's rooms): a resident's home is live.npcs home_area = the home's `area`, home_x/home_y a bed; a post's work_area = the workplace `area`, work_x/work_y a `work` spot. At most 6 to a home (HouseholdMost). An interior's region is its community (`ridgemere` for the farms near the city), so a farm's hands and its keeper are \"near\" it. A community's `town` (false) keeps it a plain place on a restart, never a town of its own (World::setupTowns), until a later step makes it one. A community's `workshops` (doc 72, Phase 5) are its country workshops: the work room (`area`, `work` spots, `stations`), the `crew` doc 71 gives it, and its keeper's `flat` (also in `flats`, `for` the workshop); their hands live in the community's `homes`. A community's `square` (doc 79, 5.1 and 8.1) is its green's middle, out of doors (`cell`, `x`, `y`): where its wagons and its farms' carts load and unload and by which its notice board stands; its carters' `posts` (farm_people.json `market`) work at the `work` spots beside it (work_area the square's cell), and live in the community's `homes`.",
+ "about": "The Country's farm steadings and communities as built on the realm (Docs/Design/70, Progress, \"The steadings and the communities\"; doc 71, Phase C), written by tools/worldgen/realm2_places.py with each realm write. Homes and workplaces are interiors (world.interiors / world.areas id; the project's rooms): a resident's home is live.npcs home_area = the home's `area`, home_x/home_y a bed; a post's work_area = the workplace `area`, work_x/work_y a `work` spot. At most 6 to a home (HouseholdMost). An interior's region is its community (`ridgemere` for the farms near the city), so a farm's hands and its keeper are \"near\" it. A community's `town` (true) makes it a town on restart (World::setupTowns). A community's `workshops` (doc 72, Phase 5) are its country workshops: the work room (`area`, `work` spots, `stations`), the `crew` doc 71 gives it, and its keeper's `flat` (also in `flats`, `for` the workshop); their hands live in the community's `homes`. A community's `square` (doc 79, 5.1 and 8.1) is its green's middle, out of doors (`cell`, `x`, `y`): where its wagons and its farms' carts load and unload and by which its notice board stands; its carters' `posts` (farm_people.json `market`) work at the `work` spots beside it (work_area the square's cell), and live in the community's `homes`.",
  "householdMost": 6,
  "workLabels": {
   "about": "The game knows a shop or works by its keeper's work label (Data/Items/businesses.json `match`, at most 40 characters). A market post's label should hold its business's word; a farm post's should hold none of them (or it becomes that city business), so not \"dairy\", \"cheesemaker\", \"water mill\", \"salt house\", \"salt pans\", \"smokehouse\", \" press\", \"vintner\", \"brewer\", \"butcher\", \"baker\", \"tavern\", \"taproom\", \"keeps the \".",
@@ -37,7 +37,7 @@
    "about": "A lakeside village of the Greenholt where the East, River, High and Downs Roads meet north of Glasswater: timber cottages under cedar shingle round a green and its well, a store, an inn and a bakehouse, kitchen gardens, hens and goats. The hands of the orchards, piggeries, sheepwalks and lake boats round about live here.",
    "style": "country",
    "region": "coldwater",
-   "town": false,
+   "town": true,
    "hands": 21,
    "farms": [
     "orchard_1",
@@ -49,7 +49,7 @@
     "lake_and_river_boat_1",
     "lake_and_river_boat_2"
    ],
-   "beds": 74,
+   "beds": 80,
    "homes": [
     {
      "area": "cn_coldwater_cottage_1",
@@ -391,6 +391,58 @@
       "y": 11,
       "worldX": 2001,
       "worldY": 1803
+     }
+    },
+    {
+     "area": "cn_coldwater_town_house_1",
+     "name": "Coldwater Town House 1",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 7,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 1
+      },
+      {
+       "x": 7,
+       "y": 11
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_7_7",
+      "x": 158,
+      "y": 4,
+      "worldX": 1950,
+      "worldY": 1796
+     }
+    },
+    {
+     "area": "cn_coldwater_town_house_2",
+     "name": "Coldwater Town House 2",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 10,
+       "y": 8
+      },
+      {
+       "x": 10,
+       "y": 6
+      },
+      {
+       "x": 1,
+       "y": 8
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_7_7",
+      "x": 180,
+      "y": 6,
+      "worldX": 1972,
+      "worldY": 1798
      }
     }
    ],
@@ -1020,7 +1072,7 @@
     }
    ],
    "roomToGrow": {
-    "cottageLots": 3,
+    "cottageLots": 1,
     "openTiles": 11526
    }
   },
@@ -1035,14 +1087,14 @@
    "about": "A village at the Long River's crossing among the middle country's grain: timber cottages round a green and its well, a store, an alehouse and a bakehouse baking the Longmead mill's flour, kitchen gardens, hens and goats. The hands of Longmead, the Plumtree orchard and the Southwood piggery live here.",
    "style": "country",
    "region": "larkfield",
-   "town": false,
+   "town": true,
    "hands": 11,
    "farms": [
     "grain_farm_1",
     "orchard_5",
     "pig_farm_3"
    ],
-   "beds": 55,
+   "beds": 61,
    "homes": [
     {
      "area": "cn_larkfield_cottage_1",
@@ -1270,6 +1322,58 @@
       "y": 127,
       "worldX": 1693,
       "worldY": 2431
+     }
+    },
+    {
+     "area": "cn_larkfield_town_house_1",
+     "name": "Larkfield Town House 1",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 1,
+       "y": 10
+      },
+      {
+       "x": 3,
+       "y": 10
+      },
+      {
+       "x": 1,
+       "y": 1
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_6_9",
+      "x": 140,
+      "y": 88,
+      "worldX": 1676,
+      "worldY": 2392
+     }
+    },
+    {
+     "area": "cn_larkfield_town_house_2",
+     "name": "Larkfield Town House 2",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 7,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 1
+      },
+      {
+       "x": 7,
+       "y": 11
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_6_9",
+      "x": 102,
+      "y": 75,
+      "worldX": 1638,
+      "worldY": 2379
      }
     }
    ],
@@ -1545,6 +1649,30 @@
       "worldY": 2360
      },
      "otherRooms": []
+    },
+    {
+     "area": "cn_larkfield_guest_inn",
+     "name": "The Long River Inn",
+     "business": "inn",
+     "posts": [],
+     "work": [
+      {
+       "x": 4,
+       "y": 1
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_6_9",
+      "x": 147,
+      "y": 56,
+      "worldX": 1683,
+      "worldY": 2360
+     },
+     "otherRooms": [
+      "cn_larkfield_guest_inn_up"
+     ],
+     "guestBeds": 6
     }
    ],
    "square": {
@@ -1848,7 +1976,7 @@
     }
    ],
    "roomToGrow": {
-    "cottageLots": 4,
+    "cottageLots": 1,
     "openTiles": 12308
    }
   },
@@ -1863,14 +1991,14 @@
    "about": "A hamlet of the warm Sunfields: limewashed cottages under red tile round a green and its well, a store and an alehouse, kitchen gardens, hens and goats, the vines and the Lark's grain fields round it. The hands of Larkholm, the Southmeadow vines and the Sunfields bee garth live here.",
    "style": "southern",
    "region": "southmeadow",
-   "town": false,
+   "town": true,
    "hands": 8,
    "farms": [
     "grain_farm_2",
     "vineyard_2",
     "beekeeper_3"
    ],
-   "beds": 29,
+   "beds": 38,
    "homes": [
     {
      "area": "cn_southmeadow_cottage_1",
@@ -1984,6 +2112,84 @@
       "y": 20,
       "worldX": 2138,
       "worldY": 3348
+     }
+    },
+    {
+     "area": "cn_southmeadow_town_house_1",
+     "name": "Southmeadow Town House 1",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 7,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 1
+      },
+      {
+       "x": 7,
+       "y": 10
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_8_13",
+      "x": 110,
+      "y": 14,
+      "worldX": 2158,
+      "worldY": 3342
+     }
+    },
+    {
+     "area": "cn_southmeadow_town_house_2",
+     "name": "Southmeadow Town House 2",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 1,
+       "y": 12
+      },
+      {
+       "x": 3,
+       "y": 12
+      },
+      {
+       "x": 1,
+       "y": 1
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_8_13",
+      "x": 75,
+      "y": 16,
+      "worldX": 2123,
+      "worldY": 3344
+     }
+    },
+    {
+     "area": "cn_southmeadow_town_house_3",
+     "name": "Southmeadow Town House 3",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 7,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 1
+      },
+      {
+       "x": 7,
+       "y": 10
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_8_13",
+      "x": 62,
+      "y": 19,
+      "worldX": 2110,
+      "worldY": 3347
      }
     }
    ],
@@ -2121,6 +2327,30 @@
      "otherRooms": [
       "cn_southmeadow_alehouse_flat"
      ]
+    },
+    {
+     "area": "cn_southmeadow_guest_inn",
+     "name": "The Sunfield Inn",
+     "business": "inn",
+     "posts": [],
+     "work": [
+      {
+       "x": 4,
+       "y": 1
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_8_13",
+      "x": 99,
+      "y": 0,
+      "worldX": 2147,
+      "worldY": 3328
+     },
+     "otherRooms": [
+      "cn_southmeadow_guest_inn_up"
+     ],
+     "guestBeds": 6
     }
    ],
    "square": {
@@ -2276,7 +2506,7 @@
     }
    ],
    "roomToGrow": {
-    "cottageLots": 5,
+    "cottageLots": 1,
     "openTiles": 12127
    }
   },
@@ -2291,7 +2521,7 @@
    "about": "A hamlet of the Sallow Fens on a low island of dry ground: timber houses thatched with reed stand on stilts over the wet, joined by boardwalks; a store, an alehouse, kitchen gardens on the dry ground, hens and goats. The eel-catchers, salt boilers, warreners and the fen coast's boatmen live here.",
    "style": "fen",
    "region": "fenshore",
-   "town": false,
+   "town": true,
    "hands": 8,
    "farms": [
     "rabbit_warren_1",
@@ -2300,7 +2530,7 @@
     "sea_fishing_boat_4",
     "salt_works_2"
    ],
-   "beds": 29,
+   "beds": 38,
    "homes": [
     {
      "area": "cn_fenshore_cottage_1",
@@ -2413,6 +2643,84 @@
       "x": 99,
       "y": 168,
       "worldX": 867,
+      "worldY": 3496
+     }
+    },
+    {
+     "area": "cn_fenshore_town_house_1",
+     "name": "Fenshore Town House 1",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 8,
+       "y": 1
+      },
+      {
+       "x": 6,
+       "y": 1
+      },
+      {
+       "x": 8,
+       "y": 10
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_3_13",
+      "x": 86,
+      "y": 148,
+      "worldX": 854,
+      "worldY": 3476
+     }
+    },
+    {
+     "area": "cn_fenshore_town_house_2",
+     "name": "Fenshore Town House 2",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 3
+      },
+      {
+       "x": 10,
+       "y": 1
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_3_13",
+      "x": 88,
+      "y": 140,
+      "worldX": 856,
+      "worldY": 3468
+     }
+    },
+    {
+     "area": "cn_fenshore_town_house_3",
+     "name": "Fenshore Town House 3",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 10,
+       "y": 7
+      },
+      {
+       "x": 10,
+       "y": 5
+      },
+      {
+       "x": 1,
+       "y": 7
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_3_13",
+      "x": 87,
+      "y": 168,
+      "worldX": 855,
       "worldY": 3496
      }
     }
@@ -2551,6 +2859,30 @@
      "otherRooms": [
       "cn_fenshore_alehouse_flat"
      ]
+    },
+    {
+     "area": "cn_fenshore_guest_inn",
+     "name": "The Reed and Ferry",
+     "business": "inn",
+     "posts": [],
+     "work": [
+      {
+       "x": 4,
+       "y": 1
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_3_13",
+      "x": 89,
+      "y": 128,
+      "worldX": 857,
+      "worldY": 3456
+     },
+     "otherRooms": [
+      "cn_fenshore_guest_inn_up"
+     ],
+     "guestBeds": 6
     }
    ],
    "square": {
@@ -2706,7 +3038,7 @@
     }
    ],
    "roomToGrow": {
-    "cottageLots": 8,
+    "cottageLots": 4,
     "openTiles": 9006
    }
   },
@@ -2721,14 +3053,14 @@
    "about": "The oasis hamlet of the Red Waste by its spring pool, on the way to the Saltpan: limewashed adobe houses with flat roofs round a well, a store and a caravan inn, gardens watered from the pool, hens and goats. The salt rakers, the Ochre vines' hands and the warreners live here.",
    "style": "adobe",
    "region": "saltwell",
-   "town": false,
+   "town": true,
    "hands": 5,
    "farms": [
     "vineyard_1",
     "rabbit_warren_2",
     "salt_works_1"
    ],
-   "beds": 22,
+   "beds": 31,
    "homes": [
     {
      "area": "cn_saltwell_cottage_1",
@@ -2841,6 +3173,84 @@
       "x": 210,
       "y": 115,
       "worldX": 3282,
+      "worldY": 2931
+     }
+    },
+    {
+     "area": "cn_saltwell_town_house_1",
+     "name": "Saltwell Town House 1",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 12,
+       "y": 8
+      },
+      {
+       "x": 12,
+       "y": 6
+      },
+      {
+       "x": 1,
+       "y": 8
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_12_11",
+      "x": 221,
+      "y": 124,
+      "worldX": 3293,
+      "worldY": 2940
+     }
+    },
+    {
+     "area": "cn_saltwell_town_house_2",
+     "name": "Saltwell Town House 2",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 3
+      },
+      {
+       "x": 12,
+       "y": 1
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_12_11",
+      "x": 220,
+      "y": 96,
+      "worldX": 3292,
+      "worldY": 2912
+     }
+    },
+    {
+     "area": "cn_saltwell_town_house_3",
+     "name": "Saltwell Town House 3",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 1,
+       "y": 10
+      },
+      {
+       "x": 3,
+       "y": 10
+      },
+      {
+       "x": 1,
+       "y": 1
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_12_11",
+      "x": 195,
+      "y": 115,
+      "worldX": 3267,
       "worldY": 2931
      }
     }
@@ -3011,7 +3421,7 @@
     }
    ],
    "roomToGrow": {
-    "cottageLots": 6,
+    "cottageLots": 3,
     "openTiles": 6285
    }
   },
@@ -3026,10 +3436,10 @@
    "about": "A village at the head of Cedar Sound where the Rainrun and the Alder come down to the sea: timber cottages under cedar shingle round a green and its well, a store and an alehouse, kitchen gardens, hens and goats, the Rainwood standing dark above it. The fellers of the Oakhaven cut live here.",
    "style": "country",
    "region": "oakhaven",
-   "town": false,
+   "town": true,
    "hands": 0,
    "farms": [],
-   "beds": 29,
+   "beds": 38,
    "homes": [
     {
      "area": "cn_oakhaven_cottage_1",
@@ -3143,6 +3553,84 @@
       "y": 176,
       "worldX": 1019,
       "worldY": 1200
+     }
+    },
+    {
+     "area": "cn_oakhaven_town_house_1",
+     "name": "Oakhaven Town House 1",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 7,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 1
+      },
+      {
+       "x": 7,
+       "y": 11
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_3_4",
+      "x": 254,
+      "y": 191,
+      "worldX": 1022,
+      "worldY": 1215
+     }
+    },
+    {
+     "area": "cn_oakhaven_town_house_2",
+     "name": "Oakhaven Town House 2",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 3
+      },
+      {
+       "x": 12,
+       "y": 1
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_3_4",
+      "x": 239,
+      "y": 176,
+      "worldX": 1007,
+      "worldY": 1200
+     }
+    },
+    {
+     "area": "cn_oakhaven_town_house_3",
+     "name": "Oakhaven Town House 3",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 10,
+       "y": 8
+      },
+      {
+       "x": 10,
+       "y": 6
+      },
+      {
+       "x": 1,
+       "y": 8
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_3_4",
+      "x": 240,
+      "y": 216,
+      "worldX": 1008,
+      "worldY": 1240
      }
     }
    ],
@@ -3272,6 +3760,30 @@
      "otherRooms": [
       "cn_oakhaven_alehouse_flat"
      ]
+    },
+    {
+     "area": "cn_oakhaven_guest_inn",
+     "name": "The Sound Road Inn",
+     "business": "inn",
+     "posts": [],
+     "work": [
+      {
+       "x": 10,
+       "y": 9
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_3_4",
+      "x": 238,
+      "y": 204,
+      "worldX": 1006,
+      "worldY": 1228
+     },
+     "otherRooms": [
+      "cn_oakhaven_guest_inn_up"
+     ],
+     "guestBeds": 6
     }
    ],
    "square": {
@@ -3430,7 +3942,7 @@
     }
    ],
    "roomToGrow": {
-    "cottageLots": 12,
+    "cottageLots": 8,
     "openTiles": 12152
    }
   },
@@ -3445,10 +3957,10 @@
    "about": "The mining village in the high valley under the Whitefangs' pass, where the Pass Road, the Pass and the High Road meet: timber cottages on stone footings under cedar shingle round a green and its well, a store and an alehouse, kitchen gardens, hens and goats, the snow on the peaks above it. The iron mine's diggers, the lime burners and the Greyteeth colliers live here.",
    "style": "country",
    "region": "frosthollow",
-   "town": false,
+   "town": true,
    "hands": 0,
    "farms": [],
-   "beds": 43,
+   "beds": 52,
    "homes": [
     {
      "area": "cn_frosthollow_cottage_1",
@@ -3600,6 +4112,84 @@
       "y": 251,
       "worldX": 2300,
       "worldY": 763
+     }
+    },
+    {
+     "area": "cn_frosthollow_town_house_1",
+     "name": "Frosthollow Town House 1",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 1,
+       "y": 12
+      },
+      {
+       "x": 3,
+       "y": 12
+      },
+      {
+       "x": 1,
+       "y": 1
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_9_3",
+      "x": 2,
+      "y": 16,
+      "worldX": 2306,
+      "worldY": 784
+     }
+    },
+    {
+     "area": "cn_frosthollow_town_house_2",
+     "name": "Frosthollow Town House 2",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 8,
+       "y": 1
+      },
+      {
+       "x": 6,
+       "y": 1
+      },
+      {
+       "x": 8,
+       "y": 12
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_9_3",
+      "x": 6,
+      "y": 16,
+      "worldX": 2310,
+      "worldY": 784
+     }
+    },
+    {
+     "area": "cn_frosthollow_town_house_3",
+     "name": "Frosthollow Town House 3",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 1,
+       "y": 10
+      },
+      {
+       "x": 3,
+       "y": 10
+      },
+      {
+       "x": 1,
+       "y": 1
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_9_3",
+      "x": 2,
+      "y": 40,
+      "worldX": 2306,
+      "worldY": 808
      }
     }
    ],
@@ -3777,6 +4367,30 @@
      "otherRooms": [
       "cn_frosthollow_alehouse_flat"
      ]
+    },
+    {
+     "area": "cn_frosthollow_guest_inn",
+     "name": "The Pass House",
+     "business": "inn",
+     "posts": [],
+     "work": [
+      {
+       "x": 10,
+       "y": 9
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_8_3",
+      "x": 241,
+      "y": 45,
+      "worldX": 2289,
+      "worldY": 813
+     },
+     "otherRooms": [
+      "cn_frosthollow_guest_inn_up"
+     ],
+     "guestBeds": 6
     }
    ],
    "square": {
@@ -3890,7 +4504,7 @@
     }
    ],
    "roomToGrow": {
-    "cottageLots": 11,
+    "cottageLots": 7,
     "openTiles": 5569
    }
   }

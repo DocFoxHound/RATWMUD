@@ -51,16 +51,17 @@ STREET_CLEAR = 2                               # Open path tiles a lamp on a str
 SEALED = 'sealed yard'                         # A note, not a failure.
 FREE_STEP, RAMP_STEP = .5, 1.
 
-# Ridgemere 3's settlements (world tiles): the walled city with its gates and quays, and the six towns round their
-# centres (doc 72; Mirebridge was erased, its roads meeting in the open, and is walked as a crossroads).
+# Ridgemere3's active settlements: the walled city and the seven cn_ towns.
+# Mirebridge was erased; its old rooms and crossroads are not an active town.
 RIDGEMERE3 = {
     'Ridgemere': (150, 130, 490, 472),
-    'Frosthollow': (2250, 730, 2380, 850),
-    'Coldwater': (1800, 1730, 2050, 2020),
-    'Oakhaven': (950, 1160, 1080, 1270),
-    'Mirebridge': (1418, 2818, 1518, 2918),
-    'Larkfield': (1590, 2290, 1790, 2580),
-    'Southmeadow': (2070, 3290, 2210, 3420),
+    'Coldwater': (1862, 1702, 2051, 1891),
+    'Larkfield': (1582, 2286, 1771, 2475),
+    'Southmeadow': (2054, 3254, 2243, 3443),
+    'Fenshore': (766, 3382, 955, 3571),
+    'Saltwell': (3198, 2838, 3387, 3027),
+    'Oakhaven': (918, 1126, 1107, 1315),
+    'Frosthollow': (2214, 702, 2403, 891),
 }
 
 

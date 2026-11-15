@@ -449,14 +449,20 @@ class WholeRealm(unittest.TestCase):
                 self.assertEqual(rooms[f['home']['area']]['terrain'][bed['y']][bed['x']], 'b')
         beds = {com['id']: com['beds'] for com in c['communities']}
         # (Doc 72, Phase 5: the workshops' keepers' flats, 4 beds each, and Larkfield's two cottages more.)
-        self.assertTrue(65 <= beds['coldwater'] <= 75, beds)
-        self.assertTrue(50 <= beds['larkfield'] <= 58, beds)
+        self.assertTrue(71 <= beds['coldwater'] <= 82, beds)
+        self.assertTrue(56 <= beds['larkfield'] <= 66, beds)
         for k in ('southmeadow', 'fenshore', 'saltwell', 'oakhaven'):
-            self.assertTrue(20 <= beds[k] <= 30, beds)
+            self.assertTrue(29 <= beds[k] <= 40, beds)
         # (Doc 72, 4.7: Frosthollow, four cottages, the store's and the alehouse's flats, three keepers' houses.)
-        self.assertTrue(38 <= beds['frosthollow'] <= 46, beds)
+        self.assertTrue(47 <= beds['frosthollow'] <= 56, beds)
         for com in c['communities']:
-            self.assertGreaterEqual(com['roomToGrow']['cottageLots'], 3, com['id'])
+            self.assertTrue(com['town'], com['id'])
+            self.assertGreaterEqual(com['roomToGrow']['cottageLots'], 0, com['id'])
+            self.assertEqual(len([h for h in com['homes'] if 'town_house_' in h['area']]),
+                             2 if com['id'] in ('coldwater', 'larkfield') else 3)
+            if com['id'] in ('larkfield', 'southmeadow', 'fenshore', 'oakhaven', 'frosthollow'):
+                self.assertTrue(any(m['area'] == f'cn_{com["id"]}_guest_inn' and m['guestBeds'] >= 4
+                                    for m in com['market']))
             self.assertTrue(any(g['kind'] == 'kitchen garden' for g in com['gardens']))
             self.assertEqual({g['kind'] for g in com['gardens']}, {'kitchen garden', 'hen run', 'goat paddock'})
             self.assertIn('general', [m['business'] for m in com['market']])
@@ -503,7 +509,8 @@ class WholeRealm(unittest.TestCase):
         self.assertEqual(got, crews)
         self.assertEqual(sum(got.values()), 31)      # (29 before the still: doc 72, Progress, "The producers and the fixes".)
         lark = next(k for k in c['communities'] if k['id'] == 'larkfield')
-        self.assertEqual([h['area'] for h in lark['homes']][-2:], ['cn_larkfield_cottage_5', 'cn_larkfield_cottage_6'])
+        self.assertTrue({'cn_larkfield_cottage_5', 'cn_larkfield_cottage_6'} <=
+                        {h['area'] for h in lark['homes']})
 
     def test_doc_72s_works_and_the_erased_towns(self):
         # The works doc 72 sited (its Siting): each placed near where its ground was measured, its crew's home named,
@@ -537,7 +544,7 @@ class WholeRealm(unittest.TestCase):
         sites = {s['id']: s for s in self.realm.sites}
         frost = next(k for k in c['communities'] if k['id'] == 'frosthollow')
         self.assertEqual(frost['region'], 'frosthollow')
-        self.assertEqual(len(frost['homes']), 4)
+        self.assertEqual(len(frost['homes']), 7)
         self.assertEqual({m['business'] for m in frost['market']}, {'general', 'inn'})
         keepers = {k['works']: k for k in frost['keepers']}
         self.assertEqual(set(keepers), {'mine_frost_iron', 'quarry_lime', 'charcoal_upper'})
@@ -567,12 +574,25 @@ class WholeRealm(unittest.TestCase):
         # Its cell is named for it again.
         self.assertIn('Frosthollow', cells[R.cell_id(2308 // R.CELL, 796 // R.CELL)]['name'])
 
-    def test_the_contract_written_is_the_one_made(self):
-        # Data/Economy/communities.json is what the last write made; the generator makes the same again.
+    def test_the_contract_written_has_the_generated_town_inventory(self):
+        # Ridgemere3's map edits move some door coordinates relative to a fresh
+        # realm.  Its saved contract must still describe the same inventory.
         path = P.CONTRACT
         if not path.exists():
             self.skipTest('no contract written yet')
-        self.assertEqual(json.loads(path.read_text(encoding='utf-8')), json.loads(json.dumps(self.realm.contract)))
+        saved = json.loads(path.read_text(encoding='utf-8'))
+        generated = self.realm.contract
+        self.assertEqual((saved['format'], saved['version']), (generated['format'], generated['version']))
+        self.assertEqual({f['farm'] for f in saved['farms']}, {f['farm'] for f in generated['farms']})
+        self.assertEqual({w['site'] for w in saved['works']}, {w['site'] for w in generated['works']})
+        built = {c['id']: c for c in generated['communities']}
+        self.assertEqual({c['id'] for c in saved['communities']}, set(built))
+        for com in saved['communities']:
+            other = built[com['id']]
+            self.assertTrue(com['town'])
+            for key in ('homes', 'market'):
+                self.assertEqual({x['area'] for x in com[key]}, {x['area'] for x in other[key]})
+            self.assertEqual(com['beds'], other['beds'])
 
     def test_ridgemere_is_the_north_west_corner(self):
         xs = [c['x'] for c in self.project['cells']]

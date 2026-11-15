@@ -390,6 +390,43 @@ std::map<std::string, std::string> greyfenFiles()
         files["cells/" + entry.path().filename().string()] = read(entry.path().string());
     return files;
 }
+
+void communityDoorsRespectUse()
+{
+    auto files = greyfenFiles();
+    auto rename = [](std::string& text, const std::string& from, const std::string& to) {
+        std::size_t at = 0;
+        while ((at = text.find(from, at)) != std::string::npos)
+        {
+            text.replace(at, from.size(), to);
+            at += to.size();
+        }
+    };
+    // Give Greyfen's working shop, private home and vacant cottage the IDs
+    // used by the authored realm's outdoor cells and community interiors.
+    auto& manifest = files["world.ratw"];
+    rename(manifest, "\"town\"", "\"w_ridgemere_0_0\"");
+    rename(manifest, "\"wren_house\"", "\"cn_test_home\"");
+    rename(manifest, "\"cottage\"", "\"cn_test_guest_inn\"");
+    rename(files["cells/town.cell"], "id: town", "id: w_ridgemere_0_0");
+    rename(files["cells/wren_house.cell"], "id: wren_house", "id: cn_test_home");
+    rename(files["cells/cottage.cell"], "id: cottage", "id: cn_test_guest_inn");
+    World world;
+    const auto loaded = world.loadWorldFiles(files, "community doors");
+    expect(loaded.ok, "Community door fixture loads: " + loaded.message);
+    world.addPlayer("player-town", "Walker");
+    world.setTimeOfDay(11);
+    expect(!walk(world, "player-town", {8.5, 23.5}, "w_ridgemere_0_0", 0, 1),
+           "A community home stays private");
+    expect(walk(world, "player-town", {12.5, 14.5}, "w_ridgemere_0_0", 0, -1),
+           "The working shop opens during its merchant's hours");
+    world.setTimeOfDay(23);
+    expect(!walk(world, "player-town", {12.5, 14.5}, "w_ridgemere_0_0", 0, -1),
+           "The shop closes after work");
+    expect(walk(world, "player-town", {18.5, 25.5}, "w_ridgemere_0_0", 0, 1) &&
+               world.entity("player-town")->cellId == "cn_test_guest_inn",
+           "The guest inn stays open overnight without a new merchant post");
+}
 std::string lineOf(const std::string& manifest, const std::string& start)
 {
     const auto at = manifest.find(start);
@@ -707,6 +744,7 @@ int main()
         rejectsBadResidents();
         doorsWalkThrough();
         lockedDoorsStillBlock();
+        communityDoorsRespectUse();
     }
     catch (const std::exception& error)
     {
