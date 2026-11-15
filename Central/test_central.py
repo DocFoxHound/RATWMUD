@@ -1436,7 +1436,8 @@ class ServerList(Base):
         self.assertIs(ember['quickened'], True)
         birch, plain = self.wolf(a, 'Birch', family='seer'), self.wolf(a, 'Plain')
         self.assertIs(birch['quickened'], False, 'Gifted unless chosen')
-        self.assertEqual([w['quickened'] for w in self.call('list_wolves', {}, a)[1]['wolves']], [True, False, False])
+        self.assertEqual({w['name']: w['quickened'] for w in self.call('list_wolves', {}, a)[1]['wolves']},
+                         {'Ember': True, 'Birch': False, 'Plain': False})
         status, refusal = self.call('patch_wolf', {'revision': ember['revision'], 'quickened': False}, a, None, ember['id'])
         self.assertEqual((status, refusal['code']), (400, 'immutable'), 'kept for good')
         for wolf, tier in ((ember, 'quickened'), (birch, 'gifted'), (plain, 'normal')):
