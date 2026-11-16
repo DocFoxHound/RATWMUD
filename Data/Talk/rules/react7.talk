@@ -1402,14 +1402,14 @@ remember pair: fq=prices 30m
 rule x7_fr_ask_child
 when concept=react.friend other.child
 cooldown 1d
-say How's #other.child#? | And #other.child#? Behaving? | Give #other.child# my love. Keeping well, are they?
+say How's #other.child#? | And #other.child#? Behaving? | Give #other.child# my love. Keeping well, is #other.child_they#?
 then other: friend.news
 remember pair: fq=child 30m
 
 rule x7_fr_ask_spouse
 when concept=react.friend other.spouse
 cooldown 1d
-say And how's #other.spouse#? | Give my best to #other.spouse#. How are they? | #other.spouse# keeping well?
+say And how's #other.spouse#? | Give my best to #other.spouse#. How is #other.spouse_they#? | #other.spouse# keeping well?
 then other: friend.news
 remember pair: fq=spouse 30m
 
@@ -1757,7 +1757,7 @@ remember pair: fx=spouse 30m
 
 rule x7_ga_child
 when concept=greet.answer pair.mem.fg=ask self.child
-say Worrying about #self.child#, as ever. | #self.child#'s well, so I'm well. | Ask #self.child#. They run the house now.
+say Worrying about #self.child#, as ever. | #self.child#'s well, so I'm well. | Ask #self.child#. #self.child_they.capitalize# runs the house now.
 then other: friend.close
 remember pair: fx=child 30m
 
@@ -1923,7 +1923,7 @@ remember pair: fx=good 30m
 ## The weather remarked on ("Wet enough for you?", "Cold enough for you?").
 
 rule x7_ga_wet
-when concept=greet.answer pair.mem.fg=wet
+when concept=greet.answer pair.mem.fg=wet here.outdoors=rain|storm|snow
 priority 1
 say Damp. Like everyone. | Wet through. And you look worse. | Half drowned, thanks for asking. | I've stopped noticing. It's that or weep.
 then other: friend.close

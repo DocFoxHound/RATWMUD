@@ -172,7 +172,7 @@ remember pair: e4d=love 2m
 rule e4_rd_tell_parent
 when concept=talk.dreams self.parent=yes self.child self.age<=45
 cooldown 3d
-say #self.child# wants to go to sea. I've said no. They've not listened. | All I want is for #self.child# to have it better than I did. | #self.child# says they'll buy me a house one day. I'm holding them to it.
+say #self.child# wants to go to sea. I've said no. #self.child_they.capitalize#'s not listened. | All I want is for #self.child# to have it better than I did. | #self.child# says #self.child_they#'ll buy me a house one day. I'm holding #self.child_them# to it.
 then other: dreams.reply
 remember pair: e4d=family 2m
 
@@ -427,7 +427,7 @@ remember pair: e4d=family 2m
 
 rule e4_rd_ans_spouse
 when concept=dreams.answer self.spouse pair.band!=spouses
-say Me and #self.spouse#, old and grumpy, in the same chairs. | Somewhere sunny for #self.spouse# and me. One day. | Ask #self.spouse#. They do the dreaming for both of us.
+say Me and #self.spouse#, old and grumpy, in the same chairs. | Somewhere sunny for #self.spouse# and me. One day. | Ask #self.spouse#. #self.spouse_they.capitalize# does the dreaming for both of us.
 then other: dreams.reply
 remember pair: e4d=us 2m
 

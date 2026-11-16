@@ -21,7 +21,7 @@ a : Spite or need. | Rowed off in the dark. | Or lazy ones.
 scene et_theft_carter
 when topic=crime topic.kind=theft a.job=carter|merchant
 does tell.complaint / react.complaint / agree
-a : Two bales gone off my wagon while I ate. | #topic.victim# lost their purse; I lost a cask of oil. Same thief, I'd bet. | I chain the axles now. Can you believe it?
+a : Two bales gone off my wagon while I ate. | #topic.victim# lost #topic.victim_their# purse; I lost a cask of oil. Same thief, I'd bet. | I chain the axles now. Can you believe it?
 b[carter] : Never leave a load. Sleep on it if you must. I do.
 b : While you ate? Bold. | A cask! That's heavy. | I can believe anything now.
 a : Bold and hungry. | Took two of them, then. | So can I.
@@ -52,7 +52,7 @@ a : Either way I'll be watching. | Too dear. | Desperate thief.
 
 scene et_theft_inn_room
 when topic=crime topic.kind=theft here.place=tavern
-a : A guest woke up to an empty pack this morning. | Someone's been trying the room doors upstairs. | #topic.victim# says they were robbed in their room.
+a : A guest woke up to an empty pack this morning. | Someone's been trying the room doors upstairs. | #topic.victim# says #topic.victim_they# was robbed in #topic.victim_their# room.
 b[innkeeper] : Not in my house. It'll be a guest who did it. I'll turn the lot out.
 b : An empty pack? | Upstairs? With you asleep below? | In a room? With the bolt?
 a : Bare as a bone. | Heard them myself. | Bolts can be lifted.
@@ -68,7 +68,7 @@ a : Strange and sad. | Even so. | Cruel or desperate.
 scene et_theft_festival
 when topic=crime topic.kind=theft here.day=festival
 does warn / tell.self / assess
-a : Pickpockets in the crowd. Mind your purse. | #topic.victim# lost their purse in the dancing. | Thieves love a feast day.
+a : Pickpockets in the crowd. Mind your purse. | #topic.victim# lost #topic.victim_their# purse in the dancing. | Thieves love a feast day.
 b[guard] : Dancing and drinking. Easiest pickings in the year.
 b : Mine's in my boot. | In the dancing? | They do.
 a : Clever. | Right under everyone's noses. | Every year.
@@ -210,7 +210,7 @@ a : Unbearable. | Insufferable. | Go on, then.
 
 scene et_appr_smith
 when topic=life topic.kind=apprentice a.job=smith|crafter|baker|brewer
-a : #topic.subject#'s apprenticed. Hope they've got thicker skin than I had. | #topic.subject#'s starting out. I remember my first burn. | They'll work #topic.subject# to the bone the first year.
+a : #topic.subject#'s apprenticed. Hope #topic.they#'s got thicker skin than I had. | #topic.subject#'s starting out. I remember my first burn. | They'll work #topic.subject# to the bone the first year.
 b : You turned out all right. | Show me the scar. | They worked you.
 a : Barely. | Here. | They did.
 
@@ -223,7 +223,7 @@ a : Not always for the worse. | Me too. | Of course.
 
 scene et_succ_farm
 when topic=life topic.kind=succession a.job=farmer|herder
-a : #topic.subject# has the farm now. Their father's land. | The fields have gone to #topic.subject#. | Young #topic.subject#'s master of the old farm.
+a : #topic.subject# has the farm now. #topic.their.capitalize# father's land. | The fields have gone to #topic.subject#. | Young #topic.subject#'s master of the old farm.
 b : Can they work it? | Lucky. Good land. | Big boots to fill.
 a : We'll know by harvest. | Good land and debts. | Big boots.
 
@@ -237,7 +237,7 @@ a : I doubt it. | Uh oh indeed. | Easy for you to say.
 
 scene et_new_guard_check
 when topic=newcomer a.role=guard
-a : I've had a word with #topic.subject#. Their papers seem in order. | Keep an eye on #topic.subject#. Just in case. | #topic.subject# came in by the gate with very little.
+a : I've had a word with #topic.subject#. #topic.their.capitalize# papers seem in order. | Keep an eye on #topic.subject#. Just in case. | #topic.subject# came in by the gate with very little.
 b : Good. | Just in case of what? | That's no crime.
 a : Seem. | Anything. | No.
 
@@ -255,7 +255,7 @@ a : Any day. | We will. | So sad.
 
 scene et_new_job_mine
 when topic=newcomer b.job=farmer|miner|laborer|fisher
-a : #topic.subject#'s looking for work. Have you room? | Could you use #topic.subject#? They're strong. | #topic.subject# said they know the #b.trade#'s trade.
+a : #topic.subject#'s looking for work. Have you room? | Could you use #topic.subject#? #topic.they.capitalize#'s strong. | #topic.subject# said #topic.they# knows the #b.trade#'s trade.
 b : Send them up. | If they don't mind mud. | We'll see.
 a : I will. | They'll manage. | Good.
 
@@ -301,11 +301,11 @@ a : As always. | Cold view. | We do.
 # ---------------------------------------------------------------- Gossip, by place and hour
 
 scene et_gos_chapel
-when topic=gossip here.place=chapel
+when topic=gossip here.place=chapel topic.claim_kind=theft|violence|wanted|prowling|promise_broken
 does tell.gossip / react.news / concede
 a : In the chapel, of all places, I heard #topic.subject# #topic.claim#. | After prayers, everyone was whispering that #topic.subject# #topic.claim#. | Even the priest's heard #topic.subject# #topic.claim#.
 b[priest] : I hear a great deal. I repeat none of it.
-b : Hush. Not here. | Shame on them. | The priest hears everything.
+b : Hush. Not here. | Shame on #topic.them#. | The priest hears everything.
 a : Outside, then. | Shameful. | Everything.
 
 scene et_gos_field

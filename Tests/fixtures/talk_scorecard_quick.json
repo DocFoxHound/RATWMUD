@@ -1,8 +1,8 @@
 {
  "about": "Docs/Design/84 §15.3: the talk scorecard (tools/talk_score.py), from talk_sim transcripts.",
- "generated": "2026-11-16T21:21:07+00:00",
+ "generated": "2026-11-16T22:52:10+00:00",
  "runs": {
-  "town": "/tmp/ratw-talk-quick-pyamuoxx/town"
+  "town": "/tmp/ratw-talk-quick-ht6snjml/town"
  },
  "metrics": {
   "R1": {
@@ -10,12 +10,12 @@
    "better": "higher",
    "gate": "hard",
    "target": "40 h+; hard 20 h+",
-   "value": 12.880208333333334,
+   "value": 12.865625,
    "passes": false,
    "by_profile": {
-    "town": 12.88
+    "town": 12.866
    },
-   "control": 12.880208333333334,
+   "control": 12.865625,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -27,12 +27,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "8 h+",
-   "value": 0.544375,
+   "value": 3.5925,
    "passes": false,
    "by_profile": {
-    "town": 0.544
+    "town": 3.592
    },
-   "control": 0.544375,
+   "control": 3.5925,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -44,12 +44,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "L1 1,500+",
-   "value": 2791.362823533999,
+   "value": 2790.666244324781,
    "passes": true,
    "by_profile": {
-    "town": 2791.363
+    "town": 2790.666
    },
-   "control": 2791.362823533999,
+   "control": 2790.666244324781,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -61,20 +61,20 @@
    "better": "lower",
    "gate": "soft",
    "target": "5 or fewer",
-   "value": 2847.5211888379413,
+   "value": 2781.842906171081,
    "passes": false,
    "by_profile": {
-    "town": 2847.521
+    "town": 2781.843
    },
-   "control": 7533.904834772863,
-   "separation": 0.6220391349124614,
+   "control": 7855.98653111442,
+   "separation": 0.6458951533135509,
    "real_better": true,
    "separates": true,
    "control_required": false,
    "structural": false,
    "events": [
-    367,
-    12.89
+    358,
+    12.87
    ]
   },
   "R5": {
@@ -82,20 +82,20 @@
    "better": "lower",
    "gate": "hard",
    "target": "1 or fewer; hard 3",
-   "value": 589.6774124024074,
-   "passes": false,
+   "value": 0.0,
+   "passes": true,
    "by_profile": {
-    "town": 589.677
+    "town": 0.0
    },
-   "control": 1481.952444327103,
-   "separation": 0.6020942408376964,
+   "control": 1305.4458330635239,
+   "separation": 1.0,
    "real_better": true,
    "separates": true,
    "control_required": false,
    "structural": false,
    "events": [
-    76,
-    12.89
+    0,
+    12.87
    ]
   },
   "R6": {
@@ -103,13 +103,13 @@
    "better": "lower",
    "gate": "soft",
    "target": "0.4%",
-   "value": 1.2272140088990957,
+   "value": 1.1712410922175969,
    "passes": false,
    "by_profile": {
-    "town": 1.227
+    "town": 1.171
    },
-   "control": 1.3707478111095164,
-   "separation": 0.10471204188481684,
+   "control": 1.2559091229803148,
+   "separation": 0.06741573033707869,
    "real_better": true,
    "separates": false,
    "control_required": false,
@@ -120,13 +120,13 @@
    "better": "higher",
    "gate": "soft",
    "target": "500+",
-   "value": 202.6349706429901,
+   "value": 204.34173669467788,
    "passes": false,
    "by_profile": {
-    "town": 202.635
+    "town": 204.342
    },
-   "control": 181.0810810810811,
-   "separation": 0.10636806417725135,
+   "control": 182.23583460949465,
+   "separation": 0.10818104241823734,
    "real_better": true,
    "separates": false,
    "control_required": false,
@@ -137,20 +137,20 @@
    "better": "lower",
    "gate": "soft",
    "target": "15% or less",
-   "value": 0.07856430804786034,
+   "value": 0.11215852708951735,
    "passes": true,
    "by_profile": {
-    "town": 0.079
+    "town": 0.112
    },
-   "control": 0.0831608747723538,
-   "separation": 0.05527318870894748,
-   "real_better": true,
+   "control": 0.09171637882203444,
+   "separation": 0.18226120472469617,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    11,
-    13934.0
+    16,
+    14173.0
    ]
   },
   "C1": {
@@ -158,20 +158,20 @@
    "better": "higher",
    "gate": "hard",
    "target": "97%; hard 92%",
-   "value": 99.81172673480366,
+   "value": 99.86968986187125,
    "passes": true,
    "by_profile": {
-    "town": 99.812
+    "town": 99.87
    },
-   "control": 18.086816720257236,
-   "separation": 0.8187906640638201,
+   "control": 16.907704443860112,
+   "separation": 0.830702343551432,
    "real_better": true,
    "separates": true,
    "control_required": true,
    "structural": false,
    "events": [
-    3711,
-    3718.0
+    3832,
+    3837.0
    ]
   },
   "C1Q": {
@@ -179,20 +179,20 @@
    "better": "higher",
    "gate": "soft",
    "target": "diagnostic (C1 until Phase 3; doesn't separate from the control)",
-   "value": 97.55409219190969,
+   "value": 97.23320158102767,
    "passes": null,
    "by_profile": {
-    "town": 97.554
+    "town": 97.233
    },
-   "control": 87.47714808043875,
-   "separation": 0.10329596519280237,
+   "control": 88.75119161105815,
+   "separation": 0.0872336797724508,
    "real_better": true,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    1037,
-    1063.0
+    984,
+    1012.0
    ]
   },
   "M1": {
@@ -200,14 +200,14 @@
    "better": "higher",
    "gate": "soft",
    "target": "100% at Phase 7 (every entry)",
-   "value": 52.892206114539974,
+   "value": 53.799477880476964,
    "passes": null,
    "by_profile": {
-    "town": 52.892
+    "town": 53.799
    },
-   "control": 52.978326395866226,
-   "separation": 0.0016255757247358427,
-   "real_better": false,
+   "control": 53.73597685740493,
+   "separation": 0.001180327868852404,
+   "real_better": true,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -217,13 +217,13 @@
    "better": "higher",
    "gate": "soft",
    "target": "95%",
-   "value": 100.0,
+   "value": 99.838622915546,
    "passes": true,
    "by_profile": {
-    "town": 100.0
+    "town": 99.839
    },
-   "control": 100.0,
-   "separation": 0.0,
+   "control": 99.94652406417113,
+   "separation": 0.0010795888064686807,
    "real_better": false,
    "separates": false,
    "control_required": false,
@@ -234,13 +234,13 @@
    "better": "higher",
    "gate": "soft",
    "target": "80% / 3% / 5%",
-   "value": 99.9,
+   "value": 99.90000000000002,
    "passes": true,
    "by_profile": {
     "town": 99.9
    },
-   "control": 33.75,
-   "separation": 0.6621621621621622,
+   "control": 32.15,
+   "separation": 0.6781781781781784,
    "real_better": true,
    "separates": true,
    "control_required": true,
@@ -268,7 +268,7 @@
    "structural": false,
    "events": [
     0,
-    13934.0
+    14173.0
    ]
   },
   "C5": {
@@ -281,7 +281,7 @@
    "by_profile": {
     "town": 0.0
    },
-   "control": 57.341753983063015,
+   "control": 58.8442813800889,
    "separation": 1.0,
    "real_better": true,
    "separates": true,
@@ -289,7 +289,7 @@
    "structural": false,
    "events": [
     0,
-    13934.0
+    14173.0
    ]
   },
   "C6": {
@@ -302,7 +302,7 @@
    "by_profile": {
     "town": 0.0
    },
-   "control": 272.0,
+   "control": 252.0,
    "separation": 1.0,
    "real_better": true,
    "separates": true,
@@ -318,12 +318,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "5-7; p90 9+",
-   "value": 6.967,
+   "value": 7.0865,
    "passes": true,
    "by_profile": {
-    "town": 6.967
+    "town": 7.087
    },
-   "control": 6.967,
+   "control": 7.0865,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -335,12 +335,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "5-15%",
-   "value": 0.1,
+   "value": 0.10000000000000002,
    "passes": false,
    "by_profile": {
     "town": 0.1
    },
-   "control": 0.1,
+   "control": 0.10000000000000002,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -356,19 +356,19 @@
    "better": "higher",
    "gate": "soft",
    "target": "1.5+",
-   "value": 0.275,
+   "value": 0.34,
    "passes": false,
    "by_profile": {
-    "town": 0.275
+    "town": 0.34
    },
-   "control": 0.275,
+   "control": 0.34,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    55,
+    68,
     2000.0
    ]
   },
@@ -390,7 +390,7 @@
    "structural": false,
    "events": [
     0,
-    13934.0
+    14173.0
    ]
   },
   "T2": {
@@ -398,20 +398,20 @@
    "better": "lower",
    "gate": "hard",
    "target": "0",
-   "value": 0.07176690110521028,
-   "passes": false,
+   "value": 0.0,
+   "passes": true,
    "by_profile": {
-    "town": 0.072
+    "town": 0.0
    },
-   "control": 12.056839385675326,
-   "separation": 0.9940476190476191,
+   "control": 10.936287306851055,
+   "separation": 1.0,
    "real_better": true,
    "separates": true,
    "control_required": false,
    "structural": false,
    "events": [
-    1,
-    13934.0
+    0,
+    14173.0
    ]
   },
   "T3": {
@@ -424,24 +424,96 @@
    "by_profile": {
     "town": 0.0
    },
-   "control": 0.07176690110521028,
-   "separation": 1.0,
+   "control": 0.0,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    0,
+    14173.0
+   ]
+  },
+  "T4": {
+   "name": "identity drift: a stance changed with no event or concede, or answered against one's own, per 1,000 stance lines",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": 0.0,
+   "passes": true,
+   "by_profile": {
+    "town": 0.0
+   },
+   "control": 0.0,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    0,
+    127.0
+   ]
+  },
+  "T6": {
+   "name": "'they' said of one known wolf named in the line, per 1,000 lines",
+   "better": "lower",
+   "gate": "soft",
+   "target": "0",
+   "value": 0.0,
+   "passes": true,
+   "by_profile": {
+    "town": 0.0
+   },
+   "control": 0.0,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    0,
+    14173.0
+   ]
+  },
+  "D1A": {
+   "name": "lines said a step broader or plainer than the speaker's own accent (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "diagnostic: accommodation (§10.6)",
+   "value": 20.404995413815,
+   "passes": null,
+   "by_profile": {
+    "town": 20.405
+   },
+   "control": 20.404995413815,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "O1": {
+   "name": "opinions given per 10 conversations",
+   "better": "higher",
+   "gate": "soft",
+   "target": "diagnostic (§8.8)",
+   "value": 0.325,
+   "passes": null,
+   "by_profile": {
+    "town": 0.325
+   },
+   "control": 0.009999999999999998,
+   "separation": 0.9692307692307692,
    "real_better": true,
    "separates": true,
    "control_required": false,
    "structural": false,
    "events": [
-    0,
-    13934.0
+    65,
+    2000.0
    ]
-  },
-  "T4": {
-   "name": "identity drift",
-   "better": "lower",
-   "gate": "hard",
-   "target": "0",
-   "value": null,
-   "note": "n/a until Phase 6"
   },
   "T5": {
    "name": "telling what the listener already believes, with no 'known' answer (%)",
@@ -462,7 +534,7 @@
    "by_profile": {
     "town": 0.0
    },
-   "control": 2.170767004341534,
+   "control": 2.849740932642487,
    "separation": 1.0,
    "real_better": true,
    "separates": true,
@@ -470,7 +542,7 @@
    "structural": false,
    "events": [
     0,
-    691.0
+    386.0
    ]
   },
   "D1L": {
@@ -478,20 +550,20 @@
    "better": "higher",
    "gate": "soft",
    "target": "light 25-50%",
-   "value": 2.433700753028484,
+   "value": 1.9189460117428039,
    "passes": false,
    "by_profile": {
-    "town": 2.434
+    "town": 1.919
    },
-   "control": 2.881152460984394,
-   "separation": 0.1553030303030304,
+   "control": 2.5633681798653876,
+   "separation": 0.2513966480446928,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    223,
-    9163.0
+    134,
+    6983.0
    ]
   },
   "D1B": {
@@ -499,20 +571,20 @@
    "better": "higher",
    "gate": "soft",
    "target": "broad 60%+",
-   "value": 4.5588235294117645,
+   "value": 4.688418577307467,
    "passes": false,
    "by_profile": {
-    "town": 4.559
+    "town": 4.688
    },
-   "control": 2.450980392156863,
-   "separation": 0.4623655913978494,
+   "control": 3.93885949441505,
+   "separation": 0.15987460815047036,
    "real_better": true,
-   "separates": true,
+   "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    186,
-    4080.0
+    319,
+    6804.0
    ]
   },
   "D2": {
@@ -537,19 +609,19 @@
    "better": "higher",
    "gate": "soft",
    "target": "85%+",
-   "value": 44.73684210526316,
+   "value": 65.78947368421052,
    "passes": false,
    "by_profile": {
-    "town": 44.737
+    "town": 65.789
    },
-   "control": 76.3157894736842,
-   "separation": 0.4137931034482758,
+   "control": 78.94736842105263,
+   "separation": 0.1666666666666667,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    17,
+    25,
     38.0
    ]
   },
@@ -575,13 +647,13 @@
    "better": "higher",
    "gate": "soft",
    "target": "90%+",
-   "value": 56.050670640834575,
+   "value": 57.98497945302536,
    "passes": false,
    "by_profile": {
-    "town": 56.051
+    "town": 57.985
    },
-   "control": 54.008941877794335,
-   "separation": 0.03642648231853233,
+   "control": 57.659061924330445,
+   "separation": 0.005620723362658899,
    "real_better": true,
    "separates": false,
    "control_required": false,
@@ -592,12 +664,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "35%+",
-   "value": 95.5,
+   "value": 95.3,
    "passes": true,
    "by_profile": {
-    "town": 95.5
+    "town": 95.3
    },
-   "control": 95.5,
+   "control": 95.3,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -609,12 +681,12 @@
    "better": "lower",
    "gate": "soft",
    "target": "25% or less",
-   "value": 11.2,
+   "value": 10.9,
    "passes": true,
    "by_profile": {
-    "town": 11.2
+    "town": 10.9
    },
-   "control": 11.2,
+   "control": 10.9,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -671,12 +743,12 @@
    "better": "lower",
    "gate": "soft",
    "target": "0.6 ms or less (gate: talk_bench)",
-   "value": 0.06906358329143615,
+   "value": 0.10001410441140206,
    "passes": true,
    "by_profile": {
-    "town": 0.069
+    "town": 0.1
    },
-   "control": 0.06906358329143615,
+   "control": 0.10001410441140206,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -688,12 +760,12 @@
    "better": "lower",
    "gate": "soft",
    "target": "3 ms or less (gate: talk_bench)",
-   "value": 0.194923,
+   "value": 0.296705,
    "passes": true,
    "by_profile": {
-    "town": 0.195
+    "town": 0.297
    },
-   "control": 0.194923,
+   "control": 0.296705,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -705,12 +777,12 @@
    "better": "lower",
    "gate": "soft",
    "target": "5 ms or less (gate: talk_bench)",
-   "value": 1.140297,
+   "value": 1.35755,
    "passes": true,
    "by_profile": {
-    "town": 1.14
+    "town": 1.358
    },
-   "control": 1.140297,
+   "control": 1.35755,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -722,12 +794,12 @@
    "better": "higher",
    "gate": "hard",
    "target": "150+",
-   "value": 726.74040366904,
+   "value": 555.276088956068,
    "passes": true,
    "by_profile": {
-    "town": 726.74
+    "town": 555.276
    },
-   "control": 726.74040366904,
+   "control": 555.276088956068,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -739,13 +811,13 @@
    "better": "higher",
    "gate": "soft",
    "target": "diagnostic (not in §15.3): shows the control is discriminating",
-   "value": 16.728444802578565,
+   "value": 16.085240726124702,
    "passes": null,
    "by_profile": {
-    "town": 16.728
+    "town": 16.085
    },
-   "control": 1.342281879194631,
-   "separation": 0.9197605100153884,
+   "control": 1.312062024750261,
+   "separation": 0.9184306876664091,
    "real_better": true,
    "separates": true,
    "control_required": true,
@@ -772,43 +844,43 @@
   "town": {
    "R1_detail": {
     "listeners": 3,
-    "median": 12.888125,
+    "median": 12.86875,
     "censored": true,
     "exchange": null
    },
    "R2_detail": {
-    "median": 0.606875,
+    "median": 3.8008333333333333,
     "censored": false
    },
    "R6_detail": {
-    "line": "Good night.",
-    "times": 171
+    "line": "Bye, then!",
+    "times": 166
    },
    "R7_detail": {
-    "replies": 6983,
-    "closing_beats": 4951,
-    "closings_distinct_per_1000": 41.8
+    "replies": 7140,
+    "closing_beats": 5033,
+    "closings_distinct_per_1000": 44.1
    },
    "R8_detail": {
-    "p90": 0.3076923076923077,
+    "p90": 0.4728132387706856,
     "speakers": 40,
-    "lines20": 13934,
-    "any_habit_mean": 0.23235791892968966
+    "lines20": 14173,
+    "any_habit_mean": 0.19951323318838046
    },
    "C1Q_detail": {
-    "questions": 1063,
-    "answered": 1037
+    "questions": 1012,
+    "answered": 984
    },
    "C1_detail": {
-    "owed": 3718,
-    "met": 3711
+    "owed": 3837,
+    "met": 3832
    },
    "C2_detail": {
-    "answers": 3600,
-    "fallbacks": 0
+    "answers": 3718,
+    "fallbacks": 2
    },
    "M1_detail": {
-    "scene": 52.892206114539974
+    "scene": 53.799477880476964
    },
    "C3_detail": {
     "farewell": 99.9,
@@ -824,47 +896,53 @@
    },
    "C7_detail": {
     "p90": 10,
-    "three_lines": 0.2,
-    "four_lines": 2.1
+    "three_lines": 0.1,
+    "four_lines": 1.55
    },
    "T2_detail": {
-    "by_kind": {
-     "fisher_self": 1
-    },
-    "examples": [
-     "fisher_self: You say that every night, my catch. (tt_co_boatman, clear/clear 14h)"
-    ]
+    "by_kind": {},
+    "examples": []
    },
    "T3_detail": {
     "by_kind": {},
     "examples": [],
     "eyewitness_judged": true
    },
+   "T4_detail": {
+    "stance_lines": 127,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "examples": []
+   },
    "T1_detail": {
     "examples": []
    },
    "K2_detail": {
     "topics": {
-     "work": 11.2,
-     "smalltalk": 7.05,
-     "travel": 6.65,
-     "memories": 5.9,
-     "season": 5.85,
-     "land": 5.75,
-     "food": 5.6,
-     "lore": 5.6,
-     "health": 5.35,
-     "animals": 5.3,
-     "pastimes": 5.3,
-     "faith": 5.0,
-     "dreams": 4.95,
-     "home": 4.9,
-     "friends": 4.3,
-     "player": 3.2,
-     "family": 2.9,
-     "weather": 2.35,
-     "accent": 1.55,
-     "life": 1.1,
+     "work": 10.9,
+     "memories": 6.6,
+     "smalltalk": 6.55,
+     "season": 6.35,
+     "travel": 6.2,
+     "pastimes": 5.75,
+     "land": 5.55,
+     "animals": 5.5,
+     "health": 5.45,
+     "lore": 5.4,
+     "dreams": 5.25,
+     "food": 5.0,
+     "home": 4.8,
+     "friends": 4.7,
+     "faith": 4.45,
+     "player": 3.35,
+     "family": 2.8,
+     "weather": 2.55,
+     "accent": 1.5,
+     "life": 1.15,
      "news": 0.2
     }
    },
@@ -872,17 +950,18 @@
     "repeats": []
    },
    "C5_detail": {
-    "turns": 942,
+    "turns": 958,
     "unmarked": 0,
     "examples": [],
-    "topics_per_talk": 1.471,
-    "turned_talks": 827
+    "topics_per_talk": 1.479,
+    "turned_talks": 834
    },
    "C9_detail": {
-    "callbacks": 55,
+    "callbacks": 68,
     "goals": {
-     "mend": 40,
-     "visit": 11
+     "mend": 39,
+     "vent": 13,
+     "visit": 10
     }
    },
    "T5_detail": {
@@ -891,9 +970,13 @@
     "examples": []
    },
    "D1_detail": {
-    "light": 2.43,
-    "broad": 4.56,
+    "light": 1.92,
+    "broad": 4.69,
     "none": 0.0
+   },
+   "D1A_detail": {
+    "broader": 2698,
+    "plainer": 194
    },
    "D2_detail": {
     "by_layers": 0,
@@ -902,35 +985,36 @@
     "lexicon": "tools/dialect_check.py"
    },
    "D3_detail": {
-    "light": 34.6,
+    "light": 65.4,
     "broad": 66.7,
-    "none": 50.0,
+    "none": 0.0,
     "speakers": 40,
     "judged": 38
    },
    "U2_detail": {
     "pairs": 19,
-    "lines": 6710
+    "lines": 7057
    },
    "B1_detail": {
-    "beats": 11934,
-    "beat_max": 0.458585,
-    "looks": 9120,
-    "look_mean": 0.15556704462719295,
-    "look_max": 2.959316
+    "beats": 12173,
+    "beat_max": 0.710359,
+    "looks": 9202,
+    "look_mean": 0.18475090599869531,
+    "look_max": 4.540123
    },
    "_counts": {
-    "lines": 13934,
+    "lines": 14173,
     "conversations": 2000,
-    "hours": 12.89,
+    "hours": 12.87,
     "listeners": 3,
     "speakers": 40,
-    "questions": 1063,
-    "owed": 3718,
+    "questions": 1012,
+    "owed": 3837,
     "asserted": 0,
-    "none_lines": 691,
-    "light_lines": 9163,
-    "broad_lines": 4080
+    "stance_lines": 127,
+    "none_lines": 386,
+    "light_lines": 6983,
+    "broad_lines": 6804
    }
   }
  },

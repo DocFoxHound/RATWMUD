@@ -6,7 +6,7 @@ scene pl_stranger
 when topic=player topic.known=no
 a[child] : Look! Who's that? | Is that a traveller? Ask them where they're from!
 a[guard] : Keep an eye on #topic.subject#. I don't know that face.
-a[merchant] : #topic.subject# looks like they've coin to spend.
+a[merchant] : #topic.subject# looks like #topic.they#'s coin to spend.
 a : Who's #topic.subject#, do you know? | Never seen #topic.subject# before. | #topic.subject#. Not from round here.
 b[old] : Travellers. Always looking, never buying.
 b[guard] : Probably just passing through.

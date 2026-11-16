@@ -530,6 +530,9 @@ class Game
         // Phase 4: whether the one spoken to held the topic's claim before the talk began ("yes", "no"; "" when the topic
         // has none): the scorecard's T5.
         std::string knew;
+        // Phase 6: the topic's claim kind and kind (topic.claim_kind, topic.kind) as the line was said: T2 judges pity
+        // and gladness by them (truth.json's pity and glad).
+        std::string claimKind, topicKind;
     };
     struct AmbientEnd
     {
@@ -1953,6 +1956,9 @@ class Game
         std::vector<std::pair<std::string, std::string>> covered;
         std::map<std::string, std::pair<std::string, double>> kept;
         std::vector<std::string> toldEntries, claims;
+        // Phase 6 (§8.6): whether each listener had been told a thing before this talk began ("listener|what": the
+        // ledger's told set and heard set, asked once each, before anything this talk says is written there).
+        std::shared_ptr<std::map<std::string, bool>> toldBefore = std::make_shared<std::map<std::string, bool>>();
     };
     std::shared_ptr<TalkTiming> talkTiming_;
     std::vector<std::string> talkListeners_;            // (setTalkListeners.)
@@ -2123,6 +2129,23 @@ class Game
     std::map<std::string, int> townFishers_;
     std::int64_t townFishersDay_ = -1;
     int townFishers(const std::string& town);
+    // Doc 84 §8.8 (Phase 6): a resident's mood (low, sore, bright, even) and why, from the last days' events; the events
+    // that drift stances, looked for once a game day (opinions.json's drift, kept in the talk ledger).
+    void talkMood(const Entity& e, talk::Facts& f);
+    void talkDrift();
+    std::int64_t talkDriftDay_ = -1;
+    // A resident's stances (op.<issue>, op_strength.<issue>), kept a game day (a joiner's stake: §8.9, B1).
+    const talk::Facts& stancesOf(const Entity& e);
+    std::map<std::string, talk::Facts> stances_;
+    std::int64_t stancesDay_ = -1;
+    // A resident's stances, likes and dislikes as talkSpeaker gives them, worked out once a game day (and again when the
+    // day's drift has been looked for): §16, B1.
+    struct TalkDaily
+    {
+        std::int64_t day = -1;
+        talk::Facts facts;
+    };
+    std::map<std::string, TalkDaily> talkDaily_;
     void talkRemember(const std::vector<talk::Effect>& effects);
     // Each resident's voice, from live.npc_voice (doc 62, phase 6): over what is worked out of them, where set.
     struct NpcVoice
@@ -2195,6 +2218,8 @@ class Game
     // Armour and weapons someone has on, for the cards' little dolls (doc 35): [{place, name, weapon?, protect?}].
     json::Value gearView(const Entity& e) const;
     std::map<std::string, std::deque<std::string>> recentScenes_;   // By cell: scenes said there lately.
+    // Doc 84 §8.12.3 (Phase 6, the collision filter): by cell, the last hour's lines said there (when, who, the words).
+    std::map<std::string, std::deque<std::tuple<double, std::string, std::size_t>>> recentWords_;   // (The words' hash.)
     std::map<std::string, double> barkLast_;                         // By cell: when someone last called out there.
     double barkLookIn_ = 0;
     void barks(double dt);

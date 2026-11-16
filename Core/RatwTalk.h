@@ -130,6 +130,14 @@ struct SaidLine
     std::string goal;
     bool goalDone = false;                // Its goal's last step: done, kept between the two for the goal's days
     double goalDays = 0;
+    // Phase 6 (§8.8, §10.6): the accent it was spoken in (the speaker's, a step broader or plainer toward the one spoken
+    // to: accommodation; the scorecard's D1), and, on a line that airs a stance (an opinion given, agreed or disagreed
+    // with, insisted on, conceded), the issue, the speaker's own side on it as it was then, and how many steps events had
+    // moved it (drift: the scorecard's T4 tells a stance moved by events from one that wandered).
+    std::string accent;
+    std::string issue, stance;
+    int drift = 0;
+    std::string basis;                    // Which of the issue's leans held, and the drift: what the stance stood on
 };
 using LineInfo = SaidLine;
 struct Said
@@ -153,6 +161,13 @@ struct Freshness
 {
     std::function<bool(const std::string&)> heard;
     std::deque<std::string> recent;
+    // Phase 6 (§8.6, §8.12.4): whether a listener (by id) has been told something already: "claim:<key>" (a claim or
+    // one's own news, the talk ledger's told set) or "story:<entry>" (a story, a memory or a tease: its heard set). The
+    // engine never tells it them again. Unset: nothing refused.
+    std::function<bool(const std::string& listener, const std::string& what)> told;
+    // Phase 6 (§8.12.3, the collision filter): whether another than `speaker` said these words in this place within the
+    // hour (a distinctive line: 6 words or more). Such a line is passed over. Unset: nothing passed over.
+    std::function<bool(const std::string& words, const std::string& speaker)> collides;
 };
 
 // One thing a speaker means to bring up (doc 84 §8.5, Phase 5: World::agendaFor, the director's topics for the two, each
@@ -217,6 +232,9 @@ struct Conversation
     std::vector<std::string> topics;
     std::string goal;
     int goalStep = 0;
+    // Phase 6 (§8.6): what the topic now is about (the director's key: a claim's subject and words, one's own news), for
+    // Freshness::told: never told a listener twice.
+    std::string claim;
 };
 
 
@@ -246,6 +264,7 @@ struct Criterion
     enum class Op : std::uint8_t { In, NotIn, Lt, Le, Gt, Ge, Has, Lacks } op = Op::In;   // Has: remembered (self.mem.x)
     std::set<std::string> values;
     double number = 0;
+    bool list = false;                    // A list fact (self.likes=x holds when the list has x): Phase 6
 };
 // {k=v} before an alternative's words (doc 84 §7.1): conv.k=v for the rest of the conversation; `keep 7d` keeps it in
 // the ledger too (Phase 5).
@@ -316,6 +335,7 @@ struct Entry
     std::map<std::string, std::string> binds;
     bool aliasMoves = false;              // Its moves are its concept's alias, not written
     std::string owner;
+    bool hedged = false;                  // Phase 6: an alternative says #hedge# (a temperament weighs it: §7.5)
     // Phase 5 (§7.1, §8.7): an invitation the world checks (`invite here <hour> <days>`), a talk-only promise (`promise
     // self: <thing> <days>`), and whether its criteria read the talk ledger (a callback).
     std::string invitePlace;
@@ -433,8 +453,54 @@ struct Frame
     double budget = 1, preclose = 1;              // Scales the budget; closes sooner (preclose > 1)
     std::set<std::string> forbid;                 // Moves never made in it
     std::map<std::string, double> tones;          // A tone's weight among candidates (light: 1.4)
-    std::string accent, hedge;                    // Phase 6 (accommodation; how a dispreferred answer is shaped)
+    std::string hedge;                            // How a dispreferred answer is shaped (not yet read)
 };
+// Doc 84 §7.4, §8.11 (Phase 6): frames.json's town moods, read as world.mood (the first whose `when` holds of the town's
+// facts): moves muted town-wide, moves boosted, tones weighed.
+struct Mood
+{
+    std::string name;
+    std::vector<Criterion> when;
+    std::set<std::string> mutes;
+    std::map<std::string, double> boosts, tones;
+};
+// Doc 84 §10.6 (Phase 6): frames.json's accommodation. Each line a speaker says is a step plainer toward one a `plainer`
+// rule holds of (self: the speaker, other: the one spoken to), else a step broader toward one a `broader` rule holds of
+// who speaks as they do (pair.same_speech: the same dialect); none rises no higher than `none_rises_to`.
+struct Accommodation
+{
+    std::vector<std::vector<Criterion>> broader, plainer;
+    std::string noneRisesTo = "light";
+    bool on = false;
+};
+// Doc 84 §7.6, §8.8 (Phase 6): Data/Talk/opinions.json. An issue a resident has a stance on, worked out from their own
+// facts: each lean that holds moves it a step for or against (with the reason it gives, in their own words), and events
+// drift it a step (the game's, kept in the talk ledger). The topics it comes up on.
+struct Issue
+{
+    std::string name, words;                      // "watch", "the Watch"
+    std::set<std::string> topics;
+    std::vector<Criterion> who;                   // Who has a view on it at all (none: everyone)
+    struct Lean
+    {
+        std::vector<Criterion> when;
+        int side = 0;                             // +1 for, -1 against
+        std::string reason;                       // A key of `reasons`
+    };
+    std::vector<Lean> leans;
+    std::map<std::string, std::string> reasons;   // key -> words, first person ("they never caught who robbed me")
+    std::map<std::string, int> drift;             // event -> steps (robbed_uncaught: -1)
+};
+// A like or a dislike (§8.8): stable, held by the wearer (until mantles, drawn from the resident's id, Phase 6).
+struct LikeItem
+{
+    std::string id, kind, words;                  // pastime, food, weather, thing
+    std::vector<Criterion> when;                  // Who may hold it (a fisher's nets, a pup's games)
+    bool dislike = false;
+};
+// Doc 84 §7.5 (Phase 6): Data/Talk/temperaments.json: a trait's lean on a move ("temper=short": {"take_offence": 1.8}),
+// each 0.3-2.0, their product held to 0.3-2.0.
+using Temperaments = std::map<std::string, std::map<std::string, double>>;
 struct Budgets
 {
     std::map<std::string, std::pair<int, int>> byTalk{{"chatty", {8, 12}}, {"plain", {5, 8}}, {"quiet", {3, 5}}};
@@ -525,7 +591,7 @@ struct ShownChoice
 // The facts there are, and the values each may take.
 struct FactKind
 {
-    enum class Type : std::uint8_t { Words, Text, Number } type = Type::Words;
+    enum class Type : std::uint8_t { Words, Text, Number, List } type = Type::Words;   // List: words, any number of them
     std::set<std::string> values;               // Words only.
 };
 
@@ -667,6 +733,29 @@ public:
     const Budgets& budgets() const { return budgets_; }
     const Beats& beats() const { return curt_; }
     double inviteTaken() const { return inviteTaken_; }
+    // Phase 6 (§7.4-7.6, §8.8, §10.6): the town moods, accommodation, the issues and the likes, the temperaments.
+    const std::vector<Mood>& moods() const { return moods_; }
+    const Accommodation& accommodation() const { return accent_; }
+    const std::vector<Issue>& issues() const { return issues_; }
+    const Issue* issue(const std::string& name) const;
+    const std::vector<LikeItem>& likeItems() const { return likes_; }
+    const Temperaments& temperaments() const { return temper_; }
+    // A resident's stances (§8.8) as their facts: op.<issue> (for, against, mixed), op_why.<issue> (the reason, in their
+    // own words), op_strength.<issue> (0-3), from their facts (`person`: theirs as talkSpeaker gives them, without
+    // namespace) and the steps events drifted each (`drift`: issue -> steps, and the event that last moved it).
+    // op_basis.<issue> says what it stood on (the leans that held, the drift): a stance that changes on the same basis
+    // has wandered (the scorecard's T4); one whose basis changed was moved by the wolf's life.
+    void stances(Facts& person, const std::map<std::string, std::pair<int, std::string>>& drift) const;
+    // A resident's likes and dislikes (§8.8), stable for good: drawn from their id among the items whose `when` holds of
+    // them, one of each kind (likes) and two dislikes: likes, dislikes (list facts), and each kind's words.
+    void likes(Facts& person) const;
+    // A speaker's lean on a move (§7.5): the product of their traits' multipliers for it (or a kind of it), 0.3-2.0.
+    double lean(const Speaker& s, const std::string& move) const;
+    // The town's mood (§7.4): the first of frames.json's moods whose `when` holds ("" none), as world.mood.
+    std::string moodOf(const Query& q) const;
+    // Accommodation (§10.6): each speaker's accent toward the other for this query, as their `speaks` (read before their
+    // accent when a line is said); the town's mood as world.mood. Both speakers', since one query may serve both.
+    void accommodate(Query& q) const;
     // frames.json's goals (Phase 5), in their order; the topic graph's steps from a topic (topics.json's `next`, its
     // criteria parsed against facts.json when the library loads).
     const std::vector<Goal>& goals() const { return goals_; }
@@ -771,7 +860,30 @@ private:
     Beats curt_;
     double inviteTaken_ = .5;
     std::vector<Goal> goals_;
+    std::vector<Mood> moods_;
+    Accommodation accent_;
+    std::vector<Issue> issues_;
+    std::vector<LikeItem> likes_;
+    Temperaments temper_;
+    // temper_ by axis, then value (found without building a key: lean is asked for every candidate, §16 B1).
+    std::map<std::string, std::map<std::string, const std::map<std::string, double>*, std::less<>>, std::less<>> temperBy_;
     std::map<std::string, std::vector<Step>> steps_;
+    bool readOpinions(const std::string& text, std::string& problem);
+    bool readTemperaments(const std::string& text, std::string& problem);
+    // Phase 6: a stance's facts for the issue a talk is on (conv.issue): each speaker's own (stance, stance_why,
+    // stance_strength) and whether the two agree (conv.agree: yes, no, half), and the pair's earlier agreement on it.
+    void stanceFacts(const Conversation& c, Query& q) const;
+    // Whether an entry's move fits the stances (§8.8): agree only where the two agree, disagree where they differ.
+    bool stanceFits(const Entry& e, const Query& q) const;
+    // Whether an entry would tell a listener what they were told before (§8.6, §8.12.4: Freshness::told).
+    bool toldAlready(const Conversation& c, const Entry& e, const Query& q, int speaker, const Freshness& fresh) const;
+    // Whether a rendered line repeats another speaker's distinctive words here within the hour (§8.12.3).
+    static bool collides(const Said& s, const Query& q, const Freshness& fresh);
+    // A mood's mutes and boosts for an entry (world.mood).
+    bool moodMuted(const Entry& e, const Query& q) const;
+    double moodWeight(const Entry& e, const Query& q, const std::string& tone) const;
+    // Phase 6's lull step: an opinion on the issue the talk's topic raises (§8.8).
+    std::optional<SaidLine> opinion(Conversation& c, const Query& now, int who, const Freshness& fresh, Trace* trace) const;
     bool readSteps(std::string& problem);                             // (topics.json's `next`, parsed: Phase 5.)
     static void deepen(Conversation& c, const Query& q);              // (A topic's aspect, by the pair's past talk of it.)
     // The topic a talk turned to over a query's own (its topic.* facts, who knew its claim, conv.topic).

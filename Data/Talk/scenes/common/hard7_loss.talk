@@ -21,7 +21,7 @@ b : Then it's the worst kind. | It hollows you. | I'll take bread. | So would I.
 
 scene h7_death_good_one
 when topic=life topic.kind=death
-a : #topic.subject#'s dead. They were a good one. | We lost #topic.subject#. One of the decent ones. | Gods. #topic.subject#. They never had a bad word for anyone. | #topic.subject#, gone. They lent me a coat once and never asked for it back.
+a : #topic.subject#'s dead. #topic.they.capitalize# was a good one. | We lost #topic.subject#. One of the decent ones. | Gods. #topic.subject#. #topic.they.capitalize# never had a bad word for anyone. | #topic.subject#, gone. #topic.they.capitalize# lent me a coat once and never asked for it back.
 b[honesty=frank] #frank : They had plenty of bad words. They just said them kindly.
 b : The good ones always go first. | There's not many of those. | Not one. Not even for me. | That sounds like them.
 a@frank : Ha. They did. They did, at that.
@@ -62,7 +62,7 @@ b : You will for a while. | They're all ordinary, till they're not. | Then remem
 
 scene h7_death_pups_ask
 when topic=life topic.kind=death a.stage=young b.stage=adult|old
-a : Where's #topic.subject# gone? | Is #topic.subject# sleeping in #grave#? | Will #topic.subject# come back in spring, like the swallows? | Did #topic.subject# know they were going to die?
+a : Where's #topic.subject# gone? | Is #topic.subject# sleeping in #grave#? | Will #topic.subject# come back in spring, like the swallows? | Did #topic.subject# know #topic.they# was going to die?
 b : Somewhere quiet, pup. | Something like sleeping. | No, pup. Not like the swallows. | I don't think so.
 a : Can I go too? | Do they dream? | Not even a bit? | That's sad. And good.
 b : Not for a long, long time. | Good dreams, I hope. | Not even a bit. Come here. | Both. That's what it mostly is.

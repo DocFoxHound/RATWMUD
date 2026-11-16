@@ -534,12 +534,34 @@
    ]
   },
   "T4": {
-   "name": "identity drift",
+   "name": "identity drift: a stance changed with no event or concede, or answered against one's own, per 1,000 stance lines",
    "better": "lower",
    "gate": "hard",
    "target": "0",
-   "value": null,
-   "note": "n/a until Phase 6"
+   "value": 0.0,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0,
+    "L9": 0,
+    "L10": 0.0
+   },
+   "control": 13.307440338659099,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    0,
+    4048.0
+   ]
   },
   "T5": {
    "name": "telling what the listener already believes, with no 'known' answer (%)",
@@ -584,7 +606,7 @@
     "L9": 0,
     "L10": 0
    },
-   "control": 0.021137626509535632,
+   "control": 0.44867208412378046,
    "separation": 1.0,
    "real_better": true,
    "separates": true,
@@ -592,7 +614,7 @@
    "structural": false,
    "events": [
     0,
-    4997.0
+    13499.0
    ]
   },
   "D2": {
@@ -870,29 +892,29 @@
    "better": "higher",
    "gate": "soft",
    "target": "light 25-50%",
-   "value": 0.2482083718329006,
+   "value": 0.9333679786881363,
    "passes": false,
    "by_profile": {
     "L1": 0.0,
-    "L2": 0.077,
-    "L3": 0.729,
-    "L4": 1.267,
-    "L5": 0.125,
-    "L6": 0.108,
-    "L7": 0.521,
+    "L2": 0.473,
+    "L3": 2.449,
+    "L4": 1.538,
+    "L5": 3.996,
+    "L6": 4.326,
+    "L7": 0.0,
     "L8": 0,
     "L9": 0,
     "L10": 0.0
    },
-   "control": 0.2398353211284556,
-   "separation": 0.033733957652652906,
-   "real_better": true,
+   "control": 2.0939484043416763,
+   "separation": 0.5542545476512918,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    161,
-    48410.0
+    385,
+    73172.0
    ]
   },
   "D1B": {
@@ -900,29 +922,29 @@
    "better": "higher",
    "gate": "soft",
    "target": "broad 60%+",
-   "value": 0.12739670927464775,
+   "value": 2.8677323044114504,
    "passes": false,
    "by_profile": {
     "L1": 0.0,
-    "L2": 0.284,
-    "L3": 0,
-    "L4": 0,
-    "L5": 0,
-    "L6": 2.186,
-    "L7": 0,
+    "L2": 4.222,
+    "L3": 6.177,
+    "L4": 7.052,
+    "L5": 5.58,
+    "L6": 8.525,
+    "L7": 5.284,
     "L8": 0,
     "L9": 0,
     "L10": 0.0
    },
-   "control": 0.13397092549221368,
-   "separation": 0.049071962393422604,
-   "real_better": false,
+   "control": 2.7110737042929056,
+   "separation": 0.0546280417727819,
+   "real_better": true,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    31,
-    13335.0
+    3667,
+    81536.0
    ]
   },
   "C1M": {
@@ -1082,6 +1104,92 @@
    "separates": false,
    "control_required": false,
    "structural": false
+  },
+  "T6": {
+   "name": "'they' said of one known wolf named in the line, per 1,000 lines",
+   "better": "lower",
+   "gate": "soft",
+   "target": "0",
+   "value": 0.01783516738304589,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.128,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 0.01783516738304589,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    3,
+    168207.0
+   ]
+  },
+  "D1A": {
+   "name": "lines said a step broader or plainer than the speaker's own accent (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "diagnostic: accommodation (§10.6)",
+   "value": 32.827409085234265,
+   "passes": null,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 12.826,
+    "L3": 70.898,
+    "L4": 94.907,
+    "L5": 96.371,
+    "L6": 52.059,
+    "L7": 97.456,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 32.827409085234265,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "O1": {
+   "name": "opinions given per 10 conversations",
+   "better": "higher",
+   "gate": "soft",
+   "target": "diagnostic (§8.8)",
+   "value": 0.8313816602113073,
+   "passes": null,
+   "by_profile": {
+    "L1": 0.642,
+    "L2": 0.934,
+    "L3": 0.703,
+    "L4": 0.9,
+    "L5": 1.142,
+    "L6": 0.658,
+    "L7": 0.658,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 1.704
+   },
+   "control": 0.05259541378249932,
+   "separation": 0.9367373418254963,
+   "real_better": true,
+   "separates": true,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    2113,
+    25972.0
+   ]
   }
  },
  "details": {
@@ -1169,8 +1277,8 @@
     }
    },
    "D1_detail": {
-    "broad": 0.0,
     "light": 0.0,
+    "broad": 0.0,
     "none": 0.0
    },
    "D2_detail": {
@@ -1250,7 +1358,18 @@
     "goals": {
      "mend": 70
     }
-   }
+   },
+   "T4_detail": {
+    "stance_lines": 1491,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "examples": []
+   },
+   "D1A_detail": {}
   },
   "L2": {
    "R1_detail": {
@@ -1337,8 +1456,8 @@
     }
    },
    "D1_detail": {
-    "light": 0.08,
-    "broad": 0.28,
+    "light": 0.47,
+    "broad": 4.22,
     "none": 0.0
    },
    "D2_detail": {
@@ -1426,6 +1545,20 @@
      "nag": 5,
      "learn_name": 2
     }
+   },
+   "T4_detail": {
+    "stance_lines": 410,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "examples": []
+   },
+   "D1A_detail": {
+    "broader": 1658,
+    "plainer": 112
    }
   },
   "L3": {
@@ -1507,9 +1640,9 @@
     }
    },
    "D1_detail": {
-    "light": 0.73,
-    "none": 0.0,
-    "broad": 0.0
+    "light": 2.45,
+    "broad": 6.18,
+    "none": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1586,6 +1719,23 @@
      "favour": 138,
      "mend": 43
     }
+   },
+   "T4_detail": {
+    "stance_lines": 459,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 3,
+    "examples": [
+     "tn_fh_jory_rimepeak: Varg Acorndell's family are coming for the festival. All of them.",
+     "tn_fh_jory_rimepeak: Varg Acorndell's family are coming for the festival. All of them.",
+     "tn_oh_varg_acorndell: Jory Rimepeak's family are coming for the festival. All of them."
+    ]
+   },
+   "D1A_detail": {
+    "broader": 16610
    }
   },
   "L4": {
@@ -1664,9 +1814,9 @@
     }
    },
    "D1_detail": {
-    "light": 1.27,
-    "none": 0.0,
-    "broad": 0.0
+    "broad": 7.05,
+    "light": 1.54,
+    "none": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1743,6 +1893,19 @@
      "favour": 244,
      "mend": 59
     }
+   },
+   "T4_detail": {
+    "stance_lines": 407,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "examples": []
+   },
+   "D1A_detail": {
+    "broader": 16959
    }
   },
   "L5": {
@@ -1821,9 +1984,9 @@
     }
    },
    "D1_detail": {
-    "light": 0.13,
-    "none": 0.0,
-    "broad": 0.0
+    "broad": 5.58,
+    "light": 4.0,
+    "none": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1899,6 +2062,19 @@
     "goals": {
      "mend": 52
     }
+   },
+   "T4_detail": {
+    "stance_lines": 267,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "examples": []
+   },
+   "D1A_detail": {
+    "broader": 8019
    }
   },
   "L6": {
@@ -1978,8 +2154,8 @@
     }
    },
    "D1_detail": {
-    "light": 0.11,
-    "broad": 2.19,
+    "light": 4.33,
+    "broad": 8.53,
     "none": 0.0
    },
    "D2_detail": {
@@ -2057,6 +2233,19 @@
      "visit": 89,
      "mend": 59
     }
+   },
+   "T4_detail": {
+    "stance_lines": 166,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "examples": []
+   },
+   "D1A_detail": {
+    "broader": 3893
    }
   },
   "L7": {
@@ -2134,9 +2323,9 @@
     }
    },
    "D1_detail": {
-    "light": 0.52,
-    "none": 0.0,
-    "broad": 0.0
+    "broad": 5.28,
+    "light": 0.0,
+    "none": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -2212,6 +2401,19 @@
     "goals": {
      "mend": 20
     }
+   },
+   "T4_detail": {
+    "stance_lines": 141,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "examples": []
+   },
+   "D1A_detail": {
+    "broader": 7967
    }
   },
   "L8": {
@@ -2330,7 +2532,18 @@
    },
    "K3_detail": {
     "repeats": []
-   }
+   },
+   "T4_detail": {
+    "stance_lines": 0,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "examples": []
+   },
+   "D1A_detail": {}
   },
   "L9": {
    "R1_detail": {
@@ -2448,7 +2661,18 @@
    },
    "K3_detail": {
     "repeats": []
-   }
+   },
+   "T4_detail": {
+    "stance_lines": 0,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "examples": []
+   },
+   "D1A_detail": {}
   },
   "L10": {
    "R1_detail": {
@@ -2610,7 +2834,18 @@
      "mend": 176,
      "nag": 1
     }
-   }
+   },
+   "T4_detail": {
+    "stance_lines": 707,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "examples": []
+   },
+   "D1A_detail": {}
   }
  },
  "control": {
@@ -2826,6 +3061,31 @@
     "L10": "artifacts/talk/runs/p5/frozen-L10"
    },
    "on": "2026-11-16T21:20:55+00:00"
+  },
+  {
+   "metrics": [
+    "T4",
+    "T6",
+    "D1",
+    "D1L",
+    "D1B",
+    "D1A",
+    "O1"
+   ],
+   "why": "Doc 84 Phase 6 (r3-talk-p6): its gate measures T4 (identity drift, first measured: no stance aired drifted on the same basis or was answered against the speaker's own side) and D1, now judged by the accent each line was spoken in (accommodation, §10.6: a step broader toward kin and friends of one's own speech, plainer toward a class above, a stranger from elsewhere, a hostile pair; plain speech unshifted); D1A (lines so shifted), T6 ('they' said of one known wolf) and O1 (opinions given per 10 talks) are new rows.",
+   "from": {
+    "L1": "artifacts/talk/runs/p6/frozen-L1",
+    "L2": "artifacts/talk/runs/p6/frozen-L2",
+    "L3": "artifacts/talk/runs/p6/frozen-L3",
+    "L4": "artifacts/talk/runs/p6/frozen-L4",
+    "L5": "artifacts/talk/runs/p6/frozen-L5",
+    "L6": "artifacts/talk/runs/p6/frozen-L6",
+    "L7": "artifacts/talk/runs/p6/frozen-L7",
+    "L8": "artifacts/talk/runs/p6/frozen-L8",
+    "L9": "artifacts/talk/runs/p6/frozen-L9",
+    "L10": "artifacts/talk/runs/p6/frozen-L10"
+   },
+   "on": "2026-11-16T23:06:49+00:00"
   }
  ]
 }

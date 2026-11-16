@@ -406,7 +406,7 @@ remember pair: qk=stories_heard 1m
 rule qk_grandmothers_talk
 when concept=talk.gossip quirk=has_opinions_about_everyone_s_grandmother topic.subject
 cooldown 2d
-say I knew #topic.subject#'s grandmother. Explains a lot. | That's the grandmother coming out, that is. | #topic.subject#? Their grandmother once sold a lame horse to a priest. It's in the blood.
+say I knew #topic.subject#'s grandmother. Explains a lot. | That's the grandmother coming out, that is. | #topic.subject#? #topic.their.capitalize# grandmother once sold a lame horse to a priest. It's in the blood.
 then other: quirk.reply
 remember pair: qk=gran 1m
 

@@ -133,7 +133,7 @@ remember pair: f7_chain=worry 2m
 rule f7_sp_child_grown
 when concept=talk.family pair.band=spouses self.child self.age>=48
 cooldown 3d
-say #self.child# hasn't been round in a fortnight. | Do you think #self.child# is happy? Truly? | I saw #self.child# at the market. Thin, I thought. | #self.child# never asks us for anything. I wish they would.
+say #self.child# hasn't been round in a fortnight. | Do you think #self.child# is happy? Truly? | I saw #self.child# at the market. Thin, I thought. | #self.child# never asks us for anything. I wish #self.child_they# would.
 then other: family.worry_answer
 remember pair: f7_worry=child 2m
 remember pair: f7_chain=worry 2m
@@ -1096,7 +1096,7 @@ remember pair: f7_chain=share 2m
 rule f7_ask_child
 when concept=talk.smalltalk|talk.friends|talk.day pair.band=friends|acquaintances other.child other.age<=36
 cooldown 2d
-say How's young #other.child#? | Is #other.child# behaving? | #other.child#'s getting so big. What are you feeding them? | I saw #other.child# chasing geese by the well. Fast, that one.
+say How's young #other.child#? | Is #other.child# behaving? | #other.child#'s getting so big. What are you feeding #other.child_them#? | I saw #other.child# chasing geese by the well. Fast, that one.
 then other: family.share_answer
 remember other: f7_asked=child 2m
 remember pair: f7_chain=share 2m
@@ -2295,12 +2295,12 @@ say Better than no family. | At least the House feeds you. | I'd swap. For a wee
 rule f7_sa_spouse
 when concept=family.share_answer self.mem.f7_asked=spouse self.spouse
 priority 1
-say #self.spouse#? Well. Snoring fit to lift the thatch, but well. | #self.spouse#'s grand. Working too hard. As ever. | Oh, #self.spouse# is a treasure. Don't tell them I said so. | #self.spouse#'s well. I'll pass it on.
+say #self.spouse#? Well. Snoring fit to lift the thatch, but well. | #self.spouse#'s grand. Working too hard. As ever. | Oh, #self.spouse# is a treasure. Don't tell #self.spouse_them# I said so. | #self.spouse#'s well. I'll pass it on.
 
 rule f7_sa_spouse_merry
 when concept=family.share_answer self.mem.f7_asked=spouse self.spouse self.humour=merry
 priority 1
-say #self.spouse#? Still putting up with me. The saint. | Still there when I get home. I keep checking. | #self.spouse#'s well. Says I'm the cross they bear.
+say #self.spouse#? Still putting up with me. The saint. | Still there when I get home. I keep checking. | #self.spouse#'s well. Says I'm the cross #self.spouse_they# bears.
 
 rule f7_sa_spouse_short
 when concept=family.share_answer self.mem.f7_asked=spouse self.spouse self.temper=short
@@ -2320,7 +2320,7 @@ say #self.child#? Into everything. Pots, puddles, other folk's gardens. | Growin
 rule f7_sa_child_poor
 when concept=family.share_answer self.mem.f7_asked=child self.child self.wealth=poor|destitute
 priority 1
-say Hungry, mostly. Growing, so hungry. | #self.child#'s a good pup. Better than we can give them. | I made #self.child# a ball from rags. Best toy in the street, they say.
+say Hungry, mostly. Growing, so hungry. | #self.child#'s a good pup. Better than we can give #self.child_them#. | I made #self.child# a ball from rags. Best toy in the street, they say.
 
 rule f7_sa_child_warm
 when concept=family.share_answer self.mem.f7_asked=child self.child self.warmth=warm

@@ -1485,6 +1485,12 @@ class World
     // The talk ledger (doc 84 §8.7, Phase 5): what residents talked of, with whom, how it went; saved in the checkpoint,
     // pruned each game day. Off (`enabled` false: nothing written) for fast economy sims (--no-talk-ledger).
     TalkLedger& talkLedger() { return talkLedger_; }
+    // A resident's own news lately (doc 84 §8.8, Phase 6: a wedding or a loss of their own sets their mood), or null.
+    const std::vector<AmbientNews>* ownNews(const std::string& id) const
+    {
+        const auto found = news_.find(id);
+        return found == news_.end() ? nullptr : &found->second;
+    }
     const TalkLedger& talkLedger() const { return talkLedger_; }
     std::vector<std::string> guardsOf(const std::string& town) const;
     // Paying off the bandits who have stopped this player (whichever of them `bandit` is).
@@ -1995,6 +2001,8 @@ class World
     // What the town around `who` has been talking of (world.bandits, world.crime, world.herbs_price...), and the place
     // (here.crowd, here.player_near), as the talk library's facts (doc 62).
     void talkTown(const std::string& who, std::map<std::string, std::string>& facts);
+    // A topic's subject's and victim's sex (topic.subject_sex, topic.victim_sex: doc 84, Phase 6), where they are known.
+    void talkSexes(const std::string& subject, const std::string& victim, std::map<std::string, std::string>& facts) const;
     // Who `a` and `b` are to each other: spouses, family, apprentice, rivals, friends, acquaintances or strangers.
     std::string pairBand(const std::string& a, const std::string& b) const;
     // Where resident `id` grew up (one of the realm's seven regions; "" for none) and how strongly they speak like it

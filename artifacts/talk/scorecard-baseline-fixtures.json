@@ -534,12 +534,34 @@
    ]
   },
   "T4": {
-   "name": "identity drift",
+   "name": "identity drift: a stance changed with no event or concede, or answered against one's own, per 1,000 stance lines",
    "better": "lower",
    "gate": "hard",
    "target": "0",
-   "value": null,
-   "note": "n/a until Phase 6"
+   "value": 0.0,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0,
+    "L7": 0.0,
+    "L8": 0,
+    "L9": 0,
+    "L10": 0.0
+   },
+   "control": 5.758458821314555,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    0,
+    1064.0
+   ]
   },
   "T5": {
    "name": "telling what the listener already believes, with no 'known' answer (%)",
@@ -588,15 +610,15 @@
     "L9": 0,
     "L10": 0.0
    },
-   "control": 0.0,
-   "separation": 0.0,
-   "real_better": false,
-   "separates": false,
+   "control": 0.2357731579301521,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
    "control_required": false,
    "structural": false,
    "events": [
     0,
-    3222.0
+    5610.0
    ]
   },
   "D2": {
@@ -876,29 +898,29 @@
    "better": "higher",
    "gate": "soft",
    "target": "light 25-50%",
-   "value": 0.21349767862884692,
+   "value": 0.83405825477109,
    "passes": false,
    "by_profile": {
-    "L1": 0.0,
-    "L2": 0.026,
-    "L3": 0.68,
-    "L4": 0.616,
-    "L5": 0.886,
-    "L6": 0.11,
-    "L7": 1.536,
+    "L1": 0.052,
+    "L2": 0.597,
+    "L3": 3.761,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 7.018,
+    "L7": 0.0,
     "L8": 0,
     "L9": 0,
-    "L10": 0.0
+    "L10": 0.052
    },
-   "control": 0.203256236633814,
-   "separation": 0.047969804921565676,
-   "real_better": true,
+   "control": 2.4178407947510516,
+   "separation": 0.6550400437523567,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    82,
-    24367.0
+    257,
+    26793.0
    ]
   },
   "D1B": {
@@ -906,29 +928,29 @@
    "better": "higher",
    "gate": "soft",
    "target": "broad 60%+",
-   "value": 0.12137670033697306,
+   "value": 4.022272048109073,
    "passes": false,
    "by_profile": {
-    "L1": 0.0,
-    "L2": 0.187,
-    "L3": 0,
-    "L4": 0,
-    "L5": 0,
-    "L6": 2.381,
-    "L7": 0,
+    "L1": 0.083,
+    "L2": 2.647,
+    "L3": 10.685,
+    "L4": 8.626,
+    "L5": 8.743,
+    "L6": 10.396,
+    "L7": 9.979,
     "L8": 0,
     "L9": 0,
-    "L10": 0.0
+    "L10": 0.053
    },
-   "control": 0.11720676807518042,
-   "separation": 0.03435529430455627,
+   "control": 3.612843738844215,
+   "separation": 0.10179030765891042,
    "real_better": true,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    16,
-    11468.0
+    2008,
+    38875.0
    ]
   },
   "C1M": {
@@ -1088,6 +1110,92 @@
    "separates": false,
    "control_required": false,
    "structural": false
+  },
+  "T6": {
+   "name": "'they' said of one known wolf named in the line, per 1,000 lines",
+   "better": "lower",
+   "gate": "soft",
+   "target": "0",
+   "value": 0.22447318948343106,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.433,
+    "L2": 0.331,
+    "L3": 0.0,
+    "L4": 0.139,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.099
+   },
+   "control": 0.22447318948343106,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    16,
+    71278.0
+   ]
+  },
+  "D1A": {
+   "name": "lines said a step broader or plainer than the speaker's own accent (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "diagnostic: accommodation (§10.6)",
+   "value": 29.18993237745167,
+   "passes": null,
+   "by_profile": {
+    "L1": 1.058,
+    "L2": 11.882,
+    "L3": 36.243,
+    "L4": 97.95,
+    "L5": 98.472,
+    "L6": 49.725,
+    "L7": 99.268,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.099
+   },
+   "control": 29.18993237745167,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "O1": {
+   "name": "opinions given per 10 conversations",
+   "better": "higher",
+   "gate": "soft",
+   "target": "diagnostic (§8.8)",
+   "value": 0.4831941514427081,
+   "passes": null,
+   "by_profile": {
+    "L1": 0.329,
+    "L2": 0.24,
+    "L3": 0.286,
+    "L4": 0.895,
+    "L5": 1.323,
+    "L6": 0.0,
+    "L7": 1.284,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.496
+   },
+   "control": 0.03414230733111882,
+   "separation": 0.9293403961343951,
+   "real_better": true,
+   "separates": true,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    578,
+    13047.0
+   ]
   }
  },
  "details": {
@@ -1191,8 +1299,8 @@
     }
    },
    "D1_detail": {
-    "light": 0.0,
-    "broad": 0.0,
+    "light": 0.05,
+    "broad": 0.08,
     "none": 0.0
    },
    "D2_detail": {
@@ -1280,6 +1388,26 @@
      "visit": 3,
      "nag": 3
     }
+   },
+   "T4_detail": {
+    "stance_lines": 278,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 10,
+    "examples": [
+     "rmx_orm_blackwood: A light-pawed sort took from Rupert Fogton. Bet they ate well tonight.",
+     "rmx_orm_blackwood: Back again? First Ebba Netherby, now everyone's barring their doors.",
+     "rm_edmund_sootdale: A light-pawed sort took Gudrun Wickby's things. They'll be disappointed.",
+     "rm_winifred_pitchdale: I walked mine to the well this morning, after Rune Pitchhand. They thought I'd gone soft.",
+     "rmx_maren_hatherley: A cutpurse took Wenna Tarford's things. They'll be disappointed.",
+     "rm_rosamund_tarridge: Here we are again. First Oda Cinderby, now everyone's barring their doors."
+    ]
+   },
+   "D1A_detail": {
+    "plainer": 244
    }
   },
   "L2": {
@@ -1379,8 +1507,8 @@
    },
    "D1_detail": {
     "none": 0.0,
-    "light": 0.03,
-    "broad": 0.19
+    "light": 0.6,
+    "broad": 2.65
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1467,6 +1595,25 @@
      "mend": 9,
      "visit": 2
     }
+   },
+   "T4_detail": {
+    "stance_lines": 101,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 4,
+    "examples": [
+     "rmx_grete_dunn: A light-pawed sort took Dagny Slaghand's things. Hope they like them.",
+     "rm_wenna_tarford: Another theft. Edric Millton. They should make an example.",
+     "rm_liv_slagstack: The little ones keep asking about Oskar Millwell. What do I tell them?",
+     "rm_liv_cinderby: First Edda Ropeton, now everyone's barring their doors."
+    ]
+   },
+   "D1A_detail": {
+    "plainer": 696,
+    "broader": 740
    }
   },
   "L3": {
@@ -1559,9 +1706,9 @@
     }
    },
    "D1_detail": {
-    "light": 0.68,
-    "none": 0.0,
-    "broad": 0.0
+    "broad": 10.68,
+    "light": 3.76,
+    "none": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1638,6 +1785,19 @@
      "favour": 64,
      "mend": 11
     }
+   },
+   "T4_detail": {
+    "stance_lines": 82,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "examples": []
+   },
+   "D1A_detail": {
+    "broader": 3023
    }
   },
   "L4": {
@@ -1722,9 +1882,9 @@
     }
    },
    "D1_detail": {
-    "light": 0.62,
-    "none": 0.0,
-    "broad": 0.0
+    "broad": 8.63,
+    "light": 0.0,
+    "none": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1801,6 +1961,21 @@
      "favour": 88,
      "mend": 37
     }
+   },
+   "T4_detail": {
+    "stance_lines": 177,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 1,
+    "examples": [
+     "tn_lf_tansy_sunmead: Vale Miremore's family are coming for the festival. All of them."
+    ]
+   },
+   "D1A_detail": {
+    "broader": 7072
    }
   },
   "L5": {
@@ -1885,9 +2060,9 @@
     }
    },
    "D1_detail": {
-    "light": 0.89,
-    "none": 0.0,
-    "broad": 0.0
+    "broad": 8.74,
+    "light": 0.0,
+    "none": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1966,6 +2141,19 @@
      "favour": 27,
      "nag": 1
     }
+   },
+   "T4_detail": {
+    "stance_lines": 135,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "examples": []
+   },
+   "D1A_detail": {
+    "broader": 3866
    }
   },
   "L6": {
@@ -2045,8 +2233,8 @@
     }
    },
    "D1_detail": {
-    "light": 0.11,
-    "broad": 2.38,
+    "broad": 10.4,
+    "light": 7.02,
     "none": 0.0
    },
    "D2_detail": {
@@ -2125,6 +2313,19 @@
      "mend": 7,
      "favour": 3
     }
+   },
+   "T4_detail": {
+    "stance_lines": 0,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "examples": []
+   },
+   "D1A_detail": {
+    "broader": 1357
    }
   },
   "L7": {
@@ -2204,9 +2405,9 @@
     }
    },
    "D1_detail": {
-    "light": 1.54,
-    "none": 0.0,
-    "broad": 0.0
+    "broad": 9.98,
+    "light": 0.0,
+    "none": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -2284,6 +2485,19 @@
      "mend": 35,
      "favour": 27
     }
+   },
+   "T4_detail": {
+    "stance_lines": 118,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "examples": []
+   },
+   "D1A_detail": {
+    "broader": 3798
    }
   },
   "L8": {
@@ -2402,7 +2616,18 @@
    },
    "K3_detail": {
     "repeats": []
-   }
+   },
+   "T4_detail": {
+    "stance_lines": 0,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "examples": []
+   },
+   "D1A_detail": {}
   },
   "L9": {
    "R1_detail": {
@@ -2520,7 +2745,18 @@
    },
    "K3_detail": {
     "repeats": []
-   }
+   },
+   "T4_detail": {
+    "stance_lines": 0,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "examples": []
+   },
+   "D1A_detail": {}
   },
   "L10": {
    "R1_detail": {
@@ -2614,8 +2850,8 @@
     }
    },
    "D1_detail": {
-    "light": 0.0,
-    "broad": 0.0,
+    "light": 0.05,
+    "broad": 0.05,
     "none": 0.0
    },
    "D2_detail": {
@@ -2697,6 +2933,21 @@
      "robbed": 1,
      "nag": 1
     }
+   },
+   "T4_detail": {
+    "stance_lines": 173,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 1,
+    "examples": [
+     "rm_rosamund_tarridge: I've had the locks changed. After Wenna Tarford. All of them."
+    ]
+   },
+   "D1A_detail": {
+    "plainer": 10
    }
   }
  },
@@ -2913,6 +3164,31 @@
     "L10": "artifacts/talk/runs/p5/fixtures-L10"
    },
    "on": "2026-11-16T21:21:01+00:00"
+  },
+  {
+   "metrics": [
+    "T4",
+    "T6",
+    "D1",
+    "D1L",
+    "D1B",
+    "D1A",
+    "O1"
+   ],
+   "why": "Doc 84 Phase 6 (r3-talk-p6): its gate measures T4 (identity drift, first measured: no stance aired drifted on the same basis or was answered against the speaker's own side) and D1, now judged by the accent each line was spoken in (accommodation, §10.6: a step broader toward kin and friends of one's own speech, plainer toward a class above, a stranger from elsewhere, a hostile pair; plain speech unshifted); D1A (lines so shifted), T6 ('they' said of one known wolf) and O1 (opinions given per 10 talks) are new rows.",
+   "from": {
+    "L1": "artifacts/talk/runs/p6/fixtures-L1",
+    "L2": "artifacts/talk/runs/p6/fixtures-L2",
+    "L3": "artifacts/talk/runs/p6/fixtures-L3",
+    "L4": "artifacts/talk/runs/p6/fixtures-L4",
+    "L5": "artifacts/talk/runs/p6/fixtures-L5",
+    "L6": "artifacts/talk/runs/p6/fixtures-L6",
+    "L7": "artifacts/talk/runs/p6/fixtures-L7",
+    "L8": "artifacts/talk/runs/p6/fixtures-L8",
+    "L9": "artifacts/talk/runs/p6/fixtures-L9",
+    "L10": "artifacts/talk/runs/p6/fixtures-L10"
+   },
+   "on": "2026-11-16T23:06:57+00:00"
   }
  ]
 }

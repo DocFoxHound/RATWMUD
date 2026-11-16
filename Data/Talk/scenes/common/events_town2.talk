@@ -42,7 +42,7 @@ a : When? I'm going grey. | I'll try soap. | Quiet's lonely.
 
 scene et_wed_children
 when topic=life topic.kind=marriage a.stage=young|adolescent
-a : Did you see #topic.subject# at the wedding? They looked so silly. | Why do grown-ups kiss at weddings? Yuck. | When I marry, there'll be a hundred honey cakes.
+a : Did you see #topic.subject# at the wedding? #topic.they.capitalize# looked so silly. | Why do grown-ups kiss at weddings? Yuck. | When I marry, there'll be a hundred honey cakes.
 b : Everyone looks silly at their wedding. | You'll understand when you're older. | A hundred? You'll be sick.
 a : I won't. | I won't ever. | Worth it.
 
@@ -71,7 +71,7 @@ a : That's the idea. | So they say. | Here's hoping.
 
 scene et_death_grief
 when topic=life topic.kind=death
-a : #topic.subject# is dead. I only saw them a few days past. | Have you heard? #topic.subject# died in the night. | They're burying #topic.subject#.
+a : #topic.subject# is dead. I only saw #topic.them# a few days past. | Have you heard? #topic.subject# died in the night. | They're burying #topic.subject#.
 b[old] : Another one gone. The list of folk I knew grows shorter than the list I didn't.
 b[priest] : The Bright One keeps a place for every wolf who kept the order. May they rest.
 b : I can't believe it. | In the night. Peaceful, I hope. | When?
@@ -80,7 +80,7 @@ a?[friends] : Come with me to the burying. I can't go alone.
 
 scene et_death_memory
 when topic=life topic.kind=death pair.band=friends|acquaintances
-a : I keep thinking of #topic.subject#'s laugh. Like a kettle. | #topic.subject# gave me my first proper job, you know. | #topic.subject# owed me two pennies. I'd give twenty to have them back.
+a : I keep thinking of #topic.subject#'s laugh. Like a kettle. | #topic.subject# gave me my first proper job, you know. | #topic.subject# owed me two pennies. I'd give twenty to have #topic.them# back.
 b[old] : Remember them laughing. That's the best mourning there is.
 b : Like a kettle on the boil. Yes. | I didn't know that. | I know what you mean.
 a : I'll miss it. | They were good to me. | Twenty. Easily.
@@ -131,13 +131,13 @@ a : Me too. | They do. | One day.
 
 scene et_death_rivals
 when topic=life topic.kind=death pair.band=rivals
-a : I hear #topic.subject#'s dead. I suppose you're pleased. | #topic.subject# died. You never liked them. | Go on, say something about #topic.subject#. I know you want to.
+a : I hear #topic.subject#'s dead. I suppose you're pleased. | #topic.subject# died. You never liked #topic.them#. | Go on, say something about #topic.subject#. I know you want to.
 b : I'm not a monster. | I didn't. But I'm not glad. | I'll say nothing. They're dead.
 a : Could've fooled me. | That's something. | That's a first.
 
 scene et_death_old_age
 when topic=life topic.kind=death b.stage=old
-a : #topic.subject# was a good age. | Old #topic.subject# finally went. | They're saying #topic.subject# slipped away in their sleep.
+a : #topic.subject# was a good age. | Old #topic.subject# finally went. | They're saying #topic.subject# slipped away in #topic.their# sleep.
 b : Not old enough. Never old enough. | Finally. What a thing to say. | That's how I'd want it.
 a : You're right. | I'm sorry. I didn't mean it so. | We all would.
 
@@ -179,7 +179,7 @@ a : Not everyone. Not the neighbours. | Only a little. | It is.
 
 scene et_birth_tired
 when topic=life topic.kind=birth pair.band=friends|family
-a : #topic.subject# looks dead on their feet. New pup. | Don't visit #topic.subject#; they've had no sleep since the birth. | #topic.subject#'s pup cries all night.
+a : #topic.subject# looks dead on #topic.their# feet. New pup. | Don't visit #topic.subject#; #topic.they#'s had no sleep since the birth. | #topic.subject#'s pup cries all night.
 b : That's pups. | I'll send food instead. | They'll grow out of it. Eventually.
 a : That's pups. | Good idea. | In about ten years.
 
@@ -202,7 +202,7 @@ a : I could. | Nor me. | Every right to.
 
 scene et_appr_hard
 when topic=life topic.kind=apprentice a.job=apprentice
-a : Poor #topic.subject#. Starting as an apprentice. They don't know what's coming. | #topic.subject# asked me what the first year's like. | Saw #topic.subject# on their first day. White as milk.
+a : Poor #topic.subject#. Starting as an apprentice. #topic.they.capitalize# doesn't know what's coming. | #topic.subject# asked me what the first year's like. | Saw #topic.subject# on #topic.their# first day. White as milk.
 b[apprentice] : I'd tell them to run. Then I'd tell them to stay.
 b : What is coming? | What did you say? | We were all white once.
 a : Sweeping. Then more sweeping. | I lied. Said it was fine. | And green, and terrified.

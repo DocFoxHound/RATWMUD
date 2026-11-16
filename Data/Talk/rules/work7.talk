@@ -1004,7 +1004,7 @@ then other: work.reply
 
 rule w7_done_fisher
 when concept=work.done job=fisher
-say Nets hung, boat's up. | Wet through, but the boat's full. | The water gave a little. It'll do.
+say Nets hung, boat's up. | Salt to the skin, but the boat's full. | The water gave a little. It'll do.
 remember pair: w7_tone=plain 30m
 remember pair: w7_from=b 30m
 then other: work.reply

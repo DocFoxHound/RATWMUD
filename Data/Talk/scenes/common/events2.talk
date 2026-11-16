@@ -170,7 +170,7 @@ a : Ask me in a month. | Maybe. | Always.
 
 scene nc2_newcomer_wary
 when topic=newcomer
-a : #topic.subject# keeps to themselves. | Nobody knows where #topic.subject# came from. | #topic.subject# asked a lot of questions.
+a : #topic.subject# keeps to #topic.themself#. | Nobody knows where #topic.subject# came from. | #topic.subject# asked a lot of questions.
 b[guard] : I've had a word with them. Seem honest enough.
 b[old] : Give them time. We were all strangers once.
 b : Shy, maybe. | Does it matter? | Curious, then.
@@ -178,7 +178,7 @@ a : Maybe. | It might. | Or nosy.
 
 scene nc2_newcomer_welcome
 when topic=newcomer pair.band=friends|family
-a : Let's take #topic.subject# some bread, to welcome them. | I'll invite #topic.subject# to supper. | Somebody should show #topic.subject# round.
+a : Let's take #topic.subject# some bread, to welcome #topic.them#. | I'll invite #topic.subject# to supper. | Somebody should show #topic.subject# round.
 b : Good idea. | Kind of you. | You do it.
 a : Tomorrow, then. | Come too. | Fine. I will.
 

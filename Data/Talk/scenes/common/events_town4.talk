@@ -36,17 +36,17 @@ b : And you believe the street? | The street says a lot of things. | Your mother
 a : Sometimes the street's right. | It does. | Don't start.
 
 scene et_gos_merchant
-when topic=gossip b.role=merchant
+when topic=gossip b.role=merchant topic.claim_kind=theft|violence|wanted|prowling|promise_broken
 does tell.gossip / give.opinion / agree
 a : I heard #topic.subject# #topic.claim#. | Word is #topic.subject# #topic.claim#. | Is it true #topic.subject# #topic.claim#?
-b : Then #topic.subject# pays coin first, from now on. | Hm. I'll check my ledger. | If it is, they owe me an explanation.
+b : Then #topic.subject# pays coin first, from now on. | Hm. I'll check my ledger. | If it is, #topic.subject# owes me an explanation.
 a : Wise. | Do. | And money, probably.
 
 scene et_gos_guard
-when topic=gossip b.role=guard
+when topic=gossip b.role=guard topic.claim_kind=theft|violence|wanted|prowling|promise_broken
 does tell.gossip / react.news.doubt / assess
 a : Did you know #topic.subject# #topic.claim#? | They're saying #topic.subject# #topic.claim#. | I'd look into #topic.subject#, if I were the watch. They say #topic.subject# #topic.claim#.
-b : I don't arrest wolves for rumours. | Saying's not proof. | If they break a law, I'll look.
+b : I don't arrest wolves for rumours. | Saying's not proof. | If #topic.subject# breaks a law, I'll look.
 a : Shame. | It's a start. | Fair.
 
 scene et_gos_child
@@ -58,16 +58,16 @@ a : I wasn't. Much. | But is it? | Everyone knows.
 b : Much enough. | Not for pups to say. | Not everyone.
 
 scene et_gos_old
-when topic=gossip a.stage=old
+when topic=gossip a.stage=old topic.claim_kind=theft|violence|wanted|prowling|promise_broken
 does tell.gossip / react.news / ack
-a : In my day, if a wolf #topic.claim#, we'd not stop talking for a year. Now it's #topic.subject#. | #topic.subject# #topic.claim#. Their grandmother would weep. | Mark me. #topic.subject# #topic.claim#. I know the signs.
+a : In my day, if a wolf #topic.claim#, we'd not stop talking for a year. Now it's #topic.subject#. | #topic.subject# #topic.claim#. #topic.their.capitalize# grandmother would weep. | Mark me. #topic.subject# #topic.claim#. I know the signs.
 b : We're not stopping now either. | She would. | You always know the signs.
 a : Good. | Loudly. | I'm always right.
 
 scene et_gos_petty
-when topic=gossip
+when topic=gossip topic.claim_kind=theft|violence|wanted|prowling|promise_broken
 does tell.gossip / react.news.glee / echo
-a : #topic.subject# #topic.claim#. And they had the cheek to sit in the front pew. | #topic.subject# #topic.claim#, and still walks about with that nose in the air. | #topic.subject# #topic.claim#. And wore a new hat to market.
+a : #topic.subject# #topic.claim#. And #topic.they# had the cheek to sit in the front pew. | #topic.subject# #topic.claim#, and still walks about with that nose in the air. | #topic.subject# #topic.claim#. And wore a new hat to market.
 b : The front pew! | That nose. | A new hat! The nerve.
 a : The front pew. | Higher than ever. | Feathers on it, too.
 
@@ -79,19 +79,34 @@ b[innkeeper] : Don't put that on me. I just pour.
 b : I'm whispering. | Ale talks. | Barkeeps hear everything.
 a : Good. | It does. | Everything.
 
+# Doc 84, Phase 6: defending one talked of is for ill talk; pity for bad news that befell them; gladness for good news
+# (a wedding is never "poor thing").
 scene et_gos_defend
-when topic=gossip pair.band=friends|acquaintances
+when topic=gossip pair.band=friends|acquaintances topic.claim_kind=theft|violence|wanted|prowling|promise_broken
 does tell.gossip / react.news.doubt / agree
-a : People say #topic.subject# #topic.claim#. | They're saying #topic.subject# #topic.claim#, poor thing. | There's talk that #topic.subject# #topic.claim#.
-b[family] : That's my kin you're talking about.
-b : I don't care what people say. | Poor thing indeed. | There's always talk.
-a : Nor should you. | Poor thing. | Always.
+a : People say #topic.subject# #topic.claim#. | Folk are saying #topic.subject# #topic.claim#. | There's talk that #topic.subject# #topic.claim#.
+b : I don't care what people say. | Talk's cheap. | There's always talk.
+a : Nor should you. | So it is. | Always.
+
+scene et_gos_pity
+when topic=gossip pair.band=friends|acquaintances topic.claim_kind=death|victim
+does tell.gossip / react.news.sorrow / agree
+a : They're saying #topic.subject# #topic.claim#, poor thing. | Did you hear #topic.subject# #topic.claim#? Poor soul.
+b : Poor thing indeed. | That's hard. I'm sorry to hear it.
+a : Poor thing. | It is.
+
+scene et_gos_glad
+when topic=gossip pair.band=friends|acquaintances topic.claim_kind=marriage|promise_kept
+does tell.gossip / react.news.glad / agree
+a : They're saying #topic.subject# #topic.claim#. Good for #topic.them#. | Have you heard? #topic.subject# #topic.claim#.
+b : Good for #topic.them#, I say. | That's lovely news.
+a : Isn't it just. | It is.
 
 scene et_gos_rivals
 when topic=gossip pair.band=rivals
 does tell.gossip / counter / tease
-a : I suppose you've heard #topic.subject# #topic.claim#. Your friend. | #topic.subject# #topic.claim#. Don't pretend you're surprised. | Tell your friend #topic.subject# that everyone knows they #topic.claim#.
-b : Not my friend. | I'm not pretending anything. | Tell them yourself.
+a : I suppose you've heard #topic.subject# #topic.claim#. Your friend. | #topic.subject# #topic.claim#. Don't pretend you're surprised. | Tell your friend #topic.subject# that everyone knows #topic.they# #topic.claim#.
+b : Not my friend. | I'm not pretending anything. | Tell #topic.them# yourself.
 a : Not any more, I'd think. | Course not. | Maybe I will.
 
 scene et_gos_market
@@ -118,9 +133,9 @@ b : Did you drop it? | Pick it up, then. | I can, actually.
 a : Nearly. | Very funny. | You would.
 
 scene et_gos_worry
-when topic=gossip pair.band=family|spouses
+when topic=gossip pair.band=family|spouses topic.claim_kind=theft|violence|wanted|prowling|promise_broken
 does tell.gossip / reassure / tell.feeling
-a : If it's true that #topic.subject# #topic.claim#, what then? | They say #topic.subject# #topic.claim#. Should we stay away? | Folk say #topic.subject# #topic.claim#. Keep the pups away from them.
+a : If it's true that #topic.subject# #topic.claim#, what then? | They say #topic.subject# #topic.claim#. Should we stay away? | Folk say #topic.subject# #topic.claim#. Keep the pups away from #topic.them#.
 b : Then we'll know where we stand. | Let's not be hasty. | I already do.
 a : I hope it isn't. | Fine. | Good.
 

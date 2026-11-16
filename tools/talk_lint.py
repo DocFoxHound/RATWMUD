@@ -8,6 +8,13 @@ tags or its say[...] (a fog bell needs fog; "my nets" a fisher), and no line's w
 What it finds is counted against the committed baseline: a finding not in it fails (exit 1), so the count may only fall
 (Phase 1 counted them and froze the count: "T2 counted and frozen as the baseline"); --bless writes the baseline (say
 why in the commit); --list prints every finding. Only reads.
+
+Phase 6 adds two checks of its own beside truth.json's: they_named, "they", "them" or "their" said of one known wolf
+(after #topic.subject#, #topic.victim#, #x.name#, one's spouse or child by name...: a wolf is male or female, so
+#topic.they#, #topic.victim_their#, #x.they# instead; "they say" and its like are the town's, not the wolf's); and
+gossip_kind, a line on the gossip topic that pities or defends ("poor thing", "shame") without its entry gating the
+claim kind to bad news, or rejoices without gating it to glad news. truth.json's rules with `topics` judge only lines
+on those topics.
 """
 from __future__ import annotations
 
@@ -128,6 +135,55 @@ def lines(root: Path, facts: dict):
             yield f"dialogue/{t['file']}:{t['line']}", f"{t['tree']}.{t['node']}", text, crit
 
 
+# Phase 6: one known wolf by name (a slot naming one person), then a plural pronoun for them.
+NAMED = re.compile(r"#(?:topic\.(?:subject|victim)|x\.(?:name|first)|(?:self|other|a|b)\.(?:spouse|child|mother|father|neighbour|"
+                   r"shopkeeper|priest|leader|friend|rival|boss|hand)|(?:other|a|b)\.(?:name|first))(?:\.[a-z]+)*#")
+THEY = re.compile(r"\b(they|them|their|theirs|themselves|themself|they're|they'd|they'll|they've)\b", re.I)
+TOWN_THEY = re.compile(r"\b(they (?:say|said|reckon|tell|told|do say|are saying|were saying|call|found|took)|they're saying|so they say|"
+                       r"what they say|they've (?:said|been saying)|they'll (?:say|tell))\b", re.I)
+PITY = re.compile(r"\b(poor (?:thing|soul|lamb|creature|devil)|shame on|shameful|sorry to hear|that's (?:sad|hard|awful|terrible))\b", re.I)
+GLAD = re.compile(r"\b(congratulat\w*|happy for (?:him|her|them|#)|good for (?:him|her|them|#)|wonderful news|lovely news|that's grand)\b", re.I)
+BAD_KINDS = {"death", "violence", "theft", "victim", "wanted", "bandit", "promise_broken", "prowling"}
+GLAD_KINDS = {"marriage", "promise_kept", "newcomer"}
+
+
+def they_named(text: str) -> bool:
+    """Whether a line says "they" (them, their...) of one known wolf it has just named."""
+    named = NAMED.search(text)
+    if not named:
+        return False
+    after = text[named.end():]
+    plain = talk_truth.SYMBOL.sub(' ', after)
+    for m in THEY.finditer(plain):
+        if TOWN_THEY.match(plain, m.start()):
+            continue
+        # (Two named: "#topic.subject# and #topic.victim#... they" may be both.)
+        if NAMED.search(after) or re.search(r"\band\b", talk_truth.SYMBOL.sub(' ', text[:named.start()] + ' ' + after[:after.find(m.group(0))])):
+            return False
+        return True
+    return False
+
+
+def on_topic(crit: list, topics: set) -> bool | None:
+    """Whether an entry is on one of these topics (topic=gossip, concept=talk.gossip, gossip.*); None if it says no topic."""
+    said = False
+    for k, op, v in crit:
+        if k == 'topic' and op == '=':
+            said = True
+            if v & topics:
+                return True
+        if k == 'concept' and op == '=':
+            said = True
+            if any(c[5:] in topics or c.split('.', 1)[0] in topics for c in v if c.startswith('talk.') or '.' in c):
+                return True
+    return False if said else None
+
+
+def kind_gated(crit: list, kinds: set) -> bool:
+    """Whether an entry's criteria hold topic.claim_kind to these kinds (some of them, and none else)."""
+    return any(k == 'topic.claim_kind' and op == '=' and v and v <= kinds for k, op, v in crit)
+
+
 def backed(rule: talk_truth.Rule, crit: list) -> bool:
     def one(need):
         return any(need.implied_by(k, op, v) for k, op, v in crit)
@@ -140,13 +196,24 @@ def findings(root: Path) -> list[dict]:
     facts = schema(root)
     rules, ids = talk_truth.load(root)
     out = []
+    gossip_entries = {}
     for where, entry, text, crit in lines(root, facts):
         words = talk_truth.SYMBOL.sub(' ', text)
         if ids.search(words):
             out.append({'rule': 'ids', 'entry': entry, 'where': where, 'text': text})
         for r in talk_truth.matches(rules, words):
+            if r.topics and on_topic(crit, r.topics) is not True:
+                continue                            # (Scoped: a line on another topic, or one that names none.)
             if not backed(r, crit):
                 out.append({'rule': r.id, 'entry': entry, 'where': where, 'text': text})
+        # Phase 6: "they" of one known wolf.
+        if they_named(text):
+            out.append({'rule': 'they_named', 'entry': entry, 'where': where, 'text': text})
+        # Phase 6: gossip that pities, defends or rejoices must say which news it answers.
+        if on_topic(crit, {'gossip'}) is True and (PITY.search(words) or GLAD.search(words)):
+            bad = bool(PITY.search(words))
+            if not kind_gated(crit, BAD_KINDS if bad else GLAD_KINDS):
+                out.append({'rule': 'gossip_kind', 'entry': entry, 'where': where, 'text': text})
     return out
 
 

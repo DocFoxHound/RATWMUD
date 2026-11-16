@@ -43,8 +43,8 @@ b : Ten by the time it gets to the next street. | Then it's a gang of twelve. | 
 
 scene h7_theft_victim_character
 when topic=crime topic.kind=theft
-a : They robbed #topic.victim#, poor soul. | #topic.victim# was robbed. Have you seen their face? | Somebody robbed #topic.victim#. | #topic.victim#, robbed. I can hardly credit it.
-b[honesty=sly] #sly : Poor soul? #topic.victim#'s never paid full price for anything in their life.
+a : They robbed #topic.victim#, poor soul. | #topic.victim# was robbed. Did you see #topic.victim_their# face, after? | Somebody robbed #topic.victim#. | #topic.victim#, robbed. I can hardly credit it.
+b[honesty=sly] #sly : Poor soul? #topic.victim#'s never paid full price for anything in #topic.victim_their# life.
 b[warmth=warm] #warm : Oh, no. And #topic.victim# always so careful.
 b : Poor #topic.victim#. | White as milk, I'd bet. | Of all folk. | Believe it.
 a@sly : Still. Nobody deserves it. Well. Hardly anybody.
@@ -61,7 +61,7 @@ b : Under your tongue. | It's the counting that's short, then. | You trust nobod
 
 scene h7_theft_market_watch
 when topic=crime topic.kind=theft here.place=market|street
-a : Mind your purse in this crush. That's how #topic.victim# lost theirs. | Look at all these paws. One of them did #topic.victim#. | A #thief#'s best friend, a crowd. Ask #topic.victim#. | I'd wager the one who did #topic.victim# is standing here now.
+a : Mind your purse in this crush. That's how #topic.victim# lost #topic.victim_theirs#. | Look at all these paws. One of them did #topic.victim#. | A #thief#'s best friend, a crowd. Ask #topic.victim#. | I'd wager the one who did #topic.victim# is standing here now.
 b : Mine's got a knot even I can't undo. | I'm looking at all of them now. | Then I'll stand at the edge. | Don't. I'll be looking at everyone.
 a : Good. Starve the #thief#. | Stop staring. You look guilty. | The edge is where they wait. | Good. Look like you'd bite.
 b : I'll starve myself, more like. | I always look guilty. It's my face. | Then I'll stand in the middle. | I do bite.
@@ -69,7 +69,7 @@ b : I'll starve myself, more like. | I always look guilty. It's my face. | Then 
 scene h7_theft_reward
 when topic=crime topic.kind=theft
 does tell.news / ask.detail / answer.detail / assess
-a : #topic.victim#'s offering a reward for their things. | They say #topic.victim# will pay to have it back. No questions. | #topic.victim#'s put a notice up. A reward. | A reward for #topic.victim#'s things, and the Watch none the wiser.
+a : #topic.victim#'s offering a reward for #topic.victim_their# things. | They say #topic.victim# will pay to have it back. No questions. | #topic.victim#'s put a notice up. A reward. | A reward for #topic.victim#'s things, and the Watch none the wiser.
 b : How much? | No questions? That's an invitation. | Can #topic.victim# even read? | Then the #thief# will bring it back and take the reward.
 a : Not enough to tempt a #thief#. | The #thief# could sell it back to them. | Someone wrote it for them. | Paid twice for the same things.
 b : Then it's not a reward, it's a hope. | Neat trade, that. | Kind of them. | That's commerce, they'd call it.
@@ -181,7 +181,7 @@ b : I'll go the long way round. | I'd have been too. | Then why's #topic.subject
 
 scene h7_assault_someone
 when topic=crime topic.kind=assault topic.subject=someone
-a : Somebody beat #topic.victim# and nobody saw a thing. | #topic.victim# didn't even see who hit them. | Nobody knows who hurt #topic.victim#. | Jumped from behind, #topic.victim# was. Never saw a face.
+a : Somebody beat #topic.victim# and nobody saw a thing. | #topic.victim# didn't even see who hit #topic.victim_them#. | Nobody knows who hurt #topic.victim#. | Jumped from behind, #topic.victim# was. Never saw a face.
 b : Then it could be anyone. | From behind. Coward's way. | Somebody knows. Somebody always knows. | A coward, then.
 a : That's what frightens me. | The only way cowards fight. | They'll talk when they're drunk. | And walking among us.
 b : Look at everyone's paws tomorrow. | Watch your back. | Then I'll listen at the tavern. | Smiling at us, probably.
@@ -190,7 +190,7 @@ b : Look at everyone's paws tomorrow. | Watch your back. | Then I'll listen at t
 
 scene h7_arrest_what_now
 when topic=crime topic.kind=arrest
-a : They took #topic.subject#. What happens to them now? | #topic.subject#'s in #gaol#. Will they hang? | #watch# has #topic.subject#. What'll it be? | #topic.subject#, locked up. What do you think they'll get?
+a : They took #topic.subject#. What happens to #topic.them# now? | #topic.subject#'s in #gaol#. Will #topic.they# hang? | #watch# has #topic.subject#. What'll it be? | #topic.subject#, locked up. What do you think #topic.they#'ll get?
 b : A fine, if they're lucky. | Not for that. A flogging, maybe. | Depends who they know. | Depends who they crossed.
 a : They've never had a penny for a fine. | Gods. | Nobody, I should think. | Then it'll be bad.
 b : Then the stocks. | They'll mend. Backs do. | Then they'll learn what the cells smell like. | Very bad.
@@ -204,7 +204,7 @@ b : I might buy one myself. | Then keep your nose clean. | Shame them into behav
 
 scene h7_arrest_family_left
 when topic=crime topic.kind=arrest
-a : #topic.subject#'s in #gaol#. Who's feeding their pups? | They took #topic.subject#. What about the household? | With #topic.subject# locked up, who earns? | #topic.subject#'s been taken, and their mother's beside herself.
+a : #topic.subject#'s in #gaol#. Who's feeding #topic.their# pups? | They took #topic.subject#. What about the household? | With #topic.subject# locked up, who earns? | #topic.subject#'s been taken, and their mother's beside herself.
 b : Not #watch#. | The parish, I suppose. | Nobody. That's who. | She would be.
 a : Someone should. | #dole.capitalize# won't stretch. | I'll take round some bread. | I'll go and sit with her.
 b : I'll send broth. | It never does. | I'll come with you. | Take her something sweet.
@@ -225,7 +225,7 @@ b : Bring them a comb, too. | Good of you. | Then smile nicely. | I was young on
 
 scene h7_arrest_wrong_one
 when topic=crime topic.kind=arrest
-a : They've taken #topic.subject#. I don't think it was them. | #topic.subject# was in #gaol# by noon. Too quick, if you ask me. | Took #topic.subject#. Anyone ask #topic.subject#? | #watch# took #topic.subject#. Easy to take someone with no friends.
+a : They've taken #topic.subject#. I don't think it was #topic.them#. | #topic.subject# was in #gaol# by noon. Too quick, if you ask me. | Took #topic.subject#. Anyone ask #topic.subject#? | #watch# took #topic.subject#. Easy to take someone with no friends.
 b : #watch# doesn't make mistakes. | Quick's how they like it. | Nobody asks. They tell. | They take who's to paw.
 a : Doesn't it? | Quick and wrong. | That's what worries me. | And who's left out?
 b : Not that they'll admit. | Is it? You saw something? | Keep your voice down. | The ones with friends.
@@ -334,7 +334,7 @@ b : Don't. Come to me first. | Hungry folk aren't all thieves. | Some joke. | No
 scene h7_crime_also_robbed
 when topic=crime topic.kind=theft b.robbed=yes
 a : #topic.victim#'s been robbed too. | Did you hear? #topic.victim#. Same as you. | Another one, #topic.victim#. Like you. | They've done #topic.victim# now.
-b : Same #thief#, I'd bet my teeth. | Then it's the same one. Has to be. | Good. Now they'll listen. | I hope #topic.victim# gets theirs back. I won't.
+b : Same #thief#, I'd bet my teeth. | Then it's the same one. Has to be. | Good. Now they'll listen. | I hope #topic.victim# gets #topic.victim_theirs# back. I won't.
 a : Your teeth are all you've got left. | Tell #watch#. | Somebody had better. | You might.
 b : Don't. It's not funny. Well. A little. | I've told them twice. | They won't. | I won't.
 

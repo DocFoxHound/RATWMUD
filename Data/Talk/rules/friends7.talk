@@ -313,7 +313,7 @@ then other: reply.close
 
 rule r7_jest_old
 when concept=jest.answer self.stage=old
-say When you're my age you can laugh at me. You won't get to my age. I'll see to it. | I've been mocked by better. Dead now, most of them. | Laugh. I've outlived three wolves who laughed at me.
+say When you're my age you can laugh at me. You won't get to my age. I'll see to it. | I've been mocked by better, and I'm still here. | Laugh. I've outlived three wolves who laughed at me.
 remember pair: went=back 30m
 then other: reply.close
 

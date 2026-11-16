@@ -781,6 +781,7 @@ void Game::dialogueRoleFacts(const std::string& playerId, const std::string& npc
             f["here.gossip"] = "yes";
             f["topic.subject"] = subject;
             f["topic.claim"] = predicate;
+            world_.talkSexes(best->subject, best->object, f);   // (#topic.they#: doc 84, Phase 6.)
             f["topic.claim_kind"] = claims::family(best->kind, best->claim);
         }
     }

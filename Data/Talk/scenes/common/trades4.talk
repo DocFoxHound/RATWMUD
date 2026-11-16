@@ -20,7 +20,7 @@ scene tr_farm_weather
 when topic=work|weather a.job=farmer
 a : We need rain. The ground's like a brick. | Too much rain. The roots'll rot. | Frost in the low field last night.
 b : It'll come. | It'll stop. | This late?
-a : After the crop's dead, it'll come. | After the crop's drowned, it'll stop. | Took the beans. All of them.
+a : After the crop's ruined, it'll come. | After the crop's rotted, it'll stop. | Took the beans. All of them.
 
 scene tr_farm_lord
 when topic=work a.job=farmer

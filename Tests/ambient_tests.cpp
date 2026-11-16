@@ -531,11 +531,26 @@ void theTalkLedger()
         l.promises().push_back({"b", "a", "healer", 2, 4, "lapsed"});
         expect(l.lastInvite("b", "a") && l.lastPromise("b", "a") && l.lastPromise("b", "a")->thing == "healer" && !l.lastPromise("a", "b"),
                "invitations and promises");
+        // Phase 6 (§7.6, §8.8): stances drifted by events, each event once, never past two steps; mood events, 8 a resident.
+        l.drift("a", "watch", -1, "robbed_uncaught", "inc-1", 3);
+        l.drift("a", "watch", -1, "robbed_uncaught", "inc-1", 3.5);
+        expect(l.drifts("a").at("watch") == std::pair<int, std::string>{-1, "robbed_uncaught"} && l.applied("a", "inc-1|watch"),
+               "an event drifts a stance a step, once");
+        l.drift("a", "watch", -1, "robbed_uncaught", "inc-2", 4);
+        l.drift("a", "watch", -1, "kin_charged", "warrant:x", 4);
+        l.drift("a", "watch", 1, "robbed_caught", "inc-3", 5);
+        expect(l.drifts("a").at("watch") == std::pair<int, std::string>{-1, "robbed_caught"}, "never past two steps either way");
+        for (int i = 0; i < 10; ++i)
+            l.moodEvent("a", i % 2 ? "quarrel" : "praised", 3 + i * .1);
+        expect(l.moodEvents("a", 0).size() == TalkLedger::MoodsPerResident && l.moodEvents("a", 3.75).size() == 2, "mood events, 8 a resident, since a day");
         const auto saved = l.save();
         TalkLedger again;
         again.load(saved);
         expect(json::dump(again.save()) == json::dump(saved), "saved and loaded, the same");
+        expect(again.drifts("a") == l.drifts("a") && again.applied("a", "inc-1|watch") && again.moodEvents("a", 0).size() == 8,
+               "drift, the events applied and moods come back");
         l.prune(40);
+        expect(l.moodEvents("a", 0).empty() && !l.drifts("a").empty(), "moods fade in a week; drift is for good");
         expect(!l.notes("a", "b") && l.saidOf("x", 40).empty() && l.lastInvite("a", "b") == nullptr, "past 30 days: gone");
         TalkLedger big;
         for (int i = 0; i < 600; ++i)

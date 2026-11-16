@@ -98,10 +98,10 @@ b : I've apologised a hundred times. | It was an accident. | Then don't.
 a : Not to me. | So you say. | I won't.
 
 scene gs2_heard_bad
-when topic=gossip
+when topic=gossip topic.claim_kind=theft|violence|wanted|prowling|promise_broken
 a : People are saying #topic.subject# #topic.claim#. | Did you know #topic.subject# #topic.claim#? | It's all over town: #topic.subject# #topic.claim#.
 b[old] : Rumours are cheap. Truth costs more.
-b[merchant] : Is that so? I'll remember that, next time they want credit.
+b[merchant] : Is that so? I'll remember that, next time #topic.they# wants credit.
 b : Is it true? | I don't believe it. | Who started that?
 a : Seems so. | Believe what you like. | Not me.
 
@@ -140,7 +140,7 @@ a : I'll manage. | Not badly. | Very.
 scene pl2_stranger_curious
 when topic=player topic.known=no
 does ask.opinion / give.opinion / ack
-a : Where do you think #topic.subject# is from? | #topic.subject# has the look of the road about them. | Is #topic.subject# buying or just looking?
+a : Where do you think #topic.subject# is from? | #topic.subject# has the look of the road about #topic.them#. | Is #topic.subject# buying or just looking?
 b[merchant] : Everyone's buying, if you ask nicely.
 b[old] : Far away. You can tell by the walk.
 b : Far, I'd guess. | They do. | Looking, as ever.

@@ -10,7 +10,7 @@
 
 rule h7_cr_open_theft
 when concept=talk.crime topic.kind=theft
-say Have you heard? #topic.victim# was robbed. | #topic.victim#'s been robbed, they're saying. | Somebody had #topic.victim#'s purse. | There's a #thief# about. #topic.victim# found out the hard way. | #topic.victim# came home to their things gone.
+say Have you heard? #topic.victim# was robbed. | #topic.victim#'s been robbed, they're saying. | Somebody had #topic.victim#'s purse. | There's a #thief# about. #topic.victim# found out the hard way. | #topic.victim# came home to #topic.victim_their# things gone.
 then other: crime.answer
 
 rule h7_cr_open_assault
@@ -20,7 +20,7 @@ then other: crime.answer
 
 rule h7_cr_open_arrest
 when concept=talk.crime topic.kind=arrest
-say #watch.capitalize# took #topic.subject#. | They've put #topic.subject# in #gaol#. | #topic.subject#'s been arrested. #topic.where# took them. | Did you see? #topic.subject#, marched off by #watch#.
+say #watch.capitalize# took #topic.subject#. | They've put #topic.subject# in #gaol#. | #topic.subject#'s been arrested. #topic.where# took #topic.them#. | Did you see? #topic.subject#, marched off by #watch#.
 then other: crime.answer
 
 rule h7_cr_open_guard
@@ -44,14 +44,14 @@ then other: crime.answer
 rule h7_cr_open_poor
 when concept=talk.crime topic.kind=theft self.wealth=poor|destitute
 cooldown 1d
-say #topic.victim#'s been robbed. They'll be looking at folk like me now. | Robbed #topic.victim#? They had something to rob, then. | Somebody got #topic.victim#. Not me, before you ask. | #topic.victim#'s robbed. Watch them all look at my paws.
+say #topic.victim#'s been robbed. The Watch'll be looking at folk like me now. | Robbed #topic.victim#? #topic.victim_they.capitalize# had something to rob, then. | Somebody got #topic.victim#. Not me, before you ask. | #topic.victim#'s robbed. Watch everybody look at my paws.
 then other: crime.answer
 
 rule h7_cr_open_robbed_too
 when concept=talk.crime topic.kind=theft self.robbed=yes
 cooldown 12h
 priority 1
-say #topic.victim# too? They had me only days ago. | First me, now #topic.victim#. Same #thief#, I'll swear it. | They robbed #topic.victim# as well. Who's next on the list? | #topic.victim#. Like me. Does #watch# even care?
+say #topic.victim# too? The same lot had me only days ago. | First me, now #topic.victim#. Same #thief#, I'll swear it. | They robbed #topic.victim# as well. Who's next on the list? | #topic.victim#. Like me. Does #watch# even care?
 then other: crime.answer
 
 rule h7_cr_open_nervy
@@ -63,7 +63,7 @@ then other: crime.answer
 rule h7_cr_open_old
 when concept=talk.crime topic.kind=theft|assault self.stage=old
 cooldown 1d
-say #topic.victim#. In my day, the whole street would've chased them down. | Sixty years in this town and I've never seen it so bad. Poor #topic.victim#. | They got #topic.victim#. Nobody looks out for anyone now. | #topic.victim#. Ah. Forty years ago I'd have had them by the scruff.
+say #topic.victim#. In my day, the whole street would've chased the #thief# down. | Sixty years in this town and I've never seen it so bad. Poor #topic.victim#. | They got #topic.victim#. Nobody looks out for anyone now. | #topic.victim#. Ah. Forty years ago I'd have had the #thief# by the scruff.
 then other: crime.answer
 
 rule h7_cr_open_devout
@@ -75,7 +75,7 @@ then other: crime.answer
 rule h7_cr_open_dry
 when concept=talk.crime topic.kind=theft self.humour=dry
 cooldown 1d
-say Somebody robbed #topic.victim#. I hope they wiped their paws. | #topic.victim#'s been relieved of their goods. Very relieving. | A #thief# took #topic.victim#'s things. They'll be disappointed. | #topic.victim# was robbed. At least someone's in work.
+say Somebody robbed #topic.victim#. I hope they wiped their paws. | #topic.victim#'s been relieved of #topic.victim_their# goods. Very relieving. | A #thief# took #topic.victim#'s things. They'll be disappointed. | #topic.victim# was robbed. At least someone's in work.
 then other: crime.answer
 
 rule h7_cr_open_short
@@ -87,7 +87,7 @@ then other: crime.answer
 rule h7_cr_open_sump
 when concept=talk.crime topic.kind=theft|assault here.region=ridgemere self.quarter=sump
 cooldown 1d
-say #topic.victim#'s been done. They'll be down here looking by noon. | They'll blame the Sump for #topic.victim#. Watch. | Not one of ours did #topic.victim#. We'd have heard. | #watch# will kick in a few Sump doors over #topic.victim#. Ours first.
+say #topic.victim#'s been done. #watch.capitalize#'ll be down here looking by noon. | They'll blame the Sump for #topic.victim#. Watch. | Not one of ours did #topic.victim#. We'd have heard. | #watch# will kick in a few Sump doors over #topic.victim#. Ours first.
 then other: crime.answer
 
 rule h7_cr_open_someone
@@ -203,7 +203,7 @@ then other: crime.close
 
 rule h7_cr_ans_warm
 when concept=crime.answer topic.kind=theft|assault self.warmth=warm
-say Is #topic.victim# all right? Should we go round? | I'll take them something. Soup. | Poor #topic.victim#. They'll need folk about them. | Has anyone sat with #topic.victim#?
+say Is #topic.victim# all right? Should we go round? | I'll take them something. Soup. | Poor #topic.victim#. #topic.victim_they.capitalize#'ll need folk about #topic.victim_them#. | Has anyone sat with #topic.victim#?
 remember pair: h7_said=care 30m
 then other: crime.close
 
@@ -233,7 +233,7 @@ then other: crime.close
 
 rule h7_cr_ans_sly
 when concept=crime.answer topic.kind=theft self.honesty=sly
-say Hm. Wonder where they'll sell it. | Clever. Nobody saw? Very clever. | What did they get, do you know? Exactly? | #topic.victim# had a lot more than they let on, then.
+say Hm. Wonder where they'll sell it. | Clever. Nobody saw? Very clever. | What did they get, do you know? Exactly? | #topic.victim# had a lot more than #topic.victim_they# let on, then.
 remember pair: h7_said=sly 30m
 then other: crime.close
 
@@ -392,7 +392,7 @@ then other: loss.answer
 rule h7_ls_open_old
 when concept=talk.life topic.kind=death self.stage=old
 cooldown 1d
-say #topic.subject#. I knew them when they were a pup. | Another one. They keep going before me. | #topic.subject#'s gone. I remember them at their first festival. | That's #topic.subject# gone. I'll be next, mark me.
+say #topic.subject#. I knew #topic.them# when #topic.they# was a pup. | Another one. They keep going before me. | #topic.subject#'s gone. I remember #topic.them# at #topic.their# first festival. | That's #topic.subject# gone. I'll be next, mark me.
 then other: loss.answer
 
 rule h7_ls_open_priest
@@ -411,7 +411,7 @@ then other: loss.answer
 rule h7_ls_open_dry
 when concept=talk.life topic.kind=death self.humour=dry self.mourning=no
 cooldown 1d
-say #topic.subject#'s died. Owed me a penny, too. I'll let it go. | #topic.subject#. Gone and missed the rent day. Clever. | They're burying #topic.subject#. They'd have hated the fuss. | #topic.subject# never could stand a queue. Went early.
+say #topic.subject#'s died. Owed me a penny, too. I'll let it go. | #topic.subject#. Gone and missed the rent day. Clever. | They're burying #topic.subject#. #topic.they.capitalize#'d have hated the fuss. | #topic.subject# never could stand a queue. Went early.
 then other: loss.answer
 
 rule h7_ls_open_poor
@@ -1035,7 +1035,7 @@ then other: stranger.answer
 
 rule h7_st_open_unknown
 when concept=talk.player topic.known=no
-say Never seen #topic.subject# before. Have you? | #topic.subject# just walked in like they own the place. | What do you make of #topic.subject#? | Somebody new. #topic.subject#. Mind them.
+say Never seen #topic.subject# before. Have you? | #topic.subject# just walked in like #topic.they# owns the place. | What do you make of #topic.subject#? | Somebody new. #topic.subject#. Mind #topic.them#.
 then other: stranger.answer
 
 rule h7_st_open_hire
@@ -1065,7 +1065,7 @@ then other: stranger.answer
 rule h7_st_open_poor
 when concept=talk.player self.wealth=poor|destitute
 cooldown 1d
-say #topic.subject# looks like they've coin. More than us. | Would #topic.subject# spare a penny, do you think? | I'd ask #topic.subject# for work. Any work. | Look at #topic.subject#'s boots. I could live a month on those boots.
+say #topic.subject# looks like #topic.they#'s coin. More than us. | Would #topic.subject# spare a penny, do you think? | I'd ask #topic.subject# for work. Any work. | Look at #topic.subject#'s boots. I could live a month on those boots.
 then other: stranger.answer
 
 ############################################################################ Strangers: answers
@@ -1206,18 +1206,18 @@ say Aye. If only. | Someone should ask them. | I'd chip in, if somebody asked.
 
 rule h7_dd_open
 when concept=talk.deed
-say You'll like this. #topic.subject# #topic.deed#. | Have you heard about #topic.subject#? They #topic.deed#. | Word is #topic.subject# #topic.deed#. | I heard #topic.subject# #topic.deed#.
+say You'll like this. #topic.subject# #topic.deed#. | Have you heard about #topic.subject#? #topic.they.capitalize# #topic.deed#. | Word is #topic.subject# #topic.deed#. | I heard #topic.subject# #topic.deed#.
 then other: deed.answer
 
 rule h7_dd_open_nickname
 when concept=talk.deed topic.has_nickname=yes
-say #topic.nickname#, they call them now. Because they #topic.deed#. | Heard of #topic.nickname#? That's #topic.subject#. They #topic.deed#. | #topic.subject# #topic.deed#. Folk call them #topic.nickname# for it.
+say #topic.nickname#, they call them now. Because they #topic.deed#. | Heard of #topic.nickname#? That's #topic.subject#. #topic.they.capitalize# #topic.deed#. | #topic.subject# #topic.deed#. Folk call #topic.them# #topic.nickname# for it.
 then other: deed.answer
 
 rule h7_dd_open_poor
 when concept=talk.deed self.wealth=poor|destitute
 cooldown 1d
-say #topic.subject# #topic.deed#. Somebody's luck turned. | #topic.subject# #topic.deed#. Wish they'd come down our street. | I heard #topic.subject# #topic.deed#. There's hope for some, then. | #topic.subject# #topic.deed#. Not for the likes of us, but still.
+say #topic.subject# #topic.deed#. Somebody's luck turned. | #topic.subject# #topic.deed#. Wish #topic.they#'d come down our street. | I heard #topic.subject# #topic.deed#. There's hope for some, then. | #topic.subject# #topic.deed#. Not for the likes of us, but still.
 then other: deed.answer
 
 rule h7_dd_ans_any

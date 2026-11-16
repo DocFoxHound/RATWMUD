@@ -409,6 +409,7 @@ void World::weighTopics(const std::string& a, const std::string& b, const std::f
                     t.talk["topic.claim"] = predicate;   // (For the lines written "#topic.subject# #topic.claim#".)
                     if (!w.yName.empty())
                         t.talk["topic.victim"] = w.yName;
+                    talkSexes(belief.subject, belief.object, t.talk);   // (#topic.they#: Phase 6.)
                 }
                 else
                 {
@@ -458,6 +459,7 @@ void World::weighTopics(const std::string& a, const std::string& b, const std::f
                     if (words.byName)
                         t.as = words.subject;
                     t.talk["topic.subject"] = words.subject;
+                    talkSexes(belief.subject, {}, t.talk);
                     t.talk["topic.deed"] = words.phrase;
                     if (!words.nickname.empty())
                         t.talk["topic.nickname"] = words.nickname;
@@ -614,6 +616,15 @@ void World::talkGood(const std::string& base, std::map<std::string, std::string>
     facts["topic.sort"] = item && item->drink ? "drink" : base == "meal" || Kitchen.count(base) || (item && item->category == "food") ? "food" : "goods";
 }
 
+void World::talkSexes(const std::string& subject, const std::string& victim, std::map<std::string, std::string>& facts) const
+{
+    // Doc 84 (Phase 6): a topic's subject and victim, male or female, for #topic.they# and #topic.victim_their#: never
+    // "they" for a known single wolf.
+    for (const auto& [id, key] : {std::pair{subject, "topic.subject_sex"}, std::pair{victim, "topic.victim_sex"}})
+        if (const auto* e = id.empty() ? nullptr : entity(id))
+            facts[key] = e->appearance->sex == "female" ? "female" : "male";
+}
+
 void World::talkTown(const std::string& who, std::map<std::string, std::string>& facts)
 {
     // What the town has been talking of (doc 62's world.* facts): the same news the topics are made of, as facts any
@@ -646,6 +657,12 @@ void World::talkTown(const std::string& who, std::map<std::string, std::string>&
             if (calendarDays_ - n.day <= 4)
                 lately.insert(n.kind);
     facts["world.death"] = lately.count("death") ? "recent" : "no";
+    // An arrest in the town within a day (doc 84 §7.4, Phase 6: the town's mood "edgy").
+    bool arrest = false;
+    if (const auto news = townNews_.find(townId); news != townNews_.end())
+        for (const auto& n : news->second)
+            arrest |= n.kind == "arrest" && calendarDays_ - n.day <= 1;
+    facts["world.arrest"] = arrest ? "recent" : "no";
     facts["world.wedding"] = lately.count("marriage") ? "recent" : "no";
     facts["world.birth"] = lately.count("birth") ? "recent" : "no";
     // The news the last wagon in brought (doc 79, 8.1: `world.news`, the source market's top cause), a few days.
@@ -1133,6 +1150,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
                         who = strangerWords(doer->appearance);
                 }
             t.talk["topic.subject"] = who.empty() ? std::string("someone") : who;
+            talkSexes(who == "someone" || who.empty() ? std::string() : i.offender, i.victim, t.talk);
             t.seen = std::any_of(i.witnesses.begin(), i.witnesses.end(), [&](const Witness& w) { return w.id == a; }) ? "yes" : "no";
             t.facts.push_back(name(i.victim) + " was " + (i.kind == "assault" ? "attacked" : "robbed") + " in town.");
             consider(std::move(t));
@@ -1159,6 +1177,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
                            "town|" + n.kind + "|" + n.subject);
             t.talk["topic.kind"] = n.kind;
             t.talk["topic.subject"] = name(n.subject);
+            talkSexes(n.subject, {}, t.talk);
             if (!n.other.empty())
                 t.talk["topic.where"] = name(n.other);
             consider(std::move(t));
@@ -1195,6 +1214,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
             const auto given = knows ? (namer_ ? namer_(a, id) : e.name) : std::string();
             t.talk["topic.known"] = !given.empty() ? "yes" : "no";
             t.talk["topic.subject"] = !given.empty() ? given : strangerWords(e.appearance);
+            talkSexes(id, {}, t.talk);
             consider(std::move(t));
             break;
         }

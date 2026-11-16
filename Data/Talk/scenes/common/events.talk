@@ -166,7 +166,7 @@ a : We'll see. | I hope so. | Very big.
 
 scene lf_newcomer
 when topic=newcomer
-a : Have you met #topic.subject#? Just arrived. | There's a new face in town. #topic.subject#, they're called. | #topic.subject#'s moved in down the street.
+a : Have you met #topic.subject#? Just arrived. | There's a new face in town. #topic.subject#, #topic.they#'s called. | #topic.subject#'s moved in down the street.
 b[old] : New blood. Good. We need it.
 b[child] : Do they have pups? Can I play with them?
 b[guard] : I'll keep an eye on them.

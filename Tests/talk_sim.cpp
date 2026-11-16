@@ -429,7 +429,8 @@ void Sim::hook()
             std::string line = a + "|" + b + "|" + t.kind + "|" + score + "|" + t.source + "|" + t.subject + "|" + t.claim + "|" +
                                t.said + "|" + t.incident + "|" + (t.passes ? "p" : "") + t.claimKind + "|" + t.object + "|" + t.seen;
             for (const auto& [k, v] : t.talk)
-                line += "|" + k + "=" + v;
+                if (k != "topic.subject_sex" && k != "topic.victim_sex")   // (Phase 6's pronouns: no part of a topic's weight.)
+                    line += "|" + k + "=" + v;
             for (const auto& f : t.facts)
                 line += "|" + f;
             for (const unsigned char c : line)
@@ -546,6 +547,21 @@ void Sim::hook()
         }
         v.add("dialect", who.string("_dialect"));
         v.add("accent", who.string("accent"));
+        // Phase 6: the accent the line was spoken in (accommodation: the scorecard's D1), the stance it aired (T4), and the
+        // topic's claim kind and kind as it was said (T2's pity and gladness).
+        if (!l.info.accent.empty())
+            v.add("spoken_accent", l.info.accent);
+        if (!l.info.issue.empty())
+        {
+            v.add("issue", l.info.issue);
+            v.add("stance", l.info.stance);
+            v.add("drift", l.info.drift);
+            v.add("basis", l.info.basis);
+        }
+        if (!l.claimKind.empty())
+            v.add("claim_kind", l.claimKind);
+        if (!l.topicKind.empty())
+            v.add("topic_kind", l.topicKind);
         auto layers = json::Value::array();
         for (const auto& x : who.array("_layers"))
             layers.push(x);

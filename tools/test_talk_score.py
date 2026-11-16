@@ -380,6 +380,48 @@ class Metrics(unittest.TestCase):
         self.assertFalse(talk_score.passes("D1", m["D1"]))
         self.assertEqual(m["_counts"]["none_lines"], 1)
 
+    def test_t4_a_stance_that_wanders_or_answers_against_itself(self):
+        d = write_run(self.root / "t4", [({}, [("jory", "varg", "The Watch? Useless."), ("varg", "jory", "No argument from me.")]),
+                                         ({}, [("jory", "varg", "The Watch keep us safe."), ("varg", "jory", "Well. Each to their own.")])],
+                      PEOPLE)
+        lines = [json.loads(l) for l in (d / "lines.jsonl").read_text().splitlines()]
+        stance = [("against", ["give.opinion"], 0), ("for", ["agree"], 0), ("for", ["give.opinion"], 0), ("against", ["disagree"], 0)]
+        for l, (side, moves, drift) in zip(lines, stance):
+            l.update({"issue": "watch", "stance": side, "moves": moves, "drift": drift, "day": 1})
+        (d / "lines.jsonl").write_text("".join(json.dumps(l) + "\n" for l in lines))
+        m = talk_score.score_run(talk_score.Run(d))
+        # Jory: against, then for with no event between: drift. Varg: agreed with one on the other side; then for to against.
+        self.assertEqual(m["T4_detail"]["drifted"], 2)
+        self.assertEqual(m["T4_detail"]["answered_against_own"], 1)
+        lines[2]["drift"] = 1                       # (An event moved Jory's: not drift.)
+        lines[3]["stance"] = "for"                  # (Varg for, said a disagree to a for: against his own.)
+        lines[1]["stance"] = "against"              # (Varg against, agreeing with an against: his own; then for: drift.)
+        (d / "lines.jsonl").write_text("".join(json.dumps(l) + "\n" for l in lines))
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertEqual(m["T4_detail"]["drifted"], 1)
+        self.assertEqual(m["T4_detail"]["answered_against_own"], 1)
+        self.assertGreater(m["T4"], 0)
+        self.assertFalse(talk_score.passes("T4", m["T4"]))
+
+    def test_t6_they_of_one_known_wolf(self):
+        m = self.score([({}, [("jory", "varg", "Wren Tarford was robbed. Have you seen their face?"),
+                              ("jory", "varg", "Wren Tarford was robbed. Did you see her face?"),
+                              ("jory", "varg", "They say Wren Tarford left in a hurry."),
+                              ("jory", "varg", "Wren Tarford and Varg Acorndell wed, and they're happy.")])])
+        self.assertEqual(m["T6_detail"]["lines"], 1)
+
+    def test_d1_by_the_accent_spoken(self):
+        d = write_run(self.root / "d1s", [({}, [("jory", "varg", "Calm water, sister."), ("jory", "varg", "Aye.")])], PEOPLE)
+        lines = [json.loads(l) for l in (d / "lines.jsonl").read_text().splitlines()]
+        lines[0].update({"accent": "none", "spoken_accent": "light", "used": ["coldwater"]})   # (A step broader, home speech.)
+        lines[1].update({"accent": "light", "spoken_accent": "none"})
+        (d / "lines.jsonl").write_text("".join(json.dumps(l) + "\n" for l in lines))
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertEqual(m["D1"], 0.0)              # (Said plainly: no dialect word.)
+        self.assertEqual(m["D1L"], 100.0)
+        self.assertEqual(m["D1A"], 100.0)
+        self.assertEqual(m["D1A_detail"], {"broader": 1, "plainer": 1})
+
     def test_a_coherence_metric_the_shuffle_beats_does_not_separate(self):
         # Slice 1's frozen C3: 0.068% real against 0.177% shuffled, 61% apart, the wrong way.
         self.assertFalse(talk_score.real_better("C3", 0.068, 0.177))

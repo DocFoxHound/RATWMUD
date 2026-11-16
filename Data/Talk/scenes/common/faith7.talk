@@ -345,7 +345,7 @@ b[piety=devout] #only : The Bright One's the only luck you need.
 b[honesty=frank] #work : Does it work?
 b : For luck? | Pretty. | I'd spend it.
 a@only : Him and this. Belt and braces.
-a@work : Haven't died yet.
+a@work : Still standing, aren't I?
 a : For luck. | It's lucky, not pretty. | You would.
 
 scene e4_fa_charm_lost

@@ -293,6 +293,57 @@ const TalkPromise* TalkLedger::lastPromise(const std::string& by, const std::str
     return nullptr;
 }
 
+void TalkLedger::drift(const std::string& resident, const std::string& issue, int steps, const std::string& event,
+                       const std::string& eventId, double day)
+{
+    if (!enabled || resident.empty() || issue.empty() || steps == 0 || applied(resident, eventId + "|" + issue))
+        return;
+    now_ = std::max(now_, day);
+    auto& d = drift_[resident][issue];
+    d.steps = std::clamp(d.steps + steps, -2, 2);
+    d.event = event;
+    d.day = day;
+    auto& done = applied_[resident];
+    done.push_back(eventId + "|" + issue);
+    cap(done, AppliedPerResident);
+}
+
+bool TalkLedger::applied(const std::string& resident, const std::string& eventId) const
+{
+    const auto found = applied_.find(resident);
+    return found != applied_.end() && std::find(found->second.begin(), found->second.end(), eventId) != found->second.end();
+}
+
+std::map<std::string, std::pair<int, std::string>> TalkLedger::drifts(const std::string& resident) const
+{
+    std::map<std::string, std::pair<int, std::string>> out;
+    if (const auto found = drift_.find(resident); found != drift_.end())
+        for (const auto& [issue, d] : found->second)
+            if (d.steps != 0)
+                out[issue] = {d.steps, d.event};
+    return out;
+}
+
+void TalkLedger::moodEvent(const std::string& resident, const std::string& kind, double day)
+{
+    if (!enabled || resident.empty() || kind.empty())
+        return;
+    now_ = std::max(now_, day);
+    auto& list = moods_[resident];
+    list.push_back({day, kind});
+    cap(list, MoodsPerResident);
+}
+
+std::vector<std::pair<double, std::string>> TalkLedger::moodEvents(const std::string& resident, double since) const
+{
+    std::vector<std::pair<double, std::string>> out;
+    if (const auto found = moods_.find(resident); found != moods_.end())
+        for (const auto& e : found->second)
+            if (e.first >= since)
+                out.push_back(e);
+    return out;
+}
+
 std::size_t TalkLedger::size() const
 {
     std::size_t n = invites_.size() + promises_.size();
@@ -344,6 +395,13 @@ void TalkLedger::prune(double day)
                     promises_.end());
     for (auto it = places_.begin(); it != places_.end();)
         it = it->second.day >= 0 && day - double(it->second.day) > 2 ? places_.erase(it) : std::next(it);
+    for (auto it = moods_.begin(); it != moods_.end();)
+    {
+        auto& list = it->second;
+        while (!list.empty() && day - list.front().first > MoodDays)
+            list.pop_front();
+        it = list.empty() ? moods_.erase(it) : std::next(it);
+    }
     // Past the cap: whole record sets, the least recently used first.
     auto total = size();
     if (total <= Records)
@@ -382,6 +440,9 @@ void TalkLedger::clear()
     places_.clear();
     invites_.clear();
     promises_.clear();
+    drift_.clear();
+    applied_.clear();
+    moods_.clear();
     touched_.clear();
     now_ = 0;
 }
@@ -521,6 +582,40 @@ json::Value TalkLedger::save() const
         promises.push(j);
     }
     out.add("promises", promises);
+    // Phase 6: stances drifted, the events applied, the moods' events.
+    auto drift = json::Value::object();
+    for (const auto& [who, issues] : drift_)
+    {
+        auto o = json::Value::object();
+        for (const auto& [issue, d] : issues)
+        {
+            auto row = json::Value::array();
+            row.push(d.steps);
+            row.push(d.event);
+            row.push(d.day);
+            o.add(issue, row);
+        }
+        drift.add(who, o);
+    }
+    out.add("drift", drift);
+    auto applied = json::Value::object();
+    for (const auto& [who, list] : applied_)
+        applied.add(who, strings(std::vector<std::string>(list.begin(), list.end())));
+    out.add("applied", applied);
+    auto moods = json::Value::object();
+    for (const auto& [who, list] : moods_)
+    {
+        auto a = json::Value::array();
+        for (const auto& [day, kind] : list)
+        {
+            auto row = json::Value::array();
+            row.push(day);
+            row.push(kind);
+            a.push(row);
+        }
+        moods.add(who, a);
+    }
+    out.add("moods", moods);
     auto touched = json::Value::object();
     for (const auto& [k, t] : touched_)
         touched.add(k, t);
@@ -608,6 +703,25 @@ void TalkLedger::load(const json::Value& v)
         p.by = j.string("by"); p.to = j.string("to"); p.thing = j.string("thing"); p.day = j.number("day");
         p.until = j.number("until"); p.state = j.string("state", "open");
         promises_.push_back(std::move(p));
+    }
+    for (const auto& [who, issues] : v.object("drift").fields())
+        for (const auto& [issue, row] : issues.fields())
+            if (row.isArray() && row.size() == 3)
+                drift_[who][issue] = {std::clamp(int(row.items()[0].asNumber()), -2, 2), row.items()[1].asString(""), row.items()[2].asNumber()};
+    for (const auto& [who, list] : v.object("applied").fields())
+    {
+        auto& d = applied_[who];
+        for (const auto& e : list.items())
+            d.push_back(e.asString(""));
+        cap(d, AppliedPerResident);
+    }
+    for (const auto& [who, list] : v.object("moods").fields())
+    {
+        auto& d = moods_[who];
+        for (const auto& row : list.items())
+            if (row.isArray() && row.size() == 2)
+                d.push_back({row.items()[0].asNumber(), row.items()[1].asString("")});
+        cap(d, MoodsPerResident);
     }
     for (const auto& [k, t] : v.object("touched").fields())
         touched_[k] = t.asNumber();

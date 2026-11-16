@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <stdexcept>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <thread>
 
@@ -1282,6 +1283,15 @@ void residentsTalkFromWrittenScenes()
             const auto allowed = [&](const talk::FactKind& k, const std::string& v) {
                 char* end = nullptr;
                 std::strtod(v.c_str(), &end);
+                if (k.type == talk::FactKind::Type::List)   // (Doc 84, Phase 6: likes and dislikes, any number of the items.)
+                {
+                    std::istringstream in(v);
+                    std::string word;
+                    bool all = true;
+                    while (in >> word)
+                        all = all && k.values.count(word) > 0;
+                    return all;
+                }
                 return k.type == talk::FactKind::Type::Text || (k.type == talk::FactKind::Type::Number && !v.empty() && !*end) ||
                        k.values.count(v) > 0;
             };

@@ -53,7 +53,7 @@ a : And spits out bones. | Always was. | Never do.
 
 scene et_rm_arrest_houses
 when topic=crime topic.kind=arrest here.region=ridgemere
-a : The Watch took #topic.subject#. Some House will have them out by morning. | #topic.subject#'s arrested. Greatly's man, they say. | #topic.subject# in the Gaol. I'll wager the Council hears of it.
+a : The Watch took #topic.subject#. Some House will have #topic.them# out by morning. | #topic.subject#'s arrested. Greatly's man, they say. | #topic.subject# in the Gaol. I'll wager the Council hears of it.
 b[noble] : The Houses do not interfere with the Watch. Publicly.
 b : If they're owned, they'll walk. | Then they'll be out by noon. | The Council hears everything.
 a : They're always owned. | Mark me. | And does nothing.
@@ -143,7 +143,7 @@ scene et_sf_gossip_respectable
 when topic=gossip here.region=ridgemere
 does tell.gossip / react.news / agree
 a : Over wine in the Heights, they say #topic.subject# #topic.claim#. | A magistrate's servant swears #topic.subject# #topic.claim#. | Respectable folk are saying #topic.subject# #topic.claim#.
-b[noble] : One doesn't discuss such things. One simply stops inviting them.
+b[noble] : One doesn't discuss such things. One simply stops inviting #topic.them#.
 b : Wine loosens tongues. | Servants know more than masters. | Respectable folk say the worst things.
 a : And purses. | Always. | Behind fans.
 
@@ -203,7 +203,7 @@ a : Worse than any of us. | Very dull. | Somehow.
 
 scene et_ac_theft_wagon
 when topic=crime topic.kind=theft here.region=larkfield
-a : Another wagon rifled in the yard. #topic.victim#'s this time. | Somebody's been cutting purses at the Singing Lark. | #topic.victim# lost a cask off their wagon. Rolled away in the night.
+a : Another wagon rifled in the yard. #topic.victim#'s this time. | Somebody's been cutting purses at the Singing Lark. | #topic.victim# lost a cask off #topic.victim_their# wagon. Rolled away in the night.
 b[carter] : I sleep in the wagon bed now, with a cudgel. Best sleep I get.
 b[innkeeper] : Not in my common room. Out in the yard, maybe.
 b : The yard's a thieves' fair. | Busy inn, easy marks. | A cask doesn't roll itself.
@@ -211,7 +211,7 @@ a : Every night. | Too easy. | Not uphill.
 
 scene et_ac_newcomer_traveller
 when topic=newcomer here.region=larkfield
-a : #topic.subject#'s stopped here instead of going on to Ridgemere. | #topic.subject# took a job in the stables. Says they're staying. | Not many carters stay in Larkfield. #topic.subject# did.
+a : #topic.subject#'s stopped here instead of going on to Ridgemere. | #topic.subject# took a job in the stables. Says #topic.they#'s staying. | Not many carters stay in Larkfield. #topic.subject# did.
 b[carter] : Most pass through. A market town's a door, not a room.
 b : Smart. The city's hard. | Stables pay honest. | Wonder why.
 a : Very hard. | And smelly. | We'll find out.
@@ -248,7 +248,7 @@ a : Nothing. | Elbow to elbow. | It is.
 
 scene et_cb_theft_ore
 when topic=crime topic.kind=theft here.region=frosthollow
-a : Somebody's carting ore off the tailings at night. | #topic.victim# lost their wages. A week down the shaft for nothing. | They stole the lamp oil from the mine store.
+a : Somebody's carting ore off the tailings at night. | #topic.victim# lost #topic.victim_their# wages. A week down the shaft for nothing. | They stole the lamp oil from the mine store.
 b[miner] : Steal a wolf's lamp oil and you might as well bury him.
 b : Selling it down the High Road, I'd bet. | A whole week! | Cruel.
 a : Bet you're right. | All for nothing. | Deadly.
@@ -284,7 +284,7 @@ a : A talkative weasel. | Dark and true. | Maybe.
 
 scene et_cb_assault
 when topic=crime topic.kind=assault here.region=frosthollow
-a : A fight at the pithead. #topic.victim# came off worst. | They say #topic.victim# was jumped for their wages. | Someone took a pick handle to #topic.victim#.
+a : A fight at the pithead. #topic.victim# came off worst. | They say #topic.victim# was jumped for #topic.victim_their# wages. | Someone took a pick handle to #topic.victim#.
 b[guard] : Pay day and drink. Never a good mix in this town.
 b : Pay day always ends in blood here. | For wages? Cowards. | A pick handle! Brute.
 a : Always. | Cowards. | A brute.

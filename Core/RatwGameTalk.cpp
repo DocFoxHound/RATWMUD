@@ -75,7 +75,10 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     // Their people (decision 8), by name: to speak of ("#self.spouse#", "#self.priest#").
     for (const auto& [role, who] : peopleOf(e.id))
         if (const auto* them = world_.entity(who))
+        {
             f[role] = them->name;
+            f[role + "_sex"] = them->appearance->sex == "female" ? "female" : "male";   // (#self.spouse_their#: Phase 6.)
+        }
     // Traits (decision 4): the middle of each axis unless their row says.
     static const std::map<std::string, std::string> Middle{{"temper", "even"}, {"talk", "plain"}, {"warmth", "reserved"},
                                                            {"humour", "none"}, {"honesty", "plain"}, {"piety", "ordinary"},
@@ -241,7 +244,139 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     }
     const auto tone = voices_.toneOf(spec ? spec->personality : std::string());
     f["tone"] = tone.empty() ? "plain" : tone;      // (The router's tones; plain without the router, or a personality.)
+    // Doc 84 §8.8 (Phase 6): their mood from the last days, their stances (and the steps events moved them: the talk
+    // ledger's drift), their likes and dislikes (stable: drawn from who they are).
+    talkMood(e, f);
+    auto& daily = talkDaily_[e.id];
+    if (const auto today = std::int64_t(std::floor(world_.calendarDays())); daily.day != today)
+    {
+        auto worked = f;
+        talk_.stances(worked, world_.talkLedger().drifts(e.id));
+        talk_.likes(worked);
+        daily.facts.clear();
+        for (auto& [k, v] : worked)
+            if (k.rfind("op", 0) == 0 || k == "likes" || k == "dislikes" || k == "dislike_kind" ||
+                (k.size() > 6 && k.compare(k.size() - 6, 6, "_words") == 0))
+                daily.facts.emplace(k, std::move(v));
+        daily.day = today;
+    }
+    for (const auto& [k, v] : daily.facts)
+        f[k] = v;
     return p;
+}
+
+void Game::talkMood(const Entity& e, talk::Facts& f)
+{
+    // §8.8: low, sore, bright or even, from the last three days' events, fading: mourning, hunger, a bad hurt, want (low);
+    // robbed, attacked, a quarrel (sore); a wedding, a pup born, a new post, praise, good trade, a festival (bright). The
+    // strongest pull of 2 or more wins (low before sore before bright); else even.
+    const double day = world_.calendarDays();
+    double low = 0, sore = 0, bright = 0;
+    std::string lowWhy, soreWhy, brightWhy;
+    const auto add = [](double& at, std::string& why, double w, const char* what) {
+        if (w > at)
+            at = w, why = what;
+    };
+    const auto fade = [&](double when) { return std::clamp(1 - (day - when) / 3.0, 0.0, 1.0); };
+    const auto is = [&](const char* k, const char* v) {
+        const auto found = f.find(k);
+        return found != f.end() && found->second == v;
+    };
+    if (is("mourning", "kin"))
+        add(low, lowWhy, 3, "mourning");
+    else if (is("mourning", "friend"))
+        add(low, lowWhy, 2, "mourning");
+    if (is("hungry", "yes"))
+        add(low, lowWhy, 2, "hungry");
+    if (is("injured", "bad"))
+        add(low, lowWhy, 2.5, "hurt");
+    if (is("wealth", "destitute") || is("homeless", "yes"))
+        add(low, lowWhy, 2, "poor");
+    for (const auto& i : world_.crime().incidents)
+        if (day - i.day <= 3 && i.victim == e.id)
+        {
+            if (i.kind == "theft")             // (Robbed: something was taken; an attempt is a fright, not a loss.)
+                add(sore, soreWhy, 2.5 * fade(i.day) + .5, "robbed");
+            else if (i.kind == "assault")
+                add(sore, soreWhy, 2.5 * fade(i.day) + .5, "attacked");
+        }
+    if (const auto* news = world_.ownNews(e.id))
+        for (const auto& n : *news)
+        {
+            if (day - n.day > 3)
+                continue;
+            if (n.kind == "marriage")
+                add(bright, brightWhy, 2.5 * fade(n.day) + .5, "wed");
+            else if (n.kind == "birth")
+                add(bright, brightWhy, 2.5 * fade(n.day) + .5, "newborn");
+            else if (n.kind == "work")
+                add(bright, brightWhy, 2 * fade(n.day) + .3, "work");
+            else if (n.kind == "loss")
+                add(low, lowWhy, 2.5 * fade(n.day) + .5, "loss");
+        }
+    for (const auto& [when, kind] : world_.talkLedger().moodEvents(e.id, day - 3))
+    {
+        if (kind == "quarrel")
+            add(sore, soreWhy, 1.8 * fade(when) + .3, "quarrel");     // (Sore a few hours, unless more befalls them.)
+        else if (kind == "praised")
+            add(bright, brightWhy, 1.7 * fade(when) + .3, "praised");
+    }
+    if (is("business", "thriving"))
+        add(bright, brightWhy, 2, "trade");
+    if (world_.dayPlan(world_.communityOf(e.cellId)).kind == "festival")
+        add(bright, brightWhy, 2, "festival");
+    std::string mood = "even", why;
+    if (low >= 2 && low >= sore && low >= bright)
+        mood = "low", why = lowWhy;
+    else if (sore >= 2 && sore >= bright)
+        mood = "sore", why = soreWhy;
+    else if (bright >= 2)
+        mood = "bright", why = brightWhy;
+    f["mood"] = mood;
+    if (!why.empty())
+        f["mood_why"] = why;
+}
+
+void Game::talkDrift()
+{
+    // Doc 84 §7.6 (Phase 6): once a game day, the events that move a stance a step (opinions.json's drift), each applied
+    // once (the talk ledger keeps which): a theft from a resident closed unsolved (cold) or charged, the Restday dole
+    // feeding them, kin of theirs under a warrant, a wedding of their own.
+    auto& ledger = world_.talkLedger();
+    const auto today = std::int64_t(std::floor(world_.calendarDays()));
+    if (!ledger.enabled || today == talkDriftDay_ || talk_.issues().empty())
+        return;
+    talkDriftDay_ = today;
+    talkDaily_.clear();                             // (Stances worked out again, with today's drift.)
+    const double day = world_.calendarDays();
+    const auto& society = world_.society();
+    const auto apply = [&](const std::string& who, const std::string& event, const std::string& id) {
+        for (const auto& i : talk_.issues())
+            if (const auto d = i.drift.find(event); d != i.drift.end())
+                ledger.drift(who, i.name, d->second, event, id, day);
+    };
+    for (const auto& i : world_.crime().incidents)
+    {
+        if (day - i.day > 30 || i.victim.empty() || !society.resident(i.victim) || (i.kind != "theft" && i.kind != "attempted theft"))
+            continue;
+        if (i.status == "cold")
+            apply(i.victim, "robbed_uncaught", i.id);
+        else if (i.status == "charged")
+            apply(i.victim, "robbed_caught", i.id);
+    }
+    for (const auto& w : world_.crime().warrants)
+        for (const auto& [id, life] : society.state().residents)
+            if (id != w.person && (society.family(id, w.person) || (society.spouse(id) && *society.spouse(id) == w.person)))
+                apply(id, "kin_charged", "warrant:" + w.person);
+    for (const auto& [id, life] : society.state().residents)
+    {
+        if (society.onDole(id))
+            apply(id, "fed_by_dole", "dole");
+        if (const auto* news = world_.ownNews(id))
+            for (const auto& n : *news)
+                if (n.kind == "marriage" && day - n.day <= 3)
+                    apply(id, "wed", "wed:" + std::to_string(std::int64_t(n.day)));
+    }
 }
 
 std::string Game::voiceCardOf(const std::string& id)
@@ -553,7 +688,7 @@ void Game::talkLedgerFacts(const std::string& a, const std::string& b, talk::Que
                     q.facts["pair.recall." + topic] = it->outcome;
             for (const auto& [k, v] : it->kept)
                 if (day <= v.second)
-                    q.facts.emplace("pair.was." + k, v.first);
+                    q.facts.emplace(k.rfind("agree.", 0) == 0 ? "pair." + k : "pair.was." + k, v.first);   // (Phase 6: pair.agree.<issue>.)
         }
     }
     if (const auto* invite = ledger.lastInvite(a, b); invite && (invite->state == "kept" || invite->state == "missed"))

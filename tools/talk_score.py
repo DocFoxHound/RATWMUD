@@ -64,9 +64,18 @@ is measured"); the rest are listed as n/a with the phase that brings them:
      with no pivot, change of subject or return among its moves
   C9 callbacks per 10 conversations (Phase 5): lines standing on the talk ledger (their criteria read it: pair.last_talk,
      pair.talked.*, a promise, an invitation; a return to a thread; "Back again?")
-  D1 lines carrying a dialect's words (a dialect grammar layer in the expansion) from speakers of accent none: the hard
-     gate (§15.3: "none 0%", "hard for none"; §10: none sounds plain); D1L light speakers' (25-50%) and D1B broad
-     speakers' (60%+), soft
+  D1 lines carrying a dialect's words (a dialect grammar layer in the expansion) spoken in accent none: the hard gate
+     (§15.3: "none 0%", "hard for none"; §10: none sounds plain); D1L lines spoken light (25-50%) and D1B broad (60%+),
+     soft. Phase 6: by the accent a line was spoken in (talk_sim's spoken_accent: a step broader toward kin and friends
+     of one's own speech, plainer toward a class above, a stranger from elsewhere, a hostile pair; §10.6), the speaker's
+     own where a run has none. D1A: the lines spoken in another accent than the speaker's own (broader, plainer)
+  T4 identity drift (Phase 6): of the lines airing a stance (issue, stance), one whose speaker's side changed from their
+     last within 30 days on the same basis (the same leans held, the same drift: nothing in their life moved it) and no
+     concede between, or an answer against the speaker's own
+     side (agreeing with the other side, disagreeing with one's own), per 1,000 stance lines. O1 opinions given per 10
+     conversations (a diagnostic)
+  T6 "they", "them", "their" said after the one known resident a line names (Phase 6; the lint's they_named is the
+     hard gate on the library's lines, this the soft one on what is said), per 1,000 lines
   D2 another dialect's words in a speaker's line (by the expansion's layers, and by tools/dialect_check.py's lexicon)
   D3 a speaker's dialect guessed from 20 of their lines (naive Bayes on words, trained on the other speakers), light and
      broad speakers
@@ -129,7 +138,13 @@ METRICS = {
     "T2": ("presupposition failures, per 1,000 lines", "lower", "hard", lambda v: v <= 0, "0", ""),
     "T3": ("self-reference errors (own name, the listener in the third person, unbacked eyewitness words), per 1,000 lines",
            "lower", "hard", lambda v: v <= 0, "0", ""),
-    "T4": ("identity drift", "lower", "hard", None, "0", "Phase 6"),
+    "T4": ("identity drift: a stance changed with no event or concede, or answered against one's own, per 1,000 stance lines",
+           "lower", "hard", lambda v: v <= 0, "0", "Phase 6"),
+    "T6": ("'they' said of one known wolf named in the line, per 1,000 lines", "lower", "soft", lambda v: v <= 0, "0",
+           "Phase 6 (the lint's they_named is the hard gate)"),
+    "D1A": ("lines said a step broader or plainer than the speaker's own accent (%)", "higher", "soft", None,
+            "diagnostic: accommodation (§10.6)", "Phase 6"),
+    "O1": ("opinions given per 10 conversations", "higher", "soft", None, "diagnostic (§8.8)", "Phase 6"),
     "T5": ("telling what the listener already believes, with no 'known' answer (%)", "lower", "soft", lambda v: v <= 2, "2%", ""),
     "D1": ("lines with a dialect's words (%): accent none", "lower", "hard", lambda v: v <= 0, "none 0%", ""),
     "D1L": ("lines with a dialect's words (%): light speakers", "higher", "soft", lambda v: 25 <= v <= 50, "light 25-50%", ""),
@@ -539,7 +554,13 @@ def score_run(run: Run) -> dict:
             for k, v in run.residents.get(l["who"], {}).items():
                 if not k.startswith("_") and isinstance(v, (str, int, float)):
                     facts["self." + k] = str(v)
-            failed = [r.id for r in rules if r.judge(facts) is False]
+            # (Phase 6: the topic's claim kind and kind as the line was said; a rule scoped to topics judges only theirs.)
+            if l.get("claim_kind"):
+                facts["topic.claim_kind"] = l["claim_kind"]
+            if l.get("topic_kind"):
+                facts["topic.kind"] = l["topic_kind"]
+            topic = l.get("topic_now") or head.get("topic") or l.get("topic")
+            failed = [r.id for r in rules if r.scoped(topic) and r.judge(facts) is False]
             for k in failed:
                 t2[k] += 1
             if failed and len(t2_examples) < 6:
@@ -560,6 +581,78 @@ def score_run(run: Run) -> dict:
     m["T3"] = sum(t3.values()) * 1000 / max(1, len(lines))
     m["T3_detail"] = {"by_kind": dict(t3), "examples": t3_examples,
                       "eyewitness_judged": any("seen" in h for h in run.conv_head.values())}
+    # T4 (Phase 6, §15.3: identity drift). Of the lines that air a stance (talk_sim's issue and stance: an opinion given,
+    # agreed or disagreed with, insisted on, conceded, a third siding or correcting): one whose speaker's side on the issue
+    # changed from their last such line within 30 days with no event moving it (its drift steps the same) and no concede
+    # of theirs between; and an answer against one's own side (agreeing with one on the other side, disagreeing with one
+    # on the same), per 1,000 stance lines.
+    stance_lines = drifted = against_own = 0
+    t4_examples = []
+    last_side = {}
+    conceded = set()
+    for l in sorted((l for l in lines if l.get("issue")), key=lambda l: (float(l.get("day", 0)), float(l.get("t", 0)))):
+        stance_lines += 1
+        key = (l["who"], l["issue"])
+        moves_ = l.get("moves") or []
+        prev = last_side.get(key)
+        # (The same basis, the same leans and drift: nothing in the wolf's life moved it. A run from before Phase 6's basis
+        # compares the drift alone.)
+        if prev and prev[0] != l.get("stance") and prev[1] == (l.get("drift", 0), l.get("basis")) and \
+                float(l.get("day", 0)) - prev[2] <= 30 and key not in conceded:
+            drifted += 1
+            if len(t4_examples) < 4:
+                t4_examples.append(f"{l['who']} on {l['issue']}: {prev[0]} then {l.get('stance')}: {l['text']}")
+        last_side[key] = (l.get("stance"), (l.get("drift", 0), l.get("basis")), float(l.get("day", 0)))
+        if any(meets(m_, "concede", book) for m_ in moves_):
+            conceded.add(key)
+        else:
+            conceded.discard(key)
+    for cid, c in run.by_conv.items():
+        # (An answer is judged against the side of the one it is said to: the opinion's giver, or a joiner's the one who
+        # spoke last.)
+        held = {}
+        for l in c:
+            if not l.get("issue"):
+                continue
+            moves_ = l.get("moves") or []
+            held[(l["who"], l["issue"])] = l.get("stance")
+            if any(meets(m_, "give.opinion", book) for m_ in moves_):
+                continue
+            other = held.get((l.get("to", ""), l["issue"]))
+            mine = l.get("stance")
+            if not other or other == "mixed" or mine == "mixed":
+                continue
+            agrees = any(meets(m_, "agree", book) or meets(m_, "join.side", book) for m_ in moves_)
+            differs = any(meets(m_, "disagree", book) or meets(m_, "join.correct", book) for m_ in moves_)
+            if (agrees and mine != other) or (differs and mine == other):
+                against_own += 1
+                if len(t4_examples) < 6:
+                    t4_examples.append(f"{l['who']} ({mine}) to one {other} on {l['issue']}: {l['text']}")
+    m["T4"] = (drifted + against_own) * 1000 / stance_lines if stance_lines else 0
+    m["T4_detail"] = {"stance_lines": stance_lines, "drifted": drifted, "answered_against_own": against_own,
+                      "examples": t4_examples}
+    m["O1"] = sum(1 for l in lines if l.get("issue") and any(meets(m_, "give.opinion", book) for m_ in (l.get("moves") or []))) \
+        * 10 / max(1, len(convs))
+    # T6 (Phase 6): "they", "them" or "their" after the one known resident a line names (the lint's they_named, at run
+    # time: residents.jsonl's names), the town's "they say" apart.
+    names = {r.get("name") for r in run.residents.values() if isinstance(r, dict) and r.get("name")}
+    t6 = 0
+    t6_examples = []
+    for l in lines:
+        text = l["text"]
+        found = [n for n in names if n and n in text]
+        if len(found) != 1:
+            continue
+        after = text[text.index(found[0]) + len(found[0]):]
+        for w in THEY.finditer(after):
+            if TOWN_THEY.match(after, w.start()) or re.search(r"\band\b", after[:w.start()]):
+                continue
+            t6 += 1
+            if len(t6_examples) < 6:
+                t6_examples.append(f"{l['who']}: {text}")
+            break
+    m["T6"] = t6 * 1000 / max(1, len(lines))
+    m["T6_detail"] = {"lines": t6, "examples": t6_examples}
     m["T1_detail"] = {"examples": t1_examples}
     # K1, K2, K3.
     topics = collections.Counter(run.conv_head.get(cid, {}).get("topic", c[0].get("topic", "")) for cid, c in run.by_conv.items())
@@ -626,10 +719,15 @@ def score_run(run: Run) -> dict:
     d2_text = 0
     d2_examples = []
     mod, lex = DIALECT
+    shifted = collections.Counter()
     for l in lines:
         own = l.get("dialect", "")
         used = [u for u in l.get("used", []) if u != "plain" and not u.startswith("p_")]
-        acc = l.get("accent") or "none"
+        # (Phase 6: by the accent the line was spoken in, a step broader or plainer toward the one spoken to; §10.6.)
+        acc = l.get("spoken_accent") or l.get("accent") or "none"
+        if l.get("spoken_accent") and l.get("accent") and l["spoken_accent"] != l["accent"]:
+            levels = {"none": 0, "light": 1, "broad": 2}
+            shifted["broader" if levels.get(l["spoken_accent"], 1) > levels.get(l["accent"], 1) else "plainer"] += 1
         by_accent[acc][1] += 1
         if used:
             by_accent[acc][0] += 1
@@ -645,6 +743,8 @@ def score_run(run: Run) -> dict:
     m["D1L"] = pct(*by_accent["light"]) if by_accent["light"][1] else 0
     m["D1B"] = pct(*by_accent["broad"]) if by_accent["broad"][1] else 0
     m["D1_detail"] = {a: round(pct(*v), 2) for a, v in by_accent.items()}
+    m["D1A"] = pct(sum(shifted.values()), len(lines))
+    m["D1A_detail"] = dict(shifted)
     m["D2"] = d2_layers + d2_text
     m["D2_detail"] = {"by_layers": d2_layers, "by_lexicon": d2_text, "examples": d2_examples,
                       "lexicon": "tools/dialect_check.py" if lex is not None else "unavailable"}
@@ -676,12 +776,16 @@ def score_run(run: Run) -> dict:
     m["X1"] = pct(cohesive, replies_n)
     m["_counts"] = {"lines": len(lines), "conversations": len(convs), "hours": round(run.hours, 2),
                     "listeners": len(listeners), "speakers": len(by_speaker), "questions": questions, "owed": owed,
-                    "asserted": asserted,
+                    "asserted": asserted, "stance_lines": stance_lines,
                     "none_lines": by_accent["none"][1], "light_lines": by_accent["light"][1],
                     "broad_lines": by_accent["broad"][1]}
     return m
 
 
+# T6 (Phase 6): "they" for one known wolf, as tools/talk_lint.py's they_named has it; the town's "they say" apart.
+THEY = re.compile(r"\b(they|them|their|theirs|themselves|themself|they're|they'd|they'll|they've)\b", re.I)
+TOWN_THEY = re.compile(r"\b(they (?:say|said|reckon|tell|told|do say|are saying|were saying|call|found|took)|they're saying|"
+                       r"so they say|what they say|they've (?:said|been saying)|they'll (?:say|tell))\b", re.I)
 EYEWITNESS = re.compile(r"\b(I saw (?!(?:them|him|her|#[^#]*#) only\b)|I watched|I seen|saw it myself|saw it with my own|"
                         r"with my own eyes|I was there when)", re.I)
 # Topics whose eyewitness words claim the deed itself was seen (a death's "I saw them only on Restday" is not one).
@@ -921,7 +1025,8 @@ EVENTS = {"R4": ("hours", 100), "R5": ("hours", 100), "C1": ("owed", 100), "C1Q"
           "C6": ("conversations", 1000), "T1": ("lines", 1000), "T2": ("lines", 1000), "T3": ("lines", 1000),
           "K3": ("conversations", None), "D1": ("none_lines", 100), "D1L": ("light_lines", 100),
           "D1B": ("broad_lines", 100), "R8": ("lines20", 100), "D3": ("judged", 100), "T5": ("asserted", 100),
-          "C5": ("lines", 1000), "C9": ("conversations", 10), "C8": ("conversations", 100)}
+          "C5": ("lines", 1000), "C9": ("conversations", 10), "C8": ("conversations", 100),
+          "T4": ("stance_lines", 1000), "T6": ("lines", 1000), "O1": ("conversations", 10)}
 # Timings, which move with the machine's load: the same build measured B5 frozen at 59, 72 and 80. And first-time waits,
 # the earliest of many listeners' (R1, R2): one listener hearing a repeat a little sooner moves them more than any rate.
 TIMING = {"B5": .25, "R1": .5, "R2": .5, "B1": .5, "B1P": .5, "B1L": .5}

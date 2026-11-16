@@ -1,12 +1,14 @@
 {
  "about": "talk_lint.py findings frozen (Docs/Design/84 \u00a77.8, Phase 1): the truth lexicon counted over the library; a new one fails, the list may only shrink.",
- "count": 9,
+ "count": 34,
  "by_rule": {
   "children": 3,
   "fisher_self": 1,
   "morning_greeting": 3,
   "night_greeting": 1,
-  "spouse": 1
+  "pity": 1,
+  "spouse": 1,
+  "they_named": 24
  },
  "findings": [
   "children|cb_ser_ferro_road|My daughter works in Ridgemere now. Never visits.",
@@ -17,6 +19,31 @@
   "morning_greeting|kn_ap_carter|Good morning, ox.",
   "morning_greeting|tr_herd_market|Good morning, long walk home.",
   "night_greeting|f7_st_pc_bed|Goodnight, pup.",
-  "spouse|et_hm_newcomer|The last newcomer I liked was my wife. Forty years back."
+  "pity|lf_apprentice|Poor thing. The first year is the worst.",
+  "spouse|et_hm_newcomer|The last newcomer I liked was my wife. Forty years back.",
+  "they_named|et_assault_revenge|When I find who hurt #topic.victim#, I'll tear their ears off.",
+  "they_named|et_birth_news|A litter for #topic.subject#. Three of them!",
+  "they_named|et_death_young|A young one, #topic.subject#. Nobody should bury their pups.",
+  "they_named|et_lf_birth_winter|Winter-born, #topic.subject#'s pup. Tough as old boots, they'll be.",
+  "they_named|et_nc_child_friend|#topic.subject#'s pup is new. Can they play with us?",
+  "they_named|et_nc_city_crowd|Another newcomer. #topic.subject#. The city swallows them by the dozen.",
+  "they_named|et_ua_death_scholar|#topic.subject#'s gone. They'll ring the bell at the Chapel of the Tide.",
+  "they_named|et_wm_death_barrows|Lights on the barrows the night #topic.subject# died. I saw them.",
+  "they_named|f7_tell_inlaws|#self.spouse#'s family are coming for the festival. All of them.",
+  "they_named|h7_assault_revenge|If I knew who hurt #topic.victim#, I'd see to them.",
+  "they_named|h7_cr_open_dry|A #thief# took #topic.victim#'s things. They'll be disappointed.",
+  "they_named|h7_cr_open_dry|Somebody robbed #topic.victim#. I hope they wiped their paws.",
+  "they_named|h7_cr_open_rich|I've had the locks changed. After #topic.victim#. All of them.",
+  "they_named|h7_cr_open_someone|#topic.victim#'s things walked off by themselves, it seems.",
+  "they_named|h7_crime_dry|A #thief# took #topic.victim#'s things. Hope they like them.",
+  "they_named|h7_crime_dry|Robbed #topic.victim#. They must've been desperate.",
+  "they_named|h7_crime_poor_pity|A #thief# took from #topic.victim#. Bet they ate well tonight.",
+  "they_named|h7_crime_rich_hang|Another theft. #topic.victim#. They should make an example.",
+  "they_named|h7_st_open_hire|#topic.subject# looks handy. With the roads as they are.",
+  "they_named|h7_stranger_night|#topic.subject# shouldn't be in the street at night. Not with things as they are.",
+  "they_named|h7_theft_doors|First #topic.victim#, now everyone's barring their doors.",
+  "they_named|n7_cr_parent|I walked mine to the well this morning, after #topic.victim#. They thought I'd gone soft.",
+  "they_named|n7_cr_parent|The little ones keep asking about #topic.victim#. What do I tell them?",
+  "they_named|n7_go_died_old|#topic.subject#'s gone. Another one. They're dropping like leaves this year."
  ]
 }

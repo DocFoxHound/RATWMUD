@@ -16,6 +16,7 @@
 #include <map>
 #include <stdexcept>
 #include <string>
+#include <unistd.h>
 
 using namespace ratw::talk;
 namespace
@@ -1668,7 +1669,7 @@ say And you.
              {R"({"budget": {"plain": [5]}})", "[fewest, most]"},
              {R"({"budget": {"least": 1}})", "least is 2"},
              {R"({"invite_taken": 2})", "a chance"},
-             {R"({"moods": {}})", "no field 'moods'"},
+             {R"({"mood": {}})", "no field 'mood'"},
              // Phase 5's goals (§7.4): a plan of moves that may open, when something holds.
              {R"({"goals": {"x": {"when": "pair.band=strangers", "plan": ["wave"]}}})", "not a move that may open"},
              {R"({"goals": {"x": {"plan": ["greet"]}}})", "holds when something does"},
@@ -2228,6 +2229,331 @@ say #x.name# has taken up the fiddle.
     }
 }
 
+void opinionsMoodsAccent()
+{
+    // Doc 84 §7.4-7.6, §8.8, §10.6 (Phase 6): stances from a resident's own facts and the events that drift them, likes
+    // held for good, how a trait leans on a move, the town's mood, accommodation, opinions aired and answered as the
+    // stances are, vent, and nothing told twice or said over another's words; pronouns by sex.
+    std::string problem;
+    auto lib = foundation();
+    expect(lib.issues().size() >= 10 && lib.issue("watch") && lib.issue("watch")->words == "the Watch", "opinions.json: the issues");
+    expect(!lib.likeItems().empty() && !lib.temperaments().empty() && lib.moods().size() == 4 && lib.accommodation().on,
+           "likes, temperaments, the four town moods and accommodation load");
+    // opinions.json refused: copied beside the foundation's files, one thing wrong at a time.
+    {
+        namespace fs = std::filesystem;
+        const auto tmp = fs::temp_directory_path() / ("ratw-opinions-" + std::to_string(::getpid()));
+        fs::remove_all(tmp);
+        fs::create_directories(tmp / "grammar");
+        for (const char* f : {"facts.json", "settings.json", "claims.json", "moves.json", "frames.json", "topics.json", "temperaments.json",
+                              "groups.talk"})
+            fs::copy_file(fs::path(Dir) / f, tmp / f);
+        for (const auto& g : fs::directory_iterator(fs::path(Dir) / "grammar"))
+            fs::copy_file(g.path(), tmp / "grammar" / g.path().filename());
+        for (const auto& [text, why] : std::vector<std::pair<std::string, std::string>>{
+                 {R"({"issues": {"watch": {"words": "the Watch", "colour": 1}}})", "no field 'colour'"},
+                 {R"({"issues": {"watch": {"words": "the Watch", "for": [{"when": "here.weather=rain"}]}}})", "the resident's own facts"},
+                 {R"({"issues": {"watch": {"words": "the Watch", "drift": {"robbed_by_moonlight": -1}}}})", "no event the game watches for"},
+                 {R"({"issues": {"watch": {"words": "the Watch", "drift": {"robbed_uncaught": -1}}}})", "needs a reason of its own"},
+                 {R"({"issues": {"watch": {"words": "the Watch", "for": [{"when": "self.role=guard", "why": "nope"}]}}})", "not among its reasons"},
+                 {R"({"issues": {"watch": {"words": "the Watch", "topics": ["weddings"]}}})", "not topics.json's"},
+                 {R"({"likes": {"tea": {"kind": "drink", "words": "tea"}}})", "kind is pastime, food, weather or thing"}})
+        {
+            std::ofstream(tmp / "opinions.json") << text;
+            Library l;
+            std::string why2;
+            expect(!l.loadFoundation(tmp.string(), why2) && why2.find(why) != std::string::npos, "opinions.json refused (" + why + "): " + why2);
+        }
+        std::ofstream(tmp / "temperaments.json") << R"({"leans": {"temper=short": {"shout": 1.5}}})";
+        std::ofstream(tmp / "opinions.json") << "{}";
+        Library l;
+        std::string why2;
+        expect(!l.loadFoundation(tmp.string(), why2) && why2.find("not a move") != std::string::npos, "temperaments.json refused: " + why2);
+        std::ofstream(tmp / "temperaments.json") << R"({"leans": {"temper=short": {"take_offence": 2.5}}})";
+        expect(!l.loadFoundation(tmp.string(), why2) && why2.find("0.3 to 2") != std::string::npos, "a lean is 0.3 to 2: " + why2);
+        fs::remove_all(tmp);
+    }
+    // Stances: from the resident's own facts; a reason true of them; strength the steps it leans; drift a step more.
+    {
+        Facts guard{{"id", "g1"}, {"role", "guard"}, {"class", "middle"}, {"honesty", "plain"}, {"quarter", "commons"}};
+        lib.stances(guard, {});
+        expect(guard["op.watch"] == "for" && guard["op_strength.watch"] == "1" &&
+                   guard["op_why.watch"].find("I walk with them myself") != std::string::npos,
+               "a guard is for the Watch, and says why: " + guard["op_why.watch"]);
+        Facts sly{{"id", "s1"}, {"role", "civilian"}, {"honesty", "sly"}, {"quarter", "sump"}, {"class", "lower"}};
+        lib.stances(sly, {});
+        expect(sly["op.watch"] == "against" && sly["op_strength.watch"] == "2" && sly["op.sump"] == "for", "a sly wolf of the Sump is against the Watch, 2");
+        Facts none{{"id", "n1"}, {"role", "civilian"}};
+        lib.stances(none, {});
+        expect(none["op.watch"] == "mixed" && none["op_strength.watch"] == "0" && !none.count("op_why.watch") && !none.count("op.sump"),
+               "nothing pulling: mixed, no view; no quarter, no view of the Sump at all");
+        lib.stances(none, {{"watch", {-1, "robbed_uncaught"}}});
+        expect(none["op.watch"] == "against" && none["op_drift.watch"] == "-1" &&
+                   none["op_why.watch"] == "they never caught whoever robbed me",
+               "a theft never solved drifts it a step, with the event's own reason");
+        lib.stances(guard, {{"watch", {-2, "robbed_uncaught"}}});
+        expect(guard["op.watch"] == "against", "events can outweigh a lean");
+    }
+    // Likes: the same every time for one wolf; a list fact holds when the list has it.
+    {
+        Facts a{{"id", "ivo"}, {"stage", "adult"}, {"homeless", "no"}, {"role", "civilian"}}, b = a;
+        lib.likes(a);
+        lib.likes(b);
+        expect(!a["likes"].empty() && a["likes"] == b["likes"] && a["dislikes"] == b["dislikes"] && !a["food_words"].empty() &&
+                   !a["dislike_kind"].empty(),
+               "likes held for good: " + a["likes"] + " / " + a["dislikes"]);
+        auto l2 = foundation();
+        const auto first = a["likes"].substr(0, a["likes"].find(' '));
+        expect(l2.parse("rule lk_t\nwhen concept=talk.food self.likes=" + first + "\nsay Mine.\n", "lk.talk", problem), problem);
+        auto q = moment("talk.food");
+        q.a.facts = a;
+        expect(l2.pick(q, 1, None, {}).id == "lk_t", "self.likes=" + first + " holds of one whose list has it");
+        q.a.facts["likes"] = "nothing_else";
+        expect(l2.pick(q, 1, None, {}).id.empty(), "and not of one whose list hasn't");
+    }
+    // Temperaments: a chatty wolf pivots more, a quiet one less; the whole lean held to 0.3-2.
+    {
+        Speaker chatty, quiet, many;
+        chatty.facts = {{"talk", "chatty"}};
+        quiet.facts = {{"talk", "quiet"}};
+        many.facts = {{"talk", "chatty"}, {"drive", "restless"}, {"warmth", "warm"}};
+        expect(std::abs(lib.lean(chatty, "pivot") - 1.4) < 1e-9 && std::abs(lib.lean(quiet, "pivot") - .6) < 1e-9, "pivot: chatty 1.4, quiet 0.6");
+        expect(lib.lean(many, "change_subject") <= 2.0 && std::abs(lib.lean(chatty, "react.news.doubt") - 1) < 1e-9, "held to 2; no lean, 1");
+        Speaker nervy;
+        nervy.facts = {{"temper", "nervy"}};
+        expect(std::abs(lib.lean(nervy, "react.news.doubt") - 1.4) < 1e-9, "a variant's own lean");
+    }
+    // The town's mood and accommodation, worked out for a query.
+    {
+        auto q = moment("talk.smalltalk");
+        q.facts["world.death"] = "recent";
+        q.facts["world.bandits"] = "near";
+        lib.accommodate(q);
+        expect(q.facts["world.mood"] == "grief", "a death in town: grief (the first mood that holds)");
+        q.facts["world.death"] = "no";
+        lib.accommodate(q);
+        expect(q.facts["world.mood"] == "uneasy", "bandits near: uneasy");
+        q.facts["world.bandits"] = "no";
+        lib.accommodate(q);
+        expect(!q.facts.count("world.mood"), "no mood");
+        const auto speaks = [&](const std::string& accentA, const std::string& fromB, Facts pair, Facts b = {}) {
+            auto x = moment("talk.smalltalk");
+            x.a.facts["from"] = "coldwater";
+            x.a.facts["accent"] = accentA;
+            x.a.facts["class"] = "middle";
+            x.b.facts["from"] = fromB;
+            x.b.facts["accent"] = "light";
+            for (const auto& [k, v] : pair)
+                x.facts[k] = v;
+            for (const auto& [k, v] : b)
+                x.b.facts[k] = v;
+            lib.accommodate(x);
+            return x.a.facts["speaks"];
+        };
+        expect(speaks("light", "coldwater", {{"pair.kin", "siblings"}}) == "broad", "a step broader to kin of one's own speech");
+        expect(speaks("light", "larkfield", {{"pair.kin", "siblings"}, {"pair.band", "family"}}) == "light", "not to kin who speak otherwise");
+        expect(speaks("broad", "larkfield", {{"pair.band", "strangers"}}) == "light", "a step plainer to a stranger from elsewhere");
+        expect(speaks("light", "coldwater", {{"pair.band", "acquaintances"}}, {{"class", "upper"}}) == "none", "plainer to one a class above");
+        expect(speaks("none", "coldwater", {{"pair.band", "friends"}}) == "light" && speaks("broad", "coldwater", {{"pair.band", "friends"}}) == "broad",
+               "none rises no higher than light; broad stays broad");
+        {
+            auto x = moment("talk.smalltalk");
+            x.a.facts["from"] = x.b.facts["from"] = "ridgemere";
+            x.a.facts["accent"] = "light";
+            x.facts["pair.kin"] = "siblings";
+            lib.accommodate(x);
+            expect(!x.a.facts.count("speaks"), "Ridgemere's plain speech: no dialect to speak more or less of");
+        }
+        // Spoken in that accent: a broad speaker's dialect words, and the line records the accent it was said in.
+        auto l2 = foundation();
+        expect(l2.parse("rule acc_t\nwhen concept=talk.smalltalk\nsay #greet#.\n", "acc.talk", problem), problem);
+        auto x = moment("talk.smalltalk");
+        x.a.facts["from"] = "coldwater";
+        x.a.facts["accent"] = "none";
+        x.a.grammar = {"coldwater"};
+        x.b.facts["from"] = "coldwater";
+        x.facts["pair.kin"] = "siblings";
+        Conversation c;
+        c.seed = 5;
+        auto first = l2.begin(c, x, Freshness{None, {}});
+        expect(first && first->accent == "light", "the opener records the accent it was spoken in: " + (first ? first->accent : std::string()));
+    }
+    // An opinion in a lull, on a topic its issue comes up on; the answer as the stances are.
+    {
+        auto l2 = foundation();
+        for (const char* f : {"rules/opinions.talk", "rules/turns.talk"})
+        {
+            std::ifstream in(Dir + "/" + f);
+            std::stringstream text;
+            text << in.rdbuf();
+            expect(l2.parse(text.str(), f, problem), std::string(f) + ": " + problem);
+        }
+        expect(l2.parse("rule op_open_crime\nwhen concept=talk.crime\ndoes tell.news\nsay There was a theft by the well.\n"
+                        "rule op_react\ndoes react.news\nsay Was there now.\n", "crime.talk", problem), problem);
+        const auto run = [&](const std::string& sideB, std::uint64_t seed, const char* band = "friends") {
+            auto q = moment("talk.crime");
+            q.facts["pair.band"] = band;
+            q.a.facts["role"] = "guard";
+            q.a.facts["talk"] = "chatty";
+            q.a.facts["honesty"] = "frank";
+            q.b.facts["talk"] = "chatty";
+            if (sideB == "against")
+                q.b.facts["honesty"] = "sly", q.b.facts["quarter"] = "sump", q.b.facts["class"] = "lower";
+            else
+                q.b.facts["role"] = "guard";
+            lib.stances(q.a.facts, {});
+            lib.stances(q.b.facts, {});
+            Conversation c;
+            c.seed = seed;
+            std::vector<SaidLine> said;
+            if (auto f = l2.begin(c, q, Freshness{None, {}}))
+                said.push_back(*f);
+            for (int i = 0; i < 16; ++i)
+                if (auto line = l2.next(c, [&](int, int) { return q; }, Freshness{None, {}}))
+                    said.push_back(*line);
+                else
+                    break;
+            return said;
+        };
+        int aired = 0, answered = 0;
+        for (const auto& side : {"for", "against"})
+            for (std::uint64_t seed = 1; seed <= 30; ++seed)
+            {
+                const auto said = run(side, seed);
+                const auto given = std::find_if(said.begin(), said.end(), [](const SaidLine& l) {
+                    return std::find(l.moves.begin(), l.moves.end(), "give.opinion") != l.moves.end();
+                });
+                if (given == said.end())
+                    continue;
+                ++aired;
+                std::string lowered = given->text;
+                std::transform(lowered.begin(), lowered.end(), lowered.begin(), [](unsigned char ch) { return char(std::tolower(ch)); });
+                expect((given->issue == "watch" && lowered.find("watch") != std::string::npos) ||
+                           (given->issue == "sump" && lowered.find("sump") != std::string::npos),
+                       "an opinion on the Watch or the Sump, on talk of crime: " + given->text);
+                const auto reply = std::next(given);
+                if (reply == said.end() || reply->issue.empty())
+                    continue;
+                ++answered;
+                const bool agrees = std::find(reply->moves.begin(), reply->moves.end(), "agree") != reply->moves.end();
+                const bool differs = std::find(reply->moves.begin(), reply->moves.end(), "disagree") != reply->moves.end();
+                if (given->stance == "mixed" || reply->stance == "mixed")
+                    continue;                       // (Half: either answer may be had from one with no side.)
+                expect(given->stance == reply->stance ? !differs : !agrees,
+                       "answered as the stances are (" + given->stance + " / " + reply->stance + "): " + given->entry + " " + given->issue + " who " +
+                           std::to_string(given->who) + ": " + given->text + " / " + reply->entry + " who " + std::to_string(reply->who) + ": " + reply->text);
+            }
+        expect(aired >= 10 && answered >= 8, "opinions aired and answered: " + std::to_string(aired) + " / " + std::to_string(answered));
+    }
+    // vent: a low mood told to a friend, and sympathy back.
+    {
+        auto l2 = foundation();
+        for (const char* f : {"rules/opinions.talk", "rules/turns.talk"})
+        {
+            std::ifstream in(Dir + "/" + f);
+            std::stringstream text;
+            text << in.rdbuf();
+            expect(l2.parse(text.str(), f, problem), problem);
+        }
+        expect(l2.parse("rule v_open\nwhen concept=talk.weather\ndoes tell.self\nsay Grey again.\n"
+                        "rule v_react\ndoes react.self\nsay So it is.\n", "v.talk", problem), problem);
+        bool vented = false;
+        for (std::uint64_t seed = 1; seed <= 20 && !vented; ++seed)
+        {
+            auto q = moment("talk.weather");
+            q.a.facts["talk"] = q.b.facts["talk"] = "chatty";
+            q.a.facts["mood"] = "low";
+            q.a.facts["mood_why"] = "robbed";
+            Conversation c;
+            c.seed = seed;
+            const auto f = [&](int speaker, int) {
+                auto x = q;
+                if (speaker == 1)
+                    std::swap(x.a, x.b);            // (Each one's own mood: other.mood is the speaker's other.)
+                return q;
+            };
+            std::vector<SaidLine> said;
+            if (auto first = l2.begin(c, q, Freshness{None, {}}))
+                said.push_back(*first);
+            for (int i = 0; i < 12; ++i)
+                if (auto line = l2.next(c, f, Freshness{None, {}}))
+                    said.push_back(*line);
+                else
+                    break;
+            for (std::size_t i = 0; i + 1 < said.size(); ++i)
+                if (said[i].goal == "vent")
+                {
+                    vented = true;
+                    expect(said[i].entry == "md_vent_robbed" && said[i + 1].who == 1, "vent: " + said[i].text);
+                    expect(std::find(said[i + 1].moves.begin(), said[i + 1].moves.end(), "sympathise") != said[i + 1].moves.end() ||
+                               std::find(said[i + 1].moves.begin(), said[i + 1].moves.end(), "reassure") != said[i + 1].moves.end(),
+                           "and the friend sympathises: " + said[i + 1].text);
+                }
+        }
+        expect(vented, "a low mood is vented to a friend");
+    }
+    // Never told again, never another's words over: the engine refuses them (Freshness::told, ::collides).
+    {
+        auto l2 = foundation();
+        expect(l2.parse("rule t_tell\nwhen concept=talk.gossip\ndoes tell.gossip\nasserts\nsay Osric wed Signe, I hear.\n"
+                        "rule t_story\nwhen concept=talk.lore\ndoes tell.story\nsay My gran swore the river talks, and it does.\n"
+                        "rule t_story2\nwhen concept=talk.lore\ndoes tell.story\nsay The old mill wheel turns by itself at night.\n",
+                        "t.talk", problem), problem);
+        auto q = moment("talk.gossip");
+        q.facts["topic.claim_kind"] = "marriage";
+        Freshness told{None, {}};
+        told.told = [](const std::string& listener, const std::string& what) { return listener == "ivo" && what == "claim:signe|wed"; };
+        Conversation c;
+        c.claim = "signe|wed";
+        expect(!l2.begin(c, q, told) && c.ended == "told", "a claim the listener was told is never told them again");
+        Conversation c2;
+        c2.claim = "signe|other";
+        expect(l2.begin(c2, q, told).has_value(), "another claim is");
+        auto lore = moment("talk.lore");
+        Freshness heard{None, {}};
+        heard.told = [](const std::string&, const std::string& what) { return what == "story:t_story"; };
+        for (std::uint64_t seed = 1; seed <= 10; ++seed)
+        {
+            Conversation s;
+            s.seed = seed;
+            const auto first = l2.begin(s, lore, heard);
+            expect(first && first->entry == "t_story2", "a story the listener heard is never told them again");
+        }
+        Freshness over{None, {}};
+        over.collides = [](const std::string& words, const std::string& speaker) {
+            return speaker == "maren" && words == "My gran swore the river talks, and it does.";   // (Another said it here.)
+        };
+        for (std::uint64_t seed = 1; seed <= 10; ++seed)
+        {
+            Conversation s;
+            s.seed = seed;
+            const auto first = l2.begin(s, lore, over);
+            expect(first && first->entry == "t_story2", "another's distinctive words said here within the hour are passed over");
+        }
+    }
+    // Pronouns by sex: a topic's subject and victim, one's own people.
+    {
+        auto l2 = foundation();
+        expect(l2.parse("rule p_t\nwhen concept=talk.gossip\nsay #topic.subject# lost #topic.their# purse. #topic.victim_they.capitalize# saw it.\n"
+                        "rule p_s\nwhen concept=talk.family\nsay #self.spouse# sends #self.spouse_their# best.\n", "p.talk", problem), problem);
+        auto q = moment("talk.gossip");
+        q.facts["topic.subject"] = "Finn Dripwick";
+        q.facts["topic.subject_sex"] = "male";
+        q.facts["topic.victim"] = "Signe Sootwell";
+        q.facts["topic.victim_sex"] = "female";
+        const auto said = l2.pick(q, 1, None, {});
+        expect(!said.lines.empty() && said.lines[0].second == "Finn Dripwick lost his purse. She saw it.", "pronouns by sex: " +
+               (said.lines.empty() ? std::string() : said.lines[0].second));
+        auto f = moment("talk.family");
+        f.a.facts["spouse"] = "Osric Wetford";
+        f.a.facts["spouse_sex"] = "male";
+        const auto s2 = l2.pick(f, 1, None, {});
+        expect(!s2.lines.empty() && s2.lines[0].second == "Osric Wetford sends his best.", "one's spouse by sex");
+        f.a.facts.erase("spouse_sex");
+        expect(l2.pick(f, 1, None, {}).id.empty(), "never 'their' for one wolf: no sex, no line");
+    }
+}
+
 int main()
 {
     try
@@ -2250,6 +2576,7 @@ int main()
         turnEngine();
         beatsWhenSpoken();
         agendasAndGoals();
+        opinionsMoodsAccent();
     }
     catch (const std::exception& error)
     {

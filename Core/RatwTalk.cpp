@@ -105,6 +105,20 @@ Ns sharedNs(const std::string& ns)
 
 const std::set<std::string> Modifiers{"capitalize", "a", "s"};
 const std::set<std::string> Pronouns{"they", "them", "their", "theirs", "themself"};
+// A topic's pronoun (Phase 6): its subject's (they, their...) or its victim's (victim_they...).
+bool topicPronoun(const std::string& name)
+{
+    return Pronouns.count(name) || (name.rfind("victim_", 0) == 0 && Pronouns.count(name.substr(7)));
+}
+// One of a person's people's pronoun (Phase 6: spouse_their, child_they...): the role ("" if it is no such word).
+std::string rolePronoun(const std::string& name)
+{
+    static const std::set<std::string> Roles{"spouse", "child", "mother", "father", "neighbour", "shopkeeper", "priest", "leader"};
+    const auto at = name.rfind('_');
+    if (at == std::string::npos || !Pronouns.count(name.substr(at + 1)) || !Roles.count(name.substr(0, at)))
+        return {};
+    return name.substr(0, at);
+}
 
 std::string pronoun(const std::string& word, const std::string& sex)
 {
@@ -222,6 +236,7 @@ void tidy(std::string& line)
         if (line[i] == '.' && (line[i - 1] == '?' || line[i - 1] == '!') && (i + 1 >= line.size() || line[i + 1] != '.'))
             line.erase(i--, 1);
 }
+bool hasMove(const Moves& book, const std::vector<std::string>& moves, const std::string& kind);   // (Below.)
 } // namespace
 
 struct Library::Expansion
@@ -257,6 +272,12 @@ void Library::clear()
     inviteTaken_ = .5;
     goals_.clear();
     steps_.clear();
+    moods_.clear();
+    accent_ = {};
+    issues_.clear();
+    likes_.clear();
+    temper_.clear();
+    temperBy_.clear();
 }
 
 const Entry* Library::find(const std::string& id) const
@@ -307,7 +328,9 @@ bool Library::readSchema(const std::string& text, std::string& problem)
     }
     std::vector<std::string> errors;
     const auto kindOf = [&](const std::string& key, const json::Value& v, FactKind& k) {
-        if (v.isString() && (v.asString("") == "text" || v.asString("") == "number"))
+        if (v.isString() && v.asString("") == "list")
+            k.type = FactKind::Type::List;          // (Phase 6: its words are opinions.json's items.)
+        else if (v.isString() && (v.asString("") == "text" || v.asString("") == "number"))
             k.type = v.asString("") == "text" ? FactKind::Type::Text : FactKind::Type::Number;
         else if (v.isArray() && v.size() > 0)
             for (const auto& item : v.items())
@@ -324,7 +347,7 @@ bool Library::readSchema(const std::string& text, std::string& problem)
             const auto full = std::string(ns) + "." + name;
             kindOf(full, v, shared_[full]);
             if (person_.count(name))
-                errors.push_back("facts.json: " + full + " has a person's name; call it something else");
+                continue;                           // (A person's name too, world.mood beside self.mood: written in full only.)
             if (aliases_.count(name))
                 twice.insert(name);
             aliases_[name] = full;
@@ -455,11 +478,15 @@ bool Library::readFrames(const std::string& text, std::string& problem)
     const auto fail = [&](const std::string& m) { errors.push_back("frames.json: " + m); };
     if (moves_.empty())
         fail("it names moves: moves.json is needed beside it");
-    static const std::set<std::string> Top{"about", "frames", "budget", "invite_taken", "curt", "join", "thread", "goals"};
-    static const std::set<std::string> Fields{"about", "when", "open", "budget", "preclose", "forbid", "tones", "accent", "hedge"};
+    static const std::set<std::string> Top{"about", "frames", "budget", "invite_taken", "curt", "join", "thread", "goals", "moods", "accent"};
+    // ("accent" is a library's from before Phase 6, a frame's step that accommodation (frames.json's accent) replaced: read
+    // and ignored, so an older library still loads.)
+    static const std::set<std::string> Fields{"about", "when", "open", "budget", "preclose", "forbid", "tones", "hedge", "accent"};
     for (const auto& [key, unused] : doc.fields())
         if (!Top.count(key))
-            fail("no field '" + key + "' (about, frames, budget, invite_taken, curt, join, thread, goals)");
+            fail("no field '" + key + "' (about, frames, budget, invite_taken, curt, join, thread, goals, moods, accent)");
+    moods_.clear();
+    accent_ = {};
     const auto scale = [&](const std::string& what, double v) {
         if (!(v >= .2 && v <= 3))
             fail(what + " is a number from 0.2 to 3");
@@ -505,7 +532,6 @@ bool Library::readFrames(const std::string& text, std::string& problem)
                 fail(name + ": tones are moves.json's, each with a weight");
             else
                 fr.tones[tone] = scale(name + ": tone " + tone, w.asNumber());
-        fr.accent = f.string("accent");
         fr.hedge = f.string("hedge");
         frames_.push_back(std::move(fr));
     }
@@ -623,6 +649,65 @@ bool Library::readFrames(const std::string& text, std::string& problem)
             fail("goals: " + name + ": days 0-60");
         goals_.push_back(std::move(goal));
     }
+    // Phase 6 (§7.4, §8.11): the town moods, in their order (the first that holds is the town's).
+    const auto criteriaOf = [&](const std::string& tokens, const std::string& what, std::vector<Criterion>& out) {
+        for (const auto& token : words(tokens))
+        {
+            Criterion c;
+            std::string why;
+            if (!criterion(token, Where::When, 0, c, why))
+                fail(what + ": " + why);
+            else
+                out.push_back(std::move(c));
+        }
+        if (out.empty())
+            fail(what + ": holds when something does");
+    };
+    for (const auto& [name, m] : doc.object("moods").fields())
+    {
+        if (name == "about")
+            continue;
+        Mood mood;
+        mood.name = name;
+        if (!m.isObject() || !lowerKey(name))
+        {
+            fail("moods: " + name + " is an object, its name lower-case letters, digits and _");
+            continue;
+        }
+        known(m, {"about", "when", "mutes", "boost", "tones"}, "moods: " + name);
+        criteriaOf(m.string("when"), "moods: " + name, mood.when);
+        for (const auto& x : m.array("mutes"))
+            if (moves_.known(x.asString("")))
+                mood.mutes.insert(x.asString(""));
+            else
+                fail("moods: " + name + ": mutes '" + x.asString("") + "', not a move");
+        for (const auto& [move, w] : m.object("boost").fields())
+            if (!moves_.known(move) || !w.isNumber())
+                fail("moods: " + name + ": boost is moves.json's moves, each with a weight");
+            else
+                mood.boosts[move] = scale("moods: " + name + ": boost " + move, w.asNumber());
+        for (const auto& [tone, w] : m.object("tones").fields())
+            if (!moves_.tone(tone) || !w.isNumber())
+                fail("moods: " + name + ": tones are moves.json's, each with a weight");
+            else
+                mood.tones[tone] = scale("moods: " + name + ": tone " + tone, w.asNumber());
+        moods_.push_back(std::move(mood));
+    }
+    // Phase 6 (§10.6): accommodation.
+    if (const auto* a = doc.find("accent"))
+    {
+        known(*a, {"about", "broader", "plainer", "none_rises_to"}, "accent");
+        accent_.on = true;
+        for (const auto& [list, out] : {std::pair{"broader", &accent_.broader}, std::pair{"plainer", &accent_.plainer}})
+            for (const auto& rule : a->array(list))
+            {
+                out->emplace_back();
+                criteriaOf(rule.asString(""), std::string("accent: ") + list, out->back());
+            }
+        accent_.noneRisesTo = a->string("none_rises_to", "light");
+        if (accent_.noneRisesTo != "none" && accent_.noneRisesTo != "light")
+            fail("accent: none_rises_to is none or light");
+    }
     if (!errors.empty())
     {
         problem.clear();
@@ -632,6 +717,8 @@ bool Library::readFrames(const std::string& text, std::string& problem)
         budgets_ = {};
         curt_ = {};
         goals_.clear();
+        moods_.clear();
+        accent_ = {};
         return false;
     }
     return true;
@@ -855,7 +942,8 @@ bool Library::criterion(const std::string& token, Where where, int speaker, Crit
             error = "'" + token + "' tests no value";
             return false;
         }
-        if (kind->type == FactKind::Type::Words && c.full != "here.region")   // (Regions may be groups: see parse.)
+        c.list = kind->type == FactKind::Type::List;
+        if ((kind->type == FactKind::Type::Words || (c.list && !kind->values.empty())) && c.full != "here.region")   // (Regions may be groups: see parse.)
             for (const auto& v : c.values)
                 if (!kind->values.count(v))
                 {
@@ -914,6 +1002,15 @@ const std::string* Library::fact(Ns ns, const std::string& name, const std::stri
 bool Library::holds(const Criterion& c, const Query& q, int speaker) const
 {
     const std::string* v = fact(c.ns, c.name, c.full, q, speaker);
+    if (c.list && (c.op == Criterion::Op::In || c.op == Criterion::Op::NotIn))
+    {
+        // A list fact (Phase 6: self.likes=honey_cakes): holds when the list, words between spaces, has one of them.
+        bool has = false;
+        if (v)
+            for (const auto& w : words(*v))
+                has = has || c.values.count(w) > 0;
+        return c.op == Criterion::Op::In ? has : !has;
+    }
     switch (c.op)
     {
     case Criterion::Op::In: return v && c.values.count(*v) > 0;
@@ -1009,6 +1106,8 @@ bool Library::checkText(const std::string& text, std::vector<std::string>& error
         }
         if (ref.parts.size() == 2 && (isPersonNs(ref.parts[0]) || ref.parts[0] == "x"))
         {
+            if (const auto role = rolePronoun(ref.parts[1]); !role.empty() && person_.count(role))
+                return;                             // (#self.spouse_their#: one of their people's pronoun, Phase 6.)
             if (!person_.count(ref.parts[1]) && !Pronouns.count(ref.parts[1]) && !(ref.parts[0] == "x" && x_.count(ref.parts[1])))
                 errors.push_back(where + ": #" + inside + "#: a person has no fact '" + ref.parts[1] + "'");
             return;
@@ -1019,6 +1118,8 @@ bool Library::checkText(const std::string& text, std::vector<std::string>& error
                 errors.push_back(where + ": #" + inside + "#: a conversation's tag is lower-case letters, digits and _");
             return;
         }
+        if (ref.parts.size() == 2 && ref.parts[0] == "topic" && topicPronoun(ref.parts[1]))
+            return;                                 // (#topic.they#, #topic.victim_their#: Phase 6.)
         if (ref.parts.size() == 2 && isSharedNs(ref.parts[0]))
         {
             if (!shared_.count(ref.parts[0] + "." + ref.parts[1]))
@@ -1938,7 +2039,9 @@ bool loadDir(Library& lib, const std::string& dir, bool all, std::string& proble
              const std::function<bool(const std::string&, std::string&)>& schema,
              const std::function<bool(const std::string&, std::string&)>& settings,
              const std::function<bool(const std::string&, std::string&)>& moves,
-             const std::function<bool(const std::string&, std::string&)>& frames)
+             const std::function<bool(const std::string&, std::string&)>& frames,
+             const std::function<bool(const std::string&, std::string&)>& opinions,
+             const std::function<bool(const std::string&, std::string&)>& temperaments)
 {
     namespace fs = std::filesystem;
     std::error_code ec;
@@ -1972,6 +2075,12 @@ bool loadDir(Library& lib, const std::string& dir, bool all, std::string& proble
     // The frames of a meeting and a talk's budget (doc 84 §7.4, Phase 3). A library from before Phase 3 has none: the
     // budgets' defaults, no frames.
     if (readFile(fs::path(dir) / "frames.json", text) && !frames(text, problem))
+        return false;
+    // Opinions, likes and how a trait leans (doc 84 §7.5, §7.6, Phase 6): facts of their own (op.<issue>, likes...), read
+    // before the lines that test them. A library from before Phase 6 has neither.
+    if (readFile(fs::path(dir) / "opinions.json", text) && !opinions(text, problem))
+        return false;
+    if (readFile(fs::path(dir) / "temperaments.json", text) && !temperaments(text, problem))
         return false;
     // The topic director's numbers (doc 84 §7.3, Phase 5): the process's book. A library from before Phase 5 has none:
     // today's, the C++ scores as they were.
@@ -2062,7 +2171,9 @@ bool Library::load(const std::string& dir, std::string& problem)
     const bool ok = loadDir(*this, dir, true, problem, [this](const std::string& t, std::string& p) { return readSchema(t, p); },
                             [this](const std::string& t, std::string& p) { return readSettings(t, p); },
                             [this](const std::string& t, std::string& p) { return readMoves(t, p); },
-                            [this](const std::string& t, std::string& p) { return readFrames(t, p); });
+                            [this](const std::string& t, std::string& p) { return readFrames(t, p); },
+                            [this](const std::string& t, std::string& p) { return readOpinions(t, p); },
+                            [this](const std::string& t, std::string& p) { return readTemperaments(t, p); });
     if (ok && !readSteps(problem))
         return clear(), false;
     if (!ok)
@@ -2076,7 +2187,9 @@ bool Library::loadFoundation(const std::string& dir, std::string& problem)
     const bool ok = loadDir(*this, dir, false, problem, [this](const std::string& t, std::string& p) { return readSchema(t, p); },
                             [this](const std::string& t, std::string& p) { return readSettings(t, p); },
                             [this](const std::string& t, std::string& p) { return readMoves(t, p); },
-                            [this](const std::string& t, std::string& p) { return readFrames(t, p); });
+                            [this](const std::string& t, std::string& p) { return readFrames(t, p); },
+                            [this](const std::string& t, std::string& p) { return readOpinions(t, p); },
+                            [this](const std::string& t, std::string& p) { return readTemperaments(t, p); });
     if (ok && !readSteps(problem))
         return clear(), false;
     if (!ok)
@@ -2095,8 +2208,10 @@ bool Library::expandSymbol(const std::string& name, Expansion& x, int depth, std
         return f == s.facts.end() ? std::string() : f->second;
     };
     // The speaker's dialect is the layer named for where they're from; their accent says how much of it they use: none
-    // (plain's words), light (the dialect's word half the time), broad (always, and its .broad words too).
-    const auto dialect = dialectOf(fact(who, "from")), accent = fact(who, "accent");
+    // (plain's words), light (the dialect's word half the time), broad (always, and its .broad words too). Phase 6
+    // (§10.6): the accent they speak in toward the one spoken to (`speaks`, accommodation) before their own.
+    const auto dialect = dialectOf(fact(who, "from"));
+    const auto accent = !fact(who, "speaks").empty() ? fact(who, "speaks") : fact(who, "accent");
     std::vector<const Alt*> alts;
     std::vector<const std::string*> altLayer;       // (The layer each came from, for LineInfo: never for choosing.)
     bool habit = false, pairHabit = false;
@@ -2224,7 +2339,17 @@ bool Library::expandInto(const std::string& text, Expansion& x, int depth, std::
         else if (ref.parts.size() == 2 && isPersonNs(ref.parts[0]))
         {
             const Ns ns = personNs(ref.parts[0]);
-            if (Pronouns.count(ref.parts[1]))
+            if (const auto role = rolePronoun(ref.parts[1]); !role.empty())
+            {
+                // One of their people (#self.spouse_their#, #other.child_they#: Phase 6), by that one's sex: never "they"
+                // for one known wolf. Not without them.
+                const std::string* who = fact(ns, role, {}, x.q, x.speaker);
+                const std::string* sex = fact(ns, role + "_sex", {}, x.q, x.speaker);
+                if (!who || who->empty() || !sex)
+                    return false;
+                value = pronoun(ref.parts[1].substr(role.size() + 1), *sex);
+            }
+            else if (Pronouns.count(ref.parts[1]))
             {
                 const std::string* sex = fact(ns, "sex", {}, x.q, x.speaker);
                 const std::string* any = fact(ns, "name", {}, x.q, x.speaker);
@@ -2234,6 +2359,17 @@ bool Library::expandInto(const std::string& text, Expansion& x, int depth, std::
             }
             else if (const auto* v = fact(ns, ref.parts[1], {}, x.q, x.speaker))
                 value = *v;
+        }
+        else if (ref.parts.size() == 2 && ref.parts[0] == "topic" && topicPronoun(ref.parts[1]))
+        {
+            // The topic's subject or victim as a pronoun, by their sex (doc 84, Phase 6: never "they" for one wolf):
+            // #topic.they#, #topic.their#...; #topic.victim_they#... Not without the one it stands for.
+            const bool victim = ref.parts[1].rfind("victim_", 0) == 0;
+            const auto who = x.q.facts.find(victim ? "topic.victim" : "topic.subject");
+            const auto sex = x.q.facts.find(victim ? "topic.victim_sex" : "topic.subject_sex");
+            if (who == x.q.facts.end() || who->second.empty())
+                return false;
+            value = pronoun(victim ? ref.parts[1].substr(7) : ref.parts[1], sex == x.q.facts.end() ? std::string() : sex->second);
         }
         else if (ref.parts.size() == 2)
         {
@@ -2419,6 +2555,12 @@ Said Library::renderWith(const Entry& e, const Query& q, std::uint64_t seed, Tra
         info.text = said;
         info.turn = int(t);
         info.variant = int(chosen - turn.variants.data());
+        {
+            const Speaker& by = who == 0 || q.alone ? q.a : q.b;
+            const auto speaks = by.facts.find("speaks");
+            const auto accent = by.facts.find("accent");
+            info.accent = speaks != by.facts.end() ? speaks->second : accent != by.facts.end() ? accent->second : std::string();
+        }
         if (std::size_t(info.alt) < chosen->tags.size())
         {
             info.tags = chosen->tags[std::size_t(info.alt)].set;
@@ -2521,6 +2663,24 @@ void Library::describe(const Entry& e, std::size_t turn, const Query& q, const s
     // A scene is written whole: its last line owes only what is written (a set piece handing on into open talk, §8.2),
     // never what its moves expect by default.
     describeMoves(line, before, q.facts, !(e.scene && turn + 1 == e.turns.size()));
+    // Phase 6 (§8.8): a line airing a stance on the issue a talk is on records the speaker's own side, and the steps events
+    // had moved it (the scorecard's T4).
+    if (const auto issue = q.facts.find("conv.issue"); issue != q.facts.end())
+    {
+        static const char* const Stance[] = {"give.opinion", "agree", "disagree", "insist", "concede", "counter", "join.side", "join.correct"};
+        if (std::any_of(std::begin(Stance), std::end(Stance), [&](const char* m) { return hasMove(moves_, line.moves, m); }))
+        {
+            const Speaker& by = line.who == 0 || q.alone ? q.a : q.b;
+            const auto at = [&](const std::string& k) {
+                const auto f = by.facts.find(k + "." + issue->second);
+                return f == by.facts.end() ? std::string() : f->second;
+            };
+            line.issue = issue->second;
+            line.stance = at("op").empty() ? "mixed" : at("op");
+            line.drift = std::atoi(at("op_drift").c_str());
+            line.basis = at("op_basis");
+        }
+    }
 }
 
 void Library::describeMoves(SaidLine& line, const std::vector<std::string>& before, const Facts& facts, bool expect) const
@@ -2910,6 +3070,8 @@ Query Library::beatQuery(const Conversation& c, const std::function<Query(int, i
     for (const auto& [k, v] : c.conv)
         q.facts["conv." + k] = v;
     overlay(c, q);
+    accommodate(q);                                 // (Phase 6: each one's accent toward the other; the town's mood.)
+    stanceFacts(c, q);
     return q;
 }
 
@@ -3246,14 +3408,37 @@ std::optional<SaidLine> Library::begin(Conversation& c, const Query& q, const Fr
 {
     // The opener: the concept's, as pick chooses it (the director's topic; Phase 5's agenda chooses from Phase 5).
     setUp(c, q);
-    auto said = pickOne(q, c.seed, fresh.heard, fresh.recent, 0, false, trace);
+    auto asked = q;
+    accommodate(asked);                             // (Phase 6: the opener's accent toward the one spoken to; the mood.)
+    // Never what the one spoken to was told before (Phase 6, §8.6: the ledger's told set; a story they heard): not this
+    // opener, nor the authored lines (the game leaves a talk "told" unbegun).
+    const auto* found = (moves_.empty() || !fresh.told) ? nullptr : &asked;
+    auto recent = fresh.recent;
+    Said said;
+    for (int tries = 0; tries < 6; ++tries)
+    {
+        said = pickOne(asked, c.seed + std::uint64_t(tries) * 0x2545F491ULL, fresh.heard, recent, 0, false, trace);
+        const auto* e = said.id.empty() || !found ? nullptr : find(said.id);
+        const bool told = e && toldAlready(c, *e, asked, 0, fresh);
+        if (said.id.empty() || (!told && !collides(said, asked, fresh)))
+            break;
+        if (trace)
+            trace->why += "; " + said.id + (told ? " would tell them again" : " repeats words said here lately");
+        recent.push_back(said.id);
+        said = {};
+        if (told && c.ended.empty())
+            c.ended = "told";
+    }
     if (said.id.empty())
     {
-        end(c, "nothing", nullptr);
+        const auto why = c.ended == "told" ? "told" : "nothing";
+        c.ended.clear();
+        end(c, why, nullptr);
         return std::nullopt;
     }
+    c.ended.clear();
     c.repeat = said.repeat;
-    preface(c, said, q, fresh, trace);
+    preface(c, said, asked, fresh, trace);
     take(c, std::move(said));
     return sayNext(c);
 }
@@ -3307,6 +3492,8 @@ std::optional<SaidLine> Library::join(Conversation& c, const std::string& id, co
     for (const auto& [k, v] : c.conv)
         asked.facts["conv." + k] = v;
     asked.facts["conv.stake"] = stake;
+    accommodate(asked);
+    stanceFacts(c, asked);                          // (Phase 6: a joiner sides with an opinion, or corrects it.)
     auto s = answer(c, o, asked, 0, fresh, trace);
     if (s.id.empty() || s.info.size() != 1)
         return std::nullopt;
@@ -3447,10 +3634,17 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
             break;
         const int who = o.to >= 0 ? o.to : partner(c, o.by);
         const int to = who == o.by ? partner(c, who) : o.by;
-        if (o.soft && unit(beatSeed(0x50F7)) >= inviteTaken_)
-            continue;                               // (Passed over: an invitation, not taken this time.)
         int side = 0;
         auto q = beatQuery(c, facts, who, to, side);
+        // An invitation is taken up half the time, as the one invited leans (Phase 6, §7.5: a warm wolf sympathises).
+        if (o.soft)
+        {
+            double leaning = o.moves.empty() ? 1 : 0;
+            for (const auto& m : o.moves)
+                leaning = std::max(leaning, lean(side == 0 ? q.a : q.b, m));
+            if (unit(beatSeed(0x50F7)) >= std::min(1.0, inviteTaken_ * leaning))
+                continue;                           // (Passed over: an invitation, not taken this time.)
+        }
         int held = 0;
         auto s = answer(c, o, q, side, fresh, trace, &held);
         const std::string what = o.moves.empty() ? o.concept : joined(o.moves);
@@ -3591,6 +3785,9 @@ std::optional<SaidLine> Library::lull(Conversation& c, const std::function<Query
     std::vector<int> order{partner(c, last), last};
     if (order[0] == order[1])
         order.pop_back();
+    // An opinion aired is done with once nothing more is owed on it (Phase 6): its facts go.
+    c.conv.erase("issue");
+    c.conv.erase("issue_words");
     // Between two, one query serves both (a and b as begin had them; the speaker is their side): §16, B1.
     int side0 = 0;
     const auto now = beatQuery(c, facts, 0, 1, side0);
@@ -3652,6 +3849,11 @@ std::optional<SaidLine> Library::lull(Conversation& c, const std::function<Query
             return sayNext(c);
         }
     }
+    // 1b. An opinion on the issue the topic raises (Phase 6, §8.8), by the one whose turn it is.
+    if (c.people.size() == 2)
+        for (const int who : order)
+            if (auto line = opinion(c, now, who, fresh, trace))
+                return line;
     // 2. A turn to something on either's agenda (§8.5): a thread left unfinished on it is returned to; a step along the
     // topic graph (its criteria holding now) is a pivot; anything else, now and then, a marked change of subject. A talk
     // of three keeps to its topic.
@@ -3689,17 +3891,32 @@ std::optional<SaidLine> Library::lull(Conversation& c, const std::function<Query
     std::stable_sort(candidates.begin(), candidates.end(), [](const auto& x, const auto& y) { return x.first > y.first; });
     for (const auto& [rank, pick] : candidates)
     {
-        if (pick.how == "change_subject" && unit(beatSeed(0x5B1E)) >= .5)
-            break;                                  // (Now and then only: else the talk closes.)
         auto& item = c.agenda[std::size_t(pick.owner)][pick.at];
-        item.done = true;
         const int who = pick.owner, to = partner(c, who);
+        // Now and then only (else the talk closes), as the one who'd turn it leans (Phase 6: a chatty wolf pivots more).
+        const Speaker& turner = who == 0 ? now.a : now.b;
+        if (pick.how == "change_subject" && unit(beatSeed(0x5B1E)) >= std::min(1.0, .5 * lean(turner, "change_subject")))
+            break;
+        if (pick.how == "pivot" && !temper_.empty() &&
+            unit(beatSeed(0x91B0 + std::uint64_t(pick.at))) >= std::min(1.0, lean(turner, "pivot") * lean(turner, "pivot:" + item.topic)))
+            continue;
+        // Never what the one spoken to was told before (Phase 6, §8.6).
+        if (fresh.told && !item.claim.empty())
+            if (const auto& listener = to == 0 ? now.a : now.b; listener.facts.count("id") &&
+                (item.kind == "tell" || item.kind == "news") && fresh.told(listener.facts.at("id"), "claim:" + item.claim))
+            {
+                item.done = true;
+                continue;
+            }
+        item.done = true;
         // The talk on the new topic: its facts over the old, who knew its claim.
         const auto oldFacts = c.topicFacts;
         const auto oldKnows = c.knows;
         const auto oldTopic = c.topic;
+        const auto oldClaim = c.claim;
         c.topicFacts = item.facts;
         c.knows = item.knows;
+        c.claim = item.claim;
         c.topic = item.facts.count("topic.kind") ? item.facts.at("topic.kind") : item.topic;
         const int side = who;
         auto q = now;
@@ -3708,15 +3925,17 @@ std::optional<SaidLine> Library::lull(Conversation& c, const std::function<Query
         q.concept = item.concept;
         // (Never an entry or a question already said in this talk: the scorecard's C6.)
         auto said = pickLazy(q, beatSeed(0x7091), fresh.heard, fresh.recent, side, trace, [&](const Said& s) {
-            return c.said.count(s.id) > 0 || std::any_of(s.info.begin(), s.info.end(), [&](const SaidLine& l) {
+            return c.said.count(s.id) > 0 || collides(s, q, fresh) || std::any_of(s.info.begin(), s.info.end(), [&](const SaidLine& l) {
                        return !l.text.empty() && l.text.back() == '?' && c.asked.count(lower(l.text));
                    });
         });
-        if (said.id.empty() || said.info.empty() || c.said.count(said.id))
+        if (said.id.empty() || said.info.empty() || c.said.count(said.id) ||
+            (fresh.told && find(said.id) && toldAlready(c, *find(said.id), q, side, fresh)))
         {
             c.topicFacts = oldFacts;
             c.knows = oldKnows;
             c.topic = oldTopic;
+            c.claim = oldClaim;
             continue;
         }
         if (said.info.size() == 1)
@@ -3739,7 +3958,19 @@ std::optional<SaidLine> Library::lull(Conversation& c, const std::function<Query
             }
         }
         else
-            expand(pick.how == "pivot" ? "#pivot#" : "#anyway#", q, side, beatSeed(0x91F0), words);
+        {
+            // (The marked words in front, as another said none of them here within the hour: the collision filter.)
+            const auto bare = first.text;
+            for (std::uint64_t tries = 0; tries < 5; ++tries)
+            {
+                words.clear();
+                expand(pick.how == "pivot" ? "#pivot#" : "#anyway#", q, side, beatSeed(0x91F0 + tries * 0x51), words);
+                first.text = words.empty() ? bare : words + " " + bare;
+                if (!collides(said, q, fresh))
+                    break;
+            }
+            first.text = bare;
+        }
         if (!words.empty())
         {
             first.text = words + " " + first.text;
@@ -3828,13 +4059,28 @@ Said Library::answer(const Conversation& c, const Conversation::Open& owed, cons
         if (c.said.count(e.id) || forbidden(c, e, asked, speaker) || toneBlocked(c, tone) ||
             (c.extended >= std::max(1, moves_.find("preclose") ? moves_.find("preclose")->maxExtend : 1) && answersExtend(e)))
             continue;
+        // Phase 6: agree or disagree as the stances are (§8.8); nothing a town's mood mutes (§7.4); never told again (§8.6).
+        if (!stanceFits(e, asked) || moodMuted(e, asked) || toldAlready(c, e, asked, speaker, fresh))
+            continue;
+        // An opinion answered with one's own only by one who differs, and once (one who agrees says so).
+        if (c.conv.count("issue") && hasMove(moves_, e.does.front(), "give.opinion"))
+        {
+            const auto agree = asked.facts.find("conv.agree");
+            const auto id = self.facts.find("id");
+            const bool gave = id != self.facts.end() && std::any_of(c.lines.begin(), c.lines.end(), [&](const SaidLine& l) {
+                return l.who >= 0 && std::size_t(l.who) < c.people.size() && c.people[std::size_t(l.who)] == id->second &&
+                       hasMove(moves_, l.moves, "give.opinion");
+            });
+            if (gave || (agree != asked.facts.end() && agree->second == "yes"))
+                continue;
+        }
         auto said = render(e, asked, mix(c.seed + std::uint64_t(c.beat) * 7919 + i), nullptr, speaker);
         if (said.id.empty() || said.info.empty())
             continue;
-        // Never the same words twice in one talk (C6), nor the same question.
+        // Never the same words twice in one talk (C6), nor the same question; nor another's words here within the hour.
         const auto& text = said.info.front().text;
         if (std::any_of(c.lines.begin(), c.lines.end(), [&](const SaidLine& l) { return l.text == text; }) ||
-            (!text.empty() && text.back() == '?' && c.asked.count(lower(text))))
+            (!text.empty() && text.back() == '?' && c.asked.count(lower(text))) || collides(said, asked, fresh))
             continue;
         toneWeight = 1;
         for (const auto& name : c.frames)
@@ -3842,7 +4088,12 @@ Said Library::answer(const Conversation& c, const Conversation::Open& owed, cons
                 if (f.name == name)
                     if (const auto w = f.tones.find(tone.empty() ? "even" : tone); w != f.tones.end())
                         toneWeight *= w->second;
-        options.push_back({std::move(said), &e, !repeats && fresh.heard && fresh.heard(e.id), e.weight * toneWeight, fit});
+        // How the speaker leans (§7.5: temperaments.json, a dispreferred answer's hedge too) and the town's mood (§7.4).
+        double leaning = e.does.empty() || e.does.front().empty() ? 1 : lean(self, e.does.front().front());
+        if (e.hedged)
+            leaning = std::clamp(leaning * lean(self, "hedge"), .3, 2.0);
+        options.push_back({std::move(said), &e, !repeats && fresh.heard && fresh.heard(e.id),
+                           e.weight * toneWeight * leaning * moodWeight(e, asked, tone), fit});
     }
     if (bestHeld)
         *bestHeld = best;
@@ -3922,9 +4173,13 @@ Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bo
                 trace->passed.push_back(e.id + ": a turn can't be spoken (no line holds, or a fact is missing)");
             continue;
         }
+        if (moodMuted(e, q))
+            continue;                               // (Phase 6: muted town-wide by its mood: no teasing in grief.)
         // (Whether it may be heard again is the concept asked's, not any of the entry's: an entry that is also a weather
         // line is not fresh at every telling of gossip. Doc 84, defect 4.)
-        options.push_back({std::move(said), &e, !repeats && heard && heard(e.id), e.weight, 0});
+        const Speaker& by = speaker == 0 || q.alone ? q.a : q.b;
+        const double leaning = temper_.empty() || e.does.empty() || e.does.front().empty() ? 1 : lean(by, e.does.front().front());
+        options.push_back({std::move(said), &e, !repeats && heard && heard(e.id), e.weight * leaning, 0});
     }
     if (options.empty())
     {
@@ -3963,9 +4218,11 @@ Said Library::pickLazy(const Query& q, std::uint64_t seed, const std::function<b
     {
         const auto& e = entries_[i];
         if (std::find(recent.begin(), recent.end(), e.id) != recent.end() || (e.scene && speaker != 0) ||
-            (e.scene && untrueScene(e, q)) || !fits(e, q, speaker))
+            (e.scene && untrueScene(e, q)) || !fits(e, q, speaker) || moodMuted(e, q))
             continue;
-        options.push_back({Said{}, &e, !repeats && heard && heard(e.id), e.weight, 0});
+        const Speaker& by = speaker == 0 || q.alone ? q.a : q.b;
+        const double leaning = temper_.empty() || e.does.empty() || e.does.front().empty() ? 1 : lean(by, e.does.front().front());
+        options.push_back({Said{}, &e, !repeats && heard && heard(e.id), e.weight * leaning, 0});
     }
     for (std::uint64_t tries = 0; !options.empty() && tries < 8; ++tries)
     {
@@ -4006,7 +4263,11 @@ void Library::indexMoves(std::size_t i)
 {
     // A rule by its moves, a scene by its first turn's (a scene taken as a beat starts with it), each under its move and
     // every kind it is of: react.news.known under react.news.known and react.news.
-    const auto& e = entries_[i];
+    auto& e = entries_[i];
+    // (Phase 6: an alternative of its first turn hedges, #hedge#: a temperament weighs a hedged answer, §7.5.)
+    e.hedged = !e.turns.empty() && std::any_of(e.turns.front().variants.begin(), e.turns.front().variants.end(), [](const Variant& v) {
+        return std::any_of(v.texts.begin(), v.texts.end(), [](const std::string& t) { return t.find("#hedge") != std::string::npos; });
+    });
     if (e.does.empty())
         return;
     std::set<std::string> under;
@@ -4212,6 +4473,577 @@ std::string Library::voiceCard(const Speaker& speaker) const
             card += sentence;
     }
     return card;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Doc 84 §7.5, §7.6, §8.8, §10.6 (Phase 6): opinions, likes, temperaments, town moods, accommodation.
+
+static const std::set<std::string>& driftEvents()
+{
+    // What the game watches for (Game::talkDrift), once each: a theft from them closed unsolved or charged, the Restday
+    // dole feeding them, kin of theirs charged by the Watch, a wedding of their own.
+    static const std::set<std::string> Events{"robbed_uncaught", "robbed_caught", "fed_by_dole", "kin_charged", "wed"};
+    return Events;
+}
+
+bool Library::readOpinions(const std::string& text, std::string& problem)
+{
+    // {"issues": {"watch": {"words": "the Watch", "topics": [...], "for": [{"when": "...", "why": "guard"}], "against":
+    // [...], "reasons": {"guard": "..."}, "drift": {"robbed_uncaught": -1}}}, "likes": {...}, "dislikes": {...}}.
+    issues_.clear();
+    likes_.clear();
+    json::Value doc;
+    std::string error;
+    if (!json::parseUnique(text, doc, error) || !doc.isObject())
+    {
+        problem = "opinions.json: " + (error.empty() ? "not a JSON object" : error);
+        return false;
+    }
+    std::vector<std::string> errors;
+    const auto fail = [&](const std::string& m) { errors.push_back("opinions.json: " + m); };
+    const auto known = [&](const json::Value& o, const std::set<std::string>& fields, const std::string& what) {
+        for (const auto& [key, unused] : o.fields())
+            if (!fields.count(key))
+                fail(what + ": no field '" + key + "'");
+    };
+    known(doc, {"about", "issues", "likes", "dislikes"}, "the file");
+    const auto& book = topics::book();
+    const auto criteriaOf = [&](const std::string& tokens, const std::string& what, std::vector<Criterion>& out, bool needed) {
+        for (const auto& token : words(tokens))
+        {
+            Criterion c;
+            std::string why;
+            if (!criterion(token, Where::When, 0, c, why))
+                fail(what + ": " + why);
+            else if (c.ns != Ns::Self)
+                fail(what + ": a stance or a like stands on the resident's own facts (self.*): " + token);
+            else
+                out.push_back(std::move(c));
+        }
+        if (needed && out.empty())
+            fail(what + ": holds when something does");
+    };
+    for (const auto& [name, v] : doc.object("issues").fields())
+    {
+        if (name == "about")
+            continue;
+        Issue issue;
+        issue.name = name;
+        if (!v.isObject() || !lowerKey(name))
+        {
+            fail(name + " is an object, its name lower-case letters, digits and _");
+            continue;
+        }
+        known(v, {"about", "words", "topics", "for", "against", "reasons", "drift", "who"}, name);
+        criteriaOf(v.string("who"), name + ": who", issue.who, false);
+        issue.words = v.string("words");
+        if (issue.words.empty())
+            fail(name + ": words (how it is spoken of: \"the Watch\")");
+        for (const auto& t : v.array("topics"))
+            if (book.topics.empty() || book.topics.count(t.asString("")))
+                issue.topics.insert(t.asString(""));
+            else
+                fail(name + ": topic '" + t.asString("") + "' is not topics.json's");
+        for (const auto& [k, w] : v.object("reasons").fields())
+            if (!w.isString() || w.asString("").empty() || !lowerKey(k))
+                fail(name + ": a reason is a key and its words");
+            else
+                issue.reasons[k] = w.asString("");
+        for (const auto& [list, side] : {std::pair{"for", 1}, std::pair{"against", -1}})
+            for (const auto& l : v.array(list))
+            {
+                Issue::Lean lean;
+                lean.side = side;
+                known(l, {"when", "why"}, name + ": " + list);
+                criteriaOf(l.string("when"), name + ": " + list, lean.when, true);
+                lean.reason = l.string("why");
+                if (!lean.reason.empty() && !issue.reasons.count(lean.reason))
+                    fail(name + ": " + list + ": why '" + lean.reason + "' is not among its reasons");
+                issue.leans.push_back(std::move(lean));
+            }
+        for (const auto& [event, steps] : v.object("drift").fields())
+        {
+            const double n = steps.asNumber(0);
+            if (!driftEvents().count(event))
+                fail(name + ": drift: '" + event + "' is no event the game watches for");
+            else if (n != double(int(n)) || n == 0 || std::abs(n) > 2)
+                fail(name + ": drift: " + event + " is a step or two, for (+) or against (-)");
+            else if (!issue.reasons.count(event))
+                fail(name + ": drift: " + event + " needs a reason of its own (the words it gives)");
+            else
+                issue.drift[event] = int(n);
+        }
+        issues_.push_back(std::move(issue));
+    }
+    for (const auto& [list, dislike] : {std::pair{"likes", false}, std::pair{"dislikes", true}})
+        for (const auto& [id, v] : doc.object(list).fields())
+        {
+            if (id == "about")
+                continue;
+            LikeItem item;
+            item.id = id;
+            item.dislike = dislike;
+            if (!v.isObject() || !lowerKey(id))
+            {
+                fail(std::string(list) + ": " + id + " is an object, its name lower-case letters, digits and _");
+                continue;
+            }
+            known(v, {"kind", "words", "when"}, std::string(list) + ": " + id);
+            item.kind = v.string("kind");
+            item.words = v.string("words");
+            static const std::set<std::string> Kinds{"pastime", "food", "weather", "thing"};
+            if (!Kinds.count(item.kind))
+                fail(std::string(list) + ": " + id + ": kind is pastime, food, weather or thing");
+            if (item.words.empty())
+                fail(std::string(list) + ": " + id + ": words");
+            criteriaOf(v.string("when"), std::string(list) + ": " + id, item.when, false);
+            likes_.push_back(std::move(item));
+        }
+    if (!errors.empty())
+    {
+        problem.clear();
+        for (std::size_t i = 0; i < errors.size() && i < 20; ++i)
+            problem += (i ? "\n" : "") + errors[i];
+        issues_.clear();
+        likes_.clear();
+        return false;
+    }
+    // Their facts: each issue's stance, reason and strength (a person's), and the pair's agreement on it once aired; the
+    // likes' and dislikes' words.
+    for (const auto& i : issues_)
+    {
+        person_["op." + i.name] = FactKind{FactKind::Type::Words, {"for", "against", "mixed"}};
+        person_["op_why." + i.name] = FactKind{FactKind::Type::Text, {}};
+        person_["op_strength." + i.name] = FactKind{FactKind::Type::Number, {}};
+        person_["op_drift." + i.name] = FactKind{FactKind::Type::Number, {}};
+        person_["op_basis." + i.name] = FactKind{FactKind::Type::Text, {}};
+        shared_["pair.agree." + i.name] = FactKind{FactKind::Type::Words, {"yes", "no", "half"}};
+    }
+    for (const auto& item : likes_)
+        if (auto k = person_.find(item.dislike ? "dislikes" : "likes"); k != person_.end())
+            k->second.values.insert(item.id);
+    return true;
+}
+
+bool Library::readTemperaments(const std::string& text, std::string& problem)
+{
+    // {"temper=short": {"take_offence": 1.8, ...}, ...}: a trait's value and its lean on moves (or "pivot:<topic>").
+    temper_.clear();
+    json::Value doc;
+    std::string error;
+    if (!json::parseUnique(text, doc, error) || !doc.isObject())
+    {
+        problem = "temperaments.json: " + (error.empty() ? "not a JSON object" : error);
+        return false;
+    }
+    std::vector<std::string> errors;
+    const auto fail = [&](const std::string& m) { errors.push_back("temperaments.json: " + m); };
+    if (moves_.empty())
+        fail("it names moves: moves.json is needed beside it");
+    for (const auto& [trait, table] : doc.object("leans").fields())
+    {
+        const auto eq = trait.find('=');
+        const auto axis = eq == std::string::npos ? trait : trait.substr(0, eq);
+        const auto value = eq == std::string::npos ? std::string() : trait.substr(eq + 1);
+        const auto kind = person_.find(axis);
+        if (eq == std::string::npos || kind == person_.end() || kind->second.type != FactKind::Type::Words || !kind->second.values.count(value))
+        {
+            fail("'" + trait + "' is not a trait and one of its values (facts.json: temper=short)");
+            continue;
+        }
+        for (const auto& [move, w] : table.fields())
+        {
+            const auto colon = move.find(':');
+            const auto base = colon == std::string::npos ? move : move.substr(0, colon);
+            const bool topic = colon != std::string::npos && (base == "pivot" || base == "change_subject") &&
+                               (topics::book().topics.empty() || topics::book().topics.count(move.substr(colon + 1)));
+            if (!((moves_.known(base) && (colon == std::string::npos || topic)) || move == "hedge"))
+                fail(trait + ": '" + move + "' is not a move (or pivot:<topic>, or hedge: a dispreferred answer's)");
+            else if (!w.isNumber() || w.asNumber() < .3 || w.asNumber() > 2)
+                fail(trait + ": " + move + ": a lean is 0.3 to 2");
+            else
+                temper_[trait][move] = w.asNumber();
+        }
+    }
+    for (const auto& [key, unused] : doc.fields())
+        if (key != "about" && key != "leans")
+            fail("no field '" + key + "' (about, leans)");
+    if (!errors.empty())
+    {
+        problem = errors.front();
+        temper_.clear();
+        temperBy_.clear();
+        return false;
+    }
+    temperBy_.clear();
+    for (const auto& [trait, table] : temper_)
+        temperBy_[trait.substr(0, trait.find('='))][trait.substr(trait.find('=') + 1)] = &table;
+    return true;
+}
+
+const Issue* Library::issue(const std::string& name) const
+{
+    for (const auto& i : issues_)
+        if (i.name == name)
+            return &i;
+    return nullptr;
+}
+
+void Library::stances(Facts& person, const std::map<std::string, std::pair<int, std::string>>& drift) const
+{
+    // §8.8: a lean that holds moves the stance a step; events a step more (the ledger's drift). Its reason is the
+    // strongest of its side: the event's own when an event moved it that way, else the first lean of that side. Strength
+    // is how far it leans (0-3); a stance pulled both ways evenly, or not at all, is mixed.
+    // (The person's facts are lent to a query and given back: no copy of them, every speaker's every 30 s: §16, B1.)
+    Query q;
+    q.alone = true;
+    q.a.facts.swap(person);
+    struct GiveBack
+    {
+        Facts& to;
+        Facts& from;
+        ~GiveBack() { to.swap(from); }
+    } giveBack{person, q.a.facts};
+    std::vector<std::pair<std::string, std::string>> set;
+    std::vector<std::string> erased;
+    for (const auto& i : issues_)
+    {
+        if (!holdsAll(i.who, q, 0))
+        {
+            for (const char* k : {"op.", "op_why.", "op_strength.", "op_drift.", "op_basis."})
+                erased.push_back(k + i.name);
+            continue;                               // (No view on it at all: the Sump, to one who never lived by it.)
+        }
+        int sum = 0, pulls = 0;
+        std::string forWhy, againstWhy, basis;
+        for (std::size_t li = 0; li < i.leans.size(); ++li)
+            if (const auto& l = i.leans[li]; holdsAll(l.when, q, 0))
+            {
+                basis += (basis.empty() ? "" : ",") + std::to_string(li);
+                sum += l.side;
+                pulls |= l.side > 0 ? 1 : 2;
+                auto& why = l.side > 0 ? forWhy : againstWhy;
+                if (why.empty() && !l.reason.empty())
+                    why = i.reasons.at(l.reason);
+            }
+        int moved = 0;
+        if (const auto d = drift.find(i.name); d != drift.end() && d->second.first != 0)
+        {
+            moved = d->second.first;
+            sum += moved;
+            if (const auto r = i.reasons.find(d->second.second); r != i.reasons.end())
+                (moved > 0 ? forWhy : againstWhy) = r->second;
+        }
+        const char* side = sum > 0 ? "for" : sum < 0 ? "against" : "mixed";
+        set.emplace_back("op." + i.name, side);
+        // (Mixed and torn, pulled both ways, is a view of its own: strength 1. Mixed with nothing pulling is none: 0.)
+        set.emplace_back("op_strength." + i.name, std::to_string(sum == 0 ? (pulls == 3 ? 1 : 0) : std::min(3, std::abs(sum))));
+        const auto& why = sum > 0 ? forWhy : sum < 0 ? againstWhy : std::string();
+        if (!why.empty())
+            set.emplace_back("op_why." + i.name, why);
+        else
+            erased.push_back("op_why." + i.name);
+        if (moved)
+            set.emplace_back("op_drift." + i.name, std::to_string(moved));
+        else
+            erased.push_back("op_drift." + i.name);
+        set.emplace_back("op_basis." + i.name, basis + "|" + std::to_string(moved));
+    }
+    for (const auto& k : erased)
+        q.a.facts.erase(k);
+    for (auto& [k, v] : set)
+        q.a.facts[k] = std::move(v);
+}
+
+void Library::likes(Facts& person) const
+{
+    // §8.8: one like of each kind and two dislikes, drawn from the resident's id among the items that suit them: the
+    // same every day (today's pastime lines drew a new favourite each time).
+    if (likes_.empty())
+        return;
+    const auto id = person.count("id") ? person.at("id") : person.count("name") ? person.at("name") : std::string();
+    if (id.empty())
+        return;
+    Query q;
+    q.alone = true;
+    q.a.facts.swap(person);                         // (Lent, and given back below: no copy.)
+    std::map<std::string, std::vector<const LikeItem*>> byKind;
+    std::vector<const LikeItem*> dislikes;
+    for (const auto& item : likes_)
+        if (holdsAll(item.when, q, 0))
+            (item.dislike ? dislikes : byKind[item.kind]).push_back(&item);
+    person.swap(q.a.facts);
+    std::string liked, disliked;
+    for (const auto& [kind, list] : byKind)
+    {
+        const auto* chosen = list[std::size_t(mix(hash(id + "|like|" + kind)) % list.size())];
+        liked += (liked.empty() ? "" : " ") + chosen->id;
+        person[kind + "_words"] = chosen->words;
+    }
+    for (int n = 0; n < 2 && !dislikes.empty(); ++n)
+    {
+        const auto at = std::size_t(mix(hash(id + "|dislike|" + std::to_string(n))) % dislikes.size());
+        disliked += (disliked.empty() ? "" : " ") + dislikes[at]->id;
+        if (n == 0)
+        {
+            person["dislike_words"] = dislikes[at]->words;
+            person["dislike_kind"] = dislikes[at]->kind;
+        }
+        dislikes.erase(dislikes.begin() + std::ptrdiff_t(at));
+    }
+    if (!liked.empty())
+        person["likes"] = liked;
+    if (!disliked.empty())
+        person["dislikes"] = disliked;
+}
+
+double Library::lean(const Speaker& s, const std::string& move) const
+{
+    if (temper_.empty() || move.empty())
+        return 1;
+    double m = 1;
+    for (const auto& [axis, values] : temperBy_)
+    {
+        const auto f = s.facts.find(axis);
+        if (f == s.facts.end())
+            continue;
+        const auto t = values.find(f->second);
+        if (t == values.end())
+            continue;
+        for (const auto& [mv, w] : *t->second)
+            if (mv == move || (move.size() > mv.size() && move.compare(0, mv.size(), mv) == 0 && mv.find(':') == std::string::npos &&
+                               moves_.kindOf(move, mv)))
+                m *= w;
+    }
+    return std::clamp(m, .3, 2.0);
+}
+
+std::string Library::moodOf(const Query& q) const
+{
+    for (const auto& m : moods_)
+        if (holdsAll(m.when, q, 0))
+            return m.name;
+    return {};
+}
+
+void Library::accommodate(Query& q) const
+{
+    if (!moods_.empty())
+    {
+        if (const auto mood = moodOf(q); !mood.empty())
+            q.facts["world.mood"] = mood;
+        else
+            q.facts.erase("world.mood");
+    }
+    if (!accent_.on || q.alone)
+        return;
+    // §10.6: one step broader toward kin, friends and the fond who speak as one does (code-switching home), one step
+    // plainer toward one a class above, a stranger from elsewhere, a hostile pair; none rises no higher than light.
+    const auto from = [](const Speaker& s) {
+        const auto f = s.facts.find("from");
+        return f == s.facts.end() ? std::string() : f->second;
+    };
+    const auto da = dialectOf(from(q.a)), db = dialectOf(from(q.b));
+    q.facts["pair.same_speech"] = !from(q.a).empty() && da == db ? "yes" : "no";
+    static const char* const Levels[] = {"none", "light", "broad"};
+    for (int side = 0; side < 2; ++side)
+    {
+        auto& s = side == 0 ? q.a : q.b;
+        const auto accent = s.facts.find("accent");
+        if (const auto d = dialectOf(from(s)); accent == s.facts.end() || from(s).empty() || d == "plain" || !grammars_.count(d))
+            continue;                               // (Plain speech, Ridgemere's: no dialect to speak more or less of.)
+        const int level = accent->second == "none" ? 0 : accent->second == "broad" ? 2 : 1;
+        const auto any = [&](const std::vector<std::vector<Criterion>>& rules) {
+            return std::any_of(rules.begin(), rules.end(), [&](const std::vector<Criterion>& r) { return holdsAll(r, q, side); });
+        };
+        int step = any(accent_.plainer) ? -1 : any(accent_.broader) ? 1 : 0;
+        int now = std::clamp(level + step, 0, 2);
+        if (level == 0)
+            now = std::min(now, accent_.noneRisesTo == "light" ? 1 : 0);
+        s.facts["speaks"] = Levels[now];
+    }
+}
+
+void Library::stanceFacts(const Conversation& c, Query& q) const
+{
+    const auto issue = c.conv.find("issue");
+    if (issue == c.conv.end())
+        return;
+    std::string sides[2];
+    for (int side = 0; side < 2 && !(side == 1 && q.alone); ++side)
+    {
+        auto& s = side == 0 ? q.a : q.b;
+        const auto at = [&](const std::string& k) {
+            const auto f = s.facts.find(k + "." + issue->second);
+            return f == s.facts.end() ? std::string() : f->second;
+        };
+        sides[side] = at("op").empty() ? "mixed" : at("op");
+        s.facts["stance"] = sides[side];
+        s.facts["stance_strength"] = at("op_strength").empty() ? "0" : at("op_strength");
+        if (const auto why = at("op_why"); !why.empty())
+            s.facts["stance_why"] = why;
+        else
+            s.facts.erase("stance_why");
+    }
+    if (!q.alone)
+        q.facts["conv.agree"] = sides[0] == sides[1] && sides[0] != "mixed" ? "yes"
+                                : (sides[0] == "for" && sides[1] == "against") || (sides[0] == "against" && sides[1] == "for") ? "no"
+                                                                                                                               : "half";
+    if (const auto before = q.facts.find("pair.agree." + issue->second); before != q.facts.end())
+        q.facts["conv.agreed_before"] = before->second;
+}
+
+bool Library::stanceFits(const Entry& e, const Query& q) const
+{
+    // §8.8: "disagree" fits only when the stances differ, so a disagreement is real; "agree" only when they don't.
+    const auto agree = q.facts.find("conv.agree");
+    if (agree == q.facts.end() || e.does.empty() || e.does.front().empty())
+        return true;
+    const auto& moves = e.does.front();
+    const auto has = [&](const char* m) { return hasMove(moves_, moves, m); };
+    if ((has("agree") || has("join.side")) && agree->second == "no")
+        return false;
+    if ((has("disagree") || has("counter") || has("join.correct")) && agree->second == "yes")
+        return false;
+    return true;
+}
+
+bool Library::toldAlready(const Conversation& c, const Entry& e, const Query& q, int speaker, const Freshness& fresh) const
+{
+    // §8.6, §8.12.4: nobody is told what they were told before: a claim (or one's own news) passed on to one who was told
+    // it already, a story, a memory or a tease to one who heard it.
+    if (!fresh.told || q.alone || e.does.empty())
+        return false;
+    const auto& listener = speaker == 0 ? q.b : q.a;
+    const auto id = listener.facts.find("id");
+    if (id == listener.facts.end() || id->second.empty())
+        return false;
+    for (std::size_t t = 0; t < e.does.size() && t < e.turns.size(); ++t)
+    {
+        const int who = e.scene ? e.turns[t].who : 0;
+        if (who != 0)
+            continue;                               // (The speaker's own turns: what they tell.)
+        const auto& moves = e.does[t];
+        const bool tells = int(t) == e.asserts || (e.asserts < 0 && q.facts.count("topic.claim_kind") &&
+                                                   (hasMove(moves_, moves, "tell.news") || hasMove(moves_, moves, "tell.gossip")));
+        if (tells && !c.claim.empty() && fresh.told(id->second, "claim:" + c.claim))
+            return true;
+        if ((hasMove(moves_, moves, "tell.story") || hasMove(moves_, moves, "tell.memory") || hasMove(moves_, moves, "tease")) &&
+            fresh.told(id->second, "story:" + e.id))
+            return true;
+    }
+    return false;
+}
+
+bool Library::collides(const Said& s, const Query& q, const Freshness& fresh)
+{
+    if (!fresh.collides)
+        return false;
+    for (const auto& l : s.info)
+    {
+        int n = 0;
+        bool in = false;
+        for (const char ch : l.text)
+        {
+            const bool letter = std::isalnum(static_cast<unsigned char>(ch)) || ch == '\'';
+            n += letter && !in;
+            in = letter;
+        }
+        if (n < 6)
+            continue;
+        const Speaker& by = l.who == 0 || q.alone ? q.a : q.b;
+        const auto id = by.facts.find("id");
+        if (fresh.collides(l.text, id == by.facts.end() ? std::string() : id->second))
+            return true;
+    }
+    return false;
+}
+
+bool Library::moodMuted(const Entry& e, const Query& q) const
+{
+    const auto mood = q.facts.find("world.mood");
+    if (mood == q.facts.end() || e.does.empty() || e.does.front().empty())
+        return false;
+    for (const auto& m : moods_)
+        if (m.name == mood->second)
+            return std::any_of(m.mutes.begin(), m.mutes.end(), [&](const std::string& x) { return hasMove(moves_, e.does.front(), x); });
+    return false;
+}
+
+double Library::moodWeight(const Entry& e, const Query& q, const std::string& tone) const
+{
+    const auto mood = q.facts.find("world.mood");
+    if (mood == q.facts.end())
+        return 1;
+    double w = 1;
+    for (const auto& m : moods_)
+        if (m.name == mood->second)
+        {
+            if (!e.does.empty())
+                for (const auto& [move, x] : m.boosts)
+                    if (hasMove(moves_, e.does.front(), move))
+                        w *= x;
+            if (const auto t = m.tones.find(tone.empty() ? "even" : tone); t != m.tones.end())
+                w *= t->second;
+        }
+    return w;
+}
+
+std::optional<SaidLine> Library::opinion(Conversation& c, const Query& now, int who, const Freshness& fresh, Trace* trace) const
+{
+    // §8.8: on a topic an issue comes up on, one with a stance may give it (the stronger, the likelier; a trait leans on
+    // it), once an issue a talk. The other answers as their own stance is: agree, disagree (friends and kin may argue it
+    // out; strangers steer away), or half.
+    if (issues_.empty() || c.people.size() != 2 || c.topics.empty())
+        return std::nullopt;
+    const auto& topic = c.topics.back();
+    const Speaker& self = who == 0 ? now.a : now.b;
+    const int n = int(c.lines.size());
+    for (const auto& i : issues_)
+    {
+        if (!i.topics.count(topic) || c.conv.count("aired_" + i.name))
+            continue;
+        if (const auto aired = self.facts.find("was.aired_" + i.name); aired != self.facts.end() && aired->second == "yes")
+            continue;                               // (Given today already: the ledger's kept tag.)
+        const auto op = self.facts.find("op." + i.name);
+        if (op == self.facts.end())
+            continue;
+        const auto strength = self.facts.find("op_strength." + i.name);
+        const int s = strength == self.facts.end() ? 0 : std::atoi(strength->second.c_str());
+        if (s < 1)
+            continue;                               // (No view to give: nothing pulls them either way.)
+        const double chance = (s >= 2 ? .45 : .25) * lean(self, "give.opinion");
+        c.conv["aired_" + i.name] = "no";       // (Weighed once a talk, given or not.)
+        if (unit(mix(c.seed + std::uint64_t(n) * 104729 + hash(i.name))) >= chance)
+            continue;
+        auto talk = c;
+        talk.conv["issue"] = i.name;
+        talk.conv["issue_words"] = i.words;
+        auto q = now;
+        q.facts["conv.issue"] = i.name;
+        q.facts["conv.issue_words"] = i.words;
+        stanceFacts(talk, q);
+        Conversation::Open o;
+        o.by = partner(c, who);
+        o.to = who;
+        o.moves = {"give.opinion"};
+        auto said = answer(talk, o, q, who, fresh, trace);
+        if (said.id.empty() || said.info.size() != 1)
+            continue;
+        c.conv["issue"] = i.name;
+        c.conv["issue_words"] = i.words;
+        c.conv["aired_" + i.name] = "yes";
+        if (const auto agree = q.facts.find("conv.agree"); agree != q.facts.end())
+            c.conv["agree_" + i.name] = agree->second;
+        for (auto& line : said.info)
+            line.fit = line.best = -1;              // (It answers nothing owed: the speaker's own view.)
+        if (trace)
+            trace->why += "; an opinion (" + i.name + "): " + said.id;
+        place(said, who, partner(c, who));
+        take(c, std::move(said));
+        return sayNext(c);
+    }
+    return std::nullopt;
 }
 
 std::string jobCategory(const std::string& title, const std::string& label, const std::string& role, int age)

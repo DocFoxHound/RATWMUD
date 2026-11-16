@@ -96,7 +96,7 @@ a : Very. | Very. | Hungry. | Very.
 
 scene sw_beasts
 when topic=animals|smalltalk here.region=waste
-a : The goats are on the roof again. | A hawk drinks at the pool every morning. Bold as a guest. | Lizard in the water jar. Fished it out with a spoon. | The hens won't lay in this heat.
+a : The goats are on the roof again. | A hawk drinks at the pool every morning. Bold as a guest. | Lizard in the water jar. Fished it out with a spoon. | The hens won't lay in the hot months.
 b[herder] #herd : Flat roofs. Goats think they're for them. Maybe they're right. | Leave her be. A hawk at the pool means the pool is good. | Lid on the jar. Always a lid. | Shade and water, and they'll come round.
 b : Again? | Lovely. | Brave lizard. | Nor would I.
 a@herd : Maybe. | I will. | Always. | I'll try.
@@ -132,7 +132,7 @@ a : Very dear. | True enough. | Nobody. | It should.
 
 scene sw_newcomer
 when topic=newcomer here.region=waste
-a : #topic.subject#'s new in Saltwell. Three families have asked them to supper already. | A newcomer, #topic.subject#. Somebody should take them a jar of water and some dates. | #topic.subject# came in with the carts and stayed. | Have you met #topic.subject#? Quiet. Watches the well.
+a : #topic.subject#'s new in Saltwell. Three families have asked #topic.them# to supper already. | A newcomer, #topic.subject#. Somebody should take #topic.them# a jar of water and some dates. | #topic.subject# came in with the carts and stayed. | Have you met #topic.subject#? Quiet. Watches the well.
 b[from=saltwell] #sw : As it should be. Three days a guest, and then a neighbour. | I took them dates this morning. And salt, for luck. | The Waste sends us who it sends. We make them welcome. | Let them watch. They'll learn the turns soon enough.
 b : Lucky them. | I'll do it. | Brave. | Quiet's fine.
 a@sw : So it is. | Good. | We do. | They will.

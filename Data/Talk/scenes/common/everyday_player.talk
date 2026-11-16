@@ -6,7 +6,7 @@
 
 scene ev_pl_new_face
 when topic=player topic.known=no
-a : See #topic.subject# over there? Never seen them before. | Who's that? Look at #topic.subject#, fresh off the road. | There's #topic.subject# watching the street.
+a : See #topic.subject# over there? Never seen #topic.them# before. | Who's that? Look at #topic.subject#, fresh off the road. | There's #topic.subject# watching the street.
 b[guard] : I've had my eye on them since the gate.
 b[child] : Are they an adventurer? Do they have a sword?
 b : New face. | Travellers come and go. | Let them watch.
@@ -38,7 +38,7 @@ a : Something with walking. | Or used to. | Same eyes, some would say.
 
 scene ev_pl_newcomer_hope
 when topic=player topic.known=no here.place=tavern
-a : Look, #topic.subject# just came in. Buy them a drink? | Think #topic.subject# has news from the road? | I'd say #topic.subject# could use a seat by the fire.
+a : Look, #topic.subject# just came in. Buy #topic.them# a drink? | Think #topic.subject# has news from the road? | I'd say #topic.subject# could use a seat by the fire.
 b[innkeeper] : Strangers drink like everyone else. I'll see to it.
 b : You buy it. | Ask them. | Move over, then.
 a : I might. | I will, once they've eaten. | I'm moving.
@@ -82,7 +82,7 @@ a : Country wolves. Always staring at the walls. | They always do. | Let them.
 scene ev_pl_ridgemere_judge
 when topic=player topic.known=no here.region=rain_coast
 does give.opinion / give.opinion / agree
-a : Look at #topic.subject#. Not dressed for our rain. | Look, #topic.subject# has stopped to stare at the Sound. | Whoever #topic.subject# is, they're not from Ridgemere. Too dry.
+a : Look at #topic.subject#. Not dressed for our rain. | Look, #topic.subject# has stopped to stare at the Sound. | Whoever #topic.subject# is, #topic.they#'s not from Ridgemere. Too dry.
 b[fisher] : Two days here and they'll have webbed paws.
 b : They'll learn. | First sight of the Sound, maybe. | Not for long.
 a : Soon enough. | It takes you, the first time. | Give it a day.
@@ -108,7 +108,7 @@ a : I couldn't. | Amber, exactly. | A smile. Definitely a smile.
 scene ev_pl_rude
 when topic=player topic.known=no
 does give.opinion / disagree / insist
-a : Somebody should point #topic.subject# to the bathhouse. | Who does #topic.subject# think they are, strolling about like that? | Look at the mud on #topic.subject#.
+a : Somebody should point #topic.subject# to the bathhouse. | Who does #topic.subject# think #topic.they# is, strolling about like that? | Look at the mud on #topic.subject#.
 b[priest] : Kindness to the stranger. It's written.
 b : After the road? We all could use one. | A traveller. Let them stroll. | Muddy roads.
 a : Some more than others. | Strolling's free, I suppose. | Muddy everything.
@@ -122,7 +122,7 @@ a : I might. | Wise. | If they're for hire.
 
 scene ev_pl_hungry_look
 when topic=player topic.known=no here.place=market|street
-a : See #topic.subject# eyeing the bread stall? | I think #topic.subject# hasn't eaten today. | I saw #topic.subject# count their coins twice.
+a : See #topic.subject# eyeing the bread stall? | I think #topic.subject# hasn't eaten today. | I saw #topic.subject# count #topic.their# coins twice.
 b[baker] : They can have the burnt end. No charge.
 b[merchant] : I'll do a fair price. Even for strangers.
 b : Poor thing. | Looks thin. | Short, maybe.
@@ -134,7 +134,7 @@ scene ev_pk_back
 when topic=player topic.known=yes
 a : There's #topic.subject#, back again. | Look, it's #topic.subject#. | #topic.subject#'s around again, I see.
 b[merchant] : Good. They pay on time. A rare thing.
-b[child] : #topic.subject#! Do you think they'll show me the trick again?
+b[child] : #topic.subject#! Do you think #topic.they#'ll show me the trick again?
 b : Haven't seen them in a while. | Good. I like them. | So I see.
 a : Busy, I suppose. | Easy to like. | Hard to miss.
 
@@ -147,13 +147,13 @@ a : More than decent. | I noticed. | It is.
 
 scene ev_pk_debt
 when topic=player topic.known=yes a.role=merchant
-a : #topic.subject# still owes me for last time. | #topic.subject# drives a hard bargain. | #topic.subject# bought half my stock. I could kiss them.
+a : #topic.subject# still owes me for last time. | #topic.subject# drives a hard bargain. | #topic.subject# bought half my stock. I could kiss #topic.them#.
 b : Remind them. | Respect, then. | Don't. Just smile.
 a : Gently. They're good for it. | Grudging respect. | I'll smile all day.
 
 scene ev_pk_gossip_about
 when topic=player topic.known=yes
-a : Did #topic.subject# tell you where they've been? | #topic.subject# came in with a fresh scar. | #topic.subject# looks tired today.
+a : Did #topic.subject# tell you where #topic.they#'s been? | #topic.subject# came in with a fresh scar. | #topic.subject# looks tired today.
 b[healer] : I'll take a look, if they'll let me.
 b : Never says much. | Trouble on the road? | Long days, maybe.
 a : Close as a clam, that one. | They didn't say. | We all have them.
@@ -173,7 +173,7 @@ a : Loud, too. | Good. | Or a hollow leg.
 
 scene ev_pk_wary
 when topic=player topic.known=yes
-a : #topic.subject# again. I don't know about them. | Something about #topic.subject# bothers me. | #topic.subject# asks a lot of questions.
+a : #topic.subject# again. I don't know about #topic.them#. | Something about #topic.subject# bothers me. | #topic.subject# asks a lot of questions.
 b[guard] : I've noted their comings and goings.
 b : They've done nothing wrong. | You're too careful. | Curious, that's all.
 a : Not that I've seen. | Better careful. | Maybe.
@@ -249,7 +249,7 @@ a : More's the pity. | Discreetly. | Not everyone is worth it.
 
 scene ev_pl_beggar_hopes
 when topic=player topic.known=no a.job=beggar
-a : Maybe #topic.subject# has a coin to spare. | I've seen kinder faces than the one on #topic.subject#. | Bet #topic.subject# gives. They've the look.
+a : Maybe #topic.subject# has a coin to spare. | I've seen kinder faces than the one on #topic.subject#. | Bet #topic.subject# gives. #topic.they.capitalize#'s the look.
 b : Ask nicely. | And crueler ones. | Hope so.
 a : I always ask nicely. | Plenty crueler. | Here goes.
 
@@ -288,7 +288,7 @@ a : Good for trade. | And their cousins' cousins. | A treat and a sore head.
 
 scene ev_pk_long_absence
 when topic=player topic.known=yes
-a : I thought #topic.subject# had gone for good. | #topic.subject# was away so long I'd forgotten their voice. | Where has #topic.subject# been all this time?
+a : I thought #topic.subject# had gone for good. | #topic.subject# was away so long I'd forgotten #topic.their# voice. | Where has #topic.subject# been all this time?
 b : Seems not. | Ask them to sing. | Roads, I suppose.
 a : Glad to be wrong. | Ha. Maybe. | Long roads.
 
@@ -307,7 +307,7 @@ a : They do. | Who knows. | Far from here, anyway.
 
 scene ev_pk_guard
 when topic=player topic.known=yes a.job=guard|soldier
-a : #topic.subject# is no trouble. Leave them be. | #topic.subject# again. Keep half an eye. | I've seen #topic.subject# draw a blade. Quick.
+a : #topic.subject# is no trouble. Leave #topic.them# be. | #topic.subject# again. Keep half an eye. | I've seen #topic.subject# draw a blade. Quick.
 b : Understood. | Half an eye. | Glad they're not against us.
 a : Good. | And the other half on the crowd. | So am I.
 
@@ -319,13 +319,13 @@ a : By the well. | I'll cook. | Hmm.
 
 scene ev_pk_rivals
 when topic=player topic.known=yes pair.band=rivals
-a : I suppose you're friends with #topic.subject# too. | #topic.subject# likes me better than you. | #topic.subject# told me what you said about them.
+a : I suppose you're friends with #topic.subject# too. | #topic.subject# likes me better than you. | #topic.subject# told me what you said about #topic.them#.
 b : Better than with you. | Dream on. | Liar.
 a : Hm. | I don't dream. | Ask them, then.
 
 scene ev_pk_tavern_story
 when topic=player topic.known=yes here.place=tavern here.time=dusk|night
-a : Get #topic.subject# to tell the story about the bandits. | #topic.subject# was in here last night till the lamps went out. | Last time #topic.subject# drank, they danced on a table.
+a : Get #topic.subject# to tell the story about the bandits. | #topic.subject# was in here last night till the lamps went out. | Last time #topic.subject# drank, #topic.they# danced on a table.
 b[innkeeper] : And broke a leg off it. Which I've not forgotten.
 b : I've heard it. It grows each time. | They have a gift for staying. | I'd pay to see that again.
 a : Better every time. | A gift, yes. | So would I.

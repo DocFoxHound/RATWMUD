@@ -151,7 +151,7 @@ rule n7_go_died_old
 when concept=talk.gossip topic.claim_kind=death self.stage=old
 priority 10
 cooldown 1d
-say #topic.subject#'s gone. Another one. They're dropping like leaves this year. | Have you heard about #topic.subject#? Died. I'd have bet on me going first. | #topic.subject# died. I remember them as a pup, tumbling in the street.
+say #topic.subject#'s gone. Another one. They're dropping like leaves this year. | Have you heard about #topic.subject#? Died. I'd have bet on me going first. | #topic.subject# died. I remember #topic.them# as a pup, tumbling in the street.
 remember pair: on=gossip 1h
 then other: town.gossip
 
@@ -159,7 +159,7 @@ rule n7_go_died_warm
 when concept=talk.gossip topic.claim_kind=death self.warmth=warm
 priority 10
 cooldown 1d
-say Oh, have you heard? #topic.subject#. They died. I can't stop thinking about it. | I've had sad news. #topic.subject# died. | It's #topic.subject#. They've died. I keep wanting to go round with a pie.
+say Oh, have you heard? #topic.subject#. #topic.they.capitalize# died. I can't stop thinking about it. | I've had sad news. #topic.subject# died. | It's #topic.subject#. #topic.they.capitalize#'s died. I keep wanting to go round with a pie.
 remember pair: on=gossip 1h
 then other: town.gossip
 
@@ -208,7 +208,7 @@ then other: town.close
 rule n7_ga2_warm
 when concept=town.gossip self.warmth=warm topic.claim_kind=victim|newcomer|other
 does react.news.sorrow
-say Oh. Well, I hope they're all right, whatever's what. | I'll call on #topic.subject#. See how they are. | We shouldn't talk. But oh, #topic.subject#.
+say Oh. Well, I hope they're all right, whatever's what. | I'll call on #topic.subject#. See how #topic.they# is. | We shouldn't talk. But oh, #topic.subject#.
 remember pair: ha=kind 1h
 then other: town.close
 
@@ -290,7 +290,7 @@ then other: town.close
 
 rule n7_ga2_married_dry
 when concept=town.gossip topic.claim_kind=marriage self.humour=dry
-say Married. They'll learn. | Poor soul. Whichever one it is. | Married. Well. Somebody had to.
+say Married. They'll learn. | Brave souls, the pair of them. | Married. Well. Somebody had to.
 remember pair: ha=glad 1h
 then other: town.close
 
@@ -754,7 +754,7 @@ then other: town.answer
 rule n7_ro_shopkeeper_kind
 when concept=talk.smalltalk|talk.prices self.shopkeeper self.warmth=warm pair.customer=no
 cooldown 3d
-say #self.shopkeeper# kept a loaf back for me. Didn't even ask. | #self.shopkeeper# let me off a penny. Said I'd an honest face. | Say what you like about #self.shopkeeper#, they'd give you the coat off their back. Then charge you for the buttons.
+say #self.shopkeeper# kept a loaf back for me. Didn't even ask. | #self.shopkeeper# let me off a penny. Said I'd an honest face. | Say what you like about #self.shopkeeper#, #self.shopkeeper_they#'d give you the coat off #self.shopkeeper_their# back. Then charge you for the buttons.
 remember pair: on=answer 1h
 remember pair: ans=shopgood 1h
 then other: town.answer
@@ -810,7 +810,7 @@ then other: town.answer
 rule n7_ro_neighbour_name
 when concept=talk.smalltalk|talk.day self.neighbour pair.neighbours=no
 cooldown 3d
-say #self.neighbour# next door's taken up the fiddle. Gods help me. | #self.neighbour#'s been at the wall again with a hammer. What are they building? | #self.neighbour# knows everything about everyone on our row. Everything.
+say #self.neighbour# next door's taken up the fiddle. Gods help me. | #self.neighbour#'s been at the wall again with a hammer. What is #self.neighbour_they# building? | #self.neighbour# knows everything about everyone on our row. Everything.
 remember pair: on=answer 1h
 remember pair: ans=neighbour 1h
 then other: town.answer
@@ -942,7 +942,7 @@ then other: town.answer
 rule n7_nc_neighbours
 when concept=talk.newcomer pair.neighbours=yes
 cooldown 2d
-say #topic.subject#'s taking the empty place on our row. | So we've a new neighbour. #topic.subject#. Heard them unpacking at midnight. | Have you met #topic.subject#? We'll hear them through the wall soon enough.
+say #topic.subject#'s taking the empty place on our row. | So we've a new neighbour. #topic.subject#. Heard #topic.them# unpacking at midnight. | Have you met #topic.subject#? We'll hear #topic.them# through the wall soon enough.
 remember pair: on=answer 1h
 remember pair: ans=newcomer 1h
 then other: town.answer
@@ -950,7 +950,7 @@ then other: town.answer
 rule n7_nc_guard
 when concept=talk.newcomer self.role=guard
 cooldown 2d
-say I'll be keeping an eye on #topic.subject#. Nothing against them. Habit. | #topic.subject# came in through the gate with a cartload. Polite enough. | New faces mean new trouble, nine times in ten. The tenth's all right.
+say I'll be keeping an eye on #topic.subject#. Nothing against #topic.them#. Habit. | #topic.subject# came in through the gate with a cartload. Polite enough. | New faces mean new trouble, nine times in ten. The tenth's all right.
 remember pair: on=answer 1h
 remember pair: ans=newcomer 1h
 then other: town.answer
@@ -958,7 +958,7 @@ then other: town.answer
 rule n7_nc_old
 when concept=talk.newcomer self.stage=old
 cooldown 2d
-say In my day you knew every face. Now look. #topic.subject#! Who's that? | Another new one. Soon there'll be nobody I know. | #topic.subject#. I'll learn the name, then they'll leave. They always leave.
+say In my day you knew every face. Now look. #topic.subject#! Who's that? | Another new one. Soon there'll be nobody I know. | #topic.subject#. I'll learn the name, then #topic.they#'ll leave. Newcomers always leave.
 remember pair: on=answer 1h
 remember pair: ans=newcomer 1h
 then other: town.answer
@@ -966,7 +966,7 @@ then other: town.answer
 rule n7_nc_merchant
 when concept=talk.newcomer self.role=merchant
 cooldown 2d
-say A new customer, I hope. #topic.subject#. Have they coin, do you know? | I'll send #topic.subject# a little something. First purchase half price. Second, full. | Every newcomer needs a pot, a broom and a blanket. I've all three.
+say A new customer, I hope. #topic.subject#. Has #topic.they# coin, do you know? | I'll send #topic.subject# a little something. First purchase half price. Second, full. | Every newcomer needs a pot, a broom and a blanket. I've all three.
 remember pair: on=answer 1h
 remember pair: ans=newcomer 1h
 then other: town.answer
@@ -1006,7 +1006,7 @@ then other: town.answer
 rule n7_cr_arrest_warm
 when concept=talk.crime topic.kind=arrest self.warmth=warm
 cooldown 1d
-say Poor #topic.subject#. Whatever they did, there's a family. | I knew #topic.subject#'s mother. She'll be heartbroken. | Arrested. Gods. I hope they're fed in there.
+say Poor #topic.subject#. Whatever #topic.they# did, there's a family. | I knew #topic.subject#'s mother. She'll be heartbroken. | Arrested. Gods. I hope they're fed in there.
 remember pair: on=answer 1h
 remember pair: ans=arrest 1h
 then other: town.answer

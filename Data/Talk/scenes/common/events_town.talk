@@ -6,7 +6,7 @@
 scene et_theft_purse
 when topic=crime topic.kind=theft
 does tell.news / react.news / assess / request
-a : #topic.victim# had their purse cut in broad daylight. | Did you hear? #topic.victim# was robbed. | Somebody lifted #topic.victim#'s coin on the way home.
+a : #topic.victim# had #topic.victim_their# purse cut in broad daylight. | Did you hear? #topic.victim# was robbed. | Somebody lifted #topic.victim#'s coin on the way home.
 b[merchant] : That's three this month. I'm keeping my takings under the floor.
 b[old] : When I was young we hanged thieves at the gate. Not that it stopped them.
 b : In daylight? Bold. | Poor soul. Much taken? | On the way home. That's the worst of it.
@@ -80,7 +80,7 @@ a : I'll know next time. | Not like that. | Nor me. That's the worrying part.
 
 scene et_theft_rich_victim
 when topic=crime topic.kind=theft
-a : #topic.victim# was robbed. I'd have thought they'd more locks than doors. | Even #topic.victim# isn't safe, then. | #topic.victim# lost a silver cup, they say.
+a : #topic.victim# was robbed. I'd have thought #topic.victim_they#'d more locks than doors. | Even #topic.victim# isn't safe, then. | #topic.victim# lost a silver cup, they say.
 b[beggar] : The rich lose a cup. I'd lose my blanket. Pity whom you like.
 b : Locks don't stop the clever ones. | None of us are. | A cup! Imagine owning a cup worth stealing.
 a : Clever ones go for the rich. | None. | I can't.
@@ -145,7 +145,7 @@ a : Somebody has to. | They didn't deserve it. | Maybe.
 scene et_assault_healer
 when topic=crime topic.kind=assault
 a[healer] : Broken ribs, a torn ear. #topic.victim# will mend. The fear won't, not soon.
-a : How is #topic.victim#? Have you seen them? | Is #topic.victim# still at the healer's? | I took some broth round to #topic.victim#.
+a : How is #topic.victim#? Have you seen #topic.victim_them#? | Is #topic.victim# still at the healer's? | I took some broth round to #topic.victim#.
 b[healer] : Sleeping, at last. It took poppy and a long talk.
 b : Sore, and quiet. Too quiet. | Still there. Won't eat. | That's kind of you.
 a : Give it time. | Poor soul. | It's nothing.
@@ -181,7 +181,7 @@ a : Worse days, some of them. Not this. | Shame on them. | We would.
 
 scene et_arrest_relief
 when topic=crime topic.kind=arrest
-a : They've taken #topic.subject# to the cells. | #topic.subject#'s been arrested. I saw them marched off. | The watch caught #topic.subject# at last.
+a : They've taken #topic.subject# to the cells. | #topic.subject#'s been arrested. I saw #topic.them# marched off. | The watch caught #topic.subject# at last.
 b[guard] : Took four of us. Bit one. We have them now, though.
 b[merchant] : Good. Maybe I'll sleep without a cudgel by the bed.
 b : Good riddance. | Marched off? In chains? | About time.
@@ -190,7 +190,7 @@ a?[rivals] : Your cousin's friends with #topic.subject#, isn't she?
 
 scene et_arrest_doubt
 when topic=crime topic.kind=arrest
-a : They've arrested #topic.subject#. I don't believe it. | #topic.subject# in the cells. It doesn't sit right. | I've known #topic.subject# years. They're no criminal.
+a : They've arrested #topic.subject#. I don't believe it. | #topic.subject# in the cells. It doesn't sit right. | I've known #topic.subject# years. #topic.they.capitalize#'s no criminal.
 b[guard] : We don't drag wolves in for fun. There's cause.
 b[priest] : Pray for the truth, then. It tends to come out.
 b : You never know a wolf all the way through. | Nothing sits right these days. | Years can hide a lot.

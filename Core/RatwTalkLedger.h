@@ -15,6 +15,10 @@
 //                director's everyday floor and saturation (§8.5).
 //   invitations  an invitation the world checks (invite <place> <hour> <days>): kept or missed (pair.kept_invite).
 //   promises     a talk-only promise (promise self: <thing> <days>), never a world promise; lapsed, it is a callback.
+//   drift        (Phase 6, §7.6) the steps events moved a resident's stance on an issue (a theft never solved: the Watch
+//                a step down), and the events applied, once each: self.op.<issue> stands on it. For good.
+//   moods        (Phase 6, §8.8) a resident's recent events as talk saw them (a quarrel, praise, a warm talk): self.mood.
+//                8 a resident, 7 days.
 //
 // At most 30,000 records in all (places aside), the least recently used dropped first (prune, each game day).
 #include "RatwJsonDoc.h"
@@ -64,12 +68,19 @@ struct TalkPromise
     double day = 0, until = 0;
     std::string state = "open";                              // open, lapsed, called (brought up since)
 };
+struct TalkDrift
+{
+    int steps = 0;                                           // For (+) or against (-), at most 2 either way
+    std::string event;                                       // The latest event that moved it (its reason's key)
+    double day = 0;
+};
 
 class TalkLedger
 {
   public:
     static constexpr std::size_t NotesPerPair = 8, ToldPerResident = 64, SaidPerSubject = 16, HeardPerResident = 64,
-                                 PlaceLast = 16, Records = 30000;
+                                 PlaceLast = 16, Records = 30000, AppliedPerResident = 32, MoodsPerResident = 8;
+    static constexpr double MoodDays = 7;
     static constexpr double NoteDays = 30;
     // Off in fast economy sims (--no-talk-ledger): nothing is written, so nothing is read.
     bool enabled = true;
@@ -113,6 +124,16 @@ class TalkLedger
     // The pair's kept tags, newest first (pair.was.k).
     std::map<std::string, std::string> pairKept(const std::string& a, const std::string& b, double day) const;
 
+    // Drift (Phase 6): an event moves a stance a step (never past 2 either way), once for each event id.
+    void drift(const std::string& resident, const std::string& issue, int steps, const std::string& event,
+               const std::string& eventId, double day);
+    bool applied(const std::string& resident, const std::string& eventId) const;
+    // issue -> (steps, the event that last moved it).
+    std::map<std::string, std::pair<int, std::string>> drifts(const std::string& resident) const;
+    // Moods (Phase 6): what happened to a resident in talk lately (quarrel, praised, warmed...), newest last.
+    void moodEvent(const std::string& resident, const std::string& kind, double day);
+    std::vector<std::pair<double, std::string>> moodEvents(const std::string& resident, double since) const;
+
     // Places.
     void placeTalk(const std::string& cell, const std::string& topic, const std::string& key, bool news, double day);
     int todayCount(const std::string& cell, const std::string& key, double day) const;
@@ -151,6 +172,9 @@ class TalkLedger
     std::map<std::string, Place> places_;                   // By cell.
     std::vector<TalkInvite> invites_;
     std::vector<TalkPromise> promises_;
+    std::map<std::string, std::map<std::string, TalkDrift>> drift_;   // By resident, then issue.
+    std::map<std::string, std::deque<std::string>> applied_;           // By resident: event ids applied.
+    std::map<std::string, std::deque<std::pair<double, std::string>>> moods_;   // By resident.
     // When each record set was last used (written or read), for the least-recently-used cap: "n:pair", "t:id"...
     mutable std::map<std::string, double> touched_;
     double now_ = 0;                                        // The latest day written (what reads are stamped with).

@@ -6,10 +6,16 @@
 # ---------------------------------------------------------------- Ridgemere
 
 scene em_rm_cv_quay
-when topic=caravan topic.kind=arrived here.region=ridgemere
+when topic=caravan topic.kind=arrived here.region=ridgemere here.outdoors=rain|storm
 a : The #topic.where# wagons are in, and soaked through. | Caravan from #topic.where#, mud to the axles. | They came in from #topic.where# in the rain. Of course.
 b : Everything that comes here comes wet. | Mud's the Ridgemere welcome. | Of course. It's Ridgemere.
 a : And leaves wetter. | A true one. | Of course.
+
+scene em_rm_cv_quay_dry
+when topic=caravan topic.kind=arrived here.region=ridgemere here.outdoors=clear|overcast|fog
+a : The #topic.where# wagons are in, and dry, for once. Mark the day. | Caravan from #topic.where#, and not a drop on it. | They came in from #topic.where# under a dry sky. In Ridgemere!
+b : Somebody check the sky's still up there. | It won't last. | Don't say it too loud.
+a : I'll look. | It never does. | I'll whisper it.
 b?[noble] : House Grayrock will want first look at that cargo.
 
 scene em_ua_cv_gate_check

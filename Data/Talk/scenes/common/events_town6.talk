@@ -19,7 +19,8 @@ a : I try not to. | Slippery. | Or three.
 
 scene et_cr_coast_theft
 when topic=crime topic.kind=theft here.region=rain_coast
-a : Somebody went through the smokehouse in the night. | Rain covers footsteps. #topic.victim# heard nothing. | Wet night, light fingers. #topic.victim# lost a purse.
+a[here.outdoors=rain|storm] : Somebody went through the smokehouse in the night. | Rain covers footsteps. #topic.victim# heard nothing. | Wet night, light fingers. #topic.victim# lost a purse.
+a : Somebody went through the smokehouse in the night. | Dark night, quiet paws. #topic.victim# heard nothing. | Dark night, light fingers. #topic.victim# lost a purse.
 b[fisher] : Rain's a thief's cloak on this coast.
 b : The smell'll give them away. | It covers everything. | Always is, here.
 a : You'd hope. | Everything. | Always.
@@ -33,7 +34,7 @@ a : Too dear. | Apparently. | Not ever.
 
 scene et_cr_north_arrest
 when topic=crime topic.kind=arrest here.region=mountains
-a : They marched #topic.subject# through the snow to the cells. | #topic.subject#'s arrested. They'll have a cold night. | Cells up here have frost on the inside. #topic.subject#'ll learn.
+a : They marched #topic.subject# through the snow to the cells. | #topic.subject#'s arrested. #topic.they.capitalize#'ll have a cold night. | Cells up here have frost on the inside. #topic.subject#'ll learn.
 b[guard] : Cold cells make for quick confessions.
 b : Snow and chains. Grim. | Good. | Hard lesson.
 a : Very grim. | Fitting. | Hard country.
@@ -127,7 +128,7 @@ a : Worth it, though. | Very dear. | Lovely.
 
 scene et_lf_north_death
 when topic=life topic.kind=death here.region=mountains here.season=winter|autumn
-a : They'll keep #topic.subject# cold till the ground softens. | Winter's long up here. #topic.subject# didn't see the end of it. | #topic.subject#'s gone. The cold took them, in the end.
+a : They'll keep #topic.subject# cold till the ground softens. | Winter's long up here. #topic.subject# didn't see the end of it. | #topic.subject#'s gone. The cold took #topic.them#, in the end.
 b[old] : Cold's merciful, in its way. You just go to sleep.
 b : The ground's like iron. | Too long. | It takes the old ones.
 a : Iron. | Always too long. | And not only old.
@@ -196,7 +197,7 @@ a : Once. | Happy fools. | Only at weddings.
 
 scene et_lf_marriage_merchant_b
 when topic=life topic.kind=marriage b.role=merchant
-a : #topic.subject#'s wedding. Did you sell them anything? | Who did the wedding cloth for #topic.subject#? | #topic.subject#'s getting married. I need a gift.
+a : #topic.subject#'s wedding. Did you sell #topic.them# anything? | Who did the wedding cloth for #topic.subject#? | #topic.subject#'s getting married. I need a gift.
 b : Half the feast. | I did. Finest weave. | I've just the thing.
 a : Good for you. | It was fine. | Of course you have.
 
@@ -210,7 +211,7 @@ a : It was. | Nor me. | Lovely.
 
 scene et_nc_city_crowd
 when topic=newcomer here.region=cities
-a : Another newcomer. #topic.subject#. The city swallows them by the dozen. | #topic.subject#'s new. You can tell by how they flinch at carts. | Saw #topic.subject# lost in the market. City's too big for them.
+a : Another newcomer. #topic.subject#. The city swallows them by the dozen. | #topic.subject#'s new. You can tell by how #topic.they# flinches at carts. | Saw #topic.subject# lost in the market. City's too big for #topic.them#.
 b[official] : Have them register at the City Office. Everyone registers.
 b : And spits most of them out. | We all flinched once. | It's too big for me.
 a : Usually. | I still do. | Me too.
@@ -242,13 +243,13 @@ a : Charming. | Never. | That's what I'm afraid of.
 
 scene et_nc_spouses
 when topic=newcomer pair.band=spouses
-a : Was #topic.subject# looking at you at chapel? | #topic.subject#'s handsome, isn't he? Don't answer that. | We should have #topic.subject# round. They're alone.
+a : Was #topic.subject# looking at you at chapel? | #topic.subject#'s handsome, isn't he? Don't answer that. | We should have #topic.subject# round. #topic.they.capitalize#'s alone.
 b : Only you, love. | I won't. | Good idea.
 a : Hm. | Good. | Tomorrow, then.
 
 scene et_nc_old_female
 when topic=newcomer a.stage=old a.sex=female
-a : I'll take that #topic.subject# a pot of broth. Too thin, that one. | #topic.subject# needs feeding up. I'll see to it. | That newcomer #topic.subject# has no one to mend for them.
+a : I'll take that #topic.subject# a pot of broth. Too thin, that one. | #topic.subject# needs feeding up. I'll see to it. | That newcomer #topic.subject# has no one to mend for #topic.them#.
 b : They'll thank you. | Feeding up, aye. | Bless you.
 a : Course they will. | I'll start tonight. | Somebody must.
 
@@ -260,7 +261,7 @@ a : Let's ask! | My side! | No.
 
 scene et_nc_carter
 when topic=newcomer b.job=carter
-a : Did you bring #topic.subject# in your wagon? | #topic.subject# came with your load, didn't they? | #topic.subject# said you gave them a ride.
+a : Did you bring #topic.subject# in your wagon? | #topic.subject# came with your load, didn't #topic.they#? | #topic.subject# said you gave #topic.them# a ride.
 b : Picked them up on the road. Sore feet. | They paid with a song. Badly. | I did. Talked the whole way.
 a : Kind of you. | Ha. | That's the price.
 
@@ -368,9 +369,9 @@ b : Too old to stop. | Louder. | Different times.
 a : Much too old. | #topic.subject# #topic.claim#! | Worse times.
 
 scene et_gs_merchant_pair
-when topic=gossip a.role=merchant b.role=merchant
+when topic=gossip a.role=merchant b.role=merchant topic.claim_kind=theft|violence|wanted|prowling|promise_broken
 a : Between stalls: #topic.subject# #topic.claim#. | Customer told me #topic.subject# #topic.claim#. | Heard at the scales: #topic.subject# #topic.claim#.
-b : Bad for their credit. | Customers talk. | Scales don't lie, folk do.
+b : Bad for #topic.their# credit. | Customers talk. | Scales don't lie, folk do.
 a : Very bad. | All day. | True.
 
 scene et_gs_apprentice

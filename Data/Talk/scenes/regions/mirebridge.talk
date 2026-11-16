@@ -219,7 +219,7 @@ a : Very eerie. | Very strange. | I hope.
 
 scene mb_long_river
 when topic=lore|smalltalk here.region=fens
-a : They say the Long River starts in a cold lake under the mountains. Hard to believe in this heat. | The river's brown and fat today. Rain upstream. | Fished a carved float out of the lode. Came all the way down from Larkfield, I'd bet.
+a : They say the Long River starts in a cold lake under the mountains. Hard to believe, down here. | The river's brown and fat today. Rain upstream. | Fished a carved float out of the lode. Came all the way down from Larkfield, I'd bet.
 b[old] : Cold up there, warm down here. Same water.
 b[fisher] : Whatever the river carries, the eels find first.
 b : Hard to believe. | Mind the low boards. | Long way to float.

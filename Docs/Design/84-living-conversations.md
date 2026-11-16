@@ -4,8 +4,9 @@ Draft, 2026-11-15, revised 2026-11-16 with the user's answers to all six questio
 mantles as world database rows, the richer size written by Claude agents, newborns inheriting honesty, births kept
 realm-wide, ticking listening runs), for Ridgemere 3 (`ridgemere3`, database `ratw_ridgemere3`; doc 82). **Phase 0 (the
 instrument), Phase 1 (truth fixes), Phase 2 (moves and tags), Phase 3 (the turn engine), Phase 4 (beats when spoken,
-knowledge, a third voice) and Phase 5 (topics, agendas, goals, the ledger) are built** (2026-11-16, branches `r3-talk-p0`
-to `r3-talk-p5`; §23, §24, §27, §28, §29 and §30 say what and what they measured); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
+knowledge, a third voice), Phase 5 (topics, agendas, goals, the ledger) and Phase 6 (opinions, temperament, moods,
+accommodation) are built** (2026-11-16, branches `r3-talk-p0` to `r3-talk-p6`; §23, §24, §27-§31 say what and what they
+measured); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
 replaces neither: every one of today's 8,525 library entries and 10 trees keeps loading and speaking while it is
 converted. It was written from five read-only surveys of the code, the data and the live world at `ridgemere2` 1034c1fc
 (the engine, the trees, the lifecycle, what residents know, and prior art) and three competing designs; §4 says how they
@@ -2931,3 +2932,175 @@ of this phase, not §7.3's: mantles (Phase 9) bring their own favourites. The ag
 goals; "needs" (hunger, money owed) are the favour goal only. The heard set is written but the engine doesn't yet refuse a
 story a listener has heard (§8.12.4). Threads are returned to from the agenda too, but the card's runs had none to return
 to. Frozen K1 is high (75%) because a frozen world keeps the same events and prices all day, and saturation cools them.
+
+## 31. Phase 6, as built (2026-11-16)
+
+Branch `r3-talk-p6`, on Phase 5. Residents now hold views and say them, like and dislike things for good, lean by their
+traits, carry a mood, feel the town's, and broaden or plane their speech toward the one they speak to. Four defects heard
+in Slice 1's ticking listen are fixed, each with a check that keeps it fixed.
+
+**`Data/Talk/opinions.json`** (§7.6; `Library::readOpinions`, `stances`, `likes`). 13 issues: the Watch, the Houses, the
+Restday dole, newcomers, the church, the merchants and their prices, life in the city, the roads, festival days, drink,
+the way things are going, the Sump (only for one with a Ridgemere quarter: an issue's `who`), strangers passing through;
+each with the topics it comes up on (topics.json's), `for` and `against` leans over the resident's own stable facts
+(post, class, quarter, temperament: never the moment, so a view doesn't flicker), each giving its reason in the wolf's
+own words, true because its criteria hold ("I walk with them myself, and I know what the nights are like"), and `drift`:
+events the game looks for once a game day (`Game::talkDrift`) and keeps in the talk ledger, once each, at most two steps
+either way: a theft from them closed unsolved or charged, the Restday dole feeding them, kin of theirs under a warrant, a
+wedding of their own, each with a reason of its own. The sum is the stance: `self.op.<issue>` (for, against, mixed),
+`op_why`, `op_strength` (0-3; mixed and pulled both ways is 1, pulled by nothing 0), `op_drift`, `op_basis` (what it
+stood on: the leans that held and the drift). Not the doc's 20 issues nor a House each: the four Houses wait for their
+own facts (a House's trade, its workers) and the mantles' opinions (Phase 9). Checked on load: fields, criteria (the
+resident's own only), reasons, events, topics, kinds. **Likes**: 48 likes in four kinds (pastime, food, weather, thing)
+and 16 dislikes; each resident holds one of each kind and two dislikes, drawn from their id among those whose `when`
+holds (a fisher's knots, no garden for the homeless): `self.likes` and `self.dislikes` are list facts (a new
+`FactKind::Type::List`: `self.likes=honey_cakes` holds when the list has it), and `pastime_words`, `food_words`,
+`weather_words`, `thing_words`, `dislike_words`, `dislike_kind` give their words. The pastime answer is now theirs every
+day (`lk_pastime_own`, priority 3), where `pastimes_animals7.talk` drew a new favourite each time. Stances, likes and
+dislikes are worked out once a game day per resident (`Game::talkDaily_`).
+
+**Opinions in talk** (§8.8). In a lull, after a goal and before a turn of topic (`Library::opinion`), the one whose turn
+it is may give their view on an issue the topic raises: chance 0.45 at strength 2+, 0.25 at 1, none with no view, times
+their lean on give.opinion; one issue a talk, once a game day per speaker and issue (`self.was.aired_<issue>`). The engine
+sets `conv.issue` and `conv.issue_words` and gives each speaker `self.stance`, `stance_why`, `stance_strength`, and
+the two `conv.agree` (yes, no, half: one has no side); **stance fit** in `Library::answer`: agree (and join.side) only
+where they don't differ, disagree (counter, join.correct) only where they do, a counter-opinion only from one who
+differs and once. Friends and kin who differ argue a turn (`owes insist|concede`), strangers steer away ("Well. Each to
+their own."), one with no view answers short ("Could be."). Whether two agreed is kept between them 30 days
+(`pair.agree.<issue>`, read in the next airing as `conv.agreed_before`: "We'll never agree on the Watch, you and I."). A
+third who holds the issue strongly (2+) joins with a new stake, `stance` (join.side, join.correct; `Game::stancesOf`, a
+game day's cache). `Data/Talk/rules/opinions.talk` holds the lines: per issue (the Watch, the dole, the Houses,
+strangers, drink, in dialect symbols: `#watch#`, `#dole#`, `#toffs#`, `#stranger#`, `#ale#`), general ones by side and
+strength, the answers, insist and concede, the joins.
+
+**`Data/Talk/temperaments.json`** (§7.5; `Library::lean`). 17 trait values leaning on moves (and `pivot:<topic>`, and
+`hedge`: a line saying `#hedge#`, a new plain symbol for a dispreferred answer), each 0.3-2, a speaker's product held to
+0.3-2. Applied to every candidate's weight inside its tier (`answer`, `pickOne`, `pickLazy`), to an invitation's chance of
+being taken (the move invited), to a pivot and a change of subject in a lull, and to an opinion given.
+
+**`self.mood`** (§8.8; `Game::talkMood`). low, sore, bright or even, from the last three days, fading: mourning, hunger,
+a bad hurt, want (low); robbed (a theft, not an attempt), attacked, a quarrel (sore: a grudge aired, offence taken, an
+apology refused; the ledger's mood events, 8 a resident, a week); a wedding, a pup born, a new post, praise or thanks
+heard, a thriving trade, a festival (bright). The strongest pull of 2 or more wins; `mood_why` says why. **vent**, the goal
+Phase 5 left waiting, is in frames.json (a grown wolf's low or sore mood told to a friend, spouse or kin; 3 days), with
+its lines by `mood_why` (each led in: "Truth be told, ...", "Between us, ...") and sympathy and reassurance by the other's
+mood; the day's talk and "How are you?" show it too. **`world.mood`** (§7.4): frames.json's `moods`, the first that holds
+of the town's facts (grief: a death within four days; uneasy: bandits near; festive: a festival today; edgy: an arrest
+within a day, the new `world.arrest`), muting moves (no teasing at a wake), boosting others, weighing tones; set by
+`Library::accommodate` on each query. `world.mood` beside `self.mood`: a shared fact may now share a person's name, written
+in full only.
+
+**Accommodation** (§10.6; `Library::accommodate`, frames.json's `accent`). Each speaker's accent toward the other, every
+line: a step plainer toward one a class above, a stranger from elsewhere, a hostile pair; else a step broader toward
+kin, friends and the fond who grew up speaking the same dialect (`pair.same_speech`); none rises no higher than light (the
+doc's §10.6, so a wolf who lost their accent slips back into it with their own); plain speech (Ridgemere's) is never
+shifted. It is the speaker's `speaks`, read before `accent` when a line's words are chosen (a person fact rather than
+`conv.accent`, because one query serves both speakers in a lull); `SaidLine::accent` records it, and the kin frame's
+`"accent": "+1"` is retired (still read, ignored, for older libraries). **D1 now judges a line by the accent it was spoken
+in** (the hard gate: none 0%), and D1A counts the lines shifted.
+
+**The four defects of the Slice 1 listen.**
+1. **Pronouns by sex.** `#topic.they#`, `#topic.their#`... (the subject) and `#topic.victim_they#`... (the victim), from
+   `topic.subject_sex` and `topic.victim_sex` (`World::talkSexes`, at every topic and the window's gossip), and
+   `#self.spouse_their#`, `#other.child_them#`... for one's people (their `<role>_sex`, from `peopleOf`); none of them is
+   said without the one it stands for. 185 alternatives in 30 files were rewritten ("Finn Dripwick was robbed. Did you see
+   his face, after?"; "Ask Osric. He does the dreaming for both of us."; verbs to agree: "she's", "does he"), and four
+   cross-turn ones by hand ("Tell him yourself."). **talk_lint's `they_named`** finds "they/them/their" said after a slot
+   naming one known wolf, the town's "they say" apart: 209 found, 185 fixed, 24 reviewed as someone else (the thief
+   nobody saw, "all of them", "the little ones") and blessed. **T6**, the same at run time (a resident's name, then
+   "they"): fixtures 0.98 → 0.22 per 1,000 lines, frozen 0.06 → 0.018 (what is left is those 24).
+2. **News kinds.** et_gos_defend is three scenes: defending one talked of, for ill talk (theft, violence, wanted,
+   prowling, a promise broken); pity, for bad news that befell them (death, victim); gladness, for a wedding or a promise
+   kept ("Good for him, I say."). et_gos_guard, _chapel, _petty ("had the cheek to sit in the front pew"), _worry, _old,
+   _merchant, gs2_heard_bad and et_gs_merchant_pair are held to ill talk too. truth.json's **pity** and **glad** rules,
+   scoped by a new `topics` field (gossip, life, news), judge them at run time by the claim kind each line was said under
+   (talk_sim now records `claim_kind` and `topic_kind`), and **talk_lint's `gossip_kind`** refuses a gossip line that pities
+   or rejoices without its entry gating the kind.
+3. **Weather true.** truth.json's **rain_claim** ("rain covers footsteps", "wet night", "soaked through"), **sun_now**,
+   **heat_now** (summer) and **storm_now**. et_cr_coast_theft says its rain only under `here.outdoors=rain|storm` ("Dark
+   night, quiet paws." otherwise); Ridgemere's quay wagons come in soaked only in the rain, and dry otherwise ("Mark the
+   day."); a fisher is "salt to the skin", not "wet through"; a wet greeting answers only in the wet; the Long River and
+   Saltwell's hens no longer claim the heat. On P5's own transcripts the new rules find 30 such lines (fixtures, 0.45 per
+   1,000); P6's: 1 (0.014), and none frozen.
+4. **Never told twice, in the engine.** `Freshness::told` asks whether a listener was told a thing before the talk began
+   (the ledger's told set, `claim:<key>`; the heard set, `story:<entry>`, for stories, memories and teases; asked once per
+   listener and thing, `AmbientTalk::toldBefore`), and `Conversation::claim` is what the topic is about. The opener is
+   refused (`ended` "told", and the game then begins no talk at all, written or not), a turn to an agenda item is skipped,
+   an answer that would tell them is passed over. Beside it, **the collision filter** (§8.12.3, `Freshness::collides`):
+   another speaker's distinctive words (6 words or more) said in the place within the hour are passed over, the pivot's
+   words in front included. It was built here because accommodation's dialect words collided more in the talk town (R5
+   an open hard gate): frozen R5 592 → 5.1 per 100 h, fixtures 83 → 0.3.
+
+**The scorecard's new rows** (`tools/talk_score.py`). **T4** (hard, §15.3): of the lines airing a stance (talk_sim's
+`issue`, `stance`, `drift`, `basis`), one whose speaker's side changed from their last within 30 days on the same basis
+(nothing in their life moved it) and no concede between, or an answer against their own side to the one it is said to.
+**T6** (soft): above. **D1** by the accent spoken; **D1A** (diagnostic) the lines shifted; **O1** (diagnostic) opinions
+given per 10 talks. T2's rules may be scoped to topics.
+
+**The gate: met** (`artifacts/talk/runs/p6`, every profile in both modes over P0's fixture, pinned to build 81; 13,047
+and 25,972 conversations, 71,278 and 168,207 lines; 6.3 minutes; the card was run five times while fixing what it found: the Houses' "great" was Saltwell's
+word (D2), Ridgemere's plain speakers were shifted, two old jokes with "dead" and "drowned" in them read as tone clashes
+after a pivot (C4), a repeated opinion, a pup venting about money). Fixtures / frozen:
+- **T4 = 0 / 0**: 1,064 and 4,048 stance lines, none drifted, none answered against its speaker's side.
+- **D1 measured**: none 0% / 0% (the hard gate holds); light 0.83% / 0.93% (P5 2.06 / 1.33), broad 4.02% / 2.87% (0.79 /
+  0.48): light speakers among their own now speak broad (D1A: 29.2% / 32.8% of lines shifted, 19,856 / 55,106 a step
+  broader, 950 / 112 plainer), so the broad lines carry the dialect words. Both stay far under their targets (25-50%,
+  60%+) because 1.4% of the library's text has a dialect symbol at all: Phase 7's discourse symbols and Phase 8's lines.
+
+**The scorecard against Phase 5** (its transcripts rescored with this phase's scorer, `artifacts/talk/runs/p5r`),
+fixtures / frozen:
+
+| | Phase 5 | Phase 6 |
+|---|---|---|
+| **T4** identity drift per 1,000 stance lines | 0 / 0 (no stances aired) | **0 / 0** (1,064 / 4,048 stance lines) |
+| **O1** opinions per 10 talks | 0 / 0 | 0.48 / 0.83 |
+| **T6** "they" of one known wolf, per 1,000 lines | 0.98 / 0.06 | **0.22 / 0.018** |
+| **T2** presupposition failures per 1,000 lines (with the new rules) | 0.45 / 0.036 | **0.014 / 0** |
+| D1 / D1L / D1B (%), by the accent spoken | 0 / 2.06 / 0.79; 0 / 1.33 / 0.48 | 0 / 0.83 / 4.02; 0 / 0.93 / 2.87 |
+| D1A lines spoken in another accent (%) | 0 / 0 | 29.2 / 32.8 |
+| D3 dialect guessed from 20 lines (%) | 84.5 / 70.9 | 86.7 / 81.2 |
+| **R5** collisions per 100 h | 83.3 / 592 | **0.32 / 5.1** |
+| R4 a distinctive line heard again within 10 h, per 100 h | 460 / 3,818 | 403 / 3,504 |
+| R1 first identical talk (h) / R3 distinct openers per 3,000 | 16.2 / 2,517; 2.3 / 1,674 | 15.0 / 2,520; 2.4 / 1,704 |
+| C1 / C3 / C7 | 96.9 / 89.4 / 5.59; 98.9 / 90.1 / 6.42 | 97.2 / 89.3 / 5.59; 98.5 / 90.8 / 6.53 |
+| C4 / C6 | 0 / 0; 0 / 0 | 0.014 / 0 (one lexicon clash, an open gate in fixtures since P0); 0 / 0 |
+| C8 a third speaker (%) | 0.31 / 4.9 | 0.25 / 5.3 (frozen stance joins: 249) |
+| C9 callbacks per 10 talks / K1 / K2 / K3 | 1.21 / 44.8 / 21.1 / 0; 0.76 / 74.7 / 13.0 / 0 | 1.21 / 44.4 / 21.1 / 0; 0.79 / 74.2 / 13.1 / 0 |
+| T1 / T3 / T5 | 0 / 0.07 / 0.04%; 0 / 0.006 / 0 | 0 / 0.042 / 0.06%; 0 / 0.024 / 0 |
+| M1 / U2 / X1 / R8 | 66.1 / 40.1 / 20.2 / 0.104; 55.9 / 29.4 / 16.7 / 0.134 | 66.8 / 39.3 / 19.2 / 0.109; 57.2 / 29.9 / 16.3 / 0.126 |
+| B1 / B1P (ms, the card's load) | 0.19 / 0.62; 0.19 / 1.52 | 0.27 / 0.82; 0.27 / 1.77 |
+| B5 exchanges a second | 2.2 / 73 | 2.2 / 84 |
+
+Goals pursued (steps), fixtures / frozen: favour 257 / 414, mend 155 / 411, visit 136 / 210, **vent 105 / 191**,
+learn_name 101 / 2, nag 10 / 15.
+
+**What the card still flags, and why** (soft rows; no hard gate is broken in either mode): R8, M1, U2 and X1 are the rows
+§30 explained (the talk moved to everyday life, the library's least worked) and stand where Phase 5 left them (R8 frozen
+0.134 → 0.126; M1 and U2 a little up; X1 a little down). **B1, B1P** (under the card's load of twenty runs): each beat now
+also works out accommodation, the town's mood, the stances in play, leans on every candidate, the told set and the
+collision filter. Alone it is within budget: `talk_bench` (the talk town) a beat 0.086 ms mean, p99 0.26 (Phase 5: 0.058,
+0.19), a look p99 1.1 ms; `talk_bench --world ridgemere3 --hours 20` a beat 0.169 ms, p99 0.93, a look p99 4.9 ms (budget
+5: the cold `districtHouse` walks of §29 are most of it, and the next phase that touches the director should warm them).
+T4, T6, D1, D1L, D1B, D1A and O1 were taken into both baselines from this card (`--refreeze`, the why kept there): T4
+and D1 are the gate's, the rest new rows. The quick card was blessed again (talk-town talk now airs opinions and vents,
+speaks broader among its own, and its beats do more: B1 0.069 → 0.10 ms under ctest's load; R5 590 → 0). talk_lint: 34
+findings (from 9: the 24 reviewed `they_named` and one `pity`, a dry wedding joke now reworded, are its new ones).
+
+**Tests.** `talk_tests` `opinionsMoodsAccent`: opinions.json's seven refusals and temperaments.json's two; stances from
+facts, reasons, strength, no view without a lean or outside `who`, drift with its own reason, events outweighing a lean;
+likes the same every time and a list criterion; leans (chatty 1.4, quiet 0.6, a variant's own, held to 2); the moods; the
+five accommodation cases, plain speech untouched, and the accent a line records; opinions aired on crime and answered as
+the stances are (agree never across sides, disagree never on the same); vent to a friend and sympathy back; a claim and a
+story never told twice, another's words passed over; pronouns by sex, and no line without the sex. `ambient_tests`
+`theTalkLedger`: drift once an event, two steps at most, moods 8 a resident, saved and loaded, moods gone in a week and
+drift kept. `game_tests`: every person fact the library knows, list facts included. `test_talk_lint` (pronouns, news
+kinds, weather, scoped rules at run time), `test_talk_score` (T4, T6, D1 by the accent spoken). The non-database ctest
+suite passed 92 of 92 (with the quick card blessed); `talk_check --validate` on every file and `talk_lint` passed. The database suites weren't run (no schema change). No ticking runs, no paid calls, no servers.
+
+**For Phase 7.** The opinion lines are move lines, tagged; the 5,477 untagged entries still answer nothing by stance, and
+an old line doing agree in a stance talk is held by the engine's stance fit only. The discourse symbols Phase 7 drafts
+should include `#hedge#` in every dialect (plain has it now) and the vent lead-ins. Mantles (Phase 9) bring their own
+opinions (`opinion road against 2 : ...`): they should set `op.<issue>`, `op_why` and `op_basis` over the computed ones,
+and their own likes over the drawn ones (`Library::likes` is a stand-in). `pair.agree.<issue>` is kept in the pair's
+note kept tags (`agree.<issue>`). The four Houses as separate issues, the hedge frame (`boss`), and "needs" beyond the
+favour goal are not done. talk_bench's look p99 on Ridgemere 3 is at 4.9 ms of 5.

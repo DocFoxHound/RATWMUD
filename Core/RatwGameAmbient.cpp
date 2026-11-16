@@ -176,15 +176,25 @@ void Game::ambientSpeak(double)
             post.segments.push_back({"speech", text});
             publish(speaker, post, Voice::Speak);
             npcLastSpeech_[speaker] = now;
+            {
+                // (The collision filter's: what was said here this last hour, by whom. §8.12.3, Phase 6.)
+                auto& said = recentWords_[a->cellId];
+                while (!said.empty() && now - std::get<0>(said.front()) > 3600)
+                    said.pop_front();
+                said.emplace_back(now, speaker, std::hash<std::string>{}(text));
+            }
             it->nextAt = now + 2.5 + double(text.size()) / 25;   // Time to read it, before the answer.
             if (options_.logTalkWords)
                 voicedWords("exchange", speaker, spokenTo, text, &info);
             if (onAmbientLine)
             {
                 const auto knew = it->knew.find(spokenTo);
+                const auto& talk = it->pick.topic.talk;
                 onAmbientLine({it->id, it->spoken, speaker, spokenTo, text, a->cellId, it->pick.hearer, it->pick.topic.kind,
                                it->pick.topic.claim, it->route, info, it->pick.topic.subject, it->pick.topic.seen,
-                               knew == it->knew.end() ? std::string() : knew->second});
+                               knew == it->knew.end() ? std::string() : knew->second,
+                               talk.count("topic.claim_kind") ? talk.at("topic.claim_kind") : std::string(),
+                               talk.count("topic.kind") ? talk.at("topic.kind") : std::string()});
             }
             if (it->engine)
             {
@@ -202,6 +212,7 @@ void Game::ambientStart(const std::vector<std::string>& listeners)
 {
     // A new exchange for these listeners: the director's pick among those standing near them, written (the talk
     // library; the Mind only where ambientModelCallsPerHour allows) and begun at once.
+    talkDrift();                                    // (Doc 84 §7.6, Phase 6: once a game day, the events that move stances.)
     if (listeners.empty() || ambient_.size() >= AtOnce)
         return;
     const auto clock = std::chrono::steady_clock::now();
@@ -403,7 +414,10 @@ bool Game::ambientBegin(AmbientTalk& t, const talk::Query& start, const mind::Ex
             t.conv.agenda[p.teller == t.pick.teller ? 0 : 1].push_back(std::move(item));
         }
     }
+    t.conv.claim = t.pick.topic.key;               // (Phase 6: what it is about, never told a listener twice.)
     auto first = talk_.begin(t.conv, q, talkFreshness(t, 0));
+    if (!first && t.conv.ended == "told")
+        return false;                               // (Its only openers would tell the listener again: no talk, written or not.)
     if (first)
     {
         t.route = !t.conv.chain.empty() && t.conv.chain.front().rfind("lib_", 0) == 0 ? "library" : "scene";
@@ -448,6 +462,27 @@ talk::Freshness Game::talkFreshness(const AmbientTalk& t, int speaker) const
     };
     if (const auto recent = recentScenes_.find(t.pick.cell); recent != recentScenes_.end())
         fresh.recent = recent->second;
+    // Phase 6 (§8.12.3): the collision filter: another speaker's distinctive words said here within the hour.
+    if (const auto said = recentWords_.find(t.pick.cell); said != recentWords_.end())
+        fresh.collides = [said = &said->second, now = world_.time()](const std::string& words, const std::string& speaker) {
+            const auto h = std::hash<std::string>{}(words);
+            return std::any_of(said->begin(), said->end(), [&](const std::tuple<double, std::string, std::size_t>& x) {
+                return std::get<2>(x) == h && now - std::get<0>(x) <= 3600 && std::get<1>(x) != speaker;
+            });
+        };
+    // Phase 6 (§8.6, §8.12.4): told before this talk began, never told again: a claim or one's own news (the ledger's told
+    // set), a story or a tease (its heard set). Asked once a listener and thing, before this talk writes either.
+    const auto& ledger = world_.talkLedger();
+    if (ledger.enabled)
+        fresh.told = [&ledger, cache = t.toldBefore](const std::string& listener, const std::string& what) {
+            const auto key = listener + "|" + what;
+            if (const auto found = cache->find(key); found != cache->end())
+                return found->second;
+            const bool told = what.rfind("claim:", 0) == 0 ? ledger.wasTold(listener, what.substr(6))
+                              : what.rfind("story:", 0) == 0 ? ledger.hasHeard(listener, what.substr(6))
+                                                             : false;
+            return (*cache)[key] = told;
+        };
     return fresh;
 }
 
@@ -700,6 +735,18 @@ std::optional<talk::SaidLine> Game::joiners(AmbientTalk& t, const talk::Freshnes
                      knows(a->id) && knows(b->id))
                 c.stake = "favourite", c.moves = {"join.add"};
         }
+        // A stance on the issue just aired (Phase 6, §8.9: join.side, join.correct): one who holds it strongly (2 or more)
+        // sides with the one who spoke last, or puts them right.
+        if (c.stake.empty() && !t.conv.lines.back().issue.empty() && !t.conv.lines.back().stance.empty())
+        {
+            const auto& last = t.conv.lines.back();
+            const auto& facts = stancesOf(*e);
+            const auto side = facts.find("op." + last.issue);
+            const auto strength = facts.find("op_strength." + last.issue);
+            if (side != facts.end() && side->second != "mixed" && strength != facts.end() && std::atoi(strength->second.c_str()) >= 2 &&
+                last.stance != "mixed")
+                c.stake = "stance", c.moves = {side->second == last.stance ? "join.side" : "join.correct"};
+        }
         if (!c.stake.empty())
             found.push_back(std::move(c));
     }
@@ -854,6 +901,12 @@ void Game::ambientSaid(AmbientTalk& t, const talk::SaidLine& line)
         }
     if (line.goalDone && !line.goal.empty())
         t.kept["goal_" + line.goal] = {"yes", day + line.goalDays};
+    // Phase 6 (§8.8): an opinion given is given once a day (self.was.aired_<issue>): a view, not a refrain.
+    if (!line.issue.empty() && hasMove(line.moves, "give.opinion"))
+        ledger.keep(speaker, "aired_" + line.issue, "yes", day + 1);
+    // Phase 6 (§8.8): praise or thanks heard brightens the one spoken to (the ledger's mood events).
+    if (!to.empty() && (hasMove(line.moves, "praise") || hasMove(line.moves, "congratulate") || hasMove(line.moves, "thank")))
+        ledger.moodEvent(to, "praised", day);
     // An introduction (learn_name): the one spoken to knows the speaker's name now (familiarity 10: pair.named).
     if ((hasMove(line.moves, "introduce") || hasMove(line.moves, "introduce.return")) && !to.empty())
         if (const auto* b = world_.bonds().find(to, speaker); !b || b->familiarity < 10)
@@ -941,6 +994,11 @@ void Game::ambientNote(AmbientTalk& t, const std::string& reason)
                           : t.conv.ended == "farewell" ? "warmed"
                                                        : "even";
     std::vector<std::string> people = t.people.empty() ? std::vector<std::string>{t.pick.teller, t.pick.listener} : t.people;
+    // Phase 6 (§8.8): a quarrel sours each one's mood a while: a real one (an old grudge aired, offence taken, an apology
+    // refused), not a talk that only cooled or a tease countered.
+    if (t.pick.topic.kind == "quarrel" || any({"take_offence", "decline_apology"}))
+        for (const auto& p : people)
+            ledger.moodEvent(p, "quarrel", day);
     for (std::size_t i = 0; i < people.size(); ++i)
         for (std::size_t j = i + 1; j < people.size(); ++j)
         {
@@ -955,6 +1013,11 @@ void Game::ambientNote(AmbientTalk& t, const std::string& reason)
             note.told = t.toldEntries;
             note.claims = t.claims;
             note.kept = t.kept;
+            // Phase 6 (§8.8): an opinion aired between the two: whether they agreed (pair.agree.<issue>), kept 30 days.
+            if (i == 0 && j == 1)
+                for (const auto& [k, v] : t.conv.conv)
+                    if (k.rfind("agree_", 0) == 0)
+                        note.kept["agree." + k.substr(6)] = {v, day + 30};
             // A goal done, or begun and given up, is kept between the two for its days (frames.json's goals): never
             // pursued again in their every talk.
             for (const auto& g : talk_.goals())
@@ -992,6 +1055,22 @@ void Game::talkPledges()
     for (auto& p : ledger.promises())
         if (p.state == "open" && day > p.until)
             p.state = "lapsed";
+}
+
+const talk::Facts& Game::stancesOf(const Entity& e)
+{
+    if (const auto today = std::int64_t(std::floor(world_.calendarDays())); today != stancesDay_)
+    {
+        stancesDay_ = today;
+        stances_.clear();
+    }
+    if (const auto found = stances_.find(e.id); found != stances_.end())
+        return found->second;
+    talk::Facts kept;
+    for (auto& [k, v] : talkSpeaker(e).facts)
+        if (k.rfind("op.", 0) == 0 || k.rfind("op_strength.", 0) == 0)
+            kept.emplace(k, v);
+    return stances_[e.id] = std::move(kept);
 }
 
 std::vector<std::string> Game::talkFavourites(const std::string& id)

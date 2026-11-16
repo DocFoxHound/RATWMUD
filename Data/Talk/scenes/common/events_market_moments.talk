@@ -197,7 +197,7 @@ a : Every guard's. | Not far enough. | Good.
 
 scene em_weather_storm_caravan
 when topic=caravan topic.kind=left here.weather=storm|rain
-a : I hope the #topic.where# wagons found shelter in this storm. | Caravan's out on the road in this. Poor carters. | The rain will wash the road to #topic.where# away.
+a : I hope the #topic.where# wagons found shelter in this weather. | Caravan's out on the road in this. Poor carters. | The rain will wash the road to #topic.where# away.
 b : They're used to it. | They'll be soaked. | It always does, then they rebuild it.
 a : Nobody's used to this. | And grumpy. | Slowly.
 

@@ -329,7 +329,7 @@ a : Not a thing. Not even the bed. | Not a chance. | Thousands. I'm terrified.
 
 scene e1_home_child_named
 when topic=home a.child a.homeless=no pair.roof=no
-a : #a.child# has taken over the whole loft. | #a.child# brought home a stray. A stray what, I don't know yet. | #a.child# wants a room of their own. Don't we all.
+a : #a.child# has taken over the whole loft. | #a.child# brought home a stray. A stray what, I don't know yet. | #a.child# wants a room of #a.child_their# own. Don't we all.
 b : They grow. | Feed it and see. | Tell them to earn one.
 a : Out of it, I hope. | It eats like three. | Paid in chores.
 

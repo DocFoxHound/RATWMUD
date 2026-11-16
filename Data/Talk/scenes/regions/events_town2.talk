@@ -27,7 +27,7 @@ a : Right and proper. | I know what I saw. | Wide and empty.
 
 scene et_wm_newcomer_frontier
 when topic=newcomer here.region=larkfield
-a : #topic.subject# rode in from the north. Says they want land. | #topic.subject#'s a city wolf. You can tell by the boots. | #topic.subject# asked about the barrows. First thing.
+a : #topic.subject# rode in from the north. Says #topic.they# wants land. | #topic.subject#'s a city wolf. You can tell by the boots. | #topic.subject# asked about the barrows. First thing.
 b[herder] : Land's cheap out here. Keeping it is the hard part.
 b : Plenty of it. Not much but grass. | They'll have mud on them by sundown. | Tell them to stay off them.
 a : Grass, mostly. | And blisters. | I did.
@@ -63,7 +63,7 @@ a : Always. | Empty. | It doesn't.
 
 scene et_ls_newcomer_garrison
 when topic=newcomer here.region=coldwater
-a : #topic.subject# came up from the lowlands. Says they're staying. | #topic.subject# wants to learn boatbuilding. | #topic.subject# came in on a cart and never went back down.
+a : #topic.subject# came up from the lowlands. Says #topic.they#'s staying. | #topic.subject# wants to learn boatbuilding. | #topic.subject# came in on a cart and never went back down.
 b[old] : They come for the quiet. Then the winter finds them.
 b : Plenty like that. | A good trade. | Running from something?
 a : Plenty. | It is. | Or just tired.
@@ -92,7 +92,7 @@ a : All gone. | Cold and shameless. | Very lonely.
 
 scene et_fh_death_marsh
 when topic=life topic.kind=death here.region=fens
-a : #topic.subject# followed the marsh lights. They found them in the bog. | Fever took #topic.subject#. The fen fever. | They're burying #topic.subject# on the dry rise behind the chapel.
+a : #topic.subject# followed the marsh lights. They found #topic.them# in the bog. | Fever took #topic.subject#. The fen fever. | They're burying #topic.subject# on the dry rise behind the chapel.
 b[old] : Never follow the lights. My grandmother said it, and her grandmother.
 b : Never follow the lights. | That fever's cruel. | Only dry ground left.
 a : Never. | So cruel. | And not much of it.
@@ -129,14 +129,14 @@ a : Shameless. | Utterly. | Every penny.
 
 scene et_af_death
 when topic=life topic.kind=death here.region=southmeadow
-a : #topic.subject# died in the fields. Heat took them. | They found #topic.subject# in the millpond. The water's so low, how? | #topic.subject#'s gone. They'll be buried under the old oak.
+a : #topic.subject# died in the fields. Heat took #topic.them#. | They found #topic.subject# in the millpond. The water's so low, how? | #topic.subject#'s gone. #topic.they.capitalize#'ll be buried under the old oak.
 b[farmer] : The sun's no friend this year.
 b : This heat'll kill us all. | Low water still drowns. | The oak's seen a lot of us off.
 a : It might. | Always does. | It has.
 
 scene et_af_newcomer
 when topic=newcomer here.region=southmeadow
-a : #topic.subject# came to help with the harvest. Says they'll stay. | #topic.subject# asked to rent a field. In a drought. | New wolf at the mill. #topic.subject#.
+a : #topic.subject# came to help with the harvest. Says #topic.they#'ll stay. | #topic.subject# asked to rent a field. In a drought. | New wolf at the mill. #topic.subject#.
 b[farmer] : Strong back? Then welcome.
 b : Good. We need paws. | Brave or foolish. | The miller needed help.
 a : We do. | Foolish. | Good.

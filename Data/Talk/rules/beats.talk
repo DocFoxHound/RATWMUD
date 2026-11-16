@@ -76,12 +76,12 @@ say That's my own blood you're talking of. Mind your tongue. | #topic.subject#'s
 rule bt_join_defend_friend
 does join.defend
 when conv.stake=friend
-say #topic.subject#'s a friend of mine. I'll not hear it. | I know #topic.subject#. That's not like them at all. | You've got that wrong about #topic.subject#. | Hearsay. I'd want more than that before I believed it.
+say #topic.subject#'s a friend of mine. I'll not hear it. | I know #topic.subject#. That's not like #topic.them# at all. | You've got that wrong about #topic.subject#. | Hearsay. I'd want more than that before I believed it.
 
 rule bt_join_add_kin
 does join.add
 when conv.stake=kin|friend
-say You're talking of #topic.subject#? I know them well. | That's #topic.subject# you mean? I'll vouch for them. | #topic.subject#, is it? Let me hear.
+say You're talking of #topic.subject#? I know #topic.them# well. | That's #topic.subject# you mean? I'll vouch for #topic.them#. | #topic.subject#, is it? Let me hear.
 
 rule bt_join_add_goods
 does join.add

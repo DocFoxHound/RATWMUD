@@ -177,7 +177,7 @@ remember pair: k=good 1m
 rule keep_spouse
 when concept=keeping.answer self.spouse
 cooldown 1d
-say We're well, #self.spouse# and I. Thank you. | Well. #self.spouse# sends their best, I'm sure. | Can't complain. #self.spouse# does that for both of us. | Well. #self.spouse#'s cooking, so well fed.
+say We're well, #self.spouse# and I. Thank you. | Well. #self.spouse# sends #self.spouse_their# best, I'm sure. | Can't complain. #self.spouse# does that for both of us. | Well. #self.spouse#'s cooking, so well fed.
 then other: keeping.glad
 remember pair: k=family 1m
 
@@ -191,7 +191,7 @@ remember pair: k=family 1m
 rule keep_parent_grown
 when concept=keeping.answer self.child self.age>=48
 cooldown 1d
-say Well. #self.child# came by on Restday. That makes a good week. | Proud. #self.child#'s doing well for themselves. | Well enough. #self.child# fusses over me now. Imagine. | Well. I've a grandpup on the way, they tell me.
+say Well. #self.child# came by on Restday. That makes a good week. | Proud. #self.child#'s doing well for #self.child_themself#. | Well enough. #self.child# fusses over me now. Imagine. | Well. I've a grandpup on the way, they tell me.
 then other: keeping.glad
 remember pair: k=family 1m
 

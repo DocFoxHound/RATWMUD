@@ -86,7 +86,7 @@ a : Give it time. | That's something. | Good.
 
 scene et_su_child
 when topic=life topic.kind=succession a.stage=young|adolescent
-a : Is #topic.subject# the boss now? | #topic.subject#'s in charge now. Do they get a crown? | Why does #topic.subject# get everything?
+a : Is #topic.subject# the boss now? | #topic.subject#'s in charge now. Does #topic.they# get a crown? | Why does #topic.subject# get everything?
 b : They are. | No crown. Just worries. | Because someone had to.
 a : Can I be the boss? | Boring. | Lucky.
 
@@ -100,47 +100,47 @@ a : Upward. | That's business. | Wise.
 
 scene et_ar_barracks
 when topic=crime topic.kind=arrest here.place=barracks
-a : They brought #topic.subject# in last night. Kicking. | #topic.subject#'s in the lock-up. Smells like they slept in a ditch. | Bunk duty's guarding #topic.subject# tonight. Lucky me.
+a : They brought #topic.subject# in last night. Kicking. | #topic.subject#'s in the lock-up. Smells like #topic.they# slept in a ditch. | Bunk duty's guarding #topic.subject# tonight. Lucky me.
 b[guard] : I've got the bite marks to prove it.
 b : Kicking and shouting. | Probably did. | Bring a book.
 a : Loud one. | Smelly one. | Can't read.
 
 scene et_ar_chapel
 when topic=crime topic.kind=arrest here.place=chapel
-a : They took #topic.subject# right outside the chapel. After prayers. | #topic.subject# came to confess, then the watch took them. | Did you see? #topic.subject#, arrested on the chapel steps.
+a : They took #topic.subject# right outside the chapel. After prayers. | #topic.subject# came to confess, then the watch took #topic.them#. | Did you see? #topic.subject#, arrested on the chapel steps.
 b[priest] : Confession is between a wolf and the Bright One. I said nothing to the watch.
 b : After prayers! | Unlucky timing. | I saw. Everyone saw.
 a : Bold of the watch. | Or guilty conscience. | Everyone.
 
 scene et_ar_shore
 when topic=crime topic.kind=arrest here.place=shore
-a : They pulled #topic.subject# off a boat at the jetty. | #topic.subject# tried to swim for it. Watch fished them out. | Arrested at the shore, #topic.subject#. Trying to get away by water.
+a : They pulled #topic.subject# off a boat at the jetty. | #topic.subject# tried to swim for it. Watch fished #topic.them# out. | Arrested at the shore, #topic.subject#. Trying to get away by water.
 b[fisher] : Caught like a fish. Ha.
 b : Nowhere to go. | Swim? In that cold? | Nearly made it.
 a : Nowhere at all. | Desperate. | Nearly.
 
 scene et_ar_gate
 when topic=crime topic.kind=arrest here.place=gate
-a : They took #topic.subject# at the gate, trying to leave. | #topic.subject# nearly made it out. Gatekeeper stopped them. | Guards at the gate grabbed #topic.subject# with a full pack.
+a : They took #topic.subject# at the gate, trying to leave. | #topic.subject# nearly made it out. Gatekeeper stopped #topic.them#. | Guards at the gate grabbed #topic.subject# with a full pack.
 b[guard] : Running with a full pack says enough.
 b : Running, then. | Close one. | Packed for a long trip.
 a : Guilty as sin. | Too close. | A very long one.
 
 scene et_ar_rivals
 when topic=crime topic.kind=arrest pair.band=rivals
-a : Your friend #topic.subject#'s arrested. Proud of them? | Didn't you used to drink with #topic.subject#? | #topic.subject# in the cells. You must be so ashamed.
+a : Your friend #topic.subject#'s arrested. Proud of #topic.them#? | Didn't you used to drink with #topic.subject#? | #topic.subject# in the cells. You must be so ashamed.
 b : They're no friend of mine. | Once. Years ago. | Not as ashamed as you'd like.
 a : Not now, eh? | Interesting. | Shame.
 
 scene et_ar_spouses
 when topic=crime topic.kind=arrest pair.band=spouses
-a : #topic.subject#'s arrested. We had them to supper last month. | Do you think we should've seen it, with #topic.subject#? | I'm glad they took #topic.subject#. I always felt odd near them.
+a : #topic.subject#'s arrested. We had #topic.them# to supper last month. | Do you think we should've seen it, with #topic.subject#? | I'm glad they took #topic.subject#. I always felt odd near #topic.them#.
 b : I'll count the spoons. | No one saw it. | You always had a nose for people.
 a : Ha. | Nobody. | I do.
 
 scene et_ar_old
 when topic=crime topic.kind=arrest a.stage=old
-a : They've taken #topic.subject#. I said so years ago. Nobody listened. | #topic.subject#! I knew their grandfather. Honest wolf. | In my day, the stocks. Now it's cells and clerks.
+a : They've taken #topic.subject#. I said so years ago. Nobody listened. | #topic.subject#! I knew #topic.their# grandfather. Honest wolf. | In my day, the stocks. Now it's cells and clerks.
 b : You did say so. | Bad blood skips. | Clerks are crueller.
 a : Every year. | It does. | Much.
 
@@ -148,7 +148,7 @@ a : Every year. | It does. | Much.
 
 scene et_nw2_gate
 when topic=newcomer here.place=gate
-a : #topic.subject# came through the gate with a cart of everything they own. | Gatekeeper asked #topic.subject#'s business. They said staying. | #topic.subject# stood at the gate a long time, deciding.
+a : #topic.subject# came through the gate with a cart of everything #topic.they# owns. | Gatekeeper asked #topic.subject#'s business. They said staying. | #topic.subject# stood at the gate a long time, deciding.
 b[guard] : I wrote them down. Name, trade, where from. They hadn't much of any.
 b : All of it in one cart. | Staying. A brave word. | What did they decide?
 a : Not much, then. | Very brave. | To come in.
@@ -169,7 +169,7 @@ a : I will. | Poor soul. | Kind.
 
 scene et_nw2_hall
 when topic=newcomer here.place=hall
-a : #topic.subject# registered at the hall today. Officially one of us. | The clerk made #topic.subject# spell their name three times. | #topic.subject# asked the hall for a plot of land.
+a : #topic.subject# registered at the hall today. Officially one of us. | The clerk made #topic.subject# spell #topic.their# name three times. | #topic.subject# asked the hall for a plot of land.
 b[official] : Paperwork is how a town knows who belongs to it.
 b : Welcome, then. | Clerks love that. | Bold.
 a : Welcome. | They do. | Very bold.
