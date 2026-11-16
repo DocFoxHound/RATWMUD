@@ -1577,6 +1577,13 @@ say Down south we'd tell that at harvest, with the cider going round. | Every fi
 then other: moment.close
 remember pair: m7=hometale 2m
 
+rule m7_lore_re_from_salt
+when concept=moment.reply_lore self.from=saltwell here.region!=waste
+cooldown 2d
+say In Saltwell we'd tell that at the well, after dark, with the stars out. | At home that tale has a hawk in it. Every good tale does. | My grandmother told it better, and slower. In the Waste nobody hurries a story.
+then other: moment.close
+remember pair: m7=hometale 2m
+
 rule m7_lore_re_from_city
 when concept=moment.reply_lore self.from=ridgemere here.region!=ridgemere
 cooldown 2d

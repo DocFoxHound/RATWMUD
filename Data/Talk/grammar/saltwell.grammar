@@ -1,0 +1,134 @@
+# Saltwell (Docs/Design/83-dialogue-trees.md, "Saltwell's own speech"): the oasis hamlet of the Red Waste, by its spring
+# pool on the way to the Saltpan; salt rakers, the Ochre vines' hands, warreners, a store and the Oasis Inn, and the
+# carters who come in off the sand. A dignified, unhurried speech of hospitality: peace and welcome first, the guest
+# honoured and the host's water and shade praised; courteous to strangers, warm to its own ("my brother", "my
+# sister"); fond of proverbs. Its world is the well and the spring, salt, the caravans and carts, dunes and wadis, the
+# noon heat and the cool of night, date palms, shade, the stars a traveller steers by, and trade done by measure and
+# oath ("by salt and water": salt shared is a promise kept). The broad accent is the more formal, never another
+# grammar: a longer blessing, one courtesy more.
+
+grammar saltwell
+greet = Peace on you | Water and shade to you | Be welcome
+greet[here.time=dawn] = Peace with the morning | Peace on you, and a cool morning
+greet[here.time=dusk|night] = A cool evening to you | Peace on you, and a cool night
+greet.broad = Peace on you, and on your house | Peace on you, and water, and shade
+farewell = Go in peace | Peace on your road | Water on your way
+farewell.broad = Go in peace, and come back to us | Peace on your road, and stars to steer by
+thanks = May your well never fail | My thanks, and water to you | You are generous
+thanks.broad = May your well never fail, and your shade never thin
+agree = It is so | Truly said | As sure as the spring
+refuse = That well is dry | Not for all the salt in the pan | Not by any measure
+surprise = Stars above | By the spring | Who would have said it
+annoyed = Sand in my teeth | Dust and thorns | A dry well take it
+very = truly
+good = sweet | sound
+bad = brackish | sour
+worthless = dust | blown sand
+luck = a full cistern | a sweet well
+child = palm-shoot | little one
+pet!! = light of my eyes | my star
+money = silver | coin
+cold = night-cold | cold as the stars
+hot = noon-hot | hot as the Saltpan
+rain = sky-water | rain
+tired = sun-weary | worn as a well rope
+drunk = wine-merry | full of the Ochre red
+nonsense = mirage-talk | wind in the dunes
+tag = , is it not | , not so
+oath! = By salt and water | By the well and the stars | By bread and salt
+home = my own well | my father's roof
+# (Phase 7, the rest of plain's words.)
+address = my brother^m | my sister^f | friend of the well
+address[topic.meeting=stranger] = honoured guest | traveller
+address[other.stage=young] = little one | palm-shoot
+bed = my mat | the cool of my bed
+dear! = light of my eyes | my sweet water | my heart
+hungry = empty as a dry well | hungry
+hurt = sore | knocked about | aching
+little = a grain of sand | a sip
+robbery = That's robbery under the noon sun | Short measure and a thief's weight
+saying! = The well remembers who drew from it | Every caravan comes home at last | Salt keeps, and so does a promise | Shade is for sharing
+work = the day's labour | the work
+# (Phase 7, the conversations' words.)
+wages = silver | the day's silver
+boss = the pan-master | the head of the well
+busy = busy as the well at dusk | never still
+slow = still as noon | quiet
+takings = the day's silver | the till
+cheated = short-measured | sold a skin of sand
+mum! = Mother | Mama
+dad! = Father | Baba
+gran = Grandmother | Old Mother
+grandad = Grandfather | Old Father
+supper = the evening bread | supper
+toffs = the great Houses | the silk-pawed
+rabble = the dust-pawed lot | that lot
+skint = dry as the Saltpan | empty-pursed
+posh = silken | grand
+busybody = well-talker | gossip
+fool = you sun-addled thing | you empty water-skin
+daft = sun-addled | moon-struck
+toast = Water and shade | To the well | Long life and sweet water
+drink = a cup of date wine | a cup of the Ochre red
+ale = date wine | the Ochre red
+fog = dust-haze | haze
+snow = snow | frost
+mud = dust | sand
+wind = dust-wind | a wind off the dunes
+watch = the Watch | the well-watch
+thief = night-taker | thief
+bandits = dune-raiders | road wolves
+gaol = the cells | the strong-room
+dole = the alms-bread | the well-share
+grave = the sand | the long shade
+grub = bread and dates | food
+tasty = sweet as dates | good
+snug = cool as a courtyard | shaded
+beasts = the goats and hens | the flock
+bet = a wager | a wager of dates
+poorly = sun-sick | poorly
+chill = a night-chill | a touch of sun-fever
+remedy = salt in sweet water | honey and date syrup | a wet cloth in the shade
+olddays = the old caravan days | the years of the old well
+blessing = Peace on you | Water and shade be yours | May your well run sweet
+bless = Peace keep you | Sweet water keep you | The Bright One shade you
+someday = one cool day | when the Waste blooms
+far = many wells off | beyond the dunes | three wadis over
+stranger = guest | road-stranger
+journey = crossing | caravan road
+# The dialogue window (doc 83).
+shop_offer = Look, and take your time: my shelves are yours. | What may I bring you? | Sit, look. Nothing is hurried here.
+shop_dear = Everything comes over the sand, and the sand charges. | Dear as water in the dry season. | The caravans set the prices, not I.
+shop_sold = May it serve you well. | Weighed true, and yours. | Fairly measured, by my oath.
+shop_bye = Go in peace, and come again. | Peace on your road. | May your water skin stay full.
+shop_bare = The last caravan took the best of it. | My shelves are as dry as the pan. | Little left until the carts come.
+talk_open = Sit, sit. What is on your heart? | Speak, and be at ease. | What brings you to my shade?
+# A giver's work (doc 83, Phase 2).
+work_offer = There is work, if you will carry it in the cool hours. | I could use honest paws. | Something wants doing before the heat.
+work_taken = Good. Go at first light and keep to the shade. | Good. Your word is your salt. | It is agreed, then, by measure and by word.
+work_paid = Here, by measure, as promised. | Paid in full, and my thanks with it. | Weighed true. You have earned it.
+work_back = No shame in it. Another will carry it. | So be it. The road is long for everyone. | Better said now than at the bottom of the well.
+work_none = Nothing today. The well is quiet. | No work until the next caravan. | Nothing that needs doing just now.
+# The other roles (doc 83, Phase 3).
+inn_offer = Come in out of the sun. A bed, bread or something cool? | Rest your feet. There is a bed, and bread, and cool water.
+inn_bed = Up the stairs, where the night air comes in. There's a chest for your things. | Your room is cool and made up. Sleep in peace.
+watch_greet = The watch. Keep the peace of the well and we'll get on. | Speak, traveller. The watch is listening.
+church_greet = Peace on you. Come in out of the heat. | Come in. The shade here is for everyone.
+learn_offer = It is a trade that keeps water in the jar. | Honest work, and measured fairly.
+# The dialogue trees' other words (doc 83, Phase 4): news and gossip there isn't, a trouble that isn't, thanks for
+# help, the way, a resident's work, work turned down, an inn's fire and its helpers, the watch's word, a master's
+# new apprentice, something to hand over; a keeper asleep.
+shop_asleep = Mm... the heat's gone... come back in the cool of the morning. | Zzz... the shutters are closed. Morning, in peace.
+news_none = Nothing new since the last caravan. | Quiet as noon. | The road has brought no news.
+gossip_none = Talk at the well stays at the well. | Nothing I would repeat.
+trouble_none = Nothing that shade and water won't mend. | Nothing, and thank you for asking.
+trouble_thanks = May your well never fail. I won't forget this. | You have been generous. I am in your debt.
+way_ask = Where are you bound, traveller? | Where to? I'll point you true.
+job_busy = This and that, as the day allows. | I work in the cool hours and rest in the heat.
+work_declined = As the guest wishes. | Another day, then, in peace.
+inn_rest = Sit by the fire, then: the night comes cold off the sand. A bed upstairs rests you better. | Take the bench by the hearth. Nobody moves a guest.
+watch_noted = Noted, and by my oath they'll answer for it. | Good. The watch owes you a cup of cool water.
+watch_bye = Go in peace, and keep it. | Move along, then, in peace.
+learn_taken = Good. Come at first light, before the heat, and stay near me. | Then you are mine to teach. Keep close, and watch my paws.
+receiver_ask = Something for me? Come into the shade. | For me, traveller?
+inn_helper = I only help here. Ask #here.innkeeper#: the rooms are theirs to give. | #here.innkeeper# keeps this house. I carry the water.

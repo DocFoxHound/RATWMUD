@@ -224,7 +224,7 @@ b : Mine too. | Who could? | Join them.
 a : Old timbers. | Nobody. | There's no room.
 
 scene ev_wx_storm_field
-when topic=weather here.weather=storm here.region=countryside
+when topic=weather here.weather=storm here.region=countryside here.region!=waste
 a : Hail flattened the barley. | Wind's lying the wheat down flat. | Herd's spooked by the thunder.
 b[farmer] : A year's work, gone in an afternoon.
 b[herder] : Get them in the lee of the hill.
@@ -305,7 +305,7 @@ b : Bundle up. | Behind the clouds. | Always.
 a : I am bundled. | They'll be back. | Always.
 
 scene ev_wx_region_south
-when topic=weather here.region=south here.weather=clear|overcast
+when topic=weather here.region=south here.weather=clear|overcast here.region!=waste
 a : Warm wind from the south. | Dry year down south. | The air smells of summer already.
 b[farmer] : Too dry and the barley burns.
 b : Pleasant. | It is. | Already.

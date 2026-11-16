@@ -122,6 +122,12 @@ say Southmeadow, down south. | Southmeadow. The orchards. I miss the sun. | The 
 then other: travel.from_reply
 remember pair: tf=away 2m
 
+rule e5_from_away_saltwell
+when concept=travel.from self.from=saltwell here.region!=waste
+say Saltwell, in the Red Waste. By the spring. | Saltwell. The oasis, on the way to the Saltpan. | Saltwell. Where the well never fails, and the guest draws first. | Out in the Waste. Saltwell. You'd know it by the palms.
+then other: travel.from_reply
+remember pair: tf=away 2m
+
 # The first answers that (self is the first again). From the same place: the best, whoever they are.
 rule e5_from_reply_same
 when concept=travel.from_reply pair.same_from=yes
@@ -258,6 +264,11 @@ then other: tale.react
 rule e5_been_moved_southmeadow
 when concept=travel.been self.from=southmeadow here.region!=southmeadow
 say Up from the south. Every mile colder than the last. | From Southmeadow. Came for a sweetheart. The sweetheart went; I stayed. | Up out of the orchards, and the sun got smaller every day.
+then other: tale.react
+
+rule e5_been_moved_saltwell
+when concept=travel.been self.from=saltwell here.region!=waste
+say Out of the Waste with the salt carts, and I never went back. | From Saltwell. Three days over the sand, and then all this green. I'd never seen so much rain. | I left the oasis for work. I still wake at noon and look for the shade.
 then other: tale.react
 
 # By what they do and are:

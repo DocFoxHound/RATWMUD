@@ -152,7 +152,7 @@ b : And twice as dry. | The sun! Imagine. | Not even in summer?
 a : Dry sounds nice. | I try to. | Not even then.
 
 scene wt3_long_river
-when topic=lore|smalltalk here.region=lake|countryside
+when topic=lore|smalltalk here.region=lake|countryside here.region!=waste
 a : The Long River starts in Glasswater, they say, and ends in the Drowned Delta. | My father took a raft down the Long River once. Halfway, anyway. | Half the south drinks from the Long River.
 b[old] : That river was here before any of us. It'll be here after.
 b : That's a long way. | Only halfway? | The thirsty half.

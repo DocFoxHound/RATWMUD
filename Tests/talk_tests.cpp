@@ -1113,15 +1113,15 @@ b : Yes.
            "and their values are checked: " + problem);
 }
 
-// Doc 83, Phase 4: the Country's towns speak another's dialect (settings.json, dialect_of), and every symbol a dialogue
-// tree says is in every dialect.
+// Doc 83, Phase 4: a Country town may speak another's dialect (settings.json, dialect_of: Fenshore), or its own
+// (Saltwell, the oasis's, since 2026-11-15), and every symbol a dialogue tree says is in every dialect.
 void theCountrysVoices()
 {
     Library lib;
     std::string problem;
     expect(lib.load(Dir, problem), "the library loads: " + problem);
-    expect(lib.dialectOf("fenshore") == "mirebridge" && lib.dialectOf("saltwell") == "coldwater",
-           "Fenshore speaks as Mirebridge, Saltwell as Coldwater");
+    expect(lib.dialectOf("fenshore") == "mirebridge", "Fenshore speaks as Mirebridge");
+    expect(lib.dialectOf("saltwell") == "saltwell", "Saltwell speaks its own, the oasis's (it borrowed Coldwater's before)");
     expect(lib.dialectOf("larkfield") == "larkfield" && lib.dialectOf("") == "", "a town with a dialect speaks its own");
     // A Fenshore wolf, broad (as Game::talkSpeaker makes them: their grammar layer is the dialect, `from` their town).
     Query q = moment("talk.smalltalk");
@@ -1141,15 +1141,32 @@ void theCountrysVoices()
     expect(lib.voiceCard(q.a).find("Grew up in Fenshore") != std::string::npos &&
                lib.voiceCard(q.a).find("Dry feet") != std::string::npos,
            "and the model is told where they grew up, with the fens' words: " + lib.voiceCard(q.a));
-    // A Saltwell wolf with no accent left speaks plainly.
+    // A broad Saltwell wolf greets as the oasis does, with peace, water and shade, and never with the lake's words;
+    // the model is told so. With no accent left they speak plainly.
     q.a.facts["from"] = "saltwell";
-    q.a.facts["accent"] = "none";
+    q.a.facts["accent"] = "broad";
     q.a.grammar = {lib.dialectOf("saltwell")};
+    said.clear();
+    for (std::uint64_t seed = 1; seed < 40; ++seed)
+    {
+        std::string out;
+        expect(lib.expand("#greet#", q, 0, seed, out), "a Saltwell greeting expands");
+        said.insert(out);
+        expect(out.find("Still water") == std::string::npos && out.find("Calm water") == std::string::npos,
+               "no Coldwater greeting in Saltwell: " + out);
+    }
+    expect(std::any_of(said.begin(), said.end(), [](const std::string& s) { return s.rfind("Peace on you", 0) == 0; }),
+           "a broad Saltwell wolf greets with peace");
+    expect(lib.voiceCard(q.a).find("Grew up in Saltwell") != std::string::npos &&
+               lib.voiceCard(q.a).find("Still water") == std::string::npos,
+           "and the model hears the oasis's words, not the lake's: " + lib.voiceCard(q.a));
+    q.a.facts["accent"] = "none";
     for (std::uint64_t seed = 1; seed < 20; ++seed)
     {
         std::string out;
         lib.expand("#greet#", q, 0, seed, out);
-        expect(out.find("water") == std::string::npos, "no accent, no Coldwater words: " + out);
+        expect(out.find("Peace") == std::string::npos && out.find("shade") == std::string::npos,
+               "no accent, no oasis words: " + out);
     }
     // The dialogue trees' symbols (doc 83's shop_*, work_*, inn_*, watch_*, the Phase 4 words) in every dialect.
     for (const char* symbol : {"shop_offer", "shop_asleep", "shop_bye", "talk_open", "work_offer", "work_declined", "inn_offer",

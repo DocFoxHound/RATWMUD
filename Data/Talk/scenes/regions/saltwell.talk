@@ -1,0 +1,189 @@
+# The Red Waste (here.region=waste): Saltwell on Ridgemere 3 (doc 72; doc 83, "Saltwell's own speech"), the oasis
+# hamlet by its spring pool on the way to the Saltpan: limewashed adobe houses with flat roofs round the well, gardens
+# watered from the pool by channels, hens and goats, the date palms; Saltwell Stores (water skins, salt sacks, lamp
+# oil, rope, dates) and the Oasis Inn (its courtyard cistern, rooms for the carters on the Saltpan road). Its folk rake
+# salt on the Saltpan, tend the Ochre vines on the hills' warm slopes and keep the Redsand warren. The noon heat and the
+# cold clear nights, the sand wind, the rain that comes once or twice a year and makes the Waste bloom, the stars the
+# carters steer by. Its customs: the stranger draws first at the well, a guest is fed for three days and then is a
+# neighbour, bread and salt shared make a friend, the garden channels open by turns. Lines in Saltwell's own words are
+# its folk's (`from=saltwell`); the rest is said by anyone who lives there.
+
+# ================================================================ The weather: noon, night, sand wind and rare rain
+
+scene sw_noon_hush
+when topic=weather|day here.region=waste here.time=day here.weather=clear
+a : Noon. Even the lizards have gone in. | Shutters closed, and the whole hamlet asleep till the heat breaks. | Look at the air over the Saltpan. It shivers like water. | The well's shadow is the size of a coin.
+b[from=saltwell] #sw : Work at dawn, work at dusk, and give the noon to the shade. My grandmother's rule. | The sun is a guest who never leaves. We let him have the street. | That's the pan lying to you. There's no water out there, only salt. | At noon we sit, and drink, and say nothing. It is a fine custom.
+b : Sensible lizards. | I'd sleep too, if I could. | Is there water there? | Hot enough to bake bricks.
+a@sw : A wise wolf, your grandmother. | Let him have it. | It lies very well. | The finest.
+a : Wiser than us. | Find a cool wall. | Only salt. | They do. Adobe.
+
+scene sw_cool_night
+when topic=weather|day here.region=waste here.time=dusk|night here.weather=clear
+a : Feel that? The heat's gone off the sand like a lid lifted. | Cold enough for a blanket, and it was baking at noon. | Look at the stars. You could read by them out here. | Everyone's up on the roofs tonight.
+b[from=saltwell] #sw : The Waste takes with one paw and gives with the other: noon for work's ruin, night for its mending. | Cold nights, sweet sleep. We say the stars blow on the embers of the day. | My father steered a cart across the dunes by the low red one. | Roof-sleeping. Best beds in the realm, and free.
+b : Lovely, that. | Make up your mind, sky. | I can't find the half of them. | I'll fetch a blanket.
+a@sw : Wise. | Is that so? | And got home. | And free.
+a : It is. | It never will. | Nor I. | Bring two.
+
+scene sw_sand_wind
+when topic=weather here.region=waste here.weather=sandstorm
+a : Sand on the wind. Shutters, everyone. | Wrap your muzzle, or you'll be chewing grit for a week. | The dunes are walking tonight. | Cover the well! The pool will be gritty for days.
+b[old] #old : Sit it out indoors and tell stories. A sand wind ends. Everything ends. | My mother wet a cloth and tied it over our noses. It still works. | When I was a pup the dunes ate the old road whole. | Lid on the well, cloth on the cistern, and patience.
+b : Already shut. | Too late. | They'll bury the road. | I'll fetch the lid.
+a@old : I'll fetch the lamp. | It does. | Then we'll find another. | And patience.
+a : Good. | Spit it out. | Again. | Quick.
+
+scene sw_rain_in_the_waste
+when topic=weather here.region=waste here.weather=rain|storm
+a : Rain! In the Waste! Everyone's out in it. | Open the cistern covers. Every drop. | Pups dancing in the street, and their elders not far behind. | Smell that. Wet dust. There's nothing sweeter.
+b[from=saltwell] #sw : In a week the whole Waste will bloom. Flowers you won't see again for years. | A rain like this fills the cisterns for a season. We'll give thanks at the pool tonight. | Let them dance. Rain comes to the Waste once or twice a year, and it's a feast. | My father said rain on the sand smells of promises.
+b : Mind you don't drown. | Already open. | Me too. | Odd, but yes.
+a@sw : I'll walk out and see. | Gladly. | A feast. | He was right.
+a : Not likely. | Good. | Join them. | Sweet.
+
+# ================================================================ The spring, the well and the stars
+
+scene sw_the_spring
+when topic=lore here.region=waste
+a : They say the spring was found by a lost carter following a hawk. | The spring's never failed. Not once, in all the years anyone remembers. | Folk say there's a river under the Waste, and the pool is where it breathes. | Every family in Saltwell has a place by the pool that's theirs to draw from.
+b[old] #old : Not a carter. A mother with two pups and an empty water skin. The hawk was real, mind. | It failed once, my grandfather said, in the long drought. Everyone dug, pups too, and it came back. | A river under the sand. Cold and dark, and it never stops. I believe it. | And the stranger draws first. Always. That's the oldest rule we have.
+b : A hawk? | Lucky us. | Under the sand? | That seems fair.
+a@old : I'll tell it that way, then. | Pups too. | So do I. | Always.
+a : A hawk. | Very lucky. | Deep under. | It is.
+
+scene sw_at_the_well
+when topic=smalltalk here.region=waste here.time=dawn|dusk
+a : The well at dusk. Half of Saltwell comes for the water and stays for the talk. | First bucket of the morning is the coldest. | Somebody's left the rope frayed again. | Mind the queue. The well has its manners.
+b[from=saltwell] #sw : And what's said at the well stays at the well. Mostly. | Cold as the stars. Drink it slowly, it's sweeter that way. | I'll splice it. A well rope is everyone's, so it's mine too. | Elders first, then the guest, then the rest of us. Pups last, and they know it.
+b : And the gossip's free. | Bracing. | Who'd do that? | Right you are.
+a@sw : Mostly. | It is. | Good. | They do.
+a : Always free. | Very. | Somebody. | Sorry.
+
+scene sw_stars
+when topic=lore here.region=waste here.time=night
+a : See the low red star? Keep it on your left and you'll reach the Saltpan. | My father knew forty stars by name. I know nine. | There's no getting lost in the Waste on a clear night. Only on a cloudy one. | The stars here are close enough to touch.
+b[carter] #carter : On your left going out, on your right coming home. I've never missed the road. | Nine is enough, if they're the right nine. | And then you sit, and wait for morning. That's the rule. | Close enough to steer by. That's what matters.
+b : Which one? | Only nine? | So you sit? | Nearly.
+a@carter : Never once? | They are. | Wise rule. | It is.
+a : That one. Low down. | Only nine. | You sit. | Nearly.
+
+# ================================================================ The work: salt, vines and the warren
+
+scene sw_saltpan
+when topic=work here.region=waste
+a : Raked salt on the pan since before dawn. My eyes are full of white. | The crust's thick this year. Good salt, clean salt. | A cart of Saltwell salt goes as far as Ridgemere, they say. | Salt in my fur, salt in my bread, salt in my dreams.
+b[farmer] #raker : Wet cloth over the eyes at noon, or the glare blinds you. Old rakers' trick. | Clean salt sells. Grey salt salts the road. | And comes back as silver, if the carter's honest. | Salt keeps. That's why they pay for it.
+b : Rest them. | Good. | That far? | Bread needs it.
+a@raker : I'll try it. | So it does. | If. | And so do we.
+a : Can't yet. | Very. | Further. | It does.
+
+scene sw_ochre_vines
+when topic=work here.region=waste here.season=summer|autumn
+a : Up to the Ochre vines at first light, back before noon. | The grapes on the Ochre slopes are sweet as honey this year. | Every vine up there drinks from a channel somebody dug a hundred years ago. | The Ochre wine will be good this year. You can taste it in the grapes already.
+b[farmer] #vine : Pick in the cool, rest in the heat. Grapes bruise in the sun. | Sweet grapes, short tempers. Everyone wants theirs picked first. | We clear the channels every spring. Miss one, lose a row. | Don't promise the wine before it's in the jar.
+b : Early start. | Good year, then. | A hundred years? | I'll drink to that.
+a@vine : I know it. | Mine first. | I'll clear mine. | Wise.
+a : Very early. | Very good. | At least. | You will.
+
+scene sw_warren
+when topic=work|animals here.region=waste
+a : The Redsand rabbits are fat this year. | Found a burrow under the cistern wall. Bold things. | A hawk took one of the does right off the warren this morning. | The rabbits dig, the sand fills in, the rabbits dig again.
+b[herder] #warren : Thorn scrub after the rain. They eat like lords. | Leave it. They're good luck, under a wall. Or bad. I forget which. | That hawk's taken three this month. She's feeding chicks somewhere. | Like us and the dunes.
+b : Good. | Bold indeed. | Cruel. | Patient things.
+a@warren : Lucky rabbits. | Good, then. | Fair enough. | Just like us.
+a : Very. | Very. | Hungry. | Very.
+
+scene sw_beasts
+when topic=animals|smalltalk here.region=waste
+a : The goats are on the roof again. | A hawk drinks at the pool every morning. Bold as a guest. | Lizard in the water jar. Fished it out with a spoon. | The hens won't lay in this heat.
+b[herder] #herd : Flat roofs. Goats think they're for them. Maybe they're right. | Leave her be. A hawk at the pool means the pool is good. | Lid on the jar. Always a lid. | Shade and water, and they'll come round.
+b : Again? | Lovely. | Brave lizard. | Nor would I.
+a@herd : Maybe. | I will. | Always. | I'll try.
+a : Always. | Very. | Wet lizard. | Fair.
+
+# ================================================================ The road: carts in off the sand, prices
+
+scene sw_carts_in
+when topic=caravan here.region=waste topic.kind=arrived|in
+a : Carts in off the sand from #topic.where#. Water for the mules first. | The #topic.where# carters came in at dusk, white with dust. | Half of Saltwell's at the inn, waiting on the #topic.where# news. | The #topic.where# carts brought rope and lamp oil. And a letter or two.
+b[innkeeper] #inn : Water, bread, a cool room. A carter who's crossed the Waste is everyone's guest tonight. | They'll sleep till noon, and who'd blame them. | The news comes with the carters, and the carters come to me. | And every one of them thirsty.
+b : Always first. | Long way. | So am I. | Good.
+a@inn : Everyone's. | Not I. | Clever. | Of course.
+a : Always. | Very long. | Come on, then. | Very good.
+
+scene sw_carts_late
+when topic=caravan here.region=waste topic.kind=late|due
+a : The #topic.where# carts are late. Folk keep looking at the road. | No carts from #topic.where# yet. The store's down to its last rope. | They should be in by now, the #topic.where# carters. | Somebody's set a lamp on the roof for the #topic.where# carts.
+b[old] #old : Late is not lost. The sand slows everyone. | Then we'll make do. We always have. | The stars are clear. They'll find the way. | A lamp for travellers. As it was in my mother's day.
+b : They'll come. | Make do, then. | Soon. | Good.
+a@old : Not lost. | Always. | They will. | Good custom.
+a : They will. | We will. | Soon. | Good.
+
+scene sw_prices
+when topic=prices here.region=waste
+a : #topic.what# at #topic.price#? Out here everything's crossed the sand first. | Everything we eat but dates and goat comes in on a cart. | The store's put the rope up again. And who can blame them. | Water's free in Saltwell. Everything else, you pay the road for.
+b[merchant] #store : The carter charges me, the road charges the carter, and the sand charges everyone. | And the carts don't come for nothing. | Rope frays in the heat. I buy it twice as often as they do in Ridgemere. | Water's free. That's the oldest law here, and the only one I'd never change.
+b : Dear, though. | True. | Nobody. | So it should be.
+a@store : Dear for everyone. | They don't. | Twice. | Nor I.
+a : Very dear. | True enough. | Nobody. | It should.
+
+# ================================================================ The hamlet's customs: guests, dates, turns, feasts
+
+scene sw_newcomer
+when topic=newcomer here.region=waste
+a : #topic.subject#'s new in Saltwell. Three families have asked them to supper already. | A newcomer, #topic.subject#. Somebody should take them a jar of water and some dates. | #topic.subject# came in with the carts and stayed. | Have you met #topic.subject#? Quiet. Watches the well.
+b[from=saltwell] #sw : As it should be. Three days a guest, and then a neighbour. | I took them dates this morning. And salt, for luck. | The Waste sends us who it sends. We make them welcome. | Let them watch. They'll learn the turns soon enough.
+b : Lucky them. | I'll do it. | Brave. | Quiet's fine.
+a@sw : So it is. | Good. | We do. | They will.
+a : Very. | Do. | Or lost. | It is.
+
+scene sw_dates
+when topic=food here.region=waste
+a : First dates of the year off the palms. Taste. | Bread, dates and a cup of water. A meal for anyone. | The palms by the pool are heavy this year. | Goat cheese and dates. Nothing better at noon.
+b[from=saltwell] #sw : Sweet as the first rain. My grandmother said it every year, and every year she was right. | And salt on the bread. Share bread and salt with a wolf and you're friends for life. | Heavy palms, kind year. | And shade to eat it in.
+b : Sweet. | Simple, that. | Good. | Nor worse.
+a@sw : She was. | For life. | Kind indeed. | Always.
+a : Very. | And good. | Very. | Better.
+
+scene sw_water_turns
+when topic=quarrel here.region=waste
+a : You opened your channel in my hour. My beans are dry. | Your goats were in my garden again. | You drew from my place at the pool. | You took the shade by the wall that's mine at noon.
+b : The sluice stuck. I didn't mean it. | Goats can't read walls. | It was empty. Nobody was there. | I didn't see your name on it.
+a : Then mend the sluice. | Then build them a pen. | It was mine. Everyone knows whose it is. | My grandfather sat there. And his.
+b : You'll have my hour tomorrow. | I'll build it, and bring you cheese. | Then I'll draw from my own, and you'll forgive me. | Sit, then. I'll find another wall.
+a : Done. | Cheese first. | Forgiven. | Sit with me. There's shade for two.
+
+scene sw_garden_family
+when topic=family pair.band=family|spouses here.region=waste
+a : The garden needs water before dark. | Your mother wants you at the pool for the evening water. | The goat's off her milk. | The roof needs fresh plaster before the heat.
+b : Then we'd better go now, while it's cool. | I'll be there. I always am. | Too much sun. Bring her into the shade. | I'll mix it at dawn.
+a : Bring the jars. | You weren't, last week. | I did. She sulks. | Mix enough for the wall too.
+b : Both of them. | Last week the carts were in! | Then she'll sulk in the shade. | Enough for the whole house.
+a : Good. | Excuses. | Better than the sun. | Good.
+
+scene sw_festival_lamps
+when topic=festival here.region=waste topic.when=today
+a : Lamps all round the pool for #here.festival#. | Music on the roofs tonight, for #here.festival#. | The whole hamlet eats together in the inn courtyard for #here.festival#. | Pups racing round the well for #here.festival#.
+b[old] #old : Same pool, same lamps, sixty years. The water holds the lights like stars. | My father played the reed pipe up there. Out of tune, every year. | Everyone brings a dish, and nobody leaves hungry. That's the whole of it. | Round the well three times for luck. I did it myself once.
+b : Lovely. | Loud, then. | Pass the bread. | Mind they don't fall in.
+a@old : Like stars. | Lovely anyway. | The whole of it. | You still could.
+a : Very. | Very. | Here. | They won't.
+
+scene sw_wedding
+when topic=life topic.kind=marriage here.region=waste
+a : #topic.subject#'s wedding is in the inn courtyard, under the lamps. | They walked #topic.subject# three times round the pool, for a marriage that never runs dry. | #topic.subject#'s wedding. Two days of feasting, and the carters stayed for it. | Every house sent a dish to #topic.subject#'s wedding.
+b[old] #old : Weddings under the lamps are the best kind. Cool, and full of music. | Three times round. I did it. Fifty years, and never dry. | Carters at a wedding. They'll carry the news to every town on the road. | As it should be. No house cooks alone for a wedding.
+b : Lovely. | Sweet custom. | Lucky pair. | And mine.
+a@old : The best kind. | Fifty years! | Every town. | Never alone.
+a : Very. | It is. | Very. | Good.
+
+scene sw_old_palm
+when topic=memories here.region=waste a.stage!=young
+a : There was a palm by the pool taller than the inn. The wind took it the year I married. | The old well had a stone lip worn smooth by paws. They've rebuilt it since. | When I was small, the carts came in once a month and the whole hamlet ran out to meet them. | The pool was bigger once. You could swim across it.
+b[old] #old : I carved my name on that palm. It's in somebody's roof beam now. | I sat on that lip every evening of my youth. | And we'd stand in the dust and wave. I remember. | I swam it. Once. My mother nearly skinned me.
+b[young] #pup : What palm? Where? | What was wrong with it? | Once a month? | Can I swim it?
+b : I remember it. | A shame. | Times change. | It's still deep.
+a@old : Then you're holding up a roof. | We all did. | So do I. | She'd have been right.
+a@pup : Before your time, pup. | Nothing. It was old, and so am I. | And we were glad of it. | No.
+a : Tall. | It was. | They do. | Deep enough.

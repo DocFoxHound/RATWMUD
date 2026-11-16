@@ -721,13 +721,49 @@ then idle, in its mood's frame. The review found, and these are fixed:
 the window, take and finish a courier job, hand in a faction delivery, free talk with the Mind fixture), and one
 review-and-fix. Altogether about 23 hours of agent work, before the user's listen and any animation art.
 
+## Saltwell's own speech (r3-saltwell, 2026-11-15)
+
+The user, on hearing it: Saltwell should get "a town dialect of its own, something more akin to a deserty or Arab
+dialect"; Coldwater's boats and tides sounded wrong in a desert oasis. So Saltwell no longer borrows (settings.json
+`dialect_of` keeps only Fenshore as Mirebridge) and speaks `grammar/saltwell.grammar`:
+- **The voice.** A dignified, unhurried speech of hospitality, drawn from the courtesy of desert peoples without
+  imitating any: peace and welcome first ("Peace on you", "Water and shade to you", "Be welcome"; at dusk "A cool
+  evening to you"), the guest honoured ("honoured guest" to a stranger, "my brother"/"my sister" to the rest), the
+  host's water and shade praised ("May your well never fail"), proverbs ("The well remembers who drew from it", "Salt
+  keeps, and so does a promise", "Shade is for sharing"), and trade by measure and oath ("By salt and water", "Weighed
+  true, and yours"). Its things are the well and the spring, salt and the Saltpan, carts in off the sand, dunes and
+  wadis, the noon heat (noon-hot, sun-weary) and the cold of night (night-cold), date palms and date wine, the Ochre
+  red, the stars a carter steers by. The broad accent is the more formal, never a mock accent or broken grammar: one
+  courtesy more ("Peace on you, and on your house"; "Go in peace, and come back to us"). No real places, peoples or
+  religious words; "wadi" and "Baba" are its only borrowed words. Every symbol the other dialects have (109) is
+  there, with all of the trees'.
+- **Origins.** `World::talkOrigin` knows Saltwell as a town with a dialect of its own (`OwnTowns`), still after the
+  seven and with Fenshore in their names' order, so nobody's birthplace moved: `talk_seed.py --world ridgemere3
+  --reorigin --replace dialects` changed no voice rows (Saltwell's 13 grew up there; 11 more Saltwell-born live in
+  Ridgemere, and now sound like the oasis there) and rewrote live.dialects with the eighth row (the two tables dumped
+  first into the main checkout's Saved/Backups).
+- **The library's lines in Saltwell.** It had none of its own: the 44 entries that played there (`towns`, `south`,
+  `countryside`, the `from=` lists) were read. 14 that don't suit an oasis (barns, mills, ploughing, stubble and
+  barley, deer and bears, the Long River, "we grow it ourselves") now say `here.region!=waste`; the rest (the heat, the
+  caravan's news, the carters' meat, the newcomer and the goat) stay. `scenes/regions/saltwell.talk` gives it 21 scenes
+  of its own (the noon hush, the cool night, the sand wind, rain that makes the Waste bloom; the spring's tale and the
+  well's manners, the stars; the Saltpan, the Ochre vines, the Redsand warren, goats on the roofs; the carts in and
+  late, prices off the sand; the guest's three days, dates and bread and salt, the garden channels' turns, lamps round
+  the pool, a wedding, the old palm), and Saltwell-born living away have their homesick lines as every other place does
+  (where they're from, how they came, their memories, tales, best town, where they'd go, dates).
+- **Checks.** `dialect_check.py` knows the eighth dialect; `dialect_allow.json` lists the realm's devout courtesies
+  ("go in peace", "peace on you", "peace on your road") and "the sand" as ordinary speech, and the Waste's names as
+  places. `talk_tests` (Saltwell speaks its own; a broad wolf greets with peace, never the lake's words; no accent,
+  plain), `dialect_check --world ridgemere3` 0 failures, the listen sheet rewritten. `dialect_samples.py --towns
+  saltwell:4,coldwater:1` samples one place. The live world must be restarted for the new dialect and lines.
+
 ## Open questions
 
 1. *(Answered: yes, with free talk and an editable default line on every choice.)* **Does Talk open the window?** I've decided yes, on the hub with free text inside it, and typing to a talk target
    still works. The other way is that only Trade and work open it, and Talk stays as it is.
 2. *(Answered: yes, both sides.)* **Are the window's lines said aloud?** I've decided yes, as ordinary speech, so the world hears a purchase being
    asked for. Would you rather have trade lines quiet (only the two of them)?
-3. *(Answered: Fenshore as Mirebridge, Saltwell as Coldwater.)* **The Country's towns' speech.** Fenshore would speak as Mirebridge and Saltwell as Coldwater, or each could get a
+3. *(Answered: Fenshore as Mirebridge, Saltwell as Coldwater; since 2026-11-15 Saltwell has its own, the oasis's.)* **The Country's towns' speech.** Fenshore would speak as Mirebridge and Saltwell as Coldwater, or each could get a
    dialect of its own (about 70 entries each, with you).
 4. *(Answered: work every resident's dialect out again from Ridgemere 3.)* **Working out origins again** changes how about 150 town residents sound. Is that wanted, or should the origins
    stay and the residents be moved instead? I recommend working them out again, since DEV isn't precious.

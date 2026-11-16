@@ -173,8 +173,8 @@ struct Settings
         std::vector<std::string> never;
     };
     std::vector<Salience> salience;
-    // The towns with no dialect of their own, and whose speech is theirs (doc 83, Phase 4: Fenshore speaks as Mirebridge,
-    // Saltwell as Coldwater): settings.json's "dialect_of". A resident's `from` stays where they grew up.
+    // The towns with no dialect of their own, and whose speech is theirs (doc 83, Phase 4: Fenshore speaks as Mirebridge;
+    // Saltwell, which spoke as Coldwater, has its own since 2026-11-15): settings.json's "dialect_of". A resident's `from` stays where they grew up.
     std::map<std::string, std::string> dialectOf;
 };
 

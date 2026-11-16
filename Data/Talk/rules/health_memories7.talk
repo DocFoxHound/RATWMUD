@@ -789,6 +789,13 @@ say I miss the orchards. Blossom like snow, but warm. | Back home we'd eat plums
 then other: memories.answer
 remember pair: mk=home 2m
 
+rule e3_mr_from_saltwell
+when concept=talk.memories from=saltwell here.region!=waste
+cooldown 2d
+say I miss the nights at home. Cold and clear, and the whole sky down to the sand. | Back in Saltwell we slept on the roofs all summer. Here I lie awake listening to the walls. | #mum# used to wake me before dawn to draw the first water. Coldest, sweetest water in the realm.
+then other: memories.answer
+remember pair: mk=home 2m
+
 rule e3_mr_from_city
 when concept=talk.memories from=ridgemere here.region=towns
 cooldown 2d
@@ -803,7 +810,7 @@ say When I was a pup there were fields where the suburbs are. | I remember when 
 then other: memories.answer
 
 rule e3_mr_town_old
-when concept=talk.memories here.region=towns stage=old
+when concept=talk.memories here.region=towns stage=old here.region!=waste
 cooldown 2d
 say I miss the old mill. The whole town smelled of flour on grinding days. | There used to be a dance every Restday eve, before the hall burned. | The crossroads was all grass when I was small. We kept geese on it.
 then other: memories.answer

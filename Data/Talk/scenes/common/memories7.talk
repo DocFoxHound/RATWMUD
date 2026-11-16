@@ -329,7 +329,7 @@ a@old : It nearly was, for some.
 a : You could read by it at midnight. | It was. Three boats lost. | As big as a chapel. With sails.
 
 scene e3_m_lost_mill
-when topic=memories here.region=towns a.stage!=young
+when topic=memories here.region=towns a.stage!=young here.region!=waste
 a : The old mill had a wheel you could hear from the gate. Gone now. | There used to be a dance hall over the smithy. | There was an old oak by the crossroads. They cut it down for the road.
 b[old] #old : I courted under that oak. I carved my name in it.
 b[young] #young : What mill? Where?
@@ -408,6 +408,15 @@ b[from=larkfield] #lf : The larks over the downs at dawn. Don't. I'll weep.
 b : Twenty miles of what? | What happens at a fair like that? | We get crows.
 a@lf : Weep, then. I'll join you.
 a : Grass and sheep. And more sky. | Sheep. And haggling. And cider. | Crows aren't the same.
+
+scene e3_m_from_saltwell
+when topic=memories a.from=saltwell here.region!=waste
+cooldown 2d
+a : At home the stars come right down to the sand. You can't see half of them here. | In Saltwell we'd race the goats up onto the roofs. The goats always won. | I miss the dates straight off the palm, warm from the sun.
+b[from=saltwell] #sw : #oath#, I miss that sky. Not a cloud from one end to the other.
+b : Half's plenty. | On the roofs? | Warm dates?
+a@sw : Not one. Only stars, and the carts' lamps on the road.
+a : Not for me. | Flat roofs. It's allowed. | Sweet as honey. Sweeter.
 
 scene e3_m_from_southmeadow
 when topic=memories a.from=southmeadow here.region!=southmeadow

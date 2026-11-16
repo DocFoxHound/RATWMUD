@@ -186,7 +186,7 @@ b : He's had practice. | ...Maybe. | Father's a clever one.
 a : He scowled at me today. | Sheaves first. Then the miller's son. | He's a scowler. They're the cleverest.
 
 scene kn_rg_af_neighbours
-when topic=quarrel here.region=countryside
+when topic=quarrel here.region=countryside here.region!=waste
 a : Your sheep were in my barley. | You've moved the boundary stone. | Your bull broke my fence and ate my cabbages.
 b : Sheep can't read fences. | That stone's always been there. | He was hungry.
 a : Then teach them. | It's moved a stride. I paced it. | So am I now.
