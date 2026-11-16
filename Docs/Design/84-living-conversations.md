@@ -1,12 +1,14 @@
 # 84. Living conversations: a voice of its own for every wolf, talk that answers itself, and players only in the window
 
-Draft, 2026-11-15, for Ridgemere 3 (`ridgemere3`, database `ratw_ridgemere3`; doc 82). **Nothing here is built.** It
-extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and replaces
-neither: every one of today's 8,525 library entries and 10 trees keeps loading and speaking while it is converted. It
-was written from five read-only surveys of the code, the data and the live world at `ridgemere2` 1034c1fc (the engine,
-the trees, the lifecycle, what residents know, and prior art) and three competing designs; §4 says how they were
-judged and what was taken from each. Decisions are marked **decided** (mine, for the user to overturn) or **open
-(Qn)**, answered in §21.
+Draft, 2026-11-15, revised 2026-11-16 with the user's answers to all six questions of §21 (the window's free text,
+mantles as world database rows, the richer size written by Claude agents, newborns inheriting honesty, births kept
+realm-wide, ticking listening runs), for Ridgemere 3 (`ridgemere3`, database `ratw_ridgemere3`; doc 82). **Nothing here
+is built.** It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
+replaces neither: every one of today's 8,525 library entries and 10 trees keeps loading and speaking while it is
+converted. It was written from five read-only surveys of the code, the data and the live world at `ridgemere2` 1034c1fc
+(the engine, the trees, the lifecycle, what residents know, and prior art) and three competing designs; §4 says how they
+were judged and what was taken from each. Decisions are marked **decided** (mine, for the user to overturn) or **the
+user's (Qn)**, from the answers recorded in §21.
 
 ## 1. The ask (the user, 2026-11-15)
 
@@ -30,7 +32,7 @@ judged and what was taken from each. Decisions are marked **decided** (mine, for
 
 | # | The user's words | What it means here (decided) | Where | Measured by (§15) |
 |---|---|---|---|---|
-| 1 | unique dialogue trees that follow the dialect of their region | Every placed resident wears a **mantle**: their own lines, opinions, stories and window branches, written without their name and natively in the dialect of where they grew up. The role trees keep their shape; the mantle fills their nodes in that wolf's voice and adds branches of its own. | §9, §10 | U1, U2, D1-D3, W1 |
+| 1 | unique dialogue trees that follow the dialect of their region | Every placed resident wears a **mantle**: their own lines, opinions, stories and window branches, written without their name and natively in the dialect of where they grew up, and kept as rows in the world database, editable live in Atlas and the DM. The role trees keep their shape; the mantle fills their nodes in that wolf's voice and adds branches of its own. | §9, §10, §17 | U1, U2, D1-D3, W1 |
 | 2 | an extra set of dialogues for each region for NPCs yet to be born | **88 spare mantles** across the eight dialect pools, each with a pup's and an adolescent's lines, plus a stage kit per dialect for pups whose mantle has none | §12 | pool health log; `mantle_tests` |
 | 3 | dialogues can interchange their own names, so trees can be reused | No name, kin, trade or place is written into a mantle; all are **slots** filled from the wearer's facts. A line whose slot can't be filled doesn't fit. A lint refuses literal names. | §11 | `mantle_check`, T3 |
 | 4 | dialogue trees of old dead wolves reused for newborns in the same dialect region | A dead wolf's mantle **rests** a game year, then passes to a newborn of the same dialect. Habits the neighbours would remember are drawn again; kin may hear an **echo**. | §12 | `mantle_tests`; a harness run shows the handoff |
@@ -187,8 +189,10 @@ composed from authored packs), **content-first** (a hand-written "mantle" for ev
   window choices), but too many moving parts at once, an in-game identity composer, voices shared by about 19 wolves
   each through packs (weak on goal 1), and 131 hours that did not cover its own scope.
 - **Content-first** was the only one that made every wolf truly unique and dialect-true in its own words, and it
-  measured the quadratic load (defect 16). But about 0.7 million words (more than twice today's whole library) is not a
-  realistic review load, a third voice was optional, and measurement came late.
+  measured the quadratic load (defect 16). But about 0.7 million words (more than twice today's whole library) looked
+  like an unrealistic review load, a third voice was optional, and measurement came late. **The user chose that size
+  anyway (Q3)**, so its writing volume is in this plan, reviewed as §14.4 describes: every line through the automated
+  gates, a stratified sample by eye.
 - **Robustness-first** wins: measurement first, behaviour-neutral refactors with golden tests before any change, a
   scorecard whose metrics are checked against a shuffled control so they can't grade their own annotations, hard gates
   in ctest, and concrete truth findings (the Coldwater fishers). Its weak spots were thinner opinions and agendas and a
@@ -200,15 +204,16 @@ writing to the ledger, town moods, a player's knowledge unlocking choices, resid
 without answering it, and the function lint for window lines. From content-first, the name **mantle**, the native
 dialect content, tiers by role, batch loading with per-owner buckets, re-drawn marks and kin echoes, invitations and
 talk-only promises the world checks, grafts and the "you" node in the window, dialect name pools, pool fallbacks by
-neighbouring dialect, and logging the words.
+neighbouring dialect, logging the words, and (by the user's answers) its size (Q3) and engine-first's home for the
+text, the world database (Q2).
 
 **Contradictions, resolved:**
 
 | Question | Engine-first | Content-first | Robustness-first | Decided |
 |---|---|---|---|---|
 | Name of the per-NPC unit | identity | mantle | identity / `.voice` | **mantle**: `Core/RatwIdentity.h` already means a player's central identity, and "voice", "character" and "persona" are taken |
-| Where the text lives | a DB table (`live.voice_identities`) | files, DB override text | files; DB bindings and per-NPC overrides | **files**, DB bindings and per-NPC overrides (open, Q2, because it revises doc 62 decision 3) |
-| How it is written | composed from ~900 shared packs, ~150 by hand | ~700-1,200 words each by hand | ~15-30 lines each by hand | **by hand, by tier**: about 40 lines for the ~220 public roles, 24 for the rest (size open, Q3) |
+| Where the text lives | a DB table (`live.voice_identities`) | files, DB override text | files; DB bindings and per-NPC overrides | **world database rows** (the user, Q2): `live.mantles` and `live.mantle_lines` with revisions and a history, the bindings in `live.npc_voice`, per-NPC overrides as today; validated on save, hot-reloaded, exported to text for review (§7.12, §17). This keeps doc 62's decision 3 (what belongs to people lives in the world database) instead of revising it |
+| How it is written | composed from ~900 shared packs, ~150 by hand | ~700-1,200 words each by hand | ~15-30 lines each by hand | **by hand, by tier, at the richer size** (the user, Q3): about 92 lines for the ~220 public roles, 55 for the rest, 64 a spare; about 0.7 million words, by Claude agents in sessions, no paid model calls |
 | Rest before reuse | 365 game days | 365 | 120 | **365 game days** (a setting), with re-drawn marks for wolves still remembered |
 | Spares | 71 | 70 | 88 | **88**, at least 6 per pool |
 | Speakers at once | up to 4 | 2 (3 optional) | up to 3 | **up to 3** in this build; the cap is a setting |
@@ -221,10 +226,13 @@ neighbouring dialect, and logging the words.
 
 ## 5. Decisions (summary)
 
-All **decided**, for the user to overturn; each is explained where it is built.
+All **decided**, for the user to overturn, except where an answer of the user's is named (Qn); each is explained where
+it is built.
 
 1. **Measure first.** Phase 0 builds the offline conversation simulator, the scorer and a committed baseline scorecard
    before any engine or content change. Every later phase reports its scorecard diff and may not break a hard gate (§15).
+   Phase 0 records its fixtures from one ticking 25-game-day run, and each slice ends with a ticking 100-hour listen
+   (the user, Q6); every such run is reported with its seed, length and wall time.
 2. **Truth before variety.** Phase 1 fixes defects 1-15 and adds a presupposition lexicon checked on every line (§7.8).
 3. **Every line declares its move.** About 85 dialogue moves in `Data/Talk/moves.json`; a line `does` one and `owes`
    the answers it makes due. A reply is chosen because it answers what is owed, so content from different files and
@@ -241,12 +249,15 @@ All **decided**, for the user to overturn; each is explained where it is built.
 8. **Opinions with reasons, temperament and mood** shape what is said and how it is taken (§8.8).
 9. **A third wolf may join**, with a stake: named, kin or friend of the subject, deals in the goods, or a witness (§8.9).
 10. **Every placed resident wears a mantle**: name-free, written in the dialect of where they grew up, by hand, sized by
-    tier. Its lines speak in NPC-to-NPC talk and in the window, where it also adds branches (§9).
+    tier at the richer size (about 0.7 million words: the user, Q3), by Claude agents in sessions with no paid model
+    calls. Its lines speak in NPC-to-NPC talk and in the window, where it also adds branches (§9).
 11. **Names, kin, trades and places are slots only** (§11).
 12. **Mantles pass on**: 88 spares in eight dialect pools; a dead wolf's mantle rests a game year and passes to a
-    newborn of the same dialect; no NPC is ever invented and births stay one for one with deaths (§12).
+    newborn of the same dialect; no NPC is ever invented and births stay one for one with deaths. Births stay
+    realm-wide and the pools absorb the imbalance (Q5, the recommendation kept) (§12).
 13. **A newborn gets a voice row at birth**: its mantle, a name from its dialect's pool, its birth town as its origin
-    for life, its parents in `live.npc_relations`, a personality from its mantle instead of its mother's (§12).
+    for life, its parents in `live.npc_relations`, a personality from its mantle instead of its mother's, and its
+    mantle's honesty and temperament (the user, Q4) (§12).
 14. **Residents never answer players' chat.** Everything a resident says *to* a player is in the window; unaddressed
     barks stay. Residents still notice what players say and may talk *about* it to each other (§13).
 15. **The window speaks with the mantle's voice**: choices are moves; Ask about...; introductions; choices unlocked by
@@ -255,6 +266,12 @@ All **decided**, for the user to overturn; each is explained where it is built.
 17. **The ambient Mind path goes** once the final listen-through passes its hard gates (§13.6).
 18. **The lean cadence**: one agent per phase in sequence, one build, targeted tests; the full suite, an end-to-end run
     and one review-and-fix at each slice's end (§18).
+19. **Mantles live in the world database** (the user, Q2): `live.mantles` (the card) and `live.mantle_lines` (one row
+    an item), with revisions and an append-only `live.mantle_history`, editable live in Atlas and the DM. Every save is
+    checked by the game's own loader and `mantle_check` before it is written, and reaches a running server by a
+    `mantle.sync` hot reload, never a new build. Agents' reviewed drafts reach DEV through `tools/mantle_load.py`; a
+    text export, `Data/Talk/mantles-export/`, committed at every batch and slice end, keeps review and diffs possible;
+    tests read a committed fixture (§7.12, §17).
 
 ## 6. Words used here
 
@@ -266,12 +283,18 @@ All **decided**, for the user to overturn; each is explained where it is built.
 - **Ledger**: the talk ledger, what pairs talked about and how it went.
 - **Pool**: the mantles of one dialect not worn by anyone (spares, and resting mantles of the dead).
 - **Kit**: a dialect's shared lines for pups and adolescents.
+- **Item**: one piece of a mantle: a line, a full rule, a symbol, an opinion, a story, a window line or a graft. It is
+  one `live.mantle_lines` row.
+- **The export**: every mantle written out of the database as `.mantle` text under `Data/Talk/mantles-export/`, for
+  review, diffs and tests. No server ever reads it as its mantles.
 
 ## 7. The data model
 
-Everything new is a file under `Data/Talk/`, checked when the library loads (an unknown move, tone, topic, frame, issue
-or claim kind is refused, as an unknown fact is today) and by `talk_check --validate`. The database keeps only who
-wears which mantle and the per-NPC overrides (§17).
+The shared library's new data are files under `Data/Talk/`, checked when the library loads (an unknown move, tone,
+topic, frame, issue or claim kind is refused, as an unknown fact is today) and by `talk_check --validate`. **Mantles
+are rows in the world database** (the user, Q2): written, exported and checked in the `.mantle` syntax (§7.9) by the
+same loader, and stored one row per item (§7.12, §17). The database also keeps who wears which mantle and the per-NPC
+overrides.
 
 ### 7.1 Additions to the `.talk` format (decided)
 
@@ -523,15 +546,19 @@ moment's facts must hold).
 `here.weather` is `indoors` inside a building, so a new fact `here.outdoors` gives the weather outside it: a shopkeeper
 can remark on the mist from behind the counter, truthfully.
 
-### 7.9 The mantle file: `Data/Talk/mantles/<dialect>/<id>.mantle` (decided)
+### 7.9 The mantle text: the `.mantle` syntax, stored as rows (decided; the storage is the user's, Q2)
 
-The example is written for a real resident: Myrtle Stillford (`tn_cw_myrtle_stillford`), 38, shopkeeper at Coldwater
-Stores, from Coldwater, broad accent; calm, plain talk, warm, no humour, plain honesty, content, comfortable; swims in
-the lake even in autumn. Her father is Orrin Stillford (`live.npc_relations`).
+A mantle is written, validated, exported and shown in Atlas and the DM in this syntax, and kept in the world database
+as rows (below, and §17). The example is written for a real resident: Myrtle Stillford (`tn_cw_myrtle_stillford`), 38,
+shopkeeper at Coldwater Stores, from Coldwater, broad accent; calm, plain talk, warm, no humour, plain honesty,
+content, comfortable; swims in the lake even in autumn. Her father is Orrin Stillford (`live.npc_relations`). It is
+abridged: at the richer size (Q3) a full mantle holds about 92 lines (§9.3).
 
 ```
 # cw017, the lake swimmer (doc 84). Written for tn_cw_myrtle_stillford; name-free; worn by one living wolf at a time.
 mantle cw017
+revision 4                         # the database's revision this text was exported at (§17.5); a new draft has none
+state ready                        # draft, ready or retired (§9.2)
 dialect coldwater
 accent broad light                 # the accents a wearer may have; the first is as written
 tier full
@@ -562,7 +589,7 @@ grown
 line tell.self [here.time=dawn|day] : {did=swim} Had my swim before I took the shutters down. #cold.capitalize#, and #very# glad of it.
 line insist [conv.did=swim] : Every year since I was a minnow, and the lake hasn't had me yet. #oath#.
 line reassure [pair.recall.road=worried] : You said the same last week, and you came home with every crate.
-line request [other.job=carter world.bandits=near] : {request=carry} Will you take a box of my candles up the road with you?
+line @carry request [other.job=carter world.bandits=near] : {request=carry} Will you take a box of my candles up the road with you?
 line accept_decline : Next run, then. I'll not have you holed for a box of candles.
 line preclose [self.working=yes] : Well. The counter won't mind itself.
 line farewell : #farewell#, #other.called#. Mind the step, it's slick.
@@ -610,6 +637,29 @@ line tell.boast : I swam out to the second post! Don't tell #mum!#.
   reachability and that every exit leads back to a base node, `bye` or `end`.
 - Every mantle rule gets `self.mantle=<id>` and +5 (`named_person`), as `setCharacter` does today with `self.id=`.
 
+**How it is stored** (the user, Q2; the tables are in §17.1). The header and the card are columns of one
+`live.mantles` row; every item below them is one `live.mantle_lines` row whose `body` is that item's text in this
+syntax, exactly as the export writes it, so drafts, rows and exports share one parser and one set of checks:
+
+| In the text | In the database |
+|---|---|
+| `mantle`, `dialect`, `accent`, `tier`, `state`, `written_for`, `title`, `fits`, `prefers` | `live.mantles` columns (`id`, `dialect`, `accents`, `tier`, `state`, ...) |
+| `traits`, `quirk` | `live.mantles.traits` (jsonb, as `live.npc_voice.traits`), `.quirk` |
+| `likes`, `dislikes`, `fears`, `hopes`, `topics`, `styles`, `marks` | `live.mantles.card` (jsonb) |
+| the Mind's persona template (§11, §13.6) | `live.mantles.persona` |
+| `revision` | `live.mantles.revision`: written by the export, never by hand |
+| one `words` symbol | a row of kind `symbol`, key `words.oath` |
+| one `opinion` | kind `opinion`, key `opinion.road.1` |
+| one `line` or full `rule` in a stage section | kind `line` or `rule`, `section` any, grown, young, adolescent or old, `move` its `does`, key `grown.request.carry` |
+| one `story`, `dlg` or `graft` block | kind `story`, `dlg` or `graft`, key `story.first_swim`, `dlg.shop.greet.1`, `graft.resident.about` |
+
+**Keys** are stable names inside a mantle, so a diff, a history entry, a listener's "wrong" mark or a merge conflict
+points at one item. A line's key is `<section>.<move>.<name>`, and other items are keyed by kind and name
+(`words.oath`, `opinion.road.1`, `story.first_swim`, `dlg.shop.greet.1`, `graft.resident.about`). A line may name
+itself (`line @carry request ...` is `grown.request.carry`); a draft may leave names out, and `mantle_load` gives a new
+item the next free number (`grown.request.2`), which the export writes back (`line @2 request ...`). Order is the
+row's `position`, so inserting a line moves no key.
+
 ### 7.10 Stage kits and name pools (decided)
 
 ```
@@ -656,15 +706,19 @@ living parent or sibling shares the child's first name.
 | `here.came_in`, `here.outdoors`, `here.trades` | a player walked in within 120 s; the weather outside a building; the town's trades (for truth checks) | world |
 | `world.mood` | grief, uneasy, festive, edgy, none | §7.4 |
 
-### 7.12 Where everything lives (decided; storage open, Q2)
+### 7.12 Where everything lives (decided; the mantles' storage is the user's, Q2)
 
 | What | Where | Why |
 |---|---|---|
 | The shared library, moves, topics, frames, temperaments, opinions, claims, truth, kits, names | `Data/Talk/` files | reviewed, versioned, gated in ctest |
-| **Mantles**, spares included | `Data/Talk/mantles/<dialect>/<id>.mantle` | the same; they belong to no one world, so they ship to PROD with the build, no database push |
-| Who wears which mantle, since when, how bound, when released | `live.npc_voice`, new columns (migration 0066, §17) | live data Atlas and the DM see; the game writes it at birth, death and arrival |
-| Per-NPC overrides by the DM or Atlas, and re-drawn marks | `live.npc_voice.grammar/rules/persona` (existing) | doc 62 decision 3 stays true for one person: an override is that wolf's alone and is never passed on |
-| Dialects | `Data/Talk/grammar/*` and `live.dialects` (existing) | unchanged |
+| **Mantles**, spares included: card and items | **the world database**: `live.mantles` (one row a mantle: dialect, tier, state, card, persona, revision, author) and `live.mantle_lines` (one row an item, with its own revision), migration 0066 (§17.1) | the user's answer (Q2): editable live in Atlas (DEV) and the DM (live), checked on every save (§17.3), heard on the wearer's next line (§17.2); live data under doc 20's rules, so an import brings new mantles to live and a pull brings the DM's edits back (§17.9) |
+| Every change to a mantle: who, when, from what source, before and after | `live.mantle_history` (append-only, written by triggers) | audit and revert; each world keeps its own, never synced or packaged |
+| The export: every mantle as `.mantle` text, plus `index.tsv` | `Data/Talk/mantles-export/<dialect>/<id>.mantle`, written by `tools/mantle_export.py`, committed at every batch and slice end | review: an edit made in Atlas or the DM shows as a git diff; G1-G2 run over it in ctest; worlds without a database read it (`--mantles-from`). Never a server's source of mantles when a database is there (§17.5) |
+| Agents' drafts | `.mantle` files in the agent's worktree, at their export path, loaded into DEV by `tools/mantle_load.py` (§17.4) | reviewed as a commit before and after loading |
+| Test content | `Tests/fixtures/mantles/` (about 20 mantles in 3 dialects, committed) | ctest needs no database (§17.6) |
+| Who wears which mantle, since when, how bound, when released | `live.npc_voice`, new columns referencing `live.mantles` (migration 0066, §17.1) | live data Atlas and the DM see; the game writes it at birth, death and arrival, and never writes a mantle's text |
+| Per-NPC overrides by the DM or Atlas, and re-drawn marks | `live.npc_voice.grammar/rules/persona` (existing) | doc 62 decision 3 stays true for one person: an override is that wolf's alone and is never passed on; an edit to the mantle's rows passes on (§11) |
+| Dialects | `Data/Talk/grammar/*` and `live.dialects` (existing) | unchanged, except that saving a dialect re-checks the ready mantles that speak it (§17.3) |
 | The ledger, the cooldown store, news, residents' heard sets, players' claims, the mantle ledger for worlds without a database | the world checkpoint (`Core/RatwWire.cpp`) | game state; harness sims see it |
 | Sim fixtures, transcripts, scorecards, listen sheets, the user's marks | `artifacts/talk/` | evidence, compared run to run |
 
@@ -913,6 +967,7 @@ reply came from a different file family than its opener (expected to rise from a
 | `Core/RatwTalkLedger.{h,cpp}` | new; checkpointed in `RatwWire.cpp` |
 | `Core/RatwGameTalk.cpp` | `talkSpeaker` (:24) gains the §7.11 facts and the layer order (§9.4); `talkPair` (:252) `pair.named` for residents, agreement, ledger and echo facts; `peopleOf` (:742) the priest of the resident's own district; `talkRemember` (:436) sends `conv` effects to the conversation and the rest to the ledger; `loadVoices` (:848) rewritten (§9.4) |
 | `Core/RatwGameDialogue.cpp` | one shared `claimKind` (:172) with the ambient one, plus `bandits` and `newcomer`; free text to `dialogueUnderstand` (§13.5) |
+| `Core/RatwGame.cpp` (the DM actions, beside `voice.sync` at :1210) | `mantle.sync <id>` (one mantle's rows read again, §17.2), `mantle.assign`, `mantle.release`, `mantle.retire` (§17.10) |
 
 ## 9. Mantles: every wolf's own dialogue (goal 1)
 
@@ -939,34 +994,48 @@ lines.
 | spare | written for the unborn of its dialect, never worn |
 | worn | held by one living wolf (a unique index enforces it, §17) |
 | resting | its wearer died on `released_day`; it can't be worn again for `mantle_rest_days` (365 game days, a setting) |
-| retired | taken out of use by the DM, or stale |
+| retired | taken out of use by the DM, or stale (`live.mantles.state = 'retired'`; refused while the mantle is worn) |
 
-Status is worked out from the binding columns and the files: a mantle with no living wearer is spare (never bound) or
-resting (bound before). There is no second store to drift.
+Status is worked out from the binding columns and the mantle's row: a `ready` mantle with no living wearer is spare
+(never bound) or resting (bound before). There is no second store to drift. A `draft` mantle (one still being written
+in Atlas or the DM) is invisible to the game: never loaded, never drawn for a birth. A mantle once worn is never
+deleted, only retired (the bindings reference it).
 
-### 9.3 Tiers and sizes (decided; the size is open, Q3)
+### 9.3 Tiers and sizes (decided; the richer size is the user's, Q3)
 
 | Tier | Who (placed) | Card | Words | NPC-to-NPC lines | Window | Stages | Lines, about |
 |---|---|---|---|---|---|---|---|
-| **full** | about 220 public roles: every merchant (127), guard (14), priest (7), innkeeper (15), master (60, overlapping), House family (15) | yes | 10-14 symbols | 4 openers, 10 move lines, 2 stories of 3 beats, 3 barks | hub, you, job, business, news, gossip, bye, the role tree's nodes; 2 graft nodes | old section if 55 or older | 40 |
-| **standard** | about 553: everyone else placed, 97 pups and adolescents included | yes | 8-10 symbols | 3 openers, 8 move lines, 1 story, 2 barks | hub, you, news, bye, 1 graft node | young section for pups | 24 |
-| **spare** | 88 (§12.1), sex-neutral | yes | 8-10 symbols | as standard | as standard | young and adolescent sections | 28 |
+| **full** | about 220 public roles: every merchant (127), guard (14), priest (7), innkeeper (15), master (60, overlapping), House family (15) | yes | 16-20 symbols | 8 openers (by frame: strangers, kin, at work, again today); 30 move lines, with variants by mood and by the listener's band; 5 stories of 3-4 beats; 6 barks; 8 opinions with reasons | hub, you, job, business, news, gossip, bye and the role tree's nodes, each with greetings by meeting and disposition; 2 grafts of 2 nodes | old section if 55 or older | 92 |
+| **standard** | about 553: everyone else placed, 97 pups and adolescents included | yes | 12-14 symbols | 5 openers, 18 move lines, 3 stories of 3 beats, 4 barks, 5 opinions | hub, you, news, bye and the role tree's nodes; 1 graft of 2 nodes | young section for pups | 55 |
+| **spare** | 88 (§12.1), sex-neutral | yes | 12-14 symbols | as standard | as standard | young and adolescent sections | 64 |
 
-About **24,500 lines, roughly 300,000 words**, for the 773 placed residents and the spares. For scale, today's whole
-library is 58,802 alternatives.
+About **56,300 lines, roughly 690,000 words** (220 × 92 + 553 × 55 + 88 × 64), for the 773 placed residents and the
+spares: the user's richer size (Q3), about 2.3 times the 24,500 lines (300,000 words) first recommended at 40, 24 and
+28. For scale, today's whole library is 58,802 alternatives. The extra goes into breadth, not share: more openers by
+frame, more answers per move, more stories and opinions, so a wolf is heard longer before repeating; the cap on a
+mantle's share of a conversation (35%, §8.2) and U1's target are unchanged.
 
 ### 9.4 Loading (decided)
 
 - **Batch, once.** `Library::setMantles(std::vector<MantleText>)` parses every mantle in one pass and reindexes once.
   Measured this session on the existing build: 20,000 rules in one `Library::parse` load in 0.85 s, against 22.4 s
-  through 800 `setCharacter` calls (defect 16).
+  through 800 `setCharacter` calls (defect 16). At the richer size the living wearers' mantles are about 50,700 items,
+  so about 2.2 s by that rate (B3, §16).
 - **Per-owner buckets.** Mantle rules go into `byOwner_[mantle]`, never into the shared `byConcept_`, so a pick scans
-  the shared bucket plus one speaker's own (about 25-40 rules): about today's 0.2 ms instead of 0.49 ms.
+  the shared bucket plus one speaker's own (about 55-90 rules at the richer size, of which a move's candidates are a
+  few): about today's 0.2 ms instead of 0.49 ms.
 - **The layer order**, nearest first: `p_<npc>` (the wearer's own overrides and re-drawn marks: `live.npc_voice.grammar`)
   → `m_<mantle>` → the dialect → `plain`.
-- **Only living wearers load.** `Game::loadVoices` (`RatwGameTalk.cpp:848`) reads the mantle files, the bindings from
-  the database (or the checkpoint in a world without one), then the overrides. A new `Game::loadVoice(npc)` and the DM
-  command `voice.sync <npc>` reload one wolf (today only the whole set reloads).
+- **Only living wearers load, from the rows.** `Game::loadVoices` (`RatwGameTalk.cpp:848`) reads, in one pass, the
+  `ready` mantles worn by a living wolf (`live.mantles` and `live.mantle_lines` joined to the bindings in
+  `live.npc_voice`), the cards alone of every other ready mantle (id, dialect, accents, fits, honesty: what the pools
+  need), then the overrides. In a world without a database it reads an export directory (`--mantles-from DIR`) and
+  its bindings from the checkpoint. A mantle that fails to load is skipped and logged (`RATW_MANTLE refused <id>:
+  <why>`), and its wearer speaks from the library: a bad row never stops a server.
+- **Hot reload.** `mantle.sync <id>` (a DM action, queued by every save in Atlas and the DM, §17.2) reads one mantle's
+  rows again and swaps its `byOwner_` bucket and `m_<id>` layer; if the new revision fails to load, the old one stays
+  and the action reports why. A new `Game::loadVoice(npc)` and `voice.sync <npc>` reload one wolf; `voice.sync` with
+  no target reloads everything (today only the whole set reloads).
 - **Mantle traits feed the society** as today's voice traits do (`setHonesty`, `setQuarters`), and its favourite topics
   feed `World::setTalkLeanings`.
 
@@ -977,7 +1046,13 @@ the Market Board's district factor (doc 79 10.1; `RatwGameTalk.cpp:906-925`). Th
 of the six talk-only axes (501 residents are "reserved", 592 have no humour) and may change a quirk where three or more
 in a town share it (Coldwater has several lake swimmers). Nothing else in the simulation reads them.
 
-### 9.6 The truth rules for mantle text (decided; enforced by `tools/mantle_check.py`)
+**A newborn inherits its mantle's honesty and temperament** (the user, Q4; §12.5): all seven axes come from the card.
+A reused mantle carries the honesty of the dead wolf it was written for, and births are one for one with deaths, so
+reuse keeps each dialect's honesty mix. Spares have no one to copy, so P15 writes their cards to their dialect's mix
+of placed residents (`mantle_check --pools`: each pool's share of `sly` and `guarded` within 5 points of its
+dialect's).
+
+### 9.6 The truth rules for mantle text (decided; enforced by `tools/mantle_check.py`, on every batch and every save)
 
 1. **Opinions and feelings: freely.** "I can't abide the noon heat."
 2. **Claims about the wearer only with a fact behind them**: "my shop" needs `self.role=merchant`, "my husband"
@@ -991,8 +1066,9 @@ in a town share it (Coldwater has several lake swimmers). Nothing else in the si
 
 The 10 `gpt-5.6-luna` tables become the pilot's first mantles (`written_for` kept). Their stale facts are rewritten
 (Dagny Slaghand sells fish in the Rag Market; Berit Kelpwick builds at the Greatly works), "Priest Tamsin Icefell" and
-"Aster Coldfell" become slots, the punctuation that breaks the window's templates goes, and the rows' `grammar`,
-`rules` and `persona` columns are emptied once the mantle holds them.
+"Aster Coldfell" become slots, the punctuation that breaks the window's templates goes, and the voice rows' `grammar`,
+`rules` and `persona` columns are emptied once their mantles' rows hold them. Ported, they are also the core of the
+test fixture (`Tests/fixtures/mantles/`, §17.6).
 
 ## 10. Dialect (goal 1)
 
@@ -1044,17 +1120,24 @@ own; the player's choices stay plain words (doc 83 decision 4). The English the 
 **Rules** (decided):
 - **A slot that can't be filled makes the line not fit** (the renderer already skips an alternative with a missing fact;
   `mantle_check` makes the gate explicit). A reused mantle cannot name a dead wolf's husband or a bachelor's wife.
-- **`mantle_check` refuses**: any first name or surname of any NPC in `live.npcs` (living or dead) outside a slot;
+- **`mantle_check` refuses**, in a batch and on every save in Atlas and the DM alike (§17.3): any first name or surname
+  of any NPC in `live.npcs` (living or dead) outside a slot;
   capitalised words outside symbols that aren't sentence-initial or on the allowlist (the realm's places, Glasswater,
   the Houses, the gods such as the Bright One, weekdays, ships); `he`/`she`/`him`/`her` about the listener; a habit value
   with its own end punctuation (defect 14); the word "dog"; "tells" for private messages; another dialect's words.
 - **Rebinding is free.** Mantle rules key on the mantle, never the wolf: `self.mantle=<id>`, `byOwner_[mantle]`,
-  layer `m_<id>`. Habits defined in the mantle are seeded by the mantle id, so a mantle's oath survives into its next
-  wearer unless its marks are drawn again (§12.4).
+  layer `m_<id>`, and rows keyed `(world_id, mantle_id, key)`; a binding is one `live.npc_voice` row pointing at the
+  mantle. Habits defined in the mantle are seeded by the mantle id, so a mantle's oath survives into its next wearer
+  unless its marks are drawn again (§12.4).
+- **An edit to a mantle's rows passes on; an override does not.** Since the DM and Atlas now edit a mantle's own text
+  (Q2), a change made there is heard from every later wearer, and `mantle_check` judges it as name-free text. A change
+  meant for one wolf alone (a nickname for their own spouse, a word only they misuse) goes in that wolf's override,
+  `live.npc_voice.grammar/rules`, which is never passed on. The editor asks which, on a worn mantle: "This mantle (its
+  next wearers hear it too)" or "This wolf only".
 - **Text that still names people stays per wolf and is never reused**: `live.npcs.backstory` (all 1,083 name the NPC)
   and the old persona. `#topic.greeting#` (`rules/player.talk:13-31`, the 169 broken greetings) is retired in favour of
-  the mantle's window lines. Because the Mind answers in the window when connected (Q1), mantles carry a `persona` template with
-  `#self.first#` slots.
+  the mantle's window lines. Because the Mind answers in the window when connected (Q1), mantles carry a `persona`
+  template with `#self.first#` slots (`live.mantles.persona`), checked by `mantle_check` like any other mantle text.
 
 ## 12. Spare pools, and the dead-to-newborn handoff (goals 2 and 4)
 
@@ -1073,15 +1156,21 @@ with no fertile couple today can get one by marriage (23 marriages in 26 days so
 
 - **Pups first.** A newborn is a pup for 12 game years (about 2 real years), so every spare has young and adolescent
   sections, and every dialect has a young and an adolescent kit (§7.10) for mantles that have neither.
+- **The pools are read from the rows**: a pool is its dialect's `ready` mantles with no living wearer (spares never
+  bound, and resting ones), worked out from `live.mantles` and the bindings; `draft` and `retired` mantles are never
+  in it.
 - **Pool health**: the server logs `RATW_MANTLE pool coldwater spare=N resting=M ready=K` once a game day, and warns
   when spare plus ready falls below 1.5 × the births expected in the next 180 game days, plus 2. The warning is the
-  signal for another authoring batch. `tools/mantle_pool.py forecast ridgemere3` (read-only) projects births by
-  dialect from couples and ages. The DM's NPC tab shows the same.
+  signal for another authoring batch, loaded with `mantle_load` (§17.4); the DM can also write a spare by hand in the
+  Mantles panel (§17.10), which counts once it is saved `ready`. `tools/mantle_pool.py forecast ridgemere3`
+  (read-only) projects births by dialect from couples and ages, and reports each pool's honesty mix (§9.5). The DM's
+  NPC tab shows the same.
 
 ### 12.2 Death: the mantle rests (decided)
 
 `Society::died` (`Core/RatwCareers.cpp:873-897`) emits a `CareerNote{"mantle_release", resident}`. The host sets
-`released_day` on the binding (database) or in the checkpoint's mantle ledger (`CareerState`, saved through
+`released_day` on the binding (the dead's `live.npc_voice` row, which the game may write; the mantle's own rows are
+untouched) or in the checkpoint's mantle ledger (`CareerState`, saved through
 `RatwWire.cpp:1011-1031`, for file, scratch and harness worlds), and records `knownBy`: the living residents with
 familiarity 40 or more toward the dead, resolved through the `CareerWorld` interface. Memories, bonds, beliefs,
 acquaintances and the ledger stay keyed to the dead and correctly don't pass on: **the pup inherits the voice, not
@@ -1105,8 +1194,11 @@ sits beside `inPlaceOf` (`RatwSociety.h:218`). Candidates, in order:
    never delayed or refused for want of a voice.
 
 A mantle's `fits` must hold for the newborn's sex at any stage. A failed birth re-owes the child **and** returns the
-mantle to its earlier status. **The couple is still chosen realm-wide**; steering births toward the dead's region would
-keep pools balanced (Coldwater runs about 2.7 a year short) but changes the economy sims (open, Q5).
+mantle to its earlier status. Only `ready` mantles are candidates; one saved while the birth was being chosen is taken
+at its newest revision. **The couple is still chosen realm-wide** (Q5: the user didn't take the question up, so the
+recommendation stands): steering births toward the dead's region would keep pools balanced (Coldwater runs about 2.7 a
+year short) but would change the economy sims, so the pools absorb the imbalance (§12.1's sizes, the neighbouring
+pools, the health warning).
 
 ### 12.4 Marks, echoes and the uncanny (decided)
 
@@ -1124,8 +1216,10 @@ keep pools balanced (Coldwater runs about 2.7 a year short) but changes the econ
 - **Stop cloning the mother's** `personality` (a son today inherits "*she* counts things"); write the mantle card's
   ("Calm and warm; swims in the lake even in autumn."). The greeting is left empty (the window speaks from the mantle).
 - **Insert `live.npc_voice`**: `home_region` **pinned** to the birth region (no flip at 18), an accent drawn from the
-  mantle's allowed accents by the town's mix, traits and quirk from the card (honesty open, Q4), `mantle_id`,
-  `bound_how` (echo, reused or spare) and `bound_day`.
+  mantle's allowed accents by the town's mix, **all seven traits, honesty included, and the quirk from the card**
+  (the user, Q4: newborns inherit their mantle's honesty and temperament; `Society::setHonesty` takes the card's at
+  birth, so a `sly` mantle's pup can turn thief at 16, more than 2 real years away), `mantle_id`, `bound_how` (echo,
+  reused or spare) and `bound_day`.
 - **Insert the parents into `live.npc_relations`**, so Atlas and the DM see them.
 - **A name** from `names/<dialect>.names`, unique as §7.10 says; 25% of children born in place of a dead grandparent
   take their first name. The surname stays the mother's.
@@ -1239,7 +1333,7 @@ window, `heed` can no longer record a promise from free talk (defect 15).
 
 ## 14. Authoring plan
 
-### 14.1 How much (decided; the mantles' size is open, Q3)
+### 14.1 How much (decided; the mantles' richer size is the user's, Q3)
 
 | Content | Phase | Size |
 |---|---|---|
@@ -1248,17 +1342,24 @@ window, `heed` can no longer record a promise from free talk (defect 15).
 | Shared lines the coverage matrix asks for: closings and pre-closings, known/new/doubt for every claim kind, details per topic, preferred and dispreferred pairs, pivots for the ~120 topic edges, repair, joining, breaks and returns, callbacks | P8 | about 1,500 rules |
 | Thin topics, gated to the facts | P8 | gossip 70→250, event 49→150, news 43→150, newcomer 52→120, harvest and ships 11→60 each, deed 21→80, accent 26→60, times 21→60: about 600 rules |
 | The data files (moves, topics, frames, temperaments, opinions, claims, truth) | P2-P6 | 85 moves; 45 topics, 120 edges; 8-10 frames, 6 goals, 4 moods; 21 trait values; 20 issues, 130 items; 25 claim kinds × up to 5 points of view |
-| Mantles, full tier | P11, P14 | about 220 × 40 = 8,800 lines |
-| Mantles, standard tier | P11, P14 | about 553 × 24 = 13,300 lines |
-| Spares | P15 | 88 × 28 = 2,500 lines |
+| Mantles, full tier | P11, P14 | about 220 × 92 = 20,200 lines |
+| Mantles, standard tier | P11, P14 | about 553 × 55 = 30,400 lines |
+| Spares | P15 | 88 × 64 = 5,600 lines |
+| All mantles | | about 56,300 lines, roughly 690,000 words (the richer size; 24,500 lines and 300,000 words at the size first recommended) |
 | Stage kits and mark banks | P15 | 16 kits × 60 = 960 lines; 4 banks × 8 dialects, about 1,100 alternatives |
 | Name pools | P10 | about 1,100 names, drafts for the user |
 | The window: new nodes, unclear lines, companion concepts, the understanding corpus | P13 | about 12 nodes, 80 say lines, 40 unclear lines, 60 companion lines; 500 corpus lines |
 
-### 14.2 Who writes, and how (decided; authors open, Q3)
+### 14.2 Who writes, and how (the user, Q3)
 
-- **Claude agents in the user's sessions**, writing files, one town or one Ridgemere quarter per session, behind
-  automated gates. No paid model calls (`tools/voice_tables.py` uses a paid story model; bulk runs need the user's go).
+- **Claude agents in the user's sessions**, about 19 mantles (about 1,200 lines) a session of about 4 hours, a town or
+  a share of a Ridgemere quarter at a time, behind automated gates. **No paid model calls**: `tools/voice_tables.py`,
+  which drafts with a paid story model, is not used for this.
+- **From draft to DEV** (§17.4): the agent writes `.mantle` drafts in its own worktree at their export paths
+  (`Data/Talk/mantles-export/<dialect>/<id>.mantle`), runs G1-G4 on the files, then `tools/mantle_load.py ridgemere3
+  --batch <name> --bind` loads them into DEV's rows (dumping what it replaces to `Saved/Backups/` first), binds them to
+  their `written_for` residents and writes the export back, so the batch's commit carries the assigned keys and
+  revisions and is the review diff. Nobody writes mantle rows by hand-made SQL.
 - **The writer's kit** (Phase 11):
   - `tools/mantle_brief.py ridgemere3 <npc>` (read-only): the resident's facts (`talk_check --residents --json`), kept
     traits, quirk, accent and origin; their post and work label; household, kin, neighbours and bonds above 20; their
@@ -1273,29 +1374,37 @@ window, `heed` can no longer record a promise from free talk (defect 15).
 
 ### 14.3 Order (decided)
 
-1. **Pilot** (P11): Saltwell 13, Fenshore 23 and the 8 placed luna residents, about 44 mantles. **The user listens; the
-   format is frozen.**
-2. Coldwater 66 (2 sessions).
-3. Larkfield 36 (1).
-4. Southmeadow 19, Frosthollow 9, Oakhaven 8 (1).
-5. Ridgemere by quarter (13): commons 211 (5), the Sump 179 (4), the Estate 51 and the Heights 42 (2), the Works 32,
-   the Office 32 and the Wharf 12 (2), with the 40 who have no quarter shared among them.
-6. Spares, kits and mark banks (3).
+Sessions are recomputed for the richer size (Q3): about 19 mantles a session instead of about 43.
+
+1. **Pilot** (P11): Saltwell 13, Fenshore 23 and the 8 placed luna residents, about 44 mantles (about 2,900 lines).
+   **The user listens; the format and the rows' shape are frozen.**
+2. Coldwater 66 (4 sessions).
+3. Larkfield 36 (2).
+4. Southmeadow 19, Frosthollow 9, Oakhaven 8 (2).
+5. Ridgemere by quarter (31): commons 211 (12), the Sump 179 (10), the Estate 51 and the Heights 42 (5), the Works 32,
+   the Office 32 and the Wharf 12 (4), with the 40 who have no quarter shared among them.
+6. Spares, kits and mark banks (5).
+
+That is 39 sessions for P14 and 5 for P15, against 17 and 3 at the size first recommended.
 
 ### 14.4 Quality gates for every batch (decided)
 
 1. **G1, the game's loader**: `talk_check --mantle` (syntax, facts, symbols, 160 characters, depth 6, graft
-   reachability, `needs does=`).
+   reachability, `needs does=`), on the draft files and again on the rows once loaded.
 2. **G2, `tools/mantle_check.py`**: names and the allowlist; truth and claims; stage, job and role gates; punctuation in
    habit values; no "dog", no "tells"; pronouns by symbol; the dialect lexicon by accent; dialect density 60%+;
    uniqueness (no 5-word run shared within a dialect, no oath or saying repeated within a town, a quirk at most twice
-   in a town); habit saturation (`oath!`, `saying!`) in 25% of alternatives at most; the tier's minimum coverage.
+   in a town); habit saturation (`oath!`, `saying!`) in 25% of alternatives at most; the tier's minimum coverage; for
+   spares, the pool's honesty mix (§9.5).
 3. **G3, `talk_check --coverage --mantle`**: the batch answers and is answered by sampled real listeners of its town.
 4. **G4, the frozen scorecard** on ridgemere3 with the batch bound: no hard gate fails, no soft metric regresses by more
    than 10%, and U1, U2 and D1 for that dialect rise.
 5. **G5, listening**: a 60-conversation packet (about 20 minutes). The user listens to the pilot and to the first batch of
    each dialect; for the rest, the slice's review agent reads a stratified 20% sample, and the user's packet is there
-   if they want it. "Wrong" marks are fixed and listened to again before the batch merges.
+   if they want it. "Wrong" marks are fixed and listened to again before the batch merges. At the richer size (Q3)
+   nobody reads every line by eye: G1-G4 and G6 see every line, people see the samples.
+6. **G6, the round trip**: after `mantle_load`, `mantle_export --check` finds DEV's rows identical to the committed
+   files, and G1-G2 pass on the rows as the game reads them.
 
 ## 15. Measurement: the offline conversation simulator (goal 6)
 
@@ -1311,8 +1420,12 @@ A new target beside `hunt_sim` and `level_sim` (not a ctest).
   choice, pacing, breaks and heard sets as the server. (The survey's harness paired random residents in a cell.)
 - **Modes**: `--frozen` (the default: the calendar steps 0.2 game hours between exchanges and the economy doesn't tick;
   events can be injected: a theft, a death, a festival, a raid); `--fixtures DIR` (talk replayed over checkpoint
-  snapshots recorded once from a ticking run; needs a small `Options::checkpointFile`); `--tick` (the world really runs:
-  a simulation, which needs the user's go-ahead, Q6).
+  snapshots recorded once, in P0, from one ticking 25-game-day run; needs a small `Options::checkpointFile`); `--tick`
+  (the world really runs: a simulation). **The user allowed the ticking runs this plan names (Q6)**: that one
+  recording run in P0 and a ticking 100-hour listen at each slice's end (§15.8). No others; each is reported with its
+  seed, length, speed and wall time.
+- **Mantles**: from the world's rows, as the server reads them (a database world), or `--mantles-from DIR` (an
+  export or the test fixture, §17.6).
 - **Options**: `--profile`, `--seed`, `--exchanges`, `--ablate shuffle`, `--library-from REF` (an older library, for
   the old-against-new packet), `--out DIR`.
 - **Output**: `lines.jsonl` and `convs.jsonl` (end reason, outcome, effects, participants):
@@ -1405,7 +1518,8 @@ the dialect lexicon) don't depend on tags, so they keep the tag-based ones hones
 1. **`tools/talk_listen.py RUN --html out.html [--packet 60]`**: one self-contained page; conversations laid out like
    the story log with speaker chips (name, job, origin, accent); hovering a line shows its entry, move, what it owed and
    why it fit; a fine / off / wrong button and a note per conversation. Marks export as JSON, are filed under
-   `artifacts/talk/marks/`, and the scorer reports the "marked wrong" rate per file family. `--packet` samples by
+   `artifacts/talk/marks/`, and the scorer reports the "marked wrong" rate per file family (a mark on a mantle's line
+   names the mantle and the item's key, §7.9, so its fix is one row). `--packet` samples by
    dialect × pair kind (kin, friends, strangers, boss and hand, rich and poor) × topic family × length.
 2. **In the game, for DEV accounts**: `/talkwhy on` shows entry ids and moves beside NPC speech in that player's story
    log; `/flag [note]` saves the last 3 conversations heard, with their per-beat queries and seeds, to
@@ -1424,9 +1538,10 @@ produces an HTML page and a CSV; the scorer computes H1 and H2. Run at the end o
 
 | When | What |
 |---|---|
-| Every commit (ctest) | the loader; `talk_lint`; `mantle_check`; coverage; golden transcripts (60 seeded conversations over a frozen copy of the library, `Tests/fixtures/talk_lib/`, regenerated with `--bless`); `talk_scorecard_quick`: a synthetic town export (`Tests/fixtures/talk_town/`: 3 cells, about 40 residents, 3 dialects), 2,000 frozen exchanges in under 60 s, no database, enforcing the hard gates and failing a soft metric that regresses by more than 10% |
-| End of each phase | ridgemere3, frozen, every profile; the scorecard diff goes in the phase's report |
-| End of each slice | a 100-hour listening run (frozen, or ticking with the user's go-ahead), a listen packet, and at Slices 2 and 5 the blind ratings |
+| Every commit (ctest) | the loader; `talk_lint`; `mantle_check` and `talk_check --mantle` over the test fixture (`Tests/fixtures/mantles/`) and over the whole committed export (`Data/Talk/mantles-export/`); coverage; golden transcripts (60 seeded conversations over a frozen copy of the library and the fixture's mantles, `Tests/fixtures/talk_lib/`, regenerated with `--bless`); `talk_scorecard_quick`: a synthetic town export (`Tests/fixtures/talk_town/`: 3 cells, about 40 residents, 3 dialects, wearing the fixture's mantles), 2,000 frozen exchanges in under 60 s, no database, enforcing the hard gates and failing a soft metric that regresses by more than 10% |
+| With the local PostgreSQL (skipped without it, as `test_world_sync.py` is) | `test_mantle_load.py`: the round trip, refusals, revisions, the history, `mantle.sync` on a built server (§17.6) |
+| End of each phase | ridgemere3, frozen, every profile, reading DEV's mantle rows; the scorecard diff goes in the phase's report |
+| End of each slice | a ticking 100-hour listening run (Q6, reported), the frozen profiles beside it for the scorecard diff, a listen packet, `mantle_export --check` and the fresh export committed, and at Slices 2 and 5 the blind ratings |
 
 ## 16. Performance budgets (decided)
 
@@ -1446,58 +1561,291 @@ The server runs at 20 Hz (50 ms a tick). Measured on this laptop (i9-13900H, `bu
 |---|---|---|
 | B1 | one beat (facts, pick, render): mean 0.6 ms or less, p99 3 ms; a director look every 5 s: p99 5 ms | `Tests/talk_bench.cpp`, ctest label `perf` (not run by default) |
 | B2 | talk at most 1% of tick time | `RATW_TALK_STATS` every 10 minutes (beats, pick ms mean and p99, facts ms, conversations, ledger size, mantles loaded); `/talkstats` for admins |
-| B3 | mantles add 2 s or less to start and to `voice.sync` | batch `setMantles`, one reindex |
-| B4 | RSS grows 80 MB or less | interned strings for mantle entries (today about 2.3 KB an entry) |
+| B3 | mantles add 3 s or less to start and to `voice.sync` (reading about 50,700 rows and one batch parse: about 2.2 s at the measured rate); `mantle.sync` of one mantle 50 ms or less | batch `setMantles`, one reindex; a one-mantle swap of its bucket and layer |
+| B4 | RSS grows 150 MB or less (the richer size, Q3: at today's about 2.3 KB an entry, 50,700 entries would be about 115 MB) | interned strings for mantle entries, aiming at half that |
 | B5 | the simulator runs 150+ exchanges a second per core | ten profiles as separate processes take about 2 minutes frozen |
 
-**Mechanisms:** batch loading and per-owner buckets (§9.4); only the speaker's own mantle is consulted; candidates are
-rendered lazily in the chosen order; person facts are cached per conversation, because `peopleOf` and `neighboursOf`
-scan positions; concurrency stays at `AtOnce = 3`, only where a player listens, until B2's numbers show room.
+**Mechanisms:** batch loading and per-owner buckets (§9.4); only the speaker's own mantle is consulted (about 55-90
+rules); candidates are rendered lazily in the chosen order; person facts are cached per conversation, because
+`peopleOf` and `neighboursOf` scan positions; concurrency stays at `AtOnce = 3`, only where a player listens, until
+B2's numbers show room.
 
-## 17. Migrating `ratw_ridgemere3` (decided)
+## 17. Mantles in the world database, and migrating `ratw_ridgemere3` (decided; the storage is the user's, Q2)
 
-**Migration `Database/migrations/0066_mantles.sql`** (the latest is 0065), with a rollback in `Database/rollback/`.
-The server is PostgreSQL 18.6.
+The user's answer (Q2): mantle text lives in the world database, editable live in Atlas and the DM tool, not in
+repository files. This section is how: the tables (17.1), how an edit reaches a running server (17.2), the checks on
+every save (17.3), how agents' drafts reach DEV (17.4), the text export that keeps review possible (17.5), where tests
+get their mantles (17.6), the bindings (17.7), the checkpoint (17.8), PROD and hosted worlds (17.9), and the editors
+(17.10).
+
+### 17.1 Migration `Database/migrations/0066_mantles.sql`
+
+The latest is 0065; the rollback is `Database/rollback/0066_mantles_down.sql`, run only after `tools/mantle_load.py
+backup <world>` has dumped the three tables and the new columns to `Saved/Backups/` (its header says so). The server is
+PostgreSQL 18.6. The tables are in `live`, beside
+`live.npc_voice` and `live.dialects`, because mantles are live data under doc 20's rules (Atlas edits DEV's, the DM
+edits live's, an import and a pull carry them) and `tools/world_sync.py` already compares `live` tables row by row.
 
 ```sql
--- Who wears which mantle (Docs/Design/84 §17). The mantles themselves are files (Data/Talk/mantles).
+-- Mantles (Docs/Design/84 §7.9, §17): each wolf's way of talking, name-free, passed on at death; the user's answer Q2
+-- puts the text here, editable live in Atlas (DEV) and the Dungeon Master (live). One row a mantle (its card) and one
+-- row an item (a line, a rule, a symbol, an opinion, a story, a window line, a graft) in the .mantle syntax, so the
+-- game's one parser reads rows, drafts and exports alike. The game reads them at start, on voice.sync and on
+-- mantle.sync <id>, and never writes them: it writes only the bindings in live.npc_voice.
+CREATE TABLE live.mantles (
+    world_id     ratw_id NOT NULL REFERENCES world.worlds ON DELETE CASCADE,
+    id           text NOT NULL CHECK (id ~ '^[a-z]{2}[0-9]{3,4}$'),
+    dialect      text NOT NULL CHECK (dialect ~ '^[a-z_]{1,40}$'),     -- plain, or a live.dialects name (checked on save)
+    tier         text NOT NULL CHECK (tier IN ('full', 'standard', 'spare')),
+    state        text NOT NULL DEFAULT 'draft' CHECK (state IN ('draft', 'ready', 'retired')),
+    format       integer NOT NULL DEFAULT 1 CHECK (format >= 1),        -- the .mantle syntax's version: the server reads
+                                                                        -- its own and the one before, as builds do (0065)
+    accents      text[] NOT NULL CHECK (cardinality(accents) BETWEEN 1 AND 3
+                                        AND accents <@ ARRAY['none', 'light', 'broad']),  -- the first is as written
+    title        text NOT NULL DEFAULT '' CHECK (char_length(title) <= 80),      -- for authors and the DM, never spoken
+    written_for  ratw_id,                                                         -- metadata, never spoken
+    fits         text NOT NULL DEFAULT '' CHECK (char_length(fits) <= 400),      -- hard criteria a wearer must match
+    prefers      text NOT NULL DEFAULT '' CHECK (char_length(prefers) <= 400),   -- soft: how well a wearer suits it
+    traits       jsonb NOT NULL DEFAULT '{}' CHECK (jsonb_typeof(traits) = 'object'),   -- as live.npc_voice.traits
+    quirk        text NOT NULL DEFAULT '' CHECK (quirk ~ '^[a-z_]{0,60}$'),
+    card         jsonb NOT NULL DEFAULT '{}' CHECK (jsonb_typeof(card) = 'object'),     -- likes, dislikes, fears, hopes,
+                                                                                         -- topics, styles, marks
+    persona      text NOT NULL DEFAULT '' CHECK (char_length(persona) <= 4000),  -- for the Mind in the window (Q1)
+    revision     integer NOT NULL DEFAULT 1 CHECK (revision >= 1),               -- rises with any change to it or its items
+    written_by   text NOT NULL DEFAULT '' CHECK (char_length(written_by) <= 80), -- 'claude-<batch>', 'atlas', 'dm', 'seed'
+    created_at   timestamptz NOT NULL DEFAULT now(),
+    updated_at   timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (world_id, id)
+);
+COMMENT ON TABLE live.mantles IS 'Each wolf''s way of talking (doc 84): the card of one mantle; its items are live.mantle_lines.';
+
+CREATE TABLE live.mantle_lines (
+    world_id     ratw_id NOT NULL,
+    mantle_id    text NOT NULL,
+    key          text NOT NULL CHECK (key ~ '^[a-z0-9_.:]{1,120}$'),      -- <section>.<move>.<name> (§7.9), stable
+    section      text NOT NULL CHECK (section IN ('any', 'grown', 'young', 'adolescent', 'old')),
+    kind         text NOT NULL CHECK (kind IN ('symbol', 'opinion', 'line', 'rule', 'story', 'dlg', 'graft')),
+    move         text NOT NULL DEFAULT '' CHECK (move ~ '^[a-z0-9_.:]{0,80}$'),  -- a line's `does`; a dlg's or graft's node
+    position     integer NOT NULL,                                        -- order within the section
+    body         text NOT NULL CHECK (char_length(body) BETWEEN 1 AND 6000),  -- the item in .mantle syntax, as exported
+    revision     integer NOT NULL DEFAULT 1 CHECK (revision >= 1),
+    updated_at   timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (world_id, mantle_id, key),
+    FOREIGN KEY (world_id, mantle_id) REFERENCES live.mantles (world_id, id) ON DELETE CASCADE
+);
+CREATE INDEX mantle_lines_in_order ON live.mantle_lines (world_id, mantle_id, section, position);
+
+-- Every change, for audit, review and revert. Append-only; each world keeps its own (never synced, never packaged).
+CREATE TABLE live.mantle_history (
+    seq          bigserial PRIMARY KEY,
+    world_id     ratw_id NOT NULL,
+    mantle_id    text NOT NULL,
+    key          text NOT NULL DEFAULT '',          -- '' for the card (the live.mantles row)
+    revision     integer NOT NULL,                  -- the mantle's revision after the change
+    action       text NOT NULL CHECK (action IN ('insert', 'update', 'delete')),
+    before       jsonb,
+    after        jsonb,
+    source       text NOT NULL DEFAULT '',          -- mantle_load:<batch>, atlas, dm, import, pull, migration
+    account      text NOT NULL DEFAULT '',          -- who (an Atlas or DM login, or the session that loaded a batch)
+    note         text NOT NULL DEFAULT '' CHECK (char_length(note) <= 400),
+    at           timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX mantle_history_of ON live.mantle_history (world_id, mantle_id, seq);
+
+-- live.mantle_changed() (in this migration): on each changed row, raises the item's and its mantle's revision, stamps
+-- updated_at and writes one history row, taking source, account and note from the transaction's settings
+-- (SET LOCAL ratw.edit_source / ratw.edit_by / ratw.edit_note, which tools/mantle_store.py sets). SECURITY DEFINER,
+-- so nobody needs, or has, a right to write the history directly (as 0059 does for live.game_changes).
+CREATE TRIGGER mantle_changed BEFORE INSERT OR UPDATE OR DELETE ON live.mantles
+    FOR EACH ROW EXECUTE FUNCTION live.mantle_changed();
+CREATE TRIGGER mantle_changed BEFORE INSERT OR UPDATE OR DELETE ON live.mantle_lines
+    FOR EACH ROW EXECUTE FUNCTION live.mantle_changed();
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON live.mantle_history FROM ratw_editor, ratw_publisher, ratw_game, ratw_dm;
+-- The game reads mantles and never writes them.
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON live.mantles, live.mantle_lines FROM ratw_game;
+GRANT SELECT ON live.mantles, live.mantle_lines, live.mantle_history TO ratw_editor, ratw_publisher, ratw_game, ratw_dm;
+GRANT INSERT, UPDATE, DELETE ON live.mantles, live.mantle_lines TO ratw_editor, ratw_publisher, ratw_dm;
+
+-- Who wears which mantle. A binding is the wearer's voice row; a mantle's wearers, in order, are the rows naming it.
 ALTER TABLE live.npc_voice
-    ADD COLUMN mantle_id    text NOT NULL DEFAULT '' CHECK (mantle_id ~ '^([a-z]{2}[0-9]{3,4})?$'),
+    ADD COLUMN mantle_id    text,
     ADD COLUMN bound_day    double precision,
     ADD COLUMN bound_how    text NOT NULL DEFAULT '' CHECK (bound_how IN ('', 'authored', 'spare', 'reused', 'echo', 'arrival', 'dm')),
-    ADD COLUMN released_day double precision;
+    ADD COLUMN released_day double precision,
+    -- A mantle once worn is never deleted, only retired.
+    ADD FOREIGN KEY (world_id, mantle_id) REFERENCES live.mantles (world_id, id) ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED;
 COMMENT ON COLUMN live.npc_voice.mantle_id IS 'The mantle this resident wears or wore (doc 84); released_day set when they died.';
 -- A mantle is worn by one living wolf at a time (goal 1).
 CREATE UNIQUE INDEX npc_voice_mantle_worn ON live.npc_voice (world_id, mantle_id)
-    WHERE mantle_id <> '' AND released_day IS NULL;
+    WHERE mantle_id IS NOT NULL AND released_day IS NULL;
 -- Rows the game writes (births, deaths, arrivals) show in Atlas's conflict list, as live.npcs's do (migration 0059).
 CREATE TRIGGER game_changes AFTER INSERT OR UPDATE OR DELETE ON live.npc_voice FOR EACH ROW
     WHEN (current_user = 'ratw_game') EXECUTE FUNCTION live.log_game_change('npc_id');
 ```
 
-A mantle's history is its binding rows ordered by `bound_day`; "worn", "resting since" and "spare" are worked out from
-them and the files, so there is one truth.
+"Worn", "resting since" and "spare" are worked out from the bindings and `state`, so there is one truth (§9.2). The
+database's own checks are only the cheap ones; everything the game's loader would refuse is checked before a write
+(17.3), and the game skips, rather than trips on, anything that slipped past (§9.4).
 
-**Backfill** (`tools/mantle_seed.py bind ridgemere3`; DEV writes are allowed, PROD is the user's push):
-1. Each authoring batch binds its own mantles to their `written_for` residents (`bound_how='authored'`, `bound_day` =
-   the world's day). Residents whose batch hasn't landed keep speaking from the library, as today.
-2. The 10 luna rows have their `grammar`, `rules` and `persona` emptied once their mantles land (Phase 11).
-3. Nothing else changes: `home_region`, accent, quarter, traits and quirk stay (a mantle's refinements of talk-only
-   traits are in its card, not written back). The Country's 310 rows are untouched until they arrive.
-4. `tools/mantle_seed.py check ridgemere3` reports placed residents with no mantle, mantles bound twice, and
-   `written_for` ids that no longer exist; the scorecard and `voice_check` flag the same.
+### 17.2 From a save to a running server: hot reload, never a build
 
-**The checkpoint** (`Core/RatwWire.cpp`, beside careers at :1011-1031) gains `talkLedger`, `talkCooldowns`, `news`,
-`townNews`, residents' heard sets, `playerClaims`, and `mantles` (the society's ledger, for worlds without a database;
-a database world reads its bindings from `live.npc_voice` instead, as it does for NPC rows). Older checkpoints load with
-these empty.
+Mantles are not part of a world build: like `live.npc_voice`, `live.dialects` and the economy, the server reads them
+at start, and a build's `LIVE_LAYERS` (`tools/world_build.py`) don't include them, so an edit never makes a new build
+or restarts a DEV server.
 
-**PROD** is on the old map at migration 54, so 0066 waits behind 0055-0065 there, and the mantles, written for Ridgemere
-3's residents, bind only when PROD moves to Ridgemere 3. That push is the user's.
+1. A save in Atlas or the DM (or a `mantle_load` batch) is checked (17.3) and written in one transaction, raising the
+   mantle's `revision` and writing the history.
+2. The same transaction queues a `mantle.sync <id>` action in `dm.actions` for the world's server, as saving a voice
+   queues `voice.sync` today (`tools/dungeon_master.py`). A batch queues one `voice.sync` instead of one per mantle.
+3. The server takes it on its next action poll: `Game::loadMantle(id)` reads that mantle's rows, parses them alone and
+   swaps its `byOwner_` bucket and `m_<id>` layer (B3: 50 ms or less). A conversation already under way keeps the lines
+   it has spoken; its next beat sees the new revision. The action's result names the revision now loaded, or the
+   reasons it wasn't and the revision still in use.
+4. A `draft` mantle is saved and checked like any other but never loaded; saving it `ready` is what lets the game see
+   it (a spare joins its pool at that moment). A `retired` one leaves the pools at once.
+5. Scratch servers read the rows at start, read only; a later edit reaches one only when it is started again.
 
-**Atlas and the DM**: the People panel shows each resident's mantle, its status and its pool; per-NPC overrides are
-edited as today and checked by `talk_check --validate` before saving. New DM commands: `mantle.assign <npc> <mantle>`,
-`mantle.release <npc>`, `mantle.retire <mantle>`, `voice.sync <npc>`.
+### 17.3 Checked on every save: the same checks as a batch (`tools/mantle_store.py`)
+
+One module does every write to mantle rows, so Atlas, the DM tool and `mantle_load` can't disagree:
+
+1. **The game's own loader**: the whole mantle as it would be after the save (the changed item spliced into its rows)
+   goes to `talk_check --validate --mantle`, with the world's dialects (`live.dialects` over the files) and facts:
+   syntax, facts, symbols, 160 characters an alternative, depth 6, graft reachability, `needs does=`, known moves and
+   tones (G1). About a second.
+2. **`mantle_check --one <id> --world <world>`** (G2), reading the world's own rows: names in `live.npcs`, living or
+   dead, outside slots; the allowlist; truth patterns and the stage, job and role gates; punctuation in habit values;
+   no "dog", no "tells"; pronouns by symbol; the dialect lexicon by accent and the density; uniqueness against the
+   other mantles of the dialect and the wearer's town; habit saturation; and the persona template.
+3. **The binding**: the current wearer still fits `fits`; `written_for`, if set, is a resident; `retired` is refused
+   while the mantle is worn (release or reassign first).
+4. **The state**: a `draft` may be under its tier's minimum (a warning beside the counts); `ready` needs the tier's
+   minimum coverage and a clean G2.
+5. **The revision**: a save names the revision it was edited from; if the mantle has moved on, it is refused with who
+   changed it and when, and the editor shows the newer rows to merge, as Atlas's keyed edits do (`tools/live_edit.py`).
+
+A refused save writes nothing and returns the problems by item key, which the editor shows beside the item. **Saving a
+dialect** (`save_dialect`) also re-checks the `ready` mantles that speak it, and is refused, naming them, if a symbol
+they use would go.
+
+### 17.4 How agents author into DEV: `tools/mantle_load.py`
+
+A committed, re-runnable tool, so DEV's mantle rows are only ever written by a tool that checks, backs up and records,
+never by hand-made SQL:
+
+```
+python3 tools/mantle_load.py ridgemere3 Data/Talk/mantles-export/coldwater/cw0*.mantle --batch cw-2 --bind [--dry-run]
+python3 tools/mantle_load.py check ridgemere3
+python3 tools/mantle_load.py backup ridgemere3        # every mantle row and binding to Saved/Backups/; restore FILE puts one back
+```
+
+1. **Parse and check**: every file through 17.3's checks (G1, G2; G3 and G4 the agent ran before). Any problem refuses
+   the whole batch, listed by file, mantle and line.
+2. **Compare revisions**: a file's `revision` header is the revision it was exported from (none for a new mantle). If
+   the row has moved on since (someone edited it in Atlas or the DM), that mantle is refused unless `--take-theirs`
+   (keep the database's, skip the file) or `--take-mine` (overwrite; the history keeps the other) is given for it.
+3. **Back up**: every row the batch will change (mantles, items, the `live.npc_voice` rows it binds) is dumped to
+   `Saved/Backups/mantles-<world>-<batch>-<stamp>.jsonl`, which `mantle_load restore FILE` puts back.
+4. **Write**, in one transaction as `ratw_editor` (the role Atlas writes with), with `ratw.edit_source =
+   'mantle_load:<batch>'`: new mantles and items inserted, changed items updated, unchanged ones left alone (their
+   revision doesn't move), and items absent from a file deleted only with `--prune`. `written_by` is the batch.
+5. **Bind** (`--bind`): each mantle to its `written_for` resident (`bound_how = 'authored'`, `bound_day` = the world's
+   day), unless they are dead or already wear another.
+6. **Tell the server**: one `voice.sync` for a running DEV server.
+7. **Write back**: the touched mantles are exported over their files (17.5), so the commit carries the assigned keys
+   and revisions.
+
+Loading the same files twice changes nothing. `check` reports placed residents with no mantle, mantles bound twice (in
+checkpoint worlds; the database's index forbids it), `written_for` ids that no longer exist, `ready` mantles that fail
+today's checks (after a dialect or a resident changed), and rows that differ from the export; the scorecard and
+`voice_check` flag the same.
+
+### 17.5 Review stays possible: the export (`tools/mantle_export.py`)
+
+```
+python3 tools/mantle_export.py ridgemere3 [--out Data/Talk/mantles-export] [--mantle ID] [--check]
+```
+
+- One file a mantle, `Data/Talk/mantles-export/<dialect>/<id>.mantle`, in canonical form: the header and card from
+  the columns (with `revision` and `state`), then the items by section and position, each with its `@` key, each body
+  verbatim. Plus `index.tsv`: id, dialect, tier, state, revision, `written_for`, `written_by`. Wearers are not in the
+  export (they change with every birth); Atlas shows them.
+- **Canonical, so diffs are clean**: loading an export and exporting again gives the same bytes (`test_mantle_load.py`
+  proves it).
+- **`--check`** lists every mantle and item where the rows and the files differ, and exits 1. It runs at every batch
+  (G6), at every slice's end and before any import to a live world.
+- **Committed**: each batch commits its files after loading; each slice's end exports afresh and commits, so every
+  edit made in Atlas or the DM since shows as a git diff ("14 items in 6 mantles changed in the DM since the last
+  export"), with `live.mantle_history` naming who and when.
+- **Never a server's source** where there's a database: the library's loader reads `.talk` and `.grammar` files, not
+  `.mantle`, and only `--mantles-from DIR` points a server at an export (for worlds without a database). ctest checks
+  that the committed export loads and passes G2 (§15.8), so a broken text can't sit committed unnoticed.
+- `tools/world_build.py export DIR` also writes the world's mantles to `DIR/mantles/` in this form, so `world_check`
+  and `game_load` on an exported build hear them.
+
+### 17.6 Where tests get their mantles
+
+- **ctest, no database**: `Tests/fixtures/mantles/`, about 20 committed mantles in 3 dialects (the 10 luna tables
+  ported, 6 spares, and a few written to exercise every item kind, stage section and graft), changed only on purpose,
+  with `--bless`. `mantle_tests`, the golden transcripts and `talk_scorecard_quick` (its synthetic town wears them)
+  read it through `--mantles-from`. Content that changes in DEV never breaks a unit test.
+- **ctest over the real content**: G1 and G2 over the whole committed export.
+- **The database's own tests** (with the local PostgreSQL, skipped without it, as `test_world_sync.py` is):
+  `test_mantle_load.py` makes a throwaway database from the migrations, loads the fixture, exports it and compares
+  bytes; refuses a name outside a slot, a stale revision, a `ready` under its tier's minimum and a retire while worn;
+  checks the revisions and the history rows; and, with a built server, that `mantle.sync` loads a new revision and
+  keeps the old one when the new one fails. `test_dungeon_master.py` and `test_world_sync.py` gain the mantle save,
+  the import and the pull.
+- **Harness runs** (`talk_sim`, `talk_check --world`, the scorecard) on ridgemere3 read DEV's rows, read only, as the
+  server does.
+
+### 17.7 The bindings
+
+1. Each authoring batch binds its own mantles to their `written_for` residents (`mantle_load --bind`). Residents whose
+   batch hasn't landed keep speaking from the library, as today.
+2. The 10 luna rows have their `grammar`, `rules` and `persona` emptied once their mantles land (Phase 11), after a
+   dump to `Saved/Backups/`.
+3. Nothing else changes: `home_region`, accent, quarter, traits and quirk stay for placed residents (a mantle's
+   refinements of talk-only traits are in its card, not written back; newborns take the card whole, §12.5). The
+   Country's 310 rows are untouched until they arrive.
+4. Births, deaths and arrivals write the bindings from the game (§12); the DM's `mantle.assign` and `mantle.release`
+   write them from the tool (`bound_how = 'dm'`).
+
+### 17.8 The checkpoint
+
+`Core/RatwWire.cpp`, beside careers at :1011-1031, gains `talkLedger`, `talkCooldowns`, `news`, `townNews`, residents'
+heard sets, `playerClaims`, and `mantles` (the society's ledger of bindings, for worlds without a database; a database
+world reads its bindings from `live.npc_voice` instead, as it does for NPC rows). Mantle text is never in the
+checkpoint. Older checkpoints load with these empty.
+
+### 17.9 PROD and hosted worlds
+
+- **PROD** is on the old map at migration 54, so 0066 waits behind 0055-0065 there, and the mantles, written for
+  Ridgemere 3's residents, reach a live world only when it moves to Ridgemere 3. That push is the user's.
+- **Import and pull** (`tools/world_sync.py`): `live.mantles` and `live.mantle_lines` join `SYNCED` as live data.
+  Comparing item by item means an agent's edit to one line in DEV and a DM's to another in live don't conflict; an
+  edit to the same item on both sides is a conflict in Atlas's list, chosen there as any live row's is. `revision` and
+  `updated_at` are already among the fields sync doesn't compare (`VOLATILE`). `live.mantle_history` stays in each
+  world. An import also runs `mantle_export --check` first and records the export's commit in the release note.
+- **Hosted worlds** (doc 78): both tables join `world_package.py`'s `SEED_TABLES` (add-only: a host's own edits are
+  never overwritten), and `written_by` follows `PROVENANCE` and `AUTHOR_COLUMNS` (a model's name, `dm`, `seed` or
+  `package`, with `atlas` added to the allowed words; never a person's).
+
+### 17.10 Atlas and the DM
+
+- **The Mantles panel**, beside Voices, Dialects and Figures in the Talk panels both tools share
+  (`Editor/src/dm/TalkPanels.tsx`; Atlas's "NPCs & areas" workspace and the DM's NPC tab): a list by dialect, tier,
+  state and status (spare; worn by whom; resting until which day), with each pool's health and honesty mix. A mantle
+  opens as its card (form fields) and its items by section, each a text box in `.mantle` syntax; problems from 17.3
+  sit beside the item they concern. "Hear it" renders five samples of an item for the current wearer (through
+  `talk_check`'s render, nothing spoken in the world). The history lists every change with who, when and the diff,
+  and reverts any revision (a revert is a new revision). On a worn mantle, a save asks "This mantle (its next wearers
+  hear it too)" or "This wolf only" (§11). New writes a spare from a blank card or a copy of another (keys kept, text
+  to be changed: uniqueness refuses a near copy).
+- **The People panel** shows each resident's mantle, its state and its pool; per-NPC overrides are edited as today and
+  checked by `talk_check --validate` before saving.
+- **DM commands**: `mantle.assign <npc> <mantle>`, `mantle.release <npc>`, `mantle.retire <mantle>` (refused while
+  worn), `mantle.sync <mantle>`, `voice.sync <npc>`.
 
 ## 18. Phases
 
@@ -1508,9 +1856,9 @@ Hours are rough, for one agent.
 | # | Phase | Needs | Delivers | Tests and gate | h |
 |---|---|---|---|---|---|
 | | **Slice 1: hear it, then make it true** | | | | |
-| P0 | The instrument | – | `ambientStart`/`ambientSpeak` split; `Tests/talk_sim.cpp` (frozen and fixture modes, virtual listeners, the ten profiles, `--ablate`, `--library-from`); `tools/talk_score.py`, `talk_listen.py`, `talk_rate.py`; the synthetic `talk_town` fixture and `talk_scorecard_quick`; `--log-talk-words`; **the committed baseline scorecard and a listen sheet for the user**; the most-heard residents list (it orders the authoring) | golden transcripts unchanged by the split | 12 |
+| P0 | The instrument | – | `ambientStart`/`ambientSpeak` split; `Tests/talk_sim.cpp` (frozen and fixture modes, virtual listeners, the ten profiles, `--ablate`, `--library-from`); `tools/talk_score.py`, `talk_listen.py`, `talk_rate.py`; the synthetic `talk_town` fixture and `talk_scorecard_quick`; `--log-talk-words`; the ticking mode and **the one ticking 25-game-day run that records the fixtures** (the user, Q6; reported); **the committed baseline scorecard and a listen sheet for the user**; the most-heard residents list (it orders the authoring) | golden transcripts unchanged by the split; the run's report (seed, days, speed, wall time) | 13 |
 | P1 | Truth fixes | P0 | defects 1-12, 14 and 15 (`heed` ignores promises from window free talk): structured claims (`Belief` kind, object, place; `claims.json`; `placeWords`), no raw ids, teller ≠ victim, `housemates`, `repeat` per concept, the cooldown store, every beat heard, `noteNews` for births and newcomers, one `claimKind`, `pair.named` between residents, the district priest, `exchangeContext`, news saved; `here.outdoors`; `truth.json` with `talk_lint` and the runtime check; the punctuation join; Coldwater's trade lines gated | T1 = 0, T3 = 0; T2 counted and frozen as the baseline | 10 |
-| | Slice end: full suite, all profiles, review and fix | | | | 3 |
+| | Slice end: full suite, all profiles, a ticking 100-hour listen (Q6, in the background, reported), review and fix | | | | 3 |
 | | **Slice 2: the conversation engine** | | | | |
 | P2 | Moves and tags | P1 | `moves.json`; `does`/`owes`/`invites`/`tone`/`asserts`/`denies`/`gist`/`binds`/`{k=v}` parsed; `Ns::Conv`, `Ns::X`; `byMove_`; aliases for the answer concepts; the dead-end proof; `SaidLine` metadata into transcripts; moves tagged on the 40 most-spoken families | loader refusals tested; transcripts carry moves | 10 |
 | P3 | The turn engine | P2 | `Conversation`; `begin`/`next`/`answer`; fit then tiers; `frames.json`; budgets; closings; shrugs become `ack`; tone rules; `converse` rebuilt on `begin`/`next` | golden for unconverted content; C3, C4, C6 measured | 12 |
@@ -1519,35 +1867,43 @@ Hours are rough, for one agent.
 | P6 | Opinions, temperament, moods, accommodation | P5 | `opinions.json` with drift; `self.op.*`, `pair.agree.*`; likes; `temperaments.json`; `self.mood`; `world.mood`; `conv.accent` | T4 = 0; D1 measured | 6 |
 | P7 | Converting the library; coverage | P6 | `tools/talk_conv.py` (2,652 markers to tags), moves and tones on all 8,525 entries, `talk_migrate.py` (backchannel symbols, plain identical by diff), the discourse symbols drafted in 8 grammars; `talk_check --coverage` and `profiles.json` | equivalence test (the same possible lines, old against new); coverage holes listed | 12 |
 | P8 | The shared lines (three sessions) | P7 | about 1,500 coverage rules and 600 thin-topic rules (§14.1), in dialect symbols | 0 holes on the core moves; R7 3× baseline; C1 92%+ | 18 |
-| | Slice end: full suite, all profiles, a listen packet, **the first blind ratings**, review and fix | | | H1 measured against the baseline | 6 |
+| | Slice end: full suite, all profiles, a ticking 100-hour listen (Q6, reported), a listen packet, **the first blind ratings**, review and fix | | | H1 measured against the baseline | 6 |
 | | **Slice 3: mantles and the lifecycle** | | | | |
-| P9 | The mantle engine | P8 | the `.mantle` parser (card, words, opinions, stages, lines, stories, `dlg`, grafts); batch `setMantles`; `byOwner_`; `setCharacter` as an override; the layer order; habits by mantle; `loadVoices` rewrite, `loadVoice`, `voice.sync <npc>`; `mantle_check.py`; `talk_check --mantle`; migration 0066 and its rollback; the 10 luna tables ported as test content | B3 and B4 budgets; `mantle_tests` parse | 12 |
-| P10 | Passing mantles on | P9 | the mantle ledger in `CareerState`; release in `died`; choosing in `tendBirths`; `ResidentRequest::mantle`; the voice row, relations and personality at birth; names and their checks (draft pools); re-drawn marks and echoes; the `makeRequestedResidents` mirror; arrival binding; pool health and `mantle_pool.py forecast`; DM commands; Atlas's column | `mantle_tests` with synthetic deaths in a small `Society` (no economy run); a harness world shows a handoff | 10 |
-| P11 | The writer's kit and the pilot | P10 | `mantle_brief.py`, `mantle_index.py`, the writer's guide; **about 44 mantles: Saltwell, Fenshore, the 8 placed luna residents**; Saltwell and Mirebridge kits; bindings; a listen packet | G1-G4 on the pilot; U2 and W1 measured | 8 |
-| | Slice end: **the user listens; the format is frozen** | | | | 4 |
+| P9 | The mantle engine and its tables | P8 | the `.mantle` parser (card, words, opinions, stages, lines, stories, `dlg`, grafts, `@` keys, `revision`/`state` headers); batch `setMantles`; `byOwner_`; `setCharacter` as an override; the layer order; habits by mantle; **migration 0066** (`live.mantles`, `live.mantle_lines`, `live.mantle_history` and its trigger, the binding columns, grants) and its rollback, applied to DEV after a dump to `Saved/Backups/`; `loadVoices` reading the rows, `loadVoice`, `voice.sync <npc>`, **`mantle.sync <id>` hot reload**, `--mantles-from DIR`; `mantle_check.py` (with `--one --world`), `talk_check --mantle`; **`tools/mantle_store.py`, `mantle_load.py` and `mantle_export.py`**; the test fixture `Tests/fixtures/mantles/` with the 10 luna tables ported | B3 and B4 budgets; `mantle_tests` parse; `test_mantle_load.py` (round trip byte for byte, refusals, stale revisions, history, `mantle.sync` keeps the old revision when the new fails) | 18 |
+| P10 | Passing mantles on | P9 | the mantle ledger in `CareerState`; release in `died`; choosing in `tendBirths`; `ResidentRequest::mantle`; the voice row, relations and personality at birth; names and their checks (draft pools); re-drawn marks and echoes; the `makeRequestedResidents` mirror; arrival binding; pool health and `mantle_pool.py forecast`; newborns' honesty and temperament from the card (Q4); DM commands; **the Mantles panel** for Atlas and the DM (§17.10: card, items, problems beside the item, history and revert, "this mantle or this wolf only", Hear it) and its save endpoints through `mantle_store`; Atlas's column; `world_sync` and `world_package` learn the tables | `mantle_tests` with synthetic deaths in a small `Society` (no economy run); a harness world shows a handoff; `test_dungeon_master.py` (a bad save refused with its reasons, a good one queues `mantle.sync`); `test_world_sync.py` (an item edited on both sides is a conflict, on different items not) | 15 |
+| P11 | The writer's kit and the pilot | P10 | `mantle_brief.py`, `mantle_index.py`, the writer's guide; **about 44 mantles at the richer size (about 2,900 lines): Saltwell, Fenshore, the 8 placed luna residents**; Saltwell and Mirebridge kits; loaded into DEV with `mantle_load --bind`; the export committed; a listen packet | G1-G4 and G6 on the pilot; U2 and W1 measured | 14 |
+| | Slice end: a ticking 100-hour listen (Q6, reported); **the user listens; the format and the rows' shape are frozen** | | | | 4 |
 | | **Slice 4: the window only** | | | | |
 | P12 | Window-only plumbing | P11 | `residentsAnswerChat`; `overheard`; the emote and the hint; talk opens the window; `react.customer`, `welcomeAtInn` and `companionSays` converted; the companion tree's "What do you think?"; the storyline event from the window only; legacy lines removed; the client changes (§13.2) | W3 = 0; `dialogue_tests`; `game_tests` (introductions still learned) | 8 |
 | P13 | The window's talk and typed words | P12 | `[does <move>]` choices and `answers` nodes; the hub rebuilt; Ask about...; `introduce`, `ask_name`; greetings by meeting and disposition; bye and thanks; day, hours, wanted, where-is; docs 52/54/55 nodes; grafts shown; the player claim store and knowledge choices; the ledger with players; `understand.json` and the 500-line corpus; unclear lines; the Mind in the window when connected, authored understanding otherwise and on failure (Q1); line rotation; `#way.*#`/`#refuse.*#` symbols | W2 gates; the hub never shows more than 9 | 12 |
-| | Slice end: end to end in the client on a scratch server (`tools/scratch.sh`) | | | | 4 |
+| | Slice end: end to end in the client on a scratch server (`tools/scratch.sh`); a ticking 100-hour listen (Q6, reported) | | | | 4 |
 | | **Slice 5: writing every wolf** | | | | |
-| P14 | Mantle batches (17 sessions, §14.3) | P11's freeze, P13 | about 729 mantles, bound as each batch lands | G1-G5 per batch | 68 |
-| P15 | Spares, kits and mark banks (3 sessions) | P10 | 88 spares, 16 stage kits, the mark banks | pool health green for 5 forecast years | 12 |
-| P16 | The final listen-through | all | a 100-hour listening run; the second blind ratings; review and fix; the ambient Mind path deleted | every hard gate; H1 3.8+ | 8 |
-| | **Total** | | | | **257** |
+| P14 | Mantle batches (39 sessions, §14.3) | P11's freeze, P13 | about 729 mantles at the richer size (about 47,800 lines), loaded and bound as each batch lands, the export committed with each | G1-G6 per batch | 156 |
+| P15 | Spares, kits and mark banks (5 sessions) | P10 | 88 spares at the richer size (about 5,600 lines), written to each dialect's honesty mix (Q4); 16 stage kits; the mark banks | pool health green for 5 forecast years; `mantle_check --pools` | 20 |
+| P16 | The final listen-through | all | a ticking 100-hour listening run (Q6, reported); the second blind ratings; review and fix, over 2.3 times the mantle text; `mantle_export --check` and the final export committed; the ambient Mind path deleted | every hard gate; H1 3.8+ | 10 |
+| | **Total** | | | | **373** |
 
-About **159 hours of engine, tools, pilot and checks** and **98 of writing** (P8, P14, P15). The user's own time: the
-pilot's packet, the first packet of each dialect, an hour at each slice's end, the two blind ratings, and tuning the
-discourse symbols and name pools by ear.
+About **179 hours of engine, tools, pilot and checks** and **194 of writing** (P8 18, P14 156, P15 20): **373 in all**.
+Against the first draft's 257 (159 and 98), the user's answers add 116: the richer size (Q3) adds 96 to the writing
+(P14 +88, P15 +8) and 6 to the pilot (P11); the database home (Q2) adds 11 (P9 +6 for the tables, the loader, the
+export and the hot reload; P10 +5 for the Mantles panel, the save checks and sync); the ticking fixture run (Q6) adds
+1 (P0); the larger final review adds 2 (P16). The ticking slice-end listens run in the background and add no hours.
+The user's own time: the pilot's packet, the first packet of each dialect, an hour at each slice's end, the two blind
+ratings, and tuning the discourse symbols and name pools by ear.
 
 ## 19. Risks
 
-1. **The writing is large** (about 24,500 mantle lines and 2,100 shared rules) and could drift in quality or sameness.
-   *Against it:* the pilot freezes the format with the user; the town index and uniqueness gates stop neighbours
-   echoing each other; U2 measures distinctness; every batch passes G1-G5; the size is the user's choice (Q3).
+1. **The writing is large** (the user's richer size, Q3: about 56,300 mantle lines, roughly 690,000 words, and 2,100
+   shared rules, over 44 sessions) and could drift in quality or sameness across that many sessions. *Against it:*
+   the pilot freezes the format with the user; the town index and uniqueness gates stop neighbours echoing each other;
+   U2 measures distinctness; every batch passes G1-G6, so every line is checked by machine while people read samples
+   (§14.4); the extra length goes into breadth (more openers, answers, stories), not into each mantle's share.
 2. **Rebuilding `converse` and the director breaks what works.** *Against it:* Phase 0's split and Phase 5's topic move
    are behaviour-neutral and proved by golden transcripts before anything changes; old content keeps loading.
-3. **Load and pick time with 1,000 mantles** (measured: 22.4 s and 0.49 ms with today's `setCharacter`). *Against it:*
-   batch loading and per-owner buckets in Phase 9, benched against B1-B5 before any batch lands.
+3. **Load, pick time and memory with 1,000 mantles at the richer size** (measured: 22.4 s and 0.49 ms with today's
+   `setCharacter`; about 50,700 items for living wearers, about 115 MB at today's entry size). *Against it:* batch
+   loading, per-owner buckets and interned strings in Phase 9, benched against B1-B5 (B3 3 s, B4 150 MB) before any
+   batch lands.
 4. **Grading our own homework**: metrics computed from the tags authors wrote. *Against it:* the shuffled ablation must
    separate (§15.5), text-only checks don't trust tags, and people rate blind.
 5. **Coherence makes talk predictable.** *Against it:* fit first, but tiers, temperaments and unheard preference inside
@@ -1563,13 +1919,27 @@ discourse symbols and name pools by ear.
    is matched first, in-character "didn't follow" lines bring the choices back, and the 500-line corpus is a hard gate.
 10. **Goal 7 removes things players use** (typing to a resident, introductions by chat, storyteller quests counted by
     naming). *Against it:* the hint, Introduce in the window, the window counting for storylines, and `game_tests`.
-11. **Sims change through voice traits** (honesty chooses thieves; quarter feeds the Market Board). *Against it:*
-    placed residents' honesty and quarter never change; newborns' honesty is the user's call (Q4); births stay
-    realm-wide unless the user says otherwise (Q5).
+11. **Sims change through voice traits** (honesty chooses thieves; quarter feeds the Market Board). Newborns inherit
+    their mantle's honesty and temperament (the user, Q4), so a `sly` mantle's pup can turn thief at 16, more than 2
+    real years away. *Against it:* placed residents' honesty and quarter never change; a reused mantle carries its dead
+    wearer's honesty and births are one for one with deaths, so reuse keeps the mix; spares are written to their
+    dialect's mix and gated (`mantle_check --pools`); births stay realm-wide (Q5). Long sims will show it, year-long
+    ones barely.
 12. **The checkpoint grows** (about +2 MB on 1.3 MB). *Against it:* caps, least-recently-used eviction,
     `--no-talk-ledger` for fast economy sims.
-13. **Measurement runs that tick are simulations.** *Against it:* frozen runs by default; ticking only with the user's
-    go-ahead (Q6).
+13. **Measurement runs that tick are simulations.** The user allowed the ones this plan names (Q6): one ticking
+    25-game-day run in P0 and a ticking 100-hour listen at each slice's end. *Against it:* frozen runs stay the default
+    for everything else; no other ticking run without asking; each one reported with its seed, length, speed and wall
+    time.
+14. **Live edits drift from what was reviewed, or break a running server** (the price of Q2: anyone with Atlas or the
+    DM can change a mantle's text at any moment). *Against it:* every save passes the game's loader and `mantle_check`
+    first (§17.3) and a stale revision is refused; the history names who changed what and reverts it; the server keeps
+    the loaded revision when a reload fails and skips a mantle that fails at start, its wearer falling back to the
+    library; `mantle_export --check` runs at every batch, slice end and import, and the export is committed, so a DM's
+    edits show as a git diff.
+15. **Two copies of the text** (the rows and the export) could be mistaken for two truths. *Against it:* the rows are
+    the only truth a database world reads; the export is written from them and read by no server there; agents' drafts
+    go in through `mantle_load`, never past it; `--check` reports any difference.
 
 ## 20. Example conversations
 
@@ -1699,27 +2069,32 @@ Had Kestrel typed "morning, Myrtle" in chat instead, Myrtle would only have glan
 have seen "Talk to Myrtle (T)".
 ```
 
-## 21. Open questions for the user
+## 21. The user's answers (2026-11-16)
 
-Only the ones that change what gets built.
+All six questions are settled; they were the ones that changed what gets built.
 
-1. **The window's "Say something else...".** *Answered (the user, 2026-11-16):* the live AI answers when it is plugged
-   in; otherwise the pre-written responses (authored understanding, §13.5) answer. See §13.6.
-2. **Where mantles live.** Files in the repository, with the database holding who wears which and the per-NPC overrides
-   (my recommendation: reviewed, tested, shipped with the build). Or rows in the world database, as doc 62's decision 3
-   put character tables, editable live in Atlas and the DM (the DM would then edit a mantle's text, not only one wolf's
-   override).
-3. **How much per wolf, and who writes it.** About 40 lines for the ~220 public roles and 24 for the rest (my
-   recommendation: about 98 hours of writing), or the richer size (about 0.7 million words, roughly 2.3 times the
-   writing), or a leaner one (about 14 lines each, about 55 hours)? Written by Claude agents in sessions (my
-   recommendation, no paid calls), or drafted by the paid story model through `tools/voice_tables.py` and reviewed?
-4. **Newborns' honesty.** Should a newborn take its mantle's honesty (some become possible thieves at 16, more than 2
-   real years away; my recommendation), or always start "plain"? It changes long simulations, not year-long ones.
-5. **Births toward the dead's region.** Keep births realm-wide and let the pools absorb the imbalance (my
-   recommendation), or prefer a couple in the dead wolf's dialect region? Steering keeps pools balanced but changes the
-   economy sims.
-6. **Listening runs that tick the world.** May agents record fixtures from one ticking 25-game-day run in Phase 0 and run
-   ticking 100-hour listens at slice ends (a world simulation)? Or only frozen runs, which tick no economy?
+1. **The window's "Say something else...".** *Answered:* "It should be answered by live AI but ONLY if the AI is
+   plugged in, otherwise it should be answered by the pre-generated responses." So the live AI answers when it is
+   plugged in, and otherwise the pre-written responses (authored understanding, §13.5) answer. See §13.6.
+2. **Where mantles live.** *Answered: world database rows, not repository files*: mantle text lives in the world
+   database, editable live in Atlas and the DM tool. (The draft had recommended files, with the database holding only
+   who wears which and the per-NPC overrides.) Built as §7.9, §7.12 and §17 describe: `live.mantles`,
+   `live.mantle_lines` and `live.mantle_history` (migration 0066), checks on every save (§17.3), `mantle.sync` hot
+   reload (§17.2), `mantle_load` for agents' drafts (§17.4), the committed export for review (§17.5), a committed
+   fixture for tests (§17.6).
+3. **How much per wolf, and who writes it.** *Answered: richer* (about 0.7 million words, about 2.3 times the
+   recommended writing), *written by Claude agents in sessions, no paid model calls.* (The draft had recommended about
+   40 lines for the ~220 public roles and 24 for the rest, about 98 hours of writing, and offered a leaner size or the
+   paid story model through `tools/voice_tables.py`.) Built as §9.3's tiers of 92, 55 and 64 lines, §14's 39 + 5
+   sessions, and §18's 373 hours.
+4. **Newborns' honesty.** *Answered: newborns inherit their mantle's honesty and temperament* (the draft's
+   recommendation, against always starting "plain"). See §9.5 and §12.5.
+5. **Births toward the dead's region.** *Not taken up by the user*, so the recommendation stands: births stay
+   realm-wide and the pools absorb the imbalance (§12.3), rather than preferring a couple in the dead wolf's dialect
+   region, which would keep pools balanced but change the economy sims.
+6. **Listening runs that tick the world.** *Answered: yes, as planned*: one ticking 25-game-day run in Phase 0 to
+   record the fixtures, and ticking 100-hour listens at slice ends (world simulations), each run reported. No other
+   ticking runs (§15.1, §15.8).
 
 ## 22. What I could not verify
 
@@ -1728,8 +2103,9 @@ Only the ones that change what gets built.
   set against it. Phase 0 re-measures with the real director.
 - **The cost of building facts per beat** (`talkSpeaker`, `peopleOf`): not profiled. The load and pick timings in §16
   were re-run this session on synthetic rules; real mantle rules have more criteria.
-- **The agents' writing rate** (about 320 gated lines an hour) is an estimate drawn from the three designs' own
-  estimates, not a measurement.
+- **The agents' writing rate** (about 300-320 gated lines an hour, about 1,200 lines a 4-hour session) is an estimate
+  drawn from the three designs' own estimates, not a measurement, and the richer size's longer stories and opinions
+  may write slower; P11's pilot measures it, and P14's sessions are re-planned from that if it's off by more than 20%.
 - **Ridgemere 3's births and deaths.** It has never been simulated and has had none; the pools use the Gompertz
   expectation on today's ages, with a margin for violent deaths, which are unmeasured.
 - **Fixture mode**: whether a checkpoint file can be loaded into a scratch world needs a small option that doesn't exist.
@@ -1738,6 +2114,10 @@ Only the ones that change what gets built.
   read.
 - **The client line numbers** (`state.ts`) come from the trees survey; I didn't read the client.
 - **The router's full intent list**, and how many of the 500 corpus lines today's router already understands.
-- **Doc 20's push semantics** for the new columns, and Atlas's UI work for the mantle column.
+- **Doc 20's push semantics** for the new tables (that `world_sync`'s row-by-row comparison handles items keyed
+  `(mantle_id, key)` as assumed), and the Talk panels' room for a 92-item mantle editor.
+- **The database's costs**: reading about 50,700 item rows at start, a one-mantle `mantle.sync`, and a save's checks
+  (a `talk_check` process plus `mantle_check` reading the dialect's other mantles, about a second) are estimates from
+  §16's parse timings, not measured; B3 and the save's latency are measured in P9.
 - **About 44 Coldwater fishing lines**: a word search finds 46 lines in `scenes/regions/coldwater.talk` matching fish,
   net, catch or boat (a few may be false matches, and some may be fine with a `self.job` gate); Phase 1 reviews each.
