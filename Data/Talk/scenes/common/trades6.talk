@@ -63,9 +63,9 @@ a : Everybody knows them by the third cup. | Home sour home. | You try telling a
 
 scene tr_sr_gulls
 when topic=work here.region=ridgemere a.job=fisher|sailor|laborer
-a : Gulls flying inland. Storm by night. | The gulls stole half my catch off the slab. | Gulls quiet today. Fair weather.
+a : Gulls flying inland. Storm by night. | The gulls stole half the catch off the slab. | Gulls quiet today. Fair weather.
 b : They're never wrong. | Thieves with wings. | Go out, then.
-a : Never. Gulls and old knees. | Fat, loud thieves. | Already gone. Just came back for my net.
+a : Never. Gulls and old knees. | Fat, loud thieves. | Already gone. Just came back for the net.
 
 scene tr_rm_quay
 when topic=work here.region=ridgemere here.place=shore|work

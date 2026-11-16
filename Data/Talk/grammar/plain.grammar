@@ -97,6 +97,9 @@ toast = Your health | Here's to us | Fur and fortune | Down the hatch
 drink = a jar | a drink | a pint | a cup of cider | a drop of something
 lump = great lump | oaf | lummox | daft article
 later = later | by and by | another time
+# A talk turning (doc 84 §8.5, Phase 5): a step to a neighbouring topic, and a marked change of subject.
+pivot = Speaking of which. | That puts me in mind of something. | While we're at it. | Which reminds me. | And another thing.
+anyway = Anyway. | But never mind that. | Still, enough of that. | Something else, while I think of it. | Here's a thing.
 # The moment.
 fog = fog | mist | murk
 snow = snow | white stuff

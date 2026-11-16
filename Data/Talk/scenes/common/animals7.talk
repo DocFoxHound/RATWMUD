@@ -281,7 +281,7 @@ when topic=animals
 a : Fish are biting. | Pike in the river took a duckling, right off the top. | What's the cleverest fish, would you say?
 b[job=fisher] #fisher : Fish are never where you want them. That's fishing.
 b[job=cook] #cook : Bring me trout. I'll make a meal you'll weep over.
-b #plain : Off you go then. | Gods. | A dead one. Can't be caught.
+b #plain : Off you go then. | Gods. | An old one. Can't be caught.
 a@fisher : That's what I like about it.
 a@cook : Catch them first.
 a@plain : After work. | Pike are devils. | Ha.

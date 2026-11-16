@@ -116,6 +116,20 @@ struct SaidLine
     // Phase 4 (§8.2, Valve's rule): the turn (from 0) and the line within it (a turn's variant) it was said from, so a
     // scene's queued turn is checked again when it comes due. -1 for a line written outside the library.
     int turn = -1, variant = -1;
+    // Phase 5 (§8.5, §8.7): the topic it was said on (the talk's, after any pivot); whether its words stand on the talk
+    // ledger (a callback: what the two said before, a thread, a kept tag, a promise or an invitation; the scorecard's
+    // C9); an invitation it makes the world check (invite <place> <hour> <days>) and a talk-only promise (promise self:
+    // <thing> <days>); the goal (frames.json's) it is a step of.
+    std::string topic;
+    bool callback = false;
+    std::string invitePlace;
+    int inviteHour = -1;
+    double inviteDays = 0;
+    std::string promiseWhat;
+    double promiseDays = 0;
+    std::string goal;
+    bool goalDone = false;                // Its goal's last step: done, kept between the two for the goal's days
+    double goalDays = 0;
 };
 using LineInfo = SaidLine;
 struct Said
@@ -141,13 +155,19 @@ struct Freshness
     std::deque<std::string> recent;
 };
 
-// One thing a speaker means to bring up (doc 84 §8.5). Filled from Phase 5 (World::agendaFor); empty until then, so a
-// conversation with nothing owed has a lull, and closes.
+// One thing a speaker means to bring up (doc 84 §8.5, Phase 5: World::agendaFor, the director's topics for the two, each
+// owned by the one who'd raise it). In a lull with budget left, the talk may turn to one: a step along the topic graph
+// (topics.json's `next`, its criteria holding now: a pivot, "Speaking of wagons...") or, marked, anywhere (a change of
+// subject, "Anyway..."); a thread left unfinished on it is returned to ("As I was saying...").
 struct AgendaItem
 {
-    std::string kind, topic, claim;       // tell, ask_after, callback, need, opinion, smalltalk
+    std::string kind, topic, claim;       // tell, news, smalltalk...; the topic; what it is about (the director's key)
     double urgency = 0;
     bool done = false;
+    Facts facts;                          // Its topic's facts (topic.*, and any other it sets: here.festival)
+    std::string concept;                  // talk.<topic>
+    std::map<std::string, std::string> knows;   // Who held its claim before (by id: yes, no), for `knows`
+    int index = -1;                       // The caller's own (which of its topics it is)
 };
 
 // A conversation as it goes (doc 84 §8.1, Phase 3): who is in it, its phase, its frames and budget, the answers owed,
@@ -188,6 +208,15 @@ struct Conversation
     int handOns = 0;                              // (legacy: the chain's beats so far)
     std::string stake;                            // Why the third joined (named, kin, friend, goods, witness, friends)
     int dropped = 0;                              // Queued scene turns dropped when they came due (Valve's rule)
+    // Phase 5 (§8.5): the topic now, once the talk has turned from the director's (its facts over each query's topic.*,
+    // and who knew its claim, by id); the agenda item it is on (-1: the director's first topic); the topics covered in
+    // order; the goal under way and its next step.
+    Facts topicFacts;
+    std::map<std::string, std::string> knows;
+    int agendaAt = -1;
+    std::vector<std::string> topics;
+    std::string goal;
+    int goalStep = 0;
 };
 
 
@@ -287,6 +316,14 @@ struct Entry
     std::map<std::string, std::string> binds;
     bool aliasMoves = false;              // Its moves are its concept's alias, not written
     std::string owner;
+    // Phase 5 (§7.1, §8.7): an invitation the world checks (`invite here <hour> <days>`), a talk-only promise (`promise
+    // self: <thing> <days>`), and whether its criteria read the talk ledger (a callback).
+    std::string invitePlace;
+    int inviteHour = -1;
+    double inviteDays = 0;
+    std::string promiseWhat;
+    double promiseDays = 0;
+    bool ledger = false;
 };
 
 // A dialogue move (doc 84 §7.2, Data/Talk/moves.json): what a line does, what it makes due, what it answers, and how a
@@ -375,6 +412,17 @@ struct Settings
     std::map<std::string, std::string> dialectOf;
 };
 
+// Doc 84 §7.4, §8.5 (Phase 5): frames.json's goals, a reason to steer a talk: learn a name, ask a favour, mend a quarrel,
+// warn of the road, ask after a loss or a hurt, nag a promise let lapse. A goal holds when its `when` does (self: the one
+// who'd pursue it, other: the one spoken to); its plan's moves are said in lulls, a step a lull, by lines doing them; a
+// step no line fits gives it up. Done, it is kept between the two for `days` (pair.was.goal_<name>) and not pursued again.
+struct Goal
+{
+    std::string name;
+    std::vector<Criterion> when;
+    std::vector<std::string> plan;
+    double days = 7;
+};
 // Doc 84 §7.4 (Phase 3): Data/Talk/frames.json: the kinds of meeting, worked out when a conversation starts and
 // stacked, and the length a talk is meant to have.
 struct Frame
@@ -619,6 +667,18 @@ public:
     const Budgets& budgets() const { return budgets_; }
     const Beats& beats() const { return curt_; }
     double inviteTaken() const { return inviteTaken_; }
+    // frames.json's goals (Phase 5), in their order; the topic graph's steps from a topic (topics.json's `next`, its
+    // criteria parsed against facts.json when the library loads).
+    const std::vector<Goal>& goals() const { return goals_; }
+    struct Step
+    {
+        std::string to;
+        std::vector<Criterion> when;
+    };
+    const std::vector<Step>& steps(const std::string& topic) const;
+    // Whether a fact's key is the talk ledger's (pair.last_talk, pair.talked.*, x.said.*...): a line testing one is a
+    // callback (§8.7).
+    static bool ledgerFact(const std::string& key);
     // The frames that hold for a query (a opens, to b), in frames.json's order; the budget drawn for them (§8.4: by the
     // two speakers' talk, the smaller; +2 for friends and kin; scaled by the frames; closing sooner by their preclose).
     std::vector<std::string> framesFor(const Query& q) const;
@@ -710,6 +770,20 @@ private:
     Budgets budgets_;
     Beats curt_;
     double inviteTaken_ = .5;
+    std::vector<Goal> goals_;
+    std::map<std::string, std::vector<Step>> steps_;
+    bool readSteps(std::string& problem);                             // (topics.json's `next`, parsed: Phase 5.)
+    static void deepen(Conversation& c, const Query& q);              // (A topic's aspect, by the pair's past talk of it.)
+    // The topic a talk turned to over a query's own (its topic.* facts, who knew its claim, conv.topic).
+    static void overlay(const Conversation& c, Query& q);
+    // pickOne's choice made before anything is rendered (§16: lazily): only the chosen entry is rendered, and one whose
+    // turn can't be spoken is dropped and the choice made again. (A talk's turn to a new topic, mid-talk: Phase 5.)
+    Said pickLazy(const Query& q, std::uint64_t seed, const std::function<bool(const std::string&)>& heard,
+                  const std::deque<std::string>& recent, int speaker, Trace* trace,
+                  const std::function<bool(const Said&)>& refuse = {}) const;
+    // Phase 5's lull: a goal's next step, or a turn to an agenda item, or nothing (then the talk closes).
+    std::optional<SaidLine> lull(Conversation& c, const std::function<Query(int, int)>& facts, const Freshness& fresh,
+                                 Trace* trace) const;
 
     std::vector<Entry> entries_;
     std::map<std::string, std::vector<std::size_t>> byConcept_;

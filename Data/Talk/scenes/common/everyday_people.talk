@@ -96,7 +96,7 @@ a : Fair. | Good. | Lean somewhere else.
 
 scene ev_pp_acquaint_name
 when topic=smalltalk pair.band=acquaintances
-a : Remind me, is it #b.name#? | We met at the market. You sold me a basket. | Your cousin married my neighbour, didn't she?
+a : Remind me, is it #b.first#? | We met at the market. You sold me a basket. | Your cousin married my neighbour, didn't she?
 b : That's me. | The one that fell apart? | She did. Poor fellow.
 a : I'm terrible with names. | Er. Yes. | Poor fellow indeed.
 

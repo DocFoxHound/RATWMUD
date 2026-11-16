@@ -1337,7 +1337,7 @@ void residentsTalkFromWrittenScenes()
         // says; a second greeting is the one for those served before.
         shopkeeper = a;
         bool greeted = false;
-        for (int i = 0; i < 40 && !greeted; ++i)
+        for (int i = 0; i < 240 && !greeted; ++i)   // (Not while the keeper is in a talk: longer since doc 84, Phase 5.)
         {
             greeted = g.react(shopkeeper, "player-ash", "react.customer");
             if (!greeted)

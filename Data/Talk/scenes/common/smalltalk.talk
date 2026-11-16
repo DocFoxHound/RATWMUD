@@ -37,13 +37,13 @@ a : Good. That's good. | Glad to hear it. | Look after yourself.
 scene st_strangers_nod
 when topic=smalltalk pair.band=strangers
 a[child] : Who are you? I haven't seen you before. | Are you new? You smell new.
-a[old] : I don't think we've met. I'm #a.name#. | You're not from my street, are you?
-a : Good day. | I don't think we've been introduced. #a.name#. | Fine day, isn't it?
-b[child] : I'm #b.name#. I live just there.
-b[guard] : #b.name#, of the watch. Keep out of trouble and we'll get along.
-b[merchant] : #b.name#. I keep a stall, if you ever need anything.
-b : #b.name#. Good to meet you. | Good day. #b.name#, if you're asking. | Fine enough, yes.
-a?[old] : Hm. Good name. My aunt had a cousin called #b.name#.
+a[old] : I don't think we've met. I'm #a.first#. | You're not from my street, are you?
+a : Good day. | I don't think we've been introduced. #a.first#. | Fine day, isn't it?
+b[child] : I'm #b.first#. I live just there.
+b[guard] : #b.first#, of the watch. Keep out of trouble and we'll get along.
+b[merchant] : #b.first#. I keep a stall, if you ever need anything.
+b : #b.first#. Good to meet you. | Good day. #b.first#, if you're asking. | Fine enough, yes.
+a?[old] : Hm. Good name. My aunt had a cousin called #b.first#.
 
 scene st_the_hour
 when topic=smalltalk
@@ -400,7 +400,7 @@ scene st_town_pride
 when topic=smalltalk
 a : Say what you like, there's no place like #here.town#. | I'd not live anywhere but #here.town#. | #here.town# isn't much, but it's ours.
 b[adolescent] : I'd live anywhere else, given half a chance.
-b[old] : Born here, and I'll be buried here.
+b[old] : Born here, and I'll end my days here.
 b[merchant] : Good place to trade. That's all I ask of a place.
 b : Too right. | I've seen worse. | It'll do.
 a : You'll come back. Everyone does. | Ha. | It will.

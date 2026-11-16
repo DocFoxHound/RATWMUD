@@ -166,6 +166,9 @@ struct Options
     // NPC line's words, the rule or scene it came from and its moves, as records of kind "words" (tools/ai_cost.py
     // doesn't count them). Off: the ledger is as it was, with no words.
     bool logTalkWords = false;
+    // The talk ledger (Docs/Design/84 §8.7, Phase 5): what residents talked of, kept in the checkpoint. Off
+    // (--no-talk-ledger) for fast economy sims: nothing is written to it.
+    bool talkLedger = true;
     // A checkpoint file to start from instead of the world's own save (the conversation simulator's fixtures: doc 84
     // §15.1). Only with `scratch`: read, never written; no journal is replayed over it and a database world's copied
     // NPC states are not applied.
@@ -1942,6 +1945,14 @@ class Game
         bool rainAtStart = false, gist = false, marked = false;
         std::size_t effectsDone = 0, chainDone = 0;
         std::optional<talk::SaidLine> due;           // The first line, chosen as it began (said when it comes due)
+        // Phase 5 (§8.5, §8.7): the director's agenda for the two (what the talk may turn to; Conversation::agenda's
+        // items index it), the topic it is on (-1: the first), what it covered (topic, what about), and what the ledger's
+        // note of it will keep (tags kept, entries told once a listener, claims passed).
+        std::vector<AmbientTopic> agenda;
+        int agendaAt = -1;
+        std::vector<std::pair<std::string, std::string>> covered;
+        std::map<std::string, std::pair<std::string, double>> kept;
+        std::vector<std::string> toldEntries, claims;
     };
     std::shared_ptr<TalkTiming> talkTiming_;
     std::vector<std::string> talkListeners_;            // (setTalkListeners.)
@@ -2244,6 +2255,26 @@ class Game
     const Belief* claimHeld(const AmbientTalk& t, const std::string& who) const;
     // Whether talk may name the topic's claim as a thing one knows (a claim passed on: gossip, a camp, a deed).
     static bool claimTopic(const AmbientPick& pick) { return pick.topic.passes && !pick.topic.subject.empty() && !pick.topic.claim.empty(); }
+    // Doc 84 §8.5, §8.7 (Phase 5). The topic's own facts (topic.*, the Mind's words: exchangeQuery's), for an agenda item.
+    talk::Facts exchangeFacts(const AmbientPick& pick, const mind::ExchangeContext& context);
+    // The context's words only (the subject's name as the teller knows them, the claim, the news, the day's remark): what
+    // exchangeFacts needs, without the personas.
+    mind::ExchangeContext exchangeWords(const AmbientPick& pick);
+    // The talk ledger's facts for the two (pair.last_talk, pair.thread, pair.talked.<topic>, pair.was.<k>, kept_invite;
+    // each one's was.<k>, told_me, promised): what is remembered, asked again every line.
+    void talkLedgerFacts(const std::string& a, const std::string& b, talk::Query& q);
+    // Each one's people by name (spouse, child...) left out where they are the one spoken to.
+    static void notEachOthers(talk::Query& q);
+    // A topic a talk takes up (its first, or one turned to): the place's day and the told set know it.
+    void ambientTopicBegun(AmbientTalk& t, const std::string& speaker);
+    // The ledger's note of a talk as it ends.
+    void ambientNote(AmbientTalk& t, const std::string& reason);
+    // Invitations kept or missed, promises let lapse (each look).
+    void talkPledges();
+    // A resident's favourite topics (topics.json's favourites, by their traits and trade; once a game day).
+    std::vector<std::string> talkFavourites(const std::string& id);
+    std::map<std::string, std::vector<std::string>> favourites_;
+    std::int64_t favouritesDay_ = -1;
 
     // Saving.
     void saveSoon();

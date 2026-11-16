@@ -25,6 +25,7 @@
 #include "RatwCrime.h"
 #include "RatwSchedules.h"
 #include "RatwAmbient.h"
+#include "RatwTalkLedger.h"
 #include "RatwRoads.h"
 #include "RatwCalendar.h"
 #include "RatwSociety.h"
@@ -662,6 +663,8 @@ struct PersistedWorld
     // What residents and towns have to tell (the ambient talk's news: doc 84, defect 10), kept across a restart.
     std::map<std::string, std::vector<AmbientNews>> news;
     std::map<std::string, std::vector<TownNews>> townNews;
+    // The talk ledger (doc 84 §8.7, Phase 5): what residents talked of, with whom, how it went.
+    json::Value talkLedger;
 };
 
 class World
@@ -1479,6 +1482,10 @@ class World
     const Belief* holding(const std::string& holder, const std::string& subject, const std::string& claim,
                           const std::string& incident = {}, const std::string& kind = {}, const std::string& object = {}) const;
     std::string describeRegard(const std::string& holder, const std::string& other) const;
+    // The talk ledger (doc 84 §8.7, Phase 5): what residents talked of, with whom, how it went; saved in the checkpoint,
+    // pruned each game day. Off (`enabled` false: nothing written) for fast economy sims (--no-talk-ledger).
+    TalkLedger& talkLedger() { return talkLedger_; }
+    const TalkLedger& talkLedger() const { return talkLedger_; }
     std::vector<std::string> guardsOf(const std::string& town) const;
     // Paying off the bandits who have stopped this player (whichever of them `bandit` is).
     Result payBandits(const std::string& player, const std::string& bandit);
@@ -1942,7 +1949,9 @@ class World
     void furnishHomes();
     void placeHomeStores(const std::string& cellId);
     std::map<std::string, std::vector<Belief>> beliefs_;   // By holder.
-    std::set<std::string> corroborated_;                   // "holder|subject|claim|source" already counted (told; not saved).
+    // The talk ledger (doc 84 §8.7, Phase 5; RatwTalkLedger.h): saved in the checkpoint. Its told set is what
+    // corroboration counts (World::told: a second source once), as corroborated_ was before.
+    TalkLedger talkLedger_;
     CrimeState crime_;
     // The ambient director (RatwAmbient.cpp): when each resident and place last had an exchange (world seconds), and
     // what has happened in residents' lives lately (a few items each, for two game days).
@@ -1973,6 +1982,14 @@ class World
     // The best thing for `a` to talk of with `b` now (gossip, news, the day...), with its tags and blanks; also asked by
     // talk_check (doc 62). An empty kind if there's nothing.
     AmbientTopic ambientTopic(const std::string& a, const std::string& b);
+    // Everything `a` and `b` might talk of now, the likeliest first, each with its owner (`source`): the director's agenda
+    // (doc 84 §8.5, Phase 5). ambientTopic is its first.
+    std::vector<AmbientTopic> agendaFor(const std::string& a, const std::string& b);
+    // Each resident's favourite topics (topics.json's favourites, by their traits; a mantle's from Phase 9): the game's.
+    void setTalkFavourites(std::function<std::vector<std::string>(const std::string&)> f) { talkFavourites_ = std::move(f); }
+    // Every topic ambientTopic weighs for a pair, as it is weighed, its score final (doc 84, Phase 5: talk_sim
+    // --dump-topics, the proof that topics.json's numbers are today's). Observation only.
+    std::function<void(const std::string& a, const std::string& b, const AmbientTopic& t)> onTopic;
     // The talk library's facts for where `who` stands, now (doc 62): here.place, here.time, here.weather...
     void talkMoment(const std::string& who, std::map<std::string, std::string>& facts);
     // What the town around `who` has been talking of (world.bandits, world.crime, world.herbs_price...), and the place
@@ -2001,6 +2018,9 @@ class World
     static void talkGood(const std::string& base, std::map<std::string, std::string>& facts);
   private:
     void sceneTopics(const std::string& a, const std::string& b, const std::function<void(AmbientTopic)>& consider);
+    // Every topic the two might talk of, scored, cooled and warmed (topics.json), handed to `take` as it is weighed.
+    void weighTopics(const std::string& a, const std::string& b, const std::function<void(AmbientTopic)>& take);
+    std::function<std::vector<std::string>(const std::string&)> talkFavourites_;
     std::string talkHolder_;                        // (See talkFor.)
     std::function<std::string(const std::string&)> holderOf_;
     mutable std::map<std::string, std::vector<Society::PriceMove>>* talkPricesMemo_ = nullptr;   // (While ambientPicks runs.)

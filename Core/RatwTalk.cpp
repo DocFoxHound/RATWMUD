@@ -2,6 +2,7 @@
 #include "RatwTalk.h"
 #include "RatwJsonDoc.h"
 #include "RatwClaims.h"
+#include "RatwTopics.h"
 
 #include <algorithm>
 #include <cctype>
@@ -254,6 +255,8 @@ void Library::clear()
     frames_.clear();
     budgets_ = {};
     inviteTaken_ = .5;
+    goals_.clear();
+    steps_.clear();
 }
 
 const Entry* Library::find(const std::string& id) const
@@ -277,6 +280,20 @@ std::set<std::string> Library::symbols(const std::string& grammar) const
         for (const auto& [name, s] : g->second)
             out.insert(name);
     return out;
+}
+
+bool Library::ledgerFact(const std::string& key)
+{
+    // The talk ledger's facts (doc 84 §7.11, §8.7): the pair's (pair.last_talk, last_outcome, thread, kept_invite,
+    // talked.<topic>, recall.<topic>, was.<k>) and a person's (was.<k>, told_me, promised, promise_what).
+    static const std::set<std::string> Pair{"pair.last_talk", "pair.last_outcome", "pair.thread", "pair.kept_invite"};
+    if (Pair.count(key) || key.rfind("pair.talked.", 0) == 0 || key.rfind("pair.recall.", 0) == 0 || key.rfind("pair.was.", 0) == 0)
+        return true;
+    const auto dot = key.find('.');
+    if (dot == std::string::npos)
+        return false;
+    const auto name = key.substr(dot + 1);
+    return name.rfind("was.", 0) == 0 || name == "told_me" || name == "promised" || name == "promise_what";
 }
 
 bool Library::readSchema(const std::string& text, std::string& problem)
@@ -425,6 +442,7 @@ bool Library::readFrames(const std::string& text, std::string& problem)
     frames_.clear();
     budgets_ = {};
     curt_ = {};
+    goals_.clear();
     inviteTaken_ = .5;
     json::Value doc;
     std::string error;
@@ -437,11 +455,11 @@ bool Library::readFrames(const std::string& text, std::string& problem)
     const auto fail = [&](const std::string& m) { errors.push_back("frames.json: " + m); };
     if (moves_.empty())
         fail("it names moves: moves.json is needed beside it");
-    static const std::set<std::string> Top{"about", "frames", "budget", "invite_taken", "curt", "join", "thread"};
+    static const std::set<std::string> Top{"about", "frames", "budget", "invite_taken", "curt", "join", "thread", "goals"};
     static const std::set<std::string> Fields{"about", "when", "open", "budget", "preclose", "forbid", "tones", "accent", "hedge"};
     for (const auto& [key, unused] : doc.fields())
         if (!Top.count(key))
-            fail("no field '" + key + "' (about, frames, budget, invite_taken, curt, join, thread)");
+            fail("no field '" + key + "' (about, frames, budget, invite_taken, curt, join, thread, goals)");
     const auto scale = [&](const std::string& what, double v) {
         if (!(v >= .2 && v <= 3))
             fail(what + " is a number from 0.2 to 3");
@@ -569,6 +587,42 @@ bool Library::readFrames(const std::string& text, std::string& problem)
         if (!(curt_.threadDays >= 0 && curt_.threadDays <= 30))
             fail("thread: days 0-30");
     }
+    // Phase 5 (§7.4, §8.5): the goals, in their order (the first that holds is pursued).
+    for (const auto& [name, g] : doc.object("goals").fields())
+    {
+        if (name == "about")
+            continue;
+        Goal goal;
+        goal.name = name;
+        if (!g.isObject() || !lowerKey(name))
+        {
+            fail("goals: " + name + " is an object, its name lower-case letters, digits and _");
+            continue;
+        }
+        known(g, {"about", "when", "plan", "days"}, "goals: " + name);
+        for (const auto& token : words(g.string("when")))
+        {
+            Criterion c;
+            std::string why;
+            if (!criterion(token, Where::When, 0, c, why))
+                fail("goals: " + name + ": " + why);
+            else
+                goal.when.push_back(std::move(c));
+        }
+        if (goal.when.empty())
+            fail("goals: " + name + ": a goal holds when something does (\"when\")");
+        for (const auto& m : g.array("plan"))
+            if (moves_.known(m.asString("")) && moves_.find(m.asString(""))->first)
+                goal.plan.push_back(m.asString(""));
+            else
+                fail("goals: " + name + ": its plan's '" + m.asString("") + "' is not a move that may open (moves.json)");
+        if (goal.plan.empty())
+            fail("goals: " + name + ": a plan of one move or more");
+        goal.days = g.number("days", 7);
+        if (!(goal.days >= 0 && goal.days <= 60))
+            fail("goals: " + name + ": days 0-60");
+        goals_.push_back(std::move(goal));
+    }
     if (!errors.empty())
     {
         problem.clear();
@@ -577,9 +631,72 @@ bool Library::readFrames(const std::string& text, std::string& problem)
         frames_.clear();
         budgets_ = {};
         curt_ = {};
+        goals_.clear();
         return false;
     }
     return true;
+}
+
+void Library::deepen(Conversation& c, const Query& q)
+{
+    // A topic's aspects (topics.json, §7.3: Façade's tiers): a pair that has talked of it before starts one deeper
+    // (pair.talked.<topic>, the ledger's), as conv.aspect for the lines that dig.
+    c.depth = 0;
+    c.conv.erase("aspect");
+    if (c.topics.empty())
+        return;
+    const auto& book = topics::book();
+    const auto t = book.topics.find(c.topics.back());
+    if (t == book.topics.end() || t->second.aspects.empty())
+        return;
+    c.depth = q.facts.count("pair.talked." + c.topics.back()) ? 1 : 0;
+    c.conv["aspect"] = t->second.aspects[std::min<std::size_t>(std::size_t(c.depth), t->second.aspects.size() - 1)];
+}
+
+bool Library::readSteps(std::string& problem)
+{
+    // Doc 84 §7.3 (Phase 5): the topic graph's steps (topics.json's `next`), their criteria checked against facts.json as
+    // a rule's are; and the favourites' traits ("piety=devout": a person's fact).
+    steps_.clear();
+    std::vector<std::string> errors;
+    const auto& book = topics::book();
+    for (const auto& [name, t] : book.topics)
+        for (const auto& [to, when] : t.next)
+        {
+            Step step;
+            step.to = to;
+            for (const auto& token : words(when))
+            {
+                Criterion c;
+                std::string why;
+                if (!criterion(token, Where::When, 0, c, why))
+                    errors.push_back("topics.json: " + name + " -> " + to + ": " + why);
+                else
+                    step.when.push_back(std::move(c));
+            }
+            steps_[name].push_back(std::move(step));
+        }
+    for (const auto& [trait, list] : book.favourites)
+    {
+        Criterion c;
+        std::string why;
+        if (!criterion(trait, Where::When, 0, c, why))
+            errors.push_back("topics.json: favourites: " + why);
+    }
+    if (!errors.empty())
+    {
+        problem = errors.front();
+        steps_.clear();
+        return false;
+    }
+    return true;
+}
+
+const std::vector<Library::Step>& Library::steps(const std::string& topic) const
+{
+    static const std::vector<Step> none;
+    const auto found = steps_.find(topic);
+    return found == steps_.end() ? none : found->second;
 }
 
 bool Library::muted(const std::string& said, const Query& q, int speaker) const
@@ -661,6 +778,13 @@ bool Library::criterion(const std::string& token, Where where, int speaker, Crit
         // Something remembered (phase 4): self.mem.x, pair.mem.x, world.mem.x (a town's), any key, any words.
         static const FactKind Remembered{FactKind::Type::Text, {}};
         const bool memory = c.name.rfind("mem.", 0) == 0 && c.name.size() > 4 && (isPersonNs(ns) || ns == "pair" || ns == "world");
+        // The talk ledger's (doc 84 §7.11, Phase 5): pair.talked.<topic> (days since the two talked of it), pair.recall.<topic>
+        // (how that went), pair.was.<k> and a person's was.<k> (kept tags).
+        static const FactKind Days{FactKind::Type::Number, {}};
+        const bool talked = ns == "pair" && c.name.rfind("talked.", 0) == 0 && lowerKey(c.name.substr(7));
+        const bool kept = (ns == "pair" && (c.name.rfind("recall.", 0) == 0 || c.name.rfind("was.", 0) == 0) &&
+                           lowerKey(c.name.substr(c.name.find('.') + 1))) ||
+                          (isPersonNs(ns) && c.name.rfind("was.", 0) == 0 && lowerKey(c.name.substr(4)));
         // A conversation's tag (doc 84 §7.1, {k=v}): any key, any word; the engine's own keys (facts.json "conv") as
         // they're declared.
         static const FactKind Tagged{FactKind::Type::Text, {}};
@@ -699,8 +823,10 @@ bool Library::criterion(const std::string& token, Where where, int speaker, Crit
             if (const auto k = shared_.find(key); k != shared_.end())
                 kind = &k->second;
         }
-        if (memory)
+        if (memory || kept)
             kind = &Remembered;
+        if (talked)
+            kind = &Days;
     }
     else if (const auto k = person_.find(key); k != person_.end())
     {
@@ -1334,17 +1460,18 @@ bool Library::parse(const std::string& text, const std::string& file, std::strin
         }
         if (line.rfind("remember ", 0) == 0)
         {
-            // remember self|other|pair|town: key[=value] [DURATION]
+            // remember self|other|pair|town|x: key[=value] [DURATION] (x: the third party the line binds, what talk has said
+            // of them, kept in the talk ledger and read as x.said.key: doc 84 §7.1, §8.7, Phase 5)
             const auto colon = line.find(':');
             const auto scope = colon == std::string::npos ? std::string() : trim(line.substr(9, colon - 9));
             const auto parts = colon == std::string::npos ? std::vector<std::string>{} : words(line.substr(colon + 1));
             Entry::Remember r;
             r.scope = scope;
             double days = -1;
-            if ((scope != "self" && scope != "other" && scope != "pair" && scope != "town") || parts.empty() || parts.size() > 2 ||
-                (parts.size() == 2 && !duration(parts[1], days)))
+            if ((scope != "self" && scope != "other" && scope != "pair" && scope != "town" && scope != "x") || parts.empty() ||
+                parts.size() > 2 || (parts.size() == 2 && !duration(parts[1], days)))
             {
-                fail("remember is 'remember self|other|pair|town: key[=value] [1d|6h|30m|forever]'");
+                fail("remember is 'remember self|other|pair|town|x: key[=value] [1d|6h|30m|forever]'");
                 continue;
             }
             const auto eq = parts[0].find('=');
@@ -1393,6 +1520,36 @@ bool Library::parse(const std::string& text, const std::string& file, std::strin
                 e->limit = Entry::Limit::Cooldown;
             else
                 fail("cooldown is 'cooldown 2h' (or 30m, 1d)");
+            continue;
+        }
+        // Doc 84 §7.1 (Phase 5): an invitation the world checks, and a talk-only promise.
+        if (line.rfind("invite ", 0) == 0)
+        {
+            // invite here <hour> <days>: to meet again in this place at that hour, within so many days.
+            const auto parts = words(line.substr(7));
+            char* end = nullptr;
+            const long hour = parts.size() == 3 ? std::strtol(parts[1].c_str(), &end, 10) : -1;
+            const bool hourOk = end && !*end && hour >= 0 && hour <= 23;
+            end = nullptr;
+            const double days = parts.size() == 3 ? std::strtod(parts[2].c_str(), &end) : 0;
+            if (parts.size() != 3 || parts[0] != "here" || !hourOk || !end || *end || days <= 0 || days > 14)
+                fail("invite is 'invite here <hour 0-23> <days 1-14>'");
+            else
+                e->invitePlace = parts[0], e->inviteHour = int(hour), e->inviteDays = days;
+            continue;
+        }
+        if (line.rfind("promise ", 0) == 0)
+        {
+            // promise self: <thing> <days>: a talk-only promise (never a world promise); let lapse, it is brought up.
+            const auto colon = line.find(':');
+            const auto who = colon == std::string::npos ? std::string() : trim(line.substr(8, colon - 8));
+            const auto parts = colon == std::string::npos ? std::vector<std::string>{} : words(line.substr(colon + 1));
+            char* end = nullptr;
+            const double days = parts.size() == 2 ? std::strtod(parts[1].c_str(), &end) : 0;
+            if (who != "self" || parts.size() != 2 || !end || *end || days <= 0 || days > 30 || !lowerKey(parts[0]))
+                fail("promise is 'promise self: <thing, lower-case> <days 1-30>'");
+            else
+                e->promiseWhat = parts[0], e->promiseDays = days;
             continue;
         }
         // Doc 84 §7.1 (Phase 2): what a line does in the talk.
@@ -1712,6 +1869,17 @@ bool Library::parse(const std::string& text, const std::string& file, std::strin
             }
         if (usesX && !x.binds.count("x"))
             errs.push_back(what + ": speaks of x with nobody bound (binds x=<slot>)");
+        if (std::any_of(x.remember.begin(), x.remember.end(), [](const Entry::Remember& r) { return r.scope == "x"; }) && !x.binds.count("x"))
+            errs.push_back(what + ": remembers of x with nobody bound (binds x=<slot>)");
+        if ((!x.invitePlace.empty() || !x.promiseWhat.empty()) && x.scene)
+            errs.push_back(what + ": an invitation or a promise is a rule's (one speaker's)");
+        // A callback: its criteria read the talk ledger (doc 84 §8.7, the scorecard's C9).
+        const auto ledgerOne = [](const Criterion& c) { return Library::ledgerFact(c.full.empty() ? "self." + c.name : c.full) ||
+                                                               (c.ns == Ns::X && c.name.rfind("said.", 0) == 0); };
+        x.ledger = std::any_of(x.when.begin(), x.when.end(), ledgerOne);
+        for (const auto& t : x.turns)
+            for (const auto& v : t.variants)
+                x.ledger = x.ledger || std::any_of(v.when.begin(), v.when.end(), ledgerOne);
     };
     for (auto& x : parsed)
     {
@@ -1805,6 +1973,15 @@ bool loadDir(Library& lib, const std::string& dir, bool all, std::string& proble
     // budgets' defaults, no frames.
     if (readFile(fs::path(dir) / "frames.json", text) && !frames(text, problem))
         return false;
+    // The topic director's numbers (doc 84 §7.3, Phase 5): the process's book. A library from before Phase 5 has none:
+    // today's, the C++ scores as they were.
+    if (readFile(fs::path(dir) / "topics.json", text))
+    {
+        if (!topics::load(text, problem))
+            return false;
+    }
+    else
+        topics::reset();
     std::vector<fs::path> grammars, talks, trees;
     for (fs::recursive_directory_iterator it(dir, ec), end; it != end && !ec; it.increment(ec))
         if (it->is_regular_file())
@@ -1886,6 +2063,8 @@ bool Library::load(const std::string& dir, std::string& problem)
                             [this](const std::string& t, std::string& p) { return readSettings(t, p); },
                             [this](const std::string& t, std::string& p) { return readMoves(t, p); },
                             [this](const std::string& t, std::string& p) { return readFrames(t, p); });
+    if (ok && !readSteps(problem))
+        return clear(), false;
     if (!ok)
         clear();
     return ok;
@@ -1898,6 +2077,8 @@ bool Library::loadFoundation(const std::string& dir, std::string& problem)
                             [this](const std::string& t, std::string& p) { return readSettings(t, p); },
                             [this](const std::string& t, std::string& p) { return readMoves(t, p); },
                             [this](const std::string& t, std::string& p) { return readFrames(t, p); });
+    if (ok && !readSteps(problem))
+        return clear(), false;
     if (!ok)
         clear();
     return ok;
@@ -2266,8 +2447,15 @@ Said Library::renderWith(const Entry& e, const Query& q, std::uint64_t seed, Tra
             out.effects.push_back({scope, owner, key, value, days});
     };
     for (const auto& m : e.remember)
-        add(m.scope == "pair" ? "pair" : m.scope == "town" ? "town" : "person",
-            m.scope == "self" ? self : m.scope == "other" ? other : m.scope == "pair" ? pair : town, m.key, m.value, m.days);
+        if (m.scope == "x")
+        {
+            // What talk says of the third party bound (doc 84 §8.7): the ledger's person facts, "subject|by".
+            if (const auto x = q.facts.find("x.id"); x != q.facts.end() && !x->second.empty())
+                add("said", x->second + "|" + self, m.key, m.value, m.days);
+        }
+        else
+            add(m.scope == "pair" ? "pair" : m.scope == "town" ? "town" : "person",
+                m.scope == "self" ? self : m.scope == "other" ? other : m.scope == "pair" ? pair : town, m.key, m.value, m.days);
     for (const auto& r : e.regard)
         if (!self.empty() && !other.empty())
             for (const auto& [axis, amount] : r.change)
@@ -2320,6 +2508,16 @@ void Library::describe(const Entry& e, std::size_t turn, const Query& q, const s
     if (e.denies == int(turn))
         line.denies.push_back(claim(e.deniesClaim));
     line.gist = e.gist == int(turn);
+    // Phase 5: an invitation or a promise the line makes; a callback (its criteria read the talk ledger).
+    line.callback = e.ledger;
+    if (turn + 1 == e.turns.size())
+    {
+        line.invitePlace = e.invitePlace;
+        line.inviteHour = e.inviteHour;
+        line.inviteDays = e.inviteDays;
+        line.promiseWhat = e.promiseWhat;
+        line.promiseDays = e.promiseDays;
+    }
     // A scene is written whole: its last line owes only what is written (a set piece handing on into open talk, §8.2),
     // never what its moves expect by default.
     describeMoves(line, before, q.facts, !(e.scene && turn + 1 == e.turns.size()));
@@ -2711,7 +2909,30 @@ Query Library::beatQuery(const Conversation& c, const std::function<Query(int, i
     auto q = facts(speaker, to);
     for (const auto& [k, v] : c.conv)
         q.facts["conv." + k] = v;
+    overlay(c, q);
     return q;
+}
+
+void Library::overlay(const Conversation& c, Query& q)
+{
+    // Phase 5: the topic the talk turned to (a pivot) over the one it began on, and who knew its claim.
+    if (!c.topicFacts.empty())
+    {
+        for (auto it = q.facts.begin(); it != q.facts.end();)
+            it = it->first.rfind("topic.", 0) == 0 ? q.facts.erase(it) : std::next(it);
+        for (const auto& [k, v] : c.topicFacts)
+            q.facts[k] = v;
+        for (auto* s : {&q.a, &q.b})
+            if (const auto id = s->facts.find("id"); id != s->facts.end())
+            {
+                if (const auto k = c.knows.find(id->second); k != c.knows.end())
+                    s->facts["knows"] = k->second;
+                else
+                    s->facts.erase("knows");
+            }
+    }
+    if (!c.topics.empty())
+        q.facts["conv.topic"] = c.topics.back();
 }
 
 Query Library::beatQuery(const Conversation& c, const std::function<Query(int, int)>& facts, int speaker) const
@@ -2831,6 +3052,7 @@ SaidLine Library::sayNext(Conversation& c) const
     // tone, the lines said.
     for (const auto& [k, v] : line.tags)
         c.conv[k] = v;
+    line.topic = c.topics.empty() ? c.topic : c.topics.back();
     if (!line.moves.empty())
     {
         if (const auto m = c.conv.find("move"); m != c.conv.end())
@@ -2947,6 +3169,10 @@ void Library::setUp(Conversation& c, const Query& q) const
         c.topic = kind->second;
     else if (q.concept.rfind("talk.", 0) == 0)
         c.topic = q.concept.substr(5);
+    c.topics.clear();
+    if (q.concept.rfind("talk.", 0) == 0)
+        c.topics.push_back(q.concept.substr(5));
+    deepen(c, q);
     if (!c.legacy)
     {
         c.frames = framesFor(q);
@@ -3266,7 +3492,11 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
         end(c, "done", trace);
         return std::nullopt;
     }
-    // 2. Nothing owed. Until Phase 5's agendas and the topic graph, that is a lull: the talk closes (§8.3, 8.4).
+    // 2. Nothing owed: a lull (§8.3). While the budget has room, a goal's next step or a turn to something on either's
+    // agenda (§8.5, Phase 5); else the talk closes (§8.4).
+    if (c.phase != Conversation::Phase::Closing)
+        if (auto line = lull(c, facts, fresh, trace))
+            return line;
     if (c.phase != Conversation::Phase::Closing)
     {
         c.phase = Conversation::Phase::Closing;
@@ -3343,6 +3573,187 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
         return say(std::move(s), "takes leave with", "farewell", who, to);
     }
     end(c, c.gaps ? "nothing" : "no closing", trace);
+    return std::nullopt;
+}
+
+std::optional<SaidLine> Library::lull(Conversation& c, const std::function<Query(int, int)>& facts, const Freshness& fresh,
+                                      Trace* trace) const
+{
+    // Doc 84 §8.3, §8.5 (Phase 5). Room for a step, its answer and the farewell pair, or nothing (the talk closes).
+    if (c.legacy || moves_.empty() || c.people.size() < 2 || c.lines.empty())
+        return std::nullopt;
+    const int n = int(c.lines.size());
+    if (n + 4 > c.budget || n + 4 > budgets_.most)
+        return std::nullopt;
+    const int last = c.lines.back().who;
+    const auto beatSeed = [&](std::uint64_t salt) { return mix(c.seed + std::uint64_t(n) * 7919 + salt); };
+    // Turn-taking (§8.3): the one who didn't speak last first, then the other (a chatty speaker may go on).
+    std::vector<int> order{partner(c, last), last};
+    if (order[0] == order[1])
+        order.pop_back();
+    // Between two, one query serves both (a and b as begin had them; the speaker is their side): §16, B1.
+    int side0 = 0;
+    const auto now = beatQuery(c, facts, 0, 1, side0);
+    // 1. A goal (frames.json): the one under way, its next step; else the first that holds for either, not pursued in
+    // this talk nor done between the two lately (pair.was.goal_<name>).
+    for (const int who : order)
+    {
+        const int to = partner(c, who);
+        int side = who;
+        const auto q = c.people.size() == 2 ? now : beatQuery(c, facts, who, to, side);
+        for (const auto& g : goals_)
+        {
+            const bool underWay = c.goal == g.name;
+            if (!underWay)
+            {
+                if (!c.goal.empty() || c.conv.count("goal_" + g.name))
+                    continue;
+                if (const auto done = q.facts.find("pair.was.goal_" + g.name); done != q.facts.end() && done->second == "yes")
+                    continue;
+                if (!holdsAll(g.when, q, side))
+                    continue;
+            }
+            else if (std::size_t(c.goalStep) >= g.plan.size())
+                continue;
+            Conversation::Open o;
+            o.by = to;
+            o.to = who;
+            o.moves = {g.plan[std::size_t(underWay ? c.goalStep : 0)]};
+            auto asked = q;
+            asked.facts["conv.goal"] = g.name;
+            auto s = answer(c, o, asked, side, fresh, trace);
+            if (s.id.empty() || s.info.size() != 1)
+            {
+                c.conv["goal_" + g.name] = "off";          // (No line for this step: given up.)
+                if (underWay)
+                    c.goal.clear();
+                continue;
+            }
+            c.goal = g.name;
+            c.goalStep = underWay ? c.goalStep + 1 : 1;
+            c.conv["goal_" + g.name] = "on";
+            for (auto& line : s.info)
+            {
+                line.fit = line.best = -1;              // (It answers nothing owed: the speaker's own reason.)
+                line.goal = g.name;
+                line.goalDone = std::size_t(c.goalStep) >= g.plan.size();
+                line.goalDays = g.days;
+            }
+            if (std::size_t(c.goalStep) >= g.plan.size())
+            {
+                c.conv["goal_" + g.name] = "done";
+                c.goal.clear();
+                c.goalStep = 0;
+            }
+            if (trace)
+                trace->why += "; a goal (" + g.name + ", " + o.moves.front() + "): " + s.id;
+            place(s, who, to);
+            take(c, std::move(s));
+            return sayNext(c);
+        }
+    }
+    // 2. A turn to something on either's agenda (§8.5): a thread left unfinished on it is returned to; a step along the
+    // topic graph (its criteria holding now) is a pivot; anything else, now and then, a marked change of subject. A talk
+    // of three keeps to its topic.
+    if (c.people.size() != 2 || c.agenda.empty() || int(c.topics.size()) >= topics::book().topicsPerTalk)
+        return std::nullopt;
+    struct Pick
+    {
+        int owner = -1;
+        std::size_t at = 0;
+        std::string how;
+    };
+    const auto thread = now.facts.count("pair.thread") ? now.facts.at("pair.thread") : std::string();
+    std::vector<std::pair<double, Pick>> candidates;
+    for (std::size_t p = 0; p < c.agenda.size() && p < 2; ++p)
+        for (std::size_t i = 0; i < c.agenda[p].size(); ++i)
+        {
+            const auto& item = c.agenda[p][i];
+            if (item.done || item.concept.empty() || !has(item.concept))
+                continue;
+            const auto kind = item.facts.count("topic.kind") ? item.facts.at("topic.kind") : item.topic;
+            std::string how;
+            if (!thread.empty() && (thread == kind || thread == item.topic))
+                how = "return";
+            else if (!c.topics.empty() && item.topic == c.topics.back())
+                how = "pivot";
+            else if (!c.topics.empty())
+                for (const auto& step : steps(c.topics.back()))
+                    if (step.to == item.topic && holdsAll(step.when, now, int(p)))
+                        how = "pivot";
+            if (how.empty())
+                how = "change_subject";
+            const double rank = item.urgency + (how == "return" ? 100 : how == "pivot" ? 10 : 0);
+            candidates.push_back({rank, {int(p), i, how}});
+        }
+    std::stable_sort(candidates.begin(), candidates.end(), [](const auto& x, const auto& y) { return x.first > y.first; });
+    for (const auto& [rank, pick] : candidates)
+    {
+        if (pick.how == "change_subject" && unit(beatSeed(0x5B1E)) >= .5)
+            break;                                  // (Now and then only: else the talk closes.)
+        auto& item = c.agenda[std::size_t(pick.owner)][pick.at];
+        item.done = true;
+        const int who = pick.owner, to = partner(c, who);
+        // The talk on the new topic: its facts over the old, who knew its claim.
+        const auto oldFacts = c.topicFacts;
+        const auto oldKnows = c.knows;
+        const auto oldTopic = c.topic;
+        c.topicFacts = item.facts;
+        c.knows = item.knows;
+        c.topic = item.facts.count("topic.kind") ? item.facts.at("topic.kind") : item.topic;
+        const int side = who;
+        auto q = now;
+        overlay(c, q);
+        q.facts["conv.topic"] = item.topic;
+        q.concept = item.concept;
+        // (Never an entry or a question already said in this talk: the scorecard's C6.)
+        auto said = pickLazy(q, beatSeed(0x7091), fresh.heard, fresh.recent, side, trace, [&](const Said& s) {
+            return c.said.count(s.id) > 0 || std::any_of(s.info.begin(), s.info.end(), [&](const SaidLine& l) {
+                       return !l.text.empty() && l.text.back() == '?' && c.asked.count(lower(l.text));
+                   });
+        });
+        if (said.id.empty() || said.info.empty() || c.said.count(said.id))
+        {
+            c.topicFacts = oldFacts;
+            c.knows = oldKnows;
+            c.topic = oldTopic;
+            continue;
+        }
+        if (said.info.size() == 1)
+            place(said, who, to);
+        else
+            for (auto& l : said.info)
+                l.to = 1 - l.who;
+        // Marked: a thread's return line, or the words of a pivot or a change of subject, in the opener's breath.
+        auto& first = said.info.front();
+        std::string words;
+        if (pick.how == "return")
+        {
+            Conversation::Open o;
+            o.moves = {"return"};
+            if (auto back = answer(c, o, q, side, fresh, nullptr); !back.id.empty() && back.info.size() == 1)
+            {
+                words = back.info.front().text;
+                said.chain.insert(said.chain.begin(), back.id);
+                c.said.insert(back.id);
+            }
+        }
+        else
+            expand(pick.how == "pivot" ? "#pivot#" : "#anyway#", q, side, beatSeed(0x91F0), words);
+        if (!words.empty())
+        {
+            first.text = words + " " + first.text;
+            said.lines.front().second = first.text;
+        }
+        first.moves.insert(first.moves.begin(), pick.how);
+        c.agendaAt = item.index;
+        c.topics.push_back(item.topic);
+        deepen(c, q);
+        if (trace)
+            trace->why += "; turns to " + item.topic + " (" + pick.how + "): " + said.id;
+        take(c, std::move(said));
+        return sayNext(c);
+    }
     return std::nullopt;
 }
 
@@ -3537,6 +3948,35 @@ Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bo
         render(*chosen.entry, q, seed, trace, speaker);    // (Again, for its grammar steps.)
     }
     return std::move(chosen.said);
+}
+
+Said Library::pickLazy(const Query& q, std::uint64_t seed, const std::function<bool(const std::string&)>& heard,
+                       const std::deque<std::string>& recent, int speaker, Trace* trace,
+                       const std::function<bool(const Said&)>& refuse) const
+{
+    const auto list = byConcept_.find(q.concept);
+    if (list == byConcept_.end())
+        return {};
+    std::vector<Option> options;
+    const bool repeats = settings_.repeat.count(q.concept) > 0;
+    for (const auto i : list->second)
+    {
+        const auto& e = entries_[i];
+        if (std::find(recent.begin(), recent.end(), e.id) != recent.end() || (e.scene && speaker != 0) ||
+            (e.scene && untrueScene(e, q)) || !fits(e, q, speaker))
+            continue;
+        options.push_back({Said{}, &e, !repeats && heard && heard(e.id), e.weight, 0});
+    }
+    for (std::uint64_t tries = 0; !options.empty() && tries < 8; ++tries)
+    {
+        auto work = options;
+        const auto choice = chooseOption(work, settings_, seed + tries * 0x9E37, settings_.bestOnly.count(q.concept) > 0);
+        const auto* chosen = work[choice.chosen].entry;
+        if (auto said = render(*chosen, q, seed, trace, speaker); !said.id.empty() && !(refuse && refuse(said)))
+            return said;
+        options.erase(std::remove_if(options.begin(), options.end(), [&](const Option& o) { return o.entry == chosen; }), options.end());
+    }
+    return {};
 }
 
 std::string Library::personalLayer(const std::string& npc)

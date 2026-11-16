@@ -261,14 +261,14 @@ then other: keeping.glad
 remember pair: k=good 2m
 
 rule e1_fd_tell_spouse
-when concept=talk.food self.spouse
+when concept=talk.food self.spouse pair.kin!=spouses
 cooldown 2d
 say #self.spouse# cooked last night. Something new. I'm still not sure what. | #self.spouse# hides the honey from me. I always find it. | #self.spouse# makes the best dumplings in town. Don't tell my mother.
 then other: keeping.glad
 remember pair: k=family 2m
 
 rule e1_fd_tell_child
-when concept=talk.food self.child
+when concept=talk.food self.child pair.kin!=parent
 cooldown 2d
 say #self.child# won't eat anything green. Anything. | #self.child# ate a whole loaf on the way home from the baker. | #self.child# made me breakfast. I ate it. I'm brave.
 then other: keeping.glad

@@ -98,7 +98,7 @@ a : The house smells of wet wolf. | Something's died under the floor. | Who's be
 b : It always smells of wet wolf. | Probably a rat. | Me. To cover the rat.
 a : Worse than usual. | Probably a big one. | Now it smells of herbs and rat.
 b : Open a window. | Then get it out. | Better than rat alone.
-a : It's raining. | You get it out. | Barely.
+a : It's damp out. | You get it out. | Barely.
 
 scene kn_home_money_jar
 when topic=family pair.band=spouses|family here.place=home

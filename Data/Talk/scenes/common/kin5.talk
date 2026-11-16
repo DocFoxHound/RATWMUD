@@ -136,8 +136,8 @@ scene kn_str_introduce
 when topic=smalltalk pair.band=strangers
 weight 0.8
 a : I don't think we've met. | You're new, aren't you? | Have I seen you before?
-b : I'm #b.name#. | I've been here a while. Keep to myself. | I don't think so.
-a : I'm #a.name#. Pleased to meet you. | Most folk here don't. Welcome. | Then well met now.
+b : I'm #b.first#. | I've been here a while. Keep to myself. | I don't think so.
+a : I'm #a.first#. Pleased to meet you. | Most folk here don't. Welcome. | Then well met now.
 b : And you. | Thank you. | Well met.
 a?[merchant] : If you need anything, my stall's by the well.
 
@@ -190,8 +190,8 @@ b : In harnesses, at least. | Don't tell her. | A small one.
 
 scene kn_acq_names
 when topic=smalltalk pair.band=acquaintances
-a : It's #b.name#, isn't it? | Remind me your name? I'm terrible. | We've met. At the... somewhere.
-b : That's me. And you're #a.name#. | #b.name#. And you're #a.name#, I think. | At the market, last season.
+a : It's #b.first#, isn't it? | Remind me your name? I'm terrible. | We've met. At the... somewhere.
+b : That's me. And you're #a.first#. | #b.first#. And you're #a.first#, I think. | At the market, last season.
 a : I am. Good memory. | I am. Better memory than mine. | That's it. You bought fish.
 b : For names. Not for anything useful. | Everyone's is better than yours. | I always buy fish.
 

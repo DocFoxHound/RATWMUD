@@ -259,6 +259,37 @@ class Metrics(unittest.TestCase):
         self.assertFalse(talk_score.meets("farewell.return", "farewell", talk_score.move_book()))
         self.assertTrue(talk_score.meets("react.news.known", "react.news", talk_score.move_book()))
 
+    def test_c5_c9_and_k1_phase_5(self):
+        # C5: a line on another topic than the one before it, with no pivot, change of subject or return among its moves;
+        # C9: lines standing on the talk ledger (a callback, a return, "Back again?") per 10 talks; K1: the topics
+        # topics.json calls everyday (smalltalk is, gossip and player aren't).
+        d = write_run(self.root / "c5", [({"topic": "smalltalk"}, [("jory", "varg", "Fine day."), ("varg", "jory", "It is."),
+                                                                   ("jory", "varg", "Anyway. Prices!"), ("varg", "jory", "Wagons late.")]),
+                                         ({"topic": "gossip"}, [("jory", "varg", "Back again? Heard about Wren?")]),
+                                         ({"topic": "player"}, [("jory", "varg", "Who's that?")])], PEOPLE)
+        self.with_fields(d, {(1, 0): {"topic_now": "smalltalk"}, (1, 1): {"topic_now": "smalltalk"},
+                             (1, 2): {"topic_now": "prices", "moves": ["change_subject", "tell.complaint"]},
+                             (1, 3): {"topic_now": "caravan", "callback": True},
+                             (2, 0): {"topic_now": "gossip", "moves": ["again.open", "tell.gossip"]}, (3, 0): {"topic_now": "player"}})
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertAlmostEqual(m["C5"], 1000 / 6)
+        self.assertEqual(m["C5_detail"]["turns"], 2)
+        self.assertAlmostEqual(m["C9"], 2 * 10 / 3)
+        if talk_score.EVERYDAY is not None:
+            self.assertAlmostEqual(m["K1"], 100 / 3)
+        old = write_run(self.root / "old", [({"topic": "smalltalk"}, [("jory", "varg", "Fine day.")])], PEOPLE)
+        m = talk_score.score_run(talk_score.Run(old))
+        self.assertNotIn("C5", m)
+
+    def test_t2_judges_a_line_at_its_own_hour(self):
+        # Phase 5: a talk begun by day ("here.time": day at its head) that closes at dusk says "Good night." truly.
+        d = write_run(self.root / "t2h", [({"facts": {"here.time": "day", "here.hour": "17"}},
+                                           [("jory", "varg", "Fine evening."), ("varg", "jory", "Good night.")]),
+                                          ({"facts": {"here.time": "day", "here.hour": "12"}}, [("jory", "varg", "Good night.")])], PEOPLE)
+        self.with_fields(d, {(1, 1): {"hour": 18.2}, (2, 0): {"hour": 12.1}})
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertEqual(m["T2_detail"]["by_kind"], {"night_greeting": 1})
+
     def test_t5_told_what_they_knew_without_a_known_answer(self):
         # Phase 4: a claim passed on to one who held it before is fine answered "I'd heard"; not with "Never!"; one told it
         # fresh is judged and fine; a line with no to_knew isn't judged.

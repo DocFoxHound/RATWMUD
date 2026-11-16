@@ -3,6 +3,7 @@
 #include "RatwWorld.h"
 
 #include "RatwClaims.h"
+#include "RatwTopics.h"
 #include "RatwItems.h"
 
 #include <algorithm>
@@ -203,11 +204,40 @@ void World::noteNews(const WorldEvent& e)
 
 AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
 {
+    // The best of what the two might talk of (the first of the best, in the order weighed): the director's pick.
+    AmbientTopic best;
+    weighTopics(a, b, [&](AmbientTopic t) {
+        if (t.score > best.score)
+            best = std::move(t);
+    });
+    // What the written scenes need of any topic: who the two are to each other, the place, the hour, the town.
+    if (!best.kind.empty())
+    {
+        best.talk["pair.band"] = pairBand(a, b);
+        talkMoment(a, best.talk);
+    }
+    return best;
+}
+
+std::vector<AmbientTopic> World::agendaFor(const std::string& a, const std::string& b)
+{
+    // Doc 84 §8.5 (Phase 5): everything the two might talk of, the likeliest first (ties as weighed), each owned by the
+    // one who'd raise it (`source`).
+    std::vector<AmbientTopic> all;
+    weighTopics(a, b, [&](AmbientTopic t) {
+        if (t.score > 0)
+            all.push_back(std::move(t));
+    });
+    std::stable_sort(all.begin(), all.end(), [](const AmbientTopic& x, const AmbientTopic& y) { return x.score > y.score; });
+    return all;
+}
+
+void World::weighTopics(const std::string& a, const std::string& b, const std::function<void(AmbientTopic)>& take)
+{
     const auto* ea = entity(a);
     const auto* eb = entity(b);
-    AmbientTopic best;
     if (!ea || !eb)
-        return best;
+        return;
     const auto name = [&](const std::string& id) {
         const auto* who = entity(id);
         return who ? who->name : std::string();     // (Never the id: doc 84, defect 1.)
@@ -217,6 +247,8 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
         return found ? *found : Bond{};
     };
     const Bond ab = bond(a, b), ba = bond(b, a);
+    // The scores are topics.json's (doc 84 §7.3, Phase 5; today's numbers for a library without one).
+    const auto& book = topics::book();
     // The day, and the place, as either would see them.
     std::vector<std::string> day;
     const auto plan = dayPlan(communityOf(ea->cellId));
@@ -231,11 +263,50 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
         if (c->outdoors && skyAt(c->id, ea->position) >= 1)
             day.push_back(weatherAt(c->id, ea->position).kind == Weather::Rain ? "It is raining." : "The weather is foul.");
     }
+    // What cools a topic or warms it (doc 84 §8.5, Phase 5; topics.json, off in today's numbers): the same two on the
+    // same thing lately, the same incident talked of all day in this place, the everyday floor where a place's talk has
+    // been news, a speaker's favourites; and nothing told twice to one listener (the ledger's told set).
+    const auto& ledger = talkLedger_;
+    const auto here = ea->cellId;
+    const double share = book.floorBoost != 0 && book.floorWindow > 0 ? ledger.newsShare(here, book.floorWindow) : -1;
+    const bool floor = share > book.floorOver;
+    std::vector<std::string> favA, favB;
+    if (book.favourite != 0 && talkFavourites_)
+        favA = talkFavourites_(a), favB = talkFavourites_(b);
+    const auto told = [&](const std::string& listener, const std::string& key) { return book.toldOnce && ledger.wasTold(listener, key); };
+    double closeness = 0;
+    if (!book.pairBonus.empty())
+        if (const auto found = book.pairBonus.find(pairBand(a, b)); found != book.pairBonus.end())
+            closeness = found->second;
     // `source` names who opens: the one who knows (gossip, news) or bears the grudge.
     const auto consider = [&](AmbientTopic topic) {
         topic.facts.insert(topic.facts.end(), day.begin(), day.end());
-        if (topic.score > best.score)
-            best = std::move(topic);
+        if (topic.key.empty())
+            topic.key = topic.kind;
+        const bool everyday = book.everyday(topic.kind);
+        topic.score = topic.score * book.weight(topic.kind);
+        if (book.noveltyFactor != 1 && book.noveltyDays > 0 &&
+            ledger.talkedOf(a, b, topic.kind, everyday ? std::string() : topic.key, calendarDays_ - book.noveltyDays))
+            topic.score *= book.noveltyFactor;
+        if (book.saturationPerDay > 0 && !everyday && ledger.todayCount(here, topic.key, calendarDays_) >= book.saturationPerDay)
+            topic.score *= book.saturationFactor;
+        if (floor && everyday)
+            topic.score += book.floorBoost;
+        topic.score += closeness;
+        if (book.favourite != 0)
+        {
+            const bool fa = std::find(favA.begin(), favA.end(), topic.kind) != favA.end();
+            const bool fb = std::find(favB.begin(), favB.end(), topic.kind) != favB.end();
+            if (fa || fb)
+            {
+                topic.score += book.favourite;
+                if (!fa && everyday)
+                    topic.source = b;               // (The one whose favourite it is brings it up.)
+            }
+        }
+        if (onTopic)
+            onTopic(a, b, topic);
+        take(std::move(topic));
     };
     // A rumour one has heard lately and the other hasn't: about anyone but the two of them, players included. Said in
     // claims.json's words from the teller's point of view (doc 84 §7.7): never a raw id (defect 1), never to or by its
@@ -273,7 +344,10 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
                 if (const auto* theirs = beliefsOf(listener))
                     for (const auto& other : *theirs)
                         known |= other.subject == belief.subject && other.claim == belief.claim;
-                if (known)
+                // (With the tuned book, a listener who holds it in other words, or by its incident or its kind about the
+                // same victim, knows it too: never "Never!" to one who'd heard: T5.)
+                if (known || told(listener, belief.subject + "|" + belief.claim) ||
+                    (book.toldOnce && holding(listener, belief.subject, belief.claim, belief.incident, belief.kind, belief.object)))
                     continue;
                 const auto* about = entity(belief.subject);
                 claims::Words w;
@@ -317,7 +391,10 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
                 t.source = teller;
                 t.incident = belief.incident;
                 t.confidence = belief.confidence;
-                t.score = 3 + belief.confidence + (about && !about->npc ? .5 : 0);
+                const auto& sc = book.topics.count(topicKind) && book.topics.at(topicKind).kinds.count("claim")
+                                     ? book.score(topicKind, "claim") : book.score("gossip", "claim");
+                t.score = sc.base + belief.confidence + (about && !about->npc ? sc.add : 0);
+                t.key = belief.subject + "|" + belief.claim;
                 t.said = said;
                 t.passes = true;
                 t.claimKind = belief.kind;
@@ -362,7 +439,7 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
                     if (const auto* theirs = beliefsOf(listener))
                         for (const auto& other : *theirs)
                             known |= other.claim == belief.claim;
-                    if (known)
+                    if (known || told(listener, belief.subject + "|" + belief.claim))
                         continue;
                     const auto words = deedWords_(teller, belief.claim, belief.subject);
                     if (words.phrase.empty())
@@ -373,7 +450,9 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
                     t.claim = belief.claim;
                     t.source = teller;
                     t.confidence = belief.confidence;
-                    t.score = 3.2 + belief.confidence * .3;
+                    const auto& sc = book.score("deed");
+                    t.score = sc.base + belief.confidence * sc.scale;
+                    t.key = belief.subject + "|" + belief.claim;
                     t.talk["topic.known"] = words.byName ? "yes" : "no";
                     t.talk["topic.has_nickname"] = words.nickname.empty() ? "no" : "yes";
                     if (words.byName)
@@ -394,7 +473,8 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
         if (const auto found = news_.find(teller); found != news_.end())
             for (const auto& n : found->second)
             {
-                if (calendarDays_ - n.day > NewsDays || (!n.about.empty() && n.about == listener))
+                if (calendarDays_ - n.day > NewsDays || (!n.about.empty() && n.about == listener) ||
+                    told(listener, teller + "|" + n.text))
                     continue;                       // (Not told to the one it is about: "I married Orm" to Orm.)
                 AmbientTopic t;
                 t.kind = "news";
@@ -402,7 +482,9 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
                 t.source = teller;
                 t.claim = n.kind;
                 t.talk["topic.kind"] = n.kind;           // marriage, loss, work, crime: for the scenes.
-                t.score = 2.8 + (n.kind == "loss" || n.kind == "crime" ? .2 : 0);
+                const auto& sc = book.score("news");
+                t.score = sc.base + (n.kind == "loss" || n.kind == "crime" ? sc.add : 0);
+                t.key = teller + "|" + n.text;
                 t.said = n.text;                         // (Put in the teller's own person when it is said: topic.news.)
                 t.facts.push_back(n.text + ".");
                 t.facts.push_back(name(teller) + " tells " + name(listener) + " about it.");
@@ -414,7 +496,9 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
         AmbientTopic t;
         t.kind = "quarrel";
         t.source = ab.affinity <= ba.affinity ? a : b;
-        t.score = 2.5 + std::abs(std::min(ab.affinity, ba.affinity)) / 100;
+        const auto& sc = book.score("quarrel");
+        t.score = sc.base + std::abs(std::min(ab.affinity, ba.affinity)) / sc.per;
+        t.key = a < b ? a + "|" + b : b + "|" + a;
         t.facts.push_back(name(a) + " and " + name(b) + " do not get on.");
         for (const auto& [h, o] : {std::pair{a, b}, std::pair{b, a}})
         {
@@ -433,7 +517,7 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
         AmbientTopic t;
         t.kind = "friends";
         t.source = a;
-        t.score = 1.5;
+        t.score = book.score("friends").base;
         t.facts.push_back(name(a) + " and " + name(b) + " are friends.");
         consider(std::move(t));
     }
@@ -443,18 +527,12 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
         AmbientTopic t;
         t.kind = "day";
         t.source = a;
-        t.score = 1 + (plan.kind == "festival" ? .3 : 0);
+        const auto& sc = book.score("day");
+        t.score = sc.base + (plan.kind == "festival" ? sc.add : 0);
         t.facts.push_back(name(a) + " and " + name(b) + " know each other.");
         consider(std::move(t));
     }
     sceneTopics(a, b, consider);
-    // What the written scenes need of any topic: who the two are to each other, the place, the hour, the town.
-    if (!best.kind.empty())
-    {
-        best.talk["pair.band"] = pairBand(a, b);
-        talkMoment(a, best.talk);
-    }
-    return best;
 }
 
 std::string World::pairBand(const std::string& a, const std::string& b) const
@@ -790,12 +868,13 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         return who ? who->name : std::string("someone");
     };
     const auto townId = townIdOf(ea->cellId);
+    const auto& book = topics::book();              // (topics.json's numbers: doc 84 §7.3, Phase 5.)
     // A little chance in the everyday topics, so the same two don't always talk of the same thing.
     const auto jitter = [&](int salt) {
         std::uint64_t h = std::hash<std::string>{}(a + "|" + b) ^ (std::uint64_t(calendarDays_ * 24) * 0x9E3779B97F4A7C15ULL) ^
                           std::uint64_t(salt) * 1099511628211ULL;
         h ^= h >> 31;
-        return double(h % 1000) / 1000.0 * .7;
+        return double(h % 1000) / 1000.0 * book.jitter;
     };
     // The market's news (prices, events, ships, wagons, the Times, the harvest, the town's lives) drawn once an hour for
     // the whole place, not a pair: whichever pair of a cell talks, the hour's draw decides which of what is live is the
@@ -806,13 +885,17 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         h ^= h >> 29;
         h *= 0xBF58476D1CE4E5B9ULL;
         h ^= h >> 32;
-        return double(h % 1000) / 1000.0 * .4;
+        return double(h % 1000) / 1000.0 * book.hourly;
     };
-    const auto topic = [&](const char* kind, double score) {
+    // A source's score: its base, and the place's draw for the hour or the pair's draw where it has one.
+    const auto H = [&](const topics::Score& sc) { return sc.hourly >= 0 ? sc.base + hourly(sc.hourly) : sc.base; };
+    const auto J = [&](const topics::Score& sc) { return sc.jitter >= 0 ? sc.base + jitter(sc.jitter) * sc.jitterScale : sc.base; };
+    const auto topic = [&](const std::string& kind, double score, std::string key = {}) {
         AmbientTopic t;
         t.kind = kind;
         t.source = a;
         t.score = score;
+        t.key = key.empty() ? kind : std::move(key);
         return t;
     };
     // Caravans to and from this town, and the bandits on the roads.
@@ -835,8 +918,8 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
                            : c.status == "travelling" && c.to == marketId ? "due" : "";   // (On its way here: Phase 8.)
         if (kind.empty())
             continue;
-        auto t = topic(kind == "raided" ? "bandits" : "caravan", kind == "raided" ? 2.4 : kind == "late" ? 1.75 + hourly(13)
-                                                                  : kind == "due" ? 1.5 + hourly(13) : 1.7 + hourly(13));
+        auto t = topic(kind == "raided" ? "bandits" : "caravan",
+                       kind == "raided" ? H(book.score("bandits", "raided")) : H(book.score("caravan", kind)), "wagon|" + c.id + "|" + kind);
         t.talk["topic.kind"] = kind;
         t.talk["topic.where"] = townWords(other);
         if (!c.manifest.empty())
@@ -852,7 +935,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         consider(std::move(t));
         if (kind == "raided")
         {
-            auto road = topic("caravan", 2.1);
+            auto road = topic("caravan", H(book.score("caravan", "raided")), "wagon|" + c.id + "|road");
             road.talk["topic.kind"] = "raided";
             road.talk["topic.where"] = townWords(other);
             consider(std::move(road));
@@ -868,7 +951,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
     if (posted)
     {
         const auto& d = *posted;
-        auto t = topic("caravan", 1.45 + hourly(14));
+        auto t = topic("caravan", H(book.score("caravan", "posted")), "posted|" + d.from);
         t.talk["topic.kind"] = "due";
         t.talk["topic.when"] = d.day <= std::int64_t(std::floor(calendarDays_)) ? "today" : "soon";
         t.talk["topic.where"] = townWords(d.from);
@@ -883,7 +966,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         if (const auto news = society_.board().news.find(hereMarket->id);
             news != society_.board().news.end() && calendarDays_ - news->second.day <= 4 && !news->second.words.empty())
         {
-            auto t = topic("caravan", 1.65 + hourly(15));
+            auto t = topic("caravan", H(book.score("caravan", "news")), "wagon_news|" + news->second.words);
             t.talk["topic.kind"] = "news";
             t.talk["topic.news"] = news->second.words;
             t.talk["topic.where"] = marketWords(news->second.from);
@@ -896,11 +979,12 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
     // (Scored with the other live topics of the market, the events, ships, wagons, Times and harvest, each with a little
     // chance an hour, so each is heard while it lasts: Phase 8 repair. The largest move first; the others below it.)
     {
-        double score = 1.65 + hourly(16);
+        const auto& sc = book.score("prices");
+        double score = H(sc);
         for (const auto& move : talkPrices(a))
         {
-            auto t = topic("prices", score);
-            score -= .3;
+            auto t = topic("prices", score, "price|" + move.base);
+            score -= sc.step;
             talkGood(move.base, t.talk);
             t.talk["topic.dir"] = move.trend > 0 ? "up" : "down";
             t.talk["topic.price"] = Society::priceWords(move.shown, move.listCount);
@@ -921,7 +1005,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
                     const auto known = knower_(a, id);
                     if (known.words.empty())
                         break;
-                    auto c = topic("price_cause", scored + .05);   // (The same draw: the traveller named in the price's place.)
+                    auto c = topic("price_cause", scored + book.score("price_cause").add, "price|" + move.base);   // (The same draw: the traveller named in the price's place.)
                     c.subject = id;
                     c.talk = price;
                     c.talk.erase("topic.cause");
@@ -962,8 +1046,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         {
             // (Phase 10's first pass: a lost ship was a fixed 2.3, over everything for its four days; in the hour's draw
             // now, still the likeliest, so the Times and an event are heard beside it.)
-            auto t = topic("ships", kind == "lost" ? 1.85 + hourly(18) : kind == "late" ? 1.75 + hourly(18) : kind == "in" ? 1.7 + hourly(18)
-                                    : kind == "due" ? 1.5 + hourly(18) : 1.3 + hourly(18));
+            auto t = topic("ships", H(book.score("ships", kind)), "ship|" + s->name + "|" + kind);
             t.talk["topic.kind"] = kind;
             t.talk["topic.ship"] = s->name;
             // (Her rich cargo's goods first, while it is on: the brandy she brought in, not her everyday cargo. The merge
@@ -995,7 +1078,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         if (f.count("world.event"))
         {
             const auto& when = f["world.event_when"];
-            auto t = topic("event", (when == "now" ? 1.7 : when == "soon" ? 1.55 : 1.35) + hourly(19));
+            auto t = topic("event", H(book.score("event", when)), "event|" + f["world.event"] + "|" + when);
             t.facts.push_back("At the market: " + f["world.event_words"] + " (" + when + ").");
             consider(std::move(t));
         }
@@ -1003,7 +1086,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         {
             // (Phase 10's first pass: 1.65 and 1.45 before, so an event on (1.7) took most hours from hard Times and
             // nearly all from lean ones; now hard or boom Times draw level with an event on, lean or good a step under.)
-            auto t = topic("times", (f["world.times"] == "hard" || f["world.times"] == "boom" ? 1.7 : 1.6) + hourly(11));
+            auto t = topic("times", H(book.score("times", f["world.times"])), "times|" + f["world.times"]);
             t.facts.push_back("Times here are " + f["world.times"] + (f.count("world.times_cause") ? ", since " + f["world.times_cause"] : std::string()) + ".");
             consider(std::move(t));
         }
@@ -1018,13 +1101,13 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
             const int season = int(calendar::calendarAt(calendarDays_).season);
             // (Talked of while it comes in, summer and autumn, most when it's poor or good; a poor one into the winter.)
             if (season == 1 || season == 2 || (season == 3 && word <= 0))
-                consider(topic("harvest", (word == 1 ? 1.1 : 1.5) + hourly(12)));
+                consider(topic("harvest", H(book.score("harvest", word == 1 ? "fair" : "")), "harvest|" + std::to_string(word)));
         }
     }
     for (const auto& camp : roads_.camps)
         if (camp.active && calendarDays_ - camp.lastRaid <= 3)
         {
-            auto t = topic("bandits", 2.0);
+            auto t = topic("bandits", H(book.score("bandits", "camp")), "camp|" + camp.id);
             t.talk["topic.kind"] = "camp";
             if (const auto near = placeNear(camp.cell); !near.empty())
                 t.talk["topic.where"] = near;   // ("Glasswater", never "The Greenholt, Glasswater" nor the cell's id: doc 84.)
@@ -1035,7 +1118,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
     for (const auto& i : crime_.incidents)
         if (i.town == townId && calendarDays_ - i.day <= 2 && i.victim != a && i.victim != b && i.offender != a && i.offender != b)
         {
-            auto t = topic("crime", 2.4);
+            auto t = topic("crime", H(book.score("crime")), "incident|" + i.id);
             t.talk["topic.kind"] = i.kind == "assault" ? "assault" : "theft";
             t.talk["topic.victim"] = name(i.victim);
             // The one who did it is named only if a witness saw who (one who heard a struggle, or glimpsed someone they
@@ -1071,8 +1154,9 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
             if (close(a, n.subject) || close(b, n.subject) || close(a, n.other) || close(b, n.other))
                 continue;
             const bool fresh = n.kind == "newcomer";
-            auto t = topic(fresh ? "newcomer" : n.kind == "arrest" ? "crime" : "life", fresh ? 1.8 : n.kind == "death" ? 2.3
-                                                                                        : n.kind == "arrest" ? 2.0 : 1.7 + hourly(21));
+            auto t = topic(fresh ? "newcomer" : n.kind == "arrest" ? "crime" : "life",
+                           fresh ? H(book.score("newcomer")) : n.kind == "arrest" ? H(book.score("crime", "arrest")) : H(book.score("life", n.kind)),
+                           "town|" + n.kind + "|" + n.subject);
             t.talk["topic.kind"] = n.kind;
             t.talk["topic.subject"] = name(n.subject);
             if (!n.other.empty())
@@ -1084,7 +1168,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
     const auto plan = dayPlan(community);
     if (plan.kind == "festival")
     {
-        auto t = topic("festival", 2.0);
+        auto t = topic("festival", H(book.score("festival", "today")), "festival|" + plan.name);
         t.talk["topic.when"] = "today";
         t.talk["here.festival"] = plan.name;
         consider(std::move(t));
@@ -1093,7 +1177,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         for (const auto& f : festivals_)
             if (f.community == community && f.day > std::int64_t(calendarDays_) && f.day - calendarDays_ <= 3)
             {
-                auto t = topic("festival", 1.9);
+                auto t = topic("festival", H(book.score("festival", "soon")), "festival|" + f.name);
                 t.talk["topic.when"] = "soon";
                 t.talk["here.festival"] = f.name;
                 consider(std::move(t));
@@ -1104,7 +1188,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         if (!e.npc && !e.dead && e.cellId == ea->cellId && apart(e.position, ea->position) <= 12 &&
             visionClarity(a, id) > 0 && visionClarity(b, id) > 0)
         {
-            auto t = topic("player", 1.6 + jitter(7) * .5);
+            auto t = topic("player", J(book.score("player")), "player|" + id);
             const auto* bond = bonds_.find(a, id);
             const bool knows = bond && bond->familiarity >= 5;
             // (Named only if the speaker was given the name: doc 56, 6.)
@@ -1123,7 +1207,8 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         if (!fromA.empty() && !fromB.empty() && fromA != fromB && accentB != "none" &&
             (band == "strangers" || band == "acquaintances"))
         {
-            auto t = topic("accent", 1.3 + jitter(9) * .6 + (accentB == "broad" ? .3 : 0));
+            const auto& sc = book.score("accent");
+            auto t = topic("accent", J(sc) + (accentB == "broad" ? sc.add : 0));
             t.talk["topic.accent_of"] = fromB;
             t.talk["topic.accent_town"] = townWords(fromB);
             consider(std::move(t));
@@ -1131,27 +1216,26 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
     }
     // The everyday: family, work, the weather, the town's own lore, and talk for talk's sake.
     if (const auto* spouse = society_.spouse(a); (spouse && *spouse == b) || society_.family(a, b))
-        consider(topic("family", 1.4 + jitter(1)));   // (Kin only: housemates share a roof, not a father's tools.)
+        consider(topic("family", J(book.score("family"))));   // (Kin only: housemates share a roof, not a father's tools.)
     else if (society_.household(a, b))
-        consider(topic("home", 1.4 + jitter(1)));     // (What housemates have in common is the house: doc 84, defect 3.)
+        consider(topic("home", J(book.score("home", "housemates"))));   // (What housemates have in common is the house: doc 84, defect 3.)
     const auto* ja = society_.jobOf(a);
     const auto* jb = society_.jobOf(b);
     if ((ja && jb && (ja->work.cell == jb->work.cell || ja->title == jb->title)) || (ja && ja->work.cell == ea->cellId))
-        consider(topic("work", 1.1 + jitter(2)));
+        consider(topic("work", J(book.score("work"))));
     if (const auto* c = cell(ea->cellId); c && c->outdoors)
         if (const auto here = weatherAt(c->id, ea->position); skyAt(c->id, ea->position) >= 1 || (here.kind == Weather::Fog && here.intensity >= .3))
-            consider(topic("weather", 1.0 + jitter(3)));
+            consider(topic("weather", J(book.score("weather"))));
         else
-            consider(topic("weather", .6 + jitter(3)));     // (A fair sky is remarked on too, less often: doc 62, phase 7.)
-    consider(topic("lore", .7 + jitter(4)));
-    consider(topic("smalltalk", .8 + jitter(5)));
+            consider(topic("weather", J(book.score("weather", "fair"))));     // (A fair sky is remarked on too, less often: doc 62, phase 7.)
+    consider(topic("lore", J(book.score("lore"))));
+    consider(topic("smalltalk", J(book.score("smalltalk"))));
     // More of everyday life (doc 62, phase 7: no conversation heard twice in a hundred hours): each its own topic,
     // so the two wander from one subject to another hour by hour.
     static const char* const Everyday[] = {"food", "home", "pastimes", "animals", "health", "memories",
                                            "dreams", "faith", "travel", "land", "season"};
-    int salt = 20;
     for (const char* kind : Everyday)
-        consider(topic(kind, .7 + jitter(salt++)));
+        consider(topic(kind, J(book.score(kind))));
     (void)eb;
 }
 
@@ -1260,14 +1344,17 @@ const Belief* World::holding(const std::string& holder, const std::string& subje
 void World::told(const Belief& given, const std::string& via)
 {
     // Doc 84 §8.6: corroboration by a second, independent source; otherwise as believe (the surer kept).
+    // (Once a source: the ledger's told set remembers who told them what: doc 84 §8.7, Phase 5.)
+    const auto key = given.subject + "|" + given.claim;
+    const bool before = talkLedger_.counted(given.holder, given.source, key);
+    talkLedger_.told(given.holder, given.source, key, given.kind, calendarDays_, true);
     const auto mine = beliefs_.find(given.holder);
     if (mine != beliefs_.end() && !given.source.empty())
         for (auto& old : mine->second)
             if (old.subject == given.subject && old.claim == given.claim)
             {
                 const bool independent = given.source != old.source && given.source != given.holder && via != old.source &&
-                                         via != given.holder &&
-                                         corroborated_.insert(given.holder + "|" + given.subject + "|" + given.claim + "|" + given.source).second;
+                                         via != given.holder && !before;
                 if (!independent)
                     break;
                 old.confidence = std::min(1.0, old.confidence + (1 - old.confidence) * .4);

@@ -2009,8 +2009,26 @@ void World::gossip()
         mine.erase(std::remove_if(mine.begin(), mine.end(), [](const Belief& b) { return b.confidence < .1; }), mine.end());
     }
     for (const auto& [listener, b] : telling)
+    {
         believe(b);
-
+        // Talk out of anyone's hearing is the ledger's too (doc 84 §8.7, Phase 5): a note with no words (they talked of
+        // it, the claim passed), one a pair a day, and the told set; so "as you told me yesterday" is true wherever a
+        // player arrives. Off with the ledger (--no-talk-ledger).
+        if (!talkLedger_.enabled)
+            continue;
+        const auto key = b.subject + "|" + b.claim;
+        talkLedger_.told(listener, b.source, key, b.kind, calendarDays_);
+        auto* note = talkLedger_.latest(b.source, listener);
+        if (!note || !note->unheard || std::floor(note->day) != std::floor(calendarDays_))
+        {
+            note = &talkLedger_.note(b.source, listener, calendarDays_);
+            note->unheard = true;
+        }
+        const auto* kind = claims::find(b.kind);
+        note->topics.push_back(kind ? kind->topic : std::string("gossip"));
+        note->keys.push_back(key);
+        note->claims.push_back(b.source + "|" + key);
+    }
 }
 
 Result World::payBandits(const std::string& player, const std::string& bandit)

@@ -4,6 +4,7 @@
 // players, to whoever can hear. Barks, a resident calling out to no one in particular, are the talk library's too.
 #include "RatwClaims.h"
 #include "RatwItems.h"
+#include "RatwTopics.h"
 #include "RatwSermons.h"
 #include "RatwGame.h"
 
@@ -23,6 +24,7 @@ constexpr std::size_t AtOnce = 3;                   // Exchanges under way acros
 constexpr double Apart = 5;                         // Tiles: walk further apart and the exchange stops.
 constexpr double ConversationQuiet = 60;            // Give a player's conversation room before more ambient speech.
 constexpr double PersonFactsEvery = 30;             // World seconds a talk keeps a speaker's person facts (doc 84 §8.2).
+constexpr std::size_t AgendaKept = 8;               // The director's topics a talk may turn to (doc 84 §8.5), the likeliest.
 
 // The authored lines (no library line fits) with their moves (doc 84, Phase 2), so a transcript says what they do.
 talk::Said authoredMoves(const talk::Library& lib, const std::string& kind, const talk::Facts& facts, const mind::Exchange& x)
@@ -69,7 +71,10 @@ void Game::ambient(double dt)
     // (doc 84 §15.1, Phase 0) so the conversation simulator runs the same director; the split changes nothing said
     // (Tests/fixtures/talk_golden, the golden transcripts).
     ambientSpeak(dt);
-    if ((exchangeLookIn_ += dt) < LookEvery || ambient_.size() >= AtOnce)
+    if ((exchangeLookIn_ += dt) < LookEvery)
+        return;
+    talkPledges();                                  // (Invitations kept or missed, promises let lapse: doc 84 §8.7.)
+    if (ambient_.size() >= AtOnce)
         return;
     exchangeLookIn_ = 0;
     const double now = world_.time();
@@ -281,6 +286,17 @@ void Game::ambientStart(const std::vector<std::string>& listeners)
     const auto seed = id * 2654435761u + std::uint64_t(now * 7);
     if (beats)
     {
+        // What the talk may turn to (§8.5, Phase 5): the director's other topics for the two, the likeliest first.
+        if (topics::book().topicsPerTalk > 1)
+        {
+            world_.talkFor(pick.hearer);
+            auto all = world_.agendaFor(pick.teller, pick.listener);
+            world_.talkFor({});
+            auto& agenda = ambient_.back().agenda;
+            for (auto& item : all)
+                if (agenda.size() < AgendaKept && !(item.kind == pick.topic.kind && item.key == pick.topic.key))
+                    agenda.push_back(std::move(item));
+        }
         if (!ambientBegin(ambient_.back(), q, context, seed))
             ambient_.pop_back();
         return;
@@ -347,9 +363,7 @@ bool Game::ambientBegin(AmbientTalk& t, const talk::Query& start, const mind::Ex
             t.knew[id] = id == t.pick.teller || claimHeld(t, id) ? "yes" : "no";
             s->facts["knows"] = t.knew[id];
         }
-    // A talk this pair left unfinished (§8.10): its topic, kept two game days.
-    if (const auto m = q.facts.find("pair.mem.thread"); m != q.facts.end())
-        q.facts["pair.thread"] = m->second;
+    // (A talk this pair left unfinished, §8.10: pair.thread, the ledger's, in talkQuery's facts.)
     t.queries[t.pick.teller + "|" + t.pick.listener] = q;
     t.fresh[t.pick.teller] = t.fresh[t.pick.listener] = now;
     // The place as they began: rain falling on them already, fights already under way (neither breaks it off).
@@ -359,6 +373,36 @@ bool Game::ambientBegin(AmbientTalk& t, const talk::Query& start, const mind::Ex
         if (b.cellId == t.pick.cell)
             t.fights.insert(b.id);
     t.conv.seed = seed;
+    // The agenda (§8.5, Phase 5): each of the director's other topics, owned by the one who'd raise it, with its own
+    // facts and who knew its claim.
+    if (!t.agenda.empty())
+    {
+        t.conv.agenda.assign(2, {});
+        for (std::size_t i = 0; i < t.agenda.size(); ++i)
+        {
+            AmbientPick p;
+            p.teller = t.agenda[i].source == t.pick.listener ? t.pick.listener : t.pick.teller;
+            p.listener = p.teller == t.pick.teller ? t.pick.listener : t.pick.teller;
+            p.cell = t.pick.cell;
+            p.hearer = t.pick.hearer;
+            p.topic = t.agenda[i];
+            talk::AgendaItem item;
+            item.kind = claimTopic(p) ? "tell" : topics::book().everyday(p.topic.kind) ? "smalltalk" : "news";
+            item.topic = p.topic.kind;
+            item.claim = p.topic.key;
+            item.urgency = p.topic.score;
+            item.concept = "talk." + p.topic.kind;
+            item.index = int(i);
+            world_.talkFor(p.hearer);
+            item.facts = exchangeFacts(p, exchangeWords(p));
+            world_.talkFor({});
+            if (claimTopic(p))
+                for (const auto& id : {p.teller, p.listener})
+                    item.knows[id] = id == p.teller || world_.holding(id, p.topic.subject, p.topic.claim, p.topic.incident,
+                                                                      p.topic.claimKind, p.topic.object) ? "yes" : "no";
+            t.conv.agenda[p.teller == t.pick.teller ? 0 : 1].push_back(std::move(item));
+        }
+    }
     auto first = talk_.begin(t.conv, q, talkFreshness(t, 0));
     if (first)
     {
@@ -455,12 +499,13 @@ talk::Query Game::talkBeat(AmbientTalk& t, int speaker, int to)
                 renewed.facts[k] = kept->second;
         *s = std::move(renewed);
         t.fresh[id] = now;
+        notEachOthers(base);
     }
     auto q = base;
     // The moment (here.*: the hour, the sky), how each is now (hurt, fighting), the bonds, and what is remembered: fresh.
     for (auto it = q.facts.begin(); it != q.facts.end();)
         it = it->first.rfind("here.", 0) == 0 || it->first.rfind("pair.mem.", 0) == 0 || it->first.rfind("pair.said:", 0) == 0 ||
-                     it->first.rfind("world.mem.", 0) == 0 || it->first.rfind("world.said:", 0) == 0 || it->first == "pair.thread"
+                     it->first.rfind("world.mem.", 0) == 0 || it->first.rfind("world.said:", 0) == 0 || talk::Library::ledgerFact(it->first)
                  ? q.facts.erase(it)
                  : std::next(it);
     world_.talkMoment(a, q.facts);
@@ -475,7 +520,10 @@ talk::Query Game::talkBeat(AmbientTalk& t, int speaker, int to)
             break;
         const auto id = s->facts.count("id") ? s->facts.at("id") : std::string();
         for (auto it = s->facts.begin(); it != s->facts.end();)
-            it = it->first.rfind("mem.", 0) == 0 || it->first.rfind("said:", 0) == 0 ? s->facts.erase(it) : std::next(it);
+            it = it->first.rfind("mem.", 0) == 0 || it->first.rfind("said:", 0) == 0 || it->first.rfind("was.", 0) == 0 ||
+                         it->first == "told_me" || it->first == "promised" || it->first == "promise_what"
+                     ? s->facts.erase(it)               // (The ledger's own: Library::ledgerFact's person keys.)
+                     : std::next(it);
         talkRecall("person:" + id, "", s->facts);
         if (const auto* e = world_.entity(id); e && e->npc)
         {
@@ -487,8 +535,7 @@ talk::Query Game::talkBeat(AmbientTalk& t, int speaker, int to)
     {
         talkBond(a, b, q.facts);
         talkRecall("pair:" + pairKey(a, b), "pair.", q.facts);
-        if (const auto m = q.facts.find("pair.mem.thread"); m != q.facts.end())
-            q.facts["pair.thread"] = m->second;
+        talkLedgerFacts(a, b, q);                   // (What the ledger keeps of the two: doc 84 §8.7.)
     }
     return q;
 }
@@ -552,6 +599,7 @@ std::optional<talk::SaidLine> Game::joiners(AmbientTalk& t, const talk::Freshnes
     // out of talk a while, knowing one of them, and with a stake in what was just said; only with a line that fits.
     const auto& rules = talk_.beats();
     if (int(t.people.size()) >= rules.joinPeople || t.conv.people.size() != 2 || t.conv.lines.empty() || !t.conv.queued.empty() ||
+        !t.conv.topicFacts.empty() ||               // (Not once the talk has turned to another topic: Phase 5.)
         t.conv.phase != talk::Conversation::Phase::Body || int(t.conv.lines.size()) + 4 > talk_.budgets().most)
         return std::nullopt;
     const auto* a = world_.entity(t.pick.teller);
@@ -646,6 +694,11 @@ std::optional<talk::SaidLine> Game::joiners(AmbientTalk& t, const talk::Freshnes
             const bool chatty = voice != npcVoice_.end() && voice->second.traits.count("talk") && voice->second.traits.at("talk") == "chatty";
             if (chatty && Close.count(world_.pairBand(e->id, a->id)) && Close.count(world_.pairBand(e->id, b->id)))
                 c.stake = "friends", c.moves = {"join.add"};
+            // One who likes to talk, on their favourite topic, who knows both (Phase 5: topics.json's favourites).
+            else if (const auto favs = chatty ? talkFavourites(e->id) : std::vector<std::string>{};
+                     !t.conv.topics.empty() && std::find(favs.begin(), favs.end(), t.conv.topics.back()) != favs.end() &&
+                     knows(a->id) && knows(b->id))
+                c.stake = "favourite", c.moves = {"join.add"};
         }
         if (!c.stake.empty())
             found.push_back(std::move(c));
@@ -653,6 +706,7 @@ std::optional<talk::SaidLine> Game::joiners(AmbientTalk& t, const talk::Freshnes
     std::sort(found.begin(), found.end(), [](const Candidate& x, const Candidate& y) {
         return x.distance < y.distance || (x.distance == y.distance && x.id < y.id);
     });
+
     // The nearest two at most (a candidate's query is a whole one: §16, B1).
     if (found.size() > 2)
         found.resize(2);
@@ -692,6 +746,17 @@ void Game::ambientSaid(AmbientTalk& t, const talk::SaidLine& line)
     const auto at = [&](int i) { return i >= 0 && std::size_t(i) < t.people.size() ? t.people[std::size_t(i)] : std::string(); };
     const auto speaker = at(line.who);
     const auto to = at(line.to);
+    // The topic (§8.5, Phase 5): the talk's first, or one it turned to (the agenda's: the pick follows it), taken up.
+    if (t.conv.agendaAt != t.agendaAt && t.conv.agendaAt >= 0 && std::size_t(t.conv.agendaAt) < t.agenda.size())
+    {
+        t.agendaAt = t.conv.agendaAt;
+        t.pick.topic = t.agenda[std::size_t(t.agendaAt)];
+        t.knew = t.conv.knows;
+        t.gist = false;
+        ambientTopicBegun(t, speaker);
+    }
+    else if (t.spoken == 0)
+        ambientTopicBegun(t, speaker);
     // Heard: every rule and scene said so far (a greeting with its opener), by all who could hear it (defect 5).
     const auto hearers = hearersOf(speaker);
     for (; t.chainDone < t.conv.chain.size(); ++t.chainDone)
@@ -775,10 +840,191 @@ void Game::ambientSaid(AmbientTalk& t, const talk::SaidLine& line)
     // The point of it made (§8.10): a thread is kept only for a talk broken off before.
     if (line.gist || !line.asserts.empty() || hasMove(line.moves, "preclose") || hasMove(line.moves, "farewell"))
         t.gist = true;
-    // A thread taken up again is done with.
+    // The talk ledger (§8.7, Phase 5). A thread taken up again is done with.
+    auto& ledger = world_.talkLedger();
+    const double day = world_.calendarDays();
     if (hasMove(line.moves, "return"))
-        if (const auto memo = talkMemory_.find("pair:" + pairKey(t.pick.teller, t.pick.listener)); memo != talkMemory_.end())
-            memo->second.erase("thread");
+        ledger.closeThread(t.pick.teller, t.pick.listener);
+    // Tags kept ({k=v keep 7d}): the pair's (pair.was.k) and the speaker's own (self.was.k); a goal done, kept between them.
+    if (line.keep > 0)
+        for (const auto& [k, v] : line.tags)
+        {
+            t.kept[k] = {v, day + line.keep};
+            ledger.keep(speaker, k, v, day + line.keep);
+        }
+    if (line.goalDone && !line.goal.empty())
+        t.kept["goal_" + line.goal] = {"yes", day + line.goalDays};
+    // An introduction (learn_name): the one spoken to knows the speaker's name now (familiarity 10: pair.named).
+    if ((hasMove(line.moves, "introduce") || hasMove(line.moves, "introduce.return")) && !to.empty())
+        if (const auto* b = world_.bonds().find(to, speaker); !b || b->familiarity < 10)
+            world_.bonds().change(to, speaker, {0, 0, 10 - (b ? b->familiarity : 0), 0, 0}, day);
+    // A story or a tease is told a listener once (§8.12): the ledger's heard set, and the note's.
+    if (hasMove(line.moves, "tell.story") || hasMove(line.moves, "tell.memory") || hasMove(line.moves, "tease"))
+    {
+        t.toldEntries.push_back(line.entry);
+        for (const auto& p : t.people)
+            if (p != speaker)
+                ledger.heard(p, line.entry);
+    }
+    if (!line.asserts.empty() && claimTopic(t.pick))
+        t.claims.push_back(speaker + "|" + t.pick.topic.key);
+    // An invitation the world checks, a talk-only promise (§8.7).
+    if (!line.invitePlace.empty() && !to.empty() && ledger.enabled)
+    {
+        const auto* c = world_.cell(t.pick.cell);
+        ledger.invites().push_back({speaker, to, t.pick.cell, c ? c->name : std::string(), line.inviteHour, day, day + line.inviteDays, "open"});
+    }
+    if (!line.promiseWhat.empty() && !to.empty() && ledger.enabled)
+        ledger.promises().push_back({speaker, to, line.promiseWhat, day, day + line.promiseDays, "open"});
+    // A callback said is said once: a lapsed promise nagged, a missed invitation remarked on.
+    if (line.callback && !to.empty())
+        if (const auto* e = talk_.find(line.entry))
+            for (const auto& c : e->when)
+            {
+                if (c.name == "promised")
+                    for (auto it = ledger.promises().rbegin(); it != ledger.promises().rend(); ++it)
+                        if (it->by == to && it->to == speaker && it->state == "lapsed")
+                        {
+                            it->state = "called";
+                            break;
+                        }
+                if (c.full == "pair.kept_invite")
+                    for (auto it = ledger.invites().rbegin(); it != ledger.invites().rend(); ++it)
+                        if (((it->by == to && it->to == speaker) || (it->by == speaker && it->to == to)) && it->state != "open")
+                        {
+                            it->state = "called";
+                            break;
+                        }
+            }
+}
+
+void Game::ambientTopicBegun(AmbientTalk& t, const std::string& speaker)
+{
+    // A topic taken up (§8.5, Phase 5): the place's day counts it (saturation, the everyday floor), and a claim or one's
+    // own news is now told to everyone else in the talk (the told set: never told them twice, K3).
+    const auto& topic = t.pick.topic;
+    auto& ledger = world_.talkLedger();
+    const double day = world_.calendarDays();
+    ledger.placeTalk(t.pick.cell, topic.kind, topic.key, topics::book().news(topic.kind), day);
+    t.covered.push_back({topic.kind, topic.key});
+    if (claimTopic(t.pick) || topic.kind == "news" || topic.kind == "deed")
+    {
+        const auto teller = topic.source.empty() ? speaker : topic.source;
+        for (const auto& p : t.people.empty() ? std::vector<std::string>{t.pick.teller, t.pick.listener} : t.people)
+            if (p != teller)
+                ledger.told(p, teller, topic.key, topic.claimKind, day);
+    }
+}
+
+void Game::ambientNote(AmbientTalk& t, const std::string& reason)
+{
+    // The ledger's note of the talk (§8.7): what they talked of, how it went, the claims passed, the tags kept, an open
+    // thread (§8.10: a talk broken off before its point was made, neither of them dead), for each two in it.
+    auto& ledger = world_.talkLedger();
+    if (!ledger.enabled || t.spoken == 0)
+        return;
+    const double day = world_.calendarDays();
+    const auto* a = world_.entity(t.pick.teller);
+    const auto* b = world_.entity(t.pick.listener);
+    const bool brokenOff = t.conv.ended == "break" || reason != "done";
+    const auto any = [&](std::initializer_list<const char*> moves) {
+        return std::any_of(t.conv.lines.begin(), t.conv.lines.end(), [&](const talk::SaidLine& l) {
+            return std::any_of(moves.begin(), moves.end(), [&](const char* m) { return hasMove(l.moves, m); });
+        });
+    };
+    std::string outcome = brokenOff                 ? "broken"
+                          : t.conv.ended == "curt"  ? "curt"
+                          : t.pick.topic.kind == "quarrel" || any({"challenge", "counter"}) ? "quarrelled"
+                          : any({"take_offence", "decline_apology", "decline", "refuse", "join.object", "join.defend"}) ? "soured"
+                          : any({"concede"}) ? "conceded"
+                          : any({"reassure", "sympathise"}) ? "reassured"
+                          : t.conv.ended == "farewell" ? "warmed"
+                                                       : "even";
+    std::vector<std::string> people = t.people.empty() ? std::vector<std::string>{t.pick.teller, t.pick.listener} : t.people;
+    for (std::size_t i = 0; i < people.size(); ++i)
+        for (std::size_t j = i + 1; j < people.size(); ++j)
+        {
+            auto& note = ledger.note(people[i], people[j], day);
+            note.opener = people[i];
+            for (const auto& [topic, key] : t.covered)
+            {
+                note.topics.push_back(topic);
+                note.keys.push_back(key);
+            }
+            note.outcome = outcome;
+            note.told = t.toldEntries;
+            note.claims = t.claims;
+            note.kept = t.kept;
+            // A goal done, or begun and given up, is kept between the two for its days (frames.json's goals): never
+            // pursued again in their every talk.
+            for (const auto& g : talk_.goals())
+                if (const auto state = t.conv.conv.find("goal_" + g.name); state != t.conv.conv.end() && g.days > 0)
+                    note.kept.emplace("goal_" + g.name, std::pair<std::string, double>{"yes", day + g.days});
+            if (i == 0 && j == 1 && brokenOff && !t.gist && !t.conv.topic.empty() && a && b && !a->dead && !b->dead &&
+                talk_.beats().threadDays > 0)
+            {
+                note.thread = t.conv.topic;
+                note.threadUntil = day + talk_.beats().threadDays;
+            }
+        }
+}
+
+void Game::talkPledges()
+{
+    // Invitations (§8.7): kept when both are in its place in its hour, missed when its days run out; a talk-only promise
+    // let run past its days lapses (a callback: "You said you'd see the healer.").
+    auto& ledger = world_.talkLedger();
+    if (ledger.invites().empty() && ledger.promises().empty())
+        return;
+    const double day = world_.calendarDays();
+    const int hour = int(std::floor(calendar::calendarAt(day).hour));
+    for (auto& i : ledger.invites())
+    {
+        if (i.state != "open")
+            continue;
+        const auto* by = world_.entity(i.by);
+        const auto* to = world_.entity(i.to);
+        if (day > i.until || !by || !to || by->dead || to->dead)
+            i.state = "missed";
+        else if (hour == i.hour && by->cellId == i.cell && to->cellId == i.cell && day - i.from > .05)
+            i.state = "kept";
+    }
+    for (auto& p : ledger.promises())
+        if (p.state == "open" && day > p.until)
+            p.state = "lapsed";
+}
+
+std::vector<std::string> Game::talkFavourites(const std::string& id)
+{
+    // topics.json's favourites (§8.5): "trait=value|value" over the resident's talk facts, once a game day each.
+    if (const auto today = std::int64_t(std::floor(world_.calendarDays())); today != favouritesDay_)
+    {
+        favouritesDay_ = today;
+        favourites_.clear();
+    }
+    if (const auto found = favourites_.find(id); found != favourites_.end())
+        return found->second;
+    std::vector<std::string> out;
+    const auto& book = topics::book();
+    if (const auto* e = world_.entity(id); e && e->npc && !book.favourites.empty())
+    {
+        const auto facts = talkSpeaker(*e).facts;
+        for (const auto& [trait, list] : book.favourites)
+        {
+            const auto eq = trait.find('=');
+            if (eq == std::string::npos)
+                continue;
+            const auto have = facts.find(trait.substr(0, eq));
+            if (have == facts.end())
+                continue;
+            std::string values = "|" + trait.substr(eq + 1) + "|";
+            if (values.find("|" + have->second + "|") != std::string::npos)
+                for (const auto& t : list)
+                    if (std::find(out.begin(), out.end(), t) == out.end())
+                        out.push_back(t);
+        }
+    }
+    return favourites_[id] = out;
 }
 
 void Game::ambientFinish(AmbientTalk& t, const std::string& reason)
@@ -804,13 +1050,8 @@ void Game::ambientFinish(AmbientTalk& t, const std::string& reason)
                     regard(t.people[std::size_t(left)], closer, change, "talk", "left without a word");
             }
     }
-    // A talk broken off before its point was made is kept as the pair's thread (§8.10), unless one of them is dead.
-    const auto* a = world_.entity(t.pick.teller);
-    const auto* b = world_.entity(t.pick.listener);
-    const bool brokenOff = t.conv.ended == "break" || reason != "done";
-    if (brokenOff && !t.gist && !t.conv.topic.empty() && a && b && !a->dead && !b->dead && talk_.beats().threadDays > 0)
-        talkRemember({{"pair", pairKey(t.pick.teller, t.pick.listener), "thread", t.conv.topic, talk_.beats().threadDays,
-                       "broken off"}});
+    // The ledger's note of it, with a thread kept for a talk broken off before its point was made (§8.10; Phase 5).
+    ambientNote(t, reason);
 }
 
 mind::ExchangeContext Game::exchangeContext(const AmbientPick& pick)
@@ -831,6 +1072,7 @@ mind::ExchangeContext Game::exchangeContext(const AmbientPick& pick)
             p.personality += (p.personality.empty() ? "" : "\n") + std::string("How they speak: ") + card;
         return p;
     };
+    const auto words = exchangeWords(pick);
     context.a = persona(*a);
     context.b = persona(*b);
     context.aSeesB = world_.describeRegard(a->id, b->id);
@@ -839,6 +1081,20 @@ mind::ExchangeContext Game::exchangeContext(const AmbientPick& pick)
     context.facts = pick.topic.facts;
     if (const auto* place = world_.cell(a->cellId))
         context.scene = mind::left(place->description, 1200);
+    context.subjectName = words.subjectName;
+    context.claim = words.claim;
+    context.news = words.news;
+    context.day = words.day;
+    return context;
+}
+
+mind::ExchangeContext Game::exchangeWords(const AmbientPick& pick)
+{
+    const auto* a = world_.entity(pick.teller);
+    mind::ExchangeContext context;
+    if (!a)
+        return context;
+    context.a.name = a->name;
     // The subject as the teller knows them: a player by a name they were given, else by look (doc 56, 6).
     if (const auto found = pick.topic.talk.find("topic.subject"); found != pick.topic.talk.end())
         context.subjectName = found->second;
@@ -858,7 +1114,7 @@ mind::ExchangeContext Game::exchangeContext(const AmbientPick& pick)
     return context;
 }
 
-talk::Query Game::exchangeQuery(const AmbientPick& pick, const mind::ExchangeContext& context)
+talk::Facts Game::exchangeFacts(const AmbientPick& pick, const mind::ExchangeContext& context)
 {
     // The talk library (doc 62): the topic's facts, and what the Mind would be told.
     auto facts = pick.topic.talk;
@@ -873,6 +1129,12 @@ talk::Query Game::exchangeQuery(const AmbientPick& pick, const mind::ExchangeCon
     }
     if (!context.day.empty())
         facts["topic.remark"] = context.day;
+    return facts;
+}
+
+talk::Query Game::exchangeQuery(const AmbientPick& pick, const mind::ExchangeContext& context)
+{
+    const auto facts = exchangeFacts(pick, context);
     auto q = talkQuery(pick.teller, pick.listener, "talk." + pick.topic.kind, facts);
     // binds x=topic.subject: the one the talk is about, when it is a resident (doc 84 §7.1).
     q.bind = [this, subject = pick.topic.subject, people = std::move(q.bind), a = pick.teller,

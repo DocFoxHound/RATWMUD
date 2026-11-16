@@ -47,7 +47,7 @@ b[priest] #priest : No field's lucky or cursed. Some are tended better, that's a
 b : Belongs to the Houses, I expect. | What does he do to it? | Which is cursed?
 a@farmer : Drainage and dung. There's a song in that somewhere.
 a@priest : Tell that to whoever ploughs the bad ones.
-a : Everything does. | Says he sings to it. | The one with the dead tree.
+a : Everything does. | Says he sings to it. | The one with the split oak.
 
 scene e5_la_bad_field
 when topic=land

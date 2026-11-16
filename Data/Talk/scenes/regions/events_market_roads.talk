@@ -60,7 +60,7 @@ b?[guard] : Careful. Talk like that gets wolves into the Sound.
 
 scene em_rm_bd_camp
 when topic=bandits topic.kind=camp here.region=ridgemere
-a : There's a camp at #topic.where#. In this rain, even. | They say the bandits at #topic.where# sell to the smugglers on the wharf. | Timberland's charcoal burners saw a camp near #topic.where#.
+a : There's a camp at #topic.where#. Out in the open, too. | They say the bandits at #topic.where# sell to the smugglers on the wharf. | Timberland's charcoal burners saw a camp near #topic.where#.
 b : Wet bandits. Miserable ones. | Everyone sells to the smugglers. | Then House Timberland will hear of it.
 a : Miserable and armed. | Everyone. | And do nothing.
 

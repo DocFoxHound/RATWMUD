@@ -1,8 +1,8 @@
 {
  "about": "Docs/Design/84 §15.3: the talk scorecard (tools/talk_score.py), from talk_sim transcripts.",
- "generated": "2026-11-16T17:57:41+00:00",
+ "generated": "2026-11-16T21:21:07+00:00",
  "runs": {
-  "town": "/tmp/ratw-talk-quick-n_iqmu0k/town"
+  "town": "/tmp/ratw-talk-quick-pyamuoxx/town"
  },
  "metrics": {
   "R1": {
@@ -10,12 +10,12 @@
    "better": "higher",
    "gate": "hard",
    "target": "40 h+; hard 20 h+",
-   "value": 0.5545833333333333,
+   "value": 12.880208333333334,
    "passes": false,
    "by_profile": {
-    "town": 0.555
+    "town": 12.88
    },
-   "control": 0.5545833333333333,
+   "control": 12.880208333333334,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -27,12 +27,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "8 h+",
-   "value": 0.4365277777777778,
+   "value": 0.544375,
    "passes": false,
    "by_profile": {
-    "town": 0.437
+    "town": 0.544
    },
-   "control": 0.4365277777777778,
+   "control": 0.544375,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -44,12 +44,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "L1 1,500+",
-   "value": 1532.2815205627705,
+   "value": 2791.362823533999,
    "passes": true,
    "by_profile": {
-    "town": 1532.282
+    "town": 2791.363
    },
-   "control": 1532.2815205627705,
+   "control": 2791.362823533999,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -61,20 +61,20 @@
    "better": "lower",
    "gate": "soft",
    "target": "5 or fewer",
-   "value": 8664.325561513531,
+   "value": 2847.5211888379413,
    "passes": false,
    "by_profile": {
-    "town": 8664.326
+    "town": 2847.521
    },
-   "control": 9334.408293788858,
-   "separation": 0.07178631051752918,
+   "control": 7533.904834772863,
+   "separation": 0.6220391349124614,
    "real_better": true,
-   "separates": false,
+   "separates": true,
    "control_required": false,
    "structural": false,
    "events": [
-    1112,
-    12.83
+    367,
+    12.89
    ]
   },
   "R5": {
@@ -82,20 +82,20 @@
    "better": "lower",
    "gate": "hard",
    "target": "1 or fewer; hard 3",
-   "value": 1644.0401919778371,
+   "value": 589.6774124024074,
    "passes": false,
    "by_profile": {
-    "town": 1644.04
+    "town": 589.677
    },
-   "control": 1877.7899823064395,
-   "separation": 0.12448132780082982,
+   "control": 1481.952444327103,
+   "separation": 0.6020942408376964,
    "real_better": true,
-   "separates": false,
+   "separates": true,
    "control_required": false,
    "structural": false,
    "events": [
-    211,
-    12.83
+    76,
+    12.89
    ]
   },
   "R6": {
@@ -103,13 +103,13 @@
    "better": "lower",
    "gate": "soft",
    "target": "0.4%",
-   "value": 1.7009345794392523,
+   "value": 1.2272140088990957,
    "passes": false,
    "by_profile": {
-    "town": 1.701
+    "town": 1.227
    },
-   "control": 1.7476635514018692,
-   "separation": 0.026737967914438568,
+   "control": 1.3707478111095164,
+   "separation": 0.10471204188481684,
    "real_better": true,
    "separates": false,
    "control_required": false,
@@ -120,13 +120,13 @@
    "better": "higher",
    "gate": "soft",
    "target": "500+",
-   "value": 99.68282736746715,
+   "value": 202.6349706429901,
    "passes": false,
    "by_profile": {
-    "town": 99.683
+    "town": 202.635
    },
-   "control": 92.57998638529612,
-   "separation": 0.07125440930750666,
+   "control": 181.0810810810811,
+   "separation": 0.10636806417725135,
    "real_better": true,
    "separates": false,
    "control_required": false,
@@ -137,20 +137,20 @@
    "better": "lower",
    "gate": "soft",
    "target": "15% or less",
-   "value": 0.08780091637905593,
+   "value": 0.07856430804786034,
    "passes": true,
    "by_profile": {
-    "town": 0.088
+    "town": 0.079
    },
-   "control": 0.1039347166152166,
-   "separation": 0.15523013639312305,
+   "control": 0.0831608747723538,
+   "separation": 0.05527318870894748,
    "real_better": true,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    9,
-    10700.0
+    11,
+    13934.0
    ]
   },
   "C1": {
@@ -158,20 +158,20 @@
    "better": "higher",
    "gate": "hard",
    "target": "97%; hard 92%",
-   "value": 100.0,
+   "value": 99.81172673480366,
    "passes": true,
    "by_profile": {
-    "town": 100.0
+    "town": 99.812
    },
-   "control": 26.00246761258482,
-   "separation": 0.7399753238741518,
+   "control": 18.086816720257236,
+   "separation": 0.8187906640638201,
    "real_better": true,
    "separates": true,
    "control_required": true,
    "structural": false,
    "events": [
-    3294,
-    3294.0
+    3711,
+    3718.0
    ]
   },
   "C1Q": {
@@ -179,20 +179,20 @@
    "better": "higher",
    "gate": "soft",
    "target": "diagnostic (C1 until Phase 3; doesn't separate from the control)",
-   "value": 96.5194109772423,
+   "value": 97.55409219190969,
    "passes": null,
    "by_profile": {
-    "town": 96.519
+    "town": 97.554
    },
-   "control": 91.67785234899328,
-   "separation": 0.050161502015284555,
+   "control": 87.47714808043875,
+   "separation": 0.10329596519280237,
    "real_better": true,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    721,
-    747.0
+    1037,
+    1063.0
    ]
   },
   "M1": {
@@ -200,13 +200,13 @@
    "better": "higher",
    "gate": "soft",
    "target": "100% at Phase 7 (every entry)",
-   "value": 62.691588785046726,
+   "value": 52.892206114539974,
    "passes": null,
    "by_profile": {
-    "town": 62.692
+    "town": 52.892
    },
-   "control": 62.794392523364486,
-   "separation": 0.0016371483851764204,
+   "control": 52.978326395866226,
+   "separation": 0.0016255757247358427,
    "real_better": false,
    "separates": false,
    "control_required": false,
@@ -234,19 +234,19 @@
    "better": "higher",
    "gate": "soft",
    "target": "80% / 3% / 5%",
-   "value": 92.15,
+   "value": 99.9,
    "passes": true,
    "by_profile": {
-    "town": 92.15
+    "town": 99.9
    },
-   "control": 42.5,
-   "separation": 0.538795442213782,
+   "control": 33.75,
+   "separation": 0.6621621621621622,
    "real_better": true,
    "separates": true,
    "control_required": true,
    "structural": false,
    "events": [
-    1843,
+    1998,
     2000.0
    ]
   },
@@ -268,7 +268,7 @@
    "structural": false,
    "events": [
     0,
-    10700.0
+    13934.0
    ]
   },
   "C5": {
@@ -276,8 +276,21 @@
    "better": "lower",
    "gate": "soft",
    "target": "5",
-   "value": null,
-   "note": "n/a until Phase 5"
+   "value": 0.0,
+   "passes": true,
+   "by_profile": {
+    "town": 0.0
+   },
+   "control": 57.341753983063015,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    0,
+    13934.0
+   ]
   },
   "C6": {
    "name": "same entry or question twice in a conversation, per 1,000",
@@ -289,7 +302,7 @@
    "by_profile": {
     "town": 0.0
    },
-   "control": 233.5,
+   "control": 272.0,
    "separation": 1.0,
    "real_better": true,
    "separates": true,
@@ -305,12 +318,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "5-7; p90 9+",
-   "value": 5.35,
+   "value": 6.967,
    "passes": true,
    "by_profile": {
-    "town": 5.35
+    "town": 6.967
    },
-   "control": 5.35,
+   "control": 6.967,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -322,25 +335,42 @@
    "better": "higher",
    "gate": "soft",
    "target": "5-15%",
-   "value": 0.0,
+   "value": 0.1,
    "passes": false,
    "by_profile": {
-    "town": 0.0
+    "town": 0.1
    },
-   "control": 0.0,
+   "control": 0.1,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
    "control_required": false,
-   "structural": true
+   "structural": true,
+   "events": [
+    2,
+    2000.0
+   ]
   },
   "C9": {
    "name": "callbacks per 10 conversations",
    "better": "higher",
    "gate": "soft",
    "target": "1.5+",
-   "value": null,
-   "note": "n/a until Phase 5"
+   "value": 0.275,
+   "passes": false,
+   "by_profile": {
+    "town": 0.275
+   },
+   "control": 0.275,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    55,
+    2000.0
+   ]
   },
   "T1": {
    "name": "raw ids spoken, per 1,000 lines",
@@ -360,7 +390,7 @@
    "structural": false,
    "events": [
     0,
-    10700.0
+    13934.0
    ]
   },
   "T2": {
@@ -368,20 +398,20 @@
    "better": "lower",
    "gate": "hard",
    "target": "0",
-   "value": 0.2803738317757009,
+   "value": 0.07176690110521028,
    "passes": false,
    "by_profile": {
-    "town": 0.28
+    "town": 0.072
    },
-   "control": 13.551401869158878,
-   "separation": 0.9793103448275862,
+   "control": 12.056839385675326,
+   "separation": 0.9940476190476191,
    "real_better": true,
    "separates": true,
    "control_required": false,
    "structural": false,
    "events": [
-    3,
-    10700.0
+    1,
+    13934.0
    ]
   },
   "T3": {
@@ -394,15 +424,15 @@
    "by_profile": {
     "town": 0.0
    },
-   "control": 0.0,
-   "separation": 0.0,
-   "real_better": false,
-   "separates": false,
+   "control": 0.07176690110521028,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
    "control_required": false,
    "structural": false,
    "events": [
     0,
-    10700.0
+    13934.0
    ]
   },
   "T4": {
@@ -414,12 +444,13 @@
    "note": "n/a until Phase 6"
   },
   "T5": {
-   "name": "telling what the listener already believes (%)",
+   "name": "telling what the listener already believes, with no 'known' answer (%)",
    "better": "lower",
    "gate": "soft",
    "target": "2%",
    "value": null,
-   "note": "n/a until Phase 4"
+   "passes": null,
+   "by_profile": {}
   },
   "D1": {
    "name": "lines with a dialect's words (%): accent none",
@@ -431,7 +462,7 @@
    "by_profile": {
     "town": 0.0
    },
-   "control": 0.7614213197969543,
+   "control": 2.170767004341534,
    "separation": 1.0,
    "real_better": true,
    "separates": true,
@@ -439,7 +470,7 @@
    "structural": false,
    "events": [
     0,
-    394.0
+    691.0
    ]
   },
   "D1L": {
@@ -447,20 +478,20 @@
    "better": "higher",
    "gate": "soft",
    "target": "light 25-50%",
-   "value": 2.7974044700793077,
+   "value": 2.433700753028484,
    "passes": false,
    "by_profile": {
-    "town": 2.797
+    "town": 2.434
    },
-   "control": 3.229992790194665,
-   "separation": 0.13392857142857154,
+   "control": 2.881152460984394,
+   "separation": 0.1553030303030304,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    194,
-    6935.0
+    223,
+    9163.0
    ]
   },
   "D1B": {
@@ -468,20 +499,20 @@
    "better": "higher",
    "gate": "soft",
    "target": "broad 60%+",
-   "value": 5.013349154553545,
+   "value": 4.5588235294117645,
    "passes": false,
    "by_profile": {
-    "town": 5.013
+    "town": 4.559
    },
-   "control": 4.182735093444082,
-   "separation": 0.16568047337278105,
+   "control": 2.450980392156863,
+   "separation": 0.4623655913978494,
    "real_better": true,
-   "separates": false,
+   "separates": true,
    "control_required": false,
    "structural": false,
    "events": [
-    169,
-    3371.0
+    186,
+    4080.0
    ]
   },
   "D2": {
@@ -506,19 +537,19 @@
    "better": "higher",
    "gate": "soft",
    "target": "85%+",
-   "value": 65.78947368421052,
+   "value": 44.73684210526316,
    "passes": false,
    "by_profile": {
-    "town": 65.789
+    "town": 44.737
    },
    "control": 76.3157894736842,
-   "separation": 0.13793103448275865,
+   "separation": 0.4137931034482758,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    25,
+    17,
     38.0
    ]
   },
@@ -544,13 +575,13 @@
    "better": "higher",
    "gate": "soft",
    "target": "90%+",
-   "value": 64.04539120047781,
+   "value": 56.050670640834575,
    "passes": false,
    "by_profile": {
-    "town": 64.045
+    "town": 56.051
    },
-   "control": 62.4328090782401,
-   "separation": 0.025178737954616174,
+   "control": 54.008941877794335,
+   "separation": 0.03642648231853233,
    "real_better": true,
    "separates": false,
    "control_required": false,
@@ -561,12 +592,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "35%+",
-   "value": 90.8,
+   "value": 95.5,
    "passes": true,
    "by_profile": {
-    "town": 90.8
+    "town": 95.5
    },
-   "control": 90.8,
+   "control": 95.5,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -578,12 +609,12 @@
    "better": "lower",
    "gate": "soft",
    "target": "25% or less",
-   "value": 40.3,
-   "passes": false,
+   "value": 11.2,
+   "passes": true,
    "by_profile": {
-    "town": 40.3
+    "town": 11.2
    },
-   "control": 40.3,
+   "control": 11.2,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -595,19 +626,19 @@
    "better": "lower",
    "gate": "hard",
    "target": "0",
-   "value": 182,
-   "passes": false,
+   "value": 0,
+   "passes": true,
    "by_profile": {
-    "town": 182
+    "town": 0
    },
-   "control": 182,
+   "control": 0,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    182,
+    0,
     2000.0
    ]
   },
@@ -635,17 +666,68 @@
    "value": null,
    "note": "n/a until Phase 12"
   },
+  "B1": {
+   "name": "one beat: the director's mean (ms)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "0.6 ms or less (gate: talk_bench)",
+   "value": 0.06906358329143615,
+   "passes": true,
+   "by_profile": {
+    "town": 0.069
+   },
+   "control": 0.06906358329143615,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "B1P": {
+   "name": "one beat: the director's 99th percentile (ms)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "3 ms or less (gate: talk_bench)",
+   "value": 0.194923,
+   "passes": true,
+   "by_profile": {
+    "town": 0.195
+   },
+   "control": 0.194923,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "B1L": {
+   "name": "a director look: 99th percentile (ms)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "5 ms or less (gate: talk_bench)",
+   "value": 1.140297,
+   "passes": true,
+   "by_profile": {
+    "town": 1.14
+   },
+   "control": 1.140297,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
   "B5": {
    "name": "exchanges simulated a second",
    "better": "higher",
    "gate": "hard",
    "target": "150+",
-   "value": 1218.2518853188012,
+   "value": 726.74040366904,
    "passes": true,
    "by_profile": {
-    "town": 1218.252
+    "town": 726.74
    },
-   "control": 1218.2518853188012,
+   "control": 726.74040366904,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -657,13 +739,13 @@
    "better": "higher",
    "gate": "soft",
    "target": "diagnostic (not in §15.3): shows the control is discriminating",
-   "value": 19.283121597096187,
+   "value": 16.728444802578565,
    "passes": null,
    "by_profile": {
-    "town": 19.283
+    "town": 16.728
    },
-   "control": 0.8401453224341507,
-   "separation": 0.9564310519848267,
+   "control": 1.342281879194631,
+   "separation": 0.9197605100153884,
    "real_better": true,
    "separates": true,
    "control_required": true,
@@ -690,52 +772,50 @@
   "town": {
    "R1_detail": {
     "listeners": 3,
-    "median": 10.349930555555556,
+    "median": 12.888125,
     "censored": true,
-    "exchange": 28
+    "exchange": null
    },
    "R2_detail": {
-    "median": 1.169513888888889,
+    "median": 0.606875,
     "censored": false
    },
    "R6_detail": {
-    "line": "Sleep sound.",
-    "times": 182
+    "line": "Good night.",
+    "times": 171
    },
    "R7_detail": {
-    "replies": 4414,
-    "closing_beats": 4286,
-    "closings_distinct_per_1000": 49.0
+    "replies": 6983,
+    "closing_beats": 4951,
+    "closings_distinct_per_1000": 41.8
    },
    "R8_detail": {
-    "p90": 0.3424657534246575,
+    "p90": 0.3076923076923077,
     "speakers": 40,
-    "lines20": 10700,
-    "any_habit_mean": 0.10415595682643167
+    "lines20": 13934,
+    "any_habit_mean": 0.23235791892968966
    },
    "C1Q_detail": {
-    "questions": 747,
-    "answered": 721
+    "questions": 1063,
+    "answered": 1037
    },
    "C1_detail": {
-    "owed": 3294,
-    "met": 3294
+    "owed": 3718,
+    "met": 3711
    },
    "C2_detail": {
-    "answers": 2379,
+    "answers": 3600,
     "fallbacks": 0
    },
    "M1_detail": {
-    "library": 46.73913043478261,
-    "scene": 61.845972957084065,
-    "written": 100.0
+    "scene": 52.892206114539974
    },
    "C3_detail": {
-    "farewell": 92.15,
+    "farewell": 99.9,
     "marked_break": 0.0,
     "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 7.85,
+    "nothing_fits": 0.1,
     "curt": 0.0
    },
    "C4_detail": {
@@ -743,19 +823,16 @@
     "by_tone": 0
    },
    "C7_detail": {
-    "p90": 8,
-    "three_lines": 0.0,
-    "four_lines": 3.25
+    "p90": 10,
+    "three_lines": 0.2,
+    "four_lines": 2.1
    },
    "T2_detail": {
     "by_kind": {
-     "rain_now": 2,
      "fisher_self": 1
     },
     "examples": [
-     "rain_now: It's raining. (tt_ri_pup, clear/clear 10h)",
-     "fisher_self: My nets are tangled past saving. (tt_co_guard, clear/clear 21h)",
-     "rain_now: In this rain? (tt_ri_elder, clear/clear 1h)"
+     "fisher_self: You say that every night, my catch. (tt_co_boatman, clear/clear 14h)"
     ]
    },
    "T3_detail": {
@@ -768,22 +845,54 @@
    },
    "K2_detail": {
     "topics": {
-     "player": 40.3,
-     "family": 17.25,
-     "work": 13.3,
-     "life": 10.15,
-     "news": 9.2,
-     "home": 6.1,
-     "accent": 2.4,
-     "weather": 0.6,
-     "friends": 0.4,
-     "smalltalk": 0.2,
-     "season": 0.1
+     "work": 11.2,
+     "smalltalk": 7.05,
+     "travel": 6.65,
+     "memories": 5.9,
+     "season": 5.85,
+     "land": 5.75,
+     "food": 5.6,
+     "lore": 5.6,
+     "health": 5.35,
+     "animals": 5.3,
+     "pastimes": 5.3,
+     "faith": 5.0,
+     "dreams": 4.95,
+     "home": 4.9,
+     "friends": 4.3,
+     "player": 3.2,
+     "family": 2.9,
+     "weather": 2.35,
+     "accent": 1.55,
+     "life": 1.1,
+     "news": 0.2
     }
    },
+   "K3_detail": {
+    "repeats": []
+   },
+   "C5_detail": {
+    "turns": 942,
+    "unmarked": 0,
+    "examples": [],
+    "topics_per_talk": 1.471,
+    "turned_talks": 827
+   },
+   "C9_detail": {
+    "callbacks": 55,
+    "goals": {
+     "mend": 40,
+     "visit": 11
+    }
+   },
+   "T5_detail": {
+    "asserted": 0,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
    "D1_detail": {
-    "light": 2.8,
-    "broad": 5.01,
+    "light": 2.43,
+    "broad": 4.56,
     "none": 0.0
    },
    "D2_detail": {
@@ -793,27 +902,35 @@
     "lexicon": "tools/dialect_check.py"
    },
    "D3_detail": {
-    "light": 61.5,
-    "broad": 75.0,
+    "light": 34.6,
+    "broad": 66.7,
     "none": 50.0,
     "speakers": 40,
     "judged": 38
    },
    "U2_detail": {
     "pairs": 19,
-    "lines": 5023
+    "lines": 6710
+   },
+   "B1_detail": {
+    "beats": 11934,
+    "beat_max": 0.458585,
+    "looks": 9120,
+    "look_mean": 0.15556704462719295,
+    "look_max": 2.959316
    },
    "_counts": {
-    "lines": 10700,
+    "lines": 13934,
     "conversations": 2000,
-    "hours": 12.83,
+    "hours": 12.89,
     "listeners": 3,
     "speakers": 40,
-    "questions": 747,
-    "owed": 3294,
-    "none_lines": 394,
-    "light_lines": 6935,
-    "broad_lines": 3371
+    "questions": 1063,
+    "owed": 3718,
+    "asserted": 0,
+    "none_lines": 691,
+    "light_lines": 9163,
+    "broad_lines": 4080
    }
   }
  },

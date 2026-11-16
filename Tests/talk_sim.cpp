@@ -40,6 +40,7 @@
 #include "RatwCalendar.h"
 #include "RatwGame.h"
 #include "RatwTalk.h"
+#include "RatwTopics.h"
 
 #include <algorithm>
 #include <chrono>
@@ -142,8 +143,9 @@ const char* weatherWord(Weather w)
 struct Args
 {
     std::string world, mode = "frozen", fixtures, profile = "L1", out, runName, checkpoint, libraryFrom, talkData, golden,
-                record, ablate, places;
+                record, ablate, places, dumpTopics, topics;
     std::uint64_t seed = 1;
+    bool dumpTopicsAll = false;
     double hours = -1, days = 25, warm = 0, freezeAt = 0;
     long exchanges = -1;
     bool bless = false;
@@ -190,6 +192,12 @@ class Sim
     bool checkFixture(const json::Value& manifest);
     std::vector<Listener> listeners_;
     std::ofstream lines_, convs_;
+    // --dump-topics (doc 84, Phase 5): every topic the director weighs, hashed a step at a time (or every one, with
+    // --dump-topics-all), so two builds' directors can be compared exactly.
+    std::ofstream topics_;
+    std::uint64_t topicHash_ = 1469598103934665603ULL;
+    long topicCount_ = 0;
+    void flushTopics(double t);
     std::mt19937_64 rng_;
     long exchanges_ = 0, lineCount_ = 0;
     double startTime_ = 0, endTime_ = 0, startDay_ = 0;
@@ -359,6 +367,19 @@ bool Sim::makeGame(const std::string& checkpoint)
         problem_ = "the talk library at " + talkData_ + " didn't load";
         return false;
     }
+    if (!args_.topics.empty())
+    {
+        // Another topics.json over the library's (doc 84, Phase 5: today's numbers, for ctest talk_topics).
+        std::ifstream in(args_.topics);
+        std::stringstream text;
+        text << in.rdbuf();
+        std::string why;
+        if (!in || !topics::load(text.str(), why))
+        {
+            problem_ = "--topics " + args_.topics + ": " + (why.empty() ? std::string("can't be read") : why);
+            return false;
+        }
+    }
     hook();
     return true;
 }
@@ -388,8 +409,36 @@ json::Value Sim::speakerFacts(const std::string& id)
     return facts;
 }
 
+void Sim::flushTopics(double t)
+{
+    if (!topicCount_)
+        return;
+    char buf[64];
+    std::snprintf(buf, sizeof buf, "%.3f %ld %016llx\n", t - startTime_, topicCount_, static_cast<unsigned long long>(topicHash_));
+    topics_ << buf;
+    topicHash_ = 1469598103934665603ULL;
+    topicCount_ = 0;
+}
+
 void Sim::hook()
 {
+    if (topics_.is_open())
+        g_->world().onTopic = [this](const std::string& a, const std::string& b, const AmbientTopic& t) {
+            char score[40];
+            std::snprintf(score, sizeof score, "%.17g", t.score);
+            std::string line = a + "|" + b + "|" + t.kind + "|" + score + "|" + t.source + "|" + t.subject + "|" + t.claim + "|" +
+                               t.said + "|" + t.incident + "|" + (t.passes ? "p" : "") + t.claimKind + "|" + t.object + "|" + t.seen;
+            for (const auto& [k, v] : t.talk)
+                line += "|" + k + "=" + v;
+            for (const auto& f : t.facts)
+                line += "|" + f;
+            for (const unsigned char c : line)
+                topicHash_ = (topicHash_ ^ c) * 1099511628211ULL;
+            topicHash_ = (topicHash_ ^ '\n') * 1099511628211ULL;
+            ++topicCount_;
+            if (args_.dumpTopicsAll)
+                topics_ << line << "\n";
+        };
     g_->onAmbientLine = [this](const game::Game::AmbientLine& l) {
         auto& w = g_->world();
         // The run's own number for the exchange: a game's ids start again in each fixture snapshot's new world.
@@ -465,6 +514,15 @@ void Sim::hook()
         v.add("invites", list(l.info.invites));
         v.add("answers", list(l.info.answers));
         v.add("topic", l.topic);
+        v.add("hour", hourOf(w.calendarDays()));   // (Its own moment: T2 judges a line by when it was said, Phase 5.)
+        // Phase 5 (§8.5, §8.7): the topic the line was said on (a talk may turn: C5), whether it stands on the talk
+        // ledger (a callback: C9), the goal it is a step of.
+        if (!l.info.topic.empty())
+            v.add("topic_now", l.info.topic);
+        if (l.info.callback)
+            v.add("callback", true);
+        if (!l.info.goal.empty())
+            v.add("goal", l.info.goal);
         v.add("depth", 0);
         v.add("tone", l.info.tone);
         if (l.info.best >= 0)
@@ -1324,6 +1382,8 @@ int Sim::main()
         std::cerr << "talk_sim: " << problem_ << "\n";
         return 77;                                  // (ctest's skip: no git history here.)
     }
+    if (!args_.dumpTopics.empty())
+        topics_.open(args_.dumpTopics);
     std::string first = args_.checkpoint;
     if (args_.mode == "fixtures")
     {
@@ -1464,6 +1524,8 @@ int Sim::main()
             g_->world().advanceClock(dt);
             g_->ambient(dt);
         }
+        if (topics_.is_open())
+            flushTopics(t);
         if (++steps % 144000 == 0)
             std::cerr << "talk_sim " << args_.runName << ": " << (g_->world().time() - startTime_) / 3600 << " h, " << exchanges_
                       << " exchanges\n";
@@ -1538,6 +1600,9 @@ int main(int argc, char** argv)
             else if (s == "--talk-data") a.talkData = next();
             else if (s == "--ablate") a.ablate = next();
             else if (s == "--golden") a.golden = next();
+            else if (s == "--dump-topics") a.dumpTopics = next();
+            else if (s == "--dump-topics-all") a.dumpTopicsAll = true;
+            else if (s == "--topics") a.topics = next();
             else if (s == "--bless") a.bless = true;
             else if (s == "--record") a.record = next();
             else

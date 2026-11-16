@@ -234,7 +234,7 @@ a : The river. | We'll hide in plain sight. | Any order.
 
 scene kn_day_regional
 when topic=day here.region=ridgemere
-a : Fishing boats are out early. | Market's half fish today. | The fog's lifting off the water.
+a : Fishing boats are out early. | Market's half fish today. | The water's flat as glass.
 b : Before the weather turns. | It's always half fish. | First time in a week.
 a : Then it'll be fish for supper. | The other half is more fish. | Don't trust it.
 b : Again. | Smoked fish. | Never.

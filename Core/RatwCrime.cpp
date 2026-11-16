@@ -1011,5 +1011,6 @@ void World::crimeDaily()
     for (const auto& [guard, person] : found)
         confront(guard, person);
     gossip();
+    talkLedger_.prune(calendarDays_);               // (Doc 84 §8.7: the ledger's expired records, and its cap.)
 }
 } // namespace ratw

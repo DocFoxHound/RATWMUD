@@ -112,7 +112,7 @@ a : Very good. | Best anywhere. | Again.
 
 scene rg_wm_letter_east
 when topic=smalltalk here.region=downs pair.band=friends|family|spouses
-a : Still no letter from my son in the city. | A carter brought a letter for the Thornwell widow. First in a year. | Letters take a season to reach the downs.
+a : Still no letter from my brother in the city. | A carter brought a letter for the Thornwell widow. First in a year. | Letters take a season to reach the downs.
 b[old] : No news means no bad news. That's what I tell myself.
 b : It'll come. | Good for her. | If they come.
 a : I hope. | Very good. | If.

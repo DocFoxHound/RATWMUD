@@ -180,6 +180,57 @@ void aBeatAtATime()
     const auto* f = w.bonds().find(told, teller);
     expect(f && f->familiarity >= 1, "the two know each other a little better");
     expect(end->ended == "farewell" || end->ended == "curt", "and it closed: " + end->ended);
+    // The talk ledger (§8.7, Phase 5): the one told was told it (never again: K3), the place counts it today, and the two
+    // (and the one who cut in) have a note of it: its topic and what about, how it went.
+    const auto key = subject + "|stole from " + w.entity(near)->name;
+    auto& ledger = w.talkLedger();
+    expect(ledger.wasTold(told, key) && ledger.toldBy(told, teller, key), "the one told was told it, by the teller");
+    expect(ledger.todayCount(cell, key, w.calendarDays()) >= 1, "the place counts it today (saturation)");
+    const auto* note = ledger.latest(teller, told, true);
+    expect(note && !note->topics.empty() && note->topics.front() == "gossip" && note->keys.front() == key && !note->outcome.empty(),
+           "the two have a note of it: " + (note ? note->outcome : std::string("none")));
+    expect(ledger.latest(teller, subject, true) != nullptr, "and the one who cut in, with each of them");
+    for (const auto& t2 : w.agendaFor(teller, told))
+        expect(!(t2.kind == "gossip" && t2.key == key), "never told the one told again");
+}
+
+void pledgesAndCarry()
+{
+    // Doc 84 §8.7 (Phase 5): an invitation is kept when both are in its place in its hour, missed when its days run out; a
+    // talk-only promise lapses; the ledger goes with the checkpoint and with what the simulator carries over a restart.
+    Town t;
+    auto& w = t.w();
+    std::string a, b, cell;
+    for (const auto& [id, e] : w.entities())
+        if (e.npc && !e.dead && !e.transient && w.society().resident(id))
+        {
+            if (a.empty())
+                a = id, cell = e.cellId;
+            else if (b.empty() && e.cellId == cell)
+                b = id;
+        }
+    expect(!a.empty() && !b.empty(), "two in one place");
+    t.freeze();
+    auto& ledger = w.talkLedger();
+    const double day = w.calendarDays();
+    const int hour = int(std::floor(calendar::calendarAt(day + 6 / calendar::SecondsPerDay).hour));   // (The hour of the look.)
+    ledger.invites().push_back({a, b, cell, "here", hour, day - 1, day + 1, "open"});
+    ledger.invites().push_back({b, a, cell, "here", (hour + 12) % 24, day - 3, day - .5, "open"});
+    ledger.promises().push_back({b, a, "healer", day - 3, day - 1, "open"});
+    t.run(6);
+    expect(ledger.invites()[0].state == "kept", "both in its place in its hour: kept (" + ledger.invites()[0].state + ")");
+    expect(ledger.invites()[1].state == "missed", "its days run out: missed");
+    expect(ledger.promises()[0].state == "lapsed", "a promise past its days: lapsed");
+    const auto* inv = ledger.lastInvite(a, b);
+    expect(inv && (inv->state == "kept" || inv->state == "missed"), "pair.kept_invite reads the latest checked");
+    // The ledger in the checkpoint, and carried over the simulator's restarts.
+    ledger.told(a, b, "k|carried", "theft", day);
+    expect(t.g->checkpointText().find("\"talkLedger\"") != std::string::npos, "saved in the checkpoint");
+    const auto carried = t.g->talkCarry();
+    ledger.clear();
+    expect(!ledger.wasTold(a, "k|carried"), "cleared");
+    t.g->talkResume(carried);
+    expect(w.talkLedger().wasTold(a, "k|carried") && w.talkLedger().promises().size() == 1, "carried over a restart");
 }
 
 void brokenOffByRain()
@@ -233,6 +284,7 @@ int main()
     {
         aBeatAtATime();
         brokenOffByRain();
+        pledgesAndCarry();
     }
     catch (const std::exception& error)
     {

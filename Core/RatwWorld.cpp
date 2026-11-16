@@ -6583,6 +6583,7 @@ PersistedWorld World::save() const
     out.festivals = festivals_;
     out.news = news_;
     out.townNews = townNews_;
+    out.talkLedger = talkLedger_.save();
     out.roads.beliefs.clear();
     for (const auto& [holder, mine] : beliefs_)
         out.roads.beliefs.insert(out.roads.beliefs.end(), mine.begin(), mine.end());
@@ -6959,6 +6960,7 @@ Result World::restore(const PersistedWorld& saved)
     festivals_ = state.festivals;
     news_ = state.news;                              // (An older save has none: doc 84, defect 10.)
     townNews_ = state.townNews;
+    talkLedger_.load(state.talkLedger);              // (An older save has none: an empty ledger.)
     ++festivalsChanged_;
     squaresDay_ = -1;
     pursuits_.clear();

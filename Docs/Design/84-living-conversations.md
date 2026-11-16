@@ -3,9 +3,9 @@
 Draft, 2026-11-15, revised 2026-11-16 with the user's answers to all six questions of §21 (the window's free text,
 mantles as world database rows, the richer size written by Claude agents, newborns inheriting honesty, births kept
 realm-wide, ticking listening runs), for Ridgemere 3 (`ridgemere3`, database `ratw_ridgemere3`; doc 82). **Phase 0 (the
-instrument), Phase 1 (truth fixes), Phase 2 (moves and tags), Phase 3 (the turn engine) and Phase 4 (beats when spoken,
-knowledge, a third voice) are built** (2026-11-16, branches `r3-talk-p0` to `r3-talk-p4`; §23, §24, §27, §28 and §29 say
-what and what they measured); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
+instrument), Phase 1 (truth fixes), Phase 2 (moves and tags), Phase 3 (the turn engine), Phase 4 (beats when spoken,
+knowledge, a third voice) and Phase 5 (topics, agendas, goals, the ledger) are built** (2026-11-16, branches `r3-talk-p0`
+to `r3-talk-p5`; §23, §24, §27, §28, §29 and §30 say what and what they measured); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
 replaces neither: every one of today's 8,525 library entries and 10 trees keeps loading and speaking while it is
 converted. It was written from five read-only surveys of the code, the data and the live world at `ridgemere2` 1034c1fc
 (the engine, the trees, the lifecycle, what residents know, and prior art) and three competing designs; §4 says how they
@@ -2778,3 +2778,156 @@ Topics are still the director's single pick: a thread is returned to only when t
 item would make it urgent. Joins have no stance to go on yet (Phase 6: `join.side`, `join.correct`), and Ridgemere 3's
 bonds are thin. Most of T5 is whole scenes whose answer is written: Phase 7's per-turn tags let `untrueScene` see them.
 The look's p99 under cold caches is `World::districtHouse`'s walk (it loads cells), cleared every game day.
+
+## 30. Phase 5, as built (2026-11-16)
+
+Branch `r3-talk-p5`, on Phase 4. What two residents talk of is chosen from data now, cooled by what they and the place
+have already said, and a talk turns from one topic to the next; the talk ledger remembers it all.
+
+**`Data/Talk/topics.json`, today's numbers first** (`Core/RatwTopics.{h,cpp}`, `topics::book()`, the process's, set by
+the library's loader as claims.json's table is). Every score `World::ambientTopic` and `sceneTopics` had in C++ is a
+source of a topic (`gossip/claim` 3 + confidence + 0.5 for a traveller, `caravan/late` 1.75 + the hour's draw,
+`weather/fair` 0.6 + the pair's draw...), in the director's own formulas; a library without topics.json (the golden
+transcripts' a46cbdac) uses today's, built in. **Proved identical** before anything was tuned: talk_sim `--dump-topics`
+hashes every topic the director weighs (kind, score to the last bit, source, subject, claim, words, facts) each step,
+recorded with Phase 4's code and compared after the move: on Ridgemere 3 (frozen L1 and L2 6 hours, fixtures L1 and L3
+30 hours) and the talk town, 3,055 looks and 717,716 topics weighed the same, and the transcripts were byte for byte
+Phase 4's. The ctest `talk_topics` keeps the proof: 400 talk-town looks (27,914 topics) over a46cbdac, the record made
+before the move (`Tests/fixtures/talk_topics/town-400.topics`), weighed the same built in and from
+`Tests/fixtures/talk_topics/topics-today.json`. topics.json is checked when it loads (unknown fields, a source the
+director scores missing, an edge or a favourite naming no topic, a `pair_bonus` band that isn't one), and its edges'
+criteria against facts.json (`Library::steps`).
+
+**Then tuned** (the live file): 36 topics, 109 edges (`next`, with criteria: prices to the caravan when
+`topic.cause=caravan|late|raid`, weather to the land for a farmer...), aspects for eight topics, each topic news or
+everyday or neither (the player topic, a quarrel). The cooling (§8.5), applied to every topic as it is weighed
+(`World::weighTopics`): the same two on the same topic and thing within 2 days ×0.4 (the ledger's notes; an everyday
+topic by its name alone); one thing talked of 5 times in a place today ×0.5; the **everyday floor**, +2.0 to everyday
+topics where more than 60% of a place's last 8 talks were news; a speaker's favourite +0.5 (13 trait and trade rules,
+`favourites`, until mantles bring their own); closeness (`pair_bonus`: friends +0.6, spouses and family +0.5,
+housemates +0.3, apprentices +0.2, rivals and strangers −0.2, added to every topic of the two: decided, not in §7.3);
+and **nothing told a listener twice** (`told_once`: the ledger's told set, and a claim the listener holds in other words,
+by its incident or its kind about the same victim, as `World::holding` finds it). Choices made while tuning: the doc's
+saturation (3 a day, ×0.3) left news 16% of frozen talk, so 5 and ×0.5; its floor's +1.5 left fixtures K2 at 24%, so
++2.0. `AmbientTopic::key` says what a topic is about (a claim's subject and words, a wagon, a ship, a price's good, an
+incident).
+
+**Agendas and turns** (§8.5). `World::agendaFor(a, b)` is everything the two might talk of, the likeliest first, each
+owned by the one who'd raise it; `ambientTopic` is its first (the same rule, so the proof holds). The game gives a talk
+the 8 likeliest others as `Conversation::agenda` (each item's topic facts, through `exchangeFacts`, and who knew its
+claim). In a lull with room for a turn, its answer and the farewell pair (`Library::lull`, before the closing), the talk
+may turn, at most `topics_per_talk` (3) topics: back to a thread left on an item's topic (a `return` line first: "As I
+was saying."), along the graph or on the same topic (a **pivot**, `#pivot#`: "Speaking of which."), or, half the time,
+anywhere (a **change of subject**, `#anyway#`: "Anyway."); the move is put first among the opener's moves, so a turn is
+never unmarked (C5). The item's facts lie over the old topic's in every later query (`Library::overlay`: topic.*,
+`knows`, `conv.topic`); the game's pick follows it (its claim passes, its told set). A turn's opener is rendered lazily
+(`Library::pickLazy`: chosen first, only the chosen rendered; never an entry or a question already said in the talk).
+`conv.aspect` is a topic's tier: one deeper for a pair that has talked of it (`pair.talked.<topic>`).
+
+**Goals** (frames.json's `goals`, §7.4): mend (the last talk soured or quarrelled within a week: an apology), comfort,
+hurt and robbed (asking after a loss, a hurt, a robbing), nag (a talk-only promise let lapse), missed (an invitation not
+kept), warn (the camp, to one about to travel), learn_name (introductions, not at work: the one spoken to then knows the
+speaker's name, familiarity 10), favour (one poor asks one they trust: pre.request, then request on a go-ahead), visit
+(friends or kin in a tavern: an invitation). In a lull the first goal that holds for the one whose turn it is, or for the
+other, is pursued a step a lull by move lines testing `conv.goal`; a step no line fits gives it up; done, or tried, it is
+kept between the two for its days (`pair.was.goal_<name>`). vent waits on Phase 6's `self.mood`. `again_today` is a
+frame now ("Back again?", `pair.last_talk<0.3`).
+
+**The talk ledger** (`Core/RatwTalkLedger.{h,cpp}`, owned by `World`, §8.7): pair notes (8 a pair, 30 days: topics and
+keys, outcome, entries told, claims passed, kept tags, an open thread), the told set (64 a listener, with which kind and
+whether a source was counted: `World::told`'s corroboration, which replaces `corroborated_`), person facts (16 a
+subject: `remember x: k=v Nd`, read as `x.said.k`), the heard set (64 a resident: stories and teases told), a speaker's
+kept tags, places (the last 16 talks, today's counts) and invitations and promises; at most 30,000 records, the least
+recently used dropped when it is pruned each game day. Saved in the checkpoint (`talkLedger`), carried over talk_sim's
+fixture restarts (`talkCarry`), and **written out of hearing** by the daily gossip (`World::gossip`: a note with no
+words, one a pair a day, and the told set); `--no-talk-ledger` (the server, world_check; world_check `--fast` has it)
+writes nothing. Its facts, asked every line: `pair.last_talk`, `pair.last_outcome`, `pair.thread` (Phase 4's thread
+moved here), `pair.talked.<topic>`, `pair.recall.<topic>`, `pair.was.<k>`, `pair.kept_invite`; each one's `was.<k>`,
+`told_me`, `promised`, `promise_what`. A line whose criteria read them is a callback (C9). **Invitations**
+(`invite here <hour> <days>`) are checked each look (kept when both are in its place in its hour, missed when its days
+run out); **talk-only promises** (`promise self: <thing> <days>`) lapse and are nagged once. The game writes the ledger
+as lines are said (`ambientSaid`, `ambientTopicBegun`) and its note when a talk ends (`ambientNote`).
+
+**Lines** (`Data/Talk/rules/agenda.talk`, 42 rules): again.open, introductions (by first name: the new person fact
+`first`), asking after and the answers, the nags and the missed invitation, the apology, the warning, the favour's five
+moves, the invitation and its answers, four callbacks, a third who joins for their favourite topic; the plain grammar's
+`pivot` and `anyway`; moves.json's `introduce`, `introduce.return` and `ask.name`. A third may join with a new stake,
+`favourite` (one who likes to talk, the talk on their favourite topic, who knows both). **Truth, newly heard**: the
+everyday talk reached lines nothing had said in 100 hours: eight were untrue to the moment (rain, fog, "my catch" from a
+labourer, "my son" from one with none: reworded), five read as grave then light (reworded), introductions said one's own
+full name (first names now), and some lines named one's own spouse or child to that spouse or child (`notEachOthers`:
+one's people by name are left out where they are the one spoken to; a line never binds the one spoken to as x). talk_lint
+went from 20 findings to 9 (blessed). T2 now judges a line at its own hour (talk_sim's per-line `hour`): a talk begun at
+17:59 may close with "Good night".
+
+**Speed** (B1): the people and neighbours memo is kept five world minutes (30 s before: Phase 5's longer talks crossed it,
+and with it a walk of every home, in most talks); the pair's ledger facts are read in one pass; the lull asks one query.
+Alone, frozen L1 on Ridgemere 3: a beat 0.109 ms mean, p99 0.74 ms; a look p99 4.67 ms (budget 5). `talk_bench` (the
+talk town): a beat 0.061 ms, p99 0.18; a look p99 0.93: within budget. (`talk_bench --world ridgemere3` found nobody
+standing about in DEV's save this evening, and a fixture's checkpoints are at midnight; no world was ticked to warm one.)
+
+**The gate: met** (`artifacts/talk/runs/p5`, every profile in both modes over P0's fixture, pinned to build 81;
+13,041 and 25,964 conversations, 71,149 and 165,465 lines; 5.7 minutes). Fixtures / frozen:
+- **K1** everyday talk: **44.8% / 74.7%** (Phase 4: 1.7% / 3.0% as K1 now counts; 4.1% / 24.3% as it counted before).
+- **K2** the largest topic: **21.1% / 13.0%** (46.9% / 41.8%).
+- **K3** the same news twice to one listener: **0 / 0** (2,179 / 131).
+
+**The scorecard against Phase 4** (its transcripts rescored with this phase's scorer, `artifacts/talk/runs/p4r`),
+fixtures / frozen:
+
+| | Phase 4 | Phase 5 |
+|---|---|---|
+| R1 first identical talk | 2.5 / 0.84 h | **16.2 / 2.3 h** |
+| R3 distinct openers per 3,000 | 2,299 / 484 | 2,517 / 1,674 |
+| R4 / R5 per 100 h | 724 / 126; 3,823 / 883 | 460 / 83; 3,818 / 592 |
+| R6 the most-spoken line / R7 distinct replies per 1,000 | 3.0% / 62.7; 7.6% / 34.1 | 1.9% / 236.7; 2.7% / 115.6 |
+| C1 / C3 / C7 | 92.6% / 88.3% / 4.88; 97.9% / 89.8% / 4.47 | 96.9% / 89.4% / 5.59; 98.9% / 90.1% / 6.42 |
+| C4 / C6 | 0.047 / 0; 0 / 0 | 0 / 0; 0 / 0 |
+| **C5** unmarked jumps per 1,000 lines | n/a | **0 / 0** (talks turned: 1,497 / 9,047) |
+| C8 a third speaker | 0.40% / 4.15% (55 / 1,153 joins) | 0.31% / 4.90% (51 / 1,493 joins; favourite 20 / 1,346) |
+| **C9** callbacks per 10 talks | n/a | **1.21 / 0.76** |
+| T1 / T2 / T3 per 1,000 lines | 0 / 0.24 / 0.25; 0 / 0 / 0.009 | 0 / 0.028 / 0.070; 0 / 0 / 0.006 |
+| T5 told what they knew | 4.29% / 2.12% | 0.04% / 0% |
+| D1L / D3 | 2.6% / 89%; 1.8% / 64% | 2.1% / 84%; 1.3% / 71% |
+| M1 lines carrying moves | 78.6% / 85.3% | 66.1% / 55.9% |
+| U2 / X1 | 46.5% / 26.2; 38.5% / 14.7 | 40.1% / 20.2; 29.4% / 16.7 |
+| R8 habit lines (% of a speaker's, mean) | 0.019 / 0.066 | 0.104 / 0.134 |
+| B1 / B1P / B1L (ms, the card's load) | 0.11 / 0.35 / 22.7; 0.14 / 1.72 / 8.4 | 0.19 / 0.62 / 13.7; 0.19 / 1.52 / 10.0 |
+
+Goals pursued (steps said), fixtures / frozen: favour 286 / 427, mend 154 / 512, visit 144 / 311, learn_name 110 / 2,
+nag 5 / 6, robbed 1 / 0.
+
+**What the card still flags, and why** (soft rows; no hard gate is broken, open or closed): the talk moved to everyday
+life, which is the gate, and everyday content is the library's least worked. **M1**: of the lines on everyday topics 49%
+(frozen) and 51% (fixtures) carry moves, of the rest 79% (Phase 2 tagged the 40 most-spoken families, which were news;
+Phase 7 tags every entry). **U2**: everyday scenes are written for anyone, so look-alikes are told apart less (mantles,
+Phases 9-14). **X1** (fixtures; a diagnostic): news replies repeat the news's nouns ("Robbed? Who robbed her?"), everyday
+replies less; frozen X1 rose. **R8**: everyday scenes use habit symbols more: 0.13% of a speaker's lines against a 15%
+ceiling. **B1, B1P** (fixtures, under the card's load of twenty runs): a lull's goals and turns (a turn's opener is a
+topic's choice, about 0.4 ms) and longer talks; alone, within budget (above). None was refrozen: Phase 5's gate names K1,
+K2 and K3, which were taken into both baselines from this card with C5 and C9 (`--refreeze`, the why kept there), and K1
+before that on Phase 4's transcripts (its definition: topics.json's everyday topics, so the player topic, life, times and
+price_cause are no longer everyday). C8 is a counted metric now (EVENTS: 51 joins against 55 is noise). The quick card
+was blessed again (talk-town talk moved to everyday topics: K1 95.5%, C7 7.0; M1 and U2 as above).
+
+**Tests.** `talk_tests` `agendasAndGoals`: today's book read from its file equals the built-in one number for number;
+topics.json's eight refusals; the steps; a pivot along an edge with its facts over the old, answered on the new topic,
+then closed; a change of subject now and then, never unmarked; a thread returned to first; three topics at most;
+learn_name said for its goal, done and then kept; favour given up when no line fits; invitations, promises, `remember x:`
+and `x.said.k`, the ledger's facts as criteria and the refusals of the new keywords; frames.json's goal refusals.
+`ambient_tests` `theTalkLedger`: every record and its cap, the least-recently-used cap past 30,000, expiry, save and load,
+off; the ledger restored with the world; the director's saturation, the floor, novelty, the told set (and none with
+today's numbers), closeness; the daily gossip's notes, and none when off. `talk_beat_tests`: a gossip talk's told set,
+the place's count, the note for the two and the joiner, never told again; `pledgesAndCarry` (an invitation kept and one
+missed, a promise lapsed, the checkpoint, the carry). `talk_topics` (new ctest). `test_talk_score` (31): C5, C9, K1 by
+topics.json, T2 at a line's own hour. `game_tests`: a keeper's greeting waits out a longer talk (and `react` leaves one
+who joined a talk alone). The non-database ctest suite passed (92 of 92, the quick card blessed); `talk_check
+--validate` on every file and `talk_lint` (9 findings) passed. The database suites weren't run (no schema change). No
+ticking runs, no paid calls, no servers.
+
+**For Phase 6.** vent needs `self.mood` (facts.json hasn't it yet); frames.json has no moods. Joins have no stance stake
+yet (`join.side`, `join.correct`); the favourite stake is most of frozen C8. `pair_bonus` and `favourites` are tuning knobs
+of this phase, not §7.3's: mantles (Phase 9) bring their own favourites. The agenda is the director's topics and the
+goals; "needs" (hunger, money owed) are the favour goal only. The heard set is written but the engine doesn't yet refuse a
+story a listener has heard (§8.12.4). Threads are returned to from the agenda too, but the card's runs had none to return
+to. Frozen K1 is high (75%) because a frozen world keeps the same events and prices all day, and saturation cools them.

@@ -87,7 +87,7 @@ b?[merchant] : Never put it all on one cart. Never.
 
 scene em_cv_out_missing
 when topic=caravan topic.kind=left
-a : My son went with the caravan to #topic.where#. | First time my daughter's driven the #topic.where# road. | My mate signed on as a guard for the trip to #topic.where#.
+a : My nephew went with the caravan to #topic.where#. | First time my niece has driven the #topic.where# road. | My mate signed on as a guard for the trip to #topic.where#.
 b : He'll come back with tales. | She'll be fine. The old drivers look out for the young. | Good coin, guarding.
 a : And with fleas. | I hope so. | Dangerous coin.
 b?[old] : I drove that road forty years. The fear passes. Mostly.

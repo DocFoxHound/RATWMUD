@@ -3,7 +3,7 @@
 //
 //   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N [--at-seams]] [--no-check] [--full] [--deterministic] [--events FILE]
 //                                                       [--threads N] [--day N] [--sample] [--no-profile] [--no-births]
-//                                                       [--fast] [--unseen-step N] [--straight] [--coarse-ticks] [--ship-day]
+//                                                       [--fast] [--no-talk-ledger] [--unseen-step N] [--straight] [--coarse-ticks] [--ship-day]
 //                                                       [--wagon-day] [--stage FILE]]
 //
 // --simulate then runs the world the way the game server does (20 ticks a second) between two hours of the day and
@@ -36,6 +36,7 @@
 // roads, the staged accounts' maps, the accounts and the goods in staged ones, the crime records; each saved part's
 // bytes), with the day's wall time. tools/stage_report.py reads the file.
 
+// --no-talk-ledger (doc 84 §8.7): the daily gossip writes no talk-ledger notes (nobody hears them in a sim); --fast has it.
 // --fast (opt-in: it changes results) is --unseen-step 30 --straight --coarse-ticks: the unseen decide every N seconds,
 // each decision N seconds' worth (Society::setUnseenStep; the game's is 5); offstage legs are timed by their straight
 // line (World::setStraightOffstage); and while nobody is onstage the harness ticks half a second at a time, not 0.05 s.
@@ -602,6 +603,7 @@ int main(int argc, char** argv)
     bool profile = true;                            // --no-profile: World::tick's clocks off.
     bool births = true;                             // --no-births: births and arrivals only asked for.
     bool fast = false, straight = false, coarse = false;   // --fast, --straight, --coarse-ticks.
+    bool talkLedger = true;                                 // --no-talk-ledger (and --fast): doc 84 §8.7.
     int unseenStep = 0;                             // --unseen-step N (0: the game's, Society::UnseenStep).
     bool unseenStepSet = false;
     bool check = true;
@@ -634,6 +636,8 @@ int main(int argc, char** argv)
             births = false;
         else if (flag == "--fast")
             fast = true;
+        else if (flag == "--no-talk-ledger")
+            talkLedger = false;
         else if (flag == "--straight")
             straight = true;
         else if (flag == "--coarse-ticks")
@@ -666,7 +670,7 @@ int main(int argc, char** argv)
     if (usage)
     {
         std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N [--at-seams]] [--no-check] [--full] [--deterministic]"
-                     " [--events FILE] [--threads N] [--day N] [--sample] [--no-profile] [--no-births] [--fast]"
+                     " [--events FILE] [--threads N] [--day N] [--sample] [--no-profile] [--no-births] [--fast] [--no-talk-ledger]"
                      " [--unseen-step N] [--straight] [--coarse-ticks] [--ship-day] [--wagon-day] [--stage FILE]]\n";
         return 2;
     }
@@ -674,6 +678,7 @@ int main(int argc, char** argv)
     {
         unseenStep = unseenStepSet ? unseenStep : 30;
         straight = coarse = true;
+        talkLedger = false;                         // (Talk out of hearing writes no notes in a fast economy sim.)
     }
     // Per-tick sampling (held residents, the road tally, the crowds, each tick's time) when someone plays, or asked.
     const bool sampling = playerCount > 0 || sample;
@@ -692,6 +697,7 @@ int main(int argc, char** argv)
         return it == files.end() ? nullptr : &it->second;
     };
     World world;
+    world.talkLedger().enabled = talkLedger;
     world.setCellSource({
         [&](const std::string& id, std::string& header) {
             const auto* cell = find("cells/" + id + ".cell");

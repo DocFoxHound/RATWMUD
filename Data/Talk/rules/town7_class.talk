@@ -204,7 +204,7 @@ then other: town.station
 rule n7_st_poor_friends
 when concept=talk.smalltalk|talk.friends self.wealth=poor|destitute other.wealth=poor|destitute pair.band=friends|family
 cooldown 3d
-say We'll be rich one day, you and I. Or dead. One of the two. | When I'm rich I'll buy you a hat. A stupid one. | Remember when we thought a silver penny was a fortune? It still is.
+say We'll be rich one day, you and I. Or grey. One of the two. | When I'm rich I'll buy you a hat. A stupid one. | Remember when we thought a silver penny was a fortune? It still is.
 remember pair: st=poorfriends 1h
 remember pair: on=station 1h
 then other: town.station

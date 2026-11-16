@@ -172,7 +172,7 @@ then other: keeping.glad
 remember pair: k=family 2m
 
 rule e2_r_pt_own_married
-when concept=pastimes.own self.spouse
+when concept=pastimes.own self.spouse pair.kin!=spouses
 say Walking with #self.spouse#. Of an evening. | #self.spouse# and I play fox-and-geese. #self.spouse# wins. | Arguing with #self.spouse# about the fox-and-geese.
 then other: pastimes.react
 

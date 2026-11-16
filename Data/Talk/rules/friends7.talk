@@ -55,7 +55,7 @@ then other: jest.answer
 rule r7_tease_rich
 when concept=talk.friends self.wealth=poor|comfortable other.wealth=rich pair.band=friends
 cooldown 2d
-say Look at the coat on you. I could live a month in that coat. | Brushed, scented, a new collar. Who died and left you a mill? | Careful, you'll scuff those boots on us common folk. | Spare a penny for an old friend, your worship?
+say Look at the coat on you. I could live a month in that coat. | Brushed, scented, a new collar. Did a rich aunt leave you a mill? | Careful, you'll scuff those boots on us common folk. | Spare a penny for an old friend, your worship?
 remember pair: thread=jest 30m
 remember pair: jk=rich 30m
 then other: jest.answer
@@ -71,7 +71,7 @@ then other: jest.answer
 rule r7_tease_guard
 when concept=talk.friends other.role=guard pair.band=friends
 cooldown 2d
-say Caught any villains today, or just leant on that spear? | Stand up straight, the Watch is watching. | That helmet's so bright I can see my muzzle in it. Is that all you do all day, polish? | If I'm robbed tonight I'll know who was asleep at the gate.
+say Caught any villains today, or just leant on that spear? | Stand up straight, the Watch is watching. | That helmet's so bright I can see my muzzle in it. Is that all you do all day, polish? | If my till's light tomorrow I'll know who was asleep at the gate.
 remember pair: thread=jest 30m
 remember pair: jk=job 30m
 then other: jest.answer
@@ -893,7 +893,7 @@ then other: reply.close
 
 rule r7_confide_merry
 when concept=confide.answer self.humour=merry pair.mem.cf=small
-say Is that all? I thought you'd killed someone. | Ha! You had me worried. That's nothing. | Oh, is that it? Have a drink and it'll look smaller.
+say Is that all? I thought you'd set the town on fire. | Ha! You had me worried. That's nothing. | Oh, is that it? Have a drink and it'll look smaller.
 remember pair: went=light 30m
 then other: reply.close
 

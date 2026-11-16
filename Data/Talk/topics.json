@@ -1,0 +1,697 @@
+{
+ "about": "The topic director (Docs/Design/84 \u00a77.3, \u00a78.5; Phase 5). topics: each topic the director may choose, by its sources (kinds; \"_\" the topic's own), their numbers in the director's formulas (base; traveller, grave, festival, broad: the source's own extra; confidence: a deed's confidence's weight; per: a grudge's divisor; step: each further price move less; hourly: the place's draw for the hour, its salt; jitter: the pair's draw, its salt, times jitter_scale), whether it is news or everyday life (the everyday floor and the scorecard's K1 read them), a weight (tuning), the topic graph (next: the topics a talk may pivot to, with the criteria the step needs, \"\" for none) and its aspects (the tiers a pair digs into: conv.aspect). jitter and hourly: the draws' widths. pair_novelty: the same two on the same topic and thing within so many days, times factor. place_saturation: one thing talked of so many times in a place today, times factor. everyday_floor: when more than news_share_over of a place's last window talks were news, everyday topics get boost. favourite: a speaker's favourite topic gets this (favourites: by trait, \"fact=value|value\" over their talk facts; a mantle's from Phase 9). pair_bonus: added to every topic of two by who they are to each other (pair.band): those close talk more. told_once: a claim or one's own news is told a listener once (the talk ledger's told set). topics_per_talk: how many topics a talk may cover (pivots, returns, changes of subject). The numbers began as today's (Tests/fixtures/talk_topics/topics-today.json, ctest talk_topics) and were tuned against the scorecard (doc 84 \u00a730).",
+ "jitter": 0.7,
+ "hourly": 0.4,
+ "pair_novelty": {
+  "same_topic_within_days": 2,
+  "factor": 0.4
+ },
+ "place_saturation": {
+  "same_incident_per_day": 5,
+  "factor": 0.5
+ },
+ "everyday_floor": {
+  "window": 8,
+  "news_share_over": 0.6,
+  "boost": 2.0
+ },
+ "favourite": 0.5,
+ "favourites": {
+  "piety=devout": [
+   "faith"
+  ],
+  "job=farmer|herder": [
+   "land",
+   "harvest"
+  ],
+  "job=fisher|sailor": [
+   "weather"
+  ],
+  "job=healer": [
+   "health"
+  ],
+  "job=priest": [
+   "faith"
+  ],
+  "job=carter": [
+   "caravan",
+   "travel"
+  ],
+  "job=cook|baker|brewer|innkeeper": [
+   "food"
+  ],
+  "drive=ambitious": [
+   "work"
+  ],
+  "drive=restless": [
+   "travel"
+  ],
+  "humour=merry": [
+   "pastimes"
+  ],
+  "talk=chatty": [
+   "smalltalk"
+  ],
+  "stage=old": [
+   "memories"
+  ],
+  "stage=young": [
+   "animals",
+   "pastimes"
+  ]
+ },
+ "pair_bonus": {
+  "friends": 0.6,
+  "spouses": 0.5,
+  "family": 0.5,
+  "housemates": 0.3,
+  "apprentice": 0.2,
+  "acquaintances": 0,
+  "rivals": -0.2,
+  "strangers": -0.2
+ },
+ "told_once": true,
+ "topics_per_talk": 3,
+ "topics": {
+  "gossip": {
+   "news": true,
+   "kinds": {
+    "claim": {
+     "base": 3,
+     "traveller": 0.5
+    }
+   },
+   "next": {
+    "crime": "topic.claim_kind=theft|wanted|violence",
+    "life": "",
+    "family": ""
+   },
+   "aspects": [
+    "who",
+    "what",
+    "believe",
+    "consequence"
+   ]
+  },
+  "bandits": {
+   "news": true,
+   "kinds": {
+    "claim": {
+     "base": 3,
+     "traveller": 0.5
+    },
+    "raided": {
+     "base": 2.4
+    },
+    "camp": {
+     "base": 2.0
+    }
+   },
+   "next": {
+    "caravan": "",
+    "prices": "",
+    "travel": ""
+   },
+   "aspects": [
+    "where",
+    "fear",
+    "watch"
+   ]
+  },
+  "deed": {
+   "news": true,
+   "kinds": {
+    "_": {
+     "base": 3.2,
+     "confidence": 0.3
+    }
+   },
+   "next": {
+    "gossip": "",
+    "player": ""
+   }
+  },
+  "news": {
+   "news": true,
+   "kinds": {
+    "_": {
+     "base": 2.8,
+     "grave": 0.2
+    }
+   },
+   "next": {
+    "life": "",
+    "family": "",
+    "work": ""
+   }
+  },
+  "quarrel": {
+   "kinds": {
+    "_": {
+     "base": 2.5,
+     "per": 100
+    }
+   }
+  },
+  "friends": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 1.5
+    }
+   },
+   "next": {
+    "smalltalk": "",
+    "pastimes": "",
+    "memories": ""
+   }
+  },
+  "day": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 1,
+     "festival": 0.3
+    }
+   },
+   "next": {
+    "weather": "",
+    "work": "",
+    "smalltalk": ""
+   }
+  },
+  "caravan": {
+   "news": true,
+   "kinds": {
+    "raided": {
+     "base": 2.1
+    },
+    "late": {
+     "base": 1.75,
+     "hourly": 13
+    },
+    "due": {
+     "base": 1.5,
+     "hourly": 13
+    },
+    "_": {
+     "base": 1.7,
+     "hourly": 13
+    },
+    "posted": {
+     "base": 1.45,
+     "hourly": 14
+    },
+    "news": {
+     "base": 1.65,
+     "hourly": 15
+    }
+   },
+   "next": {
+    "prices": "",
+    "bandits": "",
+    "travel": "",
+    "work": ""
+   },
+   "aspects": [
+    "what",
+    "when",
+    "road"
+   ]
+  },
+  "prices": {
+   "news": true,
+   "kinds": {
+    "_": {
+     "base": 1.65,
+     "hourly": 16,
+     "step": 0.3
+    }
+   },
+   "next": {
+    "caravan": "topic.cause=caravan|late|raid",
+    "times": "",
+    "harvest": "topic.cause=harvest",
+    "work": "",
+    "food": "topic.sort=food|drink"
+   },
+   "aspects": [
+    "what",
+    "why",
+    "coping"
+   ]
+  },
+  "price_cause": {
+   "news": true,
+   "kinds": {
+    "_": {
+     "base": 0,
+     "add": 0.05
+    }
+   },
+   "next": {
+    "prices": "",
+    "caravan": "",
+    "player": ""
+   }
+  },
+  "ships": {
+   "news": true,
+   "kinds": {
+    "lost": {
+     "base": 1.85,
+     "hourly": 18
+    },
+    "late": {
+     "base": 1.75,
+     "hourly": 18
+    },
+    "in": {
+     "base": 1.7,
+     "hourly": 18
+    },
+    "due": {
+     "base": 1.5,
+     "hourly": 18
+    },
+    "sailed": {
+     "base": 1.3,
+     "hourly": 18
+    }
+   },
+   "next": {
+    "prices": "",
+    "weather": "",
+    "caravan": ""
+   }
+  },
+  "event": {
+   "news": true,
+   "kinds": {
+    "now": {
+     "base": 1.7,
+     "hourly": 19
+    },
+    "soon": {
+     "base": 1.55,
+     "hourly": 19
+    },
+    "_": {
+     "base": 1.35,
+     "hourly": 19
+    }
+   },
+   "next": {
+    "prices": "",
+    "festival": "",
+    "food": ""
+   }
+  },
+  "times": {
+   "news": true,
+   "kinds": {
+    "hard": {
+     "base": 1.7,
+     "hourly": 11
+    },
+    "boom": {
+     "base": 1.7,
+     "hourly": 11
+    },
+    "_": {
+     "base": 1.6,
+     "hourly": 11
+    }
+   },
+   "next": {
+    "prices": "",
+    "work": "",
+    "home": ""
+   }
+  },
+  "harvest": {
+   "news": true,
+   "kinds": {
+    "fair": {
+     "base": 1.1,
+     "hourly": 12
+    },
+    "_": {
+     "base": 1.5,
+     "hourly": 12
+    }
+   },
+   "next": {
+    "land": "",
+    "food": "",
+    "prices": "",
+    "weather": ""
+   }
+  },
+  "crime": {
+   "news": true,
+   "kinds": {
+    "_": {
+     "base": 2.4
+    },
+    "arrest": {
+     "base": 2.0
+    }
+   },
+   "next": {
+    "gossip": "",
+    "life": "",
+    "home": ""
+   },
+   "aspects": [
+    "who",
+    "what",
+    "watch"
+   ]
+  },
+  "newcomer": {
+   "news": true,
+   "kinds": {
+    "_": {
+     "base": 1.8
+    }
+   },
+   "next": {
+    "accent": "",
+    "travel": "",
+    "gossip": ""
+   }
+  },
+  "life": {
+   "news": true,
+   "kinds": {
+    "death": {
+     "base": 2.3
+    },
+    "_": {
+     "base": 1.7,
+     "hourly": 21
+    }
+   },
+   "next": {
+    "family": "",
+    "gossip": "",
+    "news": "",
+    "memories": ""
+   }
+  },
+  "festival": {
+   "news": true,
+   "kinds": {
+    "today": {
+     "base": 2.0
+    },
+    "soon": {
+     "base": 1.9
+    }
+   },
+   "next": {
+    "food": "",
+    "faith": "",
+    "pastimes": ""
+   }
+  },
+  "player": {
+   "kinds": {
+    "_": {
+     "base": 1.6,
+     "jitter": 7,
+     "jitter_scale": 0.5
+    }
+   },
+   "next": {
+    "accent": "",
+    "travel": "",
+    "gossip": ""
+   }
+  },
+  "accent": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 1.3,
+     "jitter": 9,
+     "jitter_scale": 0.6,
+     "broad": 0.3
+    }
+   },
+   "next": {
+    "travel": "",
+    "memories": ""
+   }
+  },
+  "family": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 1.4,
+     "jitter": 1
+    }
+   },
+   "next": {
+    "home": "",
+    "memories": "",
+    "health": ""
+   },
+   "aspects": [
+    "news",
+    "worry",
+    "pride"
+   ]
+  },
+  "home": {
+   "everyday": true,
+   "kinds": {
+    "housemates": {
+     "base": 1.4,
+     "jitter": 1
+    },
+    "_": {
+     "base": 0.7,
+     "jitter": 21
+    }
+   },
+   "next": {
+    "family": "",
+    "food": "",
+    "work": ""
+   }
+  },
+  "work": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 1.1,
+     "jitter": 2
+    }
+   },
+   "next": {
+    "prices": "",
+    "home": "",
+    "health": "",
+    "smalltalk": ""
+   },
+   "aspects": [
+    "today",
+    "trade",
+    "hopes"
+   ]
+  },
+  "weather": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 1.0,
+     "jitter": 3
+    },
+    "fair": {
+     "base": 0.6,
+     "jitter": 3
+    }
+   },
+   "next": {
+    "work": "",
+    "land": "self.job=farmer|herder",
+    "health": "",
+    "season": ""
+   },
+   "aspects": [
+    "now",
+    "work",
+    "season"
+   ]
+  },
+  "lore": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 0.7,
+     "jitter": 4
+    }
+   },
+   "next": {
+    "memories": "",
+    "faith": "",
+    "dreams": ""
+   }
+  },
+  "smalltalk": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 0.8,
+     "jitter": 5
+    }
+   },
+   "next": {
+    "weather": "",
+    "work": "",
+    "food": "",
+    "pastimes": ""
+   }
+  },
+  "food": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 0.7,
+     "jitter": 20
+    }
+   },
+   "next": {
+    "prices": "",
+    "home": "",
+    "health": ""
+   }
+  },
+  "pastimes": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 0.7,
+     "jitter": 22
+    }
+   },
+   "next": {
+    "animals": "",
+    "friends": "",
+    "smalltalk": ""
+   }
+  },
+  "animals": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 0.7,
+     "jitter": 23
+    }
+   },
+   "next": {
+    "land": "",
+    "pastimes": ""
+   }
+  },
+  "health": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 0.7,
+     "jitter": 24
+    }
+   },
+   "next": {
+    "food": "",
+    "faith": "",
+    "family": ""
+   }
+  },
+  "memories": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 0.7,
+     "jitter": 25
+    }
+   },
+   "next": {
+    "family": "",
+    "lore": "",
+    "dreams": ""
+   }
+  },
+  "dreams": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 0.7,
+     "jitter": 26
+    }
+   },
+   "next": {
+    "faith": "",
+    "memories": ""
+   }
+  },
+  "faith": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 0.7,
+     "jitter": 27
+    }
+   },
+   "next": {
+    "festival": "",
+    "dreams": "",
+    "health": ""
+   }
+  },
+  "travel": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 0.7,
+     "jitter": 28
+    }
+   },
+   "next": {
+    "caravan": "",
+    "accent": "",
+    "weather": ""
+   }
+  },
+  "land": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 0.7,
+     "jitter": 29
+    }
+   },
+   "next": {
+    "weather": "",
+    "harvest": "",
+    "animals": ""
+   }
+  },
+  "season": {
+   "everyday": true,
+   "kinds": {
+    "_": {
+     "base": 0.7,
+     "jitter": 30
+    }
+   },
+   "next": {
+    "weather": "",
+    "festival": "",
+    "land": ""
+   }
+  }
+ }
+}

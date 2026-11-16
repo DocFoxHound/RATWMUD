@@ -56,9 +56,14 @@ is measured"); the rest are listed as n/a with the phase that brings them:
   T5 telling what the listener already believes (Phase 4): of the lines passing on the topic's claim (asserts) whose
      listener talk_sim judged (to_knew), those told to one who held it before the talk began and not answered by them
      with "I'd heard" (react.news.known or .again)
-  K1 conversations on everyday topics (anything but news, gossip, crime, deeds, events, quarrels and the like)
+  K1 conversations on everyday topics: those Data/Talk/topics.json calls everyday (Phase 5; before it, anything but
+     news, gossip, crime, deeds, events, quarrels and the like)
   K2 the largest topic's share
   K3 the same news (topic, subject, claim) told twice to the same resident
+  C5 unmarked topic jumps per 1,000 lines (Phase 5): a line on another topic than the line before (talk_sim's topic_now)
+     with no pivot, change of subject or return among its moves
+  C9 callbacks per 10 conversations (Phase 5): lines standing on the talk ledger (their criteria read it: pair.last_talk,
+     pair.talked.*, a promise, an invitation; a return to a thread; "Back again?")
   D1 lines carrying a dialect's words (a dialect grammar layer in the expansion) from speakers of accent none: the hard
      gate (§15.3: "none 0%", "hard for none"; §10: none sounds plain); D1L light speakers' (25-50%) and D1B broad
      speakers' (60%+), soft
@@ -75,7 +80,7 @@ is measured"); the rest are listed as n/a with the phase that brings them:
 
 Gates (--check against --baseline): a hard gate the baseline passed must still pass; one the baseline failed may not get
 worse (each phase closes its own); a soft metric may not regress by more than 10%. "Worse" means beyond noise: a metric
-that counts events (EVENTS: R4, R5, R8, C1, C1Q, C3, C4, C6, T1-T3, T5, K3, D1, D1L, D1B, D3) only if the exact test of two Poisson counts
+that counts events (EVENTS: R4, R5, R8, C1, C1Q, C3, C4, C5, C6, C8, C9, T1-T3, T5, K3, D1, D1L, D1B, D3) only if the exact test of two Poisson counts
 (today's events against the baseline's, each over its own exposure: a binomial split of the two together) puts the
 difference beyond chance at ALPHA (1%, one-sided), so both cards' noise counts; R1 and R2, first-time waits that are the
 earliest of many listeners', by more than half; B5, a timing, by more than 25%, and B1's by more than half. A profile the baseline has and the card
@@ -115,11 +120,11 @@ METRICS = {
     "C2": ("replies at the best fit available (%)", "higher", "soft", lambda v: v >= 95, "95%", "Phase 3"),
     "C3": ("endings by a farewell or a marked break (%)", "higher", "soft", lambda v: v >= 80, "80% / 3% / 5%", ""),
     "C4": ("tone clashes per 1,000 beats", "lower", "hard", lambda v: v <= 0, "0", ""),
-    "C5": ("unmarked topic jumps per 1,000 beats", "lower", "soft", None, "5", "Phase 5"),
+    "C5": ("unmarked topic jumps per 1,000 beats", "lower", "soft", lambda v: v <= 5, "5", "Phase 5"),
     "C6": ("same entry or question twice in a conversation, per 1,000", "lower", "hard", lambda v: v <= 0, "0", ""),
     "C7": ("lines per conversation (mean)", "higher", "soft", lambda v: v >= 5, "5-7; p90 9+", ""),
     "C8": ("conversations with a third speaker (%)", "higher", "soft", lambda v: 5 <= v <= 15, "5-15%", ""),
-    "C9": ("callbacks per 10 conversations", "higher", "soft", None, "1.5+", "Phase 5"),
+    "C9": ("callbacks per 10 conversations", "higher", "soft", lambda v: v >= 1.5, "1.5+", "Phase 5"),
     "T1": ("raw ids spoken, per 1,000 lines", "lower", "hard", lambda v: v <= 0, "0", ""),
     "T2": ("presupposition failures, per 1,000 lines", "lower", "hard", lambda v: v <= 0, "0", ""),
     "T3": ("self-reference errors (own name, the listener in the third person, unbacked eyewitness words), per 1,000 lines",
@@ -165,6 +170,20 @@ see saw look""".split())
 
 NEWSY = {"gossip", "crime", "news", "deed", "event", "quarrel", "loss", "prices", "caravan", "bandits", "ships",
          "harvest", "newcomer", "storyteller", "festival", "death"}
+
+
+def everyday_topics() -> set[str] | None:
+    """The topics Data/Talk/topics.json calls everyday (Phase 5: K1 counts them, as the director's everyday floor does);
+    None without the file (a library from before Phase 5: K1 is everything but NEWSY)."""
+    path = ROOT / "Data" / "Talk" / "topics.json"
+    try:
+        topics = json.loads(path.read_text())["topics"]
+    except (OSError, ValueError, KeyError):
+        return None
+    return {t for t, v in topics.items() if isinstance(v, dict) and v.get("everyday")}
+
+
+EVERYDAY = everyday_topics()
 GRAVE = re.compile(r"\b(died|dead|death|dying|buried|burial|grave|funeral|mourn\w*|grie\w+|murder\w*|killed|"
                    r"robbed|beaten|beating|stabbed|hanged|drowned|widow\w*|orphan\w*|sick unto|plague)\b", re.I)
 LIGHT = re.compile(r"\b(ha|hah|haha|heh|hee|laugh\w*|jest\w*|joke\w*|tease\w*|giggl\w*|grin\w*|wink\w*)\b", re.I)
@@ -512,6 +531,11 @@ def score_run(run: Run) -> dict:
             if not rules:
                 continue
             facts = dict(moment)
+            if "hour" in l:                         # (The line's own hour, Phase 5: a talk that began by day may close at dusk.)
+                hour = float(l["hour"])
+                facts["here.hour"] = str(int(hour))
+                facts["here.time"] = ("night" if hour < 5 or hour >= 20 else "dawn" if hour < 7.5 else "day" if hour < 18
+                                      else "dusk")
             for k, v in run.residents.get(l["who"], {}).items():
                 if not k.startswith("_") and isinstance(v, (str, int, float)):
                     facts["self." + k] = str(v)
@@ -540,7 +564,7 @@ def score_run(run: Run) -> dict:
     # K1, K2, K3.
     topics = collections.Counter(run.conv_head.get(cid, {}).get("topic", c[0].get("topic", "")) for cid, c in run.by_conv.items())
     total = sum(topics.values())
-    m["K1"] = pct(sum(n for t, n in topics.items() if t not in NEWSY), total)
+    m["K1"] = pct(sum(n for t, n in topics.items() if (t in EVERYDAY if EVERYDAY is not None else t not in NEWSY)), total)
     m["K2"] = pct(topics.most_common(1)[0][1], total) if topics else 0
     m["K2_detail"] = {"topics": {t: round(pct(n, total), 2) for t, n in topics.most_common()}}
     told = collections.Counter()
@@ -549,6 +573,34 @@ def score_run(run: Run) -> dict:
         if head.get("topic") in NEWSY and (head.get("subject") or head.get("claim")):
             told[(head.get("other", ""), head.get("topic"), head.get("subject", ""), head.get("claim", ""))] += 1
     m["K3"] = sum(n - 1 for n in told.values() if n > 1)
+    m["K3_detail"] = {"repeats": [f"{k[0]} told {k[1]}: {k[2]} {k[3]} x{n}" for k, n in told.most_common(4) if n > 1]}
+    # C5, C9 (Phase 5): a talk that turns to another topic (the line's topic_now) without a pivot, a change of subject
+    # or a return marking it, per 1,000 lines; and the lines that stand on the talk ledger (callbacks: a line whose
+    # criteria read it, a return to a thread, "Back again?") per 10 conversations. Runs from before Phase 5 have no
+    # topic_now: not judged.
+    if any("topic_now" in l for l in lines):
+        jumps = turned = 0
+        jump_examples = []
+        for c in convs:
+            for i in range(1, len(c)):
+                a, b = c[i - 1].get("topic_now"), c[i].get("topic_now")
+                if not a or not b or a == b:
+                    continue
+                turned += 1
+                if not any(x in ("pivot", "change_subject", "return") for x in c[i].get("moves") or []):
+                    jumps += 1
+                    if len(jump_examples) < 4:
+                        jump_examples.append(f"{a} -> {b}: {c[i]['text']}")
+        m["C5"] = jumps * 1000 / max(1, len(lines))
+        callbacks = sum(1 for l in lines if l.get("callback") or
+                        any(x in ("return", "again.open") for x in l.get("moves") or []))
+        m["C9"] = callbacks * 10 / max(1, len(convs))
+        topics_per = [len({l.get("topic_now") for l in c if l.get("topic_now")}) for c in convs]
+        goals = collections.Counter(l["goal"] for l in lines if l.get("goal"))
+        m["C5_detail"] = {"turns": turned, "unmarked": jumps, "examples": jump_examples,
+                          "topics_per_talk": round(sum(topics_per) / max(1, len(topics_per)), 3),
+                          "turned_talks": sum(1 for n in topics_per if n > 1)}
+        m["C9_detail"] = {"callbacks": callbacks, "goals": dict(goals.most_common())}
     # T5 (Phase 4): a line passing on the topic's claim (asserts) to one who held it before the talk began (talk_sim's
     # to_knew), not answered by them with "I'd heard" (react.news.known or .again), of the asserting lines judged.
     asserted = knew_unsaid = 0
@@ -868,7 +920,8 @@ EVENTS = {"R4": ("hours", 100), "R5": ("hours", 100), "C1": ("owed", 100), "C1Q"
           "C3": ("conversations", 100), "C4": ("lines", 1000),
           "C6": ("conversations", 1000), "T1": ("lines", 1000), "T2": ("lines", 1000), "T3": ("lines", 1000),
           "K3": ("conversations", None), "D1": ("none_lines", 100), "D1L": ("light_lines", 100),
-          "D1B": ("broad_lines", 100), "R8": ("lines20", 100), "D3": ("judged", 100), "T5": ("asserted", 100)}
+          "D1B": ("broad_lines", 100), "R8": ("lines20", 100), "D3": ("judged", 100), "T5": ("asserted", 100),
+          "C5": ("lines", 1000), "C9": ("conversations", 10), "C8": ("conversations", 100)}
 # Timings, which move with the machine's load: the same build measured B5 frozen at 59, 72 and 80. And first-time waits,
 # the earliest of many listeners' (R1, R2): one listener hearing a repeat a little sooner moves them more than any rate.
 TIMING = {"B5": .25, "R1": .5, "R2": .5, "B1": .5, "B1P": .5, "B1L": .5}

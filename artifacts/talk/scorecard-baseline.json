@@ -321,8 +321,28 @@
    "better": "lower",
    "gate": "soft",
    "target": "5",
-   "value": null,
-   "note": "n/a until Phase 5"
+   "value": 0.0,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L10": 0.0
+   },
+   "control": 54.30755748949929,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    0,
+    165465.0
+   ]
   },
   "C6": {
    "name": "same entry or question twice in a conversation, per 1,000",
@@ -405,8 +425,28 @@
    "better": "higher",
    "gate": "soft",
    "target": "1.5+",
-   "value": null,
-   "note": "n/a until Phase 5"
+   "value": 0.7605021533751801,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.385,
+    "L2": 0.837,
+    "L3": 0.767,
+    "L4": 1.383,
+    "L5": 1.45,
+    "L6": 1.0,
+    "L7": 1.05,
+    "L10": 1.069
+   },
+   "control": 0.7605021533751801,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    1907,
+    25964.0
+   ]
   },
   "T1": {
    "name": "raw ids spoken, per 1,000 lines",
@@ -657,22 +697,23 @@
    "better": "higher",
    "gate": "soft",
    "target": "35%+",
-   "value": 24.350312734701724,
-   "passes": false,
+   "value": 74.70567137191084,
+   "passes": true,
    "by_profile": {
-    "L1": 28.742,
-    "L2": 24.643,
-    "L3": 27.722,
-    "L4": 24.292,
-    "L5": 10.5,
-    "L6": 23.0,
-    "L7": 9.667,
+    "L1": 88.05,
+    "L2": 46.211,
+    "L3": 78.131,
+    "L4": 80.833,
+    "L5": 50.417,
+    "L6": 55.583,
+    "L7": 53.25,
     "L8": 0.0,
     "L9": 0.0,
-    "L10": 8.333
+    "L10": 60.509
    },
-   "control": 24.350312734701724,
+   "control": 74.70567137191084,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -682,22 +723,23 @@
    "better": "lower",
    "gate": "soft",
    "target": "25% or less",
-   "value": 41.8295554240091,
-   "passes": false,
+   "value": 13.030816219023334,
+   "passes": true,
    "by_profile": {
-    "L1": 38.058,
-    "L2": 38.497,
-    "L3": 42.639,
-    "L4": 43.667,
-    "L5": 55.167,
-    "L6": 46.75,
-    "L7": 53.0,
+    "L1": 12.642,
+    "L2": 18.859,
+    "L3": 9.583,
+    "L4": 9.833,
+    "L5": 17.583,
+    "L6": 22.667,
+    "L7": 14.75,
     "L8": 0,
     "L9": 0,
-    "L10": 48.426
+    "L10": 10.278
    },
-   "control": 41.8295554240091,
+   "control": 13.030816219023334,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -707,11 +749,11 @@
    "better": "lower",
    "gate": "hard",
    "target": "0",
-   "value": 109,
-   "passes": false,
+   "value": 0,
+   "passes": true,
    "by_profile": {
-    "L1": 105,
-    "L2": 4,
+    "L1": 0,
+    "L2": 0,
     "L3": 0,
     "L4": 0,
     "L5": 0,
@@ -721,11 +763,16 @@
     "L9": 0,
     "L10": 0
    },
-   "control": 109,
+   "control": 0,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    0,
+    25964.0
+   ]
   },
   "W1": {
    "name": "window lines from mantles (%)",
@@ -1094,16 +1141,31 @@
    },
    "K2_detail": {
     "topics": {
-     "event": 38.06,
-     "player": 27.74,
-     "prices": 22.34,
-     "crime": 4.1,
-     "festival": 2.95,
-     "gossip": 1.78,
-     "caravan": 1.52,
-     "family": 0.98,
-     "ships": 0.51,
-     "work": 0.02
+     "work": 12.64,
+     "animals": 12.28,
+     "pastimes": 11.34,
+     "smalltalk": 7.84,
+     "friends": 7.66,
+     "travel": 4.48,
+     "season": 3.96,
+     "lore": 3.62,
+     "dreams": 3.58,
+     "food": 3.49,
+     "faith": 3.48,
+     "home": 3.41,
+     "memories": 3.27,
+     "land": 3.22,
+     "health": 2.98,
+     "prices": 2.85,
+     "player": 2.14,
+     "caravan": 2.06,
+     "event": 2.03,
+     "ships": 2.01,
+     "crime": 0.64,
+     "family": 0.5,
+     "day": 0.28,
+     "gossip": 0.16,
+     "festival": 0.06
     }
    },
    "D1_detail": {
@@ -1172,6 +1234,22 @@
     "looks": 72000,
     "look_mean": 1.2283498587361092,
     "look_max": 580.828346
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "C5_detail": {
+    "turns": 3856,
+    "unmarked": 0,
+    "examples": [],
+    "topics_per_talk": 1.321,
+    "turned_talks": 3401
+   },
+   "C9_detail": {
+    "callbacks": 462,
+    "goals": {
+     "mend": 70
+    }
    }
   },
   "L2": {
@@ -1230,18 +1308,32 @@
    },
    "K2_detail": {
     "topics": {
-     "event": 38.5,
-     "prices": 24.22,
-     "player": 20.91,
-     "gossip": 5.33,
-     "family": 2.85,
-     "festival": 2.6,
-     "crime": 1.89,
-     "caravan": 1.47,
-     "ships": 1.34,
+     "event": 18.86,
+     "work": 13.11,
+     "prices": 12.74,
+     "player": 10.74,
+     "smalltalk": 7.91,
+     "pastimes": 7.12,
+     "animals": 5.29,
+     "friends": 4.08,
+     "ships": 3.37,
+     "caravan": 2.91,
+     "faith": 2.33,
+     "crime": 1.58,
+     "gossip": 1.54,
+     "festival": 1.46,
+     "travel": 1.42,
+     "family": 1.37,
+     "home": 1.04,
+     "memories": 0.79,
+     "land": 0.58,
+     "food": 0.54,
      "times": 0.46,
-     "work": 0.25,
-     "accent": 0.17
+     "accent": 0.21,
+     "health": 0.21,
+     "bandits": 0.12,
+     "lore": 0.12,
+     "season": 0.08
     }
    },
    "D1_detail": {
@@ -1314,6 +1406,26 @@
     "looks": 72000,
     "look_mean": 0.3277720039027777,
     "look_max": 589.565271
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "C5_detail": {
+    "turns": 616,
+    "unmarked": 0,
+    "examples": [],
+    "topics_per_talk": 1.256,
+    "turned_talks": 530
+   },
+   "C9_detail": {
+    "callbacks": 201,
+    "goals": {
+     "favour": 45,
+     "mend": 33,
+     "visit": 8,
+     "nag": 5,
+     "learn_name": 2
+    }
    }
   },
   "L3": {
@@ -1368,14 +1480,30 @@
    },
    "K2_detail": {
     "topics": {
-     "event": 42.64,
-     "prices": 23.94,
-     "times": 10.83,
-     "family": 8.97,
-     "player": 7.92,
-     "caravan": 3.08,
-     "festival": 2.56,
-     "gossip": 0.06
+     "friends": 9.58,
+     "work": 8.58,
+     "smalltalk": 8.41,
+     "faith": 7.61,
+     "prices": 7.2,
+     "home": 5.47,
+     "pastimes": 5.0,
+     "event": 4.14,
+     "season": 4.03,
+     "travel": 4.03,
+     "animals": 3.73,
+     "player": 3.64,
+     "land": 3.5,
+     "caravan": 3.44,
+     "lore": 3.44,
+     "dreams": 3.38,
+     "health": 3.35,
+     "times": 3.26,
+     "food": 3.2,
+     "memories": 3.12,
+     "family": 1.35,
+     "day": 0.35,
+     "festival": 0.15,
+     "bandits": 0.03
     }
    },
    "D1_detail": {
@@ -1441,6 +1569,23 @@
     "looks": 72000,
     "look_mean": 0.12687848013888883,
     "look_max": 401.612367
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "C5_detail": {
+    "turns": 1321,
+    "unmarked": 0,
+    "examples": [],
+    "topics_per_talk": 1.384,
+    "turned_talks": 994
+   },
+   "C9_detail": {
+    "callbacks": 261,
+    "goals": {
+     "favour": 138,
+     "mend": 43
+    }
    }
   },
   "L4": {
@@ -1495,13 +1640,27 @@
    },
    "K2_detail": {
     "topics": {
-     "event": 43.67,
-     "prices": 26.54,
-     "family": 13.0,
-     "player": 10.96,
-     "caravan": 3.5,
-     "festival": 2.0,
-     "work": 0.33
+     "friends": 9.83,
+     "home": 7.46,
+     "work": 7.38,
+     "prices": 7.0,
+     "smalltalk": 6.33,
+     "pastimes": 5.83,
+     "event": 5.71,
+     "season": 5.71,
+     "player": 5.5,
+     "dreams": 4.88,
+     "travel": 4.75,
+     "lore": 4.67,
+     "animals": 4.29,
+     "memories": 4.29,
+     "health": 4.12,
+     "land": 3.75,
+     "faith": 3.62,
+     "food": 3.42,
+     "caravan": 0.71,
+     "day": 0.5,
+     "festival": 0.25
     }
    },
    "D1_detail": {
@@ -1567,6 +1726,23 @@
     "looks": 72000,
     "look_mean": 0.1189522042499999,
     "look_max": 576.602355
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "C5_detail": {
+    "turns": 1458,
+    "unmarked": 0,
+    "examples": [],
+    "topics_per_talk": 1.606,
+    "turned_talks": 1282
+   },
+   "C9_detail": {
+    "callbacks": 332,
+    "goals": {
+     "favour": 244,
+     "mend": 59
+    }
    }
   },
   "L5": {
@@ -1621,12 +1797,27 @@
    },
    "K2_detail": {
     "topics": {
-     "event": 55.17,
-     "prices": 27.0,
-     "player": 10.0,
-     "caravan": 4.5,
-     "festival": 2.83,
-     "work": 0.5
+     "prices": 17.58,
+     "caravan": 11.0,
+     "event": 10.5,
+     "player": 10.08,
+     "friends": 8.5,
+     "pastimes": 6.5,
+     "smalltalk": 6.33,
+     "work": 5.58,
+     "animals": 2.75,
+     "land": 2.67,
+     "home": 2.5,
+     "dreams": 2.33,
+     "health": 2.25,
+     "season": 2.17,
+     "faith": 2.0,
+     "travel": 1.83,
+     "lore": 1.67,
+     "memories": 1.67,
+     "food": 1.42,
+     "festival": 0.42,
+     "day": 0.25
     }
    },
    "D1_detail": {
@@ -1692,6 +1883,22 @@
     "looks": 72000,
     "look_mean": 0.05855678456944439,
     "look_max": 382.862434
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "C5_detail": {
+    "turns": 758,
+    "unmarked": 0,
+    "examples": [],
+    "topics_per_talk": 1.631,
+    "turned_talks": 657
+   },
+   "C9_detail": {
+    "callbacks": 174,
+    "goals": {
+     "mend": 52
+    }
    }
   },
   "L6": {
@@ -1746,13 +1953,28 @@
    },
    "K2_detail": {
     "topics": {
-     "event": 46.75,
-     "prices": 27.17,
-     "player": 22.83,
-     "festival": 2.33,
-     "gossip": 0.42,
-     "caravan": 0.33,
-     "work": 0.17
+     "prices": 22.67,
+     "event": 10.42,
+     "player": 10.33,
+     "land": 9.83,
+     "friends": 9.75,
+     "food": 9.0,
+     "work": 8.75,
+     "smalltalk": 3.5,
+     "season": 2.0,
+     "dreams": 1.75,
+     "travel": 1.67,
+     "pastimes": 1.58,
+     "lore": 1.58,
+     "home": 1.58,
+     "health": 1.5,
+     "faith": 1.17,
+     "animals": 1.0,
+     "memories": 0.75,
+     "caravan": 0.42,
+     "festival": 0.42,
+     "gossip": 0.17,
+     "day": 0.17
     }
    },
    "D1_detail": {
@@ -1818,6 +2040,23 @@
     "looks": 72000,
     "look_mean": 0.059373764736111084,
     "look_max": 419.046801
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "C5_detail": {
+    "turns": 359,
+    "unmarked": 0,
+    "examples": [],
+    "topics_per_talk": 1.298,
+    "turned_talks": 298
+   },
+   "C9_detail": {
+    "callbacks": 120,
+    "goals": {
+     "visit": 89,
+     "mend": 59
+    }
    }
   },
   "L7": {
@@ -1872,12 +2111,26 @@
    },
    "K2_detail": {
     "topics": {
-     "event": 53.0,
-     "prices": 31.17,
-     "player": 9.5,
-     "caravan": 3.17,
-     "festival": 3.0,
-     "work": 0.17
+     "prices": 14.75,
+     "caravan": 10.75,
+     "event": 10.42,
+     "player": 10.42,
+     "friends": 10.25,
+     "land": 9.17,
+     "smalltalk": 7.92,
+     "work": 4.67,
+     "season": 2.92,
+     "memories": 2.33,
+     "dreams": 2.33,
+     "pastimes": 2.17,
+     "food": 2.17,
+     "home": 2.08,
+     "health": 1.83,
+     "lore": 1.75,
+     "animals": 1.33,
+     "faith": 1.33,
+     "travel": 1.0,
+     "festival": 0.42
     }
    },
    "D1_detail": {
@@ -1943,6 +2196,22 @@
     "looks": 72000,
     "look_mean": 0.04562867231944443,
     "look_max": 398.027706
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "C5_detail": {
+    "turns": 894,
+    "unmarked": 0,
+    "examples": [],
+    "topics_per_talk": 1.745,
+    "turned_talks": 768
+   },
+   "C9_detail": {
+    "callbacks": 126,
+    "goals": {
+     "mend": 20
+    }
    }
   },
   "L8": {
@@ -2058,6 +2327,9 @@
     "looks": 72000,
     "look_mean": 0.00731553825000015,
     "look_max": 0.130638
+   },
+   "K3_detail": {
+    "repeats": []
    }
   },
   "L9": {
@@ -2173,6 +2445,9 @@
     "looks": 72000,
     "look_mean": 0.005854427374999933,
     "look_max": 0.06643
+   },
+   "K3_detail": {
+    "repeats": []
    }
   },
   "L10": {
@@ -2227,14 +2502,31 @@
    },
    "K2_detail": {
     "topics": {
-     "event": 48.43,
-     "prices": 29.77,
-     "player": 8.33,
-     "crime": 5.46,
-     "festival": 3.06,
-     "caravan": 2.78,
-     "ships": 1.94,
-     "gossip": 0.23
+     "prices": 10.28,
+     "friends": 8.47,
+     "memories": 8.38,
+     "event": 7.55,
+     "player": 6.9,
+     "ships": 6.57,
+     "caravan": 6.16,
+     "smalltalk": 5.19,
+     "faith": 5.05,
+     "food": 4.72,
+     "season": 3.61,
+     "home": 3.43,
+     "pastimes": 3.43,
+     "animals": 3.15,
+     "travel": 2.82,
+     "dreams": 2.64,
+     "land": 2.59,
+     "work": 2.5,
+     "lore": 2.31,
+     "health": 1.9,
+     "crime": 1.53,
+     "day": 0.32,
+     "festival": 0.28,
+     "gossip": 0.19,
+     "bandits": 0.05
     }
    },
    "D1_detail": {
@@ -2300,6 +2592,24 @@
     "looks": 43200,
     "look_mean": 0.13544693215277792,
     "look_max": 349.119301
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "C5_detail": {
+    "turns": 1485,
+    "unmarked": 0,
+    "examples": [],
+    "topics_per_talk": 1.687,
+    "turned_talks": 1117
+   },
+   "C9_detail": {
+    "callbacks": 231,
+    "goals": {
+     "visit": 214,
+     "mend": 176,
+     "nag": 1
+    }
    }
   }
  },
@@ -2474,6 +2784,48 @@
     "L10": "artifacts/talk/runs/p4/frozen-L10"
    },
    "on": "2026-11-16T19:17:50+00:00"
+  },
+  {
+   "metrics": [
+    "K1"
+   ],
+   "why": "Doc 84 Phase 5: K1 counts the topics Data/Talk/topics.json calls everyday (the director's everyday floor reads the same flags), so the player topic (a traveller standing near), life (the town's births and weddings), times and price_cause are no longer counted as everyday; measured again on Phase 4's transcripts (artifacts/talk/runs/p4r)",
+   "from": {
+    "L1": "artifacts/talk/runs/p4r/frozen-L1",
+    "L2": "artifacts/talk/runs/p4r/frozen-L2",
+    "L3": "artifacts/talk/runs/p4r/frozen-L3",
+    "L4": "artifacts/talk/runs/p4r/frozen-L4",
+    "L5": "artifacts/talk/runs/p4r/frozen-L5",
+    "L6": "artifacts/talk/runs/p4r/frozen-L6",
+    "L7": "artifacts/talk/runs/p4r/frozen-L7",
+    "L8": "artifacts/talk/runs/p4r/frozen-L8",
+    "L9": "artifacts/talk/runs/p4r/frozen-L9",
+    "L10": "artifacts/talk/runs/p4r/frozen-L10"
+   },
+   "on": "2026-11-16T20:56:47+00:00"
+  },
+  {
+   "metrics": [
+    "K1",
+    "K2",
+    "K3",
+    "C5",
+    "C9"
+   ],
+   "why": "Doc 84 Phase 5's gate (K1 35%+, K2 25% or less, K3 = 0): the topic director in data (topics.json: novelty, saturation, the everyday floor, favourites, closeness, the told set) moved the talk from news to everyday life by design, and C5 and C9 are measured for the first time (the talk turns along the topic graph; callbacks on the talk ledger); taken from Phase 5's card (artifacts/talk/runs/p5)",
+   "from": {
+    "L1": "artifacts/talk/runs/p5/frozen-L1",
+    "L2": "artifacts/talk/runs/p5/frozen-L2",
+    "L3": "artifacts/talk/runs/p5/frozen-L3",
+    "L4": "artifacts/talk/runs/p5/frozen-L4",
+    "L5": "artifacts/talk/runs/p5/frozen-L5",
+    "L6": "artifacts/talk/runs/p5/frozen-L6",
+    "L7": "artifacts/talk/runs/p5/frozen-L7",
+    "L8": "artifacts/talk/runs/p5/frozen-L8",
+    "L9": "artifacts/talk/runs/p5/frozen-L9",
+    "L10": "artifacts/talk/runs/p5/frozen-L10"
+   },
+   "on": "2026-11-16T21:20:55+00:00"
   }
  ]
 }

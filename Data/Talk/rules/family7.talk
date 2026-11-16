@@ -1126,7 +1126,7 @@ remember other: f7_asked=alone 2m
 remember pair: f7_chain=share 2m
 
 rule f7_tell_inlaws
-when concept=talk.smalltalk|talk.friends self.spouse
+when concept=talk.smalltalk|talk.friends self.spouse pair.kin!=spouses
 cooldown 3d
 say #self.spouse#'s family are coming for the festival. All of them. | My mother-in-law has opinions about my cooking. Loud ones. | We've the in-laws staying. Can I sleep at yours? | #self.spouse#'s brother has borrowed my good saw. For a year now.
 then other: family.share_answer

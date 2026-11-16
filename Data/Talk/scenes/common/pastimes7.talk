@@ -21,7 +21,7 @@ a@plain : Loser buys the cider. | Found them. Your throw. | Grew up. Lost my tou
 
 scene e2_pt_fox_and_geese
 when topic=pastimes
-a : You moved that fox backwards last night. Foxes don't go backwards. | Fox-and-geese tonight? I've a new board. | I've never once beaten my mother at fox-and-geese.
+a : You moved that fox backwards last night. Foxes don't go backwards. | Fox-and-geese tonight? I've a new board. | I've never once bested my mother at fox-and-geese.
 b[humour=merry] #merry : I love that game. I always lose and I always laugh.
 b[honesty=sly] #sly : I'm very good at fox-and-geese. Ask anyone. Well. Ask me.
 b #plain : They do in our house. | Who carved it? | Nobody beats mothers at fox-and-geese.
@@ -229,7 +229,7 @@ a : A river. | A river. Water, anyway. | Your name. Everyone uses it.
 
 scene e2_pt_riddle_trade
 when topic=pastimes pair.band=friends|acquaintances|family
-a : Riddle that's beaten the whole street. The more you take, the more you leave behind. What? | Riddle me this. What gets wetter the more it dries? | Here's one. What can you catch but never throw?
+a : Riddle that's stumped the whole street. The more you take, the more you leave behind. What? | Riddle me this. What gets wetter the more it dries? | Here's one. What can you catch but never throw?
 b[drive=ambitious] #quick : Easy. Next.
 b[job=scholar] #quick : Ha. I had that one off my grandmother.
 b : A purse? | A fish? | A ball?

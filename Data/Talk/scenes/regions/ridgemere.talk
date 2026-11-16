@@ -57,7 +57,7 @@ when topic=work here.region=ridgemere
 a : Walked the ropewalk end to end forty times today. | The Grayrock shipwrights want a cable as thick as my leg. | Hemp's damp. It'll rot.
 b[sailor] : Good rope's the difference between port and the bottom of the sea.
 b : Your poor legs. | For what ship? | Then dry it.
-a : Gone numb. | A big one. | In this rain?
+a : Gone numb. | A big one. | Dry it where?
 
 scene rm_lore_rain_hall
 when topic=lore here.region=ridgemere
