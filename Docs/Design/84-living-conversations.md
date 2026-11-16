@@ -2321,3 +2321,43 @@ findings and T2's 0.41 are the lines Phase 7's conversion (tags) and Phase 8's w
 take the best tier (Phase 3). `claims.json` is the place for Phase 4's point-of-view lines (`victim`, `to_victim`,
 `self`, `kin` are written but only `they` and the victim's own news are spoken yet).
 
+## 25. Slice 1's end: the full suite and every profile (2026-11-16)
+
+Branch `r3-talk-s1`, on Phase 1. `origin/ridgemere2` had nothing new (it was still at a46cbdac, Phase 0's base), so the
+merge was empty. Everything was built in one Release build and run:
+
+- **Core**: the full ctest, 97 of 97, with the eight database suites (`*_pg`, `pg_client`) run against the local
+  PostgreSQL this time, not skipped.
+- **Client**: typecheck, 224 unit tests, the build, and the 11 browser tests (headless, a local central and a world).
+- **Editor**: typecheck, the build, 165 tests, and the render smoke (17 panels).
+- **Talk**: `talk_check --validate` on all 152 files of `Data/Talk`, `--render-trees`, and `tools/dialect_check.py
+  --world ridgemere3` (59,232 lines, no failures, no warnings). `test_dialect_check` and `test_path_check` passed.
+- **Central**: `test_central.py` (84) and `test_world_join.py` (2).
+- **Every talk_sim profile** in both modes, over Phase 0's fixture (`artifacts/talk/runs/s1`). The transcripts are
+  Phase 1's line for line, because the code is the same.
+
+**The one fix: the scorecard's gate check (a test fault, not the game's).** `talk_card` exited 1 on the same five
+"regressions" Phase 1 reported, and none of them was one. A card's value is a mean of the profiles' rates weighted by
+their lines, so it moves when the profiles' line counts move, even with the very same events: C6 frozen was 3 talks
+against 3, and C4 fixtures was 1 clash against 1. C3 frozen (soft) was 18 good endings against 22 in 26,142. R5 frozen
+was 2,166 collisions against 2,156 (and fixtures fell from 685 to 666). B5 is a timing: the same build measured 59, 72
+and 80 frozen. `check()` in `tools/talk_score.py` now counts "worse" only beyond noise:
+- A rate that counts events (R4, R5, C3, C4, C6, T1-T3) has its events and exposure worked out from the card's own
+  per-profile values and counts. It is worse only by more than one standard deviation of a Poisson count, and by at
+  least one whole event, against the baseline's count scaled to today's exposure.
+- B5 is worse only by more than 25%.
+- A hard gate the baseline passed still breaks on a single event.
+
+A card without counts compares values as before. The message now gives the counts. `tools/test_talk_score.py` (ctest
+`talk_score_rules`) checks that a real regression is still caught: three repeats against nine, a soft metric halved,
+collisions up 14%, B5 down 40%. It also checks that this slice's noise is not. With it, `talk_card` passes in both
+modes: no gate broken.
+
+**The scorecard against P0's baseline** (fixtures / frozen; the same as §24's table, which has the shuffled control):
+T1 13.4 → 0 / 0.1 → 0; T3 3.3 → 0 / 0 → 0; T2 0.41 / 0 (frozen in Phase 1); C1 96.1 → 97.2 / 93.0 → 98.9; C3 0.83 →
+0.92 / 0.084 → 0.068 (%); C4 0.026 → 0.026 / 0 → 0; C6 0 → 0 / 0.117 → 0.119; R1 2.2 → 2.2 / 0.42 → 0.42 h; R3 2,170
+→ 2,150 / 467 → 469; R4 991 → 991 / 3,860 → 3,901; R5 189 → 185 / 909 → 926; R6 3.6 → 3.5 / 13.2 → 13.2%; R7 53 → 58
+/ 34 → 35; K1 3.8 → 3.8 / 24 → 24%; K2 52 → 50 / 42 → 42%; K3 2,284 → 2,259 / 109 → 109; D1 0.21 → 0.22 / 0.23 → 0.24%;
+D3 67 → 69 / 13 → 13%; U2 46 → 46 / 39 → 40%; B5 1.5 → 1.5 / 68 → 80.
+
+**Not done here.** No ticking run was made. The slice end's ticking 100-hour listen (Q6) and its review are still to do.

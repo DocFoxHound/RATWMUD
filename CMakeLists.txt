@@ -452,3 +452,5 @@ add_test(NAME dialect_check_rules COMMAND python3 -m unittest test_dialect_check
 # its findings were counted and frozen in Phase 1 (Tests/fixtures/talk_lint_baseline.json) and may only fall.
 add_test(NAME talk_lint COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/talk_lint.py)
 add_test(NAME talk_lint_rules COMMAND python3 -m unittest test_talk_lint WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
+# The scorecard's gate check (doc 84 §15.3): a real regression is caught, noise is not.
+add_test(NAME talk_score_rules COMMAND python3 -m unittest test_talk_score WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)

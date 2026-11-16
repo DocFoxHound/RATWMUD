@@ -45,8 +45,9 @@ is measured"); the rest are listed as n/a with the phase that brings them:
   B5 exchanges simulated a second (run.json)
 
 Gates (--check against --baseline): a hard gate the baseline passed must still pass; one the baseline failed may not get
-worse (each phase closes its own); a soft metric may not regress by more than 10%. The scorecard says which hard gates
-are still open.
+worse (each phase closes its own); a soft metric may not regress by more than 10%. "Worse" means beyond noise: a rate
+that counts events (R4, R5, C3, C4, C6, T1-T3) by more than one standard deviation of its count (and a whole event), and
+B5, a timing, by more than 25%. The scorecard says which hard gates are still open.
 """
 from __future__ import annotations
 
@@ -627,20 +628,69 @@ def scorecard(dirs: list[Path]) -> dict:
     }
 
 
+# The rates that count events (id: the run count they are per, and per how many), so --check can tell a change in the
+# events from noise. A card's value is a mean of the profiles' rates weighted by lines, so it moves when the profiles'
+# line counts do even with the very same events (Slice 1's end: C6 3 against 3, C4 1 against 1, both flagged "worse").
+EVENTS = {"R4": ("hours", 100), "R5": ("hours", 100), "C3": ("conversations", 100), "C4": ("lines", 1000),
+          "C6": ("conversations", 1000), "T1": ("lines", 1000), "T2": ("lines", 1000), "T3": ("lines", 1000)}
+# Timings, which move with the machine's load: the same build measured B5 frozen at 59, 72 and 80.
+TIMING = {"B5": .25}
+
+
+def events(card: dict, mid: str) -> tuple[float, float] | None:
+    """A rate's events and exposure over a card's profiles (from each profile's value and counts; a run that heard
+    nothing is left out, as combine() leaves it out), or None if the card can't say."""
+    if mid not in EVENTS:
+        return None
+    key, per = EVENTS[mid]
+    n = exposure = 0.0
+    for profile, value in card.get("metrics", {}).get(mid, {}).get("by_profile", {}).items():
+        counts = card.get("details", {}).get(profile, {}).get("_counts", {})
+        if not counts.get("conversations"):
+            continue
+        x = float(counts.get(key) or 0)
+        n += value * x / per
+        exposure += x
+    return (round(n), exposure) if exposure > 0 else None
+
+
+def beyond_noise(mid: str, card: dict, base: dict) -> tuple[bool, str]:
+    """Whether a counted metric got worse by more than its own noise: its events against the baseline's, scaled to
+    today's exposure, by more than one standard deviation of a Poisson count and at least one whole event. (True, with
+    no words, for a metric that counts nothing.)"""
+    now, was = events(card, mid), events(base, mid)
+    if now is None or was is None:
+        return True, ""
+    expected = was[0] * now[1] / was[1]
+    d = expected - now[0] if METRICS[mid][1] == "higher" else now[0] - expected
+    return d >= max(1.0, math.sqrt(expected)), f" ({now[0]} events against {expected:.0f} at the baseline's rate)"
+
+
 def check(card: dict, base: dict) -> list[str]:
+    """A hard gate the baseline passed must still pass; an open one may not get worse; a soft metric may not regress by
+    more than 10%. "Worse" is beyond noise: a counted metric by more than its events' own noise (beyond_noise), a
+    timing by more than TIMING's share."""
     problems = []
     for mid, row in card["metrics"].items():
         b = base.get("metrics", {}).get(mid, {})
         now, was = row.get("value"), b.get("value")
         if now is None or was is None:
             continue
+        if row["gate"] == "hard" and b.get("passes") and row.get("passes") is False:
+            problems.append(f"{mid} ({row['name']}): {now:.3g} breaks the hard gate ({row['target']}); the baseline passed")
+            continue
+        if row["gate"] == "hard" and b.get("passes") is not False:
+            continue
+        allowed = TIMING.get(mid, 0.0 if row["gate"] == "hard" else .10)
+        if worse(mid, now, was) <= allowed:
+            continue
+        noisy, said = beyond_noise(mid, card, base)
+        if not noisy:
+            continue
         if row["gate"] == "hard":
-            if b.get("passes") and row.get("passes") is False:
-                problems.append(f"{mid} ({row['name']}): {now:.3g} breaks the hard gate ({row['target']}); the baseline passed")
-            elif b.get("passes") is False and worse(mid, now, was) > 0:
-                problems.append(f"{mid} ({row['name']}): {now:.3g}, worse than the baseline's {was:.3g} on an open hard gate")
-        elif worse(mid, now, was) > .10:
-            problems.append(f"{mid} ({row['name']}): {now:.3g} regresses more than 10% from the baseline's {was:.3g}")
+            problems.append(f"{mid} ({row['name']}): {now:.3g}, worse than the baseline's {was:.3g} on an open hard gate{said}")
+        else:
+            problems.append(f"{mid} ({row['name']}): {now:.3g} regresses more than 10% from the baseline's {was:.3g}{said}")
     return problems
 
 
