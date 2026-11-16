@@ -954,6 +954,7 @@ bool Game::dialogueGo(Connection* c, DialogueSession& d, const std::string& node
     // voice (doc 28's facts, doc 62's rules); the node's own words where the game has nothing to say.
     if (node.ask.rfind("player.", 0) == 0)
         line = gameAnswer(d.npc, playerId, std::string(), true, node.ask.substr(7));
+    talk::LineInfo lineFrom{line.empty() ? std::string() : node.ask, -1, {}};
     if (line.empty())
     {
         const auto said = talk_.pick(q, seed, {}, {});
@@ -961,6 +962,8 @@ bool Game::dialogueGo(Connection* c, DialogueSession& d, const std::string& node
         {
             line = said.lines.front().second;
             talkRemember(said.effects);
+            if (!said.info.empty())
+                lineFrom = said.info.front();
         }
     }
     d.line = line;
@@ -975,6 +978,8 @@ bool Game::dialogueGo(Connection* c, DialogueSession& d, const std::string& node
     if (!d.quiet || d.history.size() > 1)          // (A quiet window's greeting isn't said aloud: dialogueOpen.)
         dialogueSpeak(d.npc, playerId, line);
     voiced("dialogue", "tree", d.npc);
+    if (options_.logTalkWords && !line.empty())
+        voicedWords("dialogue", d.npc, playerId, line, &lineFrom);
     dialogueSend(c, d, note);
     if (node.choices.empty())
     {

@@ -730,6 +730,21 @@ class World
     // A Dungeon Master's move (doc 34, the LIVE map): someone in the world put straight onto an open tile of any place,
     // where they carry on. Not someone in a fight, or a tile they couldn't stand on.
     Result teleport(const std::string& id, const std::string& cellId, double x, double y);
+    // The conversation simulator (Docs/Design/84 §15.1; Tests/talk_sim.cpp), never the game's own path: the world's clock
+    // and calendar moved on with nothing else run (its frozen mode: the weather's field follows the hour); the ambient
+    // director's pacing (when each resident and each place last talked), carried from one snapshot's world to the next;
+    // and someone put back where, and as, a recorded run had them (moving: walking somewhere, so not free to talk).
+    void advanceClock(double seconds);
+    std::map<std::string, double>& ambientPacing() { return ambientLast_; }
+    // The cells near players (the stage: World::setTiered), and every NPC put on or off it by where they stand now, as
+    // a tick's errands step does (no one walks: they stand where they are). Nothing when the world isn't tiered.
+    std::set<std::string> playerStage() const { return tiered() ? stageCells() : std::set<std::string>{}; }
+    void restage();
+    // What the talk library calls a place (here.place: market, tavern, chapel, home, work, street...), as a resident
+    // standing there would be told.
+    std::string placeKindOf(const std::string& cellId) const;
+    bool replayPlace(const std::string& id, const std::string& cellId, Vec2 at, bool moving, const std::string& posture,
+                     bool offstage);
     // Temporary folk a Dungeon Master brings in from the LIVE map (doc 34): a stranger standing where put, who leaves
     // when their time is up (1 minute to a day of world time). Never saved; looked at, not talked to (yet: briefs are
     // doc 34 Part 6). `look` is how they look, often a copy of a resident's.

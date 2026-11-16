@@ -346,6 +346,20 @@ target_compile_definitions(hunt_sim PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOU
 add_executable(level_sim Tests/level_sim.cpp)
 target_link_libraries(level_sim PRIVATE ratw_core)
 target_compile_definitions(level_sim PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+# Not a test: the conversation simulator, residents' talk heard by listeners nobody plays over a world's own director
+# (Docs/Design/84 §15.1; Tests/talk_sim.cpp). Its ctests (the golden transcripts, the quick scorecard) are below.
+add_executable(talk_sim Tests/talk_sim.cpp)
+target_link_libraries(talk_sim PRIVATE ratw_core)
+target_compile_definitions(talk_sim PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+# The golden transcripts (doc 84 §15.8): 60 seeded exchanges in the synthetic talk town over the library frozen at the
+# commit Phase 0 began from (git; skipped without the history), word for word. A change to the engine that changes what
+# is said regenerates them on purpose: talk_sim ... --golden FILE --bless (the command is in the test).
+add_test(NAME talk_golden COMMAND talk_sim --world ${CMAKE_CURRENT_SOURCE_DIR}/Tests/fixtures/talk_town --profile town
+         --warm 2 --exchanges 60 --library-from a46cbdac --run golden --out ${CMAKE_CURRENT_BINARY_DIR}/talk-golden
+         --golden ${CMAKE_CURRENT_SOURCE_DIR}/Tests/fixtures/talk_golden/town-60.jsonl)
+set_tests_properties(talk_golden PROPERTIES SKIP_RETURN_CODE 77)
+# The quick scorecard (doc 84 §15.8): 2,000 frozen exchanges in the talk town, scored against its committed baseline.
+add_test(NAME talk_scorecard_quick COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/Tests/talk_scorecard_quick.py ${CMAKE_CURRENT_BINARY_DIR})
 # Not a test: how fast skills grow by practice, for the balance pass (see Tests/practice_sim.cpp; doc 49).
 add_executable(practice_sim Tests/practice_sim.cpp)
 target_link_libraries(practice_sim PRIVATE ratw_core)

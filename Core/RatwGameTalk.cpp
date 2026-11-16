@@ -511,6 +511,8 @@ bool Game::react(const std::string& npc, const std::string& to, const std::strin
         post.segments.push_back({"speech", said.lines.front().second});
         publish(npc, post, Voice::Speak);
         npcLastSpeech_[npc] = now;
+        if (options_.logTalkWords)
+            voicedWords("react", npc, to, said.lines.front().second, said.info.empty() ? nullptr : &said.info.front());
     }
     else
     {
@@ -523,6 +525,11 @@ bool Game::react(const std::string& npc, const std::string& to, const std::strin
         talking.lines.assign(said.lines.begin(), said.lines.end());
         talking.voiced = true;
         talking.nextAt = now;
+        if (said.info.size() == said.lines.size())    // (Where each line came from: doc 84 §15.)
+            talking.info.assign(said.info.begin(), said.info.end());
+        talking.chain = said.chain;
+        talking.route = "react";
+        talking.written = int(said.lines.size());
         ambient_.push_back(talking);
     }
     voiced("react", "scene", npc);

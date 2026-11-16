@@ -1,0 +1,1653 @@
+{
+ "about": "Docs/Design/84 §15.3: the talk scorecard (tools/talk_score.py), from talk_sim transcripts.",
+ "generated": "2026-11-16T13:07:16+00:00",
+ "runs": {
+  "L1": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+  "L2": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+  "L3": "artifacts/talk/runs/p0-baseline/fixtures-L3",
+  "L4": "artifacts/talk/runs/p0-baseline/fixtures-L4",
+  "L5": "artifacts/talk/runs/p0-baseline/fixtures-L5",
+  "L6": "artifacts/talk/runs/p0-baseline/fixtures-L6",
+  "L7": "artifacts/talk/runs/p0-baseline/fixtures-L7",
+  "L8": "artifacts/talk/runs/p0-baseline/fixtures-L8",
+  "L9": "artifacts/talk/runs/p0-baseline/fixtures-L9",
+  "L10": "artifacts/talk/runs/p0-baseline/fixtures-L10"
+ },
+ "metrics": {
+  "R1": {
+   "name": "first identical conversation, per listener (h)",
+   "better": "higher",
+   "gate": "hard",
+   "target": "40 h+; hard 20 h+",
+   "value": 2.2171944443010823,
+   "passes": false,
+   "by_profile": {
+    "L1": 2.735,
+    "L2": 3.834,
+    "L3": 2.351,
+    "L4": 2.384,
+    "L5": 2.217,
+    "L6": 3.134,
+    "L7": 2.551,
+    "L8": 0,
+    "L9": 0,
+    "L10": 6.884
+   },
+   "control": 2.3005277776344157,
+   "separation": 0.03622357188793582,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "R2": {
+   "name": "first repeated opener, per listener (h)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "8 h+",
+   "value": 2.2171944443010823,
+   "passes": false,
+   "by_profile": {
+    "L1": 2.602,
+    "L2": 3.834,
+    "L3": 2.351,
+    "L4": 2.384,
+    "L5": 2.217,
+    "L6": 3.134,
+    "L7": 2.551,
+    "L8": 0,
+    "L9": 0,
+    "L10": 6.884
+   },
+   "control": 2.2171944443010823,
+   "separation": 0.0,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "R3": {
+   "name": "distinct openers per 3,000 exchanges",
+   "better": "higher",
+   "gate": "soft",
+   "target": "L1 1,500+",
+   "value": 2170.4581303973255,
+   "passes": true,
+   "by_profile": {
+    "L1": 2618.111,
+    "L2": 2475.936,
+    "L3": 1379.377,
+    "L4": 1164.397,
+    "L5": 1494.163,
+    "L6": 1645.914,
+    "L7": 1575.875,
+    "L8": 0,
+    "L9": 0,
+    "L10": 2220.913
+   },
+   "control": 2170.4581303973255,
+   "separation": 0.0,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "R4": {
+   "name": "distinctive line heard again within 10 h, per 100 h",
+   "better": "lower",
+   "gate": "soft",
+   "target": "5 or fewer",
+   "value": 990.8077503048436,
+   "passes": false,
+   "by_profile": {
+    "L1": 1786.0,
+    "L2": 668.0,
+    "L3": 432.0,
+    "L4": 248.0,
+    "L5": 61.0,
+    "L6": 82.0,
+    "L7": 95.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 868.0
+   },
+   "control": 978.4308694552776,
+   "separation": 0.01249170774628877,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "R5": {
+   "name": "collision index, per 100 h",
+   "better": "lower",
+   "gate": "hard",
+   "target": "1 or fewer; hard 3",
+   "value": 188.6631932229678,
+   "passes": false,
+   "by_profile": {
+    "L1": 404.0,
+    "L2": 18.0,
+    "L3": 67.0,
+    "L4": 28.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 168.0
+   },
+   "control": 208.44741211838002,
+   "separation": 0.09491227880620792,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "R6": {
+   "name": "most-spoken line's share (%)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "0.4%",
+   "value": 3.6137486243697694,
+   "passes": false,
+   "by_profile": {
+    "L1": 1.38,
+    "L2": 1.297,
+    "L3": 9.665,
+    "L4": 9.217,
+    "L5": 12.13,
+    "L6": 7.42,
+    "L7": 7.633,
+    "L8": 0,
+    "L9": 0,
+    "L10": 0.949
+   },
+   "control": 3.603511376142093,
+   "separation": 0.002832861189801656,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "R7": {
+   "name": "distinct reply entries per 1,000 reply beats",
+   "better": "higher",
+   "gate": "soft",
+   "target": "500+",
+   "value": 52.755910898922586,
+   "passes": false,
+   "by_profile": {
+    "L1": 16.25,
+    "L2": 59.333,
+    "L3": 97.736,
+    "L4": 90.42,
+    "L5": 137.232,
+    "L6": 140.086,
+    "L7": 112.691,
+    "L8": 0,
+    "L9": 0,
+    "L10": 29.385
+   },
+   "control": 49.49194920418053,
+   "separation": 0.06186911834383124,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "R8": {
+   "name": "habit saturation (% of a speaker's lines, mean)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "15% or less",
+   "value": 0.02461115069833656,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.109,
+    "L4": 0.141,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.059,
+    "L8": 0,
+    "L9": 0,
+    "L10": 0.0
+   },
+   "control": 0.019784286297620166,
+   "separation": 0.19612510036122108,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "C1": {
+   "name": "questions answered (%)",
+   "better": "higher",
+   "gate": "hard",
+   "target": "97%; hard 92%",
+   "value": 96.12522958746125,
+   "passes": true,
+   "by_profile": {
+    "L1": 95.264,
+    "L2": 96.136,
+    "L3": 94.654,
+    "L4": 99.254,
+    "L5": 98.113,
+    "L6": 96.0,
+    "L7": 95.714,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 97.324
+   },
+   "control": 86.52361130071189,
+   "separation": 0.09988655764939582,
+   "separates": false,
+   "control_required": true,
+   "structural": false
+  },
+  "C2": {
+   "name": "replies at the best fit available (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "95%",
+   "value": null,
+   "note": "n/a until Phase 3"
+  },
+  "C3": {
+   "name": "endings by a farewell or a break (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "80% / 3% / 5%",
+   "value": 0.8303167942553337,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.627,
+    "L2": 1.114,
+    "L3": 0.649,
+    "L4": 0.681,
+    "L5": 0.389,
+    "L6": 0.584,
+    "L7": 0.584,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 1.375
+   },
+   "control": 0.5778406099349194,
+   "separation": 0.30407211568790027,
+   "separates": true,
+   "control_required": true,
+   "structural": false
+  },
+  "C4": {
+   "name": "tone clashes per 1,000 beats",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": 0.025593120569191004,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.146,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 0.358303687968674,
+   "separation": 0.9285714285714286,
+   "separates": true,
+   "control_required": true,
+   "structural": false
+  },
+  "C5": {
+   "name": "unmarked topic jumps per 1,000 beats",
+   "better": "lower",
+   "gate": "soft",
+   "target": "5",
+   "value": null,
+   "note": "n/a until Phase 5"
+  },
+  "C6": {
+   "name": "same entry or question twice in a conversation, per 1,000",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": 0.0,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 39.654868083078384,
+   "separation": 1.0,
+   "separates": true,
+   "control_required": true,
+   "structural": false
+  },
+  "C7": {
+   "name": "lines per conversation (mean)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "5-7; p90 9+",
+   "value": 3.00884346165102,
+   "passes": false,
+   "by_profile": {
+    "L1": 3.101,
+    "L2": 3.058,
+    "L3": 2.805,
+    "L4": 2.807,
+    "L5": 2.63,
+    "L6": 2.805,
+    "L7": 2.778,
+    "L8": 0,
+    "L9": 0,
+    "L10": 3.155
+   },
+   "control": 3.00884346165102,
+   "separation": 0.0,
+   "separates": false,
+   "control_required": false,
+   "structural": true
+  },
+  "C8": {
+   "name": "conversations with a third speaker (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "5-15%",
+   "value": 0.0,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 0.0,
+   "separation": 0.0,
+   "separates": false,
+   "control_required": false,
+   "structural": true
+  },
+  "C9": {
+   "name": "callbacks per 10 conversations",
+   "better": "higher",
+   "gate": "soft",
+   "target": "1.5+",
+   "value": null,
+   "note": "n/a until Phase 5"
+  },
+  "T1": {
+   "name": "raw ids spoken, per 1,000 lines",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": 13.359608937117702,
+   "passes": false,
+   "by_profile": {
+    "L1": 14.912,
+    "L2": 19.382,
+    "L3": 7.168,
+    "L4": 0.347,
+    "L5": 0.74,
+    "L6": 4.854,
+    "L7": 2.801,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 20.383
+   },
+   "control": 13.334015816548511,
+   "separation": 0.0019157088122605237,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "T2": {
+   "name": "presupposition failures, per 1,000 lines",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": 0.204744964553528,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.146,
+    "L3": 1.387,
+    "L4": 0.347,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 0.614234893660584,
+   "separation": 0.6666666666666667,
+   "separates": true,
+   "control_required": false,
+   "structural": false
+  },
+  "T3": {
+   "name": "self-reference errors, per 1,000 lines",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": 3.3015125534256393,
+   "passes": false,
+   "by_profile": {
+    "L1": 4.111,
+    "L2": 5.829,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 4.668
+   },
+   "control": 3.352698794564021,
+   "separation": 0.015267175572518983,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "T4": {
+   "name": "identity drift",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": null,
+   "note": "n/a until Phase 6"
+  },
+  "T5": {
+   "name": "telling what the listener already believes (%)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "2%",
+   "value": null,
+   "note": "n/a until Phase 4"
+  },
+  "D1": {
+   "name": "lines with a dialect's words (%): light speakers",
+   "better": "higher",
+   "gate": "hard",
+   "target": "none 0%; light 25-50%; broad 60%+",
+   "value": 0.20574723511070636,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.026,
+    "L3": 0.694,
+    "L4": 0.52,
+    "L5": 0.814,
+    "L6": 0.112,
+    "L7": 1.471,
+    "L8": 0,
+    "L9": 0,
+    "L10": 0.0
+   },
+   "control": 0.1795875897886359,
+   "separation": 0.127144577704749,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "D2": {
+   "name": "another dialect's words in a speaker's line",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": 0,
+   "passes": true,
+   "by_profile": {
+    "L1": 0,
+    "L2": 0,
+    "L3": 0,
+    "L4": 0,
+    "L5": 0,
+    "L6": 0,
+    "L7": 0,
+    "L8": 0,
+    "L9": 0,
+    "L10": 0
+   },
+   "control": 0,
+   "separation": 0.0,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "D3": {
+   "name": "dialect guessed from 20 lines (%): light and broad",
+   "better": "higher",
+   "gate": "soft",
+   "target": "85%+",
+   "value": 66.61891278429553,
+   "passes": false,
+   "by_profile": {
+    "L1": 89.091,
+    "L2": 72.34,
+    "L3": 42.857,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 100.0
+   },
+   "control": 71.75709403078686,
+   "separation": 0.0716052024666276,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "U1": {
+   "name": "a resident's lines from their own words (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "20-35%",
+   "value": 0.0,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 0.0,
+   "separation": 0.0,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "U2": {
+   "name": "distinguishability of look-alike residents (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "90%+",
+   "value": 45.66882068788219,
+   "passes": false,
+   "by_profile": {
+    "L1": 68.365,
+    "L2": 56.856,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 64.286
+   },
+   "control": 42.779119942741424,
+   "separation": 0.06327513392320903,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "K1": {
+   "name": "conversations on everyday topics (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "35%+",
+   "value": 3.826970301622858,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 1.649,
+    "L3": 11.738,
+    "L4": 14.494,
+    "L5": 5.447,
+    "L6": 13.813,
+    "L7": 12.84,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 3.826970301622858,
+   "separation": 0.0,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "K2": {
+   "name": "largest topic's share (%)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "25% or less",
+   "value": 52.38976085781922,
+   "passes": false,
+   "by_profile": {
+    "L1": 59.443,
+    "L2": 70.811,
+    "L3": 21.595,
+    "L4": 33.171,
+    "L5": 31.323,
+    "L6": 34.047,
+    "L7": 31.128,
+    "L8": 0,
+    "L9": 0,
+    "L10": 59.597
+   },
+   "control": 52.38976085781922,
+   "separation": 0.0,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "K3": {
+   "name": "same news told twice to the same resident",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": 2284,
+   "passes": false,
+   "by_profile": {
+    "L1": 1362,
+    "L2": 313,
+    "L3": 47,
+    "L4": 0,
+    "L5": 6,
+    "L6": 18,
+    "L7": 3,
+    "L8": 0,
+    "L9": 0,
+    "L10": 535
+   },
+   "control": 2284,
+   "separation": 0.0,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "W1": {
+   "name": "window lines from mantles (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "40%+",
+   "value": null,
+   "note": "n/a until Phase 13"
+  },
+  "W2": {
+   "name": "free-text understanding",
+   "better": "higher",
+   "gate": "hard",
+   "target": "85%+; wrong 8% or less",
+   "value": null,
+   "note": "n/a until Phase 13"
+  },
+  "W3": {
+   "name": "a resident answers chat with the option off",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": null,
+   "note": "n/a until Phase 12"
+  },
+  "B5": {
+   "name": "exchanges simulated a second",
+   "better": "higher",
+   "gate": "hard",
+   "target": "150+",
+   "value": 1.5108388035410818,
+   "passes": false,
+   "by_profile": {
+    "L1": 10.523,
+    "L2": 5.513,
+    "L3": 3.944,
+    "L4": 2.797,
+    "L5": 1.511,
+    "L6": 1.512,
+    "L7": 1.533,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 7.34
+   },
+   "control": 1.5108388035410818,
+   "separation": 0.0,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "X1": {
+   "name": "lexical cohesion: replies sharing a content word with the line before (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "diagnostic (not in §15.3): shows the control is discriminating",
+   "value": 27.17672258911662,
+   "passes": null,
+   "by_profile": {
+    "L1": 30.32,
+    "L2": 30.533,
+    "L3": 19.604,
+    "L4": 20.614,
+    "L5": 21.241,
+    "L6": 20.043,
+    "L7": 21.007,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 28.838
+   },
+   "control": 1.561506935768625,
+   "separation": 0.9425424853696686,
+   "separates": true,
+   "control_required": true,
+   "structural": false
+  },
+  "H1": {
+   "name": "blind naturalness 1-5",
+   "better": "higher",
+   "gate": "soft",
+   "target": "3.8+",
+   "value": null,
+   "note": "n/a until slice ends (talk_rate.py)"
+  },
+  "H2": {
+   "name": "'written whole by a writer?' (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "40%+",
+   "value": null,
+   "note": "n/a until slice ends (talk_rate.py)"
+  }
+ },
+ "details": {
+  "L1": {
+   "R1_detail": {
+    "listeners": 4,
+    "median": 22.339416661866693,
+    "censored": true,
+    "exchange": 43
+   },
+   "R2_detail": {
+    "median": 22.339416661866693,
+    "censored": true
+   },
+   "R6_detail": {
+    "line": "Good.",
+    "times": 198
+   },
+   "R8_detail": {
+    "p90": 0.0,
+    "speakers": 66,
+    "any_habit_mean": 0.14624202110990997
+   },
+   "C1_detail": {
+    "questions": 1119,
+    "answered": 1066
+   },
+   "C3_detail": {
+    "farewell": 0.6050129645635264,
+    "break": 0.021607605877268798,
+    "cap": 0.0,
+    "nothing_fits": 99.37337942955921
+   },
+   "C7_detail": {
+    "p90": 4,
+    "three_lines": 88.35350043215212,
+    "four_lines": 10.868625756266205
+   },
+   "T2_detail": {
+    "by_kind": {},
+    "examples": []
+   },
+   "T3_detail": {
+    "examples": [
+     "rm_wenna_tarford: In the Rain Hall they're saying Osric Ropeworth tried to steal from Wenna Tarford.",
+     "rm_wenna_tarford: Between stalls: Osric Ropeworth tried to steal from Wenna Tarford.",
+     "rm_wenna_tarford: Everyone in the city's heard Osric Ropeworth tried to steal from Wenna Tarford.",
+     "rm_rosamund_tarridge: Florence Pennock tried to steal from Rosamund Tarridge, they say."
+    ]
+   },
+   "T1_detail": {
+    "examples": [
+     "They say camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8. Don't quote me.",
+     "Word at the well is that camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8.",
+     "Before we turn in: camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8."
+    ]
+   },
+   "K2_detail": {
+    "topics": {
+     "gossip": 59.44,
+     "crime": 40.56
+    }
+   },
+   "D1_detail": {
+    "light": 0.0,
+    "broad": 0.0,
+    "none": 0.0
+   },
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "light": 87.9,
+    "broad": 90.9,
+    "none": 63.6,
+    "speakers": 66
+   },
+   "U2_detail": {
+    "pairs": 9,
+    "lines": 2630
+   },
+   "_counts": {
+    "lines": 14351,
+    "conversations": 4628,
+    "hours": 100.0,
+    "listeners": 4,
+    "speakers": 165
+   }
+  },
+  "L2": {
+   "R1_detail": {
+    "listeners": 1,
+    "median": 3.833861110967749,
+    "censored": false,
+    "exchange": 78
+   },
+   "R2_detail": {
+    "median": 3.833861110967749,
+    "censored": false
+   },
+   "R6_detail": {
+    "line": "Good.",
+    "times": 89
+   },
+   "R8_detail": {
+    "p90": 0.0,
+    "speakers": 121,
+    "any_habit_mean": 0.13248615555924803
+   },
+   "C1_detail": {
+    "questions": 440,
+    "answered": 423
+   },
+   "C3_detail": {
+    "farewell": 0.6684491978609626,
+    "break": 0.44563279857397503,
+    "cap": 0.0,
+    "nothing_fits": 98.88591800356507
+   },
+   "C7_detail": {
+    "p90": 3,
+    "three_lines": 88.50267379679144,
+    "four_lines": 8.065953654188949
+   },
+   "T2_detail": {
+    "by_kind": {
+     "weather": 1
+    },
+    "examples": [
+     "weather: The mist covers everything. (cty_jessamy_greyford, clear 9h)"
+    ]
+   },
+   "T3_detail": {
+    "examples": [
+     "rmx_finn_dripwick: I heard Corwin Bilgestack tried to steal from Finn Dripwick.",
+     "rm_rupert_fogton: Word at the well is that Brenna Milldale stole from Rupert Fogton.",
+     "rmx_ebba_netherby: I heard something about Finn Saltwell. That Finn Saltwell tried to steal from Ebba Netherby.",
+     "rm_wenna_tarford: Everyone in the city's heard Ada Coalstack tried to steal from Wenna Tarford."
+    ]
+   },
+   "T1_detail": {
+    "examples": [
+     "Sold more gossip than goods this morning. Camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8.",
+     "In the Rain Hall they're saying camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8.",
+     "A smokehouse foreman told the Tarred Rope's keeper camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8."
+    ]
+   },
+   "K2_detail": {
+    "topics": {
+     "gossip": 70.81,
+     "crime": 23.66,
+     "bandits": 1.83,
+     "family": 0.98,
+     "caravan": 0.76,
+     "prices": 0.67,
+     "event": 0.62,
+     "player": 0.58,
+     "times": 0.09
+    }
+   },
+   "D1_detail": {
+    "none": 0.0,
+    "light": 0.03,
+    "broad": 0.19
+   },
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "none": 51.9,
+    "light": 71.0,
+    "broad": 75.0,
+    "speakers": 121
+   },
+   "U2_detail": {
+    "pairs": 7,
+    "lines": 299
+   },
+   "_counts": {
+    "lines": 6862,
+    "conversations": 2244,
+    "hours": 100.0,
+    "listeners": 1,
+    "speakers": 526
+   }
+  },
+  "L3": {
+   "R1_detail": {
+    "listeners": 1,
+    "median": 2.3505277776344156,
+    "censored": false,
+    "exchange": 20
+   },
+   "R2_detail": {
+    "median": 2.3505277776344156,
+    "censored": false
+   },
+   "R6_detail": {
+    "line": "A day like any other.",
+    "times": 418
+   },
+   "R8_detail": {
+    "p90": 0.46349942062572425,
+    "speakers": 7,
+    "any_habit_mean": 0.12542968111810007
+   },
+   "C1_detail": {
+    "questions": 318,
+    "answered": 301
+   },
+   "C3_detail": {
+    "farewell": 0.648508430609598,
+    "break": 0.0,
+    "cap": 0.0,
+    "nothing_fits": 99.3514915693904
+   },
+   "C7_detail": {
+    "p90": 4,
+    "three_lines": 44.29312581063554,
+    "four_lines": 14.785992217898833
+   },
+   "T2_detail": {
+    "by_kind": {
+     "weather": 6
+    },
+    "examples": [
+     "weather: The mist covers everything. (tn_fh_marl_cragpeak, clear 17h)",
+     "weather: The mist covers everything. (tn_mb_fell_miremore, clear 11h)",
+     "weather: It's raining. (tn_fh_jory_rimepeak, clear 13h)",
+     "weather: The mist covers everything. (tn_cw_fallow_lakewick, clear 12h)",
+     "weather: The mist covers everything. (tn_cw_fallow_lakewick, clear 17h)",
+     "weather: The mist covers everything. (tn_fh_marl_cragpeak, clear 9h)"
+    ]
+   },
+   "T3_detail": {
+    "examples": []
+   },
+   "T1_detail": {
+    "examples": [
+     "Pass it down the row. Camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8.",
+     "Every customer today, same story. Camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8.",
+     "Camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8. And they had the cheek to sit in the front pew."
+    ]
+   },
+   "K2_detail": {
+    "topics": {
+     "crime": 21.6,
+     "caravan": 18.87,
+     "event": 16.86,
+     "bandits": 13.81,
+     "prices": 12.65,
+     "family": 5.32,
+     "gossip": 4.47,
+     "player": 4.15,
+     "times": 2.27
+    }
+   },
+   "D1_detail": {
+    "light": 0.69
+   },
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "light": 42.9,
+    "speakers": 7
+   },
+   "U2_detail": {
+    "pairs": 0,
+    "lines": 0
+   },
+   "_counts": {
+    "lines": 4325,
+    "conversations": 1542,
+    "hours": 100.0,
+    "listeners": 1,
+    "speakers": 7
+   }
+  },
+  "L4": {
+   "R1_detail": {
+    "listeners": 1,
+    "median": 2.3838611109677488,
+    "censored": false,
+    "exchange": 15
+   },
+   "R2_detail": {
+    "median": 2.3838611109677488,
+    "censored": false
+   },
+   "R6_detail": {
+    "line": "A day like any other.",
+    "times": 266
+   },
+   "R8_detail": {
+    "p90": 0.3418803418803419,
+    "speakers": 5,
+    "any_habit_mean": 0.14062484320541835
+   },
+   "C1_detail": {
+    "questions": 134,
+    "answered": 133
+   },
+   "C3_detail": {
+    "farewell": 0.6809338521400778,
+    "break": 0.0,
+    "cap": 0.0,
+    "nothing_fits": 99.31906614785993
+   },
+   "C7_detail": {
+    "p90": 4,
+    "three_lines": 49.12451361867704,
+    "four_lines": 7.490272373540856
+   },
+   "T2_detail": {
+    "by_kind": {
+     "weather": 1
+    },
+    "examples": [
+     "weather: It's raining. (tn_oh_quill_oakdell, clear 19h)"
+    ]
+   },
+   "T3_detail": {
+    "examples": []
+   },
+   "T1_detail": {
+    "examples": [
+     "Don't spread it, but camp_w_ridgemere_6_12 raids the road at w_ridgemere_6_12."
+    ]
+   },
+   "K2_detail": {
+    "topics": {
+     "bandits": 33.17,
+     "caravan": 20.62,
+     "event": 16.63,
+     "prices": 14.69,
+     "family": 10.51,
+     "player": 3.99,
+     "gossip": 0.39
+    }
+   },
+   "D1_detail": {
+    "light": 0.52
+   },
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "speakers": 5,
+    "note": "fewer than two dialects heard"
+   },
+   "U2_detail": {
+    "pairs": 0,
+    "lines": 0
+   },
+   "_counts": {
+    "lines": 2886,
+    "conversations": 1028,
+    "hours": 100.0,
+    "listeners": 1,
+    "speakers": 5
+   }
+  },
+  "L5": {
+   "R1_detail": {
+    "listeners": 1,
+    "median": 2.2171944443010823,
+    "censored": false,
+    "exchange": 6
+   },
+   "R2_detail": {
+    "median": 2.2171944443010823,
+    "censored": false
+   },
+   "R6_detail": {
+    "line": "A day like any other.",
+    "times": 164
+   },
+   "R8_detail": {
+    "p90": 0.0,
+    "speakers": 2,
+    "any_habit_mean": 0.0
+   },
+   "C1_detail": {
+    "questions": 53,
+    "answered": 52
+   },
+   "C3_detail": {
+    "farewell": 0.38910505836575876,
+    "break": 0.0,
+    "cap": 0.0,
+    "nothing_fits": 99.61089494163424
+   },
+   "C7_detail": {
+    "p90": 3,
+    "three_lines": 45.13618677042802,
+    "four_lines": 8.949416342412452
+   },
+   "T2_detail": {
+    "by_kind": {},
+    "examples": []
+   },
+   "T3_detail": {
+    "examples": []
+   },
+   "T1_detail": {
+    "examples": [
+     "Guess who raids the road at w_ridgemere_6_12? Camp_w_ridgemere_6_12!"
+    ]
+   },
+   "K2_detail": {
+    "topics": {
+     "bandits": 31.32,
+     "caravan": 27.43,
+     "event": 18.09,
+     "prices": 15.76,
+     "player": 5.45,
+     "gossip": 1.95
+    }
+   },
+   "D1_detail": {
+    "light": 0.81
+   },
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "speakers": 2,
+    "note": "fewer than two dialects heard"
+   },
+   "U2_detail": {
+    "pairs": 0,
+    "lines": 0
+   },
+   "_counts": {
+    "lines": 1352,
+    "conversations": 514,
+    "hours": 100.0,
+    "listeners": 1,
+    "speakers": 2
+   }
+  },
+  "L6": {
+   "R1_detail": {
+    "listeners": 1,
+    "median": 3.1338611109677488,
+    "censored": false,
+    "exchange": 17
+   },
+   "R2_detail": {
+    "median": 3.1338611109677488,
+    "censored": false
+   },
+   "R6_detail": {
+    "line": "A day like any other.",
+    "times": 107
+   },
+   "R8_detail": {
+    "p90": 0.0,
+    "speakers": 3,
+    "any_habit_mean": 0.3401360544217687
+   },
+   "C1_detail": {
+    "questions": 75,
+    "answered": 72
+   },
+   "C3_detail": {
+    "farewell": 0.5836575875486382,
+    "break": 0.0,
+    "cap": 0.0,
+    "nothing_fits": 99.41634241245136
+   },
+   "C7_detail": {
+    "p90": 4,
+    "three_lines": 54.86381322957198,
+    "four_lines": 12.84046692607004
+   },
+   "T2_detail": {
+    "by_kind": {},
+    "examples": []
+   },
+   "T3_detail": {
+    "examples": []
+   },
+   "T1_detail": {
+    "examples": [
+     "Word at the well is that camp_w_ridgemere_7_12 raids the road at w_ridgemere_7_12.",
+     "Word is camp_w_ridgemere_7_12 raids the road at w_ridgemere_7_12.",
+     "Camp_w_ridgemere_7_12 raids the road at w_ridgemere_7_12, and still walks about with that nose in the air."
+    ]
+   },
+   "K2_detail": {
+    "topics": {
+     "bandits": 34.05,
+     "event": 19.65,
+     "prices": 18.68,
+     "player": 13.42,
+     "caravan": 7.2,
+     "gossip": 5.06,
+     "crime": 1.56,
+     "work": 0.39
+    }
+   },
+   "D1_detail": {
+    "broad": 2.37,
+    "light": 0.11
+   },
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "speakers": 3,
+    "note": "fewer than two dialects heard"
+   },
+   "U2_detail": {
+    "pairs": 0,
+    "lines": 0
+   },
+   "_counts": {
+    "lines": 1442,
+    "conversations": 514,
+    "hours": 100.0,
+    "listeners": 1,
+    "speakers": 3
+   }
+  },
+  "L7": {
+   "R1_detail": {
+    "listeners": 1,
+    "median": 2.5505277776344157,
+    "censored": false,
+    "exchange": 10
+   },
+   "R2_detail": {
+    "median": 2.5505277776344157,
+    "censored": false
+   },
+   "R6_detail": {
+    "line": "A day like any other.",
+    "times": 109
+   },
+   "R8_detail": {
+    "p90": 0.11890606420927467,
+    "speakers": 2,
+    "any_habit_mean": 0.059453032104637336
+   },
+   "C1_detail": {
+    "questions": 70,
+    "answered": 67
+   },
+   "C3_detail": {
+    "farewell": 0.5836575875486382,
+    "break": 0.0,
+    "cap": 0.0,
+    "nothing_fits": 99.41634241245136
+   },
+   "C7_detail": {
+    "p90": 4,
+    "three_lines": 51.750972762645915,
+    "four_lines": 13.035019455252918
+   },
+   "T2_detail": {
+    "by_kind": {},
+    "examples": []
+   },
+   "T3_detail": {
+    "examples": []
+   },
+   "T1_detail": {
+    "examples": [
+     "Keep your voice down. Camp_w_ridgemere_7_12 raids the road at w_ridgemere_7_12.",
+     "Over the back wall this morning: camp_w_ridgemere_11_12 raids the road at w_ridgemere_11_12.",
+     "I'll believe it when I hear it from camp_w_ridgemere_11_12."
+    ]
+   },
+   "K2_detail": {
+    "topics": {
+     "bandits": 31.13,
+     "prices": 27.82,
+     "event": 20.43,
+     "player": 12.06,
+     "caravan": 6.61,
+     "gossip": 1.17,
+     "work": 0.78
+    }
+   },
+   "D1_detail": {
+    "light": 1.47
+   },
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "speakers": 2,
+    "note": "fewer than two dialects heard"
+   },
+   "U2_detail": {
+    "pairs": 0,
+    "lines": 0
+   },
+   "_counts": {
+    "lines": 1428,
+    "conversations": 514,
+    "hours": 100.0,
+    "listeners": 1,
+    "speakers": 2
+   }
+  },
+  "L8": {
+   "R1_detail": {
+    "listeners": 0,
+    "median": 0.0,
+    "censored": false,
+    "exchange": null
+   },
+   "R2_detail": {
+    "median": 0.0,
+    "censored": false
+   },
+   "R6_detail": {
+    "line": "",
+    "times": 0
+   },
+   "R8_detail": {
+    "p90": 0.0,
+    "speakers": 0,
+    "any_habit_mean": 0
+   },
+   "C1_detail": {
+    "questions": 0,
+    "answered": 0
+   },
+   "C3_detail": {
+    "farewell": 0.0,
+    "break": 0.0,
+    "cap": 0.0,
+    "nothing_fits": 0.0
+   },
+   "C7_detail": {
+    "p90": 0.0,
+    "three_lines": 0.0,
+    "four_lines": 0.0
+   },
+   "T2_detail": {
+    "by_kind": {},
+    "examples": []
+   },
+   "T3_detail": {
+    "examples": []
+   },
+   "T1_detail": {
+    "examples": []
+   },
+   "K2_detail": {
+    "topics": {}
+   },
+   "D1_detail": {
+    "light": 0.0
+   },
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "speakers": 0,
+    "note": "fewer than two dialects heard"
+   },
+   "U2_detail": {
+    "pairs": 0,
+    "lines": 0
+   },
+   "_counts": {
+    "lines": 0,
+    "conversations": 0,
+    "hours": 100.0,
+    "listeners": 0,
+    "speakers": 0
+   }
+  },
+  "L9": {
+   "R1_detail": {
+    "listeners": 0,
+    "median": 0.0,
+    "censored": false,
+    "exchange": null
+   },
+   "R2_detail": {
+    "median": 0.0,
+    "censored": false
+   },
+   "R6_detail": {
+    "line": "",
+    "times": 0
+   },
+   "R8_detail": {
+    "p90": 0.0,
+    "speakers": 0,
+    "any_habit_mean": 0
+   },
+   "C1_detail": {
+    "questions": 0,
+    "answered": 0
+   },
+   "C3_detail": {
+    "farewell": 0.0,
+    "break": 0.0,
+    "cap": 0.0,
+    "nothing_fits": 0.0
+   },
+   "C7_detail": {
+    "p90": 0.0,
+    "three_lines": 0.0,
+    "four_lines": 0.0
+   },
+   "T2_detail": {
+    "by_kind": {},
+    "examples": []
+   },
+   "T3_detail": {
+    "examples": []
+   },
+   "T1_detail": {
+    "examples": []
+   },
+   "K2_detail": {
+    "topics": {}
+   },
+   "D1_detail": {
+    "light": 0.0
+   },
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "speakers": 0,
+    "note": "fewer than two dialects heard"
+   },
+   "U2_detail": {
+    "pairs": 0,
+    "lines": 0
+   },
+   "_counts": {
+    "lines": 0,
+    "conversations": 0,
+    "hours": 100.0,
+    "listeners": 0,
+    "speakers": 0
+   }
+  },
+  "L10": {
+   "R1_detail": {
+    "listeners": 1,
+    "median": 6.883861110036427,
+    "censored": false,
+    "exchange": 110
+   },
+   "R2_detail": {
+    "median": 6.883861110036427,
+    "censored": false
+   },
+   "R6_detail": {
+    "line": "Good.",
+    "times": 61
+   },
+   "R8_detail": {
+    "p90": 0.0,
+    "speakers": 25,
+    "any_habit_mean": 0.0
+   },
+   "C1_detail": {
+    "questions": 411,
+    "answered": 400
+   },
+   "C3_detail": {
+    "farewell": 1.3745704467353952,
+    "break": 0.0,
+    "cap": 0.0,
+    "nothing_fits": 98.62542955326461
+   },
+   "C7_detail": {
+    "p90": 4,
+    "three_lines": 84.19243986254295,
+    "four_lines": 15.66028473244968
+   },
+   "T2_detail": {
+    "by_kind": {},
+    "examples": []
+   },
+   "T3_detail": {
+    "examples": [
+     "rm_wenna_tarford: In the Rain Hall they're saying Osric Ropeworth tried to steal from Wenna Tarford.",
+     "rm_wenna_tarford: Between stalls: Osric Ropeworth tried to steal from Wenna Tarford.",
+     "rm_wenna_tarford: Everyone in the city's heard Osric Ropeworth tried to steal from Wenna Tarford.",
+     "rm_wenna_tarford: A clerk at the City Office told me Osric Ropeworth tried to steal from Wenna Tarford. Clerks know everything."
+    ]
+   },
+   "T1_detail": {
+    "examples": [
+     "They say camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8. Don't quote me.",
+     "Word at the well is that camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8.",
+     "Before we turn in: camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8."
+    ]
+   },
+   "K2_detail": {
+    "topics": {
+     "crime": 59.6,
+     "gossip": 40.4
+    }
+   },
+   "D1_detail": {
+    "light": 0.0,
+    "broad": 0.0,
+    "none": 0.0
+   },
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "light": 100.0,
+    "broad": 100.0,
+    "none": 50.0,
+    "speakers": 25
+   },
+   "U2_detail": {
+    "pairs": 1,
+    "lines": 196
+   },
+   "_counts": {
+    "lines": 6427,
+    "conversations": 2037,
+    "hours": 100.0,
+    "listeners": 1,
+    "speakers": 32
+   }
+  }
+ },
+ "control": {
+  "runs": [
+   "L1",
+   "L10",
+   "L2",
+   "L3",
+   "L4",
+   "L5",
+   "L6",
+   "L7",
+   "L8",
+   "L9"
+  ],
+  "how": "talk_sim --ablate shuffle: lines after the first replaced by lines said at the same side of other conversations on the same topic, by a speaker of the same dialect where possible (§15.5)"
+ },
+ "mode": "fixtures",
+ "freeze_at": null
+}

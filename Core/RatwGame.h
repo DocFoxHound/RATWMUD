@@ -162,6 +162,14 @@ struct Options
     // Cheaper voices (Docs/Design/28-ai-cost.md): the speech router (a directory with router.json; empty: off), and the
     // ledger of who answered each NPC line (empty: none kept).
     std::string voiceData, voiceLog;
+    // The ledger's words too (Docs/Design/84 §15.6, --log-talk-words; tools/server.sh turns it on for DEV worlds): each
+    // NPC line's words, the rule or scene it came from and its moves, as records of kind "words" (tools/ai_cost.py
+    // doesn't count them). Off: the ledger is as it was, with no words.
+    bool logTalkWords = false;
+    // A checkpoint file to start from instead of the world's own save (the conversation simulator's fixtures: doc 84
+    // §15.1). Only with `scratch`: read, never written; no journal is replayed over it and a database world's copied
+    // NPC states are not applied.
+    std::string checkpointFile;
     // The talk library (Docs/Design/62-talk.md: Data/Talk): every written line residents say. Empty: Talk beside
     // voiceData (Data/Voice -> Data/Talk); none at all if there's no voiceData either.
     std::string talkData;
@@ -483,6 +491,43 @@ class Game
     // The same for `a` talking to `b` of the best topic the world has for them now (as the ambient director would).
     // `hearer`: the player it's said for, whose list's prices it names (doc 79, 11), "" for none.
     talk::Query talkTopicQuery(const std::string& a, const std::string& b, const std::string& hearer = {});
+    // The ambient director in its two halves (Docs/Design/84 §15.1, for the conversation simulator): ambientSpeak says
+    // what is due of the exchanges under way and ends those whose two part, fall or are spoken to; ambientStart begins
+    // the director's pick for these listeners (player characters' ids), if fewer than three are under way. ambient(dt),
+    // run every tick, is the two, with a look every five seconds for the players connected (and setTalkListeners').
+    void ambient(double dt);                                  // Picks, voices and speaks NPC-to-NPC exchanges.
+    void ambientSpeak(double dt);
+    void ambientStart(const std::vector<std::string>& listeners);
+    // Listeners nobody plays (the simulator's, placed with World::addPlayer): the director looks for them as for the
+    // connected players, and they hear as those do (heard sets). None on a server.
+    void setTalkListeners(std::vector<std::string> ids) { talkListeners_ = std::move(ids); }
+    // Each line of residents' talk as it is spoken (the ambient director's exchanges and multi-line reactions), and
+    // each exchange as it ends, with why: the simulator's transcripts (doc 84 §15.1). Unset on a server.
+    struct AmbientLine
+    {
+        std::uint64_t conv = 0;
+        int beat = 0;                               // 0 for its first line.
+        std::string who, to, text, cell, hearer, topic, claim, route;
+        talk::LineInfo info;                        // Entry, alternative and layers ("" entry: a model's or authored).
+        std::string subject;                        // The topic's subject (a claim's), if it has one.
+    };
+    struct AmbientEnd
+    {
+        std::uint64_t conv = 0;
+        std::string teller, listener, cell, hearer, topic, route;
+        std::string reason;                         // "done", or why it broke off: "apart", "cell", "gone", "busy", "chat".
+        int spoken = 0, written = 0;                // Lines said, of those written.
+        std::vector<std::string> chain;             // The rules and scenes it was written from, in order.
+    };
+    std::function<void(const AmbientLine&)> onAmbientLine;
+    std::function<void(const AmbientEnd&)> onAmbientEnd;
+    // The checkpoint as it would be saved now, as JSON text (the simulator's fixtures: doc 84 §15.1): no journal, and
+    // the residents' world only (no player characters, no accounts).
+    std::string checkpointText();
+    // What the simulator carries from one fixture snapshot's world to the next: what its listeners have heard, the talk
+    // memory (cooldowns, once), places' recent scenes, who spoke last and the director's pacing (World::ambientPacing).
+    json::Value talkCarry() const;
+    void talkResume(const json::Value& carried);
     // A resident reacting now (doc 62, phase 4: react.fight, react.customer...), to `to` or to no one; false if they're
     // busy or the library has nothing. The game cues these itself (RatwGameTalk.cpp, reactions); tests and the Dungeon
     // Master may too.
@@ -1844,7 +1889,17 @@ class Game
         std::deque<std::pair<int, std::string>> lines;     // Still to say: 0 the teller, 1 the listener.
         double nextAt = 0;
         bool voiced = false, generated = false;
+        // Where each line still to say came from (beside `lines`; empty for a model's or authored lines), the route,
+        // and what has been said: for the transcripts and --log-talk-words (doc 84 §15), never for choosing.
+        std::deque<talk::LineInfo> info;
+        std::vector<std::string> chain;
+        std::string route;
+        int spoken = 0, written = 0;
     };
+    std::vector<std::string> talkListeners_;            // (setTalkListeners.)
+    // A spoken line's words for the voice ledger (Options::logTalkWords): kind "words", never counted as a line said.
+    void voicedWords(const char* of, const std::string& npc, const std::string& to, const std::string& text,
+                     const talk::LineInfo* info);
     std::vector<AmbientTalk> ambient_;
     std::deque<double> ambientCalls_;
     double exchangeLookIn_ = 0;
@@ -1956,7 +2011,6 @@ class Game
     void consolidate();
     void heed(const std::string& npcId, const std::string& subjectId, bool identified, const mind::Reply& reply);
     void talkNext(const std::string& npcId);
-    void ambient(double dt);                                  // Picks, voices and speaks NPC-to-NPC exchanges.
     // Cheaper voices (RatwGameVoice.cpp): the game's own answer to what was said ("" leaves it to a model), a reply
     // spoken and remembered, and a line of the ledger (no words in it: who, what kind, and which route).
     void speakReply(const std::string& npcId, const std::string& subjectId, bool identified, const mind::Reply& reply,

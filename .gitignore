@@ -42,6 +42,11 @@ __pycache__/
 /artifacts/economy/*/*.jsonl
 /artifacts/economy/*/*.log
 /artifacts/economy/export/
+# The conversation simulator (Docs/Design/84 §15; tools/talk_card.py, Tests/talk_sim.cpp): each profile's transcripts
+# (artifacts/talk/runs/<name>/<mode>-<profile>/) and a recorded fixture's checkpoints and track (they hold the DEV
+# world's state) are big and stay local; the scorecards, card.json, listen sheets and fixture.json are committed.
+/artifacts/talk/runs/*/*/
+/artifacts/talk/fixtures/*/*.gz
 # Kept local: the economy's old watch binaries, the sims' big event dumps, the realm's 50 MB editor project.
 /artifacts/economy/bin/
 /artifacts/economy/r2/**/*_events.json

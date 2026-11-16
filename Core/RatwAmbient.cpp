@@ -87,6 +87,12 @@ std::string townWords(const std::string& id)
 }
 } // namespace
 
+std::string World::placeKindOf(const std::string& cellId) const
+{
+    const auto* c = cell(cellId);
+    return c ? placeKind(*c, townOf(cellId) != nullptr) : std::string();
+}
+
 std::string World::townIdOf(const std::string& cellId) const
 {
     if (const auto* t = townOf(cellId))

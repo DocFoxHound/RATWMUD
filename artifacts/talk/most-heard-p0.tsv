@@ -1,0 +1,774 @@
+# The most-heard residents (Docs/Design/84 §14.3, §15; tools/talk_card.py --most-heard): lines each was heard saying over the runs fixtures-L1, fixtures-L2, fixtures-L3, fixtures-L4, fixtures-L5, fixtures-L6, fixtures-L7, fixtures-L8, fixtures-L9, fixtures-L10. Every placed resident, the most heard first: the order mantles are written in within each batch.
+rank	id	name	home	quarter	work	dialect_from	accent	lines_heard	share_pct	profiles
+1	rmx_orm_blackwood	Orm Blackwood	ridgemere	commons	-	ridgemere	broad	1843	4.72	L1,L10,L2
+2	rm_rosamund_tarridge	Rosamund Tarridge	ridgemere	commons	keeping the inn	ridgemere	light	1483	3.80	L1,L10,L2
+3	rm_wenna_tarford	Wenna Tarford	ridgemere	commons	provisioner in the Rag Market	ridgemere	light	1247	3.19	L1,L10,L2
+4	rm_orm_fogmore	Orm Fogmore	ridgemere	sump	at lessons	ridgemere	light	996	2.55	L1,L2
+5	rmx_gerrit_hollis	Gerrit Hollis	ridgemere	commons	-	ridgemere	broad	913	2.34	L1,L10,L2
+6	rmx_maren_hatherley	Maren Hatherley	ridgemere	commons	-	ridgemere	broad	901	2.31	L1,L10,L2
+7	tn_oh_quill_oakdell	Quill Oakdell	larkfield		loom hand at Larkfield Looms	larkfield	light	887	2.27	L2,L4
+8	tn_fh_jory_rimepeak	Jory Rimepeak	coldwater		loom hand at Coldwater Looms	coldwater	light	873	2.23	L2,L3
+9	tn_lf_moss_downridge	Moss Downridge	saltwell		pot hand at The Oasis Inn	saltwell	light	841	2.15	L7
+10	tn_lf_tansy_sunmead	Tansy Sunmead	larkfield		loom hand at Larkfield Looms	larkfield	light	816	2.09	L2,L4
+11	tn_lf_rowan_downridge	Rowan Downridge	southmeadow		keeps the taproom at The Vine and Sickle	southmeadow	light	803	2.06	L2,L6
+12	rm_wynn_rustworth	Wynn Rustworth	ridgemere	commons	butcher in the Market Hall	ridgemere	broad	798	2.04	L1,L10,L2
+13	cty_nell_plummeadow	Nell Plummeadow	fenshore		keeps the taproom at The Heron	fenshore	light	789	2.02	L2,L5
+14	tn_sm_hob_cornwell	Hob Cornwell	coldwater		-	coldwater	light	784	2.01	L2,L3
+15	tn_oh_varg_acorndell	Varg Acorndell	coldwater		loom hand at Coldwater Looms	coldwater	light	752	1.92	L2,L3
+16	rmx_gunnar_farrow	Gunnar Farrow	ridgemere	commons	-	ridgemere	broad	748	1.91	L1,L10,L2
+17	rmx_dagfinn_kettlecote	Dagfinn Kettlecote	ridgemere	commons	-	ridgemere	broad	734	1.88	L1,L10,L2
+18	tn_mb_fell_miremore	Fell Miremore	coldwater		loom hand at Coldwater Looms	ridgemere	light	686	1.76	L2,L3
+19	rm_imogen_ashby	Imogen Ashby	ridgemere	commons	teaching letters	ridgemere	broad	667	1.71	L1,L2
+20	rm_torvald_slagton	Torvald Slagton	ridgemere	sump	helping at The Grey Gull Inn	ridgemere	light	657	1.68	L1,L10,L2
+21	rm_ulf_cinderley	Ulf Cinderley	ridgemere	commons	helping at Oilcloth & Wool	ridgemere	none	646	1.65	L1,L10,L2
+22	rm_winifred_pitchdale	Winifred Pitchdale	ridgemere	commons	butcher at Mutton Lane Butchers	ridgemere	light	621	1.59	L1,L10,L2
+23	tn_cw_fallow_lakewick	Fallow Lakewick	coldwater		wool loom master at Coldwater Looms	coldwater	light	620	1.59	L2,L3
+24	rmx_oda_cotton	Oda Cotton	ridgemere	commons	keeping the Long Store	ridgemere	light	620	1.59	L1,L10,L2
+25	tn_mb_heather_reedwater	Heather Reedwater	larkfield		loom hand at Larkfield Looms	larkfield	light	588	1.50	L2,L4
+26	tn_mb_oriel_marshditch	Oriel Marshditch	saltwell		keeps the taproom at The Oasis Inn	saltwell	light	587	1.50	L7
+27	tn_oh_ludo_ashwood	Ludo Ashwood	fenshore		pot hand at The Heron	fenshore	light	572	1.46	L2,L5
+28	rmx_ivar_netherworth	Ivar Netherworth	ridgemere	commons	-	ridgemere	broad	568	1.45	L1,L10,L2
+29	tn_fh_marl_cragpeak	Marl Cragpeak	coldwater		loom hand at Coldwater Looms	coldwater	light	567	1.45	L2,L3
+30	tn_sm_brisk_plumby	Brisk Plumby	southmeadow		pot hand at The Vine and Sickle	southmeadow	broad	553	1.42	L2,L6
+31	tn_mb_vale_miremore	Vale Miremore	larkfield		loom hand at Larkfield Looms	larkfield	light	534	1.37	L2,L4
+32	rmx_desmond_toft	Desmond Toft	ridgemere	commons	runs The Greatly Yard	ridgemere	light	514	1.32	L1,L10,L2
+33	rm_winifred_cinderworth	Winifred Cinderworth	ridgemere	commons	baker on Market Square	ridgemere	light	508	1.30	L1,L10,L2
+34	rm_edmund_sootdale	Edmund Sootdale	ridgemere	office	at lessons	ridgemere	broad	480	1.23	L1,L2
+35	rm_corra_ropewick	Corra Ropewick	ridgemere	sump	at lessons	ridgemere	light	443	1.13	L1,L2
+36	rmx_montague_kettlewick	Montague Kettlewick	ridgemere	commons	at lessons	ridgemere	light	417	1.07	L1,L2
+37	rm_gwen_pitchdale	Gwen Pitchdale	ridgemere	commons	at lessons	ridgemere	broad	387	0.99	L1,L2
+38	rmx_jasper_brackham	Jasper Brackham	ridgemere	commons	at lessons	ridgemere	light	303	0.78	L1,L2
+39	rmx_greta_thornworth	Greta Thornworth	ridgemere	commons	at lessons	ridgemere	light	301	0.77	L1,L2
+40	rmx_philippa_coldby	Philippa Coldby	ridgemere	commons	clerking for the magistrate	ridgemere	broad	296	0.76	L1,L10,L2
+41	rm_rune_greyby	Rune Greyby	ridgemere	commons	at lessons	ridgemere	light	290	0.74	L1,L2
+42	rmx_delphine_brackwick	Delphine Brackwick	ridgemere	commons	driving for the carters	ridgemere	light	284	0.73	L1,L10,L2
+43	rm_rune_pitchhand	Rune Pitchhand	ridgemere	commons	at lessons	ridgemere	broad	275	0.70	L1,L2
+44	rm_silas_brinegate	Silas Brinegate	ridgemere	commons	at lessons	ridgemere	broad	268	0.69	L1,L2
+45	rm_tobias_saltton	Tobias Saltton	ridgemere	commons	baker at Grist & Crust	southmeadow	none	253	0.65	L1,L10,L2
+46	rmx_bo_gilbey	Bo Gilbey	ridgemere	commons	runs The Greatly Tileworks	ridgemere	broad	251	0.64	L1,L10,L2
+47	rm_josephine_wetmore	Josephine Wetmore	ridgemere	sump	at lessons	ridgemere	light	241	0.62	L1,L2
+48	rmx_dirk_langstead	Dirk Langstead	ridgemere	commons	crying wares in the Rag Market	coldwater	none	192	0.49	L1,L10,L2
+49	rmx_brenna_abbot	Brenna Abbot	ridgemere	commons	herald of the Great Palace	ridgemere	none	172	0.44	L1,L10,L2
+50	rmx_vidar_kettleham	Vidar Kettleham	ridgemere	commons	at lessons	ridgemere	none	171	0.44	L1,L2
+51	rm_leif_fogcot	Leif Fogcot	ridgemere	wharf	helping at The Grey Gull Inn	ridgemere	light	169	0.43	L1,L10,L2
+52	rmx_lionel_lowe	Lionel Lowe	ridgemere	commons	working at The Eastgate Stables	ridgemere	broad	167	0.43	L1,L10,L2
+53	rmx_ebba_netherby	Ebba Netherby	ridgemere	commons	at lessons	ridgemere	light	146	0.37	L1,L2
+54	rm_elspet_ropewick	Elspet Ropewick	ridgemere	sump	at lessons	ridgemere	none	131	0.34	L1,L2
+55	rmx_lothar_abbot	Lothar Abbot	ridgemere	commons	clerking at the Records Office	ridgemere	broad	127	0.33	L1,L10,L2
+56	rm_elspet_sootley	Elspet Sootley	ridgemere	commons	at lessons	ridgemere	broad	124	0.32	L1,L2
+57	tn_lf_wolde_downfield	Wolde Downfield	coldwater		-	coldwater	light	108	0.28	L2,L3
+58	rmx_ilse_netherby	Ilse Netherby	ridgemere	commons	at lessons	ridgemere	light	108	0.28	L1,L2
+59	tn_sm_varg_meadowfield	Varg Meadowfield	southmeadow		-	southmeadow	light	102	0.26	L2,L6
+60	rmx_hanne_ash	Hanne Ash	ridgemere	commons	carrying for the Couriers' Office	ridgemere	broad	101	0.26	L1,L10,L2
+61	tn_mb_aspen_marshholm	Aspen Marshholm	larkfield		linen loom master at Larkfield Looms	larkfield	light	88	0.23	L4
+62	rm_ulla_greymore	Ulla Greymore	ridgemere	sump	washing at the Washhouse	ridgemere	none	84	0.21	L1,L2
+63	rm_ilse_nailridge	Ilse Nailridge	ridgemere	commons	at lessons	ridgemere	light	81	0.21	L1,L2
+64	rm_palle_bilgemarsh	Palle Bilgemarsh	ridgemere	commons	preserver on Market Square	ridgemere	light	70	0.18	L1,L2
+65	rm_isolde_ropehand	Isolde Ropehand	ridgemere	commons	at lessons	ridgemere	light	63	0.16	L1,L2
+66	rm_gorm_tarton	Gorm Tarton	ridgemere	sump	works at The Wharf Tannery	saltwell	light	56	0.14	L1,L2
+67	rm_orla_rainworth	Orla Rainworth	ridgemere	commons	fruit stall on Market Square	frosthollow	none	55	0.14	L2
+68	rm_jorunn_cindermore	Jorunn Cindermore	ridgemere	commons	smith at Eastgate Ironmongers	ridgemere	light	54	0.14	L1,L2
+69	rm_tove_brinegate	Tove Brinegate	ridgemere	commons	baker at The Morning Oven	ridgemere	light	53	0.14	L1,L2
+70	rmx_sybil_pickering	Sybil Pickering	ridgemere	commons	at lessons	ridgemere	light	53	0.14	L1,L2
+71	rm_orla_wickby	Orla Wickby	ridgemere	commons	butcher at Moss & Marrow	ridgemere	none	50	0.13	L1,L2
+72	rm_runa_gullley	Runa Gullley	ridgemere	commons	carpenter in the Market Hall	fenshore	light	48	0.12	L2
+73	rmx_fenwick_mossdale	Fenwick Mossdale	ridgemere	commons	warden of the Market Hall	coldwater	broad	48	0.12	L1,L10,L2
+74	rmx_karin_bilgeford	Karin Bilgeford	ridgemere	sump	helping at Cinder Butchers	coldwater	none	47	0.12	L1,L2
+75	rm_theodora_ropemarsh	Theodora Ropemarsh	ridgemere	commons	butcher in the Rag Market	southmeadow	light	46	0.12	L2
+76	rm_agnes_millford	Agnes Millford	ridgemere	commons	greens stall in the Rag Market	oakhaven	light	45	0.12	L2
+77	rm_mathis_saltton	Mathis Saltton	ridgemere	commons	helping at Grist & Crust	ridgemere	light	45	0.12	L1,L2
+78	rmx_kjell_coalham	Kjell Coalham	ridgemere	sump	carrying from Sump Stairs	ridgemere	light	45	0.12	L2
+79	rm_brand_mudridge	Brand Mudridge	ridgemere	office	keeping the Watch's weapon racks	ridgemere	light	44	0.11	L2
+80	rm_ivo_fogstack	Ivo Fogstack	ridgemere	sump	keeping the Washhouse	ridgemere	broad	44	0.11	L2
+81	rm_finn_wickby	Finn Wickby	ridgemere	commons	helping at Moss & Marrow	larkfield	light	43	0.11	L1,L2
+82	rm_mab_saltgate	Mab Saltgate	ridgemere	sump	at lessons	ridgemere	light	43	0.11	L2
+83	rm_liv_cinderby	Liv Cinderby	ridgemere	sump	helping at The Wharf Tannery	ridgemere	broad	42	0.11	L2
+84	rm_signe_brineworth	Signe Brineworth	ridgemere	sump	washing at the Washhouse	ridgemere	light	41	0.10	L2
+85	rm_oskar_millwell	Oskar Millwell	ridgemere	commons	provisioner at Southway Provisions	frosthollow	none	40	0.10	L2
+86	rm_ottilie_sootdale	Ottilie Sootdale	ridgemere	office	helping at Wetink Lane Scriveners	ridgemere	light	40	0.10	L2
+87	rm_agna_dripgate	Agna Dripgate	ridgemere	sump	at lessons	ridgemere	none	39	0.10	L1,L2
+88	rm_sybil_tardale	Sybil Tardale	ridgemere	sump	works at The Timberland Foundry	ridgemere	light	39	0.10	L1,L2
+89	rm_berit_kelpwick	Berit Kelpwick	ridgemere	commons	builder at the Greatly works	larkfield	none	38	0.10	L2
+90	rmx_egil_blackcombe	Egil Blackcombe	ridgemere	commons	at lessons	ridgemere	none	38	0.10	L1,L2
+91	rmx_rika_gullwell	Rika Gullwell	ridgemere	sump	washing at the Washhouse	ridgemere	light	38	0.10	L1,L2
+92	rm_aldric_rustgate	Aldric Rustgate	ridgemere	sump	at lessons	ridgemere	light	37	0.09	L2
+93	rm_ansel_wickdale	Ansel Wickdale	ridgemere	sump	helping at The Lamp & Wick	ridgemere	light	36	0.09	L2
+94	rm_brenna_greyworth	Brenna Greyworth	ridgemere	sump	helping at Wickham's Chandlery	ridgemere	light	36	0.09	L2
+95	rm_imogen_nailridge	Imogen Nailridge	ridgemere	commons	cartographer at Soundings	ridgemere	light	36	0.09	L1,L2
+96	rm_jorunn_ropewick	Jorunn Ropewick	ridgemere	sump	pawnbroker at The Pawn and Ledger	ridgemere	broad	36	0.09	L2
+97	rmx_aud_kemp	Aud Kemp	ridgemere	commons	-	ridgemere	broad	36	0.09	L1,L10,L2
+98	rmx_desmond_farrow	Desmond Farrow	ridgemere	commons	usher in the Antechamber	ridgemere	none	36	0.09	L1,L2
+99	rm_theodora_bilgeridge	Theodora Bilgeridge	ridgemere	commons	butcher at The Hook and Cleaver	ridgemere	none	35	0.09	L1,L2
+100	rm_gudrun_targate	Gudrun Targate	ridgemere	commons	weaver at Greywool	ridgemere	none	34	0.09	L1,L2
+101	rm_mogens_greycot	Mogens Greycot	ridgemere	sump	works at The Greatly Tileworks	ridgemere	light	34	0.09	L2
+102	rmx_hollis_kendrick	Hollis Kendrick	ridgemere	commons	at lessons	ridgemere	light	34	0.09	L1,L2
+103	rmx_magda_orme	Magda Orme	ridgemere	commons	working at Grayrock Shipwrights	ridgemere	light	34	0.09	L1,L10,L2
+104	rm_ivar_nailham	Ivar Nailham	ridgemere	sump	driving for the carters	ridgemere	light	33	0.08	L2
+105	rm_ivo_dripworth	Ivo Dripworth	ridgemere	sump	helping at Gullgut Fish	ridgemere	none	33	0.08	L2
+106	rm_una_plankton	Una Plankton	ridgemere	sump	cooking for the King's household	larkfield	light	33	0.08	L1,L2
+107	rm_dagfinn_gullham	Dagfinn Gullham	ridgemere	commons	tailor at Needle & Drip	ridgemere	light	32	0.08	L2
+108	rm_soren_kelpcot	Soren Kelpcot	ridgemere	office	clerking at the Records Office	ridgemere	light	32	0.08	L2
+109	rmx_gorm_saltstack	Gorm Saltstack	ridgemere	sump	baker at The Penny Loaf	ridgemere	light	32	0.08	L1,L2
+110	rm_brenna_slaggate	Brenna Slaggate	ridgemere	commons	shipwright at Grayrock Shipwrights	larkfield	none	31	0.08	L2
+111	rm_dunstan_slagley	Dunstan Slagley	ridgemere	sump	works at The Greatly Plasterworks	saltwell	light	31	0.08	L2
+112	rm_egil_targate	Egil Targate	ridgemere	commons	helping at Greywool	ridgemere	none	31	0.08	L1,L2
+113	rm_gerrit_mudhand	Gerrit Mudhand	ridgemere	office	chancellor of the Council	ridgemere	none	31	0.08	L1,L2
+114	rm_liv_slagstack	Liv Slagstack	ridgemere	commons	preserver at The Honey Crock	ridgemere	broad	31	0.08	L2
+115	rm_osric_plankford	Osric Plankford	ridgemere	heights	-	ridgemere	light	31	0.08	L2
+116	rm_rupert_fogton	Rupert Fogton	ridgemere	commons	apothecary at Hollis Physic	ridgemere	broad	31	0.08	L1,L2
+117	rmx_orm_nailhand	Orm Nailhand	ridgemere	sump	helping at Rainford's Store	ridgemere	light	31	0.08	L2
+118	rm_brenna_milldale	Brenna Milldale	ridgemere	sump	unloading ships at the piers	ridgemere	broad	30	0.08	L2
+119	rm_frida_rainhand	Frida Rainhand	ridgemere	sump	working at the Greatly works	ridgemere	broad	30	0.08	L2
+120	rm_jasper_bilgeford	Jasper Bilgeford	ridgemere	office	collecting the Crown's customs	ridgemere	none	30	0.08	L1,L2
+121	rm_kjell_cinderwell	Kjell Cinderwell	ridgemere	commons	helping at Pennock & Sons	ridgemere	light	30	0.08	L2
+122	rm_lionel_dripworth	Lionel Dripworth	ridgemere	sump	-	larkfield	light	30	0.08	L2
+123	rm_rune_wickwell	Rune Wickwell	ridgemere	sump	-	ridgemere	broad	30	0.08	L2
+124	rm_rupert_sootley	Rupert Sootley	ridgemere	commons	helping at The Lamp & Wick	ridgemere	light	30	0.08	L1,L2
+125	rm_signe_sootwell	Signe Sootwell	ridgemere	sump	helping at Greywool	coldwater	light	30	0.08	L2
+126	rm_dagny_slaghand	Dagny Slaghand	ridgemere	commons	fishmonger in the Rag Market	ridgemere	broad	29	0.07	L2
+127	rm_gerrit_sootgate	Gerrit Sootgate	ridgemere	commons	rag-and-bone dealer, Rag Market	ridgemere	none	29	0.07	L2
+128	rm_gwen_brineby	Gwen Brineby	ridgemere	sump	working the cranes	larkfield	light	29	0.07	L1
+129	rm_kjell_cinderley	Kjell Cinderley	ridgemere	commons	preserver at The Apple Loft	ridgemere	none	29	0.07	L2
+130	tn_fh_loam_pinefell	Loam Pinefell	coldwater		keeps the taproom at The Glasswater Inn	coldwater	light	28	0.07	L2
+131	rm_corwin_sootton	Corwin Sootton	ridgemere	sump	unloading ships at the piers	ridgemere	broad	28	0.07	L2
+132	rm_erland_cinderridge	Erland Cinderridge	ridgemere	estate	serving in the hall	ridgemere	light	28	0.07	L1
+133	rm_isolde_brineton	Isolde Brineton	ridgemere	sump	helping at Southway Provisions	ridgemere	light	28	0.07	L2
+134	rm_kjell_wickmore	Kjell Wickmore	ridgemere	sump	helping at The Rain Pot	ridgemere	light	28	0.07	L2
+135	rm_erland_ashworth	Erland Ashworth	ridgemere	office	hearing cases	ridgemere	none	27	0.07	L1,L2
+136	cty_millicent_pitchby	Millicent Pitchby	ridgemere		cowherd at Hillside	ridgemere	broad	26	0.07	L1,L2
+137	rm_ivo_cinderham	Ivo Cinderham	ridgemere	sump	working the cranes	ridgemere	light	26	0.07	L1,L2
+138	rm_kari_bilgehand	Kari Bilgehand	ridgemere	commons	ropemaker at the ropewalk	ridgemere	none	26	0.07	L1,L2
+139	rm_magnus_greycot	Magnus Greycot	ridgemere	sump	washing at the Washhouse	ridgemere	broad	26	0.07	L2
+140	rm_maren_tarhand	Maren Tarhand	ridgemere	sump	printing at The Council Press	ridgemere	light	26	0.07	L2
+141	rmx_frida_netherby	Frida Netherby	ridgemere	commons	runs The Greatly Masons' Yard	ridgemere	light	26	0.07	L1
+142	rmx_halvard_fenworth	Halvard Fenworth	ridgemere	commons	at lessons	ridgemere	broad	26	0.07	L1,L2
+143	rmx_ingrid_kendrick	Ingrid Kendrick	ridgemere	commons	-	ridgemere	broad	26	0.07	L2
+144	rm_bertil_slagley	Bertil Slagley	ridgemere	estate	singing in the cathedral choir	ridgemere	light	25	0.06	L2
+145	rm_ingrid_millton	Ingrid Millton	ridgemere	commons	helping at Staves & Hoops	ridgemere	broad	25	0.06	L2
+146	rm_montague_pitchhand	Montague Pitchhand	ridgemere	commons	helping at The Sugar Loaf	ridgemere	light	25	0.06	L1,L2
+147	rm_rupert_cindergate	Rupert Cindergate	ridgemere	sump	lighting the lamps at dusk	coldwater	none	25	0.06	L2
+148	rmx_disa_bilgemarsh	Disa Bilgemarsh	ridgemere	sump	-	ridgemere	broad	25	0.06	L2
+149	rmx_josephine_wickwick	Josephine Wickwick	ridgemere	works	helping at Needle & Drip	coldwater	light	25	0.06	L2
+150	rmx_petra_ashgate	Petra Ashgate	ridgemere	sump	washing at the Washhouse	ridgemere	light	25	0.06	L2
+151	rmx_sigrun_wickham	Sigrun Wickham	ridgemere	sump	-	ridgemere	broad	25	0.06	L1,L2
+152	rm_fenwick_millmarsh	Fenwick Millmarsh	ridgemere	commons	helping at Commons Sundries	coldwater	none	24	0.06	L2
+153	rm_gerrit_ropewick	Gerrit Ropewick	ridgemere	sump	works at The Greatly Masons' Yard	ridgemere	light	24	0.06	L2
+154	rm_gwen_sootmore	Gwen Sootmore	ridgemere	sump	helping at The Cedar Phial	ridgemere	broad	24	0.06	L2
+155	rm_halvard_ashley	Halvard Ashley	ridgemere	commons	apothecary at The Mortar and Pestle	ridgemere	light	24	0.06	L2
+156	rm_lars_wickwell	Lars Wickwell	ridgemere	sump	helping at Mend & Make Do	ridgemere	light	24	0.06	L2
+157	rm_dagny_rustcot	Dagny Rustcot	ridgemere	office	harbourmaster of the Wharf Office	coldwater	light	23	0.06	L2
+158	rm_desmond_bilgeridge	Desmond Bilgeridge	ridgemere	commons	at lessons	ridgemere	none	23	0.06	L1,L2
+159	rm_greta_gullton	Greta Gullton	ridgemere	sump	working the cranes	larkfield	none	23	0.06	L2
+160	rm_gudrun_wickby	Gudrun Wickby	ridgemere	commons	at lessons	ridgemere	light	23	0.06	L1
+161	rm_ingrid_ashwell	Ingrid Ashwell	ridgemere	sump	printing at The Council Press	ridgemere	light	23	0.06	L2
+162	rm_mab_coalridge	Mab Coalridge	ridgemere	works	serving in the King's household	ridgemere	broad	23	0.06	L2
+163	rmx_ansel_kelpford	Ansel Kelpford	ridgemere	sump	helping at Needle & Drip	ridgemere	light	23	0.06	L2
+164	rmx_una_brineridge	Una Brineridge	ridgemere	sump	helping at Greywool	ridgemere	none	23	0.06	L2
+165	rmx_winifred_nailton	Winifred Nailton	ridgemere	sump	helping at Wickham's Chandlery	ridgemere	broad	23	0.06	L2
+166	rm_berit_coalworth	Berit Coalworth	ridgemere	estate	sexton of the cathedral	ridgemere	light	22	0.06	L2
+167	rm_gudrun_rustwick	Gudrun Rustwick	ridgemere	commons	runs The Greatly Plasterworks	saltwell	light	22	0.06	L2
+168	rm_mathis_plankham	Mathis Plankham	ridgemere	sump	carrying from Sump Stairs	ridgemere	light	22	0.06	L2
+169	rm_osric_ropeworth	Osric Ropeworth	ridgemere	commons	provisioner at Vane & Daughters	frosthollow	none	22	0.06	L2
+170	rm_sten_ropeford	Sten Ropeford	ridgemere	commons	helping at Rainford's Store	ridgemere	light	22	0.06	L2
+171	rm_wynn_sootworth	Wynn Sootworth	ridgemere	works	smith at Timberland's Nailers' Forge	ridgemere	light	22	0.06	L2
+172	rm_wystan_mudcot	Wystan Mudcot	ridgemere	heights	-	ridgemere	light	22	0.06	L1,L2
+173	rmx_cedric_rook	Cedric Rook	ridgemere	office	royal secretary	ridgemere	light	22	0.06	L1,L2
+174	rmx_delphine_birch	Delphine Birch	ridgemere	commons	-	coldwater	light	22	0.06	L2
+175	rmx_delphine_redfern	Delphine Redfern	ridgemere	commons	helping at Clearwater Glass	ridgemere	light	22	0.06	L1,L10,L2
+176	rmx_dorcas_brineley	Dorcas Brineley	ridgemere	sump	crying wares in the Rag Market	ridgemere	light	22	0.06	L2
+177	cty_mogens_mudstack	Mogens Mudstack	ridgemere		cuts wood at the Rainwood coppice	ridgemere	none	21	0.05	L1,L2
+178	rm_edric_millton	Edric Millton	ridgemere	commons	cooper at Staves & Hoops	ridgemere	light	21	0.05	L2
+179	rm_finn_saltwell	Finn Saltwell	ridgemere	sump	unloading ships at the piers	ridgemere	broad	21	0.05	L2
+180	rm_hilde_rainmore	Hilde Rainmore	ridgemere	commons	at lessons	ridgemere	light	21	0.05	L1,L2
+181	rm_piet_slagcot	Piet Slagcot	ridgemere	commons	baker in the Market Hall	ridgemere	broad	21	0.05	L2
+182	rmx_edda_muddale	Edda Muddale	ridgemere	sump	-	ridgemere	broad	21	0.05	L2
+183	rmx_harriet_platt	Harriet Platt	ridgemere	office	clerking at the Records Office	ridgemere	light	21	0.05	L2
+184	cty_beatha_slagby	Beatha Slagby	ridgemere		herds the cattle at Rainrun	ridgemere	light	20	0.05	L1,L2
+185	rm_corra_coalcot	Corra Coalcot	ridgemere	works	runs The Fish Hall	ridgemere	none	20	0.05	L2
+186	rm_edda_bilgeridge	Edda Bilgeridge	ridgemere	commons	helping at The Hook and Cleaver	coldwater	none	20	0.05	L2
+187	rm_gwen_pitchcot	Gwen Pitchcot	ridgemere	commons	at lessons	ridgemere	light	20	0.05	L1,L2
+188	rm_soren_coaldale	Soren Coaldale	ridgemere	sump	portering in Market Square	ridgemere	light	20	0.05	L1,L2
+189	rm_vidar_gullwick	Vidar Gullwick	ridgemere	sump	works at The Greatly Yard	coldwater	none	20	0.05	L2
+190	rm_vigdis_pitchmarsh	Vigdis Pitchmarsh	ridgemere	sump	works at The Greatly Colour Works	ridgemere	broad	20	0.05	L2
+191	rmx_lionel_platt	Lionel Platt	ridgemere	office	runs The Timberland Sawmill	ridgemere	light	20	0.05	L2
+192	rm_desmond_cindermore	Desmond Cindermore	ridgemere	commons	-	ridgemere	broad	19	0.05	L2
+193	rm_gunnar_mudstack	Gunnar Mudstack	ridgemere	sump	works at The Greatly Masons' Yard	larkfield	none	19	0.05	L2
+194	rm_maren_brineford	Maren Brineford	ridgemere	wharf	at lessons	ridgemere	light	19	0.05	L2
+195	rm_rosamund_slagstack	Rosamund Slagstack	ridgemere	commons	at lessons	ridgemere	none	19	0.05	L2
+196	rm_rupert_pitchford	Rupert Pitchford	ridgemere	commons	apothecary on Market Square	ridgemere	light	19	0.05	L1,L2
+197	rm_theodora_driphand	Theodora Driphand	ridgemere	office	keeping order in court	ridgemere	light	19	0.05	L2
+198	rm_una_pitchcot	Una Pitchcot	ridgemere	commons	baker at The Eastgate Bakehouse	ridgemere	light	19	0.05	L1,L2
+199	rm_yrsa_nailridge	Yrsa Nailridge	ridgemere	commons	helping at Soundings	ridgemere	light	19	0.05	L1,L10,L2
+200	rmx_corra_pennock	Corra Pennock	ridgemere	commons	runs The Greatly Lime Kilns	coldwater	broad	19	0.05	L1,L2
+201	rmx_edmund_sootford	Edmund Sootford	ridgemere	sump	-	fenshore	broad	19	0.05	L2
+202	tn_sm_gorse_harvestgarth	Gorse Harvestgarth	larkfield		paper vat hand at Larkfield Print House	larkfield	light	18	0.05	L2
+203	rm_cressida_tarham	Cressida Tarham	ridgemere	commons	at lessons	ridgemere	light	18	0.05	L2
+204	rm_delphine_saltwick	Delphine Saltwick	ridgemere	commons	vintner at The Fell Wine Vaults	ridgemere	light	18	0.05	L1,L2
+205	rm_gerrit_nailford	Gerrit Nailford	ridgemere	commons	barber at The Barber's Pole	ridgemere	light	18	0.05	L2
+206	rm_lotte_bilgeton	Lotte Bilgeton	ridgemere	sump	helping at The Wharf Tannery	ridgemere	none	18	0.05	L2
+207	rm_moll_dripdale	Moll Dripdale	ridgemere	sump	helping at The Wharf Tannery	ridgemere	none	18	0.05	L2
+208	rm_runa_nailton	Runa Nailton	ridgemere	sump	serving in the King's household	ridgemere	light	18	0.05	L2
+209	rm_thyra_wetmarsh	Thyra Wetmarsh	ridgemere	works	portering in Market Square	southmeadow	none	18	0.05	L1,L2
+210	rmx_oda_cinderby	Oda Cinderby	ridgemere	estate	at lessons	ridgemere	broad	18	0.05	L1
+211	rm_aud_dripgate	Aud Dripgate	ridgemere	sump	helping at Sump Sundries	fenshore	light	17	0.04	L2
+212	rm_florence_millmarsh	Florence Millmarsh	ridgemere	commons	-	ridgemere	light	17	0.04	L2
+213	rm_jorunn_saltdale	Jorunn Saltdale	ridgemere	sump	helping at The Penny Loaf	frosthollow	none	17	0.04	L2
+214	rm_mab_pitchcot	Mab Pitchcot	ridgemere	commons	keeping the New Store	ridgemere	light	17	0.04	L1,L2
+215	rm_mogens_dripley	Mogens Dripley	ridgemere	commons	greens stall on Market Square	ridgemere	light	17	0.04	L2
+216	rm_rosamund_coalford	Rosamund Coalford	ridgemere	sump	runs The North Wharf Smokehouse	ridgemere	broad	17	0.04	L1,L2
+217	rm_rune_fogworth	Rune Fogworth	ridgemere	commons	printer at The Council Press	ridgemere	light	17	0.04	L1
+218	rmx_hollis_shaw	Hollis Shaw	ridgemere	commons	copying at the Records Office	ridgemere	light	17	0.04	L1,L2
+219	rmx_ivo_wainwright	Ivo Wainwright	ridgemere	works	butcher on Market Square	ridgemere	none	17	0.04	L2
+220	rmx_magnus_millley	Magnus Millley	ridgemere	sump	working at Grayrock Shipwrights	ridgemere	light	17	0.04	L2
+221	rmx_ottilie_dripdale	Ottilie Dripdale	ridgemere	sump	helping at Commons Sundries	ridgemere	light	17	0.04	L2
+222	rm_bo_rainmarsh	Bo Rainmarsh	ridgemere	commons	baker at The Wet Loaf	fenshore	light	16	0.04	L2
+223	rm_frida_kelpford	Frida Kelpford	ridgemere	sump	helping at The Rain Pot	ridgemere	broad	16	0.04	L2
+224	rm_gerrit_tarmore	Gerrit Tarmore	ridgemere	sump	helping at Needle & Drip	ridgemere	none	16	0.04	L2
+225	rm_godfrey_dripmore	Godfrey Dripmore	ridgemere	commons	potter at The Rain Pot	ridgemere	light	16	0.04	L2
+226	rm_liv_pitchhand	Liv Pitchhand	ridgemere	commons	baker at The Sugar Loaf	ridgemere	light	16	0.04	L2
+227	rm_ottilie_nailmarsh	Ottilie Nailmarsh	ridgemere	sump	carrying from Sump Stairs	ridgemere	light	16	0.04	L2
+228	rm_wynn_tarhand	Wynn Tarhand	ridgemere	sump	working at the Greatly works	coldwater	none	16	0.04	L2
+229	rmx_bartholomew_sootmore	Bartholomew Sootmore	ridgemere	sump	washing at the Washhouse	ridgemere	broad	16	0.04	L2
+230	rmx_desmond_rook	Desmond Rook	ridgemere	office	clerking in the Administrative Wing	ridgemere	light	16	0.04	L2
+231	rmx_magnus_saltford	Magnus Saltford	ridgemere	sump	at lessons	ridgemere	none	16	0.04	L1,L2
+232	rmx_orm_carlisle	Orm Carlisle	ridgemere	heights	keeping the Carters' Yard	ridgemere	none	16	0.04	L1
+233	rmx_philippa_rainford	Philippa Rainford	ridgemere	commons	at lessons	ridgemere	light	16	0.04	L2
+234	rmx_sigrun_mudmore	Sigrun Mudmore	ridgemere	sump	helping at The Round and Rind	ridgemere	light	16	0.04	L2
+235	rm_eleanor_wetby	Eleanor Wetby	ridgemere	sump	teaching at the abbey school	ridgemere	light	15	0.04	L1,L10,L2
+236	rm_frida_wickwell	Frida Wickwell	ridgemere	sump	tinker at Mend & Make Do	larkfield	light	15	0.04	L2
+237	rm_hanne_sootham	Hanne Sootham	ridgemere	sump	unloading ships at the piers	ridgemere	light	15	0.04	L2
+238	rm_hester_fogstack	Hester Fogstack	ridgemere	sump	provisioner at Harbour Provisions	ridgemere	light	15	0.04	L2
+239	rm_ivo_slagby	Ivo Slagby	ridgemere	works	smith at Timberland's Anchor Forge	coldwater	broad	15	0.04	L2
+240	rm_lavinia_brinemarsh	Lavinia Brinemarsh	ridgemere	sump	carrying from Sump Stairs	ridgemere	light	15	0.04	L2
+241	rm_oda_kelpridge	Oda Kelpridge	ridgemere	sump	helping at Vane & Daughters	coldwater	none	15	0.04	L2
+242	rm_theodora_fogdale	Theodora Fogdale	ridgemere	sump	washing at the Washhouse	ridgemere	light	15	0.04	L1
+243	rm_thyra_ashley	Thyra Ashley	ridgemere	commons	-	southmeadow	light	15	0.04	L1,L2
+244	rmx_bettany_bilgehand	Bettany Bilgehand	ridgemere	sump	at lessons	ridgemere	light	15	0.04	L2
+245	rmx_florence_gullworth	Florence Gullworth	ridgemere	sump	-	ridgemere	broad	15	0.04	L2
+246	rmx_roald_greyham	Roald Greyham	ridgemere	sump	working at the Bathhouse	ridgemere	light	15	0.04	L2
+247	tn_fh_clover_snowhollow	Clover Snowhollow	larkfield		paper vat hand at Larkfield Print House	larkfield	broad	14	0.04	L2
+248	rm_clemence_rustham	Clemence Rustham	ridgemere	commons	cooking for Northgate	ridgemere	broad	14	0.04	L2
+249	rm_edda_ropeton	Edda Ropeton	ridgemere	commons	provisioner at The Round and Rind	ridgemere	light	14	0.04	L2
+250	rm_ingrid_saltstack	Ingrid Saltstack	ridgemere	commons	preserver at the Fell Preserving House	larkfield	light	14	0.04	L2
+251	rm_josephine_brineford	Josephine Brineford	ridgemere	wharf	at lessons	ridgemere	light	14	0.04	L2
+252	rm_lotte_ashford	Lotte Ashford	ridgemere	commons	helping at Cedar Row Joiners	coldwater	light	14	0.04	L2
+253	rm_mathis_slagwell	Mathis Slagwell	ridgemere	sump	carrying from Sump Stairs	ridgemere	light	14	0.04	L2
+254	rm_osric_wetford	Osric Wetford	ridgemere	sump	helping at The Grey Goose	ridgemere	light	14	0.04	L2
+255	rm_runa_ashridge	Runa Ashridge	ridgemere	sump	printing at The Council Press	ridgemere	light	14	0.04	L2
+256	rmx_dagfinn_wainwright	Dagfinn Wainwright	ridgemere	works	working the cranes	ridgemere	light	14	0.04	L2
+257	rmx_grete_dunn	Grete Dunn	ridgemere	commons	clerking at the Wharf Office	ridgemere	light	14	0.04	L2
+258	rmx_mab_fogham	Mab Fogham	ridgemere	sump	working at Grayrock Shipwrights	ridgemere	light	14	0.04	L2
+259	rmx_tobias_rainley	Tobias Rainley	ridgemere	sump	helping at The Penny Loaf	ridgemere	light	14	0.04	L2
+260	rmx_ulla_brindle	Ulla Brindle	ridgemere	commons	preserver in the Market Hall	coldwater	light	14	0.04	L1
+261	rmx_una_thackeray	Una Thackeray	ridgemere	works	-	ridgemere	broad	14	0.04	L2
+262	cty_jasper_greymore	Jasper Greymore	fenshore		deckhand at Rivermouth	fenshore	none	13	0.03	L2
+263	rm_agnes_wetley	Agnes Wetley	ridgemere	sump	priest at the cathedral	ridgemere	broad	13	0.03	L2
+264	rm_brand_cindermore	Brand Cindermore	ridgemere	commons	helping at Sump Sundries	larkfield	light	13	0.03	L1,L2
+265	rm_dorcas_rainford	Dorcas Rainford	ridgemere	sump	helping at The Lamp & Wick	ridgemere	light	13	0.03	L2
+266	rm_edric_cindermarsh	Edric Cindermarsh	ridgemere	works	works at The Timberland Ironworks	ridgemere	light	13	0.03	L2
+267	rm_gerrit_gullham	Gerrit Gullham	ridgemere	commons	helping at Needle & Drip	larkfield	broad	13	0.03	L2
+268	rm_percival_rustford	Percival Rustford	ridgemere	sump	serving in the King's household	ridgemere	broad	13	0.03	L2
+269	rm_runa_coalhand	Runa Coalhand	ridgemere	commons	runs The Timberland Foundry	coldwater	light	13	0.03	L2
+270	rm_signe_dripworth	Signe Dripworth	ridgemere	sump	-	fenshore	light	13	0.03	L2
+271	rm_wynn_fogworth	Wynn Fogworth	ridgemere	commons	printing at The Council Press	oakhaven	none	13	0.03	L2
+272	rmx_bertil_slagwick	Bertil Slagwick	ridgemere	office	-	fenshore	none	13	0.03	L1,L2
+273	rmx_dirk_mallory	Dirk Mallory	ridgemere	commons	at lessons	ridgemere	light	13	0.03	L1,L2
+274	rmx_knut_sootley	Knut Sootley	ridgemere	sump	unloading ships at the piers	ridgemere	light	13	0.03	L2
+275	rmx_magnus_wetherell	Magnus Wetherell	ridgemere	works	helping at The Lamp & Wick	ridgemere	none	13	0.03	L2
+276	rmx_olaf_stoneley	Olaf Stoneley	ridgemere	commons	at lessons	ridgemere	light	13	0.03	L1
+277	cty_lorn_hedgeton	Lorn Hedgeton	coldwater		raises sheep at Greyteeth	coldwater	light	12	0.03	L2
+278	rm_cressida_dripmore	Cressida Dripmore	ridgemere	commons	helping at The Rain Pot	ridgemere	light	12	0.03	L2
+279	rm_cressida_millstack	Cressida Millstack	ridgemere	commons	perfumer at The Cedar Phial	ridgemere	light	12	0.03	L1,L2
+280	rm_emmerich_sootley	Emmerich Sootley	ridgemere	commons	chandler at The Lamp & Wick	coldwater	none	12	0.03	L2
+281	rm_gunnar_wetcot	Gunnar Wetcot	ridgemere	works	works at The Ropewalk	coldwater	light	12	0.03	L2
+282	rm_hollis_greydale	Hollis Greydale	ridgemere	sump	helping at Rainford's Store	ridgemere	light	12	0.03	L2
+283	rm_hollis_gullmore	Hollis Gullmore	ridgemere	commons	keeping the taproom	ridgemere	broad	12	0.03	L2
+284	rm_lionel_ropestack	Lionel Ropestack	ridgemere	sump	abbot of the cathedral	ridgemere	light	12	0.03	L2
+285	rm_magda_rainmarsh	Magda Rainmarsh	ridgemere	commons	at lessons	ridgemere	light	12	0.03	L2
+286	rm_ragnar_roperidge	Ragnar Roperidge	ridgemere	commons	runs The Eastgate Stables	ridgemere	none	12	0.03	L2
+287	rm_silas_wickford	Silas Wickford	ridgemere	heights	-	ridgemere	light	12	0.03	L1,L2
+288	rm_vidar_ashhand	Vidar Ashhand	ridgemere	estate	serving in the hall	ridgemere	broad	12	0.03	L2
+289	rm_vigdis_rainmore	Vigdis Rainmore	ridgemere	commons	jeweler at Silver & Rain	larkfield	none	12	0.03	L1,L2
+290	rmx_corra_coldridge	Corra Coldridge	ridgemere	commons	usher in the Antechamber	ridgemere	light	12	0.03	L1,L2
+291	rmx_corra_gullford	Corra Gullford	ridgemere	sump	at lessons	ridgemere	none	12	0.03	L2
+292	tn_mb_kite_bogditch	Kite Bogditch	saltwell		works the salt at Saltpan	saltwell	light	12	0.03	L2
+293	cty_ada_coalstack	Ada Coalstack	ridgemere		keeps bees at Heatherside	southmeadow	light	11	0.03	L1,L10,L2
+294	cty_dray_merewell	Dray Merewell	ridgemere		deckhand at Soundside	coldwater	none	11	0.03	L1,L2
+295	rm_frida_brineford	Frida Brineford	ridgemere	wharf	provisioner at The Bung Hole	ridgemere	light	11	0.03	L2
+296	rm_gwen_fogstack	Gwen Fogstack	ridgemere	sump	minding the shop door	ridgemere	broad	11	0.03	L2
+297	rm_ilse_cindercot	Ilse Cindercot	ridgemere	office	clerking at the City Office	ridgemere	light	11	0.03	L2
+298	rm_magda_rustham	Magda Rustham	ridgemere	commons	minding the shop door	ridgemere	broad	11	0.03	L2
+299	rm_mogens_ashley	Mogens Ashley	ridgemere	commons	helping at The Mortar and Pestle	ridgemere	light	11	0.03	L1,L2
+300	rm_njal_ashford	Njal Ashford	ridgemere	commons	carpenter at Cedar Row Joiners	ridgemere	light	11	0.03	L2
+301	rm_theodora_wickley	Theodora Wickley	ridgemere	commons	nursing for the abbey	ridgemere	none	11	0.03	L2
+302	rm_wenna_naildale	Wenna Naildale	ridgemere	wharf	wheelwright at Cinder Wheelwrights	larkfield	light	11	0.03	L2
+303	tn_lf_rusk_downfield	Rusk Downfield	coldwater		raises sheep at Larkdowns	coldwater	light	10	0.03	L2
+304	rm_dagfinn_ropeby	Dagfinn Ropeby	ridgemere	wharf	works at The Greatly Lime Kilns	ridgemere	light	10	0.03	L1,L2
+305	rm_elspet_saltmarsh	Elspet Saltmarsh	ridgemere	commons	provisioner at Bridge Stores	coldwater	none	10	0.03	L2
+306	rm_florence_ropeworth	Florence Ropeworth	ridgemere	commons	helping at Vane & Daughters	ridgemere	light	10	0.03	L2
+307	rm_gorm_slagworth	Gorm Slagworth	ridgemere	sump	unloading ships at the piers	coldwater	light	10	0.03	L2
+308	rm_jorunn_tarham	Jorunn Tarham	ridgemere	commons	baker in the Rag Market	ridgemere	light	10	0.03	L2
+309	rm_oda_greywell	Oda Greywell	ridgemere	sump	carrying from Sump Stairs	ridgemere	light	10	0.03	L2
+310	rm_tobias_kelpton	Tobias Kelpton	ridgemere	sump	working at The North Wharf Smokehouse	ridgemere	broad	10	0.03	L1,L2
+311	rm_ulla_rustham	Ulla Rustham	ridgemere	commons	runs The Greatly Colour Works	ridgemere	none	10	0.03	L2
+312	rmx_disa_slagwick	Disa Slagwick	ridgemere	office	clerking in the Administrative Wing	coldwater	none	10	0.03	L2
+313	rmx_gorm_halford	Gorm Halford	ridgemere	commons	runs The Cinder Glassworks	ridgemere	none	10	0.03	L2
+314	rmx_jarl_greywell	Jarl Greywell	ridgemere	sump	helping at Mutton Lane Butchers	coldwater	light	10	0.03	L2
+315	rmx_jorunn_wetcombe	Jorunn Wetcombe	ridgemere	commons	at lessons	ridgemere	light	10	0.03	L1
+316	rmx_rika_tarnham	Rika Tarnham	ridgemere	commons	at lessons	ridgemere	light	10	0.03	L2
+317	tn_cw_harrow_reedford	Harrow Reedford	coldwater		cook at The Glasswater Inn	coldwater	light	9	0.02	L2
+318	tn_fh_stone_pinefell	Stone Pinefell	coldwater		still hand at Coldwater Still	coldwater	light	9	0.02	L2
+319	rm_edmund_saltham	Edmund Saltham	ridgemere	estate	keeping the chambers	southmeadow	broad	9	0.02	L1,L2
+320	rm_gorm_plankgate	Gorm Plankgate	ridgemere	commons	infirmarian of the abbey	saltwell	light	9	0.02	L2
+321	rm_gudrun_pitchridge	Gudrun Pitchridge	ridgemere	works	works at The Timberland Ironworks	ridgemere	broad	9	0.02	L2
+322	rm_oskar_gullworth	Oskar Gullworth	ridgemere	office	Chancellor of Ridgemere	ridgemere	broad	9	0.02	L2
+323	rmx_egil_dunn	Egil Dunn	ridgemere	commons	-	ridgemere	light	9	0.02	L2
+324	rmx_millicent_wickwick	Millicent Wickwick	ridgemere	works	driving for the carters	ridgemere	none	9	0.02	L2
+325	rmx_tage_slagworth	Tage Slagworth	ridgemere	sump	working at The Fell Distillery	ridgemere	broad	9	0.02	L2
+326	tn_mb_ridge_eelbank	Ridge Eelbank	saltwell		salt raker at Saltpan	saltwell	light	9	0.02	L2
+327	cty_orrin_reedmere	Orrin Reedmere	coldwater		swineherd at Alder	coldwater	light	8	0.02	L2
+328	cty_isolde_gullwick	Isolde Gullwick	ridgemere		herds the cattle at Hillside	ridgemere	light	8	0.02	L1,L2
+329	cty_pell_barleymead	Pell Barleymead	ridgemere		churns the butter at Southgate	ridgemere	light	8	0.02	L2
+330	cty_rowan_hazelfield	Rowan Hazelfield	ridgemere		keeps bees at the Alder Garth	ridgemere	light	8	0.02	L2
+331	rm_arne_ashton	Arne Ashton	ridgemere	sump	working at The Timberland Charcoal Store	ridgemere	light	8	0.02	L2
+332	rm_dagny_pitchton	Dagny Pitchton	ridgemere	estate	working at The Fell Distillery	fenshore	none	8	0.02	L2
+333	rm_erland_fogley	Erland Fogley	ridgemere	estate	helping at The Lamp & Wick	ridgemere	broad	8	0.02	L2
+334	rm_finn_slagmarsh	Finn Slagmarsh	ridgemere	works	works at The Timberland Ironworks	saltwell	none	8	0.02	L2
+335	rm_gudrun_ropeford	Gudrun Ropeford	ridgemere	commons	provisioner at Rainford's Store	fenshore	light	8	0.02	L2
+336	rm_gwen_cinderdale	Gwen Cinderdale	ridgemere	office	clerking at the City Office	ridgemere	light	8	0.02	L2
+337	rm_karin_ashgate	Karin Ashgate	ridgemere	commons	keeping the taproom	ridgemere	light	8	0.02	L2
+338	rm_oskar_kelpwell	Oskar Kelpwell	ridgemere	wharf	helping at Wickham's Chandlery	coldwater	none	8	0.02	L2
+339	rm_philippa_dripworth	Philippa Dripworth	ridgemere	sump	fishmonger at Gullgut Fish	ridgemere	light	8	0.02	L2
+340	rm_piet_wickridge	Piet Wickridge	ridgemere	sump	carrying from Sump Stairs	ridgemere	light	8	0.02	L2
+341	rmx_bertil_saltcot	Bertil Saltcot	ridgemere	commons	-	ridgemere	light	8	0.02	L2
+342	rmx_josephine_fenwick	Josephine Fenwick	ridgemere	commons	working at the Bathhouse	coldwater	none	8	0.02	L1,L2
+343	rmx_rupert_greyley	Rupert Greyley	ridgemere	sump	crying wares in the Rag Market	ridgemere	none	8	0.02	L2
+344	rmx_tobias_dunley	Tobias Dunley	ridgemere	commons	at lessons	ridgemere	broad	8	0.02	L2
+345	cty_brock_marshholm	Brock Marshholm	coldwater		shepherd at Larkdowns	mirebridge	broad	7	0.02	L2
+346	cty_ivo_sootridge	Ivo Sootridge	fenshore		skipper at Fen Shore	fenshore	light	7	0.02	L2
+347	cty_jory_corncroft	Jory Corncroft	fenshore		carter at Fenshore	fenshore	broad	7	0.02	L2
+348	cty_maren_coalwick	Maren Coalwick	fenshore		warrener at Dune	fenshore	light	7	0.02	L2
+349	cty_brisk_lakemere	Brisk Lakemere	larkfield		swineherd at Southwood	southmeadow	none	7	0.02	L2
+350	cty_fallow_plumfield	Fallow Plumfield	larkfield		tends the orchard at Plumtree	larkfield	light	7	0.02	L2
+351	tn_lf_rowan_chalkley	Rowan Chalkley	larkfield		shop hand at Larkfield Bakehouse	larkfield	none	7	0.02	L2
+352	cty_hob_appleby	Hob Appleby	ridgemere		hive hand at the Alder Garth	ridgemere	light	7	0.02	L2
+353	cty_pike_acornshaw	Pike Acornshaw	ridgemere		hive hand at Heatherside	coldwater	light	7	0.02	L2
+354	rm_dagny_pitchley	Dagny Pitchley	ridgemere	sump	scribe of the abbey	ridgemere	light	7	0.02	L2
+355	rm_eleanor_wickhand	Eleanor Wickhand	ridgemere	sump	works at The Timberland Sawmill	ridgemere	light	7	0.02	L2
+356	rm_erland_millstack	Erland Millstack	ridgemere	commons	helping at The Cedar Phial	ridgemere	none	7	0.02	L2
+357	rm_florence_millhand	Florence Millhand	ridgemere	sump	unloading ships at the piers	ridgemere	light	7	0.02	L1
+358	rm_ilse_saltley	Ilse Saltley	ridgemere	commons	distiller at the Fell Distillery	fenshore	light	7	0.02	L2
+359	rm_josephine_dripgate	Josephine Dripgate	ridgemere	sump	shopkeeper at Sump Sundries	ridgemere	broad	7	0.02	L2
+360	rm_karin_sootdale	Karin Sootdale	ridgemere	office	scribe at Wetink Lane Scriveners	ridgemere	light	7	0.02	L2
+361	rm_nessa_fogton	Nessa Fogton	ridgemere	commons	helping at Hollis Physic	ridgemere	none	7	0.02	L2
+362	rm_osric_slagstack	Osric Slagstack	ridgemere	commons	helping at The Cough Jar	coldwater	none	7	0.02	L2
+363	rm_ragnar_brineford	Ragnar Brineford	ridgemere	wharf	helping at The Bung Hole	ridgemere	broad	7	0.02	L2
+364	rm_sten_kelpwell	Sten Kelpwell	ridgemere	wharf	chandler at Wickham's Chandlery	oakhaven	none	7	0.02	L2
+365	rm_yrsa_nailwell	Yrsa Nailwell	ridgemere	sump	washing at the Washhouse	ridgemere	light	7	0.02	L2
+366	rmx_ivo_pitchridge	Ivo Pitchridge	ridgemere	sump	crying wares in the Rag Market	ridgemere	none	7	0.02	L2
+367	rmx_soren_cindermarsh	Soren Cindermarsh	ridgemere	sump	working at The Fell Press House	coldwater	light	7	0.02	L2
+368	rmx_una_toft	Una Toft	ridgemere	commons	runs The Timberland Ironworks	ridgemere	light	7	0.02	L2
+369	cty_briar_cornby	Briar Cornby	southmeadow		cellar hand at Southmeadow	southmeadow	light	7	0.02	L2
+370	cty_jessamy_greyford	Jessamy Greyford	coldwater		shepherd at Greyteeth	coldwater	light	6	0.02	L2
+371	cty_vigdis_bilgedale	Vigdis Bilgedale	coldwater		swineherd at Alder	ridgemere	light	6	0.02	L2
+372	cty_sloe_mistwick	Sloe Mistwick	fenshore		skipper at Rivermouth	fenshore	light	6	0.02	L2
+373	cty_stone_marshmore	Stone Marshmore	fenshore		deckhand at Fen Shore	fenshore	none	6	0.02	L2
+374	tn_mb_tamsin_eelbank	Tamsin Eelbank	fenshore		-	fenshore	broad	6	0.02	L2
+375	cty_iris_fernhaven	Iris Fernhaven	frosthollow		collier at the Upper hearths	larkfield	none	6	0.02	L2
+376	cty_ambrose_gullton	Ambrose Gullton	larkfield		cuts wood at the Greenholt hearths	larkfield	light	6	0.02	L2
+377	tn_cw_fern_mistshore	Fern Mistshore	larkfield		paper vat hand at Larkfield Print House	larkfield	light	6	0.02	L2
+378	tn_sm_dun_harvestley	Dun Harvestley	larkfield		country printer at Larkfield Print House	larkfield	none	6	0.02	L2
+379	cty_bettany_slagridge	Bettany Slagridge	ridgemere		churns the butter at Southgate	ridgemere	light	6	0.02	L2
+380	cty_cinder_wheatton	Cinder Wheatton	ridgemere		cowherd at Rainrun	ridgemere	light	6	0.02	L1,L2
+381	cty_ridge_larkridge	Ridge Larkridge	ridgemere		herds the cattle at Southgate	ridgemere	none	6	0.02	L1,L2
+382	rm_ada_rainmore	Ada Rainmore	ridgemere	commons	-	ridgemere	none	6	0.02	L2
+383	rm_aldric_fogwell	Aldric Fogwell	ridgemere	sump	priest at the cathedral	ridgemere	light	6	0.02	L2
+384	rm_delphine_dripham	Delphine Dripham	ridgemere	sump	scribe of the abbey	ridgemere	light	6	0.02	L2
+385	rm_egil_brineham	Egil Brineham	ridgemere	works	smith at Timberland's Forge Row	ridgemere	light	6	0.02	L2
+386	rm_ivar_pitchwick	Ivar Pitchwick	ridgemere	office	clerking at the Counting House	ridgemere	none	6	0.02	L2
+387	rm_oda_kelpworth	Oda Kelpworth	ridgemere	estate	keeping the Greatly stables	ridgemere	light	6	0.02	L1
+388	rm_petra_vance	Petra Vance	ridgemere	heights	lending	ridgemere	broad	6	0.02	L1
+389	rmx_ebba_heath	Ebba Heath	ridgemere	commons	crying wares in the Rag Market	southmeadow	light	6	0.02	L1,L2
+390	rmx_finn_dripwick	Finn Dripwick	ridgemere	sump	helping at The Sailors' Rest	ridgemere	light	6	0.02	L2
+391	rmx_mab_plankridge	Mab Plankridge	ridgemere	sump	at lessons	ridgemere	none	6	0.02	L2
+392	rmx_roald_toft	Roald Toft	ridgemere	commons	keeping the Bathhouse	ridgemere	light	6	0.02	L2
+393	rmx_theodora_pitchwick	Theodora Pitchwick	ridgemere	sump	working at The Fell Distillery	saltwell	light	6	0.02	L2
+394	rmx_wystan_wethand	Wystan Wethand	ridgemere	sump	at lessons	ridgemere	none	6	0.02	L2
+395	tn_oh_harl_oakbough	Harl Oakbough	southmeadow		vine hand at Southmeadow	southmeadow	light	6	0.02	L2
+396	cty_vale_pikebridge	Vale Pikebridge	coldwater		shepherd at Greyteeth	southmeadow	light	5	0.01	L2
+397	tn_fh_laurel_pinefell	Laurel Pinefell	coldwater		pot hand at The Glasswater Inn	coldwater	light	5	0.01	L2
+398	tn_lf_wald_larkwell	Wald Larkwell	coldwater		still hand at Coldwater Still	coldwater	light	5	0.01	L2
+399	cty_lichen_reedford	Lichen Reedford	fenshore		digs clay at the Mirebridge pits	ridgemere	light	5	0.01	L2
+400	tn_sm_bram_harvestgarth	Bram Harvestgarth	fenshore		kiln hand at Fenshore Kilns	fenshore	broad	5	0.01	L2
+401	cty_sorrel_ashbough	Sorrel Ashbough	larkfield		picks apples at Plumtree	larkfield	none	5	0.01	L2
+402	tn_cw_bramble_reedford	Bramble Reedford	larkfield		keeps the taproom at The Sheaf	larkfield	light	5	0.01	L2
+403	tn_mb_thorn_marshditch	Thorn Marshditch	larkfield		pot hand at The Sheaf	larkfield	light	5	0.01	L2
+404	tn_sm_eskar_cornley	Eskar Cornley	larkfield		baker at Larkfield Bakehouse	larkfield	broad	5	0.01	L2
+405	cty_frost_colddrift	Frost Colddrift	oakhaven		fells timber at the Oakhaven cut	oakhaven	light	5	0.01	L2
+406	cty_ludo_chalkham	Ludo Chalkham	ridgemere		churns the butter at Rainrun	ridgemere	light	5	0.01	L2
+407	rm_edda_gullford	Edda Gullford	ridgemere	sump	lighting the lamps at dusk	ridgemere	broad	5	0.01	L2
+408	rm_erland_plankwell	Erland Plankwell	ridgemere	heights	in service to the Granthams	ridgemere	broad	5	0.01	L2
+409	rm_lionel_pitchdale	Lionel Pitchdale	ridgemere	commons	helping at Mutton Lane Butchers	ridgemere	light	5	0.01	L1,L2
+410	rm_moll_millton	Moll Millton	ridgemere	commons	at lessons	ridgemere	light	5	0.01	L1
+411	rm_septimus_slagby	Septimus Slagby	ridgemere	works	minding the shop door	ridgemere	broad	5	0.01	L2
+412	rm_signe_mossgrave	Signe Timberland	ridgemere	estate	keeping Timberland Court	ridgemere	light	5	0.01	L1
+413	rm_silas_sootworth	Silas Sootworth	ridgemere	works	helping at Wickham's Chandlery	ridgemere	broad	5	0.01	L2
+414	rm_solveig_cinderton	Solveig Cinderton	ridgemere	wharf	portering in Market Square	frosthollow	none	5	0.01	L1
+415	rm_thyra_plankridge	Thyra Plankridge	ridgemere	commons	provisioner in the Market Hall	ridgemere	light	5	0.01	L1
+416	rmx_aldric_thackeray	Aldric Thackeray	ridgemere	works	at lessons	ridgemere	broad	5	0.01	L1,L2
+417	rmx_montague_kettlecote	Montague Kettlecote	ridgemere	commons	keeping the Iron Store	ridgemere	light	5	0.01	L1,L2
+418	rmx_nessa_slagmarsh	Nessa Slagmarsh	ridgemere	sump	tallying in the Iron Store	ridgemere	light	5	0.01	L2
+419	rmx_palle_mireby	Palle Mireby	ridgemere	commons	at lessons	ridgemere	light	5	0.01	L1,L2
+420	tn_sm_iris_meadowfield	Iris Meadowfield	southmeadow		farms Larkholm	southmeadow	light	5	0.01	L2
+421	cty_dunstan_wickgate	Dunstan Wickgate	coldwater		swineherd at Oakhurst	coldwater	light	4	0.01	L2
+422	cty_heather_fernwood	Heather Fernwood	coldwater		picks apples at Greenholt	coldwater	light	4	0.01	L2
+423	tn_cw_willa_coldwick	Willa Coldwick	coldwater		carter at Coldwater	coldwater	broad	4	0.01	L2
+424	tn_lf_sage_wheatridge	Sage Wheatridge	coldwater		soap boiler at Coldwater Soapworks	coldwater	broad	4	0.01	L2
+425	cty_fenwick_plankworth	Fenwick Plankworth	frosthollow		mine captain at the Frosthollow mine	coldwater	light	4	0.01	L2
+426	cty_marl_craghearth	Marl Craghearth	frosthollow		collier at the Upper hearths	frosthollow	none	4	0.01	L2
+427	cty_edric_pitchmarsh	Edric Pitchmarsh	larkfield		keeps pigs at Southwood	larkfield	light	4	0.01	L2
+428	tn_lf_pike_chalkley	Pike Chalkley	larkfield		shopkeeper at Larkfield Stores	larkfield	broad	4	0.01	L2
+429	cty_kell_reedwade	Kell Reedwade	ridgemere		skipper at Soundside	ridgemere	light	4	0.01	L2
+430	cty_linden_sedgeditch	Linden Sedgeditch	ridgemere		skipper at North Cove	ridgemere	light	4	0.01	L2
+431	cty_vesper_greenholt	Vesper Greenholt	ridgemere		cuts wood at the Rainwood coppice	ridgemere	light	4	0.01	L2
+432	rm_frederick_pitchcot	Frederick Pitchcot	ridgemere	commons	minding the shop door	ridgemere	broad	4	0.01	L2
+433	rm_gorm_pitchmarsh	Gorm Pitchmarsh	ridgemere	sump	helping at Bridge Stores	coldwater	none	4	0.01	L2
+434	rm_gunnar_harrowgate	Gunnar Harrowgate	ridgemere	office	reigning at the Great Palace	ridgemere	light	4	0.01	L2
+435	rm_hollis_slagford	Hollis Slagford	ridgemere	heights	in service to the Thornburys	coldwater	none	4	0.01	L1
+436	rm_imogen_cinderwell	Imogen Cinderwell	ridgemere	commons	carpenter at Pennock & Sons	coldwater	broad	4	0.01	L2
+437	rm_karin_thornbury	Karin Thornbury	ridgemere	heights	at lessons	ridgemere	none	4	0.01	L1,L2
+438	rm_karin_wetridge	Karin Wetridge	ridgemere	sump	working at The Fish Hall	saltwell	none	4	0.01	L2
+439	rm_njal_stanmore	Njal Stanmore	ridgemere	heights	drafting the Council's letters	ridgemere	none	4	0.01	L1
+440	rm_oda_slagby	Oda Slagby	ridgemere	works	at lessons	ridgemere	light	4	0.01	L2
+441	rm_orm_wickcot	Orm Wickcot	ridgemere	estate	serving in the hall	ridgemere	light	4	0.01	L1
+442	rm_percival_thornbury	Percival Thornbury	ridgemere	heights	pleading cases	ridgemere	light	4	0.01	L1
+443	rm_rune_cinderwick	Rune Cinderwick	ridgemere	sump	helping at The Hook and Cleaver	ridgemere	light	4	0.01	L2
+444	rm_vidar_vance	Vidar Vance	ridgemere	heights	at lessons	ridgemere	light	4	0.01	L1,L2
+445	rmx_dagny_catterick	Dagny Catterick	ridgemere	commons	keeping the Fell Cellars	ridgemere	light	4	0.01	L2
+446	rmx_florence_pennock	Florence Pennock	ridgemere	commons	carrying for the Couriers' Office	ridgemere	none	4	0.01	L1,L2
+447	rmx_frida_marrowby	Frida Marrowby	ridgemere	commons	at lessons	ridgemere	light	4	0.01	L1
+448	rmx_jasper_coalcot	Jasper Coalcot	ridgemere	sump	portering in Market Square	ridgemere	none	4	0.01	L2
+449	rmx_soren_ashcote	Soren Ashcote	ridgemere	works	working at The Fell Press House	ridgemere	light	4	0.01	L2
+450	rmx_yrsa_kelpstack	Yrsa Kelpstack	ridgemere	sump	at lessons	ridgemere	light	4	0.01	L2
+451	cty_aster_cornley	Aster Cornley	southmeadow		keeps bees at Sunfields	southmeadow	none	4	0.01	L2
+452	cty_willa_wheatcombe	Willa Wheatcombe	southmeadow		farmhand at Larkholm	southmeadow	light	4	0.01	L2
+453	cty_tobias_ropewell	Tobias Ropewell	coldwater		shepherd at Larkdowns	ridgemere	none	3	0.01	L2
+454	cty_wenna_rainford	Wenna Rainford	coldwater		swineherd at Alder	coldwater	light	3	0.01	L2
+455	tn_sm_kindle_applemeadow	Kindle Applemeadow	coldwater		still hand at Coldwater Still	coldwater	light	3	0.01	L2
+456	tn_sm_linden_harvestton	Linden Harvestton	coldwater		stillmaster at Coldwater Still	coldwater	light	3	0.01	L2
+457	cty_fallow_reedwell	Fallow Reedwell	fenshore		works the salt at Fenside	fenshore	none	3	0.01	L2
+458	cty_fell_cragdrift	Fell Cragdrift	larkfield		burns charcoal at the Greenholt hearths	larkfield	broad	3	0.01	L2
+459	cty_tamsin_oakshaw	Tamsin Oakshaw	larkfield		farmhand at Longmead	larkfield	light	3	0.01	L2
+460	cty_ingram_ashleaf	Ingram Ashleaf	oakhaven		logger at the Oakhaven cut	oakhaven	light	3	0.01	L2
+461	cty_hob_mirebridge	Hob Mirebridge	ridgemere		deckhand at North Cove	fenshore	broad	3	0.01	L2
+462	cty_varg_barleyfield	Varg Barleyfield	ridgemere		cowherd at Southgate	ridgemere	light	3	0.01	L2
+463	rm_desmond_grantham	Desmond Grantham	ridgemere	heights	runs The Rainwater Brewery	ridgemere	broad	3	0.01	L2
+464	rm_lavinia_bilgedale	Lavinia Bilgedale	ridgemere	estate	helping at The Rain Pot	frosthollow	broad	3	0.01	L2
+465	rm_olaf_pitchmore	Olaf Pitchmore	ridgemere	office	clerking at the City Office	coldwater	none	3	0.01	L2
+466	rm_philippa_rustton	Philippa Rustton	ridgemere	sump	keeping the Greatly stables	ridgemere	none	3	0.01	L2
+467	rm_ragnar_millmarsh	Ragnar Millmarsh	ridgemere	commons	provisioner at Commons Provisions	ridgemere	none	3	0.01	L2
+468	rm_rosalind_greatly	Rosalind Greatly	ridgemere	estate	reading in the gardens	ridgemere	none	3	0.01	L2
+469	rm_rupert_ropehand	Rupert Ropehand	ridgemere	commons	smith at Eastgate Farriers	larkfield	none	3	0.01	L2
+470	rm_signe_ashstack	Signe Ashstack	ridgemere	estate	serving in the King's household	ridgemere	light	3	0.01	L1
+471	rm_soren_ropewick	Soren Ropewick	ridgemere	sump	helping at The Pawn and Ledger	coldwater	light	3	0.01	L2
+472	rm_vigdis_millley	Vigdis Millley	ridgemere	works	at lessons	ridgemere	light	3	0.01	L1,L2
+473	rm_wynn_sootridge	Wynn Sootridge	ridgemere	estate	helping at The Hook and Cleaver	ridgemere	light	3	0.01	L1,L2
+474	rmx_dagfinn_thornham	Dagfinn Thornham	ridgemere	works	-	fenshore	light	3	0.01	L2
+475	rmx_desmond_hollis	Desmond Hollis	ridgemere	commons	-	coldwater	none	3	0.01	L2
+476	rmx_disa_nettleby	Disa Nettleby	ridgemere	commons	at lessons	ridgemere	broad	3	0.01	L1
+477	rmx_magnus_tarton	Magnus Tarton	ridgemere	sump	helping at The Fell Wine Vaults	ridgemere	light	3	0.01	L2
+478	rmx_ottilie_slagley	Ottilie Slagley	ridgemere	sump	unloading ships at the piers	ridgemere	light	3	0.01	L2
+479	rmx_palle_brinewell	Palle Brinewell	ridgemere	sump	at lessons	ridgemere	light	3	0.01	L2
+480	cty_disa_fogford	Disa Fogford	southmeadow		hive hand at Sunfields	southmeadow	light	3	0.01	L2
+481	cty_emrys_stillshore	Emrys Stillshore	southmeadow		grinds the corn at Larkholm	southmeadow	broad	3	0.01	L2
+482	tn_sm_rusk_plummeadow	Rusk Plummeadow	southmeadow		shopkeeper at Southmeadow Stores	southmeadow	light	3	0.01	L2
+483	cty_garth_barleyton	Garth Barleyton	coldwater		shepherd at Larkdowns	coldwater	light	2	0.01	L2
+484	cty_wick_marshwade	Wick Marshwade	coldwater		carter at Coldwater	coldwater	broad	2	0.01	L2
+485	tn_cw_tansy_reedmere	Tansy Reedmere	coldwater		-	coldwater	none	2	0.01	L2
+486	tn_lf_lichen_hedgemead	Lichen Hedgemead	coldwater		baker at Coldwater Bakehouse	coldwater	light	2	0.01	L2
+487	tn_oh_cairn_acornholt	Cairn Acornholt	coldwater		shop hand at Coldwater Bakehouse	coldwater	light	2	0.01	L2
+488	tn_sm_lichen_harvestton	Lichen Harvestton	coldwater		shop hand at Coldwater Bakehouse	coldwater	light	2	0.01	L2
+489	tn_sm_pell_harvestley	Pell Harvestley	coldwater		tends the orchard at Meresend	coldwater	broad	2	0.01	L2
+490	tn_mb_nab_bogditch	Nab Bogditch	fenshore		fowler at Withy Creek	ridgemere	broad	2	0.01	L2
+491	cty_ulric_stonevein	Ulric Stonevein	frosthollow		digs ore at the Frosthollow mine	frosthollow	light	2	0.01	L2
+492	cty_ragnar_wetby	Ragnar Wetby	larkfield		swineherd at Southwood	larkfield	broad	2	0.01	L2
+493	cty_roald_brinemarsh	Roald Brinemarsh	larkfield		swineherd at Southwood	larkfield	light	2	0.01	L2
+494	cty_rowan_eelwater	Rowan Eelwater	larkfield		farmhand at Longmead	larkfield	light	2	0.01	L2
+495	tn_lf_harrow_larkwell	Harrow Larkwell	larkfield		striker at Larkfield's anvil	larkfield	light	2	0.01	L2
+496	tn_lf_rook_wheatfield	Rook Wheatfield	larkfield		farms Longmead	larkfield	light	2	0.01	L2
+497	tn_mb_tansy_eelbridge	Tansy Eelbridge	larkfield		village smith at Larkfield Smithy	larkfield	light	2	0.01	L2
+498	cty_desmond_saltton	Desmond Saltton	ridgemere		churns the butter at Rainrun	saltwell	light	2	0.01	L2
+499	cty_flint_snowdrift	Flint Snowdrift	ridgemere		logger at the Rainwood cut	ridgemere	broad	2	0.01	L2
+500	cty_kjell_saltdale	Kjell Saltdale	ridgemere		deckhand at Soundside	ridgemere	light	2	0.01	L1
+501	cty_stone_marshditch	Stone Marshditch	ridgemere		deckhand at North Cove	saltwell	none	2	0.01	L1
+502	rm_agna_dripridge	Agna Dripridge	ridgemere	estate	helping at Bridge Stores	ridgemere	light	2	0.01	L2
+503	rm_berit_wickton	Berit Wickton	ridgemere	estate	serving in the hall	ridgemere	light	2	0.01	L1
+504	rm_brenna_ropehand	Brenna Ropehand	ridgemere	commons	helping at Greywool	ridgemere	light	2	0.01	L2
+505	rm_disa_millley	Disa Millley	ridgemere	works	helping at The Rivet and Rain	ridgemere	light	2	0.01	L2
+506	rm_disa_sootley	Disa Sootley	ridgemere	commons	minding the shop door	larkfield	light	2	0.01	L2
+507	rm_hanne_wickworth	Hanne Wickworth	ridgemere	heights	-	coldwater	none	2	0.01	L2
+508	rm_ilse_fogridge	Ilse Fogridge	ridgemere	sump	runs The Timberland Charcoal Store	ridgemere	light	2	0.01	L2
+509	rm_imogen_tarcot	Imogen Tarcot	ridgemere	works	works at The Timberland Ironworks	ridgemere	broad	2	0.01	L2
+510	rm_ivo_tarmarsh	Ivo Tarmarsh	ridgemere	commons	sausage butcher on Market Square	coldwater	light	2	0.01	L2
+511	rm_jarl_greyford	Jarl Greyford	ridgemere	sump	helping at Harbour Provisions	ridgemere	light	2	0.01	L2
+512	rm_lavinia_plankwick	Lavinia Plankwick	ridgemere	estate	stewarding Grayrock Hall	ridgemere	light	2	0.01	L1
+513	rm_maren_tarworth__	Maren Tarworth	ridgemere	estate	keeping the chambers	coldwater	light	2	0.01	L1
+514	rm_oda_sootdale	Oda Sootdale	ridgemere	office	at lessons	ridgemere	light	2	0.01	L1
+515	rm_rosamund_saltmarsh	Rosamund Saltmarsh	ridgemere	commons	helping at Bridge Stores	ridgemere	light	2	0.01	L2
+516	rm_runa_ropemarsh	Runa Ropemarsh	ridgemere	sump	works at The Greatly Plasterworks	coldwater	none	2	0.01	L2
+517	rm_rune_gullwell	Rune Gullwell	ridgemere	office	clerking at the Counting House	ridgemere	light	2	0.01	L2
+518	rm_septimus_plankmarsh	Septimus Plankmarsh	ridgemere	commons	clerking at the Wharf Office	coldwater	light	2	0.01	L2
+519	rm_silas_brinemore	Silas Brinemore	ridgemere	heights	in service to the Thornburys	ridgemere	light	2	0.01	L1
+520	rm_soren_kelpstack	Soren Kelpstack	ridgemere	commons	clerking in the Administrative Wing	ridgemere	light	2	0.01	L2
+521	rm_wenna_mossgrave	Wenna Timberland	ridgemere	estate	running the House's iron trade	ridgemere	light	2	0.01	L2
+522	rmx_cressida_wetherell	Cressida Wetherell	ridgemere	works	-	coldwater	light	2	0.01	L2
+523	rmx_dunstan_plankham	Dunstan Plankham	ridgemere	sump	-	ridgemere	light	2	0.01	L2
+524	rmx_grete_dimmock	Grete Dimmock	ridgemere	commons	carrying for the Couriers' Office	ridgemere	broad	2	0.01	L2
+525	rmx_harriet_pennock	Harriet Pennock	ridgemere	commons	clerking at the Records Office	ridgemere	light	2	0.01	L1
+526	rmx_orla_wetridge	Orla Wetridge	ridgemere	commons	at lessons	ridgemere	light	2	0.01	L2
+527	rmx_pim_pitchham	Pim Pitchham	ridgemere	sump	at lessons	ridgemere	light	2	0.01	L2
+528	rmx_rosamund_ash	Rosamund Ash	ridgemere	commons	-	ridgemere	broad	2	0.01	L2
+529	rmx_solveig_nailstack	Solveig Nailstack	ridgemere	sump	crying wares in the Rag Market	ridgemere	light	2	0.01	L2
+530	cty_alder_blossomcroft	Alder Blossomcroft	southmeadow		farmhand at Larkholm	southmeadow	broad	2	0.01	L2
+531	cty_myrtle_larkcombe	Myrtle Larkcombe	southmeadow		farmhand at Larkholm	southmeadow	broad	2	0.01	L2
+532	tn_sm_orrin_appleley	Orrin Appleley	southmeadow		village potter at Southmeadow Kilns	southmeadow	light	2	0.01	L2
+533	cty_fallow_honeyfield	Fallow Honeyfield	coldwater		swineherd at Alder	coldwater	broad	1	0.00	L2
+534	tn_cw_kell_greyton	Kell Greyton	coldwater		skipper at Upper Mere	coldwater	light	1	0.00	L2
+535	tn_lf_flint_downcombe	Flint Downcombe	coldwater		soap hand at Coldwater Soapworks	coldwater	light	1	0.00	L2
+536	tn_lf_juniper_larkcombe	Juniper Larkcombe	coldwater		shepherd at Greyteeth	coldwater	light	1	0.00	L2
+537	tn_sm_ingram_cornwell	Ingram Cornwell	coldwater		tends the orchard at Greenholt	coldwater	light	1	0.00	L2
+538	cty_leif_rainley	Leif Rainley	fenshore		keeps rabbits at Dune	fenshore	none	1	0.00	L2
+539	tn_mb_iris_pikeford	Iris Pikeford	fenshore		salt raker at Fenside	fenshore	broad	1	0.00	L2
+540	tn_mb_roan_pikewater	Roan Pikewater	fenshore		shopkeeper at Fenshore Stores	fenshore	light	1	0.00	L2
+541	cty_brand_sunham	Brand Sunham	larkfield		farmhand at Longmead	larkfield	light	1	0.00	L2
+542	cty_kell_greenshaw	Kell Greenshaw	larkfield		cuts wood at the Greenholt hearths	larkfield	light	1	0.00	L2
+543	cty_rowan_hayridge	Rowan Hayridge	larkfield		picks apples at Plumtree	larkfield	light	1	0.00	L2
+544	cty_frederick_ropeford	Frederick Ropeford	ridgemere		cowherd at Rainrun	ridgemere	light	1	0.00	L1
+545	cty_hakon_plankcot	Hakon Plankcot	ridgemere		cuts stone at the Rainward quarry	ridgemere	light	1	0.00	L2
+546	cty_juniper_larkham	Juniper Larkham	ridgemere		tends the orchard at Rainward	frosthollow	light	1	0.00	L1
+547	cty_stone_sunton	Stone Sunton	ridgemere		cowherd at Southgate	oakhaven	light	1	0.00	L2
+548	rm_aldric_rainmarsh	Aldric Rainmarsh	ridgemere	commons	helping at The Wet Loaf	ridgemere	light	1	0.00	L2
+549	rm_arne_wickdale	Arne Wickdale	ridgemere	sump	brewer at the abbey brewhouse	ridgemere	light	1	0.00	L2
+550	rm_ebba_slagstack	Ebba Slagstack	ridgemere	commons	at lessons	ridgemere	none	1	0.00	L2
+551	rm_edmund_sootcot	Edmund Sootcot	ridgemere	office	running the City Office	ridgemere	none	1	0.00	L2
+552	rm_gorm_plankworth	Gorm Plankworth	ridgemere	sump	unloading ships at the piers	southmeadow	light	1	0.00	L2
+553	rm_halvard_mossgrave	Halvard Timberland	ridgemere	estate	walking the gardens	ridgemere	broad	1	0.00	L2
+554	rm_hanne_thornbury	Hanne Thornbury	ridgemere	heights	at lessons	ridgemere	none	1	0.00	L2
+555	rm_jarl_saltcot	Jarl Saltcot	ridgemere	commons	helping at The Greatly Bank	ridgemere	light	1	0.00	L2
+556	rm_lotte_greyley	Lotte Greyley	ridgemere	estate	helping at Greywool	ridgemere	light	1	0.00	L2
+557	rm_montague_millcot	Montague Millcot	ridgemere	sump	helping at The Eastgate Bakehouse	ridgemere	broad	1	0.00	L2
+558	rm_petra_plankhand	Petra Plankhand	ridgemere	sump	driving for the carters	ridgemere	light	1	0.00	L2
+559	rm_sigrun_kelphand	Sigrun Kelphand	ridgemere	sump	cooper in the Market Hall	ridgemere	broad	1	0.00	L2
+560	rm_una_rustridge	Una Rustridge	ridgemere	sump	-	ridgemere	light	1	0.00	L2
+561	rm_wystan_coalmarsh	Wystan Coalmarsh	ridgemere	works	unloading ships at the piers	ridgemere	light	1	0.00	L2
+562	rmx_gudrun_mossdale	Gudrun Mossdale	ridgemere	commons	-	ridgemere	broad	1	0.00	L1
+563	rmx_percival_thornham	Percival Thornham	ridgemere	works	driving for the carters	larkfield	light	1	0.00	L2
+564	rmx_septimus_ives	Septimus Ives	ridgemere	commons	copying at the Records Office	ridgemere	broad	1	0.00	L1
+565	rmx_sigrun_mudworth	Sigrun Mudworth	ridgemere	sump	helping at The Barber's Pole	ridgemere	none	1	0.00	L2
+566	cty_tor_chalkfield	Tor Chalkfield	southmeadow		carter at Southmeadow	southmeadow	light	1	0.00	L2
+567	cty_delphine_sootley	Delphine Sootley	coldwater		swineherd at Oakhurst	coldwater	light	0	0.00	
+568	cty_heather_fernshaw	Heather Fernshaw	coldwater		swineherd at Oakhurst	coldwater	light	0	0.00	
+569	cty_ilse_fogley	Ilse Fogley	coldwater		keeps pigs at Alder	coldwater	light	0	0.00	
+570	cty_ingram_hazelshaw	Ingram Hazelshaw	coldwater		keeps pigs at Oakhurst	coldwater	broad	0	0.00	
+571	cty_nell_barleycombe	Nell Barleycombe	coldwater		picks apples at Greenholt	coldwater	light	0	0.00	
+572	cty_oriel_blossomby	Oriel Blossomby	coldwater		picks apples at Meresend	coldwater	light	0	0.00	
+573	cty_quarry_mossfield	Quarry Mossfield	coldwater		picks apples at Greenholt	coldwater	light	0	0.00	
+574	cty_thorn_mistmere	Thorn Mistmere	coldwater		boatman at Upper Mere	ridgemere	none	0	0.00	
+575	cty_willa_meadowfield	Willa Meadowfield	coldwater		picks apples at Meresend	coldwater	none	0	0.00	
+576	tn_cw_ash_greyton	Ash Greyton	coldwater		-	coldwater	light	0	0.00	
+577	tn_cw_bramble_reedmere	Bramble Reedmere	coldwater		skipper at Glasswater	coldwater	light	0	0.00	
+578	tn_cw_clover_coldmere	Clover Coldmere	coldwater		swineherd at Oakhurst	ridgemere	light	0	0.00	
+579	tn_cw_gorse_reedmere	Gorse Reedmere	coldwater		-	coldwater	light	0	0.00	
+580	tn_cw_grist_reedmere	Grist Reedmere	coldwater		boatman at Glasswater	ridgemere	light	0	0.00	
+581	tn_cw_myrtle_stillford	Myrtle Stillford	coldwater		shopkeeper at Coldwater Stores	coldwater	broad	0	0.00	
+582	tn_cw_tamsin_greyton	Tamsin Greyton	coldwater		-	coldwater	light	0	0.00	
+583	tn_fh_wren_coldpeak	Wren Coldpeak	coldwater		soap hand at Coldwater Soapworks	coldwater	light	0	0.00	
+584	tn_lf_cairn_downfield	Cairn Downfield	coldwater		-	coldwater	light	0	0.00	
+585	tn_lf_isla_downfield	Isla Downfield	coldwater		-	coldwater	none	0	0.00	
+586	tn_lf_jory_barleyton	Jory Barleyton	coldwater		soap hand at Coldwater Soapworks	coldwater	light	0	0.00	
+587	tn_lf_reed_downfield	Reed Downfield	coldwater		-	coldwater	light	0	0.00	
+588	tn_lf_thistle_downcombe	Thistle Downcombe	coldwater		soap hand at Coldwater Soapworks	coldwater	light	0	0.00	
+589	tn_sm_edric_harvestley	Edric Harvestley	coldwater		-	coldwater	light	0	0.00	
+590	tn_sm_fallow_cornwell	Fallow Cornwell	coldwater		-	coldwater	broad	0	0.00	
+591	tn_sm_fennel_cornley	Fennel Cornley	coldwater		shop hand at Coldwater Stores	coldwater	light	0	0.00	
+592	tn_sm_kell_honeyfield	Kell Honeyfield	coldwater		soap hand at Coldwater Soapworks	coldwater	light	0	0.00	
+593	tn_sm_ulric_harvestley	Ulric Harvestley	coldwater		-	coldwater	none	0	0.00	
+594	cty_dagfinn_brineby	Dagfinn Brineby	fenshore		salt raker at Fenside	fenshore	light	0	0.00	
+595	cty_ivar_wickcot	Ivar Wickcot	fenshore		deckhand at Rivermouth	fenshore	light	0	0.00	
+596	cty_yrsa_plankgate	Yrsa Plankgate	fenshore		deckhand at Fen Shore	fenshore	light	0	0.00	
+597	tn_fh_rowan_cragpeak	Rowan Cragpeak	fenshore		cuts peat at the Fenshore cutting	fenshore	none	0	0.00	
+598	tn_mb_skye_eelbank	Skye Eelbank	fenshore		traps eels at Withy Creek	fenshore	light	0	0.00	
+599	tn_oh_briar_greenshaw	Briar Greenshaw	fenshore		peat cutter at the Fenshore cutting	coldwater	none	0	0.00	
+600	cty_ebba_coalgate	Ebba Coalgate	frosthollow		carter at Frosthollow	frosthollow	light	0	0.00	
+601	cty_leif_driphand	Leif Driphand	frosthollow		burns lime at the high lime quarry	frosthollow	light	0	0.00	
+602	cty_stone_acorndell	Stone Acorndell	frosthollow		burns charcoal at the Upper hearths	frosthollow	broad	0	0.00	
+603	tn_fh_aster_coldfell	Aster Coldfell	frosthollow		shopkeeper at Frosthollow Stores	frosthollow	light	0	0.00	
+604	tn_oh_thorn_ashwood	Thorn Ashwood	frosthollow		keeps the taproom at The Lamp and Pick	frosthollow	broad	0	0.00	
+605	cty_gorse_hedgewell	Gorse Hedgewell	larkfield		grinds the corn at Longmead	larkfield	light	0	0.00	
+606	cty_imogen_rustford	Imogen Rustford	larkfield		carter at Larkfield	larkfield	light	0	0.00	
+607	cty_ludo_oakholt	Ludo Oakholt	larkfield		farmhand at Longmead	larkfield	light	0	0.00	
+608	cty_njal_rustwick	Njal Rustwick	larkfield		swineherd at Southwood	larkfield	light	0	0.00	
+609	tn_lf_iris_wheatfield	Iris Wheatfield	larkfield		-	larkfield	broad	0	0.00	
+610	tn_lf_tor_wheatfield	Tor Wheatfield	larkfield		-	larkfield	broad	0	0.00	
+611	cty_oda_cinderdale	Oda Cinderdale	oakhaven		logger at the Oakhaven cut	oakhaven	light	0	0.00	
+612	cty_tristram_rainridge	Tristram Rainridge	oakhaven		carter at Oakhaven	oakhaven	broad	0	0.00	
+613	cty_ulla_rusthand	Ulla Rusthand	oakhaven		logger at the Oakhaven cut	oakhaven	light	0	0.00	
+614	tn_fh_tamsin_icefell	Tamsin Icefell	oakhaven		keeps the taproom at The Felled Cedar	oakhaven	light	0	0.00	
+615	tn_oh_cairn_oakhaven	Cairn Oakhaven	oakhaven		shopkeeper at Oakhaven Stores	oakhaven	none	0	0.00	
+616	tn_sm_moss_blossomwell	Moss Blossomwell	oakhaven		country printer at Oakhaven Print House	oakhaven	light	0	0.00	
+617	cty_aster_sheafby	Aster Sheafby	ridgemere		picks apples at Coastvale	coldwater	none	0	0.00	
+618	cty_bramble_hazeldell	Bramble Hazeldell	ridgemere		churns the butter at Hillside	larkfield	light	0	0.00	
+619	cty_corrie_oakfield	Corrie Oakfield	ridgemere		cowherd at Hillside	ridgemere	light	0	0.00	
+620	cty_egil_bilgeley	Egil Bilgeley	ridgemere		churns the butter at Hillside	ridgemere	none	0	0.00	
+621	cty_nan_ashhand	Nan Ashhand	ridgemere		quarrymaster at the Rainward quarry	ridgemere	light	0	0.00	
+622	cty_odo_icewell	Odo Icewell	ridgemere		woodward of the Rainwood coppice	ridgemere	none	0	0.00	
+623	cty_pell_plumgarth	Pell Plumgarth	ridgemere		picks apples at Rainward	larkfield	none	0	0.00	
+624	cty_rue_haycombe	Rue Haycombe	ridgemere		tends the orchard at Coastvale	ridgemere	light	0	0.00	
+625	cty_rue_sheafley	Rue Sheafley	ridgemere		picks apples at Rainward	ridgemere	light	0	0.00	
+626	cty_senna_beechleaf	Senna Beechleaf	ridgemere		logger at the Rainwood cut	ridgemere	light	0	0.00	
+627	cty_skye_harvestcroft	Skye Harvestcroft	ridgemere		picks apples at Coastvale	ridgemere	light	0	0.00	
+628	cty_ulric_blossommeadow	Ulric Blossommeadow	ridgemere		picks apples at Rainward	ridgemere	light	0	0.00	
+629	rm_ada_greyhand	Ada Greyhand	ridgemere	sump	unloading ships at the piers	saltwell	none	0	0.00	
+630	rm_agna_bilgecot	Agna Bilgecot	ridgemere	sump	working at The Fell Preserving House	larkfield	light	0	0.00	
+631	rm_agna_tarham	Agna Tarham	ridgemere	commons	fishmonger at The Wet Slab	coldwater	light	0	0.00	
+632	rm_aldric_grayrock_	Aldric Grayrock	ridgemere	estate	overseeing the Grayrock wharf	ridgemere	broad	0	0.00	
+633	rm_ambrose_greatly	Ambrose Greatly	ridgemere	estate	overseeing the Counting House	ridgemere	light	0	0.00	
+634	rm_ansel_tarley	Ansel Tarley	ridgemere	estate	serving in the hall	ridgemere	light	0	0.00	
+635	rm_arne_wetworth	Arne Wetworth	ridgemere	estate	keeping the chambers	ridgemere	light	0	0.00	
+636	rm_beatha_foggate	Beatha Foggate	ridgemere	heights	-	ridgemere	broad	0	0.00	
+637	rm_beatha_millgate	Beatha Millgate	ridgemere	sump	helping at Cinder Butchers	coldwater	light	0	0.00	
+638	rm_beatha_millley	Beatha Millley	ridgemere	works	armourer at The Rivet and Rain	ridgemere	none	0	0.00	
+639	rm_berit_mudton	Berit Mudton	ridgemere	works	helping at The Sailors' Rest	ridgemere	light	0	0.00	
+640	rm_bertil_grantham	Bertil Grantham	ridgemere	heights	at lessons	ridgemere	broad	0	0.00	
+641	rm_bettany_nailley	Bettany Nailley	ridgemere	sump	sergeant of the Watch	ridgemere	light	0	0.00	
+642	rm_bettany_ropegate	Bettany Ropegate	ridgemere	commons	clerking at the Watch Office	ridgemere	light	0	0.00	
+643	rm_brand_fogworth	Brand Fogworth	ridgemere	commons	-	ridgemere	light	0	0.00	
+644	rm_cedric_ashcot	Cedric Ashcot	ridgemere	heights	-	ridgemere	light	0	0.00	
+645	rm_cedric_mudley	Cedric Mudley	ridgemere	heights	holding the north gate	ridgemere	light	0	0.00	
+646	rm_celestine_greatly	Celestine Greatly	ridgemere	estate	keeping Greatly House	saltwell	none	0	0.00	
+647	rm_corra_greyby	Corra Greyby	ridgemere	commons	-	ridgemere	none	0	0.00	
+648	rm_corra_ropewell	Corra Ropewell	ridgemere	estate	unloading ships at the piers	ridgemere	light	0	0.00	
+649	rm_corra_slagmore	Corra Slagmore	ridgemere	heights	commanding the Watch	ridgemere	none	0	0.00	
+650	rm_corwin_bilgestack	Corwin Bilgestack	ridgemere	sump	lighting the lamps at dusk	larkfield	none	0	0.00	
+651	rm_corwin_fell_	Corwin Fell	ridgemere	estate	keeping the Fell cellars	ridgemere	light	0	0.00	
+652	rm_corwin_kelpby	Corwin Kelpby	ridgemere	sump	singing in the cathedral choir	southmeadow	light	0	0.00	
+653	rm_corwin_sootstack	Corwin Sootstack	ridgemere	sump	butcher at Cinder Butchers	coldwater	light	0	0.00	
+654	rm_cressida_carlisle	Cressida Carlisle	ridgemere	heights	pleading cases	ridgemere	none	0	0.00	
+655	rm_dagfinn_brineley	Dagfinn Brineley	ridgemere	heights	-	ridgemere	light	0	0.00	
+656	rm_dagny_ropeley	Dagny Ropeley	ridgemere	sump	sergeant of the Watch	ridgemere	light	0	0.00	
+657	rm_delphine_mudwick	Delphine Mudwick	ridgemere	sump	porter of the abbey	ridgemere	none	0	0.00	
+658	rm_desmond_ashwick	Desmond Ashwick	ridgemere	sump	works at The Rainwater Brewery	ridgemere	light	0	0.00	
+659	rm_desmond_dripcot	Desmond Dripcot	ridgemere	sump	keeping the cells	ridgemere	none	0	0.00	
+660	rm_dirk_rainmore	Dirk Rainmore	ridgemere	commons	minding the shop door	ridgemere	broad	0	0.00	
+661	rm_disa_raincot	Disa Raincot	ridgemere	estate	almoner of the abbey	coldwater	light	0	0.00	
+662	rm_dunstan_greywick	Dunstan Greywick	ridgemere	commons	tanner at The Wharf Tannery	ridgemere	broad	0	0.00	
+663	rm_ebba_pitchworth	Ebba Pitchworth	ridgemere	works	works at The Ropewalk	ridgemere	none	0	0.00	
+664	rm_edda_mudmore	Edda Mudmore	ridgemere	sump	unloading ships at the piers	ridgemere	light	0	0.00	
+665	rm_edmund_kelpstack	Edmund Kelpstack	ridgemere	commons	brewer at The Hopyard	larkfield	none	0	0.00	
+666	rm_edric_kelpham	Edric Kelpham	ridgemere	estate	stewarding Greatly House	ridgemere	broad	0	0.00	
+667	rm_edric_saltby	Edric Saltby	ridgemere	sump	brother at the abbey brewhouse	ridgemere	light	0	0.00	
+668	rm_egil_grantham	Egil Grantham	ridgemere	heights	visiting the sick of the Heights	larkfield	none	0	0.00	
+669	rm_eleanor_mudworth	Eleanor Mudworth	ridgemere	office	keeping the rolls at the Records Office	ridgemere	none	0	0.00	
+670	rm_eleanor_saltcot	Eleanor Saltcot	ridgemere	commons	moneychanger at The Greatly Bank	ridgemere	none	0	0.00	
+671	rm_eleanor_vance	Eleanor Vance	ridgemere	heights	runs The Rag Mill	ridgemere	broad	0	0.00	
+672	rm_emmerich_greyridge	Emmerich Greyridge	ridgemere	office	in service to the Harrowgates	ridgemere	broad	0	0.00	
+673	rm_erland_millley	Erland Millley	ridgemere	works	-	ridgemere	broad	0	0.00	
+674	rm_frederick_foghand	Frederick Foghand	ridgemere	estate	unloading ships at the piers	ridgemere	light	0	0.00	
+675	rm_frederick_nailgate	Frederick Nailgate	ridgemere	estate	healer of the abbey	ridgemere	none	0	0.00	
+676	rm_frederick_rainham	Frederick Rainham	ridgemere	heights	-	ridgemere	light	0	0.00	
+677	rm_frida_bilgewell	Frida Bilgewell	ridgemere	sump	keeping the cells	ridgemere	light	0	0.00	
+678	rm_gorm_rustmarsh	Gorm Rustmarsh	ridgemere	commons	pressing at the Fell press	larkfield	light	0	0.00	
+679	rm_grete_gullhand	Grete Gullhand	ridgemere	sump	works at The Greatly Yard	ridgemere	light	0	0.00	
+680	rm_gudrun_fell_	Gudrun Fell	ridgemere	estate	keeping the Fell accounts	ridgemere	broad	0	0.00	
+681	rm_hakon_grantham	Hakon Grantham	ridgemere	heights	at lessons	ridgemere	light	0	0.00	
+682	rm_hanne_coalton	Hanne Coalton	ridgemere	sump	holding the Harbour Gate	fenshore	light	0	0.00	
+683	rm_hester_bilgeham	Hester Bilgeham	ridgemere	heights	holding the south gate	ridgemere	light	0	0.00	
+684	rm_hilde_bilgegate	Hilde Bilgegate	ridgemere	estate	serving in the hall	ridgemere	light	0	0.00	
+685	rm_hilde_dripby	Hilde Dripby	ridgemere	wharf	-	ridgemere	light	0	0.00	
+686	rm_hilde_greyby	Hilde Greyby	ridgemere	commons	glassblower at Clearwater Glass	ridgemere	light	0	0.00	
+687	rm_hilde_wetwick	Hilde Wetwick	ridgemere	estate	serving in the hall	coldwater	none	0	0.00	
+688	rm_hjalte_sootby	Hjalte Sootby	ridgemere	sump	works at The Greatly Yard	ridgemere	light	0	0.00	
+689	rm_hjalte_wetdale	Hjalte Wetdale	ridgemere	commons	healer of the abbey	ridgemere	light	0	0.00	
+690	rm_hollis_nailwick	Hollis Nailwick	ridgemere	estate	stewarding Timberland Court	ridgemere	light	0	0.00	
+691	rm_hollis_slagwick	Hollis Slagwick	ridgemere	office	in service to the Harrowgates	ridgemere	none	0	0.00	
+692	rm_ilse_coalley	Ilse Coalley	ridgemere	sump	lighting the lamps at dusk	ridgemere	light	0	0.00	
+693	rm_ingrid_grayrock_	Ingrid Grayrock	ridgemere	estate	at her lessons in the Hall	ridgemere	light	0	0.00	
+694	rm_isolde_fell_	Isolde Fell	ridgemere	estate	ruling House Fell	ridgemere	none	0	0.00	
+695	rm_ivar_cinderford	Ivar Cinderford	ridgemere	estate	serving in the hall	ridgemere	none	0	0.00	
+696	rm_ivo_dripford	Ivo Dripford	ridgemere	heights	holding the north gate	ridgemere	light	0	0.00	
+697	rm_ivo_wickgate	Ivo Wickgate	ridgemere	estate	serving at Greatly House	ridgemere	light	0	0.00	
+698	rm_julian_greatly	Julian Greatly	ridgemere	estate	keeping the Greatly Yard's books	ridgemere	light	0	0.00	
+699	rm_karin_stanmore	Karin Stanmore	ridgemere	heights	the Crown's treasurer	ridgemere	light	0	0.00	
+700	rm_kjell_saltcot	Kjell Saltcot	ridgemere	commons	-	ridgemere	none	0	0.00	
+701	rm_kjell_saltton	Kjell Saltton	ridgemere	commons	at lessons	ridgemere	light	0	0.00	
+702	rm_lavinia_ashford	Lavinia Ashford	ridgemere	commons	at lessons	ridgemere	light	0	0.00	
+703	rm_liv_kelpmarsh	Liv Kelpmarsh	ridgemere	heights	holding the east gate	southmeadow	none	0	0.00	
+704	rm_mab_carlisle	Mab Carlisle	ridgemere	heights	keeping the inn	larkfield	light	0	0.00	
+705	rm_magnus_stanmore	Magnus Stanmore	ridgemere	heights	at lessons	ridgemere	broad	0	0.00	
+706	rm_maren_grayrock_	Maren Grayrock	ridgemere	estate	keeping Grayrock Hall	larkfield	broad	0	0.00	
+707	rm_millicent_rustwell	Millicent Rustwell	ridgemere	estate	stewarding Fellhall	ridgemere	broad	0	0.00	
+708	rm_oda_harrowgate	Oda Harrowgate	ridgemere	office	the Queen, at the King's Residence	coldwater	none	0	0.00	
+709	rm_olaf_fogstack	Olaf Fogstack	ridgemere	sump	at lessons	ridgemere	light	0	0.00	
+710	rm_orla_ropeworth	Orla Ropeworth	ridgemere	commons	at lessons	ridgemere	light	0	0.00	
+711	rm_orm_wickwick	Orm Wickwick	ridgemere	sump	helping at Cinder Butchers	coldwater	none	0	0.00	
+712	rm_oskar_sootwick	Oskar Sootwick	ridgemere	estate	serving in the King's household	ridgemere	light	0	0.00	
+713	rm_oskar_wickmarsh	Oskar Wickmarsh	ridgemere	heights	in service to the Granthams	ridgemere	light	0	0.00	
+714	rm_osric_mossgrave	Osric Timberland	ridgemere	estate	riding out on House business	southmeadow	none	0	0.00	
+715	rm_ottilie_harrowgate	Ottilie Harrowgate	ridgemere	office	the King's daughter, at the Residence	ridgemere	none	0	0.00	
+716	rm_palle_plankmore	Palle Plankmore	ridgemere	sump	holding the Cinder Gate	ridgemere	light	0	0.00	
+717	rm_philippa_fogwick	Philippa Fogwick	ridgemere	estate	serving in the King's household	coldwater	none	0	0.00	
+718	rm_piet_muddale	Piet Muddale	ridgemere	wharf	working at Cinder Wheelwrights	ridgemere	none	0	0.00	
+719	rm_ragnar_cinderwell	Ragnar Cinderwell	ridgemere	commons	at lessons	ridgemere	light	0	0.00	
+720	rm_ragnar_vance	Ragnar Vance	ridgemere	heights	at lessons	ridgemere	none	0	0.00	
+721	rm_roald_wickstack	Roald Wickstack	ridgemere	heights	in service to the Vances	ridgemere	light	0	0.00	
+722	rm_rosamund_sootmarsh	Rosamund Sootmarsh	ridgemere	sump	holding the Customs Pier	ridgemere	broad	0	0.00	
+723	rm_sigrun_thornbury	Sigrun Thornbury	ridgemere	heights	at lessons	ridgemere	light	0	0.00	
+724	rm_solveig_tarwell	Solveig Tarwell	ridgemere	office	priest of the Chapel of the Tide	ridgemere	none	0	0.00	
+725	rm_soren_millwell	Soren Millwell	ridgemere	commons	-	ridgemere	broad	0	0.00	
+726	rm_sybil_bilgeby	Sybil Bilgeby	ridgemere	estate	cooking for the King's household	ridgemere	light	0	0.00	
+727	rm_thyra_carlisle	Thyra Carlisle	ridgemere	heights	at lessons	ridgemere	light	0	0.00	
+728	rm_tilde_nailby	Tilde Nailby	ridgemere	heights	holding the south gate	ridgemere	broad	0	0.00	
+729	rm_tobias_grayrock_	Tobias Grayrock	ridgemere	estate	keeping the wharf's books	ridgemere	light	0	0.00	
+730	rm_tove_wetgate	Tove Wetgate	ridgemere	estate	portering in Market Square	ridgemere	light	0	0.00	
+731	rm_tristram_rainley	Tristram Rainley	ridgemere	sump	portering in Market Square	ridgemere	light	0	0.00	
+732	rm_ulf_pitchham	Ulf Pitchham	ridgemere	heights	in service to the Carlisles	ridgemere	light	0	0.00	
+733	rm_ulf_stanmore	Ulf Stanmore	ridgemere	heights	at lessons	ridgemere	none	0	0.00	
+734	rm_vidar_dripmarsh	Vidar Dripmarsh	ridgemere	heights	holding the east gate	ridgemere	broad	0	0.00	
+735	rm_wynn_pitchwell	Wynn Pitchwell	ridgemere	heights	in service to the Stanmores	ridgemere	light	0	0.00	
+736	rm_wystan_tarstack	Wystan Tarstack	ridgemere	estate	keeping the chambers	ridgemere	broad	0	0.00	
+737	rm_yrsa_tarwick	Yrsa Tarwick	ridgemere	office	weighing at the Customs House	ridgemere	light	0	0.00	
+738	rmx_arne_rainworth	Arne Rainworth	ridgemere	sump	at lessons	ridgemere	light	0	0.00	
+739	rmx_aud_saltridge	Aud Saltridge	ridgemere	sump	driving for the carters	ridgemere	light	0	0.00	
+740	rmx_bertil_coalley	Bertil Coalley	ridgemere	sump	-	ridgemere	light	0	0.00	
+741	rmx_cressida_cotton	Cressida Cotton	ridgemere	commons	-	frosthollow	light	0	0.00	
+742	rmx_cressida_mallory	Cressida Mallory	ridgemere	commons	weighing at the Customs House	ridgemere	light	0	0.00	
+743	rmx_dunstan_sallow	Dunstan Sallow	ridgemere	commons	-	coldwater	broad	0	0.00	
+744	rmx_hester_greyby	Hester Greyby	ridgemere	sump	at lessons	ridgemere	light	0	0.00	
+745	rmx_humphrey_sootton	Humphrey Sootton	ridgemere	sump	at lessons	ridgemere	light	0	0.00	
+746	rmx_kari_wickworth	Kari Wickworth	ridgemere	sump	unloading ships at the piers	ridgemere	broad	0	0.00	
+747	rmx_liv_tarmarsh	Liv Tarmarsh	ridgemere	sump	working at Grayrock Shipwrights	ridgemere	light	0	0.00	
+748	rmx_moll_coldharbour	Moll Coldharbour	ridgemere	commons	at lessons	ridgemere	none	0	0.00	
+749	rmx_oda_marrowby	Oda Marrowby	ridgemere	commons	pie baker on Market Square	ridgemere	light	0	0.00	
+750	rmx_philippa_pitchstack	Philippa Pitchstack	ridgemere	commons	clerking in the Administrative Wing	larkfield	none	0	0.00	
+751	rmx_piet_lumley	Piet Lumley	ridgemere	commons	-	ridgemere	light	0	0.00	
+752	rmx_rupert_hatherley	Rupert Hatherley	ridgemere	commons	tallying in the Bonded Warehouse	ridgemere	broad	0	0.00	
+753	rmx_signe_bilgewell	Signe Bilgewell	ridgemere	sump	helping at The Morning Oven	ridgemere	light	0	0.00	
+754	rmx_tilde_slagwell	Tilde Slagwell	ridgemere	sump	working at The Fell Preserving House	ridgemere	light	0	0.00	
+755	rmx_tobias_blackford	Tobias Blackford	ridgemere	commons	clerking in the Administrative Wing	coldwater	none	0	0.00	
+756	rmx_tove_mossdale	Tove Mossdale	ridgemere	commons	tallying in the Long Store	ridgemere	none	0	0.00	
+757	rmx_ulf_kelpmarsh	Ulf Kelpmarsh	ridgemere	sump	helping at The Round and Rind	ridgemere	light	0	0.00	
+758	rmx_wenna_sootham	Wenna Sootham	ridgemere	commons	tallying in the New Store	ridgemere	broad	0	0.00	
+759	tn_fh_ivy_stonehollow	Ivy Stonehollow	ridgemere		fells timber at the Rainwood cut	oakhaven	none	0	0.00	
+760	cty_ash_sheafmeadow	Ash Sheafmeadow	saltwell		cellar hand at Ochre	saltwell	light	0	0.00	
+761	cty_fern_merewick	Fern Merewick	saltwell		salt raker at Saltpan	saltwell	light	0	0.00	
+762	cty_hob_hedgecombe	Hob Hedgecombe	saltwell		vine hand at Ochre	saltwell	light	0	0.00	
+763	cty_lavinia_mudworth	Lavinia Mudworth	saltwell		keeps rabbits at Redsand	saltwell	broad	0	0.00	
+764	cty_orm_sootgate	Orm Sootgate	saltwell		carter at Saltwell	saltwell	none	0	0.00	
+765	cty_senna_applegarth	Senna Applegarth	saltwell		tends the vines at Ochre	saltwell	light	0	0.00	
+766	cty_winifred_fogridge	Winifred Fogridge	saltwell		warrener at Redsand	saltwell	light	0	0.00	
+767	tn_fh_thistle_stonepick	Thistle Stonepick	saltwell		shopkeeper at Saltwell Stores	saltwell	light	0	0.00	
+768	tn_mb_bramble_bogditch	Bramble Bogditch	saltwell		-	saltwell	broad	0	0.00	
+769	cty_briar_sedgebridge	Briar Sedgebridge	southmeadow		digs clay at the Sallow pits	southmeadow	none	0	0.00	
+770	cty_sloe_harvestby	Sloe Harvestby	southmeadow		tends the vines at Southmeadow	southmeadow	light	0	0.00	
+771	tn_sm_hob_meadowfield	Hob Meadowfield	southmeadow		farmhand at Larkholm	southmeadow	light	0	0.00	
+772	tn_sm_lark_meadowfield	Lark Meadowfield	southmeadow		-	southmeadow	light	0	0.00	

@@ -4597,6 +4597,50 @@ Result World::teleport(const std::string& id, const std::string& cellId, double 
     return {true, a->name + " is now in " + destination->name + ".", id};
 }
 
+void World::advanceClock(double seconds)
+{
+    // As a tick's steps move the clock (World::tick), with nothing else of the tick: the frozen simulator's world.
+    while (seconds > Epsilon)
+    {
+        const double step = std::min(seconds, 60.0);
+        seconds -= step;
+        time_ += step;
+        calendarDays_ = std::min(calendar::MaxGameDays, calendarDays_ + step / DaySeconds);
+        const auto slot = std::int64_t(std::floor(calendarDays_ * 4));
+        if (slot != climateSlot_)
+            climateSlot_ = slot;
+        refreshWeatherField();
+    }
+}
+
+void World::restage()
+{
+    if (!tiered())
+        return;
+    const auto stage = stageCells();
+    for (auto& entry : entities_.inOrder())
+        if (entry.second.npc)
+            placeOnStage(entry.second, stage);
+}
+
+bool World::replayPlace(const std::string& id, const std::string& cellId, Vec2 at, bool moving, const std::string& posture,
+                        bool offstage)
+{
+    auto* e = entity(id);
+    if (!e || !ensureLoaded(cellId).ok || !cell(cellId))
+        return false;
+    e->cellId = cellId;
+    e->position = at;
+    e->path.clear();
+    e->input = {};
+    e->turning = false;
+    e->velocity = moving ? Vec2{.5, 0} : Vec2{};    // (Walking: the director passes over them, as over anyone walking.)
+    if (!posture.empty() && stablePosture(posture))
+        e->posture = posture;
+    e->offstage = offstage;
+    return true;
+}
+
 Result World::addVisitor(const std::string& id, const std::string& name, const std::string& description, const Appearance& look,
                          const std::string& cellId, double x, double y, double minutes)
 {

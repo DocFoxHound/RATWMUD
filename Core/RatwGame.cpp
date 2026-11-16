@@ -219,6 +219,57 @@ class ScratchStoreImpl final : public Store
     std::unique_ptr<Store> inner_;
 };
 
+// A scratch world started from a checkpoint file instead of its own save (Options::checkpointFile: the conversation
+// simulator's fixtures, doc 84 §15.1): the file read (through gzip when it ends .gz), nothing written, no journal replayed
+// over it, and none of a database world's copied NPC states applied (the file has its own).
+class CheckpointFileStoreImpl final : public Store
+{
+  public:
+    explicit CheckpointFileStoreImpl(std::string path) : path_(std::move(path)) {}
+    std::unique_ptr<journal::Writer> writer = journal::memoryWriter(std::make_shared<std::vector<journal::Record>>());
+    journal::Writer* journal() override { return writer.get(); }
+    bool journalAfter(std::uint64_t, std::vector<journal::Record>&, std::string&) override { return true; }
+    bool database() const override { return false; }
+    std::string load() override
+    {
+        std::string text;
+        if (path_.size() > 3 && path_.compare(path_.size() - 3, 3, ".gz") == 0)
+        {
+            std::string quoted = "'";
+            for (const char c : path_)
+                quoted += c == '\'' ? std::string("'\\''") : std::string(1, c);
+            quoted += "'";
+            if (FILE* p = ::popen(("gzip -dc " + quoted).c_str(), "r"))
+            {
+                char buffer[1 << 16];
+                for (std::size_t n; (n = std::fread(buffer, 1, sizeof buffer, p)) > 0;)
+                    text.append(buffer, n);
+                if (::pclose(p) != 0)
+                    text.clear();
+            }
+        }
+        else
+        {
+            std::ifstream in(path_, std::ios::binary);
+            std::ostringstream all;
+            all << in.rdbuf();
+            text = all.str();
+        }
+        if (text.empty())
+            problem_ = "the checkpoint file " + path_ + " can't be read";
+        return text.empty() ? std::string("{\"schema\":-1}") : text;
+    }
+    bool save(DbStore::Build, std::uint64_t) override { return true; }
+    bool saveInBackground(DbStore::Build, std::uint64_t) override { return true; }
+    bool flush() override { return true; }
+    void queueEvents(std::vector<WorldEvent>) override {}
+    std::vector<std::pair<std::string, std::string>> externalNpcStates() override { return {}; }
+    std::string error() const override { return problem_; }
+
+  private:
+    std::string path_, problem_;
+};
+
 class MemoryStoreImpl final : public Store
 {
   public:
@@ -421,6 +472,11 @@ bool Game::start(std::string& problem)
         if (!voiceLog_)
             note("warn", "RATW_VOICE the ledger " + options_.voiceLog + " cannot be written");
     }
+    if (!options_.checkpointFile.empty() && !options_.scratch)
+    {
+        problem = "a checkpoint file is only for a scratch world (it is read, and nothing is saved over it)";
+        return false;
+    }
     // One server per world, before anything is loaded or written. A scratch server writes nothing: it needn't own it.
     if (options_.scratch)
         note("info", "RATW_SCRATCH a scratch server (pid " + std::to_string(::getpid()) +
@@ -435,6 +491,8 @@ bool Game::start(std::string& problem)
         store_ = databaseStore(options_.conninfo, liveWorldId_, problem);
         if (options_.scratch)
             store_ = scratchStore(std::move(store_));
+        if (store_ && !options_.checkpointFile.empty())   // (From a fixture's checkpoint: doc 84 §15.1.)
+            store_ = std::make_unique<CheckpointFileStoreImpl>(options_.checkpointFile);
         if (!store_)
         {
             problem = "the world database save is unavailable: " + problem;
@@ -470,6 +528,8 @@ bool Game::start(std::string& problem)
         store_ = customStore_ ? std::move(customStore_) : options_.savePath.empty() ? memoryStore() : fileStore(options_.savePath, problem);
         if (options_.scratch && store_)
             store_ = scratchStore(std::move(store_));
+        if (store_ && !options_.checkpointFile.empty())
+            store_ = std::make_unique<CheckpointFileStoreImpl>(options_.checkpointFile);
         if (!store_)
             return false;
     }
@@ -696,7 +756,16 @@ bool Game::loadFromDatabase(std::string& problem)
             if (cell[0] && cell[1])
                 cellHeaders_[*cell[0]] = *cell[1];
         std::string prefetchProblem;
-        prefetching = prefetcher().Start(options_.conninfo, std::to_string(loadedBuild_), prefetchProblem);
+        // (One prefetcher a process: a second world started in it, as the conversation simulator starts one from each
+        // fixture checkpoint (doc 84 §15.1), keeps the one already fetching this build's cells.)
+        static std::string prefetchingBuild;
+        if (!prefetching || prefetchingBuild != std::to_string(loadedBuild_))
+        {
+            if (prefetching)
+                prefetcher().Stop();
+            prefetching = prefetcher().Start(options_.conninfo, std::to_string(loadedBuild_), prefetchProblem);
+            prefetchingBuild = prefetching ? std::to_string(loadedBuild_) : std::string();
+        }
         if (!prefetching)
             note("warning", "RATW cells will not be fetched ahead (each loads when needed): " + prefetchProblem);
     }
@@ -5074,6 +5143,8 @@ void Game::speakReply(const std::string& npcId, const std::string& subjectId, bo
     logEvent("conversation", npcId, identified ? subjectId : std::string());
     heed(npcId, subjectId, identified, reply);
     voiced("dialogue", route, npcId);
+    if (options_.logTalkWords)
+        voicedWords("dialogue", npcId, subjectId, text, nullptr);
     saveSoon();
     // Spoken to with others: the next one answers now, having heard this.
     if (const auto chain = chainAfter_.find(npcId); chain != chainAfter_.end())
@@ -6654,6 +6725,108 @@ void Game::autosave()
     }
     else
         trimWhenStored_.push_back({revision_, seq});
+}
+
+std::string Game::checkpointText()
+{
+    Value document;
+    std::string states;
+    capture()(document, states);
+    document.set("journal", 0.0);                   // (A fixture has no journal after it.)
+    // The residents' world only: no player characters and no accounts (a scratch world's accounts may be set-aside
+    // ones, and a fixture is read only by scratch worlds, which start with fresh accounts of their own).
+    document.set("players", Value::array());
+    document.erase("accounts");
+    return json::dump(document);
+}
+
+json::Value Game::talkCarry() const
+{
+    auto out = Value::object();
+    auto heard = Value::object();
+    for (const auto& [who, h] : scenesHeard_)
+    {
+        auto list = Value::array();
+        for (const auto& id : h.order)
+            list.push(id);
+        heard.add(who, list);
+    }
+    out.add("heard", heard);
+    auto memory = Value::object();
+    for (const auto& [owner, memos] : talkMemory_)
+    {
+        auto kept = Value::object();
+        for (const auto& [key, m] : memos)
+        {
+            auto pair = Value::array();
+            pair.push(m.value);
+            pair.push(m.until);
+            kept.add(key, pair);
+        }
+        memory.add(owner, kept);
+    }
+    out.add("memory", memory);
+    auto recent = Value::object();
+    for (const auto& [cell, ids] : recentScenes_)
+    {
+        auto list = Value::array();
+        for (const auto& id : ids)
+            list.push(id);
+        recent.add(cell, list);
+    }
+    out.add("recent", recent);
+    auto spoke = Value::object();
+    for (const auto& [id, t] : npcLastSpeech_)
+        spoke.add(id, t);
+    out.add("spoke", spoke);
+    auto incidents = Value::array();
+    for (const auto& id : voicedIncidents_)
+        incidents.push(id);
+    out.add("incidents", incidents);
+    auto pacing = Value::object();
+    for (const auto& [key, t] : const_cast<World&>(world_).ambientPacing())
+        pacing.add(key, t);
+    out.add("pacing", pacing);
+    return out;
+}
+
+void Game::talkResume(const json::Value& carried)
+{
+    if (const auto* heard = carried.find("heard"); heard && heard->isObject())
+    {
+        scenesHeard_.clear();
+        for (const auto& [who, list] : heard->fields())
+            for (const auto& id : list.items())
+                scenesHeard_[who].add(id.asString(""));
+    }
+    if (const auto* memory = carried.find("memory"); memory && memory->isObject())
+    {
+        talkMemory_.clear();
+        for (const auto& [owner, kept] : memory->fields())
+            for (const auto& [key, pair] : kept.fields())
+                if (pair.isArray() && pair.size() == 2)
+                    talkMemory_[owner][key] = {pair.items()[0].asString(""), pair.items()[1].asNumber()};
+    }
+    if (const auto* recent = carried.find("recent"); recent && recent->isObject())
+    {
+        recentScenes_.clear();
+        for (const auto& [cell, list] : recent->fields())
+            for (const auto& id : list.items())
+                recentScenes_[cell].push_back(id.asString(""));
+    }
+    if (const auto* spoke = carried.find("spoke"); spoke && spoke->isObject())
+        for (const auto& [id, t] : spoke->fields())
+            npcLastSpeech_[id] = t.asNumber();
+    if (const auto* incidents = carried.find("incidents"); incidents && incidents->isArray())
+        for (const auto& id : incidents->items())
+            voicedIncidents_.insert(id.asString(""));
+    if (const auto* pacing = carried.find("pacing"); pacing && pacing->isObject())
+    {
+        auto& last = world_.ambientPacing();
+        last.clear();
+        for (const auto& [key, t] : pacing->fields())
+            last[key] = t.asNumber();
+    }
 }
 
 void Game::save()

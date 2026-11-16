@@ -1,0 +1,13 @@
+id: tt_co_home_3
+name: A home in the talk town
+description: A small room.
+world: 30 64 0
+outdoors: false
+weather: clear
+size: 6 5
+grid:
+......
+......
+......
+......
+...+..

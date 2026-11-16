@@ -156,6 +156,14 @@ const ResidentLife* Society::resident(const std::string& id) const
     const auto it = state_.residents.find(id);
     return it == state_.residents.end() ? nullptr : &it->second;
 }
+bool Society::replayTask(const std::string& id, const std::string& task)
+{
+    const auto it = state_.residents.find(id);
+    if (it == state_.residents.end())
+        return false;
+    it->second.task = task;
+    return true;
+}
 bool Society::moveHome(const std::string& npc, const std::string& cell, double x, double y)
 {
     auto found = state_.residents.find(npc);

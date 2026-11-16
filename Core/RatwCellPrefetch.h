@@ -28,6 +28,12 @@ class FRatwCellPrefetch
             return false;
         BuildId = Build;
         Sql = Query;
+        {
+            std::lock_guard<std::mutex> Guard(Lock);
+            Stopping = false;                     // (Started again after a Stop: another build in the same process.)
+            Ready.clear();
+            Queue.clear();
+        }
         Worker = std::thread([this] { Run(); });
         return true;
     }

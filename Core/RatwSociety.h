@@ -650,6 +650,9 @@ class Society
         return a ? a->cash : 0;
     }
     const ResidentLife* resident(const std::string& id) const;
+    // A resident's task as a recorded run had it at that moment (the conversation simulator's fixtures, Docs/Design/84
+    // §15.1; never the game's own path). False if there's no one by that id.
+    bool replayTask(const std::string& id, const std::string& task);
     const SocietyState& state() const { return state_; }
     // Restores a checkpoint, leniently (doc 79, 14): the world may have gained or lost residents since it was written;
     // those still here keep their saved lives, new ones start fresh, the staged accounts of those gone and every dead
