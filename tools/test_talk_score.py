@@ -259,6 +259,40 @@ class Metrics(unittest.TestCase):
         self.assertFalse(talk_score.meets("farewell.return", "farewell", talk_score.move_book()))
         self.assertTrue(talk_score.meets("react.news.known", "react.news", talk_score.move_book()))
 
+    def test_t5_told_what_they_knew_without_a_known_answer(self):
+        # Phase 4: a claim passed on to one who held it before is fine answered "I'd heard"; not with "Never!"; one told it
+        # fresh is judged and fine; a line with no to_knew isn't judged.
+        d = write_run(self.root / "t5", [({}, [("jory", "varg", "Wren's wed."), ("varg", "jory", "I'd heard.")]),
+                                         ({}, [("jory", "varg", "Wren's wed."), ("varg", "jory", "Never!")]),
+                                         ({}, [("jory", "varg", "Wren's wed."), ("varg", "jory", "Never!")]),
+                                         ({}, [("jory", "varg", "Wren's wed."), ("varg", "jory", "Never!")])], PEOPLE)
+        self.with_fields(d, {(1, 0): {"asserts": ["marriage"], "to_knew": "yes"}, (1, 1): {"moves": ["react.news.known"]},
+                             (2, 0): {"asserts": ["marriage"], "to_knew": "yes"}, (2, 1): {"moves": ["react.news.new"]},
+                             (3, 0): {"asserts": ["marriage"], "to_knew": "no"}, (3, 1): {"moves": ["react.news.new"]},
+                             (4, 0): {"asserts": ["marriage"]}})
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertAlmostEqual(m["T5"], 100 / 3)
+        self.assertEqual(m["T5_detail"]["asserted"], 3)
+
+    def test_b1_the_slowest_profile_and_its_noise(self):
+        # Phase 4: B1 from talk_sim's run.json; a card's is the slowest profile's; a timing past its gate breaks it only
+        # beyond its share of noise.
+        d = write_run(self.root / "b1", [({}, [("jory", "varg", "Hm.")])], PEOPLE)
+        meta = json.loads((d / "run.json").read_text())
+        meta.update({"beat_ms": {"n": 10, "mean": .05, "p99": .2, "max": .4}, "look_ms": {"n": 5, "mean": .6, "p99": 3.5}})
+        (d / "run.json").write_text(json.dumps(meta))
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertEqual((m["B1"], m["B1P"], m["B1L"]), (.05, .2, 3.5))
+        self.assertEqual(talk_score.combine({"a": {**m, "_counts": {"lines": 1, "conversations": 1}},
+                                             "b": {**m, "B1L": 4.0, "_counts": {"lines": 9, "conversations": 1}}})["B1L"], 4.0)
+        base = {"metrics": {"B1L": row("B1L", 3.5)}}
+        self.assertEqual(talk_score.check({"metrics": {"B1L": row("B1L", 5.2)}}, base), [])
+        self.assertEqual(len(talk_score.check({"metrics": {"B1L": row("B1L", 6.0)}}, base)), 1)
+        # (A hard timing gate the baseline passed breaks only beyond its noise too: B5's, say.)
+        hard = {"metrics": {"B5": row("B5", 160.0)}}
+        self.assertEqual(talk_score.check({"metrics": {"B5": row("B5", 140.0)}}, hard), [])
+        self.assertEqual(len(talk_score.check({"metrics": {"B5": row("B5", 100.0)}}, hard)), 1)
+
     def test_c4_by_tone_and_a_bridge(self):
         d = write_run(self.root / "c4", [({}, [("jory", "varg", "Old Tam passed."), ("varg", "jory", "Lovely weather.")]),
                                          ({}, [("jory", "varg", "Old Tam passed."), ("varg", "jory", "Well."),

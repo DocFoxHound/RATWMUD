@@ -1462,6 +1462,22 @@ class World
     std::vector<AmbientPick> ambientPicks(const std::vector<std::string>& listeners, const std::set<std::string>& busy = {});
     // An exchange was voiced: it counts against both and the place for a while, and does what talk does.
     void ambientSpoken(const AmbientPick& pick);
+    // The same in two halves, for talk spoken a beat at a time (doc 84 §8.2, Phase 4): ambientBegun counts it against both
+    // and the place from now; ambientEnded, as it ends, makes everyone in it a little more familiar (a quarrel's grudge
+    // aired sours them, as ever) and records it. What each line does (a claim passed on, its moves' effects on regard)
+    // is the game's, as each is said.
+    void ambientBegun(const AmbientPick& pick);
+    void ambientEnded(const AmbientPick& pick, const std::vector<std::string>& people);
+    // A claim told in talk (doc 84 §8.6): believed as `believe` does, except that from a second, independent source
+    // (not the one they had it from, nor one who had it from them: `via` is where the teller had it) it is corroborated:
+    // confidence c becomes c + (1 - c) * 0.4, once a source.
+    void told(const Belief& b, const std::string& via);
+    // A claim denied to its holder by the one it is about, or their kin (§8.6): their confidence times `factor` (0..1).
+    void doubted(const std::string& holder, const std::string& subject, const std::string& claim, double factor);
+    // The holder's belief of this claim about this subject, if any (the same words, or the same incident, or the same
+    // kind about the same second party).
+    const Belief* holding(const std::string& holder, const std::string& subject, const std::string& claim,
+                          const std::string& incident = {}, const std::string& kind = {}, const std::string& object = {}) const;
     std::string describeRegard(const std::string& holder, const std::string& other) const;
     std::vector<std::string> guardsOf(const std::string& town) const;
     // Paying off the bandits who have stopped this player (whichever of them `bandit` is).
@@ -1926,6 +1942,7 @@ class World
     void furnishHomes();
     void placeHomeStores(const std::string& cellId);
     std::map<std::string, std::vector<Belief>> beliefs_;   // By holder.
+    std::set<std::string> corroborated_;                   // "holder|subject|claim|source" already counted (told; not saved).
     CrimeState crime_;
     // The ambient director (RatwAmbient.cpp): when each resident and place last had an exchange (world seconds), and
     // what has happened in residents' lives lately (a few items each, for two game days).

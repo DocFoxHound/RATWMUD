@@ -52,16 +52,19 @@ def main() -> int:
         p = run("--fixtures", str(fx))
         if p.returncode != 1 or "cp-1.json.gz is missing" not in p.stderr:
             failures.append(f"a missing checkpoint is refused (rc {p.returncode}): {p.stderr.strip()[-300:]}")
-        # --library-from: the copy of the library is gone when the run ends.
-        before = set(Path(tempfile.gettempdir()).glob("ratw-talk-lib-*"))
-        p = run("--warm", "1", "--exchanges", "5", "--library-from", "HEAD")
-        after = set(Path(tempfile.gettempdir()).glob("ratw-talk-lib-*"))
-        if p.returncode == 77:
+        # --library-from: the copy of the library (its own, named by its pid) is gone when the run ends. (Only its own:
+        # talk_golden, run beside this one by ctest -j, has a copy of its own while it runs.)
+        child = subprocess.Popen([str(sim), "--world", str(TOWN), "--profile", "town", "--out", str(Path(tmp) / "out"),
+                                  "--warm", "1", "--exchanges", "5", "--library-from", "HEAD"],
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        _out, err = child.communicate()
+        left = Path(tempfile.gettempdir()) / f"ratw-talk-lib-{child.pid}"
+        if child.returncode == 77:
             print("talk_sim_fixture_check: no git history here; the library check skipped", file=sys.stderr)
-        elif p.returncode != 0:
-            failures.append(f"a run over the library at HEAD (rc {p.returncode}): {p.stderr.strip()[-300:]}")
-        elif after - before:
-            failures.append(f"--library-from left {', '.join(str(d) for d in sorted(after - before))} behind")
+        elif child.returncode != 0:
+            failures.append(f"a run over the library at HEAD (rc {child.returncode}): {err.strip()[-300:]}")
+        elif left.exists():
+            failures.append(f"--library-from left {left} behind")
     for f in failures:
         print("talk_sim_fixture_check: " + f, file=sys.stderr)
     return 1 if failures else 0

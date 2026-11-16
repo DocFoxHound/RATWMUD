@@ -1704,6 +1704,244 @@ say And you.
     }
 }
 
+void beatsWhenSpoken()
+{
+    // Doc 84 §8.2, §8.6, §8.9, §8.10 (Phase 4): each line chosen from the facts as they are when it comes due; a scene's
+    // later turn checked again (Valve's rule); breaks; a third voice; what one already knew; a thread returned to; lines
+    // written outside the library carried on by the engine.
+    std::string problem;
+    auto lib = foundation();
+    expect(lib.parse(R"(
+rule bw_open
+when concept=talk.crime
+does tell.news
+say Someone broke the bakery window.
+rule bw_wet
+does react.news
+when here.weather=rain
+say And in this rain, too.
+rule bw_dry
+does react.news
+when here.weather=clear
+say On a fine day like this.
+rule bw_ack
+does ack
+say I see.
+rule bw_bye
+does farewell
+say Farewell.
+rule bw_bye_back
+does farewell.return
+say And you.
+scene bw_fog
+when topic=smalltalk here.weather=fog pair.mem.fogged!=yes
+remember pair: fogged=yes 1h
+a : Look at this fog.
+b : Thick as wool.
+rule bw_break_rain
+does break
+when conv.interrupt=rain
+say Rain. Inside, quick.
+rule bw_known
+does react.news.known
+say I'd heard.
+rule bw_new
+does react.news.new
+say Never!
+rule bw_defend
+does join.defend
+when conv.stake=kin
+denies
+say That's my brother you mean.
+rule bw_sorry
+does apologise
+say I meant nothing by it.
+rule bw_forgive
+does accept_apology
+say No harm done.
+rule bw_return
+does return
+say As I was saying.
+)", "beats.talk", problem), problem);
+    const Freshness fresh{None, {}};
+    // 1. Each beat asks the facts again: the answer is chosen from the moment as it is when it comes due.
+    {
+        auto q = moment("talk.crime");
+        q.facts["here.weather"] = "rain";
+        Conversation c;
+        c.seed = 5;
+        expect(bool(lib.begin(c, q, fresh)), "begun");
+        auto now = q;
+        now.facts["here.weather"] = "clear";
+        int asked = 0;
+        const auto facts = [&](int, int) {
+            ++asked;
+            return now;
+        };
+        const auto second = lib.next(c, facts, fresh);
+        expect(second && second->entry == "bw_dry" && asked > 0, "the reply is chosen from the facts as they are now (dry): " +
+                                                                     (second ? second->entry : std::string("none")));
+    }
+    // 2. Valve's rule: a scene's later turn is checked again when it comes due; the fog lifted, the rest is dropped. What
+    // the scene itself remembered (pair.mem) is never checked again.
+    {
+        auto q = moment("talk.smalltalk");
+        q.facts["here.weather"] = "fog";
+        q.facts["topic.kind"] = "smalltalk";
+        Conversation c;
+        c.seed = 1;
+        const auto first = lib.begin(c, q, fresh);
+        expect(first && first->entry == "bw_fog" && first->turn == 0 && first->variant == 0, "the fog scene opens");
+        auto still = q;
+        still.facts["pair.mem.fogged"] = "yes";     // (What its own first line remembered.)
+        Conversation kept = c;
+        const auto stays = lib.next(kept, [&](int, int) { return still; }, fresh);
+        expect(stays && stays->text == "Thick as wool." && kept.dropped == 0, "still foggy: its turn is said, its own memory never checked again");
+        auto lifted = q;
+        lifted.facts["here.weather"] = "clear";
+        const auto next = lib.next(c, [&](int, int) { return lifted; }, fresh);
+        expect(c.dropped == 1 && (!next || next->text != "Thick as wool."), "the fog lifted: the scene's later turn is dropped");
+    }
+    // 3. Broken off (§8.10): conv.interrupt, a break line by the one named, and the talk ends; with none fitting, it ends.
+    {
+        auto q = moment("talk.crime");
+        q.facts["here.weather"] = "rain";
+        Conversation c;
+        c.seed = 2;
+        lib.begin(c, q, fresh);
+        const auto broke = lib.interrupt(c, "rain", 1, [&](int, int) { return q; }, fresh);
+        expect(broke && broke->entry == "bw_break_rain" && broke->who == 1 && broke->to == 0 && c.ended == "break" &&
+                   c.phase == Conversation::Phase::Ended && c.conv["interrupt"] == "rain",
+               "rain: the one whose turn it was breaks off, and it ends");
+        Conversation d;
+        d.seed = 2;
+        lib.begin(d, q, fresh);
+        expect(!lib.interrupt(d, "fight", 1, [&](int, int) { return q; }, fresh) && d.ended == "break" && !lib.next(d, [&](int, int) { return q; }, fresh),
+               "no break line fits: it ends all the same");
+    }
+    // 4. A third voice (§8.9): joins with a line doing a join move, said to the one who spoke last, who owes the answer;
+    // the joiner's queries have the speaker as a.
+    {
+        auto q = moment("talk.crime");
+        q.facts["here.weather"] = "rain";
+        q.facts["topic.subject"] = "Bram";
+        Conversation c;
+        c.seed = 3;
+        lib.begin(c, q, fresh);
+        const auto wren = person("wren", "Wren", "female", "adult", "baker", "civilian");
+        const auto query = [&](int speaker, int to) {
+            if (speaker < 2 && to < 2)
+                return q;
+            auto x = q;
+            const auto who = [&](int i) { return i == 0 ? q.a : i == 1 ? q.b : wren; };
+            x.a = who(speaker);
+            x.b = who(to);
+            return x;
+        };
+        c.phase = Conversation::Phase::Closing;
+        expect(!lib.join(c, "wren", "kin", {"join.defend"}, query(2, 0), fresh), "nobody joins once the closing has begun");
+        c.phase = Conversation::Phase::Body;
+        expect(!lib.join(c, "wren", "friend", {"join.defend"}, query(2, 0), fresh) && c.people.size() == 2,
+               "nobody joins without a line that fits their stake");
+        const auto joined = lib.join(c, "wren", "kin", {"join.defend"}, query(2, 0), fresh);
+        expect(joined && joined->entry == "bw_defend" && joined->who == 2 && joined->to == 0 && c.people.size() == 3 &&
+                   c.people[2] == "wren" && c.stake == "kin" && joined->denies.size() == 1,
+               "a kinswoman cuts in to the one who spoke, denying it");
+        expect(c.open.size() == 1 && c.open[0].to == 0 && c.open[0].by == 2, "the one she spoke to owes the answer");
+        expect(Library::partner(c, 2) == 0 && Library::partner(c, 0) == 1, "who each is talking with");
+        const auto sorry = lib.next(c, query, fresh);
+        expect(sorry && sorry->entry == "bw_sorry" && sorry->who == 0 && sorry->to == 2, "the teller apologises to her");
+        const auto forgive = lib.next(c, query, fresh);
+        expect(forgive && forgive->entry == "bw_forgive" && forgive->who == 2 && forgive->to == 0, "and she accepts it");
+        expect(!lib.join(c, "ivo2", "kin", {"join.defend"}, query(2, 0), fresh), "three at most");
+        std::vector<SaidLine> rest;
+        while (auto l = lib.next(c, query, fresh))
+            rest.push_back(*l);
+        expect(c.ended == "farewell" && !rest.empty(), "and the talk closes: " + c.ended);
+    }
+    // 5. What one already knew (§8.6): "I heard." from one who knew, never "Never!"; never "I heard." from one who didn't.
+    {
+        std::map<std::string, int> knew, fresh2;
+        for (std::uint64_t seed = 1; seed <= 60; ++seed)
+        {
+            auto q = moment("talk.crime");
+            q.facts["here.weather"] = "fog";        // (Neither weather answer holds.)
+            q.b.facts["knows"] = "yes";
+            ++knew[lib.converse(q, seed, None, {}).info.at(1).entry];
+            q.b.facts["knows"] = "no";
+            ++fresh2[lib.converse(q, seed, None, {}).info.at(1).entry];
+        }
+        expect(knew["bw_known"] == 60, "one who knew answers that they'd heard, every time");
+        expect(fresh2["bw_known"] == 0 && fresh2["bw_new"] > 0, "one who didn't never says they'd heard");
+        auto scenes = foundation();
+        expect(scenes.parse("scene sc_news\nwhen topic=smalltalk\ndoes tell.gossip / react.news.new\na : Did you hear?\nb : Never!\n"
+                            "rule mv_ack\ndoes ack\nsay I see.\n", "news.talk", problem), problem);
+        auto q = moment("talk.smalltalk");
+        q.facts["topic.kind"] = "smalltalk";
+        q.b.facts["knows"] = "yes";
+        expect(scenes.pick(q, 1, None, {}).id.empty(), "a scene whose answer says \"Never!\" isn't chosen for one who knew");
+        q.b.facts["knows"] = "no";
+        expect(scenes.pick(q, 1, None, {}).id == "sc_news", "and is for one who didn't");
+    }
+    // 6. A thread left unfinished on this topic is returned to in the opener's breath (§8.10).
+    {
+        auto q = moment("talk.crime");
+        q.facts["here.weather"] = "rain";
+        q.facts["pair.thread"] = "crime";
+        Conversation c;
+        c.seed = 4;
+        const auto first = lib.begin(c, q, fresh);
+        expect(first && first->text.rfind("As I was saying. ", 0) == 0 && first->moves.front() == "return",
+               "as I was saying: " + (first ? first->text : std::string()));
+        q.facts["pair.thread"] = "prices";
+        Conversation d;
+        d.seed = 4;
+        const auto other = lib.begin(d, q, fresh);
+        expect(other && other->text == "Someone broke the bakery window.", "not on another topic");
+    }
+    // 7. Lines written outside the library (the authored exchange) are said as they are, then the engine closes.
+    {
+        auto q = moment("talk.crime");
+        Said written;
+        written.lines = {{0, "A wagon came in."}, {1, "So I saw."}};
+        Conversation c;
+        c.seed = 1;
+        const auto first = lib.beginWith(c, q, written);
+        expect(first && first->text == "A wagon came in." && first->who == 0 && first->to == 1, "the first written line");
+        std::vector<SaidLine> rest;
+        while (auto l = lib.next(c, [&](int, int) { return q; }, fresh))
+            rest.push_back(*l);
+        expect(rest.size() >= 3 && rest.front().text == "So I saw." && c.ended == "farewell",
+               "then the second, and the farewell pair: " + c.ended);
+    }
+    // 8. frames.json's curt, join and thread are checked when it loads.
+    for (const auto& [text, why] : std::vector<std::pair<std::string, std::string>>{
+             {R"({"curt": {"chance": 2}})", "curt: chance"},
+             {R"({"curt": {"effects": {"them": {"affinity": -1}}}})", "\"self\" or \"other\""},
+             {R"({"curt": {"effects": {"other": {"warmth": -1}}}})", "an effect is an axis"},
+             {R"({"join": {"people": 4}})", "this build's most"},
+             {R"({"join": {"colour": 1}})", "join: no field 'colour'"},
+             {R"({"thread": {"days": 99}})", "thread: days"}})
+    {
+        namespace fs = std::filesystem;
+        const auto dir = fs::temp_directory_path() / ("ratw-frames4-" + std::to_string(checks));
+        fs::remove_all(dir);
+        fs::create_directories(dir / "grammar");
+        for (const char* f : {"facts.json", "settings.json", "moves.json", "claims.json", "groups.talk"})
+            fs::copy_file(fs::path(Dir) / f, dir / f);
+        fs::copy_file(fs::path(Dir) / "grammar" / "plain.grammar", dir / "grammar" / "plain.grammar");
+        std::ofstream(dir / "frames.json") << text;
+        Library bad;
+        std::string p;
+        expect(!bad.loadFoundation(dir.string(), p) && p.find(why) != std::string::npos, "frames.json refused (" + why + "): " + p);
+        fs::remove_all(dir);
+    }
+    const auto& b = lib.beats();
+    expect(b.curtChance == .5 && b.curtEffects.at("other").at("affinity") == -.5 && b.joinPeople == 3 && b.joinTiles == 3 &&
+               b.threadDays == 2,
+           "frames.json's Phase 4 settings as written");
+}
+
 int main()
 {
     try
@@ -1724,6 +1962,7 @@ int main()
         truthFixes();
         movesAndTags();
         turnEngine();
+        beatsWhenSpoken();
     }
     catch (const std::exception& error)
     {

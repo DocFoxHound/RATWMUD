@@ -363,6 +363,16 @@ add_test(NAME talk_scorecard_quick COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/T
 # A fixture that isn't the one recorded is refused before anything is replayed, and --library-from cleans up after itself
 # (the slice-end review of doc 84's Slice 1).
 add_test(NAME talk_sim_fixture COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/Tests/talk_sim_fixture_check.py ${CMAKE_CURRENT_BINARY_DIR})
+# The director's timings (doc 84 §16, B1): a beat's mean and p99, a look's p99, measured alone (Tests/talk_bench.cpp).
+# Its ctest (label perf) is a timing, so not run by default: configure with -DRATW_PERF_TESTS=ON, then ctest -L perf.
+add_executable(talk_bench Tests/talk_bench.cpp)
+target_link_libraries(talk_bench PRIVATE ratw_core)
+target_compile_definitions(talk_bench PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+option(RATW_PERF_TESTS "Add the timing tests (label perf: talk_bench)" OFF)
+if(RATW_PERF_TESTS)
+    add_test(NAME talk_bench COMMAND talk_bench --world ${CMAKE_CURRENT_SOURCE_DIR}/Tests/fixtures/talk_town --hours 6)
+    set_tests_properties(talk_bench PROPERTIES LABELS perf)
+endif()
 # Not a test: how fast skills grow by practice, for the balance pass (see Tests/practice_sim.cpp; doc 49).
 add_executable(practice_sim Tests/practice_sim.cpp)
 target_link_libraries(practice_sim PRIVATE ratw_core)
@@ -429,6 +439,12 @@ add_executable(ambient_tests Tests/ambient_tests.cpp)
 target_link_libraries(ambient_tests PRIVATE ratw_core)
 target_compile_definitions(ambient_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 add_test(NAME ambient_behaviors COMMAND ambient_tests)
+# The director a beat at a time in a game (doc 84 §8.2-8.10, Phase 4): the talk town, claims passed as they're said, a
+# third voice, a break.
+add_executable(talk_beat_tests Tests/talk_beat_tests.cpp)
+target_link_libraries(talk_beat_tests PRIVATE ratw_core)
+target_compile_definitions(talk_beat_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+add_test(NAME talk_beats COMMAND talk_beat_tests)
 add_executable(voice_tests Tests/voice_tests.cpp)
 target_link_libraries(voice_tests PRIVATE ratw_core)
 target_compile_definitions(voice_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")

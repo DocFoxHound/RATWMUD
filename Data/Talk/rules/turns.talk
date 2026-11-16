@@ -56,12 +56,12 @@ say Off I go, then. | I'll let you be. | Right. Till next time. | I'll leave you
 rule cv_bye_night
 does farewell
 when here.time=night|dusk
-say Good night. | Sleep sound. | Good night, #address#. | Rest well. | Mind the dark. | Don't stay up late.
+say Good night. | Sleep sound. | Good night, #address#. | Rest well. | Mind the dark. | Don't stay up late. | Till morning, then. | See you in the morning. | Sleep well, now. | Off to bed with me.
 
 rule cv_bye_young
 does farewell
 when self.stage=young|adolescent
-say Bye! | See you! | Bye, then!
+say Bye! | See you! | Bye, then! | Bye bye! | See you later! | Bye for now!
 
 rule cv_return_any
 does farewell.return

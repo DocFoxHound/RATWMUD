@@ -379,22 +379,23 @@
    "better": "higher",
    "gate": "soft",
    "target": "5-15%",
-   "value": 0.0,
+   "value": 4.149968470755883,
    "passes": false,
    "by_profile": {
-    "L1": 0.0,
-    "L2": 0.0,
-    "L3": 0.0,
+    "L1": 7.992,
+    "L2": 3.324,
+    "L3": 0.391,
     "L4": 0.0,
     "L5": 0.0,
-    "L6": 0.0,
+    "L6": 0.083,
     "L7": 0.0,
     "L8": 0.0,
     "L9": 0.0,
     "L10": 0.0
    },
-   "control": 0.0,
+   "control": 4.149968470755883,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": true
@@ -501,12 +502,28 @@
    "note": "n/a until Phase 6"
   },
   "T5": {
-   "name": "telling what the listener already believes (%)",
+   "name": "telling what the listener already believes, with no 'known' answer (%)",
    "better": "lower",
    "gate": "soft",
    "target": "2%",
-   "value": null,
-   "note": "n/a until Phase 4"
+   "value": 2.1151173486902946,
+   "passes": false,
+   "by_profile": {
+    "L1": 1.429,
+    "L2": 8.772,
+    "L6": 0.0,
+    "L10": 0.0
+   },
+   "control": 2.2227606843107033,
+   "separation": 0.04842776659682994,
+   "real_better": true,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    7,
+    203.0
+   ]
   },
   "D1": {
    "name": "lines with a dialect's words (%): accent none",
@@ -944,6 +961,80 @@
     3459,
     3526.0
    ]
+  },
+  "B1": {
+   "name": "one beat: the director's mean (ms)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "0.6 ms or less (gate: talk_bench)",
+   "value": 0.14164494152386925,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.142,
+    "L2": 0.115,
+    "L3": 0.072,
+    "L4": 0.079,
+    "L5": 0.067,
+    "L6": 0.07,
+    "L7": 0.062,
+    "L10": 0.065
+   },
+   "control": 0.14164494152386925,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "B1P": {
+   "name": "one beat: the director's 99th percentile (ms)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "3 ms or less (gate: talk_bench)",
+   "value": 1.719849,
+   "passes": true,
+   "by_profile": {
+    "L1": 1.72,
+    "L2": 1.069,
+    "L3": 0.181,
+    "L4": 0.174,
+    "L5": 0.167,
+    "L6": 0.192,
+    "L7": 0.183,
+    "L10": 0.15
+   },
+   "control": 1.719849,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "B1L": {
+   "name": "a director look: 99th percentile (ms)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "5 ms or less (gate: talk_bench)",
+   "value": 8.396689,
+   "passes": false,
+   "by_profile": {
+    "L1": 8.016,
+    "L2": 8.397,
+    "L3": 2.644,
+    "L4": 3.06,
+    "L5": 2.25,
+    "L6": 2.16,
+    "L7": 1.565,
+    "L8": 0.016,
+    "L9": 0.013,
+    "L10": 2.235
+   },
+   "control": 8.396689,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
   }
  },
  "details": {
@@ -1066,6 +1157,21 @@
     "replies": 19840,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 140,
+    "told_what_they_knew": 2,
+    "examples": [
+     "Heard Osric Ropeworth tried to steal from Wenna Tarford. Probably nothing. / Probably.",
+     "It's on every corner. Ulf Kelpmarsh is wanted by the Watch for attempted theft. / Every corner."
+    ]
+   },
+   "B1_detail": {
+    "beats": 44702,
+    "beat_max": 20.698553,
+    "looks": 72000,
+    "look_mean": 1.2283498587361092,
+    "look_max": 580.828346
    }
   },
   "L2": {
@@ -1191,6 +1297,23 @@
     "replies": 3776,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 57,
+    "told_what_they_knew": 5,
+    "examples": [
+     "Good evening, lass. My jaw hit the floor. Brenna Greyworth is wanted by the Watch for attempted theft. / Pick it up, then.",
+     "Very funny. / (nothing)",
+     "Good evening. Over the furrows: Brenna Greyworth is wanted by the Watch for attempted theft. / Furrows have ears.",
+     "Osric Ropeworth tried to steal from Wenna Tarford, they say. / Who's they?"
+    ]
+   },
+   "B1_detail": {
+    "beats": 8389,
+    "beat_max": 7.895242,
+    "looks": 72000,
+    "look_mean": 0.3277720039027777,
+    "look_max": 589.565271
    }
   },
   "L3": {
@@ -1306,6 +1429,18 @@
     "replies": 5177,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 0,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "B1_detail": {
+    "beats": 12379,
+    "beat_max": 1.971917,
+    "looks": 72000,
+    "look_mean": 0.12687848013888883,
+    "look_max": 401.612367
    }
   },
   "L4": {
@@ -1420,6 +1555,18 @@
     "replies": 3521,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 0,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "B1_detail": {
+    "beats": 8250,
+    "beat_max": 2.056394,
+    "looks": 72000,
+    "look_mean": 0.1189522042499999,
+    "look_max": 576.602355
    }
   },
   "L5": {
@@ -1533,6 +1680,18 @@
     "replies": 1646,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 0,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "B1_detail": {
+    "beats": 3673,
+    "beat_max": 0.29827,
+    "looks": 72000,
+    "look_mean": 0.05855678456944439,
+    "look_max": 382.862434
    }
   },
   "L6": {
@@ -1647,6 +1806,18 @@
     "replies": 1889,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 2,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "B1_detail": {
+    "beats": 4372,
+    "beat_max": 3.660705,
+    "looks": 72000,
+    "look_mean": 0.059373764736111084,
+    "look_max": 419.046801
    }
   },
   "L7": {
@@ -1760,6 +1931,18 @@
     "replies": 1679,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 0,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "B1_detail": {
+    "beats": 3894,
+    "beat_max": 1.928373,
+    "looks": 72000,
+    "look_mean": 0.04562867231944443,
+    "look_max": 398.027706
    }
   },
   "L8": {
@@ -1863,6 +2046,18 @@
     "replies": 0,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 0,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "B1_detail": {
+    "beats": 0,
+    "beat_max": 0,
+    "looks": 72000,
+    "look_mean": 0.00731553825000015,
+    "look_max": 0.130638
    }
   },
   "L9": {
@@ -1966,6 +2161,18 @@
     "replies": 0,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 0,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "B1_detail": {
+    "beats": 0,
+    "beat_max": 0,
+    "looks": 72000,
+    "look_mean": 0.005854427374999933,
+    "look_max": 0.06643
    }
   },
   "L10": {
@@ -2081,6 +2288,18 @@
     "replies": 3072,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 4,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "B1_detail": {
+    "beats": 7334,
+    "beat_max": 1.104649,
+    "looks": 43200,
+    "look_mean": 0.13544693215277792,
+    "look_max": 349.119301
    }
   }
  },
@@ -2209,6 +2428,52 @@
     "L10": "artifacts/talk/runs/p2r/frozen-L10"
    },
    "on": "2026-11-16T17:57:06+00:00"
+  },
+  {
+   "metrics": [
+    "T5",
+    "C8",
+    "B1",
+    "B1P",
+    "B1L"
+   ],
+   "why": "Phase 4 (doc 84 §29) measures them first: T5, a claim told to one who held it before the talk began with no 'I'd heard' (talk_sim's to_knew); C8, a third who joined (§8.9); B1, the director's beat and look timings as the card's runs see them (soft here: B1's gate is Tests/talk_bench alone). From Phase 4's own card, artifacts/talk/runs/p4.",
+   "from": {
+    "L1": "artifacts/talk/runs/p4/frozen-L1",
+    "L2": "artifacts/talk/runs/p4/frozen-L2",
+    "L3": "artifacts/talk/runs/p4/frozen-L3",
+    "L4": "artifacts/talk/runs/p4/frozen-L4",
+    "L5": "artifacts/talk/runs/p4/frozen-L5",
+    "L6": "artifacts/talk/runs/p4/frozen-L6",
+    "L7": "artifacts/talk/runs/p4/frozen-L7",
+    "L8": "artifacts/talk/runs/p4/frozen-L8",
+    "L9": "artifacts/talk/runs/p4/frozen-L9",
+    "L10": "artifacts/talk/runs/p4/frozen-L10"
+   },
+   "on": "2026-11-16T19:10:52+00:00"
+  },
+  {
+   "metrics": [
+    "T5",
+    "C8",
+    "B1",
+    "B1P",
+    "B1L"
+   ],
+   "why": "Phase 4 (doc 84 §29) measures them first: T5, a claim told to one who held it before the talk began with no 'I'd heard' (talk_sim's to_knew); C8, a third who joined (§8.9); B1, the director's beat and look timings as the card's runs see them (soft here: B1's gate is Tests/talk_bench alone). From Phase 4's own card, artifacts/talk/runs/p4.",
+   "from": {
+    "L1": "artifacts/talk/runs/p4/frozen-L1",
+    "L2": "artifacts/talk/runs/p4/frozen-L2",
+    "L3": "artifacts/talk/runs/p4/frozen-L3",
+    "L4": "artifacts/talk/runs/p4/frozen-L4",
+    "L5": "artifacts/talk/runs/p4/frozen-L5",
+    "L6": "artifacts/talk/runs/p4/frozen-L6",
+    "L7": "artifacts/talk/runs/p4/frozen-L7",
+    "L8": "artifacts/talk/runs/p4/frozen-L8",
+    "L9": "artifacts/talk/runs/p4/frozen-L9",
+    "L10": "artifacts/talk/runs/p4/frozen-L10"
+   },
+   "on": "2026-11-16T19:17:50+00:00"
   }
  ]
 }

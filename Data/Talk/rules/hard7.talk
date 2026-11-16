@@ -191,7 +191,7 @@ then other: crime.close
 
 rule h7_cr_ans_merry
 when concept=crime.answer topic.kind=theft self.humour=merry
-say Ha! Hope they took the ugly chair too. | Somebody's having a grand day. Not #topic.victim#. | Oh, no. Oh, that's terrible. Did they take the goose? | Ha. Sorry. Sorry. It's not funny. It's a bit funny.
+say Well. I hope they took the ugly chair too. | Somebody's having a grand day. Not #topic.victim#. | Oh, no. Oh, that's terrible. Did they take the goose? | Sorry. Sorry. It's not funny. It's a bit funny.
 remember pair: h7_said=joke 30m
 then other: crime.close
 

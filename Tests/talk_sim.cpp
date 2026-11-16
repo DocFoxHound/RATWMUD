@@ -204,7 +204,7 @@ class Sim
     {
         json::Value head;
         std::vector<Line> lines;
-        std::string topic, opener, dialectOf0, dialectOf1;
+        std::string topic, opener, answerer, dialectOf0, dialectOf1;
     };
     std::map<std::uint64_t, Conv> open_;                     // By the run's own exchange number.
     std::map<std::uint64_t, std::uint64_t> convIds_;         // The game's exchange id -> the run's number.
@@ -213,6 +213,7 @@ class Sim
     std::map<std::string, json::Value> residents_;          // id -> facts (at first hearing)
     std::map<std::string, std::map<std::string, long>> heardBy_;   // id -> listener -> lines
     std::map<std::string, std::string> cellPlace_, cellRegion_;
+    std::shared_ptr<game::Game::TalkTiming> timing_ = std::make_shared<game::Game::TalkTiming>();   // (B1: every game's.)
     // Fixture replay.
     struct Checkpoint
     {
@@ -352,6 +353,7 @@ bool Sim::makeGame(const std::string& checkpoint)
     };
     if (!g_->start(problem_))
         return false;
+    g_->setTalkTiming(timing_);
     if (g_->talkLibrarySize() == 0)
     {
         problem_ = "the talk library at " + talkData_ + " didn't load";
@@ -473,6 +475,8 @@ void Sim::hook()
         v.add("asserts", list(l.info.asserts));
         if (!l.info.denies.empty())
             v.add("denies", list(l.info.denies));
+        if (!l.knew.empty())
+            v.add("to_knew", l.knew);               // (Phase 4: the one spoken to held the topic's claim before it began: T5.)
         if (l.info.gist)
             v.add("gist", true);
         if (!l.info.tags.empty())
@@ -499,7 +503,10 @@ void Sim::hook()
         v.add("facts", hex(fnv(json::dump(who))));
         v.add("route", l.route);
         v.add("text", l.text);
-        c.lines.push_back({v, l.who == c.opener ? 0 : 1});
+        // (The opener's side, the other's, or a third who joined: the control swaps lines within a side.)
+        c.lines.push_back({v, l.who == c.opener ? 0 : (c.answerer.empty() || l.who == c.answerer) ? 1 : 2});
+        if (l.who != c.opener && c.answerer.empty())
+            c.answerer = l.who;
         ++heardBy_[l.who][l.hearer];
         lines_ << json::dump(v) << '\n';
         ++lineCount_;
@@ -519,6 +526,12 @@ void Sim::hook()
         head.add("written", e.written);
         if (!e.ended.empty())
             head.add("ended", e.ended);             // (How the turn engine ended it: farewell, cap, nothing, curt...)
+        if (e.marked)
+            head.add("marked", true);               // (Phase 4: broken off with a line that says so: C3's marked break.)
+        if (!e.stake.empty())
+            head.add("stake", e.stake);             // (Phase 4: why a third joined: C8.)
+        if (e.dropped)
+            head.add("dropped", e.dropped);         // (Phase 4: a scene's turns dropped when they no longer held.)
         head.add("lines", double(c.lines.size()));
         auto chain = json::Value::array();
         for (const auto& id : e.chain)
@@ -530,6 +543,9 @@ void Sim::hook()
         for (const auto& l : c.lines)
             if (seen.insert(l.v.string("who")).second)
                 people.push(l.v.string("who"));
+        for (const auto& p : e.people)              // (Everyone in it, a third who joined last, said a word or not.)
+            if (seen.insert(p).second)
+                people.push(p);
         head.add("people", people);
         c.head = head;
         convs_ << json::dump(head) << '\n';
@@ -1266,6 +1282,21 @@ void Sim::writeResidents(double wall)
     meta.add("lines", double(lineCount_));
     meta.add("wall_seconds", wall);
     meta.add("exchanges_per_second", double(exchanges_) / std::max(1e-9, wall));
+    // B1 (doc 84 §16, Phase 4): the director's beats and looks, in milliseconds (this run's load included).
+    const auto stats = [](std::vector<double> xs) {
+        auto o = json::Value::object();
+        std::sort(xs.begin(), xs.end());
+        double sum = 0;
+        for (const double x : xs)
+            sum += x;
+        o.add("n", double(xs.size()));
+        o.add("mean", xs.empty() ? 0.0 : sum / double(xs.size()));
+        o.add("p99", xs.empty() ? 0.0 : xs[std::min(xs.size() - 1, std::size_t(double(xs.size()) * .99))]);
+        o.add("max", xs.empty() ? 0.0 : xs.back());
+        return o;
+    };
+    meta.add("beat_ms", stats(timing_->beats));
+    meta.add("look_ms", stats(timing_->looks));
     auto ls = json::Value::array();
     for (const auto& l : listeners_)
     {

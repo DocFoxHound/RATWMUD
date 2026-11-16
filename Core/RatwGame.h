@@ -506,6 +506,14 @@ class Game
     // Listeners nobody plays (the simulator's, placed with World::addPlayer): the director looks for them as for the
     // connected players, and they hear as those do (heard sets). None on a server.
     void setTalkListeners(std::vector<std::string> ids) { talkListeners_ = std::move(ids); }
+    // Doc 84 §16 (B1, Phase 4): how long the director takes, in milliseconds: each beat (its facts, the engine's choice,
+    // a joiner looked for, an interruption) and each look for a new talk. Kept only when asked for (talk_bench, talk_sim).
+    struct TalkTiming
+    {
+        std::vector<double> beats, looks;
+    };
+    // The director's timings (B1, doc 84 §16): kept in `timing` from now on (nullptr: no longer). talk_bench, talk_sim.
+    void setTalkTiming(std::shared_ptr<TalkTiming> timing) { talkTiming_ = std::move(timing); }
     // Each line of residents' talk as it is spoken (the ambient director's exchanges and multi-line reactions), and
     // each exchange as it ends, with why: the simulator's transcripts (doc 84 §15.1). Unset on a server.
     struct AmbientLine
@@ -516,6 +524,9 @@ class Game
         talk::LineInfo info;                        // Entry, alternative and layers ("" entry: a model's or authored).
         std::string subject;                        // The topic's subject (a claim's), if it has one.
         std::string seen;                           // The teller saw it ("yes"), heard it ("no"), or neither applies ("").
+        // Phase 4: whether the one spoken to held the topic's claim before the talk began ("yes", "no"; "" when the topic
+        // has none): the scorecard's T5.
+        std::string knew;
     };
     struct AmbientEnd
     {
@@ -525,6 +536,12 @@ class Game
         int spoken = 0, written = 0;                // Lines said, of those written.
         std::vector<std::string> chain;             // The rules and scenes it was written from, in order.
         std::string ended;                          // How the talk library's conversation ended (talk::Said::ended).
+        // Phase 4: everyone in it (a third who joined last), why the third joined, whether it was broken off with a line
+        // that says so (§8.10: the scorecard's marked break), and scene turns dropped when they no longer held.
+        std::vector<std::string> people;
+        std::string stake;
+        bool marked = false;
+        int dropped = 0;
     };
     std::function<void(const AmbientLine&)> onAmbientLine;
     std::function<void(const AmbientEnd&)> onAmbientEnd;
@@ -1908,7 +1925,25 @@ class Game
         std::vector<std::string> chain;
         std::string route, ended;
         int spoken = 0, written = 0;
+        // Doc 84 §8.2 (Phase 4): a talk the turn engine speaks a beat at a time, each line chosen when it comes due from
+        // fresh facts (Game::ambientBeat). `engine` false: its lines were written whole (a model's, a library without
+        // moves.json, a reaction), as before.
+        bool engine = false, finished = false;
+        talk::Conversation conv;
+        std::vector<std::string> people;            // The teller, the listener, and one who joined (§8.9)
+        // The queries it is asked from (§8.2, B1): the talk's start's, a and b the teller and the listener, with the topic's
+        // facts fixed (prices at its hearer's list: doc 79, 11), and one for each other two it has had (a joiner's), by
+        // "a|b". Person facts are worked out again every 30 s (`fresh`); the moment, the bonds and what is remembered
+        // every line.
+        std::map<std::string, talk::Query> queries;
+        std::map<std::string, double> fresh;         // When each one's person facts were last worked out
+        std::map<std::string, std::string> knew;     // Who held the topic's claim before it began (yes, no): `knows`
+        std::set<std::string> fights;                // Fights in the place when it began (a new one breaks it off)
+        bool rainAtStart = false, gist = false, marked = false;
+        std::size_t effectsDone = 0, chainDone = 0;
+        std::optional<talk::SaidLine> due;           // The first line, chosen as it began (said when it comes due)
     };
+    std::shared_ptr<TalkTiming> talkTiming_;
     std::vector<std::string> talkListeners_;            // (setTalkListeners.)
     // A spoken line's words for the voice ledger (Options::logTalkWords): kind "words", never counted as a line said.
     void voicedWords(const char* of, const std::string& npc, const std::string& to, const std::string& text,
@@ -2110,6 +2145,14 @@ class Game
     std::vector<std::string> neighboursOf(const std::string& id);
     // Their people by role, for talk: spouse, child, mother, father, neighbour, shopkeeper, priest, leader (IDs).
     std::map<std::string, std::string> peopleOf(const std::string& id);
+    // Both kept a while (talkPeopleFresh: 30 world seconds, the same doors; doc 84 §16, B1); worked out afresh by the Now forms.
+    std::map<std::string, std::string> peopleNow(const std::string& id);
+    std::vector<std::string> neighboursNow(const std::string& id);
+    void talkPeopleFresh();
+    std::map<std::string, std::map<std::string, std::string>> peopleMemo_;
+    std::map<std::string, std::vector<std::string>> neighboursMemo_;
+    double peopleMemoAt_ = -1;
+    std::size_t peopleMemoDoors_ = 0;
     // A third party for a line that binds x (doc 84 §7.1, Phase 2): `who`'s facts as a speaker's, and how `speaker` feels
     // about them (affinity, disposition). False if they're not here to speak of.
     bool talkThird(const std::string& speaker, const std::string& who, talk::Facts& out);
@@ -2173,11 +2216,34 @@ class Game
     std::string voiceCardOf(const std::string& id);
     // The two's facts (RatwGameTalk.cpp): pair.band, pair.kin, pair.boss...
     void talkPair(const std::string& a, const std::string& b, talk::Facts& facts);
+    // The part of it a talk moves (a's bond to b: affinity, trust... and pair.disposition), asked again every line.
+    void talkBond(const std::string& a, const std::string& b, talk::Facts& facts);
     // An exchange's context for the Mind, and its query for the talk library (the topic's facts, and the Mind's words).
     mind::ExchangeContext exchangeContext(const AmbientPick& pick);
     talk::Query exchangeQuery(const AmbientPick& pick, const mind::ExchangeContext& context);
     talk::Said talkPick(const talk::Query& q, const std::string& speaker, const std::string& where, std::size_t keep,
                         std::uint64_t seed, bool remember);
+    // The per-beat director (doc 84 §8.2-8.10, Phase 4; RatwGameAmbient.cpp). ambientBegin: a talk's first line, from
+    // the engine (or the authored lines, which it then carries on). ambientBeat: the next line when it is due (an
+    // interruption's break first, then a third voice joining, then the engine's next), or none. ambientSaid: what a line
+    // said changes (what it remembers, its moves' effects on regard, the claims it passes on or denies, who heard it).
+    // ambientFinish: what the talk changes as a whole when it ends (familiarity, a curt ending's cost, a thread kept).
+    bool ambientBegin(AmbientTalk& t, const talk::Query& q, const mind::ExchangeContext& context, std::uint64_t seed);
+    std::optional<talk::SaidLine> ambientBeat(AmbientTalk& t);
+    void ambientSaid(AmbientTalk& t, const talk::SaidLine& line);
+    void ambientFinish(AmbientTalk& t, const std::string& reason);
+    // The query for `speaker` speaking to `to` (indices into t.people), as Library::next asks it: fresh moment, bonds and
+    // memory over facts kept for the talk (§8.2).
+    talk::Query talkBeat(AmbientTalk& t, int speaker, int to);
+    talk::Freshness talkFreshness(const AmbientTalk& t, int speaker) const;
+    // A third voice (§8.9): one idle near both with a stake in what was said, who joins if a line fits.
+    std::optional<talk::SaidLine> joiners(AmbientTalk& t, const talk::Freshness& fresh);
+    // What breaks a talk off now (§8.10: "rain", "fight", "called"), and who says so; "" for nothing.
+    std::string interruption(const AmbientTalk& t, int& who) const;
+    // §8.6: the topic's claim as one in the talk holds it, if they do (its confidence, and from whom they had it).
+    const Belief* claimHeld(const AmbientTalk& t, const std::string& who) const;
+    // Whether talk may name the topic's claim as a thing one knows (a claim passed on: gossip, a camp, a deed).
+    static bool claimTopic(const AmbientPick& pick) { return pick.topic.passes && !pick.topic.subject.empty() && !pick.topic.claim.empty(); }
 
     // Saving.
     void saveSoon();

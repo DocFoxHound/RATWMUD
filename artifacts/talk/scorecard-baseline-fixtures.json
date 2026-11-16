@@ -379,22 +379,23 @@
    "better": "higher",
    "gate": "soft",
    "target": "5-15%",
-   "value": 0.0,
+   "value": 0.40083618554200473,
    "passes": false,
    "by_profile": {
-    "L1": 0.0,
-    "L2": 0.0,
+    "L1": 0.173,
+    "L2": 0.535,
     "L3": 0.0,
     "L4": 0.0,
     "L5": 0.0,
-    "L6": 0.0,
+    "L6": 1.751,
     "L7": 0.0,
     "L8": 0.0,
     "L9": 0.0,
-    "L10": 0.0
+    "L10": 1.129
    },
-   "control": 0.0,
+   "control": 0.40083618554200473,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": true
@@ -501,12 +502,32 @@
    "note": "n/a until Phase 6"
   },
   "T5": {
-   "name": "telling what the listener already believes (%)",
+   "name": "telling what the listener already believes, with no 'known' answer (%)",
    "better": "lower",
    "gate": "soft",
    "target": "2%",
-   "value": null,
-   "note": "n/a until Phase 4"
+   "value": 4.289740214652759,
+   "passes": false,
+   "by_profile": {
+    "L1": 10.383,
+    "L2": 3.451,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L10": 0.0
+   },
+   "control": 4.430404616697196,
+   "separation": 0.03174978680599613,
+   "real_better": true,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    288,
+    4653.0
+   ]
   },
   "D1": {
    "name": "lines with a dialect's words (%): accent none",
@@ -946,6 +967,80 @@
     2456,
     2532.0
    ]
+  },
+  "B1": {
+   "name": "one beat: the director's mean (ms)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "0.6 ms or less (gate: talk_bench)",
+   "value": 0.1096432177951873,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.103,
+    "L2": 0.11,
+    "L3": 0.105,
+    "L4": 0.101,
+    "L5": 0.096,
+    "L6": 0.105,
+    "L7": 0.096,
+    "L10": 0.09
+   },
+   "control": 0.1096432177951873,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "B1P": {
+   "name": "one beat: the director's 99th percentile (ms)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "3 ms or less (gate: talk_bench)",
+   "value": 0.352978,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.231,
+    "L2": 0.246,
+    "L3": 0.232,
+    "L4": 0.232,
+    "L5": 0.212,
+    "L6": 0.353,
+    "L7": 0.21,
+    "L10": 0.221
+   },
+   "control": 0.352978,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "B1L": {
+   "name": "a director look: 99th percentile (ms)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "5 ms or less (gate: talk_bench)",
+   "value": 22.748224,
+   "passes": false,
+   "by_profile": {
+    "L1": 12.32,
+    "L2": 22.748,
+    "L3": 3.32,
+    "L4": 2.893,
+    "L5": 0.112,
+    "L6": 0.118,
+    "L7": 0.114,
+    "L8": 0.042,
+    "L9": 0.039,
+    "L10": 7.769
+   },
+   "control": 22.748224,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
   }
  },
  "details": {
@@ -1074,6 +1169,23 @@
     "replies": 9840,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 2273,
+    "told_what_they_knew": 236,
+    "examples": [
+     "They say Brenna Greyworth is wanted by the Watch for attempted theft. Don't quote me. / I won't.",
+     "In the Rain Hall they're saying Brenna Greyworth is wanted by the Watch for attempted theft. / The Hall talks more than it governs.",
+     "Lean in. Brenna Greyworth is wanted by the Watch for attempted theft. You didn't hear it from me. / I never hear anything from you.",
+     "It's on every corner. Brenna Greyworth is wanted by the Watch for attempted theft. / Every corner."
+    ]
+   },
+   "B1_detail": {
+    "beats": 18716,
+    "beat_max": 60.503659,
+    "looks": 71994,
+    "look_mean": 0.8892449270633674,
+    "look_max": 1212.464333
    }
   },
   "L2": {
@@ -1207,6 +1319,23 @@
     "replies": 4631,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 1507,
+    "told_what_they_knew": 52,
+    "examples": [
+     "Good evening, neighbour. Over wine in the Heights, they say Brenna Greyworth is wanted by the Watch for attempted theft. / Wine loosens tongues.",
+     "They say Rika Gullwell is wanted by the Watch for attempted theft. Don't quote me. / I won't.",
+     "Good day. In the city you can't sneeze without everyone knowing. Finn Saltwell tried to steal from Ebba Netherby. / Bless you.",
+     "Still water, neighbour. Over wine in the Heights, they say Rika Gullwell tried to steal from Dagny Slaghand. / Wine loosens tongues."
+    ]
+   },
+   "B1_detail": {
+    "beats": 8935,
+    "beat_max": 28.647345,
+    "looks": 71999,
+    "look_mean": 0.9031830600563897,
+    "look_max": 1193.614307
    }
   },
   "L3": {
@@ -1333,6 +1462,18 @@
     "replies": 2725,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 41,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "B1_detail": {
+    "beats": 6112,
+    "beat_max": 0.480131,
+    "looks": 71999,
+    "look_mean": 0.36953634178252476,
+    "look_max": 1202.52653
    }
   },
   "L4": {
@@ -1451,6 +1592,18 @@
     "replies": 1730,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 4,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "B1_detail": {
+    "beats": 3826,
+    "beat_max": 2.352528,
+    "looks": 71999,
+    "look_mean": 0.3521478940957512,
+    "look_max": 1236.185073
    }
   },
   "L5": {
@@ -1569,6 +1722,18 @@
     "replies": 841,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 6,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "B1_detail": {
+    "beats": 1981,
+    "beat_max": 0.281905,
+    "looks": 71999,
+    "look_mean": 0.3251093972832956,
+    "look_max": 1218.466823
    }
   },
   "L6": {
@@ -1684,6 +1849,18 @@
     "replies": 937,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 11,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "B1_detail": {
+    "beats": 2070,
+    "beat_max": 1.806888,
+    "looks": 71999,
+    "look_mean": 0.31135798548590954,
+    "look_max": 1206.400025
    }
   },
   "L7": {
@@ -1798,6 +1975,18 @@
     "replies": 918,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 3,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "B1_detail": {
+    "beats": 2107,
+    "beat_max": 0.298634,
+    "looks": 71999,
+    "look_mean": 0.30196825615633555,
+    "look_max": 1199.13201
    }
   },
   "L8": {
@@ -1901,6 +2090,18 @@
     "replies": 0,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 0,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "B1_detail": {
+    "beats": 0,
+    "beat_max": 0,
+    "looks": 71999,
+    "look_mean": 0.009166483687273493,
+    "look_max": 0.231837
    }
   },
   "L9": {
@@ -2004,6 +2205,18 @@
     "replies": 0,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 0,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "B1_detail": {
+    "beats": 0,
+    "beat_max": 0,
+    "looks": 71999,
+    "look_mean": 0.009060475076042695,
+    "look_max": 3.100839
    }
   },
   "L10": {
@@ -2127,6 +2340,18 @@
     "replies": 4416,
     "closing_beats": 0,
     "closings_distinct_per_1000": null
+   },
+   "T5_detail": {
+    "asserted": 808,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "B1_detail": {
+    "beats": 8202,
+    "beat_max": 1.818694,
+    "looks": 35999,
+    "look_mean": 0.9080519559709987,
+    "look_max": 1215.399362
    }
   }
  },
@@ -2255,6 +2480,52 @@
     "L10": "artifacts/talk/runs/p2r/fixtures-L10"
    },
    "on": "2026-11-16T17:57:11+00:00"
+  },
+  {
+   "metrics": [
+    "T5",
+    "C8",
+    "B1",
+    "B1P",
+    "B1L"
+   ],
+   "why": "Phase 4 (doc 84 §29) measures them first: T5, a claim told to one who held it before the talk began with no 'I'd heard' (talk_sim's to_knew); C8, a third who joined (§8.9); B1, the director's beat and look timings as the card's runs see them (soft here: B1's gate is Tests/talk_bench alone). From Phase 4's own card, artifacts/talk/runs/p4.",
+   "from": {
+    "L1": "artifacts/talk/runs/p4/fixtures-L1",
+    "L2": "artifacts/talk/runs/p4/fixtures-L2",
+    "L3": "artifacts/talk/runs/p4/fixtures-L3",
+    "L4": "artifacts/talk/runs/p4/fixtures-L4",
+    "L5": "artifacts/talk/runs/p4/fixtures-L5",
+    "L6": "artifacts/talk/runs/p4/fixtures-L6",
+    "L7": "artifacts/talk/runs/p4/fixtures-L7",
+    "L8": "artifacts/talk/runs/p4/fixtures-L8",
+    "L9": "artifacts/talk/runs/p4/fixtures-L9",
+    "L10": "artifacts/talk/runs/p4/fixtures-L10"
+   },
+   "on": "2026-11-16T19:10:58+00:00"
+  },
+  {
+   "metrics": [
+    "T5",
+    "C8",
+    "B1",
+    "B1P",
+    "B1L"
+   ],
+   "why": "Phase 4 (doc 84 §29) measures them first: T5, a claim told to one who held it before the talk began with no 'I'd heard' (talk_sim's to_knew); C8, a third who joined (§8.9); B1, the director's beat and look timings as the card's runs see them (soft here: B1's gate is Tests/talk_bench alone). From Phase 4's own card, artifacts/talk/runs/p4.",
+   "from": {
+    "L1": "artifacts/talk/runs/p4/fixtures-L1",
+    "L2": "artifacts/talk/runs/p4/fixtures-L2",
+    "L3": "artifacts/talk/runs/p4/fixtures-L3",
+    "L4": "artifacts/talk/runs/p4/fixtures-L4",
+    "L5": "artifacts/talk/runs/p4/fixtures-L5",
+    "L6": "artifacts/talk/runs/p4/fixtures-L6",
+    "L7": "artifacts/talk/runs/p4/fixtures-L7",
+    "L8": "artifacts/talk/runs/p4/fixtures-L8",
+    "L9": "artifacts/talk/runs/p4/fixtures-L9",
+    "L10": "artifacts/talk/runs/p4/fixtures-L10"
+   },
+   "on": "2026-11-16T19:17:56+00:00"
   }
  ]
 }

@@ -1224,6 +1224,67 @@ std::vector<AmbientPick> World::ambientPicks(const std::vector<std::string>& lis
     return picks;
 }
 
+void World::ambientBegun(const AmbientPick& pick)
+{
+    ambientLast_[pick.teller] = ambientLast_[pick.listener] = ambientLast_["cell:" + pick.cell] = time_;
+    for (auto it = ambientLast_.begin(); it != ambientLast_.end();)
+        it = time_ - it->second > 3600 ? ambientLast_.erase(it) : std::next(it);
+}
+
+void World::ambientEnded(const AmbientPick& pick, const std::vector<std::string>& people)
+{
+    // Doc 84 §8.14 (Phase 4): the blanket warmth of a talk is gone; each line's moves carry their own (moves.json's
+    // effects, applied by the game as they are said). Having talked, everyone in it knows the others a little better;
+    // a quarrel's grudge, aired, sours (a topic's, until Phase 6's stances).
+    const auto& t = pick.topic;
+    for (const auto& h : people)
+        for (const auto& o : people)
+            if (h != o && !h.empty() && !o.empty())
+                bonds_.change(h, o, t.kind == "quarrel" ? BondChange{-1.5, -.5, .5, 0, 0} : BondChange{0, 0, 1, 0, 0}, calendarDays_);
+    recordEvent({t.kind == "quarrel" ? "quarrel" : "conversation", pick.teller, pick.listener, pick.cell, 0, 0, {}, 0, 0, t.kind});
+}
+
+const Belief* World::holding(const std::string& holder, const std::string& subject, const std::string& claim,
+                             const std::string& incident, const std::string& kind, const std::string& object) const
+{
+    const auto found = beliefs_.find(holder);
+    if (found == beliefs_.end() || subject.empty())
+        return nullptr;
+    for (const auto& b : found->second)
+        if (b.subject == subject && (b.claim == claim || (!incident.empty() && b.incident == incident) ||
+                                     (!kind.empty() && b.kind == kind && b.object == object)))
+            return &b;
+    return nullptr;
+}
+
+void World::told(const Belief& given, const std::string& via)
+{
+    // Doc 84 §8.6: corroboration by a second, independent source; otherwise as believe (the surer kept).
+    const auto mine = beliefs_.find(given.holder);
+    if (mine != beliefs_.end() && !given.source.empty())
+        for (auto& old : mine->second)
+            if (old.subject == given.subject && old.claim == given.claim)
+            {
+                const bool independent = given.source != old.source && given.source != given.holder && via != old.source &&
+                                         via != given.holder &&
+                                         corroborated_.insert(given.holder + "|" + given.subject + "|" + given.claim + "|" + given.source).second;
+                if (!independent)
+                    break;
+                old.confidence = std::min(1.0, old.confidence + (1 - old.confidence) * .4);
+                old.day = calendarDays_;
+                return;
+            }
+    believe(given);
+}
+
+void World::doubted(const std::string& holder, const std::string& subject, const std::string& claim, double factor)
+{
+    if (const auto mine = beliefs_.find(holder); mine != beliefs_.end())
+        for (auto& b : mine->second)
+            if (b.subject == subject && b.claim == claim)
+                b.confidence = std::clamp(b.confidence * std::clamp(factor, 0.0, 1.0), 0.0, 1.0);
+}
+
 void World::ambientSpoken(const AmbientPick& pick)
 {
     ambientLast_[pick.teller] = ambientLast_[pick.listener] = ambientLast_["cell:" + pick.cell] = time_;

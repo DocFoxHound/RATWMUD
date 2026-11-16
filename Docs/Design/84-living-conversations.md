@@ -3,9 +3,9 @@
 Draft, 2026-11-15, revised 2026-11-16 with the user's answers to all six questions of §21 (the window's free text,
 mantles as world database rows, the richer size written by Claude agents, newborns inheriting honesty, births kept
 realm-wide, ticking listening runs), for Ridgemere 3 (`ridgemere3`, database `ratw_ridgemere3`; doc 82). **Phase 0 (the
-instrument), Phase 1 (truth fixes), Phase 2 (moves and tags) and Phase 3 (the turn engine) are built** (2026-11-16,
-branches `r3-talk-p0`, `r3-talk-p1`, `r3-talk-p2` and `r3-talk-p3`; §23, §24, §27 and §28 say what and what they
-measured); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
+instrument), Phase 1 (truth fixes), Phase 2 (moves and tags), Phase 3 (the turn engine) and Phase 4 (beats when spoken,
+knowledge, a third voice) are built** (2026-11-16, branches `r3-talk-p0` to `r3-talk-p4`; §23, §24, §27, §28 and §29 say
+what and what they measured); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
 replaces neither: every one of today's 8,525 library entries and 10 trees keeps loading and speaking while it is
 converted. It was written from five read-only surveys of the code, the data and the live world at `ridgemere2` 1034c1fc
 (the engine, the trees, the lifecycle, what residents know, and prior art) and three competing designs; §4 says how they
@@ -2642,3 +2642,139 @@ closes. `Freshness` holds only the heard set and the recent list (alternatives, 
 stories are §8.12's). Curt endings and moves.json's effects cost nothing yet (per-beat effects). Extends work once
 (`max_extend`) but no line extends yet, and nothing fills the body: agendas and pivots are Phase 5's. Scenes are beats
 only at the opening: a scene whose first turn answers could be a reply once Phase 7 tags turns.
+
+## 29. Phase 4, as built (2026-11-16)
+
+Branch `r3-talk-p4`, on Phase 3. Every line of a resident talk is now chosen when it comes due, from the facts as they
+are then, and does what it does as it is said.
+
+**Beats when spoken** (§8.2; `Core/RatwGameAmbient.cpp`). With a library that has moves.json and no model writing it,
+the director's talk is a `talk::Conversation` held in its `AmbientTalk`: `Game::ambientBegin` says the first line
+(`Library::begin`; or, when nothing in the library fits, the authored lines through the new `Library::beginWith`, which
+the engine then carries on, so they close too), and `Game::ambientBeat` chooses each later line at its `nextAt`
+(`Library::next`). Its facts (`Game::talkBeat`) are the start's query (the topic's facts fixed, prices at the hearer's
+list as §8.5 says) with the moment (`here.*`), each one's hurt and fighting, the bonds (`Game::talkBond`, split out of
+`talkPair`) and what is remembered (person, pair, town) asked again every line, and each speaker's person facts worked
+out again every 30 s. `peopleOf` and `neighboursOf` are kept 30 world seconds while the doors are the same
+(`talkPeopleFresh`): a look's query fell from about 1.95 ms to 0.24 ms, and B5 rose with it. A library without
+moves.json, a reaction and the model's lines are spoken whole as before (`talk_golden` passes unblessed). Each queued
+scene turn is checked again when it comes due (Valve's rule, `Library::stillHolds`): its moment's criteria (`here.*`, a
+speaker hurt, fighting, at work, mourning), never what is remembered, which its own first line changes; failing, the
+rest of the scene is dropped and the talk goes on (`Conversation::dropped`; none in the card's runs, the unit tests
+show it). `SaidLine` gains `turn` and `variant` for it.
+
+**Per-beat effects.** What a line remembers (`talkRemember`) and that its rules were heard (every chain id, by all who
+hear its speaker) are applied as it is said. moves.json's `effects` are applied per line through `Game::regard`
+("talk", bounded): `self` the speaker toward the one spoken to, `other` theirs. Sixteen moves have them now (two did:
+sympathise and decline; a farewell answered +0.3 each way, gossip +0.3 to the teller, thanks, praise, reassurance, apologies, a tease laughed at;
+an offence taken, a refused apology, defending or objecting −0.5 to −1). `World::ambientSpoken`'s blanket warmth is gone
+from this path: `World::ambientBegun` counts the talk from its start, `World::ambientEnded` makes everyone in it a
+little more familiar (a quarrel's grudge still sours) and records it. A curt ending costs regard (frames.json `curt`:
+the chance 0.5, the one left −0.5 toward the closer).
+
+**Breaks and returns** (§8.10). Before each line `Game::interruption` looks for a player opening the window with one of
+them ("called"), a fight breaking out in the place (not one under way as they began) and rain starting where they stand
+in the open (the place's sky, as `here.weather` says it); `Library::interrupt` sets `conv.interrupt` and the one whose
+turn it was (or the one called) says a `break` move line, and the talk ends (`ended` "break"; talk_sim marks it, C3's
+marked break). A talk broken off or cut short before its point was made (no line asserting its claim or making its gist,
+no closing begun), neither of them dead, is kept as `pair.thread` for frames.json's `thread` days (2), in the pair's
+talk memory until Phase 5's ledger; the next talk of theirs on that topic returns to it in the opener's breath
+(`Library::preface`, with the frames' greeting: "Good evening. Now, as I was saying. I keep hearing it was Maren
+Tarhand."), and the thread is done with. Residents at the window are never picked for a talk or a join.
+
+**A third voice** (§8.9; `Game::joiners`, `Library::join`). Between lines of a talk of two in its body, with room for
+the joining line, its answer and the closing: one idle within 3 tiles of both, hearing the last speaker at 0.5 or more,
+out of talk 60 s, knowing one of them (familiar, kin or under one roof), and with a stake: the one talked of, or named in
+the last line (`named`: join.object); kin or a friend (affinity 40+) of a resident subject once the claim is said
+(`kin`, `friend`: join.defend for an ill claim, else join.add); a merchant dealing in the topic's good (`goods`); a
+witness of its incident (`witness`); or close to both (friends, kin, a shared roof) and chatty (`friends`); the nearest
+two tried, and only with a line that fits (`conv.stake`). The joiner cuts in on the one who spoke last, who owes the
+answer; three at most (frames.json `join`). The engine takes three: a line's `who` and `to` are indices into
+`Conversation::people`, what is owed is owed by the one it was said to, `Library::partner` says who each is talking
+with, and `next`'s facts function has the speaker as a and the one spoken to as b once a third is in.
+
+**Knowledge** (§8.6). A line that asserts the topic's claim (or, for a line that says nothing of what it does, the
+teller's first) passes it to everyone else in the talk at the speaker's confidence × (0.5 + 0.4 × trust/100) (0.1-0.9),
+and to every resident standing by who hears it at 0.5 or more at × 0.4, only once it is said (a talk cut off before has
+passed nothing). `World::told` corroborates a claim from a second, independent source, (1 − c) × 0.4, once a source
+(never the one they had it from, nor one who had it from them; the sources counted are not saved: Phase 5's ledger's
+"told" will hold them). A `denies` line from the subject or their kin multiplies each listener's confidence by
+(1 − 0.3 × trust/100) (`World::doubted`, never above 1). `knows` is a person fact: whether one held the topic's claim
+before the talk began (`World::holding`), the teller always. The engine answers react.news from one who knew with the
+known variant as its exact fit, never says "I'd heard" for one who didn't nor "Never!" for one who did, and never
+chooses a scene whose turn would (`Library::untrueScene`).
+
+**Data.** `Data/Talk/rules/beats.talk`: 21 move lines (known 3, break 4, return 2, join 7, welcome, apologise, insist,
+concede, decline_apology), the often-said ones under six words. facts.json: `knows`, `pair.thread`, `conv.interrupt`,
+`conv.stake`. frames.json: `curt`, `join`, `thread`, checked on load. turns.talk: more night and pups' farewells (the
+written route now closes too, and "Good night." had become the most-said line in the talk town). hard7.talk: the merry
+answer to a robbery no longer laughs first (`h7_cr_ans_merry`: "Ha!" after "Robbed X?" was the one C4 clash frozen L2
+met once the sampling moved).
+
+**`talk_bench`** (`Tests/talk_bench.cpp`; ctest `talk_bench`, label perf, with `-DRATW_PERF_TESTS=ON`): a scratch game
+(the talk town by default, `--world ridgemere3`), listeners where the most residents stand free, frozen, the director
+for the hours asked, and B1 checked. The game keeps its timings when asked (`Game::setTalkTiming`): each beat (its
+facts, an interruption looked for, a joiner, the engine's choice) and each look; talk_sim writes them into run.json
+(`beat_ms`, `look_ms`) and talk_score reads them as B1, B1P and B1L, soft there, the slowest profile's: a card's runs
+share the machine ten at a time and a fixture restarts a cold world every game midnight, so B1's gate is the bench's.
+
+**The gate: met.**
+- **B1 within budget**, `talk_bench --world ridgemere3 --hours 20` alone (2,400 talks, 9,806 beats, 14,400 looks): a beat
+  0.079 ms mean, p99 0.78 ms (0.6 and 3); a look p99 3.67 ms (5). The talk town: 0.032, 0.071 and 0.73 ms. In the
+  card's runs (load and cold restarts): beats 0.11 / 0.14 ms mean, p99 0.35 / 1.72; looks p99 22.7 / 8.4 ms, fixtures
+  / frozen (cold `World::districtHouse` walks, which load cells, after each fixture restart and each game day: the
+  next phase that touches the director should warm or keep them).
+- **T5 measured**: 4.29% of 4,653 judged claim lines (fixtures) and 2.12% of 203 (frozen) told to one who already held
+  the claim with no "I'd heard"; the rest of those knowers answered "I'd heard" (10 lines) or were never told: almost
+  all of the misses are whole scenes whose answering turn is written ("Don't quote me." / "I won't."), which
+  `untrueScene` can't see until Phase 7 tags each turn.
+- **C8 measured**: 0.40% (fixtures, 55 joins: witness 37, named 10, friends 6, kin 2) and 4.15% (frozen, 1,153:
+  friends 1,144, witness 8, named 1). Ridgemere 3's bonds are thin (nobody near a talk is a friend, affinity 40+, of
+  both), so the household's chatty one standing by is most of it; stances (Phase 6) are the stake still missing.
+
+**The scorecard** (`artifacts/talk/runs/p4`, every profile in both modes over P0's fixture, pinned to build 81; 13,021
+and 26,120 conversations, 63,452 and 116,386 lines; `talk_card`: **no gate broken** in either mode). Against Phase 3's
+own transcripts rescored with this phase's scorer (`artifacts/talk/runs/p3r`), fixtures / frozen:
+
+| | Phase 3 | Phase 4 |
+|---|---|---|
+| **C3** endings by a farewell or a marked break | 80.8% / 52.2% | **88.3% / 89.8%** (the written route closes now; curt 11.7 / 10.4%, one marked break) |
+| C7 lines per talk | 4.71 / 3.65 | 4.88 / 4.47 (frozen p90 6) |
+| **C8** a third speaker | 0 / 0 | **0.40% / 4.15%** |
+| **T5** told what they knew, no "I'd heard" | n/a | **4.29% / 2.12%** |
+| C1 / C2 / C6 | 92.2 / 100 / 0; 97.7 / 100 / 0 | 92.6 / 100 / 0; 97.9 / 100 / 0 |
+| C4 tone clashes per 1,000 lines | 0 / 0 | 0.047 (3 lexicon clashes in old content, an open gate since P0, within noise) / 0 |
+| R1 first identical talk | 2.2 / 0.42 h | 2.5 / 0.84 h |
+| R4 / R5 per 100 h | 750 / 139; 3,860 / 897 | 724 / 126; 3,820 / 883 |
+| R6 / R7 | 3.5% / 60.5; 9.3% / 35.0 | 3.0% / 62.7; 7.6% / 34.1 |
+| T1 / T2 / T3 per 1,000 lines | 0 / 0.23 / 0.26; 0 / 0 / 0.02 | 0 / 0.24 / 0.25; 0 / 0 / 0.009 |
+| K1 / K2 / K3 | 3.8 / 51 / 2,200; 24.5 / 42 / 109 | 4.1 / 47 / 2,180; 24.3 / 42 / 131 (within noise) |
+| D1L / D1B / D3 | 2.5 / 0.7 / 81; 1.4 / 0.5 / 49 | 2.6 / 0.8 / 90; 1.8 / 0.7 / 64 |
+| B5 exchanges a second | 2.2 / 72 | 2.2 / 86 (121 alone; ten at once) |
+
+T5, C8, B1, B1P and B1L were taken into both baselines from this card (`--refreeze`, the why kept there): they are
+measured for the first time. The quick card passes unblessed.
+
+**Tests.** `talk_tests` `beatsWhenSpoken` (144 checks): each beat asks the facts again; Valve's rule drops a scene's
+later turn when the fog lifts and never re-checks its own memory; a break by the one named, and a talk that ends with no
+break line; a third who joins (not once the closing begins, not without a fitting line, three at most), denies, is
+apologised to and accepts, and the talk closes; "I'd heard" from one who knew every time, never from one who didn't, and
+a "Never!" scene not chosen for one who knew; a thread returned to on its topic only; written lines carried on to the
+farewell; frames.json's six new refusals. `talk_beat_tests` (new, ctest `talk_beats`, 18 checks): in the talk town, a
+gossip talk's claim reaches the one told only when said, at the trusted confidence, and one standing by from the
+teller; the one talked of cuts in with join.object (three in it, stake "named"); familiarity grows; rain breaks a talk
+off with a marked break line. `ambient_tests` `talkCarriesKnowledge`: corroboration (independent, once a source, not
+from one's own source or one who had it from oneself), denial, `holding`, begun and ended. `test_talk_score` (29): T5,
+B1 (the slowest profile, timing noise, a passed hard timing gate). `talk_sim_fixture` looked at every
+`/tmp/ratw-talk-lib-*` and failed when `talk_golden` ran beside it (`ctest -j`): it now looks for its own run's copy.
+The non-database ctest suite passed 91 of 91; `talk_check --validate` on every file and `talk_lint` (its 20 frozen
+findings) passed. The database suites weren't run (no schema change). One full card run failed (frozen L2: `joiners`
+iterated two copies of a merchant's wares) and was run again after the fix; no ticking runs, no paid calls, no
+servers.
+
+**For Phase 5.** The thread lives in the pair's talk memory (`pair.mem.thread`, read as `pair.thread`) and the sources
+corroboration counted are not saved: both belong in `RatwTalkLedger`, with the told set (`react.news.again`, K3).
+Topics are still the director's single pick: a thread is returned to only when the same topic comes up, and an agenda
+item would make it urgent. Joins have no stance to go on yet (Phase 6: `join.side`, `join.correct`), and Ridgemere 3's
+bonds are thin. Most of T5 is whole scenes whose answer is written: Phase 7's per-turn tags let `untrueScene` see them.
+The look's p99 under cold caches is `World::districtHouse`'s walk (it loads cells), cleared every game day.

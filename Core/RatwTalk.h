@@ -113,6 +113,9 @@ struct SaidLine
     // the exact variant owed; 1: another line doing an owed move; 0: a fallback), and the best fit any line that held
     // had (before what was said already, the frames and the tone rules left out). -1: it answered nothing owed.
     int fit = -1, best = -1;
+    // Phase 4 (§8.2, Valve's rule): the turn (from 0) and the line within it (a turn's variant) it was said from, so a
+    // scene's queued turn is checked again when it comes due. -1 for a line written outside the library.
+    int turn = -1, variant = -1;
 };
 using LineInfo = SaidLine;
 struct Said
@@ -149,9 +152,10 @@ struct AgendaItem
 
 // A conversation as it goes (doc 84 §8.1, Phase 3): who is in it, its phase, its frames and budget, the answers owed,
 // its own facts (conv.*) and what has been said. Library::begin starts it, Library::next adds one line at a time.
+// Phase 4: a third may join (Library::join: people[2]); a line's `who` and `to` are indices into `people`.
 struct Conversation
 {
-    std::vector<std::string> people;              // Ids, 2 (a third in Phase 4); [0] opened.
+    std::vector<std::string> people;              // Ids, 2, or 3 once one has joined (§8.9); [0] opened.
     enum class Phase : std::uint8_t { Opening, Body, Closing, Ended } phase = Phase::Opening;
     std::vector<std::string> frames;              // frames.json's, stacked (strangers, at_work...): worked out at begin.
     std::string topic, tone = "even";
@@ -182,6 +186,8 @@ struct Conversation
     bool repeat = false;                          // The opener's concept may be said again to those who heard it
     int closer = -1, extended = 0, gaps = 0;      // Who closes; extends taken (§7.2 max_extend); answers nobody gave
     int handOns = 0;                              // (legacy: the chain's beats so far)
+    std::string stake;                            // Why the third joined (named, kin, friend, goods, witness, friends)
+    int dropped = 0;                              // Queued scene turns dropped when they came due (Valve's rule)
 };
 
 
@@ -386,6 +392,19 @@ struct Budgets
     std::map<std::string, std::pair<int, int>> byTalk{{"chatty", {8, 12}}, {"plain", {5, 8}}, {"quiet", {3, 5}}};
     int friendsOrKin = 2, least = 2, most = 14;
 };
+// Doc 84 §8.4, §8.9, §8.10 (Phase 4): frames.json's "curt", "join" and "thread". A cold or short-tempered closer goes
+// without a word this often, and it costs what `effects` says (moves.json's shape: "other", how the one left feels about
+// the closer). A third may join (the game's Game::joiners) if idle within `tiles` of both, hearing at `hearing` or more,
+// and not in a talk for `rest` seconds; `people` in all at most. A talk broken off before its point was made is kept as
+// pair.thread for `days`.
+struct Beats
+{
+    double curtChance = .5;
+    std::map<std::string, std::map<std::string, double>> curtEffects;
+    int joinPeople = 3;
+    double joinTiles = 3, joinHearing = .5, joinRest = 60;
+    double threadDays = 2;
+};
 
 // A dialogue tree (Docs/Design/83-dialogue-trees.md): a conversation a player has with a resident in the dialogue
 // window, choosing what to say. Written in Data/Talk/dialogue/*.tree beside the library and read by the same loader:
@@ -553,9 +572,37 @@ public:
     // pick chooses it (a scene's later turns are queued), with the conversation's frames and budget worked out; c.seed
     // is the caller's. next: the line after, or nothing once it has ended. `facts` gives the query for a speaker (0: a,
     // 1: b) speaking to another (-1: no one), a and b as begin had them; the engine adds its own conv.* facts.
+    //
+    // Phase 4 (§8.2: beats chosen when they are due, from fresh facts): `facts(speaker, to)` is asked again for every line,
+    // so it may change between them. For the opener and the one first spoken to (0 and 1), a and b are as begin had
+    // them; once a third has joined, a query between the third and another has the speaker as a and the one spoken to as
+    // b. A scene's queued turn is checked again when it comes due (Valve's rule: its criteria and its line's, not its
+    // limits) and the rest of the scene dropped if it no longer holds. What is owed in react.news is answered by the
+    // known variant (react.news.known: "I heard.") when the one answering already knew (their `knows`), and never by it
+    // when they didn't; never "Never!" (react.news.new) from one who knew.
     std::optional<SaidLine> begin(Conversation& c, const Query& q, const Freshness& fresh, Trace* trace = nullptr) const;
     std::optional<SaidLine> next(Conversation& c, const std::function<Query(int speaker, int to)>& facts,
                                  const Freshness& fresh, Trace* trace = nullptr) const;
+    // A conversation begun with lines already written (the game's authored exchange, when no library line fits): set up
+    // as begin does (frames, budget), its lines said as they are, then `next` carries on (answers owed, the closing).
+    std::optional<SaidLine> beginWith(Conversation& c, const Query& q, Said written, Trace* trace = nullptr) const;
+    // A third voice (§8.9): `id` joins with a line doing one of `moves` (join.defend, join.add...), said to the one who
+    // spoke last; `q` has the joiner as a and that one as b. Nothing (and nobody joins) unless such a line fits, the
+    // talk is in its body with room left, and only two are in it. What the joining line owes, the one it is said to owes;
+    // it comes before whatever was owed before it (the joiner cuts in).
+    // `stake` (why they join: named, kin, friend, goods, witness, friends) is conv.stake for the joining line's criteria,
+    // and the conversation's once they're in.
+    std::optional<SaidLine> join(Conversation& c, const std::string& id, const std::string& stake,
+                                 const std::vector<std::string>& moves, const Query& q, const Freshness& fresh,
+                                 Trace* trace = nullptr) const;
+    // An interruption (§8.10: rain starting outdoors, a fight in sight, one of them called away): conv.interrupt is
+    // `why`, and `who` says a line that breaks off (a `break` move line) to whoever they spoke with; the talk ends there.
+    // Nothing said if no such line fits (the talk ends all the same: "break").
+    std::optional<SaidLine> interrupt(Conversation& c, const std::string& why, int who,
+                                      const std::function<Query(int speaker, int to)>& facts, const Freshness& fresh,
+                                      Trace* trace = nullptr) const;
+    // Who `who` is talking with: the one they last spoke to, else the last other speaker, else the other of the two.
+    static int partner(const Conversation& c, int who);
     // What `speaker` says to what is owed (§8.2), rendered, or empty if nothing fits: of the rules that hold, the best
     // fit only (its handed-on concept's own rules, or the exact variant owed: 3; another line doing an owed move: 1;
     // only a rule with no concept is found by its move alone), then tiers by score within it (70/20/10: no longer the
@@ -570,6 +617,7 @@ public:
     // frames.json (doc 84 §7.4): the frames, the budgets, and the chance an invitation (`invites`) is taken.
     const std::vector<Frame>& frames() const { return frames_; }
     const Budgets& budgets() const { return budgets_; }
+    const Beats& beats() const { return curt_; }
     double inviteTaken() const { return inviteTaken_; }
     // The frames that hold for a query (a opens, to b), in frames.json's order; the budget drawn for them (§8.4: by the
     // two speakers' talk, the smaller; +2 for friends and kin; scaled by the frames; closing sooner by their preclose).
@@ -642,13 +690,25 @@ private:
                                        Trace* trace) const;
     void take(Conversation& c, Said said) const;                    // An entry's lines queued, its effects kept
     SaidLine sayNext(Conversation& c) const;                          // The next queued line said
+    // The query for `speaker` speaking to `to` with the conversation's own facts, and which of its a and b speaks.
+    Query beatQuery(const Conversation& c, const std::function<Query(int, int)>& facts, int speaker, int to, int& side) const;
     Query beatQuery(const Conversation& c, const std::function<Query(int, int)>& facts, int speaker) const;
+    // A line answered for a query whose speaker is `side`, placed in the conversation: who `speaker`, to `to`.
+    static void place(Said& s, int speaker, int to);
+    // Whether a line still holds when its turn comes due (Valve's rule): its entry's criteria and its line's.
+    bool stillHolds(const SaidLine& line, const Query& q) const;
+    // A scene with a turn untrue to what its speaker knew (§8.6: "I'd heard" from one who didn't, "Never!" from one who did).
+    bool untrueScene(const Entry& e, const Query& q) const;
+    // Opening moves said in the opener's breath (the frames' greeting, a return to a thread), before an opener.
+    void preface(Conversation& c, Said& said, const Query& q, const Freshness& fresh, Trace* trace) const;
+    void setUp(Conversation& c, const Query& q) const;               // (begin's: people, topic, frames, budget.)
     std::string toneOf(const Entry& e) const;                         // A rule's tone ("": no move, no tone)
     bool toneBlocked(const Conversation& c, const std::string& tone) const;
     bool forbidden(const Conversation& c, const Entry& e, const Query& q, int speaker) const;
     void end(Conversation& c, const std::string& why, Trace* trace) const;
     std::vector<Frame> frames_;
     Budgets budgets_;
+    Beats curt_;
     double inviteTaken_ = .5;
 
     std::vector<Entry> entries_;

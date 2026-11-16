@@ -314,21 +314,7 @@ void Game::talkPair(const std::string& a, const std::string& b, talk::Facts& fac
     if (const auto* k = known_.find(a, b))
         facts["pair.named_how"] = k->how;
     facts["pair.known_by"] = yes(residents ? residentsKnow(b, a, world_.bonds().find(b, a)) : knowsName(b, a));
-    const auto number = [](double v) { return std::to_string(int(std::lround(v))); };
-    facts["pair.affinity"] = number(r.affinity);
-    facts["pair.trust"] = number(r.trust);
-    facts["pair.respect"] = number(r.respect);
-    facts["pair.familiarity"] = number(r.familiarity);
-    facts["pair.fear"] = number(r.fear);
-    // One word for it (placeholders: doc 62, "Players, as settled").
-    facts["pair.disposition"] = r.affinity <= -50 || (r.affinity <= -25 && r.fear >= 30) ? "hostile"
-                                : r.affinity <= -15 || r.trust <= -25                    ? "wary"
-                                : r.affinity < -3                                        ? "cool"
-                                : r.affinity >= 50 && r.familiarity >= 40                ? "fond"
-                                : r.affinity >= 20                                       ? "warm"
-                                                                                         : "neutral";
-    if (bond && r.familiarity > 0)
-        facts["pair.days_since"] = std::to_string(std::max(0, int(std::floor(world_.calendarDays() - r.lastContact))));
+    talkBond(a, b, facts);
     facts["pair.owed"] = r.owed > 0 ? "b" : r.owed < 0 ? "a" : "no";
     std::string promise = "no";
     for (const auto& p : world_.promises())
@@ -353,6 +339,30 @@ void Game::talkPair(const std::string& a, const std::string& b, talk::Facts& fac
     facts["pair.rumour"] = rumour;
     if (const auto* other = world_.entity(b); other && !other->npc)
         facts["pair.famous"] = yes(!recognise(a, b, false).empty());
+}
+
+void Game::talkBond(const std::string& a, const std::string& b, talk::Facts& facts)
+{
+    // a's feelings for b (decision 9), in numbers and one word: what a talk itself moves, so asked again every line of
+    // one (doc 84 §8.2).
+    const Bond none{};
+    const auto* bond = world_.bonds().find(a, b);
+    const Bond& r = bond ? *bond : none;
+    const auto number = [](double v) { return std::to_string(int(std::lround(v))); };
+    facts["pair.affinity"] = number(r.affinity);
+    facts["pair.trust"] = number(r.trust);
+    facts["pair.respect"] = number(r.respect);
+    facts["pair.familiarity"] = number(r.familiarity);
+    facts["pair.fear"] = number(r.fear);
+    // One word for it (placeholders: doc 62, "Players, as settled").
+    facts["pair.disposition"] = r.affinity <= -50 || (r.affinity <= -25 && r.fear >= 30) ? "hostile"
+                                : r.affinity <= -15 || r.trust <= -25                    ? "wary"
+                                : r.affinity < -3                                        ? "cool"
+                                : r.affinity >= 50 && r.familiarity >= 40                ? "fond"
+                                : r.affinity >= 20                                       ? "warm"
+                                                                                         : "neutral";
+    if (bond && r.familiarity > 0)
+        facts["pair.days_since"] = std::to_string(std::max(0, int(std::floor(world_.calendarDays() - r.lastContact))));
 }
 
 talk::Query Game::talkQuery(const std::string& a, const std::string& b, const std::string& concept,
@@ -784,7 +794,30 @@ std::pair<std::string, Vec2> Game::entranceOf(const std::string& cell)
     return entrances_[cell] = at;
 }
 
+void Game::talkPeopleFresh()
+{
+    // Who a resident's people are (their neighbours, shopkeeper, priest, leader) walks the town's homes and posts: kept
+    // 30 world seconds and while the doors are the same (doc 84 §16, B1: a talk's facts are asked every line, and the
+    // director asks them of the same few in a busy place look after look). Homes, posts and kin change far slower.
+    const double now = world_.time();
+    if (peopleMemoAt_ < 0 || now < peopleMemoAt_ || now - peopleMemoAt_ >= 30 || world_.doorsKey() != peopleMemoDoors_)
+    {
+        peopleMemo_.clear();
+        neighboursMemo_.clear();
+        peopleMemoAt_ = now;
+        peopleMemoDoors_ = world_.doorsKey();
+    }
+}
+
 std::vector<std::string> Game::neighboursOf(const std::string& id)
+{
+    talkPeopleFresh();
+    if (const auto found = neighboursMemo_.find(id); found != neighboursMemo_.end())
+        return found->second;
+    return neighboursMemo_[id] = neighboursNow(id);
+}
+
+std::vector<std::string> Game::neighboursNow(const std::string& id)
 {
     const auto& society = world_.society();
     const auto* life = society.resident(id);
@@ -844,6 +877,16 @@ bool Game::talkThird(const std::string& speaker, const std::string& who, talk::F
 }
 
 std::map<std::string, std::string> Game::peopleOf(const std::string& id)
+{
+    talkPeopleFresh();
+    if (const auto found = peopleMemo_.find(id); found != peopleMemo_.end())
+        return found->second;
+    auto out = peopleNow(id);
+    talkPeopleFresh();                              // (Asked again: neighboursOf may have begun the memo afresh.)
+    return peopleMemo_[id] = std::move(out);
+}
+
+std::map<std::string, std::string> Game::peopleNow(const std::string& id)
 {
     std::map<std::string, std::string> out;
     const auto& society = world_.society();

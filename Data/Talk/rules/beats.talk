@@ -1,0 +1,122 @@
+# Beats when spoken (Docs/Design/84 §8.6, §8.9, §8.10; Phase 4): the move lines a talk needs now that each line is
+# chosen when it comes due. Move lines: rules with no concept, found by the move they make (`does`), so they answer in
+# any talk where their criteria hold. Short where they are said often (never a "distinctive" line, R4 and R5), many
+# alternatives, few criteria; in the speaker's dialect through the grammar's symbols.
+
+## Already known (§8.6): one who held the claim before the talk began says so (`self.knows=yes`, the game's), rather
+## than "Never!". The engine takes these as the exact answer to react.news from one who knew, and never from one who
+## didn't.
+
+rule bt_known_any
+does react.news.known
+when self.knows=yes
+say I'd heard. | So I heard. | Aye, I heard. | I'd heard that, aye. | So they're saying. | That's what I heard too.
+
+rule bt_known_any2
+does react.news.known
+when self.knows=yes
+say I know. | Old news, that. | Heard it already. | It's all over town. | Everyone's saying it. | You're late with that one.
+
+rule bt_known_grave
+does react.news.known
+when self.knows=yes topic.claim_kind=death|violence|victim
+tone grave
+say I'd heard. A bad business. | I know. Hard to credit. | I heard. It's a sad thing.
+
+## Broken off (§8.10): rain starting on them in the open, a fight breaking out, one of them called away by a player at
+## the window. Said by the one whose turn it was (or the one called), and the talk ends.
+
+rule bt_break_rain
+does break
+when conv.interrupt=rain here.weather=rain|storm
+say Rain. Inside, quick. | Here it comes. Under cover! | That's rain. I'm off. | Wet, now. Run for it. | Here comes the rain. Go on.
+
+rule bt_break_rain2
+does break
+when conv.interrupt=rain here.weather=rain|storm
+say Gods, it's coming down. Later. | Out of this rain. #later.capitalize#. | I'll not stand in this. #farewell#.
+
+rule bt_break_fight
+does break
+when conv.interrupt=fight
+tone serious
+say What's that? A fight! | Look there. Trouble. | Gods, they're at it. | Stand back. A fight. | Someone call the Watch!
+
+rule bt_break_called
+does break
+when conv.interrupt=called
+say One moment. | Hold on. Someone wants me. | Excuse me a moment. | Sorry. I'm wanted. | A moment, #address#.
+
+## A thread taken up again (§8.10): a talk broken off before its point was made, on the same topic within two days, is
+## returned to in the opener's breath.
+
+rule bt_return_any
+does return
+say As I was saying. | Where was I? Ah. | Now, as I was saying. | About what I said before. | Before we were stopped.
+
+rule bt_return_any2
+does return
+say To finish what I was saying. | Now, where were we? | Where was I, now? | As I was telling you.
+
+## A third voice (§8.9). The game finds one with a stake (conv.stake): the one being talked of (named), their kin or a
+## friend, one who deals in the goods, one who was there, or a friend of both who likes to talk. They cut in on the one
+## who spoke last, who owes the answer.
+
+rule bt_join_object
+does join.object
+when conv.stake=named
+say I'm standing right here, you know. | I can hear every word of that. | You might lower your voice. I'm right here. | Say it to my face, then. | I'm not deaf, #address#.
+
+rule bt_join_defend_kin
+does join.defend
+when conv.stake=kin
+denies
+say That's my own blood you're talking of. Mind your tongue. | #topic.subject#'s kin of mine, and no such thing. Have a care. | Careful. That's family you're talking about. | You'll not say that of my kin where I can hear it.
+
+rule bt_join_defend_friend
+does join.defend
+when conv.stake=friend
+say #topic.subject#'s a friend of mine. I'll not hear it. | I know #topic.subject#. That's not like them at all. | You've got that wrong about #topic.subject#. | Hearsay. I'd want more than that before I believed it.
+
+rule bt_join_add_kin
+does join.add
+when conv.stake=kin|friend
+say You're talking of #topic.subject#? I know them well. | That's #topic.subject# you mean? I'll vouch for them. | #topic.subject#, is it? Let me hear.
+
+rule bt_join_add_goods
+does join.add
+when conv.stake=goods
+say Talking trade? I've a stake in that myself. | That's my line of work you're on about. | You'll want my word on that, then. | I deal in that. Ask me.
+
+rule bt_join_add_witness
+does join.add
+when conv.stake=witness
+say I was right there, as it happens. | I was there for that. Ask me. | I can tell you about that. I was there.
+
+rule bt_join_add_friends
+does join.add
+when conv.stake=friends
+say What are you two plotting? | Room for one more? | Don't stop on my account. | Mind if I listen in? | What's all this, then?
+
+## What a third's cutting in is owed (§8.9): welcomed in, or an apology, a word held to, or conceded.
+
+rule bt_welcome_any
+does welcome_join
+say Pull up, then. | Come and join us. | There you are. | All the better. | Go on, then.
+
+rule bt_apologise_any
+does apologise
+say I meant nothing by it. | Sorry. I didn't see you there. | I only said what I heard. | No offence meant. | My mistake. I'll hush.
+
+rule bt_insist_any
+does insist
+say It's what's being said. Ask anyone. | I only say what I heard. | I'll not unsay it. | That's how I heard it.
+
+rule bt_concede_any
+does concede
+say Fair enough. I'll say no more. | Maybe so. I'll leave it. | You'd know better than me. | Well. Perhaps.
+
+rule bt_decline_apology_any
+does decline_apology
+when self.warmth=cold|reserved
+say Hm. See that you do. | Words are cheap. | Easy said, after. | We'll see.

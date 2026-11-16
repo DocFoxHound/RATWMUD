@@ -43,7 +43,7 @@ is measured"); the rest are listed as n/a with the phase that brings them:
      grief, robbery... then laughter, a jest)
   C6 the same entry (or the same question) twice in one conversation, per 1,000 conversations
   C7 lines per conversation: mean, 90th percentile, and the share of 3-line ones
-  C8 conversations with a third speaker
+  C8 conversations with a third speaker (Phase 4: one who joined, §8.9)
   T1 raw ids spoken (an identifier with an underscore), per 1,000 lines
   T2 presupposition failures per 1,000 lines: Data/Talk/truth.json's rules (Phase 1; tools/talk_truth.py) over every
      line, against the moment's facts (here.*, pair.*, world.*) and the speaker's (self.*); P0's provisional lexicon
@@ -53,6 +53,9 @@ is measured"); the rest are listed as n/a with the phase that brings them:
      Varg; a name said to them as a call, "..., Varg Acorndell." or "Varg Acorndell, ...", is not); and an unbacked
      first-person claim: an eyewitness's words ("I saw...", "with my own eyes") about a crime, a rumour or a camp from one
      who didn't see it (the conversation's `seen`, from talk_sim; a run without it isn't judged on this)
+  T5 telling what the listener already believes (Phase 4): of the lines passing on the topic's claim (asserts) whose
+     listener talk_sim judged (to_knew), those told to one who held it before the talk began and not answered by them
+     with "I'd heard" (react.news.known or .again)
   K1 conversations on everyday topics (anything but news, gossip, crime, deeds, events, quarrels and the like)
   K2 the largest topic's share
   K3 the same news (topic, subject, claim) told twice to the same resident
@@ -65,14 +68,17 @@ is measured"); the rest are listed as n/a with the phase that brings them:
   U1 a resident's lines from their own words (character tables now, mantles from Phase 9)
   U2 distinguishability: of two residents with the same eight axes (seven traits and dialect), held-out lines given to
      the right one
+  B1 the director's timings (run.json's beat_ms and look_ms, Phase 4; §16): B1 a beat's mean (0.6 ms), B1P its 99th
+     percentile (3 ms), B1L a look's 99th percentile (5 ms); the slowest profile's, with the run's load. Soft here: the
+     budget's gate is Tests/talk_bench, alone on the machine
   B5 exchanges simulated a second (run.json)
 
 Gates (--check against --baseline): a hard gate the baseline passed must still pass; one the baseline failed may not get
 worse (each phase closes its own); a soft metric may not regress by more than 10%. "Worse" means beyond noise: a metric
-that counts events (EVENTS: R4, R5, R8, C1, C1Q, C3, C4, C6, T1-T3, K3, D1, D1L, D1B, D3) only if the exact test of two Poisson counts
+that counts events (EVENTS: R4, R5, R8, C1, C1Q, C3, C4, C6, T1-T3, T5, K3, D1, D1L, D1B, D3) only if the exact test of two Poisson counts
 (today's events against the baseline's, each over its own exposure: a binomial split of the two together) puts the
 difference beyond chance at ALPHA (1%, one-sided), so both cards' noise counts; R1 and R2, first-time waits that are the
-earliest of many listeners', by more than half; B5, a timing, by more than 25%. A profile the baseline has and the card
+earliest of many listeners', by more than half; B5, a timing, by more than 25%, and B1's by more than half. A profile the baseline has and the card
 hasn't is a problem in itself. The scorecard says which hard gates are still open.
 """
 from __future__ import annotations
@@ -119,7 +125,7 @@ METRICS = {
     "T3": ("self-reference errors (own name, the listener in the third person, unbacked eyewitness words), per 1,000 lines",
            "lower", "hard", lambda v: v <= 0, "0", ""),
     "T4": ("identity drift", "lower", "hard", None, "0", "Phase 6"),
-    "T5": ("telling what the listener already believes (%)", "lower", "soft", None, "2%", "Phase 4"),
+    "T5": ("telling what the listener already believes, with no 'known' answer (%)", "lower", "soft", lambda v: v <= 2, "2%", ""),
     "D1": ("lines with a dialect's words (%): accent none", "lower", "hard", lambda v: v <= 0, "none 0%", ""),
     "D1L": ("lines with a dialect's words (%): light speakers", "higher", "soft", lambda v: 25 <= v <= 50, "light 25-50%", ""),
     "D1B": ("lines with a dialect's words (%): broad speakers", "higher", "soft", lambda v: v >= 60, "broad 60%+", ""),
@@ -133,6 +139,11 @@ METRICS = {
     "W1": ("window lines from mantles (%)", "higher", "soft", None, "40%+", "Phase 13"),
     "W2": ("free-text understanding", "higher", "hard", None, "85%+; wrong 8% or less", "Phase 13"),
     "W3": ("a resident answers chat with the option off", "lower", "hard", None, "0", "Phase 12"),
+    # (B1's gate is Tests/talk_bench's, alone on the machine: §16. A card's runs share it ten at a time, and a fixture's
+    # restart every game midnight starts each day's world cold, so here they are watched, not gated: soft.)
+    "B1": ("one beat: the director's mean (ms)", "lower", "soft", lambda v: v <= .6, "0.6 ms or less (gate: talk_bench)", ""),
+    "B1P": ("one beat: the director's 99th percentile (ms)", "lower", "soft", lambda v: v <= 3, "3 ms or less (gate: talk_bench)", ""),
+    "B1L": ("a director look: 99th percentile (ms)", "lower", "soft", lambda v: v <= 5, "5 ms or less (gate: talk_bench)", ""),
     "B5": ("exchanges simulated a second", "higher", "hard", lambda v: v >= 150, "150+", ""),
     "X1": ("lexical cohesion: replies sharing a content word with the line before (%)", "higher", "soft", None,
            "diagnostic (not in §15.3): shows the control is discriminating", ""),
@@ -538,6 +549,25 @@ def score_run(run: Run) -> dict:
         if head.get("topic") in NEWSY and (head.get("subject") or head.get("claim")):
             told[(head.get("other", ""), head.get("topic"), head.get("subject", ""), head.get("claim", ""))] += 1
     m["K3"] = sum(n - 1 for n in told.values() if n > 1)
+    # T5 (Phase 4): a line passing on the topic's claim (asserts) to one who held it before the talk began (talk_sim's
+    # to_knew), not answered by them with "I'd heard" (react.news.known or .again), of the asserting lines judged.
+    asserted = knew_unsaid = 0
+    t5_examples = []
+    for c in convs:
+        for i, l in enumerate(c):
+            if not l.get("asserts") or l.get("to_knew") not in ("yes", "no"):
+                continue
+            asserted += 1
+            if l["to_knew"] != "yes":
+                continue
+            reply = next((x for x in c[i + 1:] if x["who"] == l.get("to")), None)
+            if not reply or not any(meets(m_, "react.news.known", book) or meets(m_, "react.news.again", book)
+                                    for m_ in reply.get("moves") or []):
+                knew_unsaid += 1
+                if len(t5_examples) < 4:
+                    t5_examples.append(f"{l['text']} / {reply['text'] if reply else '(nothing)'}")
+    m["T5"] = pct(knew_unsaid, asserted) if asserted else None
+    m["T5_detail"] = {"asserted": asserted, "told_what_they_knew": knew_unsaid, "examples": t5_examples}
     # D1, D2.
     by_accent = collections.defaultdict(lambda: [0, 0])
     d2_layers = 0
@@ -572,6 +602,15 @@ def score_run(run: Run) -> dict:
     m["U1"] = pct(own, len(lines))
     m["U2"], m["U2_detail"] = distinguish(lines, run.residents)
     m["B5"] = float(run.meta.get("exchanges_per_second") or 0)
+    # B1 (Phase 4): the director's own timings, as talk_sim measured them (the run's load included: tools/talk_card runs
+    # profiles side by side; Tests/talk_bench measures alone).
+    beat, look = run.meta.get("beat_ms") or {}, run.meta.get("look_ms") or {}
+    if beat.get("n"):
+        m["B1"], m["B1P"] = float(beat.get("mean", 0)), float(beat.get("p99", 0))
+    if look.get("n"):
+        m["B1L"] = float(look.get("p99", 0))
+    m["B1_detail"] = {"beats": beat.get("n", 0), "beat_max": beat.get("max"), "looks": look.get("n", 0), "look_mean": look.get("mean"),
+                      "look_max": look.get("max")}
     # X1: a reply (a line after the first, by the other) sharing a content word with the line before it.
     cohesive = replies_n = 0
     for c in convs:
@@ -585,6 +624,7 @@ def score_run(run: Run) -> dict:
     m["X1"] = pct(cohesive, replies_n)
     m["_counts"] = {"lines": len(lines), "conversations": len(convs), "hours": round(run.hours, 2),
                     "listeners": len(listeners), "speakers": len(by_speaker), "questions": questions, "owed": owed,
+                    "asserted": asserted,
                     "none_lines": by_accent["none"][1], "light_lines": by_accent["light"][1],
                     "broad_lines": by_accent["broad"][1]}
     return m
@@ -732,6 +772,8 @@ def combine(per_run: dict[str, dict]) -> dict:
             out[mid] = sum(vals.values())
         elif mid == "B5":
             out[mid] = min(vals.values())
+        elif mid in ("B1", "B1P", "B1L"):                # (Timings: the slowest profile's.)
+            out[mid] = max(vals.values())
         else:                                       # (Over the profiles that say something of it: D3 isn't judged
             judged = sum(weights[k] for k in vals) or total   # where one dialect was heard, so it weighs nothing there.)
             out[mid] = sum(vals[k] * weights[k] for k in vals) / judged
@@ -826,10 +868,10 @@ EVENTS = {"R4": ("hours", 100), "R5": ("hours", 100), "C1": ("owed", 100), "C1Q"
           "C3": ("conversations", 100), "C4": ("lines", 1000),
           "C6": ("conversations", 1000), "T1": ("lines", 1000), "T2": ("lines", 1000), "T3": ("lines", 1000),
           "K3": ("conversations", None), "D1": ("none_lines", 100), "D1L": ("light_lines", 100),
-          "D1B": ("broad_lines", 100), "R8": ("lines20", 100), "D3": ("judged", 100)}
+          "D1B": ("broad_lines", 100), "R8": ("lines20", 100), "D3": ("judged", 100), "T5": ("asserted", 100)}
 # Timings, which move with the machine's load: the same build measured B5 frozen at 59, 72 and 80. And first-time waits,
 # the earliest of many listeners' (R1, R2): one listener hearing a repeat a little sooner moves them more than any rate.
-TIMING = {"B5": .25, "R1": .5, "R2": .5}
+TIMING = {"B5": .25, "R1": .5, "R2": .5, "B1": .5, "B1P": .5, "B1L": .5}
 # The chance, under no real change, that a counted metric is called worse (one-sided, per metric): with a dozen counted
 # metrics on a card, about one card in ten flags one by chance at most (the exact test is conservative), where one
 # standard deviation flagged two cards in three (the slice-end review).
@@ -904,7 +946,9 @@ def check(card: dict, base: dict) -> list[str]:
         if now is None or was is None:
             continue
         if row["gate"] == "hard" and b.get("passes") and row.get("passes") is False:
-            problems.append(f"{mid} ({row['name']}): {now:.3g} breaks the hard gate ({row['target']}); the baseline passed")
+            # (A timing moves with the machine's load: past its gate it breaks only beyond TIMING's share of noise too.)
+            if mid not in TIMING or worse(mid, now, was) > TIMING[mid]:
+                problems.append(f"{mid} ({row['name']}): {now:.3g} breaks the hard gate ({row['target']}); the baseline passed")
             continue
         if row["gate"] == "hard" and b.get("passes") is not False:
             continue

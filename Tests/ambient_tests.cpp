@@ -418,6 +418,59 @@ void housematesAreNotKin()
 }
 } // namespace
 
+void talkCarriesKnowledge()
+{
+    // Doc 84 §8.6 (Phase 4): a claim told in talk is corroborated by a second, independent source, (1 - c) * 0.4, once
+    // a source; not by the one they had it from, nor by one who had it from them. A denial by the one it's about weakens
+    // it. And a talk spoken a beat at a time counts from its start (ambientBegun) and leaves its people more familiar at
+    // its end (ambientEnded), with no blanket warmth: its lines carry their own.
+    auto w = scene();
+    w.believe("sorrel", "player-ada", "stole from Wren", "saw it", .5, "inc-1");
+    const auto* held = w.holding("sorrel", "player-ada", "stole from Wren");
+    expect(held && held->confidence == .5, "held as believed");
+    expect(w.holding("sorrel", "player-ada", "something else", "inc-1") == held, "found by its incident too");
+    Belief told;
+    told.holder = "sorrel";
+    told.subject = "player-ada";
+    told.claim = "stole from Wren";
+    told.confidence = .3;
+    told.source = "saw it";
+    w.told(told, "");
+    expect(std::abs(w.holding("sorrel", "player-ada", "stole from Wren")->confidence - .5) < 1e-9, "the same source again: no surer");
+    told.source = "fennel";
+    w.told(told, "sorrel");
+    expect(std::abs(w.holding("sorrel", "player-ada", "stole from Wren")->confidence - .5) < 1e-9,
+           "one who had it from them: no surer");
+    told.source = "bram";
+    w.told(told, "someone");
+    expect(std::abs(w.holding("sorrel", "player-ada", "stole from Wren")->confidence - .7) < 1e-9,
+           "a second, independent source: .5 + .5 * .4");
+    w.told(told, "someone");
+    expect(std::abs(w.holding("sorrel", "player-ada", "stole from Wren")->confidence - .7) < 1e-9, "once a source");
+    told.holder = "fennel";
+    w.told(told, "someone");
+    expect(std::abs(w.holding("fennel", "player-ada", "stole from Wren")->confidence - .3) < 1e-9, "new to the hearer: believed as told");
+    w.doubted("sorrel", "player-ada", "stole from Wren", .5);
+    expect(std::abs(w.holding("sorrel", "player-ada", "stole from Wren")->confidence - .35) < 1e-9, "a denial weakens it");
+    w.doubted("sorrel", "player-ada", "stole from Wren", 3);
+    expect(std::abs(w.holding("sorrel", "player-ada", "stole from Wren")->confidence - .35) < 1e-9, "never strengthens it");
+    // Begun and ended.
+    const auto before = w.bonds().find("fennel", "sorrel") ? *w.bonds().find("fennel", "sorrel") : Bond{};
+    AmbientPick pick;
+    pick.teller = "sorrel";
+    pick.listener = "fennel";
+    pick.cell = "town";
+    pick.topic.kind = "day";
+    w.ambientBegun(pick);
+    expect(w.ambientPacing().count("sorrel") && w.ambientPacing().count("cell:town"), "it counts from its start");
+    w.ambientEnded(pick, {"sorrel", "fennel"});
+    const auto* after = w.bonds().find("fennel", "sorrel");
+    expect(after && after->familiarity > before.familiarity && after->affinity < before.affinity + .5,
+           "a little more familiar, warmer only as any conversation is (the event's own), never the old blanket (" + std::to_string(before.familiarity) + " -> " +
+               std::to_string(after ? after->familiarity : -1) + ", " + std::to_string(before.affinity) + " -> " +
+               std::to_string(after ? after->affinity : -1) + ")");
+}
+
 int main()
 {
     try
@@ -429,6 +482,7 @@ int main()
         authoredLines();
         claimsInTheirOwnWords();
         housematesAreNotKin();
+        talkCarriesKnowledge();
         sliceEndReview();
     }
     catch (const std::exception& e)

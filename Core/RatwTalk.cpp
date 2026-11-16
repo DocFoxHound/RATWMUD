@@ -424,6 +424,7 @@ bool Library::readFrames(const std::string& text, std::string& problem)
     // "invite_taken": 0.5}. Checked: every field known, every fact, move and tone.
     frames_.clear();
     budgets_ = {};
+    curt_ = {};
     inviteTaken_ = .5;
     json::Value doc;
     std::string error;
@@ -436,11 +437,11 @@ bool Library::readFrames(const std::string& text, std::string& problem)
     const auto fail = [&](const std::string& m) { errors.push_back("frames.json: " + m); };
     if (moves_.empty())
         fail("it names moves: moves.json is needed beside it");
-    static const std::set<std::string> Top{"about", "frames", "budget", "invite_taken"};
+    static const std::set<std::string> Top{"about", "frames", "budget", "invite_taken", "curt", "join", "thread"};
     static const std::set<std::string> Fields{"about", "when", "open", "budget", "preclose", "forbid", "tones", "accent", "hedge"};
     for (const auto& [key, unused] : doc.fields())
         if (!Top.count(key))
-            fail("no field '" + key + "' (about, frames, budget, invite_taken)");
+            fail("no field '" + key + "' (about, frames, budget, invite_taken, curt, join, thread)");
     const auto scale = [&](const std::string& what, double v) {
         if (!(v >= .2 && v <= 3))
             fail(what + " is a number from 0.2 to 3");
@@ -524,6 +525,50 @@ bool Library::readFrames(const std::string& text, std::string& problem)
     inviteTaken_ = doc.number("invite_taken", .5);
     if (!(inviteTaken_ >= 0 && inviteTaken_ <= 1))
         fail("invite_taken is a chance, 0 to 1");
+    // Phase 4: curt endings and what they cost, who may join, how long a broken-off thread is kept.
+    const auto known = [&](const json::Value& o, const std::set<std::string>& fields, const std::string& what) {
+        for (const auto& [key, unused] : o.fields())
+            if (!fields.count(key))
+                fail(what + ": no field '" + key + "'");
+    };
+    if (const auto* curt = doc.find("curt"))
+    {
+        known(*curt, {"about", "chance", "effects"}, "curt");
+        curt_.curtChance = curt->number("chance", .5);
+        if (!(curt_.curtChance >= 0 && curt_.curtChance <= 1))
+            fail("curt: chance is 0 to 1");
+        for (const auto& [whose, axes] : curt->object("effects").fields())
+        {
+            if (whose != "self" && whose != "other")
+                fail("curt: effects are \"self\" or \"other\"");
+            for (const auto& [axis, v] : axes.fields())
+                if (!v.isNumber() || std::abs(v.asNumber()) > 5 ||
+                    !(axis == "affinity" || axis == "trust" || axis == "respect" || axis == "fear" || axis == "familiarity"))
+                    fail("curt: an effect is an axis (affinity, trust, respect, fear, familiarity) and a change of 5 or less");
+                else
+                    curt_.curtEffects[whose][axis] = v.asNumber();
+        }
+    }
+    if (const auto* join = doc.find("join"))
+    {
+        known(*join, {"about", "people", "tiles", "hearing", "rest"}, "join");
+        curt_.joinPeople = int(join->number("people", 3));
+        curt_.joinTiles = join->number("tiles", 3);
+        curt_.joinHearing = join->number("hearing", .5);
+        curt_.joinRest = join->number("rest", 60);
+        if (curt_.joinPeople < 2 || curt_.joinPeople > 3)
+            fail("join: people is 2 (nobody joins) or 3 (this build's most)");
+        if (!(curt_.joinTiles > 0 && curt_.joinTiles <= 10) || !(curt_.joinHearing >= 0 && curt_.joinHearing <= 1) ||
+            !(curt_.joinRest >= 0 && curt_.joinRest <= 3600))
+            fail("join: tiles 0-10, hearing 0-1, rest 0-3600 seconds");
+    }
+    if (const auto* thread = doc.find("thread"))
+    {
+        known(*thread, {"about", "days"}, "thread");
+        curt_.threadDays = thread->number("days", 2);
+        if (!(curt_.threadDays >= 0 && curt_.threadDays <= 30))
+            fail("thread: days 0-30");
+    }
     if (!errors.empty())
     {
         problem.clear();
@@ -531,6 +576,7 @@ bool Library::readFrames(const std::string& text, std::string& problem)
             problem += (i ? "\n" : "") + errors[i];
         frames_.clear();
         budgets_ = {};
+        curt_ = {};
         return false;
     }
     return true;
@@ -2190,6 +2236,8 @@ Said Library::renderWith(const Entry& e, const Query& q, std::uint64_t seed, Tra
         info.who = who;
         info.to = q.alone ? -1 : 1 - who;
         info.text = said;
+        info.turn = int(t);
+        info.variant = int(chosen - turn.variants.data());
         if (std::size_t(info.alt) < chosen->tags.size())
         {
             info.tags = chosen->tags[std::size_t(info.alt)].set;
@@ -2655,12 +2703,99 @@ bool Library::forbidden(const Conversation& c, const Entry& e, const Query& q, i
     return false;
 }
 
-Query Library::beatQuery(const Conversation& c, const std::function<Query(int, int)>& facts, int speaker) const
+Query Library::beatQuery(const Conversation& c, const std::function<Query(int, int)>& facts, int speaker, int to, int& side) const
 {
-    auto q = facts(speaker, c.people.size() < 2 ? -1 : 1 - speaker);
+    // The opener and the one first spoken to keep a and b as begin had them; a query with the third in it has the
+    // speaker as a (next's contract).
+    side = speaker < 2 && to < 2 ? speaker : 0;
+    auto q = facts(speaker, to);
     for (const auto& [k, v] : c.conv)
         q.facts["conv." + k] = v;
     return q;
+}
+
+Query Library::beatQuery(const Conversation& c, const std::function<Query(int, int)>& facts, int speaker) const
+{
+    int side = 0;
+    return beatQuery(c, facts, speaker, c.people.size() < 2 ? -1 : 1 - speaker, side);
+}
+
+int Library::partner(const Conversation& c, int who)
+{
+    for (auto it = c.lines.rbegin(); it != c.lines.rend(); ++it)
+        if (it->who == who && it->to >= 0 && it->to != who)
+            return it->to;
+    for (auto it = c.lines.rbegin(); it != c.lines.rend(); ++it)
+        if (it->who != who)
+            return it->who;
+    return who == 0 ? 1 : 0;
+}
+
+void Library::place(Said& s, int speaker, int to)
+{
+    for (auto& l : s.lines)
+        l.first = speaker;
+    for (auto& l : s.info)
+    {
+        l.who = speaker;
+        l.to = to;
+    }
+}
+
+namespace
+{
+// The facts of the moment (§8.2: here.*, the hour and the weather; a speaker hurt, fighting, at work, mourning), which a
+// scene's later turn is checked against again when it comes due. Never what is remembered (mem.*, said:), which the
+// scene's own first lines change, nor what the talk itself may move (a bond).
+bool momentCriterion(const Criterion& c)
+{
+    if (c.name.rfind("mem.", 0) == 0 || c.name.rfind("said:", 0) == 0)
+        return false;
+    static const std::set<std::string> Now{"injured", "fighting", "working", "shift", "on_watch", "tired", "hungry", "mourning"};
+    switch (c.ns)
+    {
+    case Ns::Here: return true;
+    case Ns::A:
+    case Ns::B:
+    case Ns::Self:
+    case Ns::Other: return Now.count(c.name) > 0;
+    default: return false;
+    }
+}
+} // namespace
+
+bool Library::untrueScene(const Entry& e, const Query& q) const
+{
+    // Doc 84 §8.6 (Phase 4): a scene whose turn says "I'd heard" for one who didn't know (their `knows`, the game's, on
+    // a topic with a claim), or "Never!" for one who did, is never chosen.
+    if (moves_.empty() || e.does.empty())
+        return false;
+    for (std::size_t t = 0; t < e.turns.size() && t < e.does.size(); ++t)
+    {
+        const auto& s = e.turns[t].who == 0 ? q.a : q.b;
+        const auto k = s.facts.find("knows");
+        if (k == s.facts.end())
+            continue;
+        const auto& does = e.does[t];
+        const auto has = [&](const char* m) { return std::find(does.begin(), does.end(), m) != does.end(); };
+        if ((k->second == "no" && (has("react.news.known") || has("react.news.again"))) || (k->second == "yes" && has("react.news.new")))
+            return true;
+    }
+    return false;
+}
+
+bool Library::stillHolds(const SaidLine& line, const Query& q) const
+{
+    const Entry* e = find(line.entry);
+    if (!e || line.turn < 0 || std::size_t(line.turn) >= e->turns.size())
+        return true;                                // (Written outside the library: nothing to check.)
+    if (!std::all_of(e->when.begin(), e->when.end(), [&](const Criterion& c) { return !momentCriterion(c) || holds(c, q, 0); }))
+        return false;
+    const auto& turn = e->turns[std::size_t(line.turn)];
+    if (line.variant < 0 || std::size_t(line.variant) >= turn.variants.size())
+        return true;
+    const auto& v = turn.variants[std::size_t(line.variant)];
+    return std::all_of(v.when.begin(), v.when.end(), [&](const Criterion& c) { return !momentCriterion(c) || holds(c, q, turn.who); });
 }
 
 void Library::take(Conversation& c, Said said) const
@@ -2713,6 +2848,10 @@ SaidLine Library::sayNext(Conversation& c) const
         // Who owes what now (§8.3): whatever its speaker owed is answered or passed over by speaking; a scene's own
         // lines answer each other, so only its last line's (and a rule's) obligations stand.
         c.open.clear();
+        // Owed by the one it was said to (a third speaker's line names its own: Phase 4).
+        const auto toOf = [&](const SaidLine& l) {
+            return c.people.size() < 2 ? -1 : l.to >= 0 && l.to != l.who ? l.to : partner(c, l.who);
+        };
         if (last)
         {
             const bool shrug = settings_.ends.count(line.text) > 0;
@@ -2730,7 +2869,7 @@ SaidLine Library::sayNext(Conversation& c) const
                         open.to = who == "self" ? line.who : -1;
                     }
                     else
-                        open.to = c.people.size() < 2 ? -1 : 1 - line.who;
+                        open.to = toOf(line);
                     open.moves = split(alts, '|');
                     // A `then` hand-on: its concept's own rules answer it best (its owes were derived from it).
                     if (e && !e->scene && !e->thenConcept.empty() &&
@@ -2748,7 +2887,7 @@ SaidLine Library::sayNext(Conversation& c) const
                 {
                     Conversation::Open open;
                     open.by = line.who;
-                    open.to = e->thenWho == "self" ? line.who : (c.people.size() < 2 ? -1 : 1 - line.who);
+                    open.to = e->thenWho == "self" ? line.who : toOf(line);
                     open.concept = e->thenConcept;
                     c.open.push_back(std::move(open));
                 }
@@ -2792,9 +2931,8 @@ void Library::end(Conversation& c, const std::string& why, Trace* trace) const
     c.open.clear();
 }
 
-std::optional<SaidLine> Library::begin(Conversation& c, const Query& q, const Freshness& fresh, Trace* trace) const
+void Library::setUp(Conversation& c, const Query& q) const
 {
-    // The opener: the concept's, as pick chooses it (the director's topic; Phase 5's agenda chooses from Phase 5).
     c.concept = q.concept;
     c.legacy = moves_.empty();
     c.people.clear();
@@ -2814,6 +2952,74 @@ std::optional<SaidLine> Library::begin(Conversation& c, const Query& q, const Fr
         c.frames = framesFor(q);
         c.budget = budgetFor(q, c.frames, c.seed);
     }
+}
+
+void Library::preface(Conversation& c, Said& said, const Query& q, const Freshness& fresh, Trace* trace) const
+{
+    // Said in the opener's breath, one line (the listener's first line stays the opener's words), before an opener that
+    // says what it does: the frames' opening (§8.4: strangers greet properly, a host offers a seat), unless it opens
+    // itself; and a return to a talk left unfinished on this topic (§8.10: "As I was saying..."), unless it returns
+    // itself. An opener that says nothing of what it does (Phase 7 tags it) is left as it is.
+    if (c.legacy || c.concept.rfind("talk.", 0) != 0 || said.info.empty() || said.info.front().moves.empty() ||
+        c.people.size() < 2 || said.info.front().who != 0)
+        return;
+    const auto does = [&](const std::string& what) {
+        const auto& first = said.info.front().moves;
+        return std::any_of(first.begin(), first.end(), [&](const std::string& m) {
+            const auto* mv = moves_.find(m);
+            return mv && (what == "opening" ? mv->family == "opening" : moves_.kindOf(m, what));
+        });
+    };
+    const auto prepend = [&](Said& before, const std::string& why) {
+        auto& g = before.info.front();
+        auto& line = said.info.front();
+        line.text = g.text + " " + line.text;
+        said.lines.front().second = line.text;
+        line.moves.insert(line.moves.begin(), g.moves.begin(), g.moves.end());
+        line.layers.insert(line.layers.end(), g.layers.begin(), g.layers.end());
+        line.habits.insert(line.habits.end(), g.habits.begin(), g.habits.end());
+        said.chain.push_back(before.id);
+        said.effects.insert(said.effects.begin(), before.effects.begin(), before.effects.end());
+        c.said.insert(before.id);
+        if (trace)
+            trace->why += "; " + why + ": " + before.id;
+    };
+    const auto one = [&](const std::string& move) {
+        Conversation::Open o;
+        o.moves = {move};
+        auto s = answer(c, o, q, 0, fresh, nullptr);
+        return s.id.empty() || s.info.size() != 1 ? Said{} : s;
+    };
+    // A thread left unfinished on this topic (Phase 4: pair.thread, kept two game days; the ledger's from Phase 5).
+    Said back;
+    if (const auto thread = q.facts.find("pair.thread"); thread != q.facts.end() && !c.topic.empty() && thread->second == c.topic &&
+                                                         !does("return"))
+        back = one("return");
+    const bool opens = does("opening");
+    Said greet;
+    std::vector<std::string> open;
+    for (const auto& name : c.frames)
+        for (const auto& f : frames_)
+            if (f.name == name)
+                for (const auto& m : f.open)
+                    if (std::find(open.begin(), open.end(), m) == open.end())
+                        open.push_back(m);
+    for (std::size_t i = 0; !opens && i < open.size() && greet.id.empty(); ++i)
+    {
+        greet = one(open[i]);
+        if (!greet.id.empty() && trace)
+            trace->why += "; greeted first (" + open[i] + ")";
+    }
+    if (!back.id.empty())
+        prepend(back, "returned to the thread");
+    if (!greet.id.empty())
+        prepend(greet, "greeting");
+}
+
+std::optional<SaidLine> Library::begin(Conversation& c, const Query& q, const Freshness& fresh, Trace* trace) const
+{
+    // The opener: the concept's, as pick chooses it (the director's topic; Phase 5's agenda chooses from Phase 5).
+    setUp(c, q);
     auto said = pickOne(q, c.seed, fresh.heard, fresh.recent, 0, false, trace);
     if (said.id.empty())
     {
@@ -2821,48 +3027,110 @@ std::optional<SaidLine> Library::begin(Conversation& c, const Query& q, const Fr
         return std::nullopt;
     }
     c.repeat = said.repeat;
-    // The frames' opening (§8.4): strangers greet properly, a host offers a seat. A greeting goes before an opener that
-    // says what it does and opens with no opening move of its own, in the same breath (one line: the listener's first
-    // line stays the opener's words). An opener that says nothing of what it does (Phase 7 tags it) is left as it is.
-    if (!c.legacy && c.concept.rfind("talk.", 0) == 0 && !said.info.empty() && !said.info.front().moves.empty() &&
-        c.people.size() > 1)
-    {
-        const auto& first = said.info.front();
-        const bool opens = std::any_of(first.moves.begin(), first.moves.end(), [&](const std::string& m) {
-            const auto* mv = moves_.find(m);
-            return mv && mv->family == "opening";
-        });
-        std::vector<std::string> open;
-        for (const auto& name : c.frames)
-            for (const auto& f : frames_)
-                if (f.name == name)
-                    for (const auto& m : f.open)
-                        if (std::find(open.begin(), open.end(), m) == open.end())
-                            open.push_back(m);
-        for (std::size_t i = 0; !opens && first.who == 0 && i < open.size(); ++i)
-        {
-            Conversation::Open o;
-            o.moves = {open[i]};
-            auto greet = answer(c, o, q, 0, fresh, nullptr);
-            if (greet.id.empty() || greet.info.size() != 1)
-                continue;
-            auto& g = greet.info.front();
-            auto& line = said.info.front();
-            line.text = g.text + " " + line.text;
-            said.lines.front().second = line.text;
-            line.moves.insert(line.moves.begin(), g.moves.begin(), g.moves.end());
-            line.layers.insert(line.layers.end(), g.layers.begin(), g.layers.end());
-            line.habits.insert(line.habits.end(), g.habits.begin(), g.habits.end());
-            said.chain.push_back(greet.id);
-            said.effects.insert(said.effects.begin(), greet.effects.begin(), greet.effects.end());
-            c.said.insert(greet.id);
-            if (trace)
-                trace->why += "; greeted first (" + open[i] + "): " + greet.id;
-            break;
-        }
-    }
+    preface(c, said, q, fresh, trace);
     take(c, std::move(said));
     return sayNext(c);
+}
+
+std::optional<SaidLine> Library::beginWith(Conversation& c, const Query& q, Said written, Trace* trace) const
+{
+    // Lines written whole outside the library (the game's authored exchange): said as they are, then the engine goes on.
+    setUp(c, q);
+    if (written.lines.empty())
+    {
+        end(c, "nothing", nullptr);
+        return std::nullopt;
+    }
+    if (written.info.size() != written.lines.size())
+    {
+        written.info.clear();
+        for (const auto& [who, text] : written.lines)
+        {
+            SaidLine l;
+            l.who = who;
+            l.to = q.alone ? -1 : 1 - who;
+            l.text = text;
+            written.info.push_back(std::move(l));
+        }
+    }
+    for (auto& l : written.info)
+        if (l.to < 0 && !q.alone)
+            l.to = 1 - l.who;
+    if (trace)
+        trace->why += "written: " + std::to_string(written.lines.size()) + " lines";
+    take(c, std::move(written));
+    return sayNext(c);
+}
+
+std::optional<SaidLine> Library::join(Conversation& c, const std::string& id, const std::string& stake,
+                                      const std::vector<std::string>& moves, const Query& q, const Freshness& fresh,
+                                      Trace* trace) const
+{
+    // A third voice (§8.9): only into a talk of two in its body, with room for the joining line, its answer and the
+    // closing, said to the one who spoke last; the joiner cuts in before whatever was owed.
+    if (c.legacy || moves_.empty() || c.people.size() != 2 || c.lines.empty() || !c.queued.empty() || moves.empty() ||
+        c.phase != Conversation::Phase::Body || int(c.lines.size()) + 4 > budgets_.most || id.empty() ||
+        std::find(c.people.begin(), c.people.end(), id) != c.people.end())
+        return std::nullopt;
+    const int to = c.lines.back().who;
+    Conversation::Open o;
+    o.by = to;
+    o.to = 2;
+    o.moves = moves;
+    Query asked = q;
+    for (const auto& [k, v] : c.conv)
+        asked.facts["conv." + k] = v;
+    asked.facts["conv.stake"] = stake;
+    auto s = answer(c, o, asked, 0, fresh, trace);
+    if (s.id.empty() || s.info.size() != 1)
+        return std::nullopt;
+    c.people.push_back(id);
+    c.stake = stake;
+    c.conv["stake"] = stake;
+    place(s, 2, to);
+    for (auto& line : s.info)
+        line.fit = line.best = -1;                  // (It answers nothing owed: it cuts in.)
+    if (trace)
+        trace->why += "; " + id + " joins (" + stake + "): " + s.id;
+    c.open.clear();
+    take(c, std::move(s));
+    return sayNext(c);
+}
+
+std::optional<SaidLine> Library::interrupt(Conversation& c, const std::string& why, int who,
+                                           const std::function<Query(int, int)>& facts, const Freshness& fresh,
+                                           Trace* trace) const
+{
+    // §8.10: the talk breaks off, with a line that says so (a `break` move line, by conv.interrupt), and ends.
+    if (c.phase == Conversation::Phase::Ended)
+        return std::nullopt;
+    c.conv["interrupt"] = why;
+    c.queued.clear();
+    c.open.clear();
+    std::optional<SaidLine> said;
+    if (!c.legacy && !moves_.empty() && c.people.size() >= 2 && who >= 0 && who < int(c.people.size()))
+    {
+        const int to = partner(c, who);
+        int side = 0;
+        const auto q = beatQuery(c, facts, who, to, side);
+        Conversation::Open o;
+        o.by = to;
+        o.to = who;
+        o.moves = {"break"};
+        if (auto s = answer(c, o, q, side, fresh, trace); !s.id.empty() && s.info.size() == 1)
+        {
+            place(s, who, to);
+            for (auto& line : s.info)
+                line.fit = line.best = -1;
+            if (trace)
+                trace->why += "; broken off (" + why + "): " + s.id;
+            take(c, std::move(s));
+            said = sayNext(c);
+        }
+    }
+    c.ended.clear();
+    end(c, "break", trace);
+    return said;
 }
 
 std::optional<SaidLine> Library::legacyNext(Conversation& c, const std::function<Query(int, int)>& facts,
@@ -2905,8 +3173,22 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
 {
     if (c.phase == Conversation::Phase::Ended)
         return std::nullopt;
-    if (!c.queued.empty())                          // A scene's next turn (§8.2: queued; one query here, so as written).
-        return sayNext(c);
+    if (!c.queued.empty())
+    {
+        // A scene's next turn (§8.2), checked again now it is due (Valve's rule): the moment it was chosen for may have
+        // passed (the fog lifted, one of them hurt). If so, the rest of the scene is dropped and the talk goes on from
+        // what was said.
+        const auto& due = c.queued.front();
+        int side = 0;
+        if (c.legacy || due.entry.empty() || c.people.size() < 2 || due.who < 0 || due.who > 1 ||
+            stillHolds(due, beatQuery(c, facts, 0, 1, side)))
+            return sayNext(c);
+        if (trace)
+            trace->why += "; " + due.entry + "'s turn " + std::to_string(due.turn + 1) + " no longer holds: the rest dropped";
+        c.dropped += int(c.queued.size());
+        c.queued.clear();
+        c.open.clear();
+    }
     if (c.legacy)
         return legacyNext(c, facts, fresh, trace);
     if (c.people.size() < 2 || c.lines.empty())
@@ -2921,31 +3203,33 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
         return std::nullopt;
     }
     const int last = c.lines.back().who;
-    const auto other = [&](int who) { return 1 - who; };
     const auto beatSeed = [&](std::uint64_t salt) { return mix(c.seed + std::uint64_t(n) * 7919 + salt); };
-    const auto say = [&](Said s, const char* how, const std::string& what, int who) -> std::optional<SaidLine> {
+    const auto say = [&](Said s, const char* how, const std::string& what, int who, int to) -> std::optional<SaidLine> {
         if (trace)
-            trace->why += std::string("; ") + how + " " + what + " (" + (who ? "b" : "a") + "): " + s.id;
+            trace->why += std::string("; ") + how + " " + what + " (" + char('a' + who) + "): " + s.id;
+        place(s, who, to);
         take(c, std::move(s));
         return sayNext(c);
     };
-    // 1. What is owed is answered (§8.3), by the one it is owed by: the newest obligation first. Past the most lines a
-    // talk may have, less the two of a farewell, it is left: the talk closes.
+    // 1. What is owed is answered (§8.3), by the one it is owed by, to the one who made it due: the newest obligation
+    // first. Past the most lines a talk may have, less the two of a farewell, it is left: the talk closes.
     while (!c.open.empty())
     {
         auto o = c.open.back();
         c.open.pop_back();
         if (n >= budgets_.most - 2 && c.phase != Conversation::Phase::Closing)
             break;
-        const int who = o.to >= 0 ? o.to : other(o.by);
+        const int who = o.to >= 0 ? o.to : partner(c, o.by);
+        const int to = who == o.by ? partner(c, who) : o.by;
         if (o.soft && unit(beatSeed(0x50F7)) >= inviteTaken_)
             continue;                               // (Passed over: an invitation, not taken this time.)
-        auto q = beatQuery(c, facts, who);
+        int side = 0;
+        auto q = beatQuery(c, facts, who, to, side);
         int held = 0;
-        auto s = answer(c, o, q, who, fresh, trace, &held);
+        auto s = answer(c, o, q, side, fresh, trace, &held);
         const std::string what = o.moves.empty() ? o.concept : joined(o.moves);
         if (!s.id.empty())
-            return say(std::move(s), "answers", what, who);
+            return say(std::move(s), "answers", what, who, to);
         if (o.soft || o.moves.empty())
             continue;                               // (An invitation, or a topic handed on: owed by nobody.)
         // Nothing doing it fits: its fallbacks, walked down to ack (§7.2), by move only.
@@ -2958,12 +3242,12 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
                 f.by = o.by;
                 f.to = o.to;
                 f.moves = {chain[i]};
-                auto fb = answer(c, f, q, who, fresh, trace);
+                auto fb = answer(c, f, q, side, fresh, trace);
                 if (!fb.id.empty())
                 {
                     for (auto& line : fb.info)
                         line.fit = 0, line.best = held;
-                    return say(std::move(fb), "falls back on", chain[i] + " for " + what, who);
+                    return say(std::move(fb), "falls back on", chain[i] + " for " + what, who, to);
                 }
             }
         }
@@ -2986,14 +3270,15 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
     if (c.phase != Conversation::Phase::Closing)
     {
         c.phase = Conversation::Phase::Closing;
-        // The one at work closes first, else the one who didn't speak last.
-        const auto q = beatQuery(c, facts, 0);
+        // The one at work closes first (of the two who began it), else the one spoken to last.
+        int side = 0;
+        const auto q = beatQuery(c, facts, 0, 1, side);
         const auto working = [&](const Speaker& s) {
             const auto w = s.facts.find("working");
             return w != s.facts.end() && w->second == "yes";
         };
         const bool aw = working(q.a), bw = working(q.b);
-        c.closer = aw != bw ? (aw ? 0 : 1) : other(last);
+        c.closer = aw != bw ? (aw ? 0 : 1) : partner(c, last);
     }
     // 3. Closing (§8.4): a preclose when there's room for the whole of it (preclose, its answer, the farewell pair),
     // then the farewell, answered (above). The frames' preclose makes the room it needs smaller.
@@ -3013,19 +3298,22 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
         for (const auto& f : frames_)
             if (f.name == name)
                 readily *= f.preclose;
-    const int who = c.closer < 0 ? other(last) : c.closer;
-    auto q = beatQuery(c, facts, who);
-    // Only a cold or short-tempered wolf goes without a word (§8.4), now and then (Phase 6's temperaments weigh it, and
-    // Phase 4's per-beat effects make it cost regard).
+    const int who = c.closer < 0 ? partner(c, last) : c.closer;
+    const int to = partner(c, who);
+    int side = 0;
+    auto q = beatQuery(c, facts, who, to, side);
+    // Only a cold or short-tempered wolf goes without a word (§8.4), now and then (frames.json's curt chance; Phase 6's
+    // temperaments weigh it); it costs regard (the game's, from frames.json's curt effects).
     if (!precloseSaid)
     {
-        const auto& s = who == 0 ? q.a : q.b;
+        const auto& s = side == 0 ? q.a : q.b;
         const auto trait = [&](const char* k, const char* v) {
             const auto f = s.facts.find(k);
             return f != s.facts.end() && f->second == v;
         };
-        if ((trait("warmth", "cold") || trait("temper", "short")) && unit(beatSeed(0xC0DE)) < .5)
+        if ((trait("warmth", "cold") || trait("temper", "short")) && unit(beatSeed(0xC0DE)) < curt_.curtChance)
         {
+            c.closer = who;
             end(c, "curt", trace);
             return std::nullopt;
         }
@@ -3034,25 +3322,25 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
     if (!precloseSaid && n >= 4 && n + 4 <= int(std::lround(c.budget * readily)))
     {
         Conversation::Open o;
-        o.by = other(who);
+        o.by = to;
         o.to = who;
         o.moves = {"preclose"};
-        if (auto s = answer(c, o, q, who, fresh, trace); !s.id.empty())
+        if (auto s = answer(c, o, q, side, fresh, trace); !s.id.empty())
         {
             for (auto& line : s.info)
                 line.fit = line.best = -1;          // (It answers nothing: it begins the closing.)
-            return say(std::move(s), "closes with", "preclose", who);
+            return say(std::move(s), "closes with", "preclose", who, to);
         }
     }
     Conversation::Open o;
-    o.by = other(who);
+    o.by = to;
     o.to = who;
     o.moves = {"farewell"};
-    if (auto s = answer(c, o, q, who, fresh, trace); !s.id.empty())
+    if (auto s = answer(c, o, q, side, fresh, trace); !s.id.empty())
     {
         for (auto& line : s.info)
             line.fit = line.best = -1;
-        return say(std::move(s), "takes leave with", "farewell", who);
+        return say(std::move(s), "takes leave with", "farewell", who, to);
     }
     end(c, c.gaps ? "nothing" : "no closing", trace);
     return std::nullopt;
@@ -3075,8 +3363,26 @@ Said Library::answer(const Conversation& c, const Conversation::Open& owed, cons
             for (const auto i : *list)
                 if (entries_[i].concepts.empty() && seen.insert(i).second)
                     cands.push_back(i);
+    // What the one answering knew before this talk (Phase 4, §8.6: `knows`, the game's, on a topic with a claim): one who
+    // knew answers news with the known variant ("I heard."), its exact fit; one who didn't never says they'd heard, and
+    // one who knew never says "Never!".
+    const Speaker& self = speaker == 0 || q.alone ? q.a : q.b;
+    const auto knowsIt = self.facts.find("knows");
+    const std::string knows = knowsIt == self.facts.end() ? std::string() : knowsIt->second;
+    const auto doesExactly = [&](const Entry& e, const char* move) {
+        return !e.does.empty() && std::find(e.does.front().begin(), e.does.front().end(), move) != e.does.front().end();
+    };
+    const bool owesNews = std::any_of(owed.moves.begin(), owed.moves.end(), [&](const std::string& m) {
+        return moves_.kindOf("react.news.known", m);
+    });
+    const auto untrue = [&](const Entry& e) {
+        return (knows == "no" && (doesExactly(e, "react.news.known") || doesExactly(e, "react.news.again"))) ||
+               (knows == "yes" && doesExactly(e, "react.news.new"));
+    };
     const auto exact = [&](const Entry& e) {
         if (!owed.concept.empty() && e.concepts.count(owed.concept))
+            return true;
+        if (knows == "yes" && owesNews && doesExactly(e, "react.news.known"))
             return true;
         // The exact variant owed (react.news.known), when what is owed is a variant.
         return !e.does.empty() && std::any_of(owed.moves.begin(), owed.moves.end(), [&](const std::string& m) {
@@ -3101,7 +3407,7 @@ Said Library::answer(const Conversation& c, const Conversation::Open& owed, cons
     for (const auto i : cands)
     {
         const auto& e = entries_[i];
-        if (e.scene || !fits(e, asked, speaker))
+        if (e.scene || !fits(e, asked, speaker) || untrue(e))
             continue;                               // (A scene is a whole talk: never a later beat, in this build.)
         const int fit = exact(e) ? 3 : answers(e) ? 1 : 0;
         if (fit == 0)
@@ -3174,6 +3480,12 @@ Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bo
         }
         if (e.scene && (chained || speaker != 0))
             continue;                               // (A scene is a whole talk: never a chain's later beat.)
+        if (e.scene && untrueScene(e, q))
+        {
+            if (trace)
+                trace->passed.push_back(e.id + ": an answer untrue to what they knew (knows)");
+            continue;
+        }
         if (!fits(e, q, speaker))
         {
             if (trace)
