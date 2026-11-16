@@ -756,6 +756,10 @@ void Game::dialogueRoleFacts(const std::string& playerId, const std::string& npc
                 held.confidence < .45 || world_.calendarDays() - held.day > 7 || held.claim.rfind("deed:", 0) == 0 ||
                 !world_.entity(held.subject) || (best && held.day <= best->day))
                 continue;
+            // Nobody gossips about their own kin, in the window as in the street (doc 84 §24; ambientTopic): a widow
+            // doesn't say "Sad news. Orm died." of her husband.
+            if (const auto* spouse = society.spouse(npcId); (spouse && *spouse == held.subject) || society.family(npcId, held.subject))
+                continue;
             auto b = held;
             world_.claimOf(b);
             const auto* about = world_.entity(b.subject);

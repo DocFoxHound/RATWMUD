@@ -6,11 +6,20 @@
 
 scene rg_ls_first_fish
 when topic=lore here.region=coldwater here.fishers>=3
-a : Threw the first fish back this morning, like always. | Never eat the first fish of the day. It belongs to the lake. | A carter off the High Road ate his first catch. Fell in the lake by noon.
+a : Never eat the first fish of the day. It belongs to the lake. | A carter off the High Road ate his first catch. Fell in the lake by noon.
 b[fisher] : Glasswater gives the rest if you give back the first. Every boat knows it.
 b[priest] : The Bright One owns the lake. Still, it does no harm.
-b : Good habit. | So they say. | Served him right.
-a : Always. | Always. | Ha.
+b : So they say. | Served him right.
+a : Always. | Ha.
+
+# (Said only by one who fishes: "threw the first fish back" is the speaker's own boat; truth.json's fisher_self.)
+scene rg_ls_first_fish_own
+when topic=lore here.region=coldwater here.fishers>=3 a.job=fisher|sailor
+a : Threw the first fish back this morning, like always.
+b[fisher] : Glasswater gives the rest if you give back the first. Every boat knows it.
+b[priest] : The Bright One owns the lake. Still, it does no harm.
+b : Good habit.
+a : Always.
 
 scene rg_ls_lake_colour
 when topic=smalltalk|lore here.region=coldwater here.fishers>=3
@@ -37,10 +46,18 @@ a : She will. | Good work. | Every month.
 
 scene rg_ls_netmaker
 when topic=work|smalltalk here.region=coldwater here.fishers>=3
-a : The net loft looks like grey curtains hanging everywhere. | Ordered a new net. Three weeks' wait. | Pike tore through my net like it was spider silk.
+a : The net loft looks like grey curtains hanging everywhere. | Ordered a new net. Three weeks' wait.
 b[crafter] : A net's knots, and knots are time. No hurrying knots.
-b : It does. | Busy loft. | Big pike.
-a : Lovely in the light. | Very busy. | Enormous.
+b : It does. | Busy loft.
+a : Lovely in the light. | Very busy.
+
+# (Said only by one who fishes: it is the speaker's own net; truth.json's fisher_self.)
+scene rg_ls_netmaker_own
+when topic=work|smalltalk here.region=coldwater here.fishers>=3 a.job=fisher|sailor
+a : Pike tore through my net like it was spider silk.
+b[crafter] : A net's knots, and knots are time. No hurrying knots.
+b : Big pike.
+a : Enormous.
 
 scene rg_ls_shore_oven
 when topic=smalltalk here.region=coldwater here.time=dawn here.fishers>=3

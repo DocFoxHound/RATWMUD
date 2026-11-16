@@ -698,8 +698,17 @@ bool Game::loadFromDatabase(std::string& problem)
         if (hostOnly_)
             note("info", "RATW_HOST_ONLY the world is open only to its host");
     }
+    const bool pinned = options_.scratch && options_.worldBuild > 0;
     const auto build = worldDb_.exec("SELECT w.id, b.id, coalesce(b.release, 0), b.files::text FROM world.worlds w "
-                                     "JOIN world.builds b ON b.world_id = w.id ORDER BY b.id DESC LIMIT 1");
+                                     "JOIN world.builds b ON b.world_id = w.id" +
+                                     std::string(pinned ? " WHERE b.id = " + std::to_string(options_.worldBuild) : "") +
+                                     " ORDER BY b.id DESC LIMIT 1");
+    if (pinned && build.ok && build.rows.empty())
+    {
+        problem = "the " + options_.database + " database has no world build " + std::to_string(options_.worldBuild) +
+                  " (the one asked for)";
+        return false;
+    }
     if (!build.ok || build.rows.empty() || !build.rows[0][3])
     {
         problem = "the " + options_.database + " database has no world build yet" +
@@ -4922,11 +4931,14 @@ bool Game::talk(const std::string& npcId, const std::string& playerId, const std
     if (!npc || !player || !npc->npc || world_.visitorLeaves(npcId) >= 0)
         return false;                               // (Visitors aren't voiced by the Mind: docs 34, 58.)
     world_.faceTalker(npcId, playerId);             // It turns to the one talking to it (doc 53, 4).
+    // Said in the dialogue window: decided now, as it is said (a queued line keeps its own), and kept with the reply.
+    const auto session = dialogues_.find(playerId);
+    const bool window = std::exchange(windowNext_, false) || (session != dialogues_.end() && session->second.npc == npcId);
     if (pendingNpc_.count(npcId))
     {
         // Still answering: remember this to answer next. A crowd talking over each other keeps only the latest few.
         auto& queue = queuedTalk_[npcId];
-        queue.push_back({playerId, heardText, voice, perceived != nullptr, perceived ? *perceived : SensoryResult{}});
+        queue.push_back({playerId, heardText, voice, perceived != nullptr, perceived ? *perceived : SensoryResult{}, window});
         while (queue.size() > MaxQueuedTalk)
             queue.pop_front();
         return true;
@@ -4949,11 +4961,18 @@ bool Game::talk(const std::string& npcId, const std::string& playerId, const std
     if (!alsoHeard.empty())
         context.scene += " Others were spoken to at the same time, and just answered: " + mind::left(alsoHeard, 600);
     context.scene += dialogueBrief(npcId, playerId);   // (Said in the dialogue window: doc 83.)
+    if (window && dialogueBrief(npcId, playerId).empty())   // (Said there, though it has closed since: the same rule.)
+        context.scene += " They spoke to you face to face. Answer what they said in a line or two. Never take, give, sell or "
+                         "promise anything: only their choices do that.";
     memories_.record(npcId, subjectId, {sequence_++, now(), context.playerName, heardText});
     // That they talked, never what was said (that stays in the NPC's memory); an unrecognised voice stays anonymous.
     logEvent("conversation", identified ? playerId : std::string(), npcId);
     pendingNpc_.insert(npcId);
     replyingTo_[npcId] = identified ? playerId : std::string();
+    if (window)
+        windowAsked_.insert(npcId);
+    else
+        windowAsked_.erase(npcId);
     // Thinking: the player sees the NPC's "..." until the reply comes (or half a minute passes).
     npc->typing = true;
     typingExpiry_[npcId] = world_.time() + 30;
@@ -5142,6 +5161,7 @@ void Game::speakReply(const std::string& npcId, const std::string& subjectId, bo
     memories_.record(npcId, subjectId, {sequence_++, now(), npcId, text});
     logEvent("conversation", npcId, identified ? subjectId : std::string());
     heed(npcId, subjectId, identified, reply);
+    windowAsked_.erase(npcId);
     voiced("dialogue", route, npcId);
     if (options_.logTalkWords)
         voicedWords("dialogue", npcId, subjectId, text, nullptr);
@@ -5234,8 +5254,10 @@ void Game::heed(const std::string& npcId, const std::string& subjectId, bool ide
     }
     // The window's free talk makes no promises (doc 83's brief; doc 84, defect 15): what the Mind reports of one said
     // there is let go, as anything it would give or take is.
+    // (Where the words were said decides it, as they were said: windowAsked_. The window may have closed while the Mind
+    // wrote the answer, or while the line waited its turn.)
     const auto window = dialogues_.find(subjectId);
-    const bool inWindow = window != dialogues_.end() && window->second.npc == npcId;
+    const bool inWindow = windowAsked_.count(npcId) > 0 || (window != dialogues_.end() && window->second.npc == npcId);
     if (!reply.promise.empty() && !inWindow)
     {
         const bool byNpc = reply.promiseBy == "npc";
@@ -5259,7 +5281,9 @@ void Game::talkNext(const std::string& npcId)
         }
         const QueuedTalk next = std::move(found->second.front());
         found->second.pop_front();
+        windowNext_ = next.window;
         talk(npcId, next.playerId, next.heardText, next.voice, next.hasSense ? &next.sense : nullptr);
+        windowNext_ = false;
     }
 }
 

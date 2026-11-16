@@ -360,6 +360,9 @@ add_test(NAME talk_golden COMMAND talk_sim --world ${CMAKE_CURRENT_SOURCE_DIR}/T
 set_tests_properties(talk_golden PROPERTIES SKIP_RETURN_CODE 77)
 # The quick scorecard (doc 84 §15.8): 2,000 frozen exchanges in the talk town, scored against its committed baseline.
 add_test(NAME talk_scorecard_quick COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/Tests/talk_scorecard_quick.py ${CMAKE_CURRENT_BINARY_DIR})
+# A fixture that isn't the one recorded is refused before anything is replayed, and --library-from cleans up after itself
+# (the slice-end review of doc 84's Slice 1).
+add_test(NAME talk_sim_fixture COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/Tests/talk_sim_fixture_check.py ${CMAKE_CURRENT_BINARY_DIR})
 # Not a test: how fast skills grow by practice, for the balance pass (see Tests/practice_sim.cpp; doc 49).
 add_executable(practice_sim Tests/practice_sim.cpp)
 target_link_libraries(practice_sim PRIVATE ratw_core)

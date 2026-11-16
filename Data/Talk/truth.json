@@ -11,7 +11,7 @@
     {"id": "late_spouse", "match": "\\bmy late (wife|husband)\\b", "needs": ["self.widowed=yes"]},
     {"id": "children", "match": "\\bmy (son|daughter|children|little ones)\\b", "needs": ["self.parent=yes"]},
     {"id": "parents_things", "match": "\\b(Father's|Mother's) (tools|house|grave)\\b", "needs": ["pair.kin=siblings"]},
-    {"id": "fisher_self", "match": "\\bmy (nets?|catch)\\b|\\bthrew the first fish\\b", "needs_any": ["self.job=fisher|sailor", "here.fishers>=3"], "example": "rg_ls_first_fish"},
+    {"id": "fisher_self", "match": "\\bmy (nets?|catch)\\b|\\bthrew the first fish\\b", "needs": ["self.job=fisher|sailor"], "example": "rg_ls_first_fish"},
     {"id": "fishing_town", "match": "\\b(smoked trout|net loft|boat shed|first boats|pike lines|trout were rising)\\b", "needs_any": ["self.job=fisher|sailor", "here.fishers>=3"], "example": "rg_ls_eel_smoke"}
   ],
   "concepts": {"react.rain": ["here.weather=rain|storm"]},

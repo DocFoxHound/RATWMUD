@@ -126,6 +126,8 @@ int main()
         w.setWeather("exterior", Weather::Fog);
         expect(w.setWind("exterior", 1.25, .4, true).ok && w.setLighting("tavern", .3, .6, "cool").ok, "the sky is set");
         auto saved = w.save();
+        // A resident's own news keeps whom it is about (never told it as news: doc 84, the slice-end review).
+        saved.news["npc_keeper"].push_back({3.5, "marriage", "Keeper married Scout", "npc_scout"});
         const auto server = serverWith(w);
         const auto doc = checkpoint::encode(saved, server, npcsOf(w), w.time());
         const auto text = json::dump(doc);
@@ -153,6 +155,9 @@ int main()
         expect(back.clockOffsetHours == saved.clockOffsetHours && back.time == saved.time && back.calendarDays == saved.calendarDays,
                "the same hour of the same day");
         expect(back.weather == saved.weather && back.weather.at("exterior") == Weather::Fog, "the same weather");
+        expect(back.news.count("npc_keeper") && back.news.at("npc_keeper").back().about == "npc_scout" &&
+                   back.news.at("npc_keeper").back().text == "Keeper married Scout",
+               "a resident's own news, and whom it is about");
         bool sameWinds = back.winds.size() == saved.winds.size(), sameLight = back.lighting.size() == saved.lighting.size();
         for (const auto& [cell, wind] : saved.winds)
             sameWinds = sameWinds && back.winds.count(cell) && back.winds.at(cell).direction == wind.direction &&

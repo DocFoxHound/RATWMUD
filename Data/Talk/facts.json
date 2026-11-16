@@ -61,6 +61,7 @@
   "pair": {
     "band": ["strangers", "acquaintances", "friends", "rivals", "family", "spouses", "apprentice", "housemates"],
     "kin": ["spouses", "parent", "siblings", "family", "household", "no"],
+    "roof": ["yes", "no"],
     "elder": ["a", "b"],
     "boss": ["a", "b", "no"],
     "richer": ["a", "b", "same"],

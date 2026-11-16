@@ -158,20 +158,25 @@
    "note": "n/a until Phase 3"
   },
   "C3": {
-   "name": "endings by a farewell or a break (%)",
+   "name": "endings by a farewell or a marked break (%)",
    "better": "higher",
    "gate": "soft",
    "target": "80% / 3% / 5%",
-   "value": 0.4,
+   "value": 0.75,
    "passes": false,
    "by_profile": {
-    "town": 0.4
+    "town": 0.75
    },
-   "control": 0.3,
-   "separation": 0.25000000000000006,
+   "control": 0.8499999999999999,
+   "separation": 0.11764705882352927,
+   "real_better": false,
    "separates": false,
    "control_required": true,
-   "structural": false
+   "structural": false,
+   "events": [
+    15,
+    2000.0
+   ]
   },
   "C4": {
    "name": "tone clashes per 1,000 beats",
@@ -286,7 +291,7 @@
    "structural": false
   },
   "T3": {
-   "name": "self-reference errors, per 1,000 lines",
+   "name": "self-reference errors (own name, the listener in the third person, unbacked eyewitness words), per 1,000 lines",
    "better": "lower",
    "gate": "hard",
    "target": "0",
@@ -297,9 +302,14 @@
    },
    "control": 0.0,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    0,
+    6391.0
+   ]
   },
   "T4": {
    "name": "identity drift",
@@ -318,20 +328,25 @@
    "note": "n/a until Phase 4"
   },
   "D1": {
-   "name": "lines with a dialect's words (%): light speakers",
-   "better": "higher",
+   "name": "lines with a dialect's words (%): accent none",
+   "better": "lower",
    "gate": "hard",
-   "target": "none 0%; light 25-50%; broad 60%+",
-   "value": 0.41262135922330095,
-   "passes": false,
+   "target": "none 0%",
+   "value": 0.0,
+   "passes": true,
    "by_profile": {
-    "town": 0.413
+    "town": 0.0
    },
-   "control": 0.5339805825242718,
-   "separation": 0.2272727272727273,
+   "control": 0.0,
+   "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    0,
+    233.0
+   ]
   },
   "D2": {
    "name": "another dialect's words in a speaker's line",
@@ -516,6 +531,48 @@
    "target": "40%+",
    "value": null,
    "note": "n/a until slice ends (talk_rate.py)"
+  },
+  "D1L": {
+   "name": "lines with a dialect's words (%): light speakers",
+   "better": "higher",
+   "gate": "soft",
+   "target": "light 25-50%",
+   "value": 0.41092579163645154,
+   "passes": false,
+   "by_profile": {
+    "town": 0.411
+   },
+   "control": 0.5076142131979695,
+   "separation": 0.1904761904761904,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    17,
+    4137.0
+   ]
+  },
+  "D1B": {
+   "name": "lines with a dialect's words (%): broad speakers",
+   "better": "higher",
+   "gate": "soft",
+   "target": "broad 60%+",
+   "value": 0.3463631865413162,
+   "passes": false,
+   "by_profile": {
+    "town": 0.346
+   },
+   "control": 0.3463631865413162,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    7,
+    2021.0
+   ]
   }
  },
  "details": {
@@ -544,10 +601,11 @@
     "answered": 635
    },
    "C3_detail": {
-    "farewell": 0.4,
-    "break": 0.0,
+    "farewell": 0.75,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.6
+    "nothing_fits": 99.25
    },
    "C7_detail": {
     "p90": 4,
@@ -563,7 +621,9 @@
     ]
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": true
    },
    "T1_detail": {
     "examples": []
@@ -585,7 +645,7 @@
    },
    "D1_detail": {
     "light": 0.41,
-    "broad": 0.45,
+    "broad": 0.35,
     "none": 0.0
    },
    "D2_detail": {
@@ -618,5 +678,21 @@
    "town"
   ],
   "how": "talk_sim --ablate shuffle: lines after the first replaced by lines said at the same side of other conversations on the same topic, by a speaker of the same dialect where possible (§15.5)"
- }
+ },
+ "refrozen": [
+  {
+   "metrics": [
+    "C3",
+    "T3",
+    "D1",
+    "D1L",
+    "D1B"
+   ],
+   "why": "Slice 1's review (doc 84 §26): C3 counts only farewells and marked breaks, T3 the listener in the third person and unbacked eyewitness words too, D1 gates accent none (light and broad are D1L and D1B): measured again with their new definitions",
+   "from": {
+    "town": "/tmp/r3s1-quick/town"
+   },
+   "on": "2026-11-16T15:41:10+00:00"
+  }
+ ]
 }

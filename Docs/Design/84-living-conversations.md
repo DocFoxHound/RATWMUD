@@ -2361,3 +2361,77 @@ T1 13.4 → 0 / 0.1 → 0; T3 3.3 → 0 / 0 → 0; T2 0.41 / 0 (frozen in Phase 
 D3 67 → 69 / 13 → 13%; U2 46 → 46 / 39 → 40%; B5 1.5 → 1.5 / 68 → 80.
 
 **Not done here.** No ticking run was made. The slice end's ticking 100-hour listen (Q6) and its review are still to do.
+
+## 26. Slice 1's review: what it found, and the fixes (2026-11-16)
+
+Branch `r3-talk-s1`. The slice-end review confirmed 26 findings (some twice, from two lenses); all are fixed here, each
+with a test where one could be written.
+
+**The game's talk.**
+- **The window's gossip keeps the kin rule** (`dialogueRoleFacts`): nobody gossips about their spouse or family there
+  either, so a widow never says "Sad news. Orm Blackwood died." of her husband (`dialogue_tests`).
+- **A promise from the window's free talk is let go however late the answer comes**: whether the words were said in the
+  window is decided when they are said (`Game::windowAsked_`, carried with a queued line), not when the Mind's answer
+  arrives; a line said there whose window has closed since is still briefed "never promise" (`dialogue_tests`, with a
+  stand-in Mind that answers after the window closed; the check fails without the fix).
+- **A theft or an attack is the victim's own news only once they notice it** (`World::victimNews`, from `witness()`),
+  naming the one who did it only if they saw who: "someone robbed me" when they couldn't make them out, a traveller as
+  they know them, nothing at all when the theft went unnoticed. It was told from `recordEvent`, before anyone had looked.
+- **One's own news is never told to the one it is about** (`AmbientNews::about`, saved in the checkpoint): no "I married
+  Orm Blackwood" to Orm, no "Fennel robbed me" to Fennel.
+- **The town's news is never told by or to the subject's own** (spouse, kin, one under the same roof): a father isn't
+  told his own pup's birth as the town's talk, nor does a family come in from the Country call each other newcomers.
+- **The town's crime names the one who did it only if a witness saw who**, and a traveller only as the teller knows
+  them (else how they look); one who only heard a struggle names "someone".
+- **A camp heard of is talked of only while it is there**: a cleared camp's rumours no longer say "they're camped out by
+  Glasswater, bold as you like".
+- **"Did you hear? a stranger robbed me."**: the authored exchange (no line fitting) capitalises the sentence after its
+  question. The library's own lines already did (`insert`).
+- **The house a pair shares**: housemates were sent to the home topic, whose scenes and opening rules are one's own
+  house told to one who lives elsewhere ("One room, one window, one chair. I'm the one." to the one who lives in it). A
+  new fact, `pair.roof` (yes when the two share a home, kin or not), gates those 59 scenes and 32 rules on
+  `pair.roof=no` (the family's chores scene on `pair.roof=yes`), and nine new scenes in `home7.talk` are the shared
+  house's (whose turn at the fire, the door off the latch, who finished the bread).
+  `tell_spouse` is never said to the spouse ("Varg Acorndell snores like a mill." to Varg).
+- **"My net" from a soap hand**: truth.json's `fisher_self` needs the speaker to fish or sail (§7.8, §9.6), not a
+  fishing town; Coldwater's two first-person lines are scenes of their own for fishers (`rg_ls_first_fish_own`,
+  `rg_ls_netmaker_own`). `talk_lint`'s frozen 20 findings are unchanged.
+- **The door walks' caches** (the district, the street outside, an entrance) are keyed on `World::doorsKey()`, the doors
+  less a streamed cell's seams, so a player walking through Ridgemere no longer wipes them every time a cell streams in
+  or out (`stream_tests`).
+
+**The instrument.**
+- **`talk_card` fails a failed run.** A talk_sim's exit status fails the card; a profile's old transcripts are removed
+  before it runs, so a failed run is never scored from what an earlier one left; a profile asked for with no run, or
+  one the baseline has and the card hasn't, is a problem; nothing is blessed or refrozen from such a card; a missing
+  fixture is said plainly (`test_talk_score`, with a stand-in talk_sim that fails).
+- **talk_sim stops** when a fixture checkpoint fails to load (it carried on in the day before's world and exited 0).
+- **Fixtures are pinned and checked.** `--record` writes the world build (`fixture.json` `build`) and each file's FNV-1a
+  hash (`fnv64`, the track's too); `--fixtures` refuses a missing or changed file before replaying anything and loads
+  that build, not the newest (`Options::worldBuild`, scratch games only). P0's fixture was recorded on build 81, still
+  ridgemere3's newest; its manifest now says so and carries the hashes. The checkpoints and track stay out of git (28 MB),
+  only in the worktrees' `artifacts/talk/fixtures/p0-r3-25d/`: a copy is now checked, not trusted (ctest
+  `talk_sim_fixture`).
+- **`--library-from` cleans up** its copy of the library in /tmp (19 of them, 63 MB, were left; removed).
+- **talk_listen** keys a conversation by its run's own name (`frozen-L1`, `fixtures-L1`), so the two modes' marks don't
+  merge.
+- **The scorecard's definitions.** D1, the hard gate, is accent none's share (§15.3, "hard for none"; light and broad
+  are D1L and D1B, soft). C3 counts only farewells and marked breaks; a talk cut off with no line is counted apart. T3
+  counts the listener named in the third person to their face and an eyewitness's words ("I saw...") from one who didn't
+  see it (talk_sim records each conversation's `seen`), beside one's own name. A coherence metric the shuffled control
+  beats doesn't separate, however far apart (frozen C3, 0.18% against the control's 0.27%, is now listed).
+- **The noise bar.** One standard deviation failed about two cards in three on noise alone. "Worse" for a counted metric
+  is now the exact test of two Poisson counts (today's events and the baseline's, each over its own exposure, so both
+  cards' noise counts) at 1% one-sided; C1, K3, D1, D1L and D1B are counted metrics too, and R1 and R2 (first-time waits)
+  may move by half. Simulated at Slice 1's counts, noise fails 2.4% of cards (`test_talk_score`); fifteen repeats against
+  three, collisions up 14% and the rest of the real regressions are still caught.
+- **Closed gates locked, changed ones measured again.** `--refreeze IDS --why TEXT` (talk_card, talk_score) takes only
+  those rows into a baseline and says why there. T1 is locked at Phase 1's 0 in both baselines; T3, C3, D1, D1L and D1B
+  were measured again on this review's run (`artifacts/talk/runs/s1r`) as P1 did T2; the quick card's likewise.
+
+**The scorecard** (`artifacts/talk/runs/s1r`, every profile in both modes over P0's fixture, pinned to build 81;
+13,019 and 26,142 conversations; `talk_card` passes in both, no gate broken): fixtures / frozen, against the slice end's.
+T1 0 / 0; T2 0.41 → 0.31 / 0; T3 (new) 0.41 / 0.03 per 1,000, all of it "I saw someone near X's door that night" told by
+one who only heard it (`events2.talk`, `events_town5.talk`: Phase 4's points of view); D1 (none) 0 / 0, D1L 0.21 / 0.25%,
+D1B 0.12 / 0.13%; C1 97.2 → 96.9 / 98.9 → 97.8%; C3 (new) 0.89 / 0.18%; C4 0.026 / 0; C6 0 / 0.12; R1 2.2 / 0.42 h; R3
+2,131 / 451; R5 185 → 186 / 926 → 924; K3 2,259 → 2,197 / 109 → 109; U2 48 / 39%; B5 2.1 / 58 (twenty runs at once).

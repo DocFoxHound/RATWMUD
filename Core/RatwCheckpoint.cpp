@@ -403,6 +403,8 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
             {
                 auto j = Value::object();
                 j.add("day", n.day); j.add("kind", n.kind); j.add("text", n.text);
+                if (!n.about.empty())
+                    j.add("about", n.about);
                 items.push(j);
             }
             if (items.size())
@@ -839,7 +841,8 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
         for (const auto& [who, list] : talkNews.object("people").fields())
             for (const auto& j : list.items())
                 if (saved.news[who].size() < 8)
-                    saved.news[who].push_back({num(j, "day"), json::utf8Prefix(j.string("kind"), 32), json::utf8Prefix(j.string("text"), 400)});
+                    saved.news[who].push_back({num(j, "day"), json::utf8Prefix(j.string("kind"), 32), json::utf8Prefix(j.string("text"), 400),
+                                               json::utf8Prefix(j.string("about"), 120)});
         for (const auto& [town, list] : talkNews.object("towns").fields())
             for (const auto& j : list.items())
                 if (saved.townNews[town].size() < 48)

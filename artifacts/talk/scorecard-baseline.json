@@ -248,17 +248,17 @@
    "note": "n/a until Phase 3"
   },
   "C3": {
-   "name": "endings by a farewell or a break (%)",
+   "name": "endings by a farewell or a marked break (%)",
    "better": "higher",
    "gate": "soft",
    "target": "80% / 3% / 5%",
-   "value": 0.08382354540554646,
+   "value": 0.17557239611849862,
    "passes": false,
    "by_profile": {
     "L1": 0.075,
-    "L2": 0.084,
-    "L3": 0.139,
-    "L4": 0.083,
+    "L2": 0.126,
+    "L3": 0.5,
+    "L4": 0.542,
     "L5": 0.167,
     "L6": 0.0,
     "L7": 0.0,
@@ -266,11 +266,16 @@
     "L9": 0.0,
     "L10": 0.093
    },
-   "control": 0.22703992260179465,
-   "separation": 0.6307982118520865,
-   "separates": true,
+   "control": 0.26961159100124504,
+   "separation": 0.34879507417881067,
+   "real_better": false,
+   "separates": false,
    "control_required": true,
-   "structural": false
+   "structural": false,
+   "events": [
+    47,
+    26142.0
+   ]
   },
   "C4": {
    "name": "tone clashes per 1,000 beats",
@@ -393,25 +398,30 @@
    "better": "lower",
    "gate": "hard",
    "target": "0",
-   "value": 0.105024680799988,
-   "passes": false,
+   "value": 0.0,
+   "passes": true,
    "by_profile": {
     "L1": 0.0,
-    "L2": 0.492,
-    "L3": 0.333,
+    "L2": 0.0,
+    "L3": 0.0,
     "L4": 0.0,
     "L5": 0.0,
     "L6": 0.0,
     "L7": 0.0,
     "L8": 0.0,
     "L9": 0.0,
-    "L10": 0.192
+    "L10": 0.0
    },
-   "control": 0.105024680799988,
+   "control": 0.0,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    0,
+    66742.0
+   ]
   },
   "T2": {
    "name": "presupposition failures, per 1,000 lines",
@@ -439,15 +449,15 @@
    "structural": false
   },
   "T3": {
-   "name": "self-reference errors, per 1,000 lines",
+   "name": "self-reference errors (own name, the listener in the third person, unbacked eyewitness words), per 1,000 lines",
    "better": "lower",
    "gate": "hard",
    "target": "0",
-   "value": 0.0,
-   "passes": true,
+   "value": 0.02996613826376195,
+   "passes": false,
    "by_profile": {
-    "L1": 0.0,
-    "L2": 0.0,
+    "L1": 0.031,
+    "L2": 0.162,
     "L3": 0.0,
     "L4": 0.0,
     "L5": 0.0,
@@ -457,11 +467,16 @@
     "L9": 0.0,
     "L10": 0.0
    },
-   "control": 0.0,
+   "control": 0.02996613826376195,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    2,
+    66742.0
+   ]
   },
   "T4": {
    "name": "identity drift",
@@ -480,29 +495,34 @@
    "note": "n/a until Phase 4"
   },
   "D1": {
-   "name": "lines with a dialect's words (%): light speakers",
-   "better": "higher",
+   "name": "lines with a dialect's words (%): accent none",
+   "better": "lower",
    "gate": "hard",
-   "target": "none 0%; light 25-50%; broad 60%+",
-   "value": 0.23200978364643374,
-   "passes": false,
+   "target": "none 0%",
+   "value": 0.0,
+   "passes": true,
    "by_profile": {
     "L1": 0.0,
-    "L2": 0.078,
-    "L3": 0.7,
-    "L4": 1.03,
-    "L5": 0.126,
-    "L6": 0.108,
-    "L7": 0.523,
+    "L2": 0.0,
+    "L3": 0,
+    "L4": 0,
+    "L5": 0.0,
+    "L6": 0,
+    "L7": 0,
     "L8": 0,
     "L9": 0,
-    "L10": 0.0
+    "L10": 0
    },
-   "control": 0.23138210892670039,
-   "separation": 0.0027053803933108364,
-   "separates": false,
+   "control": 0.021137626509535632,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    0,
+    4997.0
+   ]
   },
   "D2": {
    "name": "another dialect's words in a speaker's line",
@@ -768,6 +788,66 @@
    "target": "40%+",
    "value": null,
    "note": "n/a until slice ends (talk_rate.py)"
+  },
+  "D1L": {
+   "name": "lines with a dialect's words (%): light speakers",
+   "better": "higher",
+   "gate": "soft",
+   "target": "light 25-50%",
+   "value": 0.2482083718329006,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.077,
+    "L3": 0.729,
+    "L4": 1.267,
+    "L5": 0.125,
+    "L6": 0.108,
+    "L7": 0.521,
+    "L8": 0,
+    "L9": 0,
+    "L10": 0.0
+   },
+   "control": 0.2398353211284556,
+   "separation": 0.033733957652652906,
+   "real_better": true,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    161,
+    48410.0
+   ]
+  },
+  "D1B": {
+   "name": "lines with a dialect's words (%): broad speakers",
+   "better": "higher",
+   "gate": "soft",
+   "target": "broad 60%+",
+   "value": 0.12739670927464775,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.284,
+    "L3": 0,
+    "L4": 0,
+    "L5": 0,
+    "L6": 2.186,
+    "L7": 0,
+    "L8": 0,
+    "L9": 0,
+    "L10": 0.0
+   },
+   "control": 0.13397092549221368,
+   "separation": 0.049071962393422604,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    31,
+    13335.0
+   ]
   }
  },
  "details": {
@@ -797,7 +877,8 @@
    },
    "C3_detail": {
     "farewell": 0.075,
-    "break": 0.0,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
     "nothing_fits": 99.925
    },
@@ -811,7 +892,13 @@
     "examples": []
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {
+     "unbacked": 1
+    },
+    "examples": [
+     "unbacked: rm_rune_pitchhand to rm_imogen_ashby: I saw someone near Orla Wickby's door that night."
+    ],
+    "eyewitness_judged": true
    },
    "T1_detail": {
     "examples": []
@@ -882,10 +969,11 @@
     "answered": 317
    },
    "C3_detail": {
-    "farewell": 0.08396305625524769,
-    "break": 0.0,
+    "farewell": 0.12594458438287154,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.91603694374476
+    "nothing_fits": 99.87405541561712
    },
    "C7_detail": {
     "p90": 3,
@@ -897,14 +985,16 @@
     "examples": []
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {
+     "unbacked": 1
+    },
+    "examples": [
+     "unbacked: rm_ivo_fogstack to rmx_petra_ashgate: I saw someone near the back door last night."
+    ],
+    "eyewitness_judged": true
    },
    "T1_detail": {
-    "examples": [
-     "A counter hears everything. Camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8.",
-     "Over the furrows: camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8.",
-     "Mist and whispers. Camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8."
-    ]
+    "examples": []
    },
    "K2_detail": {
     "topics": {
@@ -924,7 +1014,7 @@
    },
    "D1_detail": {
     "light": 0.08,
-    "broad": 0.29,
+    "broad": 0.28,
     "none": 0.0
    },
    "D2_detail": {
@@ -976,10 +1066,11 @@
     "answered": 324
    },
    "C3_detail": {
-    "farewell": 0.1388888888888889,
-    "break": 0.0,
+    "farewell": 0.5,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.86111111111111
+    "nothing_fits": 99.5
    },
    "C7_detail": {
     "p90": 3,
@@ -991,14 +1082,12 @@
     "examples": []
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": true
    },
    "T1_detail": {
-    "examples": [
-     "Sold more gossip than goods this morning. Camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8.",
-     "Heard something. Camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8, they say.",
-     "I'll believe it when I hear it from camp_w_ridgemere_6_8."
-    ]
+    "examples": []
    },
    "K2_detail": {
     "topics": {
@@ -1013,7 +1102,9 @@
     }
    },
    "D1_detail": {
-    "light": 0.7
+    "light": 0.73,
+    "none": 0.0,
+    "broad": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1062,10 +1153,11 @@
     "answered": 259
    },
    "C3_detail": {
-    "farewell": 0.08333333333333333,
-    "break": 0.0,
+    "farewell": 0.5416666666666666,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.91666666666667
+    "nothing_fits": 99.45833333333333
    },
    "C7_detail": {
     "p90": 4,
@@ -1077,7 +1169,9 @@
     "examples": []
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": false
    },
    "T1_detail": {
     "examples": []
@@ -1094,7 +1188,9 @@
     }
    },
    "D1_detail": {
-    "light": 1.03
+    "light": 1.27,
+    "none": 0.0,
+    "broad": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1144,7 +1240,8 @@
    },
    "C3_detail": {
     "farewell": 0.16666666666666666,
-    "break": 0.0,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
     "nothing_fits": 99.83333333333333
    },
@@ -1158,7 +1255,9 @@
     "examples": []
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": false
    },
    "T1_detail": {
     "examples": []
@@ -1175,7 +1274,8 @@
    },
    "D1_detail": {
     "light": 0.13,
-    "none": 0.0
+    "none": 0.0,
+    "broad": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1225,7 +1325,8 @@
    },
    "C3_detail": {
     "farewell": 0.0,
-    "break": 0.0,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
     "nothing_fits": 100.0
    },
@@ -1239,7 +1340,9 @@
     "examples": []
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": true
    },
    "T1_detail": {
     "examples": []
@@ -1256,8 +1359,9 @@
     }
    },
    "D1_detail": {
-    "broad": 2.2,
-    "light": 0.11
+    "light": 0.11,
+    "broad": 2.19,
+    "none": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1307,7 +1411,8 @@
    },
    "C3_detail": {
     "farewell": 0.0,
-    "break": 0.0,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
     "nothing_fits": 100.0
    },
@@ -1321,7 +1426,9 @@
     "examples": []
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": false
    },
    "T1_detail": {
     "examples": []
@@ -1337,7 +1444,9 @@
     }
    },
    "D1_detail": {
-    "light": 0.52
+    "light": 0.52,
+    "none": 0.0,
+    "broad": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1387,7 +1496,8 @@
    },
    "C3_detail": {
     "farewell": 0.0,
-    "break": 0.0,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
     "nothing_fits": 0.0
    },
@@ -1401,7 +1511,9 @@
     "examples": []
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": false
    },
    "T1_detail": {
     "examples": []
@@ -1410,7 +1522,9 @@
     "topics": {}
    },
    "D1_detail": {
-    "light": 0.0
+    "none": 0.0,
+    "light": 0.0,
+    "broad": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1460,7 +1574,8 @@
    },
    "C3_detail": {
     "farewell": 0.0,
-    "break": 0.0,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
     "nothing_fits": 0.0
    },
@@ -1474,7 +1589,9 @@
     "examples": []
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": false
    },
    "T1_detail": {
     "examples": []
@@ -1483,7 +1600,9 @@
     "topics": {}
    },
    "D1_detail": {
-    "light": 0.0
+    "none": 0.0,
+    "light": 0.0,
+    "broad": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1533,7 +1652,8 @@
    },
    "C3_detail": {
     "farewell": 0.09259259259259259,
-    "break": 0.0,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
     "nothing_fits": 99.9074074074074
    },
@@ -1547,12 +1667,12 @@
     "examples": []
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": true
    },
    "T1_detail": {
-    "examples": [
-     "A clerk at the City Office told me camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8. Clerks know everything."
-    ]
+    "examples": []
    },
    "K2_detail": {
     "topics": {
@@ -1568,7 +1688,8 @@
    },
    "D1_detail": {
     "light": 0.0,
-    "broad": 0.0
+    "broad": 0.0,
+    "none": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1609,5 +1730,31 @@
   "how": "talk_sim --ablate shuffle: lines after the first replaced by lines said at the same side of other conversations on the same topic, by a speaker of the same dialect where possible (§15.5)"
  },
  "mode": "frozen",
- "freeze_at": 28.5
+ "freeze_at": 28.5,
+ "refrozen": [
+  {
+   "metrics": [
+    "T1",
+    "T3",
+    "C3",
+    "D1",
+    "D1L",
+    "D1B"
+   ],
+   "why": "Slice 1's review (doc 84 §26): T1 locked at the 0 Phase 1 reached; T3 now counts the listener named in the third person and unbacked eyewitness words too, C3 only farewells and marked breaks, D1 gates accent none (light and broad are D1L and D1B, soft): measured again with their new definitions on the review's own run",
+   "from": {
+    "L1": "artifacts/talk/runs/s1r/frozen-L1",
+    "L2": "artifacts/talk/runs/s1r/frozen-L2",
+    "L3": "artifacts/talk/runs/s1r/frozen-L3",
+    "L4": "artifacts/talk/runs/s1r/frozen-L4",
+    "L5": "artifacts/talk/runs/s1r/frozen-L5",
+    "L6": "artifacts/talk/runs/s1r/frozen-L6",
+    "L7": "artifacts/talk/runs/s1r/frozen-L7",
+    "L8": "artifacts/talk/runs/s1r/frozen-L8",
+    "L9": "artifacts/talk/runs/s1r/frozen-L9",
+    "L10": "artifacts/talk/runs/s1r/frozen-L10"
+   },
+   "on": "2026-11-16T15:47:05+00:00"
+  }
+ ]
 }

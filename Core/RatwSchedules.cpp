@@ -628,10 +628,11 @@ void World::planDays()
 
 std::string World::districtHouse(const std::string& cellId) const
 {
-    if (const auto today = std::int64_t(std::floor(calendarDays_)); doors_.size() != districtDoors_ || today != districtDay_)
+    // (Keyed on doorsKey, not the doors' count: a streamed cell's seams come and go as players walk, and would wipe it.)
+    if (const auto today = std::int64_t(std::floor(calendarDays_)); doorsKey() != districtDoors_ || today != districtDay_)
     {
         districtOf_.clear();
-        districtDoors_ = doors_.size();
+        districtDoors_ = doorsKey();
         districtDay_ = today;
     }
     if (const auto found = districtOf_.find(cellId); found != districtOf_.end())

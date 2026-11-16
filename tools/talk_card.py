@@ -11,8 +11,14 @@ unless said, so every phase starts from the same moment) and `fixtures` (talk re
 Each profile is its own talk_sim process (--jobs at once); each writes OUT/MODE-PROFILE/ (lines, convs, residents, run,
 and the shuffled control). Then OUT/scorecard-MODE.json and .md (tools/talk_score.py) and, with --baseline, the diff
 against artifacts/talk/scorecard-baseline.json (frozen) or scorecard-baseline-fixtures.json: a broken gate exits 1.
---bless writes those baselines instead (Phase 0, or on purpose, saying why). --rescore scores the runs already
-in OUT again (after a change to tools/talk_score.py), running nothing.
+--bless writes those baselines instead (Phase 0, or on purpose, saying why). --refreeze IDS --why TEXT takes only those
+metrics' rows into the baselines from this card (a gate a phase closed, locked where it closed it; a metric whose
+definition changed, measured again), keeping the rest. --rescore scores the runs already in OUT again (after a change to
+tools/talk_score.py), running nothing.
+
+A talk_sim that fails (any exit but 0) fails the card: its profile's old transcripts are removed before it runs, so a
+failed run is never scored from what an earlier one left, and a profile asked for with no run.json is a problem in
+itself (so is one the baseline has and the card hasn't). Nothing is blessed or refrozen from a card with a failed run.
 
 --most-heard OUT.tsv: every placed resident (talk_check --world ... --residents --json), most heard first, over the
 fixture runs (else the frozen ones): the order the mantles are written in (§14.3, within each batch).
@@ -39,8 +45,14 @@ import talk_score  # noqa: E402
 PROFILES = [f"L{i}" for i in range(1, 11)]
 
 
+OUTPUTS = ("lines.jsonl", "convs.jsonl", "residents.jsonl", "run.json", "lines-shuffled.jsonl", "convs-shuffled.jsonl")
+
+
 def freeze_day(fixtures: Path) -> float:
-    m = json.loads((fixtures / "fixture.json").read_text())
+    try:
+        m = json.loads((fixtures / "fixture.json").read_text())
+    except (OSError, ValueError) as e:
+        raise SystemExit(f"talk_card: no fixture at {fixtures} ({e})")
     cps = m.get("checkpoints", [])
     first_whole = math.floor(cps[1]["day"] if len(cps) > 1 else cps[0]["day"])
     return first_whole + .5
@@ -49,6 +61,8 @@ def freeze_day(fixtures: Path) -> float:
 def run_one(build: Path, world: str, fixtures: Path, mode: str, profile: str, out: Path, hours: float | None,
             freeze_at: float) -> dict:
     out.mkdir(parents=True, exist_ok=True)
+    for name in OUTPUTS:                            # (Never scored from what an earlier run left: a failed run leaves none.)
+        (out / name).unlink(missing_ok=True)
     cmd = [str(build / "talk_sim"), "--world", world, "--fixtures", str(fixtures), "--profile", profile,
            "--ablate", "shuffle", "--run", f"{mode}-{profile}", "--out", str(out)]
     if mode == "frozen":
@@ -103,9 +117,14 @@ def main() -> int:
     parser.add_argument("--freeze-at", type=float)
     parser.add_argument("--baseline", type=Path)
     parser.add_argument("--bless", action="store_true")
+    parser.add_argument("--refreeze", default="", help="metric ids whose baseline rows this card replaces (with --why)")
+    parser.add_argument("--why", default="", help="why --refreeze (kept in the baseline)")
     parser.add_argument("--most-heard", type=Path)
     parser.add_argument("--rescore", action="store_true", help="score the runs already in --out, running nothing")
     args = parser.parse_args()
+    refreeze = [m for m in args.refreeze.split(",") if m]
+    if refreeze and not args.why:
+        parser.error("--refreeze needs --why")
     if not os.environ.get("RATW_DATABASE_URL"):
         print("talk_card: RATW_DATABASE_URL isn't set; talk_sim asks tools/world_db.py for the connection", file=sys.stderr)
     freeze_at = args.freeze_at or freeze_day(args.fixtures)
@@ -127,8 +146,17 @@ def main() -> int:
     status = 0
     summary = {"freeze_at": freeze_at, "fixtures": str(args.fixtures), "wall_seconds": time.monotonic() - started,
                "runs": sorted(results, key=lambda r: (r["mode"], r["profile"]))}
+    failed = [r for r in results if r["rc"] != 0]
+    for r in failed:
+        print(f"talk_card: {r['mode']} {r['profile']} failed (rc {r['rc']}): {' '.join(r['tail'])}; see "
+              f"{args.out / (r['mode'] + '-' + r['profile']) / 'talk_sim.log'}", file=sys.stderr)
+        status = 1
     for mode in modes:
         dirs = [args.out / f"{mode}-{p}" for p in profiles if (args.out / f"{mode}-{p}" / "run.json").is_file()]
+        absent = [p for p in profiles if not (args.out / f"{mode}-{p}" / "run.json").is_file()]
+        if absent:
+            print(f"talk_card: {mode}: no run for {', '.join(absent)}", file=sys.stderr)
+            status = 1
         if not dirs:
             continue
         card = talk_score.scorecard(dirs)
@@ -141,11 +169,18 @@ def main() -> int:
             base = args.baseline.with_name(args.baseline.stem + f"-{mode}.json")
         elif args.baseline:
             base = args.baseline
-        if args.bless:
+        if (args.bless or refreeze) and (failed or absent):
+            print(f"talk_card: {mode}: nothing blessed or refrozen from a card with a failed or missing run", file=sys.stderr)
+            status = 1
+        elif args.bless:
             base.parent.mkdir(parents=True, exist_ok=True)
             base.write_text(json.dumps(card, indent=1, ensure_ascii=False) + "\n")
             print(f"talk_card: {mode} baseline written to {base}", file=sys.stderr)
-        elif base.is_file():
+        elif refreeze and base.is_file():
+            base.write_text(json.dumps(talk_score.refreeze(json.loads(base.read_text()), card, refreeze, args.why),
+                                       indent=1, ensure_ascii=False) + "\n")
+            print(f"talk_card: {mode}: {', '.join(refreeze)} refrozen in {base}", file=sys.stderr)
+        if base.is_file() and not args.bless:
             problems = talk_score.check(card, json.loads(base.read_text()))
             (args.out / f"scorecard-{mode}-diff.txt").write_text("\n".join(problems) + ("\n" if problems else "no gate broken\n"))
             for p in problems:

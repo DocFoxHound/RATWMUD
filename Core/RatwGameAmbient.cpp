@@ -95,7 +95,7 @@ void Game::ambientSpeak(double)
                 voicedWords("exchange", speaker, spokenTo, text, &info);
             if (onAmbientLine)
                 onAmbientLine({it->id, it->spoken, speaker, spokenTo, text, a->cellId, it->pick.hearer, it->pick.topic.kind,
-                               it->pick.topic.claim, it->route, std::move(info), it->pick.topic.subject});
+                               it->pick.topic.claim, it->route, std::move(info), it->pick.topic.subject, it->pick.topic.seen});
             ++it->spoken;
         }
         ++it;

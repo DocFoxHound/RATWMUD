@@ -710,6 +710,13 @@ class World
     {
         return doors_;
     }
+    // A key that changes when the doors that lead into buildings change (for caches of walks through them: the district,
+    // the street outside, an entrance), but not when a streamed cell's seams come and go: seams only join outdoor cells,
+    // and every such walk stops at the first one.
+    std::size_t doorsKey() const
+    {
+        return streamedSeams_ < doors_.size() ? doors_.size() - streamedSeams_ : 0;
+    }
     const Door* door(const std::string& id) const;
     // The doors, stairs and seams in one cell, in ID order (an index over doors(); rebuilt when doors change).
     const std::vector<Door*>& doorsIn(const std::string& cellId) const;
@@ -1938,7 +1945,12 @@ class World
     mutable std::int64_t districtDay_ = -1;
     std::string outsideOf(const std::string& cellId) const;
     void noteNews(const WorldEvent& event);
+    // News from `who`'s own life, kept a few days to tell (`about`: the other one it concerns, never told it as news).
+    void tellNews(const std::string& who, const std::string& kind, const std::string& text, const std::string& about = {});
   public:
+    // The victim's own news of a theft or an attack they noticed (doc 84; the slice-end review): the one who did it named
+    // only if the victim saw who it was, a traveller as the victim knows them. (From witness(); public for its tests.)
+    void victimNews(const Incident& incident, bool identified);
     // The town a cell is in (its id), else the cell's region: the talk library's here.region.
     std::string townIdOf(const std::string& cellId) const;
     // The best thing for `a` to talk of with `b` now (gossip, news, the day...), with its tags and blanks; also asked by
@@ -2667,6 +2679,7 @@ class World
     // Each streamed cell's seams (its side of every crossing into a neighbour), kept from the first time it loaded
     // so that offstage NPCs can cross it later without it being in memory.
     std::map<std::string, std::vector<Door>> seamAnchors_;
+    std::size_t streamedSeams_ = 0;                 // Seams in doors_ put there by a streamed cell's loading (doorsKey).
     std::set<std::string> stageCells() const;
     // Where an entity is, the cells across its open edges, and those behind doors near it: what it could see,
     // hear or step into soon. The stage is this around every player; streaming keeps it around everyone onstage.

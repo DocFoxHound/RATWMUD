@@ -274,6 +274,8 @@ void Game::talkPair(const std::string& a, const std::string& b, talk::Facts& fac
     else if (society.household(a, b))
         kin = "household";
     facts["pair.kin"] = kin;
+    // Under one roof (kin or not): a house's own complaints are said to one who lives elsewhere (the slice-end review).
+    facts["pair.roof"] = society.household(a, b) ? "yes" : "no";
     if (!elder.empty())
         facts["pair.elder"] = elder;
     // Who works for whom: a shop's keeper and the help at its premises (nobody pays a wage since doc 66's Phase 5; the
@@ -738,10 +740,10 @@ void Game::reactions(double dt)
 
 std::pair<std::string, Vec2> Game::entranceOf(const std::string& cell)
 {
-    if (world_.doors().size() != entranceDoors_)
+    if (world_.doorsKey() != entranceDoors_)        // (Not the doors' count: seams stream in and out: doorsKey.)
     {
         entrances_.clear();
-        entranceDoors_ = world_.doors().size();
+        entranceDoors_ = world_.doorsKey();
     }
     if (const auto found = entrances_.find(cell); found != entrances_.end())
         return found->second;

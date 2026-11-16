@@ -141,7 +141,8 @@ struct Town
 {
     game::Game g;
     Client ash, bo, cy;
-    Town(const std::string& world, const std::string& save, double performQuiet = 120, bool voice = false, double awayBreak = 3 * 86400) : g([&] {
+    Town(const std::string& world, const std::string& save, double performQuiet = 120, bool voice = false, double awayBreak = 3 * 86400,
+         const std::string& mind = {}) : g([&] {
           game::Options o;
           o.hiddenNames = true;
           o.devIdentity = true;
@@ -151,6 +152,7 @@ struct Town
           o.savePath = save;
           o.performQuietSeconds = performQuiet;
           o.awayBreakSeconds = awayBreak;
+          o.dialogueEndpoint = mind;                // (A stand-in NPC Mind, for a test that needs one: "" none.)
 #ifdef RATW_SOURCE_DIR
           if (voice)
               o.voiceData = std::string(RATW_SOURCE_DIR) + "/Data/Voice";   // (The router and the written scenes.)

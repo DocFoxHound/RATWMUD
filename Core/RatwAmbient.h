@@ -28,6 +28,9 @@ struct AmbientTopic
     // kind, its second party and its place (doc 84 §7.7).
     bool passes = false;
     std::string claimKind, object, place;
+    // Whether the teller saw it with their own eyes ("yes"), only heard it ("no"), or it isn't a thing one sees (""): the
+    // scorecard's T3 counts an eyewitness's words said without it (doc 84 §15.3).
+    std::string seen;
 };
 struct AmbientPick
 {
@@ -40,6 +43,7 @@ struct AmbientNews
 {
     double day = 0;
     std::string kind, text;
+    std::string about;                  // The other one it concerns (an ID): never told it as news (a spouse, a thief).
 };
 // Something that happened in a town lately, as its people talk of it: a wedding, a death, a theft, a newcomer.
 struct TownNews

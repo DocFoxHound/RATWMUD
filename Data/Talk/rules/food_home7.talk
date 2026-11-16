@@ -839,7 +839,7 @@ say That's the land for you. Feast or famine. | You eat what the year gives. | T
 # ================================================================ HOME: asking (-> home.answer)
 
 rule e1_hm_ask_house
-when concept=talk.home pair.band=acquaintances|friends|apprentice|family
+when concept=talk.home pair.band=acquaintances|friends|apprentice|family pair.roof=no
 cooldown 1d
 say How's the house? | Keeping the roof on? | All well at home? | How's your place these days?
 then other: home.answer
@@ -851,7 +851,7 @@ say Are you settled, where you live? | Is it a good spot, yours? | Do you like i
 then other: home.answer
 
 rule e1_hm_ask_weather
-when concept=talk.home here.weather=rain|storm|snow
+when concept=talk.home here.weather=rain|storm|snow pair.roof=no
 cooldown 1d
 say Is your roof holding in this? | Mine's leaking like a sieve. Yours? | Dry at yours, I hope?
 then other: home.answer
@@ -860,7 +860,7 @@ then other: home.answer
 # Only those with a home tell these. Each remembers what the trouble is (pair.mem.hk).
 
 rule e1_hm_roof
-when concept=talk.home homeless=no
+when concept=talk.home homeless=no pair.roof=no
 cooldown 2d
 say The rain's found a new way in. Over the stairs, this time. | I lay awake counting drips. I got to four hundred. | The wind took the moss off my roof, and half the roof with it.
 then other: home.advice
@@ -868,77 +868,77 @@ remember self: roof_leaks 3d
 remember pair: hk=leak 2m
 
 rule e1_hm_roof_still
-when concept=talk.home self.mem.roof_leaks homeless=no
+when concept=talk.home self.mem.roof_leaks homeless=no pair.roof=no
 cooldown 2d
 say Still leaking. I've a pot in every room now. | The roof again. I can hear it in my sleep. | I mended the roof. It's leaking somewhere new.
 then other: home.advice
 remember pair: hk=leak 2m
 
 rule e1_hm_chimney
-when concept=talk.home homeless=no
+when concept=talk.home homeless=no pair.roof=no
 cooldown 2d
 say The chimney's drawing backwards. Smoke comes down, not up. | My eyes have been streaming for a week. It's the chimney. | Every time the wind's in the west, my kitchen fills with smoke.
 then other: home.advice
 remember pair: hk=smoke 2m
 
 rule e1_hm_damp
-when concept=talk.home homeless=no
+when concept=talk.home homeless=no pair.roof=no
 cooldown 2d
 say Damp's coming up the walls again. | Everything I own smells of mould. | There's a green patch on the ceiling. It's growing.
 then other: home.advice
 remember pair: hk=damp 2m
 
 rule e1_hm_mice
-when concept=talk.home homeless=no
+when concept=talk.home homeless=no pair.roof=no
 cooldown 2d
 say Rats in the cellar. Big as cats. | Something's been at the bread in the night. Little teeth marks. | There's a nest behind the dresser. I can hear them squeaking.
 then other: home.advice
 remember pair: hk=vermin 2m
 
 rule e1_hm_door
-when concept=talk.home homeless=no
+when concept=talk.home homeless=no pair.roof=no
 cooldown 2d
 say My shutter's off its hinge. It bangs all night. | The step's cracked right through. I go in sideways. | The floorboard by the hearth's gone soft. I put a foot through it.
 then other: home.advice
 remember pair: hk=broken 2m
 
 rule e1_hm_furniture
-when concept=talk.home homeless=no
+when concept=talk.home homeless=no pair.roof=no
 cooldown 2d
 say A chair's lost a leg. Nobody's owned up to it. | My bed broke. In the night. With me in it. | The table wobbles. Soup everywhere.
 then other: home.advice
 remember pair: hk=broken 2m
 
 rule e1_hm_wood
-when concept=talk.home homeless=no here.season=autumn|winter
+when concept=talk.home homeless=no here.season=autumn|winter pair.roof=no
 cooldown 2d
 say The woodpile's half what it should be. | Every log I've got is green. It hisses at me. | Firewood's dear this year. I'm rationing logs.
 then other: home.advice
 remember pair: hk=wood 2m
 
 rule e1_hm_hens
-when concept=talk.home homeless=no here.region!=ridgemere
+when concept=talk.home homeless=no here.region!=ridgemere pair.roof=no
 cooldown 3d
 say My hens have taken to laying in the hedge. I'm hunting eggs like a pup. | The cockerel starts before dawn. The whole street hates me. | The goat got in with the hens again. Nobody's happy.
 then other: home.advice
 remember pair: hk=hens 2m
 
 rule e1_hm_noise
-when concept=talk.home homeless=no pair.neighbours=no
+when concept=talk.home homeless=no pair.neighbours=no pair.roof=no
 cooldown 2d
 say There's a baby next door that never sleeps. Nor do I, now. | The smith down the lane starts hammering before dawn. | Somebody on my street keeps geese. Have you heard geese at night?
 then other: home.advice
 remember pair: hk=noise 2m
 
 rule e1_hm_lodger
-when concept=talk.home homeless=no wealth=comfortable
+when concept=talk.home homeless=no wealth=comfortable pair.roof=no
 cooldown 3d
 say My lodger's not paid in a month. | The lodger's started cooking fish in his room. | My lodger sings in the bath. Every night. The same song.
 then other: home.advice
 remember pair: hk=lodger 2m
 
 rule e1_hm_moving
-when concept=talk.home drive=restless|ambitious
+when concept=talk.home drive=restless|ambitious pair.roof=no
 cooldown 3d
 say I'm thinking of leaving this town. Going anywhere. | I've seen a house I want. I can't afford it. Yet. | This street's too small for me.
 then other: keeping.nod
@@ -947,21 +947,21 @@ remember pair: k=hopes 2m
 # ================================================================ HOME: telling, unasked (-> keeping.*)
 
 rule e1_hm_tell_rent
-when concept=talk.home wealth=poor|destitute homeless=no
+when concept=talk.home wealth=poor|destitute homeless=no pair.roof=no
 cooldown 2d
 say I've counted the rent three times. It's still short. | The collector knocks the same knock every week. I hear it in my sleep. | Rent's eaten my #wages# again. There's nothing left for firewood.
 then other: keeping.sorry
 remember pair: k=want 2m
 
 rule e1_hm_tell_owes
-when concept=talk.home owes=yes homeless=no
+when concept=talk.home owes=yes homeless=no pair.roof=no
 cooldown 2d
 say The landlord's man was at the door again. | I've not paid the rent. I go in by the back. | If they put me out, I don't know where I'll go.
 then other: keeping.sorry
 remember pair: k=want 2m
 
 rule e1_hm_tell_homeless
-when concept=talk.home homeless=yes
+when concept=talk.home homeless=yes pair.roof=no
 cooldown 1d
 priority 2
 say I've nowhere, #address#. Not a room. | Doorways and haylofts. That's my home now. | I used to have a door I could shut.
@@ -969,97 +969,97 @@ then other: keeping.sorry
 remember pair: k=want 2m
 
 rule e1_hm_tell_rich
-when concept=talk.home wealth=rich homeless=no
+when concept=talk.home wealth=rich homeless=no pair.roof=no
 cooldown 2d
 say We're having a new wing built. The noise! | I've bought the house next door. For the garden. | New glass in every window. You should see it shine.
 then other: keeping.glad
 remember pair: k=good 2m
 
 rule e1_hm_tell_heights
-when concept=talk.home quarter=heights homeless=no
+when concept=talk.home quarter=heights homeless=no pair.roof=no
 cooldown 2d
 say The Heights are all scaffolding this season. Everyone's building. | Our neighbours have a new carriage house. Ours is older. | There's a new gardener next door. He's moved every rosebush in the street.
 then other: keeping.nod
 
 rule e1_hm_tell_sump
-when concept=talk.home quarter=sump homeless=no
+when concept=talk.home quarter=sump homeless=no pair.roof=no
 cooldown 2d
 say The landlord's split our room in two with a curtain. Now there's two rents. | There's a crack in our wall you can put your arm through. | Our stair's lost a step. Nobody'll say who took it.
 then other: keeping.sorry
 remember pair: k=want 2m
 
 rule e1_hm_tell_wharf
-when concept=talk.home quarter=wharf|docks homeless=no
+when concept=talk.home quarter=wharf|docks homeless=no pair.roof=no
 cooldown 2d
 say The Customs men tramp past my window at all hours. | I can hear the ropes creak on the piers all night. Like a cradle. | Sailors in the room below. They sing till the tide turns.
 then other: keeping.nod
 
 rule e1_hm_tell_works
-when concept=talk.home quarter=works homeless=no
+when concept=talk.home quarter=works homeless=no pair.roof=no
 cooldown 2d
 say The foundry bell rings the shifts right through my sleep. | The glassworks lights my window red all night. | My lodging's over the tannery. I'll say no more.
 then other: keeping.nod
 
 rule e1_hm_tell_spouse
-when concept=talk.home self.spouse homeless=no
+when concept=talk.home self.spouse homeless=no pair.roof=no
 cooldown 2d
 say #self.spouse# wants a bigger house. Wants. | #self.spouse# put up a shelf. It's on the floor now. | #self.spouse# has hung herbs from every beam. I walk about ducking.
 then other: keeping.glad
 remember pair: k=family 2m
 
 rule e1_hm_tell_child
-when concept=talk.home self.child homeless=no
+when concept=talk.home self.child homeless=no pair.roof=no
 cooldown 2d
 say #self.child# swept the whole floor without being asked. I nearly fainted. | #self.child# has dug a hole in the yard. A big one. Why? | #self.child# has filled the yard with snails. Pets, apparently.
 then other: keeping.glad
 remember pair: k=family 2m
 
 rule e1_hm_tell_widowed
-when concept=talk.home widowed=yes homeless=no
+when concept=talk.home widowed=yes homeless=no pair.roof=no
 cooldown 2d
 say I don't like going home in the evenings. | I still set out two cups. Every morning. | I've not moved their boots from the door. I can't.
 then other: keeping.sorry
 remember pair: k=grief 2m
 
 rule e1_hm_tell_old
-when concept=talk.home stage=old homeless=no
+when concept=talk.home stage=old homeless=no pair.roof=no
 cooldown 2d
 say Every board in my house has a voice. I know them all. | Fifty years in my house. Everything's where I can reach it. Don't move a thing. | I found a letter under the floorboards from before I was born. The house keeps secrets.
 then other: keeping.nod
 
 rule e1_hm_tell_young
-when concept=talk.home stage=young homeless=no
+when concept=talk.home stage=young homeless=no pair.roof=no
 cooldown 2d
 say There's a loose board under my bed. I keep my treasures there. | I found a bird's nest in our gutter. Three eggs! | I'm allowed to bank the fire now. On my own.
 then other: keeping.nod
 
 rule e1_hm_tell_servant
-when concept=talk.home job=servant
+when concept=talk.home job=servant pair.roof=no
 cooldown 2d
 say Scrubbed their floors all day. Mine can wait. | The family count the candles. Every night. | I polish silver I'll never eat off.
 then other: keeping.nod
 remember pair: k=weary 2m
 
 rule e1_hm_tell_winter
-when concept=talk.home here.season=winter homeless=no
+when concept=talk.home here.season=winter homeless=no pair.roof=no
 cooldown 1d
 say I've hung a blanket over the door. It helps. A bit. | The wind finds every crack in my walls. I'm learning where they all are. | I keep the fire in day and night. The woodpile's weeping.
 then other: keeping.nod
 
 rule e1_hm_tell_spring
-when concept=talk.home here.season=spring homeless=no
+when concept=talk.home here.season=spring homeless=no pair.roof=no
 cooldown 1d
 say Shutters open at last. The house can breathe. | Swallows are back in my eaves. Same pair as last year, I'm sure. | I've scrubbed the step till it shines. First time since autumn.
 then other: keeping.nod
 
 rule e1_hm_tell_summer
-when concept=talk.home here.season=summer homeless=no
+when concept=talk.home here.season=summer homeless=no pair.roof=no
 cooldown 1d
 say Shutters shut all day, or we cook. | The thatch is full of buzzing. Something's nesting. | I sleep with the door open now. The cat comes and goes.
 then other: keeping.nod
 
 rule e1_hm_tell_autumn
-when concept=talk.home here.season=autumn homeless=no
+when concept=talk.home here.season=autumn homeless=no pair.roof=no
 cooldown 1d
 say Woodpile's stacked to the eaves. Winter can come. | Apples drying on every shelf in the house. | I've stuffed every crack with moss and rags. Let the wind try.
 then other: keeping.glad

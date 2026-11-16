@@ -136,8 +136,22 @@ def packet(convs: list, n: int, seed: int) -> list:
         for k in keys:
             if strata[k] and len(out) < n:
                 out.append(strata[k].pop())
-    out.sort(key=lambda x: (x[0].name, x[1].get("conv", 0)))
+    out.sort(key=lambda x: (label(x[0]), x[1].get("conv", 0)))
     return out
+
+
+def label(run) -> str:
+    """A run's own name in the page and its marks: talk_sim's --run (frozen-L1, fixtures-L1), never only the profile, which
+    both modes share (a mark on frozen-L1's conversation 12 isn't one on fixtures-L1's)."""
+    return getattr(run, "label", None) or run.meta.get("run") or run.dir.name
+
+
+def labels(runs: list) -> None:
+    """Each run's label, unique among those given (two runs of one name: the folder's name after it)."""
+    seen = collections.Counter(run.meta.get("run") or run.dir.name for run in runs)
+    for run in runs:
+        name = run.meta.get("run") or run.dir.name
+        run.label = name if seen[name] == 1 else f"{name}:{run.dir.parent.name}/{run.dir.name}"
 
 
 def render_html(chosen: list, title: str, subtitle: str) -> str:
@@ -151,7 +165,7 @@ def render_html(chosen: list, title: str, subtitle: str) -> str:
         facts = head.get("facts", {})
         where = f"{facts.get('here.place', '')} in {head.get('cell', '')}, {facts.get('here.region', '')}; " \
                 f"day {head.get('day', 0):.2f}, hour {head.get('hour', 0):.0f}; {facts.get('_weather', '')}"
-        meta = f'<span class="chip">{html.escape(run.name)} #{head.get("conv")}</span><span class="chip">topic ' \
+        meta = f'<span class="chip">{html.escape(label(run))} #{head.get("conv")}</span><span class="chip">topic ' \
                f'{html.escape(head.get("topic", ""))}</span><span class="chip">{html.escape(facts.get("pair.band", ""))}</span>' \
                f'<span class="chip">{html.escape(where)}</span><span class="chip">ended: {html.escape(head.get("reason", ""))}</span>'
         rows = []
@@ -163,8 +177,8 @@ def render_html(chosen: list, title: str, subtitle: str) -> str:
             rows.append(f'<div class="line" tabindex="0"><span class="who">{html.escape(who)}:</span> '
                         f'{html.escape(l["text"])}<div class="why">{html.escape(why)}</div></div>')
         entries = json.dumps([l.get("entry", "") for l in lines])
-        cid = f"{run.name}-{head.get('conv')}"
-        body.append(f'<section class="conv" data-id="{html.escape(cid)}" data-run="{html.escape(run.name)}" '
+        cid = f"{label(run)}-{head.get('conv')}"
+        body.append(f'<section class="conv" data-id="{html.escape(cid)}" data-run="{html.escape(label(run))}" '
                     f'data-conv="{head.get("conv")}" data-entries=\'{html.escape(entries)}\'><div class="head">{meta}'
                     f'</div><div class="people head">{chips}</div>{"".join(rows)}<div class="marks">'
                     f'<button data-m="fine">fine</button><button data-m="off">off</button><button data-m="wrong">wrong'
@@ -180,7 +194,7 @@ def render_md(chosen: list, title: str, subtitle: str) -> str:
         out.append(f"## {i}. {head.get('topic', '')}, {facts.get('pair.band', '')}: {facts.get('here.place', '')} in "
                    f"`{head.get('cell', '')}` ({facts.get('here.region', '')}), day {head.get('day', 0):.1f}, hour "
                    f"{head.get('hour', 0):.0f}, {facts.get('_weather', '')}  ")
-        out.append(f"`{run.name}` conversation {head.get('conv')}; ended: {head.get('reason', '')}")
+        out.append(f"`{label(run)}` conversation {head.get('conv')}; ended: {head.get('reason', '')}")
         out.append("")
         people = []
         for l in lines:
@@ -211,9 +225,10 @@ def main() -> int:
     parser.add_argument("--subtitle", default="")
     args = parser.parse_args()
     runs = [talk_score.Run(d) for d in args.runs]
+    labels(runs)
     convs = list(conversations(runs))
     chosen = packet(convs, args.packet, args.seed) if args.packet else convs
-    subtitle = args.subtitle or (f"{len(chosen)} conversations of {len(convs)} from {', '.join(r.name for r in runs)} "
+    subtitle = args.subtitle or (f"{len(chosen)} conversations of {len(convs)} from {', '.join(label(r) for r in runs)} "
                                  "(talk_sim, Docs/Design/84 §15.6). Hover a line for where it came from.")
     if args.html:
         args.html.write_text(render_html(chosen, args.title, subtitle))

@@ -170,6 +170,9 @@ struct Options
     // §15.1). Only with `scratch`: read, never written; no journal is replayed over it and a database world's copied
     // NPC states are not applied.
     std::string checkpointFile;
+    // The world build to load (world.builds' id), not the newest: a scratch game only (the simulator's fixtures were
+    // recorded on one build, and replay on it: doc 84 §15.1, the slice-end review). 0: the newest.
+    std::int64_t worldBuild = 0;
     // The talk library (Docs/Design/62-talk.md: Data/Talk): every written line residents say. Empty: Talk beside
     // voiceData (Data/Voice -> Data/Talk); none at all if there's no voiceData either.
     std::string talkData;
@@ -484,6 +487,8 @@ class Game
     const std::map<std::string, Entity>& characters() const { return characters_; }
     // The talk library (doc 62): how many rules and scenes are loaded, and how many a character has heard.
     std::size_t talkLibrarySize() const { return talk_.size(); }
+    // The world build a database world loaded (world.builds' id; 0 for an export or a file world).
+    std::int64_t loadedBuild() const { return loadedBuild_; }
     const talk::Library& talkLibrary() const { return talk_; }
     // What the talk library is asked when `a` speaks to `b` (to no one: b "") of a concept, here and now: the two
     // speakers, the place and moment, and `facts` (the topic's own) over them.
@@ -510,6 +515,7 @@ class Game
         std::string who, to, text, cell, hearer, topic, claim, route;
         talk::LineInfo info;                        // Entry, alternative and layers ("" entry: a model's or authored).
         std::string subject;                        // The topic's subject (a claim's), if it has one.
+        std::string seen;                           // The teller saw it ("yes"), heard it ("no"), or neither applies ("").
     };
     struct AmbientEnd
     {
@@ -1876,8 +1882,14 @@ class Game
         Voice voice = Voice::Speak;
         bool hasSense = false;
         SensoryResult sense;
+        bool window = false;                        // Said in the dialogue window (heed: no promise from there).
     };
     static constexpr std::size_t MaxQueuedTalk = 4;
+    // NPCs whose pending reply answers words said in the dialogue window, decided when the words were said, not when the
+    // answer comes (the window may have closed by then: doc 84, defect 15, the slice-end review); and talkNext's word for
+    // a queued line's own.
+    std::set<std::string> windowAsked_;
+    bool windowNext_ = false;
     std::map<std::string, std::deque<QueuedTalk>> queuedTalk_;
     std::map<std::string, std::string> npcMood_;
     // The ambient director (RatwGameAmbient.cpp, Phase 10): exchanges being voiced or spoken, and the model calls

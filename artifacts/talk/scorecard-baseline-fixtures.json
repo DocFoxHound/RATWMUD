@@ -248,29 +248,34 @@
    "note": "n/a until Phase 3"
   },
   "C3": {
-   "name": "endings by a farewell or a break (%)",
+   "name": "endings by a farewell or a marked break (%)",
    "better": "higher",
    "gate": "soft",
    "target": "80% / 3% / 5%",
-   "value": 0.8303167942553337,
+   "value": 0.8906588828197891,
    "passes": false,
    "by_profile": {
-    "L1": 0.627,
-    "L2": 1.114,
-    "L3": 0.649,
-    "L4": 0.681,
+    "L1": 0.8,
+    "L2": 0.758,
+    "L3": 0.843,
+    "L4": 0.875,
     "L5": 0.389,
-    "L6": 0.584,
+    "L6": 0.778,
     "L7": 0.584,
     "L8": 0.0,
     "L9": 0.0,
-    "L10": 1.375
+    "L10": 1.473
    },
-   "control": 0.5778406099349194,
-   "separation": 0.30407211568790027,
+   "control": 0.5912668769019311,
+   "separation": 0.3361466569221151,
+   "real_better": true,
    "separates": true,
    "control_required": true,
-   "structural": false
+   "structural": false,
+   "events": [
+    115,
+    13019.0
+   ]
   },
   "C4": {
    "name": "tone clashes per 1,000 beats",
@@ -393,25 +398,30 @@
    "better": "lower",
    "gate": "hard",
    "target": "0",
-   "value": 13.359608937117702,
-   "passes": false,
+   "value": 0.0,
+   "passes": true,
    "by_profile": {
-    "L1": 14.912,
-    "L2": 19.382,
-    "L3": 7.168,
-    "L4": 0.347,
-    "L5": 0.74,
-    "L6": 4.854,
-    "L7": 2.801,
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
     "L8": 0.0,
     "L9": 0.0,
-    "L10": 20.383
+    "L10": 0.0
    },
-   "control": 13.334015816548511,
-   "separation": 0.0019157088122605237,
+   "control": 0.0,
+   "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    0,
+    39057.0
+   ]
   },
   "T2": {
    "name": "presupposition failures, per 1,000 lines",
@@ -439,29 +449,34 @@
    "structural": false
   },
   "T3": {
-   "name": "self-reference errors, per 1,000 lines",
+   "name": "self-reference errors (own name, the listener in the third person, unbacked eyewitness words), per 1,000 lines",
    "better": "lower",
    "gate": "hard",
    "target": "0",
-   "value": 3.3015125534256393,
+   "value": 0.409657679801316,
    "passes": false,
    "by_profile": {
-    "L1": 4.111,
-    "L2": 5.829,
-    "L3": 0.0,
+    "L1": 0.484,
+    "L2": 0.291,
+    "L3": 0.469,
     "L4": 0.0,
     "L5": 0.0,
     "L6": 0.0,
     "L7": 0.0,
     "L8": 0.0,
     "L9": 0.0,
-    "L10": 4.668
+    "L10": 0.775
    },
-   "control": 3.352698794564021,
-   "separation": 0.015267175572518983,
+   "control": 0.43526128478889825,
+   "separation": 0.058823529411764684,
+   "real_better": true,
    "separates": false,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    16,
+    39057.0
+   ]
   },
   "T4": {
    "name": "identity drift",
@@ -480,29 +495,34 @@
    "note": "n/a until Phase 4"
   },
   "D1": {
-   "name": "lines with a dialect's words (%): light speakers",
-   "better": "higher",
+   "name": "lines with a dialect's words (%): accent none",
+   "better": "lower",
    "gate": "hard",
-   "target": "none 0%; light 25-50%; broad 60%+",
-   "value": 0.20574723511070636,
-   "passes": false,
+   "target": "none 0%",
+   "value": 0.0,
+   "passes": true,
    "by_profile": {
     "L1": 0.0,
-    "L2": 0.026,
-    "L3": 0.694,
-    "L4": 0.52,
-    "L5": 0.814,
-    "L6": 0.112,
-    "L7": 1.471,
+    "L2": 0.0,
+    "L3": 0,
+    "L4": 0,
+    "L5": 0,
+    "L6": 0,
+    "L7": 0,
     "L8": 0,
     "L9": 0,
     "L10": 0.0
    },
-   "control": 0.1795875897886359,
-   "separation": 0.127144577704749,
+   "control": 0.0,
+   "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    0,
+    3222.0
+   ]
   },
   "D2": {
    "name": "another dialect's words in a speaker's line",
@@ -768,6 +788,66 @@
    "target": "40%+",
    "value": null,
    "note": "n/a until slice ends (talk_rate.py)"
+  },
+  "D1L": {
+   "name": "lines with a dialect's words (%): light speakers",
+   "better": "higher",
+   "gate": "soft",
+   "target": "light 25-50%",
+   "value": 0.21349767862884692,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.026,
+    "L3": 0.68,
+    "L4": 0.616,
+    "L5": 0.886,
+    "L6": 0.11,
+    "L7": 1.536,
+    "L8": 0,
+    "L9": 0,
+    "L10": 0.0
+   },
+   "control": 0.203256236633814,
+   "separation": 0.047969804921565676,
+   "real_better": true,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    82,
+    24367.0
+   ]
+  },
+  "D1B": {
+   "name": "lines with a dialect's words (%): broad speakers",
+   "better": "higher",
+   "gate": "soft",
+   "target": "broad 60%+",
+   "value": 0.12137670033697306,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.187,
+    "L3": 0,
+    "L4": 0,
+    "L5": 0,
+    "L6": 2.381,
+    "L7": 0,
+    "L8": 0,
+    "L9": 0,
+    "L10": 0.0
+   },
+   "control": 0.11720676807518042,
+   "separation": 0.03435529430455627,
+   "real_better": true,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    16,
+    11468.0
+   ]
   }
  },
  "details": {
@@ -796,10 +876,11 @@
     "answered": 1066
    },
    "C3_detail": {
-    "farewell": 0.6050129645635264,
-    "break": 0.021607605877268798,
+    "farewell": 0.7998270644185042,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.37337942955921
+    "nothing_fits": 99.20017293558149
    },
    "C7_detail": {
     "p90": 4,
@@ -818,19 +899,21 @@
     ]
    },
    "T3_detail": {
+    "by_kind": {
+     "unbacked": 7
+    },
     "examples": [
-     "rm_wenna_tarford: In the Rain Hall they're saying Osric Ropeworth tried to steal from Wenna Tarford.",
-     "rm_wenna_tarford: Between stalls: Osric Ropeworth tried to steal from Wenna Tarford.",
-     "rm_wenna_tarford: Everyone in the city's heard Osric Ropeworth tried to steal from Wenna Tarford.",
-     "rm_rosamund_tarridge: Florence Pennock tried to steal from Rosamund Tarridge, they say."
-    ]
+     "unbacked: rm_wynn_rustworth to rm_leif_fogcot: I saw someone near Orla Wickby's door that night.",
+     "unbacked: rm_rosamund_tarridge to rmx_gunnar_farrow: I saw someone near Frederick Foghand's door that night.",
+     "unbacked: rm_delphine_saltwick to rm_vigdis_rainmore: I saw someone near Frederick Foghand's door that night.",
+     "unbacked: rmx_maren_hatherley to rm_torvald_slagton: I saw someone near Edric Millton's door that night.",
+     "unbacked: rmx_maren_hatherley to rm_torvald_slagton: I saw someone near Gudrun Wickby's door that night.",
+     "unbacked: rmx_orm_blackwood to rmx_lothar_abbot: I saw someone near Frida Marrowby's door that night."
+    ],
+    "eyewitness_judged": true
    },
    "T1_detail": {
-    "examples": [
-     "They say camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8. Don't quote me.",
-     "Word at the well is that camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8.",
-     "Before we turn in: camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8."
-    ]
+    "examples": []
    },
    "K2_detail": {
     "topics": {
@@ -892,10 +975,11 @@
     "answered": 423
    },
    "C3_detail": {
-    "farewell": 0.6684491978609626,
-    "break": 0.44563279857397503,
+    "farewell": 0.7575757575757576,
+    "marked_break": 0.0,
+    "cut_off": 0.44563279857397503,
     "cap": 0.0,
-    "nothing_fits": 98.88591800356507
+    "nothing_fits": 98.79679144385027
    },
    "C7_detail": {
     "p90": 3,
@@ -916,19 +1000,17 @@
     ]
    },
    "T3_detail": {
+    "by_kind": {
+     "unbacked": 2
+    },
     "examples": [
-     "rmx_finn_dripwick: I heard Corwin Bilgestack tried to steal from Finn Dripwick.",
-     "rm_rupert_fogton: Word at the well is that Brenna Milldale stole from Rupert Fogton.",
-     "rmx_ebba_netherby: I heard something about Finn Saltwell. That Finn Saltwell tried to steal from Ebba Netherby.",
-     "rm_wenna_tarford: Everyone in the city's heard Ada Coalstack tried to steal from Wenna Tarford."
-    ]
+     "unbacked: rm_edda_bilgeridge to rm_sten_ropeford: I saw someone near Gudrun Wickby's door that night.",
+     "unbacked: rm_dagny_rustcot to rmx_grete_dunn: I saw someone near Frederick Foghand's door that night."
+    ],
+    "eyewitness_judged": true
    },
    "T1_detail": {
-    "examples": [
-     "Sold more gossip than goods this morning. Camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8.",
-     "In the Rain Hall they're saying camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8.",
-     "A smokehouse foreman told the Tarred Rope's keeper camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8."
-    ]
+    "examples": []
    },
    "K2_detail": {
     "topics": {
@@ -997,10 +1079,11 @@
     "answered": 301
    },
    "C3_detail": {
-    "farewell": 0.648508430609598,
-    "break": 0.0,
+    "farewell": 0.8430609597924773,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.3514915693904
+    "nothing_fits": 99.15693904020752
    },
    "C7_detail": {
     "p90": 4,
@@ -1017,14 +1100,17 @@
     ]
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {
+     "unbacked": 2
+    },
+    "examples": [
+     "unbacked: tn_sm_hob_cornwell to tn_fh_marl_cragpeak: I saw someone near Sage Wheatridge's door that night.",
+     "unbacked: tn_sm_hob_cornwell to tn_fh_marl_cragpeak: I saw someone near Ingram Hazelshaw's door that night."
+    ],
+    "eyewitness_judged": true
    },
    "T1_detail": {
-    "examples": [
-     "Pass it down the row. Camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8.",
-     "Every customer today, same story. Camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8.",
-     "Camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8. And they had the cheek to sit in the front pew."
-    ]
+    "examples": []
    },
    "K2_detail": {
     "topics": {
@@ -1040,7 +1126,9 @@
     }
    },
    "D1_detail": {
-    "light": 0.69
+    "light": 0.68,
+    "none": 0.0,
+    "broad": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1089,10 +1177,11 @@
     "answered": 133
    },
    "C3_detail": {
-    "farewell": 0.6809338521400778,
-    "break": 0.0,
+    "farewell": 0.8754863813229572,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.31906614785993
+    "nothing_fits": 99.12451361867704
    },
    "C7_detail": {
     "p90": 4,
@@ -1108,12 +1197,12 @@
     ]
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": true
    },
    "T1_detail": {
-    "examples": [
-     "Don't spread it, but camp_w_ridgemere_6_12 raids the road at w_ridgemere_6_12."
-    ]
+    "examples": []
    },
    "K2_detail": {
     "topics": {
@@ -1127,7 +1216,9 @@
     }
    },
    "D1_detail": {
-    "light": 0.52
+    "light": 0.62,
+    "none": 0.0,
+    "broad": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1177,7 +1268,8 @@
    },
    "C3_detail": {
     "farewell": 0.38910505836575876,
-    "break": 0.0,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
     "nothing_fits": 99.61089494163424
    },
@@ -1196,12 +1288,12 @@
     ]
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": true
    },
    "T1_detail": {
-    "examples": [
-     "Guess who raids the road at w_ridgemere_6_12? Camp_w_ridgemere_6_12!"
-    ]
+    "examples": []
    },
    "K2_detail": {
     "topics": {
@@ -1214,7 +1306,9 @@
     }
    },
    "D1_detail": {
-    "light": 0.81
+    "light": 0.89,
+    "none": 0.0,
+    "broad": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1263,10 +1357,11 @@
     "answered": 72
    },
    "C3_detail": {
-    "farewell": 0.5836575875486382,
-    "break": 0.0,
+    "farewell": 0.7782101167315175,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.41634241245136
+    "nothing_fits": 99.22178988326849
    },
    "C7_detail": {
     "p90": 4,
@@ -1278,14 +1373,12 @@
     "examples": []
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": true
    },
    "T1_detail": {
-    "examples": [
-     "Word at the well is that camp_w_ridgemere_7_12 raids the road at w_ridgemere_7_12.",
-     "Word is camp_w_ridgemere_7_12 raids the road at w_ridgemere_7_12.",
-     "Camp_w_ridgemere_7_12 raids the road at w_ridgemere_7_12, and still walks about with that nose in the air."
-    ]
+    "examples": []
    },
    "K2_detail": {
     "topics": {
@@ -1300,8 +1393,9 @@
     }
    },
    "D1_detail": {
-    "broad": 2.37,
-    "light": 0.11
+    "light": 0.11,
+    "broad": 2.38,
+    "none": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1351,7 +1445,8 @@
    },
    "C3_detail": {
     "farewell": 0.5836575875486382,
-    "break": 0.0,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
     "nothing_fits": 99.41634241245136
    },
@@ -1365,14 +1460,12 @@
     "examples": []
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": true
    },
    "T1_detail": {
-    "examples": [
-     "Keep your voice down. Camp_w_ridgemere_7_12 raids the road at w_ridgemere_7_12.",
-     "Over the back wall this morning: camp_w_ridgemere_11_12 raids the road at w_ridgemere_11_12.",
-     "I'll believe it when I hear it from camp_w_ridgemere_11_12."
-    ]
+    "examples": []
    },
    "K2_detail": {
     "topics": {
@@ -1386,7 +1479,9 @@
     }
    },
    "D1_detail": {
-    "light": 1.47
+    "light": 1.54,
+    "none": 0.0,
+    "broad": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1436,7 +1531,8 @@
    },
    "C3_detail": {
     "farewell": 0.0,
-    "break": 0.0,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
     "nothing_fits": 0.0
    },
@@ -1450,7 +1546,9 @@
     "examples": []
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": false
    },
    "T1_detail": {
     "examples": []
@@ -1459,7 +1557,9 @@
     "topics": {}
    },
    "D1_detail": {
-    "light": 0.0
+    "none": 0.0,
+    "light": 0.0,
+    "broad": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1509,7 +1609,8 @@
    },
    "C3_detail": {
     "farewell": 0.0,
-    "break": 0.0,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
     "nothing_fits": 0.0
    },
@@ -1523,7 +1624,9 @@
     "examples": []
    },
    "T3_detail": {
-    "examples": []
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": false
    },
    "T1_detail": {
     "examples": []
@@ -1532,7 +1635,9 @@
     "topics": {}
    },
    "D1_detail": {
-    "light": 0.0
+    "none": 0.0,
+    "light": 0.0,
+    "broad": 0.0
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1581,10 +1686,11 @@
     "answered": 400
    },
    "C3_detail": {
-    "farewell": 1.3745704467353952,
-    "break": 0.0,
+    "farewell": 1.4727540500736378,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 98.62542955326461
+    "nothing_fits": 98.52724594992637
    },
    "C7_detail": {
     "p90": 4,
@@ -1601,19 +1707,20 @@
     ]
    },
    "T3_detail": {
+    "by_kind": {
+     "unbacked": 5
+    },
     "examples": [
-     "rm_wenna_tarford: In the Rain Hall they're saying Osric Ropeworth tried to steal from Wenna Tarford.",
-     "rm_wenna_tarford: Between stalls: Osric Ropeworth tried to steal from Wenna Tarford.",
-     "rm_wenna_tarford: Everyone in the city's heard Osric Ropeworth tried to steal from Wenna Tarford.",
-     "rm_wenna_tarford: A clerk at the City Office told me Osric Ropeworth tried to steal from Wenna Tarford. Clerks know everything."
-    ]
+     "unbacked: rmx_oda_cotton to rm_winifred_pitchdale: I saw someone near Josephine Wetmore's door that night.",
+     "unbacked: rmx_orm_blackwood to rmx_gerrit_hollis: I saw someone near Frida Marrowby's door that night.",
+     "unbacked: rm_ulf_cinderley to rmx_ivar_netherworth: I saw someone near Frida Marrowby's door that night.",
+     "unbacked: rmx_maren_hatherley to rm_torvald_slagton: I saw someone near Dirk Mallory's door that night.",
+     "unbacked: rm_ulf_cinderley to rmx_ivar_netherworth: I saw someone near Wynn Rustworth's door that night."
+    ],
+    "eyewitness_judged": true
    },
    "T1_detail": {
-    "examples": [
-     "They say camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8. Don't quote me.",
-     "Word at the well is that camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8.",
-     "Before we turn in: camp_w_ridgemere_6_8 raids the road at w_ridgemere_6_8."
-    ]
+    "examples": []
    },
    "K2_detail": {
     "topics": {
@@ -1667,5 +1774,31 @@
   "how": "talk_sim --ablate shuffle: lines after the first replaced by lines said at the same side of other conversations on the same topic, by a speaker of the same dialect where possible (§15.5)"
  },
  "mode": "fixtures",
- "freeze_at": null
+ "freeze_at": null,
+ "refrozen": [
+  {
+   "metrics": [
+    "T1",
+    "T3",
+    "C3",
+    "D1",
+    "D1L",
+    "D1B"
+   ],
+   "why": "Slice 1's review (doc 84 §26): T1 locked at the 0 Phase 1 reached; T3 now counts the listener named in the third person and unbacked eyewitness words too, C3 only farewells and marked breaks, D1 gates accent none (light and broad are D1L and D1B, soft): measured again with their new definitions on the review's own run",
+   "from": {
+    "L1": "artifacts/talk/runs/s1r/fixtures-L1",
+    "L2": "artifacts/talk/runs/s1r/fixtures-L2",
+    "L3": "artifacts/talk/runs/s1r/fixtures-L3",
+    "L4": "artifacts/talk/runs/s1r/fixtures-L4",
+    "L5": "artifacts/talk/runs/s1r/fixtures-L5",
+    "L6": "artifacts/talk/runs/s1r/fixtures-L6",
+    "L7": "artifacts/talk/runs/s1r/fixtures-L7",
+    "L8": "artifacts/talk/runs/s1r/fixtures-L8",
+    "L9": "artifacts/talk/runs/s1r/fixtures-L9",
+    "L10": "artifacts/talk/runs/s1r/fixtures-L10"
+   },
+   "on": "2026-11-16T15:47:09+00:00"
+  }
+ ]
 }

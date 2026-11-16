@@ -7471,7 +7471,8 @@ void World::unload(const std::string& cellId)
         {
             unexpected |= exits == exits_.end() || !exits->second.count(d->targetCell);
             const std::string id = d->id;
-            doors_.erase(id);
+            if (doors_.erase(id) && streamedSeams_ > 0)
+                --streamedSeams_;           // (Not a change to what any door walk sees: doorsKey.)
         }
         else
             kept.push_back(d);

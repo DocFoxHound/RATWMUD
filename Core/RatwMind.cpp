@@ -432,17 +432,24 @@ Exchange Client::authoredExchange(const ExchangeContext& c)
         return std::string(*(options.begin() + n));
     };
     const auto told = [&](const std::string& text) { return firstPerson(text, c.a.name); };
+    // Words after a question begin its next sentence: "Did you hear? A stranger robbed me.", never "? a stranger" (the
+    // news and a traveller's look begin in lower case: doc 84, the slice-end review).
+    const auto after = [](std::string lead, std::string text) {
+        if (lead.size() >= 2 && lead.compare(lead.size() - 2, 2, "? ") == 0 && !text.empty() && text[0] >= 'a' && text[0] <= 'z')
+            text[0] = char(text[0] - 'a' + 'A');
+        return lead + text;
+    };
     Exchange out;
     const auto say = [&](int who, const std::string& text) { out.lines.push_back({who, left(text, 240)}); };
     if (c.kind == "gossip")
     {
-        say(0, pick({"Have you heard? ", "They're saying ", "Word is "}) + c.subjectName + " " + c.claim + ".");
+        say(0, after(pick({"Have you heard? ", "They're saying ", "Word is "}), c.subjectName + " " + c.claim + "."));
         say(1, pick({"Truly? ", "Hm. ", "No! "}) + std::string(pick({"I'd not have thought it of them.", "I'll keep an eye out, then.",
                                                                    "Who told you that?"})));
     }
     else if (c.kind == "news")
     {
-        say(0, pick({"You'll have heard: ", "Did you hear? "}) + told(c.news) + ".");
+        say(0, after(pick({"You'll have heard: ", "Did you hear? "}), told(c.news) + "."));
         say(1, pick({"I had not. How are you keeping?", "So I'd heard. These are strange days.", "Well. That's something."}));
     }
     else if (c.kind == "quarrel")

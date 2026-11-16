@@ -108,20 +108,45 @@ std::string World::describeRegard(const std::string& holder, const std::string& 
     return bonds_.describe(holder, other, o ? o->name : other);
 }
 
+void World::tellNews(const std::string& who, const std::string& kind, const std::string& text, const std::string& about)
+{
+    const auto* person = entity(who);
+    if (!person || !person->npc || person->transient || claims::rawId(text))
+        return;
+    auto& mine = news_[who];
+    mine.push_back({calendarDays_, kind, text, about});
+    if (mine.size() > NewsKept)
+        mine.erase(mine.begin());
+}
+
+void World::victimNews(const Incident& inc, bool identified)
+{
+    if (inc.kind != "theft" && inc.kind != "assault")
+        return;                                     // (A try that failed is the town's talk, not the victim's news.)
+    const auto* doer = entity(inc.offender);
+    const auto* victim = entity(inc.victim);
+    if (!victim)
+        return;
+    // Named only if the victim saw who it was (witness(): identified), a traveller only as the victim knows them (doc 56).
+    std::string by = "someone";
+    if (identified && doer)
+    {
+        by = doer->npc ? doer->name : namer_ ? namer_(inc.victim, inc.offender) : doer->name;
+        if (by.empty())
+            by = "a stranger";
+    }
+    tellNews(inc.victim, "crime", by + (inc.kind == "theft" ? " robbed " : " attacked ") + victim->name,
+             identified ? inc.offender : std::string());
+}
+
 void World::noteNews(const WorldEvent& e)
 {
     const auto name = [&](const std::string& id) {
         const auto* who = entity(id);
         return who ? who->name : std::string("someone");   // (Never an id: doc 84, defect 1.)
     };
-    const auto tell = [&](const std::string& who, const std::string& kind, const std::string& text) {
-        const auto* person = entity(who);
-        if (!person || !person->npc || person->transient || claims::rawId(text))
-            return;
-        auto& mine = news_[who];
-        mine.push_back({calendarDays_, kind, text});
-        if (mine.size() > NewsKept)
-            mine.erase(mine.begin());
+    const auto tell = [&](const std::string& who, const std::string& kind, const std::string& text, const std::string& about) {
+        tellNews(who, kind, text, about);
     };
     const auto& a = e.actor;
     const auto& t = e.target;
@@ -155,35 +180,25 @@ void World::noteNews(const WorldEvent& e)
         talkOf("newcomer", a, {});                  // (One come in from the Country is news too: doc 84, defect 10.)
     else if (e.kind == "birth" && !t.empty())
         talkOf("birth", t, a);                      // (The parent's pup: the scenes say "#topic.subject#'s pup".)
+    // (Each told never to the other it is about: "I married Orm" isn't news to Orm.)
     if (e.kind == "marriage")
     {
-        tell(a, "marriage", name(a) + " married " + name(t));
-        tell(t, "marriage", name(t) + " married " + name(a));
+        tell(a, "marriage", name(a) + " married " + name(t), t);
+        tell(t, "marriage", name(t) + " married " + name(a), a);
     }
     else if (e.kind == "mourning")
-        tell(a, "loss", name(a) + " lost " + name(t));     // (The teller first, as it's said: "I lost Bran".)
+        tell(a, "loss", name(a) + " lost " + name(t), t);  // (The teller first, as it's said: "I lost Bran".)
     else if (e.kind == "apprenticeship")
     {
-        tell(a, "work", name(a) + " became apprentice to " + name(t) + (e.detail.empty() ? "" : ", " + e.detail));
-        tell(t, "work", name(t) + " took " + name(a) + " on as an apprentice");
+        tell(a, "work", name(a) + " became apprentice to " + name(t) + (e.detail.empty() ? "" : ", " + e.detail), t);
+        tell(t, "work", name(t) + " took " + name(a) + " on as an apprentice", a);
     }
     else if (e.kind == "succession")
-        tell(a, "work", name(a) + " took over the work of " + e.detail.substr(0, e.detail.find(':')));
-    else if (e.kind == "theft" || e.kind == "assault")
-    {
-        // The one robbed tells it as their own (doc 84, defect 2), naming a traveller only as they know them (doc 56).
-        const auto* doer = entity(a);
-        auto by = name(a);
-        if (doer && !doer->npc)
-        {
-            by = namer_ ? namer_(t, a) : by;
-            if (by.empty())
-                by = "a stranger";
-        }
-        tell(t, "crime", by + (e.kind == "theft" ? " robbed " : " attacked ") + name(t));
-    }
+        tell(a, "work", name(a) + " took over the work of " + e.detail.substr(0, e.detail.find(':')), {});
     else if (e.kind == "arrest")
-        tell(a, "crime", name(a) + " took " + name(t) + " to the gaol for the Watch");
+        tell(a, "crime", name(a) + " took " + name(t) + " to the gaol for the Watch", t);
+    // (A theft or an attack is the victim's own news only once they have noticed it, and names the one who did it only if
+    // they saw who: victimNews, from witness(). It is recorded before anyone has looked.)
 }
 
 AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
@@ -248,6 +263,12 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
                     continue;
                 if (const auto* spouse = society_.spouse(teller); (spouse && *spouse == belief.subject) || society_.family(teller, belief.subject))
                     continue;
+                // A camp heard of is talked of as there now: only while it is (one cleared stays in the carters' talk,
+                // and the lines say "they're camped out by..."; the slice-end review).
+                if (belief.kind.rfind("bandits.", 0) == 0 &&
+                    std::none_of(roads_.camps.begin(), roads_.camps.end(),
+                                 [&](const BanditCamp& c) { return c.id == belief.subject && c.active; }))
+                    continue;
                 bool known = false;
                 if (const auto* theirs = beliefsOf(listener))
                     for (const auto& other : *theirs)
@@ -302,6 +323,7 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
                 t.claimKind = belief.kind;
                 t.object = belief.object;
                 t.place = belief.place;
+                t.seen = belief.source == "saw it" ? "yes" : "no";
                 t.talk["topic.said"] = said;
                 t.talk["topic.claim_kind"] = claims::family(belief.kind, belief.claim);
                 if (topicKind == "gossip")
@@ -372,10 +394,11 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
         if (const auto found = news_.find(teller); found != news_.end())
             for (const auto& n : found->second)
             {
-                if (calendarDays_ - n.day > NewsDays)
-                    continue;
+                if (calendarDays_ - n.day > NewsDays || (!n.about.empty() && n.about == listener))
+                    continue;                       // (Not told to the one it is about: "I married Orm" to Orm.)
                 AmbientTopic t;
                 t.kind = "news";
+                t.seen = "yes";                     // (One's own life.)
                 t.source = teller;
                 t.claim = n.kind;
                 t.talk["topic.kind"] = n.kind;           // marriage, loss, work, crime: for the scenes.
@@ -699,10 +722,10 @@ void World::talkOrigin(const std::string& id, std::string& from, std::string& ac
 
 std::string World::outsideOf(const std::string& cellId) const
 {
-    if (doors_.size() != outsideDoors_)
+    if (doorsKey() != outsideDoors_)                // (Not the doors' count: seams stream in and out: doorsKey.)
     {
         outsideOf_.clear();
-        outsideDoors_ = doors_.size();
+        outsideDoors_ = doorsKey();
     }
     if (const auto found = outsideOf_.find(cellId); found != outsideOf_.end())
         return found->second;
@@ -1015,7 +1038,19 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
             auto t = topic("crime", 2.4);
             t.talk["topic.kind"] = i.kind == "assault" ? "assault" : "theft";
             t.talk["topic.victim"] = name(i.victim);
-            t.talk["topic.subject"] = i.witnesses.empty() ? std::string("someone") : name(i.offender);
+            // The one who did it is named only if a witness saw who (one who heard a struggle, or glimpsed someone they
+            // couldn't make out, names nobody), and a traveller only as the teller knows them (doc 56; the slice-end
+            // review): else "someone".
+            std::string who = "someone";
+            if (std::any_of(i.witnesses.begin(), i.witnesses.end(), [](const Witness& w) { return w.identified; }))
+                if (const auto* doer = entity(i.offender))
+                {
+                    who = doer->npc ? doer->name : namer_ ? namer_(a, i.offender) : std::string();
+                    if (who.empty())
+                        who = strangerWords(doer->appearance);
+                }
+            t.talk["topic.subject"] = who.empty() ? std::string("someone") : who;
+            t.seen = std::any_of(i.witnesses.begin(), i.witnesses.end(), [&](const Witness& w) { return w.id == a; }) ? "yes" : "no";
             t.facts.push_back(name(i.victim) + " was " + (i.kind == "assault" ? "attacked" : "robbed") + " in town.");
             consider(std::move(t));
         }
@@ -1024,6 +1059,16 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         for (const auto& n : found->second)
         {
             if (calendarDays_ - n.day > TownNewsDays || n.subject == a || n.subject == b || n.other == a || n.other == b)
+                continue;
+            // Nor by or to their own (a spouse, kin, one under the same roof): a father isn't told his own pup's birth as
+            // the town's news, nor tells it so; a family come in from the Country don't call each other newcomers.
+            const auto close = [&](const std::string& x, const std::string& who) {
+                if (who.empty())
+                    return false;
+                const auto* spouse = society_.spouse(x);
+                return (spouse && *spouse == who) || society_.family(x, who) || society_.household(x, who);
+            };
+            if (close(a, n.subject) || close(b, n.subject) || close(a, n.other) || close(b, n.other))
                 continue;
             const bool fresh = n.kind == "newcomer";
             auto t = topic(fresh ? "newcomer" : n.kind == "arrest" ? "crime" : "life", fresh ? 1.8 : n.kind == "death" ? 2.3

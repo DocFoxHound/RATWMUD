@@ -103,6 +103,26 @@ std::string hex(std::uint64_t h)
     std::snprintf(b, sizeof b, "%08llx", static_cast<unsigned long long>(h & 0xffffffffULL));
     return b;
 }
+// A file's bytes hashed (FNV-1a, 64 bits, as 16 hex digits; "" if it can't be read): a fixture's checkpoints and track are
+// written with theirs and checked before they're replayed, so a partial or damaged copy is never replayed as the real one.
+std::string fileFnv(const std::string& path)
+{
+    std::ifstream in(path, std::ios::binary);
+    if (!in)
+        return {};
+    std::uint64_t h = 1469598103934665603ULL;
+    char buffer[65536];
+    while (in.read(buffer, sizeof buffer) || in.gcount() > 0)
+    {
+        for (std::streamsize i = 0; i < in.gcount(); ++i)
+            h = (h ^ static_cast<unsigned char>(buffer[i])) * 1099511628211ULL;
+        if (!in)
+            break;
+    }
+    char b[17];
+    std::snprintf(b, sizeof b, "%016llx", static_cast<unsigned long long>(h));
+    return b;
+}
 double hourOf(double days) { return std::fmod(days, 1.0) * 24; }
 const char* weatherWord(Weather w)
 {
@@ -149,12 +169,25 @@ class Sim
 {
   public:
     explicit Sim(Args a) : args_(std::move(a)) {}
+    ~Sim()
+    {
+        // (The library copied out of git for --library-from, and the scratch save's path: nothing left in /tmp.)
+        g_.reset();
+        std::error_code ec;
+        if (!libraryDir_.empty())
+            fs::remove_all(libraryDir_, ec);
+        fs::remove(savePath(), ec);
+    }
     int main();
 
   private:
     Args args_;
     std::unique_ptr<game::Game> g_;
     std::string talkData_, problem_;
+    fs::path libraryDir_;
+    std::int64_t fixtureBuild_ = 0;                          // The world build a fixture was recorded on (0: newest).
+    static std::string savePath() { return "/tmp/ratw-talk-sim-" + std::to_string(::getpid()) + ".json"; }
+    bool checkFixture(const json::Value& manifest);
     std::vector<Listener> listeners_;
     std::ofstream lines_, convs_;
     std::mt19937_64 rng_;
@@ -226,6 +259,39 @@ class Sim
     std::vector<std::string> presentIds() const;
 };
 
+bool Sim::checkFixture(const json::Value& m)
+{
+    // Every file the fixture names is the one it recorded (fnv64; a fixture from before the hashes has none to check),
+    // and the world build it was recorded on is the one it replays on (Options::worldBuild; doc 84 §15.1).
+    std::vector<std::pair<std::string, std::string>> files;
+    for (const auto& c : m.array("checkpoints"))
+        files.push_back({c.string("file"), c.string("fnv64")});
+    if (const auto& t = m["track"]; t.isObject())
+        files.push_back({t.string("file"), t.string("fnv64")});
+    else
+        files.push_back({"track.jsonl.gz", ""});
+    for (const auto& [file, want] : files)
+    {
+        const auto path = (fs::path(args_.fixtures) / file).string();
+        if (!fs::is_regular_file(path))
+        {
+            problem_ = "the fixture's " + file + " is missing from " + args_.fixtures;
+            return false;
+        }
+        if (!want.empty())
+            if (const auto got = fileFnv(path); got != want)
+            {
+                problem_ = "the fixture's " + file + " isn't the one recorded (fnv64 " + got + ", recorded " + want +
+                           "): a partial or damaged copy";
+                return false;
+            }
+    }
+    fixtureBuild_ = std::int64_t(m.number("build"));
+    if (fixtureBuild_ <= 0)
+        std::cerr << "talk_sim: the fixture names no world build; it replays on the newest, whatever that is now\n";
+    return true;
+}
+
 bool Sim::prepareLibrary()
 {
     talkData_ = args_.talkData.empty() ? RATW_SOURCE_DIR "/Data/Talk" : args_.talkData;
@@ -234,6 +300,7 @@ bool Sim::prepareLibrary()
     // The library as git had it at REF, in a directory of its own for this run.
     const auto dir = fs::temp_directory_path() / ("ratw-talk-lib-" + std::to_string(::getpid()));
     fs::create_directories(dir);
+    libraryDir_ = dir;                              // (Removed when the run ends: ~Sim.)
     const auto command = "git -C " + shellQuote(RATW_SOURCE_DIR) + " archive " + shellQuote(args_.libraryFrom) +
                          " Data/Talk | tar -x -C " + shellQuote(dir.string()) + " && echo ok";
     if (run(command) != "ok" || !fs::is_directory(dir / "Data" / "Talk"))
@@ -259,8 +326,9 @@ bool Sim::makeGame(const std::string& checkpoint)
     o.voiceData = RATW_SOURCE_DIR "/Data/Voice";
     o.scratch = true;
     o.forkSnapshots = false;
-    o.savePath = "/tmp/ratw-talk-sim-" + std::to_string(::getpid()) + ".json";
+    o.savePath = savePath();
     o.checkpointFile = checkpoint;
+    o.worldBuild = fixtureBuild_;                   // (A fixture replays on the build it was recorded on.)
     if (!fs::is_directory(args_.world))
     {
         const auto key = worldDb("resolve " + shellQuote(args_.world));
@@ -346,6 +414,8 @@ void Sim::hook()
             head.add("route", l.route);
             head.add("teller", l.who);
             head.add("other", l.to);
+            if (!l.seen.empty())
+                head.add("seen", l.seen);       // (The teller saw it, or only heard: T3's eyewitness words.)
             auto facts = json::Value::object();
             for (const auto& [k, v] : q.facts)
                 if (k.rfind("here.", 0) == 0 || k.rfind("pair.", 0) == 0 || k.rfind("world.", 0) == 0)   // (pair.kin too: T2.)
@@ -880,9 +950,8 @@ bool Sim::restartAt(const Checkpoint& c)
     auto keep = std::move(g_);
     if (!makeGame((fs::path(args_.fixtures) / c.file).string()))
     {
-        std::cerr << "talk_sim: " << c.file << " didn't load (" << problem_ << "); carrying on in the last world\n";
-        g_ = std::move(keep);
-        hook();
+        // (Never carried on in the day before's world, and scored as if it were this one: the run fails.)
+        std::cerr << "talk_sim: " << c.file << " didn't load (" << problem_ << "); the run stops\n";
         return false;
     }
     keep.reset();
@@ -928,6 +997,7 @@ int Sim::recordRun()
         c.add("file", name);
         c.add("t", w.time());
         c.add("day", w.calendarDays());
+        c.add("fnv64", fileFnv((fs::path(args_.record) / name).string()));
         cps.push(c);
         std::cerr << "talk_sim: checkpoint " << name << " at day " << w.calendarDays() << "\n";
     };
@@ -1009,9 +1079,13 @@ int Sim::recordRun()
     }
     writeCheckpoint(n++);
     ::pclose(track);
+    auto trackEntry = json::Value::object();
+    trackEntry.add("file", "track.jsonl.gz");
+    trackEntry.add("fnv64", fileFnv(trackFile));
     const double wall = std::chrono::duration<double>(std::chrono::steady_clock::now() - wallStart).count();
     manifest.add("about", "A ticking run recorded for talk_sim --fixtures (Docs/Design/84 §15.1; the user's Q6).");
     manifest.add("world", args_.world);
+    manifest.add("build", double(g_->loadedBuild()));   // (Replayed on this build: a later one moves doors and homes.)
     manifest.add("seed", double(args_.seed));
     manifest.add("days", args_.days);
     manifest.add("from_day", day0);
@@ -1023,6 +1097,7 @@ int Sim::recordRun()
     manifest.add("speed", (g_->world().time() - t0) / std::max(1e-9, wall));
     manifest.add("talk_data", talkData_.rfind(RATW_SOURCE_DIR "/", 0) == 0 ? talkData_.substr(sizeof(RATW_SOURCE_DIR)) : talkData_);
     manifest.add("checkpoints", cps);
+    manifest.add("track", trackEntry);
     manifest.add("track_every", TrackEvery);
     std::ofstream(fs::path(args_.record) / "fixture.json") << json::dump(manifest) << "\n";
     std::cerr << "talk_sim: recorded " << args_.days << " game days in " << wall << " s (" << ticks << " ticks)\n";
@@ -1147,6 +1222,7 @@ void Sim::writeResidents(double wall)
     meta.add("seed", double(args_.seed));
     meta.add("checkpoint", args_.checkpoint);
     meta.add("fixtures", args_.fixtures);
+    meta.add("build", double(g_ ? g_->loadedBuild() : 0));
     meta.add("library_from", args_.libraryFrom);
     meta.add("talk_data", talkData_);
     meta.add("world_seconds", endTime_ - startTime_);
@@ -1201,6 +1277,11 @@ int Sim::main()
         if (checkpoints_.empty())
         {
             std::cerr << "talk_sim: the fixture has no checkpoints\n";
+            return 1;
+        }
+        if (!checkFixture(m))
+        {
+            std::cerr << "talk_sim: " << problem_ << "\n";
             return 1;
         }
         std::size_t from = 0;
@@ -1306,7 +1387,8 @@ int Sim::main()
         if (args_.mode == "fixtures")
         {
             while (nextCheckpoint_ < checkpoints_.size() && t >= checkpoints_[nextCheckpoint_].t)
-                restartAt(checkpoints_[nextCheckpoint_++]);
+                if (!restartAt(checkpoints_[nextCheckpoint_++]))
+                    return 1;
             advanceTrack(t);
         }
         profileStep(t);
