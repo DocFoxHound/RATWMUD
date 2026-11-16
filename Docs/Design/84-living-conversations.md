@@ -217,7 +217,7 @@ neighbouring dialect, and logging the words.
 | The move keyword | `move` | `act` | `does` | **`does`**, with `owes`/`invites` for obligations |
 | Tags on alternatives | after the words | after | before | **before** the words: `{kind=look} Have you ...` |
 | `react.customer` | keep, de-duplicated | an emote | an emote + `here.came_in` | **emote + `here.came_in`**, so the window greets |
-| Free text in the window | classifier, Mind optional | router v2, Mind off | understanding layer, Mind off | **authored understanding, Mind off by default** (open, Q1) |
+| Free text in the window | classifier, Mind optional | router v2, Mind off | understanding layer, Mind off | **the Mind when connected, else authored understanding** (the user, Q1) |
 
 ## 5. Decisions (summary)
 
@@ -1053,7 +1053,7 @@ own; the player's choices stay plain words (doc 83 decision 4). The English the 
   wearer unless its marks are drawn again (§12.4).
 - **Text that still names people stays per wolf and is never reused**: `live.npcs.backstory` (all 1,083 name the NPC)
   and the old persona. `#topic.greeting#` (`rules/player.talk:13-31`, the 169 broken greetings) is retired in favour of
-  the mantle's window lines. If the Mind stays in the window (Q1), mantles carry a `persona` template with
+  the mantle's window lines. Because the Mind answers in the window when connected (Q1), mantles carry a `persona` template with
   `#self.first#` slots.
 
 ## 12. Spare pools, and the dead-to-newborn handoff (goals 2 and 4)
@@ -1227,10 +1227,14 @@ window, `heed` can no longer record a promise from free talk (defect 15).
 
 - **Between residents: none (decided).** The ambient Mind path (`--ambient-model-calls`, default 0 and passed by no
   launcher) is deleted in Phase 16 once the final listen-through passes its hard gates.
-- **In the window's free talk: open, Q1.** Recommended: authored understanding only (§13.5), with the Mind behind a
-  `--window-mind` option, off by default. Doc 83's answer 1 allowed the Mind to answer a player's own words; goal 6
-  ("all preprogrammed") argues the other way. If it stays, it is given the mantle's persona template and the window
-  brief, and `heed` ignores any promise it reports.
+- **In the window's free talk: decided by the user (2026-11-16, Q1):** "It should be answered by live AI but ONLY if
+  the AI is plugged in, otherwise it should be answered by the pre-generated responses." So a player's own words in
+  the window go to the NPC Mind whenever the world runs with the Mind connected (the launchers start it by default, per
+  the live-AI-by-default rule), and to authored understanding (§13.5) when it isn't, or when a call fails or times out.
+  Authored understanding is built in full either way: it is the answer for every world without the Mind, and the
+  fallback for every failed call. No `--window-mind` switch beyond "is the Mind connected". The Mind is given the
+  mantle's persona template, the dialect and the window brief, never performs actions, and `heed` ignores any promise
+  it reports. Between residents the Mind stays out (above).
 - **Summaries, recaps, books and letter polish** are untouched by this design.
 
 ## 14. Authoring plan
@@ -1523,7 +1527,7 @@ Hours are rough, for one agent.
 | | Slice end: **the user listens; the format is frozen** | | | | 4 |
 | | **Slice 4: the window only** | | | | |
 | P12 | Window-only plumbing | P11 | `residentsAnswerChat`; `overheard`; the emote and the hint; talk opens the window; `react.customer`, `welcomeAtInn` and `companionSays` converted; the companion tree's "What do you think?"; the storyline event from the window only; legacy lines removed; the client changes (§13.2) | W3 = 0; `dialogue_tests`; `game_tests` (introductions still learned) | 8 |
-| P13 | The window's talk and typed words | P12 | `[does <move>]` choices and `answers` nodes; the hub rebuilt; Ask about...; `introduce`, `ask_name`; greetings by meeting and disposition; bye and thanks; day, hours, wanted, where-is; docs 52/54/55 nodes; grafts shown; the player claim store and knowledge choices; the ledger with players; `understand.json` and the 500-line corpus; unclear lines; `--window-mind` (Q1); line rotation; `#way.*#`/`#refuse.*#` symbols | W2 gates; the hub never shows more than 9 | 12 |
+| P13 | The window's talk and typed words | P12 | `[does <move>]` choices and `answers` nodes; the hub rebuilt; Ask about...; `introduce`, `ask_name`; greetings by meeting and disposition; bye and thanks; day, hours, wanted, where-is; docs 52/54/55 nodes; grafts shown; the player claim store and knowledge choices; the ledger with players; `understand.json` and the 500-line corpus; unclear lines; the Mind in the window when connected, authored understanding otherwise and on failure (Q1); line rotation; `#way.*#`/`#refuse.*#` symbols | W2 gates; the hub never shows more than 9 | 12 |
 | | Slice end: end to end in the client on a scratch server (`tools/scratch.sh`) | | | | 4 |
 | | **Slice 5: writing every wolf** | | | | |
 | P14 | Mantle batches (17 sessions, §14.3) | P11's freeze, P13 | about 729 mantles, bound as each batch lands | G1-G5 per batch | 68 |
@@ -1699,9 +1703,8 @@ have seen "Talk to Myrtle (T)".
 
 Only the ones that change what gets built.
 
-1. **The window's "Say something else...".** Answered by authored understanding only (§13.5; my recommendation, for goal
-   6's "all preprogrammed"), or kept on the NPC Mind, as doc 83's answer 1 allowed, behind `--window-mind`? Either way
-   the Mind never performs actions and can no longer make promises from the window.
+1. **The window's "Say something else...".** *Answered (the user, 2026-11-16):* the live AI answers when it is plugged
+   in; otherwise the pre-written responses (authored understanding, §13.5) answer. See §13.6.
 2. **Where mantles live.** Files in the repository, with the database holding who wears which and the per-NPC overrides
    (my recommendation: reviewed, tested, shipped with the build). Or rows in the world database, as doc 62's decision 3
    put character tables, editable live in Atlas and the DM (the DM would then edit a mantle's text, not only one wolf's
