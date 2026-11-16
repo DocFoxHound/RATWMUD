@@ -134,6 +134,20 @@ void headersOnlyUntilNeeded()
     expect(!world.cell("c_5_5")->loaded, "Cells nobody is near stay unloaded");
 }
 
+void seamsDontMoveTheDoorKey()
+{
+    // A streamed cell's seams join outdoor cells only, and every walk out through a building's doors stops at the first
+    // one: so the caches of those walks (the district, the street outside, an entrance) are keyed on doorsKey(), which a
+    // cell's seams streaming in and out never move (doc 84, the slice-end review: they wiped them as players walked).
+    auto f = grid(Commuter);
+    auto world = load(f);
+    const auto doors = world.doors().size();
+    const auto key = world.doorsKey();
+    expect(world.ensureLoaded("c_5_5").ok && world.cell("c_5_5")->loaded, "A far cell streams in");
+    expect(world.doors().size() > doors, "with its seams among the doors");
+    expect(world.doorsKey() == key, "and the door walks' key unmoved");
+}
+
 void aResidentWalksAcrossTheWorld()
 {
     auto f = grid(Commuter);
@@ -1591,6 +1605,7 @@ int main()
     try
     {
         headersOnlyUntilNeeded();
+        seamsDontMoveTheDoorKey();
         aResidentWalksAcrossTheWorld();
         playersCrossAndReturn();
         anOffstageResidentCommutes();

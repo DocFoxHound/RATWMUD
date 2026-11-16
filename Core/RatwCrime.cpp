@@ -202,6 +202,8 @@ void World::witness(Incident& inc, double sleight)
         if (chance(id + inc.id, 1) >= noticed)
             continue;
         inc.witnesses.push_back({id, identified, clarity, guardOnDuty(id)});
+        if (id == inc.victim)
+            victimNews(inc, identified);            // (Their own news only now they've noticed: doc 84, the slice-end review.)
         if (!e.npc)
         {
             // (Food taken from a till moved its shelves, journalled whole with the next record: so the notice is a move, and

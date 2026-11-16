@@ -268,6 +268,64 @@ void theGameAnswersWhatItKnows()
     std::remove(ledger.c_str());
 }
 
+// --log-talk-words (doc 84 §15.6, DEV worlds): the ledger keeps each line's words too, as records of their own (kind
+// "words", which tools/ai_cost.py doesn't count), and the lines' own records stay as they were, with no words.
+void theLedgerKeepsWordsWhenAsked()
+{
+    const std::string ledger = "/tmp/ratw-voice-words-" + std::to_string(::getpid()) + ".jsonl";
+    std::remove(ledger.c_str());
+    game::Options o;
+    o.tiesOptional = true;
+    o.hiddenNames = false;
+    o.devIdentity = true;
+    o.voiceData = RATW_SOURCE_DIR "/Data/Voice";
+    o.voiceLog = ledger;
+    o.logTalkWords = true;
+    game::Game g(o);
+    std::string problem;
+    expect(g.start(problem), "the demo world starts: " + problem);
+    Client ash;
+    ash.id = 1;
+    g.connect(&ash);
+    g.command(&ash, cmd({{"type", "hello"}, {"id", "ash"}, {"name", "Ash"}}));
+    auto& w = g.world();
+    const auto* keeper = w.entity("npc_keeper");
+    w.entity("player-ash")->cellId = keeper->cellId;
+    w.entity("player-ash")->position = {keeper->position.x + 1, keeper->position.y};
+    run(g, ash, 2.2);
+    ash.events.clear();
+    g.command(&ash, cmd({{"type", "chat"}, {"text", "\"Rowan, what do you sell?\""}, {"commandId", "w1"}}));
+    run(g, ash, .3);
+    std::string reply;
+    for (const auto& e : ash.events)
+        if (e.string("type") == "roleplay" && e.string("speaker") == "Rowan")
+            reply = e.string("text");
+    g.disconnect(&ash);
+    std::ifstream in(ledger);
+    int lines = 0, words = 0;
+    for (std::string line; std::getline(in, line);)
+    {
+        json::Value v;
+        std::string error;
+        expect(json::parse(line, v, error), "a ledger line is JSON: " + line);
+        if (v.string("kind") == "words")
+        {
+            ++words;
+            expect(v.string("npc") == "npc_keeper" && v.string("to") == "player-ash" && v.string("words") == reply &&
+                       v.string("of") == "dialogue" && v.has("entry") && v.has("moves"),
+                   "the words record says what was said, by whom, to whom, and from where: " + line);
+        }
+        else
+        {
+            ++lines;
+            expect(!v.has("words") && !v.has("text"), "a line's own record still has no words: " + line);
+        }
+    }
+    expect(!reply.empty() && lines == 1 && words == 1, "one line said, one record of it and one of its words (" +
+                                                          std::to_string(lines) + ", " + std::to_string(words) + ")");
+    std::remove(ledger.c_str());
+}
+
 void accountsAndARestart()
 {
     game::Options o;
@@ -2265,6 +2323,7 @@ int main()
         residentsTalkFromWrittenScenes();
         uploadedPortraits();
         theGameAnswersWhatItKnows();
+        theLedgerKeepsWordsWhenAsked();
         accountsAndARestart();
     earnedTiersAndOneWolf();
         signingInNeverHoldsTheGame();

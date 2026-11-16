@@ -15,8 +15,15 @@
 #include "RatwWorld.h"
 
 #include <algorithm>
+#include <arpa/inet.h>
+#include <atomic>
+#include <chrono>
 #include <cmath>
 #include <filesystem>
+#include <mutex>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <thread>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -981,6 +988,22 @@ void otherRoles()
     expect(town.ash.snapshots.back().boolean("dialogueRoles"), "the snapshot says the roles' entries open the window");
     expect(s.jobOf("ug") && s.jobOf("ug")->role == "guard" && town.g.jobCategoryOf("up") == "priest" && town.g.jobCategoryOf("ui") == "innkeeper",
            "the fixture: a guard, a priest, an innkeeper");
+    // Doc 84, Phase 1: residents know each other's names by acquaintance (defect 11), and a keeper behind walls knows
+    // the weather out in the street (here.outdoors).
+    {
+        auto q = town.g.talkQuery("u1", "u2", "talk.smalltalk");
+        const bool kinOrWork = s.family("u1", "u2") || s.household("u1", "u2") ||
+                               (s.jobOf("u1") && s.jobOf("u2") && s.jobOf("u1")->work.cell == s.jobOf("u2")->work.cell);
+        expect(kinOrWork || q.facts["pair.named"] == "no", "two residents who never met don't know each other's names");
+        w.bonds().change("u1", "u2", {5, 5, 20, 0, 0}, w.calendarDays());
+        q = town.g.talkQuery("u1", "u2", "talk.smalltalk");
+        expect(q.facts["pair.named"] == "yes", "acquainted, they do (" + q.facts["pair.named"] + ")");
+        const auto inside = town.g.talkQuery("up", "ui", "talk.smalltalk");
+        expect(inside.facts.count("here.weather") && inside.facts.at("here.weather") == "indoors" && inside.facts.count("here.outdoors") &&
+                   inside.facts.at("here.outdoors") != "indoors",
+               "indoors, the weather outside is known: here.outdoors");
+        expect(inside.facts.count("here.hour") && inside.facts.count("here.fishers"), "and the hour and the town's fishers");
+    }
     const auto open = [&](const std::string& npc, const std::string& entry) -> const json::Value* {
         if (const auto* d = town.g.dialogueOf(town.ash.entityId))
             town.g.command(&town.ash, cmd({{"type", "dialogue_close"}, {"session", d->id}, {"why", "closed"}}));
@@ -1185,7 +1208,134 @@ void otherRoles()
     w.entity("u2")->position = {8.5, 9.5};
     d = open("u2", "orders");
     expect(d && pick(d, "Follow me.") > 0 && pick(d, "Wait here for me.") == 0, "waiting: follow is offered: " + show(d));
+    // The window's gossip keeps the street's rules: nobody gossips about their own kin (doc 84 §24, the slice-end review).
+    // Married to u2, u1 has no gossip of him: a widow never says "Sad news. Orm died." of her husband.
+    w.believe("u1", "u2", "stole from Merchant u", "saw it", .9);
+    talk::Facts gossip;
+    town.g.dialogueRoleFacts(town.ash.entityId, "u1", gossip);
+    expect(gossip["here.gossip"] == "yes" && gossip["topic.subject"] == "Neighbour u2", "the fixture: u1 has gossip of u2");
+    expect(s.marry("u1", "u2"), "u1 marries u2");
+    gossip.clear();
+    town.g.dialogueRoleFacts(town.ash.entityId, "u1", gossip);
+    expect(gossip["here.gossip"] == "no", "and has none of her husband for the window: " + gossip["topic.subject"]);
     expect(s.realBalanced(), "real money balanced");
+    fs::remove_all(root);
+}
+// A stand-in NPC Mind: answers POST /dialogue after a little while (the live Mind's 1-5 s) with a reply that carries a
+// promise, as a model might despite the window's brief; anything else 503.
+struct SlowMind
+{
+    int port = 0, fd = -1;
+    std::atomic<int> asked{0};
+    std::atomic<bool> stop{false};
+    std::thread worker;
+    SlowMind()
+    {
+        fd = ::socket(AF_INET, SOCK_STREAM, 0);
+        sockaddr_in addr{};
+        addr.sin_family = AF_INET;
+        addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+        ::bind(fd, reinterpret_cast<sockaddr*>(&addr), sizeof addr);
+        socklen_t len = sizeof addr;
+        ::getsockname(fd, reinterpret_cast<sockaddr*>(&addr), &len);
+        ::listen(fd, 8);
+        port = ntohs(addr.sin_port);
+        worker = std::thread([this] {
+            while (!stop)
+            {
+                const int c = ::accept(fd, nullptr, nullptr);
+                if (c < 0)
+                    break;
+                char buf[65536];
+                std::string in;
+                for (;;)
+                {
+                    const auto n = ::recv(c, buf, sizeof buf, 0);
+                    if (n <= 0)
+                        break;
+                    in.append(buf, std::size_t(n));
+                    const auto head = in.find("\r\n\r\n");
+                    const auto at = in.find("Content-Length: ");
+                    if (head != std::string::npos && at != std::string::npos && in.size() >= head + 4 + std::stoul(in.substr(at + 16)))
+                        break;
+                }
+                std::string reply = R"({"error": "busy"})", status = "503 Service Unavailable";
+                if (in.rfind("POST /dialogue ", 0) == 0)
+                {
+                    ++asked;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(600));
+                    reply = R"({"text": "I'll see to it, never fear.", "emotion": "warm", "promise": {"by": "npc", "what": "to mind the cart"}})";
+                    status = "200 OK";
+                }
+                const std::string out = "HTTP/1.1 " + status + "\r\nContent-Type: application/json\r\nContent-Length: " +
+                                        std::to_string(reply.size()) + "\r\n\r\n" + reply;
+                ::send(c, out.data(), out.size(), 0);
+                ::close(c);
+            }
+        });
+    }
+    ~SlowMind()
+    {
+        stop = true;
+        ::shutdown(fd, SHUT_RDWR);
+        ::close(fd);
+        worker.join();
+    }
+    std::string endpoint() const { return "http://127.0.0.1:" + std::to_string(port) + "/dialogue"; }
+};
+
+void windowPromises()
+{
+    // The window's free talk makes no promises (doc 83's brief; doc 84, defect 15), decided where the words were said: the
+    // window closed while the Mind was still writing (bye, the shop, walking away) doesn't let a promise in its answer
+    // through (the slice-end review).
+    SlowMind mind;
+    const auto root = fs::temp_directory_path() / ("ratw-dialogue-promise-" + std::to_string(::getpid()));
+    const auto worldPath = writeStrip(root / "world");
+    Town town(worldPath, (root / "save").string(), 120, true, 3 * 86400, mind.endpoint());
+    auto& w = town.g.world();
+    town.enter(town.ash, 1, "player-ash", "Ash", 1, 9.5);
+    w.setTimeOfDay(12);
+    town.run(2);
+    const auto keep = [&] {
+        auto* n = w.entity("u1");
+        n->cellId = cellId(1);
+        n->position = {10.5, 9.5};
+        w.stop("u1");
+        town.place(town.ash, 1, 9.5);
+    };
+    keep();
+    town.run(.5);
+    keep();
+    town.ash.events.clear();
+    town.g.command(&town.ash, cmd({{"type", "dialogue_open"}, {"npc", "u1"}, {"entry", "talk"}}));
+    const auto* d = town.g.dialogueOf(town.ash.entityId);
+    expect(d && d->npc == "u1", "Talk opens a window with u1");
+    {
+        auto o = json::Value::object();
+        o.add("type", "dialogue_say");
+        o.add("session", d->id);
+        o.add("text", "Would you keep an eye on my cart while I am away up the road?");
+        town.g.command(&town.ash, json::dump(o));
+    }
+    // Closed before the answer comes.
+    town.g.command(&town.ash, cmd({{"type", "dialogue_close"}, {"session", d->id}, {"why", "bye"}}));
+    expect(!town.g.dialogueOf(town.ash.entityId), "the window closed before the answer");
+    bool answered = false;
+    for (int i = 0; i < 40 && !answered; ++i)
+    {
+        keep();
+        town.run(.25);
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        for (const auto& e : town.ash.events)
+            answered |= json::dump(e).find("never fear") != std::string::npos;
+    }
+    expect(mind.asked > 0 && answered, "the Mind's answer came, after the window closed (asked " + std::to_string(mind.asked.load()) + ")");
+    bool promised = false;
+    for (const auto& p : w.promises())
+        promised |= p.by == "u1" || p.to == "u1";
+    expect(!promised && w.promisesBetween("u1", town.ash.entityId, "Ash").empty(),
+           "and the promise in it, said of words from the window, is let go");
     fs::remove_all(root);
 }
 } // namespace
@@ -1201,6 +1351,7 @@ int main()
         giversWork();
         roleTrees();
         otherRoles();
+        windowPromises();
     }
     catch (const std::exception& e)
     {

@@ -1,6 +1,7 @@
 // Talk (RatwTalk.h; Docs/Design/62-talk.md).
 #include "RatwTalk.h"
 #include "RatwJsonDoc.h"
+#include "RatwClaims.h"
 
 #include <algorithm>
 #include <cctype>
@@ -222,6 +223,8 @@ struct Library::Expansion
     std::uint64_t rng = 0;
     std::map<std::string, std::string>& binds;   // Symbols bound for the rest of the conversation ([x:#y#]).
     Trace* trace = nullptr;
+    std::vector<std::string>* layers = nullptr;  // The layers whose words were used (LineInfo), when wanted.
+    std::vector<std::string>* habits = nullptr;  // The habit symbols used (LineInfo), when wanted.
     std::uint64_t next() { return rng = mix(rng); }
 };
 
@@ -1303,6 +1306,10 @@ bool loadDir(Library& lib, const std::string& dir, bool all, std::string& proble
     }
     if (!settings(text, problem))
         return false;
+    // The claims and their words (doc 84 §7.7): the process's table, for the world's talk of what residents believe. A
+    // library from before Phase 1 has none, and leaves the table as it was.
+    if (readFile(fs::path(dir) / "claims.json", text) && !claims::load(text, problem))
+        return false;
     std::vector<fs::path> grammars, talks, trees;
     for (fs::recursive_directory_iterator it(dir, ec), end; it != end && !ec; it.increment(ec))
         if (it->is_regular_file())
@@ -1407,6 +1414,7 @@ bool Library::expandSymbol(const std::string& name, Expansion& x, int depth, std
     // (plain's words), light (the dialect's word half the time), broad (always, and its .broad words too).
     const auto dialect = dialectOf(fact(who, "from")), accent = fact(who, "accent");
     std::vector<const Alt*> alts;
+    std::vector<const std::string*> altLayer;       // (The layer each came from, for LineInfo: never for choosing.)
     bool habit = false, pairHabit = false;
     std::string from;
     auto layers = who.grammar;
@@ -1448,7 +1456,7 @@ bool Library::expandSymbol(const std::string& name, Expansion& x, int depth, std
                 if (e.score == best && holdsAll(e))
                 {
                     for (const auto& a : e.alts)
-                        alts.push_back(&a);
+                        alts.push_back(&a), altLayer.push_back(&layer);
                     adds = adds && e.add;
                 }
         from += (from.empty() ? "" : "+") + layer;
@@ -1457,16 +1465,25 @@ bool Library::expandSymbol(const std::string& name, Expansion& x, int depth, std
     }
     // ^m and ^f: for one sex of the one spoken to (or of the speaker, speaking to no one).
     const auto sex = fact(to, "sex");
-    alts.erase(std::remove_if(alts.begin(), alts.end(), [&](const Alt* a) {
-                   return a->sex && !((a->sex == 'm' && sex == "male") || (a->sex == 'f' && sex == "female"));
-               }),
-               alts.end());
+    {
+        std::size_t kept = 0;
+        for (std::size_t i = 0; i < alts.size(); ++i)
+            if (!(alts[i]->sex && !((alts[i]->sex == 'm' && sex == "male") || (alts[i]->sex == 'f' && sex == "female"))))
+                alts[kept] = alts[i], altLayer[kept++] = altLayer[i];
+        alts.resize(kept);
+        altLayer.resize(kept);
+    }
     if (alts.empty())
         return false;
     const auto id = !fact(who, "id").empty() ? fact(who, "id") : fact(who, "name");
     const auto toId = &to == &who ? std::string() : !fact(to, "id").empty() ? fact(to, "id") : fact(to, "name");
     const auto seed = pairHabit ? mix(hash(id + "|" + toId + "|" + name)) : habit ? mix(hash(id + "|" + name)) : x.next();
-    const auto* alt = alts[std::size_t(seed % alts.size())];
+    const auto chosenAt = std::size_t(seed % alts.size());
+    const auto* alt = alts[chosenAt];
+    if (x.layers && std::find(x.layers->begin(), x.layers->end(), *altLayer[chosenAt]) == x.layers->end())
+        x.layers->push_back(*altLayer[chosenAt]);
+    if (x.habits && (habit || pairHabit) && std::find(x.habits->begin(), x.habits->end(), name) == x.habits->end())
+        x.habits->push_back(name);
     if (!expandInto(alt->text, x, depth, out))
         return false;
     if (x.trace)
@@ -1533,6 +1550,11 @@ bool Library::expandInto(const std::string& text, Expansion& x, int depth, std::
             return false;
         for (const auto& m : ref.mods)
             value = modify(value, m);
+        // The punctuation join (doc 84, defect 14): a value that ends its own sentence (". " or ";") before the line's
+        // comma or stop gives up its mark: "the loaves are honest., neighbour" is "the loaves are honest, neighbour".
+        if (i + 1 < text.size() && (text[i + 1] == ',' || text[i + 1] == '.') && !value.empty() &&
+            (value.back() == ';' || (value.back() == '.' && (value.size() < 2 || value[value.size() - 2] != '.'))))
+            value.pop_back();
         insert(out, out.size(), value);
     }
     return true;
@@ -1622,10 +1644,13 @@ Said Library::render(const Entry& e, const Query& q, std::uint64_t seed, Trace* 
         std::string said;
         bool done = false;
         std::size_t k = 0;
+        std::vector<std::string> used, habits;
         for (; k < n && !done; ++k)
         {
             auto kept = binds;
-            Expansion x{q, who, mix(r ^ 0x7A1CULL ^ k), binds, trace};
+            used.clear();
+            habits.clear();
+            Expansion x{q, who, mix(r ^ 0x7A1CULL ^ k), binds, trace, &used, &habits};
             done = expandInto(chosen->texts[(start + k) % n], x, 0, said) && !muted(said, q, who);   // (Salience: 10.3.)
             if (!done)
                 binds = std::move(kept);
@@ -1643,10 +1668,11 @@ Said Library::render(const Entry& e, const Query& q, std::uint64_t seed, Trace* 
         }
         tidy(said);
         out.lines.push_back({who, said});
+        out.info.push_back({e.id, int((start + k - 1) % n), std::move(used), std::move(habits)});
         marks.insert(chosen->marks.begin(), chosen->marks.end());
     }
     out.id = e.id;
-    out.repeat = e.repeat;
+    out.repeat = settings_.repeat.count(q.concept) > 0;
     out.chain.push_back(e.id);
     // What saying it changes: what it remembers, and that it was said (for once and cooldown).
     const auto idOf = [&](int who) {
@@ -1717,6 +1743,7 @@ Said Library::converse(const Query& q, std::uint64_t seed, const std::function<b
         if (trace)
             trace->why += "; then " + next.concept + " (" + (speaker ? "b" : "a") + "): " + said.id;
         all.lines.insert(all.lines.end(), said.lines.begin(), said.lines.end());
+        all.info.insert(all.info.end(), said.info.begin(), said.info.end());
         all.chain.push_back(said.id);
         for (const auto& x : said.effects)
         {
@@ -1745,6 +1772,7 @@ Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bo
         bool heard;
     };
     std::vector<Option> options;
+    const bool repeats = settings_.repeat.count(q.concept) > 0;
     for (const auto i : list->second)
     {
         const auto& e = entries_[i];
@@ -1781,7 +1809,9 @@ Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bo
                 trace->passed.push_back(e.id + ": a turn can't be spoken (no line holds, or a fact is missing)");
             continue;
         }
-        options.push_back({std::move(said), &e, !e.repeat && heard && heard(e.id)});
+        // (Whether it may be heard again is the concept asked's, not any of the entry's: an entry that is also a weather
+        // line is not fresh at every telling of gossip. Doc 84, defect 4.)
+        options.push_back({std::move(said), &e, !repeats && heard && heard(e.id)});
     }
     if (options.empty())
     {

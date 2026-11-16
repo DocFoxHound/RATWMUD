@@ -66,6 +66,41 @@ void Game::voiced(const char* kind, const char* route, const std::string& npcId)
     voiceLog_.flush();
 }
 
+void Game::voicedWords(const char* of, const std::string& npc, const std::string& to, const std::string& text,
+                       const talk::LineInfo* info)
+{
+    if (!voiceLog_.is_open() || !options_.logTalkWords)
+        return;
+    // The words too (doc 84 §15.6, --log-talk-words, DEV worlds): what was said, by whom to whom, the rule or scene it
+    // came from, which alternative, the grammar layers whose words filled it, and its moves (none until moves exist:
+    // doc 84 Phase 2). Kind "words": a line already counted by its own record above, never counted again.
+    auto line = json::Value::object();
+    line.add("t", double(std::time(nullptr)));
+    line.add("kind", std::string("words"));
+    line.add("of", std::string(of));
+    line.add("npc", npc);
+    line.add("to", to);
+    line.add("words", text);
+    line.add("entry", info ? info->entry : std::string());
+    line.add("alt", info ? double(info->alt) : -1.0);
+    auto layers = json::Value::array();
+    if (info)
+        for (const auto& l : info->layers)
+            layers.push(l);
+    line.add("layers", layers);
+    auto habits = json::Value::array();
+    if (info)
+        for (const auto& h : info->habits)
+            habits.push(h);
+    line.add("habits", habits);
+    line.add("moves", json::Value::array());
+    line.add("day", world_.calendarDays());
+    if (const auto* e = world_.entity(npc))
+        line.add("cell", e->cellId);
+    voiceLog_ << json::dump(line) << '\n';
+    voiceLog_.flush();
+}
+
 std::string Game::wayWords(const std::string& fromNpc, const std::string& cellId, double& far) const
 {
     // A place's position in the world: an outdoor cell's own, an interior's by the door that leads into it from outside.
@@ -168,8 +203,17 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
     std::map<std::string, std::string> facts{{"name", npc->name}};
     if (identified && knowsName(npcId, playerId))
         facts["player"] = labelFor(npcId, playerId);     // Only a name they were given (doc 32).
-    // Their own greeting, the first time they meet.
-    if (spec && !spec->greeting.empty() && (!identified || memories_.recall(npcId, playerId).empty()))
+    // Their own greeting, the first time they meet; never one of the rows whose "I am" was joined to a verb ("I am plays
+    // about the town today.": 169 of them, doc 84 defect 14, until the mantles' window lines replace them).
+    const auto garbled = [](const std::string& g) {
+        const auto at = g.find("I am ");
+        if (at == std::string::npos)
+            return false;
+        const auto end = g.find(' ', at + 5);
+        const auto word = g.substr(at + 5, end == std::string::npos ? std::string::npos : end - at - 5);
+        return word.size() > 2 && word.back() == 's' && word != "always" && word != "famous" && word != "anxious";
+    };
+    if (spec && !spec->greeting.empty() && !garbled(spec->greeting) && (!identified || memories_.recall(npcId, playerId).empty()))
         facts["greeting"] = spec->greeting;
     std::string answer;
     const auto* job = society.jobOf(npcId);

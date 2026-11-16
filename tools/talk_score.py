@@ -1,0 +1,916 @@
+#!/usr/bin/env python3
+"""The talk scorecard (Docs/Design/84-living-conversations.md §15.3-§15.5): what talk_sim's transcripts measure.
+
+  python3 tools/talk_score.py RUN_DIR [RUN_DIR ...] [--json OUT.json] [--md OUT.md]
+  python3 tools/talk_score.py RUN_DIR ... --baseline BASE.json --check      exit 1 if a gate breaks (below)
+  python3 tools/talk_score.py RUN_DIR ... --bless BASE.json                 write the baseline
+  python3 tools/talk_score.py RUN_DIR ... --baseline BASE.json --refreeze T1,T3 --why TEXT
+                                                                         take only those rows into the baseline
+
+Each RUN_DIR is one talk_sim run (lines.jsonl, convs.jsonl, residents.jsonl, run.json); a run made with --ablate shuffle
+also has the shuffled control (lines-shuffled.jsonl), and every metric is computed on it too (§15.5): a coherence
+metric (C*) that scores the control within 30% of the real transcripts isn't measuring coherence, and is flagged.
+Metrics are worked out per run (a profile), then over all the runs given.
+
+What P0 can measure, before moves and tones exist (§15.1: "the text-only metrics still work: that is how the baseline
+is measured"); the rest are listed as n/a with the phase that brings them:
+  R1 first word-for-word identical conversation, per listener (hours; the earliest listener's)
+  R2 first repeated opener, per listener (hours)
+  R3 distinct openers in a listener's first 3,000 exchanges (fewer heard: scaled to 3,000)
+  R4 a distinctive line (6+ words) heard again by the same listener within 10 h, per 100 h
+  R5 collision index: the same distinctive line from two speakers in one place within an hour, per 100 h
+  R6 the most-spoken line's share of all lines
+  R7 distinct reply entries per 1,000 reply beats
+  R8 habit saturation: the share of a speaker's lines using their oath! or saying! (speakers with 20+ lines: mean, p90)
+  C1 questions answered: a line ending "?" followed by the other's line (the heuristic until moves owe answers)
+  C3 endings: by a farewell or a marked break / at the beat cap (8 lines) / by nothing fitting (a talk cut off by a
+     speaker walking away, or the other busy, ends with no line: it is counted apart, never as a good ending)
+  C4 tone clashes per 1,000 beats: a grave line (death, grief, robbery, a beating...) followed within two beats by a light
+     one (laughter, a jest) from the other, with no bridge: a lexicon until tones exist (Phase 2)
+  C6 the same entry (or the same question) twice in one conversation, per 1,000 conversations
+  C7 lines per conversation: mean, 90th percentile, and the share of 3-line ones
+  C8 conversations with a third speaker
+  T1 raw ids spoken (an identifier with an underscore), per 1,000 lines
+  T2 presupposition failures per 1,000 lines: Data/Talk/truth.json's rules (Phase 1; tools/talk_truth.py) over every
+     line, against the moment's facts (here.*, pair.*, world.*) and the speaker's (self.*); P0's provisional lexicon
+     (weather, hour, kin, fishing) before it, so Phase 1 froze T2 again as its own baseline
+  T3 self-reference errors per 1,000 lines (§15.3): a speaker saying their own full name (the teller as the victim in the
+     third person); the listener named in the third person to their face ("Varg Acorndell snores like a mill." said to
+     Varg; a name said to them as a call, "..., Varg Acorndell." or "Varg Acorndell, ...", is not); and an unbacked
+     first-person claim: an eyewitness's words ("I saw...", "with my own eyes") about a crime, a rumour or a camp from one
+     who didn't see it (the conversation's `seen`, from talk_sim; a run without it isn't judged on this)
+  K1 conversations on everyday topics (anything but news, gossip, crime, deeds, events, quarrels and the like)
+  K2 the largest topic's share
+  K3 the same news (topic, subject, claim) told twice to the same resident
+  D1 lines carrying a dialect's words (a dialect grammar layer in the expansion) from speakers of accent none: the hard
+     gate (§15.3: "none 0%", "hard for none"; §10: none sounds plain); D1L light speakers' (25-50%) and D1B broad
+     speakers' (60%+), soft
+  D2 another dialect's words in a speaker's line (by the expansion's layers, and by tools/dialect_check.py's lexicon)
+  D3 a speaker's dialect guessed from 20 of their lines (naive Bayes on words, trained on the other speakers), light and
+     broad speakers
+  U1 a resident's lines from their own words (character tables now, mantles from Phase 9)
+  U2 distinguishability: of two residents with the same eight axes (seven traits and dialect), held-out lines given to
+     the right one
+  B5 exchanges simulated a second (run.json)
+
+Gates (--check against --baseline): a hard gate the baseline passed must still pass; one the baseline failed may not get
+worse (each phase closes its own); a soft metric may not regress by more than 10%. "Worse" means beyond noise: a metric
+that counts events (EVENTS: R4, R5, C1, C3, C4, C6, T1-T3, K3, D1, D1L, D1B) only if the exact test of two Poisson counts
+(today's events against the baseline's, each over its own exposure: a binomial split of the two together) puts the
+difference beyond chance at ALPHA (1%, one-sided), so both cards' noise counts; R1 and R2, first-time waits that are the
+earliest of many listeners', by more than half; B5, a timing, by more than 25%. A profile the baseline has and the card
+hasn't is a problem in itself. The scorecard says which hard gates are still open.
+"""
+from __future__ import annotations
+
+import argparse
+import collections
+import datetime
+import importlib.util
+import json
+import math
+import random
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+
+# ------------------------------------------------------------------ The metrics' definitions
+
+# id: (name, better ("higher"/"lower"), gate ("hard"/"soft"), target as a test or None, target's words, phase)
+METRICS = {
+    "R1": ("first identical conversation, per listener (h)", "higher", "hard", lambda v: v >= 20, "40 h+; hard 20 h+", ""),
+    "R2": ("first repeated opener, per listener (h)", "higher", "soft", lambda v: v >= 8, "8 h+", ""),
+    "R3": ("distinct openers per 3,000 exchanges", "higher", "soft", lambda v: v >= 1500, "L1 1,500+", ""),
+    "R4": ("distinctive line heard again within 10 h, per 100 h", "lower", "soft", lambda v: v <= 5, "5 or fewer", ""),
+    "R5": ("collision index, per 100 h", "lower", "hard", lambda v: v <= 3, "1 or fewer; hard 3", ""),
+    "R6": ("most-spoken line's share (%)", "lower", "soft", lambda v: v <= .4, "0.4%", ""),
+    "R7": ("distinct reply entries per 1,000 reply beats", "higher", "soft", lambda v: v >= 500, "500+", ""),
+    "R8": ("habit saturation (% of a speaker's lines, mean)", "lower", "soft", lambda v: v <= 15, "15% or less", ""),
+    "C1": ("questions answered (%)", "higher", "hard", lambda v: v >= 92, "97%; hard 92%", ""),
+    "C2": ("replies at the best fit available (%)", "higher", "soft", None, "95%", "Phase 3"),
+    "C3": ("endings by a farewell or a marked break (%)", "higher", "soft", lambda v: v >= 80, "80% / 3% / 5%", ""),
+    "C4": ("tone clashes per 1,000 beats", "lower", "hard", lambda v: v <= 0, "0", ""),
+    "C5": ("unmarked topic jumps per 1,000 beats", "lower", "soft", None, "5", "Phase 5"),
+    "C6": ("same entry or question twice in a conversation, per 1,000", "lower", "hard", lambda v: v <= 0, "0", ""),
+    "C7": ("lines per conversation (mean)", "higher", "soft", lambda v: v >= 5, "5-7; p90 9+", ""),
+    "C8": ("conversations with a third speaker (%)", "higher", "soft", lambda v: 5 <= v <= 15, "5-15%", ""),
+    "C9": ("callbacks per 10 conversations", "higher", "soft", None, "1.5+", "Phase 5"),
+    "T1": ("raw ids spoken, per 1,000 lines", "lower", "hard", lambda v: v <= 0, "0", ""),
+    "T2": ("presupposition failures, per 1,000 lines", "lower", "hard", lambda v: v <= 0, "0", ""),
+    "T3": ("self-reference errors (own name, the listener in the third person, unbacked eyewitness words), per 1,000 lines",
+           "lower", "hard", lambda v: v <= 0, "0", ""),
+    "T4": ("identity drift", "lower", "hard", None, "0", "Phase 6"),
+    "T5": ("telling what the listener already believes (%)", "lower", "soft", None, "2%", "Phase 4"),
+    "D1": ("lines with a dialect's words (%): accent none", "lower", "hard", lambda v: v <= 0, "none 0%", ""),
+    "D1L": ("lines with a dialect's words (%): light speakers", "higher", "soft", lambda v: 25 <= v <= 50, "light 25-50%", ""),
+    "D1B": ("lines with a dialect's words (%): broad speakers", "higher", "soft", lambda v: v >= 60, "broad 60%+", ""),
+    "D2": ("another dialect's words in a speaker's line", "lower", "hard", lambda v: v <= 0, "0", ""),
+    "D3": ("dialect guessed from 20 lines (%): light and broad", "higher", "soft", lambda v: v >= 85, "85%+", ""),
+    "U1": ("a resident's lines from their own words (%)", "higher", "soft", lambda v: 20 <= v <= 35, "20-35%", ""),
+    "U2": ("distinguishability of look-alike residents (%)", "higher", "soft", lambda v: v >= 90, "90%+", ""),
+    "K1": ("conversations on everyday topics (%)", "higher", "soft", lambda v: v >= 35, "35%+", ""),
+    "K2": ("largest topic's share (%)", "lower", "soft", lambda v: v <= 25, "25% or less", ""),
+    "K3": ("same news told twice to the same resident", "lower", "hard", lambda v: v <= 0, "0", ""),
+    "W1": ("window lines from mantles (%)", "higher", "soft", None, "40%+", "Phase 13"),
+    "W2": ("free-text understanding", "higher", "hard", None, "85%+; wrong 8% or less", "Phase 13"),
+    "W3": ("a resident answers chat with the option off", "lower", "hard", None, "0", "Phase 12"),
+    "B5": ("exchanges simulated a second", "higher", "hard", lambda v: v >= 150, "150+", ""),
+    "X1": ("lexical cohesion: replies sharing a content word with the line before (%)", "higher", "soft", None,
+           "diagnostic (not in §15.3): shows the control is discriminating", ""),
+    "H1": ("blind naturalness 1-5", "higher", "soft", None, "3.8+", "slice ends (talk_rate.py)"),
+    "H2": ("'written whole by a writer?' (%)", "higher", "soft", None, "40%+", "slice ends (talk_rate.py)"),
+}
+# The coherence metrics, which must separate the real transcripts from the shuffled control (§15.5). C7 (length) and C8
+# (a third speaker) are structural: the control keeps each conversation's length and people, so they match it by
+# construction; R, D, K and U metrics are about variety, voice and topics, not order.
+COHERENCE = {"C1", "C3", "C4", "C6", "X1"}
+STRUCTURAL = {"C7", "C8"}
+STOP = set("""a an the and or but if then so of to in on at by for with from up down out over under about as is are was
+were be been being am i you he she it we they me him her us them my your his its our their this that these those there
+here what who whom which when where why how not no nor do does did done have has had having will would shall should can
+could may might must just too very all any some more most much many such only own same than s t don't i'm you're it's
+that's i'll you'll we'll i've i'd you'd isn't aren't wasn't weren't won't wouldn't can't couldn't oh ah aye yes well
+now still yet ever again one two get got go going gone come came say said tell told know knew think thought like
+see saw look""".split())
+
+NEWSY = {"gossip", "crime", "news", "deed", "event", "quarrel", "loss", "prices", "caravan", "bandits", "ships",
+         "harvest", "newcomer", "storyteller", "festival", "death"}
+GRAVE = re.compile(r"\b(died|dead|death|dying|buried|burial|grave|funeral|mourn\w*|grie\w+|murder\w*|killed|"
+                   r"robbed|beaten|beating|stabbed|hanged|drowned|widow\w*|orphan\w*|sick unto|plague)\b", re.I)
+LIGHT = re.compile(r"\b(ha|hah|haha|heh|hee|laugh\w*|jest\w*|joke\w*|tease\w*|giggl\w*|grin\w*|wink\w*)\b", re.I)
+BRIDGE = re.compile(r"\b(anyway|well then|enough of that|still|mind you|on a brighter note|but listen)\b", re.I)
+FAREWELL = re.compile(r"\b(farewell|goodbye|good night|goodnight|go well|go in peace|fair winds|safe road|take care|"
+                      r"see you|be seeing|i'?d best|i must be off|i'?ll be off|must go|be off|off with you|"
+                      r"till (?:tomorrow|next)|until (?:tomorrow|next)|calm water|dry feet|walk warm|rest well|"
+                      r"mind how you go|bright one keep you|gods keep|keep well|later,)\b", re.I)
+RAW_ID = re.compile(r"\b[A-Za-z]+_[A-Za-z0-9_]+\b")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import talk_truth  # noqa: E402
+TRUTH, _TRUTH_IDS = talk_truth.load()
+WORD = re.compile(r"[a-z']+")
+
+
+# ------------------------------------------------------------------ Reading runs
+
+def relative(path: Path) -> str:
+    """A path as the repository sees it (no home directory in what is committed), else as given."""
+    try:
+        return str(Path(path).resolve().relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
+def read_jsonl(path: Path) -> list[dict]:
+    if not path.is_file():
+        return []
+    out = []
+    with path.open(encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                try:
+                    out.append(json.loads(line))
+                except ValueError:
+                    pass
+    return out
+
+
+class Run:
+    def __init__(self, directory: Path, shuffled: bool = False):
+        self.dir = directory
+        self.meta = json.loads((directory / "run.json").read_text()) if (directory / "run.json").is_file() else {}
+        suffix = "-shuffled" if shuffled else ""
+        self.lines = read_jsonl(directory / f"lines{suffix}.jsonl")
+        self.convs = read_jsonl(directory / f"convs{suffix}.jsonl")
+        self.residents = {r["id"]: r for r in read_jsonl(directory / "residents.jsonl") if "id" in r}
+        self.name = self.meta.get("profile") or directory.name
+        self.shuffled = shuffled
+        self.by_conv: dict[int, list[dict]] = collections.defaultdict(list)
+        for line in self.lines:
+            self.by_conv[int(line["conv"])].append(line)
+        for c in self.by_conv.values():
+            c.sort(key=lambda l: l["beat"])
+        self.conv_head = {int(c["conv"]): c for c in self.convs}
+        self.hours = float(self.meta.get("hours") or 0) or (max((l["t"] for l in self.lines), default=0) / 3600)
+
+    def has_control(self) -> bool:
+        return (self.dir / "lines-shuffled.jsonl").is_file()
+
+
+def words(text: str) -> list[str]:
+    return WORD.findall(text.lower())
+
+
+def pct(n: float, d: float) -> float:
+    return 100.0 * n / d if d else 0.0
+
+
+def quantile(xs: list[float], q: float) -> float:
+    if not xs:
+        return 0.0
+    xs = sorted(xs)
+    return xs[min(len(xs) - 1, int(q * len(xs)))]
+
+
+def dialect_lexicon():
+    """tools/dialect_check.py's distinctive phrases for each dialect (None if it can't be read)."""
+    try:
+        spec = importlib.util.spec_from_file_location("dialect_check", ROOT / "tools" / "dialect_check.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        allow = json.loads(mod.ALLOW.read_text()) if mod.ALLOW.is_file() else {}
+        return mod, mod.lexicon(mod.grammars(), allow)
+    except Exception:  # noqa: BLE001 (a missing or changed tool: D2's text check is skipped, said so)
+        return None, None
+
+
+DIALECT = dialect_lexicon()
+
+
+# ------------------------------------------------------------------ Per run
+
+def per_listener(run: Run) -> dict[str, list[list[dict]]]:
+    """Each listener's conversations, in order, as their lines."""
+    out = collections.defaultdict(list)
+    for cid in sorted(run.by_conv):
+        lines = run.by_conv[cid]
+        if lines:
+            out[lines[0].get("listener", "")].append(lines)
+    return out
+
+
+def score_run(run: Run) -> dict:
+    m: dict[str, object] = {}
+    lines, convs = run.lines, [run.by_conv[c] for c in sorted(run.by_conv)]
+    hours = max(run.hours, 1e-9)
+    listeners = per_listener(run)
+    # R1, R2, R3: per listener.
+    r1, r2, r3 = [], [], []
+    r1_censored = r2_censored = False
+    first_exchange = None
+    for who, cs in listeners.items():
+        seen_conv, seen_open = {}, {}
+        first_conv = first_open = None
+        for i, c in enumerate(cs):
+            key = "\n".join(l["text"] for l in c)
+            if first_conv is None and key in seen_conv and len(c) > 0:
+                first_conv = (c[0]["t"] / 3600, i + 1)
+            seen_conv.setdefault(key, i)
+            o = c[0]["text"]
+            if first_open is None and o in seen_open:
+                first_open = (c[0]["t"] / 3600, i + 1)
+            seen_open.setdefault(o, i)
+        listened = cs[-1][-1]["t"] / 3600 if cs else 0
+        if first_conv is None:
+            r1_censored = True
+        elif first_exchange is None or first_conv[0] < first_exchange[0]:
+            first_exchange = first_conv
+        if first_open is None:
+            r2_censored = True
+        r1.append(first_conv[0] if first_conv else listened)
+        r2.append(first_open[0] if first_open else listened)
+        firsts = [c[0]["text"] for c in cs[:3000]]
+        r3.append(len(set(firsts)) * (3000 / len(firsts)) if firsts else 0)
+    m["R1"] = min(r1) if r1 else 0
+    m["R1_detail"] = {"listeners": len(r1), "median": quantile(r1, .5), "censored": r1_censored,
+                      "exchange": first_exchange[1] if first_exchange else None}
+    m["R2"] = min(r2) if r2 else 0
+    m["R2_detail"] = {"median": quantile(r2, .5), "censored": r2_censored}
+    m["R3"] = sum(r3) / len(r3) if r3 else 0
+    # R4: heard again by the same listener within 10 h; R5: collisions in a place within an hour.
+    heard: dict[tuple, float] = {}
+    said_at: dict[tuple, list[tuple[float, str]]] = collections.defaultdict(list)
+    r4 = r5 = 0
+    for l in sorted(lines, key=lambda x: x["t"]):
+        if len(words(l["text"])) < 6:
+            continue
+        k = (l.get("listener", ""), l["text"])
+        if k in heard and l["t"] - heard[k] <= 36000:
+            r4 += 1
+        heard[k] = l["t"]
+        place = (l.get("cell", ""), l["text"])
+        if any(l["t"] - t <= 3600 and who != l["who"] for t, who in said_at[place]):
+            r5 += 1
+        said_at[place] = [(t, w) for t, w in said_at[place] if l["t"] - t <= 3600] + [(l["t"], l["who"])]
+    m["R4"] = r4 * 100 / hours
+    m["R5"] = r5 * 100 / hours
+    counts = collections.Counter(l["text"] for l in lines)
+    top = counts.most_common(1)
+    m["R6"] = pct(top[0][1], len(lines)) if top else 0
+    m["R6_detail"] = {"line": top[0][0] if top else "", "times": top[0][1] if top else 0}
+    replies = [l for l in lines if l["beat"] > 0]
+    m["R7"] = len({l["entry"] for l in replies}) * 1000 / len(replies) if replies else 0
+    by_speaker = collections.defaultdict(list)
+    for l in lines:
+        by_speaker[l["who"]].append(l)
+    sat = [pct(sum(1 for l in ls if any(h in ("oath", "saying") or h.startswith(("oath", "saying"))
+                                        for h in l.get("habits", []))), len(ls))
+           for ls in by_speaker.values() if len(ls) >= 20]
+    m["R8"] = sum(sat) / len(sat) if sat else 0
+    m["R8_detail"] = {"p90": quantile(sat, .9), "speakers": len(sat),
+                      "any_habit_mean": (sum(pct(sum(1 for l in ls if l.get("habits")), len(ls))
+                                             for ls in by_speaker.values() if len(ls) >= 20) / len(sat)) if sat else 0}
+    # C1: questions answered by the other.
+    asked = answered = 0
+    for c in convs:
+        for i, l in enumerate(c):
+            if l["text"].rstrip().endswith("?"):
+                asked += 1
+                if i + 1 < len(c) and c[i + 1]["who"] != l["who"]:
+                    answered += 1
+    m["C1"] = pct(answered, asked)
+    questions = asked
+    m["C1_detail"] = {"questions": asked, "answered": answered}
+    # C3: how conversations end. A good ending is a farewell or a marked break (a line that breaks off, said: §15.3;
+    # the conversation's `marked`, from Phase 4). A talk cut off with no line (one walked away, the other was busy: "gone",
+    # "cell", "apart", "busy", "chat"; §8.10) or by the run's end or a snapshot is counted apart, never as a good ending.
+    farewell = marked = cap = nothing = cut = 0
+    for cid, c in run.by_conv.items():
+        head = run.conv_head.get(cid, {})
+        reason = head.get("reason", "done")
+        if head.get("marked"):
+            marked += 1
+        elif reason not in ("done", "run_end", "snapshot"):
+            cut += 1
+        elif c and FAREWELL.search(c[-1]["text"]):
+            farewell += 1
+        elif int(head.get("written", len(c))) >= 8:
+            cap += 1
+        else:
+            nothing += 1
+    n = max(1, len(run.by_conv))
+    m["C3"] = pct(farewell + marked, n)
+    m["C3_detail"] = {"farewell": pct(farewell, n), "marked_break": pct(marked, n), "cut_off": pct(cut, n), "cap": pct(cap, n),
+                      "nothing_fits": pct(nothing, n)}
+    # C4: grave then light from the other within two beats, with no bridge.
+    clashes = beats = 0
+    for c in convs:
+        beats += len(c)
+        for i, l in enumerate(c):
+            if not GRAVE.search(l["text"]):
+                continue
+            for j in (i + 1, i + 2):
+                if j < len(c) and c[j]["who"] != l["who"] and LIGHT.search(c[j]["text"]) and not BRIDGE.search(c[j]["text"]):
+                    clashes += 1
+                    break
+    m["C4"] = clashes * 1000 / max(1, beats)
+    # C6: an entry again after another (a scene's own lines are one), or the same question twice.
+    repeats = 0
+    for c in convs:
+        units, qs, bad = [], set(), False
+        for l in c:
+            if not units or units[-1] != l["entry"]:
+                if l["entry"] and l["entry"] in units:
+                    bad = True
+                units.append(l["entry"])
+            if l["text"].rstrip().endswith("?"):
+                q = l["text"].strip().lower()
+                if q in qs:
+                    bad = True
+                qs.add(q)
+        repeats += bad
+    m["C6"] = repeats * 1000 / max(1, len(convs))
+    sizes = [len(c) for c in convs]
+    m["C7"] = sum(sizes) / len(sizes) if sizes else 0
+    m["C7_detail"] = {"p90": quantile(sizes, .9), "three_lines": pct(sum(1 for s in sizes if s == 3), len(sizes)),
+                      "four_lines": pct(sum(1 for s in sizes if s == 4), len(sizes))}
+    m["C8"] = pct(sum(1 for c in convs if len({l["who"] for l in c}) > 2), len(convs))
+    # T1, T2, T3.
+    m["T1"] = sum(1 for l in lines if RAW_ID.search(l["text"])) * 1000 / max(1, len(lines))
+    t1_examples = [l["text"] for l in lines if RAW_ID.search(l["text"])][:3]
+    # T2 (Phase 1): truth.json's rules over every line, against the moment's facts (the conversation's here.*, pair.*,
+    # world.*) and the speaker's own (self.*); a rule none of whose needs was recorded isn't judged.
+    t2 = collections.Counter()
+    t2_examples = []
+    for cid, c in run.by_conv.items():
+        head = run.conv_head.get(cid, {})
+        moment = {k: v for k, v in head.get("facts", {}).items() if not k.startswith("_")}
+        if "_weather" in head.get("facts", {}) and "here.outdoors" not in moment:
+            moment["here.outdoors"] = head["facts"]["_weather"]     # (A run from before here.outdoors.)
+        moment.setdefault("here.hour", str(int(float(head.get("hour", 12)))))
+        for l in c:
+            text = l["text"]
+            rules = talk_truth.matches(TRUTH, text)
+            if not rules:
+                continue
+            facts = dict(moment)
+            for k, v in run.residents.get(l["who"], {}).items():
+                if not k.startswith("_") and isinstance(v, (str, int, float)):
+                    facts["self." + k] = str(v)
+            failed = [r.id for r in rules if r.judge(facts) is False]
+            for k in failed:
+                t2[k] += 1
+            if failed and len(t2_examples) < 6:
+                t2_examples.append(f"{'/'.join(failed)}: {text} ({l['who']}, {moment.get('here.weather', '?')}/"
+                                   f"{moment.get('here.outdoors', '?')} {moment.get('here.hour', '?')}h)")
+    m["T2"] = sum(t2.values()) * 1000 / max(1, len(lines))
+    m["T2_detail"] = {"by_kind": dict(t2), "examples": t2_examples}
+    t3 = collections.Counter()
+    t3_examples = []
+    for cid, c in run.by_conv.items():
+        head = run.conv_head.get(cid, {})
+        for l in c:
+            kind = self_reference(l, head, run.residents)
+            if kind:
+                t3[kind] += 1
+                if len(t3_examples) < 6:
+                    t3_examples.append(f"{kind}: {l['who']} to {l.get('to', '')}: {l['text']}")
+    m["T3"] = sum(t3.values()) * 1000 / max(1, len(lines))
+    m["T3_detail"] = {"by_kind": dict(t3), "examples": t3_examples,
+                      "eyewitness_judged": any("seen" in h for h in run.conv_head.values())}
+    m["T1_detail"] = {"examples": t1_examples}
+    # K1, K2, K3.
+    topics = collections.Counter(run.conv_head.get(cid, {}).get("topic", c[0].get("topic", "")) for cid, c in run.by_conv.items())
+    total = sum(topics.values())
+    m["K1"] = pct(sum(n for t, n in topics.items() if t not in NEWSY), total)
+    m["K2"] = pct(topics.most_common(1)[0][1], total) if topics else 0
+    m["K2_detail"] = {"topics": {t: round(pct(n, total), 2) for t, n in topics.most_common()}}
+    told = collections.Counter()
+    for cid, c in run.by_conv.items():
+        head = run.conv_head.get(cid, {})
+        if head.get("topic") in NEWSY and (head.get("subject") or head.get("claim")):
+            told[(head.get("other", ""), head.get("topic"), head.get("subject", ""), head.get("claim", ""))] += 1
+    m["K3"] = sum(n - 1 for n in told.values() if n > 1)
+    # D1, D2.
+    by_accent = collections.defaultdict(lambda: [0, 0])
+    d2_layers = 0
+    d2_text = 0
+    d2_examples = []
+    mod, lex = DIALECT
+    for l in lines:
+        own = l.get("dialect", "")
+        used = [u for u in l.get("used", []) if u != "plain" and not u.startswith("p_")]
+        acc = l.get("accent") or "none"
+        by_accent[acc][1] += 1
+        if used:
+            by_accent[acc][0] += 1
+        if any(u != own for u in used):
+            d2_layers += 1
+        if lex is not None:
+            others = {d for d, _ in mod.hits(l["text"], lex) if d != own and mod_dialect_of(own) != d}
+            if others:
+                d2_text += 1
+                if len(d2_examples) < 4:
+                    d2_examples.append(f"{own}: {l['text']} ({', '.join(sorted(others))})")
+    m["D1"] = pct(*by_accent["none"]) if by_accent["none"][1] else 0
+    m["D1L"] = pct(*by_accent["light"]) if by_accent["light"][1] else 0
+    m["D1B"] = pct(*by_accent["broad"]) if by_accent["broad"][1] else 0
+    m["D1_detail"] = {a: round(pct(*v), 2) for a, v in by_accent.items()}
+    m["D2"] = d2_layers + d2_text
+    m["D2_detail"] = {"by_layers": d2_layers, "by_lexicon": d2_text, "examples": d2_examples,
+                      "lexicon": "tools/dialect_check.py" if lex is not None else "unavailable"}
+    m["D3"], m["D3_detail"] = guess_dialects(lines)
+    # U1, U2.
+    own = sum(1 for l in lines if "." in l.get("entry", "") and l["entry"].split(".", 1)[0] == l["who"])
+    m["U1"] = pct(own, len(lines))
+    m["U2"], m["U2_detail"] = distinguish(lines, run.residents)
+    m["B5"] = float(run.meta.get("exchanges_per_second") or 0)
+    # X1: a reply (a line after the first, by the other) sharing a content word with the line before it.
+    cohesive = replies_n = 0
+    for c in convs:
+        for i in range(1, len(c)):
+            if c[i]["who"] == c[i - 1]["who"]:
+                continue
+            a = {w for w in words(c[i - 1]["text"]) if w not in STOP and len(w) > 2}
+            b = {w for w in words(c[i]["text"]) if w not in STOP and len(w) > 2}
+            replies_n += 1
+            cohesive += bool(a & b)
+    m["X1"] = pct(cohesive, replies_n)
+    m["_counts"] = {"lines": len(lines), "conversations": len(convs), "hours": round(run.hours, 2),
+                    "listeners": len(listeners), "speakers": len(by_speaker), "questions": questions,
+                    "none_lines": by_accent["none"][1], "light_lines": by_accent["light"][1],
+                    "broad_lines": by_accent["broad"][1]}
+    return m
+
+
+EYEWITNESS = re.compile(r"\b(I saw (?!(?:them|him|her|#[^#]*#) only\b)|I watched|I seen|saw it myself|saw it with my own|"
+                        r"with my own eyes|I was there when)", re.I)
+# Topics whose eyewitness words claim the deed itself was seen (a death's "I saw them only on Restday" is not one).
+WITNESSED = {"gossip", "crime", "bandits", "deed"}
+
+
+def calls(text: str, at: int, end: int) -> bool:
+    """Whether a name at text[at:end] is said to someone as a call ("Varg Acorndell, a word?", "..., Varg Acorndell.",
+    "Between us, Varg Acorndell: ..."), not of them in the third person ("Varg Acorndell snores", "I married Varg
+    Acorndell.")."""
+    before = text[:at].rstrip()
+    after = text[end:]
+    opens = not before or before[-1] in ".!?\"" or before.endswith((",", "--"))
+    closes = not after.strip() or after[:1] in ",.!?;:"
+    return (opens and (after[:1] in ",:" or not after.strip())) or (before.endswith(",") and closes)
+
+
+def self_reference(line: dict, head: dict, residents: dict) -> str:
+    """T3's kind for a line, or "": its speaker's own full name ("own_name"); the listener's full name said of them in the
+    third person to their face ("listener_third"); an eyewitness's words from one who didn't see it ("unbacked")."""
+    text = line["text"]
+    me = residents.get(line["who"], {}).get("name")
+    if me and me in text:
+        return "own_name"
+    them = residents.get(line.get("to", ""), {}).get("name")
+    if them and " " in them:
+        for found in re.finditer(re.escape(them), text):
+            if not calls(text, found.start(), found.end()):
+                return "listener_third"
+    if "seen" in head and head.get("topic") in WITNESSED and EYEWITNESS.search(text):
+        backed = line["who"] == head.get("teller") and head.get("seen") == "yes"
+        if not backed:
+            return "unbacked"
+    return ""
+
+
+def mod_dialect_of(d: str) -> str:
+    return {"fenshore": "mirebridge"}.get(d, d)
+
+
+def guess_dialects(lines: list[dict], per: int = 20, seed: int = 7):
+    """D3: for each speaker with 20+ lines (light or broad), 20 of their lines classified by a naive Bayes over words
+    trained on every other speaker's lines (leave one speaker out)."""
+    by = collections.defaultdict(list)
+    for l in lines:
+        by[l["who"]].append(l)
+    speakers = {w: ls for w, ls in by.items() if len(ls) >= per and ls[0].get("dialect")}
+    if len({ls[0]["dialect"] for ls in speakers.values()}) < 2:
+        return 0.0, {"speakers": len(speakers), "note": "fewer than two dialects heard"}
+    counts = collections.defaultdict(collections.Counter)
+    totals = collections.Counter()
+    per_speaker = {}
+    for w, ls in speakers.items():
+        c = collections.Counter(t for l in ls for t in words(l["text"]))
+        per_speaker[w] = c
+        counts[ls[0]["dialect"]].update(c)
+        totals[ls[0]["dialect"]] += sum(c.values())
+    vocab = len(set().union(*counts.values())) or 1
+    rng = random.Random(seed)
+    right = n = 0
+    by_accent = collections.defaultdict(lambda: [0, 0])
+    for w, ls in speakers.items():
+        accent = ls[0].get("accent") or "none"
+        truth = ls[0]["dialect"]
+        sample = rng.sample(ls, per)
+        tokens = [t for l in sample for t in words(l["text"])]
+        best, best_score = None, -1e300
+        for d in counts:
+            c = counts[d] - per_speaker[w] if d == truth else counts[d]
+            tot = totals[d] - (sum(per_speaker[w].values()) if d == truth else 0)
+            if tot <= 0:
+                continue
+            score = sum(math.log((c[t] + 1) / (tot + vocab)) for t in tokens)
+            if score > best_score:
+                best, best_score = d, score
+        ok = best == truth
+        by_accent[accent][0] += ok
+        by_accent[accent][1] += 1
+        if accent in ("light", "broad"):
+            right += ok
+            n += 1
+    return pct(right, n), {a: round(pct(*v), 1) for a, v in by_accent.items()} | {"speakers": len(speakers)}
+
+
+def distinguish(lines: list[dict], residents: dict, seed: int = 11):
+    """U2: pairs of residents with the same eight axes, each with 30+ lines; each one's held-out half attributed by
+    unigram models trained on the other halves."""
+    axes = ("temper", "warmth", "humour", "honesty", "drive", "piety", "talk", "_dialect")
+    by = collections.defaultdict(list)
+    for l in lines:
+        by[l["who"]].append(l["text"])
+    groups = collections.defaultdict(list)
+    for w, ts in by.items():
+        r = residents.get(w)
+        if r and len(ts) >= 30:
+            groups[tuple(r.get(a, "") for a in axes)].append(w)
+    rng = random.Random(seed)
+    right = n = pairs = 0
+    for members in groups.values():
+        rng.shuffle(members)
+        for a, b in zip(members[0::2], members[1::2]):
+            pairs += 1
+            halves = {}
+            for w in (a, b):
+                ts = by[w][:]
+                rng.shuffle(ts)
+                halves[w] = (ts[: len(ts) // 2], ts[len(ts) // 2:])
+            model = {w: collections.Counter(t for x in halves[w][0] for t in words(x)) for w in (a, b)}
+            vocab = len(set(model[a]) | set(model[b])) or 1
+            for w in (a, b):
+                for text in halves[w][1]:
+                    toks = words(text)
+                    score = {v: sum(math.log((model[v][t] + 1) / (sum(model[v].values()) + vocab)) for t in toks) for v in (a, b)}
+                    guess = max(score, key=score.get) if score[a] != score[b] else rng.choice([a, b])
+                    right += guess == w
+                    n += 1
+            if pairs >= 200:
+                break
+    return pct(right, n), {"pairs": pairs, "lines": n}
+
+
+# ------------------------------------------------------------------ Over runs, the control, gates
+
+def combine(per_run: dict[str, dict]) -> dict:
+    """A scorecard over the runs: each metric's value over all of them (the worst listener for R1/R2, a mean weighted
+    by lines for rates, sums for counts)."""
+    out = {}
+    weights = {k: v["_counts"]["lines"] for k, v in per_run.items()}
+    total = sum(weights.values()) or 1
+    heard = {k for k, v in per_run.items() if v["_counts"]["conversations"] > 0}   # (A run that heard nothing says nothing.)
+    for mid in METRICS:
+        vals = {k: v[mid] for k, v in per_run.items() if isinstance(v.get(mid), (int, float)) and k in heard}
+        if not vals:
+            continue
+        if mid in ("R1", "R2"):
+            out[mid] = min(vals.values())
+        elif mid in ("K3", "D2"):
+            out[mid] = sum(vals.values())
+        elif mid == "B5":
+            out[mid] = min(vals.values())
+        else:
+            out[mid] = sum(vals[k] * weights[k] for k in vals) / total
+    return out
+
+
+def passes(mid: str, value) -> bool | None:
+    test = METRICS[mid][3]
+    if test is None or value is None:
+        return None
+    return bool(test(value))
+
+
+def worse(mid: str, now: float, base: float) -> float:
+    """How much worse `now` is than `base`, as a share of base (0 if not worse)."""
+    better = METRICS[mid][1]
+    if better == "higher":
+        d = base - now
+    else:
+        d = now - base
+    if d <= 1e-9:
+        return 0.0
+    return d / abs(base) if abs(base) > 1e-9 else float("inf")
+
+
+def separation(real: float, control: float) -> float | None:
+    if real is None or control is None:
+        return None
+    scale = max(abs(real), abs(control))
+    return abs(real - control) / scale if scale > 1e-9 else 0.0
+
+
+def real_better(mid: str, real: float, control: float) -> bool:
+    """Whether the real transcripts score better than the shuffled control (§15.5: a coherence metric the shuffle beats
+    measures nothing, or the opposite of what it says, however far apart the two are)."""
+    return real > control if METRICS[mid][1] == "higher" else real < control
+
+
+def scorecard(dirs: list[Path]) -> dict:
+    per_run, per_control = {}, {}
+    for d in dirs:
+        run = Run(d)
+        key = run.name
+        if key in per_run:
+            key = f"{key}:{d.name}"
+        per_run[key] = score_run(run)
+        if run.has_control():
+            per_control[key] = score_run(Run(d, shuffled=True))
+    overall = combine(per_run)
+    control = combine(per_control) if per_control else {}
+    metrics = {}
+    for mid, (name, better, gate, test, target, phase) in METRICS.items():
+        row = {"name": name, "better": better, "gate": gate, "target": target}
+        if phase and mid not in overall:
+            row["value"] = None
+            row["note"] = f"n/a until {phase}"
+        else:
+            row["value"] = overall.get(mid)
+            row["passes"] = passes(mid, overall.get(mid))
+            row["by_profile"] = {k: round(v[mid], 3) for k, v in per_run.items() if isinstance(v.get(mid), (int, float))}
+            if mid in control:
+                row["control"] = control[mid]
+                row["separation"] = separation(overall.get(mid), control[mid])
+                row["real_better"] = real_better(mid, overall.get(mid), control[mid])
+                row["separates"] = row["separation"] is not None and row["separation"] > .3 and row["real_better"]
+                row["control_required"] = mid in COHERENCE
+                row["structural"] = mid in STRUCTURAL
+        metrics[mid] = row
+    details = {k: {m: v for m, v in r.items() if m.endswith("_detail") or m == "_counts"} for k, r in per_run.items()}
+    for mid, row in metrics.items():                # (Each counted metric's events and exposure, for --check's noise.)
+        if mid in EVENTS and row.get("by_profile"):
+            counted = events({"metrics": {mid: row}, "details": details}, mid)
+            if counted:
+                row["events"] = [counted[0], counted[1]]
+    return {
+        "about": "Docs/Design/84 §15.3: the talk scorecard (tools/talk_score.py), from talk_sim transcripts.",
+        "generated": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
+        "runs": {k: relative(d) for k, d in zip(per_run, dirs)},
+        "metrics": metrics,
+        "details": details,
+        "control": {"runs": sorted(per_control), "how": "talk_sim --ablate shuffle: lines after the first replaced by "
+                    "lines said at the same side of other conversations on the same topic, by a speaker of the same "
+                    "dialect where possible (§15.5)"},
+    }
+
+
+# The metrics that count events (id: the profile count they are per, and per how many; None: the metric is the count
+# itself), so --check can tell a change in the events from noise. A card's value is a mean of the profiles' rates
+# weighted by lines, so it moves when the profiles' line counts do even with the very same events (Slice 1's end: C6 3
+# against 3, C4 1 against 1, both flagged "worse").
+EVENTS = {"R4": ("hours", 100), "R5": ("hours", 100), "C1": ("questions", 100), "C3": ("conversations", 100), "C4": ("lines", 1000),
+          "C6": ("conversations", 1000), "T1": ("lines", 1000), "T2": ("lines", 1000), "T3": ("lines", 1000),
+          "K3": ("conversations", None), "D1": ("none_lines", 100), "D1L": ("light_lines", 100),
+          "D1B": ("broad_lines", 100)}
+# Timings, which move with the machine's load: the same build measured B5 frozen at 59, 72 and 80. And first-time waits,
+# the earliest of many listeners' (R1, R2): one listener hearing a repeat a little sooner moves them more than any rate.
+TIMING = {"B5": .25, "R1": .5, "R2": .5}
+# The chance, under no real change, that a counted metric is called worse (one-sided, per metric): with a dozen counted
+# metrics on a card, about one card in ten flags one by chance at most (the exact test is conservative), where one
+# standard deviation flagged two cards in three (the slice-end review).
+ALPHA = .01
+
+
+def events(card: dict, mid: str) -> tuple[float, float] | None:
+    """A metric's events and exposure over a card's profiles: the row's own (`events`, written by scorecard()), else
+    worked out from each profile's value and counts (an older card; a run that heard nothing is left out, as combine()
+    leaves it out), or None if the card can't say."""
+    if mid not in EVENTS:
+        return None
+    row = card.get("metrics", {}).get(mid, {})
+    if isinstance(row.get("events"), list) and len(row["events"]) == 2 and row["events"][1] > 0:
+        return float(row["events"][0]), float(row["events"][1])
+    key, per = EVENTS[mid]
+    n = exposure = 0.0
+    for profile, value in row.get("by_profile", {}).items():
+        counts = card.get("details", {}).get(profile, {}).get("_counts", {})
+        if not counts.get("conversations"):
+            continue
+        x = float(counts.get(key) or card.get("details", {}).get(profile, {}).get(f"{mid}_detail", {}).get(key) or 0)
+        if x <= 0:                                  # (An older card's C1 has its questions in C1_detail.)
+            continue
+        n += value if per is None else value * x / per
+        exposure += x
+    return (round(n), exposure) if exposure > 0 else None
+
+
+def binomial_tail(k: int, n: int, p: float, upper: bool) -> float:
+    """P(X >= k) (upper) or P(X <= k) for X ~ Binomial(n, p), summed exactly in logs."""
+    if n <= 0:
+        return 1.0
+    p = min(max(p, 1e-12), 1 - 1e-12)
+    terms = range(k, n + 1) if upper else range(0, k + 1)
+    logs = [math.lgamma(n + 1) - math.lgamma(i + 1) - math.lgamma(n - i + 1) + i * math.log(p) + (n - i) * math.log1p(-p)
+            for i in terms]
+    if not logs:
+        return 0.0
+    top = max(logs)
+    return min(1.0, math.exp(top) * sum(math.exp(x - top) for x in logs))
+
+
+def beyond_noise(mid: str, card: dict, base: dict) -> tuple[bool, str]:
+    """Whether a counted metric got worse beyond noise: today's events against the baseline's, each over its own
+    exposure, by the exact (conditional binomial) test of two Poisson counts: given both together, today's share is
+    binomial with today's share of the exposure under no change, so the baseline's own noise counts as much as today's.
+    Worse only below ALPHA. (True, with no words, for a metric that counts nothing.)"""
+    now, was = events(card, mid), events(base, mid)
+    if now is None or was is None:
+        return True, ""
+    k, n0 = int(round(now[0])), int(round(was[0]))
+    share = now[1] / (now[1] + was[1])
+    expected = was[0] * now[1] / was[1]
+    upper = METRICS[mid][1] != "higher"
+    chance = binomial_tail(k, k + n0, share, upper)
+    return chance < ALPHA, f" ({k} events against {expected:.0f} at the baseline's rate; by chance {chance:.2g})"
+
+
+def check(card: dict, base: dict) -> list[str]:
+    """A hard gate the baseline passed must still pass; an open one may not get worse; a soft metric may not regress by
+    more than 10%. "Worse" is beyond noise: a counted metric by more than its events' noise and the baseline's
+    (beyond_noise), a timing or a first-time wait by more than TIMING's share. Every profile the baseline scored must be
+    on the card: one missing (its run failed, or never ran) is a problem, not a smaller card."""
+    problems = []
+    missing = sorted(set(base.get("runs", {})) - set(card.get("runs", {})))
+    if missing and card.get("runs"):
+        problems.append(f"profiles the baseline has and this card hasn't: {', '.join(missing)} (a run failed, or never ran)")
+    for mid, row in card["metrics"].items():
+        b = base.get("metrics", {}).get(mid, {})
+        now, was = row.get("value"), b.get("value")
+        if now is None or was is None:
+            continue
+        if row["gate"] == "hard" and b.get("passes") and row.get("passes") is False:
+            problems.append(f"{mid} ({row['name']}): {now:.3g} breaks the hard gate ({row['target']}); the baseline passed")
+            continue
+        if row["gate"] == "hard" and b.get("passes") is not False:
+            continue
+        allowed = TIMING.get(mid, 0.0 if row["gate"] == "hard" else .10)
+        if worse(mid, now, was) <= allowed:
+            continue
+        noisy, said = beyond_noise(mid, card, base)
+        if not noisy:
+            continue
+        if row["gate"] == "hard":
+            problems.append(f"{mid} ({row['name']}): {now:.3g}, worse than the baseline's {was:.3g} on an open hard gate{said}")
+        else:
+            problems.append(f"{mid} ({row['name']}): {now:.3g} regresses more than 10% from the baseline's {was:.3g}{said}")
+    return problems
+
+
+def refreeze(base: dict, card: dict, ids: list[str], why: str) -> dict:
+    """The baseline with these metrics' rows (and their profiles' values) taken from the card, the rest kept: a gate a
+    phase closed is locked where it closed it (T1 at 0), and a metric whose definition changed is measured again (P1's T2).
+    Said why in the baseline itself."""
+    out = json.loads(json.dumps(base))
+    for mid in ids:
+        if mid not in card.get("metrics", {}):
+            raise SystemExit(f"talk_score: {mid} isn't on the card")
+        out.setdefault("metrics", {})[mid] = card["metrics"][mid]
+        for profile, d in card.get("details", {}).items():
+            for k, v in d.items():
+                if k == f"{mid}_detail":
+                    out.setdefault("details", {}).setdefault(profile, {})[k] = v
+    out.setdefault("refrozen", []).append({"metrics": ids, "why": why, "from": card.get("runs", {}),
+                                           "on": card.get("generated", "")})
+    return out
+
+
+def fmt(v) -> str:
+    if v is None:
+        return "n/a"
+    if isinstance(v, bool):
+        return "yes" if v else "no"
+    if isinstance(v, float):
+        return f"{v:,.3g}" if abs(v) < 1000 else f"{v:,.0f}"
+    return str(v)
+
+
+def markdown(card: dict) -> str:
+    out = ["# Talk scorecard", "", f"Generated {card['generated']} by `tools/talk_score.py` (Docs/Design/84 §15.3).", ""]
+    out.append("Runs: " + ", ".join(f"`{k}`" for k in card["runs"]) + ".")
+    if card["control"]["runs"]:
+        out.append(f"Shuffled control ({card['control']['how']}): {', '.join(card['control']['runs'])}.")
+    out += ["", "| Id | Metric | Value | Shuffled control | Separation | Target | Gate | Passes |", "|---|---|---|---|---|---|---|---|"]
+    for mid, row in card["metrics"].items():
+        if row.get("value") is None:
+            out.append(f"| {mid} | {row['name']} | n/a | | | {row['target']} | {row['gate']} | {row.get('note', '')} |")
+            continue
+        sep = row.get("separation")
+        sep_s = "" if sep is None else f"{sep:.0%}" + ("" if row.get("separates") else
+                                                       " (the control scores better)" if row.get("real_better") is False
+                                                       else " (within 30%)") + \
+            (" (structural)" if row.get("structural") else " (coherence)" if row.get("control_required") else "")
+        out.append(f"| {mid} | {row['name']} | {fmt(row['value'])} | {fmt(row.get('control'))} | {sep_s} | "
+                   f"{row['target']} | {row['gate']} | {fmt(row.get('passes'))} |")
+    out += ["", "## By profile", "", "| Id | " + " | ".join(card["runs"]) + " |", "|---|" + "---|" * len(card["runs"])]
+    for mid, row in card["metrics"].items():
+        if row.get("by_profile"):
+            out.append(f"| {mid} | " + " | ".join(fmt(row["by_profile"].get(k)) for k in card["runs"]) + " |")
+    out += ["", "## Details", ""]
+    for k, d in card["details"].items():
+        out.append(f"- **{k}**: " + json.dumps(d, ensure_ascii=False)[:1500])
+    return "\n".join(out) + "\n"
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser.add_argument("runs", nargs="+", type=Path)
+    parser.add_argument("--json", type=Path)
+    parser.add_argument("--md", type=Path)
+    parser.add_argument("--baseline", type=Path)
+    parser.add_argument("--check", action="store_true")
+    parser.add_argument("--bless", type=Path)
+    parser.add_argument("--refreeze", default="")
+    parser.add_argument("--why", default="")
+    args = parser.parse_args()
+    if args.refreeze and not (args.baseline and args.why):
+        parser.error("--refreeze needs --baseline and --why")
+    card = scorecard(args.runs)
+    if args.json:
+        args.json.write_text(json.dumps(card, indent=1, ensure_ascii=False) + "\n")
+    if args.bless:
+        args.bless.write_text(json.dumps(card, indent=1, ensure_ascii=False) + "\n")
+    if args.refreeze:
+        ids = [m for m in args.refreeze.split(",") if m]
+        args.baseline.write_text(json.dumps(refreeze(json.loads(args.baseline.read_text()), card, ids, args.why), indent=1,
+                                            ensure_ascii=False) + "\n")
+    text = markdown(card)
+    if args.md:
+        args.md.write_text(text)
+    if not (args.json or args.md or args.bless or args.check or args.refreeze):
+        print(text)
+    open_gates = [f"{m} {r['name']} ({fmt(r['value'])}; {r['target']})" for m, r in card["metrics"].items()
+                  if r["gate"] == "hard" and r.get("passes") is False]
+    unseparated = [m for m, r in card["metrics"].items() if r.get("control_required") and not r.get("separates")]
+    print(f"talk_score: {len(card['runs'])} run(s); open hard gates: {len(open_gates)}"
+          + (f"; coherence metrics not separating from the control (within 30%, or the control better): "
+             f"{', '.join(unseparated)}" if unseparated else ""),
+          file=sys.stderr)
+    if args.check:
+        if not args.baseline:
+            print("talk_score: --check needs --baseline", file=sys.stderr)
+            return 2
+        problems = check(card, json.loads(args.baseline.read_text()))
+        for p in problems:
+            print("talk_score: " + p, file=sys.stderr)
+        return 1 if problems else 0
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

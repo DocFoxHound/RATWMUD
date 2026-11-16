@@ -13,6 +13,7 @@ a : Look at the blade on #topic.subject#. That's not for cutting bread. | #topic
 b : Road's dangerous. Everyone carries something. | So long as it stays sheathed. | Habit. Or nerves. | Or someone who's had to run.
 a : Not like that, they don't. | So long as. | Both, I'd say. | Running wolves don't stand like that.
 b : Then let's be polite to them. | Smile, then. Nicely. | Then don't startle them. | Then we're glad they're on our side. Are they?
+a : We will. | I am smiling. | I won't. | I hope so.
 
 scene h7_stranger_hire_road
 when topic=player topic.known=no
@@ -48,6 +49,7 @@ a : I don't like how #topic.subject# looks at folk. | Something about #topic.sub
 b : Like what? | Your fur goes up at the cat. | Watching for what? | Nor have you.
 a : Like they're counting. | This is different. | That's what worries me. | I've reasons.
 b : Counting what? | Then keep away from them. | Then watch them back. | So might they.
+a : The doors. The guards. Us. | I mean to. | I am. | Let them.
 
 scene h7_stranger_kind_word
 when topic=player topic.known=no
@@ -127,6 +129,7 @@ a : #topic.subject# goes where they like, eats where they like. | I'd give a lot
 b : Sleeps in ditches, too. | They're good boots. | Debts, I'd bet. Everyone's got debts. | You don't know their troubles.
 a : I sleep in worse than a ditch. | I could walk out of here in them. | Not ones that knock on your door. | I'd swap mine for them.
 b : Then go. The road's free. | And go where? | Ones that wait at the next town, then. | Careful. They might say yes.
+a : Free and hungry. No. | Anywhere but here. | Maybe. | I'd say yes back.
 cooldown 1d
 
 scene h7_stranger_rich_bodyguard

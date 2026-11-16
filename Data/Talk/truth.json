@@ -1,0 +1,19 @@
+{
+  "about": "What a line presupposes (Docs/Design/84 \u00a77.8, Phase 1). Each rule's `match` (a regular expression, case-insensitive, over a line's words with its symbols left as they are) names words that take something for granted; the line must have `needs` (every one) or `needs_any` (one at least) behind it. Checked twice: statically by tools/talk_lint.py (an entry's criteria, its line's tags and its say[...] must imply what the words need) and on every simulated line by tools/talk_score.py (T2: the moment's facts must hold). A need is a fact as the lines test it, of the line's speaker (self.*), the place and moment (here.*), the two (pair.*), the town (world.*) or the conversation (conv.*, Phase 2 on: until then never held). `ids` is what an identifier looks like: never in a line's words, and never spoken (T1). `example` names an entry the rule was written for. `concepts` says what a concept asked of itself holds (a reaction to the rain starting is said in rain), for the static check.",
+  "rules": [
+    {"id": "rain_now", "match": "\\b(this rain|in this wet|(?<!when )(?<!unless )(?<!can't, )it's (?:still )?raining|it is raining|still raining|pouring down|drizzling|coming down in rods)\\b", "needs_any": ["here.weather=rain|storm", "here.outdoors=rain|storm", "conv.tense=past"], "example": "rg_wet_*"},
+    {"id": "rain_heard", "match": "\\b(coming down|hear it)\\b(?!.*\\blike rain\\b).*\\b(out there|rain)\\b", "needs_any": ["here.weather=rain|storm", "here.outdoors=rain|storm"], "example": "ev_wx_indoors_rain_heard"},
+    {"id": "fog_now", "match": "\\b(this (?:fog|mist)|the (?:fog|mist)(?:'s| is) (?:thick|in|lifting|rolling|coming|down|everywhere)|fog bells?|foggy (?:today|out)|misty (?:today|out))\\b", "needs_any": ["here.weather=fog", "here.outdoors=fog", "conv.tense=past"], "example": "rg_rm_sound_fog"},
+    {"id": "snow_now", "match": "\\b(this snow|snowing|it's snowing)\\b", "needs_any": ["here.weather=snow", "here.outdoors=snow"]},
+    {"id": "night_greeting", "match": "(^|[.!?]\\s+)(good ?night)\\b", "needs_any": ["here.time=night|dusk"]},
+    {"id": "morning_greeting", "match": "(^|[.!?]\\s+)(good morning(?!'s)|morning to you)\\b", "needs_any": ["here.time=dawn", "here.hour<12"]},
+    {"id": "spouse", "match": "\\bmy (wife|husband|missus|mister|spouse)\\b", "needs_any": ["self.married=yes", "self.widowed=yes"]},
+    {"id": "late_spouse", "match": "\\bmy late (wife|husband)\\b", "needs": ["self.widowed=yes"]},
+    {"id": "children", "match": "\\bmy (son|daughter|children|little ones)\\b", "needs": ["self.parent=yes"]},
+    {"id": "parents_things", "match": "\\b(Father's|Mother's) (tools|house|grave)\\b", "needs": ["pair.kin=siblings"]},
+    {"id": "fisher_self", "match": "\\bmy (nets?|catch)\\b|\\bthrew the first fish\\b", "needs": ["self.job=fisher|sailor"], "example": "rg_ls_first_fish"},
+    {"id": "fishing_town", "match": "\\b(smoked trout|net loft|boat shed|first boats|pike lines|trout were rising)\\b", "needs_any": ["self.job=fisher|sailor", "here.fishers>=3"], "example": "rg_ls_eel_smoke"}
+  ],
+  "concepts": {"react.rain": ["here.weather=rain|storm"]},
+  "ids": "\\b(camp|born|cty|rm|tn|w|cn|fs|r2|r3|mk|inc|npc)_[a-z0-9_]{2,}\\b"
+}

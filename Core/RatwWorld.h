@@ -659,6 +659,9 @@ struct PersistedWorld
     RoadsState roads;
     CrimeState crime;
     std::vector<CalledFestival> festivals;          // Called by the Dungeon Master (Phase 9).
+    // What residents and towns have to tell (the ambient talk's news: doc 84, defect 10), kept across a restart.
+    std::map<std::string, std::vector<AmbientNews>> news;
+    std::map<std::string, std::vector<TownNews>> townNews;
 };
 
 class World
@@ -707,6 +710,13 @@ class World
     {
         return doors_;
     }
+    // A key that changes when the doors that lead into buildings change (for caches of walks through them: the district,
+    // the street outside, an entrance), but not when a streamed cell's seams come and go: seams only join outdoor cells,
+    // and every such walk stops at the first one.
+    std::size_t doorsKey() const
+    {
+        return streamedSeams_ < doors_.size() ? doors_.size() - streamedSeams_ : 0;
+    }
     const Door* door(const std::string& id) const;
     // The doors, stairs and seams in one cell, in ID order (an index over doors(); rebuilt when doors change).
     const std::vector<Door*>& doorsIn(const std::string& cellId) const;
@@ -730,6 +740,21 @@ class World
     // A Dungeon Master's move (doc 34, the LIVE map): someone in the world put straight onto an open tile of any place,
     // where they carry on. Not someone in a fight, or a tile they couldn't stand on.
     Result teleport(const std::string& id, const std::string& cellId, double x, double y);
+    // The conversation simulator (Docs/Design/84 §15.1; Tests/talk_sim.cpp), never the game's own path: the world's clock
+    // and calendar moved on with nothing else run (its frozen mode: the weather's field follows the hour); the ambient
+    // director's pacing (when each resident and each place last talked), carried from one snapshot's world to the next;
+    // and someone put back where, and as, a recorded run had them (moving: walking somewhere, so not free to talk).
+    void advanceClock(double seconds);
+    std::map<std::string, double>& ambientPacing() { return ambientLast_; }
+    // The cells near players (the stage: World::setTiered), and every NPC put on or off it by where they stand now, as
+    // a tick's errands step does (no one walks: they stand where they are). Nothing when the world isn't tiered.
+    std::set<std::string> playerStage() const { return tiered() ? stageCells() : std::set<std::string>{}; }
+    void restage();
+    // What the talk library calls a place (here.place: market, tavern, chapel, home, work, street...), as a resident
+    // standing there would be told.
+    std::string placeKindOf(const std::string& cellId) const;
+    bool replayPlace(const std::string& id, const std::string& cellId, Vec2 at, bool moving, const std::string& posture,
+                     bool offstage);
     // Temporary folk a Dungeon Master brings in from the LIVE map (doc 34): a stranger standing where put, who leaves
     // when their time is up (1 minute to a day of world time). Never saved; looked at, not talked to (yet: briefs are
     // doc 34 Part 6). `look` is how they look, often a copy of a resident's.
@@ -1159,6 +1184,17 @@ class World
     // each day, losing confidence, and between towns with the caravans.
     void believe(const std::string& holder, const std::string& subject, const std::string& claim,
                  const std::string& source, double confidence, const std::string& incident = {}, const std::string& as = {});
+    // The same, as a structured claim (doc 84 §7.7): its kind, the second party it names and the cell it is about given
+    // (the first form works them out of the free words and the incident: claimOf).
+    void believe(const Belief& b);
+    // A belief's kind, object and place, where they are empty: from claims.json's matches for its free words, the incident
+    // it is about (a theft's victim) and the cell its words name. Older saves' beliefs are filled so as they load.
+    void claimOf(Belief& b) const;
+    void fillClaims();                              // claimOf over every belief held (after a load, or the table's).
+    // A cell in words a resident would use of where it is ("in the Greenholt, out by Glasswater"; doc 84 §7.7), and the
+    // place it is near as a name for a line's "out by #topic.where#" ("Glasswater"). Never an id; "" for no such cell.
+    std::string placeWords(const std::string& cellId) const;
+    std::string placeNear(const std::string& cellId) const;
     // Every belief of this claim dropped (a deed revoked: doc 56).
     void forgetClaim(const std::string& claim);
     const std::vector<Belief>* beliefsOf(const std::string& holder) const;
@@ -1412,6 +1448,7 @@ class World
     // named "House <name>" on the cell, else on the cells its doors lead out to (a flat to its shop, a shop to its
     // street), the nearest first, never past the first outdoor cell (the Crown's charters: Docs/Design/75, 4.2).
     std::string districtHouse(const std::string& cellId) const;
+    std::string districtWalk(const std::string& cellId) const;   // (Its walk through the doors, uncached.)
     // Schedules (Phase 9). A cell's community is its town (a region, where there are no town records); "" for none.
     std::string communityOf(const std::string& cellId) const { return lawTown(cellId); }
     DayPlan dayPlan(const std::string& community);          // Today's, as residents live it.
@@ -1897,8 +1934,23 @@ class World
     std::map<std::string, std::vector<TownNews>> townNews_;      // By town (or region).
     std::map<std::string, std::string> talkDialectOf_;           // (setTalkDialects.)
     mutable std::vector<std::pair<std::string, int>> talkHomes_; // The places somebody lives and how many, for talkOrigin (once).
+    // The street a building's door gives onto, by cell (here.outdoors: doc 84 §7.8), found through the doors once and
+    // found again when the doors change.
+    mutable std::map<std::string, std::string> outsideOf_;
+    mutable std::size_t outsideDoors_ = 0;
+    // districtHouse's answers by cell, found again when the doors change and each game day (a claim may move): asked
+    // for every resident's leader whenever one speaks (doc 84, Phase 1), it walks the doors.
+    mutable std::map<std::string, std::string> districtOf_;
+    mutable std::size_t districtDoors_ = 0;
+    mutable std::int64_t districtDay_ = -1;
+    std::string outsideOf(const std::string& cellId) const;
     void noteNews(const WorldEvent& event);
+    // News from `who`'s own life, kept a few days to tell (`about`: the other one it concerns, never told it as news).
+    void tellNews(const std::string& who, const std::string& kind, const std::string& text, const std::string& about = {});
   public:
+    // The victim's own news of a theft or an attack they noticed (doc 84; the slice-end review): the one who did it named
+    // only if the victim saw who it was, a traveller as the victim knows them. (From witness(); public for its tests.)
+    void victimNews(const Incident& incident, bool identified);
     // The town a cell is in (its id), else the cell's region: the talk library's here.region.
     std::string townIdOf(const std::string& cellId) const;
     // The best thing for `a` to talk of with `b` now (gossip, news, the day...), with its tags and blanks; also asked by
@@ -2627,6 +2679,7 @@ class World
     // Each streamed cell's seams (its side of every crossing into a neighbour), kept from the first time it loaded
     // so that offstage NPCs can cross it later without it being in memory.
     std::map<std::string, std::vector<Door>> seamAnchors_;
+    std::size_t streamedSeams_ = 0;                 // Seams in doors_ put there by a streamed cell's loading (doorsKey).
     std::set<std::string> stageCells() const;
     // Where an entity is, the cells across its open edges, and those behind doors near it: what it could see,
     // hear or step into soon. The stage is this around every player; streaming keeps it around everyone onstage.

@@ -1178,6 +1178,58 @@ void theCountrysVoices()
                 expect(lib.symbols(g).count(symbol) > 0, g + " has #" + symbol + "#");
 }
 
+// Doc 84, Phase 1: a value that ends its own sentence before the line's comma or stop gives up its mark (defect 14);
+// whether a line may be heard again is the concept asked's, not any of its entry's (defect 4).
+void truthFixes()
+{
+    auto lib = foundation();
+    std::string problem;
+    expect(lib.parseGrammar(R"(
+grammar plain
+habit = fine
+aside = well
+
+grammar loaves
+habit = the loaves are honest.
+aside = mind;
+)", "loaves.grammar", problem), problem);
+    auto q = moment("bark");
+    q.alone = true;
+    q.b = {};
+    q.a.grammar = {"loaves"};
+    const auto say = [&](const std::string& text) {
+        std::string out;
+        lib.expand(text, q, 0, 1, out);
+        return out;
+    };
+    expect(say("Morning to you; #habit#, neighbour.") == "Morning to you; the loaves are honest, neighbour.",
+           "the punctuation join drops the value's stop before a comma: " + say("Morning to you; #habit#, neighbour."));
+    expect(say("#habit#.") == "The loaves are honest.", "and one of two stops: " + say("#habit#."));
+    expect(say("#aside#, now.") == "Mind, now.", "a semicolon too: " + say("#aside#, now."));
+    expect(say("#habit# Yes.") == "The loaves are honest. Yes.", "and keeps it where the line goes on: " + say("#habit# Yes."));
+
+    expect(lib.parse(R"(
+rule r_also_weather
+when concept=talk.smalltalk|talk.weather
+say Grey again.
+
+rule r_only_small
+when concept=talk.smalltalk
+say Quiet today.
+)", "repeat.talk", problem), problem);
+    const auto heard = [](const std::string& id) { return id == "r_also_weather"; };
+    auto small = moment("talk.smalltalk");
+    int again = 0;
+    for (std::uint64_t seed = 0; seed < 40; ++seed)
+        again += lib.pick(small, seed, heard, {}).id == "r_also_weather";
+    expect(again == 0, "a line heard is not fresh for small talk because it is also a weather line (" + std::to_string(again) + " of 40)");
+    auto weather = moment("talk.weather");
+    bool repeats = false;
+    for (std::uint64_t seed = 0; seed < 10; ++seed)
+        repeats |= lib.pick(weather, seed, heard, {}).id == "r_also_weather";
+    expect(repeats, "while asked as weather, it may be said again");
+}
+
 int main()
 {
     try
@@ -1195,6 +1247,7 @@ int main()
         theStagedEconomysTalk();
         theForbiddenWord();
         theCountrysVoices();
+        truthFixes();
     }
     catch (const std::exception& error)
     {

@@ -250,7 +250,7 @@ a : Shook them twice. | Tempting. | It'll take days.
 # ---------------------------------------------------------------- Indoors
 
 scene ev_wx_indoors_rain_heard
-when topic=weather here.weather=indoors here.season=autumn|winter|spring
+when topic=weather here.weather=indoors here.outdoors=rain|storm
 a : Hear it coming down out there? | Glad I'm in here and not out there. | Shut the door, the cold's getting in.
 b[innkeeper] : Foul weather's good for trade. Everyone wants a fire.
 b : Like nails on the roof. | You and me both. | Sorry. Sorry.

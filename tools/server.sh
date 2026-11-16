@@ -54,6 +54,11 @@ if [[ "${RATW_VOICE:-on}" != off ]]; then
 fi
 if [[ -n "$database" ]]; then
   command+=(--database "$database" --world-kind "$world_kind")   # (A dev world's Dungeon Masters may /store: doc 67.)
+  # A DEV world's ledger keeps the words too (Docs/Design/84 §15.6): what each NPC line said and where it came from, so
+  # real server speech can be checked. RATW_TALK_WORDS=off leaves them out.
+  if [[ "$world_kind" == dev && "${RATW_VOICE:-on}" != off && "${RATW_TALK_WORDS:-on}" != off ]]; then
+    command+=(--log-talk-words)
+  fi
 else
   if [[ -z "$save" ]]; then
     if [[ -n "$world" ]]; then

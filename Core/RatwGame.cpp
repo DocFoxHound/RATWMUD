@@ -219,6 +219,57 @@ class ScratchStoreImpl final : public Store
     std::unique_ptr<Store> inner_;
 };
 
+// A scratch world started from a checkpoint file instead of its own save (Options::checkpointFile: the conversation
+// simulator's fixtures, doc 84 §15.1): the file read (through gzip when it ends .gz), nothing written, no journal replayed
+// over it, and none of a database world's copied NPC states applied (the file has its own).
+class CheckpointFileStoreImpl final : public Store
+{
+  public:
+    explicit CheckpointFileStoreImpl(std::string path) : path_(std::move(path)) {}
+    std::unique_ptr<journal::Writer> writer = journal::memoryWriter(std::make_shared<std::vector<journal::Record>>());
+    journal::Writer* journal() override { return writer.get(); }
+    bool journalAfter(std::uint64_t, std::vector<journal::Record>&, std::string&) override { return true; }
+    bool database() const override { return false; }
+    std::string load() override
+    {
+        std::string text;
+        if (path_.size() > 3 && path_.compare(path_.size() - 3, 3, ".gz") == 0)
+        {
+            std::string quoted = "'";
+            for (const char c : path_)
+                quoted += c == '\'' ? std::string("'\\''") : std::string(1, c);
+            quoted += "'";
+            if (FILE* p = ::popen(("gzip -dc " + quoted).c_str(), "r"))
+            {
+                char buffer[1 << 16];
+                for (std::size_t n; (n = std::fread(buffer, 1, sizeof buffer, p)) > 0;)
+                    text.append(buffer, n);
+                if (::pclose(p) != 0)
+                    text.clear();
+            }
+        }
+        else
+        {
+            std::ifstream in(path_, std::ios::binary);
+            std::ostringstream all;
+            all << in.rdbuf();
+            text = all.str();
+        }
+        if (text.empty())
+            problem_ = "the checkpoint file " + path_ + " can't be read";
+        return text.empty() ? std::string("{\"schema\":-1}") : text;
+    }
+    bool save(DbStore::Build, std::uint64_t) override { return true; }
+    bool saveInBackground(DbStore::Build, std::uint64_t) override { return true; }
+    bool flush() override { return true; }
+    void queueEvents(std::vector<WorldEvent>) override {}
+    std::vector<std::pair<std::string, std::string>> externalNpcStates() override { return {}; }
+    std::string error() const override { return problem_; }
+
+  private:
+    std::string path_, problem_;
+};
+
 class MemoryStoreImpl final : public Store
 {
   public:
@@ -421,6 +472,11 @@ bool Game::start(std::string& problem)
         if (!voiceLog_)
             note("warn", "RATW_VOICE the ledger " + options_.voiceLog + " cannot be written");
     }
+    if (!options_.checkpointFile.empty() && !options_.scratch)
+    {
+        problem = "a checkpoint file is only for a scratch world (it is read, and nothing is saved over it)";
+        return false;
+    }
     // One server per world, before anything is loaded or written. A scratch server writes nothing: it needn't own it.
     if (options_.scratch)
         note("info", "RATW_SCRATCH a scratch server (pid " + std::to_string(::getpid()) +
@@ -435,6 +491,8 @@ bool Game::start(std::string& problem)
         store_ = databaseStore(options_.conninfo, liveWorldId_, problem);
         if (options_.scratch)
             store_ = scratchStore(std::move(store_));
+        if (store_ && !options_.checkpointFile.empty())   // (From a fixture's checkpoint: doc 84 §15.1.)
+            store_ = std::make_unique<CheckpointFileStoreImpl>(options_.checkpointFile);
         if (!store_)
         {
             problem = "the world database save is unavailable: " + problem;
@@ -470,6 +528,8 @@ bool Game::start(std::string& problem)
         store_ = customStore_ ? std::move(customStore_) : options_.savePath.empty() ? memoryStore() : fileStore(options_.savePath, problem);
         if (options_.scratch && store_)
             store_ = scratchStore(std::move(store_));
+        if (store_ && !options_.checkpointFile.empty())
+            store_ = std::make_unique<CheckpointFileStoreImpl>(options_.checkpointFile);
         if (!store_)
             return false;
     }
@@ -638,8 +698,17 @@ bool Game::loadFromDatabase(std::string& problem)
         if (hostOnly_)
             note("info", "RATW_HOST_ONLY the world is open only to its host");
     }
+    const bool pinned = options_.scratch && options_.worldBuild > 0;
     const auto build = worldDb_.exec("SELECT w.id, b.id, coalesce(b.release, 0), b.files::text FROM world.worlds w "
-                                     "JOIN world.builds b ON b.world_id = w.id ORDER BY b.id DESC LIMIT 1");
+                                     "JOIN world.builds b ON b.world_id = w.id" +
+                                     std::string(pinned ? " WHERE b.id = " + std::to_string(options_.worldBuild) : "") +
+                                     " ORDER BY b.id DESC LIMIT 1");
+    if (pinned && build.ok && build.rows.empty())
+    {
+        problem = "the " + options_.database + " database has no world build " + std::to_string(options_.worldBuild) +
+                  " (the one asked for)";
+        return false;
+    }
     if (!build.ok || build.rows.empty() || !build.rows[0][3])
     {
         problem = "the " + options_.database + " database has no world build yet" +
@@ -696,7 +765,16 @@ bool Game::loadFromDatabase(std::string& problem)
             if (cell[0] && cell[1])
                 cellHeaders_[*cell[0]] = *cell[1];
         std::string prefetchProblem;
-        prefetching = prefetcher().Start(options_.conninfo, std::to_string(loadedBuild_), prefetchProblem);
+        // (One prefetcher a process: a second world started in it, as the conversation simulator starts one from each
+        // fixture checkpoint (doc 84 §15.1), keeps the one already fetching this build's cells.)
+        static std::string prefetchingBuild;
+        if (!prefetching || prefetchingBuild != std::to_string(loadedBuild_))
+        {
+            if (prefetching)
+                prefetcher().Stop();
+            prefetching = prefetcher().Start(options_.conninfo, std::to_string(loadedBuild_), prefetchProblem);
+            prefetchingBuild = prefetching ? std::to_string(loadedBuild_) : std::string();
+        }
         if (!prefetching)
             note("warning", "RATW cells will not be fetched ahead (each loads when needed): " + prefetchProblem);
     }
@@ -4853,11 +4931,14 @@ bool Game::talk(const std::string& npcId, const std::string& playerId, const std
     if (!npc || !player || !npc->npc || world_.visitorLeaves(npcId) >= 0)
         return false;                               // (Visitors aren't voiced by the Mind: docs 34, 58.)
     world_.faceTalker(npcId, playerId);             // It turns to the one talking to it (doc 53, 4).
+    // Said in the dialogue window: decided now, as it is said (a queued line keeps its own), and kept with the reply.
+    const auto session = dialogues_.find(playerId);
+    const bool window = std::exchange(windowNext_, false) || (session != dialogues_.end() && session->second.npc == npcId);
     if (pendingNpc_.count(npcId))
     {
         // Still answering: remember this to answer next. A crowd talking over each other keeps only the latest few.
         auto& queue = queuedTalk_[npcId];
-        queue.push_back({playerId, heardText, voice, perceived != nullptr, perceived ? *perceived : SensoryResult{}});
+        queue.push_back({playerId, heardText, voice, perceived != nullptr, perceived ? *perceived : SensoryResult{}, window});
         while (queue.size() > MaxQueuedTalk)
             queue.pop_front();
         return true;
@@ -4880,11 +4961,18 @@ bool Game::talk(const std::string& npcId, const std::string& playerId, const std
     if (!alsoHeard.empty())
         context.scene += " Others were spoken to at the same time, and just answered: " + mind::left(alsoHeard, 600);
     context.scene += dialogueBrief(npcId, playerId);   // (Said in the dialogue window: doc 83.)
+    if (window && dialogueBrief(npcId, playerId).empty())   // (Said there, though it has closed since: the same rule.)
+        context.scene += " They spoke to you face to face. Answer what they said in a line or two. Never take, give, sell or "
+                         "promise anything: only their choices do that.";
     memories_.record(npcId, subjectId, {sequence_++, now(), context.playerName, heardText});
     // That they talked, never what was said (that stays in the NPC's memory); an unrecognised voice stays anonymous.
     logEvent("conversation", identified ? playerId : std::string(), npcId);
     pendingNpc_.insert(npcId);
     replyingTo_[npcId] = identified ? playerId : std::string();
+    if (window)
+        windowAsked_.insert(npcId);
+    else
+        windowAsked_.erase(npcId);
     // Thinking: the player sees the NPC's "..." until the reply comes (or half a minute passes).
     npc->typing = true;
     typingExpiry_[npcId] = world_.time() + 30;
@@ -5073,7 +5161,10 @@ void Game::speakReply(const std::string& npcId, const std::string& subjectId, bo
     memories_.record(npcId, subjectId, {sequence_++, now(), npcId, text});
     logEvent("conversation", npcId, identified ? subjectId : std::string());
     heed(npcId, subjectId, identified, reply);
+    windowAsked_.erase(npcId);
     voiced("dialogue", route, npcId);
+    if (options_.logTalkWords)
+        voicedWords("dialogue", npcId, subjectId, text, nullptr);
     saveSoon();
     // Spoken to with others: the next one answers now, having heard this.
     if (const auto chain = chainAfter_.find(npcId); chain != chainAfter_.end())
@@ -5161,7 +5252,13 @@ void Game::heed(const std::string& npcId, const std::string& subjectId, bool ide
             heardTrouble(subjectId, npcId, briefed->second);
         troubleBriefed_.erase(briefed);
     }
-    if (!reply.promise.empty())
+    // The window's free talk makes no promises (doc 83's brief; doc 84, defect 15): what the Mind reports of one said
+    // there is let go, as anything it would give or take is.
+    // (Where the words were said decides it, as they were said: windowAsked_. The window may have closed while the Mind
+    // wrote the answer, or while the line waited its turn.)
+    const auto window = dialogues_.find(subjectId);
+    const bool inWindow = windowAsked_.count(npcId) > 0 || (window != dialogues_.end() && window->second.npc == npcId);
+    if (!reply.promise.empty() && !inWindow)
     {
         const bool byNpc = reply.promiseBy == "npc";
         memories_.record(npcId, subjectId, {sequence_++, now(), byNpc ? "(your promise)" : "(their promise)", reply.promise});
@@ -5184,7 +5281,9 @@ void Game::talkNext(const std::string& npcId)
         }
         const QueuedTalk next = std::move(found->second.front());
         found->second.pop_front();
+        windowNext_ = next.window;
         talk(npcId, next.playerId, next.heardText, next.voice, next.hasSense ? &next.sense : nullptr);
+        windowNext_ = false;
     }
 }
 
@@ -6581,17 +6680,33 @@ DbStore::Build Game::capture()
         c->server.scenesHeard[who].assign(heard.order.begin(), heard.order.end());
     {
         auto memory = Value::object();
+        std::set<std::string> owners;
         for (const auto& [owner, memos] : talkMemory_)
+            owners.insert(owner);
+        for (const auto& [owner, said] : talkSaid_)
+            owners.insert(owner);
+        for (const auto& owner : owners)
         {
             auto kept = Value::object();
-            for (const auto& [key, m] : memos)
-                if (m.until < 0 || m.until >= world_.calendarDays())
-                {
-                    auto pair = Value::array();
-                    pair.push(m.value);
-                    pair.push(m.until);
-                    kept.add(key, pair);
-                }
+            if (const auto memos = talkMemory_.find(owner); memos != talkMemory_.end())
+                for (const auto& [key, m] : memos->second)
+                    if (m.until < 0 || m.until >= world_.calendarDays())
+                    {
+                        auto pair = Value::array();
+                        pair.push(m.value);
+                        pair.push(m.until);
+                        kept.add(key, pair);
+                    }
+            // (The cooldown store, in the memory's shape: an older server reads it as memory, as it was. Doc 84.)
+            if (const auto said = talkSaid_.find(owner); said != talkSaid_.end())
+                for (const auto& [key, until] : said->second)
+                    if (until < 0 || until >= world_.calendarDays())
+                    {
+                        auto pair = Value::array();
+                        pair.push("yes");
+                        pair.push(until);
+                        kept.add(key, pair);
+                    }
             if (kept.size())
                 memory.add(owner, kept);
         }
@@ -6654,6 +6769,124 @@ void Game::autosave()
     }
     else
         trimWhenStored_.push_back({revision_, seq});
+}
+
+std::string Game::checkpointText()
+{
+    Value document;
+    std::string states;
+    capture()(document, states);
+    document.set("journal", 0.0);                   // (A fixture has no journal after it.)
+    // The residents' world only: no player characters and no accounts (a scratch world's accounts may be set-aside
+    // ones, and a fixture is read only by scratch worlds, which start with fresh accounts of their own).
+    document.set("players", Value::array());
+    document.erase("accounts");
+    return json::dump(document);
+}
+
+json::Value Game::talkCarry() const
+{
+    auto out = Value::object();
+    auto heard = Value::object();
+    for (const auto& [who, h] : scenesHeard_)
+    {
+        auto list = Value::array();
+        for (const auto& id : h.order)
+            list.push(id);
+        heard.add(who, list);
+    }
+    out.add("heard", heard);
+    auto memory = Value::object();
+    for (const auto& [owner, memos] : talkMemory_)
+    {
+        auto kept = Value::object();
+        for (const auto& [key, m] : memos)
+        {
+            auto pair = Value::array();
+            pair.push(m.value);
+            pair.push(m.until);
+            kept.add(key, pair);
+        }
+        memory.add(owner, kept);
+    }
+    out.add("memory", memory);
+    auto said = Value::object();
+    for (const auto& [owner, ids] : talkSaid_)
+    {
+        auto kept = Value::object();
+        for (const auto& [key, until] : ids)
+            kept.add(key, until);
+        said.add(owner, kept);
+    }
+    out.add("said", said);
+    auto recent = Value::object();
+    for (const auto& [cell, ids] : recentScenes_)
+    {
+        auto list = Value::array();
+        for (const auto& id : ids)
+            list.push(id);
+        recent.add(cell, list);
+    }
+    out.add("recent", recent);
+    auto spoke = Value::object();
+    for (const auto& [id, t] : npcLastSpeech_)
+        spoke.add(id, t);
+    out.add("spoke", spoke);
+    auto incidents = Value::array();
+    for (const auto& id : voicedIncidents_)
+        incidents.push(id);
+    out.add("incidents", incidents);
+    auto pacing = Value::object();
+    for (const auto& [key, t] : const_cast<World&>(world_).ambientPacing())
+        pacing.add(key, t);
+    out.add("pacing", pacing);
+    return out;
+}
+
+void Game::talkResume(const json::Value& carried)
+{
+    if (const auto* heard = carried.find("heard"); heard && heard->isObject())
+    {
+        scenesHeard_.clear();
+        for (const auto& [who, list] : heard->fields())
+            for (const auto& id : list.items())
+                scenesHeard_[who].add(id.asString(""));
+    }
+    if (const auto* memory = carried.find("memory"); memory && memory->isObject())
+    {
+        talkMemory_.clear();
+        for (const auto& [owner, kept] : memory->fields())
+            for (const auto& [key, pair] : kept.fields())
+                if (pair.isArray() && pair.size() == 2)
+                    talkMemory_[owner][key] = {pair.items()[0].asString(""), pair.items()[1].asNumber()};
+    }
+    if (const auto* said = carried.find("said"); said && said->isObject())
+    {
+        talkSaid_.clear();
+        for (const auto& [owner, kept] : said->fields())
+            for (const auto& [key, until] : kept.fields())
+                talkSaid_[owner][key] = until.asNumber(-1);
+    }
+    if (const auto* recent = carried.find("recent"); recent && recent->isObject())
+    {
+        recentScenes_.clear();
+        for (const auto& [cell, list] : recent->fields())
+            for (const auto& id : list.items())
+                recentScenes_[cell].push_back(id.asString(""));
+    }
+    if (const auto* spoke = carried.find("spoke"); spoke && spoke->isObject())
+        for (const auto& [id, t] : spoke->fields())
+            npcLastSpeech_[id] = t.asNumber();
+    if (const auto* incidents = carried.find("incidents"); incidents && incidents->isArray())
+        for (const auto& id : incidents->items())
+            voicedIncidents_.insert(id.asString(""));
+    if (const auto* pacing = carried.find("pacing"); pacing && pacing->isObject())
+    {
+        auto& last = world_.ambientPacing();
+        last.clear();
+        for (const auto& [key, t] : pacing->fields())
+            last[key] = t.asNumber();
+    }
 }
 
 void Game::save()
@@ -6745,6 +6978,7 @@ void Game::load(const std::string& payload)
         note("error", "RATW restore rejected; checkpoint preserved: " + result.message);
         return;
     }
+    world_.fillClaims();                              // (An older save's beliefs get their kind, victim and place: doc 84.)
     accounts_ = std::move(restored);
     for (const auto& player : saved.players)
     {
@@ -6779,9 +7013,12 @@ void Game::load(const std::string& payload)
                 e->leaderId = "party:" + partyId;
     scenesHeard_.clear();
     talkMemory_.clear();
+    talkSaid_.clear();
     for (const auto& [owner, memos] : state.talkMemory.fields())
         for (const auto& [key, m] : memos.fields())
-            if (m.items().size() == 2 && talkMemory_[owner].size() < 32)
+            if (m.items().size() == 2 && key.rfind("said:", 0) == 0)
+                talkSaid_[owner][key] = m.items()[1].asNumber(-1);   // (The cooldown store: doc 84, defect 6.)
+            else if (m.items().size() == 2 && talkMemory_[owner].size() < 32)
                 talkMemory_[owner][key] = {m.items()[0].asString(""), m.items()[1].asNumber(-1)};
     regardLedger_.clear();
     for (const auto& [pair, list] : state.regardLedger.fields())

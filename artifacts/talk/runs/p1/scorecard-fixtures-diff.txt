@@ -1,0 +1,2 @@
+C4 (tone clashes per 1,000 beats): 0.0256, worse than the baseline's 0.0256 on an open hard gate
+B5 (exchanges simulated a second): 1.5, worse than the baseline's 1.51 on an open hard gate

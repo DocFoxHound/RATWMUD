@@ -1,7 +1,11 @@
 // The ambient director (Core/RatwAmbient.h; Docs/Design/26-living-npcs.md, Phase 10), in Greyfen: which two residents
 // talk, about what, when, and what their talk changes; and the authored lines that stand in for the NPC Mind.
+#include "RatwClaims.h"
 #include "RatwMind.h"
 #include "RatwWorld.h"
+
+#include <fstream>
+#include <sstream>
 
 #include <cmath>
 #include <iostream>
@@ -179,10 +183,238 @@ void authoredLines()
         if (std::string(kind) == "news")
             expect(x.lines[0].second.find("I married Rook") != std::string::npos, "News in the teller's own words: " + x.lines[0].second);
     }
+    // A sentence after a question starts with a capital, though the news or a traveller's look begins in lower case
+    // ("Did you hear? A stranger robbed me.": the slice-end review).
+    int asked = 0;
+    for (const auto* who : {"Sorrel", "Fennel", "Rook", "Linden", "Maple", "Birch", "Wren", "Harrow"})
+        for (const auto* kind : {"gossip", "news"})
+        {
+            c.a = {who, "", ""};
+            c.kind = kind;
+            c.subjectName = "a grey stranger";
+            c.news = std::string("a stranger robbed ") + who;
+            const auto x = mind::Client::authoredExchange(c);
+            const auto& line = x.lines[0].second;
+            if (const auto q = line.find("? "); q != std::string::npos)
+            {
+                ++asked;
+                expect(q + 2 < line.size() && !(line[q + 2] >= 'a' && line[q + 2] <= 'z'), "A capital after the question: " + line);
+            }
+        }
+    expect(asked > 0, "Some of them asked first");
     mind::Client offline;
     bool got = false;
     offline.exchange(c, [&](const mind::Exchange& x) { got = x.lines.size() == 2 && !x.generated; });
     expect(got, "Without the NPC Mind, the authored lines at once");
+}
+// Doc 84, Phase 1: claims said in claims.json's words from the teller's point of view, never a raw id, never told to or
+// by their victim as gossip; housemates who aren't kin; births and arrivals the town talks of, kept across a restart.
+void claimsInTheirOwnWords()
+{
+    std::ifstream in(RATW_SOURCE_DIR "/Data/Talk/claims.json");
+    std::stringstream text;
+    text << in.rdbuf();
+    std::string problem;
+    expect(claims::load(text.str(), problem), "claims.json loads: " + problem);
+    expect(claims::kindOfText("tried to steal from Wren") == "theft.attempt" && claims::kindOfText("raids the road at w_1_2") == "bandits.camp",
+           "Older saves' free words get their kind");
+    expect(claims::rawId("camp_w_ridgemere_6_8 raids") && claims::rawId("at w_ridgemere_6_8") && !claims::rawId("Wren's well-kept rows"),
+           "An id is told from words");
+    // A camp the carters spoke of: a road topic in the claim's own words, never its ids.
+    auto w = scene();
+    w.bonds().change("sorrel", "fennel", {5, 5, 20, 0, 0}, w.calendarDays());
+    std::string wild;
+    for (const auto& [id, c] : w.cells())
+        if (c.outdoors && !c.name.empty() && wild.empty())
+            wild = id;
+    expect(!wild.empty(), "Greyfen has somewhere under the sky");
+    w.roads().camps.push_back({"camp_" + wild, wild, 4, 30, -100, true});
+    w.believe("sorrel", "camp_" + wild, "raids the road at " + wild, "the carters", .9);
+    const auto* camp = belief(w, "sorrel", "camp_" + wild, "raids the road at " + wild);
+    expect(camp && camp->kind == "bandits.camp" && camp->place == wild, "The belief knows its kind and place from its words");
+    auto picks = w.ambientPicks({"player-ada"});
+    expect(picks.size() == 1 && picks[0].topic.kind == "bandits" && picks[0].topic.talk.count("topic.said") &&
+               !claims::rawId(picks[0].topic.talk.at("topic.said")) && picks[0].topic.talk.at("topic.kind") == "camp",
+           "A camp is talked of on the road's topic, in words (" + (picks.empty() ? std::string("nothing") : picks[0].topic.kind) + ")");
+    for (const auto& [k, v] : picks[0].topic.talk)
+        expect(!claims::rawId(v) || k == "topic.good", "No fact a line can say holds an id: " + k + " = " + v);
+    w.ambientSpoken(picks[0]);
+    const auto* told = belief(w, "fennel", "camp_" + wild, "raids the road at " + wild);
+    expect(told && told->kind == "bandits.camp" && told->place == wild && told->source == "sorrel", "Told on, the structure goes with it");
+    // Never to the victim as gossip, and never by them: the one robbed tells it as their own news.
+    auto v = scene();
+    v.bonds().change("sorrel", "fennel", {5, 5, 20, 0, 0}, v.calendarDays());
+    Belief theft;
+    theft.holder = "sorrel";
+    theft.subject = "player-ada";
+    theft.claim = "stole from someone";
+    theft.source = "saw it";
+    theft.confidence = .9;
+    theft.object = "fennel";
+    v.believe(theft);
+    for (const auto& p : v.ambientPicks({"player-ada"}))
+        expect(p.topic.kind != "gossip", "Nobody is told their own misfortune as gossip");
+    auto by = scene();
+    by.bonds().change("sorrel", "fennel", {5, 5, 20, 0, 0}, by.calendarDays());
+    theft.holder = "fennel";
+    theft.object = "fennel";
+    by.believe(theft);
+    for (const auto& p : by.ambientPicks({"player-ada"}))
+        expect(p.topic.kind != "gossip", "Nor does the victim tell it of themselves as gossip");
+    // A theft named with its victim: the realization, not the free words, and the kind the answers key on.
+    auto named = scene();
+    named.bonds().change("sorrel", "fennel", {5, 5, 20, 0, 0}, named.calendarDays());
+    Belief attempt = theft;
+    attempt.holder = "sorrel";
+    attempt.claim = "tried to steal from Wren";
+    attempt.object.clear();
+    named.believe(attempt);
+    picks = named.ambientPicks({"player-ada"});
+    expect(picks.size() == 1 && picks[0].topic.kind == "gossip" && picks[0].topic.talk.at("topic.claim_kind") == "theft" &&
+               picks[0].topic.talk.at("topic.said").find("tried to steal from Wren") != std::string::npos,
+           "Gossip keeps its kind for the answers (" + (picks.empty() ? std::string("nothing") : picks[0].topic.kind) + ")");
+    // Births and arrivals are the town's news, and the news survives a restart.
+    auto n = scene();
+    WorldEvent born;
+    born.kind = "birth";
+    born.actor = "fennel";
+    born.target = "sorrel";
+    born.cell = "town";
+    n.recordEvent(born);
+    std::map<std::string, std::string> facts;
+    n.talkTown("sorrel", facts);
+    expect(facts["world.birth"] == "recent", "A birth is talked of in town (" + facts["world.birth"] + ")");
+    WorldEvent mourning;
+    mourning.kind = "marriage";
+    mourning.actor = "sorrel";
+    mourning.target = "fennel";
+    mourning.cell = "town";
+    n.recordEvent(mourning);
+    const auto saved = n.save();
+    expect(!saved.townNews.empty() && !saved.news.empty(), "The town's news and a resident's own are saved");
+    World again;
+    expect(again.loadWorldFile(RATW_SOURCE_DIR "/Data/Worlds/Greyfen/world.ratw").ok && again.restore(saved).ok, "and restored");
+    std::map<std::string, std::string> after;
+    again.talkTown("sorrel", after);
+    expect(after["world.birth"] == "recent" && after["world.wedding"] == "recent", "with the birth and the wedding still news");
+    claims::clear();
+}
+
+// The slice-end review of doc 84's Slice 1: news never told to the one it is about, a theft the victim's news only once
+// noticed and its doer named only if seen, the town's news never by or to the subject's own, a cleared camp no longer
+// "camped out by...", and the town's crime naming nobody nobody saw.
+std::string pickSaid(World& w)
+{
+    const auto picks = w.ambientPicks({"player-ada"});
+    return picks.empty() ? std::string() : picks[0].topic.kind + "|" + picks[0].topic.said;
+}
+void sliceEndReview()
+{
+    std::ifstream in(RATW_SOURCE_DIR "/Data/Talk/claims.json");
+    std::stringstream text;
+    text << in.rdbuf();
+    std::string problem;
+    expect(claims::load(text.str(), problem), "claims.json loads: " + problem);
+    // "I married Fennel" isn't news to Fennel.
+    auto own = scene();
+    own.recordEvent({"marriage", "sorrel", "fennel", "town", 0, 0, {}, 0, 0, ""});
+    for (const auto& p : own.ambientPicks({"player-ada"}))
+        expect(!(p.topic.kind == "news" && p.topic.said.find("married") != std::string::npos),
+               "One's own news isn't told to the one it is about: " + p.topic.said);
+    // A theft is the victim's news only once noticed (witness() calls victimNews), and names the doer only if seen.
+    auto v = scene();
+    v.recordEvent({"theft", "player-ada", "sorrel", "town", 0, 0, {}, 0, 3, "inc-x"});
+    expect(v.save().news["sorrel"].empty(), "A theft recorded, not yet noticed, is nobody's news");
+    Incident inc;
+    inc.id = "inc-x";
+    inc.kind = "theft";
+    inc.offender = "player-ada";
+    inc.victim = "sorrel";
+    inc.cell = "town";
+    v.victimNews(inc, false);
+    auto news = v.save().news["sorrel"];
+    expect(news.size() == 1 && news[0].text == "someone robbed Sorrel" && news[0].about.empty(),
+           "Robbed by someone they couldn't make out: nobody named (" + (news.empty() ? std::string() : news[0].text) + ")");
+    v.setNamer([](const std::string&, const std::string&) { return std::string(); });
+    v.victimNews(inc, true);
+    news = v.save().news["sorrel"];
+    expect(news.back().text == "a stranger robbed Sorrel" && news.back().about == "player-ada",
+           "Seen, a traveller whose name they weren't given is a stranger: " + news.back().text);
+    auto thief = scene();
+    inc.offender = "fennel";
+    thief.victimNews(inc, true);
+    expect(thief.save().news["sorrel"].back().text == "Fennel robbed Sorrel", "A resident seen at it is named");
+    for (const auto& p : thief.ambientPicks({"player-ada"}))
+        expect(!(p.topic.kind == "news" && p.topic.said == "Fennel robbed Sorrel"), "but the victim doesn't tell the thief");
+    // The town's news (a death here: it outscores Ada standing by, as a birth doesn't), never by or to the subject's own
+    // spouse; births and arrivals go the same way (sceneTopics).
+    const auto died = [](World& w) {
+        WorldEvent e;
+        e.kind = "mourning";
+        e.actor = "harrow";                         // (Birch and Harrow keep the barracks; Sorrel and Fennel live elsewhere.)
+        e.target = "birch";
+        e.cell = "town";
+        w.recordEvent(e);
+        const auto picks = w.ambientPicks({"player-ada"});
+        return !picks.empty() && picks[0].topic.kind == "life" && picks[0].topic.talk.count("topic.kind") &&
+               picks[0].topic.talk.at("topic.kind") == "death";
+    };
+    auto town = scene();
+    expect(died(town), "Birch's death is the town's news (" + pickSaid(town) + ")");
+    auto kin = scene();
+    expect(kin.society().marry("sorrel", "birch"), "Sorrel marries Birch");
+    expect(!died(kin), "but not told by or to his wife as the town's news (" + pickSaid(kin) + ")");
+    // A cleared camp isn't "camped out by..." any more.
+    auto c = scene();
+    std::string wild;
+    for (const auto& [id, cell] : c.cells())
+        if (cell.outdoors && !cell.name.empty() && wild.empty())
+            wild = id;
+    c.bonds().change("sorrel", "fennel", {5, 5, 20, 0, 0}, c.calendarDays());
+    c.roads().camps.push_back({"camp_" + wild, wild, 4, 30, -100, true});
+    c.believe("sorrel", "camp_" + wild, "raids the road at " + wild, "the carters", .9);
+    expect(pickSaid(c).rfind("bandits|", 0) == 0, "A camp the carters spoke of is talked of (" + pickSaid(c) + ")");
+    c.roads().camps.back().active = false;
+    expect(pickSaid(c).rfind("bandits|", 0) != 0, "and not once it is cleared (" + pickSaid(c) + ")");
+    // The town's crime names the one who did it only if a witness saw who, a traveller as the teller knows them.
+    auto crime = scene();
+    Incident beat;
+    beat.id = "inc-y";
+    beat.kind = "assault";
+    beat.offender = "player-ada";
+    beat.victim = "rook";
+    beat.cell = "town";
+    beat.town = crime.townIdOf("town");
+    beat.day = crime.calendarDays();
+    beat.witnesses.push_back({"linden", false, .5, false});
+    crime.crime().incidents.push_back(beat);
+    const auto subject = [&] {
+        const auto picks = crime.ambientPicks({"player-ada"});
+        return picks.empty() || picks[0].topic.kind != "crime" ? std::string("(no crime topic)") : picks[0].topic.talk.at("topic.subject");
+    };
+    expect(subject() == "someone", "Only heard, not seen: someone (" + subject() + ")");
+    crime.crime().incidents.back().witnesses[0].identified = true;
+    crime.setNamer([](const std::string&, const std::string&) { return std::string(); });
+    expect(subject() != "someone" && subject() != "Ada" && subject() != "(no crime topic)",
+           "Seen, by a teller not given the name: a description (" + subject() + ")");
+    crime.setNamer([](const std::string&, const std::string&) { return std::string("Ada"); });
+    expect(subject() == "Ada", "and the name, to one who was given it (" + subject() + ")");
+    claims::clear();
+}
+
+void housematesAreNotKin()
+{
+    auto w = scene();
+    // Two who share a roof without a kin tie (the user's defect 3: the watch house's 105 pairs were "family").
+    const auto& residents = w.society().state().residents;
+    std::string a, b;
+    for (const auto& [x, rx] : residents)
+        for (const auto& [y, ry] : residents)
+            if (a.empty() && x < y && !rx.homeCell.empty() && rx.homeCell == ry.homeCell && !w.society().family(x, y))
+                a = x, b = y;
+    if (a.empty())
+        return;                                     // (Greyfen may house no such pair.)
+    expect(w.pairBand(a, b) == "housemates", "Housemates who aren't kin are housemates, not family");
 }
 } // namespace
 
@@ -195,6 +427,9 @@ int main()
         grudgesAndNews();
         theDayItself();
         authoredLines();
+        claimsInTheirOwnWords();
+        housematesAreNotKin();
+        sliceEndReview();
     }
     catch (const std::exception& e)
     {

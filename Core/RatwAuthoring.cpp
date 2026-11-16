@@ -481,7 +481,7 @@ Result World::ensureLoaded(const std::string& cellId)
     {
         seamIds.push_back(d.id);
         const auto id = d.id;
-        doors_.emplace(id, std::move(d));
+        streamedSeams_ += doors_.emplace(id, std::move(d)).second;
     }
     indexSeams(cellId, seamIds);
     if (homesReady_ && !area.outdoors && !homeStoreSpots_.count(cellId))

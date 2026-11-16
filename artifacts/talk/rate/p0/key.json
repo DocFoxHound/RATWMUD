@@ -1,0 +1,305 @@
+{
+ "about": "talk_rate.py's key: which source each item came from. Open only after rating.",
+ "items": {
+  "1": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 13
+  },
+  "2": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1105
+  },
+  "3": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1677
+  },
+  "4": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 2020
+  },
+  "5": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 945
+  },
+  "6": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 996
+  },
+  "7": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 298
+  },
+  "8": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1329
+  },
+  "9": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 54
+  },
+  "10": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 111
+  },
+  "11": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 262
+  },
+  "12": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 279
+  },
+  "13": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1533
+  },
+  "14": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 889
+  },
+  "15": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 773
+  },
+  "16": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1533
+  },
+  "17": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1683
+  },
+  "18": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 964
+  },
+  "19": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 33
+  },
+  "20": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 773
+  },
+  "21": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 774
+  },
+  "22": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 339
+  },
+  "23": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 357
+  },
+  "24": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1276
+  },
+  "25": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1117
+  },
+  "26": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 943
+  },
+  "27": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1836
+  },
+  "28": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 54
+  },
+  "29": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 127
+  },
+  "30": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1127
+  },
+  "31": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1618
+  },
+  "32": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 298
+  },
+  "33": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 371
+  },
+  "34": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 805
+  },
+  "35": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 889
+  },
+  "36": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 285
+  },
+  "37": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 302
+  },
+  "38": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 32
+  },
+  "39": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1677
+  },
+  "40": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 891
+  },
+  "41": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 944
+  },
+  "42": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1780
+  },
+  "43": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 506
+  },
+  "44": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 976
+  },
+  "45": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 279
+  },
+  "46": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 302
+  },
+  "47": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 303
+  },
+  "48": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1728
+  },
+  "49": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1267
+  },
+  "50": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 2138
+  },
+  "51": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 2009
+  },
+  "52": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1682
+  },
+  "53": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 668
+  },
+  "54": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1824
+  },
+  "55": {
+   "source": "new",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 774
+  },
+  "56": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1742
+  },
+  "57": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 303
+  },
+  "58": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 1758
+  },
+  "59": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 964
+  },
+  "60": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L2",
+   "conv": 340
+  }
+ }
+}

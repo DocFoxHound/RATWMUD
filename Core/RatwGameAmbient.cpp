@@ -2,6 +2,7 @@
 // (World::ambientPicks) where players are; here it is written (the talk library, doc 62; the NPC Mind for what matters
 // most, within the hour's budget; authored lines when nothing fits) and spoken a line at a time, as NPCs speak to
 // players, to whoever can hear. Barks, a resident calling out to no one in particular, are the talk library's too.
+#include "RatwClaims.h"
 #include "RatwSermons.h"
 #include "RatwGame.h"
 
@@ -23,6 +24,27 @@ constexpr double ConversationQuiet = 60;            // Give a player's conversat
 
 void Game::ambient(double dt)
 {
+    // The director, as every tick runs it: what is due said, then, every five seconds and while fewer than three are
+    // under way, a look for a new exchange where the players (and the simulator's listeners) can hear. Split in two
+    // (doc 84 §15.1, Phase 0) so the conversation simulator runs the same director; the split changes nothing said
+    // (Tests/fixtures/talk_golden, the golden transcripts).
+    ambientSpeak(dt);
+    if ((exchangeLookIn_ += dt) < LookEvery || ambient_.size() >= AtOnce)
+        return;
+    exchangeLookIn_ = 0;
+    const double now = world_.time();
+    std::vector<std::string> listeners;
+    for (const auto* c : clients_)
+        if (!c->entityId.empty() && (!lastChat_.count(c->entityId) || now - lastChat_.at(c->entityId) >= ConversationQuiet))
+            listeners.push_back(c->entityId);
+    for (const auto& id : talkListeners_)            // (The simulator's: none on a server.)
+        if (world_.entity(id) && (!lastChat_.count(id) || now - lastChat_.at(id) >= ConversationQuiet))
+            listeners.push_back(id);
+    ambientStart(listeners);
+}
+
+void Game::ambientSpeak(double)
+{
     const double now = world_.time();
     // Speak what is due; stop an exchange when its speakers part, fall, or a player talks to one of them.
     for (auto it = ambient_.begin(); it != ambient_.end();)
@@ -35,6 +57,18 @@ void Game::ambient(double dt)
                             (lastChat_.count(it->pick.hearer) && now - lastChat_.at(it->pick.hearer) < ConversationQuiet);
         if (broken || (it->voiced && it->lines.empty()))
         {
+            if (onAmbientEnd)                         // (The simulator's transcripts: doc 84 §15.1.)
+            {
+                AmbientEnd end{it->id, it->pick.teller, it->pick.listener, it->pick.cell, it->pick.hearer, it->pick.topic.kind,
+                               it->route, "done", it->spoken, it->written, it->chain};
+                if (broken)
+                    end.reason = !a || !b || a->dead || b->dead || a->offstage || b->offstage ? "gone"
+                                 : a->cellId != b->cellId                                       ? "cell"
+                                 : std::hypot(a->position.x - b->position.x, a->position.y - b->position.y) > Apart ? "apart"
+                                 : pendingNpc_.count(a->id) || pendingNpc_.count(b->id)        ? "busy"
+                                                                                               : "chat";
+                onAmbientEnd(end);
+            }
             it = ambient_.erase(it);
             continue;
         }
@@ -42,7 +76,14 @@ void Game::ambient(double dt)
         {
             const auto [who, text] = it->lines.front();
             it->lines.pop_front();
+            talk::LineInfo info;
+            if (!it->info.empty())
+            {
+                info = std::move(it->info.front());
+                it->info.pop_front();
+            }
             const auto& speaker = who == 0 ? it->pick.teller : it->pick.listener;
+            const auto& spokenTo = who == 0 ? it->pick.listener : it->pick.teller;
             ParsedPost post;
             post.ok = true;
             post.speech = true;
@@ -50,18 +91,24 @@ void Game::ambient(double dt)
             publish(speaker, post, Voice::Speak);
             npcLastSpeech_[speaker] = now;
             it->nextAt = now + 2.5 + double(text.size()) / 25;   // Time to read it, before the answer.
+            if (options_.logTalkWords)
+                voicedWords("exchange", speaker, spokenTo, text, &info);
+            if (onAmbientLine)
+                onAmbientLine({it->id, it->spoken, speaker, spokenTo, text, a->cellId, it->pick.hearer, it->pick.topic.kind,
+                               it->pick.topic.claim, it->route, std::move(info), it->pick.topic.subject, it->pick.topic.seen});
+            ++it->spoken;
         }
         ++it;
     }
-    if ((exchangeLookIn_ += dt) < LookEvery || ambient_.size() >= AtOnce)
+}
+
+void Game::ambientStart(const std::vector<std::string>& listeners)
+{
+    // A new exchange for these listeners: the director's pick among those standing near them, written (the talk
+    // library; the Mind only where ambientModelCallsPerHour allows) and begun at once.
+    if (listeners.empty() || ambient_.size() >= AtOnce)
         return;
-    exchangeLookIn_ = 0;
-    std::vector<std::string> listeners;
-    for (const auto* c : clients_)
-        if (!c->entityId.empty() && (!lastChat_.count(c->entityId) || now - lastChat_.at(c->entityId) >= ConversationQuiet))
-            listeners.push_back(c->entityId);
-    if (listeners.empty())
-        return;
+    const double now = world_.time();
     std::set<std::string> busy(pendingNpc_.begin(), pendingNpc_.end());
     for (const auto& [npc, queue] : queuedTalk_)
         busy.insert(npc);
@@ -79,7 +126,7 @@ void Game::ambient(double dt)
     started.pick = pick;
     ambient_.push_back(started);
     const auto id = started.id;
-    const auto begin = [this, id](const mind::Exchange& written, const char* route) {
+    const auto begin = [this, id](const mind::Exchange& written, const char* route, const talk::Said* said = nullptr) {
         for (auto& t : ambient_)
             if (t.id == id)
             {
@@ -87,6 +134,13 @@ void Game::ambient(double dt)
                 t.voiced = true;
                 t.generated = written.generated;
                 t.nextAt = world_.time();
+                t.route = route;
+                t.written = int(t.lines.size());
+                if (said && said->info.size() == said->lines.size())
+                {
+                    t.info.assign(said->info.begin(), said->info.end());
+                    t.chain = said->chain;
+                }
                 note("info", "RATW_AMBIENT " + t.pick.topic.kind + " " + t.pick.teller + " to " + t.pick.listener + " in " + t.pick.cell +
                                  " (" + route + ")");
                 voiced("exchange", route, t.pick.teller);
@@ -97,11 +151,13 @@ void Game::ambient(double dt)
     world_.talkFor({});
     const auto cell = pick.cell;
     const auto seed = id * 2654435761u + std::uint64_t(now * 7);
-    const auto fromTalk = [this, q, cell, seed, teller = a->id](const char*& route) {
-        const auto said = talkPick(q, teller, cell, 16, seed, true);
+    const auto fromTalk = [this, q, cell, seed, teller = a->id](const char*& route, talk::Said* kept = nullptr) {
+        auto said = talkPick(q, teller, cell, 16, seed, true);
         mind::Exchange out;
         out.lines = said.lines;
         route = said.id.rfind("lib_", 0) == 0 ? "library" : "scene";   // (Doc 28's library, or a written scene.)
+        if (kept)
+            *kept = std::move(said);
         return out;
     };
     // Written live only when it matters most: gossip about a player standing there, or the first talk of a crime
@@ -120,8 +176,9 @@ void Game::ambient(double dt)
     if (!live)
     {
         const char* route = "written";
-        if (auto x = fromTalk(route); !x.lines.empty())
-            begin(x, route);
+        talk::Said said;
+        if (auto x = fromTalk(route, &said); !x.lines.empty())
+            begin(x, route, &said);
         else
             begin(mind::Client::authoredExchange(context), "written");
         return;
@@ -134,10 +191,11 @@ void Game::ambient(double dt)
         if (alive.expired())
             return;
         const char* route = "written";
+        talk::Said said;
         if (written.generated)
             begin(written, "model");
-        else if (auto x = fromTalk(route); !x.lines.empty())
-            begin(x, route);
+        else if (auto x = fromTalk(route, &said); !x.lines.empty())
+            begin(x, route, &said);
         else
             begin(written, "written");
     });
@@ -173,9 +231,10 @@ mind::ExchangeContext Game::exchangeContext(const AmbientPick& pick)
         context.subjectName = found->second;
     else if (const auto* subject = world_.entity(pick.topic.subject))
         context.subjectName = subject->npc || knowsName(a->id, subject->id) ? labelFor(a->id, subject->id) : strangerLabel(subject->id);
-    context.claim = pick.topic.claim;
-    if (!pick.topic.facts.empty())
-        context.news = pick.topic.facts.front().substr(0, pick.topic.facts.front().find_last_not_of(". ") + 1);
+    context.claim = claims::rawId(pick.topic.claim) ? pick.topic.said : pick.topic.claim;   // (Never an id, to the Mind either.)
+    // What the teller tells, in their words (doc 84, defect 9): the topic's own, never the day's sentence a topic with
+    // nothing to tell would have put first among its facts.
+    context.news = pick.topic.said;
     const auto plan = world_.dayPlan(world_.communityOf(a->cellId));
     const auto* place = world_.cell(a->cellId);
     context.day = plan.kind == "festival" ? "Quite a feast for " + plan.name + "."
@@ -193,9 +252,12 @@ talk::Query Game::exchangeQuery(const AmbientPick& pick, const mind::ExchangeCon
     if (!context.subjectName.empty())
         facts.emplace("topic.subject", context.subjectName);
     if (pick.topic.kind == "gossip" && !context.claim.empty())
-        facts["topic.claim"] = context.claim;
+        facts.emplace("topic.claim", context.claim);   // (The claim's words from claims.json, not its free words: doc 84.)
     if (!context.news.empty())                      // (A topic's own news, a wagon's, is kept: Phase 8 repair.)
+    {
         facts.emplace("topic.news", mind::firstPerson(context.news, context.a.name));
+        facts.emplace("topic.said", facts.at("topic.news"));
+    }
     if (!context.day.empty())
         facts["topic.remark"] = context.day;
     return talkQuery(pick.teller, pick.listener, "talk." + pick.topic.kind, facts);
@@ -224,6 +286,10 @@ std::vector<std::string> Game::hearersOf(const std::string& speaker) const
         if (const auto* e = world_.entity(c->entityId); s && e && e->cellId == s->cellId &&
                                                      world_.hearingClarity(e->id, speaker, Voice::Speak) >= .35)
             out.push_back(e->id);
+    for (const auto& id : talkListeners_)             // (The simulator's listeners hear as players do: doc 84 §15.1.)
+        if (const auto* e = world_.entity(id); s && e && e->cellId == s->cellId &&
+                                              world_.hearingClarity(e->id, speaker, Voice::Speak) >= .35)
+            out.push_back(e->id);
     return out;
 }
 
@@ -244,7 +310,8 @@ talk::Said Game::talkPick(const talk::Query& q, const std::string& speaker, cons
     talkRemember(said.effects);                     // (What it remembers, and that it was said: phase 4.)
     if (remember)
         for (const auto& h : hearers)
-            scenesHeard_[h].add(said.id);
+            for (const auto& id : said.chain)       // (Every beat heard, the answers too, not only the opener: doc 84, defect 5.)
+                scenesHeard_[h].add(id);
     recent.push_back(said.id);
     while (recent.size() > keep)
         recent.pop_front();
@@ -304,6 +371,8 @@ void Game::barks(double dt)
         publish(who->id, post, Voice::Speak);
         npcLastSpeech_[who->id] = now;
         voiced("bark", "scene", who->id);
+        if (options_.logTalkWords)
+            voicedWords("bark", who->id, {}, chosen.lines.front().second, chosen.info.empty() ? nullptr : &chosen.info.front());
     }
 }
 

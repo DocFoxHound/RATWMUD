@@ -78,6 +78,16 @@ struct Effect
     std::string why;                      // The rule or scene that made it.
 };
 
+// Where one line of what was said came from (Docs/Design/84 §15.1, for the conversation simulator's transcripts and the
+// server's --log-talk-words): its rule or scene, which of its `|` alternatives, and the grammar layers whose words
+// filled its symbols (a dialect's name when a dialect's words were spoken). Recorded only; nothing reads it to choose.
+struct LineInfo
+{
+    std::string entry;
+    int alt = -1;
+    std::vector<std::string> layers;      // In the order first used; "plain" included when plain's words were.
+    std::vector<std::string> habits;      // The habits (`name!`, `name!!` symbols: an oath, a saying) it used.
+};
 struct Said
 {
     std::string id;                                   // The rule or scene ("" when nothing fits); a chain's first.
@@ -85,6 +95,7 @@ struct Said
     bool repeat = false;                              // May be said again to those who have heard it (weather, barks).
     std::vector<Effect> effects;                      // To remember (phase 4).
     std::vector<std::string> chain;                   // Every rule or scene said, in order (a chain's beats).
+    std::vector<LineInfo> info;                       // One a line, beside `lines` (doc 84 §15.1).
 };
 
 // Why something was said (talk_check): every rule or scene that held, its score, and the choice made.

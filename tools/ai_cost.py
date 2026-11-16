@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """What the NPC voices cost (Docs/Design/28-ai-cost.md): who answered each NPC line, and what the models were paid.
 
-Reads two ledgers, neither with any words in it:
+Reads two ledgers, neither with any words in it (except npc-voices.jsonl's "words" records, which a DEV world's
+server writes with --log-talk-words: Docs/Design/84 §15.6; they are skipped here):
   Saved/Logs/npc-voices.jsonl     every NPC line the game server said, and which route answered it (the game itself,
                                   the exchange library, written lines, or a model)
   Saved/Logs/npc-mind-calls.jsonl every call the NPC Mind made: kind, model, outcome and tokens
@@ -72,6 +73,8 @@ def report(voices: list[dict], calls: list[dict], prices: dict) -> dict:
     days: dict[str, dict] = defaultdict(lambda: {"lines": defaultdict(lambda: defaultdict(int)), "calls": {},
                                                  "unpriced": set()})
     for v in voices:
+        if v.get("kind") == "words":
+            continue    # (A line's words, with --log-talk-words: doc 84 §15.6. The line itself has its own record.)
         days[day(v["t"])]["lines"][str(v.get("kind"))][str(v.get("route"))] += 1
     for c in calls:
         d = days[day(c["t"])]

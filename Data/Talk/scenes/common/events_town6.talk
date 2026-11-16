@@ -317,6 +317,7 @@ when topic=festival a.stage=adolescent
 a : Do you think anyone will ask me to dance at #here.festival#? | I'm staying up all night for #here.festival#. Nobody can stop me. | Can I have a cup of ale at #here.festival#? Just one?
 b : Someone will. | We'll see. | Half a cup.
 a : Who? | We will. | Half!
+b : Someone with sense. | We will. | Half.
 
 scene et_fs_old_male
 when topic=festival a.stage=old a.sex=male

@@ -363,7 +363,7 @@ then other: keeping.glad
 remember pair: k=family 1m
 
 rule tell_spouse
-when concept=talk.smalltalk|talk.family|talk.friends self.spouse
+when concept=talk.smalltalk|talk.family|talk.friends self.spouse pair.band!=spouses
 cooldown 2d
 say #self.spouse# burnt the bread again. Don't tell anyone. | #self.spouse# snores like a mill. | #self.spouse# brought me flowers. No reason. I'm suspicious. | #self.spouse# has taken up the whistle. Badly.
 then other: keeping.glad

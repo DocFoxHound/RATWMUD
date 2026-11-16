@@ -1,0 +1,98 @@
+{
+  "about": "Claims and who says them (Docs/Design/84 §7.7, Phase 1). A belief (struct Belief, Core/RatwRoads.h) carries a kind from this file, the one it is about (subject: #x.*#), a second party where there is one (object, the victim: #y.*#) and a place (a cell: #place.words#, World::placeWords). Each kind is said from up to five points of view: `they` (told of others), `victim` (the object telling it), `to_victim` (told to the object), `self` (the subject speaking of it) and `kin`. A point of view is a list of wordings, the first that can be filled is said; a claim with no wording that can be filled is never spoken. `family` is the old topic.claim_kind the lines answer in kind (facts.json); `topic` is the ambient topic it is talked of under (gossip unless it says); `topic_kind` sets topic.kind for that topic's lines; `grave` 0-3 is how heavy it is. `text` maps the free words older saves and the Watch still use onto a kind (`exact` or `starts`), tried in this file's order. #claim.charge# is the charge a warrant names; #claim.text# the free words themselves, the last resort for a kind about people.",
+  "kinds": {
+    "death": {
+      "family": "death", "grave": 3,
+      "they": ["#x.name# died"],
+      "kin": ["we lost #x.first#"],
+      "text": {"exact": ["died"]}
+    },
+    "marriage": {
+      "family": "marriage", "grave": 0,
+      "they": ["#x.name# married #y.name#", "#x.name# got married"],
+      "self": ["I married #y.first#", "I got married"],
+      "text": {"exact": ["married"]}
+    },
+    "theft.attempt": {
+      "family": "theft", "grave": 2,
+      "they": ["#x.name# tried to steal from #y.name#", "#x.name# #claim.text#"],
+      "victim": ["#x.name# tried to rob me"],
+      "to_victim": ["#x.name# tried to rob you"],
+      "self": ["I never laid a paw on #y.first#'s things"],
+      "text": {"starts": ["tried to steal"]}
+    },
+    "theft": {
+      "family": "theft", "grave": 2,
+      "they": ["#x.name# stole from #y.name#", "#x.name# #claim.text#"],
+      "victim": ["#x.name# robbed me"],
+      "to_victim": ["#x.name# robbed you"],
+      "self": ["I never took a thing of #y.first#'s"],
+      "text": {"starts": ["stole"]}
+    },
+    "assault": {
+      "family": "violence", "grave": 3,
+      "they": ["#x.name# attacked #y.name#", "#x.name# #claim.text#"],
+      "victim": ["#x.name# attacked me"],
+      "to_victim": ["#x.name# attacked you"],
+      "text": {"starts": ["attacked "]}
+    },
+    "violent": {
+      "family": "violence", "grave": 2,
+      "they": ["#x.name# is violent"],
+      "victim": ["#x.name# hurt me"],
+      "text": {"exact": ["is violent"]}
+    },
+    "theft.unseen": {
+      "family": "victim", "grave": 2,
+      "they": ["#x.name# was robbed by someone nobody could make out"],
+      "victim": ["I was robbed, and I never saw who did it"],
+      "to_victim": ["you were robbed, and nobody saw who did it"],
+      "text": {"starts": ["was robbed"]}
+    },
+    "assault.unseen": {
+      "family": "victim", "grave": 3,
+      "they": ["#x.name# was set upon by someone nobody could make out"],
+      "victim": ["I was set upon, and I never saw who did it"],
+      "to_victim": ["you were set upon, and nobody saw who did it"],
+      "text": {"starts": ["was attacked"]}
+    },
+    "warrant": {
+      "family": "wanted", "grave": 2,
+      "they": ["#x.name# is wanted by the Watch for #claim.charge#", "#x.name# is wanted by the Watch"],
+      "self": ["the Watch has my name up"],
+      "text": {"starts": ["is wanted"]}
+    },
+    "promise.broken": {
+      "family": "promise_broken", "grave": 1,
+      "they": ["#x.name# breaks promises"],
+      "victim": ["#x.name# broke a promise to me"],
+      "text": {"exact": ["breaks promises"]}
+    },
+    "promise.kept": {
+      "family": "promise_kept", "grave": 0,
+      "they": ["#x.name# keeps promises"],
+      "victim": ["#x.name# kept a promise to me"],
+      "text": {"exact": ["keeps promises"]}
+    },
+    "prowling": {
+      "family": "prowling", "grave": 1,
+      "they": ["#x.name# was prowling about"],
+      "text": {"starts": ["was prowling"]}
+    },
+    "newcomer": {
+      "family": "newcomer", "grave": 0,
+      "they": ["#x.name# is new in town"],
+      "text": {"exact": ["is new in town"]}
+    },
+    "bandits.camp": {
+      "family": "bandit", "grave": 2, "topic": "bandits", "topic_kind": "camp",
+      "they": ["there's a band of robbers camped #place.words#"],
+      "text": {"starts": ["raids the road"]}
+    },
+    "bandits.robs": {
+      "family": "bandit", "grave": 2, "topic": "bandits", "topic_kind": "camp",
+      "they": ["robbers have been stopping travellers #place.words#"],
+      "text": {"starts": ["robs travellers"]}
+    }
+  }
+}

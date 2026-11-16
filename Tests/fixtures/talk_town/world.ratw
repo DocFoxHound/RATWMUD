@@ -1,0 +1,180 @@
+RATW_WORLD 3
+area "tt_ridgemere_square"
+area "tt_coldwater_quay"
+area "tt_saltwell_inn"
+area "tt_ri_home_0"
+area "tt_ri_home_1"
+area "tt_ri_home_2"
+area "tt_ri_home_3"
+area "tt_ri_home_4"
+area "tt_ri_home_5"
+area "tt_ri_home_6"
+area "tt_ri_home_7"
+area "tt_ri_home_8"
+area "tt_ri_home_9"
+area "tt_ri_home_10"
+area "tt_co_home_0"
+area "tt_co_home_1"
+area "tt_co_home_2"
+area "tt_co_home_3"
+area "tt_co_home_4"
+area "tt_co_home_5"
+area "tt_co_home_6"
+area "tt_co_home_7"
+area "tt_co_home_8"
+area "tt_sa_home_0"
+area "tt_sa_home_1"
+area "tt_sa_home_2"
+area "tt_sa_home_3"
+area "tt_sa_home_4"
+area "tt_sa_home_5"
+area "tt_sa_home_6"
+area "tt_sa_home_7"
+area "tt_sa_home_8"
+exits "tt_ridgemere_square" 1 "tt_coldwater_quay"
+territory "tt_ridgemere_square" "ridgemere" "-" 0
+territory "tt_ri_home_0" "ridgemere" "-" 0
+territory "tt_ri_home_1" "ridgemere" "-" 0
+territory "tt_ri_home_2" "ridgemere" "-" 0
+territory "tt_ri_home_3" "ridgemere" "-" 0
+territory "tt_ri_home_4" "ridgemere" "-" 0
+territory "tt_ri_home_5" "ridgemere" "-" 0
+territory "tt_ri_home_6" "ridgemere" "-" 0
+territory "tt_ri_home_7" "ridgemere" "-" 0
+territory "tt_ri_home_8" "ridgemere" "-" 0
+territory "tt_ri_home_9" "ridgemere" "-" 0
+territory "tt_ri_home_10" "ridgemere" "-" 0
+exits "tt_coldwater_quay" 2 "tt_ridgemere_square" "tt_saltwell_inn"
+territory "tt_coldwater_quay" "coldwater" "-" 0
+territory "tt_co_home_0" "coldwater" "-" 0
+territory "tt_co_home_1" "coldwater" "-" 0
+territory "tt_co_home_2" "coldwater" "-" 0
+territory "tt_co_home_3" "coldwater" "-" 0
+territory "tt_co_home_4" "coldwater" "-" 0
+territory "tt_co_home_5" "coldwater" "-" 0
+territory "tt_co_home_6" "coldwater" "-" 0
+territory "tt_co_home_7" "coldwater" "-" 0
+territory "tt_co_home_8" "coldwater" "-" 0
+exits "tt_saltwell_inn" 1 "tt_coldwater_quay"
+territory "tt_saltwell_inn" "saltwell" "-" 0
+territory "tt_sa_home_0" "saltwell" "-" 0
+territory "tt_sa_home_1" "saltwell" "-" 0
+territory "tt_sa_home_2" "saltwell" "-" 0
+territory "tt_sa_home_3" "saltwell" "-" 0
+territory "tt_sa_home_4" "saltwell" "-" 0
+territory "tt_sa_home_5" "saltwell" "-" 0
+territory "tt_sa_home_6" "saltwell" "-" 0
+territory "tt_sa_home_7" "saltwell" "-" 0
+territory "tt_sa_home_8" "saltwell" "-" 0
+door "door_tt_ri_home_0_out" "Door" "tt_ridgemere_square" 1.5 1.5 "tt_ri_home_0" 3.5 3.5 "door_tt_ri_home_0_in" 1 0 0 0 "-"
+door "door_tt_ri_home_0_in" "Door" "tt_ri_home_0" 3.5 4.5 "tt_ridgemere_square" 1.5 2.5 "door_tt_ri_home_0_out" 1 0 0 0 "-"
+door "door_tt_ri_home_1_out" "Door" "tt_ridgemere_square" 3.5 1.5 "tt_ri_home_1" 3.5 3.5 "door_tt_ri_home_1_in" 1 0 0 0 "-"
+door "door_tt_ri_home_1_in" "Door" "tt_ri_home_1" 3.5 4.5 "tt_ridgemere_square" 3.5 2.5 "door_tt_ri_home_1_out" 1 0 0 0 "-"
+door "door_tt_ri_home_2_out" "Door" "tt_ridgemere_square" 5.5 1.5 "tt_ri_home_2" 3.5 3.5 "door_tt_ri_home_2_in" 1 0 0 0 "-"
+door "door_tt_ri_home_2_in" "Door" "tt_ri_home_2" 3.5 4.5 "tt_ridgemere_square" 5.5 2.5 "door_tt_ri_home_2_out" 1 0 0 0 "-"
+door "door_tt_ri_home_3_out" "Door" "tt_ridgemere_square" 7.5 1.5 "tt_ri_home_3" 3.5 3.5 "door_tt_ri_home_3_in" 1 0 0 0 "-"
+door "door_tt_ri_home_3_in" "Door" "tt_ri_home_3" 3.5 4.5 "tt_ridgemere_square" 7.5 2.5 "door_tt_ri_home_3_out" 1 0 0 0 "-"
+door "door_tt_ri_home_4_out" "Door" "tt_ridgemere_square" 9.5 1.5 "tt_ri_home_4" 3.5 3.5 "door_tt_ri_home_4_in" 1 0 0 0 "-"
+door "door_tt_ri_home_4_in" "Door" "tt_ri_home_4" 3.5 4.5 "tt_ridgemere_square" 9.5 2.5 "door_tt_ri_home_4_out" 1 0 0 0 "-"
+door "door_tt_ri_home_5_out" "Door" "tt_ridgemere_square" 11.5 1.5 "tt_ri_home_5" 3.5 3.5 "door_tt_ri_home_5_in" 1 0 0 0 "-"
+door "door_tt_ri_home_5_in" "Door" "tt_ri_home_5" 3.5 4.5 "tt_ridgemere_square" 11.5 2.5 "door_tt_ri_home_5_out" 1 0 0 0 "-"
+door "door_tt_ri_home_6_out" "Door" "tt_ridgemere_square" 13.5 1.5 "tt_ri_home_6" 3.5 3.5 "door_tt_ri_home_6_in" 1 0 0 0 "-"
+door "door_tt_ri_home_6_in" "Door" "tt_ri_home_6" 3.5 4.5 "tt_ridgemere_square" 13.5 2.5 "door_tt_ri_home_6_out" 1 0 0 0 "-"
+door "door_tt_ri_home_7_out" "Door" "tt_ridgemere_square" 15.5 1.5 "tt_ri_home_7" 3.5 3.5 "door_tt_ri_home_7_in" 1 0 0 0 "-"
+door "door_tt_ri_home_7_in" "Door" "tt_ri_home_7" 3.5 4.5 "tt_ridgemere_square" 15.5 2.5 "door_tt_ri_home_7_out" 1 0 0 0 "-"
+door "door_tt_ri_home_8_out" "Door" "tt_ridgemere_square" 17.5 1.5 "tt_ri_home_8" 3.5 3.5 "door_tt_ri_home_8_in" 1 0 0 0 "-"
+door "door_tt_ri_home_8_in" "Door" "tt_ri_home_8" 3.5 4.5 "tt_ridgemere_square" 17.5 2.5 "door_tt_ri_home_8_out" 1 0 0 0 "-"
+door "door_tt_ri_home_9_out" "Door" "tt_ridgemere_square" 19.5 1.5 "tt_ri_home_9" 3.5 3.5 "door_tt_ri_home_9_in" 1 0 0 0 "-"
+door "door_tt_ri_home_9_in" "Door" "tt_ri_home_9" 3.5 4.5 "tt_ridgemere_square" 19.5 2.5 "door_tt_ri_home_9_out" 1 0 0 0 "-"
+door "door_tt_ri_home_10_out" "Door" "tt_ridgemere_square" 21.5 1.5 "tt_ri_home_10" 3.5 3.5 "door_tt_ri_home_10_in" 1 0 0 0 "-"
+door "door_tt_ri_home_10_in" "Door" "tt_ri_home_10" 3.5 4.5 "tt_ridgemere_square" 21.5 2.5 "door_tt_ri_home_10_out" 1 0 0 0 "-"
+door "door_tt_co_home_0_out" "Door" "tt_coldwater_quay" 1.5 1.5 "tt_co_home_0" 3.5 3.5 "door_tt_co_home_0_in" 1 0 0 0 "-"
+door "door_tt_co_home_0_in" "Door" "tt_co_home_0" 3.5 4.5 "tt_coldwater_quay" 1.5 2.5 "door_tt_co_home_0_out" 1 0 0 0 "-"
+door "door_tt_co_home_1_out" "Door" "tt_coldwater_quay" 3.5 1.5 "tt_co_home_1" 3.5 3.5 "door_tt_co_home_1_in" 1 0 0 0 "-"
+door "door_tt_co_home_1_in" "Door" "tt_co_home_1" 3.5 4.5 "tt_coldwater_quay" 3.5 2.5 "door_tt_co_home_1_out" 1 0 0 0 "-"
+door "door_tt_co_home_2_out" "Door" "tt_coldwater_quay" 5.5 1.5 "tt_co_home_2" 3.5 3.5 "door_tt_co_home_2_in" 1 0 0 0 "-"
+door "door_tt_co_home_2_in" "Door" "tt_co_home_2" 3.5 4.5 "tt_coldwater_quay" 5.5 2.5 "door_tt_co_home_2_out" 1 0 0 0 "-"
+door "door_tt_co_home_3_out" "Door" "tt_coldwater_quay" 7.5 1.5 "tt_co_home_3" 3.5 3.5 "door_tt_co_home_3_in" 1 0 0 0 "-"
+door "door_tt_co_home_3_in" "Door" "tt_co_home_3" 3.5 4.5 "tt_coldwater_quay" 7.5 2.5 "door_tt_co_home_3_out" 1 0 0 0 "-"
+door "door_tt_co_home_4_out" "Door" "tt_coldwater_quay" 9.5 1.5 "tt_co_home_4" 3.5 3.5 "door_tt_co_home_4_in" 1 0 0 0 "-"
+door "door_tt_co_home_4_in" "Door" "tt_co_home_4" 3.5 4.5 "tt_coldwater_quay" 9.5 2.5 "door_tt_co_home_4_out" 1 0 0 0 "-"
+door "door_tt_co_home_5_out" "Door" "tt_coldwater_quay" 11.5 1.5 "tt_co_home_5" 3.5 3.5 "door_tt_co_home_5_in" 1 0 0 0 "-"
+door "door_tt_co_home_5_in" "Door" "tt_co_home_5" 3.5 4.5 "tt_coldwater_quay" 11.5 2.5 "door_tt_co_home_5_out" 1 0 0 0 "-"
+door "door_tt_co_home_6_out" "Door" "tt_coldwater_quay" 13.5 1.5 "tt_co_home_6" 3.5 3.5 "door_tt_co_home_6_in" 1 0 0 0 "-"
+door "door_tt_co_home_6_in" "Door" "tt_co_home_6" 3.5 4.5 "tt_coldwater_quay" 13.5 2.5 "door_tt_co_home_6_out" 1 0 0 0 "-"
+door "door_tt_co_home_7_out" "Door" "tt_coldwater_quay" 15.5 1.5 "tt_co_home_7" 3.5 3.5 "door_tt_co_home_7_in" 1 0 0 0 "-"
+door "door_tt_co_home_7_in" "Door" "tt_co_home_7" 3.5 4.5 "tt_coldwater_quay" 15.5 2.5 "door_tt_co_home_7_out" 1 0 0 0 "-"
+door "door_tt_co_home_8_out" "Door" "tt_coldwater_quay" 17.5 1.5 "tt_co_home_8" 3.5 3.5 "door_tt_co_home_8_in" 1 0 0 0 "-"
+door "door_tt_co_home_8_in" "Door" "tt_co_home_8" 3.5 4.5 "tt_coldwater_quay" 17.5 2.5 "door_tt_co_home_8_out" 1 0 0 0 "-"
+door "door_tt_sa_home_0_out" "Door" "tt_saltwell_inn" 1.5 1.5 "tt_sa_home_0" 3.5 3.5 "door_tt_sa_home_0_in" 1 0 0 0 "-"
+door "door_tt_sa_home_0_in" "Door" "tt_sa_home_0" 3.5 4.5 "tt_saltwell_inn" 1.5 2.5 "door_tt_sa_home_0_out" 1 0 0 0 "-"
+door "door_tt_sa_home_1_out" "Door" "tt_saltwell_inn" 3.5 1.5 "tt_sa_home_1" 3.5 3.5 "door_tt_sa_home_1_in" 1 0 0 0 "-"
+door "door_tt_sa_home_1_in" "Door" "tt_sa_home_1" 3.5 4.5 "tt_saltwell_inn" 3.5 2.5 "door_tt_sa_home_1_out" 1 0 0 0 "-"
+door "door_tt_sa_home_2_out" "Door" "tt_saltwell_inn" 5.5 1.5 "tt_sa_home_2" 3.5 3.5 "door_tt_sa_home_2_in" 1 0 0 0 "-"
+door "door_tt_sa_home_2_in" "Door" "tt_sa_home_2" 3.5 4.5 "tt_saltwell_inn" 5.5 2.5 "door_tt_sa_home_2_out" 1 0 0 0 "-"
+door "door_tt_sa_home_3_out" "Door" "tt_saltwell_inn" 7.5 1.5 "tt_sa_home_3" 3.5 3.5 "door_tt_sa_home_3_in" 1 0 0 0 "-"
+door "door_tt_sa_home_3_in" "Door" "tt_sa_home_3" 3.5 4.5 "tt_saltwell_inn" 7.5 2.5 "door_tt_sa_home_3_out" 1 0 0 0 "-"
+door "door_tt_sa_home_4_out" "Door" "tt_saltwell_inn" 9.5 1.5 "tt_sa_home_4" 3.5 3.5 "door_tt_sa_home_4_in" 1 0 0 0 "-"
+door "door_tt_sa_home_4_in" "Door" "tt_sa_home_4" 3.5 4.5 "tt_saltwell_inn" 9.5 2.5 "door_tt_sa_home_4_out" 1 0 0 0 "-"
+door "door_tt_sa_home_5_out" "Door" "tt_saltwell_inn" 11.5 1.5 "tt_sa_home_5" 3.5 3.5 "door_tt_sa_home_5_in" 1 0 0 0 "-"
+door "door_tt_sa_home_5_in" "Door" "tt_sa_home_5" 3.5 4.5 "tt_saltwell_inn" 11.5 2.5 "door_tt_sa_home_5_out" 1 0 0 0 "-"
+door "door_tt_sa_home_6_out" "Door" "tt_saltwell_inn" 13.5 1.5 "tt_sa_home_6" 3.5 3.5 "door_tt_sa_home_6_in" 1 0 0 0 "-"
+door "door_tt_sa_home_6_in" "Door" "tt_sa_home_6" 3.5 4.5 "tt_saltwell_inn" 13.5 2.5 "door_tt_sa_home_6_out" 1 0 0 0 "-"
+door "door_tt_sa_home_7_out" "Door" "tt_saltwell_inn" 15.5 1.5 "tt_sa_home_7" 3.5 3.5 "door_tt_sa_home_7_in" 1 0 0 0 "-"
+door "door_tt_sa_home_7_in" "Door" "tt_sa_home_7" 3.5 4.5 "tt_saltwell_inn" 15.5 2.5 "door_tt_sa_home_7_out" 1 0 0 0 "-"
+door "door_tt_sa_home_8_out" "Door" "tt_saltwell_inn" 17.5 1.5 "tt_sa_home_8" 3.5 3.5 "door_tt_sa_home_8_in" 1 0 0 0 "-"
+door "door_tt_sa_home_8_in" "Door" "tt_sa_home_8" 3.5 4.5 "tt_saltwell_inn" 17.5 2.5 "door_tt_sa_home_8_out" 1 0 0 0 "-"
+spawn "tt_ridgemere_square" 12.5 13.5
+economy 20000 100 50
+resident "tt_ri_baker" "Hollin Ashby" "merchant" "baking bread" "A resident of the talk town." "Well met." 44 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_ri_home_0" 1.5 1.5 "tt_ridgemere_square" 6.5 5.5 "tt_ridgemere_square" 6.5 5.5
+resident "tt_ri_baker_son" "Tam Ashby" "civilian" "running errands" "A resident of the talk town." "Well met." 15 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_ri_home_0" 2.5 1.5 "tt_ridgemere_square" 7.5 6.5 "tt_ridgemere_square" 7.5 6.5
+resident "tt_ri_smith" "Garrick Flint" "merchant" "smithing" "A resident of the talk town." "Well met." 52 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_ri_home_1" 1.5 1.5 "tt_ridgemere_square" 8.5 5.5 "tt_ridgemere_square" 8.5 5.5
+resident "tt_ri_smith_wife" "Maren Flint" "civilian" "mending clothes" "A resident of the talk town." "Well met." 49 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_ri_home_1" 2.5 1.5 "tt_ridgemere_square" 11.5 5.5 "tt_ridgemere_square" 11.5 5.5
+resident "tt_ri_pup" "Wren Flint" "civilian" "playing" "A resident of the talk town." "Well met." 8 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_ri_home_1" 3.5 1.5 "tt_ridgemere_square" 12.5 6.5 "tt_ridgemere_square" 12.5 6.5
+resident "tt_ri_grocer" "Odile Penhallow" "merchant" "keeping the stall" "A resident of the talk town." "Well met." 38 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_ri_home_2" 1.5 1.5 "tt_ridgemere_square" 13.5 5.5 "tt_ridgemere_square" 13.5 5.5
+resident "tt_ri_guard" "Brannoc Hale" "guard" "keeping the watch" "A resident of the talk town." "Well met." 31 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_ri_home_3" 1.5 1.5 "tt_ridgemere_square" 16.5 5.5 "tt_ridgemere_square" 16.5 5.5
+resident "tt_ri_guard2" "Sefa Morrow" "guard" "keeping the watch" "A resident of the talk town." "Well met." 27 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_ri_home_3" 2.5 1.5 "tt_ridgemere_square" 17.5 6.5 "tt_ridgemere_square" 17.5 6.5
+resident "tt_ri_carter" "Joss Wainwright" "civilian" "carting goods" "A resident of the talk town." "Well met." 35 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_ri_home_4" 1.5 1.5 "tt_ridgemere_square" 18.5 5.5 "tt_ridgemere_square" 18.5 5.5
+resident "tt_ri_clerk" "Ida Quillon" "civilian" "copying the city rolls" "A resident of the talk town." "Well met." 29 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_ri_home_5" 1.5 1.5 "tt_ridgemere_square" 6.5 10.5 "tt_ridgemere_square" 6.5 10.5
+resident "tt_ri_elder" "Old Petrel Vane" "civilian" "resting" "A resident of the talk town." "Well met." 74 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_ri_home_6" 1.5 1.5 "tt_ridgemere_square" 7.5 11.5 "tt_ridgemere_square" 7.5 11.5
+resident "tt_ri_weaver" "Linnet Strand" "merchant" "weaving cloth" "A resident of the talk town." "Well met." 33 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_ri_home_7" 1.5 1.5 "tt_ridgemere_square" 8.5 10.5 "tt_ridgemere_square" 8.5 10.5
+resident "tt_ri_porter" "Dunstan Rook" "civilian" "carrying loads" "A resident of the talk town." "Well met." 41 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_ri_home_8" 1.5 1.5 "tt_ridgemere_square" 11.5 10.5 "tt_ridgemere_square" 11.5 10.5
+resident "tt_ri_healer" "Sorrel Mendham" "civilian" "tending the sick" "A resident of the talk town." "Well met." 57 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_ri_home_9" 1.5 1.5 "tt_ridgemere_square" 12.5 11.5 "tt_ridgemere_square" 12.5 11.5
+resident "tt_ri_apprentice" "Kit Barrow" "civilian" "learning the trade" "A resident of the talk town." "Well met." 17 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_ri_home_10" 1.5 1.5 "tt_ridgemere_square" 13.5 10.5 "tt_ridgemere_square" 13.5 10.5
+resident "tt_ri_chandler" "Aldous Wick" "merchant" "making candles" "A resident of the talk town." "Well met." 60 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_ri_home_10" 2.5 1.5 "tt_ridgemere_square" 16.5 10.5 "tt_ridgemere_square" 16.5 10.5
+resident "tt_co_boatman" "Corwin Marsh" "civilian" "rowing the ferry" "A resident of the talk town." "Well met." 46 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_co_home_0" 1.5 1.5 "tt_coldwater_quay" 6.5 5.5 "tt_coldwater_quay" 6.5 5.5
+resident "tt_co_boatman_wife" "Ysolde Marsh" "merchant" "keeping the stall" "A resident of the talk town." "Well met." 43 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_co_home_0" 2.5 1.5 "tt_coldwater_quay" 7.5 6.5 "tt_coldwater_quay" 7.5 6.5
+resident "tt_co_pup" "Fen Marsh" "civilian" "playing" "A resident of the talk town." "Well met." 9 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_co_home_0" 3.5 1.5 "tt_coldwater_quay" 8.5 5.5 "tt_coldwater_quay" 8.5 5.5
+resident "tt_co_soaper" "Brisk Tallow" "civilian" "boiling soap" "A resident of the talk town." "Well met." 36 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_co_home_1" 1.5 1.5 "tt_coldwater_quay" 11.5 5.5 "tt_coldwater_quay" 11.5 5.5
+resident "tt_co_weaver" "Harl Loomis" "civilian" "working the looms" "A resident of the talk town." "Well met." 39 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_co_home_2" 1.5 1.5 "tt_coldwater_quay" 12.5 6.5 "tt_coldwater_quay" 12.5 6.5
+resident "tt_co_swineherd" "Mott Pennick" "civilian" "minding the swine" "A resident of the talk town." "Well met." 28 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_co_home_3" 1.5 1.5 "tt_coldwater_quay" 13.5 5.5 "tt_coldwater_quay" 13.5 5.5
+resident "tt_co_elder" "Grandam Oona Reed" "civilian" "resting" "A resident of the talk town." "Well met." 71 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_co_home_4" 1.5 1.5 "tt_coldwater_quay" 16.5 5.5 "tt_coldwater_quay" 16.5 5.5
+resident "tt_co_guard" "Teague Holloway" "guard" "keeping the watch" "A resident of the talk town." "Well met." 33 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_co_home_5" 1.5 1.5 "tt_coldwater_quay" 17.5 6.5 "tt_coldwater_quay" 17.5 6.5
+resident "tt_co_stiller" "Nessa Coombe" "civilian" "running the still" "A resident of the talk town." "Well met." 50 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_co_home_6" 1.5 1.5 "tt_coldwater_quay" 18.5 5.5 "tt_coldwater_quay" 18.5 5.5
+resident "tt_co_youth" "Pell Coombe" "civilian" "running errands" "A resident of the talk town." "Well met." 14 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_co_home_6" 2.5 1.5 "tt_coldwater_quay" 6.5 10.5 "tt_coldwater_quay" 6.5 10.5
+resident "tt_co_carter" "Wick Marshwade" "civilian" "carting goods" "A resident of the talk town." "Well met." 34 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_co_home_7" 1.5 1.5 "tt_coldwater_quay" 7.5 11.5 "tt_coldwater_quay" 7.5 11.5
+resident "tt_co_keeper" "Myrtle Stillwater" "merchant" "keeping the stores" "A resident of the talk town." "Well met." 47 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_co_home_8" 1.5 1.5 "tt_coldwater_quay" 8.5 10.5 "tt_coldwater_quay" 8.5 10.5
+resident "tt_sa_innkeeper" "Oriel Sandmere" "merchant" "keeping the inn" "A resident of the talk town." "Well met." 45 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_sa_home_0" 1.5 1.5 "tt_saltwell_inn" 6.5 5.5 "tt_saltwell_inn" 6.5 5.5
+resident "tt_sa_raker" "Ridge Saltash" "civilian" "raking salt" "A resident of the talk town." "Well met." 38 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_sa_home_1" 1.5 1.5 "tt_saltwell_inn" 7.5 6.5 "tt_saltwell_inn" 7.5 6.5
+resident "tt_sa_raker_wife" "Fern Saltash" "civilian" "raking salt" "A resident of the talk town." "Well met." 35 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_sa_home_1" 2.5 1.5 "tt_saltwell_inn" 8.5 5.5 "tt_saltwell_inn" 8.5 5.5
+resident "tt_sa_pup" "Dune Saltash" "civilian" "playing" "A resident of the talk town." "Well met." 7 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_sa_home_1" 3.5 1.5 "tt_saltwell_inn" 11.5 5.5 "tt_saltwell_inn" 11.5 5.5
+resident "tt_sa_storekeeper" "Thistle Stonepick" "merchant" "keeping the stores" "A resident of the talk town." "Well met." 51 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_sa_home_2" 1.5 1.5 "tt_saltwell_inn" 12.5 6.5 "tt_saltwell_inn" 12.5 6.5
+resident "tt_sa_guard" "Hazan Drywell" "guard" "keeping the watch" "A resident of the talk town." "Well met." 30 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_sa_home_3" 1.5 1.5 "tt_saltwell_inn" 13.5 5.5 "tt_saltwell_inn" 13.5 5.5
+resident "tt_sa_elder" "Old Amber Dusk" "civilian" "resting" "A resident of the talk town." "Well met." 77 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_sa_home_4" 1.5 1.5 "tt_saltwell_inn" 16.5 5.5 "tt_saltwell_inn" 16.5 5.5
+resident "tt_sa_cook" "Basil Ovenden" "civilian" "cooking" "A resident of the talk town." "Well met." 42 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_sa_home_5" 1.5 1.5 "tt_saltwell_inn" 17.5 6.5 "tt_saltwell_inn" 17.5 6.5
+resident "tt_sa_potter" "Clay Hearne" "merchant" "throwing pots" "A resident of the talk town." "Well met." 55 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_sa_home_6" 1.5 1.5 "tt_saltwell_inn" 18.5 5.5 "tt_saltwell_inn" 18.5 5.5
+resident "tt_sa_youth" "Saffron Hearne" "civilian" "learning the trade" "A resident of the talk town." "Well met." 16 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_sa_home_6" 2.5 1.5 "tt_saltwell_inn" 6.5 10.5 "tt_saltwell_inn" 6.5 10.5
+resident "tt_sa_drover" "Jet Caravel" "civilian" "driving the caravan" "A resident of the talk town." "Well met." 37 "timber" "male" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_sa_home_7" 1.5 1.5 "tt_saltwell_inn" 7.5 11.5 "tt_saltwell_inn" 7.5 11.5
+resident "tt_sa_water" "Mira Wellspring" "civilian" "drawing water" "A resident of the talk town." "Well met." 29 "timber" "female" "average" "saddle" 3 1 5 1 1 6 22 "-" 40 0 1 "tt_sa_home_8" 1.5 1.5 "tt_saltwell_inn" 8.5 10.5 "tt_saltwell_inn" 8.5 10.5
+kin "tt_ri_smith" "tt_ri_smith_wife" spouse
+kin "tt_ri_smith" "tt_ri_pup" parent
+kin "tt_ri_smith_wife" "tt_ri_pup" parent
+kin "tt_ri_baker" "tt_ri_baker_son" parent
+kin "tt_co_boatman" "tt_co_boatman_wife" spouse
+kin "tt_co_boatman" "tt_co_pup" parent
+kin "tt_co_boatman_wife" "tt_co_pup" parent
+kin "tt_co_stiller" "tt_co_youth" parent
+kin "tt_sa_raker" "tt_sa_raker_wife" spouse
+kin "tt_sa_raker" "tt_sa_pup" parent
+kin "tt_sa_raker_wife" "tt_sa_pup" parent
+kin "tt_sa_potter" "tt_sa_youth" parent

@@ -1,18 +1,28 @@
-# Coldwater: fishers and boat-builders on the shore of Glasswater, the cold clear lake under the mountains where the
+# Coldwater: the shore of Glasswater, the cold clear lake under the mountains where the
 # Long River rises, and where the High Road starts to climb. The Glass Lantern, the bakery, the fishmonger, the
 # stables, the chapel and its reed crosses, the healer, the jetty, the reed beds, the mist, the winter ice, and
-# whatever moves beneath it.
+# whatever moves beneath it. Its homes hold soap, loom and still hands, swineherds and shepherds, and hardly a fisher
+# (doc 84, defect 8): a line that takes a fishing town for granted waits for one (here.fishers>=3).
 
 scene rg_ls_first_fish
-when topic=lore here.region=coldwater
-a : Threw the first fish back this morning, like always. | Never eat the first fish of the day. It belongs to the lake. | A carter off the High Road ate his first catch. Fell in the lake by noon.
+when topic=lore here.region=coldwater here.fishers>=3
+a : Never eat the first fish of the day. It belongs to the lake. | A carter off the High Road ate his first catch. Fell in the lake by noon.
 b[fisher] : Glasswater gives the rest if you give back the first. Every boat knows it.
 b[priest] : The Bright One owns the lake. Still, it does no harm.
-b : Good habit. | So they say. | Served him right.
-a : Always. | Always. | Ha.
+b : So they say. | Served him right.
+a : Always. | Ha.
+
+# (Said only by one who fishes: "threw the first fish back" is the speaker's own boat; truth.json's fisher_self.)
+scene rg_ls_first_fish_own
+when topic=lore here.region=coldwater here.fishers>=3 a.job=fisher|sailor
+a : Threw the first fish back this morning, like always.
+b[fisher] : Glasswater gives the rest if you give back the first. Every boat knows it.
+b[priest] : The Bright One owns the lake. Still, it does no harm.
+b : Good habit.
+a : Always.
 
 scene rg_ls_lake_colour
-when topic=smalltalk|lore here.region=coldwater
+when topic=smalltalk|lore here.region=coldwater here.fishers>=3
 a : The lake's gone green as glass. Fish will be deep. | The water's dark today. Storm on the peaks. | Silver on the water at dawn. Best fishing all season.
 b[fisher] : Read the colour, read the catch. My father's words.
 b[old] : I've watched that water seventy years. It's never the same twice.
@@ -28,28 +38,36 @@ b : He's seen too many winters. | Just the ice settling. | A big pike, maybe.
 a : Maybe. | Probably. | A very big pike.
 
 scene rg_ls_boatwright
-when topic=work here.region=coldwater a.job=crafter|apprentice|fisher
+when topic=work here.region=coldwater a.job=crafter|apprentice|fisher here.fishers>=3
 a : The new skiff's ribs went in today. | Pitch smell all over the boat shed. | Somebody holed their boat on the rocks off the point again.
 b[crafter] : A good skiff's ribs are bent green and dried slow. Rush it, it leaks.
 b : She'll be a beauty. | Smells like work. | Every month.
 a : She will. | Good work. | Every month.
 
 scene rg_ls_netmaker
-when topic=work|smalltalk here.region=coldwater
-a : The net loft looks like grey curtains hanging everywhere. | Ordered a new net. Three weeks' wait. | Pike tore through my net like it was spider silk.
+when topic=work|smalltalk here.region=coldwater here.fishers>=3
+a : The net loft looks like grey curtains hanging everywhere. | Ordered a new net. Three weeks' wait.
 b[crafter] : A net's knots, and knots are time. No hurrying knots.
-b : It does. | Busy loft. | Big pike.
-a : Lovely in the light. | Very busy. | Enormous.
+b : It does. | Busy loft.
+a : Lovely in the light. | Very busy.
+
+# (Said only by one who fishes: it is the speaker's own net; truth.json's fisher_self.)
+scene rg_ls_netmaker_own
+when topic=work|smalltalk here.region=coldwater here.fishers>=3 a.job=fisher|sailor
+a : Pike tore through my net like it was spider silk.
+b[crafter] : A net's knots, and knots are time. No hurrying knots.
+b : Big pike.
+a : Enormous.
 
 scene rg_ls_shore_oven
-when topic=smalltalk here.region=coldwater here.time=dawn
+when topic=smalltalk here.region=coldwater here.time=dawn here.fishers>=3
 a : The bakery's bread is out before the first boats. | Smell of the bakery wakes the whole jetty. | Grabbed a hot loaf on the way to the boat.
 b[baker] : Bread before dawn for the boats. Every day for thirty years.
 b : Best smell there is. | Better than a bell. | Lucky you.
 a : The best. | Much better. | Very lucky.
 
 scene rg_ls_mere_chapel
-when topic=lore here.region=coldwater
+when topic=lore here.region=coldwater here.fishers>=3
 a : Hung a reed cross in the chapel for my brother's boat. | The chapel floor is laid with stones from the lake bed. | The chapel's beams are thick with reed crosses.
 b[priest] : Every cross is a prayer for safe water.
 b[old] : My mother laid one of those floor stones. Dived for it herself, in that cold.
@@ -57,7 +75,7 @@ b : May it keep him safe. | Lovely work. | Many prayers.
 a : May it. | Very lovely. | Very many.
 
 scene rg_ls_mist
-when topic=smalltalk|weather here.region=coldwater here.weather=fog|overcast
+when topic=smalltalk|weather here.region=coldwater here.outdoors=fog
 a : Mist so thick I lost the jetty. | The mist comes in under the doors at the Glass Lantern. | Nobody rows out in this.
 b[fisher] : Mist and still water. You row in circles and never know.
 b : Wait till noon. | Every night. | Nobody sane.
@@ -80,7 +98,7 @@ b : Who was it? | Nobody's asked? | Poor soul.
 a : Nobody knows. | Nobody. | Poor soul.
 
 scene rg_ls_drowned_oar
-when topic=smalltalk here.region=coldwater here.place=tavern
+when topic=smalltalk here.region=coldwater here.place=tavern here.fishers>=3
 a : The Glass Lantern's full of nets and lantern smoke tonight. | Boatmen's wagers on the race at the Lantern. | A fisher at the Lantern claims he caught a pike as long as a bench.
 b[innkeeper] : Every fisher's pike gets a foot longer with every cup.
 b[fisher] : I saw it. Long as a bench and twice as ugly.
@@ -109,7 +127,7 @@ b : Kind wolf. | Every Restday. | Some pup's crying.
 a : Very kind. | Every one. | Probably.
 
 scene rg_ls_hook_wounds
-when topic=lore|smalltalk here.region=coldwater
+when topic=lore|smalltalk here.region=coldwater here.fishers>=3
 a : The healer pulled a hook from a fisher's paw this morning. | The healer's seen every kind of hook wound there is. | Lake-cold compresses. The healer swears by them.
 b[healer] : Cut it out clean and wash it in cold water. Most heal.
 b : Ouch. | I believe it. | They work.
@@ -124,7 +142,7 @@ b : Strange. | Ten years. | No idea.
 a : Very strange. | Ten years. | I'll leave it.
 
 scene rg_ls_trout
-when topic=work here.region=coldwater a.job=fisher|cook|merchant
+when topic=work here.region=coldwater a.job=fisher|cook|merchant here.fishers>=3
 a : Trout were rising at dusk. Good sign. | Smoked trout sells best at the Glass Lantern. | Pike lines full this morning.
 b[cook] : Trout in butter with lake herbs. Nothing better on any table.
 b[merchant] : Trout sells itself. I just keep it cold.
@@ -141,10 +159,10 @@ a : It is. | So they say. | It does.
 
 scene rg_ls_still_water_inn
 when topic=smalltalk here.region=coldwater here.place=tavern|street
-a : The Glass Lantern's low windows look right over the lake. | Smoked trout on every plate at the Glass Lantern. | Travellers pay double for a lake room at the Glass Lantern.
+a : The Glass Lantern's low windows look right over the lake. | The Glass Lantern keeps its fire in all night for the carters. | Travellers pay double for a lake room at the Glass Lantern.
 b[innkeeper] : A room over the water's worth double. Wake up to herons.
-b : Best view in town. | Every plate. | Worth it.
-a : The best. | Every one. | So they say.
+b : Best view in town. | All night. | Worth it.
+a : The best. | All night. | So they say.
 
 scene rg_ls_jetty_repair
 when topic=work here.region=coldwater a.job=crafter|laborer|fisher
@@ -155,7 +173,7 @@ a : Always. | Always. | Very hard.
 
 scene rg_ls_herons
 when topic=smalltalk here.region=coldwater here.place=shore|street
-a : Herons standing in the shallows like old priests. | A heron stole a fish right off my line. | Herons are the best fishers on the lake. Better than us.
+a : Herons standing in the shallows like old priests. | A heron took a frog right out of the reeds by my door. | Herons are the best fishers on the lake. Better than us.
 b[child] : I tried to stand like a heron. I fell over.
 b : Very still. | Cheeky bird. | True enough.
 a : Very still. | Cheeky. | Too true.
@@ -183,27 +201,27 @@ a : Every year. | Very grim. | Very wise.
 
 scene rg_ls_mere_bandits
 when topic=lore here.region=coldwater
-a : Boats without lanterns on the north shore again. | Somebody's been taking fish from the traps at night. | The watch chased a boat across the lake last week.
+a : Boats without lanterns on the north shore again. | Somebody's been taking eggs from the reed beds at night. | The watch chased a boat across the lake last week.
 b[guard] : We row the north shore at dawn. We'll find them.
 b : Smugglers. | Thieves. | Did they catch it?
 a : Probably. | Probably. | Not yet.
 
 scene rg_ls_pike_story
-when topic=lore|smalltalk here.region=coldwater
+when topic=lore|smalltalk here.region=coldwater here.fishers>=3
 a : Old Mist's been chasing the same pike for twenty years. | They say there's a pike in the deep water old as the town. | Caught a pike with three hooks in its jaw already.
 b[fisher] : That pike's broken more lines than I've cast.
 b : He'll never catch it. | Ancient fish. | A survivor.
 a : Never. | Ancient. | A true survivor.
 
 scene rg_ls_eel_smoke
-when topic=work|smalltalk here.region=coldwater
+when topic=work|smalltalk here.region=coldwater here.fishers>=3
 a : Smoked trout hanging in every chimney on the shore. | The smokers lit their fires before dawn. | Smoked trout's the only thing Coldwater sends down the High Road.
 b[cook] : Trout smoked with alder wood. Nothing better in Ridgemere.
 b : Smells like home. | Early work. | And the pike.
 a : It does. | Very early. | And the pike.
 
 scene rg_ls_boat_naming
-when topic=lore here.region=coldwater
+when topic=lore here.region=coldwater here.fishers>=3
 a : Never rename a boat. The lake won't know her. | They named the new skiff after the healer. | Every boat on Glasswater has a name and a ribbon.
 b[fisher] : The ribbon's for the lake to find her in fog.
 b : Never. | Good choice. | Old custom.
@@ -211,7 +229,7 @@ a : Never. | Very good. | Very old.
 
 scene rg_ls_reed_crosses
 when topic=lore|work here.region=coldwater
-a : Weaving reed crosses for the chapel beams. | Every new boat gets a reed cross at its bow. | The children weave reed crosses on Restday.
+a : Weaving reed crosses for the chapel beams. | Every new roof gets a reed cross over its door. | The children weave reed crosses on Restday.
 b[priest] : A reed cross is a fisher's prayer, made with their own paws.
 b : Fine work. | Old custom. | Lovely.
 a : Thank you. | Very old. | Very lovely.
