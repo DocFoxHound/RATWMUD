@@ -20,18 +20,27 @@ is measured"); the rest are listed as n/a with the phase that brings them:
   R4 a distinctive line (6+ words) heard again by the same listener within 10 h, per 100 h
   R5 collision index: the same distinctive line from two speakers in one place within an hour, per 100 h
   R6 the most-spoken line's share of all lines
-  R7 distinct reply entries per 1,000 reply beats
+  R7 distinct reply entries per 1,000 reply beats: replies to what was said, the closing pairs apart (Phase 3: a
+     preclose, a farewell and their answers are formulaic by design, §8.4; their own variety is in R7_detail)
   R8 habit saturation: the share of a speaker's lines using their oath! or saying! (speakers with 20+ lines: mean, p90)
-  C1 questions answered: a line ending "?" followed by the other's line (the heuristic, kept beside C1M until Phase 3)
-  C1M owed answers answered, by moves (Phase 2): a line that owes an answer (`owes`, written, handed on by `then`, or
-     what its moves expect; Data/Talk/moves.json) followed by the one it is owed by, doing one of the owed moves or a
-     fallback of one (down to ack). A line with no moves owes nothing, so it is measured where lines carry moves
+  C1 owed answers answered, by moves (Phase 2's C1M, the hard gate from Phase 3): a line that owes an answer (`owes`,
+     written, handed on by `then`, or what its last move expects; Data/Talk/moves.json) followed by the one it is owed
+     by, doing one of the owed moves (or a variant of one) or a fallback of one (down to ack). A line with no moves owes
+     nothing, so it is measured where lines carry moves
+  C1Q questions answered: a line ending "?" followed by the other's line (the heuristic C1 was until Phase 3; it doesn't
+     separate from the control, so it is a diagnostic)
   M1 lines carrying moves (%): how much of what is said says what it does (Phase 2 tags the 40 most-spoken families and
      every answer concept by its alias; Phase 7 every entry)
-  C3 endings: by a farewell or a marked break / at the beat cap (8 lines) / by nothing fitting (a talk cut off by a
-     speaker walking away, or the other busy, ends with no line: it is counted apart, never as a good ending)
-  C4 tone clashes per 1,000 beats: a grave line (death, grief, robbery, a beating...) followed within two beats by a light
-     one (laughter, a jest) from the other, with no bridge: a lexicon until tones exist (Phase 2)
+  C2 replies at the best fit available (Phase 3): of the lines that answered something owed, those whose fit (3: the
+     handed-on concept's own or the exact variant; 1: another line doing an owed move; 0: a fallback) was the best any
+     line that held had (talk_sim's `fit` and `best`)
+  C3 endings: by a farewell or a marked break / at the beat cap / by nothing fitting (a talk cut off by a speaker walking
+     away, or the other busy, ends with no line: it is counted apart, never as a good ending). A farewell: the last line
+     makes a closing move that takes leave (farewell, farewell.return, leave, break), or its words do (the lexicon, with
+     the dialects' farewells). The cap: the turn engine's `ended` (Phase 3), else 8 lines written
+  C4 tone clashes per 1,000 beats: a grave line followed within two beats by a light one from the other, with no bridge:
+     by the lines' tones (Phase 2's moves; a bridge is change_subject, assess or preclose) or by the lexicon (death,
+     grief, robbery... then laughter, a jest)
   C6 the same entry (or the same question) twice in one conversation, per 1,000 conversations
   C7 lines per conversation: mean, 90th percentile, and the share of 3-line ones
   C8 conversations with a third speaker
@@ -60,7 +69,7 @@ is measured"); the rest are listed as n/a with the phase that brings them:
 
 Gates (--check against --baseline): a hard gate the baseline passed must still pass; one the baseline failed may not get
 worse (each phase closes its own); a soft metric may not regress by more than 10%. "Worse" means beyond noise: a metric
-that counts events (EVENTS: R4, R5, C1, C1M, C3, C4, C6, T1-T3, K3, D1, D1L, D1B) only if the exact test of two Poisson counts
+that counts events (EVENTS: R4, R5, R8, C1, C1Q, C3, C4, C6, T1-T3, K3, D1, D1L, D1B, D3) only if the exact test of two Poisson counts
 (today's events against the baseline's, each over its own exposure: a binomial split of the two together) puts the
 difference beyond chance at ALPHA (1%, one-sided), so both cards' noise counts; R1 and R2, first-time waits that are the
 earliest of many listeners', by more than half; B5, a timing, by more than 25%. A profile the baseline has and the card
@@ -93,11 +102,11 @@ METRICS = {
     "R6": ("most-spoken line's share (%)", "lower", "soft", lambda v: v <= .4, "0.4%", ""),
     "R7": ("distinct reply entries per 1,000 reply beats", "higher", "soft", lambda v: v >= 500, "500+", ""),
     "R8": ("habit saturation (% of a speaker's lines, mean)", "lower", "soft", lambda v: v <= 15, "15% or less", ""),
-    "C1": ("questions answered (%)", "higher", "hard", lambda v: v >= 92, "97%; hard 92%", ""),
-    "C1M": ("owed answers answered, by moves (%)", "higher", "soft", lambda v: v >= 92,
-            "97%; hard 92% once it replaces C1 (Phase 3)", ""),
+    "C1": ("owed answers answered, by moves (%)", "higher", "hard", lambda v: v >= 92, "97%; hard 92%", ""),
+    "C1Q": ("questions answered: the '?' heuristic (%)", "higher", "soft", None,
+            "diagnostic (C1 until Phase 3; doesn't separate from the control)", ""),
     "M1": ("lines carrying moves (%)", "higher", "soft", None, "100% at Phase 7 (every entry)", ""),
-    "C2": ("replies at the best fit available (%)", "higher", "soft", None, "95%", "Phase 3"),
+    "C2": ("replies at the best fit available (%)", "higher", "soft", lambda v: v >= 95, "95%", "Phase 3"),
     "C3": ("endings by a farewell or a marked break (%)", "higher", "soft", lambda v: v >= 80, "80% / 3% / 5%", ""),
     "C4": ("tone clashes per 1,000 beats", "lower", "hard", lambda v: v <= 0, "0", ""),
     "C5": ("unmarked topic jumps per 1,000 beats", "lower", "soft", None, "5", "Phase 5"),
@@ -133,7 +142,7 @@ METRICS = {
 # The coherence metrics, which must separate the real transcripts from the shuffled control (§15.5). C7 (length) and C8
 # (a third speaker) are structural: the control keeps each conversation's length and people, so they match it by
 # construction; R, D, K and U metrics are about variety, voice and topics, not order.
-COHERENCE = {"C1", "C1M", "C3", "C4", "C6", "X1"}
+COHERENCE = {"C1", "C3", "C4", "C6", "X1"}
 STRUCTURAL = {"C7", "C8"}
 STOP = set("""a an the and or but if then so of to in on at by for with from up down out over under about as is are was
 were be been being am i you he she it we they me him her us them my your his its our their this that these those there
@@ -152,7 +161,16 @@ BRIDGE = re.compile(r"\b(anyway|well then|enough of that|still|mind you|on a bri
 FAREWELL = re.compile(r"\b(farewell|goodbye|good night|goodnight|go well|go in peace|fair winds|safe road|take care|"
                       r"see you|be seeing|i'?d best|i must be off|i'?ll be off|must go|be off|off with you|"
                       r"till (?:tomorrow|next)|until (?:tomorrow|next)|calm water|dry feet|walk warm|rest well|"
-                      r"mind how you go|bright one keep you|gods keep|keep well|later,)\b", re.I)
+                      r"mind how you go|bright one keep you|gods keep|keep well|later,|sleep (?:well|sound)|"
+                      r"good day to you|peace on your road|water on your way|keep your lamp lit|lamp lit|root well|"
+                      r"shade keep you|good trading|ripe days|look after yourself|mind yourself|bye)\b", re.I)
+# The dialects' farewells that are ordinary words elsewhere ("a fair price", "a good harvest"): a farewell only as a
+# line's last words (Data/Talk/grammar/*.grammar's farewell).
+FAREWELL_END = re.compile(r"(?:^|[.!?,]\s*)(fair price|good harvest)(?:,[^.!?]*)?[.!]?\s*$", re.I)
+# The moves that take leave, and the closing family (doc 84 §7.2, §8.4).
+LEAVING = ("farewell", "farewell.return", "leave", "break")
+CLOSING = ("preclose", "accept_preclose", "extend", "farewell", "farewell.return", "leave", "break")
+BRIDGES = ("change_subject", "assess", "preclose")
 RAW_ID = re.compile(r"\b[A-Za-z]+_[A-Za-z0-9_]+\b")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import talk_truth  # noqa: E402
@@ -248,9 +266,16 @@ def move_book() -> dict:
     return {k: v for k, v in doc.get("moves", {}).items() if "alias" not in v}
 
 
-def meets(done: str, owed: str) -> bool:
-    """A move done meets an owed one: the same, or a variant or kind of it (RatwTalk.h, Moves::meets)."""
-    return done == owed or done.startswith(owed + ".")
+def meets(done: str, owed: str, book: dict | None = None) -> bool:
+    """A move done meets an owed one: the same, or a variant of it (RatwTalk.h, Moves::kindOf: a move of its own, such
+    as farewell.return, is never another's kind)."""
+    return done == owed or (done.startswith(owed + ".") and (book is None or done not in book))
+
+
+def closing(line: dict, book: dict | None = None) -> bool:
+    """A line of the closing (a preclose, a farewell and their answers: §8.4), by its moves."""
+    ms = line.get("moves") or []
+    return bool(ms) and all(any(meets(m_, c, book) for c in CLOSING) for m_ in ms)
 
 
 def fallbacks(book: dict, move: str) -> list[str]:
@@ -335,8 +360,13 @@ def score_run(run: Run) -> dict:
     top = counts.most_common(1)
     m["R6"] = pct(top[0][1], len(lines)) if top else 0
     m["R6_detail"] = {"line": top[0][0] if top else "", "times": top[0][1] if top else 0}
-    replies = [l for l in lines if l["beat"] > 0]
+    book = move_book()
+    replies = [l for l in lines if l["beat"] > 0 and not closing(l, book)]
     m["R7"] = len({l["entry"] for l in replies}) * 1000 / len(replies) if replies else 0
+    closings = [l for l in lines if l["beat"] > 0 and closing(l, book)]
+    m["R7_detail"] = {"replies": len(replies), "closing_beats": len(closings),
+                      "closings_distinct_per_1000": round(len({(l["entry"], l["text"]) for l in closings}) * 1000 / len(closings), 1)
+                      if closings else None}
     by_speaker = collections.defaultdict(list)
     for l in lines:
         by_speaker[l["who"]].append(l)
@@ -345,6 +375,7 @@ def score_run(run: Run) -> dict:
            for ls in by_speaker.values() if len(ls) >= 20]
     m["R8"] = sum(sat) / len(sat) if sat else 0
     m["R8_detail"] = {"p90": quantile(sat, .9), "speakers": len(sat),
+                      "lines20": sum(len(ls) for ls in by_speaker.values() if len(ls) >= 20),
                       "any_habit_mean": (sum(pct(sum(1 for l in ls if l.get("habits")), len(ls))
                                              for ls in by_speaker.values() if len(ls) >= 20) / len(sat)) if sat else 0}
     # C1: questions answered by the other.
@@ -355,14 +386,13 @@ def score_run(run: Run) -> dict:
                 asked += 1
                 if i + 1 < len(c) and c[i + 1]["who"] != l["who"]:
                     answered += 1
-    m["C1"] = pct(answered, asked)
+    m["C1Q"] = pct(answered, asked)
     questions = asked
-    m["C1_detail"] = {"questions": asked, "answered": answered}
+    m["C1Q_detail"] = {"questions": asked, "answered": answered}
     # C1M (Phase 2): what a line owes, met by the next line from the one it is owed by (another speaker; the same one
     # for "self:"; anyone for "any:"), doing an owed move, a kind of one (react.news.known meets react.news), or one of
     # its fallbacks. M1: the lines that carry moves at all.
     owed = met = 0
-    book = move_book()
     for c in convs:
         for i, l in enumerate(c):
             for o in l.get("owes") or []:
@@ -372,10 +402,14 @@ def score_run(run: Run) -> dict:
                 if not nxt or (who == "other" and nxt["who"] == l["who"]) or (who == "self" and nxt["who"] != l["who"]):
                     continue
                 targets = {t for a in alts.split("|") for t in fallbacks(book, a)}
-                if any(meets(m_, t) for m_ in nxt.get("moves") or [] for t in targets):
+                if any(meets(m_, t, book) for m_ in nxt.get("moves") or [] for t in targets):
                     met += 1
-    m["C1M"] = pct(met, owed) if owed else None
-    m["C1M_detail"] = {"owed": owed, "met": met}
+    m["C1"] = pct(met, owed) if owed else None
+    m["C1_detail"] = {"owed": owed, "met": met}
+    # C2 (Phase 3): replies at the best fit that held.
+    fitted = [l for l in lines if isinstance(l.get("best"), (int, float)) and l["best"] >= 0]
+    m["C2"] = pct(sum(1 for l in fitted if l.get("fit", -1) >= l["best"]), len(fitted)) if fitted else None
+    m["C2_detail"] = {"answers": len(fitted), "fallbacks": sum(1 for l in fitted if l.get("fit") == 0)}
     carrying = collections.Counter((l.get("route", ""), bool(l.get("moves"))) for l in lines)
     m["M1"] = pct(sum(n for (r, has), n in carrying.items() if has), len(lines)) if lines else 0
     m["M1_detail"] = {route: pct(carrying[(route, True)], carrying[(route, True)] + carrying[(route, False)])
@@ -383,36 +417,50 @@ def score_run(run: Run) -> dict:
     # C3: how conversations end. A good ending is a farewell or a marked break (a line that breaks off, said: §15.3;
     # the conversation's `marked`, from Phase 4). A talk cut off with no line (one walked away, the other was busy: "gone",
     # "cell", "apart", "busy", "chat"; §8.10) or by the run's end or a snapshot is counted apart, never as a good ending.
-    farewell = marked = cap = nothing = cut = 0
+    farewell = marked = cap = nothing = cut = curt = 0
     for cid, c in run.by_conv.items():
         head = run.conv_head.get(cid, {})
         reason = head.get("reason", "done")
+        last = c[-1] if c else {}
         if head.get("marked"):
             marked += 1
         elif reason not in ("done", "run_end", "snapshot"):
             cut += 1
-        elif c and FAREWELL.search(c[-1]["text"]):
+        elif c and (any(meets(m_, x, book) for m_ in last.get("moves") or [] for x in LEAVING) or
+                    FAREWELL.search(last["text"]) or FAREWELL_END.search(last["text"])):
             farewell += 1
-        elif int(head.get("written", len(c))) >= 8:
+        elif head.get("ended") == "cap" or ("ended" not in head and int(head.get("written", len(c))) >= 8):
             cap += 1
         else:
             nothing += 1
+            curt += head.get("ended") == "curt"
     n = max(1, len(run.by_conv))
     m["C3"] = pct(farewell + marked, n)
     m["C3_detail"] = {"farewell": pct(farewell, n), "marked_break": pct(marked, n), "cut_off": pct(cut, n), "cap": pct(cap, n),
-                      "nothing_fits": pct(nothing, n)}
+                      "nothing_fits": pct(nothing, n), "curt": pct(curt, n)}
     # C4: grave then light from the other within two beats, with no bridge.
-    clashes = beats = 0
+    clashes = beats = by_tone = 0
     for c in convs:
         beats += len(c)
         for i, l in enumerate(c):
-            if not GRAVE.search(l["text"]):
+            grave_words, grave_tone = bool(GRAVE.search(l["text"])), l.get("tone") == "grave"
+            if not (grave_words or grave_tone):
                 continue
             for j in (i + 1, i + 2):
-                if j < len(c) and c[j]["who"] != l["who"] and LIGHT.search(c[j]["text"]) and not BRIDGE.search(c[j]["text"]):
+                if j >= len(c):
+                    break
+                if any(meets(m_, b, book) for m_ in c[j].get("moves") or [] for b in BRIDGES):
+                    break                           # (Bridged: "Well. Enough of that.")
+                if c[j]["who"] == l["who"]:
+                    continue
+                tone_clash = grave_tone and c[j].get("tone") == "light"
+                word_clash = grave_words and LIGHT.search(c[j]["text"]) and not BRIDGE.search(c[j]["text"])
+                if tone_clash or word_clash:
                     clashes += 1
+                    by_tone += bool(tone_clash)
                     break
     m["C4"] = clashes * 1000 / max(1, beats)
+    m["C4_detail"] = {"clashes": clashes, "by_tone": by_tone}
     # C6: an entry again after another (a scene's own lines are one), or the same question twice.
     repeats = 0
     for c in convs:
@@ -528,8 +576,8 @@ def score_run(run: Run) -> dict:
     cohesive = replies_n = 0
     for c in convs:
         for i in range(1, len(c)):
-            if c[i]["who"] == c[i - 1]["who"]:
-                continue
+            if c[i]["who"] == c[i - 1]["who"] or closing(c[i], book):
+                continue                            # (A farewell shares no words with what it ends: R7's closings apart.)
             a = {w for w in words(c[i - 1]["text"]) if w not in STOP and len(w) > 2}
             b = {w for w in words(c[i]["text"]) if w not in STOP and len(w) > 2}
             replies_n += 1
@@ -590,7 +638,8 @@ def guess_dialects(lines: list[dict], per: int = 20, seed: int = 7):
         by[l["who"]].append(l)
     speakers = {w: ls for w, ls in by.items() if len(ls) >= per and ls[0].get("dialect")}
     if len({ls[0]["dialect"] for ls in speakers.values()}) < 2:
-        return 0.0, {"speakers": len(speakers), "note": "fewer than two dialects heard"}
+        # (Not judged: a profile that heard one dialect says nothing of D3, rather than 0% weighed by its lines.)
+        return None, {"speakers": len(speakers), "judged": 0, "note": "fewer than two dialects heard"}
     counts = collections.defaultdict(collections.Counter)
     totals = collections.Counter()
     per_speaker = {}
@@ -623,7 +672,8 @@ def guess_dialects(lines: list[dict], per: int = 20, seed: int = 7):
         if accent in ("light", "broad"):
             right += ok
             n += 1
-    return pct(right, n), {a: round(pct(*v), 1) for a, v in by_accent.items()} | {"speakers": len(speakers)}
+    return (pct(right, n) if n else None), {a: round(pct(*v), 1) for a, v in by_accent.items()} | {"speakers": len(speakers),
+                                                                                                    "judged": n}
 
 
 def distinguish(lines: list[dict], residents: dict, seed: int = 11):
@@ -682,8 +732,9 @@ def combine(per_run: dict[str, dict]) -> dict:
             out[mid] = sum(vals.values())
         elif mid == "B5":
             out[mid] = min(vals.values())
-        else:
-            out[mid] = sum(vals[k] * weights[k] for k in vals) / total
+        else:                                       # (Over the profiles that say something of it: D3 isn't judged
+            judged = sum(weights[k] for k in vals) or total   # where one dialect was heard, so it weighs nothing there.)
+            out[mid] = sum(vals[k] * weights[k] for k in vals) / judged
     return out
 
 
@@ -771,11 +822,11 @@ def scorecard(dirs: list[Path]) -> dict:
 # itself), so --check can tell a change in the events from noise. A card's value is a mean of the profiles' rates
 # weighted by lines, so it moves when the profiles' line counts do even with the very same events (Slice 1's end: C6 3
 # against 3, C4 1 against 1, both flagged "worse").
-EVENTS = {"R4": ("hours", 100), "R5": ("hours", 100), "C1": ("questions", 100), "C1M": ("owed", 100),
+EVENTS = {"R4": ("hours", 100), "R5": ("hours", 100), "C1": ("owed", 100), "C1Q": ("questions", 100),
           "C3": ("conversations", 100), "C4": ("lines", 1000),
           "C6": ("conversations", 1000), "T1": ("lines", 1000), "T2": ("lines", 1000), "T3": ("lines", 1000),
           "K3": ("conversations", None), "D1": ("none_lines", 100), "D1L": ("light_lines", 100),
-          "D1B": ("broad_lines", 100)}
+          "D1B": ("broad_lines", 100), "R8": ("lines20", 100), "D3": ("judged", 100)}
 # Timings, which move with the machine's load: the same build measured B5 frozen at 59, 72 and 80. And first-time waits,
 # the earliest of many listeners' (R1, R2): one listener hearing a repeat a little sooner moves them more than any rate.
 TIMING = {"B5": .25, "R1": .5, "R2": .5}

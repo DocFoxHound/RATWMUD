@@ -68,13 +68,18 @@ bool Moves::meets(const std::string& done, const std::string& owed)
     return done == owed || (done.size() > owed.size() && done.compare(0, owed.size(), owed) == 0 && done[owed.size()] == '.');
 }
 
+bool Moves::kindOf(const std::string& done, const std::string& owed) const
+{
+    return done == owed || (meets(done, owed) && !moves_.count(done));
+}
+
 bool Moves::answers(const std::string& answer, const std::string& said) const
 {
     const auto* m = find(answer);
     if (!m)
         return false;
     for (const auto& a : m->answers)
-        if (a == "*" || meets(said, a))
+        if (a == "*" || kindOf(said, a))
             return true;
     // A variant answers what its move answers, and what is written for the variant itself.
     return false;

@@ -1,8 +1,8 @@
 {
  "about": "Docs/Design/84 §15.3: the talk scorecard (tools/talk_score.py), from talk_sim transcripts.",
- "generated": "2026-11-16T14:15:40+00:00",
+ "generated": "2026-11-16T17:57:41+00:00",
  "runs": {
-  "town": "/tmp/ratw-talk-quick-9s48udzm/town"
+  "town": "/tmp/ratw-talk-quick-n_iqmu0k/town"
  },
  "metrics": {
   "R1": {
@@ -10,13 +10,14 @@
    "better": "higher",
    "gate": "hard",
    "target": "40 h+; hard 20 h+",
-   "value": 0.5175,
+   "value": 0.5545833333333333,
    "passes": false,
    "by_profile": {
-    "town": 0.517
+    "town": 0.555
    },
-   "control": 0.6175,
-   "separation": 0.16194331983805682,
+   "control": 0.5545833333333333,
+   "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -26,13 +27,14 @@
    "better": "higher",
    "gate": "soft",
    "target": "8 h+",
-   "value": 0.43416666666666665,
+   "value": 0.4365277777777778,
    "passes": false,
    "by_profile": {
-    "town": 0.434
+    "town": 0.437
    },
-   "control": 0.43416666666666665,
+   "control": 0.4365277777777778,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -42,13 +44,14 @@
    "better": "higher",
    "gate": "soft",
    "target": "L1 1,500+",
-   "value": 1517.1130952380952,
+   "value": 1532.2815205627705,
    "passes": true,
    "by_profile": {
-    "town": 1517.113
+    "town": 1532.282
    },
-   "control": 1517.1130952380952,
+   "control": 1532.2815205627705,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -58,45 +61,56 @@
    "better": "lower",
    "gate": "soft",
    "target": "5 or fewer",
-   "value": 8511.099784185924,
+   "value": 8664.325561513531,
    "passes": false,
    "by_profile": {
-    "town": 8511.1
+    "town": 8664.326
    },
-   "control": 9362.209762604518,
-   "separation": 0.09090909090909101,
+   "control": 9334.408293788858,
+   "separation": 0.07178631051752918,
+   "real_better": true,
    "separates": false,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    1112,
+    12.83
+   ]
   },
   "R5": {
    "name": "collision index, per 100 h",
    "better": "lower",
    "gate": "hard",
    "target": "1 or fewer; hard 3",
-   "value": 1491.3945493390015,
+   "value": 1644.0401919778371,
    "passes": false,
    "by_profile": {
-    "town": 1491.395
+    "town": 1644.04
    },
-   "control": 1827.1535316509235,
-   "separation": 0.18376068376068383,
+   "control": 1877.7899823064395,
+   "separation": 0.12448132780082982,
+   "real_better": true,
    "separates": false,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    211,
+    12.83
+   ]
   },
   "R6": {
    "name": "most-spoken line's share (%)",
    "better": "lower",
    "gate": "soft",
    "target": "0.4%",
-   "value": 2.043061449002043,
+   "value": 1.7009345794392523,
    "passes": false,
    "by_profile": {
-    "town": 2.043
+    "town": 1.701
    },
-   "control": 2.043061449002043,
-   "separation": 0.0,
+   "control": 1.7476635514018692,
+   "separation": 0.026737967914438568,
+   "real_better": true,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -106,13 +120,14 @@
    "better": "higher",
    "gate": "soft",
    "target": "500+",
-   "value": 102.45244098097639,
+   "value": 99.68282736746715,
    "passes": false,
    "by_profile": {
-    "town": 102.452
+    "town": 99.683
    },
-   "control": 94.88883795553518,
-   "separation": 0.0738255033557047,
+   "control": 92.57998638529612,
+   "separation": 0.07125440930750666,
+   "real_better": true,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -122,31 +137,79 @@
    "better": "lower",
    "gate": "soft",
    "target": "15% or less",
-   "value": 0.07552595809795412,
+   "value": 0.08780091637905593,
    "passes": true,
    "by_profile": {
-    "town": 0.076
+    "town": 0.088
    },
-   "control": 0.05555555555555555,
-   "separation": 0.2644177319339367,
+   "control": 0.1039347166152166,
+   "separation": 0.15523013639312305,
+   "real_better": true,
    "separates": false,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    9,
+    10700.0
+   ]
   },
   "C1": {
-   "name": "questions answered (%)",
+   "name": "owed answers answered, by moves (%)",
    "better": "higher",
    "gate": "hard",
    "target": "97%; hard 92%",
-   "value": 88.56345885634589,
-   "passes": false,
+   "value": 100.0,
+   "passes": true,
    "by_profile": {
-    "town": 88.563
+    "town": 100.0
    },
-   "control": 83.7618403247632,
-   "separation": 0.054216700584957304,
-   "separates": false,
+   "control": 26.00246761258482,
+   "separation": 0.7399753238741518,
+   "real_better": true,
+   "separates": true,
    "control_required": true,
+   "structural": false,
+   "events": [
+    3294,
+    3294.0
+   ]
+  },
+  "C1Q": {
+   "name": "questions answered: the '?' heuristic (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "diagnostic (C1 until Phase 3; doesn't separate from the control)",
+   "value": 96.5194109772423,
+   "passes": null,
+   "by_profile": {
+    "town": 96.519
+   },
+   "control": 91.67785234899328,
+   "separation": 0.050161502015284555,
+   "real_better": true,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    721,
+    747.0
+   ]
+  },
+  "M1": {
+   "name": "lines carrying moves (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "100% at Phase 7 (every entry)",
+   "value": 62.691588785046726,
+   "passes": null,
+   "by_profile": {
+    "town": 62.692
+   },
+   "control": 62.794392523364486,
+   "separation": 0.0016371483851764204,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
    "structural": false
   },
   "C2": {
@@ -154,27 +217,36 @@
    "better": "higher",
    "gate": "soft",
    "target": "95%",
-   "value": null,
-   "note": "n/a until Phase 3"
+   "value": 100.0,
+   "passes": true,
+   "by_profile": {
+    "town": 100.0
+   },
+   "control": 100.0,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
   },
   "C3": {
    "name": "endings by a farewell or a marked break (%)",
    "better": "higher",
    "gate": "soft",
    "target": "80% / 3% / 5%",
-   "value": 0.75,
-   "passes": false,
+   "value": 92.15,
+   "passes": true,
    "by_profile": {
-    "town": 0.75
+    "town": 92.15
    },
-   "control": 0.8499999999999999,
-   "separation": 0.11764705882352927,
-   "real_better": false,
-   "separates": false,
+   "control": 42.5,
+   "separation": 0.538795442213782,
+   "real_better": true,
+   "separates": true,
    "control_required": true,
    "structural": false,
    "events": [
-    15,
+    1843,
     2000.0
    ]
   },
@@ -190,9 +262,14 @@
    },
    "control": 0.0,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": true,
-   "structural": false
+   "structural": false,
+   "events": [
+    0,
+    10700.0
+   ]
   },
   "C5": {
    "name": "unmarked topic jumps per 1,000 beats",
@@ -212,24 +289,30 @@
    "by_profile": {
     "town": 0.0
    },
-   "control": 59.5,
+   "control": 233.5,
    "separation": 1.0,
+   "real_better": true,
    "separates": true,
    "control_required": true,
-   "structural": false
+   "structural": false,
+   "events": [
+    0,
+    2000.0
+   ]
   },
   "C7": {
    "name": "lines per conversation (mean)",
    "better": "higher",
    "gate": "soft",
    "target": "5-7; p90 9+",
-   "value": 3.1815,
-   "passes": false,
+   "value": 5.35,
+   "passes": true,
    "by_profile": {
-    "town": 3.182
+    "town": 5.35
    },
-   "control": 3.1815,
+   "control": 5.35,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": true
@@ -246,6 +329,7 @@
    },
    "control": 0.0,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": true
@@ -270,25 +354,35 @@
    },
    "control": 0.0,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    0,
+    10700.0
+   ]
   },
   "T2": {
    "name": "presupposition failures, per 1,000 lines",
    "better": "lower",
    "gate": "hard",
    "target": "0",
-   "value": 0.15715857300015715,
+   "value": 0.2803738317757009,
    "passes": false,
    "by_profile": {
-    "town": 0.157
+    "town": 0.28
    },
-   "control": 0.0,
-   "separation": 1.0,
+   "control": 13.551401869158878,
+   "separation": 0.9793103448275862,
+   "real_better": true,
    "separates": true,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    3,
+    10700.0
+   ]
   },
   "T3": {
    "name": "self-reference errors (own name, the listener in the third person, unbacked eyewitness words), per 1,000 lines",
@@ -308,7 +402,7 @@
    "structural": false,
    "events": [
     0,
-    6391.0
+    10700.0
    ]
   },
   "T4": {
@@ -337,15 +431,57 @@
    "by_profile": {
     "town": 0.0
    },
-   "control": 0.0,
-   "separation": 0.0,
+   "control": 0.7614213197969543,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    0,
+    394.0
+   ]
+  },
+  "D1L": {
+   "name": "lines with a dialect's words (%): light speakers",
+   "better": "higher",
+   "gate": "soft",
+   "target": "light 25-50%",
+   "value": 2.7974044700793077,
+   "passes": false,
+   "by_profile": {
+    "town": 2.797
+   },
+   "control": 3.229992790194665,
+   "separation": 0.13392857142857154,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    0,
-    233.0
+    194,
+    6935.0
+   ]
+  },
+  "D1B": {
+   "name": "lines with a dialect's words (%): broad speakers",
+   "better": "higher",
+   "gate": "soft",
+   "target": "broad 60%+",
+   "value": 5.013349154553545,
+   "passes": false,
+   "by_profile": {
+    "town": 5.013
+   },
+   "control": 4.182735093444082,
+   "separation": 0.16568047337278105,
+   "real_better": true,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    169,
+    3371.0
    ]
   },
   "D2": {
@@ -360,6 +496,7 @@
    },
    "control": 0,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -369,16 +506,21 @@
    "better": "higher",
    "gate": "soft",
    "target": "85%+",
-   "value": 52.63157894736842,
+   "value": 65.78947368421052,
    "passes": false,
    "by_profile": {
-    "town": 52.632
+    "town": 65.789
    },
-   "control": 65.78947368421052,
-   "separation": 0.19999999999999998,
+   "control": 76.3157894736842,
+   "separation": 0.13793103448275865,
+   "real_better": false,
    "separates": false,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    25,
+    38.0
+   ]
   },
   "U1": {
    "name": "a resident's lines from their own words (%)",
@@ -392,6 +534,7 @@
    },
    "control": 0.0,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -401,13 +544,14 @@
    "better": "higher",
    "gate": "soft",
    "target": "90%+",
-   "value": 68.14790788193318,
+   "value": 64.04539120047781,
    "passes": false,
    "by_profile": {
-    "town": 68.148
+    "town": 64.045
    },
-   "control": 67.53162504054492,
-   "separation": 0.009043312708234129,
+   "control": 62.4328090782401,
+   "separation": 0.025178737954616174,
+   "real_better": true,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -424,6 +568,7 @@
    },
    "control": 90.8,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -433,13 +578,14 @@
    "better": "lower",
    "gate": "soft",
    "target": "25% or less",
-   "value": 40.65,
+   "value": 40.3,
    "passes": false,
    "by_profile": {
-    "town": 40.65
+    "town": 40.3
    },
-   "control": 40.65,
+   "control": 40.3,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -456,9 +602,14 @@
    },
    "control": 182,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    182,
+    2000.0
+   ]
   },
   "W1": {
    "name": "window lines from mantles (%)",
@@ -489,13 +640,14 @@
    "better": "higher",
    "gate": "hard",
    "target": "150+",
-   "value": 776.224539494051,
+   "value": 1218.2518853188012,
    "passes": true,
    "by_profile": {
-    "town": 776.225
+    "town": 1218.252
    },
-   "control": 776.224539494051,
+   "control": 1218.2518853188012,
    "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -505,13 +657,14 @@
    "better": "higher",
    "gate": "soft",
    "target": "diagnostic (not in §15.3): shows the control is discriminating",
-   "value": 20.60105528791007,
+   "value": 19.283121597096187,
    "passes": null,
    "by_profile": {
-    "town": 20.601
+    "town": 19.283
    },
-   "control": 1.2388162422573985,
-   "separation": 0.9398663697104677,
+   "control": 0.8401453224341507,
+   "separation": 0.9564310519848267,
+   "real_better": true,
    "separates": true,
    "control_required": true,
    "structural": false
@@ -531,131 +684,78 @@
    "target": "40%+",
    "value": null,
    "note": "n/a until slice ends (talk_rate.py)"
-  },
-  "D1L": {
-   "name": "lines with a dialect's words (%): light speakers",
-   "better": "higher",
-   "gate": "soft",
-   "target": "light 25-50%",
-   "value": 0.41092579163645154,
-   "passes": false,
-   "by_profile": {
-    "town": 0.411
-   },
-   "control": 0.5076142131979695,
-   "separation": 0.1904761904761904,
-   "real_better": false,
-   "separates": false,
-   "control_required": false,
-   "structural": false,
-   "events": [
-    17,
-    4137.0
-   ]
-  },
-  "D1B": {
-   "name": "lines with a dialect's words (%): broad speakers",
-   "better": "higher",
-   "gate": "soft",
-   "target": "broad 60%+",
-   "value": 0.3463631865413162,
-   "passes": false,
-   "by_profile": {
-    "town": 0.346
-   },
-   "control": 0.3463631865413162,
-   "separation": 0.0,
-   "real_better": false,
-   "separates": false,
-   "control_required": false,
-   "structural": false,
-   "events": [
-    7,
-    2021.0
-   ]
-  },
-  "C1M": {
-   "name": "owed answers answered, by moves (%)",
-   "better": "higher",
-   "gate": "soft",
-   "target": "97%; hard 92% once it replaces C1 (Phase 3)",
-   "value": 99.91212653778558,
-   "passes": true,
-   "by_profile": {
-    "town": 99.912
-   },
-   "control": 27.105263157894736,
-   "separation": 0.72870897560524,
-   "real_better": true,
-   "separates": true,
-   "control_required": true,
-   "structural": false,
-   "events": [
-    1137,
-    1138.0
-   ]
-  },
-  "M1": {
-   "name": "lines carrying moves (%)",
-   "better": "higher",
-   "gate": "soft",
-   "target": "100% at Phase 7 (every entry)",
-   "value": 37.552808637145986,
-   "passes": null,
-   "by_profile": {
-    "town": 37.553
-   },
-   "control": 37.78751369112815,
-   "separation": 0.006211180124223563,
-   "real_better": false,
-   "separates": false,
-   "control_required": false,
-   "structural": false
   }
  },
  "details": {
   "town": {
    "R1_detail": {
     "listeners": 3,
-    "median": 2.0369444444444444,
-    "censored": false,
-    "exchange": 26
+    "median": 10.349930555555556,
+    "censored": true,
+    "exchange": 28
    },
    "R2_detail": {
-    "median": 2.0369444444444444,
+    "median": 1.169513888888889,
     "censored": false
    },
    "R6_detail": {
-    "line": "A day like any other.",
-    "times": 130
+    "line": "Sleep sound.",
+    "times": 182
+   },
+   "R7_detail": {
+    "replies": 4414,
+    "closing_beats": 4286,
+    "closings_distinct_per_1000": 49.0
    },
    "R8_detail": {
-    "p90": 0.0,
+    "p90": 0.3424657534246575,
     "speakers": 40,
-    "any_habit_mean": 0.07552595809795412
+    "lines20": 10700,
+    "any_habit_mean": 0.10415595682643167
+   },
+   "C1Q_detail": {
+    "questions": 747,
+    "answered": 721
    },
    "C1_detail": {
-    "questions": 717,
-    "answered": 635
+    "owed": 3294,
+    "met": 3294
+   },
+   "C2_detail": {
+    "answers": 2379,
+    "fallbacks": 0
+   },
+   "M1_detail": {
+    "library": 46.73913043478261,
+    "scene": 61.845972957084065,
+    "written": 100.0
    },
    "C3_detail": {
-    "farewell": 0.75,
+    "farewell": 92.15,
     "marked_break": 0.0,
     "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.25
+    "nothing_fits": 7.85,
+    "curt": 0.0
+   },
+   "C4_detail": {
+    "clashes": 0,
+    "by_tone": 0
    },
    "C7_detail": {
-    "p90": 4,
-    "three_lines": 66.35,
-    "four_lines": 12.85
+    "p90": 8,
+    "three_lines": 0.0,
+    "four_lines": 3.25
    },
    "T2_detail": {
     "by_kind": {
-     "rain_now": 1
+     "rain_now": 2,
+     "fisher_self": 1
     },
     "examples": [
-     "rain_now: It's raining. (tt_co_pup, clear/clear 19h)"
+     "rain_now: It's raining. (tt_ri_pup, clear/clear 10h)",
+     "fisher_self: My nets are tangled past saving. (tt_co_guard, clear/clear 21h)",
+     "rain_now: In this rain? (tt_ri_elder, clear/clear 1h)"
     ]
    },
    "T3_detail": {
@@ -668,22 +768,22 @@
    },
    "K2_detail": {
     "topics": {
-     "player": 40.65,
-     "family": 16.95,
-     "work": 13.35,
-     "life": 10.0,
+     "player": 40.3,
+     "family": 17.25,
+     "work": 13.3,
+     "life": 10.15,
      "news": 9.2,
-     "home": 6.2,
+     "home": 6.1,
      "accent": 2.4,
      "weather": 0.6,
-     "friends": 0.35,
+     "friends": 0.4,
      "smalltalk": 0.2,
      "season": 0.1
     }
    },
    "D1_detail": {
-    "light": 0.41,
-    "broad": 0.35,
+    "light": 2.8,
+    "broad": 5.01,
     "none": 0.0
    },
    "D2_detail": {
@@ -693,30 +793,27 @@
     "lexicon": "tools/dialect_check.py"
    },
    "D3_detail": {
-    "light": 57.7,
-    "broad": 41.7,
+    "light": 61.5,
+    "broad": 75.0,
     "none": 50.0,
-    "speakers": 40
+    "speakers": 40,
+    "judged": 38
    },
    "U2_detail": {
     "pairs": 19,
-    "lines": 3083
+    "lines": 5023
    },
    "_counts": {
-    "lines": 6363,
+    "lines": 10700,
     "conversations": 2000,
-    "hours": 12.81,
+    "hours": 12.83,
     "listeners": 3,
-    "speakers": 40
-   },
-   "C1M_detail": {
-    "owed": 1138,
-    "met": 1137
-   },
-   "M1_detail": {
-    "library": 0.0,
-    "scene": 34.8596256684492,
-    "written": 100.0
+    "speakers": 40,
+    "questions": 747,
+    "owed": 3294,
+    "none_lines": 394,
+    "light_lines": 6935,
+    "broad_lines": 3371
    }
   }
  },
@@ -725,32 +822,5 @@
    "town"
   ],
   "how": "talk_sim --ablate shuffle: lines after the first replaced by lines said at the same side of other conversations on the same topic, by a speaker of the same dialect where possible (§15.5)"
- },
- "refrozen": [
-  {
-   "metrics": [
-    "C3",
-    "T3",
-    "D1",
-    "D1L",
-    "D1B"
-   ],
-   "why": "Slice 1's review (doc 84 §26): C3 counts only farewells and marked breaks, T3 the listener in the third person and unbacked eyewitness words too, D1 gates accent none (light and broad are D1L and D1B): measured again with their new definitions",
-   "from": {
-    "town": "/tmp/r3s1-quick/town"
-   },
-   "on": "2026-11-16T15:41:10+00:00"
-  },
-  {
-   "metrics": [
-    "C1M",
-    "M1"
-   ],
-   "why": "Doc 84, Phase 2: new rows, first measured here. C1M (owed answers answered, by moves: replaces the '?' heuristic C1 from Phase 3) and M1 (lines carrying moves: Phase 2's gate, 'transcripts carry moves'). No existing row moved.",
-   "from": {
-    "town": "/tmp/r3p2/town"
-   },
-   "on": "2026-11-16T16:33:49+00:00"
-  }
- ]
+ }
 }

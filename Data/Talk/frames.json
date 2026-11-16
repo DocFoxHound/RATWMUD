@@ -1,0 +1,14 @@
+{
+  "about": "The kinds of meeting and how long a talk is meant to be (Docs/Design/84 §7.4, §8.4; Phase 3). A frame holds when its `when` does (the opener is self, the one spoken to other), worked out when a conversation starts; frames stack. `open`: the moves a frame opens with (a greeting goes before an opener that says what it does and doesn't open itself, in the same breath); `budget`: scales the lines the talk is meant to have; `preclose`: how readily it closes with a preclose rather than the farewell alone (the room a whole closing needs, divided by it); `forbid`: moves never made in it; `tones`: a tone's weight among the lines that answer; `accent` and `hedge` are Phase 6's (accommodation, and how a dispreferred answer is shaped). The budget (§8.4): a range of lines by each speaker's talk, the smaller of the two drawn, plus friends_or_kin for friends, spouses and kin, scaled by the frames, between least and most. invite_taken: the chance an invitation (`invites`) is taken up, until Phase 6's temperaments weigh it. The goals and the town moods of §7.4 come with Phases 5 and 6. A frame for meeting twice in a day (\"Back again?\") needs the talk ledger's pair.last_talk (Phase 5).",
+  "frames": {
+    "strangers":    {"when": "pair.band=strangers", "open": ["greet"], "budget": 0.6, "forbid": ["tease", "confide"]},
+    "kin":          {"when": "pair.kin=spouses|parent|siblings|family|household", "open": ["kin.open"], "accent": "+1"},
+    "housemates":   {"when": "pair.band=housemates", "open": ["kin.open"]},
+    "boss":         {"when": "pair.boss=a|b", "hedge": "the hand"},
+    "at_work":      {"when": "self.working=yes self.shift=during", "budget": 0.8, "preclose": 1.5},
+    "host":         {"when": "here.place=tavern self.job=innkeeper", "open": ["greet", "offer"]},
+    "tavern_night": {"when": "here.place=tavern here.time=night", "budget": 1.4, "tones": {"light": 1.4}}
+  },
+  "budget": {"chatty": [8, 12], "plain": [5, 8], "quiet": [3, 5], "friends_or_kin": 2, "least": 2, "most": 14},
+  "invite_taken": 0.5
+}

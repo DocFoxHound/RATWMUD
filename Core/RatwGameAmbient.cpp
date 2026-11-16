@@ -60,7 +60,7 @@ void Game::ambientSpeak(double)
             if (onAmbientEnd)                         // (The simulator's transcripts: doc 84 §15.1.)
             {
                 AmbientEnd end{it->id, it->pick.teller, it->pick.listener, it->pick.cell, it->pick.hearer, it->pick.topic.kind,
-                               it->route, "done", it->spoken, it->written, it->chain};
+                               it->route, "done", it->spoken, it->written, it->chain, it->ended};
                 if (broken)
                     end.reason = !a || !b || a->dead || b->dead || a->offstage || b->offstage ? "gone"
                                  : a->cellId != b->cellId                                       ? "cell"
@@ -140,6 +140,7 @@ void Game::ambientStart(const std::vector<std::string>& listeners)
                 {
                     t.info.assign(said->info.begin(), said->info.end());
                     t.chain = said->chain;
+                    t.ended = said->ended;
                 }
                 note("info", "RATW_AMBIENT " + t.pick.topic.kind + " " + t.pick.teller + " to " + t.pick.listener + " in " + t.pick.cell +
                                  " (" + route + ")");

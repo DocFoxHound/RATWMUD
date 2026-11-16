@@ -465,6 +465,11 @@ void Sim::hook()
         v.add("topic", l.topic);
         v.add("depth", 0);
         v.add("tone", l.info.tone);
+        if (l.info.best >= 0)
+        {
+            v.add("fit", l.info.fit);               // (Phase 3: how well it answered what was owed, and the best that held: C2.)
+            v.add("best", l.info.best);
+        }
         v.add("asserts", list(l.info.asserts));
         if (!l.info.denies.empty())
             v.add("denies", list(l.info.denies));
@@ -512,6 +517,8 @@ void Sim::hook()
         head.add("reason", e.reason);
         head.add("spoken", e.spoken);
         head.add("written", e.written);
+        if (!e.ended.empty())
+            head.add("ended", e.ended);             // (How the turn engine ended it: farewell, cap, nothing, curt...)
         head.add("lines", double(c.lines.size()));
         auto chain = json::Value::array();
         for (const auto& id : e.chain)
@@ -1165,7 +1172,7 @@ void Sim::writeShuffled()
                                           "answers", "tone", "asserts"})
                         if (const auto* x = src.find(k))
                             v.set(k, *x);
-                    for (const char* k : {"denies", "gist", "tags"})
+                    for (const char* k : {"denies", "gist", "tags", "fit", "best"})
                         if (const auto* x = src.find(k))
                             v.set(k, *x);
                         else

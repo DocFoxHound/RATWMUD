@@ -3,8 +3,9 @@
 Draft, 2026-11-15, revised 2026-11-16 with the user's answers to all six questions of §21 (the window's free text,
 mantles as world database rows, the richer size written by Claude agents, newborns inheriting honesty, births kept
 realm-wide, ticking listening runs), for Ridgemere 3 (`ridgemere3`, database `ratw_ridgemere3`; doc 82). **Phase 0 (the
-instrument), Phase 1 (truth fixes) and Phase 2 (moves and tags) are built** (2026-11-16, branches `r3-talk-p0`,
-`r3-talk-p1` and `r3-talk-p2`; §23, §24 and §27 say what and what they measured); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
+instrument), Phase 1 (truth fixes), Phase 2 (moves and tags) and Phase 3 (the turn engine) are built** (2026-11-16,
+branches `r3-talk-p0`, `r3-talk-p1`, `r3-talk-p2` and `r3-talk-p3`; §23, §24, §27 and §28 say what and what they
+measured); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
 replaces neither: every one of today's 8,525 library entries and 10 trees keeps loading and speaking while it is
 converted. It was written from five read-only surveys of the code, the data and the live world at `ridgemere2` 1034c1fc
 (the engine, the trees, the lifecycle, what residents know, and prior art) and three competing designs; §4 says how they
@@ -2531,3 +2532,113 @@ were read from each turn's first alternative; where its alternatives differ in k
 Phase 7 should split them. `Query::bind` resolves only peopleOf's roles and `topic.subject`; Phase 4's `joiners` and
 Phase 5's ledger (`x.said.*`) build on it. Tags reach later beats only through `converse` today (not between a scene's
 own turns).
+
+## 28. Phase 3, as built (2026-11-16)
+
+Branch `r3-talk-p3`, on Phase 2. The talk is now chosen a line at a time by what each line owes.
+
+**The engine** (`Core/RatwTalk.{h,cpp}`). `Conversation` (§8.1: people, phase, stacked frames, budget, the answers owed
+as `Open`s, `conv.*`, what was said and asked, the agenda's slot for Phase 5), `Freshness` (the heard set and the
+place's recent list), `Library::begin` (the opener, as `pick` chooses it, a scene's later turns queued), `next` (one
+line, or nothing once ended) and `answer` (the line a speaker says to what is owed). **Fit, then tiers**: the
+candidates are the handed-on concept's own rules and the *move lines* doing an owed move (a rule with no concept,
+written with `does`, found by its move alone; a line tied to a concept answers only for it until Phase 7 says what every
+line does, because the aliases are coarse). Fit 3 is the concept's own or the exact variant owed, 1 another line doing
+an owed move; only the best fit is kept, then tiers by score at 70/20/10 within it (replies are no longer the best tier
+only), unheard first, by weight times the frames' tone weights. Nothing owed answered: the move's fallbacks walked down
+to `ack`, then a gap and the closing. Never an entry, words or question already said in this talk. `converse` is
+`begin` then `next` until it ends, over one query (the game's exchanges, barks, reactions, `talk_check` and the tests
+all go through it; Phase 4 gives each beat its own query). `Said::ended` and talk_sim's conversation head say how it
+ended (farewell, curt, cap, nothing, done).
+
+**Turn-taking and closings** (§8.3-8.4). What is owed is answered by the one it is owed by; an invitation is taken half
+the time (`frames.json` `invite_taken`, until Phase 6's temperaments). With nothing owed and no agenda yet (Phase 5)
+it is a lull, and a resident talk on a topic (`talk.*`) closes: the one at work first, else the one who didn't speak
+last; a preclose and its answer first when the talk has run four lines and its budget has room for the whole closing
+(the frames' `preclose` makes that room smaller), then the farewell pair; a line may preclose and take leave at once
+("Well. Fair winds."), and what a line owes by default is its last move's. A cold or short-tempered closer goes without
+a word half the time (`curt`; Phase 4/6 make it cost regard). The most lines a talk has is 14, the farewell pair
+included (the old 8-beat cap stays only for a library without moves.json). A reaction, a bark or an answer to a player
+gets no closing or greeting: the other may be a player. **Shrugs** (settings.json `ends`) are `ack` lines: they owe
+nothing, whatever their rule hands on, and the talk closes. **Tone rules** (moves.json): light is blocked two lines
+after grave and cross one after tender unless a bridge (change_subject, assess, preclose) came between; nobody teases
+one who mourns.
+
+**`Data/Talk/frames.json`** (§7.4): strangers (greet; budget ×0.6; no tease or confide), kin and housemates (kin.open:
+no greeting), boss (Phase 6's hedge), at work (budget ×0.8, preclose ×1.5), host (greet, offer), tavern at night
+(budget ×1.4, light ×1.4); the budgets (§8.4: chatty 8-12, plain 5-8, quiet 3-5, the smaller of the two, +2 for
+friends, spouses and kin, ×the frames, 2-14). A greeting is said in the opener's breath, one line, before an opener that
+says what it does and doesn't open itself (an untagged opener is left alone until Phase 7). Checked on load (unknown
+field, fact, move, tone; scales 0.2-3; budgets). The goals and town moods of §7.4 come with Phases 5 and 6, and "Back
+again?" with the ledger's `pair.last_talk`. Choices made: `budget` lives in frames.json until topics.json (Phase 5);
+`preclose` is how readily a closing begins with one.
+
+**`Data/Talk/rules/turns.talk`**: 27 move lines (preclose 3, accept_preclose 2, farewell 5, preclose+farewell 2,
+farewell.return 6, greet 2, greet.return, ack 2, agree, accept_apology, deflect_thanks, accept_decline), under six words
+each (never a "distinctive" line for R4 and R5), few criteria and many alternatives so no one line is said most of the
+time, in the speaker's dialect through `#farewell#`, `#greet#`, `#agree#`, `#later#`, `#bless#`. A first listen in the talk
+town gave the one at work "Aye, and me. Back to it." 511 times in 2,000 talks; the spread fixed it. **Also**: a move of its own is no
+longer another's kind (`Moves::kindOf`: farewell.return isn't a farewell, though react.news.known is a react.news),
+which `byMove`, `answers` and the scorer now follow; `kn_sib_teach` asked "Like this?" twice (C6's three frozen talks).
+
+**Golden for unconverted content.** A library without moves.json (the golden transcripts' a46cbdac) goes through the
+same `begin`/`next` and is told word for word as before: `talk_golden` passes unblessed.
+
+**The scorecard** (`artifacts/talk/runs/p3`, every profile in both modes over P0's fixture, pinned to build 81; 13,019
+and 26,142 conversations, 61,109 and 95,071 lines; `talk_card`: **no gate broken** in either mode). Against Phase 2's
+own transcripts rescored with this phase's definitions (`artifacts/talk/runs/p2r`), fixtures / frozen, the shuffled
+control in brackets:
+
+| | Phase 2 | Phase 3 |
+|---|---|---|
+| **C3** endings by a farewell (§8.4) | 0.89% / 0.19% | **80.8% (43.6) / 52.2% (30.6)**; curt 11.2 / 6.3%, cap 0 / 0 |
+| **C4** tone clashes per 1,000 lines | 0.026 / 0 | **0 (0.16) / 0 (0.01)** |
+| **C6** an entry or question twice, per 1,000 talks | 0 / 0.12 | **0 (143) / 0 (106)** |
+| C1 owed answers answered (now the hard gate, 92%) | 81.3% / 96.3% | **92.2% (25.6) / 97.7% (37.6)** |
+| C2 replies at the best fit that held | n/a | 100% / 100% (56 fallbacks of 14,930 answers / 0) |
+| C7 lines per talk | 3.0 / 2.6 | 4.7 (p90 5-8) / 3.7 |
+| R3 distinct openers per 3,000 | 2,130 / 451 | 2,340 / 504 |
+| R4 / R5 per 100 h | 1,010 / 186; 3,920 / 924 | 750 / 139; 3,860 / 897 |
+| R6 the most-spoken line | 3.5% / 13.2% | 3.5% / 9.3% |
+| R7 distinct replies per 1,000 (closings apart) | 54.8 / 32.3 | 60.5 / 35.0 |
+| T2 / T3 per 1,000 lines | 0.31 / 0.41; 0 / 0.03 | 0.23 / 0.26; 0 / 0.02 |
+| D1L / D1B light and broad lines with dialect words | 0.21 / 0.12%; 0.25 / 0.13% | 2.5 / 0.7%; 1.4 / 0.5% |
+| D3 / R8 | 83.4 / 0.024; 58.8 / 0.062 | 81.2 / 0.023; 49.0 / 0.089 (both within their counted noise) |
+| B5 exchanges a second | 2.0 / 58 | 2.2 / 72 |
+
+Frozen C3 is 52% because 42% of its talks are the authored exchange (route "written", the Mind's fallback when no
+library line fits), which never reaches the engine; Phase 4's per-beat director can close those too. Every other
+library talk closes or is curt. D3 frozen moved on seven L3 speakers (three guessed right, then two) and on L2's, where
+135 speakers now have 20 lines or more against 80; R8 frozen is 79 habit lines against 48 (the tiers within the fit reach
+replies the best tier never did, `e8t_ans_hard_any` and `e8t_ev_ans_bad`). K1-K3, U and T1 are unchanged: topics are
+Phase 5's.
+
+**Definitions changed, measured again on Phase 2's transcripts** (`--refreeze` from `p2r`, the why in each baseline):
+C1 is Phase 2's C1M (owed answers by moves, the hard gate at 92%), the "?" heuristic is C1Q (a diagnostic) and C1M is
+gone; C2 is measured; C3 counts a last line that takes leave by its moves as well as its words (the lexicon gained the
+dialects' farewells; "fair price" and "good harvest" only as a line's last words) and its cap is the engine's `ended`;
+C4 counts a grave-to-light clash by the lines' tones as well as the lexicon, and a bridge move stops it; R7 and X1
+leave the closing pairs out (formulaic by design; their own variety is in R7_detail); D3 is not judged (None, not 0%)
+where one dialect was heard, and a card's mean is over the profiles that judged a metric; R8 and D3 are counted metrics
+for the noise test (habit lines; speakers guessed right). `test_talk_score` gained six checks (27). The quick card was
+blessed again (`Tests/fixtures/talk_scorecard_quick.json`): its talk changed by design (C3 0.75% to 92%, C7 3.2 to 5.4,
+C1 100%) and its old baseline had no R8 exposure to judge noise by (a handful of habit lines either way).
+
+**Tests.** `talk_tests` `turnEngine`: begin and next a line at a time and converse the same whole; fit 3 over a move
+line; tiers within the fit; the fallback down to ack; a reaction gets no closing; a shrug is an ack; the preclose by the
+one at work, its answer and the farewell pair, and none where the budget has no room; budgets by talk, kin and frames;
+frames stacked; a stranger's greeting in the opener's breath; strangers never tease, nobody teases one who mourns; light
+blocked after grave until a bridge or two lines; 14 lines at most, each entry once, a farewell last; invitations taken
+about half the time; frames.json's eleven refusals; a library without moves.json still talks as before (8 beats). The
+chain test's merchant answers as a merchant most of the time now, not always. The non-database ctest suite passed 90 of
+90 (the quick card after its bless); `talk_check --validate` on every file and `talk_lint` (its 20 frozen findings,
+unchanged) passed. The database suites weren't run (no schema change).
+
+**For Phase 4.** The game still renders a whole exchange up front through `converse` over one query; Phase 4's
+per-beat queries call `begin`/`next` from `Game::ambient` with the facts function (a and b as begin had them; a third
+voice will need the facts function to map speaker and addressee). Re-checking a queued scene turn when it comes due
+(Valve's rule) is a no-op over one query and comes with them. The authored "written" route (42% of frozen talks) never
+closes. `Freshness` holds only the heard set and the recent list (alternatives, the collision filter and per-listener
+stories are §8.12's). Curt endings and moves.json's effects cost nothing yet (per-beat effects). Extends work once
+(`max_extend`) but no line extends yet, and nothing fills the body: agendas and pivots are Phase 5's. Scenes are beats
+only at the opening: a scene whose first turn answers could be a reply once Phase 7 tags turns.

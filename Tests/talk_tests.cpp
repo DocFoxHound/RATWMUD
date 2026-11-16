@@ -477,7 +477,16 @@ say First time I've told you.
     auto q = moment("talk.prices");
     q.a.facts["wealth"] = "poor";
     q.b.facts["role"] = "merchant";
-    auto said = lib.converse(q, 1, None, {});
+    // Doc 84 §8.2 (Phase 3): a reply is no longer forced to the best tier: the merchant's own answer most of the time
+    // (the best of two tiers: 80%), anyone's now and then.
+    int asMerchant = 0;
+    for (std::uint64_t seed = 1; seed <= 200; ++seed)
+        asMerchant += lib.converse(q, seed, None, {}).lines.at(1).second == "I pay more, you pay more.";
+    expect(asMerchant > 130 && asMerchant < 190, "the merchant answers as a merchant, mostly (" + std::to_string(asMerchant) + " of 200)");
+    std::uint64_t merchantSeed = 1;
+    while (lib.converse(q, merchantSeed, None, {}).lines.at(1).second != "I pay more, you pay more.")
+        ++merchantSeed;
+    auto said = lib.converse(q, merchantSeed, None, {});
     expect(said.lines.size() == 2 && said.lines[0] == std::pair<int, std::string>{0, "Robbery, these prices."} &&
                said.lines[1] == std::pair<int, std::string>{1, "I pay more, you pay more."},
            "a poor wolf complains, the merchant answers as a merchant");
@@ -536,12 +545,12 @@ say First time I've told you.
         expect(!l.parse(text, "bad.talk", p) && p.find("regard is") != std::string::npos, std::string("refused: ") + p);
     }
 
-    // A chain ends after 8 beats, whatever its rules say.
+    // Nothing is said twice in one talk (doc 84 §8.2, C6): a ping-pong of two rules stops when it would come round again.
     auto loop = foundation();
     expect(loop.parse("rule ping\nwhen concept=talk.smalltalk\nsay Ping.\nthen other: talk.day\nrule pong\nwhen concept=talk.day\nsay Pong.\nthen other: talk.smalltalk\n",
                       "loop.talk", problem), problem);
     const auto lines = loop.converse(moment("talk.smalltalk"), 1, None, {}).lines;
-    expect(lines.size() == 8 && lines[7] == std::pair<int, std::string>{1, "Pong."}, "eight beats at most, turn and turn about");
+    expect(lines.size() == 2 && lines[1] == std::pair<int, std::string>{1, "Pong."}, "ping, pong, and not ping again");
 
     // A shrug ends it (settings.json "ends"): the next beat would answer what wasn't said.
     auto shrug = foundation();
@@ -1442,6 +1451,259 @@ say Flog them.
     expect(proof.deadEnds().empty(), "and a plain ack answers it, by the fallbacks: " + proof.deadEnds());
 }
 
+void turnEngine()
+{
+    // Doc 84 §8.1-8.4 (Phase 3): the turn engine. A conversation is begun and goes on a line at a time; what a line owes
+    // is answered, best fit first and tiers within it; nothing is said twice; a lull closes it with the farewell pair.
+    std::string problem;
+    auto lib = foundation();
+    expect(lib.parse(R"(
+rule tw_open
+when concept=talk.crime
+does tell.news
+say Someone broke the bakery window.
+then other: crime.answer
+rule tw_answer_guard
+when concept=crime.answer self.role=guard
+say I'll look into it.
+rule tw_answer
+when concept=crime.answer
+say What's the town coming to?
+rule mv_news
+does react.news
+say Is that so?
+rule mv_ack
+does ack
+say I see.
+rule mv_pre
+does preclose
+say Well. Back to it.
+rule mv_pre_ok
+does accept_preclose
+say Go on, then.
+rule mv_bye
+does farewell
+say Farewell.
+rule mv_bye_back
+does farewell.return
+say And you.
+)", "turns.talk", problem), problem);
+    auto q = moment("talk.crime");
+    q.b.facts["role"] = "guard";
+    // begin and next, a line at a time; converse is the same, whole.
+    Conversation c;
+    c.seed = 3;
+    const Freshness fresh{None, {}};
+    const auto first = lib.begin(c, q, fresh);
+    expect(first && first->entry == "tw_open" && first->who == 0 && first->owes == std::vector<std::string>{"react.news"},
+           "begin: the opener for the concept, owing its hand-on's move");
+    expect(c.open.size() == 1 && c.open[0].to == 1 && c.open[0].concept == "crime.answer", "what it owes is open, to b, by its concept");
+    const auto facts = [&](int, int) { return q; };
+    const auto second = lib.next(c, facts, fresh);
+    expect(second && second->who == 1 && (second->entry == "tw_answer_guard" || second->entry == "tw_answer") &&
+               second->fit == 3 && second->best == 3,
+           "next: the handed-on concept's own rule answers (fit 3), never a move line that only does the move (fit 1)");
+    std::vector<SaidLine> rest;
+    while (auto l = lib.next(c, facts, fresh))
+        rest.push_back(*l);
+    expect(c.phase == Conversation::Phase::Ended && c.ended == "farewell", "a lull closes it with a farewell: " + c.ended);
+    expect(!rest.empty() && rest.back().moves == std::vector<std::string>{"farewell.return"} && rest.back().text == "And you.",
+           "the farewell pair ends it");
+    expect(rest.size() >= 2 && rest[rest.size() - 2].text == "Farewell." && rest[rest.size() - 2].who != rest.back().who,
+           "the farewell, answered by the other");
+    const auto whole = lib.converse(q, 3, None, {});
+    expect(whole.lines.size() == c.lines.size() && whole.ended == "farewell" && whole.id == "tw_open" &&
+               whole.chain.front() == "tw_open",
+           "converse is begin and next, whole");
+    // Fit, then tiers within it: the guard's own answer mostly, anyone's sometimes (no longer only the best tier).
+    std::map<std::string, int> by;
+    for (std::uint64_t seed = 1; seed <= 300; ++seed)
+        ++by[lib.converse(q, seed, None, {}).info.at(1).entry];
+    expect(by["tw_answer_guard"] > 180 && by["tw_answer"] > 20 && by.size() == 2,
+           "tiers within the best fit: " + std::to_string(by["tw_answer_guard"]) + " and " + std::to_string(by["tw_answer"]));
+    // Nothing in the concept holds: a move line doing the owed move answers (fit 1); none of those: its fallback, ack.
+    auto none = foundation();
+    expect(none.parse("rule o\nwhen concept=talk.crime\ndoes tell.news\nsay A fire at the mill.\nthen other: crime.answer\n"
+                      "rule a\nwhen concept=crime.answer self.job=noble\nsay Dreadful.\n"
+                      "rule mv_ack\ndoes ack\nsay I see.\n", "fall.talk", problem), problem);
+    const auto fell = none.converse(moment("talk.crime"), 1, None, {});
+    expect(fell.info.size() >= 2 && fell.info[1].entry == "mv_ack" && fell.info[1].fit == 0,
+           "nothing answering the owed move: its fallback, walked down to ack");
+    auto noble = moment("talk.crime");
+    noble.b.facts["job"] = "noble";
+    expect(none.converse(noble, 1, None, {}).info.at(1).entry == "a", "a noble answers as one");
+    // Only a talk between residents on a topic closes: a reaction (perhaps to a player) is said, and that is all.
+    expect(lib.parse("rule tw_react\nwhen concept=react.customer\nsay Come in, come in.\n", "react.talk", problem), problem);
+    auto customer = moment("react.customer");
+    const auto reacted = lib.converse(customer, 1, None, {});
+    expect(reacted.lines.size() == 1 && reacted.ended == "done", "a reaction gets no farewell pair: " + std::to_string(reacted.lines.size()));
+    // A shrug is an ack (§8.4): it owes nothing, whatever its rule hands on, and the talk closes.
+    auto shrug = foundation();
+    expect(shrug.parse("rule ask\nwhen concept=talk.smalltalk\nsay How's the leg?\nthen other: chat.answer\n"
+                       "rule mm\nwhen concept=chat.answer\nsay Mm.\nthen other: health.answer\n"
+                       "rule advice\nwhen concept=health.answer\nsay Then see the healer.\n"
+                       "rule mv_bye\ndoes farewell\nsay Farewell.\nrule mv_bye_back\ndoes farewell.return\nsay And you.\n",
+                       "shrug.talk", problem), problem);
+    const auto shrugged = shrug.converse(moment("talk.smalltalk"), 1, None, {});
+    expect(shrugged.info.size() == 4 && shrugged.info[1].moves == std::vector<std::string>{"ack"} && shrugged.info[1].owes.empty() &&
+               shrugged.info[2].text == "Farewell.",
+           "a shrug is an ack: no hand-on, and the talk closes");
+    // A preclose when the talk has run long enough and its budget has room; the one at work closes first.
+    auto longer = foundation();
+    expect(longer.parse("scene s\nwhen topic=work\na : One.\nb : Two.\na : Three.\nb : Four.\n"
+                        "rule mv_pre\ndoes preclose\nsay Well. Back to it.\nrule mv_pre_ok\ndoes accept_preclose\nsay Go on, then.\n"
+                        "rule mv_bye\ndoes farewell\nsay Farewell.\nrule mv_bye_back\ndoes farewell.return\nsay And you.\n",
+                        "long.talk", problem), problem);
+    auto work = moment("talk.work");
+    work.a.facts["talk"] = "chatty";
+    work.b.facts["talk"] = "chatty";
+    work.a.facts["working"] = "yes";
+    const auto closed = longer.converse(work, 1, None, {});
+    expect(closed.info.size() == 8 && closed.info[4].text == "Well. Back to it." && closed.info[4].who == 0 &&
+               closed.info[5].text == "Go on, then." && closed.info[6].who == 0 && closed.ended == "farewell",
+           "preclose (by the one at work), its answer, the farewell pair");
+    work.a.facts["talk"] = "quiet";
+    expect(longer.converse(work, 1, None, {}).info.size() == 6, "a quiet one's budget has no room for a preclose: the farewell pair alone");
+    // The budget (§8.4): the smaller of the two's range by their talk, +2 for friends and kin, scaled by the frames.
+    auto b = moment("talk.work");
+    b.facts["pair.band"] = "acquaintances";
+    for (std::uint64_t seed = 1; seed < 40; ++seed)
+    {
+        b.a.facts["talk"] = "chatty";
+        b.b.facts["talk"] = "quiet";
+        const int n = lib.budgetFor(b, {}, seed);
+        expect(n >= 3 && n <= 5, "chatty and quiet: the quiet one's 3-5");
+        b.facts["pair.band"] = "friends";
+        expect(lib.budgetFor(b, {}, seed) == n + 2, "friends: two more");
+        b.facts["pair.band"] = "strangers";
+        expect(lib.budgetFor(b, lib.framesFor(b), seed) == std::max(2, int(std::lround(n * .6))), "strangers: 0.6 of it");
+        b.facts["pair.band"] = "acquaintances";
+    }
+    // Frames (§7.4): worked out from the facts, stacked; strangers greet in the opener's breath and never tease.
+    auto f = moment("talk.work");
+    f.facts["pair.band"] = "strangers";
+    f.a.facts["working"] = "yes";
+    f.a.facts["shift"] = "during";
+    expect(lib.framesFor(f) == std::vector<std::string>{"strangers", "at_work"}, "frames stack: strangers, at work");
+    auto greet = foundation();
+    expect(greet.parse("rule o\nwhen concept=talk.gossip\ndoes tell.gossip\nsay Word is the miller's wed.\n"
+                       "rule mv_greet\ndoes greet\nwhen pair.band=strangers\nsay Good day.\n"
+                       "rule mv_tease\ndoes tease\nsay Nice hat.\n", "greet.talk", problem), problem);
+    auto g = moment("talk.gossip");
+    g.facts["pair.band"] = "strangers";
+    const auto greeted = greet.converse(g, 1, None, {});
+    expect(greeted.info.at(0).text == "Good day. Word is the miller's wed." &&
+               greeted.info[0].moves == std::vector<std::string>{"greet", "tell.gossip"} && greeted.id == "o",
+           "a stranger greets in the same breath: " + greeted.info.at(0).text);
+    g.facts["pair.band"] = "friends";
+    expect(greet.converse(g, 1, None, {}).info.at(0).text == "Word is the miller's wed.", "friends don't");
+    Conversation strangers;
+    strangers.frames = {"strangers"};
+    strangers.people = {"maren", "ivo"};
+    Conversation::Open teased;
+    teased.moves = {"tease"};
+    expect(greet.answer(strangers, teased, g, 1, fresh).id.empty(), "strangers never tease");
+    strangers.frames.clear();
+    expect(greet.answer(strangers, teased, g, 1, fresh).id == "mv_tease", "acquaintances may");
+    auto mourning = g;
+    mourning.a.facts["mourning"] = "kin";
+    expect(greet.answer(strangers, teased, mourning, 1, fresh).id.empty(), "nobody teases one who mourns");
+    // Tone rules (§8.11): light is blocked for two lines after a grave one, unless a bridge came between.
+    auto tones = foundation();
+    expect(tones.parse("rule mv_laugh\ndoes laugh\nsay Ha! Good one.\n", "tone.talk", problem), problem);
+    Conversation grave;
+    grave.people = {"maren", "ivo"};
+    SaidLine sad;
+    sad.who = 0;
+    sad.tone = "grave";
+    sad.moves = {"tell.news"};
+    grave.lines.push_back(sad);
+    Conversation::Open laugh;
+    laugh.moves = {"laugh"};
+    expect(tones.answer(grave, laugh, g, 1, fresh).id.empty(), "no laughing straight after grave news");
+    SaidLine between;
+    between.who = 1;
+    between.moves = {"assess"};
+    grave.lines.push_back(between);
+    expect(tones.answer(grave, laugh, g, 1, fresh).id == "mv_laugh", "but after a bridge (assess), it may");
+    grave.lines.pop_back();
+    SaidLine plain;
+    plain.who = 1;
+    plain.moves = {"ack"};
+    grave.lines.push_back(plain);
+    grave.lines.push_back(plain);
+    expect(tones.answer(grave, laugh, g, 1, fresh).id == "mv_laugh", "and two lines on, it may");
+    // Never the same entry, nor the same words, twice in one talk (C6); at most fourteen lines, a farewell included.
+    std::string chain = "rule c0\nwhen concept=talk.day\ndoes tell.news\nsay Line 0.\nthen other: event.answer\n";
+    for (int i = 1; i < 20; ++i)
+        chain += "rule c" + std::to_string(i) + "\nwhen concept=event.answer\npriority " + std::to_string(40 - i) + "\nsay Line " +
+                 std::to_string(i) + ".\nthen other: event.answer\n";
+    chain += "rule mv_bye\ndoes farewell\nsay Farewell.\nrule mv_bye_back\ndoes farewell.return\nsay And you.\n";
+    auto capped = foundation();
+    expect(capped.parse(chain, "cap.talk", problem), problem);
+    const auto lines = capped.converse(moment("talk.day"), 1, None, {});
+    std::set<std::string> entries;
+    for (const auto& l : lines.info)
+        entries.insert(l.entry);
+    expect(lines.info.size() == 14 && entries.size() == 14 && lines.info.back().text == "And you.",
+           "fourteen lines at most, each entry once, the last two a farewell: " + std::to_string(lines.info.size()));
+    // An invitation (`invites`) is taken up only sometimes; what is owed, always.
+    auto invite = foundation();
+    expect(invite.parse("rule o\nwhen concept=talk.smalltalk\ndoes tell.self\nsay I've taken up the fiddle.\n"
+                        "rule mv_self\ndoes react.self\nsay Have you now.\n", "invite.talk", problem), problem);
+    int taken = 0;
+    for (std::uint64_t seed = 1; seed <= 200; ++seed)
+        taken += invite.converse(moment("talk.smalltalk"), seed, None, {}).lines.size() > 1;
+    expect(taken > 60 && taken < 140, "an invitation is taken about half the time: " + std::to_string(taken));
+    // frames.json is checked when it loads.
+    for (const auto& [text, why] : std::vector<std::pair<std::string, std::string>>{
+             {R"({"frames": {"x": {"when": "pair.band=strangers", "colour": "red"}}})", "no field 'colour'"},
+             {R"({"frames": {"x": {"when": "pair.band=strangers", "open": ["wave"]}}})", "not a move"},
+             {R"({"frames": {"x": {"when": "pair.nonsense=1"}}})", "nonsense"},
+             {R"({"frames": {"x": {"open": ["greet"]}}})", "holds when something does"},
+             {R"({"frames": {"x": {"when": "pair.band=strangers", "budget": 9}}})", "0.2 to 3"},
+             {R"({"frames": {"x": {"when": "pair.band=strangers", "tones": {"jolly": 1}}}})", "tones are moves.json's"},
+             {R"({"budget": {"loud": [1, 2]}})", "not a talk"},
+             {R"({"budget": {"plain": [5]}})", "[fewest, most]"},
+             {R"({"budget": {"least": 1}})", "least is 2"},
+             {R"({"invite_taken": 2})", "a chance"},
+             {R"({"goals": {}})", "no field 'goals'"}})
+    {
+        namespace fs = std::filesystem;
+        const auto dir = fs::temp_directory_path() / ("ratw-frames-" + std::to_string(checks));
+        fs::remove_all(dir);
+        fs::create_directories(dir / "grammar");
+        for (const char* f : {"facts.json", "settings.json", "moves.json", "claims.json", "groups.talk"})
+            fs::copy_file(fs::path(Dir) / f, dir / f);
+        fs::copy_file(fs::path(Dir) / "grammar" / "plain.grammar", dir / "grammar" / "plain.grammar");
+        std::ofstream(dir / "frames.json") << text;
+        Library bad;
+        std::string p;
+        expect(!bad.loadFoundation(dir.string(), p) && p.find(why) != std::string::npos, "frames.json refused (" + why + "): " + p);
+        fs::remove_all(dir);
+    }
+    // A library from before moves.json talks as it did (the golden transcripts): each `then` handed on, the best tier,
+    // up to eight beats, the same rule again if it comes round.
+    {
+        namespace fs = std::filesystem;
+        const auto dir = fs::temp_directory_path() / "ratw-legacy-talk";
+        fs::remove_all(dir);
+        fs::create_directories(dir / "grammar");
+        for (const char* f : {"facts.json", "settings.json", "groups.talk"})
+            fs::copy_file(fs::path(Dir) / f, dir / f);
+        fs::copy_file(fs::path(Dir) / "grammar" / "plain.grammar", dir / "grammar" / "plain.grammar");
+        Library old;
+        std::string p;
+        expect(old.loadFoundation(dir.string(), p), "a library without moves.json loads: " + p);
+        fs::remove_all(dir);
+        expect(old.parse("rule ping\nwhen concept=talk.smalltalk\nsay Ping.\nthen other: talk.day\nrule pong\nwhen concept=talk.day\nsay Pong.\nthen other: talk.smalltalk\n",
+                         "loop.talk", p), p);
+        const auto pp = old.converse(moment("talk.smalltalk"), 1, None, {});
+        expect(pp.lines.size() == 8 && pp.lines[7] == std::pair<int, std::string>{1, "Pong."} && pp.ended == "cap",
+               "eight beats at most, turn and turn about, as before");
+    }
+}
+
 int main()
 {
     try
@@ -1461,6 +1723,7 @@ int main()
         theCountrysVoices();
         truthFixes();
         movesAndTags();
+        turnEngine();
     }
     catch (const std::exception& error)
     {

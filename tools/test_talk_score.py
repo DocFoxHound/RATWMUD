@@ -225,6 +225,86 @@ class Metrics(unittest.TestCase):
         self.assertEqual(m["C3"], 50.0)
         self.assertEqual(m["C3_detail"]["cut_off"], 25.0)
 
+    def with_fields(self, d: Path, fields: dict) -> Path:
+        """The run's lines with more of what talk_sim writes (moves, tone, fit...), by (conversation, beat)."""
+        lines = [json.loads(l) for l in (d / "lines.jsonl").read_text().splitlines()]
+        for l in lines:
+            l.update(fields.get((l["conv"], l["beat"]), {}))
+        (d / "lines.jsonl").write_text("".join(json.dumps(l) + "\n" for l in lines))
+        return d
+
+    def test_c3_a_farewell_by_its_moves_or_a_dialects_words(self):
+        # Phase 3: "And you." takes leave by its move; "Root well." and "Good harvest, Varg." by the dialects' words;
+        # "A good harvest this year." and an ack don't.
+        d = write_run(self.root / "c3m", [({}, [("jory", "varg", "Farewell."), ("varg", "jory", "And you.")]),
+                                          ({}, [("jory", "varg", "Root well.")]),
+                                          ({}, [("jory", "varg", "Good harvest, Varg.")]),
+                                          ({}, [("jory", "varg", "A good harvest this year.")]),
+                                          ({"ended": "cap"}, [("jory", "varg", "Right.")])], PEOPLE)
+        self.with_fields(d, {(1, 1): {"moves": ["farewell.return"]}, (5, 0): {"moves": ["ack"]}})
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertEqual(m["C3"], 60.0)
+        self.assertEqual(m["C3_detail"]["cap"], 20.0)
+
+    def test_c1_by_moves_and_a_move_of_its_own_is_no_kind(self):
+        # A farewell owes farewell.return: met by it, not by another farewell; react.news is met by a variant of it.
+        d = write_run(self.root / "c1", [({}, [("jory", "varg", "Farewell."), ("varg", "jory", "Farewell to you.")]),
+                                         ({}, [("jory", "varg", "Farewell."), ("varg", "jory", "And you.")]),
+                                         ({}, [("jory", "varg", "Wren's wed."), ("varg", "jory", "I heard.")])], PEOPLE)
+        self.with_fields(d, {(1, 0): {"moves": ["farewell"], "owes": ["farewell.return"]}, (1, 1): {"moves": ["farewell"]},
+                             (2, 0): {"moves": ["farewell"], "owes": ["farewell.return"]}, (2, 1): {"moves": ["farewell.return"]},
+                             (3, 0): {"moves": ["tell.news"], "owes": ["react.news"]}, (3, 1): {"moves": ["react.news.known"]}})
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertAlmostEqual(m["C1"], 200 / 3)
+        self.assertFalse(talk_score.meets("farewell.return", "farewell", talk_score.move_book()))
+        self.assertTrue(talk_score.meets("react.news.known", "react.news", talk_score.move_book()))
+
+    def test_c4_by_tone_and_a_bridge(self):
+        d = write_run(self.root / "c4", [({}, [("jory", "varg", "Old Tam passed."), ("varg", "jory", "Lovely weather.")]),
+                                         ({}, [("jory", "varg", "Old Tam passed."), ("varg", "jory", "Well."),
+                                               ("varg", "jory", "Lovely weather.")])], PEOPLE)
+        self.with_fields(d, {(1, 0): {"tone": "grave"}, (1, 1): {"tone": "light"}, (2, 0): {"tone": "grave"},
+                             (2, 1): {"moves": ["assess"]}, (2, 2): {"tone": "light"}})
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertEqual(m["C4_detail"], {"clashes": 1, "by_tone": 1})
+
+    def test_r7_and_x1_leave_the_closings_out_and_c2_is_the_best_fit(self):
+        convs = [({}, [("jory", "varg", f"News {i}."), ("varg", "jory", f"Answer {i}."), ("jory", "varg", "Farewell."),
+                       ("varg", "jory", "And you.")]) for i in range(1, 11)]
+        d = write_run(self.root / "r7", convs, PEOPLE)
+        fields = {}
+        for i in range(1, 11):
+            fields[(i, 1)] = {"entry": f"answer{i}", "fit": 3 if i > 1 else 1, "best": 3}
+            fields[(i, 2)] = {"entry": "bye", "moves": ["farewell"]}
+            fields[(i, 3)] = {"entry": "bye_back", "moves": ["farewell.return"]}
+        m = talk_score.score_run(talk_score.Run(self.with_fields(d, fields)))
+        self.assertEqual(m["R7"], 1000.0)                 # (Ten answers, ten entries; the closings apart.)
+        self.assertEqual(m["R7_detail"]["closing_beats"], 20)
+        self.assertEqual(m["C2"], 90.0)
+
+    def test_d3_isnt_judged_where_one_dialect_was_heard(self):
+        lines = [{"who": f"w{i % 3}", "text": "aye", "dialect": "ridgemere", "accent": "light"} for i in range(90)]
+        value, detail = talk_score.guess_dialects(lines)
+        self.assertIsNone(value)
+        self.assertEqual(detail["judged"], 0)
+
+    def test_r8_and_d3_a_speaker_or_a_few_lines_are_noise(self):
+        # Phase 3's frozen card: habit lines 48 against 79 over 66,742 and 95,071 lines; D3 one speaker of seven.
+        def r8(n, lines):
+            c = {"metrics": {"R8": row("R8", n * 100 / lines)}, "details": {"L1": {"_counts": {"lines": lines, "conversations": 1},
+                                                                                     "R8_detail": {"lines20": lines}}}}
+            c["metrics"]["R8"]["passes"] = True
+            return c
+        self.assertEqual(talk_score.check(r8(79, 95071), r8(48, 66742)), [])
+        self.assertEqual(len(talk_score.check(r8(300, 95071), r8(48, 66742))), 1)
+
+        def d3(right, judged):
+            c = {"metrics": {"D3": row("D3", right * 100 / judged)}, "details": {"L1": {"_counts": {"lines": 9000, "conversations": 1},
+                                                                                       "D3_detail": {"judged": judged}}}}
+            return c
+        self.assertEqual(talk_score.check(d3(2, 7), d3(3, 7)), [])
+        self.assertEqual(len(talk_score.check(d3(20, 100), d3(80, 100))), 1)
+
     def test_d1_gates_the_plain_speakers(self):
         d = write_run(self.root / "d1", [({}, [("jory", "varg", "Aye.")])], PEOPLE)
         lines = [json.loads(l) for l in (d / "lines.jsonl").read_text().splitlines()]

@@ -524,6 +524,7 @@ class Game
         std::string reason;                         // "done", or why it broke off: "apart", "cell", "gone", "busy", "chat".
         int spoken = 0, written = 0;                // Lines said, of those written.
         std::vector<std::string> chain;             // The rules and scenes it was written from, in order.
+        std::string ended;                          // How the talk library's conversation ended (talk::Said::ended).
     };
     std::function<void(const AmbientLine&)> onAmbientLine;
     std::function<void(const AmbientEnd&)> onAmbientEnd;
@@ -1905,7 +1906,7 @@ class Game
         // and what has been said: for the transcripts and --log-talk-words (doc 84 §15), never for choosing.
         std::deque<talk::LineInfo> info;
         std::vector<std::string> chain;
-        std::string route;
+        std::string route, ended;
         int spoken = 0, written = 0;
     };
     std::vector<std::string> talkListeners_;            // (setTalkListeners.)
