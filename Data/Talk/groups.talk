@@ -6,8 +6,8 @@
 # Oakhaven (at the head of Cedar Sound, under the Rainwood), Larkfield (at the Long River's crossing, among the grain),
 # Southmeadow (a hamlet of the warm Sunfields), and the Country's two (doc 72): Fenshore (a stilt hamlet of the Sallow
 # Fens) and Saltwell (the oasis hamlet of the Red Waste). Mirebridge, the old fen town, was erased (doc 72): the fens'
-# lines are for Fenshore now (`fens`). Fenshore speaks as Mirebridge did and Saltwell as Coldwater (settings.json,
-# dialect_of: doc 83, Phase 4).
+# lines are for Fenshore now (`fens`). Fenshore speaks as Mirebridge did (settings.json, dialect_of: doc 83, Phase 4);
+# Saltwell has its own speech, the oasis's (grammar/saltwell.grammar), and its own lines (`waste`).
 
 group cities = ridgemere
 group rain_coast = ridgemere

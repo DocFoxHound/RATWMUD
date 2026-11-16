@@ -4,6 +4,7 @@ residents as the world has them now (where they grew up, their accent, their wor
 shop, resident and work trees, rendered offline by the game's own talk library (talk_check, no model).
 
     python3 tools/dialect_samples.py --world ridgemere3 --out FILE.md [--residents FILE.jsonl] [--per 3] [--seed 7]
+                                     [--towns saltwell:4,coldwater:1]   (only those places, each with its own count)
 """
 from __future__ import annotations
 
@@ -70,6 +71,12 @@ def pick(people: list[dict], town: str, per: int) -> list[dict]:
                 break
         if len(chosen) >= per:
             break
+    # Room for more: the other keepers and those with a role's own tree first (an inn's keeper beside its helper).
+    for p in sorted(here, key=lambda p: not (p.get('role') == 'merchant' or p.get('job') in ROLE)):
+        if len(chosen) >= per:
+            break
+        if p not in chosen:
+            chosen.append(p)
     return chosen[:per]
 
 
@@ -80,6 +87,7 @@ def main() -> int:
     parser.add_argument('--out', required=True)
     parser.add_argument('--per', type=int, default=3)
     parser.add_argument('--seed', type=int, default=7)
+    parser.add_argument('--towns', default='', help='only these places, in this order, each as town or town:count')
     args = parser.parse_args()
     talk_check = DC.newest_talk_check()
     if not talk_check:
@@ -96,11 +104,13 @@ def main() -> int:
            '(where they grew up, their accent: none, light or broad), and what they say in the dialogue window through the '
            'shop, resident and work trees (and their role\'s own, where they have one). Rendered offline by the game\'s talk '
            'library (`tools/dialect_samples.py`, no model). A light accent uses its dialect\'s words about half the time, so '
-           'the same wolf sounds plainer some days. Fenshore speaks as the fens (Mirebridge) did, Saltwell as Coldwater. '
+           'the same wolf sounds plainer some days. Fenshore speaks as the fens (Mirebridge) did; Saltwell has its own speech, the oasis\'s. '
            'The player is "Ash", a stranger; the moment is an autumn day.', '']
     seed = args.seed
-    for town in ORDER:
-        chosen = pick(people, town, args.per)
+    towns = [(t.split(':')[0], int(t.split(':')[1]) if ':' in t else args.per) for t in args.towns.split(',') if t] or \
+        [(t, args.per) for t in ORDER]
+    for town, per in towns:
+        chosen = pick(people, town, per)
         if not chosen:
             continue
         local = sum(1 for p in people if p.get('_home') == town and dialect_of.get(p.get('from', ''), p.get('from')) ==

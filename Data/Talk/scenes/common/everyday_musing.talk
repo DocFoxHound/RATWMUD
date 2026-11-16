@@ -166,7 +166,7 @@ b : Get a cat. | Did you eat it? | Rats, surely.
 a : The cat's scared of them. | Don't be disgusting. | Rats with ambitions.
 
 scene ev_beast_deer
-when topic=smalltalk here.region=countryside|fens|lake|wild
+when topic=smalltalk here.region=countryside|fens|lake|wild here.region!=waste
 a : Saw a stag at the forest edge at dawn. | The deer are coming down for the crops. | Fresh deer tracks by the stream.
 b[farmer] : Coming for my turnips, the thieves.
 b[herder] : Old instinct. Even I wanted to chase it.
@@ -174,7 +174,7 @@ b : Big one? | Hungry year in the hills. | Hunting party, maybe?
 a : Twelve points. | Must be. | Maybe.
 
 scene ev_beast_bear
-when topic=smalltalk here.region=north|countryside|wild
+when topic=smalltalk here.region=north|countryside|wild here.region!=waste
 a : They say a bear's been seen near the woodcutters' track. | Bear sign on the bark up the hill. | My uncle wrestled a bear once. Or so he says.
 b[woodcutter] : Saw it myself. Big as a cart. We're working in threes now.
 b[guard] : Report it to the watch, not the tavern.
@@ -189,7 +189,7 @@ b : And you just watched it? | Long time ago. | That never goes.
 a : I'm a civilised wolf now. | Feels it. | Never does.
 
 scene ev_beast_crows_on_fields
-when topic=smalltalk here.region=countryside here.place=field|street
+when topic=smalltalk here.region=countryside here.place=field|street here.region!=waste
 a : The crows are thick on the stubble. | Rooks stole half the seed corn. | There's a hawk over the far meadow.
 b[farmer] : Need a pup with a sling, that's what.
 b : They'll have it clean by noon. | Clever birds. | Watching for mice.

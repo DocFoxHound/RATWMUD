@@ -37,6 +37,7 @@ b[from=mirebridge|fenshore here.region!=fens] : Back to the fens. Don't laugh. I
 b[from=oakhaven here.region!=oakhaven] : Under the oaks of the Rainwood. Where it's green and warm and quiet.
 b[from=larkfield here.region!=larkfield] : Up on the high downs, with the larks and nothing else.
 b[from=ridgemere here.region!=ridgemere] : The wharf at Ridgemere, first thing, with the boats going out.
+b[from=saltwell here.region!=waste] : Home to Saltwell. Sit by the pool in the cool of the evening, and listen to the palms.
 b : Somewhere I've never been. Anywhere. Just to see it. | Somewhere it never rains. | Nowhere. I'm happy here with you.
 a : I'd come with you. | I'll take you, one day. | Well. Good answer.
 
@@ -299,6 +300,7 @@ b[from=southmeadow here.region!=southmeadow] #home : Southmeadow. Obviously. Hav
 b[from=mirebridge|fenshore here.region!=fens] #home : #b.from.capitalize#. Nobody bothers you there. Nobody can find you.
 b[from=coldwater here.region!=coldwater] #home : Coldwater. You've not lived till you've eaten trout out of Glasswater.
 b[from=larkfield here.region!=larkfield] #home : Larkfield. Everything's for sale and everyone's talking.
+b[from=saltwell here.region!=waste] #home : Saltwell. The well's sweet, the nights are cool, and nobody turns a guest away.
 b : This one, of course. I'm here, aren't I? | Wherever the ale's cheapest. | Wherever my friends are.
 a@home : Spoken like someone who misses it.
 a : Fair enough. | That's no answer, that's a thirst. | Soft thing.
@@ -342,6 +344,15 @@ b[from=mirebridge|fenshore] #mb : I bought a jellied eel off a cart last week. I
 b : Most folk like dry. | Most folk like seeing where they're going. | Thank the Bright One.
 a@mb : That's what they do to eels up here. It's a crime.
 a : Most folk are wrong. | Overrated. | You'd love a proper eel.
+
+scene e5_tr_homesick_saltwell
+when topic=travel a.from=saltwell here.region!=waste
+cooldown 2d
+a : Everything's so wet here. Even the walls sweat. | Nobody here sits through the noon. They just keep working, in the heat, like fools. | I miss the well at dusk. Everyone there, and all the news.
+b[from=saltwell] #sw : I know. I put a jar of water by the door for travellers, and folk here look at me as if I'm mad.
+b : You get used to it. | Some of us have to. | We've a pump.
+a@sw : They'll learn. A guest is a guest anywhere.
+a : Never. | More fool you. | A pump. It's not the same.
 
 scene e5_tr_homesick_larkfield
 when topic=travel a.from=larkfield here.region!=larkfield

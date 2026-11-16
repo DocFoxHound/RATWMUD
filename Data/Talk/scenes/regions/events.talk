@@ -26,7 +26,7 @@ b : Always the way. | Ha. | They do.
 a : Always. | Ha. | They do.
 
 scene re_prices_country
-when topic=prices here.region=countryside
+when topic=prices here.region=countryside here.region!=waste
 a : #topic.what# at #topic.price#? In the city maybe, not here. | Country folk can't pay city prices. | We grow it ourselves, mostly. Lucky.
 b[farmer] : That's the advantage of the soil.
 b : City prices everywhere now. | No. | Very lucky.

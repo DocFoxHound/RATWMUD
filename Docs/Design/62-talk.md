@@ -256,6 +256,7 @@ oaths.
 | **Mirebridge** | the fens; wry, damp, suspicious | Dry feet (hello and goodbye), boggy (dubious), fen-sure (certain), mizzle, ", no?" |
 | **Larkfield** | the downs' market town; quick, a trader's | Fair price to you (hello), Sold (agreed), a lark's worth (a little), short-weighed (cheated) |
 | **Southmeadow** | grain and orchards; cheerful | Good harvest (hello), ripe (good), chaff (nonsense), a windfall (luck), my apple (my dear) |
+| **Saltwell** (doc 83, 2026-11-15) | the Red Waste's oasis; formal, warm hospitality, proverbs | Peace on you (hello), Go in peace, honoured guest, May your well never fail (thanks), By salt and water (oath), noon-hot, brackish (bad) |
 
 **A resident speaks the dialect of where they grew up** (`self.from`), wherever they stand. Worldgen gives about 15%
 of each place's people another home (Ridgemere's wharf and estates more), so the city sounds mixed. A topic,

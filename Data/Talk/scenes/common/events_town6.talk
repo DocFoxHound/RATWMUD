@@ -112,7 +112,7 @@ a : Would not. | Probably. | Same thing.
 # ---------------------------------------------------------------- Lives across the country
 
 scene et_lf_country_wedding
-when topic=life topic.kind=marriage here.region=countryside
+when topic=life topic.kind=marriage here.region=countryside here.region!=waste
 a : The whole valley's coming to #topic.subject#'s wedding. | Barn's swept for #topic.subject#'s wedding dance. | #topic.subject#'s wedding. Three days of eating.
 b[farmer] : Wedding in the barn, sleeping in the hay. Proper country.
 b : As it should be. | I'll bring the cider. | Three days! I'll need new trousers.
@@ -153,7 +153,7 @@ b : I think about it all the time. | Happy and exhausted. | Me too.
 a : Really? | Both. | Then maybe.
 
 scene et_lf_appr_country
-when topic=life topic.kind=apprentice here.region=countryside|towns
+when topic=life topic.kind=apprentice here.region=countryside|towns here.region!=waste
 a : #topic.subject#'s going off to apprentice in the city. | #topic.subject#'s apprenticed to the smith here. Stayed home. | #topic.subject# starts with the miller tomorrow.
 b : The city swallows them. | Good. We need trades here. | Flour to the ears by noon.
 a : It might. | We do. | Ha.
@@ -274,7 +274,7 @@ b : Squeeze through. | Pick a corner. | Like a lantern.
 a : Squeezing. | All of them. | Beautiful.
 
 scene et_fs_towns
-when topic=festival here.region=towns|countryside topic.when=today
+when topic=festival here.region=towns|countryside topic.when=today here.region!=waste
 a : Everyone's on the green for #here.festival#. | One fiddler, one drum, the whole town dancing. For #here.festival#. | Trestle tables down the street for #here.festival#.
 b[old] : Same green, same tunes, sixty years. Wouldn't change a thing.
 b : Even the miser came. | Best kind. | Pass the bread.

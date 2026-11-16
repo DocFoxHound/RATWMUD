@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <set>
 
 namespace ratw
 {
@@ -552,10 +553,13 @@ void World::talkOrigin(const std::string& id, std::string& from, std::string& ac
     // out from who they are, never stored, so the same resident always has the same: most grew up where they live; of
     // each place's grown folk about one in seven came from another (one in four in Ridgemere, the city everyone comes
     // to). The old and the never-moved speak broadest; those settled elsewhere fade. The places are the realm's seven
-    // dialect regions and the towns that speak another's (talkDialectOf_: Fenshore, Saltwell), of those where somebody
-    // lives in this world: a town erased from the map (Mirebridge on Ridgemere 3) is nobody's birthplace.
+    // dialect regions, the Country's towns with a dialect of their own (Saltwell's, the oasis: doc 83) and the towns
+    // that speak another's (talkDialectOf_: Fenshore), of those where somebody lives in this world: a town erased from
+    // the map (Mirebridge on Ridgemere 3) is nobody's birthplace. (The Country's towns come after the seven in their
+    // names' order, as they did when both borrowed a dialect, so nobody else's birthplace moves.)
     static const std::vector<std::string> Regions{"ridgemere", "frosthollow", "coldwater", "oakhaven", "mirebridge",
                                                   "larkfield", "southmeadow"};
+    static const std::set<std::string> OwnTowns{"saltwell"};
     from.clear();
     accent.clear();
     const auto* e = entity(id);
@@ -571,12 +575,15 @@ void World::talkOrigin(const std::string& id, std::string& from, std::string& ac
         for (const auto& r : Regions)
             if (lived.count(r))
                 talkHomes_.push_back({r, lived[r]});
+        auto towns = OwnTowns;
         for (const auto& [town, dialect] : talkDialectOf_)
+            towns.insert(town);
+        for (const auto& town : towns)
             if (lived.count(town) && std::none_of(talkHomes_.begin(), talkHomes_.end(), [&](const auto& p) { return p.first == town; }))
                 talkHomes_.push_back({town, lived[town]});
     }
     const auto home = townIdOf(life->homeCell.empty() ? e->cellId : life->homeCell);
-    if (std::find(Regions.begin(), Regions.end(), home) == Regions.end() && !talkDialectOf_.count(home))
+    if (std::find(Regions.begin(), Regions.end(), home) == Regions.end() && !OwnTowns.count(home) && !talkDialectOf_.count(home))
         return;                                     // (Somewhere that is none of the realm's: no dialect of its own.)
     std::uint64_t h = 1469598103934665603ULL;
     for (const unsigned char c : "origin|" + id)

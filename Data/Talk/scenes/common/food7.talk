@@ -591,6 +591,15 @@ b #plain : I've never had one. | You'd freeze. | You might be.
 a@fen : Share. I'll owe you.
 a@plain : Your loss. | It'd be worth it. | Mad for eels.
 
+scene e1_food_homesick_dates
+when topic=food a.from=saltwell
+a[here.region!=waste] : Nobody here has heard of a proper date. They sell me dried brown pebbles. | I'd give a week's #wages# for bread and salt and a handful of Saltwell dates. | They put no salt on anything here. Nothing tastes of anything.
+b[from=saltwell] #sw : My cousin sends a sack with the salt carts. Come to supper. We'll share them, and the bread and salt with them.
+b #plain : I've never had a fresh one. | That much? | It tastes of food.
+a@sw : Gladly. That's the best offer I've had since I left.
+a@plain : Then you've never had a date. | Every penny. | Food and nothing.
+a : Somebody must sell them. | I'll wait for the carts. | I'll bring my own salt.
+
 scene e1_food_homesick_south
 when topic=food a.from=southmeadow
 a[here.region!=southmeadow] : The apples up here taste of nothing. | I miss real cider. This is vinegar with ideas. | My mother's peach jam. I'd cry if I saw a jar.

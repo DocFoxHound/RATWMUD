@@ -274,7 +274,7 @@ a : She doesn't think so. | Not down to the Sump. Not again. | One's enough. She
 b : Then the Heights had better watch out. | Then we'd better earn more. | Two. She'd want me to look generous.
 
 scene kn_family_farm
-when topic=family pair.band=family here.region=countryside
+when topic=family pair.band=family here.region=countryside here.region!=waste
 a : The north field needs ploughing before the rain. | Your mother wants you home for the harvest. | The old ox is lame.
 b : Then we'd better start before dawn. | I'll be there. I always am. | We can borrow the neighbour's.
 a : We'd better start now. | You weren't, last year. | He'll want paying.
