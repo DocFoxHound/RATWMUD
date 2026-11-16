@@ -242,6 +242,12 @@ bool Sim::prepareLibrary()
         return false;
     }
     talkData_ = (dir / "Data" / "Talk").string();
+    // The engine's own data that came after it (doc 84, Phase 1: the claims a belief is said in, the truth lexicon), from
+    // the source tree, so an older library's gossip is still said and checked as the engine now says it.
+    std::error_code ec;
+    for (const char* own : {"claims.json", "truth.json"})
+        if (!fs::exists(dir / "Data" / "Talk" / own) && fs::exists(fs::path(RATW_SOURCE_DIR "/Data/Talk") / own))
+            fs::copy_file(fs::path(RATW_SOURCE_DIR "/Data/Talk") / own, dir / "Data" / "Talk" / own, ec);
     return true;
 }
 
@@ -342,7 +348,7 @@ void Sim::hook()
             head.add("other", l.to);
             auto facts = json::Value::object();
             for (const auto& [k, v] : q.facts)
-                if (k.rfind("here.", 0) == 0 || k.rfind("pair.band", 0) == 0 || k.rfind("world.", 0) == 0)
+                if (k.rfind("here.", 0) == 0 || k.rfind("pair.", 0) == 0 || k.rfind("world.", 0) == 0)   // (pair.kin too: T2.)
                     facts.add(k, v);
             if (const auto* cell = w.cell(l.cell))
             {

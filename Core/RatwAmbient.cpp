@@ -2,6 +2,7 @@
 #include "RatwAmbient.h"
 #include "RatwWorld.h"
 
+#include "RatwClaims.h"
 #include "RatwItems.h"
 
 #include <algorithm>
@@ -111,11 +112,11 @@ void World::noteNews(const WorldEvent& e)
 {
     const auto name = [&](const std::string& id) {
         const auto* who = entity(id);
-        return who ? who->name : id;
+        return who ? who->name : std::string("someone");   // (Never an id: doc 84, defect 1.)
     };
     const auto tell = [&](const std::string& who, const std::string& kind, const std::string& text) {
         const auto* person = entity(who);
-        if (!person || !person->npc || person->transient)
+        if (!person || !person->npc || person->transient || claims::rawId(text))
             return;
         auto& mine = news_[who];
         mine.push_back({calendarDays_, kind, text});
@@ -150,8 +151,10 @@ void World::noteNews(const WorldEvent& e)
         talkOf(e.kind, a, t);
     else if (e.kind == "arrest")
         talkOf("arrest", t, a);
-    else if (e.kind == "relocation")
-        talkOf("newcomer", a, {});
+    else if (e.kind == "relocation" || e.kind == "newcomer")
+        talkOf("newcomer", a, {});                  // (One come in from the Country is news too: doc 84, defect 10.)
+    else if (e.kind == "birth" && !t.empty())
+        talkOf("birth", t, a);                      // (The parent's pup: the scenes say "#topic.subject#'s pup".)
     if (e.kind == "marriage")
     {
         tell(a, "marriage", name(a) + " married " + name(t));
@@ -166,10 +169,19 @@ void World::noteNews(const WorldEvent& e)
     }
     else if (e.kind == "succession")
         tell(a, "work", name(a) + " took over the work of " + e.detail.substr(0, e.detail.find(':')));
-    else if (e.kind == "theft")
-        tell(t, "crime", name(a) + " robbed " + name(t));
-    else if (e.kind == "assault")
-        tell(t, "crime", name(a) + " attacked " + name(t));
+    else if (e.kind == "theft" || e.kind == "assault")
+    {
+        // The one robbed tells it as their own (doc 84, defect 2), naming a traveller only as they know them (doc 56).
+        const auto* doer = entity(a);
+        auto by = name(a);
+        if (doer && !doer->npc)
+        {
+            by = namer_ ? namer_(t, a) : by;
+            if (by.empty())
+                by = "a stranger";
+        }
+        tell(t, "crime", by + (e.kind == "theft" ? " robbed " : " attacked ") + name(t));
+    }
     else if (e.kind == "arrest")
         tell(a, "crime", name(a) + " took " + name(t) + " to the gaol for the Watch");
 }
@@ -183,7 +195,7 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
         return best;
     const auto name = [&](const std::string& id) {
         const auto* who = entity(id);
-        return who ? who->name : id;
+        return who ? who->name : std::string();     // (Never the id: doc 84, defect 1.)
     };
     const auto bond = [&](const std::string& h, const std::string& o) {
         const auto* found = bonds_.find(h, o);
@@ -210,14 +222,32 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
         if (topic.score > best.score)
             best = std::move(topic);
     };
-    // A rumour one has heard lately and the other hasn't: about anyone but the two of them, players included.
+    // A rumour one has heard lately and the other hasn't: about anyone but the two of them, players included. Said in
+    // claims.json's words from the teller's point of view (doc 84 §7.7): never a raw id (defect 1), never to or by its
+    // victim as gossip (defect 2: the one robbed tells it as their own news), never of the teller's own kin.
+    const auto whoIs = [&](const std::string& teller, const std::string& id) -> std::string {
+        const auto* e = entity(id);
+        if (!e)
+            return {};
+        if (e->npc)
+            return e->name;
+        const auto known = namer_ ? namer_(teller, id) : e->name;   // (A player as the teller knows them: doc 56, 6.)
+        return known.empty() ? strangerWords(e->appearance) : known;
+    };
     for (const auto& [teller, listener] : {std::pair{a, b}, std::pair{b, a}})
         if (const auto* heard = beliefsOf(teller))
-            for (const auto& belief : *heard)
+            for (const auto& held : *heard)
             {
-                if (belief.subject == teller || belief.subject == listener || belief.confidence < .45 ||
-                    calendarDays_ - belief.day > GossipDays || belief.claim.rfind("deed:", 0) == 0)
+                if (held.subject == teller || held.subject == listener || held.confidence < .45 ||
+                    calendarDays_ - held.day > GossipDays || held.claim.rfind("deed:", 0) == 0)
                     continue;                       // (Deeds are talked of in their own words: doc 56.)
+                auto belief = held;
+                if (belief.kind.empty())
+                    claimOf(belief);                // (Not yet filled: a table set after the load.)
+                if (!belief.object.empty() && (belief.object == teller || belief.object == listener))
+                    continue;
+                if (const auto* spouse = society_.spouse(teller); (spouse && *spouse == belief.subject) || society_.family(teller, belief.subject))
+                    continue;
                 bool known = false;
                 if (const auto* theirs = beliefsOf(listener))
                     for (const auto& other : *theirs)
@@ -225,39 +255,75 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
                 if (known)
                     continue;
                 const auto* about = entity(belief.subject);
-                // A player is named only as the teller knows them, else by look (doc 56, 6).
-                const auto subjectName = [&]() -> std::string {
-                    if (!about || about->npc)
-                        return name(belief.subject);
-                    const auto known = namer_ ? namer_(teller, belief.subject) : about->name;
-                    return known.empty() ? strangerWords(about->appearance) : known;
-                }();
+                claims::Words w;
+                w.xName = whoIs(teller, belief.subject);
+                w.xFirst = about && about->npc ? w.xName.substr(0, w.xName.find(' ')) : w.xName;
+                if (!belief.object.empty())
+                {
+                    w.yName = whoIs(teller, belief.object);
+                    const auto* object = entity(belief.object);
+                    w.yFirst = object && object->npc ? w.yName.substr(0, w.yName.find(' ')) : w.yName;
+                }
+                w.place = placeWords(belief.place);
+                if (const auto at = belief.claim.find(" for "); belief.claim.rfind("is wanted", 0) == 0 && at != std::string::npos)
+                    w.charge = belief.claim.substr(at + 5);
+                w.text = belief.claim;
+                std::string said, predicate, topicKind = "gossip", sceneKind;
+                if (claims::loaded())
+                {
+                    const auto* k = claims::find(belief.kind);
+                    if (!k)
+                        continue;                   // (A claim with no kind in claims.json is never spoken.)
+                    said = claims::said(belief.kind, "they", w);
+                    predicate = claims::predicate(belief.kind, w);
+                    topicKind = k->topic;
+                    sceneKind = k->topicKind;
+                    if (said.empty() || (topicKind == "gossip" && (predicate.empty() || w.xName.empty())))
+                        continue;
+                }
+                else
+                {
+                    // (No table: a claim about someone named, in its own free words after the name, as before.)
+                    if (w.xName.empty() || claims::rawId(belief.claim))
+                        continue;
+                    predicate = belief.claim;
+                    said = w.xName + " " + belief.claim;
+                }
                 AmbientTopic t;
-                t.kind = "gossip";
+                t.kind = topicKind;
                 t.subject = belief.subject;
                 t.claim = belief.claim;
                 t.source = teller;
                 t.incident = belief.incident;
                 t.confidence = belief.confidence;
                 t.score = 3 + belief.confidence + (about && !about->npc ? .5 : 0);
-                t.talk["topic.subject"] = subjectName;
-                // What kind of thing it is, for the lines to answer in kind (doc 62, phase 7): the claim is free words.
-                const auto& c = belief.claim;
-                const auto starts = [&](const char* w) { return c.rfind(w, 0) == 0; };
-                t.talk["topic.claim_kind"] = c == "died" ? "death" : c == "married" ? "marriage"
-                                           : starts("attacked") || c == "is violent" ? "violence"
-                                           : starts("stole") || starts("tried to steal") ? "theft"
-                                           : starts("was attacked") || starts("was robbed") ? "victim"
-                                           : starts("is wanted") ? "wanted"
-                                           : starts("raids the road") || starts("robs travellers") ? "bandit"
-                                           : c == "keeps promises" ? "promise_kept" : c == "breaks promises" ? "promise_broken"
-                                           : starts("was prowling") ? "prowling" : "other";
-                t.facts.push_back(name(teller) + " has heard that " + subjectName + " " + belief.claim + " (" +
-                                  (belief.source == "saw it" ? name(teller) + " saw it"
-                                                             : "from " + name(belief.source)) + "), and tells " +
-                                  name(listener) + ".");
-                if (about)
-                    t.facts.push_back(subjectName + " is " + (about->npc ? "someone they know of" : "a traveller") + ".");
+                t.said = said;
+                t.passes = true;
+                t.claimKind = belief.kind;
+                t.object = belief.object;
+                t.place = belief.place;
+                t.talk["topic.said"] = said;
+                t.talk["topic.claim_kind"] = claims::family(belief.kind, belief.claim);
+                if (topicKind == "gossip")
+                {
+                    t.talk["topic.subject"] = w.xName;
+                    t.talk["topic.claim"] = predicate;   // (For the lines written "#topic.subject# #topic.claim#".)
+                    if (!w.yName.empty())
+                        t.talk["topic.victim"] = w.yName;
+                }
+                else
+                {
+                    if (!sceneKind.empty())
+                        t.talk["topic.kind"] = sceneKind;
+                    if (const auto near = placeNear(belief.place); !near.empty())
+                        t.talk["topic.where"] = near;
+                }
+                const auto source = belief.source == "saw it" ? name(teller) + " saw it"
+                                    : entity(belief.source)   ? "from " + name(belief.source)
+                                                              : belief.source;
+                t.facts.push_back(name(teller) + " has heard that " + said + " (" + source + "), and tells " + name(listener) + ".");
+                if (about && topicKind == "gossip")
+                    t.facts.push_back(w.xName + " is " + (about->npc ? "someone they know of" : "a traveller") + ".");
                 consider(std::move(t));
             }
     // A deed one has heard of and the other hasn't (doc 56, 5): told in its own words, the doer named as the teller
@@ -294,6 +360,8 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
                     t.talk["topic.deed"] = words.phrase;
                     if (!words.nickname.empty())
                         t.talk["topic.nickname"] = words.nickname;
+                    t.said = words.subject + " " + words.phrase;
+                    t.passes = true;
                     t.facts.push_back(name(teller) + " has heard that " + words.subject + " " + words.phrase +
                                       (words.nickname.empty() ? "" : ", and folk call them " + words.nickname) + "; " + name(teller) +
                                       " tells " + name(listener) + ".");
@@ -312,6 +380,7 @@ AmbientTopic World::ambientTopic(const std::string& a, const std::string& b)
                 t.claim = n.kind;
                 t.talk["topic.kind"] = n.kind;           // marriage, loss, work, crime: for the scenes.
                 t.score = 2.8 + (n.kind == "loss" || n.kind == "crime" ? .2 : 0);
+                t.said = n.text;                         // (Put in the teller's own person when it is said: topic.news.)
                 t.facts.push_back(n.text + ".");
                 t.facts.push_back(name(teller) + " tells " + name(listener) + " about it.");
                 consider(std::move(t));
@@ -373,8 +442,10 @@ std::string World::pairBand(const std::string& a, const std::string& b) const
     const auto* spouse = society_.spouse(a);
     if (spouse && *spouse == b)
         return "spouses";
-    if (society_.family(a, b) || society_.household(a, b))
+    if (society_.family(a, b))
         return "family";
+    if (society_.household(a, b))
+        return "housemates";                        // (A shared roof, no kin tie: the watch house, lodgers. Doc 84, defect 3.)
     const auto* p = society_.apprenticedTo(a);
     const auto* q = society_.apprenticedTo(b);
     const auto* ja = society_.jobOf(a);
@@ -626,6 +697,36 @@ void World::talkOrigin(const std::string& id, std::string& from, std::string& ac
         accent = roll < 10 ? "broad" : roll < 60 ? "light" : "none";
 }
 
+std::string World::outsideOf(const std::string& cellId) const
+{
+    if (doors_.size() != outsideDoors_)
+    {
+        outsideOf_.clear();
+        outsideDoors_ = doors_.size();
+    }
+    if (const auto found = outsideOf_.find(cellId); found != outsideOf_.end())
+        return found->second;
+    // Out through the doors that lead in, the nearest first, to the first cell under the sky.
+    std::vector<std::string> queue{cellId};
+    std::set<std::string> seen{cellId};
+    std::string out;
+    for (std::size_t at = 0; at < queue.size() && at < 16 && out.empty(); ++at)
+    {
+        const auto* c = cell(queue[at]);
+        if (!c)
+            continue;
+        if (c->outdoors)
+        {
+            out = c->id;
+            break;
+        }
+        for (const auto& [id, d] : doors_)
+            if (d.targetCell == queue[at] && d.cellId != queue[at] && seen.insert(d.cellId).second)
+                queue.push_back(d.cellId);
+    }
+    return outsideOf_[cellId] = out;
+}
+
 void World::talkMoment(const std::string& who, std::map<std::string, std::string>& facts)
 {
     // Where and when, in the talk library's facts (doc 62): the place, the town, the hour, the sky, the day.
@@ -643,7 +744,11 @@ void World::talkMoment(const std::string& who, std::map<std::string, std::string
     facts["here.region"] = townId;
     facts["here.season"] = seasons[std::clamp(int(cal.season), 0, 3)];
     facts["here.time"] = hour < 5 || hour >= 20 ? "night" : hour < 7.5 ? "dawn" : hour < 18 ? "day" : "dusk";
+    facts["here.hour"] = std::to_string(std::clamp(int(std::floor(hour)), 0, 23));   // ("Good morning" before noon: doc 84 §7.8.)
     facts["here.weather"] = c && c->outdoors ? weatherName(c->weather) : "indoors";
+    // The weather outside, from behind a counter too (doc 84 §7.8): a keeper may speak of the mist truthfully.
+    if (const auto* out = c ? cell(c->outdoors ? c->id : outsideOf(c->id)) : nullptr)
+        facts["here.outdoors"] = weatherName(out->weather);
     if (c)
         facts["here.place_name"] = c->name;
     facts["here.town"] = townWords(townId);
@@ -898,8 +1003,8 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         {
             auto t = topic("bandits", 2.0);
             t.talk["topic.kind"] = "camp";
-            if (const auto* where = cell(camp.cell))
-                t.talk["topic.where"] = where->name;
+            if (const auto near = placeNear(camp.cell); !near.empty())
+                t.talk["topic.where"] = near;   // ("Glasswater", never "The Greenholt, Glasswater" nor the cell's id: doc 84.)
             consider(std::move(t));
             break;
         }
@@ -980,8 +1085,10 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         }
     }
     // The everyday: family, work, the weather, the town's own lore, and talk for talk's sake.
-    if (const auto* spouse = society_.spouse(a); (spouse && *spouse == b) || society_.family(a, b) || society_.household(a, b))
-        consider(topic("family", 1.4 + jitter(1)));
+    if (const auto* spouse = society_.spouse(a); (spouse && *spouse == b) || society_.family(a, b))
+        consider(topic("family", 1.4 + jitter(1)));   // (Kin only: housemates share a roof, not a father's tools.)
+    else if (society_.household(a, b))
+        consider(topic("home", 1.4 + jitter(1)));     // (What housemates have in common is the house: doc 84, defect 3.)
     const auto* ja = society_.jobOf(a);
     const auto* jb = society_.jobOf(b);
     if ((ja && jb && (ja->work.cell == jb->work.cell || ja->title == jb->title)) || (ja && ja->work.cell == ea->cellId))
@@ -1079,9 +1186,20 @@ void World::ambientSpoken(const AmbientPick& pick)
         it = time_ - it->second > 3600 ? ambientLast_.erase(it) : std::next(it);
     // What talk does (the words only perform it): gossip passed on is believed, a grudge aired sours, friends warm.
     const auto& t = pick.topic;
-    if (t.kind == "gossip" || t.kind == "deed")
+    if (t.passes)
     {
-        believe(pick.listener, t.subject, t.claim, pick.teller, t.confidence * .7, t.incident, t.as);   // (t.as: doc 56.)
+        Belief told;
+        told.holder = pick.listener;
+        told.subject = t.subject;
+        told.claim = t.claim;
+        told.source = pick.teller;
+        told.confidence = t.confidence * .7;
+        told.incident = t.incident;
+        told.as = t.as;                             // (Doc 56.)
+        told.kind = t.claimKind;                    // (Its kind, victim and place go with it: doc 84 §7.7.)
+        told.object = t.object;
+        told.place = t.place;
+        believe(told);
         bonds_.change(pick.listener, pick.teller, {.3, 0, 1, 0, 0}, calendarDays_);
     }
     else if (t.kind == "quarrel")

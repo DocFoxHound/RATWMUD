@@ -2,6 +2,7 @@
 // (World::ambientPicks) where players are; here it is written (the talk library, doc 62; the NPC Mind for what matters
 // most, within the hour's budget; authored lines when nothing fits) and spoken a line at a time, as NPCs speak to
 // players, to whoever can hear. Barks, a resident calling out to no one in particular, are the talk library's too.
+#include "RatwClaims.h"
 #include "RatwSermons.h"
 #include "RatwGame.h"
 
@@ -230,9 +231,10 @@ mind::ExchangeContext Game::exchangeContext(const AmbientPick& pick)
         context.subjectName = found->second;
     else if (const auto* subject = world_.entity(pick.topic.subject))
         context.subjectName = subject->npc || knowsName(a->id, subject->id) ? labelFor(a->id, subject->id) : strangerLabel(subject->id);
-    context.claim = pick.topic.claim;
-    if (!pick.topic.facts.empty())
-        context.news = pick.topic.facts.front().substr(0, pick.topic.facts.front().find_last_not_of(". ") + 1);
+    context.claim = claims::rawId(pick.topic.claim) ? pick.topic.said : pick.topic.claim;   // (Never an id, to the Mind either.)
+    // What the teller tells, in their words (doc 84, defect 9): the topic's own, never the day's sentence a topic with
+    // nothing to tell would have put first among its facts.
+    context.news = pick.topic.said;
     const auto plan = world_.dayPlan(world_.communityOf(a->cellId));
     const auto* place = world_.cell(a->cellId);
     context.day = plan.kind == "festival" ? "Quite a feast for " + plan.name + "."
@@ -250,9 +252,12 @@ talk::Query Game::exchangeQuery(const AmbientPick& pick, const mind::ExchangeCon
     if (!context.subjectName.empty())
         facts.emplace("topic.subject", context.subjectName);
     if (pick.topic.kind == "gossip" && !context.claim.empty())
-        facts["topic.claim"] = context.claim;
+        facts.emplace("topic.claim", context.claim);   // (The claim's words from claims.json, not its free words: doc 84.)
     if (!context.news.empty())                      // (A topic's own news, a wagon's, is kept: Phase 8 repair.)
+    {
         facts.emplace("topic.news", mind::firstPerson(context.news, context.a.name));
+        facts.emplace("topic.said", facts.at("topic.news"));
+    }
     if (!context.day.empty())
         facts["topic.remark"] = context.day;
     return talkQuery(pick.teller, pick.listener, "talk." + pick.topic.kind, facts);
@@ -305,7 +310,8 @@ talk::Said Game::talkPick(const talk::Query& q, const std::string& speaker, cons
     talkRemember(said.effects);                     // (What it remembers, and that it was said: phase 4.)
     if (remember)
         for (const auto& h : hearers)
-            scenesHeard_[h].add(said.id);
+            for (const auto& id : said.chain)       // (Every beat heard, the answers too, not only the opener: doc 84, defect 5.)
+                scenesHeard_[h].add(id);
     recent.push_back(said.id);
     while (recent.size() > keep)
         recent.pop_front();

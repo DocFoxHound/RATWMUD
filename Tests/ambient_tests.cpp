@@ -1,7 +1,11 @@
 // The ambient director (Core/RatwAmbient.h; Docs/Design/26-living-npcs.md, Phase 10), in Greyfen: which two residents
 // talk, about what, when, and what their talk changes; and the authored lines that stand in for the NPC Mind.
+#include "RatwClaims.h"
 #include "RatwMind.h"
 #include "RatwWorld.h"
+
+#include <fstream>
+#include <sstream>
 
 #include <cmath>
 #include <iostream>
@@ -184,6 +188,112 @@ void authoredLines()
     offline.exchange(c, [&](const mind::Exchange& x) { got = x.lines.size() == 2 && !x.generated; });
     expect(got, "Without the NPC Mind, the authored lines at once");
 }
+// Doc 84, Phase 1: claims said in claims.json's words from the teller's point of view, never a raw id, never told to or
+// by their victim as gossip; housemates who aren't kin; births and arrivals the town talks of, kept across a restart.
+void claimsInTheirOwnWords()
+{
+    std::ifstream in(RATW_SOURCE_DIR "/Data/Talk/claims.json");
+    std::stringstream text;
+    text << in.rdbuf();
+    std::string problem;
+    expect(claims::load(text.str(), problem), "claims.json loads: " + problem);
+    expect(claims::kindOfText("tried to steal from Wren") == "theft.attempt" && claims::kindOfText("raids the road at w_1_2") == "bandits.camp",
+           "Older saves' free words get their kind");
+    expect(claims::rawId("camp_w_ridgemere_6_8 raids") && claims::rawId("at w_ridgemere_6_8") && !claims::rawId("Wren's well-kept rows"),
+           "An id is told from words");
+    // A camp the carters spoke of: a road topic in the claim's own words, never its ids.
+    auto w = scene();
+    w.bonds().change("sorrel", "fennel", {5, 5, 20, 0, 0}, w.calendarDays());
+    std::string wild;
+    for (const auto& [id, c] : w.cells())
+        if (c.outdoors && !c.name.empty() && wild.empty())
+            wild = id;
+    expect(!wild.empty(), "Greyfen has somewhere under the sky");
+    w.believe("sorrel", "camp_" + wild, "raids the road at " + wild, "the carters", .9);
+    const auto* camp = belief(w, "sorrel", "camp_" + wild, "raids the road at " + wild);
+    expect(camp && camp->kind == "bandits.camp" && camp->place == wild, "The belief knows its kind and place from its words");
+    auto picks = w.ambientPicks({"player-ada"});
+    expect(picks.size() == 1 && picks[0].topic.kind == "bandits" && picks[0].topic.talk.count("topic.said") &&
+               !claims::rawId(picks[0].topic.talk.at("topic.said")) && picks[0].topic.talk.at("topic.kind") == "camp",
+           "A camp is talked of on the road's topic, in words (" + (picks.empty() ? std::string("nothing") : picks[0].topic.kind) + ")");
+    for (const auto& [k, v] : picks[0].topic.talk)
+        expect(!claims::rawId(v) || k == "topic.good", "No fact a line can say holds an id: " + k + " = " + v);
+    w.ambientSpoken(picks[0]);
+    const auto* told = belief(w, "fennel", "camp_" + wild, "raids the road at " + wild);
+    expect(told && told->kind == "bandits.camp" && told->place == wild && told->source == "sorrel", "Told on, the structure goes with it");
+    // Never to the victim as gossip, and never by them: the one robbed tells it as their own news.
+    auto v = scene();
+    v.bonds().change("sorrel", "fennel", {5, 5, 20, 0, 0}, v.calendarDays());
+    Belief theft;
+    theft.holder = "sorrel";
+    theft.subject = "player-ada";
+    theft.claim = "stole from someone";
+    theft.source = "saw it";
+    theft.confidence = .9;
+    theft.object = "fennel";
+    v.believe(theft);
+    for (const auto& p : v.ambientPicks({"player-ada"}))
+        expect(p.topic.kind != "gossip", "Nobody is told their own misfortune as gossip");
+    auto by = scene();
+    by.bonds().change("sorrel", "fennel", {5, 5, 20, 0, 0}, by.calendarDays());
+    theft.holder = "fennel";
+    theft.object = "fennel";
+    by.believe(theft);
+    for (const auto& p : by.ambientPicks({"player-ada"}))
+        expect(p.topic.kind != "gossip", "Nor does the victim tell it of themselves as gossip");
+    // A theft named with its victim: the realization, not the free words, and the kind the answers key on.
+    auto named = scene();
+    named.bonds().change("sorrel", "fennel", {5, 5, 20, 0, 0}, named.calendarDays());
+    Belief attempt = theft;
+    attempt.holder = "sorrel";
+    attempt.claim = "tried to steal from Wren";
+    attempt.object.clear();
+    named.believe(attempt);
+    picks = named.ambientPicks({"player-ada"});
+    expect(picks.size() == 1 && picks[0].topic.kind == "gossip" && picks[0].topic.talk.at("topic.claim_kind") == "theft" &&
+               picks[0].topic.talk.at("topic.said").find("tried to steal from Wren") != std::string::npos,
+           "Gossip keeps its kind for the answers (" + (picks.empty() ? std::string("nothing") : picks[0].topic.kind) + ")");
+    // Births and arrivals are the town's news, and the news survives a restart.
+    auto n = scene();
+    WorldEvent born;
+    born.kind = "birth";
+    born.actor = "fennel";
+    born.target = "sorrel";
+    born.cell = "town";
+    n.recordEvent(born);
+    std::map<std::string, std::string> facts;
+    n.talkTown("sorrel", facts);
+    expect(facts["world.birth"] == "recent", "A birth is talked of in town (" + facts["world.birth"] + ")");
+    WorldEvent mourning;
+    mourning.kind = "marriage";
+    mourning.actor = "sorrel";
+    mourning.target = "fennel";
+    mourning.cell = "town";
+    n.recordEvent(mourning);
+    const auto saved = n.save();
+    expect(!saved.townNews.empty() && !saved.news.empty(), "The town's news and a resident's own are saved");
+    World again;
+    expect(again.loadWorldFile(RATW_SOURCE_DIR "/Data/Worlds/Greyfen/world.ratw").ok && again.restore(saved).ok, "and restored");
+    std::map<std::string, std::string> after;
+    again.talkTown("sorrel", after);
+    expect(after["world.birth"] == "recent" && after["world.wedding"] == "recent", "with the birth and the wedding still news");
+    claims::clear();
+}
+
+void housematesAreNotKin()
+{
+    auto w = scene();
+    // Two who share a roof without a kin tie (the user's defect 3: the watch house's 105 pairs were "family").
+    const auto& residents = w.society().state().residents;
+    std::string a, b;
+    for (const auto& [x, rx] : residents)
+        for (const auto& [y, ry] : residents)
+            if (a.empty() && x < y && !rx.homeCell.empty() && rx.homeCell == ry.homeCell && !w.society().family(x, y))
+                a = x, b = y;
+    if (a.empty())
+        return;                                     // (Greyfen may house no such pair.)
+    expect(w.pairBand(a, b) == "housemates", "Housemates who aren't kin are housemates, not family");
+}
 } // namespace
 
 int main()
@@ -195,6 +305,8 @@ int main()
         grudgesAndNews();
         theDayItself();
         authoredLines();
+        claimsInTheirOwnWords();
+        housematesAreNotKin();
     }
     catch (const std::exception& e)
     {

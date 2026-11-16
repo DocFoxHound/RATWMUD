@@ -2055,6 +2055,15 @@ class Game
         double until = -1;
     };
     std::map<std::string, std::map<std::string, TalkMemo>> talkMemory_;
+    // The cooldowns and onces ("said:<entry>", by the same owners), a store of their own that no cap evicts: in the
+    // 32-entry memory, busy speakers' short markers pushed them out early (doc 84 §8.7, defect 6). Until when (a calendar
+    // day; -1 for good). Saved beside the memory, in the same shape.
+    std::map<std::string, std::map<std::string, double>> talkSaid_;
+    // How many of each town's residents fish or sail for their work (here.fishers: doc 84 §10.7, the truth of a town's
+    // trade lines), worked out once a game day.
+    std::map<std::string, int> townFishers_;
+    std::int64_t townFishersDay_ = -1;
+    int townFishers(const std::string& town);
     void talkRemember(const std::vector<talk::Effect>& effects);
     // Each resident's voice, from live.npc_voice (doc 62, phase 6): over what is worked out of them, where set.
     struct NpcVoice

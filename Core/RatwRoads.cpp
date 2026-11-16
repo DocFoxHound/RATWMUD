@@ -1,11 +1,13 @@
 // The roads between towns (RatwRoads.h; Docs/Design/26-living-npcs.md, Phase 5). World members, kept here.
 #include "RatwRoads.h"
+#include "RatwClaims.h"
 #include "RatwItems.h"
 #include "RatwWorld.h"
 
 #include "RatwCalendar.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <iterator>
 #include <set>
@@ -458,21 +460,152 @@ Result World::completeContract(const std::string& contractId, const std::string&
 void World::believe(const std::string& holder, const std::string& subject, const std::string& claim,
                     const std::string& source, double confidence, const std::string& incident, const std::string& as)
 {
-    if (holder.empty() || subject.empty() || holder == subject || claim.empty() || !(confidence > .05))
+    Belief b;
+    b.holder = holder;
+    b.subject = subject;
+    b.claim = claim;
+    b.source = source;
+    b.confidence = confidence;
+    b.incident = incident;
+    b.as = as;
+    believe(b);
+}
+
+void World::believe(const Belief& given)
+{
+    if (given.holder.empty() || given.subject.empty() || given.holder == given.subject || given.claim.empty() ||
+        !(given.confidence > .05))
         return;
-    auto& mine = beliefs_[holder];
-    for (auto& b : mine)
-        if (b.subject == subject && b.claim == claim)
+    Belief b = given;
+    b.day = calendarDays_;
+    b.confidence = std::min(1.0, b.confidence);
+    claimOf(b);
+    auto& mine = beliefs_[b.holder];
+    for (auto& old : mine)
+        if (old.subject == b.subject && old.claim == b.claim)
         {
-            if (confidence > b.confidence)
-                b = {holder, subject, claim, source, std::min(1.0, confidence), calendarDays_, incident, as.empty() ? b.as : as};
-            else if (b.as.empty())
-                b.as = as;
+            if (b.confidence > old.confidence)
+            {
+                if (b.as.empty())
+                    b.as = old.as;
+                for (auto [mine, theirs] : {std::pair{&b.kind, &old.kind}, std::pair{&b.object, &old.object}, std::pair{&b.place, &old.place}})
+                    if (mine->empty())
+                        *mine = *theirs;
+                old = b;
+            }
+            else
+            {
+                if (old.as.empty())
+                    old.as = b.as;
+                for (auto [theirs, mine] : {std::pair{&b.kind, &old.kind}, std::pair{&b.object, &old.object}, std::pair{&b.place, &old.place}})
+                    if (mine->empty())
+                        *mine = *theirs;
+            }
             return;
         }
-    mine.push_back({holder, subject, claim, source, std::min(1.0, confidence), calendarDays_, incident, as});
+    mine.push_back(std::move(b));
     if (mine.size() > BeliefsKept)
         mine.erase(std::min_element(mine.begin(), mine.end(), [](const Belief& a, const Belief& b) { return a.confidence < b.confidence; }));
+}
+
+void World::claimOf(Belief& b) const
+{
+    // (Doc 84 §7.7: the kind from claims.json's matches; the victim from the incident, else by the name the words give;
+    // a camp's cell from its words. Done once, as it is believed or loaded; told on, the structure goes with it.)
+    if (b.kind.empty() && b.claim.rfind("deed:", 0) != 0)
+        b.kind = claims::kindOfText(b.claim);
+    if (b.kind.empty())
+        return;
+    const auto* k = claims::find(b.kind);
+    const bool wantsObject = k && std::any_of(k->said.begin(), k->said.end(), [](const auto& pov) {
+        return std::any_of(pov.second.begin(), pov.second.end(), [](const std::string& w) { return w.find("#y.") != std::string::npos; });
+    });
+    if (b.object.empty() && wantsObject && k->family != "marriage")
+    {
+        if (!b.incident.empty())
+            for (const auto& i : crime_.incidents)
+                if (i.id == b.incident && i.offender == b.subject)
+                    b.object = i.victim;
+        // (A claim with no incident names its victim in its words: "stole from Wren", "attacked Wren".)
+        if (b.object.empty())
+            for (const char* lead : {" from ", "attacked "})
+                if (const auto at = b.claim.rfind(lead); at != std::string::npos)
+                {
+                    const auto name = b.claim.substr(at + std::char_traits<char>::length(lead));
+                    for (const auto& [id, e] : entities_)
+                        if (e.name == name && id != b.subject)
+                        {
+                            b.object = id;
+                            break;
+                        }
+                    break;
+                }
+    }
+    if (b.place.empty() && k && k->family == "bandit")
+        if (const auto at = b.claim.rfind(" at "); at != std::string::npos && cell(b.claim.substr(at + 4)))
+            b.place = b.claim.substr(at + 4);
+}
+
+void World::fillClaims()
+{
+    if (!claims::loaded())
+        return;
+    for (auto& [holder, mine] : beliefs_)
+        for (auto& b : mine)
+            claimOf(b);
+}
+
+namespace
+{
+// A spot named by a common noun takes an article in a sentence ("out by the Kestrel lead and silver mine"); a name doesn't.
+std::string spotWords(std::string part)
+{
+    const auto last = part.rfind(' ');
+    const auto word = last == std::string::npos ? part : part.substr(last + 1);
+    if (!word.empty() && std::islower(static_cast<unsigned char>(word[0])) && part.rfind("the ", 0) != 0)
+        part = "the " + part;
+    return part;
+}
+} // namespace
+
+std::string World::placeWords(const std::string& cellId) const
+{
+    // "The Greenholt, Glasswater": a region and a spot in it, or a quarter of it ("East"). Said as a resident would.
+    const auto* c = cell(cellId);
+    if (!c || c->name.empty() || claims::rawId(c->name))
+        return {};
+    auto region = c->name, part = std::string();
+    if (const auto comma = region.find(", "); comma != std::string::npos)
+        part = region.substr(comma + 2), region = region.substr(0, comma);
+    if (region.rfind("The ", 0) == 0)
+        region[0] = 't';
+    static const std::map<std::string, std::string> Quarter{{"East", "the east of "}, {"West", "the west of "},
+                                                            {"North", "the north of "}, {"South", "the south of "},
+                                                            {"Middle", "the heart of "}, {"Centre", "the heart of "},
+                                                            {"North-east", "the north-east of "}, {"North-west", "the north-west of "},
+                                                            {"South-east", "the south-east of "}, {"South-west", "the south-west of "}};
+    if (part.empty())
+        return "out by " + region;
+    if (const auto q = Quarter.find(part); q != Quarter.end())
+        return "in " + q->second + region;
+    return "in " + region + ", out by " + spotWords(part);
+}
+
+std::string World::placeNear(const std::string& cellId) const
+{
+    const auto* c = cell(cellId);
+    if (!c || c->name.empty() || claims::rawId(c->name))
+        return {};
+    auto region = c->name, part = std::string();
+    if (const auto comma = region.find(", "); comma != std::string::npos)
+        part = region.substr(comma + 2), region = region.substr(0, comma);
+    static const std::set<std::string> Quarters{"East", "West", "North", "South", "Middle", "Centre", "North-east", "North-west",
+                                                "South-east", "South-west"};
+    if (!part.empty() && !Quarters.count(part))
+        return spotWords(part);
+    if (region.rfind("The ", 0) == 0)
+        region[0] = 't';
+    return region;
 }
 
 void World::forgetClaim(const std::string& claim)
@@ -504,10 +637,20 @@ std::string World::rumoursAbout(const std::string& npc, const std::string& subje
 void World::rumoursFromEvent(const WorldEvent& e)
 {
     // Witnesses and those it happened to know it first; everyone else hears it later, or never.
-    const auto witnesses = [&](const std::string& cellId, const std::string& subject, const std::string& claim, double confidence) {
+    const auto witnesses = [&](const std::string& cellId, const std::string& subject, const std::string& claim, double confidence,
+                               const std::string& object = {}) {
         for (const auto& [id, other] : entities_)
             if (other.npc && !other.dead && !other.transient && other.cellId == cellId && id != subject)
-                believe(id, subject, claim, "saw it", confidence);
+            {
+                Belief b;
+                b.holder = id;
+                b.subject = subject;
+                b.claim = claim;
+                b.source = "saw it";
+                b.confidence = confidence;
+                b.object = object;                  // (Whom they married: doc 84 §7.7.)
+                believe(b);
+            }
     };
     if (e.kind == "death")
         witnesses(e.cell, e.actor, "died", 1);
@@ -523,7 +666,7 @@ void World::rumoursFromEvent(const WorldEvent& e)
     else if (e.kind == "promise kept")
         believe(e.target, e.actor, "keeps promises", "saw it kept", .8);
     else if (e.kind == "marriage")
-        witnesses(e.cell, e.actor, "married", .7);
+        witnesses(e.cell, e.actor, "married", .7, e.target);
     else if (e.kind == "newcomer" && !e.actor.empty())
         if (const auto* who = entity(e.actor))
             witnesses(who->cellId, e.actor, "is new in town", .8);
@@ -936,7 +1079,17 @@ void World::caravanEntered(Caravan& c, const Entity& wagon)
             if (p.role == "merchant")
                 if (const auto* m = roadMarketOf(p.work.cell); m && m->id == c.to)
                     if (const auto& holder = society_.state().careers.positions.at(p.id).holder; !holder.empty())
-                        believe(holder, camp.id, "raids the road at " + cellId, "the carters", .9);
+                    {
+                        Belief b;
+                        b.holder = holder;
+                        b.subject = camp.id;
+                        b.claim = "raids the road at " + cellId;   // (The Watch's free words; said only as claims.json says.)
+                        b.source = "the carters";
+                        b.confidence = .9;
+                        b.kind = "bandits.camp";
+                        b.place = cellId;
+                        believe(b);
+                    }
         break;
     }
 }
@@ -1016,8 +1169,15 @@ void World::caravanArrived(Caravan& c)
         if (p.role == "merchant" && roadMarketOf(p.work.cell) == to)
             if (const auto& holder = society_.state().careers.positions.at(p.id).holder; !holder.empty())
                 for (std::size_t i = 0; i < told.size() && i < (guarded ? 16u : 8u); ++i)
-                    believe(holder, told[i].subject, told[i].claim, "a carter from " + from->id, told[i].confidence * (guarded ? .75 : .6), {},
-                            told[i].as);
+                {
+                    // (Told on whole, its kind, victim and place with it; the source in words, never a market's id.)
+                    auto b = told[i];
+                    b.holder = holder;
+                    b.source = "a carter from " + marketWords(from->id);
+                    b.confidence = told[i].confidence * (guarded ? .75 : .6);
+                    b.incident.clear();
+                    believe(b);
+                }
     recordEvent({"caravan arrives", c.id, c.to, c.cell, 0, 0, c.departure, int(c.manifest.size()), 0, "from " + c.from + (guarded ? ", guarded" : "")});
     // Home again, empty.
     c.status = "returning";
@@ -1712,7 +1872,17 @@ void World::beaten(Entity& player, BanditCamp& camp)
     for (const auto& p : society_.positions())
         if (p.role == "merchant" && roadMarketOf(p.work.cell))
             if (const auto& holder = society_.state().careers.positions.at(p.id).holder; !holder.empty())
-                believe(holder, camp.id, "robs travellers at " + camp.cell, "a traveller", .7);
+            {
+                Belief b;
+                b.holder = holder;
+                b.subject = camp.id;
+                b.claim = "robs travellers at " + camp.cell;
+                b.source = "a traveller";
+                b.confidence = .7;
+                b.kind = "bandits.robs";
+                b.place = camp.cell;
+                believe(b);
+            }
     endEncounter(camp.id, (calendar::SecondsPerDay / 24));
 }
 
@@ -1824,7 +1994,13 @@ void World::gossip()
         for (std::size_t l = 0; l < listeners.size() && l < 3; ++l)
             for (const auto* b : best)
                 if (listeners[l].second != b->subject)
-                    telling.push_back({listeners[l].second, {listeners[l].second, b->subject, b->claim, holder, b->confidence * .7, calendarDays_, b->incident, b->as}});
+                {
+                    auto told = *b;
+                    told.holder = listeners[l].second;
+                    told.source = holder;
+                    told.confidence = b->confidence * .7;
+                    telling.push_back({listeners[l].second, std::move(told)});
+                }
     }
     for (auto& [holder, mine] : beliefs_)
     {
@@ -1833,7 +2009,7 @@ void World::gossip()
         mine.erase(std::remove_if(mine.begin(), mine.end(), [](const Belief& b) { return b.confidence < .1; }), mine.end());
     }
     for (const auto& [listener, b] : telling)
-        believe(listener, b.subject, b.claim, b.source, b.confidence, b.incident, b.as);
+        believe(b);
 
 }
 

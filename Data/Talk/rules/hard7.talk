@@ -601,6 +601,25 @@ when concept=talk.bandits topic.kind=camp
 say There's a camp out by #topic.where#. #bandits.capitalize#. | Somebody saw fires out by #topic.where#. | They're camped out by #topic.where#, bold as you like. | Stay off the road past #topic.where#.
 then other: road.answer
 
+# A camp one has heard of (doc 84, Phase 1: the claim in its own words, claims.json's bandits.camp and bandits.robs, where
+# it was told as gossip with the camp's id before).
+rule h7_rd_open_camp_heard
+when concept=talk.bandits topic.kind=camp topic.said
+say Word off the road: #topic.said#. | Did you hear? #topic.said.capitalize#. | They're saying #topic.said#. I'll not be going that way. | #topic.said.capitalize#, so they say. Keep to the town.
+then other: road.answer
+
+rule h7_rd_open_camp_heard_merchant
+when concept=talk.bandits topic.kind=camp topic.said self.role=merchant
+cooldown 1d
+say I had it over the counter: #topic.said#. There goes my next order. | #topic.said.capitalize#. I'll pay more for every crate that gets through. | Nobody's sending wagons while #topic.said#.
+then other: road.answer
+
+rule h7_rd_open_camp_heard_guard
+when concept=talk.bandits topic.kind=camp topic.said self.role=guard
+cooldown 1d
+say It came to the watch post: #topic.said#. | We've word #topic.said#. Nobody's riding out yet. | #topic.said.capitalize#. The captain says it's not ours to clear.
+then other: road.answer
+
 rule h7_rd_open_caravan
 when concept=talk.caravan topic.kind=raided
 say The #topic.where# caravan never made it. | They hit the carts from #topic.where#. | We'll get nothing from #topic.where# this week. | Robbed. The whole #topic.where# run.

@@ -981,6 +981,22 @@ void otherRoles()
     expect(town.ash.snapshots.back().boolean("dialogueRoles"), "the snapshot says the roles' entries open the window");
     expect(s.jobOf("ug") && s.jobOf("ug")->role == "guard" && town.g.jobCategoryOf("up") == "priest" && town.g.jobCategoryOf("ui") == "innkeeper",
            "the fixture: a guard, a priest, an innkeeper");
+    // Doc 84, Phase 1: residents know each other's names by acquaintance (defect 11), and a keeper behind walls knows
+    // the weather out in the street (here.outdoors).
+    {
+        auto q = town.g.talkQuery("u1", "u2", "talk.smalltalk");
+        const bool kinOrWork = s.family("u1", "u2") || s.household("u1", "u2") ||
+                               (s.jobOf("u1") && s.jobOf("u2") && s.jobOf("u1")->work.cell == s.jobOf("u2")->work.cell);
+        expect(kinOrWork || q.facts["pair.named"] == "no", "two residents who never met don't know each other's names");
+        w.bonds().change("u1", "u2", {5, 5, 20, 0, 0}, w.calendarDays());
+        q = town.g.talkQuery("u1", "u2", "talk.smalltalk");
+        expect(q.facts["pair.named"] == "yes", "acquainted, they do (" + q.facts["pair.named"] + ")");
+        const auto inside = town.g.talkQuery("up", "ui", "talk.smalltalk");
+        expect(inside.facts.count("here.weather") && inside.facts.at("here.weather") == "indoors" && inside.facts.count("here.outdoors") &&
+                   inside.facts.at("here.outdoors") != "indoors",
+               "indoors, the weather outside is known: here.outdoors");
+        expect(inside.facts.count("here.hour") && inside.facts.count("here.fishers"), "and the hour and the town's fishers");
+    }
     const auto open = [&](const std::string& npc, const std::string& entry) -> const json::Value* {
         if (const auto* d = town.g.dialogueOf(town.ash.entityId))
             town.g.command(&town.ash, cmd({{"type", "dialogue_close"}, {"session", d->id}, {"why", "closed"}}));

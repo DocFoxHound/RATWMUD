@@ -5232,7 +5232,11 @@ void Game::heed(const std::string& npcId, const std::string& subjectId, bool ide
             heardTrouble(subjectId, npcId, briefed->second);
         troubleBriefed_.erase(briefed);
     }
-    if (!reply.promise.empty())
+    // The window's free talk makes no promises (doc 83's brief; doc 84, defect 15): what the Mind reports of one said
+    // there is let go, as anything it would give or take is.
+    const auto window = dialogues_.find(subjectId);
+    const bool inWindow = window != dialogues_.end() && window->second.npc == npcId;
+    if (!reply.promise.empty() && !inWindow)
     {
         const bool byNpc = reply.promiseBy == "npc";
         memories_.record(npcId, subjectId, {sequence_++, now(), byNpc ? "(your promise)" : "(their promise)", reply.promise});
@@ -6652,17 +6656,33 @@ DbStore::Build Game::capture()
         c->server.scenesHeard[who].assign(heard.order.begin(), heard.order.end());
     {
         auto memory = Value::object();
+        std::set<std::string> owners;
         for (const auto& [owner, memos] : talkMemory_)
+            owners.insert(owner);
+        for (const auto& [owner, said] : talkSaid_)
+            owners.insert(owner);
+        for (const auto& owner : owners)
         {
             auto kept = Value::object();
-            for (const auto& [key, m] : memos)
-                if (m.until < 0 || m.until >= world_.calendarDays())
-                {
-                    auto pair = Value::array();
-                    pair.push(m.value);
-                    pair.push(m.until);
-                    kept.add(key, pair);
-                }
+            if (const auto memos = talkMemory_.find(owner); memos != talkMemory_.end())
+                for (const auto& [key, m] : memos->second)
+                    if (m.until < 0 || m.until >= world_.calendarDays())
+                    {
+                        auto pair = Value::array();
+                        pair.push(m.value);
+                        pair.push(m.until);
+                        kept.add(key, pair);
+                    }
+            // (The cooldown store, in the memory's shape: an older server reads it as memory, as it was. Doc 84.)
+            if (const auto said = talkSaid_.find(owner); said != talkSaid_.end())
+                for (const auto& [key, until] : said->second)
+                    if (until < 0 || until >= world_.calendarDays())
+                    {
+                        auto pair = Value::array();
+                        pair.push("yes");
+                        pair.push(until);
+                        kept.add(key, pair);
+                    }
             if (kept.size())
                 memory.add(owner, kept);
         }
@@ -6766,6 +6786,15 @@ json::Value Game::talkCarry() const
         memory.add(owner, kept);
     }
     out.add("memory", memory);
+    auto said = Value::object();
+    for (const auto& [owner, ids] : talkSaid_)
+    {
+        auto kept = Value::object();
+        for (const auto& [key, until] : ids)
+            kept.add(key, until);
+        said.add(owner, kept);
+    }
+    out.add("said", said);
     auto recent = Value::object();
     for (const auto& [cell, ids] : recentScenes_)
     {
@@ -6806,6 +6835,13 @@ void Game::talkResume(const json::Value& carried)
             for (const auto& [key, pair] : kept.fields())
                 if (pair.isArray() && pair.size() == 2)
                     talkMemory_[owner][key] = {pair.items()[0].asString(""), pair.items()[1].asNumber()};
+    }
+    if (const auto* said = carried.find("said"); said && said->isObject())
+    {
+        talkSaid_.clear();
+        for (const auto& [owner, kept] : said->fields())
+            for (const auto& [key, until] : kept.fields())
+                talkSaid_[owner][key] = until.asNumber(-1);
     }
     if (const auto* recent = carried.find("recent"); recent && recent->isObject())
     {
@@ -6918,6 +6954,7 @@ void Game::load(const std::string& payload)
         note("error", "RATW restore rejected; checkpoint preserved: " + result.message);
         return;
     }
+    world_.fillClaims();                              // (An older save's beliefs get their kind, victim and place: doc 84.)
     accounts_ = std::move(restored);
     for (const auto& player : saved.players)
     {
@@ -6952,9 +6989,12 @@ void Game::load(const std::string& payload)
                 e->leaderId = "party:" + partyId;
     scenesHeard_.clear();
     talkMemory_.clear();
+    talkSaid_.clear();
     for (const auto& [owner, memos] : state.talkMemory.fields())
         for (const auto& [key, m] : memos.fields())
-            if (m.items().size() == 2 && talkMemory_[owner].size() < 32)
+            if (m.items().size() == 2 && key.rfind("said:", 0) == 0)
+                talkSaid_[owner][key] = m.items()[1].asNumber(-1);   // (The cooldown store: doc 84, defect 6.)
+            else if (m.items().size() == 2 && talkMemory_[owner].size() < 32)
                 talkMemory_[owner][key] = {m.items()[0].asString(""), m.items()[1].asNumber(-1)};
     regardLedger_.clear();
     for (const auto& [pair, list] : state.regardLedger.fields())

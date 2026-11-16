@@ -1,6 +1,7 @@
 // Talk (RatwTalk.h; Docs/Design/62-talk.md).
 #include "RatwTalk.h"
 #include "RatwJsonDoc.h"
+#include "RatwClaims.h"
 
 #include <algorithm>
 #include <cctype>
@@ -1305,6 +1306,10 @@ bool loadDir(Library& lib, const std::string& dir, bool all, std::string& proble
     }
     if (!settings(text, problem))
         return false;
+    // The claims and their words (doc 84 §7.7): the process's table, for the world's talk of what residents believe. A
+    // library from before Phase 1 has none, and leaves the table as it was.
+    if (readFile(fs::path(dir) / "claims.json", text) && !claims::load(text, problem))
+        return false;
     std::vector<fs::path> grammars, talks, trees;
     for (fs::recursive_directory_iterator it(dir, ec), end; it != end && !ec; it.increment(ec))
         if (it->is_regular_file())
@@ -1545,6 +1550,11 @@ bool Library::expandInto(const std::string& text, Expansion& x, int depth, std::
             return false;
         for (const auto& m : ref.mods)
             value = modify(value, m);
+        // The punctuation join (doc 84, defect 14): a value that ends its own sentence (". " or ";") before the line's
+        // comma or stop gives up its mark: "the loaves are honest., neighbour" is "the loaves are honest, neighbour".
+        if (i + 1 < text.size() && (text[i + 1] == ',' || text[i + 1] == '.') && !value.empty() &&
+            (value.back() == ';' || (value.back() == '.' && (value.size() < 2 || value[value.size() - 2] != '.'))))
+            value.pop_back();
         insert(out, out.size(), value);
     }
     return true;
@@ -1662,7 +1672,7 @@ Said Library::render(const Entry& e, const Query& q, std::uint64_t seed, Trace* 
         marks.insert(chosen->marks.begin(), chosen->marks.end());
     }
     out.id = e.id;
-    out.repeat = e.repeat;
+    out.repeat = settings_.repeat.count(q.concept) > 0;
     out.chain.push_back(e.id);
     // What saying it changes: what it remembers, and that it was said (for once and cooldown).
     const auto idOf = [&](int who) {
@@ -1762,6 +1772,7 @@ Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bo
         bool heard;
     };
     std::vector<Option> options;
+    const bool repeats = settings_.repeat.count(q.concept) > 0;
     for (const auto i : list->second)
     {
         const auto& e = entries_[i];
@@ -1798,7 +1809,9 @@ Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bo
                 trace->passed.push_back(e.id + ": a turn can't be spoken (no line holds, or a fact is missing)");
             continue;
         }
-        options.push_back({std::move(said), &e, !e.repeat && heard && heard(e.id)});
+        // (Whether it may be heard again is the concept asked's, not any of the entry's: an entry that is also a weather
+        // line is not fresh at every telling of gossip. Doc 84, defect 4.)
+        options.push_back({std::move(said), &e, !repeats && heard && heard(e.id)});
     }
     if (options.empty())
     {

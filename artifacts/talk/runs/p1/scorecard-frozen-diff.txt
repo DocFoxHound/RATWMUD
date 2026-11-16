@@ -1,0 +1,4 @@
+R5 (collision index, per 100 h): 926, worse than the baseline's 909 on an open hard gate
+C3 (endings by a farewell or a break (%)): 0.0684 regresses more than 10% from the baseline's 0.0838
+C6 (same entry or question twice in a conversation, per 1,000): 0.119, worse than the baseline's 0.117 on an open hard gate
+B5 (exchanges simulated a second): 59.2, worse than the baseline's 67.6 on an open hard gate

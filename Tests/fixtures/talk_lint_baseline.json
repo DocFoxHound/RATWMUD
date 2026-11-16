@@ -1,0 +1,35 @@
+{
+ "about": "talk_lint.py findings frozen (Docs/Design/84 \u00a77.8, Phase 1): the truth lexicon counted over the library; a new one fails, the list may only shrink.",
+ "count": 20,
+ "by_rule": {
+  "children": 6,
+  "fisher_self": 3,
+  "fog_now": 1,
+  "morning_greeting": 3,
+  "night_greeting": 1,
+  "rain_now": 5,
+  "spouse": 1
+ },
+ "findings": [
+  "children|cb_ser_ferro_road|My daughter works in Ridgemere now. Never visits.",
+  "children|cv2_left_worry|My son rides with the #topic.where# caravan.",
+  "children|em_cv_out_missing|First time my daughter's driven the #topic.where# road.",
+  "children|em_cv_out_missing|My son went with the caravan to #topic.where#.",
+  "children|ev_pk_old_approves|#topic.subject# reminds me of my son.",
+  "children|rg_wm_letter_east|Still no letter from my son in the city.",
+  "fisher_self|tr_sr_gulls|Already gone. Just came back for my net.",
+  "fisher_self|tr_sr_gulls|The gulls stole half my catch off the slab.",
+  "fisher_self|w7s_shore_work|My nets are tangled past saving.",
+  "fog_now|kn_day_regional|The fog's lifting off the water.",
+  "morning_greeting|f7_sp_young|I woke and forgot we were married. Then I remembered. Good morning.",
+  "morning_greeting|kn_ap_carter|Good morning, ox.",
+  "morning_greeting|tr_herd_market|Good morning, long walk home.",
+  "night_greeting|f7_st_pc_bed|Goodnight, pup.",
+  "rain_now|em_rm_bd_camp|There's a camp at #topic.where#. In this rain, even.",
+  "rain_now|kn_home_smell|It's raining.",
+  "rain_now|rm_wk_rope|In this rain?",
+  "rain_now|tr_serv_ridgemere_house|In this rain?",
+  "rain_now|tr_serv_ridgemere_house|The Timberland ladies want the windows washed in this rain.",
+  "spouse|et_hm_newcomer|The last newcomer I liked was my wife. Forty years back."
+ ]
+}

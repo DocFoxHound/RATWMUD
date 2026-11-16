@@ -21,6 +21,13 @@ struct AmbientTopic
     // (topic.item=herbs, topic.price=3 pennies...).
     std::map<std::string, std::string> talk;
     std::string as;                     // A deed told by the doer's name: the name (doc 56).
+    // What the teller says of it, in their own words (topic.said; doc 84 §7.7, defect 9): a claim from its point of view
+    // in claims.json, one's own news. Empty for a topic with nothing to tell.
+    std::string said;
+    // A claim passed on when it is spoken (gossip, a deed, a camp the carters spoke of): believed by the listener, with its
+    // kind, its second party and its place (doc 84 §7.7).
+    bool passes = false;
+    std::string claimKind, object, place;
 };
 struct AmbientPick
 {

@@ -388,7 +388,14 @@ std::string firstPerson(std::string text, const std::string& teller)
     if (teller.empty())
         return text;
     if (text.rfind(teller + " ", 0) == 0)
+    {
         text = "I" + text.substr(teller.size());
+        // (The verb after it agrees: "I have", never "I has": doc 84, defect 9.)
+        for (const auto& [third, first] : {std::pair{"I has ", "I have "}, std::pair{"I is ", "I am "}, std::pair{"I does ", "I do "},
+                                           std::pair{"I was ", "I was "}})
+            if (text.rfind(third, 0) == 0)
+                text = first + text.substr(std::char_traits<char>::length(third));
+    }
     for (std::size_t at; (at = text.find(" " + teller)) != std::string::npos;)
         text.replace(at + 1, teller.size(), "me");
     return text;

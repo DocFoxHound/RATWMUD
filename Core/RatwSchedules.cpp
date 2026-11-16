@@ -628,6 +628,19 @@ void World::planDays()
 
 std::string World::districtHouse(const std::string& cellId) const
 {
+    if (const auto today = std::int64_t(std::floor(calendarDays_)); doors_.size() != districtDoors_ || today != districtDay_)
+    {
+        districtOf_.clear();
+        districtDoors_ = doors_.size();
+        districtDay_ = today;
+    }
+    if (const auto found = districtOf_.find(cellId); found != districtOf_.end())
+        return found->second;
+    return districtOf_[cellId] = districtWalk(cellId);
+}
+
+std::string World::districtWalk(const std::string& cellId) const
+{
     // Out from the cell through the doors that lead into it, the nearest first (doors in id order), stopping at the first
     // outdoor cell: a shop's own cell rarely carries its district's claim (in Ridgemere 2.0 most interiors are claimed by
     // no House while the street outside is), so the street's is the district's.

@@ -291,13 +291,27 @@ void Game::talkPair(const std::string& a, const std::string& b, talk::Facts& fac
     facts["pair.customer"] = pa2["shopkeeper"] == b ? "a" : pb2["shopkeeper"] == a ? "b" : "no";
     facts["pair.flock"] = pa2["priest"] == b ? "b" : pb2["priest"] == a ? "a" : "no";
     // Toward the other, player or resident (decision 9): a's knowledge of b, and a's feelings for b.
-    facts["pair.named"] = yes(knowsName(a, b));
-    if (const auto* k = known_.find(a, b))
-        facts["pair.named_how"] = k->how;
-    facts["pair.known_by"] = yes(knowsName(b, a));
     const Bond none{};
     const auto* bond = world_.bonds().find(a, b);
     const Bond& r = bond ? *bond : none;
+    // Between residents (doc 84 §7.11, defect 11): they know each other's names at familiarity 10 or more, or as kin,
+    // housemates or workmates. A player's name is known only as it was given (knowsName: doc 32).
+    const auto* ea = world_.entity(a);
+    const auto* eb = world_.entity(b);
+    const auto residentsKnow = [&](const std::string& x, const std::string& y, const Bond* xy) {
+        if (xy && xy->familiarity >= 10)
+            return true;
+        if (society.family(x, y) || society.household(x, y))
+            return true;
+        const auto* jx = society.jobOf(x);
+        const auto* jy = society.jobOf(y);
+        return jx && jy && jx->work.cell == jy->work.cell && !jx->work.cell.empty();
+    };
+    const bool residents = ea && eb && ea->npc && eb->npc;
+    facts["pair.named"] = yes(residents ? residentsKnow(a, b, bond) : knowsName(a, b));
+    if (const auto* k = known_.find(a, b))
+        facts["pair.named_how"] = k->how;
+    facts["pair.known_by"] = yes(residents ? residentsKnow(b, a, world_.bonds().find(b, a)) : knowsName(b, a));
     const auto number = [](double v) { return std::to_string(int(std::lround(v))); };
     facts["pair.affinity"] = number(r.affinity);
     facts["pair.trust"] = number(r.trust);
@@ -347,6 +361,8 @@ talk::Query Game::talkQuery(const std::string& a, const std::string& b, const st
     q.alone = b.empty();
     world_.talkMoment(a, q.facts);
     world_.talkTown(a, q.facts);
+    if (const auto region = q.facts.find("here.region"); region != q.facts.end())
+        q.facts["here.fishers"] = std::to_string(townFishers(region->second));
     // (A price fact only for the goods the library lists: world.<good>_price, doc 79, 11. The rest are the topic's.)
     for (auto it = q.facts.begin(); it != q.facts.end();)
         it = it->first.rfind("world.", 0) == 0 && it->first.size() > 12 && it->first.compare(it->first.size() - 6, 6, "_price") == 0 &&
@@ -433,6 +449,31 @@ talk::Query Game::talkQuery(const std::string& a, const std::string& b, const st
     return q;
 }
 
+int Game::townFishers(const std::string& town)
+{
+    if (const auto today = std::int64_t(std::floor(world_.calendarDays())); today != townFishersDay_)
+    {
+        townFishersDay_ = today;
+        townFishers_.clear();
+        const auto& society = world_.society();
+        for (const auto& [id, life] : society.state().residents)
+        {
+            const auto* e = world_.entity(id);
+            if (!e || e->dead || life.homeCell.empty())
+                continue;
+            const auto* spec = society.spec(id);
+            const auto* post = society.jobOf(id);
+            const auto role = spec ? spec->role : std::string("civilian");
+            const auto job = talk::jobCategory(post ? post->title : std::string(), spec ? spec->workLabel : std::string(),
+                                               role == "merchant" || role == "guard" ? role : "civilian", e->age);
+            if (job == "fisher" || job == "sailor")
+                ++townFishers_[world_.townIdOf(life.homeCell)];
+        }
+    }
+    const auto found = townFishers_.find(town);
+    return found == townFishers_.end() ? 0 : found->second;
+}
+
 void Game::talkRemember(const std::vector<talk::Effect>& effects)
 {
     const double now = world_.calendarDays();
@@ -448,6 +489,11 @@ void Game::talkRemember(const std::vector<talk::Effect>& effects)
              : e.key == "fear" ? change.fear : change.familiarity) = n;
             if (bar != std::string::npos)
                 regard(e.owner.substr(0, bar), e.owner.substr(bar + 1), change, "talk", "said " + e.why);
+            continue;
+        }
+        if (e.key.rfind("said:", 0) == 0)
+        {
+            talkSaid_[e.scope + ":" + e.owner][e.key] = e.days < 0 ? -1 : now + e.days;   // (Never evicted: defect 6.)
             continue;
         }
         auto& memos = talkMemory_[e.scope + ":" + e.owner];
@@ -466,10 +512,25 @@ void Game::talkRemember(const std::vector<talk::Effect>& effects)
 
 void Game::talkRecall(const std::string& owner, const std::string& prefix, talk::Facts& into)
 {
+    const double now = world_.calendarDays();
+    if (const auto said = talkSaid_.find(owner); said != talkSaid_.end())
+    {
+        for (auto it = said->second.begin(); it != said->second.end();)
+        {
+            if (it->second >= 0 && it->second < now)
+            {
+                it = said->second.erase(it);
+                continue;
+            }
+            into[prefix + it->first] = "yes";
+            ++it;
+        }
+        if (said->second.empty())
+            talkSaid_.erase(said);
+    }
     const auto found = talkMemory_.find(owner);
     if (found == talkMemory_.end())
         return;
-    const double now = world_.calendarDays();
     for (auto it = found->second.begin(); it != found->second.end();)
     {
         if (it->second.until >= 0 && it->second.until < now)
@@ -775,7 +836,14 @@ std::map<std::string, std::string> Game::peopleOf(const std::string& id)
         return out;
     const auto town = world_.communityOf(life->homeCell.empty() ? e->cellId : life->homeCell);
     const auto door = entranceOf(life->homeCell.empty() ? e->cellId : life->homeCell);
-    double nearest = 1e18;
+    double nearest = 1e18, nearestChurch = 1e18;
+    // Where a door is in the world (its street's place on the map), for the church nearest home: the priest of their own
+    // district, not the town's first (doc 84, defect 12: one priest was 598 residents' of 773).
+    const auto onMap = [&](const std::pair<std::string, Vec2>& at) {
+        const auto* c = world_.cell(at.first);
+        return c ? Vec2{c->worldX + at.second.x, c->worldY + at.second.y} : Vec2{1e9, 1e9};
+    };
+    const auto home = onMap(door);
     for (const auto& p : society.positions())
     {
         const auto held = society.state().careers.positions.find(p.id);
@@ -790,21 +858,27 @@ std::map<std::string, std::string> Game::peopleOf(const std::string& id)
             if (d < nearest)
                 nearest = d, out["shopkeeper"] = holder;
         }
-        if (Society::clergy(p.title) && !out.count("priest"))
-            out["priest"] = holder;
+        if (Society::clergy(p.title))
+        {
+            const auto at = onMap(entranceOf(p.work.cell));
+            if (const double d = std::hypot(at.x - home.x, at.y - home.y); d < nearestChurch)
+                nearestChurch = d, out["priest"] = holder;
+        }
     }
-    // Their leader: their own House's head, or the head of a House of their town.
+    // Their leader: their own House's head; else the head of the House whose district they live in; else of a House of
+    // their town (doc 84, defect 12).
+    const auto district = world_.districtHouse(life->homeCell.empty() ? e->cellId : life->homeCell);
+    int rank = 0;                                   // 3 their own House, 2 their district's, 1 their town's.
     for (const auto& h : society.houses())
     {
         const auto head = society.state().careers.positions.find(h.head);
         if (head == society.state().careers.positions.end() || head->second.holder.empty() || head->second.holder == id ||
             !living(head->second.holder))
             continue;
-        const bool own = society.family(id, head->second.holder);
-        if (own || (!out.count("leader") && h.community == town))
-            out["leader"] = head->second.holder;
-        if (own)
-            break;
+        const int r = society.family(id, head->second.holder) ? 3 : !district.empty() && h.name == "House " + district ? 2
+                      : h.community == town ? 1 : 0;
+        if (r > rank)
+            rank = r, out["leader"] = head->second.holder;
     }
     return out;
 }

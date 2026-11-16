@@ -17,10 +17,9 @@
 {"conv":5,"beat":1,"who":"tt_co_stiller","to":"tt_co_elder","entry":"h7_stranger_tired","alt":2,"topic":"player","text":"Thin, too."}
 {"conv":5,"beat":2,"who":"tt_co_elder","to":"tt_co_stiller","entry":"h7_stranger_tired","alt":2,"topic":"player","text":"And dusty to the ears."}
 {"conv":5,"beat":3,"who":"tt_co_stiller","to":"tt_co_elder","entry":"h7_stranger_tired","alt":2,"topic":"player","text":"Point them to the well, then."}
-{"conv":6,"beat":0,"who":"tt_ri_apprentice","to":"tt_ri_chandler","entry":"h7_stranger_young_hero","alt":2,"topic":"player","text":"Can I go and ask that grey stranger about the road?"}
-{"conv":6,"beat":1,"who":"tt_ri_chandler","to":"tt_ri_apprentice","entry":"h7_stranger_young_hero","alt":2,"topic":"player","text":"No. Leave them be."}
-{"conv":6,"beat":2,"who":"tt_ri_apprentice","to":"tt_ri_chandler","entry":"h7_stranger_young_hero","alt":2,"topic":"player","text":"Just one question!"}
-{"conv":6,"beat":3,"who":"tt_ri_chandler","to":"tt_ri_apprentice","entry":"h7_stranger_young_hero","alt":2,"topic":"player","text":"One. Then home."}
+{"conv":6,"beat":0,"who":"tt_ri_apprentice","to":"tt_ri_chandler","entry":"ev_pl_hungry_look","alt":2,"topic":"player","text":"I saw that grey stranger count their coins twice."}
+{"conv":6,"beat":1,"who":"tt_ri_chandler","to":"tt_ri_apprentice","entry":"ev_pl_hungry_look","alt":0,"topic":"player","text":"I'll do a fair price. Even for strangers."}
+{"conv":6,"beat":2,"who":"tt_ri_apprentice","to":"tt_ri_chandler","entry":"ev_pl_hungry_look","alt":2,"topic":"player","text":"We've all been there."}
 {"conv":7,"beat":0,"who":"tt_sa_storekeeper","to":"tt_sa_guard","entry":"ev_pl_merchant_appraises","alt":1,"topic":"player","text":"I'll bet that grey stranger needs boots. Look at those soles."}
 {"conv":7,"beat":1,"who":"tt_sa_guard","to":"tt_sa_storekeeper","entry":"ev_pl_merchant_appraises","alt":1,"topic":"player","text":"They do look worn."}
 {"conv":7,"beat":2,"who":"tt_sa_storekeeper","to":"tt_sa_guard","entry":"ev_pl_merchant_appraises","alt":1,"topic":"player","text":"Boots, and a new cloak."}
@@ -49,9 +48,9 @@
 {"conv":15,"beat":1,"who":"tt_co_boatman","to":"tt_co_pup","entry":"kn_pup_why_sad","alt":1,"topic":"family","text":"It's only been a long day."}
 {"conv":15,"beat":2,"who":"tt_co_pup","to":"tt_co_boatman","entry":"kn_pup_why_sad","alt":1,"topic":"family","text":"My tail goes low when I'm sad."}
 {"conv":15,"beat":3,"who":"tt_co_boatman","to":"tt_co_pup","entry":"kn_pup_why_sad","alt":1,"topic":"family","text":"Then maybe I'm a little sad."}
-{"conv":16,"beat":0,"who":"tt_ri_smith","to":"tt_ri_baker","entry":"ev_pl_hungry_look","alt":2,"topic":"player","text":"I saw that grey stranger count their coins twice."}
-{"conv":16,"beat":1,"who":"tt_ri_baker","to":"tt_ri_smith","entry":"ev_pl_hungry_look","alt":0,"topic":"player","text":"They can have the burnt end. No charge."}
-{"conv":16,"beat":2,"who":"tt_ri_smith","to":"tt_ri_baker","entry":"ev_pl_hungry_look","alt":2,"topic":"player","text":"We've all been there."}
+{"conv":16,"beat":0,"who":"tt_ri_smith","to":"tt_ri_baker","entry":"ev_pl_handsome","alt":1,"topic":"player","text":"Did you see the eyes on that grey stranger? Brightest I've ever seen."}
+{"conv":16,"beat":1,"who":"tt_ri_baker","to":"tt_ri_smith","entry":"ev_pl_handsome","alt":1,"topic":"player","text":"Eyes like amber."}
+{"conv":16,"beat":2,"who":"tt_ri_smith","to":"tt_ri_baker","entry":"ev_pl_handsome","alt":1,"topic":"player","text":"Amber, exactly."}
 {"conv":17,"beat":0,"who":"tt_sa_potter","to":"tt_sa_elder","entry":"et_nw_tavern","alt":2,"topic":"news","text":"Here's my news, and then I'm drinking. I took Saffron Hearne on as an apprentice."}
 {"conv":17,"beat":1,"who":"tt_sa_elder","to":"tt_sa_potter","entry":"et_nw_tavern","alt":2,"topic":"news","text":"Drink, then."}
 {"conv":17,"beat":2,"who":"tt_sa_potter","to":"tt_sa_elder","entry":"et_nw_tavern","alt":2,"topic":"news","text":"Gladly."}
@@ -67,9 +66,9 @@
 {"conv":21,"beat":0,"who":"tt_co_keeper","to":"tt_co_youth","entry":"pl2_stranger_suspicious","alt":1,"topic":"player","text":"That grey stranger has been here a while. Doing what?"}
 {"conv":21,"beat":1,"who":"tt_co_youth","to":"tt_co_keeper","entry":"pl2_stranger_suspicious","alt":1,"topic":"player","text":"Looking around."}
 {"conv":21,"beat":2,"who":"tt_co_keeper","to":"tt_co_youth","entry":"pl2_stranger_suspicious","alt":1,"topic":"player","text":"Hm."}
-{"conv":22,"beat":0,"who":"tt_ri_grocer","to":"tt_ri_guard","entry":"ev_pl_handsome","alt":1,"topic":"player","text":"Did you see the eyes on that grey stranger? Brightest I've ever seen."}
-{"conv":22,"beat":1,"who":"tt_ri_guard","to":"tt_ri_grocer","entry":"ev_pl_handsome","alt":1,"topic":"player","text":"Eyes like amber."}
-{"conv":22,"beat":2,"who":"tt_ri_grocer","to":"tt_ri_guard","entry":"ev_pl_handsome","alt":1,"topic":"player","text":"Amber, exactly."}
+{"conv":22,"beat":0,"who":"tt_ri_grocer","to":"tt_ri_guard","entry":"ev_pl_merchant_appraises","alt":0,"topic":"player","text":"Purse on that grey stranger looks heavy. Hello, customer."}
+{"conv":22,"beat":1,"who":"tt_ri_guard","to":"tt_ri_grocer","entry":"ev_pl_merchant_appraises","alt":0,"topic":"player","text":"Don't fleece them."}
+{"conv":22,"beat":2,"who":"tt_ri_grocer","to":"tt_ri_guard","entry":"ev_pl_merchant_appraises","alt":0,"topic":"player","text":"Only a little."}
 {"conv":23,"beat":0,"who":"tt_sa_raker_wife","to":"tt_sa_raker","entry":"kn_mates_old_habits","alt":2,"topic":"family","text":"You still steal the warm side of the bed."}
 {"conv":23,"beat":1,"who":"tt_sa_raker","to":"tt_sa_raker_wife","entry":"kn_mates_old_habits","alt":2,"topic":"family","text":"It was mine first."}
 {"conv":23,"beat":2,"who":"tt_sa_raker_wife","to":"tt_sa_raker","entry":"kn_mates_old_habits","alt":2,"topic":"family","text":"Nothing's yours first in a marriage."}
@@ -102,21 +101,20 @@
 {"conv":31,"beat":1,"who":"tt_co_elder","to":"tt_co_swineherd","entry":"h7_stranger_thief_eye","alt":2,"topic":"player","text":"Poor them? Why?"}
 {"conv":31,"beat":2,"who":"tt_co_swineherd","to":"tt_co_elder","entry":"h7_stranger_thief_eye","alt":2,"topic":"player","text":"Because they'll be blamed whatever."}
 {"conv":31,"beat":3,"who":"tt_co_elder","to":"tt_co_swineherd","entry":"h7_stranger_thief_eye","alt":2,"topic":"player","text":"Unfair, that."}
-{"conv":32,"beat":0,"who":"tt_ri_apprentice","to":"tt_ri_chandler","entry":"kn_teen_grown_up_talk","alt":0,"topic":"family","text":"Were you scared when you were my age?"}
-{"conv":32,"beat":1,"who":"tt_ri_chandler","to":"tt_ri_apprentice","entry":"kn_teen_grown_up_talk","alt":0,"topic":"family","text":"Scared of everything, mostly of looking scared."}
-{"conv":32,"beat":2,"who":"tt_ri_apprentice","to":"tt_ri_chandler","entry":"kn_teen_grown_up_talk","alt":0,"topic":"family","text":"You never look scared."}
-{"conv":32,"beat":3,"who":"tt_ri_chandler","to":"tt_ri_apprentice","entry":"kn_teen_grown_up_talk","alt":0,"topic":"family","text":"Practice."}
+{"conv":32,"beat":0,"who":"tt_ri_apprentice","to":"tt_ri_chandler","entry":"e1_home_garden","alt":0,"topic":"home","text":"My beans are up. Look at them."}
+{"conv":32,"beat":1,"who":"tt_ri_chandler","to":"tt_ri_apprentice","entry":"e1_home_garden","alt":0,"topic":"home","text":"Good beans."}
+{"conv":32,"beat":2,"who":"tt_ri_apprentice","to":"tt_ri_chandler","entry":"e1_home_garden","alt":0,"topic":"home","text":"I'm proud of them."}
 {"conv":33,"beat":0,"who":"tt_sa_storekeeper","to":"tt_sa_pup","entry":"lf2_apprentice_pride","alt":2,"topic":"life","text":"Saffron Hearne will be good at it."}
 {"conv":33,"beat":1,"who":"tt_sa_pup","to":"tt_sa_storekeeper","entry":"lf2_apprentice_pride","alt":2,"topic":"life","text":"I think so."}
 {"conv":33,"beat":2,"who":"tt_sa_storekeeper","to":"tt_sa_pup","entry":"lf2_apprentice_pride","alt":2,"topic":"life","text":"Let's hope."}
 {"conv":34,"beat":0,"who":"tt_co_guard","to":"tt_co_stiller","entry":"ev_pl_strong","alt":2,"topic":"player","text":"Bet that grey stranger could swing a hammer."}
 {"conv":34,"beat":1,"who":"tt_co_stiller","to":"tt_co_guard","entry":"ev_pl_strong","alt":2,"topic":"player","text":"Hire them."}
 {"conv":34,"beat":2,"who":"tt_co_guard","to":"tt_co_stiller","entry":"ev_pl_strong","alt":2,"topic":"player","text":"If they're for hire."}
-{"conv":35,"beat":0,"who":"tt_ri_baker_son","to":"tt_ri_baker","entry":"kn_pup_old_enough","alt":1,"topic":"family","text":"Everyone else stays out after dark."}
-{"conv":35,"beat":1,"who":"tt_ri_baker","to":"tt_ri_baker_son","entry":"kn_pup_old_enough","alt":1,"topic":"family","text":"Everyone else isn't my pup."}
-{"conv":35,"beat":2,"who":"tt_ri_baker_son","to":"tt_ri_baker","entry":"kn_pup_old_enough","alt":1,"topic":"family","text":"That's not fair!"}
-{"conv":35,"beat":3,"who":"tt_ri_baker","to":"tt_ri_baker_son","entry":"kn_pup_old_enough","alt":1,"topic":"family","text":"Fair isn't the point. Home by dark."}
-{"conv":35,"beat":4,"who":"tt_ri_baker_son","to":"tt_ri_baker","entry":"kn_pup_old_enough","alt":0,"topic":"family","text":"You never let me do anything."}
+{"conv":35,"beat":0,"who":"tt_ri_baker_son","to":"tt_ri_baker","entry":"kn_teen_borrow","alt":2,"topic":"family","text":"Can I take the cart to the field road?"}
+{"conv":35,"beat":1,"who":"tt_ri_baker","to":"tt_ri_baker_son","entry":"kn_teen_borrow","alt":2,"topic":"family","text":"What for?"}
+{"conv":35,"beat":2,"who":"tt_ri_baker_son","to":"tt_ri_baker","entry":"kn_teen_borrow","alt":2,"topic":"family","text":"Practice."}
+{"conv":35,"beat":3,"who":"tt_ri_baker","to":"tt_ri_baker_son","entry":"kn_teen_borrow","alt":2,"topic":"family","text":"With me beside you, then."}
+{"conv":35,"beat":4,"who":"tt_ri_baker_son","to":"tt_ri_baker","entry":"kn_teen_borrow","alt":2,"topic":"family","text":"Then watch me be brilliant."}
 {"conv":36,"beat":0,"who":"tt_sa_raker_wife","to":"tt_sa_raker","entry":"et_ap_spouses","alt":0,"topic":"life","text":"Saffron Hearne's apprenticed. Should we think about ours?"}
 {"conv":36,"beat":1,"who":"tt_sa_raker","to":"tt_sa_raker_wife","entry":"et_ap_spouses","alt":0,"topic":"life","text":"Not yet. Let them be young."}
 {"conv":36,"beat":2,"who":"tt_sa_raker_wife","to":"tt_sa_raker","entry":"et_ap_spouses","alt":0,"topic":"life","text":"A while longer, then."}
@@ -146,9 +144,8 @@
 {"conv":44,"beat":1,"who":"tt_co_boatman","to":"tt_co_pup","entry":"kn_pup_hungry","alt":0,"topic":"family","text":"You just ate."}
 {"conv":44,"beat":2,"who":"tt_co_pup","to":"tt_co_boatman","entry":"kn_pup_hungry","alt":0,"topic":"family","text":"That was ages ago."}
 {"conv":44,"beat":3,"who":"tt_co_boatman","to":"tt_co_pup","entry":"kn_pup_hungry","alt":0,"topic":"family","text":"It was before you came in."}
-{"conv":45,"beat":0,"who":"tt_ri_apprentice","to":"tt_ri_chandler","entry":"fm2_siblings","alt":1,"topic":"family","text":"You still owe me for breaking my good bowl."}
-{"conv":45,"beat":1,"who":"tt_ri_chandler","to":"tt_ri_apprentice","entry":"fm2_siblings","alt":1,"topic":"family","text":"That was ten years ago!"}
-{"conv":45,"beat":2,"who":"tt_ri_apprentice","to":"tt_ri_chandler","entry":"fm2_siblings","alt":1,"topic":"family","text":"Still owe me."}
+{"conv":45,"beat":0,"who":"tt_ri_apprentice","to":"tt_ri_chandler","entry":"e1_hm_tell_spring","alt":1,"topic":"home","text":"Swallows are back in my eaves. Same pair as last year, I'm sure."}
+{"conv":45,"beat":1,"who":"tt_ri_chandler","to":"tt_ri_apprentice","entry":"nod_plain","alt":3,"topic":"home","text":"True enough."}
 {"conv":46,"beat":0,"who":"tt_sa_storekeeper","to":"tt_sa_pup","entry":"lf_apprentice","alt":1,"topic":"life","text":"Clay Hearne took on Saffron Hearne as an apprentice."}
 {"conv":46,"beat":1,"who":"tt_sa_pup","to":"tt_sa_storekeeper","entry":"lf_apprentice","alt":1,"topic":"life","text":"Good for them."}
 {"conv":46,"beat":2,"who":"tt_sa_storekeeper","to":"tt_sa_pup","entry":"lf_apprentice","alt":1,"topic":"life","text":"It is."}
@@ -156,11 +153,9 @@
 {"conv":47,"beat":1,"who":"tt_co_elder","to":"tt_co_swineherd","entry":"h7_stranger_hire_road","alt":2,"topic":"player","text":"Looks aren't everything."}
 {"conv":47,"beat":2,"who":"tt_co_swineherd","to":"tt_co_elder","entry":"h7_stranger_hire_road","alt":2,"topic":"player","text":"They're a start."}
 {"conv":47,"beat":3,"who":"tt_co_elder","to":"tt_co_swineherd","entry":"h7_stranger_hire_road","alt":2,"topic":"player","text":"Then ask what they've done, first."}
-{"conv":48,"beat":0,"who":"tt_ri_baker_son","to":"tt_ri_baker","entry":"kn_teen_borrow","alt":1,"topic":"family","text":"Can I have a few pennies?"}
-{"conv":48,"beat":1,"who":"tt_ri_baker","to":"tt_ri_baker_son","entry":"kn_teen_borrow","alt":1,"topic":"family","text":"What for?"}
-{"conv":48,"beat":2,"who":"tt_ri_baker_son","to":"tt_ri_baker","entry":"kn_teen_borrow","alt":1,"topic":"family","text":"Things."}
-{"conv":48,"beat":3,"who":"tt_ri_baker","to":"tt_ri_baker_son","entry":"kn_teen_borrow","alt":1,"topic":"family","text":"I'll need more than things."}
-{"conv":48,"beat":4,"who":"tt_ri_baker_son","to":"tt_ri_baker","entry":"kn_teen_borrow","alt":1,"topic":"family","text":"Fine. Things, and a bun."}
+{"conv":48,"beat":0,"who":"tt_ri_baker_son","to":"tt_ri_baker","entry":"fm2_siblings","alt":2,"topic":"family","text":"Remember when we hid in the woodpile all night?"}
+{"conv":48,"beat":1,"who":"tt_ri_baker","to":"tt_ri_baker_son","entry":"fm2_siblings","alt":2,"topic":"family","text":"And Father found us at dawn."}
+{"conv":48,"beat":2,"who":"tt_ri_baker_son","to":"tt_ri_baker","entry":"fm2_siblings","alt":2,"topic":"family","text":"He was so angry."}
 {"conv":49,"beat":0,"who":"tt_sa_raker_wife","to":"tt_sa_raker","entry":"et_appr_news","alt":1,"topic":"life","text":"Saffron Hearne starts an apprenticeship this week."}
 {"conv":49,"beat":1,"who":"tt_sa_raker","to":"tt_sa_raker_wife","entry":"et_appr_news","alt":1,"topic":"life","text":"Who'd take Saffron Hearne on?"}
 {"conv":49,"beat":2,"who":"tt_sa_raker_wife","to":"tt_sa_raker","entry":"et_appr_news","alt":1,"topic":"life","text":"Someone patient."}
@@ -189,9 +184,9 @@
 {"conv":56,"beat":2,"who":"tt_sa_potter","to":"tt_sa_elder","entry":"et_news_generic","alt":0,"topic":"news","text":"It is."}
 {"conv":57,"beat":0,"who":"tt_co_boatman_wife","to":"tt_co_boatman","entry":"f7_sp_middle","alt":3,"topic":"family","text":"Half our lives under one roof. Imagine that."}
 {"conv":57,"beat":1,"who":"tt_co_boatman","to":"tt_co_boatman_wife","entry":"f7_sa_years","alt":2,"topic":"family","text":"And I'd do every day of it again."}
-{"conv":58,"beat":0,"who":"tt_ri_apprentice","to":"tt_ri_chandler","entry":"f7_home_visitors","alt":3,"topic":"family","text":"Hide the good cups."}
-{"conv":58,"beat":1,"who":"tt_ri_chandler","to":"tt_ri_apprentice","entry":"f7_home_visitors","alt":3,"topic":"family","text":"They know where the good cups are."}
-{"conv":58,"beat":2,"who":"tt_ri_apprentice","to":"tt_ri_chandler","entry":"f7_home_visitors","alt":3,"topic":"family","text":"They'll find them anyway."}
+{"conv":58,"beat":0,"who":"tt_ri_apprentice","to":"tt_ri_chandler","entry":"e1_home_bed","alt":0,"topic":"home","text":"My bed's a sack of straw and it's lovely."}
+{"conv":58,"beat":1,"who":"tt_ri_chandler","to":"tt_ri_apprentice","entry":"e1_home_bed","alt":0,"topic":"home","text":"Straw's honest."}
+{"conv":58,"beat":2,"who":"tt_ri_apprentice","to":"tt_ri_chandler","entry":"e1_home_bed","alt":0,"topic":"home","text":"It pricks a bit."}
 {"conv":59,"beat":0,"who":"tt_sa_storekeeper","to":"tt_sa_guard","entry":"h7_st_open_unknown","alt":1,"topic":"player","text":"That grey stranger just walked in like they own the place."}
 {"conv":59,"beat":1,"who":"tt_sa_guard","to":"tt_sa_storekeeper","entry":"h7_st_ans_guard","alt":3,"topic":"player","text":"If they're trouble, they'll find me."}
 {"conv":60,"beat":0,"who":"tt_co_soaper","to":"tt_co_swineherd","entry":"pl2_stranger_curious","alt":0,"topic":"player","text":"Where do you think that grey stranger is from?"}

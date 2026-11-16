@@ -3,7 +3,8 @@
 Draft, 2026-11-15, revised 2026-11-16 with the user's answers to all six questions of §21 (the window's free text,
 mantles as world database rows, the richer size written by Claude agents, newborns inheriting honesty, births kept
 realm-wide, ticking listening runs), for Ridgemere 3 (`ridgemere3`, database `ratw_ridgemere3`; doc 82). **Phase 0 (the
-instrument) is built** (2026-11-16, branch `r3-talk-p0`; §23 says what and what it measured); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
+instrument) and Phase 1 (truth fixes) are built** (2026-11-16, branches `r3-talk-p0` and `r3-talk-p1`; §23 and §24 say
+what and what they measured); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
 replaces neither: every one of today's 8,525 library entries and 10 trees keeps loading and speaking while it is
 converted. It was written from five read-only surveys of the code, the data and the live world at `ridgemere2` 1034c1fc
 (the engine, the trees, the lifecycle, what residents know, and prior art) and three competing designs; §4 says how they
@@ -2208,3 +2209,115 @@ card may need re-blessing (say why in the commit). The most-heard list is `artif
 residents heard; Orm Blackwood, Rosamund Tarridge and Wenna Tarford first), the listen sheet
 `artifacts/talk/listen/p0-baseline.md` (and `.html`), the blind packet `artifacts/talk/rate/p0/` (today's against
 the control; no old library yet).
+
+## 24. Phase 1, as built (2026-11-16)
+
+Branch `r3-talk-p1`, on Phase 0. Defects 1-12, 14 and 15 of §3.5 are fixed; 13 (dead-ending answers) stays with Phases 2
+and 8, 16 (the quadratic load) with Phase 9.
+
+**Claims (defects 1, 2, 7, 9).** `Core/RatwClaims.{h,cpp}` reads `Data/Talk/claims.json` (15 kinds: death, marriage,
+theft, theft.attempt, assault, violent, the two unseen ones, warrant, the two promises, prowling, newcomer,
+bandits.camp, bandits.robs), each with its points of view (`they`, `victim`, `to_victim`, `self`, `kin`), the old
+`topic.claim_kind` it answers as (`family`), the topic it is talked of under and the free words that are it (older
+saves, the Watch). The talk library's loader sets it (a library from before Phase 1 leaves it as it was; `talk_sim
+--library-from` copies the engine's own `claims.json` and `truth.json` in). `struct Belief` gains `kind`, `object` (the
+victim) and `place` (a cell), saved in the checkpoint (and so in `game.beliefs`' rows). `World::believe(const Belief&)`
+is the structured form; the old one fills the structure through `World::claimOf` (the kind from the words, the victim
+from the incident or the name in the words, a camp's cell from its words), and `fillClaims` does it for a whole save
+when it is restored. The camp beliefs are made structured (`RatwRoads.cpp`'s two), and the carters' and the daily
+gossip's tellings carry the structure with them; a carter's source is "a carter from Coldwater", never a market's id.
+`World::placeWords(cell)` says where a cell is as a resident would ("in the Greenholt, out by Glasswater", "in the
+south-west of the Rainward Hills", "out by the Kestrel lead and silver mine") and `placeNear` names the spot for a line's
+"out by #topic.where#". Gossip is said in claims.json's words from the teller's point of view: `topic.said`,
+`topic.claim` (the words after the subject's name, for the 70 lines written "#topic.subject# #topic.claim#"),
+`topic.victim`, and `topic.claim_kind` from the kind (`claims::family`, now the one shared by the ambient talk and the
+window, with `bandit` and `newcomer`). A claim with no kind in the table, or whose wording can't be filled, is never
+spoken; no fact a line can say holds an id (`claims::rawId`), and `ambientTopic`'s `name()` no longer falls back to one.
+A camp is talked of on the road's topic (`talk.bandits`, `topic.kind=camp`), where three new rules say the claim in its
+own words (`h7_rd_open_camp_heard`, `_merchant`, `_guard`); the listener believes it as gossip was believed. Nobody is
+told their own misfortune as gossip and no victim tells it of themselves as gossip (the one robbed tells it as their own
+news, naming a traveller only as they know them), and nobody gossips about their own kin; the window's gossip keeps the
+same rules. The gossip answers that were keyed on the claim's words are keyed on its kind (`n7_ga2_warm` for victims,
+newcomers and the rest, `n7_ga2_guard` for culprits, and the death and wedding answers). `topic.news` and `topic.said`
+are the topic's own words (`AmbientTopic::said`), never the day's sentence a topic with nothing to tell put first, and
+`mind::firstPerson` makes the verb agree ("I have", never "I has"); the Mind is never told a claim's id either.
+
+**The rest.**
+- **Housemates (3)**: `pair.band=housemates` for a shared home without a kin tie; the family topic is kin's only, and
+  housemates get the home topic at the family topic's score (what they share is the house); `kn_sib_inheritance`
+  ("Father's tools") needs `pair.kin=siblings`.
+- **`repeat` per concept (4)**: decided by the concept asked at pick time, not by any of an entry's concepts.
+- **Every beat heard (5)**: each listener hears every rule of a chain (`said.chain`), not only the opener, so a heard
+  answer gives way to a fresh one of its tier. Replies still take the best tier: fit then tiers is Phase 3's.
+- **The cooldown store (6)**: `said:<id>` cooldowns and onces live in `Game::talkSaid_`, which no cap evicts, saved
+  in the talk memory's own shape (an older server reads them as memory) and carried by `talkCarry`.
+- **Untrue lines (8)**: `here.outdoors` (the weather in the street a building opens onto), `here.hour` and
+  `here.fishers` (a town's residents who fish or sail, once a game day) are new facts. The fog bells need
+  `here.outdoors=fog`; the indoor "Hear it coming down out there?" needs `here.outdoors=rain|storm`; Coldwater's homes
+  hold one boatman, so its twelve scenes that take a fishing town for granted need `here.fishers>=3`, four of its
+  alternatives were rewritten true ("The Glass Lantern keeps its fire in all night for the carters") and its mist scene
+  needs real fog; Ridgemere's fish-hall dawn needs its fishers too.
+- **News (10)**: births (the parent's, so the 14 `topic=life topic.kind=birth` scenes and `world.birth` are reached at
+  last) and arrivals from the Country are the town's news; `news_` and `townNews_` are saved (`talkNews` in the
+  checkpoint).
+- **`pair.named` (11)** between residents: familiarity 10 or more, kin, housemates or workmates.
+- **The priest (12)**: the nearest church to home, the priest of one's own district: Ridgemere 3's 772 residents now
+  have five priests (315, 137, 131, 15, 1; 173 live where there is no clergy) where one had 598. `#self.leader#`: one's
+  own House's head, else the House of the district one lives in, else a House of the town (22 residents, from 11).
+- **The punctuation join (14)**: a value that ends its own sentence (". " or ";") before the line's comma or stop gives
+  up its mark; the 169 greeting rows whose "I am" was joined to a verb are never said (until mantles replace them).
+- **`heed` (15)** ignores a promise the Mind reports from the window's free talk.
+
+**Truth (§7.8).** `Data/Talk/truth.json`: 12 rules (rain and fog now, rain heard, snow, the night and morning
+greetings, spouse, late spouse, children, a parent's things, a fisher's own words, a fishing town's), what a concept
+holds of itself (`react.rain` is said in rain) and what an id looks like. `tools/talk_truth.py` reads it;
+`tools/talk_lint.py` checks every line of the library and the trees statically (its criteria, tags and say[...] must
+imply what its words need; no id in any line) against `Tests/fixtures/talk_lint_baseline.json`: the 20 findings left
+(6 "my son/daughter", 5 rain, 3 "good morning", 3 "my nets/catch", 1 each of fog, goodnight and "my wife") were counted
+and frozen there, and a new one fails ctest `talk_lint` (with `talk_lint_rules`, its own tests). `tools/talk_score.py`'s
+T2 runs the same rules on every simulated line against the moment's and the speaker's facts (P0's provisional lexicon
+is gone), and `talk_sim` records every `pair.*` fact for it. T2 was frozen again in both baselines with these numbers.
+
+**Also.** Ten written scenes ended on a question nobody answered ("Can I go talk to them?"): each now has its answer
+(C1 frozen 93.1% to 98.9%). `World::districtHouse` walked the doors for every speaker's leader and slowed the
+simulator three to seven times: it is cached by cell, found again when the doors change and each game day.
+
+**The scorecard** (`artifacts/talk/runs/p1/`, every profile in both modes over P0's fixture, 13,018 and 26,142
+conversations; P0's baseline beside it, the shuffled control in brackets):
+
+| | Fixtures, P0 | Fixtures, P1 | Frozen, P0 | Frozen, P1 |
+|---|---|---|---|---|
+| T1 raw ids per 1,000 lines | 13.4 | **0** | 0.1 | **0** |
+| T3 the teller naming themselves, per 1,000 | 3.3 | **0** | 0 | **0** |
+| T2 presupposition failures per 1,000 (truth.json from P1) | 0.20 (P0's lexicon) | 0.41 (0.95), frozen | 0.02 (P0's lexicon) | 0 (0.05), frozen |
+| C1 questions answered | 96.1% (86.5) | 97.2% (84.3) | 93.0% (87.2) | 98.9% (86.7) |
+| C4 tone clashes per 1,000 beats | 0.026 | 0.026 | 0 | 0 |
+| C6 an entry twice in a talk, per 1,000 | 0 | 0 | 0.117 | 0.119 (the same 3 talks) |
+| C3 ended by a farewell or a break | 0.83% | 0.92% | 0.084% | 0.068% |
+| R1 first identical conversation | 2.2 h | 2.2 h | 0.42 h | 0.42 h |
+| R3 distinct openers per 3,000 | 2,170 | 2,150 | 467 | 469 |
+| R5 collisions per 100 h | 189 (208) | 185 (217) | 909 (983) | 926 (1,003) |
+| R6 the most-spoken line | 3.6% | 3.5% | 13.2% | 13.2% |
+| R7 distinct replies per 1,000 | 53 | 58 | 34 | 35 |
+| K1 everyday / K2 largest topic | 3.8% / 52% | 3.8% / 50% | 24% / 42% | 24% / 42% |
+| K3 the same news twice | 2,284 | 2,259 | 109 | 109 |
+| D1 light speakers' dialect words | 0.21% | 0.22% | 0.23% | 0.24% |
+| D3 / U2 | 67% / 46% | 69% / 46% | 13% / 39% | 13% / 40% |
+| B5 exchanges a second | 1.5 | 1.5 | 68 | 59 (load; 72 in an earlier run) |
+
+`talk_card` still exits 1, on open gates by noise: C4 (fixtures) and C6 (frozen) are the same counts over a few more or
+fewer lines, B5 is the machine's load (the same build measured 72 the run before), C3 (frozen, soft) is 18 talks against
+22 of 26,142, and R5 (frozen) rose 1.9%: every beat heard sends a place's speakers to the same unheard price answers,
+which the collision filter (§8.12, Phase 4) is for. The phase's own gates hold: T1 = 0 and T3 = 0 in both modes, T2
+counted and frozen. The golden transcripts were blessed again (every beat heard changes which scene a listener hears
+next) and so was the quick card (its D1 moved from 0.425% to 0.413%: two lines of about 5,000). Tests: the full ctest
+(the database tests skipped without a test database), with new checks in `ambient_tests` (claims in their own words,
+camps, victims, kin, births, news across a restart, housemates), `talk_tests` (the punctuation join, `repeat` per
+concept), `dialogue_tests` (`pair.named`, `here.outdoors`) and `test_talk_lint`.
+
+**For the slice end and Phase 2.** The ticking 100-hour listen and the full review are the slice end's. The lint's 20
+findings and T2's 0.41 are the lines Phase 7's conversion (tags) and Phase 8's writing should take to zero; the
+`em_rm_bd_camp` "In this rain, even" and the caravan "my son/daughter" lines are most of what is heard. Replies still
+take the best tier (Phase 3). `claims.json` is the place for Phase 4's point-of-view lines (`victim`, `to_victim`,
+`self`, `kin` are written but only `they` and the victim's own news are spoken yet).
+

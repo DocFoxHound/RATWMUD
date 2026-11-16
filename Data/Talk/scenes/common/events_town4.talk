@@ -48,6 +48,7 @@ when topic=gossip a.stage=young|adolescent
 a : I heard the grown-ups say #topic.subject# #topic.claim#. | Everyone says #topic.subject# #topic.claim#. Is that bad? | #topic.subject# #topic.claim#! I heard it!
 b : You shouldn't listen at doors. | Never you mind. | Hush. That's grown-up talk.
 a : I wasn't. Much. | But is it? | Everyone knows.
+b : Much enough. | Not for pups to say. | Not everyone.
 
 scene et_gos_old
 when topic=gossip a.stage=old

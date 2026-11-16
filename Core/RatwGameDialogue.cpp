@@ -11,6 +11,7 @@
 //   server -> client   {"type": "dialogue", ...}                           the node: the line, the choices, the face
 //                      {"type": "dialogue_close", "session", "why"}
 #include "RatwGame.h"
+#include "RatwClaims.h"
 #include "RatwWire.h"
 
 #include <algorithm>
@@ -165,20 +166,6 @@ std::string clockWords(double hour, bool part)
     if (h == 12)
         return "noon";
     return std::string(numbers[h % 12]) + (!part ? "" : h < 12 ? " in the morning" : h < 18 ? " in the afternoon" : " in the evening");
-}
-
-// What kind of thing a rumour is (as the residents' own gossip has it, World::ambientTopics): for the lines to answer in
-// kind.
-std::string claimKind(const std::string& c)
-{
-    const auto starts = [&](const char* w) { return c.rfind(w, 0) == 0; };
-    return c == "died" ? "death" : c == "married" ? "marriage"
-           : starts("attacked") || c == "is violent" ? "violence"
-           : starts("stole") || starts("tried to steal") ? "theft"
-           : starts("was attacked") || starts("was robbed") ? "victim"
-           : starts("is wanted") ? "wanted"
-           : c == "keeps promises" ? "promise_kept" : c == "breaks promises" ? "promise_broken"
-           : starts("was prowling") ? "prowling" : "other";
 }
 
 // The places a stranger asks the way to, by the trade that keeps them (doc 83, Phase 3).
@@ -759,18 +746,38 @@ void Game::dialogueRoleFacts(const std::string& playerId, const std::string& npc
     f["here.gossip"] = "no";
     if (const auto* heard = world_.beliefsOf(npcId))
     {
+        // (Doc 84, Phase 1: in claims.json's words, never to or by its victim as gossip, never a camp's id; the claim's
+        // kind shared with the residents' own talk: claims::family.)
         const Belief* best = nullptr;
-        for (const auto& b : *heard)
-            if (b.subject != npcId && b.subject != playerId && b.confidence >= .45 && world_.calendarDays() - b.day <= 7 &&
-                b.claim.rfind("deed:", 0) != 0 && world_.entity(b.subject) && (!best || b.day > best->day))
-                best = &b;
+        std::string subject, predicate;
+        for (const auto& held : *heard)
+        {
+            if (held.subject == npcId || held.subject == playerId || held.object == npcId || held.object == playerId ||
+                held.confidence < .45 || world_.calendarDays() - held.day > 7 || held.claim.rfind("deed:", 0) == 0 ||
+                !world_.entity(held.subject) || (best && held.day <= best->day))
+                continue;
+            auto b = held;
+            world_.claimOf(b);
+            const auto* about = world_.entity(b.subject);
+            claims::Words w;
+            w.xName = about->npc ? about->name : labelFor(npcId, b.subject);
+            if (const auto* object = b.object.empty() ? nullptr : world_.entity(b.object))
+                w.yName = object->npc ? object->name : labelFor(npcId, b.object);
+            w.place = world_.placeWords(b.place);
+            w.text = b.claim;
+            auto said = claims::loaded() ? claims::predicate(b.kind, w) : (claims::rawId(b.claim) ? std::string() : b.claim);
+            if (said.empty() || (claims::find(b.kind) && claims::find(b.kind)->topic != "gossip"))
+                continue;
+            best = &held;
+            subject = w.xName;
+            predicate = said;
+        }
         if (best)
         {
-            const auto* about = world_.entity(best->subject);
             f["here.gossip"] = "yes";
-            f["topic.subject"] = about->npc ? about->name : labelFor(npcId, best->subject);
-            f["topic.claim"] = best->claim;
-            f["topic.claim_kind"] = claimKind(best->claim);
+            f["topic.subject"] = subject;
+            f["topic.claim"] = predicate;
+            f["topic.claim_kind"] = claims::family(best->kind, best->claim);
         }
     }
     f["here.places"] = std::to_string(dialoguePlaces(npcId).size());

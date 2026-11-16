@@ -1,5 +1,5 @@
 {
- "about": "Docs/Design/84 §15.3: the talk scorecard (tools/talk_score.py), from talk_sim transcripts.",
+ "about": "Docs/Design/84 §15.3: the talk scorecard (tools/talk_score.py), from talk_sim transcripts. T2 was frozen again in Phase 1 (2026-11-16) from its runs (artifacts/talk/runs/p1): Data/Talk/truth.json's rules replaced P0's provisional lexicon, so its old value no longer measured the same thing; every other metric is Phase 0's.",
  "generated": "2026-11-16T13:07:12+00:00",
  "runs": {
   "L1": "artifacts/talk/runs/p0-baseline/frozen-L1",
@@ -418,13 +418,13 @@
    "better": "lower",
    "gate": "hard",
    "target": "0",
-   "value": 0.015003525828569713,
-   "passes": false,
+   "value": 0.0,
+   "passes": true,
    "by_profile": {
     "L1": 0.0,
     "L2": 0.0,
     "L3": 0.0,
-    "L4": 0.158,
+    "L4": 0.0,
     "L5": 0.0,
     "L6": 0.0,
     "L7": 0.0,
@@ -432,8 +432,8 @@
     "L9": 0.0,
     "L10": 0.0
    },
-   "control": 0.09002115497141829,
-   "separation": 0.8333333333333333,
+   "control": 0.04503152206544581,
+   "separation": 1.0,
    "separates": true,
    "control_required": false,
    "structural": false
@@ -1073,12 +1073,8 @@
     "four_lines": 4.041666666666667
    },
    "T2_detail": {
-    "by_kind": {
-     "weather": 1
-    },
-    "examples": [
-     "weather: It's raining. (tn_oh_quill_oakdell, clear 22h)"
-    ]
+    "by_kind": {},
+    "examples": []
    },
    "T3_detail": {
     "examples": []

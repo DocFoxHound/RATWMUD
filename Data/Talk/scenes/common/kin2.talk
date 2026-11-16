@@ -90,7 +90,7 @@ b : I was keeping you company. | I'm not worried. | Fair enough.
 a : Of course you were. | You're humming now. | Let's not leave it so long again.
 
 scene kn_sib_inheritance
-when topic=family pair.band=family a.stage=adult b.stage=adult
+when topic=family pair.kin=siblings a.stage=adult b.stage=adult
 a : We need to talk about the house. | Have you thought about Father's tools? | Somebody has to look after Mother when the time comes.
 b : Not today. | You want them. Say it. | Somebody. You mean me.
 a : It's never today with you. | I could use them. You couldn't. | You live closer.

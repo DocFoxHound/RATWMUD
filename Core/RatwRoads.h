@@ -100,6 +100,10 @@ struct Belief
     double confidence = 1, day = 0;
     std::string incident;                 // What it is about, when it is a crime someone saw or heard of (RatwCrime.h).
     std::string as;                       // The name the holder knows the subject by ("" none: by look). Doc 56.
+    // What kind of claim it is (Data/Talk/claims.json), the second party it names (a theft's victim) and the cell it is
+    // about (a bandit camp's): the words it is said in come from these, never from `claim`, which keeps the free words
+    // the Watch reads (doc 84 §7.7, Phase 1). Empty in an older save until World::believe or the load fills them.
+    std::string kind, object, place;
 };
 
 struct RoadsState

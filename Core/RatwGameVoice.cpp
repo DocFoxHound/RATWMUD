@@ -203,8 +203,17 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
     std::map<std::string, std::string> facts{{"name", npc->name}};
     if (identified && knowsName(npcId, playerId))
         facts["player"] = labelFor(npcId, playerId);     // Only a name they were given (doc 32).
-    // Their own greeting, the first time they meet.
-    if (spec && !spec->greeting.empty() && (!identified || memories_.recall(npcId, playerId).empty()))
+    // Their own greeting, the first time they meet; never one of the rows whose "I am" was joined to a verb ("I am plays
+    // about the town today.": 169 of them, doc 84 defect 14, until the mantles' window lines replace them).
+    const auto garbled = [](const std::string& g) {
+        const auto at = g.find("I am ");
+        if (at == std::string::npos)
+            return false;
+        const auto end = g.find(' ', at + 5);
+        const auto word = g.substr(at + 5, end == std::string::npos ? std::string::npos : end - at - 5);
+        return word.size() > 2 && word.back() == 's' && word != "always" && word != "famous" && word != "anxious";
+    };
+    if (spec && !spec->greeting.empty() && !garbled(spec->greeting) && (!identified || memories_.recall(npcId, playerId).empty()))
         facts["greeting"] = spec->greeting;
     std::string answer;
     const auto* job = society.jobOf(npcId);

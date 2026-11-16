@@ -2,9 +2,10 @@
 # and the town's news (theme n7). Each opener remembers what it was about (pair.mem.on, and its own key), the other
 # answers as they are and remembers how they took it, and the opener has the last word (town.close).
 #
-# Gossip: topic.claim is whatever was heard ("died", "married", "is new in town", "keeps promises", "stole from Hild",
-# "was robbed by someone they couldn't make out"...). Only the one-word claims can be tested, so a death and a
-# wedding have their own lines; everything else is told and taken in words that suit good news and bad.
+# Gossip: topic.claim is the claim's words after the name, as claims.json says them ("died", "married Wren Ashdown",
+# "tried to steal from Hild"...), and topic.claim_kind what kind of thing it is (death, marriage, theft, violence, victim,
+# wanted, newcomer...: doc 84, Phase 1). Answers are keyed on the kind, never the words: a thief is not called on to
+# "see how they are" (defect 7).
 
 ## Gossip, told as the teller is (talk.gossip: topic.subject, topic.claim)
 
@@ -114,14 +115,14 @@ remember pair: on=gossip 1h
 then other: town.gossip
 
 rule n7_go_married
-when concept=talk.gossip topic.claim=married
+when concept=talk.gossip topic.claim_kind=marriage
 cooldown 1d
 say #topic.subject#'s married! Did you know? | Well, #topic.subject#'s gone and married. | Wedding bells for #topic.subject#. Who'd have thought it?
 remember pair: on=gossip 1h
 then other: town.gossip
 
 rule n7_go_died
-when concept=talk.gossip topic.claim=died
+when concept=talk.gossip topic.claim_kind=death
 priority 10
 cooldown 1d
 say Did you hear? #topic.subject# died. | #topic.subject#'s gone. Died, they said. I can't take it in. | They're saying #topic.subject# died. Is it true?
@@ -129,7 +130,7 @@ remember pair: on=gossip 1h
 then other: town.gossip
 
 rule n7_go_died_old
-when concept=talk.gossip topic.claim=died self.stage=old
+when concept=talk.gossip topic.claim_kind=death self.stage=old
 priority 10
 cooldown 1d
 say #topic.subject#'s gone. Another one. They're dropping like leaves this year. | Have you heard about #topic.subject#? Died. I'd have bet on me going first. | #topic.subject# died. I remember them as a pup, tumbling in the street.
@@ -137,7 +138,7 @@ remember pair: on=gossip 1h
 then other: town.gossip
 
 rule n7_go_died_warm
-when concept=talk.gossip topic.claim=died self.warmth=warm
+when concept=talk.gossip topic.claim_kind=death self.warmth=warm
 priority 10
 cooldown 1d
 say Oh, have you heard? #topic.subject#. They died. I can't stop thinking about it. | I've had sad news. #topic.subject# died. | It's #topic.subject#. They've died. I keep wanting to go round with a pie.
@@ -181,7 +182,7 @@ remember pair: ha=eager 1h
 then other: town.close
 
 rule n7_ga2_warm
-when concept=town.gossip self.warmth=warm topic.claim!=married
+when concept=town.gossip self.warmth=warm topic.claim_kind=victim|newcomer|other
 say Oh. Well, I hope they're all right, whatever's what. | I'll call on #topic.subject#. See how they are. | We shouldn't talk. But oh, #topic.subject#.
 remember pair: ha=kind 1h
 then other: town.close
@@ -193,19 +194,19 @@ remember pair: ha=cold 1h
 then other: town.close
 
 rule n7_ga2_devout
-when concept=town.gossip self.piety=devout topic.claim!=married
+when concept=town.gossip self.piety=devout topic.claim_kind!=marriage
 say The gods hear tattle too, you know. | Judge not. Well. A little. | I'll pray for #topic.subject#. And for us, for listening.
 remember pair: ha=pious 1h
 then other: town.close
 
 rule n7_ga2_guard
-when concept=town.gossip self.role=guard topic.claim!=married
+when concept=town.gossip self.role=guard topic.claim_kind=theft|violence|wanted|prowling|promise_broken|newcomer
 say I'll keep an ear open. | I'll make a note of that. | Hm. I'll keep my eye on #topic.subject#.
 remember pair: ha=plain 1h
 then other: town.close
 
 rule n7_ga2_priest
-when concept=town.gossip self.job=priest topic.claim!=married
+when concept=town.gossip self.job=priest topic.claim_kind!=marriage
 say I'll not hear it. And nor should you. | If #topic.subject# needs help, I'll go. If not, I'll not hear another word. | Words are stones. Be careful where you throw them.
 remember pair: ha=pious 1h
 then other: town.close
@@ -241,46 +242,46 @@ remember pair: ha=hush 1h
 then other: town.close
 
 rule n7_ga2_married
-when concept=town.gossip topic.claim=married
+when concept=town.gossip topic.claim_kind=marriage
 say Good for them. | Married! Well, well. Who to? | About time, I'd say. | Married? I'll believe it when I see the cake.
 remember pair: ha=glad 1h
 then other: town.close
 
 rule n7_ga2_married_warm
-when concept=town.gossip topic.claim=married self.warmth=warm
+when concept=town.gossip topic.claim_kind=marriage self.warmth=warm
 say Oh, that's lovely. I'll take them something. | Bless them. Bless them both. | Oh! I do love a wedding.
 remember pair: ha=glad 1h
 then other: town.close
 
 rule n7_ga2_married_dry
-when concept=town.gossip topic.claim=married self.humour=dry
+when concept=town.gossip topic.claim_kind=marriage self.humour=dry
 say Married. They'll learn. | Poor soul. Whichever one it is. | Married. Well. Somebody had to.
 remember pair: ha=glad 1h
 then other: town.close
 
 rule n7_ga2_death
-when concept=town.gossip topic.claim=died
+when concept=town.gossip topic.claim_kind=death
 priority 3
 say Gods. I'd no idea. | No. I saw them only the other day. | Dead? #topic.subject#? Oh, that's hard.
 remember pair: ha=dead 1h
 then other: town.close
 
 rule n7_ga2_death_devout
-when concept=town.gossip topic.claim=died self.piety=devout
+when concept=town.gossip topic.claim_kind=death self.piety=devout
 priority 3
 say The Bright One keep them. I'll light a candle tonight. | May they find their rest. | We'll pray for them at Restday. All of us.
 remember pair: ha=dead 1h
 then other: town.close
 
 rule n7_ga2_death_old
-when concept=town.gossip topic.claim=died self.stage=old
+when concept=town.gossip topic.claim_kind=death self.stage=old
 priority 3
 say They go so fast now. All of them. | It's never the right ones. | Another. I'll be next, mark me.
 remember pair: ha=dead 1h
 then other: town.close
 
 rule n7_ga2_death_cold
-when concept=town.gossip topic.claim=died self.warmth=cold
+when concept=town.gossip topic.claim_kind=death self.warmth=cold
 priority 3
 say Hm. Everyone goes. | I hardly knew them. | Well. That's that.
 remember pair: ha=dead 1h

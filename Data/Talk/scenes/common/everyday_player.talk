@@ -11,6 +11,7 @@ b[guard] : I've had my eye on them since the gate.
 b[child] : Are they an adventurer? Do they have a sword?
 b : New face. | Travellers come and go. | Let them watch.
 a : Wonder what brings them. | They do. Mostly go. | Watching what, though?
+b : Trade, likely. | Mostly. | Us, I expect.
 
 scene ev_pl_road_dust
 when topic=player topic.known=no
@@ -47,6 +48,7 @@ a : Look! Look at #topic.subject#! | Mama, who's #topic.subject#? | Do you think
 b[old] : It's rude to point, pup.
 b : Don't stare, it's rude. | A traveller. | Maybe. Ask politely.
 a : I'm not staring, I'm looking! | Can I go talk to them? | I'm too shy.
+b : Then look quietly. | Later. With me. | Then stay by me.
 
 # ---------------------------------------------------------------- Strangers: wary
 

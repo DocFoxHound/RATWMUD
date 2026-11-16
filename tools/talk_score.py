@@ -28,9 +28,9 @@ is measured"); the rest are listed as n/a with the phase that brings them:
   C7 lines per conversation: mean, 90th percentile, and the share of 3-line ones
   C8 conversations with a third speaker
   T1 raw ids spoken (an identifier with an underscore), per 1,000 lines
-  T2 presupposition failures per 1,000 lines (a provisional lexicon until truth.json, Phase 1): weather words against
-     the place's weather or indoors, time-of-day words against the hour, kin against the speaker's family, fishing
-     against the speaker's trade
+  T2 presupposition failures per 1,000 lines: Data/Talk/truth.json's rules (Phase 1; tools/talk_truth.py) over every
+     line, against the moment's facts (here.*, pair.*, world.*) and the speaker's (self.*); P0's provisional lexicon
+     (weather, hour, kin, fishing) before it, so Phase 1 froze T2 again as its own baseline
   T3 self-reference: a speaker saying their own full name, per 1,000 lines
   K1 conversations on everyday topics (anything but news, gossip, crime, deeds, events, quarrels and the like)
   K2 the largest topic's share
@@ -130,22 +130,10 @@ FAREWELL = re.compile(r"\b(farewell|goodbye|good night|goodnight|go well|go in p
                       r"till (?:tomorrow|next)|until (?:tomorrow|next)|calm water|dry feet|walk warm|rest well|"
                       r"mind how you go|bright one keep you|gods keep|keep well|later,)\b", re.I)
 RAW_ID = re.compile(r"\b[A-Za-z]+_[A-Za-z0-9_]+\b")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import talk_truth  # noqa: E402
+TRUTH, _TRUTH_IDS = talk_truth.load()
 WORD = re.compile(r"[a-z']+")
-# T2's provisional lexicon (truth.json, Phase 1, replaces it).
-# Words that take rain as falling now (not "Rain covers footsteps", a saying, nor the Rain Hall, a place).
-WET = re.compile(r"\b(this rain|the rain (?:is|won't|keeps|has)|raining|drizzl\w*|downpour|soaked|pouring|wet out|"
-                 r"coming down|rained on)\b", re.I)
-PLACES = re.compile(r"\bRain Hall\b")
-FOG = re.compile(r"\b(fog\w*|mist\w*|murk)\b", re.I)
-SNOW = re.compile(r"\b(snow\w*|blizzard|sleet)\b", re.I)
-OUT_THERE = re.compile(r"\b(out there|outside|hear it coming down|look at that sky)\b", re.I)
-NIGHT = re.compile(r"\b(tonight it|this night|good night|goodnight|at this hour of night|middle of the night)\b", re.I)
-MORNING = re.compile(r"\b(good morning|this morning,? (?:already|so far)|morning to you|morning,)\b", re.I)
-SPOUSE = re.compile(r"\bmy (wife|husband|man|woman|missus|mister|spouse)\b", re.I)
-CHILD = re.compile(r"\bmy (son|daughter|pup|pups|lad|lass|little ones|young ones|children|child|boy|girl)\b", re.I)
-LATE = re.compile(r"\bmy late (wife|husband|man|woman)\b", re.I)
-FISH = re.compile(r"\b(fish\w*|nets?|netting|the catch|my catch|boats?|hook and line|trawl\w*)\b", re.I)
-FISHERS = {"fisher", "fisherman", "fisherwoman", "boatman", "ferryman", "sailor", "dockhand", "netmaker", "fishmonger"}
 
 
 # ------------------------------------------------------------------ Reading runs
@@ -370,42 +358,31 @@ def score_run(run: Run) -> dict:
     # T1, T2, T3.
     m["T1"] = sum(1 for l in lines if RAW_ID.search(l["text"])) * 1000 / max(1, len(lines))
     t1_examples = [l["text"] for l in lines if RAW_ID.search(l["text"])][:3]
+    # T2 (Phase 1): truth.json's rules over every line, against the moment's facts (the conversation's here.*, pair.*,
+    # world.*) and the speaker's own (self.*); a rule none of whose needs was recorded isn't judged.
     t2 = collections.Counter()
     t2_examples = []
     for cid, c in run.by_conv.items():
-        facts = run.conv_head.get(cid, {}).get("facts", {})
-        weather = facts.get("_weather", "")
-        outdoors = facts.get("_outdoors", "")
-        hour = float(run.conv_head.get(cid, {}).get("hour", 12))
+        head = run.conv_head.get(cid, {})
+        moment = {k: v for k, v in head.get("facts", {}).items() if not k.startswith("_")}
+        if "_weather" in head.get("facts", {}) and "here.outdoors" not in moment:
+            moment["here.outdoors"] = head["facts"]["_weather"]     # (A run from before here.outdoors.)
+        moment.setdefault("here.hour", str(int(float(head.get("hour", 12)))))
         for l in c:
-            who = run.residents.get(l["who"], {})
-            text = PLACES.sub("", l["text"])
-            kinds = []
-            if WET.search(text) and weather not in ("rain", "storm"):
-                kinds.append("weather")
-            elif FOG.search(text) and weather != "fog" and re.search(r"\b(this|the) (fog|mist)\b|\bfoggy\b|\bmisty\b", text, re.I):
-                kinds.append("weather")
-            elif SNOW.search(text) and weather != "snow" and re.search(r"\b(this|the) snow\b|\bsnowing\b", text, re.I):
-                kinds.append("weather")
-            if OUT_THERE.search(text) and outdoors == "yes" and re.search(r"\bout there\b", text, re.I):
-                pass
-            if NIGHT.search(text) and 7 <= hour < 18:
-                kinds.append("time")
-            if MORNING.search(text) and not (4 <= hour < 12):
-                kinds.append("time")
-            if SPOUSE.search(text) and who.get("married") == "no" and who.get("widowed") != "yes":
-                kinds.append("kin")
-            if LATE.search(text) and who.get("widowed") == "no":
-                kinds.append("kin")
-            if CHILD.search(text) and who.get("parent") == "no" and l.get("topic") in ("family", "home"):
-                kinds.append("kin")
-            if FISH.search(text) and who and not ({who.get("job", ""), who.get("trade", "")} & FISHERS) \
-                    and re.search(r"\b(threw|caught|my nets?|the nets|my catch|my boat|mending nets|gutting)\b", text, re.I):
-                kinds.append("trade")
-            for k in kinds:
+            text = l["text"]
+            rules = talk_truth.matches(TRUTH, text)
+            if not rules:
+                continue
+            facts = dict(moment)
+            for k, v in run.residents.get(l["who"], {}).items():
+                if not k.startswith("_") and isinstance(v, (str, int, float)):
+                    facts["self." + k] = str(v)
+            failed = [r.id for r in rules if r.judge(facts) is False]
+            for k in failed:
                 t2[k] += 1
-            if kinds and len(t2_examples) < 6:
-                t2_examples.append(f"{'/'.join(kinds)}: {text} ({l['who']}, {weather or '?'} {hour:.0f}h)")
+            if failed and len(t2_examples) < 6:
+                t2_examples.append(f"{'/'.join(failed)}: {text} ({l['who']}, {moment.get('here.weather', '?')}/"
+                                   f"{moment.get('here.outdoors', '?')} {moment.get('here.hour', '?')}h)")
     m["T2"] = sum(t2.values()) * 1000 / max(1, len(lines))
     m["T2_detail"] = {"by_kind": dict(t2), "examples": t2_examples}
     t3 = [l for l in lines if run.residents.get(l["who"], {}).get("name") and

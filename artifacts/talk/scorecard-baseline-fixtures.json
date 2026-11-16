@@ -1,5 +1,5 @@
 {
- "about": "Docs/Design/84 §15.3: the talk scorecard (tools/talk_score.py), from talk_sim transcripts.",
+ "about": "Docs/Design/84 §15.3: the talk scorecard (tools/talk_score.py), from talk_sim transcripts. T2 was frozen again in Phase 1 (2026-11-16) from its runs (artifacts/talk/runs/p1): Data/Talk/truth.json's rules replaced P0's provisional lexicon, so its old value no longer measured the same thing; every other metric is Phase 0's.",
  "generated": "2026-11-16T13:07:16+00:00",
  "runs": {
   "L1": "artifacts/talk/runs/p0-baseline/fixtures-L1",
@@ -418,22 +418,22 @@
    "better": "lower",
    "gate": "hard",
    "target": "0",
-   "value": 0.204744964553528,
+   "value": 0.4102353725449977,
    "passes": false,
    "by_profile": {
-    "L1": 0.0,
-    "L2": 0.146,
-    "L3": 1.387,
-    "L4": 0.347,
-    "L5": 0.0,
+    "L1": 0.277,
+    "L2": 0.727,
+    "L3": 0.47,
+    "L4": 0.367,
+    "L5": 1.476,
     "L6": 0.0,
     "L7": 0.0,
     "L8": 0.0,
     "L9": 0.0,
-    "L10": 0.0
+    "L10": 0.31
    },
-   "control": 0.614234893660584,
-   "separation": 0.6666666666666667,
+   "control": 0.9486692990103072,
+   "separation": 0.5675675675675677,
    "separates": true,
    "control_required": false,
    "structural": false
@@ -807,8 +807,15 @@
     "four_lines": 10.868625756266205
    },
    "T2_detail": {
-    "by_kind": {},
-    "examples": []
+    "by_kind": {
+     "rain_now": 4
+    },
+    "examples": [
+     "rain_now: There's a camp at the Greenholt. In this rain, even. (rm_hilde_rainmore, indoors/clear 9h)",
+     "rain_now: There's a camp at the Greenholt. In this rain, even. (rm_torvald_slagton, indoors/overcast 10h)",
+     "rain_now: There's a camp at Glasswater. In this rain, even. (rm_tobias_saltton, indoors/clear 21h)",
+     "rain_now: There's a camp at the Rainward Hills. In this rain, even. (rmx_orm_blackwood, indoors/clear 19h)"
+    ]
    },
    "T3_detail": {
     "examples": [
@@ -897,10 +904,15 @@
    },
    "T2_detail": {
     "by_kind": {
-     "weather": 1
+     "children": 1,
+     "rain_now": 4
     },
     "examples": [
-     "weather: The mist covers everything. (cty_jessamy_greyford, clear 9h)"
+     "children: My son rides with the Coldwater caravan. (tn_sm_gorse_harvestgarth, indoors/clear 15h)",
+     "rain_now: There's a camp at the Greenholt. In this rain, even. (rm_lars_wickwell, indoors/clear 18h)",
+     "rain_now: There's a camp at the Greenholt. In this rain, even. (rm_gunnar_wetcot, indoors/clear 21h)",
+     "rain_now: There's a camp at the Rainward Hills. In this rain, even. (rm_osric_wetford, indoors/clear 11h)",
+     "rain_now: There's a camp at the Rainward Hills. In this rain, even. (rmx_desmond_toft, indoors/clear 20h)"
     ]
    },
    "T3_detail": {
@@ -997,15 +1009,11 @@
    },
    "T2_detail": {
     "by_kind": {
-     "weather": 6
+     "children": 2
     },
     "examples": [
-     "weather: The mist covers everything. (tn_fh_marl_cragpeak, clear 17h)",
-     "weather: The mist covers everything. (tn_mb_fell_miremore, clear 11h)",
-     "weather: It's raining. (tn_fh_jory_rimepeak, clear 13h)",
-     "weather: The mist covers everything. (tn_cw_fallow_lakewick, clear 12h)",
-     "weather: The mist covers everything. (tn_cw_fallow_lakewick, clear 17h)",
-     "weather: The mist covers everything. (tn_fh_marl_cragpeak, clear 9h)"
+     "children: First time my daughter's driven the Ridgemere road. (tn_oh_varg_acorndell, indoors/clear 11h)",
+     "children: First time my daughter's driven the Fenshore road. (tn_oh_varg_acorndell, indoors/clear 16h)"
     ]
    },
    "T3_detail": {
@@ -1093,10 +1101,10 @@
    },
    "T2_detail": {
     "by_kind": {
-     "weather": 1
+     "children": 1
     },
     "examples": [
-     "weather: It's raining. (tn_oh_quill_oakdell, clear 19h)"
+     "children: First time my daughter's driven the Coldwater road. (tn_lf_tansy_sunmead, indoors/clear 10h)"
     ]
    },
    "T3_detail": {
@@ -1179,8 +1187,13 @@
     "four_lines": 8.949416342412452
    },
    "T2_detail": {
-    "by_kind": {},
-    "examples": []
+    "by_kind": {
+     "children": 2
+    },
+    "examples": [
+     "children: First time my daughter's driven the Larkfield road. (cty_nell_plummeadow, indoors/clear 18h)",
+     "children: My son went with the caravan to Larkfield. (cty_nell_plummeadow, indoors/clear 18h)"
+    ]
    },
    "T3_detail": {
     "examples": []
@@ -1579,8 +1592,13 @@
     "four_lines": 15.66028473244968
    },
    "T2_detail": {
-    "by_kind": {},
-    "examples": []
+    "by_kind": {
+     "rain_now": 2
+    },
+    "examples": [
+     "rain_now: There's a camp at the Rainward Hills. In this rain, even. (rm_winifred_cinderworth, indoors/clear 18h)",
+     "rain_now: There's a camp at Glasswater. In this rain, even. (rm_wenna_tarford, indoors/clear 21h)"
+    ]
    },
    "T3_detail": {
     "examples": [

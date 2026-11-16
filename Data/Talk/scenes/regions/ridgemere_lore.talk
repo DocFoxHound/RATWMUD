@@ -91,7 +91,7 @@ b : Robbery. | Of course they are. | Can't blame them.
 a : Daylight robbery. | Of course. | Nor me.
 
 scene rg_rm_sound_fog
-when topic=lore|weather here.region=ridgemere
+when topic=lore|weather here.region=ridgemere here.outdoors=fog
 a : Fog bell at the end of the piers rang all night. | Couldn't see the end of the wharf this morning. | The fog comes up the Sound faster than a wolf can run.
 b[sailor] : Fog's the worst. Rain you can sail through.
 b[old] : The fog took a pier watchman once. Walked off the end and never came back.
@@ -191,7 +191,7 @@ b : Hard week on the water. | I'm sorry. | Too many names.
 a : Very hard. | So am I. | Far too many.
 
 scene rg_rm_fish_hall_dawn
-when topic=smalltalk|work here.region=ridgemere here.time=dawn
+when topic=smalltalk|work here.region=ridgemere here.time=dawn here.fishers>=3
 a : The Fish Hall's loud as a riot this morning. | First boats in before the bell. | Herring cheap at the Sump Market this morning, if you're quick.
 b[fisher] : Good catch, cheap price. That's the curse of a good catch.
 b[cook] : I'll take the lot if it's fresh.

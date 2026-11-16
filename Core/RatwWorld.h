@@ -659,6 +659,9 @@ struct PersistedWorld
     RoadsState roads;
     CrimeState crime;
     std::vector<CalledFestival> festivals;          // Called by the Dungeon Master (Phase 9).
+    // What residents and towns have to tell (the ambient talk's news: doc 84, defect 10), kept across a restart.
+    std::map<std::string, std::vector<AmbientNews>> news;
+    std::map<std::string, std::vector<TownNews>> townNews;
 };
 
 class World
@@ -1174,6 +1177,17 @@ class World
     // each day, losing confidence, and between towns with the caravans.
     void believe(const std::string& holder, const std::string& subject, const std::string& claim,
                  const std::string& source, double confidence, const std::string& incident = {}, const std::string& as = {});
+    // The same, as a structured claim (doc 84 §7.7): its kind, the second party it names and the cell it is about given
+    // (the first form works them out of the free words and the incident: claimOf).
+    void believe(const Belief& b);
+    // A belief's kind, object and place, where they are empty: from claims.json's matches for its free words, the incident
+    // it is about (a theft's victim) and the cell its words name. Older saves' beliefs are filled so as they load.
+    void claimOf(Belief& b) const;
+    void fillClaims();                              // claimOf over every belief held (after a load, or the table's).
+    // A cell in words a resident would use of where it is ("in the Greenholt, out by Glasswater"; doc 84 §7.7), and the
+    // place it is near as a name for a line's "out by #topic.where#" ("Glasswater"). Never an id; "" for no such cell.
+    std::string placeWords(const std::string& cellId) const;
+    std::string placeNear(const std::string& cellId) const;
     // Every belief of this claim dropped (a deed revoked: doc 56).
     void forgetClaim(const std::string& claim);
     const std::vector<Belief>* beliefsOf(const std::string& holder) const;
@@ -1427,6 +1441,7 @@ class World
     // named "House <name>" on the cell, else on the cells its doors lead out to (a flat to its shop, a shop to its
     // street), the nearest first, never past the first outdoor cell (the Crown's charters: Docs/Design/75, 4.2).
     std::string districtHouse(const std::string& cellId) const;
+    std::string districtWalk(const std::string& cellId) const;   // (Its walk through the doors, uncached.)
     // Schedules (Phase 9). A cell's community is its town (a region, where there are no town records); "" for none.
     std::string communityOf(const std::string& cellId) const { return lawTown(cellId); }
     DayPlan dayPlan(const std::string& community);          // Today's, as residents live it.
@@ -1912,6 +1927,16 @@ class World
     std::map<std::string, std::vector<TownNews>> townNews_;      // By town (or region).
     std::map<std::string, std::string> talkDialectOf_;           // (setTalkDialects.)
     mutable std::vector<std::pair<std::string, int>> talkHomes_; // The places somebody lives and how many, for talkOrigin (once).
+    // The street a building's door gives onto, by cell (here.outdoors: doc 84 §7.8), found through the doors once and
+    // found again when the doors change.
+    mutable std::map<std::string, std::string> outsideOf_;
+    mutable std::size_t outsideDoors_ = 0;
+    // districtHouse's answers by cell, found again when the doors change and each game day (a claim may move): asked
+    // for every resident's leader whenever one speaks (doc 84, Phase 1), it walks the doors.
+    mutable std::map<std::string, std::string> districtOf_;
+    mutable std::size_t districtDoors_ = 0;
+    mutable std::int64_t districtDay_ = -1;
+    std::string outsideOf(const std::string& cellId) const;
     void noteNews(const WorldEvent& event);
   public:
     // The town a cell is in (its id), else the cell's region: the talk library's here.region.

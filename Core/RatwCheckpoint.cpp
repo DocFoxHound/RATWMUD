@@ -374,6 +374,12 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
             j.add("incident", h.incident);
         if (!h.as.empty())
             j.add("as", h.as);                     // (The name the holder knows the subject by: doc 56.)
+        if (!h.kind.empty())
+            j.add("kind", h.kind);                 // (A structured claim: doc 84 §7.7.)
+        if (!h.object.empty())
+            j.add("object", h.object);
+        if (!h.place.empty())
+            j.add("place", h.place);
         beliefs.push(j);
     }
     root.add("beliefs", beliefs);
@@ -387,6 +393,41 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
         festivals.push(j);
     }
     root.add("festivals", festivals);
+    // The ambient talk's news, by resident and by town (doc 84, defect 10: lost on a restart before Phase 1).
+    {
+        auto news = Value::object();
+        for (const auto& [who, list] : saved.news)
+        {
+            auto items = Value::array();
+            for (const auto& n : list)
+            {
+                auto j = Value::object();
+                j.add("day", n.day); j.add("kind", n.kind); j.add("text", n.text);
+                items.push(j);
+            }
+            if (items.size())
+                news.add(who, items);
+        }
+        auto towns = Value::object();
+        for (const auto& [town, list] : saved.townNews)
+        {
+            auto items = Value::array();
+            for (const auto& n : list)
+            {
+                auto j = Value::object();
+                j.add("day", n.day); j.add("kind", n.kind); j.add("subject", n.subject);
+                if (!n.other.empty())
+                    j.add("other", n.other);
+                items.push(j);
+            }
+            if (items.size())
+                towns.add(town, items);
+        }
+        auto talkNews = Value::object();
+        talkNews.add("people", news);
+        talkNews.add("towns", towns);
+        root.add("talkNews", talkNews);
+    }
     auto npcList = Value::array();
     for (const auto& e : npcs)
         npcList.push(wire::persistEntity(e, time));
@@ -789,9 +830,21 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
     }
     for (const auto& j : root.array("beliefs"))
         saved.roads.beliefs.push_back({j.string("holder"), j.string("subject"), j.string("claim"), j.string("source"),
-                                       num(j, "confidence"), num(j, "day"), j.string("incident"), json::utf8Prefix(j.string("as"), 64)});
+                                       num(j, "confidence"), num(j, "day"), j.string("incident"), json::utf8Prefix(j.string("as"), 64),
+                                       j.string("kind"), j.string("object"), j.string("place")});
     for (const auto& j : root.array("festivals"))
         saved.festivals.push_back({j.string("community"), j.string("name"), std::int64_t(num(j, "day"))});
+    if (const auto& talkNews = root["talkNews"]; talkNews.isObject())
+    {
+        for (const auto& [who, list] : talkNews.object("people").fields())
+            for (const auto& j : list.items())
+                if (saved.news[who].size() < 8)
+                    saved.news[who].push_back({num(j, "day"), json::utf8Prefix(j.string("kind"), 32), json::utf8Prefix(j.string("text"), 400)});
+        for (const auto& [town, list] : talkNews.object("towns").fields())
+            for (const auto& j : list.items())
+                if (saved.townNews[town].size() < 48)
+                    saved.townNews[town].push_back({num(j, "day"), json::utf8Prefix(j.string("kind"), 32), j.string("subject"), j.string("other")});
+    }
     if (const auto& crime = root["crime"]; crime.isObject())
     {
         saved.crime.nextIncident = std::max<std::int64_t>(1, std::int64_t(num(crime, "nextIncident")));

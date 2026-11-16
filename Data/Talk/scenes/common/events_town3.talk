@@ -93,6 +93,7 @@ b[old] : I've seen sixty of them and I still get a flutter.
 b[child] : There's going to be dancing and sweets and fire!
 b : Like a painting. | And to you! | Ribbons everywhere.
 a : Isn't it? | Eat well. | Lovely, isn't it.
+b : It is. | I will. | It is.
 a?[friends] : Dance with me later. I won't take no.
 
 scene et_fest_today_work
@@ -115,6 +116,7 @@ a : Are you going to the chapel blessing for #here.festival#? | The priest's pre
 b[priest] : I'd better. I'm leading it.
 b : After the feast. | I'll go for the hymns. | One for each of my family.
 a : Ha! | Just the hymns? | A good tradition.
+b : Laugh all you like. | And the bread after. | It is.
 
 scene et_fest_today_food
 when topic=festival topic.when=today here.place=market|street|tavern
@@ -128,6 +130,7 @@ when topic=festival topic.when=today a.stage=young|adolescent
 a : It's #here.festival#! Can I stay up late? | Can we go see the fire? Please? | I got a ribbon for #here.festival#!
 b : Just this once. | After supper. | It suits you.
 a : Yes! | Promise? | I know.
+b : Off you go. | Promise. | Go and show your gran.
 
 scene et_fest_today_lonely
 when topic=festival topic.when=today pair.band=friends

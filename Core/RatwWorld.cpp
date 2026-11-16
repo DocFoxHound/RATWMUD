@@ -6581,6 +6581,8 @@ PersistedWorld World::save() const
     out.roads = roads_;
     out.crime = crime_;
     out.festivals = festivals_;
+    out.news = news_;
+    out.townNews = townNews_;
     out.roads.beliefs.clear();
     for (const auto& [holder, mine] : beliefs_)
         out.roads.beliefs.insert(out.roads.beliefs.end(), mine.begin(), mine.end());
@@ -6955,6 +6957,8 @@ Result World::restore(const PersistedWorld& saved)
     roads_ = state.roads;
     crime_ = state.crime;
     festivals_ = state.festivals;
+    news_ = state.news;                              // (An older save has none: doc 84, defect 10.)
+    townNews_ = state.townNews;
     ++festivalsChanged_;
     squaresDay_ = -1;
     pursuits_.clear();
