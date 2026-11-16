@@ -9,6 +9,7 @@
 
 scene h7_stranger_armed
 when topic=player topic.known=no
+does give.opinion / disagree / insist / give.advice / agree
 a : Look at the blade on #topic.subject#. That's not for cutting bread. | #topic.subject#'s carrying steel. In town. | See how #topic.subject# keeps a paw near the hilt? | #topic.subject# walks like someone who's had to fight.
 b : Road's dangerous. Everyone carries something. | So long as it stays sheathed. | Habit. Or nerves. | Or someone who's had to run.
 a : Not like that, they don't. | So long as. | Both, I'd say. | Running wolves don't stand like that.
@@ -31,6 +32,7 @@ b : You'd hang your own shadow. | You're a suspicious old thing. | Unfair, that.
 
 scene h7_stranger_rumours
 when topic=player topic.known=no
+does tell.gossip / react.news.doubt / concede / assess
 a : They say a traveller like #topic.subject# killed a bear bare-pawed. | I heard there's a traveller in town who's wanted in three towns. Could be #topic.subject#. | #topic.subject#? I heard they came up the river road. Nobody comes up the river road. | Folk are saying all sorts about #topic.subject#.
 b : A bear? Bare-pawed? | Could be anyone, then. | Somebody did. | Folk say all sorts about everyone.
 a : A small bear. | Could be them, though. | They did. Look at them. | Not like this.
@@ -38,6 +40,7 @@ b : Still a bear. | Could be you. | They look tired, that's all. | Then I'll lis
 
 scene h7_stranger_tired
 when topic=player topic.known=no
+does give.opinion / agree / agree / tell.plan
 a : #topic.subject# looks done in. | Poor #topic.subject#. When did they last sleep? | #topic.subject#'s been walking a long while, by the look of the paws. | Somebody give #topic.subject# a stool.
 b : The road does that. | Not in a bed, by the look. | Thin, too. | Give them yours.
 a : The road does worse. | Should we say something? | And dusty to the ears. | I need mine.
@@ -45,6 +48,7 @@ b : I'll point them to the inn. | Say they look well. Folk like that. | Point th
 
 scene h7_stranger_fear
 when topic=player topic.known=no
+does tell.worry / ask.detail / answer.detail / ask.detail / answer.detail
 a : I don't like how #topic.subject# looks at folk. | Something about #topic.subject# puts my fur up. | #topic.subject#'s been watching the street a long time. | #topic.subject# hasn't smiled once.
 b : Like what? | Your fur goes up at the cat. | Watching for what? | Nor have you.
 a : Like they're counting. | This is different. | That's what worries me. | I've reasons.
@@ -150,6 +154,7 @@ cooldown 1d
 
 scene h7_stranger_restless
 when topic=player a.drive=restless|ambitious
+does tell.plan / warn / counter / tease
 a : I could go with #topic.subject#. Out there. | What if I asked #topic.subject# to take me along? | Ever think of doing what #topic.subject# does? Just walking off? | #topic.subject# must have seen everything.
 b : And get your throat cut by the first bend. | They'd laugh. | Every day. Then I eat supper. | Everything, and slept on most of it.
 a : At least it'd be a bend I'd never seen. | Let them. | Supper's not enough. | I'd sleep on stones to see the far end of the realm.
@@ -158,6 +163,7 @@ cooldown 2d
 
 scene h7_stranger_devout
 when topic=player a.piety=devout
+does give.opinion / challenge / counter / ask.detail
 a : The Bright One sends strangers to test us. Be kind to #topic.subject#. | I'll pray for #topic.subject#. For their road. | #topic.subject# should come to chapel. Travellers need it most. | Did #topic.subject# come by the chapel? I didn't see them.
 b : And who sends the thieves? | They'd thank you, if they knew. | Ask them, then. | Not everyone comes to chapel.
 a : The Bright One sends them too. That's the test. | They needn't know. | I might. | More's the pity.
@@ -174,6 +180,7 @@ cooldown 1d
 
 scene h7_stranger_night
 when topic=player here.time=night topic.known=no
+does ask.detail / answer.detail / counter / tease
 a : Who's #topic.subject#, out at this hour? | Nobody good walks about this late. Except us. | #topic.subject# shouldn't be in the street at night. Not with things as they are. | Should we tell #topic.subject# where the inn is?
 b : Somebody who can't sleep. Like us. | Speak for yourself. | They look like they can handle it. | They'll find it. Everyone does.
 a : I'm not a stranger. | I am. I'm good. | Looks aren't steel. | Not everyone.

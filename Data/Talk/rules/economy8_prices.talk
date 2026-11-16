@@ -90,12 +90,14 @@ then other: prices.answer_cheap
 
 rule e8p_down_comfortable
 when concept=talk.prices topic.dir=down topic.item!=meal self.wealth=comfortable
+does tell.news
 cooldown 1d
 say #topic.what.capitalize# at #topic.price#. I'll get a little extra in. | Cheap #topic.what#. Mind, I'll believe it when I've paid it.
 then other: prices.answer_cheap
 
 rule e8p_down_poor
 when concept=talk.prices topic.dir=down topic.item!=meal self.wealth=poor
+does tell.news
 cooldown 1d
 say #topic.price.capitalize#! I can have #topic.what# this week. | #topic.what.capitalize# down. First good word all month.
 then other: prices.answer_cheap
@@ -108,12 +110,14 @@ then other: prices.answer_cheap
 
 rule e8p_down_destitute
 when concept=talk.prices topic.dir=down topic.item!=meal self.wealth=destitute
+does tell.complaint
 cooldown 1d
 say Cheap or dear, I've not a penny for #topic.what#. | Cheaper's no good to an empty purse.
 then other: prices.answer_cheap
 
 rule e8p_down_any
 when concept=talk.prices topic.dir=down topic.item!=meal
+does tell.news
 cooldown 1d
 say #topic.what.capitalize# #topic.is# cheap just now. #topic.price.capitalize#. | Have you seen #topic.what#? Down to #topic.price#.
 then other: prices.answer_cheap

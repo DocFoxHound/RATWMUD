@@ -1,0 +1,94 @@
+# The plain answers (Docs/Design/84 §7.2, defect 13): a line that hands on to one of these concepts could, before Phase 2,
+# find nothing to answer it when the answerer's facts matched none of the written replies, and the talk ended there. The
+# dead-end proof now refuses a library where that can happen. These hold for anyone, know nothing, and speak only when
+# nothing better holds (priority -1). Each is true wherever its concept is reached, whoever says it.
+
+rule fb_crime_answer
+when concept=crime.answer
+priority -1
+say That's a bad business. | Gods. What's the town coming to? | Hard to hear. Hard to know what to say.
+
+rule fb_dreams_answer
+when concept=dreams.answer
+priority -1
+say I've never let myself think about it. | Ask me another day. I'd only say something foolish. | Enough to get by, and a bit over.
+
+rule fb_event_answer
+when concept=event.answer
+priority -1
+say So I'd heard. | Is that so? Folk talk of little else. | We'll see what comes of it.
+
+rule fb_event_close
+when concept=event.close
+priority -1
+say It'll pass. Most things do. | Aye. Well. We go on.
+
+rule fb_faith_answer
+when concept=faith.answer
+priority -1
+say Now and then. I'll leave it there. | That's between me and the Bright One. | Ask me on a better day.
+
+rule fb_friend_parting
+when concept=friend.parting
+priority -1
+say Go on, then. Mind how you go. | Another time, then. | Off you go.
+
+rule fb_friend_tease
+when concept=friend.tease
+priority -1
+say Charming. Lovely to see you too. | Ha. And a good day to you as well. | Keep it up and see where it gets you.
+
+rule fb_harvest_answer
+when concept=harvest.answer
+priority -1
+say So I hear. The farms would know best. | We'll see what it does to the price of bread. | Let's hope it holds.
+
+rule fb_moment_reply_home
+when concept=moment.reply_home
+priority -1
+say From where I grew up, same as anyone's. | Home. Where else would it be from? | It's the only voice I've got.
+
+rule fb_reply_close
+when concept=reply.close
+priority -1
+say Well. There it is. | Fair enough. | Aye, well.
+
+rule fb_season_answer
+when concept=season.answer
+priority -1
+say Every season has its work. | It comes round whether we're ready or not. | It'll turn again soon enough.
+
+rule fb_ships_answer
+when concept=ships.answer
+priority -1
+say The sea does as it likes. | I leave the ships to the Wharf folk. | The Wharf will know more than I do.
+
+rule fb_street_answer
+when concept=street.answer
+priority -1
+say Hard times for some. | I see them. I don't always know what to do. | Bright One keep them.
+
+rule fb_times_answer
+when concept=times.answer
+priority -1
+say It's hard all round. | We all feel it, one way or another. | It'll turn. It always turns, in the end.
+
+rule fb_times_close
+when concept=times.close
+priority -1
+say No offence meant. | I spoke out of turn. Let it go.
+
+rule fb_travel_from
+when concept=travel.from
+priority -1
+say You'd not know the place. | That's a long story, and I've not the time for it. | Where I grew up, and that's all I'll say.
+
+rule fb_travel_home
+when concept=travel.home
+priority -1
+say It's home. That's all I can tell you. | Better than they say, and worse. | Some days I miss it. Most days I don't think of it.
+
+rule fb_work_reply
+when concept=work.reply
+priority -1
+say That's work for you. | Well. It keeps the roof on. | Better than none.

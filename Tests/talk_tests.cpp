@@ -1230,6 +1230,218 @@ say Quiet today.
     expect(repeats, "while asked as weather, it may be said again");
 }
 
+
+// Doc 84, Phase 2: moves and tags. moves.json and what a line says it does (does, owes, invites, tone, asserts, denies,
+// gist, binds, {k=v}), refused when wrong; the answer concepts as aliases; entries by move; the dead-end proof; what a
+// said line carries into the transcripts; the conversation's own facts (conv.*) and a bound third party (x.*).
+void movesAndTags()
+{
+    // The book itself.
+    {
+        Moves m;
+        std::string problem;
+        const std::set<std::string> concepts{"jest.answer", "talk.smalltalk"};
+        const auto refused = [&](const std::string& text, const std::string& says) {
+            Moves x;
+            std::string p;
+            expect(!x.read(text, concepts, p) && p.find(says) != std::string::npos, "moves.json refused (" + says + "): " + p);
+            expect(x.empty(), "and nothing of it kept");
+        };
+        const std::string ok = R"({"tones": ["light", "even"], "moves": {
+            "greet": {"family": "opening", "first": true, "expects": ["greet.return"]},
+            "greet.return": {"family": "opening", "answers": ["greet"], "fallback": ["ack"]},
+            "react.news": {"family": "react", "answers": ["greet"], "variants": ["known"], "fallback": ["ack"]},
+            "ack": {"family": "ground", "answers": ["*"]},
+            "jest.answer": {"alias": "react.news.known"}}})";
+        expect(m.read(ok, concepts, problem), "a small book reads: " + problem);
+        expect(m.known("react.news.known") && !m.known("react.news.loud") && m.alias("jest.answer") == "react.news.known",
+               "variants are moves of their own kind; an alias names a move");
+        expect(m.answers("greet.return", "greet") && m.answers("ack", "anything") && !m.answers("greet", "greet.return"),
+               "what answers what");
+        expect(Moves::meets("react.news.known", "react.news") && !Moves::meets("react.newsy", "react.news"), "a kind meets its move");
+        expect(m.chain("greet.return") == std::vector<std::string>({"greet.return", "ack"}), "fallbacks walk down to ack");
+        expect(m.toneOf("greet") == "even", "a move with no tone is even");
+        refused(R"({"tones": ["even"], "moves": {"greet": {"family": "chat", "first": true}, "ack": {"family": "ground", "answers": ["*"]}}})", "family 'chat'");
+        refused(R"({"tones": ["even"], "moves": {"greet": {"family": "opening", "first": true, "expects": ["hello"]}, "ack": {"family": "ground", "answers": ["*"]}}})", "'hello' is not a move");
+        refused(R"({"tones": ["even"], "moves": {"greet": {"family": "opening", "first": true, "expects": ["greet2"]}, "greet2": {"family": "opening", "first": true}, "ack": {"family": "ground", "answers": ["*"]}}})", "doesn't answer it");
+        refused(R"({"tones": ["even"], "moves": {"greet": {"family": "opening", "first": true, "colour": "red"}, "ack": {"family": "ground", "answers": ["*"]}}})", "no field 'colour'");
+        refused(R"({"tones": ["even"], "moves": {"greet": {"family": "opening", "first": true}, "ack": {"family": "ground", "answers": ["*"]}, "wave.answer": {"alias": "greet"}}})", "an alias names a concept");
+        refused(R"({"tones": ["even"], "moves": {"greet": {"family": "opening", "first": true}, "ack": {"family": "ground", "answers": ["*"]}, "jest.answer": {"alias": "grin"}}})", "alias 'grin' is not a move");
+        refused(R"({"tones": ["even"], "moves": {"greet": {"family": "opening", "first": true, "tone": "loud"}, "ack": {"family": "ground", "answers": ["*"]}}})", "tone 'loud'");
+        refused(R"({"tones": ["even"], "moves": {"greet": {"family": "opening", "first": true}}})", "no ack");
+        refused(R"({"tones": ["even"], "moves": {"nod": {"family": "ground"}, "ack": {"family": "ground", "answers": ["*"]}}})", "either opens");
+    }
+    // The real book: every answer concept of the library is a move's alias, so every `then` hands on a move.
+    auto lib = foundation();
+    expect(!lib.moves().empty() && lib.moves().all().size() >= 85, "the book: about 85 moves or more");
+    for (const auto& c : lib.settings().concepts)
+        if (c.rfind("talk.", 0) != 0 && c.rfind("player.", 0) != 0 && c.rfind("react.", 0) != 0 && c != "bark")
+            expect(!lib.moves().alias(c).empty(), "the answer concept " + c + " is a move's alias");
+    expect(lib.moves().alias("jest.answer") == "tease.return", "jest.answer is tease.return (§7.2)");
+
+    // What a line says it does, refused when wrong.
+    const auto bad = [&](const std::string& text, const std::string& says) {
+        auto l = foundation();
+        std::string p;
+        expect(!l.parse(text, "bad.talk", p) && p.find(says) != std::string::npos, "refused (" + says + "): " + p);
+        expect(l.size() == 0, "and nothing of it loaded");
+    };
+    bad("rule x\nwhen concept=talk.gossip\ndoes gossiping\nsay Hm.\n", "'gossiping' is not a move");
+    bad("rule x\nwhen concept=talk.gossip\ndoes react.news.loud\nsay Hm.\n", "'react.news.loud' is not a move");
+    bad("rule x\nwhen concept=talk.gossip\ndoes tell.gossip / react.news\nsay Hm.\n", "a rule is one turn");
+    bad("rule x\nwhen concept=talk.gossip\ndoes tell.gossip\ndoes tell.news\nsay Hm.\n", "one `does` line");
+    bad("scene x\nwhen topic=smalltalk\ndoes give.opinion / agree\na : Grey.\nb : It is.\na : Very.\n", "does names 2 turns' moves; it has 3");
+    bad("rule x\nwhen concept=talk.gossip\ndoes tell.gossip\nowes other: grant\nsay Hm.\n", "owes grant, which doesn't answer tell.gossip");
+    bad("rule x\nwhen concept=talk.gossip\ndoes tell.gossip\nowes friend: react.news\nsay Hm.\n", "owes is 'owes other|self|any");
+    bad("rule x\nwhen concept=talk.gossip\nowes other: react.news\nsay Hm.\n", "needs the line's own move first");
+    bad("rule x\nwhen concept=talk.gossip\ndoes tell.gossip\ninvites other: tease\nsay Hm.\n", "owes tease, which doesn't answer");
+    bad("rule x\nwhen concept=talk.gossip\ndoes tell.gossip\ntone loud\nsay Hm.\n", "'loud' is not a tone");
+    bad("rule x\nwhen concept=talk.gossip\ndoes tell.gossip\nasserts theft.maybe\nsay Hm.\n", "'theft.maybe' is not a claim kind");
+    bad("rule x\nwhen concept=talk.gossip\ndoes tell.gossip\ngist 2\nsay Hm.\n", "a rule is one turn; only a scene's names one");
+    bad("scene x\nwhen topic=smalltalk\ndoes give.opinion / agree\ndenies 3\na : Grey.\nb : It is.\n", "names turn 3 of 2");
+    bad("rule x\nwhen concept=bark\nbinds y=self.spouse\nsay Hm.\n", "binds is 'binds x=<slot>'");
+    bad("rule x\nwhen concept=bark\nbinds x=self.cousin\nsay Hm.\n", "'self.cousin' is not a slot binds may name");
+    bad("rule x\nwhen concept=bark\nsay #x.name# snores.\n", "speaks of x with nobody bound");
+    bad("rule x\nwhen concept=bark x.stage=adult\nsay Hm.\n", "speaks of x with nobody bound");
+    bad("rule x\nwhen concept=bark x.shoe=red\nbinds x=self.spouse\nsay Hm.\n", "unknown fact 'x.shoe'");
+    bad("rule x\nwhen concept=bark x.disposition=giddy\nbinds x=self.spouse\nsay Hm.\n", "'giddy' is not a x.disposition");
+    bad("rule x\nwhen concept=bark\nsay {Kind=look} Hm.\n", "a tag is {key=value}");
+    bad("rule x\nwhen concept=bark\nsay {kind=look Hm.\n", "a tag is {key=value} before the words");
+    bad("rule x\nwhen concept=bark\nsay Hm {kind=look}.\n", "{ } hold a tag");
+    bad("rule x\nwhen concept=bark\nsay {move=greet} Hm.\n", "conv.move is the engine's own");
+    bad("rule x\nwhen concept=bark\nsay {kind=look keep soon} Hm.\n", "keep is a time");
+    bad("rule x\nwhen concept=bark conv.move=tell.wibble\nsay Hm.\n", "'tell.wibble' is not a conv.move");
+    bad("rule x\nwhen concept=bark conv.Kind=look\nsay Hm.\n", "unknown fact 'conv.Kind'");
+    bad("rule x\nwhen concept=talk.gossip\nsay Hm.\nthen other: talk.weather\nrule y\nwhen concept=talk.gossip\nsay Hm.\nthen other: lost.answer\n",
+        "is not a concept");
+
+    std::string problem;
+    expect(lib.parse(R"(
+rule mv_tell
+when concept=talk.gossip
+does tell.gossip
+say {kind=look keep 7d} #topic.subject# tried it.
+then other: town.gossip
+
+rule mv_react
+when concept=town.gossip
+say Never!
+
+rule mv_react_look
+when concept=town.gossip conv.kind=look conv.move=tell.gossip conv.beat=1
+priority 5
+say Look at what?
+
+rule mv_tell_soft
+when concept=talk.news
+does tell.news
+invites other: react.news
+tone grave
+asserts
+say Sad news.
+
+rule mv_x
+when concept=bark x.stage=adult x.disposition=warm|fond
+binds x=self.spouse
+does tell.self
+say #x.name# snores. #x.they.capitalize# always did.
+
+scene mv_scene
+when topic=smalltalk
+does give.opinion / agree / tease
+tone even / even / light
+gist
+a : Grey day.
+b : It is.
+a : Like your coat.
+)", "moves.talk", problem), "lines that say what they do load: " + problem);
+    const auto* tell = lib.find("mv_tell");
+    const auto* react = lib.find("mv_react");
+    expect(tell && tell->does.size() == 1 && tell->does[0] == std::vector<std::string>({"tell.gossip"}) && !tell->aliasMoves,
+           "a rule's written move");
+    expect(react && react->aliasMoves && react->does[0] == std::vector<std::string>({"react.news"}),
+           "a rule with no `does` makes its answer concept's move (town.gossip: react.news)");
+    expect(tell->owes.size() == 1 && tell->owes[0].derived && tell->owes[0].moves == std::vector<std::string>({"react.news"}),
+           "a `then` hands on its concept's move as what is owed");
+    const auto by = [&](const std::string& move, const std::string& id) {
+        const auto* list = lib.byMove(move);
+        return list && std::any_of(list->begin(), list->end(), [&](std::size_t i) { return lib.entries()[i].id == id; });
+    };
+    expect(by("tell.gossip", "mv_tell") && by("react.news", "mv_react") && by("give.opinion", "mv_scene") && !by("agree", "mv_scene"),
+           "entries by move: a rule by its own, a scene by its first turn's");
+
+    // What a said line carries.
+    auto q = moment("talk.gossip");
+    q.facts["topic.subject"] = "Wren";
+    q.facts["topic.claim_kind"] = "theft";
+    const auto said = lib.converse(q, 3, None, {});
+    expect(said.chain.size() == 2 && said.chain[0] == "mv_tell" && said.info.size() == 2, "the two beats: " + std::to_string(said.chain.size()));
+    const auto& first = said.info[0];
+    expect(first.moves == std::vector<std::string>({"tell.gossip"}) && first.owes == std::vector<std::string>({"react.news"}) &&
+               first.asserts == std::vector<std::string>({"theft"}) && first.tone == "even" && first.tags.at("kind") == "look" &&
+               std::abs(first.keep - 7) < 1e-9 && first.who == 0 && first.to == 1 && first.text == "Wren tried it.",
+           "the teller's line: its move, what it owes, the claim it passes on, its tone and its tag");
+    expect(said.chain[1] == "mv_react_look" && said.info[1].moves == std::vector<std::string>({"react.news"}) &&
+               said.info[1].answers == std::vector<std::string>({"tell.gossip"}),
+           "the next beat sees the tag (conv.kind), the move just made (conv.move) and the beat (conv.beat), and answers it: " + said.chain[1]);
+    auto news = moment("talk.news");
+    const auto sad = lib.pick(news, 1, None, {});
+    expect(sad.info.size() == 1 && sad.info[0].tone == "grave" && sad.info[0].invites == std::vector<std::string>({"react.news"}) &&
+               sad.info[0].owes.empty() && sad.info[0].asserts == std::vector<std::string>({"topic"}),
+           "a soft obligation (invites), a written tone, and asserting with no claim kind: the topic");
+    auto small = moment("talk.smalltalk");
+    const auto* scene = lib.find("mv_scene");
+    const auto talk = lib.render(*scene, small, 1);
+    expect(talk.info.size() == 3 && talk.info[1].answers == std::vector<std::string>({"give.opinion"}) && talk.info[2].tone == "light" &&
+               talk.info[2].gist && !talk.info[0].gist && talk.info[0].owes.size() == 1 && talk.info[2].owes.empty(),
+           "a scene's turns: what each answers, its tone, the gist in the last; its last line owes only what is written");
+    // A third party: nobody to bind, the line doesn't fit; the game's binder fills x.*.
+    auto bark = moment("bark");
+    bark.alone = true;
+    const auto* x = lib.find("mv_x");
+    expect(x && !lib.fits(*x, bark), "with no binder, a line that binds never fits");
+    bark.bind = [](const std::string& slot, int speaker, Facts& f) {
+        if (slot != "self.spouse" || speaker != 0)
+            return false;
+        f = {{"name", "Bram"}, {"sex", "male"}, {"stage", "adult"}, {"disposition", "fond"}};
+        return true;
+    };
+    const auto snores = lib.render(*x, bark, 1);
+    expect(lib.fits(*x, bark) && !snores.lines.empty() && snores.lines[0].second == "Bram snores. He always did.",
+           "bound, it speaks of them: " + (snores.lines.empty() ? std::string("(nothing)") : snores.lines[0].second));
+    bark.bind = [](const std::string&, int, Facts& f) {
+        f = {{"name", "Bram"}, {"stage", "adult"}, {"disposition", "cool"}};
+        return true;
+    };
+    expect(!lib.fits(*x, bark), "and its criteria test them (x.disposition)");
+
+    // The dead-end proof.
+    auto proof = foundation();
+    expect(proof.parse(R"(
+rule dead_open
+when concept=talk.crime
+does tell.news
+say A theft.
+then other: crime.answer
+
+rule dead_answer_rich
+when concept=crime.answer self.wealth=rich
+say Flog them.
+)", "dead.talk", problem), problem);
+    auto dead = proof.deadEnds();
+    expect(dead.find("dead end: crime.answer") != std::string::npos && dead.find("react.news") != std::string::npos,
+           "a concept handed on to with no plain rule, and a move owed with nothing plain doing it, are dead ends:\n" + dead);
+    expect(proof.parse("rule dead_answer_any\nwhen concept=crime.answer\npriority -1\nsay That's a bad business.\n", "fill.talk", problem), problem);
+    dead = proof.deadEnds();
+    expect(dead.find("crime.answer") == std::string::npos && dead.find("react.news") == std::string::npos,
+           "filled, neither is (crime.answer's move, react.news, now has a plain line):\n" + dead);
+    expect(proof.parse("rule dead_wave\nwhen concept=talk.smalltalk\ndoes request\nsay Lend me a hand?\n", "wave.talk", problem), problem);
+    dead = proof.deadEnds();
+    expect(dead.find("grant|decline") != std::string::npos, "what a move expects is owed too: " + dead);
+    expect(proof.parse("rule dead_nod\nwhen concept=keeping.nod\nsay Mm.\n", "nod.talk", problem), problem);
+    expect(proof.deadEnds().empty(), "and a plain ack answers it, by the fallbacks: " + proof.deadEnds());
+}
+
 int main()
 {
     try
@@ -1248,6 +1460,7 @@ int main()
         theForbiddenWord();
         theCountrysVoices();
         truthFixes();
+        movesAndTags();
     }
     catch (const std::exception& error)
     {

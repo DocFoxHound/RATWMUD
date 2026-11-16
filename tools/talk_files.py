@@ -15,6 +15,11 @@ LIBRARY_BLANKS = {'teller': 'a.name', 'listener': 'b.name', 'subject': 'topic.su
                   'news': 'topic.news', 'day': 'topic.remark'}
 
 
+def alternatives(text: str) -> list[str]:
+    """A line's `|` alternatives, each without the conversation tag that may lead it ({k=v}: doc 84 §7.1)."""
+    return [re.sub(r'^\{[^}]*\}\s*', '', t.strip()) for t in text.split('|') if t.strip()]
+
+
 def read(root: Path = TALK) -> dict:
     """{'groups': {name: set}, 'entries': [...], 'grammars': {name: {symbol: [alternatives...]}}}. An entry is
     {'id', 'file', 'scene': bool, 'concepts': set, 'when': [token...], 'regions': set or None, 'priority', 'weight',
@@ -69,12 +74,11 @@ def read(root: Path = TALK) -> dict:
             elif line.startswith('weight '):
                 entry['weight'] = float(line.split()[1])
             elif line.startswith('say'):
-                entry['lines'].append(('a', False, '', [t.strip() for t in line[3:].split('|') if t.strip()]))
+                entry['lines'].append(('a', False, '', alternatives(line[3:])))
             elif re.match(r'^[ab]\??(\[[^\]]*\])?\s*:', line):
                 head, _, text = line.partition(':')
                 tags = re.findall(r'\[([^\]]*)\]', head)
-                entry['lines'].append((head[0], '?' in head, tags[0] if tags else '',
-                                       [t.strip() for t in text.split('|') if t.strip()]))
+                entry['lines'].append((head[0], '?' in head, tags[0] if tags else '', alternatives(text)))
     return {'groups': groups, 'entries': entries, 'grammars': grammars}
 
 

@@ -5,6 +5,7 @@
 
 scene et_gos_whisper
 when topic=gossip
+does tell.gossip / react.news / ack
 a : Lean in. #topic.subject# #topic.claim#. You didn't hear it from me. | Word at the well is that #topic.subject# #topic.claim#. | Don't spread it, but #topic.subject# #topic.claim#.
 b[old] : I've heard worse about better wolves. And better about worse.
 b[priest] : The Bright One frowns on a loose tongue, you know.
@@ -13,6 +14,7 @@ a : Good. | It always does. | Everyone, by supper.
 
 scene et_gos_disbelief
 when topic=gossip
+does tell.gossip / react.news.doubt / agree / ask.detail
 a : They say #topic.subject# #topic.claim#. | Apparently #topic.subject# #topic.claim#. | You'll love this. #topic.subject# #topic.claim#.
 b : Never. Not #topic.subject#. | Apparently, apparently. Who says? | I don't love it. I don't believe it.
 a : That's what I said. | Half the street. | Suit yourself.
@@ -20,6 +22,7 @@ b?[friends] : Tell me everything anyway.
 
 scene et_gos_delight
 when topic=gossip pair.band=friends
+does tell.gossip / backchannel / answer.detail / tell.plan
 a : Oh, you'll want to sit down. #topic.subject# #topic.claim#. | I've been saving this one for you. #topic.subject# #topic.claim#. | Guess who #topic.claim#? #topic.subject#!
 b : I'm sitting. Go on. | You're a treasure. Go on. | No! Really?
 a : That's all I've got. Isn't it enough? | That's it. That's the whole of it. | Really and truly.
@@ -27,24 +30,28 @@ b?[adolescent] : I'm telling everyone.
 
 scene et_gos_scold
 when topic=gossip pair.band=spouses|family
+does tell.gossip / react.news.doubt / insist
 a : Did you know #topic.subject# #topic.claim#? | The whole street's saying #topic.subject# #topic.claim#. | Mother says #topic.subject# #topic.claim#.
 b : And you believe the street? | The street says a lot of things. | Your mother says a lot of things.
 a : Sometimes the street's right. | It does. | Don't start.
 
 scene et_gos_merchant
 when topic=gossip b.role=merchant
+does tell.gossip / give.opinion / agree
 a : I heard #topic.subject# #topic.claim#. | Word is #topic.subject# #topic.claim#. | Is it true #topic.subject# #topic.claim#?
 b : Then #topic.subject# pays coin first, from now on. | Hm. I'll check my ledger. | If it is, they owe me an explanation.
 a : Wise. | Do. | And money, probably.
 
 scene et_gos_guard
 when topic=gossip b.role=guard
+does tell.gossip / react.news.doubt / assess
 a : Did you know #topic.subject# #topic.claim#? | They're saying #topic.subject# #topic.claim#. | I'd look into #topic.subject#, if I were the watch. They say #topic.subject# #topic.claim#.
 b : I don't arrest wolves for rumours. | Saying's not proof. | If they break a law, I'll look.
 a : Shame. | It's a start. | Fair.
 
 scene et_gos_child
 when topic=gossip a.stage=young|adolescent
+does tell.gossip / counter / counter / tease
 a : I heard the grown-ups say #topic.subject# #topic.claim#. | Everyone says #topic.subject# #topic.claim#. Is that bad? | #topic.subject# #topic.claim#! I heard it!
 b : You shouldn't listen at doors. | Never you mind. | Hush. That's grown-up talk.
 a : I wasn't. Much. | But is it? | Everyone knows.
@@ -52,18 +59,21 @@ b : Much enough. | Not for pups to say. | Not everyone.
 
 scene et_gos_old
 when topic=gossip a.stage=old
+does tell.gossip / react.news / ack
 a : In my day, if a wolf #topic.claim#, we'd not stop talking for a year. Now it's #topic.subject#. | #topic.subject# #topic.claim#. Their grandmother would weep. | Mark me. #topic.subject# #topic.claim#. I know the signs.
 b : We're not stopping now either. | She would. | You always know the signs.
 a : Good. | Loudly. | I'm always right.
 
 scene et_gos_petty
 when topic=gossip
+does tell.gossip / react.news.glee / echo
 a : #topic.subject# #topic.claim#. And they had the cheek to sit in the front pew. | #topic.subject# #topic.claim#, and still walks about with that nose in the air. | #topic.subject# #topic.claim#. And wore a new hat to market.
 b : The front pew! | That nose. | A new hat! The nerve.
 a : The front pew. | Higher than ever. | Feathers on it, too.
 
 scene et_gos_tavern
 when topic=gossip here.place=tavern
+does tell.gossip / react.news / ack
 a : Keep your voice down. #topic.subject# #topic.claim#. | Over the ale, I heard #topic.subject# #topic.claim#. | Barkeep says #topic.subject# #topic.claim#.
 b[innkeeper] : Don't put that on me. I just pour.
 b : I'm whispering. | Ale talks. | Barkeeps hear everything.
@@ -71,6 +81,7 @@ a : Good. | It does. | Everything.
 
 scene et_gos_defend
 when topic=gossip pair.band=friends|acquaintances
+does tell.gossip / react.news.doubt / agree
 a : People say #topic.subject# #topic.claim#. | They're saying #topic.subject# #topic.claim#, poor thing. | There's talk that #topic.subject# #topic.claim#.
 b[family] : That's my kin you're talking about.
 b : I don't care what people say. | Poor thing indeed. | There's always talk.
@@ -78,12 +89,14 @@ a : Nor should you. | Poor thing. | Always.
 
 scene et_gos_rivals
 when topic=gossip pair.band=rivals
+does tell.gossip / counter / tease
 a : I suppose you've heard #topic.subject# #topic.claim#. Your friend. | #topic.subject# #topic.claim#. Don't pretend you're surprised. | Tell your friend #topic.subject# that everyone knows they #topic.claim#.
 b : Not my friend. | I'm not pretending anything. | Tell them yourself.
 a : Not any more, I'd think. | Course not. | Maybe I will.
 
 scene et_gos_market
 when topic=gossip here.place=market
+does tell.gossip / react.news / agree
 a : Heard it at the fish stall. #topic.subject# #topic.claim#. | Over the cabbages: #topic.subject# #topic.claim#. | Whole market's saying #topic.subject# #topic.claim#.
 b[merchant] : My stall's a market stall, not a gossip stall. Buying anything?
 b : The fish stall's never wrong. | Cabbages and scandal. | Whole market's slow today.
@@ -91,6 +104,7 @@ a : Never. | My favourite. | Not the tongues.
 
 scene et_gos_skeptic
 when topic=gossip
+does tell.gossip / react.news.doubt / answer.detail
 a : #topic.subject# #topic.claim#, they say. | I keep hearing #topic.subject# #topic.claim#. | Some say #topic.subject# #topic.claim#.
 b[scholar] : I'd want three witnesses before I believed the sun rose.
 b : Who's they? | Keep hearing it from whom? | Some say anything.
@@ -98,12 +112,14 @@ a : Everyone, it seems. | The usual mouths. | True.
 
 scene et_gos_shocked
 when topic=gossip
+does tell.gossip / ask.detail / answer.detail
 a : #topic.subject# #topic.claim#! I nearly dropped my basket. | My jaw hit the floor. #topic.subject# #topic.claim#. | #topic.subject#. #topic.subject# #topic.claim#! Can you imagine?
 b : Did you drop it? | Pick it up, then. | I can, actually.
 a : Nearly. | Very funny. | You would.
 
 scene et_gos_worry
 when topic=gossip pair.band=family|spouses
+does tell.gossip / reassure / tell.feeling
 a : If it's true that #topic.subject# #topic.claim#, what then? | They say #topic.subject# #topic.claim#. Should we stay away? | Folk say #topic.subject# #topic.claim#. Keep the pups away from them.
 b : Then we'll know where we stand. | Let's not be hasty. | I already do.
 a : I hope it isn't. | Fine. | Good.

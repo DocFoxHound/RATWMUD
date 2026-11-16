@@ -2109,6 +2109,9 @@ class Game
     std::vector<std::string> neighboursOf(const std::string& id);
     // Their people by role, for talk: spouse, child, mother, father, neighbour, shopkeeper, priest, leader (IDs).
     std::map<std::string, std::string> peopleOf(const std::string& id);
+    // A third party for a line that binds x (doc 84 §7.1, Phase 2): `who`'s facts as a speaker's, and how `speaker` feels
+    // about them (affinity, disposition). False if they're not here to speak of.
+    bool talkThird(const std::string& speaker, const std::string& who, talk::Facts& out);
     // An owner's memories as facts: "mem.<key>" (and "said:<id>") with `prefix` before them ("", "pair.", "world.").
     void talkRecall(const std::string& owner, const std::string& prefix, talk::Facts& into);
     // Uploaded portraits (RatwGameArtwork.cpp; doc 29, phase 9): where they are kept, every record, uploads under way.

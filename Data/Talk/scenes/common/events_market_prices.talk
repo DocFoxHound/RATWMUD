@@ -274,6 +274,7 @@ b?[merchant] : Don't blame me. I pay it too.
 
 scene em_prices_haggle
 when topic=prices here.place=market
+does tell.boast / tease / tease.return / counter
 a : Watch me haggle. I'll have something off, I bet. | I got a smile out of the keeper by staring. | Never pay without a word first. Never.
 b : You'll get a dirty look. | Staring? Teach me. | I always just pay.
 a : A look's a start. | Ears forward, no blinking. | That's why you're poor.
@@ -281,12 +282,14 @@ b?[merchant] : Haggle all you like. My first price is my last.
 
 scene em_prices_saving
 when topic=prices pair.band=friends|spouses
+does tell.self / react.self / agree
 a : I've started putting a penny aside every day. | We should buy together and split it. | I keep a jar under the floor for lean weeks.
 b : A penny a day? That's a mark by the season. | Good idea. Half the cost. | Under the floor? Don't tell anyone else.
 a : That's the plan. | I'll bring the basket. | You're the only one who knows.
 
 scene em_prices_ledger
 when topic=prices a.job=official|scholar|merchant
+does tell.self / ask.detail / decline
 a : I've been writing down prices every week. You'd be surprised. | My ledger says this happens every year about now. | Prices have a pattern. I can show you.
 b : Surprise me. | Every year? | Show me, then.
 a : Some other time. It's a long ledger. | Every year. Nobody listens. | Bring a lamp. It's a thick book.

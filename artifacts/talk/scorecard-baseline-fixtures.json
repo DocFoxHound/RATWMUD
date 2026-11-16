@@ -848,6 +848,60 @@
     16,
     11468.0
    ]
+  },
+  "C1M": {
+   "name": "owed answers answered, by moves (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "97%; hard 92% once it replaces C1 (Phase 3)",
+   "value": 81.26380931392863,
+   "passes": false,
+   "by_profile": {
+    "L1": 75.972,
+    "L2": 74.776,
+    "L3": 91.236,
+    "L4": 90.157,
+    "L5": 88.023,
+    "L6": 88.753,
+    "L7": 89.544,
+    "L10": 84.704
+   },
+   "control": 40.29913137238458,
+   "separation": 0.5040949752096189,
+   "real_better": true,
+   "separates": true,
+   "control_required": true,
+   "structural": false,
+   "events": [
+    10204,
+    12541.0
+   ]
+  },
+  "M1": {
+   "name": "lines carrying moves (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "100% at Phase 7 (every entry)",
+   "value": 66.42087205878587,
+   "passes": null,
+   "by_profile": {
+    "L1": 68.312,
+    "L2": 76.305,
+    "L3": 60.98,
+    "L4": 67.114,
+    "L5": 68.708,
+    "L6": 60.51,
+    "L7": 65.084,
+    "L8": 0,
+    "L9": 0,
+    "L10": 56.098
+   },
+   "control": 66.46951890826229,
+   "separation": 0.0007318670313162988,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
   }
  },
  "details": {
@@ -948,6 +1002,14 @@
     "hours": 100.0,
     "listeners": 4,
     "speakers": 165
+   },
+   "C1M_detail": {
+    "owed": 4399,
+    "met": 3342
+   },
+   "M1_detail": {
+    "library": 0.0,
+    "scene": 68.43490304709141
    }
   },
   "L2": {
@@ -1052,6 +1114,15 @@
     "hours": 100.0,
     "listeners": 1,
     "speakers": 526
+   },
+   "C1M_detail": {
+    "owed": 2454,
+    "met": 1835
+   },
+   "M1_detail": {
+    "library": 0.0,
+    "scene": 76.30007283321194,
+    "written": 100.0
    }
   },
   "L3": {
@@ -1150,6 +1221,14 @@
     "hours": 100.0,
     "listeners": 1,
     "speakers": 7
+   },
+   "C1M_detail": {
+    "owed": 1392,
+    "met": 1270
+   },
+   "M1_detail": {
+    "scene": 51.35845749342682,
+    "written": 100.0
    }
   },
   "L4": {
@@ -1240,6 +1319,14 @@
     "hours": 100.0,
     "listeners": 1,
     "speakers": 5
+   },
+   "C1M_detail": {
+    "owed": 1016,
+    "met": 916
+   },
+   "M1_detail": {
+    "scene": 58.88485947416138,
+    "written": 100.0
    }
   },
   "L5": {
@@ -1330,6 +1417,14 @@
     "hours": 100.0,
     "listeners": 1,
     "speakers": 2
+   },
+   "C1M_detail": {
+    "owed": 526,
+    "met": 463
+   },
+   "M1_detail": {
+    "scene": 58.71470301850049,
+    "written": 100.0
    }
   },
   "L6": {
@@ -1417,6 +1512,14 @@
     "hours": 100.0,
     "listeners": 1,
     "speakers": 3
+   },
+   "C1M_detail": {
+    "owed": 489,
+    "met": 434
+   },
+   "M1_detail": {
+    "scene": 53.60323886639676,
+    "written": 100.0
    }
   },
   "L7": {
@@ -1503,6 +1606,14 @@
     "hours": 100.0,
     "listeners": 1,
     "speakers": 2
+   },
+   "C1M_detail": {
+    "owed": 526,
+    "met": 471
+   },
+   "M1_detail": {
+    "scene": 58.81383855024712,
+    "written": 100.0
    }
   },
   "L8": {
@@ -1581,7 +1692,12 @@
     "hours": 100.0,
     "listeners": 0,
     "speakers": 0
-   }
+   },
+   "C1M_detail": {
+    "owed": 0,
+    "met": 0
+   },
+   "M1_detail": {}
   },
   "L9": {
    "R1_detail": {
@@ -1659,7 +1775,12 @@
     "hours": 100.0,
     "listeners": 0,
     "speakers": 0
-   }
+   },
+   "C1M_detail": {
+    "owed": 0,
+    "met": 0
+   },
+   "M1_detail": {}
   },
   "L10": {
    "R1_detail": {
@@ -1755,6 +1876,13 @@
     "hours": 100.0,
     "listeners": 1,
     "speakers": 32
+   },
+   "C1M_detail": {
+    "owed": 1739,
+    "met": 1473
+   },
+   "M1_detail": {
+    "scene": 56.097938943127225
    }
   }
  },
@@ -1799,6 +1927,26 @@
     "L10": "artifacts/talk/runs/s1r/fixtures-L10"
    },
    "on": "2026-11-16T15:47:09+00:00"
+  },
+  {
+   "metrics": [
+    "C1M",
+    "M1"
+   ],
+   "why": "Doc 84, Phase 2: new rows, first measured here (P2's card, artifacts/talk/runs/p2; its transcripts are Slice 1's word for word). C1M, owed answers answered by moves, replaces the '?' heuristic C1 from Phase 3 (§23); M1, lines carrying moves, is Phase 2's gate (transcripts carry moves). No existing row moved.",
+   "from": {
+    "L1": "artifacts/talk/runs/p2/fixtures-L1",
+    "L2": "artifacts/talk/runs/p2/fixtures-L2",
+    "L3": "artifacts/talk/runs/p2/fixtures-L3",
+    "L4": "artifacts/talk/runs/p2/fixtures-L4",
+    "L5": "artifacts/talk/runs/p2/fixtures-L5",
+    "L6": "artifacts/talk/runs/p2/fixtures-L6",
+    "L7": "artifacts/talk/runs/p2/fixtures-L7",
+    "L8": "artifacts/talk/runs/p2/fixtures-L8",
+    "L9": "artifacts/talk/runs/p2/fixtures-L9",
+    "L10": "artifacts/talk/runs/p2/fixtures-L10"
+   },
+   "on": "2026-11-16T16:41:15+00:00"
   }
  ]
 }

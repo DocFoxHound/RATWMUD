@@ -11,6 +11,7 @@
 
 rule n7_go_sly
 when concept=talk.gossip self.honesty=sly
+does tell.gossip
 cooldown 1d
 say I shouldn't say. But I will. #topic.subject# #topic.claim#. | Now, you didn't hear this from me: #topic.subject# #topic.claim#. | I know something you don't. #topic.subject# #topic.claim#. Worth a drink, that.
 remember pair: on=gossip 1h
@@ -18,6 +19,7 @@ then other: town.gossip
 
 rule n7_go_chatty
 when concept=talk.gossip self.talk=chatty
+does tell.gossip
 cooldown 1d
 say Oh, you'll love this. #topic.subject# #topic.claim#! | Sit down, sit down. You'll never guess. #topic.subject# #topic.claim#. | Have you heard? You haven't! #topic.subject# #topic.claim#!
 remember pair: on=gossip 1h
@@ -25,6 +27,7 @@ then other: town.gossip
 
 rule n7_go_devout
 when concept=talk.gossip self.piety=devout
+does tell.gossip
 cooldown 1d
 say I don't hold with tattle. But you ought to know. #topic.subject# #topic.claim#. | I'll say it once and say no more: #topic.subject# #topic.claim#. | It was all the talk after chapel. #topic.subject# #topic.claim#.
 remember pair: on=gossip 1h
@@ -32,6 +35,7 @@ then other: town.gossip
 
 rule n7_go_quiet
 when concept=talk.gossip self.talk=quiet
+does tell.gossip
 cooldown 1d
 say #topic.subject# #topic.claim#. That's all I'll say. | Heard something. #topic.subject# #topic.claim#, they say. | Mm. #topic.subject# #topic.claim#. Thought you'd want to know.
 remember pair: on=gossip 1h
@@ -39,6 +43,7 @@ then other: town.gossip
 
 rule n7_go_nervy
 when concept=talk.gossip self.temper=nervy
+does tell.gossip
 cooldown 1d
 say Don't look round. #topic.subject# #topic.claim#. I'm not saying it's true. | I'm only saying what I heard. #topic.subject# #topic.claim#. Don't tell anyone I said. | Is anyone listening? Right. #topic.subject# #topic.claim#.
 remember pair: on=gossip 1h
@@ -46,6 +51,7 @@ then other: town.gossip
 
 rule n7_go_neighbours
 when concept=talk.gossip pair.neighbours=yes
+does tell.gossip
 cooldown 1d
 say The whole row's talking. #topic.subject# #topic.claim#. | Over the back wall this morning: #topic.subject# #topic.claim#. | You'll not have heard, you were out. #topic.subject# #topic.claim#.
 remember pair: on=gossip 1h
@@ -53,6 +59,7 @@ then other: town.gossip
 
 rule n7_go_chapel
 when concept=talk.gossip here.place=chapel
+does tell.gossip
 cooldown 1d
 say Not here. Well, quickly: #topic.subject# #topic.claim#. | The whole back pew knows. #topic.subject# #topic.claim#. | Lean in. Quietly. #topic.subject# #topic.claim#.
 remember pair: on=gossip 1h
@@ -60,6 +67,7 @@ then other: town.gossip
 
 rule n7_go_tavern
 when concept=talk.gossip here.place=tavern
+does tell.gossip
 cooldown 1d
 say Lean in. #topic.subject# #topic.claim#. Straight from behind the bar. | Another jug and I'll tell you. No, I'll tell you now: #topic.subject# #topic.claim#. | The whole room's buzzing. #topic.subject# #topic.claim#.
 remember pair: on=gossip 1h
@@ -67,6 +75,7 @@ then other: town.gossip
 
 rule n7_go_old
 when concept=talk.gossip self.stage=old
+does tell.gossip
 cooldown 1d
 say I've seen a lot of years, and this one's new to me. #topic.subject# #topic.claim#. | You young ones won't credit it. #topic.subject# #topic.claim#. | Now then. #topic.subject# #topic.claim#. What do you make of that?
 remember pair: on=gossip 1h
@@ -74,6 +83,7 @@ then other: town.gossip
 
 rule n7_go_young
 when concept=talk.gossip self.stage=young|adolescent
+does tell.gossip
 cooldown 1d
 say #mum# says #topic.subject# #topic.claim#! Is that bad? | The big pups at the well say #topic.subject# #topic.claim#. | I heard the grown-ups. #topic.subject# #topic.claim#! I'm not supposed to know.
 remember pair: on=gossip 1h
@@ -81,6 +91,7 @@ then other: town.gossip
 
 rule n7_go_servant
 when concept=talk.gossip self.job=servant
+does tell.gossip
 cooldown 1d
 say You hear things, serving at table. #topic.subject# #topic.claim#. | The household's talked of nothing else. #topic.subject# #topic.claim#. | They forget we've ears. #topic.subject# #topic.claim#.
 remember pair: on=gossip 1h
@@ -88,6 +99,7 @@ then other: town.gossip
 
 rule n7_go_guard
 when concept=talk.gossip self.role=guard
+does tell.gossip
 cooldown 1d
 say I shouldn't, being the Watch. But #topic.subject# #topic.claim#. | It came up at the watch post. #topic.subject# #topic.claim#. | Word among the Watch: #topic.subject# #topic.claim#.
 remember pair: on=gossip 1h
@@ -95,6 +107,7 @@ then other: town.gossip
 
 rule n7_go_merchant
 when concept=talk.gossip self.role=merchant here.place=market|work
+does tell.gossip
 cooldown 1d
 say Every customer today, same story. #topic.subject# #topic.claim#. | Sold more gossip than goods this morning. #topic.subject# #topic.claim#. | A counter hears everything. #topic.subject# #topic.claim#.
 remember pair: on=gossip 1h
@@ -102,6 +115,7 @@ then other: town.gossip
 
 rule n7_go_rivals
 when concept=talk.gossip pair.band=rivals
+does tell.gossip
 cooldown 1d
 say I suppose even you should hear this. #topic.subject# #topic.claim#. | Thought you'd know already, you know everything. #topic.subject# #topic.claim#. | Here's something you didn't know first: #topic.subject# #topic.claim#.
 remember pair: on=gossip 1h
@@ -109,6 +123,7 @@ then other: town.gossip
 
 rule n7_go_spouses
 when concept=talk.gossip pair.band=spouses
+does tell.gossip
 cooldown 1d
 say #dear.capitalize#, you'll never guess. #topic.subject# #topic.claim#. | Don't make that face. #topic.subject# #topic.claim#. | Guess what I heard at the well. #topic.subject# #topic.claim#.
 remember pair: on=gossip 1h
@@ -116,6 +131,7 @@ then other: town.gossip
 
 rule n7_go_married
 when concept=talk.gossip topic.claim_kind=marriage
+does tell.gossip
 cooldown 1d
 say #topic.subject#'s married! Did you know? | Well, #topic.subject#'s gone and married. | Wedding bells for #topic.subject#. Who'd have thought it?
 remember pair: on=gossip 1h
@@ -124,6 +140,8 @@ then other: town.gossip
 rule n7_go_died
 when concept=talk.gossip topic.claim_kind=death
 priority 10
+does tell.gossip
+tone grave
 cooldown 1d
 say Did you hear? #topic.subject# died. | #topic.subject#'s gone. Died, they said. I can't take it in. | They're saying #topic.subject# died. Is it true?
 remember pair: on=gossip 1h
@@ -149,100 +167,117 @@ then other: town.gossip
 
 rule n7_ga2_plain
 when concept=town.gossip
+does react.news.doubt
 say #topic.subject#? Never. | Who told you that? | Well, I never. | Is that so? Well, well.
 remember pair: ha=plain 1h
 then other: town.close
 
 rule n7_ga2_plain2
 when concept=town.gossip
+does react.news.new
 say #surprise#. | Huh. Fancy that. | Hm. | Mm.
 
 rule n7_ga2_frank
 when concept=town.gossip self.honesty=frank
+does react.news.doubt
 say I'll ask #topic.subject# myself, then. | I'll believe it when I hear it from #topic.subject#. | Then I'll hear it from #topic.subject#, not from the well.
 remember pair: ha=doubt 1h
 then other: town.close
 
 rule n7_ga2_guarded
 when concept=town.gossip self.honesty=guarded
+does react.news
 say I'd not repeat that, if I were you. | Hm. I'll keep that to myself. | I didn't hear it. Nor did you.
 remember pair: ha=hush 1h
 then other: town.close
 
 rule n7_ga2_sly
 when concept=town.gossip self.honesty=sly
+does ask.detail
 say And? There's always more. What else? | Interesting. Who else knows? | That's worth knowing. Thank you. Very much.
 remember pair: ha=eager 1h
 then other: town.close
 
 rule n7_ga2_chatty
 when concept=town.gossip self.talk=chatty
+does react.news.glee
 say No! Wait till I tell my sister. | I knew it! Didn't I say? I said! | Tell me everything. Slowly. From the start.
 remember pair: ha=eager 1h
 then other: town.close
 
 rule n7_ga2_warm
 when concept=town.gossip self.warmth=warm topic.claim_kind=victim|newcomer|other
+does react.news.sorrow
 say Oh. Well, I hope they're all right, whatever's what. | I'll call on #topic.subject#. See how they are. | We shouldn't talk. But oh, #topic.subject#.
 remember pair: ha=kind 1h
 then other: town.close
 
 rule n7_ga2_cold
 when concept=town.gossip self.warmth=cold
+does react.news
 say Not my business. | And? | Doesn't surprise me.
 remember pair: ha=cold 1h
 then other: town.close
 
 rule n7_ga2_devout
 when concept=town.gossip self.piety=devout topic.claim_kind!=marriage
+does counter
 say The gods hear tattle too, you know. | Judge not. Well. A little. | I'll pray for #topic.subject#. And for us, for listening.
 remember pair: ha=pious 1h
 then other: town.close
 
 rule n7_ga2_guard
 when concept=town.gossip self.role=guard topic.claim_kind=theft|violence|wanted|prowling|promise_broken|newcomer
+does react.news
 say I'll keep an ear open. | I'll make a note of that. | Hm. I'll keep my eye on #topic.subject#.
 remember pair: ha=plain 1h
 then other: town.close
 
 rule n7_ga2_priest
 when concept=town.gossip self.job=priest topic.claim_kind!=marriage
+does counter
 say I'll not hear it. And nor should you. | If #topic.subject# needs help, I'll go. If not, I'll not hear another word. | Words are stones. Be careful where you throw them.
 remember pair: ha=pious 1h
 then other: town.close
 
 rule n7_ga2_old
 when concept=town.gossip self.stage=old
+does react.news.known
 say I've heard it all in my time. Most of it twice. | It'll be forgotten by the next festival. Everything is. | Ha. Their grandmother was just the same.
 remember pair: ha=plain 1h
 then other: town.close
 
 rule n7_ga2_young
 when concept=town.gossip self.stage=young
+does ask.detail
 say What does that mean? | Is that bad? It sounds bad. | I'm telling everyone!
 remember pair: ha=pup 1h
 then other: town.close
 
 rule n7_ga2_dry
 when concept=town.gossip self.humour=dry
+does react.news.doubt
 say And the moon's made of cheese, I suppose. | Gossip travels fast. The truth's still putting its boots on. | Fascinating. Tell me again, slower, so I can not believe it properly.
 remember pair: ha=doubt 1h
 then other: town.close
 
 rule n7_ga2_merry
 when concept=town.gossip self.humour=merry
+does react.news.glee
 say Ha! No! | Oh, that's too good. Is it true? Don't tell me. Tell me. | Ha! I'll never look at #topic.subject# the same.
 remember pair: ha=eager 1h
 then other: town.close
 
 rule n7_ga2_nervy
 when concept=town.gossip self.temper=nervy
+does react.news
 say Don't. If they hear we said it... | Shh! Not so loud. | Oh, I wish you hadn't told me. Now I'll have to not tell people.
 remember pair: ha=hush 1h
 then other: town.close
 
 rule n7_ga2_married
 when concept=town.gossip topic.claim_kind=marriage
+does react.news.glad
 say Good for them. | Married! Well, well. Who to? | About time, I'd say. | Married? I'll believe it when I see the cake.
 remember pair: ha=glad 1h
 then other: town.close
@@ -262,6 +297,8 @@ then other: town.close
 rule n7_ga2_death
 when concept=town.gossip topic.claim_kind=death
 priority 3
+does react.news.sorrow
+tone grave
 say Gods. I'd no idea. | No. I saw them only the other day. | Dead? #topic.subject#? Oh, that's hard.
 remember pair: ha=dead 1h
 then other: town.close
@@ -295,14 +332,17 @@ say Well. That's what they're saying. | I'm only telling you what I heard. | Mak
 
 rule n7_close_go_doubt
 when concept=town.close pair.mem.on=gossip pair.mem.ha=doubt
+does insist
 say Suit yourself. You'll see. | Believe what you like. I know what I heard. | Ask anyone.
 
 rule n7_close_go_hush
 when concept=town.close pair.mem.on=gossip pair.mem.ha=hush
+does agree
 say Not a word, then. | You're right. Forget I said it. | My lips are sealed. From now.
 
 rule n7_close_go_eager
 when concept=town.close pair.mem.on=gossip pair.mem.ha=eager
+does answer.detail
 say That's all I know. Honest. | I'll tell you the rest when I have it. | I knew you'd like that one.
 
 rule n7_close_go_eager_sly
@@ -311,26 +351,33 @@ say There's more, but it'll cost you a drink. | Keep it close. It's worth more t
 
 rule n7_close_go_kind
 when concept=town.close pair.mem.on=gossip pair.mem.ha=kind
+does agree
 say Aye. Let's hope so. | You're kinder than most. | You're right. We shouldn't.
 
 rule n7_close_go_cold
 when concept=town.close pair.mem.on=gossip pair.mem.ha=cold
+does ack
 say Please yourself. | I only thought you'd want to know. | Fine. I'll tell someone who cares.
 
 rule n7_close_go_pious
 when concept=town.close pair.mem.on=gossip pair.mem.ha=pious
+does concede
 say I know. I know. Gods forgive me. | I'll say no more of it. | You're right. I'll say a prayer for loose tongues. Mine first.
 
 rule n7_close_go_pup
 when concept=town.close pair.mem.on=gossip pair.mem.ha=pup
+does counter
 say Never you mind. And don't repeat it! | Hush now. Forget I said. | Not bad. Just grown-up business.
 
 rule n7_close_go_glad
 when concept=town.close pair.mem.on=gossip pair.mem.ha=glad
+does assess
 say There'll be a feast, I'd think. | It's nice to hear good news for once. | I'll find out who to, don't you worry.
 
 rule n7_close_go_death
 when concept=town.close pair.mem.on=gossip pair.mem.ha=dead
+does agree
+tone grave
 say Aye. Gone, just like that. | I'll miss seeing them about. | It makes you think.
 
 ## Debts and promises between the two (pair.owed and pair.promise name the one who owes, the one who promised)

@@ -60,6 +60,7 @@ b : They'll get bolder. | Says you. | It's the feeling that costs. | Then it's v
 
 scene h7_camp_smoke
 when topic=bandits topic.kind=camp
+does tell.news / ask.detail / answer.detail / assess
 a : There's smoke at #topic.where#. They're camped there. | Somebody saw a camp at #topic.where#. Not hunters. | #bandits.capitalize# at #topic.where#. Bold as you like. | They say there's a camp at #topic.where#, and the fire's never out.
 b : How many? | How do they know it's not hunters? | Bold, or stupid? | Then they mean to stay.
 a : Six. Twelve. Depends who's telling. | Hunters don't post a lookout. | Bold. They know nobody comes. | That's what frightens me.
@@ -67,6 +68,7 @@ b : Six is enough. | Fair point. | Then somebody should. | It should frighten th
 
 scene h7_camp_avoid
 when topic=bandits topic.kind=camp
+does tell.worry / agree / give.opinion / give.opinion
 a : I'll not go past #topic.where# now. | Is there another road round #topic.where#? | My cousin goes by #topic.where# every week. I've told her. | I used to pick berries out by #topic.where#.
 b : Nobody will. | The long way. Two days more. | Did she listen? | Pick them somewhere else.
 a : Then the camp's got the road. | Two days. On my feet. | She laughed. | They were the good berries.
@@ -74,6 +76,7 @@ b : Until someone takes it back. | Better than never getting there. | Then she'l
 
 scene h7_camp_fed
 when topic=bandits topic.kind=camp
+does give.opinion / give.opinion / tell.boast / tease
 a : Somebody's feeding that camp at #topic.where#. They don't live on air. | The camp at #topic.where# buys bread somewhere. | Where do they get their beer, the #topic.where# lot? | Somebody in town's selling to them at #topic.where#.
 b : A farm, I'd bet. Too frightened to say no. | From someone who'd rather sell than be robbed. | Same place we do. | That's a hanging matter, that.
 a : I'd say no. | Can you blame them? | Then they're drinking our beer. | Only if they're caught.
@@ -88,6 +91,7 @@ b : Then let it be there without me. | You don't know that. | Then dark it is. |
 
 scene h7_camp_children
 when topic=bandits topic.kind=camp a.stage=young|adolescent b.stage=adult|old
+does ask.detail / answer.detail / counter / insist
 a : Is it true there's #bandits# at #topic.where#? | I want to see the camp at #topic.where#. Just from the hill. | Do #bandits# have pups too? At #topic.where#? | If they come I'll fight them. I've a stick.
 b : True. And you're not going near it. | You'll see the back of my paw. | I... suppose they might. | A stick. Gods help us.
 a : I wasn't going to. Much. | Just from the hill! | Then are they bad too? | It's a good stick!

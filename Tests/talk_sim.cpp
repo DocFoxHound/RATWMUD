@@ -450,14 +450,33 @@ void Sim::hook()
         v.add("to", l.to);
         v.add("entry", l.info.entry);
         v.add("alt", l.info.alt);
-        // Moves, obligations and tones come with Phase 2 (doc 84 §15.1): empty until then.
-        v.add("moves", json::Value::array());
-        v.add("owes", json::Value::array());
-        v.add("answers", json::Value::array());
+        // What the line does in the talk (doc 84 §15.1, Phase 2): its moves, what it makes due (owes; invites, soft),
+        // which of the line before it it answers, its tone, the claims it passes on or denies, the gist, its tags.
+        const auto list = [](const std::vector<std::string>& xs) {
+            auto a = json::Value::array();
+            for (const auto& x : xs)
+                a.push(x);
+            return a;
+        };
+        v.add("moves", list(l.info.moves));
+        v.add("owes", list(l.info.owes));
+        v.add("invites", list(l.info.invites));
+        v.add("answers", list(l.info.answers));
         v.add("topic", l.topic);
         v.add("depth", 0);
-        v.add("tone", "");
-        v.add("asserts", json::Value::array());
+        v.add("tone", l.info.tone);
+        v.add("asserts", list(l.info.asserts));
+        if (!l.info.denies.empty())
+            v.add("denies", list(l.info.denies));
+        if (l.info.gist)
+            v.add("gist", true);
+        if (!l.info.tags.empty())
+        {
+            auto tags = json::Value::object();
+            for (const auto& [k, x] : l.info.tags)
+                tags.add(k, x);
+            v.add("tags", tags);
+        }
         v.add("dialect", who.string("_dialect"));
         v.add("accent", who.string("accent"));
         auto layers = json::Value::array();
@@ -1140,9 +1159,17 @@ void Sim::writeShuffled()
                         continue;
                     const auto pick = others[std::size_t(r() % others.size())];
                     const auto& src = done_[pick.first].lines[pick.second].v;
-                    for (const char* k : {"entry", "alt", "used", "habits", "text", "route"})
+                    // (The line whole, with what it does: the moves are the line's, so the control's C1M is the
+                    // shuffled lines' own.)
+                    for (const char* k : {"entry", "alt", "used", "habits", "text", "route", "moves", "owes", "invites",
+                                          "answers", "tone", "asserts"})
                         if (const auto* x = src.find(k))
                             v.set(k, *x);
+                    for (const char* k : {"denies", "gist", "tags"})
+                        if (const auto* x = src.find(k))
+                            v.set(k, *x);
+                        else
+                            v.erase(k);
                     v.set("shuffled_from", src.number("conv"));
                     break;
                 }

@@ -210,12 +210,14 @@ a : Always. | I will. | Of course.
 
 scene em_bd_camp_smoke
 when topic=bandits topic.kind=camp
+does tell.news / ask.detail / answer.detail
 a : There's smoke up by #topic.where#. Camp fires. | Someone saw bandits camped near #topic.where#. | Don't go near #topic.where#. There's a camp.
 b : Bandits or charcoal burners? | How many? | I wasn't planning to.
 a : Charcoal burners don't post sentries. | Enough to worry about. | Good.
 
 scene em_bd_camp_scared
 when topic=bandits topic.kind=camp
+does tell.worry / assess / assess / reassure
 a : I won't walk past #topic.where# even in daylight now. | My pups aren't allowed beyond the gate while that camp's at #topic.where#. | They watch the road from #topic.where#. You can feel it.
 b : Wise. | Quite right. | I've felt it. Like eyes on your neck.
 a : Or cowardly. | They hate it. | That's it exactly.
@@ -223,6 +225,7 @@ b?[guard] : Stay inside the walls after dark and you've nothing to fear.
 
 scene em_bd_camp_rumour
 when topic=bandits topic.kind=camp
+does tell.gossip / react.news / agree / counter
 a : They say the camp at #topic.where# has a leader with one ear. | Somebody said the bandits at #topic.where# pay for their bread with stolen silver. | They say there's a Gifted wolf in that camp.
 b : One ear and no mercy, I suppose. | Someone's selling them bread, then. | Gifted? Probably lights their fires.
 a : That's what they say. | Someone in this town. | Probably.
@@ -230,6 +233,7 @@ b?[scholar] : Most Gifts are small. A camp fire is about right.
 
 scene em_bd_camp_clear
 when topic=bandits topic.kind=camp
+does give.opinion / agree / tease / counter
 a : Someone should clear out that camp at #topic.where#. | The watch could finish them in a night. | Why hasn't anyone driven them off from #topic.where#?
 b : Someone with spears. | The watch couldn't find their own feet. | Nobody wants to go.
 a : Volunteer, then. | Unkind. Probably true. | Nobody ever does.
@@ -238,6 +242,7 @@ b?[soldier] : Send a proper company, not a watch. They'd scatter by morning.
 
 scene em_bd_camp_sightings
 when topic=bandits topic.kind=camp here.place=gate|field|wild|street
+does tell.news / give.advice / tell.complaint / tell.self
 a : Saw shapes moving on the ridge toward #topic.where#. | Fresh tracks coming down from #topic.where#. | Smelled smoke and old meat downwind of #topic.where#.
 b : Tell the watch. | Fresh? How fresh? | That's them.
 a : I did. They wrote it down. | This morning's. | That's them.
@@ -247,6 +252,7 @@ b?[woodcutter] : I've stopped cutting in that wood.
 scene em_bd_camp_brief
 when topic=bandits topic.kind=camp
 weight 0.6
+does tell.news / react.news.known / echo
 a : That camp's still there. | Bandits at #topic.where#. | Smoke from #topic.where# again.
 b : I know. | Still? | Stay away.
 a : I know. | Still. | I will.

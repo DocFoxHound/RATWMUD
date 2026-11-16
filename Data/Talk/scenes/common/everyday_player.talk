@@ -22,6 +22,7 @@ a : Long road, then. | Tired and hungry, I'd guess. | Best in the street.
 
 scene ev_pl_coat
 when topic=player topic.known=no
+does give.opinion / agree / tell.self
 a : Fine coat on #topic.subject#, isn't it? | Have you ever seen markings like #topic.subject# has? | Look at #topic.subject#. Odd colouring for these parts.
 b[noble] : Common enough, in the south. One sees it at court.
 b[old] : My #grandad# had markings like that. Southern blood.
@@ -44,6 +45,7 @@ a : I might. | I will, once they've eaten. | I'm moving.
 
 scene ev_pl_child_staring
 when topic=player topic.known=no a.stage=young|adolescent
+does tell.news / give.advice / counter / give.advice
 a : Look! Look at #topic.subject#! | Mama, who's #topic.subject#? | Do you think #topic.subject# has been to the sea?
 b[old] : It's rude to point, pup.
 b : Don't stare, it's rude. | A traveller. | Maybe. Ask politely.
@@ -54,6 +56,7 @@ b : Then look quietly. | Later. With me. | Then stay by me.
 
 scene ev_pl_suspicious
 when topic=player topic.known=no
+does give.opinion / tease / counter
 a : I don't like the look of #topic.subject#. | I've seen #topic.subject# hanging about the stalls all morning. | Keep an eye on #topic.subject#. Shifty.
 b[guard] : Noted. If they're trouble, they'll learn fast.
 b[merchant] : Then I'll keep my paw on the coin box.
@@ -62,6 +65,7 @@ a : I've good reasons. | Looking, or counting. | Usually right, though.
 
 scene ev_pl_suspicious_night
 when topic=player topic.known=no here.time=dusk|night
+does give.opinion / give.opinion / disagree
 a : Who's #topic.subject#, out at this hour? | I've watched #topic.subject# in the shadows a while now. | Strange time for a stranger to be wandering.
 b[guard] : I'll have a word, if they're still here at the next bell.
 b : Lost, maybe. | Let them be. | Strange, yes.
@@ -69,6 +73,7 @@ a : Or not lost at all. | Let's go inside. | Bar the door tonight.
 
 scene ev_pl_ser_ferro_judge
 when topic=player topic.known=no here.region=ridgemere
+does give.opinion / agree / give.opinion
 a : I'd say #topic.subject# isn't a Ridgemere wolf. | Do you think #topic.subject# has a permit from the City Office? | Somebody should tell #topic.subject# to bathe before the Heights.
 b[official] : Every visitor is noted at the gate. In principle.
 b : Countryside, by the walk. | The Watch will ask. | Hush, they'll hear.
@@ -76,6 +81,7 @@ a : Country wolves. Always staring at the walls. | They always do. | Let them.
 
 scene ev_pl_ridgemere_judge
 when topic=player topic.known=no here.region=rain_coast
+does give.opinion / give.opinion / agree
 a : Look at #topic.subject#. Not dressed for our rain. | Look, #topic.subject# has stopped to stare at the Sound. | Whoever #topic.subject# is, they're not from Ridgemere. Too dry.
 b[fisher] : Two days here and they'll have webbed paws.
 b : They'll learn. | First sight of the Sound, maybe. | Not for long.
@@ -83,6 +89,7 @@ a : Soon enough. | It takes you, the first time. | Give it a day.
 
 scene ev_pl_fortress
 when topic=player topic.known=no here.place=barracks
+does give.opinion / give.opinion / disagree
 a : A civilian in the barracks, #topic.subject#. Odd. | Who let #topic.subject# in? | I hope #topic.subject# has business here.
 b[guard] : Business with the captain, I heard. Keep your mouth shut.
 b : Messenger, maybe. | The door watch, obviously. | They will, or they won't stay.
@@ -92,6 +99,7 @@ a : Messengers carry pouches. | Then they'd better be right. | Ha. True.
 
 scene ev_pl_handsome
 when topic=player topic.known=no a.stage=adult|adolescent
+does give.opinion / give.advice / decline
 a : Have you seen #topic.subject#? Very handsome. | Did you see the eyes on #topic.subject#? Brightest I've ever seen. | I think #topic.subject# smiled at me.
 b[spouses] : I'm standing right here, you know.
 b : Go and say something. | Eyes like amber. | Smiled? Or bared their teeth?
@@ -99,6 +107,7 @@ a : I couldn't. | Amber, exactly. | A smile. Definitely a smile.
 
 scene ev_pl_rude
 when topic=player topic.known=no
+does give.opinion / disagree / insist
 a : Somebody should point #topic.subject# to the bathhouse. | Who does #topic.subject# think they are, strolling about like that? | Look at the mud on #topic.subject#.
 b[priest] : Kindness to the stranger. It's written.
 b : After the road? We all could use one. | A traveller. Let them stroll. | Muddy roads.
@@ -106,6 +115,7 @@ a : Some more than others. | Strolling's free, I suppose. | Muddy everything.
 
 scene ev_pl_strong
 when topic=player topic.known=no a.job=laborer|soldier|guard|smith|miner
+does give.opinion / give.advice / agree
 a : I bet #topic.subject# could lift a cart. | Shoulders on #topic.subject#. I'd not like to quarrel. | Bet #topic.subject# could swing a hammer.
 b : Ask them to help unload. | Nor me. | Hire them.
 a : I might. | Wise. | If they're for hire.
@@ -257,6 +267,7 @@ a : Every road from here to the sea. | Thank you, pup. | Both.
 
 scene ev_pl_two_kids
 when topic=player topic.known=no a.stage=young|adolescent b.stage=young|adolescent
+does challenge / insist / tease
 a : Bet you can't go and talk to #topic.subject#. | I dare you to sniff #topic.subject#. | Do you think #topic.subject# has treasure?
 b : Bet I can! | No! You do it! | A whole bag of it!
 a : Go on, then! | Coward! | Let's follow them!

@@ -43,6 +43,7 @@ a : Ha. | I intend to. | It won't.
 scene pr_general_grumble
 when topic=prices
 weight 0.6
+does tell.complaint / react.complaint / tell.complaint
 a : Prices, prices. That's all anyone talks about now. | My purse gets lighter every market. | Everything costs the earth this week, or near enough.
 b[merchant] : Don't blame me. I pay what you pay.
 b[official] : The council is aware of the matter.

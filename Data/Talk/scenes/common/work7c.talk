@@ -8,6 +8,7 @@
 
 scene w7c_up_purse
 when topic=prices topic.dir=up
+does tell.complaint / react.complaint / tell.complaint
 a : I took #topic.price# to market and came home with no change at all. | Have you priced #topic.what# lately? Don't. | My purse is lighter and my basket's lighter. How's that work?
 b[wealth=rich] #rich : Is it so much? I suppose it is, for some. | I'll take your word for it. | Magic, I expect.
 b[wealth=poor|destitute] #poor : I didn't take anything. I hadn't anything to take. | I don't price. I look and walk on. | Mine's been light all year.
@@ -20,6 +21,7 @@ a : It's not right. | Wept, and paid. | A cruel one.
 
 scene w7c_up_blame
 when topic=prices topic.dir=up topic.cause=late|raid
+does ask.opinion / give.opinion / assess
 a : Whose fault is it, then? #topic.price# for #topic.what#. | Somebody's getting rich off this, and it isn't me. | They say it's the roads. They always say it's the roads.
 b[temper=short] : The Houses. It's always the Houses. | Find them and I'll tell them. | Then fix the roads!
 b[honesty=sly] : Me. I've been buying it all up. Ha. | Not me. Well. A little me. | It's the roads. Mostly.
@@ -38,6 +40,7 @@ a : Needs must. | Don't I know it. | Boots, then.
 
 scene w7c_up_story
 when topic=prices topic.dir=up
+does tell.story / react.story / tell.self
 a : I asked for #topic.what# and the stallholder laughed when I counted out my coin. | A wolf ahead of me at the stall just turned round and left. | I heard someone haggle for #topic.what# for half an hour.
 b[humour=merry] : Laughed? Laugh back louder. | Wise wolf. I'll follow them. | Did they win?
 b[warmth=warm] : That's cruel. I'd not stand for it. | Poor soul. | Good for them. Somebody has to.
@@ -54,6 +57,7 @@ a : I'll see it in my dreams. | Somebody's talking to somebody. | It can. It alw
 
 scene w7c_up_tavern
 when topic=prices topic.dir=up here.place=tavern
+does tell.complaint / react.complaint / agree
 a : At #topic.price#, I'll be drinking slower. | Cheers to dear prices. | Everything's going up but my #wages#.
 b[humour=dry] #dry : Slower drinking. Longer evenings. Every cloud. | Cheers. To our empty purses. | Your #wages# and the river in summer.
 b : Drink up while you can. | Cheers. | Ain't that the way.
@@ -62,6 +66,7 @@ a : I intend to. | #toast#. | Every week.
 
 scene w7c_up_meal
 when topic=prices topic.item=meal topic.dir=up
+does tell.complaint / give.advice / counter
 a : #topic.price# for a bowl of stew. A bowl! | The pie-wife wants #topic.price# a pie now. | Last week a meal was cheaper. I counted.
 b[job=cook|innkeeper] #cook : And who pays the cook? Someone has to. | Pies don't make themselves. | Not my doing. I'm losing on it.
 b[stage=young] #pup : Can we still have pie? | Is pie a lot of money? | Can I have half a pie?
@@ -72,6 +77,7 @@ a : On what fire? | With what flour? | Every penny.
 
 scene w7c_up_herbs
 when topic=prices topic.item=herbs topic.dir=up
+does tell.complaint / react.complaint / react.self
 a : Herbs at #topic.price#. A cough's a luxury now. | I'll not be ill this month. Can't afford it. | They want #topic.price# for a twist of willow bark.
 b[job=healer] #heal : I know. I'm paying it too. Come to me if it's bad. | Don't wait till it's bad. Bad's dearer. | Bark grows by the river, free. Take a knife.
 b[stage=old] #old : My knees eat herbs, and at #topic.price#. | Neither will I. I'll lie about it. | I remember it growing on every bank.
@@ -84,6 +90,7 @@ a : I don't know which is which. | Being ill's for the rich now. | And nobody st
 
 scene w7c_down_glad
 when topic=prices topic.dir=down
+does tell.news / react.news.glad / ack
 a : #topic.what.capitalize#, #topic.price#! Down! | Something got cheaper. Write down the day. | Good news for the purse. Prices are down.
 b[wealth=poor|destitute] : Gods be thanked. I can eat. | Down? I'll believe it. | My purse needs it.
 b[role=merchant] #merch : Lovely. For the buyers. | I'm writing it. With tears. | Not for the seller's.
@@ -94,6 +101,7 @@ a : Hurry, then. | It's a rare day. | Very good.
 
 scene w7c_down_why
 when topic=prices topic.dir=down topic.cause!=still
+does ask.detail / answer.detail / ack
 a : Why's #topic.what# cheaper? What's wrong with it? | Down to #topic.price#. I wonder why. | Cheap. I don't trust cheap.
 b[honesty=guarded] #worm : There's a worm in it somewhere. Look. | There's a reason. Wait and see what. | Nor me.
 b[humour=merry] : Maybe someone was nice. It happens! Rarely. | Wonder all you like. I'm buying. | Trust it long enough to buy some.
@@ -103,6 +111,7 @@ a : I hope you're right. | Maybe. | Hm. I'll buy a little.
 
 scene w7c_down_stock
 when topic=prices topic.dir=down topic.item=herbs a.stage=adult|old
+does tell.plan / react.self / ack
 a : I'll stock up while it's #topic.price#. | Buy now and keep it, that's what #mum# did. | At this price, I'll have the cellar full.
 b[drive=ambitious] #amb : Buy it all. Sell it back at the turn. | Clever, your mother. | Fill two.
 b[wealth=poor|destitute] #poor : With what? | Mine did too, when we had a cellar. | What cellar?
@@ -113,6 +122,7 @@ a : I'll try. | She was. | I won't.
 
 scene w7c_down_meal
 when topic=prices topic.item=meal topic.dir=down
+does tell.plan / react.self / ack
 a : A hot meal for #topic.price#. I'll eat out tonight! | Pie's cheaper. Pie's cheaper! | Supper's on me. At these prices.
 b[job=cook|innkeeper] #cook : And who's paying the cook? | Cheaper pies, thinner cook. | Come to mine. I'm matching it.
 b[wealth=poor|destitute] : I'll have two. | Pie! | I'll hold you to it.
@@ -122,6 +132,7 @@ a : I will. | Pie for everyone! | It's cheap. I can afford to be.
 
 scene w7c_down_herbs
 when topic=prices topic.item=herbs topic.dir=down
+does tell.news / react.news.glad / agree
 a : Herbs are down. My chest'll thank me. | Cheap herbs! I'll buy for the whole winter. | Willow bark at #topic.price#. Glory be.
 b[job=healer] #heal : Good. Come and get the right ones. Not the wrong ones. | Dry them well, or they'll rot. | Now folk might come before it's too late.
 b : Good. | Clever. | At last.

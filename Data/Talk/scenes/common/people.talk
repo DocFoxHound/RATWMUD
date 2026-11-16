@@ -23,6 +23,7 @@ a : It is. | Seems so. | Indeed.
 
 scene pl_stranger_whisper
 when topic=player topic.known=no pair.band=friends|family
+does warn / counter / ack
 a : Don't look now, but #topic.subject# is listening. | Talk quieter. #topic.subject# can hear us. | #topic.subject# has big ears, I bet.
 b : Let them listen. | Oh. Right. | Ha. Most travellers do.
 a : Fine. | Exactly. | Ha.
@@ -31,6 +32,7 @@ a : Fine. | Exactly. | Ha.
 
 scene gs_heard
 when topic=gossip
+does tell.gossip / react.news / insist
 a : Have you heard? They say #topic.subject# #topic.claim#. | Word is #topic.subject# #topic.claim#. | I heard something about #topic.subject#. That #topic.subject# #topic.claim#.
 b[old] : People say all sorts. I'll believe it when I see it.
 b[guard] : Is that so? I'll remember that.
@@ -40,12 +42,14 @@ a : That's what I heard. | Never you mind. | It's true, I'd wager.
 
 scene gs_secret
 when topic=gossip pair.band=friends|family|spouses
+does confide / keep_confidence / ack
 a : Between us, #b.name#: #topic.subject# #topic.claim#. | Don't tell a soul, but #topic.subject# #topic.claim#. | You'll keep this to yourself? #topic.subject# #topic.claim#.
 b : I won't say a word. | Truly? | You're making that up.
 a : Good. | Truly. | I'm not!
 
 scene gs_rival
 when topic=gossip pair.band=rivals
+does tell.gossip / react.news.doubt / ack
 a : Even you should know this: #topic.subject# #topic.claim#. | I suppose you'd want to hear: #topic.subject# #topic.claim#.
 b : And why would I believe you? | Spreading tales again?
 a : Believe what you like. | Suit yourself.

@@ -573,6 +573,44 @@
     7,
     2021.0
    ]
+  },
+  "C1M": {
+   "name": "owed answers answered, by moves (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "97%; hard 92% once it replaces C1 (Phase 3)",
+   "value": 99.91212653778558,
+   "passes": true,
+   "by_profile": {
+    "town": 99.912
+   },
+   "control": 27.105263157894736,
+   "separation": 0.72870897560524,
+   "real_better": true,
+   "separates": true,
+   "control_required": true,
+   "structural": false,
+   "events": [
+    1137,
+    1138.0
+   ]
+  },
+  "M1": {
+   "name": "lines carrying moves (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "100% at Phase 7 (every entry)",
+   "value": 37.552808637145986,
+   "passes": null,
+   "by_profile": {
+    "town": 37.553
+   },
+   "control": 37.78751369112815,
+   "separation": 0.006211180124223563,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
   }
  },
  "details": {
@@ -670,6 +708,15 @@
     "hours": 12.81,
     "listeners": 3,
     "speakers": 40
+   },
+   "C1M_detail": {
+    "owed": 1138,
+    "met": 1137
+   },
+   "M1_detail": {
+    "library": 0.0,
+    "scene": 34.8596256684492,
+    "written": 100.0
    }
   }
  },
@@ -693,6 +740,17 @@
     "town": "/tmp/r3s1-quick/town"
    },
    "on": "2026-11-16T15:41:10+00:00"
+  },
+  {
+   "metrics": [
+    "C1M",
+    "M1"
+   ],
+   "why": "Doc 84, Phase 2: new rows, first measured here. C1M (owed answers answered, by moves: replaces the '?' heuristic C1 from Phase 3) and M1 (lines carrying moves: Phase 2's gate, 'transcripts carry moves'). No existing row moved.",
+   "from": {
+    "town": "/tmp/r3p2/town"
+   },
+   "on": "2026-11-16T16:33:49+00:00"
   }
  ]
 }

@@ -5,6 +5,7 @@
 
 scene et_theft_purse
 when topic=crime topic.kind=theft
+does tell.news / react.news / assess / request
 a : #topic.victim# had their purse cut in broad daylight. | Did you hear? #topic.victim# was robbed. | Somebody lifted #topic.victim#'s coin on the way home.
 b[merchant] : That's three this month. I'm keeping my takings under the floor.
 b[old] : When I was young we hanged thieves at the gate. Not that it stopped them.
@@ -14,6 +15,7 @@ a?[friends] : Walk home with me tonight, would you?
 
 scene et_theft_lock
 when topic=crime topic.kind=theft here.place=home|street
+does tell.self / react.self / assess
 a : I bought a new lock today. After #topic.victim#. | Bolted the shutters for the first time in years. | I'm sleeping with my boots on, after what happened to #topic.victim#.
 b[smith] : You and half the street. I've sold out of hasps.
 b[child] : Are the thieves going to come here? Will they take my top?
@@ -22,6 +24,7 @@ a : Better than doing nothing. | They care about noise. Mine creak. | So I can c
 
 scene et_theft_suspect
 when topic=crime topic.kind=theft
+does tell.gossip / react.news / agree
 a : They say #topic.subject# took it. From #topic.victim#, of all people. | I keep hearing it was #topic.subject#. | Folk point at #topic.subject# for the thieving.
 b[guard] : Saying and proving are different animals. We need a witness.
 b[rivals] : You'd believe anything of anyone, you would.
@@ -46,12 +49,14 @@ a : A sneak's worse. Sneaks are everywhere. | Then how do you know? | Aww.
 
 scene et_theft_shrug
 when topic=crime topic.kind=theft pair.band=acquaintances|strangers
+does tell.news / react.news / agree
 a : Another theft, I hear. #topic.victim# this time. | Bad business with #topic.victim#'s things. | #topic.victim# got robbed, they say.
 b : There's always another. | It is. | So they say.
 a : Seems so. | Keep an eye on your own. | Mind yours.
 
 scene et_theft_priest
 when topic=crime topic.kind=theft
+does tell.news / give.opinion / agree
 a[priest] : The Bright One gave us order. A thief spits on it. Pray for #topic.victim#, and for the thief too.
 a : #topic.victim# was robbed. What's the town coming to? | A thief, here, in our street. | They took everything #topic.victim# had saved.
 b[priest] : The Dark One's work is small, most days. A cut purse. A broken latch. It adds up.
@@ -60,6 +65,7 @@ a : Then it's coming to nothing new. | Apparently not. | Every last coin.
 
 scene et_theft_inside_job
 when topic=crime topic.kind=theft here.place=work|tavern
+does give.opinion / agree / echo
 a : They knew just where the strongbox was. That wasn't luck. | Whoever robbed #topic.victim# knew the house. | No door forced. Think on that.
 b[innkeeper] : I've counted my keys twice. All here. Still don't sleep.
 b : Someone close, then. | You think it's one of us? | That's worse than a broken door.
@@ -88,6 +94,7 @@ a : I've noticed. | They're very good at it. | Every time.
 
 scene et_theft_fence
 when topic=crime topic.kind=theft
+does tell.gossip / agree / assess
 a : Someone's selling cheap pots out of a sack by the gate. Funny timing. | #topic.victim#'s brooch will turn up on a stall, mark me. | Stolen goods go downriver by night.
 b[merchant] : If I see #topic.victim#'s things on a stall, I'll know whose stall to watch.
 b : Very funny timing. | Probably in another town. | And come back up as honest wares.

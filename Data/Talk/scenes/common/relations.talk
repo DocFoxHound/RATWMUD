@@ -107,6 +107,7 @@ a : Seems so. | Believe what you like. | Not me.
 
 scene gs2_doubt
 when topic=gossip pair.band=acquaintances|strangers
+does tell.gossip / challenge / concede
 a : I don't usually repeat things, but #topic.subject# #topic.claim#. | Heard #topic.subject# #topic.claim#. Probably nothing. | They say #topic.subject# #topic.claim#. Don't quote me.
 b : Then why repeat it? | Probably. | I won't.
 a : Fair. | Probably. | Good.
@@ -138,6 +139,7 @@ a : I'll manage. | Not badly. | Very.
 
 scene pl2_stranger_curious
 when topic=player topic.known=no
+does ask.opinion / give.opinion / ack
 a : Where do you think #topic.subject# is from? | #topic.subject# has the look of the road about them. | Is #topic.subject# buying or just looking?
 b[merchant] : Everyone's buying, if you ask nicely.
 b[old] : Far away. You can tell by the walk.
@@ -146,12 +148,14 @@ a : Hm. | Dusty. | As ever.
 
 scene pl2_stranger_suspicious
 when topic=player topic.known=no a.role=guard|merchant
+does give.opinion / disagree / concede
 a : I'm keeping my eye on #topic.subject#. | #topic.subject# has been here a while. Doing what? | Strangers mean trouble, often as not.
 b : Probably harmless. | Looking around. | Often as not, they don't.
 a : Probably. | Hm. | We'll see.
 
 scene pl2_stranger_child
 when topic=player topic.known=no a.stage=young
+does ask.detail / give.advice / counter
 a : Is #topic.subject# Gifted? | I want to talk to #topic.subject#! | Does #topic.subject# have a sword?
 b : Leave them be. | Don't bother them. | I doubt it.
 a : But I want to! | Fine. | Maybe a little sword.

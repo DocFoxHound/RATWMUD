@@ -384,6 +384,7 @@ then other: event.answer
 
 rule e8t_ev_blight
 when concept=talk.event world.event=orchard_blight world.event_when=now
+does tell.news
 cooldown 1d
 say Blight in the orchards, they say. Black spots on every apple. | No cider this year, if the blight keeps on.
 remember pair: ev=bad 2m
@@ -490,6 +491,7 @@ then other: event.answer
 
 rule e8t_ev_lost
 when concept=talk.event world.event=lost_ship
+does tell.news
 cooldown 1d
 priority 1
 say #world.event_words.capitalize#. All her cargo, gone. | Everyone's talking of #world.event_words#. The Wharf's gone quiet. | #world.event_words.capitalize#. The Bright One keep them.
@@ -508,6 +510,7 @@ then other: event.answer
 
 rule e8t_ev_mill
 when concept=talk.event world.event=mill_stopped world.event_when=now
+does tell.news
 cooldown 1d
 say The mill wheel's stopped for mending. | No flour from the mill this week. The bakers are scraping.
 remember pair: ev=bad 2m
@@ -538,6 +541,7 @@ then other: event.answer
 
 rule e8t_ev_drovers
 when concept=talk.event world.event=drovers_in world.event_when=now
+does tell.news
 cooldown 1d
 say The drovers are in. You can hear the herds from the square. | Drovers in, and the whole yard smells of it.
 remember pair: ev=good 2m
@@ -561,6 +565,7 @@ then other: event.answer
 
 rule e8t_ev_salt
 when concept=talk.event world.event=salt_short world.event_when=now
+does tell.news
 cooldown 1d
 say The salt pans are flooded, they say. | No salt to be had, with the pans under water. | Every cook in town is after salt, and the pans give none.
 remember pair: ev=bad 2m
@@ -591,6 +596,7 @@ then other: event.answer
 
 rule e8t_ev_brew
 when concept=talk.event world.event=brewers_glut world.event_when=now
+does tell.news
 cooldown 1d
 say The brewers have brewed too much. Barrels everywhere. | The brewers can't shift it all. I'll do my bit to help.
 remember pair: ev=good 2m
@@ -621,6 +627,7 @@ then other: event.answer
 
 rule e8t_ev_any_now
 when concept=talk.event world.event_when=now
+does tell.news
 cooldown 1d
 priority -1
 say Have you heard? #world.event_words.capitalize#. | It's all talk of #world.event_words# at the market today.
@@ -629,6 +636,7 @@ then other: event.answer
 
 rule e8t_ev_any_soon
 when concept=talk.event world.event_when=soon
+does tell.news
 cooldown 1d
 priority -1
 say There's a notice up: #world.event_words#, in a day or two. | They're crying #world.event_words# in the square.
@@ -637,6 +645,7 @@ then other: event.answer
 
 rule e8t_ev_any_past
 when concept=talk.event world.event_when=past
+does tell.news
 cooldown 1d
 priority -1
 say That business is over now: #world.event_words#. | Folk are still talking of it. #world.event_words.capitalize#.
@@ -647,6 +656,7 @@ then other: event.answer
 
 rule e8t_ev_ans_good
 when concept=event.answer pair.mem.ev=good
+does react.news.glad
 say So I heard. Good for someone. | Well, that's something.
 
 rule e8t_ev_ans_good_poor
@@ -655,6 +665,7 @@ say Not that it'll reach me. | Good for those who can buy.
 
 rule e8t_ev_ans_bad
 when concept=event.answer pair.mem.ev=bad
+does react.news.sorrow
 say #oath#. That's hard news. | I'd heard. Bad business. | Let's hope it's put right soon.
 then other: event.close
 
@@ -670,12 +681,15 @@ then other: event.close
 
 rule e8t_ev_ans_loss
 when concept=event.answer pair.mem.ev=loss
+does react.news.sorrow
 say The Bright One keep them. | Terrible news. Terrible. | Were there families waiting for her?
 
 rule e8t_ev_ans_news
 when concept=event.answer pair.mem.ev=news
+does react.news
 say So they say. | Is it now? Well. | I saw the notice.
 
 rule e8t_ev_close
 when concept=event.close pair.mem.ev=bad
+does reassure
 say It'll mend. These things do. | Aye. We'll get by.

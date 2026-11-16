@@ -230,45 +230,55 @@ then other: prices.answer_doubt
 
 rule w7_cheap_plain
 when concept=prices.answer_cheap
+does react.news.glad
 say About time. | Good. Long may it last. | Won't last. Never does. | I'll believe it when I pay it.
 
 rule w7_cheap_poor
 when concept=prices.answer_cheap wealth=poor|destitute
+does react.news.glad
 say Thank the gods. Something's gone my way. | Cheaper's the best word I've heard all week. | Good. Now I can nearly afford it.
 
 rule w7_cheap_rich
 when concept=prices.answer_cheap wealth=rich
+does react.news
 say Is it? The steward sees to all that. | My steward will be pleased, I suppose. | Lovely for everyone.
 
 rule w7_cheap_merchant
 when concept=prices.answer_cheap role=merchant deals=yes
+does react.news
 say Good for you. Bad for my till. | I'll be selling at a loss, then. | I'll hold mine back till it rises.
 then other: work.end
 
 rule w7_cheap_cook
 when concept=prices.answer_cheap job=cook|innkeeper topic.item=meal
+does react.news
 say Cheaper for you, thinner for me. | Thin suppers for the cook, then. | I'll match it. I'll have to.
 then other: work.end
 
 rule w7_cheap_healer
 when concept=prices.answer_cheap job=healer topic.item=herbs
+does react.news.glad
 say Good. I'll stock up before it turns. | Now the poor can afford a poultice. | That'll save a few chests this winter.
 
 rule w7_cheap_farmer
 when concept=prices.answer_cheap job=farmer|herder topic.item=meal
+does react.news
 say Cheap for you. My year's work, worth less. | Lovely. Unless you grow it. | Cheap means farmers go short.
 then other: work.end
 
 rule w7_cheap_old
 when concept=prices.answer_cheap stage=old
+does react.news.doubt
 say Won't last. I've watched prices sixty years. | Buy now. Tomorrow it'll be up again. | Cheap? That's still dear to me.
 
 rule w7_cheap_dry
 when concept=prices.answer_cheap humour=dry
+does react.news
 say Something's going right. Hide. | Quick, buy it before they notice. | Must be a mistake.
 
 rule w7_cheap_ambitious
 when concept=prices.answer_cheap drive=ambitious
+does give.advice
 say Buy low. Sell high. Buy now. | I'll fill a cellar with it. | That's opportunity, that is.
 
 ## Answering a seller the fall hurts (prices.answer_undercut)

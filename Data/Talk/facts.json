@@ -258,5 +258,17 @@
     "figure_high_priest": "text",
     "figure_hero": "text",
     "figure_villain": "text"
+  },
+  "conv": {
+    "about": "A conversation's own facts (Docs/Design/84 §7.11), read as conv.X: the move just made and the one before it (moves.json's names), the tone of the line before, and the lines said so far. Any other conv.X is a tag a line set ({X=value}).",
+    "move": "text",
+    "prev": "text",
+    "tone": "text",
+    "beat": "number"
+  },
+  "x": {
+    "about": "A third party a line binds (binds x=self.spouse: Docs/Design/84 §7.1), read as x.X: a person's facts, and these, the speaker's bond to them. x.said.K is what talk has said of them (the ledger, Phase 5).",
+    "affinity": "number",
+    "disposition": ["hostile", "wary", "cool", "neutral", "warm", "fond"]
   }
 }

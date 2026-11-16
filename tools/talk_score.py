@@ -22,7 +22,12 @@ is measured"); the rest are listed as n/a with the phase that brings them:
   R6 the most-spoken line's share of all lines
   R7 distinct reply entries per 1,000 reply beats
   R8 habit saturation: the share of a speaker's lines using their oath! or saying! (speakers with 20+ lines: mean, p90)
-  C1 questions answered: a line ending "?" followed by the other's line (the heuristic until moves owe answers)
+  C1 questions answered: a line ending "?" followed by the other's line (the heuristic, kept beside C1M until Phase 3)
+  C1M owed answers answered, by moves (Phase 2): a line that owes an answer (`owes`, written, handed on by `then`, or
+     what its moves expect; Data/Talk/moves.json) followed by the one it is owed by, doing one of the owed moves or a
+     fallback of one (down to ack). A line with no moves owes nothing, so it is measured where lines carry moves
+  M1 lines carrying moves (%): how much of what is said says what it does (Phase 2 tags the 40 most-spoken families and
+     every answer concept by its alias; Phase 7 every entry)
   C3 endings: by a farewell or a marked break / at the beat cap (8 lines) / by nothing fitting (a talk cut off by a
      speaker walking away, or the other busy, ends with no line: it is counted apart, never as a good ending)
   C4 tone clashes per 1,000 beats: a grave line (death, grief, robbery, a beating...) followed within two beats by a light
@@ -55,7 +60,7 @@ is measured"); the rest are listed as n/a with the phase that brings them:
 
 Gates (--check against --baseline): a hard gate the baseline passed must still pass; one the baseline failed may not get
 worse (each phase closes its own); a soft metric may not regress by more than 10%. "Worse" means beyond noise: a metric
-that counts events (EVENTS: R4, R5, C1, C3, C4, C6, T1-T3, K3, D1, D1L, D1B) only if the exact test of two Poisson counts
+that counts events (EVENTS: R4, R5, C1, C1M, C3, C4, C6, T1-T3, K3, D1, D1L, D1B) only if the exact test of two Poisson counts
 (today's events against the baseline's, each over its own exposure: a binomial split of the two together) puts the
 difference beyond chance at ALPHA (1%, one-sided), so both cards' noise counts; R1 and R2, first-time waits that are the
 earliest of many listeners', by more than half; B5, a timing, by more than 25%. A profile the baseline has and the card
@@ -89,6 +94,9 @@ METRICS = {
     "R7": ("distinct reply entries per 1,000 reply beats", "higher", "soft", lambda v: v >= 500, "500+", ""),
     "R8": ("habit saturation (% of a speaker's lines, mean)", "lower", "soft", lambda v: v <= 15, "15% or less", ""),
     "C1": ("questions answered (%)", "higher", "hard", lambda v: v >= 92, "97%; hard 92%", ""),
+    "C1M": ("owed answers answered, by moves (%)", "higher", "soft", lambda v: v >= 92,
+            "97%; hard 92% once it replaces C1 (Phase 3)", ""),
+    "M1": ("lines carrying moves (%)", "higher", "soft", None, "100% at Phase 7 (every entry)", ""),
     "C2": ("replies at the best fit available (%)", "higher", "soft", None, "95%", "Phase 3"),
     "C3": ("endings by a farewell or a marked break (%)", "higher", "soft", lambda v: v >= 80, "80% / 3% / 5%", ""),
     "C4": ("tone clashes per 1,000 beats", "lower", "hard", lambda v: v <= 0, "0", ""),
@@ -125,7 +133,7 @@ METRICS = {
 # The coherence metrics, which must separate the real transcripts from the shuffled control (§15.5). C7 (length) and C8
 # (a third speaker) are structural: the control keeps each conversation's length and people, so they match it by
 # construction; R, D, K and U metrics are about variety, voice and topics, not order.
-COHERENCE = {"C1", "C3", "C4", "C6", "X1"}
+COHERENCE = {"C1", "C1M", "C3", "C4", "C6", "X1"}
 STRUCTURAL = {"C7", "C8"}
 STOP = set("""a an the and or but if then so of to in on at by for with from up down out over under about as is are was
 were be been being am i you he she it we they me him her us them my your his its our their this that these those there
@@ -231,6 +239,33 @@ DIALECT = dialect_lexicon()
 
 # ------------------------------------------------------------------ Per run
 
+def move_book() -> dict:
+    """Data/Talk/moves.json's moves (not its aliases): what C1M walks for fallbacks. {} without it."""
+    try:
+        doc = json.loads((ROOT / "Data" / "Talk" / "moves.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return {k: v for k, v in doc.get("moves", {}).items() if "alias" not in v}
+
+
+def meets(done: str, owed: str) -> bool:
+    """A move done meets an owed one: the same, or a variant or kind of it (RatwTalk.h, Moves::meets)."""
+    return done == owed or done.startswith(owed + ".")
+
+
+def fallbacks(book: dict, move: str) -> list[str]:
+    """A move and its fallbacks, walked breadth first (Moves::chain); a variant's are its move's."""
+    out, todo = [], [move]
+    while todo:
+        m_ = todo.pop(0)
+        if m_ in out:
+            continue
+        out.append(m_)
+        base = m_ if m_ in book else m_.rsplit(".", 1)[0]
+        todo += book.get(base, {}).get("fallback", [])
+    return out
+
+
 def per_listener(run: Run) -> dict[str, list[list[dict]]]:
     """Each listener's conversations, in order, as their lines."""
     out = collections.defaultdict(list)
@@ -323,6 +358,28 @@ def score_run(run: Run) -> dict:
     m["C1"] = pct(answered, asked)
     questions = asked
     m["C1_detail"] = {"questions": asked, "answered": answered}
+    # C1M (Phase 2): what a line owes, met by the next line from the one it is owed by (another speaker; the same one
+    # for "self:"; anyone for "any:"), doing an owed move, a kind of one (react.news.known meets react.news), or one of
+    # its fallbacks. M1: the lines that carry moves at all.
+    owed = met = 0
+    book = move_book()
+    for c in convs:
+        for i, l in enumerate(c):
+            for o in l.get("owes") or []:
+                who, alts = o.split(":", 1) if ":" in o else ("other", o)
+                owed += 1
+                nxt = c[i + 1] if i + 1 < len(c) else None
+                if not nxt or (who == "other" and nxt["who"] == l["who"]) or (who == "self" and nxt["who"] != l["who"]):
+                    continue
+                targets = {t for a in alts.split("|") for t in fallbacks(book, a)}
+                if any(meets(m_, t) for m_ in nxt.get("moves") or [] for t in targets):
+                    met += 1
+    m["C1M"] = pct(met, owed) if owed else None
+    m["C1M_detail"] = {"owed": owed, "met": met}
+    carrying = collections.Counter((l.get("route", ""), bool(l.get("moves"))) for l in lines)
+    m["M1"] = pct(sum(n for (r, has), n in carrying.items() if has), len(lines)) if lines else 0
+    m["M1_detail"] = {route: pct(carrying[(route, True)], carrying[(route, True)] + carrying[(route, False)])
+                      for route in sorted({r for r, _ in carrying})}
     # C3: how conversations end. A good ending is a farewell or a marked break (a line that breaks off, said: §15.3;
     # the conversation's `marked`, from Phase 4). A talk cut off with no line (one walked away, the other was busy: "gone",
     # "cell", "apart", "busy", "chat"; §8.10) or by the run's end or a snapshot is counted apart, never as a good ending.
@@ -479,7 +536,7 @@ def score_run(run: Run) -> dict:
             cohesive += bool(a & b)
     m["X1"] = pct(cohesive, replies_n)
     m["_counts"] = {"lines": len(lines), "conversations": len(convs), "hours": round(run.hours, 2),
-                    "listeners": len(listeners), "speakers": len(by_speaker), "questions": questions,
+                    "listeners": len(listeners), "speakers": len(by_speaker), "questions": questions, "owed": owed,
                     "none_lines": by_accent["none"][1], "light_lines": by_accent["light"][1],
                     "broad_lines": by_accent["broad"][1]}
     return m
@@ -714,7 +771,8 @@ def scorecard(dirs: list[Path]) -> dict:
 # itself), so --check can tell a change in the events from noise. A card's value is a mean of the profiles' rates
 # weighted by lines, so it moves when the profiles' line counts do even with the very same events (Slice 1's end: C6 3
 # against 3, C4 1 against 1, both flagged "worse").
-EVENTS = {"R4": ("hours", 100), "R5": ("hours", 100), "C1": ("questions", 100), "C3": ("conversations", 100), "C4": ("lines", 1000),
+EVENTS = {"R4": ("hours", 100), "R5": ("hours", 100), "C1": ("questions", 100), "C1M": ("owed", 100),
+          "C3": ("conversations", 100), "C4": ("lines", 1000),
           "C6": ("conversations", 1000), "T1": ("lines", 1000), "T2": ("lines", 1000), "T3": ("lines", 1000),
           "K3": ("conversations", None), "D1": ("none_lines", 100), "D1L": ("light_lines", 100),
           "D1B": ("broad_lines", 100)}

@@ -28,6 +28,7 @@ a : Very. | A rare kind. | They earned it.
 
 scene et_ua_gossip_concord
 when topic=gossip here.region=ridgemere
+does tell.gossip / react.news / agree
 a : In the Rain Hall's own corridors, they say #topic.subject# #topic.claim#. | A clerk at the City Office told me #topic.subject# #topic.claim#. Clerks know everything. | Word in the Commons is that #topic.subject# #topic.claim#.
 b[official] : I would not repeat that near the Rain Hall, if I were you.
 b : Corridors leak. | They do. | The Commons love a tale.
@@ -87,6 +88,7 @@ a : We'd not know the difference. | Dry ribbons, for once. | Especially feast da
 
 scene et_rm_gossip_houses
 when topic=gossip here.region=ridgemere
+does tell.gossip / react.news / agree
 a : In the Rain Hall they're saying #topic.subject# #topic.claim#. | A smokehouse girl on the wharf told me #topic.subject# #topic.claim#. | The wharf's buzzing. #topic.subject# #topic.claim#.
 b[noble] : The Houses have better things to whisper about than #topic.subject#.
 b : The Hall talks more than it governs. | Smokehouse girls hear everything. | The wharf always buzzes.
@@ -139,6 +141,7 @@ a : Bring a hood. | Early, or you'll see nothing. | Lovely.
 
 scene et_sf_gossip_respectable
 when topic=gossip here.region=ridgemere
+does tell.gossip / react.news / agree
 a : Over wine in the Heights, they say #topic.subject# #topic.claim#. | A magistrate's servant swears #topic.subject# #topic.claim#. | Respectable folk are saying #topic.subject# #topic.claim#.
 b[noble] : One doesn't discuss such things. One simply stops inviting them.
 b : Wine loosens tongues. | Servants know more than masters. | Respectable folk say the worst things.
@@ -191,6 +194,7 @@ a : Very. | We need it. | Strange and good.
 
 scene et_sr_gossip_vesk
 when topic=gossip here.region=ridgemere
+does tell.gossip / react.news / agree
 a : A smokehouse foreman told the Tarred Rope's keeper #topic.subject# #topic.claim#. | On the salt pans they're saying #topic.subject# #topic.claim#. | Out on the boats: #topic.subject# #topic.claim#.
 b : The foreman's a gossip. | The pans are dull work. Gossip helps. | The boats always know first.
 a : Worse than any of us. | Very dull. | Somehow.

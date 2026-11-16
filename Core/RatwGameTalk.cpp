@@ -361,6 +361,20 @@ talk::Query Game::talkQuery(const std::string& a, const std::string& b, const st
     talk::Query q;
     q.concept = concept;
     q.alone = b.empty();
+    // Who a line's `binds x=<slot>` names (doc 84 §7.1): one of the speaker's or the other's people (peopleOf).
+    // topic.subject is the exchange's own (exchangeQuery).
+    q.bind = [this, a, b](const std::string& slot, int speaker, talk::Facts& out) {
+        const auto dot = slot.find('.');
+        if (dot == std::string::npos)
+            return false;
+        const auto& self = speaker == 0 ? a : b;
+        const auto& whose = slot.compare(0, dot, "self") == 0 ? self : slot.compare(0, dot, "other") == 0 ? (speaker == 0 ? b : a) : std::string();
+        if (whose.empty())
+            return false;
+        const auto people = peopleOf(whose);
+        const auto found = people.find(slot.substr(dot + 1));
+        return found != people.end() && found->second != self && talkThird(self, found->second, out);
+    };
     world_.talkMoment(a, q.facts);
     world_.talkTown(a, q.facts);
     if (const auto region = q.facts.find("here.region"); region != q.facts.end())
@@ -807,6 +821,26 @@ std::vector<std::string> Game::neighboursOf(const std::string& id)
                 if (const auto* e = world_.entity(other); e && !e->dead)
                     out.push_back(other);
     return out;
+}
+
+bool Game::talkThird(const std::string& speaker, const std::string& who, talk::Facts& out)
+{
+    const auto* e = world_.entity(who);
+    if (!e || e->dead)
+        return false;
+    out = talkSpeaker(*e).facts;
+    const Bond none{};
+    const auto* bond = world_.bonds().find(speaker, who);
+    const Bond& r = bond ? *bond : none;
+    out["affinity"] = std::to_string(int(std::lround(r.affinity)));
+    // (The same one word as pair.disposition: talkPair.)
+    out["disposition"] = r.affinity <= -50 || (r.affinity <= -25 && r.fear >= 30) ? "hostile"
+                         : r.affinity <= -15 || r.trust <= -25                    ? "wary"
+                         : r.affinity < -3                                        ? "cool"
+                         : r.affinity >= 50 && r.familiarity >= 40                ? "fond"
+                         : r.affinity >= 20                                       ? "warm"
+                                                                                  : "neutral";
+    return true;
 }
 
 std::map<std::string, std::string> Game::peopleOf(const std::string& id)

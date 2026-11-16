@@ -5,6 +5,7 @@
 
 scene em_pup_wagons
 when topic=caravan topic.kind=arrived a.stage=young|adolescent
+does tell.news / react.news / tell.feeling / give.advice
 a : Did you see the wagons? One had a horse with a bell on its bridle! | A carter gave me a ride on the back of his cart! | The wagons came from #topic.where#! Where's #topic.where#?
 b : I saw. Very fine. | Did your mother see you? | A long way off. Over the hills.
 a : I want a bell. | No. Don't tell her. | Can we go there?
@@ -19,6 +20,7 @@ b?[guard] : Not while I'm on the wall, they won't.
 
 scene em_pup_hungry
 when topic=prices topic.item=meal topic.dir=up a.stage=young|adolescent
+does ask.detail / answer.detail / ask.detail / reassure
 a : Why do we only get half a bowl now? | My tummy's growling louder than a bear. | Mama gave me her bread and said she wasn't hungry.
 b : Food costs more this week, little one. | Mine too. Drink some water. It helps. | Mamas say that sometimes.
 a : Is it my fault? | It doesn't help. | Was she lying?
@@ -26,12 +28,14 @@ b : No, never. | I know. | Only a kind lie.
 
 scene em_pup_honey
 when topic=prices topic.dir=down a.stage=young|adolescent
+does tell.boast / congratulate / agree
 a : We had honey on our bread! Honey! | Mama let me have two apples! | Supper was so big I couldn't finish it!
 b : Lucky pup. | Two? Spoiled. | That's never happened before.
 a : Very lucky! | Very spoiled! | I finished it later.
 
 scene em_pup_herbs
 when topic=prices topic.item=herbs topic.dir=up a.stage=young|adolescent
+does ask.detail / give.advice / counter / offer
 a : I picked a whole basket of mint by the wall. Can I sell it? | The herb lady gave me a sprig of lavender for nothing. | Why do grown-ups fight about herbs?
 b : Ask your mother first. | She's soft on pups. | Because they're dear, little one.
 a : She'll say no. | I'll keep it forever. | I'll grow them for you.

@@ -133,7 +133,8 @@ def entries(root: Path = TALK) -> list[dict]:
 
 
 def split_alts(text: str) -> list[str]:
-    return [t.strip() for t in text.split('|') if t.strip()]
+    """A line's alternatives, each without the conversation tag that may lead it ({k=v}: doc 84 §7.1)."""
+    return [re.sub(r'^\{[^}]*\}\s*', '', t.strip()) for t in text.split('|') if t.strip()]
 
 
 def trees(root: Path = TALK) -> list[dict]:

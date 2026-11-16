@@ -335,24 +335,28 @@ a : Greedy. | Shiny sells. | Good.
 
 scene et_gs_city
 when topic=gossip here.region=cities
+does tell.gossip / react.news / agree
 a : Everyone in the city's heard #topic.subject# #topic.claim#. | In the city you can't sneeze without everyone knowing. #topic.subject# #topic.claim#. | It's on every corner. #topic.subject# #topic.claim#.
 b : The city's a big mouth. | Bless you. | Every corner.
 a : Biggest there is. | Ha. | Every one.
 
 scene et_gs_country
 when topic=gossip here.region=countryside|towns
+does tell.gossip / react.news / agree
 a : Out here there's nothing to do but talk. #topic.subject# #topic.claim#. | Small town, big ears. #topic.subject# #topic.claim#. | Everyone knows. #topic.subject# #topic.claim#.
 b : And talk we do. | Huge ears. | Course they do.
 a : Endlessly. | Enormous. | Always.
 
 scene et_gs_rain
 when topic=gossip here.weather=rain|fog|snow
+does tell.gossip / react.news / agree
 a : Nothing to do in this weather but talk. #topic.subject# #topic.claim#. | Stuck indoors, and I heard #topic.subject# #topic.claim#. | Under the eaves: #topic.subject# #topic.claim#.
 b : The weather breeds gossip. | Indoors is where gossip lives. | Eaves hear everything.
 a : It does. | Always. | Everything.
 
 scene et_gs_adolescent
 when topic=gossip a.stage=adolescent b.stage=adolescent
+does tell.gossip / react.news / laugh
 a : You'll never believe it. #topic.subject# #topic.claim#! | Swear you won't tell. #topic.subject# #topic.claim#. | Everyone at the well says #topic.subject# #topic.claim#.
 b : I believe anything. | Swear. | Everyone!
 a : Ha! | Good. | Everyone.
@@ -371,6 +375,7 @@ a : Very bad. | All day. | True.
 
 scene et_gs_apprentice
 when topic=gossip pair.band=apprentice
+does ask.detail / counter / concede
 a : Master, is it true #topic.subject# #topic.claim#? | The other apprentices say #topic.subject# #topic.claim#. | I heard #topic.subject# #topic.claim#, master.
 b : Sweep, don't gossip. | The other apprentices talk too much. | Back to work.
 a : Yes, master. | Sorry, master. | Yes, master.

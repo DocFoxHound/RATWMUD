@@ -173,6 +173,29 @@ void Game::ambientStart(const std::vector<std::string>& listeners)
     while (!ambientCalls_.empty() && now - ambientCalls_.front() > 3600)
         ambientCalls_.pop_front();
     const bool live = salient && mind_.live() && int(ambientCalls_.size()) < options_.ambientModelCallsPerHour;
+    // The authored lines (no library line fits) with their moves (doc 84, Phase 2), so a transcript says what they do.
+    const auto authored = [this, kind = pick.topic.kind, facts = q.facts](const mind::Exchange& x) {
+        static const std::map<std::string, std::vector<std::string>> Moves{
+            {"gossip", {"tell.gossip", "react.news"}}, {"news", {"tell.news", "react.news"}},
+            {"quarrel", {"challenge", "counter"}},     {"friends", {"greet", "greet.return"}}};
+        const auto found = Moves.find(kind);
+        const std::vector<std::string> pair = found == Moves.end() ? std::vector<std::string>{"give.opinion", "agree"} : found->second;
+        talk::Said said;
+        said.lines = x.lines;
+        std::vector<std::string> before;
+        for (std::size_t i = 0; i < x.lines.size(); ++i)
+        {
+            talk::SaidLine line;
+            line.who = x.lines[i].first;
+            line.to = 1 - line.who;
+            line.text = x.lines[i].second;
+            line.moves = {pair[std::min<std::size_t>(i, 1)]};
+            talk_.describeMoves(line, before, facts, i + 1 < x.lines.size());   // (Written whole, as a scene is.)
+            before = line.moves;
+            said.info.push_back(std::move(line));
+        }
+        return said;
+    };
     if (!live)
     {
         const char* route = "written";
@@ -180,14 +203,18 @@ void Game::ambientStart(const std::vector<std::string>& listeners)
         if (auto x = fromTalk(route, &said); !x.lines.empty())
             begin(x, route, &said);
         else
-            begin(mind::Client::authoredExchange(context), "written");
+        {
+            const auto x2 = mind::Client::authoredExchange(context);
+            const auto moves = authored(x2);
+            begin(x2, "written", &moves);
+        }
         return;
     }
     ambientCalls_.push_back(now);
     if (!pick.topic.incident.empty())
         voicedIncidents_.insert(pick.topic.incident);
     std::weak_ptr<bool> alive = alive_;
-    mind_.exchange(context, [alive, begin, fromTalk](const mind::Exchange& written) {
+    mind_.exchange(context, [alive, begin, fromTalk, authored](const mind::Exchange& written) {
         if (alive.expired())
             return;
         const char* route = "written";
@@ -197,7 +224,10 @@ void Game::ambientStart(const std::vector<std::string>& listeners)
         else if (auto x = fromTalk(route, &said); !x.lines.empty())
             begin(x, route, &said);
         else
-            begin(written, "written");
+        {
+            const auto moves = authored(written);
+            begin(written, "written", &moves);
+        }
     });
 }
 mind::ExchangeContext Game::exchangeContext(const AmbientPick& pick)
@@ -260,7 +290,16 @@ talk::Query Game::exchangeQuery(const AmbientPick& pick, const mind::ExchangeCon
     }
     if (!context.day.empty())
         facts["topic.remark"] = context.day;
-    return talkQuery(pick.teller, pick.listener, "talk." + pick.topic.kind, facts);
+    auto q = talkQuery(pick.teller, pick.listener, "talk." + pick.topic.kind, facts);
+    // binds x=topic.subject: the one the talk is about, when it is a resident (doc 84 §7.1).
+    q.bind = [this, subject = pick.topic.subject, people = std::move(q.bind), a = pick.teller,
+              b = pick.listener](const std::string& slot, int speaker, talk::Facts& out) {
+        if (slot != "topic.subject")
+            return people && people(slot, speaker, out);
+        const auto* s = world_.entity(subject);
+        return s && s->npc && talkThird(speaker == 0 ? a : b, subject, out);
+    };
+    return q;
 }
 
 talk::Query Game::talkTopicQuery(const std::string& a, const std::string& b, const std::string& hearer)

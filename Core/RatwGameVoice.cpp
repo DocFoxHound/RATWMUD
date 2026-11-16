@@ -72,8 +72,9 @@ void Game::voicedWords(const char* of, const std::string& npc, const std::string
     if (!voiceLog_.is_open() || !options_.logTalkWords)
         return;
     // The words too (doc 84 §15.6, --log-talk-words, DEV worlds): what was said, by whom to whom, the rule or scene it
-    // came from, which alternative, the grammar layers whose words filled it, and its moves (none until moves exist:
-    // doc 84 Phase 2). Kind "words": a line already counted by its own record above, never counted again.
+    // came from, which alternative, the grammar layers whose words filled it, its moves and what it owes (doc 84,
+    // Phase 2; none for a line with no moves: a model's, an old library's). Kind "words": a line already counted by its
+    // own record above, never counted again.
     auto line = json::Value::object();
     line.add("t", double(std::time(nullptr)));
     line.add("kind", std::string("words"));
@@ -93,7 +94,19 @@ void Game::voicedWords(const char* of, const std::string& npc, const std::string
         for (const auto& h : info->habits)
             habits.push(h);
     line.add("habits", habits);
-    line.add("moves", json::Value::array());
+    auto moves = json::Value::array();       // (What the line does: doc 84 Phase 2's moves, and what it owes.)
+    auto owes = json::Value::array();
+    if (info)
+    {
+        for (const auto& m : info->moves)
+            moves.push(m);
+        for (const auto& o : info->owes)
+            owes.push(o);
+    }
+    line.add("moves", moves);
+    line.add("owes", owes);
+    if (info && !info->tone.empty())
+        line.add("tone", info->tone);
     line.add("day", world_.calendarDays());
     if (const auto* e = world_.entity(npc))
         line.add("cell", e->cellId);

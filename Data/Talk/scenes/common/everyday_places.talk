@@ -49,6 +49,7 @@ a : Far roads. | Spice and dust. | Trade's good for someone.
 
 scene ev_pl_shore
 when topic=smalltalk here.place=shore
+does give.opinion / give.advice / ack
 a : Water's cold enough to stop your heart. | Tide's out farther than I've ever seen. | Found a shell big as my paw.
 b[fisher] : Low tide means a storm coming. Mark it.
 b[sailor] : Seen bigger. Out in deep water, they're big as shields.
@@ -57,6 +58,7 @@ a : Wasn't planning on it. | It makes me uneasy. | I'll keep it on my sill.
 
 scene ev_pl_barracks
 when topic=smalltalk here.place=barracks
+does tell.complaint / give.advice / counter
 a : These cots were made for pups. | Who stole my good blanket? | Sergeant's in a foul temper.
 b[soldier] : Complain to the quartermaster. He'll laugh at you.
 b : Sleep on the floor, then. | Not me. | When isn't he?
@@ -64,6 +66,7 @@ a : The floor's warmer. | Somebody did. | Fair point.
 
 scene ev_pl_hall
 when topic=smalltalk here.place=hall
+does tell.complaint / react.complaint.agree / agree
 a : The council's sitting late again. | Look at the carvings on these beams. | It's always cold in the hall.
 b[official] : Matters of state take time. As do petitions. As do you.
 b : They love the sound of their voices. | Old work. Very old. | Big rooms always are.

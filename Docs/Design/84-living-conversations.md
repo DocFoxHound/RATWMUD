@@ -3,8 +3,8 @@
 Draft, 2026-11-15, revised 2026-11-16 with the user's answers to all six questions of §21 (the window's free text,
 mantles as world database rows, the richer size written by Claude agents, newborns inheriting honesty, births kept
 realm-wide, ticking listening runs), for Ridgemere 3 (`ridgemere3`, database `ratw_ridgemere3`; doc 82). **Phase 0 (the
-instrument) and Phase 1 (truth fixes) are built** (2026-11-16, branches `r3-talk-p0` and `r3-talk-p1`; §23 and §24 say
-what and what they measured); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
+instrument), Phase 1 (truth fixes) and Phase 2 (moves and tags) are built** (2026-11-16, branches `r3-talk-p0`,
+`r3-talk-p1` and `r3-talk-p2`; §23, §24 and §27 say what and what they measured); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
 replaces neither: every one of today's 8,525 library entries and 10 trees keeps loading and speaking while it is
 converted. It was written from five read-only surveys of the code, the data and the live world at `ridgemere2` 1034c1fc
 (the engine, the trees, the lifecycle, what residents know, and prior art) and three competing designs; §4 says how they
@@ -2435,3 +2435,99 @@ T1 0 / 0; T2 0.41 → 0.31 / 0; T3 (new) 0.41 / 0.03 per 1,000, all of it "I saw
 one who only heard it (`events2.talk`, `events_town5.talk`: Phase 4's points of view); D1 (none) 0 / 0, D1L 0.21 / 0.25%,
 D1B 0.12 / 0.13%; C1 97.2 → 96.9 / 98.9 → 97.8%; C3 (new) 0.89 / 0.18%; C4 0.026 / 0; C6 0 / 0.12; R1 2.2 / 0.42 h; R3
 2,131 / 451; R5 185 → 186 / 926 → 924; K3 2,259 → 2,197 / 109 → 109; U2 48 / 39%; B5 2.1 / 58 (twenty runs at once).
+
+## 27. Phase 2, as built (2026-11-16)
+
+Branch `r3-talk-p2`, on Slice 1 (`ridgemere2` at 0ec6d092). Every line can now say what it does; nothing chooses by it
+yet (that is Phase 3's turn engine), so **what is said is Slice 1's word for word**: the twenty profiles' 105,799 lines
+are identical, entry, alternative and text, to `artifacts/talk/runs/s1r`.
+
+**`Data/Talk/moves.json`** (`Core/RatwTalkMoves.cpp`, `talk::Moves`): 96 moves in §7.2's 12 families (the party's join
+moves are moves of their own, `join.defend`...; react.news, react.complaint, react.self, assess, answer.how and
+answer.after carry variants), each with what it `expects` (soft when `optional`), what it `answers` (`*`: anything), its
+`fallback` (every answer walks down to `ack`), `insertion`, `shape`, `tone`, `effects`, and the flags; the six tones and
+§7.2's two tone rules. **Every one of the 121 answer concepts is an alias** (`jest.answer` is `tease.return`), its
+lines' commonest move: a coarse reading until Phase 7 tags each line. The book is checked when it loads: an unknown
+field, family, move, tone or variant, an alias of something not a concept, a move that neither opens nor answers, and
+an expectation that doesn't answer its move are refused.
+
+**The `.talk` keywords** (§7.1), parsed and checked in `Library::parse`: `does` (a rule's moves; a scene's per turn,
+`/` between turns, `-` for one not known, its count checked against the scene's turns), `owes`/`invites` (`other`,
+`self`, `any`; an owed move that doesn't answer the line's own is refused, and so is one with no move to answer),
+`tone` (one, or one per turn), `asserts [claim]`, `denies [claim]` and `gist` (a rule's; a scene's may name the turn,
+else it asserts in its first, denies in its second and makes its gist in its last; a claim must be claims.json's),
+`binds x=<slot>` (`self.`/`other.` spouse, child, mother, father, neighbour, shopkeeper, priest, leader;
+`topic.subject`; a line that speaks of `x` with nobody bound is refused), and `{k=v [keep 7d]}` before an alternative
+(the conversation's tags; one written anywhere else, or one setting the engine's own `conv.move`, is refused). A rule
+with no `does` makes its answer concept's alias; a `then` hands on its concept's move as what the rule owes (a hand-on
+to a topic owes nothing). Choices made: a scene's `does` is one line for all its turns (read from each turn's first
+alternative where the tagger had to choose), and a scene's last line owes only what is written (§8.2: a set piece hands
+on into open talk only on purpose), where a rule's owes what its moves expect.
+
+**`Ns::Conv` and `Ns::X`.** `conv.*` facts (facts.json's new `conv`: `move`, `prev`, `tone`, `beat`, which take
+moves.json's words, and any tag) and `x.*` (a person's facts, and facts.json's new `x`: `affinity`, `disposition`;
+`x.said.*` for Phase 5's ledger) are criteria and words (`#x.name#`, `#x.they#`, `#conv.k#`). `Library::converse`
+gives each beat the conversation's facts so far (the move just made and the one before, the tone, the beat, every tag);
+`Query::bind` is how the game names a slot's person, and `Game::talkQuery` fills it from `peopleOf` (the speaker's
+bond to them as `x.affinity`, `x.disposition`; `exchangeQuery` adds `topic.subject` when it is a resident). With no
+binder, or nobody there, a line that binds doesn't fit.
+
+**`byMove_`**: rules by their moves, scenes by their first turn's, each under every kind it is of (react.news.known is
+under react.news too); `Library::byMove`.
+
+**The dead-end proof** (`Library::deadEnds`, run when the whole library loads; a dead end refuses it): every concept a
+line hands on to has a rule of its own that holds and speaks with nothing known, and every answer a line can owe
+(written, handed on, or what its moves expect) has such a line among it and its fallbacks. It found **the 17
+dead-ending concepts of defect 13 and an 18th, `moment.reply_home`** (its one plain rule needs `#topic.accent_town#`):
+`rules/fallbacks.talk` gives each a plain rule at priority -1 (speaking only where nothing else holds; none of them was
+needed in any profile, as the identical transcripts show). Defect 13 is closed for the talk as it runs today; Phase 3's
+fallback walk is proved too.
+
+**`SaidLine` into the transcripts.** `talk::LineInfo` is now `talk::SaidLine` (§8.1): beside its entry, alternative,
+layers and habits, each said line carries its moves, what it owes and invites, which of the line before it it answers,
+its tone, the claims it asserts or denies (topic.claim_kind's family, else "topic"), the gist, its tags, the speaker and
+the one spoken to, and its words. `talk_sim` writes them in `lines.jsonl` (and the shuffled control carries the moved
+line's own), `--log-talk-words` writes moves, owes and tone, `talk_check` prints them under each line and `--validate`
+counts what says what it does. The authored exchange (the "written" route, 23% of lines) has its moves too (gossip:
+tell.gossip, react.news; news: tell.news, react.news; a quarrel: challenge, counter; friends: greet, greet.return;
+else give.opinion, agree).
+
+**The 40 most-spoken families tagged.** A family is the entries whose ids differ only in their last part (`h7_crime_*`),
+ranked by the lines Slice 1's s1r run spoke of them: et_gos, h7_stranger, ev_pl, e1_home_shared, h7_crime, h7_theft,
+et_theft, pl2_stranger, w7c_down, w7_cheap, ev_pl_child, et_gs, pl_stranger, pr_general, et_rm_gossip, em_rm_pr_cheap,
+et_sf_gossip, et_ua_gossip, ev_pl_two, gs2, et_sr_gossip, ev_pl_ser_ferro, ev_pl_ridgemere, em_bd_camp, n7_go, n7_ga2,
+e8t_ev_ans, w7c_up, em_more_cheap, h7_camp, ev_pl_suspicious, em_more_bd, n7_close_go, gs, e8t_ev, et_theft_inside,
+em_prices, e8p_down, em_pup, e8t_ev_any: **209 entries (137 scenes, 72 rules), all by hand**, a `does` line each (a
+grave `tone` on the death lines). With the aliases, 3,080 of the library's 8,557 entries say what they do (209 written,
+2,871 by alias); 5,477 wait for Phase 7. Of the 1,615 hand-ons with moves on both sides, 273 (17%) hand on a move that
+doesn't formally answer the one before (mostly a closing after an answer: answer.how then farewell): Phase 7's list.
+
+**The scorecard** (`artifacts/talk/runs/p2`, every profile in both modes over P0's fixture, pinned to build 81; 13,019
+and 26,142 conversations; `talk_card`: **no gate broken** in either mode). Every metric is Slice 1's (§26) to the digit
+but B5, the machine's timing (2.04 / 58 exchanges a second, against s1r's 2.13 / 58). Two rows are new, measured where
+lines carry moves, and taken into both baselines and the quick card's with `--refreeze C1M,M1` (no existing row moved):
+
+| | Fixtures | Frozen |
+|---|---|---|
+| **M1** lines carrying moves (the gate: transcripts carry moves) | **66.4%** (scenes 68-76% by profile, the authored lines 100%) | **74.3%** |
+| **C1M** owed answers answered, by moves (control in brackets) | **81.3%** (40.3%) | **96.3%** (55.3%) |
+| C1 the "?" heuristic it replaces in Phase 3 | 96.9% (84.9%: doesn't separate) | 97.8% (85.9%) |
+
+C1M separates from the shuffled control where C1 never did (§24), so the coherence the moves describe is measured, not
+asserted. It is soft until Phase 3 makes it C1 (hard 92%); its misses are mostly owed answers left at a rule chain's
+end and turn tags read from first alternatives. The quick card: M1 37.6%, C1M 99.9% (control 27.1%).
+
+**Tests.** `talk_tests` (`movesAndTags`): the book's refusals (9), the lines' (27: every keyword, the tags, `x` and
+`conv` facts), aliases for every answer concept, entries by move, what a said line carries (moves, owes, invites,
+answers, tone, asserts, tags, keep), the conversation's facts reaching the next beat, a bound third party and its
+criteria, and the dead-end proof (a concept, a handed-on move and an expected move, each a dead end until filled).
+`dialogue_tests`: the game's binder names a resident's people with their facts and the speaker's bond, and nothing for
+an unknown slot or `topic.subject` outside an exchange. The ctest suite without the database (90 of 90) passed; the
+database suites weren't run (no schema or migration changed).
+
+**For Phase 3.** The turn engine chooses by `byMove`, the fallbacks (`Moves::chain`) and `Moves::answers`/`meets`;
+what a line owes is `SaidLine::owes`. `C1M` is the measure to promote to C1's hard gate there. A scene's per-turn tags
+were read from each turn's first alternative; where its alternatives differ in kind (a question beside a statement)
+Phase 7 should split them. `Query::bind` resolves only peopleOf's roles and `topic.subject`; Phase 4's `joiners` and
+Phase 5's ledger (`x.said.*`) build on it. Tags reach later beats only through `converse` today (not between a scene's
+own turns).

@@ -524,18 +524,21 @@ a@plain : Not even you. | I eat one every night. | A sheet. Same thing.
 
 scene e1_home_shared_fire
 when topic=home pair.roof=yes
+does ask.detail / answer.detail / concede
 a : Whose turn is it to bank the fire tonight? | The fire was out again this morning. Ash cold. | Somebody's been burning the good kindling.
 b : Yours. I did it last night. | Not my doing. I was first up. | It wasn't me. Look at my paws.
 a : I'll do it, then. | Then whose? | I'll find out.
 
 scene e1_home_shared_door
 when topic=home pair.roof=yes
+does tell.complaint / disagree / insist
 a : The door was off the latch again last night. | Somebody left the shutter open. The whole place is cold. | That door wants oil. It wakes everyone.
 b : I latched it. I'm sure I did. | Not me. I sleep by it, I'd have felt it. | I'll see to it.
 a : Then it unlatches itself. | Then who? | Before tonight, if you would.
 
 scene e1_home_shared_sleep
 when topic=home pair.roof=yes
+does tell.complaint / counter / tease
 a : Somebody snored like a saw all night. | I heard you talking in your sleep again. | Who was up walking about in the small hours?
 b[humour=dry|merry] #dry : Snoring keeps the mice away. You should thank me.
 b #plain : Not me. I sleep like the dead. | Did I say anything worth hearing? | I couldn't sleep. Sorry.
@@ -544,36 +547,42 @@ a@plain : The dead are quieter. | Nothing I'd repeat. | Try counting sheep. Quie
 
 scene e1_home_shared_stores
 when topic=home pair.roof=yes
+does ask.detail / answer.detail / request
 a : Who finished the bread? | There's no water in the jug. Again. | The lamp's out of oil.
 b : Me. I was hungry. | I'll fetch some. | I used the last of it. I'll buy more.
 a : Then you're buying the next loaf. | Thank you. | Before dark, mind.
 
 scene e1_home_shared_mess
 when topic=home pair.roof=yes
+does tell.complaint / counter / insist
 a : Your boots are by the fire again. They stink. | Something in here smells of wet fur. | You've left your things all over the floor.
 b : They're drying. | That'll be me. I was out in the wet. | I'll clear them.
 a : Dry them somewhere else. | Then shake off outside. | Today.
 
 scene e1_home_shared_mending
 when topic=home pair.roof=yes
+does tell.boast / praise / deflect_praise
 a : I swept the whole floor this morning. | The step's worn through in the middle. Someone will trip. | There's a draught under the back door.
 b : I saw. It looks well. | I'll tell whoever sees to it. | I'll stuff a rag in it.
 a : It'll last a day. | Tell them soon. | That'll do till winter.
 
 scene e1_home_shared_vermin
 when topic=home pair.roof=yes
+does tell.worry / offer / accept
 a : There's a mouse in here somewhere. I heard it. | Something's been at the oats. | Little tracks in the flour this morning.
 b : I'll set a trap. | Not me, I swear it. | A mouse, then. A bold one.
 a : Set two. | I believe you. Mostly. | Bold and fat, by now.
 
 scene e1_home_shared_cold
 when topic=home pair.roof=yes here.season=autumn|winter
+does tell.complaint / give.advice / counter
 a : It's bitter in here today. | We'll need more wood before the frost. | The walls are wet with cold.
 b : Bank the fire higher. | I'll split some. | Put a blanket against them.
 a : With what wood? | I'll stack it. | I'll find one.
 
 scene e1_home_shared_night
 when topic=home pair.roof=yes here.time=night|dusk
+does give.opinion / agree / agree
 a : Quiet in here tonight. | Everyone else asleep already? | I like it when the place settles for the night.
 b : For once. | Long since. | So do I.
 a : Long may it last. | Lucky them. | Goodnight, then.

@@ -46,18 +46,21 @@ a : It's what there is. | It's the way I'm living. | Then we're both thin.
 
 scene em_more_cheap_party
 when topic=prices topic.dir=down topic.sort=food
+does tell.plan / counter / counter
 a : Food's cheap. Let's have everyone round. | A cheap week. I'm throwing a supper. | I bought enough for the whole lane.
 b : Everyone? Your floor's too small. | I'll bring the cider. | The whole lane will come.
 a : We'll stand. | Bring two. | Let them.
 
 scene em_more_cheap_save
 when topic=prices topic.dir=down topic.sort=food
+does tell.plan / react.self / assess
 a : Cheap week. I'm drying and salting all I can. | Buying grain now for winter while it's #topic.price#. | Smart wolves buy when it's cheap.
 b : Good thinking. | Clever. | Smart wolves have coin.
 a : Winter remembers. | Winter's long. | True. Borrow some.
 
 scene em_more_cheap_why
 when topic=prices topic.dir=down topic.cause!=still
+does ask.detail / answer.detail / assess
 a : Why's everything cheap? Did I miss news? | Cheap #topic.what#. Somebody must have lost a bet. | Somebody, somewhere, did something right.
 b : #topic.cause_words.capitalize#, they say. | Or found a cellar. | Bless them, whoever they are.
 a : Bless that, then. | Bless the cellar. | Bless them twice.
@@ -116,12 +119,14 @@ a : More than we have. | Pray. | Every penny helps.
 
 scene em_more_bd_song
 when topic=bandits
+does tell.news / ask.detail / answer.detail
 a : Somebody's made a song about the bandits. | The pups are singing about the robber chief. | There's a ballad going round the tavern about the raids.
 b : Is it good? | A terrible song. | A rude one, I bet.
 a : It's catchy. | Catchy, though. | Very rude.
 
 scene em_more_bd_caught
 when topic=bandits
+does tell.gossip / react.news / agree / counter
 a : They say the watch caught one of them. | A bandit was brought in bound this morning. Or so I heard. | Did they really catch a robber, or is that just talk?
 b : One's a start. | Or so you heard. | Talk, probably.
 a : One of many. | So I heard. | Probably.
@@ -129,6 +134,7 @@ b?[guard] : We caught a sheep thief. That's all I'll say.
 
 scene em_more_bd_inside
 when topic=bandits
+does tell.gossip / warn / insist
 a : Someone in town is telling the bandits when the wagons leave. | The bandits know too much. Someone talks. | Watch who goes out the gate before a caravan. Watch them.
 b : That's a dangerous thing to say. | Everyone talks. | I'll watch.
 a : Dangerous and true. | To bandits? | Watch quietly.
@@ -142,6 +148,7 @@ a : Still pointy. | I'm here, aren't I? | Mostly.
 scene em_more_bd_gifted
 when topic=bandits
 weight 0.7
+does tell.gossip / give.opinion / ack / counter
 a : They say one of the bandits is Gifted. Lights fires with a look. | A Gifted bandit, they say. Can hear a purse across a field. | People say the robbers have a Gifted wolf. People say a lot.
 b : That's how they burned the wagons. | Useful, for a thief. | They do.
 a : Maybe. | Very useful. | Too much.
@@ -149,12 +156,14 @@ b?[scholar] : Most Gifts are small. A candle flame, a nudge. Not much of a bandi
 
 scene em_more_bd_pity
 when topic=bandits
+does give.opinion / disagree / concede
 a : Some of those bandits were farmers once. Before the bad years. | They're hungry, the robbers. Like us, only desperate. | I almost feel sorry for them. Almost.
 b : Hungry doesn't excuse a knife. | We're hungry too and we don't rob. | Don't. They'd not feel sorry for you.
 a : No. But it explains it. | Not yet. | True.
 
 scene em_more_bd_brag
 when topic=bandits pair.band=friends
+does tell.boast / tease / tease.return
 a : If bandits come for me, I'll bite. Hard. | Let them try me. I've got sharp teeth and a bad temper. | I'd scare them off with my singing.
 b : You'd faint. | You've got a bad temper, true. | You'd scare me off.
 a : I'd faint fiercely. | And sharp teeth. | That's the idea.

@@ -59,9 +59,13 @@ struct Speaker
 struct Query
 {
     std::string concept;                  // "talk.prices", "bark"
-    Facts facts;                          // "pair.band", "here.place", "topic.item"...: full keys.
+    Facts facts;                          // "pair.band", "here.place", "topic.item", "conv.k"...: full keys.
     Speaker a, b;                         // a speaks first; b is no one when `alone`.
     bool alone = false;
+    // A third party for a line that `binds x=<slot>` (doc 84 §7.1, Phase 2): the person the slot names, for the one
+    // speaking (0: a, 1: b), as facts without "x." (a person's facts, and the speaker's bond to them: affinity,
+    // disposition). False when there is no one: then the line doesn't fit. Unset: no line that binds ever fits.
+    std::function<bool(const std::string& slot, int speaker, Facts& facts)> bind;
 };
 
 // What saying something changes (phase 4): a fact remembered about a resident, two of them, or a town, for a time;
@@ -81,13 +85,31 @@ struct Effect
 // Where one line of what was said came from (Docs/Design/84 §15.1, for the conversation simulator's transcripts and the
 // server's --log-talk-words): its rule or scene, which of its `|` alternatives, and the grammar layers whose words
 // filled its symbols (a dialect's name when a dialect's words were spoken). Recorded only; nothing reads it to choose.
-struct LineInfo
+//
+// Doc 84 §8.1 (Phase 2): and what the line does in the talk, from its moves (Data/Talk/moves.json): the moves it makes, the
+// answers it makes due (`owes`, written or handed on by `then`, else its moves' `expects`; "self:" or "any:" before one
+// not owed by the one spoken to), the soft ones (`invites`), which of the line before it it answers, the claims it
+// passes on or denies (claims.json's family, as topic.claim_kind says it), its tone, and the conversation's tags it sets
+// ({k=v}: conv.k). The transcripts and --log-talk-words carry them; Phase 3's turn engine chooses by them.
+struct SaidLine
 {
     std::string entry;
     int alt = -1;
     std::vector<std::string> layers;      // In the order first used; "plain" included when plain's words were.
     std::vector<std::string> habits;      // The habits (`name!`, `name!!` symbols: an oath, a saying) it used.
+    std::vector<std::string> moves;       // "tell.gossip", "react.news.known"
+    std::vector<std::string> owes;        // Each "move|move" (any one answers it)
+    std::vector<std::string> invites;     // The same, soft: answered only if a fitting line comes
+    std::vector<std::string> answers;     // The moves of the line before it that this one answers
+    std::vector<std::string> asserts, denies;   // Claims ("theft", or "topic" when the topic has no claim kind)
+    std::string tone;                     // light, even, serious, grave, tender, cross ("": no move, no tone)
+    bool gist = false;
+    Facts tags;                           // {k=v}: conv.k for the rest of the conversation
+    double keep = 0;                      // {k=v keep 7d}: kept in the ledger this long (game days; Phase 5)
+    int who = 0, to = -1;                 // The speaker (0: a, 1: b) and the one spoken to (-1: no one)
+    std::string text;
 };
+using LineInfo = SaidLine;
 struct Said
 {
     std::string id;                                   // The rule or scene ("" when nothing fits); a chain's first.
@@ -114,7 +136,9 @@ struct Trace
     std::vector<std::string> steps;       // The grammar's expansions, in order.
 };
 
-enum class Ns : std::uint8_t { A, B, Self, Other, Pair, Here, Topic, World };
+// Conv: the conversation's own facts (doc 84 §7.11: conv.move, conv.prev, conv.beat, conv.tone and every {k=v} tag);
+// X: a third party a line binds (x.name, x.job..., x.affinity), both kept in Query::facts by their full keys.
+enum class Ns : std::uint8_t { A, B, Self, Other, Pair, Here, Topic, World, Conv, X };
 struct Criterion
 {
     Ns ns = Ns::Self;
@@ -123,10 +147,18 @@ struct Criterion
     std::set<std::string> values;
     double number = 0;
 };
+// {k=v} before an alternative's words (doc 84 §7.1): conv.k=v for the rest of the conversation; `keep 7d` keeps it in
+// the ledger too (Phase 5).
+struct Tag
+{
+    Facts set;
+    double keep = 0;
+};
 struct Variant
 {
     std::vector<Criterion> when;
     std::vector<std::string> texts;
+    std::vector<Tag> tags;                // Beside texts: each alternative's (empty: none).
     std::set<std::string> needs, marks;   // Marks needed (a@worried), and set when spoken (#worried): a scene's branches.
     int line = 0;                         // In its file, for messages.
 };
@@ -164,6 +196,86 @@ struct Entry
     std::string thenWho, thenConcept;
     enum class Limit : std::uint8_t { None, Once, PerDay, PerOther, Cooldown } limit = Limit::None;
     double cooldownDays = 0;
+    // Doc 84 §7.1 (Phase 2): what each turn does (a rule has one turn), from `does` (a scene names each turn's, `/`
+    // between them), or a rule's answer concept's alias (moves.json); `tone` likewise. What the last turn owes and
+    // invites (written; a `then` hands on its concept's move too, `derived`). The turn (from 0) that asserts the topic's
+    // claim, denies it, or makes the gist (-1: none). A third party bound for x.* (`binds x=self.spouse`). The mantle
+    // it belongs to (Phase 9).
+    struct Owed
+    {
+        std::string who = "other";        // other, self, any
+        std::vector<std::string> moves;   // Any one of them answers it.
+        bool soft = false;                // `invites`
+        bool derived = false;             // From `then` (its concept's alias), not written
+    };
+    std::vector<std::vector<std::string>> does;
+    std::vector<std::string> tones;
+    std::vector<Owed> owes;
+    int asserts = -1, denies = -1, gist = -1;
+    std::string assertsClaim, deniesClaim;
+    std::map<std::string, std::string> binds;
+    bool aliasMoves = false;              // Its moves are its concept's alias, not written
+    std::string owner;
+};
+
+// A dialogue move (doc 84 §7.2, Data/Talk/moves.json): what a line does, what it makes due, what it answers, and how a
+// dispreferred answer is shaped. An answer concept is an alias of one (jest.answer: tease.return), so the 2,778 `then`
+// hand-ons have moves too.
+struct Move
+{
+    std::string name, family;
+    bool first = false;                   // May open (needs nothing before it)
+    bool asserts = false, denies = false; // Passes the topic's claim on / denies it, by default
+    bool dispreferred = false, thirdParty = false, ends = false, weak = false, optional = false, stance = false;
+    std::vector<std::string> expects;     // What it makes due by default (soft when `optional`)
+    std::vector<std::string> answers;     // What it answers ("*": anything)
+    std::vector<std::string> fallback;    // When nothing doing it fits, these instead, in order (down to ack)
+    std::vector<std::string> insertion;   // May come between it and its answer (request: ask.detail)
+    std::vector<std::string> variants;    // react.news.known...
+    std::vector<std::string> shape;       // hedge, account, remedy: how a dispreferred one is said
+    std::string tone;                     // Its lines' tone unless they say
+    std::map<std::string, std::map<std::string, double>> effects;   // "self"|"other" -> axis -> change
+    int maxExtend = 0;
+};
+class Moves
+{
+public:
+    // moves.json's text; `concepts` are settings.json's (an alias's key must be one). False with the problems, and the
+    // book left empty.
+    bool read(const std::string& text, const std::set<std::string>& concepts, std::string& problem);
+    void clear();
+    bool empty() const { return moves_.empty(); }
+    const std::map<std::string, Move>& all() const { return moves_; }
+    const std::map<std::string, std::string>& aliases() const { return aliases_; }
+    const std::vector<std::string>& tones() const { return tones_; }
+    // A move by its name; with a variant ("react.news.known") its move's.
+    const Move* find(const std::string& name) const;
+    // Whether a name is a move or a move's variant.
+    bool known(const std::string& name) const { return find(name) != nullptr; }
+    // The move an answer concept stands for ("" if none).
+    std::string alias(const std::string& concept) const;
+    bool tone(const std::string& t) const;
+    std::string toneOf(const std::string& move) const;    // Its default tone ("even" when it names none)
+    // Whether a line doing `answer` answers one doing `said`: its move's `answers` names `said`, a move `said` is a
+    // variant of, or "*".
+    bool answers(const std::string& answer, const std::string& said) const;
+    // Whether a move done meets an owed one: the same, or a variant or kind of it (react.news.known meets react.news).
+    static bool meets(const std::string& done, const std::string& owed);
+    // The fallbacks walked from a move, breadth first, without repeats (the move itself first).
+    std::vector<std::string> chain(const std::string& move) const;
+    struct ToneRule
+    {
+        std::string after;
+        std::set<std::string> blocks, bridge;
+        int beats = 0;
+    };
+    const std::vector<ToneRule>& toneRules() const { return toneRules_; }
+
+private:
+    std::map<std::string, Move> moves_;
+    std::map<std::string, std::string> aliases_;          // concept -> move (or move.variant)
+    std::vector<std::string> tones_;
+    std::vector<ToneRule> toneRules_;
 };
 
 // The odds and lists of settings.json.
@@ -310,6 +422,25 @@ public:
     const std::vector<Entry>& entries() const { return entries_; }
     const Entry* find(const std::string& id) const;
     bool has(const std::string& concept) const { return byConcept_.count(concept) > 0; }
+    // Moves (doc 84 §7.2, Phase 2): the book (empty for a library from before them), and the entries that make a move
+    // (a rule's own, written or by its concept's alias; a scene's first turn's), by move and by each of its kinds
+    // (react.news.known is under react.news too). Null if none.
+    const Moves& moves() const { return moves_; }
+    const std::vector<std::size_t>* byMove(const std::string& move) const;
+    // What `binds x=<slot>` may name: self.<role>, other.<role> (spouse, child, mother, father, neighbour, shopkeeper,
+    // priest, leader) and topic.subject.
+    static const std::set<std::string>& bindSlots();
+    // The dead-end proof (doc 84 §7.2), run when the whole library has loaded: every concept a line hands on to has a
+    // plain rule of its own that holds for a speaker with every fact empty, and every move a line can owe has one,
+    // walking its fallbacks down to ack. The problems, one a line ("" if none).
+    std::string deadEnds() const;
+    // The moves a line of `e` makes as its turn `turn` is spoken, and the rest of SaidLine's moves (owes, tone...), for
+    // a query (`q`: the topic's claim kind, for what it asserts). `before`: the moves of the line said before it.
+    void describe(const Entry& e, std::size_t turn, const Query& q, const std::vector<std::string>& before, SaidLine& line) const;
+    // The same for a line whose moves are already set (an authored line's): its tone, what its moves expect (unless
+    // `expect` is false: the last line of a whole written exchange), what it answers of `before`, what it asserts on the
+    // topic's claim. Nothing without moves.json.
+    void describeMoves(SaidLine& line, const std::vector<std::string>& before, const Facts& facts, bool expect = true) const;
     const Settings& settings() const { return settings_; }
     // The dialect (a grammar layer) of one who grew up in `from`: its own, or settings.json's dialect_of for a town with
     // none of its own (Fenshore: mirebridge).
@@ -380,12 +511,22 @@ private:
     Said pickOne(const Query& q, std::uint64_t seed, const std::function<bool(const std::string&)>& heard,
                  const std::deque<std::string>& recent, int speaker, bool chained, Trace* trace) const;
     bool checkGrammars(std::vector<std::string>& errors) const;
-    void reindex();                                         // byConcept_ and byId_ from entries_.
+    void reindex();                                         // byConcept_, byId_ and byMove_ from entries_.
+    void indexMoves(std::size_t i);
+    bool readMoves(const std::string& text, std::string& problem);
+    bool unconditioned(const Entry& e) const;               // (deadEnds: holds and speaks with every fact empty.)
+    bool bindThird(const Entry& e, const Query& q, int speaker, Query& out) const;   // (binds: q with x.* filled.)
+    bool fitsWith(const Entry& e, const Query& q, int speaker) const;            // (fits, x bound already.)
+    Said renderWith(const Entry& e, const Query& q, std::uint64_t seed, Trace* trace, int speaker) const;
+    std::vector<std::string> answersOf(const std::vector<std::string>& before, const std::vector<std::string>& moves) const;
     bool readSchema(const std::string& text, std::string& problem);
     bool readSettings(const std::string& text, std::string& problem);
 
     std::vector<Entry> entries_;
     std::map<std::string, std::vector<std::size_t>> byConcept_;
+    std::map<std::string, std::vector<std::size_t>> byMove_;
+    Moves moves_;
+    std::map<std::string, FactKind> conv_, x_;               // facts.json's "conv" and "x" (the engine's own keys)
     std::map<std::string, std::size_t> byId_;
     std::map<std::string, std::set<std::string>> groups_;    // Region groups: name -> regions.
     std::map<std::string, Grammar> grammars_;

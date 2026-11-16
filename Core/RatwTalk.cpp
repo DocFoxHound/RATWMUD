@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -83,6 +84,11 @@ bool readFile(const std::filesystem::path& path, std::string& out)
 }
 
 bool isPersonNs(const std::string& ns) { return ns == "a" || ns == "b" || ns == "self" || ns == "other"; }
+// A tag's key, a remembered key: lower-case letters, digits and _.
+bool lowerKey(const std::string& k)
+{
+    return !k.empty() && k.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_") == std::string::npos;
+}
 bool isSharedNs(const std::string& ns) { return ns == "pair" || ns == "here" || ns == "topic" || ns == "world"; }
 
 Ns personNs(const std::string& ns)
@@ -240,6 +246,10 @@ void Library::clear()
     aliases_.clear();
     settings_ = {};
     trees_.clear();
+    byMove_.clear();
+    moves_.clear();
+    conv_.clear();
+    x_.clear();
 }
 
 const Entry* Library::find(const std::string& id) const
@@ -300,6 +310,14 @@ bool Library::readSchema(const std::string& text, std::string& problem)
         }
     for (const auto& name : twice)
         aliases_.erase(name);                     // Written in full where two namespaces have it.
+    // The conversation's own facts and a bound third party's own (doc 84 §7.11), never by a bare name: conv.move,
+    // conv.beat...; x.affinity, x.disposition (the rest of x.* are a person's facts).
+    for (const auto& [name, v] : doc.object("conv").fields())
+        if (name != "about")
+            kindOf("conv." + name, v, conv_[name]);
+    for (const auto& [name, v] : doc.object("x").fields())
+        if (name != "about")
+            kindOf("x." + name, v, x_[name]);
     if (!shared_.count("here.region"))
         errors.push_back("facts.json: here.region is needed (the regions)");
     if (!errors.empty())
@@ -372,6 +390,26 @@ bool Library::readSettings(const std::string& text, std::string& problem)
         }
         settings_.salience.push_back(std::move(one));
     }
+    return true;
+}
+
+bool Library::readMoves(const std::string& text, std::string& problem)
+{
+    if (!moves_.read(text, settings_.concepts, problem))
+        return false;
+    // The conversation's own facts take the move and tone words moves.json gives (facts.json may declare them "text").
+    std::set<std::string> names;
+    for (const auto& [name, m] : moves_.all())
+    {
+        names.insert(name);
+        for (const auto& v : m.variants)
+            names.insert(name + "." + v);
+    }
+    for (const char* key : {"move", "prev"})
+        if (const auto k = conv_.find(key); k != conv_.end())
+            k->second = {FactKind::Type::Words, names};
+    if (const auto k = conv_.find("tone"); k != conv_.end())
+        k->second = {FactKind::Type::Words, {moves_.tones().begin(), moves_.tones().end()}};
     return true;
 }
 
@@ -454,7 +492,32 @@ bool Library::criterion(const std::string& token, Where where, int speaker, Crit
         // Something remembered (phase 4): self.mem.x, pair.mem.x, world.mem.x (a town's), any key, any words.
         static const FactKind Remembered{FactKind::Type::Text, {}};
         const bool memory = c.name.rfind("mem.", 0) == 0 && c.name.size() > 4 && (isPersonNs(ns) || ns == "pair" || ns == "world");
-        if (isPersonNs(ns))
+        // A conversation's tag (doc 84 §7.1, {k=v}): any key, any word; the engine's own keys (facts.json "conv") as
+        // they're declared.
+        static const FactKind Tagged{FactKind::Type::Text, {}};
+        if (ns == "conv")
+        {
+            c.ns = Ns::Conv;
+            c.full = key;
+            if (const auto k = conv_.find(c.name); k != conv_.end())
+                kind = &k->second;
+            else if (lowerKey(c.name))
+                kind = &Tagged;
+        }
+        else if (ns == "x")
+        {
+            // A bound third party (binds x=...): a person's facts, their own (facts.json "x"), and what talk has said of
+            // them (x.said.k, the ledger's: Phase 5).
+            c.ns = Ns::X;
+            c.full = key;
+            if (const auto k = x_.find(c.name); k != x_.end())
+                kind = &k->second;
+            else if (const auto p = person_.find(c.name); p != person_.end())
+                kind = &p->second;
+            else if (c.name.rfind("said.", 0) == 0 && lowerKey(c.name.substr(5)))
+                kind = &Tagged;
+        }
+        else if (isPersonNs(ns))
         {
             c.ns = personNs(ns);
             if (const auto k = person_.find(c.name); k != person_.end())
@@ -649,10 +712,16 @@ bool Library::checkText(const std::string& text, std::vector<std::string>& error
             errors.push_back(where + ": #" + inside + "# is not a symbol or a fact");
             return;
         }
-        if (ref.parts.size() == 2 && isPersonNs(ref.parts[0]))
+        if (ref.parts.size() == 2 && (isPersonNs(ref.parts[0]) || ref.parts[0] == "x"))
         {
-            if (!person_.count(ref.parts[1]) && !Pronouns.count(ref.parts[1]))
+            if (!person_.count(ref.parts[1]) && !Pronouns.count(ref.parts[1]) && !(ref.parts[0] == "x" && x_.count(ref.parts[1])))
                 errors.push_back(where + ": #" + inside + "#: a person has no fact '" + ref.parts[1] + "'");
+            return;
+        }
+        if (ref.parts.size() == 2 && ref.parts[0] == "conv")
+        {
+            if (!lowerKey(ref.parts[1]))
+                errors.push_back(where + ": #" + inside + "#: a conversation's tag is lower-case letters, digits and _");
             return;
         }
         if (ref.parts.size() == 2 && isSharedNs(ref.parts[0]))
@@ -954,11 +1023,50 @@ bool Library::parse(const std::string& text, const std::string& file, std::strin
             fail("'" + name + "' is not a concept (settings.json)");
         e->concepts.insert(name);
     };
-    const auto addText = [&](Variant& v, const std::string& t) {
+    const auto addText = [&](Variant& v, const std::string& written) {
+        // {k=v ...} before the words (doc 84 §7.1): the conversation's tags; `keep 7d` keeps them in the ledger too.
+        std::string t = written;
+        Tag tag;
+        if (!t.empty() && t[0] == '{')
+        {
+            const auto close = t.find('}');
+            if (close == std::string::npos)
+                fail("a tag is {key=value} before the words");
+            else
+            {
+                const auto parts = words(t.substr(1, close - 1));
+                for (std::size_t i = 0; i < parts.size(); ++i)
+                {
+                    if (parts[i] == "keep" && i + 1 < parts.size())
+                    {
+                        if (!duration(parts[i + 1], tag.keep) || tag.keep <= 0)
+                            fail("keep is a time ({k=v keep 7d})");
+                        ++i;
+                        continue;
+                    }
+                    const auto eq = parts[i].find('=');
+                    const auto key = parts[i].substr(0, std::min(eq, parts[i].size()));
+                    const auto value = eq == std::string::npos ? std::string() : parts[i].substr(eq + 1);
+                    if (eq == std::string::npos || !lowerKey(key) || value.empty() ||
+                        value.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_.-") != std::string::npos)
+                        fail("a tag is {key=value}: lower-case words ('" + parts[i] + "')");
+                    else if (conv_.count(key))
+                        fail("conv." + key + " is the engine's own: a tag can't set it");
+                    else
+                        tag.set[key] = value;
+                }
+                if (tag.set.empty())
+                    fail("a tag sets something: {key=value}");
+                t = trim(t.substr(close + 1));
+            }
+        }
+        if (t.find('{') != std::string::npos || t.find('}') != std::string::npos)
+            fail("{ } hold a tag, before an alternative's words: {key=value} words");
         std::size_t longest = 0;
         if (checkText(t, errors, file + ":" + std::to_string(number), &longest) && longest > LongestLine)
             fail("a line of more than " + std::to_string(LongestLine) + " characters");
         v.texts.push_back(t);
+        v.tags.push_back(std::move(tag));
     };
     while (std::getline(in, raw))
     {
@@ -1118,6 +1226,137 @@ bool Library::parse(const std::string& text, const std::string& file, std::strin
                 fail("cooldown is 'cooldown 2h' (or 30m, 1d)");
             continue;
         }
+        // Doc 84 §7.1 (Phase 2): what a line does in the talk.
+        const auto keyword = [&](const char* k) {
+            const auto n = std::strlen(k);
+            return line.compare(0, n, k) == 0 && (line.size() == n || line[n] == ' ');
+        };
+        if (keyword("does") || keyword("owes") || keyword("invites") || keyword("tone") || keyword("asserts") ||
+            keyword("denies") || keyword("gist") || keyword("binds"))
+        {
+            const auto space = line.find(' ');
+            const auto head = line.substr(0, space);
+            const auto rest = space == std::string::npos ? std::string() : trim(line.substr(space + 1));
+            if (moves_.empty() && head != "binds")
+            {
+                fail(head + ": there is no moves.json to say what lines do");
+                continue;
+            }
+            if (head == "does")
+            {
+                if (!e->does.empty())
+                {
+                    fail("one `does` line (a scene names each turn's moves in it, / between them)");
+                    continue;
+                }
+                if (!e->scene && rest.find('/') != std::string::npos)
+                {
+                    fail("a rule is one turn: its `does` names its moves, with no /");
+                    continue;
+                }
+                std::vector<std::string> groups;
+                {
+                    std::string part;
+                    std::istringstream in(rest);
+                    while (std::getline(in, part, '/'))
+                        groups.push_back(trim(part));
+                }
+                for (const auto& g : groups)
+                {
+                    std::vector<std::string> turn;
+                    const auto ws = words(g);
+                    if (ws.empty())
+                        fail("does names a move for each turn (- for one not yet known)");
+                    for (const auto& w : ws)
+                        if (w == "-" && ws.size() == 1)
+                            continue;
+                        else if (!moves_.known(w))
+                            fail("'" + w + "' is not a move (moves.json)");
+                        else if (std::find(turn.begin(), turn.end(), w) == turn.end())
+                            turn.push_back(w);
+                    e->does.push_back(std::move(turn));
+                }
+            }
+            else if (head == "owes" || head == "invites")
+            {
+                const auto colon = rest.find(':');
+                const auto who = colon == std::string::npos ? std::string() : trim(rest.substr(0, colon));
+                const auto list = colon == std::string::npos ? std::string() : trim(rest.substr(colon + 1));
+                if ((who != "other" && who != "self" && who != "any") || list.empty() || list.find(' ') != std::string::npos)
+                {
+                    fail(head + " is '" + head + " other|self|any: <move>[|<move>]'");
+                    continue;
+                }
+                Entry::Owed o;
+                o.who = who;
+                o.soft = head == "invites";
+                for (const auto& m : split(list, '|'))
+                    if (!moves_.known(m))
+                        fail("'" + m + "' is not a move (moves.json)");
+                    else
+                        o.moves.push_back(m);
+                e->owes.push_back(std::move(o));
+            }
+            else if (head == "tone")
+            {
+                if (!e->tones.empty())
+                {
+                    fail("one `tone` line (a scene's may name each turn's, / between them)");
+                    continue;
+                }
+                std::vector<std::string> groups;
+                std::string part;
+                std::istringstream in(rest);
+                while (std::getline(in, part, '/'))
+                    groups.push_back(trim(part));
+                if (!e->scene && groups.size() != 1)
+                    fail("a rule is one turn: one tone");
+                for (const auto& g : groups)
+                    if (!moves_.tone(g))
+                        fail("'" + g + "' is not a tone (moves.json: light, even, serious, grave, tender, cross)");
+                    else
+                        e->tones.push_back(g);
+            }
+            else if (head == "asserts" || head == "denies" || head == "gist")
+            {
+                // A rule's one turn; in a scene the turn's number may come first (asserts 1, denies 2, gist 3): without
+                // it a scene asserts in its first turn, denies in its second and makes its gist in its last.
+                auto ws = words(rest);
+                int turn = e->scene ? (head == "asserts" ? 0 : head == "denies" ? 1 : -2) : 0;
+                if (!ws.empty() && ws[0].find_first_not_of("0123456789") == std::string::npos)
+                {
+                    if (!e->scene)
+                        fail(head + ": a rule is one turn; only a scene's names one");
+                    turn = std::atoi(ws[0].c_str()) - 1;
+                    if (turn < 0)
+                        fail(head + ": turns count from 1");
+                    ws.erase(ws.begin());
+                }
+                const auto claim = ws.empty() ? std::string() : ws[0];
+                if (ws.size() > 1 || (head == "gist" && !claim.empty()))
+                    fail(head == "gist" ? "gist is 'gist' (in a scene, 'gist <turn>')" : head + " is '" + head + " [turn] [claim kind]'");
+                else if (!claim.empty() && claims::loaded() && !claims::find(claim))
+                    fail("'" + claim + "' is not a claim kind (claims.json)");
+                (head == "asserts" ? e->asserts : head == "denies" ? e->denies : e->gist) = turn;
+                (head == "asserts" ? e->assertsClaim : e->deniesClaim) = head == "gist" ? std::string() : claim;
+            }
+            else    // binds x=<slot>
+            {
+                const auto eq = rest.find('=');
+                const auto name = eq == std::string::npos ? std::string() : trim(rest.substr(0, eq));
+                const auto slot = eq == std::string::npos ? std::string() : trim(rest.substr(eq + 1));
+                if (name != "x" || slot.empty())
+                    fail("binds is 'binds x=<slot>' (self.spouse, other.child, topic.subject...)");
+                else if (!bindSlots().count(slot))
+                    fail("'" + slot + "' is not a slot binds may name (self. or other. spouse, child, mother, father, "
+                         "neighbour, shopkeeper, priest, leader; topic.subject)");
+                else if (e->binds.count(name))
+                    fail("x is bound once");
+                else
+                    e->binds[name] = slot;
+            }
+            continue;
+        }
         if (line.rfind("say ", 0) == 0 || line == "say")
         {
             if (e->scene)
@@ -1126,7 +1365,7 @@ bool Library::parse(const std::string& text, const std::string& file, std::strin
                 continue;
             }
             if (e->turns.empty())
-                e->turns.push_back({0, false, {Variant{{}, {}, {}, {}, number}}});
+                e->turns.push_back({0, false, {Variant{{}, {}, {}, {}, {}, number}}});
             for (const auto& t : split(line.substr(3), '|'))
                 addText(e->turns[0].variants[0], t);
             continue;
@@ -1230,6 +1469,81 @@ bool Library::parse(const std::string& text, const std::string& file, std::strin
             turns.push_back({who, optional, {}});
         turns.back().variants.push_back(v);
     }
+    // Doc 84 §7.1-7.2 (Phase 2): each entry's moves settled once its turns are known.
+    const auto settle = [&](Entry& x, const std::string& what, std::vector<std::string>& errs) {
+        const auto turns = x.turns.size();
+        if (turns == 0)
+            return;
+        if (!x.does.empty() && x.does.size() != turns)
+            errs.push_back(what + ": does names " + std::to_string(x.does.size()) + " turns' moves; it has " +
+                           std::to_string(turns) + " (a / between turns, - for one not yet known)");
+        if (!x.tones.empty() && x.tones.size() != turns && x.tones.size() != 1)
+            errs.push_back(what + ": tone names " + std::to_string(x.tones.size()) + " turns' tones; it has " + std::to_string(turns));
+        // A rule with no `does` makes its answer concept's move (an alias in moves.json).
+        if (x.does.empty() && !x.scene && !moves_.empty())
+        {
+            std::vector<std::string> aliased;
+            for (const auto& c : x.concepts)
+                if (const auto a = moves_.alias(c); !a.empty() && std::find(aliased.begin(), aliased.end(), a) == aliased.end())
+                    aliased.push_back(a);
+            if (!aliased.empty())
+            {
+                x.does.push_back(aliased);
+                x.aliasMoves = true;
+            }
+        }
+        x.does.resize(turns);
+        if (x.tones.size() == 1 && turns > 1)
+            x.tones.assign(turns, x.tones.front());
+        x.tones.resize(turns);
+        if (x.gist == -2)
+            x.gist = int(turns) - 1;
+        for (const auto* t : {&x.asserts, &x.denies, &x.gist})
+            if (*t >= int(turns))
+                errs.push_back(what + ": names turn " + std::to_string(*t + 1) + " of " + std::to_string(turns));
+        // What is owed must answer what the line does: an owed move that can't is a slip.
+        const auto& last = x.does.back();
+        for (const auto& o : x.owes)
+        {
+            if (last.empty())
+            {
+                errs.push_back(what + ": " + (o.soft ? "invites" : "owes") + " needs the line's own move first (does)");
+                continue;
+            }
+            for (const auto& m : o.moves)
+                if (o.who != "self" && std::none_of(last.begin(), last.end(), [&](const std::string& d) { return moves_.answers(m, d); }))
+                    errs.push_back(what + ": owes " + m + ", which doesn't answer " + last.front() + " (moves.json: its answers)");
+        }
+        // A `then` hands on its concept's move: the answer it makes due. (A hand-on to a topic is a new topic, owed by
+        // nobody: no alias.)
+        if (!x.thenConcept.empty() && !moves_.empty())
+        {
+            if (const auto a = moves_.alias(x.thenConcept); a.empty())
+            {
+                if (x.thenConcept.rfind("talk.", 0) != 0)
+                    errs.push_back(what + ": hands on to " + x.thenConcept + ", an answer concept with no move (moves.json: an alias)");
+            }
+            else if (std::none_of(x.owes.begin(), x.owes.end(), [](const Entry::Owed& o) { return !o.soft; }))
+            {
+                Entry::Owed o;
+                o.who = x.thenWho;
+                o.moves = {a};
+                o.derived = true;
+                x.owes.push_back(o);
+            }
+        }
+        // A line that speaks of x needs someone bound as x.
+        bool usesX = std::any_of(x.when.begin(), x.when.end(), [](const Criterion& c) { return c.ns == Ns::X; });
+        for (const auto& t : x.turns)
+            for (const auto& v : t.variants)
+            {
+                usesX = usesX || std::any_of(v.when.begin(), v.when.end(), [](const Criterion& c) { return c.ns == Ns::X; });
+                for (const auto& text : v.texts)
+                    usesX = usesX || text.find("#x.") != std::string::npos;
+            }
+        if (usesX && !x.binds.count("x"))
+            errs.push_back(what + ": speaks of x with nobody bound (binds x=<slot>)");
+    };
     for (auto& x : parsed)
     {
         const std::string what = x.file + ": " + (x.scene ? "scene " : "rule ") + x.id;
@@ -1257,6 +1571,7 @@ bool Library::parse(const std::string& text, const std::string& file, std::strin
         for (const auto& c : x.when)
             x.score += (c.name == "id" && c.full.empty()) ? settings_.namedPerson : 1;
         x.repeat = std::any_of(x.concepts.begin(), x.concepts.end(), [&](const std::string& c) { return settings_.repeat.count(c) > 0; });
+        settle(x, what, errors);
     }
     if (!errors.empty())
     {
@@ -1274,6 +1589,7 @@ bool Library::parse(const std::string& text, const std::string& file, std::strin
         for (const auto& c : x.concepts)
             byConcept_[c].push_back(entries_.size());
         entries_.push_back(std::move(x));
+        indexMoves(entries_.size() - 1);
     }
     return true;
 }
@@ -1282,7 +1598,8 @@ namespace
 {
 bool loadDir(Library& lib, const std::string& dir, bool all, std::string& problem,
              const std::function<bool(const std::string&, std::string&)>& schema,
-             const std::function<bool(const std::string&, std::string&)>& settings)
+             const std::function<bool(const std::string&, std::string&)>& settings,
+             const std::function<bool(const std::string&, std::string&)>& moves)
 {
     namespace fs = std::filesystem;
     std::error_code ec;
@@ -1309,6 +1626,9 @@ bool loadDir(Library& lib, const std::string& dir, bool all, std::string& proble
     // The claims and their words (doc 84 §7.7): the process's table, for the world's talk of what residents believe. A
     // library from before Phase 1 has none, and leaves the table as it was.
     if (readFile(fs::path(dir) / "claims.json", text) && !claims::load(text, problem))
+        return false;
+    // The moves lines make (doc 84 §7.2, Phase 2). A library from before Phase 2 has none: its lines make no moves.
+    if (readFile(fs::path(dir) / "moves.json", text) && !moves(text, problem))
         return false;
     std::vector<fs::path> grammars, talks, trees;
     for (fs::recursive_directory_iterator it(dir, ec), end; it != end && !ec; it.increment(ec))
@@ -1371,6 +1691,10 @@ bool loadDir(Library& lib, const std::string& dir, bool all, std::string& proble
                 if (c.action == "open" && !c.args.empty() &&
                     std::none_of(lib.trees().begin(), lib.trees().end(), [&](const auto& o) { return o.second.entries.count(c.args[0]) > 0; }))
                     add(t.file + ":" + std::to_string(c.line) + ": no tree has the entry '" + c.args[0] + "'");
+    // No dead ends (doc 84 §7.2): whatever a line hands on to or owes can always be answered.
+    if (all && trouble.empty())
+        if (const auto dead = lib.deadEnds(); !dead.empty())
+            add(dead);
     if (!trouble.empty())
     {
         problem = trouble;
@@ -1384,7 +1708,8 @@ bool Library::load(const std::string& dir, std::string& problem)
 {
     clear();
     const bool ok = loadDir(*this, dir, true, problem, [this](const std::string& t, std::string& p) { return readSchema(t, p); },
-                            [this](const std::string& t, std::string& p) { return readSettings(t, p); });
+                            [this](const std::string& t, std::string& p) { return readSettings(t, p); },
+                            [this](const std::string& t, std::string& p) { return readMoves(t, p); });
     if (!ok)
         clear();
     return ok;
@@ -1394,7 +1719,8 @@ bool Library::loadFoundation(const std::string& dir, std::string& problem)
 {
     clear();
     const bool ok = loadDir(*this, dir, false, problem, [this](const std::string& t, std::string& p) { return readSchema(t, p); },
-                            [this](const std::string& t, std::string& p) { return readSettings(t, p); });
+                            [this](const std::string& t, std::string& p) { return readSettings(t, p); },
+                            [this](const std::string& t, std::string& p) { return readMoves(t, p); });
     if (!ok)
         clear();
     return ok;
@@ -1521,7 +1847,23 @@ bool Library::expandInto(const std::string& text, Expansion& x, int depth, std::
         const auto ref = readRef(text.substr(i + 1, end - i - 1));
         i = end;
         std::string value;
-        if (ref.parts.size() == 2 && isPersonNs(ref.parts[0]))
+        if (ref.parts.size() == 2 && (ref.parts[0] == "x" || ref.parts[0] == "conv"))
+        {
+            // A bound third party's (x.name, x.they) or the conversation's own (conv.k): kept in the query by full key.
+            const auto at = [&](const std::string& k) {
+                const auto f = x.q.facts.find(ref.parts[0] + "." + k);
+                return f == x.q.facts.end() ? nullptr : &f->second;
+            };
+            if (ref.parts[0] == "x" && Pronouns.count(ref.parts[1]))
+            {
+                if (!at("sex") && !at("name"))
+                    return false;
+                value = pronoun(ref.parts[1], at("sex") ? *at("sex") : std::string());
+            }
+            else if (const auto* v = at(ref.parts[1]))
+                value = *v;
+        }
+        else if (ref.parts.size() == 2 && isPersonNs(ref.parts[0]))
         {
             const Ns ns = personNs(ref.parts[0]);
             if (Pronouns.count(ref.parts[1]))
@@ -1571,7 +1913,37 @@ bool Library::expand(const std::string& text, const Query& q, int speaker, std::
     return true;
 }
 
+bool Library::bindThird(const Entry& e, const Query& q, int speaker, Query& out) const
+{
+    // A third party (doc 84 §7.1, binds x=<slot>): the game says who the slot names for the speaker, and their facts go
+    // in as x.*. Nobody there, or nobody to ask: the line doesn't fit.
+    out = q;
+    for (auto it = out.facts.begin(); it != out.facts.end();)
+        it = it->first.rfind("x.", 0) == 0 ? out.facts.erase(it) : std::next(it);
+    for (const auto& [name, slot] : e.binds)
+    {
+        Facts f;
+        if (!q.bind || !q.bind(slot, speaker, f) || f.empty())
+            return false;
+        for (auto& [k, v] : f)
+            out.facts[name + "." + k] = std::move(v);
+    }
+    return true;
+}
+
 bool Library::fits(const Entry& e, const Query& q, int speaker) const
+{
+    if (!e.concepts.count(q.concept))
+        return false;
+    if (!e.binds.empty())
+    {
+        Query b;
+        return bindThird(e, q, speaker, b) && fitsWith(e, b, speaker);
+    }
+    return fitsWith(e, q, speaker);
+}
+
+bool Library::fitsWith(const Entry& e, const Query& q, int speaker) const
 {
     if (!e.concepts.count(q.concept))
         return false;
@@ -1608,9 +1980,20 @@ std::string Library::dialectOf(const std::string& from) const
 
 Said Library::render(const Entry& e, const Query& q, std::uint64_t seed, Trace* trace, int speaker) const
 {
+    if (!e.binds.empty())
+    {
+        Query b;
+        return bindThird(e, q, speaker, b) ? renderWith(e, b, seed, trace, speaker) : Said{};
+    }
+    return renderWith(e, q, seed, trace, speaker);
+}
+
+Said Library::renderWith(const Entry& e, const Query& q, std::uint64_t seed, Trace* trace, int speaker) const
+{
     Said out;
-    if (!fits(e, q, speaker))
+    if (!fitsWith(e, q, speaker))
         return out;
+    std::vector<std::string> before;                // (The moves of the line spoken before: what a line answers.)
     std::map<std::string, std::string> binds;
     std::set<std::string> marks;
     std::uint64_t r = mix(seed ^ hash(e.id));
@@ -1668,7 +2051,22 @@ Said Library::render(const Entry& e, const Query& q, std::uint64_t seed, Trace* 
         }
         tidy(said);
         out.lines.push_back({who, said});
-        out.info.push_back({e.id, int((start + k - 1) % n), std::move(used), std::move(habits)});
+        SaidLine info;
+        info.entry = e.id;
+        info.alt = int((start + k - 1) % n);
+        info.layers = std::move(used);
+        info.habits = std::move(habits);
+        info.who = who;
+        info.to = q.alone ? -1 : 1 - who;
+        info.text = said;
+        if (std::size_t(info.alt) < chosen->tags.size())
+        {
+            info.tags = chosen->tags[std::size_t(info.alt)].set;
+            info.keep = chosen->tags[std::size_t(info.alt)].keep;
+        }
+        describe(e, t, q, before, info);
+        before = info.moves;
+        out.info.push_back(std::move(info));
         marks.insert(chosen->marks.begin(), chosen->marks.end());
     }
     out.id = e.id;
@@ -1708,6 +2106,161 @@ Said Library::render(const Entry& e, const Query& q, std::uint64_t seed, Trace* 
     return out;
 }
 
+std::vector<std::string> Library::answersOf(const std::vector<std::string>& before, const std::vector<std::string>& moves) const
+{
+    std::vector<std::string> out;
+    for (const auto& b : before)
+        if (std::any_of(moves.begin(), moves.end(), [&](const std::string& m) { return moves_.answers(m, b); }))
+            out.push_back(b);
+    return out;
+}
+
+void Library::describe(const Entry& e, std::size_t turn, const Query& q, const std::vector<std::string>& before, SaidLine& line) const
+{
+    if (moves_.empty() || turn >= e.turns.size())
+        return;
+    line.moves = turn < e.does.size() ? e.does[turn] : std::vector<std::string>{};
+    if (turn < e.tones.size())
+        line.tone = e.tones[turn];
+    // What the last turn makes due as written (or its `then`'s move); the rest from its moves (describeMoves).
+    if (turn + 1 == e.turns.size())
+        for (const auto& o : e.owes)
+        {
+            std::string alts;
+            for (const auto& m : o.moves)
+                alts += (alts.empty() ? "" : "|") + m;
+            (o.soft ? line.invites : line.owes).push_back((o.who == "other" ? std::string() : o.who + ":") + alts);
+        }
+    // The claim it names, else the topic's (topic.claim_kind), else "topic".
+    const auto claim = [&](const std::string& named) {
+        const auto kind = q.facts.find("topic.claim_kind");
+        return !named.empty() ? named : kind != q.facts.end() ? kind->second : std::string("topic");
+    };
+    if (e.asserts == int(turn))
+        line.asserts.push_back(claim(e.assertsClaim));
+    if (e.denies == int(turn))
+        line.denies.push_back(claim(e.deniesClaim));
+    line.gist = e.gist == int(turn);
+    // A scene is written whole: its last line owes only what is written (a set piece handing on into open talk, §8.2),
+    // never what its moves expect by default.
+    describeMoves(line, before, q.facts, !(e.scene && turn + 1 == e.turns.size()));
+}
+
+void Library::describeMoves(SaidLine& line, const std::vector<std::string>& before, const Facts& facts, bool expect) const
+{
+    if (moves_.empty())
+        return;
+    if (line.tone.empty() && !line.moves.empty())
+        line.tone = moves_.toneOf(line.moves.front());
+    // What its moves expect, when nothing was written or handed on (soft for a move whose answer is optional).
+    if (expect && line.owes.empty() && line.invites.empty())
+        for (const auto& m : line.moves)
+            if (const auto* mv = moves_.find(m); mv && !mv->expects.empty())
+            {
+                std::string alts;
+                for (const auto& x : mv->expects)
+                    alts += (alts.empty() ? "" : "|") + x;
+                (mv->optional ? line.invites : line.owes).push_back(alts);
+            }
+    line.answers = answersOf(before, line.moves);
+    // A move that asserts (or denies) by default does so only on a topic with a claim.
+    const auto kind = facts.find("topic.claim_kind");
+    const auto byDefault = [&](bool Move::*flag) {
+        return kind != facts.end() && std::any_of(line.moves.begin(), line.moves.end(), [&](const std::string& m) {
+                   const auto* mv = moves_.find(m);
+                   return mv && mv->*flag;
+               });
+    };
+    if (line.asserts.empty() && byDefault(&Move::asserts))
+        line.asserts.push_back(kind->second);
+    if (line.denies.empty() && byDefault(&Move::denies))
+        line.denies.push_back(kind->second);
+}
+
+bool Library::unconditioned(const Entry& e) const
+{
+    // Holds, and can be said, for a speaker with every fact empty: plain words, no limit, nobody bound.
+    if (e.scene || !e.binds.empty() || e.limit != Entry::Limit::None || e.turns.size() != 1)
+        return false;
+    Query none;
+    if (!std::all_of(e.when.begin(), e.when.end(), [&](const Criterion& c) { return holds(c, none, 0); }))
+        return false;
+    for (const auto& v : e.turns.front().variants)
+    {
+        if (!std::all_of(v.when.begin(), v.when.end(), [&](const Criterion& c) { return holds(c, none, 0); }) || !v.needs.empty())
+            continue;
+        for (const auto& text : v.texts)
+        {
+            std::string out;
+            if (expand(text, none, 0, 1, out) && !out.empty())
+                return true;
+        }
+    }
+    return false;
+}
+
+std::string Library::deadEnds() const
+{
+    if (moves_.empty())
+        return {};
+    std::vector<char> plain(entries_.size(), 2);    // (2: not worked out yet.)
+    const auto ok = [&](std::size_t i) {
+        if (plain[i] == 2)
+            plain[i] = unconditioned(entries_[i]) ? 1 : 0;
+        return plain[i] == 1;
+    };
+    std::vector<std::string> problems;
+    // 1. Every concept a line hands on to (`then`) has a plain rule of its own: the talk as it runs today asks for the
+    // concept, so its own rules must never all fail (defect 13).
+    std::map<std::string, std::string> handed;
+    for (const auto& e : entries_)
+        if (!e.thenConcept.empty())
+            handed.emplace(e.thenConcept, e.id);
+    for (const auto& [concept, by] : handed)
+    {
+        const auto list = byConcept_.find(concept);
+        if (list == byConcept_.end() || std::none_of(list->second.begin(), list->second.end(), ok))
+            problems.push_back("dead end: " + concept + " (handed on by " + by +
+                               ") has no rule that holds and speaks with nothing known: a talk that reaches it ends there");
+    }
+    // 2. Every answer a line can owe (written, handed on, or what its moves expect) has a plain line doing it, or doing
+    // one of its fallbacks, walked down to ack.
+    std::map<std::string, std::string> owed;        // "a|b" -> the first entry owing it
+    const auto owe = [&](const std::vector<std::string>& alts, const std::string& by) {
+        std::string key;
+        for (const auto& m : alts)
+            key += (key.empty() ? "" : "|") + m;
+        owed.emplace(key, by);
+    };
+    for (const auto& e : entries_)
+    {
+        for (const auto& o : e.owes)
+            if (!o.soft)
+                owe(o.moves, e.id);
+        for (const auto& turn : e.does)
+            for (const auto& m : turn)
+                if (const auto* mv = moves_.find(m); mv && !mv->optional && !mv->expects.empty())
+                    owe(mv->expects, e.id);
+    }
+    for (const auto& [key, by] : owed)
+    {
+        bool answered = false;
+        for (const auto& alt : split(key, '|'))
+            for (const auto& m : moves_.chain(alt))
+                if (const auto* list = byMove(m); list && std::any_of(list->begin(), list->end(), ok))
+                    answered = true;
+        if (!answered)
+            problems.push_back("dead end: " + key + " (owed by " + by +
+                               ") has no plain line doing it, or any of its fallbacks, that holds with nothing known");
+    }
+    std::string out;
+    for (std::size_t i = 0; i < problems.size() && i < 30; ++i)
+        out += (i ? "\n" : "") + problems[i];
+    if (problems.size() > 30)
+        out += "\n(" + std::to_string(problems.size() - 30) + " more dead ends)";
+    return out;
+}
+
 Said Library::pick(const Query& q, std::uint64_t seed, const std::function<bool(const std::string&)>& heard,
                    const std::deque<std::string>& recent, Trace* trace) const
 {
@@ -1725,6 +2278,26 @@ Said Library::converse(const Query& q, std::uint64_t seed, const std::function<b
     auto next = q;
     for (const auto& e : all.effects)
         remembered(e, next);
+    // The conversation's own facts for the beats after (doc 84 §7.11): the move just made and the one before it, its
+    // tone, the lines said so far, and every {k=v} tag (conv.k). Read by nothing until lines test them.
+    int beats = 0;
+    const auto heardSaid = [&](const Said& said) {
+        for (const auto& line : said.info)
+        {
+            for (const auto& [k, v] : line.tags)
+                next.facts["conv." + k] = v;
+            if (!line.moves.empty())
+            {
+                if (const auto m = next.facts.find("conv.move"); m != next.facts.end())
+                    next.facts["conv.prev"] = m->second;
+                next.facts["conv.move"] = line.moves.front();
+            }
+            if (!line.tone.empty())
+                next.facts["conv.tone"] = line.tone;
+            next.facts["conv.beat"] = std::to_string(++beats);
+        }
+    };
+    heardSaid(all);
     const Entry* e = find(all.id);
     int speaker = 0;
     // A shrug ("Mm.") ends it, whatever the rule hands on: the next beat would answer something not said (phase 7).
@@ -1742,6 +2315,10 @@ Said Library::converse(const Query& q, std::uint64_t seed, const std::function<b
         }
         if (trace)
             trace->why += "; then " + next.concept + " (" + (speaker ? "b" : "a") + "): " + said.id;
+        // What the beat answers is the line before it, said by the other (Phase 2: the transcripts' `answers`).
+        if (!said.info.empty() && !all.info.empty())
+            said.info.front().answers = answersOf(all.info.back().moves, said.info.front().moves);
+        heardSaid(said);
         all.lines.insert(all.lines.end(), said.lines.begin(), said.lines.end());
         all.info.insert(all.info.end(), said.info.begin(), said.info.end());
         all.chain.push_back(said.id);
@@ -1926,12 +2503,53 @@ void Library::reindex()
 {
     byConcept_.clear();
     byId_.clear();
+    byMove_.clear();
     for (std::size_t i = 0; i < entries_.size(); ++i)
     {
         byId_[entries_[i].id] = i;
         for (const auto& c : entries_[i].concepts)
             byConcept_[c].push_back(i);
+        indexMoves(i);
     }
+}
+
+void Library::indexMoves(std::size_t i)
+{
+    // A rule by its moves, a scene by its first turn's (a scene taken as a beat starts with it), each under its move and
+    // every kind it is of: react.news.known under react.news.known and react.news.
+    const auto& e = entries_[i];
+    if (e.does.empty())
+        return;
+    std::set<std::string> under;
+    for (const auto& m : e.does.front())
+        for (std::string k = m;;)
+        {
+            under.insert(k);
+            const auto dot = k.rfind('.');
+            if (dot == std::string::npos || !moves_.find(k.substr(0, dot)))
+                break;
+            k = k.substr(0, dot);
+        }
+    for (const auto& k : under)
+        byMove_[k].push_back(i);
+}
+
+const std::vector<std::size_t>* Library::byMove(const std::string& move) const
+{
+    const auto f = byMove_.find(move);
+    return f == byMove_.end() ? nullptr : &f->second;
+}
+
+const std::set<std::string>& Library::bindSlots()
+{
+    static const std::set<std::string> Slots = [] {
+        std::set<std::string> out{"topic.subject"};
+        for (const char* who : {"self", "other"})
+            for (const char* role : {"spouse", "child", "mother", "father", "neighbour", "shopkeeper", "priest", "leader"})
+                out.insert(std::string(who) + "." + role);
+        return out;
+    }();
+    return Slots;
 }
 
 bool Library::setGrammar(const std::string& name, const std::string& text, std::string& problem)

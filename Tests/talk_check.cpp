@@ -227,8 +227,25 @@ int explain(const talk::Library& lib, const talk::Query& q, std::uint64_t seed, 
     std::cout << "\nchosen: " << trace.why << "\n";
     for (const auto& step : trace.steps)
         std::cout << "  " << step << "\n";
-    for (const auto& [who, text] : said.lines)
-        std::cout << (who == 0 ? "  a: " : "  b: ") << text << "\n";    for (const auto& e : said.effects)
+    for (std::size_t i = 0; i < said.lines.size(); ++i)
+    {
+        std::cout << (said.lines[i].first == 0 ? "  a: " : "  b: ") << said.lines[i].second << "\n";
+        // What it does in the talk (doc 84, Phase 2): its moves, what it owes, what it answers, its tone.
+        if (i < said.info.size() && !said.info[i].moves.empty())
+        {
+            const auto& l = said.info[i];
+            const auto join = [](const std::vector<std::string>& v) {
+                std::string out;
+                for (const auto& x : v)
+                    out += (out.empty() ? "" : ", ") + x;
+                return out;
+            };
+            std::cout << "       does " << join(l.moves) << (l.owes.empty() ? "" : "; owes " + join(l.owes))
+                      << (l.invites.empty() ? "" : "; invites " + join(l.invites)) << (l.answers.empty() ? "" : "; answers " + join(l.answers))
+                      << "; " << l.tone << (l.asserts.empty() ? "" : "; asserts " + join(l.asserts)) << "\n";
+        }
+    }
+    for (const auto& e : said.effects)
         std::cout << "  remembers (" << e.scope << " " << e.owner << "): " << e.key << "=" << e.value
                   << (e.days < 0 ? " for good" : " for " + (std::ostringstream() << e.days).str() + " days") << "\n";
     if (many > 0)
@@ -391,6 +408,13 @@ int main(int argc, char** argv)
             if (!ok)
                 std::cout << problem << "\n", ++refused;
         }
+        // What the files' lines say they do (doc 84, Phase 2): written moves, moves by an answer concept's alias, none.
+        int written = 0, aliased = 0, none = 0;
+        for (const auto& e : lib.entries())
+            (e.aliasMoves ? aliased : std::any_of(e.does.begin(), e.does.end(), [](const auto& t) { return !t.empty(); }) ? written : none) += 1;
+        if (!lib.moves().empty() && lib.size() > 0)
+            std::cout << "moves: " << written << " entries say what they do, " << aliased << " by their concept's alias, " << none
+                      << " not yet\n";
         return refused ? 1 : 0;
     }
     if (world.empty())
