@@ -1074,6 +1074,11 @@
    "roomToGrow": {
     "cottageLots": 1,
     "openTiles": 11526
+   },
+   "layout": {
+    "shape": "crossroads and market blocks",
+    "surface": "_",
+    "lane": "f"
    }
   },
   {
@@ -1978,6 +1983,11 @@
    "roomToGrow": {
     "cottageLots": 1,
     "openTiles": 12308
+   },
+   "layout": {
+    "shape": "long market street and grain lanes",
+    "surface": "d",
+    "lane": "f"
    }
   },
   {
@@ -2508,6 +2518,11 @@
    "roomToGrow": {
     "cottageLots": 1,
     "openTiles": 12127
+   },
+   "layout": {
+    "shape": "diagonal vine lanes",
+    "surface": "f",
+    "lane": "/"
    }
   },
   {
@@ -3040,6 +3055,11 @@
    "roomToGrow": {
     "cottageLots": 4,
     "openTiles": 9006
+   },
+   "layout": {
+    "shape": "branching fen boardwalks",
+    "surface": "8",
+    "lane": "8"
    }
   },
   {
@@ -3423,6 +3443,11 @@
    "roomToGrow": {
     "cottageLots": 3,
     "openTiles": 6285
+   },
+   "layout": {
+    "shape": "oasis crescent and caravan arc",
+    "surface": "f",
+    "lane": "d"
    }
   },
   {
@@ -3944,6 +3969,11 @@
    "roomToGrow": {
     "cottageLots": 8,
     "openTiles": 12152
+   },
+   "layout": {
+    "shape": "staggered woodland lanes",
+    "surface": "/",
+    "lane": "d"
    }
   },
   {
@@ -4506,6 +4536,11 @@
    "roomToGrow": {
     "cottageLots": 7,
     "openTiles": 5569
+   },
+   "layout": {
+    "shape": "pass road and miners’ spurs",
+    "surface": "_",
+    "lane": "f"
    }
   }
  ],

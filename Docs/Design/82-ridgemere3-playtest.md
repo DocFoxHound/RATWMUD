@@ -33,6 +33,22 @@ The map editor validated the revision 104 project; `path_check.py` now audits th
 
 The server loaded build 80 after the updated door rule was compiled; build 79 was the first map build of revision 104.
 
+### Distinct town layouts (revision 105 / build 81)
+
+Each community now has a different character-map street plan and ground texture while keeping its existing buildings and doors:
+
+| Town | Street plan and appearance |
+| --- | --- |
+| Coldwater | Cobbled crossroads, short market blocks and wildflower verges. |
+| Larkfield | A long flagstone market street, grain lanes and crop-field edges. |
+| Southmeadow | Diagonal vine lanes, red tile roofs and flowered dry grass. |
+| Fenshore | Branching plank boardwalks through reeds and water. |
+| Saltwell | A caravan arc and a lane following the oasis, with sandstone in the sand. |
+| Oakhaven | Staggered woodland lanes with moss beside cedar roofs. |
+| Frosthollow | A straight pass road, miners' spurs, scree and slate roofs. |
+
+The pass uses existing terrain characters, with no raster artwork. It preserves water, trees, gardens, doors and the green's well. Two Southmeadow lamps moved to the verge when the new lanes crossed their old positions. Revision 104 is backed up at `Saved/Backups/ridgemere3-before-towns-rev104.json.gz` on the development machine.
+
 ## Street and access pass, 2026-11-15
 
 Ridgemere3 revision 101 / build 76 levels 63,608 built city tiles to a shared street height. The coast, waterways, transition hills, and Palace remain distinct. Of the previous 735 stair glyphs in the four central cells, 715 routine street stairs were replaced with cobbles or flagstones, and six neutral stone stair tiles now mark the three Palace approaches. The 20 remaining old stairs lie on the eastern hillside outside the built town. The Sump and its adjoining fringe lost 786 timber fence tiles. Small doorless roof sheds became rubble, while 26 larger private frontages use a solid `⊠` character, distinct from working `+` doors. The revision-checked edit is reproducible with `tools/refresh_ridgemere3_streets.py`; the pre-edit source snapshots were saved in `/tmp/ridgemere3-before-streets-rev99.json.gz` and `rev100.json.gz` on the development machine.
