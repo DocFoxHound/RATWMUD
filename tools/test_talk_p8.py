@@ -13,7 +13,7 @@ DIALECTS = ['coldwater', 'frosthollow', 'larkfield', 'mirebridge', 'oakhaven', '
 # The discourse words Phase 8 added (§33.1), in every grammar; the greetings and closings, plain's by who says them and
 # each dialect's own.
 DISCOURSE = ['marvel', 'pity', 'gladnews', 'uneasy', 'grumble', 'notsobad', 'dunno', 'hearsay', 'howso', 'rest']
-CLOSINGS = ['s8_hello', 's8_okay', 's8_bye', 's8_byeback', 's8_nevermind']
+CLOSINGS = ['s8_hello', 's8_okay', 's8_bye', 's8_byeback', 's8_nevermind', 's8_night', 's8_nightback']
 # Plain's own, by who says them (no dialect needs them: they're said by the plain words' speakers, with dialect inside).
 PLAIN_ONLY = ['s8_wow', 's8_gripe', 's8_evade', 's8_ask', 's8_pupbye', 's8_pupbyeback', 's8_teenbye']
 # Session 2's (§33.3): the other owed moves' words in every grammar, and plain's who-says-it for them.
@@ -23,6 +23,20 @@ PLAIN_ONLY2 = ['s8_self', 's8_laugh', 's8_teaseback', 's8_thanks', 's8_praise', 
                's8_story', 's8_memory', 's8_extend', 's8_welcome']
 # Callbacks (shared8_callbacks.talk) are the one place an opener is the point (§33.1): a concept there reads the ledger.
 LEDGER = re.compile(r'\bpair\.(talked|recall|last_talk|last_outcome|kept_invite|thread)\b')
+# Session 3's (§33.4): the thin topics' own files, where a topic's opener is the point. Each file's concepts are its
+# topic's opener and the answer concepts its openers hand on to, nothing else.
+THIN = {'shared8_events.talk': {'talk.event', 'event.answer'},
+        'shared8_gossip.talk': {'talk.gossip'},
+        'shared8_ships.talk': {'talk.ships', 'ships.answer'},
+        'shared8_times.talk': {'talk.times', 'times.answer', 'times.boast_answer'},
+        'shared8_harvest.talk': {'talk.harvest', 'harvest.answer'},
+        'shared8_ownnews.talk': {'talk.news'},
+        'shared8_newcomers.talk': {'talk.newcomer'},
+        'shared8_deeds.talk': {'talk.deed'},
+        'shared8_accents.talk': {'talk.accent', 'moment.reply_home'},
+        'shared8_caravans.talk': {'talk.caravan', 'caravan.answer', 'caravan.due_answer'}}
+PLAIN_ONLY3 = ['s8_heard', 's8_psst']
+EYEWITNESS = re.compile(r"\b(I saw|I watched|I seen|saw it myself|with my own eyes)\b", re.I)
 
 
 def grammar(name: str) -> dict[str, list[str]]:
@@ -43,7 +57,8 @@ def rules() -> list[dict]:
             m = re.match(r'rule (\S+)', block)
             if not m:
                 continue
-            r = {'id': m.group(1), 'file': f.name, 'does': '', 'when': '', 'say': [], 'weight': 1.0}
+            r = {'id': m.group(1), 'file': f.name, 'does': '', 'when': '', 'say': [], 'weight': 1.0, 'then': '',
+                 'cooldown': ''}
             for line in block.splitlines():
                 if line.startswith('does '):
                     r['does'] = line[5:].strip()
@@ -51,6 +66,10 @@ def rules() -> list[dict]:
                     r['when'] = (r['when'] + ' ' + line[5:].strip()).strip()
                 elif line.startswith('weight '):
                     r['weight'] = float(line[7:])
+                elif line.startswith('then '):
+                    r['then'] = line[5:].strip()
+                elif line.startswith('cooldown '):
+                    r['cooldown'] = line[9:].strip()
                 elif line.startswith('say '):
                     r['say'] += [a.strip() for a in line[4:].split('|')]
             out.append(r)
@@ -65,7 +84,10 @@ class SharedLines(unittest.TestCase):
     def test_every_rule_is_a_move_line_that_says_what_it_does(self):
         for r in rules():
             self.assertTrue(r['does'], f"{r['id']}: no does")
-            if 'concept=' in r['when']:
+            if 'concept=' in r['when'] and r['file'] in THIN:
+                concepts = set(re.search(r'(?:^| )concept=([a-z_.|]+)', r['when']).group(1).split('|'))
+                self.assertLessEqual(concepts, THIN[r['file']], f"{r['id']}: not this file's topic (§33.4)")
+            elif 'concept=' in r['when']:
                 self.assertEqual(r['file'], 'shared8_callbacks.talk', f"{r['id']}: a move line has no concept (§8.2)")
                 self.assertRegex(r['when'], LEDGER, f"{r['id']}: a callback opener reads the ledger")
                 self.assertRegex(r['when'], r'(^| )concept=talk\.[a-z_]+(\|talk\.[a-z_]+)*( |$)', r['id'])
@@ -155,7 +177,9 @@ class SharedLines(unittest.TestCase):
     def test_feeling_for_the_one_talked_of_is_gated_to_the_claim(self):
         # Pity only for bad news, gladness only for good (truth.json's pity and glad rules, talk_lint's gossip_kind).
         feeling = re.compile(r'#(pity|rest|gladnews)#|\b(poor soul|sorry to hear|good for #|congratulat)', re.I)
-        gates = re.compile(r'\b(topic\.claim_kind|topic\.kind|topic\.dir|world\.harvest|world\.times)=')
+        # (A deed is good news by its nature: Data/Fame/deeds.json's kinds are all good deeds.)
+        gates = re.compile(r'\b(topic\.claim_kind|topic\.kind|topic\.dir|world\.harvest|world\.times|world\.event)=|'
+                           r'\b(concept=talk\.|conv\.topic=)deed\b')
         for r in rules():
             if any(feeling.search(a) for a in r['say']):
                 self.assertRegex(r['when'], gates, f"{r['id']}: feels for the one talked of with no claim kind")
@@ -180,6 +204,45 @@ class SharedLines(unittest.TestCase):
         for r in rules():
             for a in r['say']:
                 self.assertNotRegex(a, bad, f"{r['id']}: \"{a}\"")
+
+    def test_the_thin_topics_openers_keep_their_promises(self):
+        # Session 3 (§33.4): every thin topic's opener is said once a day at most by one speaker; one that hands on says
+        # what kind of news it was where its answers read it (event.answer's ev=, times.answer's tm=); none claims to
+        # have seen what it tells (the eyewitness lines are the library's own, gated to topic.seen); the lead-ins are
+        # plain's who-says-it symbols; an answer owes nothing, so it never ends on a question.
+        plain = {k.split('[')[0] for k in grammar('plain')}
+        for s in PLAIN_ONLY3:
+            self.assertIn(s, plain, f'plain has no {s}')
+        for r in rules():
+            if r['file'] not in THIN:
+                continue
+            opener = re.search(r'(?:^| )concept=talk\.', r['when'])
+            if opener:
+                self.assertEqual(r['cooldown'], '1d', f"{r['id']}: an opener once a day")
+                if r['then'] == 'other: event.answer':
+                    for a in r['say']:
+                        self.assertRegex(a, r'^\{ev=(good|bad|loss|news)\}', f"{r['id']}: \"{a}\"")
+                if r['then'] in ('other: times.answer', 'other: times.boast_answer'):
+                    for a in r['say']:
+                        self.assertRegex(a, r'^\{tm=(moan|cause|state|land|boast)\}', f"{r['id']}: \"{a}\"")
+            elif 'concept=' in r['when'] or r['does'].split()[0].startswith(('react.', 'sympathise', 'reassure')):
+                for a in r['say']:
+                    # (An echo, "New, is it?", is a reaction; a real question, four words and up, would want an answer.)
+                    last = re.split(r'(?<=[.!?])\s+', re.sub(r'^\{[^}]*\}\s*', '', a).strip())[-1]
+                    self.assertFalse(last.endswith('?') and words(last) > 4, f"{r['id']}: \"{a}\"")
+            for a in r['say']:
+                self.assertNotRegex(a, EYEWITNESS, f"{r['id']}: \"{a}\"")
+                if 'world.times_cause' in a:
+                    self.assertIn('world.times_cause', r['when'], f"{r['id']}: names a cause it doesn't test")
+
+    def test_the_lost_and_the_newcomer_keep_their_pronouns(self):
+        # One's own loss names the lost one in #topic.news# and no pronoun is known (§33.4): never "they" for them.
+        # A newcomer, a doer, the one gossiped of: by #topic.they# and the like (test_a_named_one_is_never_they).
+        bad = re.compile(r"\b(they(?! say| said|'re saying| were saying)|them|their)\b", re.I)
+        for r in rules():
+            if r['file'] == 'shared8_ownnews.talk' and 'topic.kind=loss' in r['when']:
+                for a in r['say']:
+                    self.assertNotRegex(re.sub(r'#[^#]*#', '', a), bad, f"{r['id']}: \"{a}\"")
 
     def test_house_rules_of_the_world(self):
         # Never "dog" (wolves; pups for the young); "private messages", never "tells".

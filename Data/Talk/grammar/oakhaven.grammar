@@ -168,6 +168,8 @@ s8_hello = Good shade, old root | Shade on you, mm | Ah, old root | Well, mm, he
 s8_okay = Mm, go on, then | Slow, now. Off you go | Root well, then | Go on, old root
 s8_bye = Root well, old root | Good shade, mm | Step over the roots | Go slow, mm
 s8_byeback = And good shade to you | Root well, mm | Step over the roots, now | Slow, now, mm
+s8_night = Sleep like an old root | Mind the roots, now | Rest under the green, mm | Sound sleep, mm
+s8_nightback = Root deep tonight, mm | And sound sleep to you | Rest under the green
 s8_nevermind = In its season, then | Mm. No matter | Let it grow
 
 # Backchannel lines (doc 84 §10.2, Phase 7): plain's short answers ("Good.", "Always.", "It is.") as Oakhaven says them.

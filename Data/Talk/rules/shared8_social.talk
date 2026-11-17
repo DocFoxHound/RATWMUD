@@ -246,6 +246,17 @@ does thank
 when conv.move=give.advice
 say I'll bear it in mind. | Good advice. Thank you. | I'll think on it. Truly. | You're right. I know you are.
 
+# (Session 3: the most-heard thanks of session 2's card, given more ways.)
+rule s8s_thank_advice2
+does thank
+when conv.move=give.advice
+say I'll do that. | Thank you. I needed telling. | That's sound. I will. | Wise words. Thank you. | I'll try it your way.
+
+rule s8s_thank_advice3
+does thank
+when conv.move=give.advice
+say #wellsaid#. | #thanks#. I'll mind it. | Aye. You've the sense of it. | I hadn't thought of that.
+
 rule s8s_thank_comfort
 does thank
 when conv.move=sympathise|reassure

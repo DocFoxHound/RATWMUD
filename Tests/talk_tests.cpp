@@ -772,7 +772,15 @@ void theStagedEconomysTalk()
             for (const auto& v : t.variants)
                 for (const auto& text : v.texts)
                 {
-                    const bool figure = std::any_of(text.begin(), text.end(), [](char c) { return std::isdigit(static_cast<unsigned char>(c)) != 0; });
+                    // (A symbol's name is no figure: #s8_heard# says words.)
+                    std::string words;
+                    bool inSymbol = false;
+                    for (char c : text)
+                        if (c == '#')
+                            inSymbol = !inSymbol;
+                        else if (!inSymbol)
+                            words += c;
+                    const bool figure = std::any_of(words.begin(), words.end(), [](char c) { return std::isdigit(static_cast<unsigned char>(c)) != 0; });
                     expect(!figure, e.id + " names no figure (the shown-price gate): " + text);
                     if (money)
                         for (const char* unit : {"#topic.price# a bundle", "#topic.price# a loaf", "#topic.price# each", "#topic.price# the "})

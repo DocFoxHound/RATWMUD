@@ -1,0 +1,740 @@
+# The shared lines, Phase 8 session 3 (Docs/Design/84 §33, §14.1's thin topics): one's own news (talk.news), 43
+# openers before this phase. The openers carry the concept (§33.1); none hands on, so they're answered by what answers
+# tell.news (session 1's react.news by kind, the move lines below, ask.detail, advice).
+#
+# The facts (Core/RatwAmbient.cpp World::ambientTopic, noteNews, victimNews): topic.kind is marriage, loss, work or
+# crime; topic.news is the teller's own news in their own person: "I married Orm Ashdown", "I lost Bran Tarford", "I
+# became apprentice to Hild Smith", "I took Wren on as an apprentice", "I took over the work of Bran Tarford",
+# "someone robbed me", "a stranger attacked me", "I took Orm Blackwood to the gaol for the Watch". Never told to the
+# one it's about.
+#
+# The rules they keep: the teller's own state by their own facts (self.married, self.mourning, self.apprentice,
+# self.master, self.robbed, self.injured, the guard's job); nothing of the lost one's sex, age or kin (#topic.news#
+# names them; no pronoun is known), nothing of a thief the news doesn't name; grief is quiet, never jaunty (§8.11);
+# who says it by the grammar, what about by the criteria.
+
+## ================================================================ Married
+
+rule s83w_wed_1
+when concept=talk.news topic.kind=marriage
+does tell.news
+cooldown 1d
+say I've news. #topic.news#. | #topic.news#. I still can't quite believe it. | You'll hear it anyway, so: #topic.news#.
+
+rule s83w_wed_2
+when concept=talk.news topic.kind=marriage
+does tell.news
+cooldown 1d
+say #topic.news#. I'm still getting used to saying it. | Guess what. #topic.news#. | Well, it's done. #topic.news#.
+
+rule s83w_wed_3
+when concept=talk.news topic.kind=marriage
+does tell.news
+cooldown 1d
+say #topic.news#. Don't laugh. | Good news, for once. #topic.news#. | #topic.news#. I'm the happiest wolf in #here.town#.
+
+rule s83w_wed_4
+when concept=talk.news topic.kind=marriage
+does tell.news
+cooldown 1d
+say I wanted you to hear it from me. #topic.news#. | #topic.news#. I keep smiling at nothing. | #topic.news#. Somebody pinch me.
+
+rule s83w_wed_friends
+when concept=talk.news topic.kind=marriage pair.band=friends
+does tell.news
+cooldown 1d
+say I've been dying to tell you. #topic.news#! | You first, before anyone. #topic.news#. | Sit down. #topic.news#. Stop grinning.
+
+rule s83w_wed_family
+when concept=talk.news topic.kind=marriage pair.band=family
+does tell.news
+cooldown 1d
+say Don't tell the rest of the family I told you first. #topic.news#. | #topic.news#. You'll have a new one at the table. | #topic.news#. Be nice at supper.
+
+rule s83w_wed_strangers
+when concept=talk.news topic.kind=marriage pair.band=strangers|acquaintances
+does tell.news
+cooldown 1d
+say Forgive me, I'm telling everyone. #topic.news#. | You don't know me, but I can't keep it in. #topic.news#. | #topic.news#. Sorry. I'm grinning at strangers today.
+
+rule s83w_wed_old
+when concept=talk.news topic.kind=marriage self.stage=old
+does tell.news
+cooldown 1d
+say At my age! #topic.news#. | Never too late, they say. #topic.news#. | #topic.news#. Old bones, young heart.
+
+rule s83w_wed_shy
+when concept=talk.news topic.kind=marriage self.talk=quiet
+does tell.news
+cooldown 1d
+say #topic.news#. | Mm. #topic.news#. That's my news. | I don't say much, but: #topic.news#.
+
+rule s83w_wed_tavern
+when concept=talk.news topic.kind=marriage here.place=tavern
+does tell.news
+cooldown 1d
+say Drink with me. #topic.news#. | This one's on me. #topic.news#. | Raise your cup. #topic.news#.
+
+rule s83w_wed_work
+when concept=talk.news topic.kind=marriage here.place=work|market
+does tell.news
+cooldown 1d
+say I can't keep my mind on work. #topic.news#. | Before we start: #topic.news#. | I'll be useless today. #topic.news#.
+
+rule s83w_wed_chapel
+when concept=talk.news topic.kind=marriage here.place=chapel
+does tell.news
+cooldown 1d
+say Where better to say it? #topic.news#. | I came to give thanks. #topic.news#. | The Bright One heard me. #topic.news#.
+
+rule s83w_wed_poor
+when concept=talk.news topic.kind=marriage self.wealth=poor|destitute
+does tell.news
+cooldown 1d
+say No feast, no fine clothes. But #topic.news#. | We've nothing, but we've each other. #topic.news#. | #topic.news#. Two can go hungry as cheap as one, they say.
+
+rule s83w_wed_rich
+when concept=talk.news topic.kind=marriage self.wealth=rich
+does tell.news
+cooldown 1d
+say You'll have heard, I suppose. #topic.news#. | #topic.news#. The seating plan nearly ended it. | #topic.news#. The whole family is beside itself.
+
+## ================================================================ A loss
+
+rule s83w_loss_1
+when concept=talk.news topic.kind=loss
+does tell.feeling
+cooldown 1d
+say #topic.news#. | I've had bad news. #topic.news#. | #topic.news#. I keep forgetting, and then remembering.
+
+rule s83w_loss_2
+when concept=talk.news topic.kind=loss
+does tell.feeling
+cooldown 1d
+say You'll have heard. #topic.news#. | #topic.news#. I don't know what to do with the days. | #topic.news#. Everything's very quiet.
+
+rule s83w_loss_3
+when concept=talk.news topic.kind=loss
+does tell.feeling
+cooldown 1d
+say I have to say it out loud to someone. #topic.news#. | #topic.news#. It doesn't feel real yet. | #topic.news#. I'm managing. Mostly.
+
+rule s83w_loss_4
+when concept=talk.news topic.kind=loss
+does tell.feeling
+cooldown 1d
+say #topic.news#. I'm all right. I'm not, but I am. | It's been a hard week. #topic.news#. | #topic.news#. I keep setting out too many cups.
+
+rule s83w_loss_kin
+when concept=talk.news topic.kind=loss self.mourning=kin
+does tell.feeling
+cooldown 1d
+say We've had a death in the family. #topic.news#. | #topic.news#. The house is too big now. | #topic.news#. Family's all that matters, and now there's less of it.
+
+rule s83w_loss_friend
+when concept=talk.news topic.kind=loss self.mourning=friend
+does tell.feeling
+cooldown 1d
+say #topic.news#. A good friend. The best. | I've lost a friend. #topic.news#. | #topic.news#. We'd known each other for years.
+
+rule s83w_loss_friends
+when concept=talk.news topic.kind=loss pair.band=friends|family|spouses
+does tell.feeling
+cooldown 1d
+say I didn't want to say it in front of the others. #topic.news#. | You're the only one I can say it to. #topic.news#. | #topic.news#. Stay a while, will you?
+
+rule s83w_loss_strangers
+when concept=talk.news topic.kind=loss pair.band=strangers|acquaintances
+does tell.feeling
+cooldown 1d
+say Forgive me. #topic.news#. I needed to say it to someone. | You don't know me. But #topic.news#. | Sorry. #topic.news#. It's been on my mind all day.
+
+rule s83w_loss_old
+when concept=talk.news topic.kind=loss self.stage=old
+does tell.feeling
+cooldown 1d
+say #topic.news#. At my age you bury more than you'd like. | #topic.news#. Another one gone ahead of me. | #topic.news#. I've lost count of the funerals. I hate that.
+
+rule s83w_loss_young
+when concept=talk.news topic.kind=loss self.stage=young|adolescent
+does tell.feeling
+cooldown 1d
+say #topic.news#. Everyone at home is crying. | #topic.news#. I don't understand it. | #topic.news#. I'm trying to be brave.
+
+rule s83w_loss_work
+when concept=talk.news topic.kind=loss here.place=work|market
+does tell.feeling
+cooldown 1d
+say I came to work to keep busy. #topic.news#. | #topic.news#. Work helps. A little. | Don't mind me today. #topic.news#.
+
+rule s83w_loss_chapel
+when concept=talk.news topic.kind=loss here.place=chapel
+does tell.feeling
+cooldown 1d
+say I came to sit for a while. #topic.news#. | #topic.news#. I lit a candle. | #topic.news#. It's quiet here. I needed quiet.
+
+rule s83w_loss_tavern
+when concept=talk.news topic.kind=loss here.place=tavern
+does tell.feeling
+cooldown 1d
+say One cup, for remembering. #topic.news#. | #topic.news#. I didn't want to be at home tonight. | #topic.news#. Drink one with me.
+
+rule s83w_loss_devout
+when concept=talk.news topic.kind=loss self.piety=devout
+does tell.feeling
+cooldown 1d
+say #topic.news#. The Bright One keeps the lost. I tell myself that. | #topic.news#. I've prayed and prayed. | #topic.news#. #rest.capitalize#.
+
+## ================================================================ Work: apprenticed, a master, carrying on another's work
+
+rule s83w_work_1
+when concept=talk.news topic.kind=work
+does tell.news
+cooldown 1d
+say Good news for once. #topic.news#. | #topic.news#. Things are changing. | You'll want to hear this. #topic.news#.
+
+rule s83w_work_2
+when concept=talk.news topic.kind=work
+does tell.news
+cooldown 1d
+say #topic.news#. I'm still taking it in. | Big news, for me anyway. #topic.news#. | #topic.news#. It's all new.
+
+rule s83w_work_3
+when concept=talk.news topic.kind=work
+does tell.news
+cooldown 1d
+say Things are looking up. #topic.news#. | #topic.news#. Wish me luck. | Here's a thing. #topic.news#.
+
+rule s83w_work_apprentice
+when concept=talk.news topic.kind=work self.apprentice=yes
+does tell.news
+cooldown 1d
+say #topic.news#! I'm learning a proper trade. | #topic.news#. I'll be good at it, you watch. | #topic.news#. I start at dawn and finish when I'm told.
+
+rule s83w_work_apprentice2
+when concept=talk.news topic.kind=work self.apprentice=yes
+does tell.news
+cooldown 1d
+say #topic.news#. My paws are all blisters already. | #topic.news#. There's so much to learn. | #topic.news#. I sweep a lot. They say that's how it starts.
+
+rule s83w_work_master
+when concept=talk.news topic.kind=work self.master=yes
+does tell.news
+cooldown 1d
+say #topic.news#. Somebody to pass it on to, at last. | #topic.news#. I remember when I was the one sweeping. | #topic.news#. We'll see if there's a craftsman in there.
+
+rule s83w_work_master2
+when concept=talk.news topic.kind=work self.master=yes
+does tell.news
+cooldown 1d
+say #topic.news#. Keen, which is half of it. | #topic.news#. I'll be patient. Mostly. | #topic.news#. My own master would laugh to see it.
+
+rule s83w_work_adolescent
+when concept=talk.news topic.kind=work self.stage=adolescent
+does tell.news
+cooldown 1d
+say #topic.news#! I'm practically grown. | #topic.news#. My elders are so proud it's embarrassing. | Guess what! #topic.news#.
+
+rule s83w_work_poor
+when concept=talk.news topic.kind=work self.wealth=poor|destitute
+does tell.news
+cooldown 1d
+say #topic.news#. Things might get better now. | #topic.news#. I could cry. I did cry, a little. | #topic.news#. A way up, maybe.
+
+rule s83w_work_friends
+when concept=talk.news topic.kind=work pair.band=friends|family|spouses
+does tell.news
+cooldown 1d
+say You first. #topic.news#. | I wanted you to know. #topic.news#. | #topic.news#. Say you're proud of me.
+
+rule s83w_work_strangers
+when concept=talk.news topic.kind=work pair.band=strangers|acquaintances
+does tell.news
+cooldown 1d
+say Sorry, I'm telling everyone. #topic.news#. | #topic.news#. I can't keep it in. | You don't know me, but #topic.news#.
+
+rule s83w_work_old
+when concept=talk.news topic.kind=work self.stage=old
+does tell.news
+cooldown 1d
+say #topic.news#. Not done yet, you see. | At my age! #topic.news#. | #topic.news#. They'll not be rid of me so easily.
+
+rule s83w_work_tavern
+when concept=talk.news topic.kind=work here.place=tavern
+does tell.news
+cooldown 1d
+say A cup to celebrate. #topic.news#. | #topic.news#. I'll buy, this once. | Drink to it with me. #topic.news#.
+
+rule s83w_work_mourning
+when concept=talk.news topic.kind=work self.mourning=kin|friend
+does tell.news
+cooldown 1d
+say #topic.news#. It's not how I'd have wanted it. | #topic.news#. Somebody had to carry it on. | #topic.news#. I'll do it the way it was done.
+
+## ================================================================ A crime done to the teller; a guard's arrest
+
+rule s83w_crime_1
+when concept=talk.news topic.kind=crime self.role!=guard
+does tell.feeling
+cooldown 1d
+say I have to tell someone. #topic.news#. | #topic.news#. I'm still shaking. | You'll hear it anyway. #topic.news#.
+
+rule s83w_crime_2
+when concept=talk.news topic.kind=crime self.role!=guard
+does tell.feeling
+cooldown 1d
+say #topic.news#. I've not been right since. | Bad week. #topic.news#. | #topic.news#. I keep going over it.
+
+rule s83w_crime_3
+when concept=talk.news topic.kind=crime self.role!=guard
+does tell.feeling
+cooldown 1d
+say #topic.news#. In this town, of all places. | #topic.news#. I feel such a fool. | #topic.news#. I don't feel safe anywhere now.
+
+rule s83w_crime_robbed
+when concept=talk.news topic.kind=crime self.robbed=yes self.role!=guard
+does tell.feeling
+cooldown 1d
+say #topic.news#. My own things. | #topic.news#. I'd been putting that by for months. | #topic.news#. I've nothing left worth taking now.
+
+rule s83w_crime_robbed2
+when concept=talk.news topic.kind=crime self.robbed=yes self.role!=guard
+does tell.feeling
+cooldown 1d
+say #topic.news#. I've barred the door twice since. | #topic.news#. I keep checking my pockets. | #topic.news#. I could spit.
+
+rule s83w_crime_hurt
+when concept=talk.news topic.kind=crime self.injured=light|bad self.role!=guard
+does tell.feeling
+cooldown 1d
+say #topic.news#. Look at me. | #topic.news#. It still hurts to breathe. | #topic.news#. I'll mend. Slowly.
+
+rule s83w_crime_friends
+when concept=talk.news topic.kind=crime pair.band=friends|family|spouses self.role!=guard
+does tell.feeling
+cooldown 1d
+say I didn't want to frighten you. #topic.news#. | You're the first I've told. #topic.news#. | #topic.news#. Can I stay at yours tonight?
+
+rule s83w_crime_neighbours
+when concept=talk.news topic.kind=crime pair.neighbours=yes self.role!=guard
+does tell.feeling
+cooldown 1d
+say Lock your door tonight. #topic.news#. | Right on our row. #topic.news#. | #topic.news#. Did you hear anything?
+
+rule s83w_crime_old
+when concept=talk.news topic.kind=crime self.stage=old self.role!=guard
+does tell.feeling
+cooldown 1d
+say #topic.news#. At my age. | #topic.news#. In all my years, never once. | #topic.news#. The town's not what it was.
+
+rule s83w_crime_poor
+when concept=talk.news topic.kind=crime self.wealth=poor|destitute self.role!=guard
+does tell.feeling
+cooldown 1d
+say #topic.news#. As if I had anything to spare. | #topic.news#. They took what little there was. | #topic.news#. Robbing the poor. Who does that?
+
+rule s83w_crime_merchant
+when concept=talk.news topic.kind=crime self.role=merchant
+does tell.feeling
+cooldown 1d
+say #topic.news#. Right at my own counter. | #topic.news#. I'll be locking the shutters at noon now. | #topic.news#. Bad for the shop, bad for me.
+
+rule s83w_crime_guard
+when concept=talk.news topic.kind=crime self.role=guard
+does tell.news
+cooldown 1d
+say #topic.news#. Somebody had to. | Busy day. #topic.news#. | #topic.news#. That's one less to worry about.
+
+rule s83w_crime_guard2
+when concept=talk.news topic.kind=crime self.role=guard
+does tell.news
+cooldown 1d
+say #topic.news#. Came quietly, mostly. | #topic.news#. The magistrate can have it now. | #topic.news#. All in a day's work for the Watch.
+
+## ================================================================ More ways in, by the moment and the trade
+
+rule s83w_wed_spring
+when concept=talk.news topic.kind=marriage here.season=spring|summer
+does tell.news
+cooldown 1d
+say A wedding with the blossom out. #topic.news#. | #topic.news#. Couldn't have picked a better season. | Warm days ahead. #topic.news#.
+
+rule s83w_wed_winter
+when concept=talk.news topic.kind=marriage here.season=autumn|winter
+does tell.news
+cooldown 1d
+say Something to keep us warm this winter. #topic.news#. | #topic.news#. A cold season and a warm house. | #topic.news#. Two by the fire beats one.
+
+rule s83w_wed_festival
+when concept=talk.news topic.kind=marriage world.festival=today|soon
+does tell.news
+cooldown 1d
+say We'll dance at the festival as a pair. #topic.news#. | #topic.news#. Just in time for the festival. | Two reasons to celebrate. #topic.news#.
+
+rule s83w_wed_neighbours
+when concept=talk.news topic.kind=marriage pair.neighbours=yes
+does tell.news
+cooldown 1d
+say You'll be seeing more of us. #topic.news#. | #topic.news#. You'll hear us laughing through the wall. | Neighbour, you'll want to hear this. #topic.news#.
+
+rule s83w_wed_street
+when concept=talk.news topic.kind=marriage here.place=street|gate|market
+does tell.news
+cooldown 1d
+say I'm stopping everyone I know. #topic.news#. | Wait, wait. #topic.news#. | I can't walk ten steps without telling someone. #topic.news#.
+
+rule s83w_wed_comfortable
+when concept=talk.news topic.kind=marriage self.wealth=comfortable
+does tell.news
+cooldown 1d
+say We've a home and each other. What more is there? #topic.news#. | #topic.news#. A small wedding, but ours. | #topic.news#. We'll set up house properly now.
+
+rule s83w_wed_guard
+when concept=talk.news topic.kind=marriage self.job=guard|soldier
+does tell.news
+cooldown 1d
+say Off duty, and married. #topic.news#. | #topic.news#. Somebody to come home to after the night watch. | #topic.news#. The barracks have been teasing me all week.
+
+rule s83w_wed_merchant
+when concept=talk.news topic.kind=marriage self.role=merchant
+does tell.news
+cooldown 1d
+say Good news from behind the counter. #topic.news#. | #topic.news#. Two of us at the stall now. | #topic.news#. Best bargain I ever made.
+
+rule s83w_wed_farmer
+when concept=talk.news topic.kind=marriage self.job=farmer|herder|fisher|sailor
+does tell.news
+cooldown 1d
+say #topic.news#. Another pair of paws, and a good heart with them. | Between the work and the weather, I found time. #topic.news#. | #topic.news#. The work goes easier for two.
+
+rule s83w_wed_merry
+when concept=talk.news topic.kind=marriage self.humour=merry
+does tell.news
+cooldown 1d
+say Ha! You'll never guess. #topic.news#! | #topic.news#. I know. I know! | Somebody actually said yes. #topic.news#.
+
+rule s83w_loss_home
+when concept=talk.news topic.kind=loss here.place=home
+does tell.feeling
+cooldown 1d
+say #topic.news#. The house is full of little reminders. | You'll have noticed the shutters. #topic.news#. | Come in, sit. #topic.news#.
+
+rule s83w_loss_street
+when concept=talk.news topic.kind=loss here.place=street|gate|market
+does tell.feeling
+cooldown 1d
+say I had to get out of the house. #topic.news#. | #topic.news#. Walking helps, a little. | Sorry. I'm not myself. #topic.news#.
+
+rule s83w_loss_winter
+when concept=talk.news topic.kind=loss here.season=winter
+does tell.feeling
+cooldown 1d
+say A hard winter, this one. #topic.news#. | #topic.news#. The cold makes it worse somehow. | #topic.news#. I keep the fire high, and it doesn't help.
+
+rule s83w_loss_night
+when concept=talk.news topic.kind=loss here.time=night|dusk
+does tell.feeling
+cooldown 1d
+say The nights are the worst. #topic.news#. | I can't sleep. #topic.news#. | #topic.news#. I didn't want to sit in the dark alone.
+
+rule s83w_loss_poor
+when concept=talk.news topic.kind=loss self.wealth=poor|destitute
+does tell.feeling
+cooldown 1d
+say #topic.news#. I couldn't even pay for flowers. | #topic.news#. Burying costs. I'll manage somehow. | #topic.news#. We had so little, and now less.
+
+rule s83w_loss_neighbours
+when concept=talk.news topic.kind=loss pair.neighbours=yes
+does tell.feeling
+cooldown 1d
+say You'll have heard, I expect. #topic.news#. | #topic.news#. Thank you for the quiet these few days. | #topic.news#. You've been a good neighbour through it.
+
+rule s83w_loss_farmer
+when concept=talk.news topic.kind=loss self.job=farmer|herder|fisher|sailor
+does tell.feeling
+cooldown 1d
+say #topic.news#. The work doesn't stop, though. It never does. | #topic.news#. I went out at dawn anyway. What else is there? | #topic.news#. The beasts still need feeding.
+
+rule s83w_loss_merchant
+when concept=talk.news topic.kind=loss self.role=merchant
+does tell.feeling
+cooldown 1d
+say I've shut the stall for a day. #topic.news#. | #topic.news#. I can't look at the ledger. | #topic.news#. The customers have been kind.
+
+rule s83w_loss_guard
+when concept=talk.news topic.kind=loss self.job=guard|soldier
+does tell.feeling
+cooldown 1d
+say #topic.news#. I stood my watch anyway. | #topic.news#. Work keeps my head straight. | #topic.news#. You learn to keep a straight face in the Watch. It doesn't help.
+
+rule s83w_loss_healer
+when concept=talk.news topic.kind=loss self.job=healer|priest
+does tell.feeling
+cooldown 1d
+say I've sat with so many. And now #topic.news#. | #topic.news#. All my remedies, and nothing to be done. | #topic.news#. I've said the words over so many. Now I'm the one who listens.
+
+rule s83w_loss_quiet
+when concept=talk.news topic.kind=loss self.talk=quiet
+does tell.feeling
+cooldown 1d
+say #topic.news#. | Mm. #topic.news#. | #topic.news#. That's all.
+
+rule s83w_loss_old_kin
+when concept=talk.news topic.kind=loss self.mourning=kin self.stage=old
+does tell.feeling
+cooldown 1d
+say #topic.news#. It should have been me first. | #topic.news#. I've outlived too many of my own. | #topic.news#. The young shouldn't go before the old.
+
+rule s83w_work_place
+when concept=talk.news topic.kind=work here.place=work
+does tell.news
+cooldown 1d
+say Right here's where I'll be, from now on. #topic.news#. | #topic.news#. First day, and look at me. | Have a look round. #topic.news#.
+
+rule s83w_work_comfortable
+when concept=talk.news topic.kind=work self.wealth=comfortable
+does tell.news
+cooldown 1d
+say #topic.news#. Steady, that's what I wanted. | #topic.news#. It's a good step. | #topic.news#. We'll be all right now.
+
+rule s83w_work_dawn
+when concept=talk.news topic.kind=work here.time=dawn
+does tell.news
+cooldown 1d
+say Up before the sun, and glad of it. #topic.news#. | #topic.news#. Early starts from now on. | First light, and off I go. #topic.news#.
+
+rule s83w_work_neighbours
+when concept=talk.news topic.kind=work pair.neighbours=yes
+does tell.news
+cooldown 1d
+say You'll see me off early from now on. #topic.news#. | #topic.news#. If I'm loud in the mornings, that's why. | #topic.news#. Thought the row should know.
+
+rule s83w_work_smith
+when concept=talk.news topic.kind=work self.job=smith|crafter
+does tell.news
+cooldown 1d
+say #topic.news#. There's a forge to keep hot, and a trade to pass on. | #topic.news#. Iron's patient. So am I. | #topic.news#. Good paws for it, I think.
+
+rule s83w_work_food
+when concept=talk.news topic.kind=work self.job=baker|cook|brewer|innkeeper
+does tell.news
+cooldown 1d
+say #topic.news#. Flour to the elbows already. | #topic.news#. There's an oven to learn, and its tempers. | #topic.news#. Come and taste what we make.
+
+rule s83w_work_land
+when concept=talk.news topic.kind=work self.job=farmer|herder|fisher|woodcutter
+does tell.news
+cooldown 1d
+say #topic.news#. Outdoors, all weathers. Suits me. | #topic.news#. The land's a hard teacher. | #topic.news#. I'll be up before the beasts.
+
+rule s83w_work_merchant
+when concept=talk.news topic.kind=work self.role=merchant
+does tell.news
+cooldown 1d
+say #topic.news#. Another pair of paws behind the counter. | #topic.news#. Good for the stall. | #topic.news#. Trade's a thing you learn by doing.
+
+rule s83w_work_rivals
+when concept=talk.news topic.kind=work pair.band=rivals
+does tell.news
+cooldown 1d
+say You'll hear it anyway, so: #topic.news#. | #topic.news#. Not that you'd care. | #topic.news#. Go on, say something.
+
+rule s83w_work_nervy
+when concept=talk.news topic.kind=work self.temper=nervy
+does tell.news
+cooldown 1d
+say #topic.news#. I hope I'm up to it. | #topic.news#. What if I'm no good? | #topic.news#. I've not slept for thinking about it.
+
+rule s83w_work_ambitious
+when concept=talk.news topic.kind=work self.drive=ambitious|restless
+does tell.news
+cooldown 1d
+say #topic.news#. It's a start. Only a start. | #topic.news#. Give me a few years. | #topic.news#. I've plans, you'll see.
+
+rule s83w_crime_home
+when concept=talk.news topic.kind=crime here.place=home self.role!=guard
+does tell.feeling
+cooldown 1d
+say Right here, in my own home. #topic.news#. | #topic.news#. I keep looking at the door. | #topic.news#. It doesn't feel like mine any more.
+
+rule s83w_crime_street
+when concept=talk.news topic.kind=crime here.place=street|gate|market self.role!=guard
+does tell.feeling
+cooldown 1d
+say I don't like being out here now. #topic.news#. | #topic.news#. I look behind me every few steps. | #topic.news#. Walk with me a while?
+
+rule s83w_crime_tavern
+when concept=talk.news topic.kind=crime here.place=tavern self.role!=guard
+does tell.feeling
+cooldown 1d
+say I needed a cup after it. #topic.news#. | #topic.news#. Don't let me drink alone. | #topic.news#. I'm sitting with my back to the wall tonight.
+
+rule s83w_crime_night
+when concept=talk.news topic.kind=crime here.time=night|dusk self.role!=guard
+does tell.feeling
+cooldown 1d
+say I hate the dark now. #topic.news#. | #topic.news#. I'll not go out after dark for a while. | #topic.news#. Every shadow's somebody.
+
+rule s83w_crime_keeper
+when concept=talk.news topic.kind=crime self.job=innkeeper|cook|baker|brewer
+does tell.feeling
+cooldown 1d
+say #topic.news#. In my own kitchen, near enough. | #topic.news#. I've started locking the back door. | #topic.news#. Bad for business, and worse for sleep.
+
+rule s83w_crime_servant
+when concept=talk.news topic.kind=crime self.job=servant|laborer|carter
+does tell.feeling
+cooldown 1d
+say #topic.news#. As if I'd anything worth the trouble. | #topic.news#. Nobody listens to the likes of me. | #topic.news#. A day's pay, gone.
+
+rule s83w_crime_young
+when concept=talk.news topic.kind=crime self.stage=young|adolescent self.role!=guard
+does tell.feeling
+cooldown 1d
+say #topic.news#. I was so scared. | #topic.news#. Nobody believes me. | #topic.news#. I don't want to go out alone.
+
+rule s83w_crime_robbed_poor
+when concept=talk.news topic.kind=crime self.robbed=yes self.wealth=poor|destitute
+does tell.feeling
+cooldown 1d
+say #topic.news#. It was all I had. | #topic.news#. I'll have to go to #dole# now. | #topic.news#. Who robs someone with nothing?
+
+rule s83w_crime_hurt_old
+when concept=talk.news topic.kind=crime self.injured=light|bad self.stage=old
+does tell.feeling
+cooldown 1d
+say #topic.news#. At my age, the bones don't mend. | #topic.news#. I'm too old to be knocked about. | #topic.news#. Look at my arm.
+
+rule s83w_crime_guard3
+when concept=talk.news topic.kind=crime self.role=guard here.place=tavern
+does tell.news
+cooldown 1d
+say I've earned this cup. #topic.news#. | #topic.news#. Long day. | #topic.news#. Don't ask me about it till I've had a drink.
+
+rule s83w_wed_family_old
+when concept=talk.news topic.kind=marriage pair.band=family self.stage=old
+does tell.news
+cooldown 1d
+say I've lived to see it again. #topic.news#. | #topic.news#. Don't look so shocked, you. | #topic.news#. The family can stop fussing over me now.
+
+rule s83w_loss_rain
+when concept=talk.news topic.kind=loss here.outdoors=rain|storm
+does tell.feeling
+cooldown 1d
+say Fitting weather for it. #topic.news#. | #topic.news#. Even the sky's grieving. | #topic.news#. I didn't notice the rain till now.
+
+rule s83w_loss_tavern_friend
+when concept=talk.news topic.kind=loss self.mourning=friend here.place=tavern
+does tell.feeling
+cooldown 1d
+say We used to sit right there. #topic.news#. | #topic.news#. That bench looks empty tonight. | #topic.news#. I'll drink to an old friend.
+
+rule s83w_work_festival
+when concept=talk.news topic.kind=work world.festival=today|soon
+does tell.news
+cooldown 1d
+say Something to celebrate at the festival. #topic.news#. | #topic.news#. I'll dance twice as hard. | #topic.news#. A new start, and a festival with it.
+
+rule s83w_crime_rain
+when concept=talk.news topic.kind=crime here.outdoors=rain|storm|fog self.role!=guard
+does tell.feeling
+cooldown 1d
+say Grey weather for a grey week. #topic.news#. | #topic.news#. I can't get warm since. | #topic.news#. Everything feels wet and wrong.
+
+## ================================================================ Any news, by the moment
+
+rule s83w_any_1
+when concept=talk.news topic.kind=marriage|work
+does tell.news
+cooldown 1d
+say I've news of my own. #topic.news#. | Here's my news. #topic.news#. | #topic.news#. That's my week.
+
+rule s83w_any_2
+when concept=talk.news topic.kind!=loss|crime
+does tell.news
+cooldown 1d
+say Something's happened. #topic.news#. | #topic.news#. Well, what do you think of that? | #topic.news#. Life does surprise you.
+
+rule s83w_any_spouses
+when concept=talk.news pair.band=spouses topic.kind!=marriage
+does tell.news
+cooldown 1d
+say Sit down, love. #topic.news#. | I didn't know how to tell you. #topic.news#. | You'll hear it from someone else, so: #topic.news#.
+
+rule s83w_any_rivals
+when concept=talk.news pair.band=rivals
+does tell.news
+cooldown 1d
+say Before you hear it wrong. #topic.news#. | You'll hear it anyway. #topic.news#. | #topic.news#. Make of it what you like.
+
+## ================================================================ The answers (move lines, found by the move: any tell.news on the topic)
+
+rule s83w_re_wed
+does react.news.glad
+when conv.topic=news topic.kind=marriage
+say Oh, that's wonderful! | Congratulations! | About time! | I'm so glad for you. | #gladnews#!
+
+rule s83w_re_wed2
+does react.news.glad
+when conv.topic=news topic.kind=marriage
+say Many happy years to you both. | Bless you both. | Long life and good luck to you. | You'll be happy. I can see it.
+
+rule s83w_re_wed_tease
+does react.news.glad
+when conv.topic=news topic.kind=marriage pair.band=friends
+say I knew it! I said so! | You kept that quiet! | You never said a word! | Ha! Somebody finally caught you.
+
+rule s83w_re_loss
+does sympathise
+when conv.topic=news topic.kind=loss
+say I'm so sorry. | #sympathy.capitalize#. | #rest.capitalize#. | That's hard. I'm here. | Oh, I'm sorry. Truly.
+
+rule s83w_re_loss2
+does sympathise
+when conv.topic=news topic.kind=loss
+say Take all the time you need. | If you need anything, you know where I am. | Come and eat with us tonight. | Don't be alone tonight.
+
+rule s83w_re_loss_old
+does sympathise
+when conv.topic=news topic.kind=loss self.stage=old
+say It doesn't go. You learn to carry it. | I've buried many. It gets no easier. Only quieter. | Grief walks beside you. Let it.
+
+rule s83w_re_work
+does react.news.glad
+when conv.topic=news topic.kind=work
+say Well done! | That's grand. You'll do well. | Good for you. | #gladnews#. You've earned it.
+
+rule s83w_re_work2
+does react.news.glad
+when conv.topic=news topic.kind=work
+say Look at you. | That's a step up. | Proper work. Good. | I'm proud of you.
+
+rule s83w_re_work_apprentice
+does give.advice
+when conv.topic=news topic.kind=work other.apprentice=yes
+say Watch, listen, and sweep. That's how it starts. | Keep your mouth shut and your eyes open. You'll learn. | The first year's the hardest. Stick at it.
+
+rule s83w_re_crime
+does sympathise
+when conv.topic=news topic.kind=crime other.role!=guard
+say Gods. Are you all right? | #pity#. Sit down a moment. | I'm so sorry. | That's awful. In your own town.
+
+rule s83w_re_crime2
+does reassure
+when conv.topic=news topic.kind=crime other.role!=guard
+say You're safe now. That's what matters. | It wasn't your fault. None of it. | Things can be replaced. You can't. | We'll look after you.
+
+rule s83w_re_crime_guard
+does react.news
+when conv.topic=news topic.kind=crime other.role=guard
+say Good. Somebody had to. | One less on the streets. | Well done, then. | I'll sleep better for it.
+
+rule s83w_re_crime_watch
+does sympathise
+when conv.topic=news topic.kind=crime other.role!=guard self.job=guard|soldier
+say I'm sorry. Come by the watch-house and I'll take it down. | I'll ask about. Something will turn up. | That shouldn't happen to anyone. I'll look into it.
+
+rule s83w_re_work_master
+does give.advice
+when conv.topic=news topic.kind=work other.master=yes
+say Be patient. You were young once. | Show, don't shout. It sticks better. | A full belly learns faster. Feed your apprentice well.

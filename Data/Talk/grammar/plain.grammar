@@ -291,6 +291,9 @@ s8_byeback[self.stage=adult|old self.piety=devout] = #bless# | #blessing# | Brig
 s8_byeback[self.stage=adult|old self.warmth=cold] = Mm | Goodbye | Yes. Good day | Right
 s8_byeback[self.stage=adult|old self.warmth=warm] = Take good care, now | Look after yourself | Come by any time
 s8_byeback[self.stage=old] = Off you go | Mind the step, now | Come again soon | Go on, young one
+# Phase 8 session 3: the night's goodbye and its answer (s8t_bye_night, s8t_return_night), in this voice.
+s8_night = Sleep sound | Rest well, then | Off to bed with you | Mind the gutters home | Lamps are lit. Off home
+s8_nightback = And you. Rest well | Sleep sound, then | Mind the gutters | Lamps are lit. Go on
 s8_nevermind = Ah, well | Never mind | Some other time | That's all right | No harm in asking
 s8_nevermind[self.stage=young|adolescent] = Aw | Okay | Fine | Aw, all right | Oh. Okay
 s8_nevermind[self.stage=adult|old self.warmth=warm] = Of course. Don't fret | That's quite all right | Another time, then. Truly
@@ -463,19 +466,46 @@ s8_story[self.stage=adult|old self.talk=chatty] = Oh, I'll remember that one. | 
 s8_story[self.stage=adult|old self.talk=quiet] = Mm. | A good one. | Hm. Yes.
 s8_story[self.stage=old] = Ah, well. | Well, well, now. | Those were other days. | Ah. The things we see.
 # one more thing before parting (extend), by the moment
-s8_extend = Oh, before you go: thank you. For listening. | One more thing. Don't be a stranger. | Before you go: I'm glad we talked. | Wait, before you go. Look after yourself.
+s8_extend = Oh, before you go: thank you. For listening. | One more thing. Don't be a stranger. | Before you go: I'm glad we talked. | Wait, before you go. Look after yourself. | Oh, and mind how you go. | And don't leave it so long next time. | Oh, and good luck with it all. | Before I forget: it was good to see you.
 s8_extend[pair.band=friends|family|spouses|housemates other.homeless=no] = Oh, and give my love at home. | And say hello to all at yours. | Oh, and come by soon. I mean it.
 s8_extend[here.season=winter here.outdoors=snow|clear|overcast] = Oh, and mind the ice going home. | And wrap up. It's bitter out.
 s8_extend[here.outdoors=rain|storm] = Oh, and take care in this rain. | And keep dry, if you can.
-s8_extend[here.time=night] = Mind the dark lanes going home. | Oh, and take a light. It's black out there.
+s8_extend[here.time=night] = Mind the dark lanes going home. | Oh, and take a light. It's black out there. | And bolt your door tonight. | Oh, and sleep well, when you get there.
 s8_extend[world.bandits=near] = And keep off the road after dark, mind. | Oh, and don't travel alone, these days.
 s8_extend[world.festival=soon] = Oh, and I'll see you at the festival. | And save me a dance at the festival.
 s8_extend[other.hungry=yes self.hungry=no] = Oh, and eat something, will you. | And get some food in you. You look thin.
 # a third welcomed in (welcome_join), by why they joined
-s8_welcome = The more the merrier. | Come in, come in. | You'll want to hear this. | Join us, by all means. | Sit yourself down.
+s8_welcome = The more the merrier. | Come in, come in. | You'll want to hear this. | Join us, by all means. | Sit yourself down. | Make room, then. | Just in time. | You'll have something to say about this.
 s8_welcome[conv.stake=favourite] = I knew you'd want in on this. | Ha. Your sort of talk, this. | We were waiting for you, near enough. | Thought that'd fetch you. | Ears pricked up, did they? | Come and have your say. | Pull up. You'll have views. | We hoped you'd come by. | Your favourite, this.
 s8_welcome[conv.stake=goods|witness] = Good. You'd know better than us. | Go on, then. Tell us. | Just the one to ask.
-s8_welcome[conv.stake=friends] = Pull up, then. | There you are! | Come here, you. | Well, look who it is.
+s8_welcome[conv.stake=friends] = Pull up, then. | There you are! | Come here, you. | Well, look who it is. | Speak of the wolf. | Ha! The very one.
+# Phase 8 session 3 (doc 84 §33.4): how the thin topics' news is begun, by who begins it. Each a whole sentence, said
+# in front of the news itself ("#s8_heard# The drovers are in."). s8_heard: what everyone may know (a notice, a crier,
+# a ship, the harvest); s8_psst: what's whispered (gossip, a deed).
+s8_heard = Have you heard? | You'll have heard. | Did you hear? | Here's news. | Word's going round.
+s8_heard[self.stage=young] = Guess what! | Did you know? | Know what? | Listen!
+s8_heard[self.stage=adolescent] = So, get this. | Heard the news? | Listen. | You know what?
+s8_heard[self.stage=adult|old self.talk=chatty] = Oh, have you heard? | Well! Have you heard? | You'll never guess what's happened. | Oh, I've news for you.
+s8_heard[self.stage=adult|old self.talk=quiet] = Heard? | Mm. News. | Did you hear? | One thing.
+s8_heard[self.stage=adult|old self.temper=nervy] = Oh, have you heard? It's all anyone says. | Did you hear? I don't like it. | Oh, you'll have heard. Everyone has.
+s8_heard[self.stage=adult|old self.humour=dry] = Here's excitement for you. | Brace yourself. | News, of a sort. | Hold on to your hat.
+s8_heard[self.stage=adult|old self.humour=merry] = Ha! Have you heard? | Here's one for you! | Oh, you'll like this.
+s8_heard[self.stage=old] = Here's a thing, now. | Listen to this, now. | They've a new one today.
+s8_heard[self.stage=adult|old pair.band=strangers] = Have you heard, friend? | Pardon me. Have you heard? | You'll have heard, I expect.
+s8_heard[self.stage=adult|old pair.band=friends|family|spouses] = Here, you'll want this. | Have you heard, then? | Listen, you.
+s8_psst = Have you heard? | Here's something. | Word going round. | You didn't hear it from me. | Between us, now.
+s8_psst[self.stage=young] = Want to know a secret? | I know something! | Guess what I heard!
+s8_psst[self.stage=adolescent] = Okay, don't tell anyone. | You'll never guess. | So, I heard something.
+s8_psst[self.stage=adult|old self.honesty=sly] = Now, this stays between us. | I really shouldn't. But I will. | Here's a thing worth knowing.
+s8_psst[self.stage=adult|old self.honesty=frank] = I'll say it plain. | No sense dressing it up. | Straight out, then.
+s8_psst[self.stage=adult|old self.talk=chatty] = Oh, wait till you hear this. | Come here. Closer. Listen. | You'll never believe it.
+s8_psst[self.stage=adult|old self.talk=quiet] = Heard a thing. | Mm. Talk going round. | One thing.
+s8_psst[self.stage=adult|old self.temper=nervy] = Don't look now. | Keep this quiet. | I'm only saying what I heard.
+s8_psst[self.stage=adult|old self.piety=devout] = I don't hold with gossip. Still. | Forgive me for repeating it. | It isn't kind to say. But you should know.
+s8_psst[self.stage=adult|old self.warmth=cold] = You'll hear it anyway. | Thought you should know. | Talk, for what it's worth.
+s8_psst[self.stage=old] = In my day we'd not say it aloud. | Old ears hear plenty. | Sit down. Hear this.
+s8_psst[self.stage=adult|old pair.band=friends|family|spouses] = Right, you. Listen. | You'll want this. | Come here, you need to hear this.
+s8_psst[self.stage=adult|old pair.band=strangers] = Forgive me, but you'll want to know. | Begging your pardon. Have you heard? | You'll not know me, but listen.
 
 # Backchannel lines (doc 84 §10.2, Phase 7; tools/talk_migrate.py): the library's most repeated short answers, each a
 # symbol whose value here is exactly the words it replaced, so plain speech is unchanged (talk_migrate.py --check);

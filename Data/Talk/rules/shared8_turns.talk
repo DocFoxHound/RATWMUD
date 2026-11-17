@@ -56,7 +56,7 @@ say #s8_okay#. | #s8_okay#. | Right. Me too. | Of course, of course.
 
 rule s8t_bye
 does farewell
-say #s8_bye#. | #s8_bye#. | #farewell#. | Go well.
+say #s8_bye#. | #s8_bye#. | #farewell#. | Go well, then.
 
 rule s8t_bye2
 does farewell
@@ -65,7 +65,7 @@ say #s8_bye#. | #s8_bye#. | Till next we meet. | Take care, now.
 rule s8t_bye_night
 does farewell
 when here.time=night|dusk
-say Night, then. | Sleep easy. | Mind the dark streets. | Off home, then. | Bed for me. | Till tomorrow, then. | Lock your door. | Off to my bed. | Sleep easy, now. | Warm bed, I hope.
+say Night, then. | Sleep easy. | Mind the dark streets. | Off home, then. | Bed for me. | Till tomorrow, then. | Lock your door. | Off to my bed. | Sleep easy, now. | Warm bed, I hope. | #s8_night#. | #s8_night#. | #s8_night#.
 
 rule s8t_bye_young
 does farewell
@@ -100,7 +100,7 @@ say #s8_byeback#. | #s8_byeback#. | Go carefully. | Aye. Go well.
 rule s8t_return_night
 does farewell.return
 when here.time=night|dusk
-say Night, then. | Sleep easy. | And you. Sleep easy. | Till tomorrow. | Lock your door. | And you. Bed, now. | Night. Mind the dark. | Warm bed, now.
+say Night, then. | Sleep easy. | And you. Sleep easy. | Till tomorrow. | Lock your door. | And you. Bed, now. | Night. Mind the dark. | Warm bed, now. | #s8_nightback#. | #s8_nightback#. | #s8_nightback#.
 
 rule s8t_return_young
 does farewell.return

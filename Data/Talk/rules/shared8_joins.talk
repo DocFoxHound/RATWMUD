@@ -145,6 +145,22 @@ does join.add
 when conv.stake=favourite conv.topic=pastimes|friends
 say Is this about what folk do of an evening? | You're talking my language now. | I've a pastime or two myself, you know. | Don't mind me. I just love this sort of talk.
 
+# (Session 3: the favourite's joins were the most-heard joins of session 2's card; more ways in.)
+rule s8j_favourite_pastimes3
+does join.add
+when conv.stake=favourite conv.topic=pastimes|friends
+say Now this is a talk worth stopping for. | Go on, don't stop on my account. | I heard the word "game" and here I am. | Is there room for one more in this?
+
+rule s8j_favourite_smalltalk3
+does join.add
+when conv.stake=favourite conv.topic=smalltalk|day
+say I'll not say no to a bit of company. | You two look like you've time to spare. So have I. | Room for one more on this wall? | Don't let me stop you. I'll just listen.
+
+rule s8j_favourite_animals3
+does join.add
+when conv.stake=favourite conv.topic=animals|land
+say Somebody say beasts? | I could talk stock all day and all night. | Nothing I like better than talk of the land. | Count me in. I know a thing or two about beasts.
+
 rule s8j_favourite_animals2
 does join.add
 when conv.stake=favourite conv.topic=animals|land

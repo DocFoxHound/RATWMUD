@@ -1,0 +1,241 @@
+# The shared lines, Phase 8 session 3 (Docs/Design/84 §33): the wagons the topic draw finds thinnest (talk.caravan):
+# a wagon due (13 openers before this, the most-heard caravan kind of Phase 8 session 2's card), late (5), and the word
+# the last one brought (2). The rest of the caravan topic fell to the authored route ("A day like any other.") 407
+# times in session 2's card and 22 in session 3's first smoke run; these are its other ways to be said. The openers
+# carry the concept (§33.1) and hand on as economy8_roads.talk's do: caravan.due_answer for one due, caravan.answer
+# for the rest ({rd=why} where the line gives the late wagon's cause).
+#
+# The facts (Core/RatwAmbient.cpp World::sceneTopics): topic.kind (due, late, news), topic.where (the town at the
+# road's other end, "Larkfield"), topic.what (its first good, mid-sentence: "nails", "hides"), topic.who (the carter's
+# name; no pronoun is known for them), topic.when (a wagon due: today or soon), topic.why (a late one's cause, "a
+# broken axle"), topic.news (what the last wagon brought word of: "berries are dear in Coldwater").
+#
+# The rules they keep: nothing of the road the facts don't give (no bandits for a late wagon unless world.bandits says
+# so); the carter by name only; who says it by the grammar, what about by the criteria.
+
+## ================================================================ A wagon due
+
+rule s83v_due_1
+when concept=talk.caravan topic.kind=due
+does tell.news
+cooldown 1d
+say #s8_heard# There's a wagon due from #topic.where#. | The #topic.where# wagon's on its way. | A wagon's posted from #topic.where#, the board says.
+then other: caravan.due_answer
+
+rule s83v_due_2
+when concept=talk.caravan topic.kind=due
+does tell.news
+cooldown 1d
+say We've a wagon coming in from #topic.where#. | Keep an eye on the road. #topic.where#'s wagon is due. | They've chalked up the #topic.where# wagon.
+then other: caravan.due_answer
+
+rule s83v_due_3
+when concept=talk.caravan topic.kind=due
+does tell.news
+cooldown 1d
+say The #topic.where# road will be busy. A wagon's due. | #topic.where#'s sending a wagon. Good. | Wagon from #topic.where#. That'll fill a few shelves.
+then other: caravan.due_answer
+
+rule s83v_due_today
+when concept=talk.caravan topic.kind=due topic.when=today
+does tell.news
+cooldown 1d
+say The #topic.where# wagon should be in by dark. | Any hour now, the #topic.where# wagon. | Today's the day for the #topic.where# wagon.
+then other: caravan.due_answer
+
+rule s83v_due_today2
+when concept=talk.caravan topic.kind=due topic.when=today
+does tell.news
+cooldown 1d
+say Listen for wheels. The #topic.where# wagon's due today. | They're clearing the yard for the #topic.where# wagon. | The #topic.where# wagon comes in today, if the road's kind.
+then other: caravan.due_answer
+
+rule s83v_due_soon
+when concept=talk.caravan topic.kind=due topic.when=soon
+does tell.news
+cooldown 1d
+say A wagon from #topic.where# in a day or so. | Not long till the #topic.where# wagon. | The #topic.where# wagon's posted. A day or two yet.
+then other: caravan.due_answer
+
+rule s83v_due_what
+when concept=talk.caravan topic.kind=due topic.what
+does tell.news
+cooldown 1d
+say There's #topic.what# coming from #topic.where#. | The #topic.where# wagon's bringing #topic.what#. | If you're after #topic.what#, wait for the #topic.where# wagon.
+then other: caravan.due_answer
+
+rule s83v_due_what2
+when concept=talk.caravan topic.kind=due topic.what
+does tell.news
+cooldown 1d
+say #topic.what.capitalize#, on the way from #topic.where#. | We'll have #topic.what# again when the wagon's in. | The board says #topic.what# from #topic.where#.
+then other: caravan.due_answer
+
+rule s83v_due_who
+when concept=talk.caravan topic.kind=due topic.who
+does tell.news
+cooldown 1d
+say #topic.who#'s bringing the #topic.where# wagon. | The #topic.where# wagon's #topic.who#'s this time. | #topic.who# has the #topic.where# run. Should be in soon.
+then other: caravan.due_answer
+
+rule s83v_due_carter
+when concept=talk.caravan topic.kind=due job=carter
+does tell.self
+cooldown 1d
+say I know the #topic.where# road. Good surface, most of it. | The #topic.where# run's an easy one, this time of year. | If the wagon's on the #topic.where# road, it'll be here.
+then other: caravan.due_answer
+
+rule s83v_due_laborer
+when concept=talk.caravan topic.kind=due job=laborer|servant
+does tell.self
+cooldown 1d
+say A wagon due. There'll be unloading for anyone who wants it. | When the #topic.where# wagon's in, I'll be at the yard. | A wagon means a day's carrying.
+then other: caravan.due_answer
+
+rule s83v_due_keeper
+when concept=talk.caravan topic.kind=due job=innkeeper|cook|brewer|baker
+does tell.self
+cooldown 1d
+say I'm waiting on the #topic.where# wagon myself. | The carters will want feeding when they're in. | Wagon day. I'll have a pot on.
+then other: caravan.due_answer
+
+rule s83v_due_young
+when concept=talk.caravan topic.kind=due stage=young|adolescent
+does tell.news
+cooldown 1d
+say There's a wagon coming! From #topic.where#! | I'm going to watch the wagon come in. | I want to see what's on it.
+then other: caravan.due_answer
+
+rule s83v_due_rich
+when concept=talk.caravan topic.kind=due wealth=rich
+does tell.self
+cooldown 1d
+say One's been told the #topic.where# wagon is due. | One hears the #topic.where# wagon is due. Not that one waits on wagons. | Wagons. One never knows when they'll actually arrive.
+then other: caravan.due_answer
+
+rule s83v_due_town
+when concept=talk.caravan topic.kind=due here.region=towns
+does tell.news
+cooldown 1d
+say A wagon from #topic.where#. #here.town# needs it. | Out here, a wagon's an event. #topic.where#'s is due. | The #topic.where# wagon. Half of #here.town# will turn out.
+then other: caravan.due_answer
+
+## ================================================================ A wagon late
+
+rule s83v_late_1
+when concept=talk.caravan topic.kind=late
+does tell.news
+cooldown 1d
+say The #topic.where# wagon's late. #uneasy#. | No sign of the #topic.where# wagon. | The #topic.where# wagon should've been in by now.
+then other: caravan.answer
+
+rule s83v_late_2
+when concept=talk.caravan topic.kind=late
+does tell.news
+cooldown 1d
+say Still waiting on #topic.where#. The wagon's overdue. | Late, the #topic.where# wagon. Nobody knows why. | The yard's empty. #topic.where#'s wagon is late.
+then other: caravan.answer
+
+rule s83v_late_why
+when concept=talk.caravan topic.kind=late topic.why
+does tell.news
+cooldown 1d
+say {rd=why} #topic.why.capitalize#, I'm told. The #topic.where# wagon's held up. | {rd=why} The #topic.where# wagon's stuck. #topic.why.capitalize#. | {rd=why} Late, the #topic.where# wagon. #topic.why.capitalize#, they say.
+then other: caravan.answer
+
+rule s83v_late_who
+when concept=talk.caravan topic.kind=late topic.who
+does tell.news
+cooldown 1d
+say #topic.who#'s overdue from #topic.where#. | No #topic.who#, no wagon. Late from #topic.where#. | Anyone heard from #topic.who#? The #topic.where# wagon's late.
+then other: caravan.answer
+
+rule s83v_late_merchant
+when concept=talk.caravan topic.kind=late role=merchant
+does tell.self
+cooldown 1d
+say Every day the #topic.where# wagon's late, I lose custom. | I've folk waiting on the #topic.where# wagon, and I've nothing to tell them. | A late wagon. My back room's bare.
+then other: caravan.answer
+
+rule s83v_late_bandits
+when concept=talk.caravan topic.kind=late world.bandits=near
+does tell.news
+cooldown 1d
+say The #topic.where# wagon's late, and the roads aren't safe. | With #bandits# about, a late wagon worries me. | Late from #topic.where#. I hope it's only the road.
+then other: caravan.answer
+
+## ================================================================ The word the last wagon brought
+
+rule s83v_news_1
+when concept=talk.caravan topic.kind=news
+does tell.news
+cooldown 1d
+say The last wagon brought word: #topic.news#. | Word from #topic.where#, by the wagon. #topic.news.capitalize#. | The carters say #topic.news#.
+then other: caravan.answer
+
+rule s83v_news_2
+when concept=talk.caravan topic.kind=news
+does tell.news
+cooldown 1d
+say News off the road. #topic.news.capitalize#. | Have you heard? #topic.news.capitalize#. That's what the wagon said. | #topic.news.capitalize#, the carters say.
+then other: caravan.answer
+
+rule s83v_news_merchant
+when concept=talk.caravan topic.kind=news role=merchant
+does tell.news
+cooldown 1d
+say The carters say #topic.news#. That'll move prices here too. | #topic.news.capitalize#. Worth knowing, in my trade. | A merchant listens to carters. #topic.news.capitalize#.
+then other: caravan.answer
+
+rule s83v_news_carter
+when concept=talk.caravan topic.kind=news job=carter
+does tell.news
+cooldown 1d
+say On the road they're saying #topic.news#. | #topic.news.capitalize#. Heard it at every stop. | Road talk: #topic.news#.
+then other: caravan.answer
+
+rule s83v_news_keeper
+when concept=talk.caravan topic.kind=news job=innkeeper|cook|brewer
+does tell.news
+cooldown 1d
+say The carters were full of it at my bar: #topic.news#. | Carters talk over a cup. #topic.news.capitalize#. | #topic.news.capitalize#. That's what the carters had.
+then other: caravan.answer
+
+rule s83v_news_old
+when concept=talk.caravan topic.kind=news stage=old
+does tell.news
+cooldown 1d
+say Word from the road, for what it's worth. #topic.news.capitalize#. | #topic.news.capitalize#. Things change out there, too. | The wagons always bring word. #topic.news.capitalize#.
+then other: caravan.answer
+
+## ================================================================ The answers
+
+rule s83v_ans_due
+when concept=caravan.due_answer
+does react.news
+say Good. We need it. | #bc_about_time# | I'll be glad to see it. | Let's hope it comes when they say.
+
+rule s83v_ans_due2
+when concept=caravan.due_answer topic.what
+does react.news
+say Then I'll wait for the #topic.what#. | Good. I'm short of #topic.what#. | #topic.what.capitalize#. That'll help.
+
+rule s83v_ans_due_today
+when concept=caravan.due_answer topic.when=today
+does react.news
+say Today? Good. | I'll listen for the wheels. | Before dark, I hope.
+
+rule s83v_ans_news
+when concept=caravan.answer topic.kind=news
+does react.news
+say Is that so? Things move fast out there. | Good to know. | We'll feel it here soon, I expect. | The carters always know first.
+
+rule s83v_ans_news_poor
+when concept=caravan.answer topic.kind=news wealth=poor|destitute
+does react.news
+say Whatever it is, it'll cost me. | News from far off. It never helps us. | I'll hear about it when it hits my supper.
+
+rule s83v_ans_late
+when concept=caravan.answer topic.kind=late
+does react.news
+say Late's not lost. | It'll come. They always do. | Roads are roads. | I hope the carter's all right.

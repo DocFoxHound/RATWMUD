@@ -174,6 +174,8 @@ s8_hello = Good trade to you | Fair price, friend | Ah, a customer | Well met at
 s8_okay = Sold. Go on | Off to the stalls | Trade waits for nobody | Off you trade, then
 s8_bye = Good trading | Fair weights, friend | Mind the weights | Keep a full purse
 s8_byeback = And good trading | Fair price to you | Full weight, friend | And a full purse
+s8_night = Shutters up, friend | Till the market bell | Sleep on a fair price | Count your coin and sleep
+s8_nightback = Till the bell, then | Shutters up, friend | And a fair price tomorrow
 s8_nevermind = No sale, then | Another market | Fair enough, by weight
 
 # Backchannel lines (doc 84 §10.2, Phase 7): plain's short answers ("Good.", "Always.", "It is.") as Larkfield says them.

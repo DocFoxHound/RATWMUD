@@ -1,0 +1,414 @@
+# The shared lines, Phase 8 session 3 (Docs/Design/84 §33, §14.1's thin topics): the harvest (talk.harvest), 11
+# openers before this phase. The openers carry the concept (§33.1) and hand on to harvest.answer, answered below.
+#
+# The facts (Core/RatwAmbient.cpp World::sceneTopics): world.harvest (poor, fair, good), the average of the farms that
+# send this market carts; talked of while it comes in, summer and autumn, and a poor one into the winter
+# (here.season). Nothing of a particular farm, field or crop the facts don't give: "the farms", "the carts", "the
+# barns"; a farmer speaks of the work, not of a yield the game didn't say.
+#
+# The rules they keep: a poor year is worried over, never laughed at; a good one is welcomed (and the old and the
+# farmers touch wood); bread and its price only where world.bread_price or world.flour_price says so; who says it by
+# the grammar, what about by the criteria (the year, the season, the trade, the land round the town).
+
+## ================================================================ A good year
+
+rule s83h_good_1
+when concept=talk.harvest world.harvest=good
+does tell.news
+cooldown 1d
+say #s8_heard# The harvest's a good one. | Good harvest, they're saying. Full carts every morning. | The farms have done well this year.
+then other: harvest.answer
+
+rule s83h_good_2
+when concept=talk.harvest world.harvest=good
+does tell.news
+cooldown 1d
+say A good year on the land. #gladnews#. | The barns will be full, I'm told. | Heavy carts coming in. You can hear the axles groan.
+then other: harvest.answer
+
+rule s83h_good_3
+when concept=talk.harvest world.harvest=good
+does tell.news
+cooldown 1d
+say There'll be bread enough this winter. Good harvest. | Best harvest in a while, by all accounts. | The ground's been kind this year.
+then other: harvest.answer
+
+rule s83h_good_summer
+when concept=talk.harvest world.harvest=good here.season=summer
+does tell.news
+cooldown 1d
+say It's coming in early and coming in heavy. | Summer's been kind to the fields. A good harvest on the way. | If the weather holds, it'll be a year to remember.
+then other: harvest.answer
+
+rule s83h_good_autumn
+when concept=talk.harvest world.harvest=good here.season=autumn
+does tell.news
+cooldown 1d
+say The barns are full, and the farms are singing. | A good harvest in. We'll eat this winter. | They're stacking the sheaves higher than the barn doors.
+then other: harvest.answer
+
+rule s83h_good_farmer
+when concept=talk.harvest world.harvest=good self.job=farmer|herder
+does tell.self
+cooldown 1d
+say A year like this, a farmer forgives the last three. | I'll not say it's good. The ground might hear. | Good rows this year. Even the stony ones.
+then other: harvest.answer
+
+rule s83h_good_farmer2
+when concept=talk.harvest world.harvest=good self.job=farmer|herder
+does tell.self
+cooldown 1d
+say My back's done in, and I've never been happier. | We'll be at it till the moon's up. Good problem to have. | The carts can't take it all in one go.
+then other: harvest.answer
+
+rule s83h_good_baker
+when concept=talk.harvest world.harvest=good self.job=baker|cook|brewer
+does tell.self
+cooldown 1d
+say Good grain this year. My bread will thank the farms. | A good harvest makes a good loaf. Or a good ale. | Plenty of grain coming. I'll not be scraping the sack this winter.
+then other: harvest.answer
+
+rule s83h_good_merchant
+when concept=talk.harvest world.harvest=good self.role=merchant
+does tell.self
+cooldown 1d
+say A good harvest. Folk will have coin to spend come autumn. | Good year on the land, good year at the counter. | The farmers will be buying this year. I'll be ready.
+then other: harvest.answer
+
+rule s83h_good_laborer
+when concept=talk.harvest world.harvest=good self.job=laborer|carter|servant
+does tell.self
+cooldown 1d
+say Harvest work going on every farm. Good pay for a strong back. | The farms want hands. I might go out for a week. | There'll be sheaves to cart all day. Good harvest, sore arms.
+then other: harvest.answer
+
+rule s83h_good_poor
+when concept=talk.harvest world.harvest=good self.wealth=poor|destitute
+does tell.self
+cooldown 1d
+say A good harvest. Maybe bread'll be cheap for once. | Good year. There'll be gleaning for anyone who wants it. | Full barns. Even we might eat well.
+then other: harvest.answer
+
+rule s83h_good_rich
+when concept=talk.harvest world.harvest=good self.wealth=rich
+does tell.self
+cooldown 1d
+say The tenants will pay their rents this year, one hopes. | A good year on the land. Splendid. | One hears the estates are doing very well.
+then other: harvest.answer
+
+rule s83h_good_priest
+when concept=talk.harvest world.harvest=good self.job=priest
+does tell.self
+cooldown 1d
+say We'll give thanks for this harvest. It's a gift. | The Bright One's been generous with the fields. | Full barns, full chapel, I hope.
+then other: harvest.answer
+
+rule s83h_good_old
+when concept=talk.harvest world.harvest=good self.stage=old
+does tell.self
+cooldown 1d
+say A good year. Touch wood, and don't boast of it. | I've seen good harvests and bad. This is a good one. | Years like this, I remember being young.
+then other: harvest.answer
+
+rule s83h_good_young
+when concept=talk.harvest world.harvest=good self.stage=young|adolescent
+does tell.news
+cooldown 1d
+say There's so much grain! The carts are full! | Everyone's happy about the harvest. | Harvest means harvest cakes. Everyone says.
+then other: harvest.answer
+
+## ================================================================ A fair year
+
+rule s83h_fair_1
+when concept=talk.harvest world.harvest=fair
+does tell.news
+cooldown 1d
+say Middling harvest, they say. | Fair year on the land. Not good, not bad. | The carts come in half full. A fair year.
+then other: harvest.answer
+
+rule s83h_fair_2
+when concept=talk.harvest world.harvest=fair
+does tell.news
+cooldown 1d
+say An ordinary harvest. Nobody's boasting, nobody's starving. | The farms say it's fair. They never say better than that. | A fair year. We'll get by.
+then other: harvest.answer
+
+rule s83h_fair_3
+when concept=talk.harvest world.harvest=fair
+does tell.news
+cooldown 1d
+say #s8_heard# The harvest's fair, nothing more. | Fair to middling, the harvest. | Neither feast nor famine this year.
+then other: harvest.answer
+
+rule s83h_fair_farmer
+when concept=talk.harvest world.harvest=fair self.job=farmer|herder
+does tell.self
+cooldown 1d
+say A fair year. I'll take a fair year every time. | Not the best, not the worst. The ground does what it does. | Enough to pay the rent and a bit over. Fair.
+then other: harvest.answer
+
+rule s83h_fair_merchant
+when concept=talk.harvest world.harvest=fair self.role=merchant
+does tell.self
+cooldown 1d
+say Fair harvest, fair prices. That's all I ask. | Nobody'll be rich off this harvest, nor poor. | A middling year. Trade will be middling with it.
+then other: harvest.answer
+
+rule s83h_fair_old
+when concept=talk.harvest world.harvest=fair self.stage=old
+does tell.self
+cooldown 1d
+say Fair. Most years are fair. That's what nobody remembers. | A fair harvest. My father would have called it good. | Middling. The old ones always say it was better once.
+then other: harvest.answer
+
+rule s83h_fair_autumn
+when concept=talk.harvest world.harvest=fair here.season=autumn
+does tell.news
+cooldown 1d
+say The harvest's in. Fair, they say. | Barns half full and the farms content enough. | That's the harvest in. Not one for the songs.
+then other: harvest.answer
+
+## ================================================================ A poor year
+
+rule s83h_poor_1
+when concept=talk.harvest world.harvest=poor
+does tell.news
+cooldown 1d
+say Poor harvest this year. #uneasy#. | #s8_heard# The harvest's thin. | The farm carts come in light. Bad year.
+then other: harvest.answer
+
+rule s83h_poor_2
+when concept=talk.harvest world.harvest=poor
+does tell.news
+cooldown 1d
+say A thin year on the farms. We'll feel it. | They say the harvest's the worst in years. | Light carts, worried faces. Poor harvest.
+then other: harvest.answer
+
+rule s83h_poor_3
+when concept=talk.harvest world.harvest=poor
+does tell.news
+cooldown 1d
+say The harvest's failed half the farms, I'm told. | Poor harvest. #pity#. | Not much coming in this year. Not much at all.
+then other: harvest.answer
+
+rule s83h_poor_winter
+when concept=talk.harvest world.harvest=poor here.season=winter
+does tell.news
+cooldown 1d
+say That poor harvest's showing now. The stores are thin. | It's a long winter after a thin harvest. | Every week the barns look emptier.
+then other: harvest.answer
+
+rule s83h_poor_summer
+when concept=talk.harvest world.harvest=poor here.season=summer
+does tell.news
+cooldown 1d
+say It's coming in thin. Too little rain, or too much. | The fields look tired this summer. | Short stalks and small heads. Poor harvest on the way.
+then other: harvest.answer
+
+rule s83h_poor_bread
+when concept=talk.harvest world.harvest=poor world.bread_price=up
+does tell.news
+cooldown 1d
+say Bread's dearer already. It's the harvest. | A thin harvest, and the loaf goes up. | You'll pay for your bread this year. Poor harvest.
+then other: harvest.answer
+
+rule s83h_poor_flour
+when concept=talk.harvest world.harvest=poor world.flour_price=up
+does tell.news
+cooldown 1d
+say Flour's gone dear. The harvest, see. | Every sack of flour costs more this year. | Dear flour. Thin harvest.
+then other: harvest.answer
+
+rule s83h_poor_farmer
+when concept=talk.harvest world.harvest=poor self.job=farmer|herder
+does tell.self
+cooldown 1d
+say A year's work for half a cart. | I don't want to talk about it. It's a bad year. | Some years the ground just says no.
+then other: harvest.answer
+
+rule s83h_poor_farmer2
+when concept=talk.harvest world.harvest=poor self.job=farmer|herder
+does tell.self
+cooldown 1d
+say I'll be eating my own seed corn by spring at this rate. | The rent's due whether the corn comes up or not. | We'll manage. Farmers always say that. We always do.
+then other: harvest.answer
+
+rule s83h_poor_baker
+when concept=talk.harvest world.harvest=poor self.job=baker|cook|brewer
+does tell.self
+cooldown 1d
+say Thin grain this year. My loaves will be thin with it. | I'll be cutting the flour with barley before winter's out. | Bad harvest, dear grain, and everyone blames the baker.
+then other: harvest.answer
+
+rule s83h_poor_merchant
+when concept=talk.harvest world.harvest=poor self.role=merchant
+does tell.self
+cooldown 1d
+say A poor harvest. Folk will be buying less of everything. | When the farms struggle, we all struggle. | Thin harvest, thin trade. I've seen it before.
+then other: harvest.answer
+
+rule s83h_poor_poor
+when concept=talk.harvest world.harvest=poor self.wealth=poor|destitute
+does tell.self
+cooldown 1d
+say Poor harvest. And it's us who'll go #hungry#, come winter. | A thin harvest. I'm already counting crusts. | The poor always pay for a poor year.
+then other: harvest.answer
+
+rule s83h_poor_parent
+when concept=talk.harvest world.harvest=poor self.parent=yes
+does tell.self
+cooldown 1d
+say Poor harvest. I worry for the pups this winter. | Thin year. I'll put by what I can for the little ones. | I'll go without before the young ones do.
+then other: harvest.answer
+
+rule s83h_poor_rich
+when concept=talk.harvest world.harvest=poor self.wealth=rich
+does tell.self
+cooldown 1d
+say The tenants will be asking for time on the rent, I expect. | A poor year on the estates. One must be patient. | One hears the estates are struggling.
+then other: harvest.answer
+
+rule s83h_poor_priest
+when concept=talk.harvest world.harvest=poor self.job=priest|healer
+does tell.self
+cooldown 1d
+say We'll pray for better next year, and share what we have this one. | A thin harvest means a hard winter. We must look after each other. | The chapel will open its stores if it comes to that.
+then other: harvest.answer
+
+rule s83h_poor_old
+when concept=talk.harvest world.harvest=poor self.stage=old
+does tell.self
+cooldown 1d
+say I remember a harvest worse than this. We ate bark that winter. | A poor year. Mind your stores, everyone. | Thin harvests come round. You learn to keep a full cellar.
+then other: harvest.answer
+
+## ================================================================ By the land round the town
+
+rule s83h_downs
+when concept=talk.harvest here.region=larkfield|southmeadow
+does tell.news
+cooldown 1d
+say Every field from here to the hills is cut or cutting. | You can't move on the lanes for harvest carts. | The whole valley's out in the fields.
+then other: harvest.answer
+
+rule s83h_city
+when concept=talk.harvest here.region=ridgemere
+does tell.news
+cooldown 1d
+say The farm carts are coming in through the gates. Harvest's on. | The city eats what the farms send it. Harvest's what matters. | Harvest time. The carts come in from the country every morning.
+then other: harvest.answer
+
+rule s83h_north
+when concept=talk.harvest here.region=frosthollow|coldwater
+does tell.news
+cooldown 1d
+say Up here, every harvest's a fight with the cold. | Short summers and thin soil. The harvest's always a worry. | Barley and rye, and a prayer for sun.
+then other: harvest.answer
+
+rule s83h_woods
+when concept=talk.harvest here.region=oakhaven|mirebridge|fenshore
+does tell.news
+cooldown 1d
+say Harvest's on. The clearings are full of folk with sickles. | Harvest's on, wet or dry. | We grow what the damp lets us, and buy the rest.
+then other: harvest.answer
+
+rule s83h_carter
+when concept=talk.harvest self.job=carter
+does tell.self
+cooldown 1d
+say Harvest means carting. My mule knows it before I do. | Every farm wants a cart this week. | I've carted more sheaves than I can count this season.
+then other: harvest.answer
+
+rule s83h_keeper
+when concept=talk.harvest self.job=innkeeper|brewer
+does tell.self
+cooldown 1d
+say Harvest hands drink like fish. Good for the till. | When the harvest's in, the benches are full. | Harvest ale's the best ale. Folk have earned it.
+then other: harvest.answer
+
+rule s83h_poor_laborer
+when concept=talk.harvest world.harvest=poor self.job=laborer|servant
+does tell.self
+cooldown 1d
+say A thin harvest means less work in the fields. | No harvest hands wanted this year. Not many. | Thin year. I'd hoped for a week's work out at the farms.
+then other: harvest.answer
+
+rule s83h_waste
+when concept=talk.harvest here.region=saltwell
+does tell.news
+cooldown 1d
+say We grow what the sand lets us. The harvest's what comes in by cart. | Out here, the harvest's a rumour. We buy ours. | The carts from the green country decide our winter.
+then other: harvest.answer
+
+rule s83h_comfortable
+when concept=talk.harvest self.wealth=comfortable
+does tell.self
+cooldown 1d
+say I'll lay in flour while the harvest's coming. | We'll fill the larder this autumn. | Harvest time. I'll buy ahead, like my mother did.
+then other: harvest.answer
+
+rule s83h_good_times
+when concept=talk.harvest world.harvest=good world.times=hard|lean
+does tell.news
+cooldown 1d
+say A good harvest, at least. Something going right. | Hard times, but the fields are full. That's something. | The harvest's good. Let's hope it mends the times.
+then other: harvest.answer
+
+rule s83h_poor_times
+when concept=talk.harvest world.harvest=poor world.times=hard|lean
+does tell.news
+cooldown 1d
+say Hard times and a thin harvest. #uneasy#. | Poor harvest on top of everything. | Everything at once. Thin harvest, thin purses.
+then other: harvest.answer
+
+## ================================================================ The answers (harvest.answer)
+
+rule s83h_ans_good
+when concept=harvest.answer world.harvest=good
+does react.news.glad
+say #gladnews#. The farms deserve it. | Good. Let's hope it holds. | Full barns. That's a comfort. | Touch wood.
+
+rule s83h_ans_good2
+when concept=harvest.answer world.harvest=good
+does react.news
+say Then bread will be cheap, maybe. | About time the ground was kind. | We'll all eat better for it.
+
+rule s83h_ans_fair
+when concept=harvest.answer world.harvest=fair
+does react.news
+say Fair's fine. Fair's enough. | Better than poor. | We'll get by, then. | Middling suits me.
+
+rule s83h_ans_poor
+when concept=harvest.answer world.harvest=poor
+does react.news.sorrow
+say #uneasy#. A thin winter ahead. | #pity#. The farms work so hard. | We'll all feel that. | Bright One help the farms.
+
+rule s83h_ans_poor2
+when concept=harvest.answer world.harvest=poor
+does react.news
+say Put something by while you can. | Then bread will go dear. Mark me. | We've had poor years before. We'll manage.
+
+rule s83h_ans_farmer
+when concept=harvest.answer self.job=farmer|herder
+does react.news
+say You should see it from the furrow. | The weather decides. Not us. | Ask me again when it's all in.
+
+rule s83h_ans_baker
+when concept=harvest.answer self.job=baker|cook|brewer
+does react.news
+say It's in the bread, the harvest. Always. | I'll know by the flour. | Grain's my trade. I'll be watching it.
+
+rule s83h_ans_poorwolf
+when concept=harvest.answer self.wealth=poor|destitute world.harvest=poor|fair
+does react.news
+say It's the price of bread I care about. | Whatever the harvest, I'll be #hungry# by spring. | Good or bad, it doesn't reach me.
+
+rule s83h_ans_old
+when concept=harvest.answer self.stage=old
+does react.news
+say I've seen fifty harvests. Every one's a worry. | Good or bad, it passes. | Keep your cellar full. That's all I know.
+
+rule s83h_ans_young
+when concept=harvest.answer self.stage=young|adolescent
+does react.news
+say I hope there's harvest cakes. | I like harvest time. Everyone's outside. | I want to help with the sheaves.

@@ -169,6 +169,8 @@ s8_hello = Still water, shore-friend | Ah, it's you, shore-friend | Well met on 
 s8_okay = Aye, row on | Off you row, then | The tide won't wait | Go on, shore-friend
 s8_bye = Calm water to you | Steady on the jetty | Row safe | Off with the tide
 s8_byeback = And calm water to you | Row safe, then | Mind the deep | And you, shore-friend
+s8_night = Calm sleep, shore-friend | Moor up safe | Dry bunk to you | Lamp in the window, then
+s8_nightback = And calm sleep to you | Moor up safe yourself | Dry bunk, shore-friend
 s8_nevermind = Another tide, then | Let it drift | No ripple, shore-friend
 
 # Backchannel lines (doc 84 §10.2, Phase 7): plain's short answers ("Good.", "Always.", "It is.") as Coldwater says them.

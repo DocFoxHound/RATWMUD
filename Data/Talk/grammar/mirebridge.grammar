@@ -170,6 +170,8 @@ s8_hello = Dry feet, fen-friend | Ah, dry feet | Well met, fen-friend | In from 
 s8_okay = Wade on, then | Go on, fen-friend | The reeds won't wait | Off through the mud
 s8_bye = Stick to the boards | Wade careful | Dry feet, fen-friend | Watch the soft mud
 s8_byeback = And dry feet to you | Mind the boards | Dry boots, now | Wade careful, fen-friend
+s8_night = Mind the boards, dark now | Dry feet till morning | Lantern on the boards, now | Sleep above the mud
+s8_nightback = Dry feet, fen-friend | Mind the boards yourself | Sleep above the reeds
 s8_nevermind = When it's dry, then | Let it sink | No matter, fen-friend
 
 # Backchannel lines (doc 84 §10.2, Phase 7): plain's short answers ("Good.", "Always.", "It is.") as Mirebridge says them.

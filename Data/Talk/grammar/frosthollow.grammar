@@ -173,6 +173,8 @@ s8_hello = Hearth to you, stone | Warm hearth, cousin | Ah, stone | Lamp lit, co
 s8_okay = Aye, back to the seam | Go on, stone | The pit won't dig itself | Off you dig
 s8_bye = Keep your lamp lit | Mind the ice, stone | Dig safe | Lamp lit, cousin
 s8_byeback = And your lamp, stone | Dig safe, cousin | Mind the ice | Lamp lit to you
+s8_night = Bank your fire, stone | Warm stone, warm sleep | Lamp low, cousin | Mind the ice home
+s8_nightback = And bank yours, cousin | Warm stone to you | Lamp low, stone
 s8_nevermind = Another shift, stone | Leave it lie, stone | No matter, cousin
 
 # Backchannel lines (doc 84 §10.2, Phase 7): plain's short answers ("Good.", "Always.", "It is.") as Frosthollow says them.

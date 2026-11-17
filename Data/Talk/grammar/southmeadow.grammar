@@ -170,6 +170,8 @@ s8_hello = Harvest to you, neighbour | Ah, bless you | Good harvest, friend | We
 s8_okay = Off you pick, then | Bless you, go on | The furrows won't wait | Ripe time to go
 s8_bye = Ripe days, neighbour | Bless you, then | Mind the furrows | Good gleaning
 s8_byeback = And ripe days to you | And bless you | Good gleaning to you | Mind the furrows, now
+s8_night = Sweet hay to you | Early to the furrows, then | Rest now, dawn comes early | Sleep sound, neighbour
+s8_nightback = And sweet hay to you | Up with the cockerel | Sleep sound, neighbour
 s8_nevermind = Another harvest, then | Bless you, no matter | Let it lie fallow
 
 # Backchannel lines (doc 84 §10.2, Phase 7): plain's short answers ("Good.", "Always.", "It is.") as Southmeadow says them.

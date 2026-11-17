@@ -1,0 +1,1150 @@
+# The shared lines, Phase 8 session 3 (Docs/Design/84 §33, §14.1's thin topics): gossip (talk.gossip), 70 openers
+# before this phase. The topic's openers are the point (§33.1), so these carry the concept; none hands on, so the
+# answer is whatever answers tell.gossip best (session 1's react.news by claim kind and its variants, ask.detail, a
+# view), never one written for a different kind of claim.
+#
+# The facts (Core/RatwAmbient.cpp World::ambientTopic; claims.json): topic.subject (the one talked of, by name, or as
+# the teller saw them, "that grey stranger"), topic.claim (the claim's words after the name: "stole from Hild
+# Ashdown", "is wanted by the Watch for theft", "married Wren Ashdown", "died", "was robbed by someone nobody could make
+# out", "breaks promises", "was prowling about", "is new in town"), topic.claim_kind (its kind), topic.victim (the
+# second party, where the claim has one), and their sexes for #topic.they# and #topic.victim_them#.
+#
+# The rules they keep (§7.8, §8.6, §11): what the claim says and no more (no "took the lot", no "in broad daylight");
+# the teller had it from someone (#hearsay#, "they say", "I'm told"), never "I saw" (the eyewitness lines are the
+# library's own, gated to topic.seen); pity and gladness by the claim's kind; the one talked of by name and pronoun
+# symbol, never "they" for one known wolf; nothing of where the subject lives or works (they may be a traveller).
+# Who says it by the grammar (#s8_psst#: the sly, the chatty, the nervy, the devout, a pup); what about by criteria:
+# the claim's kind, the place, the teller's trade and lot.
+
+## ================================================================ Theft (stole from, tried to steal from)
+
+rule s83g_theft_1
+when concept=talk.gossip topic.claim_kind=theft
+does tell.gossip
+cooldown 1d
+say #s8_psst# #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Lock your door. | Watch your purse. #topic.subject# #topic.claim#, I'm told.
+
+rule s83g_theft_2
+when concept=talk.gossip topic.claim_kind=theft
+does tell.gossip
+cooldown 1d
+say I'll say this once. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Light paws, that one. | They're saying #topic.subject# #topic.claim#. Count your spoons.
+
+rule s83g_theft_3
+when concept=talk.gossip topic.claim_kind=theft
+does tell.gossip
+cooldown 1d
+say You know #topic.subject#? #topic.they.capitalize# #topic.claim#, apparently. | Mark this. #topic.subject# #topic.claim#. | #hearsay#, but #topic.subject# #topic.claim#.
+
+rule s83g_theft_4
+when concept=talk.gossip topic.claim_kind=theft
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. Of all things. | Talk is #topic.subject# #topic.claim#. I'd keep my door barred. | #s8_psst# #topic.subject#. #topic.they.capitalize# #topic.claim#.
+
+rule s83g_theft_5
+when concept=talk.gossip topic.claim_kind=theft
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. Can you credit it? | I can't stop thinking about it. #topic.subject# #topic.claim#. | Did you know #topic.subject# #topic.claim#? I didn't.
+
+rule s83g_theft_6
+when concept=talk.gossip topic.claim_kind=theft
+does tell.gossip
+cooldown 1d
+say Keep a paw on your things. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. #robbery#. | A #thief# among us. #topic.subject# #topic.claim#.
+
+rule s83g_theft_7
+when concept=talk.gossip topic.claim_kind=theft
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. Or so the story goes. | The way I heard it, #topic.subject# #topic.claim#. | #topic.subject#, if you please. #topic.they.capitalize# #topic.claim#.
+
+rule s83g_theft_8
+when concept=talk.gossip topic.claim_kind=theft
+does tell.gossip
+cooldown 1d
+say There's a #thief# about. #topic.subject# #topic.claim#, they say. | I'm told #topic.subject# #topic.claim#. Bold as brass. | #topic.subject# #topic.claim#. Nobody's safe, these days.
+
+rule s83g_theft_9
+when concept=talk.gossip topic.claim_kind=theft
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. I feel for #topic.victim_them#. | #topic.subject# #topic.claim#. Of all wolves to rob. | #topic.subject# #topic.claim#. #topic.victim_they.capitalize# didn't deserve that.
+
+rule s83g_theft_10
+when concept=talk.gossip topic.claim_kind=theft
+does tell.gossip
+cooldown 1d
+say Is it true? #topic.subject# #topic.claim#? That's the talk. | I don't know what to make of it. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. I'd never have thought it.
+
+rule s83g_theft_11
+when concept=talk.gossip topic.claim_kind=theft
+does tell.gossip
+cooldown 1d
+say Word to the wise: #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. If you see #topic.them#, keep your bag close. | Thieving now, is it? #topic.subject# #topic.claim#.
+
+rule s83g_theft_12
+when concept=talk.gossip topic.claim_kind=theft
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. #grumble#. Everyone's at it. | It's going round that #topic.subject# #topic.claim#. | You'll not believe it. #topic.subject# #topic.claim#.
+
+rule s83g_theft_tavern
+when concept=talk.gossip topic.claim_kind=theft here.place=tavern
+does tell.gossip
+cooldown 1d
+say Mind your coat on the peg. #topic.subject# #topic.claim#. | Over a cup, I heard #topic.subject# #topic.claim#. | Keep your purse in your lap tonight. #topic.subject# #topic.claim#.
+
+rule s83g_theft_tavern2
+when concept=talk.gossip topic.claim_kind=theft here.place=tavern
+does tell.gossip
+cooldown 1d
+say The whole bench is talking. #topic.subject# #topic.claim#. | Don't leave your cup unwatched. #topic.subject# #topic.claim#, they say. | Ale and rumour. #topic.subject# #topic.claim#.
+
+rule s83g_theft_work
+when concept=talk.gossip topic.claim_kind=theft here.place=work
+does tell.gossip
+cooldown 1d
+say Keep your tools in sight. #topic.subject# #topic.claim#. | Quietly. #topic.subject# #topic.claim#. | Not a word while we're at it. #topic.subject# #topic.claim#.
+
+rule s83g_theft_work2
+when concept=talk.gossip topic.claim_kind=theft here.place=work
+does tell.gossip
+cooldown 1d
+say Lock up well tonight. #topic.subject# #topic.claim#. | Everyone at the bench has heard. #topic.subject# #topic.claim#. | Between jobs, I heard #topic.subject# #topic.claim#.
+
+rule s83g_theft_market
+when concept=talk.gossip topic.claim_kind=theft here.place=market
+does tell.gossip
+cooldown 1d
+say Watch the stalls. #topic.subject# #topic.claim#. | Every stall's heard by now. #topic.subject# #topic.claim#. | Purse in front, where you can see it. #topic.subject# #topic.claim#.
+
+rule s83g_theft_street
+when concept=talk.gossip topic.claim_kind=theft here.place=street|gate
+does tell.gossip
+cooldown 1d
+say Out here, anyone could hear. But #topic.subject# #topic.claim#. | Walk with me. #topic.subject# #topic.claim#. | Shutters will be barred tonight. #topic.subject# #topic.claim#.
+
+rule s83g_theft_night
+when concept=talk.gossip topic.claim_kind=theft here.time=night
+does tell.gossip
+cooldown 1d
+say Bar the door tonight. #topic.subject# #topic.claim#. | Dark nights and light paws. #topic.subject# #topic.claim#. | Not a night to leave the shutters open. #topic.subject# #topic.claim#.
+
+rule s83g_theft_merchant
+when concept=talk.gossip topic.claim_kind=theft self.role=merchant
+does tell.gossip
+cooldown 1d
+say I'm keeping the good stock under the counter. #topic.subject# #topic.claim#. | Shopkeepers talk. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. I'll want coin up front from #topic.them#.
+
+rule s83g_theft_merchant2
+when concept=talk.gossip topic.claim_kind=theft self.role=merchant
+does tell.gossip
+cooldown 1d
+say If #topic.subject# comes to my counter, I'll be watching #topic.their# paws. #topic.subject# #topic.claim#. | Bad for trade, a #thief#. #topic.subject# #topic.claim#. | The stalls are passing it along. #topic.subject# #topic.claim#.
+
+rule s83g_theft_guard
+when concept=talk.gossip topic.claim_kind=theft self.job=guard|soldier
+does tell.gossip
+cooldown 1d
+say Off the record. #topic.subject# #topic.claim#, they say. | You didn't hear it from the Watch. #topic.subject# #topic.claim#. | I'd want a witness. But #topic.subject# #topic.claim#, the talk goes.
+
+rule s83g_theft_keeper
+when concept=talk.gossip topic.claim_kind=theft self.job=innkeeper|brewer
+does tell.gossip
+cooldown 1d
+say I hear everything over the bar. #topic.subject# #topic.claim#. | If #topic.subject# comes in, I'll count the cups. #topic.subject# #topic.claim#, they say. | Barrel-talk. #topic.subject# #topic.claim#.
+
+rule s83g_theft_servant
+when concept=talk.gossip topic.claim_kind=theft self.job=servant|cook
+does tell.gossip
+cooldown 1d
+say Below stairs, it's all anyone says. #topic.subject# #topic.claim#. | Kitchen talk. #topic.subject# #topic.claim#. | Don't let my master hear I said it. #topic.subject# #topic.claim#.
+
+rule s83g_theft_smith
+when concept=talk.gossip topic.claim_kind=theft self.job=smith|crafter
+does tell.gossip
+cooldown 1d
+say I'll put a better lock on my shop. #topic.subject# #topic.claim#. | Good iron's worth stealing. #topic.subject# #topic.claim#, I hear. | #topic.subject# #topic.claim#. I've a lock that'd stop #topic.them#.
+
+rule s83g_theft_rich
+when concept=talk.gossip topic.claim_kind=theft self.wealth=rich
+does tell.gossip
+cooldown 1d
+say One hears #topic.subject# #topic.claim#. Shocking. | Dreadful business. #topic.subject# #topic.claim#, apparently. | #topic.subject# #topic.claim#. One locks the silver now.
+
+rule s83g_theft_poor
+when concept=talk.gossip topic.claim_kind=theft self.wealth=poor|destitute
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. As if any of us has anything worth taking. | Not that there's much at mine to steal. But #topic.subject# #topic.claim#. | They'll blame the likes of us. But #topic.subject# #topic.claim#.
+
+rule s83g_theft_beggar
+when concept=talk.gossip topic.claim_kind=theft self.job=beggar|laborer
+does tell.gossip
+cooldown 1d
+say Down our way, they're saying #topic.subject# #topic.claim#. | You hear things, on the steps. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. And the Watch will look at us first.
+
+rule s83g_theft_priest
+when concept=talk.gossip topic.claim_kind=theft self.job=priest
+does tell.gossip
+cooldown 1d
+say I'd rather not repeat it, but you should know. #topic.subject# #topic.claim#. | The Bright One sees what's taken. #topic.subject# #topic.claim#, they say. | Pray for both of them. #topic.subject# #topic.claim#.
+
+rule s83g_theft_carter
+when concept=talk.gossip topic.claim_kind=theft self.job=carter|sailor|fisher
+does tell.gossip
+cooldown 1d
+say I'll be sleeping on my load tonight. #topic.subject# #topic.claim#. | Road talk, this. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. I'll rope my cargo down twice.
+
+rule s83g_theft_old
+when concept=talk.gossip topic.claim_kind=theft self.stage=old
+does tell.gossip
+cooldown 1d
+say In my day you could leave a door open. Now #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. I've seen it all, and now this. | The town's not what it was. #topic.subject# #topic.claim#.
+
+rule s83g_theft_young
+when concept=talk.gossip topic.claim_kind=theft self.stage=young|adolescent
+does tell.gossip
+cooldown 1d
+say #s8_psst# #topic.subject# #topic.claim#! | Everyone's saying #topic.subject# #topic.claim#. Is that true? | #topic.subject# #topic.claim#. That's really bad, isn't it?
+
+## ================================================================ Wanted by the Watch
+
+rule s83g_wanted_1
+when concept=talk.gossip topic.claim_kind=wanted
+does tell.gossip
+cooldown 1d
+say #s8_psst# #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Keep clear. | The Watch is after #topic.subject#. #topic.they.capitalize# #topic.claim#.
+
+rule s83g_wanted_2
+when concept=talk.gossip topic.claim_kind=wanted
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. Did you know? | There's a warrant. #topic.subject# #topic.claim#. | You'll want to know this. #topic.subject# #topic.claim#.
+
+rule s83g_wanted_3
+when concept=talk.gossip topic.claim_kind=wanted
+does tell.gossip
+cooldown 1d
+say If you see #topic.subject#, say nothing and walk away. #topic.they.capitalize# #topic.claim#. | #topic.subject# #topic.claim#. I'd not stand too near #topic.them#. | #topic.subject#. #topic.they.capitalize# #topic.claim#. #uneasy#.
+
+rule s83g_wanted_4
+when concept=talk.gossip topic.claim_kind=wanted
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#, they say. | The word is #topic.subject# #topic.claim#. | #hearsay#. #topic.subject# #topic.claim#.
+
+rule s83g_wanted_5
+when concept=talk.gossip topic.claim_kind=wanted
+does tell.gossip
+cooldown 1d
+say So the Watch wants #topic.subject#. #topic.they.capitalize# #topic.claim#. | #topic.subject# #topic.claim#. That's not a name you want on a warrant. | #topic.subject# #topic.claim#. Rather #topic.them# than me.
+
+rule s83g_wanted_6
+when concept=talk.gossip topic.claim_kind=wanted
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. I always wondered. | Fancy that. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. I'd not want to be in #topic.their# boots.
+
+rule s83g_wanted_7
+when concept=talk.gossip topic.claim_kind=wanted
+does tell.gossip
+cooldown 1d
+say You'll hear it soon enough. #topic.subject# #topic.claim#. | The Watch has a name up. #topic.subject#. #topic.they.capitalize# #topic.claim#. | #topic.subject# #topic.claim#. The whole town knows it now.
+
+rule s83g_wanted_8
+when concept=talk.gossip topic.claim_kind=wanted
+does tell.gossip
+cooldown 1d
+say Don't go helping #topic.subject#. #topic.they.capitalize# #topic.claim#. | #topic.subject# #topic.claim#. Best not be seen with #topic.them#. | #topic.subject# #topic.claim#. That'll be the end of #topic.their# good name.
+
+rule s83g_wanted_tavern
+when concept=talk.gossip topic.claim_kind=wanted here.place=tavern
+does tell.gossip
+cooldown 1d
+say If #topic.subject# walks in, I'm walking out. #topic.they.capitalize# #topic.claim#. | Quiet. #topic.subject# #topic.claim#. | The barkeep won't serve #topic.subject# now. #topic.they.capitalize# #topic.claim#.
+
+rule s83g_wanted_work
+when concept=talk.gossip topic.claim_kind=wanted here.place=work|market
+does tell.gossip
+cooldown 1d
+say Don't sell to #topic.subject#. #topic.they.capitalize# #topic.claim#. | Heads down. #topic.subject# #topic.claim#. | Everyone's been told. #topic.subject# #topic.claim#.
+
+rule s83g_wanted_street
+when concept=talk.gossip topic.claim_kind=wanted here.place=street|gate
+does tell.gossip
+cooldown 1d
+say Eyes open on the road. #topic.subject# #topic.claim#. | They'll be watching the gate. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Keep to the lit streets.
+
+rule s83g_wanted_guard
+when concept=talk.gossip topic.claim_kind=wanted self.job=guard|soldier
+does tell.gossip
+cooldown 1d
+say If you see #topic.subject#, come and find me. #topic.they.capitalize# #topic.claim#. | Between us, #topic.subject# #topic.claim#. We'll find #topic.them#. | #topic.subject# #topic.claim#. Tell no one I told you, but tell me if you see #topic.them#.
+
+rule s83g_wanted_merchant
+when concept=talk.gossip topic.claim_kind=wanted self.role=merchant
+does tell.gossip
+cooldown 1d
+say I'll not take #topic.subject#'s coin now. #topic.they.capitalize# #topic.claim#. | No credit for #topic.subject#. #topic.they.capitalize# #topic.claim#. | The stalls are talking. #topic.subject# #topic.claim#.
+
+rule s83g_wanted_keeper
+when concept=talk.gossip topic.claim_kind=wanted self.job=innkeeper|cook|servant
+does tell.gossip
+cooldown 1d
+say No room for #topic.subject# under my roof. #topic.they.capitalize# #topic.claim#. | I've been told to look out for #topic.subject#. #topic.they.capitalize# #topic.claim#. | Kitchens hear everything. #topic.subject# #topic.claim#.
+
+rule s83g_wanted_carter
+when concept=talk.gossip topic.claim_kind=wanted self.job=carter|sailor|fisher|herder
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. I'll not give #topic.them# a ride. | On the road they're saying #topic.subject# #topic.claim#. | Nobody's taking #topic.subject# anywhere. #topic.they.capitalize# #topic.claim#.
+
+rule s83g_wanted_rich
+when concept=talk.gossip topic.claim_kind=wanted self.wealth=rich
+does tell.gossip
+cooldown 1d
+say One hears #topic.subject# #topic.claim#. How dreadful. | Everyone up the hill is talking of it. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. One feels quite unsafe.
+
+rule s83g_wanted_poor
+when concept=talk.gossip topic.claim_kind=wanted self.wealth=poor|destitute
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. The Watch will be on our streets now, poking. | They're after #topic.subject#. #topic.they.capitalize# #topic.claim#. We'll all get looked at. | #topic.subject# #topic.claim#. Somebody'll get dragged in for it, guilty or not.
+
+rule s83g_wanted_old
+when concept=talk.gossip topic.claim_kind=wanted self.stage=old
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. I've outlived better and worse. | A warrant, at #topic.their# age. #topic.subject# #topic.claim#. | Well. #topic.subject# #topic.claim#. I've seen it come to that before.
+
+## ================================================================ Violence (attacked, is violent)
+
+rule s83g_violence_1
+when concept=talk.gossip topic.claim_kind=violence
+does tell.gossip
+cooldown 1d
+say #s8_psst# #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. #uneasy#. | They're saying #topic.subject# #topic.claim#. I'm shaking just saying it.
+
+rule s83g_violence_2
+when concept=talk.gossip topic.claim_kind=violence
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. Keep your distance. | Have you heard? #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#, I'm told. #pity#.
+
+rule s83g_violence_3
+when concept=talk.gossip topic.claim_kind=violence
+does tell.gossip
+cooldown 1d
+say It's not safe, is it. #topic.subject# #topic.claim#. | #topic.subject#. #topic.they.capitalize# #topic.claim#. Gods. | #hearsay#, but #topic.subject# #topic.claim#.
+
+rule s83g_violence_4
+when concept=talk.gossip topic.claim_kind=violence
+does tell.gossip
+cooldown 1d
+say I'd not walk alone tonight. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. You'd never think it to look at #topic.them#. | Stay clear of #topic.subject#. #topic.they.capitalize# #topic.claim#.
+
+rule s83g_violence_5
+when concept=talk.gossip topic.claim_kind=violence
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. I hope #topic.victim_they#'s mending. | #topic.subject# #topic.claim#. Rotten luck for #topic.victim_them#. | #topic.subject# #topic.claim#. Somebody should sit with #topic.victim_them#.
+
+rule s83g_violence_6
+when concept=talk.gossip topic.claim_kind=violence
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. That's not gossip, that's a warning. | I'm telling everyone. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Somebody should do something.
+
+rule s83g_violence_tavern
+when concept=talk.gossip topic.claim_kind=violence here.place=tavern
+does tell.gossip
+cooldown 1d
+say Too much drink, I expect. #topic.subject# #topic.claim#. | Keep your voice down. #topic.subject# #topic.claim#. | If #topic.subject# comes in, I'm sitting by the door. #topic.they.capitalize# #topic.claim#.
+
+rule s83g_violence_street
+when concept=talk.gossip topic.claim_kind=violence here.place=street|gate|market
+does tell.gossip
+cooldown 1d
+say Walk where it's busy. #topic.subject# #topic.claim#. | Look about you, after this. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Out here, where anyone could pass.
+
+rule s83g_violence_guard
+when concept=talk.gossip topic.claim_kind=violence self.job=guard|soldier
+does tell.gossip
+cooldown 1d
+say We're looking into it. #topic.subject# #topic.claim#, they say. | Off duty, mind: #topic.subject# #topic.claim#. | If it's true #topic.subject# #topic.claim#, the Watch will want #topic.them#.
+
+rule s83g_violence_healer
+when concept=talk.gossip topic.claim_kind=violence self.job=healer|priest
+does tell.gossip
+cooldown 1d
+say I'll pray for the hurt one. #topic.subject# #topic.claim#, they say. | #topic.subject# #topic.claim#. If anyone's hurt, I'm here. | Bruises heal. The fear takes longer. #topic.subject# #topic.claim#.
+
+rule s83g_violence_merchant
+when concept=talk.gossip topic.claim_kind=violence self.role=merchant
+does tell.gossip
+cooldown 1d
+say I'll keep a cudgel under the counter. #topic.subject# #topic.claim#. | Bad for trade, a fighter about. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. I'll not serve #topic.them#.
+
+rule s83g_violence_old
+when concept=talk.gossip topic.claim_kind=violence self.stage=old
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. Violence. In this town. | Never thought I'd live to hear it. #topic.subject# #topic.claim#. | When I was young we'd settle it with words. #topic.subject# #topic.claim#.
+
+rule s83g_violence_poor
+when concept=talk.gossip topic.claim_kind=violence self.wealth=poor|destitute
+does tell.gossip
+cooldown 1d
+say Down our end, they're saying #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. And it's us that live with it. | Doors don't lock on our row. #topic.subject# #topic.claim#.
+
+## ================================================================ Robbed or set upon by someone nobody saw
+
+rule s83g_victim_1
+when concept=talk.gossip topic.claim_kind=victim
+does tell.gossip
+cooldown 1d
+say #s8_psst# #topic.subject# #topic.claim#. | Poor #topic.subject#. #topic.they.capitalize# #topic.claim#. | #topic.subject# #topic.claim#. #pity#.
+
+rule s83g_victim_2
+when concept=talk.gossip topic.claim_kind=victim
+does tell.gossip
+cooldown 1d
+say Have you heard about #topic.subject#? #topic.they.capitalize# #topic.claim#. | #topic.subject# #topic.claim#. Can you imagine? | It could have been any of us. #topic.subject# #topic.claim#.
+
+rule s83g_victim_3
+when concept=talk.gossip topic.claim_kind=victim
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. Nobody saw a thing. | #hearsay#. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. That's what frightens me. No face to it.
+
+rule s83g_victim_4
+when concept=talk.gossip topic.claim_kind=victim
+does tell.gossip
+cooldown 1d
+say Someone should look in on #topic.subject#. #topic.they.capitalize# #topic.claim#. | #topic.subject# #topic.claim#. I keep thinking of #topic.them#. | #topic.subject# #topic.claim#. I hope #topic.they#'s all right.
+
+rule s83g_victim_night
+when concept=talk.gossip topic.claim_kind=victim here.time=night|dusk
+does tell.gossip
+cooldown 1d
+say Don't walk home alone. #topic.subject# #topic.claim#. | After dark, too, I'd wager. #topic.subject# #topic.claim#. | Keep to the lamps tonight. #topic.subject# #topic.claim#.
+
+rule s83g_victim_guard
+when concept=talk.gossip topic.claim_kind=victim self.job=guard|soldier
+does tell.gossip
+cooldown 1d
+say No description, nothing. #topic.subject# #topic.claim#. | We've nothing to go on. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. If you hear anything, I want to know.
+
+rule s83g_victim_warmth
+when concept=talk.gossip topic.claim_kind=victim self.warmth=warm
+does tell.gossip
+cooldown 1d
+say I'll take a pie round to #topic.subject#. #topic.they.capitalize# #topic.claim#. | Oh, #topic.subject#. #topic.they.capitalize# #topic.claim#. I could weep. | #topic.subject# #topic.claim#. We should all go round.
+
+rule s83g_victim_merchant
+when concept=talk.gossip topic.claim_kind=victim self.role=merchant
+does tell.gossip
+cooldown 1d
+say Every stall's worried. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. I'll close before dark this week. | #topic.subject# #topic.claim#. It's bad for all of us.
+
+## ================================================================ A wedding
+
+rule s83g_marriage_1
+when concept=talk.gossip topic.claim_kind=marriage
+does tell.gossip
+cooldown 1d
+say #s8_psst# #topic.subject# #topic.claim#! | #topic.subject# #topic.claim#. About time, too. | Good news for once. #topic.subject# #topic.claim#.
+
+rule s83g_marriage_2
+when concept=talk.gossip topic.claim_kind=marriage
+does tell.gossip
+cooldown 1d
+say Have you heard? #topic.subject# #topic.claim#! | #topic.subject# #topic.claim#. I could have told you it'd happen. | Well! #topic.subject# #topic.claim#.
+
+rule s83g_marriage_3
+when concept=talk.gossip topic.claim_kind=marriage
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. #gladnews#. | Wedding news. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Good luck to the pair.
+
+rule s83g_marriage_4
+when concept=talk.gossip topic.claim_kind=marriage
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. Bless the pair. | They're saying #topic.subject# #topic.claim#. Lovely. | #topic.subject# #topic.claim#. That's warmed my day.
+
+rule s83g_marriage_5
+when concept=talk.gossip topic.claim_kind=marriage
+does tell.gossip
+cooldown 1d
+say Who'd have guessed? #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Kept that quiet. | #topic.subject# #topic.claim#. I'd have liked an invitation.
+
+rule s83g_marriage_6
+when concept=talk.gossip topic.claim_kind=marriage
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. Love, in this weather. | Oh, I've news. #topic.subject# #topic.claim#. | Did nobody tell you? #topic.subject# #topic.claim#.
+
+rule s83g_marriage_7
+when concept=talk.gossip topic.claim_kind=marriage
+does tell.gossip
+cooldown 1d
+say I heard #topic.subject# #topic.claim#. There'll be pups next, you'll see. | #topic.subject# #topic.claim#. Love's in the air, apparently. | #topic.subject# #topic.claim#. Somebody's happy, anyway.
+
+rule s83g_marriage_chapel
+when concept=talk.gossip topic.claim_kind=marriage here.place=chapel
+does tell.gossip
+cooldown 1d
+say Here, of all places, to say it. #topic.subject# #topic.claim#. | Right here, at the altar, I expect. #topic.subject# #topic.claim#. | Bless them. #topic.subject# #topic.claim#.
+
+rule s83g_marriage_tavern
+when concept=talk.gossip topic.claim_kind=marriage here.place=tavern
+does tell.gossip
+cooldown 1d
+say Raise a cup. #topic.subject# #topic.claim#! | Here's one to drink to. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. That's worth a round.
+
+rule s83g_marriage_work
+when concept=talk.gossip topic.claim_kind=marriage here.place=work|market
+does tell.gossip
+cooldown 1d
+say Something to cheer the day. #topic.subject# #topic.claim#. | Before I forget, #topic.subject# #topic.claim#. | News with the work. #topic.subject# #topic.claim#.
+
+rule s83g_marriage_priest
+when concept=talk.gossip topic.claim_kind=marriage self.job=priest
+does tell.gossip
+cooldown 1d
+say I've a happy duty to speak of. #topic.subject# #topic.claim#. | The Bright One smiles on it. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. I'll name the pair in the prayers.
+
+rule s83g_marriage_cook
+when concept=talk.gossip topic.claim_kind=marriage self.job=cook|baker|innkeeper|brewer
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. I hope somebody baked a cake. | There'll be a feast, if I'm asked. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. That's a wedding I'd cook for.
+
+rule s83g_marriage_old
+when concept=talk.gossip topic.claim_kind=marriage self.stage=old
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. Weddings take me back. | Weddings! At my age, that's the best news there is. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Long life to the pair.
+
+rule s83g_marriage_young
+when concept=talk.gossip topic.claim_kind=marriage self.stage=young|adolescent
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#! Ew. | Guess who got married! #topic.subject#! | #topic.subject# #topic.claim#. Will there be cake?
+
+rule s83g_marriage_merchant
+when concept=talk.gossip topic.claim_kind=marriage self.role=merchant
+does tell.gossip
+cooldown 1d
+say Weddings are good for trade. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. The pair will be wanting things for the house. | #topic.subject# #topic.claim#. I'll offer the pair a fair price.
+
+rule s83g_marriage_rich
+when concept=talk.gossip topic.claim_kind=marriage self.wealth=rich
+does tell.gossip
+cooldown 1d
+say One hears #topic.subject# #topic.claim#. Charming. | #topic.subject# #topic.claim#. A quiet affair, I gather. | #topic.subject# #topic.claim#. One must send something.
+
+rule s83g_marriage_cold
+when concept=talk.gossip topic.claim_kind=marriage self.warmth=cold
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. We'll see how long that lasts. | #topic.subject# #topic.claim#. If you care about such things. | #topic.subject# #topic.claim#. Somebody had to.
+
+## ================================================================ A death
+
+rule s83g_death_1
+when concept=talk.gossip topic.claim_kind=death
+does tell.gossip
+cooldown 1d
+say Have you heard? #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. #rest.capitalize#. | I've sad news. #topic.subject# #topic.claim#.
+
+rule s83g_death_2
+when concept=talk.gossip topic.claim_kind=death
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. I can hardly believe it. | It's #topic.subject#. #topic.they.capitalize# #topic.claim#. | You'll want to know. #topic.subject# #topic.claim#.
+
+rule s83g_death_3
+when concept=talk.gossip topic.claim_kind=death
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. #pity#. | I keep thinking of #topic.subject#. #topic.they.capitalize# #topic.claim#. | #topic.subject# #topic.claim#. It's put a stillness on everything.
+
+rule s83g_death_4
+when concept=talk.gossip topic.claim_kind=death
+does tell.gossip
+cooldown 1d
+say Did nobody tell you? #topic.subject# #topic.claim#. | Sit down a moment. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Gone, just like that.
+
+rule s83g_death_5
+when concept=talk.gossip topic.claim_kind=death
+does tell.gossip
+cooldown 1d
+say Bad news, I'm afraid. #topic.subject# #topic.claim#. | #hearsay#. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. We'll all miss #topic.them#.
+
+rule s83g_death_chapel
+when concept=talk.gossip topic.claim_kind=death here.place=chapel
+does tell.gossip
+cooldown 1d
+say We'll be lighting a candle. #topic.subject# #topic.claim#. | We'll all be here for the burying. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. I came to say a word for #topic.them#.
+
+rule s83g_death_tavern
+when concept=talk.gossip topic.claim_kind=death here.place=tavern
+does tell.gossip
+cooldown 1d
+say Raise your cup for #topic.subject#. #topic.they.capitalize# #topic.claim#. | Not a merry night. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. One for #topic.them#, then.
+
+rule s83g_death_work
+when concept=talk.gossip topic.claim_kind=death here.place=work|market
+does tell.gossip
+cooldown 1d
+say Before we start. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Nobody feels like working. | #topic.subject# #topic.claim#. Hard to keep my mind on anything.
+
+rule s83g_death_priest
+when concept=talk.gossip topic.claim_kind=death self.job=priest
+does tell.gossip
+cooldown 1d
+say I've had word. #topic.subject# #topic.claim#. #rest.capitalize#. | #topic.subject# #topic.claim#. I'll say the words for #topic.them#. | The Bright One has #topic.subject# now. #topic.they.capitalize# #topic.claim#.
+
+rule s83g_death_healer
+when concept=talk.gossip topic.claim_kind=death self.job=healer
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. There's only so much any of us can do. | I heard #topic.subject# #topic.claim#. #pity#. | #topic.subject# #topic.claim#. I'd have liked to help.
+
+rule s83g_death_old
+when concept=talk.gossip topic.claim_kind=death self.stage=old
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. You never know the day. | Another gone. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. I'll be next, I shouldn't wonder.
+
+rule s83g_death_warm
+when concept=talk.gossip topic.claim_kind=death self.warmth=warm
+does tell.gossip
+cooldown 1d
+say Oh, have you heard? #topic.subject# #topic.claim#. I could cry. | #topic.subject# #topic.claim#. I keep wanting to take round some bread. | #topic.subject# #topic.claim#. Hold your own close tonight.
+
+rule s83g_death_young
+when concept=talk.gossip topic.claim_kind=death self.stage=young|adolescent
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. Everyone's sad. | Did you know #topic.subject# #topic.claim#? I heard the grown-ups. | #topic.subject# #topic.claim#. I don't like it.
+
+rule s83g_death_merchant
+when concept=talk.gossip topic.claim_kind=death self.role=merchant
+does tell.gossip
+cooldown 1d
+say The whole market's gone quiet with it. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. I'll shut early for the burying. | #topic.subject# #topic.claim#. The stalls are quiet with it.
+
+## ================================================================ Promises kept and broken
+
+rule s83g_broken_1
+when concept=talk.gossip topic.claim_kind=promise_broken
+does tell.gossip
+cooldown 1d
+say #s8_psst# #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Don't lend #topic.them# anything. | Mark this. #topic.subject# #topic.claim#.
+
+rule s83g_broken_2
+when concept=talk.gossip topic.claim_kind=promise_broken
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#, I'm told. I'd want it in writing. | They say #topic.subject# #topic.claim#. Words are cheap to #topic.them#. | #topic.subject# #topic.claim#. Don't count on #topic.them#.
+
+rule s83g_broken_3
+when concept=talk.gossip topic.claim_kind=promise_broken
+does tell.gossip
+cooldown 1d
+say If #topic.subject# swears it, cross your fingers. #topic.they.capitalize# #topic.claim#. | #topic.subject# #topic.claim#. #poorshow#. | #topic.subject# #topic.claim#. Nobody'll trust #topic.them# now.
+
+rule s83g_broken_merchant
+when concept=talk.gossip topic.claim_kind=promise_broken self.role=merchant
+does tell.gossip
+cooldown 1d
+say No slate for #topic.subject#. #topic.they.capitalize# #topic.claim#. | #topic.subject# #topic.claim#. Coin first, from now on. | Shopkeepers talk. #topic.subject# #topic.claim#.
+
+rule s83g_broken_work
+when concept=talk.gossip topic.claim_kind=promise_broken here.place=work
+does tell.gossip
+cooldown 1d
+say Don't take a job from #topic.subject#. #topic.they.capitalize# #topic.claim#. | #topic.subject# #topic.claim#. Get your pay up front. | #topic.subject# #topic.claim#, the bench says.
+
+rule s83g_kept_1
+when concept=talk.gossip topic.claim_kind=promise_kept
+does tell.gossip
+cooldown 1d
+say Here's one for you. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Rare as rain in summer. | They say #topic.subject# #topic.claim#. Good to hear it of someone.
+
+rule s83g_kept_2
+when concept=talk.gossip topic.claim_kind=promise_kept
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. You can lean on #topic.them#. | If #topic.subject# says it, #topic.they#'ll do it. #topic.they.capitalize# #topic.claim#. | #topic.subject# #topic.claim#. #gladnews#.
+
+rule s83g_kept_3
+when concept=talk.gossip topic.claim_kind=promise_kept
+does tell.gossip
+cooldown 1d
+say A good word, for a change. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. I'd take #topic.their# word over a contract. | #topic.subject#? #topic.they.capitalize# #topic.claim#. Solid as a wall.
+
+rule s83g_kept_merchant
+when concept=talk.gossip topic.claim_kind=promise_kept self.role=merchant
+does tell.gossip
+cooldown 1d
+say #topic.subject# can have a slate with me. #topic.they.capitalize# #topic.claim#. | #topic.subject# #topic.claim#. That's my sort of customer. | #topic.subject# #topic.claim#. Good for business, that.
+
+## ================================================================ Prowling about
+
+rule s83g_prowl_1
+when concept=talk.gossip topic.claim_kind=prowling
+does tell.gossip
+cooldown 1d
+say #s8_psst# #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. #uneasy#. | They say #topic.subject# #topic.claim#. Up to no good.
+
+rule s83g_prowl_2
+when concept=talk.gossip topic.claim_kind=prowling
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. At all hours. | Keep your shutters fast. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Looking for what, I'd like to know.
+
+rule s83g_prowl_3
+when concept=talk.gossip topic.claim_kind=prowling
+does tell.gossip
+cooldown 1d
+say I don't like it. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#, I'm told. Probably nothing. | #topic.subject# #topic.claim#. Somebody should ask #topic.them# what for.
+
+rule s83g_prowl_night
+when concept=talk.gossip topic.claim_kind=prowling here.time=night|dusk
+does tell.gossip
+cooldown 1d
+say On a night like this, too. #topic.subject# #topic.claim#. | Bolt the door. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. I'll sleep with one eye open.
+
+rule s83g_prowl_guard
+when concept=talk.gossip topic.claim_kind=prowling self.job=guard|soldier
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#, I'm told. I'll walk that way tonight. | If #topic.subject# is prowling, the Watch should know. #topic.they.capitalize# #topic.claim#, they say. | #topic.subject# #topic.claim#. I'll keep an eye.
+
+rule s83g_prowl_merchant
+when concept=talk.gossip topic.claim_kind=prowling self.role=merchant
+does tell.gossip
+cooldown 1d
+say I've doubled the bolt on my shutters. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Round the back of the stalls, I'd guess. | #topic.subject# #topic.claim#. I'll leave a lamp burning.
+
+rule s83g_prowl_old
+when concept=talk.gossip topic.claim_kind=prowling self.stage=old
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. Nobody prowled when I was young. | I don't sleep much anyway. #topic.subject# #topic.claim#, they say. | #topic.subject# #topic.claim#. I've my stick by the door.
+
+## ================================================================ New in town; anything else
+
+rule s83g_newcomer_1
+when concept=talk.gossip topic.claim_kind=newcomer
+does tell.gossip
+cooldown 1d
+say Have you met #topic.subject#? #topic.they.capitalize# #topic.claim#. | #topic.subject# #topic.claim#. Somebody should say hello. | #topic.subject# #topic.claim#, I'm told.
+
+rule s83g_newcomer_2
+when concept=talk.gossip topic.claim_kind=newcomer
+does tell.gossip
+cooldown 1d
+say A new face. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. We'll see what #topic.they#'s made of. | You'll have noticed. #topic.subject# #topic.claim#.
+
+rule s83g_newcomer_merchant
+when concept=talk.gossip topic.claim_kind=newcomer self.role=merchant
+does tell.gossip
+cooldown 1d
+say A new customer, I hope. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. I'll make sure #topic.they# finds my stall. | #topic.subject# #topic.claim#. #topic.they.capitalize#'ll be wanting pots and pans.
+
+rule s83g_newcomer_cold
+when concept=talk.gossip topic.claim_kind=newcomer self.warmth=cold
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. Another one. | #topic.subject# #topic.claim#. We'll see how long #topic.they# lasts. | #topic.subject# #topic.claim#. Nobody asked me.
+
+rule s83g_other_1
+when concept=talk.gossip topic.claim_kind=other
+does tell.gossip
+cooldown 1d
+say #s8_psst# #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. That's the talk, anyway. | #hearsay#. #topic.subject# #topic.claim#.
+
+rule s83g_other_2
+when concept=talk.gossip topic.claim_kind=other
+does tell.gossip
+cooldown 1d
+say They're saying #topic.subject# #topic.claim#. Make of it what you will. | #topic.subject# #topic.claim#. Odd, isn't it. | Did you hear #topic.subject# #topic.claim#?
+
+## ================================================================ Any claim, by the place and the teller's lot
+# (Light framings only where the claim is light: never a jaunty word over a death or a hurt, §8.11.)
+
+rule s83g_any_light_1
+when concept=talk.gossip topic.claim_kind!=death|violence|victim
+does tell.gossip
+cooldown 1d
+say #s8_psst# #topic.subject# #topic.claim#. | Here's a thing. #topic.subject# #topic.claim#. | Did you know? #topic.subject# #topic.claim#.
+
+rule s83g_any_light_2
+when concept=talk.gossip topic.claim_kind!=death|violence|victim
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. The whole street's talking. | You'll hear it soon anyway. #topic.subject# #topic.claim#. | They're saying #topic.subject# #topic.claim#. Fancy that.
+
+rule s83g_any_light_3
+when concept=talk.gossip topic.claim_kind!=death|violence|victim
+does tell.gossip
+cooldown 1d
+say Lean in. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#, according to everyone. | Word on every doorstep: #topic.subject# #topic.claim#.
+
+rule s83g_any_grave
+when concept=talk.gossip topic.claim_kind=death|violence|victim
+does tell.gossip
+cooldown 1d
+say I've hard news. #topic.subject# #topic.claim#. | You'll not want to hear it. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. I'm sorry to be the one.
+
+rule s83g_any_tavern
+when concept=talk.gossip here.place=tavern topic.claim_kind!=death|violence|victim
+does tell.gossip
+cooldown 1d
+say Here's something to go with your cup. #topic.subject# #topic.claim#. | Pull your stool in. #topic.subject# #topic.claim#. | Ale talk, but true, I think. #topic.subject# #topic.claim#.
+
+rule s83g_any_tavern2
+when concept=talk.gossip here.place=tavern
+does tell.gossip
+cooldown 1d
+say The whole room's heard by now. #topic.subject# #topic.claim#. | Quieter, now. #topic.subject# #topic.claim#. | Before the room gets loud. #topic.subject# #topic.claim#.
+
+rule s83g_any_work
+when concept=talk.gossip here.place=work topic.claim_kind!=death|violence|victim
+does tell.gossip
+cooldown 1d
+say Something to pass the work. #topic.subject# #topic.claim#. | Keep at it, but listen. #topic.subject# #topic.claim#. | You'll like this one. #topic.subject# #topic.claim#.
+
+rule s83g_any_work2
+when concept=talk.gossip here.place=work
+does tell.gossip
+cooldown 1d
+say While we're at it. #topic.subject# #topic.claim#. | Did you hear, before we started? #topic.subject# #topic.claim#. | Keep it down, now. #topic.subject# #topic.claim#.
+
+rule s83g_any_market
+when concept=talk.gossip here.place=market
+does tell.gossip
+cooldown 1d
+say Every stall has it by now. #topic.subject# #topic.claim#. | Between the cabbages and the cheese, I heard #topic.subject# #topic.claim#. | Market talk. #topic.subject# #topic.claim#.
+
+rule s83g_any_street
+when concept=talk.gossip here.place=street|gate
+does tell.gossip
+cooldown 1d
+say Walk a step with me. #topic.subject# #topic.claim#. | Out here, quickly. #topic.subject# #topic.claim#. | Hold up. Did you hear #topic.subject# #topic.claim#?
+
+rule s83g_any_shore
+when concept=talk.gossip here.place=shore|field|wild
+does tell.gossip
+cooldown 1d
+say Nobody out here to overhear. #topic.subject# #topic.claim#. | Out here, talk carries. But #topic.subject# #topic.claim#. | Here's a thing to chew on. #topic.subject# #topic.claim#.
+
+rule s83g_any_city
+when concept=talk.gossip here.region=ridgemere
+does tell.gossip
+cooldown 1d
+say It's all over the city. #topic.subject# #topic.claim#. | In a city this size, and still everyone knows. #topic.subject# #topic.claim#. | From the Wharf to the Heights, they're saying #topic.subject# #topic.claim#.
+
+rule s83g_any_town
+when concept=talk.gossip here.region=towns
+does tell.gossip
+cooldown 1d
+say In a place like #here.town#, everybody knows by noon. #topic.subject# #topic.claim#. | You can't keep a thing quiet here. #topic.subject# #topic.claim#. | All #here.town# has it. #topic.subject# #topic.claim#.
+
+rule s83g_any_friends
+when concept=talk.gossip pair.band=friends|family|spouses topic.claim_kind!=death|violence|victim
+does tell.gossip
+cooldown 1d
+say You'll keep this to yourself, I know. #topic.subject# #topic.claim#. | I've been saving this for you. #topic.subject# #topic.claim#. | Only you, mind. #topic.subject# #topic.claim#.
+
+rule s83g_any_strangers
+when concept=talk.gossip pair.band=strangers
+does tell.gossip
+cooldown 1d
+say You'll not know the name, maybe. #topic.subject# #topic.claim#. | Forgive me, it's the talk of the place. #topic.subject# #topic.claim#. | You're new to it, I expect. #topic.subject# #topic.claim#.
+
+rule s83g_any_restday
+when concept=talk.gossip here.day=rest|market
+does tell.gossip
+cooldown 1d
+say Everyone's out today, and everyone's saying it. #topic.subject# #topic.claim#. | A whole day's talk in it. #topic.subject# #topic.claim#. | You'll hear it at every corner today. #topic.subject# #topic.claim#.
+
+rule s83g_any_rain
+when concept=talk.gossip here.weather=rain|storm|fog
+does tell.gossip
+cooldown 1d
+say Nothing to do in weather like this but talk. #topic.subject# #topic.claim#. | Get in out of the wet, and hear this. #topic.subject# #topic.claim#. | Grey day, grey news. #topic.subject# #topic.claim#.
+
+rule s83g_any_doubt
+when concept=talk.gossip
+does tell.gossip
+cooldown 1d
+say I don't know if it's true. #topic.subject# #topic.claim#. | Take it with salt. #topic.subject# #topic.claim#. | Only what I'm told. #topic.subject# #topic.claim#.
+
+rule s83g_any_heard
+when concept=talk.gossip
+does tell.gossip
+cooldown 1d
+say #s8_psst# #topic.subject# #topic.claim#. | #hearsay#. #topic.subject# #topic.claim#. | There's talk. #topic.subject# #topic.claim#.
+
+## ================================================================ More ways in, by the moment (the claim's kind first, then when and where)
+
+rule s83g_theft_winter
+when concept=talk.gossip topic.claim_kind=theft here.season=winter
+does tell.gossip
+cooldown 1d
+say In the dead of winter, too. #topic.subject# #topic.claim#. | Stealing, in this cold. #topic.subject# #topic.claim#. | Hard winter, harder hearts. #topic.subject# #topic.claim#.
+
+rule s83g_theft_marketday
+when concept=talk.gossip topic.claim_kind=theft here.day=market
+does tell.gossip
+cooldown 1d
+say Market day and a #thief# about. #topic.subject# #topic.claim#. | Keep your purse close today. #topic.subject# #topic.claim#. | Busy day for light paws. #topic.subject# #topic.claim#.
+
+rule s83g_theft_restday
+when concept=talk.gossip topic.claim_kind=theft here.day=rest
+does tell.gossip
+cooldown 1d
+say On a Restday, I'm told. #topic.subject# #topic.claim#. | Nobody rests round here, it seems. #topic.subject# #topic.claim#. | They'll be talking of it after chapel. #topic.subject# #topic.claim#.
+
+rule s83g_theft_chapel
+when concept=talk.gossip topic.claim_kind=theft here.place=chapel
+does tell.gossip
+cooldown 1d
+say Forgive me for saying it here. #topic.subject# #topic.claim#. | Even here, they're whispering it. #topic.subject# #topic.claim#. | Pray for honest paws. #topic.subject# #topic.claim#.
+
+rule s83g_wanted_night
+when concept=talk.gossip topic.claim_kind=wanted here.time=night|dusk
+does tell.gossip
+cooldown 1d
+say Walk home the lit way tonight. #topic.subject# #topic.claim#. | After dark, I'd stay in. #topic.subject# #topic.claim#. | Bolt the door. #topic.subject# #topic.claim#.
+
+rule s83g_wanted_chapel
+when concept=talk.gossip topic.claim_kind=wanted here.place=chapel
+does tell.gossip
+cooldown 1d
+say I shouldn't say it here. #topic.subject# #topic.claim#. | The priest will pray for #topic.them#, I expect. #topic.subject# #topic.claim#. | Quietly. #topic.subject# #topic.claim#.
+
+rule s83g_wanted_young
+when concept=talk.gossip topic.claim_kind=wanted self.stage=young|adolescent
+does tell.gossip
+cooldown 1d
+say The Watch is looking for #topic.subject#! | #topic.subject# #topic.claim#. Like in a story! | Everyone says #topic.subject# #topic.claim#. Is #topic.they# dangerous?
+
+rule s83g_violence_work
+when concept=talk.gossip topic.claim_kind=violence here.place=work|market
+does tell.gossip
+cooldown 1d
+say Before you hear it from the gossips. #topic.subject# #topic.claim#. | Nobody's talking of anything else today. #topic.subject# #topic.claim#. | Heads down, but listen. #topic.subject# #topic.claim#.
+
+rule s83g_violence_night
+when concept=talk.gossip topic.claim_kind=violence here.time=night|dusk
+does tell.gossip
+cooldown 1d
+say I'd walk in pairs tonight. #topic.subject# #topic.claim#. | Keep to the lamps. #topic.subject# #topic.claim#. | Don't go home alone. #topic.subject# #topic.claim#.
+
+rule s83g_violence_rich
+when concept=talk.gossip topic.claim_kind=violence self.wealth=rich
+does tell.gossip
+cooldown 1d
+say One hears #topic.subject# #topic.claim#. How very coarse. | #topic.subject# #topic.claim#. One is quite shaken. | Dreadful. #topic.subject# #topic.claim#.
+
+rule s83g_violence_keeper
+when concept=talk.gossip topic.claim_kind=violence self.job=innkeeper|brewer
+does tell.gossip
+cooldown 1d
+say If #topic.subject# comes in, I'm not serving #topic.them#. #topic.they.capitalize# #topic.claim#. | I keep a cudgel behind the bar for a reason. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Not under my roof, not again.
+
+rule s83g_victim_tavern
+when concept=talk.gossip topic.claim_kind=victim here.place=tavern
+does tell.gossip
+cooldown 1d
+say A cup for #topic.subject#. #topic.they.capitalize# #topic.claim#. | Quiet tonight. #topic.subject# #topic.claim#. | Everyone here's heard. #topic.subject# #topic.claim#.
+
+rule s83g_victim_street
+when concept=talk.gossip topic.claim_kind=victim here.place=street|gate|market
+does tell.gossip
+cooldown 1d
+say Out here, maybe, for all we know. #topic.subject# #topic.claim#. | Keep your eyes open. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Somewhere like this, I'd guess.
+
+rule s83g_victim_poor
+when concept=talk.gossip topic.claim_kind=victim self.wealth=poor|destitute
+does tell.gossip
+cooldown 1d
+say Even the poor aren't safe. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Nobody's safe, rich or poor. | Down our way, they're saying #topic.subject# #topic.claim#.
+
+rule s83g_victim_old
+when concept=talk.gossip topic.claim_kind=victim self.stage=old
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. I don't go out after dark now. | In my day you'd know who did it. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. These are cruel times.
+
+rule s83g_marriage_street
+when concept=talk.gossip topic.claim_kind=marriage here.place=street|gate
+does tell.gossip
+cooldown 1d
+say Stop a moment. #topic.subject# #topic.claim#! | Good news on a grey street. #topic.subject# #topic.claim#. | Did you hear, on your way? #topic.subject# #topic.claim#.
+
+rule s83g_marriage_poor
+when concept=talk.gossip topic.claim_kind=marriage self.wealth=poor|destitute
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. Love's free, at least. | Good news costs nothing. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Two can share one supper.
+
+rule s83g_marriage_guard
+when concept=talk.gossip topic.claim_kind=marriage self.job=guard|soldier
+does tell.gossip
+cooldown 1d
+say Something cheerful for once. #topic.subject# #topic.claim#. | Not the Watch's business, but #topic.subject# #topic.claim#. | Good news on my rounds. #topic.subject# #topic.claim#.
+
+rule s83g_marriage_neighbours
+when concept=talk.gossip topic.claim_kind=marriage pair.neighbours=yes
+does tell.gossip
+cooldown 1d
+say News for the row. #topic.subject# #topic.claim#. | You'll hear the celebrating, I expect. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. We should send something round.
+
+rule s83g_marriage_spring
+when concept=talk.gossip topic.claim_kind=marriage here.season=spring|summer
+does tell.gossip
+cooldown 1d
+say It's the season for it. #topic.subject# #topic.claim#. | Warm days and weddings. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Blossom and all.
+
+rule s83g_marriage_festival
+when concept=talk.gossip topic.claim_kind=marriage world.festival=today|soon
+does tell.gossip
+cooldown 1d
+say And with the festival close, too. #topic.subject# #topic.claim#. | Something more to celebrate. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. There'll be dancing at the festival.
+
+rule s83g_death_street
+when concept=talk.gossip topic.claim_kind=death here.place=street|gate|market
+does tell.gossip
+cooldown 1d
+say Stop a moment. #topic.subject# #topic.claim#. | I'm sorry to stop you with it. #topic.subject# #topic.claim#. | You'll want to know. #topic.subject# #topic.claim#.
+
+rule s83g_death_poor
+when concept=talk.gossip topic.claim_kind=death self.wealth=poor|destitute
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. We all go the same way, rich or poor. | #topic.subject# #topic.claim#. Who'll pay for the burying, I wonder. | #topic.subject# #topic.claim#. #rest.capitalize#.
+
+rule s83g_death_rich
+when concept=talk.gossip topic.claim_kind=death self.wealth=rich
+does tell.gossip
+cooldown 1d
+say One has had word. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. One must send flowers. | So sad. #topic.subject# #topic.claim#.
+
+rule s83g_death_guard
+when concept=talk.gossip topic.claim_kind=death self.job=guard|soldier
+does tell.gossip
+cooldown 1d
+say Word came to the watch-house. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Nothing for the Watch to do but stand by. | I've sad news from my rounds. #topic.subject# #topic.claim#.
+
+rule s83g_death_keeper
+when concept=talk.gossip topic.claim_kind=death self.job=innkeeper|brewer|cook
+does tell.gossip
+cooldown 1d
+say There'll be a wake, I expect. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. I'll keep a cup by for #topic.them#. | Quiet house tonight. #topic.subject# #topic.claim#.
+
+rule s83g_death_cold
+when concept=talk.gossip topic.claim_kind=death self.warmth=cold
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. That's how it goes. | You'll hear soon enough. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. We all come to it.
+
+rule s83g_death_winter
+when concept=talk.gossip topic.claim_kind=death here.season=winter
+does tell.gossip
+cooldown 1d
+say Winter takes its share. #topic.subject# #topic.claim#. | The cold's cruel this year. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. The ground's too hard for digging, even.
+
+rule s83g_death_friends
+when concept=talk.gossip topic.claim_kind=death pair.band=friends|family|spouses
+does tell.gossip
+cooldown 1d
+say I didn't want you to hear it from someone else. #topic.subject# #topic.claim#. | Sit with me a moment. #topic.subject# #topic.claim#. | Hold on to me. #topic.subject# #topic.claim#.
+
+rule s83g_broken_tavern
+when concept=talk.gossip topic.claim_kind=promise_broken here.place=tavern
+does tell.gossip
+cooldown 1d
+say Don't drink on #topic.subject#'s promises. #topic.they.capitalize# #topic.claim#. | Ale's cheaper than #topic.subject#'s word. #topic.they.capitalize# #topic.claim#. | Over a cup, they say #topic.subject# #topic.claim#.
+
+rule s83g_broken_old
+when concept=talk.gossip topic.claim_kind=promise_broken self.stage=old
+does tell.gossip
+cooldown 1d
+say A promise used to mean something. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. In my day you'd be shamed for it. | #topic.subject# #topic.claim#. Mark my words, it'll come back to #topic.them#.
+
+rule s83g_broken_poor
+when concept=talk.gossip topic.claim_kind=promise_broken self.wealth=poor|destitute
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. The poor can't afford broken promises. | Don't take work from #topic.subject#. #topic.they.capitalize# #topic.claim#. | #topic.subject# #topic.claim#. I've been let down before.
+
+rule s83g_kept_tavern
+when concept=talk.gossip topic.claim_kind=promise_kept here.place=tavern
+does tell.gossip
+cooldown 1d
+say Here's one to drink to. #topic.subject# #topic.claim#. | Raise a cup to #topic.subject#. #topic.they.capitalize# #topic.claim#. | Good word over the ale. #topic.subject# #topic.claim#.
+
+rule s83g_kept_old
+when concept=talk.gossip topic.claim_kind=promise_kept self.stage=old
+does tell.gossip
+cooldown 1d
+say There's still some who keep their word. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. That's the old way. | #topic.subject# #topic.claim#. I like to hear it.
+
+rule s83g_kept_poor
+when concept=talk.gossip topic.claim_kind=promise_kept self.wealth=poor|destitute
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. That's worth more than coin. | If you need work, go to #topic.subject#. #topic.they.capitalize# #topic.claim#. | #topic.subject# #topic.claim#. You can trust #topic.them#.
+
+rule s83g_prowl_tavern
+when concept=talk.gossip topic.claim_kind=prowling here.place=tavern
+does tell.gossip
+cooldown 1d
+say Keep an eye on the door tonight. #topic.subject# #topic.claim#. | They say #topic.subject# #topic.claim#. Up to something. | Ale talk, but #topic.subject# #topic.claim#.
+
+rule s83g_prowl_street
+when concept=talk.gossip topic.claim_kind=prowling here.place=street|gate
+does tell.gossip
+cooldown 1d
+say Round here, I'm told. #topic.subject# #topic.claim#. | Look about you. #topic.subject# #topic.claim#. | Out in the lanes, they say. #topic.subject# #topic.claim#.
+
+rule s83g_prowl_poor
+when concept=talk.gossip topic.claim_kind=prowling self.wealth=poor|destitute
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#. Our street will get the blame. | Down our way, #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. Nothing on our row worth prowling for.
+
+rule s83g_prowl_rich
+when concept=talk.gossip topic.claim_kind=prowling self.wealth=rich
+does tell.gossip
+cooldown 1d
+say One hears #topic.subject# #topic.claim#. One has asked for the gate to be watched. | #topic.subject# #topic.claim#. Most unsettling. | #topic.subject# #topic.claim#. Near the good houses, one fears.
+
+rule s83g_newcomer_old
+when concept=talk.gossip topic.claim_kind=newcomer self.stage=old
+does tell.gossip
+cooldown 1d
+say Another new face. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. I'll never learn all the names now. | #topic.subject# #topic.claim#. Welcome, I suppose.
+
+rule s83g_newcomer_tavern
+when concept=talk.gossip topic.claim_kind=newcomer here.place=tavern
+does tell.gossip
+cooldown 1d
+say Buy #topic.subject# a cup if you see #topic.them#. #topic.they.capitalize# #topic.claim#. | #topic.subject# #topic.claim#. This'll be #topic.their# tavern soon enough. | They say #topic.subject# #topic.claim#.
+
+rule s83g_newcomer_young
+when concept=talk.gossip topic.claim_kind=newcomer self.stage=young|adolescent
+does tell.gossip
+cooldown 1d
+say #topic.subject# #topic.claim#! I want to meet #topic.them#! | Guess what! #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#. That's exciting, isn't it?

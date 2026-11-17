@@ -193,6 +193,8 @@ s8_hello = Peace on you | Be welcome, friend | Water and shade | Welcome, truly
 s8_okay = Go in peace, then | As you must | The sun moves | Truly, go
 s8_bye = Go in peace | Peace on your road | Shade on your way | Stars keep you
 s8_byeback = And peace on yours | Stars keep you, too | Peace, friend | Shade on your way
+s8_night = A cool night to you | The night keep you | Water by the bed, then | Sleep in the cool, friend
+s8_nightback = A cool night, you too | Peace in the dark, friend | Sleep cool, friend
 s8_nevermind = As the stars will | Another day, truly | No matter, friend
 
 # Backchannel lines (doc 84 §10.2, Phase 7): plain's short answers ("Good.", "Always.", "It is.") as Saltwell says them.

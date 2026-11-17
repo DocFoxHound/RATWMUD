@@ -1,0 +1,325 @@
+# The shared lines, Phase 8 session 3 (Docs/Design/84 §33, §14.1's thin topics): a voice from elsewhere (talk.accent),
+# 26 openers before this phase. The openers carry the concept (§33.1) and hand on to moment.reply_home, as
+# moment7.talk's do: the one with the voice says where it's from (the answers below add Saltwell's, which had none, and
+# more ways for the rest).
+#
+# The facts (Core/RatwAmbient.cpp World::sceneTopics): talked of between strangers or acquaintances who grew up in
+# different places, the one spoken to with an accent (light or broad); topic.accent_of is where the one spoken to grew
+# up, topic.accent_town its name ("Coldwater", "Frosthollow"...). The speaker hears a voice: they may guess, but never
+# claim a cousin from there, a carter who cheated them, a visit they never made.
+#
+# The rules they keep: what each town is (doc 82: Coldwater's lake, Frosthollow's mines and snow, Larkfield's market,
+# the fens of Mirebridge and Fenshore, Oakhaven's Rainwood, Southmeadow's fields, Saltwell's sand and water, Ridgemere
+# the city); never a slur; who says it by the grammar, what about by the criteria (whose voice, the speaker's own
+# home, their trade, the place).
+
+## ================================================================ Any voice
+
+rule s83a_any_1
+when concept=talk.accent
+does ask.whereabouts
+cooldown 1d
+say That's not a voice from round here. | You're not from here. I can hear it. | Where did you get that voice?
+then other: moment.reply_home
+
+rule s83a_any_2
+when concept=talk.accent
+does ask.whereabouts
+cooldown 1d
+say I know that voice from somewhere. Where's home? | You say your words different. Where from? | Go on, where are you from? I'm trying to guess.
+then other: moment.reply_home
+
+rule s83a_any_3
+when concept=talk.accent
+does ask.whereabouts
+cooldown 1d
+say Say that again. Where's that from? | You've a voice that travels. Whose is it? | #surprise#. That's a long way from #here.town#, that voice.
+then other: moment.reply_home
+
+rule s83a_guess
+when concept=talk.accent
+does ask.detail
+cooldown 1d
+say #topic.accent_town#, is it? I'd put money on it. | That's #topic.accent_town# I hear. | Don't tell me. #topic.accent_town#.
+then other: moment.reply_home
+
+rule s83a_guess2
+when concept=talk.accent
+does ask.detail
+cooldown 1d
+say A #topic.accent_town# voice, if I'm any judge. | I'd know a #topic.accent_town# voice anywhere. | You'll be from #topic.accent_town#. Am I right?
+then other: moment.reply_home
+
+## ================================================================ Whose voice
+
+rule s83a_coldwater
+when concept=talk.accent topic.accent_of=coldwater
+does ask.detail
+cooldown 1d
+say That's a lake voice, or I'm a heron. Coldwater? | You talk like the water's in your mouth. Coldwater, is it? | Slow and deep. Coldwater folk talk like that.
+then other: moment.reply_home
+
+rule s83a_coldwater2
+when concept=talk.accent topic.accent_of=coldwater
+does ask.detail
+cooldown 1d
+say Lake country, by the sound of it. | Somebody's from up by the Glasswater. | You've a fisher's way of talking. Coldwater?
+then other: moment.reply_home
+
+rule s83a_frost
+when concept=talk.accent topic.accent_of=frosthollow
+does ask.detail
+cooldown 1d
+say Mountain voice. Frosthollow, I'd wager. | Short words, and every one counts. You'll be from Frosthollow. | That's snow in your voice. Frosthollow?
+then other: moment.reply_home
+
+rule s83a_frost2
+when concept=talk.accent topic.accent_of=frosthollow
+does ask.detail
+cooldown 1d
+say You talk like a miner. Under the Whitefangs, is it? | Frosthollow folk say less and mean more. You're one of them. | Up the Pass Road, that voice.
+then other: moment.reply_home
+
+rule s83a_lark
+when concept=talk.accent topic.accent_of=larkfield
+does ask.detail
+cooldown 1d
+say You talk like a market cry. Larkfield? | That's a Larkfield voice. Quick and sharp. | You could sell me my own coat in that voice. Larkfield, yes?
+then other: moment.reply_home
+
+rule s83a_lark2
+when concept=talk.accent topic.accent_of=larkfield
+does ask.detail
+cooldown 1d
+say A trader's voice. Larkfield, I'd say. | Everything sounds like a bargain when you say it. Larkfield? | That's the market town in your voice.
+then other: moment.reply_home
+
+rule s83a_fens
+when concept=talk.accent topic.accent_of=mirebridge|fenshore
+does ask.detail
+cooldown 1d
+say There's the fens in that voice. #topic.accent_town#? | You talk like the reeds. Fen folk? | That's a wet-foot voice. No offence meant.
+then other: moment.reply_home
+
+rule s83a_fens2
+when concept=talk.accent topic.accent_of=mirebridge|fenshore
+does ask.detail
+cooldown 1d
+say Down from the Sallow Fens, by the sound of it. | Fen-born. I can always tell. Am I wrong? | Soft vowels and long memories. That's fen talk.
+then other: moment.reply_home
+
+rule s83a_oak
+when concept=talk.accent topic.accent_of=oakhaven
+does ask.detail
+cooldown 1d
+say That's a Rainwood voice. Oakhaven? | You talk like the trees take their time. Oakhaven, is it? | Slow and green, that voice. The woods?
+then other: moment.reply_home
+
+rule s83a_oak2
+when concept=talk.accent topic.accent_of=oakhaven
+does ask.detail
+cooldown 1d
+say Under the oaks, I'd say. | Oakhaven folk talk like that. Like the rain's in no hurry. | There's a forest in your voice.
+then other: moment.reply_home
+
+rule s83a_south
+when concept=talk.accent topic.accent_of=southmeadow
+does ask.detail
+cooldown 1d
+say That's a farm voice. Southmeadow? | You talk like the fields. Warm and wide. | Southmeadow, I'd guess. Am I close?
+then other: moment.reply_home
+
+rule s83a_south2
+when concept=talk.accent topic.accent_of=southmeadow
+does ask.detail
+cooldown 1d
+say There's harvest in that voice. | Down the valley, by the sound of you. | You say "summer" like someone who means it. Southmeadow?
+then other: moment.reply_home
+
+rule s83a_salt
+when concept=talk.accent topic.accent_of=saltwell
+does ask.detail
+cooldown 1d
+say That's a desert voice. Saltwell? | You talk like water's precious. Saltwell, is it? | There's sand in that voice. From the Waste?
+then other: moment.reply_home
+
+rule s83a_salt2
+when concept=talk.accent topic.accent_of=saltwell
+does ask.detail
+cooldown 1d
+say You've a Saltwell way of saying things. Careful. Polite. | All the way from Saltwell, by the sound of it. | Sun and salt, that voice.
+then other: moment.reply_home
+
+rule s83a_city
+when concept=talk.accent topic.accent_of=ridgemere
+does ask.detail
+cooldown 1d
+say City voice. Ridgemere? | You talk fast, like the city. | That's a Ridgemere voice. What brings you out of the city?
+then other: moment.reply_home
+
+rule s83a_city2
+when concept=talk.accent topic.accent_of=ridgemere here.region=towns
+does ask.detail
+cooldown 1d
+say We don't hear many city voices in #here.town#. | Ridgemere, by that voice. You're a long way from the towers. | City folk always sound in a hurry. Are you?
+then other: moment.reply_home
+
+## ================================================================ The speaker's own home beside it
+
+rule s83a_north
+when concept=talk.accent self.from=frosthollow|coldwater topic.accent_of=frosthollow|coldwater
+does ask.detail
+cooldown 1d
+say A northern voice. We're neighbours, near enough. | You're from up my way. Mountains or lake? | I hear the north in that. Same as mine, nearly.
+then other: moment.reply_home
+
+rule s83a_south_pair
+when concept=talk.accent self.from=larkfield|southmeadow topic.accent_of=larkfield|southmeadow
+does ask.detail
+cooldown 1d
+say We're both from the downs, I think. Not the same town, though. | You sound like home. Nearly. | Downs folk. I can hear it, though you're not from my town.
+then other: moment.reply_home
+
+rule s83a_fenpair
+when concept=talk.accent self.from=mirebridge|fenshore|oakhaven topic.accent_of=mirebridge|fenshore|oakhaven
+does ask.detail
+cooldown 1d
+say A southern voice, and a wet one. Like mine. | You're from the warm country, aren't you. Same as me. | I know that voice. Not my town, but close.
+then other: moment.reply_home
+
+rule s83a_cityself
+when concept=talk.accent self.from=ridgemere topic.accent_of!=ridgemere
+does ask.whereabouts
+cooldown 1d
+say I've lived in the city all my life, and I still can't place half the voices. Where's yours from? | You're not city-born. Where's home? | That's no city voice. Where from?
+then other: moment.reply_home
+
+## ================================================================ By the teller and the place
+
+rule s83a_guard
+when concept=talk.accent self.job=guard|soldier
+does ask.whereabouts
+cooldown 1d
+say Not from here. Where's home, then? | The Watch likes to know where folk are from. Where's that voice from? | Travelling? Where from?
+then other: moment.reply_home
+
+rule s83a_keeper
+when concept=talk.accent self.job=innkeeper|brewer|cook
+does ask.whereabouts
+cooldown 1d
+say I hear every voice in the realm at my door. Where's yours from? | A traveller's voice. What'll you have, and where are you from? | That's a voice from the road. Whose is it?
+then other: moment.reply_home
+
+rule s83a_old
+when concept=talk.accent self.stage=old
+does ask.whereabouts
+cooldown 1d
+say My ears aren't what they were. Where's that voice from? | I knew a voice like that, long ago. Where are you from? | Say it again, slower, for an old one. Where's home?
+then other: moment.reply_home
+
+rule s83a_young
+when concept=talk.accent self.stage=young|adolescent
+does ask.whereabouts
+cooldown 1d
+say You talk different! Where are you from? | Say something else! Where's that voice from? | Is that how everyone talks where you live?
+then other: moment.reply_home
+
+rule s83a_tavern
+when concept=talk.accent here.place=tavern
+does ask.whereabouts
+cooldown 1d
+say Every voice ends up in a tavern. Where's yours from? | Pull up. Where's that voice from? | I've a guess where you're from. Tell me I'm right.
+then other: moment.reply_home
+
+rule s83a_market
+when concept=talk.accent here.place=market
+does ask.whereabouts
+cooldown 1d
+say I hear every town at this market. Which is yours? | That's a voice from out of town. Here to trade? | Where from? The market's full of voices today.
+then other: moment.reply_home
+
+rule s83a_broad
+when concept=talk.accent topic.accent_of!=ridgemere self.from=ridgemere here.region=ridgemere
+does ask.whereabouts
+cooldown 1d
+say I can barely follow you. In a good way. Where's that from? | That's a proper country voice. Where's home? | You've a thick old voice. Which town?
+then other: moment.reply_home
+
+rule s83a_merchant2
+when concept=talk.accent self.role=merchant
+does ask.whereabouts
+cooldown 1d
+say I trade with half the realm, and I can't place you. Where from? | That voice. You're not from my side of the market. | Where's home? I like to know who I'm selling to.
+then other: moment.reply_home
+
+rule s83a_warm2
+when concept=talk.accent self.warmth=warm
+does ask.whereabouts
+cooldown 1d
+say Oh, I love a voice from away. Where's yours from? | You sound like somewhere nice. Where is it? | Tell me where you're from. I'll want to visit.
+then other: moment.reply_home
+
+## ================================================================ Where the voice is from (moment.reply_home: the one with the accent answers)
+
+rule s83a_home_salt
+when concept=moment.reply_home self.from=saltwell
+does answer.detail
+priority 1
+say {m7=home} Saltwell. Out past the Waste, where water's worth more than coin. | {m7=home} Saltwell. Sand in everything, and I miss it. | {m7=home} From Saltwell. We talk careful. Every word costs breath in the heat.
+then other: moment.close
+
+rule s83a_home_salt2
+when concept=moment.reply_home self.from=saltwell
+does answer.detail
+priority 1
+say {m7=home} Saltwell, by the springs. You'll not have been. | {m7=home} Saltwell. Hot days, cold nights, and good wells. | {m7=home} The Waste, aye. Saltwell. Water first, words after, we say.
+then other: moment.close
+
+rule s83a_home_cold2
+when concept=moment.reply_home self.from=coldwater
+does answer.detail
+priority 1
+say {m7=home} Coldwater. Out on the lake, mostly. | {m7=home} Coldwater born. The lake gets in your voice. | {m7=home} Glasswater's shore. Coldwater. #greet#.
+then other: moment.close
+
+rule s83a_home_frost2
+when concept=moment.reply_home self.from=frosthollow
+does answer.detail
+priority 1
+say {m7=home} Frosthollow. Under the snow. | {m7=home} The mines. Frosthollow. We don't waste words. | {m7=home} Frosthollow. Cold enough to crack teeth.
+then other: moment.close
+
+rule s83a_home_lark2
+when concept=moment.reply_home self.from=larkfield
+does answer.detail
+priority 1
+say {m7=home} Larkfield. The market town. We talk quick to get the price in first. | {m7=home} Larkfield, aye. Raised on a stall. | {m7=home} Larkfield. Best market in the realm, whatever the city says.
+then other: moment.close
+
+rule s83a_home_fens2
+when concept=moment.reply_home self.from=mirebridge|fenshore
+does answer.detail
+priority 1
+say {m7=home} The fens. #self.from.capitalize#. Mind the mud. | {m7=home} #self.from.capitalize#. Boards over water, and the reeds whispering. | {m7=home} Fen-born, #self.from.capitalize#. You'll hear it till I die.
+then other: moment.close
+
+rule s83a_home_oak2
+when concept=moment.reply_home self.from=oakhaven
+does answer.detail
+priority 1
+say {m7=home} Oakhaven. Under the green. | {m7=home} The Rainwood. Oakhaven. It never stops dripping. | {m7=home} Oakhaven, aye. Slow wood, slow folk, long lives.
+then other: moment.close
+
+rule s83a_home_south2
+when concept=moment.reply_home self.from=southmeadow
+does answer.detail
+priority 1
+say {m7=home} Southmeadow. Fields as far as you can see. | {m7=home} Southmeadow, down the valley. We grow your bread. | {m7=home} Southmeadow. Warm days and long harvests.
+then other: moment.close
+
+rule s83a_home_city2
+when concept=moment.reply_home self.from=ridgemere
+does answer.detail
+priority 1
+say {m7=home} Ridgemere. The city. Don't hold it against me. | {m7=home} City-born. Ridgemere. We talk fast so we can get on. | {m7=home} Ridgemere. Rain and towers and everybody's business.
+then other: moment.close

@@ -360,9 +360,40 @@ say #agree#. | You're not wrong. | That's the truth. | I'd say the same. | Quite
 
 rule s8o_agree_prices
 does agree
-when conv.topic=prices|price_cause|times
+when conv.topic=prices|price_cause topic.dir=up
 weight 1.5
 say Dear as anything, aye. | You're telling me. My purse feels it. | It's a scandal, and that's the truth. | Every week, a penny more.
+
+# (Session 3: the most-heard agreement had no direction, so a price coming down was "Dear as anything" too.)
+rule s8o_agree_prices_up2
+does agree
+when conv.topic=prices|price_cause topic.dir=up
+weight 1.5
+say #grumble#. | Don't get me started. | Aye, and nobody's wages rising with it. | Dearer by the week. | We all feel it.
+
+rule s8o_agree_prices_down
+does agree
+when conv.topic=prices|price_cause topic.dir=down
+weight 1.5
+say About time something came down. | Make the most of it, I say. | Aye. It won't last, mind. | Good. My purse could use the rest. | #notsobad#, for once.
+
+rule s8o_agree_prices_any
+does agree
+when conv.topic=prices|price_cause
+weight 1.5
+say Prices. Always prices. | That's the market for you. | Aye. It's the way of things. | Up and down, and never when you want.
+
+rule s8o_agree_times_hard
+does agree
+when conv.topic=times world.times=hard|lean
+weight 1.5
+say Hard all round. | #grumble#. | Aye. Everyone's feeling it. | You'll hear no different from me.
+
+rule s8o_agree_times_good
+does agree
+when conv.topic=times world.times=good|boom
+weight 1.5
+say Long may it last. | Aye. Folk have coin again. | Better than it was, I'll say that. | Good times. Mind they don't turn.
 
 rule s8o_agree_weather
 does agree
@@ -399,6 +430,24 @@ does agree
 when conv.topic=family|home|friends|pastimes|animals|land|health|faith|memories|dreams|lore|festival|event|harvest|smalltalk|accent
 weight 1.5
 say Aye, that's so. | You're right about that. | That's the way of it. | #bc_true_enough#
+
+rule s8o_agree_home2
+does agree
+when conv.topic=family|home|friends|pastimes|animals|land|health|faith|memories|dreams|lore|festival|event|harvest|smalltalk|accent
+weight 1.5
+say Isn't that the truth. | Just what I was thinking. | You've the right of it there. | I'll not argue with that. | Well said.
+
+rule s8o_agree_road2
+does agree
+when conv.topic=bandits|caravan|travel|ships
+weight 1.5
+say Aye. That's the road for you. | No arguing with that. | You'd know. | Aye, that's how it is out there.
+
+rule s8o_agree_food2
+does agree
+when conv.topic=food
+weight 1.5
+say You'll get no argument from me. | Aye. Good food's good sense. | That's a belly talking sense. | Just so.
 
 ## give.advice by the trade of the one asking
 
