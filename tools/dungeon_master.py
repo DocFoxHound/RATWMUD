@@ -183,6 +183,9 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            # Talk (Docs/Design/62-talk.md, phase 6): a resident's voice, their family, a dialect or a figure saved; read again.
            # A mantle saved, read again alone (doc 84 §17.2: its own rows, swapped whole; the old kept if the new fails).
            'voice.sync': 'dm', 'mantle.sync': 'dm',
+           # Doc 84 §17.10 (Phase 10): a mantle bound to a resident by hand (target the resident; payload {"mantle": id}),
+           # or released (target the resident); a mantle retired (refused while worn: mantle_retire, through mantle_store).
+           'mantle.assign': 'dm', 'mantle.release': 'dm', 'mantle.retire': 'dm',
            # (The staged economy's acts, doc 79, 12, are added below from the one list of them: LIVE_ACTS.)
            # Marking a player a Dungeon Master in the game (the Dev Console) is for admins.
            'character.dm': 'admin'}
@@ -585,6 +588,20 @@ class DungeonMaster:
                 if not isinstance(p.get('approve'), bool):
                     raise DMError('Approve or refuse.')
                 clean['approve'] = p['approve']
+        elif kind in ('mantle.assign', 'mantle.release'):
+            # Doc 84 §17.10: the game checks the binding again (one living wearer, fits) and writes it (bound_how 'dm').
+            with self.connect(target) as conn:
+                world = C.world_of(conn)
+                if not conn.execute('SELECT 1 FROM live.npcs WHERE world_id = %s AND id = %s', (world, target_id)).fetchone():
+                    raise DMError('No such resident.')
+                if kind == 'mantle.assign':
+                    mantle = str(p.get('mantle', '')).strip()
+                    if not re.fullmatch(r'[a-z]{2}[0-9]{3,4}', mantle):
+                        raise DMError('Say {"mantle": its id, such as cw017}.')
+                    row = conn.execute('SELECT state FROM live.mantles WHERE world_id = %s AND id = %s', (world, mantle)).fetchone()
+                    if not row or row[0] != 'ready':
+                        raise DMError(f'{mantle} is not a ready mantle.' if row else f'No mantle {mantle}.')
+                    clean = {'mantle': mantle}
         elif kind == 'storyline.tick':
             step, objective = p.get('step'), p.get('objective')
             if not all(isinstance(v, int) and not isinstance(v, bool) and 0 <= v < 16 for v in (step, objective)):
@@ -697,6 +714,21 @@ class DungeonMaster:
                              (world, npc, origin, accent, quarter, json.dumps(traits), quirk, persona, grammar, rules, 'dm:' + who['username']))
                 action_id = self.queue(conn, who, target, 'voice.sync', npc, f'voice.sync after saving {npc}\'s voice')
         return {'id': action_id, 'status': 'queued'}
+
+    def mantle_retire(self, who, target, mantle_id, reason=''):
+        """A mantle taken out of use (doc 84 §9.2, §17.10): refused while worn; the server unloads it (mantle.sync)."""
+        self.allowed(who, 'mantle.retire')
+        import mantle_store
+        with self.connect(target) as conn:
+            with conn.transaction():
+                world = C.world_of(conn)
+                try:
+                    done = mantle_store.retire(conn, world, str(mantle_id), source='dm', account=who['username'], note=reason[:400])
+                except mantle_store.StoreError as error:
+                    raise DMError('\n'.join(error.problems)) from error
+                action_id = mantle_store.queue(conn, 'mantle.sync', str(mantle_id), who['username'])
+                self.audit(conn, who['username'], 'mantle.retire', str(mantle_id), f'{target.upper()}: mantle.retire {mantle_id}')
+        return {'id': action_id, 'status': 'queued', **done}
 
     def save_kin(self, who, target, npc, other, kind, remove=False):
         """A family tie: `npc` is `other`'s spouse, or `npc` is `other`'s parent; or one taken away."""
@@ -907,7 +939,7 @@ class DungeonMaster:
             dead = [r[0] for r in conn.execute('SELECT npc_id FROM live.npc_state WHERE world_id = %s AND NOT alive', (world[0],))]
             actions = [{'id': r[0], 'kind': r[1], 'target': r[2], 'by': r[3], 'at': r[4].isoformat(), 'status': r[5], 'result': r[6]}
                        for r in conn.execute('''SELECT id, kind, target_id, requested_by, requested_at, status, result FROM dm.actions
-                                                WHERE kind LIKE 'npc.%%' OR kind IN ('layers.sync', 'band.override')
+                                                WHERE kind LIKE 'npc.%%' OR kind IN ('layers.sync', 'band.override', 'mantle.assign', 'mantle.release')
                                                 ORDER BY id DESC LIMIT 60''').fetchall()]
             wanders = dict(conn.execute('SELECT id, wander_area FROM live.npcs WHERE world_id = %s AND wander_area IS NOT NULL',
                                         (world[0],)).fetchall())
@@ -931,6 +963,14 @@ class DungeonMaster:
                 if isinstance(o, dict):
                     for npc in o.get('members') or []:
                         held[npc] = {'band': o.get('band'), 'until': o.get('until'), 'household': o.get('household')}
+            # Who wears which mantle (doc 84 §17.10, Phase 10: Atlas's column), worn or rested, as the bindings say.
+            mantles = {}
+            if conn.execute("SELECT to_regclass('live.mantles') IS NOT NULL").fetchone()[0]:
+                for npc, mantle, how, bound, released, state in conn.execute(
+                        '''SELECT v.npc_id, v.mantle_id, v.bound_how, v.bound_day, v.released_day, m.state FROM live.npc_voice v
+                           JOIN live.mantles m ON m.world_id = v.world_id AND m.id = v.mantle_id
+                           WHERE v.world_id = %s AND v.mantle_id IS NOT NULL''', (world[0],)).fetchall():
+                    mantles[npc] = {'mantle': mantle, 'how': how, 'bound': bound, 'released': released, 'state': state}
             spawns = []
             for r in conn.execute('''SELECT id, name, area_id, template_id, count, respawn_minutes, enabled FROM live.spawns
                                      WHERE world_id = %s ORDER BY position, id''', (world[0],)).fetchall():
@@ -940,7 +980,7 @@ class DungeonMaster:
                                'dead': sum(1 for n in made if n in dead)})
         return {'target': target, 'world': world[0], 'people': project['people'], 'holders': holders, 'dead': dead,
                 'routes': project['routes'], 'areas': areas, 'spawns': spawns, 'wanders': wanders, 'spawned': spawned,
-                'actions': actions, 'bandsHeld': held, 'bandable': bandable, 'bandsAuthored': authored}
+                'actions': actions, 'bandsHeld': held, 'bandable': bandable, 'bandsAuthored': authored, 'mantles': mantles}
 
     # -- the calendar (Docs/Design/26-living-npcs.md, Phase 9) ----------------------
     def calendar(self, target):
@@ -2458,7 +2498,7 @@ def economy_log(audit, events, board, names, today, acts=()):
 # Live actions on things other than characters, sent through /api/live/action.
 LIVE_KINDS = ('project.post', 'project.cancel', 'project.complete', 'project.remove', 'npc.protect', 'npc.unprotect',
               'storyline.give', 'storyline.tick', 'storyteller.decide', 'storyteller.revoke', 'tale.pause', 'tale.resume',
-              'tale.stop', 'visitors.sync',
+              'tale.stop', 'visitors.sync', 'mantle.assign', 'mantle.release',
               'deed.award', 'deed.revoke', 'nickname.drop', 'nickname.restore', 'board.remove', 'estate.clear', 'estate.release',
               # The staged economy's acts (doc 79, 12): normalised by LIVE_ACTS (DungeonMaster.act), the one list of them.
               *ECONOMY_ACTS)
@@ -2685,6 +2725,9 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
             if method == 'POST' and path == '/api/talk/dialect':
                 data = self.body()
                 return self.reply(200, dm.save_dialect(who, self.posted(data), data.get('name'), data.get('grammar')))
+            if method == 'POST' and path == '/api/talk/mantle/retire':
+                data = self.body()
+                return self.reply(200, dm.mantle_retire(who, self.posted(data), str(data.get('mantle', '')), str(data.get('reason', ''))))
             if method == 'POST' and path == '/api/talk/figure':
                 data = self.body()
                 return self.reply(200, dm.save_figure(who, self.posted(data), data.get('figure'), bool(data.get('remove', False))))

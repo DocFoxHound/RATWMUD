@@ -185,6 +185,68 @@ struct Mourning
     double until = 0;
     std::string whom;     // Who is mourned (an ID).
 };
+// Doc 84 §12, §17.7 (Phase 10): who wears which mantle, one entry a wearer, living or dead (the mantle ledger). A world
+// in the database writes the same to live.npc_voice (mantle_id, bound_day, bound_how, released_day) and reads it back
+// from there at start; the rest (who knew the wearer, an echo, re-drawn marks, a newborn's voice) is the checkpoint's.
+// A mantle's status is worked out from it, never stored: worn (a living wearer, not released), resting (its last
+// wearer released it on releasedDay; it passes on once MantleRules::restDays have gone by), spare (never bound).
+struct MantleBinding
+{
+    std::string mantle;
+    std::string how;                  // authored, spare, reused, echo, arrival or dm (live.npc_voice.bound_how)
+    double boundDay = 0;
+    double releasedDay = -1;          // -1: worn; else the day its wearer died (or the DM released it)
+    std::vector<std::string> knownBy; // At release: the living residents with familiarity 40 or more toward the wearer
+    std::string echoOf;               // An echo (§12.4): the kin of a parent who wore it last (their id)
+    std::string dialect;              // The pool it came from (a fallback pool's dialect is the wearer's own: `own`)
+    std::map<std::string, std::string> marks;   // Re-drawn habits (§12.4): symbol -> the wearer's own value
+    std::string markDialect;          // Marks still to be drawn (by the host, which has the words) from this dialect's bank
+    // A newborn's voice, taken from the card at birth (the user, Q4: honesty and temperament inherited): where it was
+    // born (its origin for life), its accent, all seven traits and the quirk. Empty for one who had a voice before.
+    std::string from, accent, quirk;
+    std::map<std::string, std::string> traits;
+    bool born = false;
+};
+// A ready mantle as the pools need it (§9.4: the card without the lines), from live.mantles or an export's headers.
+struct PoolMantle
+{
+    std::string id, dialect, fits, writtenFor, quirk;
+    std::vector<std::string> accents, marks;
+    std::map<std::string, std::string> traits;
+};
+// Names for the born (§7.10, Data/Talk/names/<dialect>.names): drafts, to settle with the user.
+struct NamePool
+{
+    std::vector<std::string> female, male;
+    double namedFor = .25;            // A child born in place of a dead grandparent takes their first name this often
+};
+// Reads a .names file. False with the problems, one a line.
+bool readNamePool(const std::string& text, const std::string& where, std::string& dialect, NamePool& out,
+                  std::vector<std::string>& problems);
+// How mantles pass on (§12; Data/Talk/settings.json's mantle_rest_days and mantle_fallback, the name pools).
+struct MantleRules
+{
+    double restDays = 365;
+    std::map<std::string, std::string> fallback;      // A pool with nothing to give -> its neighbour's
+    std::map<std::string, NamePool> names;            // By dialect (plain: Ridgemere's)
+};
+// A pool's health (§12.1): its mantles never worn, resting, rested and ready to pass on; the births its dialect
+// expects in the next 180 game days; its honesty mix against its living wearers'.
+struct MantlePoolHealth
+{
+    std::string dialect;
+    int spare = 0, resting = 0, ready = 0;
+    double births180 = 0;
+    bool low = false;                                 // spare + ready under 1.5 x births180 + 2
+    std::map<std::string, int> honesty, livingHonesty;   // The pool's (spare and resting); its dialect's living residents'
+};
+// Something the host writes for the mantle ledger: a release (`died`, the DM), a binding (an arrival, the DM), or a
+// birth with no mantle for its dialect (`none`: logged, RATW_MANTLE none for <dialect>).
+struct MantleChange
+{
+    std::string kind, npc, mantle, how, dialect;
+    double day = 0;
+};
 struct CareerState
 {
     std::map<std::string, PositionState> positions;   // By position ID.
@@ -200,6 +262,7 @@ struct CareerState
     // day the child is due. Players never count: only residents die into it.
     std::map<std::string, double> birthsOwed;
     std::int64_t day = -1;                            // The last day careers were tended.
+    std::map<std::string, MantleBinding> mantles;     // The mantle ledger (doc 84 §12), by wearer.
 };
 // A resident the world should gain: a child, in place of one who died, or an unplaced NPC of the world's own list come in
 // from the Country for a post nobody in the city can fill (the user, 2026-11-01: "I never said to simulate new NPCs or
@@ -234,6 +297,14 @@ struct ResidentRequest
     // greeting; `idleLabel` the row's label of one placed with no post (a keeper's family: "keeps the house", "plays
     // about the farm"). Empty: the words as they were.
     std::string description, greeting, idleLabel;
+    // Doc 84 §12.3, §12.6 (Phase 10): the mantle a birth or an arrival takes up ("" for none), how (spare, reused, echo,
+    // arrival), whose kin it echoes, whether its marks are drawn again and from which dialect's bank; for a birth, the
+    // voice it is born with (MantleBinding's from, accent, traits, quirk) and its personality, written from the card
+    // instead of its mother's.
+    std::string mantle, mantleHow, echoOf, dialect, markDialect;
+    bool redrawMarks = false;
+    MantleBinding voice;
+    std::string personality;
 };
 // The Country folk's words (doc 79, Progress, "The Country folk's words"; the user, 2026-11-12): a description and a
 // greeting for one placed by the farms' rule, written from their post and home in the world's voice: the look kept from
@@ -277,6 +348,14 @@ struct CareerWorld
     // Whether the world has a place (a cell or an interior): the farms' people are placed only where their places are
     // built (doc 71, Phase C). Null: nowhere is, so nobody is placed.
     std::function<bool(const std::string& cell)> place;
+    // Doc 84 §12 (Phase 10): the dialect pool of a place (its town's grammar: "plain" for Ridgemere; "" for none of the
+    // realm's), the town a cell is in, where a resident (or one of the Country) grew up and their accent, and those
+    // living who knew one well (familiarity 40 or more toward them). Null: no mantles pass on.
+    std::function<std::string(const std::string& cell)> dialectOfCell;
+    std::function<std::string(const std::string& cell)> townOf;
+    std::function<std::string(const std::string& town)> dialectOfTown;
+    std::function<std::pair<std::string, std::string>(const std::string& id)> originOf;   // (town, accent); ("", "") unknown
+    std::function<std::vector<std::string>(const std::string& id)> knownBy;
 };
 
 // What the staged economy keeps between days (Docs/Design/79-a-staged-economy.md, Phase 2; the save's "staged", only when
@@ -519,8 +598,9 @@ class Society
     bool family(const std::string& a, const std::string& b) const;
     bool household(const std::string& a, const std::string& b) const;
     const Mourning* mourning(const std::string& resident) const;
-    // A resident has died: their position stands empty and their estate waits a day to be settled.
-    std::vector<CareerNote> died(const std::string& resident, double day);
+    // A resident has died: their position stands empty and their estate waits a day to be settled; their mantle rests
+    // (doc 84 §12.2), known by those `world` says knew them well.
+    std::vector<CareerNote> died(const std::string& resident, double day, const CareerWorld* world = nullptr);
     // Brought back: the estate is theirs still, and their position too if nobody has taken it.
     std::vector<CareerNote> revived(const std::string& resident);
     void mourn(const std::string& resident, const std::string& whom, double until);
@@ -609,8 +689,39 @@ class Society
     std::size_t requestsWaiting() const { return requests_.size(); }
     void askFor(ResidentRequest r) { requests_.push_back(std::move(r)); }   // (One asked for, as careers would: tests'.)
     CareerNote welcome(const ResidentRequest& request, const std::string& id);
-    // A child the host could not make: owed again, due now.
+    // A child the host could not make: owed again, due now. (A mantle it was to wear was never bound: it stays as it was.)
     void birthFailed(const ResidentRequest& request);
+    // Mantles passed on (Docs/Design/84-living-conversations.md §12, Phase 10; RatwHandoff.cpp). The host gives the
+    // ready mantles' cards (every ready one, worn or not) and the rules; the ledger is CareerState::mantles. A death
+    // releases its wearer's mantle (died); a birth chooses one (tendBirths: an echo, a rested one nobody in the birth
+    // town knew, any rested one with its marks drawn again, a spare, a neighbouring pool's, else none); an arrival from
+    // the Country binds one from its dialect's pool. Never two living wearers of one mantle.
+    void setMantleCards(std::vector<PoolMantle> cards);
+    void setMantleRules(MantleRules rules) { mantleRules_ = std::move(rules); }
+    const MantleRules& mantleRules() const { return mantleRules_; }
+    const PoolMantle* mantleCard(const std::string& id) const;
+    const std::map<std::string, PoolMantle>& mantleCards() const { return mantleCards_; }
+    const MantleBinding* mantleOf(const std::string& wearer) const;   // Their binding, worn or released (null: none)
+    std::map<std::string, MantleBinding>& mantleLedger() { return state_.careers.mantles; }   // (The host's reconciling.)
+    std::string wearerOf(const std::string& mantle) const;            // Its living wearer ("" for none)
+    // A binding from outside (a database world's live.npc_voice, read at start; an authored binding; the DM): replaces
+    // the wearer's. False with why (the mantle is worn by another living wolf, or isn't ready, or they don't fit it).
+    bool bindMantle(const std::string& wearer, const std::string& mantle, const std::string& how, double day, std::string& why,
+                    bool checkFits = true);
+    // Released while alive (the DM's mantle.release) or at death: resting from `day`. False if they wear none.
+    bool releaseMantle(const std::string& wearer, double day, const std::vector<std::string>& knownBy = {});
+    void setMantleMarks(const std::string& wearer, std::map<std::string, std::string> marks);
+    // Whether a wolf of this sex, age, class, role and job fits a mantle's `fits` at its age now or any it will grow to
+    // (a newborn fits `stage=adult|old`: it will be one). Unknown facts don't hold.
+    static bool fitsMantle(const std::string& fits, const std::map<std::string, std::string>& facts, int age);
+    // The pools today (§12.1), each dialect's, for the daily log and mantle_pool.py's numbers.
+    std::vector<MantlePoolHealth> mantlePools(double now, const CareerWorld& world) const;
+    // What the host must write since the last call (releases, bindings, births with no mantle).
+    std::vector<MantleChange> takeMantleChanges();
+    // A personality line from a card (§12.5: "Calm and warm; swims in the lake even in autumn."), no pronouns.
+    static std::string cardPersonality(const std::map<std::string, std::string>& traits, const std::string& quirk);
+    // The seven traits with the middle of each axis where the card says nothing (honesty plain).
+    static std::map<std::string, std::string> wholeTraits(const std::map<std::string, std::string>& traits);
     // An arrival from the Country (ResidentRequest "arrival"): the unplaced NPC becomes a resident at the home chosen for
     // it, placed without work (it holds the post it came for once welcomed), with the purse the request names (a plain
     // amount, set: doc 79, 6.5). False if it is no longer unplaced.
@@ -1624,6 +1735,21 @@ class Society
     mutable bool careersIndexed_ = false;
     std::vector<ResidentRequest> requests_;
     std::map<std::string, int> fills_;
+    // Mantles (RatwHandoff.cpp): the ready cards, the rules, what the host must write.
+    std::map<std::string, PoolMantle> mantleCards_;
+    MantleRules mantleRules_;
+    std::vector<MantleChange> mantleChanges_;
+    // Chooses a mantle for a birth or an arrival (§12.3) into the request: false if none (logged as `none`).
+    bool chooseMantle(ResidentRequest& r, const std::string& wearer, const std::map<std::string, std::string>& facts, int age,
+                      double now, const CareerWorld& world);
+    // A name for a child (§7.10): its dialect's pool, unique as the doc says, perhaps its dead grandparent's.
+    std::string childName(const std::string& dialect, const std::string& sex, const std::string& surname,
+                          const std::vector<std::string>& parents, const std::string& inPlaceOf, const std::string& key,
+                          std::int64_t today, const CareerWorld& world) const;
+    bool kinOf(const std::string& a, const std::string& b) const;   // Spouses, parent and child, siblings, grandparent
+    void mantleWelcome(const ResidentRequest& request, const std::string& id);
+    // An arrival from the Country (an "arrival" or a "farm" request) takes a mantle from the pool of where it grew up.
+    void arrivalMantle(ResidentRequest& r, double now, const CareerWorld& world);
     std::string classOf(const std::string& id, int depth, ClassPass* pass = nullptr) const;
     std::string workOutClass(const std::string& id, int depth, ClassPass* pass) const;   // (classOf's work, uncached.)
     void tendBirths(double now, const CareerWorld& world);

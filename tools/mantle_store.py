@@ -8,8 +8,9 @@ ratw.edit_source, ratw.edit_by and ratw.edit_note set for live.mantle_history; a
 <id>, or one voice.sync for a batch) through dm.queue_talk_sync. A refused save writes nothing and returns the problems by
 item key.
 
-Phase 10 adds the Mantles panel's endpoints on top of save() and retire(); the binding's `fits` check needs a wearer's
-facts and comes with it.
+Phase 10: a binding checks its wearer against the mantle's `fits` (fits(), as Core/RatwHandoff.cpp's
+Society::fitsMantle: a stage or an age holds if it is the wearer's now or one they will grow to), and retire() refuses a
+mantle while it is worn. The Mantles panel's endpoints (P10's table) are still to come on top of save() and retire().
 """
 from __future__ import annotations
 
@@ -211,6 +212,86 @@ def save(conn, world_id: str, m: T.Mantle, *, base_revision: int | None, source:
     return done
 
 
+STAGES = ('young', 'adolescent', 'adult', 'old')
+
+
+def stage_of(age: int) -> int:
+    """Core/RatwAppearance.cpp's lifeStage: young under 13, adolescent to 17, adult to 64, old after."""
+    return 0 if age < 13 else 1 if age < 18 else 2 if age < 65 else 3
+
+
+def fits(text: str, facts: dict, age: int) -> bool:
+    """Whether a wolf fits a mantle's hard criteria (§7.9 `fits`), as the game's Society::fitsMantle decides."""
+    now = stage_of(age)
+    for token in (text or '').split():
+        token = token[5:] if token.startswith('self.') else token
+        op = next((o for o in ('!=', '>=', '<=', '=', '>', '<') if o in token), None)
+        if op is None:
+            if token in STAGES:
+                name, op, value = 'stage', '=', token
+            elif token in ('male', 'female'):
+                name, op, value = 'sex', '=', token
+            else:
+                return False
+        else:
+            name, value = token.split(op, 1)
+        values = value.split('|')
+        if name == 'stage':
+            reachable = [STAGES[i] for i in range(now, 4)]
+            if op == '=' and not any(v in reachable for v in values):
+                return False
+            if op == '!=' and all(r in values for r in reachable):
+                return False
+            if op not in ('=', '!='):
+                return False
+            continue
+        if name == 'age':
+            try:
+                n = float(value)
+            except ValueError:
+                return False
+            ok = {'>=': True, '>': True, '<': age < n, '<=': age <= n, '=': age <= n, '!=': age != n}[op]
+            if not ok:
+                return False
+            continue
+        have = facts.get(name)
+        listed = have is not None and have in values
+        if (op == '=' and not listed) or (op == '!=' and listed) or op not in ('=', '!='):
+            return False
+    return True
+
+
+def wearer_facts(conn, world_id: str, npc: str) -> tuple[dict, int] | None:
+    """A resident's facts for `fits` (sex, role, job) and age, from live.npcs (the game's age where it has saved one)."""
+    row = conn.execute("SELECT age, role, work_label, appearance->>'sex' FROM live.npcs WHERE world_id = %s AND id = %s",
+                       (world_id, npc)).fetchone()
+    if not row:
+        return None
+    age = row[0] or 0
+    saved = conn.execute("SELECT data->>'age' FROM game.npcs WHERE world_id = %s AND key = %s", (world_id, npc)).fetchone()
+    if saved and saved[0] and str(saved[0]).isdigit():
+        age = int(saved[0])
+    return {'sex': row[3] or '', 'role': row[1] or '', 'job': row[2] or ''}, int(age)
+
+
+def retire(conn, world_id: str, mantle_id: str, *, source: str, account: str = '', note: str = '') -> dict:
+    """A mantle taken out of use (§9.2): refused while worn (release or reassign it first). Inside the caller's
+    transaction; the server is told by the caller (queue mantle.sync)."""
+    current, _ = rows(conn, world_id, mantle_id)
+    if current is None:
+        raise StoreError([f'{mantle_id}: no such mantle'])
+    wearer = worn_by(conn, world_id, mantle_id)
+    if wearer:
+        raise StoreError([f'{mantle_id}: retired while {wearer} wears it: release or reassign it first'])
+    if current['state'] == 'retired':
+        return {'id': mantle_id, 'revision': current['revision'], 'state': 'retired'}
+    conn.execute("SELECT set_config('ratw.edit_source', %s, true), set_config('ratw.edit_by', %s, true), "
+                 "set_config('ratw.edit_note', %s, true)", (source[:120], account[:120], note[:400]))
+    conn.execute("UPDATE live.mantles SET state = 'retired' WHERE world_id = %s AND id = %s", (world_id, mantle_id))
+    revision = conn.execute('SELECT revision FROM live.mantles WHERE world_id = %s AND id = %s', (world_id, mantle_id)).fetchone()[0]
+    return {'id': mantle_id, 'revision': revision, 'state': 'retired'}
+
+
 def bind(conn, world_id: str, mantle_id: str, npc: str, how: str = 'authored') -> str:
     """The mantle bound to a resident (their voice row): '' done, else why not (they're dead, they wear another, it's
     worn by someone else, no such resident)."""
@@ -228,6 +309,12 @@ def bind(conn, world_id: str, mantle_id: str, npc: str, how: str = 'authored') -
         return f'{npc} wears {voice[0]}'
     if voice and voice[0] == mantle_id and voice[1] is None:
         return ''
+    card = conn.execute('SELECT fits, state FROM live.mantles WHERE world_id = %s AND id = %s', (world_id, mantle_id)).fetchone()
+    if card and card[1] == 'retired':
+        return f'{mantle_id} is retired'
+    wearer = wearer_facts(conn, world_id, npc)
+    if card and wearer and not fits(card[0], *wearer):
+        return f'{npc} doesn\'t fit {mantle_id} (fits {card[0]})'
     day = world_day(conn, world_id)
     if voice:
         conn.execute('UPDATE live.npc_voice SET mantle_id = %s, bound_how = %s, bound_day = %s, released_day = NULL WHERE '

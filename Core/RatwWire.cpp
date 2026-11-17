@@ -1029,6 +1029,44 @@ Value society(const SocietyState& s)
     for (const auto& [dead, day] : s.careers.birthsOwed)
         owed.add(dead, day);
     careers.add("birthsOwed", owed);
+    // The mantle ledger (doc 84 §12, §17.8): who wears or wore which mantle, only while there is one (an older save
+    // reads as none).
+    if (!s.careers.mantles.empty())
+    {
+        auto mantles = Value::object();
+        for (const auto& [wearer, b] : s.careers.mantles)
+        {
+            auto j = Value::object();
+            j.add("mantle", b.mantle); j.add("how", b.how); j.add("boundDay", b.boundDay); j.add("releasedDay", b.releasedDay);
+            if (!b.knownBy.empty())
+            {
+                auto list = Value::array();
+                for (const auto& k : b.knownBy)
+                    list.push(k);
+                j.add("knownBy", list);
+            }
+            if (!b.echoOf.empty()) j.add("echoOf", b.echoOf);
+            if (!b.dialect.empty()) j.add("dialect", b.dialect);
+            if (!b.markDialect.empty()) j.add("markDialect", b.markDialect);
+            if (!b.marks.empty())
+            {
+                auto marks = Value::object();
+                for (const auto& [k, v] : b.marks)
+                    marks.add(k, v);
+                j.add("marks", marks);
+            }
+            if (b.born)
+            {
+                j.add("born", true); j.add("from", b.from); j.add("accent", b.accent); j.add("quirk", b.quirk);
+                auto traits = Value::object();
+                for (const auto& [k, v] : b.traits)
+                    traits.add(k, v);
+                j.add("traits", traits);
+            }
+            mantles.add(wearer, j);
+        }
+        careers.add("mantles", mantles);
+    }
     o.add("careers", careers);
     if (!s.board.empty())
         o.add("board", market::encode(s.board));   // (The Market Board, doc 79, Phase 1: only while staged has moved it.)
@@ -1428,6 +1466,25 @@ CareerState readCareers(const Value& o)
         if (v.isNumber()) c.births[key] = std::clamp(int(v.asNumber()), 0, 3);
     for (const auto& [dead, v] : o.object("birthsOwed").fields())
         if (v.isNumber() && v.asNumber() >= 0 && v.asNumber() < 1e9) c.birthsOwed[dead] = v.asNumber();
+    for (const auto& [wearer, a] : o.object("mantles").fields())
+    {
+        if (!a.isObject() || a.string("mantle").empty())
+            continue;
+        MantleBinding b;
+        b.mantle = a.string("mantle"); b.how = a.string("how");
+        if (a["boundDay"].isNumber()) b.boundDay = a["boundDay"].asNumber();
+        if (a["releasedDay"].isNumber()) b.releasedDay = a["releasedDay"].asNumber();
+        for (const auto& k : a["knownBy"].items())
+            if (k.isString()) b.knownBy.push_back(k.asString());
+        b.echoOf = a.string("echoOf"); b.dialect = a.string("dialect"); b.markDialect = a.string("markDialect");
+        for (const auto& [k, v] : a.object("marks").fields())
+            if (v.isString()) b.marks[k] = v.asString();
+        b.born = a["born"].isBool() && a["born"].asBool();
+        b.from = a.string("from"); b.accent = a.string("accent"); b.quirk = a.string("quirk");
+        for (const auto& [k, v] : a.object("traits").fields())
+            if (v.isString()) b.traits[k] = v.asString();
+        c.mantles[wearer] = std::move(b);
+    }
     return c;
 }
 

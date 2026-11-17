@@ -60,6 +60,45 @@ def unmigrate(key):
             conn.execute("DELETE FROM public.schema_migrations WHERE version = '0061'")
 
 
+def unmantle(key):
+    """Takes migration 0066 back off a throwaway world (doc 84 §17.1's rollback): as PROD is until the user migrates it."""
+    with W.connect(key, 'owner') as conn:
+        with conn.transaction():
+            conn.execute((W.ROOT / 'Database' / 'rollback' / '0066_mantles_down.sql').read_text(encoding='utf-8'))
+
+
+class MantleItemsTests(unittest.TestCase):
+    """Doc 84 §17.9 (Phase 10): mantles are live data, synced item by item."""
+
+    @staticmethod
+    def lines(**bodies):
+        out = WS.Snapshot({s.table: {} for s in WS.SYNCED})
+        for key, body in bodies.items():
+            row = {'world_id': 'w', 'mantle_id': 'cw017', 'key': key.replace('__', '.'), 'section': 'grown', 'kind': 'line',
+                   'move': 'greet', 'position': 1, 'body': body}
+            out['live.mantle_lines'][('cw017', row['key'])] = (WS.digest_of(row), row)
+        return out
+
+    def test_items_edited_on_different_sides_dont_conflict_and_the_same_item_does(self):
+        base = self.lines(grown__greet__1='line greet : Morning.', grown__farewell__1='line farewell : Mind the step.')
+        dev = self.lines(grown__greet__1='line greet : Morning, neighbour.', grown__farewell__1='line farewell : Mind the step.')
+        live = self.lines(grown__greet__1='line greet : Morning.', grown__farewell__1='line farewell : Mind the step; it\'s slick.')
+        items = {i.key[1]: i.side for i in WS.three_way(base, dev, live)}
+        self.assertEqual(items, {'grown.greet.1': 'dev', 'grown.farewell.1': 'live'}, 'one line each side: no conflict')
+        both = self.lines(grown__greet__1='line greet : Good morning.', grown__farewell__1='line farewell : Mind the step.')
+        items = {i.key[1]: i.side for i in WS.three_way(base, dev, both)}
+        self.assertEqual(items, {'grown.greet.1': 'conflict'}, 'the same line on both sides: a conflict in Atlas\'s list')
+
+    def test_the_tables_come_before_the_voices_that_bind_them_and_the_binding_is_the_games(self):
+        order = [s.table for s in WS.SYNCED]
+        self.assertLess(order.index('live.mantles'), order.index('live.mantle_lines'))
+        self.assertLess(order.index('live.mantle_lines'), order.index('live.npc_voice'))
+        self.assertNotIn('live.mantle_history', order, 'each world keeps its own history')
+        for column in ('mantle_id', 'bound_day', 'bound_how', 'released_day'):
+            self.assertTrue(S.game_owned('live.npc_voice', column), column)
+        self.assertFalse(S.game_owned('live.npc_voice', 'grammar'))
+
+
 class ThreeWayTests(unittest.TestCase):
     """Section 4's table, row by row, on NPC rows."""
 
@@ -433,6 +472,42 @@ class PullTests(ScratchWorlds, unittest.TestCase):
         result = WS.import_(self.dev, {}, 'password', 'Ada')
         self.assertEqual(result['summary']['live'], {'NPCs': {'added': 0, 'changed': 1, 'removed': 0}})
         self.assertEqual(self.one(self.live, "SELECT greeting FROM live.npcs WHERE id = 'sloe'"), 'Hi from dev.')
+
+    def test_a_world_without_migration_0066_takes_voices_without_their_bindings(self):
+        # Doc 84 Phase 10: live.npc_voice's binding columns are 0066's (PROD is at 0054). An unbound voice is the same on
+        # both sides; a bound one can't reach a world without them, and says so; the mantles' tables aren't compared.
+        unmantle(self.live)
+        self.sql(self.dev, "INSERT INTO live.npc_voice (world_id, npc_id, home_region) VALUES ('greyfen', 'sloe', 'coldwater')")
+        self.sql(self.live, "INSERT INTO live.npc_voice (world_id, npc_id, home_region) VALUES ('greyfen', 'sloe', 'coldwater')")
+        self.assertEqual(WS.diff(self.dev)['counts'], {'live': 0, 'dev': 0, 'conflicts': 0}, 'an unset binding is no difference')
+        self.sql(self.dev, "INSERT INTO live.mantles (world_id, id, dialect, tier, state, accents) VALUES "
+                           "('greyfen', 'cw017', 'coldwater', 'standard', 'ready', ARRAY['light'])")
+        self.sql(self.dev, "INSERT INTO live.npc_voice (world_id, npc_id, home_region, mantle_id, bound_how, bound_day) VALUES "
+                           "('greyfen', 'wren', 'coldwater', 'cw017', 'authored', 1)")
+        WS.maintenance(self.live, True, 'Ada', 'Import')
+        plan = WS.plan_import(self.dev)
+        self.assertTrue(any('lacks migration 0066' in b and 'wren' in b for b in plan['blocked']), plan['blocked'])
+        with self.assertRaisesRegex(WS.PublishError, 'mantle_id'):
+            WS.import_(self.dev, {}, 'password', 'Ada')
+        self.assertEqual(self.sql(self.live, "SELECT count(*) FROM live.npc_voice WHERE npc_id = 'wren'"), [(0,)], 'nothing imported')
+
+    def test_mantles_pull_item_by_item_with_their_bindings(self):
+        # Both worlds at 0066: a mantle written in live (the DM's) comes to dev with its items and its wearer's binding;
+        # dev's history names the sync.
+        self.sql(self.live, "INSERT INTO live.mantles (world_id, id, dialect, tier, state, accents) VALUES "
+                            "('greyfen', 'cw017', 'coldwater', 'standard', 'ready', ARRAY['light'])")
+        self.sql(self.live, "INSERT INTO live.mantle_lines (world_id, mantle_id, key, section, kind, move, position, body) VALUES "
+                            "('greyfen', 'cw017', 'grown.greet.1', 'grown', 'line', 'greet', 1, 'line @1 greet : Morning.')")
+        self.sql(self.live, "INSERT INTO live.npc_voice (world_id, npc_id, mantle_id, bound_how, bound_day) VALUES "
+                            "('greyfen', 'wren', 'cw017', 'dm', 3)")
+        plan = WS.diff(self.dev)
+        self.assertEqual(self.ids(plan['liveChanges']), ['live.mantle_lines/cw017/grown.greet.1', 'live.mantles/cw017',
+                                                         'live.npc_voice/wren'])
+        WS.pull(self.dev, editor='Ada')
+        self.assertEqual(self.one(self.dev, "SELECT body FROM live.mantle_lines WHERE key = 'grown.greet.1'"), 'line @1 greet : Morning.')
+        self.assertEqual(self.sql(self.dev, "SELECT mantle_id, bound_how FROM live.npc_voice WHERE npc_id = 'wren'"), [('cw017', 'dm')])
+        self.assertIn('sync', [r[0] for r in self.sql(self.dev, 'SELECT source FROM live.mantle_history')])
+        self.assertEqual(WS.diff(self.dev)['counts'], {'live': 0, 'dev': 0, 'conflicts': 0}, 'level after (revisions and stamps volatile)')
 
     def test_conflicts_field_by_field(self):
         self.sql(self.dev, "UPDATE live.npcs SET name = 'Wrenna', greeting = 'Dev greeting.' WHERE id = 'wren'")

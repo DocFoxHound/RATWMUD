@@ -461,6 +461,10 @@ struct Settings
     // tests' small libraries, and a library before it, keep the line-by-line engine).
     bool hybrid = false;
     int hybridStitch = 2;
+    // Doc 84 §12 (Phase 10): a dead wolf's mantle rests this many game days before it passes on ("mantle_rest_days"), and
+    // the neighbouring pool a dialect with nothing to give borrows from ("mantle_fallback": Frosthollow -> Coldwater...).
+    double mantleRestDays = 365;
+    std::map<std::string, std::string> mantleFallback;
 };
 
 // Doc 84 §7.4, §8.5 (Phase 5): frames.json's goals, a reason to steer a talk: learn a name, ask a favour, mend a quarrel,
@@ -649,6 +653,11 @@ public:
     bool setCharacter(const std::string& npc, const std::string& text, std::string& problem);
     // The name a person's own grammar layer has ("p_" and their ID, - as _).
     static std::string personalLayer(const std::string& npc);
+    // A mantle's mark drawn again for a new wearer (doc 84 §12.4, Phase 10): a value from the bank's `mark.<symbol>`
+    // (a dialect's mark bank, Phase 15's), else another of the mantle's own alternatives for the habit than the one it is
+    // seeded to; "" when there is nothing else to draw (one alternative, no bank, or the mantle isn't loaded).
+    std::string redrawHabit(const std::string& mantle, const std::string& symbol, const std::string& wearer,
+                            const std::string& bank) const;
 
     // Mantles (doc 84 §9.4, Phase 9). Each is read (the .mantle syntax), checked against the library as a file of its own
     // would be (facts, symbols, moves, 160 characters, the window's trees, a graft's nodes and its ways out), and compiled

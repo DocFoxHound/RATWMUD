@@ -4,12 +4,16 @@
 // keeps the old revision when the new one fails, and, in a game (the talk town wearing Tests/fixtures/mantles), who wears
 // what, mantle.sync and voice.sync <npc>.
 //
-//   mantle_tests            the checks
+//   mantle_tests            the checks (Phase 10: passing mantles on, with synthetic deaths in a small Society, and a
+//                           handoff in the talk town)
 //   mantle_tests --bench    B3 and B4 (§16): about 800 mantles at the richer size (about 50,700 items) loaded in one
 //                           batch, the time and the memory it adds, one mantle swapped, and a pick with and without them
 #include "RatwCalendar.h"
 #include "RatwGame.h"
+#include "RatwJsonDoc.h"
+#include "RatwSociety.h"
 #include "RatwTalk.h"
+#include "RatwWire.h"
 
 #include <algorithm>
 #include <chrono>
@@ -23,6 +27,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <cstdlib>
 #include <malloc.h>
 #include <unistd.h>
 #include <vector>
@@ -415,6 +420,398 @@ void inTheGame()
     fs::remove_all(dir, ec);
 }
 
+// Phase 10 (§12): passing mantles on, in a small Society (no world, no economy run): synthetic deaths, the births they owe,
+// and what each child is given. The lake town: the Reeds (Ottar and Wenna, of an age for pups) in Coldwater, Ottar's
+// mother Agna next door wearing cw001, Myrtle the keeper wearing cw017; in Ridgemere a carter and a clerk.
+ResidentSpec person(const std::string& id, const std::string& name, const std::string& role, const std::string& work, int age,
+                    const std::string& sex, Spot home, Spot job)
+{
+    ResidentSpec r;
+    r.id = id, r.name = name, r.role = role, r.workLabel = work, r.age = age;
+    r.appearance.sex = sex;
+    r.home = r.evening = home;
+    r.work = r.serve = job;
+    r.purse = 40;
+    return r;
+}
+
+struct Town
+{
+    std::set<std::string> dead;
+    std::map<std::string, std::vector<std::string>> knew;
+    std::map<std::string, std::pair<std::string, std::string>> origins;
+    static std::string townOf(const std::string& cell)
+    {
+        return cell.rfind("cw_", 0) == 0 ? "coldwater" : cell.rfind("fh_", 0) == 0 ? "frosthollow" : "ridgemere";
+    }
+    static std::string pool(const std::string& town) { return town == "ridgemere" ? std::string("plain") : town; }
+    CareerWorld world(const Society& s)
+    {
+        CareerWorld w;
+        w.alive = [this](const std::string& id) { return !dead.count(id); };
+        w.age = [&s](const std::string& id) { const auto* r = s.spec(id); return r ? r->age : 30; };
+        w.regard = [](const std::string&, const std::string&) { return 0.0; };
+        w.townOf = [](const std::string& cell) { return townOf(cell); };
+        w.dialectOfTown = [](const std::string& town) { return pool(town); };
+        w.dialectOfCell = [](const std::string& cell) { return pool(townOf(cell)); };
+        w.originOf = [this, &s](const std::string& id) {
+            if (const auto o = origins.find(id); o != origins.end())
+                return o->second;
+            const auto* r = s.spec(id);
+            return std::pair<std::string, std::string>{r ? townOf(r->home.cell) : std::string(), "light"};
+        };
+        w.knownBy = [this](const std::string& id) { return knew.count(id) ? knew[id] : std::vector<std::string>{}; };
+        return w;
+    }
+};
+
+PoolMantle card(const std::string& id, const std::string& dialect, const std::string& fits, std::map<std::string, std::string> traits,
+                const std::string& quirk = "", std::vector<std::string> marks = {"oath"})
+{
+    PoolMantle c;
+    c.id = id, c.dialect = dialect, c.fits = fits, c.traits = std::move(traits), c.quirk = quirk, c.marks = std::move(marks);
+    c.accents = {"broad", "light"};
+    return c;
+}
+
+MantleRules lakeRules()
+{
+    MantleRules rules;
+    rules.restDays = 365;
+    rules.fallback = {{"frosthollow", "coldwater"}};
+    NamePool cw;
+    cw.female = {"Wenna", "Ottilie", "Merle", "Linnet"};
+    cw.male = {"Orrin", "Ottar", "Heron", "Tarn"};
+    cw.namedFor = .25;
+    rules.names["coldwater"] = cw;
+    NamePool fh;
+    fh.female = {"Sigrid", "Agna"};
+    fh.male = {"Brand", "Ulf"};
+    fh.namedFor = 1;
+    rules.names["frosthollow"] = fh;
+    return rules;
+}
+
+// A child asked for, made as a host would (its record, then welcomed): its id.
+std::string makeChild(Society& s, const ResidentRequest& r, int n)
+{
+    const auto* mother = s.spec(r.templateId);
+    auto child = *mother;
+    child.id = "born_" + std::to_string(n);
+    child.name = r.name;
+    child.age = 0;
+    child.role = "civilian";
+    child.workLabel = "-";
+    child.appearance.sex = r.sex;
+    if (!r.personality.empty())
+        child.personality = r.personality;
+    expect(s.addResident(child, 0), "the child is made");
+    s.welcome(r, child.id);
+    return child.id;
+}
+
+void passingOn()
+{
+    // fits: a hard criterion holds at the age one is or will grow to.
+    expect(Society::fitsMantle("stage=adult|old", {{"sex", "male"}}, 0), "a newborn fits an adult's mantle: it will be one");
+    expect(!Society::fitsMantle("stage=young|adolescent", {{"sex", "male"}}, 30), "a grown wolf never fits a pup's");
+    expect(!Society::fitsMantle("sex=female", {{"sex", "male"}}, 0) && Society::fitsMantle("female", {{"sex", "female"}}, 0),
+           "sex as written, bare or not");
+    expect(!Society::fitsMantle("role=merchant", {{"role", "civilian"}}, 0) && Society::fitsMantle("self.role!=guard", {{"role", "civilian"}}, 0),
+           "a role, with self. or without");
+    expect(Society::fitsMantle("age>=60", {}, 0) && !Society::fitsMantle("age<5", {}, 30), "an age, upward as one grows");
+    expect(!Society::fitsMantle("quarter=sump", {}, 30), "a fact not known doesn't hold");
+
+    AuthoredRoster roster;
+    roster.residents = {
+        person("ottar", "Ottar Reed", "civilian", "boiling soap", 32, "male", {"cw_reed_house", 2.5, 2.5}, {"cw_soap", 2.5, 2.5}),
+        person("wenna", "Wenna Reed", "civilian", "working the looms", 29, "female", {"cw_reed_house", 3.5, 2.5}, {"cw_looms", 2.5, 2.5}),
+        person("agna", "Agna Reed", "civilian", "resting", 69, "female", {"cw_agna_house", 2.5, 2.5}, {"cw_agna_house", 2.5, 2.5}),
+        person("myrtle", "Myrtle Stillwater", "merchant", "keeping the stores", 70, "female", {"cw_stores_up", 2.5, 2.5}, {"cw_stores", 2.5, 2.5}),
+        person("joss", "Joss Wainwright", "civilian", "carting goods", 50, "male", {"rm_yard", 2.5, 2.5}, {"rm_yard", 3.5, 2.5}),
+        person("ida", "Ida Quillon", "civilian", "copying the city rolls", 44, "female", {"rm_rolls", 2.5, 2.5}, {"rm_office", 2.5, 2.5})};
+    roster.kin = {{"ottar", "wenna", "spouse"}, {"agna", "ottar", "parent"}};
+    Society s(Roster::None);
+    s.configure(roster);
+    s.setMantleRules(lakeRules());
+    s.setMantleCards({card("cw017", "coldwater", "stage=adult|old", {{"temper", "calm"}, {"warmth", "warm"}, {"honesty", "plain"}},
+                           "swims_in_the_lake_even_in_autumn", {"oath", "saying"}),
+                      card("cw001", "coldwater", "", {{"honesty", "sly"}, {"humour", "dry"}}, "counts_the_gulls"),
+                      card("cw090", "coldwater", "stage=young|adolescent|adult|old", {{"honesty", "guarded"}, {"talk", "chatty"}}),
+                      card("cw091", "coldwater", "sex=female", {{"honesty", "frank"}}),
+                      card("cw092", "coldwater", "", {{"honesty", "plain"}, {"drive", "restless"}}),
+                      card("rm090", "plain", "", {{"honesty", "plain"}})});
+    Town t;
+    auto w = t.world(s);
+    s.tendCareers(1.3, w);                          // (The families taken in.)
+    std::string why;
+    expect(s.bindMantle("myrtle", "cw017", "authored", 1, why) && s.bindMantle("agna", "cw001", "authored", 1, why), "authored: " + why);
+    expect(!s.bindMantle("ida", "cw017", "dm", 1, why) && why.find("worn by myrtle") != std::string::npos, "one living wearer at a time: " + why);
+    expect(s.wearerOf("cw017") == "myrtle", "Myrtle wears cw017");
+
+    // Myrtle dies: cw017 rests, known well by Wenna (who lives in the birth town).
+    t.dead.insert("myrtle");
+    t.knew["myrtle"] = {"wenna"};
+    const auto notes = s.died("myrtle", 2.5, &w);
+    expect(std::any_of(notes.begin(), notes.end(), [](const CareerNote& n) { return n.kind == "mantle_release" && n.detail == "cw017"; }),
+           "the death releases her mantle");
+    const auto* released = s.mantleOf("myrtle");
+    expect(released && released->releasedDay == 2.5 && released->knownBy == std::vector<std::string>{"wenna"}, "on the day, with who knew her");
+    expect(s.wearerOf("cw017").empty(), "nobody living wears it");
+    auto changes = s.takeMantleChanges();
+    expect(changes.size() == 1 && changes[0].kind == "release" && changes[0].mantle == "cw017", "the host is told to write the release");
+
+    // Her child is born days later to the Reeds, the only couple of an age: cw017 is resting (a year), cw001 is worn, so a
+    // spare of Coldwater, its card the child's voice (honesty and temperament: Q4).
+    int made = 0;
+    std::vector<std::string> born;
+    const auto days = [&](int from, int to) {
+        for (int day = from; day < to; ++day)
+        {
+            s.tendCareers(day + .3, w);
+            for (const auto& r : s.takeRequests())
+                if (r.kind == "birth")
+                    born.push_back(makeChild(s, r, made++));
+        }
+    };
+    days(2, 12);
+    expect(born.size() == 1, "one child for one death");
+    const auto* first = s.mantleOf(born[0]);
+    expect(first && first->mantle.rfind("cw09", 0) == 0 && first->how == "spare" && first->born,
+           "a spare of its dialect: " + (first ? first->mantle + " " + first->how : std::string("none")));
+    expect(first != nullptr, "bound");
+    const auto* firstCard = s.mantleCard(first->mantle);
+    expect(first->traits.size() == 7 && first->traits.at("honesty") == firstCard->traits.at("honesty"), "all seven traits, honesty the card's");
+    expect(first->from == "coldwater" && (first->accent == "broad" || first->accent == "light"), "born in Coldwater, its origin for life");
+    const auto* child = s.spec(born[0]);
+    expect(child->name.find("Reed") != std::string::npos && child->name.rfind("Wenna", 0) != 0 && child->name.rfind("Ottar", 0) != 0,
+           "a Coldwater name, its mother's surname, no parent's first name: " + child->name);
+    expect(child->personality.find(';') != std::string::npos || child->personality.back() == '.', "a personality from the card: " + child->personality);
+    expect(first->mantle != "cw091" || child->appearance.sex == "female", "cw091 fits only a daughter");
+    changes = s.takeMantleChanges();
+    expect(std::any_of(changes.begin(), changes.end(), [&](const MantleChange& c) { return c.kind == "bind" && c.npc == born[0]; }),
+           "the host is told to write the binding");
+
+    // Agna dies on day 30 (Ottar's mother); her child comes when the Reeds can have another (300 days on). Then Joss dies:
+    // the Reeds' next pup takes Agna's mantle, rested, as an echo (its last wearer kin of a parent), its marks kept.
+    t.dead.insert("agna");
+    t.knew["agna"] = {"wenna", "ottar"};
+    days(12, 30);
+    s.died("agna", 30.5, &w);
+    days(30, 400);
+    expect(born.size() == 2, "Agna's child too");
+    const auto* second = s.mantleOf(born[1]);
+    expect(second && second->mantle != "cw001" && second->mantle != "cw017", "nothing rested yet: another spare (" + (second ? second->mantle : std::string("none")) + ")");
+    t.dead.insert("joss");
+    s.died("joss", 400.5, &w);
+    days(400, 700);
+    expect(born.size() == 3, "Joss's child");
+    const auto* third = s.mantleOf(born[2]);
+    expect(third && third->mantle == "cw001" && third->how == "echo" && third->echoOf == "agna" && third->markDialect.empty(),
+           "an echo of the grandmother, its marks kept: " + (third ? third->mantle + " " + third->how : std::string()));
+    expect(third->traits.at("honesty") == "sly", "and her honesty with it (Q4)");
+
+    // The Reeds have had three: the next birth goes to... nobody else of an age, so it waits. A Frosthollow couple, with
+    // no Frosthollow mantle: the Coldwater pool lends one (cw017 rested, known by Wenna, who lives in Coldwater but not
+    // in the birth town), its marks drawn from Frosthollow's bank, and a Frosthollow name: the grandfather's (named_for 1).
+    expect(s.mantlePools(700, w).size() >= 1, "the pools");
+    {
+        AuthoredRoster north;
+        north.residents = {
+            person("brand", "Brand Coldfell", "civilian", "cutting ice", 33, "male", {"fh_hall", 2.5, 2.5}, {"fh_ice", 2.5, 2.5}),
+            person("sigrid", "Sigrid Coldfell", "civilian", "mending nets", 30, "female", {"fh_hall", 3.5, 2.5}, {"fh_nets", 2.5, 2.5}),
+            person("ulf", "Ulf Coldfell", "civilian", "resting", 71, "male", {"fh_old", 2.5, 2.5}, {"fh_old", 2.5, 2.5}),
+            person("old", "Old Wick", "civilian", "resting", 75, "male", {"cw_wick", 2.5, 2.5}, {"cw_wick", 2.5, 2.5})};
+        north.kin = {{"brand", "sigrid", "spouse"}, {"ulf", "brand", "parent"}};
+        Society n(Roster::None);
+        n.configure(north);
+        n.setMantleRules(lakeRules());
+        n.setMantleCards({card("cw017", "coldwater", "stage=adult|old", {{"honesty", "plain"}}, "", {"oath", "saying"})});
+        Town nt;
+        auto nw = nt.world(n);
+        n.tendCareers(1.3, nw);
+        expect(n.bindMantle("old", "cw017", "authored", 1, why), why);
+        nt.dead.insert("old");
+        nt.knew["old"] = {"brand"};
+        n.died("old", 2.5, &nw);
+        bool told = false;
+        for (int day = 2; day < 380; ++day)
+        {
+            n.tendCareers(day + .3, nw);
+            for (const auto& r : n.takeRequests())
+                expect(r.mantle.empty(), "Old Wick's child: nothing rested, no spare, no mantle");
+            for (const auto& c : n.takeMantleChanges())
+                told = told || (c.kind == "none" && c.dialect == "frosthollow");
+        }
+        expect(told, "a birth with no mantle to give is born as before, and said so (RATW_MANTLE none for frosthollow)");
+        nt.dead.insert("ulf");
+        n.died("ulf", 380.5, &nw);
+        ResidentRequest asked;
+        for (int day = 380; day < 390 && asked.kind.empty(); ++day)
+        {
+            n.tendCareers(day + .3, nw);
+            for (const auto& r : n.takeRequests())
+                asked = r;
+        }
+        expect(asked.kind == "birth" && asked.dialect == "frosthollow", "a Frosthollow birth");
+        expect(asked.mantle == "cw017" && asked.redrawMarks && asked.markDialect == "frosthollow" && asked.voice.dialect == "coldwater",
+               "a neighbouring pool's mantle, its marks drawn from the child's own dialect: " + asked.mantle);
+        expect(asked.sex != "male" || asked.name == "Ulf Coldfell", "a son is named for his grandfather (named_for 1): " + asked.name);
+        expect(asked.sex != "female" || asked.name == "Agna Coldfell", "a daughter takes the pool's other name: " + asked.name);
+    }
+
+    // The pools (§12.1): Coldwater's cw017 rested and ready, cw091 or cw090 spare; Ridgemere's rm090 spare; births
+    // expected for Coldwater (the only couple of an age, though they have had three: none).
+    const auto pools = s.mantlePools(700, w);
+    const auto cw = std::find_if(pools.begin(), pools.end(), [](const MantlePoolHealth& p) { return p.dialect == "coldwater"; });
+    const auto rm = std::find_if(pools.begin(), pools.end(), [](const MantlePoolHealth& p) { return p.dialect == "plain"; });
+    expect(cw != pools.end() && rm != pools.end(), "a pool for each dialect with mantles");
+    expect(cw->ready == 1 && cw->spare + cw->ready + cw->resting == 2 && rm->spare == 1,
+           "the pools by dialect: coldwater spare " + std::to_string(cw->spare) + " resting " + std::to_string(cw->resting) + " ready " +
+               std::to_string(cw->ready));
+    expect(cw->honesty.size() >= 1 && cw->livingHonesty.size() >= 1, "with their honesty mix against the living's");
+
+    // The ledger survives a save.
+    const auto saved = wire::society(s.state());
+    std::string error;
+    json::Value parsed;
+    expect(json::parse(json::dump(saved), parsed, error), "the save parses");
+    const auto back = wire::readSociety(parsed);
+    expect(back.careers.mantles.size() == s.state().careers.mantles.size() && back.careers.mantles.at(born[2]).echoOf == "agna" &&
+               back.careers.mantles.at(born[2]).traits.at("honesty") == "sly" && back.careers.mantles.at("myrtle").releasedDay == 2.5 &&
+               back.careers.mantles.at("myrtle").knownBy == std::vector<std::string>{"wenna"},
+           "the mantle ledger is saved and read back whole");
+
+    // Brought back before anyone took it up: worn again.
+    t.dead.insert("ida");
+    s.bindMantle("ida", "rm090", "dm", 700, why);
+    s.died("ida", 700.5, &w);
+    expect(s.wearerOf("rm090").empty(), "released at death");
+    t.dead.erase("ida");
+    s.revived("ida");
+    expect(s.wearerOf("rm090") == "ida", "brought back, she wears it again");
+}
+
+// A harness world shows a handoff (§18, P10's gate): the talk town wearing the fixture. Myrtle Stillwater, the Coldwater
+// keeper who wears cw017 (written for her), dies; the Saltwell rakers die too, so the only couple of an age left is the
+// Marshes of Coldwater. A game year on (the calendar moved, nothing else run), their child is born: cw017 has rested its
+// 365 days and nobody in Coldwater knew her well, so it passes on whole. The child's voice is the card's (Q4), its name
+// is Coldwater's, its origin Coldwater for life, its parents its own.
+void handoffInTheTalkTown()
+{
+    const auto dir = fs::temp_directory_path() / ("ratw-handoff-" + std::to_string(::getpid()));
+    fs::remove_all(dir);
+    fs::copy(Fixture, dir, fs::copy_options::recursive);
+    const auto save = (fs::temp_directory_path() / ("ratw-handoff-" + std::to_string(::getpid()) + ".json")).string();
+    {
+        game::Options o;
+        o.talkData = RATW_SOURCE_DIR "/Data/Talk";
+        o.voiceData = RATW_SOURCE_DIR "/Data/Voice";
+        o.scratch = true;
+        o.forkSnapshots = false;
+        o.savePath = save;
+        o.worldExport = RATW_SOURCE_DIR "/Tests/fixtures/talk_town";
+        o.mantlesFrom = dir.string();
+        auto g = std::make_unique<game::Game>(o);
+        std::vector<std::string> notes;
+        g->log = [&](const char*, const std::string& m) { notes.push_back(m); };
+        std::string problem;
+        expect(g->start(problem), "the talk town starts: " + problem);
+        auto& world = g->world();
+        auto& society = world.society();
+        const auto* authored = society.mantleOf("tt_co_keeper");
+        expect(authored && authored->mantle == "cw017" && authored->how == "authored", "the keeper's binding is in the ledger, authored");
+        expect(society.mantleRules().names.size() == 8 && society.mantleRules().restDays == 365, "the eight name pools and the rest");
+        const auto said = [&](const std::string& what) {
+            return std::any_of(notes.begin(), notes.end(), [&](const std::string& n) { return n.find(what) != std::string::npos; });
+        };
+        const double died = world.calendarDays();
+        for (const auto* who : {"tt_co_keeper", "tt_sa_raker", "tt_sa_raker_wife"})
+            expect(world.setDead(who, true).ok, std::string("a death: ") + who);
+        for (int i = 0; i < 4; ++i)
+            g->tick(.05);
+        const auto* rest = society.mantleOf("tt_co_keeper");
+        expect(rest && rest->releasedDay >= 0 && !g->mantleWearers().count("tt_co_keeper") && said("RATW_MANTLE cw017 rests"),
+               "her mantle rests");
+        // A year on: the children owed are due, and the day's turn has them born.
+        expect(world.advanceCalendar(370).ok, "a year on");
+        std::string child;
+        for (int i = 0; i < 200 && child.empty(); ++i)
+        {
+            g->tick(.05);
+            for (const auto& [npc, b] : society.state().careers.mantles)
+                if (b.mantle == "cw017" && npc != "tt_co_keeper" && b.releasedDay < 0)
+                    child = npc;
+        }
+        expect(!child.empty(), "a child wears cw017");
+        const auto* b = society.mantleOf(child);
+        const auto* e = world.entity(child);
+        expect(b->how == "reused" && b->born && b->from == "coldwater" && b->markDialect.empty(), "reused whole, born in Coldwater: " + b->how);
+        const auto& parents = society.state().careers.parents.at(child);
+        expect(std::find(parents.begin(), parents.end(), "tt_co_boatman_wife") != parents.end(), "the Marshes' child");
+        expect(e && e->name.find("Marsh") != std::string::npos, "a Coldwater name and its mother's surname: " + (e ? e->name : std::string()));
+        expect(g->mantleWearers().count(child) && g->mantleWearers().at(child) == "cw017", "and the game hears it wear it");
+        auto q = g->talkQuery(child, "tt_co_boatman", "talk.day");
+        expect(q.a.facts["mantle"] == "cw017" && q.a.facts["from"] == "coldwater" && q.a.facts["quirk"] == "swims_in_the_lake_even_in_autumn" &&
+                   q.a.facts["temper"] == "calm" && q.a.facts["honesty"] == "plain" && q.a.facts["stage"] == "young",
+               "its voice is the card's: " + q.a.facts["temper"] + " " + q.a.facts["honesty"]);
+        expect(society.honestyOf(child) == "plain", "its honesty the society's too (who turns thief)");
+        const auto* spec = society.spec(child);
+        expect(spec && spec->personality.rfind("Calm", 0) == 0 && spec->personality.find("swims in the lake") != std::string::npos,
+               "a personality from the card, not its mother's: " + (spec ? spec->personality : std::string()));
+        expect(said("wears cw017 (reused"), "the handoff is logged");
+        std::cout << "handoff: " << e->name << " (" << child << "), born day " << int(world.calendarDays()) << " to Ysolde and Corwin Marsh, "
+                  << "wears cw017 (" << b->how << "), last worn by Myrtle Stillwater, who died day " << int(died) << "; temper "
+                  << q.a.facts["temper"] << ", honesty " << q.a.facts["honesty"] << ", from " << q.a.facts["from"] << " ("
+                  << q.a.facts["accent"] << "); \"" << spec->personality << "\"\n";
+        for (const auto& p : world.mantlePools())
+            std::cout << "pool " << p.dialect << " spare=" << p.spare << " resting=" << p.resting << " ready=" << p.ready
+                      << " births180=" << p.births180 << (p.low ? " LOW" : "") << "\n";
+        g->save();
+    }
+    std::error_code ec;
+    fs::remove(save, ec);
+    fs::remove_all(dir, ec);
+}
+
+// An arrival from the Country binds a mantle from the pool of where it grew up (§12.6), and keeps its own voice.
+void arrivalsBindOne()
+{
+    AuthoredRoster roster;
+    roster.residents = {
+        person("ivar", "Ivar Nailham", "civilian", "unloading ships at the piers", 40, "male", {"sump_rents", 2.5, 2.5}, {"piers", 3.5, 3.5}),
+        person("una", "Una Nailham", "civilian", "unloading ships at the piers", 38, "female", {"sump_rents", 3.5, 2.5}, {"piers", 4.5, 3.5})};
+    auto fisher = person("cty_fisher", "Kjell Saltdale", "civilian", "fishes the waters off Greywater", 30, "male", {}, {});
+    fisher.description = "A tall grey wolf, who fishes the waters off Greywater.";
+    fisher.purse = 49;
+    roster.unplaced = {fisher};
+    roster.kin = {{"ivar", "una", "spouse"}};
+    Society s(Roster::None);
+    s.configure(roster);
+    s.setMantleRules(lakeRules());
+    s.setMantleCards({card("cw095", "coldwater", "sex=male stage=adult|old", {{"honesty", "frank"}}), card("rm095", "plain", "", {})});
+    Town t;
+    t.origins["cty_fisher"] = {"coldwater", "broad"};
+    auto w = t.world(s);
+    s.tendCareers(1.3, w);
+    t.dead.insert("ivar");
+    s.died("ivar", 1.5, &w);
+    ResidentRequest arrival;
+    for (int day = 2; day <= 14 && arrival.kind.empty(); ++day)
+    {
+        s.tendCareers(day + .3, w);
+        for (auto& r : s.takeRequests())
+            if (r.kind == "arrival")
+                arrival = r;
+    }
+    expect(arrival.templateId == "cty_fisher" && arrival.mantle == "cw095" && arrival.mantleHow == "arrival" && arrival.dialect == "coldwater",
+           "the fisher comes with a Coldwater mantle: " + arrival.mantle);
+    expect(s.arrive(arrival), "he comes in");
+    s.welcome(arrival, arrival.templateId);
+    const auto* b = s.mantleOf("cty_fisher");
+    expect(b && b->mantle == "cw095" && b->how == "arrival" && !b->born && b->traits.empty(), "bound, keeping the voice he has");
+}
+
 // B3 and B4 (§16): about 800 mantles at the richer size loaded in one batch.
 long rssKb()
 {
@@ -575,14 +972,94 @@ int database(const std::string& key)
     }
     return 0;
 }
+// Phase 10, end to end in a world database (tools/test_mantle_load.py drives it, on a throwaway world): a game that writes
+// (not scratch), driven from stdin: "assign NPC MANTLE" and "release NPC" (the DM's acts), "kill NPC", "days N" (the
+// calendar moved N days and the game ticked until the children owed are made), "quit" (saved). One line out for each;
+// "LOG" lines are the game's RATW_MANTLE notes, "BORN id name mantle how" each child made.
+int databaseLife(const std::string& key)
+{
+    const char* url = std::getenv("RATW_DATABASE_URL");
+    if (!url)
+    {
+        std::cerr << "--db-life needs RATW_DATABASE_URL\n";
+        return 2;
+    }
+    game::Options o;
+    o.talkData = RATW_SOURCE_DIR "/Data/Talk";
+    o.voiceData = RATW_SOURCE_DIR "/Data/Voice";
+    o.forkSnapshots = false;
+    o.database = key;
+    o.conninfo = url;
+    game::Game g(o);
+    g.log = [](const char*, const std::string& m) {
+        if (m.find("RATW_MANTLE") != std::string::npos || m.find("RATW_RESIDENT") != std::string::npos)
+            std::cout << "LOG " << m << std::endl;
+    };
+    std::string problem;
+    if (!g.start(problem))
+    {
+        std::cout << "FAILED " << problem << std::endl;
+        return 1;
+    }
+    std::cout << "READY " << g.mantleWearers().size() << " wearers" << std::endl;
+    int act = 1;
+    std::set<std::string> known;
+    for (const auto& [id, life] : g.world().society().state().residents)
+        known.insert(id);
+    for (std::string line; std::getline(std::cin, line);)
+    {
+        std::istringstream in(line);
+        std::string what, a, b;
+        in >> what >> a >> b;
+        if (what == "quit")
+            break;
+        if (what == "assign" || what == "release")
+        {
+            const auto r = g.applyDmAct({std::to_string(act++), "mantle." + what, a, std::string("e2e"),
+                                         what == "assign" ? "{\"mantle\": \"" + b + "\"}" : std::string("{}")});
+            std::cout << "RESULT " << (r.ok ? "ok " : "refused ") << r.message << std::endl;
+        }
+        else if (what == "kill")
+        {
+            const auto r = g.world().setDead(a, true);
+            for (int i = 0; i < 4; ++i)
+                g.tick(.05);
+            std::cout << "RESULT " << (r.ok ? "ok " : "refused ") << r.message << std::endl;
+        }
+        else if (what == "days")
+        {
+            g.world().advanceCalendar(std::atof(a.c_str()));
+            for (int i = 0; i < 200; ++i)
+                g.tick(.05);
+            for (const auto& [id, life] : g.world().society().state().residents)
+                if (known.insert(id).second)
+                {
+                    const auto* binding = g.world().society().mantleOf(id);
+                    const auto* e = g.world().entity(id);
+                    std::cout << "BORN " << id << " " << (e ? e->name : std::string("?")) << " | "
+                              << (binding ? binding->mantle + " " + binding->how : std::string("none")) << std::endl;
+                }
+            for (const auto& p : g.world().mantlePools())
+                std::cout << "POOL " << p.dialect << " spare=" << p.spare << " resting=" << p.resting << " ready=" << p.ready
+                          << " births180=" << p.births180 << std::endl;
+            std::cout << "RESULT ok day " << int(g.world().calendarDays()) << std::endl;
+        }
+    }
+    g.save();
+    std::cout << "SAVED" << std::endl;
+    return 0;
+}
 } // namespace
 
 int main(int argc, char** argv)
 {
+    setenv("RATW_DATA_DIR", (fs::path(RATW_SOURCE_DIR) / "Data").string().c_str(), 0);
     try
     {
         if (argc > 2 && std::string(argv[1]) == "--db")
             return database(argv[2]);
+        if (argc > 2 && std::string(argv[1]) == "--db-life")
+            return databaseLife(argv[2]);
         if (argc > 1 && std::string(argv[1]) == "--bench")
             return bench(argc > 2 ? std::atoi(argv[2]) : 805);
         theSyntax();
@@ -590,6 +1067,9 @@ int main(int argc, char** argv)
         wornByItsWearer();
         theHotReload();
         inTheGame();
+        passingOn();
+        arrivalsBindOne();
+        handoffInTheTalkTown();
     }
     catch (const std::exception& e)
     {

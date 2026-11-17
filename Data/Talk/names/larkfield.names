@@ -1,0 +1,8 @@
+# Data/Talk/names/larkfield.names (Docs/Design/84-living-conversations.md §7.10, Phase 10): Larkfield's: the fields' and the downs' names, warm and plain.
+# Drafts, to settle with the user by ear. A child born here takes one (its mother's surname after it): no two living
+# residents share a full name, no living parent or sibling shares the child's first name, and one born in place of a
+# dead grandparent takes their first name named_for of the time. Male or female only.
+names larkfield
+female = Bryony | Clover | Daisy | Elder | Fern | Hazel | Heather | Honor | Jessamy | Lark | Lavender | Linden | Maybell | Meadow | Millie | Nettie | Pansy | Poppy | Primrose | Rue | Sorrel | Tansy | Thrift | Violet | Wilma | Yarrow | Amabel | Barley | Bettony | Bramble | Campion | Cicely | Clary | Columbine | Cowslip | Dulcie | Eglantine | Fennel | Flax | Hollyhock | Ivy | Juniper | Kerria | Lettice | Madder | Marigold | Melilot | Myrtle | Oriel | Perrin | Quince | Rosemary | Saffron | Sweetbriar | Tibby | Vetch | Wren | Avens | Bluebell | Cress | Dorrie | Elsie | Hettie | Kitty | Lally | Molly | Nancy | Patty | Tilly
+male = Abel | Alder | Ash | Bede | Blythe | Bran | Brock | Burdock | Cobb | Colt | Corin | Dale | Davy | Dunn | Ellis | Fallow | Farrow | Garth | Giles | Hay | Holt | Hob | Jethro | Joss | Kit | Lowell | Mead | Merrit | Nye | Oakes | Penn | Rook | Rye | Sedge | Shep | Thatch | Tod | Wade | Wheaton | Will | Yeo | Ambrose | Bartle | Crispin | Dickon | Dobbin | Edwy | Fitch | Gaffer | Hal | Ira | Jonas | Lambkin | Linus | Matt | Ned | Osmund | Pip | Ralph | Sim | Tam | Ulf | Vane | Wat | Warrin | Abner | Cole
+named_for = .25

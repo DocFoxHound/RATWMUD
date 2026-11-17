@@ -2018,6 +2018,10 @@ class World
     // The towns with no dialect of their own and the dialect each speaks (the talk library's settings.json, "dialect_of":
     // doc 83, Phase 4), so their folk have an origin too.
     void setTalkDialects(std::map<std::string, std::string> dialectOf);
+    // Doc 84 §12.1 (Phase 10): the mantle pool of a town (its grammar: "plain" for Ridgemere, Fenshore's "mirebridge";
+    // "" for a place that is none of the realm's), and the pools as they stand today.
+    std::string dialectPoolOf(const std::string& town) const;
+    std::vector<MantlePoolHealth> mantlePools() const { return society_.mantlePools(calendarDays_, careerWorld()); }
     // The market's largest moves in shown price where `who` stands (doc 79, 11; Phase 8), as the list shows them to the
     // traveller overhearing (talkHolder_: the listening player's account holder, set by ambientPicks for each listener
     // and by talkFor; else one who has pushed nothing), each read off the nearest shop that sets the good out. At most

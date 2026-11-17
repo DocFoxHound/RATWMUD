@@ -1,0 +1,8 @@
+# Data/Talk/names/coldwater.names (Docs/Design/84-living-conversations.md §7.10, Phase 10): Coldwater's: the lake's names, soft and wet as Glasswater.
+# Drafts, to settle with the user by ear. A child born here takes one (its mother's surname after it): no two living
+# residents share a full name, no living parent or sibling shares the child's first name, and one born in place of a
+# dead grandparent takes their first name named_for of the time. Male or female only.
+names coldwater
+female = Wenna | Ottilie | Merle | Linnet | Teal | Brenna | Ysolde | Marra | Demelza | Morwen | Kerra | Elowen | Lowenna | Tamsyn | Jenna | Rosen | Senara | Wenneth | Delen | Gwenna | Ebrel | Kensa | Loveday | Morva | Nessa | Tressa | Wynne | Ysella | Avalen | Bryluen | Carrow | Dowra | Ebby | Fenna | Glaze | Hedra | Ionna | Jowen | Keverne | Lamorna | Meraud | Nolwen | Oona | Pasca | Rewan | Sowena | Tegen | Ulla | Veryan | Wenvera | Zennor | Briallen | Cressa | Dwynwen | Eseld | Flora | Gwedhen | Hollin | Isolt | Jessa | Kayna | Lowen | Mena | Nanscawen | Pella | Rosewyn | Steren | Tamar | Wylla | Merryn
+male = Orrin | Nab | Heron | Tarn | Kell | Osric | Garrow | Bran | Cadan | Davey | Elwin | Fenwick | Goran | Hedrek | Jago | Jory | Kitto | Lanyon | Madoc | Nance | Ogier | Pascoe | Ruan | Sennen | Talan | Treeve | Ulfin | Wenyon | Yestin | Arthek | Bennack | Carne | Derwa | Endelyon | Fowey | Gerens | Hammet | Ivey | Jowan | Kenwyn | Lowdy | Mabyn | Nectan | Ottery | Penrose | Quill | Roskelly | Selevan | Tonkin | Trevan | Udy | Varcoe | Wesley | Austol | Bosun | Cador | Dunstan | Ennis | Gweek | Harvey | Ives | Jacca | Kernick | Loe | Merrick | Nanjivey | Pender | Rodda | Stennack
+named_for = .25

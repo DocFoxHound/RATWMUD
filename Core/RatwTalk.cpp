@@ -400,6 +400,12 @@ bool Library::readSettings(const std::string& text, std::string& problem)
     // §37: the hybrid ("hybrid": true; "hybrid_stitch": the lines stitched after a body, goodbyes aside).
     settings_.hybrid = doc.boolean("hybrid", false);
     settings_.hybridStitch = int(doc.number("hybrid_stitch", settings_.hybridStitch));
+    // Doc 84 §12 (Phase 10): how long a dead wolf's mantle rests, and the pools a dialect with nothing to give borrows.
+    settings_.mantleRestDays = doc.number("mantle_rest_days", settings_.mantleRestDays);
+    settings_.mantleFallback.clear();
+    for (const auto& [from, to] : doc.object("mantle_fallback").fields())
+        if (!from.empty() && to.isString() && !to.asString().empty())
+            settings_.mantleFallback[from] = to.asString();
     for (const auto& [key, set] : {std::pair<const char*, std::set<std::string>*>{"concepts", &settings_.concepts},
                                    {"repeat", &settings_.repeat}, {"alone", &settings_.alone}, {"best_only", &settings_.bestOnly},
                                    {"ends", &settings_.ends}})
@@ -2457,6 +2463,8 @@ bool Library::expandInto(const std::string& text, Expansion& x, int depth, std::
             }
             else if (const auto* v = fact(ns, ref.parts[1], {}, x.q, x.speaker))
                 value = *v;
+            else if (ref.parts[1] == "called" && !expandSymbol("address", x, depth + 1, value))
+                return false;                       // (What one calls a stranger: their #address#. Doc 84 §11.)
         }
         else if (ref.parts.size() == 2 && ref.parts[0] == "topic" && topicPronoun(ref.parts[1]))
         {
@@ -2562,6 +2570,28 @@ void Library::remembered(const Effect& e, Query& q)
         q.facts[said ? "pair." + e.key : "pair.mem." + e.key] = e.value;
     else if (e.scope == "town")
         q.facts["world.mem." + e.key] = e.value;
+}
+
+std::string Library::redrawHabit(const std::string& mantle, const std::string& symbol, const std::string& wearer,
+                                 const std::string& bank) const
+{
+    const auto alternatives = [&](const Grammar* g, const std::string& name) {
+        std::vector<std::string> out;
+        if (const auto s = g ? g->find(name) : Grammar::const_iterator(); g && s != g->end())
+            for (const auto& e : s->second.entries)
+                for (const auto& a : e.alts)
+                    if (!a.sex && std::find(out.begin(), out.end(), a.text) == out.end())
+                        out.push_back(a.text);
+        return out;
+    };
+    if (const auto banked = alternatives(layerOf(bank.empty() ? std::string("plain") : bank), "mark." + symbol); !banked.empty())
+        return banked[mix(hash(wearer + "|mark|" + symbol)) % banked.size()];
+    const auto layer = mantleLayer(mantle);
+    const auto own = alternatives(layerOf(layer), symbol);
+    if (own.size() < 2)
+        return {};
+    const auto was = mix(hash(layer + "|" + symbol)) % own.size();   // (As a habit of the mantle's is seeded.)
+    return own[(was + 1 + mix(hash(wearer + "|" + symbol)) % (own.size() - 1)) % own.size()];
 }
 
 std::string Library::dialectOf(const std::string& from) const

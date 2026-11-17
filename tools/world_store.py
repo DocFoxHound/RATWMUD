@@ -628,6 +628,8 @@ GAME_COLUMNS = {
     'live.npcs': (*PLACE_COLUMNS, 'purse', 'herbs', 'meals', 'age', 'origin'),
     'live.profession_slots': (*PLACE_COLUMNS, 'purse', 'herbs', 'meals', 'character_id', 'origin'),
     'live.characters': ('status', 'assignment', 'origin'),
+    # Who wears which mantle (doc 84 §17.7): the game binds at birth, death and arrival.
+    'live.npc_voice': ('mantle_id', 'bound_day', 'bound_how', 'released_day'),
 }
 # The same, as the editor's entities carry them (live_edit's person: and slot: keys).
 GAME_FIELDS = {'person': (*PLACES, 'purse', 'herbs', 'meals', 'age'), 'slot': (*PLACES, 'purse', 'herbs', 'meals')}

@@ -334,6 +334,7 @@ CareerNote Society::welcome(const ResidentRequest& request, const std::string& i
     auto& c = state_.careers;
     if (!state_.residents.count(id))
         return {"refused", id, {}, "No such resident to welcome."};
+    mantleWelcome(request, id);                     // (Doc 84 §12.3, §12.6: the mantle chosen for it, bound now.)
     if (request.kind == "birth")
     {
         c.parents[id] = request.parents;
@@ -870,7 +871,7 @@ void Society::mourn(const std::string& resident, const std::string& whom, double
         m = {until, whom};
 }
 
-std::vector<CareerNote> Society::died(const std::string& resident, double day)
+std::vector<CareerNote> Society::died(const std::string& resident, double day, const CareerWorld* world)
 {
     std::vector<CareerNote> notes;
     auto& c = state_.careers;
@@ -892,6 +893,19 @@ std::vector<CareerNote> Society::died(const std::string& resident, double day)
     // days after (a lot of the dead's). A player's never does.
     if (state_.residents.count(resident) && !playerAccountId(resident) && !dead_.count(resident))
         c.birthsOwed[resident] = std::floor(day) + 1 + double(mix(resident + "|born", std::int64_t(std::floor(day))) % BirthDelayMost);
+    // Their mantle rests (doc 84 §12.2): released today, with who knew them well, for the host to write. Their memories,
+    // bonds and beliefs stay theirs: a pup inherits the voice, not the life.
+    if (!dead_.count(resident))
+        if (const auto* worn = mantleOf(resident); worn && worn->releasedDay < 0 && !worn->mantle.empty())
+        {
+            std::vector<std::string> knew;
+            if (world && world->knownBy)
+                knew = world->knownBy(resident);
+            const auto mantle = worn->mantle;
+            releaseMantle(resident, day, knew);
+            mantleChanges_.push_back({"release", resident, mantle, {}, {}, day});
+            notes.push_back({"mantle_release", resident, {}, mantle});
+        }
     dead_.insert(resident);
     forgetCareers();
     return notes;
@@ -904,6 +918,16 @@ std::vector<CareerNote> Society::revived(const std::string& resident)
     c.estates.erase(resident);
     c.birthsOwed.erase(resident);                   // (Brought back before their child was born: none is owed.)
     dead_.erase(resident);
+    // Their mantle again, if nobody has taken it up since (doc 84 §12.2).
+    if (auto found = c.mantles.find(resident); found != c.mantles.end() && found->second.releasedDay >= 0 &&
+                                               !found->second.mantle.empty() && wearerOf(found->second.mantle).empty() &&
+                                               std::none_of(requests_.begin(), requests_.end(),
+                                                            [&](const ResidentRequest& q) { return q.mantle == found->second.mantle; }))
+    {
+        found->second.releasedDay = -1;
+        found->second.knownBy.clear();
+        mantleChanges_.push_back({"bind", resident, found->second.mantle, found->second.how, found->second.dialect, found->second.boundDay});
+    }
     if (!jobOf(resident))
         for (auto& [id, ps] : c.positions)
             if (ps.holder.empty() && ps.lastHolder == resident)
@@ -1206,6 +1230,7 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
                 ResidentRequest r;
                 if (arrivalFor(p, ps, world, step, r))
                 {
+                    arrivalMantle(r, now, world);   // (Doc 84 §12.6.)
                     requests_.push_back(r);
                     ++fills_[step ? "from the Country, of the next class" : "from the Country"];
                     notes.push_back({"arrival sent for", r.templateId, ps.lastHolder, p.title});
@@ -1348,12 +1373,51 @@ void Society::tendBirths(double now, const CareerWorld& world)
         r.kind = "birth";
         r.templateId = k.mother->id;
         const auto family = surname(k.mother->name);
-        r.name = std::string(FirstNames[mix(key, today + 7) % std::size(FirstNames)]) + (family.empty() ? "" : " " + family);
         r.age = 0;
         r.home = home ? Spot{home->homeCell, home->homeX, home->homeY} : k.mother->home;
         r.parents = {k.a, k.b};
         r.sex = birthSex(key, today);
         r.inPlaceOf = due[i].second;
+        // Doc 84 §12.3, §12.5 (Phase 10): the child's dialect is its mother's home's, its name from that dialect's pool
+        // (placeholders where there is none), and its mantle chosen now: its voice the card's, honesty and temperament
+        // with it (the user, Q4), its birth town its origin for life.
+        r.dialect = world.dialectOfCell ? world.dialectOfCell(r.home.cell) : std::string();
+        if (mantleRules_.names.empty() && mantleCards_.empty())
+            r.name = std::string(FirstNames[mix(key, today + 7) % std::size(FirstNames)]) + (family.empty() ? "" : " " + family);
+        else
+            r.name = childName(r.dialect, r.sex, family, r.parents, r.inPlaceOf, key, today, world);
+        const std::map<std::string, std::string> facts{{"sex", r.sex}, {"role", "civilian"}, {"job", "none"},
+                                                       {"class", classOf(k.mother->id)}};
+        r.voice.boundDay = now;
+        if (chooseMantle(r, {}, facts, 0, now, world))
+            if (const auto* card = mantleCard(r.mantle))
+            {
+                r.voice.traits = wholeTraits(card->traits);
+                r.voice.quirk = card->quirk;
+                r.personality = cardPersonality(card->traits, card->quirk);
+                r.voice.from = world.townOf ? world.townOf(r.home.cell) : std::string();
+                // An accent the card allows, by the birth town's mix (the first, as written, where none of them is heard).
+                std::map<std::string, int> heard;
+                if (world.originOf && world.townOf)
+                    for (const auto& [id, life] : state_.residents)
+                        if (world.alive(id) && world.townOf(life.homeCell) == r.voice.from)
+                            if (const auto o = world.originOf(id); std::find(card->accents.begin(), card->accents.end(), o.second) != card->accents.end())
+                                ++heard[o.second];
+                r.voice.accent = card->accents.empty() ? std::string("light") : card->accents.front();
+                int total = 0;
+                for (const auto& [a, n] : heard)
+                    total += n;
+                if (total > 0)
+                {
+                    int pick = int(lotOf(key + "|accent|" + std::to_string(today)) * total);
+                    for (const auto& [a, n] : heard)
+                        if ((pick -= n) < 0)
+                        {
+                            r.voice.accent = a;
+                            break;
+                        }
+                }
+            }
         c.lastBirth[key] = now;
         ++c.births[key];
         c.birthsOwed.erase(due[i].second);

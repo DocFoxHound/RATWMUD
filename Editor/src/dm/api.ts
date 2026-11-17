@@ -201,7 +201,11 @@ export interface Npcs {
     /** The NPCs the bands cover (residents the game houses, as last saved; null: no save yet); whether the world holds an
      *  NPC's own band (migration 0061). */
     bandable?: string[] | null; bandsAuthored?: boolean;
+    /** Doc 84 §17.10 (Phase 10): NPC ID → the mantle they wear or wore (live.npc_voice's binding), how it was bound, the
+     *  game days it was bound and released (null: worn), and the mantle's state. */
+    mantles?: Record<string, MantleBinding>;
 }
+export interface MantleBinding { mantle: string; how: string; bound: number | null; released: number | null; state: string }
 
 export type FactionKind = 'npc' | 'city' | 'guild' | 'clan' | 'other';
 export type Stance = 'allied' | 'friendly' | 'neutral' | 'tense' | 'hostile' | 'war';

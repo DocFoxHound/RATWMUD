@@ -15,7 +15,9 @@ made from the migrations (`ratw_test_mantles_<hex>`, dropped after; skipped with
 talk_check must be built (G1 runs it): RATW_TALK_CHECK names it, else the newest build*/talk_check.
 """
 import json
+import os
 import secrets
+import subprocess
 import shutil
 import tempfile
 import unittest
@@ -57,13 +59,17 @@ class Scratch:
         W.migrate(self.owner)
         self.owner.execute("INSERT INTO world.worlds (id, name) VALUES ('w', 'Mantle world')")
         # Everyone the fixture's mantles are written for, and a Hollin to be named where only slots may name.
-        people = set()
+        people, pups = set(), set()
         for f in FIXTURE.rglob('*.mantle'):
             m = T.read(f.read_text(), str(f))
             if m.written_for:
                 people.add(m.written_for)
+                if not S.fits(m.fits, {}, 40):
+                    pups.add(m.written_for)          # (A pup's mantle, written for a pup: Phase 10 checks `fits` at binding.)
         for npc in sorted(people) + ['tt_hollin']:
             insert_npc(self.owner, 'w', npc, 'Hollin Ashby' if npc == 'tt_hollin' else npc.replace('_', ' ').title())
+            if npc in pups:
+                self.owner.execute("UPDATE live.npcs SET age = 8 WHERE world_id = 'w' AND id = %s", (npc,))
             self.owner.execute("INSERT INTO live.npc_voice (world_id, npc_id) VALUES ('w', %s)", (npc,))
         self.owner.execute("INSERT INTO game.checkpoints (world_id, schema_version, revision, payload) VALUES "
                            "('w', 1, 1, '{\"time\": 144000.0, \"x\": 1}')")
@@ -238,6 +244,28 @@ class MantleRows(unittest.TestCase):
                     S.save(s.editor, 'w', worn, base_revision=1, source='atlas')
             self.assertIn('while tt_sa_storekeeper wears it', str(e.exception))
 
+    def test_binding_fits_and_retire(self):
+        # Doc 84 Phase 10: a binding checks the wearer against `fits` (§17.3.3); a retire waits for the mantle's release.
+        with Scratch() as s:
+            s.load(bind=True)
+            s.owner.execute("UPDATE live.npc_voice SET released_day = 3 WHERE mantle_id = 'rm002'")
+            with s.editor.transaction():
+                self.assertEqual(S.bind(s.editor, 'w', 'rm002', 'tt_hollin'), "tt_hollin doesn't fit rm002 (fits stage=young|adolescent)",
+                                 'a grown wolf never wears a pup\'s mantle')
+                self.assertEqual(S.bind(s.editor, 'w', 'cw090', 'tt_hollin'), '', 'a spare for any stage fits')
+            with self.assertRaises(S.StoreError) as e:
+                with s.editor.transaction():
+                    S.retire(s.editor, 'w', 'cw017', source='dm')
+            self.assertIn('while tt_co_keeper wears it', str(e.exception))
+            s.owner.execute("UPDATE live.npc_voice SET released_day = 3 WHERE npc_id = 'tt_co_keeper'")
+            with s.editor.transaction():
+                done = S.retire(s.editor, 'w', 'cw017', source='dm', account='ada')
+            self.assertEqual(done['state'], 'retired')
+            self.assertEqual(s.count("SELECT state FROM live.mantles WHERE id = 'cw017'"), 'retired')
+            self.assertEqual(s.count("SELECT account FROM live.mantle_history ORDER BY seq DESC LIMIT 1"), 'ada')
+            with s.editor.transaction():
+                self.assertEqual(S.bind(s.editor, 'w', 'cw017', 'tt_co_keeper'), 'cw017 is retired')
+
     def test_backup_and_restore(self):
         with Scratch() as s:
             s.load(bind=True)
@@ -250,6 +278,84 @@ class MantleRows(unittest.TestCase):
             self.assertEqual(s.count("SELECT mantle_id FROM live.npc_voice WHERE npc_id = 'tt_co_keeper'"), 'cw017')
             self.assertEqual(s.count("SELECT source FROM live.mantle_history ORDER BY seq DESC LIMIT 1"), 'restore')
             self.assertEqual(s.count("SELECT count(*) FROM live.mantle_lines WHERE key = 'grown.insist.1' AND mantle_id = 'cw017'"), 1)
+
+
+MANTLE_TESTS = Path(os.environ.get('RATW_MANTLE_TESTS') or ROOT / 'build-core' / 'mantle_tests')
+
+
+@unittest.skipUnless(database_available() and MANTLE_TESTS.exists(), 'local PostgreSQL not running, or mantle_tests not built')
+class PassingOnInADatabase(unittest.TestCase):
+    """Doc 84 Phase 10 end to end: a game that writes (not scratch) on a throwaway Greyfen world, its places made
+    Coldwater's, two Coldwater mantles in its rows, and Sorrel and Linden married in their cottage. The DM gives Wren
+    cw017 and takes it back and gives it again; Wren dies (her release written); the child owed is born to Sorrel and
+    Linden with the spare cw090 (cw017 rests), its voice row, its parents and its personality written by the game."""
+
+    def test_the_game_writes_the_bindings(self):
+        import roster as R
+        import world_build
+        import world_store as WSt
+        from test_world_store import greyfen
+        key = f'mtl{secrets.token_hex(3)}'
+        folder = tempfile.TemporaryDirectory()             # (A scratch registry, as test_world_sync's: worlds.json untouched.)
+        registry = Path(folder.name) / 'worlds.json'
+        registry.write_text(W.WORLDS_FILE.read_text(encoding='utf-8'), encoding='utf-8')
+        saved_env = dict(os.environ)
+        os.environ.update({'RATW_WORLDS_FILE': str(registry), 'RATW_WORLDS_LOCAL': str(Path(folder.name) / 'local.json')})
+        W.new_world(key, 'Mantle life', 'dev', log=lambda *_: None)
+        try:
+            with W.connect(key, 'owner') as conn:
+                WSt.save_roster(conn, R.load())
+                WSt.save_world(conn, greyfen(), None, create=True)
+                conn.execute("UPDATE world.cells SET region = 'coldwater'")
+                conn.execute("UPDATE world.interiors SET region = 'coldwater'")
+                world = conn.execute('SELECT id FROM world.worlds').fetchone()[0]
+                conn.execute("INSERT INTO live.npc_relations (world_id, npc_id, other_id, kind) VALUES (%s, 'linden', 'sorrel', 'spouse')",
+                             (world,))
+                for name in ('cw017', 'cw090'):
+                    m = T.read((FIXTURE / 'coldwater' / f'{name}.mantle').read_text())
+                    m.written_for = ''
+                    with conn.transaction():
+                        S.save(conn, world, m, base_revision=None, source='test', checked=True)
+            with W.connect(key, 'editor') as editor:
+                world_build.build(editor, 'test')
+            script = 'assign wren cw017\nrelease wren\nassign sloe cw017\nrelease sloe\nassign wren cw017\nkill wren\ndays 9\nquit\n'
+            run = subprocess.run([str(MANTLE_TESTS), '--db-life', key], input=script, capture_output=True, text=True, timeout=300,
+                                 env={**os.environ, 'RATW_DATABASE_URL': W.libpq_conninfo(key, 'game'), 'RATW_AI': 'off'})
+            out = run.stdout
+            if os.environ.get('RATW_SHOW'):
+                print(out)
+            self.assertEqual(run.returncode, 0, out + run.stderr)
+            results = [l for l in out.splitlines() if l.startswith('RESULT')]
+            self.assertTrue(results[0].startswith('RESULT ok') and 'wears cw017' in results[0], out)
+            self.assertIn('rests from today', results[1])
+            self.assertTrue(results[2].startswith('RESULT refused') or results[2].startswith('RESULT ok'), out)
+            self.assertIn('RATW_MANTLE cw017 rests: wren died', out)
+            born = [l for l in out.splitlines() if l.startswith('BORN')]
+            self.assertEqual(len(born), 1, out)
+            child = born[0].split()[1]
+            self.assertIn('cw090 spare', born[0], 'cw017 rests a year: the spare')
+            with W.connect(key, 'owner') as conn:
+                q = lambda sql, *a: conn.execute(sql, a).fetchall()
+                self.assertEqual(q("SELECT mantle_id, bound_how, released_day IS NOT NULL FROM live.npc_voice WHERE npc_id = 'wren'"),
+                                 [('cw017', 'dm', True)], 'her release written')
+                row = q('SELECT mantle_id, bound_how, home_region, traits, quirk FROM live.npc_voice WHERE npc_id = %s', child)
+                self.assertEqual(row[0][:3], ('cw090', 'spare', 'coldwater'))
+                self.assertEqual(len(row[0][3]), 7, 'all seven traits, from the card (Q4)')
+                self.assertEqual(row[0][3]['honesty'], 'plain')
+                self.assertEqual(sorted(r[0] for r in q('SELECT npc_id FROM live.npc_relations WHERE other_id = %s AND kind = %s', child, 'parent')),
+                                 ['linden', 'sorrel'], 'its parents in live.npc_relations')
+                personality, greeting, name = q('SELECT personality, greeting, name FROM live.npcs WHERE id = %s', child)[0]
+                self.assertTrue(personality.startswith('Nervy') and greeting == '', personality)
+                self.assertTrue(name.endswith(' ') is False and len(name.split()) <= 2, name)
+                self.assertGreaterEqual(q("SELECT count(*) FROM live.game_changes WHERE table_name = 'live.npc_voice'")[0][0], 2,
+                                        'the game\'s writes show in Atlas\'s conflict list')
+        finally:
+            with superuser() as su:
+                su.execute(f'DROP DATABASE IF EXISTS ratw_{key} WITH (FORCE)')
+            os.environ.clear()
+            os.environ.update(saved_env)
+            folder.cleanup()
+            W.worlds()
 
 
 if __name__ == '__main__':

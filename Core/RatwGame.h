@@ -501,6 +501,9 @@ class Game
     // reload: from its rows, or its file under Options::mantlesFrom), or one resident's voice and mantle (voice.sync <npc>).
     const std::map<std::string, std::string>& mantleWearers() const { return mantleOf_; }
     Result loadMantle(const std::string& id);
+    // Doc 84 Phase 10: the DM's mantle.assign <npc> (payload {"mantle": id}, or "npc mantle") and mantle.release <npc>.
+    Result assignMantle(const std::string& npc, const std::string& mantle);
+    Result releaseMantle(const std::string& npc);
     Result loadVoice(const std::string& npc);
     // What the talk library is asked when `a` speaks to `b` (to no one: b "") of a concept, here and now: the two
     // speakers, the place and moment, and `facts` (the topic's own) over them.
@@ -2161,6 +2164,7 @@ class Game
     };
     std::map<std::string, TalkDaily> talkDaily_;
     void talkRemember(const std::vector<talk::Effect>& effects);
+    void talkSlots(const Entity& e, const Position* post, const ResidentSpec* spec, talk::Facts& f);   // (Doc 84 §11.)
     // Each resident's voice, from live.npc_voice (doc 62, phase 6): over what is worked out of them, where set.
     struct NpcVoice
     {
@@ -2195,13 +2199,31 @@ class Game
     std::map<std::string, std::string> mantleOf_;   // Resident -> the mantle they wear, loaded
     std::map<std::string, std::string> mantleFiles_;   // Mantle -> its file (Options::mantlesFrom)
     bool mantleTables_ = false;                     // The world database has live.mantles (migration 0066)
-    // The cards of the ready mantles nobody living wears (§9.4: what the pools need; Phase 10 draws from them).
-    struct MantleCard
+    // Doc 84 Phase 10 (§12, §17.7): every ready mantle's card goes to the society (its pools), with the rules (rest days,
+    // fallbacks, the name pools under Data/Talk/names). A database world's bindings as live.npc_voice holds them (read by
+    // loadVoices) are the ledger's truth; syncMantleLedger puts them, or an export's written_for bindings, into the
+    // society's ledger after the checkpoint is read, and works out who wears what from it. tendMantles (every tick, from
+    // makeResidents) writes what the society decided: releases at death, bindings at arrival, births with none; and
+    // logs the pools' health once a game day.
+    struct RowBinding
     {
-        std::string id, dialect, fits, honesty;
-        std::vector<std::string> accents;
+        std::string mantle, how;
+        double bound = 0, released = -1;
     };
-    std::vector<MantleCard> mantleCards_;
+    std::map<std::string, RowBinding> rowBindings_;
+    std::vector<PoolMantle> mantlePoolCards_;
+    bool mantleRulesLoaded_ = false;
+    std::int64_t mantlePoolDay_ = -1;
+    void loadMantleRules();
+    void syncMantleLedger();
+    void tendMantles();
+    // A wearer's binding put to work: their mantle worn (mantleOf_), a newborn's voice from the ledger (a world from
+    // files), their re-drawn marks as their own words (p_ layer; a database world writes them to their voice row).
+    void wearBinding(const std::string& npc);
+    std::map<std::string, std::string> drawMarks(const std::string& mantle, const std::string& bank, const std::string& wearer);
+    bool writeBinding(const std::string& npc, const MantleBinding& b, std::string& problem);
+    bool mantleRows() const;                        // A world whose bindings are live.npc_voice rows the game writes
+    std::string talkDir_;                           // Data/Talk, as the library was read from
     // Where each home opens onto a street (its building's door, through any stairs), for neighbours (doc 62, decision
     // 8): kept until the doors change.
     std::map<std::string, std::pair<std::string, Vec2>> entrances_;

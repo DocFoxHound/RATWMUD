@@ -930,6 +930,8 @@ def scan(snapshot: dict | None, rows: dict, usernames=(), names=(), allowed_tabl
 # package instead (dm.* stays out, and with it the DM tool's logins). Story visitors count as approved while approved_by
 # is set (Core/RatwGameStoryteller.cpp), so it is kept set.
 PROVENANCE = {'live.npc_voice': ('written_by', lambda v: 'dm' if isinstance(v, str) and v.startswith('dm:') else v),
+              # A mantle's writer (doc 84 §17.9): a batch's or a model's name, dm, atlas, seed; never a person's.
+              'live.mantles': ('written_by', lambda v: v if isinstance(v, str) and MANTLE_AUTHOR.fullmatch(v) else 'package'),
               'live.story_visitors': ('approved_by', lambda v: None if v is None else 'package'),
               'live.faction_relations': ('updated_by', lambda v: '')}
 
@@ -946,7 +948,9 @@ def without_provenance(table: str, row: dict) -> dict:
 # model's name, never a person's (doc 78, 10.1: an author column naming someone refuses the package, at the export's scan
 # and at an import's). None is "nobody" (a visitor not approved).
 MODEL_NAME = r'(?:gpt|o[1-9]|claude|gemini|llama|mistral)-?[a-z0-9._-]{0,60}'
+MANTLE_AUTHOR = re.compile(rf'|seed|dm|atlas|package|{MODEL_NAME}')
 AUTHOR_COLUMNS = {('live.npc_voice', 'written_by'): re.compile(rf'|seed|dm|package|{MODEL_NAME}'),
+                  ('live.mantles', 'written_by'): MANTLE_AUTHOR,
                   ('live.story_visitors', 'approved_by'): re.compile('package'),
                   ('live.faction_relations', 'updated_by'): re.compile('')}
 
@@ -1984,7 +1988,10 @@ SEEDED = 'seeded'                       # admin.settings: every seed key the wor
 # the NPCs or anything placed on the map (an official map's changes never reach a hosted world, 12.5), and never
 # live.economy's keys (a new rule's default comes with the image's Data/Economy files; a key in the package's row is
 # the source's own setting, which an update mustn't impose): only its row, when the world has none.
-SEED_TABLES = ('live.dialects', 'live.figures', 'live.npc_voice')
+# Mantles (doc 84 §17.9, Phase 10) too, add-only: a host's own edits to one are never overwritten; a new item of a mantle
+# the world has comes; an item of a mantle it hasn't (or removed) doesn't; a voice's binding to a mantle it hasn't is left
+# unbound.
+SEED_TABLES = ('live.dialects', 'live.figures', 'live.mantles', 'live.mantle_lines', 'live.npc_voice')
 
 
 def _seed_key(table: str, row: dict, keys) -> str:
@@ -2027,6 +2034,8 @@ def seed_update(conn, directory: Path, manifest: dict, log) -> dict:
         record = _setting(conn, SEEDED)
         seen = set(record.get('keys') or []) if isinstance(record, dict) else None
         npcs = {r[0] for r in conn.execute('SELECT id FROM live.npcs WHERE world_id = %s', (world_id,)).fetchall()}
+        mantles = ({r[0] for r in conn.execute('SELECT id FROM live.mantles WHERE world_id = %s', (world_id,)).fetchall()}
+                   if world_sync.shape(conn, 'live.mantles')[0] else set())
         given = set(seen or ())
         for table in SEED_TABLES:
             if not isinstance(live.get(table), list) or not world_sync.shape(conn, table)[0]:
@@ -2043,7 +2052,11 @@ def seed_update(conn, directory: Path, manifest: dict, log) -> dict:
                     continue
                 if table == 'live.npc_voice' and row.get('npc_id') not in npcs:
                     continue                       # (A voice for a resident this world hasn't got.)
+                if table == 'live.mantle_lines' and row.get('mantle_id') not in mantles:
+                    continue                       # (An item of a mantle this world hasn't got.)
                 row = {**row, 'world_id': world_id}
+                if table == 'live.npc_voice' and row.get('mantle_id') and row['mantle_id'] not in mantles:
+                    row = {k: v for k, v in row.items() if k not in ('mantle_id', 'bound_day', 'bound_how', 'released_day')}
                 if table == 'live.figures' and row.get('npc_id') and row['npc_id'] not in npcs:
                     row['npc_id'] = None             # (Someone known of, not yet here.)
                 author = AUTHOR_COLUMNS.get((table, 'written_by'))
@@ -2052,6 +2065,8 @@ def seed_update(conn, directory: Path, manifest: dict, log) -> dict:
                 world_sync.write(conn, table, _fit(conn, table, world_sync.stored(table, without_provenance(table, row)), log))
                 added[table] = added.get(table, 0) + 1
                 given.add(k)
+                if table == 'live.mantles':
+                    mantles.add(row.get('id'))
         economy = [r for r in live.get('live.economy') or [] if isinstance(r, dict)]
         if economy and not conn.execute('SELECT 1 FROM live.economy WHERE world_id = %s', (world_id,)).fetchone():
             if not (economy_rows_problems(economy) + economy_words(economy)):

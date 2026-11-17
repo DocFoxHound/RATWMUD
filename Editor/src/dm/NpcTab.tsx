@@ -16,7 +16,7 @@ import {NumberField, Row, SelectField, TextField, Toggle, Hint} from '../compone
 import {useWorld} from './world';
 import {BANDS, type Band} from '../lib/economyContract';
 import {awaitOutcome, outcomeWords, sureText} from '../lib/acts';
-import {isLive, worldName, dmApi, type Action, type Me, type NpcArea, type Npcs, type Target, worldLabel} from './api';
+import {isLive, worldName, dmApi, type Action, type MantleBinding, type Me, type NpcArea, type Npcs, type Target, worldLabel} from './api';
 import {CalendarPanel} from './CalendarPanel';
 import {LifePanel} from './LifePanel';
 import {DialectsPanel, FiguresPanel, VoicePanel} from './TalkPanels';
@@ -207,6 +207,16 @@ export function NpcTab({me, target, suite}: {me: Me; target: Target; suite: 'atl
             said = outcomeWords(`${name}'s band`, await awaitOutcome(() => dmApi.action(target, queued.id)), done);
         }, '').then(() => { if (said) setProblem(said); });
     };
+    // A mantle bound by hand or released (doc 84 §17.10, Phase 10): told what the game server made of it.
+    const act = (kind: 'mantle.assign' | 'mantle.release', id: string, name: string, payload?: Record<string, unknown>) => {
+        if (!sure(kind === 'mantle.assign' ? `Give ${name} the mantle ${String(payload?.mantle)}` : `Release ${name}'s mantle`)) return;
+        let said = '';
+        return finish(async () => {
+            const queued = await dmApi.liveAction(target, kind, id, payload);
+            said = outcomeWords(`${name}'s mantle`, await awaitOutcome(() => dmApi.action(target, queued.id)),
+                kind === 'mantle.assign' ? `${name} wears ${String(payload?.mantle)} now.` : `${name}'s mantle rests from today.`);
+        }, '').then(() => { if (said) setProblem(said); });
+    };
     const wander = (id: string, name: string, area: string) => sure(area ? `Have ${name} wander ${data?.areas.find(a => a.id === area)?.name}` : `Stop ${name} wandering`) &&
         finish(() => dmApi.setWander(target, id, area || null), area ? `${name} now wanders there.` : `${name} keeps to their schedule.`);
 
@@ -272,7 +282,10 @@ export function NpcTab({me, target, suite}: {me: Me; target: Target; suite: 'atl
                     {(data?.people ?? []).filter(p => match(p.name, p.id, p.role, p.workLabel)).map(p => <button key={p.id}
                         className={selected === p.id ? 'tree-item active' : 'tree-item'} onClick={() => choose(p.id, (p.work ?? p.home)?.cell)}>
                         <span className="tree-icon" style={{color: ROLE_INFO[p.role].color}}>{dead.has(p.id) ? '✝' : ROLE_INFO[p.role].icon}</span>
-                        <span className="tree-label">{p.name}</span>{data?.spawned[p.id] ? <small className="spawned">spawned</small>
+                        <span className="tree-label">{p.name}</span>
+                        {data?.mantles?.[p.id] && <small className="mantle" title={mantleTitle(data.mantles[p.id])}>
+                            {data.mantles[p.id].released == null ? data.mantles[p.id].mantle : `(${data.mantles[p.id].mantle})`}</small>}
+                        {data?.spawned[p.id] ? <small className="spawned">spawned</small>
                             : !p.home ? <small>unplaced</small> : !p.work ? <small>no work</small> : <small>{p.workLabel}</small>}</button>)}
                     <p className="dm-group">Job holders</p>
                     {(data?.holders ?? []).filter(h => match(h.name, h.id, h.slot)).map(h => <button key={h.id} className={selected === h.id ? 'tree-item active' : 'tree-item'}
@@ -333,6 +346,8 @@ export function NpcTab({me, target, suite}: {me: Me; target: Target; suite: 'atl
                 bandable={!data?.bandable || data.bandable.includes(draft.id)} bandsAuthored={data?.bandsAuthored !== false} spawnedBy={data?.spawns.find(r => r.id === data.spawned[draft.id])?.name ?? (data?.spawned[draft.id] ? 'a deleted rule' : '')}
                 onWander={area => wander(draft.id, draft.name, area)} onBandFor={(band, days) => bandFor(draft.id, draft.name, band, days)}
                 onPick={p => setPick(p)} onSave={save} onRevert={revert} onDelete={remove} onLife={kill => life(draft.id, draft.name, kill)} />
+                {!isNew && <MantlePanel binding={data?.mantles?.[draft.id] ?? null} canLive={canLive && !dead.has(draft.id)} busy={busy}
+                    onAssign={m => void act('mantle.assign', draft.id, draft.name, {mantle: m})} onRelease={() => void act('mantle.release', draft.id, draft.name)} />}
                 {!isNew && building && <VoicePanel me={me} target={target} npc={draft.id} name={draft.name} />}
                 {!isNew && !building && <LifePanel me={me} target={target} id={draft.id} name={draft.name} />}</>
                 : holder ? <div className="dm-panel"><header><div><small>JOB HOLDER</small><h2>{holder.name}</h2></div>
@@ -465,7 +480,29 @@ function NpcInspector({draft, setDraft, routes, world, canEdit, canLive, busy, d
 }
 
 const ACTION_LABELS: Record<string, string> = {'npc.sync': 'sync', 'npc.kill': 'kill', 'npc.revive': 'revive', 'layers.sync': 'sync layers',
-    'band.override': 'band for a while'};
+    'band.override': 'band for a while', 'mantle.assign': 'mantle given', 'mantle.release': 'mantle released'};
+
+// Doc 84 §17.10 (Phase 10): the mantle a resident wears (Atlas's column, and this line), how it came to them, and for the
+// DM, one given by hand or released. A mantle's own text is the Mantles panel's (to come).
+const HOW: Record<string, string> = {authored: 'written for them', spare: 'a spare, at birth', reused: 'passed on at birth',
+    echo: 'passed on at birth, an echo of kin', arrival: 'taken up on coming from the Country', dm: 'given by the DM'};
+function mantleTitle(b: MantleBinding) {
+    const day = (d: number | null) => d == null ? '' : ` on day ${Math.floor(d)}`;
+    return `${b.mantle} (${b.state}): ${HOW[b.how] ?? b.how}${day(b.bound)}` + (b.released == null ? '' : `; released${day(b.released)}, resting`);
+}
+function MantlePanel({binding, canLive, busy, onAssign, onRelease}: {binding: MantleBinding | null; canLive: boolean; busy: boolean;
+    onAssign: (mantle: string) => void; onRelease: () => void}) {
+    const [mantle, setMantle] = useState('');
+    if (!binding && !canLive) return null;
+    return <div className="dm-panel" aria-label="Mantle">
+        <header><div><small>MANTLE</small><h2>{binding ? binding.mantle : 'No mantle'}</h2></div></header>
+        <Hint>{binding ? mantleTitle(binding) : 'They speak from the shared library until a mantle is bound to them.'}</Hint>
+        {canLive && <div className="button-grid">
+            <input placeholder="a ready mantle's id (cw017)" value={mantle} onChange={e => setMantle(e.target.value.trim())} />
+            <button disabled={busy || !/^[a-z]{2}[0-9]{3,4}$/.test(mantle)} onClick={() => onAssign(mantle)}>Give it to them</button>
+            {binding && binding.released == null && <button disabled={busy} onClick={onRelease}>Release theirs</button>}</div>}
+    </div>;
+}
 
 function ActionList({actions, target}: {actions: Action[]; target: Target}) {
     if (!actions.length) return null;

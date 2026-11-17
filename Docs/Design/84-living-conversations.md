@@ -14,7 +14,10 @@ ticking 100-hour listen and its packet, the review's fixes, and the first blind 
 a critic's read, the ticking listen, the card and the second blind packet), and §37's hybrid is live, and **Phase 9
 (the mantle engine and its tables)** is built (2026-11-17, branch `r3-talk-p9`, §38: the `.mantle` format, migration
 0066 applied to DEV, mantles loaded from the rows in one batch into buckets of their own, the hot reload, the checks on
-every save, `mantle_load` and `mantle_export`, the test fixture with the ten luna tables ported); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
+every save, `mantle_load` and `mantle_export`, the test fixture with the ten luna tables ported), and **Phase 10
+(passing mantles on)** is built (2026-11-17, branch `r3-talk-p10`, §39: the mantle ledger, release at death, the choice
+at birth, the newborn's voice from the card, the name pools, re-drawn marks and echoes, arrivals' bindings, the pools'
+health and `mantle_pool.py`, the DM's acts, Atlas's column, sync and packages; not the Mantles panel); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
 replaces neither: every one of today's 8,525 library entries and 10 trees keeps loading and speaking while it is
 converted. It was written from five read-only surveys of the code, the data and the live world at `ridgemere2` 1034c1fc
 (the engine, the trees, the lifecycle, what residents know, and prior art) and three competing designs; §4 says how they
@@ -4807,3 +4810,184 @@ build: 0.061, 0.132), a look p99 1.71 ms.
   `Library::entries()` that `talk_check --validate` counts are the shared library's only.
 - **The live world** (7788, ridgemere3) needs no restart: 0066 is additive and its server reads past it. A server built
   from this branch reads DEV's mantle rows at start (none yet) and answers `mantle.sync`.
+
+## 39. Phase 10, passing mantles on, as built (2026-11-17)
+
+Branch `r3-talk-p10`, on `r3-talk-p9` (8474c3de). A dead wolf's mantle now rests and passes to a newborn of its dialect;
+a newborn is born with its mantle's voice, honesty and temperament with it (the user's Q4); one of the Country's own
+takes a mantle up as it comes; the pools' health is logged and forecast; the DM can give and release a mantle by hand.
+Births stay realm-wide, one for one with deaths, and no NPC is ever made but a child born in place of the dead (Q5;
+`people_flow_tests`, unchanged, still prove it). The society decides (`Core/RatwHandoff.cpp`); the game writes what it
+decided (`Core/RatwGameHandoff.cpp`).
+
+**The ledger** (`CareerState::mantles`, `MantleBinding`: by wearer, living or dead): the mantle, how it was bound
+(authored, spare, reused, echo, arrival, dm), the day bound and released, who knew the wearer well at release, whose kin
+it echoes, the pool it came from, re-drawn marks (and a bank still to draw them from), and a newborn's voice (its birth
+town, accent, seven traits, quirk). Saved in the checkpoint's `careers.mantles` only while it has anything (an older
+save reads as none). A world in the database writes the bindings to `live.npc_voice` (§17.7) and reads them back as the
+truth: `Game::syncMantleLedger`, after the checkpoint is read and on every `voice.sync`, takes each row's mantle, how,
+bound and released over the ledger's and keeps the rest; a scratch server writes no row and keeps what it made itself.
+A world from files binds each ready mantle to the resident it was written for (`authored`) unless the ledger says it
+passed on. Every ready mantle's card (worn or not: §9.4's `mantleCards_` are gone) goes to the society for its pools.
+
+**Death** (`Society::died`): the wearer's binding is released that day with `knownBy` (`CareerWorld::knownBy`: the
+living residents with familiarity 40 or more toward the dead), a `mantle_release` career note, and a change the game
+writes (`released_day`; `RATW_MANTLE cw017 rests: tt_co_keeper died on day 0 (known well by N)`). Memories, bonds and
+beliefs stay the dead's. Revived before anyone took it up, they wear it again.
+
+**Birth** (`Society::tendBirths`, as §12.3): the couple is chosen as before (realm-wide); the child's pool is its mother's
+home's (`CareerWorld::dialectOfCell`, `World::dialectPoolOf`: the town's grammar, plain for Ridgemere, Fenshore's
+mirebridge, nothing for a place none of the realm's). Candidates are the ready mantles of the pool not worn by a living
+wolf and not asked for by a request still on its way (so a birth the host can't make leaves its mantle as it was: it was
+never bound), whose `fits` holds for the child: `Society::fitsMantle` (and `mantle_store.fits`, the same) tests a stage
+or an age as the wearer is or will grow to be (a newborn fits `stage=adult|old`), sex, role, job and class as they are (a
+newborn is a civilian with no job, of its mother's class, so a `role=merchant` fit never goes to one), and a fact it
+doesn't know never holds. In order: 1. an echo (rested, its last wearer kin of a parent: spouse, parent, child, sibling
+or grandparent, by the society's families); 2. a rested one whose last wearer nobody living in the birth town knew well,
+marks kept (`reused`); 3. any rested one, marks drawn again (`reused`); 2 and 3 never in the household of the last
+wearer's kin; 4. a spare by a lot; 5. a neighbouring pool, through `settings.json`'s new `mantle_fallback`
+(Frosthollow to Coldwater, Oakhaven to Larkfield, Saltwell to Southmeadow, Mirebridge to Oakhaven, followed on while each
+has nothing), its marks drawn from the child's own dialect; 6. nothing: born as before, `RATW_MANTLE none for <dialect>
+(birth)`. Rested is `mantle_rest_days` (new in `settings.json`, 365) since the release, longest rested first.
+
+**The child** (`ResidentRequest::mantle`, `mantleHow`, `echoOf`, `dialect`, `redrawMarks`, `markDialect`, `voice`,
+`personality`): its traits are the card's, all seven, the middle of an axis where the card says nothing (honesty plain:
+`Society::wholeTraits`), so a `sly` card's pup can turn thief at 16 (the voice row's honesty feeds `Society::setHonesty`);
+its quirk the card's; its accent drawn from the card's accents by the birth town's mix (the first, as written, where none
+of them is heard there); its origin the birth town for life (its voice row's `home_region`, which `talkOrigin` takes over
+the worked-out one: no flip at 18); its personality the card's in a few words (`Society::cardPersonality`: "Calm, warm
+and content; swims in the lake even in autumn.", no pronouns), its greeting empty, its surname its mother's. In a world
+in the database `Game::makeResidents` writes the child's `live.npcs` row with that personality, its parents into
+`live.npc_relations` (every birth, mantle or not), and its `live.npc_voice` row (origin, accent, its mother's quarter,
+traits, quirk, the binding); `World::makeRequestedResidents` mirrors it for worlds from files and scratch servers, where
+the ledger is the voice (`Game::wearBinding`).
+
+**Names** (`Data/Talk/names/<dialect>.names`, §7.10's format; eight pools of 68 to 72 female and 64 to 69 male names,
+drafts for the user to settle by ear): read by `readNamePool` (refused with its reasons: one word, a capital and small
+letters, none twice, none both female and male, male or female only) and checked by `mantle_pool.py names`. A child's is
+its dialect's (plain's for one without a pool; the 28 placeholders where there is none, and in a society given no cards
+and no pools, as every test before Phase 10 is): no two living residents (or children asked for) share a full name, no
+living parent or sibling shares its first name, and one born in place of a dead grandparent of its own sex takes their
+first name `named_for` of the time (.25).
+
+**Marks and echoes** (§12.4): marks drawn again are the wearer's own words, never the mantle's (`p_<npc>`; in a database
+world appended to the voice row's `grammar`, never over a symbol they already have): `Library::redrawHabit` takes a value
+from the dialect's `mark.<symbol>` bank (none exist yet: Phase 15 writes them), else another of the mantle's own
+alternatives than the one its seed gives (a mark with one alternative is kept). An echo's wearer has `echoOf`, and
+`pair.echo=yes` with `pair.echo_of` (the dead's name) holds between them and anyone who knew the dead well.
+
+**§11's slots as facts** (`facts.json`; `talkSpeaker`, the new `talkSlots` once a game day, `talkQuery`): `surname`;
+`called` (what the one speaking calls this one: the first name between residents who know each other's names, a Master
+or Mistress and the surname across a class gap in Ridgemere unless kin or fond; for strangers none, and
+`#other.called#` then says the speaker's `#address#`); `spouse_word` (husband or wife); `late` (the kin last mourned,
+dead); `friend` and `rival` (affinity 40 or more, -25 or less, living); `boss` and `hand` (a shop's keeper and the help
+at its premises), each with its `_sex`; `workplace`, `trade_words`, `street`, `from_town`, `away`, `dialect`; and
+`pair.echo`, `pair.echo_of`. (`boss` was a pair fact only: a bare `boss=` in a criterion would now read the person's; no
+rule wrote it bare.)
+
+**Arrivals** (§12.6): an "arrival" or a "farm" request (`arrivalFor`, `staffFarms`) takes a mantle from the pool of where
+the newcomer grew up (their voice row's origin: the Country's 310 seed rows; else the town they come to), fitted to their
+sex, age, role, job and class, bound `arrival` as they are welcomed; they keep their own voice row (§9.5).
+
+**Pool health** (§12.1): `Society::mantlePools` (spare: never bound; resting; ready: rested; the births the dialect
+expects in 180 days from the Gompertz deaths of the living and the births owed, shared as the fertile couples' mothers
+are; the honesty mix of the pool against its living residents'). The game logs `RATW_MANTLE pool coldwater spare=N
+resting=M ready=K` once a game day, a warning with `LOW` when spare plus ready is under 1.5 x the 180 days' births plus 2;
+nothing while a world has no ready mantle (DEV today). `tools/mantle_pool.py forecast <world> [--years 5] [--json]`
+reads a world read-only (one read-only transaction; the checkpoint's marriages and births with the rows' families) and
+projects the same by year.
+
+**The DM** (§17.10): the game's acts `mantle.assign <npc>` (payload `{"mantle": id}`; refused, writing nothing, unless the
+mantle is ready, nobody else living wears it and the resident fits it; `bound_how 'dm'`) and `mantle.release <npc>`
+(resting from today); `tools/dungeon_master.py` sends both (checked: the resident, a ready mantle) and retires a mantle
+(`POST /api/talk/mantle/retire`: `mantle_store.retire`, refused while worn, then `mantle.sync`). `mantle_store.bind`
+(`mantle_load --bind`) now checks `fits` and refuses a retired mantle.
+
+**Atlas's column**: the NPC tab's list (Atlas and the DM) shows each resident's mantle beside their name (in brackets once
+released), and a Mantle panel under the NPC says how it came to them and since when; the DM's gives one by hand or
+releases it.
+
+**Sync and packages** (§17.9): `live.mantles` and `live.mantle_lines` join `world_sync.SYNCED` before the voices that
+bind them, compared item by item (an edit to one line in dev and another in live don't conflict; the same line on both
+is a conflict), a mantle's `created_at` volatile, `live.mantle_history` each world's own (a sync's changes are recorded
+as `sync`). `live.npc_voice`'s four binding columns are optional columns (a world before 0066, as PROD is, reads an
+unset binding as equal, and a binding it can't hold is refused with why, and named in the import's plan); the bindings
+are the live game's fields (`world_store.GAME_COLUMNS`). `world_package`: both tables are seed tables, add-only (an item
+of a mantle the world hasn't is left out; a voice bound to one it hasn't comes unbound), `written_by` a model's, a
+batch's, `dm`, `atlas`, `seed` or `package`, never a person's.
+
+**Not built here**: the Mantles panel and its save endpoints (card, items, problems beside the item, history and revert,
+"this mantle or this wolf only", Hear it) and `test_dungeon_master`'s mantle save; the fallback pool's words filtered of
+the other dialect's (§12.3.5); the kits and mark banks (Phase 15); G3 and G4; `talk_scorecard_quick`'s town wearing the
+fixture. The ten luna voice rows are as Phase 9 left them.
+
+**The handoff, in a harness world** (`mantle_tests`' `handoffInTheTalkTown`: the talk town wearing the fixture, a scratch
+game, nothing written): Myrtle Stillwater, Coldwater's keeper, who wears `cw017` (written for her), dies, and so do the
+Saltwell rakers, leaving the Marshes of Coldwater the only couple of an age. `RATW_MANTLE cw017 rests: tt_co_keeper died
+on day 0`. The calendar moved a year (nothing else run: no economy, no ticking days), the child owed is born: "Arthek
+Marsh (born_40), born day 370 to Ysolde and Corwin Marsh, wears cw017 (reused), last worn by Myrtle Stillwater; temper
+calm, honesty plain, from coldwater (light); 'Calm, warm and content; swims in the lake even in autumn.'" The game hears
+the pup wear it (its facts: `mantle=cw017`, the card's temper, honesty and quirk, `from=coldwater`, `stage=young`), the
+society's honesty map has the card's, and the ledger is in the save. **In a world database** (`test_mantle_load`'s
+`PassingOnInADatabase`: a throwaway Greyfen world, its places made Coldwater's, `cw017` and `cw090` in its rows, a game
+that writes, driven by `mantle_tests --db-life`): the DM gives Wren `cw017`, releases it, gives it to Sloe and back; Wren
+dies and her row's `released_day` is written; nine days on, the child owed is born to Sorrel and Linden ("Wenneth",
+`cw090 spare`: `cw017` rests), with its voice row (Coldwater, all seven traits, honesty plain), its parents in
+`live.npc_relations`, the card's personality and no greeting, and the game's writes in `live.game_changes`.
+
+**The forecast** (`python3 tools/mantle_pool.py forecast ridgemere3`, read only, DEV at day 34.1: 773 living residents,
+69 couples of an age for pups once the checkpoint's marriages are counted). Births in the next 180 days and over five
+years (births one for one with deaths, about 21 a year, 125 in five, shared where the mothers are):
+
+| Pool | plain | coldwater | larkfield | frosthollow | oakhaven | southmeadow | saltwell | mirebridge |
+|---|---|---|---|---|---|---|---|---|
+| 180 days | 6.2 | 2.1 | 1.4 | 0.24 | 0.24 | 0.24 | 0.24 | 0 |
+| 5 years | 67 | 27 | 17 | 3.4 | 3.4 | 3.4 | 3.4 | 0 |
+| Living sly + guarded (%) | 21.0 | 22.4 | 19.5 | 33.3 | 50.0 | 15.8 | 23.1 | 22.7 |
+
+Every pool is empty today (no mantle is in DEV's rows until Phase 11's pilot), so every pool reads LOW, and every birth
+until then is born as before and says `RATW_MANTLE none for <dialect>`. Against §12.1's spares (20, 26, 10, 8, 6, 6, 6,
+6): Coldwater's 26 and Larkfield's 10 about cover their five years with the mantles their own dead return after their year;
+Ridgemere's 20 is thin against 67 births and leans on its own dead's mantles coming back (about 13 a year, §12.1), and
+Mirebridge's 6 (Fenshore's) has no couple of an age today. Phase 15 sizes the spares from this, not from §12.1's guess.
+
+**Tests.** `mantle_tests` (335 checks; new: `passingOn`, a small Society with synthetic deaths: `fits` as it is and will
+be, one living wearer, the release with who knew her, a spare at birth with the card's seven traits, a Coldwater name with
+no parent's first name, the grandmother's mantle as an echo a year on with her honesty, a Frosthollow birth lent
+Coldwater's mantle with its marks to draw from Frosthollow's bank and named for its grandfather, `none` said, the pools,
+the ledger saved and read back, the revived wearing hers again; `arrivalsBindOne`: the fisher from the Country comes with
+a Coldwater mantle and keeps his own voice; `handoffInTheTalkTown`, above), `mantle_load_pg` (`test_binding_fits_and_
+retire`: a pup's mantle refused to a grown wolf, a retire refused while worn and done after, a retired mantle never bound;
+`PassingOnInADatabase`, above; the fixture's pup now aged as a pup), the new `mantle_pool_rules` (`test_mantle_pool`: the
+forecast's arithmetic, the pools from bindings, `fits` as the game decides, the committed name pools clean and a bad one
+refused with each reason), and `test_world_sync`'s `MantleItemsTests` (one line edited each side: no conflict; the same
+line both sides: a conflict; the tables' order; the bindings the game's) and two Pull tests (a world without 0066 takes
+voices without their bindings and refuses a binding, named in the plan; a mantle, its item and its binding pulled from
+live, the history saying `sync`, level after). The full ctest: 116 of 116 (pg_client skipped as before). The Python
+suites touched: `test_world_sync` and `test_dungeon_master` pass; `test_world_package` passes but for two cases that fail
+the same on `r3-talk-p9` (its export of DEV now finds 12 planted accounts to close where it expected 8, and a hostile
+package's import reaches the registry: DEV's data, not this branch). Editor: `tsc --noEmit` clean.
+
+**The card** (`artifacts/talk/runs/p10`, every profile in both modes over P0's fixture, reading DEV's rows, alongside the
+Python suites): every metric is Phase 9's (`p9`) to the digit but the timings (and frozen L5's R6 naming another of two
+sentences tied at 38); `talk_card` exits 1 on the soft rows §37 and §38 left flagged (C8, O1, D1L, D1B, U2, K2, C9, X1)
+and on timings under its neighbours' load (B1 0.221 ms); no hard gate is broken, nothing was refrozen. With no mantle in
+the rows and no birth in a frozen hour, Phase 10 changes nothing that is said.
+
+**For Phase 11.**
+- Load the pilot with `mantle_load --bind`: a binding now checks `fits` (a pup's mantle needs a pup) and refuses a
+  retired mantle. Once mantles are in DEV's rows the game gives every ready card to the pools and logs their health daily;
+  the dead release theirs and the born take them from that moment, on the live server too once it runs a build of this
+  branch.
+- The pilot's mantles should use the new slots (`#other.called#` falls back to the speaker's `#address#`; `#self.friend#`,
+  `#self.late#`, `#self.workplace#`, `#self.trade_words#`, `#self.street#`, `#self.from_town#`, `#self.spouse_word#`) and
+  name 2-4 `marks` with more than one alternative each, so a reused mantle's marks can be drawn again before Phase 15's
+  banks exist. `mantle_check` doesn't yet know which slots each truth pattern needs for the new ones.
+- `talk_scorecard_quick`'s town still doesn't wear the fixture; the Mantles panel is still to build (its writes are
+  `mantle_store.save` and `retire`, its reload `dm.queue_talk_sync`).
+- The ten luna voice rows still hold their old grammar, rules and persona above the mantle's words.
+
+**The live world** (7788, ridgemere3) needs no restart and nothing was written to DEV: there is no migration (0066's
+columns hold everything), the forecast reads DEV in a read-only transaction, and every database test ran on throwaway
+worlds. A server built from this branch reads the bindings and the checkpoint's ledger and passes mantles on from its
+next death and birth.
