@@ -1,0 +1,296 @@
+# rm107, the weather's opponent (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm107
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for cty_tobias_ropewell
+written_by claude-codex-cw-1
+title the weather's opponent
+fits stage=adult|old
+prefers talk=chatty
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk argues_with_the_weather
+likes blackberries cards festival_bells autumn_wind
+dislikes gulls drizzle
+fears a_debt_called_in_public a_storm_over_newly_shorn_sheep
+hopes a_clear_account_in_ridgemere a_festival_without_rain
+topics work +0.4 weather +0.5 pastimes +0.4 festival +0.3 memories -0.2
+styles comfort=gentle gossip=reluctant refuse=wry tease=playful
+marks oath saying
+persona #self.first# disputes the #wind#, keeps #cards# inside a #coat#, and counts #bells# against the coming #rain#.
+
+words
+oath! = By the crooked vane | Wool and weather
+saying! = Let the sky make its own wager | A bell travels farther than a complaint
+sheep = sheep | flock
+flock = flock | sheep
+ewe = ewe | ewe
+lamb = lamb | young lamb
+wool = wool | fleece
+fleece = fleece | shorn fleece
+shears = shears | shearing blades
+barn = barn | shearing barn
+gate = gate | field gate
+field = field | grazing field
+fields = fields | grazing fields
+hill = hill | grassy rise
+grass = grass | pasture
+cloud = cloud | grey cloud
+clouds = clouds | grey clouds
+wind = wind | autumn wind
+rain = rain | shower
+drizzle = drizzle | thin rain
+storm = storm | hard storm
+sky = sky | open sky
+vane = vane | weather vane
+coat = coat | work coat
+boots = boots | muddy boots
+berries = berries | blackberries
+berry = berry | blackberry
+birds = birds | shore birds
+bag = bag | wool sack
+price = price | asking price
+card = card | playing card
+bush = bush | berry bush
+cards = cards | playing cards
+hand = hand | card hand
+hands = hands | working hands
+table = table | card table
+bell = bell | festival bell
+bells = bells | festival bells
+festival = festival | town festival
+gull = gull | shore gull
+gulls = gulls | shore gulls
+lake = lake | Glasswater
+shore = shore | lakeshore
+city = city | Ridgemere
+road = road | High Road
+coin = coin | penny
+debt = debt | old debt
+ledger = ledger | account book
+friend = friend | good companion
+cup = cup | cup of ale
+home = home | cottage
+night = night | late evening
+market = market | market square
+
+any
+opinion @1 city for 1 : The #city# taught me how to bargain for a #fleece#. | I know streets there where a #friend# can find a warm #cup#.
+opinion @1 drink for 1 : A #cup# after shearing helps the whole #barn# relax. | I prefer company at the #table# to drinking alone.
+opinion @1 festivals for 2 : The #bells# can pull me from any #field#. | A festival is worth the walk even when the #sky# threatens.
+opinion @1 houses against 1 : Their fine windows look over #fields# they never cross. | I have shorn their #sheep# without hearing a word of thanks.
+opinion @1 merchants against 1 : They add a #coin# to the #fleece# price when no one checks the #ledger#. | I ask them to name the charge aloud.
+opinion @1 newcomers mixed 0 : New #hands# can learn to hold the #shears#. | I watch how they close the #gate# first.
+opinion @1 watch mixed 0 : A good patrol keeps the #market# safe after the #bells#. | I would rather settle a #debt# without their help.
+
+grown
+line @1 greet : #greet#. Have you come to argue with the #sky# too? | #greet#. The #flock# is behaving better than the #wind#.
+line @2 greet [self.working=yes] : I can speak while I move the #sheep#. | Stay by the #gate# and we can talk.
+line @3 greet [pair.band=friends|family] : There is a seat at the #table# for you. | I found #berries# along the #hill#.
+line @4 greet [here.time=dawn] : The #clouds# have started their excuses early. | #greet#. We are leading the #flock# out.
+line @1 greet.return : #welcome_back#. The #sky# still has not listened. | You have returned before I finished this #fleece#.
+line @1 kin.open [pair.kin!=no] : Come in; I will put the #cards# away. | Your #coat# can dry by the fire.
+line @1 again.open : We were halfway through a weather dispute. | Have you brought news from the #road#?
+line @1 farewell : #farewell#. Do not take the #clouds# at their word. | #saying.capitalize#. Shut the #gate# after you.
+line @1 farewell.return : I may have another #hand# of #cards# ready. | Come back when the #bells# ring.
+line @1 react.news : Say what happened and I shall stop watching the #sky#. | I can put the #shears# aside for a moment.
+line @1 react.news.new : That is news to this #barn#. | Was anyone on the #road# to see it?
+line @1 react.news.known : I heard a little of it beside the #market#. | Your account fills the missing part.
+line @1 react.news.doubt : #hedge#, I want the name of whoever saw it. | A rumour travels faster than a frightened #sheep#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. The #barn# can wait while we talk. | That is a cruel turn; sit down.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Ring the #bells# for that! | I would raise a #cup# to such news.
+line @1 answer.how : The #flock# is sound and I am cheerful enough. | Waiting for the #rain# to admit defeat.
+line @1 answer.how.busy [self.working=yes] : There is more #wool# than daylight. | The #gate# needs mending after I count the #sheep#.
+line @1 ask.how : Has the weather treated you fairly? | Did you get home before the #rain#?
+line @1 sympathise : Let us get out of the #wind# and talk. | I can sit with you until the #bells#.
+line @1 reassure : Even this #storm# must run out of breath. | We can count the #flock# again in daylight.
+line @1 decline : I cannot leave the #sheep# now. | That wager would cost more than I have.
+line @1 accept_decline : Fair enough; I will stop asking. | I shall keep my #cards# to myself.
+line @1 thank : You turned the #flock# before it reached the #road#; thank you. | I owe you a quiet #cup# for that.
+line @1 deflect_thanks : I only held the #gate#. | The #lamb# was ready to follow.
+line @1 preclose : The #flock# needs bringing in. | I must put these #shears# away.
+line @1 tease [pair.band=friends] : I would trust your #cards# more than your weather forecast. | You walk like a #gull# expects supper.
+line @1 ack : #bc_right#. I will count again. | #bc_fair_enough#. You may have that #hand#.
+line @1 give.advice : Face the #sheep# into the #wind# when shearing. | Keep your #cards# dry if you want to win.
+line @1 warn [world.bandits=near] : The #road# is poor company after dusk. | Keep the #coin# tucked inside your #coat#.
+scene quarrel_with_sky
+when topic=weather
+does tell.self / react.self / assess
+a : I ask the #sky# for a dry hour and it sends a #cloud#. | The #wind# and I have disagreed since dawn.
+b : Does it ever listen? | What did you say to it?
+a : Once in a long while. | That the #sheep# deserve better.
+
+scene autumn_wind
+when topic=weather here.season=autumn
+does tell.self / react.self / assess
+a : An autumn #wind# can make the whole #hill# feel awake. | I like it when the #clouds# race but the #rain# stays away.
+b : Does the flock like it? | Do you go walking?
+a : They bunch together. | Along the high #field#.
+
+scene thin_drizzle
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : #drizzle.capitalize# soaks the #wool# without giving us a proper storm. | I tell the #sky# to choose one thing and finish it.
+b : Does it delay shearing? | Does that help?
+a : Wet #fleece# must dry. | Never, but I feel better.
+
+scene gull_argument
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #gull# stole a #berry# from my hand by the #shore#. | I have distrusted their manners since.
+b : Did you chase it? | Are they always bold?
+a : Only until it flew. | Bold enough for both of us.
+
+scene berry_bush
+when topic=food
+does tell.self / react.self / assess
+a : The best #berries# are hidden inside the #bush#, away from the #road#. | I eat one for every handful I carry #home#.
+b : Do you leave any? | Where is the bush?
+a : Plenty for the #birds#. | I would rather keep it a small secret.
+
+scene card_hand
+when topic=pastimes
+does tell.self / react.self / assess
+a : I can read a poor #hand# by how quickly someone looks away. | I keep my #cards# in a dry pocket of the #coat#.
+b : Do you win often? | Who taught you?
+a : Enough to be invited back. | A shepherd with too much spare time.
+
+scene festival_bells
+when topic=festival
+does tell.self / react.self / assess
+a : The #bells# on festival morning reach the far #field#. | I finish the #gate# before following the sound.
+b : Do you dance? | Is the work done first?
+a : If someone asks. | The #sheep# must be safe.
+
+scene sheep_count
+when topic=work
+does tell.self / react.self / assess
+a : I count the #flock# at the #gate# and again at the #barn#. | A missing #lamb# can hide in the #grass#.
+b : Do you know each one? | Have you lost one?
+a : By marks on the #wool#. | Not for long.
+
+scene shearing_blades
+when topic=work
+does tell.self / react.self / assess
+a : I sharpen the #shears# before the first #ewe# is brought in. | Dull blades pull at the #fleece#.
+b : Is it difficult? | Does the sheep mind?
+a : It takes steady #hands#. | Less when the edge is clean.
+
+scene wet_fleece
+when topic=work
+does tell.self / react.self / assess
+a : I spread damp #wool# where air can move through it. | A sealed #bag# of wet #fleece# turns sour quickly.
+b : How long must it dry? | Do you have room?
+a : Until my hand finds no chill. | We use the side of the #barn#.
+
+scene field_gate
+when topic=work
+does tell.self / react.self / assess
+a : A #gate# that swings open in the #wind# is an invitation to the #flock#. | I put my weight against the post before leading them through.
+b : Is the hinge loose? | Can it be fixed?
+a : One pin is worn. | Before the next hard #storm#.
+
+scene old_city_debt
+when topic=memories
+does tell.self / react.self / assess
+a : There is an old #debt# waiting for me in the #city#. | I keep a place in my #ledger# for the sum.
+b : Do you owe much? | Will you go back?
+a : Enough that I remember it. | When I can pay it plainly.
+
+scene city_companion
+when topic=memories
+does tell.self / react.self / assess
+a : I knew someone in the #city# who trusted me with #coin#. | I would rather repay a #friend# than hide in the #field#.
+b : Have you written to them? | Do they know you mean to pay?
+a : I keep the message short. | I hope they do.
+
+scene market_wool
+when topic=prices
+does tell.self / react.self / assess
+a : I weigh the #fleece# before a merchant names a #price#. | A wet bundle should never be sold as dry #wool#.
+b : Do they argue? | Is the price fair?
+a : When the #market# is busy. | Some days it is.
+
+scene bells_after_work
+when topic=festival
+does tell.self / react.self / assess
+a : I hear the #bells# while I am still at the #barn#. | It makes the final #sheep# feel twice as slow.
+b : Do you hurry? | Do you miss the beginning?
+a : I keep my hands steady. | I reach the square in time.
+
+scene shore_cards
+when topic=pastimes
+does tell.self / react.self / assess
+a : We played #cards# by the #lake# until the #wind# took one. | The missing card turned up beneath a boot.
+b : Did the game continue? | Who found it?
+a : With a new deal. | The player who had lost the last #hand#.
+
+scene forecast_wager
+when topic=weather
+does tell.self / react.self / assess
+a : I wagered a #cup# that the #clouds# would clear by noon. | The #rain# waited until the #flock# was inside.
+b : Who won? | Did you predict that?
+a : The other shepherd. | I claimed I had persuaded the #sky#.
+
+story borrowed_coin [topic=memories self.age>=25]
+  : I borrowed #coin# in the #city# when a season of work fell short.
+  : I have kept the sum in my #ledger#, though the lender's name stays with me.
+  ask : Will you repay it?
+  b : That sounds like a heavy thing to carry.
+  : Every #fleece# I sell brings the account closer to closing.
+
+story bell_in_field [topic=festival self.age>=25]
+  : The festival #bells# started while I was bringing in a stubborn #ewe#.
+  : I asked the #wind# to wait and it blew the #gate# shut for me.
+  ask : Did you make the celebration?
+  b : The wind finally helped.
+  : I did, with a muddy #coat# and a good story.
+
+story lost_card [topic=pastimes self.age>=25]
+  : A #card# lifted from our #table# and sailed toward the #lake#.
+  : We chased it past a #bush# full of #berries#.
+  ask : Did you catch it?
+  b : That must have spoiled the hand.
+  : It landed face up. Nobody trusted the next deal.
+
+rule @bark_weather
+when concept=bark
+does aside
+cooldown 8h
+say Make up your mind, #sky#. | That #cloud# has followed me all morning.
+
+rule @bark_flock
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say One more #sheep# through the #gate#. | Where has that #lamb# gone?
+
+rule @bark_bells
+when concept=bark
+does aside
+cooldown 10h
+say I think I heard the #bells#. | Keep the #cards# dry this time.
+
+rule @bark_drizzle
+when concept=bark here.weather=rain
+does aside
+cooldown 12h
+say Proper #rain# or none at all, please. | This #drizzle# is doing the #wool# no favours.
+
+dlg @1 resident.hub : #greet#. The #sky# and I are in the middle of an argument. | #greet#. Come by the #gate# where I can hear you.
+dlg @2 resident.hub [topic.meeting=known] : You have caught me counting the #flock# again. | Back for a #hand# of #cards#?
+dlg @1 resident.job : I shepherd the #flock# at #self.workplace# and help with the #shears#. | I watch the #field#, count the #sheep#, and bring in the #wool#.
+dlg @1 resident.bye : #farewell#. Tell the #sky# I have won. | #saying.capitalize#. I must close the #gate#.
+graft resident.hub
+choice Why argue with the weather? -> weather
+node weather
+say Because it has an answer for everything. I prefer when the #wind# admits I was right.
+free
+choice Do you miss the city? -> city
+choice Back to the flock. -> hub
+node city
+say There is an account I mean to settle there. Until then, the #flock# keeps me busy.
+choice Back to the flock. -> hub
+choice Goodbye. -> bye

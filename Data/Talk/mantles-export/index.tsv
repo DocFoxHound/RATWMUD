@@ -59,6 +59,7 @@ rm103	plain	standard	ready	1	cty_lichen_reedford	claude-p11-pilot
 rm104	plain	standard	ready	1	tn_mb_nab_bogditch	claude-p11-pilot
 rm105	plain	full	ready	1	tn_mb_fell_miremore	claude-codex-cw-1
 rm106	plain	standard	ready	1	cty_vigdis_bilgedale	claude-codex-cw-1
+rm107	plain	standard	ready	1	cty_tobias_ropewell	claude-codex-cw-1
 sm101	southmeadow	standard	ready	1	cty_ada_coalstack	claude-p11-pilot
 sw101	saltwell	full	ready	1	tn_fh_thistle_stonepick	claude-p11-pilot
 sw102	saltwell	full	ready	1	tn_mb_oriel_marshditch	claude-p11-pilot
