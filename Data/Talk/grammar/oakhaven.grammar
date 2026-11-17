@@ -150,6 +150,19 @@ dunno = That's all the leaves said | No more on that branch, mm
 hearsay = Leaf-talk, mm, that's all | It came on the wind
 howso = Slow, now. How so | How's that, mm
 rest = Root deep, and rest | The old oak keep the soul
+# Phase 8, session 2 (doc 84 §33.3): the other owed moves' words, as Oakhaven says them. Drafts, to be tuned by ear.
+funny = Ha, you'll shake my leaves | That's a merry branch, mm
+cheek = Hark at the sapling | Says the acorn
+modest = Slow growth, nothing more | The roots did it, mm
+secret = Down in the roots | Not a whisper in the leaves
+advise = Take it from an old root | Grow it slow, mm
+helpout = Need a branch to lean on | Want an extra paw, mm
+wellsaid = Sound timber, that | That's heartwood sense
+poorshow = That's rotten wood | Dead branch, that
+fine = Still standing, mm | Rooted, as ever
+planless = Slow, as the trees go | Whatever the season says
+pardon = I only said, mm | What I said, old root, was
+tale = That's an old-wood tale | One for under the branches, that
 # Greetings and closings for rules/shared8_turns.talk (plain.grammar's s8_* say who; here, the dialect's own).
 s8_hello = Good shade, old root | Shade on you, mm | Ah, old root | Well, mm, hello
 s8_okay = Mm, go on, then | Slow, now. Off you go | Root well, then | Go on, old root

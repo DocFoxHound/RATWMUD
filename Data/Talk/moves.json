@@ -82,6 +82,7 @@
     "pivot": {"family": "topic", "first": true},
     "change_subject": {"family": "topic", "first": true},
     "return": {"family": "topic", "first": true},
+    "recall": {"family": "topic", "first": true},
     "repair": {"family": "repair", "answers": ["*"], "expects": ["clarify"]},
     "clarify": {"family": "repair", "answers": ["repair"], "fallback": ["ack"]},
     "join.add": {"family": "party", "third_party": true, "expects": ["welcome_join", "ack"], "optional": true},

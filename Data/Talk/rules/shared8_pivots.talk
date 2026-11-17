@@ -1,0 +1,605 @@
+# The shared lines, Phase 8 session 2 (Docs/Design/84 §8.5, §33.1, §33.3): a step along the topic graph said by a line
+# made for it. In a lull the talk may turn along one of topics.json's 109 edges; the engine looks first for a `pivot`
+# move line whose criteria hold for the step (conv.from, the topic it leaves; conv.topic, the one it turns to; the new
+# topic's facts), and says it in front of the new topic's opener, else #pivot# ("Speaking of which."). A turn within the
+# same topic is a step too (conv.from and conv.topic the same).
+#
+# A pivot line is a bridge: it leads from the old topic to the new and leaves the news to the opener after it, so it
+# claims nothing the opener might not bear out ("The road's no better, and nor's the trade on it." then "The Larkfield
+# wagon's late again."). Short, a sentence of its own, never the same bridge twice in a place within the hour (the
+# collision filter judges the whole line).
+
+## From the news: gossip, a deed, the town's news, crime, a newcomer, life
+
+rule s8p_gossip_crime
+does pivot
+when conv.from=gossip conv.topic=crime
+say And that's not the only trouble about. | Talk like that puts me in mind of the Watch. | While we're on folk behaving badly.
+
+rule s8p_gossip_life
+does pivot
+when conv.from=gossip conv.topic=life
+say That's not all the talk, mind. | There's other news about folk, too. | Folk have been busy, one way and another.
+
+rule s8p_gossip_family
+does pivot
+when conv.from=gossip conv.topic=family
+say Other folk's business. Never mind them; what of ours? | That's their trouble. Family's what matters. | Enough of the town. Closer to home.
+
+rule s8p_deed_gossip
+does pivot
+when conv.from=deed conv.topic=gossip
+say That's not all the town's talking of. | Travellers aside, folk here have been at it too. | And there's talk closer to home.
+
+rule s8p_deed_player
+does pivot
+when conv.from=deed conv.topic=player
+say Talking of travellers. | Strangers do get about, don't they. | And there's one of them now, near enough.
+
+rule s8p_news_life
+does pivot
+when conv.from=news conv.topic=life
+say And there's more news than that. | That's the half of it. | Other news, while I think of it.
+
+rule s8p_news_family
+does pivot
+when conv.from=news conv.topic=family
+say News is news. What of your own? | Never mind the town. How's home? | All very well, but family first.
+
+rule s8p_news_work
+does pivot
+when conv.from=news conv.topic=work
+say News doesn't do the work, though. | Still, the work goes on. | And meanwhile there's #work# to be done.
+
+rule s8p_crime_gossip
+does pivot
+when conv.from=crime conv.topic=gossip
+say And that's not the only talk going round. | There's more folk talking than doing. | Folk will talk, and they are.
+
+rule s8p_crime_life
+does pivot
+when conv.from=crime conv.topic=life
+say Not all the news is bad, mind. | Life goes on, for all that. | There's better news than that, at least.
+
+rule s8p_crime_home
+does pivot
+when conv.from=crime conv.topic=home
+say It makes you glad of your own door. | Puts you in mind to bar the shutters. | Makes home seem the safest place.
+
+rule s8p_newcomer_accent
+does pivot
+when conv.from=newcomer conv.topic=accent
+say New folk, new ways of talking. | You can always hear where folk are from. | Talking of where folk hail from.
+
+rule s8p_newcomer_travel
+does pivot
+when conv.from=newcomer conv.topic=travel
+say Folk come from all over, these days. | It's a long way, some of them come. | The roads bring all sorts.
+
+rule s8p_newcomer_gossip
+does pivot
+when conv.from=newcomer conv.topic=gossip
+say New faces get folk talking. | There's more talk than that, mind. | Folk have been gossiping, one way and another.
+
+rule s8p_life_family
+does pivot
+when conv.from=life conv.topic=family
+say Your own come to mind, after that. | That sort of news turns your mind homeward. | Family. It all comes back to family.
+
+rule s8p_life_gossip
+does pivot
+when conv.from=life conv.topic=gossip
+say There's other talk too, mind. | That's the kind news. There's the other sort. | Folk have been talking, besides.
+
+rule s8p_life_news
+does pivot
+when conv.from=life conv.topic=news
+say And while we're on news. | There's more news than that about. | That's not the only word going round.
+
+rule s8p_life_memories
+does pivot
+when conv.from=life conv.topic=memories
+say It takes me back, news like that. | Things come back, with news like that. | That sort of thing brings the old days back.
+
+## From the road, the wagons, the ships, prices, the times, the harvest, a market's event
+
+rule s8p_bandits_caravan
+does pivot
+when conv.from=bandits conv.topic=caravan
+tone serious
+say With the road like that, I wonder about the wagons. | And the carters have to drive through it. | The road's no better, and nor's the trade on it.
+
+rule s8p_bandits_prices
+does pivot
+when conv.from=bandits conv.topic=prices
+say We all pay for it in the end. | You can see it in what things cost. | Trouble on the road, trouble at the till.
+
+rule s8p_bandits_travel
+does pivot
+when conv.from=bandits conv.topic=travel
+say It's enough to keep a wolf home. | Makes you think twice about travelling. | Who'd go anywhere, with that about?
+
+rule s8p_caravan_prices
+does pivot
+when conv.from=caravan conv.topic=prices
+say And whatever the wagons bring, it's dear. | Wagons in, prices up. Or down, if we're lucky. | That's the wagons. Then there's what we pay. | Everything off the wagons has its price. | And the carters want paying too.
+
+rule s8p_caravan_bandits
+does pivot
+when conv.from=caravan conv.topic=bandits
+tone serious
+say Let's hope they keep clear of trouble. | There's danger on that road, mind. | It's a risk, driving out there now.
+
+rule s8p_caravan_travel
+does pivot
+when conv.from=caravan conv.topic=travel
+say The roads keep everyone moving. | I'd not drive those roads for anything. | The road, now.
+
+rule s8p_caravan_work
+does pivot
+when conv.from=caravan conv.topic=work
+say That's work for somebody, at least. | It all makes work, one way or another. | And it's the same with any trade.
+
+rule s8p_prices_caravan
+does pivot
+when conv.from=prices conv.topic=caravan
+say And it all comes in by wagon. | That's the road for you. Which reminds me. | Prices follow the wagons, they say.
+
+rule s8p_prices_times
+does pivot
+when conv.from=prices conv.topic=times
+say It's the times, isn't it. | Everything's dear when times are what they are. | That's how it goes, these days.
+
+rule s8p_prices_harvest
+does pivot
+when conv.from=prices conv.topic=harvest
+say It's the fields that set the price, in the end. | It all comes back to the harvest. | Bread follows the corn.
+
+rule s8p_prices_work
+does pivot
+when conv.from=prices conv.topic=work
+say And wages don't keep up. | You'd think the pay would follow. | It makes the work feel thinner.
+
+rule s8p_prices_food
+does pivot
+when conv.from=prices conv.topic=food
+say It's the belly that feels it. | And a wolf still has to eat. | You can't eat what you can't buy.
+
+rule s8p_cause_prices
+does pivot
+when conv.from=price_cause conv.topic=prices
+say That's the why. Then there's the how much. | And here's what it comes to. | There's more than one price gone, mind.
+
+rule s8p_cause_caravan
+does pivot
+when conv.from=price_cause conv.topic=caravan
+say And the wagons are part of it. | The wagons come into it, too. | That's half of it. The road's the rest.
+
+rule s8p_cause_player
+does pivot
+when conv.from=price_cause conv.topic=player
+say Strangers in town don't help, either. | There's travellers about, buying up. | And there's strangers about, too.
+
+rule s8p_ships_prices
+does pivot
+when conv.from=ships conv.topic=prices
+say Ships mean prices, one way or the other. | What comes off the boats sets the stalls. | And it all ends up on the stalls.
+
+rule s8p_ships_weather
+does pivot
+when conv.from=ships conv.topic=weather
+say It's the weather that rules the sea. | It all hangs on the sky, sailing. | Talking of wind and water.
+
+rule s8p_ships_caravan
+does pivot
+when conv.from=ships conv.topic=caravan
+say Sea or road, it's all carrying. | And then there's the wagons. | What the boats don't bring, the wagons do.
+
+rule s8p_event_prices
+does pivot
+when conv.from=event conv.topic=prices
+say And it'll do nothing for prices. | Everything's dearer on a market day. | Mind your purse, with that going on. | And what it'll cost us. | Busy days mean dear days.
+
+rule s8p_event_festival
+does pivot
+when conv.from=event conv.topic=festival
+tone light
+say And there's the festival besides. | Talking of a day out. | It's all doings this season.
+
+rule s8p_event_food
+does pivot
+when conv.from=event conv.topic=food
+say There'll be food, at least. | Where there's a crowd, there's a pie. | My belly's thinking of the stalls already.
+
+rule s8p_times_prices
+does pivot
+when conv.from=times conv.topic=prices
+say You see it in the price of everything. | And here's what it costs us. | That's the times. Here's the bill.
+
+rule s8p_times_work
+does pivot
+when conv.from=times conv.topic=work
+say And work's no easier. | It's felt at work, I'll tell you. | You see it on the job.
+
+rule s8p_times_home
+does pivot
+when conv.from=times conv.topic=home
+say It's felt at home, most of all. | It all comes home in the end. | You see it round the table.
+
+rule s8p_harvest_land
+does pivot
+when conv.from=harvest conv.topic=land
+say It all comes back to the land. | The fields will have their say. | The land has its say in the end.
+
+rule s8p_harvest_food
+does pivot
+when conv.from=harvest conv.topic=food
+say And that's what's on the table. | The harvest's the supper, really. | Talking of what we eat.
+
+rule s8p_harvest_prices
+does pivot
+when conv.from=harvest conv.topic=prices
+say And you'll see it in the price. | That's bread, and bread's a price. | The market follows the fields.
+
+rule s8p_harvest_weather
+does pivot
+when conv.from=harvest conv.topic=weather
+say It's all down to the sky. | The weather made the harvest, as ever. | And what about this sky?
+
+## From the town's days: a festival, a traveller near, the way folk talk
+
+rule s8p_festival_food
+does pivot
+when conv.from=festival conv.topic=food
+tone light
+say And the food, of course. | There'll be eating, if nothing else. | Talking of feasts.
+
+rule s8p_festival_faith
+does pivot
+when conv.from=festival conv.topic=faith
+say It's a holy day too, mind. | There's the chapel side of it. | The Bright One has a share in it.
+
+rule s8p_festival_pastimes
+does pivot
+when conv.from=festival conv.topic=pastimes
+tone light
+say Music, games, all that. | Talking of a bit of fun. | Any excuse for a frolic.
+
+rule s8p_player_accent
+does pivot
+when conv.from=player conv.topic=accent
+say You can hear where folk are from. | Strangers talk funny, mind. So do we, to them. | Voices, now.
+
+rule s8p_player_travel
+does pivot
+when conv.from=player conv.topic=travel
+say A traveller's come a long way, I'd think. | Travellers make me think of the road. | And the road, of course.
+
+rule s8p_player_gossip
+does pivot
+when conv.from=player conv.topic=gossip
+say Strangers get folk talking. | That's not all the talk, either. | There's other talk about, besides strangers.
+
+rule s8p_accent_travel
+does pivot
+when conv.from=accent conv.topic=travel
+say Talk of where folk are from. | Every voice has a road behind it. | You pick up a voice on the road.
+
+rule s8p_accent_memories
+does pivot
+when conv.from=accent conv.topic=memories
+say It takes me back, hearing that. | The way folk talked when I was small. | Voices bring back the old days.
+
+## From home and everyday life
+
+rule s8p_family_home
+does pivot
+when conv.from=family conv.topic=home
+say And the house, too. | Family and four walls. | Home, now.
+
+rule s8p_family_memories
+does pivot
+when conv.from=family conv.topic=memories
+say It makes you remember. | Family brings the old days back. | That takes me back.
+
+rule s8p_family_health
+does pivot
+when conv.from=family conv.topic=health
+tone tender
+say So long as everyone's well. | That's the main thing: their health. | And how's your health holding?
+
+rule s8p_home_family
+does pivot
+when conv.from=home conv.topic=family
+say And the folk in it. | A house is the folk in it. | Family, now.
+
+rule s8p_home_food
+does pivot
+when conv.from=home conv.topic=food
+say And what's on the table. | And the pot, while I think of it. | Home's where the supper is. | What's a house without a full pot. | And then there's supper.
+
+rule s8p_home_work
+does pivot
+when conv.from=home conv.topic=work
+say It doesn't pay for itself, mind. | And then there's the work that keeps it. | Somebody has to pay for it.
+
+rule s8p_work_prices
+does pivot
+when conv.from=work conv.topic=prices
+say And it's never enough for the price of things. | Wages one way, prices the other. | Talking of coin. | And the pay never stretches. | Wages here, prices there.
+
+rule s8p_work_home
+does pivot
+when conv.from=work conv.topic=home
+say And then home, at the end of it. | Work's work. Home's the reward. | And then home. | Then home to put my feet up. | It's home that keeps me going.
+
+rule s8p_work_health
+does pivot
+when conv.from=work conv.topic=health
+say It takes it out of you, all that. | My back feels the work, I'll say. | Mind it doesn't wear you down. | Work like that wears a body out. | It's my back that pays for it.
+
+rule s8p_work_smalltalk
+does pivot
+when conv.from=work conv.topic=smalltalk
+say But enough of work. | Never mind work. | Work can wait a moment. | Let's not talk shop all day. | Enough of the job, anyway.
+
+rule s8p_weather_work
+does pivot
+when conv.from=weather conv.topic=work
+say Weather or no, the work wants doing. | The work doesn't care what the sky does. | Work, now.
+
+rule s8p_weather_land
+does pivot
+when conv.from=weather conv.topic=land
+say It's the fields that feel it. | The land's at the sky's mercy. | That'll tell on the land.
+
+rule s8p_weather_health
+does pivot
+when conv.from=weather conv.topic=health
+say It gets in your bones, weather like this. | Mind it doesn't give you a chill. | That's how folk get poorly.
+
+rule s8p_weather_season
+does pivot
+when conv.from=weather conv.topic=season
+say It's the time of year, I suppose. | It's the season for it. | And the time of year has its say.
+
+rule s8p_smalltalk_weather
+does pivot
+when conv.from=smalltalk conv.topic=weather
+say And the sky's doing what it likes, as ever. | The sky's had its own say lately. | Then there's the weather.
+
+rule s8p_smalltalk_work
+does pivot
+when conv.from=smalltalk conv.topic=work
+say And work, of course. | And there's work. | Work goes on, mind. | Not that there's time to stand about. | Still, the work won't do itself.
+
+rule s8p_smalltalk_food
+does pivot
+when conv.from=smalltalk conv.topic=food
+say My belly's been thinking. | Which puts me in mind of supper. | I could eat, now you mention it. | My belly's been talking to me all morning. | Not to change the subject, but food.
+
+rule s8p_smalltalk_pastimes
+does pivot
+when conv.from=smalltalk conv.topic=pastimes
+say What do you do with yourself, after? | Which brings me to idle hours. | There's more to life than work. | And when there's time to spare. | Not that there's much spare time.
+
+rule s8p_food_prices
+does pivot
+when conv.from=food conv.topic=prices
+say If you can afford it, that is. | And the price of it, these days. | And what it all costs.
+
+rule s8p_food_home
+does pivot
+when conv.from=food conv.topic=home
+say Nothing like your own table. | Talking of home cooking. | Food tastes best at home.
+
+rule s8p_food_health
+does pivot
+when conv.from=food conv.topic=health
+say Good food keeps you well. | You are what you eat, they say. | Health's the main thing, mind. | Eat right and you'll stay right, they say. | A good belly keeps a body well.
+
+rule s8p_pastimes_animals
+does pivot
+when conv.from=pastimes conv.topic=animals
+say Which brings me to beasts. | Some folk's pastime is their beasts. | And then there's the animals. | Some folk's pastime is their beasts, mind. | And beasts are a pastime of a kind.
+
+rule s8p_pastimes_friends
+does pivot
+when conv.from=pastimes conv.topic=friends
+say It's better in company. | It's the company that makes it, mind. | Everything's better with a friend along.
+
+rule s8p_pastimes_smalltalk
+does pivot
+when conv.from=pastimes conv.topic=smalltalk
+say Anyway, it passes the time. | That's my idle hours. And yours? | Each to their own, I say.
+
+rule s8p_animals_land
+does pivot
+when conv.from=animals conv.topic=land
+say And the land they live off. | Out in the fields, it's the same. | Beasts and land go together. | Beasts need grazing, after all. | And what they graze on.
+
+rule s8p_animals_pastimes
+does pivot
+when conv.from=animals conv.topic=pastimes
+say Beasts are a pastime of their own. | Beasts are fun, mind, some of them. | It passes the time, all that. | Some of us keep beasts for the fun of it. | Beasts fill an idle hour.
+
+rule s8p_health_food
+does pivot
+when conv.from=health conv.topic=food
+say A good meal mends most things. | Eating well's half the cure. | And feeding yourself is half of it.
+
+rule s8p_health_faith
+does pivot
+when conv.from=health conv.topic=faith
+say A prayer can't hurt. | The Bright One looks after the sick, they say. | The chapel's good for that, too.
+
+rule s8p_health_family
+does pivot
+when conv.from=health conv.topic=family
+tone tender
+say It makes you think of your own. | Family matters most when you're poorly. | And then there's family.
+
+rule s8p_memories_family
+does pivot
+when conv.from=memories conv.topic=family
+say Family's where the memories are. | That brings my own to mind. | Closer to home, there's family.
+
+rule s8p_memories_lore
+does pivot
+when conv.from=memories conv.topic=lore
+say There's an old tale like that. | That's how the old stories start. | There's an old tale in that, too. | Old days, old tales. | The old ones told stories like that.
+
+rule s8p_memories_dreams
+does pivot
+when conv.from=memories conv.topic=dreams
+say Funny, the things that come back at night. | I dream about those days sometimes. | And the things we dream.
+
+rule s8p_lore_memories
+does pivot
+when conv.from=lore conv.topic=memories
+say It brings it all back. | I heard it first when I was small. | Old tales bring old days.
+
+rule s8p_lore_faith
+does pivot
+when conv.from=lore conv.topic=faith
+say The chapel has its own tales. | That's half a sermon, that. | And the gods, of course. | The old tales and the chapel aren't far apart. | There's faith in the old stories.
+
+rule s8p_lore_dreams
+does pivot
+when conv.from=lore conv.topic=dreams
+say That's the stuff of dreams. | Tales like that stay with you at night. | The night has its own tales.
+
+rule s8p_dreams_faith
+does pivot
+when conv.from=dreams conv.topic=faith
+say Some say dreams are sent. | The priest would have a word for it. | The chapel would say the same. | The chapel would make something of that. | Dreams and prayers aren't so far apart.
+
+rule s8p_dreams_memories
+does pivot
+when conv.from=dreams conv.topic=memories
+say Dreams are only memories, mixed up. | It's the old days I dream of. | That's a long way back.
+
+rule s8p_faith_festival
+does pivot
+when conv.from=faith conv.topic=festival
+say And there's a holy day coming. | The chapel's busy, festival time. | And a feast day coming.
+
+rule s8p_faith_dreams
+does pivot
+when conv.from=faith conv.topic=dreams
+say And what the night brings. | The priest says dreams are a kind of prayer. | Dreams are another matter. | The night has its own prayers. | And the night has its own messages.
+
+rule s8p_faith_health
+does pivot
+when conv.from=faith conv.topic=health
+say We pray for the sick, don't we. | Health is a blessing, the priest says. | Keeping well's the trick of it. | Prayer for the soul, rest for the body. | The Bright One keeps us well, the priest says.
+
+rule s8p_friends_smalltalk
+does pivot
+when conv.from=friends conv.topic=smalltalk
+say Anyway. How's things? | But listen to me. | Never mind all that.
+
+rule s8p_friends_pastimes
+does pivot
+when conv.from=friends conv.topic=pastimes
+say We should do something, one of these days. | Talking of what we get up to. | All the more reason for a bit of fun.
+
+rule s8p_friends_memories
+does pivot
+when conv.from=friends conv.topic=memories
+say We've known each other a while, haven't we. | Remember when we were young and daft? | Now there's a thing from years ago. | We go back a long way, you and I. | Funny, the years.
+
+rule s8p_day_weather
+does pivot
+when conv.from=day conv.topic=weather
+say And look at the sky. | The day's what the sky makes it. | Then there's the weather, as ever.
+
+rule s8p_day_work
+does pivot
+when conv.from=day conv.topic=work
+say And the work, of course. | It's the work that fills the day. | Talking of the day's work.
+
+rule s8p_day_smalltalk
+does pivot
+when conv.from=day conv.topic=smalltalk
+say Anyway. | So, what's new? | Never mind the day.
+
+rule s8p_travel_caravan
+does pivot
+when conv.from=travel conv.topic=caravan
+say And the wagons go the same roads. | Carts are on the road too, mind. | The road's busy with carts. | The wagons know those roads best. | Carters see more road than anyone.
+
+rule s8p_travel_accent
+does pivot
+when conv.from=travel conv.topic=accent
+say You come back talking differently. | You hear all sorts on the road. | And the way folk speak.
+
+rule s8p_travel_weather
+does pivot
+when conv.from=travel conv.topic=weather
+say It all depends on the weather. | Rain makes a road twice as long. | The sky has its say on the road.
+
+rule s8p_land_weather
+does pivot
+when conv.from=land conv.topic=weather
+say It all hangs on the sky. | The land answers to the weather. | As for the weather.
+
+rule s8p_land_harvest
+does pivot
+when conv.from=land conv.topic=harvest
+say And what it gives us at harvest. | That's the harvest, in the end. | And there's the harvest to think of.
+
+rule s8p_land_animals
+does pivot
+when conv.from=land conv.topic=animals
+say And the beasts on it. | And the stock on it. | Land and beasts, it's all one. | Fields want beasts, and beasts want fields. | What grazes it matters too.
+
+rule s8p_season_weather
+does pivot
+when conv.from=season conv.topic=weather
+say And the weather to go with it. | It's what the sky does this time of year. | Not that the weather helps.
+
+rule s8p_season_festival
+does pivot
+when conv.from=season conv.topic=festival
+tone light
+say There's a feast day coming. | Every season has its festival. | Feast days, now.
+
+rule s8p_season_land
+does pivot
+when conv.from=season conv.topic=land
+say The land knows the season before we do. | It's a busy time for the fields. | And the fields, of course.
+
+## A turn within the same topic (an item of the same kind: another price, another wagon, another wolf's news)
+
+rule s8p_same_gossip
+does pivot
+when conv.from=gossip conv.topic=gossip
+say And that's not all I've heard. | There's more, mind. | That's not the only tale going.
+
+rule s8p_same_prices
+does pivot
+when conv.from=prices conv.topic=prices
+say And it's not just that. | There's more gone up than that. | And while we're counting. | Then there's the rest of the list. | And another thing gone dear.
+
+rule s8p_same_caravan
+does pivot
+when conv.from=caravan conv.topic=caravan
+say And that's not the only wagon. | There's another, besides. | Then there's the other road.
+
+rule s8p_same_ships
+does pivot
+when conv.from=ships conv.topic=ships
+say And that's not the only ship. | Another boat, while we're at it. | There's more sails than one.
+
+rule s8p_same_crime
+does pivot
+when conv.from=crime conv.topic=crime
+tone serious
+say And that's not the only one. | There's been more than that. | It doesn't stop there, either. | There's been other trouble, too. | And it's not the first this week.
+
+rule s8p_same_life
+does pivot
+when conv.from=life|news conv.topic=life|news
+weight 0.4
+say And there's more news besides. | That's not all, either. | Other news, too.

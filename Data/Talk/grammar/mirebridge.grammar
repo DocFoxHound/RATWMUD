@@ -152,6 +152,19 @@ dunno = That's all the reeds told me | No more under that mud
 hearsay = The reeds had it, is all | Fen-talk, mind
 howso = Muddy, that. How so | How's that, fen-friend
 rest = Dry rest to the soul | The fen hold the soul gently
+# Phase 8, session 2 (doc 84 §33.3): the other owed moves' words, as Mirebridge says them. Drafts, to be tuned by ear.
+funny = Ha, I'm in up to my knees | That's a good eel of a joke
+cheek = Hark at the tadpole | Says the wet-foot
+modest = Only dry luck | The fen gave it up
+secret = Sunk in the mud | Not a word past the reeds
+advise = Take it from an old wader | Wade it this way, fen-friend
+helpout = Need a pole | Want a paw across
+wellsaid = Dry thinking, that | That's firm ground
+poorshow = That's sinking ground | Boggy work, that
+fine = Keeping my feet dry | Above the water
+planless = Wherever the boards go | See how the water rises
+pardon = I only said, fen-friend | What I said was
+tale = That's a tale from the fens | One for a misty night, that
 # Greetings and closings for rules/shared8_turns.talk (plain.grammar's s8_* say who; here, the dialect's own).
 s8_hello = Dry feet, fen-friend | Ah, dry feet | Well met, fen-friend | In from the mizzle
 s8_okay = Wade on, then | Go on, fen-friend | The reeds won't wait | Off through the mud

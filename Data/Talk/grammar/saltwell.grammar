@@ -175,6 +175,19 @@ dunno = That is all the well gave me | No more water in that bucket
 hearsay = Caravan-talk, no more | The road brought it to me
 howso = Tell it slowly, my friend | How so, my friend
 rest = May the well remember the name | Peace on the one gone
+# Phase 8, session 2 (doc 84 §33.3): the other owed moves' words, as Saltwell says them. Drafts, to be tuned by ear.
+funny = You have a quick tongue, my friend | That is a fine jest
+cheek = Hear the little sand-flea | Says the one with sand in the ears
+modest = The well gives, not I | It was the stars, not me
+secret = Buried in the sand | It stays in the shade with me
+advise = If you will hear me, my friend | Take it from the old caravans
+helpout = May I carry some of it | Let me share the load
+wellsaid = That is wise as water | Spoken like an elder of the well
+poorshow = That is bitter water | That is a dry well indeed
+fine = Well, by the well's grace | In the shade, thank you
+planless = As the stars allow | What the day brings, I will take
+pardon = I said, my friend | What I said was
+tale = That is a tale for the cool of evening | One for the fire under the stars
 # Greetings and closings for rules/shared8_turns.talk (plain.grammar's s8_* say who; here, the dialect's own).
 s8_hello = Peace on you | Be welcome, friend | Water and shade | Welcome, truly
 s8_okay = Go in peace, then | As you must | The sun moves | Truly, go

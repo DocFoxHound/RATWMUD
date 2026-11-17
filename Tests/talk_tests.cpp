@@ -2606,6 +2606,153 @@ void opinionsMoodsAccent()
     }
 }
 
+void sharedLinesTwo()
+{
+    // Doc 84 §33.3 (Phase 8, session 2): a step along the graph said by a line made for it (a `pivot` move line, conv.from
+    // the topic it leaves), else #pivot#; a word in the opener's breath that the two were on this lately (a `recall`
+    // line, half the time one holds), a callback; and an everyday view or pushback left unsaid once one of the realm's
+    // issues is aired.
+    std::string problem;
+    auto lib = foundation();
+    expect(lib.parse(R"(
+rule s2_open_prices
+when concept=talk.prices
+does tell.complaint
+say Herbs are dear again.
+rule s2_agree
+does react.complaint
+say They are that.
+rule s2_open_caravan
+when concept=talk.caravan
+does tell.news
+say The wagon from #topic.where# is late.
+rule s2_react_news
+does react.news
+say Is it now.
+rule s2_bye
+does farewell
+say Farewell.
+rule s2_bye_back
+does farewell.return
+say And you.
+rule s2_step
+does pivot
+when conv.from=prices conv.topic=caravan
+say And it all comes in by wagon.
+rule s2_step_wrong
+does pivot
+when conv.from=weather conv.topic=caravan
+say Weather or no, the wagons.
+rule s2_recall
+does recall
+when conv.topic=prices pair.talked.prices<3
+say Prices again. It's all anyone talks of.
+rule s2_view
+does give.opinion
+say Somebody's doing well out of it.
+rule s2_stance
+does give.opinion
+when conv.issue=merchants self.stance=against
+say The merchants never go short.
+)", "shared2.talk", problem), problem);
+    const Freshness fresh{None, {}};
+    const auto base = [&] {
+        auto q = moment("talk.prices");
+        q.facts["topic.cause"] = "caravan";
+        for (auto* s : {&q.a, &q.b})
+            s->facts["talk"] = "chatty";
+        return q;
+    };
+    const auto talk = [&](Conversation& c, const Query& q) {
+        std::vector<SaidLine> said;
+        if (auto first = lib.begin(c, q, fresh))
+            said.push_back(*first);
+        for (int i = 0; i < 20; ++i)
+            if (auto line = lib.next(c, [&](int, int) { return q; }, fresh))
+                said.push_back(*line);
+            else
+                break;
+        return said;
+    };
+    // 1. The pivot from prices to the caravan is said by the line made for that step, in front of the new opener.
+    {
+        AgendaItem i;
+        i.kind = "news";
+        i.topic = "caravan";
+        i.claim = "caravan";
+        i.concept = "talk.caravan";
+        i.facts = {{"topic.where", "Coldwater"}};
+        i.urgency = 1.6;
+        i.index = 4;
+        const auto q = base();
+        Conversation c;
+        c.seed = 3;
+        c.agenda = {{i}, {}};
+        const auto said = talk(c, q);
+        const auto turned = std::find_if(said.begin(), said.end(), [](const SaidLine& l) {
+            return !l.moves.empty() && l.moves.front() == "pivot";
+        });
+        expect(turned != said.end() && turned->text == "And it all comes in by wagon. The wagon from Coldwater is late.",
+               "the step's own line before the opener: " + (turned == said.end() ? std::string("(no pivot)") : turned->text));
+        expect(std::none_of(said.begin(), said.end(), [](const SaidLine& l) { return l.text.find("Weather or no") != std::string::npos; }),
+               "never another step's line");
+    }
+    // 2. Recall: with the two on prices two days ago, the opener sometimes says so in its breath, and is a callback;
+    // never when they haven't talked of it.
+    {
+        int recalled = 0, plain = 0;
+        for (std::uint64_t seed = 1; seed <= 40; ++seed)
+        {
+            auto q = base();
+            q.facts["pair.talked.prices"] = "2.00";
+            q.facts["pair.last_talk"] = "2.00";
+            Conversation c;
+            c.seed = seed;
+            const auto said = talk(c, q);
+            if (said.empty())
+                continue;
+            if (said.front().text.rfind("Prices again. It's all anyone talks of. ", 0) == 0)
+            {
+                ++recalled;
+                expect(said.front().moves.front() == "recall" && said.front().callback, "a recall leads the opener, a callback");
+            }
+            else if (said.front().text.find("Prices again") == std::string::npos)
+                ++plain;
+        }
+        expect(recalled >= 8 && plain >= 8, "recalled about half the time: " + std::to_string(recalled) + " of 40");
+        auto q = base();
+        Conversation c;
+        c.seed = 5;
+        const auto said = talk(c, q);
+        expect(!said.empty() && said.front().text.find("Prices again") == std::string::npos, "no recall without the ledger");
+    }
+    // 3. Once an issue is aired, the everyday view is left unsaid; the stance line, written for it, isn't.
+    {
+        auto q = base();
+        Conversation c;
+        c.seed = 9;
+        c.people = {"maren", "ivo"};
+        c.conv["issue"] = "merchants";
+        q.facts["conv.issue"] = "merchants";
+        q.a.facts["stance"] = "against";
+        q.b.facts["stance"] = "against";
+        Conversation::Open o;
+        o.moves = {"give.opinion"};
+        bool everyday = false;
+        for (int k = 0; k < 30; ++k)
+        {
+            c.seed = std::uint64_t(k + 1);
+            const auto s = lib.answer(c, o, q, 0, fresh, nullptr);
+            everyday = everyday || (!s.info.empty() && s.info.front().text == "Somebody's doing well out of it.");
+        }
+        expect(!everyday, "an everyday view is left unsaid in an issue's talk");
+        c.conv.erase("issue");
+        q.facts.erase("conv.issue");
+        const auto s = lib.answer(c, o, q, 0, fresh, nullptr);
+        expect(!s.info.empty() && s.info.front().text == "Somebody's doing well out of it.", "and said where none is");
+    }
+}
+
 int main()
 {
     try
@@ -2629,6 +2776,7 @@ int main()
         beatsWhenSpoken();
         agendasAndGoals();
         opinionsMoodsAccent();
+        sharedLinesTwo();
     }
     catch (const std::exception& error)
     {

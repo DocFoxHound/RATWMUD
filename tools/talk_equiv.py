@@ -53,6 +53,8 @@ EDITED = {
                     '#topic.them#. Surely not." now',
     'n7_ga2_death_devout': '"May they find their rest" and "keep them" of one wolf: #topic.they#, #topic.them# now',
     'n7_ga2_death_cold': '"I hardly knew them" of one wolf: #topic.them# now',
+    'e5_been_old_broad': '"For a funeral. Didn\'t care for it." was laughed at by tale.react\'s merry answer (C4, the hard gate, '
+                         'frozen L10 at Phase 8 session 2, reached by a new pivot): "For a wedding." now, the dry joke kept',
 }
 DISCOURSE = {'hedge', 'account', 'ack', 'pivot', 'anyway', 'later', 'resume', 'preclose', 'excuse', 'knew', 'sympathy',
              'concede', 'insist', 'warn', 'welcome_back', 'welcome', 'sorry', 'forgive', 'deflect', 'no_matter',

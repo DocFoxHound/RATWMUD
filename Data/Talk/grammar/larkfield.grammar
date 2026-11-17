@@ -156,6 +156,19 @@ dunno = That's the full weight of it | That's all I've got on the scales
 hearsay = Stall-talk, that's all | It came to me across the stalls
 howso = Weigh it out for me | How's that weigh, then
 rest = The scales are even now | Fair weighing to the soul
+# Phase 8, session 2 (doc 84 §33.3): the other owed moves' words, as Larkfield says them. Drafts, to be tuned by ear.
+funny = That's worth a penny of anyone's | Ha, that's sold me
+cheek = Hark at the haggler | Says the short-weigher
+modest = Only a fair bargain | Luck at the scales, that's all
+secret = Locked in the strongbox | Not a word at market
+advise = Take it from a trader | Weigh it this way, friend
+helpout = Need a hand at the stall | Want me to weigh in
+wellsaid = Good value, that | That weighs right
+poorshow = That's short weight | Poor goods, that
+fine = Trading fair | Holding my price
+planless = Whatever the market gives | Buy, sell, same as ever
+pardon = I only said, friend | What I said was
+tale = That's a tale worth the telling | One for market day, that
 # Greetings and closings for rules/shared8_turns.talk (plain.grammar's s8_* say who; here, the dialect's own).
 s8_hello = Good trade to you | Fair price, friend | Ah, a customer | Well met at market
 s8_okay = Sold. Go on | Off to the stalls | Trade waits for nobody | Off you trade, then

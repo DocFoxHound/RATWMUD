@@ -729,8 +729,9 @@ std::optional<talk::SaidLine> Game::joiners(AmbientTalk& t, const talk::Freshnes
             static const std::set<std::string> Close{"friends", "family", "spouses", "housemates"};
             const auto voice = npcVoice_.find(e->id);
             const bool chatty = voice != npcVoice_.end() && voice->second.traits.count("talk") && voice->second.traits.at("talk") == "chatty";
+            // (Phase 8: one close to both may cut in with a tease as well, §8.9's join.tease.)
             if (chatty && Close.count(world_.pairBand(e->id, a->id)) && Close.count(world_.pairBand(e->id, b->id)))
-                c.stake = "friends", c.moves = {"join.add"};
+                c.stake = "friends", c.moves = {"join.add", "join.tease"};
             // One who likes to talk, on their favourite topic, who knows both (Phase 5: topics.json's favourites).
             else if (const auto favs = chatty ? talkFavourites(e->id) : std::vector<std::string>{};
                      !t.conv.topics.empty() && std::find(favs.begin(), favs.end(), t.conv.topics.back()) != favs.end() &&

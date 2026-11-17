@@ -5,8 +5,8 @@ mantles as world database rows, the richer size written by Claude agents, newbor
 realm-wide, ticking listening runs), for Ridgemere 3 (`ridgemere3`, database `ratw_ridgemere3`; doc 82). **Phase 0 (the
 instrument), Phase 1 (truth fixes), Phase 2 (moves and tags), Phase 3 (the turn engine), Phase 4 (beats when spoken,
 knowledge, a third voice), Phase 5 (topics, agendas, goals, the ledger), Phase 6 (opinions, temperament, moods,
-accommodation) and Phase 7 (converting the library; coverage) are built**, and Phase 8 (the shared lines) is in
-its first of three sessions (2026-11-16, branches `r3-talk-p0` to `r3-talk-p8`; §23, §24, §27-§33 say what and what they
+accommodation) and Phase 7 (converting the library; coverage) are built**, and Phase 8 (the shared lines) has had
+two of its three sessions (2026-11-16, branches `r3-talk-p0` to `r3-talk-p8`; §23, §24, §27-§33 say what and what they
 measured); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
 replaces neither: every one of today's 8,525 library entries and 10 trees keeps loading and speaking while it is
 converted. It was written from five read-only surveys of the code, the data and the live world at `ridgemere2` 1034c1fc
@@ -3273,7 +3273,7 @@ cells) are the gate's real work, and the rest of §14.1 is the variety the gate 
 | Session | Moves, topics, dialects | Rules, about | Measured by |
 |---|---|---|---|
 | **1** (this) | **The core moves, deep**: react.news (new, sorrow, glad, doubt, glee) for every news topic and claim kind, by band, stage and temperament; react.complaint (agree, disagree) for every topic that carries a grumble; **ask.detail and answer.detail as pairs**, per topic, true to the topic's facts; and the openings and closings that were thin (greet.return had one line; pups' and the night's farewells are the most-said lines of all). New discourse symbols for them in all eight grammars (`marvel`, `pity`, `gladnews`, `uneasy`, `grumble`, `notsobad`, `dunno`, `hearsay`, `howso`, `rest`). Ridgemere 3's `live.dialects` brought up to the files (below). | 650 planned; **265 built**, with 209 grammar lines (779 alternatives) that say who says it (§33.2) | core holes 0; the card |
-| **2** | **The other owed moves**: the 30 with no move line and the thin ones (react.self and its variants, react.story, laugh, assess, congratulate, thank, praise and deflect_praise, tease, tease.return, tease.laugh, take_offence, counter, give.opinion and give.advice everywhere, offer, accept, refuse, grant, answer.how, answer.plan, answer.whereabouts, answer.check_in, keep_confidence, repair and clarify, extend, decline_apology), about 480; then the moves nothing owes: **pivots for topics.json's 109 edges** (a line made for each edge where `#pivot#` alone reads thin, about 150), joins by stake (60), breaks and returns (40), callbacks on the ledger's facts (80). Every dialect through symbols, a few more where a move needs its own word. | 950 (850, and a share of session 1's) | the hole rate under 10%; C9; C5 stays 0 |
+| **2** | **The other owed moves**: the 30 with no move line and the thin ones (react.self and its variants, react.story, laugh, assess, congratulate, thank, praise and deflect_praise, tease, tease.return, tease.laugh, take_offence, counter, give.opinion and give.advice everywhere, offer, accept, refuse, grant, answer.how, answer.plan, answer.whereabouts, answer.check_in, keep_confidence, repair and clarify, extend, decline_apology), about 480; then the moves nothing owes: **pivots for topics.json's 109 edges** (a line made for each edge where `#pivot#` alone reads thin, about 150), joins by stake (60), breaks and returns (40), callbacks on the ledger's facts (80). Every dialect through symbols, a few more where a move needs its own word. | 950 (850, and a share of session 1's); **515 built**, with 94 grammar lines (392 alternatives) that say who says it and the words they say it with (§33.3) | the hole rate under 10%; C9; C5 stays 0 |
 | **3** | **The thin topics** (§14.1): gossip 70→250, event 49→150, news 43→150, newcomer 52→120, harvest and ships 11→60 each, deed 21→80, accent 26→60, times 21→60: openers and their answers, gated to the facts (claims.json's kinds, `topic.kind`, the towns' trades); the scene turns whose alternatives differ in kind (2,792 of 12,113: a question beside statements) given moves of their own or split; dialect variants (§10.5) for the most-spoken shared lines where one is natural; then the phase's gate on the whole. | 700 (600, and the rest of session 1's) | the phase gate; K1-K3 hold; R4, R6 |
 
 Every session: the new rules in `Data/Talk/rules/shared8_*.talk`, move lines (no concept) unless a topic's opener is
@@ -3431,3 +3431,156 @@ servers.
 - The 30 moves with no move line (assess, react.self, react.story, laugh, tease and its answers, take_offence, counter,
   give.opinion and give.advice everywhere, offer, accept, refuse, grant, the other answers, keep_confidence, clarify,
   extend, praise, deflect_praise...) are session 2's (§33.1), with the pivots, joins, breaks, returns and callbacks.
+
+### 33.3 Phase 8 (session 2 of 3), as built (2026-11-16)
+
+**Every owed move is answered everywhere.** `talk_check --coverage`: the 25 moves with no move line and the two held in
+part (answer.how, decline_apology) are written, so the whole matrix is 555,264 → **0 holes of 1,188,000** (46.7% →
+0%: session 2's measure was under 10%). `Tests/fixtures/talk_coverage.json` is blessed at 0, so no move may gain a
+hole again; `artifacts/talk/coverage-p8s2.md` and `.json` are the listing.
+
+**What was written** (`Data/Talk/rules/shared8_*.talk`, **515 rules, 1,857 alternatives**; move lines but for the
+callbacks' openers, §33.1):
+- `shared8_react.talk` (87): react.self by the move before it (a boast is glad news, answer.how.poorly isn't), its tone
+  (light, or serious, tender, grave) and its topic, with the glad, sorry and wry variants; react.story for tales,
+  memories (by who remembers: `s8_memory`), lore told gravely; laugh, never at what was said gravely
+  (`conv.tone!=serious|grave|tender`); assess, good and bad, by the move (advice, an opinion, a complaint) and the
+  topic (a theft, a death, a wedding, prices up and down, the times, the road), never glad of ill news.
+- `shared8_social.talk` (60): tease (at a boast, a view, oneself, by topic; strangers never, the frames'), tease.return,
+  tease.laugh, take_offence (seldom: weight 0.15-0.3, six words or a hedge), counter (weight 0.25-0.5), praise,
+  deflect_praise, thank by what it thanks (a warning, advice, comfort, praise, a favour, a secret kept, an offer),
+  keep_confidence, congratulate (a boast, a plan, by topic, to a pup).
+- `shared8_offers.talk` (70): offer (help, a hand, company: what a talk can give), accept, refuse (softened and
+  explained), grant, give.advice by topic and by the asker's trade and state (hungry first, a pup, a plan), give.opinion
+  on the everyday run of things by topic (never a claim, never of the subject of gossip but of the deed), and agree by
+  topic, weighted over the rest so a view is mostly met with a nod.
+- `shared8_answers.talk` (61): answer.how and its variants true to the speaker's own facts (well only where nothing ails
+  them; hungry, hurt, low, sore, robbed, homeless, busy at work, grieving in mourning, bright with a pup born, a wedding,
+  a good trade; else the deflections), answer.plan by the hour, the shift, Restday, a festival, the stage and the trade
+  (fourteen trades), answer.whereabouts that fits both "where've you been?" and "where are you off to?",
+  answer.check_in, clarify, extend (seldom, its moment the grammar's `s8_extend`: love to a friend's house, the ice,
+  the rain, the dark, the road, the festival) and decline_apology (seldom).
+- `shared8_pivots.talk` (115): a line for every one of topics.json's 109 edges and the commonest turns within a topic
+  (another price, wagon, ship, crime, piece of news), each a bridge from the old topic to the new that claims nothing
+  the opener after it might not bear out ("And it all comes in by wagon." then "The Larkfield wagon's late."), 3-5
+  ways each, the most-heard edges more.
+- `shared8_joins.talk` (67): joins by stake and topic (a friend of both who likes to talk, on food, work, prices,
+  gossip, the road, the wagons, a festival, the market's doings, faith; a favourite topic's chatty wolf, on pastimes,
+  beasts, small talk, food, health, travel), join.tease, one who deals in the goods, a witness (who says they were by,
+  never an eyewitness's "I saw it": nobody's sight is claimed the game didn't give them), the one talked of (never a
+  denial of a true claim: nobody lies in this build, §8.6) and their kin and friends (who may deny it as they believe
+  it), the welcome by stake (`s8_welcome`); breaks by what broke the talk, where and when (rain where they stand in
+  the open, a storm, a fight in a tavern or a market, a guard's duty, a customer at the window, a pup's "Rain! Run!");
+  returns on the topic left unfinished.
+- `shared8_callbacks.talk` (55): the two were on this lately, or how it went (below); long-missed friends' openers
+  (`pair.last_talk>=7`, owing answer.whereabouts or answer.check_in); an invitation kept or missed; kin's first words
+  of the day (kin.open, which had no line: "Mum.", "There's my pup.", "There you are, love."; after they've been apart
+  a while, never again the same day, by the hour).
+
+**Who says it: the grammar's** (§33.2's rule, kept). 94 new plain.grammar lines (392 alternatives): twelve discourse
+words in all eight grammars (`funny`, `cheek`, `modest`, `secret`, `advise`, `helpout`, `wellsaid`, `poorshow`, `fine`,
+`planless`, `pardon`, `tale`; 84 dialect lines, 168 alternatives: Coldwater's "Not a ripple from me", Frosthollow's
+"Take it from an old pick", Larkfield's "That weighs right", Mirebridge's "Says the wet-foot", Oakhaven's "Hark at the
+sapling", Southmeadow's "Sound as a sheaf", Saltwell's "That is wise as water") and plain's who-says-it symbols
+`s8_self`, `s8_laugh`, `s8_teaseback`, `s8_thanks`, `s8_praise`, `s8_modest`, `s8_sure`, `s8_fine`, `s8_story`,
+`s8_memory`, `s8_extend`, `s8_welcome` (a pup laughs "Hee!", a dry wolf "Very droll.", an old one "Creaking, but
+here."; to a pup, "Clever pup!"). A rule that must weigh little (an extend, a welcome by stake) says a symbol and keeps
+no criteria of its own, so it never outranks the line it stands beside: the first smoke run made "Oh, and give my love
+at home." 57 of 20,000 lines from a rule gated to friends (§8.2's tiers), and the favourite's welcome 124.
+Ridgemere 3's `live.dialects` were brought up to the files again (`tools/talk_seed.py --only dialects`, the rows dumped
+first: `Saved/Backups/ratw_ridgemere3-dialects-20261116-193715.sql`); Saltwell's grammar is 16,620 characters of the
+column's 20,000.
+
+**The engine** (`Core/RatwTalk.cpp`, `Core/RatwGameAmbient.cpp`):
+- **A pivot's own line** (§8.5: "said by a line made for that edge or through #pivot#"). In a lull's turn along the
+  graph, `Library::lull` asks first for a `pivot` move line whose criteria hold with `conv.from` (new in facts.json:
+  the topic it leaves) and the new topic's facts, and says it in front of the opener (the collision filter judging the
+  whole line), else `#pivot#` as before.
+- **Recall, a callback in the opener's breath** (§8.7). A new move, `recall` (moves.json, family topic): in
+  `Library::preface`, when no thread is returned to, the ledger has the pair on the talk's topic (`pair.talked.<topic>`)
+  or their last talk was broken off, half the time, a `recall` line that holds is said before the opener ("Every
+  time we meet, it's money. Twenty-seven pence the dozen, still. You'd think it'd have come down by now."), and a prefaced line that stands on the
+  ledger is a callback (`SaidLine::callback`, C9). The callbacks first written as topic openers replaced the topic's
+  own opener with talk about talk ("Beasts again. We're a pair.") and were heard 15-18 times in 30 hours; as a preface
+  the opener keeps its news.
+- **Joins by topic.** `Library::join` gives the joiner's line the talk's topic (`conv.topic`), which it lacked: the
+  topic's joins never held in the first smoke run. A friend of both who likes to talk may cut in with a tease
+  (`Game::joiners`: the friends stake asks join.add or join.tease, §8.9's).
+- **No everyday view against a stance.** Once one of the realm's issues is aired (`conv.issue`), a move line's
+  give.opinion or counter that reads no issue, agreement or stance is left unsaid, and so is an everyday tease or piece
+  of advice said straight back to a stance line: the shared lines' views ("The Watch should look sharper.") never
+  speak against a speaker's own side (T4), and "Don't pay the first price asked." no longer answers a view on the dole.
+
+**Truth.** Laughs gated by tone; how one is, by one's own facts; plans by one's own shift and trade; "lately", not "last
+time", where the ledger says only that the two talked of a topic; every recall names the topic it's gated to (the first
+run's "Here we are on pastimes again." on friends); no "Talking of X." bridges where X is the topic turned to (19
+rewritten); pronouns by `#topic.them#`/`#topic.their#`, no "they" for one known wolf ("I miss them." for the mourned was
+cut); a festival join only on a festival (one answered drovers in the yard). `talk_lint` 33 findings, none new;
+`dialect_check` 0 failures (three of the new lines and two dialect words collided with other dialects' lexicons and
+were rewritten); `talk_migrate --write` turned the session's word-for-word backchannels into their symbols.
+
+**The scorecard** (`artifacts/talk/runs/p8s2`, every profile in both modes over P0's fixture, pinned to build 81, with Ridgemere 3's rows speaking the files' dialects; run three times: the first two found what is fixed above and the clash below, and the frozen profiles were run a fourth time after that fix, the fixtures' runs kept). Against session 1's card (`artifacts/talk/runs/p8s1`; the scorer is unchanged),
+fixtures / frozen:
+
+| | P8, session 1 | P8, session 2 |
+|---|---|---|
+| coverage holes (of 1,188,000) / core holes | 555,264 (46.7%) / 0 | **0 (0%)** / 0 |
+| R7 distinct replies per 1,000 (gate: 3× P0's 54.8 / 32.3) | 242 / 121 | **250 / 125** (4.6× / 3.9×) |
+| C1 owed answers answered (%, gate 92) | 97.9 / 98.7 | **97.9 / 98.6** |
+| **C9** callbacks per 10 talks | 2.59 / 1.56 | **3.65 / 2.16** |
+| **C5** unmarked jumps per 1,000 lines | 0 / 0 | **0 / 0** |
+| C8 a third speaker (%) | 0.24 / 5.93 | 0.27 / 6.45 |
+| R6 the most-spoken line (%) / R3 distinct openers per 3,000 | 1.29 / 2,737; 1.32 / 1,930 | 1.25 / 2,786; 1.29 / 2,049 |
+| R1 first identical talk (h) | 27.5 / 2.42 | 27.5 / 1.77 |
+| R4 / R5 per 100 h | 265 / 0; 3,059 / 6.56 | 249 / 0; 3,069 / 6.34 |
+| C3 / C7 | 89.8 / 5.62; 90.8 / 6.45 | 89.4 / 5.64; 90.7 / 6.44 |
+| C4 per 1,000 / C6 | 0.028 / 0; 0 / 0 | 0.014 / 0; 0 / 0 |
+| T1 / T2 / T3 per 1,000 | 0 / 0.028 / 0.084; 0 / 0 / 0.012 | 0 / 0.042 / 0.098; 0 / 0 / 0.012 |
+| T5 (%) / T6 per 1,000 | 0.78 / 0.41; 0 / 0.006 | 0.14 / 0.31; 0 / 0.012 |
+| K1 / K2 / K3 | 44.5 / 21.0 / 0; 73.7 / 13.4 / 0 | 44.4 / 21.2 / 0; 73.9 / 13.2 / 0 |
+| D1 / D1L / D1B / D3 (%) | 0 / 1.67 / 10.7 / 89.6; 0 / 2.01 / 6.80 / 83.2 | 0 / 1.79 / 10.4 / 89.7; 0 / 1.86 / 6.83 / 82.2 |
+| U2 / X1 / R8 / O1 | 39.6 / 19.6 / 0.110 / 0.47; 30.0 / 16.3 / 0.136 / 0.79 | 40.0 / 19.5 / 0.104 / 0.45; 32.1 / 16.1 / 0.149 / 0.80 |
+| B1 / B1P (ms, the card's load) / B5 | 0.30 / 0.84 / 1.2; 0.30 / 1.85 / 86 | 0.31 / 1.03 / 0.87; 0.22 / 1.10 / 108 |
+
+**The gate, so far** (the phase's, judged at session 3's end): **0 holes on the core moves: met**, and on every move.
+**R7 3× the baseline: met** (4.6× and 3.9×). **C1 92%+: met.** Session 2's own: **the hole rate under 10%** (0%),
+**C9** up by 41% in both modes (the recalls, the kin's first words, the long-missed), **C5 0**. `talk_card` breaks no
+hard gate the baselines passed in either mode and exits 1 on the soft rows session 1 left (R8 0.10-0.15% against a 15%
+ceiling, U2, X1, B1, B1P), with B5 fixtures below session 1's on an open hard gate (below). What moved, and why:
+- **C4 frozen** broke its hard gate (one clash in 163,000 lines) on the second card: an old chain the new pivot from
+  the traveller to the road reached (`e5_been_old_broad`'s "Been to the next town, once. For a funeral. Didn't care for
+  it." laughed at by tale.react's merry answer). The old line says "For a wedding." now (named in talk_equiv's
+  EDITED), and the frozen card run again: 0. C4 fixtures is one old lexicon clash (an open gate since P0).
+- **T3 fixtures** (0.084 → 0.098) is the old eyewitness lines ("I saw someone near X's door that night.") sampled more
+  where a recall leads into them; the session's own witness joins said "I saw it with my own eyes." to the scorer, which
+  backs only the teller's own sight, and were rewritten ("I was right there, as it happens."). **T2 fixtures** is
+  Phase 7's two old faults (a luna table's "Morning to you" at 20h, Coldwater's "my catch"). **T6 frozen** is two old
+  lines about one wolf's family ("All of them."). All open gates since P0, none the session's words.
+- **R1 frozen** 2.42 → 1.77 h is L1's authored route ("A day like any other." / "It is at that."), the Mind's fallback,
+  not the library (an open gate since P0, as Phase 7 found).
+- **B5 fixtures** 1.21 → 0.87 exchanges a second: the fixture runs took 600 s against session 1's 460 with the machine
+  shared (load 7); the frozen ones run alone came out faster than session 1's (108 against 86). A beat costs what it did:
+  `talk_bench` (alone) the talk town a beat 0.10 ms mean, p99 0.27, a look p99 1.6 ms, within budget; Ridgemere 3, 20
+  hours, a beat 0.195 ms, p99 0.97, a look p99 5.1 ms, over its 5 ms, **and the same without this session's seven
+  files** (5.09 ms: the look is `World::districtHouse`'s cold walks, §29, at 4.8 when Phase 7 measured it). The
+  recall is asked only where the ledger has the topic, so it costs a look nothing otherwise.
+
+**Tests.** `talk_tests` `sharedLinesTwo` (new): the pivot from prices to the caravan said by its own line in front of
+the opener and never another step's line; a recall in the opener's breath about half the time where the ledger has the
+topic, a callback, and none without it; an everyday view left unsaid in an issue's talk and said where none is.
+`talk_p8_rules` (12): the twelve words in every grammar and plain's who-says-it symbols; every pivot names a step
+topics.json has; laughs gated by tone; no view or pushback reads an issue; the dispreferred and the seldom weigh little
+and an extend keeps no criteria; how one is, by one's own facts; a concept only in the callbacks, and only where the
+ledger is read. `talk_coverage` re-blessed at 0. The non-database ctest suite: 99 passed, the 8 database suites skipped, and the quick card failed on D1A alone (a diagnostic: the lines said a step broader or plainer, 17.1% against 19.7, and 18.4-23.4% over four other seeds of the same town), so it was blessed again with the town's talk as this session changed it (`talk_scorecard_quick.json`: R6 1.30 → 0.89%, R7 205 → 213, C9 1.32 → 1.37, D1B 9.7 → 11.6%, R4 2,318 → 2,550, the shared lines 163 of its 14,237 lines); `talk_check --validate` on every file; `talk_lint` (33, none new); `dialect_check` (0 failures); `talk_equiv --against 1e159420` (19 entries changed by hand, each named). No ticking runs, no paid calls, no servers.
+
+**For session 3.**
+- **The share left.** Session 2 wrote 515 of its planned 950 (the owed moves 278 of 480, the pivots 115 of 150, the joins, breaks and returns 67 of 100, the callbacks 55 of 80): the phase has 780 of §14.1's 2,100 rules after two sessions, so 1,320 remain against session 3's planned 700. The gate doesn't see the difference (every cell holds; the variety rows are met), so session 3 should spend it where it's heard: the thin topics' openers and answers first, then more ways to say the most-heard shared lines (the favourite's join and welcome, thanks for advice, agreement on prices, the extend), and only then more move lines.
+- The thin topics (§33.1: gossip 70→250, event 49→150, news 43→150, newcomer 52→120, harvest and ships 11→60 each,
+  deed 21→80, accent 26→60, times 21→60), the scene turns whose alternatives differ in kind, and dialect variants for
+  the most-spoken shared lines; then the phase's gate on the whole, with the ticking slice-end listen after.
+- Most of what is heard is still concept rules' answers and the authored route: move lines answer where no concept
+  rule holds (the session's lines were 1-2.5% of what the card heard, the joins, welcomes, extends, thanks and agreement
+  most); the thin topics' openers are where new lines will be heard most.
+- Saltwell's grammar is at 16,620 of 20,000 characters; `talk_seed --only dialects --world ridgemere3` after any
+  dialect change.
+- talk_bench's Ridgemere 3 look p99 is 5.1 ms of 5 with or without the shared lines (`World::districtHouse`, §29): the director's, not the library's; whoever next touches the director should warm or keep those walks.

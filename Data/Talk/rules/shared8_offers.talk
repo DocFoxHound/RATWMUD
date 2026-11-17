@@ -1,0 +1,418 @@
+# The shared lines, Phase 8 session 2 (Docs/Design/84 §33.1, §33.3): help offered and taken (offer, accept, refuse), a
+# request granted (grant), advice (give.advice) and a view (give.opinion), with the agreement a view is mostly met
+# with (agree), so a view isn't answered by another view more often than by a nod. Move lines (no concept).
+#
+# A view here is on the everyday run of things, never on one of the realm's issues (once one is aired, the engine leaves
+# an everyday view unsaid: Phase 6's stance lines say those, true to each speaker's side), and never a claim: an opinion of the subject of gossip is of the deed, not
+# the wolf. Advice is true wherever it's said (no "the chapel feeds folk" where it may not). An offer is of help, a
+# hand or company, which a talk can give; a refusal is softened and explained (§7.2).
+
+## offer: help, after a worry or a grumble
+
+rule s8o_offer_any
+does offer
+weight 0.6
+say #helpout#? | Can I do anything? | Do you want a hand with it? | Is there aught I can do? | You've only to ask, you know.
+
+rule s8o_offer_work
+does offer
+when conv.topic=work|day
+weight 0.6
+say Need a paw with it after hours? | I could lend a hand at the end of the day. | Want me to ask about, for anything going?
+
+rule s8o_offer_home
+does offer
+when conv.topic=home|family
+weight 0.6
+say I could come round and help, if you like. | Shall I look in on you tomorrow? | Do you want company tonight?
+
+rule s8o_offer_health
+does offer
+when conv.topic=health
+weight 0.6
+tone tender
+say Shall I fetch the healer to you? | Do you want me to sit with you a while? | I could bring you some broth.
+
+rule s8o_offer_money
+does offer
+when conv.topic=prices|times|food self.wealth=comfortable|rich self.homeless=no
+weight 0.5
+say I could spare a few pennies, if it'd help. | Come and eat at mine, if it's lean. | I've a loaf more than I need. Want it?
+
+rule s8o_offer_road
+does offer
+when conv.topic=bandits|travel|caravan
+weight 0.6
+say I'll walk with you as far as the gate. | Do you want company on the road? | Wait, and we'll go together.
+
+rule s8o_offer_crime
+does offer
+when conv.topic=crime|gossip topic.claim_kind=theft|violence|prowling other.homeless=no
+weight 0.6
+say Shall I walk you home after dark? | Do you want me to look in on your place? | I'll keep an eye on your door, if you like.
+
+## accept and refuse: the answers to an offer
+
+rule s8o_accept_any
+does accept
+say That's kind. Yes, please. | I'd not say no. | If you're sure. | Thank you. I'd like that. | #bc_go_on_then# | Would you? That'd help.
+
+rule s8o_accept_any2
+does accept
+say You're a good one. Yes. | I won't pretend I don't need it. | Aye. Thank you. | That's a weight off. Yes.
+
+rule s8o_refuse_any
+does refuse
+weight 0.5
+say #hedge#, but I'll manage. You're kind to offer. | That's good of you, but no. I'd sooner see to it myself. | Thank you, but I'll be all right. Truly. | No, no. Keep it for yourself. I'll get by.
+
+rule s8o_refuse_proud
+does refuse
+when self.wealth=poor|destitute
+weight 0.5
+say I'll not take charity, thank you all the same. | I can't take it. I'd never pay it back. I'll manage. | That's kind, but I've my pride, little as it is.
+
+## grant: yes to a request
+
+rule s8o_grant_any
+does grant
+say #s8_sure# | #s8_sure# | Leave it with me. | I can do that. | Consider it done. | #bc_gladly#
+
+rule s8o_grant_any2
+does grant
+say Aye, I'll see to it. | No trouble at all. | Happy to help. | For you, aye.
+
+rule s8o_grant_work
+does grant
+when conv.topic=work|day
+say I'll ask at work for you. | I'll see what I can do there. | I'll put a word in, aye.
+
+rule s8o_grant_pastimes
+does grant
+when conv.topic=pastimes|friends|animals
+say Aye, I'll show you how. | Come by and I'll teach you. | Course. It's easy, once you've the knack.
+
+## give.advice: what one would do
+
+rule s8o_advice_any
+does give.advice
+when topic.claim_kind!=death|victim|violence
+weight 0.6
+say #advise#, I'd not fret over it. | Give it time. | Look after yourself first. | One step at a time. | Don't let it get on top of you.
+
+rule s8o_advice_any2
+does give.advice
+weight 0.6
+say Talk it over with someone. | Take it a day at a time. | Don't let it eat at you. | Ask someone who knows.
+
+rule s8o_advice_hungry
+does give.advice
+when other.hungry=yes
+say Get something warm in you, first. | Eat, before anything else. | Find a meal. The rest can wait. | You'll think straighter with something in your belly.
+
+rule s8o_advice_health
+does give.advice
+when conv.topic=health
+tone tender
+say See the healer, and don't put it off. | Rest, and plenty of broth. | #advise#, try #remedy#. | Keep warm and keep still. | Don't go back to work too soon.
+
+rule s8o_advice_food
+does give.advice
+when conv.topic=food
+say Eat something warm, at least. | Little and often, when it's lean. | Don't skip your supper for anyone. | Bread and broth go further than you'd think.
+
+rule s8o_advice_money
+does give.advice
+when conv.topic=prices|price_cause|times
+say Buy what you need and no more. | Keep a little back, when you can. | Shop around. Someone's always cheaper. | Don't pay the first price asked.
+
+rule s8o_advice_road
+does give.advice
+when conv.topic=bandits|caravan|travel
+tone serious
+say Travel by day, and go in company. | Keep off the road a while, if you can. | Wait for a caravan and walk with it. | Don't carry more than you can lose.
+
+rule s8o_advice_crime
+does give.advice
+when conv.topic=crime|gossip topic.claim_kind=theft|violence|prowling|wanted
+tone serious
+say Bar your door at night. | Keep your purse close and your wits closer. | Tell the Watch, for what it's worth. | Don't walk the back ways after dark.
+
+rule s8o_advice_weather_cold
+does give.advice
+when conv.topic=weather|season here.season=autumn|winter
+say Wrap up warm. | Keep your feet dry. | Get a fire going early. | Don't go out with a wet coat.
+
+rule s8o_advice_weather_warm
+does give.advice
+when conv.topic=weather|season here.season=spring|summer
+say Keep to the shade at noon. | Drink plenty. | Work early and rest late. | Mind the sun on your nose.
+
+rule s8o_advice_work
+does give.advice
+when conv.topic=work|day
+say Keep your head down and your paws busy. | Ask for more. The worst they'll say is no. | Don't let them work you to the bone. | Learn all you can. It's yours to keep.
+
+rule s8o_advice_family
+does give.advice
+when conv.topic=family|home
+say Give it time. Families mend. | Say your piece, then let it lie. | Talk to them, before it festers. | Keep the peace at home. It's worth more than being right.
+
+rule s8o_advice_friends
+does give.advice
+when conv.topic=friends|quarrel
+say Make it up. Life's short. | A friend's worth a bit of pride. | Let it go. You'll both feel better.
+
+rule s8o_advice_faith
+does give.advice
+when conv.topic=faith|dreams
+say Light a candle. It can't hurt. | Ask the priest. That's what priests are for. | Say a word to the Bright One, and sleep on it.
+
+rule s8o_advice_dreams
+does give.advice
+when conv.topic=dreams
+weight 0.5
+say Don't eat cheese before bed. | Sleep on your other side. | Don't go looking for meanings.
+
+rule s8o_advice_plan
+does give.advice
+when conv.move=tell.plan|answer.plan
+say Mind you think it through. | Start early, while you're fresh. | Don't tell too many till it's done. | Do it properly or not at all.
+
+rule s8o_advice_pastimes
+does give.advice
+when conv.topic=pastimes|animals|land
+say Patience. It comes with patience. | Little and often, that's the way. | Don't rush it, and it'll come.
+
+rule s8o_advice_young
+does give.advice
+when other.stage=young|adolescent self.stage=adult|old
+say Listen to your elders, now. | Mind you're home before dark. | Do as you're told, and you'll not go wrong. | Don't go far.
+
+## give.opinion: a view on the everyday run of things
+
+rule s8o_view_any
+does give.opinion
+when topic.claim_kind!=death|victim|violence
+weight 0.6
+say It'll come right in the end. | That's how things are, these days. | Can't say it surprises me. | It's not how it was. | There's worse things.
+
+rule s8o_view_crime
+does give.opinion
+when conv.topic=gossip|crime topic.claim_kind=theft|violence|wanted|prowling
+weight 0.5
+say There's too much of that about. | The Watch should look sharper. | Folk aren't what they were. | You can't leave a thing out these days.
+
+rule s8o_view_death
+does give.opinion
+when conv.topic=gossip|life|news topic.claim_kind=death
+weight 0.5
+tone grave
+say Hard on those left behind. | We never know the day, do we. | It makes you hold your own closer.
+
+rule s8o_view_marriage
+does give.opinion
+when conv.topic=gossip|life|news topic.claim_kind=marriage
+weight 0.5
+tone light
+say They'll do well together, I'd think. | Good. Every town needs a wedding. | That's a match, that is.
+
+rule s8o_view_newcomer
+does give.opinion
+when conv.topic=newcomer|gossip topic.claim_kind=newcomer
+weight 0.5
+say New faces do a town good. | Time will tell with #topic.them#. | We'll see what #topic.they# makes of us.
+
+rule s8o_view_prices_up
+does give.opinion
+when conv.topic=prices|price_cause topic.dir=up
+weight 0.6
+say Somebody's doing well out of it. | It'll be the poor that feel it. | They'll go up again, mark me. | It's always the same goods that go dear.
+
+rule s8o_view_prices_road
+does give.opinion
+when conv.topic=prices|price_cause topic.dir=up topic.cause=caravan|late|raid
+weight 0.6
+say It's the road. It's always the road. | Fix the roads and you'd fix the prices. | While the wagons are late, we pay.
+
+rule s8o_view_prices_down
+does give.opinion
+when conv.topic=prices|price_cause topic.dir=down
+weight 0.6
+say It won't last. | Make the most of it, I say. | Somebody's selling at a loss.
+
+rule s8o_view_times
+does give.opinion
+when conv.topic=times world.times=hard|lean
+weight 0.6
+say It'll turn. It always does. | It's the same everywhere, I hear. | We've come through worse.
+
+rule s8o_view_harvest_poor
+does give.opinion
+when conv.topic=harvest|land world.harvest=poor
+weight 0.6
+say We'll feel it come winter. | Bread'll be dear by spring. | The fields want a better year.
+
+rule s8o_view_harvest_good
+does give.opinion
+when conv.topic=harvest|land world.harvest=good
+weight 0.6
+tone light
+say Good. Bread'll be cheaper. | A full barn makes a happy town. | We were due a good one.
+
+rule s8o_view_festival
+does give.opinion
+when conv.topic=festival|event
+weight 0.6
+say A town needs its festivals. | We could all do with some fun. | Too much noise, if you ask me. | It brings folk together, at least.
+
+rule s8o_view_weather
+does give.opinion
+when conv.topic=weather|season
+weight 0.6
+say Give me a cold clear day over this. | It's good for the fields, mind. | Every season has its trouble. | I'll take what comes.
+
+rule s8o_view_work
+does give.opinion
+when conv.topic=work|day
+weight 0.6
+say Work's what keeps us honest. | Nobody's paid what they're worth. | An idle paw's worse than a sore one. | It's steady, and that's something.
+
+rule s8o_view_food
+does give.opinion
+when conv.topic=food
+weight 0.6
+say Simple food's the best food. | Nothing beats bread still warm. | A good supper mends most things. | You can't work on an empty belly.
+
+rule s8o_view_animals
+does give.opinion
+when conv.topic=animals|land
+weight 0.6
+say Beasts have more sense than folk. | The land doesn't lie. | You get out what you put in, with beasts.
+
+rule s8o_view_faith
+does give.opinion
+when conv.topic=faith|dreams|lore
+weight 0.6
+say The gods help those who help themselves. | There's more in the old tales than folk think. | I keep my faith and my own counsel.
+
+rule s8o_view_family
+does give.opinion
+when conv.topic=family|home
+weight 0.6
+say Blood's thicker than water. | A house is only as warm as the folk in it. | Family's a blessing and a burden, both.
+
+rule s8o_view_travel
+does give.opinion
+when conv.topic=travel|accent|newcomer
+weight 0.6
+say Every road leads home in the end. | Travel broadens the mind and flattens the purse. | I'd see more of the realm, if I could.
+
+rule s8o_view_player
+does give.opinion
+when conv.topic=player|deed
+weight 0.6
+say Travellers bring news and trouble, both. | Strangers come and go. The town stays. | They're welcome, so long as they pay.
+
+rule s8o_view_sea
+does give.opinion
+when conv.topic=ships
+weight 0.6
+say The sea gives and takes. | Ships mean trade, and trade means bread. | I'd not go to sea for all the salt in Saltwell.
+
+rule s8o_view_wagons
+does give.opinion
+when conv.topic=caravan
+weight 0.6
+say The wagons keep this town fed. | Late or not, we'd be lost without them. | Carters earn every penny.
+
+rule s8o_view_road
+does give.opinion
+when conv.topic=bandits
+weight 0.6
+tone serious
+say The roads want clearing, and soon. | Nobody's safe out there till it's done. | Somebody should send soldiers.
+
+rule s8o_view_health
+does give.opinion
+when conv.topic=health
+weight 0.6
+say Rest cures most things. | You can't buy health. | A healer's worth every penny.
+
+rule s8o_view_pastimes
+does give.opinion
+when conv.topic=pastimes|friends|smalltalk
+weight 0.6
+say Everyone needs something besides work. | Good company's worth more than coin. | It's the small things, in the end.
+
+rule s8o_view_memories
+does give.opinion
+when conv.topic=memories
+weight 0.6
+say We remember the good and forget the rest. | The old days weren't so golden, really. | Things were simpler, once.
+
+## agree: a view met with a nod, on the same everyday things (so a view is mostly agreed with)
+
+rule s8o_agree_any
+does agree
+weight 1.5
+say #agree#. | You're not wrong. | That's the truth. | I'd say the same. | Quite right. | Couldn't put it better.
+
+rule s8o_agree_prices
+does agree
+when conv.topic=prices|price_cause|times
+weight 1.5
+say Dear as anything, aye. | You're telling me. My purse feels it. | It's a scandal, and that's the truth. | Every week, a penny more.
+
+rule s8o_agree_weather
+does agree
+when conv.topic=weather|season
+weight 1.5
+say Isn't it just. | Aye, and no sign of it changing. | You're right there. | Couldn't agree more.
+
+rule s8o_agree_work
+does agree
+when conv.topic=work|day
+weight 1.5
+say You're not wrong there. | Same in every trade. | Don't I know it. | Too true.
+
+rule s8o_agree_food
+does agree
+when conv.topic=food
+weight 1.5
+say Now you're talking. | Can't beat it. | Aye, that's the way. | My belly agrees with you.
+
+rule s8o_agree_news
+does agree
+when conv.topic=gossip|crime|news|life|newcomer|deed|player
+weight 1.5
+say So I'd think. | That's about the size of it. | Aye. That's how I see it. | You've the right of it.
+
+rule s8o_agree_road
+does agree
+when conv.topic=bandits|caravan|travel|ships
+weight 1.5
+say Aye. Something has to give. | You're right. It can't go on. | That's the truth of it.
+
+rule s8o_agree_home
+does agree
+when conv.topic=family|home|friends|pastimes|animals|land|health|faith|memories|dreams|lore|festival|event|harvest|smalltalk|accent
+weight 1.5
+say Aye, that's so. | You're right about that. | That's the way of it. | #bc_true_enough#
+
+## give.advice by the trade of the one asking
+
+rule s8o_advice_farm
+does give.advice
+when conv.topic=work|land|weather other.job=farmer|herder
+say Get the hay in while it's dry. | Mend the fences before you need to. | Watch the sky and trust your nose.
+
+rule s8o_advice_shop
+does give.advice
+when conv.topic=work|prices other.job=merchant|baker|brewer|innkeeper|cook
+say Keep the shelves full and the prices fair. | Never give credit to a smiler. | Count the till twice.
+
+rule s8o_advice_water
+does give.advice
+when conv.topic=work|weather other.job=fisher|sailor
+say Don't go out if the sky's wrong. | Mend the nets on the quiet days. | Trust the old hands about the water.

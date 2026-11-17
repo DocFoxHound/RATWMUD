@@ -155,6 +155,19 @@ dunno = That's the whole seam | Nothing more down that tunnel
 hearsay = Heard it down the pit, is all | Pit-talk, mind
 howso = Show me the seam of it | How's that, stone
 rest = A lamp at the pit-head for the soul | The rock rest the soul
+# Phase 8, session 2 (doc 84 §33.3): the other owed moves' words, as Frosthollow says them. Drafts, to be tuned by ear.
+funny = That's a bright seam | Ha, you'll crack the rock
+cheek = Hark at the pebble | Says the loose stone
+modest = Just a lucky seam | The rock gave it up, not me
+secret = Buried deep, cousin | Not a word out of the dark
+advise = Take it from an old pick | Dig it this way, stone
+helpout = Need another pick | Want a lamp held
+wellsaid = Solid thinking | That's well shored
+poorshow = That's rotten rock | Bad seam, that
+fine = Still digging | Lamp's lit, stone
+planless = Wherever the seam goes | Same tunnel as ever
+pardon = I only said, stone | What I said was
+tale = That's a tale from deep down | One for the lamp-light, that
 # Greetings and closings for rules/shared8_turns.talk (plain.grammar's s8_* say who; here, the dialect's own).
 s8_hello = Hearth to you, stone | Warm hearth, cousin | Ah, stone | Lamp lit, cousin
 s8_okay = Aye, back to the seam | Go on, stone | The pit won't dig itself | Off you dig

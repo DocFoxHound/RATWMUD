@@ -353,6 +353,130 @@ s8_ask[self.stage=young|adolescent] = Why? | But why? | What happened next? | Ho
 s8_ask[self.stage=adult|old self.talk=chatty] = Go on, go on. What else? | And? Don't stop there! | Well? Out with the rest of it.
 s8_ask[self.stage=adult|old self.temper=nervy] = Is it bad? | Should I be worried? | What does that mean for us?
 
+# Phase 8, session 2 (doc 84 §33.3): the other owed moves' words, in every grammar (each dialect says them its own way),
+# for rules/shared8_react, _social, _offers and _answers. No end punctuation: the rule's line ends the sentence.
+# a tale or a jest that landed (laugh, tease.laugh)
+funny = That's a good one | Ha, that's rich | You'll be the death of me | Oh, that's priceless
+# a jest turned back (tease.return)
+cheek = The cheek of it | Says you | Look who's talking | Hark at you
+# praise waved off (deflect_praise)
+modest = Oh, it was nothing | Luck, mostly | Anyone could have done it | Don't make a fuss
+# a secret kept (keep_confidence)
+secret = Not a word | It goes no further | It's safe with me | I'll keep it close
+# advice led in (give.advice)
+advise = If I were you | Take it from me | For what it's worth | Mark me, now
+# help offered (offer)
+helpout = Can I help at all | Is there anything I can do | Do you want a hand | Say the word if you need me
+# a thing well judged (assess.good)
+wellsaid = That's sensible | That's sound | Well thought | Now that's wise
+# a thing badly done (assess.bad)
+poorshow = That's a poor show | That's no good at all | That's a sorry thing | That's a shame
+# how one is, well enough (answer.how, answer.check_in)
+fine = Well enough | Can't complain | Fair to middling | Getting along
+# one's plans, loosely (answer.plan)
+planless = We'll see what the day brings | Whatever comes, I expect | Same as ever | Nothing much
+# saying it again (clarify)
+pardon = I only said | What I said was | I was saying | All I said was
+# a tale taken in (react.story)
+tale = That's a tale and a half | There's a story | There's one for the fireside | That's a good tale
+
+# Phase 8, session 2: who says it, for the same rules (as session 1's s8_* above: the most specific entry that holds
+# is said, ties are one list; each value ends its own sentence).
+# taking in what another says of themselves (react.self)
+s8_self = Is that so. | Well, there you are. | Fancy that. | Is it, now. | I see. | So that's how it is.
+s8_self[self.stage=young] = Oh! | Really? | Wow. | Oh, okay. | Huh!
+s8_self[self.stage=adolescent] = Huh. | Right. | Oh, yeah? | Fair enough. | Sounds about right.
+s8_self[self.stage=adult|old self.warmth=warm] = Oh, is that right? | I'm glad you said. | Well, there's you. | Thank you for saying.
+s8_self[self.stage=adult|old self.warmth=cold] = Hm. | Is it. | So. | I see.
+s8_self[self.stage=adult|old self.talk=quiet] = Mm. | Ah. | Oh, aye. | Right.
+s8_self[self.stage=adult|old self.talk=chatty] = Is that so? Well, I never. | Oh, is it, now? | Well! There's a thing. | Oh, I didn't know that.
+s8_self[self.stage=adult|old self.humour=dry] = Well, there's a thing. | So it goes. | Hm. Is it, now. | There we are, then.
+s8_self[self.stage=old] = Ah, well. | Is that so, now. | Well, well. | That's the way of it.
+s8_self[self.stage=adult|old other.stage=young] = Is that so? Clever you. | Well! Aren't you something. | Fancy that, and you so small. | Is it, now? Well done, little one.
+s8_self[self.stage=adult|old other.stage=adolescent] = Is that right. | Well, there's you grown up. | Fair enough, then. | Mind you don't get ahead of yourself.
+# a memory taken in, by who remembers (react.story on memories)
+s8_memory = Those were other days. | We were all young once. | Funny, the things you keep. | Long ago, that.
+s8_memory[self.stage=old] = Ah, I remember days like that. | It all goes so fast. | We'd sit like that for hours, once. | Gone, all of it, and here we are.
+s8_memory[self.stage=young|adolescent other.stage=adult|old] = Were you really little once? | That was ages ago. | Did that really happen? | I can't picture you small.
+# a laugh (laugh, tease.laugh)
+s8_laugh = Ha! | Ha, good. | Heh. | Ha! Very good.
+s8_laugh[self.stage=young|adolescent] = Hee! | Ha ha! | Ha! That's funny. | Hee hee!
+s8_laugh[self.stage=adult|old self.humour=merry] = Ha! Oh, ha ha! | Oh, stop, stop! | Ha! I'll be laughing at that all day. | Ha ha! Oh, my ribs.
+s8_laugh[self.stage=adult|old self.humour=dry] = Very droll. | Oh, very good. | I'll grant you that one. | Ha. Not bad.
+s8_laugh[self.stage=adult|old self.humour=none] = Heh. | Hm. Funny. | Ha. Yes.
+s8_laugh[self.stage=adult|old self.warmth=cold] = Heh. | Hm. | Ha.
+s8_laugh[self.stage=adult|old self.talk=quiet] = Heh. | Ha. | Mm, ha.
+s8_laugh[self.stage=old] = Ha! Oh, my. | Heh heh. | Ha! That's a good one, that.
+# a jest turned back (tease.return)
+s8_teaseback = Says you. | Look who's talking. | Takes one to know one. | You're one to talk.
+s8_teaseback[self.stage=young|adolescent] = Am not! | You are! | Takes one to know one! | Shut up! | Says you!
+s8_teaseback[self.stage=adult|old self.humour=merry] = Ha! You'd know all about it. | Oh, and you're perfect, are you? | Ha! Pot and kettle.
+s8_teaseback[self.stage=adult|old self.humour=dry] = Coming from you, that's rich. | I'll take that as praise. | Charming. | Thank you. I think.
+s8_teaseback[self.stage=adult|old self.temper=short] = Watch it. | Mind your tongue. | Less of that.
+s8_teaseback[self.stage=adult|old self.warmth=warm] = Oh, you. | Go on with you. | Get away.
+s8_teaseback[self.stage=old] = Less of your cheek. | Mind your elders, you. | When you're my age, then.
+# thanks (thank)
+s8_thanks = Thank you. | Thanks. | That's kind. | Much obliged.
+s8_thanks[self.stage=young|adolescent] = Thank you! | Thanks! | Thanks, then.
+s8_thanks[self.stage=adult|old self.warmth=warm] = Thank you, truly. | Bless you for that. | That's good of you. | You're kind.
+s8_thanks[self.stage=adult|old self.warmth=cold] = Hm. Thanks. | Noted. | Right. Thanks.
+s8_thanks[self.stage=adult|old self.tone=formal] = I'm obliged to you. | Much obliged. | My thanks.
+s8_thanks[self.stage=adult|old self.piety=devout] = Bright One bless you for it. | Bless you. | The gods keep you for that.
+s8_thanks[self.stage=old] = Thank you, dear. | Bless you. | You're a good one.
+# praise (praise)
+s8_praise = That's well done. | Good for you. | Not bad at all. | Now that's something.
+s8_praise[self.stage=young] = Wow! | That's amazing! | Can you show me? | Whoa!
+s8_praise[self.stage=adolescent] = Not bad. | That's actually good. | Huh. Nice.
+s8_praise[self.stage=adult|old self.warmth=warm] = Oh, that's lovely. | Well done, you. | Look at you! | I'm proud of you.
+s8_praise[self.stage=adult|old self.humour=dry] = Not bad. For you. | I'm almost impressed. | Steady. You'll be famous.
+s8_praise[self.stage=adult|old self.warmth=cold] = Hm. Not bad. | Fair. | It'll do.
+s8_praise[self.stage=old] = Well done, young one. | That's the way. | Good. Very good.
+s8_praise[self.stage=adult|old other.stage=young] = Clever pup! | Well done, little one. | Look at you go! | Aren't you clever.
+# praise waved off (deflect_praise)
+s8_modest = Oh, it was nothing. | Luck, mostly. | Anyone could have. | Don't make a fuss.
+s8_modest[self.stage=young|adolescent] = Thanks! | It was easy! | I know! | Thanks. It's nothing.
+s8_modest[self.stage=adult|old self.warmth=cold] = It's what's done. | Hm. | It's only work.
+s8_modest[self.stage=adult|old self.humour=dry] = Don't let it get about. | I'll try not to let it go to my head. | Steady on.
+s8_modest[self.stage=adult|old self.talk=quiet] = Mm. Thank you. | Oh. Thanks. | It was nothing.
+s8_modest[self.stage=adult|old self.drive=ambitious] = Thank you. I worked for it. | It's a start. | Wait till you see the next.
+# yes to an offer or a request (accept, grant)
+s8_sure = Of course. | Gladly. | Happy to. | Aye, why not.
+s8_sure[self.stage=young|adolescent] = Okay! | Yes! | All right. | Sure!
+s8_sure[self.stage=adult|old self.warmth=warm] = Of course, love. | For you, any time. | Oh, gladly. | You only had to ask.
+s8_sure[self.stage=adult|old self.warmth=cold] = If I must. | Fine. | Very well.
+s8_sure[self.stage=adult|old self.temper=short] = Fine, fine. | Yes, all right. | If it stops you asking.
+# how one is, well enough (answer.how, answer.check_in)
+s8_fine = Well enough. | Can't complain. | Getting by. | Not so bad.
+s8_fine[self.stage=young] = Good! | Fine! | I'm good!
+s8_fine[self.stage=adolescent] = Fine. | All right. | Same as ever.
+s8_fine[self.stage=adult|old self.humour=merry] = Never better, never worse. | Still breathing! | All the better for seeing you.
+s8_fine[self.stage=adult|old self.temper=nervy] = Oh, well enough, I suppose. | As well as can be. | Not too bad. Touch wood.
+s8_fine[self.stage=adult|old self.warmth=cold] = Fine. | Well enough. | It does.
+s8_fine[self.stage=old] = Creaking, but here. | Still above ground. | The bones complain, but I don't.
+# a tale taken in (react.story)
+s8_story = Is that so. | Well, there's a thing. | I'll remember that. | Fancy that.
+s8_story[self.stage=young] = Really? | Then what? | Ooh. | Is that true?
+s8_story[self.stage=adolescent] = Huh. | Weird. | Huh, really? | Okay, that's something.
+s8_story[self.stage=adult|old self.humour=merry] = Ha! I like that. | Oh, that's grand. | Well, isn't that something.
+s8_story[self.stage=adult|old self.humour=dry] = You don't say. | Well, there's a thing. | I'll take your word for it.
+s8_story[self.stage=adult|old self.talk=chatty] = Oh, I'll remember that one. | Well! I never heard the like. | Oh, go on. That's lovely.
+s8_story[self.stage=adult|old self.talk=quiet] = Mm. | A good one. | Hm. Yes.
+s8_story[self.stage=old] = Ah, well. | Well, well, now. | Those were other days. | Ah. The things we see.
+# one more thing before parting (extend), by the moment
+s8_extend = Oh, before you go: thank you. For listening. | One more thing. Don't be a stranger. | Before you go: I'm glad we talked. | Wait, before you go. Look after yourself.
+s8_extend[pair.band=friends|family|spouses|housemates other.homeless=no] = Oh, and give my love at home. | And say hello to all at yours. | Oh, and come by soon. I mean it.
+s8_extend[here.season=winter here.outdoors=snow|clear|overcast] = Oh, and mind the ice going home. | And wrap up. It's bitter out.
+s8_extend[here.outdoors=rain|storm] = Oh, and take care in this rain. | And keep dry, if you can.
+s8_extend[here.time=night] = Mind the dark lanes going home. | Oh, and take a light. It's black out there.
+s8_extend[world.bandits=near] = And keep off the road after dark, mind. | Oh, and don't travel alone, these days.
+s8_extend[world.festival=soon] = Oh, and I'll see you at the festival. | And save me a dance at the festival.
+s8_extend[other.hungry=yes self.hungry=no] = Oh, and eat something, will you. | And get some food in you. You look thin.
+# a third welcomed in (welcome_join), by why they joined
+s8_welcome = The more the merrier. | Come in, come in. | You'll want to hear this. | Join us, by all means. | Sit yourself down.
+s8_welcome[conv.stake=favourite] = I knew you'd want in on this. | Ha. Your sort of talk, this. | We were waiting for you, near enough. | Thought that'd fetch you. | Ears pricked up, did they? | Come and have your say. | Pull up. You'll have views. | We hoped you'd come by. | Your favourite, this.
+s8_welcome[conv.stake=goods|witness] = Good. You'd know better than us. | Go on, then. Tell us. | Just the one to ask.
+s8_welcome[conv.stake=friends] = Pull up, then. | There you are! | Come here, you. | Well, look who it is.
+
 # Backchannel lines (doc 84 §10.2, Phase 7; tools/talk_migrate.py): the library's most repeated short answers, each a
 # symbol whose value here is exactly the words it replaced, so plain speech is unchanged (talk_migrate.py --check);
 # each dialect says them its own way. A light accent uses the dialect's half the time, a broad one always.

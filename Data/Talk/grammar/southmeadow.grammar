@@ -152,6 +152,19 @@ dunno = That's all the gleaning | Not a pip more, bless you
 hearsay = Field-talk, that's all | Heard it over the hedge
 howso = Ripe, is it? How so | How's that, bless you
 rest = Soft earth to the soul | Rest easy in the orchard
+# Phase 8, session 2 (doc 84 §33.3): the other owed moves' words, as Southmeadow says them. Drafts, to be tuned by ear.
+funny = Ha, bless you, that's funny | That's a plum of a joke
+cheek = Hark at the green apple | Says the windfall
+modest = Just a good season | The sun did the work, bless it
+secret = Buried with the seed | Not a word, bless you
+advise = Take it from an old gleaner | Sow it this way, neighbour
+helpout = Need a hand at the picking | Want another pair of paws
+wellsaid = That's good earth, that | Sound as a sheaf
+poorshow = That's blight, that | Wormy work, that
+fine = Growing, bless you | Fair as the season
+planless = Whatever the sun brings | See what the season wants
+pardon = I only said, bless you | What I said was
+tale = That's a harvest-supper tale | One for the barn dance, that
 # Greetings and closings for rules/shared8_turns.talk (plain.grammar's s8_* say who; here, the dialect's own).
 s8_hello = Harvest to you, neighbour | Ah, bless you | Good harvest, friend | Well, bless me, hello
 s8_okay = Off you pick, then | Bless you, go on | The furrows won't wait | Ripe time to go

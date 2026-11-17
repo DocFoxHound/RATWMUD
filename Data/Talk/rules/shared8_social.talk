@@ -1,0 +1,358 @@
+# The shared lines, Phase 8 session 2 (Docs/Design/84 §33.1, §33.3): the social moves. A tease and its answers (tease,
+# tease.return, tease.laugh, take_offence), a pushback (counter), praise and its answers (praise, deflect_praise),
+# thanks (thank) and a confidence kept (keep_confidence). Move lines (no concept): they answer wherever no concept's
+# own rule does.
+#
+# Strangers never tease (frames.json) and nobody teases at a wake (world.mood) or one who mourns: the engine's. The
+# dispreferred answers (offence taken, a pushback) weigh little beside the easy ones (§7.2: a jest is mostly laughed
+# off), and are written at six words or more or with a hedge. Once one of the realm's issues is aired, a pushback is
+# left to Phase 6's stance lines, true to each speaker's side (the engine keeps an everyday one out of that talk).
+
+## tease: a jest at what the other said of themselves, or thought
+
+rule s8s_tease_any
+does tease
+weight 0.6
+say Hark at you. | Oh, listen to this one. | Get you. | Aren't we pleased with ourselves. | Well, aren't you the clever one.
+
+rule s8s_tease_boast
+does tease
+when conv.move=tell.boast
+weight 0.6
+say Oh, here we go. | You'll want a medal next. | I'll fetch a crown for you, shall I. | Steady. Your head won't fit through the door. | And modest with it.
+
+rule s8s_tease_opinion
+does tease
+when conv.move=give.opinion
+weight 0.5
+say Spoken like a true expert. | You'd argue with a fence post. | Oh, you know all about it, do you. | And who asked you, wise one?
+
+rule s8s_tease_self
+does tease
+when conv.move=tell.self
+weight 0.5
+say That's you all over. | Of course you did. | Only you. | Why am I not surprised.
+
+rule s8s_tease_food
+does tease
+when conv.topic=food
+weight 0.5
+say Is there a meal you don't like? | You and your belly. | You'd eat the table if it was gravied. | Thinking with your stomach again.
+
+rule s8s_tease_work
+does tease
+when conv.topic=work|day
+weight 0.5
+say Working hard, or hardly working? | Busy, are we? Could have fooled me. | I've seen you work. Once. | You make it sound like a battle.
+
+rule s8s_tease_weather
+does tease
+when conv.topic=weather|season
+weight 0.5
+say You'd grumble at a sunny day. | Never happy, are you. | And next you'll want it to snow honey.
+
+rule s8s_tease_money
+does tease
+when conv.topic=prices|times
+weight 0.5
+say You and your pennies. | You'd count the crumbs on a plate. | Clutch that purse any tighter and it'll squeak.
+
+rule s8s_tease_pastimes
+does tease
+when conv.topic=pastimes|animals
+weight 0.5
+say You and your pastimes. | You'd sooner do that than eat. | One day you'll get some sleep. | Is that all you think about?
+
+## tease.return: a jest turned back
+
+rule s8s_return_any
+does tease.return
+tone light
+say #s8_teaseback# | #s8_teaseback# | #cheek#. | Oh, very funny. | I'll remember that, mind. | You're one to talk.
+
+rule s8s_return_any2
+does tease.return
+tone light
+say Better than you, any day. | Jealous, are you? | Laugh away. | You wish you had half my sense. | Charming, as ever.
+
+rule s8s_return_food
+does tease.return
+when conv.topic=food
+tone light
+say A wolf has to eat. | I'll not apologise for a good appetite. | More for me, then.
+
+rule s8s_return_work
+does tease.return
+when conv.topic=work|day
+tone light
+say Somebody has to work round here. | I work harder than you, and that's no boast. | You should try it some time.
+
+rule s8s_return_money
+does tease.return
+when conv.topic=prices|times
+tone light
+say Look after the pennies, I say. | You'll be glad of my pennies one day. | Better a full purse than a light head.
+
+## tease.laugh: taking it in good part
+
+rule s8s_laugh_any
+does tease.laugh
+tone light
+say #s8_laugh# | Ha! Fair. | Ha! You got me. | All right, you win. | Ha! I'll have you for that. | #funny#.
+
+rule s8s_laugh_any2
+does tease.laugh
+tone light
+say Ha! I suppose I asked for it. | Ha! Too true. | Oh, stop it. | Ha! Guilty. | You're not wrong, worse luck.
+
+## take_offence: seldom, and with a reason
+
+rule s8s_offence_any
+does take_offence
+weight 0.25
+say Now that's uncalled for, that is. | I don't see what's so funny about it. | I'll thank you to keep that to yourself. | There's no need to be like that. | #hedge#, but that's not kind.
+
+rule s8s_offence_advice
+does take_offence
+when conv.move=give.advice
+weight 0.15
+say I didn't ask for advice, thank you. | I know my own business best, I think. | I'll manage my own affairs, thank you kindly. | #hedge#, but I'm not a pup to be told.
+
+rule s8s_offence_assess
+does take_offence
+when conv.move=assess|counter
+weight 0.3
+say Easy for you to judge from over there. | You weren't there, so mind what you say. | #hedge#. You don't know the half of it.
+
+## counter: a pushback (never in a talk on one of the realm's issues: Phase 6's stance lines say those)
+
+rule s8s_counter_any
+does counter
+weight 0.35
+say Oh, I don't know about that. | I'd not go that far. | That's not how I see it. | It's not so simple as that. | #hedge#. #demur#.
+
+rule s8s_counter_warn
+does counter
+when conv.move=warn
+weight 0.5
+say I can look after myself. | I've managed this long, haven't I. | I'll be fine. Don't fuss. | I know what I'm about.
+
+rule s8s_counter_advice
+does counter
+when conv.move=give.advice
+weight 0.25
+say Easy said. | That's all very well for you. | I'll do as I see fit. | If only it were that simple.
+
+rule s8s_counter_complaint
+does counter
+when conv.move=tell.complaint
+weight 0.4
+say It's not so bad as all that. | You'd grumble at a feast. | Others have it worse, mind. | Cheer up. It'll pass.
+
+rule s8s_counter_tease
+does counter
+when conv.move=tease|join.tease
+weight 0.5
+tone light
+say Better than yours, any day. | At least I've an excuse. | And whose fault is that? | Coming from you? Please.
+
+rule s8s_counter_challenge
+does counter
+when conv.move=challenge
+weight 0.5
+say I will, too. | Watch me. | You'll see. | Just you wait.
+
+rule s8s_counter_prices
+does counter
+when conv.topic=prices|price_cause|times
+weight 0.35
+say Prices are what they are. Folk still eat. | You'd not say that if you sold the stuff. | It's always dear somewhere. | Dear for some.
+
+rule s8s_counter_work
+does counter
+when conv.topic=work|day
+weight 0.35
+say Nobody's forcing you. | There's worse work than yours. | You'd miss it if you hadn't it. | It's honest, at least.
+
+rule s8s_counter_weather
+does counter
+when conv.topic=weather|season
+weight 0.35
+say It's only weather. | I've seen worse, and so have you. | The fields want it, mind. | It'll do no harm.
+
+## praise: for what another did
+
+rule s8s_praise_any
+does praise
+say #s8_praise# | #s8_praise# | #congrats.capitalize#! | That's well done. | You should be proud. | Now there's something.
+
+rule s8s_praise_any2
+does praise
+say You've done well. | Not many could say that. | I'd be proud of that. | Credit where it's due.
+
+rule s8s_praise_work
+does praise
+when conv.topic=work|day
+say You've a good paw for it. | There's not many do it so well. | That's a trade well learned. | You'll go far at that.
+
+rule s8s_praise_food
+does praise
+when conv.topic=food|home
+say That sounds a proper feast. | You keep a good table. | I'd walk a mile for that.
+
+rule s8s_praise_pastimes
+does praise
+when conv.topic=pastimes|friends
+say You've a knack for it, clearly. | I could never. | That takes patience, that does. | I'd like to see you at it.
+
+rule s8s_praise_beasts
+does praise
+when conv.topic=animals|land
+say You've a way with beasts. | The land does well by you. | That's good tending.
+
+rule s8s_praise_money
+does praise
+when conv.topic=prices|times|price_cause
+say That's a sharp bargain. | You'd get blood out of a stone. | Clever paws, you've got. | Nobody fleeces you, do they.
+
+## deflect_praise: praise waved off
+
+rule s8s_modest_any
+does deflect_praise
+say #s8_modest# | #s8_modest# | #modest#. | Go on with you. | You're too kind. | It's nothing much.
+
+rule s8s_modest_any2
+does deflect_praise
+say I had help. | It's no great thing. | Don't, you'll make me blush. | It was luck as much as anything.
+
+rule s8s_modest_work
+does deflect_praise
+when conv.topic=work|day
+say It's only the job. | Years of practice, that's all. | Any of us would. | I've done worse, believe me.
+
+## thank: thanks, for what was said or given
+
+rule s8s_thank_any
+does thank
+say #s8_thanks# | #s8_thanks# | #thanks#. | #bc_thank_you# | That's kind. | I'm grateful.
+
+rule s8s_thank_warn
+does thank
+when conv.move=warn
+say I'll mind it. Thank you. | I'll take care. Thanks for the word. | I'll keep my eyes open. | Good of you to tell me.
+
+rule s8s_thank_advice
+does thank
+when conv.move=give.advice
+say I'll bear it in mind. | Good advice. Thank you. | I'll think on it. Truly. | You're right. I know you are.
+
+rule s8s_thank_comfort
+does thank
+when conv.move=sympathise|reassure
+tone tender
+say That's kind of you to say. | It helps, hearing that. | Thank you. I needed that. | You're a comfort.
+
+rule s8s_thank_praise
+does thank
+when conv.move=praise|congratulate
+say Kind of you to notice. | Thank you. I've worked at it. | That's good to hear, from you. | Thank you. Truly.
+
+rule s8s_thank_grant
+does thank
+when conv.move=grant
+say I owe you one. | Thank you. I'll not forget it. | You're a good soul. | That's a weight off.
+
+rule s8s_thank_grant_close
+does thank
+when conv.move=grant pair.band=friends|family|spouses|housemates
+say You're a good friend to me. | What would I do without you. | I knew I could count on you.
+
+rule s8s_thank_secret
+does thank
+when conv.move=keep_confidence
+tone tender
+say I knew I could trust you. | Thank you. It's been weighing on me. | That's a weight off my chest.
+
+rule s8s_thank_accept
+does thank
+when conv.move=accept|accept_invite
+say Good. I'm glad. | Lovely. I'll look forward to it. | That's settled, then. | Good. That's good.
+
+rule s8s_thank_offer
+does thank
+when conv.move=offer
+say That's good of you. | You're kind to think of it. | Thank you for asking.
+
+## keep_confidence: a secret kept
+
+rule s8s_secret_any
+does keep_confidence
+tone tender
+say #secret.capitalize#. | #bc_i_wont# | I'll not breathe a word. | Your secret's safe with me. | Who would I tell? | It stays here.
+
+rule s8s_secret_any2
+does keep_confidence
+tone tender
+say Not a soul will hear it from me. | I'll take it to the grave. | You can trust me with that. | I'll forget you said it.
+
+rule s8s_secret_worry
+does keep_confidence
+when conv.tone=serious|tender|grave
+tone tender
+say I'm glad you told me. It's safe. | You did right to say. It goes no further. | Thank you for trusting me with it.
+
+## congratulate: glad for what another did or means to do (a boast, a plan)
+
+rule s8s_cheer_any
+does congratulate
+tone light
+say Well done, you! | That's grand news. | Now that's worth a cheer. | I'm that pleased for you. | #congrats.capitalize#, truly.
+
+rule s8s_cheer_plan
+does congratulate
+when conv.move=tell.plan
+tone light
+say Good luck to you. You'll do it. | That's a fine plan. Go to it. | I hope it all comes right for you. | You've my blessing, for what it's worth.
+
+rule s8s_cheer_work
+does congratulate
+when conv.topic=work|day
+tone light
+say A step up! Well earned. | You'll be running the place yet. | That's the trade paying you back.
+
+rule s8s_cheer_money
+does congratulate
+when conv.topic=prices|times|price_cause
+tone light
+say Sharp! You'll be rich yet. | A bargain like that wants celebrating. | That's coin well kept.
+
+rule s8s_cheer_pastimes
+does congratulate
+when conv.topic=pastimes|friends|animals
+tone light
+say Look at you, a natural. | You'll have to teach me. | All that practice paid off.
+
+rule s8s_cheer_home
+does congratulate
+when conv.topic=home|family
+tone light
+say That's lovely news for your house. | Your folk must be proud. | A happy house, that.
+
+rule s8s_cheer_young
+does congratulate
+when other.stage=young|adolescent self.stage=adult|old
+tone light
+say Clever pup! | Well done, little one. | Good for you, pup. | Aren't you something.
+
+## more teases, praise and grants by the trade
+
+rule s8s_tease_trade
+does tease
+when conv.topic=work other.job=merchant|baker|brewer|innkeeper|cook
+weight 0.5
+say You'd sell your own tail if the price was right. | Counting pennies in your sleep, I'd bet. | Rich yet, are you?
+
+rule s8s_praise_trade
+does praise
+when conv.topic=work other.job=smith|crafter|baker|cook
+say Your work's as good as any in town. | Nobody makes them like you. | You've the knack, no doubt about it.

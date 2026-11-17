@@ -3390,6 +3390,7 @@ void Library::preface(Conversation& c, Said& said, const Query& q, const Freshne
         line.text = g.text + " " + line.text;
         said.lines.front().second = line.text;
         line.moves.insert(line.moves.begin(), g.moves.begin(), g.moves.end());
+        line.callback = line.callback || g.callback;   // (Phase 8: a word that stands on the ledger is a callback, C9.)
         line.layers.insert(line.layers.end(), g.layers.begin(), g.layers.end());
         line.habits.insert(line.habits.end(), g.habits.begin(), g.habits.end());
         said.chain.push_back(before.id);
@@ -3409,6 +3410,24 @@ void Library::preface(Conversation& c, Said& said, const Query& q, const Freshne
     if (const auto thread = q.facts.find("pair.thread"); thread != q.facts.end() && !c.topic.empty() && thread->second == c.topic &&
                                                          !does("return"))
         back = one("return");
+    // Phase 8 (§8.7, §33.3): else, half the time, a word that the two were on this lately, or how it went then (a
+    // `recall` move line reading the ledger: pair.talked.<topic>, pair.recall.<topic>), on the talk's own topic.
+    const auto onLedger = [&] {                     // (Asked only where the ledger has something to recall: §16, B1.)
+        if (c.topics.empty())
+            return false;
+        const auto last = q.facts.find("pair.last_outcome");
+        return q.facts.count("pair.talked." + c.topics.back()) > 0 || (last != q.facts.end() && last->second == "broken");
+    };
+    if (back.id.empty() && !does("return") && !does("recall") && moves_.find("recall") && onLedger() &&
+        unit(mix(c.seed * 0x9E3779B97F4A7C15ULL + 0x5EC0)) < .5)
+    {
+        auto onTopic = q;
+        onTopic.facts["conv.topic"] = c.topics.back();
+        Conversation::Open o;
+        o.moves = {"recall"};
+        if (auto s = answer(c, o, onTopic, 0, fresh, nullptr); !s.id.empty() && s.info.size() == 1)
+            back = std::move(s);
+    }
     const bool opens = does("opening");
     Said greet;
     std::vector<std::string> open;
@@ -3425,7 +3444,8 @@ void Library::preface(Conversation& c, Said& said, const Query& q, const Freshne
             trace->why += "; greeted first (" + open[i] + ")";
     }
     if (!back.id.empty())
-        prepend(back, "returned to the thread");
+        prepend(back, does("return") || back.info.front().moves.empty() || back.info.front().moves.front() != "recall"
+                          ? "returned to the thread" : "recalled their last talk");
     if (!greet.id.empty())
         prepend(greet, "greeting");
 }
@@ -3518,6 +3538,8 @@ std::optional<SaidLine> Library::join(Conversation& c, const std::string& id, co
     for (const auto& [k, v] : c.conv)
         asked.facts["conv." + k] = v;
     asked.facts["conv.stake"] = stake;
+    if (!c.topics.empty() && !asked.facts.count("conv.topic"))
+        asked.facts["conv.topic"] = c.topics.back(); // (Phase 8: joins by the topic they cut in on, §33.3.)
     accommodate(asked);
     stanceFacts(c, asked);                          // (Phase 6: a joiner sides with an opinion, or corrects it.)
     auto s = answer(c, o, asked, 0, fresh, trace);
@@ -3998,7 +4020,29 @@ std::optional<SaidLine> Library::lull(Conversation& c, const std::function<Query
         {
             // (The marked words in front, as another said none of them here within the hour: the collision filter.)
             const auto bare = first.text;
-            for (std::uint64_t tries = 0; tries < 5; ++tries)
+            bool lined = false;
+            // Phase 8 (§8.5): a step along the graph is said by a line made for it where one holds (a `pivot` move line;
+            // conv.from is the topic it leaves, conv.topic the one it turns to), else by #pivot#.
+            if (pick.how == "pivot" && !c.topics.empty())
+            {
+                auto stepQ = q;
+                stepQ.facts["conv.from"] = c.topics.back();
+                Conversation::Open o;
+                o.moves = {"pivot"};
+                if (auto step = answer(c, o, stepQ, side, fresh, nullptr); !step.id.empty() && step.info.size() == 1)
+                {
+                    first.text = step.info.front().text + " " + bare;
+                    if (!collides(said, q, fresh))
+                    {
+                        words = step.info.front().text;
+                        said.chain.insert(said.chain.begin(), step.id);
+                        c.said.insert(step.id);
+                        lined = true;
+                    }
+                    first.text = bare;
+                }
+            }
+            for (std::uint64_t tries = 0; !lined && tries < 5; ++tries)
             {
                 words.clear();
                 expand(pick.how == "pivot" ? "#pivot#" : "#anyway#", q, side, beatSeed(0x91F0 + tries * 0x51), words);
@@ -4109,6 +4153,24 @@ Said Library::answer(const Conversation& c, const Conversation::Open& owed, cons
                        hasMove(moves_, l.moves, "give.opinion");
             });
             if (gave || (agree != asked.facts.end() && agree->second == "yes"))
+                continue;
+        }
+        // Phase 8 (§33.3): once one of the realm's issues is aired, a move line's everyday view or pushback (one not
+        // written for the issue: none of its criteria read the issue, the agreement or a stance) is left unsaid, so the
+        // shared lines' views never speak against a speaker's own side (T4); and nor is an everyday tease or piece of
+        // advice said straight back to a stance (it would answer what wasn't said: "Don't pay the first price asked." to
+        // a view on the dole).
+        if (e.concepts.empty())
+        {
+            const auto& does = e.does.front();
+            const bool view = hasMove(moves_, does, "give.opinion") || hasMove(moves_, does, "counter");
+            const bool reply = hasMove(moves_, does, "tease") || hasMove(moves_, does, "give.advice");
+            const bool afterStance = !c.lines.empty() && !c.lines.back().issue.empty();
+            if (((view && c.conv.count("issue")) || ((view || reply) && afterStance)) &&
+                std::none_of(e.when.begin(), e.when.end(), [](const Criterion& k) {
+                    static const std::set<std::string> Stance{"issue", "agree", "agreed_before", "stance", "stance_strength", "stance_why"};
+                    return Stance.count(k.name) > 0 || k.name.rfind("op.", 0) == 0 || k.name.rfind("op_", 0) == 0;
+                }))
                 continue;
         }
         auto said = render(e, asked, mix(c.seed + std::uint64_t(c.beat) * 7919 + i), nullptr, speaker);

@@ -1,0 +1,337 @@
+# The shared lines, Phase 8 session 2 (Docs/Design/84 §33.1, §33.3): the answers a question makes due when no concept's
+# own rule answers it: how one is (answer.how and its variants), what one means to do (answer.plan), where one's been
+# or going (answer.whereabouts), what ails one (answer.check_in), what one said (clarify); and the turns around a
+# closing and an apology: one more thing before parting (extend), and an apology not taken (decline_apology). Move
+# lines (no concept).
+#
+# An answer about oneself is true to the speaker's own facts: well only when nothing ails them, hungry when hungry,
+# busy at work, grieving when mourning; where the facts say nothing, the ordinary deflections ("Getting by."). A
+# question of where may be "where've you been?" or "where are you off to?", so the answers fit both. An extend is
+# seldom (it weighs little beside taking the leave), and an apology is seldom refused.
+
+## answer.how: how one is
+
+rule s8a_how_any
+does answer.how.deflect
+say #s8_fine# | #s8_fine# | #fine#. | Oh, you know. | Same as ever. | Getting by.
+
+rule s8a_how_any2
+does answer.how.deflect
+say Not so bad. | Still here. | Can't grumble, or I'd never stop. | One day at a time. | Mustn't complain.
+
+rule s8a_how_well
+does answer.how.well
+when self.mood=bright|even self.hungry!=yes self.injured!=light|bad self.mourning!=kin|friend
+say Well, thank you. | Good, thanks. Busy, but good. | Very well, as it happens. | Can't complain. Truly. | All the better for asking.
+
+rule s8a_how_bright
+does answer.how.well
+when self.mood=bright self.hungry!=yes self.mourning!=kin|friend
+tone light
+say Never better. | Grand, thank you. Grand. | Happy as a lark. | On top of the world, today.
+
+rule s8a_how_newborn
+does answer.how.well
+when self.mood_why=newborn
+tone light
+say Tired and happy. There's a new pup at ours. | Short of sleep, but I'd not change it. | Over the moon, if you must know.
+
+rule s8a_how_wed
+does answer.how.well
+when self.mood_why=wed
+tone light
+say Still getting used to being wed. | Happy. Is that allowed? | Never better, since the wedding.
+
+rule s8a_how_trade
+does answer.how.well
+when self.mood_why=trade self.hungry!=yes
+say Business is good, so I'm good. | Busy, and the till's full. Can't ask more. | Doing well, touch wood.
+
+rule s8a_how_hungry
+does answer.how.poorly
+when self.hungry=yes
+say Hungry, if I'm honest. | Lean. The belly's empty more than it's full. | I've had better weeks. Hungrier ones too. | Empty, mostly.
+
+rule s8a_how_hurt
+does answer.how.poorly
+when self.injured=light|bad
+say Sore. I took a knock. | Stiff, and slow with it. | Mending, slowly. | I've been better. It'll heal.
+
+rule s8a_how_low
+does answer.how.poorly
+when self.mood=low self.mourning!=kin|friend
+say Not so good, truth be told. | Low. I don't know why. | A bit down, that's all. | I've been better.
+
+rule s8a_how_sore
+does answer.how.poorly
+when self.mood=sore
+say Out of sorts. Don't ask. | Cross, if you want the truth. | Sore about something. It'll pass.
+
+rule s8a_how_robbed
+does answer.how.poorly
+when self.mood_why=robbed
+say Robbed, and still cross about it. | Poorer than I was, thanks to some thief. | Not good. I was robbed, you know.
+
+rule s8a_how_busy
+does answer.how.busy
+when self.working=yes
+say #bc_very_busy# | Busy. No rest for anyone. | Up to my ears. | Run ragged, but there it is. | Busy as ever.
+
+rule s8a_how_grieving
+does answer.how.grieving
+when self.mourning=kin|friend
+tone tender
+say I'm up and about. That's something. | Getting through the days. | Some mornings are hard. | It's the quiet I mind. That's all. | Better for the company.
+
+rule s8a_how_homeless
+does answer.how.poorly
+when self.homeless=yes
+say Rough, mostly. | Looking for a dry corner, same as ever. | Still without a roof, if you're asking.
+
+## answer.plan: what one means to do
+
+rule s8a_plan_any
+does answer.plan
+say #planless#. | Oh, the usual. | Nothing much. | Haven't decided. | #bc_we_will_see# | Whatever comes.
+
+rule s8a_plan_work_before
+does answer.plan
+when self.working=yes self.shift=before
+say Work, and soon. | Off to work in a bit. | The usual. A day's work. | Work first. Then we'll see.
+
+rule s8a_plan_work_during
+does answer.plan
+when self.working=yes self.shift=during
+say Finish this, then home. | Get through the day, mostly. | Work till it's done. | Back to it, after this.
+
+rule s8a_plan_work_after
+does answer.plan
+when self.shift=after
+say Home, and my feet up. | Supper, and an early night. | Nothing. I've earned it. | Rest, if anyone lets me.
+
+rule s8a_plan_day_off
+does answer.plan
+when self.shift=day_off here.time=dawn|day
+say Nothing, if I can help it. | A day to myself, for once. | I mean to enjoy it. | Odd jobs about the place.
+
+rule s8a_plan_night
+does answer.plan
+when here.time=night
+say Bed, and soon. | Sleep, if my head lets me. | Home. It's late. | Nothing but my bed.
+
+rule s8a_plan_festival
+does answer.plan
+when world.festival=today|soon
+tone light
+say The festival, like everyone. | Dancing, if my feet hold out. | Eat too much, I expect. | I'll be at the festival.
+
+rule s8a_plan_rest
+does answer.plan
+when here.day=rest
+say Chapel, then supper. | It's Restday. Nothing. | Rest, as the day says. | Sit in the sun, if there is any.
+
+rule s8a_plan_young
+does answer.plan
+when self.stage=young
+tone light
+say Playing! | Find the others. | I'm going to the water! | Climb something. | Explore!
+
+rule s8a_plan_teen
+does answer.plan
+when self.stage=adolescent
+say #bc_nothing# | Get out of chores. | Dunno. Something. | Find the others, maybe.
+
+rule s8a_plan_farm
+does answer.plan
+when self.job=farmer|herder
+say Out to the fields. | The beasts want seeing to. | Fences, and more fences. | Whatever the land wants of me.
+
+rule s8a_plan_water
+does answer.plan
+when self.job=fisher|sailor
+say Out on the water, weather allowing. | Nets to mend first. | Whatever the tide says.
+
+rule s8a_plan_shop
+does answer.plan
+when self.job=merchant|baker|brewer|innkeeper|cook
+say Open up and sell what I can. | Keep the shop. Same as always. | Count the stock, curse the prices.
+
+rule s8a_plan_hungry
+does answer.plan
+when self.hungry=yes
+say Find something to eat, first. | Eat, if I can. | Food. Then the rest.
+
+rule s8a_plan_homeless
+does answer.plan
+when self.homeless=yes
+say Find somewhere dry to sleep. | Keep out of the wind. | Same as every day. Get by.
+
+## answer.whereabouts: where one's been, or going (the answers fit both)
+
+rule s8a_where_any
+does answer.whereabouts
+say Oh, here and there. | About my business. | Nowhere much. | Just about. | Here, there. You know.
+
+rule s8a_where_work
+does answer.whereabouts
+when self.job!=none|child|beggar self.stage=adult|old
+say Work, mostly. | Where the work is. | At it, same as ever.
+
+rule s8a_where_home
+does answer.whereabouts
+when self.homeless=no
+say Home, mostly. | Between home and work. | Not far from my own door.
+
+rule s8a_where_young
+does answer.whereabouts
+when self.stage=young|adolescent
+say Nowhere! | Just out. | Around. | With the others.
+
+## answer.check_in: what ails one
+
+rule s8a_checkin_any
+does answer.check_in
+say I'm all right, really. | Nothing a sit-down won't fix. | Oh, it's nothing. | I'll live. | Don't fuss. I'm fine.
+
+rule s8a_checkin_tired
+does answer.check_in
+when self.tired=yes
+say Tired, that's all. | Didn't sleep. | Long day. Longer night. | I could sleep standing.
+
+rule s8a_checkin_low
+does answer.check_in
+when self.mood=low|sore
+say Bit of a day, that's all. | Don't mind me. I'll come round. | Something on my mind. It'll keep.
+
+rule s8a_checkin_hungry
+does answer.check_in
+when self.hungry=yes
+say Hungry, mostly. | Haven't eaten. That'll be it. | Empty belly, sour face.
+
+rule s8a_checkin_hurt
+does answer.check_in
+when self.injured=light|bad
+say Took a knock. It'll mend. | Sore, that's all. | Just a hurt. Nothing broken.
+
+rule s8a_checkin_bright
+does answer.check_in
+when self.mood=bright
+tone light
+say Never better, as it happens. | Me? I'm grand. | Not a care in the world, today.
+
+## clarify: what one said, again
+
+rule s8a_clarify_any
+does clarify
+say Never mind. It'll keep. | Oh, nothing. Forget it. | #pardon#, it's no matter. | It wasn't important. | I'll tell you later.
+
+rule s8a_clarify_gossip
+does clarify
+when conv.topic=gossip|crime|life|news|newcomer
+say #topic.subject#. You heard right. | #pardon# #topic.subject#. | #topic.subject#, I said. That's all.
+
+rule s8a_clarify_prices
+does clarify
+when conv.topic=prices|price_cause
+say Prices, I said. | The price of things. That's all. | #pardon#, it's all gone dear.
+
+rule s8a_clarify_weather
+does clarify
+when conv.topic=weather|season
+say The weather, I said. | Only the weather. | #pardon#, it's turned.
+
+rule s8a_clarify_road
+does clarify
+when conv.topic=bandits|caravan|travel
+say The road, I said. | The road. It's not safe. | About the wagons. That's all.
+
+## extend: one more thing before parting (seldom: it weighs little beside taking the leave). What the one more thing is
+## comes of the moment (plain.grammar's s8_extend: love to the house of a friend, the ice, the rain, the dark, the road),
+## so no extend outranks the leave-taking it stands beside.
+
+rule s8a_extend_any
+does extend
+weight 0.3
+say #s8_extend# | #s8_extend#
+
+## decline_apology: an apology not taken (seldom)
+
+rule s8a_unforgiven_any
+does decline_apology
+weight 0.3
+say #hedge#. I'm not ready to let it go yet. | Hm. Sorry's a start, I suppose. | Words are easy. We'll see, won't we. | I'll think about it. Not now, though.
+
+rule s8a_unforgiven_sore
+does decline_apology
+when self.mood=sore
+weight 0.4
+say Not today. I'm too sore about it still. | You'll have to do better than that. | #hedge#, but it'll take more than sorry.
+
+## answer.plan by trade (what a day holds for each)
+
+rule s8a_plan_smith
+does answer.plan
+when self.job=smith
+say The forge, as ever. | Nails, and more nails. | Mend what's broken, make what's wanted. | Keep the fire fed.
+
+rule s8a_plan_crafter
+does answer.plan
+when self.job=crafter
+say Whatever's on the bench. | Finish what I started yesterday. | Orders, if there are any.
+
+rule s8a_plan_guard
+does answer.plan
+when self.job=guard|soldier
+say My watch, then sleep. | Walk the rounds. Same as ever. | Keep the peace, if it'll be kept.
+
+rule s8a_plan_healer
+does answer.plan
+when self.job=healer
+say Whoever's sick, I'll see. | Rounds, and the herbs to dry. | Whatever ails the town today.
+
+rule s8a_plan_priest
+does answer.plan
+when self.job=priest
+say Prayers, then visiting. | The chapel wants sweeping, and the sick want seeing. | The Bright One's work.
+
+rule s8a_plan_miner
+does answer.plan
+when self.job=miner
+say Down the hole, same as yesterday. | Dig till the lamp says stop. | The seam, and then a bath.
+
+rule s8a_plan_carter
+does answer.plan
+when self.job=carter
+say Load up and go, if the road's fit. | Whatever wants carrying. | On the road by noon, I hope.
+
+rule s8a_plan_labour
+does answer.plan
+when self.job=laborer|servant|woodcutter
+say Fetch and carry, as ever. | Whatever I'm told. | Heavy work, then bed.
+
+rule s8a_plan_scholar
+does answer.plan
+when self.job=scholar|official
+say Papers, and more papers. | Reading, if they let me. | Counting, writing, sealing. The usual.
+
+## answer.whereabouts by place and work
+
+rule s8a_where_market
+does answer.whereabouts
+when here.place=market
+say The market, mostly. | Round the stalls. | Here, haggling.
+
+rule s8a_where_tavern
+does answer.whereabouts
+when here.place=tavern self.stage=adult|old
+say Here, mostly, if I'm honest. | By this fire, more than I should be. | Nowhere a cup can't find me.
+
+rule s8a_where_field
+does answer.whereabouts
+when self.job=farmer|herder
+say Out in the fields. | With the beasts. | Up the top meadow, mostly.
+
+rule s8a_where_water
+does answer.whereabouts
+when self.job=fisher|sailor
+say On the water. | Down by the boats. | Out with the nets.

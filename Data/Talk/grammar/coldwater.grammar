@@ -151,6 +151,19 @@ dunno = That's all the net brought up | That's the whole catch of it
 hearsay = It washed up on the shore, is all | Shore-talk, that's all I have
 howso = How did that wash up | How do you mean, shore-friend
 rest = The deep keep the soul | Calm water to the soul
+# Phase 8, session 2 (doc 84 §33.3): the other owed moves' words, as Coldwater says them. Drafts, to be tuned by ear.
+funny = That's a catch and a half | Ha, you'll sink me
+cheek = Hark at the herring | Says the minnow
+modest = Only a lucky cast | The lake did the work
+secret = Sunk deep, that | Not a ripple from me
+advise = Take it from an old net | Cast it this way, shore-friend
+helpout = Need another oar | Want a paw on the line
+wellsaid = Sound as a good hull | Well cast, that
+poorshow = That's a holed net | Weedy work, that
+fine = Afloat, shore-friend | Steady on the water
+planless = Whatever the tide washes in | See how the water lies
+pardon = I only said, shore-friend | What I said was
+tale = A tale and a half, that | That's one for mending nets by
 # Greetings and closings for rules/shared8_turns.talk (plain.grammar's s8_* say who; here, the dialect's own).
 s8_hello = Still water, shore-friend | Ah, it's you, shore-friend | Well met on the shore | Calm water
 s8_okay = Aye, row on | Off you row, then | The tide won't wait | Go on, shore-friend

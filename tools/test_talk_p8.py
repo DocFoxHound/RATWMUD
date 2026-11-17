@@ -16,6 +16,13 @@ DISCOURSE = ['marvel', 'pity', 'gladnews', 'uneasy', 'grumble', 'notsobad', 'dun
 CLOSINGS = ['s8_hello', 's8_okay', 's8_bye', 's8_byeback', 's8_nevermind']
 # Plain's own, by who says them (no dialect needs them: they're said by the plain words' speakers, with dialect inside).
 PLAIN_ONLY = ['s8_wow', 's8_gripe', 's8_evade', 's8_ask', 's8_pupbye', 's8_pupbyeback', 's8_teenbye']
+# Session 2's (§33.3): the other owed moves' words in every grammar, and plain's who-says-it for them.
+DISCOURSE2 = ['funny', 'cheek', 'modest', 'secret', 'advise', 'helpout', 'wellsaid', 'poorshow', 'fine', 'planless',
+              'pardon', 'tale']
+PLAIN_ONLY2 = ['s8_self', 's8_laugh', 's8_teaseback', 's8_thanks', 's8_praise', 's8_modest', 's8_sure', 's8_fine',
+               's8_story', 's8_memory', 's8_extend', 's8_welcome']
+# Callbacks (shared8_callbacks.talk) are the one place an opener is the point (§33.1): a concept there reads the ledger.
+LEDGER = re.compile(r'\bpair\.(talked|recall|last_talk|last_outcome|kept_invite|thread)\b')
 
 
 def grammar(name: str) -> dict[str, list[str]]:
@@ -36,12 +43,14 @@ def rules() -> list[dict]:
             m = re.match(r'rule (\S+)', block)
             if not m:
                 continue
-            r = {'id': m.group(1), 'file': f.name, 'does': '', 'when': '', 'say': []}
+            r = {'id': m.group(1), 'file': f.name, 'does': '', 'when': '', 'say': [], 'weight': 1.0}
             for line in block.splitlines():
                 if line.startswith('does '):
                     r['does'] = line[5:].strip()
                 elif line.startswith('when '):
-                    r['when'] = line[5:].strip()
+                    r['when'] = (r['when'] + ' ' + line[5:].strip()).strip()
+                elif line.startswith('weight '):
+                    r['weight'] = float(line[7:])
                 elif line.startswith('say '):
                     r['say'] += [a.strip() for a in line[4:].split('|')]
             out.append(r)
@@ -56,7 +65,10 @@ class SharedLines(unittest.TestCase):
     def test_every_rule_is_a_move_line_that_says_what_it_does(self):
         for r in rules():
             self.assertTrue(r['does'], f"{r['id']}: no does")
-            self.assertNotIn('concept=', r['when'], f"{r['id']}: a move line has no concept (§8.2)")
+            if 'concept=' in r['when']:
+                self.assertEqual(r['file'], 'shared8_callbacks.talk', f"{r['id']}: a move line has no concept (§8.2)")
+                self.assertRegex(r['when'], LEDGER, f"{r['id']}: a callback opener reads the ledger")
+                self.assertRegex(r['when'], r'(^| )concept=talk\.[a-z_]+(\|talk\.[a-z_]+)*( |$)', r['id'])
             self.assertNotRegex(r['when'], r'(^| )topic=', f"{r['id']}: conv.topic, not topic= (a concept)")
             self.assertTrue(r['say'], f"{r['id']}: no words")
 
@@ -77,6 +89,56 @@ class SharedLines(unittest.TestCase):
         plain = {k.split('[')[0] for k in grammar('plain')}
         for s in PLAIN_ONLY:
             self.assertIn(s, plain, f'plain has no {s}')
+        for g in ['plain'] + DIALECTS:
+            have = {k.split('[')[0] for k in grammar(g)}
+            for s in DISCOURSE2:
+                self.assertIn(s, have, f'{g} has no {s}')
+        for s in PLAIN_ONLY2:
+            self.assertIn(s, plain, f'plain has no {s}')
+
+    def test_every_pivot_is_a_step_the_graph_has(self):
+        # A pivot line (§8.5) is made for an edge of topics.json, or a turn within one topic: conv.from and conv.topic.
+        import json
+        topics = json.loads((TALK / 'topics.json').read_text())['topics']
+        for r in rules():
+            if r['does'].split()[0] != 'pivot':
+                continue
+            src = re.search(r'conv\.from=([a-z_|]+)', r['when'])
+            dst = re.search(r'conv\.topic=([a-z_|]+)', r['when'])
+            self.assertTrue(src and dst, f"{r['id']}: a pivot names the step (conv.from, conv.topic)")
+            for a in src.group(1).split('|'):
+                self.assertIn(a, topics, r['id'])
+                for b in dst.group(1).split('|'):
+                    self.assertIn(b, topics, r['id'])
+                    if len(src.group(1).split('|')) == 1 and len(dst.group(1).split('|')) == 1:
+                        self.assertTrue(a == b or b in topics[a].get('next', {}), f"{r['id']}: {a} to {b} isn't an edge")
+
+    def test_laughs_and_views_keep_their_place(self):
+        # Never a laugh at what was said gravely (§8.11); an everyday view or pushback says nothing of one of the realm's
+        # issues (the engine leaves it unsaid once one is aired: Phase 6's stance lines speak there); the dispreferred and
+        # the seldom weigh little (§7.2), and what an extend is comes of the grammar, so it never outranks the leave.
+        for r in rules():
+            moves = r['does'].split()
+            if moves[0] == 'laugh':
+                self.assertRegex(r['when'], r'conv\.tone(!=serious\|grave\|tender|=light)', r['id'])
+            if moves[0] in ('counter', 'give.opinion'):
+                self.assertNotRegex(r['when'], r'conv\.(issue|agree)|self\.(stance|op)', r['id'])
+            if moves[0] in ('take_offence', 'refuse', 'decline_apology', 'counter'):
+                self.assertLessEqual(r['weight'], 0.5, r['id'])
+            if moves[0] == 'extend':
+                self.assertLessEqual(r['weight'], 0.35, r['id'])
+                self.assertEqual(r['when'], '', f"{r['id']}: an extend's moment is the grammar's (s8_extend)")
+
+    def test_answers_about_oneself_are_true_to_the_speaker(self):
+        # How one is, by one's own facts (§33.3): "well" only where nothing ails them, grieving only in mourning.
+        for r in rules():
+            moves = r['does'].split()
+            if moves[0] == 'answer.how.well':
+                self.assertRegex(r['when'], r'self\.(mood|mood_why)=', r['id'])
+            if moves[0] == 'answer.how.grieving':
+                self.assertIn('self.mourning=', r['when'], r['id'])
+            if moves[0] == 'answer.how.busy':
+                self.assertIn('self.working=yes', r['when'], r['id'])
 
     def test_closings_are_short(self):
         # Said in nearly every talk: under six words, never "distinctive" (R4, R5), in every voice.
@@ -127,7 +189,7 @@ class SharedLines(unittest.TestCase):
                 self.assertNotRegex(a, r'\btells\b', r['id'])
         for g in ['plain'] + DIALECTS:
             for k, alts in grammar(g).items():
-                if k.split('[')[0] in DISCOURSE + CLOSINGS + PLAIN_ONLY:
+                if k.split('[')[0] in DISCOURSE + CLOSINGS + PLAIN_ONLY + DISCOURSE2 + PLAIN_ONLY2:
                     for a in alts:
                         self.assertNotRegex(a, r'\bdogs?\b', f'{g} {k}')
 

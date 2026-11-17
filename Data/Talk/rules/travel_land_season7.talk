@@ -346,7 +346,7 @@ then other: tale.react
 rule e5_been_old_broad
 when concept=travel.been self.stage=old self.accent=broad
 does answer.detail
-say Never. Never needed to. Everything I want's in sight of my door. | Been to the next town, once. For a funeral. Didn't care for it. | Why would I? I'd only have to come back.
+say Never. Never needed to. Everything I want's in sight of my door. | Been to the next town, once. For a wedding. Didn't care for it. | Why would I? I'd only have to come back.
 then other: tale.react
 
 rule e5_been_rich

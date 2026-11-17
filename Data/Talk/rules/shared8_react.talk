@@ -1,0 +1,488 @@
+# The shared lines, Phase 8 session 2 (Docs/Design/84 §33.1, §33.3): taking in what another says of themselves
+# (react.self), a tale or a memory (react.story), a laugh (laugh), and a judgement on what was said (assess). Move
+# lines (no concept), found by the move they make, so they answer wherever no concept's own rule does: the floor of
+# every reply, and every mantle line (Phase 9) that owes one of these.
+#
+# A move line doesn't know the words it answers: react.self answers "I sold the lot!" and "I'm worn to the bone" alike,
+# so a line says only what fits whatever was said, and its feeling comes from what is known of the line before it:
+# its move (conv.move: tell.boast is glad news, answer.how.poorly isn't), its tone (conv.tone: light, or serious,
+# tender, grave) and its topic (conv.topic). Who says it (a pup, a dry wolf, a cold one) is the grammar's (s8_*), so no
+# rule outranks the rest for its speaker (§33.2). Never a laugh at what was said gravely.
+
+## react.self: the floor, for anything said of oneself
+
+rule s8r_self_any
+does react.self
+say #s8_self# | #s8_self# | #ack#. | So that's how it is. | Well, there you are. | There it is, then.
+
+rule s8r_self_any2
+does react.self
+say Ah. I see. | #bc_fair_enough# | Is that right. | Well, now. | So it goes, then. | #bc_right#
+
+## react.self by how it was said: light news of oneself, and heavier
+
+rule s8r_self_light
+does react.self.glad
+when conv.tone=light
+say That's cheering. | Well, that's grand. | Good. Good for you. | Ha, there's a thing. | Nice, that. | That's put a smile on me.
+
+rule s8r_self_sober
+does react.self.sorry
+when conv.tone=serious|tender|grave
+tone tender
+say Ah. That's hard. | #sympathy.capitalize#. | I'm sorry for it. | That's a weight to carry about. | Go easy on yourself. | That's no small thing.
+
+## react.self by the move before: a boast, a plan, a feeling, how one is, where one's been
+
+rule s8r_self_boast
+does react.self.glad
+when conv.move=tell.boast
+tone light
+say And so you should be pleased. | That's worth a grin. | Well, look at that. | You've earned a sit-down, then. | Not bad at all.
+
+rule s8r_self_boast_wry
+does react.self.wry
+when conv.move=tell.boast
+weight 0.5
+tone light
+say And you'll be telling everyone, I suppose. | Don't let it go to your head. | I'll hear about this all week, won't I. | Steady. You'll burst.
+
+rule s8r_self_plan
+does react.self
+when conv.move=tell.plan|answer.plan
+say Sounds a fair plan. | I hope it comes off. | Well, see it through. | That's a full day. | Good luck with it, then. | Best of luck to you.
+
+rule s8r_self_plan_wry
+does react.self.wry
+when conv.move=tell.plan|answer.plan
+weight 0.4
+say Plans are easy made. | We'll see how far it gets. | And if it rains? | Rather you than me.
+
+rule s8r_self_feeling
+does react.self.sorry
+when conv.move=tell.feeling|tell.worry
+tone tender
+say That's no way to feel. | Ah. I'd feel the same. | Come here. It'll pass. | You poor thing. | That's hard. I'm here, mind.
+
+rule s8r_self_well
+does react.self.glad
+when conv.move=answer.how.well|answer.after.better
+say Glad to hear it. | Long may it last. | Good. That's good. | That's what I like to hear. | Keep it that way.
+
+rule s8r_self_poorly
+does react.self.sorry
+when conv.move=answer.how.poorly|answer.after.worse
+tone tender
+say Oh dear. Look after yourself. | That's no good. Rest, if you can. | Sorry for it. Mind you eat something. | Don't push yourself, then. | Have you seen anyone?
+
+rule s8r_self_busy
+does react.self.wry
+when conv.move=answer.how.busy
+say Busy's better than idle, they say. | Don't work yourself to the bone. | Better busy than bored. | Mind you rest some.
+
+rule s8r_self_grieving
+does react.self.sorry
+when conv.move=answer.how.grieving
+tone tender
+say Go gently. It takes the time it takes. | I know. One day at a time. | You've only to say, if you need anything. | There's no hurrying it.
+
+rule s8r_self_deflect
+does react.self.wry
+when conv.move=answer.how.deflect
+say Keep your secrets, then. | As you like. | Fair enough. I'll not pry. | Ha. All right.
+
+rule s8r_self_where
+does react.self
+when conv.move=answer.whereabouts
+say Ah. I wondered. | That's where you've been. | I thought I'd not seen you about. | So that's it.
+
+rule s8r_self_checkin
+does react.self
+when conv.move=answer.check_in
+say Well, as long as you're all right. | Only asking. | Good. You'd say, if not? | Mind yourself, then.
+
+rule s8r_self_after_nothing
+does react.self.sorry
+when conv.move=answer.after.nothing|answer.after.done
+say Ah, well. Give it time. | That's a shame. | Some things don't come back. | Well. You tried.
+
+## react.self by what it's about
+
+rule s8r_self_work
+does react.self
+when conv.topic=work|day
+say That's the trade for you. | Work's work. | It all wants doing. | #bc_somebody_has_to# | Same in every trade.
+
+rule s8r_self_work_job
+does react.self
+when conv.topic=work self.working=yes
+say Same here, near enough. | Don't I know it. | It's the same in my line. | Aye, and mine's no better.
+
+rule s8r_self_pastimes
+does react.self
+when conv.topic=pastimes|friends
+say Each to their own. | Sounds a good way to spend an evening. | You've the time for it, then. | I'd like to see that. | Better than sitting idle.
+
+rule s8r_self_home
+does react.self
+when conv.topic=home|family
+say Home's home. | Families, eh. | That's how it is, under one roof. | It's never quiet at home, is it. | There's always something.
+
+rule s8r_self_food
+does react.self
+when conv.topic=food
+say That sounds good. | I'd not say no to that. | Now you're making me hungry. | A full belly's a fine thing.
+
+rule s8r_self_food_poor
+does react.self
+when conv.topic=food self.hungry=yes
+say Don't. My belly's listening. | You'll set me drooling. | Stop, or I'll eat my own paw.
+
+rule s8r_self_health
+does react.self
+when conv.topic=health
+tone tender
+say Look after yourself, now. | Don't leave it too long. | Mind you rest. | That wants watching.
+
+rule s8r_self_faith
+does react.self
+when conv.topic=faith|dreams
+say The Bright One sees it, I'm sure. | That's between you and the gods. | There's comfort in that. | I'd not read too much into it.
+
+rule s8r_self_dreams
+does react.self
+when conv.topic=dreams
+say Dreams are queer things. | I'd not lose sleep over it. | I never remember mine. | Funny, what the night brings up.
+
+rule s8r_self_animals
+does react.self
+when conv.topic=animals|land
+say Beasts are good company. | The land keeps you honest. | That's a full day's tending. | They know their own minds, beasts.
+
+rule s8r_self_weather
+does react.self
+when conv.topic=weather|season
+say Weather's weather. | Nothing for it but to put up with it. | It'll turn. It always does. | That's the season for you.
+
+rule s8r_self_travel
+does react.self
+when conv.topic=travel|accent|newcomer
+say You've been about, then. | That's a long way. | I've never been past the next town. | Roads change a wolf, they say.
+
+rule s8r_self_memories
+does react.self
+when conv.topic=memories|lore
+say Funny what stays with you. | That takes some remembering. | Long ago, that. | You've a good memory.
+
+rule s8r_self_prices
+does react.self
+when conv.topic=prices|price_cause|times
+say That's coin for you. | Every penny counts. | It's the same for all of us. | You'll manage. We always do.
+
+
+
+## react.self.glad, when gladness was what was owed
+
+rule s8r_glad_any
+does react.self.glad
+say Well, that's good to hear. | Good. I'm glad. | That's grand. | Now that's cheering. | Happy for you.
+
+rule s8r_glad_any2
+does react.self.glad
+say Well done. | That's good news, that. | #bc_lucky_you# | #bc_very_good#
+
+## react.story: a tale, a memory
+
+rule s8r_story_any
+does react.story
+say #s8_story# | #s8_story# | #tale#. | That's a tale. | Is that so. | Well, I never.
+
+rule s8r_story_any2
+does react.story
+say You tell it well. | There's a thing to think on. | I'll remember that. | Funny, the things you hear.
+
+rule s8r_story_lore
+does react.story
+when conv.topic=lore
+say They tell that one still. | Old stories have a grain of truth in them. | There's one for the pups at bedtime. | You'd half believe it, the way you tell it. | Every town has a tale like that.
+
+rule s8r_story_lore_grave
+does react.story
+when conv.topic=lore conv.tone=serious|grave
+tone serious
+say That's a sad old tale. | Gives me a shiver, that. | Some stories are best left by the fire. | I'd not want that on my road.
+
+rule s8r_story_tale
+does react.story
+when conv.move=tell.story
+say #tale#. | Well, there's a thing. | You'd want a fire and a full cup for that one. | And they say nothing happens here.
+
+rule s8r_story_memory
+does react.story
+when conv.topic=memories
+say Funny what stays with you. | I can just about picture it. | You remember it like yesterday. | #s8_memory# | #s8_memory#
+
+
+
+rule s8r_story_light
+does react.story
+when conv.tone=light
+tone light
+say Ha! That's a good one. | I'll be telling that one. | Oh, that's grand. | Ha! I can just see it.
+
+rule s8r_story_travel
+does react.story
+when conv.topic=travel|accent|player
+say You've seen a thing or two. | The road's full of tales. | I'd like to see that, one day. | Further than I've ever been.
+
+rule s8r_story_work
+does react.story
+when conv.topic=work|day
+say That's a day's work to remember. | Every trade has its stories. | Ha. That's the job, all over.
+
+rule s8r_story_friends
+does react.story
+when conv.topic=friends pair.band=friends|family|spouses|housemates
+say That's us all over. | We've had some times, haven't we. | You never change. | Ha. That's you to the life.
+
+## laugh: never at what was said gravely, nor at another's trouble
+
+rule s8r_laugh_any
+does laugh
+when conv.tone!=serious|grave|tender
+tone light
+say #s8_laugh# | #s8_laugh# | #funny#. | #bc_ha# | Ha! Good. | Ha! That's you all over.
+
+rule s8r_laugh_tease
+does laugh
+when conv.move=tease|join.tease conv.tone!=serious|grave|tender
+tone light
+say Ha! Fair enough. | Ha! You got me there. | All right, all right. | Ha! I asked for that. | Ha! You've a tongue on you.
+
+rule s8r_laugh_story
+does laugh
+when conv.move=tell.story conv.tone!=serious|grave|tender
+tone light
+say Ha! That's a good one. | #funny#. | Ha! I can just see it. | Oh, ha! Tell it again sometime.
+
+rule s8r_laugh_boast
+does laugh
+when conv.move=tell.boast conv.tone!=serious|grave|tender
+tone light
+say Ha! Listen to you. | Ha! You would. | Ha! And who's to say otherwise? | Ha! Go on, then, show off.
+
+rule s8r_laugh_self
+does laugh
+when conv.move=tell.self conv.tone=light
+tone light
+say Ha! Only you. | Ha! That sounds like you. | Ha! Of course you did. | Ha! I'd have paid to see that.
+
+
+## assess: a judgement on what was said
+
+rule s8r_assess_any
+does assess
+say Well, there it is. | That's how it goes. | That's the way of things. | So it is. | That's life, I suppose.
+
+rule s8r_assess_any2
+does assess
+say #bc_true_enough# | It is what it is. | Can't argue with that. | There's sense in that.
+
+rule s8r_assess_advice
+does assess.good
+when conv.move=give.advice|warn
+say #wellsaid.capitalize#. | That's good sense. | I'll think on it. | You're not wrong. | Good sense, that.
+
+rule s8r_assess_opinion
+does assess
+when conv.move=give.opinion
+say There's something in that. | You may have a point. | Well, it's a view. | I'd not thought of it like that. | Could be, could be.
+
+rule s8r_assess_complaint
+does assess.bad
+when conv.move=tell.complaint
+say #poorshow.capitalize#. | That's not right. | Shameful, that is. | It shouldn't be so. | That's no way to carry on.
+
+rule s8r_assess_how_well
+does assess.good
+when conv.move=answer.how.well
+say That's the way. | That's how it should be. | Can't ask more than that.
+
+rule s8r_assess_how_poor
+does assess.bad
+when conv.move=answer.how.poorly
+tone tender
+say That's no good. | That's a shame, that is. | Not right, that. You deserve better.
+
+rule s8r_assess_detail
+does assess
+when conv.move=answer.detail
+say So that's how it was. | Well, now we know. | That's a turn up. | That explains it.
+
+## assess by what it's about
+
+rule s8r_assess_crime
+does assess.bad
+when conv.topic=gossip|crime topic.claim_kind=theft|violence|wanted|prowling|promise_broken
+tone serious
+say A bad business. | #poorshow.capitalize#. | It's not what it was, this town. | Nobody's safe, these days. | Lock your door, I say.
+
+rule s8r_assess_death
+does assess.bad
+when conv.topic=gossip|life|news topic.claim_kind=death
+tone grave
+say A sad business. | It comes to us all. | Hard on the family. | Too soon. Always too soon.
+
+rule s8r_assess_wedding
+does assess.good
+when conv.topic=gossip|life|news topic.claim_kind=marriage|promise_kept
+tone light
+say Good. That's how it should be. | A fine thing, that. | That's the best news all week. | Well, there's hope for us all.
+
+rule s8r_assess_prices_up
+does assess.bad
+when conv.topic=prices|price_cause topic.dir=up
+say Dear. Too dear. | That's a scandal, that. | Somebody's getting fat on it. | Daylight robbery.
+
+rule s8r_assess_prices_down
+does assess.good
+when conv.topic=prices|price_cause topic.dir=down
+say #bc_about_time# | That's a mercy. | Make the most of it, I say. | It won't last.
+
+rule s8r_assess_food
+does assess
+when conv.topic=food
+say Sounds a good table. | You'll not go hungry, then. | That'd fill a belly. | Simple's best.
+
+rule s8r_assess_work
+does assess
+when conv.topic=work|day
+say That's honest work. | Steady pays. | That's a hard day's graft. | You earn your bread.
+
+rule s8r_assess_weather
+does assess
+when conv.topic=weather|season
+say That's the season for you. | We'll have worse yet. | It'll pass. | You can't change the sky.
+
+rule s8r_assess_road
+does assess.bad
+when conv.topic=bandits|caravan topic.kind=raided|camp|late
+tone serious
+say The roads aren't what they were. | Somebody ought to do something. | It's the Watch's job, that. | Bad for everyone, that.
+
+rule s8r_assess_travel
+does assess
+when conv.topic=travel|caravan|ships
+say A long haul, that. | Rather you than me. | The road takes its toll. | Good to be home after, I'd think.
+
+rule s8r_assess_family
+does assess
+when conv.topic=family|home
+say That's family. | Every house has its ways. | You'll sort it out. You always do. | Blood's blood.
+
+rule s8r_assess_health
+does assess
+when conv.topic=health
+tone tender
+say Mind it doesn't get worse. | You want that seen to. | Rest's the best cure. | Don't leave it.
+
+rule s8r_assess_times
+does assess.bad
+when conv.topic=times world.times=hard|lean
+say Hard times make hard wolves. | It'll turn. These things do. | We've seen worse and come through. | Nobody's laughing, these days.
+
+rule s8r_assess_times_good
+does assess.good
+when conv.topic=times world.times=good|boom
+say Make hay while it lasts. | Good times don't stay. Mind that. | Nice while it's here.
+
+rule s8r_assess_festival
+does assess.good
+when conv.topic=festival
+tone light
+say Something to look forward to. | That'll cheer the town. | About time we had some fun. | We could all do with it.
+
+## More of the everyday (pastimes, beasts and the day's small things are most of what's said)
+
+rule s8r_self_pastimes2
+does react.self
+when conv.topic=pastimes|friends
+say I've never had the patience for that. | You'll have to show me some time. | That sounds like a good evening. | Rather that than idle hands.
+
+rule s8r_self_animals2
+does react.self
+when conv.topic=animals
+say Beasts have their moods, same as us. | They're cleverer than folk think. | You'd not catch me tending that. | They earn their keep, beasts.
+
+rule s8r_self_smalltalk
+does react.self
+when conv.topic=smalltalk|day
+say Well, that's the day for you. | Some days are like that. | There's always something. | That's how it goes, round here.
+
+rule s8r_self_smalltalk2
+does react.self
+when conv.topic=smalltalk|day
+say Funny old day. | I'd have done the same. | You don't say. | That's life in this town.
+
+rule s8r_self_family2
+does react.self
+when conv.topic=family
+say They'll come round. | You'll miss it when they're grown. | That's what family's for. | Families are like that.
+
+rule s8r_self_home2
+does react.self
+when conv.topic=home
+say A house always wants something. | Better a leaky roof than none. | It'll keep till the weekend.
+
+rule s8r_self_food2
+does react.self
+when conv.topic=food
+say My belly's grumbling just hearing it. | Simple's best, I always say. | You'll not starve, then.
+
+rule s8r_story_lore2
+does react.story
+when conv.topic=lore
+say My skin's prickling. | That's not how I heard it, but I like yours better. | Best told after dark, that one. | Where do they get these from?
+
+rule s8r_assess_pastimes
+does assess
+when conv.topic=pastimes|friends|animals
+say Sounds a good way to pass the time. | Each to their own. | That takes patience. | Better than drink, I suppose.
+
+rule s8r_assess_smalltalk
+does assess
+when conv.topic=smalltalk|day
+say That's the way of it. | So it goes. | Can't argue with that. | #bc_fair_enough#
+
+## react.self to one's trade, by the trade of the one who said it
+
+rule s8r_self_work_farm
+does react.self
+when conv.topic=work|land other.job=farmer|herder
+say The land never rests, does it. | Fields don't wait for anyone. | That's farming for you.
+
+rule s8r_self_work_forge
+does react.self
+when conv.topic=work other.job=smith
+say Hot work, that. | You've the arms for it. | There's always something wants mending.
+
+rule s8r_self_work_shop
+does react.self
+when conv.topic=work|prices other.job=merchant|baker|brewer|innkeeper|cook
+say Customers, eh. | Trade's trade. | Folk always want something.
+
+rule s8r_self_work_guard
+does react.self
+when conv.topic=work|crime other.job=guard|soldier
+say Somebody has to keep the peace. | Long nights, your work. | I'd not do your job for anything.
+
+rule s8r_self_work_water
+does react.self
+when conv.topic=work|weather other.job=fisher|sailor
+say The water's a hard master. | Rather you than me, out there. | You'll have seen some weather.
+
+rule s8r_self_hurt
+does react.self.sorry
+when other.injured=light|bad conv.topic=health|work
+tone tender
+say You want to rest that. | That'll take time to mend. | Mind how you go with it.
