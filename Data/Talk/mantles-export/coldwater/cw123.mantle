@@ -1,0 +1,293 @@
+# cw123, the swept threshold (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw123
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_sm_kindle_applemeadow
+written_by claude-codex-cw-1
+title the swept threshold
+fits stage=adult|old
+prefers warmth=warm temper=calm
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk sweeps_the_threshold_before_guests_arrive
+likes roast_pork old_tales tidy_house autumn_wind
+dislikes drizzle flies
+fears a_false_city_promise a_fire_left_unwatched
+hopes a_house_kept_warm a_tale_accurately_remembered
+topics home +0.5 work +0.4 memories +0.4 food +0.3 weather +0.3 gossip -0.3
+styles comfort=gentle gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# sweeps the #threshold# before the #still# shift, lets the #pot# cool slowly, and asks where a city bargain began.
+
+words
+oath! = By hearth and bottle | Wind over the water
+saying! = Sweep the sill before the guests arrive | A slow boil saves the jar
+threshold = threshold | door sill
+broom = broom | straw broom
+floor = floor | swept floor
+house = house | small house
+hearth = hearth | fireside
+pot = pot | cooking pot
+pork = pork | roast pork
+crackling = crackling | crisp rind
+plate = plate | supper plate
+tale = tale | old story
+tales = tales | old stories
+voice = voice | teller's voice
+still = still | copper still
+copper = copper | red metal
+pipe = pipe | cooling pipe
+water = water | clear water
+heat = heat | gentle heat
+flame = flame | low fire
+jar = jar | sealed jar
+jars = jars | stoppered jars
+lid = lid | jar lid
+smoke = smoke | bitter smoke
+fly = fly | buzzing fly
+flies = flies | buzzing flies
+drizzle = drizzle | thin rain
+wind = wind | autumn blow
+leaf = leaf | fallen leaf
+leaves = leaves | fallen leaves
+lake = lake | Glasswater
+shore = shore | lake shore
+road = road | high road
+city = city | Ridgemere
+cart = cart | passing cart
+seller = seller | merchant
+price = price | asking cost
+coin = coin | pay
+promise = promise | word given
+bench = bench | wooden bench
+window = window | house window
+door = door | house door
+ink = ink | faded ink
+stone = stone | smooth stone
+sellers = sellers | merchants
+morning = morning | first light
+evening = evening | long dusk
+
+any
+opinion @1 city against 2 : I walked its #road# once and came home with fewer good reasons to trust it. | A city #seller# can be pleasant while counting your #coin#.
+opinion @1 merchants against 2 : I ask for a #price# with the measure beside it. | A polished #promise# will not fill a #plate#.
+opinion @1 dole for 1 : A hungry neighbour may eat at my #hearth# before we talk about work. | A full #plate# for one day can give someone strength for the next.
+opinion @1 strangers for 1 : A stranger can hear an old #tale# while supper warms. | I ask where the #road# brought them, then offer the #bench#.
+opinion @1 newcomers mixed 1 : Show a new hand where the #broom# stays. | Someone who keeps a shared #floor# clean is welcome here.
+opinion @1 houses against 1 : Their #promise# travels farther than their workers' pay. | I would sooner know who tends the #flame# than who owns the building.
+opinion @1 road mixed 0 : The #road# carried me to the #city# and back. | I prefer the stretch where the #lake# comes into view.
+opinion @1 drink mixed 0 : A #jar# is a day's work, and a drink has its place. | I will not let drink turn a quiet #house# loud.
+
+grown
+line @1 greet : #greet#. Take your time at the #threshold#. | #greet#. There is a clean #bench# by the #hearth#.
+line @2 greet [pair.band=strangers] : #greet#. Where has the #road# brought you from? | #greet#. Come in after you wipe your paws.
+line @3 greet [pair.band=friends|family] : A patient listener may hear a #tale# here. | The #pork# is nearly warm; stay a moment.
+line @4 greet [self.working=yes] : #greet#. I am tending the #heat#; speak while it settles. | The cooling #jars# leave me time to hear you.
+line @5 greet [here.time=dawn] : #greet#. The #threshold# has its first sweep. | #greet#. The #lake# is pale this morning.
+line @1 greet.return : You have come back. The #pot# is warm. | #welcome_back#. I finished that #tale# after you left.
+line @2 greet.return [pair.band=friends|family] : The #bench# is ready for you. | I saved some #crackling# from supper.
+line @1 kin.open [pair.kin!=no] : Come in, dear one. There is a #plate#. | I have kept the #hearth# low for you.
+line @1 again.open : Another visit in one day? Come through. | The #broom# has not touched the #floor# since you left.
+line @1 farewell : #saying.capitalize#. Step carefully. | #farewell#. The #shore# path may be damp.
+line @1 farewell.return : A fair #road# to you. | That #bench# will be free on your return.
+line @1 react.news : Tell it in your own #voice#; I will listen. | Let me put the #lid# on this #jar# first.
+line @1 react.news.new : I have heard nothing of that beside the #still#. | Was that word carried by a #cart#?
+line @1 react.news.known : That account reached the #shore# in fragments. | You have filled a pause in the earlier account.
+line @1 react.news.doubt : A city #promise# needs more than a pleasant #voice#. | I would ask who put their name to it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is sorrowful news. This #bench# is yours until you are ready. | A hard #tale#. I can sit quietly with you.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. May their supper be warm tonight. | That is a welcome turn in the #tale#.
+line @1 answer.how : The #house# is tidy and the #jar# is sealed. | I have had a quiet #morning#.
+line @1 answer.how.busy [self.working=yes] : Keeping the #flame# low and the #pipe# cool. | The #jars# want careful hands today.
+line @1 ask.how : Has the #road# left you tired? | Have you eaten from a warm #plate# today?
+line @1 sympathise : Sit by the #hearth# until you can speak. | I will listen without hurrying you.
+line @1 reassure : The #pot# can be washed after supper; rest now. | A rough #road# ends at some #threshold#.
+line @1 decline : The hot #still# has me here until it cools. | No, thank you. That #promise# is more than I can give.
+line @1 accept_decline : I hear you. We can let it rest. | Very well; The #jar# can be sealed; we can turn to other work.
+line @1 thank : Your help brought the #jars# in safely. Thank you. | I appreciate the quiet work you did.
+line @1 deflect_thanks : The #bench# was free. | An extra #plate# was ready for company.
+line @1 preclose : The #flame# needs lowering before I go. | I must sweep the #threshold# once more.
+line @1 tease [pair.band=friends] : You have heard this #tale# and still missed the ending. | The #broom# works better in your paws than as a prop.
+line @1 ack : #bc_right#. I will remember that. | #bc_fair_enough#. The #lid# is sound.
+line @1 give.advice : Ask a #seller# to show the weight beside the #price#. | Let a hot #jar# cool before touching its #lid#.
+line @1 warn [world.bandits=near] : The #road# has trouble on it; wait for company. | Keep to the lit #shore# path tonight.
+scene swept_sill
+when topic=home
+does tell.self / react.self / assess
+a : I sweep the #threshold# before anyone comes in. | A tidy #floor# makes a small #house# feel rested.
+b : Do you sweep every day? | Does anyone notice?
+a : Most days, once. | I notice, and that is enough.
+
+scene tale_by_fire
+when topic=pastimes
+does tell.self / react.self / assess
+a : The best #tales# let a listener find the question before the ending. | I like an old #voice# that knows when to pause.
+b : Do you retell it? | Do you know the whole ending?
+a : After I have heard it twice. | Not every time. That keeps me listening.
+
+scene one_more_turn
+when topic=memories
+does tell.self / react.self / assess
+a : I heard a #tale# as a pup that changed its last turn each winter. | The teller said a story should fit the people hearing it.
+b : Did you believe them? | Which ending did you keep?
+a : I still think about it. | The one where someone came #home#.
+
+scene pot_and_plate
+when topic=food
+does tell.self / react.self / assess
+a : Roast #pork# is best when the #crackling# stays crisp. | I warm the #plate# before putting the #pork# on it.
+b : Is that your own cooking? | Does the plate matter?
+a : When I have time. | The supper stays warm longer.
+
+scene jar_lid
+when topic=work
+does tell.self / react.self / assess
+a : I set a #lid# on each #jar# only after it cools. | A warm #jar# can trick a hurried paw.
+b : Does the seal hold? | Do you wait long?
+a : Better when I take my time. | Until the glass feels even.
+
+scene steady_flame
+when topic=work
+does tell.self / react.self / assess
+a : The #flame# should warm the #copper# without making it smoke. | I listen at the #pipe# when the #heat# changes.
+b : Can you tell a problem by sound? | Do you stand there all day?
+a : Some. A rough note makes me look. | We take turns when the work allows.
+
+scene open_window
+when topic=work
+does tell.self / react.self / assess
+a : I open the #window# when #smoke# creeps into the room. | A #fly# finds the #window# faster than the #door#.
+b : Does the smoke make your eyes water? | Do many flies come in?
+a : If I let it linger. | In warm weather, more than I like.
+
+scene summer_flies
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : #flies.capitalize# find the #pot# when the air is still. | I cover the #plate# while I work near the #window#.
+b : Do you drive them out? | Does that keep supper safe?
+a : I try with the #broom#. | Better than leaving it open.
+
+scene thin_drizzle
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : A thin #drizzle# leaves the #road# neither dry nor properly wet. | I wait for a real rain before moving the #jars# from the #window#.
+b : Why wait? | Does it get through?
+a : The half rain is harder to plan around. | Through a loose frame, sometimes.
+
+scene autumn_wind
+when topic=weather here.season=autumn
+does tell.self / react.self / assess
+a : An autumn #wind# sends #leaves# across the #threshold#. | The #shore# pleases me when #wind# draws long lines on the water.
+b : Do you sweep them at once? | Will you walk while it blows?
+a : Before they reach the #hearth#. | For a short walk after work.
+
+scene city_walk
+when topic=memories
+does tell.self / react.self / assess
+a : Once I made the long walk down to the #city#. | The return #road# felt longer until the #lake# came into view.
+b : What did you find there? | Why come home?
+a : More #sellers# than I could trust. | I knew my own #threshold# when I saw it.
+
+scene city_bargain
+when topic=prices
+does tell.self / react.self / assess
+a : In the #city#, a #seller# offered one #price# and wrote another. | I ask to see the measure before I hand over #coin# now.
+b : Did you buy it? | Do they all do that?
+a : No. I kept my #coin#. | I do not know. One was enough.
+
+scene shore_return
+when topic=travel
+does tell.self / react.self / assess
+a : The #lake# appearing beside the #road# told me I was near #home#. | I had walked for days before Coldwater's #shore# came back into view.
+b : Were you glad? | Would you take that road again?
+a : More than I expected. | Only for a reason worth the miles.
+
+scene quiet_supper
+when topic=home
+does tell.self / react.self / assess
+a : At #home#, I want to set down a #plate# without shouting over anyone. | After a noisy shift, a swept #floor# is a comfort.
+b : Do you live alone? | Do you talk over supper?
+a : I share space with others. | If someone has a gentle #tale#.
+
+scene flies_at_still
+when topic=work here.season=summer
+does tell.self / react.self / assess
+a : The #flies# gather where the warm #water# stands. | I empty the waste #pot# before they make a home of it.
+b : Is that part of your work? | Does it help?
+a : Yes. Small tasks keep the #still# sound. | Enough to make the following workday easier.
+
+scene late_story
+when topic=day here.time=night
+does tell.self / react.self / assess
+a : A remembered #tale# can keep the evening company until dark. | I put the #lid# on the #pot# before I sit to listen.
+b : Do you stay up late? | Do you tell one too?
+a : Only for a good ending. | If someone asks, and I recall it clearly.
+
+scene price_on_counter
+when topic=prices
+does tell.self / react.self / assess
+a : I want a #price# where both buyer and #seller# can read it. | A spoken #promise# fades faster than #ink# in a busy shop.
+b : Do you write prices down? | Can you trust a written price?
+a : When I am buying supplies. | More than one that keeps changing.
+
+story road_home [topic=memories self.age>=25]
+  : I walked from the #city# until the #road# began to climb.
+  : When I saw the #lake#, I stopped and sat on a #stone# by the #shore#.
+  ask : Did you regret going?
+  b : You learned which way felt like home.
+  : No. I knew I wanted to come back.
+
+story cracked_lid [topic=work self.age>=25]
+  : I found a crack in a #lid# before closing a full #jar#.
+  : I set that lid aside and waited for another rather than forcing it.
+  ask : Was the jar kept safe?
+  b : Better to wait than lose its contents.
+  : It was. I checked the next #lid# twice.
+
+story story_changed [topic=pastimes self.age>=25]
+  : A teller gave an old #tale# a different ending than I remembered.
+  : I waited until supper was done before asking where that ending came from.
+  ask : Did they have a reason?
+  b : A different listener might need another turn.
+  : They did. Both endings stayed with me.
+
+rule @bark_sill
+when concept=bark
+does aside
+cooldown 8h
+say The #threshold# wants a quick sweep. | The #broom# belongs back in its corner.
+
+rule @bark_still
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say The #pipe# is keeping an even note. | This #jar# needs a sound #lid#.
+
+rule @bark_wind
+when concept=bark here.season=autumn
+does aside
+cooldown 10h
+say Autumn #wind# at the #window#. | Those #leaves# will reach the #threshold# soon.
+
+rule @bark_tale
+when concept=bark here.time=dusk|night
+does aside
+cooldown 11h
+say One old #tale# before sleep. | I know a better ending for that #tale#.
+
+dlg @1 resident.hub : #greet#. Come inside and take your time. | #greet#. I have left the #broom# in its corner to hear you.
+dlg @2 resident.hub [topic.meeting=known] : You have returned. Was the #road# kind? | I know your #voice#. Come by the #hearth#.
+dlg @1 resident.job : I tend the #still#, keep the #pipe# cool, and seal the #jars#. | The #flame# needs a patient paw all day.
+dlg @1 resident.bye : #farewell#. The #threshold# is clear now. | #saying.capitalize#. Keep warm on the #road#.
+graft resident.hub
+choice Why do you mistrust city goods? -> city
+node city
+say I once saw a #seller# name one #price# and write another. I check the measure now.
+free
+choice Did you go to the city yourself? -> journey
+choice Back to what we were saying. -> hub
+node journey
+say I walked there and back. The #lake# on the return #road# was a welcome sight.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
