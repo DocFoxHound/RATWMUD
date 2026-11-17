@@ -1,6 +1,6 @@
 # Mantle batch cw-1: Coldwater (2026-11-17)
 
-Writer: Codex (GPT-6), one agent. Branch: `r3-mantles-cw-1`. Merge: pending.
+Writer: Codex (GPT-6), one agent. Branch: `r3-mantles-cw-1`. Merge: `513e064a`.
 World: DEV `ridgemere3`, game day 35.6 at final check.
 
 ## What was written
@@ -51,7 +51,7 @@ Totals: 33 mantles (11 full, 22 standard), 4,029 loader items, approximately 102
 - G3: 33 mantles worn; 783 of 793 scenes heard by a listener; 0 core-move holes; W1 100% (2,100 of 2,100 window lines owned by the wearer).
 - Ten scenes were not sampled because their conditions depend on weather, occupancy, or a later world state: cw103 wind_in_wool and thin_week; cw107 borrowed_hour; cw109 full_rooms; cw111 storm_fence; cw112 thunder_roof; cw115 roof_and_thunder; cw119 thunder_roof; cw125 thunder_safe; rm105 thunder_under_roof.
 - Each mantle was dry-run, loaded and bound individually in DEV with a backup under `Saved/Backups/`; the final world has 76 mantles, 76 worn. `mantle_export --check` agrees with the rows. `mantle_load check` reports 698 residents without a mantle.
-- Main-checkout ctest: pending merge.
+- Main-checkout ctest: dialect_check, dialect_check_rules, talk_lint, talk_lint_rules, mantle_export_loads, mantle_export_rules, and mantle_check_rules passed.
 
 ## Voices
 
