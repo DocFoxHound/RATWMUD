@@ -5035,10 +5035,11 @@ standard** (Ada Rainmore, a pup of five, with young, adolescent and grown sectio
 | The luna eight | 8 | 632 | 124 | 3,029 | 21,737 |
 | **All** | **43** | **2,974** | **658** | **14,281** | **93,341** |
 
-About 1,060 of the items are whole scenes (24 to 38 a full mantle, 18 to 22 a standard one, mostly three threads),
-the rest stories (5 and 3), opinions with reasons (8 and 5-6), lines at the edges (openers by frame, the answers to the
-core moves, sympathy, hedged declines, closings in pairs), barks (6 and 4), window lines (15-18 and 6-7: the hub by
-meeting, disposition and hour, the job, the role tree's greeting, prices and goodbye) and grafts (2 and 1). Each has 2-3
+Of the 2,974 items, **928 are whole scenes** (24 to 38 a full mantle, 18 to 22 a standard one, mostly three
+threads) and 145 stories (5 and 3); then 1,064 lines at the edges (openers by frame, the answers to the core moves,
+sympathy, hedged declines, closings in pairs), 267 opinions with reasons (8 and 5-6), 188 barks and other rules (6 and
+4), 331 window lines (15-18 and 6-7: the hub by meeting, disposition and hour, the job, the role tree's greeting,
+prices and goodbye) and 51 grafts (2 and 1). Each has 2-3
 marks of two alternatives or more, its own words (12-20), traits from the brief with honesty kept, and a persona for
 the window's Mind. Where three in a town shared a quirk, the third was varied (§9.5 allows it): Lichen, Nab and Briar's
 "counts things under the breath" became three; Ludo's and Tamsin's door-watching two others; Lavinia "haggles" with the
@@ -5184,3 +5185,153 @@ queued), `test_studio` (the routes decided). Editor `tsc` clean.
   the cold" are a dialect's): accent-none and plain mantles step around ordinary English. Worth a pass on the grammars'
   shortest phrases before P14.
 - The live world needs a restart onto a build of this branch to speak the pilot (§41).
+
+## 41. Slice 3's end: the ticking listen, the card, and the format frozen (2026-11-17)
+
+Branch `r3-talk-p11`. The user waived listening (the pilot's packet is produced for the record), so the freeze is
+mine to call; what they would want to know is at the end.
+
+**The suites** (after every fix of §40). Core: the full ctest, **117 of 117** with the database suites run against the
+local PostgreSQL (`pg_client` skipped as before), and with `-L perf` `mantle_bench` passes (B3, B4) and `talk_bench` within its budget alone (a beat 0.108 ms mean, p99 0.25; a look p99 4.2 ms), though over it in one run of three while another session's jobs held 19 of the 20 cores (beat p99 3.2 ms, look p99 7.8-9.1 ms): a measure of the machine that hour, not of the talk. Client: typecheck, 224 unit tests,
+the build. Editor: typecheck, 165 tests (78 and 87), the build, the render smoke (17 panels). Python: `test_mantle_check`,
+`test_mantle_load`, `test_mantle_pool`, `test_dungeon_master` (55), `test_world_sync` (58), `test_studio` (81),
+`test_talk_score` (42), `test_talk_rate`. Talk: `talk_check --mantle` and `mantle_check --strict` over the export (43, 0
+refused), `--mantle-coverage` on ridgemere3 (0 holes), `talk_migrate --check` (the kits' 76 backchannels made symbols),
+`dialect_check`, `talk_lint`, `--coverage`.
+
+**The ticking 100-hour listen** (Q6, the one the user allows at a slice's end; reported):
+`talk_sim --world ridgemere3 --tick --profile L1 --places r2_the_knucklebones,rm_the_grey_gull_inn,rm_the_rainbarrel,
+rm_the_bilge,cn_saltwell_inn,cn_fenshore_alehouse --hours 100 --seed 1 --ablate shuffle` (`artifacts/talk/runs/p11-tick`):
+Slices 2's and 3's four Ridgemere rooms and, so the pilot is heard where it lives, **the Oasis Inn and the Heron**, from
+DEV's save as it was at 16:25 UTC (game day 34.85) to day 59.85: 100 world hours, 360,000 world seconds, nothing
+written, the pilot's 43 mantles read from DEV's rows. **3,875 s (1 h 4 min 39 s with the load) of wall time**, beside the card for about 13 minutes of
+it; **1.21 GiB peak memory**; 7,004 conversations, 24,410 lines. It ran on the build before the last engine fix of
+§40 (one's people never named to their face): the card after it has that fix. Against Slice 3's hybrid tick (`s4-tick`,
+§37), the four Ridgemere rooms alone, and the two pilot rooms beside them, the shuffled control in brackets:
+
+| | Metric | Slice 3, the hybrid (`s4-tick`) | **Now, the four rooms** | **Now, the Oasis Inn and the Heron** |
+|---|---|---|---|---|
+| R1 | first identical talk, earliest listener (h) | 4.26 | **4.09** (20.1) | **11** (14.7) |
+| R2 | first repeated opener (h) | 3.67 | **4.09** (4.09) | **7.13** (7.13) |
+| R4 | a sentence heard again in 10 h, per 100 h | 1,331 | **1,135** (1,238) | **273** (303) |
+| R6 | the most-spoken sentence (%) | 0.925 | **0.923** (0.923) | **2.97** (2.17) |
+| R7 | distinct replies per 1,000 | 73.9 | **75.3** (74.9) | **186** (209) |
+| C1 | owed answers answered (%) | 95.3 | **95.5** (24.2) | **98.4** (36.7) |
+| C3 | good endings (%) | 98.9 | **98.5** (82.9) | **98.6** (86.7) |
+| C7 | lines per talk | 3.52 | **3.51** (3.51) | **3.29** (3.29) |
+| T2 | untrue presuppositions per 1,000 | 0 | **0** (3.85) | **0** (0) |
+| T3 | self-reference per 1,000 | 0 | **0** (0) | **2.45** (2.45) |
+| K1 | everyday topics (%) | 45.3 | **44.8** (44.8) | **47.5** (47.5) |
+| K2 | the largest topic (%) | 24.3 | **27.5** (27.5) | **25.6** (25.6) |
+| K3 | the same news twice | 2 | **0** (0) | **0** (0) |
+| D1 | accent none with dialect words (%) | 0 | **0** (1.74) | **0** (0) |
+| D1L | light (%) | 0.694 | **0.821** (0.544) | **42.9** (42.9) |
+| D1B | broad (%) | 0.694 | **0.795** (0.736) | **15.3** (14.9) |
+| D3 | dialect guessed (%) | 85.6 | **82.7** (88.5) | **25** (25) |
+| U1 | a resident's own words (%) | 0 | **0.13** (0.0789) | **13.6** (12.7) |
+| U2 | look-alikes told apart (%) | 54.4 | **53.7** (54.3) | **0** (0) |
+| X1 | replies sharing a word (%) | 23.9 | **24** (2.31) | **20.5** (1.53) |
+| R8 | habit lines (%) | 0.0197 | **0.0574** (0.0588) | **0.496** (0.517) |
+
+The four rooms are Slice 3's hybrid to within noise (6,134 talks): the pilot's luna wearers are few there (Agna
+Bilgecot most, 84 lines). **The two pilot rooms** (870 talks, 2,859 lines, almost all between the inns' own: the Oasis
+Inn's keeper and pot hand, the Heron's, in the hours a listener sits there) are where the pilot is heard: **U1 13.6%**
+of all lines there their speakers' own mantles' (0.13% in the rooms); **D1L 42.9%, D1B 15.3%** of light and broad
+speakers' lines in their dialect's words (0.8% in Ridgemere's rooms), the habit lines R8 0.5% (well under 15%); R1 11 h
+and R4 273 per 100 h (fewer speakers, more scenes of their own). Its faults, read from its transcripts: **T3's 7** are
+all one: the keeper speaking of her pot hand by name to the pot hand ("I'd not keep the taps a week without Moss
+Downridge."), which the last fix of §40 stops (the card after it has none); the most-said sentence there is the fens'
+farewell "Dry feet." (85 times in 870 talks: two wolves bidding each other goodbye all day, R6 3%), a plain fact of a
+two-wolf room, and a nudge for P15's kits and P14's mantles to carry more goodbyes of their own; D3 and U2 have too few
+speakers in two rooms to say anything (4 judged; no look-alike pair).
+
+**The card** (`artifacts/talk/runs/p11`, every profile in both modes over P0's fixture, reading DEV's rows with the
+pilot bound, on the final build; 6 min 13 s). Fixtures / frozen, against Slice 2 (`s2`, §34) and Phase 10 (`p10`, §39):
+
+| | Metric | Slice 2 (`s2`) | Phase 10 (`p10`) | **Slice 3's end (`p11`)** |
+|---|---|---|---|---|
+| R1 | first identical talk (h; an open hard gate) | 42.9 / 8.29 | 6.83 / 2.3 | **6.83 / 2.3** |
+| R4 | a distinctive line again within 10 h, per 100 h | 276 / 3,180 | 456 / 2,080 | **467 / 2,056** |
+| R6 | the most-spoken line (%) | 1.21 / 1.1 | 1.47 / 0.829 | **1.7 / 1** |
+| R7 | distinct replies per 1,000 | 269 / 125 | 142 / 94.1 | **143 / 94.7** |
+| C1 | owed answers answered (%) | 98.9 / 98.7 | 95.1 / 97.6 | **95.4 / 97.7** |
+| C7 | lines per talk | 5.64 / 6.59 | 3.47 / 3.35 | **3.45 / 3.34** |
+| T2 | untrue presuppositions per 1,000 | 0.0281 / 0 | 0 / 0 | **0 / 0** |
+| T3 | self-reference errors per 1,000 | 0.014 / 0 | 0 / 0 | **0 / 0** |
+| K1 | everyday topics (%) | 45 / 75.2 | 43.7 / 69.8 | **43.8 / 70.7** |
+| K2 | the largest topic (%) | 20.8 / 12.7 | 22.4 / 15.4 | **22.9 / 14.8** |
+| D1 | accent none's lines with dialect words (%) | 0 / 0 | 0 / 0 | **0 / 0** |
+| D1L | light (%) | 1.8 / 2.78 | 1.18 / 0.947 | **1.15 / 1.05** |
+| D1B | broad (%) | 10.6 / 7.12 | 3.46 / 2.85 | **3.93 / 3.2** |
+| D2 | another dialect's words | 0 / 0 | 0 / 0 | **0 / 0** |
+| D3 | dialect guessed from 20 lines (%) | 87.2 / 65.2 | 86.3 / 65.2 | **84.5 / 82.4** |
+| U1 | a resident's lines from their own words (%) | 0.0014 / 0.000601 | 0 / 0 | **1.24 / 0.957** |
+| U2 | look-alikes told apart (%) | 39.4 / 29.6 | 38.8 / 32.8 | **38.2 / 33** |
+| X1 | replies sharing a word (%) | 18.5 / 16.4 | 24 / 19.6 | **23.8 / 19.5** |
+| R8 | habit lines (%) | 0.103 / 0.107 | 0.0132 / 0.0221 | **0.0776 / 0.0506** |
+| B1 | a beat (ms) | 0.339 / 0.365 | 0.221 / 0.221 | **0.237 / 0.246** |
+| B5 | exchanges a second | 0.761 / 70.9 | 2.64 / 74.5 | **2.5 / 56** |
+
+`talk_card` breaks **no hard gate** P10's card passed; it exits 1, as P9's and P10's did, on the open hard gates (R1,
+B5 under the card's own load) and the soft rows §37 and §38 left (C8, O1, D1L, D1B, U2, K2, C9, X1, the timings), and
+**R8** (habit lines 0.013 → 0.078% in the fixtures: the pilot's oaths and sayings, by design; the ceiling is 15%) and
+D1A. Nothing was refrozen in the committed baselines. **What the pilot moved**: **D3** frozen 65.2 → 82.4% (a
+listener in Saltwell or Fenshore guesses the speaker's dialect from 20 lines far more often), **D1B** up in both
+(3.46 → 3.93%, 2.85 → 3.20%), **U1** from 0 to 1.24 / 0.96% of all lines (11.6% of the wearers'), **T3** 0 once
+the listener_third fix was in (the first card of this slice found 7 such lines: §40); the rest is P10's to within
+noise (R1, R2, C1, C3, C7, K1, K3 and the truth rows as they were). Against Slice 2 the card is §37's hybrid's (shorter
+talks, whole scenes, fewer stitched replies), as P9 and P10 left it.
+
+**The listen packet** (for the record; the user waived listening): `artifacts/talk/listen/p11-tick.md` and `.html`
+(the page with fine / off / wrong marks): 60 conversations of the 915 in the ticking listen in which a pilot wearer speaks (224 of the 915 have a line of a
+mantle in them; the packet has 24 such lines in its 398), sampled over pair kind, topic and length
+(`talk_listen.py --packet 60 --seed 11`). I read it, and about a fifth of the pilot's scenes whole in their files; the
+faults found are §40's and the tick's above.
+
+**The format and the rows' shape, frozen** (format 1; §7.9, §17.1, §38, §40). From here, P14's 729 mantles and P15's
+spares are written to this, and a change to it is a format 2: a `format` value the server reads beside the one before
+(as builds do, §17.1), a migration for any column, and the export rewritten.
+- **The text**: the header lines (`mantle`, `revision`, `state` draft|ready|retired, `dialect`, `accent` (1-3 of none,
+  light, broad; the first as written), `tier` full|standard|spare, `written_for`, `written_by`, `title`, `fits`,
+  `prefers`, `traits` (all seven axes), `quirk`, `likes`, `dislikes`, `fears`, `hopes`, `topics` (director topics, with
+  weights), `styles`, `marks` (2-4 habits of the mantle's own, two alternatives or more each), `persona` (one line,
+  `#self.first#`), `format`); the sections `words`, `any`, `grown` (the adult and the old), `young` (the young, and the
+  adolescent unless an `adolescent` section exists), `adolescent`, `old` (the old's own, beside `grown`); the items
+  `line <move>[.variant] [criteria] : alts`, `opinion <issue> <for|against|mixed> <0-3> [criteria] : alts`, `dlg
+  <tree>.<node> [criteria] : alts`, and the blocks `rule`, `scene` (a whole talk the wearer opens: `when`, `does` a move
+  for every turn, `tone`, `a :`/`b :`/`b[kind] #tag :`/`a@tag :`/`b? :` with parallel threads), `story` (a scene told
+  once to each listener: `:`, `ask :`, `b :`), `graft <tree>.<node>` (choices, nodes, `say`, `mood`, `free`, `invite`);
+  `@name` keys, the next free number otherwise; the canonical form the export writes.
+- **The rows**: `live.mantles` (the card's columns, `format`, `revision`, `written_by`), `live.mantle_lines` (one row an
+  item: key, section, kind symbol|opinion|line|rule|scene|story|dlg|graft, move, position, body in the text above,
+  revision), `live.mantle_history` (append-only, by trigger), and the bindings in `live.npc_voice` (`mantle_id`,
+  `bound_day`, `bound_how`, `released_day`), as migration 0066 made them: **no change to the shape this slice**.
+- **What the checks hold it to** (G2 `--strict` from P11 on, the loader's default): names only through slots; the
+  realm's capitals; no "dog", no "gods", no "tells", male or female only; no he/she beside a person slot; a word's value
+  never ends its sentence; truth (truth.json, scoped as talk_lint scopes it, and what slots take for granted); another
+  dialect's words never, the own dialect's written out only where the accents allow it and never in a bare listener's
+  line; no 5-word run shared within a dialect; a town's oaths, sayings and quirks (two at most); habits at most 25% of
+  the wearer's own alternatives; 60% of them with a dialect marker (non-plain); the tier's minimum and size (92, 55,
+  64 items).
+- **Kits** are shared `.talk` files gated to their dialect's towns and stage (§40), not §7.10's `.kit`.
+
+**What the user would want to know.**
+1. **The pilot is in DEV's rows and bound, but the live world doesn't speak it yet**: the server on 7788 runs the
+   main checkout's build of `ridgemere2` from before Phase 9 (it reads no mantle rows). It needs a restart onto a build
+   of this branch (or of `ridgemere2` once Slice 3 is merged) to wear them; until then the eight luna residents, whose
+   voice rows were emptied, speak from the library like everyone else.
+2. **The mantles are heard less than they are written**: in the card a wearer's own lines are 11.6% of what they say
+   (U1's target is 20-35%), because their scenes play only when they open a talk on an everyday topic their mantle
+   covers; the rest of their talk is others' scenes and the news. Before P14's 729 are written, worth deciding whether a
+   mantle may carry its own `b` turns for the shared scenes' topics, or many more news scenes (§40).
+3. **43, not 44**: Iris Greywater, Fenshore's potter, is dead in the save. Five quirks were varied where three in a
+   town shared one (§9.5 allows it); every resident's honesty and quarter are as they were.
+4. **Writing is fast and the gates did the reviewing**: ten writers wrote the 43 in about 22 minutes of wall clock; G1,
+   G2 `--strict` and G3 saw every line, I read about a fifth of the scenes whole. P14 is re-estimated at about 75
+   agent-hours from 156 (§40), but the 5-word-run check and the uniqueness of a town's habits get harder with
+   Ridgemere's 599 in one dialect.
+5. **The data the writers tripped on** (§40): workplaces that are districts, friend slots that are kin, Saltwell folk
+   with fen backstories, `job=beggar` for two of Ochre's hands. Not changed here.
+6. **Two facts changed for everyone**: skippers, deckhands and boatmen now have `job=sailor` and warreners
+   `job=herder` (they were `none`), so lines gated on those jobs now fit them; and nobody names one of their people
+   (`#self.boss#`, `#self.friend#`...) to that very wolf's face.

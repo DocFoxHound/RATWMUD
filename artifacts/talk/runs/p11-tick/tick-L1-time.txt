@@ -1,0 +1,290 @@
+talk_sim: sim-l1-0 listens in r2_the_knucklebones (work; 40 free there now, 40 with someone to talk to)
+talk_sim: sim-l1-1 listens in rm_the_grey_gull_inn (tavern; 40 free there now, 39 with someone to talk to)
+talk_sim: sim-l1-2 listens in rm_the_rainbarrel (tavern; 40 free there now, 40 with someone to talk to)
+talk_sim: sim-l1-3 listens in rm_the_bilge (work; 40 free there now, 39 with someone to talk to)
+talk_sim: sim-l1-4 listens in cn_saltwell_inn (tavern; 0 free there now, 0 with someone to talk to)
+talk_sim: sim-l1-5 listens in cn_fenshore_alehouse (tavern; 0 free there now, 0 with someone to talk to)
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 2.27 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.22 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.36 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.00 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.22 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 5.91 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.22 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.45 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 2.18 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.21 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.31 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.43 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.21 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 5.67 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.21 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.43 births expected in 180 days, plus 2
+talk_sim tick-L1: 2 h, 76 exchanges
+talk_sim tick-L1: 4 h, 271 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.94 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.16 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.58 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 6.03 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.38 births expected in 180 days, plus 2
+talk_sim tick-L1: 6 h, 347 exchanges
+talk_sim tick-L1: 8 h, 508 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.94 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.16 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.58 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 6.03 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.38 births expected in 180 days, plus 2
+talk_sim tick-L1: 10 h, 584 exchanges
+talk_sim tick-L1: 12 h, 756 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.94 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.16 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.58 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 6.03 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.38 births expected in 180 days, plus 2
+talk_sim tick-L1: 14 h, 832 exchanges
+talk_sim tick-L1: 16 h, 993 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.94 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.16 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.58 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 6.03 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.38 births expected in 180 days, plus 2
+talk_sim tick-L1: 18 h, 1071 exchanges
+talk_sim tick-L1: 20 h, 1232 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.94 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.16 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.58 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 6.03 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.38 births expected in 180 days, plus 2
+talk_sim tick-L1: 22 h, 1308 exchanges
+talk_sim tick-L1: 24 h, 1472 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.94 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.16 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.58 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 6.03 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.38 births expected in 180 days, plus 2
+talk_sim tick-L1: 26 h, 1618 exchanges
+talk_sim tick-L1: 28 h, 2097 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 2.12 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.21 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.27 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.63 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.21 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 6.57 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.21 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.42 births expected in 180 days, plus 2
+talk_sim tick-L1: 30 h, 2171 exchanges
+talk_sim tick-L1: 32 h, 2342 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 2.48 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.14 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.57 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 6.12 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.57 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.38 births expected in 180 days, plus 2
+talk_sim tick-L1: 34 h, 2418 exchanges
+talk_sim tick-L1: 36 h, 2597 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 2.48 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.14 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.57 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 6.12 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.57 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.38 births expected in 180 days, plus 2
+talk_sim tick-L1: 38 h, 2674 exchanges
+talk_sim tick-L1: 40 h, 2850 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 2.48 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.14 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.57 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 6.12 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.57 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.38 births expected in 180 days, plus 2
+talk_sim tick-L1: 42 h, 2925 exchanges
+talk_sim tick-L1: 44 h, 2951 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 2.48 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.14 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.57 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.19 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 6.12 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.57 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.38 births expected in 180 days, plus 2
+talk_sim tick-L1: 46 h, 2961 exchanges
+talk_sim tick-L1: 48 h, 3137 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 2.27 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.17 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.05 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.52 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.17 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 5.60 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.52 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.35 births expected in 180 days, plus 2
+talk_sim tick-L1: 50 h, 3212 exchanges
+talk_sim tick-L1: 52 h, 3412 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 2.27 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.17 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.05 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.52 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.17 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 5.60 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.52 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.35 births expected in 180 days, plus 2
+talk_sim tick-L1: 54 h, 3558 exchanges
+talk_sim tick-L1: 56 h, 4036 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 2.27 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.17 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.05 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.52 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.17 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 5.60 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.52 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.35 births expected in 180 days, plus 2
+talk_sim tick-L1: 58 h, 4110 exchanges
+talk_sim tick-L1: 60 h, 4304 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 2.16 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.15 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.08 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.46 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.15 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 5.88 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.46 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.30 births expected in 180 days, plus 2
+talk_sim tick-L1: 62 h, 4378 exchanges
+talk_sim tick-L1: 64 h, 4561 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 2.16 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.15 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.08 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.46 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.15 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 5.88 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.46 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.30 births expected in 180 days, plus 2
+talk_sim tick-L1: 66 h, 4637 exchanges
+talk_sim tick-L1: 68 h, 4810 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 2.16 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.15 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.08 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.46 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.15 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 5.88 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.46 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.30 births expected in 180 days, plus 2
+talk_sim tick-L1: 70 h, 4884 exchanges
+talk_sim tick-L1: 72 h, 5041 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 2.16 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.15 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.08 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.46 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.15 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 5.88 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.46 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.30 births expected in 180 days, plus 2
+talk_sim tick-L1: 74 h, 5114 exchanges
+talk_sim tick-L1: 76 h, 5270 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 2.16 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.15 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.08 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.46 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.15 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 5.88 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.46 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.30 births expected in 180 days, plus 2
+talk_sim tick-L1: 78 h, 5344 exchanges
+talk_sim tick-L1: 80 h, 5486 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 2.16 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.15 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.08 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.46 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.15 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 5.88 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.46 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.30 births expected in 180 days, plus 2
+talk_sim tick-L1: 82 h, 5635 exchanges
+talk_sim tick-L1: 84 h, 6108 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 2.16 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.15 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.08 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.46 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.15 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 5.88 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.46 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.30 births expected in 180 days, plus 2
+talk_sim tick-L1: 86 h, 6180 exchanges
+talk_sim tick-L1: 88 h, 6328 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.93 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.13 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.96 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.55 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.13 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 6.92 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.41 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.41 births expected in 180 days, plus 2
+talk_sim tick-L1: 90 h, 6400 exchanges
+talk_sim tick-L1: 92 h, 6553 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.93 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.13 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.96 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.55 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.13 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 6.92 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.41 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.41 births expected in 180 days, plus 2
+talk_sim tick-L1: 94 h, 6626 exchanges
+talk_sim tick-L1: 96 h, 6786 exchanges
+[warn] RATW_MANTLE pool coldwater spare=0 resting=0 ready=0 LOW: under 1.5 x the 1.93 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool frosthollow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.13 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool larkfield spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.96 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool mirebridge spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.55 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool oakhaven spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.13 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool plain spare=0 resting=0 ready=0 LOW: under 1.5 x the 6.92 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool saltwell spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.41 births expected in 180 days, plus 2
+[warn] RATW_MANTLE pool southmeadow spare=0 resting=0 ready=0 LOW: under 1.5 x the 0.41 births expected in 180 days, plus 2
+talk_sim tick-L1: 98 h, 6860 exchanges
+talk_sim tick-L1: 100 h, 7004 exchanges
+talk_sim tick-L1: 7004 exchanges, 24410 lines in 100 world hours; 3874.79 s wall
+	Command being timed: "./build-core/talk_sim --world ridgemere3 --tick --profile L1 --places r2_the_knucklebones,rm_the_grey_gull_inn,rm_the_rainbarrel,rm_the_bilge,cn_saltwell_inn,cn_fenshore_alehouse --hours 100 --seed 1 --ablate shuffle --out artifacts/talk/runs/p11-tick/tick-L1 --run tick-L1"
+	User time (seconds): 3781.26
+	System time (seconds): 225.79
+	Percent of CPU this job got: 103%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:04:39
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1264344
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 23608298
+	Voluntary context switches: 37581672
+	Involuntary context switches: 3429750
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 137000
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+rc=0
+2026-11-17T17:30:17Z
