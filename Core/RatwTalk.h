@@ -134,6 +134,11 @@ struct SaidLine
     std::string promiseWhat;
     double promiseDays = 0;
     std::string goal;
+    // §37 (the hybrid): what part of the talk the line is: "scene" (a whole written scene's turn, the body), "exchange"
+    // (a rule said as the body where no scene fit: the opener and what it owes), "written" (the game's authored
+    // exchange, its body), "edge" (stitched at the edges: an answer owed after the body, a joiner, a break), "close"
+    // (the goodbyes).
+    std::string part;
     bool goalDone = false;                // Its goal's last step: done, kept between the two for the goal's days
     double goalDays = 0;
     // Phase 6 (§8.8, §10.6): the accent it was spoken in (the speaker's, a step broader or plainer toward the one spoken
@@ -243,6 +248,12 @@ struct Conversation
     std::string claim;
     // Slice 2's review (§13): who in it is a player (0: a, 1: b), never given a line by the engine.
     std::set<int> players;
+    // §37 (the hybrid): what carried the body ("scene": a whole written scene; "exchange": a rule, where none fit;
+    // "written": the game's authored exchange), and
+    // the lines stitched after it that weren't goodbyes.
+    std::string body;
+    int stitched = 0;
+    bool hybrid = false;                          // (Played as the hybrid: settings.json's, a talk of residents on a topic.)
 };
 
 
@@ -439,6 +450,14 @@ struct Settings
     // The towns with no dialect of their own, and whose speech is theirs (doc 83, Phase 4: Fenshore speaks as Mirebridge;
     // Saltwell, which spoke as Coldwater, has its own since 2026-11-15): settings.json's "dialect_of". A resident's `from` stays where they grew up.
     std::map<std::string, std::string> dialectOf;
+    // Doc 84 §37, the hybrid (the user, 2026-11-17): the engine decides what is said; a written scene says it. A talk
+    // between residents on a topic opens with a whole scene that fits wherever one does, plays it as written, and then
+    // only its edges are stitched line by line (what its last line owes, a joiner's word and its answer, the goodbyes):
+    // no lull's opinion, pivot, goal or change of subject after it, nobody speaking twice running outside a scene, at
+    // most `hybridStitch` stitched lines after the body. settings.json's "hybrid" (false where it isn't said: the
+    // tests' small libraries, and a library before it, keep the line-by-line engine).
+    bool hybrid = false;
+    int hybridStitch = 2;
 };
 
 // Doc 84 §7.4, §8.5 (Phase 5): frames.json's goals, a reason to steer a talk: learn a name, ask a favour, mend a quarrel,
@@ -670,6 +689,7 @@ public:
     // topic's claim. Nothing without moves.json.
     void describeMoves(SaidLine& line, const std::vector<std::string>& before, const Facts& facts, bool expect = true) const;
     const Settings& settings() const { return settings_; }
+    void setHybrid(bool on) { settings_.hybrid = on; }   // (§37: the tests of the line-by-line engine turn it off.)
     // The dialect (a grammar layer) of one who grew up in `from`: its own, or settings.json's dialect_of for a town with
     // none of its own (Fenshore: mirebridge).
     std::string dialectOf(const std::string& from) const;
@@ -830,7 +850,7 @@ private:
     bool expandInto(const std::string& text, Expansion& x, int depth, std::string& out) const;
     bool expandSymbol(const std::string& name, Expansion& x, int depth, std::string& out) const;
     Said pickOne(const Query& q, std::uint64_t seed, const std::function<bool(const std::string&)>& heard,
-                 const std::deque<std::string>& recent, int speaker, bool chained, Trace* trace) const;
+                 const std::deque<std::string>& recent, int speaker, bool chained, Trace* trace, bool scenesFirst = false) const;
     bool checkGrammars(std::vector<std::string>& errors) const;
     void reindex();                                         // byConcept_, byId_ and byMove_ from entries_.
     void indexMoves(std::size_t i);

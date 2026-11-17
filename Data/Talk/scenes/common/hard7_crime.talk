@@ -449,7 +449,7 @@ b : Not off your feet, they don't. | It'll turn. | Then the #thief# gets nothing
 scene h7_crime_sump
 when topic=crime topic.kind=theft|assault here.region=ridgemere a.quarter=sump
 does give.opinion / agree / echo / assess
-a : Down here they'd rob #topic.victim# and sell them back their own shoes. | Robbed? In the Sump that's just a Hearthday. | The Heights'll hear #topic.victim# was robbed and blame the Sump. | They always come looking in the Sump first.
+a : Down here they'd rob #topic.victim# and sell #topic.victim_them# back #topic.victim_their# own shoes. | Robbed? In the Sump that's just a Hearthday. | The Heights'll hear #topic.victim# was robbed and blame the Sump. | They always come looking in the Sump first.
 b : And they'd charge for the laces. | It is a Hearthday. | They do anyway. | Because it's usually here.
 a : Twice. | Then mind your shoes. | Let them. We've nothing. | Usually isn't always.
 b : We're a trading quarter, then. | I've none. | And they still take it. | Tell #watch# that.

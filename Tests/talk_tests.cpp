@@ -37,6 +37,7 @@ Library foundation()
     Library lib;
     std::string problem;
     expect(lib.loadFoundation(Dir, problem), "the foundation loads: " + problem);
+    lib.setHybrid(false);                           // (§37: these test the line-by-line engine; hybridTalk the hybrid.)
     return lib;
 }
 
@@ -618,6 +619,7 @@ void playerAnswers()
     Library lib;
     std::string problem;
     expect(lib.load(Dir, problem), problem);
+    lib.setHybrid(false);
     const auto ask = [&](const std::string& intent, const Facts& facts, const std::string& tone, std::uint64_t seed) {
         auto q = moment("player." + intent);
         q.a.facts["tone"] = tone;
@@ -747,6 +749,7 @@ void theStagedEconomysTalk()
     Library lib;
     std::string problem;
     expect(lib.load(Dir, problem), "the library loads whole:\n" + problem);
+    lib.setHybrid(false);
     const auto price = [](const std::string& cause, const std::string& words, const std::string& dir) {
         auto q = moment("talk.prices");
         q.facts["topic.item"] = "salt";
@@ -1111,6 +1114,7 @@ void theRealLibrary()
     Library lib;
     std::string problem;
     expect(lib.load(Dir, problem), "the library loads whole:\n" + problem);
+    lib.setHybrid(false);
     expect(lib.size() >= 2300, "and is a library (" + std::to_string(lib.size()) + ")");
     for (const auto& c : lib.settings().concepts)
         expect(lib.has(c), "something written for " + c);
@@ -1139,6 +1143,7 @@ void theCountrysVoices()
     Library lib;
     std::string problem;
     expect(lib.load(Dir, problem), "the library loads: " + problem);
+    lib.setHybrid(false);
     expect(lib.dialectOf("fenshore") == "mirebridge", "Fenshore speaks as Mirebridge");
     expect(lib.dialectOf("saltwell") == "saltwell", "Saltwell speaks its own, the oasis's (it borrowed Coldwater's before)");
     expect(lib.dialectOf("larkfield") == "larkfield" && lib.dialectOf("") == "", "a town with a dialect speaks its own");
@@ -3095,6 +3100,7 @@ say Prices again. It's all anyone talks of.
     {
         Library lib;
         expect(lib.load(Dir, problem), "the library loads: " + problem);
+        lib.setHybrid(false);
         // An opener that says the claim passes it on (gs_secret: "Don't tell a soul, but X stole..."; the listener was
         // marked told and never held it).
         for (const auto& e : lib.entries())
@@ -3182,6 +3188,135 @@ say Prices again. It's all anyone talks of.
     }
 }
 
+// Doc 84 §37, the hybrid (the user, 2026-11-17): the engine decides what is said; a written scene carries the talk; only
+// its edges are stitched line by line.
+void hybridTalk()
+{
+    std::string problem;
+    const auto hybrid = [] {
+        auto lib = foundation();
+        lib.setHybrid(true);
+        return lib;
+    };
+    // 1. A whole scene that fits carries the talk, whatever a single line's score; a rule only where no scene fits.
+    {
+        const char* text = "scene hy_t_scene\nwhen topic=work\na : The bellows leak.\nb : Patch them.\na : With what?\nb : Leather.\n"
+                           "rule hy_t_rule\nwhen concept=talk.work self.job=baker here.place=market self.stage=adult\ndoes tell.self\nsay Flour in everything.\n"
+                           "rule hy_t_back\ndoes react.self\nsay There's always something.\n"
+                           "rule hy_t_bye\ndoes farewell\nsay Farewell.\nrule hy_t_bye_back\ndoes farewell.return\nsay And you.\n";
+        auto on = hybrid();
+        expect(on.parse(text, "hy_t.talk", problem), problem);
+        auto off = foundation();
+        expect(off.parse(text, "hy_t.talk", problem), problem);
+        int scenes = 0, rules = 0;
+        for (std::uint64_t seed = 1; seed <= 60; ++seed)
+        {
+            scenes += on.converse(moment("talk.work"), seed, None, {}).id == "hy_t_scene";
+            rules += off.converse(moment("talk.work"), seed, None, {}).id == "hy_t_rule";
+        }
+        expect(scenes == 60, "the hybrid: a whole scene carries every talk it fits (" + std::to_string(scenes) + " of 60)");
+        expect(rules > 30, "line by line, the higher-scoring rule opened most (" + std::to_string(rules) + " of 60)");
+        auto none = hybrid();
+        expect(none.parse("rule hy_t_rule\nwhen concept=talk.work\ndoes tell.self\nsay Flour in everything.\n"
+                          "rule hy_t_back\ndoes react.self\nsay There's always something.\n", "hy_t2.talk", problem), problem);
+        const auto ex = none.converse(moment("talk.work"), 1, None, {});
+        expect(ex.lines.size() == 2 && ex.info[0].part == "exchange" && ex.info[1].part == "exchange",
+               "no scene fits: a short exchange (" + std::to_string(ex.lines.size()) + " lines)");
+        // The scene played as written, then the goodbyes: no "There's always something." stitched after "Leather.".
+        const auto said = on.converse(moment("talk.work"), 3, None, {});
+        expect(said.lines.size() == 6 && said.lines[3].second == "Leather." && said.lines[4].second == "Farewell." &&
+                   said.info[0].part == "scene" && said.info[4].part == "close",
+               "the scene as written, then its goodbyes (" + std::to_string(said.lines.size()) + " lines)");
+    }
+    // 2. Past the body, a direct question it owes is answered at the edge (a scene owes only what is written).
+    {
+        auto lib = hybrid();
+        expect(lib.parse("scene hy_q\nwhen topic=work\ndoes tell.self / ask.detail\nowes other: answer.detail\na : The bellows leak.\nb : Since when?\n"
+                         "rule hy_q_answer\ndoes answer.detail\nsay Since Restday.\n", "hy_q.talk", problem), problem);
+        const auto said = lib.converse(moment("talk.work"), 1, None, {});
+        expect(said.lines.size() == 3 && said.lines[2].second == "Since Restday." && said.info[2].part == "edge",
+               "a question the scene ends on is answered at the edge");
+    }
+    // 3. Nobody twice running outside a scene: a scene of five lines ends on a, and b says the goodbye.
+    {
+        auto lib = hybrid();
+        expect(lib.parse("scene hy_five\nwhen topic=work\na : One.\nb : Two.\na : Three.\nb : Four.\na : Five.\n"
+                         "rule hy_t_bye\ndoes farewell\nsay Farewell.\nrule hy_t_bye_back\ndoes farewell.return\nsay And you.\n"
+                         "rule hy_t_pre\ndoes preclose\nsay I'd best be off.\nrule hy_t_pre_ok\ndoes accept_preclose\nsay Off you go.\n",
+                         "hy_five.talk", problem), problem);
+        for (std::uint64_t seed = 1; seed <= 20; ++seed)
+        {
+            const auto said = lib.converse(moment("talk.work"), seed, None, {});
+            expect(said.lines.size() > 5, "the five-line scene and its goodbyes");
+            for (std::size_t i = 1; i < said.info.size(); ++i)
+                expect(said.info[i].who != said.info[i - 1].who || said.info[i].entry == said.info[i - 1].entry,
+                       "nobody speaks twice running but as a scene is written: " + said.lines[i].second);
+        }
+    }
+    // 4. A parallel line never answers past a speaker's own line chosen by their kind: the scene ends on that line.
+    {
+        const char* text = "scene hy_kind\nwhen topic=work\na : The bellows leak. | The forge is cold.\n"
+                           "b[old] : In my day we had no bellows.\nb : Patch them. | Light it.\na : With what? | With what?\n";
+        auto on = hybrid();
+        expect(on.parse(text, "hy_kind.talk", problem), problem);
+        auto off = foundation();
+        expect(off.parse(text, "hy_kind.talk", problem), problem);
+        auto q = moment("talk.work");
+        q.b.facts["stage"] = "old";
+        expect(on.converse(q, 1, None, {}).lines.size() == 2, "the hybrid: the scene ends on the old wolf's own line");
+        expect(off.converse(q, 1, None, {}).lines.size() == 3, "line by line, the parallel line answered past it");
+    }
+    // 5. The game's authored exchange is a body too: said as written, then nothing stitched on but the goodbyes.
+    {
+        auto lib = hybrid();
+        expect(lib.parse("rule hy_w_op\nwhen concept=talk.smalltalk\ndoes give.opinion\nsay The Houses keep the works going.\n"
+                         "rule hy_w_inv\ndoes invite\nsay Come by tomorrow evening?\n", "hy_w.talk", problem), problem);
+        Conversation c;
+        c.seed = 1;
+        Said written;
+        written.lines = {{0, "A quiet day, for once."}, {1, "It is at that."}};
+        const auto q = moment("talk.smalltalk");
+        const auto facts = [&](int, int) { return q; };
+        int said = lib.beginWith(c, q, written) ? 1 : 0;
+        while (lib.next(c, facts, Freshness{None, {}}))
+            ++said;
+        expect(said == 2, "the authored exchange, and nothing stitched after it (" + std::to_string(said) + " lines)");
+    }
+    // 6. The real library: every talk of two on a topic keeps the hybrid's rules.
+    {
+        Library lib;
+        expect(lib.load(Dir, problem), "the library loads: " + problem);
+        expect(lib.settings().hybrid, "settings.json plays the hybrid");
+        int talks = 0, bodies = 0, stitchedPast = 0;
+        for (const char* concept : {"talk.work", "talk.food", "talk.smalltalk", "talk.weather", "talk.memories", "talk.pastimes",
+                                    "talk.faith", "talk.animals", "talk.home", "talk.health"})
+            for (std::uint64_t seed = 1; seed <= 40; ++seed)
+            {
+                const auto said = lib.converse(moment(concept), seed, None, {});
+                if (said.info.empty())
+                    continue;
+                ++talks;
+                bodies += said.info.front().part == "scene";
+                int edges = 0;
+                for (std::size_t i = 0; i < said.info.size(); ++i)
+                {
+                    const auto& l = said.info[i];
+                    edges += l.part == "edge" || (l.part == "exchange" && i > 0);
+                    if (i > 0)
+                        expect(l.who != said.info[i - 1].who || l.entry == said.info[i - 1].entry,
+                               std::string(concept) + ": twice running outside a scene: " + said.lines[i].second);
+                    for (const auto& m : l.moves)
+                        expect(m != "pivot" && m != "change_subject" && m != "give.opinion" && m != "pre.request" && m != "extend",
+                               std::string(concept) + ": a lull's " + m + " in the hybrid: " + said.lines[i].second);
+                }
+                stitchedPast += edges > 2;
+            }
+        expect(talks > 300 && bodies * 10 >= talks * 9, "whole scenes carry the everyday talk: " + std::to_string(bodies) + " of " +
+                                                          std::to_string(talks));
+        expect(stitchedPast == 0, "never more than two lines stitched past the body: " + std::to_string(stitchedPast));
+    }
+}
+
 int main()
 {
     try
@@ -3208,6 +3343,7 @@ int main()
         sharedLinesTwo();
         sliceTwoReview();
         sliceThree();
+        hybridTalk();
     }
     catch (const std::exception& error)
     {

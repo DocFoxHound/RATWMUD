@@ -88,7 +88,7 @@ b : Cheerful. | No. Ours is the right one. | They all mean it. | ...Never you mi
 
 scene m7_acc_sorry_what
 when topic=accent
-does ask.detail / answer.detail / assess
+does repair / clarify / assess
 a : Sorry? Once more? | Come again? | I didn't catch that. | You said what, now?
 b[accent=broad,from!=ridgemere] #broad : I said #greet#. It means hello where I'm from.
 b : I said it's a #good# day for it. | I asked after your family. | I said #thanks#. | I said #nonsense#. About the price of bread.

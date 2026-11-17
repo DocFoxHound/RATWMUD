@@ -4406,3 +4406,226 @@ sampled over topic family and length, in a random order, numbered and nothing el
 `artifacts/talk/rate/s3/key.json` (don't open it before rating). Scored as the first: `python3 tools/talk_rate.py score
 RATINGS... --key artifacts/talk/rate/s3/key.json --json artifacts/talk/rate/s3/h1.json --report
 artifacts/talk/rate/s3/h1.md`, with the mean weighted to the lengths heard beside the packet's even one.
+
+## 37. The hybrid: the engine chooses, a written scene says it (2026-11-17)
+
+Branch `r3-talk-s2`, on Slice 3 (9d69ff60). **Why.** The second blind packet (§36, 60 conversations, three raters, the
+same two axes) was rated: Slice 3's ticking talk **3.48** overall (believable 3.33, coherent 3.62), the old library
+(P0's baseline) **3.79** (3.48, 4.10), the shuffled control **1.38**; new − old −0.31 (95%: −0.85 to +0.24). The
+raters' scores are `artifacts/talk/rate/s3/ratings-blind.json`, scored as `h1.json` and `h1.md` beside the key. What
+they marked down: the same wolf speaking twice running, jumps to another topic ("festival days come out of nowhere"),
+cryptic replies ("Two empty pots."), muddled openers stacked in one breath. Read against the key, the pattern is plain:
+**the 9 of the 20 new talks that were one whole scene (with or without a goodbye pair) rated 4.11 on average (eight
+of them 3.67 or more); the 11 stitched from rules, or a scene with a second scene or an opinion after it, rated 2.95**,
+and all four rated under 2.5 were stitched (a scene followed by a second scene or an opinion, a farewell said by the
+one who had just spoken, a rule's opener answered by a line written for any opener). The old system mostly plays whole hand-written scenes, coherent by
+construction; Slice 2's engine stitched talk line by line from separate pieces (in Slice 3's tick 47% of lines came
+from rules, against 13% in the baseline), and the stitching is what lost the flow.
+
+**The design (the user, 2026-11-17).** The engine decides *what* is said: the topic, when, between whom, the truth
+checks, who has heard what (the ledger), opinions, moods and temperament for choosing, no repeats. **Written whole
+scenes carry the body**: the engine selects an authored multi-turn scene that fits (topic, pair, facts, truth, not
+heard, mood and kind), binds names and facts, and plays it as written. **Line-by-line stitching only at the edges**: a
+greeting in the opener's breath, the goodbyes, a joiner's word and its answer, a short answer to a direct question, a
+thread's return; never two lines running by one speaker unless the scene is written that way; never a change of topic
+mid-talk unless a written scene carries it. `settings.json`'s `"hybrid": true` turns it on for the library
+(`"hybrid_stitch": 2`, the most lines stitched after a body, goodbyes aside); a library without it (the tests' small
+ones) keeps the line-by-line engine.
+
+**How a talk is chosen now** (`Core/RatwTalk.cpp`):
+- **The body.** `Library::begin` asks `pickOne` with `scenesFirst` for a talk of two residents on a topic. Of all that
+  holds, a whole scene (two turns or more, rendered for these two) carries the talk, whatever a single line's score; a
+  strict priority (a death) holds only against scenes of that priority. **The director's facts decide between them**:
+  each option is credited with the topic's facts its rendered lines say (the words of `topic.price`, `topic.news`,
+  `topic.who`, a ship's name, case aside) and the flags it tests (`topic.bare=yes`); where a scene says as much as any
+  line could, the scenes that do carry it; where only a rule says more (the shelf bought bare, "fourteen pence the
+  dozen", a price's cause), **that rule opens a short exchange** (its opener and the answer owed it, always taken, and
+  nothing after unless asked). Only where no scene fits at all does a rule open. When every scene that fits would tell
+  the one spoken to again (the ledger), the last two of begin's six tries may take a rule.
+- **Freshness.** A scene the listeners have heard is told in another of its parallel threads where it has one they
+  haven't: the game keeps `entry#alt` of each talk's first line in `scenesHeard_` beside the entry
+  (`Core/RatwGameAmbient.cpp`), and `pickOne` re-renders a heard scene until its first line is a thread they haven't
+  heard (up to six tries) before tiers and weights choose. The place's recent list, the collision filter, the ledger's
+  told set and the cooldowns stand as they were.
+- **Played as written.** A scene's turns answer each other as written, so in the hybrid none owes by default (its next
+  turn is its answer; its last owes only what is written). A parallel line never answers past a speaker's own line
+  chosen by their kind: after a one-alternative line chosen by the speaker's facts (`b[old] : In my day we hanged
+  thieves at the gate.`) the next parallel line would answer the line before it ("Right on their own doorstep."), so
+  the scene ends on the kind's line (Slice 3 had measured 3-5% of scene turns crossing their thread this way).
+- **The edges.** No lull at all after the body: no opinion, pivot, goal, change of subject or extend ("Oh, before you
+  go..."). What a line owes past the body is answered only when it is a direct question, a joiner's word, or a rule's
+  opener where no scene fit; at most `hybrid_stitch` such lines. Nobody speaks twice running outside a scene: an
+  obligation owed by the one who has just spoken is passed over, the closer is never the last speaker, and a break for
+  rain or a fight is said by the other (a call away stays the called one's). The goodbyes: a talk of fewer than four
+  lines parts without ceremony (as Slice 3 had it); a longer one gets the farewell pair alone, no preclose before it
+  (four lines of leave-taking after four of talk was the ceremony Slice 2's raters marked down); a scene that ends on a
+  question nobody answers ends there ("Yes. Sometime. Tomorrow?" is never met with "Right. I'm away.").
+- **The opener's breath.** Nothing asked in it that nobody answers: a greeting that asks ("Morning. Sleep well?",
+  "Back again?") is left out; no greeting or recall before a goodbye said as a talk of its own (`st_farewell`, retagged
+  `farewell / farewell.return`) or before a repair (`m7_acc_sorry_what`, retagged `repair / clarify / assess`: "Good
+  evening, friend. Come again?"). The thread's return ("As I was saying...") and a recall of the last talk in its breath
+  stand.
+- **Kept from Slices 1 and 2:** the truth checks and the lint, the ledger and never told twice, pronouns by sex,
+  dialect grammar in every line, the collision filter, told-once stories, joins (their word and its answer),
+  interruptions and breaks, the topic director and its everyday floor. **Given up, by the design:** opinions aired
+  mid-talk (O1 0), goals begun mid-talk (learn a name, ask a favour), pivots and marked changes of subject; a third who
+  joins only for the pleasure of talk mostly finds no room (C8).
+- **`part`**: every line says what part of the talk it is (`SaidLine::part`, talk_sim's `part`): `scene`, `exchange`
+  (a rule's body where no scene fit), `edge` (stitched past the body) or `close`.
+
+**Where whole scenes were thin, and the scenes written for them.** A first hybrid listen (fixtures L1, 100 h) showed
+the topics that had no scene for what the director chose: ships (no scene at all), the week's events (none), the
+Times (none) and three caravan kinds (a wagon due, a wagon late, the word the last wagon brought: 348 of Slice 3's
+452 caravan talks in the taverns were stitched from single lines). **66 scenes** in four new files, each 3-5 turns in
+three parallel threads with lines by the speaker's kind, in the dialect symbols (`talk_migrate --write` took 52 of
+their backchannels into symbols), under the world-text rules (no "dog", male or female, a ship is "she", nothing of
+crew, cargo or road the facts don't give, the lost grieved): `scenes/common/hybrid_ships.talk` (16: due, in, late,
+lost, sailed), `hybrid_caravans.talk` (20: due, late, the road's news by the way the price went), `hybrid_events.talk`
+(23: each of the twelve events while it is on, more for the drovers and the works fire, any event coming or over) and
+`hybrid_times.talk` (7: hard and good times, with and without a cause). After them a scene carries 89-100% of the
+talks on every topic the listens heard (the caravan, the events and the ships ~90%, the rest of the misses the
+recent list and the told set at work).
+
+**What the critic's read found and fixed** (about 250 conversations read whole before the ticking listen, from frozen L1-L4 and fixtures L1 of
+four rounds of hybrid listens, the taverns first):
+- A stitched answer to a scene's last statement ("You didn't." / "There's always something."): past the body only a
+  direct question is answered.
+- The parallel thread crossed after a kind's line (above).
+- "Evening, neighbour. Mind how you go, Brenna Abbot." (a greeting before a goodbye), "Good evening, friend. Come
+  again?", "Morning. Sleep well? Down here they'd rob...", "Back again? I've written a poem.": the opener's breath
+  (above).
+- "Right. I'm away." after "Tomorrow?"; four lines of goodbyes after a four-line scene: the closing (above).
+- "My son rides with the Frosthollow caravan." from a wolf with no son (T2, open since Phase 1, and heard far more once
+  scenes carry the talk): `cv2_left_worry` says "The Frosthollow caravan's gone. Long road, that." / "They'll be back
+  soon." "Down here they'd rob Corra Ropewell and sell them back their own shoes": `#topic.victim_them#`,
+  `#topic.victim_their#`. "Good day, then." said at dusk as the last line of a scene rendered by day
+  (`m7_wx_strangers_polite`, the quick card's T2): "Take care, then." Each in `talk_equiv`'s EDITED.
+- The same pair telling each other the same scene in the same words within the hour, and one wolf telling the same
+  gossip to three neighbours in a listener's hearing: the parallel threads by what was heard (above).
+- A rule that said what no scene did (the shelf bought bare, the price, `market_behaviors`) lost to scenes of the topic
+  in general: the director's facts (above).
+Left as read: the old library's own scenes still have their faults now that they are most of the talk (a scene's
+fact never backed: "Bo Gilbey's offering a reward for his things."; a cat in a wolf's house; generic gossip scenes
+told to pups); the joiner's word is sometimes left unanswered when no welcome fits; a scene rendered whole at its
+start can say an hour's words a minute past the hour.
+
+**Tests.** `talk_tests` has `hybridTalk`: a whole scene carries every talk it fits though a rule scores higher (60 of
+60; line by line the rule opened most), a short exchange where none fits, the scene as written and then its goodbyes
+(no line stitched after its last statement), a question the scene owes answered at the edge, nobody twice running
+outside a scene (a five-line scene's goodbye said by the other), a scene ending on a kind's line, and over the real
+library 400 talks on ten everyday topics: 90%+ carried by scenes, no pivot, opinion, request or extend, never more
+than two lines stitched past the body. The tests of the line-by-line engine turn the hybrid off
+(`Library::setHybrid(false)`, in `foundation()` and after each load of the real library). The quick card
+(`Tests/fixtures/talk_scorecard_quick.json`) is refrozen on R7, C7, C9, D1A, O1 and K2 with the why (by design: a
+scene and its goodbyes), its hard gates passing; the lint's baseline is blessed at 58 (the "my son" finding gone).
+**The suites**: Core, the full ctest (all 101 that need no database pass; the eight `*_pg` and `pg_client` skip
+without `Database/.env` in the worktree, as at §36), `talk_bench` and the quick card among them; Talk: `talk_check
+--validate` on every file (10,441 entries say what they do), `--coverage` (0 holes), `talk_lint` (58, none new),
+`talk_equiv --against 1e159420` (169 entries changed by hand, each said why), `talk_migrate --check`,
+`tools/dialect_check.py` (66,395 lines, 0 failures, the 14 warnings), and the Python tests (`test_talk_score`,
+`test_talk_rate`, `test_talk_lint`, `test_talk_p7`, `test_talk_p8`, `test_dialect_check`, `test_path_check`).
+
+**The scorecard** (`artifacts/talk/runs/s4`, every profile in both modes over P0's fixture, on the final commit, alone;
+the same values but timings as its run beside the ticking listen). `talk_card` breaks **no hard gate** (exit 1 on soft rows only, nothing refrozen). Fixtures /
+frozen, against Slice 3 (`s3`, §36):
+
+| | Metric | Slice 3 (`s3`) | **The hybrid (`s4`)** |
+|---|---|---|---|
+| R1 | first identical talk (h; an open hard gate) | 6.75 / 4.14 | **6.83 / 2.30** |
+| R2 | first repeated opener (h) | 6.35 / 2.50 | **2.99 / 1.42** |
+| R3 | distinct openers per 3,000 | 2,772 / 1,991 | **2,824 / 2,080** |
+| R4 | a distinctive line heard again within 10 h, per 100 h | 767 / 5,462 | **456 / 2,080** |
+| R5 / R6 | collisions per 100 h / the most-spoken line (%) | 0 / 0; 1.52 / 1.34 | **0 / 0; 1.47 / 0.83** |
+| R7 | distinct replies per 1,000 | 278 / 128 | **142 / 94** |
+| C1 | owed answers answered (%) | 98.5 / 98.7 | **95.1 / 97.6** |
+| C3 / C4 / C6 | good endings (%) / tone clashes / a line twice | 99.8 / 100; 0; 0 | **99.8 / 100; 0; 0** |
+| C7 | lines per talk | 4.57 / 5.81 | **3.47 / 3.35** |
+| C8 / C9 | a third (%) / callbacks per 10 | 0.09 / 1.29; 1.20 / 0.83 | **0.09 / 0.07; 1.12 / 0.94** |
+| T1 / T2 / T3 / T5 | raw ids / untrue presuppositions / self-reference / told what they knew | 0; 0.037 / 0; 0; 0.67 / 0 | **0; 0 / 0; 0; 0 / 0** |
+| T6 | "they" of one named wolf, per 1,000 | 2.69 / 0.07 | **1.64 / 0.07** |
+| K1 / K2 / K3 | everyday (%) / the largest topic (%) / news twice | 45.0 / 74.3; 20.9 / 13.0; 0 | **43.7 / 69.8; 22.4 / 15.4; 0** |
+| D1 / D1L / D1B / D2 | dialect words: none / light / broad (%) / another's | 0; 0.78 / 1.10; 5.04 / 3.74; 0 | **0; 1.18 / 0.95; 3.46 / 2.85; 0** |
+| D3 / U2 / X1 | dialect guessed / look-alikes told apart / replies sharing a word (%) | 83.7 / 81.7; 34.8 / 31.5; 18.8 / 16.5 | **86.3 / 65.2; 38.8 / 32.9; 24.0 / 19.6** |
+| R8 / O1 | habit lines (%) / opinions per 10 talks | 0.16 / 0.14; 0.85 / 1.24 | **0.013 / 0.022; 0 / 0** |
+| B1 / B5 | a beat (ms) / exchanges a second | 0.457 / 0.431; 1.73 / 52.5 | **0.208 / 0.190; 2.24 / 85.1** |
+
+What moved, and why. **By design**: C7 (a scene and, if it ran past three lines, its goodbye pair), R7 (replies are
+the scenes' own lines), O1 and C8 (no opinion or joiner stitched past the body), C1 (now measured only on what the
+edges owe: a statement stitched past a scene is no longer answered, a scene's turns owe nothing by default). **Better**:
+R4 (a distinctive line again within 10 h: 767 → 456 in the fixtures, 5,462 → 2,080 frozen), R6, T2 and T5 to 0, T6,
+X1 (replies that share a word with the line they answer: 18.8 → 24.0%, near the old library's 26.8), U2 and D3 in the
+fixtures, and the beat's cost halved. **Worse, and open**: R1 frozen (4.1 → 2.3 h: the frozen moment replays one hour's
+crowd for a hundred hours, and its few topics' scenes come round; the fixtures' R1 held at 6.8 h) and R2 (a scene's
+first line is the opener, so fewer openers than lines that could start a talk); D1B (broad speakers' dialect words:
+the old library's scenes say fewer of the symbols the dialects colour than Phase 8's shared lines did; the mantles'
+work); K2.
+
+**The share of whole scenes.** Over all twenty card runs (124,791 lines, 36,841 talks): **83.4% of lines are written
+scenes' turns, 9.4% goodbyes, 7.1% a rule's short exchange where no scene said the topic's facts, 0.1% stitched
+edges** (a joiner's word and its answer, a question answered); 87.9% of talks open with a whole scene. The exchanges
+are nearly all the prices (84% of price talks: the scenes of prices don't say the price or the good, the rules do,
+"Have you seen theriac? Down to 101 pence." / "About time."), the ships (42%) and the caravan (33%), where the rules
+say the ship's day or the wagon's goods the scenes leave out. **Thin, and the next scenes to write**: prices that name
+the good and its price, ships and wagons by their day and goods.
+
+**The ticking 100-hour listen** (Q6, the one the user allows at a slice's end; reported):
+`talk_sim --world ridgemere3 --tick --profile L1 --places r2_the_knucklebones,rm_the_grey_gull_inn,rm_the_rainbarrel,
+rm_the_bilge --hours 100 --seed 1 --ablate shuffle` (`artifacts/talk/runs/s4-tick`), Slice 2's and 3's four rooms, from
+DEV's save as it was at 11:47 UTC (game day 33.69) to day 37.86: 100 world hours, 360,000 world seconds, world build 81,
+nothing written. **3,021 s of wall time** (50 min 25 s), beside the card for its first ten minutes; **1.12 GiB peak
+memory**; 6,876 conversations, 24,208 lines. **Also reported**: a first start of it, on the commit before the
+director's-facts rule below, was stopped by hand after about ten minutes of wall time when
+`market_behaviors` showed a rule's facts losing to scenes; nothing of it was kept. And one fault the listen found came
+after it: the game's authored exchange (`beginWith`, "A quiet day, for once." / "It is at that.", 72 of its 6,876 talks)
+was not played as the hybrid, so six of them ran on into an opinion, an invitation or a change of subject stitched
+line by line (all six of the listen's "twice running" outside a scene, and its O1 0.02). `beginWith` is the hybrid's
+now (`hybridTalk`'s fifth case); none of the 20 new talks in the packet is one of the 72. Against Slice 3's ticking
+listen (`s3-tick`, rescored with today's scorer), the shuffled control in brackets:
+
+| | Ticking L1, Slice 3 | **Ticking L1, the hybrid** |
+|---|---|---|
+| Lines from whole scenes / goodbyes / a rule's exchange / stitched edges | 53% from scenes, 46% from rules | **84.3% / 11.0% / 3.8% / 1.0%** |
+| Talks a scene carries | 66% | **99%+ of crime, smalltalk, gossip, travel, faith, food...; caravan 77%, ships 58%, prices 16%** |
+| Two lines running by one speaker outside a scene | 1,334 lines in 31,638 | **6** (the authored exchange's, above) |
+| C7 lines per talk (2 / 3 / 6+ lines) | 4.65 | **3.52** (11% / 65% / 19%) |
+| R1 first identical talk (h) / R2 first repeated opener (h) | 6.1 / 6.0 | **4.3 / 3.7** |
+| R4 a sentence heard again in 10 h, per 100 h / R6 the most-spoken | 2,417 / 1.15% | **1,331 / 0.93%** |
+| R5 collisions / R7 distinct replies per 1,000 | 0 / 118 | **0 (142) / 74** |
+| C1 owed answers answered / C3 good endings (%) | 97.6 / 98.7 | **95.3 (24.3) / 98.9** |
+| C4 tone clashes / C6 a line twice | 0.16 / 0 | **0 / 0** |
+| C8 a third / C9 callbacks per 10 / O1 opinions per 10 | 1.9% / 1.65 / 1.25 | **0.64% / 1.68 / 0.02** |
+| T2 untrue presuppositions / T3 self-reference / T5 told what they knew | 0.03 / 0.09 / 0.95 | **0 / 0 / 0** |
+| K1 everyday / K2 the largest (crime) / K3 the same news twice | 45.5% / 24.2% / 2 | **45.3% / 24.3% / 2** |
+| D1L / D1B / D3 (%) | 0.49 / 0.41 / 84.2 | **0.69 / 0.69 / 85.6** |
+| X1 replies sharing a word with the line before | 18.7% | **23.9%** (2.5%) |
+
+What it says: the talk is now what the raters scored highest, a whole scene and, when it ran past three lines, a
+goodbye pair; nobody speaks twice running outside a scene; the truth rows are all 0; a line heard again within ten
+hours is half as common, and replies share the words of what they answer as the old library's do. What it cost:
+shorter talks, fewer opinions, joiners and distinct replies (by design), and R1 and R2 fall (a scene is the same talk
+when it comes round, where stitching hid a repeat behind a different second half). K3's two are Slice 3's (an incident
+and a theft told one wolf twice, the ledger's). Read from its transcripts (60 of them whole, the four rooms): the
+caravan's and the events' new scenes heard in their rooms ("When the Coldwater wagon comes there'll be lavender
+again." / "Again? When did we last have any?"); gossip and thefts by the old library's scenes with the names bound
+and the truth checked; prices by a rule's two lines ("Have you seen theriac? Down to 101 pence." / "About time.").
+Its faults, left: the old scenes' "they" of one named wolf ("Bo Rainmarsh must be heartbroken." / "They are.": T6, the
+lint's `they_named`); `ac_homesick` asked in Ridgemere of Ridgemere ("What's it like, Ridgemere? I've never been." /
+"Better than here"), the accent topic's who-hears-whom left open since §34.
+
+**The third blind packet (H1, §15.7).** `tools/talk_rate.py packet --new artifacts/talk/runs/s4-tick/tick-L1 --old
+artifacts/talk/runs/p0-baseline/fixtures-L1 --each 20 --seed 4 --out <the rater's folder> --key
+artifacts/talk/rate/s4/key.json`: **60 conversations**, 20 from this ticking listen, 20 from the Slice 1 baseline (P0's,
+the old library: the same source as the first two packets) and 20 from the tick's shuffled control, sampled over topic
+family and length, in a random order, numbered and nothing else. The packet (`packet.md`, `rate.html`, `ratings.csv`)
+is handed to the raters outside the repository; the key is `artifacts/talk/rate/s4/key.json` (don't open it before
+rating). Scored as the second: `python3 tools/talk_rate.py score RATINGS... --key artifacts/talk/rate/s4/key.json
+--json artifacts/talk/rate/s4/h1.json --report artifacts/talk/rate/s4/h1.md`, with the mean weighted to the lengths
+heard beside the packet's even one.
+
+**For the next round.** The packet's ratings decide whether the hybrid beats the old library (H1: new 3.8+, new − old
++1.0, new − shuffled 2.0+). Before them, what this section leaves: whole scenes that say the price and the good (the
+prices topic is a rule's exchange 84% of the time), ships and wagons by their day and goods; R1 and R2 frozen (more
+scenes on the topics a frozen hour repeats, or a scene's threads written further apart); the old library's own faults,
+heard far more now (a fact a scene invents, "they" of one named wolf, the accent topic's who-hears-whom); opinions,
+goals and joiners back only as written scenes that carry them (a scene of two who disagree on the Watch, an invitation
+written whole), never stitched on.

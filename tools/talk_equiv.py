@@ -140,6 +140,16 @@ EDITED.update({
     'st2_apology': '"I\'m sorry about what I said." to one nothing was said to: only after a talk that went sour '
                    '(pair.last_outcome)',
 })
+# The hybrid (Docs/Design/84 §37: whole scenes carry the talk, so what a scene takes for granted is heard far more).
+EDITED.update({
+    'cv2_left_worry': '"My son rides with the X caravan." from a wolf with no son (T2, §34\'s open finding, and now a whole '
+                      'scene heard often): "The X caravan\'s gone. Long road, that." / "They\'ll be back soon."',
+    'h7_crime_sump': '"sell them back their own shoes" of a named victim: #topic.victim_them#, #topic.victim_their#',
+    'm7_wx_strangers_polite': '"#good_day#, then." as the scene\'s last line, rendered with its first by day and said at '
+                              'dusk (the quick card\'s T2): "Take care, then."',
+    'st_farewell': 'a goodbye said as a talk of its own was tagged tell.self / react.self, so a greeting went before it '
+                   '("Evening, neighbour. Mind how you go."): farewell / farewell.return',
+})
 DISCOURSE = {'hedge', 'account', 'ack', 'pivot', 'anyway', 'later', 'resume', 'preclose', 'excuse', 'knew', 'sympathy',
              'concede', 'insist', 'warn', 'welcome_back', 'welcome', 'sorry', 'forgive', 'deflect', 'no_matter',
              'go_ahead', 'put_off', 'vent', 'reassure', 'congrats', 'demur', 'doubt', 'listen'}

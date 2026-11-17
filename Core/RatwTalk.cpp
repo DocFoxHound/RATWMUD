@@ -387,6 +387,9 @@ bool Library::readSettings(const std::string& text, std::string& problem)
     settings_.lower = tiers.number("lower", settings_.lower);
     settings_.strict = int(doc.number("strict_priority", settings_.strict));
     settings_.namedPerson = int(doc.number("named_person", settings_.namedPerson));
+    // §37: the hybrid ("hybrid": true; "hybrid_stitch": the lines stitched after a body, goodbyes aside).
+    settings_.hybrid = doc.boolean("hybrid", false);
+    settings_.hybridStitch = int(doc.number("hybrid_stitch", settings_.hybridStitch));
     for (const auto& [key, set] : {std::pair<const char*, std::set<std::string>*>{"concepts", &settings_.concepts},
                                    {"repeat", &settings_.repeat}, {"alone", &settings_.alone}, {"best_only", &settings_.bestOnly},
                                    {"ends", &settings_.ends}})
@@ -2559,6 +2562,7 @@ Said Library::renderWith(const Entry& e, const Query& q, std::uint64_t seed, Tra
     // same one (the second reply to the second remark), even past a single-line answer in between. Otherwise one at
     // random.
     std::size_t threadIndex = 0, threadCount = 0;
+    bool kindLine = false;                  // (§37: the turn before was a speaker's own line, by their kind: b[old] ...)
     for (std::size_t t = 0; t < e.turns.size(); ++t)
     {
         const auto& turn = e.turns[t];
@@ -2579,6 +2583,17 @@ Said Library::renderWith(const Entry& e, const Query& q, std::uint64_t seed, Tra
                 continue;
             return {};
         }
+        // §37, the hybrid: a parallel line answers the line of its own thread, so after a speaker's own line chosen by
+        // their kind (one alternative, no mark: "When I was young we hanged thieves at the gate.") the next parallel line
+        // would answer what was said before it ("Right on their own doorstep."). The scene ends on the kind's line.
+        if (settings_.hybrid && e.scene && kindLine && threadCount > 1 && chosen->needs.empty() && chosen->texts.size() == threadCount &&
+            out.lines.size() >= 2)
+        {
+            out.info.back().owes.clear();           // (Its end, as a scene's last line: it owes only what is written.)
+            out.info.back().invites.clear();
+            break;
+        }
+        kindLine = chosen->texts.size() == 1 && !chosen->when.empty() && chosen->marks.empty();
         // One alternative at random; another if a fact it needs is missing.
         r = mix(r + t);
         const std::size_t n = chosen->texts.size(), start = n == threadCount ? threadIndex : std::size_t(r % n);
@@ -2750,7 +2765,9 @@ void Library::describe(const Entry& e, std::size_t turn, const Query& q, const s
     }
     // A scene is written whole: its last line owes only what is written (a set piece handing on into open talk, §8.2),
     // never what its moves expect by default.
-    describeMoves(line, before, q.facts, !(e.scene && turn + 1 == e.turns.size()));
+    // §37, the hybrid: and a scene's turns answer each other as written, so none owes by default (its next turn is the
+    // answer, whatever its move is called); a scene ended early on a speaker's own line ends there owing nothing.
+    describeMoves(line, before, q.facts, !(e.scene && (turn + 1 == e.turns.size() || settings_.hybrid)));
     if (e.asserts == Entry::NeverAsserts)
         line.asserts.clear();                       // (`asserts none`: not even by its move's default.)
     // Phase 6 (§8.8): a line airing a stance on the issue a talk is on records the speaker's own side, and the steps events
@@ -3411,6 +3428,26 @@ SaidLine Library::sayNext(Conversation& c) const
         if (c.phase == Conversation::Phase::Opening)
             c.phase = Conversation::Phase::Body;
     }
+    // §37: what part of the talk it is (the scorecard's H1 counts the share of whole scenes against the edges).
+    if (!c.legacy && !moves_.empty())
+    {
+        const bool closing = std::any_of(line.moves.begin(), line.moves.end(), [&](const std::string& m) {
+            const auto* mv = moves_.find(m);
+            return mv && mv->family == "closing" && !moves_.kindOf(m, "extend") && !moves_.kindOf(m, "break");
+        });
+        if (closing)
+            line.part = "close";
+        else if (e && e->scene && line.turn >= 0)
+            line.part = "scene";
+        else if (c.body == "written" && line.entry.empty())
+            line.part = "written";                  // (The game's authored exchange, its body.)
+        else if (c.lines.empty() || (c.body == "exchange" && c.lines.size() == 1 && c.lines.back().who != line.who && line.who < 2))
+            line.part = "exchange";
+        else
+            line.part = "edge";
+        if (line.part == "edge" || (line.part == "exchange" && !c.lines.empty()))
+            ++c.stitched;
+    }
     c.said.insert(line.entry);
     if (!line.text.empty() && line.text.back() == '?')
         c.asked.insert(lower(line.text));
@@ -3566,7 +3603,15 @@ void Library::preface(Conversation& c, Said& said, const Query& q, const Freshne
         if (auto s = answer(c, o, onTopic, 0, fresh, nullptr); !s.id.empty() && s.info.size() == 1)
             back = std::move(s);
     }
-    const bool opens = does("opening");
+    // (§37: nor a greeting before a goodbye: "Evening, neighbour. Mind how you go." A talk that is only its leave-taking.)
+    const bool leaving = std::any_of(said.info.front().moves.begin(), said.info.front().moves.end(), [&](const std::string& m) {
+        const auto* mv = moves_.find(m);
+        return mv && (mv->family == "closing" || mv->family == "repair");
+    });
+    if (leaving)
+        back = {};
+    // (Nor before a repair: "Good evening, friend. Come again?" asks the other to say again what they never said.)
+    const bool opens = does("opening") || leaving;
     Said greet;
     std::vector<std::string> open;
     // (Met already today, the two don't greet, sit down or say kin's first words all over again: the innkeeper's "Sit
@@ -3621,6 +3666,15 @@ void Library::preface(Conversation& c, Said& said, const Query& q, const Freshne
             greet = {};
             continue;
         }
+        // §37, the hybrid: nothing asked in the opener's breath that nobody answers ("Morning. Sleep well? Down here
+        // they'd rob..."; "Back again? ..."): the raters' muddled openers. A greeting that asks is left out.
+        if (!greet.id.empty() && c.hybrid && greet.info.front().text.find('?') != std::string::npos)
+        {
+            if (trace)
+                trace->why += "; " + greet.id + " left out (it asks, and the opener goes on)";
+            greet = {};
+            continue;
+        }
         if (!greet.id.empty() && trace)
             trace->why += "; greeted first (" + open[i] + ")";
     }
@@ -3644,6 +3698,8 @@ std::optional<SaidLine> Library::begin(Conversation& c, const Query& q, const Fr
     setUp(c, q);
     auto asked = q;
     accommodate(asked);                             // (Phase 6: the opener's accent toward the one spoken to; the mood.)
+    // §37: a talk between residents on a topic is carried by a whole scene where one fits.
+    const bool hybrid = settings_.hybrid && !c.legacy && c.concept.rfind("talk.", 0) == 0 && c.people.size() >= 2 && c.players.empty();
     // Never what the one spoken to was told before (Phase 6, §8.6: the ledger's told set; a story they heard): not this
     // opener, nor the authored lines (the game leaves a talk "told" unbegun).
     const auto* found = (moves_.empty() || !fresh.told) ? nullptr : &asked;
@@ -3651,7 +3707,8 @@ std::optional<SaidLine> Library::begin(Conversation& c, const Query& q, const Fr
     Said said;
     for (int tries = 0; tries < 6; ++tries)
     {
-        said = pickOne(asked, c.seed + std::uint64_t(tries) * 0x2545F491ULL, fresh.heard, recent, 0, false, trace);
+        // (§37: whole scenes first; where every scene that fits would tell them again, a rule's short exchange may.)
+        said = pickOne(asked, c.seed + std::uint64_t(tries) * 0x2545F491ULL, fresh.heard, recent, 0, false, trace, hybrid && tries < 4);
         const auto* e = said.id.empty() || !found ? nullptr : find(said.id);
         const bool told = e && toldAlready(c, *e, asked, 0, fresh);
         if (said.id.empty() || (!told && !collides(said, asked, fresh)))
@@ -3672,6 +3729,9 @@ std::optional<SaidLine> Library::begin(Conversation& c, const Query& q, const Fr
     }
     c.ended.clear();
     c.repeat = said.repeat;
+    c.hybrid = hybrid;
+    if (const auto* e = find(said.id); e && !c.legacy)
+        c.body = e->scene && said.info.size() >= 2 ? "scene" : "exchange";
     preface(c, said, asked, fresh, trace);
     take(c, std::move(said));
     return sayNext(c);
@@ -3681,6 +3741,10 @@ std::optional<SaidLine> Library::beginWith(Conversation& c, const Query& q, Said
 {
     // Lines written whole outside the library (the game's authored exchange): said as they are, then the engine goes on.
     setUp(c, q);
+    // (§37, the hybrid: an authored exchange is the talk's body, as a scene is: only its edges after it, never a lull's
+    // opinion or invitation stitched on after "A quiet day, for once." / "It is at that.". The ticking listen found it.)
+    c.hybrid = settings_.hybrid && !c.legacy && c.concept.rfind("talk.", 0) == 0 && c.people.size() >= 2 && c.players.empty();
+    c.body = "written";
     if (written.lines.empty())
     {
         end(c, "nothing", nullptr);
@@ -3763,6 +3827,10 @@ std::optional<SaidLine> Library::interrupt(Conversation& c, const std::string& w
     std::optional<SaidLine> said;
     if (!c.legacy && !moves_.empty() && c.people.size() >= 2 && who >= 0 && who < int(c.people.size()))
     {
+        // (§37: the one who breaks it off isn't the one who has just spoken, where the other can: nobody twice running.)
+        // (Not when one of them is called away: "One moment, Wick." is the called one's to say.)
+        if (c.hybrid && why != "called" && !c.lines.empty() && c.lines.back().who == who && !c.players.count(partner(c, who)))
+            who = partner(c, who);
         const int to = partner(c, who);
         int side = 0;
         const auto q = beatQuery(c, facts, who, to, side);
@@ -3895,14 +3963,37 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
         c.open.pop_back();
         if (n >= budgets_.most - 2 && c.phase != Conversation::Phase::Closing)
             break;
+        // §37, the hybrid: past the body, only so many lines are stitched before the goodbyes (an answer to what the
+        // scene's last line asked, a joiner's word and its answer), and an extend ("Oh, before you go...") would open
+        // what nothing written carries on.
+        if (c.hybrid && c.phase != Conversation::Phase::Closing && c.stitched >= settings_.hybridStitch)
+            break;
+        if (c.hybrid)
+            o.moves.erase(std::remove_if(o.moves.begin(), o.moves.end(), [&](const std::string& m) { return moves_.kindOf(m, "extend"); }),
+                          o.moves.end());
         const int who = o.to >= 0 ? o.to : partner(c, o.by);
         const int to = who == o.by ? partner(c, who) : o.by;
         if (c.players.count(who))
             continue;                               // (Owed by a player: theirs to answer, in the window or not at all: §13.)
+        if (c.hybrid && who == last)
+            continue;                               // (§37: nobody speaks twice running but as a scene is written.)
+        // §37: past the body, what a line owes is answered at the edges only: a direct question ("Is she armed?"), a
+        // joiner's word, or a rule's opener where no scene fit (its answer is the exchange). A scene's last statement is
+        // the end of it: no "There's always something." stitched on after "You didn't." (a goodbye's answer, always).
+        if (c.hybrid && c.phase != Conversation::Phase::Closing)
+        {
+            const auto& made = c.lines.back();
+            const bool question = !made.text.empty() && made.text.back() == '?';
+            const bool exchange = c.body == "exchange" && c.lines.size() == 1;
+            if (!exchange && (o.soft || (!question && made.who < 2 && who < 2)))
+                continue;                           // (An invitation to say more, past the body: the scene said its piece.)
+        }
         int side = 0;
         auto q = beatQuery(c, facts, who, to, side);
-        // An invitation is taken up half the time, as the one invited leans (Phase 6, §7.5: a warm wolf sympathises).
-        if (o.soft)
+        // An invitation is taken up half the time, as the one invited leans (Phase 6, §7.5: a warm wolf sympathises);
+        // always, in the hybrid, by the one spoken to where a rule opened for want of a scene (§37: an exchange, not a
+        // line said to nobody).
+        if (o.soft && !(c.hybrid && c.body == "exchange" && c.lines.size() == 1))
         {
             double leaning = o.moves.empty() ? 1 : 0;
             for (const auto& m : o.moves)
@@ -3954,7 +4045,9 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
     }
     // 2. Nothing owed: a lull (§8.3). While the budget has room, a goal's next step or a turn to something on either's
     // agenda (§8.5, Phase 5); else the talk closes (§8.4).
-    if (c.phase != Conversation::Phase::Closing)
+    // §37, the hybrid: no lull at all. A written scene carried the talk; what follows it is only its edges, never another
+    // topic, an opinion out of nowhere or a goal begun mid-talk (the raters' "festival days come out of nowhere").
+    if (c.phase != Conversation::Phase::Closing && !c.hybrid)
         if (auto line = lull(c, facts, fresh, trace))
             return line;
     if (c.phase != Conversation::Phase::Closing)
@@ -3971,6 +4064,8 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
         c.closer = aw != bw ? (aw ? 0 : 1) : partner(c, last);
         if (c.closer >= 2)
             c.closer = last == 0 ? 1 : 0;           // (One who has just joined doesn't close the talk they joined.)
+        if (c.hybrid && c.closer == last)
+            c.closer = partner(c, last);            // (§37: not the one who has just spoken: "Lovely, and short." / "Bed for me.")
     }
     // 3. Closing (§8.4): a preclose when there's room for the whole of it (preclose, its answer, the farewell pair),
     // then the farewell, answered (above). The frames' preclose makes the room it needs smaller.
@@ -3990,7 +4085,9 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
         for (const auto& f : frames_)
             if (f.name == name)
                 readily *= f.preclose;
-    const int who = c.closer < 0 ? partner(c, last) : c.closer;
+    int who = c.closer < 0 ? partner(c, last) : c.closer;
+    if (c.hybrid && who == last)
+        who = partner(c, last);                     // (§37: nobody speaks twice running but as a scene is written.)
     const int to = partner(c, who);
     int side = 0;
     auto q = beatQuery(c, facts, who, to, side);
@@ -3998,6 +4095,15 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
     // 3.90. A talk that has had only one exchange (fewer than four lines) ends there, the two going back to what they
     // were doing without a word of ceremony; the farewell pair is for a talk that has run a while.
     if (!precloseSaid && n < 4 && c.extended == 0)
+    {
+        c.closer = who;
+        end(c, "parted", trace);
+        return std::nullopt;
+    }
+    // §37, the hybrid: a scene that ends on a question nobody answers ends there, as written ("Yes. Sometime.
+    // Tomorrow?" is never met with "Right. I'm away.").
+    if (c.hybrid && !precloseSaid && !c.lines.empty() && !c.lines.back().text.empty() && c.lines.back().text.back() == '?' &&
+        c.lines.back().part == "scene")
     {
         c.closer = who;
         end(c, "parted", trace);
@@ -4020,7 +4126,9 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
         }
     }
     // A preclose first when the talk has run a while and there's room for the whole closing.
-    if (!precloseSaid && n >= 4 && n + 4 <= int(std::lround(c.budget * readily)))
+    // (§37, the hybrid: the goodbye pair alone after a written scene: four lines of leave-taking after four of talk was
+    // the ceremony the raters marked down.)
+    if (!precloseSaid && !c.hybrid && n >= 4 && n + 4 <= int(std::lround(c.budget * readily)))
     {
         Conversation::Open o;
         o.by = to;
@@ -4463,7 +4571,7 @@ Said Library::answer(const Conversation& c, const Conversation::Open& owed, cons
 }
 
 Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bool(const std::string&)>& heard,
-                      const std::deque<std::string>& recent, int speaker, bool chained, Trace* trace) const
+                      const std::deque<std::string>& recent, int speaker, bool chained, Trace* trace, bool scenesFirst) const
 {
     const auto list = byConcept_.find(q.concept);
     if (list == byConcept_.end())
@@ -4529,6 +4637,90 @@ Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bo
         if (trace)
             trace->why = "nothing fits";
         return {};
+    }
+    // §37, the hybrid: a whole written scene carries the talk wherever one fits (two turns or more, as rendered for these
+    // two), whatever a single line's score; a line must be said (a strict priority: a death) only where no scene of that
+    // priority holds. Only where no scene fits does a rule open it, as a short exchange.
+    if (scenesFirst)
+    {
+        // (A scene the listeners have heard is told with another of its parallel threads where it has one they haven't:
+        // the same scene in other words, never the same talk twice. The game keeps "entry#alt" of a talk's first line.)
+        if (heard)
+            for (auto& o : options)
+                if (o.entry->scene && o.heard && !o.said.info.empty() && heard(o.entry->id + "#" + std::to_string(o.said.info.front().alt)))
+                    for (std::uint64_t again = 1; again <= 6; ++again)
+                    {
+                        auto other = render(*o.entry, q, mix(seed + again * 0xA24BAED4963EE407ULL), nullptr, speaker);
+                        if (!other.id.empty() && other.info.size() >= 2 &&
+                            !heard(o.entry->id + "#" + std::to_string(other.info.front().alt)))
+                        {
+                            o.said = std::move(other);
+                            o.heard = false;        // (Heard, but not this way: as fresh as an unheard scene.)
+                            break;
+                        }
+                    }
+        int top = -1000;
+        for (const auto& o : options)
+            top = std::max(top, o.entry->priority);
+        const auto whole = [&](const Option& o) {
+            return o.entry->scene && o.said.info.size() >= 2 &&
+                   (top >= settings_.strict ? o.entry->priority == top : top < 0 || o.entry->priority >= 0);
+        };
+        // What the director chose to have said is the topic's facts: where a rule says one of them that no scene that
+        // fits does (the shelf bought bare, a price's cause), the rule's short exchange says it, not a scene of the
+        // topic in general (market_behaviors: "and it's said: the shelf bought bare").
+        // (A topic fact is said where its lines, as rendered, say its words: "fourteen pence the dozen", "a broken
+        // axle"; or a flag the topic carries is tested. Not its kind, nor a short word that could stand for anything.)
+        const auto topicFacts = [&](const Option& o) {
+            std::set<std::string> out;
+            for (const auto& c : o.entry->when)     // (A flag the topic carries, tested: topic.bare=yes.)
+                if (const auto f = q.facts.find("topic." + c.name); c.ns == Ns::Topic && f != q.facts.end() && f->second == "yes")
+                    out.insert(c.name);
+            for (const auto& [k, v] : q.facts)
+                if (k.rfind("topic.", 0) == 0 && k != "topic.kind" && v.size() >= 4 && v != "yes")
+                    for (const auto& l : o.said.info)
+                        if (lower(l.text).find(lower(v)) != std::string::npos)   // ("A dun wolf" begins a sentence.)
+                        {
+                            out.insert(k.substr(6));
+                            break;
+                        }
+            return out;
+        };
+        // The most of the topic's facts any line that holds would say; a scene that says as much carries the talk, else
+        // a rule that does, as a short exchange.
+        std::size_t most = 0;
+        std::vector<std::size_t> says;
+        for (const auto& o : options)
+        {
+            const bool can = whole(o) || (!o.entry->scene && (top >= settings_.strict ? o.entry->priority == top : top < 0 || o.entry->priority >= 0));
+            says.push_back(can ? topicFacts(o).size() : 0);
+            most = std::max(most, says.back());
+        }
+        bool sceneSaysAll = false;
+        for (std::size_t i = 0; i < options.size(); ++i)
+            sceneSaysAll = sceneSaysAll || (whole(options[i]) && says[i] == most);
+        if (!sceneSaysAll && most > 0)
+        {
+            std::vector<Option> kept;
+            for (std::size_t i = 0; i < options.size(); ++i)
+                if (!options[i].entry->scene && says[i] == most)
+                    kept.push_back(std::move(options[i]));
+            options = std::move(kept);
+            if (trace)
+                trace->why += "a rule says what no scene does; ";
+        }
+        else if (most > 0)
+        {
+            std::vector<Option> kept;
+            for (std::size_t i = 0; i < options.size(); ++i)
+                if (whole(options[i]) && says[i] == most)
+                    kept.push_back(std::move(options[i]));
+            options = std::move(kept);
+        }
+        else if (std::any_of(options.begin(), options.end(), whole))
+            options.erase(std::remove_if(options.begin(), options.end(), [&](const Option& o) { return !whole(o); }), options.end());
+        else if (trace)
+            trace->why += "no whole scene fits; ";
     }
     // A chain's later beats take the best tier, so its answers stay coherent (before Phase 3's fit: legacyNext).
     const auto choice = chooseOption(options, settings_, seed, chained || settings_.bestOnly.count(q.concept) > 0);

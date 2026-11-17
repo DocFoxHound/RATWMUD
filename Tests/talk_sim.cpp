@@ -580,6 +580,8 @@ void Sim::hook()
         v.add("habits", habits);
         v.add("facts", hex(fnv(json::dump(who))));
         v.add("route", l.route);
+        if (!l.info.part.empty())
+            v.add("part", l.info.part);              // (§37: scene, exchange, edge or close.)
         v.add("text", l.text);
         // (The opener's side, the other's, or a third who joined: the control swaps lines within a side.)
         c.lines.push_back({v, l.who == c.opener ? 0 : (c.answerer.empty() || l.who == c.answerer) ? 1 : 2});

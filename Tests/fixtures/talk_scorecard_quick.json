@@ -120,13 +120,13 @@
    "better": "higher",
    "gate": "soft",
    "target": "500+",
-   "value": 212.56983240223462,
+   "value": 181.50934239262315,
    "passes": false,
    "by_profile": {
-    "town": 212.57
+    "town": 181.509
    },
-   "control": 193.88188641835433,
-   "separation": 0.08791438452337906,
+   "control": 172.81553398058253,
+   "separation": 0.04789730543585483,
    "real_better": true,
    "separates": false,
    "control_required": false,
@@ -318,12 +318,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "5-7; p90 9+",
-   "value": 5.5245,
-   "passes": true,
+   "value": 3.2075,
+   "passes": false,
    "by_profile": {
-    "town": 5.524
+    "town": 3.208
    },
-   "control": 5.5245,
+   "control": 3.2075,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -356,19 +356,19 @@
    "better": "higher",
    "gate": "soft",
    "target": "1.5+",
-   "value": 0.17,
+   "value": 0.065,
    "passes": false,
    "by_profile": {
-    "town": 0.17
+    "town": 0.065
    },
-   "control": 0.17,
+   "control": 0.065,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    34,
+    13,
     2000.0
    ]
   },
@@ -482,12 +482,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "diagnostic: accommodation (§10.6)",
-   "value": 17.1173702324928,
+   "value": 12.704598597038192,
    "passes": null,
    "by_profile": {
-    "town": 17.117
+    "town": 12.705
    },
-   "control": 17.1173702324928,
+   "control": 12.704598597038192,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -499,19 +499,19 @@
    "better": "higher",
    "gate": "soft",
    "target": "diagnostic (§8.8)",
-   "value": 0.31,
+   "value": 0.0,
    "passes": null,
    "by_profile": {
-    "town": 0.31
+    "town": 0.0
    },
-   "control": 0.014999999999999998,
-   "separation": 0.9516129032258064,
-   "real_better": true,
-   "separates": true,
+   "control": 0.0,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    62,
+    0,
     2000.0
    ]
   },
@@ -681,12 +681,12 @@
    "better": "lower",
    "gate": "soft",
    "target": "25% or less",
-   "value": 10.15,
+   "value": 11.6,
    "passes": true,
    "by_profile": {
-    "town": 10.15
+    "town": 11.6
    },
-   "control": 10.15,
+   "control": 11.6,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -859,9 +859,9 @@
     "line_pct": 0.742
    },
    "R7_detail": {
-    "replies": 7160,
-    "closing_beats": 5077,
-    "closings_distinct_per_1000": 93.4
+    "replies": 4121,
+    "closing_beats": 294,
+    "closings_distinct_per_1000": 554.4
    },
    "R8_detail": {
     "p90": 0.3766478342749529,
@@ -898,9 +898,9 @@
     "in_line": 0
    },
    "C7_detail": {
-    "p90": 10,
-    "three_lines": 54.7,
-    "four_lines": 0.0
+    "p90": 3,
+    "three_lines": 87.2,
+    "four_lines": 0.2
    },
    "T2_detail": {
     "by_kind": {},
@@ -932,26 +932,26 @@
    },
    "K2_detail": {
     "topics": {
-     "work": 10.15,
-     "smalltalk": 7.05,
-     "travel": 6.55,
-     "pastimes": 6.15,
-     "memories": 6.05,
-     "season": 6.0,
-     "food": 5.7,
-     "dreams": 5.6,
-     "land": 5.45,
-     "lore": 5.45,
-     "animals": 5.25,
-     "home": 5.25,
-     "faith": 4.95,
-     "friends": 4.8,
-     "health": 4.6,
-     "player": 3.1,
-     "family": 2.95,
-     "weather": 2.1,
-     "accent": 1.45,
-     "life": 1.2,
+     "work": 11.6,
+     "smalltalk": 8.3,
+     "memories": 6.45,
+     "pastimes": 6.45,
+     "food": 6.4,
+     "home": 6.15,
+     "animals": 5.8,
+     "health": 5.55,
+     "travel": 5.45,
+     "season": 5.35,
+     "land": 5.15,
+     "dreams": 4.95,
+     "faith": 4.8,
+     "lore": 4.6,
+     "family": 3.55,
+     "accent": 3.05,
+     "player": 3.0,
+     "weather": 1.85,
+     "friends": 0.95,
+     "life": 0.4,
      "news": 0.2
     }
    },
@@ -966,12 +966,8 @@
     "turned_talks": 833
    },
    "C9_detail": {
-    "callbacks": 34,
-    "goals": {
-     "visit": 10,
-     "vent": 5,
-     "mend": 2
-    }
+    "callbacks": 13,
+    "goals": {}
    },
    "T5_detail": {
     "asserted": 0,
@@ -984,8 +980,8 @@
     "none": 0.0
    },
    "D1A_detail": {
-    "broader": 2234,
-    "plainer": 203
+    "broader": 680,
+    "plainer": 135
    },
    "D2_detail": {
     "by_layers": 0,
@@ -1062,6 +1058,21 @@
     "town": "/home/martinb/.claude/jobs/ee03c49e/tmp/quick/town"
    },
    "on": "2026-11-17T09:19:52+00:00"
+  },
+  {
+   "metrics": [
+    "R7",
+    "C7",
+    "C9",
+    "D1A",
+    "O1",
+    "K2"
+   ],
+   "why": "Doc 84 §37, the hybrid: whole written scenes carry the talk and only its edges are stitched, so talks are a scene and its goodbyes (C7), the replies are the scenes' own lines (R7), no opinion, pivot or goal is stitched on after a scene (O1, C9: a recall now only in the opener's breath), the scenes' words carry fewer accent steps (D1A), and the topic mix follows which topics have scenes (K2)",
+   "from": {
+    "town": "/tmp/hyb/q/town"
+   },
+   "on": "2026-11-17T11:47:14+00:00"
   }
  ]
 }

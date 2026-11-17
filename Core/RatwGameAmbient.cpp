@@ -835,6 +835,11 @@ void Game::ambientSaid(AmbientTalk& t, const talk::SaidLine& line)
     for (; t.chainDone < t.conv.chain.size(); ++t.chainDone)
         for (const auto& h : hearers)
             scenesHeard_[h].add(t.conv.chain[t.chainDone]);
+    // (Doc 84 §37: and which of a scene's parallel threads they heard it in, its first line's: the hybrid tells a scene
+    // heard before in another of its threads.)
+    if (!t.conv.lines.empty() && t.conv.lines.front().alt >= 0 && !t.conv.lines.front().entry.empty())
+        for (const auto& h : hearers)
+            scenesHeard_[h].add(t.conv.lines.front().entry + "#" + std::to_string(t.conv.lines.front().alt));
     // What it remembers, and that it was said (once, cooldowns).
     if (t.effectsDone < t.conv.effects.size())
     {

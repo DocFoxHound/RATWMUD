@@ -1,0 +1,920 @@
+{
+ "about": "The second blind ratings of doc 84 (Slice 3's packet, 60 conversations: artifacts/talk/rate/s3/key.json), by three raters given only the packet: each item rated 1-5 for believable and coherent. Their numbers unchanged; scored by tools/talk_rate.py score (h1.json, h1.md). Doc 84 \u00a737.",
+ "raters": [
+  {
+   "rater": "A",
+   "ratings": [
+    {
+     "id": "1",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "2",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "3",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "4",
+     "believable": 2,
+     "coherent": 1
+    },
+    {
+     "id": "5",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "6",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "7",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "8",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "9",
+     "believable": 2,
+     "coherent": 3
+    },
+    {
+     "id": "10",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "11",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "12",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "13",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "14",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "15",
+     "believable": 2,
+     "coherent": 1
+    },
+    {
+     "id": "16",
+     "believable": 2,
+     "coherent": 3
+    },
+    {
+     "id": "17",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "18",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "19",
+     "believable": 5,
+     "coherent": 5
+    },
+    {
+     "id": "20",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "21",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "22",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "23",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "24",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "25",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "26",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "27",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "28",
+     "believable": 5,
+     "coherent": 5
+    },
+    {
+     "id": "29",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "30",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "31",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "32",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "33",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "34",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "35",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "36",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "37",
+     "believable": 2,
+     "coherent": 3
+    },
+    {
+     "id": "38",
+     "believable": 2,
+     "coherent": 1
+    },
+    {
+     "id": "39",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "40",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "41",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "42",
+     "believable": 5,
+     "coherent": 5
+    },
+    {
+     "id": "43",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "44",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "45",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "46",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "47",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "48",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "49",
+     "believable": 2,
+     "coherent": 3
+    },
+    {
+     "id": "50",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "51",
+     "believable": 2,
+     "coherent": 3
+    },
+    {
+     "id": "52",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "53",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "54",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "55",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "56",
+     "believable": 2,
+     "coherent": 1
+    },
+    {
+     "id": "57",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "58",
+     "believable": 3,
+     "coherent": 2
+    },
+    {
+     "id": "59",
+     "believable": 5,
+     "coherent": 5
+    },
+    {
+     "id": "60",
+     "believable": 4,
+     "coherent": 4
+    }
+   ]
+  },
+  {
+   "rater": "B",
+   "ratings": [
+    {
+     "id": "60",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "59",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "58",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "57",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "56",
+     "believable": 2,
+     "coherent": 1
+    },
+    {
+     "id": "55",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "54",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "53",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "52",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "51",
+     "believable": 2,
+     "coherent": 3
+    },
+    {
+     "id": "50",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "49",
+     "believable": 2,
+     "coherent": 3
+    },
+    {
+     "id": "48",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "47",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "46",
+     "believable": 2,
+     "coherent": 1
+    },
+    {
+     "id": "45",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "44",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "43",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "42",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "41",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "40",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "39",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "38",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "37",
+     "believable": 2,
+     "coherent": 3
+    },
+    {
+     "id": "36",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "35",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "34",
+     "believable": 2,
+     "coherent": 3
+    },
+    {
+     "id": "33",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "32",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "31",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "30",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "29",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "28",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "27",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "26",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "25",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "24",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "23",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "22",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "21",
+     "believable": 3,
+     "coherent": 2
+    },
+    {
+     "id": "20",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "19",
+     "believable": 5,
+     "coherent": 5
+    },
+    {
+     "id": "18",
+     "believable": 3,
+     "coherent": 2
+    },
+    {
+     "id": "17",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "16",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "15",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "14",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "13",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "12",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "11",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "10",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "9",
+     "believable": 2,
+     "coherent": 3
+    },
+    {
+     "id": "8",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "7",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "6",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "5",
+     "believable": 5,
+     "coherent": 5
+    },
+    {
+     "id": "4",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "3",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "2",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "1",
+     "believable": 4,
+     "coherent": 4
+    }
+   ]
+  },
+  {
+   "rater": "C",
+   "ratings": [
+    {
+     "id": "1",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "3",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "5",
+     "believable": 5,
+     "coherent": 5
+    },
+    {
+     "id": "7",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "9",
+     "believable": 2,
+     "coherent": 3
+    },
+    {
+     "id": "11",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "13",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "15",
+     "believable": 2,
+     "coherent": 1
+    },
+    {
+     "id": "17",
+     "believable": 2,
+     "coherent": 1
+    },
+    {
+     "id": "19",
+     "believable": 5,
+     "coherent": 5
+    },
+    {
+     "id": "21",
+     "believable": 3,
+     "coherent": 2
+    },
+    {
+     "id": "23",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "25",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "27",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "29",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "31",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "33",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "35",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "37",
+     "believable": 2,
+     "coherent": 3
+    },
+    {
+     "id": "39",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "41",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "43",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "45",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "47",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "49",
+     "believable": 2,
+     "coherent": 3
+    },
+    {
+     "id": "51",
+     "believable": 2,
+     "coherent": 3
+    },
+    {
+     "id": "53",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "55",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "57",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "59",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "2",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "4",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "6",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "8",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "10",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "12",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "14",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "16",
+     "believable": 2,
+     "coherent": 3
+    },
+    {
+     "id": "18",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "20",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "22",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "24",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "26",
+     "believable": 2,
+     "coherent": 1
+    },
+    {
+     "id": "28",
+     "believable": 5,
+     "coherent": 5
+    },
+    {
+     "id": "30",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "32",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "34",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "36",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "38",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "40",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "42",
+     "believable": 5,
+     "coherent": 5
+    },
+    {
+     "id": "44",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "46",
+     "believable": 1,
+     "coherent": 1
+    },
+    {
+     "id": "48",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "50",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "52",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "54",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "56",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "58",
+     "believable": 2,
+     "coherent": 2
+    },
+    {
+     "id": "60",
+     "believable": 4,
+     "coherent": 4
+    }
+   ]
+  }
+ ]
+}

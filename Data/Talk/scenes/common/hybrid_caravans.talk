@@ -1,0 +1,196 @@
+# The wagons, as whole scenes (Docs/Design/84 §37, the hybrid). The caravan topic had scenes for a caravan arrived,
+# left or raided, and none for the three kinds the director chooses most in the city's taverns: a wagon due, a wagon
+# late, and the word the last wagon brought (talk.caravan topic.kind=due|late|news: 348 of 452 caravan talks in Slice
+# 3's ticking listen were stitched from shared8_caravans.talk's and economy8_roads.talk's single lines). These carry
+# them whole.
+#
+# The facts (Core/RatwAmbient.cpp World::sceneTopics): topic.where (the town at the road's other end), topic.what (its
+# first good), topic.who (the carter, by name only: no pronoun is known for them), topic.when (a wagon due: today or
+# soon), topic.why (a late one's cause), topic.news (what the last wagon brought word of: "berries are dear in
+# Coldwater", which names its own town) and topic.dir (up for dear, down for cheap, else neither).
+#
+# The rules they keep (shared8_caravans.talk's): nothing of the road the facts don't give; the carter by name only;
+# the news said once and in the wagon's words; a price only the way topic.dir says it went.
+
+## ================================================================ A wagon due
+
+scene hy_cv_due_board
+when topic=caravan topic.kind=due
+does tell.news / react.news / tell.self / react.self
+a : There's a wagon due from #topic.where#. | The #topic.where# wagon's on its way, the board says. | Keep an eye on the road. #topic.where#'s wagon is due.
+b[role=merchant] #trade : I know. I've been counting the days. | Good. I've an order on it. | Then I'll have stock again by the week's end.
+b #plain : Is it? I hadn't seen the board. | When? | I'll believe it when I hear the wheels.
+a@trade : You and half the market. | Let's hope it's all there. | #bc_lucky_you#
+a@plain : Chalked up this morning. | #topic.when.capitalize#, if the road's kind. | #bc_fair_enough#
+b?@plain : Then we'll see. | #bc_we_will_see# | So will I.
+
+scene hy_cv_due_what
+when topic=caravan topic.kind=due topic.what
+does tell.news / ask.detail / answer.detail / assess
+a : The #topic.where# wagon's bringing #topic.what#, they say. | #topic.what.capitalize# coming in from #topic.where#. | When the #topic.where# wagon comes there'll be #topic.what# again.
+b : Much of it? | Is that all it's bringing? | Again? When did we last have any?
+a : A full load, I'm told. | That's what the board says. | Too long ago.
+b : Then it'll go quick. Get there early. | It'll do. | It will be.
+
+scene hy_cv_due_today
+when topic=caravan topic.kind=due topic.when=today
+does tell.news / react.news / tell.self / react.self
+a : The #topic.where# wagon should be in by dark. | Wagon from #topic.where# today. Listen for the bells. | Any hour now, the #topic.where# wagon.
+b : I'll listen for the wheels. | Bells. I always hear them before I see anything. | Any hour. That's what they said yesterday.
+a : The gate watch will shout when they see it. | #bc_me_too# | Today it's chalked up. Today it comes.
+b : Then I'll wait for the shout. | #bc_lovely# | #bc_we_will_see#
+
+scene hy_cv_due_carter
+when topic=caravan topic.kind=due topic.who
+does tell.news / ask.detail / answer.detail / assess
+a : #topic.who#'s bringing the #topic.where# wagon in. | It's #topic.who# driving from #topic.where# this time. | #topic.who#'s on the #topic.where# road again.
+b : Is that a good thing? | Do I know them? | #bc_again_q#
+a : They know the road. | You'd know the whistle. | Every month or so.
+b : Then we'll have it on time, for once. | Oh, that one. | #bc_always_is#
+
+scene hy_cv_due_poor
+when topic=caravan topic.kind=due a.wealth=poor|destitute
+does tell.news / react.news / assess
+a : Wagon due from #topic.where#. Not that I'll be buying. | The #topic.where# wagon's coming. Much good it does me. | There's a wagon due. I'll watch it come in. That's my share.
+b[wealth=poor|destitute] #same : Nor me. Looking costs nothing. | #bc_nor_me# | Watching's free.
+b #plain : There might be work unloading. | You never know. | Ask at the yard. They want backs.
+a@same : We'll look together, then. | Nothing does. | For now.
+a@plain : I'll ask. | I do know. That's the trouble. | #bc_i_might#
+
+## ================================================================ A wagon late
+
+scene hy_cv_late_road
+when topic=caravan topic.kind=late
+does tell.news / react.news / tell.self / react.self
+tone serious / even / even / even
+a : The #topic.where# wagon's late. | No sign of the #topic.where# wagon. | The #topic.where# wagon should have been in by now.
+b[job=carter] #road : Roads are bad this time of year. It'll come. | Late's nothing. Lost is something. | I've been late a hundred times. Never lost one.
+b #plain : How late? | #bc_again_q# | Maybe it's just slow.
+a@road : I hope you're right. | Don't say lost. | That's something, I suppose.
+a@plain : A day, near enough. | #bc_again# | #bc_maybe#
+b?@plain : It'll turn up. | #bc_again# | #bc_we_will_see#
+
+scene hy_cv_late_why
+when topic=caravan topic.kind=late topic.why
+does tell.news / ask.detail / answer.detail / assess
+tone serious / even / even / even
+a : The #topic.where# wagon's held up. | No #topic.where# wagon yet. They've had word why. | The #topic.where# wagon won't be in today.
+b : What's stopped it? | #bc_why_q# | Is it trouble?
+a : #topic.why.capitalize#, they say. | #topic.why.capitalize#. | #topic.why.capitalize#, is all I heard.
+b : Then it'll come when it comes. | That's the road for you. | Could be worse.
+
+scene hy_cv_late_carter
+when topic=caravan topic.kind=late topic.who
+does tell.news / react.news / assess
+tone serious / even / even
+a : #topic.who#'s late with the #topic.where# wagon. | No sign of #topic.who# yet. | #topic.who# should've been in from #topic.where# by now.
+b : That's not like them. | Gods. I hope they're all right. | Late again?
+a : No. It isn't. | #bc_so_do_i# | Not usually, no.
+
+scene hy_cv_late_shelves
+when topic=caravan topic.kind=late a.role=merchant
+does tell.worry / sympathise / assess
+tone serious / tender / even
+a : I'm waiting on the #topic.where# wagon, and it's late. | Every day the #topic.where# wagon's late, I lose custom. | My shelves are empty till the #topic.where# wagon comes.
+b : It'll come. They always do. | That's hard. Nothing to do but wait. | Sell what you've got and smile.
+a : Always so far. | #bc_i_know# | I'm smiling. Can't you tell?
+
+## ================================================================ The word the last wagon brought
+
+scene hy_cv_news_dear
+when topic=caravan topic.kind=news topic.news topic.dir=up
+does tell.news / react.news / tell.self / react.self
+a : The last wagon brought word: #topic.news#. | The carters say #topic.news#. | News off the road: #topic.news#.
+b[role=merchant] #trade : Then it'll be dear here by the next wagon. | Dear there's dear here, give it a week. | I'll be raising mine, then. I've no choice.
+b #plain : Dear there means dear here, soon enough. | Is anything cheap anywhere? | #bc_lovely#
+a@trade : Don't you dare. | That's what I was afraid of. | Everyone says that.
+a@plain : That's what I thought. | Not that I've heard. | Isn't it.
+b?@plain : We'll manage. | #bc_nothing# | #bc_always_is#
+
+scene hy_cv_news_cheap
+when topic=caravan topic.kind=news topic.news topic.dir=down
+does tell.news / react.news / tell.self / react.self
+a : The last wagon brought word: #topic.news#. | The carters say #topic.news#. | Here's a thing off the road: #topic.news#.
+b[role=merchant] #trade : Cheap there won't stay cheap by the time it's carted here. | Then I'll be buying. | Good. Somebody's having a good year.
+b #plain : Cheap there. Not here, I'll bet. | Good. Something's cheap somewhere. | Will it be cheap here?
+a@trade : Carters have to eat. | Leave some for us. | Not us, then.
+a@plain : You'd win that bet. | Somewhere. | Not likely.
+b?@plain : Never is. | #bc_ha# | #bc_never#
+
+scene hy_cv_news_plain
+when topic=caravan topic.kind=news topic.news
+does tell.news / ask.detail / answer.detail / assess
+a : The carters came in full of talk. #topic.news.capitalize#, they say. | Word off the last wagon: #topic.news#. | You'll have heard what the wagon said? #topic.news.capitalize#.
+b : Who told you that? | Is that so? Since when? | And is it true?
+a : The carters, at the yard. | Since the last wagon. | True as anything carters say.
+b : Then it's half true. | Hm. Things change fast out there. | #bc_so_they_say#
+
+## ================================================================ More of the commonest (the word off the road is talked of for days)
+
+scene hy_cv_news_yard
+when topic=caravan topic.kind=news topic.news
+does tell.news / react.news / tell.self / react.self
+a : I was at the yard when the wagon came in. #topic.news.capitalize#, they say. | The carters were full of it. #topic.news.capitalize#. | #topic.news.capitalize#. That's the word from the road.
+b[job=carter] #road : I heard it at every stop. | Carters say a lot of things. Some of them true. | That's the road talking. It's mostly right.
+b #plain : Is it, now? | Carters talk. | And that's the news, is it?
+a@road : You'd know. | Some of them. | #bc_mostly#
+a@plain : #bc_so_they_say# | #bc_they_do# | That's the news.
+b?@plain : Well. Now we know. | They talk more than they drive. | #bc_so_they_say#
+
+scene hy_cv_news_old
+when topic=caravan topic.kind=news topic.news a.stage=old
+does tell.news / react.news / tell.self / react.self
+a : The wagon says #topic.news#. In my day we'd not hear for a month. | #topic.news.capitalize#, they tell me. Word travels quick now. | The carters say #topic.news#. Not that it matters to an old wolf.
+b : A month? | It does. Too quick, some days. | It matters to your purse.
+a : A month, and we were none the worse. | Some days. | My purse is past caring.
+b : Maybe we weren't. | #bc_true# | Mine isn't.
+
+scene hy_cv_due_tavern
+when topic=caravan topic.kind=due here.place=tavern
+does tell.news / react.news / tell.self / react.self
+a : The #topic.where# wagon's due. There'll be carters at the bar. | Carters in from #topic.where# soon. Mind your seat. | When the #topic.where# wagon comes, this place fills.
+b : Thirsty lot, carters. | I'll guard it with my life. | Then we'd better drink up now.
+a : The road's dusty. | You'd better. | That's the spirit.
+b : So's my throat. | #bc_i_will# | Cheers to that.
+
+scene hy_cv_news_pot
+when topic=caravan topic.kind=news topic.news topic.dir=up
+does tell.news / react.news / tell.self / react.self
+a : Here's one off the road: #topic.news#. | #topic.news.capitalize#. The wagon had it from the carters on the way. | They're saying #topic.news#. Came in on the last wagon.
+b[wealth=poor|destitute] #purse : And it'll reach my pot before it reaches my purse. | Of course it is. | Then I'll do without, same as always.
+b #plain : Dear there, dear here, give it a fortnight. | It always starts somewhere. | Should we buy now, then, before it's dear here too?
+a@purse : It always does. | #bc_of_course# | Same as always.
+a@plain : If that. | And ends on our table. | With what?
+b?@plain : Sooner, likely. | #bc_every_time# | Good question.
+
+scene hy_cv_news_keeper
+when topic=caravan topic.kind=news topic.news a.job=innkeeper|cook|brewer|baker
+does tell.news / ask.detail / answer.detail / assess
+a : The last wagon brought word: #topic.news#. I'll have to think about my prices. | #topic.news.capitalize#, the carters say. That's my kitchen's business. | The carters had it that #topic.news#. Worth knowing, in my line.
+b : Will you put yours up? | Does it touch what you cook? | Worth knowing how?
+a : Not if I can help it. | Everything touches what I cook. | What it costs there, it'll cost me here.
+b : Good. Don't. | Then I'm sorry for your pots. | Then I'll eat while it's cheap.
+
+scene hy_cv_news_doubt
+when topic=caravan topic.kind=news topic.news
+does tell.news / react.news / tell.self / react.self
+a : A carter told me #topic.news#. | Did you hear what the wagon brought? #topic.news.capitalize#. | #topic.news.capitalize#. That's the road's news.
+b : A carter told you. Then it's half the truth, at best. | I heard. It was all the yard could talk about. | That's not news. That's every year.
+a : Half's better than none. | So I gather. | Every year, and still we talk of it.
+b : #bc_fair# | It'll be something else tomorrow. | What else is there to talk of?
+
+scene hy_cv_news_far
+when topic=caravan topic.kind=news topic.news topic.dir!=up
+does tell.news / react.news / assess
+a : Word off the last wagon: #topic.news#. | The carters say #topic.news#. | #topic.news.capitalize#, by the wagon.
+b : That's a long way off. | Is it, now. Good for them. | And what's that to us?
+a : Not so far as all that. | Somebody's lucky. | Nothing, yet.
+
+scene hy_cv_due_pups
+when topic=caravan topic.kind=due a.stage=young
+does tell.news / react.news / tell.self
+a : There's a wagon coming from #topic.where#! | The board says a wagon's due! Can I watch it come in? | When the #topic.where# wagon comes, can we see the horses?
+b[stage=adult|old] #grown : From the steps, and no closer. | If your chores are done. | We'll see the horses. From a distance.
+b #plain : I'm going to count the horses! | Me too! | Let's wait at the gate!
+a@grown : I'll stay on the steps. | They're nearly done. | Can I pat one?
+a@plain : I'll count the wheels. | Race you there! | All day!

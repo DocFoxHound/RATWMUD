@@ -1,0 +1,167 @@
+# The ships, as whole scenes (Docs/Design/84 §37, the hybrid). Before these the ships topic (talk.ships) had no scene
+# at all: every talk of a ship was stitched from shared8_ships.talk's openers and ships.answer's replies, line by line.
+# Here each talk of a ship is written whole, two voices answering each other, and the engine only chooses which.
+#
+# The facts (Core/RatwAmbient.cpp World::sceneTopics): only a market with a port has ships (the Wharf); topic.kind is
+# in, due (topic.when today or soon), late (stormbound), lost (lost at sea) or sailed; topic.ship is her name with its
+# article ("the Kestrel"); topic.what is what she brings, where it is known.
+#
+# The rules they keep (shared8_ships.talk's): a ship is "she"; nothing of her crew, captain or cargo the facts don't
+# give; the lost are grieved, never joked of. Parallel alternatives answer each other by position.
+
+## ================================================================ Due
+
+scene hy_ship_due_watch
+when topic=ships topic.kind=due topic.ship
+does tell.news / react.news / tell.self / react.self
+a : #topic.ship.capitalize#'s due #topic.when#. | They've chalked #topic.ship# up on the Wharf board. | Ship due. #topic.ship.capitalize#, if the wind's kind.
+b[job=sailor|fisher] #sea : Wind's been fair all week. She'll be early, you watch. | Board's never right. Watch the harbour mouth instead. | It's been kind so far. She'll make good time.
+b #plain : Is she? The Wharf'll be all shouting, then. | For when? | And if it isn't?
+a@sea : Early would be a first. | You watch it. I've work to do. | #bc_hope_so#
+a@plain : Shouting and carts. Keep off the Wharf road. | #topic.when.capitalize#. | Then she's late, and we all stand about.
+b?@plain : I'll keep off it. | Then I'll keep an eye out. | #bc_we_will_see#
+
+scene hy_ship_due_work
+when topic=ships topic.kind=due topic.ship a.wealth=poor|comfortable a.stage=adult
+does tell.self / ask.detail / answer.detail / assess
+a : #topic.ship.capitalize#'s due. That's a day's carrying, if they'll have me. | When #topic.ship# comes in I'll be at the gangplank first. | A ship means work. #topic.ship.capitalize#, #topic.when#.
+b : What do they pay, for carrying? | First? You'll need to sleep on the pier. | Will they take you?
+a : Enough for a week's bread. | I've done it before. | They'll take anyone with a back.
+b : Then carry for both of us. | Take a blanket. | Good luck to you.
+
+scene hy_ship_due_cargo
+when topic=ships topic.kind=due topic.ship topic.what
+does tell.news / react.news / assess
+a : #topic.ship.capitalize#'s bringing #topic.what#, they say. | #topic.what.capitalize#, coming in on #topic.ship#. | When #topic.ship# docks there'll be #topic.what# at every stall.
+b[role=merchant] #trade : I've a buyer waiting on that already. | Then I'll be at the Wharf before the crowd. | And every other trader in the city waiting on it.
+b #plain : #bc_about_time# | Will there be enough to go round? | Every stall? I'll believe it when I see it.
+a@trade : Don't go buying it all. | Leave some for the rest of us. | Busy week for you.
+a@plain : #bc_about_time# | Never is. | #bc_fair_enough#
+
+scene hy_ship_due_pup
+when topic=ships topic.kind=due topic.ship a.stage=young|adolescent
+does tell.news / react.news / tell.self
+a : A ship's coming! #topic.ship.capitalize#! | Can we go and see #topic.ship# come in? | I'm going to count #topic.ship#'s sails.
+b[stage=adult|old] #grown : Not on your own. The Wharf's no place for pups. | If your chores are done. | She'll have three. Go on.
+b #plain : Where? I can't see it. | Can we? Please? | Me too!
+a@grown : Will you come with me, then? | They're done. Nearly. | Only three?
+a@plain : Not yet. Soon. | We could ask. | We'll count them together.
+
+## ================================================================ In at the Wharf
+
+scene hy_ship_in_wharf
+when topic=ships topic.kind=in topic.ship
+does tell.news / react.news / assess
+a : #topic.ship.capitalize#'s in. Tied up this morning. | She's in. #topic.ship.capitalize#. The Wharf's heaving. | Ship's in. Mind the carts on the Wharf road.
+b[job=innkeeper|cook|brewer] #keeper : Thirsty sailors tonight. I'd best roll out another barrel. | Then the benches will be full tonight. | Sailors ashore. That's my best night.
+b #plain : I heard the cranes from my bed. | Heaving's the word. I couldn't get near. | Carts everywhere. I nearly lost a tail.
+a@keeper : Keep the stew going. | Mind they pay first. | And your longest.
+a@plain : Cranes and gulls. Lovely way to wake. | #bc_nor_me# | Keep it out of the wheels.
+
+scene hy_ship_in_cargo
+when topic=ships topic.kind=in topic.ship topic.what
+does tell.news / ask.detail / answer.detail / assess / assess
+a : They're landing #topic.what# off #topic.ship#. | #topic.ship.capitalize#'s in with #topic.what#. | #topic.what.capitalize# off #topic.ship#, crate after crate.
+b : Much of it? | Is it any good? | Where's it all going?
+a : Enough to fill the Wharf sheds. | Good enough that the traders are fighting over it. | Up the hill, mostly. Same as always.
+b : Then the stalls will have it by tomorrow. | Let them fight. | #bc_always_is#
+a?[role=merchant] : Not if I get there first.
+
+scene hy_ship_in_sailors
+when topic=ships topic.kind=in topic.ship here.place=tavern|street|market
+does tell.self / react.self / tell.self / react.self
+a : #topic.ship.capitalize#'s crew are ashore. Listen to them. | Sailors off #topic.ship#, singing already. | That lot by the door came off #topic.ship#.
+b : They've been at sea a while, by the sound of it. | Badly. | You can smell the salt on them from here.
+a : Weeks, I'd say. Let them have their night. | Very badly. | Salt and tar.
+b : As long as they keep to their own bench. | #bc_ha# | Better than some of our lot.
+
+## ================================================================ Late
+
+scene hy_ship_late_wait
+when topic=ships topic.kind=late topic.ship
+does tell.news / react.news / tell.self / react.self
+tone serious / even / even / even
+a : Still no sign of #topic.ship#. Stormbound, they say. | #topic.ship.capitalize#'s late. The sea's in a temper. | The Wharf office says #topic.ship#'s holed up somewhere, waiting out the weather.
+b[job=sailor|fisher] #sea : She'll be in a cove somewhere. Her skipper's no fool. | It's blowing hard past the point. She's right to wait. | Waiting's the hard part. I've done it.
+b #plain : Better late than on the rocks. | It's been rough all week. | Waiting for what, exactly?
+a@sea : I hope you're right. | Wait, then. We all do. | I'd not like to.
+a@plain : #bc_true# | It has. | For the sea to calm down, I suppose.
+b?@plain : She'll come. They mostly do. | Bright One keep her. | Then we wait as well.
+
+scene hy_ship_late_shelves
+when topic=ships topic.kind=late topic.ship topic.what
+does tell.news / react.news / assess
+tone serious / even / even
+a : No #topic.what# till #topic.ship# comes in, and she's stormbound. | #topic.ship.capitalize#'s late, and the #topic.what# with her. | We're short of #topic.what#. Waiting on #topic.ship#.
+b[role=merchant] #trade : My shelves are bare for it. I'm turning folk away. | Don't I know it. I've orders I can't fill. | Every day she's out costs me.
+b #plain : Then we'll do without. | Short? We've none. | It'll come.
+a@trade : Hard times for you, then. | Promise them next week. | And us.
+a@plain : We always do. | Not a scrap. | When the sea says.
+
+scene hy_ship_late_worry
+when topic=ships topic.kind=late topic.ship pair.band=friends|family
+does tell.worry / sympathise / tell.self / react.self
+tone serious / tender / even / even
+a : I keep looking out for #topic.ship#. Days late now. | I couldn't sleep for the wind, thinking of #topic.ship# out in it. | #topic.ship.capitalize#'s still not in. I don't like it.
+b : Stop looking. It won't bring her any faster. | Stormbound's not lost. Remember that. | Nor do I. But it's early days.
+a : I know. I can't help it. | I'll try to remember it. | Early days. Aye.
+b : Come and sit, then. Look at something else. | #bc_good# | #bc_we_will_see#
+
+## ================================================================ Lost
+
+scene hy_ship_lost_grief
+when topic=ships topic.kind=lost topic.ship
+does tell.news / sympathise / assess / assess
+tone grave / grave / grave / grave
+a : You'll have heard. #topic.ship.capitalize# was lost. | #topic.ship.capitalize#'s gone down. They've stopped waiting. | Lost at sea. #topic.ship.capitalize#. The Wharf's gone quiet.
+b[job=sailor|fisher] #sea : It could have been any of us. Any of us. | I knew the way she sat in the water. A good ship. | The sea doesn't care who's aboard.
+b #plain : I heard. I can't take it in. | Gods. All of them? | I saw the flag at half on the Wharf.
+a@sea : #bc_i_know# | She was. | No. It doesn't.
+a@plain : #bc_nor_me# | That's what they're saying. | So did I.
+b?@plain : The sea gives and the sea takes. | Bright One keep them. | I'll light a candle.
+
+scene hy_ship_lost_wharf
+when topic=ships topic.kind=lost topic.ship
+does tell.news / react.news / assess
+tone grave / grave / grave
+a : The bell rang for #topic.ship# this morning. | Nobody's working on the Wharf today. Not since #topic.ship#. | They're saying prayers on the pier for #topic.ship#.
+b : I heard it. I knew what it meant. | Nobody could. | I'll go down after.
+a : Bright One keep them. | Not today. | I'll come with you.
+
+## ================================================================ Sailed
+
+scene hy_ship_sailed
+when topic=ships topic.kind=sailed topic.ship
+does tell.news / react.news / tell.self / react.self
+a : #topic.ship.capitalize# went out on the tide. | She's sailed. #topic.ship.capitalize#. The Wharf's quiet again. | #topic.ship.capitalize#'s gone. Didn't stay long.
+b[job=innkeeper|cook|brewer] #keeper : And took my best customers with her. | Quiet's the word. My benches are empty. | Long enough to drink me dry.
+b #plain : I watched her go from the steps. | Quiet till the next one. | They never do.
+a@keeper : They'll be back. | They'll fill again. | Ha. And pay for it?
+a@plain : Pretty, wasn't she, under sail. | Peace for a while. | In and out.
+b?@plain : She was. | #bc_lovely# | #bc_always_is#
+
+## ================================================================ More of the commonest (a ship due is talked of all week)
+
+scene hy_ship_due_old
+when topic=ships topic.kind=due topic.ship a.stage=old
+does tell.news / react.news / tell.self / react.self
+a : #topic.ship.capitalize#'s due. I used to run down to meet every ship. | Ships come and ships go. #topic.ship.capitalize# next. | I'll sit on the wall and watch #topic.ship# come in. That's my day.
+b : You'd not catch me running down there. | #bc_they_do# | That's a good day.
+a : You've no romance in you. | They always will. | It is, at my age.
+b : None at all. | #bc_always_is# | Save me a spot on the wall.
+
+scene hy_ship_due_wind
+when topic=ships topic.kind=due topic.ship
+does ask.detail / answer.detail / react.self / assess
+a : Is #topic.ship# in yet? | Any word of #topic.ship#? | When's #topic.ship# due, did they say?
+b : Not yet. #topic.when.capitalize#, they say. | Due #topic.when#, the board says. | #topic.when.capitalize#.
+a : I'll go down and look anyway. | Board's never right. | Good. We need her.
+b : Take a coat. It's cold on the pier. | #bc_we_will_see# | We do.
+
+scene hy_ship_due_tavern
+when topic=ships topic.kind=due topic.ship here.place=tavern
+does tell.news / react.news / tell.self / react.self
+a : #topic.ship.capitalize#'s due. There'll be sailors in here by the weekend. | Ship due. Better hide the good cups. | When #topic.ship# docks, this place will be heaving.
+b : Loud ones, too. | And the good chairs. | Then we'd best enjoy the quiet.
+a : Sing all night, they will. | And the good ale. | While it lasts.
+b : Let them. It's lively. | All of it. | Cheers to that.

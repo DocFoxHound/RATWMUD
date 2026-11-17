@@ -77,9 +77,9 @@ a : Same everywhere. | Lots, they say. | Not this time.
 scene cv2_left_worry
 when topic=caravan topic.kind=left
 does tell.news / react.news / assess
-a : My son rides with the #topic.where# caravan. | Hope they make #topic.where# before the weather turns. | The wagons for #topic.where# were overloaded.
+a : The #topic.where# caravan's gone. Long road, that. | Hope they make #topic.where# before the weather turns. | The wagons for #topic.where# were overloaded.
 b[guard] : They had good guards. They'll be fine.
-b : He'll be back soon. | They will. | Greedy.
+b : They'll be back soon. | They will. | Greedy.
 a : #bc_i_hope_so# | Pray so. | #bc_always#
 
 scene cv2_raided_aftermath

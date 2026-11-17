@@ -1,8 +1,8 @@
 {
  "about": "talk_lint.py findings frozen (Docs/Design/84 \u00a77.8, Phase 1): the truth lexicon counted over the library; a new one fails, the list may only shrink.",
- "count": 59,
+ "count": 58,
  "by_rule": {
-  "children": 3,
+  "children": 2,
   "morning_greeting": 3,
   "night_greeting": 1,
   "pity": 1,
@@ -12,7 +12,6 @@
  },
  "findings": [
   "children|cb_ser_ferro_road|My daughter works in Ridgemere now. Never visits.",
-  "children|cv2_left_worry|My son rides with the #topic.where# caravan.",
   "children|ev_pk_old_approves|#topic.subject# reminds me of my son.",
   "morning_greeting|f7_sp_young|I woke and forgot we were married. Then I remembered. Good morning.",
   "morning_greeting|kn_ap_carter|Good morning, ox.",

@@ -1,0 +1,73 @@
+# The Times, as whole scenes (Docs/Design/84 §37, the hybrid). Hard and good times (talk.times) had no scene: every talk
+# of them was stitched from economy8_times.talk's and shared8_times.talk's openers and times.answer's replies.
+#
+# The facts (Core/RatwEvents.cpp World::eventFacts): world.times (hard, lean, ordinary, good, boom) and world.times_cause
+# (a noun phrase, maybe missing: "the Crown's war levy", "the silver strike in the hills"; said after "talk of", "word
+# of", "blames" or alone). Never a price figure; nobody says why things are as they always are.
+
+## ================================================================ Hard and lean
+
+scene hy_tm_hard_purse
+when topic=times world.times=hard|lean
+does tell.complaint / react.complaint / tell.self
+tone serious / even / even
+a : Times are hard. I've counted my coins three times today. | Lean times. Everyone's tightening their belts. | It's a hard year, this. Harder than most.
+b[wealth=rich|comfortable] #easy : It'll turn. It always does. | It's not so bad as all that. | Hard for some. We're managing.
+b[wealth=poor|destitute] #same : Three times? I don't need to count mine. | My belt's got no more holes. | Harder for us than most.
+b #plain : Didn't they come to more the third time? | Mine's on the last hole. | They all feel harder than most.
+a@easy : Easy for you to say. | Not for everyone. | Good for you.
+a@same : There's a mercy in that. | Then we'll go thin together. | #bc_they_are#
+a@plain : No. Less, somehow. | #bc_mine_too# | This one is.
+
+scene hy_tm_hard_cause
+when topic=times world.times=hard|lean world.times_cause
+does tell.complaint / ask.detail / answer.detail / assess
+tone serious / even / even / even
+a : Times are hard, and it's all #world.times_cause#. | Everybody blames #world.times_cause#. | It's #world.times_cause#, they say, that's made it so lean.
+b : Is it, though? | Do they? Who says? | And what's to be done about it?
+a : That's what they're saying in the market. | Everyone with a mouth. | Nothing, by the likes of us.
+b : Then it must be true. | Then I'll say it too. | Nothing ever is.
+
+scene hy_tm_hard_old
+when topic=times world.times=hard|lean a.stage=old
+does tell.memory / react.story / tell.self
+a : I've seen worse years than this. Not many. | In my day we'd call this a good year. Nearly. | I remember a winter we boiled our boots.
+b : Not many, though? | Nearly? | Did you eat them?
+a : Not many. That's the trouble. | Nearly. | The laces. The rest we kept.
+
+scene hy_tm_hard_family
+when topic=times world.times=hard|lean a.parent=yes
+does tell.worry / sympathise / tell.self / react.self
+tone serious / tender / even / even
+a : I give the pups the bigger share and tell them I've eaten. | The young ones keep growing. The pot doesn't. | Hard times, and three mouths to feed.
+b : They'll know, one day. And love you for it. | They do that. | We all go hungrier for them.
+a : I hope they never have to. | I wish they'd stop. | We do.
+b : #bc_so_do_i# | Not for a while. | And glad to.
+
+## ================================================================ Good and booming
+
+scene hy_tm_good
+when topic=times world.times=good|boom
+does tell.news / react.news / tell.self / react.self
+a : Good times. Coin's moving. | Have you noticed? Everyone's spending. | It's a good year, this. Even the beggars look fed.
+b[wealth=poor|destitute] #left : Good for some. Not round here. | Not my coin. | Not this one.
+b #plain : About time we had one. | I've noticed. I've spent. | Long may it last.
+a@left : It'll trickle down. Maybe. | Yours'll come. | They'll get to you.
+a@plain : Make the most of it. | Ha. So have I. | Long may it.
+b?@left : #bc_maybe# | #bc_we_will_see# | When?
+
+scene hy_tm_good_cause
+when topic=times world.times=good|boom world.times_cause
+does tell.news / ask.detail / answer.detail / assess
+a : Good times, and they say it's #world.times_cause#. | Coin's moving, with #world.times_cause#. | Everyone's flush. It's #world.times_cause#, they say.
+b : Is that what's done it? | Will it last? | Flush, are they? Not me.
+a : That's what the market says. | Nothing lasts. | You're not trying.
+b : Then bless it. | Then I'll enjoy it while it does. | #bc_ha#
+
+scene hy_tm_good_trade
+when topic=times world.times=good|boom a.role=merchant
+does tell.boast / react.self / tell.self / react.self
+a : Best month I've had in years. Don't tell the tax-wolf. | Sold out by noon, three days running. | I can't keep the shelves full.
+b : I'll not tell. For a price. | #bc_lucky_you# | Good problem to have.
+a : Name it. | Luck's got nothing to do with it. | Is it? I've not slept.
+b : A drink. You're buying. | Course not. | #bc_poor_soul#

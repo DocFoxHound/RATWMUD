@@ -416,7 +416,7 @@ b : Then she grew up and asked even more. | Truly. | One day it will.
 
 scene st_farewell
 when topic=smalltalk
-does tell.self / react.self
+does farewell / farewell.return
 a : Well, I'll let you get on. | I should be going. | Mind how you go, #b.name#.
 b[child] : Bye! Bye bye!
 b[old] : Go well. And come back.
