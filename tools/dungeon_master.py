@@ -181,7 +181,8 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            'storyteller.decide': 'dm', 'storyteller.revoke': 'dm', 'tale.pause': 'dm', 'tale.resume': 'dm', 'tale.stop': 'dm',
            'milestone.credit': 'dm', 'visitors.sync': 'dm',
            # Talk (Docs/Design/62-talk.md, phase 6): a resident's voice, their family, a dialect or a figure saved; read again.
-           'voice.sync': 'dm',
+           # A mantle saved, read again alone (doc 84 §17.2: its own rows, swapped whole; the old kept if the new fails).
+           'voice.sync': 'dm', 'mantle.sync': 'dm',
            # (The staged economy's acts, doc 79, 12, are added below from the one list of them: LIVE_ACTS.)
            # Marking a player a Dungeon Master in the game (the Dev Console) is for admins.
            'character.dm': 'admin'}

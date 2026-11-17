@@ -179,6 +179,10 @@ struct Options
     // The talk library (Docs/Design/62-talk.md: Data/Talk): every written line residents say. Empty: Talk beside
     // voiceData (Data/Voice -> Data/Talk); none at all if there's no voiceData either.
     std::string talkData;
+    // Mantles from files, not the world database's rows (Docs/Design/84 §9.4, §17.5-17.6, Phase 9): every `ready` .mantle
+    // under this directory (an export, or Tests/fixtures/mantles), each worn by the resident it was written for. For
+    // worlds without a database, the simulator and the tests; it takes the place of the rows when given. Empty: the rows.
+    std::string mantlesFrom;
     // Overheard NPC exchanges written live by the Mind, at most this many an hour; 0 (the default): never, the talk
     // library voices them all.
     int ambientModelCallsPerHour = 0;
@@ -493,6 +497,11 @@ class Game
     // The world build a database world loaded (world.builds' id; 0 for an export or a file world).
     std::int64_t loadedBuild() const { return loadedBuild_; }
     const talk::Library& talkLibrary() const { return talk_; }
+    // Doc 84 Phase 9: who wears which loaded mantle (resident -> mantle), and one mantle read again (mantle.sync's hot
+    // reload: from its rows, or its file under Options::mantlesFrom), or one resident's voice and mantle (voice.sync <npc>).
+    const std::map<std::string, std::string>& mantleWearers() const { return mantleOf_; }
+    Result loadMantle(const std::string& id);
+    Result loadVoice(const std::string& npc);
     // What the talk library is asked when `a` speaks to `b` (to no one: b "") of a concept, here and now: the two
     // speakers, the place and moment, and `facts` (the topic's own) over them.
     talk::Query talkQuery(const std::string& a, const std::string& b, const std::string& concept, const talk::Facts& facts = {});
@@ -2157,6 +2166,7 @@ class Game
     {
         std::string from, accent, quarter, quirk, persona;
         std::map<std::string, std::string> traits;
+        std::string mantle;                         // The mantle they wear (doc 84: live.npc_voice.mantle_id, not released)
     };
     std::map<std::string, NpcVoice> npcVoice_;
     std::map<std::string, std::deque<RegardEntry>> regardLedger_;     // "holder|other" (saved with talk memory).
@@ -2175,6 +2185,23 @@ class Game
     std::vector<Figure> figures_;
     // The voices, dialects and figures from the world database, at start and on the DM's voice.sync.
     void loadVoices();
+    // Doc 84 Phase 9 (§9.4): the mantles worn by living residents, in one batch: from the rows (live.mantles and
+    // live.mantle_lines, bound by live.npc_voice: `bindings`, resident -> mantle) or from Options::mantlesFrom. A mantle
+    // that fails is skipped and logged (RATW_MANTLE refused), its wearer speaking from the library.
+    void loadMantles(const std::map<std::string, std::string>& bindings);
+    // One mantle's text from its rows (any state; "" if there is none), and its state.
+    std::string mantleRows(const std::string& id, std::string& state, int& revision);
+    void voicesChanged();                           // (The society's quarters, honesty and origins from npcVoice_.)
+    std::map<std::string, std::string> mantleOf_;   // Resident -> the mantle they wear, loaded
+    std::map<std::string, std::string> mantleFiles_;   // Mantle -> its file (Options::mantlesFrom)
+    bool mantleTables_ = false;                     // The world database has live.mantles (migration 0066)
+    // The cards of the ready mantles nobody living wears (§9.4: what the pools need; Phase 10 draws from them).
+    struct MantleCard
+    {
+        std::string id, dialect, fits, honesty;
+        std::vector<std::string> accents;
+    };
+    std::vector<MantleCard> mantleCards_;
     // Where each home opens onto a street (its building's door, through any stairs), for neighbours (doc 62, decision
     // 8): kept until the doors change.
     std::map<std::string, std::pair<std::string, Vec2>> entrances_;

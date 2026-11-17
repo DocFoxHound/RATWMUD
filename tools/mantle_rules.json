@@ -1,0 +1,23 @@
+{
+  "about": "What tools/mantle_check.py (G2, Docs/Design/84 §9.6, §11, §14.4, §17.3) holds a mantle to, beside truth.json and tools/dialect_check.py's lexicon. tiers: each tier's size (§9.3's lines, about: reported, a gate only with --strict, from Phase 11) and its minimum (what a `ready` mantle must have: its symbols, its lines (line, rule, scene and story items), the moves it must answer itself (a kind of the move counts: react.news.new is a react.news), its window lines and stories, and the sections a spare needs for pups). allow: capitalised words a mantle may say outside a sentence's start beside the realm's places (tools/dialect_allow.json's places and legend, Data/Economy/communities.json): the realm's towns, Houses, weekdays, seasons' feasts, the two deities. forbidden: words never in world text (the project's rules), each with why. pronouns: he, she, him, her, his and hers are never said in a sentence that names a person by a slot (they come from the person's sex: #other.they#, #x.their#). habits: at most this share of a mantle's alternatives say one of its habits (oath!, saying!: §14.4's saturation). density: the share of a non-plain mantle's alternatives that should carry a dialect marker (§10.1; a warning, a gate with --strict).",
+  "tiers": {
+    "full": {"size": 92, "minimum": {"symbols": 4, "lines": 10, "moves": ["greet.return", "farewell.return", "react.news"], "dlg": 1, "stories": 1}},
+    "standard": {"size": 55, "minimum": {"symbols": 3, "lines": 6, "moves": ["greet.return", "farewell.return", "react.news"], "dlg": 0, "stories": 0}},
+    "spare": {"size": 64, "minimum": {"symbols": 2, "lines": 6, "moves": ["greet.return", "farewell.return", "react.news"], "dlg": 0, "stories": 0, "sections": ["young", "adolescent"]}}
+  },
+  "allow": ["I", "I'm", "I'd", "I'll", "I've", "Ridgemere", "Coldwater", "Larkfield", "Southmeadow", "Fenshore", "Saltwell",
+            "Oakhaven", "Frosthollow", "Mirebridge", "Glasswater", "Deepvein", "Heatherside", "Larkdowns", "Soundside",
+            "Greatly", "Fell", "Grayrock", "Timberland", "House", "Houses", "Watch", "Commons", "Heights", "Sump", "Wharf",
+            "Estate", "Works", "Office", "Rag Market", "High Road", "Long River", "Bright One", "Dark One", "Restday",
+            "Dawnday", "Emberday", "Hearthday", "Marketday", "Riverday", "Stoneday", "Times", "Council", "Market Board"],
+  "forbidden": [
+    {"match": "\\bdogs?\\b", "why": "never the word dog in world text (wolves; pups for the young)"},
+    {"match": "\\bgods?\\b|\\bgoddess(es)?\\b", "why": "the deities are the Bright One and the Dark One, never gods"},
+    {"match": "\\b(send|sent|sending|a|your|my|his|her|their|private)\\s+tells?\\b", "why": "players' private messages, never tells"},
+    {"match": "\\b(non-?binary|genderless)\\b", "why": "characters are male or female only"}
+  ],
+  "pronouns": "\\b(he|she|him|her|his|hers)\\b",
+  "person_slots": "#(other|x|topic\\.subject|topic\\.victim|self\\.(spouse|child|mother|father|neighbour|shopkeeper|priest|leader))[.#]",
+  "habits": 0.25,
+  "density": 0.6
+}

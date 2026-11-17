@@ -1,0 +1,40 @@
+# cw090, a spare for a Coldwater pup yet to be born (test fixture): no wearer; young and adolescent sections.
+mantle cw090
+state ready
+dialect coldwater
+accent light broad
+tier spare
+title the jetty pup
+fits stage=young|adolescent|adult|old
+traits temper=nervy talk=chatty warmth=warm humour=merry honesty=plain piety=ordinary drive=restless
+quirk skims_stones_off_the_jetty
+likes still_water
+fears deep_water
+hopes a_boat_of_my_own
+topics weather +.3
+marks oath
+
+words
+oath! = Fins and feathers | By the cold lake
+greet = Fair morning | Morning to the lake
+
+young
+line tell.boast : I skimmed a stone six times off the jetty. Six!
+line greet.return : #greet#! Are you going down to the water?
+line farewell.return : #farewell#!
+line react.news.new : #oath#! Does #mum# know?
+line react.news.known : I knew that already.
+line answer.how : Wet. I fell in again.
+
+adolescent
+line tell.self : I'll have a boat of my own one day. Watch.
+line greet.return : #greet#.
+line farewell.return : #farewell#.
+line react.news.new : #oath#. Really?
+line answer.how : Bored. Nothing happens here.
+
+grown
+line greet.return : #greet#. Wind's off the lake today.
+line farewell.return : #farewell#.
+line react.news.new : #oath#. Now there's news.
+line answer.how : Can't complain. The lake's calm.

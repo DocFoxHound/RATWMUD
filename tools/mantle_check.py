@@ -1,0 +1,433 @@
+#!/usr/bin/env python3
+"""G2, the mantle text's own rules (Docs/Design/84-living-conversations.md §9.6, §11, §14.4, §17.3; Phase 9): what the
+game's loader (G1, `talk_check --mantle`) can't see. The same checks run on a batch of drafts, on the committed export and
+fixture in ctest, and on every save (tools/mantle_store.py, which Atlas, the DM and mantle_load all write through).
+
+  python3 tools/mantle_check.py PATH... [--world KEY] [--strict] [--json]     .mantle files (a directory: all under it)
+  python3 tools/mantle_check.py --one ID --world KEY [--strict] [--json]      one mantle as the world's rows hold it
+
+What it refuses (each finding names the mantle and the item's key):
+  * names: a first name or surname of any NPC of the world (live.npcs, living or dead: --world) outside a slot, and any
+    capitalised word that isn't a sentence's first and isn't the realm's (tools/mantle_rules.json's allow, the places
+    of tools/dialect_allow.json and Data/Economy/communities.json): names come only through slots (§11);
+  * world text: no "dog", no "gods" (the Bright One and the Dark One), never "tells" for private messages, male or female
+    only (mantle_rules.json's forbidden);
+  * pronouns: he, she, him, her, his or hers in a sentence that names a person by a slot (#other.*#, #x.*#, one's kin...):
+    a wolf's pronouns come from their sex (#other.they#);
+  * a word's value that ends its own sentence (".", ";", "!", "?": defect 14, it breaks the window's templates);
+  * truth (§9.6, Data/Talk/truth.json): words that take something for granted ("my nets", "back home", fog) need their
+    item's criteria, its section's stage or the fit to imply it;
+  * dialect (§10.1): another dialect's words (tools/dialect_check.py's lexicon); its own dialect's words written out where
+    its accents allow none (they must come through symbols);
+  * uniqueness (§9.1): no 5-word run shared with another mantle of the dialect; with --world, no oath or saying the
+    same as another mantle's worn in the same town, a quirk at most twice in a town;
+  * habits (§14.4): its oath and saying in at most 25% of its alternatives;
+  * the tier's minimum (mantle_rules.json): a `ready` mantle's symbols, lines, its answers to the core moves, window lines,
+    stories, and a spare's young and adolescent sections; a draft under it is warned.
+Warned, and refused with --strict (the batches of Phase 11 on): the tier's size (§9.3), the dialect density (60% of a
+non-plain mantle's alternatives with a dialect marker: §10.1). Exit 1 on any refusal. Only reads.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+import dialect_check  # noqa: E402
+import mantle_text as T  # noqa: E402
+import talk_lint  # noqa: E402
+import talk_truth  # noqa: E402
+
+ROOT = HERE.parent
+TALK = ROOT / 'Data' / 'Talk'
+RULES = HERE / 'mantle_rules.json'
+SLOT = re.compile(r'#[^#\s]*#')
+TAG = re.compile(r'^\{[^}]*\}\s*')
+TELLING = {'says', 'said', 'told', 'tells', 'asked', 'reckons', 'swears'}
+STAGE = {'any': [], 'grown': ['self.stage=adult|old'], 'young': ['self.stage=young|adolescent'], 'adolescent': ['self.stage=adolescent'],
+         'old': ['self.stage=old']}
+
+
+@dataclass
+class Finding:
+    mantle: str
+    key: str
+    message: str
+    warning: bool = False
+
+    def __str__(self):
+        return f"{'warning ' if self.warning else ''}{self.mantle}{' ' + self.key if self.key else ''}: {self.message}"
+
+
+def rules() -> dict:
+    return json.loads(RULES.read_text())
+
+
+def realm_words(extra: set | None = None) -> set:
+    """Capitalised words and phrases a mantle may say mid-sentence."""
+    r = rules()
+    allow = json.loads((HERE / 'dialect_allow.json').read_text())
+    words = set(r.get('allow', [])) | set(allow.get('places', [])) | set(allow.get('legend', {}))
+    communities = ROOT / 'Data' / 'Economy' / 'communities.json'
+    if communities.exists():
+        doc = json.loads(communities.read_text())
+        for key in ('communities', 'farms', 'works'):
+            for c in doc.get(key, []):
+                if isinstance(c.get('name'), str):
+                    words.add(re.sub(r'^the ', '', c['name']))
+    return words | set(extra or ())
+
+
+# ------------------------------------------------------------------ What a mantle says, item by item
+
+def alternatives(text: str) -> list[str]:
+    return [TAG.sub('', a.strip()) for a in dialect_check.split_alts(text)]
+
+
+def said(it: T.Item) -> list[tuple[list[str], list[str], str]]:
+    """(texts, criteria tokens, who) for each line of an item: its words, what stands behind them (the item's criteria
+    and its section's stage), and who says them (a: the wearer, b: the one spoken to, p: the player's choice)."""
+    out = []
+    stage = list(STAGE.get(it.section, []))
+    lines = it.body.split('\n')
+    first = lines[0].strip()
+    if it.kind == 'symbol':
+        m = T.SYMBOL.match(first)
+        return [(alternatives(first[m.end():]), (m.group(4) or '[]')[1:-1].split(), 'a')] if m else []
+    if it.kind in ('line', 'opinion', 'dlg'):
+        kw = first.split(None, 1)[0]
+        _, head, crit, words, _, _ = T.split_item(first[len(kw):])
+        tokens = crit.split() + stage
+        if it.kind == 'dlg':
+            tokens.append('concept=dlg.' + head)
+        return [(alternatives(words), tokens, 'a')]
+    when = []
+    for raw in lines[1:]:
+        t = raw.strip()
+        if t.startswith('when '):
+            when += t[5:].split()
+    if it.kind == 'story':
+        _, _, crit, _, _, _ = T.split_item(first[len('story'):])
+        when += crit.split()
+    for raw in lines[1:]:
+        t = raw.strip()
+        if not t or t.startswith('#'):
+            continue
+        if it.kind in ('rule', 'graft') and (t.startswith('say ') or t.startswith('say[')):
+            m = re.match(r'^say(?:\[([^\]]*)\])?\s*(.*)$', t)
+            out.append((alternatives(m.group(2)), when + (m.group(1) or '').split() + stage, 'a'))
+        elif it.kind == 'graft' and t.startswith('choice '):
+            words = t[7:].rsplit('->', 1)[0]
+            out.append(([re.sub(r'\[[^\]]*\]\s*$', '', words).strip()], [], 'p'))
+        elif it.kind in ('scene', 'story'):
+            m = re.match(r'^(ask\s*|[ab]\??(?:\[([^\]]*)\])?\s*)?:\s*(.*)$', t)
+            if m:
+                who = 'b' if (m.group(1) or '').startswith('b') else 'a'
+                out.append((alternatives(m.group(3)), when + (m.group(2) or '').split() + (stage if who == 'a' else []), who))
+    return out
+
+
+def plain_words(text: str) -> str:
+    return SLOT.sub(' ', text)
+
+
+def sentences(text: str) -> list[str]:
+    return [s for s in re.split(r'(?<=[.!?;:])\s+|\s+-\s+|\s+—\s+', text) if s.strip()]
+
+
+# ------------------------------------------------------------------ The checks
+
+def check(mantles: list[T.Mantle], *, world: dict | None = None, strict: bool = False, others: list[T.Mantle] | None = None) -> list[Finding]:
+    """Every finding for these mantles. `world` (from world_facts): the names of every NPC, where each wearer lives and
+    who wears what; `others`: mantles of the world beside these (for uniqueness)."""
+    r = rules()
+    facts = talk_lint.schema(TALK)
+    truth_rules, ids = talk_truth.load(TALK)
+    implied = talk_truth.concepts(TALK)
+    gram = dialect_check.grammars(TALK)
+    allow = json.loads((HERE / 'dialect_allow.json').read_text())
+    lex = dialect_check.lexicon(gram, allow)
+    realm = realm_words()
+    realm_lower = {w.lower() for w in realm}
+    forbidden = [(re.compile(f['match'], re.I), f['why']) for f in r['forbidden']]
+    pronoun = re.compile(r['pronouns'], re.I)
+    person_slot = re.compile(r['person_slots'])
+    names = set((world or {}).get('names', ()))
+    out: list[Finding] = []
+    everyone = list(mantles) + [o for o in (others or []) if o.id not in {m.id for m in mantles}]
+    runs: dict[str, dict[tuple, set]] = {}            # dialect -> 5-word run -> the mantles saying it
+    said_runs: dict[tuple, list] = {}                 # (mantle, key) -> its runs
+    for m in everyone:
+        for it in m.items:
+            for texts, _, who in said(it):
+                if who == 'p':
+                    continue
+                for t in texts:
+                    words = re.findall(r"[a-z']+", plain_words(t).lower())
+                    for i in range(len(words) - 4):
+                        run = tuple(words[i:i + 5])
+                        runs.setdefault(m.dialect, {}).setdefault(run, set()).add(m.id)
+                        said_runs.setdefault((m.id, it.key), []).append(run)
+    shared = {}
+    for m in mantles:
+        for (mid, key), found in said_runs.items():
+            if mid != m.id:
+                continue
+            for run in found:
+                others_ = runs[m.dialect][run] - {m.id}
+                if others_:
+                    shared.setdefault((mid, key), (sorted(others_)[0], ' '.join(run)))
+                    break
+    for m in mantles:
+        def fail(key, message, warning=False):
+            out.append(Finding(m.id, key, message, warning))
+        own_symbols = {it.symbol.split('.')[0] for it in m.items if it.kind == 'symbol'}
+        habits = {it.symbol.split('.')[0] for it in m.items if it.kind == 'symbol' and re.match(r'^(?:@\S+\s+)?[a-z0-9_.]+!', it.body)}
+        dialect_symbols = set(gram.get(m.dialect, {})) if m.dialect != 'plain' else set()
+        total = marked = habit_lines = 0
+        texts_of = [(it, said(it)) for it in m.items]
+        for text, key in [(m.persona, 'persona'), (m.title, 'title')]:
+            texts_of.append((T.Item(key=key, kind='card'), [([text], [], 'a')]))
+        for it, lines in texts_of:
+            for texts, tokens, who in lines:
+                for t in texts:
+                    if not t:
+                        continue
+                    low = plain_words(t)
+                    for pattern, why in forbidden:
+                        if pattern.search(low):
+                            fail(it.key, f'"{t}": {why}')
+                    # Names only through slots: a name of the world's anywhere but a sentence's start; there (where "Stone
+                    # keeps..." is a word), when another name, a comma or a word of telling follows it ("Hollin says...").
+                    for s_ in sentences(low):
+                        ws = re.findall(r"[A-Za-z][A-Za-z'-]*|,", s_)
+                        for i, w in enumerate(ws):
+                            if w not in names or w in realm:
+                                continue
+                            nxt = ws[i + 1] if i + 1 < len(ws) else ''
+                            if i > 0 or nxt in names or nxt == ',' or not nxt or nxt.lower() in TELLING:
+                                fail(it.key, f'"{w}" is the name of someone in the world: names come only through slots '
+                                             f'(#self.spouse#...)')
+                    for s in sentences(low):
+                        tokens_ = re.findall(r"[A-Za-z][A-Za-z'-]*", s)
+                        for i, w in enumerate(tokens_[1:], 1):
+                            if not w[0].isupper() or w in names:
+                                continue
+                            two = f'{w} {tokens_[i + 1]}' if i + 1 < len(tokens_) else ''
+                            prev2 = f'{tokens_[i - 1]} {w}'
+                            if (w in realm or w.lower() in realm_lower or two in realm or prev2 in realm or
+                                    re.sub(r"'s$", '', w) in realm):
+                                continue
+                            fail(it.key, f'"{w}" is capitalised mid-sentence: a name? Names come only through slots; a place of '
+                                         f'the realm goes in mantle_rules.json allow')
+                    if person_slot.search(t) and pronoun.search(plain_words(t)):
+                        fail(it.key, f'"{t}": he, she, him or her beside a person named by a slot; say it by their sex '
+                                     f'(#other.they#, #x.their#)')
+                    if it.kind == 'card' or who == 'p':
+                        continue
+                    counted = it.kind != 'symbol'       # (Lines' alternatives, for the habits and the density.)
+                    if counted:
+                        total += 1
+                        if any(f'#{h}' in t for h in habits):
+                            habit_lines += 1
+                    # Dialect: another's words never; its own written out only where its accents allow it.
+                    own = 'mirebridge' if m.dialect == 'fenshore' else m.dialect
+                    hits = dialect_check.hits(t, lex)
+                    for d, phrase in hits:
+                        if d != own:
+                            fail(it.key, f'"{phrase}" is {d} speech, not {m.dialect}\'s')
+                        elif 'none' in m.accents:
+                            fail(it.key, f'"{phrase}" is {d} speech written out, and its wearer may speak with no accent: '
+                                         f'through a symbol (the dialect\'s word, or its own words)')
+                    syms = {x.strip('#').split('.')[0] for x in SLOT.findall(t)}
+                    if counted and ((syms & (own_symbols | dialect_symbols)) or any(d == own for d, _ in hits)):
+                        marked += 1
+                    # Truth: what the words take for granted, behind them.
+                    crit = talk_lint.criteria(tokens, 'a' if who == 'a' else 'b', False, facts) + talk_lint.held(tokens, implied)
+                    crit.append(('self.mantle', '=', {m.id}))
+                    for rule in talk_truth.matches(truth_rules, t):
+                        if not talk_lint.backed(rule, crit):
+                            needs = ', '.join(f'{n.key}{n.op}{"|".join(sorted(n.values))}' for n in rule.needs + rule.needs_any)
+                            fail(it.key, f'"{t}" takes for granted what its criteria don\'t say ({rule.id}: {needs})')
+                    if ids.search(t):
+                        fail(it.key, f'"{t}" holds an identifier')
+            if it.kind == 'symbol':
+                for t in lines[0][0] if lines else []:
+                    if t.rstrip().endswith(('.', ';', '!', '?')):
+                        fail(it.key, f'"{t}" ends its own sentence: a word is spliced into lines ("Morning to you; the loaves are '
+                                     f'honest., neighbour"), so it ends without a stop (defect 14)')
+        # Shared runs (uniqueness within the dialect).
+        for (mid, key), (other, run) in shared.items():
+            if mid == m.id:
+                fail(key, f'"{run}" is word for word in {other} (no two mantles of a dialect share a 5-word run)')
+        # Habits.
+        if total and habit_lines / total > r['habits']:
+            fail('', f'its habits are in {habit_lines} of {total} alternatives ({habit_lines / total:.0%}; at most {r["habits"]:.0%})')
+        # Density.
+        if m.dialect != 'plain' and total and marked / total < r['density']:
+            fail('', f'{marked} of {total} alternatives carry a dialect marker ({marked / total:.0%}; {r["density"]:.0%} wanted)', not strict)
+        # The tier's minimum and size.
+        tier = r['tiers'].get(m.tier, {})
+        need = tier.get('minimum', {})
+        lines_ = [it for it in m.items if it.kind in ('line', 'rule', 'scene', 'story')]
+        counts = {'symbols': sum(it.kind == 'symbol' for it in m.items), 'lines': len(lines_),
+                  'dlg': sum(it.kind == 'dlg' for it in m.items), 'stories': sum(it.kind == 'story' for it in m.items)}
+        short = [f'{counts[k]} {k} of {need[k]}' for k in ('symbols', 'lines', 'dlg', 'stories') if counts[k] < need.get(k, 0)]
+        done = set()
+        for it in m.items:
+            if it.kind == 'line':
+                kw = it.body.split(None, 1)[0]
+                _, head, _, _, _, _ = T.split_item(it.body.split('\n')[0][len(kw):])
+                for mv in head.split():
+                    parts = mv.split('.')
+                    done |= {'.'.join(parts[:i]) for i in range(1, len(parts) + 1)}
+            elif it.kind == 'rule':
+                for raw in it.body.split('\n'):
+                    if raw.strip().startswith('does '):
+                        for mv in raw.strip()[5:].split():
+                            parts = mv.split('.')
+                            done |= {'.'.join(parts[:i]) for i in range(1, len(parts) + 1)}
+        short += [f'no line answering {mv}' for mv in need.get('moves', []) if mv not in done]
+        short += [f'no {s} section' for s in need.get('sections', []) if not any(it.section == s for it in m.items)]
+        if short:
+            fail('', f'under its tier\'s minimum ({m.tier}): ' + '; '.join(short), m.state != 'ready')
+        size = len([it for it in m.items if it.kind != 'symbol'])
+        if tier.get('size') and size < tier['size']:
+            fail('', f'{size} items of the {m.tier} tier\'s {tier["size"]} (§9.3)', not strict)
+        # The marks name its own habits (the loader checks they are its words).
+        for mark in m.marks:
+            if mark not in habits:
+                fail('marks', f"'{mark}' is not a habit of its own (name! in its words)")
+        if m.persona and '#self.first#' not in m.persona and m.persona:
+            fail('persona', 'the persona names its wearer by #self.first# (it is passed on)', True)
+    # In a world: who wears what, where; a town's oaths, sayings and quirks.
+    if world:
+        town = world.get('town', {})
+        wearer = world.get('wearer', {})
+        by_town: dict[str, list[T.Mantle]] = {}
+        for m in everyone:
+            w = wearer.get(m.id) or m.written_for
+            if w and town.get(w):
+                by_town.setdefault(town[w], []).append(m)
+        for m in mantles:
+            if m.written_for and m.written_for not in world.get('npcs', set()):
+                out.append(Finding(m.id, 'written_for', f'{m.written_for} is not an NPC of the world'))
+            w = wearer.get(m.id) or m.written_for
+            if not w or not town.get(w):
+                continue
+            neighbours = [o for o in by_town[town[w]] if o.id != m.id]
+            for sym in ('oath', 'saying'):
+                mine = {a for it in m.items if it.kind == 'symbol' and it.symbol == sym for a in said(it)[0][0]}
+                for o in neighbours:
+                    theirs = {a for it in o.items if it.kind == 'symbol' and it.symbol == sym for a in said(it)[0][0]}
+                    for same in sorted(mine & theirs):
+                        out.append(Finding(m.id, f'words.{sym}', f'"{same}" is {o.id}\'s {sym} too, in the same town'))
+            if m.quirk and sum(o.quirk == m.quirk for o in neighbours) >= 2:
+                out.append(Finding(m.id, 'quirk', f'{m.quirk}: three in one town have it (two at most)'))
+    return out
+
+
+# ------------------------------------------------------------------ The world's side
+
+def town_of(home_area: str) -> str:
+    """The town a home is in, by its area's id: a town's cells are cn_<town>_..., Ridgemere's rm_ and r2_."""
+    m = re.match(r'^cn_([a-z]+)_', home_area or '')
+    if m:
+        return m.group(1)
+    return 'ridgemere' if re.match(r'^(rm|r2|rmx)_', home_area or '') else ''
+
+
+def world_facts(conn, world_id: str) -> dict:
+    """What the world adds: every NPC's names and ids, the town each lives in, and who wears which mantle."""
+    names, npcs, town = set(), set(), {}
+    for npc_id, name, home in conn.execute('SELECT id, name, coalesce(home_area, \'\') FROM live.npcs WHERE world_id = %s',
+                                           (world_id,)).fetchall():
+        npcs.add(npc_id)
+        town[npc_id] = town_of(home)
+        for part in re.findall(r"[A-Z][A-Za-z'-]+", name or ''):
+            names.add(part)
+    wearer = {}
+    if conn.execute("SELECT to_regclass('live.mantles') IS NOT NULL").fetchone()[0]:
+        for mantle_id, npc_id in conn.execute('SELECT mantle_id, npc_id FROM live.npc_voice WHERE world_id = %s AND mantle_id IS NOT '
+                                              'NULL AND released_day IS NULL', (world_id,)).fetchall():
+            wearer[mantle_id] = npc_id
+    return {'names': names - {'Old', 'The', 'Grandam'}, 'npcs': npcs, 'town': town, 'wearer': wearer}
+
+
+def world_id_of(conn) -> str:
+    worlds = [r[0] for r in conn.execute('SELECT id FROM world.worlds').fetchall()]
+    if len(worlds) != 1:
+        raise SystemExit(f'Expected one world in the database, found {worlds}')
+    return worlds[0]
+
+
+def world_mantles(conn, world_id: str, only: str | None = None) -> list[T.Mantle]:
+    """The world's mantles, as their rows hold them."""
+    cols = ('id', 'dialect', 'tier', 'state', 'format', 'accents', 'title', 'written_for', 'fits', 'prefers', 'traits', 'quirk',
+            'card', 'persona', 'revision', 'written_by')
+    rows = conn.execute(f"SELECT {', '.join(cols)} FROM live.mantles WHERE world_id = %s" + (' AND id = %s' if only else '') +
+                        ' ORDER BY id', (world_id, only) if only else (world_id,)).fetchall()
+    out = []
+    for row in rows:
+        r = dict(zip(cols, row))
+        items = [dict(zip(('key', 'section', 'kind', 'move', 'position', 'body'), i)) for i in conn.execute(
+            'SELECT key, section, kind, move, position, body FROM live.mantle_lines WHERE world_id = %s AND mantle_id = %s',
+            (world_id, r['id'])).fetchall()]
+        out.append(T.read(T.write(T.Mantle.from_columns(r, items)), f'db:{r["id"]}'))
+    return out
+
+
+def files(paths: list[str]) -> list[Path]:
+    out = []
+    for p in map(Path, paths):
+        out += sorted(p.rglob('*.mantle')) if p.is_dir() else [p]
+    return out
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument('paths', nargs='*')
+    ap.add_argument('--world')
+    ap.add_argument('--one')
+    ap.add_argument('--strict', action='store_true')
+    ap.add_argument('--json', action='store_true')
+    a = ap.parse_args()
+    mantles, problems = [], []
+    for f in files(a.paths):
+        try:
+            mantles.append(T.read(f.read_text(), str(f)))
+        except T.MantleError as e:
+            problems += e.problems
+    world, others = None, []
+    if a.world:
+        import world_db as W
+        with W.connect(W.resolve(a.world), 'editor') as conn:
+            world_id = world_id_of(conn)
+            world = world_facts(conn, world_id)
+            others = world_mantles(conn, world_id)
+            if a.one:
+                mantles = [m for m in others if m.id == a.one]
+                if not mantles:
+                    problems.append(f'{a.one}: no such mantle in {a.world}')
+    elif a.one:
+        ap.error('--one needs --world')
+    found = check(mantles, world=world, strict=a.strict, others=others)
+    errors = [f for f in found if not f.warning]
+    if a.json:
+        print(json.dumps({'problems': problems, 'findings': [vars(f) for f in found]}, indent=1))
+    else:
+        for p in problems:
+            print(p)
+        for f in found:
+            print(f)
+        print(f'{len(mantles)} mantles: {len(errors) + len(problems)} refusals, {len(found) - len(errors)} warnings')
+    return 1 if errors or problems else 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

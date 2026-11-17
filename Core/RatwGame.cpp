@@ -534,6 +534,8 @@ bool Game::start(std::string& problem)
             return false;
     }
     storageReady_ = true;
+    if (!live)
+        loadMantles({});                            // (From files, if any: Options::mantlesFrom. Doc 84 Phase 9.)
     // A hunt (doc 41) may be joined by a hunter's friends: their party, or their Chapter.
     world_.setFriends([this](const std::string& a, const std::string& b) {
         const auto* pa = parties_.of(a);
@@ -1290,13 +1292,26 @@ Result Game::applyDmAct(std::vector<PgValue> row)
     else if (kind == "voice.sync")
     {
         // Talk (doc 62, phase 6): residents' voices, the dialects and the figures read again, after an edit; and
-        // families (taken in by the society at the next day's turn).
-        loadVoices();
+        // families (taken in by the society at the next day's turn). Doc 84 Phase 9: one resident's alone (their voice
+        // row, own words and lines, and mantle) when the target is a resident; anything else (a dialect, a figure, a
+        // batch of mantles, nothing) reads every voice again.
+        const auto* one = world_.entity(target);
+        if (one && one->npc)
+            outcome = loadVoice(target);
+        else
+        {
+            loadVoices();
+            outcome = {true, "Voices, dialects, mantles, families and figures are read again.", target};
+        }
         World candidate;
         std::string problem;
         if (loadWithLivePeople(candidate, problem))
             world_.society().setKin(candidate.society().kin());
-        outcome = {true, "Voices, dialects, families and figures are read again.", target};
+    }
+    else if (kind == "mantle.sync")
+    {
+        // Doc 84 §17.2: one mantle's rows read again and swapped whole; a revision that fails leaves the one loaded.
+        outcome = loadMantle(target);
     }
     else if (kind == "deed.award" || kind == "deed.revoke")
     {

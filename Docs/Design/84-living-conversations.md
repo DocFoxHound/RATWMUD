@@ -11,7 +11,10 @@ measured), and **Slice 2's end** is done (2026-11-17, branch `r3-talk-s2`, §34:
 ticking 100-hour listen and its packet, the review's fixes, and the first blind packet, rated blind by three raters:
 **H1 not met**, the talk rated below the baseline, and why, §34's last part), and its review's 33 findings are fixed
 (2026-11-17, §35), and **Slice 3's first round** is done (2026-11-17, §36: the causes of the failed ratings fixed,
-a critic's read, the ticking listen, the card and the second blind packet); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
+a critic's read, the ticking listen, the card and the second blind packet), and §37's hybrid is live, and **Phase 9
+(the mantle engine and its tables)** is built (2026-11-17, branch `r3-talk-p9`, §38: the `.mantle` format, migration
+0066 applied to DEV, mantles loaded from the rows in one batch into buckets of their own, the hot reload, the checks on
+every save, `mantle_load` and `mantle_export`, the test fixture with the ten luna tables ported); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
 replaces neither: every one of today's 8,525 library entries and 10 trees keeps loading and speaking while it is
 converted. It was written from five read-only surveys of the code, the data and the live world at `ridgemere2` 1034c1fc
 (the engine, the trees, the lifecycle, what residents know, and prior art) and three competing designs; §4 says how they
@@ -4629,3 +4632,178 @@ scenes on the topics a frozen hour repeats, or a scene's threads written further
 heard far more now (a fact a scene invents, "they" of one named wolf, the accent topic's who-hears-whom); opinions,
 goals and joiners back only as written scenes that carry them (a scene of two who disagree on the Watch, an invitation
 written whole), never stitched on.
+
+## 38. Phase 9, the mantle engine and its tables, as built (2026-11-17)
+
+Branch `r3-talk-p9`, on `ridgemere2` at 46b6ad88 (Slices 1-2 and §37's hybrid). Mantles exist end to end: written as
+`.mantle` text, checked by the game's own loader and by `mantle_check`, written to a world's rows by one module that
+checks, backs up and records, loaded by the game in one batch into buckets of their own, reloaded one at a time by
+`mantle.sync`, and exported back to text byte for byte. No mantle is in DEV's rows yet: Phase 11's pilot writes them.
+
+**The format** (§7.9; `Core/RatwMantle.{h,cpp}` reads it for the game, `tools/mantle_text.py` for the tools, key for key
+the same, which `test_mantle_check` proves on every fixture mantle). The header is the card (§7.9's lines, plus
+`written_by`, `persona` on one line, `format`). `words` holds the symbol lines; `opinion`, `line`, `dlg` are one line
+each; `rule`, `scene`, `story` and `graft` are blocks that run to the next blank line or the next keyword at a line's
+start; `grown`, `young`, `adolescent`, `old` (and `any`) are sections. Keys as §7.9 says, with `@name` after an item's
+keyword (first on a symbol's line) and the next free number otherwise; a symbol's first line is `words.<symbol>`. The
+canonical form (the export) writes every item with its name, so the text the game assembles from the rows gives every
+item the key its row has. Decided while building:
+- **A `scene` kind** (a mantle's own whole scene, which its wearer opens), beside §17.1's seven: §37 made written scenes
+  the body of every talk, so a mantle that is to be heard must hold scenes, not only lines. The table's `kind` check has it.
+- **A story is a whole scene** (§37): `: words` is a beat of the wearer's, `ask : words` a question of theirs, `b : words`
+  (and `b[old] : ...`) the listener's answer, written whole; one with no listener's line is refused. It does `tell.story`,
+  `ask.detail`, `react.story` and `answer.detail` turn by turn, is said on its criteria's topic (`talk.memories` unless
+  they name one) and, as a `tell.story`, once to each listener (the heard set).
+- **An opinion** compiles to a `give.opinion` line under `conv.issue=<issue>`, and its unconditioned first one per issue
+  is the wearer's stance: `op.<issue>`, `op_strength`, `op_basis mantle` over the worked-out one (`op_why` kept only where
+  the sides agree). Its issue must be opinions.json's.
+- **`dlg <tree>.<node>`** is a rule for `dlg.<tree>.<node>` (the node must exist); +5 makes it the wearer's line there.
+- **A graft** is checked whole (its tree and node exist; every choice leads to one of its nodes, the tree's, `bye` or
+  `end`; every node is reached, says something, and has a way back) and its nodes' says compile to rules for
+  `graft.<tree>.<mantle>.<node>`; its shape (choices, nodes, moods, invitations) is kept on the card for the window
+  (Phase 13 shows grafts).
+- **Stage sections** are criteria: grown `self.stage=adult|old` (adult only where an `old` section exists), young
+  `young|adolescent` (young only beside an `adolescent` section), adolescent, old.
+
+**Migration 0066** (`Database/migrations/0066_mantles.sql`; rollback `Database/rollback/0066_mantles_down.sql`). §17.1's
+tables, trigger, grants, binding columns, unique index (`npc_voice_mantle_worn`) and `game_changes` trigger, and:
+- `live.mantle_changed()` raises a mantle's revision **once a transaction** (a 60-item batch is one revision; a
+  transaction-local flag), each changed item's own, stamps `updated_at`, writes one history row with the transaction's
+  `ratw.edit_source`/`edit_by`/`edit_note`; an update that changes nothing is left alone (loading twice moves nothing);
+  SECURITY DEFINER, and nobody may write the history.
+- `dm.queue_talk_sync(who, kind, target)`, as 0061's `queue_economy_sync`: Atlas's role can't write `dm.actions`, so this
+  queues `mantle.sync <id>` or `voice.sync [npc]` only, and notifies the server.
+- **Applied to `ratw_ridgemere3`** (DEV, Atlas's and the live server's world) at 07:36 after `live.npc_voice` was dumped
+  to the main checkout's `Saved/Backups/ridgemere3-before-0066-npc_voice-20261117-073615.sql` (1,083 rows; no row was
+  changed: new tables, four nullable columns and a constraint). The server on 7788 kept running (it reads the voice rows
+  by name, at start and on `voice.sync`); it needs no restart. `mantle_load check ridgemere3`: 773 placed residents, 0
+  mantles. The rollback is tested on throwaway databases (`test_mantle_load`: backup, down, 0066 again), not on DEV.
+
+**The engine** (`Core/RatwTalk.{h,cpp}`, `Core/RatwMantle.cpp`).
+- **Buckets** (§9.4's `byOwner_`): each mantle is a bucket of its own (`Library::Owned`: its rules and scenes, by concept,
+  move and id, its words as the grammar `m_<id>`, its card), and so is each NPC's own lines (`setCharacter`, now an
+  override: no copy of the library, no reindex: defect 16 is closed). A pick, an answer and a lazy pick look at the
+  shared lines and the speaker's own buckets only (`forConcept`, `ownersOf`, by the speaker's `mantle` and `id` facts);
+  `find` resolves a mantle's or an NPC's entry by its id. Mantle rules carry `self.mantle=<id>` and +5.
+- **The share** (§8.2): at the edges (`answer`), a mantle's move lines are left out once its stitched lines would pass
+  35% of the talk's; a whole scene of its own is the talk's body and is not counted against it.
+- **The layer order** `p_<npc>` → `m_<mantle>` → the dialect → plain: a mantle's words are its wearer's whatever their
+  accent (its `.broad` words for a broad one); its layer lives in its bucket, not among the dialects, so saving a dialect
+  checks no mantle's words and a mantle never slows the library's own grammar checks.
+- **Habits by mantle**: a habit drawn from `m_<id>` is seeded by the mantle, so its oath passes to its next wearer; the
+  wearer's own layer (re-drawn marks, Phase 10) still wins.
+- **Loading** (`setMantles`: every mantle at once, each compiled item by item so a problem names its key; one that fails
+  is left out and named; only `ready` ones), **`setMantle`** (one swapped whole; a failure keeps the revision loaded),
+  `checkMantle` (any state, kept nowhere), `dropMantle`, `mantle`, `wear` (the card's opinions, likes over the drawn ones,
+  dislikes, fears, hopes). A mantle's lines are proved answerable (what they owe has a shared or own line that holds with
+  nothing known, walking the fallbacks: §7.2's dead-end proof, per mantle).
+- **The game** (`Core/RatwGameTalk.cpp`): `talkSpeaker` gives a wearer `mantle=<id>`, the `m_` layer, the card's
+  talk-only traits and quirk (never honesty: §9.5), and once a day `wear`; `talkFavourites` puts the mantle's favourite
+  topics first and its shunned ones out. `loadVoices` reads the bindings (where 0066 is applied; a world before it reads
+  as before) and `loadMantles` reads, in two queries, the ready mantles worn by a living wearer and their items, plus the
+  cards of every other ready one (`mantleCards_`, for Phase 10's pools), assembles each text (`talk::mantleText`) and
+  loads them in one batch (`RATW_MANTLE loaded N mantles (E rules and scenes, R rows) worn by W residents in T ms`,
+  `RATW_MANTLE refused <id>: <why>`). **`mantle.sync <id>`** (`Game::loadMantle`): one mantle's rows read again (any
+  state: a draft or a retired one is unloaded and its wearer speaks from the library), swapped, its wearer found again;
+  the answer names the revision loaded, or why not and the revision still in use. **`voice.sync <npc>`**
+  (`Game::loadVoice`): that resident's voice row, own words and lines and mantle; any other target (a dialect, a figure,
+  a batch, nothing) reads every voice again, as the DM tool's existing saves expect. **`--mantles-from DIR`**
+  (`Options::mantlesFrom`; the server, `talk_sim`, `talk_check --world`): every ready `.mantle` under DIR, each worn by
+  the resident it was written for, in place of the rows (Phase 10's checkpoint ledger will carry bindings for worlds
+  without a database). facts.json: `mantle`, `fears`, `hopes`.
+
+**The checks.** G1 is `talk_check --mantle PATH... [--dialects DIR] [--json]` (the game's loader, the world's dialects
+over the files'). G2 is `tools/mantle_check.py PATH... | --one ID --world KEY [--strict] [--json]`, with its data in
+`tools/mantle_rules.json` (not under Data/Talk, whose scans would read its own forbidden words): names of the world's
+NPCs outside slots and capitalised words that aren't the realm's; no "dog", "gods", "tells" for private messages, male
+or female only; he/she/him/her beside a person named by a slot; a word's value that ends its own sentence (defect 14);
+truth.json's needs behind every line (with the section's stage); another dialect's words, and the own dialect's written
+out where the accents allow none; no 5-word run shared within a dialect; a town's oaths, sayings and quirks (with
+--world); habits in at most 25% of alternatives; and the tier's **minimum** (symbols, lines, an answer of its own to
+greet.return, farewell.return and react.news, window lines and a story for the full tier, a spare's young and
+adolescent sections): required of a `ready` mantle, warned for a draft. The tier's **size** (§9.3's 92, 55, 64) and the
+**dialect density** (60%) are warnings until `--strict` (Phase 11's batches on): the fixture is far under both by design.
+
+**The tools.** `tools/mantle_store.py` (every write: G1 and G2 first, `ready` needs its minimum, a retire refused while
+worn, a stale revision refused naming who moved it and when, one transaction with the history's settings, items
+inserted, updated or left alone, deleted only with `prune`, `bind`, `queue`), `tools/mantle_load.py` (§17.4's seven
+steps; `check`, `backup`, `restore`; refuses a live world; a new unnamed item never takes a key the rows hold),
+`tools/mantle_export.py` (§17.5; `--check`). `Data/Talk/mantles-export/` holds DEV's export: `index.tsv` alone, since DEV
+has no mantles. The DM tool knows the `mantle.sync` act.
+
+**The test fixture** (`Tests/fixtures/mantles/`, 16 mantles in all eight speeches but Fenshore's): the **ten luna tables
+ported** (`rm001` Dagny Slaghand, `rm002` Ada Rainmore (a pup: a young section), `lf001` Berit Kelpwick, `lf002` Ada
+Aldwych, `lf003` Agna Bilgecot, `fh001` Bramble Snowhearth, `oh001` Agnes Millford, `cw001` Dray Merewell, `sm001` Ada
+Coalstack, `mb001` Brock Marshholm), each with `written_for` kept and its stale facts made true (Dagny sells fish in the
+Rag Market, Berit's stall, Agnes's greens, Agna at the preserving house, Dray with no boat to speak of, Ada's bees at
+Heatherside, Brock's fold at Larkdowns), the names they gave made slots or taken out (a priest, a trader, a husband,
+neighbours, "the Maker": the Bright One), the punctuation that broke the window's templates gone, Dagny's "Morning to
+you" said only at dawn, the barks kept as rule blocks with their cooldowns, the small talk turned into whole scenes, the
+player greetings into window lines, and the lines they lacked for the tier's minimum written; `cw017` (§7.9's lake
+swimmer, written for the talk town's keeper: every item kind, a story, a scene, a graft of two nodes), `sw001` and
+`rm003` (the talk town's Saltwell storekeeper and Ridgemere pup), the spares `cw090` and `sw090` (young, adolescent and
+grown sections) and the draft spare `rm090`. All pass G1 and G2 (27 warnings: size and density).
+
+**Budgets** (§16; `mantle_tests --bench`, ctest `mantle_bench`, label perf: 805 mantles at the richer size, cw017 with five
+more copies of its grown lines, **50,715 items**, 48,300 rules and scenes):
+- **B3**: the batch parse and index **449 ms**; reading the rows (805 cards and 51,520 items, the game's two queries, a
+  throwaway database on the local PostgreSQL 18) **about 0.53 s**: about 1 s added to start, of 3. One mantle swapped:
+  **0.58 ms** median in the bench, **1 ms** for `mantle.sync` end to end (below), of 50.
+- **B4**: **133 MB** more in use on the heap (133 MB resident), of 150: about 2.75 KB a compiled entry. Strings are not
+  interned; it is the lever if the written mantles' longer alternatives push the real figure over.
+- A pick for a wearer of a mantle costs 0.081 ms against 0.077 ms for one without (talk.weather, 400 picks).
+
+**End to end, on a copy of ridgemere3** (a throwaway database restored from DEV's dump, dropped after): the ten luna
+ports loaded with `mantle_load --batch e2e --bind` (10 written, 10 bound, the server told), a scratch game on the copy
+(`mantle_tests --db`, which applies the DM's acts through `Game::applyDmAct` as the server does; a non-scratch server on
+the copy stopped at its account checkpoint, which the copy lacks): `RATW_MANTLE loaded 8 mantles (77 rules and scenes, 110
+rows) worn by 8 residents in 3 ms` (two of the ten aren't residents of the save); Dagny's shop greeting is `rm001`'s
+(in her own words layer's greeting: the luna row's `p_` layer still sits above the mantle until Phase 11 empties it);
+an Atlas-style save of one item (`mantle_store.save`, revision 2) then `mantle.sync rm001`: "revision 2 is loaded (11
+rules and scenes, worn by rm_dagny_slaghand, 1 ms)", heard at once; a broken row written past the checks, then
+`mantle.sync`: refused, "revision 2 is still in use", and she says revision 2's line; `voice.sync rm_dagny_slaghand`
+reads her alone; `oh001` saved retired: unloaded; `rm999`: "No mantle rm999".
+
+**Tests.** New: `mantle_tests` (ctest `mantle_tests`, 270 checks: the syntax and its refusals, keys and the text from
+the rows, the loader's refusals by key, buckets and wearers, the window greeting the wearer's, a scene of its own as a
+talk's body, the layer order and habits by mantle, answers within the share, the override, the hot reload keeping the
+old revision, and the talk town wearing the fixture with `mantle.sync`, a draft unloaded and `voice.sync <npc>`),
+`mantle_fixture_loads` (G1 over the fixture and the export), `mantle_fixture_rules` (G2 the same),
+`mantle_check_rules` (`tools/test_mantle_check.py`: the tools' keys are the game's, canonical text stable, G2's
+refusals), `mantle_load_pg` (`tools/test_mantle_load.py`, with the local PostgreSQL: 0066's trigger, grants, unique
+wearer, restrict, `game_changes`, `queue_talk_sync`, the rollback and 0066 again; the fixture loaded, bound, exported,
+loaded again with nothing changed, exported to the same bytes, `--check`; an Atlas edit found by `--check`; stale
+revisions with `--take-theirs` and `--take-mine`; a new item never taking a row's key; refusals that write nothing;
+backup and restore). The full ctest: 113 of 113 (pg_client skipped as before), the database suites run; with
+RATW_PERF_TESTS, `talk_bench` and `mantle_bench`.
+
+**The card** (`artifacts/talk/runs/p9`, every profile in both modes over P0's fixture, reading DEV's rows after 0066:
+no mantle in them yet). Every metric is the base's (`ridgemere2` 46b6ad88's own card, `s5`) to the digit but the
+timings, and the transcripts match line for line where compared (frozen L6, fixtures L7): with no mantle worn, the
+buckets, the candidate gathering and the layer order change nothing that is said. `talk_card` exits 1 on the soft rows
+§37 left flagged against the committed baselines (C8, O1, D1L, D1B, U2, K2, C9, X1: the hybrid's, by design or open)
+and the card's timings under its own load (B1 frozen 0.218 ms against `s5`'s 0.197; B5 62 against 80); no hard gate is
+broken and nothing was refrozen. Alone, `talk_bench` on the talk town: a beat 0.062 ms mean, p99 0.133 (the base's
+build: 0.061, 0.132), a look p99 1.71 ms.
+
+**For Phase 10.**
+- **The bindings** are `live.npc_voice.mantle_id`, `bound_day`, `bound_how`, `released_day`; one living wearer a mantle
+  (`npc_voice_mantle_worn`); the game's writes there show in `live.game_changes` (the game has UPDATE and INSERT on it).
+  `mantle_store.bind` writes an authored one; death's release (`released_day`), births, arrivals and `mantle.assign`/
+  `release`/`retire` are Phase 10's, through the same module. `Game::mantleCards_` holds the ready mantles nobody
+  living wears (id, dialect, accents, fits, honesty): the pools' cards. A mantle's `fits` is parsed and checked as
+  criteria but never tested against a wearer yet (§17.3.3, at binding).
+- **Worlds without a database** bind by `written_for` under `--mantles-from`; the checkpoint's mantle ledger (§17.8)
+  should take its place.
+- **The Mantles panel** has its writes in `mantle_store.save` (checks, stale revisions, history settings, prune,
+  retire-while-worn) and its reload in `dm.queue_talk_sync`; "Hear it" can render through `talk_check --mantle` plus a
+  concept (not built). `tools/world_sync.py` and `tools/world_package.py` know neither the tables nor `live.npc_voice`'s
+  four new columns: a sync to a world before 0066 would carry columns it lacks.
+- **Left as they were**: the ten luna voice rows keep their `grammar`, `rules` and `persona` (their `p_` layer sits above
+  the mantle's words: Phase 11 empties them once the pilot's mantles land); §11's new slots (`#other.called#`,
+  `#self.workplace#`, `#self.trade_words#`, `#self.away#`...) are not facts yet; the persona template is stored and
+  checked but only the window's Mind will read it (Phase 13); G3 (`talk_check --coverage --mantle`) and G4 are not built;
+  `talk_scorecard_quick`'s town doesn't wear the fixture (it would move the quick card for no measure yet); the
+  `Library::entries()` that `talk_check --validate` counts are the shared library's only.
+- **The live world** (7788, ridgemere3) needs no restart: 0066 is additive and its server reads past it. A server built
+  from this branch reads DEV's mantle rows at start (none yet) and answers `mantle.sync`.

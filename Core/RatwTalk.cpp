@@ -278,12 +278,22 @@ void Library::clear()
     likes_.clear();
     temper_.clear();
     temperBy_.clear();
+    owned_.clear();
+    plain_.clear();
 }
 
 const Entry* Library::find(const std::string& id) const
 {
     const auto f = byId_.find(id);
-    return f == byId_.end() ? nullptr : &entries_[f->second];
+    if (f != byId_.end())
+        return &entries_[f->second];
+    // A mantle's ("<mantle>.<key>") or an NPC's own ("<npc>.<rule>"): doc 84 Phase 9.
+    if (const auto dot = id.find('.'); dot != std::string::npos && !owned_.empty())
+        for (const auto& key : {"m:" + id.substr(0, dot), "p:" + id.substr(0, dot)})
+            if (const auto o = owned_.find(key); o != owned_.end())
+                if (const auto e = o->second->byId.find(id); e != o->second->byId.end())
+                    return &o->second->entries[e->second];
+    return nullptr;
 }
 
 std::vector<std::string> Library::grammars() const
@@ -1054,9 +1064,14 @@ std::size_t Library::longestSymbol(const std::string& name, std::map<std::string
     }
     open.insert(name);
     std::size_t longest = 0;
+    std::vector<const Grammar*> layers;
     for (const auto& [layer, g] : grammars_)
+        layers.push_back(&g);
+    if (checking_)
+        layers.push_back(checking_);
+    for (const auto* gp : layers)
         for (const auto& key : {name, name + ".broad"})
-        if (const auto s = g.find(key); s != g.end())
+        if (const auto s = gp->find(key); s != gp->end())
             for (const auto& e : s->second.entries)
                 for (const auto& alt : e.alts)
                 {
@@ -1138,9 +1153,9 @@ bool Library::checkText(const std::string& text, std::vector<std::string>& error
             errors.push_back(where + ": #" + inside + "# is not a symbol or a fact");
             return;
         }
-        if (!plain.count(ref.parts[0]))
+        if (!plain.count(ref.parts[0]) && !(checking_ && checking_->count(ref.parts[0])))
         {
-            errors.push_back(where + ": #" + ref.parts[0] + "# is not in the plain grammar");
+            errors.push_back(where + ": #" + ref.parts[0] + "# is not in the plain grammar" + (checking_ ? " nor the mantle's words" : ""));
             return;
         }
         std::set<std::string> open;
@@ -1173,7 +1188,7 @@ bool Library::checkText(const std::string& text, std::vector<std::string>& error
                 break;
             }
             const auto name = text.substr(i + 1, colon - i - 1);
-            if (!plain.count(name))
+            if (!plain.count(name) && !(checking_ && checking_->count(name)))
                 errors.push_back(where + ": [" + name + ":...] binds a symbol the plain grammar doesn't have");
             std::size_t inner = 0;
             checkText(text.substr(colon + 1, end - colon - 1), errors, where, &inner);
@@ -1192,21 +1207,14 @@ bool Library::checkText(const std::string& text, std::vector<std::string>& error
     return errors.size() == before;
 }
 
-bool Library::parseGrammar(const std::string& text, const std::string& file, std::string& problem)
+bool Library::readGrammarText(const std::string& text, const std::string& file, std::map<std::string, Grammar>& merged,
+                              std::vector<GrammarLine>& pending, std::vector<std::string>& errors) const
 {
-    std::vector<std::string> errors;
-    auto merged = grammars_;
     std::string current;
     std::istringstream in(text);
     std::string raw;
     int number = 0;
     const auto fail = [&](const std::string& message) { errors.push_back(file + ":" + std::to_string(number) + ": " + message); };
-    struct Pending
-    {
-        std::string grammar, symbol, where;
-        std::vector<std::string> texts;
-    };
-    std::vector<Pending> pending;
     while (std::getline(in, raw))
     {
         ++number;
@@ -1311,12 +1319,21 @@ bool Library::parseGrammar(const std::string& text, const std::string& file, std
         auto& symbol = merged[current][broad ? name + ".broad" : name];
         symbol.habit = symbol.habit || habit;
         symbol.pairHabit = symbol.pairHabit || pairHabit;
-        Pending p{current, name, file + ":" + std::to_string(number), {}};
+        GrammarLine p{current, name, file + ":" + std::to_string(number), {}};
         for (const auto& a : entry.alts)
             p.texts.push_back(a.text);
         pending.push_back(p);
         symbol.entries.push_back(std::move(entry));
     }
+    return errors.empty();
+}
+
+bool Library::parseGrammar(const std::string& text, const std::string& file, std::string& problem)
+{
+    std::vector<std::string> errors;
+    auto merged = grammars_;
+    std::vector<GrammarLine> pending;
+    readGrammarText(text, file, merged, pending, errors);
     // Checked against the grammars with this file in: every symbol used, and every layer's symbol, is in plain.
     auto kept = std::move(grammars_);
     grammars_ = merged;
@@ -1422,7 +1439,7 @@ bool Library::parse(const std::string& text, const std::string& file, std::strin
         into.push_back(c);
     };
     const auto concept = [&](const std::string& name) {
-        if (!settings_.concepts.count(name))
+        if (!settings_.concepts.count(name) && !(mantleParse_ && name.rfind("graft.", 0) == 0))
             fail("'" + name + "' is not a concept (settings.json)");
         e->concepts.insert(name);
     };
@@ -2036,6 +2053,13 @@ bool Library::parse(const std::string& text, const std::string& file, std::strin
             problem += "\n(" + std::to_string(errors.size() - 20) + " more)";
         return false;
     }
+    if (parseInto_)
+    {
+        // (A mantle's items, or one wolf's own lines: kept by their owner, never the shared library's. Doc 84 Phase 9.)
+        for (auto& x : parsed)
+            parseInto_->push_back(std::move(x));
+        return true;
+    }
     groups_ = groups;
     for (auto& x : parsed)
     {
@@ -2278,22 +2302,24 @@ bool Library::expandSymbol(const std::string& name, Expansion& x, int depth, std
     std::vector<const Alt*> alts;
     std::vector<const std::string*> altLayer;       // (The layer each came from, for LineInfo: never for choosing.)
     bool habit = false, pairHabit = false;
-    std::string from;
+    std::string from, habitLayer;
     auto layers = who.grammar;
     layers.push_back("plain");
     for (const auto& layer : layers)
     {
-        const auto g = grammars_.find(layer);
-        if (g == grammars_.end())
+        const Grammar* g = layerOf(layer);
+        if (!g)
             continue;
         const bool spoken = layer == dialect;
         if (spoken && (accent == "none" || (accent == "light" && x.next() % 2)))
             continue;
+        // (A mantle's words are its wearer's whatever their accent; its .broad words for a broad one: doc 84 Phase 9.)
+        const bool worn = layer.rfind("m_", 0) == 0;
         std::vector<const Symbol*> symbols;
-        if (const auto s = g->second.find(name); s != g->second.end())
+        if (const auto s = g->find(name); s != g->end())
             symbols.push_back(&s->second);
-        if (spoken && accent == "broad")
-            if (const auto s = g->second.find(name + ".broad"); s != g->second.end())
+        if ((spoken || worn) && accent == "broad")
+            if (const auto s = g->find(name + ".broad"); s != g->end())
                 symbols.push_back(&s->second);
         if (symbols.empty())
             continue;
@@ -2326,6 +2352,8 @@ bool Library::expandSymbol(const std::string& name, Expansion& x, int depth, std
         if (added == 0)
             continue;                               // (Only words for another hour here: the layer below has the hour's.)
         from += (from.empty() ? "" : "+") + layer;
+        if (worn && habitLayer.empty())
+            habitLayer = layer;
         if (!adds)
             break;
     }
@@ -2343,7 +2371,10 @@ bool Library::expandSymbol(const std::string& name, Expansion& x, int depth, std
         return false;
     const auto id = !fact(who, "id").empty() ? fact(who, "id") : fact(who, "name");
     const auto toId = &to == &who ? std::string() : !fact(to, "id").empty() ? fact(to, "id") : fact(to, "name");
-    const auto seed = pairHabit ? mix(hash(id + "|" + toId + "|" + name)) : habit ? mix(hash(id + "|" + name)) : x.next();
+    // A habit defined in a mantle is seeded by the mantle, not its wearer (doc 84 §11): its oath survives into its next
+    // wearer, unless their own layer (re-drawn marks, §12.4) says otherwise.
+    const auto& habitOf = habitLayer.empty() || *altLayer.front() != habitLayer ? id : habitLayer;
+    const auto seed = pairHabit ? mix(hash(habitOf + "|" + toId + "|" + name)) : habit ? mix(hash(habitOf + "|" + name)) : x.next();
     const auto chosenAt = std::size_t(seed % alts.size());
     const auto* alt = alts[chosenAt];
     if (x.layers && std::find(x.layers->begin(), x.layers->end(), *altLayer[chosenAt]) == x.layers->end())
@@ -4419,18 +4450,36 @@ Said Library::answer(const Conversation& c, const Conversation::Open& owed, cons
 {
     // The candidates (§8.2): the handed-on concept's own rules, and the rules with no concept doing an owed move (a line
     // tied to a concept answers only for it until Phase 7 says what every line does).
-    std::vector<std::size_t> cands;
-    std::set<std::size_t> seen;
+    std::vector<const Entry*> cands;
+    std::set<const Entry*> seen;
     if (!owed.concept.empty())
-        if (const auto list = byConcept_.find(owed.concept); list != byConcept_.end())
-            for (const auto i : list->second)
-                if (seen.insert(i).second)
-                    cands.push_back(i);
+        for (const auto* e : forConcept(owed.concept, q, speaker))
+            if (seen.insert(e).second)
+                cands.push_back(e);
+    // Doc 84 Phase 9: the speaker's own lines (their mantle's, their own) beside the shared ones, while their mantle has
+    // said no more than its share of this talk (§8.2: 35%; a whole scene of theirs is a body, not counted against it).
+    const auto own = ownersOf(q, speaker);
+    std::size_t mine = 0;
+    if (!own.empty())
+        for (const auto& l : c.lines)
+            for (const auto* o : own)
+                if (l.part != "scene" && l.entry.size() > o->owner.size() && l.entry.compare(0, o->owner.size(), o->owner) == 0 &&
+                    l.entry[o->owner.size()] == '.')
+                    ++mine;
+    const bool share = double(mine + 1) <= .35 * double(std::max<std::size_t>(c.lines.size() + 1, 3));
     for (const auto& m : owed.moves)
+    {
         if (const auto* list = byMove(m))
             for (const auto i : *list)
-                if (entries_[i].concepts.empty() && seen.insert(i).second)
-                    cands.push_back(i);
+                if (entries_[i].concepts.empty() && seen.insert(&entries_[i]).second)
+                    cands.push_back(&entries_[i]);
+        if (share)
+            for (const auto* o : own)
+                if (const auto list = o->byMove.find(m); list != o->byMove.end())
+                    for (const auto i : list->second)
+                        if (o->entries[i].concepts.empty() && seen.insert(&o->entries[i]).second)
+                            cands.push_back(&o->entries[i]);
+    }
     // What the one answering knew before this talk (Phase 4, §8.6: `knows`, the game's, on a topic with a claim): one who
     // knew answers news with the known variant ("I heard."), its exact fit; one who didn't never says they'd heard, and
     // one who knew never says "Never!".
@@ -4472,9 +4521,13 @@ Said Library::answer(const Conversation& c, const Conversation::Open& owed, cons
     if (!owed.concept.empty())
         asked.concept = owed.concept;
     const bool repeats = !owed.concept.empty() && settings_.repeat.count(owed.concept) > 0;
-    for (const auto i : cands)
+    for (const auto* ep : cands)
     {
-        const auto& e = entries_[i];
+        const auto& e = *ep;
+        // (A seed for its words: its place in the library, or its id's hash for a speaker's own.)
+        const std::less<const Entry*> before;
+        const std::uint64_t i = !entries_.empty() && !before(ep, entries_.data()) && before(ep, entries_.data() + entries_.size())
+                                    ? std::uint64_t(ep - entries_.data()) : hash(e.id);
         if (e.scene || !fits(e, asked, speaker) || untrue(e))
             continue;                               // (A scene is a whole talk: never a later beat, in this build.)
         const int fit = exact(e) ? 3 : answers(e) ? 1 : 0;
@@ -4573,8 +4626,8 @@ Said Library::answer(const Conversation& c, const Conversation::Open& owed, cons
 Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bool(const std::string&)>& heard,
                       const std::deque<std::string>& recent, int speaker, bool chained, Trace* trace, bool scenesFirst) const
 {
-    const auto list = byConcept_.find(q.concept);
-    if (list == byConcept_.end())
+    const auto cands = forConcept(q.concept, q, speaker);
+    if (cands.empty())
     {
         if (trace)
             trace->why = "nothing is written for " + q.concept;
@@ -4582,9 +4635,9 @@ Said Library::pickOne(const Query& q, std::uint64_t seed, const std::function<bo
     }
     std::vector<Option> options;
     const bool repeats = settings_.repeat.count(q.concept) > 0;
-    for (const auto i : list->second)
+    for (const auto* ep : cands)
     {
-        const auto& e = entries_[i];
+        const auto& e = *ep;
         if (std::find(recent.begin(), recent.end(), e.id) != recent.end())
         {
             if (trace)
@@ -4744,14 +4797,14 @@ Said Library::pickLazy(const Query& q, std::uint64_t seed, const std::function<b
                        const std::deque<std::string>& recent, int speaker, Trace* trace,
                        const std::function<bool(const Said&)>& refuse) const
 {
-    const auto list = byConcept_.find(q.concept);
-    if (list == byConcept_.end())
+    const auto cands = forConcept(q.concept, q, speaker);
+    if (cands.empty())
         return {};
     std::vector<Option> options;
     const bool repeats = settings_.repeat.count(q.concept) > 0;
-    for (const auto i : list->second)
+    for (const auto* ep : cands)
     {
-        const auto& e = entries_[i];
+        const auto& e = *ep;
         if (std::find(recent.begin(), recent.end(), e.id) != recent.end() || (e.scene && speaker != 0) ||
             (e.scene && untrueScene(e, q)) || !fits(e, q, speaker) || moodMuted(e, q))
             continue;
@@ -4796,16 +4849,21 @@ void Library::reindex()
 
 void Library::indexMoves(std::size_t i)
 {
+    for (const auto& k : movesUnder(entries_[i]))
+        byMove_[k].push_back(i);
+}
+
+std::set<std::string> Library::movesUnder(Entry& e) const
+{
     // A rule by its moves, a scene by its first turn's (a scene taken as a beat starts with it), each under its move and
     // every kind it is of: react.news.known under react.news.known and react.news.
-    auto& e = entries_[i];
     // (Phase 6: an alternative of its first turn hedges, #hedge#: a temperament weighs a hedged answer, §7.5.)
     e.hedged = !e.turns.empty() && std::any_of(e.turns.front().variants.begin(), e.turns.front().variants.end(), [](const Variant& v) {
         return std::any_of(v.texts.begin(), v.texts.end(), [](const std::string& t) { return t.find("#hedge") != std::string::npos; });
     });
-    if (e.does.empty())
-        return;
     std::set<std::string> under;
+    if (e.does.empty())
+        return under;
     for (const auto& m : e.does.front())
         for (std::string k = m;;)
         {
@@ -4816,8 +4874,7 @@ void Library::indexMoves(std::size_t i)
                 break;
             k = k.substr(0, dot);
         }
-    for (const auto& k : under)
-        byMove_[k].push_back(i);
+    return under;
 }
 
 const std::vector<std::size_t>* Library::byMove(const std::string& move) const
@@ -4863,43 +4920,7 @@ bool Library::setGrammar(const std::string& name, const std::string& text, std::
     return true;
 }
 
-bool Library::setCharacter(const std::string& npc, const std::string& text, std::string& problem)
-{
-    const auto file = "voice:" + npc;
-    // Their rules' IDs, made theirs.
-    std::string own;
-    std::istringstream in(text);
-    for (std::string raw; std::getline(in, raw);)
-    {
-        const auto line = trim(raw);
-        if (line.rfind("scene ", 0) == 0)
-        {
-            problem = file + ": a character's table holds rules, not scenes";
-            return false;
-        }
-        own += (line.rfind("rule ", 0) == 0 ? "rule " + npc + "." + trim(line.substr(5)) : raw) + "\n";
-    }
-    auto keptEntries = entries_;
-    entries_.erase(std::remove_if(entries_.begin(), entries_.end(), [&](const Entry& e) { return e.file == file; }), entries_.end());
-    reindex();
-    const auto before = entries_.size();
-    if (!parse(own, file, problem))
-    {
-        entries_ = std::move(keptEntries);
-        reindex();
-        return false;
-    }
-    for (std::size_t i = before; i < entries_.size(); ++i)
-    {
-        Criterion c;
-        c.ns = Ns::Self;
-        c.name = "id";
-        c.values = {npc};
-        entries_[i].when.insert(entries_[i].when.begin(), c);
-        entries_[i].score += settings_.namedPerson;
-    }
-    return true;
-}
+// (Library::setCharacter: Core/RatwMantle.cpp, beside the mantles, since doc 84 Phase 9.)
 
 std::string Library::voiceCard(const Speaker& speaker) const
 {

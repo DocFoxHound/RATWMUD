@@ -1,0 +1,45 @@
+# rm003, the square's pup (test fixture): written for the talk town's Ridgemere pup; a young section, then grown lines
+# for when she is grown.
+mantle rm003
+state ready
+dialect plain
+accent none
+tier standard
+written_for tt_ri_pup
+title the square's pup
+fits stage=young|adolescent|adult|old
+traits talk=chatty humour=merry
+quirk counts_the_cobbles
+likes skipping_stones
+dislikes baths
+fears the_dark
+hopes to_be_a_smith
+topics day +.4
+marks oath
+persona #self.first# is a chatty, merry pup who counts the cobbles of the square.
+
+words
+oath! = Cobbles and crumbs | By my tail
+greet = Hello | Hi there
+farewell = Bye, then | See you
+
+young
+line tell.boast [concept=talk.day] : I counted the cobbles. There's four hundred and twelve. Maybe thirteen.
+line greet.return : #greet#! Did you see me run?
+line farewell.return : Bye! Bye!
+line react.news.new : #oath#! Tell me again!
+line react.news.known : I knew that. Everyone knows that.
+line answer.how : Good! Hungry, though.
+
+story cobbles [concept=talk.day]
+  : I'm going to count every cobble in the square.
+  b : Every one?
+  : Every one. Then the lane. Then the whole city.
+  b[old] : You'll be old as me by then.
+  b : That's a lot of cobbles.
+
+grown
+line greet.return : #greet#. Watch the cobbles; they're slick.
+line farewell.return : #farewell#.
+line react.news.new : #oath#. Is that right?
+line answer.how : Well enough, thanks.

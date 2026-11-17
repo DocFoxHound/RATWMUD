@@ -1,0 +1,55 @@
+# lf001, the long stairs (doc 84 §9.7): the luna table of rm_berit_kelpwick, ported. Her accent is gone (none): the
+# Larkfield in her words only through symbols. Her stall is the realm's, not the Heights' egg stall the table said.
+mantle lf001
+state ready
+dialect larkfield
+accent none light
+tier standard
+written_for rm_berit_kelpwick
+title the long stairs
+fits stage=adult|old
+prefers role=merchant
+traits talk=quiet humour=dry warmth=warm
+quirk takes_the_long_stairs_two_at_a_time
+likes clean_fur
+dislikes muddy_lanes
+fears falling_back
+hopes the_heights
+topics work +.2 prices +.2
+styles tease=dry refuse=soft
+marks oath saying
+persona #self.first# keeps a stall in the Commons: quiet, dry and warm under it, born low and climbing, and she takes the long stairs two at a time.
+
+words
+saying! = A full-weight egg makes a fair bargain | Clean shell, clean trade
+oath! = By the cold shine | Wind and weather
+farewell = Fair price on your way
+agree = Done, then
+surprise = Well, now | There's a thing
+
+rule @stall
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say Fair prices, full weight, fresh this morning. | Step up; I don't bite before noon.
+
+rule @stairs
+when concept=bark working=no
+does aside
+cooldown 8h
+say The long stairs are quicker two at a time. | Leave the cleanest one aside. Tomorrow deserves a proper breakfast.
+
+scene remark
+when concept=talk.smalltalk
+does tell.self / react.self
+a : A comfortable wolf can still tell a light weight from a full one. That's something.
+b : It is. Plenty can't.
+
+line greet.return : #greet#. Mind the stairs; they bite harder going down.
+line farewell.return : #farewell#.
+line react.news.new : #surprise#! Who told you that?
+line react.news.known : So I'd heard. Doesn't make it better.
+line answer.how [self.working=yes] : Busy, and glad of it.
+line answer.how : Well enough. Can't grumble.
+
+dlg resident.hub [topic.meeting=known] : #greet#, #topic.player#. Come for goods, or for news?

@@ -7,7 +7,11 @@
 #include "RatwTroubles.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 
 namespace ratw::game
 {
@@ -67,6 +71,14 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     }
     if (voiceLayers_.count(e.id))
         p.grammar.push_back(talk::Library::personalLayer(e.id));
+    // Their mantle (doc 84 §9.4, Phase 9): its words a layer between their own and their dialect, its lines theirs.
+    const talk::Mantle* worn = nullptr;
+    if (const auto m = mantleOf_.find(e.id); m != mantleOf_.end())
+        if ((worn = talk_.mantle(m->second)))
+        {
+            f["mantle"] = worn->id;
+            p.grammar.push_back(talk::mantleLayer(worn->id));
+        }
     if (!from.empty())
     {
         f["from"] = from;
@@ -88,6 +100,16 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     {
         const auto set = voice == npcVoice_.end() ? nullptr : &voice->second.traits;
         f[axis] = set && set->count(axis) ? set->at(axis) : middle;
+    }
+    // The mantle's talk-only traits and its quirk over the seeded ones; never honesty, which drives who turns thief and
+    // stays the placed resident's own (§9.5; a newborn takes the card's whole: Phase 10).
+    if (worn)
+    {
+        for (const auto& [axis, value] : worn->traits)
+            if (axis != "honesty" && Middle.count(axis))
+                f[axis] = value;
+        if (!worn->quirk.empty())
+            f["quirk"] = worn->quirk;
     }
 
     // Means (doc 79, 11; Phase 8): the household's band, worked out once a day with its guarantees (6.3), and class a
@@ -254,9 +276,11 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
         auto worked = f;
         talk_.stances(worked, world_.talkLedger().drifts(e.id));
         talk_.likes(worked);
+        if (worn)
+            talk_.wear(worked, worn->id);           // (Its opinions, likes, dislikes, fears and hopes: doc 84 §8.8.)
         daily.facts.clear();
         for (auto& [k, v] : worked)
-            if (k.rfind("op", 0) == 0 || k == "likes" || k == "dislikes" || k == "dislike_kind" ||
+            if (k.rfind("op", 0) == 0 || k == "likes" || k == "dislikes" || k == "dislike_kind" || k == "fears" || k == "hopes" ||
                 (k.size() > 6 && k.compare(k.size() - 6, 6, "_words") == 0))
                 daily.facts.emplace(k, std::move(v));
         daily.day = today;
@@ -1242,7 +1266,10 @@ const std::deque<Game::RegardEntry>* Game::regardLedger(const std::string& holde
 void Game::loadVoices()
 {
     if (options_.database.empty() || liveWorldId_.empty())
+    {
+        loadMantles({});
         return;
+    }
     std::string problem;
     int dialects = 0, refused = 0;
     // The dialects (decision 7): the database's over the files'.
@@ -1257,18 +1284,25 @@ void Game::loadVoices()
                 else
                     ++refused, note("warn", "RATW_TALK the dialect " + *row[0] + " was refused, the file's kept:\n" + problem);
             }
+    // Whether the world has mantles (migration 0066): a world before it has no binding columns either.
+    if (const auto rows = worldDb_.exec("SELECT to_regclass('live.mantles') IS NOT NULL", {}); rows.ok && !rows.rows.empty() &&
+        !rows.rows.front().empty() && rows.rows.front()[0])
+        mantleTables_ = *rows.rows.front()[0] == "t" || *rows.rows.front()[0] == "true";
     // Each resident's voice (decisions 4 to 6, 10).
     std::map<std::string, NpcVoice> voices;
     std::set<std::string> layers, rules;
-    if (const auto rows = worldDb_.exec("SELECT npc_id, home_region, accent, quarter, traits::text, quirk, persona, grammar, rules "
-                                        "FROM live.npc_voice WHERE world_id = $1", {liveWorldId_});
+    std::map<std::string, std::string> bindings;
+    if (const auto rows = worldDb_.exec(std::string("SELECT npc_id, home_region, accent, quarter, traits::text, quirk, persona, grammar, rules") +
+                                            (mantleTables_ ? ", coalesce(mantle_id, ''), released_day IS NULL" : "") +
+                                            " FROM live.npc_voice WHERE world_id = $1",
+                                        {liveWorldId_});
         rows.ok)
         for (const auto& row : rows.rows)
         {
             if (row.size() < 9 || !row[0])
                 continue;
             const auto& id = *row[0];
-            const auto text = [&](std::size_t i) { return row[i] ? *row[i] : std::string(); };
+            const auto text = [&](std::size_t i) { return i < row.size() && row[i] ? *row[i] : std::string(); };
             auto& v = voices[id];
             v.from = text(1), v.accent = text(2), v.quarter = text(3), v.quirk = text(5), v.persona = text(6);
             json::Value traits;
@@ -1277,7 +1311,10 @@ void Game::loadVoices()
                 for (const auto& [axis, value] : traits.fields())
                     if (value.isString())
                         v.traits[axis] = value.asString("");
-            // Their own words and lines: a person's layer, and rules only they may say.
+            // The mantle they wear (doc 84 §17.7): a binding not released (their death releases it, Phase 10).
+            if (row.size() >= 11 && !text(9).empty() && (text(10) == "t" || text(10) == "true"))
+                bindings[id] = v.mantle = text(9);
+            // Their own words and lines: a person's layer, and rules only they may say (an override: never passed on).
             if (const auto grammar = text(7); !grammar.empty())
             {
                 const auto layer = talk::Library::personalLayer(id);
@@ -1302,29 +1339,10 @@ void Game::loadVoices()
         if (!rules.count(id))
             talk_.setCharacter(id, "", problem);
     npcVoice_ = std::move(voices);
-    {
-        // The quarters (the Heights, the Sump, an estate): the Market Board's district factor (doc 79, 7.1) and the
-        // bands' score and guarantees (6.3), one map for both.
-        std::map<std::string, std::string> quarters;
-        for (const auto& [id, v] : npcVoice_)
-            if (!v.quarter.empty())
-                quarters[id] = v.quarter;
-        world_.society().setQuarters(std::move(quarters));
-        // Their honesty (frank, plain, guarded, sly): who turns thief among the day's thieves (doc 79, 10.1).
-        std::map<std::string, std::string> honesty;
-        for (const auto& [id, v] : npcVoice_)
-            if (const auto trait = v.traits.find("honesty"); trait != v.traits.end() && !trait->second.empty())
-                honesty[id] = trait->second;
-        world_.society().setHonesty(std::move(honesty));
-        // Their origin and accent (Slice 2's review): the world's talk (the accent topic) as their own facts have it.
-        std::map<std::string, std::pair<std::string, std::string>> origins;
-        for (const auto& [id, v] : npcVoice_)
-            if (!v.from.empty() || !v.accent.empty())
-                origins[id] = {v.from, v.accent};
-        world_.setTalkOrigins(std::move(origins));
-    }
+    voicesChanged();
     voiceLayers_ = std::move(layers);
     voiceRules_ = std::move(rules);
+    loadMantles(bindings);
     // Figures (decision 8).
     figures_.clear();
     if (const auto rows = worldDb_.exec("SELECT id, name, title, role, known_in, about, coalesce(npc_id, '') FROM live.figures "
@@ -1335,7 +1353,374 @@ void Game::loadVoices()
                 figures_.push_back({*row[0], *row[1], row[2] ? *row[2] : "", row[3] ? *row[3] : "", row[4] ? *row[4] : "realm",
                                     row[5] ? *row[5] : "", row[6] ? *row[6] : ""});
     note("info", "RATW_TALK voices: " + std::to_string(npcVoice_.size()) + " residents (" + std::to_string(voiceLayers_.size()) +
-                     " with words of their own, " + std::to_string(voiceRules_.size()) + " with lines), " + std::to_string(dialects) +
-                     " dialects, " + std::to_string(figures_.size()) + " figures" + (refused ? ", " + std::to_string(refused) + " refused" : ""));
+                     " with words of their own, " + std::to_string(voiceRules_.size()) + " with lines, " +
+                     std::to_string(mantleOf_.size()) + " with a mantle), " + std::to_string(dialects) + " dialects, " +
+                     std::to_string(figures_.size()) + " figures" + (refused ? ", " + std::to_string(refused) + " refused" : ""));
+}
+
+void Game::voicesChanged()
+{
+    // The quarters (the Heights, the Sump, an estate): the Market Board's district factor (doc 79, 7.1) and the bands'
+    // score and guarantees (6.3), one map for both.
+    std::map<std::string, std::string> quarters;
+    for (const auto& [id, v] : npcVoice_)
+        if (!v.quarter.empty())
+            quarters[id] = v.quarter;
+    world_.society().setQuarters(std::move(quarters));
+    // Their honesty (frank, plain, guarded, sly): who turns thief among the day's thieves (doc 79, 10.1).
+    std::map<std::string, std::string> honesty;
+    for (const auto& [id, v] : npcVoice_)
+        if (const auto trait = v.traits.find("honesty"); trait != v.traits.end() && !trait->second.empty())
+            honesty[id] = trait->second;
+    world_.society().setHonesty(std::move(honesty));
+    // Their origin and accent (Slice 2's review): the world's talk (the accent topic) as their own facts have it.
+    std::map<std::string, std::pair<std::string, std::string>> origins;
+    for (const auto& [id, v] : npcVoice_)
+        if (!v.from.empty() || !v.accent.empty())
+            origins[id] = {v.from, v.accent};
+    world_.setTalkOrigins(std::move(origins));
+}
+
+namespace
+{
+// A mantle's card from its live.mantles row (the columns the queries below select, from `at`), as talk::mantleText reads it.
+talk::Mantle mantleCard(const std::vector<PgValue>& row, std::size_t at)
+{
+    const auto text = [&](std::size_t i) { return at + i < row.size() && row[at + i] ? *row[at + i] : std::string(); };
+    talk::Mantle m;
+    m.id = text(0), m.dialect = text(1), m.tier = text(2), m.state = text(3);
+    m.format = std::max(1, std::atoi(text(4).c_str()));
+    std::istringstream accents(text(5));
+    m.accents.clear();
+    for (std::string a; accents >> a;)
+        m.accents.push_back(a);
+    m.title = text(6), m.writtenFor = text(7), m.fits = text(8), m.prefers = text(9);
+    json::Value traits, card;
+    std::string error;
+    if (json::parse(text(10), traits, error) && traits.isObject())
+        for (const auto& [k, v] : traits.fields())
+            if (v.isString())
+                m.traits[k] = v.asString("");
+    m.quirk = text(11);
+    if (json::parse(text(12), card, error) && card.isObject())
+    {
+        const auto list = [&](const char* key, std::vector<std::string>& into) {
+            if (const auto* v = card.find(key); v && v->isArray())
+                for (const auto& w : v->items())
+                    if (w.isString())
+                        into.push_back(w.asString(""));
+        };
+        list("likes", m.likes), list("dislikes", m.dislikes), list("fears", m.fears), list("hopes", m.hopes), list("marks", m.marks);
+        if (const auto* v = card.find("topics"); v && v->isArray())
+            for (const auto& pair : v->items())
+                if (pair.isArray() && pair.items().size() == 2 && pair.items()[0].isString())
+                    m.topics.push_back({pair.items()[0].asString(""), pair.items()[1].asNumber(0)});
+        if (const auto* v = card.find("styles"); v && v->isObject())
+            for (const auto& [k, w] : v->fields())
+                if (w.isString())
+                    m.styles[k] = w.asString("");
+    }
+    m.persona = text(13);
+    m.revision = std::atoi(text(14).c_str());
+    m.writtenBy = text(15);
+    return m;
+}
+constexpr const char* MantleColumns = "m.id, m.dialect, m.tier, m.state, m.format, array_to_string(m.accents, ' '), m.title, "
+                                      "coalesce(m.written_for, ''), m.fits, m.prefers, m.traits::text, m.quirk, m.card::text, "
+                                      "m.persona, m.revision, m.written_by";
+constexpr const char* LineColumns = "l.mantle_id, l.key, l.section, l.kind, l.move, l.position, l.body";
+talk::MantleItem mantleItem(const std::vector<PgValue>& row)
+{
+    const auto text = [&](std::size_t i) { return i < row.size() && row[i] ? *row[i] : std::string(); };
+    talk::MantleItem item;
+    item.key = text(1), item.section = text(2), item.kind = text(3), item.move = text(4);
+    item.position = std::atoi(text(5).c_str());
+    item.body = text(6);
+    return item;
+}
+bool readText(const std::filesystem::path& path, std::string& out)
+{
+    std::ifstream in(path, std::ios::binary);
+    if (!in)
+        return false;
+    std::ostringstream all;
+    all << in.rdbuf();
+    out = all.str();
+    return true;
+}
+} // namespace
+
+void Game::loadMantles(const std::map<std::string, std::string>& bindings)
+{
+    const auto started = std::chrono::steady_clock::now();
+    std::vector<talk::MantleText> texts;
+    std::map<std::string, std::string> wearers;       // Resident -> mantle
+    std::size_t rows = 0;
+    const auto living = [&](const std::string& npc) {
+        const auto* e = world_.entity(npc);
+        return e && e->npc && !e->dead;
+    };
+    if (!options_.mantlesFrom.empty())
+    {
+        // Files (an export, or the test fixture: doc 84 §17.5-17.6), each worn by the resident it was written for.
+        mantleFiles_.clear();
+        std::error_code error;
+        std::vector<std::filesystem::path> files;
+        for (std::filesystem::recursive_directory_iterator it(options_.mantlesFrom, error), end; !error && it != end; it.increment(error))
+            if (it->is_regular_file() && it->path().extension() == ".mantle")
+                files.push_back(it->path());
+        std::sort(files.begin(), files.end());
+        for (const auto& path : files)
+        {
+            std::string text;
+            if (!readText(path, text))
+                continue;
+            talk::Mantle head;
+            std::vector<std::string> problems;
+            talk::readMantle(text, path.string(), head, problems);
+            if (head.id.empty() || head.state != "ready")
+                continue;
+            mantleFiles_[head.id] = path.string();
+            if (!head.writtenFor.empty() && living(head.writtenFor) && !wearers.count(head.writtenFor))
+                wearers[head.writtenFor] = head.id;
+            texts.push_back({head.id, text, path.string()});
+        }
+        if (error)
+            note("warn", "RATW_MANTLE the mantles under " + options_.mantlesFrom + " could not all be read: " + error.message());
+    }
+    else if (mantleTables_ && !liveWorldId_.empty())
+    {
+        // The rows (doc 84 §9.4): the ready mantles worn by a living wolf, card and items, in one pass each.
+        std::set<std::string> worn;
+        for (const auto& [npc, mantle] : bindings)
+            if (living(npc))
+                wearers[npc] = mantle, worn.insert(mantle);
+        std::map<std::string, talk::Mantle> cards;
+        std::map<std::string, std::vector<talk::MantleItem>> items;
+        const std::string bound = " FROM live.mantles m WHERE m.world_id = $1 AND m.state = 'ready' AND m.id IN "
+                                  "(SELECT v.mantle_id FROM live.npc_voice v WHERE v.world_id = $1 AND v.mantle_id IS NOT NULL "
+                                  "AND v.released_day IS NULL)";
+        if (const auto got = worldDb_.exec(std::string("SELECT ") + MantleColumns + bound, {liveWorldId_}); got.ok)
+            for (const auto& row : got.rows)
+                if (auto card = mantleCard(row, 0); worn.count(card.id))
+                    cards[card.id] = std::move(card);
+        if (const auto got = worldDb_.exec(std::string("SELECT ") + LineColumns + " FROM live.mantle_lines l WHERE l.world_id = $1 AND "
+                                               "l.mantle_id IN (SELECT m.id" + bound + ")",
+                                           {liveWorldId_});
+            got.ok)
+            for (const auto& row : got.rows)
+                if (!row.empty() && row[0] && cards.count(*row[0]))
+                    items[*row[0]].push_back(mantleItem(row)), ++rows;
+        for (auto& [id, card] : cards)
+            texts.push_back({id, talk::mantleText(card, std::move(items[id])), "db:" + id});
+        // The cards of the other ready mantles (§9.4: what the pools need; Phase 10 draws from them).
+        mantleCards_.clear();
+        if (const auto got = worldDb_.exec("SELECT m.id, m.dialect, m.fits, coalesce(m.traits->>'honesty', ''), array_to_string(m.accents, ' ') "
+                                           "FROM live.mantles m WHERE m.world_id = $1 AND m.state = 'ready'",
+                                           {liveWorldId_});
+            got.ok)
+            for (const auto& row : got.rows)
+                if (row.size() >= 5 && row[0] && !cards.count(*row[0]))
+                {
+                    MantleCard c{*row[0], row[1] ? *row[1] : "", row[2] ? *row[2] : "", row[3] ? *row[3] : "", {}};
+                    std::istringstream a(row[4] ? *row[4] : std::string());
+                    for (std::string w; a >> w;)
+                        c.accents.push_back(w);
+                    mantleCards_.push_back(std::move(c));
+                }
+    }
+    std::vector<talk::Library::MantleRefusal> refused;
+    const auto loaded = talk_.setMantles(texts, refused);
+    for (const auto& r : refused)
+        note("warn", "RATW_MANTLE refused " + r.id + ": " + r.why);
+    mantleOf_.clear();
+    for (const auto& [npc, mantle] : wearers)
+        if (talk_.mantle(mantle))
+            mantleOf_[npc] = mantle;
+    talkDaily_.clear();
+    favourites_.clear();
+    const auto ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - started).count();
+    if (!texts.empty() || !refused.empty() || mantleTables_)
+        note("info", "RATW_MANTLE loaded " + std::to_string(loaded) + " mantles (" + std::to_string(talk_.mantleEntries()) +
+                         " rules and scenes" + (rows ? ", " + std::to_string(rows) + " rows" : "") + ") worn by " +
+                         std::to_string(mantleOf_.size()) + " residents in " + std::to_string(int(ms)) + " ms" +
+                         (refused.empty() ? "" : ", " + std::to_string(refused.size()) + " refused") +
+                         (options_.mantlesFrom.empty() ? "" : " (from " + options_.mantlesFrom + ")"));
+}
+
+std::string Game::mantleRows(const std::string& id, std::string& state, int& revision)
+{
+    state.clear();
+    revision = 0;
+    if (!mantleTables_ || liveWorldId_.empty())
+        return {};
+    const auto got = worldDb_.exec(std::string("SELECT ") + MantleColumns + " FROM live.mantles m WHERE m.world_id = $1 AND m.id = $2",
+                                   {liveWorldId_, id});
+    if (!got.ok || got.rows.empty())
+        return {};
+    auto card = mantleCard(got.rows.front(), 0);
+    state = card.state;
+    revision = card.revision;
+    std::vector<talk::MantleItem> items;
+    if (const auto lines = worldDb_.exec(std::string("SELECT ") + LineColumns + " FROM live.mantle_lines l WHERE l.world_id = $1 AND l.mantle_id = $2",
+                                         {liveWorldId_, id});
+        lines.ok)
+        for (const auto& row : lines.rows)
+            items.push_back(mantleItem(row));
+    return talk::mantleText(card, std::move(items));
+}
+
+Result Game::loadMantle(const std::string& id)
+{
+    // mantle.sync <id> (doc 84 §17.2): one mantle's rows (or file) read again and swapped whole; if its new revision
+    // fails, the one loaded stays and the reasons are the answer. B3: 50 ms or less.
+    const auto started = std::chrono::steady_clock::now();
+    std::string text, state, where;
+    int revision = 0;
+    if (!options_.mantlesFrom.empty())
+    {
+        auto file = mantleFiles_.count(id) ? mantleFiles_[id] : std::string();
+        if (file.empty())
+        {
+            std::error_code error;
+            for (std::filesystem::recursive_directory_iterator it(options_.mantlesFrom, error), end; !error && it != end; it.increment(error))
+                if (it->path().filename() == id + ".mantle")
+                    file = it->path().string();
+        }
+        if (file.empty() || !readText(file, text))
+            return {false, "No mantle " + id + " under " + options_.mantlesFrom + ".", id};
+        talk::Mantle head;
+        std::vector<std::string> problems;
+        talk::readMantle(text, file, head, problems);
+        state = head.state, revision = head.revision, where = file;
+        mantleFiles_[id] = file;
+    }
+    else
+    {
+        text = mantleRows(id, state, revision);
+        where = "db:" + id;
+        if (text.empty())
+            return {false, "No mantle " + id + " in the world database.", id};
+    }
+    const auto* was = talk_.mantle(id);
+    const int before = was ? was->revision : 0;
+    if (state != "ready")
+    {
+        // A draft is never worn; a retired one leaves at once (§17.2.4). Its wearer speaks from the library.
+        talk_.dropMantle(id);
+        for (auto it = mantleOf_.begin(); it != mantleOf_.end();)
+            it = it->second == id ? mantleOf_.erase(it) : std::next(it);
+        talkDaily_.clear();
+        return {true, id + " is " + state + ": not worn" + (before ? " (revision " + std::to_string(before) + " unloaded)" : "") + ".", id};
+    }
+    std::string problem;
+    if (!talk_.setMantle({id, text, where}, problem))
+    {
+        note("warn", "RATW_MANTLE refused " + id + " revision " + std::to_string(revision) + ": " + problem);
+        return {false, id + " revision " + std::to_string(revision) + " was refused" +
+                           (before ? "; revision " + std::to_string(before) + " is still in use" : "; it is not worn") + ":\n" + problem,
+                id};
+    }
+    // Who wears it now: its binding in the rows (a living resident's, not released), or the one it was written for.
+    std::string wearer;
+    if (options_.mantlesFrom.empty())
+    {
+        if (const auto got = worldDb_.exec("SELECT npc_id FROM live.npc_voice WHERE world_id = $1 AND mantle_id = $2 AND released_day IS NULL",
+                                           {liveWorldId_, id});
+            got.ok && !got.rows.empty() && got.rows.front()[0])
+            wearer = *got.rows.front()[0];
+    }
+    else if (const auto* m = talk_.mantle(id))
+        wearer = m->writtenFor;
+    for (auto it = mantleOf_.begin(); it != mantleOf_.end();)
+        it = it->second == id && it->first != wearer ? mantleOf_.erase(it) : std::next(it);
+    if (const auto* e = world_.entity(wearer); e && e->npc && !e->dead)
+    {
+        mantleOf_[wearer] = id;
+        if (auto v = npcVoice_.find(wearer); v != npcVoice_.end())
+            v->second.mantle = id;
+    }
+    talkDaily_.erase(wearer);
+    favourites_.erase(wearer);
+    const auto ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - started).count();
+    const auto* now = talk_.mantle(id);
+    return {true, id + " revision " + std::to_string(now ? now->revision : revision) + " is loaded (" +
+                      std::to_string(now ? now->entries : 0) + " rules and scenes" + (wearer.empty() ? ", worn by nobody living" : ", worn by " + wearer) +
+                      ", " + std::to_string(int(ms + .5)) + " ms).",
+            id};
+}
+
+Result Game::loadVoice(const std::string& npc)
+{
+    // voice.sync <npc> (doc 84 §9.4): one resident's voice row, their own words and lines, and their mantle read again.
+    if (options_.database.empty() || liveWorldId_.empty())
+    {
+        if (const auto m = mantleOf_.find(npc); m != mantleOf_.end())
+            return loadMantle(m->second);
+        return {true, "No voice rows here: nothing to read for " + npc + ".", npc};
+    }
+    const auto rows = worldDb_.exec(std::string("SELECT npc_id, home_region, accent, quarter, traits::text, quirk, persona, grammar, rules") +
+                                        (mantleTables_ ? ", coalesce(mantle_id, ''), released_day IS NULL" : "") +
+                                        " FROM live.npc_voice WHERE world_id = $1 AND npc_id = $2",
+                                    {liveWorldId_, npc});
+    if (!rows.ok)
+        return {false, "The voice of " + npc + " could not be read.", npc};
+    std::string problem, said;
+    const auto layer = talk::Library::personalLayer(npc);
+    if (rows.rows.empty())
+    {
+        npcVoice_.erase(npc);
+        talk_.setGrammar(layer, "grammar " + layer + "\n", problem);
+        talk_.setCharacter(npc, "", problem);
+        voiceLayers_.erase(npc), voiceRules_.erase(npc), mantleOf_.erase(npc);
+        voicesChanged();
+        talkDaily_.erase(npc);
+        return {true, npc + " has no voice row: they speak from the library.", npc};
+    }
+    const auto& row = rows.rows.front();
+    const auto text = [&](std::size_t i) { return i < row.size() && row[i] ? *row[i] : std::string(); };
+    NpcVoice v;
+    v.from = text(1), v.accent = text(2), v.quarter = text(3), v.quirk = text(5), v.persona = text(6);
+    json::Value traits;
+    std::string error;
+    if (json::parse(text(4), traits, error) && traits.isObject())
+        for (const auto& [axis, value] : traits.fields())
+            if (value.isString())
+                v.traits[axis] = value.asString("");
+    if (row.size() >= 11 && !text(9).empty() && (text(10) == "t" || text(10) == "true"))
+        v.mantle = text(9);
+    bool ok = true;
+    if (const auto grammar = text(7); !grammar.empty())
+    {
+        if (talk_.setGrammar(layer, "grammar " + layer + "\n" + grammar, problem))
+            voiceLayers_.insert(npc);
+        else
+            ok = false, said += " Their own words were refused: " + problem;
+    }
+    else if (voiceLayers_.erase(npc))
+        talk_.setGrammar(layer, "grammar " + layer + "\n", problem);
+    if (const auto own = text(8); !own.empty())
+    {
+        if (talk_.setCharacter(npc, own, problem))
+            voiceRules_.insert(npc);
+        else
+            ok = false, said += " Their own lines were refused: " + problem;
+    }
+    else if (voiceRules_.erase(npc))
+        talk_.setCharacter(npc, "", problem);
+    const auto mantle = v.mantle;
+    npcVoice_[npc] = std::move(v);
+    voicesChanged();
+    talkDaily_.erase(npc);
+    favourites_.erase(npc);
+    if (mantle.empty())
+        mantleOf_.erase(npc);
+    else
+    {
+        const auto loaded = loadMantle(mantle);
+        ok = ok && loaded.ok;
+        said += " " + loaded.message;
+    }
+    return {ok, npc + "'s voice is read again." + said, npc};
 }
 } // namespace ratw::game

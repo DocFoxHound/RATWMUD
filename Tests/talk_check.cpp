@@ -18,6 +18,16 @@
 //       Checks .talk and .grammar files against the library's facts, settings, grammars and groups, as Atlas and the
 //       Dungeon Master will before saving a character's table. Exit 1, with the reasons, if any is refused.
 //
+//   talk_check [--data DIR] --mantle PATH... [--dialects DIR] [--json]
+//       Doc 84 §14.4 G1, §17.3 (Phase 9): each .mantle file (a directory: every one under it) read and checked against
+//       the whole library as the game loads it (its syntax, facts, symbols and its own words, moves, 160 characters,
+//       the window's trees and nodes, a graft's nodes and ways out, what its lines owe answered), in any state. With
+//       --dialects, the world's own dialects (NAME.grammar, as live.dialects holds them) over the files'. Exit 1, with
+//       the reasons by item key, if any is refused; --json, one object a mantle (tools/mantle_store.py reads it).
+//
+//   (--mantles-from DIR, with --world: the residents wear the mantles under DIR, each the one written for them, in place of
+//   the world's rows: an export, or Tests/fixtures/mantles.)
+//
 //   talk_check [--data DIR] --coverage [--profiles FILE] [--json] [--holes N]
 //       Doc 84 §15.4 (Phase 7): for every move a line can owe, every topic (topics.json) and every replier kind
 //       (Data/Talk/profiles.json, tools/talk_profiles.py: Ridgemere 3's residents clustered) at each band (strangers,
@@ -42,6 +52,7 @@
 #include "RatwGame.h"
 #include "RatwTalk.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -486,6 +497,112 @@ bool setFact(talk::Query& q, const std::string& kv)
 }
 } // namespace
 
+// --mantle (doc 84 Phase 9): every .mantle file named, or under a directory named, checked as the game loads one.
+int checkMantles(talk::Library& lib, const std::string& data, const std::string& dialects, const std::vector<std::string>& paths,
+                 bool asJson)
+{
+    std::string problem;
+    if (paths.empty())
+        return usage();
+    if (!lib.load(data, problem))
+    {
+        std::cerr << "the talk library doesn't load:\n" << problem << "\n";
+        return 2;
+    }
+    if (!dialects.empty())
+        for (const auto& f : std::filesystem::directory_iterator(dialects))
+            if (f.path().extension() == ".grammar")
+            {
+                std::ifstream in(f.path());
+                std::stringstream text;
+                text << in.rdbuf();
+                if (!lib.setGrammar(f.path().stem().string(), text.str(), problem))
+                    std::cerr << "the dialect " << f.path().stem().string() << " is refused (the file's kept):\n" << problem << "\n";
+            }
+    std::vector<std::string> files;
+    for (const auto& p : paths)
+        if (std::filesystem::is_directory(p))
+        {
+            for (const auto& f : std::filesystem::recursive_directory_iterator(p))
+                if (f.is_regular_file() && f.path().extension() == ".mantle")
+                    files.push_back(f.path().string());
+        }
+        else
+            files.push_back(p);
+    std::sort(files.begin(), files.end());
+    int refused = 0;
+    std::size_t entries = 0, items = 0;
+    const auto quote = [](const std::string& s) {
+        std::string out = "\"";
+        for (const char c : s)
+        {
+            if (c == '"' || c == '\\')
+                out += '\\', out += c;
+            else if (c == '\n')
+                out += "\\n";
+            else if (static_cast<unsigned char>(c) < 0x20)
+                out += ' ';
+            else
+                out += c;
+        }
+        return out + "\"";
+    };
+    if (asJson)
+        std::cout << "[";
+    bool first = true;
+    for (const auto& file : files)
+    {
+        std::ifstream in(file);
+        if (!in)
+        {
+            std::cout << (asJson ? "" : "REFUSED " + file + "\ncan't be read\n");
+            ++refused;
+            continue;
+        }
+        std::stringstream text;
+        text << in.rdbuf();
+        talk::Mantle m;
+        const bool ok = lib.checkMantle({"", text.str(), file}, m, problem);
+        refused += ok ? 0 : 1;
+        entries += m.entries;
+        items += m.items.size();
+        if (asJson)
+        {
+            std::cout << (first ? "" : ",") << "\n {\"file\": " << quote(file) << ", \"id\": " << quote(m.id) << ", \"ok\": "
+                      << (ok ? "true" : "false") << ", \"state\": " << quote(m.state) << ", \"revision\": " << m.revision
+                      << ", \"items\": " << m.items.size() << ", \"entries\": " << m.entries << ", \"problems\": [";
+            if (!ok)
+            {
+                std::istringstream lines(problem);
+                bool one = true;
+                for (std::string l; std::getline(lines, l);)
+                    std::cout << (one ? "" : ", ") << quote(l), one = false;
+            }
+            std::cout << "], \"stances\": {";
+            bool one = true;
+            for (const auto& [issue, st] : m.stances)
+                std::cout << (one ? "" : ", ") << quote(issue) << ": " << quote(st.side + " " + std::to_string(st.strength)), one = false;
+            std::cout << "}, \"grafts\": " << m.grafts.size() << ", \"keys\": [";
+            for (std::size_t i = 0; i < m.items.size(); ++i)
+                std::cout << (i ? ", " : "") << quote(m.items[i].key);
+            std::cout << "]}";
+            first = false;
+        }
+        else
+        {
+            std::cout << (ok ? "ok      " : "REFUSED ") << file << " (" << (m.id.empty() ? "?" : m.id) << ", " << m.state << ", "
+                      << m.items.size() << " items, " << m.entries << " rules and scenes)\n";
+            if (!ok)
+                std::cout << problem << "\n";
+        }
+    }
+    if (asJson)
+        std::cout << "\n]\n";
+    else
+        std::cout << files.size() << " mantles, " << items << " items, " << entries << " rules and scenes; " << refused << " refused\n";
+    return refused ? 1 : 0;
+}
+
 int main(int argc, char** argv)
 {
     std::string data = RATW_SOURCE_DIR "/Data/Talk", world;
@@ -495,7 +612,9 @@ int main(int argc, char** argv)
     double runHours = 0;
     std::string character, dialect, grammarFile, rulesFile;
     bool all = false, validating = false, residents = false, asJson = false, renderingTrees = false, covering = false;
-    std::string profilesFile;
+    std::string profilesFile, dialectsDir, mantlesFrom;
+    std::vector<std::string> mantles;
+    bool checkingMantles = false;
     int listHoles = 0;
     for (int i = 1; i < argc; ++i)
     {
@@ -535,6 +654,14 @@ int main(int argc, char** argv)
             grammarFile = next();
         else if (a == "--rules")
             rulesFile = next();
+        else if (a == "--mantle")
+            checkingMantles = true;
+        else if (a == "--dialects")
+            dialectsDir = next();
+        else if (a == "--mantles-from")
+            mantlesFrom = next();
+        else if (checkingMantles)
+            mantles.push_back(a);
         else if (validating)
             validate.push_back(a);
         else
@@ -586,6 +713,8 @@ int main(int argc, char** argv)
             std::cout << "ok      " << character << "\n";
         return ok ? 0 : 1;
     }
+    if (checkingMantles)
+        return checkMantles(lib, data, dialectsDir, mantles, asJson);
     if (renderingTrees)
     {
         if (!lib.load(data, problem))
@@ -662,6 +791,7 @@ int main(int argc, char** argv)
         return usage();
     game::Options o;
     o.talkData = data;
+    o.mantlesFrom = mantlesFrom;                         // (Doc 84 Phase 9: mantles from files, not the world's rows.)
     o.voiceData = RATW_SOURCE_DIR "/Data/Voice";       // (The router's tones: a resident's tone fact.)
     o.scratch = true;
     o.forkSnapshots = false;

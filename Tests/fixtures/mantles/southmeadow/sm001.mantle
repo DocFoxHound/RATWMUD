@@ -1,0 +1,52 @@
+# sm001, the beekeeper's stones (doc 84 §9.7): the luna table of cty_ada_coalstack, ported. She keeps bees at
+# Heatherside now (the table said Mossbank).
+mantle sm001
+state ready
+dialect southmeadow
+accent light
+tier standard
+written_for cty_ada_coalstack
+title the beekeeper's stones
+fits stage=adult|old
+traits humour=dry honesty=sly
+quirk collects_smooth_stones_from_the_riverbanks
+likes smooth_stones
+dislikes grand_promises
+fears being_overlooked
+hopes sound_hives
+topics harvest +.4 land +.2
+styles tease=dry
+marks oath saying
+persona #self.first# farms and keeps bees: dry at the edges, sly in her honesty, and she gathers smooth stones from riverbanks.
+
+words
+saying! = A field remembers every pawprint | No hive thrives on boasting
+oath! = By the river's patience | Comb and clover
+refuse = The fur stays dry
+
+rule @hives
+when concept=bark working=yes self.job=farmer
+does aside
+cooldown 6h
+say Mind the hive; honey rewards patience, not swagger. | The bees are cross today. So am I.
+
+rule @stones
+when concept=bark working=no
+does aside
+cooldown 8h
+say Set the stones by the door. They've earned their place. | The hive is quiet. Better company than most.
+
+scene stones
+when concept=talk.smalltalk
+does give.opinion / agree
+a : Smooth stones tell the truth: water wears down every grand claim.
+b[old] : I've watched it happen.
+b : Given long enough.
+
+line greet.return : #greet#. Keep your paws clear of the hives.
+line farewell.return : #farewell#.
+line react.news.new : #oath#. Well, there's a thing.
+line react.news.known : I'd heard. Bees hear everything.
+line answer.how : Hives are sound. That's most of it.
+
+dlg resident.hub [topic.meeting=known] : #greet#, #topic.player#. Come to trade, or come to look?

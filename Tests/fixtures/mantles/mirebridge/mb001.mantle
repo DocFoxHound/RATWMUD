@@ -1,0 +1,51 @@
+# mb001, the tally-keeper (doc 84 §9.7): the luna table of cty_brock_marshholm, ported. A shepherd at Larkdowns now (the
+# table said Reedfold); the neighbour it named is gone, and the Maker is the Bright One.
+mantle mb001
+state ready
+dialect mirebridge
+accent broad light
+tier standard
+written_for cty_brock_marshholm
+title the tally-keeper
+fits stage=adult|old
+traits talk=chatty piety=devout
+quirk keeps_a_tally_of_favours_owed
+likes dry_weeks
+dislikes broken_promises
+fears losing_what_he_built
+hopes a_full_fold
+topics faith +.3 land +.2
+marks oath saying
+persona #self.first# tends sheep: chatty behind a reserved manner, devout, and careful to mark every favour owed.
+
+words
+saying! = A dry week pays every debt | Keep the tally, keep the trust
+duck = duck | my reed
+oath! = By the dry bank | Reed and rush
+
+rule @flock
+when concept=bark working=yes self.job=herder
+does aside
+cooldown 6h
+say Mind the gate, and count the sheep twice. | No wandering now, #duck#; the flock owes us no favours.
+
+scene tally
+when concept=talk.smalltalk
+does tell.self / react.self
+a : A favour's a favour, given at the fold or owed on the road. I keep the tally.
+b[friends] : Am I in your book, then?
+b : I know you do. You'll have me in it.
+
+scene watching
+when concept=talk.faith
+does give.opinion / agree
+a : The Bright One watches a straight tongue. I try to give no cause to look twice.
+b : #agree#. Best way to live.
+
+line greet.return : #greet#, #duck#. Dry feet to you.
+line farewell.return : #farewell#, #duck#.
+line react.news.new : Well I never. Is that so?
+line react.news.known : I heard. The fold hears everything, given time.
+line answer.how : Dry, and thankful for it.
+
+dlg resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've your last kindness marked, right here.

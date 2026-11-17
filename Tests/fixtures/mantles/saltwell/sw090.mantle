@@ -1,0 +1,39 @@
+# sw090, a spare for a Saltwell pup yet to be born (test fixture).
+mantle sw090
+state ready
+dialect saltwell
+accent light
+tier spare
+title the well-drawer
+fits stage=young|adolescent|adult|old
+traits temper=calm talk=quiet warmth=warm humour=dry honesty=guarded piety=devout drive=steady
+quirk hums_at_the_well
+likes cool_mornings
+fears sandstorms
+hopes a_deep_well
+topics faith +.3
+marks oath
+
+words
+oath! = By the deep well | Sun keep me
+greet = Cool water to you | Shade and water
+
+young
+line tell.boast : I can carry two buckets now. Full ones.
+line greet.return : #greet#.
+line farewell.return : #farewell#.
+line react.news.new : #oath#!
+line answer.how : Thirsty.
+
+adolescent
+line tell.self : I'm learning the pans. My arms hurt.
+line greet.return : #greet#.
+line farewell.return : #farewell#.
+line react.news.new : #oath#. Truly?
+line answer.how : Tired. The pans are hard work.
+
+grown
+line greet.return : #greet#. The well's sweet today.
+line farewell.return : #farewell#.
+line react.news.new : #oath#. Now that's news.
+line answer.how : Well enough, under the sun.

@@ -1,0 +1,76 @@
+# cw017, the lake swimmer (doc 84 §7.9). Test fixture: written for the talk town's Coldwater keeper; every item kind.
+mantle cw017
+state ready
+dialect coldwater
+accent broad light
+tier full
+written_for tt_co_keeper
+title the lake swimmer
+fits stage=adult|old
+prefers role=merchant warmth=warm
+traits temper=calm talk=plain warmth=warm humour=none piety=ordinary drive=content
+quirk swims_in_the_lake_even_in_autumn
+likes still_water cold_mornings smoked_eel
+dislikes hurry wet_floors
+fears deep_winter_ice
+hopes a_quiet_old_age
+topics weather +.4 lore +.3 prices -.3
+styles tease=none refuse=soft comfort=practical gossip=reluctant
+marks oath saying
+persona #self.first# keeps the stores by the lake: calm, warm and plain, and swims every morning till the ice says no.
+
+words
+oath! = Deep and dark | Glass and stone
+saying! = The lake keeps its own accounts | Still water settles every argument
+swim = every morning till the ice | in before the boats, every day
+brisk = cold enough to wake the dead | sharp as a gutting knife
+
+opinion road against 2 : The High Road? I'd not send my own soap up it.
+opinion road against 2 [conv.agreed_before=no] : The High Road again? You know where I stand.
+opinion watch mixed 1 : The Watch walk the lanes like the cobbles bite them. But they do walk them.
+
+grown
+line tell.self [concept=talk.day here.time=dawn|day] : {did=swim} Had my swim before I took the shutters down. #brisk.capitalize#, and glad of it.
+line insist [conv.did=swim] : Every year since I was a minnow, and the lake hasn't had me yet. #oath#.
+line @carry request [concept=talk.work other.job=carter] : {request=carry} Will you take a box of my candles up the road with you?
+line accept_decline : Next run, then. I'll not have you holed for a box of candles.
+line preclose [self.working=yes] : Well. The counter won't mind itself.
+line farewell : #farewell#. Mind the step, it's slick.
+line react.news.new : #oath#! And me stood here pricing string.
+line farewell.return : #farewell#.
+line greet.return [self.working=yes] : #greet#. Come in out of the wind.
+
+story first_swim [concept=talk.memories]
+  : #mum.capitalize# threw me off the jetty when I was a minnow. Said the lake teaches what she can't.
+  : I've gone in #swim# since.
+  ask : Do you swim yourself?
+  b[old] : Not since my knees went.
+  b : Not if I can help it.
+
+scene shutters
+when concept=talk.weather here.time=dawn|day
+does tell.self / react.self
+a : The lake's like glass this morning. I'll be in it before the shutters are down.
+b : You'll catch your death one of these mornings.
+
+dlg shop.greet : #greet#. Salt, candles, string, soap. If the lake doesn't sell it, I do.
+dlg shop.greet [topic.meeting=known] : #greet#, #topic.player#. In out of the wet. Looking or buying?
+dlg resident.hub [here.outdoors=fog] : #greet#. Come in out of the mist; the floor's wet, mind. What's wanted?
+dlg resident.bye : #farewell#. Mind the step; it's slick.
+
+graft resident.hub
+choice You swim in the lake? In this weather? [here.season=spring|autumn|winter] -> swim
+node swim
+say Every morning till the ice says no. It clears the head. You should try it.
+mood pleased
+free
+choice Not for all the coin in the realm. -> hub
+choice Where do you go in? -> swim_where
+node swim_where
+say Off the end of the jetty, before the boats go out. Come at dawn and I'll show you, if you've the fur for it.
+invite jetty dawn 3d
+choice I might, at that. -> hub
+choice Goodbye. -> bye
+
+young
+line tell.boast : I swam out to the second post! Don't tell #mum#.
