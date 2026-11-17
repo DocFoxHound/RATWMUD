@@ -3,6 +3,7 @@
 
 scene st_morning_greeting
 when topic=smalltalk here.time=dawn
+does greet / greet.return / tell.self
 a[old] : Up before the birds again, #b.name#. My bones won't let me sleep. | Morning, #b.name#. The cold gets in early at my age.
 a[child] : Morning, #b.name#! | Good morning, #b.name#! Have you eaten yet?
 a : Morning, #b.name#. | Early start for you too, #b.name#? | Morning. Sleep well?
@@ -14,6 +15,7 @@ a?[friends] : Come and find me at midday; I'll have bread to spare.
 
 scene st_evening_greeting
 when topic=smalltalk here.time=dusk|night
+does tell.self / react.self / tell.self
 a[guard] : Quiet so far tonight. Let's keep it that way.
 a[child] : I'm not tired. I'm not! | Are there really wolves that walk at night? Bad ones?
 a : Long day, #b.name#? | Evening, #b.name#. Done for the day? | That's the sun gone, then.
@@ -26,6 +28,7 @@ a?[friends] : Sit a while with me, then.
 
 scene st_how_are_you
 when topic=smalltalk pair.band=acquaintances|friends|family
+does ask.how / answer.how / assess
 a[old] : How are you keeping, #b.name#? | Still on your feet, #b.name#?
 a : How are you, #b.name#? | Keeping well, #b.name#? | You look tired, #b.name#.
 b[old] : Older than yesterday. Not as old as tomorrow. | The knees complain, but they still carry me.
@@ -36,6 +39,7 @@ a : Good. That's good. | Glad to hear it. | Look after yourself.
 
 scene st_strangers_nod
 when topic=smalltalk pair.band=strangers
+does ask.detail / answer.detail / tell.self
 a[child] : Who are you? I haven't seen you before. | Are you new? You smell new.
 a[old] : I don't think we've met. I'm #a.first#. | You're not from my street, are you?
 a : Good day. | I don't think we've been introduced. #a.first#. | Fine day, isn't it?
@@ -47,6 +51,7 @@ a?[old] : Hm. Good name. My aunt had a cousin called #b.first#.
 
 scene st_the_hour
 when topic=smalltalk
+does ask.detail / answer.detail / assess
 a : What hour is it, would you say? | Is it past midday already? | Has the bell gone yet?
 b[here.time=dawn] : Barely dawn. The day's not even awake. | Early yet. Too early.
 b[here.time=day] : Past the middle of the day, I'd say. | Hard to tell under this sky. Day, anyway.
@@ -57,6 +62,7 @@ a : Hm. Thank you. | Of course it is. | I'll be late, then.
 
 scene st_feet_ache
 when topic=smalltalk
+does tell.self / react.self / tell.complaint
 a[old] : My feet ache from here to my ears. | These old paws weren't made for cobbles.
 a[laborer] : I've carried half the town on my back today. | Every bone I own is complaining.
 a[farmer] : Furrow after furrow since dawn. My back's like a bent nail.
@@ -69,6 +75,7 @@ a : If I sit I'll never get up again. | Maybe I will.
 
 scene st_food_talk
 when topic=smalltalk
+does tell.self / react.self / tell.self
 a[child] : I'm hungry. When's supper? | I'd eat a whole loaf if you let me.
 a[baker] : There'll be a fresh batch out by noon, if you're passing.
 a[cook] : I've a stew on that wants another hour. Smells right, though.
@@ -76,20 +83,22 @@ a : I could eat a horse. | What I'd give for something hot. | Have you eaten tod
 b[child] : Me too! Me too!
 b[innkeeper] : There's soup at mine, and bread, for a fair price.
 b[old] : Eat while you've the teeth for it.
-b : Me too. | Not since morning. | Not enough, anyway.
+b : #bc_me_too# | Not since morning. | Not enough, anyway.
 a?[friends] : Come and eat with us tonight, then. There's always enough for one more.
 
 scene st_sleep_talk
 when topic=smalltalk here.time=day|dusk
+does tell.self / react.self / tell.self
 a : I barely slept last night. | Did you hear the noise last night? | I slept like a stone.
 b[old] : I never sleep past the third hour any more. | The young sleep. The old lie awake and think.
 b[child] : I had a dream about a fish as big as a house!
 b[guard] : I was the noise last night. Someone had to shout at the drunks.
-b : Nor me. | Something kept me awake, too. | Lucky you.
+b : #bc_nor_me# | Something kept me awake, too. | #bc_lucky_you#
 a : Tonight, then. Tonight I'll sleep. | Ah, well.
 
 scene st_old_days
 when topic=smalltalk a.stage=old
+does tell.memory / react.story / assess
 a : Things aren't what they were, #b.name#. | When I was young, this street was all grass. | I remember when bread cost half a penny.
 b[old] : They never were, #a.name#. That's the joke of it. | You remember wrong, old friend. It was worse.
 b[child] : Was there really grass here? Where did it go?
@@ -99,29 +108,33 @@ a : Better? No. Slower. | Ha. You'll see, one day. | Different. Just different.
 
 scene st_children_play
 when topic=smalltalk a.stage=young|adolescent b.stage=young|adolescent
+does tell.self / react.self / assess
 a : Do you want to play? | Race you to the corner! | I found a stick that looks like a sword.
 b : Yes! | Only if I'm the guard this time. | You'll lose. You always lose.
 a : I will not! | Fine, you can be the guard. | Go!
 
 scene st_children_secret
 when topic=smalltalk a.stage=young|adolescent
+does request / grant / tell.self
 a : Can you keep a secret? | I know something nobody else knows. | Promise you won't tell?
 b[child] : Cross my heart. | Tell me tell me tell me!
 b[old] : I've kept a few in my time. Go on, then.
 b[guard] : That depends on the secret, little one.
-b : I promise. | What is it? | Go on.
+b : I promise. | What is it? | #bc_go_on#
 a : There's a nest under the bridge. With eggs. | I saw a ghost. A real one. | I'm not telling after all.
 
 scene st_young_bored
 when topic=smalltalk a.stage=adolescent
+does tell.self / react.self / assess
 a : There's nothing to do in this place. | I'm going to leave one day. See the world. | Everyone here is so old.
 b[old] : The world will still be there when you're grown. | I said the same thing at your age.
 b[adolescent] : Me too. We could go together. | Where would you even go?
 b : You'll miss it when you're gone. | Mind your manners. | And who'd do your chores?
-a : I won't. | I'd go anywhere. | Somewhere with more than one street.
+a : #bc_i_wont# | I'd go anywhere. | Somewhere with more than one street.
 
 scene st_courting
 when topic=smalltalk pair.band=friends|acquaintances a.stage=adult b.stage=adult
+does tell.self / react.self / tell.self / react.self
 weight 0.6
 a : You've done something with your fur. It suits you. | You look well today, #b.name#. | Would you walk with me later?
 b : Oh! Thank you. | Have I? I hadn't noticed. | Maybe. If you're lucky.
@@ -130,6 +143,7 @@ b?[friends] : Then I'll be there.
 
 scene st_spouse_morning
 when topic=smalltalk pair.band=spouses
+does tell.self / react.self / assess / tell.self
 a : Did you bank the fire before you left? | You were snoring again. | Don't forget the bread on your way home.
 b : I did. I think. | I never snore. | I won't. I'll forget, but I won't.
 a : You did not. | Like a saw through wet wood. | You always say that.
@@ -137,14 +151,16 @@ b?[here.time=dusk] : Come home. I'm tired of this day.
 
 scene st_family_supper
 when topic=smalltalk pair.band=family
+does ask.detail / answer.detail / assess
 a : Mother wants us all home for supper tonight. | Have you seen the little ones? | Who left the door open?
 b[child] : I didn't! It wasn't me!
 b[old] : I'll be there, if my legs get me there.
-b : I'll be there. | Somewhere about. | Not me.
+b : I'll be there. | Somewhere about. | #bc_not_me#
 a : Don't be late. | They'll turn up hungry. | Well, somebody did.
 
 scene st_neighbour_noise
 when topic=smalltalk pair.band=acquaintances|rivals here.place=home|street
+does tell.self / react.self / assess
 a : Your pups were howling half the night. | Was that you singing, last night? | Your shutter bangs every time the wind changes.
 b[rivals] : And your hearth smokes into my window. We're even. | Mind your own house.
 b : Sorry. I'll speak to them. | It was not! Well. Maybe. | I'll fix it. One day.
@@ -152,13 +168,15 @@ a : See that you do. | It's fine. Just mention it. | One day. Right.
 
 scene st_lent_tool
 when topic=smalltalk pair.band=acquaintances|friends|family
+does request / grant / tell.self / react.self
 a : Do you still have my good knife? | Can I borrow your ladder tomorrow? | You never brought back my basket.
 b : It's around somewhere. | Of course. I'll bring it by. | Didn't I? I'm sure I did.
-a : Somewhere isn't here, #b.name#. | Thank you. | You didn't.
+a : Somewhere isn't here, #b.name#. | #bc_thank_you# | You didn't.
 b?[friends] : I'll find it tonight, I swear.
 
 scene st_money_short
 when topic=smalltalk pair.band=friends|family
+does tell.self / react.self / assess
 a : Things are tight this month. | I've not a penny to my name till next week. | Could you spare a little, until the end of the week?
 b[merchant] : Trade's slow for me too. But here, take this.
 b[old] : When was it ever not tight?
@@ -167,6 +185,7 @@ a : I know. Forget I asked. | You're good to me. | We'll manage.
 
 scene st_good_mood
 when topic=smalltalk
+does tell.self / react.self / assess
 a : You're cheerful today. | Something's put a spring in your step. | Why are you grinning like that?
 b[child] : I'm always cheerful! | I got a sweet!
 b[old] : I woke up. At my age, that's reason enough.
@@ -176,6 +195,7 @@ a : Well, keep it up. | Tell me later. | Suit yourself.
 
 scene st_bad_mood
 when topic=smalltalk pair.band=acquaintances|friends|family
+does ask.detail / answer.detail / assess / assess
 a : What's eating you? | You look like thunder. | Who stepped on your tail?
 b : Nothing. Leave it. | Everything. And nothing. | Don't ask.
 a : As you like. | I'm here if you want to talk. | I won't, then.
@@ -183,6 +203,7 @@ b?[friends] : Later. Maybe later.
 
 scene st_lost_thing
 when topic=smalltalk
+does tell.self / react.self / assess
 a : Have you seen a little leather pouch? | I've lost my good comb. | I put my knife down and now it's gone.
 b[child] : I didn't take it! | Is there a reward?
 b[guard] : Report it at the watch house, if it doesn't turn up.
@@ -191,6 +212,7 @@ a : If I knew that it wouldn't be lost. | Never mind. | It'll turn up.
 
 scene st_rumour_mill_small
 when topic=smalltalk pair.band=acquaintances|friends
+does ask.detail / answer.detail / assess
 a : Anything happening I should know about? | Heard anything good lately? | What's the talk today?
 b[merchant] : Only that prices go up and nobody's happy.
 b[guard] : Nothing I'm allowed to say.
@@ -201,24 +223,27 @@ a : Pity. | That's a mercy. | Well, keep your ears open.
 
 scene st_weather_ahead
 when topic=smalltalk here.weather=clear|overcast
+does tell.self / react.self / assess
 a : Think it'll hold? | Fine day for it. | Clouds over the hills. Might turn.
 b[farmer] : It'll hold till dusk. After that, I'd not swear to it.
 b[fisher] : The water says otherwise. There's a turn coming.
 b[old] : My knee says rain by morning. My knee is never wrong.
-b : I hope so. | Might do. | We'll see.
+b : #bc_i_hope_so# | Might do. | #bc_we_will_see#
 a : Let's hope. | Your knee's been wrong before. | Always "we'll see".
 
 scene st_work_waiting
 when topic=smalltalk
+does tell.self / react.self / assess
 a[merchant] : Quiet day. Nobody buying. | I've sold three things since dawn. Three.
 a : Back to work, I suppose. | No rest for the likes of us. | Well, this won't get the work done.
 b[child] : I don't have to work! I'm little!
 b[old] : I did my working years. Now I watch.
-b : No rest at all. | It never ends. | Go on, then.
-a : Lucky you. | Wish me luck. | Off I go.
+b : No rest at all. | It never ends. | #bc_go_on_then#
+a : #bc_lucky_you# | Wish me luck. | Off I go.
 
 scene st_age_compare
 when topic=smalltalk a.stage=adult b.stage=old
+does tell.self / react.self / assess / tell.self
 a : How long have you lived here now, #b.name#? | You must have seen this place change.
 b : Longer than you've been alive, pup. | Too long, and not long enough. | I saw them lay these very stones.
 a : I believe it. | Tell me about it some time. | Hard to imagine.
@@ -226,30 +251,34 @@ b?[friends] : Some evening. Bring something to drink.
 
 scene st_young_and_old
 when topic=smalltalk a.stage=old b.stage=young|adolescent
+does tell.self / react.self / tell.self
 a : Mind your manners, young one. | You'll be taller than me by spring. | Do you help your mother at home?
 b : Yes, #a.name#. | I'm already taller than my sister! | Sometimes. When she makes me.
 a : Good. Good. | Ha. You'll be taller than all of us. | Sometimes is better than never.
 
 scene st_tavern_round
 when topic=smalltalk here.place=tavern
+does ask.detail / answer.detail / tell.self
 a[innkeeper] : Another? You've the look of someone with one more in them.
 a : Another round? | This ale's thinner than it used to be. | Busy tonight.
 b[innkeeper] : Thin? I'll have you know it's exactly as thin as last year.
 b[guard] : Just the one. I'm on at dawn.
 b[old] : Thinner than my hair. Pour it anyway.
-b : Go on, then. | Everything's thinner than it used to be. | Too busy. Can't hear myself think.
+b : #bc_go_on_then# | Everything's thinner than it used to be. | Too busy. Can't hear myself think.
 a : That's the spirit. | Ha. True enough. | Then stop thinking and drink.
 
 scene st_tavern_song
 when topic=smalltalk here.place=tavern here.time=dusk|night
+does tell.self / react.self / assess
 a : Someone start a song. | Not that song again. | Who taught that pup to sing? Someone should untaught him.
 b[old] : When I was young we knew songs worth singing.
 b[innkeeper] : Sing all you like, so long as you buy as you sing.
 b : You start it. | It's the only one they know. | His mother, and she should be ashamed.
-a : Not likely. | Then teach them another. | Ha.
+a : Not likely. | Then teach them another. | #bc_ha#
 
 scene st_market_bustle
 when topic=smalltalk here.place=market
+does tell.self / react.self / assess
 a : What a crush today. | Everyone and their pups are out. | I can't get to the stalls for the crowd.
 b[merchant] : A crowd is a good day, for those of us selling.
 b[guard] : Watch your purse in a crush like this.
@@ -258,20 +287,23 @@ a : Is it? I hadn't noticed. | Too late for that. | Lead on.
 
 scene st_chapel_quiet
 when topic=smalltalk here.place=chapel
+does tell.self / react.self / assess
 a : Peaceful in here. | I come here to think, mostly. | Did you light a candle?
 b[priest] : The peace is what it's for. Stay as long as you need.
 b[old] : I come to remember the ones who are gone.
-b : It is. | Me too. | Two. One for each of my parents.
+b : #bc_it_is# | #bc_me_too# | Two. One for each of my parents.
 a : That's a good thing. | They'd be glad of it. | Mm.
 
 scene st_home_visit
 when topic=smalltalk here.place=home pair.band=friends|family|spouses
+does tell.self / react.self / assess
 a : Sit, sit. You're letting the heat out. | Mind the step; it's loose. | Shall I put something on the fire?
-b : Thank you. | I always forget that step. | Only if you're having some.
+b : #bc_thank_you# | I always forget that step. | Only if you're having some.
 a : Of course I am. | Everyone does. | There. Warm yourself.
 
 scene st_gate_talk
 when topic=smalltalk here.place=gate
+does tell.self / react.self / assess
 a[guard] : Name and business, and be quick about it.
 a : Busy on the road today. | Look at the dust on that wagon. | Anyone interesting come through?
 b[guard] : Only the usual. Carters, peddlers, the odd fool.
@@ -281,48 +313,54 @@ a : Glad to hear it. | Rather you than me. | Well, keep an eye out.
 
 scene st_field_break
 when topic=smalltalk here.place=field
+does tell.self / react.self / assess
 a[farmer] : Rest a moment. The field's not going anywhere. | Look at that sky. Good growing weather.
 a : Hard ground this year. | Is that the last row? | I'll be finding stones in my dreams.
 b[farmer] : It's always hard ground. That's farming. | Last row, then home.
 b[child] : Can I help? I'm strong!
-b : It is. | Nearly. | Me too.
-a : Back to it, then. | Thank the stars. | Ha.
+b : #bc_it_is# | Nearly. | #bc_me_too#
+a : Back to it, then. | Thank the stars. | #bc_ha#
 
 scene st_shore_talk
 when topic=smalltalk here.place=shore
+does tell.self / react.self / assess
 a[fisher] : Water's got a mood on it today. | Fish are deep. They know something.
 a : Smell that air. | Look at the water. | Cold wind off the water.
 b[fisher] : It always smells like that. You get used to it. | They always know something.
 b[child] : Can I go in? Can I?
-b : Salt and rot. Lovely. | It's never the same twice. | Always is.
-a : I never do. | True enough. | Mind the edge.
+b : Salt and rot. Lovely. | It's never the same twice. | #bc_always_is#
+a : I never do. | #bc_true_enough# | Mind the edge.
 
 scene st_wild_road
 when topic=smalltalk here.place=wild
+does tell.self / react.self / assess
 a : Long way from anywhere out here. | Keep an eye on the trees. | I don't like this stretch of road.
 b[guard] : Nor do I. Stay close.
 b[carter] : I've driven it a hundred times. It's the hundred-and-first you worry about.
-b : We'll be through it soon. | It's quiet. Too quiet. | Nor me.
+b : We'll be through it soon. | It's quiet. Too quiet. | #bc_nor_me#
 a : Let's hope so. | Don't say that. | Walk faster, then.
 
 scene st_compliment_work
 when topic=smalltalk
+does tell.self / react.self / assess
 a : That's fine work you do. | I hear good things about you. | You've a steady paw, I'll give you that.
 b[apprentice] : My master says I'm hopeless.
 b[old] : Years of practice. Most of them wasted.
 b[child] : I'm good at lots of things!
-b : Thank you. | Do you? From whom? | It pays the rent.
+b : #bc_thank_you# | Do you? From whom? | It pays the rent.
 a : Then your master's wrong. | Everyone. | It's more than that.
 
 scene st_missing_someone
 when topic=smalltalk pair.band=friends|family
+does tell.self / react.self / assess
 a : I keep thinking about my brother. | I miss the way things were. | Do you ever think of leaving?
 b[old] : Everyone you miss is still with you, in a way.
-b : Have you heard from him? | So do I. | Every day. And then I don't.
-a : Not in months. | Well. | Me too.
+b : Have you heard from him? | #bc_so_do_i# | Every day. And then I don't.
+a : Not in months. | Well. | #bc_me_too#
 
 scene st_dream
 when topic=smalltalk
+does tell.self / react.self / assess
 weight 0.7
 a : I had the strangest dream. | I dreamt of the sea last night, and I've never seen it. | Do dreams mean anything, do you think?
 b[priest] : Some do. Most are only the stomach talking.
@@ -333,30 +371,34 @@ a : I've forgotten already. | Strange, isn't it? | Ha. Probably.
 
 scene st_fur_shedding
 when topic=smalltalk here.season=spring|summer
+does tell.self / react.self / assess
 a : I'm shedding like a pine in a storm. | There's fur on everything I own. | Spring coat's coming in at last.
 b[old] : At my age it doesn't grow back. Count your blessings.
 b : Me too. Look at my rug. | Brush it outside, at least. | Mine's patchy.
-a : Ha. | I'll try. | Nobody's looking.
+a : #bc_ha# | #bc_ill_try# | Nobody's looking.
 
 scene st_winter_coat
 when topic=smalltalk here.season=autumn|winter
+does tell.self / react.self / assess
 a : My winter coat's coming in thick this year. | Feel this cold. | The nights are drawing in.
 b[old] : Thick coat, hard winter. That's what they always said.
 b[child] : Will it snow? I want it to snow!
-b : Mine too. | I feel it in my bones. | Already.
+b : #bc_mine_too# | I feel it in my bones. | #bc_already#
 a : Let's hope they're wrong. | Wrap up. | Too soon.
 
 scene st_crow_omen
 when topic=smalltalk
+does tell.self / react.self / assess
 weight 0.5
 a : Did you see the crows this morning? A whole flock of them. | A black cat crossed my path twice. | I spilled salt at breakfast.
 b[old] : Throw some over your shoulder. Quick, before it settles.
 b[priest] : Omens are for the idle. Work is for the rest of us.
 b : Probably nothing. | I'd stay indoors, if I were you. | Bad luck, that.
-a : Probably. | Maybe I will. | Don't say that.
+a : #bc_probably# | Maybe I will. | Don't say that.
 
 scene st_new_shoes
 when topic=smalltalk
+does ask.detail / answer.detail / tell.self
 weight 0.5
 a : Do you like my new collar? | Got a new cloak at last. | My sister mended my old coat; looks new, doesn't it?
 b[merchant] : Where did you buy that? Not from me, I'd remember.
@@ -366,6 +408,7 @@ a : Ha. Thank you. | I thought so too. | She's clever with a needle.
 
 scene st_story_request
 when topic=smalltalk a.stage=young b.stage=old
+does ask.detail / answer.detail / ask.detail / answer.detail
 a : Tell me a story, #b.name#! | Is it true you once saw a bear? | What was it like when you were little?
 b : Once upon a time there was a pup who asked too many questions. | A bear? Three of them. Or one bear, three times. | Colder. Hungrier. We were happy anyway.
 a : And then what? | Really? | That doesn't make sense.
@@ -373,6 +416,7 @@ b : Then she grew up and asked even more. | Truly. | One day it will.
 
 scene st_farewell
 when topic=smalltalk
+does tell.self / react.self
 a : Well, I'll let you get on. | I should be going. | Mind how you go, #b.name#.
 b[child] : Bye! Bye bye!
 b[old] : Go well. And come back.
@@ -381,26 +425,29 @@ b : And you. | Go well. | Until next time.
 
 scene st_weekday_plan
 when topic=smalltalk pair.band=acquaintances|friends|family
+does ask.detail / answer.detail / assess
 a : What are you doing with yourself this #here.weekday#? | Any plans? | Busy week ahead?
 b[merchant] : Selling, and hoping to sell more.
 b[child] : Playing!
 b[guard] : Walking the same streets I always walk.
 b : Same as always. | Work, then sleep, then work. | Nothing I'd call a plan.
-a : Same as me, then. | Sounds about right. | Ha.
+a : Same as me, then. | Sounds about right. | #bc_ha#
 
 scene st_season_turning
 when topic=smalltalk
+does tell.self / react.self / assess
 a : Feels like #here.season#, now. | The season's turning. | Is it #here.season# already?
 b[old] : Every year they come faster.
 b[farmer] : About time. The ground's been waiting.
-b : It does. | Already? | Hard to believe.
-a : They do. | Isn't it. | Time flies.
+b : #bc_it_does# | Already? | Hard to believe.
+a : #bc_they_do# | Isn't it. | Time flies.
 
 scene st_town_pride
 when topic=smalltalk
+does tell.self / react.self / tell.self
 a : Say what you like, there's no place like #here.town#. | I'd not live anywhere but #here.town#. | #here.town# isn't much, but it's ours.
 b[adolescent] : I'd live anywhere else, given half a chance.
 b[old] : Born here, and I'll end my days here.
 b[merchant] : Good place to trade. That's all I ask of a place.
 b : Too right. | I've seen worse. | It'll do.
-a : You'll come back. Everyone does. | Ha. | It will.
+a : You'll come back. Everyone does. | #bc_ha# | It will.

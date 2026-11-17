@@ -172,3 +172,138 @@ watch_bye = Move along, then. | Keep the peace.
 learn_taken = Good. Be here when I start, and stay near me while I work. | Then you're mine to teach. Stay close while I work.
 receiver_ask = Something for me? | Yes? Is that for me?
 inn_helper = I only help here. #here.innkeeper# keeps the house, and the rooms are theirs to let. | Ask #here.innkeeper# for a bed. I just carry the cups.
+
+# Discourse words (doc 84 §10.3, Phase 7): the turns every conversation has, each a kind of word (§7.2): how a refusal
+# softens and what it gives as its reason, taking in what was said, closing, an excuse to go, news one had, sympathy,
+# giving ground and holding it, a warning, a second meeting, a welcome, an apology and its acceptance, thanks waved
+# off, a refusal taken well, yes to "are you busy?", not now, a worry led in, reassurance, joy at good news, a view
+# not shared, news not believed, and calling the ear. Said by rules/discourse.talk's move lines and the vent lines;
+# written for Phase 8's. Drafts; the dialects' to be tuned by ear (§10.3).
+# the reason a dispreferred answer gives (§7.2: hedge, account, remedy)
+account = I've too much on just now | My hands are full | It's not a good time | I've my own to see to
+# a turn that takes in what was said and owes nothing (ack)
+ack = I see | Is that so | Well, well | Fancy that | There it is
+# taking up a talk that was broken off (return, §8.10)
+resume = As I was saying | Where was I, now | Now, where was I | As I was telling you
+# the first step of a closing (§8.4): the talk is near its end
+preclose = Well. There it is | Still. Can't stand about | So. There we are | Well, that's that
+# why one goes (a preclose's reason)
+excuse = I've things to see to | I'm wanted at home | Work won't wait
+# news one had already (react.news.known)
+knew = I'd heard | So I heard | That's old news
+# feeling for one's trouble (sympathise)
+sympathy = I'm sorry for it | That's a weight to carry | It's a heavy load
+# giving ground (concede)
+concede = Maybe so | You may be right | I'll grant you that
+# holding one's ground (insist)
+insist = I'll say it again | Mark my words | I know what I know
+# a warning's words (warn)
+warn = Mind yourself | Watch your step | Have a care
+# a second meeting the same day (again.open): said as a question
+welcome_back = Back again | You again | Twice in a day
+# one who joins, welcomed (welcome_join)
+welcome = Come and join us | Pull up, then | All the better
+# an apology (apologise)
+sorry = I meant nothing by it | No offence meant | Forgive me
+# an apology taken (accept_apology)
+forgive = No harm done | Think nothing of it | It's forgotten
+# thanks waved off (deflect_thanks)
+deflect = Any time | Don't mention it | It's nothing
+# a refusal taken well (accept_decline)
+no_matter = Another time, then | No matter | Fair enough
+# yes to "are you busy?" (go_ahead)
+go_ahead = Ask away | Go on, then | Out with it
+# not now (put_off)
+put_off = Not just now | Another time, maybe
+# how a worry is led in, to a friend (the vent goal, §7.4)
+vent = Truth be told | Between us | If I'm honest | I'll tell you straight
+# it will pass (reassure)
+reassure = It'll come right | Don't fret | You'll manage
+# joy at one's good news (congratulate)
+congrats = Well done | Good for you | Well done, you
+# a view not shared, softly (disagree)
+demur = I don't see it that way | I'm not so sure | I'd not go that far
+# news not believed yet (react.news.doubt)
+doubt = I'm not so sure | I'd want more than that | I'll believe it when I see it
+# calling the other's ear first
+listen = Listen | Here | Mark this
+
+# Backchannel lines (doc 84 §10.2, Phase 7; tools/talk_migrate.py): the library's most repeated short answers, each a
+# symbol whose value here is exactly the words it replaced, so plain speech is unchanged (talk_migrate.py --check);
+# each dialect says them its own way. A light accent uses the dialect's half the time, a broad one always.
+bc_good = Good.
+bc_always = Always.
+bc_thank_you = Thank you.
+bc_it_is = It is.
+bc_ha = Ha.
+bc_i_will = I will.
+bc_very = Very.
+bc_never = Never.
+bc_probably = Probably.
+bc_we_will_see = We'll see.
+bc_maybe = Maybe.
+bc_me_too = Me too.
+bc_it_does = It does.
+bc_again = Again.
+bc_lovely = Lovely.
+bc_every_year = Every year.
+bc_wise = Wise.
+bc_i_know = I know.
+bc_so_they_say = So they say.
+bc_again_q = Again?
+bc_of_course = Of course.
+bc_about_time = About time.
+bc_mine_too = Mine too.
+bc_ill_try = I'll try.
+bc_nor_me = Nor me.
+bc_they_do = They do.
+bc_poor_soul = Poor soul.
+bc_i_wont = I won't.
+bc_every_one = Every one.
+bc_not_me = Not me.
+bc_very_good = Very good.
+bc_go_on_then = Go on, then.
+bc_barely = Barely.
+bc_lucky_you = Lucky you.
+bc_every_night = Every night.
+bc_nobody = Nobody.
+bc_for_once = For once.
+bc_i_hope_so = I hope so.
+bc_exactly = Exactly.
+bc_everything = Everything.
+bc_true = True.
+bc_mostly = Mostly.
+bc_gladly = Gladly.
+bc_fair_enough = Fair enough.
+bc_sorry = Sorry.
+bc_every_time = Every time.
+bc_very_bad = Very bad.
+bc_fair = Fair.
+bc_bless_you = Bless you.
+bc_always_is = Always is.
+bc_right = Right.
+bc_lucky = Lucky.
+bc_bad_luck = Bad luck.
+bc_why_q = Why?
+bc_true_enough = True enough.
+bc_they_always_do = They always do.
+bc_every_day = Every day.
+bc_very_busy = Very busy.
+bc_im_sorry = I'm sorry.
+bc_so_do_i = So do I.
+bc_clever = Clever.
+bc_too_late = Too late.
+bc_go_on = Go on.
+bc_we_will = We will.
+bc_they_are = They are.
+bc_so_am_i = So am I.
+bc_let_them = Let them.
+bc_hope_so = Hope so.
+bc_already = Already.
+bc_i_might = I might.
+bc_the_best = The best.
+bc_somebody_has_to = Somebody has to.
+bc_nothing = Nothing.
+bc_and_q = And?
+bc_who_q = Who?
+bc_it_was = It was.

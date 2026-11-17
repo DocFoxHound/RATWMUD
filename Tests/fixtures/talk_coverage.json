@@ -1,0 +1,342 @@
+{
+ "bands": 4,
+ "by_move": {
+  "accept": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "accept_apology": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 3
+  },
+  "accept_decline": {
+   "cells": 21600,
+   "core": true,
+   "holes": 0,
+   "lines": 3
+  },
+  "accept_invite": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 1
+  },
+  "accept_preclose": {
+   "cells": 21600,
+   "core": true,
+   "holes": 0,
+   "lines": 2
+  },
+  "ack": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 3
+  },
+  "agree": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 5
+  },
+  "answer.after": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 7
+  },
+  "answer.check_in": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "answer.detail": {
+   "cells": 21600,
+   "core": true,
+   "holes": 21600,
+   "lines": 0
+  },
+  "answer.how": {
+   "cells": 21600,
+   "core": false,
+   "holes": 9936,
+   "lines": 3
+  },
+  "answer.plan": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "answer.whereabouts": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "apologise": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 3
+  },
+  "ask.detail": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "assess": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "clarify": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "concede": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 4
+  },
+  "congratulate": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 1
+  },
+  "counter": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "decline": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 3
+  },
+  "decline_apology": {
+   "cells": 21600,
+   "core": false,
+   "holes": 5328,
+   "lines": 1
+  },
+  "deflect_praise": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "deflect_thanks": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 2
+  },
+  "disagree": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 5
+  },
+  "extend": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "farewell": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 7
+  },
+  "farewell.return": {
+   "cells": 21600,
+   "core": true,
+   "holes": 0,
+   "lines": 6
+  },
+  "give.advice": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 1
+  },
+  "give.opinion": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 14
+  },
+  "go_ahead": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 3
+  },
+  "grant": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 1
+  },
+  "greet.return": {
+   "cells": 21600,
+   "core": true,
+   "holes": 0,
+   "lines": 1
+  },
+  "insist": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 3
+  },
+  "introduce.return": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 2
+  },
+  "keep_confidence": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "laugh": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "offer": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "praise": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "put_off": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 2
+  },
+  "react.complaint": {
+   "cells": 21600,
+   "core": true,
+   "holes": 21600,
+   "lines": 0
+  },
+  "react.news": {
+   "cells": 21600,
+   "core": true,
+   "holes": 21600,
+   "lines": 4
+  },
+  "react.news.doubt": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "react.self": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "react.self.glad": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "react.story": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "reassure": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 4
+  },
+  "refuse": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "sympathise": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 3
+  },
+  "take_offence": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "tease": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "tease.laugh": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "tease.return": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 0
+  },
+  "thank": {
+   "cells": 21600,
+   "core": false,
+   "holes": 21600,
+   "lines": 1
+  },
+  "welcome_join": {
+   "cells": 21600,
+   "core": false,
+   "holes": 0,
+   "lines": 2
+  }
+ },
+ "cells": 1188000,
+ "core_holes": 64800,
+ "hole_rate": 0.5583030303030303,
+ "holes": 663264,
+ "kinds": 150,
+ "moves_owed": 55,
+ "topics": 36
+}

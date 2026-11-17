@@ -17,90 +17,105 @@
 
 rule m7_wx_open_any
 when concept=talk.weather
+does tell.self
 cooldown 1d
 say Look at it. Just look at it. | What do you make of this sky? | Strange weather for the time of year#tag#. | I can't make my mind up about today. | Funny old sky today.
 then other: moment.reply_weather
 
 rule m7_wx_open_rain
 when concept=talk.weather here.weather=rain
+does tell.self
 cooldown 1d
 say It's coming down in rods. | My hood's given up. | Another day of this #rain#. | I've had drier baths. | I can feel it in my boots. | It's found its way down my collar. All of it.
 then other: moment.reply_weather
 
 rule m7_wx_open_snow
 when concept=talk.weather here.weather=snow
+does tell.self
 cooldown 1d
 say #snow.capitalize# up to my hocks already. | It's settling. That's the trouble, it's settling. | I can't feel my paw pads. | Everything's gone quiet under it. | Snowing again. Sideways, this time.
 then other: moment.reply_weather
 
 rule m7_wx_open_fog
 when concept=talk.weather here.weather=fog
+does tell.self
 cooldown 1d
 say I just begged a post's pardon. | You can taste this #fog#. | Can't see the end of my own tail. | Every sound's coming from the wrong side. | My whiskers are dripping.
 then other: moment.reply_weather
 
 rule m7_wx_open_storm
 when concept=talk.weather here.weather=storm
+does tell.self
 cooldown 1d
 say #oath#! Did you hear that one? Shook my teeth. | This #wind# wants the roofs off. | I counted three between the flash and the bang. | Something's come loose somewhere and it's banging like a drum. | Hold on to your hat.
 then other: moment.reply_weather
 
 rule m7_wx_open_clear
 when concept=talk.weather here.weather=clear here.time=dawn|day
+does tell.self
 cooldown 1d
 say Not a cloud. I don't trust it. | Now that's a sky. | Sun on my back for once. | You can see for miles today. | Look at that. Blue as a jay.
 then other: moment.reply_weather
 
 rule m7_wx_open_clear_night
 when concept=talk.weather here.weather=clear here.time=dusk|night
+does tell.self
 cooldown 1d
 say Not a cloud. The owls'll be busy. | Look at that sky. You could count them all, if you'd the nights to spare. | Clear as a bell. The cold's coming down already. | Light enough to find the way home without a lamp.
 then other: moment.reply_weather
 
 rule m7_wx_open_overcast
 when concept=talk.weather here.weather=overcast
+does tell.self
 cooldown 1d
 say Grey as a pot lid. | It can't decide whether to rain. | The sky's sulking. | Heavy, isn't it? Like it's holding its breath. | No sun, no rain. Just grey.
 then other: moment.reply_weather
 
 rule m7_wx_open_sandstorm
 when concept=talk.weather here.weather=sandstorm
+does tell.self
 cooldown 1d
 say I've dust in places dust shouldn't be. | Cover your eyes. | Can't see the field for the dirt in the air. | It's in my teeth. Grit, all of it.
 then other: moment.reply_weather
 
 rule m7_wx_open_dawn_frost
 when concept=talk.weather here.time=dawn here.season=winter|autumn here.weather=clear|overcast
+does tell.self
 cooldown 1d
 say Frost on everything. The pump handle bit me. | White on the roofs this morning. | My breath's coming out in clouds. | The puddles have lids on.
 then other: moment.reply_weather
 
 rule m7_wx_open_dusk_summer
 when concept=talk.weather here.time=dusk here.season=summer here.weather=clear
+does tell.self
 cooldown 1d
 say Warm evening. The ground's still giving off the day. | Swifts screaming overhead. | Light till all hours, this time of year. | Lovely, this. Don't tell anyone I said so.
 then other: moment.reply_weather
 
 rule m7_wx_open_night_rain
 when concept=talk.weather here.time=night here.weather=rain|storm
+does tell.self
 cooldown 1d
 say Only fools and the watch out in this. | Black as a tar barrel, and wet with it. | I'll be dripping on the floor till morning. | Can't hear yourself think for it.
 then other: moment.reply_weather
 
 rule m7_wx_open_spring_rain
 when concept=talk.weather here.season=spring here.weather=rain|overcast
+does tell.self
 cooldown 1d
 say Green rain. You can smell things growing. | The buds won't mind it. | Smells of earth and wet blossom. | Every ditch has a song in it today.
 then other: moment.reply_weather
 
 rule m7_wx_open_summer_heat
 when concept=talk.weather here.season=summer here.time=day here.weather=clear here.region!=frosthollow
+does tell.self
 cooldown 1d
 say My tongue's out to my chin. | Too hot for fur. | The flies are the only ones enjoying this. | I've been panting since breakfast.
 then other: moment.reply_weather
 
 rule m7_wx_open_autumn_wind
 when concept=talk.weather here.season=autumn here.weather=overcast|storm|rain
+does tell.self
 cooldown 1d
 say Leaves everywhere. In my collar, even. | The #wind#'s got a bite to it now. | Summer's packed up and gone without a word. | Smell that? Woodsmoke and wet leaves.
 then other: moment.reply_weather
@@ -109,135 +124,149 @@ then other: moment.reply_weather
 
 rule m7_wx_open_farmer_dry
 when concept=talk.weather self.job=farmer|herder here.weather=clear here.season=summer
+does tell.self
 cooldown 2d
 say The ground's cracking. We want rain. | Lovely day if you're not a turnip. | Another dry one. The peas are curling up.
 then other: moment.reply_weather
 
 rule m7_wx_open_farmer_wet
 when concept=talk.weather self.job=farmer|herder here.weather=rain here.season=autumn
+does tell.self
 cooldown 2d
 say Can't get the last of it in. Not in this. | The stooks are sodden. | Rain at harvest. Every year the same prayer, and the same answer.
 then other: moment.reply_weather
 
 rule m7_wx_open_fisher
 when concept=talk.weather self.job=fisher|sailor here.weather=storm|fog
+does tell.self
 cooldown 2d
 say No boats out today. Not one. | I'd not take a rowboat across a puddle in this. | Somebody's out there in it. Somebody always is.
 then other: moment.reply_weather
 
 rule m7_wx_open_guard
 when concept=talk.weather self.job=guard|soldier here.weather=rain|snow|storm
+does tell.self
 cooldown 2d
 say Eight hours in this, and the captain wants the boots polished. | My mail's rusting as I stand here. | Nobody causes trouble in weather like this. Small mercies.
 then other: moment.reply_weather
 
 rule m7_wx_open_carter
 when concept=talk.weather self.job=carter here.weather=rain|snow|storm
+does tell.self
 cooldown 2d
 say The road'll be #mud# to the axles. | I've a load due by dusk and no hope of it. | Horses hate it. I hate it. We're agreed.
 then other: moment.reply_weather
 
 rule m7_wx_open_old
 when concept=talk.weather self.stage=old here.weather=rain|fog|overcast
+does tell.self
 cooldown 2d
 say My knees told me yesterday. | Weather's not what it was. Wetter. | Seventy years under this sky, and I like it less every one.
 then other: moment.reply_weather
 
 rule m7_wx_open_young
 when concept=talk.weather self.stage=young
+does ask.detail
 cooldown 1d
-say Who makes the weather? | Why's the sky that colour? | Can clouds fall down? | Does the sky ever run out of weather?
+say {m7o=pup} Who makes the weather? | {m7o=pup} Why's the sky that colour? | {m7o=pup} Can clouds fall down? | {m7o=pup} Does the sky ever run out of weather?
 then other: moment.reply_weather
-remember pair: m7o=pup 2m
 
 rule m7_wx_open_south_in_snow
 when concept=talk.weather here.weather=snow self.from=oakhaven|mirebridge|fenshore|larkfield|southmeadow
+does tell.self
 cooldown 2d
-say Where I come from this is a story you tell pups. | I didn't know cold went this deep. | How do you live like this? Honestly. How?
+say {m7o=far} Where I come from this is a story you tell pups. | {m7o=far} I didn't know cold went this deep. | {m7o=far} How do you live like this? Honestly. How?
 then other: moment.reply_weather
-remember pair: m7o=far 2m
 
 rule m7_wx_open_north_in_heat
 when concept=talk.weather here.region=south here.season=summer here.weather=clear self.from=frosthollow|coldwater
+does ask.detail
 cooldown 2d
-say Does the sun never go in, down here? | Is it always this hot down here? | My fur was made for snow, not this.
+say {m7o=far} Does the sun never go in, down here? | {m7o=far} Is it always this hot down here? | {m7o=far} My fur was made for snow, not this.
 then other: moment.reply_weather
-remember pair: m7o=far 2m
 
 rule m7_wx_open_city_rain_away
 when concept=talk.weather here.weather=rain here.region!=ridgemere self.from=ridgemere
+does tell.self
 cooldown 2d
 say Ah. Rain. Almost feels like home. | You call this rain? In Ridgemere we'd call it a dry spell. | Smells like the Sound, this.
 then other: moment.reply_weather
 
 rule m7_wx_open_poor_cold
 when concept=talk.weather self.wealth=destitute|poor here.season=winter here.weather=snow|rain|overcast|storm self.stage=adult|old
+does tell.self
 cooldown 2d
 priority 1
-say No wood till Restday. We sleep in our coats. | The damp's in the walls again. | Cold's dearer for some than others.
+say {m7o=need} No wood till Restday. We sleep in our coats. | {m7o=need} The damp's in the walls again. | {m7o=need} Cold's dearer for some than others.
 then other: moment.reply_weather
-remember pair: m7o=need 2m
 
 rule m7_wx_open_homeless
 when concept=talk.weather self.homeless=yes here.weather=rain|snow|storm
+does tell.self
 cooldown 1d
 priority 2
-say Where'll I sleep tonight, in this? | Every doorway's taken. | I've been wet three days now. You stop noticing. Almost.
+say {m7o=need} Where'll I sleep tonight, in this? | {m7o=need} Every doorway's taken. | {m7o=need} I've been wet three days now. You stop noticing. Almost.
 then other: moment.reply_weather
-remember pair: m7o=need 2m
 
 # ================================================================ The weather: answers (self is the one answering)
 
 rule m7_wx_re_any
 when concept=moment.reply_weather
+does assess
 say Could be worse. Could be raining frogs. | It'll change. It always does. | I've stopped looking up. Saves disappointment. | Weather's weather. You can't argue with it. | Mm. Same sky over all of us.
 then other: moment.close
 
 rule m7_wx_re_any2
 when concept=moment.reply_weather
+does assess
 say My mother said you can't eat weather, so stop chewing it. | It is what it is. | Keeps us talking, at least. | The sky doesn't ask our leave, does it?
 then other: moment.close
 
 rule m7_wx_re_rain
 when concept=moment.reply_weather here.weather=rain
-say Ducks are happy. Someone ought to be. | The water butt's full, so that's one thing. | Washes the fleas out, I suppose. | #annoyed#. Wet as a fish's elbow.
+does assess
+say {m7=moan} Ducks are happy. Someone ought to be. | {m7=moan} The water butt's full, so that's one thing. | {m7=moan} Washes the fleas out, I suppose. | {m7=moan} #annoyed#. Wet as a fish's elbow.
 then other: moment.close
-remember pair: m7=moan 2m
 
 rule m7_wx_re_snow
 when concept=moment.reply_weather here.weather=snow
+does assess
 say It'll be grey slush by noon. | Pretty for an hour. Then it's just #cold#. | Mind the eaves. They drop it on you. | If a snowball finds you later, it wasn't me.
 then other: moment.close
 
 rule m7_wx_re_fog
 when concept=moment.reply_weather here.weather=fog
+does assess
 say Keep to the path. | I heard the cart before I saw it. Nearly lost a tail. | Fog's good for one thing: nobody sees you yawn. | It'll lift. Or we'll all wander off and get lost.
 then other: moment.close
 
 rule m7_wx_re_storm
 when concept=moment.reply_weather here.weather=storm
-say Inside, and quick about it. | I've tied everything down that'll tie. | The gods are moving furniture. | That one was close. Too close.
+does assess
+say {m7=fear} Inside, and quick about it. | {m7=fear} I've tied everything down that'll tie. | {m7=fear} The gods are moving furniture. | {m7=fear} That one was close. Too close.
 then other: moment.close
-remember pair: m7=fear 2m
 
 rule m7_wx_re_clear
 when concept=moment.reply_weather here.weather=clear here.time=dawn|day
-say Make the most of it. That's #luck#, that is. | Washing day, then. | Don't say it out loud. You'll scare it off. | I'll take it. I'll take every scrap of it.
+does assess
+say {m7=glad} Make the most of it. That's #luck#, that is. | {m7=glad} Washing day, then. | {m7=glad} Don't say it out loud. You'll scare it off. | {m7=glad} I'll take it. I'll take every scrap of it.
 then other: moment.close
-remember pair: m7=glad 2m
 
 rule m7_wx_re_clear_night
 when concept=moment.reply_weather here.weather=clear here.time=dusk|night
+does assess
 say No cloud to keep the warmth in. It'll bite tonight. | Stars thick as frost. | Pretty. Cold, but pretty. | I'll want two blankets.
 then other: moment.close
 
 rule m7_wx_re_overcast
 when concept=moment.reply_weather here.weather=overcast
+does assess
 say It'll rain before long. | It's thinking about it. | Grey's restful, if you let it be. | No shadows, at least. Can't see your own gloom.
 then other: moment.close
 
 rule m7_wx_re_sandstorm
 when concept=moment.reply_weather here.weather=sandstorm
+does assess
 say Shut your mouth and walk. | It'll blow through. | Keep a wet cloth over your nose.
 then other: moment.close
 
@@ -245,299 +274,305 @@ then other: moment.close
 
 rule m7_wx_re_farmer_rain
 when concept=moment.reply_weather self.job=farmer|herder here.weather=rain here.season=spring|summer
+does assess
 cooldown 1d
-say Don't curse it. That's bread falling. | My fields have been begging for this. | Every drop's a loaf in the autumn.
+say {m7=glad} Don't curse it. That's bread falling. | {m7=glad} My fields have been begging for this. | {m7=glad} Every drop's a loaf in the autumn.
 then other: moment.close
-remember pair: m7=glad 2m
 
 rule m7_wx_re_farmer_harvest_rain
 when concept=moment.reply_weather self.job=farmer|herder here.weather=rain|storm here.season=autumn
+does assess
 cooldown 1d
-say Half my barley's still standing out in it. | It'll sprout in the stook if it keeps on. | I've stopped looking at the sky. It only laughs.
+say {m7=work} Half my barley's still standing out in it. | {m7=work} It'll sprout in the stook if it keeps on. | {m7=work} I've stopped looking at the sky. It only laughs.
 then other: moment.close
-remember pair: m7=work 2m
 
 rule m7_wx_re_farmer_snow
 when concept=moment.reply_weather self.job=farmer|herder here.weather=snow
+does assess
 cooldown 1d
-say I was up before light digging the ewes out. | Snow's a blanket for the winter wheat. | The beasts want feeding whatever falls.
+say {m7=work} I was up before light digging the ewes out. | {m7=work} Snow's a blanket for the winter wheat. | {m7=work} The beasts want feeding whatever falls.
 then other: moment.close
-remember pair: m7=work 2m
 
 rule m7_wx_re_fisher_fog
 when concept=moment.reply_weather self.job=fisher|sailor here.weather=fog
+does assess
 cooldown 1d
-say No boat goes out in this. Not if they want to come back. | Fog on the water's the worst. You row in circles. | I've lost the shore in fog once. Never again.
+say {m7=boats} No boat goes out in this. Not if they want to come back. | {m7=boats} Fog on the water's the worst. You row in circles. | {m7=boats} I've lost the shore in fog once. Never again.
 then other: moment.close
-remember pair: m7=boats 2m
 
 rule m7_wx_re_fisher_storm
 when concept=moment.reply_weather self.job=fisher|sailor here.weather=storm|rain
+does assess
 cooldown 1d
-say I've doubled the lines on the boat. | The water's white out there. Nobody's fool enough. | Wind's the killer, not the wet.
+say {m7=boats} I've doubled the lines on the boat. | {m7=boats} The water's white out there. Nobody's fool enough. | {m7=boats} Wind's the killer, not the wet.
 then other: moment.close
-remember pair: m7=boats 2m
 
 rule m7_wx_re_fisher_clear
 when concept=moment.reply_weather self.job=fisher|sailor here.weather=clear
+does assess
 cooldown 1d
-say Flat water. Good for the nets. | Clear sky, cold night. Fish go deep. | I should be out. Why am I talking to you?
+say {m7=joke} Flat water. Good for the nets. | {m7=joke} Clear sky, cold night. Fish go deep. | {m7=joke} I should be out. Why am I talking to you?
 then other: moment.close
-remember pair: m7=joke 2m
 
 rule m7_wx_re_guard
 when concept=moment.reply_weather self.job=guard|soldier here.weather=rain|snow|storm|fog
+does assess
 cooldown 1d
-say I'm on the wall in it tonight. Lucky me. | Thieves stay in when it's like this. So should I. | My cloak's been wet since Dawnday.
+say {m7=work} I'm on the wall in it tonight. Lucky me. | {m7=work} Thieves stay in when it's like this. So should I. | {m7=work} My cloak's been wet since Dawnday.
 then other: moment.close
-remember pair: m7=work 2m
 
 rule m7_wx_re_carter
 when concept=moment.reply_weather self.job=carter here.weather=rain|snow|storm
+does assess
 cooldown 1d
-say The roads'll be ruined. Three days late, everything. | My wheels will be #mud# to the hub. | I've a horse with a cough and a load of slate. Wish me luck.
+say {m7=work} The roads'll be ruined. Three days late, everything. | {m7=work} My wheels will be #mud# to the hub. | {m7=work} I've a horse with a cough and a load of slate. Wish me luck.
 then other: moment.close
-remember pair: m7=work 2m
 
 rule m7_wx_re_carter_fog
 when concept=moment.reply_weather self.job=carter here.weather=fog
+does assess
 cooldown 1d
-say I'll walk at the horse's head all the way, in this. | Last fog I drove the cart into a hedge. The hedge won. | Can't see the ruts. I'll feel for them.
+say {m7=work} I'll walk at the horse's head all the way, in this. | {m7=work} Last fog I drove the cart into a hedge. The hedge won. | {m7=work} Can't see the ruts. I'll feel for them.
 then other: moment.close
-remember pair: m7=work 2m
 
 rule m7_wx_re_miner
 when concept=moment.reply_weather self.job=miner
+does assess
 cooldown 1d
-say I'll be under the hill soon. It's always the same weather down there. | Sun, snow, it's all one in the dark. | Lucky you, to care what the sky does.
+say {m7=joke} I'll be under the hill soon. It's always the same weather down there. | {m7=joke} Sun, snow, it's all one in the dark. | {m7=joke} Lucky you, to care what the sky does.
 then other: moment.close
-remember pair: m7=joke 2m
 
 rule m7_wx_re_smith_cold
 when concept=moment.reply_weather self.job=smith here.season=winter
+does assess
 cooldown 1d
-say Come and stand by my forge. Warmest spot in town. | I've the only warm paws for a mile. | Everyone's my friend in winter. Funny, that.
+say {m7=joke} Come and stand by my forge. Warmest spot in town. | {m7=joke} I've the only warm paws for a mile. | {m7=joke} Everyone's my friend in winter. Funny, that.
 then other: moment.close
-remember pair: m7=joke 2m
 
 rule m7_wx_re_smith_heat
 when concept=moment.reply_weather self.job=smith|baker|cook here.season=summer here.weather=clear here.region!=frosthollow
+does assess
 cooldown 1d
-say Try a day by the fire in this. | I've been baking along with the bread. | I'd trade you for the shade.
+say {m7=work} Try a day by the fire in this. | {m7=work} I've been baking along with the bread. | {m7=work} I'd trade you for the shade.
 then other: moment.close
-remember pair: m7=work 2m
 
 rule m7_wx_re_innkeeper_wet
 when concept=moment.reply_weather self.job=innkeeper|brewer here.weather=rain|snow|storm
+does assess
 cooldown 1d
-say Good for trade. Wet wolves want a fire and a jar. | I shouldn't say it, but I love a wet night. Full house. | Keep it coming, I say. My taproom thanks it.
+say {m7=joke} Good for trade. Wet wolves want a fire and a jar. | {m7=joke} I shouldn't say it, but I love a wet night. Full house. | {m7=joke} Keep it coming, I say. My taproom thanks it.
 then other: moment.close
-remember pair: m7=joke 2m
 
 rule m7_wx_re_merchant_wet
 when concept=moment.reply_weather self.role=merchant here.weather=rain|storm|snow
+does assess
 cooldown 1d
-say Nobody buys when they're wet. | My awning's a waterfall. | I've sold one thing all day, and that was a hood.
+say {m7=moan} Nobody buys when they're wet. | {m7=moan} My awning's a waterfall. | {m7=moan} I've sold one thing all day, and that was a hood.
 then other: moment.close
-remember pair: m7=moan 2m
 
 rule m7_wx_re_healer_winter
 when concept=moment.reply_weather self.job=healer here.season=winter|autumn
+does assess
 cooldown 1d
-say Every chest in town's rattling. I'm run off my paws. | Wrap up. I've no room for one more cough. | Cold brings me trade I'd rather not have.
+say {m7=work} Every chest in town's rattling. I'm run off my paws. | {m7=work} Wrap up. I've no room for one more cough. | {m7=work} Cold brings me trade I'd rather not have.
 then other: moment.close
-remember pair: m7=work 2m
 
 rule m7_wx_re_priest
 when concept=moment.reply_weather self.job=priest
+does assess
 cooldown 1d
 say We take what's sent, and give thanks for a roof. | The Bright One sends weather on the deserving and the rest alike. | Weather keeps us humble.
 then other: moment.close
 
 rule m7_wx_re_woodcutter_storm
 when concept=moment.reply_weather self.job=woodcutter here.weather=storm
+does assess
 cooldown 1d
-say I'll be clearing windfall for a week. | Trees down everywhere tomorrow, you watch. | Never stand under an old tree in a #wind# like this.
+say {m7=work} I'll be clearing windfall for a week. | {m7=work} Trees down everywhere tomorrow, you watch. | {m7=work} Never stand under an old tree in a #wind# like this.
 then other: moment.close
-remember pair: m7=work 2m
 
 rule m7_wx_re_laborer_heat
 when concept=moment.reply_weather self.job=laborer|miner|woodcutter here.season=summer here.weather=clear here.time=day here.region!=frosthollow
+does assess
 cooldown 1d
-say I've hauled sacks since dawn in it. My tongue's dragging. | Try carrying stone in this. | Water. I need water and a cellar.
+say {m7=work} I've hauled sacks since dawn in it. My tongue's dragging. | {m7=work} Try carrying stone in this. | {m7=work} Water. I need water and a cellar.
 then other: moment.close
-remember pair: m7=work 2m
 
 rule m7_wx_re_beggar
 when concept=moment.reply_weather self.job=beggar here.weather=rain|snow|storm
+does assess
 cooldown 1d
 priority 1
-say Easy for some to talk about it. | Spare a copper for a dry crust? | Wet through, and the day not half done.
+say {m7=poor} Easy for some to talk about it. | {m7=poor} Spare a copper for a dry crust? | {m7=poor} Wet through, and the day not half done.
 then other: moment.close
-remember pair: m7=poor 2m
 
 # By their home: the weather as it falls on one from elsewhere.
 
 rule m7_wx_re_south_snow
 when concept=moment.reply_weather here.weather=snow self.from=oakhaven|mirebridge|fenshore|larkfield|southmeadow
+does assess
 priority 1
 cooldown 1d
-say Back home we'd be mending fences in our shirtsleeves. | At home I'd only seen snow on the far hills. Now it's in my boots. | I keep thinking it'll stop. It never stops.
+say {m7=home} Back home we'd be mending fences in our shirtsleeves. | {m7=home} At home I'd only seen snow on the far hills. Now it's in my boots. | {m7=home} I keep thinking it'll stop. It never stops.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_wx_re_south_cold
 when concept=moment.reply_weather here.season=winter here.region=north self.from=southmeadow|larkfield|oakhaven
+does assess
 cooldown 1d
-say Winter down south is a brisk autumn up here. | I've worn every coat I own. At once. | My blood's too thin for the north. Always was.
+say {m7=home} Winter down south is a brisk autumn up here. | {m7=home} I've worn every coat I own. At once. | {m7=home} My blood's too thin for the north. Always was.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_wx_re_north_snow
 when concept=moment.reply_weather here.weather=snow self.from=frosthollow
+does assess
 priority 1
 cooldown 1d
-say Call this snow? Up the valley it's to the eaves. | This is a dusting. Come back when you can't find the door. | Snow's a friend if you know it. Treat it right.
+say {m7=joke} Call this snow? Up the valley it's to the eaves. | {m7=joke} This is a dusting. Come back when you can't find the door. | {m7=joke} Snow's a friend if you know it. Treat it right.
 then other: moment.close
-remember pair: m7=joke 2m
 
 rule m7_wx_re_north_heat
 when concept=moment.reply_weather here.season=summer here.weather=clear self.from=frosthollow|coldwater here.region!=frosthollow|coldwater
+does assess
 priority 1
 cooldown 1d
-say Up home there'd still be snow in the gullies. I'd give a week's wage to roll in it. | I'm cooking in my own fur. | Glasswater would be cold enough to stop your heart right now. Lovely.
+say {m7=home} Up home there'd still be snow in the gullies. I'd give a week's wage to roll in it. | {m7=home} I'm cooking in my own fur. | {m7=home} Glasswater would be cold enough to stop your heart right now. Lovely.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_wx_re_fen_fog
 when concept=moment.reply_weather here.weather=fog self.from=mirebridge|fenshore
+does assess
 priority 1
 cooldown 1d
-say This? In the fens this is a clear morning. | Fog's only air with something to say. | You learn to walk by smell in the fens.
+say {m7=joke} This? In the fens this is a clear morning. | {m7=joke} Fog's only air with something to say. | {m7=joke} You learn to walk by smell in the fens.
 then other: moment.close
-remember pair: m7=joke 2m
 
 rule m7_wx_re_city_rain
 when concept=moment.reply_weather here.weather=rain self.from=ridgemere
+does assess
 cooldown 1d
-say I'm Ridgemere born. Rain's just air you can see. | In Ridgemere we don't call it rain unless it's sideways. | Rain doesn't count till it's coming up off the cobbles.
+say {m7=joke} I'm Ridgemere born. Rain's just air you can see. | {m7=joke} In Ridgemere we don't call it rain unless it's sideways. | {m7=joke} Rain doesn't count till it's coming up off the cobbles.
 then other: moment.close
-remember pair: m7=joke 2m
 
 rule m7_wx_re_lake_clear
 when concept=moment.reply_weather here.weather=clear|overcast self.from=coldwater here.region!=coldwater|ridgemere
+does assess
 cooldown 1d
-say On a day like this Glasswater goes still as a plate. I miss it. | Nothing here to look into. At home you'd see your face in the lake. | I keep looking for the water and finding walls.
+say {m7=home} On a day like this Glasswater goes still as a plate. I miss it. | {m7=home} Nothing here to look into. At home you'd see your face in the lake. | {m7=home} I keep looking for the water and finding walls.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_wx_re_downs_wind
 when concept=moment.reply_weather here.weather=overcast|storm self.from=larkfield here.region!=larkfield
+does assess
 cooldown 1d
-say On the downs you'd feel this wind coming a day off. | I miss a good wind across open grass. Here it just whistles round corners. | Larks'd be up in this at home, singing into it.
+say {m7=home} On the downs you'd feel this wind coming a day off. | {m7=home} I miss a good wind across open grass. Here it just whistles round corners. | {m7=home} Larks'd be up in this at home, singing into it.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_wx_re_wood_rain
 when concept=moment.reply_weather here.weather=rain self.from=oakhaven here.region!=oakhaven
+does assess
 cooldown 1d
-say Under the Rainwood you'd barely feel it. The leaves take it all. | Rain's nicer with a roof of oak over you. | I miss the smell of wet leaf mould. Sounds daft.
+say {m7=home} Under the Rainwood you'd barely feel it. The leaves take it all. | {m7=home} Rain's nicer with a roof of oak over you. | {m7=home} I miss the smell of wet leaf mould. Sounds daft.
 then other: moment.close
-remember pair: m7=home 2m
 
 # By age, means and mood.
 
 rule m7_wx_re_old_bones
 when concept=moment.reply_weather self.stage=old here.weather=rain|fog|snow|overcast
+does assess
 cooldown 1d
 say My hip told me this a day ago. Hip's never wrong. | I've seen worse. I've seen the winter the wells froze solid. | At my age you're grateful for any weather you wake up to.
 then other: moment.close
 
 rule m7_wx_re_young_snow
 when concept=moment.reply_weather self.stage=young here.weather=snow
+does assess
 cooldown 1d
-say Can we build a snow fort? A big one? | I ate some. It tastes of nothing. | I'm going to slide down the lane on my tail!
+say {m7=glad} Can we build a snow fort? A big one? | {m7=glad} I ate some. It tastes of nothing. | {m7=glad} I'm going to slide down the lane on my tail!
 then other: moment.close
-remember pair: m7=glad 2m
 
 rule m7_wx_re_young_rain
 when concept=moment.reply_weather self.stage=young here.weather=rain|storm
+does assess
 cooldown 1d
 say Puddles! The big one by the well's up to my knees! | Is the thunder angry at us? | I'm not cold. I'm not. My teeth just do that.
 then other: moment.close
 
 rule m7_wx_re_adolescent
 when concept=moment.reply_weather self.stage=adolescent
+does assess
 cooldown 1d
-say Who cares? It's weather. | Can we not talk about the weather? Please? | Everyone always talks about the weather. Every single day.
+say {m7=joke} Who cares? It's weather. | {m7=joke} Can we not talk about the weather? Please? | {m7=joke} Everyone always talks about the weather. Every single day.
 then other: moment.close
-remember pair: m7=joke 2m
 
 rule m7_wx_re_poor
 when concept=moment.reply_weather self.wealth=destitute|poor here.weather=rain|snow|storm here.season=autumn|winter self.stage=adult|old
+does assess
 priority 1
 cooldown 1d
-say The roof's leaking over the bed again. | I can't buy wood and bread both this week. | We'll huddle. We always huddle.
+say {m7=poor} The roof's leaking over the bed again. | {m7=poor} I can't buy wood and bread both this week. | {m7=poor} We'll huddle. We always huddle.
 then other: moment.close
-remember pair: m7=poor 2m
 
 rule m7_wx_re_rich
 when concept=moment.reply_weather self.wealth=rich here.weather=rain|snow|storm self.stage=adult|old
+does assess
 cooldown 1d
-say I've had the fires lit in every room. | The carriage leaks, if you can believe it. | Tiresome. I'll stay in and read.
+say {m7=posh} I've had the fires lit in every room. | {m7=posh} The carriage leaks, if you can believe it. | {m7=posh} Tiresome. I'll stay in and read.
 then other: moment.close
-remember pair: m7=posh 2m
 
 rule m7_wx_re_tired
 when concept=moment.reply_weather self.tired=yes
+does assess
 cooldown 1d
-say I'm too #tired# to mind what the sky does. | Rain, shine, I'll sleep through it given half a chance. | Don't care. I want #bed#.
+say {m7=weary} I'm too #tired# to mind what the sky does. | {m7=weary} Rain, shine, I'll sleep through it given half a chance. | {m7=weary} Don't care. I want #bed#.
 then other: moment.close
-remember pair: m7=weary 2m
 
 rule m7_wx_re_mourning
 when concept=moment.reply_weather self.mourning=kin|friend
+does assess
 priority 2
 cooldown 1d
-say I hadn't noticed. I don't notice much this week. | They'd have had something to say about it. They always did. | Is it? I've not looked up in days.
+say {k=grief} I hadn't noticed. I don't notice much this week. | {k=grief} They'd have had something to say about it. They always did. | {k=grief} Is it? I've not looked up in days.
 then other: keeping.sorry
-remember pair: k=grief 2m
 
 rule m7_wx_re_dry
 when concept=moment.reply_weather self.humour=dry self.stage!=young
+does assess
 cooldown 1d
-say Remarkable. Weather, happening, outdoors. | Next you'll tell me it's dark at night. | I'll write to the Council. They'll sort it.
+say {m7=joke} Remarkable. Weather, happening, outdoors. | {m7=joke} Next you'll tell me it's dark at night. | {m7=joke} I'll write to the Council. They'll sort it.
 then other: moment.close
-remember pair: m7=joke 2m
 
 rule m7_wx_re_merry_wet
 when concept=moment.reply_weather self.humour=merry here.weather=rain|storm|snow|fog
+does assess
 cooldown 1d
-say Lovely day for a duck! Or a fish. Or a wet wolf. | I've given up being dry. It's very freeing. | Sky's having a worse day than us, and that's saying something.
+say {m7=joke} Lovely day for a duck! Or a fish. Or a wet wolf. | {m7=joke} I've given up being dry. It's very freeing. | {m7=joke} Sky's having a worse day than us, and that's saying something.
 then other: moment.close
-remember pair: m7=joke 2m
 
 rule m7_wx_re_merry_fair
 when concept=moment.reply_weather self.humour=merry here.weather=clear|overcast
+does assess
 cooldown 1d
-say I'd sing, but I'd frighten the birds. | Weather like this, I could dance. Don't hold me to it. | Grand. Somebody fetch the cider.
+say {m7=joke} I'd sing, but I'd frighten the birds. | {m7=joke} Weather like this, I could dance. Don't hold me to it. | {m7=joke} Grand. Somebody fetch the cider.
 then other: moment.close
-remember pair: m7=joke 2m
 
 rule m7_wx_re_short
 when concept=moment.reply_weather self.temper=short
+does assess
 cooldown 1d
-say Talking about it won't change it. | #agree#, I can see it. I've got eyes. | And?
+say Talking about it won't change it. | #agree#, I can see it. I've got eyes. | #bc_and_q#
 then other: moment.close
 
 rule m7_wx_re_quiet
 when concept=moment.reply_weather self.talk=quiet
+does assess
 cooldown 1d
-say Mm. | Aye. | It is.
+say Mm. | Aye. | #bc_it_is#
 then other: moment.close
 
 rule m7_wx_re_devout
 when concept=moment.reply_weather self.piety=devout here.weather=storm|snow|rain
+does assess
 cooldown 1d
 say I'll light a candle for the ones out in it. | Pray for the boats and the shepherds. | It's sent. We bear it.
 then other: moment.close
@@ -545,383 +580,440 @@ then other: moment.close
 # A pup's question about the sky (m7o=pup).
 
 rule m7_wx_re_to_pup
-when concept=moment.reply_weather pair.mem.m7o=pup self.stage=adult|old
+when concept=moment.reply_weather conv.m7o=pup self.stage=adult|old
+does assess
 priority 3
-say Ask a shepherd. They talk to it all day. | The Bright One sends it. Don't ask me why. | Because it can, pup. Same as you. | Never yet, and I've been watching a long while.
+say {m7=topup} Ask a shepherd. They talk to it all day. | {m7=topup} The Bright One sends it. Don't ask me why. | {m7=topup} Because it can, pup. Same as you. | {m7=topup} Never yet, and I've been watching a long while.
 then other: moment.close
-remember pair: m7=topup 2m
 
 rule m7_wx_re_to_pup_merry
-when concept=moment.reply_weather pair.mem.m7o=pup self.stage=adult|old self.humour=merry|dry
+when concept=moment.reply_weather conv.m7o=pup self.stage=adult|old self.humour=merry|dry
+does assess
 priority 3
-say There's a wolf on the hill with a great bellows. Blows it all our way. | Somebody up there's washing their blankets. | Ask the clouds. They never tell me anything.
+say {m7=topup} There's a wolf on the hill with a great bellows. Blows it all our way. | {m7=topup} Somebody up there's washing their blankets. | {m7=topup} Ask the clouds. They never tell me anything.
 then other: moment.close
-remember pair: m7=topup 2m
 
 rule m7_wx_re_pup_pup
-when concept=moment.reply_weather pair.mem.m7o=pup self.stage=young|adolescent
+when concept=moment.reply_weather conv.m7o=pup self.stage=young|adolescent
+does assess
 priority 3
-say Dunno. Ask a grown-up. | My brother says the sky's a big lake upside down. | From the mountains. Everything bad comes from the mountains.
+say {m7=pupchat} Dunno. Ask a grown-up. | {m7=pupchat} My brother says the sky's a big lake upside down. | {m7=pupchat} From the mountains. Everything bad comes from the mountains.
 then other: moment.close
-remember pair: m7=pupchat 2m
 
 # ================================================================ Answering the opener's own plight (any of the moment's
 # answers): in need (m7o=need), far from home (m7o=far), working while others rest (m7o=busy). Priority 3, so the
 # answer meets what was said.
 
 rule m7_re_need
-when concept=moment.reply_weather|moment.reply_day|moment.reply_festival pair.mem.m7o=need
+when concept=moment.reply_weather|moment.reply_day|moment.reply_festival conv.m7o=need
+does answer.how
 priority 3
-say #bad.capitalize# times. Harder for some. | The chapel gives out bread on Restday. Go early. | I'm sorry. I truly am. | It won't always be like this. It can't be.
+say {m7=sorry} #bad.capitalize# times. Harder for some. | {m7=sorry} The chapel gives out bread on Restday. Go early. | {m7=sorry} I'm sorry. I truly am. | {m7=sorry} It won't always be like this. It can't be.
 then other: moment.close
-remember pair: m7=sorry 2m
 
 rule m7_re_need_warm
-when concept=moment.reply_weather|moment.reply_day|moment.reply_festival pair.mem.m7o=need self.warmth=warm self.wealth!=destitute|poor self.stage=adult|old
+when concept=moment.reply_weather|moment.reply_day|moment.reply_festival conv.m7o=need self.warmth=warm self.wealth!=destitute|poor self.stage=adult|old
+does answer.how
 priority 3
-say Come to ours tonight. There's a fire and a pot, and room for you. | Here. Don't argue. Take it. | You'll eat with us. That's settled. Bring whoever's yours.
+say {m7=offer} Come to ours tonight. There's a fire and a pot, and room for you. | {m7=offer} Here. Don't argue. Take it. | {m7=offer} You'll eat with us. That's settled. Bring whoever's yours.
 then other: moment.close
-remember pair: m7=offer 2m
 
 rule m7_re_need_rich
-when concept=moment.reply_weather|moment.reply_day|moment.reply_festival pair.mem.m7o=need self.wealth=rich self.stage=adult|old
+when concept=moment.reply_weather|moment.reply_day|moment.reply_festival conv.m7o=need self.wealth=rich self.stage=adult|old
+does answer.how
 priority 3
-say Here. For wood. No, I insist. | Take this. Buy something hot. | I'll have something sent round. See that it is.
+say {m7=offer} Here. For wood. No, I insist. | {m7=offer} Take this. Buy something hot. | {m7=offer} I'll have something sent round. See that it is.
 then other: moment.close
-remember pair: m7=offer 2m
 
 rule m7_re_need_poor
-when concept=moment.reply_weather|moment.reply_day|moment.reply_festival pair.mem.m7o=need self.wealth=destitute|poor
+when concept=moment.reply_weather|moment.reply_day|moment.reply_festival conv.m7o=need self.wealth=destitute|poor
+does answer.how
 priority 3
-say Same boat, you and me. Leaking the same. | We'll share what there is. Which is nothing, twice. | Don't I know it.
+say {m7=same} Same boat, you and me. Leaking the same. | {m7=same} We'll share what there is. Which is nothing, twice. | {m7=same} Don't I know it.
 then other: moment.close
-remember pair: m7=same 2m
 
 rule m7_re_need_cold
-when concept=moment.reply_weather|moment.reply_day|moment.reply_festival pair.mem.m7o=need self.warmth=cold self.stage=adult|old
+when concept=moment.reply_weather|moment.reply_day|moment.reply_festival conv.m7o=need self.warmth=cold self.stage=adult|old
+does answer.how
 priority 3
-say Should've put some by. | Everyone's got troubles. | Work harder, then.
+say {m7=snub} Should've put some by. | {m7=snub} Everyone's got troubles. | {m7=snub} Work harder, then.
 then other: moment.close
-remember pair: m7=snub 2m
 
 rule m7_re_need_pup
-when concept=moment.reply_weather|moment.reply_day|moment.reply_festival pair.mem.m7o=need self.stage=young
+when concept=moment.reply_weather|moment.reply_day|moment.reply_festival conv.m7o=need self.stage=young
+does answer.how
 priority 3
-say You can have half my bread. Here. | My mum'll let you sit by our fire. Probably. | I've got a penny. You can have it.
+say {m7=pupgift} You can have half my bread. Here. | {m7=pupgift} My mum'll let you sit by our fire. Probably. | {m7=pupgift} I've got a penny. You can have it.
 then other: moment.close
-remember pair: m7=pupgift 2m
 
 rule m7_re_far
-when concept=moment.reply_weather|moment.reply_day|moment.reply_festival pair.mem.m7o=far
+when concept=moment.reply_weather|moment.reply_day|moment.reply_festival conv.m7o=far
+does answer.how
 priority 3
-say You'll get used to it. Everyone does. | Give it a year. It'll be home before you know it. | Miss it, do you? | Bit different from home, eh?
+say {m7=farre} You'll get used to it. Everyone does. | {m7=farre} Give it a year. It'll be home before you know it. | {m7=farre} Miss it, do you? | {m7=farre} Bit different from home, eh?
 then other: moment.close
-remember pair: m7=farre 2m
 
 rule m7_re_far_same
-when concept=moment.reply_weather|moment.reply_day|moment.reply_festival pair.mem.m7o=far pair.same_from=yes
+when concept=moment.reply_weather|moment.reply_day|moment.reply_festival conv.m7o=far pair.same_from=yes
+does answer.how
 priority 3
-say Don't. I'll start missing it too. | I know. I think of it every day. | One day we'll both go back. You'll see.
+say {m7=together} Don't. I'll start missing it too. | {m7=together} I know. I think of it every day. | {m7=together} One day we'll both go back. You'll see.
 then other: moment.close
-remember pair: m7=together 2m
 
 rule m7_re_far_local
-when concept=moment.reply_weather|moment.reply_day|moment.reply_festival pair.mem.m7o=far self.from=frosthollow|coldwater here.region=frosthollow|coldwater here.weather=snow
+when concept=moment.reply_weather|moment.reply_day|moment.reply_festival conv.m7o=far self.from=frosthollow|coldwater here.region=frosthollow|coldwater here.weather=snow
+does answer.how
 priority 3
-say Soft. You're soft. You'll harden up. | This is mild. Wait till midwinter. | Wrap up and stop whining. We'll make a mountain wolf of you.
+say {m7=tease} Soft. You're soft. You'll harden up. | {m7=tease} This is mild. Wait till midwinter. | {m7=tease} Wrap up and stop whining. We'll make a mountain wolf of you.
 then other: moment.close
-remember pair: m7=tease 2m
 
 rule m7_re_busy
-when concept=moment.reply_day|moment.reply_festival|moment.reply_weather pair.mem.m7o=busy
+when concept=moment.reply_day|moment.reply_festival|moment.reply_weather conv.m7o=busy
+does answer.how
 priority 3
-say Somebody has to, I suppose. | Don't let them work you into the ground. | Shall I bring you something? A pie? | You'll rest when it's done.
+say {m7=busy} Somebody has to, I suppose. | {m7=busy} Don't let them work you into the ground. | {m7=busy} Shall I bring you something? A pie? | {m7=busy} You'll rest when it's done.
 then other: moment.close
-remember pair: m7=busy 2m
 
 # ================================================================ Closing (self is the one who began), by how it went
 
 rule m7_close_any
 when concept=moment.close
+does ack
 say Well. There it is. | #farewell#. | Ah well. | I'll let you get on. | So it goes.
 weight 1.5
 
 rule m7_close_any2
 when concept=moment.close
-say #saying#. | True enough. | Can't argue with that. | Mm. Well, then.
+does ack
+say #saying#. | #bc_true_enough# | Can't argue with that. | Mm. Well, then.
 
 rule m7_close_dry
-when concept=moment.close self.humour=dry !pair.mem.m7
+when concept=moment.close self.humour=dry !conv.m7
+does ack
 say Riveting. | We should do this more often. Or less. | Well, that's the day's excitement. | I'll treasure this talk.
 
 rule m7_close_quiet
-when concept=moment.close self.talk=quiet !pair.mem.m7
+when concept=moment.close self.talk=quiet !conv.m7
+does ack
 say Mm. | Aye. | ...Aye. | Mm. Right.
 
 rule m7_close_moan
-when concept=moment.close pair.mem.m7=moan
+when concept=moment.close conv.m7=moan
+does ack
 priority 1
 say Chin up. It can't last for ever. | It'll pass. Most things do. | Aye, well. We'll live.
 
 rule m7_close_moan_warm
-when concept=moment.close pair.mem.m7=moan self.warmth=warm
+when concept=moment.close conv.m7=moan self.warmth=warm
+does ack
 priority 1
 say Come by mine later. There's a fire and a pot on. | Tomorrow'll be better. I'll see that it is. | Cheer up, #address#. I'll stand you something hot.
 
 rule m7_close_glad
-when concept=moment.close pair.mem.m7=glad
+when concept=moment.close conv.m7=glad
+does ack
 priority 1
 say That's the spirit. | Ha. You've cheered me up. | Let's have more days like this, then.
 
 rule m7_close_joke
-when concept=moment.close pair.mem.m7=joke
+when concept=moment.close conv.m7=joke
+does ack
 priority 1
 say Ha! | Get away with you. | You're no help at all. | I walked into that one.
 
 rule m7_close_work
-when concept=moment.close pair.mem.m7=work
+when concept=moment.close conv.m7=work
+does ack
 priority 1
 say Rather you than me. | Don't let it grind you down. | #oath#, and I thought I had it bad.
 
 rule m7_close_work_adult
-when concept=moment.close pair.mem.m7=work self.stage=adult|old
+when concept=moment.close conv.m7=work self.stage=adult|old
+does ack
 priority 1
 say Rather you than me. | Don't let it grind you down. | I'll stand you #drink# when it's done. | #oath#, and I thought I had it bad.
 
 rule m7_close_fear
-when concept=moment.close pair.mem.m7=fear
+when concept=moment.close conv.m7=fear
+does ack
 priority 1
 say Stay safe. | Get indoors, then. Both of us. | Mind the slates going home.
 
 rule m7_close_boats
-when concept=moment.close pair.mem.m7=boats
+when concept=moment.close conv.m7=boats
+does ack
 priority 1
 say Bright One keep them that are out on it. | Stay ashore, then. | I'll not go near the water today.
 
 rule m7_close_crowd
-when concept=moment.close pair.mem.m7=crowd
+when concept=moment.close conv.m7=crowd
+does ack
 priority 1
 say Go on, then. I'll find you after. | Stick by me. I'll get us through. | Breathe. It thins out by the well.
 
 rule m7_close_gossip
-when concept=moment.close pair.mem.m7=gossip
+when concept=moment.close conv.m7=gossip
+does ack
 priority 1
 say Go on, then. Who? | Tell me at the well. I've a pot on. | Save it. I'll want all of it later.
 
 rule m7_close_weary
-when concept=moment.close pair.mem.m7=weary
+when concept=moment.close conv.m7=weary
+does ack
 priority 1
 say Get to your bed, then. | Go on home. Sleep. | You look it, if you don't mind my saying.
 
 rule m7_close_hungry
-when concept=moment.close pair.mem.m7=hungry
+when concept=moment.close conv.m7=hungry
+does ack
 priority 1
 say Go and eat, for pity's sake. | Then go and find a pie. | I can hear it from here.
 
 rule m7_close_posh
-when concept=moment.close pair.mem.m7=posh
+when concept=moment.close conv.m7=posh
+does ack
 priority 1
 say Well. I'm sure you'll manage. | Hard lives, some of us. | Mm. Terrible for you.
 
 rule m7_close_posh_poor
-when concept=moment.close pair.mem.m7=posh self.wealth=destitute|poor
+when concept=moment.close conv.m7=posh self.wealth=destitute|poor
+does ack
 priority 1
 say My heart bleeds. | We should all have your troubles. | A leaky carriage. Gods help us.
 
 rule m7_close_posh_rich
-when concept=moment.close pair.mem.m7=posh self.wealth=rich
+when concept=moment.close conv.m7=posh self.wealth=rich
+does ack
 priority 1
 say I know. One suffers. | Quite. Quite. | Ours has been the same. Dreadful.
 
 rule m7_close_poor
-when concept=moment.close pair.mem.m7=poor
+when concept=moment.close conv.m7=poor
+does ack
 priority 1
 say That's hard. I'm sorry. | It'll mend. Things do. | Hard times, these.
 
 rule m7_close_poor_warm
-when concept=moment.close pair.mem.m7=poor self.warmth=warm self.wealth!=destitute|poor
+when concept=moment.close conv.m7=poor self.warmth=warm self.wealth!=destitute|poor
+does ack
 priority 1
 say Come by ours. There's always a bowl. | Here. Take this, and no arguing. | Don't you sleep out tonight. You hear me?
 
 rule m7_close_poor_poor
-when concept=moment.close pair.mem.m7=poor self.wealth=destitute|poor
+when concept=moment.close conv.m7=poor self.wealth=destitute|poor
+does ack
 priority 1
 say Two leaky boats, then. | We'll keep each other afloat. | Ha. Misery loves company.
 
 rule m7_close_poor_cold
-when concept=moment.close pair.mem.m7=poor self.warmth=cold
+when concept=moment.close conv.m7=poor self.warmth=cold
+does ack
 priority 1
 say Hm. Well. | Hard times all round. | The chapel takes folk in, I hear.
 
 rule m7_close_poor_rich
-when concept=moment.close pair.mem.m7=poor self.wealth=rich
+when concept=moment.close conv.m7=poor self.wealth=rich
+does ack
 priority 1
 say The chapel does good work, I'm told. | Ah. Well. One hears it's dreadful. | I'll mention it to someone.
 
 rule m7_close_offer
-when concept=moment.close pair.mem.m7=offer
+when concept=moment.close conv.m7=offer
+does ack
 priority 2
 say I... #thanks#. Truly. | Bless you. I'll not forget it. | You're too good. I'll pay you back. Somehow.
 
 rule m7_close_pupgift
-when concept=moment.close pair.mem.m7=pupgift
+when concept=moment.close conv.m7=pupgift
+does ack
 priority 2
 say Keep your bread, little one. But bless you for it. | You're a good pup. Your mother raised you right. | Ha. I'll hold you to that.
 
 rule m7_close_same
-when concept=moment.close pair.mem.m7=same
+when concept=moment.close conv.m7=same
+does ack
 priority 2
 say Two leaky boats, then. | We'll keep each other afloat. | Ha. Misery loves company.
 
 rule m7_close_sorry
-when concept=moment.close pair.mem.m7=sorry
+when concept=moment.close conv.m7=sorry
+does ack
 priority 2
 say Aye. Well. | Kind of you to say. | We'll manage. We always do.
 
 rule m7_close_snub
-when concept=moment.close pair.mem.m7=snub
+when concept=moment.close conv.m7=snub
+does ack
 priority 2
 say #annoyed#. Thanks for nothing. | I'll remember that. | Easy for you to say.
 
 rule m7_close_farre
-when concept=moment.close pair.mem.m7=farre
+when concept=moment.close conv.m7=farre
+does ack
 priority 2
 say So they keep telling me. | I hope you're right. | Some days more than others.
 
 rule m7_close_together
-when concept=moment.close pair.mem.m7=together
+when concept=moment.close conv.m7=together
+does ack
 priority 2
 say One day. | Till then, there's two of us. | Aye. Together.
 
 rule m7_close_tease
-when concept=moment.close pair.mem.m7=tease
+when concept=moment.close conv.m7=tease
+does ack
 priority 2
 say I'll never be a mountain wolf. | Harden up yourself. | Gods help me.
 
 rule m7_close_busy
-when concept=moment.close pair.mem.m7=busy
+when concept=moment.close conv.m7=busy
+does ack
 priority 2
 say Aye. Back to it. | Don't tempt me to stop. | It won't do itself, more's the pity.
 
 rule m7_close_home
-when concept=moment.close pair.mem.m7=home
+when concept=moment.close conv.m7=home
+does ack
 priority 1
 say Long way from home, then. | Tell me about it some time. Properly. | I'd like to see it one day. | You're here now, any road.
 
 rule m7_close_home_cold
-when concept=moment.close pair.mem.m7=home self.warmth=cold
+when concept=moment.close conv.m7=home self.warmth=cold
+does ack
 priority 1
 say Nobody made you come. | Go back, then. | Everyone's from somewhere.
 
 rule m7_close_local
-when concept=moment.close pair.mem.m7=local
+when concept=moment.close conv.m7=local
+does ack
 priority 1
 say So it's me that talks funny. Fair enough. | I'll pick it up. Give me a year. | Then I'd best mind my own voice.
 
 rule m7_close_prickly
-when concept=moment.close pair.mem.m7=prickly
+when concept=moment.close conv.m7=prickly
+does ack
 priority 1
 say No offence meant. | Touchy. | Suit yourself.
 
 rule m7_close_gladgone
-when concept=moment.close pair.mem.m7=gladgone
+when concept=moment.close conv.m7=gladgone
+does ack
 priority 1
 say Can't blame you. | Their loss, then. | Ha. Fair enough.
 
 rule m7_close_topup
-when concept=moment.close pair.mem.m7=topup
+when concept=moment.close conv.m7=topup
+does ack
 priority 2
 say I'm going to ask my mum. | That's not what Brindle says. | Promise? | I knew it!
 
 rule m7_close_pupchat
-when concept=moment.close pair.mem.m7=pupchat
+when concept=moment.close conv.m7=pupchat
+does ack
 priority 2
 say You're making it up. | I'm telling everyone. | Race you to the corner!
 
 rule m7_close_market
-when concept=moment.close pair.mem.m7=market
+when concept=moment.close conv.m7=market
+does ack
 priority 1
 say Ha. Mind your purse. | I'll look out for you in the crush. | Save me a pie if you get there first.
 
 rule m7_close_rest
-when concept=moment.close pair.mem.m7=rest
+when concept=moment.close conv.m7=rest
+does ack
 priority 1
 say Wise words. | Ha. Right you are. | Don't remind me.
 
 rule m7_close_dawn
-when concept=moment.close pair.mem.m7=dawn
+when concept=moment.close conv.m7=dawn
+does ack
 priority 1
 say I'll leave you to wake up, then. | Go on. Off you go. | Same here, if I'm honest.
 
 rule m7_close_night
-when concept=moment.close pair.mem.m7=night
+when concept=moment.close conv.m7=night
+does ack
 priority 1
 say Ha. Same as you, then. | Mind the watch doesn't take you for a thief. | Well. Don't stay out too late.
 
 rule m7_close_done
-when concept=moment.close pair.mem.m7=done
+when concept=moment.close conv.m7=done
+does ack
 priority 1
 say That's the plan. | I will. Don't work too hard. | Home, and nothing till morning.
 
 rule m7_close_both
-when concept=moment.close pair.mem.m7=both
+when concept=moment.close conv.m7=both
+does ack
 priority 1
 say Come on, then. First round's mine. | Aye. Let's sit a while. | Not a word about work. Agreed.
 
 rule m7_close_dayoff
-when concept=moment.close pair.mem.m7=dayoff
+when concept=moment.close conv.m7=dayoff
+does ack
 priority 1
 say I'll try. It doesn't come natural. | Lucky? I'll be bored by noon. | I mean to.
 
 rule m7_close_teen
-when concept=moment.close pair.mem.m7=teen
+when concept=moment.close conv.m7=teen
+does ack
 priority 1
 say Ha. I remember being your age. | Go on, then. Enjoy it. | Mind your manners, mind.
 
 # Lore closes (the one who told the tale).
 
 rule m7_close_scoff
-when concept=moment.close pair.mem.m7=scoff
+when concept=moment.close conv.m7=scoff
+does ack
 priority 1
 say Laugh all you like. | Believe what you want. My grandmother did. | Well, that's how I heard it. | You'll see. One of these nights.
 
 rule m7_close_believe
-when concept=moment.close pair.mem.m7=believe
+when concept=moment.close conv.m7=believe
+does ack
 priority 1
 say Keep a lamp lit tonight, then. | See? It's not just me. | Sleep well. Ha.
 
 rule m7_close_version
-when concept=moment.close pair.mem.m7=version
+when concept=moment.close conv.m7=version
+does ack
 priority 1
 say Every hearth tells it its own way. | Yours sounds worse. I'll keep mine. | Tell me yours some night. With the lamp low.
 
 rule m7_close_pious
-when concept=moment.close pair.mem.m7=pious
+when concept=moment.close conv.m7=pious
+does ack
 priority 1
 say No harm in a tale. | Aye, well. It's still a good tale. | I'll say a prayer as well, then. To be safe.
 
 rule m7_close_spooked
-when concept=moment.close pair.mem.m7=spooked
+when concept=moment.close conv.m7=spooked
+does ack
 priority 1
 say It's only a tale! Come back! | I'll walk you to your door, if you like. | Ha! Sleep with a lamp lit, then.
 
 rule m7_close_oldtell
-when concept=moment.close pair.mem.m7=oldtell
+when concept=moment.close conv.m7=oldtell
+does ack
 priority 1
 say Go on, then. I've time. | Another night. I'll bring the ale. | I'll hold you to that.
 
 rule m7_close_scholar
-when concept=moment.close pair.mem.m7=scholar
+when concept=moment.close conv.m7=scholar
+does ack
 priority 1
 say You've no romance in you. | Smaller and duller. That's learning for you. | Read it me some time, then.
 
 rule m7_close_hometale
-when concept=moment.close pair.mem.m7=hometale
+when concept=moment.close conv.m7=hometale
+does ack
 priority 1
 say Every place has its own way of telling it. | I'd like to hear your way some night. | Same tale, different mud.
 
 rule m7_close_tale_devout
-when concept=moment.close pair.mem.m7=scoff|believe|version|hometale self.piety=devout
+when concept=moment.close conv.m7=scoff|believe|version|hometale self.piety=devout
+does ack
 priority 1
 say The Bright One keeps us, tales or no. | I'll light a candle tonight all the same. | Tales are tales. Prayers are better.
 
@@ -929,86 +1021,87 @@ say The Bright One keeps us, tales or no. | I'll light a candle tonight all the 
 
 rule m7_day_open_any
 when concept=talk.day
+does tell.self
 cooldown 1d
 say Where's the day gone? | Feels like a long one already. | Is it only #here.weekday#? | Funny sort of day#tag#. | Days are getting away from me.
 then other: moment.reply_day
 
 rule m7_day_open_market
 when concept=talk.day here.day=market
+does tell.self
 cooldown 1d
-say Marketday. The whole town's out with its purse. | Have you been round the stalls yet? | I've been elbowed three times and I've bought nothing. | Market crowd's thick as porridge today.
+say {m7o=market} Marketday. The whole town's out with its purse. | {m7o=market} Have you been round the stalls yet? | {m7o=market} I've been elbowed three times and I've bought nothing. | {m7o=market} Market crowd's thick as porridge today.
 then other: moment.reply_day
-remember pair: m7o=market 2m
 
 rule m7_day_open_rest
 when concept=talk.day here.day=rest
+does tell.self
 cooldown 1d
-say Restday at last. My paws thank the gods. | Quiet, isn't it? You can hear the birds. | I don't know what to do with myself on a Restday. | Nothing to do but sit. Lovely.
+say {m7o=rest} Restday at last. My paws thank the gods. | {m7o=rest} Quiet, isn't it? You can hear the birds. | {m7o=rest} I don't know what to do with myself on a Restday. | {m7o=rest} Nothing to do but sit. Lovely.
 then other: moment.reply_day
-remember pair: m7o=rest 2m
 
 rule m7_day_open_work
 when concept=talk.day here.day=work here.time=dawn
+does tell.self
 cooldown 1d
-say Up with the birds again. | Another day, another sack. | #here.weekday.capitalize#, and already I'm counting to Restday.
+say {m7o=dawn} Up with the birds again. | {m7o=dawn} Another day, another sack. | {m7o=dawn} #here.weekday.capitalize#, and already I'm counting to Restday.
 then other: moment.reply_day
-remember pair: m7o=dawn 2m
 
 rule m7_day_open_dusk
 when concept=talk.day here.time=dusk
+does tell.self
 cooldown 1d
-say Lamps going on. Day's done. | That's the light gone. | Home, supper, #bed#. In that order. | Long shadows. My favourite hour.
+say {m7o=dusk} Lamps going on. Day's done. | {m7o=dusk} That's the light gone. | {m7o=dusk} Home, supper, #bed#. In that order. | {m7o=dusk} Long shadows. My favourite hour.
 then other: moment.reply_day
-remember pair: m7o=dusk 2m
 
 rule m7_day_open_night
 when concept=talk.day here.time=night
+does ask.detail
 cooldown 1d
-say What are you doing out at this hour? | You're up late. | Can't sleep either? | Late to be wandering, isn't it?
+say {m7o=night} What are you doing out at this hour? | {m7o=night} You're up late. | {m7o=night} Can't sleep either? | {m7o=night} Late to be wandering, isn't it?
 then other: moment.reply_day
-remember pair: m7o=night 2m
 
 rule m7_day_open_crowd
 when concept=talk.day here.crowd=crowd
+does tell.self
 cooldown 1d
-say Where's everyone come from? | Can't swing a cat for wolves today. | Mind your purse in this crush.
+say {m7o=crowd} Where's everyone come from? | {m7o=crowd} Can't swing a cat for wolves today. | {m7o=crowd} Mind your purse in this crush.
 then other: moment.reply_day
-remember pair: m7o=crowd 2m
 
 rule m7_day_open_quiet
 when concept=talk.day here.crowd=quiet here.place=street|market
+does tell.self
 cooldown 1d
-say Dead quiet. Where is everybody? | Just you and me and the pigeons. | Quiet as a chapel out here.
+say {m7o=quiet} Dead quiet. Where is everybody? | {m7o=quiet} Just you and me and the pigeons. | {m7o=quiet} Quiet as a chapel out here.
 then other: moment.reply_day
-remember pair: m7o=quiet 2m
 
 rule m7_day_open_rest_working
 when concept=talk.day here.day=rest self.working=yes
+does tell.self
 cooldown 2d
-say Restday, they call it. Not for me. | Somebody has to work while the rest of you pray. | I'll rest when I'm dead. Or Hearthday.
+say {m7o=busy} Restday, they call it. Not for me. | {m7o=busy} Somebody has to work while the rest of you pray. | {m7o=busy} I'll rest when I'm dead. Or Hearthday.
 then other: moment.reply_day
-remember pair: m7o=busy 2m
 
 rule m7_day_open_market_merchant
 when concept=talk.day here.day=market self.role=merchant
+does tell.self
 cooldown 2d
-say Good day for it. I've sold out of half the stall. | They're haggling like it's a sport. | Marketday's the only day that pays the rent.
+say {m7o=stall} Good day for it. I've sold out of half the stall. | {m7o=stall} They're haggling like it's a sport. | {m7o=stall} Marketday's the only day that pays the rent.
 then other: moment.reply_day
-remember pair: m7o=stall 2m
 
 rule m7_day_open_after_shift
 when concept=talk.day self.shift=after
+does tell.self
 cooldown 1d
-say That's me done. Done, done, done. | Off my feet, finally. | Day's work's behind me. Don't mention it.
+say {m7o=done} That's me done. Done, done, done. | {m7o=done} Off my feet, finally. | {m7o=done} Day's work's behind me. Don't mention it.
 then other: moment.reply_day
-remember pair: m7o=done 2m
 
 rule m7_day_open_day_off
 when concept=talk.day self.shift=day_off
+does tell.self
 cooldown 1d
-say Day off. I keep thinking I've forgotten something. | Nothing to do and all day to do it. | I slept till the bells. Shameless.
+say {m7o=dayoff} Day off. I keep thinking I've forgotten something. | {m7o=dayoff} Nothing to do and all day to do it. | {m7o=dayoff} I slept till the bells. Shameless.
 then other: moment.reply_day
-remember pair: m7o=dayoff 2m
 
 # ================================================================ The day: answers (self is the one answering)
 
@@ -1016,390 +1109,407 @@ remember pair: m7o=dayoff 2m
 
 rule m7_day_re_any
 when concept=moment.reply_day
+does answer.how
 say Same as ever. One foot, then the other. | I've stopped counting them. | Another day closer to something. | Aye. There's always tomorrow. | Days are like beans. All the same till you need one.
 then other: moment.close
 
 rule m7_day_re_any2
 when concept=moment.reply_day
+does answer.how
 say Can't complain. Well, I can. | Mustn't grumble, so I won't. Much. | It's had its moments. | So far, so ordinary.
 then other: moment.close
 
 # To the opener's kind of day (priority 1).
 
 rule m7_day_re_market
-when concept=moment.reply_day pair.mem.m7o=market
+when concept=moment.reply_day conv.m7o=market
+does answer.how
 priority 1
-say Once round. The prices'd make you weep. | I'm keeping my purse in my teeth. | I'm only here for the cheese. | Thick as porridge, and twice as slow.
+say {m7=market} Once round. The prices'd make you weep. | {m7=market} I'm keeping my purse in my teeth. | {m7=market} I'm only here for the cheese. | {m7=market} Thick as porridge, and twice as slow.
 then other: moment.close
-remember pair: m7=market 2m
 
 rule m7_day_re_market_merchant
-when concept=moment.reply_day pair.mem.m7o=market self.role=merchant
+when concept=moment.reply_day conv.m7o=market self.role=merchant
+does answer.how
 priority 1
 cooldown 1d
-say I've not sat down since dawn. Don't keep me. | Busy's good. Busy's rent. | One more haggler and I'll give it away to be rid of them.
+say {m7=work} I've not sat down since dawn. Don't keep me. | {m7=work} Busy's good. Busy's rent. | {m7=work} One more haggler and I'll give it away to be rid of them.
 then other: moment.close
-remember pair: m7=work 2m
 
 rule m7_day_re_market_poor
-when concept=moment.reply_day pair.mem.m7o=market self.wealth=destitute|poor self.stage=adult|old
+when concept=moment.reply_day conv.m7o=market self.wealth=destitute|poor self.stage=adult|old
+does answer.how
 priority 1
 cooldown 1d
-say I look. Looking's free. | Smelled the pies. That'll do me. | I've a penny and a list as long as my tail.
+say {m7=poor} I look. Looking's free. | {m7=poor} Smelled the pies. That'll do me. | {m7=poor} I've a penny and a list as long as my tail.
 then other: moment.close
-remember pair: m7=poor 2m
 
 rule m7_day_re_market_young
-when concept=moment.reply_day pair.mem.m7o=market self.stage=young
+when concept=moment.reply_day conv.m7o=market self.stage=young
+does answer.how
 priority 1
 cooldown 1d
-say There's a wolf with a dancing bird! A real one! | I'm allowed one honey cake. Just one. | I lost my mother twice already.
+say {m7=glad} There's a wolf with a dancing bird! A real one! | {m7=glad} I'm allowed one honey cake. Just one. | {m7=glad} I lost my mother twice already.
 then other: moment.close
-remember pair: m7=glad 2m
 
 rule m7_day_re_stall
-when concept=moment.reply_day pair.mem.m7o=stall
+when concept=moment.reply_day conv.m7o=stall
+does answer.how
 priority 1
-say Then you can stand me a pie. | Good. Your prices can come down, then. | Glad somebody's doing well out of it.
+say {m7=joke} Then you can stand me a pie. | {m7=joke} Good. Your prices can come down, then. | {m7=joke} Glad somebody's doing well out of it.
 then other: moment.close
-remember pair: m7=joke 2m
 
 rule m7_day_re_stall_merchant
-when concept=moment.reply_day pair.mem.m7o=stall self.role=merchant
+when concept=moment.reply_day conv.m7o=stall self.role=merchant
+does answer.how
 priority 1
 cooldown 1d
 say Lucky you. Mine's been dead as a doornail. | Same here. My voice is gone from crying my wares. | Don't boast. It brings the tax-farmers.
 then other: moment.close
 
 rule m7_day_re_rest
-when concept=moment.reply_day pair.mem.m7o=rest
+when concept=moment.reply_day conv.m7o=rest
+does answer.how
 priority 1
-say Rest while you can. | I've done nothing all morning, and I'm proud of it. | Sit. That's the whole trick of it. | It won't last. Dawnday's coming.
+say {m7=rest} Rest while you can. | {m7=rest} I've done nothing all morning, and I'm proud of it. | {m7=rest} Sit. That's the whole trick of it. | {m7=rest} It won't last. Dawnday's coming.
 then other: moment.close
-remember pair: m7=rest 2m
 
 rule m7_day_re_rest_devout
-when concept=moment.reply_day pair.mem.m7o=rest self.piety=devout
+when concept=moment.reply_day conv.m7o=rest self.piety=devout
+does answer.how
 priority 1
 cooldown 1d
-say I've been to chapel twice. I'll go again at dusk. | Rest's a gift. You should take it. | A good sermon this morning. You missed it.
+say {m7=rest} I've been to chapel twice. I'll go again at dusk. | {m7=rest} Rest's a gift. You should take it. | {m7=rest} A good sermon this morning. You missed it.
 then other: moment.close
-remember pair: m7=rest 2m
 
 rule m7_day_re_rest_working
-when concept=moment.reply_day pair.mem.m7o=rest self.working=yes
+when concept=moment.reply_day conv.m7o=rest self.working=yes
+does answer.how
 priority 1
 cooldown 1d
-say Easy for you. I've been at it since dawn. | Restday's for those who can afford it. | Someone has to keep the fires in.
+say {m7=work} Easy for you. I've been at it since dawn. | {m7=work} Restday's for those who can afford it. | {m7=work} Someone has to keep the fires in.
 then other: moment.close
-remember pair: m7=work 2m
 
 rule m7_day_re_rest_restless
-when concept=moment.reply_day pair.mem.m7o=rest self.drive=restless|ambitious
+when concept=moment.reply_day conv.m7o=rest self.drive=restless|ambitious
+does answer.how
 priority 1
 cooldown 1d
-say I hate Restdays. Nothing gets done. | I've tidied the house twice. | Tomorrow can't come soon enough.
+say {m7=joke} I hate Restdays. Nothing gets done. | {m7=joke} I've tidied the house twice. | {m7=joke} Tomorrow can't come soon enough.
 then other: moment.close
-remember pair: m7=joke 2m
 
 rule m7_day_re_dawn
-when concept=moment.reply_day pair.mem.m7o=dawn
+when concept=moment.reply_day conv.m7o=dawn
+does answer.how
 priority 1
-say Birds have the right idea. They sing about it. | Don't. I've not woken up yet. | Ask me after I've eaten. | Same sack, different day.
+say {m7=dawn} Birds have the right idea. They sing about it. | {m7=dawn} Don't. I've not woken up yet. | {m7=dawn} Ask me after I've eaten. | {m7=dawn} Same sack, different day.
 then other: moment.close
-remember pair: m7=dawn 2m
 
 rule m7_day_re_dusk
-when concept=moment.reply_day pair.mem.m7o=dusk
+when concept=moment.reply_day conv.m7o=dusk
+does answer.how
 priority 1
 say And not before time. | Supper and my own chair. I can taste it. | Best hour of the day, this. | Another one done, and nothing broken.
 then other: moment.close
 
 rule m7_day_re_dusk_old
-when concept=moment.reply_day pair.mem.m7o=dusk self.stage=old
+when concept=moment.reply_day conv.m7o=dusk self.stage=old
+does answer.how
 priority 1
 cooldown 1d
 say At my age you're glad of every one. | Days go quicker the fewer you've got. | I watched the sun down. I always do.
 then other: moment.close
 
 rule m7_day_re_night
-when concept=moment.reply_day pair.mem.m7o=night
+when concept=moment.reply_day conv.m7o=night
+does answer.how
 priority 1
-say Couldn't sleep. | Walking it off. | I could ask you the same. | Better out here than staring at the rafters.
+say {m7=night} Couldn't sleep. | {m7=night} Walking it off. | {m7=night} I could ask you the same. | {m7=night} Better out here than staring at the rafters.
 then other: moment.close
-remember pair: m7=night 2m
 
 rule m7_day_re_night_young
-when concept=moment.reply_day pair.mem.m7o=night self.stage=young|adolescent
+when concept=moment.reply_day conv.m7o=night self.stage=young|adolescent
+does answer.how
 priority 1
-say Don't tell my mum. | I'm going home. I'm going right now. | I heard a noise and came to look.
+say {m7=joke} Don't tell my mum. | {m7=joke} I'm going home. I'm going right now. | {m7=joke} I heard a noise and came to look.
 then other: moment.close
-remember pair: m7=joke 2m
 
 rule m7_day_re_crowd
-when concept=moment.reply_day pair.mem.m7o=crowd
+when concept=moment.reply_day conv.m7o=crowd
+does answer.how
 priority 1
-say Every village for a day's walk, by the look of it. | Keep your tail tucked in. | I've been trodden on twice.
+say {m7=market} Every village for a day's walk, by the look of it. | {m7=market} Keep your tail tucked in. | {m7=market} I've been trodden on twice.
 then other: moment.close
-remember pair: m7=market 2m
 
 rule m7_day_re_crowd_nervy
-when concept=moment.reply_day pair.mem.m7o=crowd self.temper=nervy
+when concept=moment.reply_day conv.m7o=crowd self.temper=nervy
+does answer.how
 priority 1
 cooldown 1d
-say Too many. Far too many. I can't breathe. | Everyone's treading on my tail. | I'm going home. I'll come back when it thins.
+say {m7=crowd} Too many. Far too many. I can't breathe. | {m7=crowd} Everyone's treading on my tail. | {m7=crowd} I'm going home. I'll come back when it thins.
 then other: moment.close
-remember pair: m7=crowd 2m
 
 rule m7_day_re_quiet
-when concept=moment.reply_day pair.mem.m7o=quiet
+when concept=moment.reply_day conv.m7o=quiet
+does answer.how
 priority 1
 say Indoors, with any sense. | Suits me. | Don't complain. You'll bring the crowds. | Gone to the next town, I expect. Something's always better there.
 then other: moment.close
 
 rule m7_day_re_done
-when concept=moment.reply_day pair.mem.m7o=done
+when concept=moment.reply_day conv.m7o=done
+does answer.how
 priority 1
-say Off home with you, then. | Lucky. I've half a day yet. | Put your feet up. You've earned it.
+say {m7=done} Off home with you, then. | {m7=done} Lucky. I've half a day yet. | {m7=done} Put your feet up. You've earned it.
 then other: moment.close
-remember pair: m7=done 2m
 
 rule m7_day_re_done_too
-when concept=moment.reply_day pair.mem.m7o=done self.shift=after
+when concept=moment.reply_day conv.m7o=done self.shift=after
+does answer.how
 priority 1
-say Me too. Shall we find a bench? | Same. My back's made of wood. | Done and dusted. Let's not talk about it.
+say {m7=both} Me too. Shall we find a bench? | {m7=both} Same. My back's made of wood. | {m7=both} Done and dusted. Let's not talk about it.
 then other: moment.close
-remember pair: m7=both 2m
 
 rule m7_day_re_dayoff
-when concept=moment.reply_day pair.mem.m7o=dayoff
+when concept=moment.reply_day conv.m7o=dayoff
+does answer.how
 priority 1
-say Enjoy it. Don't waste it on the likes of me. | Make the most of it. | Lucky beast. | You'll have forgotten nothing. That's the feeling of rest.
+say {m7=dayoff} Enjoy it. Don't waste it on the likes of me. | {m7=dayoff} Make the most of it. | {m7=dayoff} Lucky beast. | {m7=dayoff} You'll have forgotten nothing. That's the feeling of rest.
 then other: moment.close
-remember pair: m7=dayoff 2m
 
 # As they are, whatever the opener (priority 1, so they stand with the keyed answers).
 
 rule m7_day_re_guard
 when concept=moment.reply_day self.on_watch=yes
+does answer.how
 priority 1
 cooldown 1d
-say Can't stop. I'm on watch. | Long one. Ask me at the end of it. | Quiet so far. Don't say it. You'll jinx it.
+say {m7=work} Can't stop. I'm on watch. | {m7=work} Long one. Ask me at the end of it. | {m7=work} Quiet so far. Don't say it. You'll jinx it.
 then other: moment.close
-remember pair: m7=work 2m
 
 rule m7_day_re_tired
 when concept=moment.reply_day self.tired=yes
+does answer.how
 priority 1
 cooldown 1d
-say I'm that #tired# I could sleep on a fence. | I could sleep standing, like a horse. | Don't ask. I'll cry.
+say {m7=weary} I'm that #tired# I could sleep on a fence. | {m7=weary} I could sleep standing, like a horse. | {m7=weary} Don't ask. I'll cry.
 then other: moment.close
-remember pair: m7=weary 2m
 
 rule m7_day_re_hungry
 when concept=moment.reply_day self.hungry=yes
+does answer.how
 priority 1
 cooldown 1d
-say I'll tell you after I've eaten. | I'm #hungry#. That's my whole day. | My belly's been talking louder than me.
+say {m7=hungry} I'll tell you after I've eaten. | {m7=hungry} I'm #hungry#. That's my whole day. | {m7=hungry} My belly's been talking louder than me.
 then other: moment.close
-remember pair: m7=hungry 2m
 
 rule m7_day_re_chatty
 when concept=moment.reply_day self.talk=chatty
+does answer.how
 priority 1
 cooldown 1d
-say Never mind that. You'll never guess who I saw at the well. | Oh, that reminds me. Have you heard about the baker's cart? | Listen, I've news. Sit down a moment.
+say {m7=gossip} Never mind that. You'll never guess who I saw at the well. | {m7=gossip} Oh, that reminds me. Have you heard about the baker's cart? | {m7=gossip} Listen, I've news. Sit down a moment.
 then other: moment.close
-remember pair: m7=gossip 2m
 
 rule m7_day_re_rich
-when concept=moment.reply_day self.wealth=rich self.stage=adult|old !pair.mem.m7o
+when concept=moment.reply_day self.wealth=rich self.stage=adult|old !conv.m7o
+does answer.how
 cooldown 2d
-say Pleasant enough. Calls and letters. | A dull dinner, and a duller visit after it. | One does what one must.
+say {m7=posh} Pleasant enough. Calls and letters. | {m7=posh} A dull dinner, and a duller visit after it. | {m7=posh} One does what one must.
 then other: moment.close
-remember pair: m7=posh 2m
 
 rule m7_day_re_mourning
 when concept=moment.reply_day self.mourning=kin|friend
+does answer.how
 priority 2
 cooldown 1d
-say I get through them. That's all. | Every day's long, this week. | I keep thinking I'll tell them about it.
+say {k=grief} I get through them. That's all. | {k=grief} Every day's long, this week. | {k=grief} I keep thinking I'll tell them about it.
 then other: keeping.sorry
-remember pair: k=grief 2m
 
 # ================================================================ Festivals: openers (here.festival is the festival's
 # name, today's or the one coming)
 
 rule m7_fest_open_today
 when concept=talk.festival topic.when=today here.festival
+does tell.self
 cooldown 1d
 say #greet#, and a happy #here.festival#! | #here.festival.capitalize# at last. | You've a ribbon on, I see. Proper #here.festival# spirit. | Smell that? That's a feast cooking.
 then other: moment.reply_festival
 
 rule m7_fest_open_soon
 when concept=talk.festival topic.when=soon here.festival
+does tell.self
 cooldown 1d
 say #here.festival.capitalize#'s nearly on us. | Ready for #here.festival#? | Not long now till #here.festival#. | They've asked me to bring a pie for #here.festival#. Me! I burn water.
 then other: moment.reply_festival
 
 rule m7_fest_open_today_spring
 when concept=talk.festival topic.when=today here.season=spring
+does tell.self
 cooldown 1d
 say Blossom in every doorway. | They've hung green boughs over the gate. | First feast after the lean months. My belly cheered.
 then other: moment.reply_festival
 
 rule m7_fest_open_today_summer
 when concept=talk.festival topic.when=today here.season=summer
+does tell.self
 cooldown 1d
 say They'll dance till the light goes, and it goes late. | The fires'll be lit at dusk. | Too hot to dance. They'll dance anyway.
 then other: moment.reply_festival
 
 rule m7_fest_open_today_autumn
 when concept=talk.festival topic.when=today here.season=autumn
+does tell.self
 cooldown 1d
 say The last of it's in. Now we eat it. | Corn dollies on every door. | Bread, cider, more bread. That's the plan.
 then other: moment.reply_festival
 
 rule m7_fest_open_today_winter
 when concept=talk.festival topic.when=today here.season=winter
+does tell.self
 cooldown 1d
 say Dark early, and every window lit. | Look at it. Candles in every house. | The cold can't get in tonight. Not with all those fires.
 then other: moment.reply_festival
 
 rule m7_fest_open_soon_poor
 when concept=talk.festival topic.when=soon self.wealth=destitute|poor self.stage=adult|old
+does tell.self
 cooldown 2d
 priority 1
-say How's a body to feast on nothing? | Everyone in new ribbons, and me in last year's coat. | Festivals are for those with full purses.
+say {m7o=need} How's a body to feast on nothing? | {m7o=need} Everyone in new ribbons, and me in last year's coat. | {m7o=need} Festivals are for those with full purses.
 then other: moment.reply_festival
-remember pair: m7o=need 2m
 
 rule m7_fest_open_soon_cook
 when concept=talk.festival topic.when=soon self.job=cook|baker|innkeeper|brewer
+does tell.self
 cooldown 2d
-say I'll be baking from tonight till it's over. | Three days' work for one day's feast. | Order your pies now or go without.
+say {m7o=busy} I'll be baking from tonight till it's over. | {m7o=busy} Three days' work for one day's feast. | {m7o=busy} Order your pies now or go without.
 then other: moment.reply_festival
-remember pair: m7o=busy 2m
 
 rule m7_fest_open_young_today
 when concept=talk.festival topic.when=today self.stage=young
+does ask.detail
 cooldown 1d
-say Is it the feast now? Is it? | Will there be honey cakes? Say there will. | I'm going to stay up till the end. All of it.
+say {m7o=pup} Is it the feast now? Is it? | {m7o=pup} Will there be honey cakes? Say there will. | {m7o=pup} I'm going to stay up till the end. All of it.
 then other: moment.reply_festival
-remember pair: m7o=pup 2m
 
 rule m7_fest_open_young_soon
 when concept=talk.festival topic.when=soon self.stage=young here.festival
+does ask.detail
 cooldown 1d
-say How many sleeps till #here.festival#? | Will there be honey cakes? Say there will. | Is it #here.festival# tomorrow? Is it?
+say {m7o=pup} How many sleeps till #here.festival#? | {m7o=pup} Will there be honey cakes? Say there will. | {m7o=pup} Is it #here.festival# tomorrow? Is it?
 then other: moment.reply_festival
-remember pair: m7o=pup 2m
 
 # ================================================================ Festivals: answers
 
 rule m7_fest_re_any
 when concept=moment.reply_festival
-say Wouldn't miss it for all the #money# in Ridgemere. | I've my good coat brushed and ready. | Aye. Eat, dance, regret it in the morning. | It comes round quicker every year. | I'll be there. Somewhere near the food.
+does answer.plan
+say {m7=glad} Wouldn't miss it for all the #money# in Ridgemere. | {m7=glad} I've my good coat brushed and ready. | {m7=glad} Aye. Eat, dance, regret it in the morning. | {m7=glad} It comes round quicker every year. | {m7=glad} I'll be there. Somewhere near the food.
 then other: moment.close
-remember pair: m7=glad 2m
 
 rule m7_fest_re_any2
 when concept=moment.reply_festival
+does answer.plan
 say Same as every year, and I'll love it the same. | Gods, the noise there'll be. | They'd better not run out of cider like last time.
 then other: moment.close
 
 rule m7_fest_re_priest
 when concept=moment.reply_festival self.job=priest
+does answer.plan
 cooldown 1d
 say Remember why we keep it, between the cups. | I've the blessing to say. Pray they listen. | The chapel first, then the feast. That's the order.
 then other: moment.close
 
 rule m7_fest_re_guard
 when concept=moment.reply_festival self.job=guard|soldier
+does answer.plan
 cooldown 1d
-say I'm on duty. Somebody's got to fish the drunks out of the trough. | Double watch. Every festival, the same fights. | I'll hear it from the wall. Lovely.
+say {m7=work} I'm on duty. Somebody's got to fish the drunks out of the trough. | {m7=work} Double watch. Every festival, the same fights. | {m7=work} I'll hear it from the wall. Lovely.
 then other: moment.close
-remember pair: m7=work 2m
 
 rule m7_fest_re_cook
 when concept=moment.reply_festival self.job=cook|baker|innkeeper|brewer
+does answer.plan
 cooldown 1d
-say I'll be feeding the lot of you. Don't expect me to dance. | Every oven in town's going. | I've not seen my bed since yesterday.
+say {m7=work} I'll be feeding the lot of you. Don't expect me to dance. | {m7=work} Every oven in town's going. | {m7=work} I've not seen my bed since yesterday.
 then other: moment.close
-remember pair: m7=work 2m
 
 rule m7_fest_re_merchant
 when concept=moment.reply_festival self.role=merchant
+does answer.plan
 cooldown 1d
 say Best trade of the season. Ribbons sell themselves. | I've laid in triple stock. Pray I sell it. | Festivals are good to merchants. Very good.
 then other: moment.close
 
 rule m7_fest_re_poor
 when concept=moment.reply_festival self.wealth=destitute|poor self.stage=adult|old
+does answer.plan
 priority 1
 cooldown 1d
-say I'll watch. Watching's free. | The chapel feeds folk at festival. I'll be in the line. | Not this year. Maybe next.
+say {m7=poor} I'll watch. Watching's free. | {m7=poor} The chapel feeds folk at festival. I'll be in the line. | {m7=poor} Not this year. Maybe next.
 then other: moment.close
-remember pair: m7=poor 2m
 
 rule m7_fest_re_rich
 when concept=moment.reply_festival self.wealth=rich self.stage=adult|old
+does answer.plan
 cooldown 1d
-say We'll give a little something to the town, of course. | I've a dinner to host. Twelve at table. Exhausting. | I've ordered more candles than the chapel.
+say {m7=posh} We'll give a little something to the town, of course. | {m7=posh} I've a dinner to host. Twelve at table. Exhausting. | {m7=posh} I've ordered more candles than the chapel.
 then other: moment.close
-remember pair: m7=posh 2m
 
 rule m7_fest_re_house
 when concept=moment.reply_festival self.house self.wealth=rich
+does answer.plan
 cooldown 2d
-say Our House always puts on a show. It's expected. | Father wants the whole hall lit. Every candle in the city. | The Council will be watching who gives most. As ever.
+say {m7=posh} Our House always puts on a show. It's expected. | {m7=posh} Father wants the whole hall lit. Every candle in the city. | {m7=posh} The Council will be watching who gives most. As ever.
 then other: moment.close
-remember pair: m7=posh 2m
 
 rule m7_fest_re_mourning
 when concept=moment.reply_festival self.mourning=kin|friend
+does answer.plan
 priority 2
 cooldown 1d
-say I'll not go this year. | They loved this festival. I can't face it. | Maybe I'll sit at the back. Maybe.
+say {k=grief} I'll not go this year. | {k=grief} They loved this festival. I can't face it. | {k=grief} Maybe I'll sit at the back. Maybe.
 then other: keeping.sorry
-remember pair: k=grief 2m
 
 rule m7_fest_re_old
 when concept=moment.reply_festival self.stage=old
+does answer.plan
 cooldown 1d
 say In my day it went three days, not one. | I've danced at sixty of them. I'll sit this one out. Maybe. | They don't sing the old songs any more. Nobody knows them.
 then other: moment.close
 
 rule m7_fest_re_young
 when concept=moment.reply_festival self.stage=young
+does answer.plan
 cooldown 1d
-say I'm going to eat six honey cakes. Six! | Can I stay up? Can I? | I've practised the dance. Watch! No, watch!
+say {m7=glad} I'm going to eat six honey cakes. Six! | {m7=glad} Can I stay up? Can I? | {m7=glad} I've practised the dance. Watch! No, watch!
 then other: moment.close
-remember pair: m7=glad 2m
 
 rule m7_fest_re_adolescent
 when concept=moment.reply_festival self.stage=adolescent
+does answer.plan
 cooldown 1d
-say There's dancing after dark. Everyone's going. Everyone. | I'm not wearing that ribbon. I'm not. | Maybe someone'll ask me to dance. Maybe.
+say {m7=teen} There's dancing after dark. Everyone's going. Everyone. | {m7=teen} I'm not wearing that ribbon. I'm not. | {m7=teen} Maybe someone'll ask me to dance. Maybe.
 then other: moment.close
-remember pair: m7=teen 2m
 
 rule m7_fest_re_from_away
 when concept=moment.reply_festival self.from!=ridgemere here.region=ridgemere
+does answer.plan
 cooldown 2d
-say At home we do it different. More singing, less shoving. | It's not the same as at home. Bigger, but not the same. | Back home they'll be setting the long table about now.
+say {m7=home} At home we do it different. More singing, less shoving. | {m7=home} It's not the same as at home. Bigger, but not the same. | {m7=home} Back home they'll be setting the long table about now.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_fest_re_short
 when concept=moment.reply_festival self.temper=short
+does answer.plan
 cooldown 1d
-say Noise, drink and fools. I'll stay in. | Wake me when it's over. | Every year someone's sick on my step.
+say {m7=joke} Noise, drink and fools. I'll stay in. | {m7=joke} Wake me when it's over. | {m7=joke} Every year someone's sick on my step.
 then other: moment.close
-remember pair: m7=joke 2m
 
 rule m7_fest_re_devout
 when concept=moment.reply_festival self.piety=devout
+does answer.plan
 cooldown 1d
 say I'll be at the chapel first. Give thanks before you feast. | It's a holy day before it's a drinking one. | I've a candle ready for the window.
 then other: moment.close
@@ -1407,248 +1517,254 @@ then other: moment.close
 # To a pup's festival questions (m7o=pup).
 
 rule m7_fest_re_to_pup_today
-when concept=moment.reply_festival pair.mem.m7o=pup topic.when=today self.stage=adult|old
+when concept=moment.reply_festival conv.m7o=pup topic.when=today self.stage=adult|old
+does answer.plan
 priority 3
-say Cakes, and dancing, and a bonfire. If you're good. | Stay by your mother in the crowd, mind. | Till the end? We'll see who's asleep first. | It's today, you daft pup. Go and find the cakes.
+say {m7=topup} Cakes, and dancing, and a bonfire. If you're good. | {m7=topup} Stay by your mother in the crowd, mind. | {m7=topup} Till the end? We'll see who's asleep first. | {m7=topup} It's today, you daft pup. Go and find the cakes.
 then other: moment.close
-remember pair: m7=topup 2m
 
 rule m7_fest_re_to_pup_soon
-when concept=moment.reply_festival pair.mem.m7o=pup topic.when=soon self.stage=adult|old
+when concept=moment.reply_festival conv.m7o=pup topic.when=soon self.stage=adult|old
+does answer.plan
 priority 3
-say Not long. A few more sleeps. | Soon. Be good till then and there might be cakes. | Ask me again tomorrow, and the day after. Then it'll be here.
+say {m7=topup} Not long. A few more sleeps. | {m7=topup} Soon. Be good till then and there might be cakes. | {m7=topup} Ask me again tomorrow, and the day after. Then it'll be here.
 then other: moment.close
-remember pair: m7=topup 2m
 
 rule m7_fest_re_pup_pup
-when concept=moment.reply_festival pair.mem.m7o=pup self.stage=young|adolescent
+when concept=moment.reply_festival conv.m7o=pup self.stage=young|adolescent
+does answer.plan
 priority 3
-say I'm having two! | My big sister says there's a fire as high as a house. | I'm going to dance with everyone.
+say {m7=pupchat} I'm having two! | {m7=pupchat} My big sister says there's a fire as high as a house. | {m7=pupchat} I'm going to dance with everyone.
 then other: moment.close
-remember pair: m7=pupchat 2m
 
 # ================================================================ Lore: openers (talk.lore: the realm's tales, by anyone)
 
 rule m7_lore_open_any
 when concept=talk.lore
+does tell.story
 cooldown 1d
-say My grandmother used to say the hills were sleeping giants. | They say a giant dragged one claw from Glasswater to the sea, and that's the Long River. | They say the old roads were laid by wolves who never slept. | Put your ear to the ground on a still night, they say, and you'll hear the dead talking.
+say {m7o=tale} My grandmother used to say the hills were sleeping giants. | {m7o=tale} They say a giant dragged one claw from Glasswater to the sea, and that's the Long River. | {m7o=tale} They say the old roads were laid by wolves who never slept. | {m7o=tale} Put your ear to the ground on a still night, they say, and you'll hear the dead talking.
 then other: moment.reply_lore
-remember pair: m7o=tale 2m
 
 rule m7_lore_open_night
 when concept=talk.lore here.time=night|dusk
+does tell.story
 cooldown 1d
-say Don't whistle after dark. It calls things. | Count the stars and you'll go blind, my mother said. | They say a shiver at dusk means someone's stepped where you'll be buried. | Never answer a voice in the dark that knows your name.
+say {m7o=tale} Don't whistle after dark. It calls things. | {m7o=tale} Count the stars and you'll go blind, my mother said. | {m7o=tale} They say a shiver at dusk means someone's stepped where you'll be buried. | {m7o=tale} Never answer a voice in the dark that knows your name.
 then other: moment.reply_lore
-remember pair: m7o=tale 2m
 
 rule m7_lore_open_wardens
 when concept=talk.lore
+does tell.story
 cooldown 2d
-say Folk say the Wardens watch the Quickened from somewhere past the mountains. | Ever seen a Warden? My uncle swore he did. Grey cloak, no face. | If you've a gift, they say, the Wardens hear of it.
+say {m7o=tale} Folk say the Wardens watch the Quickened from somewhere past the mountains. | {m7o=tale} Ever seen a Warden? My uncle swore he did. Grey cloak, no face. | {m7o=tale} If you've a gift, they say, the Wardens hear of it.
 then other: moment.reply_lore
-remember pair: m7o=tale 2m
 
 rule m7_lore_open_houses
 when concept=talk.lore here.region=ridgemere
+does tell.story
 cooldown 2d
-say They say the first Greatly came down from the hills with a trowel and a bag of lime. | They say the cellars under Grayrock Hall go down under the sea and never stop. | They say there was a fifth House once, and the other four swore never to speak its name.
+say {m7o=tale} They say the first Greatly came down from the hills with a trowel and a bag of lime. | {m7o=tale} They say the cellars under Grayrock Hall go down under the sea and never stop. | {m7o=tale} They say there was a fifth House once, and the other four swore never to speak its name.
 then other: moment.reply_lore
-remember pair: m7o=tale 2m
 
 rule m7_lore_open_old
 when concept=talk.lore self.stage=old
+does tell.story
 cooldown 2d
-say When I was a pup they said the winters were longer because the wolves were kinder. | My gran told me a comet came in her girlhood and burned the sky a week. | My father swore the old well spoke to him, the night before the flood.
+say {m7o=tale} When I was a pup they said the winters were longer because the wolves were kinder. | {m7o=tale} My gran told me a comet came in her girlhood and burned the sky a week. | {m7o=tale} My father swore the old well spoke to him, the night before the flood.
 then other: moment.reply_lore
-remember pair: m7o=tale 2m
 
 rule m7_lore_open_young
 when concept=talk.lore self.stage=young
+does ask.detail
 cooldown 1d
-say Is it true there's a dragon under the hill? | Is there really a wolf with no shadow that walks the roads at night? | Do the dead come back on the longest night? Brindle says so.
+say {m7o=pup} Is it true there's a dragon under the hill? | {m7o=pup} Is there really a wolf with no shadow that walks the roads at night? | {m7o=pup} Do the dead come back on the longest night? Brindle says so.
 then other: moment.reply_lore
-remember pair: m7o=pup 2m
 
 # ================================================================ Lore: answers (to a tale told, m7o=tale)
 
 rule m7_lore_re_any
 when concept=moment.reply_lore
-say Every grandmother says that. | Who told you that? | Old tales have a grain of something in them. Not much.
+does react.story
+say {m7=scoff} Every grandmother says that. | {m7=scoff} Who told you that? | {m7=scoff} Old tales have a grain of something in them. Not much.
 then other: moment.close
-remember pair: m7=scoff 2m
 
 rule m7_lore_re_any2
 when concept=moment.reply_lore
-say My mother told it the same. Word for word. | Don't. I'll never sleep. | Hush. Somebody'll hear. | That's nonsense, and I believe every word.
+does react.story
+say {m7=believe} My mother told it the same. Word for word. | {m7=believe} Don't. I'll never sleep. | {m7=believe} Hush. Somebody'll hear. | {m7=believe} That's nonsense, and I believe every word.
 then other: moment.close
-remember pair: m7=believe 2m
 
 rule m7_lore_re_any3
 when concept=moment.reply_lore
-say I heard it different. Worse, my version. | That's not how my gran told it. Hers had a fox in it. | You've left the best bit out.
+does react.story
+say {m7=version} I heard it different. Worse, my version. | {m7=version} That's not how my gran told it. Hers had a fox in it. | {m7=version} You've left the best bit out.
 then other: moment.close
-remember pair: m7=version 2m
 
 rule m7_lore_re_frank
 when concept=moment.reply_lore self.honesty=frank
+does react.story
 cooldown 1d
-say #nonsense.capitalize#. Pure #nonsense#. | Tales are for pups and drunks. | I'll believe it when it pays my rent.
+say {m7=scoff} #nonsense.capitalize#. Pure #nonsense#. | {m7=scoff} Tales are for pups and drunks. | {m7=scoff} I'll believe it when it pays my rent.
 then other: moment.close
-remember pair: m7=scoff 2m
 
 rule m7_lore_re_devout
 when concept=moment.reply_lore self.piety=devout
+does react.story
 cooldown 1d
-say The Bright One made the world. The rest is gossip. | Don't speak lightly of such things. | There's more under the sky than the priests tell us. I'll grant that.
+say {m7=pious} The Bright One made the world. The rest is gossip. | {m7=pious} Don't speak lightly of such things. | {m7=pious} There's more under the sky than the priests tell us. I'll grant that.
 then other: moment.close
-remember pair: m7=pious 2m
 
 rule m7_lore_re_old
 when concept=moment.reply_lore self.stage=old
+does react.story
 cooldown 1d
-say That's not how it goes. Sit down, I'll tell it right. | I knew a wolf who knew a wolf who was there. | They told it better when I was young. Slower.
+say {m7=oldtell} That's not how it goes. Sit down, I'll tell it right. | {m7=oldtell} I knew a wolf who knew a wolf who was there. | {m7=oldtell} They told it better when I was young. Slower.
 then other: moment.close
-remember pair: m7=oldtell 2m
 
 rule m7_lore_re_young
 when concept=moment.reply_lore self.stage=young
+does react.story
 cooldown 1d
-say Is that true? Truly true? | I'm not scared. I'm just going to stand behind you. | Tell it again! The scary bit!
+say {m7=believe} Is that true? Truly true? | {m7=believe} I'm not scared. I'm just going to stand behind you. | {m7=believe} Tell it again! The scary bit!
 then other: moment.close
-remember pair: m7=believe 2m
 
 rule m7_lore_re_scholar
 when concept=moment.reply_lore self.job=scholar|priest|official
+does react.story
 cooldown 1d
-say There's something like it in the old rolls, if you can read the hand. | The records say something of the kind. Duller, mind. | Tales grow in the telling. The truth's usually smaller.
+say {m7=scholar} There's something like it in the old rolls, if you can read the hand. | {m7=scholar} The records say something of the kind. Duller, mind. | {m7=scholar} Tales grow in the telling. The truth's usually smaller.
 then other: moment.close
-remember pair: m7=scholar 2m
 
 rule m7_lore_re_nervy
 when concept=moment.reply_lore self.temper=nervy here.time=night|dusk
+does react.story ask.opinion
 cooldown 1d
-say Why would you say that? Now? Here? | I'm going home. Right now. With a lamp. | Did you hear that? Behind us?
+say {m7=spooked} Why would you say that? Now? Here? | {m7=spooked} I'm going home. Right now. With a lamp. | {m7=spooked} Did you hear that? Behind us?
 then other: moment.close
-remember pair: m7=spooked 2m
 
 # From elsewhere: each country's way of telling it (never said at home, where everyone tells it so).
 
 rule m7_lore_re_from_frost
 when concept=moment.reply_lore self.from=frosthollow here.region!=frosthollow
+does react.story
 cooldown 2d
-say Up the valley they'd say it's the mountain breathing. Everything's the mountain, with us. | We've a tale like it. Ends with a cave-in. They all do. | In Frosthollow we'd knock on the mine door for luck before we said that aloud.
+say {m7=hometale} Up the valley they'd say it's the mountain breathing. Everything's the mountain, with us. | {m7=hometale} We've a tale like it. Ends with a cave-in. They all do. | {m7=hometale} In Frosthollow we'd knock on the mine door for luck before we said that aloud.
 then other: moment.close
-remember pair: m7=hometale 2m
 
 rule m7_lore_re_from_cold
 when concept=moment.reply_lore self.from=coldwater here.region!=coldwater
+does react.story
 cooldown 2d
-say At Coldwater we'd say the lake knows. The lake knows everything. | My grandfather would throw a fish back for saying that. | There's a tale like it about Glasswater. Colder, mind.
+say {m7=hometale} At Coldwater we'd say the lake knows. The lake knows everything. | {m7=hometale} My grandfather would throw a fish back for saying that. | {m7=hometale} There's a tale like it about Glasswater. Colder, mind.
 then other: moment.close
-remember pair: m7=hometale 2m
 
 rule m7_lore_re_from_oak
 when concept=moment.reply_lore self.from=oakhaven here.region!=oakhaven
+does react.story
 cooldown 2d
-say In the Rainwood we'd say an oak saw it. Oaks see everything. | We tell that one round the fire at story night. Better, mind. | My granddam told it with a ghost in it. Always a ghost, in Oakhaven.
+say {m7=hometale} In the Rainwood we'd say an oak saw it. Oaks see everything. | {m7=hometale} We tell that one round the fire at story night. Better, mind. | {m7=hometale} My granddam told it with a ghost in it. Always a ghost, in Oakhaven.
 then other: moment.close
-remember pair: m7=hometale 2m
 
 rule m7_lore_re_from_mire
 when concept=moment.reply_lore self.from=mirebridge|fenshore here.region!=fens
+does react.story
 cooldown 2d
-say In the fens we'd say: don't follow the lights. That's the end of every tale. | Fen folk know a dozen like it, and every one's true. Mostly. | My aunt would spit three times and touch iron.
+say {m7=hometale} In the fens we'd say: don't follow the lights. That's the end of every tale. | {m7=hometale} Fen folk know a dozen like it, and every one's true. Mostly. | {m7=hometale} My aunt would spit three times and touch iron.
 then other: moment.close
-remember pair: m7=hometale 2m
 
 rule m7_lore_re_from_lark
 when concept=moment.reply_lore self.from=larkfield here.region!=larkfield
+does react.story
 cooldown 2d
-say A carter told me that one at home. Taller, it was. | In Larkfield you'd pay a penny for a tale like that, and get change. | Every tale passes through Larkfield sooner or later. That one came back muddier.
+say {m7=hometale} A carter told me that one at home. Taller, it was. | {m7=hometale} In Larkfield you'd pay a penny for a tale like that, and get change. | {m7=hometale} Every tale passes through Larkfield sooner or later. That one came back muddier.
 then other: moment.close
-remember pair: m7=hometale 2m
 
 rule m7_lore_re_from_south
 when concept=moment.reply_lore self.from=southmeadow here.region!=southmeadow
+does react.story
 cooldown 2d
-say Down south we'd tell that at harvest, with the cider going round. | Every field in Southmeadow has its story. That's a field tale if ever I heard one. | We'd say a scarecrow saw it. Don't laugh.
+say {m7=hometale} Down south we'd tell that at harvest, with the cider going round. | {m7=hometale} Every field in Southmeadow has its story. That's a field tale if ever I heard one. | {m7=hometale} We'd say a scarecrow saw it. Don't laugh.
 then other: moment.close
-remember pair: m7=hometale 2m
 
 rule m7_lore_re_from_salt
 when concept=moment.reply_lore self.from=saltwell here.region!=waste
+does react.story
 cooldown 2d
-say In Saltwell we'd tell that at the well, after dark, with the stars out. | At home that tale has a hawk in it. Every good tale does. | My grandmother told it better, and slower. In the Waste nobody hurries a story.
+say {m7=hometale} In Saltwell we'd tell that at the well, after dark, with the stars out. | {m7=hometale} At home that tale has a hawk in it. Every good tale does. | {m7=hometale} My grandmother told it better, and slower. In the Waste nobody hurries a story.
 then other: moment.close
-remember pair: m7=hometale 2m
 
 rule m7_lore_re_from_city
 when concept=moment.reply_lore self.from=ridgemere here.region!=ridgemere
+does react.story
 cooldown 2d
-say In the city they'd say it was a House that did it. It's always a House. | We've a tale like that in Ridgemere. Ends with somebody owing money. | City folk don't believe tales. We believe rumours. Different thing.
+say {m7=hometale} In the city they'd say it was a House that did it. It's always a House. | {m7=hometale} We've a tale like that in Ridgemere. Ends with somebody owing money. | {m7=hometale} City folk don't believe tales. We believe rumours. Different thing.
 then other: moment.close
-remember pair: m7=hometale 2m
 
 # To a pup's question (m7o=pup).
 
 rule m7_lore_re_to_pup
-when concept=moment.reply_lore pair.mem.m7o=pup self.stage=adult|old
+when concept=moment.reply_lore conv.m7o=pup self.stage=adult|old
+does react.story
 priority 3
-say Only for pups who stay up late. So don't. | Who's been filling your head? ...No. Probably not. | Ask your gran. She'll tell it scarier than me. | Not round here. The watch wouldn't stand for it.
+say {m7=topup} Only for pups who stay up late. So don't. | {m7=topup} Who's been filling your head? ...No. Probably not. | {m7=topup} Ask your gran. She'll tell it scarier than me. | {m7=topup} Not round here. The watch wouldn't stand for it.
 then other: moment.close
-remember pair: m7=topup 2m
 
 rule m7_lore_re_to_pup_old
-when concept=moment.reply_lore pair.mem.m7o=pup self.stage=old
+when concept=moment.reply_lore conv.m7o=pup self.stage=old
+does react.story
 priority 3
 cooldown 1d
-say Sit down, pup, and I'll tell you the whole of it. | When I was your size, we were told the same. And I'm still here. | There is. And it likes pups who don't do as they're told.
+say {m7=topup} Sit down, pup, and I'll tell you the whole of it. | {m7=topup} When I was your size, we were told the same. And I'm still here. | {m7=topup} There is. And it likes pups who don't do as they're told.
 then other: moment.close
-remember pair: m7=topup 2m
 
 rule m7_lore_re_pup_pup
-when concept=moment.reply_lore pair.mem.m7o=pup self.stage=young|adolescent
+when concept=moment.reply_lore conv.m7o=pup self.stage=young|adolescent
+does react.story
 priority 3
-say Brindle says a lot of things. | I'm not scared. You're scared. | Let's go and look! ...Tomorrow. In the day.
+say {m7=pupchat} Brindle says a lot of things. | {m7=pupchat} I'm not scared. You're scared. | {m7=pupchat} Let's go and look! ...Tomorrow. In the day.
 then other: moment.close
-remember pair: m7=pupchat 2m
 
 # ================================================================ Where you're from (talk.accent): b's voice noticed
 
 rule m7_acc_open_any
 when concept=talk.accent
+does ask.whereabouts
 cooldown 1d
 say Where's that voice from? | I can't place your voice. Where's it from? | Say that again. I like how you say it. | #surprise#! There's a voice from somewhere.
 then other: moment.reply_home
 
 rule m7_acc_open_rude
 when concept=talk.accent self.warmth=cold
+does ask.detail
 cooldown 2d
 say Can't understand a word you say. | Talk properly, will you? | Where'd you learn to talk like that? A barn?
 then other: moment.reply_home
 
 rule m7_acc_open_warm
 when concept=talk.accent self.warmth=warm
+does ask.detail
 cooldown 2d
 say I love that voice. Where's it from? | You've a lovely way of talking. Like music. | Go on, say something else. I could listen all day.
 then other: moment.reply_home
 
 rule m7_acc_open_young
 when concept=talk.accent self.stage=young
+does ask.detail
 cooldown 1d
 say Why do you talk funny? | Say something else! You talk like a story. | Are you from far away? Really far?
 then other: moment.reply_home
 
 rule m7_acc_open_city
 when concept=talk.accent here.region=ridgemere self.from=ridgemere
+does ask.detail
 cooldown 2d
 say Fresh off the road, are you? | You'll lose that voice in a year. The city wears it off. | That's never a city voice. I can always tell.
 then other: moment.reply_home
 
 rule m7_acc_open_merchant
 when concept=talk.accent self.role=merchant
+does ask.detail
 cooldown 2d
 say A #topic.accent_town# voice! I had a carter from there once. Never paid me. | I'd know that voice in a crowd. Your folk come to my stall. | #topic.accent_town#, is it? I'll mind my weights, then.
 then other: moment.reply_home
@@ -1658,151 +1774,151 @@ then other: moment.reply_home
 
 rule m7_home_re_any
 when concept=moment.reply_home
-say #topic.accent_town#, born and bred. | #topic.accent_town#, if you must know. | From #topic.accent_town#. It shows, does it? | #topic.accent_town#. I'll die talking like it.
+does answer.detail
+say {m7=home} #topic.accent_town#, born and bred. | {m7=home} #topic.accent_town#, if you must know. | {m7=home} From #topic.accent_town#. It shows, does it? | {m7=home} #topic.accent_town#. I'll die talking like it.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_home_re_frost
 when concept=moment.reply_home self.from=frosthollow
+does answer.detail
 priority 1
-say Frosthollow. Up the Pass Road, under the Whitefangs. Where the snow lives. | The valley. Frosthollow. We say what we mean, and not much of it. | Miner's voice, that. Frosthollow. Grew up by lamplight.
+say {m7=home} Frosthollow. Up the Pass Road, under the Whitefangs. Where the snow lives. | {m7=home} The valley. Frosthollow. We say what we mean, and not much of it. | {m7=home} Miner's voice, that. Frosthollow. Grew up by lamplight.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_home_re_cold
 when concept=moment.reply_home self.from=coldwater
+does answer.detail
 priority 1
-say Coldwater. On Glasswater, under the mountains. You'd love it. Or freeze. | Lake country. We talk slow. The fish don't hurry, why should we? | Coldwater. I can still smell the reeds when I close my eyes.
+say {m7=home} Coldwater. On Glasswater, under the mountains. You'd love it. Or freeze. | {m7=home} Lake country. We talk slow. The fish don't hurry, why should we? | {m7=home} Coldwater. I can still smell the reeds when I close my eyes.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_home_re_oak
 when concept=moment.reply_home self.from=oakhaven
+does answer.detail
 priority 1
-say Oakhaven. The Rainwood. Green all summer, and then some. | From under the oaks. We take our time, in Oakhaven. | The Rainwood, aye. Slow talk from a slow wood.
+say {m7=home} Oakhaven. The Rainwood. Green all summer, and then some. | {m7=home} From under the oaks. We take our time, in Oakhaven. | {m7=home} The Rainwood, aye. Slow talk from a slow wood.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_home_re_mire
 when concept=moment.reply_home self.from=mirebridge|fenshore
+does answer.detail
 priority 1
-say #self.from.capitalize#. The fens. Wet feet, and a wetter voice. | Fen-born. The Sallow Fens. Wet feet and long memories. | #self.from.capitalize#. Don't make the face. Everyone makes the face.
+say {m7=home} #self.from.capitalize#. The fens. Wet feet, and a wetter voice. | {m7=home} Fen-born. The Sallow Fens. Wet feet and long memories. | {m7=home} #self.from.capitalize#. Don't make the face. Everyone makes the face.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_home_re_lark
 when concept=moment.reply_home self.from=larkfield
+does answer.detail
 priority 1
-say Larkfield. The downs. I was raised shouting prices over sheep. | Larkfield. Every carter in the realm drinks in our inn. | The Larkdowns. Wide skies, quick tongues.
+say {m7=home} Larkfield. The downs. I was raised shouting prices over sheep. | {m7=home} Larkfield. Every carter in the realm drinks in our inn. | {m7=home} The Larkdowns. Wide skies, quick tongues.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_home_re_south
 when concept=moment.reply_home self.from=southmeadow
+does answer.detail
 priority 1
-say Southmeadow! Orchards and cider and sun on your back. Why did I leave? | The far south. Southmeadow. We grow your bread. | Southmeadow. Where the apples come from. You're welcome.
+say {m7=home} Southmeadow! Orchards and cider and sun on your back. Why did I leave? | {m7=home} The far south. Southmeadow. We grow your bread. | {m7=home} Southmeadow. Where the apples come from. You're welcome.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_home_re_city
 when concept=moment.reply_home self.from=ridgemere
+does answer.detail
 priority 1
-say Ridgemere. The city. Rain and Houses and too many stairs. | City-born. You can't scrub it off. | Ridgemere. Don't hold it against me.
+say {m7=home} Ridgemere. The city. Rain and Houses and too many stairs. | {m7=home} City-born. You can't scrub it off. | {m7=home} Ridgemere. Don't hold it against me.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_home_re_broad_old
 when concept=moment.reply_home self.accent=broad self.stage=old
+does answer.detail
 cooldown 1d
-say #topic.accent_town# through and through. Seventy years of it. | My voice never left home, and nor did I till now. | They'll bury me sounding like #topic.accent_town#. And proud.
+say {m7=home} #topic.accent_town# through and through. Seventy years of it. | {m7=home} My voice never left home, and nor did I till now. | {m7=home} They'll bury me sounding like #topic.accent_town#. And proud.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_home_re_defensive
 when concept=moment.reply_home self.temper=short
+does answer.detail ask.detail
 priority 1
 cooldown 1d
-say What of it? | I talk how I talk. You talk like a gate hinge. | #topic.accent_town#. Got a problem with that?
+say {m7=prickly} What of it? | {m7=prickly} I talk how I talk. You talk like a gate hinge. | {m7=prickly} #topic.accent_town#. Got a problem with that?
 then other: moment.close
-remember pair: m7=prickly 2m
 
 rule m7_home_re_shy
 when concept=moment.reply_home self.tone=shy
+does answer.detail
 priority 1
 cooldown 1d
-say Oh. Is it that plain? #topic.accent_town#. Sorry. | I try to talk like you lot. It doesn't take. | #topic.accent_town#. I don't, um. I don't say much, usually.
+say {m7=home} Oh. Is it that plain? #topic.accent_town#. Sorry. | {m7=home} I try to talk like you lot. It doesn't take. | {m7=home} #topic.accent_town#. I don't, um. I don't say much, usually.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_home_re_young
 when concept=moment.reply_home self.stage=young|adolescent
+does answer.detail
 priority 1
 cooldown 1d
-say #topic.accent_town#. We're only visiting. | I'm from #topic.accent_town#! Everyone talks like this there. | I don't talk funny. You do.
+say {m7=home} #topic.accent_town#. We're only visiting. | {m7=home} I'm from #topic.accent_town#! Everyone talks like this there. | {m7=home} I don't talk funny. You do.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_home_re_homesick
 when concept=moment.reply_home self.warmth=warm self.stage=adult|old
+does answer.detail
 cooldown 2d
-say #topic.accent_town#. I miss it every day. Some days more. | I left for work. I'll go back for good one day. | You'd like it there. Everyone does. Except me, apparently, since I left.
+say {m7=home} #topic.accent_town#. I miss it every day. Some days more. | {m7=home} I left for work. I'll go back for good one day. | {m7=home} You'd like it there. Everyone does. Except me, apparently, since I left.
 then other: moment.close
-remember pair: m7=home 2m
 
 rule m7_home_re_glad_gone
 when concept=moment.reply_home self.drive=restless|ambitious self.stage=adult|old
+does answer.detail
 cooldown 2d
-say #topic.accent_town#. And glad to be shot of it. | Nothing ever happens in #topic.accent_town#. That's why I'm here. | I left as soon as I could walk the road.
+say {m7=gladgone} #topic.accent_town#. And glad to be shot of it. | {m7=gladgone} Nothing ever happens in #topic.accent_town#. That's why I'm here. | {m7=gladgone} I left as soon as I could walk the road.
 then other: moment.close
-remember pair: m7=gladgone 2m
 
 # At home: the one asking is the stranger here (priority 2, before all the rest).
 
 rule m7_home_re_local_ridgemere
 when concept=moment.reply_home self.from=ridgemere here.region=ridgemere
+does answer.detail
 priority 2
-say Ridgemere, friend. You're standing in it. It's your voice that's the odd one. | Born three streets over. You're the one with the accent, here. | From here. Every wolf on this street sounds like me.
+say {m7=local} Ridgemere, friend. You're standing in it. It's your voice that's the odd one. | {m7=local} Born three streets over. You're the one with the accent, here. | {m7=local} From here. Every wolf on this street sounds like me.
 then other: moment.close
-remember pair: m7=local 2m
 
 rule m7_home_re_local_frosthollow
 when concept=moment.reply_home self.from=frosthollow here.region=frosthollow
+does answer.detail
 priority 2
-say From here. Where else? You're the one off the Pass Road. | Frosthollow. You're in it. Mind the ice. | This is a Frosthollow voice, in Frosthollow. Yours is the strange one.
+say {m7=local} From here. Where else? You're the one off the Pass Road. | {m7=local} Frosthollow. You're in it. Mind the ice. | {m7=local} This is a Frosthollow voice, in Frosthollow. Yours is the strange one.
 then other: moment.close
-remember pair: m7=local 2m
 
 rule m7_home_re_local_coldwater
 when concept=moment.reply_home self.from=coldwater here.region=coldwater
+does answer.detail
 priority 2
-say I'm from here, friend. You're the one with the voice. | Coldwater, born on the shore yonder. You'll be the stranger. | Everyone on the lake talks like me. Give it a week.
+say {m7=local} I'm from here, friend. You're the one with the voice. | {m7=local} Coldwater, born on the shore yonder. You'll be the stranger. | {m7=local} Everyone on the lake talks like me. Give it a week.
 then other: moment.close
-remember pair: m7=local 2m
 
 rule m7_home_re_local_oakhaven
 when concept=moment.reply_home self.from=oakhaven here.region=oakhaven
+does answer.detail
 priority 2
-say From here. Oakhaven, under these very oaks. It's you that's foreign. | This is how we talk in the Rainwood. You'll catch it. | Born a stone's throw off. You're the one from away.
+say {m7=local} From here. Oakhaven, under these very oaks. It's you that's foreign. | {m7=local} This is how we talk in the Rainwood. You'll catch it. | {m7=local} Born a stone's throw off. You're the one from away.
 then other: moment.close
-remember pair: m7=local 2m
 
 rule m7_home_re_local_mirebridge
 when concept=moment.reply_home self.from=mirebridge|fenshore here.region=fens
+does answer.detail
 priority 2
-say You're in the fens, friend. This is how the fens talk. | #here.town#. Here. You'll be from away, no? | My voice is at home. It's yours that's wandered.
+say {m7=local} You're in the fens, friend. This is how the fens talk. | {m7=local} #here.town#. Here. You'll be from away, no? | {m7=local} My voice is at home. It's yours that's wandered.
 then other: moment.close
-remember pair: m7=local 2m
 
 rule m7_home_re_local_larkfield
 when concept=moment.reply_home self.from=larkfield here.region=larkfield
+does answer.detail
 priority 2
-say Larkfield, and you're in it. It's you that talks funny, here. | Every stall on the downs talks like me. | Born here, sold here, I'll be buried here. You're the stranger.
+say {m7=local} Larkfield, and you're in it. It's you that talks funny, here. | {m7=local} Every stall on the downs talks like me. | {m7=local} Born here, sold here, I'll be buried here. You're the stranger.
 then other: moment.close
-remember pair: m7=local 2m
 
 rule m7_home_re_local_southmeadow
 when concept=moment.reply_home self.from=southmeadow here.region=southmeadow
+does answer.detail
 priority 2
-say Southmeadow, and you're standing in it! It's your voice that's the odd one. | From here, my apple. Everyone talks like this in the orchards. | I'm the one at home. You'll be from away.
+say {m7=local} Southmeadow, and you're standing in it! It's your voice that's the odd one. | {m7=local} From here, my apple. Everyone talks like this in the orchards. | {m7=local} I'm the one at home. You'll be from away.
 then other: moment.close
-remember pair: m7=local 2m

@@ -6,6 +6,7 @@
 
 scene em_more_theft_hunger
 when topic=prices topic.item=meal topic.dir=up
+does tell.self / react.self / assess / tell.self
 a : Somebody stole a loaf off the baker's sill. With food this dear, who can blame them? | Saw a pup snatch an apple and run. Didn't have the heart to shout. | Hunger makes thieves of honest wolves.
 b : The baker can. | Neither would I. | And honest wolves of thieves, sometimes.
 a : The baker can afford it. | A small apple. | Sometimes.
@@ -13,6 +14,7 @@ b?[guard] : I can blame them. It's my job to.
 
 scene em_more_watered_ale
 when topic=prices topic.dir=up here.place=tavern
+does tell.self / react.self / assess / tell.self
 a : This ale's half water. They're stretching it. | The stew's got more turnip than meat. Cheaper, I suppose. | Smaller mugs, same price. Clever.
 b : Half? Two thirds. | Turnip is cheap. | Clever and sly.
 a : Generous of you. | Turnip is turnip. | Sly and clever.
@@ -20,24 +22,28 @@ b?[innkeeper] : Full measure, same as always. Your tongue's gone sour.
 
 scene em_more_trade_favours
 when topic=prices topic.dir=up topic.sort=food
+does tell.self / react.self / assess
 a : I mended her roof for a week of suppers. Better than coin. | Coin's scarce. Folk are trading work for food. | I'll sweep your floor for a bowl of soup. I'm not proud.
 b : Fair trade. | Like the old days. | Pride doesn't fill a belly.
 a : Better than fair. | The old days were hungry too. | No, it doesn't.
 
 scene em_more_rumour_famine
 when topic=prices topic.item=meal topic.dir=up
+does tell.self / react.self / assess
 a : Somebody said there's going to be a famine. | Old Hask says this is how the hungry years started last time. | Don't listen to the doom talk. It's one bad week.
 b : People love saying that. | Old Hask says a lot. | One bad week, then another.
 a : I hope they're wrong. | He does. Some of it true. | Don't.
 
 scene em_more_dear_gift
 when topic=prices topic.dir=up pair.band=friends|family
+does tell.self / react.self / assess
 a : I brought you a little #topic.what#. Don't argue. | Here. I had extra. | Take this. I know you're short.
 b : You can't afford it either. | Liar. Nobody has extra. | I'm not short.
 a : I said don't argue. | Take it anyway. | You're short. Take it.
 
 scene em_more_skip_meal
 when topic=prices topic.item=meal topic.dir=up
+does tell.self / react.self / assess
 a : I've been eating once a day. Saves coin. | Skipped supper. Drank water and went to bed. | Bread at noon, nothing at night. That's my week.
 b : That's not enough. | That's no way to live. | That's my week too.
 a : It's what there is. | It's the way I'm living. | Then we're both thin.
@@ -49,13 +55,13 @@ when topic=prices topic.dir=down topic.sort=food
 does tell.plan / counter / counter
 a : Food's cheap. Let's have everyone round. | A cheap week. I'm throwing a supper. | I bought enough for the whole lane.
 b : Everyone? Your floor's too small. | I'll bring the cider. | The whole lane will come.
-a : We'll stand. | Bring two. | Let them.
+a : We'll stand. | Bring two. | #bc_let_them#
 
 scene em_more_cheap_save
 when topic=prices topic.dir=down topic.sort=food
 does tell.plan / react.self / assess
 a : Cheap week. I'm drying and salting all I can. | Buying grain now for winter while it's #topic.price#. | Smart wolves buy when it's cheap.
-b : Good thinking. | Clever. | Smart wolves have coin.
+b : Good thinking. | #bc_clever# | Smart wolves have coin.
 a : Winter remembers. | Winter's long. | True. Borrow some.
 
 scene em_more_cheap_why
@@ -69,48 +75,56 @@ a : Bless that, then. | Bless the cellar. | Bless them twice.
 
 scene em_more_cv_wonders
 when topic=caravan topic.kind=arrived
+does tell.news / react.news ask.detail / answer.detail
 a : They brought a bird from #topic.where# that talks. A real bird! | One of the #topic.where# carters had a sword with a jewel in the hilt. | There's a crate from #topic.where# that smells of oranges.
 b : Talks? What does it say? | Stolen, I'd wager. | Oranges? Who can afford oranges?
-a : Rude things, mostly. | Probably. | Nobody here.
+a : Rude things, mostly. | #bc_probably# | Nobody here.
 
 scene em_more_cv_wrong_goods
 when topic=caravan topic.kind=arrived
+does tell.news / react.news / assess
 a : I ordered nails from #topic.where#. They sent buttons. | Half my order from #topic.where# is wrong. | The carters swear the crate says what's in it. It doesn't.
 b : Buttons? Useful. | Only half? | Carters swear a lot.
 a : For what? Sewing roofs? | The useful half. | At me, mostly.
 
 scene em_more_cv_romance
 when topic=caravan topic.kind=arrived
+does tell.news / react.news / assess
 a : That handsome carter from #topic.where# is back. | Somebody's been waiting at the gate for the #topic.where# caravan all week. | Did you see her run to meet the lead wagon?
 b : Your heart's showing. | I wonder who. | Nobody runs like that for cloth.
-a : Hush. | Don't you dare. | Nobody.
+a : Hush. | Don't you dare. | #bc_nobody#
 
 scene em_more_cv_dust
 when topic=caravan topic.kind=arrived here.season=summer here.weather=clear
+does tell.self / react.self / assess
 a : The #topic.where# wagons came in under a cloud of dust. | Dust on everything after the caravan came through. | You could see them coming for an hour. Dust to the sky.
 b : Dry roads. | Shake it off. | Good warning.
 a : Very dry. | It's in my teeth. | Too good.
 
 scene em_more_cv_left_tears
 when topic=caravan topic.kind=left
+does tell.self / react.self / assess
 a : She cried all the way to the gate when he left with the #topic.where# wagons. | Saw a pup chase the caravan to the bridge. | Goodbyes at the gate, every caravan.
 b : Young love. | Their father, maybe. | They come back.
-a : Loud love. | Maybe. | Most of them.
+a : Loud love. | #bc_maybe# | Most of them.
 
 scene em_more_cv_left_goods
 when topic=caravan topic.kind=left
+does tell.news / react.news / assess
 a : Our best went with the caravan. What's left is seconds. | The stalls are thin since the wagons left for #topic.where#. | Everything worth having went to #topic.where#.
 b : Seconds are fine. | Thin and dear. | Everything worth selling.
 a : Seconds and dear. | Always after. | Not having.
 
 scene em_more_cv_raided_tale
 when topic=caravan topic.kind=raided
+does tell.news / react.news / assess
 a : One carter fought them off with a whip, they say. | They say a pup hid under a wagon and saw everything. | The lead mule bolted and saved a whole wagon.
 b : A whip against knives? | Brave pup. | Good mule.
 a : A long whip. | Brave and lucky. | Best mule in the land.
 
 scene em_more_cv_raided_ransom
 when topic=caravan topic.kind=raided
+does tell.self / react.self / assess
 a : They're holding a carter for ransom. | The bandits sent word: pay, or they keep the driver. | Somebody's collecting coin to buy back the carter they took.
 b : How much? | Bright One. | I'll give what I can.
 a : More than we have. | Pray. | Every penny helps.
@@ -129,7 +143,7 @@ when topic=bandits
 does tell.gossip / react.news / agree / counter
 a : They say the watch caught one of them. | A bandit was brought in bound this morning. Or so I heard. | Did they really catch a robber, or is that just talk?
 b : One's a start. | Or so you heard. | Talk, probably.
-a : One of many. | So I heard. | Probably.
+a : One of many. | So I heard. | #bc_probably#
 b?[guard] : We caught a sheep thief. That's all I'll say.
 
 scene em_more_bd_inside
@@ -141,17 +155,19 @@ a : Dangerous and true. | To bandits? | Watch quietly.
 
 scene em_more_bd_old_soldier
 when topic=bandits a.stage=old
+does tell.self / ask.detail / answer.detail
+tone serious / even / even
 a : Give me my old spear and I'd show those bandits. | I fought robbers on the old road when I was young. | Bandits run from anyone who stands their ground.
 b : Your old spear's a walking stick now. | Did you win? | Do they?
-a : Still pointy. | I'm here, aren't I? | Mostly.
+a : Still pointy. | I'm here, aren't I? | #bc_mostly#
 
 scene em_more_bd_gifted
 when topic=bandits
 weight 0.7
 does tell.gossip / give.opinion / ack / counter
 a : They say one of the bandits is Gifted. Lights fires with a look. | A Gifted bandit, they say. Can hear a purse across a field. | People say the robbers have a Gifted wolf. People say a lot.
-b : That's how they burned the wagons. | Useful, for a thief. | They do.
-a : Maybe. | Very useful. | Too much.
+b : That's how they burned the wagons. | Useful, for a thief. | #bc_they_do#
+a : #bc_maybe# | Very useful. | Too much.
 b?[scholar] : Most Gifts are small. A candle flame, a nudge. Not much of a bandit's tool.
 
 scene em_more_bd_pity
@@ -159,7 +175,7 @@ when topic=bandits
 does give.opinion / disagree / concede
 a : Some of those bandits were farmers once. Before the bad years. | They're hungry, the robbers. Like us, only desperate. | I almost feel sorry for them. Almost.
 b : Hungry doesn't excuse a knife. | We're hungry too and we don't rob. | Don't. They'd not feel sorry for you.
-a : No. But it explains it. | Not yet. | True.
+a : No. But it explains it. | Not yet. | #bc_true#
 
 scene em_more_bd_brag
 when topic=bandits pair.band=friends
@@ -170,6 +186,7 @@ a : I'd faint fiercely. | And sharp teeth. | That's the idea.
 
 scene em_more_bd_child_scare
 when topic=bandits b.stage=young|adolescent
+does tell.self / ask.detail / answer.detail
 a : Stay inside the walls, little one. There are bandits. | Don't wander off. The robbers take pups who wander. | If you see strangers in the wood, run home.
 b : Do bandits eat pups? | They don't really, do they? | What if they're nice strangers?
 a : Only naughty ones. | No. But stay close. | Run home anyway.
@@ -178,6 +195,7 @@ a : Only naughty ones. | No. But stay close. | Run home anyway.
 
 scene em_more_market_gossip
 when topic=prices topic.dir=up here.place=market
+does tell.self / react.self / assess / tell.self
 a : The fish wife says the merchants fixed the price over dinner. | Two stalls, same price, same moment. Funny. | The herb seller and the baker are cousins. Notice that?
 b : I'd believe it. | Very funny. | Now you mention it.
 a : So would I. | Hilarious. | Now I've noticed.
@@ -185,25 +203,29 @@ b?[merchant] : We didn't fix anything. We read the same slate.
 
 scene em_more_caravan_guard_job
 when topic=caravan b.job=guard|soldier topic.kind!=news
+does tell.news / react.news / assess
 a : The caravan needs guards. Would you sign on? | Good coin guarding the wagons to #topic.where#. | I heard they're hiring swords for the next caravan.
 b : For the right coin. | Good coin, cold nights. | I've a post here.
 a : How right? | Bring a blanket. | Shame.
 
 scene em_more_bandits_rest
 when topic=bandits here.day=rest
+does tell.self / react.self / assess / tell.self
 a : Even bandits keep Restday, I hope. | Pray at the chapel today. For safe roads. | Restday and still I'm thinking about those robbers.
-b : I doubt it. | I will. | Rest your mind too.
-a : Me too. | Good. | I'll try.
+b : I doubt it. | #bc_i_will# | Rest your mind too.
+a : #bc_me_too# | #bc_good# | #bc_ill_try#
 b?[priest] : The road is in the Bright One's sight. Pray, and bar your door.
 
 scene em_more_prices_dusk
 when topic=prices topic.dir=up here.time=dusk
+does tell.self / react.self / assess
 a : Stalls are closing and I've bought nothing. Too dear. | End of the day and the prices didn't drop. | I waited till dusk for a better price. Didn't come.
 b : Tomorrow, maybe. | They never drop. | Never does.
-a : Tomorrow. | Never. | Never.
+a : Tomorrow. | #bc_never# | #bc_never#
 
 scene em_more_prices_dawn
 when topic=prices here.time=dawn here.place=market
+does tell.news / react.news / assess
 a : Early to market. Best pick, worst price. | At dawn the sellers are grumpy and the #topic.what# is fresh. | Here before the crowds. Still #topic.price#.
 b : Same as always. | Grumpy sellers are honest sellers. | The crowds don't change the price.
-a : Always. | Honest and dear. | Sadly.
+a : #bc_always# | Honest and dear. | Sadly.

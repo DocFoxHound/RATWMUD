@@ -4,9 +4,9 @@ Draft, 2026-11-15, revised 2026-11-16 with the user's answers to all six questio
 mantles as world database rows, the richer size written by Claude agents, newborns inheriting honesty, births kept
 realm-wide, ticking listening runs), for Ridgemere 3 (`ridgemere3`, database `ratw_ridgemere3`; doc 82). **Phase 0 (the
 instrument), Phase 1 (truth fixes), Phase 2 (moves and tags), Phase 3 (the turn engine), Phase 4 (beats when spoken,
-knowledge, a third voice), Phase 5 (topics, agendas, goals, the ledger) and Phase 6 (opinions, temperament, moods,
-accommodation) are built** (2026-11-16, branches `r3-talk-p0` to `r3-talk-p6`; §23, §24, §27-§31 say what and what they
-measured); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
+knowledge, a third voice), Phase 5 (topics, agendas, goals, the ledger), Phase 6 (opinions, temperament, moods,
+accommodation) and Phase 7 (converting the library; coverage) are built** (2026-11-16, branches `r3-talk-p0` to
+`r3-talk-p7`; §23, §24, §27-§32 say what and what they measured); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
 replaces neither: every one of today's 8,525 library entries and 10 trees keeps loading and speaking while it is
 converted. It was written from five read-only surveys of the code, the data and the live world at `ridgemere2` 1034c1fc
 (the engine, the trees, the lifecycle, what residents know, and prior art) and three competing designs; §4 says how they
@@ -3104,3 +3104,157 @@ opinions (`opinion road against 2 : ...`): they should set `op.<issue>`, `op_why
 and their own likes over the drawn ones (`Library::likes` is a stand-in). `pair.agree.<issue>` is kept in the pair's
 note kept tags (`agree.<issue>`). The four Houses as separate issues, the hedge frame (`boss`), and "needs" beyond the
 favour goal are not done. talk_bench's look p99 on Ridgemere 3 is at 4.9 ms of 5.
+
+## 32. Phase 7, as built (2026-11-16)
+
+Branch `r3-talk-p7`, on Phase 6. The library is converted: every entry says what it does, the short markers are the
+conversation's own tags, the stock short answers and the turns every talk has are symbols each dialect says its own
+way, and the coverage the shared lines lack is listed for Phase 8. What a plain speaker can say is what they could say
+at Phase 6, word for word (the equivalence test), less four lines fixed by hand.
+
+**The markers to tags (`tools/talk_conv.py`, §8.7).** All 2,652 short markers (`remember pair:` and `remember other:`
+of an hour or less; 56 keys, in 2,140 rules) are `{k=v}` tags on every alternative of their rule's `say`, and their
+1,837 reads `conv.k` (`self.mem.k` for the five `remember other:`). Every one was read only within its exchange; the
+keys meant to last (`served` 7 days, `grumble` and `nb` 3...) were never markers and stay in the talk memory. A tag lives
+as long as the talk, so nothing leaks into the same two's next talk or crowds the 32-entry memory. `--check` (ctest
+`talk_conv`) fails on a short marker left.
+
+**Backchannels (`tools/talk_migrate.py`, §10.2).** The 76 most repeated short lines ("Good." 201 times, "Always." 162,
+"Thank you." 109, "It is." 106...; settings.json's shrugs left alone, because the engine knows them by their words) are
+`bc_*` symbols whose plain value is exactly the old words: 2,796 alternatives in 126 files. Each dialect has its own,
+1,007 alternatives in all ("Good.": Coldwater "Fair catch.", Frosthollow "Sound.", Larkfield "Full weight.", Mirebridge
+"Dry enough.", Oakhaven "Good bark.", Southmeadow "Ripe.", Saltwell "Sweet as well water."); a light accent uses them half
+the time, a broad one always. `--check` (ctest `talk_migrate`): plain's value one line, no dialect repeating it, none left
+word for word. The often-said ones are under six words where they could be.
+
+**Discourse words (§10.3).** 24 new symbols in plain (`account`, `ack`, `resume`, `preclose`, `excuse`, `knew`, `sympathy`,
+`concede`, `insist`, `warn`, `welcome_back`, `welcome`, `sorry`, `forgive`, `deflect`, `no_matter`, `go_ahead`, `put_off`,
+`vent`, `reassure`, `congrats`, `demur`, `doubt`, `listen`; 77 alternatives), and all 28 in each dialect with `hedge`,
+`pivot`, `anyway` and `later` (399): Coldwater's preclose "The lake waits for nobody", Saltwell's "Stars move; so must I",
+Mirebridge's insist "I'll not leave the bank". `rules/discourse.talk` says them (19 move lines: preclose, decline and
+put_off with `#hedge#` and `#account#`, disagree, concede, insist, sympathise, reassure, congratulate, apologise and its
+acceptance, thanks waved off, a refusal taken well, go_ahead, react.news.known, ack, return, again.open, welcome_join),
+and the vent lines are led in by `#vent#` (seven; Phase 6's "Truth be told" and "Between us" among plain's values).
+Drafts: §10.3 says the user tunes them by ear. Fewer than §14.1's estimate (about 1,500 backchannel and 860 discourse
+alternatives): 1,083 and 476.
+
+**Moves and tones on every entry (`tools/talk_tag.py`).** The 8,350 entries that said nothing of what they did (3,658
+scenes, 4,692 rules) have a `does` line, a scene's per turn: all 8,723 say what they do (`talk_check --validate`: none by
+alias, none not yet), and M1 is 100% in both modes. The reading: an answer concept's rules make its alias first, always
+(a `then` that hands on to it owes that move, and C1 judges by it), and ask back too when most of their words are a
+question; a topic's opener by its words (a question asks: how, after, plan, opinion, where, a request, an invitation,
+else a detail; news tells it where it speaks of the topic's claim; a grumble, a memory, a plan, a worry, a boast, a view,
+a tease only with a tease's words; else it tells of oneself); each later turn of a scene answers what the turn before
+made due, chosen among the moves it expects as its words show (react.news.known for "I heard", .new for "Never!", .sorrow
+for "Poor soul", answer.* to a question, agree, sympathise, laugh, tease.return...), with a second move when it asks back;
+barks are asides; a shop's greeting greets. 102 turns are grave (a death) or serious (a crime) by most of their words,
+and no light tone follows grave within a scene. Of the scenes' 1,596 middle turns that owe something, 1,566 are answered
+by the next turn's moves as written (the 30 are Phase 2's hand tags). moves.json: `tell.gossip` expects `ask.detail` and
+`give.opinion` too, as `tell.news` does ("Who told you that?" answers gossip). "Every family checked by hand" was not
+done for all 3,503 families: the 400 most-spoken entries of Phase 6's run were read by hand
+(`artifacts/talk/p7-tag-review.txt`) and what they showed went into the reading rules (requests and invitations,
+teases only by their words, news only with its claim, a place's name no death); `--review OUT.md` writes every family
+for the rest. `--check` (ctest `talk_tags`) fails on an entry with no `does`.
+
+**Coverage (§15.4).** `tools/talk_profiles.py ridgemere3` (read-only: `talk_check --world --residents --json`) writes
+`Data/Talk/profiles.json`: 150 replier kinds covering 716 of the 773 placed residents, clustered by stage, job, wealth and
+dialect, each with its members' commonest temperament and the facts of the member nearest it, names left out.
+`talk_check --coverage [--json] [--holes N]` asks, for every move a line can owe (55), every topic (36), every kind and
+four bands (strangers, acquaintances, friends, family), whether a move line (no concept) doing it or a variant of it holds
+for one who didn't know the news: 1,188,000 cells in 1.2 s, **663,264 holes (55.8%)**. The core moves: greet.return,
+accept_preclose, farewell.return and accept_decline have none; **react.news, react.complaint and answer.detail are holes
+in every cell** (no move line answers news for one who hadn't heard it, a complaint, or a question; react.news's four
+move lines are "I'd heard"). 30 moves have no move line at all, 23 hold everywhere, answer.how and decline_apology in
+part (`artifacts/talk/coverage-p7.md` and `.json`). ctest `talk_coverage` holds the count where it is: a move may not
+gain holes (Tests/fixtures/talk_coverage.json).
+
+**The gate: met.**
+- **The equivalence test** (`tools/talk_equiv.py --against 1e159420`, ctest `talk_equiv`): every Phase 6 entry is there
+  with the same criteria (a converted marker's read now `conv.k`), hand-on, limits, priority and weight, remembering less
+  the converted markers; every alternative a plain speaker could say, they can say still, the new symbols expanded to
+  plain's values; a converted marker's tag leads every alternative of its rule; a new alternative says a discourse word
+  (the vent lines); 19 new entries (discourse.talk). Four entries changed by hand, named with why in its EDITED: the fog
+  chowder that said "in this rain" in fog; a weaver's "My nets are tangled past saving" (talk_lint's frozen
+  `fisher_self`, now "Look at those nets. Tangled past saving.", true for anyone at the shore; the lint's baseline is 33);
+  and the two "Back again?" rules, once a day each (below).
+- **The coverage holes listed** (above).
+
+**Found by the card, fixed.**
+- **"Back again?" before 83% of a busy place's talks.** With every opener saying what it does, Phase 5's `again_today`
+  frame said it before nearly every talk of two who had talked that day (frozen L1: 83% of openers; Phase 6: 4%). The
+  again.open lines are once a day per speaker (`cooldown 1d`): 16% of frozen openers, 26% of the fixture's.
+- **Collisions in the opener's breath** (`SaidLine::bare`, `Library::preface`). The collision filter judged an opener's
+  words before a greeting was said in front of them: two speakers could say the same greeting and the same opener in a
+  place within the hour. The ring now keeps the opener's own words beside the whole line, and a preface whose whole line
+  another said there within the hour is left out (the quick card's R5 went 7.7 to 0).
+- **D2 across a sentence's end** (`tools/dialect_check.py`'s `hits`). A dialect's phrase was found in a line's words with
+  the stops taken out, so "Back again? Stone Sunton's been at the wall" was Frosthollow's "Back again, stone" and "Here we
+  are again. Mm." Oakhaven's "Again, mm?": eight such in the first card, none a dialect's words. A phrase is now found
+  within a sentence, unless its own words run over one ("Too late. Sunk."). And its pattern cache was keyed by an id
+  that a freed lexicon's successor can reuse (test_dialect_check gained the check). Phrases that collided with other
+  dialects' words or the library's (dialect_check's lexicon) were rewritten before the card: 0 failures.
+
+**The scorecard** (`artifacts/talk/runs/p7`, every profile in both modes over P0's fixture, pinned to build 81; 13,001 and
+25,526 conversations, 71,259 and 163,071 lines; the card was run three times, each run finding something above).
+Against Phase 6's own transcripts rescored with this phase's scorer (`artifacts/talk/runs/p6r`), fixtures / frozen:
+
+| | Phase 6 | Phase 7 |
+|---|---|---|
+| **M1** lines carrying moves (%) | 66.8 / 57.2 | **100 / 100** |
+| D1L / D1B light and broad lines with dialect words (%) | 0.83 / 4.02; 0.93 / 2.87 | 1.00 / 5.54; 1.28 / 3.49 |
+| D1 (none, hard) / D2 (hard) | 0 / 0; 0 / 0 | 0 / 0; 0 / 0 |
+| C1 owed answers answered (%) / C2 / C3 | 97.2 / 99.8 / 89.3; 98.5 / 99.9 / 90.8 | 97.9 / 99.8 / 89.6; 98.7 / 99.8 / 90.8 |
+| C4 tone clashes per 1,000 / C7 lines per talk | 0.014 / 5.59; 0 / 6.53 | 0 / 5.60; 0 / 6.44 |
+| C8 a third speaker (%) / C9 callbacks per 10 talks | 0.25 / 1.21; 5.27 / 0.79 | 0.25 / 2.58; 5.62 / 1.57 |
+| R1 first identical talk (h) / R3 distinct openers per 3,000 | 15.0 / 2,520; 2.42 / 1,704 | 6.0 / 2,729; 2.42 / 1,931 |
+| R4 / R5 per 100 h | 403 / 0.32; 3,504 / 5.1 | 265 / 0; 2,968 / 5.7 |
+| R6 most-spoken line (%) / R7 distinct replies per 1,000 | 1.81 / 235; 2.67 / 113 | 1.85 / 237; 2.75 / 118 |
+| T2 / T3 per 1,000 lines | 0.014 / 0.042; 0 / 0.024 | 0.042 / 0.070; 0 / 0.012 |
+| T5 told what they knew (%) / T6 "they" of one known wolf per 1,000 | 0.06 / 0.22; 0 / 0.018 | 0.23 / 0.38; 0 / 0.006 |
+| K1 / K2 (%) | 44.4 / 21.1; 74.2 / 13.1 | 44.4 / 21.1; 73.5 / 13.5 |
+| D3 / U2 / X1 (%) | 86.7 / 39.3 / 19.2; 81.2 / 29.9 / 16.3 | 84.9 / 39.8 / 19.7; 72.7 / 30.7 / 16.2 |
+| R8 habit lines / O1 opinions per 10 talks | 0.109 / 0.48; 0.126 / 0.83 | 0.105 / 0.45; 0.134 / 0.81 |
+| B1 / B1P (ms, the card's load) / B5 | 0.27 / 0.82 / 2.2; 0.27 / 1.77 / 84 | 0.28 / 0.86 / 1.9; 0.27 / 1.74 / 91 |
+
+`talk_card` exits 1 on soft rows only, the ones it flagged at Phase 6 against these baselines and about where Phase 6 left
+them: **R8** (habit lines, 0.13% of a speaker's against a 15% ceiling), **U2** and **X1** (everyday talk, §30), **B1** and
+**B1P** (the card's load of twenty runs; alone, `talk_bench` the talk town: a beat 0.089 ms mean, p99 0.24, a look p99
+1.35 ms; Ridgemere 3, 20 hours: a beat 0.181 ms, p99 0.89, a look p99 4.81 ms of 5, Phase 6's 4.9). No hard gate is
+broken, open or closed. What moved, and why: **M1** is the phase's own (refrozen into both baselines at 100%, the why
+kept there, so an untagged line shows); **D1L/D1B** rose a little (the backchannels and discourse words; most of what is
+said in Ridgemere 3 is plain, and 1.4% of the library's other words have a dialect symbol: Phase 8's lines and the
+mantles); **C9** counts "Back again?" (now once a day each); **R1 fixtures** 15 to 6 h is one listener (L4) hearing the
+authored fallback "A day like any other." / "So it is." and the same closing twice, at exchange 54 (the authored route,
+not the library); **T2 fixtures** is three lines against one, each an old fault surfaced by a greeting said in front
+(a luna table's "Morning to you" at 20h, the frozen lint finding "My son rides with the caravan", Coldwater's
+endearment "my catch" read as a fisher's): Phase 8's and the mantles'; **T5 fixtures** is 7 lines of 2,200 told what the
+listener knew (soft, within its noise); **D3 frozen** moved on L3's seven judged speakers (one guessed differently).
+The quick card was blessed again (talk-town talk says what it does, M1 54% to 100%; its backchannels and discourse words
+in dialect, D1L 1.9 to 4.2%, D1B 4.7 to 9.7%; R4 2,782 to 2,318; R6 1.17 to 1.30%: "Rest well." now the commonest night farewell rather than
+"Bye, then!").
+
+**Tests.** New ctests: `talk_conv`, `talk_migrate`, `talk_tags`, `talk_equiv`, `talk_coverage`, `talk_p7_rules`
+(`tools/test_talk_p7.py`, 12: a marker to tags on every alternative and its read, a key also kept for days left as
+memory, `remember other:` read as `self.mem`; whole alternatives only migrated and shrugs left; a dialect repeating plain
+refused; questions, requests, invitations and their answers; news met as known, new, or with a question; every answer
+meets what was owed; an answer concept's alias first; a death grave and no light after it; the expansions and the
+converted read). `talk_tests`: the opener's own words kept beside a prefaced line. `test_dialect_check` (15): a phrase
+within a sentence, and across one only where its own words run over. The non-database ctest suite passed, 98 of 98;
+`talk_check --validate` on every file; `talk_lint` (33 findings); `dialect_check` (0 failures). The database suites weren't
+run (no schema change). No ticking runs, no paid calls, no servers.
+
+**For Phase 8.**
+- **The core holes**: react.news (for one who hadn't heard), react.complaint and answer.detail have no move line at
+  all, for anyone; then the 30 moves with none (`artifacts/talk/coverage-p7.md`). `talk_check --coverage` is the
+  measure and `talk_coverage` holds the count; bless it as holes close.
+- **Lines tied to a concept still answer only for it.** Now that every line says what it does, the engine could let a
+  concept's rules answer by move as well (§8.13: replies from other files); not done here, because the readings of the
+  answer concepts are their alias, coarse (all of `family.answer_child` is answer.detail).
+- **Alternatives that differ in kind**: 2,792 of the 12,113 scene turns mix a question with statements, and the turn's
+  tag is its majority's; a scene's parallel alternatives would need their own moves (`{does=...}` per alternative, or
+  the scene split by thread).
+- The discourse words and backchannels are drafts for the user's ear; the dialects' long ones (179 of six words or more
+  when drafted) were cut where they're said most, but a broad speaker's "We'll see what nets up." is still the same words
+  each time: more alternatives per dialect would help R4.
+- The lint's 33 findings (24 reviewed "they") and the three T2 lines above; a luna table's greeting said at night.
+- talk_bench's Ridgemere 3 look p99 is still 4.8 ms of 5 (`World::districtHouse`, §29).

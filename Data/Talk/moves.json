@@ -11,7 +11,7 @@
     "check_in": {"family": "opening", "first": true, "expects": ["answer.check_in"]},
     "answer.check_in": {"family": "opening", "answers": ["check_in"], "fallback": ["ack"]},
     "tell.news": {"family": "inform", "first": true, "expects": ["react.news", "ask.detail", "give.opinion", "give.advice"], "asserts": true},
-    "tell.gossip": {"family": "inform", "first": true, "expects": ["react.news"], "asserts": true, "effects": {"other": {"affinity": 0.3}}},
+    "tell.gossip": {"family": "inform", "first": true, "expects": ["react.news", "ask.detail", "give.opinion"], "asserts": true, "effects": {"other": {"affinity": 0.3}}},
     "tell.complaint": {"family": "inform", "first": true, "expects": ["react.complaint", "sympathise", "agree", "disagree", "counter", "give.advice"]},
     "tell.boast": {"family": "inform", "first": true, "expects": ["congratulate", "react.self", "tease", "praise"], "tone": "light"},
     "tell.plan": {"family": "inform", "first": true, "expects": ["react.self", "ask.detail", "congratulate"]},

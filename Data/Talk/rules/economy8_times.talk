@@ -23,246 +23,262 @@
 
 rule e8t_hard_destitute
 when concept=talk.times world.times=hard|lean self.wealth=destitute
+does tell.self
 cooldown 1d
-say Times like these, it's #dole# or nothing. | Nobody gives a penny when everyone's #skint#.
-remember pair: tm=moan 2m
+say {tm=moan} Times like these, it's #dole# or nothing. | {tm=moan} Nobody gives a penny when everyone's #skint#.
 then other: times.answer
 
 rule e8t_hard_poor
 when concept=talk.times world.times=hard|lean self.wealth=poor self.class=lower|middle
+does tell.self
 cooldown 1d
-say What I earn doesn't stretch to Emberday any more. | They've cut the hours at my place. Same work, less of it, less pay.
-remember pair: tm=moan 2m
+say {tm=moan} What I earn doesn't stretch to Emberday any more. | {tm=moan} They've cut the hours at my place. Same work, less of it, less pay.
 then other: times.answer
 
 rule e8t_hard_poor_upper
 when concept=talk.times world.times=hard|lean self.wealth=poor self.class=upper
+does tell.self
 cooldown 2d
-say One sold the good silver last month. Not a word to anyone. | We keep up appearances. Appearances are cheaper than dinners.
-remember pair: tm=moan 2m
+say {tm=moan} One sold the good silver last month. Not a word to anyone. | {tm=moan} We keep up appearances. Appearances are cheaper than dinners.
 then other: times.answer
 
 rule e8t_hard_comfortable
 when concept=talk.times world.times=hard|lean self.wealth=comfortable
+does tell.self
 cooldown 1d
-say We're tightening our belts. Another notch and I'll be through it. | Folk are buying less. You feel it at every counter.
-remember pair: tm=moan 2m
+say {tm=moan} We're tightening our belts. Another notch and I'll be through it. | {tm=moan} Folk are buying less. You feel it at every counter.
 then other: times.answer
 
 rule e8t_hard_rich_state
 when concept=talk.times world.times=hard|lean self.wealth=rich self.class=upper here.region=ridgemere
+does tell.self
 cooldown 1d
-say The Council will have to answer for this. In the chamber, not the street. | The Houses will be asked to stand behind the Crown. They always are.
-remember pair: tm=state 2m
+say {tm=state} The Council will have to answer for this. In the chamber, not the street. | {tm=state} The Houses will be asked to stand behind the Crown. They always are.
 then other: times.answer
 
 rule e8t_hard_rich_father
 when concept=talk.times world.times=hard|lean self.wealth=rich self.class=upper self.father
+does tell.self
 cooldown 2d
-say Father says the Houses must close ranks until it passes. | Father has the steward looking at every account twice.
-remember pair: tm=state 2m
+say {tm=state} Father says the Houses must close ranks until it passes. | {tm=state} Father has the steward looking at every account twice.
 then other: times.answer
 
 rule e8t_hard_rich_house
 when concept=talk.times world.times=hard|lean self.wealth=rich self.house
+does tell.self
 cooldown 2d
-say Our House will see its people through. It always has. | Our House has put off the summer ball. Imagine the talk.
-remember pair: tm=state 2m
+say {tm=state} Our House will see its people through. It always has. | {tm=state} Our House has put off the summer ball. Imagine the talk.
 then other: times.answer
 
 rule e8t_hard_rich_land
 when concept=talk.times world.times=hard|lean self.wealth=rich self.class=middle|lower
+does tell.self
 cooldown 1d
-say The mill's turning half days. Nobody's buying flour by the sack. | My tenants are behind with the rent. I can't turn them all out.
-remember pair: tm=land 2m
+say {tm=land} The mill's turning half days. Nobody's buying flour by the sack. | {tm=land} My tenants are behind with the rent. I can't turn them all out.
 then other: times.answer
 
 rule e8t_hard_rich_town
 when concept=talk.times world.times=hard|lean self.wealth=rich here.region!=ridgemere
+does tell.self
 cooldown 1d
-say The fields don't care about the times. The market does. | I'll hold my grain back till it turns. Let the barns wait.
-remember pair: tm=land 2m
+say {tm=land} The fields don't care about the times. The market does. | {tm=land} I'll hold my grain back till it turns. Let the barns wait.
 then other: times.answer
 
 ## The cause, in its own words
 
 rule e8t_cause_hard
 when concept=talk.times world.times=hard|lean world.times_cause
+does tell.self
 cooldown 1d
-say It's all the talk of #world.times_cause#, they say. | Ever since word of #world.times_cause#, nothing's been right. | Everyone blames #world.times_cause#. I suppose they're right.
-remember pair: tm=cause 2m
+say {tm=cause} It's all the talk of #world.times_cause#, they say. | {tm=cause} Ever since word of #world.times_cause#, nothing's been right. | {tm=cause} Everyone blames #world.times_cause#. I suppose they're right.
 then other: times.answer
 
 rule e8t_cause_hard_poor
 when concept=talk.times world.times=hard|lean world.times_cause self.wealth=poor|destitute
+does tell.self
 cooldown 1d
-say #world.times_cause.capitalize#. And who pays for it? Us, same as ever. | They talk of #world.times_cause#. I talk of my supper.
-remember pair: tm=cause 2m
+say {tm=cause} #world.times_cause.capitalize#. And who pays for it? Us, same as ever. | {tm=cause} They talk of #world.times_cause#. I talk of my supper.
 then other: times.answer
 
 rule e8t_cause_hard_upper
 when concept=talk.times world.times=hard|lean world.times_cause self.wealth=rich|comfortable self.class=upper here.region=ridgemere
+does tell.self
 cooldown 1d
-say The Heights talk of nothing but #world.times_cause#. | #world.times_cause.capitalize#. A matter of state, and the city pays for it.
-remember pair: tm=cause 2m
+say {tm=cause} The Heights talk of nothing but #world.times_cause#. | {tm=cause} #world.times_cause.capitalize#. A matter of state, and the city pays for it.
 then other: times.answer
 
 ## Good times and boom
 
 rule e8t_good_destitute
 when concept=talk.times world.times=good|boom self.wealth=destitute
+does tell.news
 cooldown 1d
-say Good times, they say. Not on the chapel steps. | Boom for some. I'm still counting crumbs.
-remember pair: tm=moan 2m
+say {tm=moan} Good times, they say. Not on the chapel steps. | {tm=moan} Boom for some. I'm still counting crumbs.
 then other: times.answer
 
 rule e8t_good_poor
 when concept=talk.times world.times=good|boom self.wealth=poor
+does tell.news
 cooldown 1d
-say Good times, they say. Not on my street. | The #toffs# are spending. Spending past me.
-remember pair: tm=moan 2m
+say {tm=moan} Good times, they say. Not on my street. | {tm=moan} The #toffs# are spending. Spending past me.
 then other: times.answer
 
 rule e8t_good_comfortable
 when concept=talk.times world.times=good|boom self.wealth=comfortable
+does tell.self
 cooldown 1d
-say Good times. We had meat twice this week. | Work's steady and the pay keeps coming. I'll take it.
-remember pair: tm=boast 2m
+say {tm=boast} Good times. We had meat twice this week. | {tm=boast} Work's steady and the pay keeps coming. I'll take it.
 then other: times.boast_answer
 
 rule e8t_good_comfortable_parent
 when concept=talk.times world.times=good|boom self.wealth=comfortable self.parent=yes
+does tell.self
 cooldown 2d
-say The pups have new boots, and I didn't have to think about it. | The little ones had a cake on Restday. A whole cake.
-remember pair: tm=boast 2m
+say {tm=boast} The pups have new boots, and I didn't have to think about it. | {tm=boast} The little ones had a cake on Restday. A whole cake.
 then other: times.boast_answer
 
 rule e8t_good_comfortable_keeper
 when concept=talk.times world.times=good|boom self.wealth=comfortable self.role=merchant business=thriving|steady
+does tell.self
 cooldown 1d
-say A queue at my counter yesterday. A queue! | I've taken on a lad to help. First time in years.
-remember pair: tm=boast 2m
+say {tm=boast} A queue at my counter yesterday. A queue! | {tm=boast} I've taken on a lad to help. First time in years.
 then other: times.boast_answer
 
 rule e8t_good_rich_state
 when concept=talk.times world.times=good|boom self.wealth=rich self.class=upper here.region=ridgemere
+does tell.self
 cooldown 1d
-say The Houses haven't had a season like it. The Council's all smiles. | The Crown's pleased with the city, one hears. That's worth more than coin.
-remember pair: tm=state 2m
+say {tm=state} The Houses haven't had a season like it. The Council's all smiles. | {tm=state} The Crown's pleased with the city, one hears. That's worth more than coin.
 then other: times.boast_answer
 
 rule e8t_good_rich_cheese
 when concept=talk.times world.times=good|boom self.wealth=rich
+does tell.self
 cooldown 2d
-say We've a whole wheel of the good cheese in the larder. A whole wheel. | Cheese at every supper this week. One gets used to it terribly fast.
-remember pair: tm=boast 2m
+say {tm=boast} We've a whole wheel of the good cheese in the larder. A whole wheel. | {tm=boast} Cheese at every supper this week. One gets used to it terribly fast.
 then other: times.boast_answer
 
 rule e8t_good_rich_land
 when concept=talk.times world.times=good|boom self.wealth=rich self.class=middle|lower
+does tell.self
 cooldown 1d
-say Mill's never been busier. I've bought the meadow by the river. | My barns are full and my buyers are fuller. Good years, these.
-remember pair: tm=land 2m
+say {tm=land} Mill's never been busier. I've bought the meadow by the river. | {tm=land} My barns are full and my buyers are fuller. Good years, these.
 then other: times.boast_answer
 
 rule e8t_cause_good
 when concept=talk.times world.times=good|boom world.times_cause
+does tell.self
 cooldown 1d
-say #world.times_cause.capitalize#, and suddenly everyone's got coin. | All this talk of #world.times_cause#, and the whole city's different.
-remember pair: tm=cause 2m
+say {tm=cause} #world.times_cause.capitalize#, and suddenly everyone's got coin. | {tm=cause} All this talk of #world.times_cause#, and the whole city's different.
 then other: times.answer
 
 ## ---------------------------------------------------------------- Answers: a moan or a cause, in hard times
 
 rule e8t_ans_hard_destitute
-when concept=times.answer pair.mem.tm=moan|cause world.times=hard|lean self.wealth=destitute
+when concept=times.answer conv.tm=moan|cause world.times=hard|lean self.wealth=destitute
+does react.complaint
 say Try the chapel steps. Then tell me about hard. | At least you've a roof.
 
 rule e8t_ans_hard_poor
-when concept=times.answer pair.mem.tm=moan|cause world.times=hard|lean self.wealth=poor
+when concept=times.answer conv.tm=moan|cause world.times=hard|lean self.wealth=poor
+does react.complaint
 say Don't I know it. I'm #skint# till Marketday. | Same here. Every penny's counted twice.
 
 rule e8t_ans_hard_poor_parent
-when concept=times.answer pair.mem.tm=moan|cause world.times=hard|lean self.wealth=poor self.parent=yes
+when concept=times.answer conv.tm=moan|cause world.times=hard|lean self.wealth=poor self.parent=yes
+does react.complaint
 say #agree#. My pups are eating porridge for supper. | And the little ones growing out of everything.
 
 rule e8t_ans_hard_comfortable
-when concept=times.answer pair.mem.tm=moan|cause world.times=hard|lean self.wealth=comfortable
+when concept=times.answer conv.tm=moan|cause world.times=hard|lean self.wealth=comfortable
+does react.complaint
 say We're all pinching. #agree#. | Keep your head down and your purse shut, that's my way.
 
 rule e8t_ans_hard_rich_upper
-when concept=times.answer pair.mem.tm=moan|cause world.times=hard|lean self.wealth=rich self.class=upper
+when concept=times.answer conv.tm=moan|cause world.times=hard|lean self.wealth=rich self.class=upper
+does react.complaint
 say It is being seen to, I'm told. At the Council. | Dreadful. Someone really ought to do something.
 
 rule e8t_ans_hard_rich
-when concept=times.answer pair.mem.tm=moan|cause world.times=hard|lean self.wealth=rich self.class=middle|lower
+when concept=times.answer conv.tm=moan|cause world.times=hard|lean self.wealth=rich self.class=middle|lower
+does react.complaint
 say I've cut my hands to four days. It's that or shut the gate. | It'll pass. Buy cheap now, I say.
 
 rule e8t_ans_hard_any
-when concept=times.answer pair.mem.tm=moan|cause world.times=hard|lean
+when concept=times.answer conv.tm=moan|cause world.times=hard|lean
+does react.complaint
 say #agree#. It'll turn. It always does. | #oath#. I don't know anyone who isn't feeling it.
 
 ## The rich's worries, answered
 
 rule e8t_ans_worry_poor
-when concept=times.answer pair.mem.tm=state|land world.times=hard|lean self.wealth=poor|destitute
-say Your half days are my no days. | I'd trade worries with you. Gladly.
-remember pair: ta=sour 2m
+when concept=times.answer conv.tm=state|land world.times=hard|lean self.wealth=poor|destitute
+does react.complaint
+say {ta=sour} Your half days are my no days. | {ta=sour} I'd trade worries with you. Gladly.
 then other: times.close
 
 rule e8t_ans_worry_any
-when concept=times.answer pair.mem.tm=state|land world.times=hard|lean
+when concept=times.answer conv.tm=state|land world.times=hard|lean
+does react.complaint
 say So I hear. | Hard for everyone, then. | Quite. One rides it out.
 
 ## A moan in good times (the poor not feeling it), and a cause in good or ordinary times
 
 rule e8t_ans_good_moan_rich
-when concept=times.answer pair.mem.tm=moan world.times=good|boom self.wealth=rich
-say Nonsense. There's work for anyone who wants it. | It'll trickle down. It always does, eventually.
-remember pair: ta=sour 2m
+when concept=times.answer conv.tm=moan world.times=good|boom self.wealth=rich
+does react.complaint
+say {ta=sour} Nonsense. There's work for anyone who wants it. | {ta=sour} It'll trickle down. It always does, eventually.
 then other: times.close
 
 rule e8t_ans_good_moan_poor
-when concept=times.answer pair.mem.tm=moan world.times=good|boom self.wealth=poor|destitute
+when concept=times.answer conv.tm=moan world.times=good|boom self.wealth=poor|destitute
+does react.complaint
 say Not my street either. | Good times never get down the hill.
 
 rule e8t_ans_cause_good
-when concept=times.answer pair.mem.tm=cause world.times=good|boom
+when concept=times.answer conv.tm=cause world.times=good|boom
+does react.complaint
 say Long may it last. | I'll believe it when it's in my purse.
 
 ## ---------------------------------------------------------------- Answers to a boast, and the close
 
 rule e8t_boast_ans_poor
 when concept=times.boast_answer self.wealth=poor|destitute
-say Must be nice. | Good for you. Some of us are still counting crusts.
-remember pair: ta=sour 2m
+does react.self
+say {ta=sour} Must be nice. | {ta=sour} Good for you. Some of us are still counting crusts.
 then other: times.close
 
 rule e8t_boast_ans_comfortable
 when concept=times.boast_answer self.wealth=comfortable
+does react.self
 say Good for you. Mind it doesn't turn. | Make hay while the sun shines, eh?
 
 rule e8t_boast_ans_rich
 when concept=times.boast_answer self.wealth=rich
+does react.self
 say We've done well too, touch wood. | Yes, everyone's flush. It makes servants so hard to keep.
 
 rule e8t_boast_ans_any
 when concept=times.boast_answer
+does react.self
 say Well, that's good to hear. | Glad someone's doing well.
 
 rule e8t_close_any
-when concept=times.close pair.mem.ta=sour
-say I didn't mean anything by it. | Fair enough. | Sorry. I didn't think.
+when concept=times.close conv.ta=sour
+does apologise
+say I didn't mean anything by it. | #bc_fair_enough# | Sorry. I didn't think.
 
 ## ================================================================ Barks: hard and lean times
 
 rule e8t_bk_hard_destitute
 when concept=bark world.times=hard|lean self.wealth=destitute
+does aside
 cooldown 4h
 say A penny, anyone? Times are hard for all of us. | Hard times. Hard ground to sleep on.
 
 rule e8t_bk_hard_poor
 when concept=bark world.times=hard|lean self.wealth=poor
+does aside
 cooldown 4h
 say Another week, another hole in the purse. | #oath#, these times.
 
@@ -273,111 +289,111 @@ say Another week, another hole in the purse. | #oath#, these times.
 
 rule e8t_ev_wedding_soon
 when concept=talk.event world.event=house_wedding world.event_when=soon
+does tell.self
 cooldown 1d
-say There's a House wedding on the way. Every cook in the Heights is hiring. | A House wedding this week. The whole city will turn out to gawp.
-remember pair: ev=good 2m
+say {ev=good} There's a House wedding on the way. Every cook in the Heights is hiring. | {ev=good} A House wedding this week. The whole city will turn out to gawp.
 then other: event.answer
 
 rule e8t_ev_wedding_now
 when concept=talk.event world.event=house_wedding world.event_when=now
+does tell.self
 cooldown 1d
-say Carriages up and down the hill all day. For the wedding. | They've hung ribbons from every lamp on the way up to the Heights.
-remember pair: ev=good 2m
+say {ev=good} Carriages up and down the hill all day. For the wedding. | {ev=good} They've hung ribbons from every lamp on the way up to the Heights.
 then other: event.answer
 
 rule e8t_ev_wedding_wine
 when concept=talk.event world.event=house_wedding world.event_when=soon|now world.wine_price=up
+does tell.self
 cooldown 1d
-say The stewards are buying up all the wine for the wedding. Dear as anything. | Wine's dear while the Houses buy for the wedding.
-remember pair: ev=good 2m
+say {ev=good} The stewards are buying up all the wine for the wedding. Dear as anything. | {ev=good} Wine's dear while the Houses buy for the wedding.
 then other: event.answer
 
 rule e8t_ev_wedding_mother
 when concept=talk.event world.event=house_wedding world.event_when=soon|now self.wealth=rich self.class=upper self.mother
+does tell.self
 cooldown 1d
-say We're invited, of course. Mother has had three gowns made and likes none of them. | The seating alone has caused two feuds.
-remember pair: ev=good 2m
+say {ev=good} We're invited, of course. Mother has had three gowns made and likes none of them. | {ev=good} The seating alone has caused two feuds.
 then other: event.answer
 
 rule e8t_ev_wedding_poor
 when concept=talk.event world.event=house_wedding world.event_when=soon|now self.wealth=poor|destitute
+does tell.self
 cooldown 1d
-say A House wedding. They'll spend more on one night than I'll see in my life. | Maybe they'll throw the leftovers to the gate.
-remember pair: ev=good 2m
+say {ev=good} A House wedding. They'll spend more on one night than I'll see in my life. | {ev=good} Maybe they'll throw the leftovers to the gate.
 then other: event.answer
 
 rule e8t_ev_wedding_cook
 when concept=talk.event world.event=house_wedding world.event_when=soon|now self.job=cook|baker|brewer|innkeeper
+does tell.self
 cooldown 1d
-say Every kitchen in the city's working for the House wedding. | The stewards want it all by morning. All of it.
-remember pair: ev=good 2m
+say {ev=good} Every kitchen in the city's working for the House wedding. | {ev=good} The stewards want it all by morning. All of it.
 then other: event.answer
 
 rule e8t_ev_wedding_past
 when concept=talk.event world.event=house_wedding world.event_when=past
+does tell.self
 cooldown 1d
-say Did you see the House wedding? The carriages! | They're still sweeping ribbons off the hill, after the wedding.
-remember pair: ev=good 2m
+say {ev=good} Did you see the House wedding? The carriages! | {ev=good} They're still sweeping ribbons off the hill, after the wedding.
 then other: event.answer
 
 ## A fire at the works.
 
 rule e8t_ev_fire_now
 when concept=talk.event world.event=works_fire world.event_when=now
+does tell.self
 cooldown 1d
-say There's a fire at the works. You can see the smoke from the square. | They're saying the works caught fire in the night.
-remember pair: ev=bad 2m
+say {ev=bad} There's a fire at the works. You can see the smoke from the square. | {ev=bad} They're saying the works caught fire in the night.
 then other: event.answer
 
 rule e8t_ev_fire_worker
 when concept=talk.event world.event=works_fire world.event_when=now self.quarter=works
+does tell.self
 cooldown 1d
-say I was there when it went up. The heat took the fur off my arm. | We passed buckets till dawn. It's still smouldering.
-remember pair: ev=bad 2m
+say {ev=bad} I was there when it went up. The heat took the fur off my arm. | {ev=bad} We passed buckets till dawn. It's still smouldering.
 then other: event.answer
 
 rule e8t_ev_fire_builder
 when concept=talk.event world.event=works_fire world.event_when=now self.job=crafter|laborer
+does tell.complaint
 cooldown 1d
-say I can't get planks for love nor money since the fire. | Anyone building had better wait till the works is put right.
-remember pair: ev=bad 2m
+say {ev=bad} I can't get planks for love nor money since the fire. | {ev=bad} Anyone building had better wait till the works is put right.
 then other: event.answer
 
 rule e8t_ev_fire_past
 when concept=talk.event world.event=works_fire world.event_when=past
+does tell.self
 cooldown 1d
-say They're still clearing the burnt beams at the works. | Nobody hurt in the fire, thank the Bright One.
-remember pair: ev=bad 2m
+say {ev=bad} They're still clearing the burnt beams at the works. | {ev=bad} Nobody hurt in the fire, thank the Bright One.
 then other: event.answer
 
 ## A good catch.
 
 rule e8t_ev_catch_now
 when concept=talk.event world.event=good_catch world.event_when=now
+does tell.self
 cooldown 1d
-say The boats came in low in the water this morning. | A good catch in. Everyone's having fish tonight.
-remember pair: ev=good 2m
+say {ev=good} The boats came in low in the water this morning. | {ev=good} A good catch in. Everyone's having fish tonight.
 then other: event.answer
 
 rule e8t_ev_catch_cheap
 when concept=talk.event world.event=good_catch world.event_when=now world.fish_price=down
+does tell.self
 cooldown 1d
-say A good catch is in. Fish is cheap for a day or two. | Fish going for nothing at the stalls, with the catch in.
-remember pair: ev=good 2m
+say {ev=good} A good catch is in. Fish is cheap for a day or two. | {ev=good} Fish going for nothing at the stalls, with the catch in.
 then other: event.answer
 
 rule e8t_ev_catch_fisher
 when concept=talk.event world.event=good_catch world.event_when=now self.job=fisher|sailor
+does tell.self
 cooldown 1d
-say Best haul of the season. The nets near split. | We'll be salting fish till midnight.
-remember pair: ev=good 2m
+say {ev=good} Best haul of the season. The nets near split. | {ev=good} We'll be salting fish till midnight.
 then other: event.answer
 
 rule e8t_ev_catch_past
 when concept=talk.event world.event=good_catch world.event_when=past
+does tell.self
 cooldown 1d
-say That was a catch the other day. The smokehouses are still full. | They'll be talking of that catch all season.
-remember pair: ev=good 2m
+say {ev=good} That was a catch the other day. The smokehouses are still full. | {ev=good} They'll be talking of that catch all season.
 then other: event.answer
 
 ## Blight in the orchards.
@@ -386,105 +402,104 @@ rule e8t_ev_blight
 when concept=talk.event world.event=orchard_blight world.event_when=now
 does tell.news
 cooldown 1d
-say Blight in the orchards, they say. Black spots on every apple. | No cider this year, if the blight keeps on.
-remember pair: ev=bad 2m
+say {ev=bad} Blight in the orchards, they say. Black spots on every apple. | {ev=bad} No cider this year, if the blight keeps on.
 then other: event.answer
 
 rule e8t_ev_blight_past
 when concept=talk.event world.event=orchard_blight world.event_when=past
+does tell.complaint
 cooldown 1d
-say The orchards had the blight. They've burnt the worst of the trees. | The blight's done its worst. We'll see what's left come picking.
-remember pair: ev=bad 2m
+say {ev=bad} The orchards had the blight. They've burnt the worst of the trees. | {ev=bad} The blight's done its worst. We'll see what's left come picking.
 then other: event.answer
 
 ## The festival's buying ahead.
 
 rule e8t_ev_festival_buying
 when concept=talk.event world.event=festival_buying world.event_when=soon|now
+does tell.self
 cooldown 1d
-say The inns are buying ahead for the festival. | Every kitchen's stocking up for the festival.
-remember pair: ev=good 2m
+say {ev=good} The inns are buying ahead for the festival. | {ev=good} Every kitchen's stocking up for the festival.
 then other: event.answer
 
 rule e8t_ev_festival_ale
 when concept=talk.event world.event=festival_buying world.event_when=soon|now world.ale_price=up
+does tell.self
 cooldown 1d
-say Ale's dear already, with the festival coming. | The inns have bought the ale up for the festival. Dear now.
-remember pair: ev=good 2m
+say {ev=good} Ale's dear already, with the festival coming. | {ev=good} The inns have bought the ale up for the festival. Dear now.
 then other: event.answer
 
 rule e8t_ev_festival_keeper
 when concept=talk.event world.event=festival_buying world.event_when=soon|now self.job=innkeeper|cook|brewer
+does tell.self
 cooldown 1d
-say I've ordered more ale than I've room for. Festival's worth it. | My cellar's full to the stairs.
-remember pair: ev=good 2m
+say {ev=good} I've ordered more ale than I've room for. Festival's worth it. | {ev=good} My cellar's full to the stairs.
 then other: event.answer
 
 ## A lame ox holding a farm's cart.
 
 rule e8t_ev_lame_ox
 when concept=talk.event world.event=lame_ox world.event_when=now
+does tell.self
 cooldown 1d
-say No farm cart this morning. Some business with an ox. | It's all talk of #world.event_words# at the stalls. Small thing, but they feel it.
-remember pair: ev=bad 2m
+say {ev=bad} No farm cart this morning. Some business with an ox. | {ev=bad} It's all talk of #world.event_words# at the stalls. Small thing, but they feel it.
 then other: event.answer
 
 rule e8t_ev_lame_ox_carter
 when concept=talk.event world.event=lame_ox world.event_when=now|past self.job=carter|farmer|herder
+does tell.self
 cooldown 1d
-say Poor beast. You don't drive an ox on a bad leg, whatever the market wants. | Better a day late than an ox lost.
-remember pair: ev=bad 2m
+say {ev=bad} Poor beast. You don't drive an ox on a bad leg, whatever the market wants. | {ev=bad} Better a day late than an ox lost.
 then other: event.answer
 
 rule e8t_ev_lame_ox_past
 when concept=talk.event world.event=lame_ox world.event_when=past
+does tell.self
 cooldown 1d
-say The farm cart's back, after that business with the ox. | They had another ox in the shafts by morning.
-remember pair: ev=bad 2m
+say {ev=bad} The farm cart's back, after that business with the ox. | {ev=bad} They had another ox in the shafts by morning.
 then other: event.answer
 
 ## A ship's rich cargo.
 
 rule e8t_ev_cargo_soon
 when concept=talk.event world.event=rich_cargo world.event_when=soon world.event_goods
+does tell.self
 cooldown 1d
-say The Wharf's all talk of #world.event_words#. | She's bringing #world.event_goods#, they say. #world.event_words.capitalize#.
-remember pair: ev=good 2m
+say {ev=good} The Wharf's all talk of #world.event_words#. | {ev=good} She's bringing #world.event_goods#, they say. #world.event_words.capitalize#.
 then other: event.answer
 
 rule e8t_ev_cargo_now
 when concept=talk.event world.event=rich_cargo world.event_when=now world.event_goods
+does tell.self
 cooldown 1d
-say The Heights are all down at the Wharf. #world.event_words.capitalize#. | #world.event_goods.capitalize#, and all of it off the one ship.
-remember pair: ev=good 2m
+say {ev=good} The Heights are all down at the Wharf. #world.event_words.capitalize#. | {ev=good} #world.event_goods.capitalize#, and all of it off the one ship.
 then other: event.answer
 
 rule e8t_ev_cargo_silk
 when concept=talk.event world.event=rich_cargo world.event_when=now world.silk_price=down
+does tell.self
 cooldown 1d
-say I've never seen so much silk in one place.
-remember pair: ev=good 2m
+say {ev=good} I've never seen so much silk in one place.
 then other: event.answer
 
 rule e8t_ev_cargo_spices
 when concept=talk.event world.event=rich_cargo world.event_when=now world.spices_price=down
+does tell.self
 cooldown 1d
-say Spices cheap at the Wharf, for once. | You can smell the spices from the square. Cheap, too.
-remember pair: ev=good 2m
+say {ev=good} Spices cheap at the Wharf, for once. | {ev=good} You can smell the spices from the square. Cheap, too.
 then other: event.answer
 
 rule e8t_ev_cargo_rich
 when concept=talk.event world.event=rich_cargo world.event_when=soon|now self.wealth=rich
+does tell.self
 cooldown 1d
-say I've sent the steward down to the Wharf. Before the Heights take it all. | One waits for a ship like that all year.
-remember pair: ev=good 2m
+say {ev=good} I've sent the steward down to the Wharf. Before the Heights take it all. | {ev=good} One waits for a ship like that all year.
 then other: event.answer
 
 rule e8t_ev_cargo_past
 when concept=talk.event world.event=rich_cargo world.event_when=past
+does tell.complaint
 cooldown 1d
-say That cargo's all gone up the hill. | The Heights had the best of that cargo, as ever.
-remember pair: ev=good 2m
+say {ev=good} That cargo's all gone up the hill. | {ev=good} The Heights had the best of that cargo, as ever.
 then other: event.answer
 
 ## A ship lost.
@@ -494,16 +509,15 @@ when concept=talk.event world.event=lost_ship
 does tell.news
 cooldown 1d
 priority 1
-say #world.event_words.capitalize#. All her cargo, gone. | Everyone's talking of #world.event_words#. The Wharf's gone quiet. | #world.event_words.capitalize#. The Bright One keep them.
-remember pair: ev=loss 2m
+say {ev=loss} #world.event_words.capitalize#. All her cargo, gone. | {ev=loss} Everyone's talking of #world.event_words#. The Wharf's gone quiet. | {ev=loss} #world.event_words.capitalize#. The Bright One keep them.
 then other: event.answer
 
 rule e8t_ev_lost_wharf
 when concept=talk.event world.event=lost_ship self.quarter=wharf|docks
+does tell.self
 cooldown 1d
 priority 2
-say I knew her crew. Some of them, anyway. | The sea takes what it likes. It took her.
-remember pair: ev=loss 2m
+say {ev=loss} I knew her crew. Some of them, anyway. | {ev=loss} The sea takes what it likes. It took her.
 then other: event.answer
 
 ## The mill wheel stopped.
@@ -512,29 +526,28 @@ rule e8t_ev_mill
 when concept=talk.event world.event=mill_stopped world.event_when=now
 does tell.news
 cooldown 1d
-say The mill wheel's stopped for mending. | No flour from the mill this week. The bakers are scraping.
-remember pair: ev=bad 2m
+say {ev=bad} The mill wheel's stopped for mending. | {ev=bad} No flour from the mill this week. The bakers are scraping.
 then other: event.answer
 
 rule e8t_ev_mill_bread
 when concept=talk.event world.event=mill_stopped world.event_when=now world.bread_price=up
+does tell.complaint
 cooldown 1d
-say Bread's dearer with the mill wheel stopped. | They're mending the mill wheel, and bread's dear till it turns.
-remember pair: ev=bad 2m
+say {ev=bad} Bread's dearer with the mill wheel stopped. | {ev=bad} They're mending the mill wheel, and bread's dear till it turns.
 then other: event.answer
 
 rule e8t_ev_mill_baker
 when concept=talk.event world.event=mill_stopped world.event_when=now self.job=baker
+does tell.self
 cooldown 1d
-say No flour, no bread. I'm baking what I had put by. | I'll be glad to hear that wheel turn again.
-remember pair: ev=bad 2m
+say {ev=bad} No flour, no bread. I'm baking what I had put by. | {ev=bad} I'll be glad to hear that wheel turn again.
 then other: event.answer
 
 rule e8t_ev_mill_past
 when concept=talk.event world.event=mill_stopped world.event_when=past
+does tell.self
 cooldown 1d
-say The mill wheel's turning again. You can hear it from the bridge. | They mended the mill. The bakers are back at it.
-remember pair: ev=good 2m
+say {ev=good} The mill wheel's turning again. You can hear it from the bridge. | {ev=good} They mended the mill. The bakers are back at it.
 then other: event.answer
 
 ## The drovers in.
@@ -543,22 +556,21 @@ rule e8t_ev_drovers
 when concept=talk.event world.event=drovers_in world.event_when=now
 does tell.news
 cooldown 1d
-say The drovers are in. You can hear the herds from the square. | Drovers in, and the whole yard smells of it.
-remember pair: ev=good 2m
+say {ev=good} The drovers are in. You can hear the herds from the square. | {ev=good} Drovers in, and the whole yard smells of it.
 then other: event.answer
 
 rule e8t_ev_drovers_meat
 when concept=talk.event world.event=drovers_in world.event_when=now world.mutton_price=down
+does tell.self
 cooldown 1d
-say Mutton tonight. The drovers are in and it's cheap. | Cheap mutton, with the drovers in.
-remember pair: ev=good 2m
+say {ev=good} Mutton tonight. The drovers are in and it's cheap. | {ev=good} Cheap mutton, with the drovers in.
 then other: event.answer
 
 rule e8t_ev_drovers_past
 when concept=talk.event world.event=drovers_in world.event_when=past
+does tell.self
 cooldown 1d
-say The drovers have moved on. The yard's quiet again. | The tanners are still busy with what the drovers left.
-remember pair: ev=good 2m
+say {ev=good} The drovers have moved on. The yard's quiet again. | {ev=good} The tanners are still busy with what the drovers left.
 then other: event.answer
 
 ## The salt pans flooded.
@@ -567,29 +579,28 @@ rule e8t_ev_salt
 when concept=talk.event world.event=salt_short world.event_when=now
 does tell.news
 cooldown 1d
-say The salt pans are flooded, they say. | No salt to be had, with the pans under water. | Every cook in town is after salt, and the pans give none.
-remember pair: ev=bad 2m
+say {ev=bad} The salt pans are flooded, they say. | {ev=bad} No salt to be had, with the pans under water. | {ev=bad} Every cook in town is after salt, and the pans give none.
 then other: event.answer
 
 rule e8t_ev_salt_winter
 when concept=talk.event world.event=salt_short world.event_when=now here.season=autumn|winter
+does tell.self
 cooldown 1d
-say What's a winter without salt? Ask me in a month. | The pans flooded, and the curing season on us.
-remember pair: ev=bad 2m
+say {ev=bad} What's a winter without salt? Ask me in a month. | {ev=bad} The pans flooded, and the curing season on us.
 then other: event.answer
 
 rule e8t_ev_salt_fisher
 when concept=talk.event world.event=salt_short world.event_when=now self.job=fisher|cook
+does tell.self
 cooldown 1d
-say How am I to cure fish with no salt? | I'll smoke what I can't salt.
-remember pair: ev=bad 2m
+say {ev=bad} How am I to cure fish with no salt? | {ev=bad} I'll smoke what I can't salt.
 then other: event.answer
 
 rule e8t_ev_salt_past
 when concept=talk.event world.event=salt_short world.event_when=past
+does tell.news
 cooldown 1d
-say The salt pans are drying out, they say. | The salt's back on the stalls, after the flood.
-remember pair: ev=bad 2m
+say {ev=bad} The salt pans are drying out, they say. | {ev=bad} The salt's back on the stalls, after the flood.
 then other: event.answer
 
 ## A brewing too many.
@@ -598,29 +609,28 @@ rule e8t_ev_brew
 when concept=talk.event world.event=brewers_glut world.event_when=now
 does tell.news
 cooldown 1d
-say The brewers have brewed too much. Barrels everywhere. | The brewers can't shift it all. I'll do my bit to help.
-remember pair: ev=good 2m
+say {ev=good} The brewers have brewed too much. Barrels everywhere. | {ev=good} The brewers can't shift it all. I'll do my bit to help.
 then other: event.answer
 
 rule e8t_ev_brew_ale
 when concept=talk.event world.event=brewers_glut world.event_when=now world.ale_price=down
+does tell.self
 cooldown 1d
-say Ale's cheap! The brewers made too much. | Cheap ale this week. The brewers can't shift it.
-remember pair: ev=good 2m
+say {ev=good} Ale's cheap! The brewers made too much. | {ev=good} Cheap ale this week. The brewers can't shift it.
 then other: event.answer
 
 rule e8t_ev_brew_brewer
 when concept=talk.event world.event=brewers_glut world.event_when=now|past self.job=brewer
+does tell.self
 cooldown 1d
-say Never brew in a hurry. I've learnt that twice now. | If you've a thirst, come and see me.
-remember pair: ev=good 2m
+say {ev=good} Never brew in a hurry. I've learnt that twice now. | {ev=good} If you've a thirst, come and see me.
 then other: event.answer
 
 rule e8t_ev_brew_past
 when concept=talk.event world.event=brewers_glut world.event_when=past
+does tell.self
 cooldown 1d
-say The brewers sold the last of their glut. Shame. | That was a week for a thirst, the brewers' glut.
-remember pair: ev=good 2m
+say {ev=good} The brewers sold the last of their glut. Shame. | {ev=good} That was a week for a thirst, the brewers' glut.
 then other: event.answer
 
 ## Any other (a host's kinds), in its own words.
@@ -630,8 +640,7 @@ when concept=talk.event world.event_when=now
 does tell.news
 cooldown 1d
 priority -1
-say Have you heard? #world.event_words.capitalize#. | It's all talk of #world.event_words# at the market today.
-remember pair: ev=news 2m
+say {ev=news} Have you heard? #world.event_words.capitalize#. | {ev=news} It's all talk of #world.event_words# at the market today.
 then other: event.answer
 
 rule e8t_ev_any_soon
@@ -639,8 +648,7 @@ when concept=talk.event world.event_when=soon
 does tell.news
 cooldown 1d
 priority -1
-say There's a notice up: #world.event_words#, in a day or two. | They're crying #world.event_words# in the square.
-remember pair: ev=news 2m
+say {ev=news} There's a notice up: #world.event_words#, in a day or two. | {ev=news} They're crying #world.event_words# in the square.
 then other: event.answer
 
 rule e8t_ev_any_past
@@ -648,48 +656,50 @@ when concept=talk.event world.event_when=past
 does tell.news
 cooldown 1d
 priority -1
-say That business is over now: #world.event_words#. | Folk are still talking of it. #world.event_words.capitalize#.
-remember pair: ev=news 2m
+say {ev=news} That business is over now: #world.event_words#. | {ev=news} Folk are still talking of it. #world.event_words.capitalize#.
 then other: event.answer
 
 ## Answers and the close
 
 rule e8t_ev_ans_good
-when concept=event.answer pair.mem.ev=good
+when concept=event.answer conv.ev=good
 does react.news.glad
 say So I heard. Good for someone. | Well, that's something.
 
 rule e8t_ev_ans_good_poor
-when concept=event.answer pair.mem.ev=good self.wealth=poor|destitute
+when concept=event.answer conv.ev=good self.wealth=poor|destitute
+does react.news
 say Not that it'll reach me. | Good for those who can buy.
 
 rule e8t_ev_ans_bad
-when concept=event.answer pair.mem.ev=bad
+when concept=event.answer conv.ev=bad
 does react.news.sorrow
 say #oath#. That's hard news. | I'd heard. Bad business. | Let's hope it's put right soon.
 then other: event.close
 
 rule e8t_ev_ans_bad_poor
-when concept=event.answer pair.mem.ev=bad self.wealth=poor|destitute
+when concept=event.answer conv.ev=bad self.wealth=poor|destitute
+does react.news
 say And it's always us who feel it first. | Just what we needed.
 then other: event.close
 
 rule e8t_ev_ans_bad_rich
-when concept=event.answer pair.mem.ev=bad self.wealth=rich
+when concept=event.answer conv.ev=bad self.wealth=rich
+does react.news
 say How inconvenient. | Dreadful. Was anyone hurt?
 then other: event.close
 
 rule e8t_ev_ans_loss
-when concept=event.answer pair.mem.ev=loss
+when concept=event.answer conv.ev=loss
 does react.news.sorrow
 say The Bright One keep them. | Terrible news. Terrible. | Were there families waiting for her?
 
 rule e8t_ev_ans_news
-when concept=event.answer pair.mem.ev=news
+when concept=event.answer conv.ev=news
 does react.news
-say So they say. | Is it now? Well. | I saw the notice.
+say #bc_so_they_say# | Is it now? Well. | I saw the notice.
 
 rule e8t_ev_close
-when concept=event.close pair.mem.ev=bad
+when concept=event.close conv.ev=bad
 does reassure
 say It'll mend. These things do. | Aye. We'll get by.

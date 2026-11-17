@@ -8,6 +8,7 @@
 
 scene w7b_smiths_failing
 when topic=work a.job=smith b.job=smith a.business=failing
+does tell.self / react.self / assess
 cooldown 1d
 a : Not one order this week, #b.name#. Not one. | My forge is cold by noon. Nothing to heat it for. | I've been making nails for the shelf. Nails!
 b[business=thriving] #rich : Strange. I can't keep up. I'll pass you some of mine. | I'll send the small jobs your way. I've too many. | I'll buy your nails. I'm short.
@@ -15,10 +16,11 @@ b[business=failing] #both : Mine too. Folk mend old iron and make do. | Same. Co
 b : It turns. It always turns. | Harvest comes, ploughs break. Wait. | Make something folk want. Knives sell.
 a@rich : You'd do that? | I'll hold you to it. | Fair. I'll take fair.
 a@both : Then it's the town, not us. | Coal's the killer. | Hinges! We should go into doors.
-a : I hope so. | I'll wait, then. | Knives. Maybe.
+a : #bc_i_hope_so# | I'll wait, then. | Knives. Maybe.
 
 scene w7b_smiths_iron
 when topic=work a.job=smith b.job=smith here.region=frosthollow|ridgemere
+does tell.self / react.self / tell.self
 a : This new iron's full of slag. | Timberland's bars are getting worse. | Feel the weight of this. Light. They're cheating us.
 b[self.house=mossgrave_court|timberland_court] : Mind how you talk of Timberland. I eat their bread. | It's the ore, not the House. | Nobody's cheating. It's just poor ore.
 b : Fold it more. It'll come right. | They know we've nowhere else to buy. | Weigh it next time, in front of them.
@@ -26,14 +28,16 @@ a : Hm. If you say so. | That's the truth of it. | I'll weigh the next lot, all 
 
 scene w7b_bakers_dawn
 when topic=work a.job=baker b.job=baker here.time=dawn|night
+does ask.detail / answer.detail / assess
 a : Your ovens lit yet? | Did your dough rise? Mine's flat as a pond. | I dreamt of bread. Woke up, made bread.
 b[tired=yes] #tired : Lit. My eyes aren't. | Mine rose. I nearly didn't. | I don't dream any more. Only bread.
 b : Hours ago. | Warm the water more. It's the cold. | Bakers' dreams.
 a@tired : Nor are mine. | Better than me. | Bread and more bread.
-a : Show-off. | I'll try. | Bakers' lives.
+a : Show-off. | #bc_ill_try# | Bakers' lives.
 
 scene w7b_bakers_rival
 when topic=work a.job=baker b.job=baker pair.band=rivals
+does tell.self / react.self / assess
 a : I hear you're selling loaves a penny under. | Your bread's half air. Everyone says so. | My regulars say your crust's like slate.
 b[business=thriving] : And the queue's at my door. Funny that. | Air's light. Folk like light. | They still buy it.
 b[temper=short] : Say that to my face again. | Everyone? Name one. | Your regulars have no teeth.
@@ -42,22 +46,25 @@ a : We'll see who's open in spring. | Hmph. | Ask anyone.
 
 scene w7b_brewers_batch
 when topic=work a.job=brewer b.job=brewer
+does tell.self / react.self / assess
 a : Mine's gone sour. Whole batch. | What do you do when it won't start? | I tried honey in the last one.
 b[stage=old] #old : Scrub the vats with boiling water. Every time. Every time. | Warm it, and say something kind to it. | Honey! Your grandfather would weep.
-b : Bad yeast. Get some of mine. | Wait. It'll start. | And?
+b : Bad yeast. Get some of mine. | Wait. It'll start. | #bc_and_q#
 a@old : Every time. Yes. | Something kind? To beer? | He would. Into his own ale.
 a : Thank you. Truly. | I've waited three days. | It was very sweet. Very strong. Very bad.
 
 scene w7b_innkeepers
 when topic=work a.job=innkeeper b.job=innkeeper
+does tell.self / react.self / assess
 a : Had a guest leave by the window. Without paying. | How do you stop them carving their names in the tables? | Somebody's been watering my ale. Not me.
 b[humour=merry] #joke : Charge for the window. | Carve them in first. Charge them for it. | Somebody's doing you a kindness.
 b : Payment first, beds after. Always. | You don't. You call it character. | Count the barrels nightly.
 a@joke : Ha. I'll add it to the bill. | There's a thought. | Some kindness.
-a : I've learnt that now. | Character. Right. | I will.
+a : I've learnt that now. | Character. Right. | #bc_i_will#
 
 scene w7b_guards_night
 when topic=work a.role=guard b.role=guard here.time=night|dusk
+does tell.self / react.self / assess
 a : Quiet so far. | You hear that? | Cold tonight. Keep your eyes sharp.
 b[temper=nervy] : Don't say quiet. Never say quiet. | Hear what? What? | Sharp as I can.
 b[on_watch=yes] : Too quiet for my liking. | Just a cat. Probably. | Stamp your feet. Keeps you awake.
@@ -66,6 +73,7 @@ a : Aye. | There. Again. | Long night yet.
 
 scene w7b_guards_pay
 when topic=work a.role=guard b.role=guard a.wealth=poor|destitute
+does tell.self / react.self / tell.self
 a : The town pays us in promises this month. | Watch pay's late again. | Do they think we eat air?
 b[wealth=poor|destitute] #broke : I'm eating air. Want some? | Third time this year. | Some do. Look at me.
 b : Grumble to the sergeant, not me. | It'll come. | Talk to the captain.
@@ -74,13 +82,15 @@ a : I have. The sergeant grumbles back. | When? | The captain's never there.
 
 scene w7b_guards_captain
 when topic=work a.role=guard b.role=guard world.figure_captain
+does tell.self / react.self / assess
 a : #world.figure_captain# had us polishing helmets all morning. | Has #world.figure_captain# ever walked a night watch? | #world.figure_captain#'s been in a mood.
-b[temper=short] : Polish this. | Never. Not once. | Always is.
+b[temper=short] : Polish this. | Never. Not once. | #bc_always_is#
 b : The captain likes shiny. | Once. Years ago. Never again. | Keep your head down.
 a : Shiny and hungry. | I believe it. | I'm trying.
 
 scene w7b_farmers_weather
 when topic=work a.job=farmer b.job=farmer here.weather=rain|storm
+does tell.self / react.self / assess
 a : It's beating the barley flat. | Rain on rain. The roots'll rot. | Look at the sky. It's not done.
 b[here.season=autumn] : And the harvest half in. Gods help us. | Get in what you can tonight. | Not done, nor are we.
 b[here.season=spring] : Flat seedlings stand up again. Mostly. | Good for the seed, bad for my back. | Spring rain's welcome. Up to a point.
@@ -89,13 +99,15 @@ a : No. Just watch it. | Easy said. | Nothing dries in this.
 
 scene w7b_farmers_dry
 when topic=work a.job=farmer b.job=farmer here.weather=clear here.season=summer
+does tell.self / react.self / tell.self
 a : No rain in a fortnight. The ground's cracking. | Carrying water to every row. | The well's lower every morning.
 b[piety=devout] : I've prayed. I'll pray harder. | Pray for rain, and carry water. | The Bright One will turn it. You'll see.
-b : It'll break. Always does. | My shoulders are cracking too. | Mine too.
+b : It'll break. Always does. | My shoulders are cracking too. | #bc_mine_too#
 a : Before the barley dies, I hope. | Two buckets at a time. | We'll be begging rain by next week.
 
 scene w7b_fishers_luck
 when topic=work a.job=fisher b.job=fisher
+does tell.self / react.self / assess
 a : Where are you casting? Tell me true. | Your nets come up full and mine come up weed. | Did you go out past the point?
 b[honesty=guarded|sly] : Here and there. | Weed's good for the soul. | Past what point?
 b[warmth=warm] #tip : By the old stakes, at dawn. Tell no one. | Mend the left side. It's torn. | Yes. Come with me tomorrow.
@@ -105,39 +117,44 @@ a : That's no answer. | I'll find your spot. | Hm.
 
 scene w7b_miners_seam
 when topic=work a.job=miner b.job=miner
+does tell.self / react.self / assess
 a : The east gallery's sweating. I don't like it. | Lamp went blue in the low seam. | Found a good vein, at last.
 b[temper=nervy] : Don't go in there. Promise me. | Blue! Out, out, get everyone out. | Don't shout it. Others will hear.
 b[stage=old] : Prop it. Then prop it again. | Blue means bad air. Tell the foreman. | First one in a month. Mark it.
 b : Tell the foreman. | Get out and wait. | Lucky wolf.
-a : I will. | We did. | Heh.
+a : #bc_i_will# | We did. | Heh.
 
 scene w7b_healers_patient
 when topic=work a.job=healer b.job=healer
+does tell.self / react.self / assess
 a : The fever on our street's spreading. | I've a wolf with a paw swelled like a loaf. | Lost one last night. Old fellow.
 b[stage=old] : Willow bark, and keep them cool. Nothing more to it. | Lance it. Clean it. Pray. | It comes for all of us. You did right.
 b[piety=devout] : I'll ask the priest to visit. | Wash it with boiled water. | The Bright One keep him.
 b : Keep them apart. It'll burn itself out. | Bathe it in salt. | I'm sorry. It happens.
-a : Let's hope it's enough. | I will. | It does. Still.
+a : Let's hope it's enough. | #bc_i_will# | It does. Still.
 
 scene w7b_priests
 when topic=work a.job=priest b.job=priest
+does tell.self / react.self / assess
 a : Half my flock sleep through the sermon. | The poor box was empty this Restday. | How do you comfort a widow who won't be comforted?
 b[humour=dry] #dry : The other half sleep at home. | Ours had a button in it. | You don't. You sit with her.
 b : Shorter sermons. | Times are hard. | Be there. That's all.
 a@dry : Ha. True enough. | A button. Bless them. | I'll sit, then.
-a : Shorter. Hm. | They are. | I'll sit, then.
+a : Shorter. Hm. | #bc_they_are# | I'll sit, then.
 
 scene w7b_scholars
 when topic=work a.job=scholar b.job=scholar
+does tell.self / react.self / assess
 a : I've found a second copy with a different ending. | The candles are eating my stipend. | My patron wants the history to flatter his grandfather.
 b[honesty=frank] : Then the copyist lied. Find a third. | Read by day. | Write the truth and starve with me.
 b[honesty=sly] #sly : Choose the better ending. Nobody will know. | Steal ends from the chapel. | Flatter him. Add a dragon.
-b : Exciting! Which is older? | Mine too. | They always do.
+b : Exciting! Which is older? | #bc_mine_too# | #bc_they_always_do#
 a@sly : I'd know. | The chaplain counts them. | A dragon. Hm. Tempting.
-a : That's the question. | I'll try. | I suppose so.
+a : That's the question. | #bc_ill_try# | I suppose so.
 
 scene w7b_carters_road
 when topic=work a.job=carter b.job=carter
+does tell.self / react.self / assess
 a : The road's rutted to the axle. | Lost a wheel by the bridge. | Took the long way. Bandits on the short one.
 b[world.bandits=near] #bandits : Ruts are the least of it. There's bandits about. | Better a wheel than your throat. | Wise. They had a wagon two days ago.
 b : Go round by the mill. | Need a spare? | Long way's longer.
@@ -146,38 +163,43 @@ a : I'll try that. | You're a good one. | And safer.
 
 scene w7b_crafters_order
 when topic=work a.job=crafter b.job=crafter
+does tell.self / react.self / assess
 a : My customer wants it carved with his own face. | Three chairs, all to be ready by Restday. | Spoiled a whole hide this morning.
 b[humour=merry] #joke : Make it flattering. Double the price. | Make two. Sit on the third. | Make it a hat.
 b : Charge for the trouble. | Tell them no. | It happens.
 a@joke : Flattering. Right. | Ha. If only. | A hat. Hm.
-a : I will. Twice over. | I tried. | It does.
+a : I will. Twice over. | I tried. | #bc_it_does#
 
 scene w7b_herders_lambing
 when topic=work a.job=herder b.job=herder here.season=spring
+does tell.self / react.self / assess
 a : Lost a ewe in the night. Saved the lambs. | Twins, and the ewe won't take the second. | I've not slept since the moon was full.
 b[stage=old] #old : Rub the lamb with the dead one's fleece. She'll take it. | Rub it with her own milk. | You'll sleep in summer.
-b : Bad luck. | Bottle it. | Nobody does.
+b : #bc_bad_luck# | Bottle it. | Nobody does.
 a@old : I'll try that. | Her own milk. Right. | Summer, then.
 a : Hard luck, aye. | I am. Every two hours. | Not in spring.
 
 scene w7b_cooks_kitchen
 when topic=work a.job=cook b.job=cook
+does tell.self / react.self / assess
 a : The fish came in off. Again. | How much salt do you put in the stew? Truly? | My knife's lost its edge and so have I.
 b[temper=short] #short : Throw it back at the fishwife. | Enough. | Sharpen both.
 b : Smoke it. Hides everything. | A good pinch. Then another. | Whetstone and an early night.
 a@short : Ha. I might. | Thank you. Most helpful. | Very funny.
-a : Clever. | Two pinches. Noted. | Early night. Ha.
+a : #bc_clever# | Two pinches. Noted. | Early night. Ha.
 
 scene w7b_woodcutters
 when topic=work a.job=woodcutter b.job=woodcutter
+does tell.self / react.self / assess
 a : That oak fought me all morning. | I heard wolves in the deep wood. Wild ones. | Axe head's loose again.
 b[stage=old] #old : The old ones always do. Respect it. | Stay together and keep the fire high. | Soak the haft overnight.
 b : Felled it, though? | Stay near the edge. | Get a wedge in it.
-a@old : I do. Mostly. | We will. | Overnight. Right.
-a : Eventually. | I will. | I'll try that.
+a@old : I do. Mostly. | #bc_we_will# | Overnight. Right.
+a : Eventually. | #bc_i_will# | I'll try that.
 
 scene w7b_officials
 when topic=work a.job=official b.job=official
+does tell.self / react.self / assess
 a : Another petition about the drains. | The tax rolls don't add up. | Someone's taken the good seal again.
 b[honesty=sly] #sly : Lose it. | Make them add up. | Ask who signed for it last.
 b : File it with the others. | Count again. | Check the clerk's drawer.
@@ -186,190 +208,214 @@ a : There's a mountain already. | Twice. | I'll look.
 
 scene w7b_sailors
 when topic=work a.job=sailor b.job=sailor
+does tell.self / react.self / assess
 a : Captain says we sail on the turn. | Ever been out past the headland in a storm? | My rope paws are getting soft ashore.
 b[drive=restless] : Good. I'm tired of land. | Twice. Ask me if I'd go again. | Then let's sail.
-b : Good. | Once. Never again. | Haul something.
-a : We'll see. | That bad? | I will.
+b : #bc_good# | Once. Never again. | Haul something.
+a : #bc_we_will_see# | That bad? | #bc_i_will#
 
 scene w7b_beggars
 when topic=work a.job=beggar b.job=beggar
+does tell.self / react.self / assess
 a : The chapel steps are taken. | That merchant gave me a whole penny. | The Watch moved me on twice today.
 b[warmth=warm] #warm : Share mine. Room for two. | Go back tomorrow! | Come by the bakery's back door.
 b : Try the market gate. | Lucky so-and-so. | They do that.
-a@warm : Thank you. Truly. | I will! | Bless you.
-a : Thank you. | I know! A whole one. | I know.
+a@warm : Thank you. Truly. | I will! | #bc_bless_you#
+a : #bc_thank_you# | I know! A whole one. | #bc_i_know#
 
 scene w7b_apprentices
 when topic=work a.job=apprentice b.job=apprentice
+does tell.self / react.self / assess
 a : Mine made me redo it four times. | When do you get your own tools? | Mine shouted at me in front of a customer.
-b[temper=short] #short : Mine threw it at me. | Never. | Shout back.
+b[temper=short] #short : Mine threw it at me. | #bc_never# | Shout back.
 b : Four is nothing. Mine was seven. | Fifth year, they say. | They all do.
 a@short : Threw it! | Never? | You first.
 a : Seven! | Five years! | I'll not.
 
 scene w7b_laborers_wage
 when topic=work a.job=laborer b.job=laborer
+does tell.self / react.self / assess
 a : Did the foreman pay you yet? | We moved a whole wall today. For pennies. | My shoulders are gone.
 b[wealth=poor|destitute] #poor : Half. Says the rest is coming. | Pennies, and a crust. | Mine went last year.
 b : Yesterday. | Pennies are something. | Rub them with fat.
 a@poor : Coming. Like spring. | And a crust. Lovely. | Gone for good?
-a : Lucky. | Something. | I will.
+a : #bc_lucky# | Something. | #bc_i_will#
 
 scene w7b_servants_masters
 when topic=work a.job=servant b.job=servant
+does tell.self / react.self / assess
 a : The mistress wants the silver polished twice. | Master's son came home drunk again. | They've guests every night this week.
 b[quarter=heights] #up : Same up the hill. They have more silver than sense. | And woke the whole house. | Rich folk can't eat alone.
 b[honesty=guarded] #hush : Better not to say. | Not my business. | Mm.
 b : Then polish it twice. | Again! | More work for us.
 a@up : And more spoons than mouths. | Sang the whole way up the stairs. | Can't eat, can't sleep, can't dress themselves.
 a@hush : Better not. | No. | Mm.
-a : Twice. As if it'll shine brighter. | Third time this month. | Always.
+a : Twice. As if it'll shine brighter. | Third time this month. | #bc_always#
 
 scene w7b_soldiers
 when topic=work a.job=soldier b.job=soldier
+does tell.self / react.self / assess
 a : Polish, march, polish. | Rumours of trouble in the hills. | Kit inspection tomorrow.
-b[temper=nervy] #nervy : Don't. | What trouble? | Again?
+b[temper=nervy] #nervy : Don't. | What trouble? | #bc_again_q#
 b : That's soldiering. | There's always rumours. | Better shine.
-a@nervy : All right. I'll stop. | Who knows. Rumours. | Again.
+a@nervy : All right. I'll stop. | Who knows. Rumours. | #bc_again#
 a : That it is. | And always nothing. | I'll shine.
 
 ## ---------------------------------------------------------------- Suppliers and the trades that buy from them
 
 scene w7b_miner_smith
 when topic=work a.job=miner b.job=smith
+does tell.self / react.self / assess
 a : Good ore this week. Rich stuff. | The seam's thinning. Ore'll be dear. | Do you want what I bring up or not?
 b[business=thriving] : Bring me all of it. | Dear or not, I'll need it. | Want it? I'm begging for it.
 b[business=failing] #broke : I can't buy what I can't sell. | Dear? I can't pay cheap. | Not this week.
 b : Bring it by. | Hm. | I'll look at it.
 a@broke : Then someone else will. | Then I'll sell it elsewhere. | Next week, then.
-a : I will. | Sorry. | Look, then.
+a : #bc_i_will# | #bc_sorry# | Look, then.
 
 scene w7b_farmer_baker
 when topic=work a.job=farmer b.job=baker
+does tell.self / ask.detail / answer.detail
 a : Wheat's in. Good dry grain. | Mill's slow. You'll wait on flour. | I'll want a fair price this year.
 b : Good. I'm down to the last sack. | How slow? | Fair to who?
 a : I'll send it. | Week. Maybe two. | Fair to me.
 
 scene w7b_farmer_brewer
 when topic=work a.job=farmer b.job=brewer
+does tell.self / react.self / assess
 a : Barley's good this year. Plump. | Hops failed. Sorry. | You still want my barley?
-b : Plump barley, good ale. Bring it. | Gods. That's the season gone. | Always.
-a : I will. | There's always next year. | Good.
+b : Plump barley, good ale. Bring it. | Gods. That's the season gone. | #bc_always#
+a : #bc_i_will# | There's always next year. | #bc_good#
 
 scene w7b_brewer_inn
 when topic=work a.job=brewer b.job=innkeeper
+does tell.self / react.self / tell.self
 a : New batch. Taste this. | You're two barrels behind on payment. | How fast are you going through it?
 b[business=failing] #broke : Lovely. I can't afford it. | I know. I'm sorry. | Slowly.
 b : Good stuff. Three barrels. | You'll have it Restday. | Like water.
 a@broke : Pay me when you can. | Restday, then. Don't make me ask again. | That's the trouble.
-a : Three it is. | I'll hold you to it. | Good.
+a : Three it is. | I'll hold you to it. | #bc_good#
 
 scene w7b_baker_inn
 when topic=work a.job=baker b.job=innkeeper|cook
+does ask.detail / answer.detail / assess
 a : Loaves for the evening? | Thirty loaves, as usual? | You never paid for yesterday's.
 b[business=thriving] #ok : Double it. Full house. | Forty. We're busy. | Yesterday? Here.
 b : Twenty. | Thirty. | Oh. Tomorrow.
-a@ok : Double it is. | Forty. Right. | Thank you.
+a@ok : Double it is. | Forty. Right. | #bc_thank_you#
 a : Twenty, then. | Thirty it is. | Tomorrow. Without fail.
 
 scene w7b_woodcutter_crafter
 when topic=work a.job=woodcutter b.job=crafter
+does tell.self / react.self / assess
 a : Got some good seasoned oak. Want it? | Timberland's foreman bought up all the ash. | Bring you the knotty stuff cheap.
 b[self.house=mossgrave_court|timberland_court] #tim : Timberland buys yours, and Timberland sells me mine. | Of course. We're Timberland. | No knots. Timberland's standards.
 b : Yes, please! How much? | Again! | Cheap? Fine.
 a@tim : Then buy from me direct. | Of course you are. | Standards. Ha.
-a : Fair price. | Every time. | Knots and all.
+a : Fair price. | #bc_every_time# | Knots and all.
 
 scene w7b_fisher_cook
 when topic=work a.job=fisher b.job=cook|innkeeper
+does tell.self / react.self / assess
 a : Fresh this morning. | Catch was poor. Price is up. | Eels?
 b : Good. Give me ten. | How much up? | Eels! Yes.
 a : Ten. | Penny a fish. | Eels it is.
 
 scene w7b_herder_crafter
 when topic=work a.job=herder b.job=crafter
+does tell.self / react.self / assess
 a : Shearing's done. Wool's good. | Hides for you. Three. | Want some fleece?
 b[self.house=mossgrave_court|timberland_court] #moss : Not for Timberland. They want leather for the bellows. | Timberland buys hides for its bellows, not me. | I'll tell Timberland. They're short of bellows leather.
 b : I'll take it. | Good hides. | Yes.
 a@moss : Then I'll go elsewhere. | Then I'll take them there. | Do.
-a : Good. | The best this year. | I'll bring a sack.
+a : #bc_good# | The best this year. | I'll bring a sack.
 
 scene w7b_carter_merchant
 when topic=work a.job=carter b.role=merchant
+does tell.self / react.self / assess
 a : Your goods are on the cart. | Road was bad. Price is up. | Lost a crate on the bridge. Sorry.
-b[temper=short] : About time. | Up? You agreed! | Lost? Then you pay for it.
+b[temper=short] : #bc_about_time# | Up? You agreed! | Lost? Then you pay for it.
 b : Good. Bring them round. | How much? | Sorry won't sell it.
-a : Round the back. | A penny a crate more. | I know.
+a : Round the back. | A penny a crate more. | #bc_i_know#
 
 scene w7b_smith_guard
 when topic=work a.job=smith b.role=guard
+does tell.self / react.self / assess
 a : Spearheads are ready. | Your captain owes me for the last lot. | Bring me your blade. It's notched.
-b : Good. | I'll tell the captain. | Notched on a drunk's helmet.
-a : Collect them tomorrow. | Loudly, mind. | Ha.
+b : #bc_good# | I'll tell the captain. | Notched on a drunk's helmet.
+a : Collect them tomorrow. | Loudly, mind. | #bc_ha#
 
 scene w7b_healer_priest
 when topic=work a.job=healer b.job=priest
+does tell.self / react.self / assess
 a : You'll want to visit the miller. Soon. | I've done all I can. The rest is yours. | She asked for you.
 b[piety=devout] : I'll go now. | Then I'll pray. | I'm coming.
 b : Today. | I'll go. | Tell her I'm coming.
-a : Thank you. | Go gently with them. | I will.
+a : #bc_thank_you# | Go gently with them. | #bc_i_will#
 
 scene w7b_official_merchant
 when topic=work a.job=official b.role=merchant
+does tell.self / react.self / assess
 a : Your stall dues are late. | The council's raising the market toll. | Your scales were found short.
 b[honesty=sly] : Late? I paid. Ask your clerk. | Again! | Short? Someone's been at them.
-b : I'll pay Restday. | Robbery. | Never.
-a : I'll check. | It's the law. | We'll see.
+b : I'll pay Restday. | Robbery. | #bc_never#
+a : I'll check. | It's the law. | #bc_we_will_see#
 
 scene w7b_guard_innkeeper
 when topic=work a.role=guard b.job=innkeeper here.time=dusk|night
+does tell.self / react.self / assess
 a : Any trouble tonight? | Your last brawl cost us a night. | Close at midnight. No later.
 b : Not yet. | Not my fault. | Midnight.
-a : Good. | Your ale's fault. | I'll check.
+a : #bc_good# | Your ale's fault. | I'll check.
 
 ## ---------------------------------------------------------------- A customer at the counter (a buys from b)
 
 scene w7b_customer_order
 when topic=work pair.customer=a b.working=yes
+does tell.self / react.self / thank
 a : My usual, if you've got it. | Same as last week, please. | I need it by Restday. Can you?
 b[business=thriving] : For you? Always. | Last of it, there. | Restday? I'm swamped. Dawnday.
 b[business=failing] : Of course! Anything else? Anything at all? | Same. And something else, perhaps? | Restday, easy. Tomorrow, even.
 b : Here you are. | Same as ever. | I'll do my best.
-a : Thank you. | Lovely. | Good. I'm counting on it.
+a : #bc_thank_you# | #bc_lovely# | Good. I'm counting on it.
 
 scene w7b_customer_price
 when topic=work pair.customer=a b.working=yes a.wealth=poor|destitute
+does ask.detail / answer.detail / assess
 a : Can I owe you till Restday? | Is there anything cheaper? | That's more than last week.
 b[warmth=warm] : For you, yes. Go on. | I'll find you something. | Pay last week's price.
 b[warmth=cold] #no : No. | Cheaper's elsewhere. | Prices go up.
 b : Just this once. | This one. | Everything's dearer.
 a@no : Right. I'll go without. | Then I'll go elsewhere. | Everything does.
-a : Thank you. | That'll do. | I know.
+a : #bc_thank_you# | That'll do. | #bc_i_know#
 
 scene w7b_customer_complaint
 when topic=work pair.customer=a b.working=yes
+does tell.self / react.self / assess
 cooldown 2d
 a : The last one broke. | That bread was stale. | You short-changed me yesterday.
 b[honesty=frank] : Then I'll make it right. | Here's another. | Did I? I'll fix it.
 b[temper=short] #rude : Broke? You broke it. | Fresh as you. | I never.
-b : Bring it back. | I'm sorry. | Let me see.
+b : Bring it back. | #bc_im_sorry# | Let me see.
 a@rude : I did not! | Charming. | You did. I counted.
-a : Thank you. | Better. | There. See?
+a : #bc_thank_you# | Better. | There. See?
 
 scene w7b_regular
 when topic=work|smalltalk pair.customer=a pair.band=acquaintances|friends
+does tell.self / react.self / assess
 a : You're the only one I buy from, you know. | Twenty years I've been coming here. | I told my neighbour about you.
-b[warmth=warm] #warm : And I'm grateful every day. | Twenty! You were a pup. | Bless you.
-b : I know. | Feels longer. | Good.
+b[warmth=warm] #warm : And I'm grateful every day. | Twenty! You were a pup. | #bc_bless_you#
+b : #bc_i_know# | Feels longer. | #bc_good#
 a@warm : You've earned it. | I was. A greedy one. | Bless you too.
 a : Don't forget it. | Charming. | You're welcome.
 
 scene w7b_keeper_to_customer
 when topic=work pair.customer=b a.working=yes
+does tell.self / react.self / assess
 a : Back again! The usual? | Missed you last week. Thought you'd gone elsewhere. | Saved you the good one.
 b[warmth=warm] #warm : Couldn't stay away. | I was poorly. | You're a treasure.
-b[honesty=sly] : Maybe. | Me? Elsewhere? Never. | How much extra for good?
-b : Please. | No. | Thank you.
+b[honesty=sly] : #bc_maybe# | Me? Elsewhere? Never. | How much extra for good?
+b : Please. | No. | #bc_thank_you#
 a@warm : There you are. | Oh, I'm sorry. Better now? | Go on with you.
 a : There. | Good. Glad you're back. | For you, nothing.
 
@@ -377,40 +423,45 @@ a : There. | Good. Glad you're back. | For you, nothing.
 
 scene w7b_boss_hire
 when topic=work pair.boss=a a.business=thriving
+does tell.self / react.self / assess
 cooldown 2d
 a : I'm taking on another pair of paws. | We're busy. I'll need you longer hours. | You've done well. More #wages# from next week.
 b[drive=ambitious] : Then make me in charge of them. | Paid longer? | About time!
-b[tired=yes] #tired : Thank the gods. | Longer? I'm already dead. | Thank you.
-b : Good. | Paid? | Thank you!
+b[tired=yes] #tired : Thank the gods. | Longer? I'm already dead. | #bc_thank_you#
+b : #bc_good# | Paid? | Thank you!
 a@tired : Good. More paws, less work. | Paid, mind. Well paid. | You've earned it.
-a : We'll see. | Paid, of course. | You've earned it.
+a : #bc_we_will_see# | Paid, of course. | You've earned it.
 
 scene w7b_boss_cut
 when topic=work pair.boss=a a.business=failing
+does tell.self / react.self / assess
 cooldown 2d
 a : I can't pay you full this week. | I'll have to let someone go. | We're shutting the second stall.
 b[warmth=warm] : I understand. We'll manage. | Let it be me. The others have families. | It's for the best.
 b[temper=short] : Then I'll work half. | Me? Say it. | And me?
 b[wealth=poor|destitute] : I can't eat on half. | Please, not me. | What'll I do?
-b : I see. | Who? | When?
-a : I'm sorry. | Not you. Not yet. | We'll see how the month goes.
+b : I see. | #bc_who_q# | When?
+a : #bc_im_sorry# | Not you. Not yet. | We'll see how the month goes.
 
 scene w7b_worker_boss_good
 when topic=work pair.boss=b b.warmth=warm
+does tell.self / react.self / assess
 a : Thank you for yesterday. | You're fair. Not all are. | I'd work for no one else.
 b : Think nothing of it. | I try. | Nor should you.
-a : I'll not forget it. | You do. | I won't.
+a : I'll not forget it. | You do. | #bc_i_wont#
 
 scene w7b_worker_boss_bad
 when topic=work pair.boss=b b.warmth=cold b.temper=short
+does request / decline / tell.self
 a : Could I... could I have a word? | About my #wages#... | Could I go a little early?
 b : No. | What about them? | No.
-a : Never mind. | Nothing. | Right.
+a : Never mind. | #bc_nothing# | #bc_right#
 
 ## ---------------------------------------------------------------- Master and apprentice
 
 scene w7b_master_teach
 when topic=work pair.band=apprentice a.master=yes
+does tell.self / react.self / assess
 a : Hold it lower. Lower. Good. | Once more. Slower. | Look at the work, not at me.
 b[stage=young|adolescent] : Like this? | Again? Again again? | Sorry. The work. Yes.
 b[drive=ambitious] : I'll get it faster next time. | Slower? I'm already slow. | I'm watching. I'm watching.
@@ -419,29 +470,33 @@ a : Better. | Good. Again. | Good. Now you do it.
 
 scene w7b_master_pride
 when topic=work pair.band=apprentice a.master=yes a.warmth=warm
+does tell.self / react.self / assess
 a : You did that well. | You'll be better than me one day. | I'm proud of you.
 b[talk=quiet] : ...Thank you. | Me? | Oh.
-b : Really? | Never! | Thank you.
+b : Really? | Never! | #bc_thank_you#
 a : Really. | Yes. | You've earned it.
 
 scene w7b_apprentice_question
 when topic=work pair.band=apprentice a.apprentice=yes
+does ask.detail / answer.detail / assess
 a : Why do we do it this way? | When can I try the hard part? | What did you learn first?
 b[temper=short] #short : Because I say. | Not yet. | Patience.
 b : Because it works. | When you're ready. | Sweeping.
-a@short : Right. | Not yet. Right. | Yes, master.
-a : Right. | Soon? | Sweeping!
+a@short : #bc_right# | Not yet. Right. | Yes, master.
+a : #bc_right# | Soon? | Sweeping!
 
 ## ---------------------------------------------------------------- The Houses as employers
 
 scene w7b_house_pay
 when topic=work a.house b.house a.wealth=poor|destitute
+does ask.detail / answer.detail / assess
 a : Has the House paid you? | Our steward's slow with wages again. | Do the Houses ever go poor?
-b : Yesterday. | Same. | Never.
-a : Lucky. | Every month. | No.
+b : Yesterday. | Same. | #bc_never#
+a : #bc_lucky# | Every month. | No.
 
 scene w7b_house_rivals
 when topic=work a.house=greatly_house b.house=house_fell|grayrock_hall|mossgrave_court|timberland_court
+does tell.self / react.self / assess
 a : Greatly's building the new hall. | Your House sells to ours. Remember who's buying. | Greatly's richer than yours.
 b[self.house=house_fell] : With our wine at the opening. | And who'd you buy from instead? | Richer? Showier.
 b[self.house=grayrock_hall] : Off our ships, every stone of it. | And who'd ship it in for you instead? | Richer? Showier.
@@ -450,6 +505,7 @@ a : With our money. | We'd find someone. | Same thing.
 
 scene w7b_house_same
 when topic=work a.house=greatly_house b.house=greatly_house
+does tell.self / react.self / tell.self
 a : They're working us hard this week. | The steward's new. Strict. | Another wall.
 b : Big order. | Strict and dull. | Walls, walls. I dream in mortar.
 a : Big enough to break us. | We'll wear the new one down. | Better than no work.

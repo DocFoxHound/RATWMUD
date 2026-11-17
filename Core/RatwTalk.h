@@ -109,6 +109,9 @@ struct SaidLine
     double keep = 0;                      // {k=v keep 7d}: kept in the ledger this long (game days; Phase 5)
     int who = 0, to = -1;                 // The speaker (0: a, 1: b) and the one spoken to (-1: no one)
     std::string text;
+    // Phase 7 (§8.12.3): the opener's own words when something was said in its breath before them (a greeting, "Back
+    // again?", "As I was saying."), so the collision filter keeps the words themselves, not only the whole line.
+    std::string bare;
     // Phase 3 (§8.2, the scorecard's C2): how well a reply answered what was owed (3: the handed-on concept's own, or
     // the exact variant owed; 1: another line doing an owed move; 0: a fallback), and the best fit any line that held
     // had (before what was said already, the frames and the tone rules left out). -1: it answered nothing owed.

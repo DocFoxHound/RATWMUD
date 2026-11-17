@@ -1,6 +1,6 @@
 # Neighbours (theme n7): noise, borrowing, fences, pups and gardens, thin walls, help in hard times. The opener
 # remembers what it was about (pair.mem.nb), the neighbour answers as they are and remembers how they took it
-# (pair.mem.na: sorry, rebuff, joke, dodge, give, none, thanks, proud, grief, chat, glare, plead, promise), and the
+# (conv.na: sorry, rebuff, joke, dodge, give, none, thanks, proud, grief, chat, glare, plead, promise), and the
 # opener has the last word (town.close, in town7.talk). Every answer is keyed to what it answers, since a chain's
 # later beats always take their best tier.
 
@@ -8,544 +8,544 @@
 
 rule n7_nb_noise
 when concept=talk.smalltalk|talk.day pair.neighbours=yes
+does ask.detail
 cooldown 2d
-say Was that your lot banging about at midnight? | Somebody on our side was dragging furniture till all hours. Yours? | I heard a crash from yours last night. All well? | You were singing again. Through the wall. At length.
+say {on=nb} Was that your lot banging about at midnight? | {on=nb} Somebody on our side was dragging furniture till all hours. Yours? | {on=nb} I heard a crash from yours last night. All well? | {on=nb} You were singing again. Through the wall. At length.
 remember pair: nb=noise 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_noise_pups
 when concept=talk.smalltalk|talk.day pair.neighbours=yes other.parent=yes other.age<=45
+does tell.self
 cooldown 2d
-say Your pups were up with the birds. So was I, as it happens. | Which of yours has learnt to howl? Because they're very proud of it. | There's a small wolf throwing pebbles at my shutter. I think it's one of yours.
+say {on=nb} Your pups were up with the birds. So was I, as it happens. | {on=nb} Which of yours has learnt to howl? Because they're very proud of it. | {on=nb} There's a small wolf throwing pebbles at my shutter. I think it's one of yours.
 remember pair: nb=pups 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_borrow_ladder
 when concept=talk.smalltalk|talk.day|talk.friends pair.neighbours=yes pair.band!=strangers
+does tell.self
 cooldown 3d
-say You've still got my ladder, you know. | Is my ladder still leaning on your wall? Only I've a gutter to see to. | I'll want my ladder back before the frost. No hurry. Some hurry.
+say {on=nb} You've still got my ladder, you know. | {on=nb} Is my ladder still leaning on your wall? Only I've a gutter to see to. | {on=nb} I'll want my ladder back before the frost. No hurry. Some hurry.
 remember pair: nb=borrow 3d
 remember pair: lent=ladder 7d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_borrow_pot
 when concept=talk.smalltalk|talk.day|talk.friends pair.neighbours=yes pair.band!=strangers
+does ask.detail
 cooldown 3d
-say Did my good pot ever come back from yours? | I went to make a stew last night and found I'd no pot. Then I remembered where it was. | That pot of mine. The big one. Still at yours?
+say {on=nb} Did my good pot ever come back from yours? | {on=nb} I went to make a stew last night and found I'd no pot. Then I remembered where it was. | {on=nb} That pot of mine. The big one. Still at yours?
 remember pair: nb=borrow 3d
 remember pair: lent=pot 7d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_borrow_saw
 when concept=talk.smalltalk|talk.day|talk.friends pair.neighbours=yes pair.band!=strangers
+does ask.detail
 cooldown 3d
-say I'll want my saw back before the wood comes in. | My saw. You remember my saw? Sharp, wooden handle, mine? | Have you finished with the saw? Only I've a shelf that won't put itself up.
+say {on=nb} I'll want my saw back before the wood comes in. | {on=nb} My saw. You remember my saw? Sharp, wooden handle, mine? | {on=nb} Have you finished with the saw? Only I've a shelf that won't put itself up.
 remember pair: nb=borrow 3d
 remember pair: lent=saw 7d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_borrow_ask
 when concept=talk.smalltalk|talk.day pair.neighbours=yes
+does request
 cooldown 2d
-say Could I borrow a cup of salt? I'll pay it back Restday. | You've not a spare candle? Ours went out mid-supper. | Lend me your barrow an hour? I'll bring it back cleaner than it went. | Have you a needle I could borrow? Mine's gone into the floor somewhere.
+say {on=nb} Could I borrow a cup of salt? I'll pay it back Restday. | {on=nb} You've not a spare candle? Ours went out mid-supper. | {on=nb} Lend me your barrow an hour? I'll bring it back cleaner than it went. | {on=nb} Have you a needle I could borrow? Mine's gone into the floor somewhere.
 remember pair: nb=ask 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_ask_poor
 when concept=talk.smalltalk|talk.day pair.neighbours=yes self.wealth=poor|destitute
+does request
 cooldown 2d
-say I hate to ask. Could you spare a little meal till Restday? | You've not a bit of kindling? We're down to the chair legs. | If you've any bread going stale, we'd not say no.
+say {on=nb} I hate to ask. Could you spare a little meal till Restday? | {on=nb} You've not a bit of kindling? We're down to the chair legs. | {on=nb} If you've any bread going stale, we'd not say no.
 remember pair: nb=ask 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_fence
 when concept=talk.smalltalk|talk.day pair.neighbours=yes here.region!=ridgemere
+does tell.self
 cooldown 3d
-say That fence of ours is leaning. Your way or mine, I can't tell. | There's a gap in the fence a pup could walk through. One did, this morning. | We should go halves on new posts for the fence.
+say {on=nb} That fence of ours is leaning. Your way or mine, I can't tell. | {on=nb} There's a gap in the fence a pup could walk through. One did, this morning. | {on=nb} We should go halves on new posts for the fence.
 remember pair: nb=fence 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_stair
 when concept=talk.smalltalk|talk.day pair.neighbours=yes here.region=ridgemere
+does give.opinion
 cooldown 3d
-say The stair's not been swept. I think it's your week. | Someone left a bucket on the landing and I found it with my foot. | Who's been leaving fish heads on the stair? The cats are holding a meeting.
+say {on=nb} The stair's not been swept. I think it's your week. | {on=nb} Someone left a bucket on the landing and I found it with my foot. | {on=nb} Who's been leaving fish heads on the stair? The cats are holding a meeting.
 remember pair: nb=stair 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_garden
 when concept=talk.smalltalk|talk.day pair.neighbours=yes here.season=spring|summer
+does tell.complaint
 cooldown 3d
-say Your beans are coming up lovely. Better than mine, curse you. | Your roses are over my wall. I'm not complaining, they smell nice. | What do you put on your cabbages? Mine look like lace.
+say {on=nb} Your beans are coming up lovely. Better than mine, curse you. | {on=nb} Your roses are over my wall. I'm not complaining, they smell nice. | {on=nb} What do you put on your cabbages? Mine look like lace.
 remember pair: nb=garden 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_garden_autumn
 when concept=talk.smalltalk|talk.day pair.neighbours=yes here.season=autumn
+does tell.worry
 cooldown 3d
-say Your apples keep falling on my side. I've been eating them, I'm afraid. | Your pear tree's leaning right over my yard. Not that I mind the pears. | Shall we swap? My onions for some of your pears.
+say {on=nb} Your apples keep falling on my side. I've been eating them, I'm afraid. | {on=nb} Your pear tree's leaning right over my yard. Not that I mind the pears. | {on=nb} Shall we swap? My onions for some of your pears.
 remember pair: nb=harvest 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_snow
 when concept=talk.smalltalk|talk.weather|talk.day pair.neighbours=yes here.weather=snow
+does tell.self
 cooldown 1d
-say I've cleared your step with mine. Don't thank me. Clear both tomorrow. | Your step was a sheet of ice. I've put some ash down on it. | Snowed in, the pair of us. Knock on the wall if you need anything.
+say {on=nb} I've cleared your step with mine. Don't thank me. Clear both tomorrow. | {on=nb} Your step was a sheet of ice. I've put some ash down on it. | {on=nb} Snowed in, the pair of us. Knock on the wall if you need anything.
 remember pair: nb=help 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_washing
 when concept=talk.smalltalk|talk.weather pair.neighbours=yes here.weather=rain|storm
+does tell.self
 cooldown 1d
-say Your washing was still out. I took it in for you; it's on my chair. | Rain came on. I've thrown your sheets over my line under the eaves. | I got your washing in before the worst of it. Mostly.
+say {on=nb} Your washing was still out. I took it in for you; it's on my chair. | {on=nb} Rain came on. I've thrown your sheets over my line under the eaves. | {on=nb} I got your washing in before the worst of it. Mostly.
 remember pair: nb=help 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_walls
 when concept=talk.smalltalk pair.neighbours=yes here.region=ridgemere
+does tell.self
 cooldown 3d
-say These walls are thin as paper. I know what you had for supper. | I can hear your kettle. I can hear your kettle thinking about it. | Whoever builds these places ought to live in one. Next to you.
+say {on=nb} These walls are thin as paper. I know what you had for supper. | {on=nb} I can hear your kettle. I can hear your kettle thinking about it. | {on=nb} Whoever builds these places ought to live in one. Next to you.
 remember pair: nb=walls 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_smell
 when concept=talk.smalltalk pair.neighbours=yes
+does ask.detail
 cooldown 3d
-say What were you cooking last night? The whole row was drooling. | Something smells wonderful from yours. Fish? | Whatever's in your pot tonight, I'll trade you for it.
+say {on=nb} What were you cooking last night? The whole row was drooling. | {on=nb} Something smells wonderful from yours. Fish? | {on=nb} Whatever's in your pot tonight, I'll trade you for it.
 remember pair: nb=cooking 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_smell_trade
 when concept=talk.smalltalk pair.neighbours=yes other.job=fisher|smith|crafter|miner|herder
+does tell.self
 cooldown 3d
-say Your work boots are on the step and the cats are worshipping them. | I always know when you're home. I mean that kindly. Mostly. | Could you not bring quite so much of your work home in your fur?
+say {on=nb} Your work boots are on the step and the cats are worshipping them. | {on=nb} I always know when you're home. I mean that kindly. Mostly. | {on=nb} Could you not bring quite so much of your work home in your fur?
 remember pair: nb=trade 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_critter
 when concept=talk.smalltalk pair.neighbours=yes
+does tell.self
 cooldown 3d
-say Is that your cat on my roof every night, yowling? | There's a hen in my yard. It looks like one of yours. | Something's been at my scraps. I'm not saying it was one of yours.
+say {on=nb} Is that your cat on my roof every night, yowling? | {on=nb} There's a hen in my yard. It looks like one of yours. | {on=nb} Something's been at my scraps. I'm not saying it was one of yours.
 remember pair: nb=critter 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_away
 when concept=talk.smalltalk|talk.day pair.neighbours=yes self.travelling=yes
+does tell.self
 cooldown 2d
-say I'm off on the road a few days. Keep an eye on my door? | Will you feed the hens while I'm gone? There's a penny in it. | If anyone comes asking, I'm away and I've nothing worth taking.
+say {on=nb} I'm off on the road a few days. Keep an eye on my door? | {on=nb} Will you feed the hens while I'm gone? There's a penny in it. | {on=nb} If anyone comes asking, I'm away and I've nothing worth taking.
 remember pair: nb=away 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_new
 when concept=talk.smalltalk|talk.day pair.neighbours=yes pair.band=strangers
+does tell.self
 cooldown 1d
-say You'll be the new folk next door. Welcome. | We've not met. I'm the door to your left. The one with the squeaky hinge. | I saw the cart. Settling in? If you need a hammer, knock.
+say {on=nb} You'll be the new folk next door. Welcome. | {on=nb} We've not met. I'm the door to your left. The one with the squeaky hinge. | {on=nb} I saw the cart. Settling in? If you need a hammer, knock.
 remember pair: nb=new 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_late
 when concept=talk.smalltalk pair.neighbours=yes here.time=night
+does ask.detail
 cooldown 2d
-say You're in late. Courting, or working? | I saw your light still on. Can't sleep either? | Not to pry, but who was that at your door?
+say {on=nb} You're in late. Courting, or working? | {on=nb} I saw your light still on. Can't sleep either? | {on=nb} Not to pry, but who was that at your door?
 remember pair: nb=late 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 ## Help in hard times, from next door
 
 rule n7_nb_help_hungry
 when concept=talk.smalltalk|talk.day pair.neighbours=yes other.hungry=yes self.wealth!=destitute self.hungry=no
+does tell.self
 priority 1
 cooldown 1d
-say I made too much stew. Take some before it spoils. You'd be doing me a favour. | There's half a loaf going hard on my table. Take it, go on. | Come and eat with us tonight. No, I'll not hear no.
+say {on=nb} I made too much stew. Take some before it spoils. You'd be doing me a favour. | {on=nb} There's half a loaf going hard on my table. Take it, go on. | {on=nb} Come and eat with us tonight. No, I'll not hear no.
 remember pair: nb=charity 3d
 regard other: affinity +1
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_help_poor
 when concept=talk.smalltalk|talk.day pair.neighbours=yes self.wealth=rich|comfortable other.wealth=destitute self.warmth!=cold
+does tell.self
 cooldown 2d
 priority 1
-say I've a sack of meal I'll never get through. Help me with it? | If it's the rent, come and see me before you see the landlord. | We've a ham hanging that'll go off before we get to the end of it. I'll send half round.
+say {on=nb} I've a sack of meal I'll never get through. Help me with it? | {on=nb} If it's the rent, come and see me before you see the landlord. | {on=nb} We've a ham hanging that'll go off before we get to the end of it. I'll send half round.
 remember pair: nb=charity 3d
 regard other: affinity +1
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_help_mourning
 when concept=talk.smalltalk|talk.day|talk.friends pair.neighbours=yes other.mourning=kin
+does tell.self
 cooldown 1d
 priority 3
-say I've left a pie on your step. Don't thank me. Just eat it. | We're only next door. Knock if you can't bear the quiet. | I'll see to your hens this week. You see to yourself.
+say {on=nb} I've left a pie on your step. Don't thank me. Just eat it. | {on=nb} We're only next door. Knock if you can't bear the quiet. | {on=nb} I'll see to your hens this week. You see to yourself.
 remember pair: nb=grief 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_help_hurt
 when concept=talk.smalltalk|talk.day pair.neighbours=yes other.injured=bad self.injured!=bad
+does tell.self
 priority 2
 cooldown 1d
-say I'll fetch your water till you're mended. No arguing. | You're not to climb that ladder like that. Give me the job. | I'll send broth round. Leave the door on the latch.
+say {on=nb} I'll fetch your water till you're mended. No arguing. | {on=nb} You're not to climb that ladder like that. Give me the job. | {on=nb} I'll send broth round. Leave the door on the latch.
 remember pair: nb=help 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_help_old
 when concept=talk.smalltalk|talk.day pair.neighbours=yes other.stage=old self.stage=adult|adolescent
+does ask.detail
 cooldown 2d
-say Let me carry that for you. | Shall I bring your wood in? It's going to be a cold one. | Anything from the market? I'm going anyway.
+say {on=nb} Let me carry that for you. | {on=nb} Shall I bring your wood in? It's going to be a cold one. | {on=nb} Anything from the market? I'm going anyway.
 remember pair: nb=help 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_help_robbed
 when concept=talk.smalltalk|talk.crime pair.neighbours=yes other.robbed=yes
+does tell.self
 cooldown 1d
 priority 2
-say I heard about your trouble. I'll keep my ears open, both of them. | I've a spare bolt for your door. I'll fit it tonight. | If they come back, bang on the wall. I'll come with the poker.
+say {on=nb} I heard about your trouble. I'll keep my ears open, both of them. | {on=nb} I've a spare bolt for your door. I'll fit it tonight. | {on=nb} If they come back, bang on the wall. I'll come with the poker.
 remember pair: nb=help 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_rumour_thief
 when concept=talk.smalltalk|talk.day pair.neighbours=yes pair.rumour=thief
+does tell.self
 cooldown 3d
 priority 1
-say I've started locking my door. Nothing personal. | My good knife's gone missing. I don't suppose you've seen it? | Funny. Since you moved in, things wander off.
+say {on=nb} I've started locking my door. Nothing personal. | {on=nb} My good knife's gone missing. I don't suppose you've seen it? | {on=nb} Funny. Since you moved in, things wander off.
 remember pair: nb=suspect 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_rumour_violent
 when concept=talk.smalltalk|talk.day pair.neighbours=yes pair.rumour=violent
+does tell.plan
 cooldown 3d
 priority 1
-say I heard shouting from yours again. Everyone all right in there? | The pups are scared to walk past your door. I'd like to know why. | Folk say you've a heavy paw. I'd not like to find out.
+say {on=nb} I heard shouting from yours again. Everyone all right in there? | {on=nb} The pups are scared to walk past your door. I'd like to know why. | {on=nb} Folk say you've a heavy paw. I'd not like to find out.
 remember pair: nb=suspect 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_rich_to_poor
 when concept=talk.smalltalk pair.neighbours=yes self.wealth=rich other.wealth=poor|destitute self.warmth=cold
+does tell.self
 cooldown 3d
-say Your cart is in front of my gate again. | Might you keep your pups off my steps? They were just whitened. | We've guests tonight. I'd be grateful for a little quiet from your side.
+say {on=nb} Your cart is in front of my gate again. | {on=nb} Might you keep your pups off my steps? They were just whitened. | {on=nb} We've guests tonight. I'd be grateful for a little quiet from your side.
 remember pair: nb=snub 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_poor_to_rich
 when concept=talk.smalltalk pair.neighbours=yes self.wealth=poor|destitute other.wealth=rich
+does tell.self
 cooldown 3d
-say Saw your cart come home loaded. Good week? | Your cook threw out a whole ham yesterday. A whole ham! | Your new windows catch the sun lovely. Catch me in the eye at dawn, mind.
+say {on=nb} Saw your cart come home loaded. Good week? | {on=nb} Your cook threw out a whole ham yesterday. A whole ham! | {on=nb} Your new windows catch the sun lovely. Catch me in the eye at dawn, mind.
 remember pair: nb=envy 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 ## A neighbour again (a day or two on)
 
 rule n7_nb_again_ladder
 when concept=talk.smalltalk|talk.day pair.neighbours=yes pair.mem.lent=ladder
+does tell.self
 priority 1
 cooldown 2d
-say The ladder. Still. | I've had to borrow a ladder from across the way to get my own ladder back. Not really. Nearly. | I'm not going to mention the ladder. I'm mentioning it.
+say {on=nb} The ladder. Still. | {on=nb} I've had to borrow a ladder from across the way to get my own ladder back. Not really. Nearly. | {on=nb} I'm not going to mention the ladder. I'm mentioning it.
 remember pair: nb=borrow 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_again_pot
 when concept=talk.smalltalk|talk.day pair.neighbours=yes pair.mem.lent=pot
+does tell.self
 priority 1
 cooldown 2d
-say The pot. Still at yours, is it? | I've been making stew in a bucket. Think on that. | I'm not going to mention the pot. I'm mentioning it.
+say {on=nb} The pot. Still at yours, is it? | {on=nb} I've been making stew in a bucket. Think on that. | {on=nb} I'm not going to mention the pot. I'm mentioning it.
 remember pair: nb=borrow 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_again_saw
 when concept=talk.smalltalk|talk.day pair.neighbours=yes pair.mem.lent=saw
+does tell.self
 priority 1
 cooldown 2d
-say Don't think I didn't see my saw on your woodpile. | The saw. You know the one. | My shelf's still on the floor, waiting for my saw.
+say {on=nb} Don't think I didn't see my saw on your woodpile. | {on=nb} The saw. You know the one. | {on=nb} My shelf's still on the floor, waiting for my saw.
 remember pair: nb=borrow 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 rule n7_nb_again_noise
 when concept=talk.smalltalk|talk.day pair.neighbours=yes pair.mem.nb=noise
+does tell.self
 priority 1
 cooldown 2d
-say Again last night! What are you building in there? | I've put a pillow on my side of the wall. Didn't help. | Same again last night. I counted the thumps. Forty.
-remember pair: on=nb 1h
+say {on=nb} Again last night! What are you building in there? | {on=nb} I've put a pillow on my side of the wall. Didn't help. | {on=nb} Same again last night. I counted the thumps. Forty.
 then other: town.neighbour
 
 rule n7_nb_again_ask
 when concept=talk.smalltalk|talk.day pair.neighbours=yes pair.mem.nb=ask
+does tell.self
 priority 1
 cooldown 2d
-say Here's what I borrowed back, and a bit over for the trouble. | I've not forgotten what you lent me. Restday, I promise. | Thank you for the other day. Truly. It got us through.
+say {on=nb} Here's what I borrowed back, and a bit over for the trouble. | {on=nb} I've not forgotten what you lent me. Restday, I promise. | {on=nb} Thank you for the other day. Truly. It got us through.
 remember pair: nb=repay 3d
-remember pair: on=nb 1h
 then other: town.neighbour
 
 ## The neighbour answers (self answers; pair.mem.nb says what about)
 
 rule n7_na_plain
 when concept=town.neighbour
-say Ah. Right you are. | Is that so? | Well. There it is.
-remember pair: na=chat 1h
+does counter
+say {na=chat} Ah. Right you are. | {na=chat} Is that so? | {na=chat} Well. There it is.
 then other: town.close
 
 rule n7_na_noise
 when concept=town.neighbour pair.mem.nb=noise|walls
-say Sorry. I'll see to it. | Ah. Sorry, #address#. It won't happen again. | Was it that loud? Gods. Sorry. | I'll put a rug down.
-remember pair: na=sorry 1h
+does counter
+say {na=sorry} Sorry. I'll see to it. | {na=sorry} Ah. Sorry, #address#. It won't happen again. | {na=sorry} Was it that loud? Gods. Sorry. | {na=sorry} I'll put a rug down.
 then other: town.close
 
 rule n7_na_noise_parent
 when concept=town.neighbour pair.mem.nb=noise|pups self.parent=yes self.age<=45
-say Sorry. The little one had a dream and woke the house. | Teething. Gods help us all. Sorry. | They're pups, #address#. You were one.
-remember pair: na=sorry 1h
+does counter
+say {na=sorry} Sorry. The little one had a dream and woke the house. | {na=sorry} Teething. Gods help us all. Sorry. | {na=sorry} They're pups, #address#. You were one.
 then other: town.close
 
 rule n7_na_pups
 when concept=town.neighbour pair.mem.nb=pups
-say I'll have a word with them. For all the good it'll do. | Sorry. They're wild this week. Something in the air. | Send them home with a flea in their ear. I'll back you.
-remember pair: na=sorry 1h
+does counter
+say {na=sorry} I'll have a word with them. For all the good it'll do. | {na=sorry} Sorry. They're wild this week. Something in the air. | {na=sorry} Send them home with a flea in their ear. I'll back you.
 then other: town.close
 
 rule n7_na_noise_short
 when concept=town.neighbour pair.mem.nb=noise|pups|walls self.temper=short
-say It's my house. I'll bang about in it if I like. | You snore like a saw, so we're even. | Then move.
-remember pair: na=rebuff 1h
+does counter
+say {na=rebuff} It's my house. I'll bang about in it if I like. | {na=rebuff} You snore like a saw, so we're even. | {na=rebuff} Then move.
 then other: town.close
 
 rule n7_na_noise_merry
 when concept=town.neighbour pair.mem.nb=noise|walls self.humour=merry
-say That was my dancing. I'll teach you, if you like. | I was practising for the festival. You'll thank me then. | Ha! Wait till you hear me on Restday.
-remember pair: na=joke 1h
+does counter
+say {na=joke} That was my dancing. I'll teach you, if you like. | {na=joke} I was practising for the festival. You'll thank me then. | {na=joke} Ha! Wait till you hear me on Restday.
 then other: town.close
 
 rule n7_na_noise_shy
 when concept=town.neighbour pair.mem.nb=noise|walls self.tone=shy
-say Oh! Oh, gods. Sorry. I didn't know you could hear. | I'll put a rug down. Two rugs. | You heard that? All of it? Oh no.
-remember pair: na=sorry 1h
+does counter
+say {na=sorry} Oh! Oh, gods. Sorry. I didn't know you could hear. | {na=sorry} I'll put a rug down. Two rugs. | {na=sorry} You heard that? All of it? Oh no.
 then other: town.close
 
 rule n7_na_borrow
 when concept=town.neighbour pair.mem.nb=borrow
-say Have I? Gods. I'll bring it round tonight. | Is that yours? I thought it was mine. | I was going to bring it back. I was just... still using it. | Tomorrow. First thing. Before the gulls.
-remember pair: na=dodge 1h
+does counter
+say {na=dodge} Have I? Gods. I'll bring it round tonight. | {na=dodge} Is that yours? I thought it was mine. | {na=dodge} I was going to bring it back. I was just... still using it. | {na=dodge} Tomorrow. First thing. Before the gulls.
 then other: town.close
 
 rule n7_na_borrow_sly
 when concept=town.neighbour pair.mem.nb=borrow self.honesty=sly
-say Are you sure you lent it to me? Lots of folk have one. | I thought that was a gift. | I'll swap you. You can have my old one. It's got character.
-remember pair: na=dodge 1h
+does counter
+say {na=dodge} Are you sure you lent it to me? Lots of folk have one. | {na=dodge} I thought that was a gift. | {na=dodge} I'll swap you. You can have my old one. It's got character.
 then other: town.close
 
 rule n7_na_ask_yes
 when concept=town.neighbour pair.mem.nb=ask
-say Course. Wait there. | Take what you need. | Here. Don't fret over paying it back.
+does counter
+say {na=give} Course. Wait there. | {na=give} Take what you need. | {na=give} Here. Don't fret over paying it back.
 regard other: affinity +1
-remember pair: na=give 1h
 then other: town.close
 
 rule n7_na_ask_poor
 when concept=town.neighbour pair.mem.nb=ask self.wealth=poor|destitute
-say I'd give it if I had it. We're scraping the pot ourselves. | I've a little. You can have half of it. | Ask me Restday. We're both #skint# till then.
-remember pair: na=none 1h
+does counter
+say {na=none} I'd give it if I had it. We're scraping the pot ourselves. | {na=none} I've a little. You can have half of it. | {na=none} Ask me Restday. We're both #skint# till then.
 then other: town.close
 
 rule n7_na_ask_cold
 when concept=town.neighbour pair.mem.nb=ask self.warmth=cold
-say I'm not a shop. | Again? | You can have it. I'll be writing it down, mind.
-remember pair: na=rebuff 1h
+does counter
+say {na=rebuff} I'm not a shop. | {na=rebuff} #bc_again_q# | {na=rebuff} You can have it. I'll be writing it down, mind.
 then other: town.close
 
 rule n7_na_ask_rich
 when concept=town.neighbour pair.mem.nb=ask self.wealth=rich
-say Of course. I'll have it sent round. | Take what you need. Take more than you need. | My dear, think nothing of it.
+does counter
+say {na=give} Of course. I'll have it sent round. | {na=give} Take what you need. Take more than you need. | {na=give} My dear, think nothing of it.
 regard other: affinity +1
-remember pair: na=give 1h
 then other: town.close
 
 rule n7_na_repay
 when concept=town.neighbour pair.mem.nb=repay
-say There was no hurry. | Ah, you needn't have. Keep the extra. | That's what neighbours are for. | Any time. I mean it.
-remember pair: na=chat 1h
+does counter
+say {na=chat} There was no hurry. | {na=chat} Ah, you needn't have. Keep the extra. | {na=chat} That's what neighbours are for. | {na=chat} Any time. I mean it.
 then other: town.close
 
 rule n7_na_repay_cold
 when concept=town.neighbour pair.mem.nb=repay self.warmth=cold
-say Good. | About time. | I'd written it down, you know.
-remember pair: na=chat 1h
+does counter
+say {na=chat} #bc_good# | {na=chat} #bc_about_time# | {na=chat} I'd written it down, you know.
 then other: town.close
 
 rule n7_na_fence
 when concept=town.neighbour pair.mem.nb=fence
-say Halves, then. You buy the posts, I'll dig. | It was like that when I came. Ask the last lot. | I'll come and look at it Restday. Bring a mallet. | Aye, it's had its day, that fence.
-remember pair: na=chat 1h
+does counter
+say {na=chat} Halves, then. You buy the posts, I'll dig. | {na=chat} It was like that when I came. Ask the last lot. | {na=chat} I'll come and look at it Restday. Bring a mallet. | {na=chat} Aye, it's had its day, that fence.
 then other: town.close
 
 rule n7_na_stair
 when concept=town.neighbour pair.mem.nb=stair
-say Is it? I thought it was yours. | I'll see to it tonight. | Not mine. I'd know my own mess.
-remember pair: na=sorry 1h
+does counter
+say {na=sorry} Is it? I thought it was yours. | {na=sorry} I'll see to it tonight. | {na=sorry} Not mine. I'd know my own mess.
 then other: town.close
 
 rule n7_na_fence_short
 when concept=town.neighbour pair.mem.nb=fence|stair|critter self.temper=short
-say Not my doing. See to it yourself. | Always something with you. | I've better things to do.
-remember pair: na=rebuff 1h
+does counter
+say {na=rebuff} Not my doing. See to it yourself. | {na=rebuff} Always something with you. | {na=rebuff} I've better things to do.
 then other: town.close
 
 rule n7_na_garden
 when concept=town.neighbour pair.mem.nb=garden
-say Ash and patience. And talking to them nicely. | It's all the rain. Nothing to do with me. | You'll have some when they're ready. There's always too many.
-remember pair: na=chat 1h
+does counter
+say {na=chat} Ash and patience. And talking to them nicely. | {na=chat} It's all the rain. Nothing to do with me. | {na=chat} You'll have some when they're ready. There's always too many.
 then other: town.close
 
 rule n7_na_garden_proud
 when concept=town.neighbour pair.mem.nb=garden self.job=farmer|herder|cook
-say It's the soil. I bring it up from the river. I'll not say which bit. | Three generations of muck in that patch. | Secret. If I told you, you'd win the festival marrow.
-remember pair: na=joke 1h
+does counter
+say {na=joke} It's the soil. I bring it up from the river. I'll not say which bit. | {na=joke} Three generations of muck in that patch. | {na=joke} Secret. If I told you, you'd win the festival marrow.
 then other: town.close
 
 rule n7_na_harvest
 when concept=town.neighbour pair.mem.nb=harvest
-say Eat all you like. There's too many for us. | Fair's fair. Bring me a few onions and we're square. | That tree's older than both houses. It goes where it likes.
-remember pair: na=chat 1h
+does counter
+say {na=chat} Eat all you like. There's too many for us. | {na=chat} Fair's fair. Bring me a few onions and we're square. | {na=chat} That tree's older than both houses. It goes where it likes.
 then other: town.close
 
 rule n7_na_help
 when concept=town.neighbour pair.mem.nb=help
-say You're a good neighbour. | Thank you. I mean it. | I'd do the same for you. I'll have to, now.
+does counter
+say {na=thanks} You're a good neighbour. | {na=thanks} Thank you. I mean it. | {na=thanks} I'd do the same for you. I'll have to, now.
 regard other: affinity +1
-remember pair: na=thanks 1h
 then other: town.close
 
 rule n7_na_help_proud
 when concept=town.neighbour pair.mem.nb=help|charity self.temper=short
-say I can manage. | I'm not dead yet, thank you. | I'll do it myself, thank you. I'm not made of glass.
-remember pair: na=proud 1h
+does counter
+say {na=proud} I can manage. | {na=proud} I'm not dead yet, thank you. | {na=proud} I'll do it myself, thank you. I'm not made of glass.
 then other: town.close
 
 rule n7_na_charity
 when concept=town.neighbour pair.mem.nb=charity
-say You're kind. I'll not forget it. | I... thank you. I'll pay you back when I can. | Bless you. We'll eat tonight.
+does counter
+say {na=thanks} You're kind. I'll not forget it. | {na=thanks} I... thank you. I'll pay you back when I can. | {na=thanks} Bless you. We'll eat tonight.
 regard other: affinity +1
-remember pair: na=thanks 1h
 then other: town.close
 
 rule n7_na_charity_proud
 when concept=town.neighbour pair.mem.nb=charity self.warmth=cold|reserved self.wealth=poor|destitute
-say I don't need charity. | We're managing. | Leave it on the step. I'll see.
-remember pair: na=proud 1h
+does counter
+say {na=proud} I don't need charity. | {na=proud} We're managing. | {na=proud} Leave it on the step. I'll see.
 then other: town.close
 
 rule n7_na_charity_devout
 when concept=town.neighbour pair.mem.nb=charity self.piety=devout
-say The Bright One sees what you do. So do I. | Bless you. Bless your house. | I'll light a candle for you on Restday.
+does counter
+say {na=thanks} The Bright One sees what you do. So do I. | {na=thanks} Bless you. Bless your house. | {na=thanks} I'll light a candle for you on Restday.
 regard other: affinity +1
-remember pair: na=thanks 1h
 then other: town.close
 
 rule n7_na_grief
 when concept=town.neighbour pair.mem.nb=grief
-say Thank you. I can't... thank you. | The house is so quiet. Knock anyway, sometimes. | You're kind. You were always kind to them too.
-remember pair: na=grief 1h
+does counter
+say {na=grief} Thank you. I can't... thank you. | {na=grief} The house is so quiet. Knock anyway, sometimes. | {na=grief} You're kind. You were always kind to them too.
 then other: town.close
 
 rule n7_na_critter
 when concept=town.neighbour pair.mem.nb=critter
-say One of mine? I'll come and see. | It's not mine. I'd know. Probably. | I'll speak to it. It won't listen.
-remember pair: na=sorry 1h
+does counter
+say {na=sorry} One of mine? I'll come and see. | {na=sorry} It's not mine. I'd know. Probably. | {na=sorry} I'll speak to it. It won't listen.
 then other: town.close
 
 rule n7_na_cooking
 when concept=town.neighbour pair.mem.nb=cooking
-say My granddam's recipe. I'll bring you a bowl. | Come round tomorrow and I'll make it again. | It's only onions and patience. And a bone. And a secret.
-remember pair: na=chat 1h
+does counter
+say {na=chat} My granddam's recipe. I'll bring you a bowl. | {na=chat} Come round tomorrow and I'll make it again. | {na=chat} It's only onions and patience. And a bone. And a secret.
 then other: town.close
 
 rule n7_na_trade
 when concept=town.neighbour pair.mem.nb=trade
-say It's the work. I wash every night and it's still there. | Honest work, that smell. | I'll leave the boots out back. Sorry.
-remember pair: na=sorry 1h
+does counter
+say {na=sorry} It's the work. I wash every night and it's still there. | {na=sorry} Honest work, that smell. | {na=sorry} I'll leave the boots out back. Sorry.
 then other: town.close
 
 rule n7_na_away
 when concept=town.neighbour pair.mem.nb=away
-say I'll watch it like it's mine. | Hens fed, door checked. Off you go. | I'll sit on your step with a rolling pin.
-remember pair: na=promise 1h
+does counter
+say {na=promise} I'll watch it like it's mine. | {na=promise} Hens fed, door checked. Off you go. | {na=promise} I'll sit on your step with a rolling pin.
 then other: town.close
 
 rule n7_na_new
 when concept=town.neighbour pair.mem.nb=new
-say Thank you. It's all boxes and confusion. | We'll be quiet. Mostly. | Kind of you. Where's the well, and is the baker honest?
+does counter
+say {na=thanks} Thank you. It's all boxes and confusion. | {na=thanks} We'll be quiet. Mostly. | {na=thanks} Kind of you. Where's the well, and is the baker honest?
 regard other: familiarity +1
-remember pair: na=thanks 1h
 then other: town.close
 
 rule n7_na_late
 when concept=town.neighbour pair.mem.nb=late
-say Long day. Long night. Same as ever. | Can't settle. Don't know why. | Nobody you'd know.
-remember pair: na=chat 1h
+does counter
+say {na=chat} Long day. Long night. Same as ever. | {na=chat} Can't settle. Don't know why. | {na=chat} Nobody you'd know.
 then other: town.close
 
 rule n7_na_late_short
 when concept=town.neighbour pair.mem.nb=late self.temper=short
-say Mind your own. | What's it to you? | Do you sit at the window all night?
-remember pair: na=rebuff 1h
+does counter ask.detail
+say {na=rebuff} Mind your own. | {na=rebuff} What's it to you? | {na=rebuff} Do you sit at the window all night?
 then other: town.close
 
 rule n7_na_suspect
 when concept=town.neighbour pair.mem.nb=suspect
-say Whatever you've heard, you heard wrong. | Who's been talking? | Say it to my face, then. Oh, you just did. Well.
+does counter
+say {na=glare} Whatever you've heard, you heard wrong. | {na=glare} Who's been talking? | {na=glare} Say it to my face, then. Oh, you just did. Well.
 regard self: affinity -1
-remember pair: na=glare 1h
 then other: town.close
 
 rule n7_na_suspect_nervy
 when concept=town.neighbour pair.mem.nb=suspect self.temper=nervy
-say It wasn't me. Truly. I swear on my mother. | Please don't tell the Watch. I've done nothing. | I know what they say. It's not true. It's not.
-remember pair: na=plead 1h
+does counter
+say {na=plead} It wasn't me. Truly. I swear on my mother. | {na=plead} Please don't tell the Watch. I've done nothing. | {na=plead} I know what they say. It's not true. It's not.
 then other: town.close
 
 rule n7_na_snub
 when concept=town.neighbour pair.mem.nb=snub
-say Right. I'll tell the pups to fly past. | We'll try to be poorer more quietly. | Course. Wouldn't want to frighten the guests.
-remember pair: na=rebuff 1h
+does counter
+say {na=rebuff} Right. I'll tell the pups to fly past. | {na=rebuff} We'll try to be poorer more quietly. | {na=rebuff} Course. Wouldn't want to frighten the guests.
 then other: town.close
 
 rule n7_na_envy
 when concept=town.neighbour pair.mem.nb=envy
-say We work for it, same as you. | Mm. It's been a fair year. | Come round the back sometime. There's always something going spare.
-remember pair: na=chat 1h
+does counter
+say {na=chat} We work for it, same as you. | {na=chat} Mm. It's been a fair year. | {na=chat} Come round the back sometime. There's always something going spare.
 then other: town.close
 
 rule n7_na_envy_cold
 when concept=town.neighbour pair.mem.nb=envy self.warmth=cold
-say That's our business. | I'd thank you not to watch my door. | Quite.
+does counter
+say {na=rebuff} That's our business. | {na=rebuff} I'd thank you not to watch my door. | {na=rebuff} Quite.
 regard self: affinity -1
-remember pair: na=rebuff 1h
 then other: town.close

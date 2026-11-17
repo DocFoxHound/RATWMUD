@@ -1,7 +1,7 @@
 # Quirks (Docs/Design/62-talk.md, decision 5): worldgen gives every resident one of 41 quirks ("coughs in the damp
 # and pretends not to"); here are a few lines for each, so it shows in what they say. Barks have a cooldown, so a habit
 # shows without wearing thin; so do the asides in talk (two days), or a quirk with one fact would win every small talk
-# its 26 owners have. An aside hands to quirk.reply: the listener notices the habit (keyed by pair.mem.qk, priority 1),
+# its 26 owners have. An aside hands to quirk.reply: the listener notices the habit (keyed by conv.qk, priority 1),
 # or, if nothing is written for it, says what anyone would to a friend's old habit, or a stranger's odd remark.
 # The town quirks belong to their towns' people (wheat and larks Larkfield, apples and the dance Southmeadow, trees and
 # birds Oakhaven, bogs and wet feet Mirebridge, snow and ore Frosthollow, the lake and swimming Coldwater); the rest
@@ -11,25 +11,27 @@
 
 rule qk_wheat_price
 when concept=talk.prices quirk=always_knows_the_price_of_wheat
+does tell.self
 cooldown 2d
-say Never mind #topic.what#. Ask me about wheat. You should. | Watch the wheat. Everything else follows the wheat. | Wheat. Always look at the wheat first. There.
+say {qk=wheat} Never mind #topic.what#. Ask me about wheat. You should. | {qk=wheat} Watch the wheat. Everything else follows the wheat. | {qk=wheat} Wheat. Always look at the wheat first. There.
 then other: quirk.reply
-remember pair: qk=wheat 1m
 
 rule qk_wheat_talk
 when concept=talk.smalltalk|talk.land quirk=always_knows_the_price_of_wheat
+does tell.self
 cooldown 2d
-say Do you know what wheat fetched at Larkfield mill this morning? I do. | I dream in bushels. Prices, all night long. | A good wheat year and the whole realm smiles. Mark my words.
+say {qk=wheat} Do you know what wheat fetched at Larkfield mill this morning? I do. | {qk=wheat} I dream in bushels. Prices, all night long. | {qk=wheat} A good wheat year and the whole realm smiles. Mark my words.
 then other: quirk.reply
-remember pair: qk=wheat 1m
 
 rule qk_wheat_bark
 when concept=bark quirk=always_knows_the_price_of_wheat here.place=market
+does aside
 cooldown 6h
 say Wheat at four the bushel. Mark me. | Who's selling wheat? I know what it's worth, so don't try it. | That's last week's price on that board. Last week's!
 
 rule qk_larks_bark
 when concept=bark quirk=whistles_back_at_the_larks here.weather!=indoors here.time=dawn|day
+does aside
 cooldown 6h
 say *whistles* She'll answer. Wait. | *whistles back at a lark* | *whistles three notes and a trill, and waits* | There. Hear her? She knows me.
 
@@ -37,32 +39,34 @@ say *whistles* She'll answer. Wait. | *whistles back at a lark* | *whistles thre
 
 rule qk_apple_bark
 when concept=bark quirk=can_tell_an_apple_by_its_smell
+does aside
 cooldown 6h
 say Russets. Somebody's cart's full of russets. | That's a Pippin. I'd know it blind. | Somebody's apples have gone over. Bottom of the barrel. I can tell from here.
 
 rule qk_apple_talk
 when concept=talk.food|talk.smalltalk quirk=can_tell_an_apple_by_its_smell
+does tell.self
 cooldown 2d
-say Hold one up. No, don't tell me. Golden Wren. Late picked. | Every orchard smells different. Ours smelt of honey and wasps. | Give me a blindfold and a barrel and I'll name every apple in it.
+say {qk=apple} Hold one up. No, don't tell me. Golden Wren. Late picked. | {qk=apple} Every orchard smells different. Ours smelt of honey and wasps. | {qk=apple} Give me a blindfold and a barrel and I'll name every apple in it.
 then other: quirk.reply
-remember pair: qk=apple 1m
 
 rule qk_dance_talk
 when concept=talk.festival quirk=never_misses_a_harvest_dance
+does tell.self
 cooldown 1d
-say I'll be dancing till the fiddler drops. | Save me a dance. Save me three. | I've not missed a harvest dance since I could stand. I'll not start now.
+say {qk=dance} I'll be dancing till the fiddler drops. | {qk=dance} Save me a dance. Save me three. | {qk=dance} I've not missed a harvest dance since I could stand. I'll not start now.
 then other: quirk.reply
-remember pair: qk=dance 1m
 
 rule qk_dance_season
 when concept=talk.season|talk.smalltalk quirk=never_misses_a_harvest_dance here.season=summer|autumn
+does tell.self
 cooldown 2d
-say Not long till the harvest dance. I've my boots by the door already. | I've been practising the turns. In the kitchen. The cat's furious. | Who's fiddling at the dance this year? Not old Brannoc. He's slow.
+say {qk=dance} Not long till the harvest dance. I've my boots by the door already. | {qk=dance} I've been practising the turns. In the kitchen. The cat's furious. | {qk=dance} Who's fiddling at the dance this year? Not old Brannoc. He's slow.
 then other: quirk.reply
-remember pair: qk=dance 1m
 
 rule qk_dance_bark
 when concept=bark quirk=never_misses_a_harvest_dance here.season=autumn
+does aside
 cooldown 6h
 say Not long to the dance now. Not long! | *practises a step or two, and a twirl* | One, two, turn. One, two, turn.
 
@@ -70,18 +74,20 @@ say Not long to the dance now. Not long! | *practises a step or two, and a twirl
 
 rule qk_trees_bark
 when concept=bark quirk=knows_every_tree_by_its_shape here.weather!=indoors
+does aside
 cooldown 6h
 say That's an old ash. See the lean? | Beech. Beech. Oak. Beech. Lime. | That oak's older than the town. Look at her.
 
 rule qk_trees_talk
 when concept=talk.land|talk.smalltalk quirk=knows_every_tree_by_its_shape
+does tell.self
 cooldown 2d
-say See that one leaning? Ash. Lightning had it the winter I was wed. | You can tell a hornbeam from a beech a mile off. By the shoulders. | I could walk the Rainwood in the dark and tell you where I was by the trees.
+say {qk=trees} See that one leaning? Ash. Lightning had it the winter I was wed. | {qk=trees} You can tell a hornbeam from a beech a mile off. By the shoulders. | {qk=trees} I could walk the Rainwood in the dark and tell you where I was by the trees.
 then other: quirk.reply
-remember pair: qk=trees 1m
 
 rule qk_birds_bark
 when concept=bark quirk=hums_with_the_birds here.time=dawn|day here.weather!=indoors
+does aside
 cooldown 6h
 say Hm-hm, hm-hm. They sing it better. | Hear that? She's answering me. | *hums back at a blackbird*
 
@@ -89,23 +95,26 @@ say Hm-hm, hm-hm. They sing it better. | Hear that? She's answering me. | *hums 
 
 rule qk_bog_bark
 when concept=bark quirk=can_find_a_path_across_any_bog
+does aside
 cooldown 6h
 say Tussock to tussock. Never the green bits. | There's a path through anything, if you're patient. | Reed's firm, moss lies. Remember that.
 
 rule qk_bog_talk
 when concept=talk.travel|talk.land|talk.smalltalk quirk=can_find_a_path_across_any_bog
+does tell.self
 cooldown 2d
-say Lost in the fens? Never. The ground tells you, if you listen with your paws. | Bright green's a liar. Brown's honest. That's the whole secret of the fens. | I walked a carter's mule across the Sallow Fens once. Mule's still grateful.
+say {qk=bog} Lost in the fens? Never. The ground tells you, if you listen with your paws. | {qk=bog} Bright green's a liar. Brown's honest. That's the whole secret of the fens. | {qk=bog} I walked a carter's mule across the Sallow Fens once. Mule's still grateful.
 then other: quirk.reply
-remember pair: qk=bog 1m
 
 rule qk_wet_feet_bark
 when concept=bark quirk=never_minds_wet_feet here.weather=rain|storm
+does aside
 cooldown 6h
 say Puddles never hurt anyone. *splash* | Wet paws, dry heart. That's fen sense. | *walks straight through the puddle*
 
 rule qk_wet_feet_rain
 when concept=react.rain quirk=never_minds_wet_feet
+does aside
 priority 1
 say Lovely. Wet's just wet. | Rain! Good. The puddles were getting lonely. | *doesn't even look up*
 
@@ -113,23 +122,26 @@ say Lovely. Wet's just wet. | Rain! Good. The puddles were getting lonely. | *do
 
 rule qk_snow_bark
 when concept=bark quirk=can_smell_snow_a_day_before_it_comes here.season=autumn|winter
+does aside
 cooldown 6h
 say Snow tomorrow. I can smell it. | Get the wood in. There's snow in that wind. | Smells like iron and nothing. That's snow coming.
 
 rule qk_snow_talk
 when concept=talk.weather quirk=can_smell_snow_a_day_before_it_comes here.season=autumn|winter
+does tell.self
 cooldown 2d
-say Snow by morning. My nose is never wrong. | There's a snow smell coming down off the peaks. Clean, like a blade. | Mark me. White roofs by dawn.
+say {qk=snow} Snow by morning. My nose is never wrong. | {qk=snow} There's a snow smell coming down off the peaks. Clean, like a blade. | {qk=snow} Mark me. White roofs by dawn.
 then other: quirk.reply
-remember pair: qk=snow 1m
 
 rule qk_ore_bark
 when concept=bark quirk=keeps_a_lump_of_ore_for_luck
+does aside
 cooldown 6h
 say Still got it. *pats pocket* Good. | Ore for luck. Never failed me yet. | Touch the ore. Go on. It's warm, see?
 
 rule qk_ore_struck
 when concept=react.struck quirk=keeps_a_lump_of_ore_for_luck
+does aside
 priority 1
 say *clutches pocket* Didn't work, then. | Should've thrown the ore at you!
 
@@ -137,25 +149,27 @@ say *clutches pocket* Didn't work, then. | Should've thrown the ore at you!
 
 rule qk_lake_bark
 when concept=bark quirk=reads_the_weather_from_the_lake here.region=coldwater
+does aside
 cooldown 6h
 say Lake's gone flat and grey. Rain by dark. | Look at the water. Wind's turning. | Little white caps off the point. Blow tonight.
 
 rule qk_lake_talk
 when concept=talk.weather quirk=reads_the_weather_from_the_lake
+does tell.self
 cooldown 2d
-say The lake told me this morning. Rain, and plenty. | Glasswater's never lied to me. The sky lies all the time. | When the lake goes the colour of pewter, get your boat in.
+say {qk=lake} The lake told me this morning. Rain, and plenty. | {qk=lake} Glasswater's never lied to me. The sky lies all the time. | {qk=lake} When the lake goes the colour of pewter, get your boat in.
 then other: quirk.reply
-remember pair: qk=lake 1m
 
 rule qk_swim_talk
 when concept=talk.weather|talk.season quirk=swims_in_the_lake_even_in_autumn
+does tell.self
 cooldown 2d
-say Cold? I swam this morning. Bracing, that's all. | Nothing like the lake at dawn. Nothing. | Went in to the ears today. Came out a new wolf.
+say {qk=swim} Cold? I swam this morning. Bracing, that's all. | {qk=swim} Nothing like the lake at dawn. Nothing. | {qk=swim} Went in to the ears today. Came out a new wolf.
 then other: quirk.reply
-remember pair: qk=swim 1m
 
 rule qk_swim_bark
 when concept=bark quirk=swims_in_the_lake_even_in_autumn here.season=summer|autumn here.region=coldwater
+does aside
 cooldown 6h
 say Lake's lovely today. Cold as a blade. Lovely. | *shakes out a wet coat, beaming* | Who's coming in? Nobody? Cowards.
 
@@ -163,40 +177,45 @@ say Lake's lovely today. Cold as a blade. Lovely. | *shakes out a wet coat, beam
 
 rule qk_ships_bark
 when concept=bark quirk=can_name_every_ship_in_the_sound here.region=ridgemere
+does aside
 cooldown 6h
 say That's the Gull's Wife coming in. Low in the water. Full hold. | Heron, Saltlark, Old Mercy. All in. Good. | Where's the Brindled Hen? She's two days late.
 
 rule qk_ships_talk
 when concept=talk.smalltalk quirk=can_name_every_ship_in_the_sound
+does tell.self
 cooldown 2d
-say Did you see the Saltlark come in? Listing to port. Again. | Every hull in the Sound has a name, and I know them all. | The Old Mercy's got a new mast. Pine. It'll not last.
+say {qk=ships} Did you see the Saltlark come in? Listing to port. Again. | {qk=ships} Every hull in the Sound has a name, and I know them all. | {qk=ships} The Old Mercy's got a new mast. Pine. It'll not last.
 then other: quirk.reply
-remember pair: qk=ships 1m
 
 rule qk_bells_bark
 when concept=bark quirk=counts_the_bells_from_the_chapel_of_the_tide here.region=ridgemere
+does aside
 cooldown 6h
 say Six. That was six bells. | One, two, three... it rang four. I'm sure of it. | Late. The bell's late. Somebody's asleep in that tower.
 
 rule qk_bells_talk
 when concept=talk.smalltalk|talk.faith quirk=counts_the_bells_from_the_chapel_of_the_tide here.region=ridgemere
+does tell.self
 cooldown 2d
-say The noon bell was a breath slow today. Nobody else noticed. | I've counted the Tide's bells since I was a pup. They've never missed one. Nearly never. | There's a crack in the third bell. Listen next time. You'll hear it.
+say {qk=bells} The noon bell was a breath slow today. Nobody else noticed. | {qk=bells} I've counted the Tide's bells since I was a pup. They've never missed one. Nearly never. | {qk=bells} There's a crack in the third bell. Listen next time. You'll hear it.
 then other: quirk.reply
-remember pair: qk=bells 1m
 
 rule qk_flood_rain
 when concept=react.rain quirk=knows_which_streets_flood_first
+does aside
 priority 1
 say The low lane'll be under in an hour. Mark me. | Get off the low road. It goes first. | There goes the bottom of the street. Told you.
 
 rule qk_flood_bark
 when concept=bark quirk=knows_which_streets_flood_first here.weather=rain|storm
+does aside
 cooldown 4h
 say Keep to the high side. The low side floods. | Not that way. You'll be wading. | Three more hours of this and the steps are a river.
 
 rule qk_stairs_bark
 when concept=bark quirk=takes_the_long_stairs_two_at_a_time
+does aside
 cooldown 6h
 say Two at a time. Keeps the legs young. | *bounds past* Morning! Can't stop! | Ninety steps. Forty-five strides. Easy.
 
@@ -204,174 +223,196 @@ say Two at a time. Keeps the legs young. | *bounds past* Morning! Can't stop! | 
 
 rule qk_weather_rain
 when concept=react.rain quirk=argues_with_the_weather
+does aside
 priority 1
 say Oh, is it? Is it now? Well, I'm not going in. | You call that rain? I've been wetter in a bath. | Go on, then. Soak me. See if I care.
 
 rule qk_weather_bark
 when concept=bark quirk=argues_with_the_weather here.weather=rain|storm|snow|fog|overcast
+does aside
 cooldown 6h
 say And what do you think you're doing up there? | Go on, then. Do your worst. | Don't you look at me like that, you great grey lump.
 
 rule qk_weather_clear
 when concept=bark quirk=argues_with_the_weather here.weather=clear
+does aside
 cooldown 6h
 say Oh, now you're sorry. | Sun, is it? Took your time. | Don't think this makes up for yesterday.
 
 rule qk_weather_talk
 when concept=talk.weather quirk=argues_with_the_weather
+does tell.self
 cooldown 2d
-say I had words with the sky this morning. It didn't listen. | I've told that wind twice. Twice! | I said to the clouds, not today. And here they are. Today.
+say {qk=weather} I had words with the sky this morning. It didn't listen. | {qk=weather} I've told that wind twice. Twice! | {qk=weather} I said to the clouds, not today. And here they are. Today.
 then other: quirk.reply
-remember pair: qk=weather 1m
 
 rule qk_cough_bark
 when concept=bark quirk=coughs_in_the_damp_and_pretends_not_to here.weather=rain|fog|overcast|storm
+does aside
 cooldown 4h
 say *cough* It's nothing. The damp. | *cough* Don't look at me like that. | *cough* Swallowed a fly.
 
 rule qk_cough_talk
 when concept=talk.weather|talk.health quirk=coughs_in_the_damp_and_pretends_not_to
+does tell.self
 cooldown 2d
-say *cough* Bit of a tickle. Nothing more. | Fine weather. *cough* For ducks. | Damp? I don't feel the damp. *cough*
+say {qk=cough} *cough* Bit of a tickle. Nothing more. | {qk=cough} Fine weather. *cough* For ducks. | {qk=cough} Damp? I don't feel the damp. *cough*
 then other: quirk.reply
-remember pair: qk=cough 1m
 
 rule qk_storm_bark
 when concept=bark quirk=sleeps_badly_before_storms here.weather=overcast|storm
+does aside
 cooldown 6h
 say Didn't sleep a wink. There's a storm coming. | My head's been aching since dawn. Storm. | Eyes like holes in snow. That's a storm on the way.
 
 rule qk_storm_talk
 when concept=talk.weather quirk=sleeps_badly_before_storms
+does tell.self
 cooldown 2d
-say I lay awake all night. That means weather. It always does. | My ears won't sit still. There's thunder somewhere. | Don't mind me. I sleep badly before a storm. There's one coming.
+say {qk=storm} I lay awake all night. That means weather. It always does. | {qk=storm} My ears won't sit still. There's thunder somewhere. | {qk=storm} Don't mind me. I sleep badly before a storm. There's one coming.
 then other: quirk.reply
-remember pair: qk=storm 1m
 
 rule qk_hood_rain
 when concept=react.rain quirk=never_goes_out_without_an_oilcloth_hood
+does aside
 priority 1
 say And who's dry? I am. That's who. | This is what the hood's for. | *pulls up the oilcloth hood, smugly*
 
 rule qk_hood_bark
 when concept=bark quirk=never_goes_out_without_an_oilcloth_hood here.weather=clear
+does aside
 cooldown 8h
 say Clear now. You'll see. Hood up by noon. | Laugh all you like. I'll be the dry one at dusk. | Blue sky's a liar.
 
 rule qk_rain_watch_bark
 when concept=bark quirk=watches_the_rain_as_if_it_might_stop here.weather=rain
+does aside
 cooldown 6h
 say It'll stop. Any moment now. | There. Was that... no. Still raining. | Any moment. Any moment. ...Any moment.
 
 rule qk_smoke_talk
 when concept=talk.smalltalk quirk=smells_faintly_of_smoke_whatever_the_weather
+does tell.self
 cooldown 2d
-say Smoke? On me? Can't think why. | Everyone says I smell of smoke. I've stopped noticing. | I washed my coat in the stream. Came out smelling of smoke. The stream, I mean.
+say {qk=smoke} Smoke? On me? Can't think why. | {qk=smoke} Everyone says I smell of smoke. I've stopped noticing. | {qk=smoke} I washed my coat in the stream. Came out smelling of smoke. The stream, I mean.
 then other: quirk.reply
-remember pair: qk=smoke 1m
 
 rule qk_smoke_bark
 when concept=bark quirk=smells_faintly_of_smoke_whatever_the_weather
+does aside
 cooldown 8h
 say *sniffs own sleeve* Smoke. Again. How? | Somebody's fire, somewhere, is following me.
 
 rule qk_whetstone_bark
 when concept=bark quirk=carries_a_wet_stone_whetting_knife_everywhere
+does aside
 cooldown 6h
 say *scrape, scrape* A dull knife's a danger, that's all. | Hold still. I'll put an edge on that for you. | *scrape* Lovely. Like a whisker.
 
 rule qk_whetstone_talk
 when concept=talk.smalltalk|talk.work quirk=carries_a_wet_stone_whetting_knife_everywhere
+does tell.self
 cooldown 2d
-say Give us your knife. Go on. It's a disgrace. | A dull blade slips. A sharp one does as it's told. | I've had this stone since I was twelve. It's half the size it was. So am I, nearly.
+say {qk=whet} Give us your knife. Go on. It's a disgrace. | {qk=whet} A dull blade slips. A sharp one does as it's told. | {qk=whet} I've had this stone since I was twelve. It's half the size it was. So am I, nearly.
 then other: quirk.reply
-remember pair: qk=whet 1m
 
 rule qk_stones_bark
 when concept=bark quirk=collects_smooth_stones_from_the_riverbanks
+does aside
 cooldown 6h
 say Look at this one. Smooth as an egg. | Another for the shelf. I've a hundred now. | *stoops, turns a pebble over, pockets it*
 
 rule qk_stones_talk
 when concept=talk.smalltalk quirk=collects_smooth_stones_from_the_riverbanks
+does tell.self
 cooldown 2d
-say Found a grey one with a white ring right round it. Good luck, that. | Want to see my stones? No? Your loss. | The river gives up its best stones in spring. After the floods. You learn that.
+say {qk=stones} Found a grey one with a white ring right round it. Good luck, that. | {qk=stones} Want to see my stones? No? Your loss. | {qk=stones} The river gives up its best stones in spring. After the floods. You learn that.
 then other: quirk.reply
-remember pair: qk=stones 1m
 
 rule qk_counts_bark
 when concept=bark quirk=counts_things_under_the_breath
+does aside
 cooldown 4h
 say ...eleven, twelve, thirteen. Thirteen. | Nine carts today. Nine. Hm. | Four, five... no, that's a goat. Four.
 
 rule qk_counts_talk
 when concept=talk.smalltalk quirk=counts_things_under_the_breath
+does tell.self
 cooldown 2d
-say Forty-one steps from my door to the well. I checked again. | Ninety-two cobbles in this stretch. Ninety-three. One's loose. | Seven crows on the chapel roof. Yesterday it was six.
+say {qk=count} Forty-one steps from my door to the well. I checked again. | {qk=count} Ninety-two cobbles in this stretch. Ninety-three. One's loose. | {qk=count} Seven crows on the chapel roof. Yesterday it was six.
 then other: quirk.reply
-remember pair: qk=count 1m
 
 rule qk_sparrows_bark
 when concept=bark quirk=feeds_the_sparrows here.weather!=indoors
+does aside
 cooldown 6h
 say Here, little ones. Here. Crumbs for you. | Shoo, you greedy thing. Let the small one eat. | There's the one with the bent wing. Morning, you.
 
 rule qk_sparrows_talk
 when concept=talk.animals|talk.smalltalk quirk=feeds_the_sparrows
+does tell.self
 cooldown 2d
-say I know every sparrow on this street. That one's a thief. | They wait on my sill at dawn. Rows of them. Like creditors. | Half my bread goes to the sparrows. The better half.
+say {qk=sparrows} I know every sparrow on this street. That one's a thief. | {qk=sparrows} They wait on my sill at dawn. Rows of them. Like creditors. | {qk=sparrows} Half my bread goes to the sparrows. The better half.
 then other: quirk.reply
-remember pair: qk=sparrows 1m
 
 rule qk_marching_bark
 when concept=bark quirk=hums_old_marching_songs
+does aside
 cooldown 6h
 say Hm hm, hm-hm, over the hill and through the ford... | Left, left, left and home again... | *hums a march, tapping the beat on a thigh*
 
 rule qk_sea_songs_bark
 when concept=bark quirk=hums_sea_songs_under_the_breath
+does aside
 cooldown 6h
 say Haul away, and haul away home... | ...and the tide came in and the boat came home... | *hums something with a swell in it*
 
 rule qk_late_talk
 when concept=talk.smalltalk quirk=is_always_a_little_late
+does tell.self
 cooldown 2d
-say Am I late? I'm late. I'm always late. | I meant to be here an hour ago. | I set off early. Something happened. Something always happens.
+say {qk=late} Am I late? I'm late. I'm always late. | {qk=late} I meant to be here an hour ago. | {qk=late} I set off early. Something happened. Something always happens.
 then other: quirk.reply
-remember pair: qk=late 1m
 
 rule qk_late_work
 when concept=bark quirk=is_always_a_little_late shift=during
+does aside
 cooldown 8h
 say Nobody saw me come in. Nobody. | It's not late if nobody noticed. | I was here. I was just... elsewhere.
 
 rule qk_coal_bark
 when concept=bark quirk=keeps_a_pocketful_of_coal_for_luck
+does aside
 cooldown 6h
 say Coal for luck. Black paws, warm heart. | Touch the coal. Go on. For luck. | Coal in the pocket, fire in the belly.
 
 rule qk_coal_hurt
 when concept=react.struck quirk=keeps_a_pocketful_of_coal_for_luck
+does aside
 priority 1
 say Some luck this coal is! | So much for the coal.
 
 rule qk_door_bark
 when concept=bark quirk=never_sits_with_a_back_to_the_door here.place=tavern
+does aside
 cooldown 6h
 say Move up. I want the wall seat. | I'll sit where I can see the door, thanks. | Not that stool. That one. With the wall behind it.
 
 rule qk_door_fight
 when concept=react.fight quirk=never_sits_with_a_back_to_the_door
+does aside
 priority 1
 say I knew it. I always know it. | Eyes on the door, I said. Didn't I say?
 
 rule qk_forge_sea_oath
 when concept=bark quirk=swears_by_the_forge_and_the_sea
+does aside
 cooldown 4h
 say By the forge and the sea! | Forge and sea, would you look at that. | Forge and sea, my aching back.
 
 rule qk_forge_sea_hurt
 when concept=react.struck quirk=swears_by_the_forge_and_the_sea
+does aside
 priority 1
 say Forge and sea! You'll pay for that! | By the forge and the sea, that hurt!
 
@@ -379,256 +420,291 @@ say Forge and sea! You'll pay for that! | By the forge and the sea, that hurt!
 
 rule qk_sayings_talk
 when concept=talk.smalltalk quirk=quotes_old_sayings_for_everything
+does tell.self
 cooldown 2d
-say As my mother said: rain before the cock, dry by the noon bell. | A full barrel makes no noise, they say. | You can't shear a pig, as the saying goes. | Never trust a cat with the cream or a carter with the change.
+say {qk=sayings} As my mother said: rain before the cock, dry by the noon bell. | {qk=sayings} A full barrel makes no noise, they say. | {qk=sayings} You can't shear a pig, as the saying goes. | {qk=sayings} Never trust a cat with the cream or a carter with the change.
 then other: quirk.reply
-remember pair: qk=sayings 1m
 
 rule qk_sayings_bark
 when concept=bark quirk=quotes_old_sayings_for_everything
+does aside
 cooldown 6h
 say Many paws, light work. | Slow and steady fills the cart. | A crooked tail still wags.
 
 rule qk_stories_talk
 when concept=talk.smalltalk quirk=tells_the_same_three_stories pair.band!=friends|family|spouses
+does ask.detail
 cooldown 2d
-say Did I ever tell you about the night the bridge went? | So there I was, up to my neck in the mill race... | Have I told you about my uncle and the goat?
+say {qk=stories} Did I ever tell you about the night the bridge went? | {qk=stories} So there I was, up to my neck in the mill race... | {qk=stories} Have I told you about my uncle and the goat?
 then other: quirk.reply
-remember pair: qk=stories 1m
 
 rule qk_stories_friends
 when concept=talk.smalltalk quirk=tells_the_same_three_stories pair.band=friends|family|spouses
+does tell.self
 cooldown 2d
-say Did I ever tell you about the... I did. You're making that face. | So there I was, up to my neck in the... Yes. All right. You've heard it. | My uncle had a goat... Don't roll your eyes at me.
+say {qk=stories_heard} Did I ever tell you about the... I did. You're making that face. | {qk=stories_heard} So there I was, up to my neck in the... Yes. All right. You've heard it. | {qk=stories_heard} My uncle had a goat... Don't roll your eyes at me.
 then other: quirk.reply
-remember pair: qk=stories_heard 1m
 
 rule qk_grandmothers_talk
 when concept=talk.gossip quirk=has_opinions_about_everyone_s_grandmother topic.subject
+does tell.gossip
 cooldown 2d
-say I knew #topic.subject#'s grandmother. Explains a lot. | That's the grandmother coming out, that is. | #topic.subject#? #topic.their.capitalize# grandmother once sold a lame horse to a priest. It's in the blood.
+say {qk=gran} I knew #topic.subject#'s grandmother. Explains a lot. | {qk=gran} That's the grandmother coming out, that is. | {qk=gran} #topic.subject#? #topic.their.capitalize# grandmother once sold a lame horse to a priest. It's in the blood.
 then other: quirk.reply
-remember pair: qk=gran 1m
 
 rule qk_grandmothers_small
 when concept=talk.smalltalk quirk=has_opinions_about_everyone_s_grandmother pair.band=acquaintances|friends|rivals
+does tell.self
 cooldown 2d
-say Your grandmother made the worst pies in town. Bless her. | Now your grandmother, there was a wolf. | I knew your grandmother. You've her ears. Not her temper, I hope.
+say {qk=gran} Your grandmother made the worst pies in town. Bless her. | {qk=gran} Now your grandmother, there was a wolf. | {qk=gran} I knew your grandmother. You've her ears. Not her temper, I hope.
 then other: quirk.reply
-remember pair: qk=gran 1m
 
 rule qk_favours_talk
 when concept=talk.smalltalk quirk=keeps_a_tally_of_favours_owed
+does tell.self
 cooldown 2d
-say That's one you owe me. Two, counting the barrow. | I keep a tally. Don't think I don't. | I lent you a rope at the spring fair. That's in the book.
+say {qk=favours} That's one you owe me. Two, counting the barrow. | {qk=favours} I keep a tally. Don't think I don't. | {qk=favours} I lent you a rope at the spring fair. That's in the book.
 then other: quirk.reply
-remember pair: qk=favours 1m
 
 rule qk_favours_customer
 when concept=react.customer quirk=keeps_a_tally_of_favours_owed pair.mem.served
+does greet
 cooldown 1h
 priority 2
 say Back again. I've not forgotten last time. | #greet#. You're in my book, you know. In a good way. | Ah. One of my regulars. That's a mark in your favour.
 
 rule qk_debts_talk
 when concept=talk.smalltalk quirk=remembers_every_debt_owed_or_owing
+does tell.self
 cooldown 2d
-say You owe Tam two pennies, and Tam owes me one. It all comes round. | I never forget a debt. Mine or anyone's. | The baker's owed eleven pennies by half this street. I could name them.
+say {qk=debts} You owe Tam two pennies, and Tam owes me one. It all comes round. | {qk=debts} I never forget a debt. Mine or anyone's. | {qk=debts} The baker's owed eleven pennies by half this street. I could name them.
 then other: quirk.reply
-remember pair: qk=debts 1m
 
 rule qk_debts_customer
 when concept=react.customer quirk=remembers_every_debt_owed_or_owing pair.owed=b
+does greet
 cooldown 1h
 priority 3
 say Before anything else: there's the matter of what you owe me. | Ah. You. You'll be wanting to settle up first, I expect. | Welcome. The slate's still got your name on it, mind.
 
 rule qk_names_customer
 when concept=react.customer quirk=remembers_every_name_ever_heard pair.named=yes
+does greet
 cooldown 1h
 priority 2
 say #topic.player#! I never forget a name. | #greet#, #topic.player#. See? I remembered. | #topic.player#. Don't look so surprised. I never forget.
 
 rule qk_names_talk
 when concept=talk.smalltalk quirk=remembers_every_name_ever_heard
+does tell.self
 cooldown 2d
-say I never forget a name. Faces, now. Faces I forget. | Every name I've ever heard. Try me. | The carter's mule is called Absolom. Nobody else knows that. I do.
+say {qk=names} I never forget a name. Faces, now. Faces I forget. | {qk=names} Every name I've ever heard. Try me. | {qk=names} The carter's mule is called Absolom. Nobody else knows that. I do.
 then other: quirk.reply
-remember pair: qk=names 1m
 
 rule qk_city_accent
 when concept=talk.accent quirk=distrusts_anything_from_the_city topic.accent_of=ridgemere
+does ask.detail
 cooldown 2d
 priority 1
-say City folk. Thought so. Keep your paw on your purse, I say. | You're from the city. I can hear it. No offence. Some offence. | Ridgemere, is it? Hm. We'll see.
+say {qk=city} City folk. Thought so. Keep your paw on your purse, I say. | {qk=city} You're from the city. I can hear it. No offence. Some offence. | {qk=city} Ridgemere, is it? Hm. We'll see.
 then other: quirk.reply
-remember pair: qk=city 1m
 
 rule qk_city_talk
 when concept=talk.smalltalk quirk=distrusts_anything_from_the_city here.region!=ridgemere
+does tell.self
 cooldown 2d
-say Anything good ever come out of Ridgemere? No. Exactly. | They'd sell you rain in the city, and charge for the bucket. | City nails rust in a season. I buy town-made or nothing.
+say {qk=city} Anything good ever come out of Ridgemere? No. Exactly. | {qk=city} They'd sell you rain in the city, and charge for the bucket. | {qk=city} City nails rust in a season. I buy town-made or nothing.
 then other: quirk.reply
-remember pair: qk=city 1m
 
 rule qk_rival_talk
 when concept=talk.smalltalk quirk=trusts_no_one_from_a_rival_house
+does tell.self
 cooldown 2d
-say The Houses look after themselves. Remember that. | Whose House are your folk with? ...Hm. Thought so. | Every House smiles at every other House at the festival. Then they count their knives.
+say {qk=houses} The Houses look after themselves. Remember that. | {qk=houses} Whose House are your folk with? ...Hm. Thought so. | {qk=houses} Every House smiles at every other House at the festival. Then they count their knives.
 then other: quirk.reply
-remember pair: qk=houses 1m
 
 ## quirk.reply: the other notices the habit
 
 rule qk_reply_plain
 when concept=quirk.reply
+does react.self
 say Is that so. | Well. I'll bear it in mind. | ...Right.
 
 rule qk_reply_known
 when concept=quirk.reply pair.band!=strangers
+does react.self
 say You never change, do you? | Ha. That's you all over. | Some things never change.
 
 rule qk_reply_wheat
-when concept=quirk.reply pair.mem.qk=wheat
+when concept=quirk.reply conv.qk=wheat
+does react.self
 priority 1
 say You and your wheat. | I'll take your word for it. I always do. | Is there anything you don't know the price of?
 
 rule qk_reply_apple
-when concept=quirk.reply pair.mem.qk=apple
+when concept=quirk.reply conv.qk=apple
+does react.self
 priority 1
 say Remarkable. Useless, but remarkable. | You should judge the fair. | I can tell an apple from a pear. Just about.
 
 rule qk_reply_dance
-when concept=quirk.reply pair.mem.qk=dance
+when concept=quirk.reply conv.qk=dance
+does react.self
 priority 1
 say Save one for me, then. A slow one. | You'll dance your legs off one of these years. | I'll watch. Someone has to.
 
 rule qk_reply_trees
-when concept=quirk.reply pair.mem.qk=trees
+when concept=quirk.reply conv.qk=trees
+does react.self
 priority 1
 say They all look like trees to me. | You should write it down. Somebody should. | I know an oak. That's me finished.
 
 rule qk_reply_bog
-when concept=quirk.reply pair.mem.qk=bog
+when concept=quirk.reply conv.qk=bog
+does react.self
 priority 1
 say I'll take the road, all the same. | I'd sink to my ears. | You should guide folk across. Charge them.
 
 rule qk_reply_snow
-when concept=quirk.reply pair.mem.qk=snow
+when concept=quirk.reply conv.qk=snow
+does react.self
 priority 1
 say Your nose has never been wrong yet. | I'll get the wood in, then. | I smell nothing but #supper#.
 
 rule qk_reply_lake
-when concept=quirk.reply pair.mem.qk=lake
+when concept=quirk.reply conv.qk=lake
+does react.self
 priority 1
 say If the lake says so, I'll take my washing in. | You and that lake. | It's never been wrong for you, I'll say that.
 
 rule qk_reply_swim
-when concept=quirk.reply pair.mem.qk=swim
+when concept=quirk.reply conv.qk=swim
+does react.self
 priority 1
 say You're mad. Quite mad. | In this? You're made of iron. | I went in to my knees once. Once.
 
 rule qk_reply_ships
-when concept=quirk.reply pair.mem.qk=ships
+when concept=quirk.reply conv.qk=ships
+does react.self
 priority 1
 say They all look like boats to me. | You should be harbourmaster. | I'll take your word for it. I can't tell a mast from a mop.
 
 rule qk_reply_bells
-when concept=quirk.reply pair.mem.qk=bells
+when concept=quirk.reply conv.qk=bells
+does react.self
 priority 1
 say I've never once counted them. | You'd know. | Does it matter, a breath here or there?
 
 rule qk_reply_weather
-when concept=quirk.reply pair.mem.qk=weather
+when concept=quirk.reply conv.qk=weather
+does react.self
 priority 1
 say One day it'll answer back. | And who won? | You'll get struck, talking to the sky like that.
 
 rule qk_reply_cough
-when concept=quirk.reply pair.mem.qk=cough
+when concept=quirk.reply conv.qk=cough
+does react.self
 priority 1
 say That cough wants seeing to. | Nothing, it says. | Have some honey, for pity's sake.
 
 rule qk_reply_storm
-when concept=quirk.reply pair.mem.qk=storm
+when concept=quirk.reply conv.qk=storm
+does react.self
 priority 1
 say Then I'll tie the shutters down. You're never wrong. | You look it. Go and lie down. | Every time. Like a weathercock with ears.
 
 rule qk_reply_smoke
-when concept=quirk.reply pair.mem.qk=smoke
+when concept=quirk.reply conv.qk=smoke
+does react.self
 priority 1
 say You do, a bit. | I like it. Like a hearth. | Have you been sleeping in a chimney?
 
 rule qk_reply_whet
-when concept=quirk.reply pair.mem.qk=whet
+when concept=quirk.reply conv.qk=whet
+does react.self
 priority 1
 say It's fine as it is. | You'll have it sharp enough to shave a cat. | You and that stone.
 
 rule qk_reply_stones
-when concept=quirk.reply pair.mem.qk=stones
+when concept=quirk.reply conv.qk=stones
+does react.self
 priority 1
 say Your shelf'll come down one day. | It's a stone. | Go on, then. Show me. Just the one.
 
 rule qk_reply_count
-when concept=quirk.reply pair.mem.qk=count
+when concept=quirk.reply conv.qk=count
+does react.self
 priority 1
 say Of course there are. | I'll take your word for it. | And how many fingers am I holding up? No, don't.
 
 rule qk_reply_sparrows
-when concept=quirk.reply pair.mem.qk=sparrows
+when concept=quirk.reply conv.qk=sparrows
+does react.self
 priority 1
 say They'll follow you home one day. | You'll have them fat as hens. | That's where all your bread goes.
 
 rule qk_reply_late
-when concept=quirk.reply pair.mem.qk=late
+when concept=quirk.reply conv.qk=late
+does react.self
 priority 1
 say You're always late. | We'd worry if you were on time. | Only a little. As ever.
 
 rule qk_reply_sayings
-when concept=quirk.reply pair.mem.qk=sayings
+when concept=quirk.reply conv.qk=sayings
+does react.self
 priority 1
 say Did your mother say that too? | There's a saying for everything with you. | I've no idea what that means, and I agree.
 
 rule qk_reply_stories
-when concept=quirk.reply pair.mem.qk=stories
+when concept=quirk.reply conv.qk=stories
+does react.self ask.detail
 priority 1
-say Go on, then. | Is it a long one? | I think someone's told me that one. Was it you?
+say #bc_go_on_then# | Is it a long one? | I think someone's told me that one. Was it you?
 
 rule qk_reply_stories_heard
-when concept=quirk.reply pair.mem.qk=stories_heard
+when concept=quirk.reply conv.qk=stories_heard
+does react.self
 priority 1
 say Twice this week. | Go on. Tell it again. I like the goat bit. | Every Restday since I've known you.
 
 rule qk_reply_gran
-when concept=quirk.reply pair.mem.qk=gran
+when concept=quirk.reply conv.qk=gran
+does react.self
 priority 1
 say Leave grandmothers out of it. | She was a terror, wasn't she. | Everyone says that.
 
 rule qk_reply_favours
-when concept=quirk.reply pair.mem.qk=favours
+when concept=quirk.reply conv.qk=favours
+does react.self
 priority 1
 say Put it on the slate. | I've a tally of my own, you know. | How many is that now? Don't tell me.
 
 rule qk_reply_debts
-when concept=quirk.reply pair.mem.qk=debts
+when concept=quirk.reply conv.qk=debts
+does react.self
 priority 1
 say Remind me never to borrow from you. | How do you keep it all in your head? | I'll pay you back. I will. Don't write it down.
 
 rule qk_reply_names
-when concept=quirk.reply pair.mem.qk=names
+when concept=quirk.reply conv.qk=names
+does react.self
 priority 1
 say Go on, then. My cousin's pup. | That's a gift, that is. | I forget my own, some mornings.
 
 rule qk_reply_city
-when concept=quirk.reply pair.mem.qk=city
+when concept=quirk.reply conv.qk=city
+does react.self
 priority 1
 say Not all of them. | My cousin's in the city. He's all right. | Ha. You'd know, would you?
 
 rule qk_reply_city_ridgemere
-when concept=quirk.reply pair.mem.qk=city self.from=ridgemere
+when concept=quirk.reply conv.qk=city self.from=ridgemere
+does react.self
 priority 1
 say Born and bred. And proud of it. | Charming. I'm city born. | I'll not take offence. Much.
 
 rule qk_reply_houses
-when concept=quirk.reply pair.mem.qk=houses
+when concept=quirk.reply conv.qk=houses
+does react.self
 priority 1
 say I'm with nobody's House. | They're all the same to me. | Careful. Walls have ears, and Houses have more.

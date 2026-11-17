@@ -10,7 +10,7 @@ a : Lean in. #topic.subject# #topic.claim#. You didn't hear it from me. | Word a
 b[old] : I've heard worse about better wolves. And better about worse.
 b[priest] : The Bright One frowns on a loose tongue, you know.
 b : I never hear anything from you. | The well knows everything. | Who would I tell?
-a : Good. | It always does. | Everyone, by supper.
+a : #bc_good# | It always does. | Everyone, by supper.
 
 scene et_gos_disbelief
 when topic=gossip
@@ -33,21 +33,21 @@ when topic=gossip pair.band=spouses|family
 does tell.gossip / react.news.doubt / insist
 a : Did you know #topic.subject# #topic.claim#? | The whole street's saying #topic.subject# #topic.claim#. | Mother says #topic.subject# #topic.claim#.
 b : And you believe the street? | The street says a lot of things. | Your mother says a lot of things.
-a : Sometimes the street's right. | It does. | Don't start.
+a : Sometimes the street's right. | #bc_it_does# | Don't start.
 
 scene et_gos_merchant
 when topic=gossip b.role=merchant topic.claim_kind=theft|violence|wanted|prowling|promise_broken
 does tell.gossip / give.opinion / agree
 a : I heard #topic.subject# #topic.claim#. | Word is #topic.subject# #topic.claim#. | Is it true #topic.subject# #topic.claim#?
 b : Then #topic.subject# pays coin first, from now on. | Hm. I'll check my ledger. | If it is, #topic.subject# owes me an explanation.
-a : Wise. | Do. | And money, probably.
+a : #bc_wise# | Do. | And money, probably.
 
 scene et_gos_guard
 when topic=gossip b.role=guard topic.claim_kind=theft|violence|wanted|prowling|promise_broken
 does tell.gossip / react.news.doubt / assess
 a : Did you know #topic.subject# #topic.claim#? | They're saying #topic.subject# #topic.claim#. | I'd look into #topic.subject#, if I were the watch. They say #topic.subject# #topic.claim#.
 b : I don't arrest wolves for rumours. | Saying's not proof. | If #topic.subject# breaks a law, I'll look.
-a : Shame. | It's a start. | Fair.
+a : Shame. | It's a start. | #bc_fair#
 
 scene et_gos_child
 when topic=gossip a.stage=young|adolescent
@@ -62,7 +62,7 @@ when topic=gossip a.stage=old topic.claim_kind=theft|violence|wanted|prowling|pr
 does tell.gossip / react.news / ack
 a : In my day, if a wolf #topic.claim#, we'd not stop talking for a year. Now it's #topic.subject#. | #topic.subject# #topic.claim#. #topic.their.capitalize# grandmother would weep. | Mark me. #topic.subject# #topic.claim#. I know the signs.
 b : We're not stopping now either. | She would. | You always know the signs.
-a : Good. | Loudly. | I'm always right.
+a : #bc_good# | Loudly. | I'm always right.
 
 scene et_gos_petty
 when topic=gossip topic.claim_kind=theft|violence|wanted|prowling|promise_broken
@@ -77,7 +77,7 @@ does tell.gossip / react.news / ack
 a : Keep your voice down. #topic.subject# #topic.claim#. | Over the ale, I heard #topic.subject# #topic.claim#. | Barkeep says #topic.subject# #topic.claim#.
 b[innkeeper] : Don't put that on me. I just pour.
 b : I'm whispering. | Ale talks. | Barkeeps hear everything.
-a : Good. | It does. | Everything.
+a : #bc_good# | #bc_it_does# | #bc_everything#
 
 # Doc 84, Phase 6: defending one talked of is for ill talk; pity for bad news that befell them; gladness for good news
 # (a wedding is never "poor thing").
@@ -86,21 +86,21 @@ when topic=gossip pair.band=friends|acquaintances topic.claim_kind=theft|violenc
 does tell.gossip / react.news.doubt / agree
 a : People say #topic.subject# #topic.claim#. | Folk are saying #topic.subject# #topic.claim#. | There's talk that #topic.subject# #topic.claim#.
 b : I don't care what people say. | Talk's cheap. | There's always talk.
-a : Nor should you. | So it is. | Always.
+a : Nor should you. | So it is. | #bc_always#
 
 scene et_gos_pity
 when topic=gossip pair.band=friends|acquaintances topic.claim_kind=death|victim
 does tell.gossip / react.news.sorrow / agree
 a : They're saying #topic.subject# #topic.claim#, poor thing. | Did you hear #topic.subject# #topic.claim#? Poor soul.
 b : Poor thing indeed. | That's hard. I'm sorry to hear it.
-a : Poor thing. | It is.
+a : Poor thing. | #bc_it_is#
 
 scene et_gos_glad
 when topic=gossip pair.band=friends|acquaintances topic.claim_kind=marriage|promise_kept
 does tell.gossip / react.news.glad / agree
 a : They're saying #topic.subject# #topic.claim#. Good for #topic.them#. | Have you heard? #topic.subject# #topic.claim#.
 b : Good for #topic.them#, I say. | That's lovely news.
-a : Isn't it just. | It is.
+a : Isn't it just. | #bc_it_is#
 
 scene et_gos_rivals
 when topic=gossip pair.band=rivals
@@ -115,7 +115,7 @@ does tell.gossip / react.news / agree
 a : Heard it at the fish stall. #topic.subject# #topic.claim#. | Over the cabbages: #topic.subject# #topic.claim#. | Whole market's saying #topic.subject# #topic.claim#.
 b[merchant] : My stall's a market stall, not a gossip stall. Buying anything?
 b : The fish stall's never wrong. | Cabbages and scandal. | Whole market's slow today.
-a : Never. | My favourite. | Not the tongues.
+a : #bc_never# | My favourite. | Not the tongues.
 
 scene et_gos_skeptic
 when topic=gossip
@@ -123,7 +123,7 @@ does tell.gossip / react.news.doubt / answer.detail
 a : #topic.subject# #topic.claim#, they say. | I keep hearing #topic.subject# #topic.claim#. | Some say #topic.subject# #topic.claim#.
 b[scholar] : I'd want three witnesses before I believed the sun rose.
 b : Who's they? | Keep hearing it from whom? | Some say anything.
-a : Everyone, it seems. | The usual mouths. | True.
+a : Everyone, it seems. | The usual mouths. | #bc_true#
 
 scene et_gos_shocked
 when topic=gossip
@@ -137,40 +137,45 @@ when topic=gossip pair.band=family|spouses topic.claim_kind=theft|violence|wante
 does tell.gossip / reassure / tell.feeling
 a : If it's true that #topic.subject# #topic.claim#, what then? | They say #topic.subject# #topic.claim#. Should we stay away? | Folk say #topic.subject# #topic.claim#. Keep the pups away from #topic.them#.
 b : Then we'll know where we stand. | Let's not be hasty. | I already do.
-a : I hope it isn't. | Fine. | Good.
+a : I hope it isn't. | Fine. | #bc_good#
 
 # ---------------------------------------------------------------- One's own news
 
 scene et_news_marriage_shy
 when topic=news topic.kind=marriage
+does tell.news / react.news / assess / tell.self
 a : I've something to tell you. #topic.news#. | Don't laugh. #topic.news#. | You'll hear it anyway. #topic.news#.
 b[old] : Bless you both. Grow old and rude together.
 b : Wonderful! When? | Laugh? I'll cheer! | I'm glad I heard it from you.
-a : It's done already. | Cheer quietly. | So am I.
+a : It's done already. | Cheer quietly. | #bc_so_am_i#
 b?[friends] : You didn't invite me! I'll never forgive you. I forgive you.
 
 scene et_news_marriage_tease
 when topic=news topic.kind=marriage pair.band=friends
+does tell.news / react.news / assess
 a : Well, it happened. #topic.news#. | #topic.news#. Stop grinning. | I've news. #topic.news#.
 b : I knew it! I said so at midsummer! | I'll grin all I like. | About time!
-a : You did. Everyone did. | You're insufferable. | It is.
+a : You did. Everyone did. | You're insufferable. | #bc_it_is#
 
 scene et_news_marriage_old
 when topic=news topic.kind=marriage a.stage=old
+does tell.news / react.news / assess
 a : At my age! #topic.news#. | Don't look at me like that. #topic.news#. | Love finds the old too. #topic.news#.
 b : At any age! Good! | Like what? Like I'm happy for you? | It does!
 a : That's the spirit. | Exactly like that. | It did.
 
 scene et_news_loss_raw
 when topic=news topic.kind=loss
+does tell.news / react.news / assess
 a : #topic.news#. I don't know what to do with myself. | It's hard to say. #topic.news#. | #topic.news#. The house is so quiet.
 b[priest] : The Bright One holds them. And I'll hold you, if you'll let me.
 b[old] : Keep busy. Eat. Sleep. Grief walks beside you. It doesn't go.
 b : Come and stay with us. | Take your time. | Quiet's the worst of it.
-a : I might. | Thank you. | It is.
+a : #bc_i_might# | #bc_thank_you# | #bc_it_is#
 
 scene et_news_loss_angry
 when topic=news topic.kind=loss pair.band=friends|family
+does tell.news / react.news / assess / tell.self
 a : #topic.news#. It's not fair. | Why them? #topic.news#. | #topic.news#. I want to break something.
 b : No. It isn't. | There's no why. | Break something of mine. I don't mind.
 a : None of it is. | Then what's the point? | Don't tempt me.
@@ -178,32 +183,37 @@ b?[spouses] : I'm here. I'm not going anywhere.
 
 scene et_news_loss_brave
 when topic=news topic.kind=loss a.stage=adult
+does tell.news / ask.detail / answer.detail
 a : You'll have heard. #topic.news#. I'm managing. | I'm all right. Really. #topic.news#. | #topic.news#. Back at work tomorrow.
 b : You don't have to manage. | Are you? | So soon?
 a : Someone has to. | No. | Work helps.
 
 scene et_news_loss_child
 when topic=news topic.kind=loss a.stage=young|adolescent
+does tell.news / react.news / assess
 a : #topic.news#. Mama won't stop crying. | #topic.news#. Does it mean they're not coming back? | Everyone's sad at home. #topic.news#.
 b[old] : Come here, pup. Cry if you want. I'll cry with you.
 b : Then you hug her tight. | No, little one. I'm sorry. | That's all right. Sad is all right.
-a : I will. | Not ever? | I know.
+a : #bc_i_will# | Not ever? | #bc_i_know#
 
 scene et_news_work_new
 when topic=news topic.kind=work
+does tell.news / react.news / assess
 a : Good news for once. #topic.news#. | #topic.news#. Real coin at last. | Guess what? #topic.news#.
 b[merchant] : Then you can settle your slate with me, can't you.
 b : Well done! | Drinks on you, then. | Tell me!
-a : Thank you. | One drink. | I just did.
+a : #bc_thank_you# | One drink. | I just did.
 
 scene et_news_work_lost
 when topic=news topic.kind=work pair.band=friends|family|spouses
+does tell.news / react.news / ask.detail
 a : Bad news, I'm afraid. #topic.news#. | #topic.news#. I'm not sure it's a good thing. | #topic.news#. Everything's changing.
 b : What will you do? | Change can be good. | We'll manage.
 a : Think. | Can it? | Will we?
 
 scene et_news_work_proud
 when topic=news topic.kind=work a.stage=adolescent
+does tell.news / react.news / assess
 a : #topic.news#! I'm earning! | #topic.news#. I'm grown now. | Ma cried when I told her. #topic.news#.
 b[old] : Earning's good. Don't spend it all on sweets.
 b : Look at you! | Grown? Nearly. | She would.
@@ -211,28 +221,32 @@ a : Look at me! | Nearly grown. | Happy tears.
 
 scene et_news_crime_victim
 when topic=news topic.kind=crime
+does tell.news / react.news / assess / tell.self
 a : I have to tell someone. #topic.news#. | #topic.news#. I'm still shaking. | You'll hear it anyway. #topic.news#.
 b[guard] : Did you report it? Tell me everything, slowly.
 b[healer] : Sit down. Let me look at you.
 b : Bright One. Are you hurt? | Sit down. Breathe. | I'm so sorry.
-a : Not badly. | I'm trying. | So am I.
+a : Not badly. | I'm trying. | #bc_so_am_i#
 b?[friends] : Sleep at ours tonight. I won't hear no.
 
 scene et_news_crime_angry
 when topic=news topic.kind=crime pair.band=friends|family|spouses
+does tell.news / react.news / assess
 a : #topic.news#. I'll find who did it. | #topic.news#. In our own home. | #topic.news#. And the watch shrugged.
 b : Let the watch do it. | That's the worst of it. Home. | Then we'll shout until they don't.
 a : They won't. | Nowhere's safe. | Loudly.
 
 scene et_news_crime_acq
 when topic=news topic.kind=crime pair.band=strangers|acquaintances
+does tell.news / react.news / assess
 a : Bad week. #topic.news#. | #topic.news#. Thought you should know, living near. | #topic.news#. Lock your doors.
-b : I'm sorry to hear it. | Thank you for telling me. | I will.
-a : Thank you. | Neighbours ought to. | Do.
+b : I'm sorry to hear it. | Thank you for telling me. | #bc_i_will#
+a : #bc_thank_you# | Neighbours ought to. | Do.
 
 scene et_news_generic
 when topic=news
+does tell.news / react.news / assess
 weight 0.5
 a : #topic.news#. That's my news. | Did you hear? #topic.news#. | #topic.news#. Thought you'd want to know.
 b : That's quite something. | I hadn't heard. | Thank you for telling me.
-a : It is. | Now you have. | Of course.
+a : #bc_it_is# | Now you have. | #bc_of_course#

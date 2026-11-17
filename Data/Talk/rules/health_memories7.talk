@@ -5,43 +5,45 @@
 # days, so a friend can ask after it; old times told together are remembered by the pair.
 #
 # Reviewed 2026-10-13. What kind of thing was said is remembered for the chain, so the answers suit it:
-#   health:   pair.mem.hk = sick (catching), tired, hungry, grief, rough (sleeping out), child (one of theirs ill);
+#   health:   conv.hk = sick (catching), tired, hungry, grief, rough (sleeping out), child (one of theirs ill);
 #             aches and hurts need no key: the everyday answers fit illness, aches and knocks alike. The answers
 #             for tired, hungry, grief, rough and child have the say alone (no health.back). The everyday answers
-#             remember their stance (pair.mem.ha = advice, kind, rough, pup) and the last word suits it.
-#   memories: pair.mem.mk = grief (ended with the answer), home (missing where they grew up); a pup's memories are
+#             remember their stance (conv.ha = advice, kind, rough, pup) and the last word suits it.
+#   memories: conv.mk = grief (ended with the answer), home (missing where they grew up); a pup's memories are
 #             answered as a pup's (e3_ma_they_young); only those past being pups say "when I was young".
 
 # ================================================================ Health: one speaks of their own
 
 rule e3_hr_open
 when concept=talk.health
-say I'm not right today. Can't say what. | Something's going round and I think it found me. | My stomach's been at me since breakfast. | I've a head on me like a bell being rung.
+does tell.self
+say {hk=sick} I'm not right today. Can't say what. | {hk=sick} Something's going round and I think it found me. | {hk=sick} My stomach's been at me since breakfast. | {hk=sick} I've a head on me like a bell being rung.
 then other: health.answer
 remember self: e3_ailing 3d
-remember pair: hk=sick 2m
 
 rule e3_hr_open_chill
 when concept=talk.health
-say I think I've caught #chill#. | My nose has been running like a tap since Restday. | I'm feeling #poorly#, if I'm honest. | I've a cough that's settled in like a lodger.
+does tell.self
+say {hk=sick} I think I've caught #chill#. | {hk=sick} My nose has been running like a tap since Restday. | {hk=sick} I'm feeling #poorly#, if I'm honest. | {hk=sick} I've a cough that's settled in like a lodger.
 then other: health.answer
 remember self: e3_ailing 3d
-remember pair: hk=sick 2m
 
 rule e3_hr_open_crick
 when concept=talk.health
+does tell.self
 say I've a crick in my neck from sleeping wrong. | I've done something to my back. Bent for a bucket and it went. | My shoulder's stiff as a board this morning.
 then other: health.answer
 
 rule e3_hr_open_sleep
 when concept=talk.health tired=yes
+does tell.self
 cooldown 1d
-say I've not slept properly in a week. | Woke at the third bell and lay there till dawn. | I dreamt all night and woke more #tired# than I went to bed.
+say {hk=tired} I've not slept properly in a week. | {hk=tired} Woke at the third bell and lay there till dawn. | {hk=tired} I dreamt all night and woke more #tired# than I went to bed.
 then other: health.answer
-remember pair: hk=tired 2m
 
 rule e3_hr_old
 when concept=talk.health stage=old
+does tell.self
 cooldown 2d
 say My knees are telling me about the weather again. | I've a new ache. I'd run out of the old ones. | Took me half the morning to get my boots on. | My paws won't close in the mornings any more.
 then other: health.answer
@@ -49,18 +51,21 @@ remember self: e3_ailing 3d
 
 rule e3_hr_old_teeth
 when concept=talk.health stage=old
+does tell.self
 cooldown 2d
 say I've four teeth left and two of them are thinking about it. | Everything I eat now has to be soup. | My hearing's going. What? Exactly.
 then other: health.answer
 
 rule e3_hr_young
 when concept=talk.health stage=young
+does tell.self
 cooldown 1d
 say I've got a tummy ache. Can I have honey? | My tooth's wobbly and it hurts when I eat. | I fell over and grazed my knee. I didn't even cry.
 then other: health.answer
 
 rule e3_hr_hurt_light
 when concept=talk.health injured=light
+does tell.self
 priority 1
 cooldown 1d
 say Took a knock. It's #hurt#, but it'll mend. | Mind my arm. It's bruised black under the fur. | Twisted my paw. Walking like a crab.
@@ -69,6 +74,7 @@ remember self: e3_ailing 3d
 
 rule e3_hr_hurt_bad
 when concept=talk.health injured=bad
+does tell.self
 priority 2
 cooldown 12h
 say I'm in a bad way. I won't pretend I'm not. | Every breath hurts. | I need to sit. I need to sit down.
@@ -77,43 +83,44 @@ remember self: e3_ailing 3d
 
 rule e3_hr_tired
 when concept=talk.health tired=yes
+does tell.self
 cooldown 1d
-say I'm so #tired# my fur aches. | If I sit down I won't get up. | I could sleep on a fence post.
+say {hk=tired} I'm so #tired# my fur aches. | {hk=tired} If I sit down I won't get up. | {hk=tired} I could sleep on a fence post.
 then other: health.answer
-remember pair: hk=tired 2m
 
 rule e3_hr_hungry
 when concept=talk.health hungry=yes
+does tell.self
 cooldown 1d
-say I'm light-headed. Haven't eaten. | My belly's growling louder than I talk. | I came over dizzy at the well. I've had nothing since yesterday.
+say {hk=hungry} I'm light-headed. Haven't eaten. | {hk=hungry} My belly's growling louder than I talk. | {hk=hungry} I came over dizzy at the well. I've had nothing since yesterday.
 then other: health.answer
-remember pair: hk=hungry 2m
 
 rule e3_hr_mourning
 when concept=talk.health mourning=kin|friend
+does tell.worry
 priority 1
 cooldown 1d
-say I can't eat. I can't sleep. It's not the body, it's the rest. | There's a weight on my chest since the burial. | I'm all hollow inside. Is that a sickness?
+say {hk=grief} I can't eat. I can't sleep. It's not the body, it's the rest. | {hk=grief} There's a weight on my chest since the burial. | {hk=grief} I'm all hollow inside. Is that a sickness?
 then other: health.answer
-remember pair: hk=grief 2m
 
 rule e3_hr_homeless
 when concept=talk.health homeless=yes
+does tell.self
 priority 1
 cooldown 1d
-say Sleeping in doorways. My bones have frozen through. | You get a cough you can't shift, sleeping out. | My paws haven't been warm in a week.
+say {hk=rough} Sleeping in doorways. My bones have frozen through. | {hk=rough} You get a cough you can't shift, sleeping out. | {hk=rough} My paws haven't been warm in a week.
 then other: health.answer
-remember pair: hk=rough 2m
 
 rule e3_hr_parent
 when concept=talk.health parent=yes
+does tell.self
 cooldown 2d
-say One of mine's been up all night with a cough. So have I. | The little ones have spots. All of them. | One of mine has a fever. I've not left the bedside since yesterday.
+say {hk=child} One of mine's been up all night with a cough. So have I. | {hk=child} The little ones have spots. All of them. | {hk=child} One of mine has a fever. I've not left the bedside since yesterday.
 then other: health.answer
-remember pair: hk=child 2m
 
 rule e3_hr_poor
 when concept=talk.health wealth=poor|destitute
+does tell.self
 cooldown 2d
 say I've a pain I can't afford to have looked at. | The healer's for them that can pay. I'll wait it out. | I could do with a draught but it's that or supper.
 then other: health.answer
@@ -121,39 +128,43 @@ remember self: e3_ailing 3d
 
 rule e3_hr_rich
 when concept=talk.health wealth=rich
+does tell.self
 cooldown 2d
 say My physician says I'm to avoid excitement and rich food. | I've been taking the waters. Dreadful taste. | I've had a slight chill. The whole household's been in uproar.
 then other: health.answer
 
 rule e3_hr_nervy
 when concept=talk.health temper=nervy
+does give.opinion
 cooldown 1d
-say I've a lump. Here. Is it a lump? Feel it. No, don't. | I think my heart skipped. Twice. | There's a fever two doors down. I'll be next, I know it.
+say {hk=sick} I've a lump. Here. Is it a lump? Feel it. No, don't. | {hk=sick} I think my heart skipped. Twice. | {hk=sick} There's a fever two doors down. I'll be next, I know it.
 then other: health.answer
 remember self: e3_ailing 3d
-remember pair: hk=sick 2m
 
 rule e3_hr_short
 when concept=talk.health temper=short
+does tell.self
 cooldown 1d
 say I've a cough and everyone keeps telling me about it. | The healer says rest. I said I'd rest when she pays my rent. | Don't ask about my back.
 then other: health.answer
 
 rule e3_hr_devout
 when concept=talk.health piety=devout
+does tell.self
 cooldown 2d
-say My cough's no better. I've prayed on it. | I've had a fever. I've offered it up. | The gods send aches to remind us we're only lent our bodies. I've been reminded this week.
+say {hk=sick} My cough's no better. I've prayed on it. | {hk=sick} I've had a fever. I've offered it up. | {hk=sick} The gods send aches to remind us we're only lent our bodies. I've been reminded this week.
 then other: health.answer
-remember pair: hk=sick 2m
 
 rule e3_hr_merry
 when concept=talk.health humour=merry
+does tell.self
 cooldown 2d
 say I'm dying. Slowly. Over about forty years. | The healer took one look at my tongue and asked for paying first. | I sneezed so hard I saw my grandmother.
 then other: health.answer
 
 rule e3_hr_miner
 when concept=talk.health job=miner
+does tell.self
 cooldown 2d
 say Coughing up the seam again. | My chest's full of rock dust. Every miner's is. | The damp down there gets into your knees.
 then other: health.answer
@@ -161,49 +172,56 @@ remember self: e3_ailing 3d
 
 rule e3_hr_smith
 when concept=talk.health job=smith
+does tell.self
 cooldown 2d
 say Caught a spark on the wrist. Another one. | My ears ring from the anvil all night. | The heat's dried me out like a smoked fish.
 then other: health.answer
 
 rule e3_hr_farmer
 when concept=talk.health job=farmer|herder
+does tell.self
 cooldown 2d
 say My back's bent like a scythe from the rows. | Kicked by a cow. Same cow as last week. | Scythe nicked my shin. Bled like a pig.
 then other: health.answer
 
 rule e3_hr_fisher
 when concept=talk.health job=fisher|sailor
+does tell.self
 cooldown 2d
 say Salt water's cracked my pads to the bone. | My paws won't straighten after a night on the nets. | I've been wet so long I'm growing moss.
 then other: health.answer
 
 rule e3_hr_guard
 when concept=talk.health job=guard|soldier
+does tell.self
 cooldown 2d
 say My feet are ruined from standing watch. | The armour's rubbed me raw under the arm. | Got clipped in training. My ear's still ringing.
 then other: health.answer
 
 rule e3_hr_labour
 when concept=talk.health job=laborer|carter|woodcutter
+does tell.self
 cooldown 2d
 say Shoulders like knotted rope. | Every rut in the road went up my spine. | Pulled something lifting. Something important.
 then other: health.answer
 
 rule e3_hr_healer
 when concept=talk.health job=healer
+does tell.self
 cooldown 2d
-say I've caught everyone's cold at once. Healer, heal thyself. | Up all night with a fever case. Mine now, I think. | I've seen fifty patients this week. I'd like to be one.
+say {hk=sick} I've caught everyone's cold at once. Healer, heal thyself. | {hk=sick} Up all night with a fever case. Mine now, I think. | {hk=sick} I've seen fifty patients this week. I'd like to be one.
 then other: health.answer
-remember pair: hk=sick 2m
 
 rule e3_hr_cook
 when concept=talk.health job=cook|baker
+does tell.self
 cooldown 2d
 say Burned my paw on the oven door again. | Flour in my lungs. I sneeze bread. | Stood at the hearth all day. My feet are cooked.
 then other: health.answer
 
 rule e3_hr_winter
 when concept=talk.health here.season=winter
+does tell.self
 cooldown 1d
 say I've chilblains on every toe. | This cold's got into my chest. | The whole street's got the winter fever, and now so have I.
 then other: health.answer
@@ -211,41 +229,44 @@ remember self: e3_ailing 3d
 
 rule e3_hr_summer
 when concept=talk.health here.season=summer
+does tell.self
 cooldown 1d
 say This heat's making me sick. Can't keep anything down. | Burned my nose in the sun. | I'm panting like I've run here from the next town, and I've only crossed the street.
 then other: health.answer
 
 rule e3_hr_damp
 when concept=talk.health here.weather=rain|fog|storm
+does tell.self
 cooldown 1d
 say This damp's in my joints. | The wet's gone to my chest again. | My fur hasn't been dry in a week. I'll go mouldy.
 then other: health.answer
 
 rule e3_hr_ridgemere
 when concept=talk.health here.region=ridgemere here.weather=rain|fog|overcast
+does tell.self
 cooldown 2d
-say It's the Ridgemere cough. Everyone has it. | This city's air is half sea, half chimney. | I wheeze from the wharf to the Heights.
+say {hk=sick} It's the Ridgemere cough. Everyone has it. | {hk=sick} This city's air is half sea, half chimney. | {hk=sick} I wheeze from the wharf to the Heights.
 then other: health.answer
-remember pair: hk=sick 2m
 
 rule e3_hr_quirk_storm
 when concept=talk.health quirk=sleeps_badly_before_storms
+does tell.self
 cooldown 1d
-say Storm's coming. I didn't sleep a wink. | My fur's crackling. Didn't sleep. Storm by dark.
+say {hk=tired} Storm's coming. I didn't sleep a wink. | {hk=tired} My fur's crackling. Didn't sleep. Storm by dark.
 then other: health.answer
-remember pair: hk=tired 2m
 
 rule e3_hr_quirk_cough
 when concept=talk.health quirk=coughs_in_the_damp_and_pretends_not_to
+does tell.self
 cooldown 1d
-say *coughs* I'm perfectly well. | Never better. *coughs* Never better.
+say {hk=sick} *coughs* I'm perfectly well. | {hk=sick} Never better. *coughs* Never better.
 then other: health.answer
-remember pair: hk=sick 2m
 
 ## Asking after it, days later (the ailing one is remembered)
 
 rule e3_hr_ask_after
 when concept=talk.health other.mem.e3_ailing pair.band=acquaintances|friends|family|spouses
+does ask.detail
 priority 1
 cooldown 3d
 say Are you any better? You weren't well, last I saw you. | How's whatever it was? Mended? | You were #poorly#. Better now?
@@ -256,334 +277,366 @@ then other: keeping.answer
 
 rule e3_ha_plain
 when concept=health.answer
-say Sorry to hear it. | That's no good. | Poor you. | Well, look after yourself.
+does sympathise
+say {ha=kind} Sorry to hear it. | {ha=kind} That's no good. | {ha=kind} Poor you. | {ha=kind} Well, look after yourself.
 then other: health.back
-remember pair: ha=kind 2m
 
 rule e3_ha_remedy
 when concept=health.answer
-say Have you tried #remedy#? | #remedy.capitalize#. Works every time. | My mother would have said #remedy#.
+does sympathise
+say {ha=advice} Have you tried #remedy#? | {ha=advice} #remedy.capitalize#. Works every time. | {ha=advice} My mother would have said #remedy#.
 then other: health.back
-remember pair: ha=advice 2m
 
 rule e3_ha_healer
 when concept=health.answer job=healer
+does sympathise
 priority 2
-say Come by and I'll look at it. Don't leave it. | Rest, warmth and nothing stupid. I know. Nobody does it. | Show me later. Before it's worse, not after.
+say {ha=advice} Come by and I'll look at it. Don't leave it. | {ha=advice} Rest, warmth and nothing stupid. I know. Nobody does it. | {ha=advice} Show me later. Before it's worse, not after.
 then other: health.back
-remember pair: ha=advice 2m
 
 rule e3_ha_priest
 when concept=health.answer job=priest
+does sympathise
 priority 1
-say I'll remember you at the evening prayer. | Come to the chapel. Sit a while. The body follows the heart. | The gods mend slowly, but they mend.
+say {ha=kind} I'll remember you at the evening prayer. | {ha=kind} Come to the chapel. Sit a while. The body follows the heart. | {ha=kind} The gods mend slowly, but they mend.
 then other: health.back
-remember pair: ha=kind 2m
 
 rule e3_ha_devout
 when concept=health.answer piety=devout
+does sympathise
 cooldown 12h
-say I'll pray for you. | Light a candle. It can't hurt. | The gods see it. They'll see you through.
+say {ha=kind} I'll pray for you. | {ha=kind} Light a candle. It can't hurt. | {ha=kind} The gods see it. They'll see you through.
 then other: health.back
-remember pair: ha=kind 2m
 
 rule e3_ha_old
 when concept=health.answer stage=old other.stage!=old
+does sympathise
 cooldown 1d
-say You think that's bad? Wait till you're my age. | Pfft. I've had that since before you were born. | You young ones. One ache and it's the end of the world.
+say {ha=rough} You think that's bad? Wait till you're my age. | {ha=rough} Pfft. I've had that since before you were born. | {ha=rough} You young ones. One ache and it's the end of the world.
 then other: health.back
-remember pair: ha=rough 2m
 
 rule e3_ha_old_plain
 when concept=health.answer stage=old
+does sympathise
 cooldown 12h
 say Ah, I know that one well. | I've had the same, on and off, for years. | Rest it. I never did, and look at me.
 then other: health.back
 
 rule e3_ha_young
 when concept=health.answer stage=young
-say Does it hurt? Can I see? | #mum# says you have to have soup when you're poorly. | Are you going to die?
+does sympathise ask.detail
+say {ha=pup} Does it hurt? Can I see? | {ha=pup} #mum# says you have to have soup when you're poorly. | {ha=pup} Are you going to die?
 then other: health.back
-remember pair: ha=pup 2m
 
 rule e3_ha_nervy
 when concept=health.answer temper=nervy
+does sympathise
 cooldown 12h
 say Don't come too close. Not that I mind. I do mind. | My cousin had something like that and he went yellow. | You should go to the healer. Now. Today.
 then other: health.back
 
 rule e3_ha_short
 when concept=health.answer temper=short
+does sympathise
 cooldown 12h
-say Stop moaning and see the healer. | We've all got something. | Then go home. Don't stand there telling me.
+say {ha=rough} Stop moaning and see the healer. | {ha=rough} We've all got something. | {ha=rough} Then go home. Don't stand there telling me.
 then other: health.back
-remember pair: ha=rough 2m
 
 rule e3_ha_warm
 when concept=health.answer warmth=warm
+does sympathise
 cooldown 12h
-say I'll bring you some broth tonight. | Come and sit by my fire. | Oh, #pet#. You need looking after.
+say {ha=kind} I'll bring you some broth tonight. | {ha=kind} Come and sit by my fire. | {ha=kind} Oh, #pet#. You need looking after.
 then other: health.back
-remember pair: ha=kind 2m
 
 rule e3_ha_cold
 when concept=health.answer warmth=cold
+does sympathise
 cooldown 12h
-say Mm. | Everyone's got something. | I'm sure it'll pass.
+say {ha=rough} Mm. | {ha=rough} Everyone's got something. | {ha=rough} I'm sure it'll pass.
 then other: health.back
-remember pair: ha=rough 2m
 
 rule e3_ha_merry
 when concept=health.answer humour=merry
+does sympathise
 cooldown 12h
-say Can I have your boots if you don't pull through? | You'll live. Unfortunately for the rest of us. | That's what comes of being so good-looking.
+say {ha=rough} Can I have your boots if you don't pull through? | {ha=rough} You'll live. Unfortunately for the rest of us. | {ha=rough} That's what comes of being so good-looking.
 then other: health.back
-remember pair: ha=rough 2m
 
 rule e3_ha_dry
 when concept=health.answer humour=dry
+does sympathise
 cooldown 12h
-say Well, you've looked worse. Not much. | Could be worse. Could be me. | And here's me thinking you were made of iron.
+say {ha=rough} Well, you've looked worse. Not much. | {ha=rough} Could be worse. Could be me. | {ha=rough} And here's me thinking you were made of iron.
 then other: health.back
-remember pair: ha=rough 2m
 
 rule e3_ha_sly
 when concept=health.answer honesty=sly
+does sympathise
 cooldown 12h
-say I know a carter sells a tonic. Very reasonable. I could get you some. | The healer overcharges. I've something at home. For a penny. | Don't go to the healer. Come to me.
+say {ha=advice} I know a carter sells a tonic. Very reasonable. I could get you some. | {ha=advice} The healer overcharges. I've something at home. For a penny. | {ha=advice} Don't go to the healer. Come to me.
 then other: health.back
-remember pair: ha=advice 2m
 
 rule e3_ha_chatty
 when concept=health.answer talk=chatty
+does sympathise
 cooldown 12h
 say My cousin had that. Three weeks. Then it went to her ears, then her feet. Then she was fine. | Oh, I had that! Started in the toes, it did. | Funny you say, there's a wolf on our street, same thing.
 then other: health.back
 
 rule e3_ha_poor
 when concept=health.answer wealth=poor|destitute
+does sympathise
 cooldown 12h
-say Healers are for them with money. Sleep it off. | Same as me. You get better or you don't. | Hot water and salt. It's what we've got.
+say {ha=advice} Healers are for them with money. Sleep it off. | {ha=advice} Same as me. You get better or you don't. | {ha=advice} Hot water and salt. It's what we've got.
 then other: health.back
-remember pair: ha=advice 2m
 
 rule e3_ha_rich
 when concept=health.answer wealth=rich
+does sympathise
 cooldown 12h
-say You should see my physician. He's very good. | Have you thought of a week by the sea? | Oh, you poor thing. Have your cook make you a broth.
+say {ha=advice} You should see my physician. He's very good. | {ha=advice} Have you thought of a week by the sea? | {ha=advice} Oh, you poor thing. Have your cook make you a broth.
 then other: health.back
-remember pair: ha=advice 2m
 
 rule e3_ha_cook
 when concept=health.answer job=cook|baker
-say Broth. Bone broth. I'll put a pot on. | Nothing a good stew won't mend. | You're not eating right. I can tell.
+does sympathise
+say {ha=kind} Broth. Bone broth. I'll put a pot on. | {ha=kind} Nothing a good stew won't mend. | {ha=kind} You're not eating right. I can tell.
 then other: health.back
-remember pair: ha=kind 2m
 
 rule e3_ha_drink
 when concept=health.answer job=innkeeper|brewer
-say A drop of brandy. Medicinal. | Come by tonight. Hot ale with honey. On the house. Well, half. | Nothing a cup won't ease.
+does sympathise
+say {ha=advice} A drop of brandy. Medicinal. | {ha=advice} Come by tonight. Hot ale with honey. On the house. Well, half. | {ha=advice} Nothing a cup won't ease.
 then other: health.back
-remember pair: ha=advice 2m
 
 rule e3_ha_herder
 when concept=health.answer job=herder|farmer
+does sympathise
 cooldown 12h
-say I'd give a ewe a warm mash and a dry bed for that. Same for you. | Work it off. That's what I do. | Goose grease. I swear by it for the beasts.
+say {ha=advice} I'd give a ewe a warm mash and a dry bed for that. Same for you. | {ha=advice} Work it off. That's what I do. | {ha=advice} Goose grease. I swear by it for the beasts.
 then other: health.back
-remember pair: ha=advice 2m
 
 rule e3_ha_parent
 when concept=health.answer parent=yes
+does sympathise
 cooldown 12h
 say I'd tell my pups bed and soup. You're no different. | You sound just like my youngest. Same whine. | My mother's cure: onion in a sock. Don't ask.
 then other: health.back
 
 rule e3_ha_miner
 when concept=health.answer job=miner
+does sympathise
 cooldown 12h
-say You should try a shift underground. Then talk to me. | That's nothing. Come and hear my chest some morning. | Pfft. Rock falls on you, that's hurt.
+say {ha=rough} You should try a shift underground. Then talk to me. | {ha=rough} That's nothing. Come and hear my chest some morning. | {ha=rough} Pfft. Rock falls on you, that's hurt.
 then other: health.back
-remember pair: ha=rough 2m
 
 rule e3_ha_spouses
 when concept=health.answer pair.band=spouses
-say Bed. Now. I'll bring you something hot. | Why didn't you wake me? | That's it. You're not going out today.
+does sympathise
+say {ha=kind} Bed. Now. I'll bring you something hot. | {ha=kind} Why didn't you wake me? | {ha=kind} That's it. You're not going out today.
 then other: health.back
-remember pair: ha=kind 2m
 
 rule e3_ha_friends
 when concept=health.answer pair.band=friends|family
+does sympathise
 cooldown 12h
-say Why didn't you come to me? | You should have said. I'll come by tonight. | Let me look at you. #oath#, you look rough.
+say {ha=kind} Why didn't you come to me? | {ha=kind} You should have said. I'll come by tonight. | {ha=kind} Let me look at you. #oath#, you look rough.
 then other: health.back
-remember pair: ha=kind 2m
 
 rule e3_ha_they_bad
 when concept=health.answer other.injured=bad
+does sympathise
 priority 3
-say #oath#, sit down before you fall down. | You need the healer. I'll take you. | Don't talk. Lean on me.
+say {ha=kind} #oath#, sit down before you fall down. | {ha=kind} You need the healer. I'll take you. | {ha=kind} Don't talk. Lean on me.
 then other: health.back
-remember pair: ha=kind 2m
 
 rule e3_ha_they_old
 when concept=health.answer other.stage=old
+does sympathise
 cooldown 12h
-say You should rest more, at your age. | Sit down. I'll fetch whatever you need. | My grandmother swore by a hot brick in a cloth.
+say {ha=advice} You should rest more, at your age. | {ha=advice} Sit down. I'll fetch whatever you need. | {ha=advice} My grandmother swore by a hot brick in a cloth.
 then other: health.back
-remember pair: ha=advice 2m
 
 # A pup's tummy, tooth or knee: answered as a pup's, by whoever isn't one.
 rule e3_ha_they_young
 when concept=health.answer other.stage=young self.stage!=young
+does sympathise
 priority 3
 say Brave pup. It'll be better by tomorrow. | Go and tell your #mum#. They'll know what to do. | Show me. Ooh. Very brave. Honey for that, I'd say.
 then other: health.back
 
 rule e3_ha_same
-when concept=health.answer self.mem.e3_ailing pair.mem.hk=sick
+when concept=health.answer self.mem.e3_ailing conv.hk=sick
+does sympathise
 priority 1
-say You too? I've had the same all week. | It's going round. I've got it as well. | Snap. We'll be ill together.
+say {ha=kind} You too? I've had the same all week. | {ha=kind} It's going round. I've got it as well. | {ha=kind} Snap. We'll be ill together.
 then other: health.back
-remember pair: ha=kind 2m
 
 # Worn out (hk=tired): the say is theirs.
 rule e3_ha_tired
-when concept=health.answer pair.mem.hk=tired
+when concept=health.answer conv.hk=tired
+does sympathise
 priority 3
 say Then go to bed, you daft thing. | Get some sleep. The work'll be there tomorrow. | You look it. No offence.
 
 rule e3_ha_tired_warm
-when concept=health.answer pair.mem.hk=tired warmth=warm
+when concept=health.answer conv.hk=tired warmth=warm
+does sympathise
 priority 2
 say Sit. I'll make you something hot, then you're going home. | Put your feet up at mine for an hour. I'll not tell a soul. | Oh, you poor thing. Off to bed with you.
 
 rule e3_ha_tired_merry
-when concept=health.answer pair.mem.hk=tired humour=merry
+when concept=health.answer conv.hk=tired humour=merry
+does sympathise
 priority 2
 say You look like you've been dragged backwards through a hedge. Twice. | Sleep standing up. Horses manage it. | I'll wake you when there's something worth seeing.
 
 rule e3_ha_tired_old
-when concept=health.answer pair.mem.hk=tired stage=old
+when concept=health.answer conv.hk=tired stage=old
+does sympathise
 priority 2
 say Sleep while you can. At my age it doesn't come. | When I was your age I slept like a stone. Now I count the beams. | Rest. Nobody thanks you for wearing yourself out.
 
 rule e3_ha_tired_young
-when concept=health.answer pair.mem.hk=tired stage=young
+when concept=health.answer conv.hk=tired stage=young
+does sympathise
 priority 2
 say I don't ever want to sleep. Sleep's boring. | You can have a nap! I'll keep watch. | You yawned! You did it again!
 
 # Hungry (hk=hungry).
 rule e3_ha_hungry
-when concept=health.answer pair.mem.hk=hungry
+when concept=health.answer conv.hk=hungry
+does sympathise
 priority 4
 say Here. Half a loaf. Take it, go on. | Sit down before you fall down. When did you last eat? | You'll eat with us tonight. No arguing.
 
 rule e3_ha_hungry_poor
-when concept=health.answer pair.mem.hk=hungry wealth=poor|destitute
+when concept=health.answer conv.hk=hungry wealth=poor|destitute
+does sympathise
 priority 3
 say I've nothing myself, or I'd share it. You know I would. | The chapel gives out bread at dawn. Get there early. | Here. It's only a crust, but it's yours.
 
 rule e3_ha_hungry_rich
-when concept=health.answer pair.mem.hk=hungry wealth=rich
+when concept=health.answer conv.hk=hungry wealth=rich
+does sympathise
 priority 3
 say Good heavens. Here, buy yourself a hot pie. | That won't do. Take this and get something proper. | Go round to my kitchen door. Tell them I sent you.
 
 rule e3_ha_hungry_cook
-when concept=health.answer pair.mem.hk=hungry job=cook|baker|innkeeper
+when concept=health.answer conv.hk=hungry job=cook|baker|innkeeper
+does sympathise
 priority 3
 say Come round the back. There's always something. | I've yesterday's loaves going spare. Have the lot. | Sit. I'll bring you a bowl. You can pay me another day.
 
 rule e3_ha_hungry_cold
-when concept=health.answer pair.mem.hk=hungry warmth=cold
+when concept=health.answer conv.hk=hungry warmth=cold
+does sympathise
 priority 3
 say We all go short sometimes. | Then you'd best find some work. | Mm. That's hard.
 
 rule e3_ha_hungry_young
-when concept=health.answer pair.mem.hk=hungry stage=young
+when concept=health.answer conv.hk=hungry stage=young
+does sympathise
 priority 3
 say You can have my crust. I'm not hungry. Much. | #mum# always has bread. Come home with me! | I've got an apple. Half each?
 
 # Grieving (hk=grief).
 rule e3_ha_grief
-when concept=health.answer pair.mem.hk=grief
+when concept=health.answer conv.hk=grief
+does sympathise
 priority 5
 say It's not something you mend. You carry it, and it gets lighter. | Of course you can't. Nobody would expect you to. | Grief's a sickness of its own. Be gentle with yourself.
 
 rule e3_ha_grief_warm
-when concept=health.answer pair.mem.hk=grief warmth=warm
+when concept=health.answer conv.hk=grief warmth=warm
+does sympathise
 priority 4
 say Come and sit with us tonight. You shouldn't be alone. | Oh, #pet#. Come here. | I'll bring something round. You'll not have to cook.
 
 rule e3_ha_grief_devout
-when concept=health.answer pair.mem.hk=grief piety=devout
+when concept=health.answer conv.hk=grief piety=devout
+does sympathise
 priority 4
 say They're in the Bright One's keeping now. Let that be a little comfort. | I'll pray for them, and for you. | Come to the chapel with me. Just to sit.
 
 rule e3_ha_grief_old
-when concept=health.answer pair.mem.hk=grief stage=old
+when concept=health.answer conv.hk=grief stage=old
+does sympathise
 priority 4
 say It never goes. But it gets lighter to carry. I promise you that. | I've buried more than I can count. It's always like this, at first. | Eat something anyway. They'd want you to.
 
 rule e3_ha_grief_cold
-when concept=health.answer pair.mem.hk=grief warmth=cold
+when concept=health.answer conv.hk=grief warmth=cold
+does sympathise
 priority 4
 say It passes. Slowly, but it does. | We all lose someone. | I'm sorry. I'm no good with these things.
 
 rule e3_ha_grief_young
-when concept=health.answer pair.mem.hk=grief stage=young
+when concept=health.answer conv.hk=grief stage=young
+does sympathise
 priority 4
 say Are you sad? I'll be quiet with you. | I can sit with you. I'm good at sitting. | #mum# says the ones we lose go to the Bright One.
 
 # Sleeping out (hk=rough).
 rule e3_ha_rough
-when concept=health.answer pair.mem.hk=rough
+when concept=health.answer conv.hk=rough
+does sympathise
 priority 4
 say There's a bed at the chapel, some nights. Go early. | Keep out of the wind and keep moving, or you'll not wake. | Come by the back door tonight. There's a corner by the stove.
 
 rule e3_ha_rough_warm
-when concept=health.answer pair.mem.hk=rough warmth=warm
+when concept=health.answer conv.hk=rough warmth=warm
+does sympathise
 priority 3
 say Sleep in my shed tonight. I mean it. It's dry, at least. | You'll have my old coat. I'll not hear no. | Come to ours. We'll squeeze up.
 
 rule e3_ha_rough_rich
-when concept=health.answer pair.mem.hk=rough wealth=rich
+when concept=health.answer conv.hk=rough wealth=rich
+does sympathise
 priority 3
 say Dreadful. Someone really ought to do something. | Here. Get a bed at an inn tonight. | The Council should see to it. I'll mention it.
 
 rule e3_ha_rough_poor
-when concept=health.answer pair.mem.hk=rough wealth=poor|destitute
+when concept=health.answer conv.hk=rough wealth=poor|destitute
+does sympathise
 priority 3
 say I know. I've slept in a few doorways myself. | Find a stable. The beasts keep it warm. | Stick together. Two's warmer than one.
 
 rule e3_ha_rough_guard
-when concept=health.answer pair.mem.hk=rough job=guard
+when concept=health.answer conv.hk=rough job=guard
+does sympathise
 priority 3
 say Not in the gateways. I'll have to move you on. Try the chapel porch. | Stay where the lamps are. It's safer. | I'll look the other way at the stables tonight. Once.
 
 # One of theirs ill (hk=child).
 rule e3_ha_child
-when concept=health.answer pair.mem.hk=child
+when concept=health.answer conv.hk=child
+does sympathise
 priority 3
 say Poor mite. Keep them warm and give them plenty to drink. | They're tougher than we think, the little ones. | Every house on the street's had it. It passes.
 
 rule e3_ha_child_parent
-when concept=health.answer pair.mem.hk=child parent=yes
+when concept=health.answer conv.hk=child parent=yes
+does sympathise
 priority 2
 say Ours had the same last winter. A week of misery and then they were climbing the walls. | Honey and warm milk. And sleep when they sleep. | You'll be the one needing a healer by the end of it.
 
 rule e3_ha_child_healer
-when concept=health.answer pair.mem.hk=child job=healer
+when concept=health.answer conv.hk=child job=healer
+does sympathise
 priority 2
 say Bring them by. I'll look at them. No charge. | Keep them warm and watch the fever. If it climbs, come for me. | Sounds like what's going round. I'll call in later.
 
 rule e3_ha_child_old
-when concept=health.answer pair.mem.hk=child stage=old
+when concept=health.answer conv.hk=child stage=old
+does sympathise
 priority 2
 say I nursed mine through worse. They come through it. | Spots? Every pup gets spots. You did. | Keep the fire up and the shutters closed. That's all it ever was.
 
 rule e3_ha_child_warm
-when concept=health.answer pair.mem.hk=child warmth=warm
+when concept=health.answer conv.hk=child warmth=warm
+does sympathise
 priority 2
 say I'll send round some broth for them. And for you. | Poor little things. Tell them I asked after them. | Get some sleep yourself. I'll sit with them an hour.
 
@@ -591,83 +644,101 @@ say I'll send round some broth for them. And for you. | Poor little things. Tell
 
 rule e3_hb_plain
 when concept=health.back
-say I'll live. | It'll pass. | #saying#. | We'll see.
+does ack
+say I'll live. | It'll pass. | #saying#. | #bc_we_will_see#
 
 rule e3_hb_advice
-when concept=health.back pair.mem.ha=advice
+when concept=health.back conv.ha=advice
+does ack
 say Maybe I will. | I'll try it. | Everyone says that. I might even do it.
 
 rule e3_hb_kind
-when concept=health.back pair.mem.ha=kind
+when concept=health.back conv.ha=kind
+does ack
 say That's good of you. | Thank you. I mean it. | You're kind. I'll be right in a day or two.
 
 rule e3_hb_rough
-when concept=health.back pair.mem.ha=rough
+when concept=health.back conv.ha=rough
+does ack
 say Thank you for your sympathy. | Charming. | I'll remember that when it's you.
 
 rule e3_hb_pup
-when concept=health.back pair.mem.ha=pup
+when concept=health.back conv.ha=pup
+does ack
 priority 1
 say No, pup. Not today. | Only a bit. | I'll live, little one.
 
 rule e3_hb_short
 when concept=health.back temper=short
+does ack
 say Hmph. | I'll manage. | Enough about it.
 
 rule e3_hb_nervy
 when concept=health.back temper=nervy
+does ack
 say You don't think it's serious? Do you? | I'll go and see the healer. Today. | Now I'll not sleep for worrying.
 
 rule e3_hb_merry
 when concept=health.back humour=merry
+does ack
 say If I die, I'm haunting you. | Put that on my stone. | I'll live. Out of spite, mostly.
 
 rule e3_hb_devout
 when concept=health.back piety=devout
+does ack
 say The gods willing. | It's in better hands than mine. | I'll offer it up tonight.
 
 rule e3_hb_old
 when concept=health.back stage=old
+does ack
 say At my age you take what comes. | I've survived worse. I've survived most folk. | Never get old. That's my advice.
 
 rule e3_hb_young
 when concept=health.back stage=young
+does ack
 say All right. | Can I have honey, then? | I'm brave. I'm very brave.
 
 rule e3_hb_poor
 when concept=health.back wealth=poor|destitute
+does ack
 say I'll manage. We always do. | When I've the coin. | Can't stop working, either way.
 
 rule e3_hb_warm
 when concept=health.back warmth=warm
+does ack
 say I'll be all right. Don't you fret. | You're a dear for listening. | I'll be right as rain in a day or two.
 
 rule e3_hb_cold
 when concept=health.back warmth=cold
-say We'll see. | I'll manage. | It's nothing.
+does ack
+say #bc_we_will_see# | I'll manage. | It's nothing.
 
 # ================================================================ Memories: one remembers
 # Only those past being pups remember being small; a pup's memories are short (e3_mr_young).
 
 rule e3_mr_open
 when concept=talk.memories stage!=young
+does tell.memory
 say Funny what comes back to you. I was thinking about my first pair of boots. | I was remembering my grandmother this morning. Out of nowhere. | I passed the old schoolroom today. Still smells of chalk. | I found a wooden top of mine at the back of a chest. It still spins.
 then other: memories.answer
 remember pair: e3_reminisced 3d
 
 rule e3_mr_open_smell
 when concept=talk.memories stage!=young
+does tell.memory
 say The smell of bread always takes me back to my mother's kitchen. | I heard a fiddle tune yesterday and I was ten again. | Somebody laughed in the street like my father used to. Stopped me cold.
 then other: memories.answer
 remember pair: e3_reminisced 3d
 
 rule e3_mr_open_town
 when concept=talk.memories stage!=young
+does tell.memory
 say They say there used to be a well right here, before anyone's time. | That window, there. I courted under it one whole summer. Never got a word out of her. | When I was small, every street was #mud#. Look at it now.
 then other: memories.answer
 
 rule e3_mr_old
 when concept=talk.memories stage=old
+does tell.memory
 cooldown 2d
 say The winters were harder when I was young. Snow up to the shutters. | Bread was better then. Real crust on it. | In my day we walked everywhere, and we were glad of it. | I remember the old lord. Rode a white horse. Nobody since has looked so grand.
 then other: memories.answer
@@ -675,73 +746,79 @@ remember pair: e3_reminisced 3d
 
 rule e3_mr_old_love
 when concept=talk.memories stage=old
+does tell.memory
 cooldown 2d
 say I was thinking about my first sweetheart. #oath#, the ears on that one. | I can still see the hat my first sweetheart wore to the spring dance. Awful hat. I loved it. | Did I tell you I nearly married a miller? I'd have been fat and happy.
 then other: memories.answer
 
 rule e3_mr_old_plague
 when concept=talk.memories stage=old
+does tell.memory
 cooldown 3d
 say I lived through the Grey Year. The sickness. Half the street. | I remember the great flood. My mother put us up on the roof. | The year of the hungry spring, we ate bark soup.
 then other: memories.answer
 
 rule e3_mr_young
 when concept=talk.memories stage=young
+does tell.memory
 cooldown 1d
 say Last summer I found a bird's egg! A blue one! | When I was little I was scared of goats. | Remember yesterday? I was so fast. Nobody could catch me.
 then other: memories.answer
 
 rule e3_mr_adolescent
 when concept=talk.memories stage=adolescent
+does tell.memory
 cooldown 1d
 say When I was a pup I thought I'd be a knight. | I used to think the priest could see through walls. | Everything was easier when I was small.
 then other: memories.answer
 
 rule e3_mr_widowed
 when concept=talk.memories widowed=yes
+does tell.memory
 cooldown 1d
-say I keep turning to say "#dear#, look at that", and nobody's there. | All those years married, and I still hear the door and think it's them. | I found one of their old gloves in the chest. Sat with it all evening.
+say {mk=grief} I keep turning to say "#dear#, look at that", and nobody's there. | {mk=grief} All those years married, and I still hear the door and think it's them. | {mk=grief} I found one of their old gloves in the chest. Sat with it all evening.
 then other: memories.answer
-remember pair: mk=grief 2m
 
 rule e3_mr_mourning
 when concept=talk.memories mourning=kin|friend
+does tell.memory
 priority 1
 cooldown 1d
-say I keep remembering things they said. Silly things. | The last time I saw them, they were laughing. | I'd give anything for one more ordinary day with them.
+say {mk=grief} I keep remembering things they said. Silly things. | {mk=grief} The last time I saw them, they were laughing. | {mk=grief} I'd give anything for one more ordinary day with them.
 then other: memories.answer
-remember pair: mk=grief 2m
 
 rule e3_mr_friends
 when concept=talk.memories pair.band=friends pair.familiarity>=50
+does ask.detail
 cooldown 1d
-say Remember when we tried to sail to the end of the world in a washtub? Your idea. | Remember the night we sang under the miller's window? You sang flat. | Remember when you fell out of the apple tree and blamed me?
+say {e3_shared=yes} Remember when we tried to sail to the end of the world in a washtub? Your idea. | {e3_shared=yes} Remember the night we sang under the miller's window? You sang flat. | {e3_shared=yes} Remember when you fell out of the apple tree and blamed me?
 then other: memories.answer
-remember pair: e3_shared 30m
 remember pair: e3_reminisced 3d
 
 rule e3_mr_close
 when concept=talk.memories pair.band=friends pair.familiarity>=40
+does tell.memory
 cooldown 2d
 say You're the only one who remembers me as I was. | I was thinking about the day we met. I remember every bit of it. | We've seen a lot, you and me.
 then other: memories.answer
 
 rule e3_mr_family
 when concept=talk.memories pair.kin=siblings
+does ask.detail
 cooldown 1d
-say #mum# burnt the pancakes every Restday, remember? On purpose, she said. | The old house. The roof leaked over your bed, not mine. | Remember when we hid in the hayloft all afternoon and they had the whole street out looking?
+say {e3_shared=yes} #mum# burnt the pancakes every Restday, remember? On purpose, she said. | {e3_shared=yes} The old house. The roof leaked over your bed, not mine. | {e3_shared=yes} Remember when we hid in the hayloft all afternoon and they had the whole street out looking?
 then other: memories.answer
-remember pair: e3_shared 30m
 
 rule e3_mr_spouses
 when concept=talk.memories pair.band=spouses
+does tell.memory
 cooldown 1d
-say I was thinking about the day we wed. It rained on everyone but us. | Our first winter, we had one blanket and one chair. I'd not trade it. | You used to leave flowers on the step. Before you got lazy.
+say {e3_shared=yes} I was thinking about the day we wed. It rained on everyone but us. | {e3_shared=yes} Our first winter, we had one blanket and one chair. I'd not trade it. | {e3_shared=yes} You used to leave flowers on the step. Before you got lazy.
 then other: memories.answer
-remember pair: e3_shared 30m
 
 rule e3_mr_again
 when concept=talk.memories pair.mem.e3_reminisced
+does tell.memory
 priority 1
 cooldown 1d
 say Since we talked about the old days, it keeps coming back to me. | I remembered something else, after we spoke. | You set me off, the other day. I've been remembering all week.
@@ -749,140 +826,154 @@ then other: memories.answer
 
 rule e3_mr_from_frost
 when concept=talk.memories from=frosthollow here.region!=frosthollow
+does tell.feeling
 cooldown 2d
-say I miss the snow, would you believe it. The proper deep stuff. | Back home in the valley the pines creak all winter. I can't sleep without it. | Up in Frosthollow we'd sing in the dark to keep warm.
+say {mk=home} I miss the snow, would you believe it. The proper deep stuff. | {mk=home} Back home in the valley the pines creak all winter. I can't sleep without it. | {mk=home} Up in Frosthollow we'd sing in the dark to keep warm.
 then other: memories.answer
-remember pair: mk=home 2m
 
 rule e3_mr_from_coldwater
 when concept=talk.memories from=coldwater here.region!=coldwater
+does tell.memory
 cooldown 2d
-say I miss the lake. Clear as air, the Glasswater. | We'd swim out to the island every summer. I still dream of it. | Back home the mist on the lake in the morning was like milk.
+say {mk=home} I miss the lake. Clear as air, the Glasswater. | {mk=home} We'd swim out to the island every summer. I still dream of it. | {mk=home} Back home the mist on the lake in the morning was like milk.
 then other: memories.answer
-remember pair: mk=home 2m
 
 rule e3_mr_from_oakhaven
 when concept=talk.memories from=oakhaven here.region!=oakhaven
+does tell.memory
 cooldown 2d
-say We used to sleep out under the oaks on hot nights. I miss the sound of the leaves. | In the Rainwood we knew every oak by its name. | The woods after rain. I'd give a week's #wages# to smell that.
+say {mk=home} We used to sleep out under the oaks on hot nights. I miss the sound of the leaves. | {mk=home} In the Rainwood we knew every oak by its name. | {mk=home} The woods after rain. I'd give a week's #wages# to smell that.
 then other: memories.answer
-remember pair: mk=home 2m
 
 rule e3_mr_from_mirebridge
 when concept=talk.memories from=mirebridge|fenshore here.region!=fens
+does tell.memory
 cooldown 2d
-say I miss the fen at dusk. The frogs starting up, the mist coming in over the reeds. | Back home, the frogs sang all night. It's too quiet here. | My mother could read the fen mist like a book.
+say {mk=home} I miss the fen at dusk. The frogs starting up, the mist coming in over the reeds. | {mk=home} Back home, the frogs sang all night. It's too quiet here. | {mk=home} My mother could read the fen mist like a book.
 then other: memories.answer
-remember pair: mk=home 2m
 
 rule e3_mr_from_larkfield
 when concept=talk.memories from=larkfield here.region!=larkfield
+does tell.feeling
 cooldown 2d
-say I miss the downs. All that sky and the larks going up. | The wind on the downs. I can't sleep without something rattling the shutters. | #dad# used to take me up the hill at dawn to watch the larks go up.
+say {mk=home} I miss the downs. All that sky and the larks going up. | {mk=home} The wind on the downs. I can't sleep without something rattling the shutters. | {mk=home} #dad# used to take me up the hill at dawn to watch the larks go up.
 then other: memories.answer
-remember pair: mk=home 2m
 
 rule e3_mr_from_southmeadow
 when concept=talk.memories from=southmeadow here.region!=southmeadow
+does tell.memory
 cooldown 2d
-say I miss the orchards. Blossom like snow, but warm. | Back home we'd eat plums off the tree till we were sick. | I haven't been properly warm since I left the south.
+say {mk=home} I miss the orchards. Blossom like snow, but warm. | {mk=home} Back home we'd eat plums off the tree till we were sick. | {mk=home} I haven't been properly warm since I left the south.
 then other: memories.answer
-remember pair: mk=home 2m
 
 rule e3_mr_from_saltwell
 when concept=talk.memories from=saltwell here.region!=waste
+does tell.memory
 cooldown 2d
-say I miss the nights at home. Cold and clear, and the whole sky down to the sand. | Back in Saltwell we slept on the roofs all summer. Here I lie awake listening to the walls. | #mum# used to wake me before dawn to draw the first water. Coldest, sweetest water in the realm.
+say {mk=home} I miss the nights at home. Cold and clear, and the whole sky down to the sand. | {mk=home} Back in Saltwell we slept on the roofs all summer. Here I lie awake listening to the walls. | {mk=home} #mum# used to wake me before dawn to draw the first water. Coldest, sweetest water in the realm.
 then other: memories.answer
-remember pair: mk=home 2m
 
 rule e3_mr_from_city
 when concept=talk.memories from=ridgemere here.region=towns
+does tell.memory
 cooldown 2d
-say I grew up in Ridgemere. I miss the bells. And the noise, oddly. | When I came out from the city, I'd never seen a cow up close. | In the city you're never alone. Out here you're never anything else.
+say {mk=home} I grew up in Ridgemere. I miss the bells. And the noise, oddly. | {mk=home} When I came out from the city, I'd never seen a cow up close. | {mk=home} In the city you're never alone. Out here you're never anything else.
 then other: memories.answer
-remember pair: mk=home 2m
 
 rule e3_mr_ridgemere_old
 when concept=talk.memories here.region=ridgemere stage=old
+does tell.memory
 cooldown 2d
 say When I was a pup there were fields where the suburbs are. | I remember when the Rainrun had no bridge. You waded, or you swam. | I remember the wharf when it was half the length, and the old Grayrock lord walking it every morning.
 then other: memories.answer
 
 rule e3_mr_town_old
 when concept=talk.memories here.region=towns stage=old here.region!=waste
+does tell.memory
 cooldown 2d
 say I miss the old mill. The whole town smelled of flour on grinding days. | There used to be a dance every Restday eve, before the hall burned. | The crossroads was all grass when I was small. We kept geese on it.
 then other: memories.answer
 
 rule e3_mr_chatty
 when concept=talk.memories talk=chatty stage!=young
+does tell.memory
 cooldown 1d
 say My aunt once chased a runaway pig the length of the town in her nightgown. Caught it, too. | When I was a pup there was a wolf on our street kept seven cats, and named every one of them Duchess. | You'll never guess who I was thinking about. Old Tamsin! The one with the goats!
 then other: memories.answer
 
 rule e3_mr_content
 when concept=talk.memories drive=content stage!=young
+does tell.memory
 cooldown 2d
 say I had a happy childhood. I don't think I knew it then. | Some afternoons, years ago, I'd live again just as they were. | I remember sitting on a wall in the sun with an apple. Nothing else. Perfect.
 then other: memories.answer
 
 rule e3_mr_frank
 when concept=talk.memories honesty=frank stage!=young
+does tell.memory
 cooldown 2d
 say People say the old days were better. They weren't. They were colder and hungrier. | My childhood was hard and I'll not dress it up. | I don't miss being young. I was a fool.
 then other: memories.answer
 
 rule e3_mr_merry
 when concept=talk.memories humour=merry stage!=young
+does tell.memory
 cooldown 2d
 say When I was a pup I tried to marry the priest's goat. | I once fell asleep in a hay cart and woke up in another town. | My brother and I painted the miller's pig. Blue.
 then other: memories.answer
 
 rule e3_mr_devout
 when concept=talk.memories piety=devout stage!=young
+does tell.memory
 cooldown 2d
 say The old priest used to give every pup a honey cake after the blessing. | My mother took us to chapel in the snow. Every Restday. Never missed. | I sang in the chapel as a pup. Off key, but loud. The Bright One didn't seem to mind.
 then other: memories.answer
 
 rule e3_mr_rich
 when concept=talk.memories wealth=rich job!=noble
+does tell.memory
 cooldown 3d
 say People forget I started with a barrow and a borrowed coat. | My father mended boots by candlelight. I've not forgotten. | My first shop was a plank on two barrels.
 then other: memories.answer
 
 rule e3_mr_noble
 when concept=talk.memories job=noble stage!=young
+does tell.memory
 cooldown 3d
 say My governess made me recite every House's lineage before breakfast. I can still do it. | I was nine before I knew other pups didn't have their own pony. | My grandfather took me round the estate on his saddle and said, all this will need minding. It does.
 then other: memories.answer
 
 rule e3_mr_poor
 when concept=talk.memories wealth=poor|destitute stage!=young
+does tell.memory
 cooldown 3d
 say We had a proper house once. Before things went wrong. | There was a time I had two coats and didn't think about it. | I used to give pennies to beggars. Funny, that.
 then other: memories.answer
 
 rule e3_mr_soldier
 when concept=talk.memories job=guard|soldier stage=adult|old
+does tell.memory
 cooldown 3d
 say I remember the bandit winter. We held the gate a fortnight. | My first watch, I challenged a scarecrow. Twice. | The old captain could shout the birds out of the trees.
 then other: memories.answer
 
 rule e3_mr_festival
 when concept=talk.memories here.day=festival
+does tell.memory
 cooldown 1d
 say I danced my first dance at this festival. Trod on everyone. | My father used to lift me up on his shoulders to see the fire. | This festival always smells the same. Smoke and honey cakes. Every year.
 then other: memories.answer
 
 rule e3_mr_winter
 when concept=talk.memories here.season=winter
+does tell.memory
 cooldown 2d
 say First snow always takes me back. Snowball wars, our street against the next. | We'd tell stories round the fire all winter when I was small. | I remember the winter we had to dig out the front door.
 then other: memories.answer
 
 rule e3_mr_quirk_story
 when concept=talk.memories quirk=tells_the_same_three_stories
+does ask.detail
 cooldown 1d
 say Did I ever tell you about the night the miller's cart lost a wheel? Flour from one end of the street to the other. | Have I told you about my uncle and the bear? He ran one way, the bear ran the other. Both of them told it for years.
 then other: memories.answer
@@ -891,40 +982,47 @@ then other: memories.answer
 
 rule e3_ma_plain
 when concept=memories.answer
+does react.story
 say That takes me back. | Funny what sticks. | Mine was much the same, near enough. | I'd forgotten all about that sort of thing. | You should write these down.
 then other: memories.back
 
 rule e3_ma_old
 when concept=memories.answer stage=old other.stage!=old
+does react.story
 cooldown 1d
 say That's nothing. You should have seen it in my day. | Ah. I remember further back than that. | You don't know old days. I know old days.
 then other: memories.back
 
 rule e3_ma_old_plain
 when concept=memories.answer stage=old
+does react.story
 cooldown 12h
 say Ah. Now there's a thing I'd forgotten. | It all comes back, doesn't it? All of it. | We all had that, in our day.
 then other: memories.back
 
 rule e3_ma_young
 when concept=memories.answer stage=young
+does react.story
 say That was before I was born, I bet. | I bet there were dragons then. | That's so long ago.
 then other: memories.back
 
 rule e3_ma_adolescent
 when concept=memories.answer stage=adolescent
+does react.story
 say Everyone old says that. | Everything's always better when you were small. | You're not that old.
 then other: memories.back
 
 rule e3_ma_shared
-when concept=memories.answer pair.mem.e3_shared
+when concept=memories.answer conv.e3_shared
+does react.story
 priority 1
 say That's not how it went at all. | You've got it backwards, as usual. | That's not how I remember it. Not even close.
 then other: memories.argue
 remember pair: e3_reminisced 3d
 
 rule e3_ma_shared_fond
-when concept=memories.answer pair.mem.e3_shared
+when concept=memories.answer conv.e3_shared
+does react.story
 priority 1
 say I remember. I'll always remember. | #oath#, we were young. | We were, weren't we.
 then other: memories.back
@@ -932,112 +1030,131 @@ remember pair: e3_reminisced 3d
 
 rule e3_ma_friends
 when concept=memories.answer pair.band=friends
+does react.story
 cooldown 12h
 say You never told me that before. | I'd forgotten that one. It's a good one. | I don't believe a word of it. Tell it again.
 then other: memories.back
 
 rule e3_ma_frank
 when concept=memories.answer honesty=frank
+does react.story
 cooldown 12h
 say You're remembering it kinder than it was. | It was never that rosy. Nothing was. | Old days were mostly #mud#.
 then other: memories.back
 
 rule e3_ma_short
 when concept=memories.answer temper=short
+does react.story
 cooldown 12h
 say Must we? Some of us have work. | Old news. | That was then. This is now, and I'm busy.
 then other: memories.back
 
 rule e3_ma_warm
 when concept=memories.answer warmth=warm
+does react.story
 cooldown 12h
 say Tell me more. I like hearing it. | That's lovely. Really. | I wish I'd known you then.
 then other: memories.back
 
 rule e3_ma_cold
 when concept=memories.answer warmth=cold
+does react.story
 cooldown 12h
 say I don't think about the past much. | Mm. | That was then.
 then other: memories.back
 
 rule e3_ma_dry
 when concept=memories.answer humour=dry
+does react.story
 cooldown 12h
 say And now look at you. | Ah, the good old days. When we were miserable and didn't know it. | They weren't old then. They were just days.
 then other: memories.back
 
 rule e3_ma_merry
 when concept=memories.answer humour=merry
+does react.story
 cooldown 12h
 say Ha! That's the best thing I've heard all week. | Ha! Now that I believe. | You were a terror, I bet. You still are.
 then other: memories.back
 
 rule e3_ma_devout
 when concept=memories.answer piety=devout
+does react.story
 cooldown 12h
 say The gods kept us through all of it. | We should give thanks for the years. | Remember them in your prayers. I do mine.
 then other: memories.back
 
 rule e3_ma_chatty
 when concept=memories.answer talk=chatty
+does react.story
 cooldown 12h
 say That reminds me, my uncle once... no, you tell yours first. | Oh, and there was the fellow with the goats. I'll tell you that one after. | We had one just like that! I'll tell you after.
 then other: memories.back
 
 rule e3_ma_quiet
 when concept=memories.answer talk=quiet
+does react.story
 cooldown 12h
 say Mm. I remember. | Aye. | ... Good times.
 then other: memories.back
 
 rule e3_ma_elsewhere
 when concept=memories.answer pair.same_from=no
+does react.story
 cooldown 12h
 say Where I grew up, it was different. | We had nothing like that at home. | Sounds just like home, and nothing like it.
 then other: memories.back
 
 rule e3_ma_same_place
 when concept=memories.answer pair.same_from=yes
+does react.story
 cooldown 12h
 say Same as at home. Same as us. | I know. We grew up on the same #mud#. | Same place, same winters.
 then other: memories.back
 
 rule e3_ma_widowed
 when concept=memories.answer widowed=yes
+does react.story
 cooldown 12h
 say My late mate used to say just that. | I'd tell mine that, if mine were here. | I remember too much, these days.
 then other: memories.back
 
 rule e3_ma_mourning
 when concept=memories.answer mourning=kin|friend
+does react.story
 priority 1
 say Don't. Not today. I can't. | We buried someone this week. Remembering hurts just now. | I'll laugh at that another day.
 then other: memories.back
 
 rule e3_ma_poor
 when concept=memories.answer wealth=poor|destitute
+does react.story
 cooldown 12h
 say Some of us can't afford to look back. Too far to fall. | I'd rather remember than think about now. | The past was cheaper.
 then other: memories.back
 
 rule e3_ma_forward
 when concept=memories.answer drive=ambitious|restless
+does react.story
 cooldown 12h
 say I'd rather look forward. | The past's done. What's next? | Old days. I want new ones.
 then other: memories.back
 
 rule e3_ma_quirk_names
 when concept=memories.answer quirk=remembers_every_name_ever_heard
+does react.story
 say And the wolf next door was Hobb. Hobb Fennick. Wore a red cap. | I remember the names of everyone in it. Shall I list them? | Bramble. That was the goat's name. Bramble.
 then other: memories.back
 
 rule e3_ma_quirk_sayings
 when concept=memories.answer quirk=quotes_old_sayings_for_everything
+does react.story
 say As they say, the old days are the ones we lived through. | Old saying: you can't go home, but you can visit. | My grandmother said a wolf who forgets is a wolf twice bitten.
 then other: memories.back
 
 rule e3_ma_they_old
 when concept=memories.answer other.stage=old
+does react.story
 cooldown 12h
 say Tell me more. Nobody tells it like you. | I wish I'd seen it. | They don't make days like that any more.
 then other: memories.back
@@ -1045,75 +1162,88 @@ then other: memories.back
 # A pup's memory (last summer, yesterday), answered as a pup's.
 rule e3_ma_they_young
 when concept=memories.answer other.stage=young self.stage!=young
+does react.story
 priority 3
 say That long ago, eh? | You'll remember that all your life. | Ha! And look at you now.
 then other: memories.back
 
 # Missing where they grew up (mk=home).
 rule e3_ma_home
-when concept=memories.answer pair.mem.mk=home
+when concept=memories.answer conv.mk=home
+does react.story
 priority 2
 say You'll go back one day, I'd bet. | It sounds a fine place to have come from. | I'd like to see it, some day.
 then other: memories.back
 
 rule e3_ma_home_same
-when concept=memories.answer pair.mem.mk=home pair.same_from=yes
+when concept=memories.answer conv.mk=home pair.same_from=yes
+does react.story
 priority 1
 say I miss it too. Every day. | I'd forgotten that. Now I'll be homesick all week. | Don't. You'll set me off.
 then other: memories.back
 
 rule e3_ma_home_old
-when concept=memories.answer pair.mem.mk=home stage=old
+when concept=memories.answer conv.mk=home stage=old
+does react.story
 priority 1
 say You never stop missing it. You only get used to the missing. | Home's where you were young. Can't go back to that, wherever you walk. | Go and see it, while you've the legs.
 then other: memories.back
 
 rule e3_ma_home_dry
-when concept=memories.answer pair.mem.mk=home humour=dry
+when concept=memories.answer conv.mk=home humour=dry
+does react.story
 priority 1
 say And yet here you are. | Strange how home's always better from a distance. | I'll help you pack.
 then other: memories.back
 
 rule e3_ma_home_frank
-when concept=memories.answer pair.mem.mk=home honesty=frank
+when concept=memories.answer conv.mk=home honesty=frank
+does react.story
 priority 1
 say It'll have changed. Places do, when you're not looking. | Then why did you leave it? No, don't tell me. I know why. | Missing it's easier than living there, I'd guess.
 then other: memories.back
 
 rule e3_ma_home_warm
-when concept=memories.answer pair.mem.mk=home warmth=warm
+when concept=memories.answer conv.mk=home warmth=warm
+does react.story
 priority 1
 say Then you'll tell me all about it, some evening. I'd love that. | It's in your voice when you talk of it. | We'll have to make this place feel more like home for you.
 then other: memories.back
 
 # Grief (mk=grief): the answer has the say alone.
 rule e3_ma_grief
-when concept=memories.answer pair.mem.mk=grief
+when concept=memories.answer conv.mk=grief
+does react.story
 priority 5
 say Keep remembering. It's how they stay. | Of course you do. You'd not be you if you didn't. | That's the hard part. The ordinary things.
 
 rule e3_ma_grief_warm
-when concept=memories.answer pair.mem.mk=grief warmth=warm
+when concept=memories.answer conv.mk=grief warmth=warm
+does react.story
 priority 4
 say Oh, #pet#. Come here. | Tell me about them, whenever you like. Any time at all. | I'm here. Whenever it comes over you, I'm here.
 
 rule e3_ma_grief_devout
-when concept=memories.answer pair.mem.mk=grief piety=devout
+when concept=memories.answer conv.mk=grief piety=devout
+does react.story
 priority 4
 say The Bright One keeps them now. And you keep the rest. | I'll remember them in my prayers tonight. | They're not so far as they seem.
 
 rule e3_ma_grief_old
-when concept=memories.answer pair.mem.mk=grief stage=old
+when concept=memories.answer conv.mk=grief stage=old
+does react.story
 priority 4
 say It never goes. It gets lighter to carry. | I still hear mine, some mornings. It's a comfort, after a while. | Say their name out loud now and then. It helps.
 
 rule e3_ma_grief_cold
-when concept=memories.answer pair.mem.mk=grief warmth=cold
+when concept=memories.answer conv.mk=grief warmth=cold
+does react.story
 priority 4
 say It passes. Slowly. | We all lose someone. | I'm sorry. I'm no good at this.
 
 rule e3_ma_grief_young
-when concept=memories.answer pair.mem.mk=grief stage=young
+when concept=memories.answer conv.mk=grief stage=young
+does react.story
 priority 4
 say I'll sit with you. I'm good at sitting. | Are you sad? You can hold my paw. | I miss people too, sometimes.
 
@@ -1121,77 +1251,95 @@ say I'll sit with you. I'm good at sitting. | Are you sad? You can hold my paw. 
 
 rule e3_mb_plain
 when concept=memories.back
+does ack
 say Aye. Well. That's how it was. | It all goes by. | Long time ago now. | Doesn't seem so long.
 
 rule e3_mb_old
 when concept=memories.back stage=old
+does ack
 say Ah well. All gone now. | It's all I've got, the remembering. | Gone now. Most of it.
 
 rule e3_mb_young
 when concept=memories.back stage=young
+does ack
 say It was ages ago. | I'm going to remember it forever. | And then I went home.
 
 rule e3_mb_short
 when concept=memories.back temper=short
+does ack
 say Well. There it is. | That's all I'll say about it. | Enough of that.
 
 rule e3_mb_warm
 when concept=memories.back warmth=warm
+does ack
 say I'm glad I said it out loud. | It's good to talk about it. | Some things want saying, now and then.
 
 rule e3_mb_merry
 when concept=memories.back humour=merry
+does ack
 say And I'd do it all again. | I'd do it again tomorrow, mind. | Ha. Them were the days.
 
 rule e3_mb_frank
 when concept=memories.back honesty=frank
+does ack
 say I'm only telling it how it was. | Better or worse, it's true. | I'll not pretend otherwise.
 
 rule e3_mb_quiet
 when concept=memories.back talk=quiet
+does ack
 say Mm. | Aye. | ...
 
 rule e3_mb_content
 when concept=memories.back drive=content
+does ack
 say Good years. Good years. | I'd not change any of it. | It was enough.
 
 # Friends and family arguing over who remembers it right (after e3_ma_shared): the one who began insists, or gives in.
 
 rule e3_mg_plain
 when concept=memories.argue
+does disagree
 say It was not! I was there! | You were there too, and you know it. | Fine. Have it your way. It was still you.
 then other: memories.settle
 
 rule e3_mg_short
 when concept=memories.argue temper=short
+does disagree
 say Don't you dare. I know what I saw. | You always do this. Every time. | I'm not having this argument again.
 then other: memories.settle
 
 rule e3_mg_merry
 when concept=memories.argue humour=merry
+does disagree
 say Ha! Liar! You were there and you know it. | Your memory's as bad as your singing. | You'll be telling me next the sky was green.
 
 rule e3_mg_calm
 when concept=memories.argue temper=calm
+does disagree
 say Maybe. It was a long time ago. | We'll each keep our own version, then. | Have it your way. I know what I remember.
 
 rule e3_mg_old
 when concept=memories.argue stage=old
+does disagree
 say At my age I remember that better than this morning. | My memory's the only thing that still works. Trust it. | You'll remember I'm right when I'm gone.
 then other: memories.settle
 
 rule e3_ms_plain
 when concept=memories.settle
+does concede
 say Ha. Same as ever, you. | Let's call it both of us. | We'll ask someone who was there. | Fine. Fine!
 
 rule e3_ms_warm
 when concept=memories.settle warmth=warm
+does concede
 say Ha! I've missed this. | Whoever it was, I'm glad it was with you. | Come here, you old fool.
 
 rule e3_ms_short
 when concept=memories.settle temper=short
+does concede
 say Believe what you like. | I'm not arguing. I'm right. | Hmph.
 
 rule e3_ms_dry
 when concept=memories.settle humour=dry
+does concede
 say We'll put both on your stone. | History is written by whoever lives longest. I intend to. | Fine. You were the hero. Of falling in.

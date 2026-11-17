@@ -5,51 +5,59 @@
 
 scene re_prices_rain_coast
 when topic=prices topic.dir=up here.region=rain_coast
+does tell.self / react.self / assess
 a : Dear as ever in this city, and wetter. | #topic.what# at #topic.price#. The Houses must be laughing. | Even the rain will cost money soon.
 b[noble] : Prices follow the market.
 b[fisher] : I get none of it. The Fish Hall takes it all.
 b : The Houses always win. | Ha. Don't give them ideas. | Typical Ridgemere.
-a : Always. | They'll think of it. | Typical.
+a : #bc_always# | They'll think of it. | Typical.
 
 scene re_prices_marches
 when topic=prices topic.dir=up here.region=ridgemere
+does tell.self / react.self / assess
 a : #topic.what# at #topic.price#. The wharf's at it again. | Prices at the Sump Market are a scandal. | The Heights don't even notice prices.
 b[merchant] : The Harbourmaster sets the dues. We just pay them.
-b : The wharf always is. | Always. | They never do.
-a : Always. | A scandal. | Never.
+b : The wharf always is. | #bc_always# | They never do.
+a : #bc_always# | A scandal. | #bc_never#
 
 scene re_prices_accord
 when topic=prices topic.dir=up here.region=mountains
+does tell.self / react.self / assess
 a : Mountain prices again: #topic.what# at #topic.price#. | Everything climbs up here, prices too. | The lowland carts charge what they like.
 b[carter] : You try hauling it up.
-b : Always the way. | Ha. | They do.
-a : Always. | Ha. | They do.
+b : Always the way. | #bc_ha# | #bc_they_do#
+a : #bc_always# | #bc_ha# | #bc_they_do#
 
 scene re_prices_country
 when topic=prices here.region=countryside here.region!=waste
+does tell.self / react.self / assess
 a : #topic.what# at #topic.price#? In the city maybe, not here. | Country folk can't pay city prices. | We grow it ourselves, mostly. Lucky.
 b[farmer] : That's the advantage of the soil.
 b : City prices everywhere now. | No. | Very lucky.
-a : Everywhere. | No. | Very.
+a : Everywhere. | No. | #bc_very#
 
 # ---------------------------------------------------------------- Caravans and bandits
 
 scene re_caravan_crossing
 when topic=caravan here.region=larkfield topic.kind!=news
+does tell.news / react.news / assess
 a : The #topic.where# caravan always stops here. Always. | Carters from #topic.where# filled the yard. | Wagons to and from #topic.where# all week.
 b[innkeeper] : And every one of them hungry.
 b : That's Larkfield. | Busy. | Good for trade.
-a : That it is. | Very. | Very.
+a : That it is. | #bc_very# | #bc_very#
 
 scene re_caravan_coast
 when topic=caravan here.region=rain_coast topic.kind=arrived
+does tell.news / react.news / assess
 a : The #topic.where# wagons came in soaked. | The road's mud to the axles; the #topic.where# carts were late. | Wagons from #topic.where# brought dry goods. Rare thing.
 b[carter] : The rain eats wheels.
-b : Of course they did. | Always is. | Very rare.
-a : Of course. | Always. | Rare.
+b : Of course they did. | #bc_always_is# | Very rare.
+a : #bc_of_course# | #bc_always# | Rare.
 
 scene re_bandits_downs
 when topic=bandits here.region=downs
+does tell.self / react.self / assess
+tone serious / even / even
 a : Raiders on the downs again. | The watch rode out after the bandits; came back empty-pawed. | They took a whole flock off the high pasture.
 b[herder] : I'm sleeping with my flock till they're gone.
 b[guard] : We'll get them. Next time.
@@ -58,46 +66,53 @@ a : Too wide. | Next time. | Every sheep.
 
 scene re_bandits_lake
 when topic=bandits here.region=lake
+does tell.self / react.self / assess
 a : Bandits on the lake road. | They say the watch is going after them. | Boats are safer than the road now.
 b[guard] : Give us a week.
-b : Again? | About time. | For now.
-a : Again. | Let's see. | For now.
+b : #bc_again_q# | #bc_about_time# | For now.
+a : #bc_again# | Let's see. | For now.
 
 # ---------------------------------------------------------------- Crime
 
 scene re_crime_rain_coast
 when topic=crime here.region=rain_coast
+does tell.news / react.news / assess
 a : Theft on the wharf again. | The Watch won't go into the Sump for #topic.victim#. | #topic.victim#'s been robbed; they're saying #topic.subject#.
 b[guard] : We go where we're sent.
 b[beggar] : Blame the Sump. Always blame the Sump.
 b : The wharf's rough. | Of course not. | Is that so?
-a : Very rough. | Of course. | So they say.
+a : Very rough. | #bc_of_course# | #bc_so_they_say#
 
 scene re_crime_marches
 when topic=crime here.region=ridgemere
+does tell.news / react.news / assess
 a : The Watch says it'll find whoever robbed #topic.victim#. | A robbery, in the Heights, in daylight. | They say #topic.subject# did it. Wharf rat.
 b[guard] : The Watch always finds them.
 b : Let's hope. | Shocking. | Careful who you name.
-a : Let's hope. | Very. | Everyone's naming them.
+a : Let's hope. | #bc_very# | Everyone's naming them.
 
 scene re_crime_small_town
 when topic=crime here.region=towns
+does tell.news / react.news / assess
 a : Nothing ever happens here, and now #topic.victim#'s robbed. | Everybody knows everybody; how could anyone rob #topic.victim#? | We've never had to bolt our doors before.
 b[old] : Times change. Not for the better.
 b : Strange days. | Somebody new, maybe. | We do now.
-a : Very strange. | Maybe. | We do.
+a : Very strange. | #bc_maybe# | We do.
 
 # ---------------------------------------------------------------- Life
 
 scene re_life_marriage_country
 when topic=life topic.kind=marriage here.region=countryside|towns
+does tell.news / react.news / assess
 a : The whole town came to #topic.subject#'s wedding. | #topic.subject# and #topic.where# married in the chapel; there was dancing till dawn. | Every family brought something for the feast.
 b[old] : Weddings are when a town shows what it is.
-b : Wish I'd been. | Lovely. | That's how it should be.
-a : You missed it. | Very. | Always.
+b : Wish I'd been. | #bc_lovely# | That's how it should be.
+a : You missed it. | #bc_very# | #bc_always#
 
 scene re_life_death_city
 when topic=life topic.kind=death here.region=cities
+does tell.news / react.news / assess
+tone grave / even / even
 a : #topic.subject# is dead, did you hear? Big burial up the hill. | The city didn't notice #topic.subject# was gone. Only us. | They buried #topic.subject# by the old wall.
 b[priest] : Every soul is noticed by the Bright One.
 b : I heard. | Cities don't. | Quietly?
@@ -105,57 +120,65 @@ a : Big crowd. | Only us. | Quietly.
 
 scene re_life_newcomer_country
 when topic=newcomer here.region=countryside|towns
+does tell.news / react.news / assess
 a : #topic.subject# and kin have moved into the empty house. | #topic.subject# came from the city. Doesn't know which end of a goat to milk. | Strangers are rare here. #topic.subject#'s the talk of the town.
 b[old] : Teach them. We all learned.
 b : Good. Houses need families. | Ha. They'll learn. | Everyone's curious.
-a : They do. | Slowly. | Everyone.
+a : #bc_they_do# | Slowly. | Everyone.
 
 scene re_life_newcomer_city
 when topic=newcomer here.region=cities
+does tell.news / react.news / assess
 a : #topic.subject# just arrived from the country. Gawping at everything. | New face on the lane: #topic.subject#. | #topic.subject# got lost three times yesterday.
-b : We all gawped once. | Welcome to them. | Ha.
-a : True. | Welcome. | Three times.
+b : We all gawped once. | Welcome to them. | #bc_ha#
+a : #bc_true# | Welcome. | Three times.
 
 # ---------------------------------------------------------------- Festivals
 
 scene re_fest_downs
 when topic=festival here.region=downs
+does tell.self / react.self / assess
 a : Bonfires on the downs for #here.festival#. | Sheep races for #here.festival#! | The whole of the downs comes in for #here.festival#.
 b[child] : I'm racing a lamb this year!
-b : Lovely sight. | Sheep races! | Every year.
-a : It is. | Ha. | Always.
+b : Lovely sight. | Sheep races! | #bc_every_year#
+a : #bc_it_is# | #bc_ha# | #bc_always#
 
 scene re_fest_lake
 when topic=festival here.region=lake
+does tell.self / react.self / assess
 a : Lanterns floating on Glasswater for #here.festival#. | Boat races for #here.festival#. | The fishers row in from every cove for #here.festival#.
 b[fisher] : I'll win this year. I've a new boat.
 b : Beautiful. | Who's racing? | And drink the town dry.
-a : Very. | Everyone. | Every year.
+a : #bc_very# | Everyone. | #bc_every_year#
 
 scene re_fest_fens
 when topic=festival here.region=fens
+does tell.self / react.self / assess
 a : Marsh lanterns for #here.festival#, to keep the lights away. | Everyone burns rushes on the doorstep for #here.festival#. | We sing the old fen songs for #here.festival#.
 b[old] : The songs are older than the town.
 b : A good custom. | Smells lovely. | I don't know the words.
-a : Very old. | It does. | Learn them.
+a : Very old. | #bc_it_does# | Learn them.
 
 scene re_fest_steppe
 when topic=festival here.region=farmland
+does tell.self / react.self / assess
 a : Harvest dances for #here.festival#. | First sheaf goes to the chapel for #here.festival#. | Grain cakes for #here.festival#!
 b[farmer] : Pray for rain at #here.festival#. Every year.
-b : Lovely. | Every year. | My favourite.
-a : Every year. | Always. | Mine too.
+b : #bc_lovely# | #bc_every_year# | My favourite.
+a : #bc_every_year# | #bc_always# | #bc_mine_too#
 
 scene re_fest_fortress
 when topic=festival here.region=ridgemere a.job=guard
+does tell.self / react.self / assess
 a : Double rations at the Watch House for #here.festival#. | Even the Watch keeps #here.festival#. | A barrel of ale for #here.festival#. One barrel.
 b[guard] : One barrel for forty wolves.
-b : About time. | Barely. | One.
-a : About time. | Barely. | One.
+b : #bc_about_time# | #bc_barely# | One.
+a : #bc_about_time# | #bc_barely# | One.
 
 scene re_fest_coast
 when topic=festival here.region=rain_coast
+does tell.self / react.self / assess
 a : Rain or no rain, it's #here.festival#. | The boats get garlands for #here.festival#. | Even the Houses stop feuding for #here.festival#.
 b[sailor] : Garlands, then back to sea.
 b : Always rain for #here.festival#. | Pretty. | For a day.
-a : Always. | Very. | One day.
+a : #bc_always# | #bc_very# | One day.

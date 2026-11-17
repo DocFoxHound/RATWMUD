@@ -15,7 +15,7 @@ say I'd heard. | So I heard. | Aye, I heard. | I'd heard that, aye. | So they're
 rule bt_known_any2
 does react.news.known
 when self.knows=yes
-say I know. | Old news, that. | Heard it already. | It's all over town. | Everyone's saying it. | You're late with that one.
+say #bc_i_know# | Old news, that. | Heard it already. | It's all over town. | Everyone's saying it. | You're late with that one.
 
 rule bt_known_grave
 does react.news.known
@@ -102,7 +102,7 @@ say What are you two plotting? | Room for one more? | Don't stop on my account. 
 
 rule bt_welcome_any
 does welcome_join
-say Pull up, then. | Come and join us. | There you are. | All the better. | Go on, then.
+say Pull up, then. | Come and join us. | There you are. | All the better. | #bc_go_on_then#
 
 rule bt_apologise_any
 does apologise
@@ -119,4 +119,4 @@ say Fair enough. I'll say no more. | Maybe so. I'll leave it. | You'd know bette
 rule bt_decline_apology_any
 does decline_apology
 when self.warmth=cold|reserved
-say Hm. See that you do. | Words are cheap. | Easy said, after. | We'll see.
+say Hm. See that you do. | Words are cheap. | Easy said, after. | #bc_we_will_see#

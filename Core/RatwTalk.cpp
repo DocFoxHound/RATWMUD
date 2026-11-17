@@ -3361,6 +3361,22 @@ void Library::preface(Conversation& c, Said& said, const Query& q, const Freshne
     const auto prepend = [&](Said& before, const std::string& why) {
         auto& g = before.info.front();
         auto& line = said.info.front();
+        // Phase 7 (§8.12.3): what is said in the opener's breath makes a longer line; if another said those very words
+        // here within the hour (the same greeting before the same short opener), the opener goes without it.
+        if (fresh.collides)
+        {
+            Said whole;
+            whole.info.push_back(line);
+            whole.info.front().text = g.text + " " + line.text;
+            if (collides(whole, q, fresh))
+            {
+                if (trace)
+                    trace->why += "; " + why + " left out (another said those words here)";
+                return;
+            }
+        }
+        if (line.bare.empty())
+            line.bare = line.text;
         line.text = g.text + " " + line.text;
         said.lines.front().second = line.text;
         line.moves.insert(line.moves.begin(), g.moves.begin(), g.moves.end());

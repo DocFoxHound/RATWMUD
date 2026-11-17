@@ -6,6 +6,7 @@
 
 scene em_herbs_up_sickbed
 when topic=prices topic.item=herbs topic.dir=up
+does tell.news / react.news / assess / tell.self
 a : My pup's coughing and herbs are #topic.price#. | #topic.price# for feverfew. I counted it out twice. | The herb seller wants #topic.price# now. For weeds.
 b : Have you tried the chapel? They keep a little by. | You counted right, sadly. | Weeds that cure you aren't weeds.
 a : I'll try them tomorrow. | I wish I hadn't. | Fine. Expensive weeds.
@@ -14,6 +15,7 @@ b?[old] : Honey and steam. Cost me nothing when I was small.
 
 scene em_herbs_up_hoarders
 when topic=prices topic.item=herbs topic.dir=up here.place=market|street topic.cause=players
+does tell.self / react.self / tell.self / react.self
 a : Somebody's buying up all the herbs. Mark me. | Every stall's sold out of mint by noon. | #topic.price#, and half of it stems.
 b : Who'd hoard herbs? | Noon? It was gone by dawn yesterday. | Stems and a smell of mint.
 a : Someone with a cellar and no shame. | Then I'll come at dawn. | That's all you get for #topic.price#.
@@ -22,18 +24,21 @@ b?[guard] : If someone's hoarding, the Watch would want a name.
 
 scene em_herbs_up_cook_grumble
 when topic=prices topic.item=herbs topic.dir=up a.job=cook|innkeeper|baker
+does tell.self / react.self / assess
 a : My stew wants thyme and my purse says no. | #topic.price# for a fistful of sage. I'll season with salt and prayers. | Gave the soup a sniff of rosemary. A sniff is all it gets now.
 b : Nobody will notice. | Salt's cheaper. Pray harder. | A sniff's more than I get at home.
 a : Everyone will notice. | I am praying. | Come eat here, then.
 
 scene em_herbs_up_pup_question
 when topic=prices topic.item=herbs topic.dir=up
+does tell.news / react.news / assess
 a : Have you seen the herb stall today? | Herbs again. #topic.price#. | I'm going to start growing my own on the sill.
 b : I walked past fast with my ears down. | Again and again. | On that sill? It gets no sun.
 a : It's a shame. | And we keep paying. | Then I'll grow mould.
 
 scene em_herbs_up_forager
 when topic=prices topic.item=herbs topic.dir=up here.season=spring|summer
+does tell.news / react.news / assess / tell.self
 a : At #topic.price# I'm off to the hedges tomorrow. | The ditches are full of nettle and nobody's picking. | Why pay #topic.price# when the hill's covered in yarrow?
 b : Mind the wasps. | Nettles? Gloves, then. | Because half of it's hemlock.
 a : I'll mind them. | I've got thick paws. | I know the difference. Mostly.
@@ -42,6 +47,7 @@ b?[healer] : Bring me what you find before you eat it. Half that hill is poison.
 
 scene em_herbs_up_winter
 when topic=prices topic.item=herbs topic.dir=up here.season=autumn|winter
+does tell.self / react.self / assess / tell.self
 a : Dear herbs, and the hedges bare till spring. | Dried herbs at #topic.price#. Dust, mostly. | Winter, and herbs dear on top of it.
 b : Can't blame the frost for that. | Dust with a good smell. | And taste half as much.
 a : I can blame the seller. | That's the trouble. | Winter's a thief.
@@ -49,6 +55,7 @@ b?[merchant] : Drying takes time and space. That's in the price.
 
 scene em_herbs_up_priest
 when topic=prices topic.item=herbs topic.dir=up
+does tell.news / react.news / assess / tell.self
 weight 0.7
 a : Can't afford herbs at #topic.price#. Might ask the chapel. | The chapel still gives herbs to the poor, doesn't it? | I left a bundle at the chapel last month. Wish I had it back.
 b : They'll help if they can. | When they have any. | Ha. No you don't.
@@ -57,18 +64,21 @@ b?[priest] : Take what you need. The Bright One counts what's given, not what's 
 
 scene em_herbs_up_rivals
 when topic=prices topic.item=herbs topic.dir=up pair.band=rivals
+does tell.news / react.news / tell.self
 a : I suppose you're pleased, with herbs at #topic.price#. | Your cousin sells herbs, doesn't he? Funny how they've gone up. | You bought the last of the mint. I saw you.
 b : Why would I be pleased? | Say that again and see. | I was first in line. That's all.
 a : You always land on your paws. | I'll say it twice. | First in line, last to share.
 
 scene em_herbs_up_friends_share
 when topic=prices topic.item=herbs topic.dir=up pair.band=friends
+does tell.news / react.news / assess
 a : Herbs at #topic.price#. I'm going without. | Can't buy chamomile for my bad nights now. | My poultice jar's empty and herbs cost #topic.price#.
 b : No you're not. I've a bundle hung by my door. | I'll bring you a pinch tonight. | I'll make you one. I've comfrey drying.
 a : You're a good friend. | You don't have to. | I'll owe you a supper.
 
 scene em_herbs_up_old_remedies
 when topic=prices topic.item=herbs topic.dir=up a.stage=old
+does tell.memory / react.story / tell.self / ask.detail
 a : When I was a pup we chewed willow bark and got on with it. | Herbs at #topic.price#. My mother would have laughed. | In my day nobody sold herbs. You knew where to look.
 b : Willow bark tastes like a fence. | She'd have laughed and then cried. | Nobody knows where to look any more.
 a : That's how you know it works. | She did both often. | That's what I keep saying.
@@ -76,27 +86,31 @@ b?[child] : Does willow bark taste bad?
 
 scene em_herbs_up_brewer
 when topic=prices topic.item=herbs topic.dir=up a.job=brewer|innkeeper
+does tell.self / react.self / tell.self
 a : Herbs dear. My ale's going to taste of water. | Spiced cider, with herbs at #topic.price#? Not this month. | I'll be brewing plain ale till herbs come down.
 b : It already tastes of water. | Then charge more for it. | Plain ale's fine by me.
 a : Watch your tongue or drink elsewhere. | And then hear about it all night. | It would be.
 
 scene em_herbs_up_soldier
 when topic=prices topic.item=herbs topic.dir=up a.job=guard|soldier
+does tell.self / react.self / assess
 a : The barracks surgeon is rationing salve. | Wound herbs at #topic.price#. Try not to get stabbed this month. | We used to get a herb ration. Not since the price went up.
 b : Rationing? Be careful, then. | I'll try my hardest. | Complain to your captain.
 a : I'm always careful. | Tell the robbers that. | My captain says complain to the herb seller.
 
 scene em_herbs_up_brief
 when topic=prices topic.item=herbs topic.dir=up
+does tell.news / react.news / assess
 weight 0.6
 a : Herbs. #topic.price#. | Did you buy herbs today? | #topic.price#, if you're wondering about herbs.
-b : I know. | No. Not at that price. | I wasn't. Now I'm sad.
-a : I know you know. | Nor me. | Sorry.
+b : #bc_i_know# | No. Not at that price. | I wasn't. Now I'm sad.
+a : I know you know. | #bc_nor_me# | #bc_sorry#
 
 # ---------------------------------------------------------------- Herbs cheaper
 
 scene em_herbs_down_glut
 when topic=prices topic.item=herbs topic.dir=down
+does tell.news / react.news / assess / tell.self
 a : Herb stall's practically giving them away. #topic.price#. | There's a glut of herbs. Someone's cellar must have burst. | I bought three bundles at #topic.price#. Couldn't help myself.
 b : Giving them away? I'll go now. | A cellar full of mint. Imagine the smell. | Three? What will you do with three?
 a : Go quick, before the cooks get there. | Like a sweet shop. | Hang them everywhere.
@@ -105,46 +119,53 @@ b?[merchant] : Cheap now. Not for long. Buy while you're able.
 
 scene em_herbs_down_cook_glad
 when topic=prices topic.item=herbs topic.dir=down a.job=cook|innkeeper|baker
+does tell.self / react.self / assess
 a : Herbs at #topic.price#. Everything gets thyme this week. | Sage in the bread, sage in the stew, sage on the floor. | Finally my kitchen smells like a kitchen.
 b : I'll come for supper. | Not on the floor, I hope. | It smelled like boiled boots before.
 a : Bring coin. | Strewn sage keeps the fleas off. | It did. Hush.
 
 scene em_herbs_down_suspicious
 when topic=prices topic.item=herbs topic.dir=down
+does ask.detail / answer.detail / assess / tell.self
 a : Herbs at #topic.price#? That's suspicious. | Why are herbs so cheap? Somebody's selling bad ones. | Cheap herbs. I'd smell them before you buy.
 b : Or maybe it was a good season. | Or maybe they've too many. | My nose is better than yours.
-a : Never trust a good season. | Maybe. | We'll see.
+a : Never trust a good season. | #bc_maybe# | #bc_we_will_see#
 b?[healer] : Sniff for mould and look for grey leaves. If it's sound, it's sound.
 
 scene em_herbs_down_seller_sad
 when topic=prices topic.item=herbs topic.dir=down a.role=merchant
+does tell.self / react.self / assess
 a : I sold a whole day's herbs and made less than last week. | #topic.price#, and still they haggle. | If herbs go any lower I'll be eating them.
 b : Good for us, though. | They'll haggle at nothing. | They're good for you.
 a : Not for me. | They would. | Not as a whole meal.
 
 scene em_herbs_down_child
 when topic=prices topic.item=herbs topic.dir=down
+does tell.self / react.self / assess
 a : Herbs are cheap. I filled the pantry. | I made a pillow of lavender, they were so cheap. | Herbs for #topic.price#. My hearth smells sweet.
-b : Lucky you. | A pillow? Do you sleep better? | Mine smells of smoke.
-a : For once. | Like a stone. | Come and sit by mine.
+b : #bc_lucky_you# | A pillow? Do you sleep better? | Mine smells of smoke.
+a : #bc_for_once# | Like a stone. | Come and sit by mine.
 
 scene em_herbs_down_old
 when topic=prices topic.item=herbs topic.dir=down b.stage=old
+does tell.self / react.self / assess
 a : Herbs are cheaper, grandfather. You could get your knee salve. | #topic.price#. Shall I fetch you some? | They're selling herbs cheap at the stalls.
 b : Maybe I will. The knee's been barking at me. | Fetch two. And don't let them cheat you. | Cheap is cheap. It won't last.
 a : I'll go tomorrow. | They won't. | Then buy now.
 
 scene em_herbs_down_brief
 when topic=prices topic.item=herbs topic.dir=down
+does tell.self / react.self / assess
 weight 0.6
 a : Herbs are down. | #topic.price# for herbs now. Not bad. | Cheap herbs this week.
-b : About time. | Not bad at all. | Good to hear.
+b : #bc_about_time# | Not bad at all. | Good to hear.
 a : About time indeed. | Better than last week. | Isn't it.
 
 # ---------------------------------------------------------------- Meals dearer
 
 scene em_meal_up_tavern_slate
 when topic=prices topic.item=meal topic.dir=up here.place=tavern|street|market
+does tell.news / react.news / assess / ask.detail
 a : The slate by the door says #topic.price# for stew now. | A bowl of broth for #topic.price#. I remember it cheaper. | I saw the new prices on the board and walked straight out.
 b : Stew's still stew. | Last season was kinder. | Where did you eat, then?
 a : Stew at #topic.price# had better have meat in it. | Everything was kinder. | Nowhere. I'm hungry.
@@ -153,24 +174,28 @@ b?[old] : Charged me #topic.price# for gristle and a bread heel.
 
 scene em_meal_up_family_supper
 when topic=prices topic.item=meal topic.dir=up pair.band=family|spouses
+does tell.self / react.self / assess
 a : We'll be eating barley again tonight. | Food's so dear I'm watering the soup. | The pups ate everything. I've had nothing.
 b : Barley again is fine by me. | I noticed. I didn't say. | Here, take my bread.
 a : You always say that. | Thank you for not saying. | No, you eat it.
 
 scene em_meal_up_laborer
 when topic=prices topic.item=meal topic.dir=up a.job=laborer|miner|carter|woodcutter
+does tell.self / react.self / assess
 a : I can't haul all day on a crust and a pickle. | A meal costs #topic.price#, and they pay us the same as last year. | Dinner was water and a turnip.
 b : Ask for more pay. | Same pay, more cost. Always the way. | A whole turnip?
-a : And lose the work? | Always. | Half of one.
+a : And lose the work? | #bc_always# | Half of one.
 
 scene em_meal_up_beggar
 when topic=prices topic.item=meal topic.dir=up a.job=beggar|servant
+does tell.self / react.self / assess
 a : Nobody spares a bite when food's this dear. | Used to get scraps at the back door. Not now. | Folk walk faster past me when bread goes up.
-b : Here. It's not much. | Times are hard for all of us. | I'm sorry.
-a : Bright One keep you. | Harder for some. | So am I.
+b : Here. It's not much. | Times are hard for all of us. | #bc_im_sorry#
+a : Bright One keep you. | Harder for some. | #bc_so_am_i#
 
 scene em_meal_up_pups
 when topic=prices topic.item=meal topic.dir=up
+does tell.self / react.self / tell.self / react.self
 a : Supper's smaller in every house this week. | The pups ask for more and I've nothing to give them. | Dear food makes everyone short-tempered.
 b : They'll remember it as a lean week. | Give them mine. | Everyone's snapping at everyone.
 a : I hope it's only a week. | Then you'll be hungry. | My ears are flat all day.
@@ -178,52 +203,60 @@ b?[child] : I'm hungry too.
 
 scene em_meal_up_merchant_defends
 when topic=prices topic.item=meal topic.dir=up b.role=merchant
+does tell.self / react.self / tell.self
 a : #topic.price# for a meal? Is it served on silver? | You've put your prices up. | Your pies have shrunk.
 b : Served on wood, with my apologies. | Everyone has. I've costs too. | The pies are the same. Your eyes are hungrier.
 a : Then the wood is very expensive. | Costs are an excuse. | My eyes know a pie.
 
 scene em_meal_up_cooking_home
 when topic=prices topic.item=meal topic.dir=up
+does tell.self / react.self / assess
 a : I'm cooking at home every night now. | No more suppers out at #topic.price#. | I've learned to make soup from almost nothing.
 b : Your cooking or #topic.price#? Hard choice. | I miss the noise of the tavern, though. | Almost nothing is my favourite flavour.
-a : Rude. | So do I. | You'd eat it and like it.
+a : Rude. | #bc_so_do_i# | You'd eat it and like it.
 
 scene em_meal_up_soldier
 when topic=prices topic.item=meal topic.dir=up a.job=guard|soldier
+does tell.self / react.self / assess
 a : Barracks rations shrank again. | The quartermaster's cutting the bread thinner. | I could eat my own boots after a watch on this ration.
 b : Thinner than it was? | Bread you can see through. | Boots are leather. Very filling.
 a : Much thinner. | Like a window. | Don't tempt me.
 
 scene em_meal_up_spring_lean
 when topic=prices topic.item=meal topic.dir=up here.season=spring topic.cause=harvest
+does tell.self / react.self / assess / tell.self
 a : Spring's always lean. The old stores are gone and nothing new is in. | Last year's grain is running out. | The hungry season, my mother called it.
 b : Not long now till the fields come in. | And this year's isn't in. | She knew.
-a : Not soon enough. | Exactly. | She did.
+a : Not soon enough. | #bc_exactly# | She did.
 b?[farmer] : Wait till the first harvest. Be patient.
 
 scene em_meal_up_winter
 when topic=prices topic.item=meal topic.dir=up here.season=winter
+does tell.self / react.self / assess
 a : Dear bread and a cold hearth. | Cold outside, and dear inside. | I'm burning my coin on food and firewood both.
 b : Every winter the same. | Cold makes everyone a merchant. | At least you're warm and fed.
 a : And every winter I forget. | And greedy. | Barely either.
 
 scene em_meal_up_rivals
 when topic=prices topic.item=meal topic.dir=up pair.band=rivals
+does tell.self / react.self / tell.self
 a : I hear you put your rates up too, with food so dear. | Your table still looks full. Must be nice. | You'll be fine. You always are.
 b : Everyone's raised them. Don't single me out. | Mind your own table. | And you'll always grumble.
-a : I single you out because it's you. | I'm minding it. It's empty. | Somebody has to.
+a : I single you out because it's you. | I'm minding it. It's empty. | #bc_somebody_has_to#
 
 scene em_meal_up_brief
 when topic=prices topic.item=meal topic.dir=up
+does tell.complaint / react.complaint / assess
 weight 0.6
 a : Food's up again. | #topic.price# a meal now. | Another price rise on meals.
-b : Again. | Ouch. | Of course there is.
-a : Again and again. | I know. | Of course.
+b : #bc_again# | Ouch. | Of course there is.
+a : Again and again. | #bc_i_know# | #bc_of_course#
 
 # ---------------------------------------------------------------- Meals cheaper
 
 scene em_meal_down_feast
 when topic=prices topic.item=meal topic.dir=down
+does tell.self / react.self / assess / tell.self
 a : A meal for #topic.price#. I had two. | Cheap food. I'm buying pastries just because. | Supper's cheaper this week. Let's eat out.
 b : Two? You'll be round. | Pastries, of course. | Yes. Somewhere with a fire.
 a : Round and happy. | Just because. | Somewhere warm.
@@ -231,44 +264,50 @@ b?[innkeeper] : Eat up. A full tavern's a happy one.
 
 scene em_meal_down_family
 when topic=prices topic.item=meal topic.dir=down pair.band=family|spouses
+does tell.self / react.self / assess
 a : Food's cheaper. Shall we have meat tonight? | The pups ate till they slept. | I bought a whole loaf and didn't count my coin.
 b : Meat! Yes. | First quiet night in weeks. | Mark the day.
 a : Meat it is. | Let's not wake them. | I did. It's marked.
 
 scene em_meal_down_suspicious
 when topic=prices topic.item=meal topic.dir=down
+does tell.news / react.news / assess / tell.self
 a : Cheap pies. What's in them, I wonder? | #topic.price# for a hot meal. Something's wrong with it. | Never trust cheap stew.
 b : Best not to ask. | Or something's right with the harvest. | Never trust a full belly, then.
-a : I won't. | We'll see. | I never do.
+a : #bc_i_wont# | #bc_we_will_see# | I never do.
 b?[cook] : Mine is honest meat. Come and smell it yourself.
 
 scene em_meal_down_innkeeper_complains
 when topic=prices topic.item=meal topic.dir=down a.job=innkeeper|cook
+does tell.self / react.self / tell.self
 a : I've lowered my prices and filled every seat and still made less. | Cheaper suppers means a poorer cook. | #topic.price# a bowl. I'm feeding the town at cost.
 b : Full seats are better than empty ones. | You'll make it up in ale. | Very noble of you.
 a : Not if the ale's cheap too. | Ha. That's the plan. | Noble and poor.
 
 scene em_meal_down_children
 when topic=prices topic.item=meal topic.dir=down
+does tell.self / react.self / assess
 a : The pups had seconds tonight. | We ate like nobles last night. | For once everyone's fed.
-b : Seconds? A good week. | Nobles eat worse, I hear. | For once.
+b : Seconds? A good week. | Nobles eat worse, I hear. | #bc_for_once#
 a : A very good week. | Not this week. | Long may it last.
 
 scene em_meal_down_brief
 when topic=prices topic.item=meal topic.dir=down
+does tell.self / react.self / assess
 weight 0.6
 a : Food's cheaper. | #topic.price# a meal. Better. | Meals are down a little.
-b : Good. | Much better. | Little is still something.
-a : Very good. | It is. | It is.
+b : #bc_good# | Much better. | Little is still something.
+a : #bc_very_good# | #bc_it_is# | #bc_it_is#
 
 # ---------------------------------------------------------------- Any price
 
 scene em_prices_who_blame
 when topic=prices topic.dir=up
+does tell.self / react.self / assess / tell.self
 weight 0.8
 a : Who do we blame this time? | Somebody's getting rich off this. | Prices go up like smoke and come down like stones.
 b : The weather. Always the weather. | Never us. | Slowly, and never far enough.
-a : Can't fine the weather. | Never us. | Exactly.
+a : Can't fine the weather. | Never us. | #bc_exactly#
 b?[official] : The council watches the markets closely.
 b?[merchant] : Don't blame me. I pay it too.
 
@@ -296,6 +335,7 @@ a : Some other time. It's a long ledger. | Every year. Nobody listens. | Bring a
 
 scene em_prices_old_grumble
 when topic=prices topic.dir=up a.stage=old
+does tell.memory / react.story / tell.self / ask.detail
 a : I remember when a mark could feed you for a season. | Pennies were worth something in my day. | Every year it costs more to stay alive.
 b : Things change. | And now? | And every year you manage.
 a : Not always for the better. | Now they're worth less than a smile. | Stubbornness.
@@ -303,6 +343,7 @@ b?[child] : What's a mark?
 
 scene em_prices_rumour_cause
 when topic=prices topic.dir=up topic.cause!=still
+does tell.news / react.news / assess
 a : #topic.cause_words.capitalize#, they say. That's why. | Word is, it's #topic.cause_words#. | Ask anyone: #topic.cause_words#.
 b : Could be. | Is it, now? | Anyone but me, then.
 a : That's what they say. | So I'm told. | Now you know.

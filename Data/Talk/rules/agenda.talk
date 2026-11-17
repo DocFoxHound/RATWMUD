@@ -4,16 +4,20 @@
 # answered by the lines after them. The rest are callbacks: what the two said before (the talk ledger: pair.last_talk,
 # pair.talked.<topic>, a promise let lapse, an invitation missed).
 
-## Meeting again the same day (frames.json's again_today: pair.last_talk under 0.3 days), said before the opener.
+## Meeting again the same day (frames.json's again_today: pair.last_talk under 0.3 days), said before the opener; once a
+## day each (Phase 7: with every opener saying what it does, the frame had "Back again?" before 83% of a busy place's
+## talks).
 
 rule ag_again_any
 does again.open
 when pair.last_talk<0.3
+cooldown 1d
 say Back again? | You again! | Twice in a day, is it? | Here we are again. | Back so soon?
 
 rule ag_again_any2
 does again.open
 when pair.last_talk<0.3
+cooldown 1d
 say Can't keep away, then. | Again! | Well, look who it is again. | Hello again.
 
 ## learn_name: two who don't know each other's names, away from work. The one spoken to knows the speaker's name after.
@@ -164,11 +168,11 @@ say Have you a moment? I've a favour to ask. | Can I ask you something? It's a f
 rule ag_go_ahead
 does go_ahead
 when self.talk!=quiet
-say Ask away. | Go on, then. | What is it? | Out with it.
+say Ask away. | #bc_go_on_then# | What is it? | Out with it.
 
 rule ag_go_ahead_quiet
 does go_ahead
-say Go on. | Ask. | Mm?
+say #bc_go_on# | Ask. | Mm?
 
 rule ag_put_off
 does put_off

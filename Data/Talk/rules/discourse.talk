@@ -1,0 +1,93 @@
+# The discourse words in use (Docs/Design/84 §10.3, Phase 7): move lines (no concept; found by the move they make, §8.2)
+# said through the grammars' discourse symbols, so each speaker closes, refuses, gives ground, apologises and takes in
+# news in their own dialect ("The lake waits for nobody, nor do I." / "Well. The stars move, and so must I."). They sit
+# beside turns.talk's and beats.talk's plain lines, a choice among them; Phase 8 writes the rest of the shared lines
+# with these symbols. Short (the often-said ones under six words), so seldom a "distinctive" line for the scorecard's R4
+# and R5; a refusal is longer, as a dispreferred answer is (§7.2).
+
+## Closing (§8.4)
+rule ds_preclose
+does preclose
+say #preclose#. | #excuse#.
+
+## Refusals, softened and explained (§7.2: hedge, account, remedy)
+rule ds_decline
+does decline
+say #hedge#. #account#. | #hedge#. #account#. #later.capitalize#, maybe.
+
+rule ds_put_off
+does put_off
+say #hedge#. #put_off#. | #put_off#. #account#.
+
+rule ds_accept_decline
+does accept_decline
+say #no_matter#.
+
+## Requests
+rule ds_go_ahead
+does go_ahead
+say #go_ahead#.
+
+## Views (§8.8: the engine lets a disagreement through only where the stances differ)
+rule ds_disagree
+does disagree
+say #hedge#. #demur#.
+
+rule ds_concede
+does concede
+say #concede#.
+
+rule ds_insist
+does insist
+say #insist#.
+
+## Feelings
+rule ds_sympathise
+does sympathise
+say #sympathy#.
+
+rule ds_reassure
+does reassure
+say #reassure#.
+
+rule ds_congratulate
+does congratulate
+say #congrats#!
+
+## Apologies and thanks
+rule ds_apologise
+does apologise
+say #sorry#.
+
+rule ds_accept_apology
+does accept_apology
+say #forgive#.
+
+rule ds_deflect_thanks
+does deflect_thanks
+say #deflect#.
+
+## News one had (§8.6; never for a death or a hurt, which beats.talk's grave lines answer)
+rule ds_known
+does react.news.known
+when self.knows=yes topic.claim_kind!=death|violence|victim
+say #knew#.
+
+## Taking in, coming back, a second meeting, a welcome
+rule ds_ack
+does ack
+say #ack#.
+
+rule ds_return
+does return
+say #resume#.
+
+rule ds_again
+does again.open
+when pair.last_talk<0.3
+cooldown 1d
+say #welcome_back#?
+
+rule ds_welcome_join
+does welcome_join
+say #welcome#.

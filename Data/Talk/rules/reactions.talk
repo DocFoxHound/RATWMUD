@@ -4,49 +4,61 @@
 
 rule react_fight
 when concept=react.fight
+does aside
 say #oath#! Fetch the Watch! | A fight! There's a fight! | Not again. Someone stop them.
 
 rule react_fight_guard
 when concept=react.fight role=guard
+does aside
 say Break it up! In the name of the Watch! | Stand apart, the both of you!
 
 rule react_fight_child
 when concept=react.fight child
+does aside
 say Fight! Fight! | Ooh, look!
 
 rule react_struck
 when concept=react.struck
+does aside
 say #oath#! | You'll pay for that! | Is that all you've got?
 
 rule react_struck_bad
 when concept=react.struck injured=bad
+does aside
 priority 2
 say I can't... someone help me. | Enough. Enough!
 
 rule react_theft
 when concept=react.theft
+does aside
 say Thief! Stop, thief! | Did you see that? They took it! | #robbery#!
 
 rule react_theft_guard
 when concept=react.theft role=guard
+does aside
+tone serious
 say Stop, thief! In the name of the Watch!
 
 rule react_rain
 when concept=react.rain
+does aside
 say #rain.capitalize# again#tag#. | Here it comes. | Get the washing in!
 
 rule react_rain_outdoor_work
 when concept=react.rain working=yes job=farmer|herder|fisher|woodcutter|laborer
+does aside
 say There goes the rest of the day. | #oath#. Soaked by noon.
 
 rule react_customer
 when concept=react.customer
+does greet
 cooldown 1h
 say #greet#. Come in, come in. | #greet#. Have a look around.
 remember pair: served 7d
 
 rule react_customer_again
 when concept=react.customer pair.mem.served
+does greet
 cooldown 1h
 priority 1
 say Back again#tag#? #greet#. | #greet#! Good to see you again.
@@ -54,12 +66,14 @@ remember pair: served 7d
 
 rule react_customer_inn
 when concept=react.customer job=innkeeper
+does greet
 cooldown 1h
 say #greet#! Sit anywhere, I'll be with you. | Come in out of the #rain#.
 remember pair: served 7d
 
 rule react_customer_failing
 when concept=react.customer business=failing
+does greet
 cooldown 1h
 say A customer! Come in, please, come in. | #greet#! Anything you like. Anything.
 remember pair: served 7d

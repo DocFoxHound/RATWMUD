@@ -1,8 +1,8 @@
 {
  "about": "Docs/Design/84 §15.3: the talk scorecard (tools/talk_score.py), from talk_sim transcripts.",
- "generated": "2026-11-16T22:52:10+00:00",
+ "generated": "2026-11-17T00:28:14+00:00",
  "runs": {
-  "town": "/tmp/ratw-talk-quick-ht6snjml/town"
+  "town": "/tmp/ratw-talk-quick-629lup6h/town"
  },
  "metrics": {
   "R1": {
@@ -10,12 +10,12 @@
    "better": "higher",
    "gate": "hard",
    "target": "40 h+; hard 20 h+",
-   "value": 12.865625,
+   "value": 12.885069444444444,
    "passes": false,
    "by_profile": {
-    "town": 12.866
+    "town": 12.885
    },
-   "control": 12.865625,
+   "control": 12.885069444444444,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -27,12 +27,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "8 h+",
-   "value": 3.5925,
+   "value": 3.1038888888888887,
    "passes": false,
    "by_profile": {
-    "town": 3.592
+    "town": 3.104
    },
-   "control": 3.5925,
+   "control": 3.1038888888888887,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -44,12 +44,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "L1 1,500+",
-   "value": 2790.666244324781,
+   "value": 2864.4823380495304,
    "passes": true,
    "by_profile": {
-    "town": 2790.666
+    "town": 2864.482
    },
-   "control": 2790.666244324781,
+   "control": 2864.4823380495304,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -61,20 +61,20 @@
    "better": "lower",
    "gate": "soft",
    "target": "5 or fewer",
-   "value": 2781.842906171081,
+   "value": 2318.4909561836657,
    "passes": false,
    "by_profile": {
-    "town": 2781.843
+    "town": 2318.491
    },
-   "control": 7855.98653111442,
-   "separation": 0.6458951533135509,
+   "control": 6978.735319616385,
+   "separation": 0.6677777777777778,
    "real_better": true,
    "separates": true,
    "control_required": false,
    "structural": false,
    "events": [
-    358,
-    12.87
+    299,
+    12.9
    ]
   },
   "R5": {
@@ -87,7 +87,7 @@
    "by_profile": {
     "town": 0.0
    },
-   "control": 1305.4458330635239,
+   "control": 984.7770951014232,
    "separation": 1.0,
    "real_better": true,
    "separates": true,
@@ -95,7 +95,7 @@
    "structural": false,
    "events": [
     0,
-    12.87
+    12.9
    ]
   },
   "R6": {
@@ -103,14 +103,14 @@
    "better": "lower",
    "gate": "soft",
    "target": "0.4%",
-   "value": 1.1712410922175969,
+   "value": 1.3022323983972524,
    "passes": false,
    "by_profile": {
-    "town": 1.171
+    "town": 1.302
    },
-   "control": 1.2559091229803148,
-   "separation": 0.06741573033707869,
-   "real_better": true,
+   "control": 1.2950772753291357,
+   "separation": 0.00549450549450537,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -120,13 +120,13 @@
    "better": "higher",
    "gate": "soft",
    "target": "500+",
-   "value": 204.34173669467788,
+   "value": 205.11714819606152,
    "passes": false,
    "by_profile": {
-    "town": 204.342
+    "town": 205.117
    },
-   "control": 182.23583460949465,
-   "separation": 0.10818104241823734,
+   "control": 186.52105187526942,
+   "separation": 0.09066085641468159,
    "real_better": true,
    "separates": false,
    "control_required": false,
@@ -137,20 +137,20 @@
    "better": "lower",
    "gate": "soft",
    "target": "15% or less",
-   "value": 0.11215852708951735,
+   "value": 0.19568010631455207,
    "passes": true,
    "by_profile": {
-    "town": 0.112
+    "town": 0.196
    },
-   "control": 0.09171637882203444,
-   "separation": 0.18226120472469617,
+   "control": 0.08968893939516431,
+   "separation": 0.5416553011730736,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    16,
-    14173.0
+    27,
+    13976.0
    ]
   },
   "C1": {
@@ -158,20 +158,20 @@
    "better": "higher",
    "gate": "hard",
    "target": "97%; hard 92%",
-   "value": 99.86968986187125,
+   "value": 99.8663101604278,
    "passes": true,
    "by_profile": {
-    "town": 99.87
+    "town": 99.866
    },
-   "control": 16.907704443860112,
-   "separation": 0.830702343551432,
+   "control": 18.69516310461192,
+   "separation": 0.8127980990328016,
    "real_better": true,
    "separates": true,
    "control_required": true,
    "structural": false,
    "events": [
-    3832,
-    3837.0
+    4482,
+    4488.0
    ]
   },
   "C1Q": {
@@ -179,20 +179,20 @@
    "better": "higher",
    "gate": "soft",
    "target": "diagnostic (C1 until Phase 3; doesn't separate from the control)",
-   "value": 97.23320158102767,
+   "value": 97.2139303482587,
    "passes": null,
    "by_profile": {
-    "town": 97.233
+    "town": 97.214
    },
-   "control": 88.75119161105815,
-   "separation": 0.0872336797724508,
+   "control": 89.30323846908735,
+   "separation": 0.08137405668953132,
    "real_better": true,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    984,
-    1012.0
+    977,
+    1005.0
    ]
   },
   "M1": {
@@ -200,14 +200,14 @@
    "better": "higher",
    "gate": "soft",
    "target": "100% at Phase 7 (every entry)",
-   "value": 53.799477880476964,
+   "value": 100.0,
    "passes": null,
    "by_profile": {
-    "town": 53.799
+    "town": 100.0
    },
-   "control": 53.73597685740493,
-   "separation": 0.001180327868852404,
-   "real_better": true,
+   "control": 100.0,
+   "separation": 0.0,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -217,13 +217,13 @@
    "better": "higher",
    "gate": "soft",
    "target": "95%",
-   "value": 99.838622915546,
+   "value": 100.0,
    "passes": true,
    "by_profile": {
-    "town": 99.839
+    "town": 100.0
    },
-   "control": 99.94652406417113,
-   "separation": 0.0010795888064686807,
+   "control": 100.0,
+   "separation": 0.0,
    "real_better": false,
    "separates": false,
    "control_required": false,
@@ -234,13 +234,13 @@
    "better": "higher",
    "gate": "soft",
    "target": "80% / 3% / 5%",
-   "value": 99.90000000000002,
+   "value": 99.9,
    "passes": true,
    "by_profile": {
     "town": 99.9
    },
-   "control": 32.15,
-   "separation": 0.6781781781781784,
+   "control": 33.85,
+   "separation": 0.6611611611611612,
    "real_better": true,
    "separates": true,
    "control_required": true,
@@ -268,7 +268,7 @@
    "structural": false,
    "events": [
     0,
-    14173.0
+    13976.0
    ]
   },
   "C5": {
@@ -281,7 +281,7 @@
    "by_profile": {
     "town": 0.0
    },
-   "control": 58.8442813800889,
+   "control": 55.595306239267316,
    "separation": 1.0,
    "real_better": true,
    "separates": true,
@@ -289,7 +289,7 @@
    "structural": false,
    "events": [
     0,
-    14173.0
+    13976.0
    ]
   },
   "C6": {
@@ -302,7 +302,7 @@
    "by_profile": {
     "town": 0.0
    },
-   "control": 252.0,
+   "control": 245.0,
    "separation": 1.0,
    "real_better": true,
    "separates": true,
@@ -318,12 +318,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "5-7; p90 9+",
-   "value": 7.0865,
+   "value": 6.988,
    "passes": true,
    "by_profile": {
-    "town": 7.087
+    "town": 6.988
    },
-   "control": 7.0865,
+   "control": 6.988,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -335,19 +335,19 @@
    "better": "higher",
    "gate": "soft",
    "target": "5-15%",
-   "value": 0.10000000000000002,
+   "value": 0.15,
    "passes": false,
    "by_profile": {
-    "town": 0.1
+    "town": 0.15
    },
-   "control": 0.10000000000000002,
+   "control": 0.15,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": true,
    "events": [
-    2,
+    3,
     2000.0
    ]
   },
@@ -356,19 +356,19 @@
    "better": "higher",
    "gate": "soft",
    "target": "1.5+",
-   "value": 0.34,
+   "value": 1.315,
    "passes": false,
    "by_profile": {
-    "town": 0.34
+    "town": 1.315
    },
-   "control": 0.34,
+   "control": 1.315,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    68,
+    263,
     2000.0
    ]
   },
@@ -390,7 +390,7 @@
    "structural": false,
    "events": [
     0,
-    14173.0
+    13976.0
    ]
   },
   "T2": {
@@ -403,7 +403,7 @@
    "by_profile": {
     "town": 0.0
    },
-   "control": 10.936287306851055,
+   "control": 12.092157985117344,
    "separation": 1.0,
    "real_better": true,
    "separates": true,
@@ -411,7 +411,7 @@
    "structural": false,
    "events": [
     0,
-    14173.0
+    13976.0
    ]
   },
   "T3": {
@@ -424,15 +424,15 @@
    "by_profile": {
     "town": 0.0
    },
-   "control": 0.0,
-   "separation": 0.0,
-   "real_better": false,
-   "separates": false,
+   "control": 0.28620492272467085,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
    "control_required": false,
    "structural": false,
    "events": [
     0,
-    14173.0
+    13976.0
    ]
   },
   "T4": {
@@ -453,7 +453,7 @@
    "structural": false,
    "events": [
     0,
-    127.0
+    108.0
    ]
   },
   "T6": {
@@ -474,7 +474,7 @@
    "structural": false,
    "events": [
     0,
-    14173.0
+    13976.0
    ]
   },
   "D1A": {
@@ -482,12 +482,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "diagnostic: accommodation (§10.6)",
-   "value": 20.404995413815,
+   "value": 19.719519175729822,
    "passes": null,
    "by_profile": {
-    "town": 20.405
+    "town": 19.72
    },
-   "control": 20.404995413815,
+   "control": 19.719519175729822,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -499,19 +499,19 @@
    "better": "higher",
    "gate": "soft",
    "target": "diagnostic (§8.8)",
-   "value": 0.325,
+   "value": 0.295,
    "passes": null,
    "by_profile": {
-    "town": 0.325
+    "town": 0.295
    },
-   "control": 0.009999999999999998,
-   "separation": 0.9692307692307692,
+   "control": 0.005,
+   "separation": 0.983050847457627,
    "real_better": true,
    "separates": true,
    "control_required": false,
    "structural": false,
    "events": [
-    65,
+    59,
     2000.0
    ]
   },
@@ -534,7 +534,7 @@
    "by_profile": {
     "town": 0.0
    },
-   "control": 2.849740932642487,
+   "control": 2.900763358778626,
    "separation": 1.0,
    "real_better": true,
    "separates": true,
@@ -542,7 +542,7 @@
    "structural": false,
    "events": [
     0,
-    386.0
+    655.0
    ]
   },
   "D1L": {
@@ -550,20 +550,20 @@
    "better": "higher",
    "gate": "soft",
    "target": "light 25-50%",
-   "value": 1.9189460117428039,
+   "value": 4.152554852010013,
    "passes": false,
    "by_profile": {
-    "town": 1.919
+    "town": 4.153
    },
-   "control": 2.5633681798653876,
-   "separation": 0.2513966480446928,
+   "control": 5.183330879104697,
+   "separation": 0.19886363636363638,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    134,
-    6983.0
+    282,
+    6791.0
    ]
   },
   "D1B": {
@@ -571,20 +571,20 @@
    "better": "higher",
    "gate": "soft",
    "target": "broad 60%+",
-   "value": 4.688418577307467,
+   "value": 9.663093415007657,
    "passes": false,
    "by_profile": {
-    "town": 4.688
+    "town": 9.663
    },
-   "control": 3.93885949441505,
-   "separation": 0.15987460815047036,
+   "control": 7.77947932618683,
+   "separation": 0.19492868462757526,
    "real_better": true,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    319,
-    6804.0
+    631,
+    6530.0
    ]
   },
   "D2": {
@@ -597,10 +597,10 @@
    "by_profile": {
     "town": 0
    },
-   "control": 0,
-   "separation": 0.0,
-   "real_better": false,
-   "separates": false,
+   "control": 2,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
    "control_required": false,
    "structural": false
   },
@@ -609,19 +609,19 @@
    "better": "higher",
    "gate": "soft",
    "target": "85%+",
-   "value": 65.78947368421052,
+   "value": 81.57894736842105,
    "passes": false,
    "by_profile": {
-    "town": 65.789
+    "town": 81.579
    },
-   "control": 78.94736842105263,
-   "separation": 0.1666666666666667,
+   "control": 92.10526315789474,
+   "separation": 0.1142857142857143,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    25,
+    31,
     38.0
    ]
   },
@@ -647,13 +647,13 @@
    "better": "higher",
    "gate": "soft",
    "target": "90%+",
-   "value": 57.98497945302536,
+   "value": 57.634092578986035,
    "passes": false,
    "by_profile": {
-    "town": 57.985
+    "town": 57.634
    },
-   "control": 57.659061924330445,
-   "separation": 0.005620723362658899,
+   "control": 54.812637766348274,
+   "separation": 0.04895461499235075,
    "real_better": true,
    "separates": false,
    "control_required": false,
@@ -664,12 +664,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "35%+",
-   "value": 95.3,
+   "value": 95.55,
    "passes": true,
    "by_profile": {
-    "town": 95.3
+    "town": 95.55
    },
-   "control": 95.3,
+   "control": 95.55,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -681,12 +681,12 @@
    "better": "lower",
    "gate": "soft",
    "target": "25% or less",
-   "value": 10.9,
+   "value": 10.55,
    "passes": true,
    "by_profile": {
-    "town": 10.9
+    "town": 10.55
    },
-   "control": 10.9,
+   "control": 10.55,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -743,12 +743,12 @@
    "better": "lower",
    "gate": "soft",
    "target": "0.6 ms or less (gate: talk_bench)",
-   "value": 0.10001410441140206,
+   "value": 0.10336936005344054,
    "passes": true,
    "by_profile": {
-    "town": 0.1
+    "town": 0.103
    },
-   "control": 0.10001410441140206,
+   "control": 0.10336936005344054,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -760,12 +760,12 @@
    "better": "lower",
    "gate": "soft",
    "target": "3 ms or less (gate: talk_bench)",
-   "value": 0.296705,
+   "value": 0.315546,
    "passes": true,
    "by_profile": {
-    "town": 0.297
+    "town": 0.316
    },
-   "control": 0.296705,
+   "control": 0.315546,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -777,12 +777,12 @@
    "better": "lower",
    "gate": "soft",
    "target": "5 ms or less (gate: talk_bench)",
-   "value": 1.35755,
+   "value": 1.632657,
    "passes": true,
    "by_profile": {
-    "town": 1.358
+    "town": 1.633
    },
-   "control": 1.35755,
+   "control": 1.632657,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -794,12 +794,12 @@
    "better": "higher",
    "gate": "hard",
    "target": "150+",
-   "value": 555.276088956068,
+   "value": 506.6033490902503,
    "passes": true,
    "by_profile": {
-    "town": 555.276
+    "town": 506.603
    },
-   "control": 555.276088956068,
+   "control": 506.6033490902503,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -811,13 +811,13 @@
    "better": "higher",
    "gate": "soft",
    "target": "diagnostic (not in §15.3): shows the control is discriminating",
-   "value": 16.085240726124702,
+   "value": 16.410670978173,
    "passes": null,
    "by_profile": {
-    "town": 16.085
+    "town": 16.411
    },
-   "control": 1.312062024750261,
-   "separation": 0.9184306876664091,
+   "control": 1.4651449722393584,
+   "separation": 0.9107199837113258,
    "real_better": true,
    "separates": true,
    "control_required": true,
@@ -844,43 +844,44 @@
   "town": {
    "R1_detail": {
     "listeners": 3,
-    "median": 12.86875,
+    "median": 12.896319444444444,
     "censored": true,
     "exchange": null
    },
    "R2_detail": {
-    "median": 3.8008333333333333,
+    "median": 5.0361111111111105,
     "censored": false
    },
    "R6_detail": {
-    "line": "Bye, then!",
-    "times": 166
+    "line": "Rest well.",
+    "times": 182
    },
    "R7_detail": {
-    "replies": 7140,
-    "closing_beats": 5033,
-    "closings_distinct_per_1000": 44.1
+    "replies": 6957,
+    "closing_beats": 5019,
+    "closings_distinct_per_1000": 51.0
    },
    "R8_detail": {
-    "p90": 0.4728132387706856,
+    "p90": 0.546448087431694,
     "speakers": 40,
-    "lines20": 14173,
-    "any_habit_mean": 0.19951323318838046
+    "lines20": 13976,
+    "any_habit_mean": 0.32197571167274414
    },
    "C1Q_detail": {
-    "questions": 1012,
-    "answered": 984
+    "questions": 1005,
+    "answered": 977
    },
    "C1_detail": {
-    "owed": 3837,
-    "met": 3832
+    "owed": 4488,
+    "met": 4482
    },
    "C2_detail": {
-    "answers": 3718,
-    "fallbacks": 2
+    "answers": 3677,
+    "fallbacks": 6
    },
    "M1_detail": {
-    "scene": 53.799477880476964
+    "scene": 100.0,
+    "written": 100.0
    },
    "C3_detail": {
     "farewell": 99.9,
@@ -896,8 +897,8 @@
    },
    "C7_detail": {
     "p90": 10,
-    "three_lines": 0.1,
-    "four_lines": 1.55
+    "three_lines": 0.25,
+    "four_lines": 2.05
    },
    "T2_detail": {
     "by_kind": {},
@@ -909,7 +910,7 @@
     "eyewitness_judged": true
    },
    "T4_detail": {
-    "stance_lines": 127,
+    "stance_lines": 108,
     "drifted": 0,
     "answered_against_own": 0,
     "examples": []
@@ -923,26 +924,26 @@
    },
    "K2_detail": {
     "topics": {
-     "work": 10.9,
-     "memories": 6.6,
-     "smalltalk": 6.55,
-     "season": 6.35,
-     "travel": 6.2,
-     "pastimes": 5.75,
-     "land": 5.55,
-     "animals": 5.5,
-     "health": 5.45,
-     "lore": 5.4,
-     "dreams": 5.25,
-     "food": 5.0,
-     "home": 4.8,
-     "friends": 4.7,
-     "faith": 4.45,
-     "player": 3.35,
-     "family": 2.8,
+     "work": 10.55,
+     "smalltalk": 6.95,
+     "travel": 6.5,
+     "season": 6.1,
+     "animals": 6.0,
+     "food": 5.9,
+     "land": 5.7,
+     "memories": 5.6,
+     "home": 5.45,
+     "pastimes": 5.45,
+     "dreams": 5.3,
+     "lore": 5.25,
+     "faith": 4.8,
+     "friends": 4.55,
+     "health": 4.45,
+     "player": 3.2,
+     "family": 2.95,
      "weather": 2.55,
      "accent": 1.5,
-     "life": 1.15,
+     "life": 1.05,
      "news": 0.2
     }
    },
@@ -950,18 +951,18 @@
     "repeats": []
    },
    "C5_detail": {
-    "turns": 958,
+    "turns": 907,
     "unmarked": 0,
     "examples": [],
-    "topics_per_talk": 1.479,
-    "turned_talks": 834
+    "topics_per_talk": 1.454,
+    "turned_talks": 795
    },
    "C9_detail": {
-    "callbacks": 68,
+    "callbacks": 263,
     "goals": {
-     "mend": 39,
-     "vent": 13,
-     "visit": 10
+     "mend": 36,
+     "visit": 9,
+     "vent": 8
     }
    },
    "T5_detail": {
@@ -970,13 +971,13 @@
     "examples": []
    },
    "D1_detail": {
-    "light": 1.92,
-    "broad": 4.69,
+    "light": 4.15,
+    "broad": 9.66,
     "none": 0.0
    },
    "D1A_detail": {
-    "broader": 2698,
-    "plainer": 194
+    "broader": 2551,
+    "plainer": 205
    },
    "D2_detail": {
     "by_layers": 0,
@@ -985,36 +986,36 @@
     "lexicon": "tools/dialect_check.py"
    },
    "D3_detail": {
-    "light": 65.4,
-    "broad": 66.7,
-    "none": 0.0,
+    "light": 80.8,
+    "broad": 83.3,
+    "none": 100.0,
     "speakers": 40,
     "judged": 38
    },
    "U2_detail": {
     "pairs": 19,
-    "lines": 7057
+    "lines": 6805
    },
    "B1_detail": {
-    "beats": 12173,
-    "beat_max": 0.710359,
-    "looks": 9202,
-    "look_mean": 0.18475090599869531,
-    "look_max": 4.540123
+    "beats": 11976,
+    "beat_max": 0.665851,
+    "looks": 9093,
+    "look_mean": 0.22135760892994624,
+    "look_max": 4.775504
    },
    "_counts": {
-    "lines": 14173,
+    "lines": 13976,
     "conversations": 2000,
-    "hours": 12.87,
+    "hours": 12.9,
     "listeners": 3,
     "speakers": 40,
-    "questions": 1012,
-    "owed": 3837,
+    "questions": 1005,
+    "owed": 4488,
     "asserted": 0,
-    "stance_lines": 127,
-    "none_lines": 386,
-    "light_lines": 6983,
-    "broad_lines": 6804
+    "stance_lines": 108,
+    "none_lines": 655,
+    "light_lines": 6791,
+    "broad_lines": 6530
    }
   }
  },

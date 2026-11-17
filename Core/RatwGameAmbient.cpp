@@ -182,6 +182,8 @@ void Game::ambientSpeak(double)
                 while (!said.empty() && now - std::get<0>(said.front()) > 3600)
                     said.pop_front();
                 said.emplace_back(now, speaker, std::hash<std::string>{}(text));
+                if (!info.bare.empty() && info.bare != text)     // (Phase 7: the opener's own words, said after a greeting.)
+                    said.emplace_back(now, speaker, std::hash<std::string>{}(info.bare));
             }
             it->nextAt = now + 2.5 + double(text.size()) / 25;   // Time to read it, before the answer.
             if (options_.logTalkWords)

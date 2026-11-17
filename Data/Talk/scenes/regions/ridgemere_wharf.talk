@@ -4,29 +4,33 @@
 
 scene rg_sr_salt_sand
 when topic=smalltalk|work here.region=ridgemere
+does tell.self / react.self / assess
 a : Rain in the salt pans again. Half the salt's gone back to brine. | A Fish Hall buyer says our salt's too grey. | Rake the pans the minute the rain stops, or there's no salt at all.
 b[laborer] : Salt pans in a rain city. Whoever thought of it never stood in one.
 b[merchant] : The smokehouses take every grain we make, grey or white.
 b : It always does. | He'd say anything to pay less. | When does it ever stop?
-a : Always. | Anything. | Never.
+a : #bc_always# | Anything. | #bc_never#
 
 scene rg_sr_pan_wall
 when topic=work|lore here.region=ridgemere a.job=laborer|crafter
+does tell.story / react.story / assess
 a : The spring tide broke the pan wall again. | Rebuilt the pan wall twice this month. | Sun on the pans at last. Salt by the week's end.
 b[laborer] : Clay and stone and prayer. That's a pan wall.
-b : Again? | Twice! | Sun? Here?
-a : Again. | Twice. | An hour of it.
+b : #bc_again_q# | Twice! | Sun? Here?
+a : #bc_again# | Twice. | An hour of it.
 
 scene rg_sr_salt_house
 when topic=lore|work here.region=ridgemere
+does tell.story / react.story / assess
 a : Water got into the salt store by the pans. A whole heap gone to brine. | The salt store's full to the rafters. Good year. | Keep the salt dry, my father said. In Ridgemere.
 b[laborer] : Lost a heap, lost a month's wages. Somebody's getting the blame.
 b[merchant] : Full is good. Full means the smokehouses can't squeeze us. For a week.
-b : Bad luck. | Finally. | Wise words.
-a : Very bad. | Finally. | Wise and useless.
+b : #bc_bad_luck# | Finally. | Wise words.
+a : #bc_very_bad# | Finally. | Wise and useless.
 
 scene rg_sr_fish_slab
 when topic=smalltalk here.region=ridgemere here.place=market|street|work
+does tell.self / react.self / assess
 a : The Fish Hall's cat stole a whole mackerel today. | The fishmongers never chase the Fish Hall cat. They say it's lucky. | Best smoked eel in the city's at the Sump Market, and the cheapest.
 b[merchant] : That cat's earned it. Keeps the rats off.
 b[child] : I named the cat. Its name's Captain.
@@ -35,13 +39,15 @@ a : Very lucky. | Very odd. | Nobody can.
 
 scene rg_sr_smoked_fish
 when topic=smalltalk|work here.region=ridgemere
+does tell.self / react.self / assess
 a : Smoked herring for breakfast, smoked herring for supper. | The smokehouse fires on the wharf have been burning three days. | My coat smells of smoke even after washing.
 b[cook] : Smoked herring's a feast if you do it right. Nobody does it right.
 b : That's the wharf. | Big catch, then. | Everything does.
-a : That's the wharf. | Very big. | Everything.
+a : That's the wharf. | Very big. | #bc_everything#
 
 scene rg_sr_net_twine
 when topic=work here.region=ridgemere a.job=fisher|crafter|laborer
+does tell.self / react.self / assess
 a : Mending nets on the pier all morning. Seals tore them. | The new twine from the chandlery rots faster than the old. | My paws are raw from the net needle.
 b[fisher] : Tar the twine. Every time. My grandmother's rule.
 b : Cursed seals. | Cheap stuff. | Rest them.
@@ -49,21 +55,25 @@ a : Cursed. | Very cheap. | Can't.
 
 scene rg_sr_oilskins
 when topic=smalltalk here.region=ridgemere
+does tell.self / react.self / assess
 a : Bought new oilskins at Wickham's Chandlery. They leak already. | Oilskins on, oilskins off, oilskins on. All day. | My oilskin's older than me. Still keeps the rain out.
 b[merchant] : Linseed every spring. That's your problem.
 b : Take them back. | That's Ridgemere. | They don't make them like that now.
-a : I will. | It is. | They don't.
+a : #bc_i_will# | #bc_it_is# | They don't.
 
 scene rg_sr_storm_night
 when topic=lore|smalltalk here.region=ridgemere here.weather=storm|rain
+does tell.story / react.story / assess
 a : Storm's tearing at the piers. | No boats out on the Sound tonight, thank the Bright One. | Hope the Fish Hall roof holds.
 b[sailor] : I've ridden out worse. Not in a boat that small, mind.
 b[priest] : I'll light a lamp in the Chapel of the Tide, for those still out.
-b : Stay in. | Not tonight. | So do I.
-a : I will. | Thank the Bright One. | Me too.
+b : Stay in. | Not tonight. | #bc_so_do_i#
+a : #bc_i_will# | Thank the Bright One. | #bc_me_too#
 
 scene rg_sr_seal_hunt
 when topic=lore here.region=ridgemere
+does tell.story / react.story / assess
+tone even / serious / even
 a : The seals are back on the rocks below the docks. | Old folk say seals are the drowned come to visit. | Seals ate half the morning catch out on the Sound.
 b[fisher] : Drowned or not, they're thieves.
 b[priest] : The drowned rest with the Bright One. The seals are just seals.

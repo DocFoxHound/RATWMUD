@@ -986,22 +986,22 @@
    "better": "higher",
    "gate": "soft",
    "target": "100% at Phase 7 (every entry)",
-   "value": 66.42087205878587,
+   "value": 100.0,
    "passes": null,
    "by_profile": {
-    "L1": 68.312,
-    "L2": 76.305,
-    "L3": 60.98,
-    "L4": 67.114,
-    "L5": 68.708,
-    "L6": 60.51,
-    "L7": 65.084,
+    "L1": 100.0,
+    "L2": 100.0,
+    "L3": 100.0,
+    "L4": 100.0,
+    "L5": 100.0,
+    "L6": 100.0,
+    "L7": 100.0,
     "L8": 0,
     "L9": 0,
-    "L10": 56.098
+    "L10": 100.0
    },
-   "control": 66.46951890826229,
-   "separation": 0.0007318670313162988,
+   "control": 100.0,
+   "separation": 0.0,
    "real_better": false,
    "separates": false,
    "control_required": false,
@@ -1332,8 +1332,8 @@
     "met": 3342
    },
    "M1_detail": {
-    "library": 0.0,
-    "scene": 68.43490304709141
+    "scene": 100.0,
+    "written": 100.0
    },
    "C1Q_detail": {
     "questions": 1098,
@@ -1539,8 +1539,7 @@
     "met": 1835
    },
    "M1_detail": {
-    "library": 0.0,
-    "scene": 76.30007283321194,
+    "scene": 100.0,
     "written": 100.0
    },
    "C1Q_detail": {
@@ -1737,7 +1736,7 @@
     "met": 1270
    },
    "M1_detail": {
-    "scene": 51.35845749342682,
+    "scene": 100.0,
     "written": 100.0
    },
    "C1Q_detail": {
@@ -1913,7 +1912,7 @@
     "met": 916
    },
    "M1_detail": {
-    "scene": 58.88485947416138,
+    "scene": 100.0,
     "written": 100.0
    },
    "C1Q_detail": {
@@ -2091,7 +2090,7 @@
     "met": 463
    },
    "M1_detail": {
-    "scene": 58.71470301850049,
+    "scene": 100.0,
     "written": 100.0
    },
    "C1Q_detail": {
@@ -2264,7 +2263,7 @@
     "met": 434
    },
    "M1_detail": {
-    "scene": 53.60323886639676,
+    "scene": 100.0,
     "written": 100.0
    },
    "C1Q_detail": {
@@ -2436,7 +2435,7 @@
     "met": 471
    },
    "M1_detail": {
-    "scene": 58.81383855024712,
+    "scene": 100.0,
     "written": 100.0
    },
    "C1Q_detail": {
@@ -2883,7 +2882,8 @@
     "met": 1473
    },
    "M1_detail": {
-    "scene": 56.097938943127225
+    "scene": 100.0,
+    "written": 100.0
    },
    "C1Q_detail": {
     "questions": 419,
@@ -3189,6 +3189,25 @@
     "L10": "artifacts/talk/runs/p6/fixtures-L10"
    },
    "on": "2026-11-16T23:06:57+00:00"
+  },
+  {
+   "metrics": [
+    "M1"
+   ],
+   "why": "Phase 7 says what every entry does (doc 84 §32): every line carries its moves, 100% in both modes; locked there so an untagged line shows",
+   "from": {
+    "L1": "artifacts/talk/runs/p7/fixtures-L1",
+    "L2": "artifacts/talk/runs/p7/fixtures-L2",
+    "L3": "artifacts/talk/runs/p7/fixtures-L3",
+    "L4": "artifacts/talk/runs/p7/fixtures-L4",
+    "L5": "artifacts/talk/runs/p7/fixtures-L5",
+    "L6": "artifacts/talk/runs/p7/fixtures-L6",
+    "L7": "artifacts/talk/runs/p7/fixtures-L7",
+    "L8": "artifacts/talk/runs/p7/fixtures-L8",
+    "L9": "artifacts/talk/runs/p7/fixtures-L9",
+    "L10": "artifacts/talk/runs/p7/fixtures-L10"
+   },
+   "on": "2026-11-17T00:37:03+00:00"
   }
  ]
 }

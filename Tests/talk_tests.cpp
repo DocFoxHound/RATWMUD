@@ -1597,8 +1597,11 @@ say And you.
     expect(greeted.info.at(0).text == "Good day. Word is the miller's wed." &&
                greeted.info[0].moves == std::vector<std::string>{"greet", "tell.gossip"} && greeted.id == "o",
            "a stranger greets in the same breath: " + greeted.info.at(0).text);
+    // Phase 7 (§8.12.3): the opener's own words are kept beside the whole line, for the collision filter.
+    expect(greeted.info.at(0).bare == "Word is the miller's wed.", "the opener's own words kept: " + greeted.info.at(0).bare);
     g.facts["pair.band"] = "friends";
     expect(greet.converse(g, 1, None, {}).info.at(0).text == "Word is the miller's wed.", "friends don't");
+    expect(greet.converse(g, 1, None, {}).info.at(0).bare.empty(), "nothing said before: no own words kept apart");
     Conversation strangers;
     strangers.frames = {"strangers"};
     strangers.people = {"maren", "ivo"};

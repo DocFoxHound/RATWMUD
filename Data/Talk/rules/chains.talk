@@ -5,53 +5,64 @@
 # Prices: the poor complain, and each answers as they are.
 rule prices_complain_poor
 when concept=talk.prices self.wealth=poor|destitute topic.dir=up
+does tell.news
 say #oath#. I'll go without this week at #topic.price#. | #topic.price#? For #topic.what#? #robbery#.
 then other: prices.answer_complaint
 remember self: complained_prices 1d
 
 rule prices_complain_again
 when concept=talk.prices self.mem.complained_prices topic.dir=up
+does tell.news
 priority 1
 say Still #topic.price#. I said it yesterday and I'll say it again. | Dearer every day#tag#.
 then other: prices.answer_complaint
 
 rule prices_answer_merchant
 when concept=prices.answer_complaint self.role=merchant self.deals=yes
+does react.complaint
 say I pay more, you pay more, #address#. | Don't blame me. I only sell it.
 remember pair: talked_money 7d
 
 rule prices_answer_poor
 when concept=prices.answer_complaint self.wealth=poor|destitute
+does react.complaint
 say #agree#. We'll all go short together. | Don't I know it.
 
 rule prices_answer_rich
 when concept=prices.answer_complaint self.wealth=rich
+does react.complaint
 say Is it? I hadn't noticed. | Surely not so very much.
 
 rule prices_answer
 when concept=prices.answer_complaint
+does react.complaint
 say #agree#. Hard on everyone. | #agree#. Nothing to be done.
 
 # Two friends passing: a greeting, and the answer as the answerer is today.
 rule greet_friend
 when concept=react.friend
+does hail
 cooldown 6h
 say #greet#, #pet#! | #greet#, #pet#. Keeping well?
 then other: greet.answer
 
 rule greet_answer
 when concept=greet.answer
+does answer.how
 say #greet#! Can't stop. | #greet#, #pet#. Well enough.
 
 rule greet_answer_tired
 when concept=greet.answer tired=yes
+does answer.how
 say #tired.capitalize#. Don't ask. | Ask me after I've slept.
 
 rule greet_answer_mourning
 when concept=greet.answer mourning=kin
+does answer.how
 priority 3
 say ... Thank you for asking. | Not good. Not today.
 
 rule greet_answer_working
 when concept=greet.answer working=yes shift=during
+does answer.how
 say Can't stop, I'm at work. | Later, #pet#. Work.

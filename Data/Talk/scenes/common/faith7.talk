@@ -11,16 +11,18 @@
 
 scene e4_fa_sermon_long
 when topic=faith
+does tell.self / react.self / assess
 a : Long sermon last Restday. I counted the beams twice. | Did you hear the sermon? On patience? It tested mine. | The priest went on about the Dark One for an hour. I think he's met him.
 b[priest] #self : I heard it, yes. I was giving it. Thank you so much.
 b[piety=devout] #dev : I thought it was beautiful. Every word.
 b : I slept through it. | Not a word. I was at the back. | He has that look.
 a@self : Ah. It was a very good sermon. Very... thorough.
 a@dev : You would. You sit at the front.
-a : Lucky. | Wise. | Doesn't he.
+a : #bc_lucky# | #bc_wise# | Doesn't he.
 
 scene e4_fa_sermon_good
 when topic=faith a.piety=devout
+does tell.self / ask.detail / answer.detail
 cooldown 2d
 a : That was a good sermon on Restday. About the lamp in the window. | I keep thinking about what was said at chapel. About the stranger at the gate. | The priest made me cry on Restday. In a good way.
 b[piety=devout] : I've been thinking about it all week.
@@ -30,6 +32,7 @@ a : Leave a light for those still on the road. That was it. | Feed the stranger.
 
 scene e4_fa_priest_named
 when topic=faith a.priest a.job!=priest pair.flock!=b
+does tell.self / ask.detail / answer.detail
 cooldown 3d
 a : #a.priest# was at our door this week. Asking after my soul. | Have you heard #a.priest# sing? Like a gate in the wind. | #a.priest# says the chapel roof needs a collection. Again.
 b : What did you tell them? | Every Restday. | Again? Where does it go?
@@ -37,12 +40,13 @@ a : That it's fine, thank you. | Loudly, too. | Slates, they say.
 
 scene e4_fa_priest_scolds
 when topic=faith a.job=priest b.job!=priest
+does ask.detail / answer.detail / tell.self
 cooldown 2d
 a : I've not seen you at chapel, #b.name#. | You'll come on Restday? I've a good one ready. | Have you prayed this week? Truly?
 b[piety=devout] #there : I was there! Back bench, by the pillar. You can't see past it.
 b[shift=during] #work : I'm working, #address#. The Bright One knows I'm working.
 b[honesty=sly] #sly : I was there in spirit. Very much in spirit.
-b : I've been meaning to. | I'll try. | Once or twice.
+b : I've been meaning to. | #bc_ill_try# | Once or twice.
 a@sly : Bring the rest of you next time.
 a@there : Then I'll look past the pillar.
 a@work : He does. Come when you're not.
@@ -50,14 +54,16 @@ a : Meaning's a start. | I'll save you a bench. | Once or twice is more than non
 
 scene e4_fa_promise_chapel
 when topic=faith a.job=priest b.job!=priest
+does tell.self / react.self / assess
 cooldown 3d
 remember pair: e4_chapel_promise 7d
 a : Promise me you'll come this Restday. | I'll look for you at chapel, mind. | You'll be there Restday? Say yes.
 b : I'll come. I promise. | I'll be there. | Yes. Fine. Yes.
-a : I'll hold you to it. | Front bench. | Good.
+a : I'll hold you to it. | Front bench. | #bc_good#
 
 scene e4_fa_promise_broken
 when topic=faith a.job=priest pair.mem.e4_chapel_promise here.day=work|market
+does tell.self / react.self / tell.self
 cooldown 7d
 a : You promised me Restday, #b.name#. I looked. | I saved a bench for you. It stayed empty. | The Bright One heard you promise, you know. So did I.
 b[honesty=frank] : I forgot. I'm sorry. Truly.
@@ -67,6 +73,7 @@ a : Next Restday, then. And I'll look harder. | Bring yourself, not excuses. | I
 
 scene e4_fa_collection
 when topic=faith
+does tell.self / react.self / tell.self
 a : The collection plate came round twice on Restday. Twice! | What does the chapel do with all the coin? | I put a button on the plate once. Felt bad for a month.
 b[priest] #self : Bread for the dole. Wood for the widows. Slates for the roof. Shall I go on?
 b[wealth=rich] #purse : I give a purse at midwinter. Nobody notices a penny.
@@ -77,44 +84,49 @@ a : They'd notice it missing. | Somebody's eating well. | It was a nice button.
 
 scene e4_fa_bell
 when topic=faith here.time=dawn|dusk
+does tell.self / react.self / assess
 a : There's the chapel bell. | Bell's ringing. Somebody's being married, or buried. | Every evening that bell. I'd miss it if it stopped.
 b[piety=devout] #word : Bless us. Say a word with me.
 b : Prayers, then. | Which, do you think? | You would.
-a@word : Go on, then.
+a@word : #bc_go_on_then#
 a : Prayers it is. | Married. They'd ring it slower. | I would.
 
 scene e4_fa_painted_star
 when topic=faith here.place=chapel|street
+does tell.self / react.self / assess
 a : Look at the star painted on the chapel ceiling. Fading. | My father painted that star, the one over the door. | Pup asked me why the Bright One's star never moves. I didn't know.
 b[priest] #pr : Because he set the order, and the order holds. So his star holds too.
 b[crafter] #gold : Needs gold leaf. Paint doesn't last, up there.
 b : Needs doing. | Did he? Good work. | Neither do I.
 a@pr : That's lovely. I'll tell the pup that.
 a@gold : Who's paying for gold?
-a : That's what I'll say. | It does. | We just nod.
+a : That's what I'll say. | #bc_it_does# | We just nod.
 
 scene e4_fa_chapel_school
 when topic=faith a.stage=young
+does ask.detail / answer.detail / ask.detail
 cooldown 2d
 a : We learned the Bright One's prayer at chapel. I only know the start. | The priest says the Dark One lives in a hole. Which hole? | Why did the Bright One go up? Didn't he like it here?
 b[priest] #self : Say it with me, little one. We'll learn the middle together.
 b[stage=old] : Every wolf asks that. Even the priests, I expect.
 b : The start's the best bit. | Not ours, I hope. | He had other places to see.
 a@self : Is the middle long?
-a : I know. | Is it far down? | Will he come back?
+a : #bc_i_know# | Is it far down? | Will he come back?
 
 scene e4_fa_grace
 when topic=faith here.place=home|tavern
+does tell.self / react.self / assess
 a : Do you say grace? My mother always did. | Bless this bread, and the paws that made it. That's how ours goes. | I forget to say grace. Then I feel I should.
 b[piety=devout] #apple : Every meal. Even an apple.
 b[humour=dry] #fin : Mine's short. "Finally."
-b : Mostly. | That's a nice one. | The bread doesn't mind.
+b : #bc_mostly# | That's a nice one. | The bread doesn't mind.
 a@apple : Even an apple?
 a@fin : Finally! Ha.
-a : Good. | It was my gran's. | No, it doesn't.
+a : #bc_good# | It was my gran's. | No, it doesn't.
 
 scene e4_fa_restday_working
 when topic=faith here.day=rest a.working=yes
+does tell.self / react.self / assess
 cooldown 2d
 a : Working on Restday. The Bright One will have words. | Everyone's at chapel and here I am with a bucket. | Somebody's got to keep the place running on Restday.
 b[priest] #cow : The Bright One rested so we could. But he never let a cow go unmilked.
@@ -122,20 +134,22 @@ b[piety=devout] #pray : I'll pray for you. And the work.
 b : He'll understand. | Shocking. | It's always you, isn't it.
 a@cow : Nor a bucket unfilled, I hope.
 a@pray : Much obliged.
-a : He'd better. | Isn't it. | Always.
+a : He'd better. | Isn't it. | #bc_always#
 
 scene e4_fa_restday_lie_in
 when topic=faith here.day=rest
+does ask.detail / answer.detail / assess
 a : Chapel or bed this morning? | Restday. You're going? | I'm going to chapel. Don't look so surprised.
 b[piety=devout] #order : Chapel. Then bed.
 b[pair.band=spouses] #both : You're going. And you're taking me.
 b : Bed. Then chapel, if I'm quick. | I'll see. | I'm very surprised.
 a@order : Good order.
 a@both : Am I. Right. Yes.
-a : Wise. | Don't see too long. | Well, quite right.
+a : #bc_wise# | Don't see too long. | Well, quite right.
 
 scene e4_fa_restday_rules
 when topic=faith a.piety=devout b.piety=ordinary
+does tell.self / react.self / tell.self
 cooldown 3d
 a : You were mending a fence on Restday. I saw you. | No baking on Restday, my mother said. Not even bread. | You don't keep Restday at all, do you?
 b : The fence didn't know it was Restday. | Your mother was hungry Dawndays. | I keep it in my heart.
@@ -145,34 +159,38 @@ a : The Bright One did. | We ate cold. And we were glad. | Hm. Your heart's work
 
 scene e4_fa_prayer_sick
 when topic=faith
+does tell.self / react.self / assess
 a : I've been praying for my neighbour. She's poorly. | Pray for my father, would you? His chest. | I don't pray much. I prayed last night, for my sister.
 b[priest] : I'll name them at chapel. Every Restday till they're well.
 b[piety=devout] : Every night. I'll add them.
-b : I'll keep them in mind. | I will. | It can't hurt.
+b : I'll keep them in mind. | #bc_i_will# | It can't hurt.
 a : #thanks#. | That means something. | No. It can't.
 
 scene e4_fa_prayer_answered
 when topic=faith a.piety=devout
+does tell.self / ask.detail / answer.detail
 cooldown 2d
 a : I prayed for rain and it came. | I prayed my boy'd come home safe, and he did. | I asked for a sign and a feather fell on my paw.
 b[honesty=frank] #doubt : And everyone else who prayed that night?
 b : Bless the Bright One. | That's good. | A sign of what?
 a@doubt : He's busy. He'll get to them.
-a : Bless him. | It is. | I'm working that out.
+a : Bless him. | #bc_it_is# | I'm working that out.
 
 scene e4_fa_prayer_unanswered
 when topic=faith a.piety=ordinary
+does tell.self / react.self / ask.detail
 cooldown 1d
 a : I prayed for a whole year. Nothing. | Does praying do anything, do you think? Really? | Prayed my luck'd turn round. It didn't.
 b[piety=devout] #market : It's not a market. You don't pay and get.
 b[job=priest] #parent : He hears. He doesn't always say yes. Like a good parent.
-b : Mine neither. | I don't know. | Sorry.
+b : Mine neither. | I don't know. | #bc_sorry#
 a@market : Then what is it?
 a@parent : My parents said yes to nothing.
-a : Then what's it for? | Nobody does. | Me too.
+a : Then what's it for? | Nobody does. | #bc_me_too#
 
 scene e4_fa_blessing_given
 when topic=faith b.stage=old a.stage!=old
+does tell.memory / react.story / assess
 cooldown 2d
 a : Bless me, would you? I've a long road tomorrow. | My gran always blessed us before a journey. I miss it. | Would you say the old blessing for me?
 b : Bright One keep your feet dry and your purse full. There. | Come here. Paws on your head. There. | Road under you, sun over you, home behind you.
@@ -180,14 +198,16 @@ a : #thanks#. I'll need both. | It feels better already. | That's the one.
 
 scene e4_fa_bless_sneeze
 when topic=faith
+does tell.self / react.self / assess
 a : *sneezes* | *sneezes twice* | *sneezes into a paw*
 b[piety=devout] : Bright One bless you.
 b[humour=dry] : Keep it.
-b : Bless you. | Bless you. Twice. | Bless.
+b : #bc_bless_you# | Bless you. Twice. | Bless.
 a : #thanks#. The dust. | It's the dust. | Lovely, I know.
 
 scene e4_fa_swearing
 when topic=faith a.piety=devout
+does tell.self / react.self / assess
 cooldown 2d
 a : Don't say "Bright One's teeth" in the street, #address#. Folk hear. | You swear like a carter. The gods are listening. | That oath you use. Where did you learn it?
 b[job=carter] #carter : I am a carter.
@@ -199,14 +219,16 @@ a : Not from you, they haven't. | Shameless. | Your mother should be ashamed.
 
 scene e4_fa_doubter
 when topic=faith a.piety=ordinary b.piety=devout
+does ask.detail / answer.detail / assess / assess
 cooldown 2d
 a : Do you really believe it all? The Bright One, the Dark One? | If the Bright One's so good, why's my roof leaking? | I'll be honest, I go for the singing.
 b : Every word. | Because your roof's old. It's not personal. | Then sing well. It still counts.
-a : I envy you. | Fair enough. | It does?
-b : Don't. It's not always easy. | It's not. | It does.
+a : I envy you. | #bc_fair_enough# | It does?
+b : Don't. It's not always easy. | It's not. | #bc_it_does#
 
 scene e4_fa_old_questions
 when topic=faith a.stage=old
+does tell.self / react.self / tell.self
 cooldown 2d
 a : Seventy years of prayers. I've some questions saved for when I meet him. | The older I get, the less sure I am of everything. Except the chapel. | When I go, I hope they bury me facing the hill. Morning sun.
 b[piety=devout] #ans : He'll have answers.
@@ -214,10 +236,11 @@ b[stage=young] #soon : Are you going soon?
 b : What questions? | That's honest. | They will.
 a@ans : Hope so. I've a list.
 a@soon : Not if I can help it, pup.
-a : Why the frost takes the lambs. For a start. | It's all I've got. | Good.
+a : Why the frost takes the lambs. For a start. | It's all I've got. | #bc_good#
 
 scene e4_fa_arguing_order
 when topic=faith
+does ask.detail / answer.detail / assess
 a : The priest says the Bright One brought order. Have you seen the Sump? | Who decides what's the Dark One's and what's just a bad day? | If the Bright One made the Houses, why are they so greedy?
 b[piety=devout] #ord : Order isn't the same as everyone being comfortable.
 b[job=noble] #noble : I'll pretend I didn't hear that.
@@ -228,6 +251,7 @@ a : No one ever answers it. | Convenient. | I'd rather not.
 
 scene e4_fa_dark_one_dice
 when topic=faith here.place=tavern
+does tell.self / react.self / assess
 a : The Dark One's in those dice, I swear it. | Lost again. That's the Dark One's game, dice. | My gran said cards were the Dark One's prayer book.
 b[piety=devout] #stop : Then stop throwing them.
 b : He's winning, at any rate. | Play something else, then. | Your gran played, I bet.
@@ -236,36 +260,40 @@ a : One more throw. | Like what? Prayers? | Like a fiend, she did.
 
 scene e4_fa_dark_one_storm
 when topic=faith here.weather=storm
+does tell.self / react.self / tell.self
 a : Hear that? The Dark One's in a temper tonight. | Storm like this, my mother covered the mirrors. | Thunder. Somebody's done something wicked.
 b[piety=devout] #shut : Say the evening words and keep the door shut.
 b[scholar] #sci : Warm air meeting cold. Nothing wicked about it.
-b : Let him shout. | Why the mirrors? | Not me.
+b : Let him shout. | Why the mirrors? | #bc_not_me#
 a@shut : Shut, it is.
 a@sci : Tell that to the thunder.
 a : He will. | So he couldn't look in. | That's what they all say.
 
 scene e4_fa_sin_gossip
 when topic=faith
+does tell.self / react.self / tell.self
 a : Gossip's a sin, the priest says. So, did you hear about the cooper's wife? | They say the miller confessed to the priest. For an hour. | I've been wicked this week. Not telling how.
 b[piety=devout] #dont : Don't. Not after Restday.
 b[talk=chatty] #tell : No! Tell me. Sin's only a sin if it's dull.
-b : Go on, then. | An hour! What did he do? | Go on.
+b : #bc_go_on_then# | An hour! What did he do? | #bc_go_on#
 a@tell : Well. You didn't hear it from me...
 a@dont : Fine. It'll keep.
 a : On second thoughts, it'll keep. | Nobody knows. That's the trouble. | No.
 
 scene e4_fa_confess
 when topic=faith a.honesty=sly|guarded
+does tell.self / react.self / assess
 cooldown 2d
 a : I went to confess and I couldn't think of anything bad enough. | Does the priest tell anyone what you confess? | If I confessed everything I'd be there till Restday next.
 b[priest] #never : Never. Not a word. Not even to the Bright One; he knows already.
 b[honesty=frank] : You've a long list, then.
-b : Lucky you. | Not supposed to. | That bad?
+b : #bc_lucky_you# | Not supposed to. | That bad?
 a@never : Hm. Good.
 a : Lucky me. | Hm. Good. | Worse.
 
 scene e4_fa_charity
 when topic=faith a.wealth=rich
+does tell.self / react.self / assess
 cooldown 2d
 a : I gave a purse to the dole this Restday. Felt good. | The chapel asked me for slates. I sent a cart. | The priest sat me at the front again. I think he wants money.
 b[wealth=poor|destitute] #queue : I know. I was in the queue it bought.
@@ -275,17 +303,19 @@ a : It's the least. | They'll need them. | He's welcome to ask.
 
 scene e4_fa_dole_bread
 when topic=faith a.on_dole=yes
+does tell.self / react.self / assess
 cooldown 2d
 a : Chapel bread again this week. Stale, but bread. | Queued two hours for the parish loaf. Prayed the whole time. | The priest gives the bread with a blessing. I'd rather butter.
 b[priest] #sorry : I'm sorry it's stale. I'll speak to the baker.
 b : Bread's bread. | Prayed for what? | Wouldn't we all.
 a@sorry : It's not your fault. Thank you.
-a : It is. | A shorter queue. | We would.
+a : #bc_it_is# | A shorter queue. | We would.
 
 # ---------------------------------------------------------------- Omens and superstitions
 
 scene e4_fa_crow
 when topic=faith
+does tell.self / react.self / tell.self
 a : Crow on the roof all morning. I don't like it. | Three crows on the chapel wall. Means a death, my aunt says. | A crow followed me all the way from the well.
 b[piety=devout] #pray : Crows are only birds. Say a prayer anyway.
 b[old] #three : One crow's sorrow, two's mirth. Three... I forget three.
@@ -296,14 +326,16 @@ a : I tried. It looked at me. | She is. | Not that I know.
 
 scene e4_fa_dropped_knife
 when topic=faith here.place=home|tavern|work
+does tell.self / react.self / assess
 a : Dropped a knife. Somebody's coming to visit. | Spilled the salt. Quick, over your shoulder. | Two spoons in my cup. Means a wedding.
 b[humour=dry] #paws : Or it means you've butter-paws.
 b : Hope they bring cake. | Left or right shoulder? | Whose?
 a@paws : Rude.
-a : Ha. | Left. Into the Dark One's eye. | Not mine, sadly.
+a : #bc_ha# | Left. Into the Dark One's eye. | Not mine, sadly.
 
 scene e4_fa_salt
 when topic=faith here.place=home|tavern
+does tell.self / react.self / assess
 a : Pass the salt. No, put it down. Never paw to paw. | Never lend salt, my mother said. Bad luck to both. | Spilled it again. That's a quarrel coming.
 b[piety=devout] #priest : The priest says salt's just salt.
 b : Sorry. On the table. | Even to a neighbour? | Not with me.
@@ -312,6 +344,7 @@ a : Thank you. Never paw to paw. | Especially a neighbour. | With somebody.
 
 scene e4_fa_full_moon_howl
 when topic=faith here.time=night|dusk
+does tell.self / react.self / tell.self
 a : Full moon. My paws are itching to howl. | The old ones say you should howl at the full moon, for the old pack. | The priest says howling's for wild wolves. I say it's for the moon.
 b[piety=devout] #no : The chapel says no. We're not wild things.
 b[stage=old] #old : We all howled, when I was young. Every full moon. The whole street.
@@ -322,16 +355,18 @@ a : There's no quiet way to howl. | Aye. They'd like that. | Moon first.
 
 scene e4_fa_moon_lady
 when topic=faith here.time=night here.weather=clear
+does tell.self / react.self / assess
 a : See the face in the moon? My gran called her the Lady in the Moon. | Make a wish on the new moon, they say, and it grows with it. | The moon's watching tonight. Feels like it.
 b[priest] #lamp : The moon is the Bright One's lamp, left lit. No lady.
 b[stage=young] #nose : I see her! She's got a nose!
 b : I see a hare. | What would you wish? | It always is.
 a@lamp : Lamp or lady, she's pretty.
 a@nose : A very good nose.
-a : A hare? It's a lady. | Something small. | Always.
+a : A hare? It's a lady. | Something small. | #bc_always#
 
 scene e4_fa_red_moon
 when topic=faith here.time=night
+does tell.self / react.self / assess
 a : Red moon last month. Things have gone wrong since. | My mother never sowed under a red moon. | Red moon means war, the old soldiers say.
 b[job=guard|soldier] #wall : We say it means a long night on the wall.
 b : Things go wrong anyway. | Mine neither. | They say a lot.
@@ -340,6 +375,7 @@ a : Not like this. | Wise woman. | And drink a lot.
 
 scene e4_fa_charm
 when topic=faith
+does tell.self / react.self / assess
 a : I carry a wolf's tooth on a string. My #grandad#'s. | See this bit of red thread on my wrist? Luck. | I've the Bright One's star stamped on a penny. Never spend it.
 b[piety=devout] #only : The Bright One's the only luck you need.
 b[honesty=frank] #work : Does it work?
@@ -350,6 +386,7 @@ a : For luck. | It's lucky, not pretty. | You would.
 
 scene e4_fa_charm_lost
 when topic=faith
+does tell.self / react.self / thank
 a : I've lost my luck penny. Everything's going wrong. | Somebody took the ribbon off my door. The luck one. | My charm snapped this morning. Bad sign.
 b[warmth=warm] #btn : Here. Have this button. It's lucky now. I've decided.
 b : I'll help you look. | Who'd do that? | Get another.
@@ -358,14 +395,16 @@ a : #thanks#. Two pairs of eyes. | Someone unlucky. | It's not the same.
 
 scene e4_fa_itchy_paw
 when topic=faith
+does tell.self / react.self / assess
 a : My right paw's itching. Money coming. | My ears are burning. Someone's talking about me. | Left paw itching. That's money going.
 b[humour=dry] #flea : Or fleas.
-b : About time. | Wasn't me. | It always is.
+b : #bc_about_time# | Wasn't me. | It always is.
 a@flea : Don't say that.
-a : Isn't it. | Hm. | Always.
+a : Isn't it. | Hm. | #bc_always#
 
 scene e4_fa_moth
 when topic=faith here.time=dusk|night
+does tell.self / react.self / assess
 a : A white moth came in tonight. My gran says it's the dead visiting. | Owl on the gate last night. | A candle went out by itself. No draught.
 b[piety=devout] #names : Say their names and let them go.
 b[scholar] #lamp : A moth. They like lamps.
@@ -376,6 +415,7 @@ a : I'd like to think my mother. | This one stared. | Not this time.
 
 scene e4_fa_ladder
 when topic=faith here.place=street|market
+does tell.self / react.self / assess
 a : Don't walk under that ladder! | Black cat crossed my path. I'm going round the long way. | Step on a crack and the Dark One knows your name.
 b[job=laborer|crafter working=yes] #up : I'm up the ladder half the day. Walk where you like.
 b : Why not? | It's a cat. | That's every street in #here.town#.
@@ -384,6 +424,7 @@ a : Paint falls, for one. | A black one. | Hop, then.
 
 scene e4_fa_first_snow
 when topic=faith here.weather=snow
+does tell.self / react.self / assess
 a : Snow! Catch a flake on your tongue for luck. | Snow on Restday's a blessing, my #grandad# said. | Snow's the Bright One tidying up.
 b[stage=young] #three : I caught three! Is that three lucks?
 b : Bit late for me. | He'd say that about anything. | Tidy is the word.
@@ -392,56 +433,63 @@ a : At least. | He would. | Clean, too.
 
 scene e4_fa_fog_dead
 when topic=faith here.weather=fog
+does tell.self / react.self / assess
 a : The dead walk in fog like this. Mother always said. | Don't call a name out in fog. You don't know what answers. | In fog like this you could meet anyone. Anyone at all.
 b[piety=devout] #rest : The dead rest with the Bright One. Fog's just weather.
 b[stage=young] #pup : Stop it. I have to walk home.
 b : Cheerful. | Who'd answer? | Even you.
-a@rest : I hope so.
+a@rest : #bc_i_hope_so#
 a@pup : Sorry, pup. Stay close.
-a : Mostly. | Best not find out. | Even me.
+a : #bc_mostly# | Best not find out. | Even me.
 
 scene e4_fa_dream_omen
 when topic=faith
+does ask.detail / answer.detail / assess
+tone grave / even / even
 a : Is a dream a message, do you think? From the Bright One? | Dreamt of my dead father telling me to move the woodpile. Should I? | My gran had a dream before every death in the family. Every one.
 b[priest] #sup : Sometimes. More often, supper.
 b : Some are. | Couldn't hurt. | Every one?
 a@sup : Supper, probably.
-a : Which, though? | I'll move it. | Every one.
+a : Which, though? | I'll move it. | #bc_every_one#
 
 # ---------------------------------------------------------------- Rites: weddings, funerals, naming
 
 scene e4_fa_wedding_rite
 when topic=faith world.wedding=recent
+does tell.self / react.self / assess
 a : Lovely wedding. Did you see them bind the paws with the red cord? | The priest made them say it three times, the promise. | She cried when they tied the cord. He cried more.
 b[piety=devout] : The cord's my favourite part. Cut only by death.
 b[humour=dry] #heard : Three times so neither can say they misheard.
 b : I couldn't see past the hats. | Three times! | He would.
 a@heard : Very wise.
-a : Lovely. | Very wise. | Bless them both.
+a : #bc_lovely# | Very wise. | Bless them both.
 
 scene e4_fa_funeral_rite
 when topic=faith world.death=recent
+does tell.self / react.self / assess
 a : We sat up with the body all night. The old way. | They put pennies on the eyes. To pay the way up, my gran said. | The whole street howled for them at the burying.
 b[priest] #priest : The sitting-up matters. The dead shouldn't wake alone.
 b[piety=devout] #has : The Bright One has them now.
 b : Hard night. | Pay who? | That's a send-off.
-a@has : I hope so.
+a@has : #bc_i_hope_so#
 a@priest : That's why we do it.
 a : Hard and long. | She never said. I put them on anyway. | They'd have liked it.
 
 scene e4_fa_mourning
 when topic=faith a.mourning=kin|friend
+does tell.self / react.self / thank
 cooldown 1d
 a : I keep lighting a candle at chapel. I don't know if it helps. | The priest says they're with the Bright One. I hope they're warm. | Do you think the dead can hear us?
 b[warmth=warm] #light : It helps you. That's enough. I'll light one too.
 b[piety=devout] #sure : I'm sure of it. Every word.
-b : It does. | They'll be warm. | I think so.
+b : #bc_it_does# | They'll be warm. | I think so.
 a@light : #thanks#. That's kind.
 a@sure : Then I've a lot to say.
-a : #thanks#. | I hope so. | Then I've a lot to say.
+a : #thanks#. | #bc_i_hope_so# | Then I've a lot to say.
 
 scene e4_fa_naming
 when topic=faith world.birth=recent
+does tell.self / react.self / assess
 a : They're naming the pup at chapel Restday. The star on its brow. | The new pup'll be blessed at the font. They've asked me to hold it. | A new pup on the street. Somebody fetch the priest's oil.
 b[stage=old] #font : I held three at the font. Dropped none.
 b : What name? | Don't drop it. | They'll want honey cakes after.
@@ -450,65 +498,72 @@ a : They're not saying. | Thank you. Very helpful. | I'll bring some.
 
 scene e4_fa_burial_ground
 when topic=faith a.stage=old
+does tell.self / react.self / assess
 cooldown 2d
 a : I've chosen my spot in the chapel yard. Under the yew. | I go and talk to my old friends in the burying ground. They're good listeners. | When I go, no long sermon. Promise me.
 b[job=priest] #short : A short one. The shortest I've got.
 b : Good spot. | Best kind. | Promise.
-a@short : Good.
-a : Shade in summer. | They never interrupt. | Good.
+a@short : #bc_good#
+a : Shade in summer. | They never interrupt. | #bc_good#
 
 # ---------------------------------------------------------------- Festivals' holy side
 
 scene e4_fa_festival_procession
 when topic=faith world.festival=soon|today here.festival
+does tell.self / react.self / assess
 a : Are you walking in the procession for #here.festival#? | The candles at #here.festival#. That's my favourite bit. | The priest's blessing the fields again for #here.festival#.
 b[priest] #wave : I'll be at the front with the star on a pole. Wave.
 b[stage=young] #candle : I'm carrying a candle! A real one!
-b : Every year. | Mine too. | He does it every year.
+b : #bc_every_year# | #bc_mine_too# | He does it every year.
 a@wave : I'll wave.
 a@candle : Mind your fur, then.
-a : Good. | We'll go together. | And every year it works.
+a : #bc_good# | We'll go together. | And every year it works.
 
 scene e4_fa_midwinter
 when topic=faith here.season=winter
+does tell.self / react.self / assess
 a : Midwinter vigil soon. Up all night with a candle. | They say the Bright One's nearest at midwinter. | Long night coming. I'll keep a lamp lit for the dead.
 b[piety=devout] #faith : I never miss it. Not once in forty years.
 b[stage=young] #up : Can I stay up for it? All night?
-b : I fall asleep by midnight. | So's the cold. | Me too.
+b : I fall asleep by midnight. | So's the cold. | #bc_me_too#
 a@faith : Faithful.
 a@up : If you can.
 a : Not this year, you won't. | Wrap up, then. | That's two lamps, then.
 
 scene e4_fa_spring_blessing
 when topic=faith here.season=spring
+does tell.self / react.self / assess
 a : They'll bless the ploughs Restday. | Greening's coming. Ribbons on the chapel door. | First lambs. I always say a prayer for the first lambs.
 b[job=farmer|herder] : I'll take every blessing going. Last year's seed rotted.
 b : Bring yours. | Green ribbons. | Kind.
-a : I will. | Pretty. | It's luck.
+a : #bc_i_will# | Pretty. | It's luck.
 
 scene e4_fa_harvest_thanks
 when topic=faith here.season=autumn
+does tell.self / react.self / tell.self
 a : Harvest thanks on Restday. The altar'll be stacked with loaves. | First sheaf goes to the chapel. Always has. | We should give thanks. Good year, all things told.
 b[wealth=poor|destitute] #dole : Thanks for what? Loaves on the altar while folk go hungry.
 b[piety=devout] #best : Bring your best. Not your worst. He knows the difference.
 b : Smells lovely in there. | Always will. | All things told.
 a@dole : It goes to the dole after.
 a@best : He'll get my second best. I'm no saint.
-a : It does. | Always will. | Thanks for that.
+a : #bc_it_does# | Always will. | Thanks for that.
 
 # ---------------------------------------------------------------- By job
 
 scene e4_fa_sailor_blessing
 when topic=faith a.job=sailor|fisher
+does tell.self / react.self / assess
 cooldown 2d
 a : Priest blessed the boats this morning. Splashed us all. | Never whistle on a boat. Whistles up a wind. | Nail a horseshoe to the mast. Never lost a boat with one.
 b[job=sailor|fisher] #pig : And never say "pig" aboard. Never.
 b : Good. You'll need it. | Never? | Does it work?
 a@pig : Why pig?
-a : We will. | Never. | Never lost one yet.
+a : #bc_we_will# | #bc_never# | Never lost one yet.
 
 scene e4_fa_miner_prayer
 when topic=faith a.job=miner
+does tell.self / ask.detail / answer.detail
 cooldown 2d
 a : We all touch the stone at the shaft-head before we go down. | Leave a crust at the bottom of the shaft for the Stone Fathers. Everyone does. | Never whistle underground. They don't like it.
 b[piety=devout] #down : The Bright One's down there too. Don't forget him.
@@ -518,6 +573,7 @@ a : We all come up. | Rats, maybe. Or not rats. | Them.
 
 scene e4_fa_farmer_rain
 when topic=faith a.job=farmer|herder
+does ask.detail / answer.detail / assess
 cooldown 2d
 a : Pray for rain, would you? The east field's like a brick. | My mother buried an egg in each corner of the field. Never a bad crop. | I'll pray for sun and the brewer'll pray for rain. Who wins?
 b[job=brewer] #win : I'll win. I always win.
@@ -525,73 +581,81 @@ b[job=priest] #need : The Bright One sends what we need.
 b : I'll pray. | Did it work? | Whoever prays loudest.
 a@win : Then I'll shout louder.
 a@need : We need rain.
-a : #thanks#. | Every year. | Then I'll shout.
+a : #thanks#. | #bc_every_year# | Then I'll shout.
 
 scene e4_fa_guard_faith
 when topic=faith a.job=guard|soldier
+does tell.self / react.self / assess
 cooldown 2d
 a : I say the watchman's prayer every night before shift. | Some nights on the wall you'd pray to anything. | Seen too much to believe in much. But I pray. Just in case.
 b[piety=devout] #bless : Bless you for it. And for the wall.
 b : What's it go? | Anything? | Just in case.
 a@bless : #thanks#. I'll take it.
-a : Keep the gate, keep the dark out, keep me awake. | Anything. | Every night.
+a : Keep the gate, keep the dark out, keep me awake. | Anything. | #bc_every_night#
 
 scene e4_fa_healer_faith
 when topic=faith a.job=healer
+does tell.self / react.self / assess
 cooldown 2d
 a : Folk ask me to pray over a broken leg. I set it first. | I've seen prayers help. Mostly the one praying. | Half my patients want the priest. The other half want me.
 b[job=priest] #tog : We should work together more.
 b : Sensible. | That's something. | Which do you want?
 a@tog : Bones first, then you.
-a : Bones then prayers. | It is. | Whichever's free.
+a : Bones then prayers. | #bc_it_is# | Whichever's free.
 
 scene e4_fa_merchant_faith
 when topic=faith a.job=merchant
+does tell.self / react.self / assess
 cooldown 2d
 a : Profit's no sin, the priest says. As long as the weights are honest. | I keep a little star over the till. For honest dealing. | Restday shut, and the whole town shops Dawnday.
 b[honesty=sly] #mm : Honest weights. Mm.
 b : Are they? | Does it work? | Gets busy, Dawndays.
-a@mm : Mostly.
-a : Mostly. | The customers trust it. | Very.
+a@mm : #bc_mostly#
+a : #bc_mostly# | The customers trust it. | #bc_very#
 
 scene e4_fa_innkeeper_faith
 when topic=faith a.job=innkeeper|brewer
+does tell.self / react.self / assess
 cooldown 2d
 a : Restday's my busiest day. Straight from chapel to the bar. | The priest drinks here. Small ale. Very slowly. | Every sermon on drink sends them to me, thirsty.
 b[job=priest] #me : Very slowly. For appearances.
 b : Holy thirst. | Good for him. | Funny, that.
 a@me : And you tip. Bless you.
-a : Holy and paying. | He tips. | Very.
+a : Holy and paying. | He tips. | #bc_very#
 
 scene e4_fa_noble_pew
 when topic=faith a.quarter=heights a.wealth=rich|comfortable
+does tell.self / react.self / tell.self
 cooldown 2d
 a : Our family's had the same pew for six generations. | Mother won't sit anywhere but the front. | The Houses give a window each to the Chapel of the Tide.
 b[quarter=sump] #back : We stand at the back. Or outside.
 b : Comfortable pew? | Can she see past the priest? | Generous.
 a@back : Come and sit with us. I mean it.
-a : Not really. Hard as rock. | Barely. | They make sure we know it.
+a : Not really. Hard as rock. | #bc_barely# | They make sure we know it.
 
 # ---------------------------------------------------------------- By region: the old ways
 
 scene e4_fa_north_old_gods
 when topic=faith here.region=frosthollow
+does tell.self / react.self / assess
 a : My grandmother still left bread for the Stone Fathers at midwinter. | The old powers are in the mountain, they say. Older than any chapel. | Up the pass there's a cairn. Everyone adds a stone.
 b[priest] #pr : The Bright One set the mountain in its place. Leave bread for the poor instead.
 b[from=frosthollow] #stone : Add a stone every time I pass. Can't hurt.
-b : What did they do with it? | Don't let the priest hear you. | Why?
+b : What did they do with it? | Don't let the priest hear you. | #bc_why_q#
 a@pr : She left bread for both, to be safe.
 a@stone : So you come home.
 a : Ate it, I expect. Something did. | He knows. | So you come home.
 
 scene e4_fa_north_avalanche
 when topic=faith here.region=frosthollow here.season=winter
+does tell.self / ask.detail / answer.detail
 a : Don't shout on the high road. Not in winter. Wakes the snow. | We say the snow-prayer before the pass. Old words. | My father said every avalanche is the mountain clearing its throat.
 b : Who'd shout? | What are the words? | Rude mountain.
-a : Fools. Once. | "Hold, old one, hold." That's all. | Very.
+a : Fools. Once. | "Hold, old one, hold." That's all. | #bc_very#
 
 scene e4_fa_cold_reed
 when topic=faith here.region=coldwater
+does tell.self / react.self / assess
 a : Made a reed cross for the boat. My mother's way. | Glasswater takes one a year, they say. Throw a coin in, to pay it. | They say you can see the drowned chapel bell, on clear days.
 b[priest] #swim : The lake takes the careless. Teach your pups to swim.
 b[from=coldwater] #coin : Every spring I throw a coin. Every spring I wish I hadn't.
@@ -602,25 +666,28 @@ a : It's crooked. It works. | It takes something. | Once. I think.
 
 scene e4_fa_oak_wishing
 when topic=faith here.region=oakhaven
+does tell.self / ask.detail / answer.detail
 a : Tied a ribbon on the wishing oak this morning. | The Rainwood has its own spirits. Older than chapels. | Never cut a tree with a face in its bark.
 b[job=woodcutter] #face : I've never seen one with a face. I'd still not cut it.
 b[priest] #made : The Bright One made the Rainwood. Every leaf.
 b : What did you wish? | Have you seen one? | Never?
-a@face : Wise.
+a@face : #bc_wise#
 a@made : Then he made the faces too.
 a : Can't say. | Felt one. | Never. Not even for coin.
 
 scene e4_fa_fen_lights
 when topic=faith here.region=fens
+does tell.self / react.self / assess
 a : Fen lights out on the marsh last night. Don't follow them. | My uncle followed the lights once. Took him three days to come home. | The fen lights are the Drowned, looking for company.
 b[from=mirebridge|fenshore] : Never follow, never call, never look back. Fen sense.
 b[scholar] #gas : Marsh gas. Burning. I've seen it in a jar.
-b : I won't. | Where'd he go? | Cheerful.
+b : #bc_i_wont# | Where'd he go? | Cheerful.
 a@gas : Then why does it follow you?
-a : Good. | Won't say. | It's true.
+a : #bc_good# | Won't say. | It's true.
 
 scene e4_fa_fen_mother
 when topic=faith here.region=fens
+does tell.self / ask.detail / answer.detail
 a : Put milk on the step for the Fen Mother. Keeps the damp out of the bones. | The Fen Mother takes pups who go near the water. That's what I tell mine. | Old fen folk still say the Fen Mother's prayer before they pole out.
 b[priest] #pretend : I've heard of her. I pretend not to.
 b : Does it? | Does it work? | What's it go?
@@ -629,16 +696,18 @@ a : Mine's dry. Mostly. | They don't go near. | "Hold me up, Mother, and let me 
 
 scene e4_fa_south_corn_wolf
 when topic=faith here.region=southmeadow|larkfield here.season=summer|autumn
+does tell.self / react.self / assess
 a : Who'll cut the last sheaf this year? Nobody wants to. The corn wolf's in it. | We plait the last sheaf into a corn wolf and hang it in the barn. | The corn wolf runs from field to field ahead of the reapers. My gran swore it.
 b[job=farmer] #cut : I'll cut it. I've done it four years. Still standing.
 b[priest] #both : The first sheaf to the chapel, the last to the barn. Both's fine.
-b : Not me. | All winter? | Did she see it?
+b : #bc_not_me# | All winter? | Did she see it?
 a@cut : Bold.
 a@both : Both's fine. Good.
 a : Coward. | Till spring sowing. | Heard it, she said.
 
 scene e4_fa_south_wassail
 when topic=faith here.region=southmeadow
+does tell.self / react.self / assess
 a : We sing to the apple trees at midwinter. Wake them up. | Pour cider on the roots of the oldest tree. For luck. | My father hung bread in the orchard for the year's luck.
 b[from=southmeadow] #cup : The old tree in our orchard gets the first cup. Always.
 b : Do they wake? | Waste of cider. | Did it work?
@@ -647,6 +716,7 @@ a : Every spring. | Not if they fruit. | Always did.
 
 scene e4_fa_lark_shepherd
 when topic=faith here.region=larkfield
+does tell.self / react.self / tell.self
 a : Shepherds say a prayer to the Shepherd's star before lambing. | Never count your flock out loud on Restday. Bad luck. | My father buried a shepherd's crook with his best ewe.
 b[job=herder] #count : I count in my head. And still lose two.
 b : Which star? | Why not? | Sad.
@@ -655,56 +725,64 @@ a : The one low over the downs. | It's how they hear you. | He loved that ewe.
 
 scene e4_fa_ridge_tide
 when topic=faith here.region=ridgemere
+does tell.self / react.self / assess
 a : Lit a candle at the Chapel of the Tide for my brother on the boats. | Been to the Chapel of the Tide? The windows! | They ring the tide bell when a ship's overdue. I hate that bell.
 b[job=sailor|fisher] #out : I like knowing somebody's praying. Out there.
 b[quarter=sump] #boots : Never been in. They look at your boots.
 b : He'll come home. | Grand, isn't it. | Everyone does.
 a@out : Then I'll light another.
 a@boots : Wear mine. They'll look at me instead.
-a : Bless him. | Gave me a crick in the neck. | Every time.
+a : Bless him. | Gave me a crick in the neck. | #bc_every_time#
 
 scene e4_fa_ridge_rain
 when topic=faith here.region=ridgemere here.weather=rain
+does tell.self / react.self / tell.self
 a : Rain on Restday. The Bright One's washing the city. | My gran said the rain is the Bright One weeping for Ridgemere. | Even the chapel leaks. That tells you something.
 b[humour=dry] #dry : He's been at it for three hundred years. Hasn't worked.
 b : We need it. | Cheerful. | That it's old.
-a@dry : Ha.
-a : Ha. | She was. | Just old.
+a@dry : #bc_ha#
+a : #bc_ha# | She was. | Just old.
 
 scene e4_fa_ridge_sump_preacher
 when topic=faith here.region=ridgemere a.quarter=sump|docks|wharf
+does tell.self / react.self / assess
 cooldown 2d
 a : There's a street preacher at the Sump steps. Says the end's coming. | Mission folk came round with soup and sermons. Took the soup. | No chapel down here worth the name. Just a room and a candle.
 b[piety=devout] #room : A room and a candle's enough. The Bright One's been in worse.
 b : It always is. | Good soup? | Better than nothing.
 a@room : Then he'd feel at home here.
-a : He'd know. | Thin. Long sermon. | Barely.
+a : He'd know. | Thin. Long sermon. | #bc_barely#
 
 # ---------------------------------------------------------------- Short ones
 
 scene e4_fa_quip_pray
 when topic=faith
+does tell.self / react.self
 a : Say one for me. | Bright One keep you. | Pray for good weather, would you?
 b : I'll say two. | And you. | I'll try. No promises.
 
 scene e4_fa_quip_luck
 when topic=faith
+does tell.self / react.self
 a : Touch wood. | Knock on the doorpost. Go on. | Claws crossed.
 b : Done. | Done. Twice. | Crossed.
 
 scene e4_fa_quip_heaven
 when topic=faith a.humour=merry|dry
+does tell.self / react.self
 cooldown 2d
 a : When I go up, I hope there's ale. | I'll be first through the gate, wait and see. | The Bright One had better have a sense of humour.
 b : There'd better be. | Behind me. | For your sake.
 
 scene e4_fa_quip_omen
 when topic=faith
+does tell.self / react.self / assess
 a : Owl hooted three times last night. | Mirror cracked this morning. | Swallows nesting under my eaves. Good luck, they say.
-b : Somebody's owl's bored. | Seven years, they say. | Lucky you.
-a : I hope so. | Bad luck. Really. | Hope it holds.
+b : Somebody's owl's bored. | Seven years, they say. | #bc_lucky_you#
+a : #bc_i_hope_so# | Bad luck. Really. | Hope it holds.
 
 scene e4_fa_quip_vow
 when topic=faith here.place=tavern here.time=night
+does tell.self / react.self
 a : I swear by the Bright One I'll never drink again. | Bless you. Bless everyone. | The Dark One made ale. That's why it's lovely.
 b : Till tomorrow. | Bless you too. Go home. | Don't let the priest hear.

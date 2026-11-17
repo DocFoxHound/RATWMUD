@@ -1,0 +1,1527 @@
+  1350 w7s_gossip_boss [talk.work] then=None tone=None
+        a: tell.self                    | #boss.capitalize#'s in a foul mood today. || Did you hear the shouting earlier? || Watch yourself. Somebody's had bad news.
+        b: react.self                   | I didn't hear anything. And neither did you. || Not my business. || Noted.
+        a: assess                       | Right. Nor did I. || #bc_fair_enough# || Noted, then.
+  1062 tr_any_borrow_tool [talk.work] then=None tone=None
+        a: request                      | Can I borrow your saw? Mine's blunt. || You still have my good knife. || Lend me your ladder? Just till noon.
+        b: grant                        | If you bring it back this time. || Do I? || Noon. Not a moment later.
+        a: tell.self                    | I always bring it back. Eventually. || You've had it since spring. || Noon. On my honour.
+   921 em_x_female_market [talk.prices] then=None tone=None
+        a: tell.self                    | I've stopped buying ribbons. Bread first. || My sister and I are sharing a pot to save on firewood. || My mate thinks food appears in the cupboard by magic.
+        b: react.self                   | Ribbons can wait. || #bc_clever# || They all think that.
+        a: assess                       | They'll have to. || Cheaper, too. || Every last one.
+   783 em_x_male_market [talk.prices] then=None tone=None
+        a: tell.self                    | My mate counts every penny now. I'm not allowed near the pur || I'm supposed to buy #topic.what# and not come back with anyt || Went for bread, came back with a pie. In trouble now.
+        b: ask.detail                   | Wise mate. || Will you manage it? || A whole pie?
+        a: answer.detail                | Very wise. || Never have yet. || Half eaten.
+   755 kn_court_shy [talk.friends,talk.smalltalk] then=None tone=None
+        a: tell.self                    | You look... well. Nice. You look nice. || Is that a new collar? || I saw you at the well this morning.
+        b: react.self                   | Thank you. You look... nice too. || It was my mother's. || I go every morning.
+        a: assess                       | Good. That's good. || It suits you. || I know. I mean... I noticed.
+        b: tell.self                    | We should walk together, sometime. || #bc_thank_you# || You could come too. Tomorrow.
+        a: ask.detail                   | Yes. Sometime. Tomorrow? || Will you walk with me later? || #bc_i_will#
+   609 e5_rg_rm_spring [talk.season] then=None tone=None
+        a: tell.self                    | Warm rain now, at least. Spring rain's almost pleasant. || The ferns are uncurling all along the walls. || Two whole days without rain. The city doesn't know what to d
+        b: react.self                   | This is your fine weather? I'd weep. || Almost. || Pretty things.
+        a: tell.self                    | We do weep. It's why it's so wet. || Almost's as good as it gets, here. || Green everywhere.
+   540 rg_rm_hungry_winter [talk.lore] then=None tone=None
+        a: tell.story                   | My grandmother remembers the hungry winter. Ate boiled leath || They say the Houses kept their stores shut the hungry winter || Another hungry winter would finish the Sump.
+        b: react.story                  | I remember it. The Houses ate. We boiled boots. || The Houses opened their stores in the end. People forget tha || Mercy.
+        a: assess                       | Mercy. || #bc_so_do_i# || Let's hope.
+   528 e5_se_spring_hungry_gap [talk.season] then=None tone=None
+        a: tell.self                    | Last of the winter stores went yesterday. Nothing new till s || The hungry gap. Everything's growing and none of it's ripe. || Nettle soup again. Third day.
+        b: react.self                   | Same at ours. We're eating the seed potatoes. || Come round tonight. We've a bit of bacon left. || Hard time of year.
+        a: assess                       | Then there'll be nothing to plant. Gods help us both. || You'd do that? ...I'll come. || The hardest.
+   525 e2_pt_spring_green [talk.pastimes] then=None tone=None
+        a: tell.self                    | First dance on the green since autumn. || The pups are making daisy chains. || Spring. Everyone's courting again.
+        b: react.self                   | Spring makes fools of us all. Lovely fools. || #bc_about_time# || Bless them.
+        a: assess                       | Lovely, mostly. || Rain held off, too. || One for my tail, they said.
+   522 e3_m_lost_mill [talk.memories] then=None tone=None
+        a: tell.memory                  | The old mill had a wheel you could hear from the gate. Gone  || There used to be a dance hall over the smithy. || There was an old oak by the crossroads. They cut it down for
+        b: react.story                  | I courted under that oak. I carved my name in it. || What mill? Where? || I remember the wheel.
+        a: tell.self                    | Then somebody's beams have your name in them. || Before your time, pup. Before your mother's, nearly. || Round and round. Like the years.
+   498 e3_m_friends_old_close [talk.memories] then=None tone=None
+        a: tell.memory                  | You're the only one left who knew me as a pup. || Whatever happens, we'll always have that pie we stole. || Do you remember the first thing you said to me?
+        b: react.story                  | And the only one who won't tell. || That pie was sacred. || "Get off my wall."
+        a: tell.self                    | You'd better not. || I still think about that pie. || And I didn't. I'm still on it.
+   492 kn_fr_young_dream [talk.friends] then=None tone=None
+        a: tell.plan                    | When I'm grown, I'm going to sea. || I'm going to be a guard. || I'm going to be rich and live in a house with five fires.
+        b: react.self                   | You get sick on the river ferry. || You can't even climb the wall. || Five? What for?
+        a: tell.self                    | That's the river. The sea's different. || Guards have ladders. || One for each paw and one for my tail.
+        b: react.self                   | The sea's bigger. And wetter. || I'll hold it for you. || That's the stupidest thing I've ever heard.
+        a: assess                       | Then I'll be sick bigger. || You'd better. || You'll want to visit.
+        b: assess                       | I'll wave from the dock. || Promise. || Every winter.
+   489 e4_fa_priest_named [talk.faith] then=None tone=None
+        a: tell.self                    | #a.priest# was at our door this week. Asking after my soul. || Have you heard #a.priest# sing? Like a gate in the wind. || #a.priest# says the chapel roof needs a collection. Again.
+        b: ask.detail                   | What did you tell them? || Every Restday. || Again? Where does it go?
+        a: answer.detail                | That it's fine, thank you. || Loudly, too. || Slates, they say.
+   480 e8r_cvd_plain [caravan.due_answer] then=None tone=None
+        a: react.news                   | I'll believe it when it's in the yard. || Let's hope the road's kind to them. || Is it? I hadn't seen the board.
+   465 kn_fr_young_mischief [talk.friends] then=None tone=None
+        a: tell.self                    | Let's sneak into the orchard. || Bet you won't ring the chapel bell. || Let's follow the watch on their rounds.
+        b: react.self                   | The farmer's got geese. || Bet I will. || They'll see us.
+        a: assess                       | The geese are asleep. || Then do it. || Not if we stay downwind.
+        b: assess                       | Geese wake up. || ...Tomorrow. || We'll be shadows.
+        a: assess                       | You're scared. || Scared. || Shadows. Come on.
+   453 e8r_cvd_poor [caravan.due_answer] then=None tone=None
+        a: react.news                   | There'll be unloading, then. I'll be there. || Nothing on it for the likes of me.
+   444 em_more_dear_gift [talk.prices] then=None tone=None
+        a: tell.self                    | I brought you a little #topic.what#. Don't argue. || Here. I had extra. || Take this. I know you're short.
+        b: react.self                   | You can't afford it either. || Liar. Nobody has extra. || I'm not short.
+        a: assess                       | I said don't argue. || Take it anyway. || You're short. Take it.
+   438 e2_an_swallows [talk.animals] then=None tone=None
+        a: tell.self                    | Swallows are back. || The swallows are flying low. Rain coming. || Swallows nesting in the stable eaves again.
+        b: react.self                   | Swallows know the weather. Watch how low they fly. || Summer, then. || Is it?
+        a: assess                       | Low enough to clip your ears. || Summer. || That's what they say.
+   426 prices_answer_poor [prices.answer_complaint] then=None tone=None
+        a: react.complaint              | #agree#. We'll all go short together. || Don't I know it.
+   420 e5_se_count_feasts [talk.season] then=None tone=None
+        a: tell.self                    | I count the year by its feasts. Spring cakes, harvest home,  || Every season has its smell. Have you noticed? || The year's a wheel. We just hang on.
+        b: react.self                   | Me too. By what's on the stove. That's my almanac. || The Bright One's wheel. Every turn a blessing. || Midwinter goose. I'm already hungry.
+        a: assess                       | Then you eat best of all of us. || Some turns more than others. || Save me a leg.
+   411 e2_an_crows_clever [talk.animals] then=None tone=None
+        a: tell.self                    | A crow brought me a button. Just set it down and looked at m || I fed a crow once. Now it brings its friends. || They say a crow never forgets a face.
+        b: react.self                   | Crows! Cleverest folk in town, and they pay no tax. || Crows remember. Be kind to them, they'll be kind to you. || What did you do?
+        a: tell.self                    | Don't give the Council ideas. || I always am. Mostly. || Gave it a crust. Seemed fair.
+   411 w7s_wages_secret [talk.work] then=None tone=None
+        a: ask.detail                   | What do they pay you, anyway? || Do you think we're paid fair? || Do you ever ask for more?
+        b: answer.detail                | That's my business. || Fair enough. Fair enough. || Not out loud.
+        a: assess                       | Suit yourself. || That's not an answer. || Quietly, then. Later.
+   410 kn_court_bold [talk.friends,talk.smalltalk] then=None tone=None
+        a: invite                       | Will you dance with me at the festival? || I'd like to walk you home, if you'll let me. || You've the brightest eyes in #here.town#.
+        b: accept_invite                | If you don't tread on my tail. || It's three doors down. || That's a very old line.
+        a: tell.self                    | I'll tread very lightly. || Then I'll walk very slowly. || It's an old line because it works.
+        b: react.self                   | Then yes. || Three slow doors, then. || It's not working.
+        a: assess                       | #bc_good# || #bc_good# || It's starting to. I can tell by your ears.
+   396 e2_an_spring_nests [talk.animals] then=None tone=None
+        a: tell.self                    | Birds nesting everywhere. || A blackbird's built in my gutter. || The rooks are loud this spring.
+        b: react.self                   | Spring for you. || Leave it till they're flown. || Rooks are always loud.
+        a: assess                       | And the cats know it. || I'll have to. || This is louder.
+   396 em_place_work_prices [talk.prices] then=None tone=None
+        a: tell.self                    | The master's cutting wages. Says the price of #topic.what# i || No bonus this season. Food's eating it. || We're working longer for the same coin.
+        b: react.self                   | It's nobody's fault, apparently. || Same as last season. || Same as always.
+        a: assess                       | And nobody pays. || And the one before. || #bc_always#
+   393 e2_an_favourite_beast [talk.animals] then=None tone=None
+        a: ask.detail                   | If you could be any beast but a wolf, what would you be? || Which is the best animal? Not counting us. || I've always wanted a cat.
+        b: answer.detail                | A cat in a granary. Fat and warm and paid in mice. || A gull. Go anywhere, eat anything. || A hawk.
+        a: tell.self                    | That's not a beast. That's a dream. || And steal everyone's pie. || You'd make a good hawk.
+   393 em_prices_rumour_cause [talk.prices] then=None tone=None
+        a: tell.news                    | #topic.cause_words.capitalize#, they say. That's why. || Word is, it's #topic.cause_words#. || Ask anyone: #topic.cause_words#.
+        b: react.news                   | Could be. || Is it, now? || Anyone but me, then.
+        a: assess                       | That's what they say. || So I'm told. || Now you know.
+   378 e2_pt_riddle_trade [talk.pastimes] then=None tone=None
+        a: ask.detail                   | Riddle that's stumped the whole street. The more you take, t || Riddle me this. What gets wetter the more it dries? || Here's one. What can you catch but never throw?
+        b: answer.detail ask.detail     | Easy. Next. || Ha. I had that one off my grandmother. || A purse?
+        a: answer.detail                | Fine, clever paws. I'll find a harder one. || Footsteps. Nobody gets it. || A towel. Everyone forgets the towel.
+   372 e2_an_lambing [talk.animals] then=None tone=None
+        a: tell.self                    | Lambing's started. No sleep for a month, #address#. || Twin lambs in the snow this morning. || First lamb's always the best day of the year.
+        b: react.self                   | Seventeen last night. My paws are raw. || Can I see them? Please? I'll be quiet! || Good luck to you.
+        a: assess                       | Seventeen! Sit down before you fall. || Quiet as a mouse, mind. || I'll need it.
+   366 e2_pt_jig_learning [talk.pastimes] then=None tone=None
+        a: request                      | Will you teach me the long jig? || Is it true you used to dance at the fair? || My cousin won't dance with me. Says I hop.
+        b: grant                        | Stand up. Paw there. No, there. Now the turn. || I'm no dancer. || Once, a long time ago.
+        a: tell.self                    | Like this? Like this! || Please? Just the first steps. || Show me! Just one turn!
+   360 gs2_heard_bad [talk.gossip] then=None tone=None
+        a: tell.gossip                  | People are saying #topic.subject# #topic.claim#. || Did you know #topic.subject# #topic.claim#? || It's all over town: #topic.subject# #topic.claim#.
+        b: react.news                   | Rumours are cheap. Truth costs more. || Is that so? I'll remember that, next time #topic.they# wants || Is it true?
+        a: assess                       | Seems so. || Believe what you like. || #bc_not_me#
+   360 e2_an_animal_tale_disbelief [talk.animals] then=None tone=None
+        a: tell.self                    | I saw a pig climb a ladder. || A crow said my name. Clear as you. || The miller's cat caught a fish. In the river.
+        b: ask.detail                   | You did not. || I believe every word. I once saw a goose read. || Did it get to the top?
+        a: answer.detail                | I did! Ask anyone! || Now you're mocking me. || Top rung. Then it sat there.
+   360 e5_la_land_owner [talk.land] then=None tone=None
+        a: tell.self                    | Every field you can see belongs to somebody, and none of the || My family farmed that ground for a hundred years. Never owne || The land's rich. The ones who work it aren't.
+        b: react.self                   | Ownership's a responsibility, you know. Not just a pleasure. || One day, maybe. Things change. || That's the way of it.
+        a: assess                       | Some burden. || Not fast enough. || Doesn't make it right.
+   354 e2_pt_wager_lost [talk.pastimes] then=None tone=None
+        a: tell.self                    | Lost a penny on the ploughing match. Never again. || Won a whole cheese on a wager. A whole one. || Never bet against a goose. I learned that this week.
+        b: react.self                   | Who were you betting with? I might know them. I might owe th || A penny! You'd think it was the Greatly fortune. || Until the next one.
+        a: assess                       | Then I'll not say. || It was to me. || Next time I'll bet on the ox.
+   345 tr_any_two_jobs [talk.smalltalk,talk.work] then=None tone=None
+        a: tell.self                    | I take washing in at night for extra coin. || Thinking of a second trade. The first doesn't pay. || Worked two jobs this week. Slept one night.
+        b: ask.detail                   | When do you sleep? || Which? || One night?
+        a: answer.detail                | Restday, if I'm lucky. || Anything with a roof. || One night, and I dreamed of work.
+   343 e8p_c_ship [talk.prices] then=prices.answer_cheap tone=None
+        a: tell.news                    | #topic.ship.capitalize# came in. #topic.what.capitalize# at  || A ship in, and #topic.what# cheaper for it.
+   342 e2_an_beasts_fear [talk.animals] then=None tone=None
+        a: tell.self                    | Do you think the beasts are frightened of us? || The sheep don't trust me. I can feel it. || Cows look at you like they know something.
+        b: react.self                   | Sheep remember what we were, before the towns. || They know what's for supper. || They've reason.
+        a: assess                       | Do they? Hm. || #bc_fair# || #bc_fair#
+   342 e3_h_moult [talk.health] then=None tone=None
+        a: tell.self                    | I'm moulting so hard I leave a trail. || Pulled a whole pawful of fur off my flank. || My summer coat's come in patchy.
+        b: react.self                   | When you get old the fur comes out and doesn't come back. || I could follow you home. || Stuff a cushion.
+        a: tell.self                    | You've plenty left. On your ears, mostly. || Don't. || It's a big cushion now.
+   335 e8r_cva_news [caravan.answer] then=None tone=None
+        a: react.news                   | Is it now. || Good for #topic.where#. || Carters will say anything over a cup.
+   333 e3_h_spring_tonic [talk.health] then=None tone=None
+        a: tell.self                    | Time for the spring tonic. Nettle and dandelion. || My mother gave us sulphur and treacle every spring. || I've a cold every spring. Regular as the swallows.
+        b: react.self                   | Nettle's good. The sulphur I'd leave alone. || Sulphur and treacle. I still taste it. || Tastes like a ditch.
+        a: tell.self                    | I'll leave it alone gladly. || We all do. Every spring. || A healthy ditch.
+   328 h7_rich_kind [talk.day,talk.friends,talk.sma] then=None tone=None
+        a: tell.self                    | I had too much from the market. Take some home. || My coat's too small now. It'd fit you. Go on. || I need someone to mind the house tomorrow. I'll pay. Don't a
+        b: react.self                   | You're a bad liar. || It's not too small. || Mind the house? It minds itself.
+        a: assess                       | I'm a generous liar. || It is now. || It's lonely. It needs company.
+        b: assess                       | Thank you. I mean it. || ... Thank you. || Then I'll mind it.
+   321 e3_h_friends_ill [talk.health] then=None tone=None
+        a: ask.detail                   | You look awful, #pet#. || You've been #poorly# again, haven't you? || When did you last eat a proper meal?
+        b: answer.detail                | Thank you. Very kind. || A bit. It's passing. || Does bread count?
+        a: tell.self                    | I mean it. Go home and sleep. || Come for supper. I'm not asking. || Not on its own.
+   319 e8r_cv_due_what [talk.caravan] then=caravan.due_answer tone=None
+        a: tell.news                    | The #topic.where# wagon's bringing #topic.what#, the notice  || #topic.what.capitalize# coming from #topic.where#. About tim
+   318 e2_pt_theatre_ridgemere [talk.pastimes] then=None tone=None
+        a: tell.self                    | The players are doing a comedy in the Commons yard. || Saw a play last night. A king, a ghost and a goose. || A play about Ridgemere's founding. Very long.
+        b: react.self                   | We had them at the house. Private, of course. || Snuck in under the stage. Best seat in the yard. || Is it funny?
+        a: assess                       | Of course you did. || I'll join you next time. || The goose is.
+   317 e8r_cv_due_who [talk.caravan] then=caravan.due_answer tone=None
+        a: tell.news                    | #topic.who# is driving the #topic.where# wagon this time. || It's #topic.who# bringing the wagon from #topic.where#.
+   315 e2_an_ridgemere_rats [talk.animals] then=None tone=None
+        a: tell.self                    | Rats on the wharf as big as cats. || The ship rats came off the southern barque. Bold as sailors. || Rat-catchers are making a fortune in the Sump.
+        b: react.self                   | Down in the Sump the rats pay no rent and never leave. || Every ship's got them. You get used to them. || Bigger.
+        a: assess                       | Like some lodgers I've had. || I'd rather not. || Big enough to ride.
+   310 kn_fr_women [talk.friends] then=None tone=None
+        a: tell.self                    | Did you hear the way he spoke to me at the market? || My mate thinks I don't notice when he drinks. || Let's leave the pups with my sister and take the day.
+        b: react.self                   | Like you'd never kept a stall in your life. || Mine thinks the same. They're not clever. || Yes. Let's.
+        a: assess                       | I've kept one twenty years! || They think we're blind. || The whole day, mind.
+        b: tell.self                    | Then next time we both go. || We're not. We're patient. || The whole day. And the cider.
+        a: react.self                   | Together. || For now. || And the honey cake.
+   303 e2_pt_pond_fishing_pups [talk.pastimes] then=None tone=None
+        a: request                      | Will you take me fishing? || What's the best worm? || I caught a fish! It got away. But I caught it!
+        b: grant                        | When the weather turns. || A red one. Fat. || Then it counts.
+        a: tell.self                    | Promise? || I'll find a red one! || It counts! It counts!
+   297 e2_pt_poor_cheap_fun [talk.pastimes] then=None tone=None
+        a: tell.self                    | Best things are free. Songs. Gossip. Watching the rich fall  || Can't afford the tavern. We sing on the step instead. || A night out costs a week's bread.
+        b: react.self                   | I've never fallen in mud. || #bc_true_enough# || Better singing anyway.
+        a: assess                       | Not yet. I've hopes. || And the rich don't know it. || Echoes better.
+   297 e2_pt_sore_loser [talk.pastimes] then=None tone=None
+        a: tell.self                    | You sulked for a day when I beat you. || You'll not win twice. || Admit it. I'm the better player.
+        b: react.self                   | I didn't sulk. I was tired. Sulkily tired. || I never sulk. || Once was luck.
+        a: assess                       | Sulkily. Exactly. || A whole day. || Luck's a skill.
+   294 e2_pt_pup_marbles [talk.pastimes] then=None tone=None
+        a: tell.boast                   | I won six marbles off Pip! || Want to see my blue marble? || Pip cheats at marbles. Flicks with a whole leg.
+        b: react.self                   | Six! || Is it glass? || Everyone does that.
+        a: assess                       | Pip cried. A bit. || Real glass. From the glassworks. || I don't! Not much.
+   293 e8r_cv_due_today [talk.caravan] then=caravan.due_answer tone=None
+        a: tell.news                    | The #topic.where# wagon's due in today. || They're expecting the #topic.where# wagon before dark.
+   291 w7c_payday_plans [talk.work] then=None tone=None
+        a: tell.self                    | What'll you do with your #wages#? || Paid tomorrow. I've spent it already, in my head. || One more day to pay.
+        b: react.self                   | Rent. Then nothing. || So have I. On rent. || It'll be gone by the next day.
+        a: assess                       | Sensible. || A new hat. And pie. || Tomorrow, then.
+   285 e2_pt_pups_tag [talk.pastimes] then=None tone=None
+        a: tell.self                    | Play hunter and hare with me? || You're it! || I hid in the woodpile and nobody found me. All day.
+        b: react.self                   | I'm the hunter! I'm always the hunter! || My hunting days are done, little one. I'll count for you. || Later. After the chores.
+        a: tell.self                    | No, I'm the hunter! You're the hare! || Count slow! Really slow! || After the chores is forever.
+   284 n7_close_ans [town.close] then=None tone=None
+        a: ack                          | Aye. Well. That's the town. || So it goes. || Hm. We'll see.
+   282 w7s_late_in [talk.work] then=None tone=None
+        a: ask.detail                   | You're late. || Where've you been? || Overslept again?
+        b: answer.detail                | Don't. I barely slept. || Lay awake half the night, then slept through the cock. || My eyes opened. My legs didn't.
+        a: assess                       | Well, you're here now. || Don't let it be a habit. || Hm. Get on, then.
+   276 e2_an_ridgemere_gulls [talk.animals] then=None tone=None
+        a: tell.self                    | Gull took the pie right out of my paw. || The gulls are screaming like the city's theirs. || Gulls on the Fish Hall like a snowstorm.
+        b: react.self                   | It is theirs. We just rent it. || They come up as far as the Heights now. Shocking. || The whole pie?
+        a: assess                       | Then they can pay for my pie. || Even gulls want a better view. || Crust and all.
+   273 prices_answer [prices.answer_complaint] then=None tone=None
+        a: react.complaint              | #agree#. Hard on everyone. || #agree#. Nothing to be done.
+   273 e2_an_pup_questions [talk.animals] then=None tone=None
+        a: ask.detail                   | Why do sheep say baa? || Where do the birds go in winter? || Are cats scared of us?
+        b: answer.detail                | That's a better question than you know. Ask me again when yo || Because they've nothing better to say. || Somewhere warm.
+        a: ask.detail                   | I'll be grown tomorrow. I'll ask then. || What would they say if they did? || Can we go?
+   270 e2_an_pup_frog [talk.animals] then=None tone=None
+        a: tell.self                    | I caught a toad in the well bucket! || Do worms feel things? || I saw a crow eat a whole mouse!
+        b: react.self                   | Let's see! || No. Maybe. || Ew! Was it all of it?
+        a: tell.self                    | It got away. It went that way. || I'm being nice to them just in case. || Tail last!
+   264 e2_an_pup_lamb [talk.animals] then=None tone=None
+        a: tell.self                    | The lambs are jumping in the field! || I fed a lamb from a bottle! || Can I have a goat? A small one?
+        b: ask.detail                   | Lambs! Best thing in spring, and the loudest. || No goats. We've talked about the goat. || Are they?
+        a: answer.detail                | Can I hold one? Can I? || I didn't even say goat! ...Can I have a goat? || All four legs off the ground!
+   264 e2_pt_round [talk.pastimes] then=None tone=None
+        a: tell.self                    | Start a round. I'll come in after you. || You always come in early in a round. || Remember singing rounds on the cart home?
+        b: react.self                   | Round the well and round the well, and who's the one to... Y || You start. You're louder. || I come in when I'm ready.
+        a: tell.self                    | ...round the well and round the well! There. || Louder isn't better. || Ready's too soon.
+   264 e3_m_tavern_old [talk.memories] then=None tone=None
+        a: tell.memory                  | I met my oldest friend over a spilled cup in this very room. || This place used to have a fiddler every night. || I had my first drink in here. Fell off that stool.
+        b: react.story ask.detail       | This room's seen worse. Most nights. || Who spilled it? || What happened to him?
+        a: answer.detail                | And you've mopped it all up. || Both of us. || Married. Hasn't played since.
+   263 e8p_up_poor [talk.prices] then=prices.answer_complaint tone=None
+        a: tell.news                    | I counted my pennies twice. Still no #topic.what#. || #topic.what.capitalize# at #topic.price#. Who are they selli
+   258 e2_pt_board_argument [talk.pastimes] then=None tone=None
+        a: tell.self                    | That last game. You cheated and we both know it. || I've been thinking about that game all day. || Rematch. Tonight. No excuses.
+        b: react.self                   | I did. I'm sorry. I'd do it again. || Prove it. || I won fair.
+        a: tell.self                    | I will, one day, and you'll be sorry. || Well. At least you're honest about it. || The geese were a square off and you know it.
+   255 e2_an_hunt_lords [talk.animals] then=None tone=None
+        a: tell.self                    | The lords hunt all the deer and we get the bones. || Hunt in the wrong wood and they'll hang you for a hare. || Saw a House hunting party go by. Twenty horses.
+        b: react.self                   | Someone has to manage the herds. || Always the way. || Watch where you go, then.
+        a: assess                       | Managed onto your plates, you mean. || #bc_always# || I always do.
+   253 e8r_cv_news [talk.caravan] then=caravan.answer tone=None
+        a: tell.news                    | Word off the #topic.where# wagon: #topic.news#. || #topic.news.capitalize#, so the #topic.where# wagon says.
+   252 e8r_cv_news_carters [talk.caravan] then=caravan.answer tone=None
+        a: tell.news                    | The carters came in full of talk. #topic.news.capitalize#, t || Did you hear what the carters say? #topic.news.capitalize#.
+   246 e8p_up_comfortable [talk.prices] then=prices.answer_complaint tone=None
+        a: tell.news                    | #topic.what.capitalize# at #topic.price#. We'll manage, but  || #topic.price.capitalize# for #topic.what#. Still, there's wo
+   246 e1_home_spring_clean [talk.home] then=None tone=None
+        a: tell.self                    | Turned the whole house out to air. Took all day. || Beat the rugs till my arm dropped off. || You wouldn't believe the fur under the bed. Half a wolf.
+        b: react.self                   | My mother did it every spring. You'd find things you'd lost  || Smells better already, I bet. || Good for the soul.
+        a: tell.self                    | I found a spoon I'd blamed on the neighbours. || It smells of rugs. || And the rugs.
+   243 e2_an_bird_feeding [talk.animals] then=None tone=None
+        a: tell.self                    | I feed the robin crumbs. It comes to my paw now. || Sparrows on the sill every morning. || You feed the birds better than you feed yourself.
+        b: react.self                   | Lucky robin. || Pretty. || They need it more.
+        a: assess                       | Lucky me. || Noisy. || Do they?
+   237 tr_any_city_work [talk.smalltalk,talk.work] then=None tone=None
+        a: tell.self                    | Work's easier to find in the city. Wage is worse. || The city's eating the small trades. || Came here for work. Found a queue.
+        b: react.self                   | #bc_true# || Always has. || Long queue?
+        a: assess                       | True and miserable. || Big mouth, the city. || Long as the market street.
+   237 e8r_sh_due [talk.ships] then=ships.answer tone=None
+        a: tell.news                    | #topic.ship.capitalize#'s due #topic.when#. || Ship due #topic.when#. #topic.ship.capitalize#, the board sa
+   237 e2_an_hunt_together [talk.animals] then=None tone=None
+        a: tell.self                    | We should go out together. Run something down, like the old  || When did you last hunt? Properly? || My paws want the chase.
+        b: react.self                   | I'd slow you. || No time. Watch, watch, sleep, watch. || Name the day.
+        a: assess                       | Then we'll go slow. || I'll fetch you off your watch myself. || Then you'll hold the bag.
+   237 e5_la_quarry [talk.land] then=None tone=None
+        a: tell.self                    | Greatly's quarry has eaten half the hill since I was a pup. || They were splitting stone at the quarry all day. You could h || Where do you think all that stone goes?
+        b: react.self                   | Somebody has to cut it. Pays better than the fields. || Into walls, roads and bridges. Into the realm. || It'll eat the rest.
+        a: tell.self                    | And breaks your back quicker, too. || And into Greatly's purse, on the way. || And then us.
+   237 e4_fa_spring_blessing [talk.faith] then=None tone=None
+        a: tell.self                    | They'll bless the ploughs Restday. || Greening's coming. Ribbons on the chapel door. || First lambs. I always say a prayer for the first lambs.
+        b: react.self                   | I'll take every blessing going. Last year's seed rotted. || Bring yours. || Green ribbons.
+        a: assess                       | #bc_i_will# || Pretty. || It's luck.
+   237 e1_home_garden [talk.home] then=None tone=None
+        a: tell.self                    | My beans are up. Look at them. || The slugs are eating my lettuces. || Planted onions all along the wall.
+        b: react.self                   | Water at dusk, not noon. That's the whole trick. || Good beans. || Salt on the slugs.
+        a: assess                       | Dusk. I'll remember. || I'm proud of them. || Feels cruel.
+   234 e5_tr_saving_for [talk.travel] then=None tone=None
+        a: tell.self                    | I've been putting a penny a week by for the journey. || Got a little jar for my travelling money. || I'm saving to go and see my sister. Three years now.
+        b: ask.detail                   | Gracious. And how long will that take you? || I had a jar like that once. Then the winter came. || How much have you got?
+        a: answer.detail                | Longer than it'd take you, I expect. || This winter it stays in the jar. I've promised myself. || Enough for the boots. Not the road.
+   234 e5_rg_rm_sound [talk.land] then=None tone=None
+        a: tell.self                    | The Sound's flat as a plate this morning. You can see the he || Fog on the Sound so thick the gulls are walking. || Watched the tide go out past the wharf. Takes half the harbo
+        b: react.self                   | Flat in the bay, and a chop past the headland. Always is. || Fog's good for the herring and bad for the boats. || Rare sight.
+        a: tell.self                    | You'd know. You've the sea in your walk. || And worse for the wolves in them. || Enjoy it while it lasts.
+   232 e8r_sha_due [ships.answer] then=None tone=None
+        a: react.news                   | If the weather lets her. || The sea keeps its own hours.
+   229 m7_rg_lore_drowned_lantern [talk.lore] then=None tone=grave / even / even / even
+        a: tell.story                   | Why's it called the Drowned Lantern? || Somebody saw a light under the water at the end of the pier. || They say the Sound's got a town under it. Bells and all.
+        b: react.story                  | Ask anyone in the Sump about lights under the water. The Dro || Nobody remembers. || Lantern fish.
+        a: assess                       | Gods. Is that true? || Somebody does. || Or a ghost.
+        b: assess                       | True as the rain.
+   228 e3_h_poor_cant_pay [talk.health] then=None tone=None
+        a: tell.self                    | I can't afford the healer. I'll just wait it out. || The draught costs more than I eat in a week. || My chest's bad, but rent's due.
+        b: react.self                   | Come at the end of the day. I'll find something for you. || That's no way to live. || The chapel sometimes gives out medicine.
+        a: assess                       | You're good. I'll pay you back when I can. || No. It isn't. || I'll try the chapel.
+   228 re_prices_country [talk.prices] then=None tone=None
+        a: tell.self                    | #topic.what# at #topic.price#? In the city maybe, not here. || Country folk can't pay city prices. || We grow it ourselves, mostly. Lucky.
+        b: react.self                   | That's the advantage of the soil. || City prices everywhere now. || No.
+        a: assess                       | Everywhere. || No. || #bc_very#
+   225 e2_an_rat_catcher [talk.animals] then=None tone=None
+        a: tell.self                    | Rat-catcher's paying a farthing a tail. || I've been catching rats for the miller. Pays more than you'd || If I eat another rat I'll start squeaking.
+        b: react.self                   | That can't be... no, I suppose it is honest work. || Not many'd do it. || Does it?
+        a: assess                       | It is. It's the only kind I can get. || It's money. || Not much more.
+   225 e5_tr_wedding_far [talk.travel] then=None tone=None
+        a: tell.self                    | My cousin's marrying in another town. I've to walk three day || We've a funeral up the road. Two days there and two back for || My aunt wants us all at hers for the feast. All the way out 
+        b: react.self                   | I'm going that way. Sit on the sacks, if you don't mind sack || That's family. || Take a cart if you can.
+        a: assess                       | I'd sit on a hedgehog to save my paws. || That's what I'm afraid of. || Can't afford the cart.
+   225 wt3_long_river [talk.lore,talk.smalltalk] then=None tone=None
+        a: tell.story                   | The Long River starts in Glasswater, they say, and ends in t || My father took a raft down the Long River once. Halfway, any || Half the south drinks from the Long River.
+        b: react.story                  | That river was here before any of us. It'll be here after. || That's a long way. || Only halfway?
+        a: assess                       | It's in the name. || The fens stopped him. || Which is all of it, in summer.
+   222 e5_rg_rm_folds [talk.land] then=None tone=None
+        a: tell.self                    | The Folds are crawling with rabbits this year. You can't see || Walked out to the Folds. Sheep, rabbits, and #mud#. || The farms in the Folds feed half the city.
+        b: react.self                   | Rabbits eat what the sheep want. I'd snare the lot if I coul || Rabbit pie, rabbit stew, rabbit roast. The city's never shor || Pie, then.
+        a: assess                       | You'd need a lot of snares. || I'd never get tired of it. Well. Maybe of the roast. || #bc_every_night#
+   222 e3_m_ridgemere_growth [talk.memories] then=None tone=None
+        a: tell.memory                  | When I was a pup, there wasn't a house past Rainrun Bridge. || The wharf was half the length then. Mud and a few boats. || The city stopped at the walls. Now look at it, spilling out.
+        b: react.story                  | Fields! Where my house is? I'd never have guessed. || I thought it had always been this big. || Fields, then?
+        a: tell.self                    | Turnips, right where your hearth is. || Nothing's always been anything. || Fields and a ford.
+   219 e5_rg_rm_terraces [talk.land] then=None tone=None
+        a: tell.self                    | This city's all hill. I've climbed more steps today than a l || You can tell how rich a wolf is by how high up they live. || From the Sump you can't see the sky. From the Heights you ca
+        b: react.self                   | And the rain runs downhill. Guess where it all ends up. || We do see the Sump, you know. We simply choose not to look. || Good for your legs.
+        a: assess                       | In your boots, by the sound of it. || Choose a bit harder. It's still there. || Bad for my temper.
+   219 rg_rm_fish_hall_dawn [talk.smalltalk,talk.work] then=None tone=None
+        a: tell.self                    | The Fish Hall's loud as a riot this morning. || First boats in before the bell. || Herring cheap at the Sump Market this morning, if you're qui
+        b: react.self                   | Good catch, cheap price. That's the curse of a good catch. || I'll take the lot if it's fresh. || #bc_always_is#
+        a: assess                       | #bc_always# || Early indeed. || Be quick.
+   219 e5_tr_about_southmeadow [talk.travel] then=None tone=None
+        a: tell.self                    | I tell folk here about Southmeadow and they think I'm making || Southmeadow's soft. Sun every day and apples falling in your || They say nobody in Southmeadow's ever been cold.
+        b: react.self                   | You might be. Bring me an apple and I'll believe you. || Soft! You try harvest in that heat. Then call me soft. || The Sunfields grow grain like nowhere else. But they're dry 
+        a: assess                       | Next harvest, I'll bring you a sack of them. || I'd melt. I'd melt and be glad of it. || Dry and gold. I'd take that over wet and grey.
+   219 e2_pt_courting_dance [talk.pastimes] then=None tone=None
+        a: tell.self                    | Who are you asking to dance at the festival? || Somebody asked me to walk out. I said maybe. || They danced together three times last night. Three.
+        b: react.self                   | I've done my asking, thank the gods. I just watch now. || I... nobody. Maybe. Nobody. || Not telling.
+        a: assess                       | Smug, that's what you are. || Ah. Somebody, then. || I'll find out.
+   219 e4_fa_dropped_knife [talk.faith] then=None tone=None
+        a: tell.self                    | Dropped a knife. Somebody's coming to visit. || Spilled the salt. Quick, over your shoulder. || Two spoons in my cup. Means a wedding.
+        b: react.self                   | Or it means you've butter-paws. || Hope they bring cake. || Left or right shoulder?
+        a: assess                       | Rude. || #bc_ha# || Left. Into the Dark One's eye.
+   219 e2_pt_pups_hide [talk.pastimes] then=None tone=None
+        a: tell.self                    | The pups have been at hide-and-seek in the yard all day. || Found a pup asleep in a barrel. Hiding, they said. || The young ones made up a new game. Rules change every turn.
+        b: react.self                   | Mine came home with half the yard in their fur. || We played the same game. Different barrels. || Who's winning?
+        a: assess                       | That's a good game, then. || Same pups, near enough. || Whoever shouts loudest.
+   216 e5_rg_rm_hills_behind [talk.land] then=None tone=None
+        a: tell.self                    | The Rainward Hills have their cloud on again. Rain by noon. || From the Heights you can see the hills go blue, ridge after  || The Rainrun's loud today. All that rain coming off the hills
+        b: react.self                   | If you can see the hills, it's going to rain. If you can't,  || Best view in the realm from our terrace. Worth every step. || It always rains by noon.
+        a: assess                       | My gran said that. Word for word. || Every step's easier with a terrace at the top. || #bc_always#
+   213 tr_any_master_temper [talk.work] then=None tone=None
+        a: tell.self                    | The master threw a pot at me this morning. || Boss says I'm slow. I'm not slow. I'm careful. || Got praised today. Felt odd.
+        b: react.self                   | Did it hit you? || Careful's slow to them. || Get used to it.
+        a: assess                       | Missed by a whisker. || Careful's how I keep my paws. || I won't have to.
+   212 h7_poor_dream [talk.friends,talk.smalltalk] then=None tone=None
+        a: tell.self                    | If I had a silver coin, do you know what I'd do? || When I'm rich I'll have meat every day. Every day. || One day I'll have boots that don't let the wet in.
+        b: react.self                   | Spend it on bread, like a fool. || Meat on Restday, at least. || Dry paws. Imagine.
+        a: assess                       | I'd look at it. For a week. || Every day. Twice on Restday. || I can't.
+        b: assess                       | Then spend it on bread. || You'd be sick of it. || Neither can I.
+   210 e2_pt_a_hobby [talk.pastimes] then=None tone=None
+        a: ask.detail                   | What do you do when the work's done? || Have you any pastimes yourself? || Do you play anything? Dice, cards?
+        b: answer.detail                | Read. Then read some more. || Sleep. Then work. || Everything!
+        a: assess                       | Can't beat it. || Can't beat it. || Nice, that.
+   210 kn_fr_men [talk.friends] then=None tone=None
+        a: ask.detail                   | My mate's furious with me again. || Have you been fishing lately? || Fancy helping me with the shed on Restday?
+        b: answer.detail ask.detail     | What did you do? || Not since spring. || Will there be cider?
+        a: answer.detail                | Nothing. Something. I'm not sure. || Let's go. The river's high. || If you work.
+        b: assess                       | That's the worst kind. || High means nothing bites. || I always work.
+        a: assess                       | #bc_it_is# || Then we'll sit and lie about it. || You always drink.
+   207 e5_tr_about_frosthollow [talk.travel] then=None tone=None
+        a: tell.self                    | They think we're grim, up in Frosthollow. We're not grim. We || Can you imagine living in Frosthollow? Snow half the year. || Frosthollow folk eat their porridge cold, they say, to stay 
+        b: react.self                   | Grim or cold, I'd not last a winter. || We eat it hot like anyone. We've just a stove that never goe || Seeing in the dark's just knowing where you put things.
+        a: tell.self                    | You'd last. You'd just complain the whole way. || Then you'll have to tell me the rest of it, all of it. || Still. I'd not go down there.
+   207 e5_rg_rm_rainwood [talk.land] then=None tone=None
+        a: tell.self                    | Went up into the Rainwood. Moss on the trees, moss on the st || The cedars up past the Houses' lands are as tall as the Rain || It never stops dripping in the Rainwood, even when it's not 
+        b: react.self                   | Timberland's cedar. Every one of them counted, and every one || Are there bears? Gran says there's bears. || Did you get lost?
+        a: assess                       | Then Timberland's welcome to count them. I'll just look. || Only in your gran's stories, pup. || Nearly. Everything's green.
+   204 et_cr_coast_theft [talk.crime] then=None tone=None
+        a: tell.news                    | Somebody went through the smokehouse in the night. || Rain covers footsteps. #topic.victim# heard nothing. || Wet night, light fingers. #topic.victim# lost a purse.
+        b: react.news                   | Rain's a thief's cloak on this coast. || The smell'll give them away. || It covers everything.
+        a: assess                       | You'd hope. || #bc_everything# || #bc_always#
+   201 e5_tr_about_mirebridge [talk.travel] then=None tone=None
+        a: tell.self                    | Say what you like about #a.from.capitalize#. Folk here do. N || The fens. Wet feet from birth to burial. || They eat eels in Fenshore. Every day. Every meal.
+        b: react.self                   | I'll grant you the remedies. || We eat eels because they're good. You've just never had them || Fen herbs are the best there are. The fens grow everything.
+        a: tell.self                    | You'll grant me more than that, one day. || I'll take your word. I'll not take the eel. || Everything and the damp to go with it.
+   201 e1_food_hungry_gap [talk.food] then=None tone=None
+        a: tell.self                    | The cellar's near empty and nothing's up yet. || Nettle soup again. || It's the hungry gap. Everything's dear and nothing's grown.
+        b: react.self                   | A few more weeks. The greens are coming. I can see them, jus || Every spring the same. You'd think we'd learn. || We'll manage.
+        a: tell.self                    | I'll be looking. Every day. || Learn what? To grow bread in the frost? || We always do. Just.
+   200 e2_pt_chatty_quiet [talk.pastimes] then=None tone=None
+        a: ask.detail                   | What do you do with yourself, of an evening? I sing. Badly.  || Do you never go to the tavern? It's lively. You'd like it. || You should come to the dancing.
+        b: answer.detail                | Sit. || Not often. || #bc_maybe#
+        a: ask.detail                   | Sit! Just sit? || Is that a no? || That's a yes. I heard a yes.
+        b: answer.detail                | Sit. It's nice. || It's a no. || It was a maybe.
+   196 h7_poor_share [talk.day,talk.friends,talk.sma] then=None tone=None
+        a: tell.self                    | I've half a loaf. Want the other half of the half? || Here. It's not much. Take it. || We've turnips. Too many. Have some.
+        b: react.self                   | I couldn't. || I'll pay you back. || Too many turnips? Never heard of it.
+        a: assess                       | You could. You will. || Don't. You'll need it. || Take them before I change my mind.
+        b: assess                       | Then I'll owe you. || Then I'll pay you in turnips. || Thank you. Truly.
+   192 tr_sf_wharf [talk.work] then=None tone=None
+        a: tell.self                    | The wharf's thick with coasters. || Unloaded wine for the Heights. Not a drop for us. || Tide's low. Boats grounding.
+        b: react.self                   | Busy season. || Not a drop? || Bad for trade.
+        a: tell.self                    | Busy and wet. || Not a drop. Smelled it all day. || Bad for boats. Good for haulers.
+   192 n7_close [town.close] then=None tone=None
+        a: ack                          | Mm. Well. || #bc_right# || Aye.
+   192 e5_tr_about_coldwater [talk.travel] then=None tone=None
+        a: tell.self                    | Back in Coldwater they'll be out on the lake about now. I ca || Coldwater's the prettiest place in the realm. That lake. || They say Coldwater folk swim in that lake in winter. On purp
+        b: react.self                   | You've lake water for blood, you. || It's true, all of it. And it's colder than you're imagining. || Best trout in the realm come out of Glasswater. Don't tell m
+        a: assess                       | Cold lake water, aye. || I'm imagining very cold. || My lips are sealed. For a trout.
+   192 e5_tr_what_keeps_you [talk.travel] then=None tone=None
+        a: ask.detail                   | What keeps you here, anyway? You could go anywhere. || Ever think of just leaving? Starting over somewhere? || Why do any of us stay put, do you think?
+        b: answer.detail                | Love. Where my other half is, I am. || Coin. Or the lack of it. You can't eat the road. || Nothing keeps me. I'm off one of these days. You watch.
+        a: assess                       | #bc_fair_enough# || Ha. Me too. || That's an answer.
+   192 et_cr_old_female [talk.crime] then=None tone=None
+        a: tell.self                    | I keep my rolling pin by the door now. I'm not afraid to use || My mother kept the town's peace with a broom. I've still got || No thief's getting past me. I sleep like a cat.
+        b: react.self                   | I believe you. || I believe that too. || Lightly?
+        a: assess                       | #bc_good# || Very sturdy broom. || With one eye open.
+   189 et_ua_theft_archive [talk.crime] then=None tone=serious / even / even
+        a: tell.news                    | A thief by the Rain Hall. #topic.victim#, robbed under the C || The Watch is turning out every street in the Commons over #t || They say #topic.victim# was robbed on the long stair.
+        b: react.news                   | If they'd taken a ledger from the Hall of Records I'd unders || The gates are watched from dusk until we know who. || Under the Council's nose. Embarrassing for someone.
+        a: assess                       | Very embarrassing. || Good and thorough. || Except down.
+   189 e5_rg_cw_spring_melt [talk.season] then=None tone=None
+        a: tell.self                    | The snowmelt's coming down. The lake's up a foot. || Mayflies all over the water. The trout are going mad for the || The ice went out last night. Cracked like thunder.
+        b: react.self                   | Best week of the year. The fish practically jump in the boat || Mind the jetty. || Lucky trout.
+        a: tell.self                    | Then I'll come and help them in. || It's under. || Lucky fisher.
+   186 kn_court_rejected [talk.friends] then=None tone=None
+        a: tell.self                    | I asked her to walk with me. || He said no. Politely. || Well, that's that. I told her how I feel.
+        b: ask.detail                   | #bc_and_q# || Politely's the worst. || #bc_and_q#
+        a: answer.detail                | She said she was busy. Every night. For a season. || He wished me luck finding someone. || She said she'd always thought of me as a brother.
+        b: assess                       | Ouch. || Ouch. || Ouch.
+        a: assess                       | Ouch. || Yes. Ouch. || Ouch indeed.
+        b: tell.self                    | Come on. Cider's on me. || Come on. The tavern's warm. || Come on. I'll buy you a bun.
+   183 tr_child_shop [talk.work] then=None tone=None
+        a: tell.self                    | Ma lets me mind the shop when she's out. || I swept the whole floor and nobody noticed. || A customer asked for something and I didn't know what it was
+        b: react.self                   | Don't give anything away. || I noticed. || What was it?
+        a: tell.self                    | I gave away one sweet. To me. || Really? || A gimlet. Still don't know.
+   183 tr_rm_quay [talk.work] then=None tone=None
+        a: tell.self                    | Unloaded cedar from the Rainwood and iron for the yard. || The wharf's flooded at the spring tide. || Smokehouses running all night. Fish and smoke.
+        b: react.self                   | Busy wharf. || Wet feet. || Smell carries.
+        a: assess                       | Busy and wet. || Wet everything. || Up to the Rain Hall.
+   183 e4_fa_restday_rules [talk.faith] then=None tone=None
+        a: tell.self                    | You were mending a fence on Restday. I saw you. || No baking on Restday, my mother said. Not even bread. || You don't keep Restday at all, do you?
+        b: react.self                   | The fence didn't know it was Restday. || Your mother was hungry Dawndays. || I keep it in my heart.
+        a: tell.self                    | The Bright One did. || We ate cold. And we were glad. || Hm. Your heart's working on the roof.
+   183 e5_tr_about_oakhaven [talk.travel] then=None tone=None
+        a: tell.self                    | Folk here say Oakhaven's dark. It's not dark. It's shade. Th || Oakhaven's dark. All those trees. You can't see the sky. || They say in Oakhaven the woods move when you aren't looking.
+        b: react.self                   | What's the difference? || We do not talk to trees. We talk near trees. Very different. || The Rainwood's honest wood. Best oak in the realm.
+        a: tell.self                    | Shade's friendly. You'd see, if you came. || Near them. Of course. || Every table in the realm says so.
+   183 e3_m_ridgemere_sump [talk.memories] then=None tone=None
+        a: tell.memory                  | The Sump was a fish market once, they say. Before the sea mo || My grandmother remembered when the Sump had gardens. || There used to be a fountain on our street. It's a drain now.
+        b: react.story                  | I didn't know. I don't come down very often. || I'd like to have seen that. || Gardens!
+        a: assess                       | No. You don't. || Now it's just the smell. || Cabbages, she said. Huge ones.
+   183 em_old_caravans [talk.caravan] then=None tone=None
+        a: tell.news                    | I drove the #topic.where# road for thirty years. Every rut o || Caravans were bigger once. Forty wagons, fifty. || The bells on the harness. Same sound as when I was a pup.
+        b: react.news                   | Thirty years! You must miss it. || Bigger and slower. || Some things don't change.
+        a: assess                       | Not the cold. The company, maybe. || Much slower. || Some things shouldn't.
+   182 e5_tr_about_larkfield [talk.travel] then=None tone=None
+        a: tell.self                    | Folk here think Larkfield's only sheep and haggling. It's th || Larkfield's all sheep. More sheep than wolves. || Larkfield folk would sell you your own coat back.
+        b: react.self                   | I'll not haggle with you, then. || And you'd thank us for a good price on it. || Larkfield wool's the best in the realm. The downs make it.
+        a: tell.self                    | #bc_wise# || Thank you? I'd count my change. || The downs and a good deal of shouting.
+   180 r7_fr_merry_and_humourless [talk.friends] then=None tone=None
+        a: ask.detail                   | Why did the hen cross the market? || Did you hear about the miller who lost his wheel? || What do you call a wolf with no ears?
+        b: answer.detail ask.detail     | I don't know. Why? || No. Did he find it? || I don't know.
+        a: answer.detail                | To get to the other stall! || He's still going round in circles! || Anything you like, he can't hear you!
+        b: tell.self                    | Ha. Ha! I see. Very good. || I don't follow, but you're happy, and that's nice. || Oh, because he can't hear. Yes. Good.
+        a: react.self                   | #bc_it_was# || I'll explain it later. || It's a bit funny.
+   180 e3_m_strict_mother [talk.memories] then=None tone=None
+        a: tell.memory                  | My mother had a look that could stop a cart. || Mother made us wash our paws before every meal. Every one. || My mother never raised her voice. She didn't need to.
+        b: react.story                  | I've got that look now. I practise it on mine. || Mine had a wooden spoon. || Clean paws, clean conscience, mine said.
+        a: tell.self                    | Does it work? || She'd have liked yours. || And she checked behind the ears.
+   177 ev_pl_newcomer_hope [talk.player] then=None tone=None
+        a: tell.gossip                  | Look, #topic.subject# just came in. Buy #topic.them# a drink || Think #topic.subject# has news from the road? || I'd say #topic.subject# could use a seat by the fire.
+        b: react.news                   | Strangers drink like everyone else. I'll see to it. || You buy it. || Ask them.
+        a: assess                       | #bc_i_might# || I will, once they've eaten. || I'm moving.
+   177 e2_pt_ball_game_parish [talk.pastimes] then=None tone=None
+        a: tell.self                    | Is the ball game on this year? Town against the farms? || Last year's ball game went on till dark. || The farms are training. I've seen them.
+        b: react.self                   | We'll win. We carry sheep all year. A ball's nothing. || Mind the walls and the windows. || They say so.
+        a: tell.self                    | We'll see. Bring your sheep. || Tell the ball. || Good. I'll bring a stick.
+   175 kn_fr_tease_old [talk.friends] then=None tone=None
+        a: tell.self                    | Your muzzle's going grey. || You groaned when you sat down. || We're getting old, you and I.
+        b: react.self                   | Distinguished. The word is distinguished. || I sighed. Contentedly. || Speak for yourself.
+        a: tell.self                    | Grey, the word is grey. || Like a wheel. || I am. And for you.
+        b: react.self                   | Distinguished grey. || Like a wise old wheel. || I'm as young as I ever was.
+        a: assess                       | Fine. Distinguished. || Squeaky, too. || Your knees disagree.
+   174 et_cr_city_theft [talk.crime] then=None tone=serious / even / even
+        a: tell.news                    | Another one robbed. #topic.victim#. You stop counting in a c || City thieves are quick as eels. #topic.victim# never felt a  || #topic.victim# was robbed in the crowd by the hall.
+        b: react.news                   | Crowds are their meat. Keep your coin in front of you. || Stop counting, stop caring. || Eels in a barrel.
+        a: assess                       | I try not to. || Slippery. || Or three.
+   174 e5_tr_where_would_you_go [talk.travel] then=None tone=None
+        a: ask.detail                   | If you could go anywhere, #pet#, where would it be? || Close your eyes. You're somewhere else. Where? || Tell me the place you'd go, if nobody needed you.
+        b: answer.detail                | Up the pass again. Just to breathe that cold, clean air. || Home to the south. Lie in an orchard and let the apples fall || Out on Glasswater at dawn with the mist lifting. Nothing in 
+        a: assess                       | I'd come with you. || I'll take you, one day. || Well. Good answer.
+   172 r7_close_plan_yes [reply.close] then=None tone=None
+        a: ack                          | Good. I'll knock. || That's settled, then. || Don't you dare forget.
+   172 e3_mb_plain [memories.back] then=None tone=None
+        a: ack                          | Aye. Well. That's how it was. || It all goes by. || Long time ago now.
+   172 e5_tr_bandits_tale [talk.travel] then=None tone=serious / even / even / even
+        a: tell.self                    | I was robbed on the road once. Years back. || Did I ever tell you about the time I met #bandits#? || I've only seen #bandits# once, and they were the politest th
+        b: react.self                   | Don't tell me. I'll not sleep tonight. ...Go on, then. || What happened? || #bc_go_on#
+        a: tell.self                    | They took my purse and gave me back my bread and cheese. || They wanted the cart. The horse didn't want to go with them. || Said please and thank you, and took the lot.
+        b: react.self                   | Generous of them. || Good horse. || Better manners than the toll-keeper.
+   171 e1_food_kitchen_help [talk.food] then=None tone=None
+        a: tell.self                    | Chop these, would you? || Stir that and don't stop. || Watch the pot while I fetch water.
+        b: ask.detail                   | Can I lick the spoon after? || Give me that. You're doing it wrong. || Thick or thin?
+        a: answer.detail                | If you're good. || Gladly. Take it. || Thin. Like your patience.
+   171 et_gs_merchant_pair [talk.gossip] then=None tone=None
+        a: tell.gossip                  | Between stalls: #topic.subject# #topic.claim#. || Customer told me #topic.subject# #topic.claim#. || Heard at the scales: #topic.subject# #topic.claim#.
+        b: react.news                   | Bad for #topic.their# credit. || Customers talk. || Scales don't lie, folk do.
+        a: assess                       | #bc_very_bad# || All day. || #bc_true#
+   168 et_sf_theft_syndicate [talk.crime] then=None tone=serious / even / even
+        a: tell.news                    | #topic.victim#'s robbed. A Sump gang, I'd bet. || Clean job on #topic.victim#'s house. Too clean for a street  || Nobody's saying who robbed #topic.victim#. Everybody knows n
+        b: react.news                   | The City Office's ledgers show crime falling. I have the led || I pay my dues to the right wolves. My shop's untouched. || The gangs don't do anything without leave.
+        a: assess                       | Somebody gave the leave. || Somebody always does. || Very wise.
+   168 e2_pt_tall_tale_fish [talk.pastimes] then=None tone=None
+        a: tell.self                    | Caught a pike yesterday as long as my arm. || My uncle once fought a bear for a ham. || I knew a wolf who outran a pony.
+        b: ask.detail                   | And it grows every time you tell it. || You didn't. || Did you eat it?
+        a: answer.detail                | Only by a paw or so. || Did! Near enough. || Every bit, and the head.
+   168 kn_day_spring [talk.day,talk.smalltalk] then=None tone=None
+        a: tell.self                    | Spring at last. || Smell that? Green everywhere. || The pups are all over the meadow.
+        b: react.self                   | My nose wakes up in spring. || Mud too. || The meadow's all over the pups.
+        a: assess                       | Mine never sleeps. || Mud's honest. || Covered.
+        b: assess                       | You're a truffle-pig, then. || It's still mud. || Every last one.
+   168 e1_food_friends_pie [talk.food] then=None tone=None
+        a: ask.detail                   | Remember that pie you made me? I still think about it. || Remember the night we ate a whole cheese between us? || You still owe me supper.
+        b: answer.detail                | It was only a pie. || My belly remembers. || I owe you nothing.
+        a: tell.self                    | It was not only a pie. || Never again. Once more. || One supper. I've a long memory.
+   165 e5_tr_best_town [talk.travel] then=None tone=None
+        a: tell.self                    | Which is the best town, do you think? Honestly. || If you had to live in any other town but this one, which? || Best town in the realm. Go on, name it.
+        b: react.self                   | Frosthollow. You'd say different, but you've not seen the sn || Southmeadow. Obviously. Have you seen the orchards? || #b.from.capitalize#. Nobody bothers you there. Nobody can fi
+        a: tell.self                    | Spoken like someone who misses it. || #bc_fair_enough# || That's no answer, that's a thirst.
+   165 e4_dr_marry [talk.dreams] then=None tone=None
+        a: tell.plan                    | I'd like to be married before winter. || I want a spouse and a full house and a goose that honks at n || When I marry, it'll be in summer, in the orchard.
+        b: react.self                   | Marriage. It's lovely. Mostly. Ask me on a good day. || Have you told the other party? Or is that a detail? || Anyone in mind?
+        a: assess                       | And today's not a good day? || Details. I'll get to it. || #bc_maybe#
+   165 e5_se_spring_lambing [talk.season] then=None tone=None
+        a: tell.self                    | The lambs are out. Did you see them leaping? || First lambs in the fold today. Wobbly little things. || Lambing season. The shepherds look half dead.
+        b: react.self                   | Three nights in the fold. Twin lambs at midnight, a breech a || Can I hold one? Please? || Makes you glad to be alive.
+        a: assess                       | I'll not say another word. || Ask the shepherd. Nicely. || #bc_it_does#
+   159 e2_pt_knucklebones [talk.pastimes] then=None tone=None
+        a: invite                       | Fancy a round of knucklebones? || Where'd I put my knucklebones? || I was the best at knucklebones on our street, once.
+        b: accept_invite                | Yes! I can do onesies AND twosies! || My paws are too stiff for it now. I'll watch, and tell you w || It's a pups' game.
+        a: tell.self                    | Show me, then. Twosies first. || You would, too. || Then you'll not mind losing at it.
+   159 e5_la_young_explore [talk.land] then=None tone=None
+        a: tell.self                    | I walked all the way to the big rock and back! On my own! || There's a cave in the hill! A real one! || I found a stream nobody knows about.
+        b: react.self                   | On your own? We'll talk about that. || I found that at your age. Mind how you go. || Clever pup.
+        a: assess                       | ...Can we talk about it tomorrow? || You never! Was it there then? || Easy.
+   159 sw_carts_late [talk.caravan] then=None tone=None
+        a: tell.news                    | The #topic.where# carts are late. Folk keep looking at the r || No carts from #topic.where# yet. The store's down to its las || They should be in by now, the #topic.where# carters.
+        b: react.news                   | Late is not lost. The sand slows everyone. || Then we'll make do. We always have. || The stars are clear. They'll find the way.
+        a: assess                       | Not lost. || #bc_always# || They will.
+   157 e8r_cv_due_poor [talk.caravan] then=caravan.due_answer tone=None
+        a: tell.news                    | When the #topic.where# wagon's in I'll be at the yard for wo || A wagon due. A penny for a strong back, maybe.
+   156 et_rm_theft_sump [talk.crime] then=None tone=serious / even / even
+        a: tell.news                    | #topic.victim# got robbed by the Sump. No surprise there. || Pickpockets from the Sump worked the wharf crowd. #topic.vic || They say whoever robbed #topic.victim# vanished into the Sum
+        b: react.news                   | The Watch won't go into the Sump past dark. Not without twen || Everyone blames the Sump. The Sump's just hungry. || The Sump eats purses.
+        a: assess                       | And spits out bones. || Always was. || Never do.
+   156 et_sr_theft_salt [talk.crime] then=None tone=None
+        a: tell.self                    | Somebody's been skimming salt off the pans at night. || #topic.victim# lost a season's salt. Sacks gone from the she || They'll sell stolen salt in the Sump Market. Easy.
+        b: react.self                   | The smokehouses'll want to know. They count every sack. || Salt's coin, down there. || A season's work!
+        a: assess                       | White coin. || Gone in a night. || Anything.
+   156 e2_pt_content [talk.pastimes] then=None tone=None
+        a: tell.self                    | Fire, a cup, a chair. That's all I ask of an evening. || I like my evenings dull. Dull and warm. || Same thing every night. Wouldn't change it.
+        b: react.self                   | I'd go out of my skin. || Can't argue. || Sounds lovely.
+        a: tell.self                    | Then go out of it. I'll keep my chair. || Nobody can. || #bc_it_is#
+   156 e5_se_spring_moult [talk.season] then=None tone=None
+        a: tell.self                    | I'm moulting like a haystack. Fur everywhere. || My winter coat's coming out in tufts. I look motheaten. || Brushed out enough fur this morning to stuff a pillow.
+        b: react.self                   | I'm making a nest with mine! || Mine comes out grey and goes back in greyer. || Everyone's shedding. The streets are full of it.
+        a: assess                       | Of course you are. || Ha. Mine's thinking about it. || #bc_lovely#
+   156 e1_home_poor_one_room [talk.home] then=None tone=None
+        a: tell.self                    | One room, one window, one chair. I'm the one. || I sold the table to pay the rent. I eat on the floor now. || The bailiff's been sniffing round.
+        b: react.self                   | Have you thought about something smaller? || I've a chair going spare. It's yours. || Cosy.
+        a: assess                       | Smaller than one room? || I'll not say no. Thank you. || Very cosy.
+   156 e5_la_farmer_weeds [talk.land] then=None tone=None
+        a: tell.self                    | Thistles. The more you pull, the more come. || The docks have taken the bottom field. Roots like ropes. || Weeds grow better than anything I plant.
+        b: react.self                   | Burn them out. || Pull them in spring. || Grow weeds and sell them.
+        a: assess                       | I'd burn the field. || I did. || Who'd buy them?
+   154 st_courting [talk.smalltalk] then=None tone=None
+        a: tell.self                    | You've done something with your fur. It suits you. || You look well today, #b.name#. || Would you walk with me later?
+        b: react.self                   | Oh! Thank you. || Have I? I hadn't noticed. || Maybe. If you're lucky.
+        a: tell.self                    | I'll take that as a yes. || I noticed. || I'll be by the well at dusk.
+        b: react.self                   | Then I'll be there.
+   153 e1_fd_tell_working [talk.food] then=keeping.nod tone=None
+        a: tell.self                    | Haven't stopped for a bite since dawn. || I'll eat when it's done. If it's ever done. || Crust in my pocket. That's dinner.
+   150 e2_pt_song_stuck [talk.pastimes] then=None tone=None
+        a: tell.self                    | I've had that miller's song in my head since dawn. || Who taught the pups that rhyme? It's everywhere. || Hum something. Anything. Get this tune out of my head.
+        b: react.self                   | I know just the cure. A worse song! Oh, she went down to the || ... Hm-hm-hmm. || Which one?
+        a: assess                       | No! No more songs. || ... Thank you. I think. || Don't you start.
+   150 e2_pt_pipes [talk.pastimes] then=None tone=None
+        a: tell.self                    | Hear the pipes down the lane? || I made a pipe from a willow stick. It plays two notes. || There's no sound sadder than pipes at dusk.
+        b: react.self                   | I want a pipe! Can I have a pipe? I'll only play it a little || Nothing like pipes. Makes my tail go. || Someone's courting, I'll bet.
+        a: tell.self                    | I'll make you one. Your mother'll never forgive me. || I can see it going. || Or someone's lost a bet.
+   150 e5_se_turning_spring_summer [talk.season] then=None tone=None
+        a: tell.self                    | Can you feel it? Spring's tipping into summer. || The may's out. Summer's on its way. || The cuckoo's been calling all week.
+        b: react.self                   | Already? || Ah, lovely. || Cuckoo means summer.
+        a: assess                       | Already. Feel that sun. || Lovely, and short. || And lazy days.
+   150 e5_se_spring_smell [talk.season] then=None tone=None
+        a: tell.self                    | Smell that? Earth. Wet earth. Spring's here. || The blackbirds have started. Proper spring. || First primroses on the bank. I counted eleven.
+        b: react.self                   | The ground's warm enough to plough. You can tell by putting  || I found a nest! Three blue eggs! || #bc_about_time#
+        a: assess                       | Then off you go. || Leave them be, mind. Look, don't touch. || Long winter.
+   147 e2_pt_needlework [talk.pastimes] then=None tone=None
+        a: tell.self                    | I've been at this sampler since midwinter. || My stitching's gone wonky again. || Embroidered a hen on my apron. Looks like a cloud.
+        b: react.self                   | Small stitches, steady paw. And a good lamp, or you'll go bl || Sailors sew better than anyone. Sails, wounds, buttons. || Nearly done?
+        a: assess                       | A good lamp. I'll find one. || Sew my hen, then. || Two letters to go.
+   147 e5_tr_ride_along [talk.travel] then=None tone=None
+        a: tell.self                    | I've begged a ride on the carter's wagon next week. || A carter said I could sit up front if I paid in pies. || I'm going with the wool wagon. Sitting on the fleeces.
+        b: react.self                   | Sit still and don't talk to the oxen. They're working. || Hope you've a cushion. || Good pies?
+        a: tell.self                    | I'll talk to the carter, then. All the way. || I'll sit on my coat. || My best.
+   147 e2_pt_dance_paws [talk.pastimes] then=None tone=None
+        a: tell.self                    | Are you dancing at the next gathering? || I've two left hind paws. Always have. || I trod on three tails at the last dance.
+        b: react.self                   | I'll dance one. Slowly. Then I'll sit and judge the rest of  || I'll hold the coats. || If someone asks.
+        a: assess                       | Judge kindly. || Every gathering needs a coat-holder. || Someone will.
+   147 em_teen_road [talk.caravan] then=None tone=None
+        a: tell.news                    | When I'm grown I'm going to drive the caravan to #topic.wher || I asked the head carter if I could go with them. || I'd go to #topic.where# in a heartbeat. Anywhere but here.
+        b: react.news                   | It's hard work. And cold. || #bc_and_q# || Everyone says that at your age.
+        a: assess                       | I don't care. || He laughed at me. || I mean it.
+        b: tell.self                    | Learn to grease an axle first. Then we'll talk.
+   147 w7s_friends_cover [talk.work] then=None tone=None
+        a: tell.self                    | Cover for me this afternoon? Just an hour. || If anyone asks, I've gone for water. || I owe you for yesterday.
+        b: react.self                   | I'll not lie for you. But I'll not mention it. || You've gone for water. It's a very long well. || You do. And I'm keeping count.
+        a: assess                       | You're a treasure. || #bc_bless_you# || I'll pay you back.
+   147 e3_m_old_songs [talk.memories] then=None tone=None
+        a: tell.memory                  | My grandfather used to sing a song about a three-legged fox. || I can still remember the words to my mother's lullaby. || Do they still sing the Harvest Wolf song where you're from?
+        b: react.story                  | Sing it, then. I'll hum the march underneath. || How did it go? || Sing it.
+        a: tell.self                    | It's not a march. Nothing's a march. || I've forgotten all but the chorus. || Not in the street.
+   147 e5_la_hunting_land [talk.land] then=None tone=None
+        a: tell.self                    | Deer have been at the hedges. Tracks everywhere. || There's a fox earth under the bank. Got two of my hens. || Hares on the top field. You can see them boxing at dawn.
+        b: react.self                   | Mind what you hunt, and where. You know the rules. || Venison, then. || Block it.
+        a: assess                       | I only said I'd seen them. || I didn't say anything. || Done. They dig.
+   146 e2_r_pt_ask [talk.pastimes] then=pastimes.own tone=None
+        a: ask.detail                   | What do you do with yourself of an evening? || Any pastimes, yourself? When the work's done? || What keeps you out of trouble, #address#?
+   144 et_theft_night_noise [talk.crime] then=None tone=serious / even / even
+        a: tell.news                    | Heard a clatter in the night and thought nothing of it. Then || Geese honking at the second hour. That was the thief. || Did anyone hear anything last night?
+        b: react.news                   | I wish folk would shout when they hear a clatter. Save me a  || You couldn't have known. || They always honk.
+        a: assess                       | I'll know next time. || Not like that. || Nor me. That's the worrying part.
+   144 kn_court_advice [talk.friends] then=None tone=None
+        a: ask.detail                   | How do I tell someone I like them? || I think the cooper's daughter likes me. || Should I bring a gift? Flowers? A fish?
+        b: answer.detail                | Tell them. With your mouth. Using words. || She does. Everyone knows but you. || Not a fish.
+        a: ask.detail                   | It's not that easy. || Everyone? || What's wrong with a fish?
+        b: answer.detail                | It's the easiest thing in the world. || Even the cooper knows. || It's a fish.
+        a: tell.self                    | Easy for you to say. || Then why didn't anyone tell me? || It's a big fish.
+        b: react.self                   | I'm not the one who has to say it. || We're telling you now. || That's worse.
+   144 e4_dr_love [talk.dreams] then=None tone=None
+        a: tell.plan                    | I had a dream about someone. I'm not saying who. || Dreamt I was dancing with somebody at the festival. || Somebody was in my dream last night and now I can't look at 
+        b: ask.detail                   | Somebody, is it? Somebody with a name? || Ah. I remember those. Enjoy the blushing. || Oh, aye?
+        a: answer.detail                | Not telling. Stop grinning. || Not telling you. || Leave it.
+   144 w7c_up_cut_back [talk.prices] then=None tone=None
+        a: tell.self                    | We'll be cutting back this week. || No more of that till it drops. || I'll have to choose: #topic.what#, or boots.
+        b: react.self                   | The pups don't understand cutting back. || We've cut back so far there's no back left. || Mine need both.
+        a: assess                       | You're kind. || If you insist. || I might, at that.
+   142 e2_an_owls [talk.animals] then=None tone=None
+        a: tell.self                    | Owl's calling. || Hear that? Something screaming in the dark. || An owl came down right in front of me. Took a mouse.
+        b: react.self                   | I hate the night noises. Hate them. || An owl calling three times. Somebody's going. || Hunting.
+        a: assess                       | It's only beasts. Only beasts. || Don't. Not tonight. || Rather it than me.
+   142 e8t_ev_ans_good_poor [event.answer] then=None tone=None
+        a: react.news                   | Not that it'll reach me. || Good for those who can buy.
+   141 e2_pt_singing_badly [talk.pastimes] then=None tone=None
+        a: tell.self                    | My neighbour sings when they wash. Every morning. || Was that you singing last night? || I sang at the tavern. They clapped. I think they clapped.
+        b: ask.detail                   | The street's been praying for rain, to drown it. || Singing's singing. Better than a silent house. || Well? Any good?
+        a: answer.detail                | The rain's no help. It sings louder. || I suppose it is. || Like a gull with a cold.
+   141 ev_beast_bear [talk.smalltalk] then=None tone=None
+        a: tell.self                    | They say a bear's been seen near the woodcutters' track. || Bear sign on the bark up the hill. || My uncle wrestled a bear once. Or so he says.
+        b: react.self                   | Saw it myself. Big as a cart. We're working in threes now. || Report it to the watch, not the tavern. || Stay well clear.
+        a: assess                       | I mean to. || Claw marks still weeping sap. || He says so.
+   141 e5_se_spring_cleaning [talk.season] then=None tone=None
+        a: tell.self                    | Shook out every blanket in the house. The dust! || Opened all the windows today. The house was sour with winter || I found a mouse nest in my winter coat. Living in the sleeve
+        b: react.self                   | We've a maid for that, thank heavens. || Spring cleaning. Good. || Smells of fresh air now?
+        a: assess                       | Lucky you. And lucky her. || Good, and sneezy. || Air and goat.
+   141 e4_fa_prayer_unanswered [talk.faith] then=None tone=None
+        a: tell.self                    | I prayed for a whole year. Nothing. || Does praying do anything, do you think? Really? || Prayed my luck'd turn round. It didn't.
+        b: react.self                   | It's not a market. You don't pay and get. || He hears. He doesn't always say yes. Like a good parent. || Mine neither.
+        a: ask.detail                   | Then what is it? || My parents said yes to nothing. || Then what's it for?
+   141 e5_la_boundary_stone [talk.land] then=None tone=None
+        a: tell.self                    | Somebody's moved the boundary stone again. Two feet, in the  || There's a row about the boundary between the two farms out p || Nobody beats the bounds any more, and now look. Nobody knows
+        b: react.self                   | Two feet a year, and in forty years you've stolen a field. I || There's a map of every boundary in the town chest. Nobody ev || Can't they just share? We share.
+        a: tell.self                    | Then somebody's got a field they shouldn't, and knows it. || Then somebody should look at it. You, for instance. || If only. Grown wolves don't share land, pup.
+   140 h7_stranger_kind_word [talk.player] then=None tone=None
+        a: tell.gossip                  | We should be kind to #topic.subject#. Nobody's kind to trave || I was a stranger once. Somebody gave me bread. || #topic.subject# could use a friendly face.
+        b: react.news                   | Kind costs nothing. Go on, then. || Did you pay them back? || Mine's not friendly. It's tired.
+        a: assess                       | You first. || I'm paying it on now. || Tired's friendly enough.
+        b: assess                       | Together, then. || #bc_good# || Then let's be tired at them.
+   140 ev_pl_new_face [talk.player] then=None tone=None
+        a: ask.detail                   | See #topic.subject# over there? Never seen #topic.them# befo || Who's that? Look at #topic.subject#, fresh off the road. || There's #topic.subject# watching the street.
+        b: answer.detail                | I've had my eye on them since the gate. || Are they an adventurer? Do they have a sword? || New face.
+        a: assess                       | Wonder what brings them. || They do. Mostly go. || Watching what, though?
+        b: assess                       | Trade, likely. || #bc_mostly# || Us, I expect.
+   140 h7_stranger_thief_eye [talk.player] then=None tone=None
+        a: tell.gossip                  | Keep a paw on your purse. #topic.subject# is new. || I've had my eye on #topic.subject#. Just in case. || Any trouble, and it's always the new face that's blamed. Poo
+        b: ask.detail                   | New's not guilty. || In case of what? || Poor them? Why?
+        a: answer.detail                | New's not innocent either. || In case. || Because they'll be blamed whatever.
+        b: tell.self                    | You'd hang your own shadow. || You're a suspicious old thing. || Unfair, that.
+   139 e8p_c_players_up [talk.prices] then=prices.answer_cause tone=None
+        a: tell.news                    | Travellers buying it up. #topic.what.capitalize# at #topic.p || The travellers are buying #topic.what# like there's no tomor
+   138 e2_r_pt_wager_offer [talk.pastimes] then=pastimes.wager tone=None
+        a: tell.self                    | I'll wager you a penny I can beat you to the well. || Fancy #bet#? Two pennies says the next cart through the gate || I'll bet you a penny you can't name all four Houses.
+   138 e2_pt_ball_game [talk.pastimes] then=None tone=None
+        a: tell.self                    | The ball game's on, our street against the next. || Somebody kicked the ball through the chapel window. || My tail's still sore from the ball game.
+        b: ask.detail                   | Ball games. Somebody always gets hurt, and it's always me. || I'll be breaking that up by dusk, mark me. || Who's carrying the ball?
+        a: answer.detail                | Then stand further back. || You will. You always do. || Whoever's daft enough.
+   138 tr_child_chores [talk.smalltalk,talk.work] then=None tone=None
+        a: tell.self                    | Ma says I have to fetch water before I play. || I fed the hens and one bit me. || I'm supposed to be watching the baby.
+        b: react.self                   | I'll help. Then we play. || Hens are mean. || Where's the baby?
+        a: assess                       | Two buckets each! || Mean as goats. || ...I'll be right back.
+   138 em_job_innkeeper_caravan [talk.caravan] then=None tone=None
+        a: tell.self                    | Caravan days fill my rooms. Caravan nights empty my cellar. || I've a spare room if the carters need it. || When the wagons are late, the tavern is a tomb.
+        b: react.self                   | A fair trade. || They always need it. || A very quiet tomb.
+        a: assess                       | Usually. || Usually. || Quiet and cold.
+   137 w7_rep_plain [work.reply] then=None tone=None
+        a: react.self                   | Same as ever, then. || Aye, it goes. || Ah, well.
+   135 e2_pt_fox_and_geese [talk.pastimes] then=None tone=None
+        a: tell.self                    | You moved that fox backwards last night. Foxes don't go back || Fox-and-geese tonight? I've a new board. || I've never once bested my mother at fox-and-geese.
+        b: react.self                   | I love that game. I always lose and I always laugh. || I'm very good at fox-and-geese. Ask anyone. Well. Ask me. || They do in our house.
+        a: tell.self                    | Then play me. I like winning. || I'll ask around. || Then your house plays it wrong.
+   135 e3_h_ridgemere_rain [talk.health] then=None tone=None
+        a: tell.self                    | This city's rain gets into your chest. || Everyone in Ridgemere sniffles from autumn to spring. || I've not had dry feet since autumn.
+        b: react.self                   | The Ridgemere cough. Born with it, most of us. || Dry socks. || We're born with it.
+        a: ask.detail                   | And we'll die with it, at a ripe old age. || What socks? || #bc_lucky_you#
+   135 e2_pt_dice_cup [talk.pastimes] then=None tone=None
+        a: tell.self                    | The dice hate me. Truly. || Lucky dice, these. Bone, older than my grandmother. || Seven throws without a six. Seven.
+        b: react.self                   | Don't play for #money# you haven't got. I learned that one t || The Bright One frowns on dice, they say. Not very hard, mind || Dice hate everyone equally.
+        a: assess                       | I know. I know. || Not hard enough to stop me. || Not equally. Me more.
+   135 e5_la_bad_field [talk.land] then=None tone=None
+        a: tell.self                    | That top field's never grown a decent crop in living memory. || Stones. That field grows stones. Every spring a new crop of  || There's a field nobody will plough. Something buried there, 
+        b: react.self                   | Some ground's just poor. Pick the stones, muck it well, and  || Can I have it, then? For a den? || Let it go to grass.
+        a: ask.detail                   | Ten years. Who's got ten years? || Ask the farmer. Nicely. || Sheep won't even eat it.
+   135 e5_tr_sea_edge [talk.travel] then=None tone=None
+        a: tell.self                    | Do you think there's anything past the sea? || Sailors say there's land past the edge of the water. || I'd like to see the sea from a ship, just once. Nothing but 
+        b: react.self                   | Water, then more water, then more. Then you turn round, if y || The Bright One's lands go further than any boat. || Sailors say a lot of things.
+        a: assess                       | Then why do you keep going out? || I'd still like to see them. || Somebody must know.
+   135 e5_rg_lf_spring [talk.season] then=None tone=None
+        a: tell.self                    | The larks are up over the downs at dawn. Singing like they'l || Lambs on every slope. The downs sound like a nursery. || Gorse is in flower. The whole hill smells of honey.
+        b: react.self                   | Lambing. I've not slept since the new moon. || That's the town's name. || #bc_lovely#
+        a: assess                       | You look it. Go home. || That's why. || Loud.
+   135 e5_la_farmer_soil [talk.land] then=None tone=None
+        a: tell.self                    | Pick up a pawful of this. Feel it. That's good soil. || My soil's sour this year. Too much rain. || I can tell a field by its smell. That one's tired.
+        b: react.self                   | Let me feel. ...Aye. I'd want lime on it all the same. I'd w || It's mud. You're holding mud. || It's just dirt to me.
+        a: tell.self                    | Your father and his lime. You're turning into him. || Mud's what your bread comes out of, pup. || Dirt's the whole world, #address#.
+   132 w7c_closing [talk.work] then=None tone=None
+        a: tell.self                    | Shall we shut up shop? || That's enough for one day. || Put the shutters up. I'm done.
+        b: react.self                   | One more hour. || Never enough. || Not yet.
+        a: assess                       | One hour. Not a breath more. || Enough for me. || Yes. Now.
+   132 e2_pt_carving [talk.pastimes] then=None tone=None
+        a: tell.self                    | I've been whittling a little fox. || What are you carving there? || Cut my paw carving a spoon. A spoon!
+        b: react.self                   | Mind the grain. The grain decides. You just follow. || Can I see? Can you make a wolf? A big one? || Show me.
+        a: tell.self                    | The grain and I aren't speaking. || A small one. Big ones take wood. || It's got three legs so far.
+   132 e2_pt_riddle_mouth [talk.pastimes] then=None tone=None
+        a: ask.detail                   | Riddle for you. What has a mouth but never eats? || What runs but never walks? || What's yours but everyone else uses it?
+        b: answer.detail ask.detail     | That's an old one. You'll have to try harder than that. || Ooh! Ooh! Is it... a ghost? || A sack?
+        a: answer.detail                | Fine. Clever paws. I'll find a harder one. || A river. || A river. Water, anyway.
+   132 e5_la_paths [talk.land] then=None tone=None
+        a: tell.self                    | There's a path over the hill the old folk used. It's gone to || Every path round here was made by somebody's cow. || The old track over the hill's quicker than the road. If you 
+        b: react.self                   | That's the drove road. My grandfather took sheep along it. || Quicker on foot. Try it with a cart and see. || Nobody walks it any more.
+        a: assess                       | Then somebody should take sheep along it again, and clear it || I'll leave the cart at home, then. || Nobody has the time.
+   132 e5_se_spring_restday [talk.season] then=None tone=None
+        a: tell.self                    | First warm Restday of the year. Everybody's out of doors. || Look at them all, lying on the grass like seals. || I'm going to sit on the wall in the sun and do nothing at al
+        b: react.self                   | After chapel, mind. || Join them. || Sensible seals.
+        a: assess                       | After chapel. Then the wall. || I intend to. || Very sensible.
+   129 e4_fa_ridge_sump_preacher [talk.faith] then=None tone=None
+        a: tell.self                    | There's a street preacher at the Sump steps. Says the end's  || Mission folk came round with soup and sermons. Took the soup || No chapel down here worth the name. Just a room and a candle
+        b: react.self                   | A room and a candle's enough. The Bright One's been in worse || It always is. || Good soup?
+        a: assess                       | Then he'd feel at home here. || He'd know. || Thin. Long sermon.
+   129 e3_mr_friends [talk.memories] then=memories.answer tone=None
+        a: ask.detail                   | Remember when we tried to sail to the end of the world in a  || Remember the night we sang under the miller's window? You sa || Remember when you fell out of the apple tree and blamed me?
+   129 e2_an_fish_talk [talk.animals] then=None tone=None
+        a: tell.self                    | Fish are biting. || Pike in the river took a duckling, right off the top. || What's the cleverest fish, would you say?
+        b: react.self                   | Fish are never where you want them. That's fishing. || Bring me trout. I'll make a meal you'll weep over. || Off you go then.
+        a: assess                       | That's what I like about it. || Catch them first. || After work.
+   129 e2_pt_fiddle_learning [talk.pastimes] then=None tone=None
+        a: tell.self                    | I'm learning the fiddle. || Somebody's been sawing at a fiddle three nights running. || My grandfather's fiddle's sat on the wall for years.
+        b: react.self                   | Took me ten winters to play a tune worth hearing. || Fiddles. The cat's natural enemy. || How's it going?
+        a: assess                       | Ten! I'll be grey. || The cat agrees. || The cat leaves the room.
+   129 em_prices_who_blame [talk.prices] then=None tone=None
+        a: tell.self                    | Who do we blame this time? || Somebody's getting rich off this. || Prices go up like smoke and come down like stones.
+        b: react.self                   | The weather. Always the weather. || Never us. || Slowly, and never far enough.
+        a: assess                       | Can't fine the weather. || Never us. || #bc_exactly#
+        b: tell.self                    | The council watches the markets closely. || Don't blame me. I pay it too.
+   129 e5_se_favourite [talk.season] then=None tone=None
+        a: ask.detail                   | What's your season, then? Which one's yours? || If you could keep one season all year, which? || I've always been an autumn wolf. You?
+        b: answer.detail                | Winter. It's the only one where I get to sit down. || Summer! No, winter, for snow. No, summer. || Spring. Every spring's a gift at my age.
+        a: assess                       | Can't argue. || #bc_lovely# || A good choice.
+   129 e3_m_last_time_cried [talk.memories] then=None tone=None
+        a: tell.memory                  | My father cried once in his life. When the old ox died. || I still think about my grandmother's paws. Floury, always. || I can still smell my mother's kitchen. Smoke and onions.
+        b: react.story                  | Those are the things that stay, aren't they. || Mm. || That's a good thing to remember.
+        a: tell.self                    | They are. The small ones. || #bc_it_is# || Strong, though. Gentle.
+   128 w7_cva_plain [caravan.answer] then=None tone=None
+        a: react.news                   | Is that so? || Hm. The roads are busy. || I'd heard something.
+   126 e2_pt_reading [talk.pastimes] then=None tone=None
+        a: tell.self                    | I've been reading of an evening. || Can you read? Honestly? || I borrowed a book from the chapel. Don't tell anyone.
+        b: react.self                   | Books! Good. Whatever it is, skip the third volume. There's  || Never learned. Who had the time? || The chapel's books are there to be read. Mind the candle wax
+        a: tell.self                    | There is. I'm in it. || I'll teach you. Your name first. || I'll mind it.
+   126 e2_pt_gossip_sport [talk.pastimes] then=None tone=None
+        a: tell.self                    | Bench by the well, an hour, best entertainment in town. || Gossip's free and better than any play. || I've heard three things this morning, and one of them's true
+        b: ask.detail                   | Oh, sit down, sit down. Have you heard about the cooper? || I just listen. You'd be amazed what folk say in front of a q || What's the news?
+        a: answer.detail                | No! Tell me. Everything. || I'll remember that. And watch what I say near you. || Not here. Later.
+   126 e2_pt_walk [talk.pastimes] then=None tone=None
+        a: tell.self                    | I walked out past the last houses after supper. || A walk does you more good than any healer. || I like walking when everyone's abed.
+        b: react.self                   | A lap round the chapel's my limit now. || Alone? After dark? I couldn't. || See anything?
+        a: tell.self                    | That's a walk. That counts. || It's quieter than you'd think. || A hare and two stars.
+   126 e5_la_springs [talk.land] then=None tone=None
+        a: tell.self                    | There's a spring up the hill tastes better than any ale. || The well's water comes from under the hill. Cold even in sum || Folk used to leave pennies at the spring for luck.
+        b: react.self                   | That spring's why my ale's the best for miles. || I drank from it! Is that lucky? || Show me.
+        a: assess                       | That and the water you put in it. || The luckiest. Don't tell anyone. || I'll take you.
+   126 e5_rg_rm_ships [talk.travel] then=None tone=None
+        a: tell.self                    | A boat came in from down the coast this morning. Sails all p || They're loading the Grayrock ship with glass and iron. || I watched a ship go round the headland till I couldn't see i
+        b: react.self                   | She came through weather. You can see it in the rigging. || Our ships carry half the realm's goods. Somebody has to. || Rough passage, then.
+        a: assess                       | And in the crew, I'd guess. || And take a fair cut of it. || Looked it.
+   126 ev_pl_road_dust [talk.player] then=None tone=None
+        a: tell.gossip                  | Look at the road dust on #topic.subject#. Come a long way. || Smell #topic.subject# by the wall? Somewhere far off. || Sniff the air near #topic.subject#. Pine and river, I'd say.
+        b: react.news                   | That's west-road dust. Red. I'd know it anywhere. || Long way, by the paws on them. || Far off, and tired.
+        a: assess                       | Long road, then. || Tired and hungry, I'd guess. || Best in the street.
+   126 em_band_friends_prices [talk.prices] then=None tone=None
+        a: tell.self                    | Come eat with us tonight. One more mouth is nothing. || Let's split a sack of #topic.what#. Cheaper by the sack. || You've lost weight. Are you eating?
+        b: react.self                   | I'll bring bread. || Good idea. || When I can.
+        a: assess                       | Bring yourself. That's enough. || Tomorrow, at the stall. || Tonight, then. At ours.
+   126 st2_mixed_flirt [talk.smalltalk] then=None tone=None
+        a: ask.detail                   | Save me a dance at the next feast? || Walk me home? It's dark. || You've a kind laugh, did you know?
+        b: answer.detail                | #bc_maybe# || If you insist. || Have I?
+        a: assess                       | I'll hold you to it. || I insist. || You have.
+   126 e5_rg_lf_downs [talk.land] then=None tone=None
+        a: tell.self                    | You can walk the downs all day and never see a wall. Just gr || The wind on the High Downs never stops. You lean into it. || Sheep everywhere. Like clouds that fell.
+        b: react.self                   | Short turf, thyme in it. That's why the mutton's so sweet. || All this sky. I don't know where to hide. || Lovely country.
+        a: tell.self                    | And the shepherds so smug. || You don't. That's the beauty of it. || #bc_the_best#
+   126 ev_pl_merchant_appraises [talk.player] then=None tone=None
+        a: tell.gossip                  | Purse on #topic.subject# looks heavy. Hello, customer. || I'll bet #topic.subject# needs boots. Look at those soles. || Somebody tell #topic.subject# my prices are the best in #her
+        b: react.news                   | Don't fleece them. || They do look worn. || Tell them yourself.
+        a: assess                       | Only a little. || Boots, and a new cloak. || I'm about to.
+   125 n7_ro_shopkeeper_short [talk.prices,talk.smalltalk] then=town.answer tone=None
+        a: tell.self                    | #self.shopkeeper# gave me short weight again. I'm sure of it || Went to #self.shopkeeper#'s for candles. Came out with soap. || #self.shopkeeper# never smiles. Not once in ten years.
+   124 e2_r_an_ask [talk.animals] then=animals.own tone=None
+        a: ask.detail                   | Keeping any beasts these days? || How goes it with #beasts# at yours? || Got any creatures at yours? Hens? A cat?
+   124 w7_ask_chatty [talk.smalltalk,talk.work] then=work.answer tone=None
+        a: ask.detail                   | Now then, what are you at? Tell me everything. || Ooh, what's that you're doing? Is it hard? || Don't let me stop you, but how's it all going?
+   124 sorry_want [keeping.sorry] then=None tone=None
+        a: sympathise                   | Times are hard. For too many. || That's no way to live. It's not right. || Something'll turn. It has to.
+   124 h7_stranger_hire_road [talk.player] then=None tone=None
+        a: tell.gossip                  | Somebody should hire #topic.subject# to clear the road. || I'd pay #topic.subject# to walk my cart to the next town. || #topic.subject# looks like #topic.they# could see off a few 
+        b: react.news                   | With what money? || You'd pay? You? || Looks aren't everything.
+        a: assess                       | I'd find it. || For a safe road? Gladly. || They're a start.
+        b: assess                       | Then go and ask. || Then go and ask them. Go on. || Then ask what they've done, first.
+   123 e5_la_forest_edge [talk.land] then=None tone=None
+        a: tell.self                    | The woods are creeping closer to the fields every year. || You can hear wolves in the far woods some nights. Wild ones. || The forest edge is where the old stories start.
+        b: react.self                   | The wood takes back whatever you stop watching. Fields, path || Every wood's got something in it that's glad you're leaving. || Cut them back.
+        a: assess                       | Then I'll keep watching. || I'm always glad to oblige. || Somebody should.
+   123 e2_pt_fishing_pleasure [talk.pastimes] then=None tone=None
+        a: tell.self                    | Took a line down to the water after work. Just to sit. || Nothing beats an afternoon with a rod. || Fished all day. Caught a boot.
+        b: react.self                   | Fishing for fun. I'll never understand it. That's my workday || All day sitting? I'd go mad. || Catch anything?
+        a: tell.self                    | That's why it's fun. Nobody's counting. || That's the point of it. || Didn't want to.
+   123 e3_m_lost_things [talk.memories] then=None tone=None
+        a: tell.memory                  | I had a wooden wolf when I was small. I wonder where it went || My father carved me a boat. I sailed it in the ditch. || I still have the first penny I ever earned.
+        b: react.story                  | Mine keep everything like that in a box under the bed. || Lost in a move, I'll bet. || Did it float?
+        a: tell.self                    | Keep the box. One day they'll want it. || Somebody's pup has it now. I hope. || Until the ducks got it.
+   123 e5_la_wild_place [talk.land] then=None tone=None
+        a: tell.self                    | There's a hollow out past the woods nobody goes near after d || My gran said never to drink from the black pool past the old || You know the stone circle on the hill? Something lives up th
+        b: react.self                   | Say a prayer if you pass it. Just in case. || Something lives everywhere. Mostly rabbits. || What's there? Tell me!
+        a: assess                       | I always do. Twice, to be sure. || Big rabbits, then. || Nobody knows. That's the frightening bit.
+   123 e5_la_good_field [talk.land] then=None tone=None
+        a: tell.self                    | There's one field everyone wants and nobody can have. The on || Old Tam's field never fails. Every year, a crop. || Some fields are lucky. Some are cursed. Ask anyone.
+        b: react.self                   | Luck's got nothing to do with it. It's drainage and dung. || No field's lucky or cursed. Some are tended better, that's a || Belongs to the Houses, I expect.
+        a: tell.self                    | Drainage and dung. There's a song in that somewhere. || Tell that to whoever ploughs the bad ones. || Everything does.
+   123 e4_dr_regret_trade [talk.dreams] then=None tone=None
+        a: tell.plan                    | I should have been a sailor. I'd have been good at it. || My father wanted me to take the shop. I wonder how that went || Sometimes I think I picked the wrong trade.
+        b: react.self                   | You'd only be saying the same about this. || Not too late. || Wonder away.
+        a: assess                       | Probably. You're right, curse you. || It is for me. || #bc_probably#
+   123 e1_food_poor_bread [talk.food] then=None tone=None
+        a: tell.self                    | Bread and dripping, again. || I've a crust. I'll make it last till evening. || The parish loaf's bigger than the bakers' now.
+        b: react.self                   | Have you tried the parish? I'm told they're very good. || You're doing better than me, then. || Dripping's not bad.
+        a: assess                       | I'm told so too. || Hard times, the lot of us. || Not bad, every day? It is.
+   123 e4_dr_retire [talk.dreams] then=None tone=None
+        a: tell.plan                    | When I stop working, I'm going to sleep till noon. Every day || When I'm done with work I'll sit by the door and judge every || I've a few years left in me, then I'll rest.
+        b: react.self                   | I said that. Then I stopped, and I was bored by noon. || You'll never stop. || You do that already.
+        a: assess                       | Watch me. || Now I'll do it with a cushion. || #bc_we_will_see#
+   120 e2_pt_race [talk.pastimes] then=None tone=None
+        a: tell.self                    | Race you to the well. || Who won the race at the last fair? || I ran the hill race. Never again.
+        b: react.self                   | My racing days are done. I'll judge. || Race! I'm fastest! I'm already going! || On three.
+        a: assess                       | Judge fair, then. || Wait for me! || One, two... you went early!
+   120 e2_pt_wrestling [talk.pastimes] then=None tone=None
+        a: tell.self                    | Wrestling on the green Restday. Coming? || Who's the best wrestler in town, would you say? || I threw the smith's lad on the green. Once.
+        b: react.self                   | I'll wrestle anyone. Nobody'll wrestle me. || I could put you down before you'd tied your belt. || I was the best in town once. Ask anyone old enough to rememb
+        a: assess                       | I wonder why. || I don't doubt it. || I'll ask. Quietly.
+   119 e1_food_nose_and_tongue [talk.food] then=None tone=None
+        a: tell.self                    | Smell that? Somebody's frying onions. || My nose has been following that smell since the corner. || Whoever's cooking with that much garlic owes the street an a
+        b: react.self                   | My nose is better than yours. It's two doors down. The blue  || Onions and liver, I'd say. || Mine too. Let's knock.
+        a: tell.self                    | Clever nose. Don't go knocking, mind. || Liver. Gods, I hope it's liver. || We can't knock on a stranger's door for a smell.
+        b: react.self                   | Shame we weren't asked. || Watch me. || #bc_somebody_has_to#
+   118 n7_close_gr_agree [town.close] then=None tone=None
+        a: ack                          | That's the town. || You're not wrong. || That's what I said.
+   118 e8p_c_harvest_up [talk.prices] then=prices.answer_cause tone=None
+        a: tell.news                    | A short harvest. #topic.what.capitalize# #topic.is# dear. || The farm carts came in light. #topic.price.capitalize# now.
+   118 e8t_ev_ans_bad_poor [event.answer] then=event.close tone=None
+        a: react.news                   | And it's always us who feel it first. || Just what we needed.
+   117 w7s_other_life [talk.work] then=None tone=None
+        a: ask.detail                   | If you weren't doing this, what would you do? || Ever wish you'd learnt another trade? || What did you want to be, as a pup?
+        b: answer.detail                | Go to sea. Today, if I could. || Most days. All of them, some weeks. || Anything but this.
+        a: assess                       | #bc_lucky_you# || Wish I could say the same. || Good. Somebody should be happy.
+   117 e2_pt_new_game [talk.pastimes] then=None tone=None
+        a: tell.self                    | Somebody's brought a new game from the city. Cards with pain || Learned a card game from a sailor. Nobody else knows it. || There's a game going round with pebbles and a board of holes
+        b: react.self                   | New games. In my day there were three games, and that was pl || How's it played? || Teach me.
+        a: assess                       | Then this makes four. || Nobody's sure. That's half the fun. || I'll win, though.
+   117 nod_plain [keeping.nod] then=None tone=None
+        a: ack                          | Aye. || Is that so. || Mm. Well.
+   117 e5_rg_rm_gates [talk.travel] then=None tone=None
+        a: tell.self                    | The queue at the South Gate went right back to Rainrun Bridg || Took the High Road out the East Gate. Uphill the whole first || Half the realm comes through the gates on a Marketday.
+        b: react.self                   | We check every cart. It takes the time it takes. || The South Road's kinder. The High Road's for punishing yours || Marketday.
+        a: assess                       | It takes a good deal longer than that. || I'll take the South Road next time and go round. || Every day's Marketday at that gate.
+   117 e4_fa_restday_working [talk.faith] then=None tone=None
+        a: tell.self                    | Working on Restday. The Bright One will have words. || Everyone's at chapel and here I am with a bucket. || Somebody's got to keep the place running on Restday.
+        b: react.self                   | The Bright One rested so we could. But he never let a cow go || I'll pray for you. And the work. || He'll understand.
+        a: assess                       | Nor a bucket unfilled, I hope. || Much obliged. || He'd better.
+   115 e8p_ans_cause_poor [prices.answer_cause] then=None tone=None
+        a: answer.detail                | Whatever the reason, my purse pays it. || Knowing why doesn't make it cheaper.
+   115 kn_tail_tell [talk.family,talk.friends] then=None tone=None
+        a: ask.detail                   | You're wagging. What's happened? || Your tail's tucked. Bad news? || Your hackles are up.
+        b: answer.detail                | #bc_nothing# || #bc_nothing# || #bc_nothing#
+        a: tell.self                    | Nothing doesn't wag like that. || Nothing doesn't tuck like that. || Nothing doesn't raise hackles.
+        b: react.self                   | I've been asked to walk out with someone. || The master wants to see me tomorrow. || Somebody barged me at the gate.
+        a: assess                       | I knew it! || It might be good. || Then I'll come with you next time.
+   114 e1_food_rm_mussels [talk.food] then=None tone=None
+        a: tell.self                    | Fresh mussels off the wharf. A bucket for two pennies. || Herring again. Ridgemere swims on herring. || Have you had the crab from the stall on the wharf?
+        b: react.self                   | I'll never get used to eating things with shells. || A bucket! || And stinks of it.
+        a: assess                       | More for me. || A whole bucket. || That's the harbour for you.
+   114 e5_tr_night_road [talk.travel] then=None tone=None
+        a: tell.self                    | Wouldn't want to be on the road tonight. || Someone's still out there, walking in the dark. Poor soul. || You can hear the road at night. Wagons, and other things.
+        b: react.self                   | Don't say that. Shut the shutters. || Nobody honest walks after dark. Bar the watch. || #bc_not_me#
+        a: assess                       | They're shut. I checked twice. || Then I'll sleep easy, knowing you're out there. || Not anyone with sense.
+   114 e3_mr_close [talk.memories] then=memories.answer tone=None
+        a: tell.memory                  | You're the only one who remembers me as I was. || I was thinking about the day we met. I remember every bit of || We've seen a lot, you and me.
+   114 e5_tr_ship_dreams [talk.travel] then=None tone=None
+        a: tell.self                    | I watch the ships go out of the Sound and wonder where they  || I nearly signed on a ship once. Got as far as the gangplank. || A ship came in from far down the coast with oranges. Oranges
+        b: react.self                   | You're not missing much. Wet bunks, salt pork and a bosun wh || Somewhere warmer, I hope. || What stopped you?
+        a: tell.self                    | And the sea. Don't tell me you don't love the sea. || I hope so too. || My mother, on the wharf, crying.
+   114 pl_stranger [talk.player] then=None tone=None
+        a: tell.gossip                  | Look! Who's that? || Is that a traveller? Ask them where they're from! || Keep an eye on #topic.subject#. I don't know that face.
+        b: react.news                   | Travellers. Always looking, never buying. || Probably just passing through. || No idea.
+        a: assess                       | Hm. || I'm not staring. || #bc_probably#
+   114 e5_tr_caravan_coming [talk.travel] then=None tone=None
+        a: tell.self                    | There's a caravan due in. You can hear the bells from the ga || Look, dust on the road. Caravan coming. || The caravan's late. Two days now.
+        b: react.self                   | About time. I've an order on that, and folk waiting. || Can I go and see the oxen? Can I? || Good. We need the salt.
+        a: tell.self                    | Then you'd best go and meet it. || Go on, then. Keep out from under the wheels. || Everyone does.
+   114 e4_dr_sea [talk.dreams] then=None tone=None
+        a: tell.plan                    | I'd like to see the sea before I die. Never have. || They say the sea goes on till it meets the sky. I want to se || Have you ever seen the sea?
+        b: react.self                   | It's grey and it smells. You're not missing much. Go anyway. || It's bigger than you think. It's always bigger than you thin || Me neither.
+        a: tell.self                    | Someday. I'll smell it for myself. || One day I'll stand there and look. || Then I'll go and see for myself.
+   112 h7_theft_safest_house [talk.crime] then=None tone=serious / even / even / even
+        a: tell.news                    | Thieves about. #topic.victim#'s been done. || They robbed #topic.victim#. Should I worry? || Lock your door tonight. #topic.victim# got robbed.
+        b: react.news                   | Let them come to mine. They'll leave me something. || Have you anything worth taking? || I've nothing to lock in.
+        a: tell.self                    | Ha! A thief with a conscience. || A good pot and my mother's ring. || Lock yourself in, then.
+        b: react.self                   | They'd weep at my larder. || Wear the ring. Sleep in the pot. || I'm not worth stealing either.
+   112 e8r_cv_close [caravan.close] then=None tone=None
+        a: ack                          | #bc_we_will_see# || Aye, well. || Here's hoping.
+   111 e5_la_ruins [talk.land] then=None tone=None
+        a: tell.self                    | There's an old wall out in the fields. Older than anyone. No || Found an old coin in the furrow. Strange face on it. || There are ruins in the hills nobody's ever mapped.
+        b: react.self                   | Older folk than us were here. We farm their bones. || Leave it be. || Spend it.
+        a: assess                       | Cheerful thought, that. || I do. I walk round. || It won't spend. Nobody'll take it.
+   111 em_more_trade_favours [talk.prices] then=None tone=None
+        a: tell.self                    | I mended her roof for a week of suppers. Better than coin. || Coin's scarce. Folk are trading work for food. || I'll sweep your floor for a bowl of soup. I'm not proud.
+        b: react.self                   | Fair trade. || Like the old days. || Pride doesn't fill a belly.
+        a: assess                       | Better than fair. || The old days were hungry too. || No, it doesn't.
+   111 ev_pl_innkeeper_sizes [talk.player] then=None tone=None
+        a: tell.gossip                  | I'll have a room for #topic.subject# tonight, mark me. || Watch, #topic.subject# will ask for the stew. Travellers alw || I can tell what #topic.subject# drinks from here. Dark ale.
+        b: react.news                   | You can't know that. || Everyone asks for the stew. || How?
+        a: assess                       | Thirty years behind a counter. || Because it's good stew. || The way they lean.
+   110 n7_ro_priest_ordinary [talk.day,talk.smalltalk] then=town.answer tone=None
+        a: tell.self                    | #self.priest# caught me nodding off in chapel. Again. || #self.priest# asked why I wasn't at chapel. I said my knees. || #self.priest# went on for an hour last Restday. An hour!
+   110 e4_rf_rep_sermon [faith.reply] then=None tone=None
+        a: react.self                   | I dozed. Don't tell. || Couldn't hear a thing past the pillar. || Sermons. Long, or longer.
+   110 h7_stranger_poor_envy [talk.player] then=None tone=None
+        a: tell.gossip                  | #topic.subject# goes where #topic.they# likes, eats where #t || I'd give a lot for #topic.subject#'s boots. || Travellers. No rent, no master, no debts.
+        b: react.news                   | Sleeps in ditches, too. || They're good boots. || Debts, I'd bet. Everyone's got debts.
+        a: tell.self                    | I sleep in worse than a ditch. || I could walk out of here in them. || Not ones that knock on your door.
+        b: react.self                   | Then go. The road's free. || And go where? || Ones that wait at the next town, then.
+        a: assess                       | Free and hungry. No. || Anywhere but here. || #bc_maybe#
+   110 kn_widow_remarry [talk.friends] then=None tone=None
+        a: tell.self                    | The miller's been calling on me. || Do you think it's too soon? || Folk will talk if I take another mate.
+        b: react.self                   | He's a good wolf. Lonely too. || It's been two winters. || Folk talk anyway.
+        a: assess                       | He brings bread. Every day. || Two winters isn't long. || They'll talk worse.
+        b: tell.self                    | That's courting, that is. || It's long enough to be lonely. || Let them. You'll be warm.
+        a: react.self                   | At my age? || #bc_maybe# || Maybe I will.
+   110 e8t_ev_fire_now [talk.event] then=event.answer tone=None
+        a: tell.self                    | There's a fire at the works. You can see the smoke from the  || They're saying the works caught fire in the night.
+   110 e8p_up_tavern [talk.prices] then=prices.answer_complaint tone=None
+        a: tell.news                    | Here's to #topic.what# at #topic.price#. May it choke the se || Talk of anything but #topic.what#. I'm drinking to forget it
+   110 e8p_up_poor_food [talk.prices] then=prices.answer_complaint tone=None
+        a: tell.news                    | #topic.price.capitalize# for #topic.what#. That's my supper  || My belly says buy and my purse says no. #topic.price.capital || I'd eat #topic.what# off the stall if they'd let me.
+   109 e2_r_pt_ask_close [talk.pastimes] then=pastimes.own tone=None
+        a: ask.detail                   | Doing anything tonight, #pet#? || What are you up to after supper? || You look like you've had fun. What've you been at?
+   108 h7_crime_poor_pity [talk.crime] then=None tone=serious / even / even / even
+        a: tell.news                    | Somebody robbed #topic.victim#. I know what hungry feels lik || Whoever robbed #topic.victim# was hungry. You can tell. || A #thief# took from #topic.victim#. Bet they ate well tonigh
+        b: ask.detail                   | You'd starve first? || You can't tell anything. || Better than us, then.
+        a: answer.detail                | I nearly have. || Bread first, purse second. Every time. || That's the joke.
+        b: tell.self                    | Don't. Come to me first. || Hungry folk aren't all thieves. || Some joke.
+   108 e2_an_crows [talk.animals] then=None tone=None
+        a: tell.self                    | Crows took half the seed before it went in. || A crow followed me all down the lane. || The crows have learned to open the bins.
+        b: react.self                   | I've a scarecrow in every field. The crows sit on them. || Crows carry the news of the dead, my mother said. || Thieving birds.
+        a: tell.self                    | Comfortable, are they? || Then this one's a gossip. || Black thieves.
+   108 e2_an_beast_names [talk.animals] then=None tone=None
+        a: tell.self                    | What do you call your cow? || Named my pig Councillor. || Our goat's called Trouble.
+        b: react.self                   | Name a beast and you'll never eat it. That's my rule. || She's not named. || #bc_why_q#
+        a: assess                       | Too late for me. || She'll want one. || He's fat and loud.
+   108 e2_an_rats [talk.animals] then=None tone=None
+        a: tell.self                    | Rats in the grain again. || Biggest rat I've ever seen in my cellar. || Saw a rat as big as a cat in the lane.
+        b: react.self                   | They've had a sack of flour off me this month. || Rats. In the Sump we name them. || Get a cat.
+        a: assess                       | They'll have mine next. || I'd rather not be introduced. || The cat's moved out.
+   108 e5_tr_pilgrimage [talk.travel] then=None tone=None
+        a: tell.self                    | My mother walked to the Snow Chapel once, on her knees the l || Some folk walk to every chapel in the realm. One a season. || I keep meaning to go on pilgrimage. My knees keep meaning no
+        b: react.self                   | The road teaches what the chapel can't. || I went up to the Snow Chapel once. The best thing I ever did || On her knees? In the snow?
+        a: tell.self                    | Then I'd best get on the road. || The coldest. Everyone says that first. || Never walked right again. Said it was worth it.
+   108 em_time_night_prices [talk.prices] then=None tone=None
+        a: tell.news                    | I lay awake doing sums about the price of #topic.what#. || Can't sleep for counting pennies. || The sums never come out right at night.
+        b: react.news                   | Sums can wait till morning. || Count sheep instead. || They never do.
+        a: assess                       | They never wait. || Sheep cost money too. || #bc_never#
+   108 e5_la_flood [talk.land] then=None tone=None
+        a: tell.self                    | Do you remember when the river came over the banks? Water in || The river's up after the rain. Brown and fast. || My father said the river flooded the year I was born. Took t
+        b: react.self                   | Up to my knees in the parlour. We kept the hens on the table || A flood's a curse in spring and a blessing in autumn. Leaves || I'll never forget it.
+        a: tell.self                    | Hens on the table! I'd forgotten that. || Tell that to whoever's parlour it's in. || #bc_nor_me#
+   108 e4_dr_cottage [talk.dreams] then=None tone=None
+        a: tell.plan                    | I want a cottage. Low roof, a garden, a bench by the door. || Someday I'll have a place with an apple tree. || All I want is a house with a door that shuts properly.
+        b: react.self                   | A door. Imagine. A door that's yours. || Have the one on the lane. It's been empty a year. Only, the  || And hens.
+        a: assess                       | That's it exactly. || Only, the price. Aye. There's always that. || Hens, yes. And quiet.
+   108 nod_weary [keeping.nod] then=None tone=None
+        a: ack                          | You and me both. || Get off your feet, then. || Sit a minute. The work'll wait.
+   108 e1_home_neighbour_howl [talk.home] then=None tone=None
+        a: tell.self                    | The old one next door howls at the moon. Every full moon. || Somebody on my street was singing at midnight. || My neighbour talks in her sleep. Through the wall.
+        b: react.self                   | Leave them be. The old and the night belong to each other. || Howl back. || Was it good?
+        a: assess                       | Easy said. You sleep. || I did once. She liked it. || It was terrible.
+   105 ev_pl_wondering_job [talk.player] then=None tone=None
+        a: tell.gossip                  | What do you think #topic.subject# does for a living? || See how #topic.subject# stands? Like a soldier. || Bet you #topic.subject# is a merchant. Look at those eyes.
+        b: react.news                   | Not a merchant. Merchants look at stalls, not faces. || Hard to say. || Could be.
+        a: assess                       | Something with walking. || Or used to. || Same eyes, some would say.
+   105 e3_m_spring_lambs [talk.memories] then=None tone=None
+        a: tell.memory                  | First spring I ever remember, I watched a lamb being born. || My mother planted beans every spring and talked to them. || Spring cleaning. My mother beat the rugs like they owed her 
+        b: react.story                  | I've seen thousands of lambs. Still makes me stop. || Was it wonderful? || Did they grow?
+        a: tell.self                    | I'd stop too. || It was messy. And wonderful. || Better than mine ever have.
+   105 kn_rg_sr_friends_boat [talk.friends] then=None tone=None
+        a: tell.self                    | Coming out on the boat tomorrow? || You owe me for the nets. || I've a fish story for you.
+        b: react.self                   | If you row. || Next catch. || Is it true?
+        a: assess                       | I always row. || You said that last catch. || Partly.
+        b: assess                       | You row in circles. || Last catch was bad. || The good part?
+        a: assess                       | Big circles. || They're all bad lately. || The fish was real.
+   105 e4_dr_whats_yours [talk.dreams] then=None tone=None
+        a: ask.detail                   | What do you want, really? If you could have anything? || Have you got a dream, #b.name#? A proper one? || What did you want to be, as a pup?
+        b: answer.detail                | Everything. In order. || Nothing much. This, I think. || Somewhere quiet. Somewhere mine.
+        a: assess                       | Starting with? || #bc_lucky# || Sounds right.
+   105 e1_food_cake_disaster [talk.food] then=None tone=None
+        a: tell.self                    | I made a cake for my mother. It fell in the middle. || My pie came out of the oven like a boot. || I tried to make bread. It's more of a brick.
+        b: react.self                   | Too much yeast, or a cold kitchen. One of the two. || Fill it with cream. Nobody'll know. || Boots are useful.
+        a: tell.self                    | Cold kitchen. It's always cold, mine. || She'll know. She always knows. || Not to eat.
+   105 em_fh_pr_peat [talk.prices] then=None tone=None
+        a: tell.self                    | Peat's wet and supper's dear. A good week for misery. || Can't dry peat, can't cook. Can't cook, buy food. Can't buy  || Wet feet, wet peat, dear supper.
+        b: react.self                   | A good week for marsh lights, too. || That's the fens all over. || And dear everything.
+        a: assess                       | Don't follow them. || All over. || And we're hungry.
+        b: tell.self                    | Cut peat all morning. Wet as a fish.
+   105 e5_rg_lf_chalk [talk.land] then=None tone=None
+        a: tell.self                    | The chalk wolf on the hill needs scouring again. The grass i || Every spade turns up chalk and flint. || The barrows on the ridge are older than anything.
+        b: react.self                   | We scoured the chalk wolf every seventh summer when I was yo || Flints break ploughshares. Chalk breaks backs. || Somebody should.
+        a: assess                       | Then let's do it again. With buckets. || And the downs break farmers. || We should.
+   104 lk_pastime_own [pastimes.own] then=pastimes.react tone=None
+        a: answer.detail                | #self.pastime_words.capitalize#, when I get the chance. Alwa || Give me #self.pastime_words# and I'm content. || #self.pastime_words.capitalize#. You'll laugh, but it's what
+   103 e8p_up_any [talk.prices] then=prices.answer_complaint tone=None
+        a: tell.news                    | #topic.what.capitalize# #topic.is# dear just now. #topic.pri || Have you priced #topic.what#? #topic.price.capitalize#, now.
+   103 e3_mb_old [memories.back] then=None tone=None
+        a: ack                          | Ah well. All gone now. || It's all I've got, the remembering. || Gone now. Most of it.
+   102 e2_an_mad_goose [talk.animals] then=None tone=None
+        a: tell.self                    | That goose by the mill chased me half the way home. || Somebody's goose has taken the bridge. Nobody can cross. || I've been bitten by a goose. In the tail.
+        b: react.self                   | That goose has a longer record than half the thieves in town || Geese never forget a face. Whatever you did to it, you did i || Not just you.
+        a: tell.self                    | Then arrest it. || I've never touched a goose in my life. || I'm not walking that way again.
+   102 e2_an_cats_granary [talk.animals] then=None tone=None
+        a: tell.self                    | The granary cat had kittens. || Best mouser in town, that one-eyed cat. || That cat's been sleeping on my sacks again.
+        b: react.self                   | Can I have one? Please? I'll feed it. I'll love it. || Worth more than the granary keeper. || How many?
+        a: tell.self                    | Ask your mother. Not me. || Don't tell the keeper. || Five, and one all black.
+   102 e2_an_horse_lame [talk.animals] then=None tone=None
+        a: tell.self                    | My pony's gone lame. || Have you seen that grey in the stable yard? Beauty. || A pony trod on my foot at the forge.
+        b: react.self                   | Ponies. Half my work's their feet. || Never trust a pony's feet, nor a pony's temper. || I keep four. Each one's a fortune and a worry.
+        a: assess                       | Then you'd know. Will you look? || I'll not, now. || Four worries. I'll stick with none.
+   102 e2_an_sheep_escape [talk.animals] then=None tone=None
+        a: tell.self                    | The sheep were in the lane again this morning. || Who leaves a gate open and walks off? || One ewe got through the hedge and the rest followed.
+        b: react.self                   | Sheep don't need a gate. Sheep need an idea, and they only e || I had to stop the cart road for them. Twenty sheep. One very || Whose were they?
+        a: tell.self                    | And it's always the same idea. || The ram's always proud. That's the trouble. || Nobody's, to hear anyone tell it.
+   102 e3_ma_plain [memories.answer] then=memories.back tone=None
+        a: react.story                  | That takes me back. || Funny what sticks. || Mine was much the same, near enough.
+   102 e5_tr_mud_roads [talk.travel] then=None tone=None
+        a: tell.self                    | The roads are all #mud# after the rain. Wheel-deep. || I came in on the road this morning. I'm still finding #mud#  || A wagon sank to the axle on the road this morning.
+        b: react.self                   | Don't. I spent half the day behind my oxen, pushing. They lo || The Houses should pave them. || Brush it out before you come in.
+        a: tell.self                    | It usually is your fault. Ask the oxen. || The Houses don't use them. || #bc_too_late#
+   102 ev_pp_merchant_customer [talk.smalltalk] then=None tone=None
+        a: tell.self                    | Good day! Looking or buying? || For you, a special price. || You came back! I knew you would.
+        b: react.self                   | Looking. || Special for everyone, I'll bet. || Don't get excited.
+        a: assess                       | Looking costs nothing. Yet. || Special for you. And everyone. || Too late. I'm excited.
+   101 e4_rf_tell_sermon [talk.faith] then=faith.reply tone=None
+        a: tell.self                    | #self.priest# preached for an hour on Restday. On patience.  || #self.priest# says we should all give more. I gave a yawn. || #self.priest# had us sing the long hymn again. All the verse
+   100 e2_r_pt_tell_pup [talk.pastimes] then=pastimes.react tone=None
+        a: tell.self                    | I won at knucklebones! Five times! || I can do a cartwheel! Nearly! || We're playing hunter and hare and I'm the hare and I'm hidin
+   100 h7_poor_tips [talk.day,talk.smalltalk] then=None tone=None
+        a: tell.self                    | Baker throws out the burnt ends at dusk. Get there early. || The chapel gives soup on Restday if you sit through the serm || The tanner pays a penny a sack for oak bark. Hard picking.
+        b: react.self                   | Early's when everyone gets there. || I'll sit through anything for soup. || I wasn't going to. I am now.
+        a: assess                       | Earlier, then. || The sermon's long. || It's a penny.
+        b: assess                       | I'll sleep there. || The soup's thin. || A penny's a penny.
+   100 e3_m_who_remembers_right [talk.memories] then=None tone=None
+        a: tell.memory                  | It was the spring the bridge fell down. || That was the year your brother married. || You were there. You wore the green hood.
+        b: react.story                  | It was autumn. Leaves everywhere. || Not my brother. My cousin. || I've never owned a green hood.
+        a: tell.self                    | Spring. There were lambs. || It was your brother. I was at the wedding. || You had a green hood and you lost it in the river.
+        b: react.self                   | Lambs in autumn, then. || Were you? Then why don't I remember you there? || ... It was blue.
+        a: tell.self                    | We'll never agree, will we. || You don't remember because you drank the barrel. || Blue! There. So you did have one.
+   100 kn_fr_fears [talk.friends] then=None tone=None
+        a: ask.detail                   | Do you ever worry it'll all go wrong? || I'm afraid of growing old alone. || What frightens you most?
+        b: answer.detail                | Every night before I sleep. || You won't. You've got me. || The deep water. Ever since I was a pup.
+        a: assess                       | What do you do about it? || That's not the same. || I didn't know that.
+        b: assess                       | I sleep anyway. || It's not worse. || Now you do. Don't tell.
+        a: assess                       | I'll try that. || It's not. Thank you. || #bc_never#
+   100 h7_crime_bandits_in_town [talk.crime] then=None tone=None
+        a: tell.news                    | Now it's #topic.victim#. The road wolves have come into town || First the roads, now #topic.victim#. || With #bandits# on the roads, who's to say they're not in our
+        b: react.news                   | Or one of ours, using them as cover. || Everything's the #bandits# now. || Then nowhere's safe.
+        a: assess                       | That's worse. || Isn't it, though? || Nowhere ever was.
+        b: assess                       | #bc_it_is# || Convenient. || #bc_lovely#
+    99 w7s_night_work [talk.work] then=None tone=None
+        a: tell.self                    | Who works at this hour? Us, apparently. || The whole town's asleep but us. || Lamp's burning down.
+        b: react.self                   | The Watch does. Every night. || Not all asleep. Some are up to no good. || Then finish by moonlight. I'll walk you home.
+        a: assess                       | Rather you than me. || Still. I like it, this late. || Last one, then.
+    99 e2_an_pigs [talk.animals] then=None tone=None
+        a: tell.self                    | Pig got loose and ran the length of the street. || Our sow had eleven. Eleven! || Never stand behind a pig. Or in front. Or near.
+        b: react.self                   | Pigs! Good. I've a pot that wants filling. || Pigs. Clever as you, and twice as stubborn. || Did they catch it?
+        a: tell.self                    | Not yet, you haven't. || Cleverer, some days. || Took six of us and a net.
+    99 e2_an_cow_calving [talk.animals] then=None tone=None
+        a: tell.self                    | The brindle cow calved in the night. || Sat up with a cow all night. She wouldn't settle. || A heifer, out of the black cow. Wobbly as a drunk.
+        b: ask.detail                   | Easy, was it? The first ones never are. || Can I see? Is there a calf? Can I name it? || All well?
+        a: answer.detail                | Easy enough, in the end. Long, though. || Tomorrow. Let them rest. || Mother and calf both standing.
+    99 e2_an_eels [talk.animals] then=None tone=None
+        a: tell.self                    | Eels everywhere, after the rain. || Ever eaten jellied eel? || An eel got out of the pot and under the stove.
+        b: react.self                   | Eel traps in the mud. Best catch of the year. || Eels are snakes. I won't. I won't! || Good eating.
+        a: assess                       | Best eating, too. || More for me. || Better smoked.
+    99 e4_rf_rep_fallback [faith.reply] then=None tone=None
+        a: react.self                   | #bc_fair_enough# || Each to their own. || Well. There it is.
+    99 e3_h_pup_tooth [talk.health] then=None tone=None
+        a: tell.self                    | My tooth's wobbly! Look! || I fell over and there's blood on my knee. Real blood! || I've got a cough. Can I stay home from chores?
+        b: react.self                   | Ah, you'll live, pup. I've seen worse on a sparrow. || Come here and let me look. Hm. You'll do. || Don't fiddle with it.
+        a: ask.detail                   | A sparrow? Where? || Do I still have to do chores? || I'm going to fiddle with it.
+    99 e1_home_rm_commons [talk.home] then=None tone=None
+        a: tell.self                    | Our street's all right. Nobody bothers anybody. || We've a yard. A little one. Room for hens. || Two rooms and a kitchen. I'm content.
+        b: react.self                   | You don't know your luck. || That's all you want. || Hens in the city!
+        a: tell.self                    | I do. I count it every night. || That's what I say. || Three of them. Very proud.
+    99 e1_food_moonlight_snack [talk.food] then=None tone=None
+        a: tell.self                    | I'm raiding the larder when I get home. || Cold sausage at midnight. That's living. || Nothing tastes as good as food eaten in the dark.
+        b: react.self                   | My mother locks the larder. I know where the key is. || Quietly, I hope. || That's sin.
+        a: assess                       | I never heard that. || Like a shadow. || Delicious sin.
+    99 ev_pl_farmer_squint [talk.player] then=None tone=None
+        a: tell.gossip                  | Do you suppose #topic.subject# knows one end of a plough fro || Town paws on #topic.subject#. Soft. || Wonder if #topic.subject# wants work. I need hands at harves
+        b: react.news                   | Doubt it. || Soft as butter. || Ask them.
+        a: tell.self                    | Nor do half the wolves here. || Soft paws, sore by evening. || #bc_i_might#
+    98 n7_ro_shopkeeper_kind [talk.prices,talk.smalltalk] then=town.answer tone=None
+        a: tell.self                    | #self.shopkeeper# kept a loaf back for me. Didn't even ask. || #self.shopkeeper# let me off a penny. Said I'd an honest fac || Say what you like about #self.shopkeeper#, #self.shopkeeper_
+    96 h7_stranger_crime_blame [talk.player] then=None tone=None
+        a: tell.gossip                  | There's been thieving, and now #topic.subject# turns up. || Funny, isn't it? Robbery in town, and a new face. || Folk are already muttering about #topic.subject#.
+        b: react.news                   | Funny how? || Strangers aren't the only thieves. || Folk mutter about everything.
+        a: assess                       | Funny as in odd. || No. But they're the easiest. || This is louder.
+        b: assess                       | Odd's not proof. || Easiest for who? || Then let them mutter.
+    96 e2_an_hunt_boar [talk.animals] then=None tone=None
+        a: tell.self                    | Boar tracks by the stream. Big. || They're getting up a hunt for the boar. || A boar charged my cart.
+        b: ask.detail                   | I stitched a hunter after a boar last spring. Tusk right thr || I'll leave boar to the brave. I'll eat what they bring. || How big?
+        a: answer.detail                | I'll keep my legs, thank you. || Fair. Somebody has to eat it. || Wide as a door.
+    96 w7_prans_merry [prices.answer_complaint] then=None tone=None
+        a: react.complaint              | I'll sell you my shadow. Half price. || Laugh at it. Laughing's still free. || We'll all be poor and merry.
+    96 e1_home_candles [talk.home] then=None tone=None
+        a: tell.self                    | Down to my last candle stub. || Tallow candles stink but I can't afford wax. || I sat in the dark last night to save the candle.
+        b: react.self                   | We burn wax. Is tallow really so bad? || Bed early, then. || They do stink.
+        a: tell.self                    | Smell my coat and see. || Bed at dusk like a hen. || Like burnt mutton.
+    96 e4_fa_moth [talk.faith] then=None tone=None
+        a: tell.self                    | A white moth came in tonight. My gran says it's the dead vis || Owl on the gate last night. || A candle went out by itself. No draught.
+        b: react.self                   | Say their names and let them go. || A moth. They like lamps. || Which dead?
+        a: assess                       | I will. Quietly. || This one didn't look at the lamp. It looked at me. || I'd like to think my mother.
+    96 e5_tr_walking [talk.travel] then=None tone=None
+        a: tell.self                    | I walked in from the next town. My paws are blistered raw. || Walked all day yesterday. My legs are still walking. || Nothing like a long walk to make you love a chair.
+        b: react.self                   | Soak your paws in warm salt water tonight, and keep off them || You should have taken a cart. || Sit down, then.
+        a: tell.self                    | Keep off them? Who's going to do my work? || And pay? Never. || If I sit I'll never stand again.
+    96 e3_h_pup_brave [talk.health] then=None tone=None
+        a: tell.self                    | I didn't cry when the healer pulled the splinter. Not even o || #mum# gave me a bitter brew and I drank it all. All of it. || I've got spots! The healer said I'm not allowed to scratch.
+        b: react.self                   | You were the bravest patient I had all day. || That's very brave. || All of it?
+        a: tell.self                    | Braver than the big ones? || Maybe once. A small one. || Nearly all. Some went in the plant pot.
+    96 e4_dr_falling [talk.dreams] then=None tone=None
+        a: tell.plan                    | Woke with a jump. Dreamt I fell down the well. || Fell off something in my sleep and kicked the bed-board. || You know the falling dream? That.
+        b: ask.detail                   | Never land, do you? || Hurt? || Always just before you hit.
+        a: answer.detail                | Never. That's the only mercy. || Only my pride. And my toe. || Right before. Every time.
+    96 e5_tr_one_day [talk.travel] then=None tone=None
+        a: tell.plan                    | One day I'm going to see the whole realm. Every town. || I've a mind to walk the South Road end to end, just to say I || If I had a month and a mule, I'd be gone tomorrow.
+        b: react.self                   | That's what I said, once. Then I got a roof, and a back that || Every town's the same inn with a different name over the doo || Can I come? I'll carry the bag!
+        a: tell.self                    | Then I'll go before I get the roof. || Then I'll judge the inns. Somebody ought to. || When you're bigger. Then you can carry the both of us.
+    96 r7_fr_ghost_story [talk.friends] then=None tone=None
+        a: tell.self                    | Did you hear the old mill's haunted? || Someone saw a light in the empty house again. || They say a wolf walks the walls at night, with no feet.
+        b: react.self                   | Don't. I have to walk home. || Don't say that. Not now. || Please don't.
+        a: assess                       | A miller. Still grinding. || Thieves, with no shadows. || It floats. Slowly. Behind you.
+        b: tell.self                    | I'm going home. The long way. || Thieves have shadows. || Behind me? Don't.
+    96 ev_pl_old_memory [talk.player] then=None tone=None
+        a: tell.gossip                  | I used to walk the roads like #topic.subject#, once. || Watching #topic.subject# makes me feel old. || Young ones on the road. Like #topic.subject#. Brave or fooli
+        b: react.news                   | Did you? || You are old. || Both, usually.
+        a: tell.self                    | Every road from here to the sea. || Thank you, pup. || Both.
+    96 r7_fr_matchmaker [talk.friends] then=None tone=None
+        a: tell.self                    | I know someone you should meet. || You need someone. Don't look at me like that. || My cousin's in town. Lovely wolf. Laughs like a donkey, but 
+        b: react.self                   | I'm happy as I am. Really. || I've got someone. Me. || Is it the one with the laugh?
+        a: tell.self                    | Happy's not the same as settled. || You're poor company of an evening. Ask anyone. || That's the one. You'd suit.
+    96 e4_fa_quip_vow [talk.faith] then=None tone=None
+        a: tell.self                    | I swear by the Bright One I'll never drink again. || Bless you. Bless everyone. || The Dark One made ale. That's why it's lovely.
+        b: react.self                   | Till tomorrow. || Bless you too. Go home. || Don't let the priest hear.
+    95 e3_mr_again [talk.memories] then=memories.answer tone=None
+        a: tell.memory                  | Since we talked about the old days, it keeps coming back to  || I remembered something else, after we spoke. || You set me off, the other day. I've been remembering all wee
+    95 e8p_c_raid [talk.prices] then=prices.answer_cause tone=serious
+        a: tell.news                    | The wagon was robbed on the road. #topic.what.capitalize# #t || #bandits.capitalize# took the #topic.what#. Now it's #topic.
+    94 e2_r_an_tell_young [talk.animals] then=animals.react tone=None
+        a: tell.self                    | I saw a hedgehog! It was SO spiky! || There's a frog in the well! A big one! || A duck ate out of my paw!
+    94 e3_mb_frank [memories.back] then=None tone=None
+        a: ack                          | I'm only telling it how it was. || Better or worse, it's true. || I'll not pretend otherwise.
+    94 em_more_watered_ale [talk.prices] then=None tone=None
+        a: tell.self                    | This ale's half water. They're stretching it. || The stew's got more turnip than meat. Cheaper, I suppose. || Smaller mugs, same price. Clever.
+        b: react.self                   | Half? Two thirds. || Turnip is cheap. || Clever and sly.
+        a: assess                       | Generous of you. || Turnip is turnip. || Sly and clever.
+        b: tell.self                    | Full measure, same as always. Your tongue's gone sour.
+    93 e2_an_oxen [talk.animals] then=None tone=None
+        a: tell.self                    | The oxen are slow, but they never stop. || Watched two oxen pull a felled oak out of the mud. || Oxen don't spook. That's the whole of it.
+        b: react.self                   | I'd not move half the timber in the woods without them. || Slow is right. I could walk to the coast and back. || Like the mill.
+        a: tell.self                    | Nor the town would have its roofs. || And they'd still get there first. || Slow and sure.
+    93 e5_tr_lost_way [talk.travel] then=None tone=None
+        a: tell.self                    | Took a short cut through the woods and got lost for a day. || I followed a footpath on a carter's say-so. It went to a pig || Ever been lost? Properly lost?
+        b: react.self                   | Never trust a footpath in a wood. Half of them are made by d || Short cuts never are. || Carters lie.
+        a: assess                       | Deer! That explains a great deal. || I know that now. || Every one of them.
+    93 e1_home_young_den [talk.home] then=None tone=None
+        a: tell.self                    | I've made a den under the stairs. Nobody can come in. || I'm sleeping in the loft now. With the apples. || We built a fort in the yard. It's got a roof and everything.
+        b: react.self                   | Can I come in? I'll be quiet. || I had a den once. Best house I ever lived in. || Not even me?
+        a: assess                       | No. Well. Maybe. || Was it under the stairs too? || Not even you.
+    93 e2_r_pt_wager_owed [talk.pastimes] then=None tone=None
+        a: tell.self                    | Don't think I've forgotten that wager of ours. || We never settled that #bet#. || You still owe me, from the wager.
+        b: react.self                   | Give me till Marketday. Please. || What wager? I don't remember any wager. || Double or nothing?
+        a: assess                       | Marketday. I'll hold you to it. || You remember it. I can see it in your ears. || Nothing. Pay up.
+    93 e5_tr_toll [talk.travel] then=None tone=None
+        a: tell.self                    | Another toll at the gate. Pay to come in, pay to go out. || They've raised the toll again. || The toll-keeper wanted a penny for my shadow.
+        b: react.self                   | Tolls are why everything costs what it costs. || Somebody has to pay for the wall. || #robbery#.
+        a: tell.self                    | And every penny of it goes on my bill, I notice. || The wall was paid for in my grandad's day. || I'll climb over it next time.
+    93 e1_food_mother_said [talk.food] then=None tone=None
+        a: tell.self                    | My mother used to say a meal without bread isn't a meal. || My father ate his supper in four bites, every night of his l || My grandmother made us chew everything twenty times.
+        b: react.self                   | The old ones were right, mostly. We just didn't listen. || Then I've not eaten a meal in a week. || Wolves of that age ate like that.
+        a: tell.self                    | We didn't. I'm starting to. || She'd have fed you, then. She fed everyone. || Like a trap closing.
+    93 e3_m_restday_old [talk.memories] then=None tone=None
+        a: tell.memory                  | As a pup I hated Restday. Sitting still all day in the chape || My father always made pancakes on Restday. || We'd walk to the river after chapel. All of us.
+        b: react.story                  | You'd sit still now. Wouldn't you? || I still hate it. || Every Restday?
+        a: assess                       | #bc_mostly# || Don't tell the priest. || Even when there was no flour.
+    93 em_more_prices_dusk [talk.prices] then=None tone=None
+        a: tell.self                    | Stalls are closing and I've bought nothing. Too dear. || End of the day and the prices didn't drop. || I waited till dusk for a better price. Didn't come.
+        b: react.self                   | Tomorrow, maybe. || They never drop. || Never does.
+        a: assess                       | Tomorrow. || #bc_never# || #bc_never#
+    92 e8p_ans_cause_plain [prices.answer_cause] then=None tone=None
+        a: answer.detail                | That'll be it. || Is that so. || Makes sense, I suppose.
+    92 kn_court_gossip_couple [talk.friends,talk.smalltalk] then=None tone=None
+        a: tell.self                    | Did you see them walking by the river? || Those two are courting, I'd swear to it. || When's the wedding, do you think?
+        b: react.self                   | Arm in arm, nearly. || It's about time. || Spring, if her father has his way.
+        a: tell.self                    | Shoulder to shoulder, at least. || It's long past time. || Spring's a good time for weddings.
+        b: react.self                   | Good for them. || They took long enough. || Every time's a good time if there's a feast.
+    92 m7_lore_house_names [talk.lore] then=None tone=None
+        a: tell.story                   | Why's our street called the way it is? Ever wondered? || Every town's got a family it says founded it. || My grandfather claimed we're kin to a great House.
+        b: react.story                  | Somebody'd know. Somebody old. || Every family says it founded it. || So does everyone's grandfather.
+        a: assess                       | They're all dead. || Can't all be right. || Mine meant it.
+        b: assess                       | Cheerful. || No. Ours is the right one. || They all mean it.
+    91 e8r_cvd_merchant [caravan.due_answer] then=caravan.close tone=None
+        a: react.news                   | Good. Folk keep asking. || #bc_about_time#
+    90 e2_pt_short_temper_game [talk.pastimes] then=None tone=None
+        a: tell.self                    | I've thrown the fox-and-geese board in the fire. || Lost at cards again. Somebody's cheating. || Don't talk to me about skittles.
+        b: ask.detail                   | Breathe. It's only a game. || #bc_why_q# || #bc_who_q#
+        a: answer.detail                | It's never only a game. || It burned well. || Everyone.
+    90 e2_an_cow_milk [talk.animals] then=None tone=None
+        a: tell.self                    | The cow's milk's gone thin. || Our cow kicked the pail over. Twice. || The cow won't let anyone near her but me.
+        b: react.self                   | Cows have their moods. Better grass and a quiet word. || Sing to her. My mother always sang to the cow. || Is she sick?
+        a: tell.self                    | I'll try the quiet word. || I'll sing. She'll hate my voice. || Sulking, I think.
+    90 e2_r_pt_react [pastimes.react] then=None tone=None
+        a: react.self                   | Sounds about right. || #bc_fair_enough# || #agree#. Each to their own.
+    90 e2_an_foxes_hens [talk.animals] then=None tone=None
+        a: tell.self                    | Fox was in the hen house last night. || Saw the fox in the lane at dawn. Bold as a magistrate. || The fox took one hen and killed six.
+        b: ask.detail                   | They kill for the pleasure. I've no pity for a fox. || Was it red? Was it a red one? || How many?
+        a: answer.detail                | Nor I. Not now. || Red as a fire. || Two, and the cockerel's sulking.
+    90 e5_tr_inns [talk.travel] then=None tone=None
+        a: tell.self                    | The worst inn I ever stayed at had a goat in the common room || Best bed I ever had was at a roadside inn. Never found it ag || Do you know any inns on the road worth stopping at?
+        b: react.self                   | You'll find none better than mine, and I'll say so to anyone || I've slept in every inn on every road. The good ones you kee || Was the goat paying?
+        a: assess                       | You would say that. || Go on. Just the one. I'll not tell. || More than me.
+    90 e4_dr_tavern [talk.dreams] then=None tone=None
+        a: tell.plan                    | I've always wanted to run a tavern. || I'd like an inn on a crossroads. Somewhere carters stop. || Everyone wants a tavern, don't they? I want one with a garde
+        b: react.self                   | Then come and scrub my floors for a week. Cure you of it. || Brew your own. Never buy it in. That's my advice. || Everyone does.
+        a: assess                       | I'd still want one. || Noted. Brew my own. || I'd still want one.
+    90 r7_fr_lent_money [talk.friends] then=None tone=None
+        a: request                      | Could you lend me a few pennies? Just till market day. || I'm short. Don't laugh. Just a little. || You've not got two pennies, have you?
+        b: grant                        | I've barely one. You can have half. || I'm shorter. || Two? I've not seen two together all week.
+        a: tell.self                    | Thank you. Truly. || Not much. || You're a friend.
+    90 e1_food_swap [talk.food] then=None tone=None
+        a: tell.self                    | Swap you a jar of plums for a bit of cheese, if you've any. || I've more eggs than I can eat. Want some? || I'll trade you a loaf for a fish, if you've one going.
+        b: react.self                   | Eggs and plums I've plenty of. Bring me salt and we'll talk. || Done. I've half a wheel at home. || I'll never say no to eggs.
+        a: tell.self                    | Salt. I'll see what I can find. || Bring the cheese round, then. || Half a dozen, then.
+    90 rg_wm_lambing [talk.lore,talk.work] then=None tone=None
+        a: tell.story                   | Lambing's started on the high fold. Nobody's sleeping. || Twin lambs at dawn, both alive. || Lost a ewe in the night. Lamb lived, though.
+        b: react.story                  | Never trust a wolf who hasn't sat up a lambing night. || Spring's the hardest and the best, both at once. || Busy season.
+        a: assess                       | The busiest. || #bc_very_good# || Small ones.
+    90 em_lk2_boatwright [talk.prices] then=None tone=None
+        a: tell.self                    | Pitch costs more. Boats cost more. Fish cost more. || A new hull costs a fortune now. || The boatwrights are pricing out the fishers.
+        b: react.self                   | One thing leads to another. || A fortune! || Then nobody fishes.
+        a: assess                       | Round and round. || A fortune. || Nobody eats.
+    88 kn_fr_regional_ser_ferro [talk.friends] then=None tone=None
+        a: tell.self                    | Did you see the Watch march out this morning? || My cousin's got a post in the Hall of Records. || The Council's feasting this week. They say there'll be wine 
+        b: react.self                   | Shining like fish. || Writing all day? Poor wolf. || Last time it was rainwater in the fountain.
+        a: tell.self                    | Off to scare bandits, they say. || He likes it. Says it's quiet. || This time they promised.
+        b: react.self                   | Bandits are easy scared. Harvests aren't. || Quiet's a strange thing to want in this city. || They promise every time.
+    87 e5_tr_traveller_tale [talk.travel] then=None tone=None
+        a: tell.self                    | A traveller told me at the inn there's a lake in the south t || Met a traveller who said she'd been to every town in a singl || A traveller swore he'd seen a wolf with three tails up in th
+        b: react.self                   | Travellers say a lot after a third pint. || I'd like to swim in that. || Liar. Or very good boots.
+        a: tell.self                    | This one was on his fourth. || So would I. || Very good boots, I think.
+    87 e3_h_merry_patient [talk.health] then=None tone=None
+        a: tell.self                    | The healer says I'll live. I've asked for a second opinion. || I've a cough so loud the geese answer it. || I've been bled, cupped and prayed over. Next week I'll try s
+        b: react.self                   | Get a third, to be safe. || Let's hear it. || Sleep! Steady on.
+        a: assess                       | Ha. I'll pay for none of them. || ...Hear that? A goose. || I'll try anything once.
+    87 e3_m_forgetting [talk.memories] then=None tone=None
+        a: ask.detail                   | What was the name of that fellow who kept goats on the roof? || Who was the priest before the one we've got? || There was a tavern on the corner, before. What was it called
+        b: answer.detail                | Bartle Gorse. His wife was Nell. His goats were Pip and Old  || I knew it a moment ago. It'll come to me at midnight. || I've no idea.
+        a: tell.self                    | How do you do that? || Wake me when it does. || He must have had a name.
+    87 e2_an_hens [talk.animals] then=None tone=None
+        a: tell.self                    | Hens have stopped laying. || One of my hens laid an egg with two yolks. || A hen walked into the chapel on Restday. Sat in the front.
+        b: react.self                   | Hens. You never know what they'll do next. || Bless them. Hens know more than we credit. || All of them?
+        a: assess                       | Never. Not once. || So it seems. || Every one. Sulking in a row.
+    87 e2_an_goats [talk.animals] then=None tone=None
+        a: tell.self                    | The goat ate my washing. Off the line. || That goat's been on the roof again. || Goats would eat the chapel if you let them.
+        b: react.self                   | Goats are only clever sheep with a grudge. || Ha! Goats. I love a goat. They're all villains. || All of it?
+        a: tell.self                    | A grudge and a stomach. || Then you can have this one. || A shirt and half a sheet.
+    87 e4_dr_restday_plans [talk.dreams] then=None tone=None
+        a: tell.plan                    | Restday, I'm not getting up. Not for anything. || I've plans for Restday. Fishing. Alone. || Restday I'm going up the hill to see the view, and nobody's 
+        b: react.self                   | Chapel first. Then the hill. Or the fishing. || You said that last Restday, and the roof needed doing. || #bc_lucky_you#
+        a: assess                       | I'll pray in bed. He'll hear me. || The roof can wait a week. || I am.
+    87 e4_dr_dreamt_you [talk.dreams] then=None tone=None
+        a: tell.plan                    | You were in my dream last night. || Dreamt about you, #pet#. You were a baker. || I had a dream we were pups again, the two of us.
+        b: ask.detail                   | Tell me I was magnificent. || Was I behaving myself? || Was I any good?
+        a: answer.detail                | No. Not at all. || Burnt everything. || Stealing apples. Same as ever.
+    87 e1_food_pawned_pot [talk.food] then=None tone=None
+        a: tell.boast                   | I sold my best pot. Now I've nothing to cook in. || We eat once a day now. Supper. Makes it something to look fo || Do you know who gives out soup? I've heard there's someone.
+        b: react.self                   | You'll come to mine tonight. Don't argue. || The chapel gives soup on Restday. Go early. || That's a hard thing.
+        a: assess                       | I'll not argue. Thank you. || Early. I will. || I'll get it back.
+    87 em_wm_pr_mercantile [talk.prices] then=None tone=None
+        a: tell.self                    | The general store's chalked new prices again. || Old Fennick at the general store wrote my name in the book a || Half the downs owes the general store, and the prices keep c
+        b: ask.detail                   | Up or down? || How long is your line? || That's how they keep us.
+        a: answer.detail                | Up, mostly. || Longer than the book. || That's how.
+        b: tell.self                    | Credit costs. Somebody has to carry it.
+    87 e5_rg_cw_reeds [talk.land] then=None tone=None
+        a: tell.self                    | The reed beds at the south end are full of ducks. || Heron stood in the shallows all morning. Not one fish. || Cut reeds for the roof today. My paws are cut to ribbons.
+        b: react.self                   | That heron's a better fisher than me most days. || #bc_lovely# || Patient bird.
+        a: assess                       | It's got the legs for it. || Noisy. || Hungry bird.
+    87 e5_rg_cw_mountains [talk.land] then=None tone=None
+        a: tell.self                    | The mountains go up like a wall behind the lake. || Snow on the tops already. Winter's looking down at us. || You can see the High Road climbing, bend after bend.
+        b: react.self                   | Every one of those bends has a name. Most of them rude. || Keeps the wind off. || Early this year.
+        a: assess                       | Tell me the rudest. || Some of it. || Earlier every year.
+    87 e5_rg_lf_lark_river [talk.land] then=None tone=None
+        a: tell.self                    | The Lark's low. You can wade it at the mill. || The water meadows by the Lark are flooded again. || The mill wheel's turning slow. River's tired.
+        b: react.self                   | Water meadows flood every winter. That's what makes the hay  || Dry year. || Grass loves it.
+        a: assess                       | Then let it flood. || Too dry. || Ducks love it.
+    85 kn_fr_workmates [talk.friends,talk.work] then=None tone=None
+        a: tell.self                    | Same yard, same work, twenty years. || Remember your first day? You dropped everything. || Without you this job would kill me.
+        b: react.self                   | And still not rich. || I remember yours. You cried. || It's killing you anyway.
+        a: assess                       | Rich in friends. || Only once. In the privy. || Slower, with you.
+        b: assess                       | That doesn't buy bread. || Twice. || Same for me.
+        a: assess                       | It buys cider. || Fine. Twice. || #bc_good#
+    84 e2_pt_merry_vs_dry [talk.pastimes] then=None tone=None
+        a: tell.self                    | What we need is a song and a jig. || Let's get the whole street dancing! || I've a new joke. It's about a goose.
+        b: react.self                   | Do we. || Let's not. || Do the goose a favour. Keep it.
+        a: tell.self                    | We do! || Too late, I'm halfway down it. || A goose walks into a tavern...
+        b: react.self                   | And orders the soup. I know it. || Mind the Watch. || And leaves. Wisely.
+    84 w7_rep_plain_chatty [work.reply] then=None tone=None
+        a: react.self                   | Oh, I know just what you mean. Mine's the same. Let me tell  || Isn't it always! My cousin says the same. || Same here, same here. Did you hear about the miller?
+    84 re_prices_marches [talk.prices] then=None tone=None
+        a: tell.self                    | #topic.what# at #topic.price#. The wharf's at it again. || Prices at the Sump Market are a scandal. || The Heights don't even notice prices.
+        b: react.self                   | The Harbourmaster sets the dues. We just pay them. || The wharf always is. || #bc_always#
+        a: assess                       | #bc_always# || A scandal. || #bc_never#
+    84 e2_an_sheep_stupid [talk.animals] then=None tone=None
+        a: tell.self                    | A sheep is the stupidest beast the gods ever made. || Watched a sheep stare at a fence all morning. || Sheep are cleverer than folk think.
+        b: react.self                   | They know my step from a stranger's. They know the weather b || Sheep think slowly. Doesn't mean they don't. || Second stupidest. Geese are first.
+        a: tell.self                    | All right. Fair enough. || Hm. You may have a point. || They walk into the same ditch every year.
+    84 rm_st_leaks [talk.smalltalk] then=None tone=None
+        a: tell.self                    | Roof's leaking over my bed now. || Put a bucket under it, the drip's driving me mad. || Everything in this city leaks.
+        b: react.self                   | Tar and new slates, that's what it needs. I can do it Restda || Ridgemere roofs were built to leak. Keeps us humble. || #bc_mine_too#
+        a: assess                       | Wonderful. || I've run out of buckets. || Especially the Rain Hall.
+    84 ev_rg_serferro_gardens [talk.smalltalk] then=None tone=None
+        a: tell.self                    | The gardens up in the Heights are in flower. || Smell the cedars along the drive to Fellhall? || Lord Greatly's fountain is running again.
+        b: react.self                   | The gardens are open to the respectable. On certain days. || Lovely, aren't they. || Like summer itself, even in the rain.
+        a: tell.self                    | I'd like to sit in one. || I stand at the gate and breathe. || And never for us.
+    84 e1_food_burnt [talk.food] then=None tone=None
+        a: tell.self                    | I burnt the #supper# again. || Smoke everywhere. I'll be eating cold bread tonight. || Do you know a way to get black off a pot?
+        b: react.self                   | Lid on, fire low, and stay in the room. That's the whole sec || I know. I was there. I'm still coughing. || Call it smoked. Charge a penny extra for it.
+        a: tell.self                    | Stay in the room. I can try that. || You might have said something. || Don't tempt me.
+    84 e3_ma_same_place [memories.answer] then=memories.back tone=None
+        a: react.story                  | Same as at home. Same as us. || I know. We grew up on the same #mud#. || Same place, same winters.
+    84 em_herbs_up_forager [talk.prices] then=None tone=None
+        a: tell.news                    | At #topic.price# I'm off to the hedges tomorrow. || The ditches are full of nettle and nobody's picking. || Why pay #topic.price# when the hill's covered in yarrow?
+        b: react.news                   | Mind the wasps. || Nettles? Gloves, then. || Because half of it's hemlock.
+        a: assess                       | I'll mind them. || I've got thick paws. || I know the difference. Mostly.
+        b: tell.self                    | Mind whose hedges. I know where my sorrel grows. || Bring me what you find before you eat it. Half that hill is 
+    84 e8p_c_still_up [talk.prices] then=prices.answer_complaint tone=None
+        a: tell.news                    | #topic.what.capitalize# still dear, #topic.cause_words#. || #topic.price.capitalize#, still. You'd think it'd have come 
+    84 e5_tr_about_ridgemere [talk.travel] then=None tone=None
+        a: tell.self                    | Folk here think everyone in Ridgemere's a lord with a fancy  || Been to Ridgemere? All those Houses with their noses in the  || My cousin went to the city. Came back saying "rather" all th
+        b: react.self                   | I'd still like to see it. The fancy coats, I mean. || We're not all on the Heights, you know. Some of us grew up i || The city has its charms. The Heights are lovely in summer.
+        a: tell.self                    | You'll see the wet, I promise you. || I didn't mean you. Well. Not you especially. || So I'm told. I'll never see it.
+    84 rg_ls_drowning_season [talk.lore] then=None tone=None
+        a: tell.story                   | The lake took a swimmer at midsummer. The cold stops your he || They say Glasswater wants one wolf every summer. || I won't let my pups swim past the willows.
+        b: react.story                  | The lake takes the careless, not the chosen. Teach your youn || #bc_every_year# || Grim saying.
+        a: assess                       | #bc_every_year# || Very grim. || Very wise.
+    83 n7_close_st_poor [town.close] then=None tone=None
+        a: ack                          | Easy for some. || Aye. And the rain falls on us all. Harder on some. || Well. Back to it.
+    83 e8t_ans_hard_poor [times.answer] then=None tone=None
+        a: react.complaint              | Don't I know it. I'm #skint# till Marketday. || Same here. Every penny's counted twice.
+    81 e2_an_bees [talk.animals] then=None tone=None
+        a: tell.self                    | The bees swarmed this morning. Hung off the pear tree like a || Got stung twice getting the honey. || Bees know when someone dies, you know. You have to tell them
+        b: ask.detail                   | Bees. Mind the stings. Mud on them, and don't scratch. || Always tell the bees your news. A death, a wedding. They sul || Did you catch them?
+        a: answer.detail                | Mud. I'll remember. || I always do. Every time. || In a basket, with smoke.
+    81 e2_pt_dice_sump [talk.pastimes] then=None tone=None
+        a: tell.self                    | Dice behind the Ropewalk tonight. You in? || Lost my boots at dice. Won them back. Lost them again. || Old Tanner's using loaded dice. Everyone knows.
+        b: react.self                   | I'm in. I've two pennies and a feeling. || Dice? In an alley? How very... lively. || Not tonight.
+        a: tell.self                    | Bring the feeling. Leave the pennies. || Livelier than your whist, I'll bet. || Your loss. Or your gain.
+    81 rg_sr_fish_slab [talk.smalltalk] then=None tone=None
+        a: tell.self                    | The Fish Hall's cat stole a whole mackerel today. || The fishmongers never chase the Fish Hall cat. They say it's || Best smoked eel in the city's at the Sump Market, and the ch
+        b: react.self                   | That cat's earned it. Keeps the rats off. || I named the cat. Its name's Captain. || Lucky cat.
+        a: assess                       | Very lucky. || Very odd. || Nobody can.
+    81 e2_an_lost_goat [talk.animals] then=None tone=None
+        a: tell.self                    | Have you seen a brown goat, one horn? || Our goat's been gone two days. || Found a goat in my kitchen. Nobody's claiming it.
+        b: react.self                   | There's a goat in the gaol yard. It butted the gaoler. || I saw a goat! Up by the well! Or it was a sheep. It was brow || Not today.
+        a: tell.self                    | Gods. Goats everywhere this week. || Brown. Thank you. That's a start. || If you do, grab its horn and shout.
+    81 e1_home_rm_sump [talk.home] then=None tone=None
+        a: tell.self                    | The water came up through the floor again. We sleep on the t || Three families to a stair in our building. || The Sump smells of the tide twice a day, regular as a bell.
+        b: react.self                   | Why don't you simply move? || Ours too. The rats have the cellar. || That's no life.
+        a: tell.self                    | With what? || The rats have everything down here. || It's a life.
+    81 e4_fa_full_moon_howl [talk.faith] then=None tone=None
+        a: tell.self                    | Full moon. My paws are itching to howl. || The old ones say you should howl at the full moon, for the o || The priest says howling's for wild wolves. I say it's for th
+        b: react.self                   | The chapel says no. We're not wild things. || We all howled, when I was young. Every full moon. The whole  || Go on, then. Quietly.
+        a: tell.self                    | We're not tame ones either. || Then let's be young for a night. || There's no quiet way to howl.
+    81 e4_fa_red_moon [talk.faith] then=None tone=None
+        a: tell.self                    | Red moon last month. Things have gone wrong since. || My mother never sowed under a red moon. || Red moon means war, the old soldiers say.
+        b: react.self                   | We say it means a long night on the wall. || Things go wrong anyway. || Mine neither.
+        a: assess                       | Same thing, maybe. || Not like this. || Wise woman.
+    81 e1_food_last_crust [talk.food] then=None tone=None
+        a: tell.self                    | Who gets the last piece, in your house? || At ours we fight for the crust like it's gold. || Never leave the last slice. My mother says it's bad luck.
+        b: react.self                   | The smallest gets the last of everything. That's the rule. I || In my day the eldest had it. And I'm the eldest now. || Whoever's quickest.
+        a: assess                       | Is that so. Funny how that works. || Very convenient. || Then it's never me.
+    81 e4_dr_windfall_split [talk.dreams] then=None tone=None
+        a: ask.detail                   | If we ever came into money, we'd go halves. Promise? || Remember when we said we'd run a tavern together? || When we're old, we'll get a place by the water, you and me.
+        b: answer.detail                | Halves. Shake on it. || We'd drink the profits. || Fishing all day.
+        a: assess                       | Done. Now we just need the money. || We would. Happily. || And complaining all night.
+    81 e8t_cause_hard [talk.times] then=times.answer tone=None
+        a: tell.self                    | It's all the talk of #world.times_cause#, they say. || Ever since word of #world.times_cause#, nothing's been right || Everyone blames #world.times_cause#. I suppose they're right
+    81 re_prices_accord [talk.prices] then=None tone=None
+        a: tell.self                    | Mountain prices again: #topic.what# at #topic.price#. || Everything climbs up here, prices too. || The lowland carts charge what they like.
+        b: react.self                   | You try hauling it up. || Always the way. || #bc_ha#
+        a: assess                       | #bc_always# || #bc_ha# || #bc_they_do#
+    81 e5_rg_cw_lake [talk.land] then=None tone=None
+        a: tell.self                    | Glasswater's so clear today you could see a dropped penny fo || The lake's the colour of slate this morning. Something's com || Mist lying on the lake like a blanket.
+        b: react.self                   | Clear water, shy fish. I'll catch nothing today. || The lake changes colour with its mood. My grandfather could  || Did you drop one?
+        a: assess                       | Then you've the day off. Lucky you. || I wish he'd taught you. || Not on purpose.
+    80 w7_ask_workmate [talk.work] then=work.answer tone=None
+        a: ask.detail                   | How's your end going? || Getting anywhere with it? || How's it looking your side?
+    80 kn_fr_tease_dancing [talk.friends] then=None tone=None
+        a: ask.detail                   | I saw you dancing at the tavern last night. || Who told you that you could sing? || Was that you howling at the moon last night?
+        b: answer.detail                | I was magnificent. || Nobody had to. I just knew. || The moon looked lonely.
+        a: assess                       | You were something. || Somebody should have stopped you. || It looked frightened.
+        b: assess                       | Magnificent. || They tried. || It's still up there, isn't it?
+        a: assess                       | Something. || Not hard enough. || Hiding behind a cloud.
+    80 r7_fr_fleas [talk.friends] then=None tone=None
+        a: tell.self                    | Stop scratching. || You've been scratching since you sat down. || Have you got fleas?
+        b: react.self                   | I'm not scratching. || It's the wool. || No!
+        a: tell.self                    | You are. Your leg's going like a drum. || It's not the wool. || You have, haven't you. Move over there.
+        b: react.self                   | Fine. I've got fleas. || It's fleas. || Yes.
+        a: assess                       | I'm sitting over here. || Wash it, then. || Over there. Further.
+    79 h7_sorry_dole_both [keeping.sorry] then=None tone=None
+        a: sympathise                   | I'll save you a place in the line. || See you at the chapel door, then. || At least the line's good company.
+    79 e5_land_view [talk.land] then=land.answer tone=None
+        a: ask.detail                   | Look at it all out there. Do you ever stop and look? || Some days you could almost love the place. || Stand here a moment. Just look at it. What do you see?
+    78 w7_tell_poor_wages [talk.smalltalk,talk.work] then=work.reply tone=None
+        a: tell.self                    | Worked all week and I've four pennies to show. || The #wages# don't cover the rent. Not near. || Working and still hungry. How's that right?
+    78 tr_any_tools_stolen [talk.crime,talk.work] then=None tone=None
+        a: tell.self                    | Someone stole my tools from the shed. || My good hammer's gone. Somebody's wearing my mark on it. || Lost a day's work looking for my knife.
+        b: react.self                   | Report it. || Check the fence. || Where was it?
+        a: tell.self                    | The watch doesn't care about tools. || The fence has it. He wants a penny for it. || In my mouth. Then it wasn't.
+    78 ev_pp_shes [talk.smalltalk] then=None tone=None
+        a: tell.self                    | My sister's having her litter any day now. || That one at the stall winked at me. Bold as brass. || Do you braid your mane, or is it like that?
+        b: react.self                   | Five I had, and every one of them trouble. || She'll need help. Send for me. || Did you wink back?
+        a: assess                       | I'll tell her. || I might have. || It suits you.
+    78 e2_pt_sump_music [talk.pastimes] then=None tone=None
+        a: tell.self                    | There's a fiddle going down the Sump every night now. || Blind Harl plays the whistle for pennies by the drain-mouth. || Sump songs are rude. Best songs there are.
+        b: react.self                   | You go down there? For music? || Best nights in the city, and nobody minds your boots. || I've heard it.
+        a: tell.self                    | The best music in Ridgemere's in its worst streets. || Nobody minds anything. That's the beauty of it. || Every night till the Watch comes.
+    78 e2_an_hunt_hare [talk.animals] then=None tone=None
+        a: tell.self                    | Ran down a hare in the long grass. || Hare's the fastest thing on four legs. || A hare stood and watched me. Didn't run.
+        b: react.self                   | Teach me to hunt hares! I'm fast! || I could catch a hare once. Now I catch my breath. || Good meat?
+        a: assess                       | When you can catch me, I'll teach you. || You'll get your second wind. || Stewed with barley.
+    78 e4_dr_own_shop [talk.dreams] then=None tone=None
+        a: tell.plan                    | One day I'll have my own shop. My name over the door. || If I could save enough, I'd open a little shop. Nothing gran || I'd sell pies, if I had a shop. Just pies.
+        b: react.self                   | Don't. The rent, the stock, the folk who want it on tick. We || Shop! I'd settle for a stall. || What would you sell?
+        a: tell.self                    | You talk like it's a bad thing. You've got one. || A stall's a start. Shops grow out of stalls. || Bits. Thread, buttons. Things folk always run out of.
+    78 e4_dr_saving [talk.dreams] then=None tone=None
+        a: tell.plan                    | I've a jar under the bed. Every week, a penny or two. || I'm saving. Not saying what for. || Three years I've been saving. Nearly there.
+        b: react.self                   | Under the bed? You'd better hope I don't know which bed. || A penny a week. I'd have to have a penny a week first. || What's it for?
+        a: assess                       | Sorry. I didn't think. || Something nice. || No.
+    78 e4_fa_sin_gossip [talk.faith] then=None tone=None
+        a: tell.self                    | Gossip's a sin, the priest says. So, did you hear about the  || They say the miller confessed to the priest. For an hour. || I've been wicked this week. Not telling how.
+        b: react.self                   | Don't. Not after Restday. || No! Tell me. Sin's only a sin if it's dull. || #bc_go_on_then#
+        a: tell.self                    | Well. You didn't hear it from me... || Fine. It'll keep. || On second thoughts, it'll keep.
+    78 e5_rg_cw_river_source [talk.land] then=None tone=None
+        a: tell.self                    | All the Long River runs out of here. Think of that. || The fen folk drink our water, you know. After it's been thro || They say the river's spring is under the lake, deep down.
+        b: react.self                   | And by the time it gets to us it's half mud. Thanks for that || The river rises from three springs and the lake's spill. I'v || Makes you proud, a bit.
+        a: assess                       | You're welcome. We send it with love. || You would have. Scholars spoil everything. || Proud of water.
+    77 e2_r_pt_react_poor [pastimes.react] then=None tone=None
+        a: react.self                   | Must be nice, having the time. || Wish I had the #money# for it. || Sounds grand. I'll hear about it from you.
+    77 kn_fr_owe_pennies [talk.friends] then=None tone=None
+        a: tell.self                    | You still owe me those pennies. || About that loan... || Did you forget something? Say, five pennies?
+        b: react.self                   | Next Marketday. Swear on my tail. || What loan? || I forgot nothing. I misplaced it.
+        a: tell.self                    | You said that last Marketday. || The one you spent on cider. || Then find it.
+        b: react.self                   | And this one's the real one. || That was an investment. || I'm looking. Very slowly.
+        a: tell.self                    | I'll hold your tail to it. || In what? || Look faster.
+        b: react.self                   | Supper's on me tonight. Call it interest.
+    76 h7_theft_rumour_grows [talk.crime] then=None tone=None
+        a: tell.news                    | I heard three of them did #topic.victim#. || #topic.victim# says it was a gang. || They say it happened at noon, bold as you like.
+        b: react.news                   | I heard one. A small one. || A gang of one, I heard. || Noon? I heard midnight.
+        a: tell.self                    | Three by the time it got to me. || That's how it starts. || By supper it'll be dawn and a troop of horsemen.
+        b: react.self                   | Ten by the time it gets to the next street. || Then it's a gang of twelve. || Whatever it was, it's gone.

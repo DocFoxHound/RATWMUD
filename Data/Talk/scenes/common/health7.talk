@@ -7,6 +7,7 @@
 
 scene e3_h_back
 when topic=health
+does tell.self / react.self / tell.self
 a : My back's gone again. Bent to pick up a spoon. | Slept wrong. Now my back won't unbend. | Lifted a sack I had no business lifting.
 b[healer] #healer : Heat on it, and no lifting for three days. I mean three. Not one.
 b[farmer] #farmer : Welcome to every harvest of my life.
@@ -19,6 +20,7 @@ a : A wooden one. Not even full. | I'll lie on the floor and never get up. | The
 
 scene e3_h_sneezing
 when topic=health
+does tell.self / react.self / tell.self
 a : #oath#, I can't stop sneezing. | My nose has been running since Restday. | I think I've caught #chill#.
 b[temper=nervy] #nervy : Stand over there. No, further. I can't afford to be ill.
 b[young] #young : Do it again! You sound like a goose.
@@ -29,6 +31,7 @@ a : Half the street's got it. | I've drunk a whole pot. | Bed won't pay the rent
 
 scene e3_h_bad_night
 when topic=health a.tired=yes
+does tell.self / react.self / tell.self
 a : I didn't sleep a wink. | Lay awake counting the roof beams. | Woke four times and every time it was dark.
 b[old] #old : I haven't slept a whole night since I was forty.
 b[pair.kin=spouses] #spouse : I know. You took all the blanket with you.
@@ -41,6 +44,7 @@ a : Everything, all at once. | Twelve. I counted them twice. | And the owls. Don
 
 scene e3_h_healer_bill
 when topic=health
+does tell.self / react.self / tell.self
 a : Do you know what the healer charged me for a bit of bandage? | Three pennies for a pot of salve. Three! | I'd rather be ill than pay that healer again.
 b[healer] #healer : You're paying for twenty years of knowing which salve. The pot's free.
 b[wealth=poor] #poor : That's why I never go. I just get better or I don't.
@@ -51,6 +55,7 @@ a : A whole day's bread, for a strip of linen. | My grandmother made it for noth
 
 scene e3_h_grandmothers_cure
 when topic=health
+does tell.self / react.self / tell.self
 a : My grandmother put goose grease on every chest in the family. | Red flannel round the throat. That's what my mother swore by. | Onion in your socks draws out a fever. Don't laugh.
 b[healer] #healer : Grease does no harm. The flannel keeps you warm. The onion I can't speak for.
 b[old] #old : My grandmother did that. And I'm still here.
@@ -61,6 +66,7 @@ a : We all smelled like the kitchen till spring. | Itched like murder. Nobody da
 
 scene e3_h_fleas
 when topic=health
+does tell.self / react.self / tell.self
 a : I've got fleas. Don't move away. | Something's living in my scruff. | Scratched all night. It's in the blanket.
 b[herder] #herder : Pennyroyal in the bedding. Works for the sheep, works for us.
 b[old] #old : Roll in the woodsmoke. That's how we did it.
@@ -73,6 +79,7 @@ a : Charming. | It's the pups, they bring them home. | It's my best blanket!
 
 scene e3_h_ears
 when topic=health
+does tell.self / react.self / tell.self
 a : My ear's been aching since the wind changed. | Can't hear a thing out of this side. | Got water in my ear and now it rings.
 b[healer] #healer : Warm oil, a few drops. And keep out of the wind.
 b : What? | What? | Hop on one leg.
@@ -81,6 +88,7 @@ a : Very funny. | Oh, not you as well. | I did. Now my leg aches too.
 
 scene e3_h_belly
 when topic=health
+does tell.self / react.self / assess
 a : Something I ate's not agreeing with me. | That pie from the stall. Never again. | My belly's growling like a bear in a cupboard.
 b[cook] #cook : It wasn't my cooking. I'll say that now.
 b[young] #young : I ate a beetle once. It was fine.
@@ -91,6 +99,7 @@ a : I'd rather not remember. | You did. I didn't listen. | Small sips. I'll try.
 
 scene e3_h_hiccups
 when topic=health
+does tell.self / react.self / assess
 a : I've had hiccups since breakfast. | How do you get rid of hiccups? | Hic. Sorry. Hic.
 b[young] #young : Hold your breath and hop!
 b[old] #old : Somebody frighten you. That's the only cure.
@@ -101,6 +110,7 @@ a : I'll try that. | Stars, but still hiccups. | Hic. It didn't work.
 
 scene e3_h_eat_greens
 when topic=health
+does tell.self / react.self / tell.self
 a : My mother made us eat liver every Restday. For the blood. | Do you think eating fish makes you clever? | They say an apple a day keeps the healer away.
 b[healer] #healer : Liver, greens and sleep. And a bit less ale.
 b[fisher] #fisher : I eat fish every day. Ask me anything.
@@ -111,6 +121,7 @@ a : Strong as an ox, I was. | Your brother doesn't eat fish. | Onions, then.
 
 scene e3_h_keep_moving
 when topic=health
+does tell.self / react.self / tell.self
 a : I walk to the well and back every morning. Keeps me young. | They say if you sit down too long, you set. | The old smith walked every day till he was ninety.
 b[old] #old : I walk every day. To the chair and back.
 b[tired=yes] #tired : I'd walk if my legs agreed with me.
@@ -121,6 +132,7 @@ a : Once is enough for anyone. | I'd better stand up, then. | He walked into a w
 
 scene e3_h_healer_vs_priest
 when topic=health
+does tell.self / react.self / tell.self
 a : The healer says rest. The priest says pray. Who do I listen to? | The priest told my aunt her cough was a sin. | I lit a candle and took the healer's draught. Both at once, to be safe.
 b[priest] #priest : Pray, and then rest. The gods aren't jealous of a good bed.
 b[healer] #healer : Pray all you like. But take the draught.
@@ -131,16 +143,18 @@ a : The candle's dearer. | She didn't ask. She was too busy coughing. | One of t
 
 scene e3_h_always_ill
 when topic=health
+does ask.detail / answer.detail / tell.self
 a : #b.name#, you look #poorly#. | Is that a rash? On your neck, there. | Feeling better today?
 b[temper=nervy] #worrier : Do I? I knew it. I knew it this morning.
 b[temper=short] #short : I'm fine. Stop looking at me.
 b : Do I? I feel all right. | Where? | A little, thanks.
 a@worrier : I didn't mean anything by it. You look grand. Really.
 a@short : I'll look somewhere else, then.
-a : It's the light, maybe. | Oh. It's a shadow. Never mind. | Good.
+a : It's the light, maybe. | Oh. It's a shadow. Never mind. | #bc_good#
 
 scene e3_h_head
 when topic=health
+does tell.self / react.self / assess
 a : My head's pounding like a smithy. | Got a headache behind my eyes. | Somebody's hammering in my skull.
 b[smith] #smith : That's no smithy. A smithy has rhythm.
 b[innkeeper] #inn : Too much of my ale last night, was it?
@@ -151,6 +165,7 @@ a : I'd love to. | Tastes of bark. | It was the ale.
 
 scene e3_h_eyes
 when topic=health
+does tell.self / react.self / tell.self
 a : My eyes are going. I can't read the price boards. | I can't see a thing past the end of my muzzle any more. | Everything's gone a bit misty at the edges.
 b[scholar] #scholar : A glass lens, from the city. Expensive, but a miracle.
 b[old] #old : Mine went years ago. My nose does the work now.
@@ -161,6 +176,7 @@ a : I'll have a squint like old Hob. | Ha. True. | Oh. So it is.
 
 scene e3_h_claws
 when topic=health
+does tell.self / react.self / tell.self
 a : I split a claw on a crate. Right to the quick. | My dewclaw's caught on everything today. | Need my claws trimmed. I click like a cart on the cobbles.
 b[healer] #healer : Wrap it and leave it. Claws grow back. Patience doesn't.
 b[young] #young : #mum# bites mine off. Is that normal?
@@ -171,14 +187,16 @@ a : I won't. It's horrible. | It's bound. Now it catches on the binding. | Every
 
 scene e3_h_tail
 when topic=health
+does tell.self / react.self / tell.self
 a : Somebody shut a door on my tail. | My tail's gone stiff. Can't wag it. | I sat on my own tail. Don't ask how.
 b[humour=merry] #merry : Your whole family's tails were always too long.
 b : Ow! Whose door? | Not much to wag about anyway. | I won't. But I want to.
 a@merry : Better too long than none to speak of. Like yours.
-a : Mine. I did it myself. | Fair. | I was tired.
+a : Mine. I did it myself. | #bc_fair# | I was tired.
 
 scene e3_h_dry_nose
 when topic=health
+does tell.self / react.self / tell.self
 a : Feel my nose. Dry as a biscuit. | My mother always said a dry nose means a fever. | I woke with a hot nose and a cold tail.
 b[healer] #healer : An old tale. A dry nose means a dry room. Drink some water.
 b[old] #old : A dry nose, a sick wolf. Bed.
@@ -189,14 +207,16 @@ a : Suit yourself. | She did. And she checked. Every morning. | That's what worr
 
 scene e3_h_washing
 when topic=health
+does tell.self / react.self / tell.self
 a : A cold bath every morning. Best thing for the health. | I don't hold with too much washing. It thins the coat. | My aunt's never washed in her life, and she's ninety.
 b[old] #old : Once a season, whether we need it or not.
 b : You'll catch your death. | I can tell. | Nobody stands close enough to ask her.
 a@old : That's the way. Tell the young ones.
-a : I'll catch nothing. I'm too cold. | Thank you. | That's how she's lasted.
+a : I'll catch nothing. I'm too cold. | #bc_thank_you# | That's how she's lasted.
 
 scene e3_h_tonic_seller
 when topic=health
+does tell.self / react.self / assess
 a : A fellow at the market's selling a tonic for everything. Gout, grief and baldness. | Bought a bottle of tonic off a carter. It's mostly vinegar. | I took a tonic for my knees. Now my knees are fine and I can't feel my tongue.
 b[healer] #healer : I've tasted that tonic. It's mostly brandy, and a bit of pond.
 b[merchant] #merchant : There's money in tonics. I'll grant him that.
@@ -207,6 +227,7 @@ a : Very bald. And sad. | They say a lot. | That's what I tell myself.
 
 scene e3_h_bled
 when topic=health
+does tell.self / react.self / tell.self
 a : The healer wanted to bleed me for a sore throat. | I've been cupped. You don't want to know where. | They put leeches on me. I named one.
 b[healer] #healer : Not my method. I'd rather keep your blood where it is.
 b : I'd have run. | Then don't tell me. | What did you name it?
@@ -215,6 +236,7 @@ a : I did. Down the stairs. | I'll tell you anyway. | Sir Gulp. He was very loya
 
 scene e3_h_expecting
 when topic=health
+does tell.self / react.self / tell.self
 a : My sister's expecting. She wants salt fish and honey. Together. | My cousin's due any day now. She's as round as a barrel. | She's carrying high, so it's a boy, they say.
 b[healer] #healer : Let her eat what she likes and keep her off ladders.
 b[old sex=female] #old : I wanted coal, with my first. Coal! Ate a whole lump.
@@ -225,16 +247,18 @@ a : On a plate. With a spoon. | She'd agree. | They're wrong half the time.
 
 scene e3_h_sweet_tooth
 when topic=health
+does tell.self / react.self / tell.self
 a : I've a tooth that sings when I eat honey. | My teeth are all crooked from chewing bones. | I lost a back tooth to a walnut.
 b[healer] #healer : Sing it a song back and come and see me.
 b[young] #young : I've got a wobbly one! Look! Look!
 b : Stop eating honey. | Show me. #oath#. | Walnuts are vicious.
 a@healer : You'll pull it. I know you'll pull it.
 a@young : Very good. Very wobbly. Leave it alone.
-a : Never. | I'm proud of them. | I've never trusted one since.
+a : #bc_never# | I'm proud of them. | I've never trusted one since.
 
 scene e3_h_moult
 when topic=health here.season=spring|summer
+does tell.self / react.self / tell.self
 a : I'm moulting so hard I leave a trail. | Pulled a whole pawful of fur off my flank. | My summer coat's come in patchy.
 b[old] #old : When you get old the fur comes out and doesn't come back.
 b : I could follow you home. | Stuff a cushion. | Patchy's the fashion.
@@ -245,6 +269,7 @@ a : Don't. | It's a big cushion now. | Then I'm the height of it.
 
 scene e3_h_old_weather_knees
 when topic=health a.stage=old
+does tell.self / react.self / tell.self
 a : My knees say rain by nightfall. | My hip woke me before the cock did. | Every bone in me has an opinion today.
 b[young] #young : Can your knees really tell the weather?
 b[old] #old : Mine say snow. We'll see who's right.
@@ -255,6 +280,7 @@ a : Nor is my back. | It's liniment that keeps me upright. | Mostly rude things.
 
 scene e3_h_old_two
 when topic=health a.stage=old b.stage=old
+does tell.self / react.self / tell.self
 cooldown 2d
 a : My paws are so stiff this morning I couldn't hold my cup. | I've a pain in my side that comes and goes. | The healer says I've the heart of a younger wolf.
 b : You think that's stiff? I couldn't lift the cup to try. | Mine comes and stays. | Give it back to him, then.
@@ -262,6 +288,7 @@ a : Well, you always were the worse off. | You win again. | Ha. You never change
 
 scene e3_h_old_remember
 when topic=health a.stage=old
+does tell.self / react.self / tell.self
 a : The healer asked my age. I told her. She didn't believe me. | I've buried three healers. They all said I'd go first. | I can't remember the last time nothing hurt.
 b[healer] #healer : I believe you. I've seen your knees.
 b[young] #young : How old are you? Really?
@@ -274,6 +301,7 @@ a : Kindness, at my age. | I'll try my best. | Ha. Wait till it's your turn.
 
 scene e3_h_pup_tooth
 when topic=health a.stage=young
+does tell.self / react.self / ask.detail
 a : My tooth's wobbly! Look! | I fell over and there's blood on my knee. Real blood! | I've got a cough. Can I stay home from chores?
 b[old] #old : Ah, you'll live, pup. I've seen worse on a sparrow.
 b[pair.kin=parent] #parent : Come here and let me look. Hm. You'll do.
@@ -284,6 +312,7 @@ a : I'm going to fiddle with it. | Ew. | Cough. Cough. Hear that?
 
 scene e3_h_pup_brave
 when topic=health a.stage=young
+does tell.self / react.self / tell.self
 a : I didn't cry when the healer pulled the splinter. Not even once. | #mum# gave me a bitter brew and I drank it all. All of it. | I've got spots! The healer said I'm not allowed to scratch.
 b[healer] #healer : You were the bravest patient I had all day.
 b : That's very brave. | All of it? | Don't scratch, then.
@@ -292,6 +321,7 @@ a : Maybe once. A small one. | Nearly all. Some went in the plant pot. | I'm onl
 
 scene e3_h_pups_ill_parent
 when topic=health a.parent=yes
+does tell.self / react.self / tell.self
 cooldown 2d
 a : The little one's got a temperature. I was up all night with her. | My youngest has spots. All the pups in the street have them. | My pup's got a cough like a seal.
 b[healer] #healer : Cool cloths and plenty to drink. It'll pass in three days.
@@ -307,6 +337,7 @@ a : Poor me, more like. | Better them all at once. | You've never heard a seal.
 
 scene e3_h_hurt_light
 when topic=health a.injured=light
+does tell.self / react.self / tell.self
 a : Don't touch my arm. I took a knock. | Twisted my paw on the step. | I've a lump on my head like an egg.
 b[healer] #healer : Show me. Hm. Bruised, not broken. Keep it moving.
 b[guard] #guard : Was somebody at you? Tell me who.
@@ -317,6 +348,7 @@ a : I'd rather not say. It was a door. | I've told the landlord a hundred times.
 
 scene e3_h_hurt_bad
 when topic=health b.injured=bad
+does ask.detail / answer.detail / assess
 a : You should be lying down, not standing about. | #oath#, look at you. Who did that? | Can you walk? Lean on me.
 b[temper=short] : I'll lie down when I'm dead. Which won't be today.
 b : I can't lie still. It hurts more. | Doesn't matter now. | I can manage.
@@ -324,6 +356,7 @@ a : Then sit, at least. | It matters to me. | You can't. Lean.
 
 scene e3_h_hurt_bad_self
 when topic=health a.injured=bad
+does tell.self / react.self / tell.self
 a : I'm in a bad way, #address#. | It hurts to breathe. | I can't feel my paw.
 b[healer] #healer : Sit down. Now. Let me look at you.
 b[warmth=warm] #warm : Sit. I'll fetch someone. Don't you move.
@@ -335,6 +368,7 @@ a : I can't pay the healer. | I'll try not to. | I'm sitting.
 
 scene e3_h_tired
 when topic=health a.tired=yes
+does tell.self / react.self / tell.self
 a : I'm so #tired# I could sleep standing like a horse. | My eyes are closing on their own. | I'm running on nothing.
 b[parent=yes] #parent : Join the club. We meet at night. Nobody sleeps.
 b[young] #young : Grown-ups are always tired.
@@ -347,6 +381,7 @@ a : After this. | It'll go straight back to sleep. | What day is it?
 
 scene e3_h_devout
 when topic=health a.piety=devout
+does tell.self / react.self / assess
 a : I had a fever. I prayed, and it broke. | I pray for my knees every night. | The gods sent this cough to teach me patience.
 b[priest] #priest : The gods hear us. They heard you.
 b[healer] #healer : The gods and the draught I gave you. Let's share the credit.
@@ -359,16 +394,18 @@ a : The gods are good. | Not yet. But they're being prayed for. | Then it's work
 
 scene e3_h_short_patient
 when topic=health a.temper=short
+does tell.self / react.self / assess
 a : The healer told me to rest. Rest! Who'll do my work? | If one more person tells me to sit down, I'll bite them. | I'm not ill. I'm annoyed.
 b[healer] #healer : I'd tell you to sit down, but I value my paw.
 b[temper=calm] #calm : Breathe. Then sit.
 b : Your work'll keep. | Sit down. | Can't you be both?
-a@healer : Wise.
+a@healer : #bc_wise#
 a@calm : ...Fine. I'm sitting. Don't look at me.
 a : It won't. | ... Fine. | I'm managing it.
 
 scene e3_h_nervy_plague
 when topic=health a.temper=nervy
+does ask.detail / answer.detail / tell.self
 a : I've a spot on my paw. Do you think it's the plague? | I heard a cough in the night. Is something going round? | My heart's beating fast. Is that normal? Is it too fast?
 b[healer] #healer : It's nothing. It will be gone by Restday. I promise you.
 b[humour=dry] #dry : Yes. We'll write to your family.
@@ -379,6 +416,7 @@ a : Are you sure it's a spot? | Then I'm not going out. | It's beating faster no
 
 scene e3_h_merry_patient
 when topic=health a.humour=merry
+does tell.self / react.self / assess
 a : The healer says I'll live. I've asked for a second opinion. | I've a cough so loud the geese answer it. | I've been bled, cupped and prayed over. Next week I'll try sleep.
 b : Get a third, to be safe. | Let's hear it. | Sleep! Steady on.
 a : Ha. I'll pay for none of them. | ...Hear that? A goose. | I'll try anything once.
@@ -387,26 +425,29 @@ a : Ha. I'll pay for none of them. | ...Hear that? A goose. | I'll try anything 
 
 scene e3_h_miner_lungs
 when topic=health a.job=miner
+does tell.self / react.self / tell.self
 a : Every miner coughs. It's the dust. | I cough black in the mornings. Doesn't hurt. | My father had the miner's chest. Went at fifty.
 b[miner] #miner : I've had it twenty years. It follows me about like a stray.
 b[healer] #healer : Wet a cloth and tie it over your muzzle. Breathe through it. I know you won't.
-b : Should you not stop? | That doesn't sound right. | I'm sorry.
+b : Should you not stop? | That doesn't sound right. | #bc_im_sorry#
 a@miner : Feed it, and it'll never leave.
 a@healer : You know me too well.
 a : And eat what? | It's right for a miner. | Fifty's not bad, for us.
 
 scene e3_h_smith_burns
 when topic=health a.job=smith
+does tell.self / react.self / assess
 a : Look at my forearms. Not a hair on them. | Caught a spark in my eye this morning. | I've burned my paws so often I can't feel them.
 b[smith] #smith : Same. You learn to count the burns as years.
 b[healer] #healer : Butter's no good on a burn. Cold water. I've told you.
 b : Ugh. Like a plucked goose. | Can you see? | Useful, I suppose.
 a@smith : Then I'm a hundred.
 a@healer : Butter's what we've got in the forge.
-a : Plucked goose. Thank you. | Mostly. | For picking up pies.
+a : Plucked goose. Thank you. | #bc_mostly# | For picking up pies.
 
 scene e3_h_farmer_back
 when topic=health a.job=farmer
+does tell.self / react.self / tell.self
 a : Thirty years of bending over turnips. My back's the shape of a sickle. | I can tell the weather by my shoulders now. | The ox stood on my foot.
 b[farmer] #farmer : My knees are the same. Stiff as fence posts by harvest.
 b[old] #old : Wait till you can't straighten at all.
@@ -417,6 +458,7 @@ a : I am standing straight. | I'm not old. Yet. | Oxen don't do anything on purp
 
 scene e3_h_healer_shop
 when topic=health a.job=healer
+does tell.self / react.self / tell.self
 a : Everyone comes to me with a cold, and then they don't take my draught. | Third broken paw this week. What is everyone doing? | Willow bark's up again at the market. Then they ask why my cures are dear.
 b[healer] #healer : They want the cure, not the rest. They never want the rest.
 b[wealth=poor] #poor : Some of us can't afford the draught.
@@ -427,12 +469,14 @@ a : It tastes of mud. I won't lie. | Running from creditors. | It's the caravans
 
 scene e3_h_two_healers
 when topic=health a.job=healer b.job=healer
+does tell.self / react.self / assess
 a : Do you use comfrey for a sprain, or arnica? | Had a wolf in with a fish-hook through the lip. | I've stopped bleeding anyone. It never helped.
 b : Comfrey. Arnica's for the rich. | I've had worse. A hook in the ear. | Nor me. But they ask for it.
 a : I'll try the comfrey. | Every summer, the hooks. | Then I tell them it's been done. And I don't.
 
 scene e3_h_fisher_hands
 when topic=health a.job=fisher
+does tell.self / react.self / tell.self
 a : The salt's cracked my pads to bits. | Paws so cold this morning I couldn't tie a knot. | I got finned by a perch. Swollen like a sausage.
 b[fisher] #fisher : Lard and a sock at night. Every fisher's cure.
 b : Rub fat into them. | Warm them under your arms. | Like a sausage. Charming.
@@ -441,6 +485,7 @@ a : I smell like a candle now. | Under my arms? In front of the boat? | It's not
 
 scene e3_h_sailor
 when topic=health a.job=sailor
+does tell.self / react.self / assess
 a : I've been ashore three days and the ground's still rolling. | Last voyage half the crew had their gums go soft. | I've a cough from the bilge. Everyone does.
 b[sailor] #sailor : Apples and onions, if you can get them aboard. Nothing else helps.
 b : Sit down, then. | Gums? #oath#. | Nasty place, a bilge.
@@ -449,6 +494,7 @@ a : It's the sitting that's worst. | Everything tasted of iron. | Nastier than y
 
 scene e3_h_guard_feet
 when topic=health a.job=guard|soldier
+does tell.self / react.self / tell.self
 a : A whole day on the gate. My feet are howling. | My armour's rubbed my shoulder raw. | Got a crick in my neck from watching the road.
 b[guard] #guard : Put your boots by the fire, not on it. I learned that.
 b : Sit down while you can. | Pad it with wool. | Seen anything?
@@ -457,6 +503,7 @@ a : I'm not allowed. | And sweat like a pig. | A cart. And another cart.
 
 scene e3_h_cook_burns
 when topic=health a.job=cook|baker
+does tell.self / react.self / assess
 a : Burned my wrist on the oven door again. | I've cut my thumb so many times I've lost count. | Breathed in flour all day. I sneeze dough.
 b[cook] #cook : Same as me. The kitchen always wins.
 b[baker] #baker : The oven's mark. Every baker has a dozen.
@@ -467,6 +514,7 @@ a : I know, I know. | It's fine. Mostly. | It's not funny when it's real.
 
 scene e3_h_woodcutter
 when topic=health a.job=woodcutter|laborer|carter
+does tell.self / react.self / tell.self
 a : The axe glanced off a knot. Missed my paw by a whisker. | My shoulders are like knotted rope. | Every bump in that road went straight up my spine.
 b[woodcutter] #wood : You need a sharper axe. A blunt one bites you.
 b[healer] #healer : Rest the shoulders, not just the paws.
@@ -477,6 +525,7 @@ a : I've still got all my toes. I counted. | Would you? | Like a crime against m
 
 scene e3_h_scholar_eyes
 when topic=health a.job=scholar|official
+does tell.self / react.self / tell.self
 a : I've been reading by one candle. My eyes have given up. | Ink in my fur, ink in my food. | I sit at a desk all day and my knees think I'm dead.
 b[laborer] #lab : Come and dig a ditch with me. That'll cure you.
 b : Buy another candle. | You're a walking scroll. | Walk about at noon.
@@ -485,6 +534,7 @@ a : The office won't pay for another. | At least I'm lettered. | Noon is my best
 
 scene e3_h_herder
 when topic=health a.job=herder
+does tell.self / react.self / tell.self
 a : A ewe kicked me in the shin. I'm black and blue. | Got a tick off a sheep. As big as a pea. | My paws smell of sheep dip. Forever, I think.
 b[herder] #herder : It's ewes. It's always ewes. The rams are honest at least.
 b : Ow. | Ugh. Where? | Wash them in vinegar.
@@ -495,6 +545,7 @@ a : She knew what she was doing. | Behind my ear. I'll not say more. | Then I'll
 
 scene e3_h_poor_cant_pay
 when topic=health a.wealth=poor|destitute
+does tell.self / react.self / assess
 a : I can't afford the healer. I'll just wait it out. | The draught costs more than I eat in a week. | My chest's bad, but rent's due.
 b[healer] #healer : Come at the end of the day. I'll find something for you.
 b[wealth=rich] #rich : That's no way to live.
@@ -505,16 +556,18 @@ a : I'll try the chapel. | Soup I can do. | Tell my landlord that.
 
 scene e3_h_rich_physician
 when topic=health a.wealth=rich
+does tell.self / react.self / assess
 a : I've had the best physician in Ridgemere to see me. He says it's nerves. | Mine's prescribed a winter by the sea. | Our healer comes twice a week, to be safe.
 b[wealth=poor|destitute] #poor : Must be nice, being ill somewhere warm.
 b[healer] #healer : He says nerves to everyone who pays.
 b : Nerves? | How dreadful for you. | Safe from what?
 a@poor : It's not as nice as it sounds. Well. It is.
 a@healer : And you'd say what, for the same fee?
-a : Expensive nerves. | You're mocking me. | Everything.
+a : Expensive nerves. | You're mocking me. | #bc_everything#
 
 scene e3_h_sump_damp
 when topic=health a.quarter=sump
+does tell.self / react.self / tell.self
 a : Everyone in the Sump coughs. It's the water. | The walls run wet all winter. The pups wheeze. | I can smell the drains in my sleep.
 b[quarter=heights] #heights : Surely the Council could do something.
 b[quarter=sump] #sump : Mine too. We cough in chorus.
@@ -525,6 +578,7 @@ a : Someone should. Nobody does. | Where else would we go? | The window doesn't 
 
 scene e3_h_heights_air
 when topic=health a.quarter=heights here.region=ridgemere
+does tell.self / react.self / tell.self
 a : The physician says I must take the sea air. Daily. | Our cook does nothing but fuss over my diet. | I've had a slight chill. Bedridden for a week.
 b[quarter=sump|wharf|docks] #low : The sea air's free down our way. Comes with the fish.
 b : Very good for the lungs, they say. | Lucky you, to have a cook. | A week? For a chill?
@@ -535,14 +589,16 @@ a : You'd think so. | You'd think so, until she starts. | It was a very slight w
 
 scene e3_h_winter_fever
 when topic=health here.season=winter
+does tell.self / react.self / assess
 a : There's a fever going round. Three in our street have it. | My chest's tight with the cold. | My paws have chilblains. They itch like murder.
 b[healer] #healer : Keep warm, keep apart and drink something hot. I'm run off my feet.
 b : I'm staying in. | Breathe through your scarf. | Don't scratch them.
 a@healer : Run off your feet, and nobody to bring you anything hot.
-a : Wise. | I've no scarf. | Too late.
+a : #bc_wise# | I've no scarf. | #bc_too_late#
 
 scene e3_h_summer_heat
 when topic=health here.season=summer
+does tell.self / react.self / assess
 a : This heat's no good for a wolf. I'm panting like I've run a mile. | A carter fell down in the road from the sun yesterday. | My nose is burnt from the sun. Look.
 b[old] #old : Keep in the shade at noon. Pups never listen.
 b[farmer] #farmer : Drink, drink and drink. And a hat.
@@ -553,6 +609,7 @@ a : There is no shade. | Wet cloth and he was up again. | I know it's pink.
 
 scene e3_h_spring_tonic
 when topic=health here.season=spring
+does tell.self / react.self / tell.self
 a : Time for the spring tonic. Nettle and dandelion. | My mother gave us sulphur and treacle every spring. | I've a cold every spring. Regular as the swallows.
 b[healer] #healer : Nettle's good. The sulphur I'd leave alone.
 b[old] #old : Sulphur and treacle. I still taste it.
@@ -563,6 +620,7 @@ a : A healthy ditch. | We never dared be ill. | So does the cold. Eventually.
 
 scene e3_h_autumn_damp
 when topic=health here.season=autumn here.weather=rain|fog|overcast
+does tell.self / react.self / tell.self
 a : The damp's got into my bones. | This weather's made my old break ache. | Everything smells of mould and my nose won't stop.
 b[old] #old : The damp's always in my bones. It pays rent.
 b : Sit by a fire. | Which break? | Close your nose.
@@ -571,17 +629,19 @@ a : I'd have to own a fire. | The one from the ice, years back. | How?
 
 scene e3_h_morning_after
 when topic=health here.time=dawn
+does tell.self / react.self / tell.self
 cooldown 2d
 a : My head. Don't talk loudly. | Never again. Never. Not one more cup. | What was in that ale?
 b[innkeeper] #inn : Same thing as always. You just drank more of it.
 b[humour=merry] #merry : WHAT'S THAT? I CAN'T HEAR YOU!
-b : Sorry. | You said that last week. | Everything you asked for.
+b : #bc_sorry# | You said that last week. | Everything you asked for.
 a@inn : Then it's your fault for selling it.
 a@merry : I hate you. Quietly.
-a : Thank you. | Last week I meant it. | I'd like to speak to whoever asked.
+a : #bc_thank_you# | Last week I meant it. | I'd like to speak to whoever asked.
 
 scene e3_h_tavern_medicine
 when topic=health here.place=tavern
+does tell.self / react.self / tell.self
 a : A drop of brandy's good for the chest. Medicinal. | My healer says one cup a day. I'm saving them up. | Is ale good for you? Asking for my health.
 b[innkeeper] #inn : Medicine at two pennies a cup. Best price in town.
 b[healer] #healer : One cup. One.
@@ -592,14 +652,16 @@ a : Two drops, to be safe. | Seven days. That's seven cups. | I'll trust you.
 
 scene e3_h_chapel_prayer
 when topic=health here.place=chapel
+does tell.self / react.self / thank
 a : I've come to pray for my brother. He's very low. | I light a candle for the sick every Restday. | The priest blessed my knees. Can't hurt.
 b[priest] #priest : The gods hear prayers for others first. Sit with me.
 b : I'll pray with you. | That's kind. | Couldn't hurt.
 a@priest : Thank you. I'd like that.
-a : Thank you. | Someone has to. | And it's warm in here.
+a : #bc_thank_you# | Someone has to. | And it's warm in here.
 
 scene e3_h_crowd_cough
 when topic=health here.crowd=busy|crowd
+does tell.self / react.self / tell.self
 a : Somebody's coughing right down my neck. | Too many wolves in one place. That's how sickness spreads. | I'll catch something in this crowd.
 b[temper=nervy] #nervy : Don't. Don't say that.
 b : Turn round and glare. | Breathe through your sleeve. | Catch a purse instead.
@@ -610,6 +672,7 @@ a : I did. They coughed at me. | It smells of onion. | I'm honest. Unfortunately
 
 scene e3_h_frost_snowblind
 when topic=health here.region=frosthollow
+does tell.self / react.self / assess
 a : The snow's glare had me blind half a day. | Frostbite took the tip of my ear, years back. | The mine's damp and the valley's freezing. My chest can't win.
 b[miner] #miner : Soot under the eyes. That's the trick. Every miner knows it.
 b[old] #old : We all lose a bit to the cold up here. It's the rent for living.
@@ -620,6 +683,7 @@ a : Down. Like a fool. | It's my good ear now. Hears everything. | It doesn't ev
 
 scene e3_h_coldwater_swim
 when topic=health here.region=coldwater
+does tell.self / react.self / assess
 a : A swim in the lake every morning. Nothing ever ails me. | My grandfather swam the Glasswater in autumn and lived to ninety. | I went in the lake and now I can't stop shivering.
 b[quirk=swims_in_the_lake_even_in_autumn] #swim : There's nothing like it. It wakes the blood.
 b : You're mad. | Did he ever get warm? | What did you expect?
@@ -628,6 +692,7 @@ a : Mad, but never ill. | Not once, my mother said. | Less cold, somehow.
 
 scene e3_h_oakhaven_ticks
 when topic=health here.region=oakhaven
+does tell.self / react.self / assess
 a : Pulled three ticks off me after the woods. | My arm's come up in a rash from some leaf. | A bee stung me under the eye.
 b[woodcutter] #wood : Twist them, don't pull. Leave the head in and you'll know about it.
 b : Check behind your ears. | Which leaf? | Let me see. Ooh.
@@ -636,16 +701,18 @@ a : I'm checking now. | A green one. | Don't laugh.
 
 scene e3_h_fens_ague
 when topic=health here.region=fens
+does tell.self / react.self / tell.self
 a : The fen ague's back. Shivering one day, burning the next. | The mist gets in your chest and stays. | Leeches in the ditch again. I had four on my leg.
 b[healer] #healer : Bark of the willow, and keep out of the evening mist.
 b[from=mirebridge|fenshore] #mb : Fen folk don't get the ague. We get the ague and carry on.
 b : Every summer. | That's the fens. | Four! Did you name them?
 a@healer : Keep out of the mist. In #here.town#.
 a@mb : Carry on shivering, aye.
-a : Every summer and most autumns. | It does. | I ate one. No, I didn't.
+a : Every summer and most autumns. | #bc_it_does# | I ate one. No, I didn't.
 
 scene e3_h_larkfield_sheep
 when topic=health here.region=larkfield
+does tell.self / react.self / assess
 a : All the wool dust at the market. I sneeze for days after. | Got my paw stood on by a ram. | The shearers all have bad backs by forty.
 b[herder] #herder : Sheep don't care about your paw. Remember that.
 b : Wrap your muzzle. | Did you hit him back? | And good arms.
@@ -654,46 +721,52 @@ a : I'll look a fool. | He's bigger than me. | And good beer.
 
 scene e3_h_southmeadow_fruit
 when topic=health here.region=southmeadow
+does tell.self / react.self / assess
 a : I ate too many plums. Don't ask what happened next. | Got stung by a wasp in the orchard. Right in the paw. | The sun's burned the top of my head. Look at it.
 b[farmer] #farmer : Plums are honest. They tell you straight away.
-b : I won't. | They're drunk on the windfalls. | Wear a hat.
+b : #bc_i_wont# | They're drunk on the windfalls. | Wear a hat.
 a@farmer : Too honest.
 a : Thank you for not asking. | So was I, nearly. | Hats are for the north.
 
 scene e3_h_ridgemere_rain
 when topic=health here.region=ridgemere
+does tell.self / react.self / ask.detail
 a : This city's rain gets into your chest. | Everyone in Ridgemere sniffles from autumn to spring. | I've not had dry feet since autumn.
 b[from=ridgemere] #rm : The Ridgemere cough. Born with it, most of us.
 b : Dry socks. | We're born with it. | Buy oilskin boots.
 a@rm : And we'll die with it, at a ripe old age.
-a : What socks? | Lucky you. | With what?
+a : What socks? | #bc_lucky_you# | With what?
 
 # ---------------------------------------------------------------- Pairs
 
 scene e3_h_spouses_nurse
 when topic=health pair.band=spouses
+does tell.self / react.self / tell.self
 a : You were coughing all night. I'm making you a poultice. | Don't you dare go to work with that fever. | Sit. I'll do it. Your back's bad.
 b : I'm fine. Don't fuss. | I'm going. | I can do it.
 a : You're not fine and I will fuss. | You're not. I've hidden your boots. | Sit, I said.
 
 scene e3_h_friends_ill
 when topic=health pair.band=friends
+does ask.detail / answer.detail / tell.self
 a : You look awful, #pet#. | You've been #poorly# again, haven't you? | When did you last eat a proper meal?
 b : Thank you. Very kind. | A bit. It's passing. | Does bread count?
 a : I mean it. Go home and sleep. | Come for supper. I'm not asking. | Not on its own.
 
 scene e3_h_mourning_appetite
 when topic=health a.mourning=kin|friend
+does tell.self / react.self / assess
 a : I can't eat. Food tastes of nothing. | I haven't slept since the burial. | My chest aches. The healer says there's nothing wrong.
 b[warmth=warm] : Then I'll sit with you while you don't eat. A bite, maybe.
 b[old] : Grief sits in the body. It takes its time.
 b : Try a little broth. | Sleep will come back. | There isn't. It's grief.
-a : Maybe. A little. | I'll try. | I know.
+a : Maybe. A little. | #bc_ill_try# | #bc_i_know#
 
 # ---------------------------------------------------------------- Quirks
 
 scene e3_h_quirk_cough
 when topic=health a.quirk=coughs_in_the_damp_and_pretends_not_to
+does tell.self / react.self / assess
 a : *coughs* Nothing. It's nothing. | I'm not coughing. Something in my throat. | It's the dust. *coughs*
 b[healer] #healer : That's not nothing. Come by later and I'll listen to your chest.
 b : That's not nothing. | That's what coughing is. | It's the damp. Again.
@@ -702,6 +775,7 @@ a : It's nothing. | Hardly at all. | It's never the damp.
 
 scene e3_h_quirk_storm
 when topic=health a.quirk=sleeps_badly_before_storms
+does tell.self / react.self / assess
 a : There's a storm coming. I didn't sleep. | Lay awake all night. A storm's on its way, mark me. | My fur's crackling. Storm by tonight.
 b : The sky's clear. | You and your storms. | Whatever you say.
 a : It won't be by supper. | I've never been wrong. | You'll see.

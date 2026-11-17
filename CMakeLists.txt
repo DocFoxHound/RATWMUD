@@ -477,3 +477,16 @@ add_test(NAME talk_lint COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/talk_l
 add_test(NAME talk_lint_rules COMMAND python3 -m unittest test_talk_lint WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
 # The scorecard's gate check (doc 84 §15.3): a real regression is caught, noise is not.
 add_test(NAME talk_score_rules COMMAND python3 -m unittest test_talk_score WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
+# Phase 7 (doc 84 §18, P7): the library converted, and kept so. No short marker left as pair memory (talk_conv); every
+# backchannel's plain value its old words, none left word for word (talk_migrate); every entry says what it does
+# (talk_tag); every line a plain speaker could say at Phase 6 can be said now, nothing else changed but tags, moves and
+# tones (talk_equiv, against Phase 6's commit: a later phase that means to rewrite old lines names them in its EDITED);
+# the coverage holes listed (talk_coverage: their count may only fall, Tests/fixtures/talk_coverage.json); the tools'
+# own tests.
+add_test(NAME talk_conv COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/talk_conv.py --check)
+add_test(NAME talk_migrate COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/talk_migrate.py --check)
+add_test(NAME talk_tags COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/talk_tag.py --check)
+add_test(NAME talk_equiv COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/talk_equiv.py --against 1e159420)
+add_test(NAME talk_coverage COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/Tests/talk_coverage_check.py ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(talk_coverage PROPERTIES DEPENDS talk_check)
+add_test(NAME talk_p7_rules COMMAND python3 -m unittest test_talk_p7 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)

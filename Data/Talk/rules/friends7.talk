@@ -1,7 +1,7 @@
 # Friends, rivals and feelings (Docs/Design/62-talk.md, phase 7): chains for talk.friends, talk.quarrel, talk.day and
-# talk.smalltalk. Each family opens with a rule that remembers its thread for half an hour (pair.mem.thread=jest,
+# talk.smalltalk. Each family opens with a rule that tags its thread for the talk (conv.thread=jest,
 # wager, settle, confide, plan, recall, apart, jibe, mend, chat); the other answers as THEY are (jest.answer,
-# wager.answer...), and that answer remembers how it went (pair.mem.went=...); the opener closes (reply.close) by the
+# wager.answer...), and that answer remembers how it went (conv.went=...); the opener closes (reply.close) by the
 # thread, how it went, and their own character. So a tease can land, be thrown back, sting a short temper or worry a
 # nervy one, and the teaser makes up, shrugs or gloats as they are.
 #
@@ -14,407 +14,392 @@
 
 rule r7_tease_any
 when concept=talk.friends
+does tell.self
 cooldown 1d
-say Have you done something different with your fur? Don't. Whatever it is, don't. | You walk like a wolf who's forgotten why they came out. | I'd know that scowl anywhere. Good to see it. | Look at you. Like a pup who's been at the honey. | Your coat's buttoned wrong. Every button. That takes skill.
-remember pair: thread=jest 30m
-remember pair: jk=look 30m
+say {thread=jest jk=look} Have you done something different with your fur? Don't. Whatever it is, don't. | {thread=jest jk=look} You walk like a wolf who's forgotten why they came out. | {thread=jest jk=look} I'd know that scowl anywhere. Good to see it. | {thread=jest jk=look} Look at you. Like a pup who's been at the honey. | {thread=jest jk=look} Your coat's buttoned wrong. Every button. That takes skill.
 then other: jest.answer
 
 rule r7_tease_merry
 when concept=talk.friends self.humour=merry
+does ask.detail
 cooldown 2d
-say You've got something on your muzzle. No, other side. No, sorry, that's just your face. | Who brushed your fur this morning, a gale? | I saw your tail from the end of the street. It's got a kink in it. Have you sat on it? | Your ears have gone lopsided. Has someone been pulling them? | Here comes the handsomest wolf in town. Oh, no, they've gone past. It's only you.
-remember pair: thread=jest 30m
-remember pair: jk=look 30m
+say {thread=jest jk=look} You've got something on your muzzle. No, other side. No, sorry, that's just your face. | {thread=jest jk=look} Who brushed your fur this morning, a gale? | {thread=jest jk=look} I saw your tail from the end of the street. It's got a kink in it. Have you sat on it? | {thread=jest jk=look} Your ears have gone lopsided. Has someone been pulling them? | {thread=jest jk=look} Here comes the handsomest wolf in town. Oh, no, they've gone past. It's only you.
 then other: jest.answer
 
 rule r7_tease_dry
 when concept=talk.friends self.humour=dry
+does tell.self
 cooldown 2d
-say I see you've dressed for the occasion. What occasion, I can't imagine. | Good to see you. Well. To see you. | I'd ask how you are, but I've a busy afternoon. | You've the look of a wolf with a plan. It's a bad plan. I can tell from here. | Your ears are doing that thing. The thing where you've had an idea.
-remember pair: thread=jest 30m
-remember pair: jk=ways 30m
+say {thread=jest jk=ways} I see you've dressed for the occasion. What occasion, I can't imagine. | {thread=jest jk=ways} Good to see you. Well. To see you. | {thread=jest jk=ways} I'd ask how you are, but I've a busy afternoon. | {thread=jest jk=ways} You've the look of a wolf with a plan. It's a bad plan. I can tell from here. | {thread=jest jk=ways} Your ears are doing that thing. The thing where you've had an idea.
 then other: jest.answer
 
 rule r7_tease_old
 when concept=talk.friends self.stage=adult other.stage=old pair.band=friends
+does tell.self
 cooldown 2d
-say Still with us, then? The gods must be busy elsewhere. | Mind you don't fall over, old timer. I'm not carrying you home. | You're greyer than last week. I'm counting the hairs. | How many winters now? I've lost count. So have you, I expect.
-remember pair: thread=jest 30m
-remember pair: jk=age 30m
+say {thread=jest jk=age} Still with us, then? The gods must be busy elsewhere. | {thread=jest jk=age} Mind you don't fall over, old timer. I'm not carrying you home. | {thread=jest jk=age} You're greyer than last week. I'm counting the hairs. | {thread=jest jk=age} How many winters now? I've lost count. So have you, I expect.
 then other: jest.answer
 
 rule r7_tease_young
 when concept=talk.friends self.stage=old other.stage=adult|adolescent pair.band=friends
+does tease
 cooldown 2d
-say Look at you, all teeth and no sense. | When I was your age I'd done a day's work by now. And half of yours. | Is that a ruff you're growing? Brave. Very brave. | You young ones. Always running about like the river's on fire.
-remember pair: thread=jest 30m
-remember pair: jk=ways 30m
+say {thread=jest jk=ways} Look at you, all teeth and no sense. | {thread=jest jk=ways} When I was your age I'd done a day's work by now. And half of yours. | {thread=jest jk=ways} Is that a ruff you're growing? Brave. Very brave. | {thread=jest jk=ways} You young ones. Always running about like the river's on fire.
 then other: jest.answer
 
 rule r7_tease_rich
 when concept=talk.friends self.wealth=poor|comfortable other.wealth=rich pair.band=friends
+does tell.self
 cooldown 2d
-say Look at the coat on you. I could live a month in that coat. | Brushed, scented, a new collar. Did a rich aunt leave you a mill? | Careful, you'll scuff those boots on us common folk. | Spare a penny for an old friend, your worship?
-remember pair: thread=jest 30m
-remember pair: jk=rich 30m
+say {thread=jest jk=rich} Look at the coat on you. I could live a month in that coat. | {thread=jest jk=rich} Brushed, scented, a new collar. Did a rich aunt leave you a mill? | {thread=jest jk=rich} Careful, you'll scuff those boots on us common folk. | {thread=jest jk=rich} Spare a penny for an old friend, your worship?
 then other: jest.answer
 
 rule r7_tease_poor
 when concept=talk.friends self.wealth=rich other.wealth=poor|destitute pair.band=friends self.humour=merry|dry
+does tell.self
 cooldown 3d
-say Still wearing that cloak? It was old when we were pups. | That hat's seen more winters than you have. | You've a hole in your boot. I can see your toes waving at me.
-remember pair: thread=jest 30m
-remember pair: jk=look 30m
+say {thread=jest jk=look} Still wearing that cloak? It was old when we were pups. | {thread=jest jk=look} That hat's seen more winters than you have. | {thread=jest jk=look} You've a hole in your boot. I can see your toes waving at me.
 then other: jest.answer
 
 rule r7_tease_guard
 when concept=talk.friends other.role=guard pair.band=friends
+does ask.detail
 cooldown 2d
-say Caught any villains today, or just leant on that spear? | Stand up straight, the Watch is watching. | That helmet's so bright I can see my muzzle in it. Is that all you do all day, polish? | If my till's light tomorrow I'll know who was asleep at the gate.
-remember pair: thread=jest 30m
-remember pair: jk=job 30m
+say {thread=jest jk=job} Caught any villains today, or just leant on that spear? | {thread=jest jk=job} Stand up straight, the Watch is watching. | {thread=jest jk=job} That helmet's so bright I can see my muzzle in it. Is that all you do all day, polish? | {thread=jest jk=job} If my till's light tomorrow I'll know who was asleep at the gate.
 then other: jest.answer
 
 rule r7_tease_merchant
 when concept=talk.friends other.role=merchant pair.band=friends
+does tell.self
 cooldown 2d
-say Sold anyone their own boots back today? | I hear your scales lean your way. | What's the price of a smile from you these days? Two pennies? | Don't charge me for talking to you, mind.
-remember pair: thread=jest 30m
-remember pair: jk=job 30m
+say {thread=jest jk=job} Sold anyone their own boots back today? | {thread=jest jk=job} I hear your scales lean your way. | {thread=jest jk=job} What's the price of a smile from you these days? Two pennies? | {thread=jest jk=job} Don't charge me for talking to you, mind.
 then other: jest.answer
 
 rule r7_tease_baker
 when concept=talk.friends other.job=baker|cook pair.band=friends
+does tell.self
 cooldown 2d
-say You've flour in your ears again. | You smell of fresh bread. It's cruel, is what it is. | Burnt anything today? Go on, you can tell me.
-remember pair: thread=jest 30m
-remember pair: jk=job 30m
+say {thread=jest jk=job} You've flour in your ears again. | {thread=jest jk=job} You smell of fresh bread. It's cruel, is what it is. | {thread=jest jk=job} Burnt anything today? Go on, you can tell me.
 then other: jest.answer
 
 rule r7_tease_smith
 when concept=talk.friends other.job=smith pair.band=friends
+does ask.detail
 cooldown 2d
-say Your brows have grown back, I see. Stood too near the fire again? | Ears still ringing? WHAT? I SAID, ARE YOUR EARS STILL RINGING? | You smell like a hot horseshoe.
-remember pair: thread=jest 30m
-remember pair: jk=job 30m
+say {thread=jest jk=job} Your brows have grown back, I see. Stood too near the fire again? | {thread=jest jk=job} Ears still ringing? WHAT? I SAID, ARE YOUR EARS STILL RINGING? | {thread=jest jk=job} You smell like a hot horseshoe.
 then other: jest.answer
 
 rule r7_tease_fisher
 when concept=talk.friends other.job=fisher|sailor pair.band=friends
+does tell.self
 cooldown 2d
-say I smelt you before I saw you. | Catch anything, or did they all see you coming? | There's a scale stuck in your ruff. No, leave it. It suits you.
-remember pair: thread=jest 30m
-remember pair: jk=job 30m
+say {thread=jest jk=job} I smelt you before I saw you. | {thread=jest jk=job} Catch anything, or did they all see you coming? | {thread=jest jk=job} There's a scale stuck in your ruff. No, leave it. It suits you.
 then other: jest.answer
 
 rule r7_tease_farmer
 when concept=talk.friends other.job=farmer|herder pair.band=friends
+does ask.detail
 cooldown 2d
-say You've half a field on your boots. | How are the turnips? Still better company than you? | You've straw in your tail. Again. Do you sleep in the barn?
-remember pair: thread=jest 30m
-remember pair: jk=job 30m
+say {thread=jest jk=job} You've half a field on your boots. | {thread=jest jk=job} How are the turnips? Still better company than you? | {thread=jest jk=job} You've straw in your tail. Again. Do you sleep in the barn?
 then other: jest.answer
 
 rule r7_tease_priest
 when concept=talk.friends other.job=priest self.piety=ordinary pair.band=friends
+does tell.self
 cooldown 3d
-say Say one for me, I've been busy sinning. | Is it a sin to laugh in your sermon? Asking for a friend. | Bless me, I've had two ciders and it's not noon.
-remember pair: thread=jest 30m
-remember pair: jk=job 30m
+say {thread=jest jk=job} Say one for me, I've been busy sinning. | {thread=jest jk=job} Is it a sin to laugh in your sermon? Asking for a friend. | {thread=jest jk=job} Bless me, I've had two ciders and it's not noon.
 then other: jest.answer
 
 rule r7_tease_healer
 when concept=talk.friends other.job=healer pair.band=friends
+does tell.boast
 cooldown 3d
-say Don't look at my tongue. I know that look. | Cured anyone today, or just frightened them? | I'm fine. Don't come near me with that bag.
-remember pair: thread=jest 30m
-remember pair: jk=job 30m
+say {thread=jest jk=job} Don't look at my tongue. I know that look. | {thread=jest jk=job} Cured anyone today, or just frightened them? | {thread=jest jk=job} I'm fine. Don't come near me with that bag.
 then other: jest.answer
 
 rule r7_tease_scholar
 when concept=talk.friends other.job=scholar|official pair.band=friends
+does tell.self
 cooldown 3d
-say Read any good ledgers lately? | Your paws are all ink. Again. | Use small words today. I've a headache.
-remember pair: thread=jest 30m
-remember pair: jk=job 30m
+say {thread=jest jk=job} Read any good ledgers lately? | {thread=jest jk=job} Your paws are all ink. Again. | {thread=jest jk=job} Use small words today. I've a headache.
 then other: jest.answer
 
 rule r7_tease_apprentice
 when concept=talk.friends other.apprentice=yes self.stage=adult|old pair.band=friends|family
+does ask.detail
 cooldown 2d
-say How's the trade? Still sweeping? | Has your master let you near anything sharp yet? | Learn anything today, or just how to be shouted at?
-remember pair: thread=jest 30m
-remember pair: jk=job 30m
+say {thread=jest jk=job} How's the trade? Still sweeping? | {thread=jest jk=job} Has your master let you near anything sharp yet? | {thread=jest jk=job} Learn anything today, or just how to be shouted at?
 then other: jest.answer
 
 rule r7_tease_chatty
 when concept=talk.friends other.talk=chatty self.humour=dry|merry
+does tell.self
 cooldown 2d
-say You've talked since you got here and I've not heard a single full stop. | Breathe. Go on. I'll wait. | I asked you one question at noon and you're still answering it.
-remember pair: thread=jest 30m
-remember pair: jk=ways 30m
+say {thread=jest jk=ways} You've talked since you got here and I've not heard a single full stop. | {thread=jest jk=ways} Breathe. Go on. I'll wait. | {thread=jest jk=ways} I asked you one question at noon and you're still answering it.
 then other: jest.answer
 
 rule r7_tease_quiet
 when concept=talk.friends other.talk=quiet self.talk=chatty
+does tell.self
 cooldown 2d
-say Say something. Anything. Blink if you're alive. | Don't all talk at once, you'll wear yourself out. | Four words today. I've been counting.
-remember pair: thread=jest 30m
-remember pair: jk=ways 30m
+say {thread=jest jk=ways} Say something. Anything. Blink if you're alive. | {thread=jest jk=ways} Don't all talk at once, you'll wear yourself out. | {thread=jest jk=ways} Four words today. I've been counting.
 then other: jest.answer
 
 rule r7_tease_ambitious
 when concept=talk.friends other.drive=ambitious pair.band=friends
+does tell.self
 cooldown 2d
-say How's the empire, your lordship? | When you own the town, remember who knew you when. | Bought a House yet? Even a small one?
-remember pair: thread=jest 30m
-remember pair: jk=ways 30m
+say {thread=jest jk=ways} How's the empire, your lordship? | {thread=jest jk=ways} When you own the town, remember who knew you when. | {thread=jest jk=ways} Bought a House yet? Even a small one?
 then other: jest.answer
 
 rule r7_tease_devout
 when concept=talk.friends other.piety=devout self.piety=ordinary self.humour=merry|dry
+does tell.self
 cooldown 3d
-say Off to chapel again? What did you do this time? | You pray so much the Bright One must hide when you come in. | Put a word in for me. A small one. They'll not know my name.
-remember pair: thread=jest 30m
-remember pair: jk=ways 30m
+say {thread=jest jk=ways} Off to chapel again? What did you do this time? | {thread=jest jk=ways} You pray so much the Bright One must hide when you come in. | {thread=jest jk=ways} Put a word in for me. A small one. They'll not know my name.
 then other: jest.answer
 
 rule r7_tease_spouse
 when concept=talk.friends other.spouse pair.band=friends
+does ask.detail
 cooldown 2d
-say Does #other.spouse# know you're out? | How's #other.spouse#? Still putting up with you? | Married life suits you. You've gone soft round the middle.
-remember pair: thread=jest 30m
-remember pair: jk=ways 30m
+say {thread=jest jk=ways} Does #other.spouse# know you're out? | {thread=jest jk=ways} How's #other.spouse#? Still putting up with you? | {thread=jest jk=ways} Married life suits you. You've gone soft round the middle.
 then other: jest.answer
 
 rule r7_tease_tired
 when concept=talk.friends other.tired=yes
+does ask.detail
 cooldown 2d
-say You look like you've been dragged through a hedge. Backwards. Twice. | Did you sleep in a ditch? | Your eyes are open. Is anyone in?
-remember pair: thread=jest 30m
-remember pair: jk=look 30m
+say {thread=jest jk=look} You look like you've been dragged through a hedge. Backwards. Twice. | {thread=jest jk=look} Did you sleep in a ditch? | {thread=jest jk=look} Your eyes are open. Is anyone in?
 then other: jest.answer
 
 rule r7_tease_restless
 when concept=talk.friends other.drive=restless
+does ask.detail
 cooldown 3d
-say Still here? I thought you'd be over the hills by now. | Your feet are tapping. They always tap before you do something stupid. | Where is it this week? The coast? The mountains? The moon?
-remember pair: thread=jest 30m
-remember pair: jk=ways 30m
+say {thread=jest jk=ways} Still here? I thought you'd be over the hills by now. | {thread=jest jk=ways} Your feet are tapping. They always tap before you do something stupid. | {thread=jest jk=ways} Where is it this week? The coast? The mountains? The moon?
 then other: jest.answer
 
 rule r7_tease_courting
 when concept=talk.friends other.married=no other.stage=adult self.humour=merry pair.band=friends|family
+does ask.detail
 cooldown 3d
-say I saw you walk past the cooper's twice this morning. Twice. | Who's the lucky one, then? Your tail's giving you away. | You've brushed your ruff. You never brush your ruff. Who is it?
-remember pair: thread=jest 30m
-remember pair: jk=ways 30m
+say {thread=jest jk=ways} I saw you walk past the cooper's twice this morning. Twice. | {thread=jest jk=ways} Who's the lucky one, then? Your tail's giving you away. | {thread=jest jk=ways} You've brushed your ruff. You never brush your ruff. Who is it?
 then other: jest.answer
 
 rule r7_tease_wet
 when concept=talk.friends here.weather=rain|storm
+does tell.self
 cooldown 1d
-say You look like a drowned pup. | Did you swim here? | Shake yourself off before you come near me. Not at me!
-remember pair: thread=jest 30m
-remember pair: jk=look 30m
+say {thread=jest jk=look} You look like a drowned pup. | {thread=jest jk=look} Did you swim here? | {thread=jest jk=look} Shake yourself off before you come near me. Not at me!
 then other: jest.answer
 
 rule r7_tease_snow
 when concept=talk.friends here.weather=snow
+does tell.self
 cooldown 1d
-say You've snow on your ears. You look like a cake. | Stand still and they'll take you for a snowdrift. | Your whiskers have frozen. You look a hundred.
-remember pair: thread=jest 30m
-remember pair: jk=look 30m
+say {thread=jest jk=look} You've snow on your ears. You look like a cake. | {thread=jest jk=look} Stand still and they'll take you for a snowdrift. | {thread=jest jk=look} Your whiskers have frozen. You look a hundred.
 then other: jest.answer
 
 rule r7_tease_heights
 when concept=talk.friends other.quarter=heights self.quarter!=heights here.region=ridgemere
+does ask.detail
 cooldown 3d
-say Slumming it with us today? | Do they let you down from the Heights on your own? | Mind your nice boots. The street's dirty down here.
-remember pair: thread=jest 30m
-remember pair: jk=rich 30m
+say {thread=jest jk=rich} Slumming it with us today? | {thread=jest jk=rich} Do they let you down from the Heights on your own? | {thread=jest jk=rich} Mind your nice boots. The street's dirty down here.
 then other: jest.answer
 
 ## The teased answer, as they are (self is the one teased). Every reply here fits every tease above; where one fits
-## only one kind (their looks, their money), it reads pair.mem.jk.
+## only one kind (their looks, their money), it reads conv.jk.
 
 rule r7_jest_plain
 when concept=jest.answer
-say Ha. Very good. | Oh, very droll. | I walked into that, didn't I? | Ha! I'll let that one go. | And a good day to you too.
-remember pair: went=laughed 30m
+does tease.return
+say {went=laughed} Ha. Very good. | {went=laughed} Oh, very droll. | {went=laughed} I walked into that, didn't I? | {went=laughed} Ha! I'll let that one go. | {went=laughed} And a good day to you too.
 then other: reply.close
 
 rule r7_jest_merry
 when concept=jest.answer self.humour=merry
-say Says you, with a face like a dropped pie! | Ha! At least my own mother can tell me from the goat. | You're one to talk. You've burrs in your tail. | I'll laugh when it's funny. HA. There. Now it's funny.
-remember pair: went=back 30m
+does tease.return
+say {went=back} Says you, with a face like a dropped pie! | {went=back} Ha! At least my own mother can tell me from the goat. | {went=back} You're one to talk. You've burrs in your tail. | {went=back} I'll laugh when it's funny. HA. There. Now it's funny.
 then other: reply.close
 
 rule r7_jest_dry
 when concept=jest.answer self.humour=dry
-say I'll laugh later. In private. | Noted. Filed. Forgotten. | Thank you. I'll treasure that one. | Did you think of that yourself? It shows.
-remember pair: went=back 30m
+does tease.return
+say {went=back} I'll laugh later. In private. | {went=back} Noted. Filed. Forgotten. | {went=back} Thank you. I'll treasure that one. | {went=back} Did you think of that yourself? It shows.
 then other: reply.close
 
 rule r7_jest_short
 when concept=jest.answer self.temper=short
-say Watch your tongue. | Say that again. Slower. | One day you'll say that to the wrong wolf. | Is that meant to be clever?
-remember pair: went=stung 30m
+does tease.return
+say {went=stung} Watch your tongue. | {went=stung} Say that again. Slower. | {went=stung} One day you'll say that to the wrong wolf. | {went=stung} Is that meant to be clever?
 then other: reply.close
 
 rule r7_jest_short_merry
 when concept=jest.answer self.temper=short self.humour=merry
-say Careful. I bite. ...Ha! Your face! | Say that again and I'll... no, all right, that was good. | I ought to box your ears. I'm laughing too hard.
-remember pair: went=laughed 30m
+does tease.return
+say {went=laughed} Careful. I bite. ...Ha! Your face! | {went=laughed} Say that again and I'll... no, all right, that was good. | {went=laughed} I ought to box your ears. I'm laughing too hard.
 then other: reply.close
 
 rule r7_jest_nervy
 when concept=jest.answer self.temper=nervy
-say Is that what folk say about me? Is it? | Oh, don't. You'll have me fretting all day. | Don't. I'll be thinking about that all night.
-remember pair: went=worried 30m
+does tease.return
+say {went=worried} Is that what folk say about me? Is it? | {went=worried} Oh, don't. You'll have me fretting all day. | {went=worried} Don't. I'll be thinking about that all night.
 then other: reply.close
 
 rule r7_jest_nervy_look
-when concept=jest.answer self.temper=nervy pair.mem.jk=look
-say Do I? Really? Is it that bad? | Is it that bad? Tell me straight. Is it? | Oh no. And I've been out all morning like this.
-remember pair: went=worried 30m
+when concept=jest.answer self.temper=nervy conv.jk=look
+does tease.return ask.detail
+say {went=worried} Do I? Really? Is it that bad? | {went=worried} Is it that bad? Tell me straight. Is it? | {went=worried} Oh no. And I've been out all morning like this.
 then other: reply.close
 
 rule r7_jest_cold
 when concept=jest.answer self.warmth=cold
-say Hm. | Are you finished? | Mm. If you say so.
-remember pair: went=flat 30m
+does tease.return
+say {went=flat} Hm. | {went=flat} Are you finished? | {went=flat} Mm. If you say so.
 then other: reply.close
 
 rule r7_jest_quiet
 when concept=jest.answer self.talk=quiet
-say *flicks an ear* | ... | *a long look* Mm.
-remember pair: went=flat 30m
+does tease.return
+say {went=flat} *flicks an ear* | {went=flat} ... | {went=flat} *a long look* Mm.
 then other: reply.close
 
 rule r7_jest_sly
 when concept=jest.answer self.honesty=sly
-say That'll cost you a drink, that will. | Funny. Remind me to tell you what I heard about you. | Keep talking. I'm writing it all down.
-remember pair: went=back 30m
+does tease.return
+say {went=back} That'll cost you a drink, that will. | {went=back} Funny. Remind me to tell you what I heard about you. | {went=back} Keep talking. I'm writing it all down.
 then other: reply.close
 
 rule r7_jest_calm
 when concept=jest.answer self.temper=calm
-say Very likely true. | Could be. Could well be. | I'll not argue. I've not the energy, and you've a point.
-remember pair: went=laughed 30m
+does tease.return
+say {went=laughed} Very likely true. | {went=laughed} Could be. Could well be. | {went=laughed} I'll not argue. I've not the energy, and you've a point.
 then other: reply.close
 
 rule r7_jest_calm_look
-when concept=jest.answer self.temper=calm pair.mem.jk=look
-say You're not wrong. You rarely are, about my face. | It's the only face I've got. I've made my peace with it. | Fair. I've seen my reflection.
-remember pair: went=laughed 30m
+when concept=jest.answer self.temper=calm conv.jk=look
+does tease.return
+say {went=laughed} You're not wrong. You rarely are, about my face. | {went=laughed} It's the only face I've got. I've made my peace with it. | {went=laughed} Fair. I've seen my reflection.
 then other: reply.close
 
 rule r7_jest_old
 when concept=jest.answer self.stage=old
-say When you're my age you can laugh at me. You won't get to my age. I'll see to it. | I've been mocked by better, and I'm still here. | Laugh. I've outlived three wolves who laughed at me.
-remember pair: went=back 30m
+does tease.return
+say {went=back} When you're my age you can laugh at me. You won't get to my age. I'll see to it. | {went=back} I've been mocked by better, and I'm still here. | {went=back} Laugh. I've outlived three wolves who laughed at me.
 then other: reply.close
 
 rule r7_jest_warm
 when concept=jest.answer self.warmth=warm
-say Oh, stop it. Come here, you. | Ha! I've missed you, you horror. | You're lucky I'm fond of you.
-remember pair: went=laughed 30m
+does tease.return
+say {went=laughed} Oh, stop it. Come here, you. | {went=laughed} Ha! I've missed you, you horror. | {went=laughed} You're lucky I'm fond of you.
 then other: reply.close
 
 rule r7_jest_devout
 when concept=jest.answer self.piety=devout
-say The Bright One heard that. | I'll pray for your manners. And your soul, while I'm at it. | Mock away. I'm forgiven already.
-remember pair: went=back 30m
+does tease.return
+say {went=back} The Bright One heard that. | {went=back} I'll pray for your manners. And your soul, while I'm at it. | {went=back} Mock away. I'm forgiven already.
 then other: reply.close
 
 rule r7_jest_tired
 when concept=jest.answer self.tired=yes
-say Not today. I've not the strength. | Laugh? I can barely stand. | Save it for tomorrow. I'll laugh tomorrow.
-remember pair: went=tired 30m
+does tease.return
+say {went=tired} Not today. I've not the strength. | {went=tired} Laugh? I can barely stand. | {went=tired} Save it for tomorrow. I'll laugh tomorrow.
 then other: reply.close
 
 rule r7_jest_frank
 when concept=jest.answer self.honesty=frank
-say That was poor. You've done better. | Honestly? Not your best. | I'd laugh, but I promised myself I'd only lie on Restday.
-remember pair: went=flat 30m
+does tease.return
+say {went=flat} That was poor. You've done better. | {went=flat} Honestly? Not your best. | {went=flat} I'd laugh, but I promised myself I'd only lie on Restday.
 then other: reply.close
 
 rule r7_jest_rich
 when concept=jest.answer self.wealth=rich
-say Laugh away. I'll be laughing all the way home. In my carriage. | I'd buy you a sense of humour, but they're not for sale. | Charming. I'll put it on your bill.
-remember pair: went=back 30m
+does tease.return
+say {went=back} Laugh away. I'll be laughing all the way home. In my carriage. | {went=back} I'd buy you a sense of humour, but they're not for sale. | {went=back} Charming. I'll put it on your bill.
 then other: reply.close
 
 rule r7_jest_rich_money
-when concept=jest.answer self.wealth=rich pair.mem.jk=rich
-say Envy's an ugly colour, #pet#. | It's a very good coat. You may touch it. Once. | I'd lend you a penny, but you'd only buy a comb with it.
-remember pair: went=back 30m
+when concept=jest.answer self.wealth=rich conv.jk=rich
+does tease.return
+say {went=back} Envy's an ugly colour, #pet#. | {went=back} It's a very good coat. You may touch it. Once. | {went=back} I'd lend you a penny, but you'd only buy a comb with it.
 then other: reply.close
 
 rule r7_jest_mourning
 when concept=jest.answer self.mourning=kin|friend
+does tease.return
 priority 3
-say Not today. Please. | I can't. Not today. | ...I'm not in the mood for it.
-remember pair: went=grief 30m
+say {went=grief} Not today. Please. | {went=grief} I can't. Not today. | {went=grief} ...I'm not in the mood for it.
 regard self: affinity -1
 then other: reply.close
 
 ## The teaser closes (self is the teaser again)
 
 rule r7_close_jest
-when concept=reply.close pair.mem.thread=jest
-say Ha. | Well, there it is. | Always a pleasure. | Anyway.
+when concept=reply.close conv.thread=jest
+does ack
+say #bc_ha# | Well, there it is. | Always a pleasure. | Anyway.
 
 rule r7_close_jest_laughed
-when concept=reply.close pair.mem.thread=jest pair.mem.went=laughed
+when concept=reply.close conv.thread=jest conv.went=laughed
+does ack
 say There's my friend. | Knew you'd see it. | That's better. You never laugh enough. | Ha! That's the face I like.
 
 rule r7_close_jest_back
-when concept=reply.close pair.mem.thread=jest pair.mem.went=back
+when concept=reply.close conv.thread=jest conv.went=back
+does ack
 say Ha! Fair. I'll have that. | Oh, that's good. I'm stealing that. | All right, all right. You win this one. | I'll get you tomorrow. You won't see it coming.
 
 rule r7_close_jest_back_short
-when concept=reply.close pair.mem.thread=jest pair.mem.went=back self.temper=short
+when concept=reply.close conv.thread=jest conv.went=back self.temper=short
+does ack
 say Hm. Clever. | Watch it. | I'll let that go. This once.
 
 rule r7_close_jest_stung
-when concept=reply.close pair.mem.thread=jest pair.mem.went=stung
+when concept=reply.close conv.thread=jest conv.went=stung
+does ack
 say Easy! I'm only pulling your tail. | Hey. I didn't mean it. You know I didn't. | Sorry. That was too far.
 
 rule r7_close_jest_stung_warm
-when concept=reply.close pair.mem.thread=jest pair.mem.went=stung self.warmth=warm
+when concept=reply.close conv.thread=jest conv.went=stung self.warmth=warm
+does ack
 say Oh, #pet#. I'm sorry. I'm an ass. | Forgive me. My mouth runs ahead of my sense. | That was cruel of me. Let me buy you #drink#.
 regard other: affinity +1
 
 rule r7_close_jest_stung_cold
-when concept=reply.close pair.mem.thread=jest pair.mem.went=stung self.warmth=cold
+when concept=reply.close conv.thread=jest conv.went=stung self.warmth=cold
+does ack
 say Can't take a joke. That's your trouble. | Please yourself. | Touchy.
 regard other: affinity -1
 
 rule r7_close_jest_stung_short
-when concept=reply.close pair.mem.thread=jest pair.mem.went=stung self.temper=short
+when concept=reply.close conv.thread=jest conv.went=stung self.temper=short
+does ack
 say Suit yourself. | Don't growl at me. I was being friendly. | Oh, bite me, then.
 
 rule r7_close_jest_worried
-when concept=reply.close pair.mem.thread=jest pair.mem.went=worried
+when concept=reply.close conv.thread=jest conv.went=worried
+does ack
 say No, no. I'm teasing. You look fine. Truly. | Gods, don't fret. It's a joke. | Nobody says that. I made it up. Breathe.
 
 rule r7_close_jest_flat
-when concept=reply.close pair.mem.thread=jest pair.mem.went=flat
+when concept=reply.close conv.thread=jest conv.went=flat
+does ack
 say Tough crowd. | I'll save it for someone who laughs. | Fine. I'll laugh for both of us.
 
 rule r7_close_jest_flat_merry
-when concept=reply.close pair.mem.thread=jest pair.mem.went=flat self.humour=merry
+when concept=reply.close conv.thread=jest conv.went=flat self.humour=merry
+does ack
 say Ha! Ha. Ha... no? Nothing? | You'll laugh at that tonight, in bed, and you'll think of me. | One day I'll make you laugh. One day.
 
 rule r7_close_jest_tired
-when concept=reply.close pair.mem.thread=jest pair.mem.went=tired
+when concept=reply.close conv.thread=jest conv.went=tired
+does ack
 say Go home. Sleep. I'll tease you properly tomorrow. | You do look done in. Sit down a minute. | All right. I'll save it.
 
 rule r7_close_jest_grief
-when concept=reply.close pair.mem.thread=jest pair.mem.went=grief
+when concept=reply.close conv.thread=jest conv.went=grief
+does ack
 say Gods. I'm sorry. I didn't think. | Of course. Forgive me. I wasn't thinking. | I'm a fool. Come on, I'll walk with you.
 regard other: affinity +1
 
@@ -423,237 +408,247 @@ regard other: affinity +1
 
 rule r7_wager_any
 when concept=talk.friends
+does tell.self
 cooldown 3d
-say A penny says the next cart through the gate has a lame mule. | Two pennies says I can stand on one leg longer than you. | Bet you a penny you can't name all four Houses without counting on your claws. | A penny says the next wolf round that corner's wearing a hat.
-remember pair: thread=wager 30m
+say {thread=wager} A penny says the next cart through the gate has a lame mule. | {thread=wager} Two pennies says I can stand on one leg longer than you. | {thread=wager} Bet you a penny you can't name all four Houses without counting on your claws. | {thread=wager} A penny says the next wolf round that corner's wearing a hat.
 then other: wager.answer
 
 rule r7_wager_quirk
 when concept=talk.friends|talk.smalltalk self.quirk=cannot_resist_a_wager
+does tell.self
 priority 1
 cooldown 1d
-say Name a thing. Anything. I'll bet on it. | Two pennies says you sneeze before I do. | A penny says that pigeon goes left. Left! Quick, take it or leave it.
-remember pair: thread=wager 30m
+say {thread=wager} Name a thing. Anything. I'll bet on it. | {thread=wager} Two pennies says you sneeze before I do. | {thread=wager} A penny says that pigeon goes left. Left! Quick, take it or leave it.
 then other: wager.answer
 
 rule r7_wager_weather
 when concept=talk.friends here.weather=overcast|fog
+does tell.self
 cooldown 3d
-say A penny says it rains before supper. | Rain by dusk. I'll put a penny on it. | Two pennies says this clears by noon. Don't look at the sky, that's cheating.
-remember pair: thread=wager 30m
+say {thread=wager} A penny says it rains before supper. | {thread=wager} Rain by dusk. I'll put a penny on it. | {thread=wager} Two pennies says this clears by noon. Don't look at the sky, that's cheating.
 then other: wager.answer
 
 rule r7_wager_sly
 when concept=talk.friends self.honesty=sly
+does tell.self
 cooldown 3d
-say Fancy a little wager? Very little. Easy money, for you. | Bet you can't guess what's in my pocket. Three tries, two pennies. | I'll wager you a penny I can make you laugh before I count ten. One...
-remember pair: thread=wager 30m
+say {thread=wager} Fancy a little wager? Very little. Easy money, for you. | {thread=wager} Bet you can't guess what's in my pocket. Three tries, two pennies. | {thread=wager} I'll wager you a penny I can make you laugh before I count ten. One...
 then other: wager.answer
 
 rule r7_wager_tavern
 when concept=talk.friends here.place=tavern
+does tell.self
 cooldown 2d
-say A jar says I can drink this faster than you. | Bet you a round I can name every wolf in this room. | A penny says the next one through that door orders cider.
-remember pair: thread=wager 30m
+say {thread=wager} A jar says I can drink this faster than you. | {thread=wager} Bet you a round I can name every wolf in this room. | {thread=wager} A penny says the next one through that door orders cider.
 then other: wager.answer
 
 rule r7_wager_market
 when concept=talk.friends here.day=market
+does tell.self
 cooldown 3d
-say A penny says the cheese stall sells out before noon. | Two pennies says the fish stall's lost its voice by midday. | I'll bet you a penny somebody's pig gets loose today. Somebody's always does.
-remember pair: thread=wager 30m
+say {thread=wager} A penny says the cheese stall sells out before noon. | {thread=wager} Two pennies says the fish stall's lost its voice by midday. | {thread=wager} I'll bet you a penny somebody's pig gets loose today. Somebody's always does.
 then other: wager.answer
 
 rule r7_wager_festival
 when concept=talk.friends world.festival=today|soon
+does tell.self
 cooldown 2d
-say Two pennies says I eat more than you at the feast. | A penny says I'm dancing before you are. | A penny says the priest's blessing runs past noon. It always does.
-remember pair: thread=wager 30m
+say {thread=wager} Two pennies says I eat more than you at the feast. | {thread=wager} A penny says I'm dancing before you are. | {thread=wager} A penny says the priest's blessing runs past noon. It always does.
 then other: wager.answer
 
 rule r7_wager_guard
 when concept=talk.friends self.role=guard
+does tell.self
 cooldown 3d
-say A penny says there's a brawl at the tavern before the lamps are lit. | Two pennies says that cutpurse is back by market day. | A penny says the captain finds something wrong with my boots tomorrow. Anything. He always does.
-remember pair: thread=wager 30m
+say {thread=wager} A penny says there's a brawl at the tavern before the lamps are lit. | {thread=wager} Two pennies says that cutpurse is back by market day. | {thread=wager} A penny says the captain finds something wrong with my boots tomorrow. Anything. He always does.
 then other: wager.answer
 
 ## Taking it, or not (self is the one asked)
 
 rule r7_wager_take
 when concept=wager.answer
-say Go on, then. | You're on. | Done. And I'll be watching you. | Fine. Easiest money I'll ever make.
-remember pair: went=taken 30m
+does accept
+say {went=taken} #bc_go_on_then# | {went=taken} You're on. | {went=taken} Done. And I'll be watching you. | {went=taken} Fine. Easiest money I'll ever make.
 then other: reply.close
 
 rule r7_wager_poor
 when concept=wager.answer self.wealth=poor|destitute
-say With what? I've not a penny to my name. | I can't lose. I've nothing to lose with. | Wager me a crust and we'll talk.
-remember pair: went=refused 30m
+does accept
+say {went=refused} With what? I've not a penny to my name. | {went=refused} I can't lose. I've nothing to lose with. | {went=refused} Wager me a crust and we'll talk.
 then other: reply.close
 
 rule r7_wager_owes
 when concept=wager.answer self.owes=yes
+does accept
 priority 1
-say Better not. I owe enough as it is. | If I won, I'd only have to hand it on. No.
-remember pair: went=refused 30m
+say {went=refused} Better not. I owe enough as it is. | {went=refused} If I won, I'd only have to hand it on. No.
 then other: reply.close
 
 rule r7_wager_devout
 when concept=wager.answer self.piety=devout
-say The priest says wagering's a sin. ...How much? | I shouldn't. I really shouldn't. Go on. | The Bright One frowns on it. The Bright One is busy. Done.
-remember pair: went=taken 30m
+does accept
+say {went=taken} The priest says wagering's a sin. ...How much? | {went=taken} I shouldn't. I really shouldn't. Go on. | {went=taken} The Bright One frowns on it. The Bright One is busy. Done.
 then other: reply.close
 
 rule r7_wager_devout_frank
 when concept=wager.answer self.piety=devout self.honesty=frank
-say No. I don't wager. You know that. | Ask me that on Restday and see what I say. No.
-remember pair: went=refused 30m
+does accept
+say {went=refused} No. I don't wager. You know that. | {went=refused} Ask me that on Restday and see what I say. No.
 then other: reply.close
 
 rule r7_wager_sly_answer
 when concept=wager.answer self.honesty=sly
-say Double it and you're on. | Done. But I choose who judges. | Done. And if you lose, you don't tell anyone.
-remember pair: went=raised 30m
+does accept
+say {went=raised} Double it and you're on. | {went=raised} Done. But I choose who judges. | {went=raised} Done. And if you lose, you don't tell anyone.
 then other: reply.close
 
 rule r7_wager_ambitious
 when concept=wager.answer self.drive=ambitious
-say Five times that, or don't waste my time. | Pennies? Make it worth the winning. | Ten times that. I like a wager with teeth.
-remember pair: went=raised 30m
+does accept
+say {went=raised} Five times that, or don't waste my time. | {went=raised} Pennies? Make it worth the winning. | {went=raised} Ten times that. I like a wager with teeth.
 then other: reply.close
 
 rule r7_wager_rich
 when concept=wager.answer self.wealth=rich
-say That? Make it ten times that. I could do with the laugh. | Only if it's worth my while. Raise it.
-remember pair: went=raised 30m
+does accept
+say {went=raised} That? Make it ten times that. I could do with the laugh. | {went=raised} Only if it's worth my while. Raise it.
 then other: reply.close
 
 rule r7_wager_nervy
 when concept=wager.answer self.temper=nervy
-say What if I lose? No. Yes. No. Oh, fine, yes. | I always lose. Why do I always say yes? Yes.
-remember pair: went=taken 30m
+does accept
+say {went=taken} What if I lose? No. Yes. No. Oh, fine, yes. | {went=taken} I always lose. Why do I always say yes? Yes.
 then other: reply.close
 
 rule r7_wager_dry
 when concept=wager.answer self.humour=dry
-say I'd sooner bet on the sun coming up. Done, though. | You've lost every wager you ever made me. Fine. | Pay me now and save us both the walk.
-remember pair: went=taken 30m
+does accept
+say {went=taken} I'd sooner bet on the sun coming up. Done, though. | {went=taken} You've lost every wager you ever made me. Fine. | {went=taken} Pay me now and save us both the walk.
 then other: reply.close
 
 rule r7_wager_cold
 when concept=wager.answer self.warmth=cold
-say No. | I don't play games. | Find someone else to fleece.
-remember pair: went=refused 30m
+does accept
+say {went=refused} No. | {went=refused} I don't play games. | {went=refused} Find someone else to fleece.
 then other: reply.close
 
 rule r7_wager_content
 when concept=wager.answer self.drive=content
-say What would I do with your money? No, I'm happy as I am. | Let the pennies sit where they are. I'll watch.
-remember pair: went=refused 30m
+does accept
+say {went=refused} What would I do with your money? No, I'm happy as I am. | {went=refused} Let the pennies sit where they are. I'll watch.
 then other: reply.close
 
 rule r7_wager_merry
 when concept=wager.answer self.humour=merry
-say Ha! Done, and done again! | You're on, and you're buying the cider when you lose. | Done! Oh, I like this. I like this a lot.
-remember pair: went=taken 30m
+does accept
+say {went=taken} Ha! Done, and done again! | {went=taken} You're on, and you're buying the cider when you lose. | {went=taken} Done! Oh, I like this. I like this a lot.
 then other: reply.close
 
 rule r7_wager_quirk_answer
 when concept=wager.answer self.quirk=cannot_resist_a_wager
+does accept
 priority 1
-say Done! Before you've finished asking. | Done. Double it. Triple it. No, double.
-remember pair: went=taken 30m
+say {went=taken} Done! Before you've finished asking. | {went=taken} Done. Double it. Triple it. No, double.
 then other: reply.close
 
 ## Shaking on it (self is the one who offered)
 
 rule r7_close_wager
-when concept=reply.close pair.mem.thread=wager
-say Done, then. | Right. | We'll see.
+when concept=reply.close conv.thread=wager
+does ack
+say Done, then. | #bc_right# | #bc_we_will_see#
 
 rule r7_close_wager_taken
-when concept=reply.close pair.mem.thread=wager pair.mem.went=taken
+when concept=reply.close conv.thread=wager conv.went=taken
+does ack
 say Paws on it, then. | Shake. And no backing out. | Remember you said that. I will.
 remember pair: wager_on 3d
 
 rule r7_close_wager_raised
-when concept=reply.close pair.mem.thread=wager pair.mem.went=raised
+when concept=reply.close conv.thread=wager conv.went=raised
+does ack
 say Oh, now it's serious. Fine. Done. | Steep. But I like my chances. Done. | You'll weep when you pay me. Done.
 remember pair: wager_on 3d
 
 rule r7_close_wager_raised_poor
-when concept=reply.close pair.mem.thread=wager pair.mem.went=raised self.wealth=poor|destitute
+when concept=reply.close conv.thread=wager conv.went=raised self.wealth=poor|destitute
+does ack
 say Steady on. I said pennies, not a fortune. Forget it. | Some of us live on pennies. Forget I asked.
 
 rule r7_close_wager_refused
-when concept=reply.close pair.mem.thread=wager pair.mem.went=refused
+when concept=reply.close conv.thread=wager conv.went=refused
+does ack
 say Coward. | Suit yourself. I'd have won anyway. | More for me, then. In a manner of speaking.
 
 rule r7_close_wager_refused_warm
-when concept=reply.close pair.mem.thread=wager pair.mem.went=refused self.warmth=warm
+when concept=reply.close conv.thread=wager conv.went=refused self.warmth=warm
+does ack
 say Never mind. It was only for the fun of it. | No matter. I'll bet on you instead, one day.
 
 ## Settling it, a day or two later (whoever brings it up says they won)
 
 rule r7_wager_settle
 when concept=talk.friends|talk.smalltalk pair.mem.wager_on=yes
+does tell.boast
 priority 1
-say About that wager. I won. Pay up. | Our bet. You lost. I'll have my winnings now. | You'll have heard. I won. Don't pull that face.
-remember pair: thread=settle 30m
+say {thread=settle} About that wager. I won. Pay up. | {thread=settle} Our bet. You lost. I'll have my winnings now. | {thread=settle} You'll have heard. I won. Don't pull that face.
 remember pair: wager_on=done 3d
 then other: wager.pay
 
 rule r7_pay_plain
 when concept=wager.pay
-say Fine. Here. Don't spend it all at once. | Take it. Take it! Gloating doesn't suit you. | Here. And I want a rematch.
-remember pair: went=paid 30m
+does concede
+say {went=paid} Fine. Here. Don't spend it all at once. | {went=paid} Take it. Take it! Gloating doesn't suit you. | {went=paid} Here. And I want a rematch.
 then other: reply.close
 
 rule r7_pay_sly
 when concept=wager.pay self.honesty=sly
-say Won? Says who? I never agreed to the terms. | Double or nothing? | Funny, I remember it differently. Quite differently.
-remember pair: went=disputed 30m
+does concede
+say {went=disputed} Won? Says who? I never agreed to the terms. | {went=disputed} Double or nothing? | {went=disputed} Funny, I remember it differently. Quite differently.
 then other: reply.close
 
 rule r7_pay_poor
 when concept=wager.pay self.wealth=poor|destitute
-say Can I owe you? Till the month's out? | I've nothing on me. Truly. Look. Lint. | Will you take half a loaf?
-remember pair: went=begged 30m
+does concede ask.detail
+say {went=begged} Can I owe you? Till the month's out? | {went=begged} I've nothing on me. Truly. Look. Lint. | {went=begged} Will you take half a loaf?
 then other: reply.close
 
 rule r7_pay_merry
 when concept=wager.pay self.humour=merry
-say Ha! Worth it to see you this pleased. | Here. Buy yourself something you'll regret.
-remember pair: went=paid 30m
+does concede
+say {went=paid} Ha! Worth it to see you this pleased. | {went=paid} Here. Buy yourself something you'll regret.
 then other: reply.close
 
 rule r7_pay_short
 when concept=wager.pay self.temper=short
-say You cheated. I know you did. Here. | Take it and don't say another word.
-remember pair: went=paid 30m
+does concede
+say {went=paid} You cheated. I know you did. Here. | {went=paid} Take it and don't say another word.
 then other: reply.close
 
 rule r7_pay_frank
 when concept=wager.pay self.honesty=frank
-say Fair's fair. You won. Here. | You won it square. Here you are.
-remember pair: went=paid 30m
+does concede
+say {went=paid} Fair's fair. You won. Here. | {went=paid} You won it square. Here you are.
 then other: reply.close
 
 rule r7_close_settle
-when concept=reply.close pair.mem.thread=settle
+when concept=reply.close conv.thread=settle
+does ack
 say Hm. | We'll call it square. | Next time, then.
 
 rule r7_close_settle_paid
-when concept=reply.close pair.mem.thread=settle pair.mem.went=paid
+when concept=reply.close conv.thread=settle conv.went=paid
+does ack
 say Pleasure doing business. | I'll buy you a jar with it. That's how good I am. | Ah. It's warm. You've been clutching it.
 
 rule r7_close_settle_disputed
-when concept=reply.close pair.mem.thread=settle pair.mem.went=disputed
+when concept=reply.close conv.thread=settle conv.went=disputed
+does ack
 say You snake. | I'll remember this. And so will the whole tavern. | Fine. Keep it. Choke on it.
 
 rule r7_close_settle_begged
-when concept=reply.close pair.mem.thread=settle pair.mem.went=begged
+when concept=reply.close conv.thread=settle conv.went=begged
+does ack
 say Keep it. Buy yourself a bun. | Ach. Pay me when you're flush. | Forget it. Winning was the best part.
 
 # ================================================================== Confidences (talk.friends -> confide.answer -> close)
@@ -661,324 +656,320 @@ say Keep it. Buy yourself a bun. | Ach. Pay me when you're flush. | Forget it. W
 
 rule r7_confide_any
 when concept=talk.friends
+does tell.self
 cooldown 2d
-say Can I tell you something daft? I'm frightened of moths. Grown wolf. Moths. | Promise you won't laugh? I still can't tell left from right. I have to think which paw I eat with. | I talk to my cooking pot. Out loud. Most nights. | I sleep with a lamp lit. Like a pup. Don't you dare tell anyone.
-remember pair: thread=confide 30m
-remember pair: cf=small 30m
+say {thread=confide cf=small} Can I tell you something daft? I'm frightened of moths. Grown wolf. Moths. | {thread=confide cf=small} Promise you won't laugh? I still can't tell left from right. I have to think which paw I eat with. | {thread=confide cf=small} I talk to my cooking pot. Out loud. Most nights. | {thread=confide cf=small} I sleep with a lamp lit. Like a pup. Don't you dare tell anyone.
 then other: confide.answer
 
 rule r7_confide_owes
 when concept=talk.friends self.owes=yes pair.band=friends
+does tell.self
 cooldown 2d
-say Can I tell you something? I'm in debt. Badly. | I borrowed where I shouldn't have. Don't look at me like that. | If anyone asks, I'm good for it. I'm not good for it.
-remember pair: thread=confide 30m
-remember pair: cf=trouble 30m
+say {thread=confide cf=trouble} Can I tell you something? I'm in debt. Badly. | {thread=confide cf=trouble} I borrowed where I shouldn't have. Don't look at me like that. | {thread=confide cf=trouble} If anyone asks, I'm good for it. I'm not good for it.
 then other: confide.answer
 
 rule r7_confide_leave
 when concept=talk.friends self.drive=restless
+does tell.self
 cooldown 3d
-say I've been thinking of leaving. For good. Don't tell anyone. | Some mornings I look at the road out of town and nearly walk it. | I've a mind to go somewhere nobody knows my name. Just to see.
-remember pair: thread=confide 30m
-remember pair: cf=hope 30m
+say {thread=confide cf=hope} I've been thinking of leaving. For good. Don't tell anyone. | {thread=confide cf=hope} Some mornings I look at the road out of town and nearly walk it. | {thread=confide cf=hope} I've a mind to go somewhere nobody knows my name. Just to see.
 then other: confide.answer
 
 rule r7_confide_shop
 when concept=talk.friends self.drive=ambitious self.business=none|steady
+does tell.self
 cooldown 3d
-say I'm going to have a business of my own. Don't laugh. | I've a plan. A real one. I've been putting coin by for two years. | One day they'll know my name in Ridgemere. I mean it.
-remember pair: thread=confide 30m
-remember pair: cf=hope 30m
+say {thread=confide cf=hope} I'm going to have a business of my own. Don't laugh. | {thread=confide cf=hope} I've a plan. A real one. I've been putting coin by for two years. | {thread=confide cf=hope} One day they'll know my name in Ridgemere. I mean it.
 then other: confide.answer
 
 rule r7_confide_love
 when concept=talk.friends self.married=no self.stage=adult|adolescent pair.band=friends
+does tell.self
 cooldown 3d
-say There's someone. I can't say who. Not yet. | I think I'm in love. Don't laugh. I'm serious. | I've walked past the same door every day this week. Like a fool.
-remember pair: thread=confide 30m
-remember pair: cf=hope 30m
+say {thread=confide cf=hope} There's someone. I can't say who. Not yet. | {thread=confide cf=hope} I think I'm in love. Don't laugh. I'm serious. | {thread=confide cf=hope} I've walked past the same door every day this week. Like a fool.
 then other: confide.answer
 
 rule r7_confide_marriage
 when concept=talk.friends self.spouse pair.band=friends
+does tell.self
 cooldown 3d
-say #self.spouse# and I aren't right. Not lately. | I don't think #self.spouse# hears a word I say any more. | We had words, #self.spouse# and I. Bad ones.
-remember pair: thread=confide 30m
-remember pair: cf=trouble 30m
+say {thread=confide cf=trouble} #self.spouse# and I aren't right. Not lately. | {thread=confide cf=trouble} I don't think #self.spouse# hears a word I say any more. | {thread=confide cf=trouble} We had words, #self.spouse# and I. Bad ones.
 then other: confide.answer
 
 rule r7_confide_doubt
 when concept=talk.friends self.piety=ordinary pair.band=friends self.honesty=frank
+does tell.self
 cooldown 3d
-say I've not been to chapel in a month. Don't tell the priest. | Do you think the Bright One listens? Truly? Because I've stopped thinking so. | I lit a candle for something. Nothing happened. I don't know why I'm telling you.
-remember pair: thread=confide 30m
-remember pair: cf=trouble 30m
+say {thread=confide cf=trouble} I've not been to chapel in a month. Don't tell the priest. | {thread=confide cf=trouble} Do you think the Bright One listens? Truly? Because I've stopped thinking so. | {thread=confide cf=trouble} I lit a candle for something. Nothing happened. I don't know why I'm telling you.
 then other: confide.answer
 
 rule r7_confide_dream
 when concept=talk.friends self.piety=devout
+does give.opinion
 cooldown 3d
-say I had a dream. I think it meant something. Something good. | Last Restday I felt the Bright One close. Really close. It frightened me. | I think I've been called. To the chapel. Properly.
-remember pair: thread=confide 30m
-remember pair: cf=hope 30m
+say {thread=confide cf=hope} I had a dream. I think it meant something. Something good. | {thread=confide cf=hope} Last Restday I felt the Bright One close. Really close. It frightened me. | {thread=confide cf=hope} I think I've been called. To the chapel. Properly.
 then other: confide.answer
 
 rule r7_confide_fear
 when concept=talk.friends self.temper=nervy
+does tell.self
 cooldown 3d
-say I can't sleep. I keep thinking something's coming. | Every noise at night, I'm sure it's someone at the door. | I've had a feeling all week. A bad one.
-remember pair: thread=confide 30m
-remember pair: cf=trouble 30m
+say {thread=confide cf=trouble} I can't sleep. I keep thinking something's coming. | {thread=confide cf=trouble} Every noise at night, I'm sure it's someone at the door. | {thread=confide cf=trouble} I've had a feeling all week. A bad one.
 then other: confide.answer
 
 rule r7_confide_failing
 when concept=talk.friends self.business=failing pair.band=friends
+does tell.self
 priority 1
 cooldown 2d
-say If the business goes, I don't know what I am. | I've not told anyone. The till's been empty for days. | I lie awake doing sums. They never come out.
-remember pair: thread=confide 30m
-remember pair: cf=trouble 30m
+say {thread=confide cf=trouble} If the business goes, I don't know what I am. | {thread=confide cf=trouble} I've not told anyone. The till's been empty for days. | {thread=confide cf=trouble} I lie awake doing sums. They never come out.
 then other: confide.answer
 
 rule r7_confide_old
 when concept=talk.friends self.stage=old
+does tell.self
 cooldown 3d
-say I'm forgetting things. Names. Yesterday I forgot the way home. | I don't think I've many winters left. I can feel it. | I've started giving things away. Don't make a fuss.
-remember pair: thread=confide 30m
-remember pair: cf=grief 30m
+say {thread=confide cf=grief} I'm forgetting things. Names. Yesterday I forgot the way home. | {thread=confide cf=grief} I don't think I've many winters left. I can feel it. | {thread=confide cf=grief} I've started giving things away. Don't make a fuss.
 then other: confide.answer
 
 rule r7_confide_apprentice
 when concept=talk.friends self.apprentice=yes pair.band!=apprentice
+does tell.self
 cooldown 3d
-say I don't think I'm any good at it. The trade. | My master sighs every time I pick up a tool. | What if I'm only ever going to be the one who sweeps?
-remember pair: thread=confide 30m
-remember pair: cf=trouble 30m
+say {thread=confide cf=trouble} I don't think I'm any good at it. The trade. | {thread=confide cf=trouble} My master sighs every time I pick up a tool. | {thread=confide cf=trouble} What if I'm only ever going to be the one who sweeps?
 then other: confide.answer
 
 rule r7_confide_sly
 when concept=talk.friends self.honesty=sly
+does tell.self
 cooldown 3d
-say I know something about someone. Something big. | Can you keep a secret? Good. So can I. Mostly. | I saw something last night I wasn't meant to see.
-remember pair: thread=confide 30m
-remember pair: cf=secret 30m
+say {thread=confide cf=secret} I know something about someone. Something big. | {thread=confide cf=secret} Can you keep a secret? Good. So can I. Mostly. | {thread=confide cf=secret} I saw something last night I wasn't meant to see.
 then other: confide.answer
 
 rule r7_confide_accent
 when concept=talk.friends self.accent=broad here.region=ridgemere self.from!=ridgemere
+does tell.self
 cooldown 3d
-say Folk here still look at me funny when I open my mouth. | I dreamt of home again. I could smell it. | I've been trying to talk like the city. It won't come.
-remember pair: thread=confide 30m
-remember pair: cf=trouble 30m
+say {thread=confide cf=trouble} Folk here still look at me funny when I open my mouth. | {thread=confide cf=trouble} I dreamt of home again. I could smell it. | {thread=confide cf=trouble} I've been trying to talk like the city. It won't come.
 then other: confide.answer
 
 rule r7_confide_widowed
 when concept=talk.friends self.widowed=yes pair.band=friends
+does tell.self
 cooldown 3d
-say I still reach for their coat on the peg, some mornings. | I sleep with the shutter open, the way they liked it. I hate the cold. I can't shut it. | Everyone stopped asking how I am. I'm not better. They just stopped asking.
-remember pair: thread=confide 30m
-remember pair: cf=grief 30m
+say {thread=confide cf=grief} I still reach for their coat on the peg, some mornings. | {thread=confide cf=grief} I sleep with the shutter open, the way they liked it. I hate the cold. I can't shut it. | {thread=confide cf=grief} Everyone stopped asking how I am. I'm not better. They just stopped asking.
 then other: confide.answer
 
 ## Hearing it (self is the one told). Keyed by what kind of thing was told; a trait without a kind fits them all.
 
 rule r7_confide_heard
 when concept=confide.answer
-say Your secret's safe with me. | I'd not tell a soul. | Thank you for telling me.
-remember pair: went=heard 30m
+does keep_confidence
+say {went=heard} Your secret's safe with me. | {went=heard} I'd not tell a soul. | {went=heard} Thank you for telling me.
 then other: reply.close
 
 rule r7_confide_heard_small
-when concept=confide.answer pair.mem.cf=small
-say Is that all? Your secret's safe with me. | I'll take it to my grave. Laughing, but to my grave. | Everyone's got one of those. Mine's worse.
-remember pair: went=heard 30m
+when concept=confide.answer conv.cf=small
+does keep_confidence
+say {went=heard} Is that all? Your secret's safe with me. | {went=heard} I'll take it to my grave. Laughing, but to my grave. | {went=heard} Everyone's got one of those. Mine's worse.
 then other: reply.close
 
 rule r7_confide_heard_trouble
-when concept=confide.answer pair.mem.cf=trouble
-say That's a lot to carry about on your own. | I'd not tell a soul. What will you do? | How long have you been sitting on that?
-remember pair: went=heard 30m
+when concept=confide.answer conv.cf=trouble
+does keep_confidence ask.plan
+say {went=heard} That's a lot to carry about on your own. | {went=heard} I'd not tell a soul. What will you do? | {went=heard} How long have you been sitting on that?
 then other: reply.close
 
 rule r7_confide_heard_grief
-when concept=confide.answer pair.mem.cf=grief
-say Oh, #pet#. | Sit down a minute. Sit with me. | I'm glad you told me. I am.
-remember pair: went=held 30m
+when concept=confide.answer conv.cf=grief
+does keep_confidence
+say {went=held} Oh, #pet#. | {went=held} Sit down a minute. Sit with me. | {went=held} I'm glad you told me. I am.
 then other: reply.close
 
 rule r7_confide_heard_hope
-when concept=confide.answer pair.mem.cf=hope
-say Well! Look at you. | I'd not tell a soul. But I'm glad you told me. | And about time, too.
-remember pair: went=heard 30m
+when concept=confide.answer conv.cf=hope
+does keep_confidence
+say {went=heard} Well! Look at you. | {went=heard} I'd not tell a soul. But I'm glad you told me. | {went=heard} And about time, too.
 then other: reply.close
 
 rule r7_confide_heard_secret
-when concept=confide.answer pair.mem.cf=secret
-say Do I want to know? | Go on, then. Who? | Should you be telling me this?
-remember pair: went=heard 30m
+when concept=confide.answer conv.cf=secret
+does keep_confidence ask.detail
+say {went=heard} Do I want to know? | {went=heard} Go on, then. Who? | {went=heard} Should you be telling me this?
 then other: reply.close
 
 rule r7_confide_warm
-when concept=confide.answer self.warmth=warm pair.mem.cf=trouble|grief
-say Come here. Whatever it is, we'll manage it together. | Oh, #pet#. Why didn't you say sooner? | You can always tell me. Always. Day or night.
-remember pair: went=held 30m
+when concept=confide.answer self.warmth=warm conv.cf=trouble|grief
+does keep_confidence
+say {went=held} Come here. Whatever it is, we'll manage it together. | {went=held} Oh, #pet#. Why didn't you say sooner? | {went=held} You can always tell me. Always. Day or night.
 then other: reply.close
 
 rule r7_confide_warm_glad
-when concept=confide.answer self.warmth=warm pair.mem.cf=small|hope
-say Oh, I'm so glad you told me. | Ha! Come here, you. | That's the best thing I've heard all week. I mean it.
-remember pair: went=held 30m
+when concept=confide.answer self.warmth=warm conv.cf=small|hope
+does keep_confidence
+say {went=held} Oh, I'm so glad you told me. | {went=held} Ha! Come here, you. | {went=held} That's the best thing I've heard all week. I mean it.
 then other: reply.close
 
 rule r7_confide_frank
-when concept=confide.answer self.honesty=frank pair.mem.cf=trouble
-say Want the truth? You're making too much of it. | Then do something about it. Sitting on it helps no one. | You know what I'm going to say. So I'll say it. Stop worrying and act.
-remember pair: went=told 30m
+when concept=confide.answer self.honesty=frank conv.cf=trouble
+does keep_confidence
+say {went=told} Want the truth? You're making too much of it. | {went=told} Then do something about it. Sitting on it helps no one. | {went=told} You know what I'm going to say. So I'll say it. Stop worrying and act.
 then other: reply.close
 
 rule r7_confide_frank_hope
-when concept=confide.answer self.honesty=frank pair.mem.cf=hope|small
-say Then do it. Or stop talking about it. | That's not a secret. Everyone can see it on you. | Good. Don't wait for anyone's leave.
-remember pair: went=told 30m
+when concept=confide.answer self.honesty=frank conv.cf=hope|small
+does keep_confidence
+say {went=told} Then do it. Or stop talking about it. | {went=told} That's not a secret. Everyone can see it on you. | {went=told} Good. Don't wait for anyone's leave.
 then other: reply.close
 
 rule r7_confide_sly_answer
-when concept=confide.answer self.honesty=sly pair.mem.cf=small|trouble|hope
-say Mm. Safe with me. Quite safe. | Interesting. Very interesting. | I'll keep that. Somewhere safe.
-remember pair: went=sly 30m
+when concept=confide.answer self.honesty=sly conv.cf=small|trouble|hope
+does keep_confidence
+say {went=sly} Mm. Safe with me. Quite safe. | {went=sly} Interesting. Very interesting. | {went=sly} I'll keep that. Somewhere safe.
 then other: reply.close
 
 rule r7_confide_sly_secret
-when concept=confide.answer self.honesty=sly pair.mem.cf=secret
-say Oh? And who else knows? | Tell me everything. I'll know what to do with it. | Ooh. Is it who I think it is?
-remember pair: went=sly 30m
+when concept=confide.answer self.honesty=sly conv.cf=secret
+does keep_confidence ask.detail
+say {went=sly} Oh? And who else knows? | {went=sly} Tell me everything. I'll know what to do with it. | {went=sly} Ooh. Is it who I think it is?
 then other: reply.close
 
 rule r7_confide_cold
-when concept=confide.answer self.warmth=cold pair.mem.cf!=grief
-say Why are you telling me? | That's your business, not mine. | I'd keep that to myself, if I were you.
-remember pair: went=cold 30m
+when concept=confide.answer self.warmth=cold conv.cf!=grief
+does keep_confidence
+say {went=cold} Why are you telling me? | {went=cold} That's your business, not mine. | {went=cold} I'd keep that to myself, if I were you.
 regard other: trust -1
 then other: reply.close
 
 rule r7_confide_cold_grief
-when concept=confide.answer self.warmth=cold pair.mem.cf=grief
-say I'm no good at this. I'm sorry. | ...I don't know what to say. I never do. | Hm. That's hard. That's hard.
-remember pair: went=awkward 30m
+when concept=confide.answer self.warmth=cold conv.cf=grief
+does keep_confidence
+say {went=awkward} I'm no good at this. I'm sorry. | {went=awkward} ...I don't know what to say. I never do. | {went=awkward} Hm. That's hard. That's hard.
 then other: reply.close
 
 rule r7_confide_chatty
-when concept=confide.answer self.talk=chatty pair.mem.cf!=grief
-say I won't breathe a word. Well. I'll try very hard. | Oh! Tell me everything. From the start. | I'm a vault, me. A locked chest. Go on, more.
-remember pair: went=heard 30m
+when concept=confide.answer self.talk=chatty conv.cf!=grief
+does keep_confidence
+say {went=heard} I won't breathe a word. Well. I'll try very hard. | {went=heard} Oh! Tell me everything. From the start. | {went=heard} I'm a vault, me. A locked chest. Go on, more.
 then other: reply.close
 
 rule r7_confide_quiet
 when concept=confide.answer self.talk=quiet
-say Mm. Go on. | ...I'm here. | *leans closer, says nothing, listens*
-remember pair: went=held 30m
+does keep_confidence
+say {went=held} Mm. Go on. | {went=held} ...I'm here. | {went=held} *leans closer, says nothing, listens*
 then other: reply.close
 
 rule r7_confide_devout
-when concept=confide.answer self.piety=devout pair.mem.cf=trouble|grief
-say Have you prayed on it? The Bright One's a good listener. | Light a candle and sit with it a while. It helps. | You're not alone. You never are.
-remember pair: went=held 30m
+when concept=confide.answer self.piety=devout conv.cf=trouble|grief
+does keep_confidence
+say {went=held} Have you prayed on it? The Bright One's a good listener. | {went=held} Light a candle and sit with it a while. It helps. | {went=held} You're not alone. You never are.
 then other: reply.close
 
 rule r7_confide_devout_hope
-when concept=confide.answer self.piety=devout pair.mem.cf=hope
-say The Bright One's paw is in it, I'd say. | I'll pray it comes right for you. | Then it's meant. I can feel it.
-remember pair: went=held 30m
+when concept=confide.answer self.piety=devout conv.cf=hope
+does keep_confidence
+say {went=held} The Bright One's paw is in it, I'd say. | {went=held} I'll pray it comes right for you. | {went=held} Then it's meant. I can feel it.
 then other: reply.close
 
 rule r7_confide_merry
-when concept=confide.answer self.humour=merry pair.mem.cf=small
-say Is that all? I thought you'd set the town on fire. | Ha! You had me worried. That's nothing. | Oh, is that it? Have a drink and it'll look smaller.
-remember pair: went=light 30m
+when concept=confide.answer self.humour=merry conv.cf=small
+does keep_confidence
+say {went=light} Is that all? I thought you'd set the town on fire. | {went=light} Ha! You had me worried. That's nothing. | {went=light} Oh, is that it? Have a drink and it'll look smaller.
 then other: reply.close
 
 rule r7_confide_merry_hope
-when concept=confide.answer self.humour=merry pair.mem.cf=hope
-say Ha! I knew it! I knew it! | Oh, this is the best news. Who else knows? Nobody? Even better. | About time something good happened to you.
-remember pair: went=light 30m
+when concept=confide.answer self.humour=merry conv.cf=hope
+does keep_confidence
+say {went=light} Ha! I knew it! I knew it! | {went=light} Oh, this is the best news. Who else knows? Nobody? Even better. | {went=light} About time something good happened to you.
 then other: reply.close
 
 rule r7_confide_nervy
-when concept=confide.answer self.temper=nervy pair.mem.cf=trouble|secret
-say Oh no. Oh, that's... What will you do? | Don't. Now I'll not sleep either. | Are you sure? Are you sure sure?
-remember pair: went=worried 30m
+when concept=confide.answer self.temper=nervy conv.cf=trouble|secret
+does keep_confidence ask.plan
+say {went=worried} Oh no. Oh, that's... What will you do? | {went=worried} Don't. Now I'll not sleep either. | {went=worried} Are you sure? Are you sure sure?
 then other: reply.close
 
 rule r7_confide_old_answer
-when concept=confide.answer self.stage=old pair.mem.cf=trouble|grief
-say I've lived long enough to see worse mended. | When you're my age you'll laugh at this. Or cry. One of the two. | Sit by me. I've a story about that.
-remember pair: went=held 30m
+when concept=confide.answer self.stage=old conv.cf=trouble|grief
+does keep_confidence
+say {went=held} I've lived long enough to see worse mended. | {went=held} When you're my age you'll laugh at this. Or cry. One of the two. | {went=held} Sit by me. I've a story about that.
 then other: reply.close
 
 rule r7_confide_old_hope
-when concept=confide.answer self.stage=old pair.mem.cf=hope|small
-say When I was your age I did the same. Best thing I ever did. | At my age you stop minding what folk know. You'll get there. | Ha. You remind me of me.
-remember pair: went=held 30m
+when concept=confide.answer self.stage=old conv.cf=hope|small
+does keep_confidence
+say {went=held} When I was your age I did the same. Best thing I ever did. | {went=held} At my age you stop minding what folk know. You'll get there. | {went=held} Ha. You remind me of me.
 then other: reply.close
 
 rule r7_confide_dry
-when concept=confide.answer self.humour=dry pair.mem.cf=small|trouble
-say Well. It could be worse. I can't think how, but it could. | I'll add it to the list of things I don't know. | Is that the worst of it? I've had worse breakfasts.
-remember pair: went=light 30m
+when concept=confide.answer self.humour=dry conv.cf=small|trouble
+does keep_confidence
+say {went=light} Well. It could be worse. I can't think how, but it could. | {went=light} I'll add it to the list of things I don't know. | {went=light} Is that the worst of it? I've had worse breakfasts.
 then other: reply.close
 
 rule r7_confide_guarded
-when concept=confide.answer self.honesty=guarded pair.mem.cf=trouble|secret|hope
-say Some things are best kept close. Keep this one close. | Don't tell anyone else. Not anyone. | Careful who else hears that.
-remember pair: went=told 30m
+when concept=confide.answer self.honesty=guarded conv.cf=trouble|secret|hope
+does keep_confidence
+say {went=told} Some things are best kept close. Keep this one close. | {went=told} Don't tell anyone else. Not anyone. | {went=told} Careful who else hears that.
 then other: reply.close
 
 ## And then (self is the one who confided)
 
 rule r7_close_confide
-when concept=reply.close pair.mem.thread=confide
+when concept=reply.close conv.thread=confide
+does ack
 say Thank you. I needed to say it to someone. | Don't tell anyone. | I feel better. A bit.
 
 rule r7_close_confide_heard
-when concept=reply.close pair.mem.thread=confide pair.mem.went=heard
+when concept=reply.close conv.thread=confide conv.went=heard
+does ack
 say Thank you. I needed to say it to someone. | I knew I could tell you. | I feel better. A bit. | That's a weight off.
 
 rule r7_close_confide_secret
-when concept=reply.close pair.mem.thread=confide pair.mem.cf=secret
+when concept=reply.close conv.thread=confide conv.cf=secret
+does ack
 priority 1
 say Not here. Later, somewhere quiet. | You'll know soon enough. Everyone will. | Later. When there's fewer ears about.
 
 rule r7_close_confide_nervy
-when concept=reply.close pair.mem.thread=confide self.temper=nervy
+when concept=reply.close conv.thread=confide self.temper=nervy
+does ack
 say You won't tell? Promise me. | Swear it. On something. On your mother. | I shouldn't have said. Forget it. Can you forget it?
 
 rule r7_close_confide_held
-when concept=reply.close pair.mem.thread=confide pair.mem.went=held
+when concept=reply.close conv.thread=confide conv.went=held
+does ack
 say You're a good friend. The best. | I don't know what I'd do without you. | Thank you. Truly.
 regard self: trust +1
 
 rule r7_close_confide_told
-when concept=reply.close pair.mem.thread=confide pair.mem.went=told
+when concept=reply.close conv.thread=confide conv.went=told
+does ack
 say Maybe you're right. Maybe. | Easy for you to say. | I know. I know. I just needed someone to say it.
 
 rule r7_close_confide_sly
-when concept=reply.close pair.mem.thread=confide pair.mem.went=sly
+when concept=reply.close conv.thread=confide conv.went=sly
+does ack
 say ...Forget I said anything. | That's not why I told you. | Why are you smiling like that?
 
 rule r7_close_confide_cold
-when concept=reply.close pair.mem.thread=confide pair.mem.went=cold
+when concept=reply.close conv.thread=confide conv.went=cold
+does ack
 say Forget it. I don't know why I bothered. | Right. Well. | I thought you'd understand. My mistake.
 
 rule r7_close_confide_awkward
-when concept=reply.close pair.mem.thread=confide pair.mem.went=awkward
+when concept=reply.close conv.thread=confide conv.went=awkward
+does ack
 say No. It's all right. You listened. | You don't have to say anything. | It helps, just saying it out loud.
 
 rule r7_close_confide_light
-when concept=reply.close pair.mem.thread=confide pair.mem.went=light
+when concept=reply.close conv.thread=confide conv.went=light
+does ack
 say It's not nothing to me. | Ha. Maybe you're right. Maybe it isn't. | Trust you to make me laugh about it.
 
 rule r7_close_confide_worried
-when concept=reply.close pair.mem.thread=confide pair.mem.went=worried
+when concept=reply.close conv.thread=confide conv.went=worried
+does ack
 say Now you're frightening me. | Don't fret. It'll come right. I hope. | Look at us. A pair of frightened pups.
 
 # ================================================================== Plans for later (talk.friends -> plan.answer -> close)
@@ -987,257 +978,251 @@ say Now you're frightening me. | Don't fret. It'll come right. I hope. | Look at
 
 rule r7_plan_any
 when concept=talk.friends pair.band=friends
+does tell.self
 cooldown 2d
-say We should do something. Soon. | When are we going to have a proper evening, you and me? | Come by mine sometime. I mean it, this time. | Let's not let it be another month.
-remember pair: thread=plan 30m
-remember pair: plankind=vague 30m
+say {thread=plan plankind=vague} We should do something. Soon. | {thread=plan plankind=vague} When are we going to have a proper evening, you and me? | {thread=plan plankind=vague} Come by mine sometime. I mean it, this time. | {thread=plan plankind=vague} Let's not let it be another month.
 then other: plan.answer
 
 rule r7_plan_tavern
 when concept=talk.friends here.time=dusk|night pair.band=friends
+does tell.self
 cooldown 1d
-say Tavern, after? | One jar. Just the one. Like always. | I'll stand you #drink# if you'll sit with me a while. | The usual place, or wherever's warmest?
-remember pair: thread=plan 30m
-remember pair: plankind=evening 30m
+say {thread=plan plankind=evening} Tavern, after? | {thread=plan plankind=evening} One jar. Just the one. Like always. | {thread=plan plankind=evening} I'll stand you #drink# if you'll sit with me a while. | {thread=plan plankind=evening} The usual place, or wherever's warmest?
 then other: plan.answer
 
 rule r7_plan_supper
 when concept=talk.friends self.warmth=warm self.wealth!=destitute pair.band=friends
+does tell.self
 cooldown 2d
-say Come to supper tonight. There's plenty. | I've a pot of stew that wants eating. Come by. | You're eating with me tonight. I've decided.
-remember pair: thread=plan 30m
-remember pair: plankind=evening 30m
+say {thread=plan plankind=evening} Come to supper tonight. There's plenty. | {thread=plan plankind=evening} I've a pot of stew that wants eating. Come by. | {thread=plan plankind=evening} You're eating with me tonight. I've decided.
 then other: plan.answer
 
 rule r7_plan_supper_spouse
 when concept=talk.friends self.spouse self.warmth=warm pair.band=friends
+does tell.self
 cooldown 3d
-say Come and eat with us. #self.spouse# keeps asking after you. | #self.spouse#'s baking. Come and help us eat it.
-remember pair: thread=plan 30m
-remember pair: plankind=evening 30m
+say {thread=plan plankind=evening} Come and eat with us. #self.spouse# keeps asking after you. | {thread=plan plankind=evening} #self.spouse#'s baking. Come and help us eat it.
 then other: plan.answer
 
 rule r7_plan_walk
 when concept=talk.friends here.season=summer|spring here.weather=clear here.time=day|dusk pair.band=friends
+does tell.memory
 cooldown 2d
-say Walk out past the gate after? Too fine an evening to waste. | Let's go up the hill and watch the sun go down. Like we used to. | Fancy a walk round the walls tonight?
-remember pair: thread=plan 30m
-remember pair: plankind=evening 30m
+say {thread=plan plankind=evening} Walk out past the gate after? Too fine an evening to waste. | {thread=plan plankind=evening} Let's go up the hill and watch the sun go down. Like we used to. | {thread=plan plankind=evening} Fancy a walk round the walls tonight?
 then other: plan.answer
 
 rule r7_plan_restday
 when concept=talk.friends here.day=work pair.band=friends
+does tell.self
 cooldown 3d
-say Restday, you and me, doing nothing at all. Agreed? | Come Restday, I'm sleeping till noon, then you're buying me breakfast. | This Restday let's walk out past the fields. Take bread.
-remember pair: thread=plan 30m
-remember pair: plankind=day 30m
+say {thread=plan plankind=day} Restday, you and me, doing nothing at all. Agreed? | {thread=plan plankind=day} Come Restday, I'm sleeping till noon, then you're buying me breakfast. | {thread=plan plankind=day} This Restday let's walk out past the fields. Take bread.
 then other: plan.answer
 
 rule r7_plan_festival
 when concept=talk.friends world.festival=soon
+does tell.self
 cooldown 2d
-say The festival. We're going together, and you're dancing. I've decided. | Save me a place by the fire at the festival. | What are you wearing to the festival? Not that. Anything but that.
-remember pair: thread=plan 30m
-remember pair: plankind=day 30m
+say {thread=plan plankind=day} The festival. We're going together, and you're dancing. I've decided. | {thread=plan plankind=day} Save me a place by the fire at the festival. | {thread=plan plankind=day} What are you wearing to the festival? Not that. Anything but that.
 then other: plan.answer
 
 rule r7_plan_dice
 when concept=talk.friends self.honesty=sly here.time=dusk|night
+does tell.self
 cooldown 2d
-say Bones at the back of the tavern tonight. Bring coin. | There's a game on tonight. Quiet one. You in?
-remember pair: thread=plan 30m
-remember pair: plankind=game 30m
+say {thread=plan plankind=game} Bones at the back of the tavern tonight. Bring coin. | {thread=plan plankind=game} There's a game on tonight. Quiet one. You in?
 then other: plan.answer
 
 rule r7_plan_chapel
 when concept=talk.friends self.piety=devout other.piety=ordinary here.day!=rest
+does tell.self
 cooldown 3d
-say Come to chapel with me on Restday. Just the once. For me. | Sit with me at chapel this Restday? The singing's lovely.
-remember pair: thread=plan 30m
-remember pair: plankind=chapel 30m
+say {thread=plan plankind=chapel} Come to chapel with me on Restday. Just the once. For me. | {thread=plan plankind=chapel} Sit with me at chapel this Restday? The singing's lovely.
 then other: plan.answer
 
 rule r7_plan_lake
 when concept=talk.friends here.region=coldwater pair.band=friends
+does tell.self
 cooldown 3d
-say Out on the lake at dawn? I'll bring the bread. | Come out in the boat on Restday. We'll catch nothing and like it.
-remember pair: thread=plan 30m
-remember pair: plankind=day 30m
+say {thread=plan plankind=day} Out on the lake at dawn? I'll bring the bread. | {thread=plan plankind=day} Come out in the boat on Restday. We'll catch nothing and like it.
 then other: plan.answer
 
 rule r7_plan_snow
 when concept=talk.friends here.weather=snow pair.band=friends
+does tell.self
 cooldown 2d
-say Fire, cider, and not a step outside till spring. My place? | Come and sit by my fire tonight. I've wood enough for two.
-remember pair: thread=plan 30m
-remember pair: plankind=evening 30m
+say {thread=plan plankind=evening} Fire, cider, and not a step outside till spring. My place? | {thread=plan plankind=evening} Come and sit by my fire tonight. I've wood enough for two.
 then other: plan.answer
 
 rule r7_plan_kept
 when concept=talk.friends pair.mem.planned=yes
+does ask.detail
 priority 1
 once per other
-say Still on for what we said? Don't you back out on me. | You've not forgotten, have you? Our plan? | I'm looking forward to it, you know. What we said.
-remember pair: thread=plan 30m
-remember pair: plankind=vague 30m
+say {thread=plan plankind=vague} Still on for what we said? Don't you back out on me. | {thread=plan plankind=vague} You've not forgotten, have you? Our plan? | {thread=plan plankind=vague} I'm looking forward to it, you know. What we said.
 then other: plan.answer
 
 ## Yes, no, or maybe (self is the one asked)
 
 rule r7_plan_yes
 when concept=plan.answer
-say Aye, go on. | Why not? | I'd like that. | You've talked me into it. It didn't take much.
-remember pair: went=yes 30m
+does accept_invite
+say {went=yes} Aye, go on. | {went=yes} Why not? | {went=yes} I'd like that. | {went=yes} You've talked me into it. It didn't take much.
 then other: reply.close
 
 rule r7_plan_tired
 when concept=plan.answer self.tired=yes
-say Ask me when I can stand. | If I'm awake, I'm there. Don't count on it. | Gods, I'd fall asleep in the soup.
-remember pair: went=maybe 30m
+does accept_invite
+say {went=maybe} Ask me when I can stand. | {went=maybe} If I'm awake, I'm there. Don't count on it. | {went=maybe} Gods, I'd fall asleep in the soup.
 then other: reply.close
 
 rule r7_plan_working
-when concept=plan.answer self.working=yes self.shift=during pair.mem.plankind=evening|game
-say I'm at it till dark. After? | Once I'm done here. If I'm ever done here.
-remember pair: went=yes 30m
+when concept=plan.answer self.working=yes self.shift=during conv.plankind=evening|game
+does accept_invite
+say {went=yes} I'm at it till dark. After? | {went=yes} Once I'm done here. If I'm ever done here.
 then other: reply.close
 
 rule r7_plan_poor
-when concept=plan.answer self.wealth=poor|destitute pair.mem.plankind=evening|game|vague
-say If you're paying. | I'd love to. I've no coin, mind. | Count me in, so long as it's free.
-remember pair: went=yes 30m
+when concept=plan.answer self.wealth=poor|destitute conv.plankind=evening|game|vague
+does accept_invite
+say {went=yes} If you're paying. | {went=yes} I'd love to. I've no coin, mind. | {went=yes} Count me in, so long as it's free.
 then other: reply.close
 
 rule r7_plan_devout_evening
-when concept=plan.answer self.piety=devout pair.mem.plankind=evening
-say Not too late, mind. Chapel in the morning. | Yes, but I'll say grace, and you'll all sit through it.
-remember pair: went=yes 30m
+when concept=plan.answer self.piety=devout conv.plankind=evening
+does accept_invite
+say {went=yes} Not too late, mind. Chapel in the morning. | {went=yes} Yes, but I'll say grace, and you'll all sit through it.
 then other: reply.close
 
 rule r7_plan_devout_game
-when concept=plan.answer self.piety=devout pair.mem.plankind=game
-say Dice? You know I don't. | Not dice. Ask me to anything else. | I'll not gamble. Not even quietly.
-remember pair: went=no 30m
+when concept=plan.answer self.piety=devout conv.plankind=game
+does accept_invite
+say {went=no} Dice? You know I don't. | {went=no} Not dice. Ask me to anything else. | {went=no} I'll not gamble. Not even quietly.
 then other: reply.close
 
 rule r7_plan_spouse
 when concept=plan.answer self.spouse
-say I'll ask #self.spouse#. Or tell, rather. | #self.spouse# will want to come. Is that all right? | If #self.spouse# lets me off the lead.
-remember pair: went=maybe 30m
+does accept_invite
+say {went=maybe} I'll ask #self.spouse#. Or tell, rather. | {went=maybe} #self.spouse# will want to come. Is that all right? | {went=maybe} If #self.spouse# lets me off the lead.
 then other: reply.close
 
 rule r7_plan_parent
-when concept=plan.answer self.child pair.mem.plankind=evening|game
-say If someone can watch #self.child#. | Bring #self.child#? No. Gods, no. I'll find someone.
-remember pair: went=maybe 30m
+when concept=plan.answer self.child conv.plankind=evening|game
+does accept_invite
+say {went=maybe} If someone can watch #self.child#. | {went=maybe} Bring #self.child#? No. Gods, no. I'll find someone.
 then other: reply.close
 
 rule r7_plan_ambitious
 when concept=plan.answer self.drive=ambitious
-say Can't. Work. ...Fine. One hour. | I've ledgers. I've always got ledgers. All right. Briefly.
-remember pair: went=yes 30m
+does accept_invite
+say {went=yes} Can't. Work. ...Fine. One hour. | {went=yes} I've ledgers. I've always got ledgers. All right. Briefly.
 then other: reply.close
 
 rule r7_plan_nervy_evening
-when concept=plan.answer self.temper=nervy pair.mem.plankind=evening|game
-say After dark? You know I don't like the streets after dark. | Will you walk me home after? Then yes.
-remember pair: went=maybe 30m
+when concept=plan.answer self.temper=nervy conv.plankind=evening|game
+does accept_invite
+say {went=maybe} After dark? You know I don't like the streets after dark. | {went=maybe} Will you walk me home after? Then yes.
 then other: reply.close
 
 rule r7_plan_merry
 when concept=plan.answer self.humour=merry
-say When have I ever said no? | Try and stop me. | I'll be there before you are. I'll be there now. Let's go now.
-remember pair: went=yes 30m
+does accept_invite
+say {went=yes} When have I ever said no? | {went=yes} Try and stop me. | {went=yes} I'll be there before you are. I'll be there now. Let's go now.
 then other: reply.close
 
 rule r7_plan_quiet
 when concept=plan.answer self.talk=quiet
-say Mm. Yes. | ...I'd like that. | I'll come.
-remember pair: went=yes 30m
+does accept_invite
+say {went=yes} Mm. Yes. | {went=yes} ...I'd like that. | {went=yes} I'll come.
 then other: reply.close
 
 rule r7_plan_cold
 when concept=plan.answer self.warmth=cold
-say Perhaps. | We'll see. | If I've nothing better.
-remember pair: went=maybe 30m
+does accept_invite
+say {went=maybe} Perhaps. | {went=maybe} #bc_we_will_see# | {went=maybe} If I've nothing better.
 then other: reply.close
 
 rule r7_plan_hurt
 when concept=plan.answer self.injured=bad
-say On these legs? You'll have to carry me. | Not till I can walk without wincing.
-remember pair: went=no 30m
+does accept_invite
+say {went=no} On these legs? You'll have to carry me. | {went=no} Not till I can walk without wincing.
 then other: reply.close
 
 rule r7_plan_mourning
 when concept=plan.answer self.mourning=kin|friend
+does accept_invite
 priority 3
-say Not yet. Ask me again in a few days. | I can't. Not with things as they are. | Thank you. But no. Not yet.
-remember pair: went=no 30m
+say {went=no} Not yet. Ask me again in a few days. | {went=no} I can't. Not with things as they are. | {went=no} Thank you. But no. Not yet.
 then other: reply.close
 
 rule r7_plan_content
 when concept=plan.answer self.drive=content
-say That sounds just right. | Lovely. Nothing better. | Yes. Exactly what I wanted, and I didn't know it.
-remember pair: went=yes 30m
+does accept_invite
+say {went=yes} That sounds just right. | {went=yes} Lovely. Nothing better. | {went=yes} Yes. Exactly what I wanted, and I didn't know it.
 then other: reply.close
 
 rule r7_plan_restless
 when concept=plan.answer self.drive=restless
-say Anything to get out of these four walls. Yes. | Yes! Somewhere. Anywhere. Yes.
-remember pair: went=yes 30m
+does accept_invite
+say {went=yes} Anything to get out of these four walls. Yes. | {went=yes} Yes! Somewhere. Anywhere. Yes.
 then other: reply.close
 
 rule r7_plan_short
 when concept=plan.answer self.temper=short
-say Not tonight. | I'll see how I feel. | Don't nag. I'll come if I come.
-remember pair: went=maybe 30m
+does accept_invite
+say {went=maybe} Not tonight. | {went=maybe} I'll see how I feel. | {went=maybe} Don't nag. I'll come if I come.
 then other: reply.close
 
 rule r7_plan_sly
 when concept=plan.answer self.honesty=sly
-say What's in it for me? ...Fine. | Who else is coming? ...Then yes.
-remember pair: went=yes 30m
+does accept_invite
+say {went=yes} What's in it for me? ...Fine. | {went=yes} Who else is coming? ...Then yes.
 then other: reply.close
 
 rule r7_plan_chapel_answer
-when concept=plan.answer pair.mem.plankind=chapel
+when concept=plan.answer conv.plankind=chapel
+does accept_invite
 priority 1
-say Chapel? Me? ...Oh, all right. For you. | If the roof doesn't fall in when I walk through the door. | Only if we sit at the back. Right at the back.
-remember pair: went=yes 30m
+say {went=yes} Chapel? Me? ...Oh, all right. For you. | {went=yes} If the roof doesn't fall in when I walk through the door. | {went=yes} Only if we sit at the back. Right at the back.
 then other: reply.close
 
 rule r7_plan_chapel_no
-when concept=plan.answer pair.mem.plankind=chapel self.warmth=cold|reserved self.honesty=frank|sly
+when concept=plan.answer conv.plankind=chapel self.warmth=cold|reserved self.honesty=frank|sly
+does accept_invite
 priority 1
-say No. You go. Pray for me if you must. | The Bright One and I have an arrangement. I stay away; nobody's embarrassed. | Not this Restday. Nor the next.
-remember pair: went=no 30m
+say {went=no} No. You go. Pray for me if you must. | {went=no} The Bright One and I have an arrangement. I stay away; nobody's embarrassed. | {went=no} Not this Restday. Nor the next.
 then other: reply.close
 
 ## Settled (self is the one who asked)
 
 rule r7_close_plan
-when concept=reply.close pair.mem.thread=plan
-say Good. | Right, then. | We'll see, then.
+when concept=reply.close conv.thread=plan
+does ack
+say #bc_good# | Right, then. | We'll see, then.
 
 rule r7_close_plan_yes
-when concept=reply.close pair.mem.thread=plan pair.mem.went=yes
+when concept=reply.close conv.thread=plan conv.went=yes
+does ack
 say Good. I'll knock. | That's settled, then. | Don't you dare forget. | Good! I'll hold you to it.
 remember pair: planned 2d
 
 rule r7_close_plan_maybe
-when concept=reply.close pair.mem.thread=plan pair.mem.went=maybe
+when concept=reply.close conv.thread=plan conv.went=maybe
+does ack
 say Try. For me. | I'll take a maybe. | A maybe's a yes with its boots off.
 
 rule r7_close_plan_no
-when concept=reply.close pair.mem.thread=plan pair.mem.went=no
+when concept=reply.close conv.thread=plan conv.went=no
+does ack
 say Another time, then. | Fair enough. Mind yourself. | I'll ask again. I always do.
 
 rule r7_close_plan_no_warm
-when concept=reply.close pair.mem.thread=plan pair.mem.went=no self.warmth=warm
+when concept=reply.close conv.thread=plan conv.went=no self.warmth=warm
+does ack
 say Then I'll bring the supper to you. | Then I'll come and sit with you instead. No arguments.
 
 rule r7_close_plan_no_short
-when concept=reply.close pair.mem.thread=plan pair.mem.went=no self.temper=short
+when concept=reply.close conv.thread=plan conv.went=no self.temper=short
+does ack
 say Suit yourself. | Fine. I'll ask someone who wants to come.
 
 # ================================================================== Remember when (talk.friends -> recall.answer -> close)
@@ -1245,319 +1230,325 @@ say Suit yourself. | Fine. I'll ask someone who wants to come.
 
 rule r7_recall_any
 when concept=talk.friends pair.band=friends|spouses
+does ask.detail
 cooldown 2d
-say Remember the flood year? | Do you ever think about how we met? | Remember when you were going to be a sailor? | Remember that winter we had nothing but turnips? For a month?
-remember pair: thread=recall 30m
-remember pair: rc=times 30m
+say {thread=recall rc=times} Remember the flood year? | {thread=recall rc=times} Do you ever think about how we met? | {thread=recall rc=times} Remember when you were going to be a sailor? | {thread=recall rc=times} Remember that winter we had nothing but turnips? For a month?
 then other: recall.answer
 
 rule r7_recall_pups
 when concept=talk.friends pair.band=friends self.stage=adult|old other.stage=adult|old
+does ask.detail
 cooldown 2d
-say Remember when we were pups and you fell in the millpond? | Remember the old miller chasing us with a broom? | Remember our first jar? You were sick in a hat. Someone's hat. | Remember the raft we built? It sank. At once.
-remember pair: thread=recall 30m
-remember pair: rc=caper 30m
+say {thread=recall rc=caper} Remember when we were pups and you fell in the millpond? | {thread=recall rc=caper} Remember the old miller chasing us with a broom? | {thread=recall rc=caper} Remember our first jar? You were sick in a hat. Someone's hat. | {thread=recall rc=caper} Remember the raft we built? It sank. At once.
 then other: recall.answer
 
 rule r7_recall_old
 when concept=talk.friends self.stage=old other.stage=old
+does ask.detail
 cooldown 2d
-say Remember the winter the river froze right to the bottom? | Do you remember when this was all fields? | Remember the dances, when we could still dance? | Remember old Grizzle with the one ear? Gone now, of course.
-remember pair: thread=recall 30m
-remember pair: rc=times 30m
+say {thread=recall rc=times} Remember the winter the river froze right to the bottom? | {thread=recall rc=times} Do you remember when this was all fields? | {thread=recall rc=times} Remember the dances, when we could still dance? | {thread=recall rc=times} Remember old Grizzle with the one ear? Gone now, of course.
 then other: recall.answer
 
 rule r7_recall_home
 when concept=talk.friends pair.same_from=yes self.from!=ridgemere here.region=ridgemere
+does ask.detail
 cooldown 2d
-say Do you remember the smell of home in spring? | Remember the bakehouse back home? I'd give a week's pay for one of those loaves. | Remember how quiet it was at night, back home? I can't sleep here for the noise.
-remember pair: thread=recall 30m
-remember pair: rc=times 30m
+say {thread=recall rc=times} Do you remember the smell of home in spring? | {thread=recall rc=times} Remember the bakehouse back home? I'd give a week's pay for one of those loaves. | {thread=recall rc=times} Remember how quiet it was at night, back home? I can't sleep here for the noise.
 then other: recall.answer
 
 rule r7_recall_tavern
 when concept=talk.friends here.place=tavern pair.band=friends
+does ask.detail
 cooldown 2d
-say Remember the night we sang every verse of the Ford song? Every one? | Remember when you challenged the smith to arm-wrestle? | Remember when you fell asleep under that very table?
-remember pair: thread=recall 30m
-remember pair: rc=caper 30m
+say {thread=recall rc=caper} Remember the night we sang every verse of the Ford song? Every one? | {thread=recall rc=caper} Remember when you challenged the smith to arm-wrestle? | {thread=recall rc=caper} Remember when you fell asleep under that very table?
 then other: recall.answer
 
 rule r7_recall_festival
 when concept=talk.friends world.festival=today|soon pair.band=friends
+does ask.detail
 cooldown 2d
-say Remember last year's festival? You and the greased pole? | Remember when you won the race? Fell over at the end, but you won. | Remember dancing till the fiddler gave up?
-remember pair: thread=recall 30m
-remember pair: rc=caper 30m
+say {thread=recall rc=caper} Remember last year's festival? You and the greased pole? | {thread=recall rc=caper} Remember when you won the race? Fell over at the end, but you won. | {thread=recall rc=caper} Remember dancing till the fiddler gave up?
 then other: recall.answer
 
 rule r7_recall_snow
 when concept=talk.friends here.weather=snow pair.band=friends
+does ask.detail
 cooldown 2d
-say Remember the snow fight by the well? The Watch joined in. | Remember when we tried to sled down the chapel steps?
-remember pair: thread=recall 30m
-remember pair: rc=caper 30m
+say {thread=recall rc=caper} Remember the snow fight by the well? The Watch joined in. | {thread=recall rc=caper} Remember when we tried to sled down the chapel steps?
 then other: recall.answer
 
 ## Remembering it, as they are (self is the one reminded)
 
 rule r7_recall_fond
 when concept=recall.answer
-say How could I forget? | Don't. I still dream about it. | Gods, that was a long time ago. | Ha! I'd almost forgotten. Almost.
-remember pair: went=fond 30m
+does react.story
+say {went=fond} How could I forget? | {went=fond} Don't. I still dream about it. | {went=fond} Gods, that was a long time ago. | {went=fond} Ha! I'd almost forgotten. Almost.
 then other: reply.close
 
 rule r7_recall_merry
-when concept=recall.answer self.humour=merry pair.mem.rc=caper
-say I remember it differently. In mine, I'm a hero. | Ha! And you swore you'd never tell a soul! | Oh, that! I laughed for a week. I'm laughing now.
-remember pair: went=fond 30m
+when concept=recall.answer self.humour=merry conv.rc=caper
+does react.story
+say {went=fond} I remember it differently. In mine, I'm a hero. | {went=fond} Ha! And you swore you'd never tell a soul! | {went=fond} Oh, that! I laughed for a week. I'm laughing now.
 then other: reply.close
 
 rule r7_recall_merry_times
-when concept=recall.answer self.humour=merry pair.mem.rc=times
-say Oh, don't. I'm smiling already. | We laughed through it, didn't we? Somehow we always laughed. | Ha! I tell that one to everyone. Badly.
-remember pair: went=fond 30m
+when concept=recall.answer self.humour=merry conv.rc=times
+does react.story
+say {went=fond} Oh, don't. I'm smiling already. | {went=fond} We laughed through it, didn't we? Somehow we always laughed. | {went=fond} Ha! I tell that one to everyone. Badly.
 then other: reply.close
 
 rule r7_recall_old_answer
 when concept=recall.answer self.stage=old
-say Like yesterday. Clearer than yesterday, if I'm honest. | I remember it better than this morning. | Aye. We were somebody, then.
-remember pair: went=fond 30m
+does react.story
+say {went=fond} Like yesterday. Clearer than yesterday, if I'm honest. | {went=fond} I remember it better than this morning. | {went=fond} Aye. We were somebody, then.
 then other: reply.close
 
 rule r7_recall_cold
 when concept=recall.answer self.warmth=cold
-say Vaguely. | If you say so. | I don't think about all that.
-remember pair: went=vague 30m
+does react.story
+say {went=vague} Vaguely. | {went=vague} If you say so. | {went=vague} I don't think about all that.
 then other: reply.close
 
 rule r7_recall_dry
 when concept=recall.answer self.humour=dry
-say I've spent years trying to forget it. Thank you. | Every bit of it. Sadly. | I remember. I'd hoped you didn't.
-remember pair: went=fond 30m
+does react.story
+say {went=fond} I've spent years trying to forget it. Thank you. | {went=fond} Every bit of it. Sadly. | {went=fond} I remember. I'd hoped you didn't.
 then other: reply.close
 
 rule r7_recall_short
 when concept=recall.answer self.temper=short
-say I don't want to talk about that. | Leave it. That's past. | Why bring that up?
-remember pair: went=sour 30m
+does react.story
+say {went=sour} I don't want to talk about that. | {went=sour} Leave it. That's past. | {went=sour} Why bring that up?
 then other: reply.close
 
 rule r7_recall_warm
 when concept=recall.answer self.warmth=warm
-say Best days. Weren't they? Weren't they just? | Oh, I love that you remember that. | I think about that more than you'd know.
-remember pair: went=fond 30m
+does react.story
+say {went=fond} Best days. Weren't they? Weren't they just? | {went=fond} Oh, I love that you remember that. | {went=fond} I think about that more than you'd know.
 then other: reply.close
 
 rule r7_recall_sly
-when concept=recall.answer self.honesty=sly pair.mem.rc=caper
-say That wasn't me. You can't prove it was me. | I was nowhere near. I have witnesses. Paid ones.
-remember pair: went=denied 30m
+when concept=recall.answer self.honesty=sly conv.rc=caper
+does react.story
+say {went=denied} That wasn't me. You can't prove it was me. | {went=denied} I was nowhere near. I have witnesses. Paid ones.
 then other: reply.close
 
 rule r7_recall_quiet
 when concept=recall.answer self.talk=quiet
-say *smiles* Aye. | ...I remember. | Mm. Good days.
-remember pair: went=fond 30m
+does react.story
+say {went=fond} *smiles* Aye. | {went=fond} ...I remember. | {went=fond} Mm. Good days.
 then other: reply.close
 
 rule r7_recall_frank
-when concept=recall.answer self.honesty=frank pair.mem.rc=caper
-say You were a terrible pup. Truly terrible. | It was your idea, and it was a bad one. | I remember. You cried.
-remember pair: went=fond 30m
+when concept=recall.answer self.honesty=frank conv.rc=caper
+does react.story
+say {went=fond} You were a terrible pup. Truly terrible. | {went=fond} It was your idea, and it was a bad one. | {went=fond} I remember. You cried.
 then other: reply.close
 
 rule r7_recall_frank_times
-when concept=recall.answer self.honesty=frank pair.mem.rc=times
-say I remember. It was miserable, and you know it. | Folk talk about those days like they were good. They weren't. | I do. I don't miss it.
-remember pair: went=sour 30m
+when concept=recall.answer self.honesty=frank conv.rc=times
+does react.story
+say {went=sour} I remember. It was miserable, and you know it. | {went=sour} Folk talk about those days like they were good. They weren't. | {went=sour} I do. I don't miss it.
 then other: reply.close
 
 rule r7_recall_nervy
 when concept=recall.answer self.temper=nervy
-say Don't remind me. My heart's still pounding from it. | I still have dreams about that. Bad ones.
-remember pair: went=fond 30m
+does react.story
+say {went=fond} Don't remind me. My heart's still pounding from it. | {went=fond} I still have dreams about that. Bad ones.
 then other: reply.close
 
 rule r7_recall_widowed
 when concept=recall.answer self.widowed=yes
-say We were all there then, weren't we? All of us. | I wish my old love could hear you tell it. | We used to tell that one together, the two of us. I've lost half of it now.
-remember pair: went=sad 30m
+does react.story
+say {went=sad} We were all there then, weren't we? All of us. | {went=sad} I wish my old love could hear you tell it. | {went=sad} We used to tell that one together, the two of us. I've lost half of it now.
 then other: reply.close
 
 ## Closing it (self is the one who remembered)
 
 rule r7_close_recall
-when concept=reply.close pair.mem.thread=recall
+when concept=reply.close conv.thread=recall
+does ack
 say Aye. Well. | Those were the days. | Funny, what stays with you.
 
 rule r7_close_recall_fond
-when concept=reply.close pair.mem.thread=recall pair.mem.went=fond
+when concept=reply.close conv.thread=recall conv.went=fond
+does ack
 say Those were the days. | We were idiots. Happy idiots. | I wouldn't change a day of it. | We should do something that stupid again.
 
 rule r7_close_recall_fond_old
-when concept=reply.close pair.mem.thread=recall pair.mem.went=fond self.stage=old
+when concept=reply.close conv.thread=recall conv.went=fond self.stage=old
+does ack
 say We'll not see days like those again. | They don't make winters like that any more. Or wolves.
 
 rule r7_close_recall_sour
-when concept=reply.close pair.mem.thread=recall pair.mem.went=sour
+when concept=reply.close conv.thread=recall conv.went=sour
+does ack
 say Sorry. I didn't mean to stir anything. | No. You're right. Let it lie.
 
 rule r7_close_recall_sad
-when concept=reply.close pair.mem.thread=recall pair.mem.went=sad
+when concept=reply.close conv.thread=recall conv.went=sad
+does ack
 say I'll tell it for both of you, then. Any time you like. | They'd have laughed. I know they would. | I miss them too, you know.
 
 rule r7_close_recall_denied
-when concept=reply.close pair.mem.thread=recall pair.mem.went=denied
+when concept=reply.close conv.thread=recall conv.went=denied
+does ack
 say It was you. Everyone knows it was you. | I was THERE. I watched you do it. | Liar. Lovely liar.
 
 rule r7_close_recall_vague
-when concept=reply.close pair.mem.thread=recall pair.mem.went=vague
+when concept=reply.close conv.thread=recall conv.went=vague
+does ack
 say You were there! You were right there! | How can you not remember? I'll never forget it.
 
 # ================================================================== A long time apart (talk.friends -> apart.answer -> close)
 
 rule r7_apart_week
 when concept=talk.friends pair.days_since>=7 pair.days_since<14 pair.band=friends
+does tell.self
 cooldown 2d
-say Haven't seen you all week. Where've you been? | There you are! I'd started to think you'd moved. | A week! Not a word for a week.
-remember pair: thread=apart 30m
+say {thread=apart} Haven't seen you all week. Where've you been? | {thread=apart} There you are! I'd started to think you'd moved. | {thread=apart} A week! Not a word for a week.
 then other: apart.answer
 
 rule r7_apart_long
 when concept=talk.friends pair.days_since>=14
+does tell.self
 priority 1
 cooldown 2d
-say Look who it is! I thought you'd died. | Where have you been hiding? | It's been weeks! Weeks! | There you are. I'd started to worry.
-remember pair: thread=apart 30m
+say {thread=apart} Look who it is! I thought you'd died. | {thread=apart} Where have you been hiding? | {thread=apart} It's been weeks! Weeks! | {thread=apart} There you are. I'd started to worry.
 then other: apart.answer
 
 rule r7_apart_very_long
 when concept=talk.friends pair.days_since>=40
+does tell.self
 priority 1
 cooldown 2d
-say It's been an age. I'd nearly forgotten your face. Nearly. | Months! Months, and not a word. | Is it you? It is. Gods, it feels like half a year.
-remember pair: thread=apart 30m
+say {thread=apart} It's been an age. I'd nearly forgotten your face. Nearly. | {thread=apart} Months! Months, and not a word. | {thread=apart} Is it you? It is. Gods, it feels like half a year.
 then other: apart.answer
 
 rule r7_apart_warm
 when concept=talk.friends pair.days_since>=14 self.warmth=warm
+does tease
 priority 1
 cooldown 2d
-say Come here, let me look at you. Oh, I've missed you. | You! Oh, it's good to see you. Come here.
-remember pair: thread=apart 30m
+say {thread=apart} Come here, let me look at you. Oh, I've missed you. | {thread=apart} You! Oh, it's good to see you. Come here.
 then other: apart.answer
 
 rule r7_apart_cold
 when concept=talk.friends pair.days_since>=14 self.warmth=cold
+does tell.self
 priority 1
 cooldown 2d
-say You're back, then. | Oh. It's you. Been a while.
-remember pair: thread=apart 30m
+say {thread=apart} You're back, then. | {thread=apart} Oh. It's you. Been a while.
 then other: apart.answer
 
 rule r7_apart_short
 when concept=talk.friends pair.days_since>=14 self.temper=short
+does tell.self
 priority 1
 cooldown 2d
-say Didn't think to call by, did you? Not once. | Oh, NOW you've time for me.
-remember pair: thread=apart 30m
+say {thread=apart} Didn't think to call by, did you? Not once. | {thread=apart} Oh, NOW you've time for me.
 then other: apart.answer
 
 ## Where they've been (self is the one who was away)
 
 rule r7_apart_plain
 when concept=apart.answer
-say Here and there. Mostly there. | Busy. Too busy. I'm sorry. | I know, I know. | Has it been that long? It has, hasn't it.
-remember pair: went=sorry 30m
+does answer.whereabouts
+say {went=sorry} Here and there. Mostly there. | {went=sorry} Busy. Too busy. I'm sorry. | {went=sorry} I know, I know. | {went=sorry} Has it been that long? It has, hasn't it.
 then other: reply.close
 
 rule r7_apart_travelling
 when concept=apart.answer self.travelling=yes
-say On the road. I've seen half the realm, and it's all mud. | Away. Every inn between here and the hills knows my snore.
-remember pair: went=road 30m
+does answer.whereabouts
+say {went=road} On the road. I've seen half the realm, and it's all mud. | {went=road} Away. Every inn between here and the hills knows my snore.
 then other: reply.close
 
 rule r7_apart_mourning
 when concept=apart.answer self.mourning=kin|friend
+does answer.whereabouts
 priority 2
-say It's been a hard few weeks. | We lost someone. I couldn't face anyone.
-remember pair: went=hard 30m
+say {went=hard} It's been a hard few weeks. | {went=hard} We lost someone. I couldn't face anyone.
 then other: reply.close
 
 rule r7_apart_hurt
 when concept=apart.answer self.injured=light|bad
-say Laid up. Don't ask. | Took a knock. Spent a while flat on my back.
-remember pair: went=hard 30m
+does answer.whereabouts
+say {went=hard} Laid up. Don't ask. | {went=hard} Took a knock. Spent a while flat on my back.
 then other: reply.close
 
 rule r7_apart_quiet
 when concept=apart.answer self.talk=quiet
-say Around. | ...Busy. | Here. Just not out.
-remember pair: went=vague 30m
+does answer.whereabouts
+say {went=vague} Around. | {went=vague} ...Busy. | {went=vague} Here. Just not out.
 then other: reply.close
 
 rule r7_apart_sly
 when concept=apart.answer self.honesty=sly
-say Oh, you know. Nowhere you'd want to hear about. | Here and there. Mostly where I shouldn't be.
-remember pair: went=vague 30m
+does answer.whereabouts
+say {went=vague} Oh, you know. Nowhere you'd want to hear about. | {went=vague} Here and there. Mostly where I shouldn't be.
 then other: reply.close
 
 rule r7_apart_warm_answer
 when concept=apart.answer self.warmth=warm
-say I know. I'm sorry. I thought of you every day. | I missed you too. More than you'd think.
-remember pair: went=sorry 30m
+does answer.whereabouts
+say {went=sorry} I know. I'm sorry. I thought of you every day. | {went=sorry} I missed you too. More than you'd think.
 then other: reply.close
 
 rule r7_apart_poor
 when concept=apart.answer self.wealth=poor|destitute
-say Keeping my head down. Things have been thin. | Working every hour there is. And some there aren't.
-remember pair: went=hard 30m
+does answer.whereabouts
+say {went=hard} Keeping my head down. Things have been thin. | {went=hard} Working every hour there is. And some there aren't.
 then other: reply.close
 
 rule r7_apart_working
 when concept=apart.answer self.drive=ambitious
-say Making something of myself. You'll see. | Work. Nothing but work. It's paying, at least.
-remember pair: went=sorry 30m
+does answer.whereabouts
+say {went=sorry} Making something of myself. You'll see. | {went=sorry} Work. Nothing but work. It's paying, at least.
 then other: reply.close
 
 rule r7_apart_spouse
 when concept=apart.answer self.spouse
-say #self.spouse# has kept me busy. | Home, mostly. #self.spouse# and I have had a lot on.
-remember pair: went=sorry 30m
+does answer.whereabouts
+say {went=sorry} #self.spouse# has kept me busy. | {went=sorry} Home, mostly. #self.spouse# and I have had a lot on.
 then other: reply.close
 
 rule r7_apart_devout
 when concept=apart.answer self.piety=devout
-say In chapel, mostly. Praying. For you, sometimes. | Keeping the Bright One company. I don't think my snoring's minded.
-remember pair: went=sorry 30m
+does answer.whereabouts
+say {went=sorry} In chapel, mostly. Praying. For you, sometimes. | {went=sorry} Keeping the Bright One company. I don't think my snoring's minded.
 then other: reply.close
 
 ## Glad to have them back (self is the one who stayed)
 
 rule r7_close_apart
-when concept=reply.close pair.mem.thread=apart
+when concept=reply.close conv.thread=apart
+does ack
 say Well, you're here now. | Hm. Good to see you. | Don't leave it so long.
 
 rule r7_close_apart_sorry
-when concept=reply.close pair.mem.thread=apart pair.mem.went=sorry
+when concept=reply.close conv.thread=apart conv.went=sorry
+does ack
 say Well, you're here now. That's what matters. | Don't leave it so long next time. | You owe me a whole month of talk. Start now.
 
 rule r7_close_apart_road
-when concept=reply.close pair.mem.thread=apart pair.mem.went=road
+when concept=reply.close conv.thread=apart conv.went=road
+does ack
 say You'll have stories, then. Sit. Tell me. | Did you bring me anything? No? Stories, then.
 
 rule r7_close_apart_hard
-when concept=reply.close pair.mem.thread=apart pair.mem.went=hard
+when concept=reply.close conv.thread=apart conv.went=hard
+does ack
 say Oh. Why didn't you send word? | You should have come to me. You know that. | I'd have come. You only had to ask.
 
 rule r7_close_apart_vague
-when concept=reply.close pair.mem.thread=apart pair.mem.went=vague
+when concept=reply.close conv.thread=apart conv.went=vague
+does ack
 say Keep your secrets, then. | Hm. I'll get it out of you over a jar.
 
 rule r7_close_apart_cold
-when concept=reply.close pair.mem.thread=apart self.warmth=cold
-say Hm. Well. | Right.
+when concept=reply.close conv.thread=apart self.warmth=cold
+does ack
+say Hm. Well. | #bc_right#
 
 # ================================================================== Grudges (talk.quarrel -> jibe.answer -> close)
 # The opener is the one who likes the other least (World::ambientTopic), so pair.affinity, trust, respect and fear are
@@ -1567,223 +1558,196 @@ say Hm. Well. | Right.
 
 rule r7_jibe_any
 when concept=talk.quarrel
+does challenge
 cooldown 1d
-say Oh. It's you. | Don't you have somewhere else to be? | Every time I turn round, there you are. | Of all the wolves in this town. | You're standing in my light. You're always standing in my light.
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} Oh. It's you. | {thread=jibe jb=insult} Don't you have somewhere else to be? | {thread=jibe jb=insult} Every time I turn round, there you are. | {thread=jibe jb=insult} Of all the wolves in this town. | {thread=jibe jb=insult} You're standing in my light. You're always standing in my light.
 then other: jibe.answer
 
 rule r7_jibe_short
 when concept=talk.quarrel self.temper=short
+does challenge
 cooldown 1d
-say You've got a nerve, showing your muzzle round here. | Look at me like that again. Go on. | Move. Before I move you. | What are you staring at, #insult#?
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} You've got a nerve, showing your muzzle round here. | {thread=jibe jb=insult} Look at me like that again. Go on. | {thread=jibe jb=insult} Move. Before I move you. | {thread=jibe jb=insult} What are you staring at, #insult#?
 then other: jibe.answer
 
 rule r7_jibe_dry
 when concept=talk.quarrel self.humour=dry
+does challenge
 cooldown 2d
-say Oh, it's you. And the day was going so well. | I'd say it's nice to see you, but I was raised not to lie. | Ah. The smell makes sense now.
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} Oh, it's you. And the day was going so well. | {thread=jibe jb=insult} I'd say it's nice to see you, but I was raised not to lie. | {thread=jibe jb=insult} Ah. The smell makes sense now.
 then other: jibe.answer
 
 rule r7_jibe_frank
 when concept=talk.quarrel self.honesty=frank
+does challenge
 cooldown 2d
-say I'll say it plain: I don't like you, and I don't trust you. | Everyone's too polite to tell you. I'm not. | You know what you are. I'll not waste breath saying it.
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} I'll say it plain: I don't like you, and I don't trust you. | {thread=jibe jb=insult} Everyone's too polite to tell you. I'm not. | {thread=jibe jb=insult} You know what you are. I'll not waste breath saying it.
 then other: jibe.answer
 
 rule r7_jibe_sly
 when concept=talk.quarrel self.honesty=sly
+does challenge
 cooldown 2d
-say Heard something interesting about you. Very interesting. | Lovely to see you. Truly. How's your little secret? | Such a shame, what folk are saying. I defended you. Briefly.
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} Heard something interesting about you. Very interesting. | {thread=jibe jb=insult} Lovely to see you. Truly. How's your little secret? | {thread=jibe jb=insult} Such a shame, what folk are saying. I defended you. Briefly.
 then other: jibe.answer
 
 rule r7_jibe_cold
 when concept=talk.quarrel self.warmth=cold
+does challenge
 cooldown 2d
-say Don't speak to me. | Go away. | I've nothing to say to you. Nothing at all.
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} Don't speak to me. | {thread=jibe jb=insult} Go away. | {thread=jibe jb=insult} I've nothing to say to you. Nothing at all.
 then other: jibe.answer
 
 rule r7_jibe_nervy
 when concept=talk.quarrel self.temper=nervy
+does challenge
 cooldown 2d
-say Stay away from me. I mean it. | Don't come any closer. I'll shout for the Watch. | Why are you always where I am?
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} Stay away from me. I mean it. | {thread=jibe jb=insult} Don't come any closer. I'll shout for the Watch. | {thread=jibe jb=insult} Why are you always where I am?
 then other: jibe.answer
 
 rule r7_jibe_afraid
 when concept=talk.quarrel pair.fear>=30
+does challenge
 cooldown 2d
-say I'm not afraid of you. I'm not. | You don't frighten me. You don't. | Go on, then. Glare. See if I care.
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} I'm not afraid of you. I'm not. | {thread=jibe jb=insult} You don't frighten me. You don't. | {thread=jibe jb=insult} Go on, then. Glare. See if I care.
 then other: jibe.answer
 
 rule r7_jibe_distrust
 when concept=talk.quarrel pair.trust<=-40
+does challenge
 cooldown 2d
-say I know you were in my things. | I count my coin twice when you're near. | Liar. Everything you say. Liar.
-remember pair: thread=jibe 30m
-remember pair: jb=accuse 30m
+say {thread=jibe jb=accuse} I know you were in my things. | {thread=jibe jb=accuse} I count my coin twice when you're near. | {thread=jibe jb=accuse} Liar. Everything you say. Liar.
 then other: jibe.answer
 
 rule r7_jibe_scorn
 when concept=talk.quarrel pair.respect<=-30
+does tell.complaint
 cooldown 2d
-say Everyone knows you're useless. Everyone. | Done anything useful today? No. Thought not. | A pup of six does better work than you.
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} Everyone knows you're useless. Everyone. | {thread=jibe jb=insult} Done anything useful today? No. Thought not. | {thread=jibe jb=insult} A pup of six does better work than you.
 then other: jibe.answer
 
 rule r7_jibe_grudging_respect
 when concept=talk.quarrel pair.respect>=30
+does challenge
 cooldown 2d
-say I'll say this once: you're good at what you do. I still can't stand you. | You'd be easier to hate if you weren't so good at your work.
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} I'll say this once: you're good at what you do. I still can't stand you. | {thread=jibe jb=insult} You'd be easier to hate if you weren't so good at your work.
 then other: jibe.answer
 
 rule r7_jibe_thief
 when concept=talk.quarrel pair.rumour=thief
+does challenge
 priority 1
 cooldown 2d
-say Keep your paws where I can see them. | Lost anything lately? No? Found anything, then? | Every time you pass, something's missing. Funny, that.
-remember pair: thread=jibe 30m
-remember pair: jb=accuse 30m
+say {thread=jibe jb=accuse} Keep your paws where I can see them. | {thread=jibe jb=accuse} Lost anything lately? No? Found anything, then? | {thread=jibe jb=accuse} Every time you pass, something's missing. Funny, that.
 then other: jibe.answer
 
 rule r7_jibe_violent
 when concept=talk.quarrel pair.rumour=violent
+does challenge
 priority 1
 cooldown 2d
-say Going to hit me too? Go on. Everyone knows you do. | Keep your fists in your pockets. I've heard about you. | Who'd you knock down this week, then?
-remember pair: thread=jibe 30m
-remember pair: jb=accuse 30m
+say {thread=jibe jb=accuse} Going to hit me too? Go on. Everyone knows you do. | {thread=jibe jb=accuse} Keep your fists in your pockets. I've heard about you. | {thread=jibe jb=accuse} Who'd you knock down this week, then?
 then other: jibe.answer
 
 rule r7_jibe_promises
 when concept=talk.quarrel pair.rumour=breaks_promises
+does challenge
 priority 1
 cooldown 2d
-say Your word's worth less than the breath it's said on. | Promise me something. Go on. I could do with a laugh.
-remember pair: thread=jibe 30m
-remember pair: jb=accuse 30m
+say {thread=jibe jb=accuse} Your word's worth less than the breath it's said on. | {thread=jibe jb=accuse} Promise me something. Go on. I could do with a laugh.
 then other: jibe.answer
 
 rule r7_jibe_owed
 when concept=talk.quarrel pair.owed=b
+does challenge
 priority 1
 cooldown 1d
-say Where's my money? | You still owe me, and the whole street knows it. | I lent you that in good faith. More fool me.
-remember pair: thread=jibe 30m
-remember pair: jb=dun 30m
+say {thread=jibe jb=dun} Where's my money? | {thread=jibe jb=dun} You still owe me, and the whole street knows it. | {thread=jibe jb=dun} I lent you that in good faith. More fool me.
 then other: jibe.answer
 
 rule r7_jibe_owing
 when concept=talk.quarrel pair.owed=a
+does challenge
 priority 1
 cooldown 1d
-say Don't look at me like that. You'll get your pennies. | Stop telling folk I owe you. I know I owe you. | Every time you see me, it's that face. You'll be paid.
-remember pair: thread=jibe 30m
-remember pair: jb=debt 30m
+say {thread=jibe jb=debt} Don't look at me like that. You'll get your pennies. | {thread=jibe jb=debt} Stop telling folk I owe you. I know I owe you. | {thread=jibe jb=debt} Every time you see me, it's that face. You'll be paid.
 then other: jibe.answer
 
 rule r7_jibe_hostile
 when concept=talk.quarrel pair.disposition=hostile
+does challenge
 cooldown 2d
-say One day, you and me. One day. | If you were on fire I'd fetch more wood. | I hope your roof leaks. On your bed. All winter.
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} One day, you and me. One day. | {thread=jibe jb=insult} If you were on fire I'd fetch more wood. | {thread=jibe jb=insult} I hope your roof leaks. On your bed. All winter.
 then other: jibe.answer
 
 rule r7_jibe_rich
 when concept=talk.quarrel self.wealth=rich other.wealth=poor|destitute
+does challenge
 cooldown 2d
-say Shouldn't you be begging somewhere else? | Your sort brings the whole street down. | Don't touch the coat.
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} Shouldn't you be begging somewhere else? | {thread=jibe jb=insult} Your sort brings the whole street down. | {thread=jibe jb=insult} Don't touch the coat.
 then other: jibe.answer
 
 rule r7_jibe_poor
 when concept=talk.quarrel self.wealth=poor|destitute other.wealth=rich
+does ask.detail
 cooldown 2d
-say All right for some, isn't it? Fat on other folk's work. | Nice boots. Who'd you rob? | Must be grand, never counting pennies.
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} All right for some, isn't it? Fat on other folk's work. | {thread=jibe jb=insult} Nice boots. Who'd you rob? | {thread=jibe jb=insult} Must be grand, never counting pennies.
 then other: jibe.answer
 
 rule r7_jibe_heights
 when concept=talk.quarrel self.quarter=sump|commons|works other.quarter=heights here.region=ridgemere
+does ask.detail
 cooldown 2d
-say Lost, are we? The Heights are that way. Up. | Come down to look at the poor folk, have you? | Mind the gutter. It's where we keep our manners.
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} Lost, are we? The Heights are that way. Up. | {thread=jibe jb=insult} Come down to look at the poor folk, have you? | {thread=jibe jb=insult} Mind the gutter. It's where we keep our manners.
 then other: jibe.answer
 
 rule r7_jibe_sump
 when concept=talk.quarrel self.quarter=heights other.quarter=sump here.region=ridgemere
+does challenge
 cooldown 2d
-say Back to the Sump with you. | I can smell the Sump on you from here. | Did the Sump run out of gutters?
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} Back to the Sump with you. | {thread=jibe jb=insult} I can smell the Sump on you from here. | {thread=jibe jb=insult} Did the Sump run out of gutters?
 then other: jibe.answer
 
 rule r7_jibe_trade
 when concept=talk.quarrel self.role=merchant other.role=merchant
+does ask.detail
 cooldown 2d
-say Undercutting me again? I saw your prices. | Telling my customers lies about me again? | Your stall's in my way. Your whole life's in my way.
-remember pair: thread=jibe 30m
-remember pair: jb=accuse 30m
+say {thread=jibe jb=accuse} Undercutting me again? I saw your prices. | {thread=jibe jb=accuse} Telling my customers lies about me again? | {thread=jibe jb=accuse} Your stall's in my way. Your whole life's in my way.
 then other: jibe.answer
 
 rule r7_jibe_young
 when concept=talk.quarrel self.stage=old other.stage=adult|adolescent
+does challenge
 cooldown 2d
-say No respect, your generation. None. | When I was your age, I'd have been whipped for that look. | Mind your manners, pup.
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} No respect, your generation. None. | {thread=jibe jb=insult} When I was your age, I'd have been whipped for that look. | {thread=jibe jb=insult} Mind your manners, pup.
 then other: jibe.answer
 
 rule r7_jibe_devout
 when concept=talk.quarrel self.piety=devout other.piety=ordinary
+does challenge
 cooldown 2d
-say The Bright One sees what you are, even if this town doesn't. | I'll pray for you. Somebody has to.
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} The Bright One sees what you are, even if this town doesn't. | {thread=jibe jb=insult} I'll pray for you. Somebody has to.
 then other: jibe.answer
 
 rule r7_jibe_tavern
 when concept=talk.quarrel here.place=tavern here.time=night
+does challenge
 cooldown 1d
-say You've had enough. And so have I, of you. | Another word and you're wearing that cup. | Drink up and get out. You're souring the cider.
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} You've had enough. And so have I, of you. | {thread=jibe jb=insult} Another word and you're wearing that cup. | {thread=jibe jb=insult} Drink up and get out. You're souring the cider.
 then other: jibe.answer
 
 rule r7_jibe_restday
 when concept=talk.quarrel here.day=rest
+does challenge
 cooldown 2d
-say Even on Restday you can't leave me be. | Of course it's you. On Restday. The Bright One's testing me.
-remember pair: thread=jibe 30m
-remember pair: jb=insult 30m
+say {thread=jibe jb=insult} Even on Restday you can't leave me be. | {thread=jibe jb=insult} Of course it's you. On Restday. The Bright One's testing me.
 then other: jibe.answer
 
 rule r7_jibe_neighbours
 when concept=talk.quarrel pair.neighbours=yes
+does challenge
 cooldown 2d
-say Your door. Midnight. Again. | I can hear every word through that wall, you know. Every word. | Your rubbish is on my step. Again.
-remember pair: thread=jibe 30m
-remember pair: jb=accuse 30m
+say {thread=jibe jb=accuse} Your door. Midnight. Again. | {thread=jibe jb=accuse} I can hear every word through that wall, you know. Every word. | {thread=jibe jb=accuse} Your rubbish is on my step. Again.
 then other: jibe.answer
 
 ## Answering it, as they are (self is the one jibed at). Traits fit a sneer or a charge alike; a demand for money,
@@ -1791,402 +1755,424 @@ then other: jibe.answer
 
 rule r7_jibe_back
 when concept=jibe.answer
-say Likewise. | Get out of my way. | Say what you like. I've heard worse. | And you're still as pleasant as ever.
-remember pair: went=cool 30m
+does counter
+say {went=cool} Likewise. | {went=cool} Get out of my way. | {went=cool} Say what you like. I've heard worse. | {went=cool} And you're still as pleasant as ever.
 then other: reply.close
 
 rule r7_jibe_back_accused
-when concept=jibe.answer pair.mem.jb=accuse
-say I never did. Prove it. | Say that in front of the Watch, then. | Believe what you like. You will anyway.
-remember pair: went=cool 30m
+when concept=jibe.answer conv.jb=accuse
+does counter
+say {went=cool} I never did. Prove it. | {went=cool} Say that in front of the Watch, then. | {went=cool} Believe what you like. You will anyway.
 then other: reply.close
 
 rule r7_jibe_short_answer
 when concept=jibe.answer self.temper=short
-say Say that again. I dare you. | You want to try me? Here? Now? | You'll eat those words. | Come on, then, #insult#.
-remember pair: went=hot 30m
+does counter
+say {went=hot} Say that again. I dare you. | {went=hot} You want to try me? Here? Now? | {went=hot} You'll eat those words. | {went=hot} Come on, then, #insult#.
 then other: reply.close
 
 rule r7_jibe_calm_answer
 when concept=jibe.answer self.temper=calm
-say Are you finished? Good. Good day. | If it makes you feel better, say it. | I'm not going to fight you. Not today, not any day.
-remember pair: went=cool 30m
+does counter
+say {went=cool} Are you finished? Good. Good day. | {went=cool} If it makes you feel better, say it. | {went=cool} I'm not going to fight you. Not today, not any day.
 then other: reply.close
 
 rule r7_jibe_nervy_answer
 when concept=jibe.answer self.temper=nervy
-say I don't want trouble. I don't. | Leave me be. Please. | Why do you always... no. Never mind.
-remember pair: went=cowed 30m
+does counter
+say {went=cowed} I don't want trouble. I don't. | {went=cowed} Leave me be. Please. | {went=cowed} Why do you always... no. Never mind.
 then other: reply.close
 
 rule r7_jibe_dry_answer
 when concept=jibe.answer self.humour=dry
-say Lovely. Did you practise that? | Your wit's as sharp as ever. Which is to say, not. | I'll treasure that. Next to the others.
-remember pair: went=wit 30m
+does counter
+say {went=wit} Lovely. Did you practise that? | {went=wit} Your wit's as sharp as ever. Which is to say, not. | {went=wit} I'll treasure that. Next to the others.
 then other: reply.close
 
 rule r7_jibe_merry_answer
 when concept=jibe.answer self.humour=merry
-say Ha! You'll have to do better than that. | Is that the best you've got? I've been insulted better by my own grandmother. | Ooh. Sharp. I'll need a healer.
-remember pair: went=wit 30m
+does counter
+say {went=wit} Ha! You'll have to do better than that. | {went=wit} Is that the best you've got? I've been insulted better by my own grandmother. | {went=wit} Ooh. Sharp. I'll need a healer.
 then other: reply.close
 
 rule r7_jibe_sly_answer
 when concept=jibe.answer self.honesty=sly
-say Careful. I know things about you too. | Say that louder. I'd like the street to hear what you sound like. | Interesting. I'll remember you said that.
-remember pair: went=hot 30m
+does counter
+say {went=hot} Careful. I know things about you too. | {went=hot} Say that louder. I'd like the street to hear what you sound like. | {went=hot} Interesting. I'll remember you said that.
 then other: reply.close
 
 rule r7_jibe_frank_answer
 when concept=jibe.answer self.honesty=frank
-say You know your trouble? Everyone's sick of you, and no one will say it. | Fine. I'll say it too. You're a bully. | We both know why you hate me. Shall I say it?
-remember pair: went=hot 30m
+does counter
+say {went=hot} You know your trouble? Everyone's sick of you, and no one will say it. | {went=hot} Fine. I'll say it too. You're a bully. | {went=hot} We both know why you hate me. Shall I say it?
 then other: reply.close
 
 rule r7_jibe_warm_answer
 when concept=jibe.answer self.warmth=warm
-say Why are we like this? We could get on, you and me. | I don't want this. I never did. | Can we not? Just for today?
-remember pair: went=mend 30m
+does counter
+say {went=mend} Why are we like this? We could get on, you and me. | {went=mend} I don't want this. I never did. | {went=mend} Can we not? Just for today?
 then other: reply.close
 
 rule r7_jibe_devout_answer
 when concept=jibe.answer self.piety=devout
-say The Bright One forgives you. I'm still working on it. | I'll not answer that. Not on my soul.
-remember pair: went=cool 30m
+does counter
+say {went=cool} The Bright One forgives you. I'm still working on it. | {went=cool} I'll not answer that. Not on my soul.
 then other: reply.close
 
 rule r7_jibe_cold_answer
 when concept=jibe.answer self.warmth=cold
-say *turns their back* | Hm. | You're not worth the breath.
-remember pair: went=cool 30m
+does counter
+say {went=cool} *turns their back* | {went=cool} Hm. | {went=cool} You're not worth the breath.
 then other: reply.close
 
 rule r7_jibe_quiet_answer
 when concept=jibe.answer self.talk=quiet
-say ... | *says nothing, and goes on with what they were doing* | Mm.
-remember pair: went=cool 30m
+does counter
+say {went=cool} ... | {went=cool} *says nothing, and goes on with what they were doing* | {went=cool} Mm.
 then other: reply.close
 
 rule r7_jibe_old_answer
 when concept=jibe.answer self.stage=old
-say I've buried better than you, and I'll bury you. | Shout all you like. I'm deaf in that ear. On purpose.
-remember pair: went=wit 30m
+does counter
+tone grave
+say {went=wit} I've buried better than you, and I'll bury you. | {went=wit} Shout all you like. I'm deaf in that ear. On purpose.
 then other: reply.close
 
 rule r7_jibe_guard_answer
 when concept=jibe.answer self.role=guard
-say Careful. You're talking to the Watch. | Say that again and you'll say it in the cells.
-remember pair: went=warned 30m
+does counter
+say {went=warned} Careful. You're talking to the Watch. | {went=warned} Say that again and you'll say it in the cells.
 then other: reply.close
 
 rule r7_jibe_poor_answer
 when concept=jibe.answer self.wealth=destitute
-say What do you want? I've nothing left to take. | Kick me, then. Everyone else does.
-remember pair: went=cowed 30m
+does counter
+say {went=cowed} What do you want? I've nothing left to take. | {went=cowed} Kick me, then. Everyone else does.
 then other: reply.close
 
 rule r7_jibe_fought_answer
 when concept=jibe.answer self.fought=yes
+does counter
 priority 1
-say I've had one fight this week. Don't make it two. | I've still got the bruises from the last one who tried that.
-remember pair: went=hot 30m
+say {went=hot} I've had one fight this week. Don't make it two. | {went=hot} I've still got the bruises from the last one who tried that.
 then other: reply.close
 
 rule r7_jibe_mourning_answer
 when concept=jibe.answer self.mourning=kin|friend
+does counter
+tone grave
 priority 3
-say Not today. Whatever this is, not today. | I've buried someone this week. Have you no shame?
-remember pair: went=cowed 30m
+say {went=cowed} Not today. Whatever this is, not today. | {went=cowed} I've buried someone this week. Have you no shame?
 then other: reply.close
 
 rule r7_jibe_dunned
-when concept=jibe.answer pair.mem.jb=dun
+when concept=jibe.answer conv.jb=dun
+does counter
 priority 1
-say You'll get it. When I have it. | I said I'd pay and I will. Stop shouting it about. | Keep your voice down, for pity's sake.
-remember pair: went=promised 30m
+say {went=promised} You'll get it. When I have it. | {went=promised} I said I'd pay and I will. Stop shouting it about. | {went=promised} Keep your voice down, for pity's sake.
 then other: reply.close
 
 rule r7_jibe_dunned_short
-when concept=jibe.answer pair.mem.jb=dun self.temper=short
+when concept=jibe.answer conv.jb=dun self.temper=short
+does counter
 priority 1
-say Shout it again and you'll wait twice as long. | You'll get your money. Not a day sooner for the shouting.
-remember pair: went=hot 30m
+say {went=hot} Shout it again and you'll wait twice as long. | {went=hot} You'll get your money. Not a day sooner for the shouting.
 then other: reply.close
 
 rule r7_jibe_dunned_poor
-when concept=jibe.answer pair.mem.jb=dun self.wealth=poor|destitute
+when concept=jibe.answer conv.jb=dun self.wealth=poor|destitute
+does counter
 priority 1
-say With what? Look at me. With what? | I've nothing. You can see I've nothing. | Take my coat, then. It's all I've got.
-remember pair: went=cowed 30m
+say {went=cowed} With what? Look at me. With what? | {went=cowed} I've nothing. You can see I've nothing. | {went=cowed} Take my coat, then. It's all I've got.
 then other: reply.close
 
 rule r7_jibe_pressed
-when concept=jibe.answer pair.mem.jb=debt
+when concept=jibe.answer conv.jb=debt
+does counter
 priority 1
-say Then pay me, and you'll not see the face. | When? That's all I ask. When? | You've said that since spring.
-remember pair: went=pressed 30m
+say {went=pressed} Then pay me, and you'll not see the face. | {went=pressed} When? That's all I ask. When? | {went=pressed} You've said that since spring.
 then other: reply.close
 
 rule r7_jibe_pressed_warm
-when concept=jibe.answer pair.mem.jb=debt self.warmth=warm
+when concept=jibe.answer conv.jb=debt self.warmth=warm
+does counter
 priority 1
-say I'm not chasing you. I'd just like to know when. | Pay me when you can. Only stop glaring at me. | I've not told a soul. Whoever said I did is lying.
-remember pair: went=mend 30m
+say {went=mend} I'm not chasing you. I'd just like to know when. | {went=mend} Pay me when you can. Only stop glaring at me. | {went=mend} I've not told a soul. Whoever said I did is lying.
 then other: reply.close
 
 ## And the last word (self is the one who started it)
 
 rule r7_close_jibe
-when concept=reply.close pair.mem.thread=jibe
-say Hm. | We'll see. | Just stay out of my way.
+when concept=reply.close conv.thread=jibe
+does ack
+say Hm. | #bc_we_will_see# | Just stay out of my way.
 
 rule r7_close_jibe_hot
-when concept=reply.close pair.mem.thread=jibe pair.mem.went=hot
+when concept=reply.close conv.thread=jibe conv.went=hot
+does ack
 say Any time. Any place. | Try it. Go on. | Not here. But I'll remember. | Big words.
 
 rule r7_close_jibe_hot_short
-when concept=reply.close pair.mem.thread=jibe pair.mem.went=hot self.temper=short
+when concept=reply.close conv.thread=jibe conv.went=hot self.temper=short
+does ack
 say Right. Outside. Now. | Come on, then! Come on! | I'll break your muzzle for you.
 regard other: fear +1
 
 rule r7_close_jibe_hot_nervy
-when concept=reply.close pair.mem.thread=jibe pair.mem.went=hot self.temper=nervy
+when concept=reply.close conv.thread=jibe conv.went=hot self.temper=nervy
+does ack
 say ...Fine. Fine! I'm going. | Don't you touch me. I'll scream. I will.
 
 rule r7_close_jibe_hot_calm
-when concept=reply.close pair.mem.thread=jibe pair.mem.went=hot self.temper=calm
+when concept=reply.close conv.thread=jibe conv.went=hot self.temper=calm
+does ack
 say Look at you. All teeth. I'm done here. | Shout, then. I've somewhere to be.
 
 rule r7_close_jibe_cool
-when concept=reply.close pair.mem.thread=jibe pair.mem.went=cool
+when concept=reply.close conv.thread=jibe conv.went=cool
+does ack
 say Good. Then stay out of my way. | Hm. | Fine. Fine.
 
 rule r7_close_jibe_cowed
-when concept=reply.close pair.mem.thread=jibe pair.mem.went=cowed
+when concept=reply.close conv.thread=jibe conv.went=cowed
+does ack
 say That's right. Walk away. | Thought so. | Hm. Not so bold now.
 
 rule r7_close_jibe_cowed_warm
-when concept=reply.close pair.mem.thread=jibe pair.mem.went=cowed self.warmth=warm
+when concept=reply.close conv.thread=jibe conv.went=cowed self.warmth=warm
+does ack
 say ...I didn't mean to frighten you. | Wait. That came out wrong. I'm sorry.
 regard other: fear -1
 
 rule r7_close_jibe_warned
-when concept=reply.close pair.mem.thread=jibe pair.mem.went=warned
+when concept=reply.close conv.thread=jibe conv.went=warned
+does ack
 say Hiding behind the badge. Typical. | Oh, I'm shaking. | The cells. For talking. Listen to yourself.
 
 rule r7_close_jibe_wit
-when concept=reply.close pair.mem.thread=jibe pair.mem.went=wit
+when concept=reply.close conv.thread=jibe conv.went=wit
+does ack
 say Laugh while you can. | Very clever. Clever won't save you. | Hmph. | Think you're funny.
 
 rule r7_close_jibe_mend
-when concept=reply.close pair.mem.thread=jibe pair.mem.went=mend
+when concept=reply.close conv.thread=jibe conv.went=mend
+does ack
 say Hm. Ask me again when I'm not so cross. | I don't know. I don't know why we're like this. | ...Maybe. Not today.
 remember pair: softened 7d
 
 rule r7_close_jibe_mend_cold
-when concept=reply.close pair.mem.thread=jibe pair.mem.went=mend self.warmth=cold
+when concept=reply.close conv.thread=jibe conv.went=mend self.warmth=cold
+does ack
 say Get on? Ha. | Don't try that with me.
 
 rule r7_close_jibe_promised
-when concept=reply.close pair.mem.thread=jibe pair.mem.went=promised
+when concept=reply.close conv.thread=jibe conv.went=promised
+does ack
 say See that you do. | I'll believe it when it's in my paw. | By Restday. Or I go to the Watch.
 
 rule r7_close_jibe_pressed
-when concept=reply.close pair.mem.thread=jibe pair.mem.went=pressed
+when concept=reply.close conv.thread=jibe conv.went=pressed
+does ack
 say Soon. I said soon. | You'll have it. Gods. | I'm working on it, aren't I?
 
 # ================================================================== Making up (talk.quarrel -> mend.answer -> close)
 
 rule r7_mend_any
 when concept=talk.quarrel
+does challenge
 cooldown 3d
-say Look. About before. I'm sorry. | I'll say sorry if you will. | This is daft, the two of us. | How long are we going to keep this up?
-remember pair: thread=mend 30m
+say {thread=mend} Look. About before. I'm sorry. | {thread=mend} I'll say sorry if you will. | {thread=mend} This is daft, the two of us. | {thread=mend} How long are we going to keep this up?
 then other: mend.answer
 
 rule r7_mend_warm
 when concept=talk.quarrel self.warmth=warm
+does challenge
 cooldown 2d
-say Can we stop this? I'm tired of it. | I was wrong. There. I said it. | Let me buy you #drink#. We'll call it square.
-remember pair: thread=mend 30m
+say {thread=mend} Can we stop this? I'm tired of it. | {thread=mend} I was wrong. There. I said it. | {thread=mend} Let me buy you #drink#. We'll call it square.
 then other: mend.answer
 
 rule r7_mend_calm
 when concept=talk.quarrel self.temper=calm
+does ask.detail
 cooldown 2d
-say This has gone on long enough. Shall we leave it? | I've no stomach for a fight. Have you?
-remember pair: thread=mend 30m
+say {thread=mend} This has gone on long enough. Shall we leave it? | {thread=mend} I've no stomach for a fight. Have you?
 then other: mend.answer
 
 rule r7_mend_devout
 when concept=talk.quarrel self.piety=devout here.day=rest
+does challenge
 cooldown 2d
-say It's Restday. Peace on Restday, at least. Shall we? | The priest says not to let the sun go down on it. It's going down.
-remember pair: thread=mend 30m
+say {thread=mend} It's Restday. Peace on Restday, at least. Shall we? | {thread=mend} The priest says not to let the sun go down on it. It's going down.
 then other: mend.answer
 
 rule r7_mend_softened
 when concept=talk.quarrel pair.mem.softened=yes
+does challenge
 priority 2
 cooldown 1d
-say I've been thinking about what you said. About getting on. | You were right, the other day. We could get on, if we tried.
-remember pair: thread=mend 30m
+say {thread=mend} I've been thinking about what you said. About getting on. | {thread=mend} You were right, the other day. We could get on, if we tried.
 then other: mend.answer
 
 rule r7_mend_respect
 when concept=talk.quarrel pair.respect>=20
+does ask.detail
 cooldown 3d
-say I don't like you. But I respect you. Can that be enough? | You're the best at what you do. I hate that. Truce?
-remember pair: thread=mend 30m
+say {thread=mend} I don't like you. But I respect you. Can that be enough? | {thread=mend} You're the best at what you do. I hate that. Truce?
 then other: mend.answer
 
 rule r7_mend_festival
 when concept=talk.quarrel world.festival=today
+does challenge
 priority 1
 cooldown 1d
-say It's a feast day. Even we can share a table on a feast day. | Festival. Truce till dawn?
-remember pair: thread=mend 30m
+say {thread=mend} It's a feast day. Even we can share a table on a feast day. | {thread=mend} Festival. Truce till dawn?
 then other: mend.answer
 
 rule r7_mend_mourning
 when concept=talk.quarrel other.mourning=kin|friend
+does challenge
 priority 3
 cooldown 2d
-say I heard. I'm sorry. Whatever's between us, I'm sorry. | I'll not trouble you today. I'm sorry for your loss.
-remember pair: thread=mend 30m
+say {thread=mend} I heard. I'm sorry. Whatever's between us, I'm sorry. | {thread=mend} I'll not trouble you today. I'm sorry for your loss.
 then other: mend.answer
 
 rule r7_mend_old
 when concept=talk.quarrel self.stage=old other.stage=old
+does challenge
 cooldown 2d
-say We're too old for this. Both of us. | How many winters have we got left? Too few to waste on this.
-remember pair: thread=mend 30m
+say {thread=mend} We're too old for this. Both of us. | {thread=mend} How many winters have we got left? Too few to waste on this.
 then other: mend.answer
 
 rule r7_mend_same_from
 when concept=talk.quarrel pair.same_from=yes self.from!=ridgemere here.region=ridgemere
+does challenge
 cooldown 3d
-say We're both a long way from home. We shouldn't be at each other's throats. | Two of us from back home, and we can't get on. Our mothers would weep.
-remember pair: thread=mend 30m
+say {thread=mend} We're both a long way from home. We shouldn't be at each other's throats. | {thread=mend} Two of us from back home, and we can't get on. Our mothers would weep.
 then other: mend.answer
 
 rule r7_mend_after
 when concept=talk.quarrel pair.mem.mended=yes
+does ask.detail
 priority 2
 cooldown 2d
-say We said truce. I'm keeping to it. Are you? | Still at peace, are we? Good. Hard work, isn't it? | I've not said a bad word about you all week. It's killing me.
-remember pair: thread=mend 30m
+say {thread=mend} We said truce. I'm keeping to it. Are you? | {thread=mend} Still at peace, are we? Good. Hard work, isn't it? | {thread=mend} I've not said a bad word about you all week. It's killing me.
 then other: mend.answer
 
 ## Taking the paw, or not (self is the one offered peace)
 
 rule r7_mend_maybe
 when concept=mend.answer
-say ...Maybe. | I'll think about it. | We'll see. | Perhaps. Don't push it.
-remember pair: went=grudging 30m
+does accept_apology
+say {went=grudging} ...Maybe. | {went=grudging} I'll think about it. | {went=grudging} #bc_we_will_see# | {went=grudging} Perhaps. Don't push it.
 then other: reply.close
 
 rule r7_mend_warm_answer
 when concept=mend.answer self.warmth=warm
-say Yes. Gods, yes. I've hated this. | I've wanted to say it for weeks. Yes. | Come here, you fool.
-remember pair: went=yes 30m
+does accept_apology
+say {went=yes} Yes. Gods, yes. I've hated this. | {went=yes} I've wanted to say it for weeks. Yes. | {went=yes} Come here, you fool.
 regard self: affinity +1
 then other: reply.close
 
 rule r7_mend_short_answer
 when concept=mend.answer self.temper=short
-say Sorry doesn't mend it. | You think it's that easy? | No. You don't get to decide when it's over.
-remember pair: went=no 30m
+does accept_apology
+say {went=no} Sorry doesn't mend it. | {went=no} You think it's that easy? | {went=no} No. You don't get to decide when it's over.
 then other: reply.close
 
 rule r7_mend_cold_answer
 when concept=mend.answer self.warmth=cold
-say No. | I don't think so. | Too late for that.
-remember pair: went=no 30m
+does accept_apology
+say {went=no} No. | {went=no} I don't think so. | {went=no} Too late for that.
 then other: reply.close
 
 rule r7_mend_calm_answer
 when concept=mend.answer self.temper=calm
-say All right. All right. Let's leave it. | Agreed. It's gone on too long. | Yes. Life's short.
-remember pair: went=yes 30m
+does accept_apology
+say {went=yes} All right. All right. Let's leave it. | {went=yes} Agreed. It's gone on too long. | {went=yes} Yes. Life's short.
 then other: reply.close
 
 rule r7_mend_sly_answer
 when concept=mend.answer self.honesty=sly
-say And what's it worth to you? | Peace? Interesting. What do you want?
-remember pair: went=grudging 30m
+does accept_apology ask.detail
+say {went=grudging} And what's it worth to you? | {went=grudging} Peace? Interesting. What do you want?
 then other: reply.close
 
 rule r7_mend_frank_answer
 when concept=mend.answer self.honesty=frank
-say You were wrong. But so was I. Fine. | I'll be honest, I'm sick of it too. Yes.
-remember pair: went=yes 30m
+does accept_apology
+say {went=yes} You were wrong. But so was I. Fine. | {went=yes} I'll be honest, I'm sick of it too. Yes.
 then other: reply.close
 
 rule r7_mend_devout_answer
 when concept=mend.answer self.piety=devout
-say The Bright One asks it of us. All right. | I've prayed on it. Yes.
-remember pair: went=yes 30m
+does accept_apology
+say {went=yes} The Bright One asks it of us. All right. | {went=yes} I've prayed on it. Yes.
 then other: reply.close
 
 rule r7_mend_nervy_answer
 when concept=mend.answer self.temper=nervy
-say You mean it? You're not... you mean it? | Is this a trick? It's a trick, isn't it?
-remember pair: went=grudging 30m
+does accept_apology ask.detail
+say {went=grudging} You mean it? You're not... you mean it? | {went=grudging} Is this a trick? It's a trick, isn't it?
 then other: reply.close
 
 rule r7_mend_mourning_answer
 when concept=mend.answer self.mourning=kin|friend
+does accept_apology
 priority 3
-say Thank you. I... thank you. | That's kind. Kinder than I'd have been.
-remember pair: went=yes 30m
+say {went=yes} Thank you. I... thank you. | {went=yes} That's kind. Kinder than I'd have been.
 then other: reply.close
 
 rule r7_mend_merry_answer
 when concept=mend.answer self.humour=merry
-say Only if you're buying. | Ha! Fine. But I'm still better looking.
-remember pair: went=yes 30m
+does accept_apology
+say {went=yes} Only if you're buying. | {went=yes} Ha! Fine. But I'm still better looking.
 then other: reply.close
 
 rule r7_mend_dry_answer
 when concept=mend.answer self.humour=dry
-say Well. Stranger things have happened. Not many. | Peace. With you. Let me sit down.
-remember pair: went=grudging 30m
+does accept_apology
+say {went=grudging} Well. Stranger things have happened. Not many. | {went=grudging} Peace. With you. Let me sit down.
 then other: reply.close
 
 rule r7_mend_guarded_answer
 when concept=mend.answer self.honesty=guarded
-say Words are cheap. Show me. | We'll see how long it lasts.
-remember pair: went=grudging 30m
+does accept_apology
+say {went=grudging} Words are cheap. Show me. | {went=grudging} We'll see how long it lasts.
 then other: reply.close
 
 ## Then (self is the one who offered)
 
 rule r7_close_mend
-when concept=reply.close pair.mem.thread=mend
-say Well. | Right. | That's something.
+when concept=reply.close conv.thread=mend
+does ack
+say Well. | #bc_right# | That's something.
 
 rule r7_close_mend_yes
-when concept=reply.close pair.mem.thread=mend pair.mem.went=yes
+when concept=reply.close conv.thread=mend conv.went=yes
+does ack
 say Good. Good. Shake, then. | That's done, then. Thank the Bright One. | Truce. And this time it sticks.
 regard other: affinity +1
 remember pair: mended 14d
 
 rule r7_close_mend_grudging
-when concept=reply.close pair.mem.thread=mend pair.mem.went=grudging
+when concept=reply.close conv.thread=mend conv.went=grudging
+does ack
 say That's more than I hoped for. | Then I'll show you. | It's a start.
 
 rule r7_close_mend_no
-when concept=reply.close pair.mem.thread=mend pair.mem.went=no
+when concept=reply.close conv.thread=mend conv.went=no
+does ack
 say Then rot. | Fine. I tried. Remember I tried. | Your choice. It was always your choice.
 regard other: affinity -1
 
 rule r7_close_mend_no_warm
-when concept=reply.close pair.mem.thread=mend pair.mem.went=no self.warmth=warm
+when concept=reply.close conv.thread=mend conv.went=no self.warmth=warm
+does ack
 say I'll ask again. And again. | Then I'll wait. I'm good at waiting.
 
 rule r7_close_mend_no_short
-when concept=reply.close pair.mem.thread=mend pair.mem.went=no self.temper=short
+when concept=reply.close conv.thread=mend conv.went=no self.temper=short
+does ack
 say Fine! Fine. Your loss. | I don't know why I bothered.
 
 # ================================================================== Acquaintances (talk.day / talk.smalltalk -> chat.answer -> close)
@@ -2196,285 +2182,278 @@ say Fine! Fine. Your loss. | I don't know why I bothered.
 
 rule r7_chat_any
 when concept=talk.day|talk.smalltalk pair.band=acquaintances
+does ask.detail
 cooldown 1d
-say Busy day? | Keeping out of trouble? | Off somewhere nice? | Keeping well?
-remember pair: thread=chat 30m
-remember pair: ch=how 30m
+say {thread=chat ch=how} Busy day? | {thread=chat ch=how} Keeping out of trouble? | {thread=chat ch=how} Off somewhere nice? | {thread=chat ch=how} Keeping well?
 then other: chat.answer
 
 rule r7_chat_chatty
 when concept=talk.day|talk.smalltalk self.talk=chatty pair.band=acquaintances
+does ask.detail
 cooldown 1d
-say Did you hear the bell this morning? Twice! Twice, and nobody knows why. | You're the one from by the well, aren't you? I never forget a face. Names, yes. Faces, never. | The baker's put the prices up again, did you know? A penny on a loaf. A whole penny!
-remember pair: thread=chat 30m
-remember pair: ch=remark 30m
+say {thread=chat ch=remark} Did you hear the bell this morning? Twice! Twice, and nobody knows why. | {thread=chat ch=remark} You're the one from by the well, aren't you? I never forget a face. Names, yes. Faces, never. | {thread=chat ch=remark} The baker's put the prices up again, did you know? A penny on a loaf. A whole penny!
 then other: chat.answer
 
 rule r7_chat_quiet
 when concept=talk.day|talk.smalltalk self.talk=quiet pair.band=acquaintances
+does ask.detail
 cooldown 1d
-say ...Keeping well? | *nods* All right? | Mm. Busy, today?
-remember pair: thread=chat 30m
-remember pair: ch=how 30m
+say {thread=chat ch=how} ...Keeping well? | {thread=chat ch=how} *nods* All right? | {thread=chat ch=how} Mm. Busy, today?
 then other: chat.answer
 
 rule r7_chat_nervy
 when concept=talk.day|talk.smalltalk self.temper=nervy pair.band=acquaintances|strangers
+does ask.detail
 cooldown 1d
-say Is it me, or are there more strangers about lately? | The geese have been at it all morning. Have you noticed? | There's a cart been standing at the corner since dawn. Nobody with it.
-remember pair: thread=chat 30m
-remember pair: ch=remark 30m
+say {thread=chat ch=remark} Is it me, or are there more strangers about lately? | {thread=chat ch=remark} The geese have been at it all morning. Have you noticed? | {thread=chat ch=remark} There's a cart been standing at the corner since dawn. Nobody with it.
 then other: chat.answer
 
 rule r7_chat_formal
 when concept=talk.day|talk.smalltalk self.tone=formal pair.band=acquaintances
+does tell.self
 cooldown 1d
-say I trust the day finds you well. | Good day to you. In good health, I hope? | And how do you do, this fine morning?
-remember pair: thread=chat 30m
-remember pair: ch=how 30m
+say {thread=chat ch=how} I trust the day finds you well. | {thread=chat ch=how} Good day to you. In good health, I hope? | {thread=chat ch=how} And how do you do, this fine morning?
 then other: chat.answer
 
 rule r7_chat_sly
 when concept=talk.day|talk.smalltalk self.honesty=sly pair.band=acquaintances
+does ask.detail
 cooldown 1d
-say Nice coat. Where'd you come by it? | You'll know a lot of folk, I'd wager. Working where you do. | Hear anything interesting lately?
-remember pair: thread=chat 30m
-remember pair: ch=pry 30m
+say {thread=chat ch=pry} Nice coat. Where'd you come by it? | {thread=chat ch=pry} You'll know a lot of folk, I'd wager. Working where you do. | {thread=chat ch=pry} Hear anything interesting lately?
 then other: chat.answer
 
 rule r7_chat_merry
 when concept=talk.day|talk.smalltalk self.humour=merry pair.band=acquaintances
+does tell.self
 cooldown 1d
-say We keep meeting. Folk will talk. | You again! Are you following me, or am I following you? | Fancy seeing you here. Here, where you always are.
-remember pair: thread=chat 30m
-remember pair: ch=remark 30m
+say {thread=chat ch=remark} We keep meeting. Folk will talk. | {thread=chat ch=remark} You again! Are you following me, or am I following you? | {thread=chat ch=remark} Fancy seeing you here. Here, where you always are.
 then other: chat.answer
 
 rule r7_chat_dry
 when concept=talk.day|talk.smalltalk self.humour=dry pair.band=acquaintances
+does tell.self
 cooldown 1d
-say We must stop meeting like this. Standing about, mostly. | Another day. Same as the last, I expect. | Ah. You. The day's complete.
-remember pair: thread=chat 30m
-remember pair: ch=remark 30m
+say {thread=chat ch=remark} We must stop meeting like this. Standing about, mostly. | {thread=chat ch=remark} Another day. Same as the last, I expect. | {thread=chat ch=remark} Ah. You. The day's complete.
 then other: chat.answer
 
 rule r7_chat_name
 when concept=talk.day|talk.smalltalk pair.named=no pair.band=acquaintances
+does tell.self
 cooldown 2d
-say I've seen you about for weeks and never asked your name. | I know your face. I'm ashamed to say I've lost your name. | We've nodded at each other all season. I'm going to ask. What's your name?
-remember pair: thread=chat 30m
-remember pair: ch=name 30m
+say {thread=chat ch=name} I've seen you about for weeks and never asked your name. | {thread=chat ch=name} I know your face. I'm ashamed to say I've lost your name. | {thread=chat ch=name} We've nodded at each other all season. I'm going to ask. What's your name?
 then other: chat.answer
 
 rule r7_chat_neighbours
 when concept=talk.day|talk.smalltalk pair.neighbours=yes pair.band=acquaintances
+does tell.self
 cooldown 2d
-say Was that your door at midnight? | We share a wall and I hardly know you. That's how it goes, I suppose. | I hear you singing, some nights. It's not bad.
-remember pair: thread=chat 30m
-remember pair: ch=wall 30m
+say {thread=chat ch=wall} Was that your door at midnight? | {thread=chat ch=wall} We share a wall and I hardly know you. That's how it goes, I suppose. | {thread=chat ch=wall} I hear you singing, some nights. It's not bad.
 then other: chat.answer
 
 rule r7_chat_customer
 when concept=talk.day|talk.smalltalk pair.customer=a pair.band=acquaintances
+does tell.self
 cooldown 2d
-say I'll be by your shop later. Keep me something good. | That last lot you sold me was the best yet. | Are you open tomorrow? I'll need a few things.
-remember pair: thread=chat 30m
-remember pair: ch=shop 30m
+say {thread=chat ch=shop} I'll be by your shop later. Keep me something good. | {thread=chat ch=shop} That last lot you sold me was the best yet. | {thread=chat ch=shop} Are you open tomorrow? I'll need a few things.
 then other: chat.answer
 
 rule r7_chat_newcomer
 when concept=talk.day|talk.smalltalk pair.rumour=newcomer
+does ask.detail
 cooldown 2d
-say You're new, aren't you? How are you finding it? | Settling in? It takes a while. Folk here are slow to warm. | Found your way about yet?
-remember pair: thread=chat 30m
-remember pair: ch=new 30m
+say {thread=chat ch=new} You're new, aren't you? How are you finding it? | {thread=chat ch=new} Settling in? It takes a while. Folk here are slow to warm. | {thread=chat ch=new} Found your way about yet?
 then other: chat.answer
 
 rule r7_chat_warm
 when concept=talk.day|talk.smalltalk self.warmth=warm pair.band=acquaintances
+does ask.how
 cooldown 1d
-say You look like you could use a sit-down. How are you keeping? | There you are! How's the day treating you?
-remember pair: thread=chat 30m
-remember pair: ch=how 30m
+say {thread=chat ch=how} You look like you could use a sit-down. How are you keeping? | {thread=chat ch=how} There you are! How's the day treating you?
 then other: chat.answer
 
 rule r7_chat_old
 when concept=talk.day|talk.smalltalk self.stage=old other.stage=young|adolescent pair.band=acquaintances|strangers
+does ask.detail
 cooldown 1d
-say Whose pup are you, then? | You've grown. Haven't you grown? | Shouldn't you be helping somebody?
-remember pair: thread=chat 30m
-remember pair: ch=pup 30m
+say {thread=chat ch=pup} Whose pup are you, then? | {thread=chat ch=pup} You've grown. Haven't you grown? | {thread=chat ch=pup} Shouldn't you be helping somebody?
 then other: chat.answer
 
 ## Answering, as they are (self is the one spoken to). Each kind of greeting has its own answers; a trait's answer
-## for one kind reads pair.mem.ch, and the few with no kind fit them all.
+## for one kind reads conv.ch, and the few with no kind fit them all.
 
 rule r7_chat_open
 when concept=chat.answer
-say Can't complain. | Oh, you know. Same as ever. | Fair to middling.
-remember pair: went=open 30m
+does answer.how
+say {went=open} Can't complain. | {went=open} Oh, you know. Same as ever. | {went=open} Fair to middling.
 then other: reply.close
 
 rule r7_chat_how
-when concept=chat.answer pair.mem.ch=how
-say Can't complain. | Oh, you know. Same as ever. | Busy enough. | Fair to middling.
-remember pair: went=open 30m
+when concept=chat.answer conv.ch=how
+does answer.how
+say {went=open} Can't complain. | {went=open} Oh, you know. Same as ever. | {went=open} Busy enough. | {went=open} Fair to middling.
 then other: reply.close
 
 rule r7_chat_remark
-when concept=chat.answer pair.mem.ch=remark
-say Can't say I'd noticed. | Hm. Maybe so. | Ha. So it seems.
-remember pair: went=open 30m
+when concept=chat.answer conv.ch=remark
+does answer.how
+say {went=open} Can't say I'd noticed. | {went=open} Hm. Maybe so. | {went=open} Ha. So it seems.
 then other: reply.close
 
 rule r7_chat_name_answer
-when concept=chat.answer pair.mem.ch=name
-say It's #self.name#. And no shame in asking. | #self.name#. And I'll confess I've lost yours too. | #self.name#. Folk get it wrong all the time.
-remember pair: went=warm 30m
+when concept=chat.answer conv.ch=name
+does answer.how
+say {went=warm} It's #self.name#. And no shame in asking. | {went=warm} #self.name#. And I'll confess I've lost yours too. | {went=warm} #self.name#. Folk get it wrong all the time.
 then other: reply.close
 
 rule r7_chat_wall_answer
-when concept=chat.answer pair.mem.ch=wall
-say Ah. You heard that, did you? | Thin walls. I hear you too, mind. | Sorry. I'll try to be quieter.
-remember pair: went=open 30m
+when concept=chat.answer conv.ch=wall
+does answer.how
+say {went=open} Ah. You heard that, did you? | {went=open} Thin walls. I hear you too, mind. | {went=open} Sorry. I'll try to be quieter.
 then other: reply.close
 
 rule r7_chat_shop_answer
-when concept=chat.answer pair.mem.ch=shop
-say I'll keep you something. | Glad to hear it. Tell your friends. | Come early. The best goes quick.
-remember pair: went=warm 30m
+when concept=chat.answer conv.ch=shop
+does answer.how
+say {went=warm} I'll keep you something. | {went=warm} Glad to hear it. Tell your friends. | {went=warm} Come early. The best goes quick.
 then other: reply.close
 
 rule r7_chat_new_answer
-when concept=chat.answer pair.mem.ch=new
-say Slowly. Everyone's been kind enough. | I'm learning the streets. Mostly by getting lost. | It's not home yet. It will be.
-remember pair: went=open 30m
+when concept=chat.answer conv.ch=new
+does answer.how
+say {went=open} Slowly. Everyone's been kind enough. | {went=open} I'm learning the streets. Mostly by getting lost. | {went=open} It's not home yet. It will be.
 then other: reply.close
 
 rule r7_chat_pup_answer
-when concept=chat.answer pair.mem.ch=pup
-say #mum#'s. | I have! A whole paw's width since spring. | I am helping. I'm helping by standing here.
-remember pair: went=warm 30m
+when concept=chat.answer conv.ch=pup
+does answer.how
+say {went=warm} #mum#'s. | {went=warm} I have! A whole paw's width since spring. | {went=warm} I am helping. I'm helping by standing here.
 then other: reply.close
 
 rule r7_chat_pry_answer
-when concept=chat.answer pair.mem.ch=pry
-say Oh, here and there. | Nothing worth repeating. | Why? What have you heard?
-remember pair: went=wary 30m
+when concept=chat.answer conv.ch=pry
+does answer.how
+say {went=wary} Oh, here and there. | {went=wary} Nothing worth repeating. | {went=wary} Why? What have you heard?
 then other: reply.close
 
 rule r7_chat_chatty_answer
-when concept=chat.answer self.talk=chatty pair.mem.ch=how|remark
-say Oh, don't get me started! My neighbour's goat got out again and... where was I? Busy. Yes. | I was just saying to myself, I was, I said, it's that sort of day. You know?
-remember pair: went=warm 30m
+when concept=chat.answer self.talk=chatty conv.ch=how|remark
+does answer.how
+say {went=warm} Oh, don't get me started! My neighbour's goat got out again and... where was I? Busy. Yes. | {went=warm} I was just saying to myself, I was, I said, it's that sort of day. You know?
 then other: reply.close
 
 rule r7_chat_quiet_answer
 when concept=chat.answer self.talk=quiet
-say Mm. | Aye. | *nods*
-remember pair: went=shut 30m
+does answer.how
+say {went=shut} Mm. | {went=shut} Aye. | {went=shut} *nods*
 then other: reply.close
 
 rule r7_chat_guarded_answer
-when concept=chat.answer self.honesty=guarded pair.mem.ch=how|pry|new
-say Why do you ask? | Here and there. | Depends.
-remember pair: went=wary 30m
+when concept=chat.answer self.honesty=guarded conv.ch=how|pry|new
+does answer.how
+say {went=wary} Why do you ask? | {went=wary} Here and there. | {went=wary} Depends.
 then other: reply.close
 
 rule r7_chat_sly_answer
-when concept=chat.answer self.honesty=sly pair.mem.ch=how|pry
-say Depends who's asking. | Might be. What's it to you? | Oh, this and that.
-remember pair: went=wary 30m
+when concept=chat.answer self.honesty=sly conv.ch=how|pry
+does answer.how
+say {went=wary} Depends who's asking. | {went=wary} Might be. What's it to you? | {went=wary} Oh, this and that.
 then other: reply.close
 
 rule r7_chat_cold_answer
 when concept=chat.answer self.warmth=cold
-say Hm. | If you say so. | Excuse me.
-remember pair: went=shut 30m
+does answer.how
+say {went=shut} Hm. | {went=shut} If you say so. | {went=shut} Excuse me.
 then other: reply.close
 
 rule r7_chat_warm_answer
-when concept=chat.answer self.warmth=warm pair.mem.ch=how
-say Better for a friendly face! | Lovely of you to ask. Truly. | All the better for seeing you.
-remember pair: went=warm 30m
+when concept=chat.answer self.warmth=warm conv.ch=how
+does answer.how
+say {went=warm} Better for a friendly face! | {went=warm} Lovely of you to ask. Truly. | {went=warm} All the better for seeing you.
 then other: reply.close
 
 rule r7_chat_nervy_answer
-when concept=chat.answer self.temper=nervy pair.mem.ch=how|remark
-say Oh! Yes. I mean, fine. You startled me. | Me? Fine. Why? Do I not look fine?
-remember pair: went=open 30m
+when concept=chat.answer self.temper=nervy conv.ch=how|remark
+does answer.how
+say {went=open} Oh! Yes. I mean, fine. You startled me. | {went=open} Me? Fine. Why? Do I not look fine?
 then other: reply.close
 
 rule r7_chat_merry_answer
-when concept=chat.answer self.humour=merry pair.mem.ch=how
-say Never better, never worse! | Fair as a feast day, and twice as hungry. | Can't grumble. I do, mind. Daily.
-remember pair: went=warm 30m
+when concept=chat.answer self.humour=merry conv.ch=how
+does answer.how
+say {went=warm} Never better, never worse! | {went=warm} Fair as a feast day, and twice as hungry. | {went=warm} Can't grumble. I do, mind. Daily.
 then other: reply.close
 
 rule r7_chat_merry_remark
-when concept=chat.answer self.humour=merry pair.mem.ch=remark
-say Ha! There's never a dull day here, is there? | That's this town for you. Never a dull day. | Ha! You notice everything, you.
-remember pair: went=warm 30m
+when concept=chat.answer self.humour=merry conv.ch=remark
+does answer.how
+say {went=warm} Ha! There's never a dull day here, is there? | {went=warm} That's this town for you. Never a dull day. | {went=warm} Ha! You notice everything, you.
 then other: reply.close
 
 rule r7_chat_short_answer
-when concept=chat.answer self.temper=short pair.mem.ch!=pup
-say Can't stop. | What is it? | I'm busy.
-remember pair: went=shut 30m
+when concept=chat.answer self.temper=short conv.ch!=pup
+does answer.how
+say {went=shut} Can't stop. | {went=shut} What is it? | {went=shut} I'm busy.
 then other: reply.close
 
 rule r7_chat_formal_answer
-when concept=chat.answer self.tone=formal pair.mem.ch=how
-say Very well, thank you. And yourself? | Quite well. Kind of you to ask.
-remember pair: went=open 30m
+when concept=chat.answer self.tone=formal conv.ch=how
+does answer.how
+say {went=open} Very well, thank you. And yourself? | {went=open} Quite well. Kind of you to ask.
 then other: reply.close
 
 rule r7_chat_old_answer
-when concept=chat.answer self.stage=old pair.mem.ch=how
-say Slower than I was. Faster than I will be. | Still here. That's the main thing at my age.
-remember pair: went=open 30m
+when concept=chat.answer self.stage=old conv.ch=how
+does answer.how
+say {went=open} Slower than I was. Faster than I will be. | {went=open} Still here. That's the main thing at my age.
 then other: reply.close
 
 rule r7_chat_young_answer
-when concept=chat.answer self.stage=young pair.mem.ch=how|remark
-say I found a frog! It got away. | #mum# says I'm not to talk to... oh, you're all right. Hello! | I'm being good. Mostly.
-remember pair: went=warm 30m
+when concept=chat.answer self.stage=young conv.ch=how|remark
+does answer.how
+say {went=warm} I found a frog! It got away. | {went=warm} #mum# says I'm not to talk to... oh, you're all right. Hello! | {went=warm} I'm being good. Mostly.
 then other: reply.close
 
 rule r7_chat_working_answer
-when concept=chat.answer self.working=yes self.shift=during pair.mem.ch=how|remark
-say Can't stop long. Work. | Busy. Ask me at dusk.
-remember pair: went=open 30m
+when concept=chat.answer self.working=yes self.shift=during conv.ch=how|remark
+does answer.how
+say {went=open} Can't stop long. Work. | {went=open} Busy. Ask me at dusk.
 then other: reply.close
 
 ## And on their way (self is the one who began)
 
 rule r7_close_chat
-when concept=reply.close pair.mem.thread=chat
+when concept=reply.close conv.thread=chat
+does ack
 say Well. | Good to see you. | Mind how you go.
 
 rule r7_close_chat_open
-when concept=reply.close pair.mem.thread=chat pair.mem.went=open
+when concept=reply.close conv.thread=chat conv.went=open
+does ack
 say Well. Good to see you. | Mind how you go. | Same time tomorrow, then. | #farewell#.
 
 rule r7_close_chat_warm
-when concept=reply.close pair.mem.thread=chat pair.mem.went=warm
+when concept=reply.close conv.thread=chat conv.went=warm
+does ack
 say We should talk more. We never do. | Ha! I like you. I don't know why I never said. | Come by sometime. I mean it.
 regard other: familiarity +1
 
 rule r7_close_chat_pup
-when concept=reply.close pair.mem.thread=chat pair.mem.ch=pup
+when concept=reply.close conv.thread=chat conv.ch=pup
+does ack
 priority 1
 say Off you go, then. And mind the carts. | Ha! Good pup. Run along. | Tell your mother I said good day.
 
 rule r7_close_chat_shut
-when concept=reply.close pair.mem.thread=chat pair.mem.went=shut
+when concept=reply.close conv.thread=chat conv.went=shut
+does ack
 say Right. Well. | ...Good talk. | I'll leave you to it.
 
 rule r7_close_chat_shut_chatty
-when concept=reply.close pair.mem.thread=chat pair.mem.went=shut self.talk=chatty
+when concept=reply.close conv.thread=chat conv.went=shut self.talk=chatty
+does ack
 say ...Right! Well. Lovely chat. Lovely. | Not one for talking, are you? That's all right. I'll do it for both of us.
 
 rule r7_close_chat_wary
-when concept=reply.close pair.mem.thread=chat pair.mem.went=wary
+when concept=reply.close conv.thread=chat conv.went=wary
+does ack
 say Only being friendly. | No reason. No reason at all. | Suit yourself.

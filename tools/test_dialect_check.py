@@ -90,6 +90,14 @@ class Lexicon(unittest.TestCase):
         self.assertEqual(DC.hits('Still water hides things.', lex), [])
         self.assertEqual(DC.hits('#greet#, #address#.', lex), [])        # (Symbols are the grammar's business.)
 
+    def test_a_phrase_is_found_within_a_sentence_unless_its_own_words_run_over_one(self):
+        lake = LAKE + 'welcome_back = Back again, shore-friend\nbc_too_late = Too late. Sunk.\n'
+        lib = Library(grammars=(PLAIN, FENS, lake))
+        lex = DC.lexicon(DC.grammars(lib.root), {})
+        self.assertEqual(DC.hits('Back again, shore-friend? Come in.', lex), [('coldwater', 'back again shore-friend')])
+        self.assertEqual(DC.hits('Back again? Shore-friend Morrow is here.', lex), [('coldwater', 'shore-friend')])
+        self.assertEqual(DC.hits('It was too late. Sunk, the lot of them.', lex), [('coldwater', 'too late sunk')])
+
     def test_a_players_choice_never_has_a_dialect(self):
         tree = 'tree t\nentry talk a\nnode a\nsay #greet#.\nchoice Dry feet to you. -> end\n'
         self.assertTrue(Library(tree=tree).run().failures['lexicon'])

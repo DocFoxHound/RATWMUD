@@ -173,42 +173,42 @@ rule md_vent_mourning_friend
 does tell.worry
 when conv.goal=vent self.mood_why=mourning|loss
 tone grave
-say I keep thinking I'll see my friend at the market, and then I remember. | Everyone says it gets easier. It hasn't yet. | Truth be told, I'm not myself since the burying.
+say I keep thinking I'll see my friend at the market, and then I remember. | Everyone says it gets easier. It hasn't yet. | #vent#, I'm not myself since the burying.
 
 rule md_vent_hungry
 does tell.worry
 when conv.goal=vent self.mood_why=hungry
 tone serious
-say If I'm short with you, it's my belly talking. There's been little in the pot. | Truth be told, I've not had a proper meal in days. It makes a wolf #tired#. | I went to bed #hungry# again. I'm not complaining. Well, I am.
+say If I'm short with you, it's my belly talking. There's been little in the pot. | #vent#, I've not had a proper meal in days. It makes a wolf #tired#. | I went to bed #hungry# again. I'm not complaining. Well, I am.
 
 rule md_vent_hurt
 does tell.worry
 when conv.goal=vent self.mood_why=hurt
 tone serious
-say If I'm slow today, it's this hurt. It won't let me sleep; I lie there counting the beams. | I'm #hurt# all over and no use to anyone. | Every step's a nag. I'd sit down, only the work won't do itself.
+say If I'm slow today, it's this hurt. It won't let me sleep; I lie there counting the beams. | I'm #hurt# all over and no use to anyone. | Every step's a nag. I'd sit down, only the work won't do itself. | #vent#, this hurt's worse than I let on.
 
 rule md_vent_poor
 does tell.worry
 when conv.goal=vent self.mood_why=poor
 tone serious
-say Between us, I'm at the end of my #money#, and the week's not half done. | I'll be honest with you: I'm #skint#, and I don't know where the next meal's coming from. | I counted what's left in the jar twice this morning. It didn't get any bigger.
+say #vent#, I'm at the end of my #money#, and the week's not half done. | I'll be honest with you: I'm #skint#, and I don't know where the next meal's coming from. | I counted what's left in the jar twice this morning. It didn't get any bigger.
 
 rule md_vent_robbed
 does tell.worry
 when conv.goal=vent self.mood_why=robbed
 tone serious
-say Since I was robbed, I can't stop thinking about it. Somebody was in my things, and they're still out there. | I check the latch three times a night now. Since the thieving. | It's not even what was taken, you know. It's knowing somebody was there.
+say Since I was robbed, I can't stop thinking about it. Somebody was in my things, and they're still out there. | I check the latch three times a night now. Since the thieving. | It's not even what was taken, you know. It's knowing somebody was there. | #vent#, I've not slept right since the thieving.
 
 rule md_vent_attacked
 does tell.worry
 when conv.goal=vent self.mood_why=attacked
 tone serious
-say I keep looking over my shoulder since I was set on. I never used to. | Every footstep behind me, I jump. It's no way to live.
+say I keep looking over my shoulder since I was set on. I never used to. | Every footstep behind me, I jump. It's no way to live. | #vent#, I've not been easy since I was set on.
 
 rule md_vent_quarrel
 does tell.worry
 when conv.goal=vent self.mood_why=quarrel
-say I had words with somebody I shouldn't have, and it's sat on me all day. | Can I tell you something? I said a thing I can't take back, and it's eating at me. | I fell out with someone. Over nothing, really. That's the worst of it. | Words were said today, and I can't unsay mine. | I lost my temper with a friend. I'm not proud of it.
+say I had words with somebody I shouldn't have, and it's sat on me all day. | Can I tell you something? I said a thing I can't take back, and it's eating at me. | I fell out with someone. Over nothing, really. That's the worst of it. | Words were said today, and I can't unsay mine. | I lost my temper with a friend. I'm not proud of it. | #vent#, I said a thing today I wish I hadn't.
 
 rule md_sympathise
 does sympathise
@@ -282,6 +282,7 @@ say I'm not much company today, I'm afraid. | Some days are just long. This is o
 
 rule lk_pastime_own
 when concept=pastimes.own
+does answer.detail
 priority 3
 say #self.pastime_words.capitalize#, when I get the chance. Always has been. | Give me #self.pastime_words# and I'm content. | #self.pastime_words.capitalize#. You'll laugh, but it's what keeps me sane. | Mostly #self.pastime_words#. Nothing grand.
 then other: pastimes.react

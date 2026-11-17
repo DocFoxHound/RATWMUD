@@ -179,6 +179,8 @@ def lexicon(gram: dict[str, dict[str, list[str]]], allow: dict) -> dict[str, lis
                 p = norm(a)
                 if len(p) >= 3:
                     said[g][p].add(symbol)
+                    if re.search(r'[.!?;:]\s*\S', a.strip()):
+                        SPANNING.add(p)          # (Its own words run over a sentence's end: "Too late. Sunk.")
     ordinary = {norm(p) for p in allow.get('ordinary', [])}
     marked = {d: {norm(w) for w in ws} for d, ws in allow.get('marked', {}).items()}
     out = {}
@@ -200,13 +202,16 @@ def strip_symbols(text: str) -> str:
     return re.sub(r'#[^#\s]*#', ' | ', text)
 
 
-_PATTERNS: dict[int, dict] = {}
+_PATTERNS: dict[int, tuple] = {}
+# The phrases whose own words run over a sentence's end (a dialect's "Ha! Netted."): found across sentences, where every
+# other phrase is found only within one, so "Back again? Stone Sunton's been..." isn't Frosthollow's "Back again, stone."
+SPANNING: set[str] = set()
 
 
 def patterns(lex: dict[str, list[tuple[str, bool]]]) -> dict[str, tuple]:
     """Each dialect's phrases as two expressions: anywhere (words), and at a sentence's start (sayings)."""
     key = id(lex)
-    if key not in _PATTERNS:
+    if key not in _PATTERNS or _PATTERNS[key][0] is not lex:      # (An id is reused once its lexicon is gone.)
         out = {}
         for d, phrases in lex.items():
             words = sorted((p for p, s in phrases if not s), key=len, reverse=True)
@@ -214,8 +219,8 @@ def patterns(lex: dict[str, list[tuple[str, bool]]]) -> dict[str, tuple]:
             anywhere = re.compile(r"(?<![a-z'-])(" + '|'.join(map(re.escape, words)) + r")(?![a-z'-])") if words else None
             start = re.compile(r"^(" + '|'.join(map(re.escape, sayings)) + r")(?= |$)") if sayings else None
             out[d] = (anywhere, start)
-        _PATTERNS[key] = out
-    return _PATTERNS[key]
+        _PATTERNS[key] = (lex, out)
+    return _PATTERNS[key][1]
 
 
 def hits(text: str, lex: dict[str, list[tuple[str, bool]]]) -> list[tuple[str, str]]:
@@ -240,7 +245,9 @@ def hits(text: str, lex: dict[str, list[tuple[str, bool]]]) -> list[tuple[str, s
         sentences.append((' '.join(words), breaks))
     for d, (anywhere, start) in patterns(lex).items():
         if anywhere:
-            found += [(d, m) for m in dict.fromkeys(anywhere.findall(plain))]
+            within = [m for part in re.split(r'[.!?|;:]', own) for m in anywhere.findall(norm(part))]
+            across = [m for m in anywhere.findall(plain) if m in SPANNING]
+            found += [(d, m) for m in dict.fromkeys(within + across)]
         if start:
             for sentence, breaks in sentences:
                 for m in [start.match(sentence)]:

@@ -27,11 +27,11 @@ say Back to it, then. | Work won't wait. | I'd better get on. | This won't earn 
 
 rule cv_accept_any
 does accept_preclose
-say Go on, then. | Right you are. | You do that. | Off you go. | Aye, I'd best too.
+say #bc_go_on_then# | Right you are. | You do that. | Off you go. | Aye, I'd best too.
 
 rule cv_accept_any2
 does accept_preclose
-say #agree#. | And me. | Right. | Aye, go on. | Same here.
+say #agree#. | And me. | #bc_right# | Aye, go on. | Same here.
 
 rule cv_bye_any
 does farewell
@@ -73,7 +73,7 @@ say Take care, now. | Mind how you go. | Aye. #farewell#. | Till next time.
 
 rule cv_return_any3
 does farewell.return
-say Go on, then. | Right you are. | #later.capitalize#. | Aye, you too.
+say #bc_go_on_then# | Right you are. | #later.capitalize#. | Aye, you too.
 
 rule cv_return_any4
 does farewell.return
@@ -131,4 +131,4 @@ say Any time. | Don't mention it. | It's nothing.
 
 rule cv_accept_decline
 does accept_decline
-say Another time, then. | Fair enough. | No matter.
+say Another time, then. | #bc_fair_enough# | No matter.

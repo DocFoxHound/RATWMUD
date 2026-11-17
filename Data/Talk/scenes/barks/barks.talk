@@ -3,6 +3,7 @@
 
 scene bk_merchant_call
 when concept=bark a.role=merchant here.time=dawn|day
+does aside
 a[baker] : Fresh bread! Still warm from the oven! | Loaves, rolls, buns! Get them while they're hot!
 a[fisher] : Fish! Fresh this morning! | Trout and eel, fresh caught!
 a[smith] : Knives sharpened! Hinges mended! | Good iron, fair prices!
@@ -11,57 +12,71 @@ a : Fine goods, fair prices! | Come and see, come and see! | Best in #here.town#
 
 scene bk_guard
 when concept=bark a.role=guard
+does aside
 a[here.time=night] : All's quiet. Get to your beds. | Lights out, the lot of you. | Who goes there? Oh. Carry on.
 a : Move along, move along. | Keep the way clear! | No loitering by the gate.
 
 scene bk_child
 when concept=bark a.stage=young|adolescent
+does aside
 a : Can't catch me! | Mama! Mama, look! | One, two, three, four... ready or not! | I'm the captain of the guard!
 
 scene bk_old
 when concept=bark a.stage=old
+does aside
 a : My knees, my knees. | In my day... ah, never mind. | Too much noise. Always too much noise.
 
 scene bk_weather_rain
 when concept=bark here.weather=rain|storm
+does aside
 a : Will this rain never stop? | Soaked to the bone, again. | Somebody get the washing in!
 
 scene bk_weather_snow
 when concept=bark here.weather=snow
+does aside
 a : Mind the ice! | Cold enough to freeze your breath. | Snow on snow on snow.
 
 scene bk_night
 when concept=bark here.time=night
+does aside
 a : Time I was abed. | Dark already. | Quiet tonight.
 
 scene bk_dawn
 when concept=bark here.time=dawn
+does aside
 a : Another day. | Up and at it. | Cold morning.
 
 scene bk_tavern
 when concept=bark here.place=tavern
+does aside
 a : Another round over here! | Who's buying? | Somebody sing something! | This ale tastes of the barrel.
 
 scene bk_market
 when concept=bark here.place=market
+does aside
 a : Mind your purses in this crush! | Everyone's out today. | Excuse me, coming through!
 
 scene bk_farmer
 when concept=bark a.job=farmer|herder
+does aside
 a : Come on, you stubborn beast! | Rain or sun, the field doesn't care. | Back to the furrows.
 
 scene bk_laborer
 when concept=bark a.job=laborer|carter
+does aside
 a : Heave! | Who packed this? A rock? | Watch your backs! Load coming through!
 
 scene bk_priest
 when concept=bark a.job=priest
+does aside
 a : Peace on this house. | All are welcome. | The bell will ring at dusk.
 
 scene bk_festival
 when concept=bark here.day=festival
+does aside
 a : Joy of #here.festival#! | Music! Somebody play music! | Best day of the year!
 
 scene bk_rest
 when concept=bark here.day=rest
+does aside
 a : Lovely quiet day. | No work, no worries. | Just sitting. Just sitting is fine.
