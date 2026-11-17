@@ -1,0 +1,278 @@
+# rm106, the borrowed saying (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm106
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_vigdis_bilgedale
+written_by claude-codex-cw-1
+title the borrowed saying
+fits stage=adult|old
+prefers talk=plain
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk quotes_old_sayings_for_everything
+likes spiced_cider roof_birds full_larder first_snow
+dislikes smoke flies
+fears an_empty_larder_after_winter a_spoiled_yard
+hopes a_home_where_no_one_goes_hungry an_apprenticeship_well_finished
+topics work +0.4 family +0.3 food +0.3 weather +0.3 memories -0.2
+styles comfort=warm gossip=reluctant refuse=gentle tease=none
+marks oath saying
+persona #self.first# murmurs old #sayings# over the #feed#, watches #birds# on the #roof#, and keeps #cider# ready for visitors.
+
+words
+oath! = By the filled trough | Hearth and hay
+saying! = Feed the mouths before the fire | The roof knows the first snow
+sayings = sayings | old sayings
+pig = pig | yard pig
+pigs = pigs | yard pigs
+yard = yard | pig yard
+trough = trough | feed trough
+feed = feed | mash
+straw = straw | dry bedding
+pen = pen | pig pen
+gate = gate | yard gate
+fence = fence | pen fence
+bucket = bucket | feed bucket
+boots = boots | work boots
+roof = roof | cottage roof
+bird = bird | rooftop bird
+birds = birds | rooftop birds
+larder = larder | food cupboard
+bread = bread | loaf
+cider = cider | spiced cider
+cup = cup | warm cup
+spice = spice | winter spice
+snow = snow | first snow
+smoke = smoke | hearth smoke
+flies = flies | biting flies
+city = city | Ridgemere
+road = road | High Road
+lake = lake | Glasswater
+water = water | lake water
+home = home | cottage
+work = work | day's labour
+coin = coin | pay
+market = market | market square
+hand = hand | helping hand
+night = night | late evening
+line = line | fishing line
+
+any
+opinion @1 city for 1 : I still know the #city# streets by the sounds of their carts. | There are good neighbours beneath the #smoke#.
+opinion @1 dole for 1 : An empty #larder# is reason enough to share #bread#. | A hungry #child# cannot wait for a better season.
+opinion @1 houses against 1 : A House can spare a #bucket# of #feed# and still refuse a working #hand#. | I have not seen their fine rooms, only their walls.
+opinion @1 merchants against 2 : They raise the #bread# price when the #coin# runs thin. | I count my pay twice before I reach a #market# stall.
+opinion @1 strangers for 1 : There is a spare #cup# for someone cold from the #road#. | A guest should eat before telling a story.
+opinion @1 times against 1 : Each week it takes another #coin# to stock the #larder#. | I can work steadily and still see the shelf grow bare.
+opinion @1 newcomers mixed 1 : A newcomer may learn the #yard# quickly. | I ask them to shut the #gate# before I trust the rest.
+
+grown
+line @1 greet : #greet#. Have a #cup# of #cider# if you are cold. | #greet#. The #yard# is nearly settled.
+line @2 greet [self.working=yes] : One moment; I am filling the #trough#. | Speak while I carry this #bucket#.
+line @3 greet [pair.band=friends|family] : You can take the dry side of the #gate#. | I saved you the last warm #cup#.
+line @4 greet [here.time=dawn] : The #pigs# rose before I did today. | #greet#. The first #bucket# is already gone.
+line @1 greet.return : I remember your step by the #fence#. | #welcome_back#. The #yard# is quieter now.
+line @1 kin.open [pair.kin!=no] : Come in; the #larder# has enough for both. | Your #boots# can dry beside the hearth.
+line @1 again.open : We have met since the #trough# was filled. | Have you come back for that #saying#?
+line @1 farewell : #farewell#. Mind the #gate# on your way. | #saying.capitalize#. Keep warm.
+line @1 farewell.return : There will be another #cup# tomorrow. | Come back when the #snow# arrives.
+line @1 react.news : Give me the part you saw yourself. | I can set down the #bucket# and listen.
+line @1 react.news.new : Nobody at this #yard# has mentioned it. | Did the word come from the #city#?
+line @1 react.news.known : I heard something near the #market#. | You have given me a clearer account.
+line @1 react.news.doubt : #hedge#, I need to know who witnessed it. | A rumour can run faster than a loose #pig#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Come into the warm #home#. | That is heavy news; let me sit with you.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : We should raise a #cup# for that. | Such news can fill a room more than a fire.
+line @1 answer.how : The #larder# is full today. | Tired from the #yard#, and content.
+line @1 answer.how.busy [self.working=yes] : The #pigs# are fed; the #pen# still wants cleaning. | I have a #bucket# in each #hand#.
+line @1 ask.how : Have you eaten today? | How are things at your #home#?
+line @1 sympathise : Sit down and have #cider# before speaking. | You need not carry this alone.
+line @1 reassure : A bare shelf can be filled again. | We can settle one #pen# before worrying about the next.
+line @1 decline : I cannot leave the #yard# this morning. | I have promised this #feed# elsewhere.
+line @1 accept_decline : Then we will let it rest. | Your choice is clear; I can work with it.
+line @1 thank : You shut the #gate# before the #pigs# got out; thank you. | That was a generous #hand#.
+line @1 deflect_thanks : There was room at the table. | I had more #cider# than I needed.
+line @1 preclose : The #trough# needs one last look. | I must close the #pen# before dark.
+line @1 ack : #bc_right#. I will check the #gate#. | #bc_fair_enough#. I have heard you.
+line @1 give.advice : Keep the #straw# dry beneath the #pigs#. | Fill your own #larder# before lending #coin#.
+line @1 warn [world.bandits=near] : Do not take the #road# alone after dusk. | Keep your #coin# out of sight near the #market#.
+scene old_saying
+when topic=memories
+does tell.self / react.self / assess
+a : An old #saying# comes to me whenever the #yard# goes wrong. | I learned more of them than I learned names of #birds#.
+b : Do they help? | Who taught you?
+a : They slow my temper. | Someone who kept a fuller #larder# than ours.
+
+scene first_snow
+when topic=weather here.season=winter
+does tell.self / react.self / assess
+a : I watch the #roof# for the first #snow#. | A white morning makes even the #yard# look clean.
+b : Do the pigs mind? | Do you stay indoors?
+a : They want extra #straw#. | Only until the #trough# calls.
+
+scene roof_birds
+when topic=pastimes
+does tell.self / react.self / assess
+a : The #birds# settle on the #roof# before the sun leaves the #yard#. | One small #bird# comes back to the same tile.
+b : Can you tell them apart? | Do they come close?
+a : By their calls. | Close enough to steal #feed#.
+
+scene cider_spice
+when topic=food
+does tell.self / react.self / assess
+a : I warm #cider# with a little #spice# after work. | A hot #cup# makes the cottage seem larger.
+b : Is it strong? | Do you share it?
+a : Only enough to taste. | Whenever someone comes in cold.
+
+scene full_larder
+when topic=food
+does tell.self / react.self / assess
+a : A full #larder# lets me sleep through the #night#. | I count the #bread# before the #market# day.
+b : Do you keep stores for winter? | What runs out first?
+a : As much as I can. | Usually #spice#.
+
+scene feed_bucket
+when topic=work
+does tell.self / react.self / assess
+a : The first #bucket# goes to the smallest #pig#. | I carry the #feed# along the #fence# so nobody crowds the #gate#.
+b : Why that order? | Do they fight?
+a : The larger ones push. | If I am careless with the #trough#.
+
+scene wet_straw
+when topic=work
+does tell.self / react.self / assess
+a : Wet #straw# turns the #pen# sour before noon. | I pull the bedding out as soon as the #roof# leaks.
+b : Is that often? | Where do you get fresh straw?
+a : Only in hard #rain#. | From the dry stack beside the #yard#.
+
+scene loose_gate
+when topic=work
+does tell.self / react.self / assess
+a : I test the #gate# twice before leaving the #yard#. | One loose latch can send the whole pen into the #road#.
+b : Has that happened? | Can you mend it?
+a : Once, when I was new. | I keep a spare catch.
+
+scene smoke_in_eyes
+when topic=weather
+does tell.self / react.self / assess
+a : #smoke.capitalize# in my eyes makes me miss what the #pigs# are doing. | I stand away from the hearth when the draw is poor.
+b : Does it bother you much? | Do you open the door?
+a : More than the #flies#. | If the #snow# is not coming through it.
+
+scene summer_flies
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : #flies.capitalize# gather where the #trough# stays damp. | I scrub the #bucket# before they settle there.
+b : Can you keep them away? | Do the pigs mind?
+a : Cleaning helps. | They stamp and complain.
+
+scene city_return
+when topic=memories
+does tell.self / react.self / assess
+a : I once left for the #city# with plans larger than my purse. | I returned to the #lake# with less #coin# than I took.
+b : Did you find work? | Will you try again?
+a : For a little while. | I have a #home# here now.
+
+scene city_silence
+when topic=memories
+does tell.self / react.self / assess
+a : I do not talk much about that #city# journey. | The #road# back gave me time to decide what mattered.
+b : Was it difficult? | What did you decide?
+a : It was. | I wanted a place where I could fill a #larder#.
+
+scene share_bread
+when topic=family
+does tell.self / react.self / assess
+a : I divide #bread# before anyone says they are hungry. | There is always a corner of the table for another #cup#.
+b : Does everyone eat together? | Is there enough?
+a : When their work allows. | I make sure there is.
+
+scene apprentice_task
+when topic=work
+does tell.self / react.self / assess
+a : I am still learning which #pig# needs watching most. | A good teacher lets me make a small mistake and then correct it.
+b : What did you learn first? | Do you like the work?
+a : To keep the #gate# closed. | It gives the day shape.
+
+scene market_bread
+when topic=prices
+does tell.self / react.self / assess
+a : I compare the #bread# price with what we brought home last week. | My #coin# should buy more than an empty paper bag.
+b : Do prices rise often? | Do you bargain?
+a : Too often. | When I have a fair reason.
+
+scene quiet_lake
+when topic=pastimes
+does tell.self / react.self / assess
+a : I go to the #lake# when the #yard# is finally quiet. | The #water# makes less demand of me than the #city# did.
+b : Do you stay long? | Do you fish?
+a : Until the air cools. | Sometimes, with a borrowed #line#.
+
+scene winter_bedding
+when topic=work here.season=winter
+does tell.self / react.self / assess
+a : I pack extra #straw# beneath the #pigs# when the #snow# settles. | The #pen# must stay dry even if my #boots# do not.
+b : Does that keep them warm? | Is it hard to find enough?
+a : It helps. | I save it from autumn.
+
+story city_purse [topic=memories self.age>=18]
+  : I took the #road# to the #city# with a purse and a great many plans.
+  : I worked, spent, and came back with nearly no #coin#.
+  ask : Did you regret going?
+  b : That must have been hard to tell at home.
+  : I learned which place I wanted to call #home#.
+
+story first_gate [topic=work self.age>=18]
+  : In my first week at the #yard#, I left a #gate# half latched.
+  : The smallest #pig# found the gap and ran toward the #road#.
+  ask : Did you catch it?
+  b : A quick lesson for an apprentice.
+  : I did, and I check the catch twice now.
+
+story roof_guest [topic=pastimes self.age>=18]
+  : A #bird# watched from the #roof# while I filled the #trough# for days.
+  : When the first #snow# fell, it waited by the door instead.
+  ask : Did you feed it?
+  b : Perhaps it knew where the warmth was.
+  : A few crumbs, away from the #pigs#.
+
+rule @bark_gate
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say The #gate# wants checking. | I have another #bucket# to carry.
+
+rule @bark_birds
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say The #birds# are back on the #roof#. | One last look at the #pen#.
+
+rule @bark_larder
+when concept=bark
+does aside
+cooldown 10h
+say There should be #bread# left for supper. | I will warm the #cider# soon.
+
+rule @bark_snow
+when concept=bark here.season=winter
+does aside
+cooldown 12h
+say Is that the first #snow#? | More #straw# for the #pen# tonight.
+
+dlg @1 resident.hub : #greet#. Come around the #yard# #gate#. | #greet#. You can tell me your business over a #cup#.
+dlg @2 resident.hub [topic.meeting=known] : Back already? The #trough# is filled now. | I know you; there is #cider# if you want it.
+dlg @1 resident.job : I tend the #pigs# at #self.workplace# and keep their #pen# clean. | I carry #feed#, check the #gate#, and learn the work.
+dlg @1 resident.bye : #farewell#. Shut the #gate# behind you. | #saying.capitalize#. I must tend the #yard#.
+graft resident.hub
+choice Where did you learn those sayings? -> sayings
+node sayings
+say At home, mostly. I repeat them when the #yard# needs patience.
+free
+choice Do you miss Ridgemere? -> city
+choice Back to the yard. -> hub
+node city
+say I went once with a purse full of hopes. I have work and a fuller #larder# here.
+choice Back to the yard. -> hub
+choice Goodbye. -> bye
