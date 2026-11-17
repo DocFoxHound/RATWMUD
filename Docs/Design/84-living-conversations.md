@@ -8,8 +8,8 @@ knowledge, a third voice), Phase 5 (topics, agendas, goals, the ledger), Phase 6
 accommodation), Phase 7 (converting the library; coverage) and Phase 8 (the shared lines, in three sessions) are
 built** (2026-11-16, branches `r3-talk-p0` to `r3-talk-p8`; §23, §24, §27-§33 say what and what they
 measured), and **Slice 2's end** is done (2026-11-17, branch `r3-talk-s2`, §34: the full suite, every profile, the
-ticking 100-hour listen and its packet, the review's fixes, and the first blind packet, waiting for the user's ratings);
-nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
+ticking 100-hour listen and its packet, the review's fixes, and the first blind packet, rated blind by three raters:
+**H1 not met**, the talk rated below the baseline, and why, §34's last part); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
 replaces neither: every one of today's 8,525 library entries and 10 trees keeps loading and speaking while it is
 converted. It was written from five read-only surveys of the code, the data and the live world at `ridgemere2` 1034c1fc
 (the engine, the trees, the lifecycle, what residents know, and prior art) and three competing designs; §4 says how they
@@ -3912,8 +3912,105 @@ control, sampled over topic family and length (2 lines or more), in a random ord
 The packet is `artifacts/talk/rate/s2/packet.md` (and `rate.html`, `ratings.csv`), the key
 `artifacts/talk/rate/s2/key.json` (don't open it before rating). When the ratings are in, `python3 tools/talk_rate.py
 score ratings.csv --key artifacts/talk/rate/s2/key.json` gives H1 (the means, new − shuffled against 2.0+, new − old
-against 1.0+, new against 3.8+) and H2. Not rated yet: that is the user's.
+against 1.0+, new against 3.8+) and H2. Rated blind by three raters: "H1, first blind ratings" below. §18 asks for the
+user's own rating too; these don't stand in for it.
 
 **For Slice 3.** The open gates are Phase 8's: R1 frozen 8.3 h of 20, B5 under load, C4 fixtures' two old lexicon
 clashes, the Ridgemere 3 look's p99 (`World::districtHouse`); and the soft rows U2, X1, R8. The scene turns that put a
-question beside statements (§33.4) are not split. The ticking listen's own findings are above; the ratings decide H1.
+question beside statements (§33.4) are not split. The ticking listen's own findings are above. H1 is not met (below):
+what it asks of the engine and the shared lines comes before Slice 3's mantles are heard.
+
+### H1, first blind ratings (2026-11-17)
+
+**Who rated, and how.** Three raters (A, B, C), each given only the packet (the same `packet.md`, byte for byte) and
+never the key, rated all 90 conversations from 1 to 5 on two axes, **believable** (real people talking) and **coherent**
+(each line follows the one before), with a note on every low one. None said whether a writer wrote the whole exchange,
+so **H2 is not measured**. Their numbers and words are kept unchanged in `artifacts/talk/rate/s2/ratings-blind.json`.
+`talk_rate.py score` now takes several raters and any number of axes. H1 is judged on **overall**, the mean of each
+rating's two axes: `python3 tools/talk_rate.py score artifacts/talk/rate/s2/ratings-blind.json --key
+artifacts/talk/rate/s2/key.json --json artifacts/talk/rate/s2/h1.json --report artifacts/talk/rate/s2/h1.md` (the
+report has every table, the six lowest with their lines, entries and moves, and all the notes). Nothing in the engine or
+the lines changed, so §34's scorecard stands, and `talk_card` wasn't run again.
+
+| Source | Believable | Coherent | **Overall** | Items below 2.5 / at 4+ | Weighted to the lengths heard |
+|---|---|---|---|---|---|
+| Slice 2 (the ticking listen) | 3.31 | 3.44 | **3.38** | 6 / 11 of 30 | 3.13 |
+| Slice 1 baseline (P0's, the old library) | 3.56 | 3.98 | **3.77** | 3 / 17 of 30 | 4.02 |
+| The shuffled control | 1.83 | 1.54 | **1.69** | 26 / 1 of 30 | 1.29 |
+| New − shuffled (target 2.0+) | +1.48 (95%: +1.11 to +1.83) | +1.90 (+1.42 to +2.37) | **+1.69** (+1.28 to +2.08) | | |
+| New − old (target +1.0) | −0.24 (−0.59 to +0.12) | −0.53 (−1.03 to 0.00) | **−0.39** (−0.80 to +0.04) | | |
+
+The intervals are a seeded bootstrap over the items. These are the scores each source got, across raters and items, 1
+to 5. Believable: new 14/35/40/1 for 2/3/4/5; old 11/24/49/6; shuffled 32/44/11/3 for 1/2/3/4. Coherent: new 1/17/25/35/12
+for 1-5; old 4/7/13/29/37; shuffled 63/13/6/8 for 1-4. Every rater ranks the three the same way, old over new over
+shuffled. Each rater's overall means, for new, old and shuffled, were A 3.40, 3.88 and 1.78; B 3.38, 3.67 and 1.57; and
+C 3.35, 3.75 and 1.72. **The raters agree closely.** Krippendorff's alpha (interval) is 0.92 for believable, 0.96 for
+coherent and 0.96 overall (ordinal: 0.94, 0.95 and 0.96), and the mean pairwise Spearman is 0.94, 0.95 and 0.96. They
+gave the same number 82% of the time on believable and 81% on coherent, and never differed by more than one point. The
+means stand, and what varies is the conversations.
+
+**H1 is not met on any of its three counts.** The new talk scores 3.38, against a target of 3.8. It beats the shuffled
+control by 1.69, short of the 2.0 target, but its interval lies well clear of 0, so the control does separate. Against
+the old library it falls 0.39 short of the target, and it isn't 1.0 above it. Its interval runs from −0.80 to +0.04, so
+"no better" is sure and "worse" nearly so. The packet samples talks of 2, 3, 4 and 5 or more lines evenly, but most of
+what a listener hears is longer: the ticking listen's talk is 54% at 6 lines or more, the baseline's is 88% at 3 lines.
+Weighted to the lengths each run speaks, the gap widens to about −0.9 (3.13 against 4.02).
+
+**Where the deficit is.** The deficit isn't in the replies at the heart of a talk. The new 2- and 3-line talks rate
+3.54 and 4.15, against the baseline's 3.05 and 4.00. The 16 of 30 new talks that have neither fault below rate **3.84**,
+which is above the 3.8 target and above the baseline's 3.77. The deficit is in two things the engine adds around those
+replies:
+1. **"Back again?" in the opener's breath.** When two wolves talked within the last 0.3 days, `frames.json`'s
+   `again_today` puts `again.open` in front of whatever opens. Seven new items have it, and they rate 2.50 against 3.65
+   for those without. **29.6% of the ticking listen's 7,418 talks open with it**, because the same pairs meet again and
+   again in the four rooms. It comes before a lost house ("Back so soon? We had a proper house once."), a theft, the
+   drovers' good news, and a line that starts with the same word ("Back again? Back home rich and poor..."). With a
+   callback it stacks three openers in one breath ("Twice in a day, is it? We'd only just finished with the last of
+   this. Edric Millton's been done."). In all, 5.8% of the listen's first lines carry three moves or more.
+2. **A farewell pair after one exchange.** The 14 new items that close with a farewell rate 2.85, and the 14 that end
+   curt rate 3.90. The 4- and 5-line talks rate 2.71, and they are 40% of the listen's talk. The baseline's talks of that
+   length rate 4.25, and all their lines are talk. A quiet wolf's budget (3 to 5 lines) or a stranger's (scaled by 0.6)
+   leaves room for one exchange, and the closing takes the rest. A bare "Aye." also counts as the answer to a confession.
+   9.3% of the listen's talks are one exchange and then goodbyes. All seven "again" items also closed this way.
+
+**The five lowest of Slice 2.** The rating is the three raters' overall mean. Items 7 and 89 tie for fifth, so both are
+listed.
+
+| # | Rated | The talk | What the raters said | What caused it |
+|---|---|---|---|---|
+| 23 | 1.83 | Aud: "Back again? Back home rich and poor drink at the same well. Here they've a well each." Hanne, joining: "Don't let me stop you. I'll just listen." Aud: "Be seeing you." Gwen: "Rest well." | The opener says "back" twice. "I'll just listen" answers nothing. Aud leaves, and a speaker who hadn't spoken says goodbye. | `again.open` goes in front of `n7_st_country_city` with no check on its first word. Hanne joins on her favourite topic (`s8j_favourite_smalltalk3`) as the second line. **`Library::join` clears what was owed** (`c.open.clear()`: "the joiner cuts in before whatever was owed"), so Gwen, who was spoken to, never answers, and the opener's `then other: town.station` is dropped. With nothing owed the talk closes, and Gwen's only line is her goodbye. Of the listen's 230 joins, 65 cut in before the opener was answered. |
+| 6 | 2.00 | Corwin: "Hello, friend. She'll be tucked in a cove somewhere, the Kestrel. Waiting." Gwen: "I've watched a thousand come and go." Then goodbyes. | The Kestrel comes from nowhere. The reply only loosely fits, and the talk goes straight to goodbyes. | `s83s_late_sailor`, Phase 8's ships line, is written as a reply about a ship already known to be late, but here it opens the talk (`does tell.self`) after the strangers' greeting. `s83s_ans_old` answers any ship news for any old wolf. The strangers' budget, scaled by 0.6, leaves one exchange. |
+| 66 | 2.00 | Orm: "Back so soon? We had a proper house once. Before things went wrong." Gerrit: "Aye." Then goodbyes. | "Back so soon?" is stapled to a heavy confession, which gets a bare "Aye" and an immediate goodbye. | `again.open` (`ag_again_any`) goes in front of a grave memory (`e3_mr_poor`, though it is tagged tone even). A quiet wolf's "Aye." (`e3_ma_quiet`) is taken as the answer. The budget is a quiet wolf's, so the closing comes at once. |
+| 73 | 2.00 | Gwen: "Twice in a day, is it? We'd only just finished with the last of this. Edric Millton's been done. The Watch'll be down here looking by noon." Ansel: "Up the hill, that's news. Down here it's the weather." Gwen: "Nobody's blaming you." Then the night's goodbyes. | Three stacked openers. "Nobody's blaming you" doesn't follow, and the bedtime exit is abrupt. | Three moves go in one breath: `again.open`, the callback `s8cb_crime` ("the last of this" means the last crime, which is never named) and `h7_cr_open_sump`. `h7_cr_ans_sump` tags all four of its alternatives `{h7_said=blame}`, including this one, which isn't about blame, so `h7_cr_close_blame` follows it. |
+| 7 | 2.33 | Soren: "Planks are dear in Frosthollow, so the Frosthollow wagon says." Sybil: "I'll hear about it when it hits my supper." | "My supper" is a retort about food prices, but the news is about planks. "Frosthollow ... Frosthollow wagon" says the town twice. | `e8r_cv_news`'s second alternative puts `#topic.where#` after `#topic.news#`, which already names the town. `s83v_ans_news_poor` answers any wagon's news for any poor wolf, with nothing about the goods, and it was said 139 times in the listen. The talk ended curt. |
+| 89 | 2.33 | Hanne: "You again? There'll be meat on every table tonight, with the drovers in." Gwen: "In my day it was the same, and we managed." A preclose, then goodbyes. | "We managed" answers good news as if it were hardship. "You again?" is stilted, and the talk ends in an abrupt brush-off. | `again.open` goes in front of good news. `s83e_ans_old` answers any event happening now for any old wolf, with no `{ev=...}` criterion, so a hardship line meets the drovers' `{ev=good}`. |
+
+**What it asks of the next round.** None of this is fixed here. It comes before Slice 3's mantles are heard, and the
+second packet at the final listen will measure it again.
+- `again.open` only where it fits. It should be a line of its own, answered with `greet.return`, not said in the
+  opener's breath. It should never come before a grave or sorrowful line or news of a death or a crime, never start
+  with the opener's own first word, and come far less often between the same two in one room.
+- No more than two opening moves in one breath.
+- A body before the closing. Close only after two exchanges, or end curt, as the well-rated talks did, when the budget
+  leaves only one. A bare backchannel ("Aye.") shouldn't count as the answer to a story or a confession.
+- `Library::join` keeps what was owed: the joiner cuts in, and the one spoken to still answers.
+- Phase 8's answers by the replier's kind (`s83e_ans_old`, `s83v_ans_news_poor`, `s83s_ans_old` and the like) should
+  depend on what the news is, whether good or bad, and whether it's about food. `h7_cr_ans_sump`'s tag should go only on
+  the alternatives about blame. `s83s_late_sailor`'s lines should become answers, or openers that name the ship and say
+  that it's late. `e8r_cv_news` should say the place once.
+- Report the mean weighted to the lengths heard beside the packet's even one. The scorer does both now.
+
+**The instrument.** `talk_rate.py score` takes any number of rating files. A `ratings.csv` is one rater. A JSON file
+holds one rater or several, each with any number of 1-5 axes and a note per item. For each axis and source, the score
+gives:
+- the mean, the spread of the item means, the distribution of the scores, and each rater's means;
+- the differences, with a seeded bootstrap interval over the items;
+- agreement between the raters: Krippendorff's alpha, interval and ordinal (checked against Krippendorff's own 2011
+  example, 0.849 and 0.815), the mean pairwise Spearman, and exact and within-one agreement;
+- the rating by length, with the share of the run's talk at that length and the mean weighted to it;
+- for the new source, the rating by how its talks ended and by the moves they made;
+- the N lowest new items (`--worst`), with the raters' notes and the lines as the run spoke them;
+- the same as Markdown (`--report`).
+
+`test_talk_rate` (ctest `talk_rate_rules`) now has 7 tests: the reference alpha, several raters on two axes, and the old
+one-CSV path.

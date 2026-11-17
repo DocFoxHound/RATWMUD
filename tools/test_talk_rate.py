@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""tools/talk_rate.py's packet (Docs/Design/84 §15.7): blind, its key apart, nothing drawn twice.
+"""tools/talk_rate.py (Docs/Design/84 §15.7): the packet blind, its key apart, nothing drawn twice; the score from one
+rater or several, on any axes, with agreement between them.
 
   cd tools && python3 -m unittest test_talk_rate
 """
@@ -96,6 +97,60 @@ class Packet(unittest.TestCase):
         self.assertEqual({len(x[2]) for x in got}, {2, 3, 4}, "spread over length")
         again = talk_rate.sample(run, 40, random.Random(2), taken, openers)
         self.assertEqual(len(again), 32, "what was taken is never taken again")
+
+
+class Score(unittest.TestCase):
+    KEY = {str(i): {"source": s, "run": "", "conv": i} for i, s in
+           enumerate(["new", "new", "old", "old", "shuffled", "shuffled"], 1)}
+
+    def test_krippendorff_reference(self):
+        # Krippendorff (2011), "Computing Krippendorff's alpha-reliability": 4 observers, 12 units, some missing.
+        n = None
+        rows = [[1, 2, 3, 3, 2, 1, 4, 1, 2, n, n, n], [1, 2, 3, 3, 2, 2, 4, 1, 2, 5, n, 3],
+                [n, 3, 3, 3, 2, 3, 4, 2, 2, 5, 1, n], [1, 2, 3, 3, 2, 4, 4, 1, 2, 5, 1, n]]
+        units = [[r[u] for r in rows if r[u] is not None] for u in range(12)]
+        self.assertAlmostEqual(talk_rate.krippendorff(units, "interval"), 0.849, places=3)
+        self.assertAlmostEqual(talk_rate.krippendorff(units, "ordinal"), 0.815, places=3)
+        self.assertEqual(talk_rate.krippendorff([[1, 1], [2, 2], [3, 3]]), 1.0)
+
+    def test_many_raters_and_axes(self):
+        a = {"rater": "A", "ratings": [{"id": "1", "believable": 4, "coherent": 5}, {"id": "2", "believable": 2, "coherent": 1,
+                                                                                    "note": "Nothing answers."},
+                                       {"id": "3", "believable": 4, "coherent": 4}, {"id": "4", "believable": 5, "coherent": 5},
+                                       {"id": "5", "believable": 1, "coherent": 1}, {"id": "6", "believable": 2, "coherent": 1}]}
+        b = {"rater": "B", "ratings": [dict(x, note="Odd.") if x["id"] == "2" else dict(x) for x in a["ratings"]]}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ratings.json"
+            path.write_text(json.dumps({"raters": [a, b]}))
+            raters = talk_rate.read_raters([path])
+        self.assertEqual([r["name"] for r in raters], ["A", "B"])
+        out = talk_rate.score_ratings(self.KEY, raters, worst=1)
+        h1 = out["H1"]
+        self.assertEqual(out["axes"], ["believable", "coherent", "overall"])
+        self.assertEqual(h1["axis"], "overall", "with two axes, H1 is judged on their mean")
+        self.assertAlmostEqual(h1["mean"]["new"], 3.0)
+        self.assertAlmostEqual(h1["mean"]["old"], 4.5)
+        self.assertAlmostEqual(h1["new_minus_old"], -1.5)
+        self.assertEqual(h1["met"], {"new": False, "new_minus_shuffled": False, "new_minus_old": False})
+        self.assertEqual(h1["by_axis"]["coherent"]["new"]["dist"], {"1": 2, "5": 2})
+        self.assertEqual(out["agreement"]["coherent"]["alpha_interval"], 1.0, "two raters giving the same numbers agree")
+        self.assertEqual(out["agreement"]["coherent"]["exact_pct"], 100.0)
+        self.assertEqual(out["H2"], "not rated")
+        self.assertEqual([w["item"] for w in out["worst"]], ["2"], "the new source's lowest, only")
+        self.assertEqual(out["worst"][0]["notes"], {"A": "Nothing answers.", "B": "Odd."})
+        self.assertIn("**Not met**", talk_rate.report(out))
+
+    def test_one_csv_still_scores(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ratings.csv"
+            path.write_text("item,rating,writer\n1,5,1\n2,4,0\n3,3,0\n4,3,0\n5,1,0\n6,,0\n")
+            out = talk_rate.score_ratings(self.KEY, talk_rate.read_raters([path]), worst=0)
+        self.assertEqual(out["axes"], ["rating"])
+        self.assertAlmostEqual(out["H1"]["mean"]["new"], 4.5)
+        self.assertAlmostEqual(out["H1"]["new_minus_shuffled"], 3.5, msg="an item left blank isn't rated")
+        self.assertTrue(out["H1"]["met"]["new_minus_shuffled"])
+        self.assertEqual(out["H2"]["new"], 50.0)
+        self.assertEqual(out["agreement"], {}, "one rater: no agreement to measure")
 
 
 if __name__ == "__main__":
