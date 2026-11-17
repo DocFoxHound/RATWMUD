@@ -1,0 +1,46 @@
+# lf003, the berth-dreamer of the Sump (doc 84 §9.7): the luna table of rm_agna_bilgecot, ported. She works at the
+# preserving house now (the table had her mending nets); the names it gave are gone.
+mantle lf003
+state ready
+dialect larkfield
+accent light
+tier standard
+written_for rm_agna_bilgecot
+title the berth-dreamer
+fits stage=adult|old
+traits talk=quiet drive=content
+quirk knows_which_streets_flood_first
+likes high_stones
+dislikes mud
+fears open_water
+hopes a_berth_somewhere_dry
+topics ships +.4 weather +.2
+marks oath saying
+persona #self.first# works and lives in the Sump: quiet, content in a thin way, and she dreams of a berth on a ship bound somewhere dry.
+
+words
+saying! = Every tide leaves a bargain behind | Dry paws, fair price
+oath! = Scales and spite | Brine and bother
+surprise = There's a bargain | Well, sell me
+
+rule @sump
+when concept=bark working=no
+does aside
+cooldown 8h
+say Set that by the wall, not the door. I know what rises first. | Keep to the higher stones; the Sump is taking water.
+
+scene berth
+when concept=talk.ships
+does tell.plan / react.self
+a : A berth on a good ship could take me somewhere dry. I wonder if dry places dream of rain.
+b[friends] : I'd come and see you off.
+b : You'd miss the mud inside a week.
+
+line greet.return : #greet#. Mind your feet; it's wet past the corner.
+line farewell.return : #farewell#. Keep high.
+line react.news.new : #surprise#. And here's me thinking nothing happens.
+line react.news.known : I heard. The Sump hears everything first.
+line answer.how : Tired of mud. Otherwise well.
+line tell.worry [concept=talk.weather here.weather=rain|storm] : The first flood always tells the truth about a street.
+
+dlg resident.hub [topic.meeting=known] : #greet#, #topic.player#. Carry something, or clear the way.

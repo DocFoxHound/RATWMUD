@@ -93,9 +93,11 @@ MOVED_TO_ATLAS = frozenset({
     '/api/factions/member',
     '/api/talk/voice', '/api/talk/kin', '/api/talk/dialect', '/api/talk/figure',
 })
+# Doc 84 §17.10 (Phase 11): a mantle's text is edited in both, Atlas on its world (DEV) and the DM on the live one.
+SHARED_AUTHORING = frozenset({'/api/talk/mantle'})
 # What those pages read (and the queued syncs' answers, /api/actions/ID).
 LAYER_READS = frozenset({'/api/npcs', '/api/world', '/api/ground', '/api/factions', '/api/factions/history', '/api/talk',
-                         '/api/talk/dialects', '/api/talk/figures'})
+                         '/api/talk/dialects', '/api/talk/figures', '/api/talk/mantles', '/api/talk/mantle'})
 # Push to live leaves Atlas: it becomes the DM's Import from dev (doc 66, Phase 4).
 NOT_IN_ATLAS = frozenset({'/api/publish', '/api/publish/push', '/api/publish/rollback', '/api/publish/pull'})
 PUSH_MOVED = ('Push to live has gone: Atlas updates its copy from live (Update from live), and the DM\'s Server & import '
@@ -575,7 +577,7 @@ def dm_offers(method: str, path: str) -> bool:
 def layer_offers(method: str, path: str) -> bool:
     """Atlas's NPC pages: the moved authoring and what it reads; no sign-in, storyline or live-life routes."""
     if method == 'POST':
-        return path in MOVED_TO_ATLAS
+        return path in MOVED_TO_ATLAS or path in SHARED_AUTHORING
     return path in LAYER_READS or (path.startswith('/api/actions/') and path.count('/') == 3)
 
 
@@ -588,10 +590,11 @@ def layer_offers(method: str, path: str) -> bool:
 # one that is in neither. A route's own rules apply on top (the players' wolves flag, cheats, the AI caps: HostedStudio).
 VIEWER, DM_ROLE, BUILDER, OWNER = 'viewer', 'dm', 'builder', 'owner'
 _DM_READS = ('me', 'worlds', 'players', 'health', 'world', 'ground', 'live', 'live/rumours', 'live/fame', 'live/projects',
-             'storytellers', 'talk', 'talk/dialects', 'talk/figures', 'prosperity', 'calendar', 'chronicle', 'npcs',
+             'storytellers', 'talk', 'talk/dialects', 'talk/figures', 'talk/mantles', 'talk/mantle', 'prosperity', 'calendar', 'chronicle', 'npcs',
              'chapters', 'factions', 'factions/history', 'server/status', 'economy')
 _DM_WRITES = ('actions', 'live/move', 'live/action', 'live/visit', 'live/leave', 'storytellers/visitor', 'milestone',
-              'prosperity/act', 'festivals/call', 'reports/decide', 'chronicle/story', 'npcs/life', 'chapters/decide',
+              'prosperity/act', 'festivals/call', 'reports/decide', 'chronicle/story', 'npcs/life', 'chapters/decide', 'talk/mantle',
+              'talk/mantle/retire',
               *(f'economy/{k}' for k in ECONOMY_KINDS))
 _ATLAS_READS = ('live/world', 'live/ground', 'live/camps', 'roster', 'ai', 'economy')
 _ATLAS_WRITES = ('live/edit', 'live/sync', 'roster', 'roster/plan', 'roster/generate',
@@ -620,7 +623,7 @@ HOSTED_ROUTES = {
     **{('GET', f'/api/atlas/{p}'): BUILDER for p in _ATLAS_READS},
     **{('POST', f'/api/atlas/{p}'): BUILDER for p in _ATLAS_WRITES},
     **{('GET', '/api/atlas/layers/' + p[len('/api/'):]): BUILDER for p in LAYER_READS},
-    **{('POST', '/api/atlas/layers/' + p[len('/api/'):]): BUILDER for p in MOVED_TO_ATLAS},
+    **{('POST', '/api/atlas/layers/' + p[len('/api/'):]): BUILDER for p in MOVED_TO_ATLAS | SHARED_AUTHORING},
 }
 # Patterned routes: a queued action's answer (GET /api/dm/actions/ID).
 HOSTED_PATTERNS = ((('GET', re.compile(r'/api/dm/actions/\d{1,18}')), VIEWER),

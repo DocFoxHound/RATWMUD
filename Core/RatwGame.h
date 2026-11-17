@@ -179,6 +179,10 @@ struct Options
     // The talk library (Docs/Design/62-talk.md: Data/Talk): every written line residents say. Empty: Talk beside
     // voiceData (Data/Voice -> Data/Talk); none at all if there's no voiceData either.
     std::string talkData;
+    // Mantles from files, not the world database's rows (Docs/Design/84 §9.4, §17.5-17.6, Phase 9): every `ready` .mantle
+    // under this directory (an export, or Tests/fixtures/mantles), each worn by the resident it was written for. For
+    // worlds without a database, the simulator and the tests; it takes the place of the rows when given. Empty: the rows.
+    std::string mantlesFrom;
     // Overheard NPC exchanges written live by the Mind, at most this many an hour; 0 (the default): never, the talk
     // library voices them all.
     int ambientModelCallsPerHour = 0;
@@ -493,6 +497,14 @@ class Game
     // The world build a database world loaded (world.builds' id; 0 for an export or a file world).
     std::int64_t loadedBuild() const { return loadedBuild_; }
     const talk::Library& talkLibrary() const { return talk_; }
+    // Doc 84 Phase 9: who wears which loaded mantle (resident -> mantle), and one mantle read again (mantle.sync's hot
+    // reload: from its rows, or its file under Options::mantlesFrom), or one resident's voice and mantle (voice.sync <npc>).
+    const std::map<std::string, std::string>& mantleWearers() const { return mantleOf_; }
+    Result loadMantle(const std::string& id);
+    // Doc 84 Phase 10: the DM's mantle.assign <npc> (payload {"mantle": id}, or "npc mantle") and mantle.release <npc>.
+    Result assignMantle(const std::string& npc, const std::string& mantle);
+    Result releaseMantle(const std::string& npc);
+    Result loadVoice(const std::string& npc);
     // What the talk library is asked when `a` speaks to `b` (to no one: b "") of a concept, here and now: the two
     // speakers, the place and moment, and `facts` (the topic's own) over them.
     talk::Query talkQuery(const std::string& a, const std::string& b, const std::string& concept, const talk::Facts& facts = {});
@@ -2152,11 +2164,13 @@ class Game
     };
     std::map<std::string, TalkDaily> talkDaily_;
     void talkRemember(const std::vector<talk::Effect>& effects);
+    void talkSlots(const Entity& e, const Position* post, const ResidentSpec* spec, talk::Facts& f);   // (Doc 84 §11.)
     // Each resident's voice, from live.npc_voice (doc 62, phase 6): over what is worked out of them, where set.
     struct NpcVoice
     {
         std::string from, accent, quarter, quirk, persona;
         std::map<std::string, std::string> traits;
+        std::string mantle;                         // The mantle they wear (doc 84: live.npc_voice.mantle_id, not released)
     };
     std::map<std::string, NpcVoice> npcVoice_;
     std::map<std::string, std::deque<RegardEntry>> regardLedger_;     // "holder|other" (saved with talk memory).
@@ -2175,6 +2189,41 @@ class Game
     std::vector<Figure> figures_;
     // The voices, dialects and figures from the world database, at start and on the DM's voice.sync.
     void loadVoices();
+    // Doc 84 Phase 9 (§9.4): the mantles worn by living residents, in one batch: from the rows (live.mantles and
+    // live.mantle_lines, bound by live.npc_voice: `bindings`, resident -> mantle) or from Options::mantlesFrom. A mantle
+    // that fails is skipped and logged (RATW_MANTLE refused), its wearer speaking from the library.
+    void loadMantles(const std::map<std::string, std::string>& bindings);
+    // One mantle's text from its rows (any state; "" if there is none), and its state.
+    std::string mantleRows(const std::string& id, std::string& state, int& revision);
+    void voicesChanged();                           // (The society's quarters, honesty and origins from npcVoice_.)
+    std::map<std::string, std::string> mantleOf_;   // Resident -> the mantle they wear, loaded
+    std::map<std::string, std::string> mantleFiles_;   // Mantle -> its file (Options::mantlesFrom)
+    bool mantleTables_ = false;                     // The world database has live.mantles (migration 0066)
+    // Doc 84 Phase 10 (§12, §17.7): every ready mantle's card goes to the society (its pools), with the rules (rest days,
+    // fallbacks, the name pools under Data/Talk/names). A database world's bindings as live.npc_voice holds them (read by
+    // loadVoices) are the ledger's truth; syncMantleLedger puts them, or an export's written_for bindings, into the
+    // society's ledger after the checkpoint is read, and works out who wears what from it. tendMantles (every tick, from
+    // makeResidents) writes what the society decided: releases at death, bindings at arrival, births with none; and
+    // logs the pools' health once a game day.
+    struct RowBinding
+    {
+        std::string mantle, how;
+        double bound = 0, released = -1;
+    };
+    std::map<std::string, RowBinding> rowBindings_;
+    std::vector<PoolMantle> mantlePoolCards_;
+    bool mantleRulesLoaded_ = false;
+    std::int64_t mantlePoolDay_ = -1;
+    void loadMantleRules();
+    void syncMantleLedger();
+    void tendMantles();
+    // A wearer's binding put to work: their mantle worn (mantleOf_), a newborn's voice from the ledger (a world from
+    // files), their re-drawn marks as their own words (p_ layer; a database world writes them to their voice row).
+    void wearBinding(const std::string& npc);
+    std::map<std::string, std::string> drawMarks(const std::string& mantle, const std::string& bank, const std::string& wearer);
+    bool writeBinding(const std::string& npc, const MantleBinding& b, std::string& problem);
+    bool mantleRows() const;                        // A world whose bindings are live.npc_voice rows the game writes
+    std::string talkDir_;                           // Data/Talk, as the library was read from
     // Where each home opens onto a street (its building's door, through any stairs), for neighbours (doc 62, decision
     // 8): kept until the doors change.
     std::map<std::string, std::pair<std::string, Vec2>> entrances_;

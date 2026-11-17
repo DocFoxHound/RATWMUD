@@ -1,0 +1,306 @@
+# Fenshore's stage kit for its adolescents (doc 84 §7.10, §12.1, Phase 11): what a young wolf of the Sallow Fens (from
+# Fenshore, or old Mirebridge; stage adolescent, about 13-17) says when its own mantle has no adolescent section, in
+# Mirebridge's speech. A mantle's own lines outrank these (+5), so this is the floor: whole scenes on what the fen's
+# half-grown talk about (the traps and turves they're now set to work on, the first eel-money, the boardwalk at dusk,
+# the dares about the marsh lights, wanting dry ground somewhere far off, the arguments at home), then the edge lines as
+# rules. The speaker's lines carry the fen's colour; a listener's bare line is anyone's.
+
+# ================================================================ The weather and the hour
+
+scene kit_mb_a_mizzle
+when topic=weather|day self.from=fenshore|mirebridge self.stage=adolescent here.region=fens here.weather=rain|storm
+does tell.complaint / react.complaint / assess
+a : #rain.capitalize# for a week. I've forgotten what dry fur feels like. | They sent me to check the traps in this. My boots are full to the top. | The pups are jumping in puddles. I'd join them if anyone wasn't looking.
+b[stage=adult|old] #grown : Nobody in the fen remembers. You get used to it, or you leave. | Empty them and go again. Wet's wet; it can't get wetter. | Nobody's looking. Go on.
+b : A week! | Full to the top? | #bc_go_on_then#
+a@grown : Or I leave. I've been thinking about it. | It can. I've checked. | Somebody's always looking, on the boards.
+a : #annoyed.capitalize#. | Squelch. | Maybe later.
+
+scene kit_mb_a_murk
+when topic=weather|lore self.from=fenshore|mirebridge self.stage=adolescent here.region=fens here.weather=fog
+does tell.self / react.self / assess
+a : #fog.capitalize# so thick I walked the boards by counting them. Three hundred and twelve to the Heron. | They let me ring the mist bell last time. I rang it till my arms went. | In a murk like this the fen moves its paths. Everyone says it. I almost believe it.
+b[stage=adult|old] #grown : Counting boards. That's how the old ones did it. Good. | Somebody followed that bell home, you can be sure. | Believe it. It's kept more wolves alive than anything the priest says.
+b : #bc_clever# | Good work. | Almost?
+a@grown : Three hundred and twelve, and one loose one. | Then my arms were worth it. | I'll believe it all the way, then. In the murk.
+a : #very.capitalize# clever. | My arms ached. | Almost.
+
+scene kit_mb_a_dusk_boards
+when topic=day|smalltalk self.from=fenshore|mirebridge self.stage=adolescent here.region=fens here.time=dusk
+does tell.self / react.self / assess
+a : Everyone our age sits on the end of the north walk at dusk. Just sitting. | The bittern starts up at dusk and the pups all run home. I used to run too. | Dusk's the only time the fen's quiet. I like it. Don't tell anyone.
+b[stage=adult|old] #grown : Your elders sat there too, and said the same nothing. | And now you stay out to look brave. I remember that. | Your secret's safe. It's the best hour on the fen.
+b : Just sitting? | Not now, though. | #bc_i_wont#
+a@grown : It's not nothing. You'd not understand. | I am brave. Mostly. | The best hour. Before the lights come.
+a : Mostly sitting. | Not now. | It's mine.
+
+# ================================================================ Work and the first eel-money
+
+scene kit_mb_a_traps
+when topic=work self.from=fenshore|mirebridge self.stage=adolescent here.region=fens
+does tell.self / react.self / assess
+a : I'm checking the eel traps at Withy Creek now. Up before the herons. | Somebody's been emptying our traps before dawn. I'm going to catch them. | Eight eels in one trap this morning. Eight! #grandad# never did eight.
+b[stage=adult|old] #grown : Before the herons is the only time worth going. Good. | Careful. An eel thief with a knife is still a wolf with a knife. | Don't tell your grandda that. Let him find out.
+b : Early! | Catch them. | Eight!
+a@grown : The herons hate me now. I take their breakfast. | I'll be careful. And quiet. | I already told him. He went quiet.
+a : Before everyone. | #bc_i_will# | Eight, wriggling.
+
+scene kit_mb_a_eel_money
+when topic=work|smalltalk self.from=fenshore|mirebridge self.stage=adolescent
+does tell.self / react.self / assess
+a : I got my first proper pay today. Eel-money, all mine. | I'm saving every coin. When I've enough I'm off over the causeway. | I spent my coin on a knife. A proper one. #mum# doesn't know yet.
+b[stage=adult|old] #grown : Spend a little, save the rest. The fen's hard on empty purses. | Save, then. The far side costs more than you'd think. | She'll know by supper. Mothers always do.
+b : Well done. | Where to? | A knife!
+a@grown : Save the rest. I'll try. | Further than you'd think, too. | Then I'll show her first.
+a : All mine. | Anywhere dry. | A good one.
+
+scene kit_mb_a_apprentice
+when topic=work self.from=fenshore|mirebridge self.stage=adolescent self.apprentice=yes
+does tell.self / react.self / assess
+a : My master says I've paws like wet reeds. Floppy. They're not floppy. | First week learning the trade and I've done nothing but fetch and carry. | I got a thing right today and my master just grunted. Is that good?
+b[stage=adult|old] #grown : Every master says something like that. Mine said I'd paws like puddings. | Fetch and carry is how every trade starts. Watch while you carry. | A grunt is high praise, from a master. Take it.
+b : Unfair. | It'll change. | Probably good.
+a@grown : Puddings! I'll take wet reeds, then. | I'll watch. With both eyes. | A grunt. I'll keep it.
+a : Not floppy. | Fetch and carry. | I'll take it.
+
+scene kit_mb_a_peat
+when topic=work self.from=fenshore|mirebridge self.stage=adolescent here.region=fens
+does tell.self / react.self / assess
+a : Cut turves all morning. My back's sunk. #very.capitalize# sunk. | I found a little leather shoe in the peat. Old. Very old. | They say never cut peat wet. I cut it wet. Now I know why.
+b[stage=adult|old] #grown : Lift with your legs. Your back's got to last the rest of your life. | The bog keeps everything. Put it back where you found it, I would. | That's how everybody learns it. Once.
+b : Rest it. | Spooky. | Learned, then.
+a@grown : My legs are sunk too. | I put it on the shelf. I'll put it back. | Once. #bc_never# again.
+a : Can't. More to cut. | Very spooky. | Never again.
+
+scene kit_mb_a_salt_pans
+when topic=work|land self.from=fenshore|mirebridge self.stage=adolescent here.region=fens
+does tell.self / react.self / assess
+a : I fed the fires at the Fenside salt pans all day. I smell of smoke and salt. | They let me rake the salt off the pan. It's like snow, but hot. | The salt boilers at Fenside work all night. I'd like to see the pans steam in the dark.
+b[stage=adult|old] #grown : Better than smelling of eels. Most days. | Mind your paws on the pan's edge. It bites. | Ask. They're glad of a pair of paws at night.
+b : Hard work. | Like snow? | Ask them.
+a@grown : Eels and salt and smoke. I'm a supper. | It bit me. Once. Now I mind it. | I'll ask. They'll say yes. Probably.
+a : Long day. | Hot snow. | #bc_i_will#
+
+# ================================================================ Home, family and arguments
+
+scene kit_mb_a_still_a_tadpole
+when topic=family self.from=fenshore|mirebridge self.stage=adolescent
+does tell.complaint / react.complaint / assess
+a : #mum# still calls me #child# on the boardwalk where everyone can hear. | I can check traps and cut peat, but I can't go out on the fen alone? | #dad# says I'll understand when I'm older. I'm older now. I still don't.
+b[stage=adult|old] #grown : To a mother you're #child# till you're grey. Let it go by. | The fen has killed better wolves than you. Alone is how it does it. | Neither did I, at your age. Give it ten years.
+b : Embarrassing. | Not fair. | #bc_ha#
+a@grown : I'll be grey before she stops. | I'd take a pole. And a lantern. | Ten years! I'll be sunk by then.
+a : Everyone heard. | Not one bit fair. | Still don't.
+
+scene kit_mb_a_argument
+when topic=family|home self.from=fenshore|mirebridge self.stage=adolescent
+does tell.complaint / react.complaint / assess
+a : We had a row at supper. Over eels. Over nothing, really. | #mum# and I don't agree on anything now. Not even the weather. | I said I'd leave for somewhere dry one day, and nobody talked to me after.
+b[stage=adult|old] #grown : Rows over eels are rows over something else. Sleep on it. | That's your age. You'll agree again one day, and both of you will wonder why. | They'd miss you, that's all. That's what the quiet was.
+b : Over eels? | It'll pass. | Ouch.
+a@grown : It was about the boat. It's always about the boat. | Even the weather's wet. We can agree on that. | Then they should say so. Not go quiet.
+a : Over everything. | #bc_maybe# | #bc_nobody#
+
+scene kit_mb_a_gran
+when topic=family|memories self.from=fenshore|mirebridge self.stage=adolescent
+does tell.self / react.self / assess
+a : #gran# told me about the old floods again. I listened properly this time. | #grandad# showed me how to read the water by its colour. Brown, rain upstream. Black, deep. | I sit with #gran# and help her sort her roots. She tells me what each one cures. And what it kills.
+b[stage=adult|old] #grown : The old floods are worth listening to. They'll come again. | Then you can read the fen. Not many your age can. | Keep listening. The fen's cures are half poisons. She knows which half.
+b : Good stories? | #bc_clever# | Careful, then.
+a@grown : The one with the cow on the roof. I'd heard it wrong for years. | And green? Green means trouble, I think. | She knows. I'm learning which half.
+a : Better than I thought. | Brown, black. | Very careful.
+
+# ================================================================ Friends, sweethearts, dares and pastimes
+
+scene kit_mb_a_sweetheart
+when topic=friends|smalltalk self.from=fenshore|mirebridge self.stage=adolescent here.region=fens
+does tell.self / react.self / assess
+a : There's someone who walks the north boards at dusk, and I always seem to be there too. By accident. | Somebody gave me a willow ring. I'm not saying who. | I fell in the lode in front of someone. The one person I didn't want to fall in front of.
+b[stage=adult|old] #grown : By accident, every night? The fen's full of those accidents. | Willow rings mean something, out here. Keep it dry. | They'll remember it fondly. Truly. Most of us started with a fall.
+b : By accident? | Ooh. | Oh no.
+a@grown : Every night. By accident. | I'm keeping it under my pillow. | Fondly? It was green water.
+a : Mostly by accident. | I'm not saying. | Up to my ears.
+
+scene kit_mb_a_lights_dare
+when topic=lore|friends self.from=fenshore|mirebridge self.stage=adolescent here.region=fens
+does tell.story / react.story / assess
+a : Somebody dared me to follow the marsh lights past the last board. I didn't. Nearly did. | The older ones say they followed the lights once and came back. I don't believe them. | I watched the lights from the north walk all night. They never came closer. Never went away.
+b[stage=adult|old] #grown : Nearly is close enough. Those lights have taken braver wolves than a dare. | Don't. And don't believe them. The ones who followed don't come back to boast. | Watch them all you like. From the boards. Always from the boards.
+b : #bc_good# | #bc_wise# | Odd.
+a@grown : I'll say no next time. Louder. | I don't. I'll tell the pups not to, too. | From the boards. #bc_always#
+a : Nearly. | They're lying. | Odd, and pretty.
+
+scene kit_mb_a_friend
+when topic=friends self.from=fenshore|mirebridge self.stage=adolescent self.friend
+does tell.self / react.self / assess
+a : #self.friend# and I are going to get a boat between us and pole it all the way to the sea. | #self.friend# is the only one who doesn't laugh when I talk about leaving. | #self.friend# and I fell out. Over a fishing float. It's still stuck in me like a thorn.
+b[stage=adult|old] #grown : A boat between two is a fine thing, if you agree on the steering. | Keep that one, then. A friend who listens is dry ground. | Go and say it first. Floats are cheap. Friends aren't.
+b : Big plan. | Good friend. | Make it up.
+a@grown : We'll take turns. I'll go first. | I'll keep them. Always. | I'll say it first. Tonight.
+a : All the way. | The only one. | #bc_i_will#
+
+scene kit_mb_a_boats
+when topic=pastimes self.from=fenshore|mirebridge self.stage=adolescent here.region=fens
+does tell.boast / tease / tease.return
+a : I poled the punt from Withy Creek to the Heron without hitting a single post. | I can carve a fishing float that rides better than any you'll buy. | I swam the lode, end to end, and the cold didn't even stop me.
+b[stage=adult|old] #grown : Not one post! Then you've the paws for it. | Show me. Then I'll believe it. | Swam the lode! Your elders will have words, mind.
+b : Says you. | Prove it. | Mad, you.
+a@grown : Not one. I counted the posts too. | I'll make you one. You'll see. | They had words. Long ones.
+a : Says everyone who saw. | I'll carve you one. | Mad and dry, now.
+
+scene kit_mb_a_pastime
+when topic=pastimes self.from=fenshore|mirebridge self.stage=adolescent
+does tell.self / react.self / assess
+a : I'm learning the whistle. The herons fly off when I play. | I've been carving a heron out of bog oak. It's got one leg so far. | I tried fen-gin at the Heron. Once. It tasted like the lode smells.
+b[stage=adult|old] #grown : Herons are poor judges. Keep at it. | One leg is all a heron needs. Leave it there. | Good. Leave it a few years yet. It doesn't get better.
+b : Poor herons. | Show me. | #bc_ha#
+a@grown : The ducks stay. Ducks are kinder. | Then it's finished. Look at that. | A few years. No hardship.
+a : All of them. | One leg. | Never again.
+
+# ================================================================ Lore and faith
+
+scene kit_mb_a_drowned_bell
+when topic=lore self.from=fenshore|mirebridge self.stage=adolescent here.region=fens
+does tell.story / react.story / assess
+a : I heard the drowned bell last night. I'm sure of it. Under the fen, ringing slow. | The pups think there are still wolves living in drowned Mirebridge. I let them think it. | Peat cutters found a carved stone again. Marks nobody can read. I wish I could.
+b[stage=adult|old] #grown : Some nights it rings. Keep it to yourself; it frightens the old ones. | Leave them that. You'll tell it yourself one day, and better. | Then learn your letters. Somebody's got to read them one day.
+b : Truly? | Kind of you. | Strange stones.
+a@grown : I'll keep it. I won't tell #gran#. | Better, and with a bell noise. | Letters. Maybe. If anyone teaches.
+a : Ringing slow. | #bc_let_them# | Very strange.
+
+scene kit_mb_a_heron_fire
+when topic=lore self.from=fenshore|mirebridge self.stage=adolescent here.region=fens
+does tell.story / react.story / assess
+a : They let me bank the Heron's fire for the night. A hundred years, and my paws on it. | The old ones say the day the Heron's fire dies, the fen takes the town. I'm not scared. I'm careful. | I asked who lit the Heron's fire first. Nobody knows. Everybody says a different name.
+b[stage=adult|old] #grown : That's a trust. Not everyone gets it. | Careful is the right thing to be. Scared is for pups. | That's how old fires are. Their first lighting goes to the mist.
+b : An honour. | Careful's good. | Odd.
+a@grown : I checked it three times. | Careful. Every night. | Then I'll say I did it. Nobody can argue.
+a : My paws. | Very careful. | Lost in the murk.
+
+scene kit_mb_a_faith
+when topic=faith self.from=fenshore|mirebridge self.stage=adolescent
+does tell.self / react.self / assess
+a : The priest says the Dark One sits in the deep mire. I think it's just mire. | I said a word to the Bright One when the flood went down. In case it helped. | #gran# hangs willow, the priest says prayers. I do both. Just in case.
+b[stage=adult|old] #grown : Mire or not, stay out of the deep parts. That's the sermon either way. | It does no harm to thank. And the flood went down. | Both is wise. The fen doesn't mind which keeps you.
+b : Maybe it is. | #bc_good# | Both!
+a@grown : Out of it. #bc_always# | It went down. So it helped. | Both. And a lantern.
+a : Just mire. | In case. | Just in case.
+
+# ================================================================ Food, animals and the year
+
+scene kit_mb_a_eels
+when topic=food self.from=fenshore|mirebridge self.stage=adolescent here.region=fens
+does tell.complaint / react.complaint / assess
+a : Eels. Eels again. I'd give a week's eel-money for something that never swam. | A boatwolf let me taste an apple from upriver. I think about it every day. | #mum# says I eat like a heron in spring. I'm growing.
+b[stage=adult|old] #grown : Wait till the traps come up empty. You'll love an eel then. | An apple! You'll be wanting to go upriver next. | Growing wolves are a hole in the boards. She'll forgive you.
+b : Something new? | An apple! | You are growing.
+a@grown : I'd love one now, if it was bread. | I want to go everywhere an apple comes from. | A hole in the boards. I'll tell her that.
+a : Anything else. | An apple. | Still #hungry#.
+
+scene kit_mb_a_heron_watch
+when topic=animals self.from=fenshore|mirebridge self.stage=adolescent here.region=fens
+does tell.self / react.self / assess
+a : There's an old heron at Withy Creek who steals from my traps. We know each other now. | I saw an otter take an eel right out of the lode. Cleaner than any of us. | The bittern's back. I heard it booming before dawn.
+b[stage=adult|old] #grown : Every trapper has a heron. Leave a small eel on the bank; it's cheaper than a war. | Otters are the best eelers in the fen. Watch how it does it. | Then spring's on its way. The bittern always knows first.
+b : Cheeky bird. | Clever otter. | Spring, then.
+a@grown : A small eel. Fine. Just one. | I watched. I'll try it. Without the teeth. | Spring. #bc_about_time#
+a : We're rivals. | Very clever. | Spring.
+
+scene kit_mb_a_flood
+when topic=season|weather self.from=fenshore|mirebridge self.stage=adolescent here.region=fens here.season=winter|autumn
+does tell.self / react.self / assess
+a : The fen's over the low boards again. I helped move the peat stacks up the bank. | The lode's rising. #dad# had me out at midnight lashing the boats. | Half the floors in the hamlet are wet. Ours is one. My bed's in the dry corner.
+b[stage=adult|old] #grown : Every winter. The fen gives back what we take. Good that you helped. | Lashed boats are kept boats. Good paws. | Dry corner's a lucky bed, in a fen winter.
+b : Hard work. | Midnight! | Lucky bed.
+a@grown : It gives back a lot. Mostly water. | My knots held. All of them. | I'll not give it up. Not to anyone.
+a : Wet work. | Cold work. | Very lucky.
+
+scene kit_mb_a_summer
+when topic=season self.from=fenshore|mirebridge self.stage=adolescent here.region=fens here.season=summer
+does tell.complaint / react.complaint / assess
+a : The midges are eating me alive. Every bit of me that sticks out. | It's so #hot# on the fen I can't sleep. Everyone's out on the boards at night. | Summer, and the eels go deep and lazy. The traps come up empty.
+b[stage=adult|old] #grown : Bog-myrtle in your fur. Midges hate it more than you hate them. | Fen summers are close. Sleep by an open window and bear it. | Fish at dawn. The eels rise when it's cool.
+b : Itchy. | Close, then. | Lazy eels.
+a@grown : I already smell of peat. Now myrtle. | Bear it. #bc_ill_try# | At dawn, then. Before the herons again.
+a : Every bit. | Can't sleep. | Lazy as me.
+
+scene kit_mb_a_festival
+when topic=festival self.from=fenshore|mirebridge self.stage=adolescent here.region=fens topic.when=today
+does tell.self / react.self / assess
+a : Lanterns along the boardwalk for #here.festival#, and I'm allowed to stay out for all of it. | I'm too old for the pups' games at #here.festival#. I'll watch. And maybe join in. | Everyone's at the Heron for #here.festival#. I helped carry the benches in.
+b[stage=adult|old] #grown : All of it! Then dance once at least. | Nobody's too old for the games. Join in. | Then you've earned a seat on one.
+b : Have fun. | #bc_go_on# | Good of you.
+a@grown : Once. Maybe twice. If no one's looking. | Just one game. Then I'm grown again. | The end of one. By the fire.
+a : All night. | #bc_maybe# | My bench.
+
+# ================================================================ The edge lines
+
+rule kit_mb_a_greet_back
+does greet.return
+when self.from=fenshore|mirebridge self.stage=adolescent
+say #greet#. | Oh. #greet#. | #greet#. All right? | Hey. #greet#.
+
+rule kit_mb_a_greet_back_grown
+does greet.return
+when self.from=fenshore|mirebridge self.stage=adolescent other.stage=adult|old
+say #greet#, and to yours. | #greet#. Wet one, isn't it. | Dry feet. I was just off to the traps.
+
+rule kit_mb_a_bye
+does farewell
+when self.from=fenshore|mirebridge self.stage=adolescent
+say #farewell#. | Right. #farewell#. | Later. Mind the boards. | #farewell#, then.
+
+rule kit_mb_a_bye_back
+does farewell.return
+when self.from=fenshore|mirebridge self.stage=adolescent
+say #farewell#. | And dry feet to you. | Yeah. Mind the boards. | #farewell#. See you on the north walk.
+
+rule kit_mb_a_news_new
+does react.news.new
+when self.from=fenshore|mirebridge self.stage=adolescent topic.claim_kind!=death|violence|victim
+say #surprise#. Truly? | #surprise#. Nobody tells me anything. | Truly? I'd have heard, if I wasn't always at the traps. | Huh. #surprise#.
+
+rule kit_mb_a_news_known
+does react.news.known
+when self.from=fenshore|mirebridge self.stage=adolescent self.knows=yes
+say I know. The whole boardwalk knows. | Old news. The reeds had it yesterday. | I heard. I'm not a tadpole; people tell me things.
+
+rule kit_mb_a_news_doubt
+does react.news.doubt
+when self.from=fenshore|mirebridge self.stage=adolescent topic.claim_kind!=death|violence|victim
+say #nonsense.capitalize#. Someone's been at the fen-gin. | I'll believe it when I see it with my own eyes. | That's reed-whisper. It grows every time it's told.
+
+rule kit_mb_a_how
+does answer.how.well
+when self.from=fenshore|mirebridge self.stage=adolescent self.hungry!=yes self.injured!=light|bad self.mourning!=kin|friend
+say Well enough. Wet. | Fine. Busy, if you ask #mum#. | #good.capitalize#, nearly. Wet round the edges. | All right, I suppose.
+
+rule kit_mb_a_how_hungry
+does answer.how.poorly
+when self.from=fenshore|mirebridge self.stage=adolescent self.hungry=yes
+say #hungry.capitalize#, if you want the truth. | Starving. I'd eat eels, and I'm sick of eels. | Hollow as a reed. Is there bread anywhere?
+
+rule kit_mb_a_boast
+does tell.boast
+when self.from=fenshore|mirebridge self.stage=adolescent
+say I poled the punt the whole length of the lode without touching a post. | Eight eels in one trap. Eight. Nobody's beaten it. | I walked the boards in the thick murk and never missed one.
+
+rule kit_mb_a_ask_more
+does ask.detail
+when self.from=fenshore|mirebridge self.stage=adolescent
+say Who told you? Truly? | And then? Don't stop there. | Was it a boatwolf who said? They make things up.
+
+rule kit_mb_a_tease
+does tease
+when self.from=fenshore|mirebridge self.stage=adolescent other.stage=young|adolescent
+say #fool.capitalize#. You'd get lost on a straight board. | Listen to you. Proper old heron now, aren't you. | You've been in the mizzle too long, that's all.
+
+rule kit_mb_a_tease_back
+does tease.return
+when self.from=fenshore|mirebridge self.stage=adolescent
+say Says you, with mud in your ears. | Better that than being you. | Ha. Remember who fell in the lode. Not me.
+
+rule kit_mb_a_preclose
+does preclose
+when self.from=fenshore|mirebridge self.stage=adolescent
+say I've traps to check. Again. | #mum#'s waiting. Always is. | I should go. The mud won't wade itself.

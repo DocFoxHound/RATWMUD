@@ -1,0 +1,274 @@
+# mb107, the petitioner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb107
+revision 1
+state ready
+dialect mirebridge
+accent light broad
+tier standard
+written_for cty_dagfinn_brineby
+written_by claude-p11-pilot
+title the petitioner
+fits stage=adult|old
+prefers job=farmer
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk sleeps_badly_before_storms
+likes spiced_cider old_tales market_bustle first_snow
+dislikes waiting deep_mud
+fears the_dyke_giving_way
+hopes an_answer_from_the_council
+topics weather +0.3 work +0.3 times +0.2 lore +0.2 food +0.1 gossip -0.3
+styles comfort=patient gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# rakes salt by the sea-dyke: gentle, careful to a fault, his bad leg a barometer, and still sore at the Council that lost his petition.
+
+words
+oath! = By the long dyke | Steady on the boards
+saying! = Slow brine makes white salt | Rake straight and the pan rakes itself
+leg = this leg | the old leg
+blow = a blow coming | weather on the way
+petition = the petition | my petition to the Council
+cider = a cup of spiced cider | spiced cider
+pan = the pan | my pan
+tally = the tally | my reckoning
+dyke = the dyke | the sea-dyke
+easy = no hurry | there's no hurry
+deepmud = the deep mud | the soft mud past the dyke
+firstsnow = the year's first snow | first snow on the dyke
+bustle = the market at its busiest | a crowded market day
+tale = an old tale | a tale told slow
+
+any
+opinion @1 houses against 2 : I put my case to the Council, written fair, every figure checked twice. They lost it in a drawer. I've not forgiven that.
+opinion @1 merchants against 1 : A merchant's price goes up by the week and a raker's pay by the year, if at all. I've kept #tally#; it's so.
+opinion @1 times against 1 : Each week's a little leaner than the last. I've written it down, #address#. Nobody up the causeway has.
+opinion @1 dole for 1 : Nobody in a hamlet like ours should go to bed #hungry#. I'd sooner pay my share than see it.
+opinion @1 strangers for 1 : #easy.capitalize#, I tell a stranger. Sit, have a cup. Most of them have never once been told that.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Take your time; #easy# here. | #greet#, #address#. New over the causeway, are you? Sit a moment.
+line @1 kin.open [pair.kin!=no] : Ah, it's you. Sit down, there's #cider# warming. | #greet#. I was thinking of you this morning.
+line @1 again.open : Back again. Good. I'd not finished what I was saying. | #greet# again, #address#. Twice in one day suits me.
+line @2 greet [here.time=dawn] : #greet#. I slept poorly; #blow#, I think. | Morning, #address#. Mist on #dyke# still.
+line @3 greet [self.working=yes] : #greet#. Give me a moment; I'm at the end of a row. | #greet#. Mind the edge of #pan#; it's soft today.
+line @1 greet.return : #greet#, #other.called#. | #greet#. Good to see you, #address#.
+line @2 greet.return [here.time=dusk|night] : #greet#. Late to be on the boards. Mind the soft places. | #greet#, #other.called#. Go steady in the dark.
+line @1 farewell : #farewell#. Go steady, and mind #deepmud#. | #farewell#, #other.called#. #easy.capitalize#; the boards will keep.
+line @1 farewell.return : #farewell#, #other.called#. | And to you. #oath#, go steady.
+line @1 react.news.new : #oath#. When was this? | Is that so. I'll want to hear it all, slowly, #address#.
+line @1 react.news.known : I'd heard. I wrote it down, as it happens. | #knew.capitalize#. It came round #pan# yesterday.
+line @1 react.news.doubt : I'd want that checked before I believed it. Who saw it with their own eyes? | Hm. #doubt.capitalize#. Let's wait for the facts.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #very# hard. I'm sorry for all of them. | #pity.capitalize#. Tell me if there's something I can carry.
+line @1 answer.how : Steady, thank you. #leg.capitalize#'s a bit stiff. | Well enough. Slept badly. #blow.capitalize#, I think.
+line @1 sympathise : Take your time with it. I'm not going anywhere, #address#. | #sympathy.capitalize#. Sit; I'll fetch #cider#.
+line @1 decline : I'd like to, but I promised the next pan by noon, and I keep my word. | Not today, I'm sorry. #leg.capitalize# won't take the long boards.
+line @1 accept_decline : #no_matter.capitalize#. Another time suits me fine. | #easy.capitalize#, truly. When it suits you.
+line @1 thank : That's kind. #thanks#. | #thanks#. I'll remember it, #address#.
+line @1 deflect_thanks : #deflect.capitalize#. It was a small thing. | No need, #address#. I was glad to.
+line @1 preclose : Well. I'll let you go; I've kept you long enough. | #preclose.capitalize#. #pan.capitalize# won't keep itself.
+rule @storm
+when concept=bark here.outdoors=overcast|storm here.region=fens
+does aside
+cooldown 8h
+say #leg.capitalize#'s aching. #blow.capitalize#, by tonight. | Tie it down, all of it. I'll not sleep tonight, #oath#.
+
+rule @rows
+when concept=bark working=yes here.region=fens
+does aside
+cooldown 6h
+say Eleven rows. Twelve. #saying#. | Straight edges. Straight edges, and #easy#.
+
+rule @kept_waiting
+when concept=bark here.place=street|market
+does aside
+cooldown 8h
+say Still waiting. Noon, I was told. It's past noon, by #dyke# shadow. | I'll give them a little longer. Then a little longer again. #oath#.
+
+rule @cup
+when concept=bark here.place=tavern
+does aside
+cooldown 8h
+say #cider.capitalize#, if you've any warm. Thank you. | #cider.capitalize#. That's the day mended.
+
+scene storm_sense
+when topic=weather here.region=fens here.weather=overcast|storm
+does tell.worry / react.self / assess
+a : I didn't sleep. I never do with #blow#. | #leg.capitalize# says storm by dark. It's not been wrong in thirty years. | Look at the gulls, all in off the sea. #blow.capitalize#, and a big one.
+b[job=fisher|sailor] #boat : The boats are staying in. | We felt it too. | The gulls know.
+b : #bc_poor_soul# | Thirty years? | #bc_i_hope_so#
+a@boat : Wise. I'd not go out. | Then we'll all sleep badly together. | They always do.
+a : I'll sleep when it's over. #easy#; I'm used to it. | Not once. I'd sooner it was, some nights. | Get your shutters tied, #address#. I'll do the same.
+
+scene the_leg
+when topic=health
+does tell.self / ask.detail / answer.detail / assess
+a : #leg.capitalize# comes and goes with the weather. Today it's come. | I walk slower in the damp. #leg.capitalize# remembers the old floods. | Don't mind me. I'm quicker than I look, mostly.
+b : What happened to it? | #bc_poor_soul# | Can't the healer help?
+a : The great blow, when I was young. I'll tell you sometime, slowly. | It's an old ache, #address#. We know each other. | Willow bark, rest. I take the bark.
+b : #bc_i_will# | #bc_true# | #bc_wise#
+
+scene the_council
+when topic=times|gossip
+does give.opinion / react.self / assess
+a : I wrote to the Council once. #petition.capitalize#. Every figure checked twice. | The Council of Houses lost #petition# in a drawer. Three years, and not a word. | Nobody up there has stood on a salt pan. You can tell from what they decide.
+b[wealth=rich] #purse : The Council has a great deal to read. | Perhaps it was read. | They have their reasons.
+b : What did you ask for? | #bc_bad_luck# | #bc_i_know#
+a@purse : Then they might read faster, #address#. | Read and not answered is worse. | I'd like to hear them, just once.
+a : A fair price for raked salt. That's all it ever was. | I've not forgiven it. I don't expect to. | #oath#. They should come down and rake a day.
+
+scene straight_rows
+when topic=work self.working=yes here.region=fens
+does tell.self / react.self / assess
+a : Rake in straight rows and the crust comes up even. Crooked rows, crooked salt. | I've raked #pan# the same way for forty years. It's the right way. | Edge first, then the middle. Never the other way round, #address#.
+b[job=farmer|laborer] #hands : Every raker has their way. | Forty years? Then it's yours. | #bc_true#
+b : #bc_clever# | #bc_wise# | Does it matter?
+a@hands : Mine's the straight one. #saying#. | It is. I'll not change it now. | #bc_it_is#
+a : Not clever. Careful. #saying#. | Slow, mostly. Slow and #good#. | It does to the salt, and that's what we sell.
+
+scene the_tally
+when topic=work|prices self.job=farmer
+does tell.self / react.self / assess
+a : I keep #tally# of every basket. Pencil and board, every evening. | Thirty-one baskets this week. Two more than last. I have it written. | If anyone asks what the pans gave this year, I can say, to the basket.
+b : Why keep it? | #bc_good# | #bc_clever#
+a : So nobody can tell me different. | It's a small thing, but it's mine. | Careful, #address#. Not clever.
+
+scene kept_waiting
+when topic=smalltalk
+does tell.complaint / react.complaint / assess
+a : Waiting on other folk is what I can't take calmly. I'm always there first. | I said noon and meant noon. The cart came at two. #oath#. | I'll give anyone all the time in the world. I'll not stand and wait on them, though.
+b : #bc_me_too# | #bc_again_q# | That's not the same?
+a : I'll wait on the weather. Not on folk who said a time. | Again. And I said nothing, as usual. | It isn't, #address#. One's a gift. The other's taken.
+
+scene take_your_time
+when topic=smalltalk|newcomer pair.band=strangers|acquaintances
+does reassure / react.self / assess
+a : #easy.capitalize#. Say it slowly; I'm listening. | Sit down a moment. You've the look of a wolf who's been hurrying. | The boards are long and the fen's not going anywhere. Take it slow, #address#.
+b : #bc_thank_you# | I have, at that. | #bc_true#
+a : That's what I'm here for, mostly. | Then rest. I'll fetch #cider#. | #bc_always_is#
+
+scene spiced_cider
+when topic=food here.season=autumn|winter
+does offer / accept / assess
+a : Have #cider#. Cloves, a bit of honey, and warmed slow. | There's nothing better in the cold than #cider#. Nothing. | I make it the way #mum# did. Slow, and never boiled.
+b : #bc_thank_you# | I'll not argue. | Why never boiled?
+a : Drink it slow. That's the trick. | Good. Sit by the fire with it. | Boil it and the spice goes bitter. #saying#.
+
+scene market_day
+when topic=pastimes|smalltalk here.place=market|street
+does tell.feeling / react.self / assess
+a : I like #bustle#. Everyone shouting, everyone selling. | I'll walk the whole market twice and buy one onion. | Noise and smells and somebody's pup underfoot. That's a good morning to me.
+b : #bc_ha# | One onion? | You'd like the city, then.
+a : I don't buy. I look, #address#. | A good onion. I chose it carefully. | No. Too big. Here, you know whose pup it is.
+
+scene dyke_tale
+when topic=lore|pastimes here.region=fens
+does tell.story / react.story / assess
+a : There's #tale# about who built #dyke#. Sixty wolves, a winter, and not one of them paid. | They say the first dyke-builders sank a boat full of stones to start it. | My grandda said #dyke# was older than the drowned town. I believe him.
+b[old] #elder : I heard it was forty wolves. | My grandda said the same. | Older, and stronger.
+b : Not paid? | #bc_so_they_say# | #bc_maybe#
+a@elder : Forty, sixty. A great many, and cold. | Then it's true twice. | It's held. That's strong enough for me.
+a : Not a coin. They did it so their pups would have dry feet. | That's how you build something, #address#. You start with stone. | It's held through every blow I've known. #oath#.
+
+scene first_snow
+when topic=weather|season here.season=winter here.weather=snow
+does tell.feeling / react.self / assess
+a : #firstsnow.capitalize#. I stood and watched it a good while. | Snow on #pan#. No raking today, and I don't mind at all. | It's quiet, isn't it? Even #dyke# sounds softer.
+b[stage=young] #pup : Can I eat it? | Will it stay? | Is it cold on your paws?
+b : #bc_lovely# | Nor do I. | #bc_it_is#
+a@pup : Off the top only, mind. | A day or two. Enjoy it. | Very. But it's worth it.
+a : I like it as much now as when I was small. | The salt can wait for once. #easy#. | Stand and listen a moment. You'll hear it.
+
+scene deep_mud
+when topic=land here.region=fens
+does warn / react.self / assess
+a : Don't cut across past #dyke#. #deepmud.capitalize# takes you to the knee. | Keep off the soft ground by the old pans. I've seen a cart go in to the axle. | I hate #deepmud#. Slow work getting out, and my leg won't help.
+b : #bc_i_wont# | #bc_thank_you# | #bc_me_too#
+a : Good. The long way's quicker, there. | #easy#. Just mind it. | We'll go round together, then.
+
+scene pan_neighbour
+when topic=friends|home self.friend
+does tell.self / react.self / assess
+a : #self.friend# and I rake side by side and share a roof. We hardly need to speak. | Ask #self.friend# about me sometime. I'd like to know what's said. | #self.friend# remembers everything, and I write everything down. Between us, nothing's lost.
+b : #bc_lucky_you# | #bc_ha# | Good pair.
+a : We are. It's a #good# thing. | Kindly, I'd expect. | We are, #address#. A steady one.
+
+scene pay_day
+when topic=prices|times self.wealth=poor|destitute
+does tell.complaint / react.complaint / assess
+a : #wages.capitalize# came this morning. I've already spent it, on paper. | The store charges dear for salt, and I'm the one that raked it. I've checked. | I can tell you to the coin what we're paid and what it buys. Less, every season.
+b[wealth=rich|comfortable] #purse : Prices go up for everyone. | Somebody has to carry it to market. | Have you told the Council?
+b : #bc_poor_soul# | #bc_very_bad# | #bc_true_enough#
+a@purse : Not for everyone the same, #address#. | Carrying's work. So is raking. | I did. #petition.capitalize#. You know how that went.
+a : #bc_it_is# | I'd show you #tally#, if you'd like. | It is. I keep it written, for when someone asks.
+
+scene night_before
+when topic=day here.time=night here.outdoors=overcast|storm
+does tell.feeling / react.self / assess
+a : I'll not sleep. I'll sit up and listen to #dyke#. | Another night awake. I count the boards in the ceiling. Forty-two. | Storm nights, I make #cider# and wait. There's nothing else for it.
+b : #bc_poor_soul# | Forty-two? | #bc_every_night#
+a : Somebody should listen. It may as well be me. | I've checked. More than once. | Not every night. Only the ones before a blow.
+
+scene festival
+when topic=festival
+does tell.feeling / react.self / assess
+a : I like a festival for the stalls. Everyone out, and everything for sale. | I'll be there early and stay late. Somebody has to see it all. | Festival's the one day I'll buy a sweet. Just the one.
+b : #bc_good# | #bc_ha# | Only one?
+a : And the crowds, I'll admit it. | I'll see it all. I always do. | One. Chosen carefully, #address#.
+
+scene word_to_the_bright_one
+when topic=faith
+does tell.self / react.self / assess
+a : Before every blow I ask the Bright One for a quiet night. Short and polite. | I'm seldom at chapel. I do give thanks when #dyke# holds. | The Bright One doesn't hurry. I've always liked that.
+b[priest] #faith : Short prayers are heard as well as long ones. | Come more often. | #bc_wise#
+b : #bc_wise# | #bc_good# | #bc_true#
+a@faith : I'm glad to hear it. | When #leg# lets me, I will. | It's a comfort, #address#.
+a : It's only polite to ask. | It's held so far. I'm thankful. | Nor do I, when I can help it.
+
+scene grandda_pans
+when topic=memories|family
+does tell.self / react.self / assess
+a : #grandad# raked these same pans. I've his rake, with a new handle. Three new handles. | #dad.capitalize# taught me rows. I've done them his way since I was small. | My first pay went on #cider# for #dad#. I remember it to the coin.
+b[stage=old] #elder : The old ways hold. | Same with my father. | #bc_lovely#
+b : Is it still his rake, then? | #bc_wise# | #bc_lovely#
+a@elder : They do, mostly. | Then you know. | It was.
+a : It is. The rake's the head, not the handle. | Straight rows. #saying#. | It was. Spiced and warm.
+
+story the_petition
+  : I spent a whole winter writing #petition#. Every pan, every price, every coin, written fair.
+  : I walked it up the causeway to Ridgemere myself and sat on a bench outside their door for three days.
+  b : What happened?
+  : A clerk took it, nodded, and I came home. Not a word since. That was nine years ago.
+  b[wealth=poor|destitute] : That's how it goes for our sort.
+  b : #bc_poor_soul#
+  : I keep a copy. I'd send it again, if I thought anyone read. #oath#.
+
+story the_great_blow
+  : I was a young wolf the night #dyke# broke. The sea poured over the pans like a wall.
+  : We carried what we could and ran for the high boards. I went down in the mud and something fell on my leg.
+  b : Is that how you hurt it?
+  : That's how. I've known every storm since, before it comes. Small mercy, but it's a mercy.
+  b : #bc_poor_soul#
+
+story the_snow_market
+  : One winter #firstsnow# came on a market morning. Every stall white, and nobody went home.
+  : We stood about with #cider# till noon and sold nothing at all. Best market I ever went to.
+  b : Nothing at all?
+  : Not a basket. But everyone was there, #address#. That's what a market is.
+  b : #bc_lovely#
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Take your time; #easy#. What can I do for you?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit a moment, if you've a moment.
+dlg @1 resident.job : I rake salt by #dyke#. Straight rows, every day, and #tally# kept.
+dlg @1 resident.news : Nothing new that I've written down. #blow.capitalize#, maybe.
+dlg @1 resident.bye : #farewell#, #topic.player#. Go steady on the boards.
+graft resident.hub
+choice Can you really tell when a storm's coming? -> sense
+node sense
+say I can. #leg.capitalize# tells me a day ahead, and I sleep badly the night before. Thirty years, and never wrong.
+mood pleased
+free
+choice Is there one coming now? -> sense_now
+choice Goodbye. -> bye
+node sense_now
+say Not yet. When there is, I'll tell you. Tie your shutters early and keep off #deepmud#.
+choice I'll remember. -> hub
+choice Goodbye. -> bye

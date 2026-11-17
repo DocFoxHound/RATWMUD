@@ -1,0 +1,8 @@
+# Data/Talk/names/mirebridge.names (Docs/Design/84-living-conversations.md §7.10, Phase 10): Mirebridge's (and Fenshore's): the fens' names, slow and reedy.
+# Drafts, to settle with the user by ear. A child born here takes one (its mother's surname after it): no two living
+# residents share a full name, no living parent or sibling shares the child's first name, and one born in place of a
+# dead grandparent takes their first name named_for of the time. Male or female only.
+names mirebridge
+female = Ailith | Bethoc | Cressid | Drusilla | Edda | Elfleda | Frith | Goldie | Gytha | Hild | Ilsa | Leofrun | Mildreth | Nelda | Osyth | Rowena | Sabra | Sedgie | Sunniva | Thurza | Tilda | Ulrica | Wenda | Wilda | Withy | Aelfwyn | Brigid | Catrin | Dorrit | Ebba | Elva | Ferna | Gilly | Hester | Ivina | Jilly | Kendra | Lida | Marsha | Mossie | Nyda | Orla | Pendra | Quenby | Reedie | Rushie | Selda | Tamsey | Una | Veda | Willa | Yarra | Zelda | Abra | Bridie | Coral | Dilly | Elsa | Fenna | Gwyn | Hulda | Inga | Jessop | Kenna | Lissa | Merra | Nell | Odile | Pell
+male = Aelric | Beorn | Cenric | Dudda | Eadwig | Eldred | Fenwick | Guthric | Grimbald | Hereward | Ingold | Leofric | Merrick | Oswin | Rothwell | Saewin | Tatwin | Thurkill | Waltheof | Wulfric | Ailwin | Baldred | Cobble | Delwin | Egbert | Frey | Gosling | Hamlin | Hob | Ivo | Jessup | Kelm | Lodge | Marl | Nettle | Oswy | Pike | Quillon | Reeve | Rush | Seaver | Sigeric | Teal | Udo | Wade | Wick | Yarrow | Brackett | Carr | Dyke | Elm | Fen | Gyrth | Holm | Inge | Jarrow | Kett | Lander | Mallard | Nab | Orm | Penda | Roach | Sedge | Tench | Wherry
+named_for = .25

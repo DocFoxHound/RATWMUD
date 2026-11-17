@@ -1,0 +1,51 @@
+# cw001, the storm-listener (doc 84 §9.7): the luna table of cty_dray_merewell, ported. He has no post now (the table
+# had him fishing three generations' trade): no fishing talk without a fisher's gate. Accent none: Coldwater only
+# through symbols.
+mantle cw001
+state ready
+dialect coldwater
+accent none light
+tier standard
+written_for cty_dray_merewell
+title the storm-listener
+fits stage=adult|old
+traits temper=short drive=ambitious
+quirk sleeps_badly_before_storms
+likes calm_nights
+dislikes soft_talk
+fears storms_unbroken
+hopes to_make_his_name
+topics weather +.4 work +.3
+styles refuse=short
+marks oath saying
+persona #self.first# is ambitious, stubborn and plain-spoken, with a short temper behind a reserved manner; he sleeps badly before storms.
+
+words
+saying! = Still water hides deep weeds | A steady paw does the work
+oath! = Net and tangle | By the deep
+refuse = Not in my boat
+greet = Well met | Hello there
+
+rule @storm
+when concept=bark working=no
+does aside
+cooldown 8h
+say Storm coming. I'll sleep when the lake stops muttering. | Leave the lamp low. I need to hear the weather.
+
+line tell.self [concept=talk.work self.job=fisher|sailor] : A good catch is luck only once. After that, it's work.
+line tell.worry [concept=talk.weather here.weather=storm|rain] : There's weather in that sky. I'll not sleep tonight.
+
+scene ambition
+when concept=talk.work
+does tell.plan / react.self
+a : I'll have a name in this town before I'm thirty. Mark it.
+b[friends] : I'll hold you to it.
+b : Plenty have said that.
+
+line greet.return : #greet#.
+line farewell.return : #farewell#.
+line react.news.new : #oath#. That's no small thing.
+line react.news.known : I heard. Everyone's heard.
+line answer.how : Well enough. Slept badly.
+
+dlg resident.hub [topic.meeting=known] : #greet#, #topic.player#. Out for a stroll, or out for work?

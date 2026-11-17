@@ -30,7 +30,8 @@ def main() -> int:
         out = Path(tmp) / "town"
         sim = subprocess.run([str(build / "talk_sim"), "--world", str(ROOT / "Tests" / "fixtures" / "talk_town"),
                               "--profile", "town", "--warm", "2", "--exchanges", "2000", "--ablate", "shuffle",
-                              "--run", "quick", "--out", str(out)], capture_output=True, text=True)
+                              "--run", "quick", "--out", str(out),
+                              "--mantles-from", str(ROOT / "Tests" / "fixtures" / "mantles")], capture_output=True, text=True)
         if sim.returncode != 0:
             print(sim.stderr, file=sys.stderr)
             return 1

@@ -1,0 +1,15 @@
+# rm090, a spare for a Ridgemere pup yet to be born (test fixture). A draft: never worn, never loaded.
+mantle rm090
+state draft
+dialect plain
+accent none
+tier spare
+title the lamplighter's child
+fits stage=young|adolescent|adult|old
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+
+words
+oath! = By the lamps
+
+young
+line tell.boast : I lit a lamp all by myself!

@@ -1,0 +1,9 @@
+C8 (conversations with a third speaker (%)): 0.0889 regresses more than 10% from the baseline's 0.401 (11 events against 49 at the baseline's rate; by chance 2.7e-07)
+C9 (callbacks per 10 conversations): 1.12 regresses more than 10% from the baseline's 1.45 (1374 events against 1764 at the baseline's rate; by chance 2.6e-12)
+O1 (opinions given per 10 conversations): 0 regresses more than 10% from the baseline's 0.483 (0 events against 544 at the baseline's rate; by chance 2.5e-167)
+D1L (lines with a dialect's words (%): light speakers): 1.18 regresses more than 10% from the baseline's 1.68 (189 events against 262 at the baseline's rate; by chance 0.00011)
+D1B (lines with a dialect's words (%): broad speakers): 3.46 regresses more than 10% from the baseline's 8.28 (1031 events against 2748 at the baseline's rate; by chance 4.4e-212)
+U2 (distinguishability of look-alike residents (%)): 38.8 regresses more than 10% from the baseline's 45.7
+B1 (one beat: the director's mean (ms)): 0.201 regresses more than 10% from the baseline's 0.11
+B1P (one beat: the director's 99th percentile (ms)): 0.578 regresses more than 10% from the baseline's 0.353
+X1 (lexical cohesion: replies sharing a content word with the line before (%)): 24 regresses more than 10% from the baseline's 26.8

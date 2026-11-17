@@ -1,0 +1,95 @@
+ok      cw101 (cty_dray_merewell, ridgemere): 16 listeners; 22 of 24 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: cw101.grown.scene.storm_broke
+  never heard: cw101.grown.scene.bread_up
+ok      cw102 (tn_oh_briar_greenshaw, fenshore): 16 listeners; 23 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      lf101 (rm_berit_kelpwick, ridgemere): 16 listeners; 34 of 36 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: lf101.grown.scene.bk_watch_counter
+  never heard: lf101.grown.scene.bk_ships_custom
+ok      lf102 (rm_agna_bilgecot, ridgemere): 16 listeners; 20 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: lf102.grown.scene.before_the_storm
+  never heard: lf102.grown.scene.water_disappoints
+  never heard: lf102.grown.scene.bread_dearer
+ok      mb101 (cty_nell_plummeadow, fenshore): 16 listeners; 39 of 40 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: mb101.grown.scene.wagon_late_barrels
+ok      mb102 (tn_mb_roan_pikewater, fenshore): 16 listeners; 29 of 32 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: mb102.grown.scene.market_bustle
+  never heard: mb102.grown.scene.wagon_late_store
+  never heard: mb102.grown.scene.times_good_door
+ok      mb103 (tn_oh_ludo_ashwood, fenshore): 16 listeners; 23 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      mb104 (tn_mb_tamsin_eelbank, fenshore): 16 listeners; 22 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      mb105 (tn_mb_skye_eelbank, fenshore): 16 listeners; 24 of 24 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      mb106 (tn_mb_iris_pikeford, fenshore): 16 listeners; 21 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      mb107 (cty_dagfinn_brineby, fenshore): 16 listeners; 21 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      mb108 (cty_fallow_reedwell, fenshore): 16 listeners; 21 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      mb109 (tn_sm_bram_harvestgarth, fenshore): 16 listeners; 24 of 24 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      mb110 (cty_ivo_sootridge, fenshore): 16 listeners; 22 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      mb111 (cty_sloe_mistwick, fenshore): 16 listeners; 22 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      mb112 (cty_ivar_wickcot, fenshore): 16 listeners; 21 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      mb113 (cty_jasper_greymore, fenshore): 16 listeners; 21 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      mb114 (cty_stone_marshmore, fenshore): 16 listeners; 23 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      mb115 (cty_yrsa_plankgate, fenshore): 16 listeners; 21 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: mb115.grown.scene.storm_roof
+ok      mb116 (cty_jory_corncroft, fenshore): 16 listeners; 22 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: mb116.grown.scene.storm_scold
+ok      mb117 (cty_leif_rainley, fenshore): 16 listeners; 20 of 20 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      mb118 (cty_maren_coalwick, fenshore): 16 listeners; 20 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: mb118.grown.scene.storm_told
+ok      mb119 (tn_fh_rowan_cragpeak, fenshore): 16 listeners; 21 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      mb120 (cty_brock_marshholm, coldwater): 16 listeners; 26 of 26 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      oh101 (rm_agnes_millford, ridgemere): 16 listeners; 33 of 36 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: oh101.grown.scene.knife_kept
+  never heard: oh101.grown.scene.sing_after_supper
+  never heard: oh101.grown.scene.factor_moon
+ok      rm101 (rm_dagny_slaghand, ridgemere): 16 listeners; 33 of 38 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: rm101.grown.scene.dk_thunderstorm
+  never heard: rm101.grown.scene.dk_crime_theft
+  never heard: rm101.grown.scene.dk_ships_due
+  never heard: rm101.grown.scene.dk_prices_up
+  never heard: rm101.grown.scene.dk_times_hard
+ok      rm102 (rm_ada_rainmore, ridgemere): 16 listeners; 15 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm102.grown.scene.ad_grown_stairs
+  never heard: rm102.grown.scene.ad_grown_snow
+  never heard: rm102.grown.scene.ad_grown_plain
+  never heard: rm102.adolescent.scene.ad_teen_watching
+  never heard: rm102.adolescent.scene.ad_teen_errands
+  never heard: rm102.adolescent.scene.ad_teen_birds
+  never heard: rm102.story.ad_story_snow
+ok      rm103 (cty_lichen_reedford, fenshore): 16 listeners; 24 of 24 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      rm104 (tn_mb_nab_bogditch, fenshore): 16 listeners; 24 of 25 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: rm104.grown.scene.thunder_counting
+ok      sm101 (cty_ada_coalstack, ridgemere): 16 listeners; 23 of 24 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sm101.grown.scene.stones_shelf
+ok      sw101 (tn_fh_thistle_stonepick, saltwell): 12 listeners; 35 of 37 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: sw101.grown.scene.hard_times
+  never heard: sw101.grown.scene.good_times
+ok      sw102 (tn_mb_oriel_marshditch, saltwell): 12 listeners; 32 of 36 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 80 of 80 its own
+  never heard: sw102.grown.scene.thunder_roof
+  never heard: sw102.grown.scene.carts_in
+  never heard: sw102.grown.scene.carts_late
+  never heard: sw102.grown.scene.lean_weeks
+ok      sw103 (tn_lf_moss_downridge, saltwell): 12 listeners; 34 of 36 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 80 its own
+  never heard: sw103.grown.scene.caravan_bowls
+  never heard: sw103.grown.scene.times_hard
+ok      sw104 (tn_mb_bramble_bogditch, saltwell): 12 listeners; 23 of 24 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sw104.grown.scene.good_times
+ok      sw105 (tn_mb_kite_bogditch, saltwell): 12 listeners; 21 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sw105.grown.scene.carts_names
+ok      sw106 (cty_fern_merewick, saltwell): 12 listeners; 23 of 23 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      sw107 (tn_mb_ridge_eelbank, saltwell): 12 listeners; 21 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+ok      sw108 (cty_orm_sootgate, saltwell): 12 listeners; 20 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sw108.grown.scene.carts_late
+  never heard: sw108.grown.scene.bandits
+ok      sw109 (cty_lavinia_mudworth, saltwell): 12 listeners; 20 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sw109.grown.scene.thunder
+ok      sw110 (cty_senna_applegarth, saltwell): 12 listeners; 20 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sw110.grown.scene.sw110_market
+  never heard: sw110.grown.scene.sw110_tired
+ok      sw111 (cty_hob_hedgecombe, saltwell): 12 listeners; 19 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sw111.grown.scene.sw111_thunder
+  never heard: sw111.grown.scene.sw111_times
+ok      sw112 (cty_ash_sheafmeadow, saltwell): 12 listeners; 20 of 22 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sw112.grown.scene.sw112_festival
+  never heard: sw112.grown.scene.sw112_times
+ok      sw113 (cty_winifred_fogridge, saltwell): 12 listeners; 20 of 21 scenes heard; 0 core moves it can't answer, 0 owed it unanswered; window 60 of 60 its own
+  never heard: sw113.grown.scene.sw113_times
+43 mantles worn; 1022 of 1073 scenes heard by some listener; 0 holes in the core moves; W1 99.2701% (2720 of 2740 window lines at the hub, goodbye, job and the role's greeting are the wearers' own)

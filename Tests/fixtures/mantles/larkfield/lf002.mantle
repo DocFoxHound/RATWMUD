@@ -1,0 +1,49 @@
+# lf002, the flood-watcher of the Heights (doc 84 §9.7): the luna table of rm_ada_aldwych, ported. Her husband by the
+# slot, never by name.
+mantle lf002
+state ready
+dialect larkfield
+accent light
+tier standard
+written_for rm_ada_aldwych
+title the flood-watcher
+fits stage=adult|old
+traits temper=calm warmth=warm
+quirk knows_which_streets_flood_first
+likes dry_cellars
+dislikes being_thought_soft
+fears sudden_ruin
+hopes a_quiet_old_age
+topics weather +.4 home +.2
+styles refuse=firm
+marks saying
+persona #self.first# keeps a careful house in the Heights: calm, warm to those she trusts, and she knows which streets flood first.
+
+words
+saying! = Pride doesn't keep a den dry | Patience is free; fairness isn't
+pet!! = bright-tail | dear heart
+greet[here.time=dawn|day] = Good day to you | Well met
+greet = Well met | Evening
+
+rule @home
+when concept=bark working=no
+does aside
+cooldown 8h
+say Take your time; there's no hurry. | The rain is finding the lower streets again.
+
+scene floods
+when concept=talk.weather
+does tell.self / react.self
+a : I know which streets flood first. The low ones always think it won't be them.
+b[old] : Every spring the same.
+b : And it always is.
+
+line greet.return : #greet#, #pet#.
+line farewell.return : #farewell#. Keep to the high side of the street.
+line react.news.new : That's news. Truly.
+line react.news.known : Yes. I'd heard it from the stairs.
+line answer.how : Well, thank you. The cellar's dry, and that's a good week.
+line tell.self [concept=talk.family self.married=yes self.spouse] : #self.spouse# worries about the drains more than I do, and that's saying something.
+line reassure : It'll keep. Most things do, if you let them.
+
+dlg resident.hub [topic.meeting=known] : #greet#, #topic.player#. Come in from the rain.

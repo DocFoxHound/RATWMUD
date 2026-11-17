@@ -10,7 +10,7 @@
 //   OUT/run.json        how it was run: mode, world, profile, listeners and their places, seed, hours, wall time
 //
 //   talk_sim --world KEY|EXPORT_DIR [--frozen | --fixtures DIR | --tick] [--profile NAME] [--seed N] [--hours H]
-//            [--exchanges N] [--out DIR] [--run NAME] [--checkpoint FILE] [--library-from REF] [--talk-data DIR]
+//            [--exchanges N] [--out DIR] [--run NAME] [--checkpoint FILE] [--library-from REF] [--talk-data DIR] [--mantles-from DIR]
 //            [--warm GAME_HOURS] [--fixtures DIR --freeze-at DAY] [--ablate shuffle] [--golden FILE [--bless]]
 //   talk_sim --world KEY --tick --days D --record DIR [--profile none]
 //
@@ -142,7 +142,7 @@ const char* weatherWord(Weather w)
 
 struct Args
 {
-    std::string world, mode = "frozen", fixtures, profile = "L1", out, runName, checkpoint, libraryFrom, talkData, golden,
+    std::string world, mode = "frozen", fixtures, profile = "L1", out, runName, checkpoint, libraryFrom, talkData, mantlesFrom, golden,
                 record, ablate, places, dumpTopics, topics;
     std::uint64_t seed = 1;
     bool dumpTopicsAll = false;
@@ -332,6 +332,7 @@ bool Sim::makeGame(const std::string& checkpoint)
     g_.reset();
     game::Options o;
     o.talkData = talkData_;
+    o.mantlesFrom = args_.mantlesFrom;
     o.voiceData = RATW_SOURCE_DIR "/Data/Voice";
     o.scratch = true;
     o.forkSnapshots = false;
@@ -1591,7 +1592,7 @@ int usage()
 {
     std::cerr << "usage: talk_sim --world KEY|EXPORT_DIR [--frozen | --fixtures DIR | --tick] [--profile L1..L10|town|none]\n"
                  "                [--seed N] [--hours H] [--exchanges N] [--out DIR] [--run NAME] [--checkpoint FILE]\n"
-                 "                [--places CELL,CELL] [--warm HOURS] [--freeze-at DAY] [--library-from REF] [--talk-data DIR]\n"
+                 "                [--places CELL,CELL] [--warm HOURS] [--freeze-at DAY] [--library-from REF] [--talk-data DIR] [--mantles-from DIR]\n"
                  "                [--ablate shuffle]\n"
                  "                [--golden FILE [--bless]]\n"
                  "       talk_sim --world KEY --tick --days D --record DIR\n";
@@ -1629,6 +1630,7 @@ int main(int argc, char** argv)
             else if (s == "--places") a.places = next();
             else if (s == "--library-from") a.libraryFrom = next();
             else if (s == "--talk-data") a.talkData = next();
+            else if (s == "--mantles-from") a.mantlesFrom = next();   // (Mantles from files, not the rows: doc 84 §15.1.)
             else if (s == "--ablate") a.ablate = next();
             else if (s == "--golden") a.golden = next();
             else if (s == "--dump-topics") a.dumpTopics = next();

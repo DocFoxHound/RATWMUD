@@ -825,9 +825,14 @@ def score_run(run: Run) -> dict:
     shifted = collections.Counter()
     for l in lines:
         own = l.get("dialect", "")
-        used = [u for u in l.get("used", []) if u != "plain" and not u.startswith("p_")]
+        used = [u for u in l.get("used", []) if u != "plain" and not u.startswith(("p_", "m_"))]
         # (Phase 6: by the accent the line was spoken in, a step broader or plainer toward the one spoken to; §10.6.)
         acc = l.get("spoken_accent") or l.get("accent") or "none"
+        # (Phase 11: a mantle's own words, layer m_<id>, are the speaker's own: never another dialect's (D2). They are
+        # written in the mantle's dialect (mantle_check holds them to it), so they count as its dialect for a light or
+        # broad speaker (D1L, D1B); a mantle a wearer with no accent may wear has no dialect word in them, so not for D1.)
+        if acc != "none" and own not in ("", "plain", "ridgemere") and any(u.startswith("m_") for u in l.get("used", [])):
+            used.append(own)
         if l.get("spoken_accent") and l.get("accent") and l["spoken_accent"] != l["accent"]:
             levels = {"none": 0, "light": 1, "broad": 2}
             shifted["broader" if levels.get(l["spoken_accent"], 1) > levels.get(l["accent"], 1) else "plainer"] += 1
@@ -859,7 +864,10 @@ def score_run(run: Run) -> dict:
                       "lexicon": "tools/dialect_check.py" if lex is not None else "unavailable"}
     m["D3"], m["D3_detail"] = guess_dialects(lines)
     # U1, U2.
-    own = sum(1 for l in lines if "." in l.get("entry", "") and l["entry"].split(".", 1)[0] == l["who"])
+    # (Phase 11: a line of the speaker's own mantle is theirs too: its entry is the mantle's, whose layer m_<id> they
+    # speak with. A mantle's scene's other turns are the listener's, not counted for them.)
+    own = sum(1 for l in lines if "." in l.get("entry", "") and (l["entry"].split(".", 1)[0] == l["who"] or
+                                                                 "m_" + l["entry"].split(".", 1)[0] in l.get("layers", [])))
     m["U1"] = pct(own, len(lines))
     m["U2"], m["U2_detail"] = distinguish(lines, run.residents)
     m["B5"] = float(run.meta.get("exchanges_per_second") or 0)

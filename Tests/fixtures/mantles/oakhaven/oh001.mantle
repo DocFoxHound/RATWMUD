@@ -1,0 +1,52 @@
+# oh001, the knife by the hearth (doc 84 §9.7): the luna table of rm_agnes_millford, ported. She keeps a greens stall in
+# the Rag Market now (the table had her keeping a taproom).
+mantle oh001
+state ready
+dialect oakhaven
+accent light
+tier standard
+written_for rm_agnes_millford
+title the knife by the hearth
+fits stage=adult|old
+prefers role=merchant
+traits talk=quiet drive=content warmth=warm
+quirk carries_a_wet_stone_whetting_knife_everywhere
+likes rain_on_the_roof
+dislikes being_cornered
+fears debt
+hopes a_contented_life
+topics weather +.3 prices +.2
+marks oath saying
+persona #self.first# keeps a greens stall: quiet, warm, a dreamer of rain and far roads, and never without her whetting knife.
+
+words
+saying! = Good bark grows in quiet rain | Keep your roots where the fire knows them
+oath! = By rain and root | Bark and briar
+refuse = Not while I have breath
+surprise = Leaf and limb
+
+rule @greens
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say Greens, fresh and wet with the morning. | Good leaves, cheap and green. Step in out of the drip.
+
+rule @knife
+when concept=bark working=no
+does aside
+cooldown 8h
+say Leave the knife by the door? No. It comes with me. | The rain may have the street. This stall is mine.
+
+scene debt
+when concept=talk.prices
+does tell.worry / sympathise
+a : A debt is a root through stone. It doesn't loosen because you ask it kindly.
+b : That it doesn't. Pay it down a little at a time.
+
+line greet.return : #greet#. You look wind-thrown. Come in before the rain finds your bones.
+line farewell.return : #farewell#.
+line react.news.new : #surprise#! Is that so?
+line react.news.known : I'd heard. Bad news runs faster than rain.
+line answer.how : Content, mostly. The rain's been kind to the greens.
+
+dlg resident.hub [topic.meeting=known] : #greet#, #topic.player#. The greens are fresh; take your time.

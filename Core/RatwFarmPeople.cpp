@@ -476,6 +476,7 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
         q.description = words.description;
         q.greeting = words.greeting;
         q.idleLabel = label == "-" ? words.label : std::string();
+        arrivalMantle(q, double(std::max<std::int64_t>(0, state_.careers.day)), world);   // (Doc 84 §12.6.)
         requests_.push_back(q);
         if (const auto t = tradeOf.find(r.id); t != tradeOf.end())
             if (const auto list = poolOf.find(t->second); list != poolOf.end())

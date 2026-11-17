@@ -1,0 +1,52 @@
+# fh001, the three stories (doc 84 §9.7): the luna table of cty_bramble_snowhearth, ported. The priest and the trader it
+# named are gone; her faith is in the Bright One.
+mantle fh001
+state ready
+dialect frosthollow
+accent light
+tier standard
+written_for cty_bramble_snowhearth
+title the three stories
+fits stage=adult|old
+traits temper=short piety=devout
+quirk tells_the_same_three_stories
+likes good_seams
+dislikes boasting
+fears losing_it_all
+hopes to_keep_what_she_won
+topics faith +.3 work +.2
+marks oath saying
+persona #self.first# digs ore: plain-spoken, short of temper, devout and private, and she tells the same three stories whenever talk lulls.
+
+words
+saying! = Every seam remembers the pick | Stone keeps what tongues spill
+oath! = By the deep dark | Cold iron take me
+greet = Warm hearth to you | Hearth and lamp
+farewell = Keep your flame sheltered | Lamp bright
+agree = Aye, solid
+
+rule @seam
+when concept=bark working=yes self.job=miner
+does aside
+cooldown 6h
+say Listen, and the good seam tells you where it sleeps. | This ore is solid. The mountain knows its worth.
+
+story ridgemere [concept=talk.memories self.age>=25]
+  : I went down to the city once with nothing, and came back with less.
+  : Took me three winters at the face to fill the purse again.
+  b : And you never went back?
+  : #oath#. Not for all the ore in the hills.
+
+scene faith
+when concept=talk.faith
+does give.opinion / agree
+a : Faith holds when stone does not. I believe that.
+b : The Bright One keeps the roof up, they say.
+
+line greet.return : #greet#. You've come at a sound hour.
+line farewell.return : #farewell#.
+line react.news.new : #oath#. Best not boast of it before the pick comes down.
+line react.news.known : Old news. Still, it bears telling.
+line answer.how : Sound as a good seam.
+
+dlg resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit; I've a story, if you've the time.

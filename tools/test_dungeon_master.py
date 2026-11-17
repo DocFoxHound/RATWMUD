@@ -17,6 +17,9 @@ import os
 DB_TAG = os.environ.get('RATW_TEST_DB_TAG', '')
 
 
+ROOT = Path(__file__).resolve().parent.parent
+
+
 class TargetTests(unittest.TestCase):
     """The worlds the DM works on come from the registry (doc 66): the live ones first, the live server's by default."""
 
@@ -591,6 +594,34 @@ class NpcTests(NpcFixture):
         self.dm.save_figure(master, 'prod', {'id': 'the_lady'}, remove=True)
         self.assertEqual(self.dm.figures('prod'), [])
         self.assertTrue(all(kind == 'voice.sync' for kind, _ in self.queued()) and len(self.queued()) == 6, 'each read again by the game')
+
+    def test_the_mantles_panel(self):
+        # Doc 84 §17.10 (Phase 11): a mantle saved from its text through mantle_store (the game's loader and mantle_check
+        # first; problems by item key), listed with its status, edited from its revision (a stale one refused), its history
+        # and an old revision's text, and each save read again by the game (mantle.sync).
+        master = self.sign_in('dm-master')
+        text = (ROOT / 'Tests' / 'fixtures' / 'mantles' / 'saltwell' / 'sw001.mantle').read_text()
+        text = text.replace('mantle sw001', 'mantle sw050').replace('written_for tt_sa_storekeeper\n', '')
+        done = self.dm.save_mantle(master, 'prod', text, None, 'a first draft')
+        self.assertEqual((done['revision'], done['status']), (1, 'queued'))
+        row = next(r for r in self.dm.mantles('prod') if r['id'] == 'sw050')
+        self.assertEqual((row['status'], row['dialect'], row['revision']), ('spare', 'saltwell', 1))
+        first = self.dm.mantle('prod', 'sw050')
+        self.assertIn('mantle sw050', first['text'])
+        edited = first['text'].replace('Weighed and found fair, mostly.', 'Weighed, and fair, near enough.')
+        self.assertEqual(self.dm.save_mantle(master, 'prod', edited, 1, 'kinder')['revision'], 2)
+        with self.assertRaises(D.DMError) as stale:
+            self.dm.save_mantle(master, 'prod', edited.replace('near enough', 'mostly'), 1)
+        self.assertIn('moved on to revision 2', str(stale.exception))
+        name = self.world()['people'][0]['name'].split()[0]
+        with self.assertRaises(D.DMError) as named:
+            self.dm.save_mantle(master, 'prod', edited.replace('Weighed, and fair, near enough.', f'Ask {name}, not me.'), 2)
+        self.assertIn('any.answer.how', str(named.exception), 'refused by the item it concerns')
+        again = self.dm.mantle('prod', 'sw050', 1)
+        self.assertIn('Weighed and found fair, mostly.', again['text'], "revision 1's text, to take back")
+        self.assertEqual(self.dm.save_mantle(master, 'prod', again['text'], 2, 'taken back')['revision'], 3)
+        self.assertEqual([h['revision'] for h in self.dm.mantle('prod', 'sw050')['history']][:1], [3])
+        self.assertEqual([k for k, t in self.queued() if k == 'mantle.sync'], ['mantle.sync'] * 3)
 
     def test_the_page_saves_over_what_it_saw_keeping_the_games_moves(self):
         # The live world's truth (doc 66, Progress): the page sends the NPC whole with the NPC as it loaded it.

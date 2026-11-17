@@ -18,6 +18,16 @@
 //       Checks .talk and .grammar files against the library's facts, settings, grammars and groups, as Atlas and the
 //       Dungeon Master will before saving a character's table. Exit 1, with the reasons, if any is refused.
 //
+//   talk_check [--data DIR] --mantle PATH... [--dialects DIR] [--json]
+//       Doc 84 §14.4 G1, §17.3 (Phase 9): each .mantle file (a directory: every one under it) read and checked against
+//       the whole library as the game loads it (its syntax, facts, symbols and its own words, moves, 160 characters,
+//       the window's trees and nodes, a graft's nodes and ways out, what its lines owe answered), in any state. With
+//       --dialects, the world's own dialects (NAME.grammar, as live.dialects holds them) over the files'. Exit 1, with
+//       the reasons by item key, if any is refused; --json, one object a mantle (tools/mantle_store.py reads it).
+//
+//   (--mantles-from DIR, with --world: the residents wear the mantles under DIR, each the one written for them, in place of
+//   the world's rows: an export, or Tests/fixtures/mantles.)
+//
 //   talk_check [--data DIR] --coverage [--profiles FILE] [--json] [--holes N]
 //       Doc 84 §15.4 (Phase 7): for every move a line can owe, every topic (topics.json) and every replier kind
 //       (Data/Talk/profiles.json, tools/talk_profiles.py: Ridgemere 3's residents clustered) at each band (strangers,
@@ -25,6 +35,13 @@
 //       variant of it, that holds for that kind on that topic? No rendering. The holes listed, by move; the core moves'
 //       (greet.return, react.news, react.complaint, answer.detail, accept_preclose, farewell.return, accept_decline)
 //       first. Exit 0; it lists, it doesn't judge (Phase 8's gate: no holes in the core moves).
+//   talk_check [--data DIR] --world KEY|EXPORT_DIR [--mantles-from DIR] --mantle-coverage [MANTLE...] [--listeners N] [--json]
+//       Doc 84 §14.4 G3 (Phase 11): every mantle worn in the world (or those named) against sampled real listeners of its
+//       wearer's town (up to N, 16 by default, by id), as the pair stands in the world: does it answer (its wearer has a
+//       line, its own or the library's, for each core move a listener may owe it) and is it answered (each listener has
+//       one for every move its own lines owe)? And is each of its scenes heard (it fits at least one listener at some
+//       hour, weather, season, place and with its wearer at work or not)? Holes in either direction are listed, dead
+//       scenes beside them. Exit 1 if any core move goes unanswered either way.
 //   talk_check [--data DIR] --render-trees [--json] [--seed N]
 //       Every dialogue tree's NPC lines (Data/Talk/dialogue, doc 83) in every voice: plain and each dialect, at a light
 //       and a broad accent, each alternative filled in with sample facts. Exit 1 if a line comes out longer than 160
@@ -42,6 +59,7 @@
 #include "RatwGame.h"
 #include "RatwTalk.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -486,6 +504,352 @@ bool setFact(talk::Query& q, const std::string& kv)
 }
 } // namespace
 
+// --mantle (doc 84 Phase 9): every .mantle file named, or under a directory named, checked as the game loads one.
+int checkMantles(talk::Library& lib, const std::string& data, const std::string& dialects, const std::vector<std::string>& paths,
+                 bool asJson)
+{
+    std::string problem;
+    if (paths.empty())
+        return usage();
+    if (!lib.load(data, problem))
+    {
+        std::cerr << "the talk library doesn't load:\n" << problem << "\n";
+        return 2;
+    }
+    if (!dialects.empty())
+        for (const auto& f : std::filesystem::directory_iterator(dialects))
+            if (f.path().extension() == ".grammar")
+            {
+                std::ifstream in(f.path());
+                std::stringstream text;
+                text << in.rdbuf();
+                if (!lib.setGrammar(f.path().stem().string(), text.str(), problem))
+                    std::cerr << "the dialect " << f.path().stem().string() << " is refused (the file's kept):\n" << problem << "\n";
+            }
+    std::vector<std::string> files;
+    for (const auto& p : paths)
+        if (std::filesystem::is_directory(p))
+        {
+            for (const auto& f : std::filesystem::recursive_directory_iterator(p))
+                if (f.is_regular_file() && f.path().extension() == ".mantle")
+                    files.push_back(f.path().string());
+        }
+        else
+            files.push_back(p);
+    std::sort(files.begin(), files.end());
+    int refused = 0;
+    std::size_t entries = 0, items = 0;
+    const auto quote = [](const std::string& s) {
+        std::string out = "\"";
+        for (const char c : s)
+        {
+            if (c == '"' || c == '\\')
+                out += '\\', out += c;
+            else if (c == '\n')
+                out += "\\n";
+            else if (static_cast<unsigned char>(c) < 0x20)
+                out += ' ';
+            else
+                out += c;
+        }
+        return out + "\"";
+    };
+    if (asJson)
+        std::cout << "[";
+    bool first = true;
+    for (const auto& file : files)
+    {
+        std::ifstream in(file);
+        if (!in)
+        {
+            std::cout << (asJson ? "" : "REFUSED " + file + "\ncan't be read\n");
+            ++refused;
+            continue;
+        }
+        std::stringstream text;
+        text << in.rdbuf();
+        talk::Mantle m;
+        const bool ok = lib.checkMantle({"", text.str(), file}, m, problem);
+        refused += ok ? 0 : 1;
+        entries += m.entries;
+        items += m.items.size();
+        if (asJson)
+        {
+            std::cout << (first ? "" : ",") << "\n {\"file\": " << quote(file) << ", \"id\": " << quote(m.id) << ", \"ok\": "
+                      << (ok ? "true" : "false") << ", \"state\": " << quote(m.state) << ", \"revision\": " << m.revision
+                      << ", \"items\": " << m.items.size() << ", \"entries\": " << m.entries << ", \"problems\": [";
+            if (!ok)
+            {
+                std::istringstream lines(problem);
+                bool one = true;
+                for (std::string l; std::getline(lines, l);)
+                    std::cout << (one ? "" : ", ") << quote(l), one = false;
+            }
+            std::cout << "], \"stances\": {";
+            bool one = true;
+            for (const auto& [issue, st] : m.stances)
+                std::cout << (one ? "" : ", ") << quote(issue) << ": " << quote(st.side + " " + std::to_string(st.strength)), one = false;
+            std::cout << "}, \"grafts\": " << m.grafts.size() << ", \"keys\": [";
+            for (std::size_t i = 0; i < m.items.size(); ++i)
+                std::cout << (i ? ", " : "") << quote(m.items[i].key);
+            std::cout << "]}";
+            first = false;
+        }
+        else
+        {
+            std::cout << (ok ? "ok      " : "REFUSED ") << file << " (" << (m.id.empty() ? "?" : m.id) << ", " << m.state << ", "
+                      << m.items.size() << " items, " << m.entries << " rules and scenes)\n";
+            if (!ok)
+                std::cout << problem << "\n";
+        }
+    }
+    if (asJson)
+        std::cout << "\n]\n";
+    else
+        std::cout << files.size() << " mantles, " << items << " items, " << entries << " rules and scenes; " << refused << " refused\n";
+    return refused ? 1 : 0;
+}
+
+// G3 (doc 84 §14.4, Phase 11): each worn mantle against real listeners of its wearer's town.
+int coverMantles(game::Game& g, const std::vector<std::string>& only, int listeners, bool asJson)
+{
+    const auto& lib = g.talkLibrary();
+    static const std::vector<std::string> Core{"greet.return", "react.news", "react.complaint", "answer.detail",
+                                               "accept_preclose", "farewell.return", "accept_decline"};
+    // The move lines (no concept) of the shared library and of an owner, doing a move or a variant of it.
+    const auto doing = [](const talk::Entry& e, const std::string& m) {
+        if (e.scene || !e.concepts.empty() || e.does.empty())
+            return false;
+        for (const auto& d : e.does.front())
+            if (d == m || d.rfind(m + ".", 0) == 0)
+                return true;
+        return false;
+    };
+    std::map<std::string, std::vector<const talk::Entry*>> shared;
+    const auto sharedFor = [&](const std::string& m) -> const std::vector<const talk::Entry*>& {
+        auto found = shared.find(m);
+        if (found != shared.end())
+            return found->second;
+        auto& list = shared[m];
+        for (const auto& e : lib.entries())
+            if (doing(e, m))
+                list.push_back(&e);
+        return list;
+    };
+    // Residents: who wears what, and each one's town.
+    std::map<std::string, std::string> wearer, town;              // mantle -> resident; resident -> town
+    std::map<std::string, std::vector<std::string>> folk;         // town -> residents
+    for (const auto& [id, e] : g.world().entities())
+    {
+        if (!e.npc || e.transient || e.dead || !g.world().society().spec(id))
+            continue;
+        const auto* life = g.world().society().resident(id);
+        const auto home = life && !life->homeCell.empty() ? life->homeCell : e.cellId;
+        town[id] = g.world().townIdOf(home);
+        folk[town[id]].push_back(id);
+        const auto q = g.talkQuery(id, {}, "bark");
+        if (const auto m = q.a.facts.find("mantle"); m != q.a.facts.end() && !m->second.empty())
+            wearer[m->second] = id;
+    }
+    for (auto& [t, ids] : folk)
+        std::sort(ids.begin(), ids.end());
+    struct Report
+    {
+        std::string mantle, wearer, town;
+        int listeners = 0, scenes = 0, heard = 0, lines = 0, window = 0, windowOwn = 0;
+        std::vector<std::string> unanswered, answers, dead;       // (move / listener), (move / listener), scene keys
+    };
+    std::vector<Report> reports;
+    static const std::vector<std::string> Times{"dawn", "day", "dusk", "night"};
+    static const std::vector<std::string> Weathers{"clear", "overcast", "rain", "fog", "sandstorm", "snow"};
+    static const std::vector<std::string> Seasons{"spring", "summer", "autumn", "winter"};
+    static const std::vector<std::string> Places{"street", "work", "market", "tavern", "home"};
+    for (const auto& [mantle, who] : wearer)
+    {
+        if (!only.empty() && std::find(only.begin(), only.end(), mantle) == only.end())
+            continue;
+        Report r;
+        r.mantle = mantle, r.wearer = who, r.town = town[who];
+        std::vector<std::string> sample;
+        for (const auto& id : folk[r.town])
+            if (id != who && int(sample.size()) < listeners)
+                sample.push_back(id);
+        r.listeners = int(sample.size());
+        const auto own = lib.ownEntries(mantle);
+        std::set<std::string> owesMoves;
+        for (const auto* e : own)
+        {
+            if (e->scene && !e->concepts.empty())
+                ++r.scenes;
+            else
+                ++r.lines;
+            for (const auto& o : e->owes)
+                if (o.who != "self" && !o.soft)
+                    owesMoves.insert(o.moves.begin(), o.moves.end());
+        }
+        std::set<std::string> fitScene;
+        for (const auto& l : sample)
+        {
+            // It answers: the wearer (a) to the listener (b), each core move (its own line, or the library's).
+            for (const auto& m : Core)
+            {
+                auto q = g.talkQuery(who, l, "talk.smalltalk");
+                q.concept.clear();
+                q.facts["conv.topic"] = "smalltalk";
+                q.facts["conv.beat"] = "2";
+                q.a.facts["knows"] = "no";
+                bool held = false;
+                for (const auto* e : own)
+                    held = held || (doing(*e, m) && lib.fits(*e, q, 0));
+                for (const auto* e : sharedFor(m))
+                    held = held || (!held && lib.fits(*e, q, 0));
+                if (!held)
+                    r.answers.push_back(m + " / " + l);
+            }
+            // It is answered: the listener (a) has a line for each move the mantle's lines owe it.
+            for (const auto& m : owesMoves)
+            {
+                auto q = g.talkQuery(l, who, "talk.smalltalk");
+                q.concept.clear();
+                q.facts["conv.topic"] = "smalltalk";
+                q.facts["conv.beat"] = "2";
+                q.a.facts["knows"] = "no";
+                bool held = false;
+                std::string lm;
+                if (const auto f = q.a.facts.find("mantle"); f != q.a.facts.end())
+                    lm = f->second;
+                if (!lm.empty())
+                    for (const auto* e : lib.ownEntries(lm))
+                        held = held || (doing(*e, m) && lib.fits(*e, q, 0));
+                for (const auto* e : sharedFor(m))
+                    held = held || (!held && lib.fits(*e, q, 0));
+                if (!held && std::find(Core.begin(), Core.end(), m) != Core.end())
+                    r.unanswered.push_back(m + " / " + l);
+            }
+            // Its scenes: each heard by some listener at some moment.
+            for (const auto* e : own)
+            {
+                if (!e->scene || e->concepts.empty() || fitScene.count(e->id))
+                    continue;
+                auto base = g.talkQuery(who, l, "talk.smalltalk");
+                bool fit = false;
+                // (Where the wearer stands now, and at home: a carter out on the road still talks of home there.)
+                std::vector<std::string> regions{base.facts.count("here.region") ? base.facts.at("here.region") : std::string()};
+                if (!r.town.empty() && r.town != regions.front())
+                    regions.push_back(r.town);
+                for (const auto& region : regions)
+                for (const auto& concept : e->concepts)
+                {
+                    const auto topic = concept.rfind("talk.", 0) == 0 ? concept.substr(5) : concept;
+                    for (const auto& working : {"yes", "no"})
+                        for (const auto& t : Times)
+                            for (const auto& w : Weathers)
+                                for (const auto& season : Seasons)
+                                    for (const auto& place : Places)
+                                    {
+                                        if (fit)
+                                            break;
+                                        auto q = base;
+                                        if (!region.empty())
+                                            q.facts["here.region"] = region;
+                                        q.concept = concept;
+                                        q.facts["conv.topic"] = topic;
+                                        q.facts["here.time"] = t;
+                                        q.facts["here.season"] = season;
+                                        q.facts["here.place"] = place;
+                                        q.facts["here.weather"] = place == std::string("street") || place == std::string("market") ? w : "indoors";
+                                        q.facts["here.outdoors"] = w;
+                                        q.a.facts["working"] = working;
+                                        fit = lib.fits(*e, q, 0);
+                                    }
+                }
+                if (fit)
+                    fitScene.insert(e->id);
+            }
+        }
+        for (const auto* e : own)
+            if (e->scene && !e->concepts.empty() && !fitScene.count(e->id))
+                r.dead.push_back(e->id);
+        // W1 (§15.3): the window's hub, goodbye and the role tree's greeting, said to a stranger and to one they know
+        // (10 seeds each): how many are the mantle's own lines.
+        {
+            std::vector<std::string> nodes{"resident.hub", "resident.bye", "resident.job"};
+            const auto who_ = g.talkQuery(who, {}, "bark");
+            const auto f = [&](const char* k) { const auto x = who_.a.facts.find(k); return x == who_.a.facts.end() ? std::string() : x->second; };
+            if (f("role") == "merchant" && f("job") != "innkeeper")
+                nodes.push_back("shop.greet");
+            if (f("job") == "innkeeper")
+                nodes.push_back("inn.greet");
+            for (const auto& node : nodes)
+                for (const auto* meeting : {"stranger", "known"})
+                    for (std::uint64_t seed = 1; seed <= 10; ++seed)
+                    {
+                        auto q = g.talkQuery(who, {}, "dlg." + node);
+                        q.alone = true;
+                        q.facts["topic.meeting"] = meeting;
+                        q.facts["topic.player"] = "Rowan";
+                        const auto said = lib.pick(q, seed, {}, {});
+                        if (said.id.empty())
+                            continue;
+                        ++r.window;
+                        r.windowOwn += said.id.rfind(mantle + ".", 0) == 0;
+                    }
+        }
+        r.heard = int(fitScene.size());
+        reports.push_back(std::move(r));
+    }
+    int holes = 0;
+    if (asJson)
+    {
+        auto out = json::Value::array();
+        for (const auto& r : reports)
+        {
+            auto o = json::Value::object();
+            o.set("mantle", json::Value(r.mantle));
+            o.set("wearer", json::Value(r.wearer));
+            o.set("town", json::Value(r.town));
+            o.set("listeners", json::Value(double(r.listeners)));
+            o.set("scenes", json::Value(double(r.scenes)));
+            o.set("scenes_heard", json::Value(double(r.heard)));
+            o.set("window", json::Value(double(r.window)));
+            o.set("window_own", json::Value(double(r.windowOwn)));
+            auto list = [](const std::vector<std::string>& v) {
+                auto a = json::Value::array();
+                for (const auto& x : v)
+                    a.push(json::Value(x));
+                return a;
+            };
+            o.set("dead_scenes", list(r.dead));
+            o.set("unanswered", list(r.unanswered));
+            o.set("cannot_answer", list(r.answers));
+            out.push(o);
+            holes += int(r.unanswered.size() + r.answers.size());
+        }
+        std::cout << json::dump(out) << "\n";
+        return holes ? 1 : 0;
+    }
+    int scenes = 0, heard = 0, window = 0, windowOwn = 0;
+    for (const auto& r : reports)
+    {
+        scenes += r.scenes, heard += r.heard, window += r.window, windowOwn += r.windowOwn;
+        holes += int(r.unanswered.size() + r.answers.size());
+        std::cout << (r.unanswered.empty() && r.answers.empty() ? "ok      " : "HOLES   ") << r.mantle << " (" << r.wearer << ", "
+                  << r.town << "): " << r.listeners << " listeners; " << r.heard << " of " << r.scenes << " scenes heard; "
+                  << r.answers.size() << " core moves it can't answer, " << r.unanswered.size() << " owed it unanswered; window "
+                  << r.windowOwn << " of " << r.window << " its own\n";
+        for (std::size_t i = 0; i < r.answers.size() && i < 5; ++i)
+            std::cout << "  can't answer " << r.answers[i] << "\n";
+        for (std::size_t i = 0; i < r.unanswered.size() && i < 5; ++i)
+            std::cout << "  unanswered " << r.unanswered[i] << "\n";
+        for (const auto& d : r.dead)
+            std::cout << "  never heard: " << d << "\n";
+    }
+    std::cout << reports.size() << " mantles worn; " << heard << " of " << scenes << " scenes heard by some listener; " << holes
+              << " holes in the core moves; W1 " << (window ? 100.0 * windowOwn / window : 0.0) << "% (" << windowOwn << " of "
+              << window << " window lines at the hub, goodbye, job and the role's greeting are the wearers' own)\n";
+    return holes ? 1 : 0;
+}
+
 int main(int argc, char** argv)
 {
     std::string data = RATW_SOURCE_DIR "/Data/Talk", world;
@@ -495,8 +859,10 @@ int main(int argc, char** argv)
     double runHours = 0;
     std::string character, dialect, grammarFile, rulesFile;
     bool all = false, validating = false, residents = false, asJson = false, renderingTrees = false, covering = false;
-    std::string profilesFile;
-    int listHoles = 0;
+    std::string profilesFile, dialectsDir, mantlesFrom;
+    std::vector<std::string> mantles;
+    bool checkingMantles = false, mantleCoverage = false;
+    int listHoles = 0, listeners = 16;
     for (int i = 1; i < argc; ++i)
     {
         const std::string a = argv[i];
@@ -535,6 +901,18 @@ int main(int argc, char** argv)
             grammarFile = next();
         else if (a == "--rules")
             rulesFile = next();
+        else if (a == "--mantle")
+            checkingMantles = true;
+        else if (a == "--dialects")
+            dialectsDir = next();
+        else if (a == "--mantles-from")
+            mantlesFrom = next();
+        else if (a == "--mantle-coverage")
+            mantleCoverage = true;
+        else if (a == "--listeners")
+            listeners = std::stoi(next());
+        else if (checkingMantles)
+            mantles.push_back(a);
         else if (validating)
             validate.push_back(a);
         else
@@ -586,6 +964,8 @@ int main(int argc, char** argv)
             std::cout << "ok      " << character << "\n";
         return ok ? 0 : 1;
     }
+    if (checkingMantles)
+        return checkMantles(lib, data, dialectsDir, mantles, asJson);
     if (renderingTrees)
     {
         if (!lib.load(data, problem))
@@ -658,10 +1038,11 @@ int main(int argc, char** argv)
         return explain(lib, q, seed, many, all);
     }
     // A world, read only.
-    if (args.size() < 2 && !residents)
+    if (args.size() < 2 && !residents && !mantleCoverage)
         return usage();
     game::Options o;
     o.talkData = data;
+    o.mantlesFrom = mantlesFrom;                         // (Doc 84 Phase 9: mantles from files, not the world's rows.)
     o.voiceData = RATW_SOURCE_DIR "/Data/Voice";       // (The router's tones: a resident's tone fact.)
     o.scratch = true;
     o.forkSnapshots = false;
@@ -699,6 +1080,8 @@ int main(int argc, char** argv)
         std::cerr << "the talk library at " << data << " didn't load (see above)\n";
         return 1;
     }
+    if (mantleCoverage)
+        return coverMantles(g, args, listeners, asJson);
     if (residents)
     {
         // Every resident's facts, as the library would see them speak (to no one, here and now).

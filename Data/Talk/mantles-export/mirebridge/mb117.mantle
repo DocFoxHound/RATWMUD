@@ -1,0 +1,259 @@
+# mb117, the old-saw rabbit keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb117
+revision 1
+state ready
+dialect mirebridge
+accent none
+tier standard
+written_for cty_leif_rainley
+written_by claude-p11-pilot
+title the old-saw rabbit keeper
+fits stage=adult|old
+prefers job=herder
+traits temper=calm talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk quotes_old_sayings_for_everything
+likes blackberries long_walks fresh_straw first_snow
+dislikes night_noise gulls
+fears a_sickness_in_the_hutches
+hopes a_quiet_winter
+topics animals +0.4 land +0.3 season +0.3 weather +0.2 travel -0.4 gossip -0.3
+styles comfort=practical gossip=reluctant refuse=soft tease=none
+marks oath saying saw
+persona #self.first# keeps rabbits out in the sand hills: tired, patient, few words, and an old saying ready for anything.
+
+words
+oath! = Straw and sand | Bless the burrow
+saying! = Patience feeds the hutch | A slow paw fills the sack
+saw! = The hare that hurries finds the snare | Slow water cuts the deepest bank | What the wind takes, the spring gives back | Never count the litter till it's weaned | A quiet field is a full one
+hutch = the hutches | the long row of hutches
+warren = the warren | the burrows in the sand hills
+straw = fresh straw on the floor | clean straw, new-cut
+berries = blackberries off the bush | a pawful of blackberries
+walk = a ramble over the sand hills | a stroll along the dune tops
+whitefall = the year's first snow | a first white morning
+gulls = the gulls | those gulls off the strand
+kits = the kits | a nest of kits
+hills = the sand hills | the dunes
+stillnight = a still night | a night with nothing in it
+
+any
+opinion @1 city against 1 : I'll say this of Ridgemere and no more. #saw#.
+opinion @1 road mixed 0 : A road takes you away and a road brings you home. I've no quarrel with either, only with the walking.
+opinion @1 merchants mixed 0 : They buy my pelts and sell me my salt. Some years it comes out even. #saying#.
+opinion @1 festivals mixed 0 : A feast does the young good. I'll watch from the edge and be home before the noise starts.
+opinion @1 strangers mixed 0 : I'll judge a stranger the way I judge a rabbit. Give it a week and see what it eats.
+
+grown
+line @1 greet.return : #greet#. | #greet#. Sit, if you like.
+line @1 greet [pair.band=strangers] : #greet#. You've walked a way to find me. | #greet#. Not many come out this far.
+line @2 greet [here.time=dawn] : Mm. #greet#. Early for you. | #greet#. Up since the gulls, me.
+line @3 greet [self.working=yes] : #greet#. Mind #hutch#; the doors swing. | #greet#. Quiet, now. #kits.capitalize# are sleeping.
+line @4 greet [here.time=dusk|night] : #greet#. Late to be out on #hills#. | #greet#. Come in out of the dark.
+line @1 again.open : You again. #greet#. | Back. #greet#.
+line @1 farewell : #farewell#. #saw#. | #farewell#. Go steady.
+line @1 farewell.return : #farewell#. | #farewell#. Go careful over #hills#.
+line @1 react.news.new : Is that so. #ack#. | Well. #marvel#.
+line @1 react.news.known : #knew#. | I'd heard. News walks out to #hills# slow, but it walks.
+line @1 react.news.doubt : #doubt#. I'll wait and see if it's still true next week. | I've heard a lot of things. Half of them were weather.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #bad#. #rest#. | #pity#. Slow water cuts the deepest bank.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #good#. #gladnews#. | That's #good#. #saying#.
+line @1 answer.how : #tired.capitalize#. But steady. | #notsobad#. #oath#. | Same as last week. That's no bad thing.
+line @1 sympathise : #sympathy#. #saw#. | It'll ease. Things do, given a season.
+line @1 decline : I'd sooner not. My legs don't go as far as they did. #put_off#. | Not this time. #demur#. I've #hutch# to see to.
+line @1 accept_decline : #no_matter#. | Then another day. Days are one thing I've plenty of.
+line @1 thank : #thanks#. | #thanks#. Kindly done.
+line @1 deflect_thanks : #deflect#. | Nothing to it. #saying#.
+line @1 preclose : Well. #hutch.capitalize# won't fill themselves. | #preclose#.
+line @1 ack : Mm. #ack#. | So it is. #bc_true#
+scene kits_born
+when topic=work|animals here.region=fens self.job=herder
+does tell.self / react.self / assess
+a : Two of the does kindled in the night. Nine kits between them. | Lost a litter to the cold. It happens. #saw#. | Moved #kits# to the warm end of #hutch#.
+b[job=herder|farmer] #beasts : Nine's a good number. | It does happen. | The warm end's best.
+b : Nine! | I'm sorry. | Will they live?
+a@beasts : It is. #bc_true# | It does. You don't get used to it. | It is. They'll do.
+a : Nine. I'll count #kits# again in a week. | It happens. #saying#. | They'll do. Warm's most of it.
+
+scene straw_day
+when topic=work|home here.region=fens self.job=herder
+does tell.self / react.self / assess
+a : Put #straw# down in every hutch today. Best smell there is. | #straw.capitalize#. That's half of keeping rabbits, and most of keeping a house. | Raked out the old and put the new down. My back knows about it.
+b : Every hutch? | Is it? | You'll sleep well.
+a : Every one. #saying#. | It is. #straw.capitalize# mends most things. | I will. #bc_i_will#
+
+scene gulls_thieves
+when topic=animals here.region=fens here.time=dawn|day
+does tell.complaint / react.complaint / assess
+a : #gulls.capitalize# had the feed out of the trough again. Shouting while they did it. | Can't abide #gulls#. They take what's not theirs and laugh about it. | A gull stood on the hutch roof all morning, watching #kits#. I watched it back.
+b[job=herder|farmer|fisher] #beasts : They'll take anything. | Every bird's a thief. | I'd have thrown a clod.
+b : #bc_they_always_do# | #bc_ha# | Did it go?
+a@beasts : Anything. #saw#. | Some more than others. | I did. It came back.
+a : #bc_they_do#. Loudly. | They do. #grumble#. | In the end. #gulls.capitalize# always go in the end.
+
+scene night_noise
+when topic=home|day here.region=fens here.time=dusk|night
+does tell.feeling / react.self / assess
+a : I like #stillnight#. Out on #hills# there's no one to spoil it. | Can't sleep with noise. Never could. One fox at the wire and I'm up till dawn. | Sound carries at night. A door, a shout, and the rabbits stamp.
+b : It is quiet out there. | A fox? | Stamp?
+a : It is. #stillnight.capitalize#, and me in it. | A fox. I lit a lamp and sat by #hutch#. | Stamp. Warning each other. #bc_wise#
+
+scene long_walk
+when topic=pastimes|land here.region=fens
+does tell.self / react.self / assess
+a : Went out on #walk# this morning. Didn't meet a soul. | I walk #hills# end to end once a week. They're never the same twice. | Nothing clears the head like #walk#.
+b : On your own? | Never the same? | #bc_true#
+a : On my own. That's the whole of the pleasure. | The wind moves them. #saw#. | #saying#. It works for walking too.
+
+scene blackberries
+when topic=food|season here.region=fens here.season=summer|autumn
+does tell.self / react.self / assess
+a : #berries.capitalize#. Ate half of them before I got home. | The brambles behind #hutch# are heavy this year. Come and pick, if you like. | Stained to the elbow. #oath#. Worth it.
+b : Only half? | #bc_lovely# | #bc_ha#
+a : The other half's in a pie. #bc_lovely# | Bring a basket. The thorns won't mind. | It washes out by Restday.
+
+scene first_white
+when topic=weather|season here.region=fens here.weather=snow
+does tell.feeling / react.self / assess
+a : #whitefall.capitalize#. I stayed out under it till my ears went cold. | Look at #hills#. White to the sea. I've waited all year. | Snow on the hutches. The rabbits don't like it. I do.
+b[stage=young] #pup : Can we make a snow-wolf? | Is it deep? | Why don't they like it?
+b : You don't mind it? | #bc_lovely# | Each to their own.
+a@pup : Make two. One for me. | Deep enough for a pup to sink to the ears. | Cold paws. They stay in.
+a : I like this cold. Clean as #straw#. | #oath#. It is. | So it is.
+
+scene rain_patience
+when topic=weather here.region=fens here.weather=rain
+does tell.self / react.self / assess
+a : Rain. #saw#. | Wet again. The burrows will be soft. I'll shore them up. | Three days of this. The rabbits are sulking. So am I.
+b : #bc_every_year# | Will they hold? | #bc_ha#
+a : Every year. #bc_every_year# | They held last year. #oath#. | It'll pass. Things do.
+
+scene wind_hills
+when topic=weather|land here.region=fens here.weather=overcast|storm
+does tell.self / react.self / assess
+a : Wind's moving #hills# again. I'll find the warren somewhere new by morning. | Sand in the hutches, sand in my bed. #saw#. | When it blows like this I stay in and listen.
+b : Somewhere new? | #bc_every_time#? | Listen to what?
+a : Near enough. The sand walks. | Every time it blows. | The sand. You can hear it move.
+
+scene city_once
+when topic=travel|times here.region=fens
+does give.opinion / react.self / assess
+a : I was up in Ridgemere once. Long time back. That's all. | People ask me about the city. I tell them #saw#. | Some go up the road and come back. Some don't. I came back.
+b : What happened? | What does that mean? | #bc_good#
+a : Nothing worth telling. #saying#. | It means what it says. | I did. #oath#. And I stayed.
+
+scene young_days
+when topic=memories here.region=fens self.age>=40
+does tell.memory / react.self / assess
+a : There was an old keeper here before me. Every saying I have, I had off that one. | When I was young I thought patience was for the old. Now I'm old, and I was right. | I've kept #warren# since I had a full set of claws. Lost one since.
+b[old] #age : The young never listen. | #bc_ha# | A claw's not much to lose.
+b : Do you remember them all? | #bc_ha# | What happened to the claw?
+a@age : They don't. I didn't. #bc_i_know# | So it is. | Not much. I miss it on cold days.
+a : Most of them. #saw#. | So it is. | A doe with an opinion. #saying#.
+
+scene health_tired
+when topic=health here.region=fens
+does answer.how / react.self / assess
+a : #tired.capitalize#. I'm always a bit tired. It suits me. | Knees ache before the weather turns. Better than a barometer. | Fine. Slower than I was. #saw#.
+b : Rest, then. | #bc_ha# | #bc_true#
+a : I'll rest when #whitefall# comes. | They're never wrong. #oath#. | Slow's fine. Slow gets there.
+
+scene spring_does
+when topic=season|animals here.region=fens here.season=spring
+does tell.self / react.self / assess
+a : Every doe's building. Fur and straw, everywhere. #oath#. | Spring. #warren.capitalize# wakes up all at once. | Grass coming, kits coming. #saw#.
+b : #bc_lovely# | All at once? | #bc_every_year#
+a : Busy time. #kits.capitalize# by the dozen. | Overnight, near enough. | Every year. I've never tired of it.
+
+scene dusk_count
+when topic=day|work here.region=fens here.time=dusk self.job=herder
+does tell.self / react.self / assess
+a : Counted them in. All there. That's a good day. | Shut #hutch# for the night. Now the quiet. | Dusk's the best of it. #stillnight.capitalize# coming.
+b : All of them? | #bc_good# | #bc_lovely#
+a : All. #saw#. | It is. #bc_good# | It is. Go home before the dark, now.
+
+scene faith_quiet
+when topic=faith here.region=fens
+does give.opinion / react.self / assess
+a : The Bright One gives the grass and the rain. The rest is up to me. | I don't go to chapel much. I say my piece out on #hills#. | Old saying: the Bright One hears a quiet voice best.
+b[priest] #cloth : The chapel's always open to you. | The Bright One hears you anywhere. | Wise words.
+b : #bc_true# | #bc_fair# | Is that so?
+a@cloth : I know it. I'll come at the turn of the year. | That's what I count on. | Not mine. Older than me.
+a : So it is. #bc_true# | It does me. | So I was told.
+
+scene drowned_town
+when topic=lore here.region=fens
+does tell.story / react.story / assess
+a : There's an old saying about the drowned town. #saw#. That's all anyone remembers of it. | My grandfather used to say the sand hills were the drowned town's roofs. I don't know. | Every old saying here starts with the water.
+b[old] #age : I heard that one young. | Roofs, now? | It does.
+b : #bc_so_they_say# | Roofs? | Why the water?
+a@age : We all did. #bc_every_one# | So it was said. | Everything here does.
+a : So they say. | So it was said. I've dug, and found sand. | Because it's always there. #saying#.
+
+scene feed_prices
+when topic=prices here.region=fens
+does tell.complaint / react.complaint / assess
+a : Feed's up again. #saw#. | #self.shopkeeper# charged me for salt like it was silver. I paid. I always pay. | Pelts sell low and oats sell high. They always did.
+b : #bc_they_always_do# | You paid? | #bc_true#
+a : It comes round. #bc_always# | I'd rather pay than argue. | They did when I was young, too.
+
+story old_keeper [topic=memories|animals self.age>=40]
+  : When I was young there was an old keeper out on #hills#. Never said a word that wasn't a saying.
+  : I asked once why. The old one said, words are cheap, so spend the old ones; they've been tried.
+  b : That's wise. #bc_wise#
+  : I thought it was daft. Then I got old. #saw#.
+
+story flooded_burrows [topic=memories|weather here.region=fens self.age>=35]
+  : One winter the sea came over the low dunes in the night.
+  : I was out with a lamp, pulling does out of the burrows by the scruff. Wet to the chest.
+  ask : How many do you think I saved?
+  b : All of them? #bc_i_hope_so#
+  : Most. Not all. #saying#. I built the new hutches higher.
+
+story away_year [topic=memories|travel self.age>=40]
+  : There was a year I wasn't here. Went away. #warren.capitalize# ran itself.
+  : When I came back the rabbits didn't know I'd gone.
+  b : Where did you go?
+  : Away. #saw#. That's all there is to it.
+
+rule @hutch
+when concept=bark self.working=yes self.job=herder here.region=fens
+does aside
+cooldown 6h
+say Easy, now. Easy. | Who left this door open? #hutch.capitalize# swinging. | There. #straw.capitalize#. #saying#.
+
+rule @gulls
+when concept=bark here.region=fens here.time=dawn|day here.weather!=indoors
+does aside
+cooldown 8h
+say Go on. Off with you. #gulls.capitalize#. | Shout all you like. You'll get nothing. | #saw#.
+
+rule @snow
+when concept=bark here.region=fens here.weather=snow
+does aside
+cooldown 8h
+say #whitefall.capitalize#. At last. | Look at that. | Mm. #saw#.
+
+rule @night
+when concept=bark here.region=fens here.time=night
+does aside
+cooldown 8h
+say Quiet, now. Quiet. | #stillnight.capitalize#. Good. | Hush. The rabbits are listening.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Not many come out to #hills#. What brings you?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit a while. There's #straw# on the bench.
+dlg @3 resident.hub [pair.disposition=wary] : #greet#. Speak slow; I'm not quick these days.
+dlg @1 resident.job : I keep rabbits. #hutch.capitalize#, #warren#, #straw#. #saying#.
+dlg @1 resident.news : News comes out here slow, and old. #saw#.
+dlg @1 resident.bye : #farewell#. Go steady over #hills#.
+graft resident.hub
+choice Have you a saying for everything? -> saws
+node saws
+say Most things. They're old. They've worked longer than I have. #saw#.
+mood calm
+free
+choice Where did you learn them all? -> saws_where
+choice I'll remember that one. -> hub
+node saws_where
+say An old keeper, out here, when I was young. I didn't listen then. I listen now, and there's nobody left to say them.
+choice I'm listening. -> hub
+choice Goodbye. -> bye

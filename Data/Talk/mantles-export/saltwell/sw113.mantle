@@ -1,0 +1,294 @@
+# sw113, the notch-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sw113
+revision 1
+state ready
+dialect saltwell
+accent light broad
+tier standard
+written_for cty_winifred_fogridge
+written_by claude-p11-pilot
+title the notch-keeper
+fits stage=adult|old
+prefers temper=nervy
+traits temper=nervy talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk keeps_a_tally_of_favours_owed
+likes mutton_stew stars quiet_chapel first_snow
+dislikes bad_manners gulls
+fears letting_the_warren_fail
+hopes every_notch_paid_back
+topics animals +0.4 work +0.3 faith +0.2 weather +0.2 memories +0.2 gossip -0.4 travel -0.3
+styles comfort=practical gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# keeps the rabbits on the red sand: quiet, anxious, always counting, with a notched stick for every favour owed.
+
+words
+oath! = Burrow and briar | Whiskers and thorn
+saying! = Owed is owed, sun or shade | Cut the notch before the well forgets
+tally = my tally-stick | the notches on my stick
+notch = a notch | one more notch
+warren = the warren | the Redsand burrows
+does = the does | the old does
+kits = the kits | the new kits
+mothers = my mother, and hers before her | three of us on these burrows
+fret = It sits on me | I keep turning it over
+fuss = Sorry. I fuss | I'm fussing, I know
+stewbowl = mutton stew | a bowl of mutton stew, if there's mutton
+starsout = the first stars | the stars coming out one by one
+hush = the chapel when it's empty | the empty chapel
+firstwhite = the first white on the dunes | the first frost-snow
+hawkword = the hawk | that red-tailed hawk
+
+any
+opinion @1 city against 2 : Smoke and elbows, they say. And nobody owes anybody. How would you even keep count? #fret#.
+opinion @2 city against 2 [conv.agreed_before=no] : You know I'll not go. Nobody there knows whose favour is whose.
+opinion @1 merchants against 2 : Nothing comes into my house, and still the bread goes up. #fret#.
+opinion @1 newcomers against 2 : You never know who you've let in till they've gone. I'd want a season of watching first.
+opinion @1 strangers against 1 : A stranger draws first; that's right. But I count the jars after. #fuss#.
+opinion @1 drink against 1 : A cup loosens a tongue, and a loose tongue says what it can't buy back.
+opinion @1 road against 1 : Not for any silver. The sand eats roads, and wolves on them. #oath#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Oh. I don't know you. Is something wanted? | #greet#, #address#. Sorry, you startled me.
+line @2 greet [here.time=dawn] : #greet#. I've been up since the dark. #kits.capitalize# don't wait. | #greet#. Is it cool still? I hope it's cool.
+line @3 greet [self.working=yes] : #greet#. Quietly, please. #does.capitalize# frighten. | #greet#. Mind the holes; I'd hate you to twist a paw.
+line @1 again.open : Oh. Again. Is everything all right? | Back? Did I forget something? #fret#.
+line @1 greet.return : #greet#. | #greet#, #address#. | #greet#. Sorry. #greet#.
+line @2 greet.return [here.time=dusk|night] : #greet#. #starsout.capitalize# are nearly up. | #greet#. Late, isn't it? Safe home.
+line @1 farewell : #farewell#. Go carefully. | #farewell#. Mind the sand.
+line @1 farewell.return : #farewell#. | #farewell#. And mind yourself.
+line @1 react.news.new : #surprise#. Oh. Is it true? | Oh. #fret#.
+line @1 react.news.known : I'd heard. At the well. I wasn't sure. | #knew#. I hoped it wasn't so.
+line @1 react.news.doubt : I'd not repeat that till I'm certain. Folk get hurt by a careless word. | #doubt#. Are you sure? Who said it?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Oh, #pity#. | #rest#. I'm sorry. Truly sorry.
+line @1 answer.how : #fine#. Mostly. I worry, you know. | Well. I think. #fret#. | #tired.capitalize#. #kits.capitalize# had me up.
+line @1 sympathise : #sympathy#. If there's anything, ask. I'd owe it to you anyway. | #sympathy#. Sit a moment. Please.
+line @1 decline : #hedge#, I can't. I'd only let you down, and then I'd owe you twice. | I'd rather not. #fuss#. Another time, if I can.
+line @1 accept_decline : Oh, of course. #no_matter#. | That's all right. I shouldn't have asked.
+line @1 thank : #thanks#. That's #notch# for you. I won't forget. | My thanks. I've marked it. Truly.
+line @1 deflect_thanks : It was owed. From before. You don't remember, but I do. | #deflect#. We're square now. Nearly.
+line @1 preclose [self.working=yes] : #does.capitalize# will fret if I'm long. #excuse#. | I should see to #warren#. Sorry.
+line @1 ack : #ack#. | Yes. Yes, #bc_it_is#
+rule @warren_bark
+when concept=bark self.working=yes self.workplace
+does aside
+cooldown 6h
+say Seven, eight, nine. Nine. Where's the tenth? | Hush now, hush. Nobody's coming. | #mothers.capitalize#. Don't let me be the one.
+
+rule @tally_bark
+when concept=bark here.player_near=yes
+does aside
+cooldown 8h
+say #notch.capitalize# for the water. #notch.capitalize# for the bread. #fret#. | #saying#.
+
+rule @hawk_bark
+when concept=bark here.time=dawn|day here.outdoors=clear
+does aside
+cooldown 8h
+say Is that #hawkword#? Oh. #oath#. | Keep down, little ones. Keep down.
+
+rule @stars_bark
+when concept=bark here.time=night here.weather=clear
+does aside
+cooldown 12h
+say There. #starsout.capitalize#. | One, and two, and there's three. Good.
+
+scene sw113_count
+when topic=work|animals here.region=waste self.workplace
+does tell.worry / reassure / assess
+a : I counted #kits# twice this morning and got two numbers. | One of #does# didn't come up at dawn. I've been at the hole all morning. | #mothers.capitalize#. I feel them watching every time I lose one.
+b[job=herder|farmer] #farm : Count a third time. The middle number's right. | She'll be nursing. They hide when they're nursing. | Everyone loses a few. They did too.
+b : #sympathy#. | #bc_i_hope_so# | #bc_poor_soul#
+a@farm : The middle one. Yes. That's sensible. I'll do that. | Nursing. Oh, I hope so. | Did they? Nobody ever said.
+a : #fret#. I'll count again tonight. | I'll sit by the hole. Just in case. #oath#. | #fret#. I'm the third. I can't be the one.
+
+scene sw113_hawk
+when topic=animals here.region=waste here.time=dawn|day
+does tell.worry / react.self / assess
+a : #hawkword.capitalize# was over #warren# again. Circling. I waved my shawl. | #hawkword.capitalize# took a kit yesterday. I saw it. I couldn't do anything. | I've strung rags on the thorn to keep #hawkword# off. I don't know if it helps.
+b[from=saltwell] #sw : She's feeding her own. It's the Waste. | The Waste takes. It gives too. | Rags work, for a while. Then she learns.
+b : #bc_poor_soul# | #pity#. | #bc_maybe#
+a@sw : I know. I know. I still wave. | It gives. I keep forgetting that part. | Then I'll change the rags. Red ones.
+a : #fret#. I'll be out at first light again. | #oath#. One kit. It's still one. | #fuss#. But I'll keep at it.
+
+scene sw113_tally
+when topic=smalltalk|friends here.region=waste
+does tell.self / react.self / assess
+a : I keep #tally#. Every favour. I'd hate to die owing. | You lent me a rope at the well once. I've still got the notch. | Look. Twelve notches. Twelve I owe. Four owed me, but I don't count those as hard.
+b[friends] #friend : You don't owe me anything. | A rope! That was years ago. | Only twelve?
+b : #bc_ha# | #bc_go_on# | #bc_wise#
+a@friend : I do. It's cut. I can't uncut it. | Years ago, and still owed. #saying#. | Twelve. And one more if you keep being kind.
+a : #saying#. | It's cut. I can't uncut it. | #fret#. I'd sleep better at none.
+
+scene sw113_stew
+when topic=food here.region=waste
+does tell.self / react.self / assess
+a : #stewbowl.capitalize# tonight, if the cart brought mutton. Did it? Do you know? | I saved a little silver for #stewbowl#. Is that wicked? | Somebody left #stewbowl# on my step. I don't know who. Now I can't pay it back.
+b[from=saltwell] #sw : There's mutton at the inn. I smelled it. | Wicked? It's stew. | Bread and salt, then. That pays most things.
+b : #tasty.capitalize#. | #bc_i_hope_so# | #bc_maybe#
+a@sw : Oh, good. Good. I'll go before it's gone. | It's stew. You're right. It's stew. | Does it? Bread and salt. I'll leave it on every step, then.
+a : #hungry.capitalize#. I'll hope. | #fuss#. I'll have it anyway. | #fret#. I'll find them.
+
+scene sw113_stars
+when topic=weather|pastimes here.region=waste here.time=dusk|night here.weather=clear
+does tell.self / react.self / assess
+a : I sit on the warren wall every evening and wait for #starsout#. | #starsout.capitalize#. That one's always first. Every night. It never misses. | I count them till I lose count. It's the only counting I don't mind getting wrong.
+b[from=saltwell] #sw : The low red one. Carters steer by it. | Always first. Like the well. | The stars blow on the embers of the day.
+b : #bc_lovely# | #bc_every_night# | #bc_wise#
+a@sw : Does it? Then somebody's safe home. | Like the well. Yes. Something you can trust. | Blow gently, then. I like the warmth a bit longer.
+a : #bc_lovely# | #oath#. There it is. | Nobody owes the stars anything. I like that.
+
+scene sw113_chapel
+when topic=faith here.region=waste
+does tell.self / react.self / assess
+a : I go to #hush#. Before the bell, after the bell. Never during. | Nobody in #hush# but me and the Bright One. That's how I like it. | I pray small. Keep #warren#. Keep the young ones. That's all.
+b[stage=old] #old : The Bright One hears a quiet room best. | The bell's for the crowd. The quiet's for the asking. | Small prayers come true more often.
+b : #bc_wise# | #bc_i_know# | #bc_maybe#
+a@old : Do you think so? I hope so. | For the asking. Yes. I'll remember that. | Do they? I'll keep them small.
+a : Crowds make me count faces. #fuss#. | #bless#. | #saying#. Even to the Bright One.
+
+scene sw113_snow
+when topic=weather|season here.region=waste here.season=winter here.weather=snow
+does tell.self / react.self / assess
+a : #firstwhite.capitalize#! I was up at the window half the night watching it. | Look at #warren#. Every burrow wearing a white cap. | #firstwhite.capitalize#. #mothers.capitalize# loved it too. I can feel them pleased.
+b[from=saltwell] #sw : Snow in the Waste. Once in a long while. | The rabbits won't come out. | Gone by noon. Look while you can.
+b : #cold.capitalize#. | #bc_lovely# | #bc_i_know#
+a@sw : Once in a while. Oh, I'm glad I saw it. | No. Warm and stupid in there. I'm glad. | I'm looking. I'm looking.
+a : #cold.capitalize#, and lovely. | #oath#. Like a story. | #fret#. In a good way, for once.
+
+scene sw113_manners
+when topic=smalltalk|gossip here.region=waste
+does tell.complaint / react.complaint / assess
+a : A carter walked straight across #warren#. Stamped on two holes. Not a word. | Somebody took water before the elders at the well. I didn't say anything. I wanted to. | Nobody says thank you now. Not like it was.
+b[from=saltwell] #sw : Tell him next time. Plainly. | The well remembers who drew from it. | It's still like it was. Some of us.
+b : #bc_very_bad# | #annoyed.capitalize#. | #bc_true#
+a@sw : I couldn't. I'd shake. | I hope it does. #fret#. | Some of us. Yes. You do.
+a : #fret#. I filled the holes. | I said nothing. #fuss#. | #saying#. That's what thanks are for.
+
+scene sw113_newcomers
+when topic=newcomer here.region=waste
+does tell.worry / react.self / assess
+a : #topic.subject#, new. I don't know a thing about them. Do you? | #topic.subject# was at the warren wall at dusk. Just looking. Why would they? | Another new face. #topic.subject#. I'll wait and see. I'll watch.
+b[from=saltwell] #sw : Three days a guest, then a neighbour. | Rabbits are worth looking at. | Watch, and bring dates.
+b : #bc_we_will_see# | #bc_maybe# | #bc_fair#
+a@sw : Three days. I'll try. It's hard for me. | Maybe. I hope that's all. | Dates. Yes. And watch.
+a : #fret#. I'll be polite. | I counted #kits# after. All there. | #fuss#. I can't help it.
+
+scene sw113_times
+when topic=times|prices here.region=waste world.times=hard|lean
+does tell.complaint / react.complaint / assess
+a : The bread's up again. I owe more and earn the same. | Nothing new in my house, and still the silver goes. #fret#. | Harder by the week. Nobody up there sees it.
+b[wealth=poor|destitute] #poor : They see it. They don't look. | Same in mine. | Nobody ever does.
+b : #bc_very_bad# | #bc_true# | #bc_i_know#
+a@poor : Don't look. Yes. That's it. | We'll manage. Won't we? | Nobody. I keep my own count.
+a : #skint.capitalize#. I'll cut the stew. | #oath#. We'll manage. | #saying#. Even them, someday.
+
+scene sw113_house
+when topic=home here.region=waste self.wealth=poor|destitute
+does tell.self / react.self / assess
+a : A full cottage. Somebody's always awake. I find that comforting. | I keep #tally# under my mat. Nobody touches it. I'd know. | Six of us under one roof, and every one owes me a little and I owe them more.
+b[wealth=poor|destitute] #poor : Full houses are warm houses. | Who'd touch it? | That's a household.
+b : #bc_good# | #bc_maybe# | #bc_ha#
+a@poor : Warm. Yes. Even in winter. | Nobody. I still check. | A household. Yes. A household is a tally.
+a : #snug.capitalize#, mostly. | #fret#. I check every night. | #saying#.
+
+scene sw113_family_trade
+when topic=family|memories here.region=waste
+does tell.self / react.self / assess
+a : #mothers.capitalize#. I'm the third. I don't want to be the last. | My mother could count a warren at a glance. I need two tries, and a stick. | My grandmother dug the first burrows with her own paws. Every one I mend, I think of her.
+b[old] #old : She'd be proud of you, I'd wager. | A stick's no shame. | The burrows remember.
+b : #bc_i_hope_so# | #bc_wise# | #bc_lovely#
+a@old : Would she? I'm never sure. | No. No shame. I still feel it. | Do they? I hope they're kind.
+a : #fret#. Every season. | #oath#. A stick, and patience. | #fret#. In a good way.
+
+scene sw113_gulls
+when topic=animals here.region=waste here.time=day
+does tell.complaint / react.self / assess
+a : Gulls up from the pan again. They go after #kits#. Gulls! | I can't abide gulls. They shriek, and they take, and they never say sorry. | A gull at the warren. I threw my shawl. I missed.
+b[from=saltwell] #sw : Salt water on the pan brings them. They'll go. | Like a bad guest. | The shawl's for the hawk. Get a sling.
+b : #bc_very_bad# | #annoyed.capitalize#. | #bc_ha#
+a@sw : When? #fret#. | A guest with no manners. Yes. | A sling. I'd hit myself.
+a : #oath#. I'll sit up tonight. | #annoyed.capitalize#. No manners at all. | #fuss#. I'll try the sling.
+
+scene sw113_warren_day
+when topic=work here.region=waste self.workplace here.time=dawn
+does tell.self / react.self / assess
+a : Fresh brush in every run before the heat. #does.capitalize# like it soft. | First hour's the best at #warren#. Everything comes up blinking. | I open the pens at dawn and count. Then I count again.
+b[job=herder|farmer] #farm : Soft brush, fat rabbits. | Blinking! I'd like to see that. | Twice? You'll wear out the numbers.
+b : #bc_lovely# | #bc_go_on# | #bc_ha#
+a@farm : Fat and calm. That's what we want. | Come at dawn. Quietly. | I wear out everything. Sorry.
+a : #oath#. And quiet. | Come. I'd owe you nothing for it. | #saying#. Numbers too.
+
+scene sw113_dreams
+when topic=dreams here.region=waste
+does tell.self / react.self / assess
+a : I'd like one day with nothing owed. Not a notch. Just to know what it feels like. | I dream #warren#'s empty and I'm counting holes. I wake counting. | When I'm old, I want a warren full and a pup of the place to hand it to.
+b[friends] #friend : You'd cut a notch for the day itself. | Count sheep instead. Or stars. | You'll find one. Someone will want it.
+b : #bc_i_hope_so# | #bc_poor_soul# | #bc_maybe#
+a@friend : I would. I would, wouldn't I. | Stars. I'll try stars. | Do you think? I hope so.
+a : #someday.capitalize#. Maybe. | #fret#. Even asleep. | #oath#. I'd rest then.
+
+scene sw113_drink
+when topic=friends|pastimes here.region=waste here.time=dusk|night
+does decline / accept_decline / assess
+a : Not for me. A cup and I say things. Then I owe apologies. | #hedge#, I'll have water. I've seen what a cup does to a careful tongue. | No, thank you. I'd count wrong all tomorrow.
+b[friends] #friend : One won't hurt. | Water it is. | Fair.
+b : #bc_fair_enough# | #bc_fair# | #bc_of_course#
+a@friend : One's how it starts. Sorry. | Thank you. #thanks#. | Thank you for not pressing.
+a : Thank you for understanding. That's #notch#. | #fuss#. Water's fine. | #saying#.
+
+scene sw113_rain
+when topic=weather here.region=waste here.weather=rain|storm
+does tell.worry / reassure / assess
+a : Rain. Oh, the runs will flood. I have to go and look. | It's good for the Waste. I know it is. But #kits#! | The burrows hold, don't they? They've always held. Haven't they?
+b[from=saltwell] #sw : Redsand drinks fast. They'll be dry by dusk. | The kits have mothers. They know. | Three of you, and they've always held.
+b : #bc_i_hope_so# | #reassure#. | #bc_maybe#
+a@sw : Dry by dusk. I'll go and see anyway. | They know. Yes. Better than me. | Always. Yes. Thank you.
+a : #fret#. I'll go. | #oath#. Let it be quick. | #fuss#. I'll go and look.
+
+scene sw113_noon
+when topic=day|weather here.region=waste here.time=day here.weather=clear
+does tell.self / react.self / assess
+a : #hot.capitalize#. #does.capitalize# are deep down. Wise things. | I've wet sacking over the warren pens. I hope it's enough. | At noon I sit in the chapel shade and count the morning.
+b[from=saltwell] #sw : Give the noon to the shade. My grandmother's rule. | Wet sacking's the old way. It works. | Count the morning, and forget the afternoon.
+b : #hot.capitalize#. | #bc_i_hope_so# | #bc_wise#
+a@sw : Mine said the same. I try. | Does it? It always did for my mother. | I never forget the afternoon. It worries me.
+a : #fret#. Even so. | #oath#. It'll do. | #saying#.
+
+story third_warren [concept=talk.memories self.age>=30]
+  : When my mother gave me #warren# she gave me #tally# too. Half the notches were hers.
+  : She said: pay hers first, then mine. I did. Every one, the first year.
+  b[old] : I remember that year. You were thin.
+  b : #bc_and_q#
+  : The last notch was to an old carter who'd died. I gave the silver to the well-share instead. #oath#. It's how she'd have done it.
+
+story the_dry_year [concept=talk.memories self.age>=25]
+  : One dry year #warren# nearly went. The does stopped breeding. The kits that came were small.
+  : I carried water up from the pool in a jar every night. Two hundred trips, I counted.
+  ask : Do you know who helped me carry it?
+  b : #bc_who_q#
+  : Nobody asked them. Half the hamlet, one by one. I've notches for every one. I'll pay them back if it takes my life.
+
+story snow_night [concept=talk.weather]
+  : The first time I saw snow, I was small. I thought the stars had fallen on the warren.
+  : I ran out and tried to put them back. In my paws. They melted.
+  b[from=saltwell] : Every pup thinks that.
+  b : #bc_lovely#
+  : I cried, I think. My mother said: they'll be back tonight. And they were, up where they belong.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Oh. Hello. I don't know you. Is something wanted?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You're on #tally#, you know. In a good way.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Oh. You. #fret#. What is it?
+dlg @1 resident.job : I keep #warren# at #self.workplace#. Feed, mend, count. #mothers.capitalize#. I'm the third.
+dlg @1 resident.news : News? I don't know. I don't like to pass things on. Ask at the well.
+dlg @1 resident.bye : #farewell#. Go carefully. Mind the holes.
+graft resident.hub
+choice What's that stick with the notches? -> tally
+node tally
+say #tally.capitalize#. Every notch is a favour I owe. Bread, water, a kind word. I cut them so I don't forget.
+free
+choice Am I on it? -> tally_me
+choice Goodbye. -> bye
+node tally_me
+say Not yet. Do something kind and you will be. Then I'll fret till I've paid it.
+choice I'll try. -> hub
+choice Goodbye. -> bye

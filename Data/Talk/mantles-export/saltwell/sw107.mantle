@@ -1,0 +1,282 @@
+# sw107, the counting raker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sw107
+revision 1
+state ready
+dialect saltwell
+accent light broad
+tier standard
+written_for tn_mb_ridge_eelbank
+written_by claude-p11-pilot
+title the counting raker
+fits stage=adult|old
+prefers job=farmer warmth=cold
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk hums_old_marching_songs
+likes oatcakes draughts old_maps summer_evenings
+dislikes waiting night_noise
+fears the_lights_on_the_pan
+hopes a_door_nobody_knocks_on
+topics work +0.3 pastimes +0.3 lore +0.2 newcomer +0.2 player -0.4 gossip -0.4
+styles comfort=practical gossip=guarded refuse=short tease=none
+marks oath saying hum
+persona #self.first# rakes salt on the Saltpan: cold, guarded and shrewd, a counter of sacks and faces, who answers a question with a question and hums old marching tunes under the breath.
+
+words
+oath! = Boots and column | By the long column
+saying! = A shut door asks no questions | The wolf who smiles first wants something
+hum! = Hm, hm-hm | Dum, da-dum, dum
+tune = the old marching tune | a column song with half its words gone
+oatcake = an oatcake with the butter thick | oatcakes and butter
+draughts = a game of draughts | the draughts board at the inn
+map = a map with every road drawn wrong | the map that puts the Saltpan past the hills
+lights = the pan-lights | the lights that walk the pan after dark
+whoasks = Who's asking | Why d'you want to know
+evening = a long summer evening | the long light after supper
+racket = somebody's racket after dark | noise at night
+counted = counted | counted twice
+door = my door | a barred door
+crust = the salt crust | the crust
+
+any
+opinion @1 strangers against 2 : A face I don't know gets #door# till it's earned better. #saying#.
+opinion @2 strangers against 2 [conv.agreed_before=no] : I've said it before. A face I don't know waits outside. #hum#.
+opinion @1 merchants against 2 : The store's scales are honest. I've #counted# them. It's the price on the slate that isn't.
+opinion @1 dole against 1 : Hand out #dole# at the door and you'll have a queue at the door for life. Whose silver pays for it?
+opinion @1 newcomers against 1 : Somebody new comes in off the carts, I want to know why. Nobody crosses the Waste for the view, #address#.
+opinion @1 city against 1 : The city? Too many doors, all of them standing open. #whoasks.capitalize# there? Nobody.
+
+grown
+scene sacks_counted
+when topic=work self.job=farmer here.region=waste
+does tell.self / react.self / assess
+a : Forty sacks off #crust# this week. The store will write thirty-eight. | #counted.capitalize#, every sack, before the cart takes them. Every one. | #crust.capitalize# was grey along the north edge. Looks raked in the night, to me.
+b[job=farmer] #hands : Thirty-eight? Who'd skim two sacks? | I count mine too. I never come out even. | In the night? Who'd rake in the dark?
+b : Do they cheat you? | That's careful of you. | Odd, that.
+a@hands : #whoasks.capitalize#? I'm not saying who. I'm saying forty. | Then you're being skimmed. Write it down. | #lights.capitalize#, some say. I say somebody with a sack.
+a : I didn't say cheat. I said thirty-eight. #oath#. | Careful costs nothing. Careless costs two sacks of #wages#. | Odd. I'll watch the north edge a night or two, #lights# or no.
+
+scene marching_rake
+when topic=work self.job=farmer here.region=waste here.time=dawn|day
+does tell.self / react.self / assess
+a : #tune.capitalize# keeps the rake even. Draw on the left foot, push on the right. | #hum# That's the one #grandad# had. Forty beats to a row. | You can't rake salt without a rhythm. I borrow #tune# from soldiers.
+b[from=saltwell] #sw : My mother sang the well songs at the pan. Slower. | I've heard you humming it out there. All day. | The old rakers sang. Nobody does now.
+b : Does it work? | What are the words? | Soldiers?
+a@sw : Too slow. You'd fall asleep on #crust#. | #counted.capitalize# you, have you? | I don't sing. I hum. #hum#
+a : It works. Forty rows by noon. | Gone. Nobody remembers them. I keep #tune#. | Soldiers. Marched to the Pass and back, they say. Kept the beat.
+
+scene pan_lights
+when topic=lore here.region=waste
+does tell.story / react.story / assess
+a : You've seen #lights#? Out past the north edge, low down, moving. | They say the sand takes a carter now and then. I say it keeps them, and they walk. | Don't go out on #crust# after dark. That's all I'll tell you.
+b[old] #old : My father saw them. Never went past the edge again. | The ones the sand took. I've heard that too, from older than you. | Wise. The pan's no place at night.
+b : #nonsense.capitalize#. Marsh gas, or the moon. | They're only lights. | Why not?
+a@old : Nor will I. #oath#. | Older and wiser. Listen to them. | #agree#.
+a : There's no marsh on the Waste. Think on that. #hum# | Only lights. Walking. Against the wind. | #whoasks.capitalize#? Because I've counted them, and they're more each year.
+
+scene draughts
+when topic=pastimes
+does tell.self / react.self / assess
+a : #draughts.capitalize# tonight, if anyone at the inn will sit across from me. | Nobody plays me at #draughts# twice. I don't know why. | Draughts is counting. Count far enough and you've won before they've moved.
+b[friends] #friends : I'll sit. And I'll lose. Same as last time. | Because you never talk, and they can't tell what you're thinking. | You count, I'll watch.
+b : I'll play you. | Maybe you win too often. | I'm hopeless at it.
+a@friends : You lost in nine moves. Try for ten. | That's the game. #saying#. | Watch, then. Don't talk.
+a : Bring your #money#. I play for a copper. | Maybe. They could learn. #oath#. | Then don't play me. Watch.
+
+scene old_maps
+when topic=pastimes|travel
+does tell.self / react.self / assess / react.self
+a : I've #map#. Bought it off a carter for a cup of water. | Every map's wrong somewhere. I like to find where, and I've #counted# the errors. | Old maps tell you who drew them. Where they'd been and where they lied.
+b : Wrong how? | Why keep a wrong map? | Lied?
+a : Puts the spring two wadis east. Anyone following it would die of thirst. #hum# | It tells me who not to trust. #saying#. | They draw what they're told is there. Then they sell it. #counted.capitalize#, I'd call it.
+b : Then burn it. | Fair enough. | That's sharp.
+
+scene oatcakes
+when topic=food
+does tell.self / react.self / assess
+a : #oatcake.capitalize#. That's a meal. Keep your dates. | Oats come in off the carts dear. I buy them anyway. | Butter's the trouble. It's oil by noon out here, #hot#.
+b[from=saltwell] #sw : No dates? You were born here. | Dear oats, cheap dates. You're a strange one. | Keep it in the cistern. Wrapped.
+b : Sounds good. | Worth it? | Eat it at dawn, then.
+a@sw : Born here, and I don't like dates. Is that against the law? | Strange, then. #whoasks.capitalize#? | In the cistern. Wrapped. #agree#.
+a : It is. #oath#. | Worth it. The rest I go without. | Dawn's when I eat it. With #door# shut.
+
+scene long_evening
+when topic=weather|day here.region=waste here.season=summer here.time=dusk
+does tell.self / react.self / assess
+a : #evening.capitalize#. Best hour there is. Nobody wants anything of you. | The light goes slow in summer. I sit on the roof and watch the road. #hum# | Work done, #door# shut, light still on the dunes. That'll do me.
+b : #bc_lovely# | Watching for what? | It's the best of the day.
+a : #bc_it_is# Long may it stay. | Whoever's coming. There's always someone. #saying#. | #agree#.
+
+scene night_racket
+when topic=smalltalk|home here.time=night
+does tell.complaint / react.complaint / assess
+a : #racket.capitalize#. Some fool singing under the window past midnight. | I sleep light. Every door that bangs, I'm up. #oath#. | The inn lets them out #drunk#. Every night of the week.
+b[wealth=rich|comfortable] #comfy : Thick walls help. | Stuff straw in the shutters. | Ask them nicely to stop.
+b : They were happy. | You'll get used to it. | They're only singing.
+a@comfy : Thick walls cost. Mine are thin. | Straw's for the mat, not the shutters. #hum# | I asked. #whoasks.capitalize#, they said.
+a : Then let them be happy in daylight. | I won't. Never have. | Let them sing at noon, then.
+
+scene waiting
+when topic=smalltalk|day
+does tell.complaint / react.complaint / assess
+a : Said they'd be at the well at noon. #counted.capitalize# the shadow round twice. | Stood half the morning waiting on a carter. Half a morning I don't get back, #address#. | I don't wait. I leave, and they can find me.
+b[job=carter] #carter : The road's not a clock. We come when it lets us. | You could sit in the shade. | Leave, then. You'll miss your load.
+b : Something kept them. | That's long. | Fair.
+a@carter : Then the road can pay me for the morning. | I could. I don't. | I'll miss it. I'll still leave.
+a : Something always keeps them. #saying#. | Too long. #oath#. | Fair. And I'm off, if you're late.
+
+scene newcomer_watch
+when topic=newcomer here.region=waste
+does tell.news / react.news / assess
+a : #topic.subject.capitalize#. New. I've seen #topic.them# at the well twice, looking. | Somebody new, they tell me. #topic.subject.capitalize#. I'll watch a while before I say good day. | #topic.subject.capitalize#. #whoasks.capitalize# about #topic.them#? I am.
+b[from=saltwell] #sw : Three days a guest, then a neighbour. That's our way. | Bread and salt. That's how it's done here. | Let them settle.
+b : Give them a chance. | Seems harmless. | Why so careful?
+a@sw : Three days. I'll count them. #hum# | Bread, aye. I'll keep the salt. | They'll settle. I'll watch them do it.
+a : I'll give them a week. Then a chance. #bc_we_will_see# | They all seem harmless. #saying#. | Because nobody else is. #oath#.
+
+scene mother
+when topic=family self.mother
+does tell.self / react.self / assess
+a : I keep the best oatcakes back for #self.mother#. Don't tell anyone. | I worry for #self.mother# when it's #hot#. I don't say so, and I'll not say it twice. | #self.mother# would want me civil to you. I'm trying. #oath#.
+b : That's kind. | Why not say so? | You're doing well.
+a : It's oatcakes. Not kindness. #hum# | Saying it doesn't cool anything. #whoasks.capitalize#? | Am I. #bc_good#
+
+scene spouse
+when topic=family self.married=yes pair.kin!=spouses
+does tell.self / react.self / assess
+a : My #self.spouse_word# and I can sit a whole evening and say nothing. Suits us both. #saying#. | My #self.spouse_word# has the patience; I keep the count. A house wants both. | I'll not talk about my #self.spouse_word#. That's between the two of us. #saying#.
+b : Sounds a good match. | What sort of count? | Fair enough.
+a : It is. | Sacks. Coppers. Days till the rain. #counted.capitalize#. | #agree#.
+
+scene times_harder
+when topic=times
+does tell.self / react.self / assess
+a : Harder. How much harder is nobody's business but mine. #whoasks.capitalize#? | A copper less a sack this month. I #counted# it. Nobody up the road will. | They'll tell you times are steady. Ask who's telling you. #hum#
+b[wealth=rich|comfortable] #comfy : It's not so bad. | Times turn. | I'm told they're steady.
+b : True enough. | That's a shame. | Good point.
+a@comfy : Not for you, maybe. #oath#. | They turn. Never towards me. | #whoasks.capitalize# told you? Ask them what they're paid.
+a : #bc_true# | Don't be sorry. Be careful. | It usually is.
+
+scene salt_price
+when topic=prices self.job=farmer
+does tell.complaint / react.complaint / assess
+a : #topic.what.capitalize# at #topic.price#. And they pay me less for the salt that went in it. | The store sells my salt to the carter, the carter sells it to the city, and I'm the only one #skint#. | I know what a sack fetches at the inn. I know what I'm paid. I've #counted# both.
+b[role=merchant] #trade : The road costs. The cart costs. | Every trade's got a middle. | And what does the sack cost me?
+b : That's not right. | It's always the way. | What does it fetch?
+a@trade : The road costs you less than me. I've seen your cart. | Every trade's got a thumb on the scale. #saying#. | #whoasks.capitalize#? You know.
+a : No. #oath#. | It is. Doesn't make it right. | More than I get. That's all I'll say.
+
+scene sand_shut
+when topic=weather here.region=waste here.weather=sandstorm
+does tell.self / react.self / assess
+a : Sand wind. #door.capitalize#, the shutters, the jar. All done. | I'll sit in with #draughts# against myself. | Listen to #wind#. It'll take a fence or two before dawn.
+b : I'd best do mine. | Who wins? | I hope not mine.
+a : Best do it now, then. Not later. #oath#. | I do. Every time. | Hope's cheap. Rope's better.
+
+scene thieving
+when topic=crime here.region=waste
+does tell.self / react.self / assess
+a : Something's walked off. I've put a bar on #door#. | Lock what you've got. #saying#. | I sleep light. Anybody tries #door#, I'll know.
+b[old] #old : We never barred a door in my day. | The well knows who did it. It always comes out. | When I was young, there was nothing worth taking.
+b : Who'd steal out here? | Is that necessary? | Good idea.
+a@old : Your day's gone. #hum# | Maybe. I'll not wait on the well. | There's still nothing. Folk take it anyway.
+a : #whoasks.capitalize#? Same as anywhere. Somebody hungry. | It's cheap. A bar's cheaper than a loss. | It is. #counted.capitalize# it out.
+
+scene health
+when topic=health
+does ask.how / answer.how / assess
+a : I'm sound. #whoasks.capitalize#? | Back's #hurt#. Ribs too. Nothing that wants talking about. | Fit to rake. That's the measure.
+b : Just asking. | Rest it, then. | Fair.
+a : Then you've asked. | I'll rest when the pan does. | #agree#.
+
+scene summer_season
+when topic=season here.season=summer
+does tell.self / react.self / assess
+a : Summer. Long light, early starts, and #evening# after. | I'll take the heat for the evenings. Fair trade. #hum# | Summer pays for the winter's quiet. I've #counted# it out.
+b : I can't stand the heat. | It's a fair trade. | You count everything.
+a : Then work at dawn and sit at dusk. #saying#. | It is. #oath#. | I do. Somebody should.
+
+story lights_seen [concept=talk.memories self.age>=20]
+  : I was out late on the north edge once, chasing a goat. Saw #lights#. Three of them.
+  : They moved against the wind. Low. Walking pace. I #counted# them, and then there were four.
+  b : What did you do?
+  : Walked home. Didn't run; you don't run. I've not been out there after dark since. #oath#.
+
+story the_wrong_map [concept=talk.memories]
+  : #grandad.capitalize# had #map#. Swore by it. Walked off the road by it once, to a spring that was never there.
+  : Two days without water. Came back #tired#, the colour of the sand.
+  ask : You'd think he'd have burned it?
+  b : I would have.
+  : He hung it over the hearth instead. Said a lying map is the best one; it teaches you to look.
+
+story the_column [concept=talk.memories]
+  : #grandad.capitalize# marched in a column once, all the way to the Pass. Came home with #tune# and nothing else.
+  : Hummed it every day after. Raking, eating, falling asleep. #hum#
+  b[old] : The old soldiers all did. Couldn't stop.
+  b : And now you do.
+  : Now I do. Somebody has to keep the count of it.
+
+line @1 greet [pair.band=strangers] : #greet#. #whoasks.capitalize#? | #greet#. You're new. What do you want here?
+line @2 greet [here.time=dawn] : #greet#. Early. | #greet#.
+line @3 greet [self.working=yes] : #greet#. I'm raking. Say it while I work. | #greet#. Don't stand on the edge.
+line @1 kin.open [pair.kin!=no] : You. Good. Sit. #hum# | #greet#. Door's open, for you.
+line @1 again.open : Back again? #whoasks.capitalize# this time? | You again. What's changed since this morning?
+line @1 greet.return : #greet#. | #greet#, #other.called#.
+line @2 greet.return [pair.band=strangers] : #greet#. And you are? | #greet#. What's your business?
+line @1 farewell : #farewell#. | #farewell#. Shut the gate behind you.
+line @1 farewell.return : #farewell#. | #farewell#, #other.called#.
+line @1 react.news.new : #oath#. Who told you that? | Is it.
+line @1 react.news.known : I knew. I keep my ears open, and #door# shut. | #knew.capitalize#. Days ago.
+line @1 react.news.doubt : #doubt.capitalize#. Who's it come from? Find that out first. | Bring me somebody I trust saying it. Then we'll talk.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity.capitalize#. | Bad business. #oath#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. #bc_it_is# | Well. #gladnews.capitalize#.
+line @1 answer.how : Sound. #whoasks.capitalize#? | Steady. Same as always. #hum#
+line @1 sympathise : #sympathy.capitalize#. That's all I've got to say. | Bad luck. Keep your door shut a while; it helps.
+line @1 decline : #hedge#, no. I don't do favours for faces I don't know. | Not this time. I've my own count to keep today, #address#.
+line @1 accept_decline : Fine. I'll ask elsewhere. | Your choice. I'll remember it.
+line @1 thank : #thanks#. I'll pay it back. | Owed, then. I don't forget what's owed. #counted.capitalize#.
+line @1 deflect_thanks : Don't. Now we're square. | You'd have done the same. Maybe. #hum#
+line @1 preclose [self.working=yes] : Pan's waiting. | That's enough talk. Back to #crust#.
+line @2 preclose : #preclose.capitalize#. | I'm off. Shut #door# after.
+line @1 ack : #ack.capitalize#. | #hum#
+line @1 insist : I #counted# it. I don't count wrong. | #insist.capitalize#. I saw it myself.
+rule @hum
+when concept=bark working=yes self.job=farmer
+does aside
+cooldown 6h
+say #hum# Draw, and push, and draw. | #hum# Left, and left, and the column goes on.
+
+rule @count
+when concept=bark working=yes self.job=farmer
+does aside
+cooldown 8h
+say Thirty-one. Thirty-two. | #counted.capitalize#. Forty.
+
+rule @door
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Bar's on. Good. #hum# | #racket.capitalize#. Again. #oath#.
+
+rule @wait
+when concept=bark working=no here.time=day
+does aside
+cooldown 8h
+say Noon, they said. Noon's gone. | I'll wait as long as it takes to count to fifty. Then I'm off. #hum#
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. #whoasks.capitalize#? Say your business. | #greet#. I don't know you. What do you want?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. What is it this time? | #topic.player#. #hum# Go on.
+dlg @3 resident.hub [pair.disposition=warm] : #greet#, #topic.player#. Sit, if you like. #hum# | #topic.player#. #talk_open#
+dlg @1 resident.job [self.job=farmer] : #self.trade_words.capitalize#. I rake, I count, I get paid less than I've #counted#. | I'm a #self.trade_words#. #whoasks.capitalize#?
+dlg @1 resident.news : #news_none# | News? Ask the inn. I keep what I hear to myself. #hum#
+dlg @1 resident.bye : #farewell#. | #farewell#. Shut the gate.
+graft resident.hub
+choice What's that tune you're humming? -> tune
+node tune
+say An old marching song. Nobody knows the words now. Why d'you want to know?
+free
+choice I'd like to hear it properly. -> tune_more
+choice Goodbye. -> bye
+node tune_more
+say Hm. It goes left, left, and on. That's all it is. A column walking somewhere it won't come back from.
+choice Thank you. -> hub
+choice Goodbye. -> bye

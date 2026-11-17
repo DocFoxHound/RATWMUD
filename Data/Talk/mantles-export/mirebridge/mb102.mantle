@@ -1,0 +1,430 @@
+# mb102, the counter-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb102
+revision 1
+state ready
+dialect mirebridge
+accent light broad
+tier full
+written_for tn_mb_roan_pikewater
+written_by claude-p11-pilot
+title the counter-keeper
+fits stage=adult|old
+prefers role=merchant
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=ambitious
+quirk turns_every_city_crate_over_twice
+likes pickled_herring old_tales market_bustle first_snow
+dislikes crowds wet_floors
+fears the_shelves_going_bare
+hopes a_second_room_on_the_stores
+topics work +0.4 prices +0.3 faith +0.3 lore +0.2 food +0.2 dreams +0.2 travel -0.3
+styles comfort=practical gossip=reluctant refuse=firm tease=none
+marks oath saying boast
+persona #self.first# is #self.trade_words#: devout, ambitious and plain-spoken, suspicious of anything with a city stamp on it, and sure no wolf on the river reads eel water better.
+
+words
+oath! = Lamp and ledger | Bright One keep the count | By the lamp and the book
+saying! = Count it twice, thank the Bright One once | A full shelf is a prayer answered | Nothing city-made keeps in the fen-damp
+boast! = Nobody on this river reads eel water like I do | I've lifted more eels than any wolf on the Long River | Show me a lode and I'll show you where the eels lie
+citymade = anything with a city stamp on it | goods that came down the causeway in a crate
+herring = pickled herring | herring in brine, the sharp kind
+crock = the herring crock | my crock by the door
+shelves = my shelves | every shelf in the stores
+ledger = the ledger | my book
+scraper = the iron scraper at my door | the boot-scraper
+bustle = the boards full of buyers | a good busy Marketday
+crush = a crush of folk | elbows in a doorway
+whitefirst = the first snow | the first white on the reeds
+tale = an old tale told right | a tale with the end kept back
+lines = my lines up the lode | a string of willow traps
+plans = a second room on the back | a proper jetty for the stores
+pans = salt straight off the pans | good grey salt from the boilers
+reckon = by my reckoning | as I count it
+
+any
+opinion @1 church for 2 : The Bright One kept #shelves# full through the floods. I'll be in my pew every Restday, #reckon#.
+opinion @1 drink against 1 : I sell no spirits and I'll not start. I've seen a family go under on #drink#, and so has the Bright One.
+opinion @1 festivals against 1 : A feast day's a shut counter, and the bills come in on the morrow regardless. #oath#.
+opinion @1 houses against 1 : Nobody rises in a fen hamlet without a House's say-so. I mean to, all the same, a shelf at a time.
+opinion @1 merchants for 1 : I keep a counter, and I know what a wagon costs to fill. Folk who grumble at a merchant never #reckon# it.
+opinion @1 city against 2 : The city sends down #citymade#, and half of it's gone soft before it's off the boat. I turn every crate twice.
+opinion @1 times for 1 : Trade's never been better at my door. The Bright One sees a straight scale, #reckon#.
+opinion @1 strangers for 1 : A traveller buys rope, salt and news, and pays for all three. I'll serve a #stranger# before a grumbler.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. #scraper.capitalize# is there for your boots. | #greet#, #address#. Step in from the boards. What's wanted?
+line @2 greet [here.time=dawn] : #greet#. Up since the eels were moving. Shutters are coming down now. | Early, #address#, but the lamp's lit. #greet#.
+line @3 greet [here.time=dusk] : #greet#. Last trade of the day, then the book. | Evening. You've caught me with #ledger# open.
+line @4 greet [self.working=yes] : #greet#. Speak while I stack; #shelves# won't wait. | #greet#. Mind the sacks by the door, I'm mid-count.
+line @5 greet [pair.band=friends|acquaintances] : #greet#, #other.called#. Go with the Bright One. | #greet#. Business or a word? Either's welcome.
+line @6 greet [here.day=market] : #greet#. #bustle.capitalize#, and the Bright One sends more. | Marketday, #address#. Step in quick, before the crush.
+line @1 kin.open [pair.kin!=no] : There you are. Scrape your boots, kin or no kin. | You've come at a good hour. Sit, I'll find #herring#.
+line @1 again.open : Back so soon? Something forgot? | Again, #address#. The count's not changed since you left.
+line @1 greet.return [pair.band=strangers] : #greet#. Welcome to the stores. | #greet#, #address#.
+line @2 greet.return [here.time=night] : #greet#. Late for trade, but not for a word. | #greet#. The book's shut; I'm not.
+line @3 greet.return : #greet#. | #greet#, #other.called#. Go with the Bright One.
+line @1 farewell : #farewell#. The Bright One see you home. | #farewell#. #scraper.capitalize# on your way out, mind.
+line @1 farewell.return : #farewell#. | #farewell#, and keep out of the water.
+line @1 react.news.new : #surprise#. That's news to me, and little gets past my counter. | Is it, now. I'll write that down. | #oath#. I'd not heard.
+line @1 react.news.known : #knew#. A traveller brought it in with the rope order. | I had that at dawn, #address#. Over the counter, with the salt.
+line @1 react.news.doubt : #doubt#. I'll believe it when somebody I trust says it twice. | Bog-wind, I'd say. Who told it you? Somebody from the city?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Bright One take them up gently. | Deep mud, that. Their name goes in my Restday prayers.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. The Bright One smiled on that. | Good. Best word over my counter all week, that.
+line @1 answer.how : Well. #shelves.capitalize# are full and the book balances. | Fair-dry, thank the Bright One. | Busy, which is how I like it.
+line @1 answer.how.busy [self.working=yes] : #busy.capitalize#, and glad of it. | Counting. Always counting.
+line @1 sympathise : #sympathy#. I'll pray on it, and I mean that. | A heavy thing to carry, #address#. Come by the stores; there's always a stool.
+line @1 decline : I'll not, #address#. It's not how I do business, and I'll not start for anyone. | Not this time. #shelves.capitalize# come first; I'd be lying if I said otherwise.
+line @1 accept_decline : #no_matter#. Another day. | Fair enough. The offer keeps, like #herring#.
+line @1 thank : #thanks#. The Bright One sees it. | I'm obliged. I'll not forget it in #ledger#.
+line @1 deflect_thanks : #deflect#. It's trade, and honest trade at that. | No need. Any wolf would, for the stores.
+line @1 preclose [self.working=yes] : Well. #ledger.capitalize# won't add itself. | Still. #shelves.capitalize# want filling.
+line @1 tell.boast : #boast#. Ask anyone at the creek. | #boast#. I don't say it to be proud; I say it because it's so.
+line @1 tease.return : Say what you like. My count's right. | Laugh, then. The eels don't.
+line @1 ack : Mm. #bc_i_know# | So. | #ack#.
+line @1 give.advice : Count it twice and thank the Bright One once. You'll not go wrong. | Never take a city crate without turning it over.
+line @1 warn : #warn#. The boards by the store dip in the wet. | Mind the sacks, #address#. They're stacked for counting.
+rule @count
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say Twelve, thirteen... and one more makes a full shelf. #oath#. | That's short. Somebody's had a coil of rope off #shelves#.
+
+rule @crate
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say City stamp. Turn it over. Turn it again. | Soft at the corner, this. #saying#.
+
+rule @floor
+when concept=bark here.weather=rain|storm
+does aside
+cooldown 8h
+say Wet floor. #annoyed#. Where's the sacking? | Boots on #scraper#, all of you. I'll not have #mud# on the flour.
+
+rule @prayer
+when concept=bark working=no here.time=dawn
+does aside
+cooldown 10h
+say Bright One, keep the boards up and the count honest. | Thanks for the day, and for #shelves#. Amen to it.
+
+rule @eels
+when concept=bark here.region=fens here.time=dawn
+does aside
+cooldown 10h
+say Eel water, that. Look at the ripple. #boast#. | They're lying deep this morning. Mark me.
+
+rule @crush
+when concept=bark here.day=market|festival
+does aside
+cooldown 8h
+say One at a time, one at a time. I'll not serve a crush. | Too many in the doorway. Step back, the lot of you.
+
+scene stacking_shelves
+when topic=work self.role=merchant
+does tell.self / react.self / assess
+a : Restocked #shelves# before dawn. Rope, lamp oil, #pans#. | I keep the salt on the high shelf. The damp can't reach it there. | A full shelf is a quiet mind. I'll have every one full by noon, #address#.
+b[job=merchant] #counter : I do mine at night. Saves the morning. | High shelf's for what you don't want stolen, too. | Full by noon? You're ambitious.
+b : That's an early start. | #bc_wise# | #bc_ill_try#
+a@counter : Night's for #ledger#. Mornings are for #shelves#. | That too, #bc_true#. | I am. I'll not apologise for it, #address#.
+a : The Bright One wakes me; I'd be a fool to lie there. | It's the first thing a fen teaches you. Keep it high and dry. | #saying#. I mean it.
+
+scene the_book
+when topic=work self.role=merchant here.time=dusk|night
+does tell.self / react.self / tell.self / react.self / assess
+a : Every copper in, every copper out, in #ledger#, every night. | I balance the book before I sleep. A wolf can't rest owing himself. | #ledger.capitalize# came out a copper under. I went through it three times, #address#.
+b : Every night? | #bc_wise# | And?
+a : Every night since I took the counter. Fen-sure. | It's how a store stays a store. | It was a smudge. A smudge, and an hour of my life.
+b : #bc_good# | #bc_true# | #bc_ha#
+a : #oath#. It balances. | #saying#. | I'll write smaller. #bc_ill_try#
+
+scene city_crate
+when topic=work|travel self.role=merchant
+does tell.complaint / react.complaint / assess
+a : A crate came down from the city. Soap, they said. Half of it's soft as #mud#. | I turn every city crate over twice before I sign for it. Twice. | I sent back a box of city candles. Bent, every one of them, #address#.
+b[from=ridgemere] #city : It's a long way down the causeway for soap. | Not everything from the city is bad. | Candles bend in any warm cart.
+b : They saw you coming. | #bc_very_bad# | #bc_good#
+a@city : Then make it to last the way. #saying#. | Name one thing, and I'll turn it over. | Ours don't. Fen tallow, set hard.
+a : They did. They'll not see me twice. | I'll take fen goods over #citymade#. | I've a list of what I'll not stock again, #reckon#. It's long.
+
+scene wet_floor
+when topic=work|weather self.role=merchant here.weather=rain|storm
+does tell.complaint / react.complaint / assess
+a : Every boot through the door brings the fen in with it. #annoyed#. | I put a scraper at the door and still there's slubber on the boards. | A wet floor in a store spoils the sacks from the bottom up, #address#.
+b : #bc_every_time# | #bc_poor_soul# | #bc_i_know#
+a : #scraper.capitalize#. Use it, I say. Some do. | Next summer the floor goes up a hand's width. #plans.capitalize# first, though. | Flour on the bottom, ruined. I've moved it to the high shelf.
+
+scene salt_in
+when topic=work|prices self.role=merchant here.region=fens
+does tell.self / react.self / assess
+a : Got #pans# in this morning. Grey as a wet stone and twice as good. | I buy my salt off the boilers myself. No middle wolf. | The boilers know I pay on the nail, so I get the first sacks, #address#.
+b[job=laborer|crafter] #boiler : We know you pay. That's why you get it. | Some of us wish more did. | First sacks are the driest.
+b : #bc_good# | #bc_clever# | #bc_wise#
+a@boiler : Then we understand each other. #bc_true# | I'll not name names. They know who they are. | That's why I want them. Fen-sure.
+a : #saying#. | Cut out the middle, keep the coin. #boast#, and I'll not be outdone at salt either. | #bc_it_is#
+
+scene restday_shut
+when topic=work|faith here.day=rest self.role=merchant
+does tell.self / react.self / assess
+a : Shutters up all Restday. The Bright One gets one day of mine a week. | I'll not sell on a Restday. Not rope, not salt, not #herring#. | Somebody knocked on Restday for lamp oil. I gave it, and I'll not take the coin till morning.
+b[piety=ordinary] #easy : You'd do a day's trade on it, though. | Even for somebody in need? | That's a fine line.
+b : #bc_good# | #bc_fair# | #bc_ha#
+a@easy : I would. And I'd lose the week after, #reckon#. | In need's different. In need's a mercy. | It's a line. I keep to it, #address#.
+a : That's how I was raised, and that's how I'll keep it. | Mud's mud. A rule's a rule. | The Bright One sees the difference. So do I.
+
+scene market_bustle
+when topic=work|smalltalk here.day=market
+does tell.feeling / react.self / assess
+a : #bustle.capitalize#. That's my favourite sound, coin on the counter. | I like it busy. Busy, mind, not a #crush#. | Every Marketday I sell out of something. Today it's lamp wicks, #address#.
+b[job=merchant] #counter : Mine too, as long as they're buying. | There's a difference? | Lucky you.
+b : #bc_lovely# | Where's the line, then? | #bc_lucky_you#
+a@counter : They're buying, thanks to the Bright One. | Busy is a queue. #crush.capitalize# is a fight. | It's not #luck#. I order heavy for market.
+a : Like a tide coming in, #address#. Good water. | One at a time, through the door. That's the line. | #reckon.capitalize#, I'll need double next week.
+
+scene crowd_crush
+when topic=smalltalk|festival
+does tell.complaint / react.complaint / assess
+a : I can't abide #crush#. Folk pressed in a doorway like eels in a pot. | Festival crowd on the boards, and I couldn't get to my own door. #annoyed#. | Too many wolves in a small place, and somebody's always in the water.
+b : #bc_me_too# | Bad luck. | #bc_true_enough#
+a : I like a busy store. Not a pot of eels. | I went round by the back, through #mud# to the knee. | Somebody went in off the low boards. Not me, #bc_nor_me#.
+
+scene herring_crock
+when topic=food
+does tell.self / react.self / assess
+a : #herring.capitalize#. A slice on bread and I'm fed till dusk. | I keep #crock# by the door. Folk buy it by the jar and come back for more. | The trick with herring is the vinegar. Sharp, with a dab of the salt.
+b[job=cook|innkeeper] #kitchen : Mine's sharper. | What vinegar? | That's a cook's secret.
+b : #bc_lovely# | #bc_clever# | #bc_good#
+a@kitchen : Then bring me a jar and we'll see, #address#. | Mine. I'll not say more. | It's a storekeeper's too. #bc_i_wont#
+a : #bc_always# | Sharp enough to make you blink, #address#. | And a full jar on the shelf, always. #saying#.
+
+scene eel_water
+when topic=animals|land here.region=fens
+does tell.boast / react.self / assess
+a : #boast#. I still set #lines# before I open. | The eels are lying deep this week. Cold water under warm. You learn to read it. | Folk ask why my traps come up full. I tell them. They don't listen, #address#.
+b[job=fisher] #trapper : Every trapper on the creek says that. | Deep, are they? Mine came up light. | Tell me, then.
+b : #bc_ha# | You learn it how? | #bc_why_q#
+a@trapper : Every trapper says it. I'm the one it's true of. | Light, they would. You set shallow. | Set by the old willow, low, and leave it a night longer. Fen-sure.
+a : Ask anyone at the creek. #bc_they_do# | Forty years of looking. #boast#. | Because it's patience, and nobody has it, #address#.
+
+scene first_snow
+when topic=weather|season here.season=winter here.weather=snow
+does tell.feeling / react.self / assess
+a : #whitefirst.capitalize#, and every reed bent with it. I stood at the door a good while. | First snow. The fen goes quiet as a chapel under it. | Snow, #address#. Folk will want lamp oil and salt, and I've plenty of both.
+b : #bc_lovely# | #bc_it_is# | Always thinking of the shelves.
+a : The Bright One did that, and did it well. White as an unwritten page in #ledger#. | It won't last. The fen-damp eats it by noon. | #bc_always#. But I like it too. Both can be true.
+
+scene fog_trade
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : Fen-murk all morning, and not a soul through the door. | I hung a lamp out so folk could find the stores in the #fog#. | Can't see the creek from my step. I'll not open #lines# in this.
+b : #bc_nobody# | Thoughtful of you. | #bc_wise#
+a : They'll come at noon, all at once. A #crush#, no doubt. | It's not thought, it's custom. A lamp sells oil. | #saying#. And a wolf who sees, #reckon#.
+
+scene clear_market_morning
+when topic=weather here.weather=clear here.time=dawn|day
+does tell.self / react.self / assess
+a : Clear and dry. Good trading weather, thanks to the Bright One. | Sun on the boards, and every wolf in Fenshore out walking past my door. | A dry day dries the sacks. I've them out on the rail, #address#.
+b : #bc_lovely# | #bc_lucky_you# | #bc_good#
+a : It'll be #bustle# by noon. | Walking past's the start. Buying's the rest. | #saying#. Dry sacks, full shelves.
+
+scene bright_one_keeps
+when topic=faith
+does give.opinion / react.self / assess
+a : I thank the Bright One for each sale, aloud if nobody's in. | The Bright One kept the stores through the floods. I've not missed a Restday since. | A straight scale is a prayer, #address#. That's what I was taught.
+b[piety=devout] #devout : Each one? That's a lot of thanking. | Nor have I. The flood taught us all. | And a crooked scale's a sin.
+b[piety=ordinary] #easy : Bit much, isn't it? | The floods went down by themselves. | Pretty saying.
+b : #bc_good# | #bc_bless_you# | #bc_true#
+a@devout : On a good day, fen-sure. I don't complain. | It did. Some forgot the lesson by summer. | A sin, and a loss of custom. Both.
+a@easy : Not for what I've been given. #oath#. | They went down when they did. I'll thank who I like. | More than a saying, #address#. A rule.
+a : #saying#. | #bc_it_is#. A pew every Restday. | That's the whole of it, #address#.
+
+scene old_tale_told
+when topic=lore|pastimes here.region=fens
+does tell.story / react.story / assess
+a : My #grandad# told the best tale in the fen, about an eel as long as a punt under the drowned chapel. | There's a tale of a wolf who sold the fen back to the fen. #tale.capitalize#. | I like #tale#. Not the ones that tell you the end in the first breath, #address#.
+b[old] #elder : I've heard that one. The eel's still down there. | My mother told that one. He drowned rich. | Nobody tells them right any more.
+b : How long? | What happened to the wolf? | #bc_true#
+a@elder : #bc_so_they_say#. I've set traps for it. Nothing yet. | Rich, and under. That's the end. #saying#. | I do. Come by of an evening, I'll show you.
+a : Longer than the jetty I mean to build. Fen-sure. | Drowned with his coin in his paws. A lesson, that. | A tale's like a sale. You don't show the price first.
+
+scene the_second_room
+when topic=dreams|work self.role=merchant
+does tell.plan / react.self / assess
+a : I mean to put #plans# before I'm much older. | A jetty, so the boats can come to the door instead of the stores going to them. | One day there'll be no wolf in the fen who buys rope anywhere else, #address#.
+b : #bc_i_hope_so# | That'd cost a bit. | Ambitious.
+a : The Bright One willing, and the book allowing. | It would. I've been putting by for it, #reckon#, three winters. | I am. A wolf who stands still in a fen sinks.
+
+scene houses_say_so
+when topic=times|work
+does give.opinion / react.self / assess
+a : Nobody rises on these boards without a House's nod. I mean to rise anyway. | A House agent walked through the stores once. Looked at #shelves# and said nothing. | I don't need a House's say-so to keep #ledger# honest, #address#.
+b[wealth=poor|destitute] #low : Nor will any of us, without them. | Said nothing? That's how they say no. | You've a counter. Some of us have nothing.
+b : #bc_good# | #bc_ha# | #bc_true#
+a@low : Then we'll do it without, a shelf at a time. | Then I'll make them say it out loud one day. | I'd not forget it, #address#. I'd a trap line, once, and nothing else.
+a : #oath#. One shelf at a time. | I'll take silence. It's not a no. | #saying#.
+
+scene city_never
+when topic=travel
+does give.opinion / react.self / assess
+a : Folk ask if I'll open a stall in the city. Never. #citymade.capitalize# comes down; I'll not go up. | I've been up the causeway twice. Both times I came home with lighter pockets. | Everything in the city's sold by a wolf who's never seen where it came from, #address#.
+b[from=ridgemere] #city : You'd do well there. | That's just the city's way. | We know where things come from.
+b : #bc_ha# | #bc_bad_luck# | #bc_true#
+a@city : Well, and robbed. #thief.capitalize# on every corner, by the tales. | Then I'll keep to my way. | You know which wagon. Not which water, #address#.
+a : My #shelves# are here, and so am I. | Lighter, and wiser. #saying#. | I know the boiler, the trapper and the reed. That's trade.
+
+scene stores_lore
+when topic=lore here.region=fens
+does tell.story / react.story / assess
+a : The stores stand where the old ferry-house was. You can see the old posts at low water. | They say the first store on the boards sold nothing but rope and prayers. | My #grandad# said the drowned town had a store bigger than ours. I mean to change that.
+b : I've seen them. | Rope and prayers? | Under the fen?
+a : Oak posts. Sound still. A good omen, #reckon#. | Rope and prayers. I sell both, but I don't charge for the second. | Under the fen, and stocked with #mud#. Mine will be bigger and dry.
+
+scene sacks_back
+when topic=health
+does tell.self / react.self / assess
+a : My back's #hurt# from the salt sacks. I'll not let another wolf carry them; they drop them. | Torn ear aches when the fen-wind's up. Old thing. | I've a chill coming on. I'll work through it, #address#.
+b[job=healer] #healer : Bend at the knee, not the back. | Keep it covered in the wind. | Work through it and you'll be in bed by Restday.
+b : #bc_poor_soul# | #bc_ha# | #bc_ill_try#
+a@healer : I'll try that. It costs nothing. #bc_ill_try# | I'll wear a hood. The customers will think I'm hiding. | Then I'll go to bed on Restday. The counter's shut anyway.
+a : They drop them, and then it's salt in the slubber. | It's nothing. A reminder to duck. | #remedy.capitalize#, and the will of the Bright One.
+
+scene first_counter
+when topic=memories self.age>=40 self.role=merchant
+does tell.memory / react.story / assess
+a : The first day I had the counter I sold one coil of rope and thanked the Bright One for it all night. | I started with three shelves and a crock. Look at it now, #address#. | When I was a young 'un I traded eels for twine. That was my first bargain.
+b[stage=old] #elder : I remember those three shelves. | I bought that rope, I think. | I traded with your sort. Hard bargainers.
+b : One coil? | #bc_ha# | Good bargain?
+a@elder : And I remember you on the other side of them. | Then the Bright One sent you, and I thank you. | I learned it young. #bc_true#
+a : One coil. It was a start. #saying#. | #boast#. And I could sell, after. | I got twice the twine. I've not lost the knack, #reckon#.
+
+scene trapping_young
+when topic=memories self.age>=25 here.region=fens
+does tell.memory / react.story / assess
+a : I set my first trap at six. Caught my own paw in it. | My #grandad# taught me the willow knot. I still tie it the same way. | I was the only young 'un on the creek who came home with a full pot, #address#.
+b : #bc_ha# | Show me sometime. | Every time?
+a : Mercy of the Bright One, I learned. Fast. | Bring a withy and I will. | Every time I tried. #boast#.
+
+scene newcomer_coin
+when topic=newcomer
+does give.opinion / react.self / assess
+a : New folk need rope, salt, lamp oil and pots. I've all four, #address#. | A new face came in and asked for city soap. I sent them out with fen soap and they came back for more. | Newcomers are new custom. The Bright One sends them; I serve them.
+b : #bc_wise# | #bc_ha# | #bc_good#
+a : #reckon.capitalize#, the first sale's the one that keeps them. | Fen soap lasts. #citymade.capitalize# doesn't. | #saying#.
+
+scene wagon_late_store
+when topic=caravan topic.kind=late self.role=merchant
+does tell.complaint / react.complaint / assess
+a : The wagon's late again, and #shelves# are thinning. | Late. I ordered heavy for market and it's still on the road. #annoyed#. | Every late wagon is a gap on a shelf and a customer gone elsewhere, #address#.
+b[job=carter] #road : The causeway's soft. We go slow or we go in. | We're doing our best. | Gone where? There's nowhere else.
+b : #bc_again_q# | #bc_bad_luck# | #bc_true#
+a@road : Then go slow. Only come. #bc_i_know# | I know it. The road isn't. | Exactly my aim. Nowhere else, #reckon#.
+a : I'll buy off the boats till it comes. | It'll come. The Bright One sees the count. | It'll be in by Restday, or I'll know why.
+
+scene times_good_door
+when topic=times world.times=good|boom
+does give.opinion / react.self / assess
+a : Trade's never been better at my door. The Bright One sees a straight scale. | I've sold more lamp oil this month than all last winter, #address#. | Good times. I'll put by for #plans#.
+b[wealth=poor|destitute] #low : Not at every door. | Folk buy oil when the nights are long, that's all. | Good for some.
+b : #bc_good# | #bc_lucky_you# | #bc_wise#
+a@low : I know. I give a dab off for the ones I know are #skint#. | Maybe. I'll take it either way. | For me, this year. It's been #bad# before.
+a : #saying#. | #bc_lucky#, and long hours. | #oath#. A second room by spring.
+
+scene festival_shut
+when topic=festival
+does give.opinion / react.self / assess
+a : A feast day's a shut counter and the bills still come Dawnday. | I open for an hour on a feast morning. Folk forget rope till they need it. | Everybody out on the boards, a #crush# at every corner. I'll stay in with #ledger#, #address#.
+b : You'll miss the fun. | #bc_clever# | #bc_ha#
+a : I'll have my fun Dawnday, counting. | An hour, and then I shut. Even I keep a feast, #bc_mostly#. | #ledger.capitalize# doesn't push. It's better company.
+
+scene gossip_counter
+when topic=gossip
+does decline / react.self / assess
+a : I hear things over the counter. I don't sell them on, #address#. | Gossip's bad coin. I'll not take it and I'll not give it. | A storekeeper who talks loses custom. A quiet one keeps it.
+b[friends] #close : Not even to me? | You must hear the best of it. | Shame. You'd make a fortune.
+b : #bc_fair# | #bc_true# | #bc_wise#
+a@close : Not even to you. Especially not. | The best, and the worst. Sunk in the mud, both. | I'd lose two for every one I made, #reckon#.
+a : #saying#. | #bc_it_is#. | And I keep mine, #address#.
+
+story the_soft_soap [concept=talk.travel]
+  : A city crate came in once, marked best soap, sealed with a city stamp.
+  b : And it wasn't?
+  : It was soaked to mush. Every cake gone to slubber in the bottom. I could pour it, #address#.
+  b : #bc_ha#
+  : I poured it back into the crate and sent it up again, stamp and all.
+  b : Did they pay you back?
+  : Not a copper. But they've not sent me a crate since. #saying#.
+
+story the_long_eel [concept=talk.memories self.age>=30 here.region=fens]
+  : The longest eel that ever came up in my traps came out from under the old ferry posts. Longer than my arm and the next wolf's.
+  b : Longer than an arm?
+  : Two arms. It fought me the length of the lode. I'd #lines# out that night and nothing else.
+  b[job=fisher] : Every trapper's got one of those.
+  b : #bc_and_q#
+  : I pickled it. Sold the lot by Restday, and that's when I first thought of a store. #boast#.
+  b : #bc_clever#
+
+story the_three_shelves [concept=talk.memories self.age>=40 self.role=merchant]
+  : When I started there were three shelves and a crock, and the roof leaked over two of them.
+  b : Over two?
+  : Over two. I kept the salt on the third and moved it every time the #rain# came, #address#.
+  b : #bc_ha#
+  : I mended the roof myself that first summer. Reed by reed. Prayed over every one.
+  b : And now?
+  : Now it's every shelf in the store, and not one drip. #oath#. The Bright One and a good thatch.
+
+story the_false_scales [concept=talk.prices]
+  : A pedlar came down the causeway once with a set of brass scales to sell. City work, he said.
+  b : And?
+  : I set a pound of #pans# on them. Came out a pound and a half, #address#.
+  b : #bc_ha#
+  : I told the pedlar I'd buy them, at the weight they showed. Took my coin back by a third.
+  b : What did the pedlar say?
+  : Nothing. Packed up and went back over the causeway. #saying#.
+
+story the_first_snow_sale [concept=talk.season here.season=winter]
+  : One winter the first snow came early, before anyone had laid in oil.
+  b : You had it?
+  : I'd ordered heavy that autumn, against advice. Every wolf in the fen came to the stores by noon.
+  b : #bc_clever#
+  : I sold at the same price as the week before, mind. The Bright One sees a wolf who doesn't gouge.
+  b : That's fair of you.
+  : It's fair, and it's custom for life. Both, #address#.
+
+dlg @1 resident.hub : #greet#. #scraper.capitalize# first, then what's wanted? | #greet#. #talk_open#
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Go with the Bright One. #talk_open# | #topic.player#. You look like a wolf short of rope.
+dlg @3 resident.hub [topic.meeting=returning] : #topic.player#. #welcome_back#. I'd your name in #ledger# still. | Back again, #topic.player#. Business or a word?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : What is it. I've a count to finish. | Say your piece. I'm listening, and I'm counting.
+dlg @5 resident.hub [here.time=night] : The book's shut. Be quick, #address#. | Late. If it's trade, it's tomorrow.
+dlg @1 resident.job [self.role=merchant] : I keep the stores. Rope, salt, oil, pots, #herring#. And I read eel water better than anyone. | #self.trade_words.capitalize#. Every shelf, every sack, every copper, #reckon#.
+dlg @1 resident.business : Steady and rising, thanks to the Bright One. | Good. #shelves.capitalize# empty and fill, as they should.
+dlg @2 resident.business [business=thriving] : Thriving. I'll have #plans# by next year at this rate. | Couldn't be better. #oath#.
+dlg @1 resident.news : #news_none# The travellers bring what news there is. | Nothing that's not in #ledger#, #address#.
+dlg @1 resident.gossip : I don't trade in gossip. Bad coin, that. | #gossip_none#
+dlg @1 resident.bye : #farewell#. The Bright One see you home. | #farewell#. Mind the boards.
+dlg @1 shop.greet : #greet#. #shop_offer# Nothing city-made, mind. | #greet#, #address#. Rope, salt, oil, pots. What'll it be?
+dlg @2 shop.greet [topic.meeting=known] : #greet#, #topic.player#. #herring.capitalize# is fresh in #crock#. | Back, #topic.player#. #shop_offer#
+dlg @1 shop.prices : #shop_dear# Salt on straight scales, and the herring's worth every copper. | Nothing's moved much. #pans.capitalize#, oil, rope, same as last week, #reckon#.
+dlg @1 shop.bye : #shop_bye# Go with the Bright One. | #farewell#. Use #scraper# on the way out.
+graft shop.greet
+choice Is that pickled herring by the door? -> herring
+node herring
+say #crock.capitalize#. My own pickling. Vinegar, #pans#, and a secret I'll not tell. Sharp enough to make you blink.
+mood pleased
+free
+choice What's the secret? -> herring_secret
+choice I'll think on it. -> greet
+node herring_secret
+say If I told you, you'd pickle your own, and then where would I be? Buy a jar. That's the secret.
+choice Fair enough. -> greet
+choice Goodbye. -> bye
+
+graft resident.hub
+choice They say you're the best trapper on the river. [here.region=fens] -> eels
+node eels
+say They say right. #boast#. I still set #lines# before I open the shutters.
+mood pleased
+free
+choice What's the trick of it? -> eels_trick
+choice Goodbye. -> bye
+node eels_trick
+say Patience, and reading the water. Low by the old willow, and leave it a night longer than you'd like. Nobody does. That's the whole trick.
+choice I'll try it. -> hub
+choice Goodbye. -> bye

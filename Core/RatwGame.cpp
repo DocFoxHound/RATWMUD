@@ -458,6 +458,7 @@ bool Game::start(std::string& problem)
     if (!talkData.empty())
     {
         std::string trouble;
+        talkDir_ = talkData;
         if (talk_.load(talkData, trouble))
         {
             note("info", "RATW_TALK " + std::to_string(talk_.size()) + " rules and scenes for residents' talk");
@@ -534,6 +535,8 @@ bool Game::start(std::string& problem)
             return false;
     }
     storageReady_ = true;
+    if (!live)
+        loadMantles({});                            // (From files, if any: Options::mantlesFrom. Doc 84 Phase 9.)
     // A hunt (doc 41) may be joined by a hunter's friends: their party, or their Chapter.
     world_.setFriends([this](const std::string& a, const std::string& b) {
         const auto* pa = parties_.of(a);
@@ -595,6 +598,7 @@ bool Game::start(std::string& problem)
     }
     const std::string payload = store_->load();
     load(payload);
+    syncMantleLedger();                             // (Doc 84 Phase 10: the checkpoint's mantle ledger with the rows'.)
     if (auto* writer = store_->journal(); writer && storageReady_ && !journalSeq_)
     {
         // No checkpoint to replay over (a world never saved): records left by a crash before its first snapshot
@@ -1290,13 +1294,38 @@ Result Game::applyDmAct(std::vector<PgValue> row)
     else if (kind == "voice.sync")
     {
         // Talk (doc 62, phase 6): residents' voices, the dialects and the figures read again, after an edit; and
-        // families (taken in by the society at the next day's turn).
-        loadVoices();
+        // families (taken in by the society at the next day's turn). Doc 84 Phase 9: one resident's alone (their voice
+        // row, own words and lines, and mantle) when the target is a resident; anything else (a dialect, a figure, a
+        // batch of mantles, nothing) reads every voice again.
+        const auto* one = world_.entity(target);
+        if (one && one->npc)
+            outcome = loadVoice(target);
+        else
+        {
+            loadVoices();
+            outcome = {true, "Voices, dialects, mantles, families and figures are read again.", target};
+        }
         World candidate;
         std::string problem;
         if (loadWithLivePeople(candidate, problem))
             world_.society().setKin(candidate.society().kin());
-        outcome = {true, "Voices, dialects, families and figures are read again.", target};
+    }
+    else if (kind == "mantle.sync")
+    {
+        // Doc 84 §17.2: one mantle's rows read again and swapped whole; a revision that fails leaves the one loaded.
+        outcome = loadMantle(target);
+    }
+    else if (kind == "mantle.assign" || kind == "mantle.release")
+    {
+        // Doc 84 §17.7, §17.10 (Phase 10): a mantle bound to a resident by the DM (bound_how 'dm'), or released.
+        json::Value payload;
+        std::string problem, npc = target, mantle;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        mantle = payload.string("mantle", "");
+        if (const auto space = npc.find(' '); space != std::string::npos)
+            mantle = npc.substr(space + 1), npc = npc.substr(0, space);
+        outcome = kind == "mantle.assign" ? assignMantle(npc, mantle) : releaseMantle(npc);
     }
     else if (kind == "deed.award" || kind == "deed.revoke")
     {
@@ -1859,6 +1888,12 @@ std::string Game::priceWords(std::int64_t pennies)
 
 void Game::makeResidents(std::size_t most)
 {
+    tendMantles();                                  // (Doc 84 Phase 10: what the society decided of mantles, written.)
+    struct Later
+    {
+        Game& g;
+        ~Later() { g.tendMantles(); }
+    } later{*this};
     if (options_.database.empty() || options_.scratch)
     {
         // A world from files makes them itself, like their templates (doc 64, Phase 8). So does a scratch server of a
@@ -1981,13 +2016,14 @@ void Game::makeResidents(std::size_t most)
             "appearance, route_id, paid, purse, herbs, meals, hours_start, hours_end, home_area, home_x, home_y, work_area, work_x, work_y, "
             "evening_area, evening_x, evening_y, origin, wander_area, spawn_id) "
             "SELECT world_id, $2, (SELECT coalesce(max(position) + 1, 0) FROM live.npcs WHERE world_id = $1), $3, 'civilian', $4, "
-            "'Hello.', personality, $5, '-', $6::integer, voice, "
+            // (Doc 84 §12.5: a child with a mantle takes the card's personality, not its mother's, and no greeting.)
+            "CASE WHEN $13 = '' THEN 'Hello.' ELSE '' END, CASE WHEN $13 = '' THEN personality ELSE $13 END, $5, '-', $6::integer, voice, "
             // (A child's sex is its own, half and half, not its mother's: $12 empty keeps the template's.)
             "CASE WHEN $12 = '' THEN appearance ELSE jsonb_set(appearance, '{sex}', to_jsonb($12::text)) END, NULL, false, $7::integer, 0, 1, hours_start, hours_end, "
             "$8, $9::integer, $10::integer, $8, $9::integer, $10::integer, $8, $9::integer, $10::integer, 'runtime', NULL, NULL "
             "FROM live.npcs WHERE world_id = $1 AND id = $11",
             {liveWorldId_, id, request.name, description, std::string("Born in the world, not written."),
-             std::to_string(request.age), std::string("0"), home.cell, x, y, request.templateId, request.sex});
+             std::to_string(request.age), std::string("0"), home.cell, x, y, request.templateId, request.sex, request.personality});
         World candidate;
         std::string problem;
         const bool loaded = made.ok && loadWithLivePeople(candidate, problem);
@@ -2001,6 +2037,30 @@ void Game::makeResidents(std::size_t most)
         }
         const auto welcomed = world_.welcomeResident(request, id);
         note("info", "RATW_RESIDENT " + request.kind + ": " + request.name + " (" + id + ") " + welcomed.message);
+        // Doc 84 §12.5 (Phase 10): the parents in live.npc_relations (Atlas and the DM see them), and with a mantle, the
+        // child's voice row: its birth town its origin for life, the accent drawn, the card's seven traits and quirk
+        // (honesty with them: the user, Q4), the mantle bound (tendMantles draws its marks and reads the row back).
+        for (const auto& parent : request.parents)
+            worldDb_.exec("INSERT INTO live.npc_relations (world_id, npc_id, other_id, kind) VALUES ($1, $2, $3, 'parent') "
+                          "ON CONFLICT DO NOTHING", {liveWorldId_, parent, id});
+        if (const auto* b = world_.society().mantleOf(id); b && !request.mantle.empty() && b->mantle == request.mantle && mantleTables_)
+        {
+            json::Value traits = json::Value::object();
+            for (const auto& [axis, value] : b->traits)
+                traits.add(axis, value);
+            const auto mother = npcVoice_.find(request.templateId);
+            const auto quarter = mother == npcVoice_.end() ? std::string() : mother->second.quarter;
+            const auto voice = worldDb_.exec(
+                "INSERT INTO live.npc_voice (world_id, npc_id, home_region, accent, quarter, traits, quirk, written_by, mantle_id, "
+                "bound_how, bound_day) VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, 'seed', $8, $9, $10::double precision) "
+                "ON CONFLICT (world_id, npc_id) DO UPDATE SET home_region = excluded.home_region, accent = excluded.accent, "
+                "quarter = excluded.quarter, traits = excluded.traits, quirk = excluded.quirk, mantle_id = excluded.mantle_id, "
+                "bound_how = excluded.bound_how, bound_day = excluded.bound_day, released_day = NULL",
+                {liveWorldId_, id, b->from, b->accent, quarter, json::dump(traits), b->quirk, b->mantle, b->how,
+                 std::to_string(b->boundDay)});
+            if (!voice.ok)
+                note("warning", "RATW_MANTLE " + id + "'s voice row could not be written (" + b->mantle + "): " + voice.error);
+        }
         ++revision_;
         saveSoon();
     }

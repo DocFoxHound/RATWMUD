@@ -1,0 +1,326 @@
+# sw104, the house-book keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sw104
+revision 1
+state ready
+dialect saltwell
+accent broad light
+tier standard
+written_for tn_mb_bramble_bogditch
+written_by claude-p11-pilot
+title the house-book keeper
+fits stage=adult|old
+prefers stage=old piety=devout
+traits temper=even talk=plain warmth=reserved humour=dry honesty=plain piety=devout drive=steady
+quirk distrusts_anything_from_the_city
+likes mutton_stew singing fresh_straw first_snow
+dislikes wet_floors stale_bread
+fears dying_without_the_psalm_said
+hopes the_family_pans_kept_whole
+topics faith +0.4 memories +0.3 family +0.3 home +0.2 food +0.1 gossip -0.2 travel -0.2
+styles comfort=faith gossip=reluctant refuse=firm tease=dry
+marks oath saying tsk
+persona #self.first# keeps the house and its book out at the salt workings: devout, dry as the pan, slow to be impressed, and nothing from the city crosses the door.
+
+words
+oath! = Bright One witness it | By the old well-stone
+saying! = Nothing good ever came up the Ridgemere road in a hurry | Bread goes stale, and so do excuses | The Bright One sees the floor under the straw
+tsk! = Tsk | Mercy
+smoketown = the smoke-town | that town of chimneys
+mutton = a mutton stew | mutton stewed since noon
+straw = new straw on the floor | straw cut this week
+firstwhite = the dunes gone white at dawn | the year's first frost-white
+book = the house book | my ink and the house book
+psalm = the dawn psalm | a psalm at first light
+stale = stale bread | a crust gone hard as a well-stone
+pans = the family pans | our pans out on the white
+knees = my knees | these stiff knees
+young = you young things | you pups of thirty
+song = an old song with friends | the old well songs
+
+any
+opinion @1 church for 2 : The Bright One has kept me through worse than this, and the chapel's the least I owe. #oath#.
+opinion @1 city against 1 : #smoketown.capitalize#? Smoke and elbows, and the bread's a day old before it's sold. #saying.capitalize#.
+opinion @1 drink against 1 : I've seen what #ale# does to a family. So has the Bright One. One cup at a wedding, and no more.
+opinion @1 newcomers against 1 : Every new face from up the road makes the hamlet a grain less itself. I don't hold it against them. I hold it against the road, #address#.
+opinion @1 road against 1 : The roads were safer before the #bandits#, whatever #young# tell you. They weren't there.
+opinion @1 times for 1 : I've no complaints. A wolf with a full larder would be a fool to make any, #address#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, and peace on your house, #address#. Come in out of the sun; wipe your feet on #straw#. | #greet#. Sit. You'll take water first, and then we'll see who you are.
+line @1 kin.open [pair.kin!=no] : There you are. Sit by me, and don't drip on #straw#. | #greet#, #dear#. Eaten? You haven't. #tsk#.
+line @1 again.open : Back again? The floor's barely forgiven you the first time, #address#. | Twice in a day, #address#. Either you like me or you want something.
+line @2 greet [here.time=dawn] : #greet#. I've said #psalm# already; you'll have to make do with me.
+line @1 greet.return : #greet#, and on your house. Mind #straw#. | #greet#. Sit, if your knees allow.
+line @2 greet.return [pair.band=strangers] : #greet#, and peace on your house, #address#. Be welcome; the water's cool and the straw is new.
+line @1 farewell : #farewell#, and come back to us. Keep off the wet stones. | #farewell#. The Bright One keep you, since I can't.
+line @1 farewell.return : #farewell#, and peace on your road. | #farewell#. Come back when the stew's on.
+line @1 react.news.new : #oath#. Well. Nobody tells me anything out at the pans. | #tsk#. That's new, and I'm not sure I like it.
+line @1 react.news.known : I had it from the carters yesterday. Still wolves hear things, #address#. | The well had it first. I had it second.
+line @1 react.news.doubt : Let somebody not born in #smoketown# say it, and I'll listen. | #doubt.capitalize#. I've heard sand-wind say more, and truer.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. The Bright One will hear of it tonight, from me. | #rest.capitalize#. The long shade comes for all of us; I'll pray it came gently.
+line @1 answer.how : Still here. #oath#, that's a blessing. | #knees.capitalize# complain; I don't listen to them.
+line @1 sympathise : That's heavy, #address#. Sit; the Bright One's shoulders are broader than yours. | #sympathy.capitalize#. Say it to the Bright One tonight. Then say it to me.
+line @1 decline : Not today, #address#. #knees.capitalize# have made their own plans, and I'll not argue with them. | Thank you, no. I keep the house; the house doesn't keep itself while I wander.
+line @1 accept_decline : So be it. At your age I'd have refused as well. #tsk#. | #no_matter.capitalize#. I'll ask again when you're wiser.
+line @1 thank : #thanks#, and shade on your house. I'll remember it in #psalm#. | #thanks#. Bright One witness it, you're kind.
+line @1 deflect_thanks : Nothing. It's what neighbours are for. | #deflect.capitalize#. Thank the Bright One; I only carried it.
+line @1 preclose : Well. #book# won't write itself, and neither will I. | #preclose.capitalize#. The stew wants stirring.
+line @1 tease : You've your father's ears, #address#. That's no compliment, mind. | Sit up straight, #child#. You look like a palm in a sand-wind.
+line @1 tease.return : I take every joke as a gift, #address#. Even that one. | Heh. You'll be old too, one day. I'll pray to watch.
+line @1 ack : So it is, truly. | It is heard.
+line @1 give.advice : Never buy anything that comes up off a cart from #smoketown#. Look at it; then don't. | Say #psalm# before you open your mouth to anyone. It saves a deal of apologising.
+rule @straw_bark
+when concept=bark working=no
+does aside
+cooldown 8h
+say Feet! I've put down #straw#, not a puddle. | Who's dripping? #tsk#. Wet floors and wet manners.
+
+rule @psalm_bark
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Bright One, keep the well and #pans#. That's all for today. | #psalm.capitalize#, and then the bread. In that order.
+
+rule @stale_bark
+when concept=bark working=no
+does aside
+cooldown 8h
+say Who left the loaf uncovered? #stale.capitalize# by noon, #tsk#. | #stale.capitalize# is a sin with crumbs.
+
+rule @city_bark
+when concept=bark working=no
+does aside
+cooldown 12h
+say Is that from #smoketown#? Take it outside. | Shiny. #saying.capitalize#.
+
+scene straw_day
+when topic=home|smalltalk
+does tell.self / react.self / assess
+a : #straw.capitalize# today. The whole house smells like a summer field. | I sweep the old straw out every sixth day. My mother did, and hers, #oath#. | There is nothing so honest as #straw#. It doesn't pretend to be a carpet.
+b[old] #old : Sixth day. My mother kept the same. | I've stone floors now. I miss the smell. | Carpets are city nonsense.
+b : Smells good. | Every sixth day? | Honest straw?
+a@old : Good mothers, both. | Stone's cold. Come and sit in mine. | City nonsense, #bc_it_is#
+a : It does. Don't drip on it, #address#. | Every sixth day, #oath#. The Bright One rested on the seventh; I sweep on the sixth. | Honest. It tells you who's been in with wet feet.
+
+scene wet_floors
+when topic=home|smalltalk
+does tell.complaint / react.complaint / assess
+a : Somebody walked trough-water clear to my hearth. #tsk#. | A wet floor rots #straw# and the temper together. | I'd sooner have sand on the floor than water. Sand sweeps.
+b[stage=young|adolescent] #pup : It wasn't me. | I'll mop it. | I like the water.
+b : Who was it? | #bc_true# | Sand sweeps, true.
+a@pup : It was you, #child#. I can see your paws. | Do. Then sweep. | Like it outside, then.
+a : I've an idea. I'll say nothing. #secret.capitalize#. | #bc_it_is# | It does. Water only sulks.
+
+scene mutton_pot
+when topic=food
+does tell.self / react.self / assess
+a : #mutton.capitalize# on since noon. Come at dusk; you'll not be sorry. | #mutton.capitalize# wants patience and a heavy lid. Most cooks lack both. | #mum.capitalize# put dates in her mutton. I thought it was mad. It wasn't.
+b[from=saltwell] #sw : Bread and salt to it, and you'd be a friend for life. | Patience and a lid. Truly said. | Dates in the pot. My grandmother did too.
+b : I'll come. | #bc_wise# | Dates?
+a@sw : That's the custom. Come, then. | #bc_it_is# | Then she was wise too.
+a : Come hungry, #address#. | Not wise. Old. Same thing, some days. | Dates. Sweet with the salt. Try it before you laugh, #address#.
+
+scene stale_bread
+when topic=food|smalltalk
+does tell.complaint / react.complaint / assess
+a : #stale.capitalize# again. Somebody bought it from a cart. | Bread should be eaten the day it's baked. Anything else is penance. | A loaf from #smoketown# came on the carts. Hard as a lie by the time it got here.
+b : Toast it. | #bc_true# | Why buy it?
+a : Toast it! #tsk#. That's how the city hides its sins. | #bc_it_is# #saying.capitalize#. | I didn't. Somebody young did. #young.capitalize#.
+
+scene psalm_dawn
+when topic=faith here.time=dawn
+does tell.self / react.self / assess
+a : I've said #psalm# every morning since I could stand. I'll not stop for #knees#. | The first light's the Bright One's. I give it back with #psalm#. | #psalm.capitalize#, then water, then bread. Then the rest of the world.
+b[piety=devout] #devout : And I, every morning. The Bright One hears it. | Well said. The first light's not ours. | That's the right order.
+b : Every morning? | #bc_lovely# | In that order?
+a@devout : The Bright One hears it, and so do the larks. | #bc_wise# | The right order, #oath#.
+a : Every morning, rain or dust. | It is. Come and say it with me, #address#. | That order. The world can wait; it always does.
+
+scene the_child
+when topic=family self.parent=yes self.child
+does tell.self / react.self / assess
+a : #self.child# came by. Ate, sat, said nothing, left. That's a visit, I suppose. | I pray for #self.child# every night. Whether it helps, the Bright One knows. | #self.child# was the quiet one. Still is. I like that, though I'd not say so.
+b[stage=old] #old : That's a visit. Mine don't even sit. | It helps. It helped mine. | Quiet pups are deep wells.
+b : Short visit. | #bc_wise# | You just said so.
+a@old : Then mine are better. Barely. #tsk#. | I'll trust you. | Deep wells. #bc_it_is#
+a : Short and fed. I'll take it, #oath#. | Not wise. A mother. Same thing at night. | Heh. So I did. Don't repeat it, #address#.
+
+scene the_friend_at_home
+when topic=family|friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# talks enough for both of us. Somebody has to listen; I've the knees for sitting. | #self.friend# brings the salt news home every dusk. I hear #pans# through another mouth. | I've known #self.friend# longer than anyone. I'd not swap. Don't tell #self.friend#.
+b : Lucky. | #bc_good# | I won't.
+a : Lucky, and loud. The Bright One gives in pairs. | #bc_it_is# Better than my eyes now. | Good. #secret.capitalize#.
+
+scene the_pans
+when topic=work|land
+does tell.self / react.self / assess
+a : #pans.capitalize# were my grandfather's. I keep the book; the young keep the rakes. | Salt's honest. You can't make #pans# look like more than they are. | The crust's thick this year, they tell me. I wrote it in #book#.
+b[job=farmer|laborer] #hands : A good book keeps a good pan. | Salt doesn't lie. Folk do. | Thick crust, sore backs.
+b : The book? | #bc_true# | #bc_good#
+a@hands : And honest paws keep both. | #bc_true# | Sore backs, full sacks. I'll pray for both.
+a : Every sack in, every coin out. In ink. #oath#. | Honest. I wish more things were salt. | Good. And I'll believe it when the silver's in.
+
+scene house_book
+when topic=work|home self.age>=55
+does tell.self / react.self / assess
+a : Ink on my paws again. #book# doesn't forgive a blot. | I've kept #book# forty years. Every sack, every coin, every wedding. | #book.capitalize# says we spent three coins on city thread. I'll find who.
+b[old] #old : A blot's a sin in a ledger. My father said so. | Forty years. You'll want somebody to take it after. | You will, too.
+b : Forty years? | #bc_clever# | City thread?
+a@old : A sin with ink. #bc_it_is# | Somebody steady. I'm watching. | I will. #tsk#.
+a : Forty, and not a page torn out, #address#. | Not clever. Careful. | Thread from #smoketown#. Breaks if you look at it.
+
+scene smoke_town
+when topic=travel|smalltalk
+does give.opinion / react.self / assess
+a : #smoketown.capitalize#? I went once. Once. They sell you air in a bottle and call it perfume. | Nothing from #smoketown# crosses my door. Not cloth, not pots, not opinions. | A carter brought me a city comb as a gift. I gave it to the goats.
+b[from=saltwell] #sw : Once is enough, by the spring. | Not even news? | The goats need combing, truly.
+b : Never again? | #bc_ha# | The goats?
+a@sw : Once was a year too many. | News, I sift. Like flour. | They do. They looked very fine.
+a : Never. #saying.capitalize#. | Ha. I mean it, #address#. | The goats. They didn't complain, #oath#.
+
+scene night_cold
+when topic=weather|day here.time=night here.weather=clear
+does tell.self / react.self / assess
+a : #cold.capitalize#. I've two blankets and a hot stone, and I'll want a third. | Look at the stars. #grandad.capitalize# knew forty by name. I know three, and the Bright One. | Cold nights keep #mutton#. Small mercies.
+b : Stay warm. | Three? | #bc_good#
+a : I'll try. #knees.capitalize# won't. | Three, and the Bright One who lit them. #oath#. | Small, but I count them.
+
+scene newcomers
+when topic=newcomer
+does give.opinion / react.self / assess
+a : #topic.subject.capitalize# is new. Off the Ridgemere road, I don't doubt. | Another new face, #topic.subject#. The hamlet grows a grain less itself. | #topic.subject.capitalize#. I'll be civil. I'm always civil.
+b[from=saltwell] #sw : Three days a guest, and then a neighbour, is it not? | The custom's older than both of us. | Civil's not kind, truly.
+b : Give them a chance. | #bc_true# | #bc_good#
+a@sw : Three days. I'll feed #topic.them# three days. Then we'll see. | Older than the well-stone. I'll keep it. | No. But it's a start.
+a : One chance. That's the custom, #address#. | #bc_it_is# Bright One witness it, I'll be fair. | Civil, and watching, #oath#.
+
+scene good_times
+when topic=times world.times=good|boom
+does give.opinion / react.self / assess
+a : I've no complaints. I'd be a fool to make any, #oath#. | Silver about, bread on every table. The Bright One's in a good mood. | Good times. Write it in #book#; they don't last.
+b : #bc_good# | Long may it last. | Don't they?
+a : #bc_good# Don't spoil it by talking. | #bc_i_hope_so# | Never. I've watched them come and go, #address#.
+
+scene drink_talk
+when topic=smalltalk|family
+does give.opinion / disagree / assess
+a : One cup at a wedding. No more. I've watched #ale# take a good wolf apart. | The young drink at the inn and come home singing out of tune. #tsk#. | I keep a jar of date wine for the sick and for the dead. That's all it's for.
+b : One's very few. | They're young. | For the dead?
+a : One is plenty, if you remember it after. | They are. So was I, and I sang in tune. | For the wake. The living can drink water. #tsk#.
+
+scene road_was_safer
+when topic=travel|memories
+does tell.memory / react.story / assess
+a : When I was a pup the road was safe from here to the pan. Now they ride in threes. | My father drove salt to #smoketown# alone. Alone, #address#. | The road wolves got bolder. The roads didn't get wider.
+b[old] #old : Safe as a courtyard, then. I remember. | Alone, and came home. Those days. | Bolder, and no braver.
+b : Was it? | Alone? | #bc_true#
+a@old : You do remember. Few do. | Those days. #bc_it_is# | No braver. #tsk#.
+a : Safe, or we thought it was. Same thing, then. | Alone, with #psalm# and a stick. | #bc_true# Bright One witness it.
+
+scene gossip_held
+when topic=gossip
+does tell.self / react.self / assess
+a : I hear it all. I sit still, and still wolves hear. I repeat none of it. | Gossip is how the Dark One gets in through the door, #address#. I keep it shut. | Ask me something else, #address#. I'll not be a well-talker for anyone.
+b[friends] #f : Not even to me? | Shut door, quiet house. | Too late for that.
+b : #bc_fair_enough# | #bc_wise# | Fair.
+a@f : Not even to you, #dear#. | Quiet, and clean. | Never too late to stop.
+a : Fair. #secret.capitalize#. | Not wise. Wise enough to know. | #bc_fair#
+
+
+old
+line @1 answer.how [self.age>=70] : Old. Still here. #oath#, that's two blessings. | Old as the well-stone and twice as stubborn. #tsk#.
+line @1 react.news.new [self.age>=70] : #tsk#. Nobody tells an old wolf anything. | #oath#. Seventy-odd years and still surprised.
+line @1 deflect_thanks [self.age>=70] : It's what an old wolf is for. | Old paws, but they still carry, #address#.
+scene faith_kept
+when topic=faith
+does give.opinion / react.self / assess
+a : The Bright One has kept me seventy years and more. I'll not quarrel with that record. | The Dark One gets nothing from this house. Not a crumb, not a word. | I pray for #pans# every night. Salt keeps a family; the Bright One keeps the salt.
+b[piety=devout] #devout : A long record. | Not a crumb. Good. | Truly said.
+b : Seventy years. | #bc_good# | Salt and faith.
+a@devout : Longer than most. #bc_it_is# | Not a crumb, #oath#. | #bc_wise#
+a : And more. Don't count, #address#; it's rude. | #bc_good# Keep it so in yours. | Salt and faith. Neither keeps without the other.
+
+scene first_white
+when topic=weather|season here.season=winter here.time=dawn
+does tell.feeling / react.self / assess
+a : #firstwhite.capitalize#. I went out in my shawl to see it before it went. | White on the sand. Seventy winters and it still stops my breath. | The Bright One's frost. It's gone by noon, so you look while you can.
+b[old] #old : I saw it too. Like salt on the dunes. | Mine too. It never gets ordinary. | Gone by noon. Like most good things.
+b : #bc_lovely# | Still? | I'll look.
+a@old : Like the pans come to visit, #oath#. | Never ordinary. | Most good things, and all the young.
+a : Lovely. Cold on #knees#, but lovely. | Still. Don't you grow out of it. | Look, then. Quick.
+
+scene singing
+when topic=pastimes
+does tell.self / react.self / assess
+a : Nothing like #song# at dusk, and old voices that know the words. | I sang at the well every feast for sixty years. My voice is a crow's now. Still. | The young don't know the old verses. I'll teach them if they sit still.
+b[old] #old : The well songs. I know every one. | A crow's voice sings the truest. | Nobody sits still now.
+b : Sing one. | Still? | #bc_i_will#
+a@old : Then come and sing the low part. | Flatter me again, #address#. | Nobody. Mercy, the young.
+a : At dusk. Not now. #hot.capitalize# spoils a song. | Still. The Bright One isn't particular about voices. | Sit still, then. #tsk#.
+
+scene old_knees
+when topic=health
+does tell.self / react.self / assess
+a : #knees.capitalize# tell me the weather before the sky does. Today they say cold. | I'm old. I'm meant to ache. It's the young who ache that worry me. | #remedy.capitalize# and a psalm. Everything else is city medicine.
+b[old] #old : Mine say the same. We're never wrong. | My knees agree with you. | City medicine. Coloured water.
+b : #bc_poor_soul# | You're well, though? | What's city medicine?
+a@old : Never wrong, and never thanked. | We're a pair. | Coloured water, and a bill.
+a : Not poor. Old. It's different, #address#. | Well enough. #oath#. | Coloured water in a bottle. #tsk#.
+
+scene the_old_days
+when topic=memories|lore
+does tell.memory / react.story / assess
+a : In #olddays# the carts came once a month and we all ran out to them. Even the hens. | I remember when the well had a stone lip you could sit on. Smooth as a cup. | We used to sing the carts in. Every cart. Now nobody looks up.
+b[old] #old : Even the hens. I remember. | I sat on that lip as a pup. | Nobody sings anything now.
+b[stage=young|adolescent] #pup : Once a month? That's nothing. | What happened to it? | Sing one now.
+b : Those were the days. | #bc_lovely# | Why stopped?
+a@old : The hens knew. They always know. | So did I. Bright One witness it, we wore it smooth. | We do. Old wolves do.
+a@pup : Nothing, and everything. You'll see, #child#. | Rebuilt. City masons. #tsk#. | Not now. At dusk, if you're good.
+a : They were. They were also hard. Both. | Lovely. And gone. #saying.capitalize#. | Busy. Everyone's busy now, #address#.
+
+story the_city_comb [concept=talk.memories]
+  : A carter brought me a comb from #smoketown# once. Silver, he swore. Silver!
+  : I thanked him, I'm not a heathen. Then I put it in water overnight.
+  ask : Do you know what happened to it?
+  b[from=saltwell] : It went green, did it not?
+  b : What happened?
+  : Green by morning. Green as a lizard. I gave it to the goats; they've no vanity.
+  : I've not trusted a city word since. #saying.capitalize#.
+
+story the_long_drought [concept=talk.memories self.age>=60]
+  : When I was a young mother the spring dropped so low we drew it with cups.
+  : Everyone dug, pups and all. I dug with a child slung behind me and a psalm in my mouth.
+  ask : Did it come back, #address#?
+  b[old] : I remember. We dug for nine days.
+  b : What happened?
+  : On the ninth day it came up cold and sweet. I wept. So did the elders.
+  : Don't tell me the Bright One doesn't listen, #address#. I was there. #oath#.
+
+story the_wedding_song [concept=talk.pastimes]
+  : At my sister's wedding I sang the old well song so loud the carters stopped at the edge of the hamlet.
+  : They thought it was a blessing for them. So they came in and ate.
+  ask : Was it?
+  b[stage=young|adolescent] : Did you get in trouble?
+  b : And did they stay?
+  : Three days. A guest is a guest. My father was furious and fed them anyway.
+  : I've sung quieter since. A little. #tsk#.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#, and peace on your house, #address#. Wipe your feet on #straw#, and then tell me who you are.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit. You'll have water, and then you'll talk.
+dlg @3 resident.hub [pair.disposition=hostile] : Say what you want and say it plainly. #knees.capitalize# haven't the patience for anything else.
+dlg @1 resident.job : I keep the house and #book#. That's work enough, I promise you.
+dlg @1 resident.news : Nothing new that I'd repeat, #address#. | All the talk is of #world.event_words#. The Bright One knows what comes of it.
+dlg @1 resident.bye : #farewell#, and come back to us. Mind the wet stones.
+graft resident.hub
+choice Why don't you trust anything from the city? -> city
+node city
+say Because I've seen it, once, and that was plenty. They paint a thing to look like more than it is. Salt doesn't paint.
+mood formal
+free
+choice Is that fair? -> city_fair
+choice Goodbye. -> bye
+node city_fair
+say Fair? Bring me one honest thing from #smoketown# and I'll say sorry before the whole well. I've waited a long time.
+choice I'll look. -> hub
+choice Goodbye. -> bye

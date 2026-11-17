@@ -2222,7 +2222,13 @@ Result World::setDead(const std::string& id, bool dead)
     recordEvent({dead ? "death" : "revival", id, {}, {}, 0, 0, {}, 0, 0, {}});
     if (a->npc || society_.account(id))
     {
-        careerNotes(dead ? society_.died(id, calendarDays_) : society_.revived(id));
+        if (dead)
+        {
+            const auto world = careerWorld();
+            careerNotes(society_.died(id, calendarDays_, &world));
+        }
+        else
+            careerNotes(society_.revived(id));
         if (dead)
             // Those who were close grieve: the family for days, friends a little while.
             for (const auto& [otherId, other] : entities_)
@@ -3473,6 +3479,10 @@ int World::makeRequestedResidents(std::vector<ResidentRequest>* madeOnes, std::s
         r.joinable = r.protectedNpc = r.watch = false;
         r.description = "A young wolf, born here to " + model->name + "'s family.";
         r.backstory = "Born in the world, not written.";
+        // Not its mother's personality (a son once inherited "she counts things"): its mantle card's (doc 84 §12.5),
+        // and no greeting (the window speaks from the mantle).
+        if (!request.personality.empty())
+            r.personality = request.personality, r.greeting.clear();
         if (!request.sex.empty())
             r.appearance.sex = request.sex;          // (Not the mother's: a son or a daughter, half and half.)
         if (!society_.addResident(r, 0))
@@ -3613,6 +3623,26 @@ CareerWorld World::careerWorld() const
         return spots;
     };
     w.place = [this](const std::string& cellId) { return cell(cellId) != nullptr; };
+    // Doc 84 §12 (Phase 10): the mantle pools by place, where one grew up, and who knew one well.
+    w.townOf = [this](const std::string& cellId) { return townIdOf(cellId); };
+    w.dialectOfTown = [this](const std::string& town) { return dialectPoolOf(town); };
+    w.dialectOfCell = [this](const std::string& cellId) { return dialectPoolOf(townIdOf(cellId)); };
+    w.originOf = [this](const std::string& id) {
+        std::pair<std::string, std::string> out;
+        if (entity(id))
+            talkOrigin(id, out.first, out.second);
+        else if (const auto own = talkOrigins_.find(id); own != talkOrigins_.end())
+            out = own->second;                       // (One of the Country's: their voice row's.)
+        return out;
+    };
+    w.knownBy = [this](const std::string& id) {
+        std::vector<std::string> out;
+        for (const auto& [other, e] : entities_)
+            if (other != id && e.npc && !e.dead)
+                if (const auto* b = bonds_.find(other, id); b && b->familiarity >= 40)
+                    out.push_back(other);
+        return out;
+    };
     w.near = [this](const std::string& workCell, const std::string& homeCell) {
         const auto* work = cell(workCell);
         const auto* home = cell(homeCell);

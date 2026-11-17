@@ -1,0 +1,287 @@
+# sm101, the beekeeper with river stones (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm101
+revision 1
+state ready
+dialect southmeadow
+accent light broad
+tier standard
+written_for cty_ada_coalstack
+written_by claude-p11-pilot
+title the beekeeper with river stones
+fits stage=adult|old
+traits temper=even talk=plain warmth=reserved humour=dry honesty=sly piety=ordinary drive=steady
+quirk collects_smooth_stones_from_the_riverbanks
+likes barley_soup wrestling old_maps warm_rain
+dislikes waiting early_bells
+fears being_overlooked
+hopes sound_hives_and_her_own_counsel
+topics work +0.4 land +0.3 pastimes +0.2 food +0.2 faith -0.2 gossip -0.2
+styles comfort=practical gossip=sly refuse=short tease=dry
+marks oath saying
+persona #self.first# keeps bees on the hill: dry at the edges, sly with the truth, a pocket full of river stones, and a grudge against the Council she'll not say aloud.
+
+words
+oath! = Wax and wormwood | By the brood comb
+saying! = Honey comes to them as wait | The river wins by not arguing
+stone = a smooth stone off the river | a pebble the river's finished with
+girls = the girls | my bees
+hives = the hives | my skeps on the hill
+soup = barley soup on a cold day | a pot of barley soup
+map = an old map with the roads drawn wrong | a map that lies about the roads
+bout = a bout on the green | a bit of wrestling on the green
+petition = my petition | a petition with my name at the bottom
+smoker = the smoker | a puff from the smoker
+veil = my hat and veil | the veil
+heather = heather honey | the dark honey off the heath
+waiting = waiting on other folk | standing about while somebody makes up their mind
+counsel = my own counsel | what I know and keep
+
+grown
+scene girls_cross
+when topic=work|weather self.job=farmer here.weather=overcast|storm
+does tell.self / ask.detail / answer.detail / assess
+a : #girls.capitalize# are cross today. There's thunder in it somewhere. | Every one of #girls# came home early. That's weather. | Got stung twice before noon. #oath#. They know something I don't.
+b : They can tell? | Early? | Twice?
+a : Better than any almanac. #girls.capitalize# sulk before a storm, same as I do. | They don't stay out to get wet. #bad.capitalize# sense, they'd say, and they'd be right. | Twice. Once for the weather and once for my temper. #bc_ha#
+b : Clever things. | Sensible bees. | Ha. Fair enough.
+
+scene smoker_slow
+when topic=work self.job=farmer
+does give.advice / react.self / assess
+a : A puff of #smoker#, and you move slow. Bees don't mind you; they mind your hurry. | Never open #hives# in a temper. They can smell it, and they've more stings than you've patience. | Folk think the #veil# does the work. The veil's for when you've done it wrong.
+b : I'd still want the veil. | Sounds like you've learned the hard way. | I'd wear it anyway.
+a : Wear it, then. I'll not tell #girls#. | Every lesson I know, I learned stung, #address#. | So did I, the first ten years. #saying.capitalize#, mostly.
+
+scene heather_price
+when topic=work|prices|food self.job=farmer
+does tell.self / ask.detail / answer.detail
+a : The #heather# goes up to the hill houses. They pay what I ask, and I ask a #good# price. | Light honey for the market, #heather# for the ones who ask quietly. | There's honey and there's #heather#. One pays the rent; the other pays for my stones.
+b : What's the difference? | Why quietly? | Stones cost nothing.
+a : Darker, slower, and #toffs# like what they can't pronounce. I don't correct them. | Because if everybody asked, I'd have to charge everybody the same. | They do. That's why I can afford them. #bc_ha#
+
+scene stones_pocket
+when topic=smalltalk
+does tell.self / react.self / assess
+a : Picked #stone# up by the ford this morning. Smooth as a lie. | I've a pocket of stones, and they're all the river's work, not mine. | Want one? I've #stone# going spare. They're good for the paw when you're thinking.
+b : What do you do with them? | Why keep them? | What's it for?
+a : Line the path, fill a jar, hold one when the Council's mentioned. | They've done all their arguing already. I like that in a thing, #address#. | Nothing. That's the charm of it. #bc_it_is#
+
+scene stones_shelf
+when topic=smalltalk|home pair.band=friends|family|acquaintances
+does confide / react.self / assess
+a : I've #stone# for every year I've been up the hill. They're on the sill in a row. | #vent#: I pick the ugliest ones on purpose. The pretty ones get picked by everyone. | There's one on my sill I'd not trade for a hive full of #heather#. Don't tell anyone; they'll want to see it.
+b : That's a lot of years. | Ugly ones? | I won't.
+a : Not so many. Some years I took two. | They're honest. Nobody's polished them for #toffs#. | See that you don't. #oath#, I'd only show it to you anyway.
+
+scene barley_cold
+when topic=food|weather here.season=autumn|winter
+does tell.self / invite / accept_invite
+a : #soup.capitalize#. Nothing better, and I'll fight you on it. | There's a pot of barley on my fire that's been there since dawn. Come up and have a bowl. | When it's #cold# I put the barley on at first light and don't think about it again till dark.
+b : I'll not fight you. | I might, at that. | That's a long pot.
+a : Wise. I'm a fair hand at #bout#. | Do. Bring nothing. Nobody's honey is as #good# as mine. | Long and slow. #saying.capitalize#.
+
+scene warm_after_dry
+when topic=weather here.weather=rain here.season=spring|summer
+does tell.feeling / react.self / assess
+a : A warm #rain# after a dry week. The heather drinks it, and so do I. | Look at that. Warm and soft. #girls.capitalize# will be out the minute it stops. | I stood out in it with my face up. Don't tell the #busybody# down the lane.
+b : It's good for the land. | Busy bees, then. | Who'd I tell?
+a : #bc_it_is# The flowers come back by tomorrow, you'll see. | #very.capitalize# busy. Then #very# full. | Everybody, by your face. #bc_ha#
+
+scene green_bouts
+when topic=pastimes
+does tell.self / react.self / assess
+a : There's #bout# on the market day. I'll be watching. Might be more than watching. | I put a farmhand twice my size on his back once. He's not forgotten, #oath#. | #bout.capitalize#'s honest. Two wolves, one green, nobody's petition.
+b : You wrestle? | Twice your size? | Nobody's petition?
+a : Did. Still could, if the right fool asked. | Weight's nothing if you know where it sits. | Private joke. Mine. Nobody laughs at it but me.
+
+scene maps_wrong
+when topic=pastimes|travel
+does tell.self / ask.detail / answer.detail / assess
+a : I collect #map#. The worse the better. | Found one at the market with the river going uphill. Paid double, #oath#. | There's a road on my best map that goes straight through a lake. Somebody believed that once.
+b : Why the bad ones? | Double? | Did they drown?
+a : A good map tells you where you are. A bad one tells you who drew it. | It's a rare thing, a river going uphill. Worth the #money#. | I'd like to think they turned back. I'd like to think a lot of things.
+b : Odd sort of hobby. | I'll take your word. | Ha.
+
+scene the_petition
+when topic=land|times here.region=ridgemere self.age>=30
+does tell.complaint / ask.detail / answer.detail
+a : I took #petition# to the Council once. They read the first line and the last. | The Council of Houses and I aren't on speaking terms. They don't know it, but we aren't. | You've heard of #petition#? Then you've heard I lost. That's all there is to hear.
+b : What was it about? | Why not? | All?
+a : Water. Or land. Or both. I'll keep that to #counsel#, thank you. | Because they never knew I was talking. #oath#. | All I'll say out loud. The rest I say to #girls#.
+
+scene council_says
+when topic=gossip|times here.region=ridgemere
+does tell.gossip / react.self / assess
+a : I've an idea what the Council's about this month. I'll keep it to #counsel#, and smile. | Somebody on the Council's selling their own honey, I hear. Don't look at me. | They say the Houses are arguing. I can't think why that pleases me.
+b : Go on, tell me. | Is that true? | Can't you?
+a : No. A secret's worth more kept. #saying.capitalize#. | #hedge#. Couldn't say. Wouldn't, either. | I can. I'll just not do it where it's heard. #bc_ha#
+
+scene waiting_on
+when topic=smalltalk|day
+does tell.complaint / react.complaint / assess
+a : I've spent half the morning #waiting#. I'd sooner be stung. | I don't mind work. I mind #waiting#. | #girls.capitalize# never keep you waiting. They're ready or they're not, and they say so.
+b : It's always the way. | Shocking. | Unlike folk.
+a : Not on my hill, it isn't, #address#. | Isn't it. I said so to their face, more or less. | Unlike folk. #oath#, unlike folk.
+
+scene bells_early
+when topic=day here.time=dawn
+does tell.complaint / react.self / assess
+a : Early bells. I'm up before them, and still they shout at me. #annoyed#. | #oath#. Those bells. Who needs telling it's morning? | I hear the bells from the hill. #girls.capitalize# don't stir for them, and nor do I.
+b : They're for the city. | Somebody does. | Sensible.
+a : Then the city can have them. #bc_let_them# | Not me. I've had the kettle on an hour. | Sensible as #stone#. #bc_very_good#
+
+scene plate_and_prayer
+when topic=faith
+does give.opinion / react.self / assess
+a : The collection's quicker than the blessing, I've noticed. Funny, that. | I talk to the Bright One on the hill, where it's quiet and nobody passes a dish. | I'll put in #money# when I've heard a sermon worth it. I'm still waiting.
+b[job=priest] #priest : The dish keeps the doors open. | All are welcome to sit. | Come and listen, then.
+b : There's truth in that. | Quiet's best for it. | Long wait.
+a@priest : So it does. I'd only like it slower. | And I'm welcome on the hill. #bc_ha# | I might. Don't hold the dish out till I've sat.
+a : There's #counsel# in it, if nobody's looking. | #bc_it_is# The Bright One can find me easy enough. | Long. And I hate #waiting#.
+
+scene watch_noses
+when topic=crime here.region=ridgemere
+does give.opinion / react.self / assess
+a : The Watch have their noses in everybody's business but their own. | One of the Watch asked me why I carry stones. I said for the Watch. He didn't laugh. | When there's a #thief# about, the Watch ask everyone but the thief.
+b[role=guard] #guard : We ask to keep you safe. | That's no joke. | We catch them in the end.
+b : Seems so. | Bold of you. | Sounds about right.
+a@guard : I know. I'd only like to be kept safe from a bit further off. | It was half a joke. You can have the other half. | In the end. I'll be dead of #waiting# first.
+a : #bc_it_does# I've kept my nose clean and my hives locked. | I'm not one to be bold. It slipped out, #oath#. | #bc_it_is# More often than not.
+
+scene city_elbows
+when topic=land|smalltalk here.region=ridgemere
+does give.opinion / react.self / assess
+a : I come down off the hill on market day and go back up as soon as I'm sold. The city's all smoke and elbows. | Nobody in the city knows their neighbour. I know mine by the colour of their bees. | I'd not live down there for #heather# by the barrel.
+b[from=ridgemere] #city : It's home to some of us. | Most of us don't keep bees. | Nobody's asking you to.
+b : I know what you mean. | Do you know them? | Not for anything?
+a@city : It suits you. I'll not say it suits me. | No. More's the pity. | Good. #saying.capitalize#.
+a : #bc_i_know# Then you'll know why I go back up. | By #girls#, yes. The wolves I could take or leave. | Not for anything. Not for two barrels.
+
+scene meadow_home
+when topic=memories|land self.from=southmeadow self.away=yes
+does tell.memory / react.story / assess
+a : At home the orchards ran right down to the river. I learned to swim among windfalls. | The river at home was wide and slow and full of stones. That's where it started. | My #gran# kept bees under the apple trees. Taught me with a smoker and a slap.
+b[from=southmeadow] #meadow : Windfalls and cider wasps. I mind it. | Wide and slow. Ripe country, that. | Every gran had a hive, near enough.
+b : Sounds a sweet place. | Is that where the stones come from? | A slap?
+a@meadow : Then you'll know what I miss. Not the wasps. | #bc_it_is# I'd go back if the hill let me. | Mine had six. And a temper.
+a : #good.capitalize# enough. I'll take the hill now. Fewer windfalls. | The first ones. I still have them, #address#. | Gently. Mostly. #oath#, she had a quick paw.
+
+scene speak_slow
+when topic=accent self.from=southmeadow
+does tell.self / react.self / assess
+a : #toffs.capitalize# say I sound like a field. I take that kindly. | I hear my own way of talking come out when I'm cross. #bad.capitalize#, the lot of it. | I've kept my words. It's cheaper than buying new ones.
+b : It's a good sound. | I've heard it. | Fair point.
+a : #thanks# I'll tell the field. | Then you've heard me cross. Few have. | Most of my points are. #bc_ha#
+
+scene alone_on_the_hill
+when topic=home self.married=no
+does tell.self / react.self / assess
+a : I live alone, and I'd recommend it to anybody who's tried the other way. | There's me, the hives, and a row of stones on the sill. Nobody argues. | Folk ask if I get lonely up there. I ask them if they've met the bees.
+b : Is it quiet? | Sounds peaceful. | Have they?
+a : Quiet as I want it, and #snug#. | #bc_it_is# I'll keep it so. | Not twice, they haven't. #oath#.
+
+scene honey_harvest
+when topic=harvest|work self.job=farmer here.season=summer|autumn
+does tell.self / react.self / assess
+a : Taking the honey this week. #girls.capitalize# won't thank me for it. | It's been a #good# year for the heather. The comb's heavy. | Every frame I lift, I leave a bit. You don't take all a wolf's got, or a bee's.
+b : A good harvest, then. | Lucky. | That's fair.
+a : #good.capitalize# enough. I'll not boast it where the Council can hear. | Luck's half of it. Knowing when to lift is the rest. | Fair, and it keeps them coming back. Same as a market, #address#.
+
+scene hedgehog_hives
+when topic=animals self.job=farmer
+does tell.self / react.self / assess
+a : There's a hedgehog that lives under the third hive. I charge it no rent. | A bear's been at a hive two hills over, they say. Mine are fine. I've a sharp stone or two. | The bees and the swallows don't get on. I stay out of it.
+b : Generous. | A stone? | Sensible.
+a : It eats the beetles. We've an arrangement, #girls# and it. | Several. Thrown hard. #bc_ha# | I learned that from the Council.
+
+story the_long_petition [concept=talk.memories self.age>=40 here.region=ridgemere]
+  : I spent a winter writing #petition#. Every word weighed, every name spelled right.
+  : I stood in front of the Council for the time it takes to boil an egg, and then they thanked me.
+  ask : And that was that?
+  b : They thanked you?
+  : They did. Politely. I've not forgiven the politeness most of all.
+
+story the_swarm_on_the_watch [concept=talk.work self.job=farmer]
+  : One spring a swarm came down on a watchman's helmet in the middle of the road.
+  : He stood very still, and I walked up slow with a basket and asked him to bend his head.
+  b : Did he?
+  : Very politely. It's the only time the Watch has ever done what I asked. #oath#.
+
+story the_first_stone [concept=talk.memories self.from=southmeadow]
+  : The first stone I kept, I found under the river at home, after a flood took half the bank.
+  : Everything else was mud and broken branches, and there it was, smooth and done with it.
+  ask : Do you still have it?
+  b : That's a good one to keep.
+  : On the sill. It's seen out three floods since. #saying.capitalize#.
+
+opinion @1 church against 1 : The collection goes round a good deal quicker than the prayers do. I'll say mine on the hill, for nothing, to #girls#.
+opinion @1 city against 1 : All smoke and elbows. I'm down for market and back up the hill before #girls# miss me.
+opinion @1 watch against 1 : Noses in everybody's business but their own. I keep #girls# and my counsel, and neither needs the Watch.
+opinion @1 houses against 1 : I took #petition# to their Council once. They were very polite about it. That's all I'll say.
+opinion @1 strangers for 1 : A stranger buys honey without haggling over who my grandmother was. I like them for it.
+opinion @1 newcomers mixed 0 : The hill's big enough, and #girls# don't care who's new. I'll wait and see what they're like with their elbows.
+line @1 greet [pair.band=strangers] : #greet#. Mind the hives; they mind you. | #greet#. Lost, or looking?
+line @2 greet [self.working=yes self.job=farmer] : #greet#. Stand still and don't flap. | #greet#. Come round the back of the hives, not the front.
+line @3 greet [here.time=dawn] : #greet#. You're up early for a city wolf. | #greet#. Kettle's on, if you're stopping.
+line @1 again.open : Twice? #greet#. Folk will talk. | You again. #welcome_back#.
+line @1 kin.open [pair.kin!=no] : #greet#. Have you eaten, or do I have to ask twice? | There you are. #greet#. Sit down before you fall down.
+line @1 greet.return : #greet#. | #greet#. Well enough, since you'll ask.
+line @2 greet.return [pair.band=friends] : #greet#. Took your time. | #greet#. I'd a stone saved for you.
+line @1 farewell : #farewell#. Mind the ditch. | #farewell#. Don't let the bees follow you home.
+line @1 farewell.return : #farewell#. | #farewell#. And mind yourself.
+line @1 react.news.new : #surprise#. Well, there's a thing. | #oath#. I'd not heard that, and I hear most things.
+line @1 react.news.known : #knew#. The bees had it first. | I'd heard. I said nothing; it's #counsel#.
+line @1 react.news.doubt : #doubt#. I'll believe it when somebody I trust says it twice. | Sounds like something a councillor would say. I'd wait for proof.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'm sorry for them. | #oath#. That's a hard thing.
+line @1 answer.how : Well. #girls.capitalize# are well, which is most of it. | #fine#. Ask me again after market. | Even. I'm always even, more or less.
+line @1 sympathise : #sympathy#. Sit; I've honey for that. | A #bad# turn, that. Honey in hot water, and an early bed. It won't fix it.
+line @1 decline : No. Not this time; I've my own row to hoe, and it's long. | #refuse#. I'd help if I could, and I can't, so I won't.
+line @1 accept_decline : #no_matter#. I'd have said the same. | Fair. I'll ask somebody slower, #address#.
+line @1 thank : #thanks#. | #thanks#. I'll owe you one, and I always pay.
+line @1 deflect_thanks : #deflect#. | Don't. You'll make me soft.
+line @1 tease : You've a face like a stung pup. What happened? | Is that your best coat? Bold.
+line @1 tease.return : #cheek#. | I've had worse said by better.
+line @1 preclose : Well. #preclose#. | #girls.capitalize# won't keep themselves.
+line @1 ack : Hm. | #ack#.
+rule @hives
+when concept=bark working=yes self.job=farmer
+does aside
+cooldown 6h
+say Slow, slow. Nobody's in a hurry. | #oath#. There's one in my veil.
+
+rule @stones
+when concept=bark working=no
+does aside
+cooldown 8h
+say That's a good one. Into the pocket. | #stone.capitalize#. Done arguing, that one.
+
+rule @waiting
+when concept=bark here.crowd=busy|crowd
+does aside
+cooldown 8h
+say Any time today would do. | I've bees younger than this queue.
+
+rule @soup
+when concept=bark working=no here.time=dusk here.season=autumn|winter
+does aside
+cooldown 1d
+say Barley's on. Barley's always on. | #soup.capitalize#. That's the evening sorted.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. You're a long way off the road. Lost, or after honey? | #greet#. Mind where you stand; the bees have opinions.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Here for honey, or just for the view?
+dlg @1 resident.job [self.job=farmer] : I keep bees. #self.trade_words#. #hives.capitalize#, the honey, and a lot of patience. | #job_busy#
+dlg @1 resident.news : Nothing I'd swear to. Plenty I'd hint at, #address#. | #news_none#
+dlg @1 resident.gossip : I hear a lot. I keep it with #counsel#. | #gossip_none#
+dlg @1 resident.bye : #farewell#. Mind the hives on your way out. | #farewell#. Don't let the bees follow you.
+graft resident.hub
+choice What's in your pocket? It's rattling. -> stones
+node stones
+say Stones. River stones. #stone.capitalize#, mostly. Want one? The river's done all the arguing with them already.
+mood pleased
+free
+choice Why do you collect them? -> stones_why
+choice Goodbye. -> bye
+node stones_why
+say Because they're honest, and I've met the Council. Take that one. It's had longer to think than either of us.
+choice Thank you. -> hub
+choice Goodbye. -> bye

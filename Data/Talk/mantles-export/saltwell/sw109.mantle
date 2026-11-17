@@ -1,0 +1,274 @@
+# sw109, the warren-mistress (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sw109
+revision 1
+state ready
+dialect saltwell
+accent broad light
+tier standard
+written_for cty_lavinia_mudworth
+written_by claude-p11-pilot
+title the warren-mistress
+fits stage=adult|old
+prefers job=herder humour=merry
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=ambitious
+quirk haggles_with_the_weather
+likes smoked_eel singing sharp_knife thunder
+dislikes salt_wind early_bells
+fears the_deep_woods
+hopes a_second_warren_past_the_red_dunes
+topics animals +0.4 work +0.3 weather +0.3 festival +0.3 dreams +0.2 faith -0.3
+styles comfort=cheerful gossip=reluctant refuse=soft tease=merry
+marks oath saying
+persona #self.first# keeps the rabbits at Redsand: chatty, merry and ambitious, courteous in the old broad way, keeps the talk on the warren and off the heart, and bargains with the weather like a trader at a stall.
+
+words
+oath! = By whisker and burrow | Long ears and short nights
+saying! = Count your does in spring and your silver in autumn | A warren never sleeps, and neither does a good keeper
+doe = my does | the breeding does
+litter = a fresh litter | a nest of new ones under the straw
+warren = the warren | my warren at Redsand
+blade = my good sharp knife | a blade you could shave a lizard with
+eel = eel off the Fen Road carts, smoked black | a sliver of black smoked eel
+thunder = a real crack of thunder | the sky splitting open over the dunes
+tune = a good song | a song with friends round the table
+bell = the early bells | that dawn bell
+pelts = a bale of good pelts | pelts, cured and counted
+weatherdeal = I'll give you till noon, and not a breath more | that's my last offer, and you know it
+woods = the deep woods | trees packed so close you can't see the stars
+bargain = a fair bargain | a bargain struck
+
+any
+opinion @1 church against 1 : A sermon is a lovely thing, #address#, but it never once put bread on my table. My does do that.
+opinion @1 dole against 1 : I never took a crumb I hadn't earned, and I'm the better for it. #saying#.
+opinion @1 drink for 1 : #drink.capitalize# with friends has done no harm to anyone I'd care to know. Pour, and I'll sing.
+opinion @1 festivals for 1 : Dance all night and you'll wake younger than any sleep would leave you. #oath#, and I've tried both.
+opinion @1 houses against 1 : Nobody rises out here without a House saying so. I mean to rise anyway, on rabbits.
+opinion @1 city mixed 1 : The city buys #pelts#. That's all I need from it, and all it needs from me.
+
+grown
+scene warren_count
+when topic=work|animals self.job=herder
+does tell.self / react.self / assess
+a : Seven litters this month! Seven! #doe.capitalize# have outdone themselves, bless them. | I counted the warren at dawn, #address#. Forty-two, and three more due by Restday. | #saying#. It's spring, so I'm counting does. Ask me about silver in autumn.
+b[job=herder|farmer] #land : Seven? You'll be overrun. | Due by Restday? You count close. | And in autumn you'll be counting silver all night.
+b : That's a lot of rabbits. | You keep good count. | Spring's busy, then.
+a@land : Overrun and paid for it. I'll take that bargain, #address#. | Close as a moneylender. Kindlier, I hope. | All night, and singing while I do it. #oath#.
+a : Not yet it isn't. Not till I've a second warren. | Somebody has to. #doe.capitalize# won't do it for me. | #busy.capitalize#, and glad of every bit.
+
+scene the_blade
+when topic=work|pastimes self.job=herder
+does tell.self / react.self / assess
+a : Look at the edge on that. #blade.capitalize#. I strop it every night like a prayer. | A dull knife tears a pelt, and a torn pelt sells for half. So, #blade#, always. | I've had this knife twenty years and never let anyone else hold it. Don't take it personally.
+b[job=crafter|smith] #steel : That's a good edge. Who ground it? | Half? That's a hard market. | I wouldn't let anyone hold mine either.
+b : That's sharp. | Makes sense. | I wasn't going to.
+a@steel : Ground it myself, #address#, with a stone off the dry bank and a great deal of patience. | Hard, and fair. A tear's a tear. | Then we understand each other. #bc_ha#
+a : Sharp as a tax collector's eye. #bc_ha# | #bc_true# And sense pays. | Then you're wiser than most, and welcome.
+
+scene pelts_to_the_city
+when topic=prices|work self.job=herder
+does tell.plan / react.self / assess
+a : Next season I'll send #pelts# up to Ridgemere myself, not through the store. Cut out the middle. | The furriers in the city pay twice what the carts give. I've asked. I always ask. | #pelts.capitalize# by the bale, and a carter I trust. That's the whole plan, #address#.
+b[role=merchant] #trade : The store won't love you for it. | Twice? They'll want it twice as fine. | Trust's dear on that road.
+b : Bold. | Worth asking. | It's a good plan.
+a@trade : The store loves nobody, #address#, and it'll survive me. #bc_ha# | Then they'll have it twice as fine. I've #blade#. | Dear, but I'll pay it. #saying#.
+a : Bold's cheap. Pelts are dear. #oath#. | Always worth asking. The worst they say is no. | It's my plan, so it's the best one I've got. #bc_ha#
+
+scene second_warren
+when topic=dreams
+does tell.plan / react.self / assess
+a : A second warren, past the red dunes. Sandy ground, thorn scrub, a spring nobody uses. I've walked it twice. | Fifty breeding does by the time I'm sixty. Laugh if you like; I'll be counting. | I'll not die keeping one warren. Two, at least. Three, if the sky behaves.
+b[old] #old : At my age I wanted less, not more. | Sixty comes quicker than you think. | The sky never behaves.
+b : That's ambitious. | Fifty? | Three warrens?
+a@old : Less is a fine thing to want, #address#. I'll want it later. | Then I'd best hurry, hadn't I? #bc_ha# | Then I'll bargain with it. #weatherdeal.capitalize#.
+a : It is, and I don't apologise. #oath#. | Fifty. #saying#. | Three. One for each of my bad habits.
+
+scene the_hawk
+when topic=animals here.region=waste
+does tell.self / react.self / assess
+a : That red hawk again, circling the warren like she owns it. I sang at her. Loud. She left. | Lost a young doe to the hawk this week. I'll not pretend I didn't cry. Then I mended the net. | A hawk has to eat, #address#. I just wish she'd eat somebody else's.
+b : You sang at a hawk? | That's a loss. | Fair enough, from the hawk's side.
+a : I did, and you should have seen her face. My singing does that. #bc_ha# | It is, and it's mended. #bc_it_is# | From the hawk's side, aye. From mine, she's a thief with feathers. #oath#.
+
+scene noon_haggle
+when topic=weather|day here.region=waste here.time=day here.weather=clear
+does tell.self / react.self / assess
+a : Listen to me, sky. #weatherdeal.capitalize#. Then you cool off and we're friends again. | #hot.capitalize#. I've offered the sun an hour's shade if it'll leave my does alone. No answer yet. | It's a hard trader, this noon. Won't come down a degree, not for love or silver.
+b : Is it listening? | You're bargaining with the sun? | Nothing moves it.
+a : It never listens. It always pays, in the end. Dusk comes. #bc_ha# | Somebody should. It's been robbing us blind all summer. #robbery# | Nothing but patience. I've plenty, and so, it seems, has the sun.
+
+scene thunder
+when topic=weather here.region=waste here.weather=storm
+does tell.self / react.self / assess
+a : Hear that? #thunder.capitalize#! Get inside, #address#; I'll put the kettle on and we'll listen. | Oh, that's a good one. Rattled the shutters. Do it again, sky, and I'll sing louder. | There's nothing like #thunder# when you're #snug# with a cup. Nothing in the world.
+b : I'd rather it stopped. | You'll sing over a storm? | Lovely, if you're indoors.
+a : Never! Let it roar. It never hurts a wolf with a roof. #oath#. | Over it, under it, through it. It started it. | If you're indoors, aye. Come in, then, and be welcome. #bc_ha#
+
+scene salt_wind_haggle
+when topic=weather here.region=waste
+does tell.complaint / react.complaint / assess
+a : That salt wind gets in my fur and stays there like a bad lodger. I've told it it owes me rent. | #annoyed.capitalize#. I'd give the wind a whole day's calm if it'd keep the salt out of the warren. | Salt in the fur, salt in the burrows, salt on the does' noses. I'll trade it all for one still week.
+b : What did it say? | It won't take the deal. | Who'd sell you a still week?
+a : It said nothing and kept blowing. Typical tenant. #bc_ha# | It never does. I offer anyway. #saying#. | Nobody. That's why I keep asking the wind directly.
+
+scene rain_bargain
+when topic=weather here.region=waste here.weather=rain
+does tell.self / react.self / assess
+a : Rain at last! Now then, rain, I'll have three days of you, and not one hour more. Deal? | #rain.capitalize#! Every burrow will be wet by morning, and I don't care one bit. | There, #bargain#. A dry year paid for in one wet night.
+b : Three days? Greedy. | Won't the burrows flood? | Worth it.
+a : Greedy and grateful, #address#. Both. #oath#. | They'll drain. Sand's kind like that. #bc_it_is# | Worth every drop. #bc_true#
+
+scene eel
+when topic=food
+does tell.self / react.self / assess
+a : #eel.capitalize#. I'd walk to the fens for it, and I've never seen a fen in my life. | A carter brought a whole smoked eel up from the coast. I paid too much. I'd do it again. | Rabbit, rabbit, rabbit, and then once a month, #eel#. That's my feast.
+b[from=saltwell] #sw : Eel? Out here? Dates and goat not good enough? | Too much is the fair price for what you want. | Rabbit's a good dinner.
+b : Never had it. | That's a treat. | Lucky you.
+a@sw : Dates are lovely, #address#. Eel is a story. #bc_ha# | It is, and I've a proverb for it somewhere. #saying#. | It is, six days in seven. The seventh wants a treat.
+a : Then you've a treat waiting for you. #bc_lucky_you# | It is, and I don't share. Well. A bite. | Luck's half it. The other half's bargaining hard.
+
+scene singing
+when topic=pastimes
+does tell.self / react.self / assess
+a : #tune.capitalize# at the inn tonight, if anyone's game. I'll start; I always start. | I sing to the does at dawn. They breed better for it. You can laugh; I'll show you the numbers. | Nobody in Saltwell knows the words to anything past the first verse. I make the rest up.
+b : I'll come. | They breed better? | Do they notice?
+a : Come, and bring a voice. Even a bad one, #address#. #bc_ha# | Seven litters this month. You tell me. #oath#. | Not once. They sing the new words back to me next year.
+
+scene a_cup
+when topic=smalltalk|pastimes here.place=tavern
+does tell.self / react.self / assess
+a : #drink.capitalize#, a corner seat, and somebody who'll sing harmony. Life's not so hard, is it? | One cup, then a song, then another cup. That's the order, and I keep to it. | Pour me a small one. I've #doe# to see to at dawn. Two small ones, then.
+b : Not hard tonight. | And then another song? | Two small ones make one big one.
+a : Not tonight. Tomorrow's tomorrow's business. #bc_ha# | And then home, before I start the speeches. | They do, #address#, but they look better.
+
+scene festival_dance
+when topic=festival
+does tell.self / react.self / assess
+a : Lamps round the pool tonight. I'll dance till the stars move. You'll dance too; I'm not asking. | #tune.capitalize#, a full table, and every keeper in the hills come down. I love #here.festival#. | A night of dancing's worth a week of sleep. I'll prove it, and you can count my steps.
+b : I can't dance. | You love every feast. | Count them? There'll be hundreds.
+a : Nobody can. That's never stopped anyone, #address#. #bc_ha# | Every one. They're the only days nobody talks business. Except me. | Hundreds, and I'll know if you skip one. #oath#.
+
+scene sermons
+when topic=faith
+does tell.self / react.self / assess
+a : The chapel's lovely, I'm sure. My does don't go, and they're doing very well. | A sermon never put bread on a table, #address#. A bale of pelts does, every time. | The Bright One and I have an arrangement. I work, and the Bright One watches. It suits us both.
+b[piety=devout] #pious : You might find the sermons do more than bread. | Bread's not everything. | That's near to mocking.
+b : Fair point. | Can't argue that. | That's one way.
+a@pious : I might. When I'm too old to carry pelts, I'll sit and listen. #bc_maybe# | No, but it's a fine start to everything. | Not mocking, #address#. Bargaining. I bargain with everyone.
+a : I've a few. #bc_ha# | Then don't. #saying#. | It's my way. It's served me.
+
+scene early_bell
+when topic=day here.time=dawn
+does tell.complaint / react.complaint / assess
+a : #bell.capitalize#! Who rings a bell before the does are up? Before I'm up? | I'd pay good silver to have that bell rung at noon instead. Good silver, #address#. | Every morning, #bell#, and every morning I tell it what I think.
+b : Somebody has to wake us. | It's not that early. | Does it answer?
+a : The does wake me. Kindly. With no bell. #bc_ha# | It's early to a wolf who sings till midnight. #oath#. | It rings louder. That's its answer.
+
+scene the_woods
+when topic=travel|dreams
+does tell.self / react.self / assess
+a : They say there are woods up north so deep you can't see the sky. I'd not go in for all the pelts in Ridgemere. | Never been out of the Waste, and I'll tell you why: #woods#. The thought of them makes my fur stand. | Give me open sand and a hundred miles of sky. #woods.capitalize#? No bargain for that.
+b : You've never seen a wood? | It's only trees. | They're not so bad.
+a : Never, and I mean to keep it so. #oath#. | Only trees, and nothing but trees, and no stars. #bc_never# | Then you go in, #address#, and tell me about it from the sand. #bc_ha#
+
+scene living_alone
+when topic=home
+does tell.self / react.self / assess
+a : Just me and the does out at the warren. I like a quiet house. Well, a quiet house with singing in it. | Nobody to ask where I've been or what I spent. That's a fine way to live, #address#. | My house is kept the way I like it, which is cluttered. The does keep theirs tidier.
+b : Isn't it lonely? | Fine for some. | Messy, then.
+a : Lonely? With forty-two rabbits? #bc_ha# | Fine for me. #saying#. | Cluttered. There's a difference, and I'll argue it all night.
+
+scene spring_kits
+when topic=season here.season=spring
+does tell.self / react.self / assess
+a : Spring! #litter.capitalize# every week. I'm up half the night and grinning the whole of it. | Spring's my harvest. Other folk have grapes; I have #doe#. | If I could buy a season, I'd buy spring twice and sell the summer to whoever'd take it.
+b : Busy, then. | That's a harvest. | Nobody'd buy the summer.
+a : Busy and glad. #oath#. | It is, and it breeds. Grapes don't. #bc_ha# | Then I'll keep it and complain about it, like everyone else.
+
+story first_doe [concept=talk.memories self.age>=30]
+  : My first doe cost me a whole season's wages, raking at the pan. Everyone said I was mad.
+  : She had eleven kits that spring. Eleven! I sang to every one of them.
+  ask : Have you ever bet everything on one beast?
+  b[job=herder|farmer] : Once. It paid. Mostly.
+  b : Never. I'd not dare.
+  : Dare once. #saying#.
+
+story thunder_night [concept=talk.memories self.age>=20]
+  : The year of the big storms, #thunder# every night for a week. The whole hamlet hid indoors.
+  : I sat in my doorway with a cup and sang back at it, every crack. Never had such an audience.
+  b : Weren't you frightened?
+  : Of thunder? Never. Thunder's honest; it tells you it's coming. #oath#.
+
+story the_dream [concept=talk.dreams]
+  : I had a dream once that I was in #woods#. Couldn't see the sky. Couldn't hear the sand.
+  : Woke up with my fur on end and went straight out to stand under the stars till dawn.
+  b[old] : Dreams are only dreams.
+  b : That's a fright.
+  : A fright, and a lesson. I'll never go north, #address#. Not for any bargain.
+
+line @1 greet [pair.band=strangers] : #greet#. You're welcome at my door, and the rabbits will stare; don't mind them. | #greet#. Sit, sit; any traveller's a guest of mine.
+line @2 greet [here.time=dawn] : #greet#. Up with the does, are you? Good. | #greet#. Don't mention the bell to me.
+line @3 greet [self.working=yes] : #greet#. Mind the burrows, and talk while I work. | #greet#. Pass me that sack, there's a dear.
+line @1 kin.open [pair.kin!=no] : There you are! #welcome.capitalize#. | #greet#. You were on my mind this very morning.
+line @1 again.open : #welcome_back.capitalize#! Did I forget something, or did you? | Twice in a day, #address#. I'll start charging.
+line @1 greet.return : #greet#. | #greet#, #other.called#. #bless.capitalize#.
+line @2 greet.return [here.time=dusk|night] : #greet#. A song in you tonight? | #greet#. In you come, before #cold# gets you.
+line @1 farewell : #farewell#. | #farewell#, #address#. Mind the burrows on your way.
+line @1 farewell.return : #farewell#. | #farewell#, #other.called#.
+line @1 react.news.new : #oath#! Is it now? | #surprise.capitalize#! Tell me more.
+line @1 react.news.known : #knew.capitalize#. The carts tell me everything, eventually. | Old news, #address#, but I'll hear it again.
+line @1 react.news.doubt : #doubt.capitalize#. Who's selling that tale, and what do they want for it? | Show it to me, and even then I'll count it twice.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity.capitalize#. That's bitter news. | #oath#. #rest.capitalize#, if it's that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews.capitalize#! I'll sing for that tonight. | #congrats.capitalize#! Now there's news worth hearing.
+line @1 answer.how : Very well, #address#! Seven litters and a good knife. What more is there? | #fine.capitalize#. Busy as a burrow.
+line @2 answer.how [self.mood=low] : A little flat. A song will mend it. | Not my best day. Tomorrow will owe me one.
+line @1 sympathise : #sympathy.capitalize#. Come out to the warren; nothing cheers like a nest of kits. | Oh, #address#. Sit with me a while.
+line @1 decline : #hedge#, but no; the does won't keep and neither will I. | I'd love to, and I can't. Another day, and I'll owe you a song.
+line @1 accept_decline : #no_matter.capitalize#. I'll ask again; I always do. | Another day, then. I'll remember, mind.
+line @1 thank : #thanks#. | #thanks#. I'll pay you back in pelts.
+line @1 deflect_thanks : #deflect.capitalize#. Next time, it's your turn. | Nonsense, #address#. It was a bargain, and I like a bargain.
+line @1 tease : You call that a song? I've heard does sing sweeter. | #cheek.capitalize#! And I mean that kindly.
+line @1 tease.return : #funny.capitalize#. I'll get you back, mind. | Ha! You'll keep, #address#.
+line @1 preclose [self.working=yes] : Well, #doe# won't wait. Off I go. | That's my rest done. The warren calls, #address#.
+line @2 preclose : #preclose.capitalize#. | I'd stay, but the sky and I have business. #bc_ha#
+line @1 ack : #ack.capitalize#. | #agree#!
+rule @warren
+when concept=bark working=yes self.job=herder
+does aside
+cooldown 6h
+say Forty-two, forty-three... no, that one's counted. #oath#. | Come on, my lovelies. Breakfast. | Hush now, hush. That's only the hawk's shadow.
+
+rule @sky
+when concept=bark here.weather=clear|rain|storm
+does aside
+cooldown 6h
+say #weatherdeal.capitalize#, sky. | Do your worst, then. I'll sing over it.
+
+rule @song
+when concept=bark working=no
+does aside
+cooldown 8h
+say La, la-la... how did the second verse go? I'll make one up. | #tune.capitalize#, that's what this hour wants.
+
+rule @bell
+when concept=bark here.time=dawn
+does aside
+cooldown 12h
+say #bell.capitalize#. Again. Somebody take that rope away. | Oh, ring away. I'm up. I'm up!
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#, honoured guest. Sit; you'll take a cup? The rabbits won't mind. | #greet#. #talk_open#
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! Back again. What can I do for you, #address#? | #topic.player#! #talk_open#
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. Well, we'll see how this goes. Speak your piece. | You again. I'm listening, but I'm counting.
+dlg @1 resident.job [self.job=herder] : I keep the rabbits at Redsand. Forty-odd does, and a second warren in my head. | #doe.capitalize#, #pelts#, and #blade#. That's my work, and I love it.
+dlg @1 resident.news : #news_none# But ask me about the warren; I've news there every day. | If there's news, it'll be at the inn with a song on it.
+dlg @1 resident.bye : #farewell#. | #farewell#, #topic.player#. Come back and hear me sing.
+graft resident.hub
+choice Were you talking to the sky just now? -> haggle
+node haggle
+say Bargaining with it, #address#. There's a difference. I offered it an hour of shade for a cooler afternoon. It hasn't answered.
+free
+choice Does it ever take the deal? -> haggle_deal
+choice Goodbye. -> bye
+node haggle_deal
+say Once, the year of the big storms. I asked for rain and got a week of it. Never ask the sky for more than you can carry.
+choice I'll remember that. -> hub
+choice Goodbye. -> bye

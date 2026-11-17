@@ -201,7 +201,21 @@ export interface Npcs {
     /** The NPCs the bands cover (residents the game houses, as last saved; null: no save yet); whether the world holds an
      *  NPC's own band (migration 0061). */
     bandable?: string[] | null; bandsAuthored?: boolean;
+    /** Doc 84 §17.10 (Phase 10): NPC ID → the mantle they wear or wore (live.npc_voice's binding), how it was bound, the
+     *  game days it was bound and released (null: worn), and the mantle's state. */
+    mantles?: Record<string, MantleBinding>;
 }
+/** Doc 84 §17.10 (Phase 11): a mantle in the Mantles panel's list, its status worked out from the bindings (§9.2). */
+export interface MantleRow {
+    id: string; dialect: string; tier: string; state: string; revision: number; title: string; written_for: string | null;
+    written_by: string; updated_at: string | null; items: number; status: 'worn' | 'resting' | 'spare' | 'draft' | 'retired';
+    wearer?: {npc: string; name: string}; last_wearer?: {npc: string; name: string; since: number};
+}
+export interface MantleChange { seq: number; key: string; revision: number; action: string; source: string; account: string; note: string;
+    at: string; before: string | null; after: string | null }
+export interface MantleDetail { id: string; revision: number; state: string; dialect: string; tier: string; text: string; at: number;
+    items: {key: string; section: string; kind: string; body: string}[]; wearer: string | null; history: MantleChange[] }
+export interface MantleBinding { mantle: string; how: string; bound: number | null; released: number | null; state: string }
 
 export type FactionKind = 'npc' | 'city' | 'guild' | 'clan' | 'other';
 export type Stance = 'allied' | 'friendly' | 'neutral' | 'tense' | 'hostile' | 'war';
@@ -419,6 +433,12 @@ export const dmApi = {
     dialects: (target: Target) => call<{name: string; grammar: string}[]>(`${at(target)}talk/dialects?target=${target}`),
     saveDialect: (target: Target, name: string, grammar: string) => call<{id: number}>(`${at(target)}talk/dialect`, {target, name, grammar}),
     figures: (target: Target) => call<Figure[]>(`${at(target)}talk/figures?target=${target}`),
+    // Doc 84 §17.10 (Phase 11): the mantles, one mantle's text, items and history (or its text at a revision), and a save.
+    mantles: (target: Target) => call<MantleRow[]>(`${at(target)}talk/mantles?target=${target}`),
+    mantle: (target: Target, id: string, revision?: number) =>
+        call<MantleDetail>(`${at(target)}talk/mantle?target=${target}&id=${encodeURIComponent(id)}${revision ? `&revision=${revision}` : ''}`),
+    saveMantle: (target: Target, text: string, revision: number | null, note: string) =>
+        call<{id: number; revision: number; inserted: number; updated: number; deleted: number}>(`${at(target)}talk/mantle`, {target, text, revision, note}),
     saveFigure: (target: Target, figure: Partial<Figure> & {id: string}, remove = false) => call<{id: number}>(`${at(target)}talk/figure`, {target, figure, remove}),
     saveStoryVisitor: (target: Target, visitor: {id: string; name: string; description: string; like: string; enabled: boolean}) =>
         call<{id: number}>(`${at(target)}storytellers/visitor`, {target, visitor}),

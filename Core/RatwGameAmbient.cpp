@@ -1177,6 +1177,15 @@ std::vector<std::string> Game::talkFavourites(const std::string& id)
                         out.push_back(t);
         }
     }
+    // A mantle's own (doc 84 §9.4: its favourite topics feed the director's): those it likes first, those it shuns out.
+    if (const auto worn = mantleOf_.find(id); worn != mantleOf_.end())
+        if (const auto* m = talk_.mantle(worn->second))
+            for (auto t = m->topics.rbegin(); t != m->topics.rend(); ++t)
+            {
+                out.erase(std::remove(out.begin(), out.end(), t->first), out.end());
+                if (t->second > 0)
+                    out.insert(out.begin(), t->first);
+            }
     return favourites_[id] = out;
 }
 

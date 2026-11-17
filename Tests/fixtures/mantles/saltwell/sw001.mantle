@@ -1,0 +1,45 @@
+# sw001, the salt-weigher (test fixture): written for the talk town's Saltwell storekeeper.
+mantle sw001
+state ready
+dialect saltwell
+accent broad light
+tier standard
+written_for tt_sa_storekeeper
+title the salt-weigher
+fits stage=adult|old
+prefers role=merchant
+traits temper=even talk=plain warmth=reserved humour=dry
+quirk weighs_everything_twice
+likes well_water
+dislikes short_weight
+fears a_dry_well
+hopes a_good_season
+topics prices +.3 times +.2
+marks oath saying
+persona #self.first# keeps the stores by the pans: dry, careful, and she weighs everything twice.
+
+words
+saying! = Salt keeps, and so do debts | Weigh twice, sell once
+oath! = By the pans | Salt and sun
+greet = Peace on your step | Sun and shade to you
+
+rule @scales
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say Weighed twice and fair. Salt, oil, rope. | Short weight's a sin under the sun. Not at my scales.
+
+scene weighing
+when concept=talk.prices
+does tell.complaint / react.complaint
+a : I weighed the last sack twice and it still came up short. Somebody's thumb is on the scale up the road.
+b : There's always a thumb on it somewhere.
+
+line greet.return : #greet#. Mind the salt on the step.
+line farewell.return : #farewell#.
+line react.news.new : #oath#! And on a day like this.
+line react.news.known : I'd heard it at the well.
+line answer.how : Weighed and found fair, mostly.
+line preclose [self.working=yes] : Well. The scales won't watch themselves.
+
+dlg shop.greet : #greet#. Salt, oil, rope, all weighed twice.

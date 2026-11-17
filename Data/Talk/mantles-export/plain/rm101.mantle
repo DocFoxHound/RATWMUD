@@ -1,0 +1,505 @@
+# rm101, the whetstone (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm101
+revision 1
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_dagny_slaghand
+written_by claude-p11-pilot
+title the whetstone
+fits stage=adult|old
+prefers role=merchant job=fisher
+traits temper=short talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk whets_her_knife_on_a_wet_stone_while_she_talks
+likes hard_cheese digging market_bustle thunder
+dislikes smoke waiting haggling_over_herring
+fears going_soft
+hopes a_pitch_on_the_commons_market
+topics work +0.4 prices +0.3 weather +0.2 food +0.2 memories +0.2 festival -0.4 gossip -0.3
+styles comfort=practical gossip=reluctant refuse=short tease=dry
+marks oath saying hone
+persona #self.first# sells fish in the Rag Market and has done for longer than most can remember: quiet, short-tempered and dry, proud of a clean slab, and never without the knife and its wet stone.
+
+words
+oath! = Scale and hone | Brine and bone
+saying! = Fresh fish don't argue | The blade knows before you do | A dull knife cuts the paw that holds it | Gutted is gutted
+hone! = Hold on. Two strokes on the stone | Wait. The blade wants a lick | Mind. The stone wants a word with the knife
+knife = the knife | my old blade
+stone = the wet stone | my whetstone
+slab = the slab | my bit of counter
+catch = the morning's fish | what the boats sent up
+pitch = a pitch on the Commons Market | a counter up on the Commons
+cheese = a heel of hard cheese | a good hard cheese
+dirt = my square of dirt | the patch out the back
+thunder = a proper thunderstorm | thunder rolling off the Sound
+reek = smokehouse reek | smoke in my eyes
+idle = standing about | waiting on folk
+sprat = sprat | young sprat
+lightpaws = light paws | quick-pawed sorts
+hm = Hm | Huh
+heh = There's a joke in that somewhere | That's almost funny
+
+any
+opinion @1 road against 2 : The roads were safer when I was young, and nobody will tell me otherwise. Wagons with guards now. Guards!
+opinion @2 road against 2 [conv.agreed_before=no] : Roads again? I said my piece. Worse than they were, and they were bad.
+opinion @1 festivals against 2 : All noise and spilt ale, and somebody's always crying by dark. I shut the slab and go home.
+opinion @1 watch for 1 : The Watch keep #lightpaws# off my counter. That's worth a fish or two at the end of the day.
+opinion @1 newcomers against 1 : Every new face makes the place a little less itself. #hm#. They buy fish, I'll give them that.
+opinion @1 church for 1 : I've buried enough folk to be glad somebody says the words. I don't need more of it than that.
+opinion @1 city for 1 : Born under its smoke. I'll go under it too, and gladly. Where else would have me?
+opinion @1 merchants for 1 : I keep a counter. I know what a wagon costs, and the wheel on it, and the wolf at the reins.
+opinion @1 sump mixed 0 : The Sump buys my heads and tails and pays on the nail. Better than some up the hill.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Looking, or buying? | You've come to the right slab, if it's fish.
+line @2 greet [here.time=dawn] : Up before the gulls, are you? | #greet#. Boats are in. Stand back off the ice.
+line @3 greet [here.time=dusk|night] : Late for fish. What's left is what's left. | #greet#. I'm packing up, so be quick.
+line @4 greet [self.working=yes] : #greet#. Mind the drip off the slab. | #greet#. Fish, if you want it. Talk, if you must.
+line @5 greet [pair.band=friends] : You again. Good. Stand where I can see you. | #hm#. Was wondering when you'd turn up.
+line @6 greet : #greet#. | #hm#. #greet#.
+line @1 kin.open [pair.kin!=no] : There you are. Sit. Have you eaten? | Come here. You look thin.
+line @1 again.open : Back again? Forgot something, or just missed my face? | Twice in a day. People will talk.
+line @1 greet.return : #greet#. | #greet#. What's wanted?
+line @2 greet.return [pair.band=strangers] : #greet#. You're not from round the market. | #greet#. Fish or directions?
+line @3 greet.return [here.time=dawn] : #greet#. Early for you, isn't it? | Morning's the only honest hour. #greet#.
+line @4 greet.return [pair.band=friends] : There you are. Thought you'd gone soft and moved up the hill. | #greet#. Don't stand in my light.
+line @1 farewell : #farewell#. | Off you go, then.
+line @2 farewell [here.time=dusk|night] : #farewell#. Mind the steps going up; they're slick by dark. | Go on home. So am I.
+line @1 farewell.return : #farewell#. | Aye. Go on.
+line @2 farewell.return [pair.band=friends] : Don't be a stranger. Not that you could. | #farewell#. Same time tomorrow.
+line @1 react.news.new : #oath#. Is that so. | #hm#. First I've heard. | Well. That's a thing.
+line @1 react.news.known : I heard. Gut fish all day, you hear everything. | Old news. It went past my slab yesterday.
+line @1 react.news.doubt : I'll believe it when I see it, and maybe not then. | Who told you that? Somebody who wanted it true.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's bad. I'll say nothing clever about it. | #hm#. Nobody deserves that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. About time something went right. | Well, there's some sense in the world after all.
+line @1 answer.how : Can't complain. Wouldn't help if I did. | Still standing. That's most of it.
+line @1 answer.how.well : Sold out by noon. Don't expect me to smile about it. | Good. The knife's sharp and the fish are moving.
+line @1 answer.how.poorly : Knees. Rain. The usual. | Slow. Fish don't keep for slow.
+line @1 answer.how.busy : Busy. Talk while I gut, or don't talk. | Run off my paws. Stand aside a moment.
+line @1 sympathise : That's a bad lot. Sit down a moment. | #hm#. It'll pass. Most things do, given time.
+line @1 decline : Not today. I've the slab to see to, and nobody else will. | I'd sooner not. I don't do favours I can't finish.
+line @1 accept_decline : Fair enough. I'll not ask twice. | Suit yourself. No harm.
+line @1 thank : Obliged. | That's good of you. I'll remember it.
+line @1 deflect_thanks : It was nothing. Don't make it something. | Hm. Just don't tell anyone I did it.
+line @1 preclose [self.working=yes] : Well. These won't gut themselves. | Right. #slab.capitalize# is drying out.
+line @2 preclose : Well. I've stood long enough. | That'll do for talk.
+line @1 tease : You've a face like a flounder that's been told the price. | Look at you. Dressed for the Heights and standing in fish.
+line @1 tease.return : Says the wolf who smells of my slab. | You'd know about faces.
+line @1 ack : #hm#. | Aye. | Right.
+line @1 give.advice : Buy in the morning, eat by night. Fish don't wait for anyone. | Keep your blade sharp and your mouth shut. Both save trouble.
+rule @cry_fish
+when concept=bark working=yes self.job=fisher
+does aside
+cooldown 6h
+say Fresh off the boats. Gutted while you watch. | Cod, herring, a few good eels. Look with your eyes, not your paws. | Fish! Before the gulls get it!
+
+rule @cry_heads
+when concept=bark working=yes self.role=merchant here.time=dusk
+does aside
+cooldown 6h
+say End of the day. Heads and tails for broth, cheap. | Last of it. Take it or the gulls will.
+
+rule @hone_bark
+when concept=bark
+does aside
+cooldown 8h
+say #hone#. #saying#. | #hone#. Right. | #knife.capitalize# was going dull. Can't have that.
+
+rule @thunder_bark
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say Listen to that. Now that's weather. | #thunder.capitalize#. Best sound in the city, from under a roof.
+
+rule @idle_bark
+when concept=bark working=no
+does aside
+cooldown 8h
+say Can't abide #idle#. Somebody find me a job. | A wolf could grow roots, waiting about like this.
+
+rule @smoke_bark
+when concept=bark here.region=ridgemere here.outdoors=clear|overcast|fog
+does aside
+cooldown 12h
+say Wind's off the smokehouses again. My eyes. | #reek.capitalize#. Every blessed day.
+
+scene dk_ice_at_dawn
+when topic=work|day here.time=dawn self.job=fisher
+does tell.self / react.self / assess
+a : Ice down, fish on it, and the sun not up. That's the job. | Boats were late. Had the slab bare till near light. | Packed the cod in ice so tight they'll think it's winter.
+b[job=fisher|sailor] #boat : We were late for good reason. Swell like a hill out there. | The ice is the easy part. Try hauling it. | Cod don't think, but they'd thank you.
+b : Before the sun? I'd still be asleep. | Bare? You'd hate that. | Good. Nobody wants a warm cod.
+a@boat : I've no quarrel with the swell. Only the hour. | I've hauled. When I was young and daft. | They'd thank me with their price.
+a : That's why you're buying and I'm selling. | I did. I stood there like a fool with a knife. | Nobody. #saying#.
+
+scene dk_hone_talk
+when topic=smalltalk|work
+does tell.self / react.self / assess
+a : #hone#. Folk ask why I do it so often. | #knife.capitalize#'s older than some of my customers. | Never set it down. Not once, not in all my years.
+b[stage=young|adolescent] #pup : Why do you, then? | Can I hold it? | Not even to sleep?
+b : Why do you? | Older than you, even? | Not once?
+a@pup : A dull knife slips. A slipping knife finds a paw. Yours, if you lean on my slab. | No. Ask me again when you're taller. | Under the pillow. Joke. Mostly.
+a : Because a blunt one tears, and torn fish sells for half. | Near enough. It's had three handles. Same blade. | Once. Lost it in the ice. Found it by bleeding.
+
+scene dk_herring_haggle
+when topic=prices|work self.role=merchant
+does tell.complaint / react.complaint / assess
+a : One fellow stood a full quarter-hour over a herring. One herring. | They want the price of yesterday's fish for this morning's. | Somebody tried to give me a button today. A button.
+b[role=merchant] #trade : They do it to me with candles. Worse, nearly. | Every one of them. As if the boats run on wishes. | I had a bent nail once. Same spirit.
+b : Did he buy it? | Did you give in? | What did you do?
+a@trade : Candles don't stink by noon. Fish do. That's my trouble. | Wishes. Aye. They'd be cheaper. | Keep the nail. I keep the button. Teach them nothing.
+a : Bought two. Then left. Never understood it. | I did not. #saying#. | Told him to sew it on his purse.
+
+scene dk_gulls_and_cats
+when topic=animals here.region=ridgemere
+does tell.self / react.self / assess
+a : A gull had a whole mackerel off the end of my slab this morning. | The market cats have learnt my name, I swear. | There's one grey gull I'd gut and sell, if I could catch it.
+b[stage=young|adolescent] #pup : A whole one? In one go? | Do you feed them? | Why that one?
+b : Bold. | Do you feed them? | Why that one?
+a@pup : Swallowed it head first. I nearly clapped. | Heads, at the end of the day. Don't tell anyone. | It looks at me. Like it's pricing me.
+a : Bolder than most customers. | Heads, after closing. Don't spread it. | It looks at me. Like it's pricing me.
+
+scene dk_thunderstorm
+when topic=weather here.weather=storm
+does tell.feeling / react.self / assess
+a : Hear that? #thunder.capitalize#. I could listen all day. | Storm's come up proper. Best thing that's happened all week. | They're running for doorways. I'm staying put under the awning.
+b[old] #old : I liked it too, once. Now my bones tell me a day early. | We had them worse when I was a pup. | A good awning's worth its weight.
+b : You like this? | Best thing? Truly? | You'll get soaked.
+a@old : Mine too. I listen anyway. | Everything was worse. That's how you know you've lived. | Mine's held twenty years. Patched twice.
+a : From under a roof, aye. Out in it, no. | Clears the air. Clears the market of chatterers too. | Not under this. I know where the leaks are.
+
+scene dk_rain_slab
+when topic=weather|work here.weather=rain self.job=fisher
+does tell.self / react.self / assess
+a : Rain keeps the fish cold and the customers home. Swings and roundabouts. | Wet day. I've sold three herring and a lot of sympathy. | Rain's no trouble to fish. They've been wet before.
+b : Not much of a swing, then. | Sympathy doesn't fill a purse. | #bc_ha#
+a : The fish don't mind. I mind a bit. | No. Doesn't fill a stomach either. | I'll be here till dark regardless. #hm#.
+
+scene dk_smoke_eyes
+when topic=smalltalk|weather here.region=ridgemere here.outdoors=clear|overcast|fog
+does tell.complaint / react.complaint / assess
+a : Wind's off the smokehouses. My eyes have been running since dawn. | #reek.capitalize#. You'd think by now I'd stop minding. | Somebody's burning wet wood again. You can taste it.
+b[job=fisher|cook] #smoke : That's the price of kippers. | I've stopped smelling it altogether. | Wet oak. Cheap fellow, whoever it is.
+b : You look like you've been crying. | You'd think. | Aye, I can taste it.
+a@smoke : I'll pay the kipper price. Not the eye price. | Lucky. Or your nose has given up. | Cheap's the word.
+a : I've not. Folk keep asking. | You'd think. You'd be wrong. | Ruins a good hard cheese, that taste.
+
+scene dk_hard_cheese
+when topic=food
+does tell.self / react.self / assess
+a : Fish all day. Come night, I want #cheese# and nothing that swims. | Bought #cheese# off a farm cart. Best thing I've eaten in a month. | Folk think I live on fish. I live on cheese. Fish is for selling.
+b[job=cook|baker|farmer] #food : A heel with a crust on it. That's the good bit. | Which cart? I want one. | Sensible. You'd be sick of it.
+b : No fish at supper? | Better than fish? | Truly?
+a@food : The crust's the whole point. | I'll not tell you. You'd buy it all. | Sick to the back teeth.
+a : None. I see enough of them. | Don't tell the boats. | A good hard cheese and a heel of bread. That's a supper.
+
+scene dk_digging
+when topic=pastimes
+does tell.self / react.self / assess
+a : Spent the evening digging #dirt#. Nothing in it but stones. | I dig. That's my pastime. Dirt doesn't haggle. | An hour with a spade and I'm fit for anything.
+b[job=farmer|herder] #land : Stones grow faster than anything. | Dirt does argue. It just takes a season. | You should come out to the farms. Plenty of digging.
+b : What are you growing? | Never thought of you as a gardener. | I'd sooner sit.
+a@land : They do. I've a fine crop of them. | I'll take its arguments over a customer's. | Plenty of digging and nobody to sell to. Tempting.
+a : Stones, mostly. A few leeks if they'll have me. | I'm not one. I just dig. | Sitting is how you go soft.
+
+scene dk_busy_market
+when topic=smalltalk here.place=market|street here.time=day
+does tell.feeling / react.self / assess
+a : This is how I like it. Elbows everywhere and nobody listening. | Busy as I've seen it. Good. | Listen to it. Shouting, carts, gulls. That's a market.
+b[wealth=rich] #rich : I find it a little loud. | Busy is good for you, I suppose. | It's certainly lively.
+b : It's a crush. | Busy's good, then? | It's deafening.
+a@rich : It's meant to be. Quiet markets go hungry. | For me and for you. You're eating my fish, aren't you? | Lively's one word.
+a : A crush is a good day. | Busy's coin. Quiet's worry. | Deaf is better than broke.
+
+scene dk_waiting_about
+when topic=day
+does tell.complaint / react.complaint / assess
+a : Stood half the morning waiting on a cart that never came. | I can't abide #idle#. Never could. | Queue at the cooper's out the door. I left. I'll go without.
+b[temper=nervy] #nervy : I'd have fretted myself silly. | Me neither. It makes me twitchy. | You'll need that barrel, though.
+b : Did it come in the end? | #bc_nor_me# | Go without a barrel?
+a@nervy : I don't fret. I sharpen. | Twitchy's better than idle. | I'll need it tomorrow too. Same queue.
+a : At noon. I'd sold half the slab by then from the old ice. | Rather work double. | I'll go at dawn. Nobody queues at dawn.
+
+scene dk_commons_pitch
+when topic=dreams self.role=merchant
+does confide / react.self / assess
+a : I'm saving for #pitch#. Coin by coin. | One day I'll have #pitch#, and the Rag Market can have its gulls back. | There's a corner on the Commons I've had my eye on for years.
+b[friends] #friends : You'll have it. You've never wanted a thing you didn't get. | You'd miss the gulls. | Which corner? The one by the well?
+b : Why the Commons? | Would you miss it? | Why that one?
+a@friends : I've wanted plenty. I'm stubborn, not lucky. | I would not. Don't start. | Not saying. Somebody'd take it.
+a : I live up there. I'd like to work where I sleep. | The gulls, no. The noise, a little. | It gets the morning sun. Fish wants shade. I want the sun.
+
+scene dk_house_full
+when topic=home here.region=ridgemere
+does tell.self / react.self / assess
+a : A house full of trades and one stove. You can guess the rest. | Came home to the house smelling of fish and sawdust and soap. | Our house has a rule. Nobody talks shop at supper. Nobody keeps it.
+b[friends] #friends : Who gets the stove first? | That's a house, that is. | Who breaks it first?
+b : Sounds lively. | What's the soap for? | What do you talk about, then?
+a@friends : Whoever's up first. Which is me. | It is. I'd not swap it. | Me. Every night.
+a : Lively's a word. | Don't ask. I don't. | Shop. It's all we know.
+
+scene dk_friend_walk
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# and I walk down together before light. Neither of us says a word. | #self.friend# says my slab smells worse. It does not. | Had a cup with #self.friend# last night. Said four words between us. Grand evening.
+b : That's a friend, then. | Who'd know? | Four words?
+a : Best kind. You don't have to fill the quiet. | Anybody with a nose. I'd still win. | Four. Two were about the weather.
+
+scene dk_hand_learning
+when topic=work self.hand self.job=fisher
+does tell.self / react.self / assess
+a : #self.hand# filleted a whole cod today without me looking. Mostly whole. | I'm teaching #self.hand# the knife. Slowly. | #self.hand# keeps putting the herring out face down. Fish want to see who's buying.
+b : Mostly? | How's it going? | Do they?
+a : Mostly's a start. I started with less. | There's a paw in it yet. | No. But customers want to see the eye. Bright eye, fresh fish.
+
+scene dk_buried_words
+when topic=faith
+does give.opinion / react.self / assess
+a : I've buried enough folk to be glad somebody says the words over them. | I'm not one for the chapel. I go when someone's in a box. | The Bright One and I have an understanding. I keep my weights honest, and I don't ask much.
+b[piety=devout] #devout : The words matter more than you'd think. | You'd be welcome other days too. | That's a better understanding than most have.
+b : It helps, the words. | Too often lately? | A fair bargain, that.
+a@devout : I said they did. Once is enough. | I'd be welcome. I'd be bored. | Most don't keep their side.
+a : It does. More than I'd say out loud. | Often enough at my age. | I've kept mine. We'll see about the rest.
+
+scene dk_city_smoke
+when topic=lore|smalltalk here.region=ridgemere
+does give.opinion / react.self / assess
+a : Born under this city's smoke. I'll go under it too. | They talk about the farms like it's paradise. Mud and sheep. | Ridgemere rains, stinks and shouts. I'd not live anywhere else.
+b[from!=ridgemere] #away : I miss the quiet, some days. | It's not all mud. | You've not seen anywhere else, though.
+b : Never wanted to leave? | Not for you, then? | Nor I.
+a@away : The quiet's still there. Just send the city with you. | Mostly mud. | Don't need to. I can smell the rest of the world on the boats.
+a : Wanted to? Never once. | Not for me. Give me cobbles. | Good. Stay. We need the custom.
+
+scene dk_crime_theft
+when topic=crime topic.kind=theft here.region=ridgemere
+does tell.news / react.news / assess
+tone serious / even / even
+a : #topic.victim#, robbed. #lightpaws.capitalize# everywhere this season. | Heard about #topic.victim#. That'll be #lightpaws# from the crowd. | #topic.victim# got robbed, they say. Keep the purse inside the coat.
+b[job=guard] #watch : We're looking into it. Every lane. | We'll have them by the week's end. | Inside the coat. That's the advice.
+b : Did they catch anyone? | You think it's the crowd? | I always do.
+a@watch : Good. Look in the crowds at the Rag Market. Thick as fleas. | I'll keep the knife on the counter till you do. | It's good advice. Nobody takes it.
+a : Not that I've heard. The Watch will try. | Where else? Thieves love a crush. | Good. Do it twice.
+
+scene dk_newcomers_grumble
+when topic=newcomer here.region=ridgemere
+does tell.news / react.news / assess
+a : #topic.subject#. Another new face. Every one makes the place a little less itself. | #topic.subject# has come to the city, I hear. | They say #topic.subject# is settling here. #hm#.
+b[from!=ridgemere] #new : I've heard that before. To my face. | Is that so bad? | I came that way myself.
+b : They might be all right. | You don't sound pleased. | Somebody has to come.
+a@new : Then you know I mean it kindly. In my way. | No. Just new. New wears off. | And look at you. Half a Ridgemere wolf already.
+a : Might be. They buy fish, at least. | I'm not. Not yet. Ask me in ten years. | I suppose. They don't have to come to the Rag Market.
+
+scene dk_festival_noise
+when topic=festival
+does give.opinion / react.self / assess
+a : Festival. All noise and spilt ale, and somebody's always crying by dark. | I'll shut the slab early and go home. Leave them to it. | Every year the same. Music, mess, and fish trodden into the cobbles.
+b[stage=young|adolescent] #pup : But there's sweets! | Won't you dance? | It's fun, though!
+b : You don't like it? | Not even for the trade? | Some of it's fun.
+a@pup : Eat one for me. Then go home before the fights. | I danced once. Once. | For you. Go on, then. Mind your paws.
+a : Never have. Not even as a sprat. | Drunk folk don't buy fish. They drop it. | Some of it. The quiet after.
+
+scene dk_ships_due
+when topic=ships topic.kind=due topic.ship
+does tell.news / react.news / assess
+a : #topic.ship.capitalize#'s due, they say. Fish prices'll jump when the crews want feeding. | #topic.ship.capitalize#, due #topic.when#. Somebody'll want salt cod for the next run. | Ship due. I'll keep back a crate in case.
+b[job=sailor|fisher] #sea : Crews eat like wolves. Which we are. | Salt cod's a sailor's misery. | Keep two crates.
+b : Good for you, then. | You'll sell it? | In case of what?
+a@sea : Hungry wolves are honest customers. | Misery pays the same. | Two, then. You've talked me into it.
+a : Good for anyone with a slab. | Somebody's got to. | In case the crew's hungry and the cook's lazy.
+
+scene dk_prices_up
+when topic=prices topic.dir=up
+does tell.self / react.self / assess
+a : #topic.what#, up again. Folk will blame the sellers. They always do. | Everything's dearer. They'll blame me, the one behind the counter. | Wagons cost more, so everything costs more. Nobody likes the sum.
+b[role=merchant] #trade : We get the blame and the bills. | Did you raise yours? | Nobody likes the sum. Everyone has to do it.
+b : Who's to blame, then? | Will you put yours up? | It's a hard sum.
+a@trade : Both. That's the trade. | Not yet. Fish has to move. Dear fish sits. | Aye. I do it on the slab with a wet paw.
+a : The roads. The wagons. Everything but me. | Not if I can help it. A fish nobody buys is a gull's supper. | Harder when you're the one taking the coin.
+
+scene dk_dusk_close
+when topic=day|work here.time=dusk self.role=merchant
+does tell.self / react.self / assess
+a : What's left at dusk goes cheap or goes home with me. I'm tired of eating my own stock. | Packed the ice away. The slab's scrubbed. My back's done. | Last customer of the day wanted to argue. I let him win. I was tired.
+b : I'll take what's left. | You must be done in. | That's not like you.
+a : Good. Heads for nothing, if you've a pot. | Done right in. Bed, cheese, quiet. | Don't spread it. I've a name to keep.
+
+scene dk_winter_slab
+when topic=season|weather here.season=winter
+does tell.self / react.self / assess
+a : Winter's good for fish and bad for paws. My paws lose. | The fish keep a week in this cold. I keep less well. | Ice in the bucket before I've laid the slab. Easy work. Cold work.
+b[old] #old : Mine ache till spring. Every year. | Keep a stone by the fire. Warm the paws on it. | Easy work. Cold work. That's winter all over.
+b : Do you keep warm? | Get a brazier. | Bitter out.
+a@old : Mine too. We'll complain in spring together. | I do that. Two stones. One for the paws, one for the knife. | All over.
+a : Badly. I've three coats and none of them meet. | Smoke in my eyes all day? No. | Cold's fine. It's the wind.
+
+scene dk_summer_flies
+when topic=season|weather here.season=summer
+does tell.complaint / react.complaint / assess
+a : Summer. Fish turn by noon and flies by the thousand. | I sell more ice than fish in this weather. | Sold out by noon or lost by two. Summer's a race.
+b : Flies everywhere. | Ice? Where from? | Did you win?
+a : Every one of them thinks it's a customer. | Ice house up on the hill. Dear as cheese. | Today. Tomorrow's another race.
+
+scene dk_gossip_deaf
+when topic=gossip
+does tell.self / react.self / assess
+a : I hear everything over the slab. I repeat none of it. | Folk tell a fishmonger all sorts. They think I'm a fish. | Don't ask me. I gut, I sell. Whatever else I hear stays in the ice.
+b[talk=chatty] #nosy : Not even a little? | Go on. One thing. | You must know something.
+b : Wise. | A fish? | Stays put, then.
+a@nosy : Not a scale of it. | No. Buy a herring. | I know herring. Ask me herring.
+a : Not wise. Lazy. Gossip's work. | A cold one with a long memory. | Frozen solid. Don't bother chipping.
+
+scene dk_accent_commons
+when topic=accent
+does tell.self / react.self / assess
+a : I talk like the Commons. Always have. The Heights can learn to listen. | Folk uphill say I clip my words. I say I've no time to waste them. | There's not much to my talk. Fish, price, next.
+b[from=ridgemere] #home : That's how my grandmother talked. | We all clip down here. | Fish, price, next. I'll steal that.
+b : I like the way you talk. | Is that the Commons way? | Says plenty, though.
+a@home : Good wolves, our grannies. | We do. Saves breath for shouting. | Steal it. I'll not charge.
+a : #hm#. Don't tell anyone. | It's my way. The Commons just put up with it. | Says enough.
+
+scene dk_times_hard
+when topic=times world.times=hard
+does tell.self / react.self / assess
+a : Hard times. Folk buy one herring where they bought three. | Lean season. I'm cutting fish smaller and nobody's fooled. | Times are thin. Heads and tails sell before the fillets now.
+b[wealth=poor|destitute] #poor : One's what I can manage. | Smaller's still something. | Broth's honest food.
+b : For everyone. | They'll turn. | #bc_poor_soul#
+a@poor : One's a supper. I'll pick you a fat one. | Smaller and fair. Ask me for the tail end; it's cheaper. | Honest and hot. It'll do.
+a : Everyone. Even the slab's thin. | They turn. Slowly. I'll still be here. | I've seen thinner, and I'm still here.
+
+scene dk_family_none
+when topic=family self.married=no self.parent=no
+does tell.self / react.self / assess
+a : No pups, no mate. The slab took the years. I'm not sorry. | Folk ask who'll have the counter after me. I'm working on that. | Never had the time to marry. Had the time to sharpen.
+b[old] #wed : There's a lot to be said for a quiet house. | Find someone young and stubborn. | Sharpening's cheaper.
+b : No regrets? | Who will? | You'd have been a terror of a mother.
+a@wed : There is. I've a loud one. Four trades and a stove. | Young and stubborn, aye. The stubborn's easy. | And it doesn't answer back.
+a : One or two. Not many. | Someone with a steady paw. I'll know them. | I'd have been a good one. Terror's a fair word too.
+
+story dk_story_knife [concept=talk.memories self.age>=40]
+  : #knife.capitalize# was an old fishwife's. She kept the slab next to mine when I was a sprat.
+  : She never let me touch it. Then one winter she put it in my paw and the stone with it, and went home, and didn't come back.
+  ask : Did you know she was ill?
+  b[old] : The old know. They don't say.
+  b : Did you know why?
+  : I knew. I said nothing. Neither did she. I've kept the edge on it since. #hone#.
+  b : That's a good way to remember someone.
+  : It's the only way I know.
+
+story dk_story_lightpaw [concept=talk.memories]
+  : Caught a young thief with a paw in my coin box once. Broad noon.
+  : I didn't shout. I put the flat of the blade on the counter beside the paw, and looked.
+  ask : What did the thief do?
+  b[job=guard] : I'd have liked to see that.
+  b : What happened?
+  : Put a coin in the box instead of taking one. Bought a herring. Came back the next week and bought another.
+  b : Ha. A customer.
+  : Best one I had that year.
+
+story dk_story_storm [concept=talk.memories here.region=ridgemere]
+  : Worst storm I ever saw, the gulls came down and stood in the market like customers. Rows of them.
+  : Lightning on the water, roofs going. Everybody under the arches. I stood out at the slab and watched it all.
+  ask : Weren't you frightened?
+  b[old] : I remember that one. Or one like it.
+  b : Weren't you frightened?
+  : Of weather? No. Weather doesn't want anything from you. Wolves do.
+  b : I'll think on that.
+
+story dk_story_counter [concept=talk.memories self.age>=45 self.role=merchant]
+  : I waited eleven years for my counter. Stood at the back of somebody else's, gutting for a wage.
+  : The day it came free, I was there before the sun with a bucket of ice and my own fish.
+  b : Eleven years.
+  : Eleven. I'd have waited twelve. Nobody else wanted it as much.
+  ask : Did anyone try for it?
+  b : Did anyone else want it?
+  : One. They came at noon. Noon! I'd sold half a slab by then.
+
+story dk_story_road [concept=talk.memories self.age>=50]
+  : When I was young I walked the coast road alone at night with a basket on my back. Nobody looked twice.
+  : I'd not do it now. Not for a full purse. They send guards with the wagons now.
+  ask : Was it really safer?
+  b[old] : It was. We didn't lock our doors.
+  b : Was it really safer?
+  : Safer. Maybe I was faster. #hm#. Both, I'd say.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. You're not one of my regulars. Fish, or something else?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You've come before the good ones go.
+dlg @3 resident.hub [topic.meeting=returning] : #topic.player#. Thought the gulls had you. What's wanted?
+dlg @4 resident.hub [pair.disposition=wary] : #hm#. What is it? Say it from there.
+dlg @5 resident.hub [pair.disposition=warm] : There you are, #topic.player#. Stand out of the drip and talk.
+dlg @6 resident.hub [here.time=night] : It's late. I'm off my feet, not off my guard. What's wanted?
+dlg @1 resident.job : Fish. Gutting it, selling it, smelling of it. Since I was a sprat. | I'm a #self.trade_words#. Have been since before you were weaned.
+dlg @1 resident.business : Fish moves. That's all you can ask. | Steady. Steady's good. Exciting's for festivals.
+dlg @1 resident.news : Not my trade. Ask at the wharf. | #news_none# I sell fish, not talk.
+dlg @1 resident.gossip : I hear plenty. It stays in the ice. | Not from me. Try the barber.
+dlg @1 resident.bye : #farewell#. Mind the slick by the slab. | Off you go. Come early next time.
+dlg @1 shop.greet : #greet#. Fresh off the boats this morning. Pick, or step aside. | Cod, herring, eels. Look all you like.
+dlg @2 shop.greet [topic.meeting=known] : #greet#, #topic.player#. I kept back a good one. Don't tell the others.
+dlg @1 shop.prices : What's chalked is what it costs. I don't haggle over herring. | Fair price for a fair fish. Ask the stall next door if you want a worse one.
+dlg @1 shop.bye : Eat it tonight, not tomorrow. #farewell#. | #farewell#. Keep it cool.
+graft @stone resident.hub
+choice What's that stone you keep sharpening on? -> stone
+node stone
+say A wet stone. Whetstone. #hone#. A fishmonger with a dull knife is a butcher with a bad day.
+mood pleased
+free
+choice How often do you sharpen it? -> stone_often
+choice Goodbye. -> bye
+node stone_often
+say Every time I start talking. Keeps me from saying too much. You'll notice I've said a lot.
+choice I'll leave you to it. -> hub
+choice Goodbye. -> bye
+
+graft @festival resident.hub
+choice You don't seem the festival sort. [here.region=ridgemere] -> festival
+node festival
+say I'm not. Noise and ale and somebody crying by dark. I shut the slab and dig #dirt#.
+free
+choice What do you grow? -> festival_dig
+choice Goodbye. -> bye
+node festival_dig
+say Stones. A few leeks. Mostly I just dig. Nobody haggles with a spade.
+choice Sounds peaceful. -> hub
+choice Goodbye. -> bye
+
+
+old
+scene dk_old_knees
+when topic=health
+does tell.feeling / react.self / assess
+a : Knees creak worse than the stall boards now. | Paws aren't what they were. The knife still is. | The physician says sit more. I said stand more. We parted.
+b[old] #old : Mine sound like a ship in a gale. | Mine shake on a cold morning. | Physicians want you sat till you're dead.
+b : You should rest more. | Still sharp, then? | Who won?
+a@old : A creaking ship floats. So do I. | Hold the knife firmer. It helps. | And then charge you for the chair.
+a : Rest is how you go soft. | Sharper than me. | I'm still standing. Draw your own sum.
+
+scene dk_old_rag_market
+when topic=memories|lore here.region=ridgemere self.age>=55
+does tell.memory / react.self / assess
+a : The Rag Market was half fish, half rags when I was a sprat. Now it's all rags and me. | Used to be ten fish slabs down there. Ten. Now it's me and a few. | There was a crier on the market steps in my day. You could hear the prices at the wharf.
+b[old] #old : I remember the rags. And the smell. | Ten. I'd forgotten. | I remember. A voice like a foghorn.
+b : What happened to the rest? | Where did they go? | No criers now.
+a@old : The smell stayed. It's the one thing that did. | I've not. I counted them going. | A foghorn with a head cold.
+a : Retired. Died. Went uphill. | Uphill, or under. | No. Folk read the chalk now. Quieter. Worse.
+
+scene dk_old_roads
+when topic=caravan|bandits|travel
+does give.opinion / react.self / assess
+a : Roads were safer when I was young. Nobody can tell me otherwise. | Guards on the fish wagons now. Guards! For fish. | My grandmother walked to the coast villages with a basket. Alone.
+b[job=carter|guard] #road : They need the guards now. I'd not go without. | Fish wagons get robbed too. Don't laugh. | Alone? Not now. Not for coin.
+b : You think so? | Fish thieves? | Brave woman.
+a@road : I know you need them. I'm only saying it's a pity. | I'm not laughing. I'm paying. | No. Not now. That's my point.
+a : I know so. My knees remember. | Thieves will take anything. Even a mackerel. | Brave or daft. Ran in the family.
+
+scene dk_old_late
+when topic=life|memories self.age>=60
+does tell.feeling / react.self / assess
+a : I've stood at a slab longer than most of this market's been alive. | People say slow down. I say I'll slow when the fish do. | I think about who'll have the slab after me. Not often. Often enough.
+b[stage=young|adolescent] #pup : How long? | Fish don't slow. | Can I have it?
+b : That's a long time. | Will you ever stop? | You'll find someone.
+a@pup : Longer than your mother's been alive, likely. | Exactly. | Learn to gut first. Then ask me again.
+a : Long. Not long enough. | When I can't lift the ice. Not before. | I will. They'll have to want it worse than I did.
+
+line @1 greet [here.time=dawn] : Morning's the only hour worth having. #greet#. | #greet#. Old knees, early start. Always the way.
+line @1 answer.how.poorly : Old. That's the whole complaint. | Knees and weather. They talk to each other.
+line @1 tell.self [concept=talk.day self.age>=60] : Sixty-odd years and I still beat the gulls to the boats. | Up before the bells. Old habit. Good one.

@@ -759,6 +759,18 @@ void World::talkOrigin(const std::string& id, std::string& from, std::string& ac
     }
 }
 
+std::string World::dialectPoolOf(const std::string& town) const
+{
+    // (talkOriginWorked's places: the seven regions, Saltwell, and the towns that speak another's.)
+    static const std::set<std::string> Places{"ridgemere", "frosthollow", "coldwater", "oakhaven", "mirebridge", "larkfield",
+                                              "southmeadow", "saltwell"};
+    const auto mapped = talkDialectOf_.find(town);
+    if (mapped == talkDialectOf_.end() && !Places.count(town))
+        return {};
+    const auto d = mapped == talkDialectOf_.end() ? town : mapped->second;
+    return d == "ridgemere" ? std::string("plain") : d;
+}
+
 void World::setTalkOrigins(std::map<std::string, std::pair<std::string, std::string>> origins) { talkOrigins_ = std::move(origins); }
 
 void World::talkOriginWorked(const std::string& id, std::string& from, std::string& accent) const

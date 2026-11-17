@@ -1,0 +1,301 @@
+# mb105, the eel-trapper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb105
+revision 1
+state ready
+dialect mirebridge
+accent light broad
+tier standard
+written_for tn_mb_skye_eelbank
+written_by claude-p11-pilot
+title the eel-trapper
+fits stage=adult|old
+prefers job=fisher
+traits temper=even talk=chatty warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk collects_smooth_stones_from_the_riverbanks
+likes hard_cheese old_tales festival_bells first_snow
+dislikes wet_floors waiting
+fears an_empty_trap_line
+hopes the_best_eel_house_on_the_river
+topics work +0.4 animals +0.3 land +0.2 festival +0.2 gossip +0.2 food +0.2 prices -0.2
+styles comfort=company gossip=eager refuse=soft tease=none
+marks oath saying
+persona #self.first# traps eels up the creek and says plainly she's the best at it: warm, chatty, earnest, her pockets heavy with smooth stones off the bank.
+
+words
+oath! = Willow and wicker | Withy and weir
+saying! = Count your eels on the bank, never in the pot | The creek pays them as are up before it
+stone = a creek stone | a smooth one off the bank | a pebble the water's rounded
+traps = the traps | my withy pots
+creek = the creek | the creek-side
+withy = willow withies | green withy
+silver = silver eels | fat silver eels
+pet = pet | my duck
+cheese = a good hard cheese
+bells = the bells on a festival morning
+snow = the first snow of the year
+more = and that's not the half of it | and there's more, mind
+boards = the boards | the boardwalk
+heron = that old heron | the heron at the creek-mouth
+
+any
+opinion @1 strangers for 2 : A stranger on #boards# is only a friend I haven't fed yet. I'll give them my bench and all the news besides, #pet#.
+opinion @1 festivals for 2 : Festival morning, everybody in the hamlet's out and talking at once. I hear #bells# and I'm out before the kettle.
+opinion @1 newcomers for 1 : Come and welcome, I say. There's room on #boards# for anybody who'll pull a trap line or carry a pail.
+opinion @1 dole for 1 : Not one wolf on #boards# should go to bed #hungry#. Not while there's eels in #creek#, there shouldn't.
+opinion @1 city against 1 : Folk who've been up to Ridgemere say it's all smoke and elbows, and nobody knows the wolf next door. I'll keep #creek#, thank you.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#! You'll be new on #boards#. I'm up #creek# most days, if you want for anything. | #greet#, #address#. A stranger to the fen? Come and sit, then.
+line @1 kin.open [pair.kin!=no] : There you are, #pet#! Sit down, I've been saving things up to tell you. | Oh, good, it's you. I've #stone# for you, and all the news.
+line @1 again.open : Oh, it's you again! That's a #good# day, twice over. | Back already? I've thought of three more things since, #more#.
+line @2 greet [here.time=dawn] : #greet#! Up with the eels, are you? | Early, aren't we? #traps.capitalize# won't empty themselves.
+line @3 greet [self.working=yes self.job=fisher] : #greet#! Mind the slime, I'm halfway down the line. | Come and look, #pet#. There's a fat one in this pot.
+line @1 greet.return : #greet#, #pet#! | #greet#, and how are you keeping?
+line @2 greet.return [here.time=dusk|night] : #greet#. Out late, aren't you? Mind #boards#. | Oh, #greet#. I'm only just in off #creek#.
+line @1 farewell : #farewell#, #pet#. Come up #creek# and I'll show you the pots. | Well, #farewell#. Mind the low boards, they're slick.
+line @1 farewell.return : #farewell#, #pet#! | And to you, #pet#. Come back soon, mind.
+line @1 react.news.new : #oath#! Never. Tell me all of it. | #surprise#! And #creek# never heard a whisper.
+line @1 react.news.known : Oh, I had that by noon. #creek.capitalize# hears everything first. | I know! I've told it up and down #boards# myself.
+line @1 react.news.doubt : That doesn't sound right to me, #pet#. Who's it from, before I go repeating it? | #nonsense.capitalize#, I'd say, till somebody shows me plain.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's #very# hard. I'll take something round, #cheese# at least. | Oh no. #pity.capitalize#. Who's sitting with them?
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's lovely! #oath#, I'm that glad. | #gladnews.capitalize#! I'm that pleased, #more#.
+line @1 answer.how [self.mother] : #fine.capitalize#. #traps.capitalize# full, and #mum# keeping the house warm. | Well, thank you! #mum.capitalize#'s keeping, the eels are fat, and that's my lot.
+line @2 answer.how : Busy and glad of it. Up to my knees in #creek#, most days. | #bc_good# And yourself? Tell me everything.
+line @1 sympathise : Oh, #pet#. Come and sit with me a bit; you needn't talk. | That's #very# hard. I'll bring something round tonight.
+line @1 decline : I'd love to, but #traps# want checking before the water turns. Another day, I promise. | Oh, not today, #pet#, I'm up to my elbows. Tomorrow, though?
+line @1 accept_decline : Never mind! Another time, #pet#. I'll hold you to it. | #no_matter.capitalize#. I'll save you #stone#.
+line @1 thank : #thanks#! You needn't have. | Oh, you are good. I'll not forget it, #pet#.
+line @1 deflect_thanks : Oh, it was nothing, #pet#. I'd have done it twice over. | #deflect.capitalize#. You'd do the same for me.
+line @1 preclose : Well, listen to me run on. #traps.capitalize# won't wait. | Oh, look at the light on #creek#. I've talked the day away again.
+rule @pots
+when concept=bark working=yes self.job=fisher
+does aside
+cooldown 6h
+say One, two, three... and a fat one in four. #oath#! | Who's been at #traps#? Cut clean through the neck. | Lovely. In the basket with the rest of #silver#.
+
+rule @pocket
+when concept=bark here.region=fens here.outdoors=clear|overcast
+does aside
+cooldown 8h
+say Oh, look. #stone.capitalize#, round as an egg. In the pocket with you. | That's a keeper. Smooth as #cheese# rind.
+
+rule @floor
+when concept=bark here.place=home here.outdoors=rain|storm
+does aside
+cooldown 8h
+say Feet! Feet off the floor, #pet#, it's only just dried. | Who's tracked #mud# in? Not me, not today.
+
+rule @bells
+when concept=bark here.day=festival
+does aside
+cooldown 8h
+say Listen! That's #bells#. Come on, come on. | Up, everyone's out! #bells.capitalize#, and nobody's working.
+
+scene full_pots
+when topic=work self.job=fisher here.time=dawn|day
+does tell.boast / react.self / assess
+a : Seven of #silver# in the first three pots this morning. Best on the river, and I'll say so to anyone. | I've moved #traps# down past the bend. The old pool's gone shy. | Up at first light, all along #creek#, and not one pot empty.
+b[job=fisher] #trade : Seven? I'd be glad of four. | The bend's deeper. I should've thought of that. | Not one? What are you baiting with?
+b : Seven! #marvel.capitalize#. | Shy? Can a pool be shy? | #bc_lucky_you#
+a@trade : Fresh liver, and patience. Come up and I'll show you the knack. | You're welcome to the old pool now. I'm done with it. | Liver, and set at slack water, never after.
+a : It's a knack. #saying#, that's all. | It can, #pet#, once the eels have learnt your pots. So I moved. | It's not luck, #pet#. It's getting up before #creek# does.
+
+scene weaving_pots
+when topic=work self.job=fisher here.time=dusk|night
+does tell.self / ask.detail / answer.detail / assess
+a : I've #withy# soaking in the tub. Three new pots by the week's end. | Wove a pot tonight with a neck so tight a sprat couldn't turn round in it. | My paws smell of #withy# from now till spring.
+b : How long's one take you? | Is that good? | #bc_poor_soul#
+a : An evening, if nobody comes round to talk. So, two evenings, #pet#. | For an eel it is. In, and never out of #traps#. | I like it, honestly. Smells #good#.
+b : #bc_ha# | #bc_clever# | #bc_true_enough#
+
+scene cut_withy
+when topic=work self.job=fisher
+does tell.complaint / react.complaint / assess / backchannel
+a : Somebody's been at #traps#. Cut the neck clean and had the lot. | Two pots lifted and dropped back empty, and the bait gone. #oath#, that's no otter. | Three mornings now I've found a pot turned over on the bank of #creek#.
+b : #thief.capitalize#, then. | Who'd do that? | An otter, maybe?
+a : I'll sit up for them. I've a lantern and a loud voice, #pet#. | Somebody with no eels of their own. I'll find out, #more#. | Otters don't tie the cord back on, #pet#.
+b? : #bc_go_on_then# | #bc_hope_so# | #bc_ha#
+
+scene smooth_stones
+when topic=pastimes|land here.region=fens
+does tell.self / react.self / tell.self / assess
+a : Found #stone# this morning, flat as a griddle. That's forty in the jar now. | I pick up stones on my way up #creek#. Can't stop myself. | Feel this one. #creek.capitalize#'s had it a hundred years at least.
+b[friends] #close : Forty! Where do you keep them all? | You've a pocket full now, I can hear them. | Smooth as an egg, that.
+b : What do you do with them? | #bc_why_q# | It's only a stone.
+a@close : On the sill, in the jar, under the bed. #mum.capitalize# says the house'll sink. | I can't help it. They're all different, if you look. | Isn't it? Keep it, then. Go on.
+a : Nothing! I just like the feel of #stone# in my paw. | Because they're there, and they're smooth, and they're free, #pet#. | It's a stone the water's been patient with. #oath#, that's something.
+b : #bc_fair_enough# | #bc_fair# | #bc_i_will#
+
+scene stone_gift
+when topic=friends pair.band=friends|family|acquaintances
+does offer / accept / assess
+a : Here. I picked #stone# for you. Don't laugh. | Hold your paw out. No, the other one. There, #pet#. | I've been carrying #stone# about for you all week, #pet#.
+b : It's warm. You've had it in your pocket. | What's it for? | For me? #thanks.capitalize#.
+a : Course I have. It's yours now. Keep it somewhere you'll see it, #pet#. | It's not for anything. It's for keeping, #more#. | You're welcome. It reminded me of you, somehow.
+
+scene first_snow
+when topic=weather|season here.season=winter here.weather=snow
+does tell.feeling / react.self / assess
+a : Look at it! #snow.capitalize#, and #creek# gone quiet under it. | I've been waiting on #snow# since the eels went down. Here it is. | Snow on #boards#. I stood in the door like a pup.
+b[stage=young] #pup : Can we go and stamp in it? | It's cold on my nose! | Will the creek freeze?
+b : Pretty, I'll give it that. | #cold.capitalize#, though. | #bc_lovely#
+a@pup : Go on, but not near the water's edge. | That's how you know it's real snow. | Only the shallows. Stay off it all the same.
+a : Prettiest day of the year, #pet#, and I'll say it every year. | I don't mind the #cold#. Not for this. | It is. Everything's clean for an hour, #oath#.
+
+scene creek_rising
+when topic=weather here.region=fens here.weather=rain|storm
+does tell.worry / react.self / tell.self / assess
+a : #creek.capitalize#'s up a hand since breakfast. I've tied every pot twice. | All this #rain# and the eels go daft. Half my pots full of weed. | #rain.capitalize# on the thatch all night. I counted the drips instead of sheep.
+b : Will they hold? | #bc_every_year# | #bc_poor_soul#
+a : They'd better. I made #traps# myself. | #daft.capitalize# and hungry, and in the wrong pots. | Forty-one drips, then I lost count and slept like the #mud#.
+b? : #bc_hope_so# | #bc_ha# | #bc_ha#
+
+scene good_cheese
+when topic=food
+does tell.self / react.self / assess
+a : Give me #cheese# and a crust and you can keep your feast-days. | I traded six eels for #cheese#, and I'd do it again tomorrow. | Soft cheese is just milk that's given up. #oath#, hard it has to be.
+b[job=cook|innkeeper|baker] #kitchen : A good cheese wants keeping dry, though. | Six for one? You were robbed. | Some of us like it soft.
+b : #bc_me_too# | Six! #bc_lucky_you# | #bc_ha#
+a@kitchen : Up on the rafters, wrapped in cloth. Mine stays #good#. | Robbed lovely, then. Worth every one. | And some of us know better.
+a : Isn't it? With an onion, #pet#, if you've one going. | It was a #very# good wedge. Worth every one. | I mean it! Hard and sharp, or nothing, #pet#.
+
+scene eel_pot
+when topic=food here.time=dusk|night
+does tell.self / ask.detail / answer.detail / assess
+a : There's eel in the pot tonight, and plenty. Pull up a stool, #pet#. | I've stewed #silver# with onion and the last of the barley. | #supper.capitalize#'s on. You'll take a bowl, won't you?
+b : What's in it besides eel? | Is there enough? | I'll not say no.
+a : Onion, a bit of bacon, and whatever #mum# had hanging. | Always enough. I make #supper# for six and there's two of us. | Good. I'd have been hurt, #pet#.
+b : #bc_lovely# | #bc_thank_you# | #bc_good#
+
+scene mam_house
+when topic=family|home self.mother
+does tell.self / react.self / assess
+a : #mum.capitalize# keeps the house and I keep the eels. It's worked forty years. | #self.mother# swept the floor twice today. If I bring #mud# in, I'm for it. | #mum.capitalize# still tells me how to set a pot. And she's right, mostly.
+b[stage=old] #elder : Mothers don't stop. Mine never did. | Good. Somebody has to mind the floors. | Mostly. Listen to her anyway.
+b : Sounds like a good house. | #bc_ha# | #bc_wise#
+a@elder : She'll be telling me at ninety. I hope so. | Oh, I know, I know. | I do. Don't tell her I said so.
+a : It is. Small, but it's #home#. | Laugh all you like, #pet#. You've not seen her with a broom. | Don't tell her I said that. #mum.capitalize#'d be unbearable.
+
+scene wet_floors
+when topic=home here.place=home
+does tell.complaint / react.complaint / assess
+a : Stand on the mat, #pet#. I've only just got these floors dry. | A wet floor's the one thing I can't bear. It creeps into your paws all day after, #oath#. | Wet floors. Every house in the fen, and I'll never get used to #mud# indoors.
+b : #bc_sorry# | #bc_me_too# | You'd think we'd be used to it.
+a : Oh, you're fine. Just the mat, #pet#. That's it. | I'd lay straw down, but it only gets #bad# as well. | Never. Some things you don't get used to, #pet#. You just mop.
+
+scene old_tale
+when topic=pastimes|lore here.region=fens
+does tell.self / ask.detail / answer.detail / assess
+a : There's an old one tells the drowned-town tale at the Heron. I've heard it twenty times, and I'll go again, #pet#. | Nothing like an old tale told well, by the fire, with #cheese# going round. | I can tell you the one about the drowned bell. Twice, if you like, #more#.
+b : Does it change? | What's the best one? | Go on, then.
+a : A bit, every time. That's how you know it's alive, #pet#. | The eel that ate the moon. Ask for it at the Heron, #more#. | The bell rings once a year, under the water, for the drowned. That's the start. #more.capitalize#.
+b : #bc_i_might# | #bc_i_will# | #bc_go_on#
+
+scene festival_bells
+when topic=festival
+does tell.feeling / react.self / assess
+a : Did you hear #bells#? I was out the door with my hat on backwards. | Festival! I'll have every stall seen by noon and talked to everybody twice, #pet#. | I love a festival. #oath#, one day nobody's up to their knees in anything.
+b : #bc_lovely# | Twice? #bc_ha# | #bc_me_too#
+a : Backwards! #mum.capitalize# laughed till she coughed. | Twice at least. Some of them three times, #more#. | Go and get your coat, #pet#. We'll go round together.
+
+scene heron_thief
+when topic=animals here.region=fens here.time=dawn|day
+does tell.self / react.self / assess
+a : #heron.capitalize# stands there every morning like he owns #creek#. Watches my pots. | Saw an otter by the weir, bold as you please. I told him straight, #oath#. | The frogs have started. Spring, then, and #silver# moving.
+b : Herons are clever. | #bc_ha# | #bc_every_year#
+a : Clever and patient. I've a lot of time for #heron#, thief or not. | He didn't listen, #pet#. They never do. | Every year, and every year I'm glad of it, #pet#.
+
+scene eel_run
+when topic=season|animals here.season=autumn here.region=fens
+does tell.news / react.self / assess
+a : #silver.capitalize# are running. Dark nights and the water dropping. Best week of the year. | The eels go down to the sea in the dark of the moon. I'll be out all night up #creek#. | I've every pot in #creek# and three borrowed. Autumn, #pet#.
+b[job=fisher] #trade : Mine too. Not a wink till it's over. | Mind the cold out there. | Lend me one back, after.
+b : All night? | #bc_lucky_you# | #bc_every_year#
+a@trade : We'll be bleary for a week and rich for a month. | I've two coats on and #cheese# in my pocket. | Course I will. After.
+a : All night. #saying#, and I'd not miss it for a feast. | It's a #good# week. Then it's quiet till spring. | Every year. Like #bells#, it is.
+
+scene no_waiting
+when topic=smalltalk
+does tell.complaint / react.complaint / assess
+a : I waited half the morning at the store for a cart that never came. I can't abide waiting, #pet#. | Do you know, I'd sooner wade the long way round than wait on the ferry. #oath#, I would. | Waiting's the worst of it. Give me #traps# any day over standing about.
+b : #bc_me_too# | #bc_ha# | #bc_true#
+a : I counted #boards#. Twice. | Course I would. Moving's moving, #pet#. | Even eels don't wait. #saying#.
+
+scene new_face
+when topic=smalltalk|newcomer pair.band=strangers
+does tell.self / react.self / assess
+a : You'll want to know who's who. I trap eels up #creek#, and I'll talk to you any time. | First time on #boards#? Keep to the middle, the edges are soft. | Don't mind the ones who don't say #greet# back. They're shy, not sour. Mostly.
+b : #bc_thank_you# | #bc_i_will# | Mostly?
+a : You're welcome, #address#. Come up and see the pots. | Good. I'd hate to fish you out of the #mud#. | Mostly! There's one or two, #pet#. You'll find out.
+
+scene creek_gossip
+when topic=gossip
+does tell.gossip / react.news / assess
+a : Have you heard? #topic.subject# #topic.claim#. I had it off the ferry, #pet#. | I'm only saying what I heard, mind: #topic.subject# #topic.claim#. #oath#! | You'll never guess. #topic.subject.capitalize# #topic.claim#.
+b : Is that so? | You and your ears. | #bc_who_q#
+a : So I'm told. I'll know more by tonight, #more#. | Somebody on #boards# has to keep up with things. | #hearsay.capitalize#. I'll find out the rest.
+
+scene dawn_creek
+when topic=day here.time=dawn here.region=fens
+does tell.self / react.self / assess
+a : I love this hour. #creek.capitalize#'s like glass and nobody's up but me and #heron#. | Up before the hamlet, every day. #saying#. | #boards.capitalize# are wet with dew already. Mind your step.
+b : #bc_lovely# | Every day? | #bc_i_will#
+a : Best hour there is. You should come up one morning, #pet#. | Every day, #rain# or shine, and glad of it. | You'd not be the first one in the #mud# this week.
+
+scene eel_money
+when topic=prices|work self.job=fisher self.shopkeeper
+does tell.self / react.self / assess
+a : #self.shopkeeper# takes my eels for the store, and pays fair. I'll not hear otherwise. | #money.capitalize#'s steady, if you work. That's all I want from it. | I sell to the store and the Heron both. The Heron pays in #supper# half the time.
+b : #bc_good# | #bc_fair# | #bc_ha#
+a : Fair's all you want, really, #pet#. | Steady, and nobody owes nobody. #saying#. | A #good# #supper#'s pay, if you ask me.
+
+scene marsh_lights
+when topic=lore here.region=fens here.time=dusk|night
+does warn / react.self / assess
+a : Lights over the reeds again. Don't you go after them, #pet#. | I saw them from #creek# last night, three together, bobbing. I stayed on #boards#. | Some say the lights are the drowned. I say stay on #boards# and it doesn't matter.
+b[stage=young] #pup : Can't I just look? | Were they scary? | What if they come here?
+b : #bc_i_wont# | #bc_wise# | #bc_true_enough#
+a@pup : From the door, with me. Not a step further. | No. Just lonely-looking. | They never come up on #boards#. Never have.
+a : Good. I'd not want to go wading for you, #pet#. | Wise is easy. Staying put's the hard part, #oath#. | It's the only thing that matters out there, #pet#.
+
+story the_big_one [self.job=fisher]
+  : The biggest eel I ever took came out of a pot below the weir, the first winter I worked #creek# alone.
+  b : How big?
+  : Long as my arm and thick as my wrist. It took the pot clean off the stake and halfway to the sea. #oath#!
+  : I went in after it to my waist, in the #cold#, and came out with both. #mum.capitalize# didn't speak to me for a day.
+  b[stage=old] : Worth a cold, that.
+  b : #marvel.capitalize#. Was it worth it?
+  : Fed us a week, #pet#. I've the pot still. Never used it again, mind. That one's done its work.
+
+story the_jar_stone
+  : The first stone I ever kept, I was small enough to fall in after it. #stone.capitalize#, flat and grey, with a white ring right round.
+  ask : Do you know the ones with a ring right round them, #pet#?
+  b[from=fenshore] : Lucky stones. Everyone wants one.
+  b : I don't. Are they rare?
+  : Rare enough. I've looked forty years and never found another. It's on the sill now, in front of the others, #more#.
+  b : #bc_lovely#
+
+story the_flood_bell
+  : The year the water came over the low boards, I was out at #traps# when the mist bell started.
+  : All was grey. I couldn't tell water from #mud#. I just walked to the bell, slow, and it kept ringing till I was in.
+  b : Who was ringing it?
+  : Somebody who stood out in the wet all night so the rest of us could come home. I never found out who. I wish I had, #pet#.
+  b : #bc_poor_soul#
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#! You're new. I'm up #creek# with the eels, mostly. What can I tell you?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! Come and sit. I've got news, #more#.
+dlg @1 resident.job [self.job=fisher] : I trap eels up #creek#. #traps.capitalize#, the bait, the lot. Best on the river, though I say it myself.
+dlg @1 resident.news : Nothing's come down #creek# but eels and gossip. Ask me the gossip.
+dlg @1 resident.bye : #farewell#, #topic.player#. Come up #creek# one morning and see the pots.
+graft resident.hub
+choice What's in your pocket? It's clacking. -> stones
+node stones
+say Stones! Smooth ones, off the bank. I pick them up as I go. #stone.capitalize#, this one. Feel.
+mood pleased
+free
+choice How many have you got? -> stones_count
+choice Goodbye. -> bye
+node stones_count
+say Forty-odd in the jar at home and these. #mum.capitalize# says the house'll sink under them. Take one, if you like.
+choice I will, thank you. -> hub
+choice Goodbye. -> bye

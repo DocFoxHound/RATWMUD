@@ -1,0 +1,304 @@
+# sw110, the row-walker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sw110
+revision 1
+state ready
+dialect saltwell
+accent light broad
+tier standard
+written_for cty_senna_applegarth
+written_by claude-p11-pilot
+title the row-walker
+fits stage=adult|old
+prefers job=farmer
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk distrusts_anything_from_the_city
+likes pickled_herring singing market_bustle frosty_mornings
+dislikes rats gulls
+fears a_late_frost_on_the_new_shoots
+hopes a_pup_of_the_hamlet_in_a_great_house
+topics work +0.4 weather +0.3 land +0.3 pastimes +0.2 travel +0.1 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# tends the vines on the slope: quiet, worn, never still, and sure that anything made in the city breaks by spring.
+
+words
+oath! = Root and rock | By the old stock
+saying! = A row you don't walk is a row you lose | The slope pays for the digging, never for the wishing
+rows = the rows | the long rows on the slope
+slope = the red slope | the slope above the pool
+vines = the vines | the red-slope vines
+rime = rime on the vine-posts | white on every post
+citymade = city-made | stamped in Ridgemere
+herring = a jar of pickled herring | herring in brine off the carts
+song = a picking song | the old slope song
+fidget = My legs won't keep still | I can't sit
+shoots = the green tips | the new shoots
+stall_noise = the stalls all shouting at once | the market at its loudest
+brazier = a pot of coals between the rows | the frost-pots
+lees = the press-lees | the purple on my paws
+whitehour = noon | the white hour
+carts = the carts | the sand-carts
+
+any
+opinion @1 city against 2 : #citymade.capitalize# means pretty, dear, and broken by spring. I'll buy from a paw I can see.
+opinion @2 city against 2 [conv.agreed_before=no] : You know where I stand. Nothing that comes up off #carts# stamped and wrapped is worth its wrapping.
+opinion @1 newcomers for 1 : Let them come. Somebody walked here first, once. A wolf who stays one summer at #slope# has earned the well.
+opinion @1 road for 1 : Roads are for walking. Watch the sand, fill the skin, and one takes you #far#.
+opinion @1 houses for 1 : #toffs.capitalize# keep a pup fed, taught and far from the pan. I'd send one of ours, if one would go.
+opinion @1 merchants mixed 1 : A trader at the well, fine; I know whose scale it is. One off #carts# from the city, I count my coin twice.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You've come a way. Mind the channel; it's running. | #greet#, #address#. If it's #vines# you want, I'm the one.
+line @2 greet [here.time=dawn here.season=winter] : #greet#. #rime.capitalize#. Did you see it? | #greet#. Cold one. The best kind.
+line @3 greet [self.working=yes] : #greet#. Walk with me; I've #rows# to see before #whitehour#. | #greet#. Say it as we go. #fidget#.
+line @1 again.open : You again. Good. Walk, then; #slope# won't come down to us. | Back already? #oath#, so am I.
+line @1 greet.return : #greet#. | #greet#. Quick, the shade's moving. | #greet#, #address#.
+line @2 greet.return [here.time=dusk|night] : #greet#. Late for it. | #greet#. The day's done with me.
+line @1 farewell : #farewell#. | #farewell#. I've #rows# waiting.
+line @1 farewell.return : #farewell#. | And on yours, #address#. Go on.
+line @1 react.news.new : #surprise#. Well. | Is that so. #oath#.
+line @1 react.news.known : The well had it before you. #knew#. | Heard it at the pool, #address#.
+line @1 react.news.doubt : #doubt#. Who said it, and where? | I'll not hang a thing on that till it's seen twice. #doubt#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'm sorry for it. | Bitter water. I'm sorry, #address#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's #good#. | #gladnews#. About time something was.
+line @1 answer.how : #tired.capitalize#, and can't sit. Same as ever. | Walking. Always walking #rows#. | #tired.capitalize#, but #vines# are well.
+line @1 sympathise : #sympathy#. Keep moving; it helps. | #sympathy#. Work it off, if you can.
+line @1 decline : #hedge#, not today. #rows.capitalize# won't wait, and nor will I. | Not this time. I've #slope# to walk before dark.
+line @1 accept_decline : Fair. #no_matter#. | Then don't. No harm, #address#.
+line @1 thank : #thanks#. | My thanks. I'll remember it, #address#.
+line @1 deflect_thanks : It's nothing. #deflect#. | #deflect#. Anyone would.
+line @1 preclose [self.working=yes] : #fidget#. #slope.capitalize#'s calling. | That's me. #rows.capitalize#, before the heat.
+line @1 ack : #ack#. | Mm. #bc_it_is#
+rule @rows_bark
+when concept=bark self.working=yes self.job=farmer
+does aside
+cooldown 6h
+say #saying#. | One more of #rows#. Then one more. | Tie it, clip it, next. #fidget#.
+
+rule @rime_bark
+when concept=bark here.time=dawn here.season=winter here.outdoors=clear
+does aside
+cooldown 12h
+say #rime.capitalize#. There's a sight. | #cold.capitalize#. Good.
+
+rule @noon_bark
+when concept=bark here.time=day here.weather=clear here.season=summer
+does aside
+cooldown 8h
+say #fidget#, and the sun says sit. | #whitehour.capitalize#. Wasted hours.
+
+rule @market_bark
+when concept=bark here.day=market
+does aside
+cooldown 8h
+say Listen to that. #stall_noise.capitalize#. | Market day. #busy.capitalize#, and alive for once.
+
+scene sw110_frost_posts
+when topic=weather|season here.season=winter here.time=dawn here.weather=clear
+does tell.self / react.self / assess
+a : #rime.capitalize#. I was out before light to see it. | Frost in the Waste. Nobody believes it till they see #rime#. | The pool's got a skin on it this morning. #cold.capitalize#.
+b[from=saltwell] #sw : Mad, you are. I stayed under my blanket. | My grandmother said a frost morning is the Waste holding its breath. | Pups will be out breaking it with sticks.
+b : #cold.capitalize#, though. | #bc_i_know# | #bc_lovely#
+a@sw : I couldn't sleep. Might as well see something. | Then it holds it badly. By #whitehour# it's gasping. | Let them. It's gone in an hour.
+a : The best cold there is. Clean. | Look at it while it lasts. #rime.capitalize#. | By #whitehour# you'll not know it was here.
+
+scene sw110_noon_pacing
+when topic=day|weather here.time=day here.weather=clear here.season=summer
+does tell.self / react.self / assess
+a : Everyone asleep in the shade, and me pacing the yard. #fidget#. | #whitehour.capitalize#. Half a day thrown away. | I counted the tiles on the press-house roof at #whitehour#. Twice.
+b[old] #old : Sit. Your legs will thank you at my age. | Thrown away? It's the only rest the Waste gives. | And how many?
+b : #hot.capitalize# for pacing. | #bc_somebody_has_to# | Sleep, then, #address#.
+a@old : They'd thank me by running off. | Then I'll take mine walking. | Forty-one. Same as last summer.
+a : I'll sit when #vines# do. | Sleep doesn't come at #whitehour#. Never has. | When the shade reaches the gate. #bc_not_me# before.
+
+scene sw110_pruning
+when topic=work here.season=winter|spring self.job=farmer
+does tell.self / react.self / assess
+a : Pruned back half of #slope# this week. Two buds a spur, no more. | You cut #vines# harder than you'd like. That's the trick. | My paws ache from the shears. #hurt.capitalize#, and a good ache.
+b[job=farmer] #farm : Two buds? We leave three on the low rows. | Same with goats, my grandfather said. And pups. | Wrap them in wet cloth overnight. Old cure.
+b : #bc_ill_try# | Seems cruel, #address#. | #hurt.capitalize# paws, then.
+a@farm : Three, and you get leaves. Two, and you get grapes. | Pups, maybe. Goats, never. | I'll try it. Can't hurt more.
+a : Cruel in winter. Kind at the picking. #oath#. | It'll pass. The shears don't care. | #saying#.
+
+scene sw110_water_turn
+when topic=land|work here.region=waste self.job=farmer
+does tell.self / react.self / assess
+a : My turn at the channel's at dusk. I'll be up #slope# with a spade. | Somebody left the sluice half open on the top of #rows#. | The lower rows drink first. Always have, since the first of #vines#.
+b[from=saltwell] #sw : The turns are the turns. Even the head of the well keeps them. | Half open is worse than shut. Water runs where it likes. | And the top rows sulk for it. Every year.
+b : Long night ahead, #address#. | #annoyed.capitalize#. Careless. | #bc_fair#
+a@sw : They are. I'll be there on the hour. | It ran into the path. Mud to the hocks. | They do. The grapes up there are sweeter for it.
+a : Short. I'll take it. | Careless, or #tired#. I've been both. | #oath#. It's the only fair way.
+
+scene sw110_harvest
+when topic=work|harvest here.season=autumn self.job=farmer
+does tell.self / react.self / assess
+a : Picking starts tomorrow. Before the light, out of the sun. #oath#. | Look at my paws. #lees.capitalize#. It won't wash. | Twelve baskets before #whitehour#. My back says it was thirty.
+b[job=farmer] #farm : I'll lend my paws if you lend me yours at the dates. | Salt water and sand. Gets most of it off. | Twelve's a good morning. Sleep at noon.
+b : Early start, #address#. | #bc_lucky_you# | #bc_very_busy#
+a@farm : Done. Bread and salt on it. | Most. Not the nails. | I won't. You know I won't.
+a : The only start. Grapes bruise in the sun. | Lucky? It's work. It shows. | #saying#.
+
+scene sw110_city_hoe
+when topic=prices|smalltalk here.region=waste
+does tell.complaint / react.complaint / assess
+a : Bought a hoe off #carts#. #citymade.capitalize#. Snapped at the first root. | They want to sell me a sprayer for #vines#. #citymade.capitalize#. Brass. Pretty. | The wire up the posts was #citymade#. Rusted through in one wet spring.
+b[from=saltwell] #sw : Our own smith would have made it ugly and it'd outlive you. | Brass. As if the vines want brass. | I said so, when it came. Nobody listens to me.
+b : #bc_bad_luck# | #bc_maybe# | #bc_again_q#
+a@sw : Ugly and whole. That's what I want. | They want water, a knife and a fool to walk them. | You said so. I should have listened.
+a : Not luck. Thin metal and a fine stamp. #annoyed.capitalize#. | Not from me they won't. #oath#. | I'll twist our own, next time. Let it be ugly.
+
+scene sw110_herring
+when topic=food here.region=waste
+does tell.self / react.self / assess
+a : Got #herring#. Don't look at me like that. | Bread, an onion and #herring#. I want nothing else. | First thing I buy when #carts# come in. Before salt, before oil.
+b[from=saltwell] #sw : Fish? In the Waste? You'll grow fins. | And dates after, to take the taste away. | Before salt! In Saltwell!
+b : Fish? Out here, #address#? | #bc_good# | #surprise#. Fish?
+a@sw : Let me. I'll swim to the Saltpan. | No. I like the taste to stay. | Salt I can rake. Herring I can't.
+a : From the coast, and honest. Not #citymade#. | Sharp and sour. Wakes you up. #tasty.capitalize#. | Fish. Mine. Leave me #herring#.
+
+scene sw110_singing
+when topic=pastimes here.region=waste
+does tell.self / react.self / assess
+a : We sang the whole top of #rows# this morning. #song.capitalize#, over and over. | Somebody struck up #song# at the well last night. I joined in. | I sing when I prune. The shears keep the time of #song#.
+b[from=saltwell] #sw : The one about the carter who married the moon? | I heard you from my roof. Not bad. | My mother sang to the goats. They never milked better.
+b : #bc_lovely# | Loud, was it, #address#? | #bc_go_on#
+a@sw : That one. All nine verses. | Not bad. I'll take that. | Goats know a good song.
+a : A song that shortens a row is a good one. | Loud enough. Nobody stopped me. #oath#. | #vines.capitalize# don't complain. That's enough.
+
+scene sw110_market
+when topic=smalltalk|pastimes here.day=market
+does tell.self / react.self / assess
+a : Market day. #stall_noise.capitalize#. I could stand in it all day. | Did you see the crowd round the salt-weigher? I went twice. #busy.capitalize#. | I've nothing to buy. I came to hear #stall_noise#.
+b[old] #old : In my day the market was three stalls and a goat. | Twice? What were you after? | Hearing's free. Buying isn't.
+b : #busy.capitalize#. | #bc_ha# | #bc_fair_enough#
+a@old : Three stalls and a goat would do me too. If they shouted. | Nothing. The noise. | That's why I hear and don't buy.
+a : Noisy is alive. Quiet is #rows# at #whitehour#. | I'd go again. #fidget#. | #oath#. Better than an empty house.
+
+scene sw110_rats
+when topic=animals|work here.region=waste
+does tell.complaint / react.complaint / assess
+a : Rats in the press house again. A whole sack of dried grapes. #annoyed.capitalize#. | Found a nest of rats under the vine-baskets. #oath#, a whole nest. | A rat ran over my paw in the dark. #oath#.
+b[job=herder|farmer] #farm : Get a cat off a carter. They trade them. | Burn the baskets. You'll never get them all out. | Stamp next time.
+b : #bc_very_bad# | #annoyed.capitalize#. | Did you scream, #address#?
+a@farm : A carter's cat? It'd be off with the next cart. | I'll burn them. Every one. | I didn't think. I froze.
+a : I'll stop the holes with salt and stone. They hate salt. | I hate them. I'll not sleep tonight. #bc_never# | No. I don't scream. I shake after.
+
+scene sw110_gull
+when topic=animals here.region=waste here.time=dawn|day
+does tell.self / react.self / assess
+a : There's a gull on the press-house roof. A gull. #surprise#. | Gulls on the Saltpan this week. Followed #carts# up, I'd say. | A gull took the bread out of my paw. #annoyed.capitalize#.
+b[from=saltwell] #sw : They come up when the pan's wet. Then they go. | Gulls are thieves. The old rakers threw salt at them. | Bold as a dune-raider.
+b : #bc_again_q# | #surprise#. Up here? | Cheek, #address#.
+a@sw : They can go now. | I'll throw stones. Salt's dear. | Bolder.
+a : I don't like their eyes. Flat, like a counted coin. | Odd and loud. Off with it, back to #far#. | I'll eat indoors, then. #oath#.
+
+scene sw110_empty_house
+when topic=home here.region=waste here.time=dusk|night self.married=no
+does tell.self / react.self / assess
+a : The farmhouse is too big for one. I hear every beam. | I eat the evening bread standing up. Nobody to sit for. | I left the lamp lit on the step. Habit.
+b[friends] #friend : Come to the well at dusk, then. There's always talk. | Sit for me, then. I'll come by. | Habit's company.
+b : #bc_maybe# | #bc_so_do_i# | Quiet's not bad, #address#.
+a@friend : I might. Don't count on it. | Come. I'll find a stool. | It is. Thin company.
+a : Not bad. Not good. #slow.capitalize#. | Standing's faster. #fidget#. | Not bad. #slow.capitalize#, is all.
+
+scene sw110_tired
+when topic=health self.tired=yes
+does tell.self / react.self / assess
+a : #tired.capitalize#. Up at three, and the legs still won't stop. | My head's heavy and my feet want #slope#. Make sense of that. | Slept an hour. Walked the yard the rest. #tired.capitalize#.
+b[old] #old : #remedy.capitalize#, and lie flat at noon. | You're a pup still. Wait till fifty. | My father walked at night too. It passed.
+b : Rest, then, #address#. | #bc_poor_soul# | #bc_me_too#
+a@old : I'll try it. I said that last time. | I'm fifty. It's here. | Did it?
+a : I can't. #fidget#. That's the whole trouble. | No. Just a wolf that can't sit. | Then we're a pair. #tired.capitalize#.
+
+scene sw110_newcomer
+when topic=newcomer here.region=waste
+does tell.news / react.news / give.opinion
+a : #topic.subject# came in with #carts# and stayed. Good. | Somebody new, #topic.subject#. Asked me the way to #vines#. | Have you seen #topic.subject#? Up early. I like that.
+b[from=saltwell] #sw : Three days a guest, then a neighbour. | Did you take them up? | Up early's half the work done.
+b : #bc_good# | And you showed them, #address#? | #bc_maybe#
+a@sw : Then a neighbour. I'll see to it. | Walked them the whole slope. They kept up. | The other half's staying up there.
+a : We could use more paws. Plenty of #rows#. | I did. Whoever stays walks #rows# sometime. | Early, and quiet. Two #good# signs.
+
+scene sw110_road_out
+when topic=travel|dreams here.region=waste
+does tell.feeling / react.self / assess
+a : Sometimes I watch #carts# go out and nearly climb on. | Fifty years, and the Saltpan's as far as I've gone. #oath#. | If I went, I'd go west, #far#. Not the city. Somewhere with no stamps on anything.
+b[job=carter] #road : Climb on, then. There's room by the barrels. | Past the pan it's just more sand, for a while. | West is long. Bring water.
+b : #bc_why_q# | #bc_maybe# | Where, #address#?
+a@road : And #vines#? Who walks them? | For a while. And then? | I'd bring two skins.
+a : #vines.capitalize#. Always #vines#. | #fidget#. But not enough to go. | #oath#. #someday.capitalize#, maybe.
+
+scene sw110_great_house
+when topic=dreams|family here.region=waste
+does tell.self / react.self / assess
+a : I'd like to see a pup from here go into service with #toffs#. Wear the colours. | One of ours in a great House. Fed every day. Taught. #oath#. | A pup from #rows# in a House hall. Think of it.
+b[from=saltwell] #sw : And come home talking like a city wolf? | They'd miss the well. | The Houses don't come looking out here.
+b : #bc_i_hope_so# | Far from #home#, though. | #bc_we_will_see#
+a@sw : I'd box their ears. Then I'd be proud. | Better miss it than drink from it all their life. | Then we'll send one. Walking.
+a : Not for me. I'm past it. For the young. | Far is not the worst thing. #someday.capitalize#. | Mine. I'll keep it. #saying#.
+
+scene sw110_press
+when topic=work self.job=farmer self.workplace
+does tell.self / react.self / assess
+a : Treading at #self.workplace# all week. #lees.capitalize# to the knees. | The cellar at #self.workplace# is the only cool place in Saltwell at noon. | The first juice off the press. #tasty.capitalize#.
+b[from=saltwell] #sw : And the Ochre red at the end of it. | Don't tell everyone, or we'll all be in there. | Sweet now, sour in a month, sweet again in a year.
+b : Messy work, #address#. | #bc_lucky_you# | #bc_go_on#
+a@sw : Not for me. I'll take #herring# over wine. | I've told nobody. Only you. | Like most things.
+a : Clean work, under #lees#. | The barrels don't mind me. #snug.capitalize# down there. | Later. It's not ready, and nor am I.
+
+scene sw110_faith
+when topic=faith here.region=waste
+does tell.self / react.self / assess
+a : I say one word to the Bright One every winter. Spare #shoots#. That's all. | I don't ask for much. A kind spring and no late frost on #vines#. | Somebody left dates at the shrine stone. For the frost, I'd guess.
+b[stage=old] #old : One word's enough, if it's the right one. | The Bright One hears short prayers best. | Dates for the frost. My mother did that.
+b : #bc_i_hope_so# | #bc_fair# | #bc_maybe#
+a@old : It's the only one I've got. | Good. Short is what I have time for. | Did it work?
+a : #shoots.capitalize#. That's the whole prayer. | Not much to ask. #oath#. | Maybe. I'll leave some too. #bless#.
+
+scene sw110_rain_slope
+when topic=weather here.region=waste here.weather=rain|storm
+does tell.self / react.self / assess
+a : #rain.capitalize# on #slope#. Look how the red runs off it. | #rain.capitalize#! I'll be up there checking every channel. | #vines.capitalize# drink it standing. You can hear them.
+b[from=saltwell] #sw : The whole Waste will bloom by the week's end. | In the rain? Stay in and give thanks. | My grandmother said the vines sing in the rain.
+b : #bc_lovely# | Now, #address#? | #bc_go_on#
+a@sw : And I'll see it from the top row. | I'll give thanks walking. | They might. I'd join in.
+a : Red mud by tonight. Worth it. #oath#. | Now. Channels overflow. #fidget#. | Something like a sigh. Listen. #bc_lovely#
+
+story frost_night [concept=talk.memories self.age>=30]
+  : The year of the late frost, I walked #rows# all night with #brazier#. Pot to pot.
+  : By dawn the top of #slope# was black. The low rows, green. Every one I'd sat by.
+  b[job=farmer] : You saved half, then.
+  b : All night, #address#? On your own?
+  : #oath#. Half. I still walk that row first, every spring.
+
+story the_hoe [concept=talk.memories]
+  : Years back a trader came through selling knives. #citymade.capitalize#. Shining.
+  : I bought one for #vines#. Broke on the third cut, the blade clean off the handle.
+  ask : Guess what I did with the handle, #address#.
+  b : #bc_go_on#
+  : Kept it. It hangs by my door. Every time I want something shiny, I look at it.
+
+story first_song [concept=talk.pastimes]
+  : I first sang at the well as a pup, on a lamp night, with the whole hamlet listening.
+  : My voice went in the second verse of #song#. Just went. Like a dry channel.
+  b[from=saltwell] : And somebody sang it on for you.
+  b : #bc_and_q#
+  : An old raker took it up and finished it. I sang the last verse with him. I've not stopped since.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#, #address#. Walk if you want to talk. #fidget#.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Quick, then. #rows.capitalize# are waiting.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : What is it? Say it plain, #address#. I've work.
+dlg @1 resident.job : I walk #rows#. Prune, water, pick. Up before light, down by #whitehour#. #saying#.
+dlg @1 resident.news : Nothing new on #slope#. #shoots.capitalize# are fine. That's my news.
+dlg @1 resident.bye : #farewell#. I'm off up #slope#.
+graft resident.hub
+choice You look like you'd rather be somewhere else. -> restless
+node restless
+say I always would. #slope.capitalize#, mostly. Then the next row. Never here.
+free
+choice Don't you ever rest? -> restless_rest
+choice Goodbye. -> bye
+node restless_rest
+say At #whitehour#, if I must. I count roof tiles. Forty-one. Don't ask how I know.
+choice I won't, then. -> hub
+choice Goodbye. -> bye

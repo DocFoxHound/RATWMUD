@@ -1,0 +1,306 @@
+# sw106, the stone-sill raker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sw106
+revision 1
+state ready
+dialect saltwell
+accent light broad
+tier standard
+written_for cty_fern_merewick
+written_by claude-p11-pilot
+title the stone-sill raker
+fits stage=adult|old
+prefers job=farmer temper=short
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk collects_smooth_stones_from_the_riverbanks
+likes barley_soup old_tales fresh_straw warm_rain
+dislikes smoke salt_wind
+fears losing_the_sight_to_the_glare
+hopes a_quiet_roof_and_a_full_sill
+topics work +0.3 pastimes +0.3 weather +0.2 home +0.2 travel -0.5 gossip -0.3
+styles comfort=practical gossip=reluctant refuse=short tease=none
+marks oath saying
+persona #self.first# rakes salt on the Saltpan: short-tempered, plain and content, never hurried and quick to take offence, and keeps every round stone the dry bank gives up, in a row on the sill.
+
+words
+oath! = By the white crust | Rake and crust
+saying! = Round stones were never in a hurry | What the pan gives, it gives once
+pebble = a round one off the dry bank | a bank pebble, smooth as an egg
+crust = the white crust | the pan's crust
+glare = the pan-glare | that white glare
+soup = barley broth | the barley pot
+straw = fresh straw on my mat | clean straw underfoot
+warmrain = a warm rain after a dry spell | warm sky-water on dry sand
+smoke = smoke in my eyes | lamp smoke
+saltwind = the salt wind | a wind off the pan with salt in it
+tale = an old tale told slow | one of the old tales, told right
+huff = I didn't ask | Nobody asked you
+enough = That's enough of that | Leave it there
+sill = my sill | the sill by the door
+rake = my rake | the long rake
+nod = Aye | Mm
+
+any
+opinion @1 city against 2 : The city? I've nothing to say about the city. Ask somebody who liked it. #enough.capitalize#.
+opinion @2 city against 2 [conv.agreed_before=no] : I said I'd nothing to say about it, and I meant it. #enough.capitalize#.
+opinion @1 merchants against 2 : The store weighs our salt light and sells it heavy. #oath#, I've watched the scales do it.
+opinion @1 festivals against 1 : #smoke.capitalize#, spilt wine, and somebody weeping in the courtyard by midnight. I'll keep my roof.
+opinion @1 houses against 1 : #toffs.capitalize#? I rake their salt, and never a one of them has stood on the pan at noon. I'd pay a copper to see it.
+opinion @1 newcomers against 1 : There's only so much pan. A new #rake# on it means a short sack for somebody already there.
+
+grown
+scene pan_crust
+when topic=work self.job=farmer here.region=waste here.time=dawn|day
+does tell.self / react.self / assess
+a : #crust.capitalize#'s thick this week. Three sacks before the sun cleared the hills. | Raked since first light, and my eyes are full of #glare#. | #saying#. Rake slow and the salt comes up clean; rake fast and you're bagging sand.
+b[job=farmer] #hands : Three? I've two, and my back swears it's six. | Wet the cloth and tie it on. Nothing else for it. | Tell that to the ones paid by the sack.
+b : Good salt, then. | You look worn through. | That's wise.
+a@hands : Your back's a liar. Rest it when the shade's short. | #nod.capitalize#. I forget it every morning. | I do tell them. #oath#, they don't hear.
+a : Good enough. It'll be grey by the time the cart has it, all the same. | #tired.capitalize#. Ask me again at noon. | Not wise. I've just held #rake# longer.
+
+scene salt_wind
+when topic=weather here.region=waste
+does tell.complaint / react.complaint / assess
+a : I'd keep the pan and give away #saltwind#. Every grain of it. | Out on the pan it's not the heat that gets you. It's #saltwind#. | #saltwind.capitalize# gets in your fur and stays a week. Washing does nothing.
+b[job=farmer] #hands : It splits your pads. Mine are cracked to the quick. | Turn your back to it and rake blind. That's all there is. | Goat grease. A dab in the fur before you go out.
+b : I know it. | Worse than the heat? | It must sting.
+a@hands : Mine too. I've stopped looking at them. | I rake blind half the day as it is, with #glare#. | I'd smell like #beasts#. Better than salt, maybe.
+a : You don't, unless you've raked in it. #oath#. | Worse. The heat at least goes home at dusk; #saltwind# stays. | Sand you can shake out. Salt stays. #enough.capitalize#.
+
+scene warm_rain
+when topic=weather here.region=waste here.weather=rain|storm
+does tell.self / react.self / assess
+a : Rain. Warm, too. I'm staying out in it. #annoyed.capitalize# to anyone who calls me in. | Smell that? #warmrain.capitalize#. There's nothing like it. | Leave me be. I've waited a year for #warmrain#.
+b[from=saltwell] #sw : The cisterns will be brimming by dark. | In a week the dunes will be flowers. I'll walk out with you. | So have we all. Stand in it, then.
+b : Lovely, that. | You'll be wet to the bone. | Go on, then.
+a@sw : Let them brim. I'm not carrying jars in #rain#. | Come, if you don't talk the whole way. #nod.capitalize#. | I'm standing. #agree#.
+a : #bc_it_is# | That's the idea. | I'm going. #oath#, I'm going.
+
+scene noon_shade
+when topic=weather|day here.region=waste here.time=day here.weather=clear
+does tell.self / react.self / assess
+a : Noon. I've given up the pan till the heat breaks. #saying#. | #hot.capitalize#. I'll sit here and you can do the talking. | The pan's shimmering. Nobody rakes in #glare# like that and keeps their eyes.
+b[old] #old : My mother never raked at noon in her life. Lived to ninety. | Sit, then. I'll talk enough for two. | I raked through noon once, when I was young and daft. Once.
+b : That's wise. | I'll keep it short. | True enough.
+a@old : Ninety. I'll take that, #address#. | Do. I'll nod. | Once is enough for anyone. #bc_it_is#
+a : It's not wisdom. It's the sun. #nod.capitalize#. | Short and slow, then. #bc_good# | Ask anyone with white in their eyes. #bc_true#
+
+scene night_cold
+when topic=weather|day here.region=waste here.time=dusk|night here.weather=clear
+does tell.self / react.self / tell.self / assess
+a : Cold coming off the sand. I'll want #soup# tonight. | #cold.capitalize#, and at noon I was cursing the sun. | There. The pan's handed every bit of its heat to the stars.
+b : Is there any going? | It always turns. | Lovely, that.
+a : There's #soup#. Bring your own bowl. | I'll curse #cold# in the morning too. It doesn't listen either. | The stars will be thick tonight. I'll sit up on the roof a while.
+b : I might. | Nothing does. | I'll join you.
+
+scene barley
+when topic=food
+does tell.self / react.self / assess
+a : #soup.capitalize#, a heel of bread, a pinch of our own salt. I want nothing else. | Somebody at the inn put dates in #soup# last night. Dates. In soup. | You can't hurry #soup#. Set it on at noon, eat it at dark. #saying#.
+b[wealth=poor|destitute] #poor : Barley's what there is. Good thing you like it. | I'd have eaten it. I'd eat anything hot. | Set it on and hope nobody walks off with the pot.
+b : Good, is it? | Ha! | That's wise.
+a@poor : It's what there is, and I like it. Both true. | So did I. Then I picked the dates out. #oath#. | Nobody takes #soup#. They take the bread.
+a : It's barley. It's #good#. That's all I'll say for it. | Laugh, then. It was still soup with dates in. #huff.capitalize#. | Slow #grub# for a slow wolf. It suits me.
+
+scene stones_show
+when topic=pastimes|smalltalk
+does tell.self / react.self / assess
+a : Found #pebble# this morning. Look at it. Not a mark on it. | That's my forty-first stone. I don't count them. I just know. #nod.capitalize#. | I keep them on #sill#. Round ones only. A chipped one goes back.
+b[friends] #friends : Another one. Where will you put them all? | You know because you count them. | Back where? You walk it out to the riverbed?
+b : Nice and round. | Forty-one? | Why only the round ones?
+a@friends : On #sill#. There's room yet. | I don't count. I just know. #enough.capitalize#. | To the bank. #nod.capitalize#. It wasn't mine to keep.
+a : Feel it. #cold.capitalize# right through. | Forty-one. Don't ask to see them. | #saying#. The chipped ones are still being made.
+
+scene stones_why
+when topic=pastimes|memories
+does tell.self / ask.detail / answer.detail / assess
+a : #gran.capitalize# kept a bowl of stones by the door. I've the bowl now. | Every stone on #sill#, I could tell you the morning I found it. | Folk ask what the stones are for. They're not for anything.
+b : What did she keep them for? | Go on, then. Tell me one. | Why keep them, then?
+a : Never said, and I never asked. That's how it was with #gran#. | The grey one. A sand wind morning, lying on #crust# like it was waiting for me. | Does a song have to be for something? Nor does a stone. #enough.capitalize#.
+b : Fair enough. | Lovely. | Fair.
+
+scene old_tale
+when topic=pastimes|lore
+does tell.self / react.self / assess
+a : Somebody told the one about the hawk and the spring at the inn last night. Told it wrong. #oath#. | #tale.capitalize#, and a bowl of #soup#. That's an evening. | Don't rush #tale#. The ones who rush it have forgotten the end.
+b[old] #old : Wrong how? I've told it at that table thirty years. | Then come up to mine. I've tales enough for a winter. | I've forgotten more ends than I've told.
+b : Wrong how? | So do I. | True.
+a@old : Then you'll know. The mother finds the spring, not the carter. | I'll come, if there's no #smoke#. | Then tell me the middles. They're the best part, #address#.
+a : They had a carter find it. It was a mother with two pups. #annoyed.capitalize#, but there it is. | That's all I want of a night. #bc_it_is# | And they laugh at their own joke before they get to it. #annoyed.capitalize#.
+
+scene straw_home
+when topic=home
+does tell.self / react.self / assess
+a : Put down #straw# today. The whole room smells of it. | Changed the straw. Slept like a stone on the bank. #nod.capitalize#. | Keep your feather beds. #straw.capitalize# and a cold night, and I'm gone.
+b[wealth=rich|comfortable] #soft : A feather bed's not so bad, you know. | Straw itches. | I've not slept on straw since I was a pup.
+b : Lovely. | Lucky you. | Sounds snug.
+a@soft : I'd sink in one and never come up. #oath#. | Old straw itches. #straw.capitalize# doesn't. | Then you've forgotten something #good#.
+a : Cut green, dried in the sun. You can't buy that smell for #money#. | I don't dream, on #straw#. I just go. | Gone till #beasts# wake.
+
+scene full_house
+when topic=home|family self.wealth=poor|destitute
+does tell.self / react.self / assess / react.self
+a : The house is never empty. Somebody's always in off a shift. | Too many paws for one hearth, and only one of them sweeps. #annoyed.capitalize#. | I like a full house. I'd not tell the rest of them so. #enough.capitalize#.
+b : That's a full house. | Yours, I'll wager. | Why not?
+a : It is. You learn to sleep through the door, on #bed#. | Mine. Who else. | They'd get ideas. #bc_it_is#
+b : True enough. | Ha! | Your secret's safe.
+
+scene spouse
+when topic=family self.married=yes pair.kin!=spouses
+does tell.self / react.self / assess
+a : My #self.spouse_word# and I said six words to each other on the pan today. It was enough. | We don't talk much, #self.spouse# and I. We don't need to. #saying#. | My #self.spouse_word# says I take offence too quick. I took offence at that.
+b[married=yes] #wed : Six is a lot. Some days we manage two. | Best kind of marriage, that. | And were you wrong to?
+b : Six is plenty. | That's wise. | Ha!
+a@wed : Two's enough if they're the right two. #bc_it_is# | Quiet ones last, #address#. | No. I wasn't. #huff.capitalize#.
+a : Plenty. | Not wise. #tired.capitalize#, mostly. | Laugh, then. I'll wait. #oath#.
+
+scene salt_prices
+when topic=prices|times self.job=farmer
+does tell.complaint / react.complaint / assess
+a : The store buys our salt by the sack and sells it by the pinch. Work that out. #oath#. | Salt's dear in Ridgemere, they say. Not dear to us that rake it, #address#. | #wages.capitalize# went down a copper this month, and the sack didn't get any lighter.
+b[role=merchant] #trade : There's the cart to pay for, and the road, and the sacks. | Somebody has to carry it there. That's not free. | It's a hard trade for everyone.
+b : That's robbery. | I'm sorry for it. | True.
+a@trade : Then pay the cart. Don't pay me less for it. | Not free. Not dear for you either. #nod.capitalize#. | Harder at the bottom of it. Ask anyone holding #rake#.
+a : #robbery#. | Sorry won't salt the bread. #enough.capitalize#. | True, and nobody up the road notices. #bc_it_is#
+
+scene times_lean
+when topic=times
+does tell.self / react.self / assess
+a : Every week a little harder, and every week I'm told it's the same as ever. #annoyed.capitalize#. | The old ones say it was always lean. Maybe. It's leaner. | I don't need much. I need what I have to stay put. #saying#.
+b[wealth=rich|comfortable] #well : It's not so bad as all that. | Lean years pass. | Hold on to it, then.
+b : True enough. | It will pass. | So do I.
+a@well : Not for you, #address#. | They pass over some of us slower. #oath#. | I am. With both paws.
+a : True, and nobody's counting it but us. #bc_it_is# | Noon passes. Then it's noon again. #hot.capitalize#, every time. | Then we're agreed on that. #agree#.
+
+scene festival_smoke
+when topic=festival
+does tell.self / react.self / assess
+a : Lamps round the pool, and #smoke# for everyone. I'll watch from the roof. | #smoke.capitalize#, and somebody crying by midnight. Every year. | I'll go down for the bread and leave before the singing. #nod.capitalize#.
+b[from=saltwell] #sw : The lamps are the best of it. | You'll come down for the dancing. | Stay for one song.
+b : Every year? | Why not stay? | Every year, you say that.
+a@sw : From the roof, they're fine. | I won't. | One. Then I'm off. #enough.capitalize#.
+a : Every year. Somebody. #bc_it_is# | #smoke.capitalize#. I said. | Every year, and nobody learns. #oath#.
+
+scene ridgemere_shut
+when topic=travel self.age>=25
+does tell.self / ask.detail / decline / assess
+a : You've not been to Ridgemere? Don't. That's my whole advice, #address#. | Folk go to the city for their fortune. Most come back #skint#. | Travel's for carters. I've done mine.
+b : Why not? | Did you? | Where did you go?
+a : I'll not talk of it. #enough.capitalize#, and we'll stay friends. | I came back. That's all I'll say about it. | #far.capitalize#, far enough to know I'd rather be here.
+b : Fair enough. | Of course. | Sorry I asked.
+
+scene the_wadi
+when topic=land here.region=waste
+does tell.self / react.self / assess
+a : The dry riverbed past the pan. Water ran there once, for the stones to get so round. #saying#. | The bank's where the best ones lie. After #rain#, they wash up clean. | Folk say the Waste was all river once. Look at the stones and you'd believe it. #nod.capitalize#.
+b : So they say. | Sounds a long walk. | Maybe.
+a : Long enough to make a stone round. That's long. #bc_it_is# | It's a walk. I like a walk. | I believe it. Stones don't lie; #nonsense# does.
+
+scene eyes
+when topic=health self.job=farmer
+does tell.self / react.self / assess
+a : My eyes ache from #glare#. Years of it. | The salt cracks my pads open every summer. #annoyed.capitalize#. | I'm sound. A raker's always #hurt# somewhere; it means nothing.
+b : #remedy.capitalize#. Try it. | Grease them, and wrap them. | Good.
+a : I've tried everything. It's the pan. | And they crack anyway. Don't fuss, #address#. | It's not good. It's ordinary. #oath#.
+
+scene sand_wind
+when topic=weather here.region=waste here.weather=sandstorm
+does tell.self / react.self / assess
+a : Sand wind. No raking today. I'll sit in and sort what's on #sill#. | Shutters, and a cloth over the water jar. I've done mine. #nod.capitalize#. | Listen to it. It'll blow all night, and #crust# will be grey by morning.
+b : Good. | Wise. | What a wind.
+a : Sort them into round and rounder. It takes a day. #saying#. | Do yours, then. Don't stand there. | Grey a week, then white again. #crust.capitalize# always comes back.
+
+scene well_queue
+when topic=smalltalk here.region=waste here.time=dawn|dusk
+does tell.self / react.self / assess
+a : I've stood in this queue since before you came. Don't step in front. | First bucket of the day, and it's heavy with #cold#. | Somebody's let a pup draw before the old ones. That's not how it goes, #address#.
+b : Sorry. I didn't see you. | Good. | Pups don't know the order yet.
+a : You saw me. Behind me, then, and no harm done. | It is. Drink it slow. #bc_good# | Then somebody should teach them. Not me. #enough.capitalize#.
+
+story city_once [concept=talk.memories self.age>=25]
+  : I went down to the city one year. A bag of stones, a plan, and nothing else.
+  : The plan went. I kept the stones.
+  b : What was the plan?
+  : #enough.capitalize#. That's the whole of it, and all you'll get.
+
+story first_stone [concept=talk.memories]
+  : The first stone I kept, I was a pup. #gran.capitalize# said put it back; it isn't yours.
+  : I asked whose it was, then. There was no answer to that, and #gran# had none.
+  b[old] : Pups always find the question that has none.
+  b : And you kept it?
+  : I kept it. It's on #sill# still. Grey, with a white line round it like a belt.
+
+story the_bloom [concept=talk.memories self.age>=20]
+  : The year the rain came three days running, the whole Waste bloomed. I walked out in it.
+  : Red flowers to the dunes. I lay down in them, and #warmrain# on my face.
+  ask : Have you ever seen it bloom?
+  b[from=saltwell] : Twice. Never like that year, I'd think.
+  b : Never. I'd like to.
+  : Then wait for #warmrain#. It comes when it likes, and not before. #saying#.
+
+line @1 greet [pair.band=strangers] : #greet#. You'll want the inn. It's that way. | #greet#. Mind where you stand; that's the queue.
+line @2 greet [here.time=dawn] : #greet#. Out early. | #greet#. The pan's waiting, so I'll not stop long.
+line @3 greet [self.working=yes] : #greet#. Talk while I rake, if you like. | #greet#. You're in my light.
+line @1 kin.open [pair.kin!=no] : There you are. #welcome.capitalize#. | You're back. #welcome.capitalize#.
+line @1 again.open : #welcome_back.capitalize#. What is it now? | Twice in a day. Something on your mind, #address#?
+line @1 greet.return : #greet#. | #greet#, #other.called#.
+line @2 greet.return [here.time=dusk|night] : #greet#. Cold coming. | #greet#. Don't keep me; #soup# is on.
+line @1 farewell : #farewell#. | #farewell#. Mind the pan's edge; it bites.
+line @1 farewell.return : #farewell#. | #farewell#, #other.called#.
+line @1 react.news.new : #oath#. I'd not heard that. | #surprise.capitalize#. Well.
+line @1 react.news.known : I'd heard. Everyone's heard. #nod.capitalize#. | #knew.capitalize#. You're late with it.
+line @1 react.news.doubt : #doubt.capitalize#. I'll believe it when I see it with my own eyes. | Who told you that? I'd ask them twice over, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity.capitalize#. I'll say no more. | #pity.capitalize#. Some news is best left quiet.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews.capitalize#. Good. | Well. That's one #good# thing this week.
+line @1 answer.how : Well enough. Salt in my eyes, but well. | #hurt.capitalize# and content. Both at once.
+line @2 answer.how [self.mood=low] : Not good. I'll not go on about it. #enough.capitalize#. | Low. #notsobad.capitalize#.
+line @1 sympathise : #sympathy.capitalize#. I'll not make it worse with talk. | That's a weight. Sit down with it a while, #address#.
+line @1 decline : #hedge#, no. I've no time for it today. | Not today. I'm on the pan till dusk and no use to anyone after.
+line @1 accept_decline : Another day, then. I'm not offended. #nod.capitalize#. | #no_matter.capitalize#. No harm in it.
+line @1 thank : #thanks#. | You're kind. I'll not forget it.
+line @1 deflect_thanks : It was nothing. Don't make it something. #enough.capitalize#. | #deflect.capitalize#.
+line @1 take_offence : #huff.capitalize#. | I heard that. I'll remember it, too. #oath#.
+line @1 preclose [self.working=yes] : Well. #crust.capitalize# won't rake itself. | That's my rest done. Back to #rake#.
+line @2 preclose : #preclose.capitalize#. | I'll be off. #soup.capitalize# wants stirring.
+line @1 ack : #ack.capitalize#. | #nod.capitalize#. #bc_it_is#
+line @1 tease.return : Laugh, then. I've time. | Very good. Are you done? #huff.capitalize#.
+rule @rake
+when concept=bark working=yes self.job=farmer
+does aside
+cooldown 6h
+say Rake slow. Rake slow. #saying#. | #crust.capitalize#'s good today. Don't waste it. | My eyes. #glare.capitalize#, every blessed day.
+
+rule @stone
+when concept=bark working=no
+does aside
+cooldown 8h
+say That's a round one. For #sill#. | Not that one. Chipped. Back it goes. #nod.capitalize#.
+
+rule @sand
+when concept=bark here.region=waste here.weather=sandstorm
+does aside
+cooldown 6h
+say #annoyed.capitalize#. Shut the door, somebody. | Cloth on the jar. Cloth on the jar. #oath#.
+
+rule @soup
+when concept=bark here.time=dusk|night
+does aside
+cooldown 8h
+say #soup.capitalize#'s on. Nobody touch it. | Barley takes its time. So do I. #saying#.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. You're not from here. Say what you need, #address#. | #greet#. Say what you came to say; I'm listening.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit, if you're staying. | #topic.player#. You again. #talk_open#
+dlg @3 resident.hub [pair.disposition=hostile|wary] : I've not forgotten last time, #address#. Well? | Say it quick, #address#, and we'll see.
+dlg @1 resident.job [self.job=farmer] : I'm a #self.trade_words#. Up before the sun, done when it's done. | #self.trade_words.capitalize#. That's me. #rake.capitalize#, the sacks, and sore by noon.
+dlg @1 resident.news : #news_none# I don't go looking for news. | If there's news, it went past me on #crust#.
+dlg @1 resident.bye : #farewell#. | #farewell#. Mind the step.
+graft resident.hub
+choice What's that in your paw? A stone? -> stones
+node stones
+say A stone. A round one. I keep them. Don't ask me why; I've no answer that would satisfy you.
+free
+choice Can I see the others? -> stones_sill
+choice Goodbye. -> bye
+node stones_sill
+say On my sill, in a row. Forty-odd. You can look, if you don't touch. Some folk touch.
+choice I won't touch. -> hub
+choice Goodbye. -> bye

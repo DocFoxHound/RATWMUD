@@ -1,0 +1,315 @@
+# mb120, the notch-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb120
+revision 1
+state ready
+dialect mirebridge
+accent broad light
+tier standard
+written_for cty_brock_marshholm
+written_by claude-p11-pilot
+title the notch-keeper
+fits stage=adult|old
+prefers job=herder piety=devout
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk keeps_a_tally_of_favours_owed
+likes mutton_stew draughts new_boots first_snow
+dislikes gulls flies
+fears losing_what_was_built_from_nothing
+hopes to_square_every_notch_before_the_end
+topics faith +0.4 work +0.3 smalltalk +0.2 family +0.2 memories +0.2 pastimes +0.2
+styles comfort=pious gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# keeps sheep on the downs and a notched stick of every favour owed: fen-born and broad, devout, reserved at first and chatty once warmed, quietly proud of a life built from nothing and uneasy when anyone remarks on it.
+
+words
+oath! = Mud and mercy | Bright One mark it
+saying! = A favour paid back is a plank laid | Square your tally before the mud sets
+tally = my tally | the notches on my stick
+notch = a notch | a notch on the stick
+fold = the fold | the Larkdowns fold
+ewes = the ewes | my woolly lot
+stew = a mutton stew | mutton stew with barley in it
+boots = new boots | boots with no water in them
+snow = the first snow | first snow on the downs
+gulls = gulls | those screaming gulls off the lake
+fen = the old fen | the wet country I came out of
+road = the road | the long road I walked in on
+draughts = a game of draughts | the board and the pieces
+
+any
+opinion @1 church for 1 : The Bright One kept me on #road# when I'd nothing. I'll be in chapel every Restday I can stand, and thankful.
+opinion @1 dole for 1 : Feeding the hungry is what we're asked to do, plain as mud. I'd not grudge a crust of it. I was hungry once.
+opinion @1 drink against 1 : I've watched a jar empty a house, fen-friend. Not mine, and it won't be.
+opinion @1 festivals for 1 : One day the whole town's out and talking, and nobody's counting. Even me, fen-sure. Near enough.
+opinion @1 merchants against 1 : They put a penny on when they think nobody's counting. I'm always counting, fen-friend.
+opinion @1 houses against 1 : I've worked under the Houses my whole life, and never had one of them stand at the fold. Mud and mercy, they'd not know a ewe.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You'll be new. Mind the soft verge, it takes a boot. | #greet#, #address#. Off the wet verge, now; up here.
+line @2 greet [pair.band=spouses] : There you are. I've kept the stew warm, #dear#. | #greet#, #dear#. You smell of the fold. So do I.
+line @1 again.open : Back again, feet still dry? | You again, #address#. I've not had time to forget you.
+line @3 greet [here.time=dawn] : Morning. #ewes.capitalize# were up before me, and that's saying something. | Morning, #address#. Right raw, this early.
+line @4 greet [here.time=dusk|night] : Evening. #fold.capitalize#'s shut. The Bright One keep the gate. | Evening, #address#. Mind the boards; dark now.
+line @5 greet [self.working=yes] : #greet#. Stand still a moment; you'll scatter them. | #greet#. Talk low. They're counting you.
+line @1 greet.return : #greet#. | #greet#, #greet#. | #greet#, #address#. You're well?
+line @2 greet.return [self.working=yes] : #greet#. Shut the hurdle after you, mind. | #greet#. Mind the ewe at your back.
+line @1 farewell : #farewell#. You've a place in tonight's prayers, fen-friend. | #farewell#, #address#. Stick to the firm path.
+line @1 farewell.return : #farewell#. | #farewell#, and the Bright One with you.
+line @1 react.news.new : #oath#! Is that so? | #surprise#. Who'd have thought.
+line @1 react.news.known : I had it already. #fold.capitalize# hears everything in the end. | The reeds had it already, fen-friend. Old mud, that.
+line @1 react.news.doubt : I'd want that from somebody who saw it, #address#. Till then it's bog-wind. | I'll not say no. I'll not say yes, either, till I've seen it dry.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #oath#. Deep mud, that. I'll say a word for them tonight. | The Bright One hold them. What can be done, #address#?
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Dry ground at last for them. The Bright One is kind. | Now there's news to dry your feet by. I'm glad of it.
+line @1 answer.how : Right dry, and thankful. | #busy.capitalize#. The ewes see to that. | #good.capitalize# enough. Better than I've a right to.
+line @1 sympathise : That's sunk to the neck. Sit down; I'll not hurry you. | I'll put you in my prayers tonight, #address#, and mean it.
+line @1 decline : I'd help if I could, #address#, but I've a ewe down and no time. Another day. | Not this time, fen-friend. I've too many notches unsquared already.
+line @1 accept_decline : When it's dry, then. No harm. | Fair-dry. I'll not mark it against you.
+line @1 thank : #thanks.capitalize#. That's #notch# for you, and I'll pay it. | Dry thanks to you. It's marked, and I never rub one out.
+line @1 deflect_thanks : No need, #address#. You'd paid it back before you asked. | It's nothing, fen-friend. It squares an old notch.
+line @1 preclose : Well. My feet are sinking, and the ewes won't fold themselves. | Still. #fold.capitalize# wants me.
+line @1 ack : Fen-sure. | Is it, now.
+rule @gate
+when concept=bark working=yes self.job=herder
+does aside
+cooldown 6h
+say Hup, hup. Through, #dear#. Every one. | Thirty, forty... and the old one at the back. #good.capitalize#.
+
+rule @flies
+when concept=bark here.season=summer here.weather=clear|overcast
+does aside
+cooldown 8h
+say Flies. Mud and mercy, the flies. | Off #ewes#, you. Off.
+
+rule @gulls
+when concept=bark here.region=coldwater
+does aside
+cooldown 8h
+say #gulls.capitalize#. Screaming at nothing, as usual. | Go on, get off with you. Nobody asked you.
+
+rule @notch
+when concept=bark working=no
+does aside
+cooldown 8h
+say One more notch. And one off. Fair-dry. | Owe two, owed three. Near enough square, sure as mud.
+
+scene fold_morning
+when topic=work self.job=herder
+does tell.self / react.self / assess
+a : Up at first light to #fold#. Counted them out and counted them back. All there. | One of #ewes# is limping. I've looked her over twice, no thorn I can find. | Moved them up the downs today. Better grass, and no #rain# on it, for once.
+b[job=herder|farmer] #herd : All there's a good day. | Check between the claws. | Good grass is everything.
+b : That's a relief. | Mind it doesn't spread. | They'll be glad of it.
+a@herd : Right good day. #bc_it_is# | I will. #thanks.capitalize#. | Fen-sure it is.
+a : Every head. Thank the Bright One, fen-friend. | I'll keep her near the hurdle, out of the mud. | Fat and glad, the lot of us.
+
+scene shearing
+when topic=work self.job=herder here.season=spring|summer
+does tell.self / react.self / assess
+a : Shearing at the barn all week. My back's bog-tired and my coat's full of fleece. | Sheared forty today. The old ewe kicked me twice. That's #notch# against her. | Fleece is good this year. Heavy. The Bright One has been kind to the downs.
+b : Long days, those. | Two kicks? | Good price for it, then?
+a : Right hard. #good.capitalize#, though. | Two. She's a long memory. So have I, fen-friend. | Fair-dry, if the buyers are honest.
+
+scene favours_tally
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I keep #tally#. Every favour, every kindness. Given and owed. | Somebody carried a ewe for me once in #rain#. That's a notch I'll square, if it takes me years. | Three owed to me, five I owe. I'll have #tally# even by the year's end.
+b[friends] #mate : Am I on it? | Years for one ewe? | And if you can't?
+b : Every one? | That's a long memory. | You count them?
+a@mate : You're on it twice. Both sides. | It was a heavy ewe. | Then I'll pray I can.
+a : Every one. Big or #little# of a one. | Longer than a heron's, sure as mud. | I count them, and I pay them. #saying.capitalize#.
+
+scene favours_square
+when topic=smalltalk|friends
+does tell.self / react.self / assess
+a : Squared an old notch today. Gave a young 'un my old boots. Owed the family since #olddays#. | Somebody did me a kindness yesterday. Didn't even know they'd done it. That's #notch#. | I don't keep it to be paid. I keep it to pay.
+b : That's good of you. | Will you tell them? | That's the right way round.
+a : It was owed. #saying.capitalize#. | When I've paid it, fen-friend. Not before. | Fen-sure. The other way's a merchant's.
+
+scene stew_supper
+when topic=food
+does tell.self / react.self / assess
+a : #stew.capitalize# tonight. I've had the pot on since noon. | Nothing like #stew# after a cold day on the downs. Nothing. | Somebody brought us mutton for helping with the lambing. #stew.capitalize#, and #notch# squared.
+b[pair.band=spouses] #mine : I could smell it from the fold. | Save me the barley. | Squared, and fed.
+b : That sounds right good. | You'll not catch me disagreeing. | That's a fair trade.
+a@mine : I'll save you the big bowl. | You'll get the barley. You always do. | Both. #bc_good#
+a : Come by, #address#; there's plenty. | #agree#. | Fair-dry trade, that.
+
+scene draughts_evening
+when topic=pastimes
+does invite / accept / assess
+a : #draughts.capitalize#, after supper? I'll not go easy. | I've been beaten at #draughts# twice running. I've marked it. | Set up #draughts#. I've been thinking of a move all day, out on the downs.
+b[pair.band=spouses] #mine : You always say that. | Marked it on your stick? | Out with it, then.
+b : Go on, then. | By who? | Only one move?
+a@mine : And I always mean it. | It's a sore notch. | Not till you've moved first.
+a : Black or white, #address#? | Somebody who'll not beat me three times, fen-sure. | One good one is enough.
+
+scene draughts_patience
+when topic=pastimes
+does tell.self / react.self / assess
+a : #draughts.capitalize# is like #fold#. You don't chase. You wait for them to come to the gate. | I play still as a pool. I've been told so. I'll keep on. | A good game of draughts and a warm hearth. The Bright One gives a body plenty.
+b : I never thought of it that way. | Slow's how you win. | #bc_it_is#
+a : Nor did I, #address#, till I lost enough. | Slow is how I do everything. | Right plenty. #bc_it_is#
+
+scene faith_kept
+when topic=faith
+does give.opinion / react.self / assess
+a : The Bright One kept me on #road# when I'd nothing but my coat. I'll not forget it. | I pray at the gate of #fold# morning and night. #ewes.capitalize# are used to it. | The Bright One keeps a tally too, I reckon. I'd like #tally# to come out square.
+b[job=priest] #priest : That's a good habit to keep. | The ewes are in good company. | Mercy's not a sum, though.
+b : #bc_it_is# | Every night? | Square?
+a@priest : I've few others. | They'd be in worse. | No. But I'll not lean on it.
+a : I'll not. Not ever, fen-friend. | Every night. Even in mizzle. | Or as near as I can make it.
+
+scene faith_chapel
+when topic=faith here.region=coldwater
+does tell.self / react.self / assess
+a : Chapel was full on Restday. I stood at the back, out of the mizzle by the door. | I've put a bit of #money# by for the chapel roof. Don't say anything. | The sermon was on debts. I listened right close, as you'd guess.
+b : You could sit, you know. | I'll not say a word. | I'd guess.
+a : I could. I'll stand, fen-friend. | #bc_good#. Sunk in the mud, that. | #bc_ha# Fen-sure you would.
+
+scene husband_shared
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse_word# and I work #fold# together. We don't need to talk much out there. | We've a cottage of our own now. Two of us. I'd never have dreamed it, back in #fen#. | My #self.spouse_word# says I'd mark a favour owed by the Bright One. I would.
+b : That's a good way to be. | You've done well. | #bc_ha#
+a : It is. Right dry. | Don't say it loud, fen-friend. I'd rather not be noticed. | Square in the end, mind.
+
+scene husband_care
+when topic=family|home self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse_word# came in from the mizzle last night. I had the fire up before the door shut. | We've #boots# each this winter. First time in my life I've had a pair nobody else wore. | I owe my #self.spouse_word# more notches than I'll ever square. Happy to.
+b : That's love, that is. | Good boots are a joy. | That's how it should be.
+a : That's a dry hearth, is what. | A joy. I check #boots# every night. | Fen-sure.
+
+scene coldwater_home
+when topic=home here.region=coldwater
+does tell.self / react.self / assess
+a : A cottage with a stone floor. Right dry. I walk on it barefoot some nights just to feel it. | Folk here say we've done well. I'd rather they didn't say it. | It's a good town, Coldwater. Quiet. Lake for a neighbour. I've had worse.
+b[from=mirebridge|fenshore] #fen : A dry floor. I'd weep. | Let them talk. | Better than the fen?
+b : That's a fine thing. | Why not? | Worse?
+a@fen : I nearly did. | I'd rather they talked of the weather. | Drier. I'll say no more than that.
+a : It is. I'll not take it for granted. | Saying a thing loud is how you lose it. | Much worse, and boggy with it.
+
+scene came_from_fen
+when topic=memories self.from=mirebridge|fenshore self.away=yes
+does tell.self / react.self / assess
+a : I grew up in #fen#. Mud to the hocks from birth. A dry floor still feels like a feast. | Where I come from, they'd hang a lantern on the old bell post when the mizzle came in. | I walked out of #fen# with one coat and a hole in each boot. The Bright One saw me through.
+b[from=mirebridge|fenshore] #fen : The bell post. I remember it. | And now? | Mud to the hocks. I know it.
+b : Do you miss it? | A bell post? | A long walk.
+a@fen : Then you remember the light on the water. | Dry feet, mostly. | Then you know.
+a : The folk, fen-friend. Not the damp. | Where the drowned bell is. Or so the old ones had it. | Long, and every step owed to somebody.
+
+scene road_in
+when topic=memories|travel self.away=yes
+does tell.self / react.self / assess
+a : When I came along #road# I'd nothing. Every bit of bread I ate was somebody's kindness. | First night on #road#, a carter let me sleep under the cart. I never knew a name. Still owe it. | I came in with nothing. I'll not go out with a single favour unpaid.
+b : And you remember all of them? | That's a notch you can't square. | #bc_wise#
+a : Every one. It's how I came to keep #tally#. | I pay it on to others instead. #saying.capitalize#. | It's the one thing I'm proud of. And I try not to be.
+
+scene first_snow
+when topic=weather|season here.weather=snow
+does tell.feeling / react.self / assess
+a : #snow.capitalize#. Look at that. White as a washed fleece. | #snow.capitalize#. #ewes.capitalize# don't like it and I do. One of us has to be glad. | First snow every year, I go out and stand in it. Like a fool. A dry fool.
+b : It's cold, though. | And the ewes? | #bc_ha#
+a : #cold.capitalize#. But it's dry raw. | Folded and fed, fen-friend. They'll grumble. | A thankful one, at least.
+
+scene coldwater_rain
+when topic=weather here.region=coldwater here.weather=rain|fog
+does tell.self / react.self / assess
+a : Mizzle off the lake all day. Feels like home, near enough. | The murk's in off the lake. Can't see the far side of #fold#. | #rain.capitalize# again. #ewes.capitalize# look like soggy bread.
+b : You like this? | Stay near the gate, then. | #bc_ha#
+a : I grew up in worse. Right worse. | I will, fen-friend. I've counted them twice. | Soggy bread with legs.
+
+scene gulls_flies
+when topic=animals here.region=coldwater
+does tell.complaint / react.complaint / assess
+a : #gulls.capitalize# had my bread off the wall this noon. Took it right out of my paw. | Flies on #ewes# all week. I'm bathing eyes from dawn. | I can't abide #gulls#. They take and give nothing back. No tally at all.
+b : Gulls are thieves. | Hard on them. | They're just birds.
+a : Eel-thieves with wings. | Hard on us both, fen-friend. | Birds that never pay back.
+
+scene ewes_good
+when topic=animals self.job=herder
+does tell.self / react.self / assess
+a : #ewes.capitalize# know my voice. I call, they come. Nobody else's. | There's one old ewe who follows me to the gate and back. Like a shadow with wool, my reed. | Lambing went well. Every one standing. Thanks be to the Bright One.
+b[stage=young] : Can I call them? | Can I see her? | Can I hold one?
+b : That's a gift. | Your favourite? | That's a good season.
+a@young : Try. They'll not come, but try. | Come by the fold. Ask first. | Gently. Mind the mother.
+a : It's years of feeding, fen-friend. | I'll not say favourite. She knows. | Right dry season. I've given thanks.
+
+scene drink_no
+when topic=smalltalk|pastimes here.place=tavern
+does decline / react.self / assess
+a : I'll not take a jar, #address#, thank you kindly. A cup of something hot. | No #drink# for me. I've seen what it does to a house. | I'll sit with you. I'll not drink with you. Don't take it amiss.
+b : Suit yourself. | Fair. | None taken.
+a : It's how I keep. | Let it sink. I'll say no more about it. | #bc_good#. Then we're square.
+
+scene merchant_penny
+when topic=prices
+does tell.complaint / react.complaint / assess
+a : A penny on the salt since last month. I counted, fen-friend. They think nobody does. | Wool's down and boots are up. That's a crooked sum, that. | I paid what was asked and asked what was paid. They didn't like it.
+b[job=merchant] #shop : We pay more too. | Wool's what the buyers say. | Prices move.
+b : #bc_they_always_do# | It's always the way. | Good for you.
+a@shop : I'll take that on trust. I'll still count. | Then the buyers are counting wrong. | Up, mostly.
+a : I'm always counting. Sure as mud. | Not always. Only when nobody's watching. | Plain dealing, #address#. That's all I ask.
+
+scene dole_bread
+when topic=times|life
+does give.opinion / react.self / assess
+a : I'd not grudge the dole a crust. Feeding the hungry's holy work, fen-friend. | Some say the dole keeps folk idle. I say hunger keeps folk dead. | I was fed by strangers once. I'll feed strangers while I've a pot.
+b[wealth=rich|comfortable] #well : Somebody pays for it. | It's a fair point. | That's generous.
+b : #bc_it_is# | That's one way to put it. | You've a good heart.
+a@well : Somebody paid for me, once. | It's the only one I've got. | It's owed. That's all.
+a : Fen-sure. | It's the true way. Fen-true. | It's a long tally, is all.
+
+scene friend_fold
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# watched #fold# for me when I was laid up. That's a big notch, that. | #self.friend# and I don't talk much on the downs. We don't need to. | I owe #self.friend# #draughts#. Lost the last one. Fair-dry.
+b : Good to have. | Easy company. | You'll win it back.
+a : I'll square it. Somehow. | The best kind, fen-friend. | The Bright One willing.
+
+scene festival_out
+when topic=festival
+does give.opinion / react.self / assess
+a : Festival's the one day nobody's counting. I try not to, myself. | I'll be there. Eat too much #grub#, pray at the chapel after. | I like the festival. Everyone out, everyone talking. Even the quiet ones.
+b : Even you? | Pray after? | Even you?
+a : I try. I mostly fail, fen-friend. | Somebody has to. | Even me, once I've a cup of something hot.
+
+story walked_in [topic=memories|travel self.away=yes self.age>=25]
+  : I came out of #fen# young, with one coat and boots that drank every puddle.
+  : I walked a fortnight in the mizzle. Slept under carts and hedges. Ate what folk gave me, and folk gave me plenty.
+  ask : Who were they?
+  b[old] : The road was kinder then.
+  b : Do you know them?
+  : I never knew most of their names. That's why I keep #tally#. I can't pay them back, so I pay everyone else.
+
+story snow_lamb [topic=memories|animals self.job=herder]
+  : One winter #snow# came early. A ewe dropped her lamb in a drift up on the downs.
+  : I found it by the bleating. Carried it home inside my coat, and sat up with it all night by the fire.
+  ask : Did it live?
+  b : What happened?
+  : It did. It's the old ewe that follows me to the gate. She remembers. I'm sure of it.
+
+story first_floor [topic=home|memories self.away=yes]
+  : The first night in a house with a stone floor, I couldn't sleep. It was too dry. I kept waking for the damp.
+  : So I got up and walked on it. Up and down, barefoot, in the dark. Just to feel it.
+  ask : All night?
+  b : Did you sleep in the end?
+  : Near dawn. And I thanked the Bright One before I shut my eyes. Every dry floor's a gift to a fen wolf, fen-friend.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#, #address#. You're new to me. Step in out of the mizzle and say what you need.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Your last kindness is on the stick. Right here, fen-friend.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : #greet#. I'll hear you out, #address#. I'll not promise more than that.
+dlg @1 resident.job : I keep sheep on the downs, at #fold#. Count them out, count them home. Same with favours.
+dlg @1 resident.news : Nothing much floats up to #fold#. Grass is good. #ewes.capitalize# are fat. I give thanks for it.
+dlg @1 resident.bye : #farewell#, #address#. Mind the soft verge going home.
+graft resident.hub
+choice What's that stick you're carrying? -> tally
+node tally
+say #tally.capitalize#. A notch on this side for every favour I owe, that side for every one owed me. I square them as I can.
+mood pleased
+free
+choice Am I on it? -> tally_me
+choice Goodbye. -> bye
+node tally_me
+say If you've done me a kindness, you are. If I've done you one, forget it. I'll not collect. I only pay.
+choice That's a good way to live. -> hub
+choice Goodbye. -> bye

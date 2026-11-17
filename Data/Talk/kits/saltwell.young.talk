@@ -1,0 +1,365 @@
+# Saltwell's stage kit for its pups (doc 84 §7.10, §12.1, Phase 11): what a pup of Saltwell (stage young, about 0-12)
+# says when its own mantle has no young section. A mantle's own lines outrank these (+5), so this is the floor every
+# Saltwell pup stands on: whole scenes on the things pups really talk about (the well and the pool, the noon hush and
+# the cold starry nights, goats on the roofs, the Redsand warren, dates, the carts, the elders' sayings half understood),
+# then the edge lines as rules. The pup's own lines carry Saltwell's colour; a listener's bare line is anyone's.
+
+# ================================================================ The weather and the hour
+
+scene kit_sw_y_noon_lie_down
+when topic=weather|day self.from=saltwell self.stage=young here.region=waste here.time=day here.weather=clear
+does tell.self / react.self / assess
+a : #mum# says I have to lie down at noon. I'm not even sleepy. | It's #hot#. I put my paw on the wall and the wall bit me. | Everyone's asleep but me and the lizards.
+b[stage=adult|old] #grown : Lie down anyway. The noon heat is no friend to pups. | Walls hold the sun. Keep to the shady side till it breaks. | The lizards know what they're about. Find yourself some shade.
+b : Lie down anyway. | Ouch. Poor paw. | And me, it seems.
+a@grown : I'll lie down with my eyes open. That counts. | The shady side. #bc_i_will# | Under the palms, then. Only till the shade moves.
+a : With my eyes open. | It was only a little bite. | Then we can watch the lizards together.
+
+scene kit_sw_y_cold_stars
+when topic=weather|day self.from=saltwell self.stage=young here.region=waste here.time=dusk|night here.weather=clear
+does tell.self / react.self / assess
+a : It's #cold# tonight. Look, I can see my breath! | I counted the stars from the roof. I got to a hundred and then I fell asleep. | #grandad# showed me the low red star. It points the way to the Saltpan.
+b[stage=adult|old] #grown : Under a blanket with you, then. The nights out here bite. | A hundred is a fine count. The rest will keep till tomorrow. | It does. Keep it on your left going out, and you'll never be lost.
+b : Mine too. Brr. | A hundred! | Which one?
+a@grown : Two blankets. And the goat's warm too. | Tomorrow I'll start at a hundred and one. | On my left going out. I'll remember it always.
+a : It's like smoke! | Then I fell asleep. Counting is hard. | That one. Low down, and red.
+
+scene kit_sw_y_rain
+when topic=weather self.from=saltwell self.stage=young here.region=waste here.weather=rain|storm
+does tell.self / react.self / assess
+a : #rain.capitalize#! Real rain! I've only seen it twice in my whole life! | We put out every jar in the house to catch it. Even the cracked one. | #gran# says the Waste will be all flowers in a week. Is it true?
+b[stage=adult|old] #grown : Then dance in it. It won't come again for a long while. | Every drop's a gift. The cisterns will thank you. | It's true. Red ones and yellow ones, where there was only sand.
+b : Lucky you! | Good thinking. | #bc_so_they_say#
+a@grown : I'm wet right to the end of my tail! | I filled the little ones myself. | I'm going to pick the first one for #gran#.
+a : It smells like the dust is glad. | The cracked one leaks. | I'll go and look every day.
+
+scene kit_sw_y_sand_wind
+when topic=weather self.from=saltwell self.stage=young here.region=waste here.weather=sandstorm
+does tell.self / react.self / assess
+a : There's sand in my teeth and my ears and my bed. | #mum# tied a wet cloth over my nose. I look like a carter! | The dunes are walking tonight. #grandad# says so. Can they really walk?
+b[stage=adult|old] #grown : Shutters closed and stay in. It'll blow itself out. | Keep it on. The carters wear one for good reason. | Slowly. A step a year. That's why the roads move.
+b : #bc_mine_too# | You do, a bit. | #bc_so_they_say#
+a@grown : Then I'll tell stories till it stops. | Then I'm a carter. Make way for my cart! | I'll watch one. For a whole year.
+a : Everything crunches. | Make way for my cart! | I'd like to see a dune walk.
+
+scene kit_sw_y_dawn_water
+when topic=day|smalltalk self.from=saltwell self.stage=young here.region=waste here.time=dawn
+does tell.self / react.self / assess
+a : I carried the little jar back from the well all by myself. | The first bucket of the morning is so cold it makes my teeth sing. | I had to wait at the well. Elders first, then the guest, then everyone, then pups.
+b[stage=adult|old] #grown : All by yourself! And not a drop spilt? | Drink it slowly. The first water's the sweetest. | That's the well's manners. Pups last, and no grumbling.
+b : All the way? | #bc_lovely# | Long wait.
+a@grown : Only one drop. On my foot. | It is sweeter! Like the spring's been saving it. | I didn't grumble. Only inside.
+a : All the way, and I'll go again. | Sweet as dates. | Pups are always last.
+
+# ================================================================ Food
+
+scene kit_sw_y_dates
+when topic=food self.from=saltwell self.stage=young here.region=waste
+does tell.self / react.self / assess
+a : The first dates are down off the palms! I ate four. | Bread and dates and water again. It's #tasty#, but it's always the same. | #grandad# says if you swallow a date stone a palm grows in your belly.
+b[stage=adult|old] #grown : Four! Your belly will tell you about it tonight. | A plain meal, and many a wolf would be glad of it. | Then you'd have shade wherever you went. Don't try it.
+b : Only four? | Sounds good to me. | Did you swallow one?
+a@grown : Four and a half. The half was little. | I am glad. Mostly. | I spat it out. Quick, before it grew.
+a : Five, now. | I like the dates best. | Nearly. I spat it out.
+
+scene kit_sw_y_bread_salt
+when topic=food|friends self.from=saltwell self.stage=young
+does tell.self / react.self / assess
+a : We shared bread and salt, so now we're friends for life. That's the rule. | #mum# put salt on my bread and said it would make me strong. | Why do the elders always pass the salt first, before anything?
+b[stage=adult|old] #grown : For life, mind. That's a long promise for a pup. | Salt keeps, so it's said. A little won't hurt. | Because salt shared is a promise kept. Old as the well, that one.
+b : For life! | Did it work? | I've wondered too.
+a@grown : I'll keep it. #oath#! | I'm strong already. Feel. | A promise in a pinch of salt. #bc_wise#
+a : Even if we argue. | I'm strong already. | It's a promise, I think.
+
+# ================================================================ Animals
+
+scene kit_sw_y_goats_roof
+when topic=animals self.from=saltwell self.stage=young here.region=waste
+does tell.self / react.self / assess
+a : The goats are on our roof again. #dad# says they think it's theirs. | A hawk drinks at the pool every morning. I sat so still she let me watch. | I found a lizard in the water jar. I fished it out with a spoon.
+b[stage=adult|old] #grown : Flat roofs. Goats think they're made for them, and maybe they're right. | A hawk at the pool means the water's good. Let her be. | Lid on the jar, always. Then the lizards keep out.
+b : Get them down! | #bc_lucky_you# | Brave lizard.
+a@grown : I chased them. They only came back. | I won't throw anything. Not ever. | Lid on. #bc_i_will#
+a : They jump down when they want to. | She's nearly as big as me. | Wet lizard. Very cross.
+
+scene kit_sw_y_warren
+when topic=animals|pastimes self.from=saltwell self.stage=young here.region=waste
+does tell.self / react.self / assess
+a : There's a baby rabbit at the Redsand warren with one white ear. | We dug a burrow like the rabbits do. The sand filled it in. | A hawk took a rabbit right off the warren. I saw it happen.
+b[stage=adult|old] #grown : Look and don't touch. The warreners don't want pups in the burrows. | Sand does that. The rabbits just dig again, and so can you. | That's the Waste, #address#. The hawk has chicks to feed too.
+b : Sweet. | Dig again. | Oh no.
+a@grown : I only looked. Mostly. | We dug it twice more. Deeper. | Then I hope her chicks were hungry.
+a : I call it one-ear, even though it has two. | We'll dig deeper tomorrow. | It was so fast.
+
+scene kit_sw_y_hens
+when topic=animals|home self.from=saltwell self.stage=young
+does tell.self / react.self / assess
+a : I have to find where the hens hide their eggs. They're sly. | Our goat ate my straw hat. The whole brim. | The hens won't lay when it's #hot#. I asked them nicely.
+b[stage=adult|old] #grown : Look in the cool corners. Hens like shade as much as we do. | Goats eat anything. Even hats. Even pride. | Asking won't do it. Shade and water will.
+b : Sly hens! | The whole brim? | Nicely, even.
+a@grown : Behind the water jars! Three! | Pride doesn't taste of anything. | Shade and water. I'll try that.
+a : I found two. | All of it. | Very nicely.
+
+# ================================================================ The hamlet, its wonders and its lore
+
+scene kit_sw_y_saltpan
+when topic=smalltalk|land self.from=saltwell self.stage=young here.region=waste
+does tell.self / react.self / assess
+a : I went to the edge of the Saltpan with #dad#. It's so white it hurts. | Is the Saltpan a sea that the sun drank? | I licked the Saltpan. Don't tell.
+b[stage=adult|old] #grown : Never look at it at noon. That glare can blind a wolf. | The old ones say so. A sea, long ago, and the sun drank it dry. | Salty all day after, I'd wager.
+b : Bright, then. | Maybe it was. | Was it salty?
+a@grown : I squinted, like this. | The sun must have been #very# thirsty. | All day. Even my dates were salty.
+a : Brighter than the moon. | I think it was. | #very.capitalize# salty.
+
+scene kit_sw_y_spring_lore
+when topic=lore self.from=saltwell self.stage=young here.region=waste
+does tell.story / react.story / assess
+a : #gran# says there's a river under all the sand, and our pool is where it breathes. | Did a hawk really find our spring? | Somebody said the spring could stop. It won't, will it?
+b[stage=adult|old] #grown : That's the old telling. Cold and dark down there, and it never stops. | So it's told. A hawk, and a mother with an empty water skin following it. | It's never failed in all the years anyone remembers. It won't.
+b : #bc_so_they_say# | So it's told. | It won't.
+a@grown : I put my ear on the ground. I didn't hear it. | I'd follow a hawk. Then I'd find a spring too. | Good. I'll tell the others not to worry.
+a : I'll listen harder. | A clever hawk. | #bc_good#
+
+scene kit_sw_y_guest_first
+when topic=lore|smalltalk self.from=saltwell self.stage=young here.region=waste
+does tell.self / react.self / assess
+a : A carter drank first at the well this morning, before #grandad# even! | Why does the guest always draw first? | #mum# says a guest gets fed three days and then they're a neighbour.
+b[stage=adult|old] #grown : The guest draws first. That's the oldest rule there is. | Because a stranger has crossed the sand to get here. That's thirst enough. | Three days, and then you lend them your ladder.
+b : Good manners. | Good question. | Sounds fair.
+a@grown : #grandad# didn't mind. He smiled. | Then one day I'll be a stranger, and drink first. | I'll lend ours. It's only a bit broken.
+a : #grandad# smiled. | Because of the sand. | On the fourth day.
+
+scene kit_sw_y_sayings
+when topic=lore self.from=saltwell self.stage=young
+does tell.self / react.self / assess
+a : #gran# always says "#saying#". What does it mean? | #grandad# says "the well remembers who drew from it". Does the well have a head? | When the carts are late, the elders say every caravan comes home at last.
+b[stage=adult|old] #grown : It means what you'll know when you're older. Hold on to it till then. | Not a head. A memory. Be kind at the well, and it's kind back. | And they do, mostly. Late is not lost.
+b : Ask again later. | A good question. | #bc_mostly#
+a@grown : I'll hold on to it. Tight. | Then I'll be kind at it. And in case. | Late is not lost. I'll say that too.
+a : I'll ask when I'm big. | It might have a head. | I'll wait up for them.
+
+scene kit_sw_y_stars
+when topic=lore self.from=saltwell self.stage=young here.time=night
+does tell.story / react.story / assess
+a : I know five stars by name now. #grandad# knew forty. | If you're lost on a clear night, the stars take you home. If it's cloudy, you sit and wait. | #gran# says the stars are the lamps of every caravan that ever crossed the Waste.
+b[stage=adult|old] #grown : Five is a start. Learn the right nine and you'll never be lost. | And you wait, #address#. Never walk the sand blind. | That's a kind telling. Hold on to it.
+b : Five! | #bc_wise# | #bc_lovely#
+a@grown : Which nine? I'll learn them all. | I'll sit. Even if I'm bored. | I look for the newest one.
+a : Five, and one I made up. | I'll sit. | The newest one's mine.
+
+scene kit_sw_y_noon_tale
+when topic=lore self.from=saltwell self.stage=young
+does tell.story / react.story / assess
+a : #gran# says the noon sun carries off pups who wander on the sand. Is that true? | They say there's a wolf made of dust who walks the dunes at noon. | Did a whole cart ever sink in the sand? #grandad# says one did.
+b[stage=adult|old] #grown : True enough to keep you home at noon, which is the point of it. | That's a tale for keeping pups in the shade. Mind it anyway. | Old tales say so. Keep to the road and you'll keep your cart.
+b : Stay in the shade. | I'd not go looking. | #bc_so_they_say#
+a@grown : I'll stay home. But I'm not scared. | I won't look. I might peep. | I'll keep to the road. Always.
+a : I'm not scared. Much. | I'd only peep. | A whole cart!
+
+# ================================================================ Play and friends
+
+scene kit_sw_y_hide_palms
+when topic=friends|pastimes self.from=saltwell self.stage=young here.region=waste
+does tell.self / react.self / assess
+a : We played hide and seek in the palms. Nobody found me till supper. | I raced round the well three times and won! | We made a cart out of a date crate and pulled it to the pool.
+b[stage=adult|old] #grown : Till supper! They'll have been looking, worried. | Three times round the well. Your elders did it before you. | A fine cart. Mind the channels.
+b[stage=young|adolescent] #pup : Next time I'll find you first. | I'll beat you tomorrow. | Can I ride in it?
+b : Clever hiding. | You won! | A fine cart.
+a@grown : I was in the top of a palm. Nobody looks up. | And I'll do it again. | We minded them. Nearly all.
+a@pup : You won't. I'll be up a palm. | You won't! I'm the fastest. | If you pull it after.
+a : Nobody looks up. | Three times. | It has one wheel.
+
+scene kit_sw_y_date_stones
+when topic=pastimes self.from=saltwell self.stage=young
+does tell.self / react.self / assess
+a : I've got eleven date stones for jacks. Want to play? | I can throw a date stone right over the wall. | I'm the best at jacks in the whole street. #oath#!
+b[stage=adult|old] #grown : Eleven is plenty. Play in the shade, mind. | Over the wall? Not on anyone's head, I hope. | Best in the street! Then I'd best not play you.
+b[stage=young|adolescent] #pup : Yes! I go first. | Bet I can throw further. | Not for long.
+b : Eleven! | Over the wall? | Prove it.
+a@grown : In the shade. #bc_i_will# | Only the goat's. Once. | You'd lose. But nicely.
+a@pup : Guests go first. You go first, then. | Bet you can't. | For ever and ever.
+a : Twelve if I eat another date. | Right over. | I will, then.
+
+scene kit_sw_y_dunes
+when topic=pastimes|friends self.from=saltwell self.stage=young here.region=waste
+does tell.self / react.self / assess
+a : We slid down the big dune on a plank. Sand got everywhere. | I climbed the dune by the road and I could see the whole hamlet. | We buried each other in the sand up to our necks. It was cool underneath!
+b[stage=adult|old] #grown : Not at noon, I hope. That sand would cook a pup. | You can see the pool shining from up there. Fine view. | The sand is cool a paw down. Pups always find that out.
+b : Everywhere! | The whole hamlet? | Up to your necks?
+a@grown : At dusk. #mum# made us. | The pool, and the palms, and our roof with the goats on it! | And warm on top. Like bread.
+a : In my ears still. | Every roof. | Only our heads stuck out.
+
+scene kit_sw_y_best_friend
+when topic=friends self.from=saltwell self.stage=young self.friend
+does tell.self / react.self / assess
+a : #self.friend# and I are going to drive a cart together when we're big. | #self.friend# shared bread and salt with me. That's for life, you know. | #self.friend# and I have a secret place by the vines. I can't tell you where.
+b[stage=adult|old] #grown : A cart for two. You'll need a strong mule. | For life it is. Keep your half of it. | Keep it, then. Every pup needs a secret place.
+b : Good plan. | For life! | I won't ask.
+a@grown : The strongest. With a bell on. | I'll keep it. #oath#. | It's got shade, that's all I'll say.
+a : The best plan. | #bc_i_know# | It has shade.
+
+# ================================================================ Family and home
+
+scene kit_sw_y_gran
+when topic=family self.from=saltwell self.stage=young
+does tell.self / react.self / assess
+a : #gran# can tell where I've been by the sand on my paws. Red sand is the warren. | #gran# tells the best stories, but only in the cool of the evening. | #grandad# let me hold the reins on the cart. Just for a bit.
+b[stage=adult|old] #grown : Grandmothers know everything. You'll find that out. | The best stories wait for the evening. The heat spoils them. | Just for a bit is how every carter starts.
+b : #bc_clever# | #bc_lucky_you# | Just a bit?
+a@grown : I'm going to wash my paws before I go home. | I'll wait. I'm good at waiting. | Then I've started!
+a : Nothing gets past. | The best ones. | The mule didn't notice.
+
+scene kit_sw_y_chores
+when topic=family|home|day self.from=saltwell self.stage=young
+does tell.self / react.self / assess
+a : I have to sweep the sand off the step every morning, and every morning it's back. | It's my turn to shoo the hens out of the garden. They don't want to go. | I carry the water for the garden channels. It's #very# heavy.
+b[stage=adult|old] #grown : That's the Waste. You sweep, it blows. Keep sweeping. | Hens never want to go. Be firmer than they are. | Heavy work makes strong pups. Rest in the shade after.
+b : And again tomorrow. | Shoo! | Heavy, then.
+a@grown : I'll sweep faster than it blows. | I flapped. They flapped back. | My arms are longer already.
+a : It always comes back. | They're stubborn. | #very.capitalize# heavy.
+
+scene kit_sw_y_roof
+when topic=home self.from=saltwell self.stage=young here.region=waste here.season=summer
+does tell.self / react.self / assess
+a : We sleep up on the roof now it's summer. You can see every star. | Our roof is flat and the goat's roof is flat, so I can jump between them. | When I'm on the roof I can hear everyone's suppers.
+b[stage=adult|old] #grown : Best beds in the realm, roof beds. And free. | Don't let your elders catch you jumping. | And they can hear you, mind.
+b : #bc_lovely# | Careful! | #bc_ha#
+a@grown : I fall asleep before I count them. | They caught me once. I said I was the goat. | I'm quiet. Mostly.
+a : Every star. | I've only fallen once. | Mostly bread.
+
+# ================================================================ Dreams, faith, the year and its feasts
+
+scene kit_sw_y_dream_carts
+when topic=dreams self.from=saltwell self.stage=young
+does tell.plan / react.self / assess
+a : When I'm big I'm going to drive a cart all the way to Ridgemere. | I want to see the sea. Is it like the pool, but bigger? | I'm going to know forty stars, like #grandad# did.
+b[stage=adult|old] #grown : A long road. Learn the stars first, and the mules. | Much bigger, and salt, like the Saltpan running. | Forty! Start with the low red one.
+b : Far! | Bigger. Much. | Forty?
+a@grown : I'll learn them both. Mules first. They bite. | Salt and running? I'll need a big cup. | I know that one already. Thirty-nine to go.
+a : #far.capitalize#, and back. | I'll see it one day. | Forty, and one more.
+
+scene kit_sw_y_dream_night
+when topic=dreams self.from=saltwell self.stage=young
+does tell.plan / react.self / assess
+a : I dreamt the well talked to me. It said I was a good pup. | I dreamt the whole Waste turned to water and we all swam to the Saltpan. | I dreamt a hawk carried me up over the palms. I wasn't even scared.
+b[stage=adult|old] #grown : Then be one, and the well won't have lied. | A wet dream for a dry land. Your elders dream it too. | A hawk's dream. Means you'll travel, some say.
+b : Nice dream. | Strange! | Brave.
+a@grown : I will. Today, anyway. | Everyone dreams of water here. | I'll travel #far#.
+a : It had a kind voice. | And I could swim. | Not a bit scared.
+
+scene kit_sw_y_faith
+when topic=faith self.from=saltwell self.stage=young
+does tell.self / react.self / assess
+a : #mum# says the Bright One made the spring so we'd never be thirsty. | If you whisper at the pool, does the Bright One hear? | Is the Dark One in the sand wind? #grandad# shuts the door on it.
+b[stage=adult|old] #grown : So it's told. Give thanks when you drink, and you'll not go far wrong. | The Bright One hears a whisper as well as a shout. | It's only wind. But a shut door never hurt anyone.
+b : So it's told. | I'd like to think so. | It's only wind.
+a@grown : I say thank you every time. Nearly. | Then I'll whisper. It's more polite. | I'll help shut it.
+a : I say thank you. | I'll whisper, then. | Only wind. I think.
+
+scene kit_sw_y_autumn
+when topic=season self.from=saltwell self.stage=young here.region=waste here.season=autumn
+does tell.self / react.self / assess
+a : I carried a basket up to the Ochre vines. I only ate a few grapes. | The palms are heavy with dates and everyone's up ladders. | It's not so #hot# now. I can play at noon nearly.
+b[stage=adult|old] #grown : Only a few! The vine hands count, you know. | Hold the ladder, then. That's a pup's work at the date picking. | Nearly. The sun's still a sun. Keep your hat.
+b : A few? | Busy time. | Nearly.
+a@grown : They didn't count the purple ones. | I held it. It wobbled. Not my fault. | The goat ate my hat.
+a : Only the sweet ones. | I held the ladder. | Nearly.
+
+scene kit_sw_y_winter
+when topic=season self.from=saltwell self.stage=young here.region=waste here.season=winter|spring
+does tell.self / react.self / assess
+a : It's so #cold# at night I sleep with the goat. | #gran# says if the rain comes this year the wadis will run like rivers. | The sun's nice now. I can sit in it and not be cooked.
+b[stage=adult|old] #grown : A goat's a warm bedfellow, if a smelly one. | Then you'll see a sight. Water where there was only stones. | Enjoy it. Summer comes round again soon enough.
+b : Warm goat. | A river? | Nice, that.
+a@grown : Very smelly. Very warm. | I'm going to sail a stick down it. | I'll sit in it every day.
+a : Smelly, though. | I hope it comes. | Like a lizard.
+
+scene kit_sw_y_festival
+when topic=festival self.from=saltwell self.stage=young here.region=waste topic.when=today
+does tell.self / react.self / assess
+a : There are lamps all round the pool for #here.festival#, and they shine in the water like stars! | I'm going round the well three times for luck at #here.festival#. | Can I stay up on the roof and hear the music for #here.festival#?
+b[stage=adult|old] #grown : Lovely, aren't they. Same pool, same lamps, every year. | Three times, and no pushing. Then you'll have your luck. | Stay up as long as your elders let you. Not a moment longer.
+b : #bc_lovely# | Three times! | Ask nicely.
+a@grown : I counted them. I lost count. | No pushing. #bc_i_will# | I'll be so good they forget.
+a : Like stars! | Then I'll be lucky all year. | I'll ask very nicely.
+
+scene kit_sw_y_festival_soon
+when topic=festival self.from=saltwell self.stage=young here.region=waste topic.when=soon
+does ask.detail / answer.detail / assess
+a : Is it #here.festival# soon? How many days? | Will there be honey cakes for #here.festival#? | Can I carry a lamp to the pool for #here.festival#?
+b[stage=adult|old] #grown : Soon enough. Count the nights and you'll know. | There are always cakes. Be patient. | If you're steady with it. Lamp oil burns.
+b : Soon. | Bound to be. | Ask your elders.
+a@grown : I'll count them on my claws. | I'm being patient. Very. | I'll be the steadiest.
+a : Soon soon? | I'll save room. | I will!
+
+# ================================================================ The edge lines
+
+rule kit_sw_y_greet_back
+does greet.return
+when self.from=saltwell self.stage=young
+say #greet#! | Hello! #greet#! | #greet#, #greet#! | Hello, hello!
+
+rule kit_sw_y_greet_back_grown
+does greet.return
+when self.from=saltwell self.stage=young other.stage=adult|old
+say Peace on you, and on your house! I know the long one. | #greet#. #mum# says I have to say it properly. | #greet#! Water and shade to you, too!
+
+rule kit_sw_y_bye
+does farewell
+when self.from=saltwell self.stage=young
+say #farewell#! | Bye! #farewell#! | #farewell#, and stars! | Bye-bye! Peace on your road!
+
+rule kit_sw_y_bye_back
+does farewell.return
+when self.from=saltwell self.stage=young
+say #farewell#! | And peace on yours! Bye! | Bye! Water on your way! | Bye-bye!
+
+rule kit_sw_y_news_new
+does react.news.new
+when self.from=saltwell self.stage=young topic.claim_kind!=death|violence|victim
+say #surprise#! Does #mum# know? | #surprise#! I'm telling everyone at the well! | Truly? Truly truly? | Wait till I tell #gran#!
+
+rule kit_sw_y_news_known
+does react.news.known
+when self.from=saltwell self.stage=young self.knows=yes
+say I knew that already! Everybody knows. | I heard! I heard it first, nearly. | The big ones were talking about it. I was listening.
+
+rule kit_sw_y_news_doubt
+does react.news.doubt
+when self.from=saltwell self.stage=young topic.claim_kind!=death|violence|victim
+say #nonsense.capitalize#! You're making that up, I can tell. | #grandad# says don't believe a thing till you see it. | That sounds like a tale for pups. I'm not that little.
+
+rule kit_sw_y_how
+does answer.how.well
+when self.from=saltwell self.stage=young self.hungry!=yes self.injured!=light|bad self.mourning!=kin|friend
+say Good! I found a beetle. | #bc_good# I've got a new date stone. | Good! I'm nearly as tall as the water jar. | Very good, #oath#!
+
+rule kit_sw_y_how_hungry
+does answer.how.poorly
+when self.from=saltwell self.stage=young self.hungry=yes
+say #hungry.capitalize#. Is it supper yet? | My belly's growling like a sand wind. | Hungry. I could eat a whole palm, dates and all.
+
+rule kit_sw_y_boast
+does tell.boast
+when self.from=saltwell self.stage=young
+say I can carry the big jar now. Nearly the big one. | I can hold my breath longer than anyone. Ask anyone. | I know five stars by name. Five! | I can climb a palm faster than a lizard.
+
+rule kit_sw_y_ask_more
+does ask.detail
+when self.from=saltwell self.stage=young
+say And then what? Tell it slowly. | Was it big? How big? Bigger than a cart? | Did you see it yourself? Truly? | Is that true, by salt and water?
+
+rule kit_sw_y_tease
+does tease
+when self.from=saltwell self.stage=young other.stage=young|adolescent
+say #fool.capitalize#! That's not how it goes. | Slowcoach! The goat could beat you. | You've got sand in your ears, that's what.
+
+rule kit_sw_y_tease_back
+does tease.return
+when self.from=saltwell self.stage=young
+say Have not! You have! | Says the one who fell in the channel. | At least I can count past ten.
+
+rule kit_sw_y_preclose
+does preclose
+when self.from=saltwell self.stage=young
+say #mum#'s calling me. I have to go. | I'm meant to be fetching water. | The hens need shooing. I'd better go.

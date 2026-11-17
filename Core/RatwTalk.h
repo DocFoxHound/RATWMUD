@@ -40,10 +40,13 @@
 #include <deque>
 #include <functional>
 #include <map>
+#include <memory>
 #include <optional>
 #include <set>
 #include <string>
 #include <vector>
+
+#include "RatwMantle.h"
 
 namespace ratw::talk
 {
@@ -458,6 +461,10 @@ struct Settings
     // tests' small libraries, and a library before it, keep the line-by-line engine).
     bool hybrid = false;
     int hybridStitch = 2;
+    // Doc 84 §12 (Phase 10): a dead wolf's mantle rests this many game days before it passes on ("mantle_rest_days"), and
+    // the neighbouring pool a dialect with nothing to give borrows from ("mantle_fallback": Frosthollow -> Coldwater...).
+    double mantleRestDays = 365;
+    std::map<std::string, std::string> mantleFallback;
 };
 
 // Doc 84 §7.4, §8.5 (Phase 5): frames.json's goals, a reason to steer a talk: learn a name, ask a favour, mend a quarrel,
@@ -638,12 +645,52 @@ public:
     // A grammar replaced whole (a dialect from the database, a person's own layer): its text must declare it
     // (`grammar <name>`). False with the problems, and the old one kept.
     bool setGrammar(const std::string& name, const std::string& text, std::string& problem);
-    // A person's own rules (their character table, doc 62 phase 6), replacing any they had: each rule's ID gets
-    // "<npc>." before it and `self.id=<npc>` among its criteria, so it can only ever be theirs. Rules only, no scenes.
-    // False with the problems, and their old rules kept.
+    // A person's own rules (their character table, doc 62 phase 6; since doc 84 Phase 9 a per-NPC override, the DM's or
+    // Atlas's, never passed on), replacing any they had: each rule's ID gets "<npc>." before it and `self.id=<npc>` among
+    // its criteria, so it can only ever be theirs. Rules only, no scenes. Kept in that one wolf's own bucket, beside the
+    // shared library (no copy of it: defect 16), and consulted only when they speak. False with the problems, and their
+    // old rules kept. An empty text takes them away.
     bool setCharacter(const std::string& npc, const std::string& text, std::string& problem);
     // The name a person's own grammar layer has ("p_" and their ID, - as _).
     static std::string personalLayer(const std::string& npc);
+    // A mantle's mark drawn again for a new wearer (doc 84 §12.4, Phase 10): a value from the bank's `mark.<symbol>`
+    // (a dialect's mark bank, Phase 15's), else another of the mantle's own alternatives for the habit than the one it is
+    // seeded to; "" when there is nothing else to draw (one alternative, no bank, or the mantle isn't loaded).
+    std::string redrawHabit(const std::string& mantle, const std::string& symbol, const std::string& wearer,
+                            const std::string& bank) const;
+
+    // Mantles (doc 84 §9.4, Phase 9). Each is read (the .mantle syntax), checked against the library as a file of its own
+    // would be (facts, symbols, moves, 160 characters, the window's trees, a graft's nodes and its ways out), and compiled
+    // to rules and scenes kept in the mantle's own bucket (never the shared one: a pick looks at the shared lines and the
+    // speaker's own), with its words as the grammar layer m_<id>, between the wearer's own layer and their dialect. Its
+    // rules carry `self.mantle=<id>` and count as a named person's (+5). A speaker wears one when their facts say
+    // `mantle=<id>`.
+    struct MantleRefusal
+    {
+        std::string id, why;
+    };
+    // Every mantle at once (start, and voice.sync): those that load replace all that were loaded; one that fails is left
+    // out and named in `refused` (its wearer speaks from the library: a bad row never stops a server). Only `ready` ones
+    // are taken; a draft or a retired one is refused as such. The number loaded.
+    std::size_t setMantles(const std::vector<MantleText>& texts, std::vector<MantleRefusal>& refused);
+    // One mantle, loaded or loaded again (mantle.sync's hot reload): its bucket and its layer swapped whole. False with the
+    // problems, and the revision loaded before kept. `id` gets the mantle's id. A mantle not `ready` is refused (and the
+    // one loaded, if any, kept), unless `anyState` (talk_check, which checks drafts).
+    bool setMantle(const MantleText& text, std::string& problem, std::string* id = nullptr, bool anyState = false);
+    // A mantle read and checked as setMantle would, kept nowhere; `out` gets it as read and worked out. For talk_check
+    // --mantle and tools/mantle_store.py's checks on every save (G1).
+    bool checkMantle(const MantleText& text, Mantle& out, std::string& problem) const;
+    void dropMantle(const std::string& id);
+    void dropMantles();
+    const Mantle* mantle(const std::string& id) const;   // A loaded one (null if none)
+    std::vector<std::string> mantleIds() const;
+    std::size_t mantleEntries() const;                   // The rules and scenes of every loaded mantle
+    // The rules and scenes a mantle (or an NPC's own lines: "@<npc>") compiled to, for talk_check.
+    std::vector<const Entry*> ownEntries(const std::string& owner) const;
+    // A wearer's card over their worked-out facts (doc 84 §8.8, §9.5): its opinions over the stances worked out (op.*,
+    // op_strength.*, op_basis "mantle"), its likes over the drawn ones (one of each kind it names), its dislikes, fears
+    // and hopes. Traits and the quirk are the caller's (Game::talkSpeaker: never honesty, which a placed resident keeps).
+    void wear(Facts& person, const std::string& mantle) const;
 
     // Dialogue trees (doc 83). One .tree file's text, added to what is loaded (its nodes' lines become rules): false
     // with the problems, and nothing of it kept. Checked: every fact, symbol, node, action and list known; every node
@@ -813,6 +860,11 @@ public:
     bool expand(const std::string& text, const Query& q, int speaker, std::uint64_t seed, std::string& out,
                 Trace* trace = nullptr) const;
 
+    // Doc 84 §12.3.5 (Phase 11): a dialect's distinctive words (its grammars' phrases of two words or more, or coined
+    // with a hyphen, that no other grammar says: tools/dialect_check.py's lexicon), and whether a text says one. A mantle
+    // lent from a neighbouring pool speaks its own words to its wearer only where they aren't its dialect's.
+    const std::vector<std::string>& dialectWords(const std::string& dialect) const;
+    bool saysDialect(const std::string& dialect, const std::string& text) const;
 private:
     struct Alt
     {
@@ -854,6 +906,47 @@ private:
     bool checkGrammars(std::vector<std::string>& errors) const;
     void reindex();                                         // byConcept_, byId_ and byMove_ from entries_.
     void indexMoves(std::size_t i);
+    // The moves an entry is found by (its first turn's, each under every kind it is of).
+    std::set<std::string> movesUnder(Entry& e) const;
+    // A grammar file's lines read into `merged` (parseGrammar's, and a mantle's words): the texts each symbol line said,
+    // to be checked once the layers are in place.
+    struct GrammarLine
+    {
+        std::string grammar, symbol, where;
+        std::vector<std::string> texts;
+    };
+    bool readGrammarText(const std::string& text, const std::string& file, std::map<std::string, Grammar>& merged,
+                         std::vector<GrammarLine>& lines, std::vector<std::string>& errors) const;
+    // Doc 84 Phase 9: lines that belong to one owner, a mantle ("m:<id>") or one wolf's own ("p:<npc>"), kept apart from
+    // the shared library and swapped whole.
+    struct Owned
+    {
+        std::string owner;                                  // The mantle's id, or "@<npc>"
+        std::vector<Entry> entries;
+        std::map<std::string, std::vector<std::size_t>> byConcept, byMove;
+        std::map<std::string, std::size_t> byId;
+        Grammar grammar;                                    // m_<id>: the mantle's words
+        std::shared_ptr<const Mantle> card;
+    };
+    std::map<std::string, std::shared_ptr<const Owned>> owned_;
+    // The buckets a speaker's lines may come from: their mantle's and their own (by their facts' mantle and id).
+    std::vector<const Owned*> ownersOf(const Query& q, int speaker) const;
+    // Every entry for a concept: the shared library's, then the speaker's own buckets'.
+    std::vector<const Entry*> forConcept(const std::string& concept, const Query& q, int speaker) const;
+    const Grammar* layerOf(const std::string& name) const;   // grammars_, or a mantle's m_<id>
+    bool compileMantle(Mantle& m, Owned& out, std::vector<std::string>& errors) const;
+    bool loadMantle(const MantleText& text, Mantle& card, Owned& out, std::string& problem, bool anyState) const;
+    static void indexOwned(Owned& o, const Library& lib);
+    // Parsing into a vector of one's own (a mantle's items, an NPC's rules) instead of the shared library; and the concepts
+    // only a mantle's grafts have (graft.<tree>.<mantle>.<node>). Set only for the length of one parse.
+    mutable std::vector<Entry>* parseInto_ = nullptr;
+    mutable bool mantleParse_ = false;
+    // A mantle's own words while its lines are checked (checkText, longestSymbol): its symbols beside plain's.
+    mutable const Grammar* checking_ = nullptr;
+    // Whether each shared entry holds and speaks with nothing known (Library::unconditioned), worked out as asked: a
+    // mantle's dead-end check (what its lines owe has an answer) asks it again for every mantle.
+    mutable std::vector<char> plain_;
+    bool parseOwn(const std::string& text, const std::string& file, std::vector<Entry>& out, std::string& problem) const;
     bool readMoves(const std::string& text, std::string& problem);
     bool unconditioned(const Entry& e) const;               // (deadEnds: holds and speaks with every fact empty.)
     bool bindThird(const Entry& e, const Query& q, int speaker, Query& out) const;   // (binds: q with x.* filled.)

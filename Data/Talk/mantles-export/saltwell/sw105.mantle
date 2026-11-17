@@ -1,0 +1,305 @@
+# sw105, the name-keeper of the pans (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sw105
+revision 1
+state ready
+dialect saltwell
+accent light broad
+tier standard
+written_for tn_mb_kite_bogditch
+written_by claude-p11-pilot
+title the name-keeper of the pans
+fits stage=adult|old
+prefers job=farmer talk=chatty
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk remembers_every_name_ever_heard
+likes roast_pork digging fresh_straw autumn_wind
+dislikes gulls deep_mud
+fears being_forgotten
+hopes our_salt_in_every_kitchen
+topics work +0.4 dreams +0.3 smalltalk +0.3 food +0.2 land +0.2 faith -0.3 gossip +0.1
+styles comfort=practical gossip=eager refuse=soft tease=none
+marks oath saying more
+persona #self.first# works the family's salt out at the pans: loud, eager, never forgets a name, and means to see the salt sold in every kitchen from here to the sea.
+
+words
+oath! = Salt and sweat | By the pan's white edge
+saying! = A name remembered is half a deal done | Salt's thicker than blood out here | Dig deep and you'll stand high
+more! = And another thing | While I think of it | Listen, though
+names = every name I ever heard | names, all of them, in order
+crackling = roast pork with the crackling on | pork, and the crackling crisp
+digging = an hour's digging in the garden | a spade in the garden at dusk
+bedding = fresh straw | straw still green from the cart
+autumnwind = a good blustery autumn | the autumn wind off the dunes
+gulls = those gulls | the brine gulls
+mud = the brine-mud under the crust | mud to the hocks
+sacks = our sacks of white | the salt sacks
+rise = a second pan with our name on the store | our salt in every kitchen to the sea
+ledger = the tally of who owes what | my head's tally
+pans = the pans | the white pans
+
+any
+opinion @1 dole against 2 : I pay toward the well-share, and I see who comes back for seconds. I could name them all, #address#.
+opinion @1 houses against 1 : Nobody rises in this hamlet without a House's say-so. Watch me do it regardless. #oath#.
+opinion @1 church against 1 : A sermon never put a sack on the cart. I'll give the Bright One my thanks and #pans# my sweat.
+opinion @1 times for 1 : No complaints from me. #sacks.capitalize# are selling, and a wolf who grumbles at that wants his head looked at.
+opinion @1 festivals mixed 1 : A feast's a day off #pans#, which costs. But every name in the hamlet in one courtyard? Worth it.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#, #address#! You'll tell me your name, and I'll not forget it, I promise you. | #greet#! New face. I collect names, you know. Yours?
+line @2 greet : #greet#, #other.called#! I knew it was you from the far side of the well. | #greet#, #other.called#. #more#, how's the family?
+line @1 kin.open [pair.kin!=no] : There you are! #more#, did you eat? I've been at the pans since dark. | #greet#! Sit, sit. I've a hundred things to tell you.
+line @1 again.open : Back again, #other.called#! I was just saying your name to somebody at #pans#. | Twice today! The day's going #good#, then.
+line @3 greet [here.time=dawn] : #greet#! Up before the pans warm. Best hour, #oath#.
+line @4 greet [self.working=yes] : #greet#! Mind the brine, it's deep here. Talk while I rake.
+line @1 greet.return : #greet#, #other.called#! I'd know you anywhere. | #greet#, #address#! Good to see you, truly.
+line @1 farewell : #farewell#, #other.called#. I'll remember we talked. I always do. | #farewell#! Tell everyone I said so.
+line @1 farewell.return : #farewell#, #other.called#! | #farewell#! And come by the pans.
+line @1 react.news.new : #oath#! I hadn't heard, and I hear everything. Who told you? | #surprise.capitalize#! Wait till I tell the pans.
+line @1 react.news.known : I had it at dawn from the carters. #more#, I could name every one. | Heard it already, #address#. The pans hear quick.
+line @1 react.news.doubt : I'd want to know who said it before I believed it, and I'd know them, mind, #address#. | #doubt.capitalize#. Give me a name and I'll tell you if they're worth believing.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll remember the name. I remember them all. | #rest.capitalize#. I'll not forget it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! I'll tell the whole of the pans by noon. | #congrats.capitalize#! A new name to learn, too, by the sound of it.
+line @1 answer.how : Salted, sweaty and doing well, #oath#. You? | #busy.capitalize#! #sacks.capitalize# are going out faster than we fill them.
+line @1 sympathise : That's a weight, #address#. Sit; I'll talk, you rest. That's a fair trade. | #sympathy.capitalize#. If there's a name to it, tell me; I'll remember it with you.
+line @1 decline : I'd like to, truly, but #pans# won't wait and the carts come at noon. | Not today, #address#; I've sacks to count and a carter who owes me, and I mean to catch him.
+line @1 accept_decline : No harm! Another day, and I'll remind you, #address#. I don't forget. | #no_matter.capitalize#. I'll ask again, mind.
+line @1 thank : #thanks#! I'll remember it. I remember everything. | You're generous. I'll pay it back, #oath#.
+line @1 deflect_thanks : Nothing! A favour's half a friendship, #address#. | #deflect.capitalize#. You'd do the same, and I'll remember you said so.
+line @1 preclose [self.working=yes] : #more#, the brine won't rake itself. I'm off. | Right! The carts. #later.capitalize#, then.
+line @2 preclose : Look at the sun. #preclose.capitalize#. | I'd talk all day, but #sacks# won't.
+line @1 ack : Right, right. #bc_it_is# | It is so, truly.
+line @1 tell.boast : Forty of #sacks# this week, and I named every carter who took them. | Ask me any name at the well. Any. I'll give you the mother's too.
+rule @gulls_bark
+when concept=bark working=yes self.job=farmer
+does aside
+cooldown 6h
+say Off! Off, #gulls#! Nothing for you here. | #gulls.capitalize# again. Who feeds them? I want a name.
+
+rule @mud_bark
+when concept=bark working=yes self.job=farmer
+does aside
+cooldown 6h
+say Mind the soft patch! #mud.capitalize# will have your boot. | Plank! Somebody put a plank over the brine, #oath#.
+
+rule @sacks_bark
+when concept=bark working=yes self.job=farmer here.time=day|dusk
+does aside
+cooldown 6h
+say Thirty-one, thirty-two... #sacks.capitalize#, tied and ready. | Sack's light. Fill it to the line, #address#. A name's on that sack.
+
+rule @wind_bark
+when concept=bark here.season=autumn
+does aside
+cooldown 12h
+say Feel that? #autumnwind.capitalize#. Best weather there is. | Wind's up! Hold your hats and #sacks#.
+
+scene pans_dawn
+when topic=work here.time=dawn self.job=farmer
+does tell.self / react.self / assess
+a : Out on the pans before dark ended, raking the white while it's cool, and #more#, the crust's lovely this year. | Thirty of #sacks# by noon, that's the aim, and I'll tell you every name that carries them. | The first light on #pans# is white as milk. I've seen it a thousand times and I still look.
+b[job=farmer|laborer] #hands : Lovely crust, sore shoulders. Same every year. | Thirty's a lot of sacks. | White as milk and twice as blinding.
+b : Early start. | #bc_we_will_see# | #bc_lovely#
+a@hands : Sore shoulders, full sacks. I'll take the trade, #oath#. | It is. I mean to do thirty-one. | Twice. Wet cloth over the eyes, that's the trick.
+a : Early, and worth it. #bc_it_is# | We will. I'll name every sack, #address#. | #bc_lovely# I look every morning.
+
+scene brine_mud
+when topic=work|smalltalk self.job=farmer
+does tell.complaint / react.complaint / assess
+a : Went in up to the hocks in #mud# this morning. Lost a boot. Found it at noon, full of salt. | I can't stand #mud#. You never know where the bottom is. | Somebody moved the plank over the soft patch. I know who. #secret.capitalize#. I know, though.
+b : A boot full of salt! | #bc_true# | Who was it?
+a : Pickled! I'll wear it anyway, #oath#. | You don't. That's what I hate. Give me sand any day, #address#. | I said I won't. I know the name, and the name knows I know.
+
+scene sacks_out
+when topic=work|prices self.job=farmer
+does tell.boast / react.self / assess
+a : #sacks.capitalize# are going out faster than we fill them. Good salt sells itself. | Every one of #sacks# has a name on it, who raked it, who tied it. Ask me and I'll tell you. | A carter asked for twelve sacks. I gave him thirteen and his name in my head. That's how you keep a carter.
+b[merchant] #trade : Good salt and a good price. | Names on sacks? | Thirteen? You'll go broke.
+b : #bc_good# | Every one? | #bc_clever#
+a@trade : The salt's good. The price is the carter's business. | Names, #address#. It's how I know who's careful. | Broke? He'll come back to us for every load. #saying.capitalize#.
+a : #bc_very_good# | Every one. #oath#. | Not clever. Careful, and long-minded, #address#.
+
+scene every_name
+when topic=smalltalk
+does tell.boast / react.self / assess
+a : I've never forgotten a name. Not one. Tell me yours once and I'll have it in the long shade. | #more#: I know every wolf at the well by name, and their mother's name, and their mother's. | You're #other.called#. I knew before you opened your mouth. I always know.
+b[from=saltwell] #sw : Then you'll be the hamlet's memory when we're gone. | And mine? Truly? | Stars above, that's a gift.
+b : Not one? | Every wolf? | #bc_clever#
+a@sw : Somebody has to be. I don't mind it. | Truly. Ask me at the next feast. | A gift, and a habit. Same thing.
+a : Not one, #oath#. | Every one, #address#. Test me. | Not clever. I listen, #address#. Nobody else does.
+
+scene names_why
+when topic=smalltalk|memories
+does tell.self / react.self / assess
+a : Why names? Because a wolf whose name you remember will trade with you. #saying.capitalize#. | My #mum# taught me. Say the name back, and it sticks. | I'm afraid of being forgotten, if you want the truth. So I don't forget anyone.
+b : That's shrewd. | #bc_wise# | That's honest.
+a : Shrewd's no sin. It's salt sense, #address#. | Wise, and still at it. #oath#. | It's the truth. Don't make me say it again, #address#.
+
+scene crackling
+when topic=food
+does tell.self / react.self / assess
+a : #crackling.capitalize#. That's the meal. I'd walk to the far side of the Waste for it. | Somebody's roasting #crackling#. Smell that? I've had nothing since dawn but salt and water. | My #mum# did the crackling with salt off the pan. Best in the hamlet, I'll say that to anyone.
+b[from=saltwell] #sw : Pork, out here? A carter's luxury, that. | Smell it? The whole street's smelling it. | Our own salt's the sweetest on anything.
+b : #tasty.capitalize#. | #bc_me_too# | #bc_good#
+a@sw : Luxury, and worth every coin, #oath#. | The whole street, and me first. | It is. Ours most of all.
+a : I'm hungry now, #address#. | Then we'll both stand here smelling it. #bc_it_is# | Best in the hamlet. #bc_it_is#
+
+scene digging
+when topic=pastimes|home
+does tell.self / react.self / assess
+a : #digging.capitalize#. That's my rest. Folk think I'm mad; I rake all day and then I dig. | Dug a new bed by the wall last night. Onions. #more#, I'll need straw for the walk. | There's nothing like #digging#. You can hear yourself think.
+b[job=farmer|herder] #land : Mad, yes. But a good garden's a mad wolf's garden. | Onions want sand and not much water. | The spade's a good thinker.
+b : Doesn't it tire you? | #bc_good# | What do you think about?
+a@land : Then I'm in good company. | Sand I've plenty of. | It is. Better than me.
+a : Tire? It's the only thing that rests me, #address#. | Good onions. You'll have some, #address#. | Names. Plans. Salt. In that order, #oath#.
+
+scene fresh_straw
+when topic=home
+does tell.self / react.self / assess
+a : Put #bedding# down this morning and the whole house smells of a barn. I love it. | #self.mother# says I bring the pans in on my feet. So I put down #bedding#. Problem solved. | I'd have #bedding# on every floor in Saltwell if I could. It's cheap and it's clean.
+b : #bc_lovely# | Solved? | Every floor?
+a : #bc_lovely# Sit on it. | Solved, until noon. #more#, it's always noon. | Every floor, #oath#. A clean floor's a good name.
+
+scene gulls
+when topic=animals|work
+does tell.complaint / react.complaint / assess
+a : #gulls.capitalize# came inland again. Sitting on the brine like they own the pan. | One of #gulls# took a whole loaf off my sack. Sat on the store roof and ate it at me. | I can't abide #gulls#. Loud, greedy, and nobody knows where they come from.
+b[herder] #herd : Gulls go where the water is. Brine's water to them. | Bold things. Worse than hawks. | Like some carters, then.
+b : Odd, out here. | #bc_bad_luck# | They're only birds.
+a@herd : Then I'll drain the brine. Not really. Nearly. | Worse, and noisier. | Like some carters. I know their names, too.
+a : Odd and greedy, #address#. | #bc_bad_luck# And bad manners. | Birds with no manners. #annoyed.capitalize#.
+
+scene autumn_wind
+when topic=weather|season here.season=autumn
+does tell.feeling / react.self / assess
+a : #autumnwind.capitalize#! Best weather there is. Blows the heat off the pans and the flies off everything. | The wind's up. You can rake #pans# twice as long when it's blowing. | I stood on the store roof in #autumnwind# this morning just to feel it.
+b[from=saltwell] #sw : A dust-wind? You like a dust-wind? Sun-addled, truly. | Twice as long and half as hot. Truly said. | On the roof! You'll fly off.
+b : Windy, though. | #bc_good# | Why?
+a@sw : Not the dust. The cool. There's a difference. | Truly said. I'll rake till dark. | I'm too heavy to fly. More's the pity.
+a : Windy and lovely, #address#. | #bc_very_good# | Because it's the best wind. #oath#.
+
+scene mother_house
+when topic=family self.mother
+does tell.self / react.self / assess
+a : #self.mother# keeps the house book. Every one of #sacks# I fill, it's written there by dusk. | I live with #self.mother#, out by #pans#. Quiet house. I'm the noise in it. | #self.mother# says I talk too much. True. But I listen too, and nobody notices that.
+b[old] #old : A good book keeps a good family. | Every house needs one noisy wolf. | Listen to your mother, then.
+b : #bc_good# | #bc_lucky_you# | #bc_true#
+a@old : It does. I learned my numbers off it. | Then ours is well kept. | I do. Mostly. #oath#.
+a : Good, and strict. #bc_it_is# | Lucky, and loud. #bc_it_is# | True. And I remember everything said, #address#.
+
+scene rising
+when topic=dreams
+does tell.plan / react.self / assess
+a : One day there'll be #rise#. I've said it since I was small and I'll say it till it's true. | A House won't give it to us. So I'll take it, sack by sack, name by name. #bc_it_is# | Nobody rises here without a House's nod. I'll rise without one. Watch.
+b[wealth=rich] #rich : Big dreams for a pan. | Sack by sack's the only way. | Careful. Houses have long memories.
+b : #bc_we_will_see# | #bc_i_hope_so# | Truly?
+a@rich : Big pan, then. #oath#. | It is. Slow, and sure. | So do I. Longer.
+a : We will, #address#. #saying.capitalize#. | So do I. #more#: hope's cheap; sacks aren't. | Truly. You'll remember I said it, #address#.
+
+scene sea_kitchens
+when topic=dreams|travel
+does tell.plan / react.self / assess
+a : I want our salt in every kitchen from here to the sea. Every one. With our name on #sacks#. | I've never seen the sea. I will, the day our salt gets there first. #someday.capitalize#. | The carters tell me where they sell. I remember every town, #far#. I'll be in all of them.
+b[carter] #carter : I'll carry it. For a price. | The sea's big. Bring a lot of salt. | You'll need more carts.
+b : Every kitchen? | #bc_we_will_see# | All of them?
+a@carter : Name your price. I'll remember it. | All the salt we've got. | More carts, more names. Good.
+a : Every one, #address#. | We will. #oath#. | All of them. #more#, I've a list in my head.
+
+scene newcomer_names
+when topic=newcomer
+does tell.news / react.news / assess
+a : #topic.subject.capitalize# is new. I've already got the name, and the name of the cart that brought #topic.them#. | A newcomer, #topic.subject#. I'll go and say the name back. That's how you welcome a wolf, #address#. | #topic.subject.capitalize#, new here. I'll know everything about #topic.them# by Restday.
+b[from=saltwell] #sw : Three days a guest. Feed #topic.them# first, then learn the rest. | Saying it back. That's kind, truly. | Leave #topic.them# some secrets.
+b : Already? | #bc_good# | Everything?
+a@sw : Fed first. I'll bring bread and salt, #oath#. | Kind and useful. | A few. I'll keep them, mind.
+a : Already. I'm quick with names, #address#. | #bc_good# | Everything said aloud, #address#.
+
+scene carts_names
+when topic=caravan topic.kind=arrived|in
+does tell.news / react.news / assess
+a : The #topic.where# carts are in! #more#: I know every carter on that road by name. | Carts from #topic.where#. I'll be down there with #sacks# before they've watered the mules. | #topic.where.capitalize# carters in. One of them owes me two of #sacks#. I know which.
+b[carter] #carter : And they know yours. Loud enough. | Let the mules drink first. | Two sacks? Not me.
+b : #bc_good# | Quick, then. | #bc_ha#
+a@carter : Good. A name's worth knowing both ways. | Mules first, then salt. Fair. | Not you. I know which, #oath#.
+a : Good for the pans, #address#. | Quick and loud. That's how you sell #sacks#. | Not funny, #address#. Two sacks is two sacks.
+
+scene sermon_bread
+when topic=faith
+does give.opinion / react.self / assess
+a : A sermon never once put a sack on a cart. I thank the Bright One and get back to #pans#. | My #mum# prays for both of us. I rake for both of us. It's a fair split. | The Bright One gave us salt and paws. The rest is our business, #address#.
+b[piety=devout] #devout : The Bright One gave you the pans, too. | A fair split, maybe. | Your mother's right to pray.
+b : #bc_fair# | #bc_fair_enough# | #bc_true#
+a@devout : And I'm grateful. I just don't sit about saying so. | Maybe. I'll not argue it. | Right, and patient. #oath#.
+a : Fair, #oath#. | #bc_it_is# | #bc_true# And the rest is sweat.
+
+scene well_share
+when topic=times|smalltalk
+does give.opinion / react.self / assess
+a : I pay toward the well-share every month. I see who comes back for seconds. I know every name. | Some need the alms-bread, fair. Some just like it. I know which are which. | Work's there on #pans# for anyone who'll rake. I'd hire them myself.
+b[wealth=poor|destitute] #poor : Some of us take it because we must. | Easy said with a full purse. | The pans don't hire everyone.
+b : Hard words. | #bc_true# | Would you?
+a@poor : Then you're not the ones I mean. You know you're not. | Easy said, I know. I'll still say it. | Not everyone. Anyone who asks me, though.
+a : Hard, and true. #saying.capitalize#. | #bc_it_is# | I would. Come and ask, #address#.
+
+scene health_shoulders
+when topic=health
+does tell.self / react.self / assess
+a : My shoulders are rope from the rake, and #tired# by dusk. Good rope, though. | Salt in the eyes again. A wet cloth at noon, that's all it wants. | Never sick! Salt keeps you, inside and out. #saying.capitalize#.
+b[old] #old : Rope frays, mind. | Wet cloth. My father swore by it. | Wait till you're my age.
+b : #bc_good# | #bc_poor_soul# | Never?
+a@old : Then I'll splice it. #oath#. | So does everyone at the pans. | I'll wait. I'm patient. Mostly.
+a : Good rope, #address#. | Not poor. Salted. #bc_it_is# | Never, truly.
+
+scene land_pans
+when topic=land
+does tell.self / react.self / assess
+a : #pans.capitalize# go further than you'd think. Past the white, there's brine, and past that more white. | I walked the whole edge of the pan once. Took a day. I named every stone. Not really. Nearly. | Land out here isn't for growing. It's for raking, #address#. You learn that young.
+b[job=farmer|herder] #land : Further than anyone's raked. | A day? That's a big pan. | Raking's farming too.
+b : #bc_lovely# | Named them? | #bc_true#
+a@land : Further than anyone yet. I mean to. | Big enough for a second store. | It is. Salt's a crop. Ask anyone at the pans.
+a : White and lovely, #address#. | Not really. I said not really. #bc_it_is# | True. I learned it at five.
+
+story the_carter_name [concept=talk.memories]
+  : A carter came through once, years back, said his name once and left. Never came back.
+  : Six years later a cart came in off the sand and I called that name before the carter was off the box.
+  ask : Would you remember a name six years, #address#?
+  b[carter] : I'd not remember my own after six years on the road.
+  b : Six years? Truly?
+  : Six. The carter cried. Then ordered forty sacks, and has ever since.
+  : #saying.capitalize#. I tell that one at every feast.
+
+story the_lost_boot [concept=talk.work self.job=farmer self.mother]
+  : First week on the pans, I stepped off the plank into #mud# and went in to the chest.
+  : Couldn't move. Shouted #names#. All of them.
+  ask : Did anyone come?
+  b[job=farmer|laborer] : Somebody always comes. You'd do it too.
+  b : Who pulled you out?
+  : #self.mother#. With a rope and a face like thunder.
+  : I've never stepped off a plank since. And I still remember every name I shouted. #oath#.
+
+story the_first_sack [concept=talk.dreams]
+  : The first sack I filled myself, I wrote our name on it in charcoal. Big letters.
+  : The carter laughed. Said nobody reads sacks.
+  ask : Do they, #address#?
+  b[merchant] : I read every sack that comes in. A name means somebody cared.
+  b : Did anyone read it?
+  : A cook in Ridgemere did. Sent word back by the next cart: whose salt is this? Send more.
+  : I've the word still, in my head. Every letter. #more#, that's when I knew.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#, #address#! Your name? I'll keep it, I promise. Never forgot one yet.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! See? I remembered. I always do.
+dlg @1 resident.job [self.job=farmer] : I work the salt at #pans#. Rake it, sack it, sell it. And remember who bought it.
+dlg @1 resident.news : Nothing new since the carts, and I'd know, #address#. | It's all #world.event_words#. I've heard it from eleven wolves already, and I'll name them if you like.
+dlg @1 resident.gossip : I know #names#. What they do with them is their business. Mostly.
+dlg @1 resident.bye : #farewell#, #topic.player#. I'll remember you. I always do.
+graft resident.hub
+choice Do you really remember every name you hear? -> names
+node names
+say Every one. Say yours once and I'll call it across the well in ten years. Try me, if you like.
+mood pleased
+free
+choice How do you do it? -> names_how
+choice Goodbye. -> bye
+node names_how
+say Say it back. Out loud, straight off. Then once more when you leave. My mother taught me. It never fails, by the pan's white edge.
+choice I'll try that. -> hub
+choice Goodbye. -> bye

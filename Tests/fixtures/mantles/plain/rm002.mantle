@@ -1,0 +1,49 @@
+# rm002, the stair runner (doc 84 §9.7): the luna table of rm_ada_rainmore, ported. A pup's mantle: its lines are her
+# young section's. Name-free (her mother and father by their slots).
+mantle rm002
+state ready
+dialect plain
+accent none light
+tier standard
+written_for rm_ada_rainmore
+title the stair runner
+fits stage=young|adolescent
+traits temper=calm honesty=frank
+quirk takes_the_long_stairs_two_at_a_time
+likes stair_racing
+fears being_found_out
+hopes to_see_the_lake
+topics day +.3
+marks oath saying
+persona #self.first# is a small, quick pup who talks plainly in short bursts and takes every stair two at a time.
+
+words
+saying! = A clean path still climbs | Keep your eyes open
+pet!! = little spark | street-tail
+oath! = By the high steps | Soot and stone
+greet = Hello | Hi
+farewell = Keep to the clear way | Till the next stair
+
+young
+rule @streets
+when concept=bark
+does aside
+cooldown 6h
+say The long stairs are faster. Try them. | Keep up if you can!
+
+line tell.boast [concept=talk.day] : I took the long stairs two at a time. All of them!
+line greet.return : #greet#! Are you going up or down?
+line farewell.return : #farewell#!
+line react.news.new : #oath#! Really?
+line react.news.known : I knew that already.
+line answer.how : Good! I'm fast today.
+line tell.self [concept=talk.family self.mother] : #self.mother# says I'm to keep out from under the carts.
+
+story the_list [concept=talk.day]
+  : I'm keeping a list. A secret one.
+  ask : Do you want to know what's on it?
+  b[old] : Only if you whisper it.
+  b : Go on, then.
+  : Wolves who don't say thank you. You're not on it.
+
+dlg resident.hub [topic.meeting=known] : #greet#! Come on, I found a quicker way.

@@ -183,7 +183,11 @@ def shape(conn, table):
 # row read with one NULL leaves it out, so it compares equal to the same row from a world without the column; a write
 # to a world with the column sets one the row leaves out to NULL (a band cleared to From rank is cleared there too), and
 # one the target hasn't got is refused when the row holds a value (never dropped unsaid), left out when it is unset.
-OPTIONAL_COLUMNS = {'live.npcs': ('band_override',)}
+# Doc 84 Phase 10: live.npc_voice's bindings (migration 0066: mantle_id, bound_day, bound_how, released_day) the same way,
+# an unset binding ('' for bound_how) being what a world without them reads. Each column -> its unset value.
+OPTIONAL_COLUMNS = {'live.npcs': {'band_override': None},
+                    'live.npc_voice': {'mantle_id': None, 'bound_day': None, 'bound_how': '', 'released_day': None}}
+OPTIONAL_MIGRATION = {'live.npcs': '0061', 'live.npc_voice': '0066'}
 
 
 def world_column(table):
@@ -204,12 +208,12 @@ def read(conn, table, world_id, skip=(), where=''):
     if where:
         sql += (' AND ' if column else ' WHERE ') + where
     cur = conn.execute(sql, params)
-    optional = OPTIONAL_COLUMNS.get(table, ())
+    optional = OPTIONAL_COLUMNS.get(table, {})
     rows = {}
     for r in cur.fetchall():
         row = dict(zip(columns, r))
-        for c in optional:                         # (Unset, as a world without the column has it.)
-            if c in row and row[c] is None:
+        for c, unset in optional.items():          # (Unset, as a world without the column has it.)
+            if c in row and row[c] == unset:
                 del row[c]
         rows[tuple(row[k] for k in keys)] = row
     return rows
@@ -217,15 +221,17 @@ def read(conn, table, world_id, skip=(), where=''):
 
 def write(conn, table, row, touch=False):
     _, keys, types = shape(conn, table)
-    optional = OPTIONAL_COLUMNS.get(table, ())
+    optional = OPTIONAL_COLUMNS.get(table, {})
     row = dict(row)
-    for c in optional:
+    for c, unset in optional.items():
         if c in types and c not in row:
-            row[c] = None                         # (Unset, as read() leaves it out: written as unset.)
-        elif c not in types and row.get(c) is not None:
-            raise PublishError(f'{table} {row.get("id", "")}: this world lacks the column {c} (migration 0061) to hold it. '
-                               'Migrating it is the user\'s decision (python3 tools/world_db.py migrate); or set it back '
-                               'to none (the Band picker\'s From rank) where it was set.', [row.get('id', '')])
+            row[c] = unset                        # (Unset, as read() leaves it out: written as unset.)
+        elif c not in types and c in row and row[c] != unset:
+            who = row.get('id', row.get('npc_id', ''))
+            undo = ('set it back to none (the Band picker\'s From rank) where it was set' if table == 'live.npcs' else
+                    'release the mantle where it was bound')
+            raise PublishError(f'{table} {who}: this world lacks the column {c} (migration {OPTIONAL_MIGRATION[table]}) to hold '
+                               'it. Migrating it is the user\'s decision (python3 tools/world_db.py migrate); or ' + undo + '.', [who])
     # (Only an optional column the target lacks is left out; any other unknown column fails, as it always has.)
     columns = [c for c in row if c in types or c not in optional]
     values = [S.Jsonb(row[c]) if types.get(c) == 'jsonb' and row[c] is not None else row[c] for c in columns]
@@ -451,6 +457,10 @@ SYNCED = [Spec(*s) for s in (
     ('live.profession_slots', 'profession slots', 'live'),
     ('live.faction_members', 'faction members', 'live'),
     ('live.faction_relations', 'faction relations', 'live'),
+    # Mantles (doc 84 §17.9, Phase 10): live data, compared item by item, so an edit to one line in dev and another in
+    # live don't conflict; their history stays in each world. Before the voices that bind them.
+    ('live.mantles', 'mantles', 'live'),
+    ('live.mantle_lines', 'mantle items', 'live'),
     ('live.npc_voice', 'NPC voices', 'live'),
     ('live.npc_relations', 'families', 'live'),
     # (The store room's per-business switches went with the city's loop: Docs/Design/79-a-staged-economy.md, 17;
@@ -462,6 +472,8 @@ SYNCED = [Spec(*s) for s in (
 SPECS = {s.table: s for s in SYNCED}
 GLOBAL_TABLES = ('live.professions', 'live.characters')    # (One world a database: these have no world column.)
 VOLATILE = ('updated_at', 'revision')
+# Volatile for one table only: a mantle's created_at (each world stamps its own: doc 84 Phase 10).
+VOLATILE_OF = {'live.mantles': ('created_at',)}
 # NPCs a spawn rule made belong to the server running them; each world's rules make their own.
 SPAWNED = '(SELECT id FROM live.npcs WHERE spawn_id IS NOT NULL)'
 ONLY = {'live.npcs': 'spawn_id IS NULL', 'live.npc_voice': f'npc_id NOT IN {SPAWNED}',
@@ -508,6 +520,14 @@ class Snapshot(dict):
         return sum(len(rows) for rows in self.values())
 
 
+def bindings_unheld(source, target) -> list[str]:
+    """The NPCs of `source` bound to a mantle (live.npc_voice.mantle_id, doc 84) when `target` lacks the column (migration
+    0066): what a sync there would have to refuse (write())."""
+    if 'mantle_id' in shape(target, 'live.npc_voice')[2] or 'mantle_id' not in shape(source, 'live.npc_voice')[2]:
+        return []
+    return [r[0] for r in source.execute('SELECT npc_id FROM live.npc_voice WHERE mantle_id IS NOT NULL ORDER BY npc_id').fetchall()]
+
+
 def bands_unheld(source, target) -> list[str]:
     """The NPCs of `source` with an authored band (live.npcs.band_override) when `target` lacks the column: what a sync
     there would have to refuse (write())."""
@@ -524,7 +544,7 @@ def snapshot(conn, world_id) -> Snapshot:
         columns, keys, _ = shape(conn, table)
         rows = {}
         if columns and (world_id is not None or table in GLOBAL_TABLES):
-            found = read(conn, table, world_id, skip=VOLATILE, where=ONLY.get(table, ''))
+            found = read(conn, table, world_id, skip=VOLATILE + VOLATILE_OF.get(table, ()), where=ONLY.get(table, ''))
             if table == 'live.patrol_routes':
                 posts = {}
                 for route, seq, area, x, y in conn.execute('SELECT route_id, seq, area, x, y FROM live.patrol_posts '
@@ -997,6 +1017,9 @@ def apply_rows(conn, world_id, changes, have: Snapshot):
     (parents before children). Inside the caller's transaction; constraints are checked by finish()."""
     order = {s.table: i for i, s in enumerate(SYNCED)}
     changes = sorted(changes, key=lambda c: order[c[0].table])
+    if any(c[0].table in ('live.mantles', 'live.mantle_lines') for c in changes):
+        # (live.mantle_history names where a change came from: doc 84 §17.1's trigger reads it.)
+        conn.execute("SELECT set_config('ratw.edit_source', 'sync', true)")
     removed = [(s, k) for s, k, row in changes if row is None and have.row(s.table, k) is not None]
     written = [(s, k, row) for s, k, row in changes if row is not None]
     if any(s.table == 'world.worlds' for s, _ in removed):
@@ -1548,7 +1571,13 @@ class Sync:
             history = releases(live) if info['world'] else []
             lacking = behind(dev, live) if info['replacesMap'] else []
             unheld = bands_unheld(dev, live)
+            unbound = bindings_unheld(dev, live)
         blocked = []
+        if unbound:
+            blocked.append(f'{live_key.upper()} lacks migration 0066, and {len(unbound)} NPC{"s" if len(unbound) != 1 else ""} '
+                           f'in {dev_key.upper()} {"wear mantles" if len(unbound) != 1 else "wears a mantle"} it can\'t bind '
+                           f'({", ".join(unbound[:6])}{"..." if len(unbound) > 6 else ""}): migrate {live_key.upper()} (the '
+                           f'user\'s decision: python3 tools/world_db.py migrate --db {live_key}).')
         if info['replacesMap']:
             warnings = [maps_differ_text(info['maps'], dev_key, live_key) + ': importing replaces '
                         f'{live_key.upper()}\'s map with {dev_key.upper()}\'s.', *warnings]
