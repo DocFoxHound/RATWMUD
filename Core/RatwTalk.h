@@ -40,6 +40,7 @@
 #include <deque>
 #include <functional>
 #include <map>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -53,15 +54,22 @@ struct Speaker
 {
     Facts facts;                          // id, name, sex, stage, age, job, role, trade...: keys without "a."/"self.".
     std::vector<std::string> grammar;     // Their grammar layers, nearest first; "plain" always comes last.
+    // A player's character (or facts "player=yes"): the engine never writes them a line (doc 84 §13: players speak only
+    // in the window). What a resident's line owes them stays theirs to answer (Slice 2's review).
+    bool player = false;
 };
 
 // What is about to be said, and everything true about it.
 struct Query
 {
     std::string concept;                  // "talk.prices", "bark"
-    Facts facts;                          // "pair.band", "here.place", "topic.item"...: full keys.
+    Facts facts;                          // "pair.band", "here.place", "topic.item", "conv.k"...: full keys.
     Speaker a, b;                         // a speaks first; b is no one when `alone`.
     bool alone = false;
+    // A third party for a line that `binds x=<slot>` (doc 84 §7.1, Phase 2): the person the slot names, for the one
+    // speaking (0: a, 1: b), as facts without "x." (a person's facts, and the speaker's bond to them: affinity,
+    // disposition). False when there is no one: then the line doesn't fit. Unset: no line that binds ever fits.
+    std::function<bool(const std::string& slot, int speaker, Facts& facts)> bind;
 };
 
 // What saying something changes (phase 4): a fact remembered about a resident, two of them, or a town, for a time;
@@ -81,13 +89,68 @@ struct Effect
 // Where one line of what was said came from (Docs/Design/84 §15.1, for the conversation simulator's transcripts and the
 // server's --log-talk-words): its rule or scene, which of its `|` alternatives, and the grammar layers whose words
 // filled its symbols (a dialect's name when a dialect's words were spoken). Recorded only; nothing reads it to choose.
-struct LineInfo
+//
+// Doc 84 §8.1 (Phase 2): and what the line does in the talk, from its moves (Data/Talk/moves.json): the moves it makes, the
+// answers it makes due (`owes`, written or handed on by `then`, else its moves' `expects`; "self:" or "any:" before one
+// not owed by the one spoken to), the soft ones (`invites`), which of the line before it it answers, the claims it
+// passes on or denies (claims.json's family, as topic.claim_kind says it), its tone, and the conversation's tags it sets
+// ({k=v}: conv.k). The transcripts and --log-talk-words carry them; Phase 3's turn engine chooses by them.
+struct SaidLine
 {
     std::string entry;
     int alt = -1;
     std::vector<std::string> layers;      // In the order first used; "plain" included when plain's words were.
     std::vector<std::string> habits;      // The habits (`name!`, `name!!` symbols: an oath, a saying) it used.
+    std::vector<std::string> moves;       // "tell.gossip", "react.news.known"
+    std::vector<std::string> owes;        // Each "move|move" (any one answers it)
+    std::vector<std::string> invites;     // The same, soft: answered only if a fitting line comes
+    std::vector<std::string> answers;     // The moves of the line before it that this one answers
+    std::vector<std::string> asserts, denies;   // Claims ("theft", or "topic" when the topic has no claim kind)
+    std::string tone;                     // light, even, serious, grave, tender, cross ("": no move, no tone)
+    bool gist = false;
+    Facts tags;                           // {k=v}: conv.k for the rest of the conversation
+    double keep = 0;                      // {k=v keep 7d}: kept in the ledger this long (game days; Phase 5)
+    int who = 0, to = -1;                 // The speaker (0: a, 1: b) and the one spoken to (-1: no one)
+    std::string text;
+    // Phase 7 (§8.12.3): the opener's own words when something was said in its breath before them (a greeting, "Back
+    // again?", "As I was saying."), so the collision filter keeps the words themselves, not only the whole line.
+    std::string bare;
+    // Phase 3 (§8.2, the scorecard's C2): how well a reply answered what was owed (3: the handed-on concept's own, or
+    // the exact variant owed; 1: another line doing an owed move; 0: a fallback), and the best fit any line that held
+    // had (before what was said already, the frames and the tone rules left out). -1: it answered nothing owed.
+    int fit = -1, best = -1;
+    // Phase 4 (§8.2, Valve's rule): the turn (from 0) and the line within it (a turn's variant) it was said from, so a
+    // scene's queued turn is checked again when it comes due. -1 for a line written outside the library.
+    int turn = -1, variant = -1;
+    // Phase 5 (§8.5, §8.7): the topic it was said on (the talk's, after any pivot); whether its words stand on the talk
+    // ledger (a callback: what the two said before, a thread, a kept tag, a promise or an invitation; the scorecard's
+    // C9); an invitation it makes the world check (invite <place> <hour> <days>) and a talk-only promise (promise self:
+    // <thing> <days>); the goal (frames.json's) it is a step of.
+    std::string topic;
+    bool callback = false;
+    std::string invitePlace;
+    int inviteHour = -1;
+    double inviteDays = 0;
+    std::string promiseWhat;
+    double promiseDays = 0;
+    std::string goal;
+    // §37 (the hybrid): what part of the talk the line is: "scene" (a whole written scene's turn, the body), "exchange"
+    // (a rule said as the body where no scene fit: the opener and what it owes), "written" (the game's authored
+    // exchange, its body), "edge" (stitched at the edges: an answer owed after the body, a joiner, a break), "close"
+    // (the goodbyes).
+    std::string part;
+    bool goalDone = false;                // Its goal's last step: done, kept between the two for the goal's days
+    double goalDays = 0;
+    // Phase 6 (§8.8, §10.6): the accent it was spoken in (the speaker's, a step broader or plainer toward the one spoken
+    // to: accommodation; the scorecard's D1), and, on a line that airs a stance (an opinion given, agreed or disagreed
+    // with, insisted on, conceded), the issue, the speaker's own side on it as it was then, and how many steps events had
+    // moved it (drift: the scorecard's T4 tells a stance moved by events from one that wandered).
+    std::string accent;
+    std::string issue, stance;
+    int drift = 0;
+    std::string basis;                    // Which of the issue's leans held, and the drift: what the stance stood on
 };
+using LineInfo = SaidLine;
 struct Said
 {
     std::string id;                                   // The rule or scene ("" when nothing fits); a chain's first.
@@ -96,7 +159,103 @@ struct Said
     std::vector<Effect> effects;                      // To remember (phase 4).
     std::vector<std::string> chain;                   // Every rule or scene said, in order (a chain's beats).
     std::vector<LineInfo> info;                       // One a line, beside `lines` (doc 84 §15.1).
+    // How a whole conversation ended (doc 84 §8.4, Phase 3; converse): "farewell" (a closing pair, or a line that
+    // `ends`), "cap" (the most lines a talk may have), "nothing" (nothing owed was answered, and no closing fitted),
+    // "shrug" and "then" (a library before moves.json: a shrug, or a rule handing on nothing). "" for one line (pick).
+    std::string ended;
 };
+
+// Doc 84 §8.1 (Phase 3): what keeps a conversation fresh for those listening. The listeners' heard set (by entry) and
+// the place's recent list (an opener said here lately is never said again here). Phase 4 adds heard alternatives and
+// the collision filter (§8.12).
+struct Freshness
+{
+    std::function<bool(const std::string&)> heard;
+    std::deque<std::string> recent;
+    // Phase 6 (§8.6, §8.12.4): whether a listener (by id) has been told something already: "claim:<key>" (a claim or
+    // one's own news, the talk ledger's told set) or "story:<entry>" (a story, a memory or a tease: its heard set). The
+    // engine never tells it them again. Unset: nothing refused.
+    std::function<bool(const std::string& listener, const std::string& what)> told;
+    // Phase 6 (§8.12.3, the collision filter): whether another than `speaker` said these words in this place within the
+    // hour (a distinctive line: 6 words or more). Such a line is passed over. Unset: nothing passed over.
+    std::function<bool(const std::string& words, const std::string& speaker)> collides;
+};
+
+// One thing a speaker means to bring up (doc 84 §8.5, Phase 5: World::agendaFor, the director's topics for the two, each
+// owned by the one who'd raise it). In a lull with budget left, the talk may turn to one: a step along the topic graph
+// (topics.json's `next`, its criteria holding now: a pivot, "Speaking of wagons...") or, marked, anywhere (a change of
+// subject, "Anyway..."); a thread left unfinished on it is returned to ("As I was saying...").
+struct AgendaItem
+{
+    std::string kind, topic, claim;       // tell, news, smalltalk...; the topic; what it is about (the director's key)
+    double urgency = 0;
+    bool done = false;
+    Facts facts;                          // Its topic's facts (topic.*, and any other it sets: here.festival)
+    std::string concept;                  // talk.<topic>
+    std::map<std::string, std::string> knows;   // Who held its claim before (by id: yes, no), for `knows`
+    int index = -1;                       // The caller's own (which of its topics it is)
+};
+
+// A conversation as it goes (doc 84 §8.1, Phase 3): who is in it, its phase, its frames and budget, the answers owed,
+// its own facts (conv.*) and what has been said. Library::begin starts it, Library::next adds one line at a time.
+// Phase 4: a third may join (Library::join: people[2]); a line's `who` and `to` are indices into `people`.
+struct Conversation
+{
+    std::vector<std::string> people;              // Ids, 2, or 3 once one has joined (§8.9); [0] opened.
+    enum class Phase : std::uint8_t { Opening, Body, Closing, Ended } phase = Phase::Opening;
+    std::vector<std::string> frames;              // frames.json's, stacked (strangers, at_work...): worked out at begin.
+    std::string topic, tone = "even";
+    int beat = 0, budget = 6, depth = 0;          // beat: lines said. budget: lines meant (§8.4). depth: Phase 5.
+    // An answer owed (`owes`) or invited (`invites`, soft): `by` made it due, `to` owes it (-1: anyone). `concept` is a
+    // `then` hand-on's concept (its own rules answer it best); a hand-on to a topic owes no move, only the concept.
+    struct Open
+    {
+        int by = 0, to = -1;
+        std::vector<std::string> moves;
+        bool soft = false;
+        std::string concept;
+    };
+    std::vector<Open> open;                       // Newest last.
+    std::vector<std::vector<AgendaItem>> agenda;  // One list per person (Phase 5).
+    Facts conv;                                   // conv.* facts, by their short keys: tags, and the engine's own
+    std::map<std::string, std::string> bound;     // x -> resident id (Phase 4's per-beat queries)
+    std::set<std::string> said, asked, covered;   // Entries, questions (their words) and topics used in this talk
+    std::vector<SaidLine> lines;
+    std::uint64_t seed = 0;
+    // The engine's own bookkeeping.
+    std::string concept;                          // The opener's (talk.gossip...)
+    std::deque<SaidLine> queued;                  // A scene's turns still to come (§8.2)
+    std::vector<Effect> effects;                  // What saying it changes, in the order said
+    std::vector<std::string> chain;               // The rules and scenes said, in order
+    std::string ended;                            // Said::ended
+    bool legacy = false;                          // A library before moves.json: today's chain (the golden transcripts)
+    bool repeat = false;                          // The opener's concept may be said again to those who heard it
+    int closer = -1, extended = 0, gaps = 0;      // Who closes; extends taken (§7.2 max_extend); answers nobody gave
+    int handOns = 0;                              // (legacy: the chain's beats so far)
+    std::string stake;                            // Why the third joined (named, kin, friend, goods, witness, friends)
+    int dropped = 0;                              // Queued scene turns dropped when they came due (Valve's rule)
+    // Phase 5 (§8.5): the topic now, once the talk has turned from the director's (its facts over each query's topic.*,
+    // and who knew its claim, by id); the agenda item it is on (-1: the director's first topic); the topics covered in
+    // order; the goal under way and its next step.
+    Facts topicFacts;
+    std::map<std::string, std::string> knows;
+    int agendaAt = -1;
+    std::vector<std::string> topics;
+    std::string goal;
+    int goalStep = 0;
+    // Phase 6 (§8.6): what the topic now is about (the director's key: a claim's subject and words, one's own news), for
+    // Freshness::told: never told a listener twice.
+    std::string claim;
+    // Slice 2's review (§13): who in it is a player (0: a, 1: b), never given a line by the engine.
+    std::set<int> players;
+    // §37 (the hybrid): what carried the body ("scene": a whole written scene; "exchange": a rule, where none fit;
+    // "written": the game's authored exchange), and
+    // the lines stitched after it that weren't goodbyes.
+    std::string body;
+    int stitched = 0;
+    bool hybrid = false;                          // (Played as the hybrid: settings.json's, a talk of residents on a topic.)
+};
+
 
 // Why something was said (talk_check): every rule or scene that held, its score, and the choice made.
 struct Trace
@@ -114,7 +273,9 @@ struct Trace
     std::vector<std::string> steps;       // The grammar's expansions, in order.
 };
 
-enum class Ns : std::uint8_t { A, B, Self, Other, Pair, Here, Topic, World };
+// Conv: the conversation's own facts (doc 84 §7.11: conv.move, conv.prev, conv.beat, conv.tone and every {k=v} tag);
+// X: a third party a line binds (x.name, x.job..., x.affinity), both kept in Query::facts by their full keys.
+enum class Ns : std::uint8_t { A, B, Self, Other, Pair, Here, Topic, World, Conv, X };
 struct Criterion
 {
     Ns ns = Ns::Self;
@@ -122,11 +283,20 @@ struct Criterion
     enum class Op : std::uint8_t { In, NotIn, Lt, Le, Gt, Ge, Has, Lacks } op = Op::In;   // Has: remembered (self.mem.x)
     std::set<std::string> values;
     double number = 0;
+    bool list = false;                    // A list fact (self.likes=x holds when the list has x): Phase 6
+};
+// {k=v} before an alternative's words (doc 84 §7.1): conv.k=v for the rest of the conversation; `keep 7d` keeps it in
+// the ledger too (Phase 5).
+struct Tag
+{
+    Facts set;
+    double keep = 0;
 };
 struct Variant
 {
     std::vector<Criterion> when;
     std::vector<std::string> texts;
+    std::vector<Tag> tags;                // Beside texts: each alternative's (empty: none).
     std::set<std::string> needs, marks;   // Marks needed (a@worried), and set when spoken (#worried): a scene's branches.
     int line = 0;                         // In its file, for messages.
 };
@@ -164,6 +334,99 @@ struct Entry
     std::string thenWho, thenConcept;
     enum class Limit : std::uint8_t { None, Once, PerDay, PerOther, Cooldown } limit = Limit::None;
     double cooldownDays = 0;
+    // Doc 84 §7.1 (Phase 2): what each turn does (a rule has one turn), from `does` (a scene names each turn's, `/`
+    // between them), or a rule's answer concept's alias (moves.json); `tone` likewise. What the last turn owes and
+    // invites (written; a `then` hands on its concept's move too, `derived`). The turn (from 0) that asserts the topic's
+    // claim, denies it, or makes the gist (-1: none). A third party bound for x.* (`binds x=self.spouse`). The mantle
+    // it belongs to (Phase 9).
+    struct Owed
+    {
+        std::string who = "other";        // other, self, any
+        std::vector<std::string> moves;   // Any one of them answers it.
+        bool soft = false;                // `invites`
+        bool derived = false;             // From `then` (its concept's alias), not written
+    };
+    std::vector<std::vector<std::string>> does;
+    std::vector<std::string> tones;
+    std::vector<Owed> owes;
+    int asserts = -1, denies = -1, gist = -1;     // (asserts: the turn, -1 its move's default, NeverAsserts `asserts none`)
+    static constexpr int NeverAsserts = -3;
+    std::string assertsClaim, deniesClaim;
+    std::map<std::string, std::string> binds;
+    bool aliasMoves = false;              // Its moves are its concept's alias, not written
+    std::string owner;
+    bool hedged = false;                  // Phase 6: an alternative says #hedge# (a temperament weighs it: §7.5)
+    // Phase 5 (§7.1, §8.7): an invitation the world checks (`invite here <hour> <days>`), a talk-only promise (`promise
+    // self: <thing> <days>`), and whether its criteria read the talk ledger (a callback).
+    std::string invitePlace;
+    int inviteHour = -1;
+    double inviteDays = 0;
+    std::string promiseWhat;
+    double promiseDays = 0;
+    bool ledger = false;
+};
+
+// A dialogue move (doc 84 §7.2, Data/Talk/moves.json): what a line does, what it makes due, what it answers, and how a
+// dispreferred answer is shaped. An answer concept is an alias of one (jest.answer: tease.return), so the 2,778 `then`
+// hand-ons have moves too.
+struct Move
+{
+    std::string name, family;
+    bool first = false;                   // May open (needs nothing before it)
+    bool asserts = false, denies = false; // Passes the topic's claim on / denies it, by default
+    bool dispreferred = false, thirdParty = false, ends = false, weak = false, optional = false, stance = false;
+    std::vector<std::string> expects;     // What it makes due by default (soft when `optional`)
+    std::vector<std::string> answers;     // What it answers ("*": anything)
+    std::vector<std::string> fallback;    // When nothing doing it fits, these instead, in order (down to ack)
+    std::vector<std::string> insertion;   // May come between it and its answer (request: ask.detail)
+    std::vector<std::string> variants;    // react.news.known...
+    std::vector<std::string> shape;       // hedge, account, remedy: how a dispreferred one is said
+    std::string tone;                     // Its lines' tone unless they say
+    std::map<std::string, std::map<std::string, double>> effects;   // "self"|"other" -> axis -> change
+    int maxExtend = 0;
+};
+class Moves
+{
+public:
+    // moves.json's text; `concepts` are settings.json's (an alias's key must be one). False with the problems, and the
+    // book left empty.
+    bool read(const std::string& text, const std::set<std::string>& concepts, std::string& problem);
+    void clear();
+    bool empty() const { return moves_.empty(); }
+    const std::map<std::string, Move>& all() const { return moves_; }
+    const std::map<std::string, std::string>& aliases() const { return aliases_; }
+    const std::vector<std::string>& tones() const { return tones_; }
+    // A move by its name; with a variant ("react.news.known") its move's.
+    const Move* find(const std::string& name) const;
+    // Whether a name is a move or a move's variant.
+    bool known(const std::string& name) const { return find(name) != nullptr; }
+    // The move an answer concept stands for ("" if none).
+    std::string alias(const std::string& concept) const;
+    bool tone(const std::string& t) const;
+    std::string toneOf(const std::string& move) const;    // Its default tone ("even" when it names none)
+    // Whether a line doing `answer` answers one doing `said`: its move's `answers` names `said`, a move `said` is a
+    // variant of, or "*".
+    bool answers(const std::string& answer, const std::string& said) const;
+    // Whether a move done meets an owed one: the same, or a variant or kind of it (react.news.known meets react.news).
+    static bool meets(const std::string& done, const std::string& owed);
+    // The same, by the book: a move of its own is never another's kind (farewell.return is not a farewell, tease.return
+    // not a tease), only a variant is (react.news.known).
+    bool kindOf(const std::string& done, const std::string& owed) const;
+    // The fallbacks walked from a move, breadth first, without repeats (the move itself first).
+    std::vector<std::string> chain(const std::string& move) const;
+    struct ToneRule
+    {
+        std::string after;
+        std::set<std::string> blocks, bridge;
+        int beats = 0;
+    };
+    const std::vector<ToneRule>& toneRules() const { return toneRules_; }
+
+private:
+    std::map<std::string, Move> moves_;
+    std::map<std::string, std::string> aliases_;          // concept -> move (or move.variant)
+    std::vector<std::string> tones_;
+    std::vector<ToneRule> toneRules_;
 };
 
 // The odds and lists of settings.json.
@@ -187,6 +450,102 @@ struct Settings
     // The towns with no dialect of their own, and whose speech is theirs (doc 83, Phase 4: Fenshore speaks as Mirebridge;
     // Saltwell, which spoke as Coldwater, has its own since 2026-11-15): settings.json's "dialect_of". A resident's `from` stays where they grew up.
     std::map<std::string, std::string> dialectOf;
+    // Doc 84 §37, the hybrid (the user, 2026-11-17): the engine decides what is said; a written scene says it. A talk
+    // between residents on a topic opens with a whole scene that fits wherever one does, plays it as written, and then
+    // only its edges are stitched line by line (what its last line owes, a joiner's word and its answer, the goodbyes):
+    // no lull's opinion, pivot, goal or change of subject after it, nobody speaking twice running outside a scene, at
+    // most `hybridStitch` stitched lines after the body. settings.json's "hybrid" (false where it isn't said: the
+    // tests' small libraries, and a library before it, keep the line-by-line engine).
+    bool hybrid = false;
+    int hybridStitch = 2;
+};
+
+// Doc 84 §7.4, §8.5 (Phase 5): frames.json's goals, a reason to steer a talk: learn a name, ask a favour, mend a quarrel,
+// warn of the road, ask after a loss or a hurt, nag a promise let lapse. A goal holds when its `when` does (self: the one
+// who'd pursue it, other: the one spoken to); its plan's moves are said in lulls, a step a lull, by lines doing them; a
+// step no line fits gives it up. Done, it is kept between the two for `days` (pair.was.goal_<name>) and not pursued again.
+struct Goal
+{
+    std::string name;
+    std::vector<Criterion> when;
+    std::vector<std::string> plan;
+    double days = 7;
+};
+// Doc 84 §7.4 (Phase 3): Data/Talk/frames.json: the kinds of meeting, worked out when a conversation starts and
+// stacked, and the length a talk is meant to have.
+struct Frame
+{
+    std::string name;
+    std::vector<Criterion> when;           // Of the opener (self) and the one spoken to (other)
+    std::vector<std::string> open;                // Its opening moves (kin.open, greet...)
+    double budget = 1, preclose = 1;              // Scales the budget; closes sooner (preclose > 1)
+    std::set<std::string> forbid;                 // Moves never made in it
+    std::map<std::string, double> tones;          // A tone's weight among candidates (light: 1.4)
+    std::string hedge;                            // How a dispreferred answer is shaped (not yet read)
+};
+// Doc 84 §7.4, §8.11 (Phase 6): frames.json's town moods, read as world.mood (the first whose `when` holds of the town's
+// facts): moves muted town-wide, moves boosted, tones weighed.
+struct Mood
+{
+    std::string name;
+    std::vector<Criterion> when;
+    std::set<std::string> mutes;
+    std::map<std::string, double> boosts, tones;
+};
+// Doc 84 §10.6 (Phase 6): frames.json's accommodation. Each line a speaker says is a step plainer toward one a `plainer`
+// rule holds of (self: the speaker, other: the one spoken to), else a step broader toward one a `broader` rule holds of
+// who speaks as they do (pair.same_speech: the same dialect); none rises no higher than `none_rises_to`.
+struct Accommodation
+{
+    std::vector<std::vector<Criterion>> broader, plainer;
+    std::string noneRisesTo = "light";
+    bool on = false;
+};
+// Doc 84 §7.6, §8.8 (Phase 6): Data/Talk/opinions.json. An issue a resident has a stance on, worked out from their own
+// facts: each lean that holds moves it a step for or against (with the reason it gives, in their own words), and events
+// drift it a step (the game's, kept in the talk ledger). The topics it comes up on.
+struct Issue
+{
+    std::string name, words;                      // "watch", "the Watch"
+    std::set<std::string> topics;
+    std::vector<Criterion> who;                   // Who has a view on it at all (none: everyone)
+    struct Lean
+    {
+        std::vector<Criterion> when;
+        int side = 0;                             // +1 for, -1 against
+        std::string reason;                       // A key of `reasons`
+    };
+    std::vector<Lean> leans;
+    std::map<std::string, std::string> reasons;   // key -> words, first person ("they never caught who robbed me")
+    std::map<std::string, int> drift;             // event -> steps (robbed_uncaught: -1)
+};
+// A like or a dislike (§8.8): stable, held by the wearer (until mantles, drawn from the resident's id, Phase 6).
+struct LikeItem
+{
+    std::string id, kind, words;                  // pastime, food, weather, thing
+    std::vector<Criterion> when;                  // Who may hold it (a fisher's nets, a pup's games)
+    bool dislike = false;
+};
+// Doc 84 §7.5 (Phase 6): Data/Talk/temperaments.json: a trait's lean on a move ("temper=short": {"take_offence": 1.8}),
+// each 0.3-2.0, their product held to 0.3-2.0.
+using Temperaments = std::map<std::string, std::map<std::string, double>>;
+struct Budgets
+{
+    std::map<std::string, std::pair<int, int>> byTalk{{"chatty", {8, 12}}, {"plain", {5, 8}}, {"quiet", {3, 5}}};
+    int friendsOrKin = 2, least = 2, most = 14;
+};
+// Doc 84 §8.4, §8.9, §8.10 (Phase 4): frames.json's "curt", "join" and "thread". A cold or short-tempered closer goes
+// without a word this often, and it costs what `effects` says (moves.json's shape: "other", how the one left feels about
+// the closer). A third may join (the game's Game::joiners) if idle within `tiles` of both, hearing at `hearing` or more,
+// and not in a talk for `rest` seconds; `people` in all at most. A talk broken off before its point was made is kept as
+// pair.thread for `days`.
+struct Beats
+{
+    double curtChance = .5;
+    std::map<std::string, std::map<std::string, double>> curtEffects;
+    int joinPeople = 3;
+    double joinTiles = 3, joinHearing = .5, joinRest = 60;
+    double threadDays = 2;
 };
 
 // A dialogue tree (Docs/Design/83-dialogue-trees.md): a conversation a player has with a resident in the dialogue
@@ -260,7 +619,7 @@ struct ShownChoice
 // The facts there are, and the values each may take.
 struct FactKind
 {
-    enum class Type : std::uint8_t { Words, Text, Number } type = Type::Words;
+    enum class Type : std::uint8_t { Words, Text, Number, List } type = Type::Words;   // List: words, any number of them
     std::set<std::string> values;               // Words only.
 };
 
@@ -310,7 +669,27 @@ public:
     const std::vector<Entry>& entries() const { return entries_; }
     const Entry* find(const std::string& id) const;
     bool has(const std::string& concept) const { return byConcept_.count(concept) > 0; }
+    // Moves (doc 84 §7.2, Phase 2): the book (empty for a library from before them), and the entries that make a move
+    // (a rule's own, written or by its concept's alias; a scene's first turn's), by move and by each of its kinds
+    // (react.news.known is under react.news too). Null if none.
+    const Moves& moves() const { return moves_; }
+    const std::vector<std::size_t>* byMove(const std::string& move) const;
+    // What `binds x=<slot>` may name: self.<role>, other.<role> (spouse, child, mother, father, neighbour, shopkeeper,
+    // priest, leader) and topic.subject.
+    static const std::set<std::string>& bindSlots();
+    // The dead-end proof (doc 84 §7.2), run when the whole library has loaded: every concept a line hands on to has a
+    // plain rule of its own that holds for a speaker with every fact empty, and every move a line can owe has one,
+    // walking its fallbacks down to ack. The problems, one a line ("" if none).
+    std::string deadEnds() const;
+    // The moves a line of `e` makes as its turn `turn` is spoken, and the rest of SaidLine's moves (owes, tone...), for
+    // a query (`q`: the topic's claim kind, for what it asserts). `before`: the moves of the line said before it.
+    void describe(const Entry& e, std::size_t turn, const Query& q, const std::vector<std::string>& before, SaidLine& line) const;
+    // The same for a line whose moves are already set (an authored line's): its tone, what its moves expect (unless
+    // `expect` is false: the last line of a whole written exchange), what it answers of `before`, what it asserts on the
+    // topic's claim. Nothing without moves.json.
+    void describeMoves(SaidLine& line, const std::vector<std::string>& before, const Facts& facts, bool expect = true) const;
     const Settings& settings() const { return settings_; }
+    void setHybrid(bool on) { settings_.hybrid = on; }   // (§37: the tests of the line-by-line engine turn it off.)
     // The dialect (a grammar layer) of one who grew up in `from`: its own, or settings.json's dialect_of for a town with
     // none of its own (Fenshore: mirebridge).
     std::string dialectOf(const std::string& from) const;
@@ -325,10 +704,103 @@ public:
     // 0 speaks only when nothing else holds. Empty if nothing fits.
     Said pick(const Query& q, std::uint64_t seed, const std::function<bool(const std::string&)>& heard,
               const std::deque<std::string>& recent, Trace* trace = nullptr) const;
-    // A whole conversation: pick, then each rule's `then` handed on (to the other speaker, who answers with their own
-    // best rule for that concept, its best tier), up to 8 beats; what each beat remembers is known to the next.
+    // A whole conversation over one query (doc 84 §8.1: begin, then next until it ends; what each beat remembers is
+    // known to the next). With moves.json, the turn engine (§8.2-8.4): what each line owes is answered, best fit first
+    // and tiers within it, then the talk closes when its budget is spent or nothing is left to say. A library without
+    // moves.json talks as it did before Phase 3: each rule's `then` handed on to the other speaker's best rule for that
+    // concept (its best tier), up to 8 beats, a shrug ending it.
     Said converse(const Query& q, std::uint64_t seed, const std::function<bool(const std::string&)>& heard,
                   const std::deque<std::string>& recent, Trace* trace = nullptr) const;
+    // The turn engine (doc 84 §8.1-8.4, Phase 3). begin: the conversation's first line, the opener for q.concept as
+    // pick chooses it (a scene's later turns are queued), with the conversation's frames and budget worked out; c.seed
+    // is the caller's. next: the line after, or nothing once it has ended. `facts` gives the query for a speaker (0: a,
+    // 1: b) speaking to another (-1: no one), a and b as begin had them; the engine adds its own conv.* facts.
+    //
+    // Phase 4 (§8.2: beats chosen when they are due, from fresh facts): `facts(speaker, to)` is asked again for every line,
+    // so it may change between them. For the opener and the one first spoken to (0 and 1), a and b are as begin had
+    // them; once a third has joined, a query between the third and another has the speaker as a and the one spoken to as
+    // b. A scene's queued turn is checked again when it comes due (Valve's rule: its criteria and its line's, not its
+    // limits) and the rest of the scene dropped if it no longer holds. What is owed in react.news is answered by the
+    // known variant (react.news.known: "I heard.") when the one answering already knew (their `knows`), and never by it
+    // when they didn't; never "Never!" (react.news.new) from one who knew.
+    std::optional<SaidLine> begin(Conversation& c, const Query& q, const Freshness& fresh, Trace* trace = nullptr) const;
+    std::optional<SaidLine> next(Conversation& c, const std::function<Query(int speaker, int to)>& facts,
+                                 const Freshness& fresh, Trace* trace = nullptr) const;
+    // A conversation begun with lines already written (the game's authored exchange, when no library line fits): set up
+    // as begin does (frames, budget), its lines said as they are, then `next` carries on (answers owed, the closing).
+    std::optional<SaidLine> beginWith(Conversation& c, const Query& q, Said written, Trace* trace = nullptr) const;
+    // A third voice (§8.9): `id` joins with a line doing one of `moves` (join.defend, join.add...), said to the one who
+    // spoke last; `q` has the joiner as a and that one as b. Nothing (and nobody joins) unless such a line fits, the
+    // talk is in its body with room left, and only two are in it. What the joining line owes, the one it is said to owes;
+    // it comes before whatever was owed before it (the joiner cuts in).
+    // `stake` (why they join: named, kin, friend, goods, witness, friends) is conv.stake for the joining line's criteria,
+    // and the conversation's once they're in.
+    std::optional<SaidLine> join(Conversation& c, const std::string& id, const std::string& stake,
+                                 const std::vector<std::string>& moves, const Query& q, const Freshness& fresh,
+                                 Trace* trace = nullptr) const;
+    // An interruption (§8.10: rain starting outdoors, a fight in sight, one of them called away): conv.interrupt is
+    // `why`, and `who` says a line that breaks off (a `break` move line) to whoever they spoke with; the talk ends there.
+    // Nothing said if no such line fits (the talk ends all the same: "break").
+    std::optional<SaidLine> interrupt(Conversation& c, const std::string& why, int who,
+                                      const std::function<Query(int speaker, int to)>& facts, const Freshness& fresh,
+                                      Trace* trace = nullptr) const;
+    // Who `who` is talking with: the one they last spoke to, else the last other speaker, else the other of the two.
+    static int partner(const Conversation& c, int who);
+    // What `speaker` says to what is owed (§8.2), rendered, or empty if nothing fits: of the rules that hold, the best
+    // fit only (its handed-on concept's own rules, or the exact variant owed: 3; another line doing an owed move: 1;
+    // only a rule with no concept is found by its move alone), then tiers by score within it (70/20/10: no longer the
+    // best tier only), what no listener has heard first, then weight (times the frames' tone weights). Never an entry
+    // or words said in this talk, a move the frames forbid, a tone the tone rules block, a tease to one mourning, or a
+    // scene. Its line's `fit` and `best` say how well it answered and the best that held.
+    // `bestHeld`: the best fit of any line that held, even when nothing could be said.
+    Said answer(const Conversation& c, const Conversation::Open& owed, const Query& q, int speaker, const Freshness& fresh,
+                Trace* trace = nullptr, int* bestHeld = nullptr) const;
+    // The conversation said so far, as converse returns it.
+    static Said whole(const Conversation& c);
+    // frames.json (doc 84 §7.4): the frames, the budgets, and the chance an invitation (`invites`) is taken.
+    const std::vector<Frame>& frames() const { return frames_; }
+    const Budgets& budgets() const { return budgets_; }
+    const Beats& beats() const { return curt_; }
+    double inviteTaken() const { return inviteTaken_; }
+    // Phase 6 (§7.4-7.6, §8.8, §10.6): the town moods, accommodation, the issues and the likes, the temperaments.
+    const std::vector<Mood>& moods() const { return moods_; }
+    const Accommodation& accommodation() const { return accent_; }
+    const std::vector<Issue>& issues() const { return issues_; }
+    const Issue* issue(const std::string& name) const;
+    const std::vector<LikeItem>& likeItems() const { return likes_; }
+    const Temperaments& temperaments() const { return temper_; }
+    // A resident's stances (§8.8) as their facts: op.<issue> (for, against, mixed), op_why.<issue> (the reason, in their
+    // own words), op_strength.<issue> (0-3), from their facts (`person`: theirs as talkSpeaker gives them, without
+    // namespace) and the steps events drifted each (`drift`: issue -> steps, and the event that last moved it).
+    // op_basis.<issue> says what it stood on (the leans that held, the drift): a stance that changes on the same basis
+    // has wandered (the scorecard's T4); one whose basis changed was moved by the wolf's life.
+    void stances(Facts& person, const std::map<std::string, std::pair<int, std::string>>& drift) const;
+    // A resident's likes and dislikes (§8.8), stable for good: drawn from their id among the items whose `when` holds of
+    // them, one of each kind (likes) and two dislikes: likes, dislikes (list facts), and each kind's words.
+    void likes(Facts& person) const;
+    // A speaker's lean on a move (§7.5): the product of their traits' multipliers for it (or a kind of it), 0.3-2.0.
+    double lean(const Speaker& s, const std::string& move) const;
+    // The town's mood (§7.4): the first of frames.json's moods whose `when` holds ("" none), as world.mood.
+    std::string moodOf(const Query& q) const;
+    // Accommodation (§10.6): each speaker's accent toward the other for this query, as their `speaks` (read before their
+    // accent when a line is said); the town's mood as world.mood. Both speakers', since one query may serve both.
+    void accommodate(Query& q) const;
+    // frames.json's goals (Phase 5), in their order; the topic graph's steps from a topic (topics.json's `next`, its
+    // criteria parsed against facts.json when the library loads).
+    const std::vector<Goal>& goals() const { return goals_; }
+    struct Step
+    {
+        std::string to;
+        std::vector<Criterion> when;
+    };
+    const std::vector<Step>& steps(const std::string& topic) const;
+    // Whether a fact's key is the talk ledger's (pair.last_talk, pair.talked.*, x.said.*...): a line testing one is a
+    // callback (§8.7).
+    static bool ledgerFact(const std::string& key);
+    // The frames that hold for a query (a opens, to b), in frames.json's order; the budget drawn for them (§8.4: by the
+    // two speakers' talk, the smaller; +2 for friends and kin; scaled by the frames; closing sooner by their preclose).
+    std::vector<std::string> framesFor(const Query& q) const;
+    int budgetFor(const Query& q, const std::vector<std::string>& frames, std::uint64_t seed) const;
     // How `speaker` speaks, for a model voicing them (doc 62, phase 5): where they grew up and how strongly it shows,
     // their dialect's words, and their habits (their own oath...). Empty for plain speech with no habits.
     std::string voiceCard(const Speaker& speaker) const;
@@ -378,14 +850,87 @@ private:
     bool expandInto(const std::string& text, Expansion& x, int depth, std::string& out) const;
     bool expandSymbol(const std::string& name, Expansion& x, int depth, std::string& out) const;
     Said pickOne(const Query& q, std::uint64_t seed, const std::function<bool(const std::string&)>& heard,
-                 const std::deque<std::string>& recent, int speaker, bool chained, Trace* trace) const;
+                 const std::deque<std::string>& recent, int speaker, bool chained, Trace* trace, bool scenesFirst = false) const;
     bool checkGrammars(std::vector<std::string>& errors) const;
-    void reindex();                                         // byConcept_ and byId_ from entries_.
+    void reindex();                                         // byConcept_, byId_ and byMove_ from entries_.
+    void indexMoves(std::size_t i);
+    bool readMoves(const std::string& text, std::string& problem);
+    bool unconditioned(const Entry& e) const;               // (deadEnds: holds and speaks with every fact empty.)
+    bool bindThird(const Entry& e, const Query& q, int speaker, Query& out) const;   // (binds: q with x.* filled.)
+    bool fitsWith(const Entry& e, const Query& q, int speaker) const;            // (fits, x bound already.)
+    Said renderWith(const Entry& e, const Query& q, std::uint64_t seed, Trace* trace, int speaker) const;
+    std::vector<std::string> answersOf(const std::vector<std::string>& before, const std::vector<std::string>& moves) const;
     bool readSchema(const std::string& text, std::string& problem);
     bool readSettings(const std::string& text, std::string& problem);
+    bool readFrames(const std::string& text, std::string& problem);
+    // The turn engine's own (Phase 3).
+    std::optional<SaidLine> legacyNext(Conversation& c, const std::function<Query(int, int)>& facts, const Freshness& fresh,
+                                       Trace* trace) const;
+    void take(Conversation& c, Said said) const;                    // An entry's lines queued, its effects kept
+    SaidLine sayNext(Conversation& c) const;                          // The next queued line said
+    // The query for `speaker` speaking to `to` with the conversation's own facts, and which of its a and b speaks.
+    Query beatQuery(const Conversation& c, const std::function<Query(int, int)>& facts, int speaker, int to, int& side) const;
+    Query beatQuery(const Conversation& c, const std::function<Query(int, int)>& facts, int speaker) const;
+    // A line answered for a query whose speaker is `side`, placed in the conversation: who `speaker`, to `to`.
+    static void place(Said& s, int speaker, int to);
+    // Whether a line still holds when its turn comes due (Valve's rule): its entry's criteria and its line's.
+    bool stillHolds(const SaidLine& line, const Query& q) const;
+    // A scene with a turn untrue to what its speaker knew (§8.6: "I'd heard" from one who didn't, "Never!" from one who did).
+    bool untrueScene(const Entry& e, const Query& q) const;
+    // Opening moves said in the opener's breath (the frames' greeting, a return to a thread), before an opener.
+    void preface(Conversation& c, Said& said, const Query& q, const Freshness& fresh, Trace* trace) const;
+    void setUp(Conversation& c, const Query& q) const;               // (begin's: people, topic, frames, budget.)
+    std::string toneOf(const Entry& e) const;                         // A rule's tone ("": no move, no tone)
+    bool toneBlocked(const Conversation& c, const std::string& tone) const;
+    bool forbidden(const Conversation& c, const Entry& e, const Query& q, int speaker) const;
+    void end(Conversation& c, const std::string& why, Trace* trace) const;
+    std::vector<Frame> frames_;
+    Budgets budgets_;
+    Beats curt_;
+    double inviteTaken_ = .5;
+    std::vector<Goal> goals_;
+    std::vector<Mood> moods_;
+    Accommodation accent_;
+    std::vector<Issue> issues_;
+    std::vector<LikeItem> likes_;
+    Temperaments temper_;
+    // temper_ by axis, then value (found without building a key: lean is asked for every candidate, §16 B1).
+    std::map<std::string, std::map<std::string, const std::map<std::string, double>*, std::less<>>, std::less<>> temperBy_;
+    std::map<std::string, std::vector<Step>> steps_;
+    bool readOpinions(const std::string& text, std::string& problem);
+    bool readTemperaments(const std::string& text, std::string& problem);
+    // Phase 6: a stance's facts for the issue a talk is on (conv.issue): each speaker's own (stance, stance_why,
+    // stance_strength) and whether the two agree (conv.agree: yes, no, half), and the pair's earlier agreement on it.
+    void stanceFacts(const Conversation& c, Query& q) const;
+    // Whether an entry's move fits the stances (§8.8): agree only where the two agree, disagree where they differ.
+    bool stanceFits(const Entry& e, const Query& q) const;
+    // Whether an entry would tell a listener what they were told before (§8.6, §8.12.4: Freshness::told).
+    bool toldAlready(const Conversation& c, const Entry& e, const Query& q, int speaker, const Freshness& fresh) const;
+    // Whether a rendered line repeats another speaker's distinctive words here within the hour (§8.12.3).
+    static bool collides(const Said& s, const Query& q, const Freshness& fresh);
+    // A mood's mutes and boosts for an entry (world.mood).
+    bool moodMuted(const Entry& e, const Query& q) const;
+    double moodWeight(const Entry& e, const Query& q, const std::string& tone) const;
+    // Phase 6's lull step: an opinion on the issue the talk's topic raises (§8.8).
+    std::optional<SaidLine> opinion(Conversation& c, const Query& now, int who, const Freshness& fresh, Trace* trace) const;
+    bool readSteps(std::string& problem);                             // (topics.json's `next`, parsed: Phase 5.)
+    static void deepen(Conversation& c, const Query& q);              // (A topic's aspect, by the pair's past talk of it.)
+    // The topic a talk turned to over a query's own (its topic.* facts, who knew its claim, conv.topic).
+    static void overlay(const Conversation& c, Query& q);
+    // pickOne's choice made before anything is rendered (§16: lazily): only the chosen entry is rendered, and one whose
+    // turn can't be spoken is dropped and the choice made again. (A talk's turn to a new topic, mid-talk: Phase 5.)
+    Said pickLazy(const Query& q, std::uint64_t seed, const std::function<bool(const std::string&)>& heard,
+                  const std::deque<std::string>& recent, int speaker, Trace* trace,
+                  const std::function<bool(const Said&)>& refuse = {}) const;
+    // Phase 5's lull: a goal's next step, or a turn to an agenda item, or nothing (then the talk closes).
+    std::optional<SaidLine> lull(Conversation& c, const std::function<Query(int, int)>& facts, const Freshness& fresh,
+                                 Trace* trace) const;
 
     std::vector<Entry> entries_;
     std::map<std::string, std::vector<std::size_t>> byConcept_;
+    std::map<std::string, std::vector<std::size_t>> byMove_;
+    Moves moves_;
+    std::map<std::string, FactKind> conv_, x_;               // facts.json's "conv" and "x" (the engine's own keys)
     std::map<std::string, std::size_t> byId_;
     std::map<std::string, std::set<std::string>> groups_;    // Region groups: name -> regions.
     std::map<std::string, Grammar> grammars_;

@@ -6,13 +6,15 @@
 
 scene em_rm_pr_sump
 when topic=prices topic.dir=up here.region=ridgemere
+does tell.self / react.self / assess / tell.self
 a : In the Sump they're boiling fish heads for supper. | #topic.what# at #topic.price#. The Sump will starve before the Houses notice. | The Sump children are begging at the Commons Market again.
 b : Fish heads are better than nothing. | The Houses notice. They just don't care. | Every day this week.
-a : Barely. | Exactly. | And every day they're thinner.
+a : #bc_barely# | #bc_exactly# | And every day they're thinner.
 b?[noble] : The Houses give alms every Restday.
 
 scene em_rm_pr_vesk_fish
 when topic=prices topic.dir=up topic.item=meal here.region=ridgemere
+does tell.self / react.self / assess / tell.self
 a : The Fish Hall sets the price of fish and fish sets the price of supper. | Smoked fish at the wharf costs more than fresh used to. | The smokehouses are full and the stalls are bare. Explain that.
 b : The Fish Hall sets the price of everything wet. | Smoke costs money. | Easy. They're waiting for the price to climb.
 a : And everything here is wet. | So does salt. | That's exactly it.
@@ -20,13 +22,15 @@ b?[fisher] : We catch it. The Fish Hall sells it. We see none of the difference.
 
 scene em_rm_pr_rain_hall
 when topic=prices topic.dir=up here.region=ridgemere
+does tell.self / react.self / assess / tell.self
 a : The Council of Houses could fix prices in an afternoon. | Somebody should take #topic.price# for #topic.what# to the Rain Hall. | The Rain Hall leaks and so do our purses.
 b : And make less money? Never. | Take a bucket too. The roof leaks. | Ha. Put that on a banner.
-a : Never. | Two buckets. | Maybe I will.
+a : #bc_never# | Two buckets. | Maybe I will.
 b?[official] : The Council has the matter in hand.
 
 scene em_rm_pr_herbs_mountain
 when topic=prices topic.dir=up topic.item=herbs here.region=ridgemere topic.cause=harvest
+does tell.self / react.self / assess / tell.self
 a : Herbs come down from the Rainward Hills, and the rain rots half of them. | Wet herbs at #topic.price#. Mould, mostly. | Everything green in Ridgemere is moss.
 b : The rain rots everything. | Mould's a herb, if you're poor. | And moss is free.
 a : Including tempers. | Don't joke about that. | Then I'm rich.
@@ -34,13 +38,15 @@ b?[healer] : Dry them by the fire the day you buy them. Or you'll lose them.
 
 scene em_rm_pr_cheap_ship
 when topic=prices topic.dir=down here.region=ridgemere topic.cause=ship
+does tell.news / react.news.glad / echo / tell.self
 a : A ship came up the Sound full of grain. Prices dropped by dusk. | #topic.what# for #topic.price#. The wharf's busy for once. | Grayrock's new hull brought a hold full of food.
-b : Long may the ships come. | For once. | Good old Grayrock.
-a : Long may they. | Enjoy it. | For once.
+b : Long may the ships come. | #bc_for_once# | Good old Grayrock.
+a : Long may they. | Enjoy it. | #bc_for_once#
 b?[sailor] : Rough crossing for that cargo. Eat it slow and think of us.
 
 scene em_rm_pr_houses_rich
 when topic=prices here.region=ridgemere
+does tell.self / react.self / assess / tell.self
 a : Up in the Heights nobody's counting pennies. | Lady Maren's cook bought every egg in the Commons Market. | The Houses' servants buy first and leave us the rest.
 b : Never have, never will. | Every egg? | The way it's always been.
 a : Must be nice. | Every last one. | Way it'll always be.
@@ -48,78 +54,89 @@ b?[servant] : We're told what to buy. We don't eat it.
 
 scene em_sf_pr_tiers
 when topic=prices topic.dir=up here.region=ridgemere
+does tell.self / react.self / assess
 a : At the Sump Market #topic.what# is #topic.price#. In the Heights it's dearer and nobody blinks. | Everything costs more the higher you climb in this city. | Up in the Heights Market they sell cakes with gold leaf.
 b : In the Heights they pay for the view. | Even the rain. | Gold leaf? Tastes of nothing.
 a : The view of us. | Especially the rain. | Like their manners.
 
 scene em_sf_pr_syndicate
 when topic=prices topic.dir=up here.region=ridgemere
+does tell.self / react.self / assess / tell.self
 a : Somebody's skimming every crate off the wharf. That's the price. | They say someone at the Customs House takes a cut of every barrel. | Respectable merchants, respectable prices, and someone in a back room getting fat.
 b : Everyone knows. Nobody says. | They say. Quietly. | Someone always is.
-a : I'm saying it. | Quietly. | Always.
+a : I'm saying it. | Quietly. | #bc_always#
 b?[guard] : Careful who hears you say that.
 
 scene em_ua_pr_crafts_ward
 when topic=prices topic.dir=up here.region=ridgemere here.place=market|street
+does tell.self / react.self / assess / tell.self
 a : In the Sump they're trading tools for food now. | My neighbour paid for #topic.what# with a mended lamp. | Coin's tight in the Sump. Folk barter.
-b : Clever. | Did it work? | Coin was always tight down there.
+b : #bc_clever# | Did it work? | Coin was always tight down there.
 a : Necessary. | The lamp leaks, but yes. | Tighter now.
 b?[crafter] : My hinges buy more than my pennies, these days.
 
 scene em_sr_pr_salt
 when topic=prices topic.dir=up here.region=ridgemere
+does tell.self / react.self / assess / tell.self
 a : Salt's the one thing we're never short of. Pity we can't eat it alone. | We rake the salt pans and buy back salt fish dear. | #topic.what# at #topic.price#, and the pans full of white gold.
 b : Pity indeed. | That's the trade. | White gold for someone else.
-a : Salt soup again. | A bad one. | Always.
+a : Salt soup again. | A bad one. | #bc_always#
 b?[laborer] : Rake the pans all day, and buy my supper with what's left.
 
 scene em_sr_pr_boats
 when topic=prices topic.dir=up topic.item=meal here.region=ridgemere topic.cause=ship_late|ship_lost|harvest
+does tell.self / react.self / assess / tell.self
 a : The boats came in empty. Supper's dear. | No fish, no supper. That's the Sump. | Storm kept the boats in. Prices up by noon.
 b : Tomorrow, maybe. | That's the whole Sump in a line. | It always does.
-a : If the wind drops. | Put it over the Soup Kitchen door. | Always.
+a : If the wind drops. | Put it over the Soup Kitchen door. | #bc_always#
 b?[fisher] : Can't catch what won't come. The fish went out of the Sound.
 
 # ---------------------------------------------------------------- Frosthollow
 
 scene em_ua_pr_haul
 when topic=prices topic.dir=up here.region=frosthollow
+does tell.news / react.news / tell.self / react.self
 a : Up the High Road, up the price. #topic.price# for #topic.what#. | The carters blame the switchbacks for every penny. | A carter told me #topic.what# costs less down in the city.
 b : Every step of that road is a penny. | And the switchbacks blame the snow. | Then let the carter eat down there.
-a : And there are a lot of steps. | And the snow blames nobody. | Gladly.
+a : And there are a lot of steps. | And the snow blames nobody. | #bc_gladly#
 b?[carter] : You haul a cart up that valley and tell me it's not worth it.
 
 scene em_ua_pr_snow_cheap
 when topic=prices topic.dir=down here.region=frosthollow topic.cause=caravan
+does tell.news / react.news / assess
 a : #topic.what# for #topic.price#, up here! Who died? | Cheap #topic.what# at the general store. A miracle. | The carts from the city must have come up full.
 b : Nobody. The road opened, that's all. | Get it before it's gone. | First time this season.
 a : Then the road is my new friend. | Running. | And the last, probably.
 
 scene em_cb_pr_ore
 when topic=prices topic.dir=up here.region=frosthollow
+does tell.self / react.self / assess / tell.self
 a : Ore goes down to the city and bread comes up dear. Backwards town. | The city buys our ore for nothing and sells us bread for everything. | Miners can't eat ore.
 b : Backwards and frozen. | That's the city's way. | They'd try, if it came to it.
-a : And coughing. | Always has been. | We'll see.
+a : And coughing. | Always has been. | #bc_we_will_see#
 b?[miner] : I dug a cart of ore today. Bought half a loaf.
 
 scene em_cb_pr_herbs_cough
 when topic=prices topic.dir=up topic.item=herbs here.region=frosthollow
+does tell.self / react.self / assess / tell.self
 a : Coltsfoot for the cough at #topic.price#. In a town where everyone coughs. | The healer's out of chest herbs again. | Everyone in Frosthollow needs herbs and nobody can afford them.
-b : Of course it's dear. Everyone wants it. | Again. | That's Frosthollow.
-a : Exactly. | Every season. | That's us.
+b : Of course it's dear. Everyone wants it. | #bc_again# | That's Frosthollow.
+a : #bc_exactly# | Every season. | That's us.
 b?[healer] : Breathe through a damp cloth in the shafts. It's cheaper than any herb.
 
 scene em_cb_pr_cheap
 when topic=prices topic.dir=down here.region=frosthollow topic.cause=caravan|harvest
+does tell.self / react.self / assess / tell.self
 a : The grain carts made it up the High Road. Food's cheaper. | #topic.what# for #topic.price#. The mine crews will eat tonight. | Cheaper bread. The smith's whistling.
 b : About time the road gave back. | Good. They earned it. | He never whistles.
-a : About time. | They did. | He is today.
+a : #bc_about_time# | They did. | He is today.
 b?[smith] : A smith with a full belly works twice as hard.
 
 # ---------------------------------------------------------------- Larkfield and the downs
 
 scene em_ac_pr_toll
 when topic=prices topic.dir=up here.region=larkfield
+does tell.self / react.self / assess / tell.self
 a : Every cart pays the toll, and every cart passes it on. | The gate toll adds a penny to every crate, and every crate adds a penny to supper. | #topic.what# at #topic.price#. Thank the toll.
 b : Pennies on pennies. | And supper adds one to the tavern bill. | Thank the toll for nothing.
 a : Pennies on pennies. | Round and round. | For nothing.
@@ -127,19 +144,22 @@ b?[official] : The toll pays for the wall. You'd miss the wall.
 
 scene em_ac_pr_carters_eat
 when topic=prices topic.dir=up topic.item=meal here.region=larkfield topic.cause=players
+does tell.self / react.self / assess / tell.self
 a : Forty carters at the Singing Lark last night. Not a crumb left. | When the market's full, the stew runs out. | The carters eat everything before the town wakes.
 b : Forty! | Then the price goes up. | Then go to bed earlier and wake earlier.
-a : Forty hungry carters. | It does. | I can't wake earlier than a carter.
+a : Forty hungry carters. | #bc_it_does# | I can't wake earlier than a carter.
 b?[innkeeper] : I cook for sixty and serve eighty. Then they complain.
 
 scene em_ac_pr_cheap
 when topic=prices topic.dir=down here.region=larkfield topic.cause=caravan|dump|harvest|players
+does tell.self / react.self / assess
 a : Everything passes through Larkfield market. When there's plenty, we feel it first. | #topic.what# for #topic.price#. The market must be overflowing. | The carts dumped their extra before the long road.
 b : First to feel it, first to lose it. | Overflowing with mules, anyway. | Lighter for the road.
-a : Always. | And mule dung. | And cheaper for us.
+a : #bc_always# | And mule dung. | And cheaper for us.
 
 scene em_wm_pr_mercantile
 when topic=prices topic.dir=up here.region=larkfield
+does tell.self / ask.detail / answer.detail / tell.self
 a : The general store's chalked new prices again. | Old Fennick at the general store wrote my name in the book again. | Half the downs owes the general store, and the prices keep climbing.
 b : Up or down? | How long is your line? | That's how they keep us.
 a : Up, mostly. | Longer than the book. | That's how.
@@ -147,6 +167,7 @@ b?[merchant] : Credit costs. Somebody has to carry it.
 
 scene em_wm_pr_drovers
 when topic=prices topic.dir=up topic.item=meal here.region=downs topic.cause=late|harvest
+does tell.self / react.self / assess / tell.self
 a : The drovers are late and meat's dear all week. | No drovers this month, so no mutton. | Mutton at #topic.price#. The drovers must be scarce.
 b : Turnips, then. | Barley, then. | Scarce as rain.
 a : Turnips again. | Barley again. | Scarcer.
@@ -156,6 +177,7 @@ b?[herder] : Sheep don't walk themselves to market. Pay the drover.
 
 scene em_lk_pr_fish
 when topic=prices topic.dir=up topic.item=meal here.region=coldwater
+does tell.news / react.news / assess / tell.self
 a : Fish from Glasswater, and still it's #topic.price#. | If the lake's full of fish, why's supper dear? | The boatwrights eat better than the fishers.
 b : Ask the fishers. | The lake's moody. | Boats sell for more than fish.
 a : They're out on the water. | Like everything here. | That's the trouble.
@@ -163,6 +185,7 @@ b?[fisher] : The lake's full. The nets are torn. New nets cost.
 
 scene em_lk_pr_cheap
 when topic=prices topic.dir=down here.region=coldwater topic.cause=event|harvest
+does tell.self / react.self / assess
 a : Big catch on the lake. Fish for nothing. | #topic.what# for #topic.price#. Even the gulls are fat. | The boats came in so heavy they nearly sank.
 b : Eat fish till you swim. | Fat gulls and fat pups. | Nearly is fine.
 a : Already do. | That's a good week. | Very fine.
@@ -171,6 +194,7 @@ a : Already do. | That's a good week. | Very fine.
 
 scene em_fh_pr_herbs_ours
 when topic=prices topic.dir=up topic.item=herbs here.region=fens
+does tell.complaint / react.complaint / assess / tell.self
 a : We grow the herbs. How are they #topic.price# in our own town? | Fen herbs go out by the cartload and come back dearer. | The herb-wives sell the best to the city and keep the stems.
 b : Because the city pays more. | Every cart, every season. | Stems for the locals.
 a : Always the city. | Every season. | Stems and promises.
@@ -178,12 +202,14 @@ b?[healer] : The city pays. We don't. That's the whole of it.
 
 scene em_fh_pr_herbs_cheap
 when topic=prices topic.item=herbs topic.dir=down here.region=fens topic.cause=harvest|dump|players|caravan
+does tell.self / react.self / assess
 a : Herbs cheap enough to stuff a mattress. | The fen gave a good season. Every shed's full. | #topic.price#. The herb-wives are grumbling.
 b : I'll stuff mine. | Bless the fen. | They always grumble.
-a : Sleep well, then. | For once. | And always eat.
+a : Sleep well, then. | #bc_for_once# | And always eat.
 
 scene em_fh_pr_peat
 when topic=prices topic.dir=up here.region=fens
+does tell.self / react.self / assess / tell.self
 a : Peat's wet and supper's dear. A good week for misery. | Can't dry peat, can't cook. Can't cook, buy food. Can't buy food. | Wet feet, wet peat, dear supper.
 b : A good week for marsh lights, too. | That's the fens all over. | And dear everything.
 a : Don't follow them. | All over. | And we're hungry.
@@ -191,15 +217,17 @@ b?[laborer] : Cut peat all morning. Wet as a fish.
 
 scene em_sf_pr_river
 when topic=prices topic.dir=down here.region=fens topic.cause=caravan|harvest
+does tell.self / react.self / assess / tell.self
 a : The barges came down the Long River full. Prices fell. | #topic.what# for #topic.price# by the river. | River's been kind this month. Food's cheap.
 b : Bless the river. | River's always cheapest. | Kind for once.
-a : And the bargemen. | And muddiest. | For once.
+a : And the bargemen. | And muddiest. | #bc_for_once#
 b?[sailor] : The river's always kind until it isn't.
 
 # ---------------------------------------------------------------- Southmeadow
 
 scene em_af_pr_grain
 when topic=prices topic.dir=up topic.item=meal here.region=southmeadow
+does tell.complaint / react.complaint / assess / tell.self
 a : We grow the grain and pay #topic.price# for a meal. | The grain goes north and the bread comes back dearer. | The price chalked at the bakery door's gone up again.
 b : That's trade. | The carters take a cut both ways. | I saw.
 a : That's robbery. | Both ways. | Everyone saw.
@@ -207,13 +235,15 @@ b?[farmer] : They buy my wheat cheap in the field and sell it dear in the loaf.
 
 scene em_af_pr_dry
 when topic=prices topic.dir=up here.region=southmeadow topic.cause=harvest
+does tell.self / react.self / assess / tell.self
 a : No rain, no harvest, no cheap bread. | The wells are low and the fields are cracked. | The farmers are praying and the prices are climbing.
 b : Rain will come. | Bad year. | Pray with them.
-a : When? | Very bad. | I am.
+a : When? | #bc_very_bad# | I am.
 b?[farmer] : One more dry week and I'll lose the whole field.
 
 scene em_af_pr_harvest
 when topic=prices topic.dir=down here.region=southmeadow here.season=summer|autumn topic.cause=harvest
+does tell.self / react.self / assess / tell.self
 a : Harvest's in. Bread's cheap. Southmeadow smiles. | The granary's full to the rafters. | #topic.what# for #topic.price#. The fields did us proud.
 b : Smile while you can. | Full granary, fat winter. | Proud and tired.
 a : While I can. | Let's hope. | Very tired.
@@ -223,13 +253,15 @@ b?[farmer] : Every ear of it cut by paw and tooth. Remember that when you eat it
 
 scene em_hm_pr_carter
 when topic=prices topic.dir=up here.region=oakhaven topic.cause=late|raid
+does tell.self / react.self / assess
 a : The carter's late, so whatever he brings will cost more. | Prices in Oakhaven are whatever the carter says. | The carter brought salt and said a number. We paid it.
 b : He's always late. | And he says big numbers. | What else could we do?
-a : And always dear. | Bigger every time. | Nothing.
+a : And always dear. | Bigger every time. | #bc_nothing#
 
 scene em_hm_pr_garden
 when topic=prices topic.dir=up here.region=oakhaven
+does tell.self / react.self / assess / tell.self
 a : I'll grow more in the garden. Can't trust the carter's prices. | Every house in Oakhaven should keep a garden. | Herbs and beans from the garden. No pennies needed.
 b : Good idea. | Most do. | Beans again?
-a : About time. | The rest should. | Beans forever.
+a : #bc_about_time# | The rest should. | Beans forever.
 b?[old] : The Rainwood fed this town before there was a road. It can again.

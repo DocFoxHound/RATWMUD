@@ -1,0 +1,4 @@
+R8 (habit saturation (% of a speaker's lines, mean)): 0.126 regresses more than 10% from the baseline's 0.0622 (210 events against 108 at the baseline's rate; by chance 1.9e-05)
+M1 (lines carrying moves (%)): 57.2 regresses more than 10% from the baseline's 74.3
+U2 (distinguishability of look-alike residents (%)): 29.9 regresses more than 10% from the baseline's 39.2
+B1 (one beat: the director's mean (ms)): 0.267 regresses more than 10% from the baseline's 0.142

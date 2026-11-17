@@ -1,0 +1,973 @@
+{
+ "raters": [
+  "A",
+  "B",
+  "C"
+ ],
+ "items": 60,
+ "axes": [
+  "believable",
+  "coherent",
+  "overall"
+ ],
+ "H1": {
+  "axis": "overall",
+  "mean": {
+   "new": 3.475,
+   "old": 3.792,
+   "shuffled": 1.383
+  },
+  "rated": {
+   "new": 60,
+   "old": 60,
+   "shuffled": 60
+  },
+  "targets": {
+   "new": 3.8,
+   "new_minus_shuffled": 2.0,
+   "new_minus_old": 1.0
+  },
+  "by_axis": {
+   "believable": {
+    "new": {
+     "mean": 3.333,
+     "items": 20,
+     "ratings": 60,
+     "item_sd": 0.816,
+     "item_median": 3.167,
+     "dist": {
+      "2": 11,
+      "3": 23,
+      "4": 21,
+      "5": 5
+     },
+     "low_items": 4,
+     "high_items": 8,
+     "by_rater": {
+      "A": 3.35,
+      "B": 3.3,
+      "C": 3.35
+     }
+    },
+    "old": {
+     "mean": 3.483,
+     "items": 20,
+     "ratings": 60,
+     "item_sd": 0.859,
+     "item_median": 3.833,
+     "dist": {
+      "2": 12,
+      "3": 12,
+      "4": 31,
+      "5": 5
+     },
+     "low_items": 4,
+     "high_items": 10,
+     "by_rater": {
+      "A": 3.6,
+      "B": 3.4,
+      "C": 3.45
+     }
+    },
+    "shuffled": {
+     "mean": 1.433,
+     "items": 20,
+     "ratings": 60,
+     "item_sd": 0.461,
+     "item_median": 1.333,
+     "dist": {
+      "1": 35,
+      "2": 24,
+      "3": 1
+     },
+     "low_items": 20,
+     "high_items": 0,
+     "by_rater": {
+      "A": 1.5,
+      "B": 1.4,
+      "C": 1.4
+     }
+    }
+   },
+   "coherent": {
+    "new": {
+     "mean": 3.617,
+     "items": 20,
+     "ratings": 60,
+     "item_sd": 0.99,
+     "item_median": 4.0,
+     "dist": {
+      "1": 1,
+      "2": 10,
+      "3": 12,
+      "4": 25,
+      "5": 12
+     },
+     "low_items": 4,
+     "high_items": 12,
+     "by_rater": {
+      "A": 3.75,
+      "B": 3.6,
+      "C": 3.5
+     }
+    },
+    "old": {
+     "mean": 4.1,
+     "items": 20,
+     "ratings": 60,
+     "item_sd": 0.937,
+     "item_median": 4.5,
+     "dist": {
+      "2": 3,
+      "3": 17,
+      "4": 11,
+      "5": 29
+     },
+     "low_items": 1,
+     "high_items": 12,
+     "by_rater": {
+      "A": 4.2,
+      "B": 4.0,
+      "C": 4.1
+     }
+    },
+    "shuffled": {
+     "mean": 1.333,
+     "items": 20,
+     "ratings": 60,
+     "item_sd": 0.527,
+     "item_median": 1.0,
+     "dist": {
+      "1": 43,
+      "2": 14,
+      "3": 3
+     },
+     "low_items": 19,
+     "high_items": 0,
+     "by_rater": {
+      "A": 1.3,
+      "B": 1.35,
+      "C": 1.35
+     }
+    }
+   },
+   "overall": {
+    "new": {
+     "mean": 3.475,
+     "items": 20,
+     "ratings": 60,
+     "item_sd": 0.876,
+     "item_median": 3.583,
+     "dist": {
+      "1.5": 1,
+      "2": 7,
+      "2.5": 6,
+      "3": 9,
+      "3.5": 11,
+      "4": 14,
+      "4.5": 7,
+      "5": 5
+     },
+     "low_items": 4,
+     "high_items": 8,
+     "by_rater": {
+      "A": 3.55,
+      "B": 3.45,
+      "C": 3.425
+     }
+    },
+    "old": {
+     "mean": 3.792,
+     "items": 20,
+     "ratings": 60,
+     "item_sd": 0.88,
+     "item_median": 4.167,
+     "dist": {
+      "2": 3,
+      "2.5": 9,
+      "3": 8,
+      "3.5": 4,
+      "4": 7,
+      "4.5": 24,
+      "5": 5
+     },
+     "low_items": 1,
+     "high_items": 11,
+     "by_rater": {
+      "A": 3.9,
+      "B": 3.7,
+      "C": 3.775
+     }
+    },
+    "shuffled": {
+     "mean": 1.383,
+     "items": 20,
+     "ratings": 60,
+     "item_sd": 0.466,
+     "item_median": 1.167,
+     "dist": {
+      "1": 35,
+      "1.5": 8,
+      "2": 13,
+      "2.5": 4
+     },
+     "low_items": 19,
+     "high_items": 0,
+     "by_rater": {
+      "A": 1.4,
+      "B": 1.375,
+      "C": 1.375
+     }
+    }
+   }
+  },
+  "diffs": {
+   "believable": {
+    "new_minus_shuffled": {
+     "diff": 1.9,
+     "ci95": [
+      1.5,
+      2.317
+     ]
+    },
+    "new_minus_old": {
+     "diff": -0.15,
+     "ci95": [
+      -0.683,
+      0.383
+     ]
+    }
+   },
+   "coherent": {
+    "new_minus_shuffled": {
+     "diff": 2.284,
+     "ci95": [
+      1.783,
+      2.75
+     ]
+    },
+    "new_minus_old": {
+     "diff": -0.483,
+     "ci95": [
+      -1.1,
+      0.117
+     ]
+    }
+   },
+   "overall": {
+    "new_minus_shuffled": {
+     "diff": 2.092,
+     "ci95": [
+      1.658,
+      2.517
+     ]
+    },
+    "new_minus_old": {
+     "diff": -0.317,
+     "ci95": [
+      -0.875,
+      0.225
+     ]
+    }
+   }
+  },
+  "new_minus_shuffled": 2.092,
+  "new_minus_old": -0.317,
+  "met": {
+   "new": false,
+   "new_minus_shuffled": true,
+   "new_minus_old": false
+  },
+  "passed": false,
+  "weighted_by_heard_length": {
+   "new": 3.402,
+   "old": 4.184,
+   "shuffled": 1.361
+  },
+  "by_length": {
+   "new": {
+    "2": {
+     "items": 5,
+     "mean": 3.067,
+     "heard_pct": 12.411
+    },
+    "3": {
+     "items": 5,
+     "mean": 3.967,
+     "heard_pct": 47.793
+    },
+    "4-5": {
+     "items": 5,
+     "mean": 4.133,
+     "heard_pct": 2.695
+    },
+    "6+": {
+     "items": 5,
+     "mean": 2.733,
+     "heard_pct": 37.1
+    }
+   },
+   "old": {
+    "2": {
+     "items": 7,
+     "mean": 2.881,
+     "heard_pct": 0.778
+    },
+    "3": {
+     "items": 7,
+     "mean": 4.167,
+     "heard_pct": 88.354
+    },
+    "4-5": {
+     "items": 6,
+     "mean": 4.417,
+     "heard_pct": 10.869
+    }
+   },
+   "shuffled": {
+    "2": {
+     "items": 5,
+     "mean": 1.7,
+     "heard_pct": 12.411
+    },
+    "3": {
+     "items": 5,
+     "mean": 1.533,
+     "heard_pct": 47.793
+    },
+    "4-5": {
+     "items": 5,
+     "mean": 1.267,
+     "heard_pct": 2.695
+    },
+    "6+": {
+     "items": 5,
+     "mean": 1.033,
+     "heard_pct": 37.1
+    }
+   }
+  },
+  "new_by_ending": {
+   "curt": {
+    "items": 5,
+    "mean": 4.133
+   },
+   "parted": {
+    "items": 10,
+    "mean": 3.517
+   },
+   "farewell": {
+    "items": 5,
+    "mean": 2.733
+   }
+  },
+  "new_by_move": {
+   "agree": {
+    "items": 4,
+    "with": 3.375,
+    "without": 3.5
+   },
+   "answer.detail": {
+    "items": 3,
+    "with": 2.889,
+    "without": 3.578
+   },
+   "ask.detail": {
+    "items": 4,
+    "with": 2.875,
+    "without": 3.625
+   },
+   "assess": {
+    "items": 7,
+    "with": 3.071,
+    "without": 3.692
+   },
+   "farewell": {
+    "items": 5,
+    "with": 2.733,
+    "without": 3.722
+   },
+   "farewell.return": {
+    "items": 5,
+    "with": 2.733,
+    "without": 3.722
+   },
+   "give.opinion": {
+    "items": 4,
+    "with": 3.333,
+    "without": 3.51
+   },
+   "pivot": {
+    "items": 4,
+    "with": 2.5,
+    "without": 3.719
+   },
+   "react.news": {
+    "items": 6,
+    "with": 3.667,
+    "without": 3.393
+   },
+   "react.self": {
+    "items": 7,
+    "with": 3.19,
+    "without": 3.628
+   },
+   "recall": {
+    "items": 4,
+    "with": 3.0,
+    "without": 3.594
+   },
+   "tell.news": {
+    "items": 6,
+    "with": 3.778,
+    "without": 3.345
+   },
+   "tell.self": {
+    "items": 11,
+    "with": 3.303,
+    "without": 3.685
+   }
+  }
+ },
+ "agreement": {
+  "believable": {
+   "alpha_interval": 0.922,
+   "alpha_ordinal": 0.926,
+   "spearman_pairwise_mean": 0.929,
+   "exact_pct": 76.667,
+   "within_one_pct": 100.0
+  },
+  "coherent": {
+   "alpha_interval": 0.953,
+   "alpha_ordinal": 0.95,
+   "spearman_pairwise_mean": 0.953,
+   "exact_pct": 78.889,
+   "within_one_pct": 100.0
+  },
+  "overall": {
+   "alpha_interval": 0.958,
+   "alpha_ordinal": 0.956,
+   "spearman_pairwise_mean": 0.96,
+   "exact_pct": 63.333,
+   "within_one_pct": 100.0
+  }
+ },
+ "H2": "not rated",
+ "worst": [
+  {
+   "item": "26",
+   "conv": 4787,
+   "run": "artifacts/talk/runs/s3-tick/tick-L1",
+   "mean": {
+    "believable": 2.0,
+    "coherent": 1.667,
+    "overall": 1.833
+   },
+   "notes": {},
+   "lines": [
+    {
+     "who": "Maren Tarhand",
+     "text": "The may's out. Summer's on its way.",
+     "entry": "e5_se_turning_spring_summer",
+     "moves": [
+      "tell.self"
+     ],
+     "owes": [],
+     "answers": [],
+     "conv": {
+      "topic": "season",
+      "ended": "farewell",
+      "chain": [
+       "e5_se_turning_spring_summer",
+       "s8p_season_land",
+       "e5_rg_rm_folds",
+       "e2_r_pt_ask_close",
+       "e2_r_pt_own",
+       "e2_r_pt_react_poor",
+       "s8t_bye_leave_dusk",
+       "s8t_return_night"
+      ]
+     }
+    },
+    {
+     "who": "Runa Ashridge",
+     "text": "Ah, lovely.",
+     "entry": "e5_se_turning_spring_summer",
+     "moves": [
+      "react.self"
+     ],
+     "owes": [],
+     "answers": [
+      "tell.self"
+     ]
+    },
+    {
+     "who": "Maren Tarhand",
+     "text": "Lovely, and short.",
+     "entry": "e5_se_turning_spring_summer",
+     "moves": [
+      "assess"
+     ],
+     "owes": [],
+     "answers": []
+    },
+    {
+     "who": "Maren Tarhand",
+     "text": "It's a busy time for the fields. Walked out to the Folds. Sheep, rabbits, and mire.",
+     "entry": "e5_rg_rm_folds",
+     "moves": [
+      "pivot",
+      "tell.self"
+     ],
+     "owes": [],
+     "answers": []
+    },
+    {
+     "who": "Runa Ashridge",
+     "text": "Lovely country.",
+     "entry": "e5_rg_rm_folds",
+     "moves": [
+      "react.self"
+     ],
+     "owes": [],
+     "answers": [
+      "tell.self"
+     ]
+    },
+    {
+     "who": "Maren Tarhand",
+     "text": "Wet country.",
+     "entry": "e5_rg_rm_folds",
+     "moves": [
+      "assess"
+     ],
+     "owes": [],
+     "answers": []
+    },
+    {
+     "who": "Maren Tarhand",
+     "text": "Something else, while I think of it. Doing anything tonight, love?",
+     "entry": "e2_r_pt_ask_close",
+     "moves": [
+      "change_subject",
+      "ask.detail"
+     ],
+     "owes": [
+      "answer.detail"
+     ],
+     "answers": []
+    },
+    {
+     "who": "Runa Ashridge",
+     "text": "I walk. Just walk. Clears the head.",
+     "entry": "e2_r_pt_own",
+     "moves": [
+      "answer.detail"
+     ],
+     "owes": [
+      "react.self"
+     ],
+     "answers": [
+      "ask.detail"
+     ]
+    },
+    {
+     "who": "Maren Tarhand",
+     "text": "Wish I had the money for it.",
+     "entry": "e2_r_pt_react_poor",
+     "moves": [
+      "react.self"
+     ],
+     "owes": [],
+     "answers": [
+      "answer.detail"
+     ]
+    },
+    {
+     "who": "Runa Ashridge",
+     "text": "Off home, then.",
+     "entry": "s8t_bye_leave_dusk",
+     "moves": [
+      "farewell"
+     ],
+     "owes": [
+      "farewell.return"
+     ],
+     "answers": []
+    },
+    {
+     "who": "Maren Tarhand",
+     "text": "Sleep sound, then.",
+     "entry": "s8t_return_night",
+     "moves": [
+      "farewell.return"
+     ],
+     "owes": [],
+     "answers": [
+      "farewell"
+     ]
+    }
+   ]
+  },
+  {
+   "item": "21",
+   "conv": 1325,
+   "run": "artifacts/talk/runs/s3-tick/tick-L1",
+   "mean": {
+    "believable": 2.667,
+    "coherent": 2.0,
+    "overall": 2.333
+   },
+   "notes": {},
+   "lines": [
+    {
+     "who": "Wynn Rustworth",
+     "text": "Hello again. My winter coat's coming out in tufts. I look motheaten.",
+     "entry": "e5_se_spring_moult",
+     "moves": [
+      "again.open",
+      "tell.self"
+     ],
+     "owes": [],
+     "answers": [],
+     "conv": {
+      "topic": "season",
+      "ended": "farewell",
+      "chain": [
+       "e5_se_spring_moult",
+       "ag_again_any2",
+       "op_give_for",
+       "s8o_agree_weather",
+       "s8p_season_land",
+       "e5_land_view",
+       "e5_land_ridgemere",
+       "e5_landr",
+       "s8t_bye2",
+       "cv_return_any2"
+      ]
+     }
+    },
+    {
+     "who": "Leif Fogcot",
+     "text": "You do look motheaten.",
+     "entry": "e5_se_spring_moult",
+     "moves": [
+      "react.self"
+     ],
+     "owes": [],
+     "answers": [
+      "tell.self"
+     ]
+    },
+    {
+     "who": "Wynn Rustworth",
+     "text": "Thank you so much.",
+     "entry": "e5_se_spring_moult",
+     "moves": [
+      "assess"
+     ],
+     "owes": [],
+     "answers": []
+    },
+    {
+     "who": "Leif Fogcot",
+     "text": "I'll stand up for festival days any day. It's the one day the whole town's out and talking.",
+     "entry": "op_give_for",
+     "moves": [
+      "give.opinion"
+     ],
+     "owes": [
+      "agree|disagree|counter|give.opinion|give.advice|tease|ack"
+     ],
+     "answers": []
+    },
+    {
+     "who": "Wynn Rustworth",
+     "text": "Couldn't agree more.",
+     "entry": "s8o_agree_weather",
+     "moves": [
+      "agree"
+     ],
+     "owes": [],
+     "answers": [
+      "give.opinion"
+     ]
+    },
+    {
+     "who": "Wynn Rustworth",
+     "text": "It's a busy time for the fields. Look at it all out there. Do you ever stop and look?",
+     "entry": "e5_land_view",
+     "moves": [
+      "pivot",
+      "ask.detail"
+     ],
+     "owes": [
+      "answer.detail"
+     ],
+     "answers": []
+    },
+    {
+     "who": "Leif Fogcot",
+     "text": "Wet. Steep. Lovely, if you like moss.",
+     "entry": "e5_land_ridgemere",
+     "moves": [
+      "answer.detail"
+     ],
+     "owes": [
+      "react.self"
+     ],
+     "answers": [
+      "ask.detail"
+     ]
+    },
+    {
+     "who": "Wynn Rustworth",
+     "text": "You'd know better than me.",
+     "entry": "e5_landr",
+     "moves": [
+      "react.self"
+     ],
+     "owes": [],
+     "answers": [
+      "answer.detail"
+     ]
+    },
+    {
+     "who": "Leif Fogcot",
+     "text": "Till next we meet.",
+     "entry": "s8t_bye2",
+     "moves": [
+      "farewell"
+     ],
+     "owes": [
+      "farewell.return"
+     ],
+     "answers": []
+    },
+    {
+     "who": "Wynn Rustworth",
+     "text": "Mind how you go.",
+     "entry": "cv_return_any2",
+     "moves": [
+      "farewell.return"
+     ],
+     "owes": [],
+     "answers": [
+      "farewell"
+     ]
+    }
+   ]
+  },
+  {
+   "item": "11",
+   "conv": 2468,
+   "run": "artifacts/talk/runs/s3-tick/tick-L1",
+   "mean": {
+    "believable": 2.333,
+    "coherent": 2.333,
+    "overall": 2.333
+   },
+   "notes": {},
+   "lines": [
+    {
+     "who": "Grete Gullhand",
+     "text": "I've not eaten since yesterday morning.",
+     "entry": "e1_fd_tell_hungry",
+     "moves": [
+      "tell.self"
+     ],
+     "owes": [
+      "sympathise"
+     ],
+     "answers": [],
+     "conv": {
+      "topic": "food",
+      "ended": "parted",
+      "chain": [
+       "e1_fd_tell_hungry",
+       "h7_sorry_hungry_both"
+      ]
+     }
+    },
+    {
+     "who": "Gwen Brineby",
+     "text": "Two empty pots.",
+     "entry": "h7_sorry_hungry_both",
+     "moves": [
+      "sympathise"
+     ],
+     "owes": [],
+     "answers": []
+    }
+   ]
+  },
+  {
+   "item": "36",
+   "conv": 5577,
+   "run": "artifacts/talk/runs/s3-tick/tick-L1",
+   "mean": {
+    "believable": 2.333,
+    "coherent": 2.333,
+    "overall": 2.333
+   },
+   "notes": {},
+   "lines": [
+    {
+     "who": "Edmund Sootford",
+     "text": "Folk, folk. We're worse than the gossips. Off to chapel again? What did you do this time?",
+     "entry": "r7_tease_devout",
+     "moves": [
+      "recall",
+      "tell.self"
+     ],
+     "owes": [
+      "tease.return"
+     ],
+     "answers": [],
+     "conv": {
+      "topic": "friends",
+      "ended": "farewell",
+      "chain": [
+       "r7_tease_devout",
+       "s8cb_friends",
+       "r7_jest_warm",
+       "r7_close_jest",
+       "s8p_friends_smalltalk",
+       "ev_hour_bells",
+       "s8t_bye",
+       "s8t_return"
+      ]
+     }
+    },
+    {
+     "who": "Signe Dripworth",
+     "text": "You're lucky I'm fond of you.",
+     "entry": "r7_jest_warm",
+     "moves": [
+      "tease.return"
+     ],
+     "owes": [
+      "ack"
+     ],
+     "answers": []
+    },
+    {
+     "who": "Edmund Sootford",
+     "text": "Ha. Sink me.",
+     "entry": "r7_close_jest",
+     "moves": [
+      "ack"
+     ],
+     "owes": [],
+     "answers": [
+      "tease.return"
+     ]
+    },
+    {
+     "who": "Edmund Sootford",
+     "text": "Anyway. How's things? I wish they'd ring the bells softer.",
+     "entry": "ev_hour_bells",
+     "moves": [
+      "pivot",
+      "tell.self"
+     ],
+     "owes": [],
+     "answers": []
+    },
+    {
+     "who": "Signe Dripworth",
+     "text": "They're meant to wake the dead.",
+     "entry": "ev_hour_bells",
+     "moves": [
+      "react.self"
+     ],
+     "owes": [],
+     "answers": [
+      "tell.self"
+     ]
+    },
+    {
+     "who": "Edmund Sootford",
+     "text": "Well, they woke me.",
+     "entry": "ev_hour_bells",
+     "moves": [
+      "assess"
+     ],
+     "owes": [],
+     "answers": []
+    },
+    {
+     "who": "Signe Dripworth",
+     "text": "Dry feet.",
+     "entry": "s8t_bye",
+     "moves": [
+      "farewell"
+     ],
+     "owes": [
+      "farewell.return"
+     ],
+     "answers": []
+    },
+    {
+     "who": "Edmund Sootford",
+     "text": "Mind the boards.",
+     "entry": "s8t_return",
+     "moves": [
+      "farewell.return"
+     ],
+     "owes": [],
+     "answers": [
+      "farewell"
+     ]
+    }
+   ]
+  },
+  {
+   "item": "16",
+   "conv": 3293,
+   "run": "artifacts/talk/runs/s3-tick/tick-L1",
+   "mean": {
+    "believable": 2.333,
+    "coherent": 3.0,
+    "overall": 2.667
+   },
+   "notes": {},
+   "lines": [
+    {
+     "who": "Soren Coaldale",
+     "text": "We were talking travel lately, too. Road wolves on the road again. My cousin's waiting till they're gone.",
+     "entry": "e5_road_bandits",
+     "moves": [
+      "recall",
+      "tell.self"
+     ],
+     "owes": [
+      "assess"
+     ],
+     "answers": [],
+     "conv": {
+      "topic": "travel",
+      "ended": "parted",
+      "chain": [
+       "e5_road_bandits",
+       "s8cb_travel",
+       "e5_roadr_warm"
+      ]
+     }
+    },
+    {
+     "who": "Sybil Tardale",
+     "text": "I'll keep a light in the window, for luck.",
+     "entry": "e5_roadr_warm",
+     "moves": [
+      "assess"
+     ],
+     "owes": [],
+     "answers": [
+      "tell.self"
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -25,6 +25,7 @@
 #include "RatwCrime.h"
 #include "RatwSchedules.h"
 #include "RatwAmbient.h"
+#include "RatwTalkLedger.h"
 #include "RatwRoads.h"
 #include "RatwCalendar.h"
 #include "RatwSociety.h"
@@ -662,6 +663,8 @@ struct PersistedWorld
     // What residents and towns have to tell (the ambient talk's news: doc 84, defect 10), kept across a restart.
     std::map<std::string, std::vector<AmbientNews>> news;
     std::map<std::string, std::vector<TownNews>> townNews;
+    // The talk ledger (doc 84 §8.7, Phase 5): what residents talked of, with whom, how it went.
+    json::Value talkLedger;
 };
 
 class World
@@ -1462,7 +1465,35 @@ class World
     std::vector<AmbientPick> ambientPicks(const std::vector<std::string>& listeners, const std::set<std::string>& busy = {});
     // An exchange was voiced: it counts against both and the place for a while, and does what talk does.
     void ambientSpoken(const AmbientPick& pick);
+    // The same in two halves, for talk spoken a beat at a time (doc 84 §8.2, Phase 4): ambientBegun counts it against both
+    // and the place from now; ambientEnded, as it ends, makes everyone in it a little more familiar (a quarrel's grudge
+    // aired sours them, as ever) and records it. What each line does (a claim passed on, its moves' effects on regard)
+    // is the game's, as each is said.
+    void ambientBegun(const AmbientPick& pick);
+    void ambientEnded(const AmbientPick& pick, const std::vector<std::string>& people);
+    // One who said they're leaving (a goodbye tagged {leave=yes}) talks no more here for `seconds`: Slice 2's review.
+    void ambientLeave(const std::string& id, double seconds);
+    // A claim told in talk (doc 84 §8.6): believed as `believe` does, except that from a second, independent source
+    // (not the one they had it from, nor one who had it from them: `via` is where the teller had it) it is corroborated:
+    // confidence c becomes c + (1 - c) * 0.4, once a source.
+    void told(const Belief& b, const std::string& via);
+    // A claim denied to its holder by the one it is about, or their kin (§8.6): their confidence times `factor` (0..1).
+    void doubted(const std::string& holder, const std::string& subject, const std::string& claim, double factor);
+    // The holder's belief of this claim about this subject, if any (the same words, or the same incident, or the same
+    // kind about the same second party).
+    const Belief* holding(const std::string& holder, const std::string& subject, const std::string& claim,
+                          const std::string& incident = {}, const std::string& kind = {}, const std::string& object = {}) const;
     std::string describeRegard(const std::string& holder, const std::string& other) const;
+    // The talk ledger (doc 84 §8.7, Phase 5): what residents talked of, with whom, how it went; saved in the checkpoint,
+    // pruned each game day. Off (`enabled` false: nothing written) for fast economy sims (--no-talk-ledger).
+    TalkLedger& talkLedger() { return talkLedger_; }
+    // A resident's own news lately (doc 84 §8.8, Phase 6: a wedding or a loss of their own sets their mood), or null.
+    const std::vector<AmbientNews>* ownNews(const std::string& id) const
+    {
+        const auto found = news_.find(id);
+        return found == news_.end() ? nullptr : &found->second;
+    }
+    const TalkLedger& talkLedger() const { return talkLedger_; }
     std::vector<std::string> guardsOf(const std::string& town) const;
     // Paying off the bandits who have stopped this player (whichever of them `bandit` is).
     Result payBandits(const std::string& player, const std::string& bandit);
@@ -1926,6 +1957,9 @@ class World
     void furnishHomes();
     void placeHomeStores(const std::string& cellId);
     std::map<std::string, std::vector<Belief>> beliefs_;   // By holder.
+    // The talk ledger (doc 84 §8.7, Phase 5; RatwTalkLedger.h): saved in the checkpoint. Its told set is what
+    // corroboration counts (World::told: a second source once), as corroborated_ was before.
+    TalkLedger talkLedger_;
     CrimeState crime_;
     // The ambient director (RatwAmbient.cpp): when each resident and place last had an exchange (world seconds), and
     // what has happened in residents' lives lately (a few items each, for two game days).
@@ -1933,6 +1967,8 @@ class World
     std::map<std::string, std::vector<AmbientNews>> news_;
     std::map<std::string, std::vector<TownNews>> townNews_;      // By town (or region).
     std::map<std::string, std::string> talkDialectOf_;           // (setTalkDialects.)
+    std::map<std::string, std::pair<std::string, std::string>> talkOrigins_;   // (setTalkOrigins.)
+    void talkOriginWorked(const std::string& id, std::string& from, std::string& accent) const;
     mutable std::vector<std::pair<std::string, int>> talkHomes_; // The places somebody lives and how many, for talkOrigin (once).
     // The street a building's door gives onto, by cell (here.outdoors: doc 84 §7.8), found through the doors once and
     // found again when the doors change.
@@ -1956,16 +1992,29 @@ class World
     // The best thing for `a` to talk of with `b` now (gossip, news, the day...), with its tags and blanks; also asked by
     // talk_check (doc 62). An empty kind if there's nothing.
     AmbientTopic ambientTopic(const std::string& a, const std::string& b);
+    // Everything `a` and `b` might talk of now, the likeliest first, each with its owner (`source`): the director's agenda
+    // (doc 84 §8.5, Phase 5). ambientTopic is its first.
+    std::vector<AmbientTopic> agendaFor(const std::string& a, const std::string& b);
+    // Each resident's favourite topics (topics.json's favourites, by their traits; a mantle's from Phase 9): the game's.
+    void setTalkFavourites(std::function<std::vector<std::string>(const std::string&)> f) { talkFavourites_ = std::move(f); }
+    // Every topic ambientTopic weighs for a pair, as it is weighed, its score final (doc 84, Phase 5: talk_sim
+    // --dump-topics, the proof that topics.json's numbers are today's). Observation only.
+    std::function<void(const std::string& a, const std::string& b, const AmbientTopic& t)> onTopic;
     // The talk library's facts for where `who` stands, now (doc 62): here.place, here.time, here.weather...
     void talkMoment(const std::string& who, std::map<std::string, std::string>& facts);
     // What the town around `who` has been talking of (world.bandits, world.crime, world.herbs_price...), and the place
     // (here.crowd, here.player_near), as the talk library's facts (doc 62).
     void talkTown(const std::string& who, std::map<std::string, std::string>& facts);
+    // A topic's subject's and victim's sex (topic.subject_sex, topic.victim_sex: doc 84, Phase 6), where they are known.
+    void talkSexes(const std::string& subject, const std::string& victim, std::map<std::string, std::string>& facts) const;
     // Who `a` and `b` are to each other: spouses, family, apprentice, rivals, friends, acquaintances or strangers.
     std::string pairBand(const std::string& a, const std::string& b) const;
     // Where resident `id` grew up (one of the realm's seven regions; "" for none) and how strongly they speak like it
     // ("none", "light", "broad"): the talk library's `from` and `accent` (doc 62, phase 3).
     void talkOrigin(const std::string& id, std::string& from, std::string& accent) const;
+    // Each resident's own origin and accent where their live.npc_voice row says one (id -> (from, accent); either may be
+    // empty): talkOrigin answers with it (Slice 2's review).
+    void setTalkOrigins(std::map<std::string, std::pair<std::string, std::string>> origins);
     // The towns with no dialect of their own and the dialect each speaks (the talk library's settings.json, "dialect_of":
     // doc 83, Phase 4), so their folk have an origin too.
     void setTalkDialects(std::map<std::string, std::string> dialectOf);
@@ -1984,6 +2033,9 @@ class World
     static void talkGood(const std::string& base, std::map<std::string, std::string>& facts);
   private:
     void sceneTopics(const std::string& a, const std::string& b, const std::function<void(AmbientTopic)>& consider);
+    // Every topic the two might talk of, scored, cooled and warmed (topics.json), handed to `take` as it is weighed.
+    void weighTopics(const std::string& a, const std::string& b, const std::function<void(AmbientTopic)>& take);
+    std::function<std::vector<std::string>(const std::string&)> talkFavourites_;
     std::string talkHolder_;                        // (See talkFor.)
     std::function<std::string(const std::string&)> holderOf_;
     mutable std::map<std::string, std::vector<Society::PriceMove>>* talkPricesMemo_ = nullptr;   // (While ambientPicks runs.)

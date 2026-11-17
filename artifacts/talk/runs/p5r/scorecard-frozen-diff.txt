@@ -1,0 +1,4 @@
+R8 (habit saturation (% of a speaker's lines, mean)): 0.134 regresses more than 10% from the baseline's 0.0622 (221 events against 106 at the baseline's rate; by chance 2.1e-06)
+M1 (lines carrying moves (%)): 55.9 regresses more than 10% from the baseline's 74.3
+T2 (presupposition failures, per 1,000 lines): 0.0363 breaks the hard gate (0); the baseline passed
+U2 (distinguishability of look-alike residents (%)): 29.4 regresses more than 10% from the baseline's 39.2

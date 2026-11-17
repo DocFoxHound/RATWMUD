@@ -3,84 +3,95 @@
 
 scene wt2_rain_work
 when topic=weather here.weather=rain|storm
+does tell.self / react.self / assess
 a[merchant] : Nobody shops in the rain. | My awning's leaking onto the goods.
 a[laborer] : Hauling in the rain. Twice the weight, half the pay.
 a : Rain, rain, rain. | Everything's mud. | Can't get dry.
 b[old] : Rain's good for the wells. Be grateful.
 b[child] : I like the rain! Splash!
-b : It'll pass. | Mud everywhere. | Nor me.
-a : Eventually. | Everywhere. | Never.
+b : It'll pass. | Mud everywhere. | #bc_nor_me#
+a : Eventually. | Everywhere. | #bc_never#
 
 scene wt2_storm_fear
 when topic=weather here.weather=storm
+does tell.self / react.self / assess
 a : Hear that thunder? | Lightning struck the old oak last storm. | My shutters nearly blew off.
 b[child] : I'm not scared. I'm not! Is it over yet?
 b[old] : The sky's angry. It'll calm.
 b : Stay inside. | Split it clean, didn't it? | Nail them shut.
-a : I will. | Clean in two. | I did.
+a : #bc_i_will# | Clean in two. | I did.
 
 scene wt2_fog_creepy
 when topic=weather here.weather=fog
+does tell.self / react.self / assess
 a : Fog like this, anything could be out there. | Can't see the end of my nose. | The fog's swallowed the whole street.
 b[guard] : Thieves love a fog.
 b[old] : Fog's just a cloud that got tired.
 b : Don't say that. | Stay close. | It'll lift.
-a : Sorry. | I will. | Hope so.
+a : #bc_sorry# | #bc_i_will# | #bc_hope_so#
 
 scene wt2_snow_beauty
 when topic=weather here.weather=snow
+does tell.self / react.self / assess
 a : Look how quiet the snow makes everything. | First snow's always the prettiest. | Everything looks clean under snow.
 b[child] : Can we make snow wolves?
 b[old] : Pretty till you have to walk in it.
-b : It does. | Until it's grey slush. | For a day.
-a : Lovely. | True. | For a day.
+b : #bc_it_does# | Until it's grey slush. | For a day.
+a : #bc_lovely# | #bc_true# | For a day.
 
 scene wt2_overcast
 when topic=weather here.weather=overcast
+does tell.self / react.self / assess
 a : Grey all day. | Sun hasn't shown its face in days. | Looks like rain, doesn't it?
 b : Might. | Gloomy. | Always looks like rain.
-a : Might not. | Very. | Ha.
+a : Might not. | #bc_very# | #bc_ha#
 
 scene wt2_season_change_spring
 when topic=smalltalk|weather here.season=spring
+does tell.self / react.self / assess
 a : Mud season. | The thaw's flooded the low lanes. | Lambs in the fields already.
 b[farmer] : Busiest time of year.
-b : Always is. | Every year. | Spring's here.
-a : Always. | Every year. | At last.
+b : #bc_always_is# | #bc_every_year# | Spring's here.
+a : #bc_always# | #bc_every_year# | At last.
 
 scene wt2_season_change_autumn
 when topic=smalltalk|weather here.season=autumn
+does tell.self / react.self / assess
 a : The geese are flying south. | First frost this morning. | Gathering season.
 b[old] : Early geese, hard winter.
 b : Already? | Cold one. | Busy time.
-a : Already. | Very. | Very.
+a : #bc_already# | #bc_very# | #bc_very#
 
 scene lr_stars
 when topic=lore here.time=night|dusk
+does tell.story / react.story / assess
 a : See the Wolf in the stars, there? | The Hunter's rising early this year. | My father named every star.
 b[old] : My mother told me the stars are the ancestors watching.
 b[child] : Where? Show me!
 b : I see it. | Early winter, then. | Do you remember them?
-a : Beautiful. | So they say. | Some.
+a : Beautiful. | #bc_so_they_say# | Some.
 
 scene lr_moon
 when topic=lore here.time=night
+does tell.story / react.story / assess
 a : Big moon tonight. | They say a full moon makes pups wild. | Moon's red tonight. Bad sign.
 b[old] : The moon was bigger when I was young. Or I was smaller.
 b[child] : I feel wild! Awooo!
-b : Lovely. | Makes everyone wild. | Just dust in the air.
-a : Very. | Ha. | Maybe.
+b : #bc_lovely# | Makes everyone wild. | Just dust in the air.
+a : #bc_very# | #bc_ha# | #bc_maybe#
 
 scene lr_first_wolves
 when topic=lore
+does tell.story / react.story / assess
 a : They say the first wolves walked out of the mountain. | My grandmother said we came from across the sea. | Do you believe the old stories?
 b[priest] : The old stories hold truth, if not facts.
 b[old] : I believe the stories that keep pups behaving.
 b : Every town has its own story. | Mine says something else. | Some of them.
-a : True. | Everyone's does. | Some.
+a : #bc_true# | Everyone's does. | Some.
 
 scene lr_ghosts
 when topic=lore
+does tell.story / react.story / assess
 weight 0.7
 a : Do you believe in ghosts? | My house creaks at night like someone's walking. | I saw something in the old well once.
 b[old] : I've seen three. Two were drunk. One wasn't.
@@ -91,54 +102,61 @@ a : Nor me. Mostly. | I suppose. | I never found out.
 
 scene lr_dragons
 when topic=lore
+does tell.story / react.story / assess
 weight 0.5
 a : My uncle swears he saw a great serpent in the hills. | There are bones in the hills bigger than houses. | Monsters lived here once.
 b[scholar] : The bones are old. Very old. Not monsters.
 b : Your uncle drinks. | Have you seen them? | And now there's us.
-a : He does. | Once. | Ha.
+a : He does. | Once. | #bc_ha#
 
 scene lr_proverbs
 when topic=lore|smalltalk
+does tell.story / react.story / assess
 a : Like my mother always said: a full belly forgives everything. | A wolf alone is a wolf in danger. | Never trust a fox who smiles.
 b[old] : She was a wise wolf, your mother.
-b : True enough. | Very true. | Nor a merchant.
-a : She was. | It is. | Ha.
+b : #bc_true_enough# | Very true. | Nor a merchant.
+a : She was. | #bc_it_is# | #bc_ha#
 
 scene lr_old_war
 when topic=lore
+does tell.story / react.story / assess
 a : My grandfather fought in the old war. | There's a battlefield past the hills, still full of rusted blades. | Nobody remembers what the war was about.
 b[old] : I remember. Barely. Everyone was hungry.
 b[soldier] : Wars are always about the same thing. Somebody wanted more.
 b : Was he brave? | I'd not go there. | Nobody ever does.
-a : He said not. | Nor me. | Never.
+a : He said not. | #bc_nor_me# | #bc_never#
 
 scene lr_harvest_moon
 when topic=lore here.season=autumn
+does tell.story / react.story / assess
 a : Harvest moon soon. | They say if you wish on the harvest moon, it comes true. | The old ones danced in the fields under the harvest moon.
 b[farmer] : I'll be too tired to dance.
 b : Make a wish, then. | Did it ever work? | Nobody dances now.
-a : I will. | Sometimes. | More's the pity.
+a : #bc_i_will# | Sometimes. | More's the pity.
 
 scene lr_winter_tale
 when topic=lore here.season=winter
+does tell.story / react.story / assess
 a : They say in the hardest winter, the river froze to the bottom. | A winter so cold birds fell from the sky. | My grandmother survived the Long Winter.
 b[old] : I remember the Long Winter. We ate bark.
 b[child] : Will this winter be long?
 b : Hard to believe. | Terrible. | How?
-a : It's true. | Very. | She never said.
+a : It's true. | #bc_very# | She never said.
 
 scene lr_luck
 when topic=lore|smalltalk
+does tell.story / react.story / assess
 weight 0.6
 a : Found a white stone today. Good luck. | Saw a heron. That's luck, isn't it? | My lucky charm's gone. Lost it.
 b[old] : Luck's what you make. And a white stone helps.
-b : Lucky you. | Herons are luck. | Find another.
-a : Hope so. | Good. | I'll try.
+b : #bc_lucky_you# | Herons are luck. | Find another.
+a : #bc_hope_so# | #bc_good# | #bc_ill_try#
 
 # ---------------------------------------------------------------- The land (doc 60)
 
 scene wt3_the_city_from_afar
 when topic=lore|smalltalk here.region=towns
+does tell.story / react.story / assess
 a : My cousin went to Ridgemere. Says it rained every day. | Have you ever seen Ridgemere? The only real city there is. | They say Ridgemere's built on hills, one street on top of the next.
 b[merchant] : Ridgemere pays well for what we send. I'd go myself if the road were shorter.
 b : Every day? | Never. Too far. | Sounds like a lot of stairs.
@@ -146,6 +164,7 @@ a : Every single one. | One day, maybe. | And all of them wet.
 
 scene wt3_the_towns_from_the_city
 when topic=lore|smalltalk here.region=ridgemere
+does tell.story / react.story / assess
 a : Six towns out there, and not one bigger than the Sump. | My mother was from Southmeadow. Said the sun shone there. | They say up in Frosthollow the snow never leaves.
 b[carter] : I've driven to every one. The South Road's mud, and the High Road's worse.
 b : And twice as dry. | The sun! Imagine. | Not even in summer?
@@ -153,6 +172,7 @@ a : Dry sounds nice. | I try to. | Not even then.
 
 scene wt3_long_river
 when topic=lore|smalltalk here.region=lake|countryside here.region!=waste
+does tell.story / react.story / assess
 a : The Long River starts in Glasswater, they say, and ends in the Drowned Delta. | My father took a raft down the Long River once. Halfway, anyway. | Half the south drinks from the Long River.
 b[old] : That river was here before any of us. It'll be here after.
 b : That's a long way. | Only halfway? | The thirsty half.
@@ -160,14 +180,16 @@ a : It's in the name. | The fens stopped him. | Which is all of it, in summer.
 
 scene wt3_north_and_south
 when topic=lore|smalltalk
+does tell.story / react.story / assess
 weight 0.7
 a : North-east it's all mountains and snow, they say. | Down in the south-west the woods are warm even in winter. | The Sunfields grow half the bread we eat.
 b[old] : Snow one end, swamp the other, and rain on Ridgemere. That's the whole world.
 b : I'll take your word for it. | Warm in winter? | And the rest?
-a : Wise. | So they say. | Rabbit, mostly.
+a : #bc_wise# | #bc_so_they_say# | Rabbit, mostly.
 
 scene wt3_whitefangs
 when topic=lore|weather here.region=mountains
+does tell.story / react.story / assess
 a : The Whitefangs are clear today. You can count the peaks. | Snow's come down off the Whitefangs early. | The pass up to Frosthollow is closed again.
 b[miner] : Mountains give the ore and take the miners. Fair trade, some say.
 b : I make it eleven. | It always does. | Wait it out.

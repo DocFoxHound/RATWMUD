@@ -1,0 +1,446 @@
+# The shared lines, Phase 8 session 3 (Docs/Design/84 §33, §14.1's thin topics): the ships (talk.ships), 11 openers
+# before this phase, and in Phase 8 session 2's card the topic fell to the authored route 421 times of 644. The
+# openers carry the concept (§33.1) and hand on to ships.answer, answered below by the ship's kind.
+#
+# The facts (Core/RatwAmbient.cpp World::sceneTopics): only a market with a port has ships (the Wharf, Ridgemere's);
+# topic.kind is in, due (within two days: topic.when today or soon), late (stormbound), lost (lost at sea, four days)
+# or sailed (a day since); topic.ship is her name with its article ("the Wavecutter": #topic.ship.capitalize# begins a
+# sentence); topic.what is what she brings (her rich cargo's goods while that's on), where she has it.
+#
+# The rules they keep: a ship is "she"; nothing of her crew, captain or cargo the facts don't give; the lost are
+# grieved, never joked of; who says it by the grammar (#s8_heard#), what about by the criteria (the kind, the
+# speaker's work on the Wharf, their trade in what she brings).
+
+## ================================================================ Due
+
+rule s83s_due_1
+when concept=talk.ships topic.kind=due topic.ship
+does tell.news
+cooldown 1d
+say #s8_heard# #topic.ship.capitalize#'s due #topic.when#. | #topic.ship.capitalize#, due #topic.when#, the board says. | They've chalked #topic.ship# up for #topic.when#.
+then other: ships.answer
+
+rule s83s_due_2
+when concept=talk.ships topic.kind=due topic.ship
+does tell.news
+cooldown 1d
+say There's a ship due. #topic.ship.capitalize#. | Wharf's getting ready for #topic.ship#. | #topic.ship.capitalize# should be in #topic.when#, wind willing.
+then other: ships.answer
+
+rule s83s_due_3
+when concept=talk.ships topic.kind=due topic.ship
+does tell.news
+cooldown 1d
+say If the weather holds, #topic.ship# comes in #topic.when#. | Watch the harbour mouth. #topic.ship.capitalize#'s due. | Ship day #topic.when#. #topic.ship.capitalize#.
+then other: ships.answer
+
+rule s83s_due_4
+when concept=talk.ships topic.kind=due topic.ship topic.what
+does tell.news
+cooldown 1d
+say #topic.ship.capitalize#'s due #topic.when# with #topic.what#. | #topic.what.capitalize#, coming in on #topic.ship#. | They say #topic.ship# is bringing #topic.what#.
+then other: ships.answer
+
+rule s83s_due_today
+when concept=talk.ships topic.kind=due topic.ship topic.when=today
+does tell.news
+cooldown 1d
+say #topic.ship.capitalize# comes in today. The Wharf's all ropes and shouting already. | Today's the day for #topic.ship#. | Any hour now, #topic.ship#.
+then other: ships.answer
+
+rule s83s_due_dock
+when concept=talk.ships topic.kind=due topic.ship quarter=wharf|docks
+does tell.self
+cooldown 1d
+say I'll be on the pier at first light for #topic.ship#. | #topic.ship.capitalize#'s due, and that's work for every back on the Wharf. | Ship day. My shoulders know it before I do.
+then other: ships.answer
+
+rule s83s_due_porter
+when concept=talk.ships topic.kind=due topic.ship wealth=poor|destitute self.stage=adolescent|adult self.job!=child|innkeeper self.role=civilian
+does tell.self
+cooldown 1d
+say #topic.ship.capitalize#'s due. They'll want porters. I'll be there early. | A ship means a day's carrying, if they'll have me. | I'll queue at the gangplank for #topic.ship#. Somebody has to carry it.
+then other: ships.answer
+
+rule s83s_due_merchant
+when concept=talk.ships topic.kind=due topic.ship role=merchant
+does tell.self
+cooldown 1d
+say I've a buyer waiting on #topic.ship#. | When #topic.ship# comes, I'll have stock again. | My shelves are counting the days to #topic.ship#.
+then other: ships.answer
+
+rule s83s_due_sailor
+when concept=talk.ships topic.kind=due topic.ship job=sailor|fisher
+does tell.self
+cooldown 1d
+say #topic.ship.capitalize# sits low and slow, they say, but she gets there. | If the wind's in the west, #topic.ship# will be early. | #topic.ship.capitalize#'s a sound ship. She'll come in.
+then other: ships.answer
+
+rule s83s_due_keeper
+when concept=talk.ships topic.kind=due topic.ship job=innkeeper|cook|brewer
+does tell.self
+cooldown 1d
+say A ship in means sailors ashore. I've the barrels ready. | #topic.ship.capitalize#'s crew will want feeding. I've a pot on already. | Ship due. That's my best night of the week.
+then other: ships.answer
+
+rule s83s_due_rich
+when concept=talk.ships topic.kind=due topic.ship wealth=rich
+does tell.self
+cooldown 1d
+say The steward's been told to meet #topic.ship#. | We're expecting something on #topic.ship#. If she ever arrives. | One waits on ships like one waits on tailors.
+then other: ships.answer
+
+rule s83s_due_young
+when concept=talk.ships topic.kind=due topic.ship stage=young|adolescent
+does tell.news
+cooldown 1d
+say A ship's coming! #topic.ship.capitalize#! Can we go and see? | I'm going to watch #topic.ship# come in. | When #topic.ship# comes, I'll count the sails.
+then other: ships.answer
+
+rule s83s_due_old
+when concept=talk.ships topic.kind=due topic.ship stage=old
+does tell.news
+cooldown 1d
+say #topic.ship.capitalize#'s due. I used to run down to meet every ship. | Ships come and ships go. #topic.ship.capitalize# next. | I'll sit on the wall and watch #topic.ship# come in. That's my day.
+then other: ships.answer
+
+## ================================================================ In at the Wharf
+
+rule s83s_in_1
+when concept=talk.ships topic.kind=in topic.ship
+does tell.news
+cooldown 1d
+say #s8_heard# #topic.ship.capitalize#'s in. | #topic.ship.capitalize# tied up this morning, I'm told. | She's in. #topic.ship.capitalize#. The Wharf's heaving.
+then other: ships.answer
+
+rule s83s_in_2
+when concept=talk.ships topic.kind=in topic.ship
+does tell.news
+cooldown 1d
+say #topic.ship.capitalize#'s in, and the cranes are going. | Ship in. #topic.ship.capitalize#. Mind the carts on the Wharf road. | There's a ship at the pier. #topic.ship.capitalize#.
+then other: ships.answer
+
+rule s83s_in_3
+when concept=talk.ships topic.kind=in topic.ship topic.what
+does tell.news
+cooldown 1d
+say #topic.ship.capitalize#'s in with #topic.what#. | They're landing #topic.what# off #topic.ship#. | #topic.what.capitalize# off #topic.ship#, by the crate.
+then other: ships.answer
+
+rule s83s_in_4
+when concept=talk.ships topic.kind=in topic.ship
+does tell.news
+cooldown 1d
+say A ship in, and you'd think it was a festival. | #topic.ship.capitalize#'s made port. Somebody's mother will sleep tonight. | Sailors ashore. #topic.ship.capitalize#'s in.
+then other: ships.answer
+
+rule s83s_in_dock
+when concept=talk.ships topic.kind=in topic.ship quarter=wharf|docks
+does tell.self
+cooldown 1d
+say More crates in #topic.ship#'s hold than I can count. | My back's broken, and #topic.ship#'s hold still isn't empty. | Every paw on the Wharf is under #topic.ship#'s cargo.
+then other: ships.answer
+
+rule s83s_in_dock2
+when concept=talk.ships topic.kind=in topic.ship quarter=wharf|docks
+does tell.self
+cooldown 1d
+say Ship day pay. #topic.ship.capitalize#'s in. | We'll be at #topic.ship# till dark. | Ropes, crates, shouting. #topic.ship.capitalize# day.
+then other: ships.answer
+
+rule s83s_in_merchant
+when concept=talk.ships topic.kind=in topic.ship role=merchant deals=yes topic.what
+does tell.self
+cooldown 1d
+say #topic.ship.capitalize#'s in, and I'll have #topic.what# by evening. | I've been waiting on #topic.what#. Now #topic.ship#'s in, I'll be stocked. | Fresh #topic.what# off #topic.ship#. Come and see me tomorrow.
+then other: ships.answer
+
+rule s83s_in_merchant2
+when concept=talk.ships topic.kind=in topic.ship role=merchant
+does tell.self
+cooldown 1d
+say Ship in. Prices will move by noon, you watch. | #topic.ship.capitalize#'s in. I'll be down to haggle before the Heights wake. | A ship in. Good for the till, if I'm quick.
+then other: ships.answer
+
+rule s83s_in_porter
+when concept=talk.ships topic.kind=in topic.ship wealth=poor|destitute
+does tell.self
+cooldown 1d
+say #topic.ship.capitalize#'s in. A day's carrying, if they'll take me. | Ship's in. That's bread tonight, for anyone with a strong back. | They'll want hands for #topic.ship#. I'm going down.
+then other: ships.answer
+
+rule s83s_in_sailor
+when concept=talk.ships topic.kind=in topic.ship job=sailor|fisher
+does tell.self
+cooldown 1d
+say #topic.ship.capitalize#'s in. Her crew will be drinking the tavern dry. | She came in sweet, #topic.ship#. Good hands on her. | I'd sign on with #topic.ship# if she'd have me.
+then other: ships.answer
+
+rule s83s_in_keeper
+when concept=talk.ships topic.kind=in topic.ship job=innkeeper|cook|brewer
+does tell.self
+cooldown 1d
+say Sailors ashore off #topic.ship#. Every bench will be full tonight. | #topic.ship.capitalize#'s crew have pay in their pockets. Good. | I'll be pulling ale till the lamps go out.
+then other: ships.answer
+
+rule s83s_in_guard
+when concept=talk.ships topic.kind=in topic.ship job=guard|soldier
+does tell.self
+cooldown 1d
+say Ship in. The Watch will be busy on the Wharf tonight. | Sailors ashore. Somebody always ends up in the cells. | #topic.ship.capitalize#'s in. I'll be walking the Wharf till midnight.
+then other: ships.answer
+
+rule s83s_in_rich
+when concept=talk.ships topic.kind=in topic.ship wealth=rich
+does tell.self
+cooldown 1d
+say The steward's gone down to meet #topic.ship#. | One hopes #topic.ship# has brought something worth the wait. | #topic.ship.capitalize#'s in. The Heights will have the best of it by supper.
+then other: ships.answer
+
+rule s83s_in_young
+when concept=talk.ships topic.kind=in topic.ship stage=young|adolescent
+does tell.news
+cooldown 1d
+say #topic.ship.capitalize#'s in! She's huge! | There's a ship! Can we go and look? | I want to go on #topic.ship#. Just once.
+then other: ships.answer
+
+## ================================================================ Late: stormbound
+
+rule s83s_late_1
+when concept=talk.ships topic.kind=late topic.ship
+does tell.news
+cooldown 1d
+say #s8_heard# #topic.ship.capitalize#'s stormbound. | #topic.ship.capitalize# won't come this week. Storms. | The Wharf office says #topic.ship#'s holed up somewhere, waiting out the weather.
+then other: ships.answer
+
+rule s83s_late_2
+when concept=talk.ships topic.kind=late topic.ship
+does tell.news
+cooldown 1d
+say No sign of #topic.ship#. Stormbound, they say. | #topic.ship.capitalize#'s late. The sea's in a temper. | Storms out there. #topic.ship.capitalize# is sitting it out, please the Bright One.
+then other: ships.answer
+
+rule s83s_late_3
+when concept=talk.ships topic.kind=late topic.ship
+does tell.news
+cooldown 1d
+say #topic.ship.capitalize#'s kept out by the storms. #uneasy#. | Better stormbound than sunk. #topic.ship.capitalize#'s late. | Late again, #topic.ship#. The weather's had its way.
+then other: ships.answer
+
+rule s83s_late_dock
+when concept=talk.ships topic.kind=late topic.ship quarter=wharf|docks
+does tell.self
+cooldown 1d
+say No ship, no work. #topic.ship.capitalize#'s stormbound. | Waiting on the pier for #topic.ship#, for nothing. | Empty Wharf, empty pockets. #topic.ship.capitalize#'s late.
+then other: ships.answer
+
+rule s83s_late_merchant
+when concept=talk.ships topic.kind=late topic.ship role=merchant
+does tell.self
+cooldown 1d
+say #topic.ship.capitalize#'s stormbound, and my shelves are bare. | I'd stock coming on #topic.ship#. It'll be a lean week. | Every day #topic.ship#'s late costs me.
+then other: ships.answer
+
+rule s83s_late_sailor
+when concept=talk.ships topic.kind=late topic.ship job=sailor|fisher
+does tell.self
+cooldown 1d
+say #topic.ship.capitalize#'s stormbound. You don't argue with a storm, and her skipper knows it. | Still no sign of #topic.ship#. She'll be tucked in a cove somewhere, waiting out the weather. | #topic.ship.capitalize#'s late with the storms. I've sat out weather like that. Longest days of your life.
+then other: ships.answer
+
+rule s83s_late_family
+when concept=talk.ships topic.kind=late topic.ship warmth=warm
+does tell.news
+cooldown 1d
+say There'll be families on the pier tonight, watching for #topic.ship#. | I keep thinking of #topic.ship#'s crew, waiting out the weather. | #topic.ship.capitalize#'s late. I'll light a candle for her.
+then other: ships.answer
+
+## ================================================================ Lost at sea
+
+rule s83s_lost_1
+when concept=talk.ships topic.kind=lost topic.ship
+does tell.news
+cooldown 1d
+say #topic.ship.capitalize# was lost. #pity#. | You'll have heard. #topic.ship.capitalize#'s gone down. | Lost at sea. #topic.ship.capitalize#.
+then other: ships.answer
+
+rule s83s_lost_2
+when concept=talk.ships topic.kind=lost topic.ship
+does tell.news
+cooldown 1d
+say The Wharf's gone quiet. #topic.ship.capitalize# was lost. | They posted it this morning. #topic.ship.capitalize#, lost at sea. | #topic.ship.capitalize#. Lost. I can't stop thinking about her crew.
+then other: ships.answer
+
+rule s83s_lost_3
+when concept=talk.ships topic.kind=lost topic.ship
+does tell.news
+cooldown 1d
+say #rest.capitalize#. #topic.ship.capitalize# went down. | The sea's taken #topic.ship#. | #topic.ship.capitalize# is gone. The whole Wharf's in black.
+then other: ships.answer
+
+rule s83s_lost_dock
+when concept=talk.ships topic.kind=lost topic.ship quarter=wharf|docks
+does tell.self
+cooldown 1d
+say Nobody's working. Nobody can. #topic.ship.capitalize#'s lost. | Her berth's empty. #topic.ship.capitalize#. | Not a crane's moving today. #topic.ship.capitalize#'s lost.
+then other: ships.answer
+
+rule s83s_lost_sailor
+when concept=talk.ships topic.kind=lost topic.ship job=sailor|fisher
+does tell.self
+cooldown 1d
+say Every sailor on the Wharf is thinking the same. Next time, me. | You don't sing on the Wharf this week. #topic.ship.capitalize#'s gone. | Her crew were good wolves, I'm told. #rest.capitalize#.
+then other: ships.answer
+
+rule s83s_lost_priest
+when concept=talk.ships topic.kind=lost topic.ship job=priest|healer
+does tell.self
+cooldown 1d
+say We'll say the names of #topic.ship#'s crew at the evening prayer. | I'll go down to the Wharf. The families will need someone. | The sea keeps her own. #topic.ship.capitalize#. #rest.capitalize#.
+then other: ships.answer
+
+rule s83s_lost_merchant
+when concept=talk.ships topic.kind=lost topic.ship role=merchant
+does tell.self
+cooldown 1d
+say I'd cargo on #topic.ship#. That's nothing beside the crew. | #topic.ship.capitalize#'s lost. Goods can be bought again. Wolves can't. | Nobody's haggling today. #topic.ship.capitalize#'s gone.
+then other: ships.answer
+
+rule s83s_lost_old
+when concept=talk.ships topic.kind=lost topic.ship stage=old
+does tell.news
+cooldown 1d
+say I've seen the sea take ships before. It never gets easier. | #topic.ship.capitalize#. Another one. The sea's always hungry. | When I was young we lost three in one winter. Now #topic.ship#.
+then other: ships.answer
+
+rule s83s_lost_young
+when concept=talk.ships topic.kind=lost topic.ship stage=young|adolescent
+does tell.news
+cooldown 1d
+say Is it true #topic.ship# sank? Everyone's crying. | #topic.ship.capitalize# didn't come back. The grown-ups won't talk about it. | They're saying #topic.ship#'s lost. Lost where?
+then other: ships.answer
+
+rule s83s_due_poor2
+when concept=talk.ships topic.kind=due topic.ship here.time=dawn
+does tell.news
+cooldown 1d
+say Early on the pier, waiting for #topic.ship#. | First light, and they're watching for #topic.ship# already. | #topic.ship.capitalize#'s due. The gulls know before we do.
+then other: ships.answer
+
+rule s83s_in_tavern
+when concept=talk.ships topic.kind=in topic.ship here.place=tavern
+does tell.news
+cooldown 1d
+say #topic.ship.capitalize#'s crew will be in here by dark. | Sailors ashore off #topic.ship#. Hold on to your cup. | #topic.ship.capitalize#'s in. This place will be heaving tonight.
+then other: ships.answer
+
+## ================================================================ Sailed
+
+rule s83s_sailed_1
+when concept=talk.ships topic.kind=sailed topic.ship
+does tell.news
+cooldown 1d
+say #topic.ship.capitalize#'s sailed. | #topic.ship.capitalize# went out on the tide. | She's gone. #topic.ship.capitalize#. Wharf's quiet again.
+then other: ships.answer
+
+rule s83s_sailed_2
+when concept=talk.ships topic.kind=sailed topic.ship
+does tell.news
+cooldown 1d
+say #topic.ship.capitalize#'s away. Fair winds to her. | Gone with the tide, #topic.ship#. | The pier's empty since #topic.ship# sailed.
+then other: ships.answer
+
+rule s83s_sailed_dock
+when concept=talk.ships topic.kind=sailed topic.ship quarter=wharf|docks
+does tell.self
+cooldown 1d
+say #topic.ship.capitalize#'s gone, and so's the work. | Quiet Wharf till the next one. #topic.ship.capitalize# sailed. | I can feel my back again. #topic.ship.capitalize#'s away.
+then other: ships.answer
+
+rule s83s_sailed_keeper
+when concept=talk.ships topic.kind=sailed topic.ship job=innkeeper|cook|brewer
+does tell.self
+cooldown 1d
+say #topic.ship.capitalize#'s crew drank me dry and sailed. Good riddance and come back soon. | Quiet benches tonight. #topic.ship.capitalize# sailed. | The sailors are gone, and so is half my ale.
+then other: ships.answer
+
+## ================================================================ The answers, by the ship's kind (ships.answer)
+# (Fit before the old answers by kind alone. Statements only: an answer owes nothing.)
+
+rule s83s_ans_due
+when concept=ships.answer topic.kind=due
+does react.news
+say Let's hope the wind's kind. | Good. The town needs a ship. | She'll come when the sea lets her. | I'll believe it when she's tied up.
+
+rule s83s_ans_due2
+when concept=ships.answer topic.kind=due
+does react.news
+say The Wharf will be busy, then. | #agree#. Ship days are good days. | We'll see her sails before long.
+
+rule s83s_ans_due_poor
+when concept=ships.answer topic.kind=due wealth=poor|destitute self.stage=adolescent|adult self.job!=child|innkeeper self.role=civilian
+does react.news
+say Work for somebody, then. Maybe me. | A ship's a day's bread, if you're quick. | I'll be on the pier.
+
+rule s83s_ans_in
+when concept=ships.answer topic.kind=in
+does react.news
+say Good. Fresh goods on the stalls. | Then the taverns will be loud tonight. | That's the Wharf busy till dark. | #gladnews#. She made it.
+
+rule s83s_ans_in2
+when concept=ships.answer topic.kind=in
+does react.news.glad
+say Safe in. That's what matters. | A ship in is good for everybody. | I'll go down and have a look.
+
+rule s83s_ans_in_merchant
+when concept=ships.answer topic.kind=in role=merchant
+does react.news
+say I'll be down there before the Heights. | Prices will move. Mind your purse. | Good. I'm short of nearly everything.
+
+rule s83s_ans_late
+when concept=ships.answer topic.kind=late
+does react.news
+say Better in a cove than on the bottom. | Storms pass. She'll come. | #uneasy#. I hope they're snug somewhere. | Late's not lost.
+
+rule s83s_ans_late2
+when concept=ships.answer topic.kind=late
+does react.news
+say The sea does as it likes. | Next week, then. | Nothing anyone can do but wait.
+
+rule s83s_ans_lost
+when concept=ships.answer topic.kind=lost
+does react.news.sorrow
+priority 3
+say #rest.capitalize#. | #pity#. Their poor families. | The sea's cruel. | I don't know what to say. | Bright One keep them all.
+
+rule s83s_ans_lost2
+when concept=ships.answer topic.kind=lost
+does react.news.sorrow
+priority 3
+say Every one of them someone's. | I'll light a candle tonight. | It could have been any ship. Any crew.
+
+rule s83s_ans_sailed
+when concept=ships.answer topic.kind=sailed
+does react.news
+say Fair winds to her. | Till the next one. | The Wharf will miss the noise. | Safe passage.
+
+rule s83s_ans_sailor
+when concept=ships.answer job=sailor|fisher topic.kind=due|in|late|sailed
+does react.news
+say Good ship, that. Sound timbers. | The sea knows her. | Good ship, by all accounts.
+
+rule s83s_ans_young
+when concept=ships.answer stage=young topic.kind=due|in|sailed
+does react.news
+say I love ships! | I want to be a sailor. | How many sails has she got? I'll count them.
+
+rule s83s_ans_old
+when concept=ships.answer stage=old topic.kind=due|in|sailed
+does react.news
+say Ships. Always the ships. | I've watched a thousand come and go. | I used to run down to the pier for every one.
+
+# (Slice 3, H1: "I've watched a thousand come and go." said to a ship lost or late.)
+rule s83s_ans_old_grave
+when concept=ships.answer stage=old topic.kind=late|lost
+does react.news
+say The sea gives and the sea takes. | I've sat on that wall waiting for ships like her. | I've seen ships come in a fortnight late. And some not at all.

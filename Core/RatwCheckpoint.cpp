@@ -430,6 +430,8 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
         talkNews.add("towns", towns);
         root.add("talkNews", talkNews);
     }
+    if (saved.talkLedger.isObject())
+        root.add("talkLedger", saved.talkLedger);   // (Doc 84 §8.7, Phase 5.)
     auto npcList = Value::array();
     for (const auto& e : npcs)
         npcList.push(wire::persistEntity(e, time));
@@ -848,6 +850,8 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
                 if (saved.townNews[town].size() < 48)
                     saved.townNews[town].push_back({num(j, "day"), json::utf8Prefix(j.string("kind"), 32), j.string("subject"), j.string("other")});
     }
+    if (const auto& ledger = root["talkLedger"]; ledger.isObject())
+        saved.talkLedger = ledger;
     if (const auto& crime = root["crime"]; crime.isObject())
     {
         saved.crime.nextIncident = std::max<std::int64_t>(1, std::int64_t(num(crime, "nextIncident")));

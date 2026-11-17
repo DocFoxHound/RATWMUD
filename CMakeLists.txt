@@ -5,7 +5,7 @@ option(RATW_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-add_library(ratw_core Core/RatwWorld.cpp Core/RatwAuthoring.cpp Core/RatwTravel.cpp Core/RatwCalendar.cpp Core/RatwSociety.cpp Core/RatwItems.cpp Core/RatwGifts.cpp Core/RatwMagic.cpp Core/RatwProgress.cpp Core/RatwPractice.cpp Core/RatwStanding.cpp Core/RatwPeople.cpp Core/RatwGamePeople.cpp Core/RatwGameSafety.cpp Core/RatwGameFriends.cpp Core/RatwGameKnown.cpp Core/RatwGameCircles.cpp Core/RatwGameHowl.cpp Core/RatwGameBooks.cpp Core/RatwBooks.cpp Core/RatwStars.cpp Core/RatwNewcomers.cpp Core/RatwGameNewcomers.cpp Core/RatwGameLetters.cpp Core/RatwGameGive.cpp Core/RatwGameFavours.cpp Core/RatwResidentLetters.cpp Core/RatwTaverns.cpp Core/RatwBoards.cpp Core/RatwLodgings.cpp Core/RatwStalls.cpp Core/RatwTavernGames.cpp Core/RatwGameTables.cpp Core/RatwFestivals.cpp Core/RatwArchive.cpp Core/RatwFame.cpp Core/RatwGameFame.cpp Core/RatwChronicle.cpp Core/RatwTroubles.cpp Core/RatwGameTroubles.cpp Core/RatwProjects.cpp Core/RatwGameProjects.cpp Core/RatwStorylines.cpp Core/RatwGameStorylines.cpp Core/RatwGameStoryteller.cpp Core/RatwFavours.cpp Core/RatwOccasions.cpp Core/RatwTogether.cpp Core/RatwTraining.cpp Core/RatwDocuments.cpp Core/RatwReports.cpp Core/RatwWear.cpp Core/RatwInjury.cpp Core/RatwAging.cpp Core/RatwAppearance.cpp Core/RatwResidents.cpp Core/RatwMarket.cpp Core/RatwFarms.cpp Core/RatwFarmPeople.cpp Core/RatwWild.cpp Core/RatwHunt.cpp Core/RatwDurability.cpp Core/RatwMarks.cpp Core/RatwSermons.cpp Core/RatwPg.cpp Core/RatwBonds.cpp Core/RatwCareers.cpp Core/RatwRoads.cpp Core/RatwTradeShow.cpp Core/RatwPort.cpp Core/RatwEvents.cpp Core/RatwStreet.cpp Core/RatwProsperity.cpp Core/RatwJsonDoc.cpp Core/RatwWire.cpp Core/RatwSocialCore.cpp Core/RatwCheckpoint.cpp Core/RatwDbStore.cpp Core/RatwSystemLibs.cpp Core/RatwAccountsCore.cpp Core/RatwIdentity.cpp Core/RatwTickets.cpp Core/RatwGameTickets.cpp Core/RatwMind.cpp Core/RatwSections.cpp Core/RatwMotionCore.cpp Core/RatwGame.cpp Core/RatwGameAmbient.cpp Core/RatwGameTalk.cpp Core/RatwGameVoice.cpp Core/RatwVoice.cpp Core/RatwDirector.cpp Core/RatwWeb.cpp Core/RatwCrime.cpp Core/RatwBattle.cpp Core/RatwSchedules.cpp Core/RatwAmbient.cpp Core/RatwClaims.cpp Core/RatwTalk.cpp Core/RatwTalkTree.cpp Core/RatwGameDialogue.cpp Core/RatwWeather.cpp Core/RatwArtwork.cpp Core/RatwGameArtwork.cpp Core/RatwJournal.cpp Core/RatwGameJournal.cpp Core/RatwGameEconomy.cpp Core/RatwGameBattle.cpp Core/RatwParty.cpp Core/RatwGameParty.cpp Core/RatwNames.cpp Core/RatwGameNames.cpp Core/RatwGameCompanions.cpp Core/RatwGameSocial.cpp Core/RatwChapters.cpp Core/RatwGameChapters.cpp Core/RatwFactions.cpp Core/RatwGameFactions.cpp Core/RatwEstates.cpp Core/RatwGameEstates.cpp Core/RatwCamps.cpp Core/RatwGameCamps.cpp Core/RatwGameHolds.cpp Core/RatwWatch.cpp Core/RatwGameWatch.cpp Core/RatwGameDev.cpp Core/RatwStep.cpp Core/RatwPack.cpp Core/RatwHealth.cpp Core/RatwGameHealth.cpp Core/RatwGameOwner.cpp)
+add_library(ratw_core Core/RatwWorld.cpp Core/RatwAuthoring.cpp Core/RatwTravel.cpp Core/RatwCalendar.cpp Core/RatwSociety.cpp Core/RatwItems.cpp Core/RatwGifts.cpp Core/RatwMagic.cpp Core/RatwProgress.cpp Core/RatwPractice.cpp Core/RatwStanding.cpp Core/RatwPeople.cpp Core/RatwGamePeople.cpp Core/RatwGameSafety.cpp Core/RatwGameFriends.cpp Core/RatwGameKnown.cpp Core/RatwGameCircles.cpp Core/RatwGameHowl.cpp Core/RatwGameBooks.cpp Core/RatwBooks.cpp Core/RatwStars.cpp Core/RatwNewcomers.cpp Core/RatwGameNewcomers.cpp Core/RatwGameLetters.cpp Core/RatwGameGive.cpp Core/RatwGameFavours.cpp Core/RatwResidentLetters.cpp Core/RatwTaverns.cpp Core/RatwBoards.cpp Core/RatwLodgings.cpp Core/RatwStalls.cpp Core/RatwTavernGames.cpp Core/RatwGameTables.cpp Core/RatwFestivals.cpp Core/RatwArchive.cpp Core/RatwFame.cpp Core/RatwGameFame.cpp Core/RatwChronicle.cpp Core/RatwTroubles.cpp Core/RatwGameTroubles.cpp Core/RatwProjects.cpp Core/RatwGameProjects.cpp Core/RatwStorylines.cpp Core/RatwGameStorylines.cpp Core/RatwGameStoryteller.cpp Core/RatwFavours.cpp Core/RatwOccasions.cpp Core/RatwTogether.cpp Core/RatwTraining.cpp Core/RatwDocuments.cpp Core/RatwReports.cpp Core/RatwWear.cpp Core/RatwInjury.cpp Core/RatwAging.cpp Core/RatwAppearance.cpp Core/RatwResidents.cpp Core/RatwMarket.cpp Core/RatwFarms.cpp Core/RatwFarmPeople.cpp Core/RatwWild.cpp Core/RatwHunt.cpp Core/RatwDurability.cpp Core/RatwMarks.cpp Core/RatwSermons.cpp Core/RatwPg.cpp Core/RatwBonds.cpp Core/RatwCareers.cpp Core/RatwRoads.cpp Core/RatwTradeShow.cpp Core/RatwPort.cpp Core/RatwEvents.cpp Core/RatwStreet.cpp Core/RatwProsperity.cpp Core/RatwJsonDoc.cpp Core/RatwWire.cpp Core/RatwSocialCore.cpp Core/RatwCheckpoint.cpp Core/RatwDbStore.cpp Core/RatwSystemLibs.cpp Core/RatwAccountsCore.cpp Core/RatwIdentity.cpp Core/RatwTickets.cpp Core/RatwGameTickets.cpp Core/RatwMind.cpp Core/RatwSections.cpp Core/RatwMotionCore.cpp Core/RatwGame.cpp Core/RatwGameAmbient.cpp Core/RatwGameTalk.cpp Core/RatwGameVoice.cpp Core/RatwVoice.cpp Core/RatwDirector.cpp Core/RatwWeb.cpp Core/RatwCrime.cpp Core/RatwBattle.cpp Core/RatwSchedules.cpp Core/RatwAmbient.cpp Core/RatwClaims.cpp Core/RatwTopics.cpp Core/RatwTalkLedger.cpp Core/RatwTalk.cpp Core/RatwTalkMoves.cpp Core/RatwTalkTree.cpp Core/RatwGameDialogue.cpp Core/RatwWeather.cpp Core/RatwArtwork.cpp Core/RatwGameArtwork.cpp Core/RatwJournal.cpp Core/RatwGameJournal.cpp Core/RatwGameEconomy.cpp Core/RatwGameBattle.cpp Core/RatwParty.cpp Core/RatwGameParty.cpp Core/RatwNames.cpp Core/RatwGameNames.cpp Core/RatwGameCompanions.cpp Core/RatwGameSocial.cpp Core/RatwChapters.cpp Core/RatwGameChapters.cpp Core/RatwFactions.cpp Core/RatwGameFactions.cpp Core/RatwEstates.cpp Core/RatwGameEstates.cpp Core/RatwCamps.cpp Core/RatwGameCamps.cpp Core/RatwGameHolds.cpp Core/RatwWatch.cpp Core/RatwGameWatch.cpp Core/RatwGameDev.cpp Core/RatwStep.cpp Core/RatwPack.cpp Core/RatwHealth.cpp Core/RatwGameHealth.cpp Core/RatwGameOwner.cpp)
 # What the game page bakes in (doc 77, 5.1: the client-data hash): the terrain catalogue, the fur palette, the walking rules and the
 # packed formats. A world and a client whose hashes differ can't play together; tools/client_data_hash.py makes the
 # same hash from the same files (line endings as LF), for the client's build. Re-run when any of them changes.
@@ -360,9 +360,23 @@ add_test(NAME talk_golden COMMAND talk_sim --world ${CMAKE_CURRENT_SOURCE_DIR}/T
 set_tests_properties(talk_golden PROPERTIES SKIP_RETURN_CODE 77)
 # The quick scorecard (doc 84 §15.8): 2,000 frozen exchanges in the talk town, scored against its committed baseline.
 add_test(NAME talk_scorecard_quick COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/Tests/talk_scorecard_quick.py ${CMAKE_CURRENT_BINARY_DIR})
+# topics.json's numbers are today's (doc 84 §7.3, Phase 5): the director weighs every topic of 400 talk-town exchanges
+# as it did before the scores left C++, built in and read from Tests/fixtures/talk_topics/topics-today.json.
+add_test(NAME talk_topics COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/Tests/talk_topics_check.py ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(talk_topics PROPERTIES SKIP_RETURN_CODE 77)
 # A fixture that isn't the one recorded is refused before anything is replayed, and --library-from cleans up after itself
 # (the slice-end review of doc 84's Slice 1).
 add_test(NAME talk_sim_fixture COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/Tests/talk_sim_fixture_check.py ${CMAKE_CURRENT_BINARY_DIR})
+# The director's timings (doc 84 §16, B1): a beat's mean and p99, a look's p99, measured alone (Tests/talk_bench.cpp).
+# Its ctest (label perf) is a timing, so not run by default: configure with -DRATW_PERF_TESTS=ON, then ctest -L perf.
+add_executable(talk_bench Tests/talk_bench.cpp)
+target_link_libraries(talk_bench PRIVATE ratw_core)
+target_compile_definitions(talk_bench PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+option(RATW_PERF_TESTS "Add the timing tests (label perf: talk_bench)" OFF)
+if(RATW_PERF_TESTS)
+    add_test(NAME talk_bench COMMAND talk_bench --world ${CMAKE_CURRENT_SOURCE_DIR}/Tests/fixtures/talk_town --hours 6)
+    set_tests_properties(talk_bench PROPERTIES LABELS perf)
+endif()
 # Not a test: how fast skills grow by practice, for the balance pass (see Tests/practice_sim.cpp; doc 49).
 add_executable(practice_sim Tests/practice_sim.cpp)
 target_link_libraries(practice_sim PRIVATE ratw_core)
@@ -429,6 +443,12 @@ add_executable(ambient_tests Tests/ambient_tests.cpp)
 target_link_libraries(ambient_tests PRIVATE ratw_core)
 target_compile_definitions(ambient_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 add_test(NAME ambient_behaviors COMMAND ambient_tests)
+# The director a beat at a time in a game (doc 84 §8.2-8.10, Phase 4): the talk town, claims passed as they're said, a
+# third voice, a break.
+add_executable(talk_beat_tests Tests/talk_beat_tests.cpp)
+target_link_libraries(talk_beat_tests PRIVATE ratw_core)
+target_compile_definitions(talk_beat_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+add_test(NAME talk_beats COMMAND talk_beat_tests)
 add_executable(voice_tests Tests/voice_tests.cpp)
 target_link_libraries(voice_tests PRIVATE ratw_core)
 target_compile_definitions(voice_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
@@ -457,3 +477,21 @@ add_test(NAME talk_lint COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/talk_l
 add_test(NAME talk_lint_rules COMMAND python3 -m unittest test_talk_lint WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
 # The scorecard's gate check (doc 84 §15.3): a real regression is caught, noise is not.
 add_test(NAME talk_score_rules COMMAND python3 -m unittest test_talk_score WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
+# The blind ratings' packet (doc 84 §15.7): nothing on it tells the sources apart, the key kept apart, no talk twice.
+add_test(NAME talk_rate_rules COMMAND python3 -m unittest test_talk_rate WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
+# Phase 7 (doc 84 §18, P7): the library converted, and kept so. No short marker left as pair memory (talk_conv); every
+# backchannel's plain value its old words, none left word for word (talk_migrate); every entry says what it does
+# (talk_tag); every line a plain speaker could say at Phase 6 can be said now, nothing else changed but tags, moves and
+# tones (talk_equiv, against Phase 6's commit: a later phase that means to rewrite old lines names them in its EDITED);
+# the coverage holes listed (talk_coverage: their count may only fall, Tests/fixtures/talk_coverage.json); the tools'
+# own tests.
+add_test(NAME talk_conv COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/talk_conv.py --check)
+add_test(NAME talk_migrate COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/talk_migrate.py --check)
+add_test(NAME talk_tags COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/talk_tag.py --check)
+add_test(NAME talk_equiv COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/talk_equiv.py --against 1e159420)
+add_test(NAME talk_coverage COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/Tests/talk_coverage_check.py ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(talk_coverage PROPERTIES DEPENDS talk_check)
+add_test(NAME talk_p7_rules COMMAND python3 -m unittest test_talk_p7 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
+# Phase 8 (doc 84 §33): the shared lines keep their promises (move lines, symbols defined in every grammar, closings
+# short, feelings gated to the claim, news to one who hadn't heard never "I'd heard", no "they" for one known wolf).
+add_test(NAME talk_p8_rules COMMAND python3 -m unittest test_talk_p8 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)

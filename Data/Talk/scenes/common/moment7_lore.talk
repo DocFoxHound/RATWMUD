@@ -6,6 +6,7 @@
 
 scene m7_lore_star_wolf
 when topic=lore
+does tell.story / react.story / assess
 a : They say the Wolf in the stars chases the moon, and the night he catches it is the last. | My father said every star's a wolf who died well. | They say the Lantern star never moves, so lost wolves can find home by it. | Shooting star last night. That's somebody's luck falling.
 b[young] #pup : Will I be a star? When I die?
 b : He'll never catch it. | Then the sky's crowded. | I followed it once. Ended up in a ditch. | Whose, I wonder?
@@ -14,6 +15,7 @@ a : Doesn't stop him trying. | It is, on a clear night. | Wrong star, then. | No
 
 scene m7_lore_first_snow_wish
 when topic=lore
+does tell.story / react.story / assess
 a : Catch the first snowflake and make a wish. | Never cut your claws on Restday. Bad luck. | If your ear itches, someone's speaking of you. | A spider on your coat means money coming.
 b[honesty=frank] #frank : And if you believe that, someone's picking your purse.
 b : I wished for a warmer winter. Didn't work. | I cut them yesterday. Lucky me. | Which ear? Left's bad. | I've had spiders all year. Still poor.
@@ -22,16 +24,18 @@ a : Wish smaller. | Safe for a week. | Left. | Wrong kind of spider.
 
 scene m7_lore_the_dead
 when topic=lore here.time=dusk|night
+does tell.story / react.story / assess
 a : My grandmother said the dead walk on the longest night. | Leave a bowl out for the ones gone before. | They say you hear your name called the night before you die. | Some nights I'd swear my father's in the next room.
 b[temper=nervy] #nervy : Don't. Not at night. Not here.
 b[piety=devout] #devout : The Bright One keeps the dead. Leave them be.
 b : Then I'll stay in. | The cats get it. | Then don't answer. | Maybe he is.
 a@nervy : Sorry. Sorry. Stay close to me, then.
 a@devout : Doesn't hurt to be careful, does it?
-a : Bolt the door. | Cats are ghosts too. | I won't. | Comforting thought.
+a : Bolt the door. | Cats are ghosts too. | #bc_i_wont# | Comforting thought.
 
 scene m7_lore_wardens
 when topic=lore
+does tell.story / react.story / assess
 a : They say the Wardens know every Quickened in the realm. | My cousin swore a Warden came to his village. Grey cloak, asked questions, left. | If a pup shows a gift, mothers keep it quiet. Wardens, see. | Nobody's ever seen a Warden's face.
 b[young] #pup : What's a Warden? Do they eat pups?
 b : Let them know. I've no gift but snoring. | Asked what? | Wise mothers. | Maybe they've not got one.
@@ -40,6 +44,7 @@ a : Some gift. | He wouldn't say. Never said after. | Wise and quiet. | Don't sa
 
 scene m7_lore_old_roads
 when topic=lore here.place=gate|wild|street
+does tell.story / react.story / assess
 a : Who built the old roads, do you reckon? | There's a mile stone out there older than the town. | The old road goes straight through hills. Nobody digs like that now. | Dug up a paving stone with letters on it nobody can read.
 b[job=carter] #carter : Whoever it was, they never mended them.
 b : Somebody before us. | Older than the hills, they say. | Somebody with time. | Use it for a doorstep.
@@ -48,28 +53,32 @@ a : That's no answer. | Nothing's older than hills. | And shovels. | I did. Visi
 
 scene m7_lore_bright_one
 when topic=lore here.place=chapel|street|home
+does tell.story / react.story / assess
 a : My mother said the Bright One walks among us in rags, to test us. | Why "the Bright One"? Did it have a name once? | The priest says every candle's a prayer the Bright One hears. | They say the sun's the Bright One's eye.
 b[job=priest] #priest : The Bright One has many names. All of them are listening.
 b : I give to every beggar, just in case. | Lost it, I suppose. | That's a lot of listening. | Then it sees everything I do. Bother.
 a@priest : All of them? That's a lot of names.
-a : Wise. | Like my sister's manners. | It's got the time. | Everything.
+a : #bc_wise# | Like my sister's manners. | It's got the time. | #bc_everything#
 
 scene m7_lore_comet
 when topic=lore a.stage=old
+does tell.story / react.story ask.detail / answer.detail / assess
 a : I saw the comet when I was small. Tail across half the sky. | The winter Glasswater froze so hard they drove carts across it. | There was a summer it never rained. Not once. | I remember when the old bridge went down.
 b : What did it mean? | Carts? On the lake? | I'd have liked that summer. | What happened?
 a : Nobody knew. Everybody said. | Out and back. Never again. | You wouldn't. We ate dust. | Six carts in the river. Two wolves.
-b : Gods. | Mad, the lot of you. | No wonder you hate dust. | Gods rest them.
+b : Bright One. | Mad, the lot of you. | No wonder you hate dust. | Bright One rest them.
 
 scene m7_lore_pups_tale
 when topic=lore b.stage=young
+does ask.detail / answer.detail ask.detail / answer.detail / assess
 a : Have you heard about the wolf who swallowed the moon? | Do you know why owls hoot? | Shall I tell you about the three foxes? | Ever heard of the tailless king?
-b : Did he? Did he really? | Why? | Yes! No! Tell me! | Why didn't he have a tail?
+b : Did he? Did he really? | #bc_why_q# | Yes! No! Tell me! | Why didn't he have a tail?
 a : Spat it out. Too hot. | They're asking who stole their supper. | Once there were three foxes, and one was clever. | Bit it off, out of pride. Never do that.
-b : That's silly. | Who did? | The third one! | I won't.
+b : That's silly. | Who did? | The third one! | #bc_i_wont#
 
 scene m7_lore_house_names
 when topic=lore here.region=ridgemere|towns
+does tell.story / react.story / assess / assess
 a : Why's our street called the way it is? Ever wondered? | Every town's got a family it says founded it. | My grandfather claimed we're kin to a great House. | Names stick. Even wrong ones.
 b : Somebody'd know. Somebody old. | Every family says it founded it. | So does everyone's grandfather. | Like my nickname.
 a : They're all dead. | Can't all be right. | Mine meant it. | Which was?
@@ -79,28 +88,32 @@ b : Cheerful. | No. Ours is the right one. | They all mean it. | ...Never you mi
 
 scene m7_acc_sorry_what
 when topic=accent
+does repair / clarify / assess
 a : Sorry? Once more? | Come again? | I didn't catch that. | You said what, now?
 b[accent=broad,from!=ridgemere] #broad : I said #greet#. It means hello where I'm from.
 b : I said it's a #good# day for it. | I asked after your family. | I said #thanks#. | I said #nonsense#. About the price of bread.
 a@broad : Ah. Hello to you, then.
-a : Oh. Aye. It is. | Oh. Well, thank you. They're keeping. | Oh. You're welcome. | Fair enough.
+a : Oh. Aye. It is. | Oh. Well, thank you. They're keeping. | Oh. You're welcome. | #bc_fair_enough#
 
 scene m7_acc_word_swap
 when topic=accent
+does ask.detail / answer.detail / assess
 a : What did you call that? | You've a funny word for everything. | Say that word again. | That's not what I'd call it.
 b : What do you call it, then? | And you've a dull one. | No. You'll laugh. | Well, you're wrong.
-a : Same as everyone. | Rude. | I won't. Much. | Probably.
+a : Same as everyone. | Rude. | I won't. Much. | #bc_probably#
 
 scene m7_acc_admire
 when topic=accent a.warmth=warm
+does ask.detail / answer.detail / assess
 a : I could listen to you all day. | You make "porridge" sound like a song. | That's a lovely voice. Where's it from? | Don't lose that voice. The town needs it.
 b[tone=shy] #shy : Oh. Nobody's ever said. Thank you.
-b : #topic.accent_town#. Where everyone talks so. | It's just porridge. | #topic.accent_town#. | I'll try.
+b : #topic.accent_town#. Where everyone talks so. | It's just porridge. | #topic.accent_town#. | #bc_ill_try#
 a@shy : Well, I'm saying.
-a : Lucky #topic.accent_town#. | Not when you say it. | I knew it was somewhere good. | Good.
+a : Lucky #topic.accent_town#. | Not when you say it. | I knew it was somewhere good. | #bc_good#
 
 scene m7_acc_mock
 when topic=accent a.warmth=cold
+does ask.detail / answer.detail / assess
 a : Do they all talk like that where you're from? | Speak properly, or don't. | Sounds like a goose with a cold. | Is that a voice or a cough?
 b[temper=short] #short : Say that again. Slowly. I'll wait.
 b : Better than you. | I speak fine. You listen badly. | Better a goose than a gate. | Laugh away. I've heard worse.
@@ -109,6 +122,7 @@ a : Huh. | Hm. | Rude. | I'm sure.
 
 scene m7_acc_imitate
 when topic=accent a.humour=merry
+does ask.detail / answer.detail / assess
 a : Let me try your way of talking. How's this? | I've been practising your voice. Listen. | Say something, and I'll say it back. ...There! | Hear this. I sound just like you, don't I?
 b[humour=dry] #dry : Close. You've told me my mother's a turnip, but close.
 b : Not even near. | You sound like a drunk carter. | Close. Wrong end of the word, but close. | Like me with a mouthful of bread.
@@ -117,6 +131,7 @@ a : Bother. | That's my best voice. | I'll keep at it. | I'll take it.
 
 scene m7_acc_where_now
 when topic=accent here.region=ridgemere b.from!=ridgemere
+does ask.detail / answer.detail / assess
 a : How long have you been in the city? | You're a long way from #topic.accent_town#. | What brought you to the city from #topic.accent_town#? | Do you go back much?
 b[stage=old] #old : Since before your mother was born, I'd guess. And I still sound like it.
 b : Long enough to lose my way back. | Not as long as it feels. | Work. It's always work. | Not as much as I'd like.
@@ -125,6 +140,7 @@ a : Will you stay? | It'll pass. | Good work? | Go at festival.
 
 scene m7_acc_homesick_food
 when topic=accent here.region=ridgemere b.from!=ridgemere
+does ask.detail / answer.detail / assess
 a : What do you miss most? | Do you miss #topic.accent_town#? | Is the food different, back home? | What's the first thing you'd do, going home?
 b[from=frosthollow] #frost : Blood sausage and snow light. You can't get either here.
 b[from=coldwater] #cold : Lake trout, fresh. Everything here tastes of town.
@@ -132,63 +148,71 @@ b[from=oakhaven] #oak : Acorn bread. Don't make the face. It's lovely.
 b[from=mirebridge|fenshore] #fen : Smoked eel. And quiet. Fens are quiet.
 b[from=larkfield] #lark : Lamb with mint, and a market where they shout properly.
 b[from=southmeadow] #south : Apples off the tree. And cider. Oh, the cider.
-b : Everything. | Every day. | Different. Better. | Sleep a week.
+b : #bc_everything# | #bc_every_day# | Different. Better. | Sleep a week.
 a@frost : Blood sausage? You can keep it.
 a@cold : We've trout. Sort of.
 a@oak : I made the face. Sorry.
-a@fen : We've no eels. Thank the gods.
+a@fen : We've no eels. Thank the Bright One.
 a@lark : We shout here. Badly.
 a@south : I'd go south for cider.
-a : Poor thing. | You'll get back. | Course it is. | Lucky you.
+a : Poor thing. | You'll get back. | Course it is. | #bc_lucky_you#
 
 scene m7_acc_same_trade
 when topic=accent a.role=merchant
+does ask.detail / answer.detail / assess
 a : I trade with #topic.accent_town#. Good folk. Hard bargainers. | Your folk sold me a bad cheese once. | Talk like that at my stall and I'll give you a fair price. | #topic.accent_town# coin's as good as any.
 b : We're fair. You're soft. | Not my folk. Other folk. | Fair to all, I hope. | Better, some say.
-a : Ha. | All your folk. | Fair to friends. | Some say a lot.
+a : #bc_ha# | All your folk. | Fair to friends. | Some say a lot.
 
 scene m7_acc_pup_copy
 when topic=accent a.stage=young
+does ask.detail / answer.detail / assess
 a : Why do you say it like that? | Say it again! | Are you from the far place? | My friend says you talk funny.
 b : Because that's how it's said. | No. | Not that far. | Your friend talks funny.
 a : Say it again! | Please! | How far? | I'll tell her.
 
 scene m7_acc_city_voices
 when topic=accent here.region=ridgemere b.from!=ridgemere
+does ask.detail / answer.detail / assess
 a : The city's full of voices. | Ridgemere eats accents. Give it five years. | Go down the wharf and you'll hear six voices before you've bought a herring. | Half the Commons came from somewhere else.
 b[accent=broad] #broad : It's not having mine.
 b : And every one's complaining about the rain. | Mine's holding out. | And every one cursing. | The other half wishes they had.
 a@broad : I believe you.
-a : In seven voices. | Stubborn. | Fluently. | Ha.
+a : In seven voices. | Stubborn. | Fluently. | #bc_ha#
 
 scene m7_acc_town_suspicion
 when topic=accent here.region=towns pair.band=strangers b.travelling=yes
+does ask.detail / answer.detail / assess
 a : We don't get many from #topic.accent_town#. | What's your business here? | Staying long? | Haven't seen you before, have I?
 b[warmth=cold] #road : Passing through. Don't fret.
 b : Now you've got one. | Work. Honest work. | A night or two. | Just passing.
 a@road : I wasn't fretting.
-a : We'll see. | Is it. | Hm. | Mind you keep passing.
+a : #bc_we_will_see# | Is it. | Hm. | Mind you keep passing.
 
 scene m7_acc_north_south
 when topic=accent a.from=frosthollow|coldwater b.from=southmeadow|larkfield|oakhaven|mirebridge|fenshore
+does ask.detail / answer.detail / assess
 a : You southerners talk like you've honey in your mouths. | All that sun's made your voice lazy. | Down south you say ten words for one. | Can you even say "snow"?
 b : And you northerners talk like you're rationing words. | Sun makes us cheerful. Try it. | You say one for ten. | Snow. There. Horrible word.
 a : We are. Words are dear. | No. | Good value. | Lovely word.
 
 scene m7_acc_south_north
 when topic=accent a.from=southmeadow|larkfield|oakhaven|mirebridge|fenshore b.from=frosthollow|coldwater
+does ask.detail / answer.detail / assess
 a : You northerners clip every word. | Do they teach you to talk in the cold, up there? | Smile when you talk. It won't crack your face. | You sound like you're always about to say no.
 b : Saves breath. Breath's warm. | They teach you to talk in a hurry. | It might. | We usually are.
-a : Ha. | Before you freeze. | Try. | No.
+a : #bc_ha# | Before you freeze. | Try. | No.
 
 scene m7_acc_fens_city
 when topic=accent b.from=mirebridge|fenshore here.region=ridgemere
+does ask.detail / answer.detail / assess
 a : Fen voice. I'd know it. | You're from the fens. Is it true you sleep with your feet up? | #b.from.capitalize#? You'll miss the eels. | Do fen folk really talk to the marsh lights?
 b : Dry feet to you, then. | Keeps them dry. Try it. | Not the eels. The quiet. | They talk back. That's the trouble.
-a : Dry feet. | I might. | Quiet's rare here. | Gods.
+a : Dry feet. | #bc_i_might# | Quiet's rare here. | Bright One.
 
 scene m7_acc_city_in_town
 when topic=accent b.from=ridgemere here.region=towns
+does ask.detail / answer.detail / assess
 a : City voice. You're from Ridgemere. | Fancy talk for these parts. | Come down from the big city, have you? | Does it really rain every day up there?
 b : Guilty. | City's no fancier than here. Just wetter. | Climbed down from it. All the stairs. | Every day. And twice on Restday.
-a : We'll forgive you. | Wetter, though. | Good riddance to stairs. | Gods.
+a : We'll forgive you. | Wetter, though. | Good riddance to stairs. | Bright One.

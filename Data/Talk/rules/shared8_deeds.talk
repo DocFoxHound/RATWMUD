@@ -1,0 +1,425 @@
+# The shared lines, Phase 8 session 3 (Docs/Design/84 §33, §14.1's thin topics): a good deed heard of (talk.deed), 21
+# openers before this phase. The openers carry the concept (§33.1); none hands on, so they're answered by what answers
+# tell.news on the topic (session 1's deed answers and the move lines below).
+#
+# The facts (Core/RatwAmbient.cpp World::ambientTopic; Data/Fame/deeds.json; doc 56): topic.subject is how the teller
+# names the doer, by name where they were given it (topic.known=yes), else as they looked ("that grey stranger",
+# topic.known=no); topic.deed is what was done, a phrase after the name ("drove the bandits off the road at the
+# ford", "tended Hild Ashdown when they were down", "won the archery at the Blossom Fair"); topic.nickname where folk
+# have given one (topic.has_nickname=yes); topic.subject_sex for #topic.they#. The doer is a traveller: nothing of
+# where they live, their trade or their kin.
+#
+# The rules they keep: the deed as heard, never seen ("they say", "I'm told", #hearsay#); the doer by name only where
+# the teller has it (topic.known=yes), never "they" for the one doer; praise is the teller's own; the doubtful doubt
+# the telling, never the deed's words; who says it by the grammar (#s8_psst#, #s8_heard#), what about by the criteria.
+
+## ================================================================ By name
+
+rule s83d_named_1
+when concept=talk.deed topic.known=yes
+does tell.news
+cooldown 1d
+say #s8_heard# #topic.subject# #topic.deed#. | Have you heard of #topic.subject#? #topic.they.capitalize# #topic.deed#. | They say #topic.subject# #topic.deed#.
+
+rule s83d_named_2
+when concept=talk.deed topic.known=yes
+does tell.news
+cooldown 1d
+say #topic.subject# #topic.deed#. That's the talk, anyway. | There's a name for you. #topic.subject#. #topic.they.capitalize# #topic.deed#. | I'm told #topic.subject# #topic.deed#.
+
+rule s83d_named_3
+when concept=talk.deed topic.known=yes
+does tell.news
+cooldown 1d
+say #topic.subject# #topic.deed#. Not many would. | Good to hear of someone doing right. #topic.subject# #topic.deed#. | #topic.subject#, the traveller. #topic.they.capitalize# #topic.deed#, I hear.
+
+rule s83d_named_4
+when concept=talk.deed topic.known=yes
+does tell.news
+cooldown 1d
+say Here's a good one. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. I'd shake #topic.their# paw. | Remember the name #topic.subject#. #topic.they.capitalize# #topic.deed#.
+
+rule s83d_named_5
+when concept=talk.deed topic.known=yes
+does tell.news
+cooldown 1d
+say #hearsay#, but #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. #gladnews#. | Word is #topic.subject# #topic.deed#. Credit where it's due.
+
+rule s83d_named_6
+when concept=talk.deed topic.known=yes
+does tell.news
+cooldown 1d
+say You know #topic.subject#? #topic.they.capitalize# #topic.deed#. | Travellers aren't all trouble. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. That's worth a drink, if I ever meet #topic.them#.
+
+rule s83d_nickname
+when concept=talk.deed topic.known=yes topic.has_nickname=yes
+does tell.news
+cooldown 1d
+say #topic.subject#, the one folk call #topic.nickname#. #topic.they.capitalize# #topic.deed#. | They're calling #topic.subject# #topic.nickname# now. #topic.they.capitalize# #topic.deed#. | #topic.nickname.capitalize#, folk say. #topic.subject#. #topic.they.capitalize# #topic.deed#.
+
+rule s83d_nickname2
+when concept=talk.deed topic.has_nickname=yes
+does tell.news
+cooldown 1d
+say Have you heard of #topic.nickname#? #topic.subject# #topic.deed#. | They've a name for #topic.them# already. #topic.nickname.capitalize#. | #topic.nickname.capitalize#. That's what they call #topic.subject# now.
+
+## ================================================================ By look
+
+rule s83d_look_1
+when concept=talk.deed topic.known=no
+does tell.news
+cooldown 1d
+say #s8_heard# Some traveller #topic.deed#. | They say #topic.subject# #topic.deed#. Never gave a name. | Nobody knows the name. #topic.subject#, by the sound of it. #topic.they.capitalize# #topic.deed#.
+
+rule s83d_look_2
+when concept=talk.deed topic.known=no
+does tell.news
+cooldown 1d
+say A stranger #topic.deed#, they say. #topic.subject#. | Somebody #topic.deed#. #topic.subject#, folk reckon. | No name to it. Just #topic.subject#, who #topic.deed#.
+
+rule s83d_look_3
+when concept=talk.deed topic.known=no
+does tell.news
+cooldown 1d
+say Funny, not leaving a name. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#, and went on #topic.their# way. | I'd like to know who #topic.subject# is. #topic.they.capitalize# #topic.deed#.
+
+rule s83d_look_4
+when concept=talk.deed topic.known=no
+does tell.news
+cooldown 1d
+say If you see #topic.subject#, thank #topic.them#. #topic.they.capitalize# #topic.deed#. | #topic.subject#, they say. #topic.they.capitalize# #topic.deed#. | #hearsay#. #topic.subject# #topic.deed#.
+
+## ================================================================ By the teller
+
+rule s83d_guard
+when concept=talk.deed self.job=guard|soldier
+does tell.news
+cooldown 1d
+say The Watch heard. #topic.subject# #topic.deed#. | We could use a few more like #topic.subject#. #topic.they.capitalize# #topic.deed#. | #topic.subject# #topic.deed#. Saved us a job, frankly.
+
+rule s83d_merchant
+when concept=talk.deed self.role=merchant
+does tell.news
+cooldown 1d
+say #topic.subject# #topic.deed#. #topic.they.capitalize#'ll get a fair price at my stall. | Good for trade, folk like #topic.subject#. #topic.they.capitalize# #topic.deed#. | Every stall's heard. #topic.subject# #topic.deed#.
+
+rule s83d_carter
+when concept=talk.deed self.job=carter|herder|farmer
+does tell.news
+cooldown 1d
+say On the road they're saying #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. I'll sleep easier on the road. | #topic.subject#. #topic.they.capitalize# #topic.deed#. Road folk won't forget it.
+
+rule s83d_keeper
+when concept=talk.deed self.job=innkeeper|brewer|cook
+does tell.news
+cooldown 1d
+say If #topic.subject# comes in, the cup's on me. #topic.they.capitalize# #topic.deed#. | #topic.subject# #topic.deed#. The whole bar's been toasting #topic.them#. | #topic.subject# #topic.deed#. I'd feed #topic.them# for nothing.
+
+rule s83d_priest
+when concept=talk.deed self.job=priest|healer
+does tell.news
+cooldown 1d
+say The Bright One sees a good deed. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. I'll give thanks for it. | Kindness from a stranger. #topic.subject# #topic.deed#.
+
+rule s83d_poor
+when concept=talk.deed self.wealth=poor|destitute
+does tell.news
+cooldown 1d
+say Somebody doing good for nothing. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. That's more than the great folk ever do. | #topic.subject# #topic.deed#. There's hope yet.
+
+rule s83d_rich
+when concept=talk.deed self.wealth=rich
+does tell.news
+cooldown 1d
+say One hears #topic.subject# #topic.deed#. Admirable. | #topic.subject# #topic.deed#. One should send a token. | Commendable, really. #topic.subject# #topic.deed#.
+
+rule s83d_old
+when concept=talk.deed self.stage=old
+does tell.news
+cooldown 1d
+say In my day you'd get a song for that. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. There's still good in the young, then. | I've heard a lot of tales. #topic.subject# #topic.deed#. That's a good one.
+
+rule s83d_young
+when concept=talk.deed self.stage=young
+does tell.news
+cooldown 1d
+say #topic.subject# #topic.deed#! Like in the stories! | Is #topic.subject# a hero? #topic.they.capitalize# #topic.deed#! | I want to be like #topic.subject#. #topic.they.capitalize# #topic.deed#.
+
+rule s83d_adolescent
+when concept=talk.deed self.stage=adolescent
+does tell.news
+cooldown 1d
+say So #topic.subject# #topic.deed#. Some folk get to do things. | #topic.subject# #topic.deed#. That's a life. | #topic.subject# #topic.deed#. I'd follow #topic.them#, if I could.
+
+rule s83d_cold
+when concept=talk.deed self.warmth=cold
+does tell.news
+cooldown 1d
+say #topic.subject# #topic.deed#, they say. I'll believe it when I see it. | Travellers. #topic.subject# #topic.deed#. Or so #topic.they# says. | #topic.subject# #topic.deed#. Everyone's a hero in the telling.
+
+rule s83d_warm
+when concept=talk.deed self.warmth=warm
+does tell.news
+cooldown 1d
+say Oh, have you heard? #topic.subject# #topic.deed#. Isn't that lovely? | #topic.subject# #topic.deed#. It warms me right through. | #topic.subject# #topic.deed#. I'd hug #topic.them#.
+
+rule s83d_dry
+when concept=talk.deed self.humour=dry
+does tell.news
+cooldown 1d
+say #topic.subject# #topic.deed#. And the rest of us just mend our shoes. | A hero in town. #topic.subject# #topic.deed#. I'll try not to faint. | #topic.subject# #topic.deed#. Some of us just pay our rent.
+
+rule s83d_merry
+when concept=talk.deed self.humour=merry
+does tell.news
+cooldown 1d
+say Ha! #topic.subject# #topic.deed#! | #topic.subject# #topic.deed#. I'd buy #topic.them# a barrel. | #topic.subject# #topic.deed#. Now there's a tale for the fireside.
+
+## ================================================================ By the place and the two
+
+rule s83d_tavern
+when concept=talk.deed here.place=tavern
+does tell.news
+cooldown 1d
+say Raise your cup. #topic.subject# #topic.deed#. | Here's one for the bench. #topic.subject# #topic.deed#. | Over the ale, they're saying #topic.subject# #topic.deed#.
+
+rule s83d_market
+when concept=talk.deed here.place=market
+does tell.news
+cooldown 1d
+say Every stall has it. #topic.subject# #topic.deed#. | Market talk, but good talk. #topic.subject# #topic.deed#. | They're saying it from one end of the market to the other. #topic.subject# #topic.deed#.
+
+rule s83d_gate
+when concept=talk.deed here.place=gate|street
+does tell.news
+cooldown 1d
+say On the road in, they were saying #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. You'll hear it at every gate. | Walk with me. #topic.subject# #topic.deed#.
+
+rule s83d_chapel
+when concept=talk.deed here.place=chapel
+does tell.news
+cooldown 1d
+say A good thing to say in here. #topic.subject# #topic.deed#. | We should give thanks for #topic.subject#. #topic.they.capitalize# #topic.deed#. | #topic.subject# #topic.deed#. The chapel's heard of it.
+
+rule s83d_friends
+when concept=talk.deed pair.band=friends|family|spouses
+does tell.news
+cooldown 1d
+say You'll like this one. #topic.subject# #topic.deed#. | I saved this for you. #topic.subject# #topic.deed#. | Listen. #topic.subject# #topic.deed#. Makes you think, doesn't it.
+
+rule s83d_strangers
+when concept=talk.deed pair.band=strangers|acquaintances
+does tell.news
+cooldown 1d
+say It's the talk of the place. #topic.subject# #topic.deed#. | You'll have heard, maybe. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. Thought you'd want to know.
+
+rule s83d_city
+when concept=talk.deed here.region=ridgemere
+does tell.news
+cooldown 1d
+say Even the city's talking. #topic.subject# #topic.deed#. | From the Commons to the Heights. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. The city doesn't often stop for that.
+
+rule s83d_town
+when concept=talk.deed here.region=towns
+does tell.news
+cooldown 1d
+say All #here.town#'s heard. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. That'll be told in #here.town# for years. | In a place like #here.town#, a deed like that's remembered. #topic.subject# #topic.deed#.
+
+rule s83d_night
+when concept=talk.deed here.time=night|dusk
+does tell.news
+cooldown 1d
+say Here's something for the end of the day. #topic.subject# #topic.deed#. | A good thing to go to bed on. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. Sleep easy on that.
+
+rule s83d_bandits
+when concept=talk.deed world.bandits=near
+does tell.news
+cooldown 1d
+say With the roads as they are, we need folk like #topic.subject#. #topic.they.capitalize# #topic.deed#. | #topic.subject# #topic.deed#. And robbers on every road. | Somebody's doing something, at least. #topic.subject# #topic.deed#.
+
+rule s83d_hard
+when concept=talk.deed world.times=hard|lean
+does tell.news
+cooldown 1d
+say In times like these, a good deed's worth twice. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. That's the sort of news we need. | Hard times, but #topic.subject# #topic.deed#.
+
+## ================================================================ More ways in
+
+rule s83d_smith
+when concept=talk.deed self.job=smith|crafter
+does tell.news
+cooldown 1d
+say I'd make #topic.subject# something for nothing. #topic.they.capitalize# #topic.deed#. | #topic.subject# #topic.deed#. That's good work, of a kind. | #topic.subject# #topic.deed#. I'd mend #topic.their# gear free.
+
+rule s83d_laborer
+when concept=talk.deed self.job=laborer|servant|miner
+does tell.news
+cooldown 1d
+say #topic.subject# #topic.deed#. Not for pay, either. | Somebody did a good turn for once. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. You don't see that every day.
+
+rule s83d_fisher
+when concept=talk.deed self.job=fisher|sailor
+does tell.news
+cooldown 1d
+say Word came up from the water. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. I'd row #topic.them# anywhere for that. | #topic.subject# #topic.deed#. Good sort, that.
+
+rule s83d_baker
+when concept=talk.deed self.job=baker|cook
+does tell.news
+cooldown 1d
+say There's a loaf here for #topic.subject# any day. #topic.they.capitalize# #topic.deed#. | #topic.subject# #topic.deed#. I'll bake #topic.them# something. | #topic.subject# #topic.deed#. Feed the good ones, I say.
+
+rule s83d_comfortable
+when concept=talk.deed self.wealth=comfortable
+does tell.news
+cooldown 1d
+say #topic.subject# #topic.deed#. Makes you think, doesn't it. | #topic.subject# #topic.deed#. I ought to do more myself. | #topic.subject# #topic.deed#. Fine thing.
+
+rule s83d_nervy
+when concept=talk.deed self.temper=nervy
+does tell.news
+cooldown 1d
+say #topic.subject# #topic.deed#. Brave. I'd never dare. | #topic.subject# #topic.deed#. I'd have run a mile. | #topic.subject# #topic.deed#. I'm glad someone did.
+
+rule s83d_devout
+when concept=talk.deed self.piety=devout
+does tell.news
+cooldown 1d
+say The Bright One works through strangers. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. That's a blessing. | #topic.subject# #topic.deed#. I'll pray for #topic.them#.
+
+rule s83d_sly
+when concept=talk.deed self.honesty=sly
+does tell.news
+cooldown 1d
+say #topic.subject# #topic.deed#. Now what's #topic.they# after, I wonder. | Nobody does good for nothing. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. I'd like to know the angle.
+
+rule s83d_festival
+when concept=talk.deed world.festival=today|soon
+does tell.news
+cooldown 1d
+say Something to toast at the festival. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. There'll be a song about it by the festival, I'd wager. | Festival talk already. #topic.subject# #topic.deed#.
+
+rule s83d_winter
+when concept=talk.deed here.season=winter
+does tell.news
+cooldown 1d
+say A warm thing in a cold season. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. In this cold, too. | #topic.subject# #topic.deed#. Good to hear, this time of year.
+
+rule s83d_rain
+when concept=talk.deed here.outdoors=rain|storm|fog
+does tell.news
+cooldown 1d
+say Something to brighten a grey day. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. Cheered me up, that. | Grey out there, but #topic.subject# #topic.deed#.
+
+rule s83d_look_guard
+when concept=talk.deed topic.known=no self.job=guard|soldier
+does tell.news
+cooldown 1d
+say We'd like a name for #topic.subject#. #topic.they.capitalize# #topic.deed#. | #topic.subject#, no name. #topic.they.capitalize# #topic.deed#. The Watch would thank #topic.them#. | If you see #topic.subject#, point #topic.them# out to me. #topic.they.capitalize# #topic.deed#.
+
+rule s83d_named_merchant
+when concept=talk.deed topic.known=yes self.role=merchant
+does tell.news
+cooldown 1d
+say If #topic.subject# comes to my stall, #topic.they#'ll pay half. #topic.they.capitalize# #topic.deed#. | #topic.subject# #topic.deed#. Good name for business. | #topic.subject# #topic.deed#. I'd stock whatever #topic.they# likes.
+
+rule s83d_nickname_tavern
+when concept=talk.deed topic.has_nickname=yes here.place=tavern
+does tell.news
+cooldown 1d
+say A cup for #topic.nickname#! #topic.subject# #topic.deed#. | They're calling #topic.them# #topic.nickname# at the bar. | #topic.nickname.capitalize#. That's #topic.subject#. #topic.they.capitalize# #topic.deed#.
+
+rule s83d_wild
+when concept=talk.deed here.place=wild|field|shore
+does tell.news
+cooldown 1d
+say Out here, you think of things like that. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. Somewhere like this, I'd guess. | Nobody about to hear it but us. #topic.subject# #topic.deed#.
+
+rule s83d_neighbours
+when concept=talk.deed pair.neighbours=yes
+does tell.news
+cooldown 1d
+say The whole row's talking of #topic.subject#. #topic.they.capitalize# #topic.deed#. | #topic.subject# #topic.deed#. You'll have heard over the wall. | #topic.subject# #topic.deed#. We should all do as much.
+
+rule s83d_quiet
+when concept=talk.deed self.talk=quiet
+does tell.news
+cooldown 1d
+say #topic.subject# #topic.deed#. | Heard #topic.subject# #topic.deed#. | #topic.subject#. #topic.they.capitalize# #topic.deed#. Good.
+
+rule s83d_chatty
+when concept=talk.deed self.talk=chatty
+does tell.news
+cooldown 1d
+say Oh, you'll love this. #topic.subject# #topic.deed#! | Sit down. #topic.subject# #topic.deed#. Imagine that! | Have you heard? #topic.subject# #topic.deed#! Everyone's talking of it.
+
+rule s83d_morning
+when concept=talk.deed here.time=dawn
+does tell.news
+cooldown 1d
+say Here's something to start the day. #topic.subject# #topic.deed#. | First thing I heard this morning. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. Good way to begin a day.
+
+rule s83d_poor2
+when concept=talk.deed self.wealth=poor|destitute topic.known=no
+does tell.news
+cooldown 1d
+say Some stranger did right by somebody. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. No name, no reward, nothing. | #topic.subject# #topic.deed#. The kindest ones never stay.
+
+rule s83d_old2
+when concept=talk.deed self.stage=old topic.known=yes
+does tell.news
+cooldown 1d
+say Remember the name #topic.subject#. #topic.they.capitalize# #topic.deed#. | #topic.subject# #topic.deed#. I'll tell it to the young ones. | #topic.subject# #topic.deed#. Not many like that left.
+
+rule s83d_hard2
+when concept=talk.deed world.times=hard|lean self.wealth=poor|destitute
+does tell.news
+cooldown 1d
+say When everyone's #skint#, a deed like that's worth gold. #topic.subject# #topic.deed#. | #topic.subject# #topic.deed#. Kindness in hard times. | #topic.subject# #topic.deed#. Not everyone's forgotten how.
+
+## ================================================================ The answers (move lines on the deed topic)
+
+rule s83d_re_1
+does react.news.new
+when conv.topic=deed
+say Bless #topic.them#. | #gladnews#. | That's a fine thing. | Not many would. | I'd like to meet #topic.them#.
+
+rule s83d_re_2
+does react.news
+when conv.topic=deed
+say We need more like that. | That's the kind of news I like. | I'll remember the name. | Fancy that. A traveller.
+
+rule s83d_re_named
+does react.news
+when conv.topic=deed topic.known=yes
+say #topic.subject#? I'll mind that name. | If I see #topic.subject#, I'll say thanks. | #topic.subject#. Good name to know.
+
+rule s83d_re_look
+does react.news
+when conv.topic=deed topic.known=no
+say A pity nobody got a name. | Somebody must know who it was. | Strange, doing good and walking on.
+
+rule s83d_re_doubt
+does react.news.doubt
+when conv.topic=deed
+say Stories grow in the telling. | Somebody's stretching it, I'd wager. | I'll believe it when I hear it twice. | #doubt.capitalize#.
+
+rule s83d_re_guard
+does react.news
+when conv.topic=deed self.job=guard|soldier
+say We could use the help. | The Watch should know of it. | I'll ask about #topic.them#.
+
+rule s83d_re_old
+does react.news
+when conv.topic=deed self.stage=old
+say There's still good in the world, then. | That's how it was done in my day. | I'll tell that one by the fire.
+
+rule s83d_re_young
+does react.news
+when conv.topic=deed self.stage=young|adolescent
+say A real hero! | I want to do that one day. | I'll tell everyone!
+
+rule s83d_re_opinion
+does give.opinion
+when conv.topic=deed
+say Doing right for nothing. That's rare. | A deed like that does more than the Watch. | That's how folk should be. | Kindness costs nothing. Most still don't bother.

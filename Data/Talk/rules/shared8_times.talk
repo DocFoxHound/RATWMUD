@@ -1,0 +1,348 @@
+# The shared lines, Phase 8 session 3 (Docs/Design/84 §33, §14.1's thin topics): the Times (talk.times), 21 openers
+# before this phase. The openers carry the concept (§33.1) and hand on as economy8_times.talk's do: {tm=moan} (times
+# hard on me, or good times that haven't reached me), {tm=cause} (why, in the cause's words), {tm=boast} (good to me),
+# then times.answer or times.boast_answer; the answers below add the trades' and the old's.
+#
+# The facts (Core/RatwEvents.cpp World::eventFacts): world.times (hard, lean, good, boom; ordinary times aren't talked
+# of) and world.times_cause (a noun phrase, maybe missing: "the Crown's war levy", "rot in the granaries", "the silver
+# strike in the hills", the DM's own; never an event's words), said after "talk of", "word of", "blames", or alone.
+#
+# The rules they keep: never a figure, never a cause where none is given (a line that names it tests
+# world.times_cause); one's own lot by one's own facts (wealth, class, business, the dole, a parent's pups); who says
+# it by the grammar, what about by the criteria (the times, the trade, the lot).
+
+## ================================================================ Hard and lean, by trade
+
+rule s83m_hard_farmer
+when concept=talk.times world.times=hard|lean self.job=farmer|herder
+does tell.self
+cooldown 1d
+say {tm=moan} The land doesn't care what the times are. The market does. | {tm=moan} I can grow it. Getting a fair price for it's another thing. | {tm=moan} The buyers come out to the farm and offer half. Half!
+then other: times.answer
+
+rule s83m_hard_merchant_failing
+when concept=talk.times world.times=hard|lean self.role=merchant self.business=failing
+does tell.self
+cooldown 1d
+say {tm=moan} I'll not see the end of the season at this rate. | {tm=moan} Folk come in, look, and go out again. All day. | {tm=moan} I'm selling at cost just to keep the door open.
+then other: times.answer
+
+rule s83m_hard_merchant
+when concept=talk.times world.times=hard|lean self.role=merchant self.business=steady|thriving
+does tell.self
+cooldown 1d
+say {tm=moan} I'm holding on. Others on my row aren't. | {tm=moan} Folk buy what they need and nothing else. Can't blame them. | {tm=moan} I've cut my order in half. Nobody's buying the good stuff.
+then other: times.answer
+
+rule s83m_hard_laborer
+when concept=talk.times world.times=hard|lean self.job=laborer|miner|carter|servant
+does tell.self
+cooldown 1d
+say {tm=moan} There's less work, and more of us after it. | {tm=moan} They've let two of us go at my place. I'm next, I expect. | {tm=moan} Same #work#, less #wages#. That's hard times.
+then other: times.answer
+
+rule s83m_hard_crafter
+when concept=talk.times world.times=hard|lean self.job=smith|crafter|apprentice
+does tell.self
+cooldown 1d
+say {tm=moan} Nobody's mending what they can patch themselves. | {tm=moan} Orders have dried up. I'm making things nobody's asked for. | {tm=moan} When times are hard, the first thing folk stop buying is new.
+then other: times.answer
+
+rule s83m_hard_keeper
+when concept=talk.times world.times=hard|lean self.job=innkeeper|brewer|cook|baker
+does tell.self
+cooldown 1d
+say {tm=moan} Folk still drink in hard times. They just drink cheaper. | {tm=moan} Half the benches empty, and the ones that are full are nursing one cup. | {tm=moan} Bread's the last thing folk give up. But they're buying the small loaf.
+then other: times.answer
+
+rule s83m_hard_fisher
+when concept=talk.times world.times=hard|lean self.job=fisher|sailor
+does tell.self
+cooldown 1d
+say {tm=moan} The fish don't know the times are hard. The buyers do. | {tm=moan} I land the same catch for less coin. Explain that. | {tm=moan} Hard times on the water and harder on the shore.
+then other: times.answer
+
+rule s83m_hard_priest
+when concept=talk.times world.times=hard|lean self.job=priest|healer
+does tell.self
+cooldown 1d
+say {tm=moan} More come to the door every week, and less in the plate. | {tm=moan} In hard times, everyone remembers the chapel. | {tm=moan} I see the hard times in every face that comes to me.
+then other: times.answer
+
+rule s83m_hard_guard
+when concept=talk.times world.times=hard|lean self.job=guard|soldier
+does tell.self
+cooldown 1d
+say {tm=moan} Hard times, and the cells fill up. It's always the way. | {tm=moan} Empty bellies make short tempers. We're busy. | {tm=moan} Petty thieving's up. You can tell how the times are by it.
+then other: times.answer
+
+rule s83m_hard_dole
+when concept=talk.times world.times=hard|lean self.on_dole=yes
+does tell.self
+cooldown 1d
+say {tm=moan} The queue for #dole# goes round the corner now. | {tm=moan} I'm not proud. I take #dole# and thank them. | {tm=moan} Without #dole# I'd not be standing here.
+then other: times.answer
+
+rule s83m_hard_parent
+when concept=talk.times world.times=hard|lean self.parent=yes self.wealth=poor|comfortable
+does tell.self
+cooldown 1d
+say {tm=moan} The pups don't understand why there's no treat on Restday. | {tm=moan} I'd go without myself before the little ones do. I have, some days. | {tm=moan} Boots wear out whatever the times are.
+then other: times.answer
+
+rule s83m_hard_old
+when concept=talk.times world.times=hard|lean self.stage=old
+does tell.self
+cooldown 1d
+say {tm=moan} I've lived through worse. Not much worse, mind. | {tm=moan} Every few years it goes like this. Then it comes back. | {tm=moan} In the hungry years we ate nettles. It's not that bad yet.
+then other: times.answer
+
+rule s83m_hard_young
+when concept=talk.times world.times=hard|lean self.stage=adolescent
+does tell.self
+cooldown 1d
+say {tm=moan} Everyone keeps saying times are hard. I just want a job. | {tm=moan} Nobody's taking on apprentices. Not with the times like this. | {tm=moan} My elders keep counting coins at the table. Over and over.
+then other: times.answer
+
+rule s83m_hard_any
+when concept=talk.times world.times=hard|lean
+does tell.self
+cooldown 1d
+say {tm=moan} Hard times. You can feel it at every counter. | {tm=moan} #grumble#. Everyone's tightening their belts. | {tm=moan} I don't know anyone who isn't feeling the pinch.
+then other: times.answer
+
+rule s83m_hard_any2
+when concept=talk.times world.times=hard|lean
+does tell.self
+cooldown 1d
+say {tm=moan} Money's tight everywhere. | {tm=moan} You count every penny twice, these days. | {tm=moan} The whole place has gone quiet. Nobody's spending.
+then other: times.answer
+
+rule s83m_hard_town
+when concept=talk.times world.times=hard|lean here.region=towns
+does tell.self
+cooldown 1d
+say {tm=moan} Even #here.town# feels it, and we're a long way from anywhere. | {tm=moan} The carts come in light and go back light. | {tm=moan} Small town, small purses, and smaller every week.
+then other: times.answer
+
+rule s83m_lean
+when concept=talk.times world.times=lean
+does tell.self
+cooldown 1d
+say {tm=moan} Not hard, exactly. Lean. Everything a bit thinner. | {tm=moan} It's a lean season. You notice it in the loaf. | {tm=moan} Leaner than last year. Not starving, but lean.
+then other: times.answer
+
+## ================================================================ The cause
+
+rule s83m_cause_1
+when concept=talk.times world.times=hard|lean world.times_cause
+does tell.news
+cooldown 1d
+say {tm=cause} It's #world.times_cause#, they say. That's what's done it. | {tm=cause} Ever since #world.times_cause#, it's been like this. | {tm=cause} Blame #world.times_cause#. Everyone does.
+then other: times.answer
+
+rule s83m_cause_2
+when concept=talk.times world.times=hard|lean world.times_cause
+does tell.news
+cooldown 1d
+say {tm=cause} #world.times_cause.capitalize#. That's the root of it. | {tm=cause} All this talk of #world.times_cause#, and nobody can do a thing about it. | {tm=cause} Word of #world.times_cause# came, and the purses shut.
+then other: times.answer
+
+rule s83m_cause_worry
+when concept=talk.times world.times=hard world.times_cause
+does tell.news
+cooldown 1d
+say {tm=cause} #world.times_cause.capitalize#. #uneasy#. | {tm=cause} If it's #world.times_cause#, it won't mend quick. | {tm=cause} #world.times_cause.capitalize#. I don't see how it ends.
+then other: times.answer
+
+rule s83m_cause_poor
+when concept=talk.times world.times=hard|lean world.times_cause self.wealth=poor|destitute
+does tell.news
+cooldown 1d
+say {tm=cause} #world.times_cause.capitalize#, and the bill comes to us, as ever. | {tm=cause} The great folk talk of #world.times_cause#. We talk of supper. | {tm=cause} Whatever #world.times_cause# is, it's emptied my pot.
+then other: times.answer
+
+rule s83m_cause_merchant
+when concept=talk.times world.times=hard|lean world.times_cause self.role=merchant
+does tell.news
+cooldown 1d
+say {tm=cause} Every customer says the same: #world.times_cause#. | {tm=cause} #world.times_cause.capitalize#. It's in the prices and it's in the till. | {tm=cause} Since #world.times_cause#, nobody buys ahead.
+then other: times.answer
+
+rule s83m_cause_old
+when concept=talk.times world.times=hard|lean world.times_cause self.stage=old
+does tell.news
+cooldown 1d
+say {tm=cause} #world.times_cause.capitalize#. I've seen its like before. | {tm=cause} There's always something. This time it's #world.times_cause#. | {tm=cause} #world.times_cause.capitalize#. It'll pass, and they'll find something new to blame.
+then other: times.answer
+
+rule s83m_hard_rich
+when concept=talk.times world.times=hard|lean self.wealth=rich
+does tell.self
+cooldown 1d
+say {tm=moan} Even the Houses are counting candles. | {tm=moan} One has had to let a servant go. Awful. | {tm=moan} The good wine stays in the cellar these days.
+then other: times.answer
+
+rule s83m_hard_neighbours
+when concept=talk.times world.times=hard|lean pair.neighbours=yes
+does tell.self
+cooldown 1d
+say {tm=moan} Half our row's behind on rent. | {tm=moan} You can hear the pots scraping on our row. Everyone's stretching it. | {tm=moan} Times are hard. We should look out for each other.
+then other: times.answer
+
+## ================================================================ Good and booming
+
+rule s83m_good_any
+when concept=talk.times world.times=good|boom
+does tell.self
+cooldown 1d
+say {tm=boast} Good times. Folk are spending again. | {tm=boast} You can feel it. Coin's moving. | {tm=boast} Things are looking up. Even I can see it.
+then other: times.boast_answer
+
+rule s83m_good_any2
+when concept=talk.times world.times=good|boom
+does tell.self
+cooldown 1d
+say {tm=boast} Busy everywhere you look. Good times. | {tm=boast} Have you noticed? Everyone's in a better mood. | {tm=boast} It's a good season. Long may it last.
+then other: times.boast_answer
+
+rule s83m_boom
+when concept=talk.times world.times=boom
+does tell.self
+cooldown 1d
+say {tm=boast} Boom times! I've never seen the market like it. | {tm=boast} Everyone's flush. It can't last, but I'll enjoy it. | {tm=boast} Coin everywhere. You'd think it grew on trees.
+then other: times.boast_answer
+
+rule s83m_good_merchant
+when concept=talk.times world.times=good|boom self.role=merchant self.business=thriving|steady
+does tell.self
+cooldown 1d
+say {tm=boast} Queue at the counter twice this week. Twice! | {tm=boast} I'm ordering double and still running short. | {tm=boast} I've had to take on help. Good problem to have.
+then other: times.boast_answer
+
+rule s83m_good_laborer
+when concept=talk.times world.times=good|boom self.job=laborer|miner|carter|servant self.wealth!=poor|destitute
+does tell.self
+cooldown 1d
+say {tm=boast} Steady #work#, steady #wages#. I'll not complain. | {tm=boast} There's work going for anyone with paws. | {tm=boast} Paid on time three weeks running. Times must be good.
+then other: times.boast_answer
+
+rule s83m_good_crafter
+when concept=talk.times world.times=good|boom self.job=smith|crafter
+does tell.self
+cooldown 1d
+say {tm=boast} Orders stacked to the rafters. I can't keep up. | {tm=boast} Everyone wants something new. Good for my trade. | {tm=boast} Busy as I've ever been. My bench never cools.
+then other: times.boast_answer
+
+rule s83m_good_keeper
+when concept=talk.times world.times=good|boom self.job=innkeeper|brewer|cook|baker
+does tell.self
+cooldown 1d
+say {tm=boast} Full benches every night. Folk have coin for a second cup. | {tm=boast} I'm baking twice a day and selling out twice. | {tm=boast} Good times are thirsty times.
+then other: times.boast_answer
+
+rule s83m_good_farmer
+when concept=talk.times world.times=good|boom self.job=farmer|herder
+does tell.self
+cooldown 1d
+say {tm=boast} The buyers come to me now, not the other way round. | {tm=boast} Good prices at market for once. I'll mend the barn roof. | {tm=boast} A farmer only sees a year like this once in ten.
+then other: times.boast_answer
+
+rule s83m_good_poor
+when concept=talk.times world.times=good|boom self.wealth=poor|destitute
+does tell.self
+cooldown 1d
+say {tm=moan} Good times, they tell me. They haven't come down my street. | {tm=moan} Everyone's flush but me. | {tm=moan} Good times for some. The rest of us are still waiting.
+then other: times.answer
+
+rule s83m_good_old
+when concept=talk.times world.times=good|boom self.stage=old
+does tell.self
+cooldown 1d
+say {tm=boast} Good times. Put something by, I tell the young ones. It turns. | {tm=boast} I've seen a few good years. Never trust them. | {tm=boast} Enjoy it. I've seen good times go overnight.
+then other: times.boast_answer
+
+rule s83m_good_cause
+when concept=talk.times world.times=good|boom world.times_cause
+does tell.news
+cooldown 1d
+say {tm=cause} It's #world.times_cause# that's done it. Everyone's better for it. | {tm=cause} Since #world.times_cause#, the whole place has changed. | {tm=cause} #world.times_cause.capitalize#. Best thing in years.
+then other: times.answer
+
+rule s83m_good_cause2
+when concept=talk.times world.times=good|boom world.times_cause
+does tell.news
+cooldown 1d
+say {tm=cause} Talk of #world.times_cause# everywhere, and coin with it. | {tm=cause} #world.times_cause.capitalize#, and suddenly nobody's skint. | {tm=cause} Word of #world.times_cause#, and the purses opened.
+then other: times.answer
+
+rule s83m_good_young
+when concept=talk.times world.times=good|boom self.stage=adolescent
+does tell.self
+cooldown 1d
+say {tm=boast} There's work for anyone, they say. Even me. | {tm=boast} Good times. Maybe someone'll take me on. | {tm=boast} Everyone's in a good mood. I'm asking for an apprenticeship.
+then other: times.boast_answer
+
+rule s83m_good_parent
+when concept=talk.times world.times=good|boom self.parent=yes self.wealth!=poor|destitute
+does tell.self
+cooldown 1d
+say {tm=boast} The pups have new boots this year. | {tm=boast} Meat on the table twice a week. The little ones think it's a festival. | {tm=boast} I could even put a little by for the pups.
+then other: times.boast_answer
+
+## ================================================================ The answers, by trade and by age
+
+rule s83m_ans_hard_trade
+when concept=times.answer conv.tm=moan|cause world.times=hard|lean self.role=merchant
+does react.complaint.agree
+say #grumble#. My till's half what it was. | Every counter's the same. | We're all holding on by the claws.
+
+rule s83m_ans_hard_work
+when concept=times.answer conv.tm=moan|cause world.times=hard|lean self.job=laborer|miner|carter|servant|crafter|smith
+does react.complaint.agree
+say #grumble#. Less work every week. | They cut my hours too. | Keep your head down and your job, that's all you can do.
+
+rule s83m_ans_hard_old
+when concept=times.answer conv.tm=moan|cause world.times=hard|lean self.stage=old
+does react.complaint.agree
+say It'll turn. I've seen it turn before. | #notsobad#. I've known worse winters. | We got through the hungry years. We'll get through this.
+
+rule s83m_ans_hard_young
+when concept=times.answer conv.tm=moan|cause world.times=hard|lean self.stage=young|adolescent
+does react.complaint
+say Everyone says that. | I hope it gets better. | That's what my elders say too.
+
+rule s83m_ans_hard_farmer
+when concept=times.answer conv.tm=moan|cause world.times=hard|lean self.job=farmer|herder
+does react.complaint.agree
+say The land feeds us either way. The coin's another matter. | Ask any farmer. We've been feeling it since spring. | Grow your own, I say. It's the only sure thing.
+
+rule s83m_ans_hard_devout
+when concept=times.answer conv.tm=moan|cause world.times=hard|lean self.piety=devout
+does react.complaint
+say The Bright One sees us through. Always has. | Pray, and share what you have. | Hard times show us who we are.
+
+rule s83m_ans_lean
+when concept=times.answer conv.tm=moan world.times=lean
+does react.complaint.agree
+say Lean's the word. | Not hungry. Just thin. | #agree#. A bit less of everything.
+
+rule s83m_ans_good_cause
+when concept=times.answer conv.tm=cause world.times=good|boom
+does react.news
+say Long may it last. | #gladnews#. Let's hope it holds. | It'll trickle down to us, eventually. | Good. The town needed it.
+
+rule s83m_ans_boast_old
+when concept=times.boast_answer self.stage=old
+does react.self
+say Put some by. It turns. | Enjoy it while it lasts. | Good years end. Mind that.
+
+rule s83m_ans_boast_trade
+when concept=times.boast_answer self.role=merchant
+does react.self
+say Same at mine. Busy as anything. | Good for all of us, then. | Keep the shelves full while you can.
+
+rule s83m_ans_boast_friend
+when concept=times.boast_answer pair.band=friends|family|spouses self.wealth!=poor|destitute
+does react.self
+say Good for you. You've earned it. | I'm glad. Truly. | Then the next round's yours.

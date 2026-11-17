@@ -10,42 +10,50 @@
 
 rule e8s_bk_beg_traveller
 when concept=bark self.job=beggar here.player_near=yes
+does aside
 cooldown 2h
 say You there, traveller! A penny for a hungry wolf? | Kind face, that. Kind enough for a penny? | Bless you before you've given. Saves time.
 
 rule e8s_bk_beg_hard
 when concept=bark self.job=beggar world.times=hard|lean
+does aside
 cooldown 3h
 say There's more of us on these steps every week. | Hard times for all, and harder down here.
 
 rule e8s_bk_beg_good
 when concept=bark self.job=beggar world.times=good|boom
+does aside
 cooldown 3h
 say Fat times, they say. Not on these steps. | The town's doing well. Let a little of it fall this way.
 
 rule e8s_bk_beg_hungry
 when concept=bark self.job=beggar hungry=yes
+does aside
 priority 1
 cooldown 2h
 say Not a bite since yesterday. A crust, anyone? | I'd take bread over coin. Truly. | Anything to eat. Anything.
 
 rule e8s_bk_beg_winter
 when concept=bark self.job=beggar here.season=winter
+does aside
 cooldown 3h
 say Paws like ice. A penny for a hot cup? | Winter on the steps. The stone takes the warmth right out of you.
 
 rule e8s_bk_beg_dole
 when concept=bark self.job=beggar here.day=rest here.time=day
+does aside
 cooldown 6h
 say Bread after the service. A penny until then? | I'll queue for the parish bread. But a penny now'd not go amiss.
 
 rule e8s_bk_beg_old
 when concept=bark self.job=beggar stage=old
+does aside
 cooldown 4h
 say I worked forty years, and here I sit. | I had a trade once. Hands won't hold it now.
 
 rule e8s_bk_beg_upper
 when concept=bark self.job=beggar self.class=upper
+does aside
 cooldown 6h
 say I dined in the Heights once. Don't laugh. | My father kept a carriage. I keep a bowl.
 
@@ -54,6 +62,7 @@ say I dined in the Heights once. Don't laugh. | My father kept a carriage. I kee
 
 rule e8s_greet_helped
 when concept=player.greet pair.owed=a self.lifted=yes self.wealth=destitute|poor topic.meeting=known|returning
+does greet.return
 priority 1
 say You. You fed my household. I've not forgotten. | It's you! We've eaten this week on what you gave. | There's the one who helped us. I'll pay it back one day.
 
@@ -61,131 +70,143 @@ say You. You fed my household. I've not forgotten. | It's you! We've eaten this 
 
 rule e8s_beg_seen_rich
 when concept=talk.day self.wealth=rich here.day=market|rest here.place=market|street
+does tell.self
 cooldown 2d
-say The steps were thick with beggars this morning. One hardly knows where to look. | I gave a penny to one by the board. One feels one should.
-remember pair: jk=beg 2m
+say {jk=beg} The steps were thick with beggars this morning. One hardly knows where to look. | {jk=beg} I gave a penny to one by the board. One feels one should.
 then other: street.answer
 
 rule e8s_beg_seen_comfortable
 when concept=talk.day self.wealth=comfortable here.day=market|rest here.place=market|street
+does tell.memory
 cooldown 2d
-say Did you see them by the chapel? Poor souls. | There's a wolf on the steps I used to buy fish from.
-remember pair: jk=beg 2m
+say {jk=beg} Did you see them by the chapel? Poor souls. | {jk=beg} There's a wolf on the steps I used to buy fish from.
 then other: street.answer
 
 rule e8s_beg_seen_poor
 when concept=talk.day self.wealth=poor here.day=market|rest here.place=market|street
+does tell.self
 cooldown 2d
-say There but for the Bright One, eh? | One bad month and that's me on the steps.
-remember pair: jk=beg 2m
+say {jk=beg} There but for the Bright One, eh? | {jk=beg} One bad month and that's me on the steps.
 then other: street.answer
 
 rule e8s_beg_seen_hard
 when concept=talk.day here.day=market|rest here.place=market|street world.times=hard|lean
+does tell.self
 cooldown 2d
-say More beggars than stalls, some days. | Hard times fill the chapel steps.
-remember pair: jk=beg 2m
+say {jk=beg} More beggars than stalls, some days. | {jk=beg} Hard times fill the chapel steps.
 then other: street.answer
 
 ## ================================================================ The dole (on_dole=yes)
 
 rule e8s_bk_dole_upper
 when concept=bark on_dole=yes self.class=upper
+does aside
 cooldown 1d
 say I keep my hood up in the queue. | Nobody from the old days saw me. I hope.
 
 rule e8s_bk_dole_middle
 when concept=bark on_dole=yes self.class=middle
+does aside
 cooldown 1d
 say It's only till things turn. Only till then. | I stand at the back of the line. Less of a show.
 
 rule e8s_bk_dole_lower
 when concept=bark on_dole=yes self.class=lower
+does aside
 cooldown 1d
 say Bread's bread. I'll queue for it. | No shame in the line. Shame's for them that let it come to this.
 
 rule e8s_bk_priest_dole
 when concept=bark self.job=priest here.day=rest here.time=day
+does aside
 cooldown 4h
 say Bread for any household in want, after the service! | No one goes home empty from this door today.
 
 rule e8s_bk_priest_dole_hard
 when concept=bark self.job=priest here.day=rest world.times=hard|lean
+does aside
 priority 1
 cooldown 6h
 say The line grows every Restday, and the Bright One sees it. | We'll bake more if we must. No one will be turned away.
 
 rule e8s_dole_tell_upper
 when concept=talk.smalltalk|talk.day on_dole=yes self.class=upper
+does tell.self
 cooldown 2d
-say I took the parish bread on Restday. Don't tell a soul. | The priest was kind. That was the worst of it.
-remember pair: jk=dole 2m
+say {jk=dole} I took the parish bread on Restday. Don't tell a soul. | {jk=dole} The priest was kind. That was the worst of it.
 then other: street.answer
 
 rule e8s_dole_tell_lower
 when concept=talk.smalltalk|talk.day on_dole=yes self.class=lower
+does tell.self
 cooldown 2d
-say Got our loaf on Restday. Kept us going. | We'll be in the line again come Restday, and glad of it.
-remember pair: jk=dole 2m
+say {jk=dole} Got our loaf on Restday. Kept us going. | {jk=dole} We'll be in the line again come Restday, and glad of it.
 then other: street.answer
 
 rule e8s_dole_tell_parent
 when concept=talk.smalltalk|talk.day on_dole=yes self.parent=yes
+does tell.self
 cooldown 2d
-say The priest gave the little ones an extra crust. | The pups don't know it's the parish bread. I don't tell them.
-remember pair: jk=dole 2m
+say {jk=dole} The priest gave the little ones an extra crust. | {jk=dole} The pups don't know it's the parish bread. I don't tell them.
 then other: street.answer
 
 rule e8s_dole_tell_middle
 when concept=talk.smalltalk|talk.day on_dole=yes self.class=middle
+does tell.self
 cooldown 2d
-say I queued behind my old apprentice. Neither of us said a word. | The dole's kept us fed. The pride's another matter.
-remember pair: jk=dole 2m
+say {jk=dole} I queued behind my old apprentice. Neither of us said a word. | {jk=dole} The dole's kept us fed. The pride's another matter.
 then other: street.answer
 
 rule e8s_dole_seen
 when concept=talk.day here.day=rest world.times=hard|lean self.on_dole=no
+does tell.self
 cooldown 2d
-say The dole line went right round the chapel today. | I saw families in the bread line I'd never have thought.
-remember pair: jk=dole 2m
+say {jk=dole} The dole line went right round the chapel today. | {jk=dole} I saw families in the bread line I'd never have thought.
 then other: street.answer
 
 ## ================================================================ Business at the counter (barks)
 
 rule e8s_bk_thriving_rich
 when concept=bark business=thriving working=yes self.wealth=rich
+does aside
 cooldown 6h
 say Another good day. I'll need more hands at this rate. | Steady custom and a full till. That's a year made.
 
 rule e8s_bk_thriving_poor
 when concept=bark business=thriving working=yes self.wealth=poor|destitute
+does aside
 cooldown 6h
 say Folk are buying! From me! | If this keeps up I'll put a little by before Restday.
 
 rule e8s_bk_thriving_market
 when concept=bark business=thriving working=yes here.day=market
+does aside
 cooldown 6h
 say Step up, there's a line! | Patience, friends, patience, I've two paws only!
 
 rule e8s_bk_steady
 when concept=bark business=steady working=yes
+does aside
 cooldown 6h
 weight 0.7
 say Same as ever. Same faces, same orders. | A quiet day, but an honest one.
 
 rule e8s_bk_failing_rich
 when concept=bark business=failing working=yes self.wealth=rich
+does aside
 cooldown 6h
 say Where has the custom gone? It was here last month. | I shall have words with my buyer. This stock won't move.
 
 rule e8s_bk_failing_poor
 when concept=bark business=failing working=yes self.wealth=poor|destitute
+does aside
 priority 1
 cooldown 6h
 say Please. Anyone. Come and look, at least. | I've not taken a penny since morning. | I'll be on the steps myself, at this rate.
 
 rule e8s_bk_failing_hard
 when concept=bark business=failing working=yes world.times=hard|lean
+does aside
 cooldown 8h
 say Nobody's buying. Nobody's got it to spend. | Hard times empty every till, mine first.
 
@@ -193,143 +214,162 @@ say Nobody's buying. Nobody's got it to spend. | Hard times empty every till, mi
 
 rule e8s_trade_up_rich
 when concept=talk.work|talk.smalltalk business=thriving self.wealth=rich
+does tell.plan
 cooldown 2d
-say A fine season for the shop. I'm thinking of a second. | The books have never looked better. My steward is unbearable about it.
-remember pair: jk=trade_up 2m
+say {jk=trade_up} A fine season for the shop. I'm thinking of a second. | {jk=trade_up} The books have never looked better. My steward is unbearable about it.
 then other: street.answer
 
 rule e8s_trade_up_small
 when concept=talk.work|talk.smalltalk business=thriving self.wealth=poor|comfortable
+does tell.self
 cooldown 2d
-say The stall's doing well. I keep waiting for it to stop. | Busier than I've ever been. My paws ache with it.
-remember pair: jk=trade_up 2m
+say {jk=trade_up} The stall's doing well. I keep waiting for it to stop. | {jk=trade_up} Busier than I've ever been. My paws ache with it.
 then other: street.answer
 
 rule e8s_trade_same
 when concept=talk.work|talk.smalltalk business=steady
+does tell.self
 cooldown 2d
 weight 0.7
-say The shop's steady. Nothing to boast of, nothing to fear. | It ticks over. That'll do me.
-remember pair: jk=trade_same 2m
+say {jk=trade_same} The shop's steady. Nothing to boast of, nothing to fear. | {jk=trade_same} It ticks over. That'll do me.
 then other: street.answer
 
 rule e8s_trade_down_rich
 when concept=talk.work|talk.smalltalk business=failing self.wealth=rich
+does tell.complaint
 cooldown 2d
-say The shop's had a wretched week. One can absorb it, but still. | My stock sits there. I may have bought too much.
-remember pair: jk=trade_down 2m
+say {jk=trade_down} The shop's had a wretched week. One can absorb it, but still. | {jk=trade_down} My stock sits there. I may have bought too much.
 then other: street.answer
 
 rule e8s_trade_down_poor
 when concept=talk.work|talk.smalltalk business=failing self.wealth=poor|destitute
+does tell.self
 priority 1
 cooldown 2d
-say I've stock I can't shift and a till I can't fill. | If it doesn't turn this week I'll shut the door for good.
-remember pair: jk=trade_down 2m
+say {jk=trade_down} I've stock I can't shift and a till I can't fill. | {jk=trade_down} If it doesn't turn this week I'll shut the door for good.
 then other: street.answer
 
 rule e8s_trade_down_comfortable
 when concept=talk.work|talk.smalltalk business=failing self.wealth=comfortable
+does tell.self
 cooldown 2d
-say Trade's been thin. We're eating into what we'd put by. | Nobody's coming in. I keep sweeping the same clean floor.
-remember pair: jk=trade_down 2m
+say {jk=trade_down} Trade's been thin. We're eating into what we'd put by. | {jk=trade_down} Nobody's coming in. I keep sweeping the same clean floor.
 then other: street.answer
 
 ## ================================================================ Rough sleepers and the hungry poor
 
 rule e8s_bk_warm_wall
 when concept=bark homeless=yes here.season=winter here.time=night|dusk|dawn
+does aside
 priority 1
 cooldown 6h
 say The baker's wall stays warm till dawn. That's my bed tonight. | The forge doesn't go cold all night. Thank the Bright One for smiths.
 
 rule e8s_bk_homeless_hungry
 when concept=bark homeless=yes hungry=yes
+does aside
 cooldown 6h
 say No roof and no supper. Some days are like that. Most days. | Nowhere to go and nothing to eat. Spare anything?
 
 rule e8s_bk_hungry_poor
 when concept=bark hungry=yes self.wealth=poor self.homeless=no
+does aside
 cooldown 6h
 say There's bread enough for tomorrow, if I don't eat today. | Belly's empty, and the purse is lighter still.
 
 rule e8s_bk_hungry_parent
 when concept=bark hungry=yes self.wealth=poor|destitute self.parent=yes
+does aside
 cooldown 8h
 say Short again this week. The pups ate first. | The little ones had the last of the bread.
 
 rule e8s_bk_hungry_hard
 when concept=bark hungry=yes self.wealth=destitute world.times=hard|lean self.job!=beggar
+does aside
 cooldown 6h
 say Nothing in the house. Nothing. | I've walked past the bakery three times. Smelling's free.
 
 ## ================================================================ Answers (street.answer), keyed on what was said
 
 rule e8s_ans_beg
-when concept=street.answer pair.mem.jk=beg
+when concept=street.answer conv.jk=beg
+does react.news
 say Hard to see. | It's a shame on the town, that.
 then other: street.close
 
 rule e8s_ans_beg_rich
-when concept=street.answer pair.mem.jk=beg self.wealth=rich
+when concept=street.answer conv.jk=beg self.wealth=rich
+does react.news
 say One gives at the service. That should be enough. | Dreadful. Somebody should do something.
 then other: street.close
 
 rule e8s_ans_beg_poor
-when concept=street.answer pair.mem.jk=beg self.wealth=poor|destitute
+when concept=street.answer conv.jk=beg self.wealth=poor|destitute
+does react.news
 say Don't. That's me if this month goes wrong. | Half of them worked the same posts as us.
 then other: street.close
 
 rule e8s_ans_beg_warm
-when concept=street.answer pair.mem.jk=beg warmth=warm
+when concept=street.answer conv.jk=beg warmth=warm
+does react.news
 say I'll take them some soup tonight. | Poor souls. Every one of them was someone's pup.
 then other: street.close
 
 rule e8s_ans_dole
-when concept=street.answer pair.mem.jk=dole
+when concept=street.answer conv.jk=dole
+does react.news
 say No shame in bread. | Better the line than an empty belly.
 then other: street.close
 
 rule e8s_ans_dole_rich
-when concept=street.answer pair.mem.jk=dole self.wealth=rich
+when concept=street.answer conv.jk=dole self.wealth=rich
+does react.news
 say We give to the chapel every season. I'm glad it goes somewhere. | I hadn't realised. I'm sorry.
 then other: street.close
 
 rule e8s_ans_dole_poor
-when concept=street.answer pair.mem.jk=dole self.wealth=poor|destitute
+when concept=street.answer conv.jk=dole self.wealth=poor|destitute
+does react.news
 say I've stood in that line. I'll stand in it again, likely. | The priest's a good one. Never makes you feel it.
 then other: street.close
 
 rule e8s_ans_trade_up
-when concept=street.answer pair.mem.jk=trade_up
+when concept=street.answer conv.jk=trade_up
+does react.news
 say Good for you! | Well done. You've earned it.
 then other: street.close
 
 rule e8s_ans_trade_up_poor
-when concept=street.answer pair.mem.jk=trade_up self.wealth=poor|destitute
+when concept=street.answer conv.jk=trade_up self.wealth=poor|destitute
+does react.news
 say Must be nice. | Need anyone to sweep up? I'm cheap.
 then other: street.close
 
 rule e8s_ans_trade_same
-when concept=street.answer pair.mem.jk=trade_same
+when concept=street.answer conv.jk=trade_same
+does react.news
 say Steady's no bad thing. | That's all any of us wants.
 then other: street.close
 
 rule e8s_ans_trade_down
-when concept=street.answer pair.mem.jk=trade_down
+when concept=street.answer conv.jk=trade_down
+does react.news
 say It'll turn. It has to. | I'll come by and buy something. | That's hard. I'm sorry.
 then other: street.close
 
 rule e8s_ans_trade_down_warm
-when concept=street.answer pair.mem.jk=trade_down warmth=warm
+when concept=street.answer conv.jk=trade_down warmth=warm
+does react.news
 say I'll send my neighbours your way. | Don't you shut that door yet. We'll think of something.
 then other: street.close
 
 rule e8s_ans_trade_down_cold
-when concept=street.answer pair.mem.jk=trade_down warmth=cold
+when concept=street.answer conv.jk=trade_down warmth=cold
+does react.news
 say That's trade. | Then sell something people want.
 then other: street.close
 
 rule e8s_close
 when concept=street.close
-say Aye. Well. | So it goes. | We'll see.
+does ack
+say Aye. Well. | So it goes. | #bc_we_will_see#

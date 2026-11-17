@@ -1,0 +1,235 @@
+# The week's happenings at the market, as whole scenes (Docs/Design/84 §37, the hybrid). The event topic (talk.event)
+# had no scene: every talk of the drovers, the fire at the works or the brewers' glut was stitched from
+# shared8_events.talk's openers and event.answer's replies. These carry them whole, one or two for each kind of event
+# while it's on, and a few for any event coming or over.
+#
+# The facts (Core/RatwEvents.cpp World::eventFacts): world.event (the kind: drovers_in, works_fire, good_catch,
+# orchard_blight, festival_buying, lame_ox, rich_cargo, lost_ship, mill_stopped, salt_short, brewers_glut,
+# house_wedding), world.event_words (its noun phrase: "the drovers and their herds"), world.event_goods (what its
+# market deals in), world.event_when (now, soon, past).
+#
+# The rules they keep (shared8_events.talk's): never a price figure, and nothing dear or cheap the facts don't say;
+# an event over is spoken of in the past; nobody claims to have seen what the game didn't show them (the notices and
+# the criers are what everyone knows; "I'm told" for the rest).
+
+## ================================================================ The drovers and their herds
+
+scene hy_ev_drovers
+when topic=event world.event=drovers_in world.event_when=now
+does tell.news / react.news / tell.self
+a : The drovers are in. Did you hear the bleating? | Sheep in every lane. The drovers have come down. | Drovers in today. Mind where you step.
+b[job=cook|innkeeper|baker] #kitchen : I heard. There'll be mutton in every pot this week. | Good. I'm sick of turnips. | Then I'll be at the butchers' before the rest.
+b[wealth=poor|destitute] #purse : Meat for them as can pay for it. | Lovely. For the ones buying. | I'll smell it, anyway.
+b #plain : Couldn't miss it. They woke me at dawn. | Every lane? It's like living in a field. | Too late. I've stepped.
+a@kitchen : Save me a bowl. | So's everyone. | Go early, then.
+a@purse : Smelling's free. | #bc_true# | It's a good smell.
+a@plain : #bc_me_too# | For a week, it is. | #bc_ha#
+
+scene hy_ev_drovers_pups
+when topic=event world.event=drovers_in world.event_when=now a.stage=young
+does tell.news / react.news / tell.self
+a : There's a hundred sheep in the square! | The drovers let me hold a lamb! | One of the sheep got in the bakery!
+b[stage=adult|old] #grown : Keep away from the rams. They butt. | Did you wash your paws after? | I heard. The baker was not pleased.
+b #plain : A hundred? I counted more. | Lucky! | Ha! Did it eat the bread?
+a@grown : #bc_i_will# | ... Nearly. | It was funny, though.
+a@plain : More? Let's go and count. | It was warm. | All of it.
+
+## ================================================================ The fire at the works
+
+scene hy_ev_works_fire
+when topic=event world.event=works_fire world.event_when=now
+does tell.news / react.news / tell.self / react.self
+tone serious / even / even / even
+a : The fire at the works. Have you heard? | They're still damping down at the works after the fire. | You could smell the works burning from here last night.
+b[job=crafter|laborer|smith] #hands : I heard. Half of us are out of work till it's rebuilt. | Don't. I was meant to be on shift. | I smelled it. Thought it was my own chimney.
+b #plain : I heard. Was anyone hurt? | Still? It must have been a big one. | I thought it was somebody's supper.
+a@hands : That's hard. They'll want hands for the rebuilding. | Lucky you weren't. | So did half the street.
+a@plain : Not that I've been told. | Big enough. | A big supper, then.
+b?@hands : Let's hope. | Lucky. Aye. | #bc_ha#
+
+scene hy_ev_works_fire_goods
+when topic=event world.event=works_fire world.event_when=now world.event_goods
+does tell.news / ask.detail / answer.detail / assess
+tone serious / even / even / even
+a : With the works burned, there'll be no #world.event_goods# for a while. | The fire at the works. That's #world.event_goods# gone short. | Nobody's making #world.event_goods# till the works are rebuilt.
+b : How long will that be? | Does it matter to us? | Who's rebuilding it?
+a : Weeks, they say. | It will, if your roof leaks. | Whoever owns it, I suppose.
+b : Then I'll hope my roof holds. | Then I'll hope mine doesn't. | #bc_we_will_see#
+
+## ================================================================ A good catch
+
+scene hy_ev_good_catch
+when topic=event world.event=good_catch world.event_when=now
+does tell.news / react.news / tell.self
+a : The boats came in heavy this morning. A good catch. | Fish everywhere at the market. A good catch, they say. | Have you seen the boats? Low in the water with fish.
+b[job=fisher|sailor] #boat : We had a good night of it. Arms like rope now. | Best catch since spring. | Low in the water and the nets still full.
+b #plain : Fish for supper, then. | Good. I'll have two. | I smelled it before I saw it.
+a@boat : You've earned your sleep. | #bc_about_time# | #bc_lucky_you#
+a@plain : For a week of suppers. | Ha. And you. | You'll smell it for days.
+
+## ================================================================ Blight in the orchards
+
+scene hy_ev_orchard_blight
+when topic=event world.event=orchard_blight world.event_when=now
+does tell.news / react.news / assess
+tone serious / even / even
+a : There's blight in the orchards. | They say the orchards have the blight this year. | Blight in the orchards. The whole crop, nearly.
+b[job=farmer|herder] #land : I saw the leaves. Black at the edges. It's bad. | Then it's a hard autumn for some. | It spreads tree to tree. Nothing to be done.
+b #plain : No apples, then. | That's a shame. | The whole crop?
+a@land : Bad as I've seen. | Hard for all of them. | Nothing at all.
+a@plain : Not many. | #bc_it_is# | Near enough.
+
+## ================================================================ The festival trade
+
+scene hy_ev_festival_buying
+when topic=event world.event=festival_buying world.event_when=now
+does tell.news / react.news / tell.self
+a : The festival trade's started. Everyone's buying. | You can't move in the market for festival buyers. | It's all festival buying this week.
+b[role=merchant] #trade : Best week of my year. Don't tell anyone. | I've sold more in two days than all last month. | Good. Let them buy.
+b #plain : And I've nothing to buy with. | I know. I gave up and came home. | I've bought a ribbon. That's my festival.
+a@trade : #bc_i_wont# | #bc_lucky_you# | They will.
+a@plain : Look at it, then. Looking's free. | Smart. | A good ribbon, I hope.
+
+## ================================================================ The lame ox
+
+scene hy_ev_lame_ox
+when topic=event world.event=lame_ox world.event_when=now
+does tell.news / react.news / assess
+a : Did you hear about #world.event_words#? | It's #world.event_words#. That's why the stalls are short. | All this waiting because of #world.event_words#.
+b : One ox. One lame ox, and the whole market waits. | Poor beast. | I heard. Somebody should carry the cart themselves.
+a : That's trade for you. | Poor carter. | You first.
+
+## ================================================================ A ship's rich cargo; the loss of a ship
+
+scene hy_ev_rich_cargo
+when topic=event world.event=rich_cargo world.event_when=now|soon
+does tell.news / react.news / tell.self
+a : Have you heard? #world.event_words.capitalize#. | The Wharf's all talk of #world.event_words#. | Everyone's waiting on #world.event_words#.
+b[wealth=rich] #rich : The steward's been sent to look it over. | Is it worth the fuss? | We'll see what's in it before we get excited.
+b #plain : Rich for somebody. Not for me. | What's in it? | I'll go and look. Looking's free.
+a@rich : Lucky you, to have a steward. | They say so. | Very wise.
+a@plain : #bc_nor_me# | #world.event_goods.capitalize#, they say. | I'll come with you.
+
+scene hy_ev_lost_ship
+when topic=event world.event=lost_ship
+does tell.news / sympathise / assess
+tone grave / grave / grave
+a : You'll have heard. #world.event_words.capitalize#. | Nobody talks of anything but #world.event_words#. | The Wharf's gone quiet since #world.event_words#.
+b : I heard. I can't take it in. | Nor should they. | So it should.
+a : The sea gives and the sea takes. | No. | Bright One keep them.
+
+## ================================================================ The broken mill wheel; the salt pans; the brewers' glut
+
+scene hy_ev_mill_stopped
+when topic=event world.event=mill_stopped world.event_when=now
+does tell.news / react.news / tell.self
+a : The mill wheel's broken. Nobody's grinding. | They say the mill's stopped. The wheel's cracked. | No flour this week, with the mill wheel broken.
+b[job=baker|cook] #oven : Don't. I've three sacks left and a street to feed. | I heard. I'm making the flour last. | My oven's cold already.
+b #plain : No bread, then? | How long for? | Then it's porridge.
+a@oven : Make it stretch. | Very wise. | That's bad.
+a@plain : Not much. | Till they mend it. | Porridge it is.
+
+scene hy_ev_salt_short
+when topic=event world.event=salt_short world.event_when=now
+does tell.news / react.news / assess
+a : The salt pans flooded. There's hardly any salt to be had. | You heard about the salt pans? Flooded. | No salt this week. The pans are under water.
+b[job=cook|fisher|innkeeper] #kitchen : And me with fish to cure. | Bland suppers all round, then. | I've a jar put by. Don't tell anyone.
+b #plain : Bland suppers, then. | Flooded? With what, more salt water? | We'll manage without.
+a@kitchen : Cure it quick. | All round. | #bc_i_wont#
+a@plain : For a while. | Ha. Rain. | We'll have to.
+
+scene hy_ev_brewers_glut
+when topic=event world.event=brewers_glut world.event_when=now
+does tell.news / react.news / tell.self
+a : The brewers have more ale than they can sell. | There's a glut at the brewers'. | Ale everywhere this week. The brewers overdid it.
+b[piety=devout] #pious : Then folk will drink more than is good for them. | Moderation, all the same. | The Bright One sees it all.
+b #plain : There are worse troubles. | Somebody has to help them. | I'll do my part.
+a@pious : Some, maybe. | #bc_of_course# | Then let's hope the Bright One's busy.
+a@plain : Not many. | Very kind of you. | #bc_ha#
+
+## ================================================================ The House wedding
+
+scene hy_ev_house_wedding
+when topic=event world.event=house_wedding world.event_when=now|soon
+does tell.news / react.news / tell.self
+a : The House wedding. The whole hill's dressed for it. | Have you seen the carts going up for the House wedding? | They're hanging ribbons up the hill for the House wedding.
+b[wealth=rich] #rich : We're invited. I've nothing to wear, apparently. | It's all anyone up there talks about. | The flowers alone cost a ship.
+b #plain : They'll not be inviting us. | Ribbons. And we've holes in the roof. | Good luck to the pair of them.
+a@rich : Poor you. | I'll bet. | And a crew.
+a@plain : No. But we can watch. | That's how it goes. | I'll drink to that.
+
+## ================================================================ Any event, coming or over
+
+scene hy_ev_any_soon
+when topic=event world.event_when=soon
+does tell.news / ask.detail / answer.detail / assess
+a : There's a notice up on the board: #world.event_words#. | Have you seen the board? #world.event_words.capitalize#, soon. | The crier says #world.event_words# in a day or two.
+b : When? | What's that mean for us? | Is that good or bad?
+a : A day or two, it says. | Busy stalls, I'd say. | Depends who you ask.
+b : I'll watch for it. | #bc_we_will_see# | It always does.
+
+scene hy_ev_any_past
+when topic=event world.event_when=past
+does tell.news / react.news / assess
+a : That's done with now, #world.event_words#. | Remember #world.event_words#? Feels a month ago already. | Back to how things were, after #world.event_words#.
+b : Done, and nobody's the richer. | Feels longer. | Were they ever different?
+a : Somebody is. Never us. | #bc_it_does# | Not that I noticed.
+
+## ================================================================ More of the commonest (the recent list keeps a scene from being said
+## twice in one room within the hour: the events that last a week need more than one or two ways to be talked of)
+
+scene hy_ev_drovers_road
+when topic=event world.event=drovers_in world.event_when=now
+does tell.news / ask.detail / answer.detail / assess
+a : The drovers came in at first light. | They brought the herds down from the hills this morning. | You'll have seen the drovers on the road.
+b : How many head? | From which hills? | Seen them? I had to wait half an hour to cross.
+a : More than I could count. | The high ones, I'm told. | Everybody did.
+b : Then the butchers will be busy. | Long walk for a sheep. | #bc_every_year#
+
+scene hy_ev_drovers_tavern
+when topic=event world.event=drovers_in world.event_when=now here.place=tavern
+does tell.self / react.self / tell.self / react.self
+a : The drovers are in, and they're thirsty. | Listen to that lot by the fire. Drovers. | The drovers have taken every bench in the place.
+b : Weeks on the hills. Let them drink. | They've earned it, I suppose. | We'll stand, then.
+a : As long as they pay. | Earned it and spent it. | We'll stand.
+b : They always do, the drovers. | #bc_ha# | My feet won't thank me.
+
+scene hy_ev_drovers_mud
+when topic=event world.event=drovers_in world.event_when=now here.weather!=indoors
+does tell.self / react.self / assess
+a : Mud to the knee, with the herds through. | The lanes are a mess since the drovers came. | I've sheep wool on my coat and I never touched one.
+b : It's the same every year. | Give it a week. | Wear it. It's warm.
+a : #bc_every_year# | A week of it. | #bc_ha#
+
+scene hy_ev_works_fire_watch
+when topic=event world.event=works_fire world.event_when=now
+does tell.news / react.news / tell.self / react.self
+tone serious / even / even / even
+a : I walked past the works this morning. Black to the rafters. | They say the works roof came down in the fire. | The works are still smoking. I could smell it from the street.
+b : Was anyone hurt? | Bright One. All of it? | It'll be smoking for days.
+a : I'm told not. | Half, they say. | So it will.
+b : That's a mercy, then. | That's bad enough. | #bc_poor_soul#, whoever owns it.
+
+scene hy_ev_works_fire_pups
+when topic=event world.event=works_fire world.event_when=now a.stage=young
+does tell.news / react.news / tell.self
+a : Did you see the fire? The sky was orange! | I heard the bells for the fire at the works! | There's still smoke at the works. I saw it.
+b[stage=adult|old] #grown : I saw it. Stay away from there. | Never go near a fire. Promise me. | It's not a thing to watch, a fire.
+b #plain : I saw it from the roof! | So did I! | Can we go and look?
+a@grown : I promise. | #bc_i_wont# | #bc_i_know#
+a@plain : Let's go up again! | It was loud. | We'd better not.
+
+scene hy_ev_any_now_crier
+when topic=event world.event_when=now
+does tell.news / react.news / assess
+a : The crier's been shouting about #world.event_words# all morning. | #world.event_words.capitalize#. It's on every tongue. | Everyone's talking of #world.event_words#.
+b : I heard him. Twice. | Every tongue but mine. | Everyone but me.
+a : He's got a voice, that crier. | Now yours too. | Well, now you are.
+
+scene hy_ev_any_now_goods
+when topic=event world.event_when=now world.event_goods
+does tell.news / ask.detail / answer.detail / assess
+a : It's all #world.event_goods# at the stalls today. | Everyone's on about #world.event_goods# this week. | Watch the stalls for #world.event_goods# this week.
+b : Why's that? | What's the fuss? | Why this week?
+a : #world.event_words.capitalize#. | #world.event_words.capitalize#, of course. | #world.event_words.capitalize#. Didn't you hear?
+b : Ah. That'll be it. | #bc_of_course# | I don't hear anything.

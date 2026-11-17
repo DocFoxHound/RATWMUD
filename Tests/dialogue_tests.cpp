@@ -1003,6 +1003,29 @@ void otherRoles()
                    inside.facts.at("here.outdoors") != "indoors",
                "indoors, the weather outside is known: here.outdoors");
         expect(inside.facts.count("here.hour") && inside.facts.count("here.fishers"), "and the hour and the town's fishers");
+        // Doc 84, Phase 2: a line that binds x (binds x=self.priest) names one of the speaker's people, with their facts
+        // and how the speaker feels about them; a slot nobody fills, or one the plain query can't (topic.subject), binds
+        // nothing.
+        int bound = 0;
+        for (const char* who : {"um", "ui", "ug", "u1", "u2", "uh"})
+            for (const char* slot : {"self.priest", "self.shopkeeper", "self.leader", "self.neighbour", "self.spouse"})
+            {
+                auto qx = town.g.talkQuery(who, "up", "talk.smalltalk");
+                talk::Facts f;
+                if (!qx.bind || !qx.bind(slot, 0, f))
+                    continue;
+                ++bound;
+                expect(f.count("name") && f.count("id") && f.at("id") != who && w.entity(f.at("id")) && f.count("stage") &&
+                           f.count("affinity") && f.count("disposition"),
+                       std::string("bound ") + slot + " of " + who + ": a resident's facts and the speaker's bond");
+            }
+        // Slice 2's review (§13): a player's character is never given a line by the engine: the query says who is one.
+        const auto toPlayer = town.g.talkQuery("ui", town.ash.entityId, "react.customer");
+        expect(toPlayer.b.player && !toPlayer.a.player, "a player spoken to is marked a player, the resident isn't");
+        auto qx = town.g.talkQuery("u1", "u2", "talk.smalltalk");
+        talk::Facts none;
+        expect(bound > 0 && qx.bind && !qx.bind("self.cousin", 0, none) && !qx.bind("topic.subject", 0, none),
+               "some resident's people bind (" + std::to_string(bound) + "); nothing else does");
     }
     const auto open = [&](const std::string& npc, const std::string& entry) -> const json::Value* {
         if (const auto* d = town.g.dialogueOf(town.ash.entityId))

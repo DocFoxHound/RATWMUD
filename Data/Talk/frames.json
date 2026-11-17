@@ -1,0 +1,45 @@
+{
+  "about": "The kinds of meeting and how long a talk is meant to be (Docs/Design/84 §7.4, §8.4; Phase 3). A frame holds when its `when` does (the opener is self, the one spoken to other), worked out when a conversation starts; frames stack. `open`: the moves a frame opens with (a greeting goes before an opener that says what it does and doesn't open itself, in the same breath); `budget`: scales the lines the talk is meant to have; `preclose`: how readily it closes with a preclose rather than the farewell alone (the room a whole closing needs, divided by it); `forbid`: moves never made in it; `tones`: a tone's weight among the lines that answer; `hedge` is how a dispreferred answer is shaped (not read yet). The budget (§8.4): a range of lines by each speaker's talk, the smaller of the two drawn, plus friends_or_kin for friends, spouses and kin, scaled by the frames, between least and most. invite_taken: the chance an invitation (`invites`) is taken up, until Phase 6's temperaments weigh it. Phase 5: again_today, meeting twice in a day (\"Back again?\": the talk ledger's pair.last_talk), and the goals (§7.4, §8.5). curt, join and thread: Phase 4's (each says what it is). Phase 6: vent (a low or sore mood told to one close), the town moods (moods) and accommodation (accent).",
+  "frames": {
+    "again_today":  {"when": "pair.last_talk<0.3", "open": ["again.open"]},
+    "strangers":    {"when": "pair.band=strangers", "open": ["greet"], "budget": 0.6, "forbid": ["tease", "confide"]},
+    "kin":          {"when": "pair.kin=spouses|parent|siblings|family|household", "open": ["kin.open"]},
+    "housemates":   {"when": "pair.band=housemates", "open": ["kin.open"]},
+    "boss":         {"when": "pair.boss=a|b", "hedge": "the hand"},
+    "at_work":      {"when": "self.working=yes self.shift=during", "budget": 0.8, "preclose": 1.5},
+    "host":         {"when": "here.place=tavern self.job=innkeeper", "open": ["greet", "offer"]},
+    "tavern_night": {"when": "here.place=tavern here.time=night", "budget": 1.4, "tones": {"light": 1.4}}
+  },
+  "budget": {"chatty": [8, 12], "plain": [5, 8], "quiet": [3, 5], "friends_or_kin": 2, "least": 2, "most": 14},
+  "invite_taken": 0.5,
+  "curt": {"about": "A cold or short-tempered closer goes without a word this often (§8.4), and it costs what effects says: other, how the one left feels about the closer; self, the closer's own (moves.json's shape). Phase 4.", "chance": 0.5, "effects": {"other": {"affinity": -0.5}}},
+  "join": {"about": "A third voice (§8.9; the game's Game::joiners): one idle within tiles of both, hearing it at hearing or more, out of talk for rest seconds, knowing one of them, with a stake in what was just said, and a join line that fits; people in all at most (2: nobody joins). Phase 4.", "people": 3, "tiles": 3, "hearing": 0.5, "rest": 60},
+  "goals": {
+    "about": "A reason a speaker has to steer a talk (§7.4, §8.5; Phase 5), in this order: in a lull, the first that holds of the one whose turn it is (self: them, other: the one spoken to), unless pursued in this talk or done between the two lately. Its plan's moves are said a step a lull, by move lines doing them (a step no line fits gives it up); done, or tried and given up, it is kept between the two for `days` (pair.was.goal_<name>). vent (a low mood to a friend) waits on Phase 6's self.mood.",
+    "mend":       {"when": "pair.last_outcome=soured|quarrelled self.soured=yes pair.last_talk<=7", "plan": ["apologise"], "days": 7},
+    "comfort":    {"when": "other.mourning=kin|friend", "plan": ["ask.after"], "days": 3},
+    "hurt":       {"when": "other.injured=light|bad", "plan": ["ask.after"], "days": 2},
+    "robbed":     {"when": "other.robbed=yes", "plan": ["ask.after"], "days": 4},
+    "nag":        {"when": "other.promised=lapsed", "plan": ["ask.after"], "days": 3},
+    "missed":     {"when": "pair.kept_invite=no", "plan": ["ask.after"], "days": 7},
+    "warn":       {"when": "topic.claim_kind=bandit other.travelling=yes", "plan": ["give.advice"], "days": 2},
+    "learn_name": {"when": "pair.named=no here.place!=work", "plan": ["introduce"], "days": 30},
+    "favour":     {"when": "self.wealth=poor|destitute pair.trust>=20", "plan": ["pre.request", "request"], "days": 7},
+    "visit":      {"when": "pair.band=friends|family|spouses pair.roof=no here.place=tavern", "plan": ["invite"], "days": 5},
+    "vent":       {"when": "self.mood=low|sore self.stage=adolescent|adult|old pair.band=friends|family|spouses", "plan": ["tell.worry"], "days": 3}
+  },
+  "moods": {
+    "about": "The town's mood (§7.4, §8.11; Phase 6), read as world.mood: the first of these whose `when` holds of the town's facts (world.*: a death within four days, bandits near, a festival today, an arrest within a day), else none. `mutes`: moves nobody makes in it (no teasing at a wake); `boost`: moves weighed up among their tier's lines; `tones`: a tone's weight. Generalises settings.json's two-entry salience list.",
+    "grief":   {"when": "world.death=recent", "mutes": ["tease", "tell.boast", "join.tease"], "tones": {"light": 0.3}, "boost": {"sympathise": 1.5}},
+    "uneasy":  {"when": "world.bandits=near", "boost": {"warn": 1.6, "tell.worry": 1.5}},
+    "festive": {"when": "world.festival=today", "tones": {"light": 1.5}, "boost": {"tease": 1.3, "invite": 1.4}},
+    "edgy":    {"when": "world.arrest=recent", "boost": {"tell.gossip": 1.4, "react.news.doubt": 1.3}}
+  },
+  "accent": {
+    "about": "Accommodation (§10.6; Phase 6): each line a speaker says is a step plainer toward one a `plainer` rule holds of (self: the speaker, other: the one spoken to; pair.* the two), else a step broader toward one a `broader` rule holds of who grew up speaking the same dialect (pair.same_speech, worked out by the engine): code-switching home. none (one who has lost their accent) rises no higher than none_rises_to. The accent spoken is the speaker's `speaks`, read before their accent when the line's words are chosen; transcripts record it (the scorecard's D1 judges a line by the accent it was spoken in).",
+    "broader": ["pair.kin=spouses|parent|siblings|family pair.same_speech=yes", "pair.band=friends pair.same_speech=yes", "pair.disposition=fond pair.same_speech=yes"],
+    "plainer": ["self.class=lower|middle other.class=upper", "pair.band=strangers pair.same_speech=no", "pair.disposition=hostile"],
+    "none_rises_to": "light"
+  },
+  "thread": {"about": "A talk broken off before its point was made (§8.10) is kept as the pair's thread (pair.thread) this many game days; the next talk on that topic returns to it in the opener's breath. Phase 4; the ledger's from Phase 5.", "days": 2}
+}

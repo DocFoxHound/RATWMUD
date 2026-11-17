@@ -217,6 +217,16 @@ class Metrics(unittest.TestCase):
         ])
         self.assertEqual(m["T3_detail"]["by_kind"], {"own_name": 1, "unbacked": 2})
 
+    def test_k3_own_news_is_its_tellers(self):
+        # Two weddings told to Varg by the two who married are two pieces of news; one told him twice is a repeat.
+        own = {"topic": "news", "claim": "marriage", "other": "varg"}
+        m = self.score([(dict(own, teller="jory"), [("jory", "varg", "I married Wren Tarford.")]),
+                        (dict(own, teller="wren"), [("wren", "varg", "I married Jory Rimepeak.")])])
+        self.assertEqual(m["K3"], 0)
+        m = self.score([(dict(own, teller="jory"), [("jory", "varg", "I married Wren Tarford.")]),
+                        (dict(own, teller="jory"), [("jory", "varg", "Did I say? I married Wren Tarford.")])])
+        self.assertEqual(m["K3"], 1)
+
     def test_c3_a_talk_cut_off_is_not_a_good_ending(self):
         m = self.score([({"reason": "gone"}, [("jory", "varg", "Hm.")]),
                         ({}, [("jory", "varg", "Well, farewell.")]),
@@ -224,6 +234,151 @@ class Metrics(unittest.TestCase):
                         ({"marked": True}, [("jory", "varg", "Hold that thought.")])])
         self.assertEqual(m["C3"], 50.0)
         self.assertEqual(m["C3_detail"]["cut_off"], 25.0)
+
+    def with_fields(self, d: Path, fields: dict) -> Path:
+        """The run's lines with more of what talk_sim writes (moves, tone, fit...), by (conversation, beat)."""
+        lines = [json.loads(l) for l in (d / "lines.jsonl").read_text().splitlines()]
+        for l in lines:
+            l.update(fields.get((l["conv"], l["beat"]), {}))
+        (d / "lines.jsonl").write_text("".join(json.dumps(l) + "\n" for l in lines))
+        return d
+
+    def test_c3_a_farewell_by_its_moves_or_a_dialects_words(self):
+        # Phase 3: "And you." takes leave by its move; "Root well." and "Good harvest, Varg." by the dialects' words;
+        # "A good harvest this year." and an ack don't.
+        d = write_run(self.root / "c3m", [({}, [("jory", "varg", "Farewell."), ("varg", "jory", "And you.")]),
+                                          ({}, [("jory", "varg", "Root well.")]),
+                                          ({}, [("jory", "varg", "Good harvest, Varg.")]),
+                                          ({}, [("jory", "varg", "A good harvest this year.")]),
+                                          ({"ended": "cap"}, [("jory", "varg", "Right.")])], PEOPLE)
+        self.with_fields(d, {(1, 1): {"moves": ["farewell.return"]}, (5, 0): {"moves": ["ack"]}})
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertEqual(m["C3"], 60.0)
+        self.assertEqual(m["C3_detail"]["cap"], 20.0)
+
+    def test_c1_by_moves_and_a_move_of_its_own_is_no_kind(self):
+        # A farewell owes farewell.return: met by it, not by another farewell; react.news is met by a variant of it.
+        d = write_run(self.root / "c1", [({}, [("jory", "varg", "Farewell."), ("varg", "jory", "Farewell to you.")]),
+                                         ({}, [("jory", "varg", "Farewell."), ("varg", "jory", "And you.")]),
+                                         ({}, [("jory", "varg", "Wren's wed."), ("varg", "jory", "I heard.")])], PEOPLE)
+        self.with_fields(d, {(1, 0): {"moves": ["farewell"], "owes": ["farewell.return"]}, (1, 1): {"moves": ["farewell"]},
+                             (2, 0): {"moves": ["farewell"], "owes": ["farewell.return"]}, (2, 1): {"moves": ["farewell.return"]},
+                             (3, 0): {"moves": ["tell.news"], "owes": ["react.news"]}, (3, 1): {"moves": ["react.news.known"]}})
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertAlmostEqual(m["C1"], 200 / 3)
+        self.assertFalse(talk_score.meets("farewell.return", "farewell", talk_score.move_book()))
+        self.assertTrue(talk_score.meets("react.news.known", "react.news", talk_score.move_book()))
+
+    def test_c5_c9_and_k1_phase_5(self):
+        # C5: a line on another topic than the one before it, with no pivot, change of subject or return among its moves;
+        # C9: lines standing on the talk ledger (a callback, a return, "Back again?") per 10 talks; K1: the topics
+        # topics.json calls everyday (smalltalk is, gossip and player aren't).
+        d = write_run(self.root / "c5", [({"topic": "smalltalk"}, [("jory", "varg", "Fine day."), ("varg", "jory", "It is."),
+                                                                   ("jory", "varg", "Anyway. Prices!"), ("varg", "jory", "Wagons late.")]),
+                                         ({"topic": "gossip"}, [("jory", "varg", "Back again? Heard about Wren?")]),
+                                         ({"topic": "player"}, [("jory", "varg", "Who's that?")])], PEOPLE)
+        self.with_fields(d, {(1, 0): {"topic_now": "smalltalk"}, (1, 1): {"topic_now": "smalltalk"},
+                             (1, 2): {"topic_now": "prices", "moves": ["change_subject", "tell.complaint"]},
+                             (1, 3): {"topic_now": "caravan", "callback": True},
+                             (2, 0): {"topic_now": "gossip", "moves": ["again.open", "tell.gossip"]}, (3, 0): {"topic_now": "player"}})
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertAlmostEqual(m["C5"], 1000 / 6)
+        self.assertEqual(m["C5_detail"]["turns"], 2)
+        self.assertAlmostEqual(m["C9"], 1 * 10 / 3)     # (Slice 2's review: "Back again?" alone is no callback.)
+        if talk_score.EVERYDAY is not None:
+            self.assertAlmostEqual(m["K1"], 100 / 3)
+        old = write_run(self.root / "old", [({"topic": "smalltalk"}, [("jory", "varg", "Fine day.")])], PEOPLE)
+        m = talk_score.score_run(talk_score.Run(old))
+        self.assertNotIn("C5", m)
+
+    def test_t2_judges_a_line_at_its_own_hour(self):
+        # Phase 5: a talk begun by day ("here.time": day at its head) that closes at dusk says "Good night." truly.
+        d = write_run(self.root / "t2h", [({"facts": {"here.time": "day", "here.hour": "17"}},
+                                           [("jory", "varg", "Fine evening."), ("varg", "jory", "Good night.")]),
+                                          ({"facts": {"here.time": "day", "here.hour": "12"}}, [("jory", "varg", "Good night.")])], PEOPLE)
+        self.with_fields(d, {(1, 1): {"hour": 18.2}, (2, 0): {"hour": 12.1}})
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertEqual(m["T2_detail"]["by_kind"], {"night_greeting": 1})
+
+    def test_t5_told_what_they_knew_without_a_known_answer(self):
+        # Phase 4: a claim passed on to one who held it before is fine answered "I'd heard"; not with "Never!"; one told it
+        # fresh is judged and fine; a line with no to_knew isn't judged.
+        d = write_run(self.root / "t5", [({}, [("jory", "varg", "Wren's wed."), ("varg", "jory", "I'd heard.")]),
+                                         ({}, [("jory", "varg", "Wren's wed."), ("varg", "jory", "Never!")]),
+                                         ({}, [("jory", "varg", "Wren's wed."), ("varg", "jory", "Never!")]),
+                                         ({}, [("jory", "varg", "Wren's wed."), ("varg", "jory", "Never!")])], PEOPLE)
+        self.with_fields(d, {(1, 0): {"asserts": ["marriage"], "to_knew": "yes"}, (1, 1): {"moves": ["react.news.known"]},
+                             (2, 0): {"asserts": ["marriage"], "to_knew": "yes"}, (2, 1): {"moves": ["react.news.new"]},
+                             (3, 0): {"asserts": ["marriage"], "to_knew": "no"}, (3, 1): {"moves": ["react.news.new"]},
+                             (4, 0): {"asserts": ["marriage"]}})
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertAlmostEqual(m["T5"], 100 / 3)
+        self.assertEqual(m["T5_detail"]["asserted"], 3)
+
+    def test_b1_the_slowest_profile_and_its_noise(self):
+        # Phase 4: B1 from talk_sim's run.json; a card's is the slowest profile's; a timing past its gate breaks it only
+        # beyond its share of noise.
+        d = write_run(self.root / "b1", [({}, [("jory", "varg", "Hm.")])], PEOPLE)
+        meta = json.loads((d / "run.json").read_text())
+        meta.update({"beat_ms": {"n": 10, "mean": .05, "p99": .2, "max": .4}, "look_ms": {"n": 5, "mean": .6, "p99": 3.5}})
+        (d / "run.json").write_text(json.dumps(meta))
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertEqual((m["B1"], m["B1P"], m["B1L"]), (.05, .2, 3.5))
+        self.assertEqual(talk_score.combine({"a": {**m, "_counts": {"lines": 1, "conversations": 1}},
+                                             "b": {**m, "B1L": 4.0, "_counts": {"lines": 9, "conversations": 1}}})["B1L"], 4.0)
+        base = {"metrics": {"B1L": row("B1L", 3.5)}}
+        self.assertEqual(talk_score.check({"metrics": {"B1L": row("B1L", 5.2)}}, base), [])
+        self.assertEqual(len(talk_score.check({"metrics": {"B1L": row("B1L", 6.0)}}, base)), 1)
+        # (A hard timing gate the baseline passed breaks only beyond its noise too: B5's, say.)
+        hard = {"metrics": {"B5": row("B5", 160.0)}}
+        self.assertEqual(talk_score.check({"metrics": {"B5": row("B5", 140.0)}}, hard), [])
+        self.assertEqual(len(talk_score.check({"metrics": {"B5": row("B5", 100.0)}}, hard)), 1)
+
+    def test_c4_by_tone_and_a_bridge(self):
+        d = write_run(self.root / "c4", [({}, [("jory", "varg", "Old Tam passed."), ("varg", "jory", "Lovely weather.")]),
+                                         ({}, [("jory", "varg", "Old Tam passed."), ("varg", "jory", "Well."),
+                                               ("varg", "jory", "Lovely weather.")])], PEOPLE)
+        self.with_fields(d, {(1, 0): {"tone": "grave"}, (1, 1): {"tone": "light"}, (2, 0): {"tone": "grave"},
+                             (2, 1): {"moves": ["assess"]}, (2, 2): {"tone": "light"}})
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertEqual(m["C4_detail"], {"clashes": 1, "by_tone": 1, "in_line": 0})
+
+    def test_r7_and_x1_leave_the_closings_out_and_c2_is_the_best_fit(self):
+        convs = [({}, [("jory", "varg", f"News {i}."), ("varg", "jory", f"Answer {i}."), ("jory", "varg", "Farewell."),
+                       ("varg", "jory", "And you.")]) for i in range(1, 11)]
+        d = write_run(self.root / "r7", convs, PEOPLE)
+        fields = {}
+        for i in range(1, 11):
+            fields[(i, 1)] = {"entry": f"answer{i}", "fit": 3 if i > 1 else 1, "best": 3}
+            fields[(i, 2)] = {"entry": "bye", "moves": ["farewell"]}
+            fields[(i, 3)] = {"entry": "bye_back", "moves": ["farewell.return"]}
+        m = talk_score.score_run(talk_score.Run(self.with_fields(d, fields)))
+        self.assertEqual(m["R7"], 1000.0)                 # (Ten answers, ten entries; the closings apart.)
+        self.assertEqual(m["R7_detail"]["closing_beats"], 20)
+        self.assertEqual(m["C2"], 90.0)
+
+    def test_d3_isnt_judged_where_one_dialect_was_heard(self):
+        lines = [{"who": f"w{i % 3}", "text": "aye", "dialect": "ridgemere", "accent": "light"} for i in range(90)]
+        value, detail = talk_score.guess_dialects(lines)
+        self.assertIsNone(value)
+        self.assertEqual(detail["judged"], 0)
+
+    def test_r8_and_d3_a_speaker_or_a_few_lines_are_noise(self):
+        # Phase 3's frozen card: habit lines 48 against 79 over 66,742 and 95,071 lines; D3 one speaker of seven.
+        def r8(n, lines):
+            c = {"metrics": {"R8": row("R8", n * 100 / lines)}, "details": {"L1": {"_counts": {"lines": lines, "conversations": 1},
+                                                                                     "R8_detail": {"lines20": lines}}}}
+            c["metrics"]["R8"]["passes"] = True
+            return c
+        self.assertEqual(talk_score.check(r8(79, 95071), r8(48, 66742)), [])
+        self.assertEqual(len(talk_score.check(r8(300, 95071), r8(48, 66742))), 1)
+
+        def d3(right, judged):
+            c = {"metrics": {"D3": row("D3", right * 100 / judged)}, "details": {"L1": {"_counts": {"lines": 9000, "conversations": 1},
+                                                                                       "D3_detail": {"judged": judged}}}}
+            return c
+        self.assertEqual(talk_score.check(d3(2, 7), d3(3, 7)), [])
+        self.assertEqual(len(talk_score.check(d3(20, 100), d3(80, 100))), 1)
 
     def test_d1_gates_the_plain_speakers(self):
         d = write_run(self.root / "d1", [({}, [("jory", "varg", "Aye.")])], PEOPLE)
@@ -234,6 +389,112 @@ class Metrics(unittest.TestCase):
         self.assertEqual(m["D1"], 100.0)
         self.assertFalse(talk_score.passes("D1", m["D1"]))
         self.assertEqual(m["_counts"]["none_lines"], 1)
+
+    def test_t4_a_stance_that_wanders_or_answers_against_itself(self):
+        d = write_run(self.root / "t4", [({}, [("jory", "varg", "The Watch? Useless."), ("varg", "jory", "No argument from me.")]),
+                                         ({}, [("jory", "varg", "The Watch keep us safe."), ("varg", "jory", "Well. Each to their own.")])],
+                      PEOPLE)
+        lines = [json.loads(l) for l in (d / "lines.jsonl").read_text().splitlines()]
+        stance = [("against", ["give.opinion"], 0), ("for", ["agree"], 0), ("for", ["give.opinion"], 0), ("against", ["disagree"], 0)]
+        for l, (side, moves, drift) in zip(lines, stance):
+            l.update({"issue": "watch", "stance": side, "moves": moves, "drift": drift, "day": 1})
+        (d / "lines.jsonl").write_text("".join(json.dumps(l) + "\n" for l in lines))
+        m = talk_score.score_run(talk_score.Run(d))
+        # Jory: against, then for with no event between: drift. Varg: agreed with one on the other side; then for to against.
+        self.assertEqual(m["T4_detail"]["drifted"], 2)
+        self.assertEqual(m["T4_detail"]["answered_against_own"], 1)
+        lines[2]["drift"] = 1                       # (An event moved Jory's: not drift.)
+        lines[3]["stance"] = "for"                  # (Varg for, said a disagree to a for: against his own.)
+        lines[1]["stance"] = "against"              # (Varg against, agreeing with an against: his own; then for: drift.)
+        (d / "lines.jsonl").write_text("".join(json.dumps(l) + "\n" for l in lines))
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertEqual(m["T4_detail"]["drifted"], 1)
+        self.assertEqual(m["T4_detail"]["answered_against_own"], 1)
+        self.assertGreater(m["T4"], 0)
+        self.assertFalse(talk_score.passes("T4", m["T4"]))
+
+    def test_t6_they_of_one_known_wolf(self):
+        m = self.score([({}, [("jory", "varg", "Wren Tarford was robbed. Have you seen their face?"),
+                              ("jory", "varg", "Wren Tarford was robbed. Did you see her face?"),
+                              ("jory", "varg", "They say Wren Tarford left in a hurry."),
+                              ("jory", "varg", "Wren Tarford and Varg Acorndell wed, and they're happy.")])])
+        self.assertEqual(m["T6_detail"]["lines"], 1)
+
+    # Slice 2's review (doc 84 §35): the rows that passed on the wrong thing.
+    def test_r1_is_the_talk_not_its_greeting_or_goodbye(self):
+        talk = [("jory", "varg", "Finn Saltwell tried to steal from Ebba."), ("varg", "jory", "Pick it up, then."),
+                ("jory", "varg", "Very funny.")]
+        d = write_run(self.root / "r1", [({}, talk + [("jory", "varg", "Good night."), ("varg", "jory", "Sleep sound.")]),
+                                         ({}, talk + [("jory", "varg", "Off to bed with you."), ("varg", "jory", "Good day, then.")])],
+                      PEOPLE)
+        self.with_fields(d, {(1, 0): {"bare": "Finn Saltwell tried to steal from Ebba.", "moves": ["greet", "tell.gossip"]},
+                             (2, 0): {"bare": "Finn Saltwell tried to steal from Ebba.", "moves": ["again.open", "tell.gossip"]},
+                             (1, 3): {"moves": ["farewell"]}, (1, 4): {"moves": ["farewell.return"]},
+                             (2, 3): {"moves": ["farewell"]}, (2, 4): {"moves": ["farewell.return"]}})
+        lines = [json.loads(l) for l in (d / "lines.jsonl").read_text().splitlines()]
+        lines[0]["text"] = "Good evening. " + lines[0]["text"]
+        lines[5]["text"] = "Back again? " + lines[5]["text"]
+        (d / "lines.jsonl").write_text("".join(json.dumps(l) + "\n" for l in lines))
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertFalse(m["R1_detail"]["censored"])   # (Heard again: the same talk, its greeting and goodbye apart.)
+
+    def test_c3_a_curt_ending_is_an_ending(self):
+        m = self.score([({"ended": "curt"}, [("jory", "varg", "Hm."), ("varg", "jory", "Right.")]),
+                        ({}, [("jory", "varg", "Hm.")])])
+        self.assertEqual(m["C3"], 50.0)
+        self.assertEqual(m["C3_detail"]["nothing_fits"], 50.0)
+
+    def test_c4_a_light_bridge_into_grave_news_in_one_breath(self):
+        m = self.score([({}, [("jory", "varg", "There's better news than that, at least. They're burying Old Tam.")]),
+                        ({}, [("jory", "varg", "Not all the news is bad, mind. Wren's wed.")])])
+        self.assertEqual(m["C4_detail"]["in_line"], 1)
+
+    def test_r6_by_the_sentence_and_r4_too(self):
+        said = [("jory", "varg", f"Sit yourself down. News number {i} for you, friend.") for i in range(4)]
+        m = self.score([({}, said), ({}, [("varg", "jory", "Aye.")] * 4)])
+        self.assertEqual(m["R6_detail"]["sentence"], "Sit yourself down.")
+        self.assertEqual(m["R6"], 50.0)
+
+    def test_k3_line_by_line_turned_to_and_a_joiner(self):
+        # Told in one talk after it turned, and to a third who joined; told again in another: two repeats.
+        d = write_run(self.root / "k3", [({}, [("jory", "varg", "Fine day."), ("varg", "jory", "Anyway. Wren was robbed."),
+                                               ("wren", "varg", "I heard.")]),
+                                         ({}, [("jory", "varg", "Did you hear? Wren was robbed."), ("varg", "jory", "Wren? No!")]),
+                                         ({}, [("varg", "wren", "Wren was robbed, you know.")])], PEOPLE)
+        self.with_fields(d, {(1, 1): {"told_key": "incident|1"}, (1, 2): {"told_key": "incident|1"},
+                             (2, 0): {"told_key": "incident|1"}, (2, 1): {"told_key": "incident|1"},
+                             (3, 0): {"told_key": "incident|1"}})
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertEqual(m["K3"], 1)                # (Jory, told it in the first talk, told it again in the second.)
+
+    def test_t6_across_a_line(self):
+        m = self.score([({}, [("jory", "varg", "Wren Tarford's arrested."), ("varg", "jory", "Then they'll be out by noon.")]),
+                        ({}, [("jory", "varg", "Wren Tarford's arrested."), ("varg", "jory", "Then she'll be out by noon.")]),
+                        ({}, [("jory", "varg", "Wren Tarford's arrested."), ("varg", "jory", "They say the Watch were rough.")])])
+        self.assertEqual(m["T6_detail"]["across"], 1)
+
+    def test_d1b_is_what_is_said_not_the_goodbye(self):
+        d = write_run(self.root / "d1b", [({}, [("jory", "varg", "Nets are empty."), ("jory", "varg", "Fair winds, shore-friend.")])],
+                      PEOPLE)
+        lines = [json.loads(l) for l in (d / "lines.jsonl").read_text().splitlines()]
+        lines[0].update({"accent": "broad"})
+        lines[1].update({"accent": "broad", "used": ["coldwater"], "moves": ["farewell"]})
+        (d / "lines.jsonl").write_text("".join(json.dumps(l) + "\n" for l in lines))
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertEqual(m["D1B"], 0.0)
+        self.assertEqual(m["D1_detail"]["broad"], 50.0)
+
+    def test_d1_by_the_accent_spoken(self):
+        d = write_run(self.root / "d1s", [({}, [("jory", "varg", "Calm water, sister."), ("jory", "varg", "Aye.")])], PEOPLE)
+        lines = [json.loads(l) for l in (d / "lines.jsonl").read_text().splitlines()]
+        lines[0].update({"accent": "none", "spoken_accent": "light", "used": ["coldwater"]})   # (A step broader, home speech.)
+        lines[1].update({"accent": "light", "spoken_accent": "none"})
+        (d / "lines.jsonl").write_text("".join(json.dumps(l) + "\n" for l in lines))
+        m = talk_score.score_run(talk_score.Run(d))
+        self.assertEqual(m["D1"], 0.0)              # (Said plainly: no dialect word.)
+        self.assertEqual(m["D1L"], 100.0)
+        self.assertEqual(m["D1A"], 100.0)
+        self.assertEqual(m["D1A_detail"], {"broader": 1, "plainer": 1})
 
     def test_a_coherence_metric_the_shuffle_beats_does_not_separate(self):
         # Slice 1's frozen C3: 0.068% real against 0.177% shuffled, 61% apart, the wrong way.

@@ -3,6 +3,7 @@
 // habits, modifiers, pronouns, binding), and the real library loading whole.
 #include "RatwMarket.h"
 #include "RatwTalk.h"
+#include "RatwTopics.h"
 
 #include <algorithm>
 #include <cctype>
@@ -15,6 +16,7 @@
 #include <map>
 #include <stdexcept>
 #include <string>
+#include <unistd.h>
 
 using namespace ratw::talk;
 namespace
@@ -35,6 +37,7 @@ Library foundation()
     Library lib;
     std::string problem;
     expect(lib.loadFoundation(Dir, problem), "the foundation loads: " + problem);
+    lib.setHybrid(false);                           // (§37: these test the line-by-line engine; hybridTalk the hybrid.)
     return lib;
 }
 
@@ -477,7 +480,16 @@ say First time I've told you.
     auto q = moment("talk.prices");
     q.a.facts["wealth"] = "poor";
     q.b.facts["role"] = "merchant";
-    auto said = lib.converse(q, 1, None, {});
+    // Doc 84 §8.2 (Phase 3): a reply is no longer forced to the best tier: the merchant's own answer most of the time
+    // (the best of two tiers: 80%), anyone's now and then.
+    int asMerchant = 0;
+    for (std::uint64_t seed = 1; seed <= 200; ++seed)
+        asMerchant += lib.converse(q, seed, None, {}).lines.at(1).second == "I pay more, you pay more.";
+    expect(asMerchant > 130 && asMerchant < 190, "the merchant answers as a merchant, mostly (" + std::to_string(asMerchant) + " of 200)");
+    std::uint64_t merchantSeed = 1;
+    while (lib.converse(q, merchantSeed, None, {}).lines.at(1).second != "I pay more, you pay more.")
+        ++merchantSeed;
+    auto said = lib.converse(q, merchantSeed, None, {});
     expect(said.lines.size() == 2 && said.lines[0] == std::pair<int, std::string>{0, "Robbery, these prices."} &&
                said.lines[1] == std::pair<int, std::string>{1, "I pay more, you pay more."},
            "a poor wolf complains, the merchant answers as a merchant");
@@ -536,12 +548,12 @@ say First time I've told you.
         expect(!l.parse(text, "bad.talk", p) && p.find("regard is") != std::string::npos, std::string("refused: ") + p);
     }
 
-    // A chain ends after 8 beats, whatever its rules say.
+    // Nothing is said twice in one talk (doc 84 §8.2, C6): a ping-pong of two rules stops when it would come round again.
     auto loop = foundation();
     expect(loop.parse("rule ping\nwhen concept=talk.smalltalk\nsay Ping.\nthen other: talk.day\nrule pong\nwhen concept=talk.day\nsay Pong.\nthen other: talk.smalltalk\n",
                       "loop.talk", problem), problem);
     const auto lines = loop.converse(moment("talk.smalltalk"), 1, None, {}).lines;
-    expect(lines.size() == 8 && lines[7] == std::pair<int, std::string>{1, "Pong."}, "eight beats at most, turn and turn about");
+    expect(lines.size() == 2 && lines[1] == std::pair<int, std::string>{1, "Pong."}, "ping, pong, and not ping again");
 
     // A shrug ends it (settings.json "ends"): the next beat would answer what wasn't said.
     auto shrug = foundation();
@@ -607,6 +619,7 @@ void playerAnswers()
     Library lib;
     std::string problem;
     expect(lib.load(Dir, problem), problem);
+    lib.setHybrid(false);
     const auto ask = [&](const std::string& intent, const Facts& facts, const std::string& tone, std::uint64_t seed) {
         auto q = moment("player." + intent);
         q.a.facts["tone"] = tone;
@@ -736,6 +749,7 @@ void theStagedEconomysTalk()
     Library lib;
     std::string problem;
     expect(lib.load(Dir, problem), "the library loads whole:\n" + problem);
+    lib.setHybrid(false);
     const auto price = [](const std::string& cause, const std::string& words, const std::string& dir) {
         auto q = moment("talk.prices");
         q.facts["topic.item"] = "salt";
@@ -761,7 +775,15 @@ void theStagedEconomysTalk()
             for (const auto& v : t.variants)
                 for (const auto& text : v.texts)
                 {
-                    const bool figure = std::any_of(text.begin(), text.end(), [](char c) { return std::isdigit(static_cast<unsigned char>(c)) != 0; });
+                    // (A symbol's name is no figure: #s8_heard# says words.)
+                    std::string words;
+                    bool inSymbol = false;
+                    for (char c : text)
+                        if (c == '#')
+                            inSymbol = !inSymbol;
+                        else if (!inSymbol)
+                            words += c;
+                    const bool figure = std::any_of(words.begin(), words.end(), [](char c) { return std::isdigit(static_cast<unsigned char>(c)) != 0; });
                     expect(!figure, e.id + " names no figure (the shown-price gate): " + text);
                     if (money)
                         for (const char* unit : {"#topic.price# a bundle", "#topic.price# a loaf", "#topic.price# each", "#topic.price# the "})
@@ -1092,6 +1114,7 @@ void theRealLibrary()
     Library lib;
     std::string problem;
     expect(lib.load(Dir, problem), "the library loads whole:\n" + problem);
+    lib.setHybrid(false);
     expect(lib.size() >= 2300, "and is a library (" + std::to_string(lib.size()) + ")");
     for (const auto& c : lib.settings().concepts)
         expect(lib.has(c), "something written for " + c);
@@ -1120,6 +1143,7 @@ void theCountrysVoices()
     Library lib;
     std::string problem;
     expect(lib.load(Dir, problem), "the library loads: " + problem);
+    lib.setHybrid(false);
     expect(lib.dialectOf("fenshore") == "mirebridge", "Fenshore speaks as Mirebridge");
     expect(lib.dialectOf("saltwell") == "saltwell", "Saltwell speaks its own, the oasis's (it borrowed Coldwater's before)");
     expect(lib.dialectOf("larkfield") == "larkfield" && lib.dialectOf("") == "", "a town with a dialect speaks its own");
@@ -1230,6 +1254,2069 @@ say Quiet today.
     expect(repeats, "while asked as weather, it may be said again");
 }
 
+
+// Doc 84, Phase 2: moves and tags. moves.json and what a line says it does (does, owes, invites, tone, asserts, denies,
+// gist, binds, {k=v}), refused when wrong; the answer concepts as aliases; entries by move; the dead-end proof; what a
+// said line carries into the transcripts; the conversation's own facts (conv.*) and a bound third party (x.*).
+void movesAndTags()
+{
+    // The book itself.
+    {
+        Moves m;
+        std::string problem;
+        const std::set<std::string> concepts{"jest.answer", "talk.smalltalk"};
+        const auto refused = [&](const std::string& text, const std::string& says) {
+            Moves x;
+            std::string p;
+            expect(!x.read(text, concepts, p) && p.find(says) != std::string::npos, "moves.json refused (" + says + "): " + p);
+            expect(x.empty(), "and nothing of it kept");
+        };
+        const std::string ok = R"({"tones": ["light", "even"], "moves": {
+            "greet": {"family": "opening", "first": true, "expects": ["greet.return"]},
+            "greet.return": {"family": "opening", "answers": ["greet"], "fallback": ["ack"]},
+            "react.news": {"family": "react", "answers": ["greet"], "variants": ["known"], "fallback": ["ack"]},
+            "ack": {"family": "ground", "answers": ["*"]},
+            "jest.answer": {"alias": "react.news.known"}}})";
+        expect(m.read(ok, concepts, problem), "a small book reads: " + problem);
+        expect(m.known("react.news.known") && !m.known("react.news.loud") && m.alias("jest.answer") == "react.news.known",
+               "variants are moves of their own kind; an alias names a move");
+        expect(m.answers("greet.return", "greet") && m.answers("ack", "anything") && !m.answers("greet", "greet.return"),
+               "what answers what");
+        expect(Moves::meets("react.news.known", "react.news") && !Moves::meets("react.newsy", "react.news"), "a kind meets its move");
+        expect(m.chain("greet.return") == std::vector<std::string>({"greet.return", "ack"}), "fallbacks walk down to ack");
+        expect(m.toneOf("greet") == "even", "a move with no tone is even");
+        refused(R"({"tones": ["even"], "moves": {"greet": {"family": "chat", "first": true}, "ack": {"family": "ground", "answers": ["*"]}}})", "family 'chat'");
+        refused(R"({"tones": ["even"], "moves": {"greet": {"family": "opening", "first": true, "expects": ["hello"]}, "ack": {"family": "ground", "answers": ["*"]}}})", "'hello' is not a move");
+        refused(R"({"tones": ["even"], "moves": {"greet": {"family": "opening", "first": true, "expects": ["greet2"]}, "greet2": {"family": "opening", "first": true}, "ack": {"family": "ground", "answers": ["*"]}}})", "doesn't answer it");
+        refused(R"({"tones": ["even"], "moves": {"greet": {"family": "opening", "first": true, "colour": "red"}, "ack": {"family": "ground", "answers": ["*"]}}})", "no field 'colour'");
+        refused(R"({"tones": ["even"], "moves": {"greet": {"family": "opening", "first": true}, "ack": {"family": "ground", "answers": ["*"]}, "wave.answer": {"alias": "greet"}}})", "an alias names a concept");
+        refused(R"({"tones": ["even"], "moves": {"greet": {"family": "opening", "first": true}, "ack": {"family": "ground", "answers": ["*"]}, "jest.answer": {"alias": "grin"}}})", "alias 'grin' is not a move");
+        refused(R"({"tones": ["even"], "moves": {"greet": {"family": "opening", "first": true, "tone": "loud"}, "ack": {"family": "ground", "answers": ["*"]}}})", "tone 'loud'");
+        refused(R"({"tones": ["even"], "moves": {"greet": {"family": "opening", "first": true}}})", "no ack");
+        refused(R"({"tones": ["even"], "moves": {"nod": {"family": "ground"}, "ack": {"family": "ground", "answers": ["*"]}}})", "either opens");
+    }
+    // The real book: every answer concept of the library is a move's alias, so every `then` hands on a move.
+    auto lib = foundation();
+    expect(!lib.moves().empty() && lib.moves().all().size() >= 85, "the book: about 85 moves or more");
+    for (const auto& c : lib.settings().concepts)
+        if (c.rfind("talk.", 0) != 0 && c.rfind("player.", 0) != 0 && c.rfind("react.", 0) != 0 && c != "bark")
+            expect(!lib.moves().alias(c).empty(), "the answer concept " + c + " is a move's alias");
+    expect(lib.moves().alias("jest.answer") == "tease.return", "jest.answer is tease.return (§7.2)");
+
+    // What a line says it does, refused when wrong.
+    const auto bad = [&](const std::string& text, const std::string& says) {
+        auto l = foundation();
+        std::string p;
+        expect(!l.parse(text, "bad.talk", p) && p.find(says) != std::string::npos, "refused (" + says + "): " + p);
+        expect(l.size() == 0, "and nothing of it loaded");
+    };
+    bad("rule x\nwhen concept=talk.gossip\ndoes gossiping\nsay Hm.\n", "'gossiping' is not a move");
+    bad("rule x\nwhen concept=talk.gossip\ndoes react.news.loud\nsay Hm.\n", "'react.news.loud' is not a move");
+    bad("rule x\nwhen concept=talk.gossip\ndoes tell.gossip / react.news\nsay Hm.\n", "a rule is one turn");
+    bad("rule x\nwhen concept=talk.gossip\ndoes tell.gossip\ndoes tell.news\nsay Hm.\n", "one `does` line");
+    bad("scene x\nwhen topic=smalltalk\ndoes give.opinion / agree\na : Grey.\nb : It is.\na : Very.\n", "does names 2 turns' moves; it has 3");
+    bad("rule x\nwhen concept=talk.gossip\ndoes tell.gossip\nowes other: grant\nsay Hm.\n", "owes grant, which doesn't answer tell.gossip");
+    bad("rule x\nwhen concept=talk.gossip\ndoes tell.gossip\nowes friend: react.news\nsay Hm.\n", "owes is 'owes other|self|any");
+    bad("rule x\nwhen concept=talk.gossip\nowes other: react.news\nsay Hm.\n", "needs the line's own move first");
+    bad("rule x\nwhen concept=talk.gossip\ndoes tell.gossip\ninvites other: tease\nsay Hm.\n", "owes tease, which doesn't answer");
+    bad("rule x\nwhen concept=talk.gossip\ndoes tell.gossip\ntone loud\nsay Hm.\n", "'loud' is not a tone");
+    bad("rule x\nwhen concept=talk.gossip\ndoes tell.gossip\nasserts theft.maybe\nsay Hm.\n", "'theft.maybe' is not a claim kind");
+    bad("rule x\nwhen concept=talk.gossip\ndoes tell.gossip\ngist 2\nsay Hm.\n", "a rule is one turn; only a scene's names one");
+    bad("scene x\nwhen topic=smalltalk\ndoes give.opinion / agree\ndenies 3\na : Grey.\nb : It is.\n", "names turn 3 of 2");
+    bad("rule x\nwhen concept=bark\nbinds y=self.spouse\nsay Hm.\n", "binds is 'binds x=<slot>'");
+    bad("rule x\nwhen concept=bark\nbinds x=self.cousin\nsay Hm.\n", "'self.cousin' is not a slot binds may name");
+    bad("rule x\nwhen concept=bark\nsay #x.name# snores.\n", "speaks of x with nobody bound");
+    bad("rule x\nwhen concept=bark x.stage=adult\nsay Hm.\n", "speaks of x with nobody bound");
+    bad("rule x\nwhen concept=bark x.shoe=red\nbinds x=self.spouse\nsay Hm.\n", "unknown fact 'x.shoe'");
+    bad("rule x\nwhen concept=bark x.disposition=giddy\nbinds x=self.spouse\nsay Hm.\n", "'giddy' is not a x.disposition");
+    bad("rule x\nwhen concept=bark\nsay {Kind=look} Hm.\n", "a tag is {key=value}");
+    bad("rule x\nwhen concept=bark\nsay {kind=look Hm.\n", "a tag is {key=value} before the words");
+    bad("rule x\nwhen concept=bark\nsay Hm {kind=look}.\n", "{ } hold a tag");
+    bad("rule x\nwhen concept=bark\nsay {move=greet} Hm.\n", "conv.move is the engine's own");
+    bad("rule x\nwhen concept=bark\nsay {kind=look keep soon} Hm.\n", "keep is a time");
+    bad("rule x\nwhen concept=bark conv.move=tell.wibble\nsay Hm.\n", "'tell.wibble' is not a conv.move");
+    bad("rule x\nwhen concept=bark conv.Kind=look\nsay Hm.\n", "unknown fact 'conv.Kind'");
+    bad("rule x\nwhen concept=talk.gossip\nsay Hm.\nthen other: talk.weather\nrule y\nwhen concept=talk.gossip\nsay Hm.\nthen other: lost.answer\n",
+        "is not a concept");
+
+    std::string problem;
+    expect(lib.parse(R"(
+rule mv_tell
+when concept=talk.gossip
+does tell.gossip
+say {kind=look keep 7d} #topic.subject# tried it.
+then other: town.gossip
+
+rule mv_react
+when concept=town.gossip
+say Never!
+
+rule mv_react_look
+when concept=town.gossip conv.kind=look conv.move=tell.gossip conv.beat=1
+priority 5
+say Look at what?
+
+rule mv_tell_soft
+when concept=talk.news
+does tell.news
+invites other: react.news
+tone grave
+asserts
+say Sad news.
+
+rule mv_x
+when concept=bark x.stage=adult x.disposition=warm|fond
+binds x=self.spouse
+does tell.self
+say #x.name# snores. #x.they.capitalize# always did.
+
+rule mv_detail
+when concept=talk.crime
+does answer.detail
+say Only what I heard.
+
+rule mv_detail_none
+when concept=talk.lore
+does answer.detail
+asserts none
+say Now there's a question.
+
+scene mv_scene
+when topic=smalltalk
+does give.opinion / agree / tease
+tone even / even / light
+gist
+a : Grey day.
+b : It is.
+a : Like your coat.
+)", "moves.talk", problem), "lines that say what they do load: " + problem);
+    const auto* tell = lib.find("mv_tell");
+    const auto* react = lib.find("mv_react");
+    expect(tell && tell->does.size() == 1 && tell->does[0] == std::vector<std::string>({"tell.gossip"}) && !tell->aliasMoves,
+           "a rule's written move");
+    expect(react && react->aliasMoves && react->does[0] == std::vector<std::string>({"react.news"}),
+           "a rule with no `does` makes its answer concept's move (town.gossip: react.news)");
+    expect(tell->owes.size() == 1 && tell->owes[0].derived && tell->owes[0].moves == std::vector<std::string>({"react.news"}),
+           "a `then` hands on its concept's move as what is owed");
+    const auto by = [&](const std::string& move, const std::string& id) {
+        const auto* list = lib.byMove(move);
+        return list && std::any_of(list->begin(), list->end(), [&](std::size_t i) { return lib.entries()[i].id == id; });
+    };
+    expect(by("tell.gossip", "mv_tell") && by("react.news", "mv_react") && by("give.opinion", "mv_scene") && !by("agree", "mv_scene"),
+           "entries by move: a rule by its own, a scene by its first turn's");
+
+    // What a said line carries.
+    auto q = moment("talk.gossip");
+    q.facts["topic.subject"] = "Wren";
+    q.facts["topic.claim_kind"] = "theft";
+    const auto said = lib.converse(q, 3, None, {});
+    expect(said.chain.size() == 2 && said.chain[0] == "mv_tell" && said.info.size() == 2, "the two beats: " + std::to_string(said.chain.size()));
+    const auto& first = said.info[0];
+    expect(first.moves == std::vector<std::string>({"tell.gossip"}) && first.owes == std::vector<std::string>({"react.news"}) &&
+               first.asserts == std::vector<std::string>({"theft"}) && first.tone == "even" && first.tags.at("kind") == "look" &&
+               std::abs(first.keep - 7) < 1e-9 && first.who == 0 && first.to == 1 && first.text == "Wren tried it.",
+           "the teller's line: its move, what it owes, the claim it passes on, its tone and its tag");
+    expect(said.chain[1] == "mv_react_look" && said.info[1].moves == std::vector<std::string>({"react.news"}) &&
+               said.info[1].answers == std::vector<std::string>({"tell.gossip"}),
+           "the next beat sees the tag (conv.kind), the move just made (conv.move) and the beat (conv.beat), and answers it: " + said.chain[1]);
+    auto news = moment("talk.news");
+    const auto sad = lib.pick(news, 1, None, {});
+    expect(sad.info.size() == 1 && sad.info[0].tone == "grave" && sad.info[0].invites == std::vector<std::string>({"react.news"}) &&
+               sad.info[0].owes.empty() && sad.info[0].asserts == std::vector<std::string>({"topic"}),
+           "a soft obligation (invites), a written tone, and asserting with no claim kind: the topic");
+    // Phase 8: answer.detail asserts the topic's claim by its move's default; `asserts none` says nothing is passed on.
+    auto crime = moment("talk.crime");
+    crime.facts["topic.claim_kind"] = "theft";
+    auto lore = crime;
+    lore.concept = "talk.lore";
+    const auto detail = lib.pick(crime, 1, None, {});
+    const auto evasion = lib.pick(lore, 1, None, {});
+    expect(detail.info.size() == 1 && detail.info[0].asserts == std::vector<std::string>({"theft"}),
+           "an answer passes the topic's claim on by default");
+    expect(evasion.info.size() == 1 && evasion.info[0].asserts.empty() && lib.find("mv_detail_none")->asserts == Entry::NeverAsserts,
+           "`asserts none`: not even by default");
+    auto small = moment("talk.smalltalk");
+    const auto* scene = lib.find("mv_scene");
+    const auto talk = lib.render(*scene, small, 1);
+    expect(talk.info.size() == 3 && talk.info[1].answers == std::vector<std::string>({"give.opinion"}) && talk.info[2].tone == "light" &&
+               talk.info[2].gist && !talk.info[0].gist && talk.info[0].owes.size() == 1 && talk.info[2].owes.empty(),
+           "a scene's turns: what each answers, its tone, the gist in the last; its last line owes only what is written");
+    // A third party: nobody to bind, the line doesn't fit; the game's binder fills x.*.
+    auto bark = moment("bark");
+    bark.alone = true;
+    const auto* x = lib.find("mv_x");
+    expect(x && !lib.fits(*x, bark), "with no binder, a line that binds never fits");
+    bark.bind = [](const std::string& slot, int speaker, Facts& f) {
+        if (slot != "self.spouse" || speaker != 0)
+            return false;
+        f = {{"name", "Bram"}, {"sex", "male"}, {"stage", "adult"}, {"disposition", "fond"}};
+        return true;
+    };
+    const auto snores = lib.render(*x, bark, 1);
+    expect(lib.fits(*x, bark) && !snores.lines.empty() && snores.lines[0].second == "Bram snores. He always did.",
+           "bound, it speaks of them: " + (snores.lines.empty() ? std::string("(nothing)") : snores.lines[0].second));
+    bark.bind = [](const std::string&, int, Facts& f) {
+        f = {{"name", "Bram"}, {"stage", "adult"}, {"disposition", "cool"}};
+        return true;
+    };
+    expect(!lib.fits(*x, bark), "and its criteria test them (x.disposition)");
+
+    // The dead-end proof.
+    auto proof = foundation();
+    expect(proof.parse(R"(
+rule dead_open
+when concept=talk.crime
+does tell.news
+say A theft.
+then other: crime.answer
+
+rule dead_answer_rich
+when concept=crime.answer self.wealth=rich
+say Flog them.
+)", "dead.talk", problem), problem);
+    auto dead = proof.deadEnds();
+    expect(dead.find("dead end: crime.answer") != std::string::npos && dead.find("react.news") != std::string::npos,
+           "a concept handed on to with no plain rule, and a move owed with nothing plain doing it, are dead ends:\n" + dead);
+    expect(proof.parse("rule dead_answer_any\nwhen concept=crime.answer\npriority -1\nsay That's a bad business.\n", "fill.talk", problem), problem);
+    dead = proof.deadEnds();
+    expect(dead.find("crime.answer") == std::string::npos && dead.find("react.news") == std::string::npos,
+           "filled, neither is (crime.answer's move, react.news, now has a plain line):\n" + dead);
+    expect(proof.parse("rule dead_wave\nwhen concept=talk.smalltalk\ndoes request\nsay Lend me a hand?\n", "wave.talk", problem), problem);
+    dead = proof.deadEnds();
+    expect(dead.find("grant|decline") != std::string::npos, "what a move expects is owed too: " + dead);
+    expect(proof.parse("rule dead_nod\nwhen concept=keeping.nod\nsay Mm.\n", "nod.talk", problem), problem);
+    expect(proof.deadEnds().empty(), "and a plain ack answers it, by the fallbacks: " + proof.deadEnds());
+}
+
+void turnEngine()
+{
+    // Doc 84 §8.1-8.4 (Phase 3): the turn engine. A conversation is begun and goes on a line at a time; what a line owes
+    // is answered, best fit first and tiers within it; nothing is said twice; a lull closes it with the farewell pair.
+    std::string problem;
+    auto lib = foundation();
+    expect(lib.parse(R"(
+rule tw_open
+when concept=talk.crime
+does tell.news
+say Someone broke the bakery window.
+then other: crime.answer
+rule tw_answer_guard
+when concept=crime.answer self.role=guard
+say I'll look into it.
+rule tw_answer
+when concept=crime.answer
+say What's the town coming to?
+rule mv_news
+does react.news
+say Is that so?
+rule mv_ack
+does ack
+say I see.
+rule mv_pre
+does preclose
+say Well. Back to it.
+rule mv_pre_ok
+does accept_preclose
+say Go on, then.
+rule mv_bye
+does farewell
+say Farewell.
+rule mv_bye_back
+does farewell.return
+say And you.
+)", "turns.talk", problem), problem);
+    auto q = moment("talk.crime");
+    q.b.facts["role"] = "guard";
+    // begin and next, a line at a time; converse is the same, whole.
+    Conversation c;
+    c.seed = 3;
+    const Freshness fresh{None, {}};
+    const auto first = lib.begin(c, q, fresh);
+    expect(first && first->entry == "tw_open" && first->who == 0 && first->owes == std::vector<std::string>{"react.news"},
+           "begin: the opener for the concept, owing its hand-on's move");
+    expect(c.open.size() == 1 && c.open[0].to == 1 && c.open[0].concept == "crime.answer", "what it owes is open, to b, by its concept");
+    const auto facts = [&](int, int) { return q; };
+    const auto second = lib.next(c, facts, fresh);
+    expect(second && second->who == 1 && (second->entry == "tw_answer_guard" || second->entry == "tw_answer") &&
+               second->fit == 3 && second->best == 3,
+           "next: the handed-on concept's own rule answers (fit 3), never a move line that only does the move (fit 1)");
+    std::vector<SaidLine> rest;
+    while (auto l = lib.next(c, facts, fresh))
+        rest.push_back(*l);
+    // (Slice 3, H1: one exchange and a goodbye each rated 2.85, a talk left there 3.90: one exchange, and they part.)
+    expect(c.phase == Conversation::Phase::Ended && c.ended == "parted" && rest.empty(),
+           "a lull after one exchange: they part without ceremony: " + c.ended);
+    const auto whole = lib.converse(q, 3, None, {});
+    expect(whole.lines.size() == c.lines.size() && whole.ended == "parted" && whole.id == "tw_open" &&
+               whole.chain.front() == "tw_open",
+           "converse is begin and next, whole");
+    // Fit, then tiers within it: the guard's own answer mostly, anyone's sometimes (no longer only the best tier).
+    std::map<std::string, int> by;
+    for (std::uint64_t seed = 1; seed <= 300; ++seed)
+        ++by[lib.converse(q, seed, None, {}).info.at(1).entry];
+    expect(by["tw_answer_guard"] > 180 && by["tw_answer"] > 20 && by.size() == 2,
+           "tiers within the best fit: " + std::to_string(by["tw_answer_guard"]) + " and " + std::to_string(by["tw_answer"]));
+    // Nothing in the concept holds: a move line doing the owed move answers (fit 1); none of those: its fallback, ack.
+    auto none = foundation();
+    expect(none.parse("rule o\nwhen concept=talk.crime\ndoes tell.news\nsay A fire at the mill.\nthen other: crime.answer\n"
+                      "rule a\nwhen concept=crime.answer self.job=noble\nsay Dreadful.\n"
+                      "rule mv_ack\ndoes ack\nsay I see.\n", "fall.talk", problem), problem);
+    const auto fell = none.converse(moment("talk.crime"), 1, None, {});
+    expect(fell.info.size() >= 2 && fell.info[1].entry == "mv_ack" && fell.info[1].fit == 0,
+           "nothing answering the owed move: its fallback, walked down to ack");
+    auto noble = moment("talk.crime");
+    noble.b.facts["job"] = "noble";
+    expect(none.converse(noble, 1, None, {}).info.at(1).entry == "a", "a noble answers as one");
+    // Only a talk between residents on a topic closes: a reaction (perhaps to a player) is said, and that is all.
+    expect(lib.parse("rule tw_react\nwhen concept=react.customer\nsay Come in, come in.\n", "react.talk", problem), problem);
+    auto customer = moment("react.customer");
+    const auto reacted = lib.converse(customer, 1, None, {});
+    expect(reacted.lines.size() == 1 && reacted.ended == "done", "a reaction gets no farewell pair: " + std::to_string(reacted.lines.size()));
+    // A shrug is an ack (§8.4): it owes nothing, whatever its rule hands on, and the talk closes.
+    auto shrug = foundation();
+    expect(shrug.parse("rule ask\nwhen concept=talk.smalltalk\nsay How's the leg?\nthen other: chat.answer\n"
+                       "rule mm\nwhen concept=chat.answer\nsay Mm.\nthen other: health.answer\n"
+                       "rule advice\nwhen concept=health.answer\nsay Then see the healer.\n"
+                       "rule mv_bye\ndoes farewell\nsay Farewell.\nrule mv_bye_back\ndoes farewell.return\nsay And you.\n",
+                       "shrug.talk", problem), problem);
+    const auto shrugged = shrug.converse(moment("talk.smalltalk"), 1, None, {});
+    expect(shrugged.info.size() == 2 && shrugged.info[1].moves == std::vector<std::string>{"ack"} && shrugged.info[1].owes.empty() &&
+               shrugged.ended == "parted",
+           "a shrug is an ack: no hand-on, and the talk closes");
+    // A preclose when the talk has run long enough and its budget has room; the one at work closes first.
+    auto longer = foundation();
+    expect(longer.parse("scene s\nwhen topic=work\na : One.\nb : Two.\na : Three.\nb : Four.\n"
+                        "rule mv_pre\ndoes preclose\nsay Well. Back to it.\nrule mv_pre_ok\ndoes accept_preclose\nsay Go on, then.\n"
+                        "rule mv_bye\ndoes farewell\nsay Farewell.\nrule mv_bye_back\ndoes farewell.return\nsay And you.\n",
+                        "long.talk", problem), problem);
+    auto work = moment("talk.work");
+    work.a.facts["talk"] = "chatty";
+    work.b.facts["talk"] = "chatty";
+    work.a.facts["working"] = "yes";
+    const auto closed = longer.converse(work, 1, None, {});
+    expect(closed.info.size() == 8 && closed.info[4].text == "Well. Back to it." && closed.info[4].who == 0 &&
+               closed.info[5].text == "Go on, then." && closed.info[6].who == 0 && closed.ended == "farewell",
+           "preclose (by the one at work), its answer, the farewell pair");
+    work.a.facts["talk"] = "quiet";
+    expect(longer.converse(work, 1, None, {}).info.size() == 6, "a quiet one's budget has no room for a preclose: the farewell pair alone");
+    // The budget (§8.4): the smaller of the two's range by their talk, +2 for friends and kin, scaled by the frames.
+    auto b = moment("talk.work");
+    b.facts["pair.band"] = "acquaintances";
+    for (std::uint64_t seed = 1; seed < 40; ++seed)
+    {
+        b.a.facts["talk"] = "chatty";
+        b.b.facts["talk"] = "quiet";
+        const int n = lib.budgetFor(b, {}, seed);
+        expect(n >= 3 && n <= 5, "chatty and quiet: the quiet one's 3-5");
+        b.facts["pair.band"] = "friends";
+        expect(lib.budgetFor(b, {}, seed) == n + 2, "friends: two more");
+        b.facts["pair.band"] = "strangers";
+        expect(lib.budgetFor(b, lib.framesFor(b), seed) == std::max(2, int(std::lround(n * .6))), "strangers: 0.6 of it");
+        b.facts["pair.band"] = "acquaintances";
+    }
+    // Frames (§7.4): worked out from the facts, stacked; strangers greet in the opener's breath and never tease.
+    auto f = moment("talk.work");
+    f.facts["pair.band"] = "strangers";
+    f.a.facts["working"] = "yes";
+    f.a.facts["shift"] = "during";
+    expect(lib.framesFor(f) == std::vector<std::string>{"strangers", "at_work"}, "frames stack: strangers, at work");
+    auto greet = foundation();
+    expect(greet.parse("rule o\nwhen concept=talk.gossip\ndoes tell.gossip\nsay Word is the miller's wed.\n"
+                       "rule mv_greet\ndoes greet\nwhen pair.band=strangers\nsay Good day.\n"
+                       "rule mv_tease\ndoes tease\nsay Nice hat.\n", "greet.talk", problem), problem);
+    auto g = moment("talk.gossip");
+    g.facts["pair.band"] = "strangers";
+    const auto greeted = greet.converse(g, 1, None, {});
+    expect(greeted.info.at(0).text == "Good day. Word is the miller's wed." &&
+               greeted.info[0].moves == std::vector<std::string>{"greet", "tell.gossip"} && greeted.id == "o",
+           "a stranger greets in the same breath: " + greeted.info.at(0).text);
+    // Phase 7 (§8.12.3): the opener's own words are kept beside the whole line, for the collision filter.
+    expect(greeted.info.at(0).bare == "Word is the miller's wed.", "the opener's own words kept: " + greeted.info.at(0).bare);
+    g.facts["pair.band"] = "friends";
+    expect(greet.converse(g, 1, None, {}).info.at(0).text == "Word is the miller's wed.", "friends don't");
+    expect(greet.converse(g, 1, None, {}).info.at(0).bare.empty(), "nothing said before: no own words kept apart");
+    Conversation strangers;
+    strangers.frames = {"strangers"};
+    strangers.people = {"maren", "ivo"};
+    Conversation::Open teased;
+    teased.moves = {"tease"};
+    expect(greet.answer(strangers, teased, g, 1, fresh).id.empty(), "strangers never tease");
+    strangers.frames.clear();
+    expect(greet.answer(strangers, teased, g, 1, fresh).id == "mv_tease", "acquaintances may");
+    auto mourning = g;
+    mourning.a.facts["mourning"] = "kin";
+    expect(greet.answer(strangers, teased, mourning, 1, fresh).id.empty(), "nobody teases one who mourns");
+    // Tone rules (§8.11): light is blocked for two lines after a grave one, unless a bridge came between.
+    auto tones = foundation();
+    expect(tones.parse("rule mv_laugh\ndoes laugh\nsay Ha! Good one.\n", "tone.talk", problem), problem);
+    Conversation grave;
+    grave.people = {"maren", "ivo"};
+    SaidLine sad;
+    sad.who = 0;
+    sad.tone = "grave";
+    sad.moves = {"tell.news"};
+    grave.lines.push_back(sad);
+    Conversation::Open laugh;
+    laugh.moves = {"laugh"};
+    expect(tones.answer(grave, laugh, g, 1, fresh).id.empty(), "no laughing straight after grave news");
+    SaidLine between;
+    between.who = 1;
+    between.moves = {"assess"};
+    grave.lines.push_back(between);
+    expect(tones.answer(grave, laugh, g, 1, fresh).id == "mv_laugh", "but after a bridge (assess), it may");
+    grave.lines.pop_back();
+    SaidLine plain;
+    plain.who = 1;
+    plain.moves = {"ack"};
+    grave.lines.push_back(plain);
+    grave.lines.push_back(plain);
+    expect(tones.answer(grave, laugh, g, 1, fresh).id == "mv_laugh", "and two lines on, it may");
+    // Never the same entry, nor the same words, twice in one talk (C6); at most fourteen lines, a farewell included.
+    std::string chain = "rule c0\nwhen concept=talk.day\ndoes tell.news\nsay Line 0.\nthen other: event.answer\n";
+    for (int i = 1; i < 20; ++i)
+        chain += "rule c" + std::to_string(i) + "\nwhen concept=event.answer\npriority " + std::to_string(40 - i) + "\nsay Line " +
+                 std::to_string(i) + ".\nthen other: event.answer\n";
+    chain += "rule mv_bye\ndoes farewell\nsay Farewell.\nrule mv_bye_back\ndoes farewell.return\nsay And you.\n";
+    auto capped = foundation();
+    expect(capped.parse(chain, "cap.talk", problem), problem);
+    const auto lines = capped.converse(moment("talk.day"), 1, None, {});
+    std::set<std::string> entries;
+    for (const auto& l : lines.info)
+        entries.insert(l.entry);
+    expect(lines.info.size() == 14 && entries.size() == 14 && lines.info.back().text == "And you.",
+           "fourteen lines at most, each entry once, the last two a farewell: " + std::to_string(lines.info.size()));
+    // An invitation (`invites`) is taken up only sometimes; what is owed, always.
+    auto invite = foundation();
+    expect(invite.parse("rule o\nwhen concept=talk.smalltalk\ndoes tell.self\nsay I've taken up the fiddle.\n"
+                        "rule mv_self\ndoes react.self\nsay Have you now.\n", "invite.talk", problem), problem);
+    int taken = 0;
+    for (std::uint64_t seed = 1; seed <= 200; ++seed)
+        taken += invite.converse(moment("talk.smalltalk"), seed, None, {}).lines.size() > 1;
+    expect(taken > 60 && taken < 140, "an invitation is taken about half the time: " + std::to_string(taken));
+    // frames.json is checked when it loads.
+    for (const auto& [text, why] : std::vector<std::pair<std::string, std::string>>{
+             {R"({"frames": {"x": {"when": "pair.band=strangers", "colour": "red"}}})", "no field 'colour'"},
+             {R"({"frames": {"x": {"when": "pair.band=strangers", "open": ["wave"]}}})", "not a move"},
+             {R"({"frames": {"x": {"when": "pair.nonsense=1"}}})", "nonsense"},
+             {R"({"frames": {"x": {"open": ["greet"]}}})", "holds when something does"},
+             {R"({"frames": {"x": {"when": "pair.band=strangers", "budget": 9}}})", "0.2 to 3"},
+             {R"({"frames": {"x": {"when": "pair.band=strangers", "tones": {"jolly": 1}}}})", "tones are moves.json's"},
+             {R"({"budget": {"loud": [1, 2]}})", "not a talk"},
+             {R"({"budget": {"plain": [5]}})", "[fewest, most]"},
+             {R"({"budget": {"least": 1}})", "least is 2"},
+             {R"({"invite_taken": 2})", "a chance"},
+             {R"({"mood": {}})", "no field 'mood'"},
+             // Phase 5's goals (§7.4): a plan of moves that may open, when something holds.
+             {R"({"goals": {"x": {"when": "pair.band=strangers", "plan": ["wave"]}}})", "not a move that may open"},
+             {R"({"goals": {"x": {"plan": ["greet"]}}})", "holds when something does"},
+             {R"({"goals": {"x": {"when": "pair.band=strangers", "plan": ["greet"], "colour": 1}}})", "no field 'colour'"},
+             {R"({"goals": {"x": {"when": "pair.band=strangers", "plan": []}}})", "a plan of one move or more"}})
+    {
+        namespace fs = std::filesystem;
+        const auto dir = fs::temp_directory_path() / ("ratw-frames-" + std::to_string(checks));
+        fs::remove_all(dir);
+        fs::create_directories(dir / "grammar");
+        for (const char* f : {"facts.json", "settings.json", "moves.json", "claims.json", "groups.talk"})
+            fs::copy_file(fs::path(Dir) / f, dir / f);
+        fs::copy_file(fs::path(Dir) / "grammar" / "plain.grammar", dir / "grammar" / "plain.grammar");
+        std::ofstream(dir / "frames.json") << text;
+        Library bad;
+        std::string p;
+        expect(!bad.loadFoundation(dir.string(), p) && p.find(why) != std::string::npos, "frames.json refused (" + why + "): " + p);
+        fs::remove_all(dir);
+    }
+    // A library from before moves.json talks as it did (the golden transcripts): each `then` handed on, the best tier,
+    // up to eight beats, the same rule again if it comes round.
+    {
+        namespace fs = std::filesystem;
+        const auto dir = fs::temp_directory_path() / "ratw-legacy-talk";
+        fs::remove_all(dir);
+        fs::create_directories(dir / "grammar");
+        for (const char* f : {"facts.json", "settings.json", "groups.talk"})
+            fs::copy_file(fs::path(Dir) / f, dir / f);
+        fs::copy_file(fs::path(Dir) / "grammar" / "plain.grammar", dir / "grammar" / "plain.grammar");
+        Library old;
+        std::string p;
+        expect(old.loadFoundation(dir.string(), p), "a library without moves.json loads: " + p);
+        fs::remove_all(dir);
+        expect(old.parse("rule ping\nwhen concept=talk.smalltalk\nsay Ping.\nthen other: talk.day\nrule pong\nwhen concept=talk.day\nsay Pong.\nthen other: talk.smalltalk\n",
+                         "loop.talk", p), p);
+        const auto pp = old.converse(moment("talk.smalltalk"), 1, None, {});
+        expect(pp.lines.size() == 8 && pp.lines[7] == std::pair<int, std::string>{1, "Pong."} && pp.ended == "cap",
+               "eight beats at most, turn and turn about, as before");
+    }
+}
+
+void beatsWhenSpoken()
+{
+    // Doc 84 §8.2, §8.6, §8.9, §8.10 (Phase 4): each line chosen from the facts as they are when it comes due; a scene's
+    // later turn checked again (Valve's rule); breaks; a third voice; what one already knew; a thread returned to; lines
+    // written outside the library carried on by the engine.
+    std::string problem;
+    auto lib = foundation();
+    expect(lib.parse(R"(
+rule bw_open
+when concept=talk.crime
+does tell.news
+say Someone broke the bakery window.
+rule bw_wet
+does react.news
+when here.weather=rain
+say And in this rain, too.
+rule bw_dry
+does react.news
+when here.weather=clear
+say On a fine day like this.
+rule bw_ack
+does ack
+say I see.
+rule bw_bye
+does farewell
+say Farewell.
+rule bw_bye_back
+does farewell.return
+say And you.
+scene bw_fog
+when topic=smalltalk here.weather=fog pair.mem.fogged!=yes
+remember pair: fogged=yes 1h
+a : Look at this fog.
+b : Thick as wool.
+rule bw_break_rain
+does break
+when conv.interrupt=rain
+say Rain. Inside, quick.
+rule bw_known
+does react.news.known
+say I'd heard.
+rule bw_new
+does react.news.new
+say Never!
+rule bw_defend
+does join.defend
+when conv.stake=kin
+denies
+say That's my brother you mean.
+rule bw_sorry
+does apologise
+say I meant nothing by it.
+rule bw_forgive
+does accept_apology
+say No harm done.
+rule bw_return
+does return
+say As I was saying.
+scene bw_well
+when topic=smalltalk here.weather=clear
+does tell.self / react.self
+a : The well's been sweet all week.
+b : Sweeter than it was last summer, by far.
+)", "beats.talk", problem), problem);
+    const Freshness fresh{None, {}};
+    // 1. Each beat asks the facts again: the answer is chosen from the moment as it is when it comes due.
+    {
+        auto q = moment("talk.crime");
+        q.facts["here.weather"] = "rain";
+        Conversation c;
+        c.seed = 5;
+        expect(bool(lib.begin(c, q, fresh)), "begun");
+        auto now = q;
+        now.facts["here.weather"] = "clear";
+        int asked = 0;
+        const auto facts = [&](int, int) {
+            ++asked;
+            return now;
+        };
+        const auto second = lib.next(c, facts, fresh);
+        expect(second && second->entry == "bw_dry" && asked > 0, "the reply is chosen from the facts as they are now (dry): " +
+                                                                     (second ? second->entry : std::string("none")));
+    }
+    // 2. Valve's rule: a scene's later turn is checked again when it comes due; the fog lifted, the rest is dropped. What
+    // the scene itself remembered (pair.mem) is never checked again.
+    {
+        auto q = moment("talk.smalltalk");
+        q.facts["here.weather"] = "fog";
+        q.facts["topic.kind"] = "smalltalk";
+        Conversation c;
+        c.seed = 1;
+        const auto first = lib.begin(c, q, fresh);
+        expect(first && first->entry == "bw_fog" && first->turn == 0 && first->variant == 0, "the fog scene opens");
+        auto still = q;
+        still.facts["pair.mem.fogged"] = "yes";     // (What its own first line remembered.)
+        Conversation kept = c;
+        const auto stays = lib.next(kept, [&](int, int) { return still; }, fresh);
+        expect(stays && stays->text == "Thick as wool." && kept.dropped == 0, "still foggy: its turn is said, its own memory never checked again");
+        auto lifted = q;
+        lifted.facts["here.weather"] = "clear";
+        const auto next = lib.next(c, [&](int, int) { return lifted; }, fresh);
+        expect(c.dropped == 1 && (!next || next->text != "Thick as wool."), "the fog lifted: the scene's later turn is dropped");
+    }
+    // 2b. Phase 8 (§8.12.3): nor is a scene's later turn said when another speaker has said its words in the place since
+    // the scene was chosen (two talks there chose it within the hour); what was owed stays owed, and is answered.
+    {
+        auto q = moment("talk.smalltalk");
+        q.facts["here.weather"] = "clear";
+        Conversation c;
+        c.seed = 1;
+        const auto first = lib.begin(c, q, fresh);
+        expect(first && first->entry == "bw_well", "the well scene opens: " + (first ? first->entry : std::string("none")));
+        Conversation clear = c;
+        Freshness quiet = fresh;
+        quiet.collides = [](const std::string&, const std::string&) { return false; };
+        const auto said = lib.next(clear, [&](int, int) { return q; }, quiet);
+        expect(said && said->text == "Sweeter than it was last summer, by far." && clear.dropped == 0,
+               "nobody else said it here: its turn is said");
+        Freshness heard = fresh;
+        heard.collides = [](const std::string& words, const std::string&) { return words.rfind("Sweeter than", 0) == 0; };
+        const auto next = lib.next(c, [&](int, int) { return q; }, heard);
+        expect(c.dropped == 1 && (next ? next->text != "Sweeter than it was last summer, by far." : c.ended == "parted"),
+               "another said its words here within the hour: the rest of the scene is dropped, and the talk goes on: " +
+                   (next ? next->text : std::string("nothing")));
+    }
+    // 3. Broken off (§8.10): conv.interrupt, a break line by the one named, and the talk ends; with none fitting, it ends.
+    {
+        auto q = moment("talk.crime");
+        q.facts["here.weather"] = "rain";
+        Conversation c;
+        c.seed = 2;
+        lib.begin(c, q, fresh);
+        const auto broke = lib.interrupt(c, "rain", 1, [&](int, int) { return q; }, fresh);
+        expect(broke && broke->entry == "bw_break_rain" && broke->who == 1 && broke->to == 0 && c.ended == "break" &&
+                   c.phase == Conversation::Phase::Ended && c.conv["interrupt"] == "rain",
+               "rain: the one whose turn it was breaks off, and it ends");
+        Conversation d;
+        d.seed = 2;
+        lib.begin(d, q, fresh);
+        expect(!lib.interrupt(d, "fight", 1, [&](int, int) { return q; }, fresh) && d.ended == "break" && !lib.next(d, [&](int, int) { return q; }, fresh),
+               "no break line fits: it ends all the same");
+    }
+    // 4. A third voice (§8.9): joins with a line doing a join move, said to the one who spoke last, who owes the answer;
+    // the joiner's queries have the speaker as a.
+    {
+        auto q = moment("talk.crime");
+        q.facts["here.weather"] = "rain";
+        q.facts["topic.subject"] = "Bram";
+        Conversation c;
+        c.seed = 3;
+        lib.begin(c, q, fresh);
+        const auto wren = person("wren", "Wren", "female", "adult", "baker", "civilian");
+        const auto query = [&](int speaker, int to) {
+            if (speaker < 2 && to < 2)
+                return q;
+            auto x = q;
+            const auto who = [&](int i) { return i == 0 ? q.a : i == 1 ? q.b : wren; };
+            x.a = who(speaker);
+            x.b = who(to);
+            return x;
+        };
+        c.phase = Conversation::Phase::Closing;
+        expect(!lib.join(c, "wren", "kin", {"join.defend"}, query(2, 0), fresh), "nobody joins once the closing has begun");
+        c.phase = Conversation::Phase::Body;
+        expect(!lib.join(c, "wren", "friend", {"join.defend"}, query(2, 0), fresh) && c.people.size() == 2,
+               "nobody joins without a line that fits their stake");
+        const auto joined = lib.join(c, "wren", "kin", {"join.defend"}, query(2, 0), fresh);
+        expect(joined && joined->entry == "bw_defend" && joined->who == 2 && joined->to == 0 && c.people.size() == 3 &&
+                   c.people[2] == "wren" && c.stake == "kin" && joined->denies.size() == 1,
+               "a kinswoman cuts in to the one who spoke, denying it");
+        expect(c.open.size() == 1 && c.open[0].to == 0 && c.open[0].by == 2, "the one she spoke to owes the answer");
+        expect(Library::partner(c, 2) == 0 && Library::partner(c, 0) == 1, "who each is talking with");
+        const auto sorry = lib.next(c, query, fresh);
+        expect(sorry && sorry->entry == "bw_sorry" && sorry->who == 0 && sorry->to == 2, "the teller apologises to her");
+        const auto forgive = lib.next(c, query, fresh);
+        expect(forgive && forgive->entry == "bw_forgive" && forgive->who == 2 && forgive->to == 0, "and she accepts it");
+        expect(!lib.join(c, "ivo2", "kin", {"join.defend"}, query(2, 0), fresh), "three at most");
+        std::vector<SaidLine> rest;
+        while (auto l = lib.next(c, query, fresh))
+            rest.push_back(*l);
+        expect(c.ended == "farewell" && !rest.empty(), "and the talk closes: " + c.ended);
+    }
+    // 5. What one already knew (§8.6): "I heard." from one who knew, never "Never!"; never "I heard." from one who didn't.
+    {
+        std::map<std::string, int> knew, fresh2;
+        for (std::uint64_t seed = 1; seed <= 60; ++seed)
+        {
+            auto q = moment("talk.crime");
+            q.facts["here.weather"] = "fog";        // (Neither weather answer holds.)
+            q.b.facts["knows"] = "yes";
+            ++knew[lib.converse(q, seed, None, {}).info.at(1).entry];
+            q.b.facts["knows"] = "no";
+            ++fresh2[lib.converse(q, seed, None, {}).info.at(1).entry];
+        }
+        expect(knew["bw_known"] == 60, "one who knew answers that they'd heard, every time");
+        expect(fresh2["bw_known"] == 0 && fresh2["bw_new"] > 0, "one who didn't never says they'd heard");
+        auto scenes = foundation();
+        expect(scenes.parse("scene sc_news\nwhen topic=smalltalk\ndoes tell.gossip / react.news.new\na : Did you hear?\nb : Never!\n"
+                            "rule mv_ack\ndoes ack\nsay I see.\n", "news.talk", problem), problem);
+        auto q = moment("talk.smalltalk");
+        q.facts["topic.kind"] = "smalltalk";
+        q.b.facts["knows"] = "yes";
+        expect(scenes.pick(q, 1, None, {}).id.empty(), "a scene whose answer says \"Never!\" isn't chosen for one who knew");
+        q.b.facts["knows"] = "no";
+        expect(scenes.pick(q, 1, None, {}).id == "sc_news", "and is for one who didn't");
+    }
+    // 6. A thread left unfinished on this topic is returned to in the opener's breath (§8.10).
+    {
+        auto q = moment("talk.crime");
+        q.facts["here.weather"] = "rain";
+        q.facts["pair.thread"] = "crime";
+        Conversation c;
+        c.seed = 4;
+        const auto first = lib.begin(c, q, fresh);
+        expect(first && first->text.rfind("As I was saying. ", 0) == 0 && first->moves.front() == "return",
+               "as I was saying: " + (first ? first->text : std::string()));
+        q.facts["pair.thread"] = "prices";
+        Conversation d;
+        d.seed = 4;
+        const auto other = lib.begin(d, q, fresh);
+        expect(other && other->text == "Someone broke the bakery window.", "not on another topic");
+    }
+    // 7. Lines written outside the library (the authored exchange) are said as they are, then the engine closes.
+    {
+        auto q = moment("talk.crime");
+        Said written;
+        written.lines = {{0, "A wagon came in."}, {1, "So I saw."}};
+        Conversation c;
+        c.seed = 1;
+        const auto first = lib.beginWith(c, q, written);
+        expect(first && first->text == "A wagon came in." && first->who == 0 && first->to == 1, "the first written line");
+        std::vector<SaidLine> rest;
+        while (auto l = lib.next(c, [&](int, int) { return q; }, fresh))
+            rest.push_back(*l);
+        expect(rest.size() == 1 && rest.front().text == "So I saw." && c.ended == "parted",
+               "then the second, and (one exchange) they part: " + c.ended);
+    }
+    // 8. frames.json's curt, join and thread are checked when it loads.
+    for (const auto& [text, why] : std::vector<std::pair<std::string, std::string>>{
+             {R"({"curt": {"chance": 2}})", "curt: chance"},
+             {R"({"curt": {"effects": {"them": {"affinity": -1}}}})", "\"self\" or \"other\""},
+             {R"({"curt": {"effects": {"other": {"warmth": -1}}}})", "an effect is an axis"},
+             {R"({"join": {"people": 4}})", "this build's most"},
+             {R"({"join": {"colour": 1}})", "join: no field 'colour'"},
+             {R"({"thread": {"days": 99}})", "thread: days"}})
+    {
+        namespace fs = std::filesystem;
+        const auto dir = fs::temp_directory_path() / ("ratw-frames4-" + std::to_string(checks));
+        fs::remove_all(dir);
+        fs::create_directories(dir / "grammar");
+        for (const char* f : {"facts.json", "settings.json", "moves.json", "claims.json", "groups.talk"})
+            fs::copy_file(fs::path(Dir) / f, dir / f);
+        fs::copy_file(fs::path(Dir) / "grammar" / "plain.grammar", dir / "grammar" / "plain.grammar");
+        std::ofstream(dir / "frames.json") << text;
+        Library bad;
+        std::string p;
+        expect(!bad.loadFoundation(dir.string(), p) && p.find(why) != std::string::npos, "frames.json refused (" + why + "): " + p);
+        fs::remove_all(dir);
+    }
+    const auto& b = lib.beats();
+    expect(b.curtChance == .5 && b.curtEffects.at("other").at("affinity") == -.5 && b.joinPeople == 3 && b.joinTiles == 3 &&
+               b.threadDays == 2,
+           "frames.json's Phase 4 settings as written");
+}
+
+
+void agendasAndGoals()
+{
+    // Doc 84 §7.3, §7.4, §8.5 (Phase 5): topics.json read and checked (today's numbers as the C++ had them), the topic
+    // graph's steps, a talk turning in a lull to something on the agenda (a pivot along an edge, a marked change of
+    // subject, a return to a thread), at most topics_per_talk topics; goals pursued a step a lull, given up when no line
+    // fits, and kept between the two once done; invitations, promises and what talk says of a third party parsed.
+    std::string problem;
+    // topics.json: today's, read from the file, is the built-in book, number for number.
+    {
+        std::ifstream in(std::string(RATW_SOURCE_DIR) + "/Tests/fixtures/talk_topics/topics-today.json");
+        std::stringstream text;
+        text << in.rdbuf();
+        expect(ratw::topics::load(text.str(), problem), "topics-today.json loads: " + problem);
+        const auto& read = ratw::topics::book();
+        const auto& today = ratw::topics::today();
+        expect(read.topics.size() == today.topics.size() && !read.tuned() && !today.tuned(), "today's: the same topics, nothing cooled");
+        for (const auto& [name, t] : today.topics)
+            for (const auto& [kind, sc] : t.kinds)
+            {
+                const auto& r = read.score(name, kind);
+                expect(r.base == sc.base && r.add == sc.add && r.scale == sc.scale && r.per == sc.per && r.step == sc.step &&
+                           r.hourly == sc.hourly && r.jitter == sc.jitter && r.jitterScale == sc.jitterScale &&
+                           read.news(name) == today.news(name) && read.everyday(name) == today.everyday(name),
+                       "today's " + name + "/" + kind + " read as built in");
+            }
+        for (const auto& [text2, why] : std::vector<std::pair<std::string, std::string>>{
+                 {R"({"topics": {}, "colour": 1})", "unknown field 'colour'"},
+                 {R"({"topics": {"gossip": {"kinds": {"claim": {"base": 3}}}}})", "they are missing: accent/_"},
+                 {R"({"topics": {"gossip": {"kinds": {"claim": {"base": 3, "speed": 1}}}}})", "unknown field 'speed'"},
+                 {R"({"topics": {"gossip": {"news": true, "everyday": true, "kinds": {}}}})", "not both"},
+                 {R"({"topics": {"gossip": {"next": {"weddings": ""}, "kinds": {}}}})", "which is no topic"},
+                 {R"({"topics": {}, "favourites": {"piety=devout": ["sermons"]}})", "which is no topic"},
+                 {R"({"topics": {}, "pair_bonus": {"lovers": 1}})", "a pair.band"},
+                 {R"({"topics": {}, "pair_novelty": {"factor": 2}})", "factor is a number"}})
+        {
+            std::string why2;
+            expect(!ratw::topics::load(text2, why2) && why2.find(why) != std::string::npos, "topics.json refused (" + why + "): " + why2);
+        }
+        ratw::topics::reset();
+        expect(!ratw::topics::book().tuned(), "reset: today's");
+    }
+    // The live book loads with the library, and its steps' criteria with it.
+    auto lib = foundation();
+    expect(ratw::topics::book().tuned() && ratw::topics::book().topicsPerTalk == 3, "the live topics.json is tuned (topics_per_talk 3)");
+    const auto& steps = lib.steps("prices");
+    expect(std::any_of(steps.begin(), steps.end(), [](const Library::Step& s) { return s.to == "caravan" && !s.when.empty(); }),
+           "prices leads to the caravan when the road is the cause");
+    expect(lib.parse(R"(
+rule ag_open_prices
+when concept=talk.prices
+does tell.complaint
+say Herbs are dear again.
+rule ag_agree
+does react.complaint
+say They are that.
+rule ag_open_caravan
+when concept=talk.caravan
+does tell.news
+say The wagon from #topic.where# is late.
+rule ag_react_news
+does react.news
+say Is it now.
+rule ag_open_lore
+when concept=talk.lore
+does tell.story
+say My gran swore the river talks.
+rule ag_react_story
+does react.story
+say Did she.
+rule ag_bye
+does farewell
+say Farewell.
+rule ag_bye_back
+does farewell.return
+say And you.
+rule ag_intro
+does introduce
+when conv.goal=learn_name
+say I'm #self.first#.
+rule ag_intro_back
+does introduce.return
+say #self.first#. Good to know you.
+rule ag_return
+does return
+say As I was saying.
+)", "agenda.talk", problem), problem);
+    const Freshness fresh{None, {}};
+    const auto base = [&] {
+        auto q = moment("talk.prices");
+        q.facts["topic.cause"] = "caravan";
+        for (auto* s : {&q.a, &q.b})
+        {
+            s->facts["talk"] = "chatty";
+            s->facts["first"] = s->facts["name"];
+        }
+        return q;
+    };
+    const auto item = [](const std::string& topic, std::map<std::string, std::string> facts, double urgency, int index) {
+        AgendaItem i;
+        i.kind = "news";
+        i.topic = topic;
+        i.claim = topic;
+        i.concept = "talk." + topic;
+        i.facts = std::move(facts);
+        i.urgency = urgency;
+        i.index = index;
+        return i;
+    };
+    const auto talk = [&](Conversation& c, const Query& q) {
+        std::vector<SaidLine> said;
+        if (auto first = lib.begin(c, q, fresh))
+            said.push_back(*first);
+        for (int i = 0; i < 20; ++i)
+            if (auto line = lib.next(c, [&](int, int) { return q; }, fresh))
+                said.push_back(*line);
+            else
+                break;
+        return said;
+    };
+    const auto has = [](const SaidLine& l, const char* m) { return std::find(l.moves.begin(), l.moves.end(), m) != l.moves.end(); };
+    // 1. A pivot: prices to the caravan (the road the cause), its own facts over the old topic's, marked as a pivot.
+    {
+        const auto q = base();
+        Conversation c;
+        c.seed = 3;
+        c.agenda = {{item("caravan", {{"topic.where", "Coldwater"}}, 1.6, 4)}, {}};
+        const auto said = talk(c, q);
+        const auto turned = std::find_if(said.begin(), said.end(), [&](const SaidLine& l) { return has(l, "pivot"); });
+        expect(turned != said.end() && turned->entry == "ag_open_caravan" && turned->moves.front() == "pivot" &&
+                   turned->text.find("The wagon from Coldwater is late.") != std::string::npos &&
+                   turned->text.find("The wagon") > 0 && turned->topic == "caravan",
+               "a pivot to the caravan, its facts, its words after the pivot's");
+        expect(c.agendaAt == 4 && c.topics == std::vector<std::string>({"prices", "caravan"}) && c.agenda[0][0].done,
+               "the talk is on the agenda's item now");
+        const auto after = std::next(turned);
+        expect(after != said.end() && after->entry == "ag_react_news" && after->topic == "caravan", "and answered on it");
+        expect(said.back().text == "And you." || said.back().text == "Farewell.", "then it closes");
+    }
+    // 2. No edge: a marked change of subject now and then (lore isn't a step from prices), never unmarked.
+    {
+        int changed = 0, closed = 0;
+        for (std::uint64_t seed = 1; seed <= 40; ++seed)
+        {
+            const auto q = base();
+            Conversation c;
+            c.seed = seed;
+            c.agenda = {{}, {item("lore", {}, 0.9, 1)}};
+            const auto said = talk(c, q);
+            const auto turned = std::find_if(said.begin(), said.end(), [](const SaidLine& l) { return l.topic == "lore"; });
+            if (turned == said.end())
+                ++closed;
+            else
+            {
+                ++changed;
+                expect(turned->moves.front() == "change_subject" && turned->who == 1 && turned->entry == "ag_open_lore",
+                       "a change of subject by the one whose item it is, marked: " + turned->text);
+            }
+        }
+        expect(changed > 8 && closed > 8, "a change of subject now and then: " + std::to_string(changed) + " of 40");
+    }
+    // 3. A thread left on the topic (pair.thread) is returned to, whatever the graph says: "As I was saying."
+    {
+        auto q = base();
+        q.facts["pair.thread"] = "lore";
+        Conversation c;
+        c.seed = 1;
+        c.agenda = {{item("lore", {}, 0.5, 2), item("caravan", {{"topic.where", "Larkfield"}}, 1.6, 3)}, {}};
+        const auto said = talk(c, q);
+        const auto back = std::find_if(said.begin(), said.end(), [&](const SaidLine& l) { return has(l, "return"); });
+        expect(back != said.end() && back->text.rfind("As I was saying. My gran", 0) == 0 && back->topic == "lore",
+               "a thread is returned to first: " + (back == said.end() ? std::string("none") : back->text));
+    }
+    // 4. At most topics_per_talk topics (3).
+    {
+        const auto q = base();
+        Conversation c;
+        c.seed = 9;
+        c.budget = 14;
+        c.agenda = {{item("caravan", {{"topic.where", "Coldwater"}}, 1.6, 0), item("lore", {}, 1.5, 1)},
+                    {item("lore", {}, 1.4, 2), item("caravan", {{"topic.where", "Frosthollow"}}, 1.3, 3)}};
+        talk(c, q);
+        expect(c.topics.size() <= 3, "three topics at most: " + std::to_string(c.topics.size()));
+    }
+    // 5. A goal: learn_name, in a lull, said for it (conv.goal), done and kept; not again once kept between the two.
+    {
+        auto q = base();
+        q.facts["pair.named"] = "no";
+        Conversation c;
+        c.seed = 4;
+        const auto said = talk(c, q);
+        const auto intro = std::find_if(said.begin(), said.end(), [](const SaidLine& l) { return l.goal == "learn_name"; });
+        expect(intro != said.end() && intro->text == "I'm Maren." && intro->who == 0 && intro->goalDone && intro->goalDays == 30 &&
+                   std::next(intro) != said.end() && std::next(intro)->text == "Ivo. Good to know you.",
+               "learn_name: the one who didn't speak last introduces themselves, and is answered");
+        q.facts["pair.was.goal_learn_name"] = "yes";
+        Conversation d;
+        d.seed = 4;
+        const auto again = talk(d, q);
+        expect(std::none_of(again.begin(), again.end(), [](const SaidLine& l) { return !l.goal.empty(); }),
+               "learn_name done lately between the two: not again");
+    }
+    // 6. A goal no line fits (favour: no pre.request here) is given up, and the talk goes on.
+    {
+        auto q = base();
+        q.a.facts["wealth"] = "poor";
+        q.b.facts["wealth"] = "poor";
+        q.facts["pair.trust"] = "40";
+        Conversation c;
+        c.seed = 4;
+        const auto said = talk(c, q);
+        expect(c.conv["goal_favour"] == "off" && said.size() >= 2 && (c.ended == "farewell" || c.ended == "parted"),
+               "favour: no line, given up; the talk closes as ever: " + c.ended);
+    }
+    // 7. Invitations, promises and what talk says of a third party: parsed, carried on the line, checked.
+    {
+        auto pl = foundation();
+        expect(pl.parse(R"(
+rule ag_inv
+does invite
+invite here 19 2
+say Come by tomorrow?
+rule ag_prom
+does accept
+promise self: healer 2
+say I'll see the healer, I promise.
+rule ag_fiddle
+when concept=talk.day
+binds x=self.neighbour
+when x.said.took_up!=hammer
+does tell.news
+remember x: took_up=fiddle 30d
+say #x.name# has taken up the fiddle.
+)", "pledges.talk", problem), problem);
+        const auto* inv = pl.find("ag_inv");
+        const auto* prom = pl.find("ag_prom");
+        const auto* fid = pl.find("ag_fiddle");
+        expect(inv && inv->invitePlace == "here" && inv->inviteHour == 19 && inv->inviteDays == 2, "an invitation parsed");
+        expect(prom && prom->promiseWhat == "healer" && prom->promiseDays == 2, "a promise parsed");
+        expect(fid && fid->ledger && fid->remember.size() == 1 && fid->remember[0].scope == "x", "a person fact remembered, a callback (x.said)");
+        auto q = moment("talk.day");
+        q.bind = [](const std::string& slot, int, Facts& out) {
+            if (slot != "self.neighbour")
+                return false;
+            out = {{"id", "wick"}, {"name", "Wick"}};
+            return true;
+        };
+        const auto said = pl.render(*fid, q, 1);
+        expect(!said.effects.empty() && said.effects.front().scope == "said" && said.effects.front().owner == "wick|maren" &&
+                   said.effects.front().key == "took_up" && said.effects.front().value == "fiddle" && said.effects.front().days == 30,
+               "remember x: kept as what talk said of the one bound, by the speaker");
+        q.bind = [](const std::string& slot, int, Facts& out) {
+            if (slot != "self.neighbour")
+                return false;
+            out = {{"id", "wick"}, {"name", "Wick"}, {"said.took_up", "hammer"}};
+            return true;
+        };
+        expect(!pl.fits(*fid, q), "what talk said of them before (x.said.took_up=hammer) holds it back");
+        for (const auto& [text, why] : std::vector<std::pair<std::string, std::string>>{
+                 {"rule x1\ndoes invite\ninvite tavern 19 2\nsay Come.", "invite is"},
+                 {"rule x2\ndoes invite\ninvite here 25 2\nsay Come.", "invite is"},
+                 {"rule x3\ndoes accept\npromise other: healer 2\nsay Yes.", "promise is"},
+                 {"rule x4\ndoes accept\npromise self: Healer 2\nsay Yes.", "promise is"},
+                 {"rule x5\nwhen concept=talk.day\nremember x: a=b 1d\nsay Hm.", "nobody bound"},
+                 {"rule x6\nwhen concept=talk.day pair.talked.weather<two\nsay Hm.", "not a number"}})
+        {
+            auto bad = foundation();
+            std::string why2;
+            expect(!bad.parse(text, "bad.talk", why2) && why2.find(why) != std::string::npos, "refused (" + why + "): " + why2);
+        }
+        auto ok = foundation();
+        expect(ok.parse("rule y1\nwhen concept=talk.day pair.talked.weather<2 pair.recall.weather=warmed pair.was.carry=declined self.was.asked=yes "
+                        "other.told_me=theft other.promised=lapsed pair.last_talk<0.3 pair.last_outcome=soured pair.kept_invite=no\nsay Hm.",
+                        "ok.talk", problem),
+               "the ledger's facts are criteria: " + problem);
+        expect(ok.find("y1") && ok.find("y1")->ledger, "a line reading them is a callback");
+        expect(Library::ledgerFact("pair.talked.weather") && Library::ledgerFact("self.was.k") && !Library::ledgerFact("pair.band"),
+               "ledgerFact: the ledger's keys only");
+    }
+}
+
+void opinionsMoodsAccent()
+{
+    // Doc 84 §7.4-7.6, §8.8, §10.6 (Phase 6): stances from a resident's own facts and the events that drift them, likes
+    // held for good, how a trait leans on a move, the town's mood, accommodation, opinions aired and answered as the
+    // stances are, vent, and nothing told twice or said over another's words; pronouns by sex.
+    std::string problem;
+    auto lib = foundation();
+    expect(lib.issues().size() >= 10 && lib.issue("watch") && lib.issue("watch")->words == "the Watch", "opinions.json: the issues");
+    expect(!lib.likeItems().empty() && !lib.temperaments().empty() && lib.moods().size() == 4 && lib.accommodation().on,
+           "likes, temperaments, the four town moods and accommodation load");
+    // opinions.json refused: copied beside the foundation's files, one thing wrong at a time.
+    {
+        namespace fs = std::filesystem;
+        const auto tmp = fs::temp_directory_path() / ("ratw-opinions-" + std::to_string(::getpid()));
+        fs::remove_all(tmp);
+        fs::create_directories(tmp / "grammar");
+        for (const char* f : {"facts.json", "settings.json", "claims.json", "moves.json", "frames.json", "topics.json", "temperaments.json",
+                              "groups.talk"})
+            fs::copy_file(fs::path(Dir) / f, tmp / f);
+        for (const auto& g : fs::directory_iterator(fs::path(Dir) / "grammar"))
+            fs::copy_file(g.path(), tmp / "grammar" / g.path().filename());
+        for (const auto& [text, why] : std::vector<std::pair<std::string, std::string>>{
+                 {R"({"issues": {"watch": {"words": "the Watch", "colour": 1}}})", "no field 'colour'"},
+                 {R"({"issues": {"watch": {"words": "the Watch", "for": [{"when": "here.weather=rain"}]}}})", "the resident's own facts"},
+                 {R"({"issues": {"watch": {"words": "the Watch", "drift": {"robbed_by_moonlight": -1}}}})", "no event the game watches for"},
+                 {R"({"issues": {"watch": {"words": "the Watch", "drift": {"robbed_uncaught": -1}}}})", "needs a reason of its own"},
+                 {R"({"issues": {"watch": {"words": "the Watch", "for": [{"when": "self.role=guard", "why": "nope"}]}}})", "not among its reasons"},
+                 {R"({"issues": {"watch": {"words": "the Watch", "topics": ["weddings"]}}})", "not topics.json's"},
+                 {R"({"likes": {"tea": {"kind": "drink", "words": "tea"}}})", "kind is pastime, food, weather or thing"}})
+        {
+            std::ofstream(tmp / "opinions.json") << text;
+            Library l;
+            std::string why2;
+            expect(!l.loadFoundation(tmp.string(), why2) && why2.find(why) != std::string::npos, "opinions.json refused (" + why + "): " + why2);
+        }
+        std::ofstream(tmp / "temperaments.json") << R"({"leans": {"temper=short": {"shout": 1.5}}})";
+        std::ofstream(tmp / "opinions.json") << "{}";
+        Library l;
+        std::string why2;
+        expect(!l.loadFoundation(tmp.string(), why2) && why2.find("not a move") != std::string::npos, "temperaments.json refused: " + why2);
+        std::ofstream(tmp / "temperaments.json") << R"({"leans": {"temper=short": {"take_offence": 2.5}}})";
+        expect(!l.loadFoundation(tmp.string(), why2) && why2.find("0.3 to 2") != std::string::npos, "a lean is 0.3 to 2: " + why2);
+        fs::remove_all(tmp);
+    }
+    // Stances: from the resident's own facts; a reason true of them; strength the steps it leans; drift a step more.
+    {
+        Facts guard{{"id", "g1"}, {"role", "guard"}, {"class", "middle"}, {"honesty", "plain"}, {"quarter", "commons"}};
+        lib.stances(guard, {});
+        expect(guard["op.watch"] == "for" && guard["op_strength.watch"] == "1" &&
+                   guard["op_why.watch"].find("I walk with them myself") != std::string::npos,
+               "a guard is for the Watch, and says why: " + guard["op_why.watch"]);
+        Facts sly{{"id", "s1"}, {"role", "civilian"}, {"honesty", "sly"}, {"quarter", "sump"}, {"class", "lower"}};
+        lib.stances(sly, {});
+        expect(sly["op.watch"] == "against" && sly["op_strength.watch"] == "2" && sly["op.sump"] == "for", "a sly wolf of the Sump is against the Watch, 2");
+        Facts none{{"id", "n1"}, {"role", "civilian"}};
+        lib.stances(none, {});
+        expect(none["op.watch"] == "mixed" && none["op_strength.watch"] == "0" && !none.count("op_why.watch") && !none.count("op.sump"),
+               "nothing pulling: mixed, no view; no quarter, no view of the Sump at all");
+        lib.stances(none, {{"watch", {-1, "robbed_uncaught"}}});
+        expect(none["op.watch"] == "against" && none["op_drift.watch"] == "-1" &&
+                   none["op_why.watch"] == "they never caught whoever robbed me",
+               "a theft never solved drifts it a step, with the event's own reason");
+        lib.stances(guard, {{"watch", {-2, "robbed_uncaught"}}});
+        expect(guard["op.watch"] == "against", "events can outweigh a lean");
+    }
+    // Likes: the same every time for one wolf; a list fact holds when the list has it.
+    {
+        Facts a{{"id", "ivo"}, {"stage", "adult"}, {"homeless", "no"}, {"role", "civilian"}}, b = a;
+        lib.likes(a);
+        lib.likes(b);
+        expect(!a["likes"].empty() && a["likes"] == b["likes"] && a["dislikes"] == b["dislikes"] && !a["food_words"].empty() &&
+                   !a["dislike_kind"].empty(),
+               "likes held for good: " + a["likes"] + " / " + a["dislikes"]);
+        auto l2 = foundation();
+        const auto first = a["likes"].substr(0, a["likes"].find(' '));
+        expect(l2.parse("rule lk_t\nwhen concept=talk.food self.likes=" + first + "\nsay Mine.\n", "lk.talk", problem), problem);
+        auto q = moment("talk.food");
+        q.a.facts = a;
+        expect(l2.pick(q, 1, None, {}).id == "lk_t", "self.likes=" + first + " holds of one whose list has it");
+        q.a.facts["likes"] = "nothing_else";
+        expect(l2.pick(q, 1, None, {}).id.empty(), "and not of one whose list hasn't");
+    }
+    // Temperaments: a chatty wolf pivots more, a quiet one less; the whole lean held to 0.3-2.
+    {
+        Speaker chatty, quiet, many;
+        chatty.facts = {{"talk", "chatty"}};
+        quiet.facts = {{"talk", "quiet"}};
+        many.facts = {{"talk", "chatty"}, {"drive", "restless"}, {"warmth", "warm"}};
+        expect(std::abs(lib.lean(chatty, "pivot") - 1.4) < 1e-9 && std::abs(lib.lean(quiet, "pivot") - .6) < 1e-9, "pivot: chatty 1.4, quiet 0.6");
+        expect(lib.lean(many, "change_subject") <= 2.0 && std::abs(lib.lean(chatty, "react.news.doubt") - 1) < 1e-9, "held to 2; no lean, 1");
+        Speaker nervy;
+        nervy.facts = {{"temper", "nervy"}};
+        expect(std::abs(lib.lean(nervy, "react.news.doubt") - 1.4) < 1e-9, "a variant's own lean");
+    }
+    // The town's mood and accommodation, worked out for a query.
+    {
+        auto q = moment("talk.smalltalk");
+        q.facts["world.death"] = "recent";
+        q.facts["world.bandits"] = "near";
+        lib.accommodate(q);
+        expect(q.facts["world.mood"] == "grief", "a death in town: grief (the first mood that holds)");
+        q.facts["world.death"] = "no";
+        lib.accommodate(q);
+        expect(q.facts["world.mood"] == "uneasy", "bandits near: uneasy");
+        q.facts["world.bandits"] = "no";
+        lib.accommodate(q);
+        expect(!q.facts.count("world.mood"), "no mood");
+        const auto speaks = [&](const std::string& accentA, const std::string& fromB, Facts pair, Facts b = {}) {
+            auto x = moment("talk.smalltalk");
+            x.a.facts["from"] = "coldwater";
+            x.a.facts["accent"] = accentA;
+            x.a.facts["class"] = "middle";
+            x.b.facts["from"] = fromB;
+            x.b.facts["accent"] = "light";
+            for (const auto& [k, v] : pair)
+                x.facts[k] = v;
+            for (const auto& [k, v] : b)
+                x.b.facts[k] = v;
+            lib.accommodate(x);
+            return x.a.facts["speaks"];
+        };
+        expect(speaks("light", "coldwater", {{"pair.kin", "siblings"}}) == "broad", "a step broader to kin of one's own speech");
+        expect(speaks("light", "larkfield", {{"pair.kin", "siblings"}, {"pair.band", "family"}}) == "light", "not to kin who speak otherwise");
+        expect(speaks("broad", "larkfield", {{"pair.band", "strangers"}}) == "light", "a step plainer to a stranger from elsewhere");
+        expect(speaks("light", "coldwater", {{"pair.band", "acquaintances"}}, {{"class", "upper"}}) == "none", "plainer to one a class above");
+        expect(speaks("none", "coldwater", {{"pair.band", "friends"}}) == "light" && speaks("broad", "coldwater", {{"pair.band", "friends"}}) == "broad",
+               "none rises no higher than light; broad stays broad");
+        {
+            auto x = moment("talk.smalltalk");
+            x.a.facts["from"] = x.b.facts["from"] = "ridgemere";
+            x.a.facts["accent"] = "light";
+            x.facts["pair.kin"] = "siblings";
+            lib.accommodate(x);
+            expect(!x.a.facts.count("speaks"), "Ridgemere's plain speech: no dialect to speak more or less of");
+        }
+        // Spoken in that accent: a broad speaker's dialect words, and the line records the accent it was said in.
+        auto l2 = foundation();
+        expect(l2.parse("rule acc_t\nwhen concept=talk.smalltalk\nsay #greet#.\n", "acc.talk", problem), problem);
+        auto x = moment("talk.smalltalk");
+        x.a.facts["from"] = "coldwater";
+        x.a.facts["accent"] = "none";
+        x.a.grammar = {"coldwater"};
+        x.b.facts["from"] = "coldwater";
+        x.facts["pair.kin"] = "siblings";
+        Conversation c;
+        c.seed = 5;
+        auto first = l2.begin(c, x, Freshness{None, {}});
+        expect(first && first->accent == "light", "the opener records the accent it was spoken in: " + (first ? first->accent : std::string()));
+    }
+    // An opinion in a lull, on a topic its issue comes up on; the answer as the stances are.
+    {
+        auto l2 = foundation();
+        for (const char* f : {"rules/opinions.talk", "rules/turns.talk"})
+        {
+            std::ifstream in(Dir + "/" + f);
+            std::stringstream text;
+            text << in.rdbuf();
+            expect(l2.parse(text.str(), f, problem), std::string(f) + ": " + problem);
+        }
+        expect(l2.parse("rule op_open_crime\nwhen concept=talk.crime\ndoes tell.news\nsay There was a theft by the well.\n"
+                        "rule op_react\ndoes react.news\nsay Was there now.\n", "crime.talk", problem), problem);
+        const auto run = [&](const std::string& sideB, std::uint64_t seed, const char* band = "friends") {
+            auto q = moment("talk.crime");
+            q.facts["pair.band"] = band;
+            q.a.facts["role"] = "guard";
+            q.a.facts["talk"] = "chatty";
+            q.a.facts["honesty"] = "frank";
+            q.b.facts["talk"] = "chatty";
+            if (sideB == "against")
+                q.b.facts["honesty"] = "sly", q.b.facts["quarter"] = "sump", q.b.facts["class"] = "lower";
+            else
+                q.b.facts["role"] = "guard";
+            lib.stances(q.a.facts, {});
+            lib.stances(q.b.facts, {});
+            Conversation c;
+            c.seed = seed;
+            std::vector<SaidLine> said;
+            if (auto f = l2.begin(c, q, Freshness{None, {}}))
+                said.push_back(*f);
+            for (int i = 0; i < 16; ++i)
+                if (auto line = l2.next(c, [&](int, int) { return q; }, Freshness{None, {}}))
+                    said.push_back(*line);
+                else
+                    break;
+            return said;
+        };
+        int aired = 0, answered = 0;
+        for (const auto& side : {"for", "against"})
+            for (std::uint64_t seed = 1; seed <= 30; ++seed)
+            {
+                const auto said = run(side, seed);
+                const auto given = std::find_if(said.begin(), said.end(), [](const SaidLine& l) {
+                    return std::find(l.moves.begin(), l.moves.end(), "give.opinion") != l.moves.end();
+                });
+                if (given == said.end())
+                    continue;
+                ++aired;
+                std::string lowered = given->text;
+                std::transform(lowered.begin(), lowered.end(), lowered.begin(), [](unsigned char ch) { return char(std::tolower(ch)); });
+                expect((given->issue == "watch" && lowered.find("watch") != std::string::npos) ||
+                           (given->issue == "sump" && lowered.find("sump") != std::string::npos),
+                       "an opinion on the Watch or the Sump, on talk of crime: " + given->text);
+                const auto reply = std::next(given);
+                if (reply == said.end() || reply->issue.empty())
+                    continue;
+                ++answered;
+                const bool agrees = std::find(reply->moves.begin(), reply->moves.end(), "agree") != reply->moves.end();
+                const bool differs = std::find(reply->moves.begin(), reply->moves.end(), "disagree") != reply->moves.end();
+                if (given->stance == "mixed" || reply->stance == "mixed")
+                    continue;                       // (Half: either answer may be had from one with no side.)
+                expect(given->stance == reply->stance ? !differs : !agrees,
+                       "answered as the stances are (" + given->stance + " / " + reply->stance + "): " + given->entry + " " + given->issue + " who " +
+                           std::to_string(given->who) + ": " + given->text + " / " + reply->entry + " who " + std::to_string(reply->who) + ": " + reply->text);
+            }
+        expect(aired >= 10 && answered >= 8, "opinions aired and answered: " + std::to_string(aired) + " / " + std::to_string(answered));
+    }
+    // vent: a low mood told to a friend, and sympathy back.
+    {
+        auto l2 = foundation();
+        for (const char* f : {"rules/opinions.talk", "rules/turns.talk"})
+        {
+            std::ifstream in(Dir + "/" + f);
+            std::stringstream text;
+            text << in.rdbuf();
+            expect(l2.parse(text.str(), f, problem), problem);
+        }
+        expect(l2.parse("rule v_open\nwhen concept=talk.weather\ndoes tell.self\nsay Grey again.\n"
+                        "rule v_react\ndoes react.self\nsay So it is.\n", "v.talk", problem), problem);
+        bool vented = false;
+        for (std::uint64_t seed = 1; seed <= 20 && !vented; ++seed)
+        {
+            auto q = moment("talk.weather");
+            q.a.facts["talk"] = q.b.facts["talk"] = "chatty";
+            q.a.facts["mood"] = "low";
+            q.a.facts["mood_why"] = "robbed";
+            Conversation c;
+            c.seed = seed;
+            const auto f = [&](int speaker, int) {
+                auto x = q;
+                if (speaker == 1)
+                    std::swap(x.a, x.b);            // (Each one's own mood: other.mood is the speaker's other.)
+                return q;
+            };
+            std::vector<SaidLine> said;
+            if (auto first = l2.begin(c, q, Freshness{None, {}}))
+                said.push_back(*first);
+            for (int i = 0; i < 12; ++i)
+                if (auto line = l2.next(c, f, Freshness{None, {}}))
+                    said.push_back(*line);
+                else
+                    break;
+            for (std::size_t i = 0; i + 1 < said.size(); ++i)
+                if (said[i].goal == "vent")
+                {
+                    vented = true;
+                    expect(said[i].entry == "md_vent_robbed" && said[i + 1].who == 1, "vent: " + said[i].text);
+                    expect(std::find(said[i + 1].moves.begin(), said[i + 1].moves.end(), "sympathise") != said[i + 1].moves.end() ||
+                               std::find(said[i + 1].moves.begin(), said[i + 1].moves.end(), "reassure") != said[i + 1].moves.end(),
+                           "and the friend sympathises: " + said[i + 1].text);
+                }
+        }
+        expect(vented, "a low mood is vented to a friend");
+    }
+    // Never told again, never another's words over: the engine refuses them (Freshness::told, ::collides).
+    {
+        auto l2 = foundation();
+        expect(l2.parse("rule t_tell\nwhen concept=talk.gossip\ndoes tell.gossip\nasserts\nsay Osric wed Signe, I hear.\n"
+                        "rule t_story\nwhen concept=talk.lore\ndoes tell.story\nsay My gran swore the river talks, and it does.\n"
+                        "rule t_story2\nwhen concept=talk.lore\ndoes tell.story\nsay The old mill wheel turns by itself at night.\n",
+                        "t.talk", problem), problem);
+        auto q = moment("talk.gossip");
+        q.facts["topic.claim_kind"] = "marriage";
+        Freshness told{None, {}};
+        told.told = [](const std::string& listener, const std::string& what) { return listener == "ivo" && what == "claim:signe|wed"; };
+        Conversation c;
+        c.claim = "signe|wed";
+        expect(!l2.begin(c, q, told) && c.ended == "told", "a claim the listener was told is never told them again");
+        Conversation c2;
+        c2.claim = "signe|other";
+        expect(l2.begin(c2, q, told).has_value(), "another claim is");
+        auto lore = moment("talk.lore");
+        Freshness heard{None, {}};
+        heard.told = [](const std::string&, const std::string& what) { return what == "story:t_story"; };
+        for (std::uint64_t seed = 1; seed <= 10; ++seed)
+        {
+            Conversation s;
+            s.seed = seed;
+            const auto first = l2.begin(s, lore, heard);
+            expect(first && first->entry == "t_story2", "a story the listener heard is never told them again");
+        }
+        Freshness over{None, {}};
+        over.collides = [](const std::string& words, const std::string& speaker) {
+            return speaker == "maren" && words == "My gran swore the river talks, and it does.";   // (Another said it here.)
+        };
+        for (std::uint64_t seed = 1; seed <= 10; ++seed)
+        {
+            Conversation s;
+            s.seed = seed;
+            const auto first = l2.begin(s, lore, over);
+            expect(first && first->entry == "t_story2", "another's distinctive words said here within the hour are passed over");
+        }
+    }
+    // Pronouns by sex: a topic's subject and victim, one's own people.
+    {
+        auto l2 = foundation();
+        expect(l2.parse("rule p_t\nwhen concept=talk.gossip\nsay #topic.subject# lost #topic.their# purse. #topic.victim_they.capitalize# saw it.\n"
+                        "rule p_s\nwhen concept=talk.family\nsay #self.spouse# sends #self.spouse_their# best.\n", "p.talk", problem), problem);
+        auto q = moment("talk.gossip");
+        q.facts["topic.subject"] = "Finn Dripwick";
+        q.facts["topic.subject_sex"] = "male";
+        q.facts["topic.victim"] = "Signe Sootwell";
+        q.facts["topic.victim_sex"] = "female";
+        const auto said = l2.pick(q, 1, None, {});
+        expect(!said.lines.empty() && said.lines[0].second == "Finn Dripwick lost his purse. She saw it.", "pronouns by sex: " +
+               (said.lines.empty() ? std::string() : said.lines[0].second));
+        auto f = moment("talk.family");
+        f.a.facts["spouse"] = "Osric Wetford";
+        f.a.facts["spouse_sex"] = "male";
+        const auto s2 = l2.pick(f, 1, None, {});
+        expect(!s2.lines.empty() && s2.lines[0].second == "Osric Wetford sends his best.", "one's spouse by sex");
+        f.a.facts.erase("spouse_sex");
+        expect(l2.pick(f, 1, None, {}).id.empty(), "never 'their' for one wolf: no sex, no line");
+    }
+}
+
+void sharedLinesTwo()
+{
+    // Doc 84 §33.3 (Phase 8, session 2): a step along the graph said by a line made for it (a `pivot` move line, conv.from
+    // the topic it leaves), else #pivot#; a word in the opener's breath that the two were on this lately (a `recall`
+    // line, half the time one holds), a callback; and an everyday view or pushback left unsaid once one of the realm's
+    // issues is aired.
+    std::string problem;
+    auto lib = foundation();
+    expect(lib.parse(R"(
+rule s2_open_prices
+when concept=talk.prices
+does tell.complaint
+say Herbs are dear this week.
+rule s2_agree
+does react.complaint
+say They are that.
+rule s2_open_caravan
+when concept=talk.caravan
+does tell.news
+say The wagon from #topic.where# is late.
+rule s2_react_news
+does react.news
+say Is it now.
+rule s2_bye
+does farewell
+say Farewell.
+rule s2_bye_back
+does farewell.return
+say And you.
+rule s2_step
+does pivot
+when conv.from=prices conv.topic=caravan
+say And it all comes in by wagon.
+rule s2_step_wrong
+does pivot
+when conv.from=weather conv.topic=caravan
+say Weather or no, the wagons.
+rule s2_recall
+does recall
+when conv.topic=prices pair.talked.prices<3
+say Prices again. It's all anyone talks of.
+rule s2_view
+does give.opinion
+say Somebody's doing well out of it.
+rule s2_stance
+does give.opinion
+when conv.issue=merchants self.stance=against
+say The merchants never go short.
+)", "shared2.talk", problem), problem);
+    const Freshness fresh{None, {}};
+    const auto base = [&] {
+        auto q = moment("talk.prices");
+        q.facts["topic.cause"] = "caravan";
+        for (auto* s : {&q.a, &q.b})
+            s->facts["talk"] = "chatty";
+        return q;
+    };
+    const auto talk = [&](Conversation& c, const Query& q) {
+        std::vector<SaidLine> said;
+        if (auto first = lib.begin(c, q, fresh))
+            said.push_back(*first);
+        for (int i = 0; i < 20; ++i)
+            if (auto line = lib.next(c, [&](int, int) { return q; }, fresh))
+                said.push_back(*line);
+            else
+                break;
+        return said;
+    };
+    // 1. The pivot from prices to the caravan is said by the line made for that step, in front of the new opener.
+    {
+        AgendaItem i;
+        i.kind = "news";
+        i.topic = "caravan";
+        i.claim = "caravan";
+        i.concept = "talk.caravan";
+        i.facts = {{"topic.where", "Coldwater"}};
+        i.urgency = 1.6;
+        i.index = 4;
+        const auto q = base();
+        Conversation c;
+        c.seed = 3;
+        c.agenda = {{i}, {}};
+        const auto said = talk(c, q);
+        const auto turned = std::find_if(said.begin(), said.end(), [](const SaidLine& l) {
+            return !l.moves.empty() && l.moves.front() == "pivot";
+        });
+        expect(turned != said.end() && turned->text == "And it all comes in by wagon. The wagon from Coldwater is late.",
+               "the step's own line before the opener: " + (turned == said.end() ? std::string("(no pivot)") : turned->text));
+        expect(std::none_of(said.begin(), said.end(), [](const SaidLine& l) { return l.text.find("Weather or no") != std::string::npos; }),
+               "never another step's line");
+    }
+    // 2. Recall: with the two on prices two days ago, the opener sometimes says so in its breath, and is a callback;
+    // never when they haven't talked of it.
+    {
+        int recalled = 0, plain = 0;
+        for (std::uint64_t seed = 1; seed <= 40; ++seed)
+        {
+            auto q = base();
+            q.facts["pair.talked.prices"] = "2.00";
+            q.facts["pair.last_talk"] = "2.00";
+            Conversation c;
+            c.seed = seed;
+            const auto said = talk(c, q);
+            if (said.empty())
+                continue;
+            if (said.front().text.rfind("Prices again. It's all anyone talks of. ", 0) == 0)
+            {
+                ++recalled;
+                expect(said.front().moves.front() == "recall" && said.front().callback, "a recall leads the opener, a callback");
+            }
+            else if (said.front().text.find("Prices again") == std::string::npos)
+                ++plain;
+        }
+        expect(recalled >= 8 && plain >= 8, "recalled about half the time: " + std::to_string(recalled) + " of 40");
+        auto q = base();
+        Conversation c;
+        c.seed = 5;
+        const auto said = talk(c, q);
+        expect(!said.empty() && said.front().text.find("Prices again") == std::string::npos, "no recall without the ledger");
+    }
+    // 3. Once an issue is aired, the everyday view is left unsaid; the stance line, written for it, isn't.
+    {
+        auto q = base();
+        Conversation c;
+        c.seed = 9;
+        c.people = {"maren", "ivo"};
+        c.conv["issue"] = "merchants";
+        q.facts["conv.issue"] = "merchants";
+        q.a.facts["stance"] = "against";
+        q.b.facts["stance"] = "against";
+        Conversation::Open o;
+        o.moves = {"give.opinion"};
+        bool everyday = false;
+        for (int k = 0; k < 30; ++k)
+        {
+            c.seed = std::uint64_t(k + 1);
+            const auto s = lib.answer(c, o, q, 0, fresh, nullptr);
+            everyday = everyday || (!s.info.empty() && s.info.front().text == "Somebody's doing well out of it.");
+        }
+        expect(!everyday, "an everyday view is left unsaid in an issue's talk");
+        c.conv.erase("issue");
+        q.facts.erase("conv.issue");
+        const auto s = lib.answer(c, o, q, 0, fresh, nullptr);
+        expect(!s.info.empty() && s.info.front().text == "Somebody's doing well out of it.", "and said where none is");
+    }
+}
+
+
+// Doc 84 §35 (Slice 2's review): the engine never gives a player a line; two of a side air an issue and agree; a reason
+// is said once a talk; a goal under way finishes; the library's lines say true things of who says them and when.
+// Slice 3 (Docs/Design/84 §36): what the first blind ratings asked of the engine, and what a critic's read found.
+void sliceThree()
+{
+    std::string problem;
+    const Freshness fresh{None, {}};
+    // 1. One exchange, and the two part without ceremony; two exchanges, and the farewell pair.
+    {
+        auto lib = foundation();
+        expect(lib.parse("scene s3_one\nwhen topic=work\na : The bellows leak.\nb : Patch them.\na : With what?\n"
+                         "rule s3_bye\ndoes farewell\nsay Farewell.\nrule s3_bye_back\ndoes farewell.return\nsay And you.\n",
+                         "s3_one.talk", problem), problem);
+        const auto one = lib.converse(moment("talk.work"), 1, None, {});
+        expect(one.lines.size() == 3 && one.ended == "parted", "one exchange: they part (" + one.ended + ")");
+        auto two = foundation();
+        expect(two.parse("scene s3_two\nwhen topic=work\na : The bellows leak.\nb : Patch them.\na : With what?\nb : Leather.\n"
+                         "rule s3_bye\ndoes farewell\nsay Farewell.\nrule s3_bye_back\ndoes farewell.return\nsay And you.\n",
+                         "s3_two.talk", problem), problem);
+        const auto said = two.converse(moment("talk.work"), 1, None, {});
+        expect(said.lines.size() == 6 && said.ended == "farewell" && said.lines[4].second == "Farewell.",
+               "two exchanges: the farewell pair (" + said.ended + ")");
+    }
+    // 2. "Back again?" now and then before small talk; never before a crime, a line that echoes it, or beside a recall.
+    {
+        auto lib = foundation();
+        expect(lib.parse("rule s3_again\ndoes again.open\nwhen pair.last_talk<0.3\nsay Back again?\n"
+                         "rule s3_small\nwhen concept=talk.smalltalk\ndoes tell.self\nsay The swallows are nesting.\n"
+                         "rule s3_echo\nwhen concept=talk.weather\ndoes tell.self\nsay The rain's back.\n"
+                         "rule s3_crime\nwhen concept=talk.crime\ndoes tell.news\nsay Somebody broke the bakery window.\n"
+                         "rule s3_recall\ndoes recall\nwhen conv.topic=smalltalk pair.talked.smalltalk<3\nsay We were on this lately.\n",
+                         "s3_again.talk", problem), problem);
+        int small = 0, crime = 0, echo = 0, both = 0;
+        for (std::uint64_t seed = 1; seed <= 200; ++seed)
+        {
+            auto q = moment("talk.smalltalk");
+            q.facts["pair.last_talk"] = "0.1";
+            const auto a = lib.converse(q, seed, None, {});
+            small += a.lines.front().second.rfind("Back again? ", 0) == 0;
+            q.concept = "talk.crime";
+            crime += lib.converse(q, seed, None, {}).lines.front().second.rfind("Back again?", 0) == 0;
+            q.concept = "talk.weather";
+            echo += lib.converse(q, seed, None, {}).lines.front().second.rfind("Back again?", 0) == 0;
+            q.concept = "talk.smalltalk";
+            q.facts["pair.talked.smalltalk"] = "0.1";
+            const auto r = lib.converse(q, seed, None, {}).lines.front().second;
+            both += r.find("Back again?") != std::string::npos && r.find("lately") != std::string::npos;
+        }
+        expect(small > 10 && small < 80, "before small talk, now and then: " + std::to_string(small) + " of 200");
+        expect(crime == 0 && echo == 0 && both == 0, "never before a crime (" + std::to_string(crime) + "), an echo (" +
+                                                          std::to_string(echo) + "), nor beside a recall (" + std::to_string(both) + ")");
+    }
+    // 3. A resident's own words that name the hour are passed over at another: "Morning to you" never at night.
+    {
+        auto lib = foundation();
+        expect(lib.setGrammar("p_s3", "grammar p_s3\ngreet = Morning to you; the loaves are honest\n", problem), problem);
+        expect(lib.parse("rule s3_hi\nwhen concept=talk.smalltalk\ndoes tell.self\nsay #greet#. Quiet in here.\n", "s3_hi.talk", problem), problem);
+        auto q = moment("talk.smalltalk");
+        q.a.grammar = {"p_s3"};
+        int mine = 0;
+        for (std::uint64_t seed = 1; seed <= 40; ++seed)
+        {
+            q.facts["here.time"] = "night";
+            q.facts["here.hour"] = "21";
+            expect(lib.converse(q, seed, None, {}).lines.front().second.rfind("Morning", 0) != 0, "never Morning at nine at night");
+            q.facts["here.time"] = "dawn";
+            q.facts["here.hour"] = "6";
+            mine += lib.converse(q, seed, None, {}).lines.front().second.rfind("Morning to you", 0) == 0;
+        }
+        expect(mine == 40, "her own words at dawn: " + std::to_string(mine));
+    }
+    // 4. One who joins for the pleasure of the talk cuts in before the answer; the one spoken to still answers.
+    {
+        auto lib = foundation();
+        expect(lib.parse("rule s3_news\nwhen concept=talk.crime\ndoes tell.news\nsay Somebody broke the bakery window.\n"
+                         "rule s3_react\ndoes react.news\nsay Did they, now.\n"
+                         "rule s3_join\ndoes join.add\nsay Don't let me stop you.\n"
+                         "rule s3_welcome\ndoes welcome_join\nsay Pull up a stool.\n", "s3_join.talk", problem), problem);
+        auto q = moment("talk.crime");
+        q.a.facts["talk"] = q.b.facts["talk"] = "chatty";
+        const auto wren = person("wren", "Wren", "female", "adult", "baker", "civilian");
+        const auto query = [&](int speaker, int to) {
+            if (speaker < 2 && to < 2)
+                return q;
+            auto x = q;
+            const auto who = [&](int i) { return i == 0 ? q.a : i == 1 ? q.b : wren; };
+            x.a = who(speaker);
+            x.b = who(to);
+            return x;
+        };
+        Conversation c;
+        c.seed = 5;
+        lib.begin(c, q, fresh);
+        const auto joined = lib.join(c, "wren", "favourite", {"join.add"}, query(2, 0), fresh);
+        expect(joined && joined->who == 2, "she cuts in");
+        bool answered = false;
+        for (int i = 0; i < 8; ++i)
+            if (const auto l = lib.next(c, query, fresh))
+                answered = answered || (l->who == 1 && l->text == "Did they, now.");
+            else
+                break;
+        expect(answered, "and the one spoken to still answers the news");
+    }
+    // 5. A preclose taken, the goodbye is a goodbye ("Back to it." / "Go on, then." / never "I'll let you be.").
+    {
+        auto lib = foundation();
+        expect(lib.parse("scene s3_long\nwhen topic=work\na : One.\nb : Two.\na : Three.\nb : Four.\n"
+                         "rule s3_pre\ndoes preclose\nsay Back to it.\nrule s3_pre_ok\ndoes accept_preclose\nsay Go on, then.\n"
+                         "rule s3_both\ndoes preclose farewell\nsay I'll let you be.\n"
+                         "rule s3_bye\ndoes farewell\nsay Farewell.\nrule s3_bye_back\ndoes farewell.return\nsay And you.\n",
+                         "s3_long.talk", problem), problem);
+        auto q = moment("talk.work");
+        q.a.facts["talk"] = q.b.facts["talk"] = "chatty";
+        int closed = 0;
+        for (std::uint64_t seed = 1; seed <= 40; ++seed)
+        {
+            const auto said = lib.converse(q, seed, None, {});
+            for (std::size_t i = 1; i < said.lines.size(); ++i)
+                if (said.lines[i - 1].second == "Go on, then.")
+                {
+                    ++closed;
+                    expect(said.lines[i].second == "Farewell.", "after the preclose taken, a goodbye: " + said.lines[i].second);
+                }
+        }
+        expect(closed > 0, "preclosed talks: " + std::to_string(closed));
+    }
+}
+
+void sliceTwoReview()
+{
+    std::string problem;
+    // 1. A keeper's greeting to a customer: the engine never answers it for the player (§13).
+    {
+        auto lib = foundation();
+        expect(lib.parse("rule s2r_cust\nwhen concept=react.customer\ndoes greet\nsay Hello there. Mind where you tread.\n"
+                         "rule s2r_back\ndoes greet.return\nsay Hello there.\n", "s2r.talk", problem), problem);
+        auto q = moment("react.customer");
+        int resident = 0;
+        for (std::uint64_t seed = 1; seed <= 40; ++seed)
+        {
+            q.b.player = false;
+            resident += lib.converse(q, seed, None, {}).lines.size() == 2;
+            q.b.player = true;
+            const auto said = lib.converse(q, seed, None, {});
+            expect(said.lines.size() == 1 && said.lines.front().first == 0, "a player's wolf is never made to greet back");
+        }
+        expect(resident > 0, "a resident greeted greets back, now and then (" + std::to_string(resident) + " of 40)");
+        auto f = moment("react.customer");
+        f.b.facts["player"] = "yes";                // (talk_check's way of saying so.)
+        expect(lib.converse(f, 3, None, {}).lines.size() == 1, "nor by the facts' player=yes");
+    }
+    // 1b. An echo never asks the same question twice ("I know, no?" / "I know, no?": C6).
+    {
+        auto lib = foundation();
+        expect(lib.setGrammar("s2r_tags", "grammar s2r_tags\nbc_i_know = I know, no? | Don't I know it.\n", problem), problem);
+        expect(lib.parse("scene s2r_echo\nwhen topic=smalltalk\na : That camp's still there.\nb : #bc_i_know#\na : #bc_i_know#\n",
+                         "s2r_echo.talk", problem), problem);
+        auto q = moment("talk.smalltalk");
+        q.a.grammar = q.b.grammar = {"s2r_tags"};
+        int asked = 0;
+        for (std::uint64_t seed = 1; seed <= 60; ++seed)
+        {
+            const auto said = lib.converse(q, seed, None, {});
+            if (said.lines.size() >= 3 && said.lines[1].second == "I know, no?")
+            {
+                ++asked;
+                expect(said.lines[2].second != "I know, no?", "the echo isn't the same question again");
+            }
+        }
+        expect(asked > 0, "the question form was said (" + std::to_string(asked) + ")");
+    }
+    // 2-3. Opinions: two guards both for the Watch air it to each other and agree; a reason is said once a talk.
+    {
+        auto lib = foundation();
+        for (const char* f : {"rules/opinions.talk", "rules/turns.talk"})
+        {
+            std::ifstream in(Dir + "/" + f);
+            std::stringstream text;
+            text << in.rdbuf();
+            expect(lib.parse(text.str(), f, problem), std::string(f) + ": " + problem);
+        }
+        expect(lib.parse("rule op_open_crime\nwhen concept=talk.crime\ndoes tell.news\nsay There was a theft by the well.\n"
+                         "rule op_react\ndoes react.news\nsay Was there now.\n", "crime.talk", problem), problem);
+        int same = 0, agreed = 0, repeats = 0;
+        for (const bool differ : {false, true})
+            for (std::uint64_t seed = 1; seed <= 60; ++seed)
+            {
+                auto q = moment("talk.crime");
+                q.a.facts["role"] = "guard";
+                q.a.facts["class"] = "upper";            // (Two reasons for the Watch: the guard's, the upper class's.)
+                q.a.facts["talk"] = q.b.facts["talk"] = "chatty";
+                if (differ)
+                    q.b.facts["honesty"] = "sly", q.b.facts["quarter"] = "sump", q.b.facts["class"] = "lower";
+                else
+                    q.b.facts["role"] = "guard";
+                lib.stances(q.a.facts, {});
+                lib.stances(q.b.facts, {});
+                Conversation c;
+                c.seed = seed;
+                std::vector<SaidLine> said;
+                if (auto first = lib.begin(c, q, Freshness{None, {}}))
+                    said.push_back(*first);
+                for (int i = 0; i < 16; ++i)
+                    if (auto line = lib.next(c, [&](int, int) { return q; }, Freshness{None, {}}))
+                        said.push_back(*line);
+                    else
+                        break;
+                std::map<std::string, int> sentences;
+                for (const auto& l : said)
+                {
+                    std::size_t from = 0;
+                    for (std::size_t at = 0; at <= l.text.size(); ++at)
+                        if (at == l.text.size() || ((l.text[at] == '.' || l.text[at] == '!') && (at + 1 == l.text.size() || l.text[at + 1] == ' ')))
+                        {
+                            auto one = l.text.substr(from, at - from);
+                            while (!one.empty() && one.front() == ' ')
+                                one.erase(one.begin());
+                            if (std::count(one.begin(), one.end(), ' ') >= 5 && one.find("couldn't help hearing") == std::string::npos)
+                            {
+                                one[0] = char(std::tolower(static_cast<unsigned char>(one[0])));
+                                repeats += ++sentences[one] > 1;
+                            }
+                            from = at + 1;
+                        }
+                }
+                if (differ)
+                    continue;
+                const auto given = std::find_if(said.begin(), said.end(), [](const SaidLine& l) {
+                    return std::find(l.moves.begin(), l.moves.end(), "give.opinion") != l.moves.end() && l.issue == "watch";
+                });
+                if (given == said.end())
+                    continue;
+                ++same;
+                const auto reply = std::next(given);
+                if (reply != said.end() && std::find(reply->moves.begin(), reply->moves.end(), "agree") != reply->moves.end())
+                    ++agreed;
+                expect(reply == said.end() || std::find(reply->moves.begin(), reply->moves.end(), "disagree") == reply->moves.end(),
+                       "two of a side never disagree: " + given->text + " / " + (reply == said.end() ? std::string() : reply->text));
+            }
+        expect(same >= 5 && agreed >= 3, "two guards air the Watch to each other and agree (" + std::to_string(same) + " aired, " +
+                                             std::to_string(agreed) + " agreed)");
+        expect(repeats == 0, "no reason said twice in a talk (" + std::to_string(repeats) + ")");
+    }
+    // 4. A favour asked: once begun, the asking comes before the goodbyes, however short the budget.
+    {
+        auto lib = foundation();
+        expect(lib.parse(R"(
+rule s2r_open
+when concept=talk.smalltalk
+does tell.self
+say Quiet day.
+rule s2r_ack
+does react.self
+say So it is.
+rule s2r_pre
+does pre.request
+when conv.goal=favour
+say Have you a moment? I've a favour to ask.
+rule s2r_go
+does go_ahead
+say What is it?
+rule s2r_ask
+does request
+when conv.goal=favour
+say Could you spare me a loaf till Restday?
+rule s2r_grant
+does grant
+say Of course.
+rule s2r_decline
+does decline
+say I can't, I'm sorry.
+rule s2r_no_matter
+does accept_decline
+say No matter.
+rule s2r_bye
+does farewell
+say Farewell.
+rule s2r_bye_back
+does farewell.return
+say And you.
+)", "s2r_favour.talk", problem), problem);
+        int asked = 0, begun = 0;
+        for (std::uint64_t seed = 1; seed <= 80; ++seed)
+        {
+            auto q = moment("talk.smalltalk");
+            q.a.facts["wealth"] = q.b.facts["wealth"] = "poor";
+            q.a.facts["talk"] = q.b.facts["talk"] = "quiet";
+            q.facts["pair.trust"] = "30";
+            Conversation c;
+            c.seed = seed;
+            std::vector<std::string> said;
+            if (auto first = lib.begin(c, q, Freshness{None, {}}))
+                said.push_back(first->entry);
+            for (int i = 0; i < 16; ++i)
+                if (auto line = lib.next(c, [&](int, int) { return q; }, Freshness{None, {}}))
+                    said.push_back(line->entry);
+                else
+                    break;
+            const auto pre = std::find(said.begin(), said.end(), "s2r_pre");
+            if (pre == said.end())
+                continue;
+            ++begun;
+            asked += std::find(pre, said.end(), "s2r_ask") != said.end();
+        }
+        expect(begun > 0 && asked == begun, "a favour begun is asked (" + std::to_string(asked) + " of " + std::to_string(begun) + ")");
+    }
+    // 4b. No recall said in the breath of an opener that is a callback itself ("Prices again. ... Prices again.").
+    {
+        auto lib = foundation();
+        expect(lib.parse(R"(
+rule s2r_cb_open
+when concept=talk.prices pair.talked.prices<3
+does tell.complaint
+say Prices again. You'd think they'd settle.
+rule s2r_recall
+does recall
+when conv.topic=prices pair.talked.prices<3
+say Prices again. It's all anyone talks of.
+)", "s2r_recall.talk", problem), problem);
+        for (std::uint64_t seed = 1; seed <= 40; ++seed)
+        {
+            auto q = moment("talk.prices");
+            q.facts["pair.talked.prices"] = "1";
+            Conversation c;
+            c.seed = seed;
+            const auto first = lib.begin(c, q, Freshness{None, {}});
+            expect(first && first->text == "Prices again. You'd think they'd settle.", "a callback opener says it once: " +
+                                                                                           (first ? first->text : std::string()));
+        }
+    }
+    // 5. The real library.
+    {
+        Library lib;
+        expect(lib.load(Dir, problem), "the library loads: " + problem);
+        lib.setHybrid(false);
+        // An opener that says the claim passes it on (gs_secret: "Don't tell a soul, but X stole..."; the listener was
+        // marked told and never held it).
+        for (const auto& e : lib.entries())
+        {
+            if (e.turns.empty() || e.asserts == 0 || e.asserts == Entry::NeverAsserts || e.id.rfind("dlg.", 0) == 0)
+                continue;                           // (The window's lines are said to a player: no claim passes there.)
+            const bool says = std::any_of(e.turns[0].variants.begin(), e.turns[0].variants.end(), [](const Variant& v) {
+                return std::any_of(v.texts.begin(), v.texts.end(), [](const std::string& t) { return t.find("#topic.claim#") != std::string::npos; });
+            });
+            const bool byMove = !e.does.empty() && std::any_of(e.does[0].begin(), e.does[0].end(), [&](const std::string& m) {
+                const auto* mv = lib.moves().find(m);
+                return mv && mv->asserts;
+            });
+            expect(!says || byMove, e.id + " says the topic's claim in its first line and passes it on (asserts)");
+        }
+        // Greetings and goodbyes by the hour: no "Morning" after noon, no "Good day" at night.
+        auto q = moment("talk.smalltalk");
+        q.facts["here.time"] = "day";
+        q.facts["here.hour"] = "15";
+        for (std::uint64_t seed = 0; seed < 200; ++seed)
+        {
+            std::string out;
+            expect(lib.expand("#greet#", q, 0, seed, out) && out.rfind("Morning", 0) != 0, "no Morning at three: " + out);
+        }
+        q.facts["here.time"] = "night";
+        q.facts["here.hour"] = "21";
+        q.facts["pair.band"] = "strangers";
+        for (const char* sym : {"#farewell#", "#good_day#", "#s8_bye#", "#s8_byeback#", "#tonight#"})
+            for (std::uint64_t seed = 0; seed < 100; ++seed)
+            {
+                std::string out;
+                expect(lib.expand(sym, q, 0, seed, out) && out.find("Good day") == std::string::npos && out.find("today") == std::string::npos,
+                       std::string(sym) + " at night: " + out);
+            }
+        // Lines true of who says them.
+        const auto fits = [&](const char* id, const Query& x) {
+            const auto* e = lib.find(id);
+            expect(e != nullptr, std::string(id) + " is in the library");
+            return e && lib.fits(*e, x);
+        };
+        auto pupil = moment("talk.smalltalk");
+        pupil.a.facts["stage"] = "young";
+        pupil.a.facts["job"] = "child";
+        pupil.a.facts["working"] = "yes";
+        expect(!fits("cv_pre_work", pupil) && fits("cv_pre_school", pupil), "a pupil at school isn't earning their keep");
+        auto keeper = moment("talk.smalltalk");
+        keeper.facts["here.time"] = "night";
+        keeper.a.facts["job"] = "innkeeper";
+        keeper.a.facts["working"] = "yes";
+        expect(!fits("s8t_bye_leave_night", keeper) && !fits("s8t_bye_leave_dusk", keeper), "the innkeeper at work isn't off home");
+        keeper.a.facts["job"] = "baker";
+        keeper.a.facts["working"] = "no";
+        expect(fits("s8t_bye_leave_night", keeper), "one free to go may say so, at night");
+        keeper.facts["here.time"] = "dusk";
+        expect(!fits("s8t_bye_leave_night", keeper) && fits("s8t_bye_leave_dusk", keeper), "bed only once it's night; home at dusk");
+        auto death = moment("talk.crime");
+        death.facts["conv.from"] = "crime";
+        death.facts["conv.topic"] = "life";
+        death.facts["topic.kind"] = "death";
+        expect(!fits("s8p_crime_life", death) && fits("s8p_crime_life_grave", death), "a death is never the better news");
+        auto home = moment("moment.close");
+        home.facts["conv.m7"] = "home";
+        home.b.facts["home_here"] = "yes";
+        expect(!fits("m7_close_home", home), "never a long way from home to one born where they stand");
+        auto porter = moment("talk.ships");
+        porter.facts["topic.kind"] = "due";
+        porter.facts["topic.ship"] = "the Wavecutter";
+        porter.a.facts["wealth"] = "poor";
+        porter.a.facts["stage"] = "young";
+        porter.a.facts["job"] = "child";
+        porter.a.facts["role"] = "civilian";
+        expect(!fits("s83s_due_porter", porter), "a pup doesn't carry cargo at the pier");
+        porter.a.facts["stage"] = "adult";
+        porter.a.facts["job"] = "labourer";
+        expect(fits("s83s_due_porter", porter), "a poor labourer does");
+        // Stances: no wage reason from a pup, no jar among friends from an eleven-year-old.
+        Facts pup = {{"stage", "young"}, {"job", "child"}, {"wealth", "poor"}, {"class", "lower"}, {"role", "civilian"},
+                     {"humour", "merry"}};
+        lib.stances(pup, {});
+        for (const auto& [k, v] : pup)
+            if (k.rfind("op_why", 0) == 0)
+                expect(v.find("paid") == std::string::npos && v.find("worked my whole life") == std::string::npos &&
+                           v.find("a jar among friends") == std::string::npos,
+                       "a pup's reason is a pup's: " + k + ": " + v);
+    }
+}
+
+// Doc 84 §37, the hybrid (the user, 2026-11-17): the engine decides what is said; a written scene carries the talk; only
+// its edges are stitched line by line.
+void hybridTalk()
+{
+    std::string problem;
+    const auto hybrid = [] {
+        auto lib = foundation();
+        lib.setHybrid(true);
+        return lib;
+    };
+    // 1. A whole scene that fits carries the talk, whatever a single line's score; a rule only where no scene fits.
+    {
+        const char* text = "scene hy_t_scene\nwhen topic=work\na : The bellows leak.\nb : Patch them.\na : With what?\nb : Leather.\n"
+                           "rule hy_t_rule\nwhen concept=talk.work self.job=baker here.place=market self.stage=adult\ndoes tell.self\nsay Flour in everything.\n"
+                           "rule hy_t_back\ndoes react.self\nsay There's always something.\n"
+                           "rule hy_t_bye\ndoes farewell\nsay Farewell.\nrule hy_t_bye_back\ndoes farewell.return\nsay And you.\n";
+        auto on = hybrid();
+        expect(on.parse(text, "hy_t.talk", problem), problem);
+        auto off = foundation();
+        expect(off.parse(text, "hy_t.talk", problem), problem);
+        int scenes = 0, rules = 0;
+        for (std::uint64_t seed = 1; seed <= 60; ++seed)
+        {
+            scenes += on.converse(moment("talk.work"), seed, None, {}).id == "hy_t_scene";
+            rules += off.converse(moment("talk.work"), seed, None, {}).id == "hy_t_rule";
+        }
+        expect(scenes == 60, "the hybrid: a whole scene carries every talk it fits (" + std::to_string(scenes) + " of 60)");
+        expect(rules > 30, "line by line, the higher-scoring rule opened most (" + std::to_string(rules) + " of 60)");
+        auto none = hybrid();
+        expect(none.parse("rule hy_t_rule\nwhen concept=talk.work\ndoes tell.self\nsay Flour in everything.\n"
+                          "rule hy_t_back\ndoes react.self\nsay There's always something.\n", "hy_t2.talk", problem), problem);
+        const auto ex = none.converse(moment("talk.work"), 1, None, {});
+        expect(ex.lines.size() == 2 && ex.info[0].part == "exchange" && ex.info[1].part == "exchange",
+               "no scene fits: a short exchange (" + std::to_string(ex.lines.size()) + " lines)");
+        // The scene played as written, then the goodbyes: no "There's always something." stitched after "Leather.".
+        const auto said = on.converse(moment("talk.work"), 3, None, {});
+        expect(said.lines.size() == 6 && said.lines[3].second == "Leather." && said.lines[4].second == "Farewell." &&
+                   said.info[0].part == "scene" && said.info[4].part == "close",
+               "the scene as written, then its goodbyes (" + std::to_string(said.lines.size()) + " lines)");
+    }
+    // 2. Past the body, a direct question it owes is answered at the edge (a scene owes only what is written).
+    {
+        auto lib = hybrid();
+        expect(lib.parse("scene hy_q\nwhen topic=work\ndoes tell.self / ask.detail\nowes other: answer.detail\na : The bellows leak.\nb : Since when?\n"
+                         "rule hy_q_answer\ndoes answer.detail\nsay Since Restday.\n", "hy_q.talk", problem), problem);
+        const auto said = lib.converse(moment("talk.work"), 1, None, {});
+        expect(said.lines.size() == 3 && said.lines[2].second == "Since Restday." && said.info[2].part == "edge",
+               "a question the scene ends on is answered at the edge");
+    }
+    // 3. Nobody twice running outside a scene: a scene of five lines ends on a, and b says the goodbye.
+    {
+        auto lib = hybrid();
+        expect(lib.parse("scene hy_five\nwhen topic=work\na : One.\nb : Two.\na : Three.\nb : Four.\na : Five.\n"
+                         "rule hy_t_bye\ndoes farewell\nsay Farewell.\nrule hy_t_bye_back\ndoes farewell.return\nsay And you.\n"
+                         "rule hy_t_pre\ndoes preclose\nsay I'd best be off.\nrule hy_t_pre_ok\ndoes accept_preclose\nsay Off you go.\n",
+                         "hy_five.talk", problem), problem);
+        for (std::uint64_t seed = 1; seed <= 20; ++seed)
+        {
+            const auto said = lib.converse(moment("talk.work"), seed, None, {});
+            expect(said.lines.size() > 5, "the five-line scene and its goodbyes");
+            for (std::size_t i = 1; i < said.info.size(); ++i)
+                expect(said.info[i].who != said.info[i - 1].who || said.info[i].entry == said.info[i - 1].entry,
+                       "nobody speaks twice running but as a scene is written: " + said.lines[i].second);
+        }
+    }
+    // 4. A parallel line never answers past a speaker's own line chosen by their kind: the scene ends on that line.
+    {
+        const char* text = "scene hy_kind\nwhen topic=work\na : The bellows leak. | The forge is cold.\n"
+                           "b[old] : In my day we had no bellows.\nb : Patch them. | Light it.\na : With what? | With what?\n";
+        auto on = hybrid();
+        expect(on.parse(text, "hy_kind.talk", problem), problem);
+        auto off = foundation();
+        expect(off.parse(text, "hy_kind.talk", problem), problem);
+        auto q = moment("talk.work");
+        q.b.facts["stage"] = "old";
+        expect(on.converse(q, 1, None, {}).lines.size() == 2, "the hybrid: the scene ends on the old wolf's own line");
+        expect(off.converse(q, 1, None, {}).lines.size() == 3, "line by line, the parallel line answered past it");
+    }
+    // 5. The game's authored exchange is a body too: said as written, then nothing stitched on but the goodbyes.
+    {
+        auto lib = hybrid();
+        expect(lib.parse("rule hy_w_op\nwhen concept=talk.smalltalk\ndoes give.opinion\nsay The Houses keep the works going.\n"
+                         "rule hy_w_inv\ndoes invite\nsay Come by tomorrow evening?\n", "hy_w.talk", problem), problem);
+        Conversation c;
+        c.seed = 1;
+        Said written;
+        written.lines = {{0, "A quiet day, for once."}, {1, "It is at that."}};
+        const auto q = moment("talk.smalltalk");
+        const auto facts = [&](int, int) { return q; };
+        int said = lib.beginWith(c, q, written) ? 1 : 0;
+        while (lib.next(c, facts, Freshness{None, {}}))
+            ++said;
+        expect(said == 2, "the authored exchange, and nothing stitched after it (" + std::to_string(said) + " lines)");
+    }
+    // 6. The real library: every talk of two on a topic keeps the hybrid's rules.
+    {
+        Library lib;
+        expect(lib.load(Dir, problem), "the library loads: " + problem);
+        expect(lib.settings().hybrid, "settings.json plays the hybrid");
+        int talks = 0, bodies = 0, stitchedPast = 0;
+        for (const char* concept : {"talk.work", "talk.food", "talk.smalltalk", "talk.weather", "talk.memories", "talk.pastimes",
+                                    "talk.faith", "talk.animals", "talk.home", "talk.health"})
+            for (std::uint64_t seed = 1; seed <= 40; ++seed)
+            {
+                const auto said = lib.converse(moment(concept), seed, None, {});
+                if (said.info.empty())
+                    continue;
+                ++talks;
+                bodies += said.info.front().part == "scene";
+                int edges = 0;
+                for (std::size_t i = 0; i < said.info.size(); ++i)
+                {
+                    const auto& l = said.info[i];
+                    edges += l.part == "edge" || (l.part == "exchange" && i > 0);
+                    if (i > 0)
+                        expect(l.who != said.info[i - 1].who || l.entry == said.info[i - 1].entry,
+                               std::string(concept) + ": twice running outside a scene: " + said.lines[i].second);
+                    for (const auto& m : l.moves)
+                        expect(m != "pivot" && m != "change_subject" && m != "give.opinion" && m != "pre.request" && m != "extend",
+                               std::string(concept) + ": a lull's " + m + " in the hybrid: " + said.lines[i].second);
+                }
+                stitchedPast += edges > 2;
+            }
+        expect(talks > 300 && bodies * 10 >= talks * 9, "whole scenes carry the everyday talk: " + std::to_string(bodies) + " of " +
+                                                          std::to_string(talks));
+        expect(stitchedPast == 0, "never more than two lines stitched past the body: " + std::to_string(stitchedPast));
+    }
+}
+
 int main()
 {
     try
@@ -1248,6 +3335,15 @@ int main()
         theForbiddenWord();
         theCountrysVoices();
         truthFixes();
+        movesAndTags();
+        turnEngine();
+        beatsWhenSpoken();
+        agendasAndGoals();
+        opinionsMoodsAccent();
+        sharedLinesTwo();
+        sliceTwoReview();
+        sliceThree();
+        hybridTalk();
     }
     catch (const std::exception& error)
     {

@@ -1,0 +1,477 @@
+# The shared lines, Phase 8 session 3 (Docs/Design/84 §33, §14.1's thin topics): a newcomer in town (talk.newcomer),
+# 52 openers before this phase. The openers carry the concept (§33.1); none hands on, so they're answered by what
+# answers tell.news on the topic (the move lines below: session 1's newcomer answers read topic.claim_kind, which the
+# town's news doesn't set).
+#
+# The facts (Core/RatwAmbient.cpp World::sceneTopics, the town's news): topic.kind=newcomer, topic.subject (the
+# newcomer's name), topic.subject_sex (#topic.they#, #topic.them#, #topic.their#); one come to live in the town, from
+# another town or in from the Country. Never told to them, their kin or their household.
+#
+# The rules they keep: nothing claimed of the newcomer the game didn't give (no "bought a round", "asked about the
+# well", "smells of pine", "came with a cartload": what the teller means to do, or thinks, or has heard said, is theirs
+# to say); never "they" for the one newcomer; who says it by the grammar, what about by the criteria (the teller's
+# trade, lot and age, the two of them, the place, the town).
+
+## ================================================================ Any newcomer
+
+rule s83c_new_1
+when concept=talk.newcomer
+does tell.news
+cooldown 1d
+say #s8_heard# There's someone new in town. #topic.subject#. | A new face. #topic.subject#, #topic.they#'s called. | #topic.subject#'s come to live here.
+
+rule s83c_new_2
+when concept=talk.newcomer
+does tell.news
+cooldown 1d
+say Have you met #topic.subject# yet? New in town. | We've a newcomer. #topic.subject#. | #topic.subject#. That's the name of the new one.
+
+rule s83c_new_3
+when concept=talk.newcomer
+does tell.news
+cooldown 1d
+say #topic.subject#'s moved here, I'm told. | Somebody new's settled in. #topic.subject#. | #hearsay#. #topic.subject#'s new in town.
+
+rule s83c_new_4
+when concept=talk.newcomer
+does tell.news
+cooldown 1d
+say #topic.subject#'s the new one. You'll be seeing #topic.them# about. | Remember the name. #topic.subject#. New here. | You'll not know #topic.subject# yet. Nobody does.
+
+rule s83c_new_5
+when concept=talk.newcomer
+does tell.news
+cooldown 1d
+say A newcomer. #topic.subject#. I wonder what brought #topic.them#. | #topic.subject#'s just come. I wonder if #topic.they#'ll stay. | #topic.subject#. New in town, and nobody knows a thing about #topic.them#.
+
+rule s83c_new_6
+when concept=talk.newcomer
+does tell.news
+cooldown 1d
+say There's a #stranger# settled in. #topic.subject#. | #topic.subject#'s new. Be kind, if you see #topic.them#. | #topic.subject#'s arrived. #marvel#.
+
+rule s83c_new_7
+when concept=talk.newcomer
+does tell.news
+cooldown 1d
+say Did you know there's a new one? #topic.subject#. | Folk are talking about #topic.subject#. New in town. | #topic.subject#'s moved in. That's the talk today.
+
+rule s83c_new_8
+when concept=talk.newcomer
+does tell.news
+cooldown 1d
+say We've one more, as of this week. #topic.subject#. | New blood. #topic.subject#. | #topic.subject#. Just come, and already the talk of the place.
+
+## ================================================================ By the teller's nature (the grammar carries most; these are the plain feelings)
+
+rule s83c_warm
+when concept=talk.newcomer self.warmth=warm
+does tell.news
+cooldown 1d
+say I mean to call on #topic.subject#. Being new is lonely. | #topic.subject#'s new here. I'll make sure #topic.they# has somewhere to eat on Restday. | Let's not leave #topic.subject# on #topic.their# own. New is hard.
+
+rule s83c_cold
+when concept=talk.newcomer self.warmth=cold
+does tell.news
+cooldown 1d
+say Another one. #topic.subject#. We're full enough. | #topic.subject#'s moved in. I'll reserve my judgement. | #topic.subject#. Nobody asked me if we wanted more.
+
+rule s83c_nervy
+when concept=talk.newcomer self.temper=nervy
+does tell.news
+cooldown 1d
+say #topic.subject#'s new here. I don't know anything about #topic.them#. Do you? | A new one. #topic.subject#. I'll be polite, but I'll lock up. | #topic.subject#. I'm sure #topic.they#'s perfectly nice. I'm sure.
+
+## ================================================================ By trade
+
+rule s83c_merchant
+when concept=talk.newcomer self.role=merchant
+does tell.news
+cooldown 1d
+say A newcomer means a new customer. #topic.subject#. | #topic.subject#'ll want a pot and a blanket, I'd wager. I've both. | I'll make sure #topic.subject# knows where my stall is.
+
+rule s83c_merchant2
+when concept=talk.newcomer self.role=merchant
+does tell.news
+cooldown 1d
+say #topic.subject#'s new. I hope #topic.they# isn't in my trade. | Has #topic.subject# got coin, I wonder. New folk usually need everything. | #topic.subject#. First thing I'll ask is what #topic.they# needs.
+
+rule s83c_keeper
+when concept=talk.newcomer self.job=innkeeper|brewer
+does tell.news
+cooldown 1d
+say #topic.subject#'s new here. First cup's on me, when #topic.they# comes in. | A newcomer always finds the tavern first. #topic.subject#. | I'll see #topic.subject# at my bar before the week's out.
+
+rule s83c_cook
+when concept=talk.newcomer self.job=cook|baker
+does tell.news
+cooldown 1d
+say #topic.subject#'s new. I'll send round a loaf. | Newcomers need feeding. #topic.subject#, is it? | A new mouth in town. #topic.subject#. I'll bake an extra.
+
+rule s83c_guard
+when concept=talk.newcomer self.job=guard|soldier
+does tell.news
+cooldown 1d
+say #topic.subject#, the new one. I'll learn #topic.their# face. Habit. | A newcomer. #topic.subject#. Nothing against #topic.them#, but I watch new faces. | #topic.subject#'s moved in. The Watch likes to know who's who.
+
+rule s83c_priest
+when concept=talk.newcomer self.job=priest
+does tell.news
+cooldown 1d
+say I'll go and welcome #topic.subject#. The chapel's door is open to everyone. | #topic.subject#'s new among us. I'll name #topic.them# in the prayers. | A new soul in town. #topic.subject#. I hope #topic.they# finds us kind.
+
+rule s83c_healer
+when concept=talk.newcomer self.job=healer
+does tell.news
+cooldown 1d
+say If #topic.subject# needs a healer, I'll be the first #topic.they# meets. | #topic.subject#'s new. Travel's hard on the joints. I'll look in. | New folk catch every cough going in the first winter. #topic.subject#'s no different, I expect.
+
+rule s83c_crafter
+when concept=talk.newcomer self.job=smith|crafter
+does tell.news
+cooldown 1d
+say #topic.subject#'s new. If #topic.they# has a trade, I'd like to know it. | A newcomer. Good. I could use another pair of paws. | #topic.subject#. I wonder if #topic.they# can swing a hammer.
+
+rule s83c_laborer
+when concept=talk.newcomer self.job=laborer|miner|servant|carter
+does tell.news
+cooldown 1d
+say Another pair of paws after the same work. #topic.subject#. | #topic.subject#'s new. I hope #topic.they# isn't after my job. | #topic.subject#. We'll see if #topic.they# can keep up.
+
+rule s83c_farmer
+when concept=talk.newcomer self.job=farmer|herder
+does tell.news
+cooldown 1d
+say #topic.subject#'s new in town. Not a farmer, I'd guess. Newcomers never are. | A newcomer. #topic.subject#. If #topic.they#'s willing, there's always work in the fields. | #topic.subject#. The town grows, and the fields stay the same size.
+
+rule s83c_fisher
+when concept=talk.newcomer self.job=fisher|sailor
+does tell.news
+cooldown 1d
+say #topic.subject#'s new. Bet #topic.they# can't row. | A newcomer. #topic.subject#. The water will teach #topic.them# soon enough. | #topic.subject#. Somebody should take #topic.them# out on the water.
+
+## ================================================================ By lot and age
+
+rule s83c_rich
+when concept=talk.newcomer self.wealth=rich
+does tell.news
+cooldown 1d
+say One hears there's a newcomer. #topic.subject#. Of good family, one hopes. | #topic.subject#. Nobody seems to know who #topic.their# people are. | A newcomer. #topic.subject#. One will send a note.
+
+rule s83c_poor
+when concept=talk.newcomer self.wealth=poor|destitute
+does tell.news
+cooldown 1d
+say #topic.subject#'s new. I hope #topic.they#'s not as #skint# as the rest of us. | A newcomer. #topic.subject#. I hope #topic.they# brought coin. Nobody here's got any. | #topic.subject#. New in town and already counting pennies, I'd wager.
+
+rule s83c_old
+when concept=talk.newcomer self.stage=old
+does tell.news
+cooldown 1d
+say #topic.subject#. Another name to remember, at my age. | New ones every season now. #topic.subject#. | In my day a newcomer was news for a month. #topic.subject#.
+
+rule s83c_old2
+when concept=talk.newcomer self.stage=old
+does tell.news
+cooldown 1d
+say #topic.subject#'s moved in. I was new once, you know. Long ago. | A newcomer. #topic.subject#. I hope #topic.they# stays. Too many leave. | #topic.subject#. I'll be civil. I'm always civil.
+
+rule s83c_young
+when concept=talk.newcomer self.stage=young
+does tell.news
+cooldown 1d
+say There's a new wolf! #topic.subject#! | Do you know #topic.subject#? #topic.they.capitalize#'s new! | #topic.subject# is new. I want to say hello.
+
+rule s83c_adolescent
+when concept=talk.newcomer self.stage=adolescent
+does tell.news
+cooldown 1d
+say So there's someone new. #topic.subject#. That's something, at least. | #topic.subject#'s new. Finally, a face I haven't seen a thousand times. | Somebody new. #topic.subject#. Nothing ever happens here, so that's big.
+
+## ================================================================ By the two of them
+
+rule s83c_neighbours
+when concept=talk.newcomer pair.neighbours=yes
+does tell.news
+cooldown 1d
+say We've a newcomer near us, I hear. #topic.subject#. | #topic.subject#'s new. We should knock and say hello. | Let's take #topic.subject# something. Neighbours should.
+
+rule s83c_friends
+when concept=talk.newcomer pair.band=friends|family|spouses
+does tell.news
+cooldown 1d
+say Shall we ask #topic.subject# round? #topic.they.capitalize#'s new. | #topic.subject#'s new in town. You and me should be the first to say hello. | Have you met the newcomer? #topic.subject#. Let's go together.
+
+rule s83c_friends2
+when concept=talk.newcomer pair.band=friends|family|spouses
+does tell.news
+cooldown 1d
+say #topic.subject#, the new one. What do you make of #topic.them#? | You'll have heard of #topic.subject#. I can't make up my mind. | #topic.subject#'s new. You're good with new folk. I'm not.
+
+rule s83c_strangers
+when concept=talk.newcomer pair.band=strangers|acquaintances
+does tell.news
+cooldown 1d
+say There's a newcomer, you know. #topic.subject#. | #topic.subject#'s just come to live here. | You'll have heard of #topic.subject#, I expect. New in town.
+
+rule s83c_newself
+when concept=talk.newcomer self.from!=ridgemere here.region=ridgemere
+does tell.news
+cooldown 1d
+say #topic.subject#'s new to the city. I remember my first week. Dreadful. | Another one from the country, maybe. #topic.subject#. The city takes everyone. | #topic.subject#. I hope someone shows #topic.them# where things are. Nobody showed me.
+
+## ================================================================ By the place and the town
+
+rule s83c_tavern
+when concept=talk.newcomer here.place=tavern
+does tell.news
+cooldown 1d
+say If #topic.subject# comes in, buy #topic.them# a cup. #topic.they.capitalize#'s new. | Everyone here's talking of #topic.subject#. The new one. | #topic.subject#'s new. This is where #topic.they#'ll meet folk, if anywhere.
+
+rule s83c_market
+when concept=talk.newcomer here.place=market
+does tell.news
+cooldown 1d
+say Every stall's asking who #topic.subject# is. The newcomer. | #topic.subject#'s new. The market will find out everything by noon. | #topic.subject#, the new one. Has anyone sold #topic.them# anything yet?
+
+rule s83c_chapel
+when concept=talk.newcomer here.place=chapel
+does tell.news
+cooldown 1d
+say We should make #topic.subject# welcome here. #topic.they.capitalize#'s new in town. | #topic.subject#'s new among us. A prayer for #topic.them# wouldn't hurt. | There's a newcomer. #topic.subject#. I hope we'll see #topic.them# here.
+
+rule s83c_work
+when concept=talk.newcomer here.place=work
+does tell.news
+cooldown 1d
+say Did you hear? There's a new one in town. #topic.subject#. | #topic.subject#'s new. Maybe #topic.they#'s looking for work. | A newcomer. #topic.subject#. Somebody'll take #topic.them# on.
+
+rule s83c_street
+when concept=talk.newcomer here.place=street|gate
+does tell.news
+cooldown 1d
+say If you pass #topic.subject#, say good day. #topic.they.capitalize#'s new. | #topic.subject#. New. The streets here are a puzzle to anyone new. | You'll see #topic.subject# about. The new one.
+
+rule s83c_city
+when concept=talk.newcomer here.region=ridgemere
+does tell.news
+cooldown 1d
+say Another one come to the city. #topic.subject#. | The city swallows them up. #topic.subject#'s the latest. | #topic.subject#. New to the city. I give #topic.them# a month before #topic.they# stops staring at the towers.
+
+rule s83c_city2
+when concept=talk.newcomer here.region=ridgemere
+does tell.news
+cooldown 1d
+say #topic.subject#'s come to Ridgemere. Good luck to #topic.them#. | A new one in the city. #topic.subject#. Every road ends here. | #topic.subject#. One more face in the crowd.
+
+rule s83c_town
+when concept=talk.newcomer here.region=towns
+does tell.news
+cooldown 1d
+say A newcomer in #here.town#! #topic.subject#. That doesn't happen often. | #topic.subject#'s come to #here.town#. The whole place is curious. | #topic.subject#. New. In a place this size, that's news for a week.
+
+rule s83c_town2
+when concept=talk.newcomer here.region=towns
+does tell.news
+cooldown 1d
+say #topic.subject#'s settled in #here.town#. Brave, or lost. | A new face in #here.town#. #topic.subject#. | Everybody in #here.town# knows by now. #topic.subject#'s moved here.
+
+rule s83c_winter
+when concept=talk.newcomer here.season=winter
+does tell.news
+cooldown 1d
+say #topic.subject#'s come in the dead of winter. Hard time to arrive. | A newcomer, and in this cold. #topic.subject#. I hope #topic.they# has a warm bed. | #topic.subject#. Winter's no time to be new somewhere.
+
+rule s83c_spring
+when concept=talk.newcomer here.season=spring|summer
+does tell.news
+cooldown 1d
+say #topic.subject#'s come at the right time. Warm days ahead. | A newcomer with the good weather. #topic.subject#. | #topic.subject#'s new. Good season for it.
+
+## ================================================================ More ways in: the trade, the times, the town's own country
+
+rule s83c_servant
+when concept=talk.newcomer self.job=servant
+does tell.news
+cooldown 1d
+say The kitchens are all asking about #topic.subject#. The new one. | #topic.subject#'s new. I hope #topic.they# isn't after a place in service. | A newcomer, #topic.subject#. Below stairs we hear everything first.
+
+rule s83c_carter
+when concept=talk.newcomer self.job=carter
+does tell.news
+cooldown 1d
+say #topic.subject#'s new. Came by the road, I expect, like everyone. | A newcomer. #topic.subject#. If #topic.they# needs anything carried, I'm the one. | #topic.subject#. New. The roads bring all sorts.
+
+rule s83c_apprentice
+when concept=talk.newcomer self.job=apprentice
+does tell.news
+cooldown 1d
+say #topic.subject#'s new here. Maybe #topic.they#'ll be an apprentice too. | A newcomer. #topic.subject#. Finally someone newer than me. | #topic.subject#. I know how it feels, being the new one.
+
+rule s83c_beggar
+when concept=talk.newcomer self.job=beggar
+does tell.news
+cooldown 1d
+say A newcomer. #topic.subject#. Maybe #topic.they#'s a kind one. | #topic.subject#'s new. Fresh faces are often kind ones. | #topic.subject#. I'll be civil. You never know.
+
+rule s83c_official
+when concept=talk.newcomer self.job=official|noble
+does tell.news
+cooldown 1d
+say There's a newcomer to enter in the rolls. #topic.subject#. | #topic.subject#'s settled here, one gathers. | A new name. #topic.subject#. One must make the proper introductions.
+
+rule s83c_parent
+when concept=talk.newcomer self.parent=yes
+does tell.news
+cooldown 1d
+say #topic.subject#'s new. I wonder if #topic.they# has pups. Mine need playmates. | A newcomer. #topic.subject#. I'll tell the little ones to be polite. | #topic.subject#. New. I'll bring the pups round to say hello.
+
+rule s83c_home
+when concept=talk.newcomer here.place=home
+does tell.news
+cooldown 1d
+say We could have #topic.subject# round one evening. #topic.they.capitalize#'s new. | #topic.subject#'s new. There's room at our table. | Shall we ask the new one in? #topic.subject#.
+
+rule s83c_field
+when concept=talk.newcomer here.place=field|wild|shore
+does tell.news
+cooldown 1d
+say There's a new one in town. #topic.subject#. | Out here you'd not know, but #topic.subject#'s new in town. | #topic.subject#'s moved in. I heard before I came out.
+
+rule s83c_rain
+when concept=talk.newcomer here.outdoors=rain|storm
+does tell.news
+cooldown 1d
+say Some welcome for #topic.subject#, this weather. #topic.they.capitalize#'s new. | #topic.subject#'s new. Picked a grey week to arrive. | A newcomer in this wet. #topic.subject#. Poor timing.
+
+rule s83c_hard
+when concept=talk.newcomer world.times=hard|lean
+does tell.news
+cooldown 1d
+say A newcomer, in times like these. #topic.subject#. | #topic.subject#'s new. Hard times to start somewhere. | #topic.subject#. I hope #topic.they# brought savings.
+
+rule s83c_good
+when concept=talk.newcomer world.times=good|boom
+does tell.news
+cooldown 1d
+say Good times bring new folk. #topic.subject#'s the latest. | #topic.subject#'s new. Plenty of work about, at least. | A newcomer. #topic.subject#. Picked a good season to come.
+
+rule s83c_festival
+when concept=talk.newcomer world.festival=today|soon
+does tell.news
+cooldown 1d
+say #topic.subject#'s new. Just in time for the festival. | We should bring #topic.subject# to the festival. #topic.they.capitalize#'s new. | A newcomer and a festival. #topic.subject# will meet everyone at once.
+
+rule s83c_coldwater
+when concept=talk.newcomer here.region=coldwater
+does tell.news
+cooldown 1d
+say #topic.subject#'s come to the lake. We'll see if #topic.they# can stand the cold water. | A newcomer on the shore. #topic.subject#. | #topic.subject#'s new. The lake will make a Coldwater wolf of #topic.them#, or send #topic.them# off.
+
+rule s83c_frost
+when concept=talk.newcomer here.region=frosthollow
+does tell.news
+cooldown 1d
+say #topic.subject#'s come up the Pass. Brave, with winter in the hills. | A newcomer in Frosthollow. #topic.subject#. The snow will tell. | #topic.subject#. New. Somebody show #topic.them# how to bank a fire.
+
+rule s83c_lark
+when concept=talk.newcomer here.region=larkfield
+does tell.news
+cooldown 1d
+say A newcomer to Larkfield. #topic.subject#. Trader, I'd bet. | #topic.subject#'s new. Larkfield's market will have #topic.their# measure by noon. | #topic.subject#. New here. Hope #topic.they# brought coin.
+
+rule s83c_fens
+when concept=talk.newcomer here.region=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say #topic.subject#'s new. Somebody tell #topic.them# about the soft mud. | A newcomer to the fens. #topic.subject#. Wet feet till spring. | #topic.subject#. New. We'll learn #topic.them# the boards.
+
+rule s83c_oak
+when concept=talk.newcomer here.region=oakhaven
+does tell.news
+cooldown 1d
+say #topic.subject#'s come to the Rainwood. Hope #topic.they# likes rain. | A newcomer under the oaks. #topic.subject#. | #topic.subject#. New. The wood takes its time with strangers.
+
+rule s83c_south
+when concept=talk.newcomer here.region=southmeadow
+does tell.news
+cooldown 1d
+say A newcomer. #topic.subject#. Another pair of paws for the harvest, maybe. | #topic.subject#'s come to Southmeadow. Good soil, good folk. | #topic.subject#. New. Somebody take #topic.them# gleaning.
+
+rule s83c_salt
+when concept=talk.newcomer here.region=saltwell
+does tell.news
+cooldown 1d
+say #topic.subject#'s come across the Waste. Brave. | A newcomer in Saltwell. #topic.subject#. Show #topic.them# the wells. | #topic.subject#. New. The heat will tell.
+
+rule s83c_reserved
+when concept=talk.newcomer self.warmth=reserved
+does tell.news
+cooldown 1d
+say #topic.subject#'s new. I'll nod, and see. | A newcomer. #topic.subject#. Time will tell. | #topic.subject#. New. I'll not rush to judge.
+
+rule s83c_merry
+when concept=talk.newcomer self.humour=merry
+does tell.news
+cooldown 1d
+say A newcomer! #topic.subject#! Fresh ears for all my old stories. | #topic.subject#'s new. Somebody who hasn't heard my jokes. | Ha! A new one. #topic.subject#. Let's see if #topic.they# laughs.
+
+rule s83c_dry
+when concept=talk.newcomer self.humour=dry
+does tell.news
+cooldown 1d
+say #topic.subject#'s moved here. Of #topic.their# own free will, apparently. | A newcomer. #topic.subject#. Nobody warned #topic.them#, then. | #topic.subject#. New. Give it a week.
+
+rule s83c_devout
+when concept=talk.newcomer self.piety=devout
+does tell.news
+cooldown 1d
+say #topic.subject#'s new. I'll ask #topic.them# to Restday prayers. | A newcomer. #topic.subject#. The Bright One brought #topic.them#, I expect. | #topic.subject#. New. We should make #topic.them# welcome, as we'd want.
+
+rule s83c_young2
+when concept=talk.newcomer self.stage=young here.place=street|market|gate
+does tell.news
+cooldown 1d
+say I'm going to find the new wolf! #topic.subject#! | Have you seen #topic.subject#? #topic.they.capitalize#'s new! | #topic.subject# is new. Is #topic.they# nice?
+
+## ================================================================ The answers (move lines: any tell.news on the newcomer topic)
+
+rule s83c_re_1
+does react.news.new
+when conv.topic=newcomer
+say A newcomer? #marvel#. | New, is it? | I'll keep an eye out. | I hope #topic.they# stays. | #topic.subject#. I'll remember.
+
+rule s83c_re_2
+does react.news
+when conv.topic=newcomer
+say We'll see what #topic.they#'s like. | Good. The place could use new faces. | I'll say hello if I see #topic.them#. | New folk always find their feet.
+
+rule s83c_re_warm
+does react.news
+when conv.topic=newcomer self.warmth=warm
+say We should take #topic.them# something. | Poor thing. New is hard. | I'll ask #topic.them# to supper. | Let's make #topic.them# welcome.
+
+rule s83c_re_cold
+does react.news
+when conv.topic=newcomer self.warmth=cold
+say Hm. Another one. | #bc_we_will_see# | As long as #topic.they# keeps to #topic.themself#. | Nobody asked me.
+
+rule s83c_re_merchant
+does react.news
+when conv.topic=newcomer self.role=merchant
+say Then I've a new customer. | I'll mind my prices for #topic.them#. Fair ones. | New folk need everything. Good.
+
+rule s83c_re_old
+does react.news
+when conv.topic=newcomer self.stage=old
+say I'll not remember the name. | They come and they go. | Another face. Well, well.
+
+rule s83c_re_young
+does react.news
+when conv.topic=newcomer self.stage=young|adolescent
+say A new wolf! I want to meet #topic.them#! | I want to see #topic.them#. | Ooh. I'll go and look!
+
+rule s83c_re_guard
+does react.news
+when conv.topic=newcomer self.job=guard|soldier
+say I'll make sure the Watch knows the name. | New faces. I'll keep an eye. | Noted.

@@ -5,6 +5,7 @@
 
 scene kn_mix_elder_pup_street
 when topic=smalltalk a.stage=old b.stage=young pair.band=acquaintances|strangers
+does tell.self / react.self / tell.self / react.self / assess
 a : Mind where you're running, pup! | Whose pup are you? | Don't throw stones at the hens.
 b : Sorry! | The tanner's. | They threw them first.
 a : Sorry doesn't mend old bones. | I know your mother. Behave. | Hens don't throw stones.
@@ -13,15 +14,18 @@ a : Run somewhere else. | That's why. | Go on with you.
 
 scene kn_mix_teen_elder_respect
 when topic=smalltalk a.stage=adolescent b.stage=old pair.band=acquaintances|strangers
+does ask.detail / answer.detail / ask.detail / answer.detail / assess / assess
+tone even / grave / even / even / even / even
 a : Can I carry that for you? | Do you need a paw with that door? | Is it true you remember the old king?
 b : I'm not dead yet. But yes. | It sticks. Push it with your shoulder. | I remember his funeral. Long, dull, rainy.
 a : There. Where to? | There. | Was he a good king?
 b : Home. Slowly. I'll tell you stories. | Good pup. | He was a king. That's all they ever are.
 a : Long ones? | Any time. | That's not an answer.
-b : The longest. | Good. | It's the only true one.
+b : The longest. | #bc_good# | It's the only true one.
 
 scene kn_mix_old_strangers
 when topic=smalltalk a.stage=old b.stage=old pair.band=strangers|acquaintances
+does tell.self / react.self / tell.self / react.self
 a : Cold for the season. | The young have no respect anymore. | My knees say rain.
 b : It was colder in my day. | They never did. We didn't either. | Mine say storm.
 a : Everything was, in our day. | Speak for yourself. I was a delight. | Yours are more honest.
@@ -31,14 +35,16 @@ b : Colder and better. | I'm sure. | Older, anyway.
 
 scene kn_fr_storm_shelter
 when topic=friends here.weather=storm|rain
+does tell.self / react.self / assess / assess / assess
 a : Come in out of that, you'll drown. | You look like a drowned rat. | Shake off outside, please!
 b : Thank you. It's the end of days out there. | Thank you. That's how I feel. | Too late. Sorry.
 a : Sit by the fire. | Here. A blanket. | You've soaked the whole doorway.
 b : You're a good friend. | It smells of goat. | I'll mop it.
-a : I know. | It is goat. Lie on it. | With what?
+a : #bc_i_know# | It is goat. Lie on it. | With what?
 
 scene kn_fr_snow_day
 when topic=friends here.weather=snow
+does tell.self / react.self / tell.self / react.self / assess
 a : Snow's too deep to work. | Fancy a walk in it? | The pups are out pelting the watch with snowballs.
 b : Best news all week. | Only if you break the trail. | Bright One bless them.
 a : Then we've the whole day. | I always break the trail. | The watch is throwing back.
@@ -47,6 +53,7 @@ a : At the tavern. | It's scenic. | And I know which side I'm on.
 
 scene kn_fr_fog
 when topic=friends here.weather=fog
+does tell.self / react.self / tell.self / react.self
 a : I nearly walked into the well. | I could barely see my own tail this morning. | Is that you? I thought you were a cart.
 b : Follow your nose, not your eyes. | Then smell your way. | Do I look like a cart?
 a : My nose found the baker's instead. | It found the midden. | In this fog, everyone does.
@@ -56,6 +63,7 @@ b : Better than the well. | Worse than the well. | Charming.
 
 scene kn_q_late_again
 when topic=quarrel|friends
+does tell.self / react.self / assess / assess / assess
 a : You're late. Again. | I waited an hour at the well. | You said dawn. It's noon.
 b : I'm here now. | Something came up. | Dawn's a feeling.
 a : An hour after now. | Something always does. | Noon is a fact.
@@ -64,6 +72,7 @@ a : You're not one of them. | It will. | Fine.
 
 scene kn_q_borrowed_broken
 when topic=quarrel
+does challenge / counter / assess / assess / assess
 a : You broke my cart. | You gave back my axe with a nick in it. | My cloak's torn. You borrowed it.
 b : It was old. | It was blunt anyway. | It was torn when you gave it me.
 a : It was working. | It was sharp when I lent it! | It was whole!
@@ -72,6 +81,7 @@ a : Fix it or pay. | Sharpen it, then. | Mend it.
 
 scene kn_q_loud_neighbour
 when topic=quarrel
+does challenge / counter / assess / assess / assess
 a : Your pups woke the whole street. | Do you have to sing at midnight? | The hammering. Every morning. Before dawn.
 b : They're pups. Pups make noise. | I sing when I'm happy. | I work before dawn.
 a : Not that much noise. | Be happy quieter. | Then work quieter.
@@ -80,24 +90,27 @@ a : Stuff a sock in them. | So's my temper. | Neither am I.
 
 scene kn_q_cheated_bones
 when topic=quarrel here.place=tavern
+does challenge / counter / assess / assess / assess
 a : You cheated. I saw your paw. | Those bones are weighted. | That's the third six in a row.
 b : I don't cheat. | They're my lucky bones. | I'm lucky tonight.
 a : You cheated last week. | Lucky with lead in them. | Nobody's that lucky.
 b : I won last week. | Weigh them yourself. | I am. Pay up.
-a : We're done playing. | I will. | Never.
+a : We're done playing. | #bc_i_will# | #bc_never#
 
 # ---------------------------------------------------------------- Family, the seasons
 
 scene kn_fam_spring_clean
 when topic=family pair.band=family|spouses here.season=spring here.place=home
+does tell.self / react.self / tell.self / react.self / tell.self
 a : Spring cleaning. Everything out. | We're shedding everywhere. Get the brush. | Air the bedding. It smells of winter.
 b : Everything? Even the cat? | Brush yourself. | Winter smells like home.
 a : The cat first. | I can't reach my back. | Winter smells like old wolf.
 b : She'll never forgive us. | Fine. Turn round. | ...Fine. Air it.
-a : She never forgives us anyway. | Harder. Ah. There. | Thank you.
+a : She never forgives us anyway. | Harder. Ah. There. | #bc_thank_you#
 
 scene kn_fam_summer_harvest_kids
 when topic=family pair.band=family here.season=summer|autumn a.stage=adult b.stage=young|adolescent
+does tell.self / react.self / tell.self / react.self / assess
 a : Everyone helps with the harvest. Even you. | Carry the water to the field. | Stop eating the berries before they reach the basket.
 b : My paws are too small. | It's so heavy. | I'm checking they're good.
 a : Small paws pick small things. Go. | Half a bucket, then. | Are they?
@@ -106,6 +119,7 @@ a : Good pup. | Then make two trips. | Basket.
 
 scene kn_fam_autumn_stores
 when topic=family pair.band=family|spouses here.season=autumn
+does tell.self / react.self / assess / assess / assess
 a : We need more stored for winter. | The smokehouse is full. Good. | Did you salt the last of the meat?
 b : We've as much as last year. | Full and stinking. | Most of it.
 a : Last year we ran short. | Stinking means full. | Most isn't all.
@@ -114,35 +128,39 @@ a : A lot more. | Winter we can face. | Before it turns.
 
 scene kn_fam_winter_hearth
 when topic=family pair.band=family here.season=winter here.time=dusk|night here.place=home
+does tell.self / react.self / assess / assess / assess
 a : Everyone in close. Save the wood. | Tell the pups a story. | Whose turn is it to sleep by the door?
 b : Close as cubs. | Which one? | Not mine.
 a : That's how we survive. | The one about the winter wolf. | Everyone says that.
 b : Warmest way. | They'll never sleep after. | Because it's true.
-a : It is. | They never sleep anyway. | It's yours.
+a : #bc_it_is# | They never sleep anyway. | It's yours.
 
 # ---------------------------------------------------------------- Friends, by work
 
 scene kn_fr_workmates
 when topic=friends|work
+does tell.self / react.self / assess / assess / assess
 a : Same yard, same work, twenty years. | Remember your first day? You dropped everything. | Without you this job would kill me.
 b : And still not rich. | I remember yours. You cried. | It's killing you anyway.
 a : Rich in friends. | Only once. In the privy. | Slower, with you.
 b : That doesn't buy bread. | Twice. | Same for me.
-a : It buys cider. | Fine. Twice. | Good.
+a : It buys cider. | Fine. Twice. | #bc_good#
 
 scene kn_fr_guard_merchant
 when topic=friends a.role=guard b.role=merchant
+does ask.detail / answer.detail / assess / assess / assess
 a : Quiet day on your street? | Anyone giving you trouble? | Got any of those honey buns left?
 b : Thanks to you. | Only the tax man. | For you, always.
 a : I just stand here. | Can't arrest him, sadly. | You're a good friend.
 b : Standing here is enough. | Pity. | Bring the watch by. Business is business.
-a : I'll stand harder. | I'd like to. | I will.
+a : I'll stand harder. | I'd like to. | #bc_i_will#
 
 scene kn_fr_healer_patient
 when topic=friends a.job=healer
+does tell.self / react.self / tell.self / react.self / assess
 a : How's the leg? | Still taking the bitter tea? | You look better than last week.
 b : Better. I can walk to the well. | Most days. | Thanks to you.
-a : Then walk to the well and back. | Every day. | Thanks to the tea.
+a : Then walk to the well and back. | #bc_every_day# | Thanks to the tea.
 b : Slave driver. | It's foul. | And you.
 a : Healer. | It works. | A little.
 
@@ -150,6 +168,7 @@ a : Healer. | It works. | A little.
 
 scene kn_acq_night_meeting
 when topic=smalltalk pair.band=acquaintances here.time=night
+does ask.detail / answer.detail / assess / assess / assess
 a : Late to be out. | Couldn't sleep either? | Going home?
 b : I could say the same. | Never, these nights. | Eventually.
 a : I'm on my way to bed. | Nor me. The moon's too bright. | Me too. Eventually.
@@ -158,6 +177,7 @@ a : Goodnight. | If I could read. | Goodnight.
 
 scene kn_acq_dawn_meeting
 when topic=smalltalk pair.band=acquaintances here.time=dawn
+does greet / tell.self / react.self / assess
 a : Morning. | You're up with the birds. | Off somewhere?
 b : Is it? Feels like night still. | Somebody has to be. | Work. Always work.
 a : Morning by the bell. | The birds think so too. | Same.
@@ -165,6 +185,7 @@ b : The bell's a liar. | Birds don't work. | Then good luck to us both.
 
 scene kn_acq_market_bump
 when topic=smalltalk pair.band=acquaintances here.place=market
+does ask.detail / answer.detail / tell.self / react.self
 a : Fancy meeting you here. | Buying for the household? | Have you seen the price of salt?
 b : Everyone's here on market day. | Always. Never enough. | Don't. It hurts.
 a : Even the ones you'd rather not see. | Never is. | It hurts my purse more.
@@ -174,6 +195,7 @@ b : Like the tax man. | Not with pups. | Mine's empty already.
 
 scene kn_str_young_old
 when topic=smalltalk pair.band=strangers a.stage=young|adolescent b.stage=adult|old
+does ask.detail / answer.detail / ask.detail / answer.detail / tell.self
 a : Are you a stranger? | Where are you from? | Why do you smell funny?
 b : To you, I suppose. | Far from here. | It's called travelling. It doesn't wash off.
 a : I've never seen you. | How far? | Does it come off ever?
@@ -182,6 +204,7 @@ a : My mother says don't talk to strangers. | I'm going to go far one day. | You
 
 scene kn_str_courtesy
 when topic=smalltalk pair.band=strangers a.stage=adult b.stage=adult
+does tell.self / react.self / assess
 a : After you. | Please, go ahead. | Excuse me. I'm in your way.
-b : Thank you. | Thank you kindly. | Not at all.
-a : Bright One's day to you. | Good day. | Good day to you.
+b : #bc_thank_you# | Thank you kindly. | Not at all.
+a : Bright One's day to you. | #good_day#. | #good_day# to you.

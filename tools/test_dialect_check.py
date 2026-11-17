@@ -90,6 +90,14 @@ class Lexicon(unittest.TestCase):
         self.assertEqual(DC.hits('Still water hides things.', lex), [])
         self.assertEqual(DC.hits('#greet#, #address#.', lex), [])        # (Symbols are the grammar's business.)
 
+    def test_a_phrase_is_found_within_a_sentence_unless_its_own_words_run_over_one(self):
+        lake = LAKE + 'welcome_back = Back again, shore-friend\nbc_too_late = Too late. Sunk.\n'
+        lib = Library(grammars=(PLAIN, FENS, lake))
+        lex = DC.lexicon(DC.grammars(lib.root), {})
+        self.assertEqual(DC.hits('Back again, shore-friend? Come in.', lex), [('coldwater', 'back again shore-friend')])
+        self.assertEqual(DC.hits('Back again? Shore-friend Morrow is here.', lex), [('coldwater', 'shore-friend')])
+        self.assertEqual(DC.hits('It was too late. Sunk, the lot of them.', lex), [('coldwater', 'too late sunk')])
+
     def test_a_players_choice_never_has_a_dialect(self):
         tree = 'tree t\nentry talk a\nnode a\nsay #greet#.\nchoice Dry feet to you. -> end\n'
         self.assertTrue(Library(tree=tree).run().failures['lexicon'])
@@ -155,6 +163,22 @@ class Tables(unittest.TestCase):
                                  ('rm_b', 'fenshore', 'greet = Dry feet to you', '')], lex, SETTINGS['dialect_of'])
         self.assertEqual(len(report.failures['tables']), 1)
         self.assertIn('rm_a', report.failures['tables'][0])
+
+
+class Deities(unittest.TestCase):
+    """Two deities, the Bright One and the Dark One (the user, 2026-11-17): no god or gods by that word."""
+
+    def test_a_god_by_any_name_fails_and_the_two_pass(self):
+        found = DC.deity_lines([('a.talk', 'say Gods keep you. | Thank the gods.\nsay Bright One keep you.'),
+                                ('b.grammar', 'oath! = Sinking gods | A godsend\nbless = Dark One take it'),
+                                ('c.talk', 'say Godric mends goads by the godwit pool.')])
+        self.assertEqual([(w, word) for w, word, _ in found], [('a.talk:1', 'Gods'), ('b.grammar:1', 'gods')])
+        report = DC.Report()
+        DC.check_deities(report, found)
+        self.assertEqual(len(report.failures['deities']), 2)
+
+    def test_the_library_and_the_voice_files_name_no_god(self):
+        self.assertEqual(DC.deity_files(), [])
 
 
 class TheRealLibrary(unittest.TestCase):

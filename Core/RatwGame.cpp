@@ -549,6 +549,8 @@ bool Game::start(std::string& problem)
     });
     world_.setProtected([this](const std::string& id) { return isProtected(id); });   // (Doc 57, 6.)
     world_.setHolderOf([this](const std::string& player) { return accountOf(player); });   // (Talk's prices: doc 79, 11.)
+    world_.setTalkFavourites([this](const std::string& id) { return talkFavourites(id); });   // (Doc 84 §8.5.)
+    world_.talkLedger().enabled = options_.talkLedger;   // (Off for fast economy sims: --no-talk-ledger.)
     world_.setKnower([this](const std::string& knower, const std::string& subject) {   // (As the town knows them: doc 57, 5.)
         const bool named = knowsName(knower, subject);
         return World::Known{named ? labelFor(knower, subject) : strangerLabel(subject), named};
@@ -6840,6 +6842,7 @@ json::Value Game::talkCarry() const
     for (const auto& [key, t] : const_cast<World&>(world_).ambientPacing())
         pacing.add(key, t);
     out.add("pacing", pacing);
+    out.add("ledger", world_.talkLedger().save());   // (The talk ledger: doc 84 §8.7, Phase 5.)
     return out;
 }
 
@@ -6887,6 +6890,8 @@ void Game::talkResume(const json::Value& carried)
         for (const auto& [key, t] : pacing->fields())
             last[key] = t.asNumber();
     }
+    if (const auto* ledger = carried.find("ledger"); ledger && ledger->isObject())
+        world_.talkLedger().load(*ledger);
 }
 
 void Game::save()

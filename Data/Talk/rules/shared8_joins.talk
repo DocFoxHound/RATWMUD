@@ -1,0 +1,414 @@
+# The shared lines, Phase 8 session 2 (Docs/Design/84 §8.9, §8.10, §33.1, §33.3): a third voice cutting in, by its
+# stake and the topic (Game::joiners: named, kin, friend, goods, witness, friends, favourite; stance is Phase 6's
+# opinions.talk), the welcome it gets, and the turns a talk breaks off with (break) and comes back by (return). Move
+# lines (no concept).
+#
+# A joiner's line is true to the stake the game found: one who was there for the incident (witness) may say they were by
+# (never an eyewitness's "I saw it": the scorecard's T3 backs only the teller's own sight); one who
+# deals in the goods may say they sell them; kin and friends of the one talked of speak for them, by #topic.they#.
+# A friend of both who likes to talk may cut in with a tease (join.tease, owed a laugh or a jest back). A break is said
+# by the one whose turn it was, true to what broke it (rain where they stand in the open, a fight, a player at the
+# window); a return is said in the opener's breath, on the topic left unfinished (conv.topic).
+
+## join.add and join.tease: a friend of both, who likes to talk
+
+rule s8j_friends_food
+does join.add
+when conv.stake=friends|favourite conv.topic=food
+say Did someone say supper? | Is this about food? Count me in. | Food! Now you're talking my language. | I heard pie. Did I hear pie?
+
+rule s8j_friends_weather
+does join.add
+when conv.stake=friends|favourite conv.topic=weather|season
+say Talking weather? I've a view on that. | Never mind the sky. Room for one more? | You two on about the weather again?
+
+rule s8j_friends_work
+does join.add
+when conv.stake=friends|favourite conv.topic=work|day
+say Talking shop? I'll join you. | Don't talk work without me. | If it's grumbling about work, I'm in.
+
+rule s8j_friends_family
+does join.add
+when conv.stake=friends|favourite conv.topic=family|home
+say Not talking about me, I hope? | Family business? I'll only stay a moment. | How's everyone at home, then?
+
+rule s8j_friends_prices
+does join.add
+when conv.stake=friends|favourite conv.topic=prices|times|price_cause
+say Prices? Don't get me started. | Is this about what things cost? Let me in. | If you're on about prices, I've a thing or two.
+
+rule s8j_friends_gossip
+does join.add
+when conv.stake=friends|favourite conv.topic=gossip|news|life
+say What's this? Who's done what? | Is that the talk going round? | Don't stop. What did I miss?
+
+rule s8j_favourite_pastimes
+does join.add
+when conv.stake=favourite conv.topic=pastimes|friends
+say Ooh, my favourite sort of talk. | Pastimes? I could talk all day. | Now this I like.
+
+rule s8j_favourite_animals
+does join.add
+when conv.stake=favourite conv.topic=animals|land
+say Beasts? I've a tale or two about beasts. | Talking stock? I'm all ears. | Fields and beasts. My favourite.
+
+rule s8j_favourite_faith
+does join.add
+when conv.stake=favourite conv.topic=faith|lore|dreams
+say The old tales? I love those. | Is this about the Bright One? Let me sit. | Dreams? I had a queer one myself.
+
+rule s8j_favourite_memories
+does join.add
+when conv.stake=favourite conv.topic=memories
+say Remembering? I've a few of my own. | The old days! Let me in on this. | I remember that, if it's what I think.
+
+rule s8j_favourite_travel
+does join.add
+when conv.stake=favourite conv.topic=travel|accent|caravan|ships
+say Roads? I've walked a few. | Talking of far places? I'll listen. | Travelling talk! Go on.
+
+rule s8j_favourite_health
+does join.add
+when conv.stake=favourite conv.topic=health
+say Aches and pains? I've plenty. | Is this about cures? I know a few. | Health talk. I'm an expert, sadly.
+
+rule s8j_tease_any
+does join.tease
+when conv.stake=friends
+tone light
+say Plotting again, you two? | I leave you alone five minutes. | What mischief is this? | You two again. Thick as thieves. | Room for a third troublemaker?
+
+rule s8j_tease_food
+does join.tease
+when conv.stake=friends conv.topic=food
+tone light
+say Talking about food again? You're always hungry. | I could smell this talk from the well.
+
+rule s8j_tease_work
+does join.tease
+when conv.stake=friends conv.topic=work|day
+tone light
+say Is this what you call working? | Standing about talking. Busy day, is it?
+
+## join.add: one who deals in the goods, one who was there
+
+rule s8j_goods_prices
+does join.add
+when conv.stake=goods conv.topic=prices|price_cause
+say I sell that, as it happens. Ask me the price. | That's my trade you're on about. | You want it from one who sells it. | Prices? I set a few of them.
+
+rule s8j_goods_wagons
+does join.add
+when conv.stake=goods conv.topic=caravan|ships|event
+say I've a stake in what comes in, mind. | That's my stock on those wagons. | Some of that's for my shelves.
+
+rule s8j_witness_crime
+does join.add
+when conv.stake=witness
+tone serious
+say I was right there, as it happens. | I was close by for all of it. | I can tell you how it went. I was by. | Ask me. I was nearby.
+
+## join.object and join.defend: the one talked of, and their own
+
+rule s8j_named_any
+does join.object
+when conv.stake=named
+say I can hear you, you know. | Go on. Say it louder. | Talking about me, are we? | I'm right here, if you've something to say.
+
+rule s8j_kin_defend
+does join.defend
+when conv.stake=kin
+denies
+say That's my kin. Choose your words. | I'll not stand here and hear that said of #topic.them#. | You don't know #topic.them# like I do. | That's my own you're talking of.
+
+rule s8j_friend_defend
+does join.defend
+when conv.stake=friend
+say I know #topic.subject#. That's not like #topic.them#. | You're wrong about #topic.them#, I'd stake my coat on it. | I'll hear #topic.their# side before I believe that.
+
+rule s8j_kin_glad
+does join.add
+when conv.stake=kin|friend conv.topic=gossip|life|news topic.claim_kind=marriage|promise_kept
+tone light
+say That's my own you're talking of! Good news, isn't it? | Aye, and we're all proud of #topic.them#. | You heard, then? We're that pleased.
+
+rule s8j_kin_death
+does join.add
+when conv.stake=kin|friend conv.topic=gossip|life|news topic.claim_kind=death
+tone grave
+say You're talking of #topic.subject#. I knew #topic.them# well. | #topic.subject# was dear to me. | Speak kindly of #topic.them#. I'm listening.
+
+## More joins by the topic (the favourite stake is the commonest join of all: a chatty wolf on their favourite topic)
+
+rule s8j_favourite_pastimes2
+does join.add
+when conv.stake=favourite conv.topic=pastimes|friends
+say Is this about what folk do of an evening? | You're talking my language now. | I've a pastime or two myself, you know. | Don't mind me. I just love this sort of talk.
+
+# (Session 3: the favourite's joins were the most-heard joins of session 2's card; more ways in.)
+rule s8j_favourite_pastimes3
+does join.add
+when conv.stake=favourite conv.topic=pastimes|friends
+say Now this is a talk worth stopping for. | Go on, don't stop on my account. | I heard the word "game" and here I am. | Is there room for one more in this?
+
+rule s8j_favourite_smalltalk3
+does join.add
+when conv.stake=favourite conv.topic=smalltalk|day
+say I'll not say no to a bit of company. | You two look like you've time to spare. So have I. | Room for one more on this wall? | Don't let me stop you. I'll just listen.
+
+rule s8j_favourite_animals3
+does join.add
+when conv.stake=favourite conv.topic=animals|land
+say Somebody say beasts? | I could talk stock all day and all night. | Nothing I like better than talk of the land. | Count me in. I know a thing or two about beasts.
+
+rule s8j_favourite_animals2
+does join.add
+when conv.stake=favourite conv.topic=animals|land
+say Did I hear talk of beasts? | Animals! Go on, I'm listening. | You'll not keep me away from beast talk. | Tell me it's about a goat.
+
+rule s8j_favourite_smalltalk
+does join.add
+when conv.stake=favourite conv.topic=smalltalk|day
+say Just passing the time? Me too. | A natter! Let me in. | Nothing much, is it? My favourite kind of talk. | Don't stop on my account. I could do with a chat.
+
+rule s8j_favourite_smalltalk2
+does join.add
+when conv.stake=favourite conv.topic=smalltalk|day
+say What's all this, then? Room for one more? | I'll stand with you a while, if I may. | A bit of talk does a body good. | Mind if I lean on this wall with you?
+
+rule s8j_favourite_food
+does join.add
+when conv.stake=favourite conv.topic=food
+say Somebody said supper, I'm sure of it. | Food talk! I'm all yours. | Is there a pie in this story?
+
+rule s8j_friends_news
+does join.add
+when conv.stake=friends|favourite conv.topic=crime|bandits
+tone serious
+say Is this about the trouble? I heard something. | Bad news, is it? Tell me. | What's happened now?
+
+rule s8j_friends_wagons
+does join.add
+when conv.stake=friends|favourite conv.topic=caravan|ships
+say Talking of the wagons? Any word? | Is it the boats? I've been waiting on news. | What's come in, then?
+
+rule s8j_friends_festival
+does join.add
+when conv.stake=friends|favourite conv.topic=festival
+tone light
+say Is this about the festival? Count me in. | Festival talk! I've been waiting all week. | Are you two going? Save me a place.
+
+rule s8j_friends_event
+does join.add
+when conv.stake=friends|favourite conv.topic=event
+say What's on at the market, then? | Something happening, is there? | Is this about the doings in town?
+
+rule s8j_friends_faith
+does join.add
+when conv.stake=friends|favourite conv.topic=faith|dreams|lore|memories
+say I couldn't help hearing. Go on. | Old talk, is it? I like old talk. | Don't let me stop you. I'm curious now.
+
+## welcome_join: the two who were talking, to the one who cut in (plain.grammar's s8_welcome, by the stake)
+
+rule s8j_welcome_any
+does welcome_join
+say #s8_welcome# | #s8_welcome#
+
+## break: broken off, by what broke it
+
+rule s8j_break_rain_young
+does break
+when conv.interrupt=rain here.weather=rain|storm self.stage=young|adolescent
+say Rain! Run! | It's raining! Race you in! | Wet! I'm off!
+
+rule s8j_break_rain_work
+does break
+when conv.interrupt=rain here.weather=rain|storm self.working=yes
+say Rain. I've things out. I must go. | That's rain on my work. Excuse me. | Rain! My stock's out.
+
+rule s8j_break_storm
+does break
+when conv.interrupt=rain here.weather=storm
+tone serious
+say That's a storm. Indoors, now! | Here it comes. Get under cover! | Lightning! Inside, quick.
+
+rule s8j_break_rain_any
+does break
+when conv.interrupt=rain here.weather=rain|storm
+say #rain.capitalize#! I'm away. | Here's the #rain#. Under cover. | That's the #rain# on us. Later.
+
+rule s8j_break_fight_any
+does break
+when conv.interrupt=fight
+tone serious
+say Bright One, a fight. I'm away. | Stand back! They're at it. | Look out! Trouble. | That's a fight. Somebody fetch the Watch.
+
+rule s8j_break_fight_young
+does break
+when conv.interrupt=fight self.stage=young|adolescent
+tone serious
+say A fight! Look! | They're fighting! | Run! A fight!
+
+rule s8j_break_fight_guard
+does break
+when conv.interrupt=fight self.role=guard
+tone serious
+say A fight. Excuse me; that's my business. | Hold there! Stay back, you. | That's for me to stop. Wait here.
+
+rule s8j_break_called_any
+does break
+when conv.interrupt=called
+say Somebody wants me. Excuse me. | Hold that thought. | Back in a moment. | Sorry. Someone's waiting on me.
+
+rule s8j_break_called_shop
+does break
+when conv.interrupt=called self.job=merchant|baker|brewer|innkeeper|cook|smith|crafter
+say A customer. One moment. | Business calls. Excuse me. | Duty. Hold on. | Someone's buying. Back soon.
+
+## return: taken up again, on the topic left unfinished
+
+rule s8j_return_caravan
+does return
+when conv.topic=caravan
+say Now, about the wagons, as I was saying. | Where was I? The wagons. | As I was saying, about the carts.
+
+rule s8j_return_road
+does return
+when conv.topic=bandits|travel
+say As I was saying, about the road. | About the road. Where was I? | Back to the road, as I was saying.
+
+rule s8j_return_prices
+does return
+when conv.topic=prices|price_cause|times
+say As I was saying, about prices. | Where was I? Ah, the cost of things. | Back to what I was saying about prices.
+
+rule s8j_return_gossip
+does return
+when conv.topic=gossip|news|life|newcomer|deed
+say Where was I? Ah, that business. | As I was telling you, before. | Now, where was I with that news?
+
+rule s8j_return_crime
+does return
+when conv.topic=crime
+tone serious
+say As I was saying. That bad business. | About what happened, as I was saying. | Where was I? That trouble.
+
+rule s8j_return_ships
+does return
+when conv.topic=ships
+say As I was saying, about the boats. | The ships, as I was telling you. | Back to the boats.
+
+rule s8j_return_weather
+does return
+when conv.topic=weather|season|land
+say As I was saying about the weather. | Where was I? Oh, the sky. | Back to the weather, as I was saying.
+
+rule s8j_return_work
+does return
+when conv.topic=work|day
+say Back to what I was saying about work. | As I was telling you, about work. | Where was I? Oh, the job.
+
+rule s8j_return_home
+does return
+when conv.topic=family|home|health
+say As I was saying, about home. | Where was I? Oh, yes. At home. | Now, as I was telling you, about the house.
+
+rule s8j_return_festival
+does return
+when conv.topic=festival|event
+say Now, about the festival. | As I was saying, about the doings. | Back to the festival, then.
+
+rule s8j_return_food
+does return
+when conv.topic=food
+say As I was saying, about supper. | Where was I? Food, of course. | Back to food, as ever.
+
+## More joins: the one talked of and their own, by what was said
+
+rule s8j_named_theft
+does join.object
+when conv.stake=named topic.claim_kind=theft|wanted|prowling
+tone serious
+say I can hear every word, you know. | Say it to my face, if you think it. | If you've something to say, say it to me.
+
+rule s8j_named_kind
+does join.add
+when conv.stake=named topic.claim_kind=marriage|promise_kept|newcomer
+tone light
+say Talking about me? Good things, I hope. | I can hear you, you know. Go on, then. | My ears are burning.
+
+## One's own good news, joined by the one it names (Slice 2's review: a husband once "objected" to his own wedding).
+
+rule s8j_named_news_marriage
+does join.add
+when conv.stake=named conv.topic=news topic.kind=marriage
+tone light
+say And I'd do it all again tomorrow. | You're looking at the lucky one. | It's true. I still can't quite believe it. | Best day of my life, that was.
+
+rule s8j_named_news
+does join.add
+when conv.stake=named conv.topic=news topic.kind!=marriage|crime|loss
+say It's true, every word. | Aye, that's the way of it. | I can vouch for that.
+
+rule s8j_kin_defend_theft
+does join.defend
+when conv.stake=kin topic.claim_kind=theft|wanted|prowling
+denies
+say #topic.subject#'s no thief. I'd know. | You'll take that back about #topic.them#. | I'll not hear that said of my own.
+
+rule s8j_friend_defend_violence
+does join.defend
+when conv.stake=friend topic.claim_kind=violence
+say #topic.subject# wouldn't hurt a fly. | There's more to that than you've heard. | I'd want #topic.their# side first.
+
+rule s8j_witness_any
+does join.add
+when conv.stake=witness topic.claim_kind=theft|violence|prowling
+tone serious
+say I was nearby. It wasn't pretty. | I was close enough to hear it all. | It happened right by me.
+
+rule s8j_goods_food
+does join.add
+when conv.stake=goods conv.topic=food|harvest
+say Talking of what's on the table? I sell it. | That's my stock you're on about. | Ask me. I deal in it.
+
+## More breaks: by where they stand and the hour
+
+rule s8j_break_called_night
+does break
+when conv.interrupt=called here.time=night|dusk
+say At this hour? Excuse me. | Someone wants me, late as it is. | One moment. Late custom.
+
+rule s8j_break_fight_tavern
+does break
+when conv.interrupt=fight here.place=tavern
+tone serious
+say Mind the tables! They're at it. | Fight! Get back from the bar. | Not again. Somebody fetch the keeper.
+
+rule s8j_break_fight_market
+does break
+when conv.interrupt=fight here.place=market|street
+tone serious
+say Mind the stalls! A fight. | Out of the way, quick. | They're at it in the street.
+
+rule s8j_break_rain_market
+does break
+when conv.interrupt=rain here.weather=rain|storm here.place=market|street
+say Rain on the stalls! I'm off. | Cover the goods! Later. | Run, before the stalls go under.
+
+## More returns, by topic
+
+rule s8j_return_everyday
+does return
+when conv.topic=pastimes|friends|smalltalk|animals
+say Anyway, as I was saying. | Where was I? Oh, yes. | As I was telling you, before.
+
+rule s8j_return_faith
+does return
+when conv.topic=faith|dreams|lore|memories
+say As I was saying, before we were stopped. | Back to what I was telling you. | Now, where was I with that?
+
+rule s8j_return_player
+does return
+when conv.topic=player|accent
+say As I was saying, about the stranger. | Where was I? The traveller. | Back to that stranger, as I was saying.

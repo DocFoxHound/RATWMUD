@@ -1,0 +1,363 @@
+{
+  "about": "Issues and stances, likes and dislikes (Docs/Design/84 §7.6, §8.8; Phase 6). An issue is something residents hold a view on, spoken of in its `words`, coming up on its `topics` (topics.json's). A resident's stance on it is worked out from their own facts (self.*: their post, class, quarter, temperament, never the moment): each `for` or `against` that holds moves it a step that way, giving its reason (`why`, a key of `reasons`: the words they'd say it in, first person, true of them because its criteria hold). Events move it a step more (`drift`: the game looks for them once a game day and keeps what moved whom in the talk ledger, once each event; at most two steps either way): a theft from them closed unsolved (robbed_uncaught) or charged (robbed_caught), the Restday dole feeding them (fed_by_dole), kin of theirs under a warrant (kin_charged), a wedding of their own (wed); each drift event has a reason of its own. The sum is the stance: for, against, or mixed (as many steps each way, or none), its strength the steps it leans (0-3). Read as self.op.<issue>, self.op_why.<issue> and self.op_strength.<issue>; the pair's pair.agree.<issue> once two have aired it. `who` (criteria) says who has a view at all (a Coldwater fisher has none on the Sump). Likes and dislikes are held for good (until mantles bring their own, drawn from the resident's id among the items whose `when` holds of them): one like of each kind (pastime, food, weather, thing) and two dislikes, read as self.likes / self.dislikes (list facts) and the words of each (self.pastime_words, food_words, weather_words, thing_words; dislike_words, the first).",
+  "issues": {
+    "watch": {
+      "words": "the Watch",
+      "topics": ["crime", "gossip", "bandits", "deed"],
+      "for": [
+        {"when": "self.role=guard", "why": "guard"},
+        {"when": "self.role=merchant self.business=thriving|steady", "why": "counter"},
+        {"when": "self.class=upper", "why": "upper"}
+      ],
+      "against": [
+        {"when": "self.honesty=sly", "why": "sly"},
+        {"when": "self.quarter=sump", "why": "sump"},
+        {"when": "self.wealth=destitute", "why": "moved_on"}
+      ],
+      "reasons": {
+        "guard": "I walk with them myself, and I know what the nights are like",
+        "counter": "they keep the light paws off my counter",
+        "upper": "they keep my street quiet of a night",
+        "sly": "they've their noses in everybody's business but their own",
+        "sump": "they only come down our way to drag somebody off",
+        "moved_on": "they've moved me on from every doorway in this town",
+        "robbed_uncaught": "they never caught whoever robbed me",
+        "robbed_caught": "they caught the one who robbed me, I'll give them that",
+        "kin_charged": "they've my own kin's name up on their board"
+      },
+      "drift": {"robbed_uncaught": -1, "robbed_caught": 1, "kin_charged": -1}
+    },
+    "houses": {
+      "words": "the Houses",
+      "topics": ["work", "times", "prices", "life"],
+      "for": [
+        {"when": "self.class=upper", "why": "upper"},
+        {"when": "self.job=servant", "why": "servant"},
+        {"when": "self.drive=content self.wealth=comfortable|rich", "why": "steady"}
+      ],
+      "against": [
+        {"when": "self.class=lower self.stage=adult self.job!=none|child", "why": "lower"},
+        {"when": "self.class=lower self.stage=old", "why": "lower"},
+        {"when": "self.class=lower self.stage=adult self.job=none", "why": "lower_idle"},
+        {"when": "self.class=lower self.job=child", "why": "lower_young"},
+        {"when": "self.quarter=sump", "why": "sump"},
+        {"when": "self.drive=ambitious self.class=middle|lower", "why": "ambitious"}
+      ],
+      "reasons": {
+        "upper": "this town would fall down without them, and I'd know",
+        "servant": "they've kept a roof over my head and bread in my belly",
+        "steady": "they keep the works going, and the works keep the rest of us",
+        "lower": "I've worked my whole life in their shadow and never once seen their faces",
+        "lower_idle": "they'd sooner leave a bench empty than take on the likes of me",
+        "lower_young": "they ride past our door and never once look down",
+        "sump": "they own every brick down our way and mend none of them",
+        "ambitious": "nobody rises in this town without a House's say-so"
+      }
+    },
+    "dole": {
+      "words": "the Restday dole",
+      "topics": ["times", "faith", "prices", "food"],
+      "for": [
+        {"when": "self.on_dole=yes", "why": "on_it"},
+        {"when": "self.warmth=warm", "why": "warm"},
+        {"when": "self.piety=devout", "why": "devout"}
+      ],
+      "against": [
+        {"when": "self.wealth=rich self.stage=adult|old", "why": "rich"},
+        {"when": "self.drive=ambitious self.on_dole=no self.stage=adult|old self.job!=none", "why": "earned"},
+        {"when": "self.warmth=cold self.on_dole=no", "why": "cold"}
+      ],
+      "reasons": {
+        "on_it": "there are weeks it's the only bread on my table",
+        "warm": "nobody in a town this size should go to bed hungry",
+        "devout": "feeding the hungry is the Bright One's own work",
+        "rich": "I pay for it, and I see who comes back for seconds",
+        "earned": "I never took a crumb I didn't earn, and I'm the better for it",
+        "cold": "it teaches folk to stand in a queue instead of finding work",
+        "fed_by_dole": "it fed my house through a lean week, and I'll not forget it"
+      },
+      "drift": {"fed_by_dole": 1}
+    },
+    "newcomers": {
+      "words": "newcomers",
+      "topics": ["newcomer", "accent", "travel"],
+      "for": [
+        {"when": "self.drive=restless", "why": "restless"},
+        {"when": "self.warmth=warm", "why": "warm"},
+        {"when": "self.job=innkeeper|merchant", "why": "trade"}
+      ],
+      "against": [
+        {"when": "self.temper=nervy", "why": "nervy"},
+        {"when": "self.stage=old", "why": "old"},
+        {"when": "self.wealth=poor|destitute self.class=lower", "why": "work"}
+      ],
+      "reasons": {
+        "restless": "I'd be one myself somewhere, if I had the nerve",
+        "warm": "there's room enough here for anybody who'll pull their weight",
+        "trade": "new faces bring new coin, and I'm not too proud to take it",
+        "nervy": "you never know who you're letting in until it's too late",
+        "old": "every one that comes makes the place a little less like itself",
+        "work": "they take what little work there is going"
+      }
+    },
+    "church": {
+      "words": "the church",
+      "topics": ["faith", "festival", "health", "dreams"],
+      "for": [
+        {"when": "self.piety=devout", "why": "devout"},
+        {"when": "self.job=priest", "why": "priest"},
+        {"when": "self.stage=old", "why": "old"}
+      ],
+      "against": [
+        {"when": "self.honesty=sly", "why": "sly"},
+        {"when": "self.drive=ambitious self.piety=ordinary self.stage=adult|old", "why": "busy"}
+      ],
+      "reasons": {
+        "devout": "the Bright One has kept me through worse than this",
+        "priest": "I've served it all my life, and I'd serve it again",
+        "old": "I've buried enough folk to be glad somebody says the words",
+        "sly": "the plate goes round a good deal faster than the prayers do",
+        "busy": "a sermon never once put bread on my table",
+        "fed_by_dole": "they fed my house when nobody else would"
+      },
+      "drift": {"fed_by_dole": 1}
+    },
+    "merchants": {
+      "words": "the merchants and their prices",
+      "topics": ["prices", "times", "food", "caravan"],
+      "for": [
+        {"when": "self.role=merchant", "why": "merchant"},
+        {"when": "self.job=carter", "why": "carter"}
+      ],
+      "against": [
+        {"when": "self.wealth=poor|destitute self.job!=none|child", "why": "poor"},
+        {"when": "self.wealth=poor|destitute self.job=none self.stage=adult|old", "why": "poor_idle"},
+        {"when": "self.wealth=poor|destitute self.job=child", "why": "poor_young"},
+        {"when": "self.class=lower self.role=civilian", "why": "lower"},
+        {"when": "self.honesty=frank self.role=civilian", "why": "frank"}
+      ],
+      "reasons": {
+        "merchant": "I keep a counter myself, and I know what the wagons cost",
+        "carter": "I drive the wagons, and nobody sees what the road takes out of a load",
+        "poor": "I can't buy a loaf on what I'm paid, and they never go short",
+        "poor_idle": "there's nothing coming into my house, and still they put the bread up",
+        "poor_young": "we go without half the week, and they never go short",
+        "lower": "they put a penny on whenever they think nobody's counting",
+        "frank": "half of what they call the price is the merchant's own supper"
+      }
+    },
+    "city": {
+      "words": "life in the city",
+      "topics": ["travel", "accent", "times"],
+      "for": [
+        {"when": "self.from=ridgemere", "why": "born"},
+        {"when": "self.drive=ambitious|restless", "why": "chance"}
+      ],
+      "against": [
+        {"when": "self.from!=ridgemere self.stage=adult|old", "why": "away"},
+        {"when": "self.temper=nervy", "why": "nervy"}
+      ],
+      "reasons": {
+        "born": "I was born under its smoke and I'll die under it, gladly",
+        "chance": "there's more chance in a week there than in a year anywhere else",
+        "away": "it's all smoke and elbows, and nobody knows their neighbour",
+        "nervy": "there's a cutpurse on every corner and a cart at every crossing"
+      }
+    },
+    "road": {
+      "words": "the roads these days",
+      "topics": ["bandits", "caravan", "travel"],
+      "for": [
+        {"when": "self.job=carter", "why": "carter"},
+        {"when": "self.drive=restless", "why": "restless"},
+        {"when": "self.role=guard", "why": "guard"}
+      ],
+      "against": [
+        {"when": "self.temper=nervy", "why": "nervy"},
+        {"when": "self.stage=old", "why": "old"},
+        {"when": "self.role=merchant", "why": "merchant"}
+      ],
+      "reasons": {
+        "carter": "the road's my living, and most days it's no worse than it ever was",
+        "restless": "a road's a road; you keep your wits and you get where you're going",
+        "guard": "we ride them often enough to know where the trouble sits",
+        "nervy": "I'd not set a paw on them these days, not for any money",
+        "old": "they were safer when I was young, whatever anyone tells you",
+        "merchant": "every load that comes in late costs me, and they come in late more and more"
+      }
+    },
+    "festivals": {
+      "words": "festival days",
+      "topics": ["festival", "pastimes", "season"],
+      "for": [
+        {"when": "self.humour=merry", "why": "merry"},
+        {"when": "self.talk=chatty", "why": "chatty"},
+        {"when": "self.stage=young|adolescent", "why": "young"}
+      ],
+      "against": [
+        {"when": "self.temper=short", "why": "short"},
+        {"when": "self.drive=ambitious self.job!=none|child", "why": "work"},
+        {"when": "self.humour=dry self.talk=quiet", "why": "dry"}
+      ],
+      "reasons": {
+        "merry": "a day of dancing does a body more good than a week of sleep",
+        "chatty": "it's the one day the whole town's out and talking",
+        "young": "there are sweets and music and nobody sends you to bed",
+        "short": "it's all noise and spilt ale, and somebody always ends up crying",
+        "work": "it's a day's work lost, and the bills don't take a holiday",
+        "dry": "I'd sooner watch it from a quiet window",
+        "wed": "I danced at my own wedding and I'll never say a word against a feast again"
+      },
+      "drift": {"wed": 1}
+    },
+    "drink": {
+      "words": "drink",
+      "topics": ["friends", "pastimes", "health"],
+      "for": [
+        {"when": "self.job=brewer|innkeeper", "why": "trade"},
+        {"when": "self.humour=merry self.stage=adult|old", "why": "merry"}
+      ],
+      "against": [
+        {"when": "self.piety=devout", "why": "devout"},
+        {"when": "self.job=healer", "why": "healer"},
+        {"when": "self.temper=nervy self.humour=none", "why": "nervy"}
+      ],
+      "reasons": {
+        "trade": "good ale is an honest trade and I'll not hear otherwise",
+        "merry": "a jar among friends never hurt anybody worth knowing",
+        "devout": "I've seen what it does to a family, and so has the Bright One",
+        "healer": "I've stitched up enough of its handiwork",
+        "nervy": "folk say things in drink they can't take back"
+      }
+    },
+    "times": {
+      "words": "the way things are going",
+      "topics": ["times", "prices", "work"],
+      "for": [
+        {"when": "self.business=thriving", "why": "thriving"},
+        {"when": "self.wealth=rich", "why": "rich"},
+        {"when": "self.drive=content self.wealth=comfortable", "why": "content"}
+      ],
+      "against": [
+        {"when": "self.wealth=poor|destitute", "why": "poor"},
+        {"when": "self.business=failing", "why": "failing"},
+        {"when": "self.on_dole=yes self.stage=adult|old", "why": "dole"}
+      ],
+      "reasons": {
+        "thriving": "trade's never been better at my door",
+        "rich": "I've no complaints, and I'd be a fool to make any",
+        "content": "there's bread on the table and a roof over it, and that's plenty",
+        "poor": "it gets a little harder every week, and nobody up there notices",
+        "failing": "my counter's emptier every week, and I can't see the bottom yet",
+        "dole": "I'm stood in the dole queue, and I never thought I would be"
+      }
+    },
+    "sump": {
+      "words": "the Sump",
+      "topics": ["crime", "home", "times"],
+      "for": [
+        {"when": "self.quarter=sump", "why": "home"}
+      ],
+      "against": [
+        {"when": "self.quarter=heights|estate", "why": "heights"},
+        {"when": "self.class=upper", "why": "upper"},
+        {"when": "self.temper=nervy self.quarter!=sump", "why": "nervy"}
+      ],
+      "reasons": {
+        "home": "it's home, and folk down there look after their own",
+        "heights": "I don't go below the Ropewalk if I can help it",
+        "upper": "every trouble in this city starts down there and climbs",
+        "nervy": "I'd not walk it after dark, nor before it either"
+      },
+      "who": "self.quarter=heights|commons|sump|office|works|wharf|docks|harbour_hill|suburbs|estate"
+    },
+    "strangers": {
+      "words": "strangers passing through",
+      "topics": ["player", "newcomer", "travel"],
+      "for": [
+        {"when": "self.job=innkeeper|merchant", "why": "trade"},
+        {"when": "self.warmth=warm", "why": "warm"}
+      ],
+      "against": [
+        {"when": "self.temper=nervy", "why": "nervy"},
+        {"when": "self.honesty=guarded", "why": "guarded"},
+        {"when": "self.warmth=cold", "why": "cold"}
+      ],
+      "reasons": {
+        "trade": "travellers are half my trade and all my news",
+        "warm": "a stranger's only a friend you haven't fed yet",
+        "nervy": "you never know what they've left behind them, or what follows",
+        "guarded": "I keep my door shut to faces I don't know",
+        "cold": "they come, they stare, they go, and somebody's purse goes with them"
+      }
+    }
+  },
+  "likes": {
+    "dice": {"kind": "pastime", "words": "a game of dice"},
+    "draughts": {"kind": "pastime", "words": "a game of draughts", "when": "self.stage=adult|old"},
+    "long_walks": {"kind": "pastime", "words": "a long walk with nowhere to be"},
+    "evening_line": {"kind": "pastime", "words": "a line in the water of an evening"},
+    "singing": {"kind": "pastime", "words": "a good song with friends"},
+    "whittling": {"kind": "pastime", "words": "whittling by the fire"},
+    "cards": {"kind": "pastime", "words": "a hand of cards", "when": "self.stage=adult|old"},
+    "dancing": {"kind": "pastime", "words": "dancing on a festival night", "when": "self.stage=adolescent|adult"},
+    "old_tales": {"kind": "pastime", "words": "an old tale told well"},
+    "digging": {"kind": "pastime", "words": "an hour's digging in the garden", "when": "self.homeless=no self.stage=adult|old"},
+    "wrestling": {"kind": "pastime", "words": "a bout of wrestling on the green", "when": "self.stage=young|adolescent|adult"},
+    "swimming": {"kind": "pastime", "words": "a swim, cold water or not", "when": "self.stage=young|adolescent|adult"},
+    "knots": {"kind": "pastime", "words": "tying fancy knots", "when": "self.job=sailor|fisher|carter"},
+    "stars": {"kind": "pastime", "words": "watching the stars come out"},
+    "riddles": {"kind": "pastime", "words": "a good riddle"},
+    "roof_birds": {"kind": "pastime", "words": "watching the birds on the rooftops"},
+    "honey_cakes": {"kind": "food", "words": "honey cakes"},
+    "smoked_eel": {"kind": "food", "words": "smoked eel"},
+    "warm_bread": {"kind": "food", "words": "bread still warm from the oven"},
+    "mutton_stew": {"kind": "food", "words": "a mutton stew"},
+    "crisp_apples": {"kind": "food", "words": "a crisp apple"},
+    "hard_cheese": {"kind": "food", "words": "a good hard cheese"},
+    "fried_fish": {"kind": "food", "words": "fish fried in butter"},
+    "plum_tart": {"kind": "food", "words": "plum tart"},
+    "roast_pork": {"kind": "food", "words": "roast pork with the crackling on"},
+    "barley_soup": {"kind": "food", "words": "barley soup on a cold day"},
+    "blackberries": {"kind": "food", "words": "blackberries off the bush"},
+    "spiced_cider": {"kind": "food", "words": "a cup of spiced cider", "when": "self.stage=adult|old"},
+    "pickled_herring": {"kind": "food", "words": "pickled herring"},
+    "oatcakes": {"kind": "food", "words": "oatcakes and butter"},
+    "frosty_mornings": {"kind": "weather", "words": "a frosty morning"},
+    "warm_rain": {"kind": "weather", "words": "a warm rain after a dry week"},
+    "first_snow": {"kind": "weather", "words": "the first snow of the year"},
+    "autumn_wind": {"kind": "weather", "words": "a good blustery autumn"},
+    "summer_evenings": {"kind": "weather", "words": "a long summer evening"},
+    "first_warm_day": {"kind": "weather", "words": "the first warm day of spring"},
+    "misty_dawns": {"kind": "weather", "words": "a misty dawn"},
+    "thunder": {"kind": "weather", "words": "a thunderstorm, from under a good roof"},
+    "tidy_house": {"kind": "thing", "words": "a tidy house", "when": "self.homeless=no"},
+    "market_bustle": {"kind": "thing", "words": "the market when it's at its busiest"},
+    "quiet_chapel": {"kind": "thing", "words": "the chapel when it's empty"},
+    "new_boots": {"kind": "thing", "words": "a new pair of boots"},
+    "full_larder": {"kind": "thing", "words": "a full larder", "when": "self.homeless=no"},
+    "old_maps": {"kind": "thing", "words": "an old map with the roads drawn wrong"},
+    "festival_bells": {"kind": "thing", "words": "the bells on a festival morning"},
+    "fresh_straw": {"kind": "thing", "words": "fresh straw on the floor"},
+    "sharp_knife": {"kind": "thing", "words": "a good sharp knife"},
+    "a_full_till": {"kind": "thing", "words": "a full till at the end of the day", "when": "self.role=merchant"}
+  },
+  "dislikes": {
+    "wet_floors": {"kind": "thing", "words": "wet floors"},
+    "crowds": {"kind": "thing", "words": "a crush of folk"},
+    "night_noise": {"kind": "thing", "words": "noise at night"},
+    "gulls": {"kind": "thing", "words": "gulls"},
+    "cold_tea": {"kind": "food", "words": "tea gone cold"},
+    "smoke": {"kind": "thing", "words": "smoke in my eyes"},
+    "flies": {"kind": "thing", "words": "flies in summer"},
+    "deep_mud": {"kind": "weather", "words": "mud up to my hocks"},
+    "haggling": {"kind": "thing", "words": "haggling"},
+    "early_bells": {"kind": "thing", "words": "bells before dawn"},
+    "salt_wind": {"kind": "weather", "words": "a salt wind in my fur"},
+    "stale_bread": {"kind": "food", "words": "stale bread"},
+    "rats": {"kind": "thing", "words": "rats in the larder"},
+    "bad_manners": {"kind": "thing", "words": "folk with no manners"},
+    "waiting": {"kind": "thing", "words": "waiting on other folk"},
+    "drizzle": {"kind": "weather", "words": "a drizzle that can't make up its mind"}
+  }
+}

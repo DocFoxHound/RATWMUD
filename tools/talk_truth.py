@@ -81,6 +81,11 @@ class Rule:
     needs: list
     needs_any: list
     example: str = ''
+    topics: set = field(default_factory=set)      # Phase 6: only lines on these topics ("" all)
+
+    def scoped(self, topic: str | None) -> bool:
+        """Whether the rule judges a line on this topic (None: not known, so judged)."""
+        return not self.topics or topic is None or topic in self.topics
 
     def judge(self, facts: dict) -> bool | None:
         """True if the facts back the words, False if they don't, None if none of what it needs is known."""
@@ -120,7 +125,7 @@ def load(root: Path = TALK) -> tuple[list, re.Pattern]:
         if 'id' not in r or 'match' not in r or not (r.get('needs') or r.get('needs_any')):
             raise ValueError(f'truth.json: a rule needs an id, a match and needs or needs_any: {r}')
         rules.append(Rule(r['id'], re.compile(r['match'], re.I), [Need.parse(n) for n in r.get('needs', [])],
-                          [Need.parse(n) for n in r.get('needs_any', [])], r.get('example', '')))
+                          [Need.parse(n) for n in r.get('needs_any', [])], r.get('example', ''), set(r.get('topics', []))))
     return rules, re.compile(doc.get('ids', r'(?!x)x'))
 
 

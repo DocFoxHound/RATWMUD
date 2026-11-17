@@ -40,6 +40,7 @@
 #include "RatwCalendar.h"
 #include "RatwGame.h"
 #include "RatwTalk.h"
+#include "RatwTopics.h"
 
 #include <algorithm>
 #include <chrono>
@@ -142,8 +143,9 @@ const char* weatherWord(Weather w)
 struct Args
 {
     std::string world, mode = "frozen", fixtures, profile = "L1", out, runName, checkpoint, libraryFrom, talkData, golden,
-                record, ablate, places;
+                record, ablate, places, dumpTopics, topics;
     std::uint64_t seed = 1;
+    bool dumpTopicsAll = false;
     double hours = -1, days = 25, warm = 0, freezeAt = 0;
     long exchanges = -1;
     bool bless = false;
@@ -190,6 +192,12 @@ class Sim
     bool checkFixture(const json::Value& manifest);
     std::vector<Listener> listeners_;
     std::ofstream lines_, convs_;
+    // --dump-topics (doc 84, Phase 5): every topic the director weighs, hashed a step at a time (or every one, with
+    // --dump-topics-all), so two builds' directors can be compared exactly.
+    std::ofstream topics_;
+    std::uint64_t topicHash_ = 1469598103934665603ULL;
+    long topicCount_ = 0;
+    void flushTopics(double t);
     std::mt19937_64 rng_;
     long exchanges_ = 0, lineCount_ = 0;
     double startTime_ = 0, endTime_ = 0, startDay_ = 0;
@@ -204,7 +212,7 @@ class Sim
     {
         json::Value head;
         std::vector<Line> lines;
-        std::string topic, opener, dialectOf0, dialectOf1;
+        std::string topic, opener, answerer, dialectOf0, dialectOf1;
     };
     std::map<std::uint64_t, Conv> open_;                     // By the run's own exchange number.
     std::map<std::uint64_t, std::uint64_t> convIds_;         // The game's exchange id -> the run's number.
@@ -213,6 +221,7 @@ class Sim
     std::map<std::string, json::Value> residents_;          // id -> facts (at first hearing)
     std::map<std::string, std::map<std::string, long>> heardBy_;   // id -> listener -> lines
     std::map<std::string, std::string> cellPlace_, cellRegion_;
+    std::shared_ptr<game::Game::TalkTiming> timing_ = std::make_shared<game::Game::TalkTiming>();   // (B1: every game's.)
     // Fixture replay.
     struct Checkpoint
     {
@@ -352,10 +361,24 @@ bool Sim::makeGame(const std::string& checkpoint)
     };
     if (!g_->start(problem_))
         return false;
+    g_->setTalkTiming(timing_);
     if (g_->talkLibrarySize() == 0)
     {
         problem_ = "the talk library at " + talkData_ + " didn't load";
         return false;
+    }
+    if (!args_.topics.empty())
+    {
+        // Another topics.json over the library's (doc 84, Phase 5: today's numbers, for ctest talk_topics).
+        std::ifstream in(args_.topics);
+        std::stringstream text;
+        text << in.rdbuf();
+        std::string why;
+        if (!in || !topics::load(text.str(), why))
+        {
+            problem_ = "--topics " + args_.topics + ": " + (why.empty() ? std::string("can't be read") : why);
+            return false;
+        }
     }
     hook();
     return true;
@@ -386,8 +409,37 @@ json::Value Sim::speakerFacts(const std::string& id)
     return facts;
 }
 
+void Sim::flushTopics(double t)
+{
+    if (!topicCount_)
+        return;
+    char buf[64];
+    std::snprintf(buf, sizeof buf, "%.3f %ld %016llx\n", t - startTime_, topicCount_, static_cast<unsigned long long>(topicHash_));
+    topics_ << buf;
+    topicHash_ = 1469598103934665603ULL;
+    topicCount_ = 0;
+}
+
 void Sim::hook()
 {
+    if (topics_.is_open())
+        g_->world().onTopic = [this](const std::string& a, const std::string& b, const AmbientTopic& t) {
+            char score[40];
+            std::snprintf(score, sizeof score, "%.17g", t.score);
+            std::string line = a + "|" + b + "|" + t.kind + "|" + score + "|" + t.source + "|" + t.subject + "|" + t.claim + "|" +
+                               t.said + "|" + t.incident + "|" + (t.passes ? "p" : "") + t.claimKind + "|" + t.object + "|" + t.seen;
+            for (const auto& [k, v] : t.talk)
+                if (k != "topic.subject_sex" && k != "topic.victim_sex")   // (Phase 6's pronouns: no part of a topic's weight.)
+                    line += "|" + k + "=" + v;
+            for (const auto& f : t.facts)
+                line += "|" + f;
+            for (const unsigned char c : line)
+                topicHash_ = (topicHash_ ^ c) * 1099511628211ULL;
+            topicHash_ = (topicHash_ ^ '\n') * 1099511628211ULL;
+            ++topicCount_;
+            if (args_.dumpTopicsAll)
+                topics_ << line << "\n";
+        };
     g_->onAmbientLine = [this](const game::Game::AmbientLine& l) {
         auto& w = g_->world();
         // The run's own number for the exchange: a game's ids start again in each fixture snapshot's new world.
@@ -450,16 +502,70 @@ void Sim::hook()
         v.add("to", l.to);
         v.add("entry", l.info.entry);
         v.add("alt", l.info.alt);
-        // Moves, obligations and tones come with Phase 2 (doc 84 §15.1): empty until then.
-        v.add("moves", json::Value::array());
-        v.add("owes", json::Value::array());
-        v.add("answers", json::Value::array());
+        // What the line does in the talk (doc 84 §15.1, Phase 2): its moves, what it makes due (owes; invites, soft),
+        // which of the line before it it answers, its tone, the claims it passes on or denies, the gist, its tags.
+        const auto list = [](const std::vector<std::string>& xs) {
+            auto a = json::Value::array();
+            for (const auto& x : xs)
+                a.push(x);
+            return a;
+        };
+        v.add("moves", list(l.info.moves));
+        v.add("owes", list(l.info.owes));
+        v.add("invites", list(l.info.invites));
+        v.add("answers", list(l.info.answers));
         v.add("topic", l.topic);
+        v.add("hour", hourOf(w.calendarDays()));   // (Its own moment: T2 judges a line by when it was said, Phase 5.)
+        // Phase 5 (§8.5, §8.7): the topic the line was said on (a talk may turn: C5), whether it stands on the talk
+        // ledger (a callback: C9), the goal it is a step of.
+        if (!l.info.topic.empty())
+            v.add("topic_now", l.info.topic);
+        if (l.info.callback)
+            v.add("callback", true);
+        if (!l.info.goal.empty())
+            v.add("goal", l.info.goal);
         v.add("depth", 0);
-        v.add("tone", "");
-        v.add("asserts", json::Value::array());
+        v.add("tone", l.info.tone);
+        if (l.info.best >= 0)
+        {
+            v.add("fit", l.info.fit);               // (Phase 3: how well it answered what was owed, and the best that held: C2.)
+            v.add("best", l.info.best);
+        }
+        v.add("asserts", list(l.info.asserts));
+        if (!l.toldKey.empty())
+            v.add("told_key", l.toldKey);           // (Slice 2's review: what it tells, turned to or not: K3 line by line.)
+        if (!l.info.bare.empty() && l.info.bare != l.text)
+            v.add("bare", l.info.bare);             // (Slice 2's review: the opener's own words, R1's key without the greeting.)
+        if (!l.info.denies.empty())
+            v.add("denies", list(l.info.denies));
+        if (!l.knew.empty())
+            v.add("to_knew", l.knew);               // (Phase 4: the one spoken to held the topic's claim before it began: T5.)
+        if (l.info.gist)
+            v.add("gist", true);
+        if (!l.info.tags.empty())
+        {
+            auto tags = json::Value::object();
+            for (const auto& [k, x] : l.info.tags)
+                tags.add(k, x);
+            v.add("tags", tags);
+        }
         v.add("dialect", who.string("_dialect"));
         v.add("accent", who.string("accent"));
+        // Phase 6: the accent the line was spoken in (accommodation: the scorecard's D1), the stance it aired (T4), and the
+        // topic's claim kind and kind as it was said (T2's pity and gladness).
+        if (!l.info.accent.empty())
+            v.add("spoken_accent", l.info.accent);
+        if (!l.info.issue.empty())
+        {
+            v.add("issue", l.info.issue);
+            v.add("stance", l.info.stance);
+            v.add("drift", l.info.drift);
+            v.add("basis", l.info.basis);
+        }
+        if (!l.claimKind.empty())
+            v.add("claim_kind", l.claimKind);
+        if (!l.topicKind.empty())
+            v.add("topic_kind", l.topicKind);
         auto layers = json::Value::array();
         for (const auto& x : who.array("_layers"))
             layers.push(x);
@@ -474,8 +580,13 @@ void Sim::hook()
         v.add("habits", habits);
         v.add("facts", hex(fnv(json::dump(who))));
         v.add("route", l.route);
+        if (!l.info.part.empty())
+            v.add("part", l.info.part);              // (§37: scene, exchange, edge or close.)
         v.add("text", l.text);
-        c.lines.push_back({v, l.who == c.opener ? 0 : 1});
+        // (The opener's side, the other's, or a third who joined: the control swaps lines within a side.)
+        c.lines.push_back({v, l.who == c.opener ? 0 : (c.answerer.empty() || l.who == c.answerer) ? 1 : 2});
+        if (l.who != c.opener && c.answerer.empty())
+            c.answerer = l.who;
         ++heardBy_[l.who][l.hearer];
         lines_ << json::dump(v) << '\n';
         ++lineCount_;
@@ -493,6 +604,14 @@ void Sim::hook()
         head.add("reason", e.reason);
         head.add("spoken", e.spoken);
         head.add("written", e.written);
+        if (!e.ended.empty())
+            head.add("ended", e.ended);             // (How the turn engine ended it: farewell, cap, nothing, curt...)
+        if (e.marked)
+            head.add("marked", true);               // (Phase 4: broken off with a line that says so: C3's marked break.)
+        if (!e.stake.empty())
+            head.add("stake", e.stake);             // (Phase 4: why a third joined: C8.)
+        if (e.dropped)
+            head.add("dropped", e.dropped);         // (Phase 4: a scene's turns dropped when they no longer held.)
         head.add("lines", double(c.lines.size()));
         auto chain = json::Value::array();
         for (const auto& id : e.chain)
@@ -504,6 +623,9 @@ void Sim::hook()
         for (const auto& l : c.lines)
             if (seen.insert(l.v.string("who")).second)
                 people.push(l.v.string("who"));
+        for (const auto& p : e.people)              // (Everyone in it, a third who joined last, said a word or not.)
+            if (seen.insert(p).second)
+                people.push(p);
         head.add("people", people);
         c.head = head;
         convs_ << json::dump(head) << '\n';
@@ -769,6 +891,7 @@ void Sim::placeListeners()
         return;
     }
     int n = 0;
+    int paired = 0;
     for (const auto& cell : chosen)
     {
         Listener l{"sim-" + profile_ + "-" + std::to_string(n++)};
@@ -776,7 +899,15 @@ void Sim::placeListeners()
             ch = char(std::tolower(static_cast<unsigned char>(ch)));
         placeListener(l, cell, middle(cell));
         listeners_.push_back(l);
+        paired += all[cell].paired;
+        std::cerr << "talk_sim: " << l.id << " listens in " << cell << " (" << kindOf(cell) << "; " << all[cell].free
+                  << " free there now, " << all[cell].paired << " with someone to talk to)\n";
     }
+    // (Ranked by this moment's crowds: a world saved in the small hours ranks the streets, where nobody will stand and
+    // talk all day. A ticking run from such a save says so, rather than listening to nothing for a hundred hours.)
+    if (args_.places.empty() && !fixture && !chosen.empty() && paired == 0)
+        std::cerr << "talk_sim: warning: nobody in " << profile_ << "'s places stands with anyone to talk to at game hour "
+                  << int(hourOf(w.calendarDays())) << "; its places are this moment's, not the day's (give --places)\n";
 }
 
 // What the profile does as time passes: the wanderer moves on every game hour; the regular comes and goes.
@@ -1140,9 +1271,17 @@ void Sim::writeShuffled()
                         continue;
                     const auto pick = others[std::size_t(r() % others.size())];
                     const auto& src = done_[pick.first].lines[pick.second].v;
-                    for (const char* k : {"entry", "alt", "used", "habits", "text", "route"})
+                    // (The line whole, with what it does: the moves are the line's, so the control's C1M is the
+                    // shuffled lines' own.)
+                    for (const char* k : {"entry", "alt", "used", "habits", "text", "route", "moves", "owes", "invites",
+                                          "answers", "tone", "asserts"})
                         if (const auto* x = src.find(k))
                             v.set(k, *x);
+                    for (const char* k : {"denies", "gist", "tags", "fit", "best"})
+                        if (const auto* x = src.find(k))
+                            v.set(k, *x);
+                        else
+                            v.erase(k);
                     v.set("shuffled_from", src.number("conv"));
                     break;
                 }
@@ -1232,6 +1371,21 @@ void Sim::writeResidents(double wall)
     meta.add("lines", double(lineCount_));
     meta.add("wall_seconds", wall);
     meta.add("exchanges_per_second", double(exchanges_) / std::max(1e-9, wall));
+    // B1 (doc 84 §16, Phase 4): the director's beats and looks, in milliseconds (this run's load included).
+    const auto stats = [](std::vector<double> xs) {
+        auto o = json::Value::object();
+        std::sort(xs.begin(), xs.end());
+        double sum = 0;
+        for (const double x : xs)
+            sum += x;
+        o.add("n", double(xs.size()));
+        o.add("mean", xs.empty() ? 0.0 : sum / double(xs.size()));
+        o.add("p99", xs.empty() ? 0.0 : xs[std::min(xs.size() - 1, std::size_t(double(xs.size()) * .99))]);
+        o.add("max", xs.empty() ? 0.0 : xs.back());
+        return o;
+    };
+    meta.add("beat_ms", stats(timing_->beats));
+    meta.add("look_ms", stats(timing_->looks));
     auto ls = json::Value::array();
     for (const auto& l : listeners_)
     {
@@ -1259,6 +1413,8 @@ int Sim::main()
         std::cerr << "talk_sim: " << problem_ << "\n";
         return 77;                                  // (ctest's skip: no git history here.)
     }
+    if (!args_.dumpTopics.empty())
+        topics_.open(args_.dumpTopics);
     std::string first = args_.checkpoint;
     if (args_.mode == "fixtures")
     {
@@ -1399,6 +1555,8 @@ int Sim::main()
             g_->world().advanceClock(dt);
             g_->ambient(dt);
         }
+        if (topics_.is_open())
+            flushTopics(t);
         if (++steps % 144000 == 0)
             std::cerr << "talk_sim " << args_.runName << ": " << (g_->world().time() - startTime_) / 3600 << " h, " << exchanges_
                       << " exchanges\n";
@@ -1473,6 +1631,9 @@ int main(int argc, char** argv)
             else if (s == "--talk-data") a.talkData = next();
             else if (s == "--ablate") a.ablate = next();
             else if (s == "--golden") a.golden = next();
+            else if (s == "--dump-topics") a.dumpTopics = next();
+            else if (s == "--dump-topics-all") a.dumpTopicsAll = true;
+            else if (s == "--topics") a.topics = next();
             else if (s == "--bless") a.bless = true;
             else if (s == "--record") a.record = next();
             else

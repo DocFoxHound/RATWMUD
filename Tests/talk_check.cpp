@@ -18,6 +18,13 @@
 //       Checks .talk and .grammar files against the library's facts, settings, grammars and groups, as Atlas and the
 //       Dungeon Master will before saving a character's table. Exit 1, with the reasons, if any is refused.
 //
+//   talk_check [--data DIR] --coverage [--profiles FILE] [--json] [--holes N]
+//       Doc 84 §15.4 (Phase 7): for every move a line can owe, every topic (topics.json) and every replier kind
+//       (Data/Talk/profiles.json, tools/talk_profiles.py: Ridgemere 3's residents clustered) at each band (strangers,
+//       acquaintances, friends, family): is there a move line (one with no concept, found by its move) doing it, or a
+//       variant of it, that holds for that kind on that topic? No rendering. The holes listed, by move; the core moves'
+//       (greet.return, react.news, react.complaint, answer.detail, accept_preclose, farewell.return, accept_decline)
+//       first. Exit 0; it lists, it doesn't judge (Phase 8's gate: no holes in the core moves).
 //   talk_check [--data DIR] --render-trees [--json] [--seed N]
 //       Every dialogue tree's NPC lines (Data/Talk/dialogue, doc 83) in every voice: plain and each dialect, at a light
 //       and a broad accent, each alternative filled in with sample facts. Exit 1 if a line comes out longer than 160
@@ -227,8 +234,25 @@ int explain(const talk::Library& lib, const talk::Query& q, std::uint64_t seed, 
     std::cout << "\nchosen: " << trace.why << "\n";
     for (const auto& step : trace.steps)
         std::cout << "  " << step << "\n";
-    for (const auto& [who, text] : said.lines)
-        std::cout << (who == 0 ? "  a: " : "  b: ") << text << "\n";    for (const auto& e : said.effects)
+    for (std::size_t i = 0; i < said.lines.size(); ++i)
+    {
+        std::cout << (said.lines[i].first == 0 ? "  a: " : "  b: ") << said.lines[i].second << "\n";
+        // What it does in the talk (doc 84, Phase 2): its moves, what it owes, what it answers, its tone.
+        if (i < said.info.size() && !said.info[i].moves.empty())
+        {
+            const auto& l = said.info[i];
+            const auto join = [](const std::vector<std::string>& v) {
+                std::string out;
+                for (const auto& x : v)
+                    out += (out.empty() ? "" : ", ") + x;
+                return out;
+            };
+            std::cout << "       does " << join(l.moves) << (l.owes.empty() ? "" : "; owes " + join(l.owes))
+                      << (l.invites.empty() ? "" : "; invites " + join(l.invites)) << (l.answers.empty() ? "" : "; answers " + join(l.answers))
+                      << "; " << l.tone << (l.asserts.empty() ? "" : "; asserts " + join(l.asserts)) << "\n";
+        }
+    }
+    for (const auto& e : said.effects)
         std::cout << "  remembers (" << e.scope << " " << e.owner << "): " << e.key << "=" << e.value
                   << (e.days < 0 ? " for good" : " for " + (std::ostringstream() << e.days).str() + " days") << "\n";
     if (many > 0)
@@ -245,6 +269,202 @@ int explain(const talk::Library& lib, const talk::Query& q, std::uint64_t seed, 
             std::cout << "  " << n << "  " << id << "\n";
     }
     return said.id.empty() ? 1 : 0;
+}
+
+// The coverage check (--coverage, doc 84 §15.4): a move line for every owed move, topic and replier kind.
+int coverage(const talk::Library& lib, const std::string& data, const std::string& profilesFile, bool asJson, int listHoles)
+{
+    const auto read = [](const std::string& file, json::Value& out) {
+        std::ifstream in(file);
+        std::stringstream text;
+        text << in.rdbuf();
+        std::string error;
+        return in.good() || !text.str().empty() ? json::parse(text.str(), out, error) : false;
+    };
+    json::Value profiles, topicsDoc;
+    if (!read(profilesFile, profiles) || !profiles.isObject())
+    {
+        std::cerr << "talk_check --coverage: no replier kinds in " << profilesFile << " (tools/talk_profiles.py ridgemere3)\n";
+        return 1;
+    }
+    std::vector<std::string> topics;
+    if (read(data + "/topics.json", topicsDoc))
+        for (const auto& [name, t] : topicsDoc["topics"].fields())
+            topics.push_back(name);
+    if (topics.empty())
+        topics = {"smalltalk"};
+    // Every move a line can owe: what any move expects, and what any line writes it owes.
+    std::set<std::string> owed;
+    for (const auto& [name, m] : lib.moves().all())
+        owed.insert(m.expects.begin(), m.expects.end());
+    for (const auto& e : lib.entries())
+        for (const auto& o : e.owes)
+            if (o.who != "self")
+                owed.insert(o.moves.begin(), o.moves.end());
+    static const std::vector<std::string> Core{"greet.return", "react.news", "react.complaint", "answer.detail",
+                                               "accept_preclose", "farewell.return", "accept_decline"};
+    // The move lines (no concept) doing each owed move or a variant of it.
+    std::map<std::string, std::vector<const talk::Entry*>> lines;
+    for (const auto& m : owed)
+        if (const auto* list = lib.byMove(m))
+            for (const auto i : *list)
+                if (lib.entries()[i].concepts.empty() && !lib.entries()[i].scene)
+                    lines[m].push_back(&lib.entries()[i]);
+    struct Kind
+    {
+        std::string id, region, label;
+        int count = 0;
+        talk::Facts facts;
+    };
+    std::vector<Kind> kinds;
+    for (const auto& k : profiles["kinds"].items())
+    {
+        Kind kind;
+        kind.id = k.string("id");
+        kind.region = k.string("region", "ridgemere");
+        kind.count = int(k.number("count"));
+        for (const auto& [key, v] : k["axes"].fields())
+            kind.label += (kind.label.empty() ? "" : " ") + v.asString(std::string());
+        for (const auto& [key, v] : k["facts"].fields())
+            if (v.isString())
+                kind.facts[key] = v.asString();
+        kind.facts["id"] = "kind_" + kind.id;
+        kinds.push_back(std::move(kind));
+    }
+    std::vector<std::string> bands;
+    for (const auto& b : profiles["bands"].items())
+        bands.push_back(b.asString(std::string()));
+    if (kinds.empty() || bands.empty())
+    {
+        std::cerr << "talk_check --coverage: " << profilesFile << " has no kinds or bands\n";
+        return 1;
+    }
+    // The one who made the answer due: an ordinary grown resident (the commonest kind, another of them).
+    talk::Facts other = kinds.front().facts;
+    other["id"] = "kind_other";
+    struct Tally
+    {
+        long cells = 0, holes = 0;
+        std::map<std::string, int> byTopic, byKind, byBand;
+        std::vector<std::string> examples;
+    };
+    std::map<std::string, Tally> tally;
+    long people = 0;
+    for (const auto& k : kinds)
+        people += k.count;
+    for (const auto& topic : topics)
+        for (const auto& k : kinds)
+            for (const auto& band : bands)
+            {
+                talk::Query q;
+                q.concept = "talk." + topic;
+                q.a.facts = k.facts;
+                q.b.facts = other;
+                q.a.facts["knows"] = "no";
+                q.facts = {{"pair.band", band}, {"pair.named", band == "strangers" ? "no" : "yes"}, {"here.time", "day"},
+                           {"here.weather", "clear"}, {"here.outdoors", "clear"}, {"here.place", "street"},
+                           {"here.region", k.region}, {"conv.topic", topic}, {"conv.beat", "2"}};
+                if (band == "family")
+                    q.facts["pair.kin"] = "siblings";
+                for (const auto& m : owed)
+                {
+                    auto& t = tally[m];
+                    ++t.cells;
+                    const auto found = lines.find(m);
+                    const bool held = found != lines.end() && std::any_of(found->second.begin(), found->second.end(),
+                                                                          [&](const talk::Entry* e) { return lib.fits(*e, q, 0); });
+                    if (held)
+                        continue;
+                    ++t.holes;
+                    ++t.byTopic[topic];
+                    ++t.byKind[k.id + " " + k.label];
+                    ++t.byBand[band];
+                    if (int(t.examples.size()) < listHoles)
+                        t.examples.push_back(topic + " / " + k.id + " " + k.label + " / " + band);
+                }
+            }
+    long cells = 0, holes = 0, coreHoles = 0;
+    for (const auto& [m, t] : tally)
+    {
+        cells += t.cells;
+        holes += t.holes;
+        if (std::find(Core.begin(), Core.end(), m) != Core.end())
+            coreHoles += t.holes;
+    }
+    const auto top = [](const std::map<std::string, int>& counts, std::size_t n) {
+        std::vector<std::pair<int, std::string>> order;
+        for (const auto& [k, v] : counts)
+            order.push_back({v, k});
+        std::sort(order.rbegin(), order.rend());
+        order.resize(std::min(order.size(), n));
+        return order;
+    };
+    if (asJson)
+    {
+        auto out = json::Value::object();
+        out.set("moves_owed", json::Value(double(owed.size())));
+        out.set("topics", json::Value(double(topics.size())));
+        out.set("kinds", json::Value(double(kinds.size())));
+        out.set("residents_covered", json::Value(double(people)));
+        out.set("bands", json::Value(double(bands.size())));
+        out.set("cells", json::Value(double(cells)));
+        out.set("holes", json::Value(double(holes)));
+        out.set("hole_rate", json::Value(cells ? double(holes) / double(cells) : 0.0));
+        out.set("core_holes", json::Value(double(coreHoles)));
+        auto byMove = json::Value::object();
+        for (const auto& [m, t] : tally)
+        {
+            auto row = json::Value::object();
+            row.set("core", json::Value(std::find(Core.begin(), Core.end(), m) != Core.end()));
+            row.set("lines", json::Value(double(lines.count(m) ? lines.at(m).size() : 0)));
+            row.set("cells", json::Value(double(t.cells)));
+            row.set("holes", json::Value(double(t.holes)));
+            auto topicsOut = json::Value::object();
+            for (const auto& [n, name] : top(t.byTopic, 8))
+                topicsOut.set(name, json::Value(double(n)));
+            row.set("worst_topics", topicsOut);
+            auto bandsOut = json::Value::object();
+            for (const auto& [name, n] : t.byBand)
+                bandsOut.set(name, json::Value(double(n)));
+            row.set("by_band", bandsOut);
+            auto ex = json::Value::array();
+            for (const auto& e : t.examples)
+                ex.push(json::Value(e));
+            row.set("examples", ex);
+            byMove.set(m, row);
+        }
+        out.set("by_move", byMove);
+        std::cout << json::dump(out) << "\n";
+        return 0;
+    }
+    std::cout << "coverage (doc 84 §15.4): " << owed.size() << " moves a line can owe x " << topics.size() << " topics x "
+              << kinds.size() << " replier kinds (" << people << " residents) x " << bands.size() << " bands = " << cells
+              << " cells; " << holes << " holes (" << (cells ? 100.0 * double(holes) / double(cells) : 0.0) << "%), "
+              << coreHoles << " in the core moves\n";
+    std::vector<std::string> order(Core.begin(), Core.end());
+    for (const auto& [m, t] : tally)
+        if (std::find(Core.begin(), Core.end(), m) == Core.end())
+            order.push_back(m);
+    for (const auto& m : order)
+    {
+        const auto& t = tally[m];
+        const bool core = std::find(Core.begin(), Core.end(), m) != Core.end();
+        std::cout << (core ? "core " : "     ") << m << ": " << (lines.count(m) ? lines.at(m).size() : 0) << " move lines, "
+                  << t.holes << " of " << t.cells << " cells a hole";
+        if (t.holes)
+        {
+            std::cout << "; worst topics";
+            for (const auto& [n, name] : top(t.byTopic, 3))
+                std::cout << " " << name << " " << n;
+            std::cout << "; by band";
+            for (const auto& [name, n] : t.byBand)
+                std::cout << " " << name << " " << n;
+        }
+        std::cout << "\n";
+        for (const auto& e : t.examples)
+            std::cout << "        " << e << "\n";
+    }
+    return 0;
 }
 
 // key=value onto the query: a.X and b.X are a speaker's, the rest the moment's.
@@ -274,7 +494,9 @@ int main(int argc, char** argv)
     int many = 0;
     double runHours = 0;
     std::string character, dialect, grammarFile, rulesFile;
-    bool all = false, validating = false, residents = false, asJson = false, renderingTrees = false;
+    bool all = false, validating = false, residents = false, asJson = false, renderingTrees = false, covering = false;
+    std::string profilesFile;
+    int listHoles = 0;
     for (int i = 1; i < argc; ++i)
     {
         const std::string a = argv[i];
@@ -295,6 +517,12 @@ int main(int argc, char** argv)
             residents = true;
         else if (a == "--render-trees")
             renderingTrees = true;
+        else if (a == "--coverage")
+            covering = true;
+        else if (a == "--profiles")
+            profilesFile = next();
+        else if (a == "--holes")
+            listHoles = std::stoi(next());
         else if (a == "--json")
             asJson = true;
         else if (a == "--run")
@@ -367,6 +595,15 @@ int main(int argc, char** argv)
         }
         return renderTrees(lib, seed, asJson);
     }
+    if (covering)
+    {
+        if (!lib.load(data, problem))
+        {
+            std::cerr << "the talk library doesn't load:\n" << problem << "\n";
+            return 1;
+        }
+        return coverage(lib, data, profilesFile.empty() ? data + "/profiles.json" : profilesFile, asJson, listHoles);
+    }
     if (validating)
     {
         if (validate.empty())
@@ -391,6 +628,13 @@ int main(int argc, char** argv)
             if (!ok)
                 std::cout << problem << "\n", ++refused;
         }
+        // What the files' lines say they do (doc 84, Phase 2): written moves, moves by an answer concept's alias, none.
+        int written = 0, aliased = 0, none = 0;
+        for (const auto& e : lib.entries())
+            (e.aliasMoves ? aliased : std::any_of(e.does.begin(), e.does.end(), [](const auto& t) { return !t.empty(); }) ? written : none) += 1;
+        if (!lib.moves().empty() && lib.size() > 0)
+            std::cout << "moves: " << written << " entries say what they do, " << aliased << " by their concept's alias, " << none
+                      << " not yet\n";
         return refused ? 1 : 0;
     }
     if (world.empty())

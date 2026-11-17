@@ -1,0 +1,268 @@
+# Agendas, goals and the ledger (Docs/Design/84 §8.5, §8.7; Phase 5): the move lines a talk needs now that it has a reason
+# and a memory. Each goal (frames.json's goals) is pursued in a lull by the move lines for its plan, which test
+# conv.goal so they are said for it alone (priority 10 where another line makes the same move); what they owe is
+# answered by the lines after them. The rest are callbacks: what the two said before (the talk ledger: pair.last_talk,
+# pair.talked.<topic>, a promise let lapse, an invitation missed).
+
+## Meeting again the same day (frames.json's again_today: pair.last_talk under 0.3 days), said before the opener; once a
+## day each (Phase 7: with every opener saying what it does, the frame had "Back again?" before 83% of a busy place's
+## talks).
+
+rule ag_again_any
+does again.open
+when pair.last_talk<0.3
+cooldown 1d
+say Back again? | You again! | Twice in a day, is it? | Here we are again. | Back so soon?
+
+rule ag_again_any2
+does again.open
+when pair.last_talk<0.3
+cooldown 1d
+say Can't keep away, then. | Again! | Well, look who it is again. | Hello again.
+
+## learn_name: two who don't know each other's names, away from work. The one spoken to knows the speaker's name after.
+
+rule ag_introduce
+does introduce
+when conv.goal=learn_name
+say I don't think we've met. I'm #self.first#. | We've not been introduced, I think. #self.first#. | I'm #self.first#, by the way. | #self.first#, since we're talking. | I should say: I'm #self.first#.
+
+rule ag_introduce_back
+does introduce.return
+say #self.first#. Good to know you. | And I'm #self.first#. | #self.first#. Pleased to know you. | Glad to know you. I'm #self.first#.
+
+rule ag_introduce_back_shy
+does introduce.return
+when self.talk=quiet
+say #self.first#. | Oh. #self.first#. | I'm #self.first#.
+
+## comfort, hurt, robbed: asking after one who has lost someone, been hurt, or been robbed; and the answers.
+
+rule ag_comfort_kin
+does ask.after
+when conv.goal=comfort other.mourning=kin
+tone tender
+say How are you keeping, since your loss? | I was sorry to hear about your loss. How are you bearing it? | Are you eating? Since the burying, I mean. | I've been thinking of you. How are you holding up?
+
+rule ag_comfort_friend
+does ask.after
+when conv.goal=comfort other.mourning=friend
+tone tender
+say I heard you lost a friend. I'm sorry. How are you? | You've lost someone dear, I hear. Are you all right?
+
+rule ag_hurt_light
+does ask.after
+when conv.goal=hurt other.injured=light
+say How's the hurt? Mending? | You're walking stiff. Does it pain you? | That's a nasty knock you've had. Healing, is it?
+
+rule ag_hurt_bad
+does ask.after
+when conv.goal=hurt other.injured=bad
+tone serious
+say You look badly hurt. Should you even be up? | Have you had anyone look at that? It looks bad.
+
+rule ag_robbed
+does ask.after
+when conv.goal=robbed other.robbed=yes
+say I heard you were robbed. Did you get anything back? | Any word on what was taken from you? | Are you all right, after the robbing?
+
+rule ag_after_grief
+does answer.after
+when self.mourning=kin|friend
+tone tender
+priority 10
+say Some days are easier than others. | I manage. It's the evenings that are hard. | Thank you for asking. Truly. | Not well. But I'm up, and that's something.
+
+rule ag_after_mending
+does answer.after.better
+when self.injured=light
+priority 10
+say Mending, slowly. | Better than it was. | I'll live. | Stiff, but better.
+
+rule ag_after_worse
+does answer.after.worse
+when self.injured=bad
+promise self: healer 2
+priority 10
+say It's no better, if I'm honest. I'll see the healer, I promise. | Bad. I'll get it seen to tomorrow, I promise you.
+
+rule ag_after_robbed
+does answer.after.nothing
+when self.robbed=yes
+priority 10
+say Not a thing. The Watch shrugged. | Nothing yet. I've stopped hoping. | Not a penny of it. | Some of it. Not the best of it.
+
+rule ag_after_any
+does answer.after
+say Well enough. | Getting by. | Better, thank you. | I manage.
+
+## nag: a talk-only promise let lapse (pair's other.promised=lapsed); and missed: an invitation not kept.
+
+rule ag_nag_healer
+does ask.after
+when conv.goal=nag other.promised=lapsed other.promise_what=healer
+say You said you'd see the healer. Did you? | Well? Did you go to the healer, as you said? | That hurt of yours. You never went to the healer, did you?
+
+rule ag_nag_hand
+does ask.after
+when conv.goal=nag other.promised=lapsed other.promise_what=hand
+say You said you'd bring it by. I'm still waiting. | I'm still waiting on what you said you'd bring.
+
+rule ag_nag_visit
+does ask.after
+when conv.goal=nag other.promised=lapsed other.promise_what=visit
+say You said you'd come by. I kept a cup back for you. | That evening you promised me. Still waiting.
+
+rule ag_after_nagged
+does answer.after.nothing
+when self.promised=lapsed
+priority 10
+say I meant to. I will, I will. | Don't start. I'll get to it. | I know, I know. Soon. | It slipped my mind. I'm sorry.
+
+rule ag_missed
+does ask.after
+when conv.goal=missed pair.kept_invite=no
+say No sign of you the other night. I waited a while. | You never came, the other evening. | I sat a good hour, waiting on you.
+
+rule ag_after_missed
+does answer.after.nothing
+when pair.kept_invite=no
+priority 10
+say I'm sorry. Something kept me. | I clean forgot. Forgive me. | I couldn't get away. Another time?
+
+## mend: the last talk between them went sour (pair.last_outcome) within a week.
+
+rule ag_mend
+does apologise
+when conv.goal=mend
+priority 10
+tone serious
+say About the other day. I spoke out of turn. | I've been meaning to say: I was short with you, last time. I'm sorry. | Last time we spoke, I wasn't at my best. No hard feelings? | We parted badly, last time. My fault. | I was sharp with you. I've thought about it since.
+
+rule ag_accept_mend
+does accept_apology
+when conv.move=apologise
+say Think nothing of it. | Already forgotten. | We're square. | It's done with.
+
+## warn: talk of the bandits' camp to one about to travel.
+
+rule ag_warn
+does give.advice
+when conv.goal=warn
+priority 10
+tone serious
+say Keep off the road a while, if you can help it. | If you're going out on the road, go in company. | Travel by day, and not alone. Not with that camp out there.
+
+rule ag_thank_warn
+does thank
+when conv.goal=warn
+say I'll mind it. #thanks#. | Good advice. I'll take it. | I'll go careful, don't fret.
+
+## favour: one who is poor, to one they trust: a moment first, then the asking.
+
+rule ag_pre_request
+does pre.request
+when conv.goal=favour
+say Have you a moment? I've a favour to ask. | Can I ask you something? It's a favour. | I hate to ask, but... have you a moment?
+
+rule ag_go_ahead
+does go_ahead
+when self.talk!=quiet
+say Ask away. | #bc_go_on_then# | What is it? | Out with it.
+
+rule ag_go_ahead_quiet
+does go_ahead
+say #bc_go_on# | Ask. | Mm?
+
+rule ag_put_off
+does put_off
+when self.working=yes self.shift=during
+say Not now, I'm afraid. I'm run off my feet. | Later, if it'll keep. I'm working.
+
+rule ag_request
+does request
+when conv.goal=favour conv.move=go_ahead
+priority 10
+say Could you lend me a few pennies till the week's out? | Could you spare a loaf? Things are lean just now. | Could you put a word in for me, for any work going?
+
+rule ag_grant
+does grant
+when conv.goal=favour self.wealth=comfortable|rich
+priority 10
+promise self: hand 2
+say I can do that. I'll bring it by tomorrow. | Of course. Leave it with me; I'll bring it round. | For you, aye. I'll see to it tomorrow.
+
+rule ag_decline_favour
+does decline
+when conv.goal=favour self.wealth=destitute|poor
+priority 10
+say I would, truly, but I've barely enough for my own. Next week, if I can. | I wish I could. I'm as skint as you are, this month. | If I had it, it'd be yours. I haven't, not this week.
+
+rule ag_accept_decline_favour
+does accept_decline
+when conv.goal=favour
+say No, I understand. Times are what they are. | I shouldn't have asked. Never mind it. | Fair enough. I'll manage.
+
+## visit: friends or kin who don't share a roof, in a tavern: to meet here again within two days.
+
+rule ag_invite
+does invite
+when conv.goal=visit
+invite here 19 2
+say Come by tomorrow evening? I'll stand you a cup. | Meet me here tomorrow, after work? We'll have a proper talk. | Same time tomorrow? I'll keep a seat.
+
+rule ag_accept_invite
+does accept_invite
+say I'll be here. | Count on it. | I'd like that. | Tomorrow, then.
+
+rule ag_decline_invite
+does decline
+when conv.move=invite
+priority 10
+promise self: visit 4
+say I can't tomorrow. Another time, I promise. | Not tomorrow, I'm spoken for. Soon, though, I promise.
+
+## Callbacks: what the two said the last time on a topic (pair.talked.<topic>: days since), in its opener's breath.
+
+rule ag_cb_weather
+when concept=talk.weather pair.talked.weather<3
+does give.opinion
+say No better than when we last spoke, is it? | Still this weather, then. | Same sky as the other day. I'm sick of it.
+
+rule ag_cb_work
+when concept=talk.work pair.talked.work<3
+does tell.self
+say Still at it, same as I said. | No change at work since I saw you. | Same work, same aches, same as I told you.
+
+rule ag_cb_family
+when concept=talk.family pair.talked.family<3
+does ask.how
+say And how's the house, since we last spoke? | All well at home, since? | How's everyone, since the other day?
+
+rule ag_cb_prices
+when concept=talk.prices pair.talked.prices<3
+does tell.complaint
+say Prices again. You'd think they'd settle. | #topic.what.capitalize# again. You'd think it would settle.
+
+rule ag_cb_prices_up
+when concept=talk.prices pair.talked.prices<3 topic.dir=up
+does tell.complaint
+say #topic.what.capitalize#, dearer than when we spoke of it last. | I said #topic.what# would go this way, didn't I? Dearer again.
+
+rule ag_cb_prices_down
+when concept=talk.prices pair.talked.prices<3 topic.dir=down
+does tell.news
+say #topic.what.capitalize# #topic.is# cheaper than when we spoke of it last. | You remember #topic.what#? It's come down since we spoke.
+
+## A third who joins for the love of the topic (Phase 5: one who likes to talk, the talk on their favourite topic,
+## topics.json's favourites, and they know both): Game::joiners' stake "favourite". Under six words, never distinctive.
+
+rule ag_join_favourite
+does join.add
+when conv.stake=favourite
+say Mind if I join in? | Ooh, I love this. | Now you're talking. | Count me in on this. | Don't leave me out. | My sort of talk, this.
+
+rule ag_join_favourite2
+does join.add
+when conv.stake=favourite
+say Oh, let me in. | I've thoughts on that. | Go on, I'm listening. | Ask me about that. | Same as I always say.

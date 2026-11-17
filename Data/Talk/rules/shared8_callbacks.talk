@@ -1,0 +1,310 @@
+# The shared lines, Phase 8 session 2 (Docs/Design/84 §8.7, §33.1, §33.3): callbacks, lines that remember the two's
+# last talks (the talk ledger, Phase 5): when they last talked (pair.last_talk, days), what of (pair.talked.<topic>,
+# days since) and how it went (pair.recall.<topic>: warmed, soured, quarrelled...), an invitation kept (pair.kept_invite).
+# A line whose criteria read the ledger is a callback (the scorecard's C9).
+#
+# A word in an opener's breath (a `recall` line, which the engine says half the time one holds, after a thread's
+# return or instead of it) that the two have been on the topic lately, or how it went; long-missed friends' openers
+# (concept=talk.<topic>: the one place in the shared lines where the opener is the point, §33.1) that ask where the other's been (owed
+# answer.whereabouts) or how they are (check_in); and kin's first words of the day (kin.open: "Mum.", never a "Good
+# day" between kin), after they've been apart a while. The ledger's notes include talk out of anyone's hearing (the
+# daily gossip), so "we were on about it" is true wherever a listener stands. Nothing here claims what was said, only
+# that it was talked of, and how it went where that's known.
+
+## Said in the opener's breath (a `recall` line, the engine's, half the time when one holds): the two were on this
+## topic lately (pair.talked.<topic>: days since), or how it went then (pair.recall.<topic>). Statements, so whatever
+## the opener after them says follows on.
+
+rule s8cb_weather
+does recall
+when conv.topic=weather pair.talked.weather<3
+say We're always on about the weather, you and I. | Weather again. We never tire of it. | Same sky we were moaning about lately. | You'd think we'd run out of things to say about the sky. | Still the sky, then. It's all we talk of.
+
+rule s8cb_work
+does recall
+when conv.topic=work pair.talked.work<3
+say Work again. Nothing's changed since we last talked of it. | We were on about work lately, too. | Same job, same grumbles, since we last talked of it. | Work, work. We're a dull pair, you and I.
+
+rule s8cb_family
+does recall
+when conv.topic=family pair.talked.family<4
+say We were on about family lately too. | Family again. It's never far off, is it. | Home and kin, every time we meet.
+
+rule s8cb_food
+does recall
+when conv.topic=food pair.talked.food<3
+say Food again. You and I never stop. | We were on about supper lately too. | Every time we meet, it's food. | Supper again. You've a one-track mind, and so have I.
+
+rule s8cb_pastimes
+when conv.topic=pastimes pair.talked.pastimes<4
+does recall
+say We were on about our idle hours lately, too. | Pastimes again. We do love a natter about them. | Here we are on pastimes again.
+
+rule s8cb_health
+does recall
+when conv.topic=health pair.talked.health<4
+tone tender
+say We were on about aches and pains lately too. | Health again. We're getting old, you and I. | Every time, it's how we're keeping.
+
+rule s8cb_animals
+does recall
+when conv.topic=animals pair.talked.animals<4
+say Beasts again. We're a pair, aren't we. | We were on about beasts lately, too. | Beasts and more beasts. We never tire of them.
+
+rule s8cb_memories
+does recall
+when conv.topic=memories pair.talked.memories<4
+say We were remembering lately too. Getting old, the pair of us. | Back to the old days again. | The old days again. We'll wear them thin.
+
+rule s8cb_dreams
+does recall
+when conv.topic=dreams pair.talked.dreams<4
+say Dreams again. We're a pair of dreamers. | We were on about dreams lately too. | More dreams. The nights are busy, it seems.
+
+rule s8cb_faith
+does recall
+when conv.topic=faith pair.talked.faith<4
+say We were on about the Bright One lately, too. | The chapel again. We're a pious pair. | Faith again, you and I.
+
+rule s8cb_travel
+does recall
+when conv.topic=travel pair.talked.travel<4
+say Roads again. We do go on about them. | Every time we meet, it's the road. | We were talking travel lately, too.
+
+rule s8cb_land
+does recall
+when conv.topic=land pair.talked.land<4
+say The land again. It's never far from our talk. | We always come back to the fields, you and I. | Fields and more fields, every time we meet.
+
+rule s8cb_season
+does recall
+when conv.topic=season pair.talked.season<4
+say The season's turned a little since we last talked of it of it. | Still this time of year, still the same talk. | Another few days into the season since we last talked of it.
+
+rule s8cb_home
+does recall
+when conv.topic=home pair.talked.home<3
+say Home again. You and I always come round to it. | We were on about the house only lately. | Every time we meet, it's home and hearth.
+
+rule s8cb_friends
+does recall
+when conv.topic=friends pair.talked.friends<3
+say We talk of folk every time, don't we. | Back to who's who, are we. | Folk again. We're as bad as each other. | Folk, folk. We're worse than the gossips.
+
+rule s8cb_prices
+does recall
+when conv.topic=prices pair.talked.prices<3
+say Prices again. It's all anyone talks of. | We were on about the cost of things lately, too. | Every time we meet, it's money.
+
+rule s8cb_road
+does recall
+when conv.topic=bandits pair.talked.bandits<3
+tone serious
+say The road again. It's never off our minds. | We were on about the road lately, too. | Still the same worry, since we last talked of it.
+
+rule s8cb_gossip
+does recall
+when conv.topic=gossip pair.talked.gossip<2
+say More talk. We're as bad as the rest. | Here we are at the gossip again. | We do like a bit of news, you and I.
+
+## How it went the last time on it (pair.recall.<topic>)
+
+rule s8cb_soured_weather
+does recall
+when conv.topic=weather pair.recall.weather=soured|quarrelled
+say Let's not fall out over the weather again. | We'll keep it civil this time, the sky and all. | No quarrelling about clouds, mind.
+
+rule s8cb_soured_work
+does recall
+when conv.topic=work pair.recall.work=soured|quarrelled
+say Let's not row about work again. | I'll keep my temper this time, about work. | Work, but calmly this time.
+
+rule s8cb_soured_family
+does recall
+when conv.topic=family pair.recall.family=soured|quarrelled
+tone serious
+say Family. Gently, this time. | Last time we spoke of home, it went badly. Let's do better. | I'll mind my tongue about family, this time.
+
+rule s8cb_soured_faith
+does recall
+when conv.topic=faith pair.recall.faith=soured|quarrelled
+say We'll keep the Bright One out of a quarrel, this time. | Faith, but no fighting about it. | Let's not cross words over the chapel again.
+
+rule s8cb_soured_prices
+does recall
+when conv.topic=prices pair.recall.prices=soured|quarrelled
+say Money again. Let's not fall out over it this time. | Prices, but no hard words, mind.
+
+rule s8cb_soured_friends
+does recall
+when conv.topic=friends pair.recall.friends=soured|quarrelled
+say No hard words today, I hope. | I've been thinking about how we left it. | Friends again, after last time?
+
+rule s8cb_warmed_memories
+does recall
+when conv.topic=memories pair.recall.memories=warmed
+say I liked remembering with you, last time. | That was a good talk, the old days. | You got me thinking, last time.
+
+rule s8cb_warmed_pastimes
+does recall
+when conv.topic=pastimes pair.recall.pastimes=warmed
+say That was a good talk last time. | I enjoyed our last natter about idle hours. | Our last natter about pastimes did me good.
+
+rule s8cb_warmed_food
+does recall
+when conv.topic=food pair.recall.food=warmed
+say I've been hungry since our last talk about food. | You had me drooling last time. | Last time we talked food, I went home starving.
+
+rule s8cb_warmed_family
+does recall
+when conv.topic=family pair.recall.family=warmed
+say It did me good, talking of home last time. | I liked hearing about your lot, last time. | Last time cheered me, that talk of home.
+
+rule s8cb_broken_any
+does recall
+when pair.last_outcome=broken
+say We were cut off, last time. | We never did finish, last time. | Where were we, before we were stopped?
+
+## Long missed (pair.last_talk: a week and more since they talked)
+
+rule s8cb_long_where
+when concept=talk.smalltalk|talk.day|talk.friends pair.last_talk>=7
+does ask.whereabouts
+say It's been an age! Where've you been hiding? | Haven't seen you in days. Where've you been? | Well! Where have you been keeping yourself?
+
+rule s8cb_long_checkin
+when concept=talk.smalltalk|talk.day|talk.friends|talk.family pair.last_talk>=7
+does check_in
+say Haven't seen you in days. All well? | It's been a while. You're keeping all right? | There you are! Not ailing, I hope?
+
+rule s8cb_long_month
+when concept=talk.smalltalk|talk.day|talk.friends pair.last_talk>=20
+does tell.self
+say It must be near a month since we talked. | Weeks, it's been! I'd almost forgotten your face. | A whole month and not a word between us.
+
+## An invitation kept, or not (pair.kept_invite)
+
+rule s8cb_invite_kept
+when concept=talk.smalltalk|talk.friends|talk.day pair.kept_invite=yes
+does tell.self
+say Good, the other evening. We should do it again. | I enjoyed our evening. Thank you for coming. | That was a good night, the other day.
+
+rule s8cb_invite_missed
+when concept=talk.smalltalk|talk.friends|talk.day pair.kept_invite=no
+does tell.self
+say I waited for you, the other evening. | You never came, the other night. I kept a seat. | No sign of you, that evening. Never mind.
+
+## Kin's first words of the day (kin.open), once they've been apart a while (not again today: that's again.open)
+
+rule s8cb_kin_mum
+does kin.open
+when pair.kin=parent pair.elder=b other.sex=female pair.last_talk>=0.3
+say #mum#. | #mum#! | Oh. #mum#. | There you are, #mum#.
+
+rule s8cb_kin_dad
+does kin.open
+when pair.kin=parent pair.elder=b other.sex=male pair.last_talk>=0.3
+say #dad#. | #dad#! | Oh. #dad#. | There you are, #dad#.
+
+rule s8cb_kin_pup
+does kin.open
+when pair.kin=parent pair.elder=a other.stage=young|adolescent pair.last_talk>=0.3
+say There's my pup. | There you are, you. | Oh, it's you, pup. | Come here, you.
+
+rule s8cb_kin_grown
+does kin.open
+when pair.kin=parent pair.elder=a other.stage=adult|old pair.last_talk>=0.3
+say There you are. | Oh, it's you, love. | Ah. My own. | Look who it is.
+
+rule s8cb_kin_spouse
+does kin.open
+when pair.kin=spouses pair.last_talk>=0.3
+say There you are, love. | Oh, it's you. | #dear#. | There's my #dear#.
+
+rule s8cb_kin_sibling
+does kin.open
+when pair.kin=siblings pair.last_talk>=0.3
+say Oh. It's you. | There you are. | You again. | Look what the wind blew in.
+
+rule s8cb_kin_any
+does kin.open
+when pair.last_talk>=0.3
+say There you are. | Oh, you're back. | Ah, it's you. | Here you are, then.
+
+rule s8cb_kin_apart
+does kin.open
+when pair.kin=parent|siblings|family pair.roof=no pair.last_talk>=4
+say There you are. It's been days. | Look who remembered us. | Well! A visit at last. | We'd given you up.
+
+## More recalls: the news the two were on lately
+
+rule s8cb_crime
+does recall
+when conv.topic=crime pair.talked.crime<3
+tone serious
+say More trouble. We were on about it only lately. | Another bad business. It never stops. | More of it. We'd only just done talking of the last.
+
+rule s8cb_caravan
+does recall
+when conv.topic=caravan pair.talked.caravan<3
+say The wagons again. We're always on about them. | We were talking wagons lately, too. | Every time we meet, it's the carts.
+
+rule s8cb_ships
+does recall
+when conv.topic=ships pair.talked.ships<3
+say The boats again. We do watch them, you and I. | We were on about ships lately, too. | Ships and more ships.
+
+rule s8cb_harvest
+does recall
+when conv.topic=harvest pair.talked.harvest<4
+say The harvest again. It's never far off our minds. | We were on about the harvest lately, too. | Always the harvest, with us.
+
+rule s8cb_festival
+does recall
+when conv.topic=festival pair.talked.festival<4
+tone light
+say The festival again! We can't wait, can we. | We were on about the doings lately, too. | Still on about the festival, the pair of us.
+
+rule s8cb_newcomer
+does recall
+when conv.topic=newcomer pair.talked.newcomer<4
+say New folk again. We do like to know. | We were on about the newcomers lately, too.
+
+rule s8cb_player
+does recall
+when conv.topic=player pair.talked.player<2
+say Strangers again. We're a nosy pair. | We were on about travellers lately, too.
+
+rule s8cb_warmed_health
+does recall
+when conv.topic=health pair.recall.health=warmed|reassured
+tone tender
+say Last time we talked of it, it did me good. | That last talk about health eased my mind.
+
+rule s8cb_warmed_faith
+does recall
+when conv.topic=faith pair.recall.faith=warmed
+say I liked our last talk about the Bright One. | That was a good talk, last time, about the chapel.
+
+rule s8cb_soured_health
+does recall
+when conv.topic=health pair.recall.health=soured|quarrelled
+tone tender
+say Let's be gentle about it this time. | No cross words over aches, this time.
+
+rule s8cb_warmed_weather
+does recall
+when conv.topic=weather pair.recall.weather=warmed
+say We had a good grumble about the sky, last time. | Last time we talked weather, it cheered me, oddly.
+
+## kin's first words, by the hour
+
+rule s8cb_kin_dawn
+does kin.open
+when pair.kin=spouses|parent|siblings|family|household here.time=dawn pair.last_talk>=0.3
+say Morning, you. | You're up early. | Morning. Sleep well?
+
+rule s8cb_kin_night
+does kin.open
+when pair.kin=spouses|parent|siblings|family|household here.time=night pair.last_talk>=0.3
+say There you are. It's late. | Still up? | Out late, aren't you.

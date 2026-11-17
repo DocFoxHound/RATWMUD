@@ -5,7 +5,7 @@
 # remembered is raised again in a scene of its own (e2_r_pt_wager_owed), since its replies aren't a new offer's.
 #
 # What each beat remembers, so the reply suits what was said (2 minutes: only for this chain):
-#   animals.own / talk.animals -> animals.react: pair.mem.ak = nice (beasts kept, a pleasant sight) | loss (a beast
+#   animals.own / talk.animals -> animals.react: conv.ak = nice (beasts kept, a pleasant sight) | loss (a beast
 #   lost) | wild (a startling meeting with a wild beast)
 # Pups' own answers have priority, so a pup never answers with a rich wolf's hunting stable or a Larkfield flock.
 
@@ -13,24 +13,28 @@
 
 rule e2_r_pt_ask
 when concept=talk.pastimes pair.band=acquaintances|friends|rivals
+does ask.detail
 cooldown 1d
 say What do you do with yourself of an evening? | Any pastimes, yourself? When the work's done? | What keeps you out of trouble, #address#? | How do you spend a Restday, then?
 then other: pastimes.own
 
 rule e2_r_pt_ask_close
 when concept=talk.pastimes pair.band=friends|family|spouses
+does ask.detail
 cooldown 1d
 say Doing anything tonight, #pet#? | What are you up to after supper? | You look like you've had fun. What've you been at?
 then other: pastimes.own
 
 rule e2_r_pt_ask_pup
 when concept=talk.pastimes other.stage=young self.stage=adult|old
+does ask.detail
 cooldown 1d
 say What are you playing, #address#? | And what game is it today? | Who's winning, little one?
 then other: pastimes.own
 
 rule e2_r_pt_ask_stranger
 when concept=talk.pastimes pair.band=strangers
+does ask.detail
 cooldown 2d
 say Do you play at all? Dice, cards? I'm after a game. | What do folk do for fun hereabouts? You, say? | You look like somebody who knows a good evening. What's yours?
 then other: pastimes.own
@@ -39,175 +43,207 @@ then other: pastimes.own
 
 rule e2_r_pt_own
 when concept=pastimes.own
+does answer.detail
 say Not much. Sit. Talk. Sleep. | A song, sometimes. A cup, more often. | Whatever's going. Dice, if there's dice. | I walk. Just walk. Clears the head. | #saying#. I mend things. I sleep.
 then other: pastimes.react
 
 rule e2_r_pt_own_young
 when concept=pastimes.own self.stage=young
+does answer.detail
 priority 2
 say Hunter and hare! I'm the hunter! | Knucklebones. I'm the best on our street. Almost. | Hide-and-seek, but nobody's found me yet. Since this morning. | I'm making a fort. Out of everything.
 then other: pastimes.react
 
 rule e2_r_pt_own_adolescent
 when concept=pastimes.own self.stage=adolescent
+does answer.detail
 priority 1
 say Nothing. Nothing you'd know about. | Wrestling on the green, when nobody's watching. | Practising my steps for the dance. Don't laugh. | Sitting on the wall. With the others. It's a thing.
 then other: pastimes.react
 
 rule e2_r_pt_own_old
 when concept=pastimes.own self.stage=old
+does answer.detail
 say Draughts by the chapel, and a long nap after. | I sit, I watch, I remember. It fills a day. | I tell the young ones stories. They pretend to listen. | A bench in the sun. That's my whole kingdom.
 then other: pastimes.react
 
 rule e2_r_pt_own_rich
 when concept=pastimes.own self.wealth=rich
+does answer.detail
 say Cards, concerts, the occasional hunt. It's exhausting, honestly. | We keep musicians. Somebody has to. | Riding, mostly. And dinners. So many dinners.
 then other: pastimes.react
 
 rule e2_r_pt_own_poor
 when concept=pastimes.own self.wealth=poor|destitute
-say Pastimes? I work, then I'm too #tired# to do anything else. | Singing's free. So's gossip. I do both. | Dice, when I've a penny. I haven't a penny.
+does answer.detail
+say {k=weary} Pastimes? I work, then I'm too #tired# to do anything else. | {k=weary} Singing's free. So's gossip. I do both. | {k=weary} Dice, when I've a penny. I haven't a penny.
 then other: keeping.nod
-remember pair: k=weary 2m
 
 rule e2_r_pt_own_heights
 when concept=pastimes.own self.quarter=heights
+does answer.detail
 say Music at Greatly House, when we're asked. The strings are passable this season. | Whist. Endless whist. | Garden parties. You learn to smile through anything.
 then other: pastimes.react
 
 rule e2_r_pt_own_sump
 when concept=pastimes.own self.quarter=sump
+does answer.detail
 say Dice behind the Ropewalk. Don't tell the Watch. | A fiddle and a cheap jug, down by the drain-mouth. | Ratting. Penny a tail and the sport's thrown in.
 then other: pastimes.react
 
 rule e2_r_pt_own_scholar
 when concept=pastimes.own self.job=scholar
+does answer.detail
 say I read. And when my eyes give out, I read some more. | Riddles. I collect them. Nobody else wants them. | I'm writing down the old songs before the old forget them.
 then other: pastimes.react
 
 rule e2_r_pt_own_priest
 when concept=pastimes.own self.job=priest
+does answer.detail
 say I sing. In chapel. Out of chapel. It's much the same. | A little gardening. The Bright One likes a tidy bed. | Chess, with the healer. The healer cheats. I forgive.
 then other: pastimes.react
 
 rule e2_r_pt_own_smith
 when concept=pastimes.own self.job=smith
+does answer.detail
 say Wrestling. Nobody'll go against me any more. | I make little iron birds. For the pups. Don't tell anyone. | Sleep. A smith's pastime is sleep.
 then other: pastimes.react
 
 rule e2_r_pt_own_guard
 when concept=pastimes.own self.role=guard
+does answer.detail
 say Cards in the Watch House. Don't tell the captain. | Archery at the butts. I'm the best shot on my watch. | Sleep. And breaking up other folk's fun.
 then other: pastimes.react
 
 rule e2_r_pt_own_sailor
 when concept=pastimes.own self.job=sailor|fisher
+does answer.detail
 say Shanties. A boat's no boat without them. | Knots. I tie knots. Fancy ones. For fun. | Carving bone. Long nights, you need something.
 then other: pastimes.react
 
 rule e2_r_pt_own_innkeeper
 when concept=pastimes.own self.job=innkeeper
+does answer.detail
 say Watching other folk's pastimes, and charging for the ale. | Pastimes? I've not had an evening off since I took the inn. | Listening. You hear everything, behind a bar.
 then other: keeping.nod
 
 rule e2_r_pt_own_farmer
 when concept=pastimes.own self.job=farmer|herder
+does answer.detail
 say Leaning on the gate at sundown, watching the beasts. | Ploughing matches. I won one once. | The harvest dance, once a year. That's my pastime.
 then other: pastimes.react
 
 rule e2_r_pt_own_crafter
 when concept=pastimes.own self.job=crafter|woodcutter
+does answer.detail
 say Carving. You'd think I'd have had enough of working with my paws. | Making pipes. Willow, mostly. Some of them play. | Whittling toys for the pups up the lane.
 then other: pastimes.react
 
 rule e2_r_pt_own_cook
 when concept=pastimes.own self.job=cook|baker
+does answer.detail
 say Eating somebody else's cooking, for once. | Sweets. I make sweets for the pups on Restday. | Gossip at the oven. Best gossip in town comes through a kitchen.
 then other: pastimes.react
 
 rule e2_r_pt_own_miner
 when concept=pastimes.own self.job=miner
+does answer.detail
 say Singing. Down the shaft the echo's grand. | Dice in the lamp-room. | Breathing. Air. Up top. That's my pastime.
 then other: pastimes.react
 
 rule e2_r_pt_own_merry
 when concept=pastimes.own self.humour=merry
+does answer.detail
 say Making trouble and songs, in that order. | Jokes! I've a new one about a goose, want it? | Dancing, mostly on tables.
 then other: pastimes.react
 
 rule e2_r_pt_own_dry
 when concept=pastimes.own self.humour=dry
+does answer.detail
 say Watching other folk enjoy themselves. Fascinating. | Counting the bricks in my wall. I'm up to four hundred. | Nothing, and I'm very good at it.
 then other: pastimes.react
 
 rule e2_r_pt_own_cold
 when concept=pastimes.own self.warmth=cold
+does answer.detail
 say I don't hold with pastimes. | Mending. Something always needs mending. | I sleep. That's what evenings are for.
 then other: keeping.nod
 
 rule e2_r_pt_own_quiet
 when concept=pastimes.own self.talk=quiet
+does answer.detail
 say ... Walking. | Needlework. | Fishing. Alone.
 then other: pastimes.react
 
 rule e2_r_pt_own_chatty
 when concept=pastimes.own self.talk=chatty
-say Oh, everything! Singing, cards, I've a fiddle, I can't play it, but I've got it, and gossip, gods, the gossip... | Talking. You might've noticed. | Visiting! I visit. Everyone. Every evening.
+does answer.detail
+say Oh, everything! Singing, cards, I've a fiddle, I can't play it, but I've got it, and gossip, Bright One, the gossip... | Talking. You might've noticed. | Visiting! I visit. Everyone. Every evening.
 then other: pastimes.react
 
 rule e2_r_pt_own_restless
 when concept=pastimes.own self.drive=restless
+does answer.detail
 say A bit of everything, and none of it long. | Walking out past the walls. Further every week. | Racing. Anything. Anyone.
 then other: pastimes.react
 
 rule e2_r_pt_own_devout
 when concept=pastimes.own self.piety=devout
+does answer.detail
 say Hymns, and the chapel's flowers. | Reading the old prayers. | Helping at the dole. That's pastime enough.
 then other: pastimes.react
 
 rule e2_r_pt_own_parent
 when concept=pastimes.own self.parent=yes
-say Pastimes? I've pups. Pups are my pastime. | Chasing the young ones home at dusk. | Mending what the pups break. All of it.
+does answer.detail
+say {k=family} Pastimes? I've pups. Pups are my pastime. | {k=family} Chasing the young ones home at dusk. | {k=family} Mending what the pups break. All of it.
 then other: keeping.glad
-remember pair: k=family 2m
 
 rule e2_r_pt_own_married
-when concept=pastimes.own self.spouse
+when concept=pastimes.own self.spouse pair.kin!=spouses
+does answer.detail
 say Walking with #self.spouse#. Of an evening. | #self.spouse# and I play fox-and-geese. #self.spouse# wins. | Arguing with #self.spouse# about the fox-and-geese.
 then other: pastimes.react
 
 rule e2_r_pt_own_frosthollow
 when concept=pastimes.own here.region=frosthollow
+does answer.detail
 say Sledging on the mine road. | Snowballs, when the shift's done. It's #very# #cold#, but it's fun. | Telling tales round the stove. It's a long winter.
 then other: pastimes.react
 
 rule e2_r_pt_own_mirebridge
 when concept=pastimes.own here.region=fens
+does answer.detail
 say Punting, when the river's kind. | Fen songs on the boards at dusk. | Eel-throwing. Don't ask.
 then other: pastimes.react
 
 rule e2_r_pt_own_larkfield
 when concept=pastimes.own here.region=larkfield
+does answer.detail
 say Fiddling. Larkfield fiddlers are the best, you know. | Shearing races, in season. | Walking the downs. You can see half the realm from the top.
 then other: pastimes.react
 
 rule e2_r_pt_own_southmeadow
 when concept=pastimes.own here.region=southmeadow
+does answer.detail
 say Cider in the orchard, a fiddle, the long evenings. | Dancing. We dance for everything down here. | Lying under the pear trees. Doing nothing at all.
 then other: pastimes.react
 
 rule e2_r_pt_own_oakhaven
 when concept=pastimes.own here.region=oakhaven
+does answer.detail
 say Carving. Everyone carves in the Rainwood. | Tracking deer, just for the looking. | Climbing trees. Still. Don't tell anyone.
 then other: pastimes.react
 
 rule e2_r_pt_own_coldwater
 when concept=pastimes.own here.region=coldwater
+does answer.detail
 say Boats on Glasswater. Or skating, when it's ice. | Fishing the lake by lantern. | Swimming to the island and back.
 then other: pastimes.react
 
 rule e2_r_pt_own_ridgemere
 when concept=pastimes.own here.region=ridgemere
+does answer.detail
 say A jar at the Black Tun and whoever's singing. | Watching the ships come in off the Sound. Never tire of it. | The Grey Gull on a Marketday night. Someone always has a fiddle.
 then other: pastimes.react
 
@@ -215,94 +251,114 @@ then other: pastimes.react
 
 rule e2_r_pt_react
 when concept=pastimes.react
-say Sounds about right. | Fair enough. | #agree#. Each to their own. | Nothing wrong with that. | Can't fault it.
+does react.self
+say Sounds about right. | #bc_fair_enough# | #agree#. Each to their own. | Nothing wrong with that. | Can't fault it.
 
 rule e2_r_pt_react_merry
 when concept=pastimes.react self.humour=merry
+does react.self
 say #surprise#! Then I'm coming with you, next time! | Ha! Now that's a life. | Count me in. I'll bring the noise.
 
 rule e2_r_pt_react_dry
 when concept=pastimes.react self.humour=dry
+does react.self
 say Thrilling. | I'll try not to be jealous. | You'll want to pace yourself.
 
 rule e2_r_pt_react_ambitious
 when concept=pastimes.react self.drive=ambitious
+does react.self
 say Hm. Waste of good daylight. | If you say so. I've work. | I've never seen the point of idling.
 
 rule e2_r_pt_react_warm
 when concept=pastimes.react self.warmth=warm
+does react.self
 say That sounds lovely. Truly. | Good for you, #pet#. | Good. Everyone needs something that's theirs.
 
 rule e2_r_pt_react_cold
 when concept=pastimes.react self.warmth=cold
-say Hm. | Right. | I see.
+does react.self
+say Hm. | #bc_right# | I see.
 
 rule e2_r_pt_react_old
 when concept=pastimes.react self.stage=old
+does react.self
 say We did the same in my day. Just with more mud. | Good. Keep at it. That's what keeps you young. | My mother would've called that idling. I call it living.
 
 rule e2_r_pt_react_young
 when concept=pastimes.react self.stage=young
+does react.self request
 say Can I come? Can I? | That's boring. | Will you teach me?
 
 rule e2_r_pt_react_rich
 when concept=pastimes.react self.wealth=rich
+does react.self
 say How charming. | Simple pleasures. I envy you, almost. | You must come to one of our evenings.
 
 rule e2_r_pt_react_poor
 when concept=pastimes.react self.wealth=poor|destitute
+does react.self
 say Must be nice, having the time. | Wish I had the #money# for it. | Sounds grand. I'll hear about it from you.
 
 rule e2_r_pt_react_restless
 when concept=pastimes.react self.drive=restless
+does react.self
 say I'd go mad in a week. | Is that all? | I've done that. Got bored.
 
 rule e2_r_pt_react_devout
 when concept=pastimes.react self.piety=devout
+does react.self
 say As long as it doesn't keep you from chapel. | The Bright One loves a glad heart. | Good. Idle paws find worse things to do.
 
 rule e2_r_pt_react_chatty
 when concept=pastimes.react self.talk=chatty
+does react.self
 say Oh, I love that! My cousin does that, well, did, until her paw, but that's another story. Do you know my cousin? | Tell me more. All of it. | Me too! Well, not me. But I could!
 
 rule e2_r_pt_react_short
 when concept=pastimes.react self.temper=short
+does react.self
 say Pah. | Rather you than me. | Don't drag me into it.
 
 ## ---------------------------------------------------------------- Pastimes: telling, unasked (self tells; other reacts)
 
 rule e2_r_pt_tell_song
 when concept=talk.pastimes self.humour=merry
+does tell.self
 cooldown 2d
 say Learned a new song. Want to hear it? Too late. | I danced till my tail ached last night. | I've been practising a jig. Watch this. No, watch.
 then other: pastimes.react
 
 rule e2_r_pt_tell_quiet_thing
 when concept=talk.pastimes self.talk=quiet
+does tell.self
 cooldown 2d
 say I've finished the carving. The fox. It came out well. | I've been learning the pipes. Don't tell anyone. | Started a sampler. Flowers. It's slow going.
 then other: pastimes.react
 
 rule e2_r_pt_tell_old
 when concept=talk.pastimes self.stage=old
+does tell.self
 cooldown 2d
 say Beat the miller's father at draughts. First time in a year. | I sang in chapel today. Voice held, mostly. | Told the pups the frost giant story. They screamed. Good.
 then other: pastimes.react
 
 rule e2_r_pt_tell_pup
 when concept=talk.pastimes self.stage=young
+does tell.self
 cooldown 1d
 say I won at knucklebones! Five times! | I can do a cartwheel! Nearly! | We're playing hunter and hare and I'm the hare and I'm hiding. Shh.
 then other: pastimes.react
 
 rule e2_r_pt_tell_rich
 when concept=talk.pastimes self.wealth=rich
+does tell.self
 cooldown 2d
 say We've hired a harpist for the season. | Lost a fortune at whist last night. Well, a small fortune. | We're riding out to the Larkdowns next week. For the air.
 then other: pastimes.react
 
 rule e2_r_pt_tell_scholar
 when concept=talk.pastimes self.job=scholar
+does tell.self
 cooldown 2d
 say I've found three hundred riddles in an old book. Three hundred! | I'm copying out a book of ballads. Every verse. | The almanac has a game in it. Nobody remembers the rules.
 then other: pastimes.react
@@ -311,12 +367,14 @@ then other: pastimes.react
 
 rule e2_r_pt_wager_offer
 when concept=talk.pastimes pair.band=friends|acquaintances|rivals
+does tell.self
 cooldown 2d
 say I'll wager you a penny I can beat you to the well. | Fancy #bet#? Two pennies says the next cart through the gate's a brewer's. | I'll bet you a penny you can't name all four Houses. | A penny says I can hit that post from here.
 then other: pastimes.wager
 
 scene e2_r_pt_wager_owed
 when topic=pastimes pair.mem.wager
+does tell.self / react.self / assess
 cooldown 1d
 a : Don't think I've forgotten that wager of ours. | We never settled that #bet#. | You still owe me, from the wager.
 b[wealth=poor|destitute] #poor : Give me till Marketday. Please.
@@ -330,49 +388,59 @@ a@plain : Tomorrow, then. | Fine. A penny. Done. | You never.
 
 rule e2_r_pt_wager_take
 when concept=pastimes.wager
+does accept
 say Done. Shake on it. | You're on. | Fine. A penny. | Easy money.
 remember pair: wager 3d
 
 rule e2_r_pt_wager_rich
 when concept=pastimes.wager self.wealth=rich
+does accept
 say A penny? Make it ten, or what's the point? | Done. And I'll not take your penny if you lose. | Fine. I'll even give you odds.
 remember pair: wager 3d
 
 rule e2_r_pt_wager_poor
 when concept=pastimes.wager self.wealth=poor
+does accept
 say A penny's bread, #address#. Make it a turnip. | I'll bet, but I'll not pay. | Half a penny. That's my limit.
 remember pair: wager 3d
 
 rule e2_r_pt_wager_destitute
 when concept=pastimes.wager self.wealth=destitute
+does accept
 priority 1
 say I've not a penny to my name. | Bet with what? My shadow? | If I had a penny I'd eat it.
 
 rule e2_r_pt_wager_devout
 when concept=pastimes.wager self.piety=devout
+does accept
 say No wagers. Not me. | The chaplain says a wager's a thief's game. I'm with the chaplain. | I'll pray for you to win. That's as far as I go.
 
 rule e2_r_pt_wager_sly
 when concept=pastimes.wager self.honesty=sly
+does accept
 say Done. But we'll do it my way. | Of course. Who's holding the money? Me? | Done. Though I'll want a witness. Mine.
 remember pair: wager 3d
 
 rule e2_r_pt_wager_frank
 when concept=pastimes.wager self.honesty=frank
+does accept
 say All right. Fair and square. | I'll bet, but you'll lose. I'm telling you now. | Done. And no sulking when you lose.
 remember pair: wager 3d
 
 rule e2_r_pt_wager_guarded
 when concept=pastimes.wager self.honesty=guarded
+does accept
 say No. | I don't bet. | What for?
 
 rule e2_r_pt_wager_merry
 when concept=pastimes.wager self.humour=merry
+does accept
 say Done! And loser sings at the well. | Double it! | Done, and loser buys the cider.
 remember pair: wager 3d
 
 rule e2_r_pt_wager_owing
 when concept=pastimes.wager self.owes=yes
+does accept
 priority 1
 say I can't. I owe half the street already. | Put it on the slate. With the rest. | Don't. I'm in deep enough.
 
@@ -380,24 +448,28 @@ say I can't. I owe half the street already. | Put it on the slate. With the rest
 
 rule e2_r_an_ask
 when concept=talk.animals pair.band=acquaintances|friends|family
+does ask.detail
 cooldown 1d
 say Keeping any beasts these days? | How goes it with #beasts# at yours? | Got any creatures at yours? Hens? A cat? | Anything living at yours, besides you?
 then other: animals.own
 
 rule e2_r_an_ask_farmer
 when concept=talk.animals other.job=farmer|herder
+does ask.after
 cooldown 1d
 say How's the stock? | And how goes it with #beasts#? | Lost any lately?
 then other: animals.own
 
 rule e2_r_an_ask_pup
 when concept=talk.animals other.stage=young self.stage=adult|old
+does ask.detail
 cooldown 1d
 say What are you looking at down there, #address#? | Seen any good beasts today? | Found another frog?
 then other: animals.own
 
 rule e2_r_an_ask_neighbour
 when concept=talk.animals pair.neighbours=yes
+does ask.detail
 cooldown 2d
 say Got anything living in that yard of yours? I hear things. | What's that creature I hear over the wall at night? Yours? | Have you any beasts over there? Something's been at my cabbages.
 then other: animals.own
@@ -406,350 +478,378 @@ then other: animals.own
 
 rule e2_r_an_own_none
 when concept=animals.own
+does answer.detail
 say Not a one. Mice don't count. | Nothing. Never wanted the bother. | No. Unless you count the spiders.
 then other: keeping.nod
 
 rule e2_r_an_own
 when concept=animals.own
-say Two hens and a grudge against the fox. | Just the cat. Or the cat's got me. | A goat. She eats the washing.
+does answer.detail
+say {ak=nice} Two hens and a grudge against the fox. | {ak=nice} Just the cat. Or the cat's got me. | {ak=nice} A goat. She eats the washing.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_farmer
 when concept=animals.own self.job=farmer
-say Cows are well. Hens are sulking. Pig's fat. | The new calf's all legs and no sense. The rest are sound. | Geese are laying. Sow's farrowed. Busy, busy.
+does answer.detail
+say {ak=nice} Cows are well. Hens are sulking. Pig's fat. | {ak=nice} The new calf's all legs and no sense. The rest are sound. | {ak=nice} Geese are laying. Sow's farrowed. Busy, busy.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_herder
 when concept=animals.own self.job=herder
-say Flock's sound. Two lame. One stupid. Well, all stupid. | Lambs are coming thick and fast. | Fat, the lot of them. The grass is good this year.
+does answer.detail
+say {ak=nice} Flock's sound. Two lame. One stupid. Well, all stupid. | {ak=nice} Lambs are coming thick and fast. | {ak=nice} Fat, the lot of them. The grass is good this year.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_loss
 when concept=animals.own self.job=farmer|herder here.season=winter|spring
-say Lost a ewe to the cold. The rest pulled through. | Fox had three hens last week. | Lost a calf. Came too early.
+does answer.detail
+say {ak=loss} Lost a ewe to the cold. The rest pulled through. | {ak=loss} Fox had three hens last week. | {ak=loss} Lost a calf. Came too early.
 then other: animals.react
-remember pair: ak=loss 2m
 
 rule e2_r_an_own_fisher
 when concept=animals.own self.job=fisher
-say My stock's in the water, and it doesn't want to come out. | Fish are deep this month. | An otter's been at the nets. That's my beast.
+does answer.detail
+say {ak=nice} My stock's in the water, and it doesn't want to come out. | {ak=nice} Fish are deep this month. | {ak=nice} An otter's been at the nets. That's my beast.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_carter
 when concept=animals.own self.job=carter
-say My old mare. Knows the roads better than me. | Two ponies. One's a saint. One's a demon. | The ox is well. The ox is always well.
+does answer.detail
+say {ak=nice} My old mare. Knows the roads better than me. | {ak=nice} Two ponies. One's a saint. One's a demon. | {ak=nice} The ox is well. The ox is always well.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_woodcutter
 when concept=animals.own self.job=woodcutter
-say I see more beasts than anyone. Deer, boar, a bear once. | Squirrels throw things at me. I'm not joking. | An owl lives in the woodshed. We've an understanding.
+does answer.detail
+say {ak=nice} I see more beasts than anyone. Deer, boar, a bear once. | {ak=nice} Squirrels throw things at me. I'm not joking. | {ak=nice} An owl lives in the woodshed. We've an understanding.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_miner
 when concept=animals.own self.job=miner
-say Pit ponies. They know the tunnels better than the foreman. | Rats down the shaft. Friendly ones. You learn their names. | I see nothing but rock. Rock's not a beast.
+does answer.detail
+say {ak=nice} Pit ponies. They know the tunnels better than the foreman. | {ak=nice} Rats down the shaft. Friendly ones. You learn their names. | {ak=nice} I see nothing but rock. Rock's not a beast.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_cook
 when concept=animals.own self.job=cook|baker
-say The kitchen cat. Worth her weight in sausages. | A cat for the mice and a goose for the yard. | The geese for Restday. They know.
+does answer.detail
+say {ak=nice} The kitchen cat. Worth her weight in sausages. | {ak=nice} A cat for the mice and a goose for the yard. | {ak=nice} The geese for Restday. They know.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_innkeeper
 when concept=animals.own self.job=innkeeper
-say The inn cat's fatter than the guests. | Stabled six ponies last night. One bit the stable lad. | A goose lives in the yard. It runs the place.
+does answer.detail
+say {ak=nice} The inn cat's fatter than the guests. | {ak=nice} Stabled six ponies last night. One bit the stable lad. | {ak=nice} A goose lives in the yard. It runs the place.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_sailor
 when concept=animals.own self.job=sailor
-say Ship's cat. She's been to more ports than me. | Rats. Every ship's got them. They're crew. | Gulls follow us home. Like a bad smell.
+does answer.detail
+say {ak=nice} Ship's cat. She's been to more ports than me. | {ak=nice} Rats. Every ship's got them. They're crew. | {ak=nice} Gulls follow us home. Like a bad smell.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_guard
 when concept=animals.own self.role=guard
-say Strays. Goats, pigs, a cow once. All on my watch. | I've a pony, when the captain says. | That goose by the gate. My nemesis.
+does answer.detail
+say {ak=nice} Strays. Goats, pigs, a cow once. All on my watch. | {ak=nice} I've a pony, when the captain says. | {ak=nice} That goose by the gate. My nemesis.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_priest
 when concept=animals.own self.job=priest
-say The chapel's bats. The Bright One's creatures. Still. | I bless the beasts at lambing. Most of them kick me. | A cat sits in the front pew every Restday.
+does answer.detail
+say {ak=nice} The chapel's bats. The Bright One's creatures. Still. | {ak=nice} I bless the beasts at lambing. Most of them kick me. | {ak=nice} A cat sits in the front pew every Restday.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_healer
 when concept=animals.own self.job=healer
-say Folk bring me their goats. I'm not a goat healer. I treat them anyway. | Leeches. Good ones. | Bees, for the honey. Honey heals.
+does answer.detail
+say {ak=nice} Folk bring me their goats. I'm not a goat healer. I treat them anyway. | {ak=nice} Leeches. Good ones. | {ak=nice} Bees, for the honey. Honey heals.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_scholar
 when concept=animals.own self.job=scholar
-say I'm writing on the herons' habits. Fascinating birds. | A tame crow. It's cleverer than my students. | Beetles. In jars. Don't ask.
+does answer.detail
+say {ak=nice} I'm writing on the herons' habits. Fascinating birds. | {ak=nice} A tame crow. It's cleverer than my students. | {ak=nice} Beetles. In jars. Don't ask.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_young
 when concept=animals.own self.stage=young
+does answer.detail
 priority 2
-say I've got a beetle! In a box! His name's Hob! | I want a goat. Nobody'll let me have a goat. | I fed the ducks and one followed me home!
+say {ak=nice} I've got a beetle! In a box! His name's Hob! | {ak=nice} I want a goat. Nobody'll let me have a goat. | {ak=nice} I fed the ducks and one followed me home!
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_old
 when concept=animals.own self.stage=old
-say Had a cow once. Best friend I ever had. | Just the robin on the sill. It's enough. | Beasts? I've outlived three cats. The fourth's watching me.
+does answer.detail
+say {ak=nice} Had a cow once. Best friend I ever had. | {ak=nice} Just the robin on the sill. It's enough. | {ak=nice} Beasts? I've outlived three cats. The fourth's watching me.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_rich
 when concept=animals.own self.wealth=rich
-say Four horses, a peacock nobody wanted, and the hunting stable. | The grey mare's from the south. Beautiful thing. | We've a groom for the beasts. I never see them.
+does answer.detail
+say {ak=nice} Four horses, a peacock nobody wanted, and the hunting stable. | {ak=nice} The grey mare's from the south. Beautiful thing. | {ak=nice} We've a groom for the beasts. I never see them.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_poor
 when concept=animals.own self.wealth=poor|destitute
-say A hen. When the fox lets me. | Rats. Do rats count? | Had a goat. Sold her for winter bread.
+does answer.detail
+say {k=want} A hen. When the fox lets me. | {k=want} Rats. Do rats count? | {k=want} Had a goat. Sold her for winter bread.
 then other: keeping.sorry
-remember pair: k=want 2m
 
 rule e2_r_an_own_heights
 when concept=animals.own self.quarter=heights
-say A songbird in a cage. It sings beautifully, if a bit sadly. | Carriage horses. Matched greys. | The cook keeps a cat. Downstairs.
+does answer.detail
+say {ak=nice} A songbird in a cage. It sings beautifully, if a bit sadly. | {ak=nice} Carriage horses. Matched greys. | {ak=nice} The cook keeps a cat. Downstairs.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_sump
 when concept=animals.own self.quarter=sump
-say Rats. Lots. We're on first-name terms. | A gull that steals from me every morning. | A three-legged cat that adopted me.
+does answer.detail
+say {ak=nice} Rats. Lots. We're on first-name terms. | {ak=nice} A gull that steals from me every morning. | {ak=nice} A three-legged cat that adopted me.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_larkfield
 when concept=animals.own here.region=larkfield
-say A few ewes on the common. Everyone has a few, here. | Hens, and a pony for market. | An orphan lamb that thinks it's one of the family. Follows me everywhere.
+does answer.detail
+say {ak=nice} A few ewes on the common. Everyone has a few, here. | {ak=nice} Hens, and a pony for market. | {ak=nice} An orphan lamb that thinks it's one of the family. Follows me everywhere.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_mirebridge
 when concept=animals.own here.region=fens
-say Eels in the trap and frogs in the cellar. | Ducks. The fen's thick with them. | A heron stands on my roof. I've not asked why.
+does answer.detail
+say {ak=nice} Eels in the trap and frogs in the cellar. | {ak=nice} Ducks. The fen's thick with them. | {ak=nice} A heron stands on my roof. I've not asked why.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_frosthollow
 when concept=animals.own here.region=frosthollow
-say A pit pony, and a goat that climbs better than me. | Goats. Nothing else'll stand the slopes. | Snow hares in the garden. Eat the cabbages.
+does answer.detail
+say {ak=nice} A pit pony, and a goat that climbs better than me. | {ak=nice} Goats. Nothing else'll stand the slopes. | {ak=nice} Snow hares in the garden. Eat the cabbages.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_southmeadow
 when concept=animals.own here.region=southmeadow
-say Bees. Southmeadow's all bees and orchards. | Pigs in the orchard, eating the windfalls. | A donkey that hates me. Loves everyone else.
+does answer.detail
+say {ak=nice} Bees. Southmeadow's all bees and orchards. | {ak=nice} Pigs in the orchard, eating the windfalls. | {ak=nice} A donkey that hates me. Loves everyone else.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_oakhaven
 when concept=animals.own here.region=oakhaven
-say Pigs in the oak-woods, fat on acorns. | Deer in the garden. Bold as anything. | A squirrel that thinks it owns the roof.
+does answer.detail
+say {ak=nice} Pigs in the oak-woods, fat on acorns. | {ak=nice} Deer in the garden. Bold as anything. | {ak=nice} A squirrel that thinks it owns the roof.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_coldwater
 when concept=animals.own here.region=coldwater
-say Ducks on the lake. Swans, too, the bullies. | A boat, and the char beneath it. | A goat that swims. I'm not lying.
+does answer.detail
+say {ak=nice} Ducks on the lake. Swans, too, the bullies. | {ak=nice} A boat, and the char beneath it. | {ak=nice} A goat that swims. I'm not lying.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_own_ridgemere
 when concept=animals.own here.region=ridgemere
-say Gulls on the roof. Rats in the cellar. A proper city house. | The cat. The city's full of cats. | Pigeons. The landlord says they're mine. They're not.
+does answer.detail
+say {ak=nice} Gulls on the roof. Rats in the cellar. A proper city house. | {ak=nice} The cat. The city's full of cats. | {ak=nice} Pigeons. The landlord says they're mine. They're not.
 then other: animals.react
-remember pair: ak=nice 2m
 
 ## ---------------------------------------------------------------- Animals: reacting (ak = nice | loss | wild)
 
 rule e2_r_an_react
 when concept=animals.react
+does react.self
 say That's beasts for you. | There's always something, with beasts. | Mm. Same everywhere.
 
 rule e2_r_an_react_devout
 when concept=animals.react self.piety=devout
+does react.self
 say All creatures are the Bright One's. | The Bright One sees every sparrow, they say. | Bless them. Every one.
 
 rule e2_r_an_react_nice
-when concept=animals.react pair.mem.ak=nice
+when concept=animals.react conv.ak=nice
+does react.self
 say Sounds a proper menagerie. | Better you than me. | They're good company, beasts. | Ha. Beasts.
 
 rule e2_r_an_react_nice_nervy
-when concept=animals.react pair.mem.ak=nice temper=nervy
+when concept=animals.react conv.ak=nice temper=nervy
+does react.self
 say Do they bite? | Keep them away from me. | I'd be terrified.
 
 rule e2_r_an_react_nice_merry
-when concept=animals.react pair.mem.ak=nice humour=merry
+when concept=animals.react conv.ak=nice humour=merry
+does react.self
 say Ha! Bring it round, I'll teach it a trick. | I'd pay to see that. | I knew a goat like that. It ran for council.
 
 rule e2_r_an_react_nice_dry
-when concept=animals.react pair.mem.ak=nice humour=dry
+when concept=animals.react conv.ak=nice humour=dry
+does react.self
 say Lucky beasts. | And how do they feel about it? | Fascinating.
 
 rule e2_r_an_react_nice_warm
-when concept=animals.react pair.mem.ak=nice warmth=warm
+when concept=animals.react conv.ak=nice warmth=warm
+does react.self
 say Aw, bless them. | Give them a scratch from me. | I love a beast that knows its own mind.
 
 rule e2_r_an_react_nice_farmer
-when concept=animals.react pair.mem.ak=nice job=farmer|herder
+when concept=animals.react conv.ak=nice job=farmer|herder
+does react.self
 say Beasts. More trouble than folk know, and worth it. | Keep an eye on them in this weather. | Every beast's a worry, one way or another.
 
 rule e2_r_an_react_nice_cook
-when concept=animals.react pair.mem.ak=nice job=cook
+when concept=animals.react conv.ak=nice job=cook
+does react.self
 say Bring it to me when it's done. I'll make it worth its life. | Sounds tasty. | Plump?
 
 rule e2_r_an_react_nice_old
-when concept=animals.react pair.mem.ak=nice stage=old
+when concept=animals.react conv.ak=nice stage=old
+does react.self
 say Beasts are better company than most. | We had the same, when I was a pup. | Look after them. They look after you.
 
 rule e2_r_an_react_nice_young
-when concept=animals.react pair.mem.ak=nice stage=young
+when concept=animals.react conv.ak=nice stage=young
+does react.self ask.detail
 say Can I see it? Can I stroke it? | I want one! | Does it have a name?
 
 rule e2_r_an_react_nice_rich
-when concept=animals.react pair.mem.ak=nice wealth=rich
+when concept=animals.react conv.ak=nice wealth=rich
+does react.self
 say How quaint. | I've never touched a hen. | Our groom sees to all that sort of thing.
 
 rule e2_r_an_react_nice_short
-when concept=animals.react pair.mem.ak=nice temper=short
+when concept=animals.react conv.ak=nice temper=short
+does react.self
 say Keep them out of my garden, that's all. | Pests, the lot of them. | Don't bring them near me.
 
 rule e2_r_an_react_loss
-when concept=animals.react pair.mem.ak=loss
+when concept=animals.react conv.ak=loss
+does react.self
 say That's hard. You get fond of them. | Rotten luck. | Bad business, that. | It happens. Doesn't make it easier.
 
 rule e2_r_an_react_loss_warm
-when concept=animals.react pair.mem.ak=loss warmth=warm
+when concept=animals.react conv.ak=loss warmth=warm
+does react.self
 say Oh, the poor thing. And you too. | That's a sorrow. I'm sorry. | You did all you could, I'm sure of it.
 
 rule e2_r_an_react_loss_farmer
-when concept=animals.react pair.mem.ak=loss job=farmer|herder
+when concept=animals.react conv.ak=loss job=farmer|herder
+does react.self
 say Same here. You never get used to it. | The cold takes its share every year. | Count the living. That's what my father said.
 
 rule e2_r_an_react_loss_old
-when concept=animals.react pair.mem.ak=loss stage=old
+when concept=animals.react conv.ak=loss stage=old
+does react.self
+tone grave
 say Every beast I've had, I've buried. Still hurts. | Seventy springs, and it's always the springs that take them.
 
 rule e2_r_an_react_loss_short
-when concept=animals.react pair.mem.ak=loss temper=short
+when concept=animals.react conv.ak=loss temper=short
+does react.self
 say Foxes. I'd have every one of them. | Should've built the fold higher. | That's what you get.
 
 rule e2_r_an_react_wild
-when concept=animals.react pair.mem.ak=wild
+when concept=animals.react conv.ak=wild
+does react.self
 say #oath#! Where was that? | Now there's a sight. | You want to watch yourself out there. | Lucky you came back with your tail.
 
 rule e2_r_an_react_wild_nervy
-when concept=animals.react pair.mem.ak=wild temper=nervy
+when concept=animals.react conv.ak=wild temper=nervy
+does react.self
 say I'd not have slept for a week. | I'm never going past the walls again. | Stop. I'll dream of it.
 
 rule e2_r_an_react_wild_merry
-when concept=animals.react pair.mem.ak=wild humour=merry
+when concept=animals.react conv.ak=wild humour=merry
+does react.self ask.detail
 say Ha! And which of you was more scared? | Did it say good morning? | Next time, bring it home for supper.
 
 rule e2_r_an_react_wild_old
-when concept=animals.react pair.mem.ak=wild stage=old
+when concept=animals.react conv.ak=wild stage=old
+does react.self
 say We saw more of them, in my day. Much more. | Big ones? They were bigger when I was young. | Leave them be and they'll leave you be. Mostly.
 
 rule e2_r_an_react_wild_young
-when concept=animals.react pair.mem.ak=wild stage=young
+when concept=animals.react conv.ak=wild stage=young
+does react.self ask.detail
 say Did you touch it? Did you? | I'd have chased it! | Was it THIS big?
 
 ## ---------------------------------------------------------------- Animals: telling, unasked
 
 rule e2_r_an_tell_farmer
 when concept=talk.animals self.job=farmer
+does tell.self
 cooldown 2d
-say The cow calved. Bull calf, all legs. | The hens have taken to laying in the hayloft. | #oath#, the new pig bit me. Twice.
+say {ak=nice} The cow calved. Bull calf, all legs. | {ak=nice} The hens have taken to laying in the hayloft. | {ak=nice} #oath#, the new pig bit me. Twice.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_tell_herder
 when concept=talk.animals self.job=herder
+does tell.self
 cooldown 2d
-say Found a ewe on her back in a ditch, singing her head off. | The ram jumped the wall. Again. | The lambs race each other up the fold at dusk. Every dusk.
+say {ak=nice} Found a ewe on her back in a ditch, singing her head off. | {ak=nice} The ram jumped the wall. Again. | {ak=nice} The lambs race each other up the fold at dusk. Every dusk.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_tell_fisher
 when concept=talk.animals self.job=fisher
+does tell.self
 cooldown 2d
-say #oath#, a pike as long as my leg took my line and half my rod. | An otter sat on my boat and laughed at me. | A heron took my bait and gave me a look.
+say {ak=wild} #oath#, a pike as long as my leg took my line and half my rod. | {ak=wild} An otter sat on my boat and laughed at me. | {ak=wild} A heron took my bait and gave me a look.
 then other: animals.react
-remember pair: ak=wild 2m
 
 rule e2_r_an_tell_young
 when concept=talk.animals self.stage=young
+does tell.self
 cooldown 1d
-say I saw a hedgehog! It was SO spiky! | There's a frog in the well! A big one! | A duck ate out of my paw!
+say {ak=nice} I saw a hedgehog! It was SO spiky! | {ak=nice} There's a frog in the well! A big one! | {ak=nice} A duck ate out of my paw!
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_tell_old
 when concept=talk.animals self.stage=old
+does tell.self
 cooldown 2d
-say Robin came to my paw today. Took the crumb right off. | The owl's back in the chapel tower. Like when I was a pup. | Saw the first swallow. I always look for it.
+say {ak=nice} Robin came to my paw today. Took the crumb right off. | {ak=nice} The owl's back in the chapel tower. Like when I was a pup. | {ak=nice} Saw the first swallow. I always look for it.
 then other: animals.react
-remember pair: ak=nice 2m
 
 rule e2_r_an_tell_woodcutter
 when concept=talk.animals self.job=woodcutter
+does tell.self
 cooldown 2d
-say Bear in the far clearing. Turned and went. So did I. | Felled an oak and an owl flew out cursing me. | Boar ran right between my legs.
+say {ak=wild} Bear in the far clearing. Turned and went. So did I. | {ak=wild} Felled an oak and an owl flew out cursing me. | {ak=wild} Boar ran right between my legs.
 then other: animals.react
-remember pair: ak=wild 2m
 
 rule e2_r_an_tell_guard
 when concept=talk.animals self.role=guard
+does tell.self
 cooldown 2d
-say Chased a runaway pig the length of the street on my watch. | That goose has bitten me for the last time. | Arrested a drunk riding a cow.
+say {k=jest} Chased a runaway pig the length of the street on my watch. | {k=jest} That goose has bitten me for the last time. | {k=jest} Arrested a drunk riding a cow.
 then other: keeping.glad
-remember pair: k=jest 2m
 
 rule e2_r_an_tell_carter
 when concept=talk.animals self.job=carter
+does tell.self
 cooldown 2d
-say The ox stepped on my foot. Took us both a while to notice. | The mare ate a whole sack of my apples and looked pleased with herself. | My pony won't pass the tannery. Goes the long way round on her own.
+say {k=jest} The ox stepped on my foot. Took us both a while to notice. | {k=jest} The mare ate a whole sack of my apples and looked pleased with herself. | {k=jest} My pony won't pass the tannery. Goes the long way round on her own.
 then other: keeping.glad
-remember pair: k=jest 2m
 
 rule e2_r_an_tell_hunt
 when concept=talk.animals self.stage=adult
+does tell.self
 cooldown 2d
-say Something big crashed through the bracken at dawn. Never saw what. | Saw a stag on the ridge, just stood there, watching me. | The boar are back by the stream. Big ones.
+say {ak=wild} Something big crashed through the bracken at dawn. Never saw what. | {ak=wild} Saw a stag on the ridge, just stood there, watching me. | {ak=wild} The boar are back by the stream. Big ones.
 then other: animals.react
-remember pair: ak=wild 2m
 
 ## ---------------------------------------------------------------- Quips (one beat)
 
 rule e2_r_an_quip_cat
 when concept=talk.animals self.humour=dry
+does tell.self
 cooldown 2d
-say A cat's a landlord who pays you in dead mice. | Geese. Proof the gods have a temper. | A sheep's thought is a lonely thing.
+say A cat's a landlord who pays you in dead mice. | Geese. Proof the Dark One has a sense of humour. | A sheep's thought is a lonely thing.
 
 rule e2_r_an_quip_omen
 when concept=talk.animals self.stage=old
+does tell.self
 cooldown 2d
 say Cows lying down. Rain by dark. Mark me. | A crow on the roof, three mornings. Someone's going. | The bees were quiet today. I don't like it.
 
 rule e2_r_pt_quip_chatty
 when concept=talk.pastimes self.talk=chatty
+does tell.self
 cooldown 2d
 say If nobody's singing by dusk, I'm starting. | Life's short. Dance on the table. | The best pastime's the one that annoys the chaplain.

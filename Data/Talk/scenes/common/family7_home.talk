@@ -10,6 +10,7 @@
 
 scene f7_home_pot
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does ask.detail / answer.detail / assess
 a : What's in the pot tonight? | Is that the same stew as yesterday? | Something smells burnt. | Who salted this? Who salted this twice?
 b[wealth=destitute] : Water and an onion. The onion's doing its best. | It's the same stew as the day before that, too. | That's the last of the bread. It was burnt already. | Salt's free. Meat isn't.
 b[wealth=rich] : Cook's done a hare. Again. | Cook says it's a new receipt. I say it's yesterday's. | Cook's let the sauce catch. I'll speak to her. | Cook did. Shall I ring for her?
@@ -20,6 +21,7 @@ a : Well. It's hot, at least. | So you keep saying. | I'll eat round the black b
 
 scene f7_home_last_piece
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does tell.self / react.self / tell.self
 a : Who had the last of the cheese? | There were three apples this morning. There's one. | Someone's been at the honey with their paw. | Who ate the end of the loaf?
 b[young] #y : The mice. Big mice. | I counted two. | It was already like that. | Not me. My tummy did it.
 b[adolescent] : I'm growing. I'm allowed. | You can't prove anything. | I needed it. For studying. | I'll get more. Tomorrow. Maybe.
@@ -29,14 +31,16 @@ a : Somebody did. And I'll find out who. | I'm counting again tonight. | Funny. 
 
 scene f7_home_table_manners
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does tell.self / react.self / tell.self
 a : Elbows. | Don't talk with your mouth full. | Napkin. Not your sleeve. Napkin. | Sit up. You're folding like a wet sack.
 b[young] : Elbows are for leaning. | Whaff? | My sleeve's a napkin. It's soft. | I'm sitting! I'm sitting!
 b[old] : I've had elbows on tables for seventy years. | I've earned a full mouth. | I'll use what I like at my age. | I'm resting. There's a difference.
 b : You sound like your mother. | Mmf. Sorry. | I'll use a napkin when we own one. | Sitting up. Look. Very straight.
-a : Somebody has to say it. | Good. | There's one by your bowl. | Better.
+a : Somebody has to say it. | #bc_good# | There's one by your bowl. | Better.
 
 scene f7_home_recipe
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does tell.self / react.self / tell.self
 a : That's not how Mother made it. | You're doing it wrong. There's no turnip in it. | Where's the receipt for the pie? | You've put the herbs in too early.
 b[old] : I taught your mother how. Your mother was wrong. | Turnip's what there was. In my day we were glad of turnip. | The receipt's in my head. It dies with me. Pass the knife. | Herbs early, herbs late. It all goes to the same place.
 b[young] : It's my way. I made it up. | I put the turnip in. I like turnip. | Is it a secret receipt? Can I know it? | I helped! I picked the herbs! Some were grass.
@@ -45,33 +49,37 @@ a : Well. It's not bad, I'll give it that. | I'll eat round the turnip. | I'll f
 
 scene f7_home_supper_late
 when topic=family pair.kin=spouses|parent|siblings|family|household here.time=dusk|night
+does tell.self / react.self / assess
 a : You're late. #supper.capitalize#'s gone cold. | Where've you been till now? | I kept you a bowl. It's by the fire. | Sit. Eat. Then tell me.
 b[working=yes] : Work ran over. Sorry. | A cart lost a wheel. We all had to lift. | Bless you. I've not stopped once. | I'll eat on my feet. I've to go back.
-b[tired=yes] : Don't. I'm too #tired# to be told off. | Everywhere. My legs say everywhere. | Gods bless you. | I'll eat and fall asleep in it.
-b : Cold's fine. I'm fine. | Talking. You know how it is. | Bless you. | Food first. Then everything.
-a : Eat, then. | Hm. Sit down, then. | Eat it while it's warm. | Go on.
+b[tired=yes] : Don't. I'm too #tired# to be told off. | Everywhere. My legs say everywhere. | Bright One bless you. | I'll eat and fall asleep in it.
+b : Cold's fine. I'm fine. | Talking. You know how it is. | #bc_bless_you# | Food first. Then everything.
+a : Eat, then. | Hm. Sit down, then. | Eat it while it's warm. | #bc_go_on#
 
 scene f7_home_supper_grace
 when topic=family pair.kin=spouses|parent|siblings|family|household here.time=dusk|night
+does tell.self / react.self / assess
 a : Say the words before you eat. | Who's saying thanks tonight? | Wait. We give thanks first. | Paws together.
 b[piety=devout] : For the bread and the roof and the ones beside us, thank you. | I will. Bright One, keep this house. | For what we have, and for who. | Bright One, we're grateful. Truly.
-b[young] : Thank you for the soup and the bread and the cat next door and... | Me! Me! Thank you gods for supper and also for no turnips. | Do I have to say it out loud? | Paws together. Thank you. Can I open my eyes?
-b : Thanks for the food. There. | Me. Gods, thanks for this. Can we eat now? | Gods, thanks. Can we eat? | Done. Pass the bread.
+b[young] : Thank you for the soup and the bread and the cat next door and... | Me! Me! Thank you, Bright One, for supper and also for no turnips. | Do I have to say it out loud? | Paws together. Thank you. Can I open my eyes?
+b : Thanks for the food. There. | Me. Bright One, thanks for this. Can we eat now? | Bright One, thanks. Can we eat? | Done. Pass the bread.
 a : Well. It counts. | Short and sweet. | It counts. Eat. | So be it.
 
 # ---------------------------------------------------------------- Chores
 
 scene f7_home_water
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does tell.self / react.self / tell.self
 a : Whose turn is it on the water? | The water barrel's dry. | There's a queue at the well as long as my tail. | You fetched half a bucket. Half.
 b[young] : Mine? I did it yesterday! I think! | I can carry it if it's only a little bit full. | Can I take the cart? I'll be quick! | My arms are small.
 b[old] : Mine, once. Seventy years of yours now. | I'll fetch it when my knees say yes. | I remember when the well was clean. | I spilt the rest on the stair. My paws aren't what they were.
 b #d : Yours. Definitely yours. | I'll go. Don't look at me like that. | Then I'll go at dusk when it's empty. | It was a full bucket when I set out.
-a@d : It's never mine. | Thank you. | Go now. We need it now. | Then the stair's drinking well.
-a : Somebody's, and soon. | Thank you. | Go now. We need it now. | Half a bucket's half a wash.
+a@d : It's never mine. | #bc_thank_you# | Go now. We need it now. | Then the stair's drinking well.
+a : Somebody's, and soon. | #bc_thank_you# | Go now. We need it now. | Half a bucket's half a wash.
 
 scene f7_home_sweep
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does tell.self / react.self / tell.self
 a : Did you sweep? It doesn't look swept. | There's fur everywhere. Everywhere. | Somebody's walked mud right through. | I've swept twice and it's still dusty.
 b[young] : I swept under the bed. Mostly. | It's my fur. I'm shedding. I can't help it. | Not me. My paws were clean. Ish. | Can I do the dust? I like the dust.
 b[season=spring] : It's spring. We're all shedding. Sweep or give up. | Moulting season. The broom's losing. | Spring mud. It's everywhere. Even on the ceiling. | Leave the door open. It'll blow out.
@@ -81,6 +89,7 @@ a : Sweep again. | Then brush outside. I'm begging you. | Somebody's sweeping it
 
 scene f7_home_washing
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does tell.self / react.self / assess
 a : It's washing day. Don't put anything else in the basket. | Who put their boots in with the linen? | My good shirt's gone grey. | The lines are full. Where do I hang this?
 b[young] : I've only got one shirt and it's on. | The boots were muddy. They needed washing too. | Grey is a nice colour. | On the cat?
 b[wealth=rich] : Send it out. That's what the laundress is for. | Tell the maid. | Buy another. | The maid will find a place.
@@ -90,6 +99,7 @@ a : Nobody listens in this house. | It's always somebody. | It was white! | I'll
 
 scene f7_home_fire
 when topic=family pair.kin=spouses|parent|siblings|family|household here.season=autumn|winter
+does tell.self / react.self / tell.self
 a : Who let the fire go out? | We're down to the last of the wood. | Don't sit so close, you'll singe your tail. | Bank it properly tonight. Properly.
 b[young] : I was watching it. Then I wasn't. | I can find sticks! I'm good at sticks! | It's warm here! My tail likes it! | What's banking?
 b[old] : Fire's a wilful thing. Like you. | Burn the old chair. Nobody sits in it. | I've singed it twice this winter. Smells like cooking. | I banked fires before your mother was born.
@@ -99,15 +109,17 @@ a : Fires do, when nobody feeds them. | Then we'll need more than sticks. | You'
 
 scene f7_home_roof
 when topic=family pair.kin=spouses|parent|siblings|family|household here.weather=rain|storm|snow
+does tell.self / react.self / tell.self
 a : The roof's leaking again. | There's a drip on my pillow. | Put the pot under the corner. | That's a new drip. I know all the old ones.
 b[wealth=destitute] : The landlord says it's character. | Turn it over. The other side's damp too. | We've no pot left. They're all under drips. | Name it. It's family now.
 b[old] : That roof's been leaking since I was a pup. | Turn the pillow over. I always did. | It'll stop when it stops raining. That's how roofs work. | I stopped counting drips the year your father was born.
-b #d : I'll go up when it's dry. | Move the pillow. | Which corner? There's four. | Gods. How many does that make?
+b #d : I'll go up when it's dry. | Move the pillow. | Which corner? There's four. | Bright One. How many does that make?
 a@d : It'll be leaking when the last of us is gone. | And sleep where? On the drip? | Every corner, then. | Nine, I make it.
 a : It'll be leaking when the last of us is gone. | And sleep where? On the drip? | Then the bowls. Then the boots. | Nine, I make it.
 
 scene f7_home_mice
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does tell.self / react.self / tell.self
 a : Mice have been at the meal sack. | I heard something in the wall all night. | There's a mouse in the bread crock. Looking at me. | We need a cat.
 b[young] : Can I keep it? I'll call it Small. | It was singing. I heard it singing. | Hello, mouse! | Can the cat sleep with me?
 b[humour=merry] : Put a little hat on it and charge it rent. | It's the old tenant. Paid up to the end of the month. | Did it say anything? | We had a cat. The mice ate it.
@@ -117,6 +129,7 @@ a : It's not staying. | Easy for you to say. You snore over it. | It's looking a
 
 scene f7_home_mending
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does tell.self / react.self / tell.self
 a : You've a hole in your elbow. | Bring me your coat. The sleeve's going. | Who's sewing the button back on? | I've darned this sock so often it's more darn than sock.
 b[young] : It's a window! For my elbow! | I climbed a tree. The tree won. | I'll do it! Where's the needle? Ow. | Can I wear the darny one?
 b[old] : Give it here. My eyes are bad but my paws remember. | It's seen worse winters than this. So have I. | Button's in my pocket. Somewhere. With the others. | I've a sock older than you. Still going.
@@ -128,34 +141,38 @@ a : Bring it here, then. | Off with it. Now. | I'll do it, then. Again. | It's l
 
 scene f7_home_morning
 when topic=family pair.kin=spouses|parent|siblings|family|household here.time=dawn
+does tell.self / react.self / assess
 a : Up. Up! The sun's up. | Who's got my other boot? | You've slept on your ear. It's all flat. | Did anyone see my belt?
 b[young] : The sun's not up. It's pretending. | It's under the cat. | It's a good ear. It'll pop up. | I'm wearing it. As a tail.
 b[adolescent] : Five more breaths. | Why is it always me you ask? | Don't look at me. | Under my bed, probably. Everything is.
 b[old] : I've been up since the second cock. | Look under your other boot. | At my age everything's flat. | It's round your waist, you fool.
-b : Coming. Coming. | Where you left it. | Is it? Gods. | On the hook. Where it lives.
+b : Coming. Coming. | Where you left it. | Is it? Bright One. | On the hook. Where it lives.
 a : Now! | That's no help at all. | It's sticking up now. Worse. | Of course it is.
 
 scene f7_home_night
 when topic=family pair.kin=spouses|parent|siblings|family|household here.time=night
+does tell.self / react.self / assess
 a : Bar the door. | Put the lamp out, oil's dear. | Who's still awake? I can hear you. | Is everyone in?
 b[young] #y : Can it be a little bit open? For the moon? | Not yet! I'm reading the dark. | Nobody. I'm asleep. This is a dream. | Is the cat in? Is the cat in?
 b[old] #o : Barred it an hour ago. Barred it twice. | Leave me one candle. I sleep better with a candle. | I'm old. I'm always awake. | Everyone but your uncle. He'll come in by the window.
 b : Done. | Out it goes. | Just me. Thinking. | All in. All counted.
 a@y : Not even a crack. Sleep. | Read it with your eyes shut. | Dreams don't talk back. | The cat's in. Sleep.
 a@o : Twice is plenty. Sleep. | One candle. A small one. | Then be awake quietly. | He'll break his neck one of these nights.
-a : Good. Sleep, then. | Good. | Think quieter. | Good night, all.
+a : Good. Sleep, then. | #bc_good# | Think quieter. | Good night, all.
 
 scene f7_home_cant_sleep
 when topic=family pair.kin=spouses|parent|siblings|family|household here.time=night
+does tell.self / react.self / assess
 a : I can't sleep. | Are you awake? | Something's on my mind. | Listen to that wind.
 b[young] : Me neither. Can I come in? | Yes. I was being quiet in case. | What is it? Is it a bad thing? | Is it the Fen Hag? It sounds like a wolf crying.
 b[tired=yes] : I am now. | Mm? Mm. | Tell me in the morning. | It'll stop. Go to sleep.
 b #d : Count the roof beams. | Always. What is it? | Tell me. | It'll blow itself out.
-a@d : I've counted them. There's still eleven. | Nothing. Everything. Never mind. | Tomorrow. | I hope so.
-a : I'll lie still and hope, then. | Nothing. Everything. Never mind. | Tomorrow. | I hope so.
+a@d : I've counted them. There's still eleven. | Nothing. Everything. Never mind. | Tomorrow. | #bc_i_hope_so#
+a : I'll lie still and hope, then. | Nothing. Everything. Never mind. | Tomorrow. | #bc_i_hope_so#
 
 scene f7_home_dream
 when topic=family pair.kin=spouses|parent|siblings|family|household here.time=dawn|day
+does tell.self / react.self / tell.self
 a : I had the strangest dream. | I dreamt you were a goose. | Did you dream? I dreamt of the old house. | I dreamt I was falling. All night.
 b[young] : I dreamt of cake. A cake as big as the town. | A goose? Did I honk? | I didn't dream. Or I forgot. | Did you land? You have to land or it doesn't count.
 b[old] : I dream of my mother. She's always cross. | A goose? I've dreamt worse of you. | At my age, you dream of the dead. They're good company. | Same dream fifty years. A door. Never opened it.
@@ -166,14 +183,16 @@ a : You'd not believe me if I told you. | You honked. All night. | Mm. Some nigh
 
 scene f7_home_grooming
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does tell.self / react.self / assess
 a : Hold still, you've burrs in your tail. | Your fur's all on end at the back. | Come here, let me get that knot. | When did you last brush? Be honest.
 b[young] : Ow! Ow! You're pulling! | I like it on end. I look fierce. | It's not a knot. It's my friend. | What's a brush?
 b[old] : Gently. Gently. Thank you. | Leave it. It hasn't lain flat since my wedding day. | You'll pull out what little I've got. | At my age you brush what's left and hope.
-b : Ow. Sorry. Ow. | Is it? I slept on it. | Go on, then. | Define brush.
+b : Ow. Sorry. Ow. | Is it? I slept on it. | #bc_go_on_then# | Define brush.
 a : Nearly. There. | It'll stay like that now. | There. Like new. | That's all I need to know.
 
 scene f7_home_scent
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does ask.detail / answer.detail / assess
 a : You smell of the tavern. | Where've you been? You smell of smoke and onions. | Is that someone else's scent on your coat? | Who've you been with? I can smell them.
 b[young] : The baker's cat! I hugged it. | I fell in something. I don't want to talk about it. | The goat. I've been with the goat. | Everybody! I've been with everybody!
 b[working=yes] : I've been working. Work smells. | The forge. The fish. The whole street. | Customers. Fifty of them. They all left a bit. | Fifty strangers a day. They all rub off.
@@ -183,6 +202,7 @@ a : My nose says otherwise. | Well, wash before #supper#. | Wash it out. | My no
 
 scene f7_home_ears
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does tell.self / react.self / assess
 a : Your ears are back. What's wrong? | You've been quiet all day. Your tail's down. | Your ears are doing that thing. | Look at me. What is it?
 b[young] : Nothing. Nothing happened. | The big ones said I can't play. | My ears are just tired. | I broke something. A little bit.
 b[mourning=kin|friend] : I keep thinking about them. | It's just... the day. | I don't want to talk. Just sit. | It comes and goes.
@@ -194,6 +214,7 @@ a : All right. I'm here. | Come and sit by me. | They always tell. | When you're
 
 scene f7_home_letter
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does tell.self / react.self / tell.self
 a : There's a letter from your sister. | Your uncle's written. A whole page. | Someone's sent word from home. | A carter brought a note for you.
 b[from=frosthollow] : From up the valley? Is the snow in? | From home? They never write unless someone's dead. | Up the valley? Read it. Is the mine still open? | Read it. My eyes are bad. Is anyone dead?
 b[from=coldwater|mirebridge|fenshore|oakhaven|larkfield|southmeadow|saltwell] : From home? Give it here. | Read it out. Slowly. | Is it the harvest? Is it bad? | From home? Read it, quick.
@@ -203,62 +224,68 @@ a : They're well. They say the goat isn't. | Money, mostly. And the roof. | Good
 
 scene f7_home_visitors
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does tell.self / react.self / assess
 a : Your cousins are coming on Restday. | We've visitors tomorrow. Tidy something. | The whole family's coming. All of them. | Hide the good cups.
 b[young] #y : Are they bringing their pups? Can we play? | Will there be cake? | The ones with the goat? Hooray! | Can I show them my beetle?
-b[warmth=cold] #c : Tell them we're ill. | Must they? | I'll be out. | Every year.
-b #d : All of them? Where will they sit? | Tidy what? Everything's where I want it. | Gods help us. | They know where the good cups are.
+b[warmth=cold] #c : Tell them we're ill. | Must they? | I'll be out. | #bc_every_year#
+b #d : All of them? Where will they sit? | Tidy what? Everything's where I want it. | Bright One help us. | They know where the good cups are.
 a@y : Yes, and you'll share your toys. | If you tidy, there'll be cake. | The very same. Keep your tail out of its way. | Only if it stays in its box.
 a@c : We're not ill, and they're coming. | They must. | You'll be in. | Every year. And every year you survive it.
-a : On each other. | Everything. | Gods help the cups. | They'll find them anyway.
+a : On each other. | #bc_everything# | Bright One help the cups. | They'll find them anyway.
 
 scene f7_home_gift
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does tell.self / react.self / assess
 a : I've got something for you. Close your eyes. | I saw this at the market and thought of you. | It's not much. Open it. | Happy name day. Don't make a fuss.
 b[young] #y : Is it a kitten? Is it a sword? Is it a kitten with a sword? | Is it sweets? It's sweets! | Can I open it now? Now? Now? | A whistle! Thank you! Listen!
-b[warmth=cold] #c : What's this for? | You shouldn't have. Really. | Hm. Thank you. | Why?
+b[warmth=cold] #c : What's this for? | You shouldn't have. Really. | Hm. Thank you. | #bc_why_q#
 b[old] : At my age, a gift's a kindness. Thank you. | A scarf. I'll wear it to my own funeral. | You remembered. You always remember. | Oh, you shouldn't. Give it here.
 b : What is it? Oh. Oh, that's lovely. | You thought of me? | It's perfect. | Oh, you.
 a@y : Open your eyes and see. | Better than sweets. Open it. | Now. Go on. | Blow it outside!
 a@c : For being you. | I wanted to. | You're welcome. I think. | Because it's your day.
-a : I'll take that as a thank you. | Every day. | I hoped you'd like it. | Too late. Fuss made.
+a : I'll take that as a thank you. | #bc_every_day# | I hoped you'd like it. | Too late. Fuss made.
 
 scene f7_home_restday
 when topic=family pair.kin=spouses|parent|siblings|family|household here.day=rest
+does tell.self / react.self / assess
 a : No work today. Nobody gets up. | Restday. What shall we do? | Chapel, then a walk, then nothing. | Don't you dare start a chore.
 b[young] : Can we go to the river? Please? | Can we go to the fair? Is there a fair? | Can I stay in my nightshirt all day? | Can we play hide?
-b[piety=devout] : Chapel first. The gods gave us the day. | Chapel. Then you can lie about. | We'll walk to chapel and back the long way. | Nothing but prayer and soup.
+b[piety=devout] : Chapel first. The Bright One gave us the day. | Chapel. Then you can lie about. | We'll walk to chapel and back the long way. | Nothing but prayer and soup.
 b[job=guard|healer|innkeeper|priest] : Some of us work Restday. | Not for me. I'm on. | Enjoy it for both of us. | My busiest day, this.
 b : Suits me. | Sleep. Then more sleep. | Nothing sounds right. | I'll start nothing. Promise.
-a : Good. | We'll see. | Lovely. | Good.
+a : #bc_good# | #bc_we_will_see# | #bc_lovely# | #bc_good#
 
 scene f7_home_neighbours
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does tell.self / react.self / tell.self
 a : The neighbours were at it again last night. | Next door's goat got into our cabbages. | The family upstairs have a new pup. Hear it? | Did you see who's moved in across the way?
 b[young] #y : I heard them! They said a rude word! | I like the goat. It ate my sock. | Can I go and see it? Is it tiny? | They've got a pup my size!
 b[quarter=sump] : Walls are paper down here. Wet paper. | Goats? Down here it's rats in the cabbages. If we had cabbages. | Six to a room up there. Seven now. | Somebody new every week down here.
 b : Shouting about money. Always money. | That goat's eaten more of our garden than we have. | I heard. Every hour. Like a bell. | A carter. Seems quiet.
 a@y : And you'll not be repeating it. | Your sock's not the point. | Later. When it's awake. | Your size? Then it's trouble.
-a : Aren't we all. | I'll speak to them. | Gods, those lungs. | We'll see how long that lasts.
+a : Aren't we all. | I'll speak to them. | Bright One, those lungs. | We'll see how long that lasts.
 
 # ---------------------------------------------------------------- Money and the jar
 
 scene f7_home_jar
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does tell.self / react.self / tell.self
 a : How much is left in the jar? | Did you take from the jar? | We need to put something by for winter. | I've counted the pennies twice.
 b[wealth=destitute] #x : Nothing. Just the jar. | I took the last. For bread. | Put what by? Hope? | I can count it once, there's that few.
 b[wealth=rich] #r : We don't keep a jar, #pet#. We keep a steward. | The steward has the books. Ask him. | We've put by for ten winters. | Count them a third time, if it soothes you.
-b : Enough till market day. Just. | A little. For boots. | I'll try to work extra. | And?
+b : Enough till market day. Just. | A little. For boots. | I'll try to work extra. | #bc_and_q#
 a@x : Then we'd best not drop the jar. | Bread's fair. Bread's always fair. | Hope, then. It's light to carry. | Then we count it once and save our breath.
 a@r : I like a jar. A jar you can see. | Then I'll ask him. | Eleven, then. To be safe. | I will. It's soothing.
 a : Just. | Boots are fair. | Try hard. | And it came out the same.
 
 scene f7_home_boots
 when topic=family pair.kin=spouses|parent|siblings|family|household
+does tell.self / react.self / assess
 a : Your boots are worn through. | You need new boots before the frost. | Where are your good boots? | Those boots have seen better years. So have I.
 b[wealth=poor|destitute] #p : I'll stuff them with straw. | Boots or bread. I chose bread. | Sold them. Don't be angry. | They'll do another winter. They'll have to.
 b[young] #y : My toes stick out! I can wiggle them! | I grew out of them. Again. | They're in the river. It's a long story. | I like them. They're my lucky boots.
 b : They've a year in them. | After market day. | Under the bed. With the cat. | They're broken in. That's the good part.
-a@p : Straw. Gods help us. | Bread was right. | I'm not angry. I'm sad. | Then we'll patch them again.
+a@p : Straw. Bright One help us. | Bread was right. | I'm not angry. I'm sad. | Then we'll patch them again.
 a@y : Stop wiggling them at me. | Again! On what we earn! | Tell me the long story. Now. | Lucky or not, they're done.
 a : A month, maybe. | Before the frost. | Fetch them out. | Broken, more like.
 
@@ -266,6 +293,7 @@ a : A month, maybe. | Before the frost. | Fetch them out. | Broken, more like.
 
 scene f7_home_cold
 when topic=family pair.kin=spouses|parent|siblings|family|household here.season=autumn|winter
+does tell.self / react.self / assess
 a : You're sniffing. Are you coming down with something? | Is your nose dry? Let me feel. | You've got that cough again. | Stay home today. You're grey.
 b[young] : My nose is running! It won't stop! | It's dry and hot. Is that bad? | It's a little cough. A baby one. | Can I stay home? Can I have honey?
 b[old] : At my age everything's coming down with something. | My nose has been dry since the spring before last. | Same cough every winter. It's an old friend. | Stay home? I live here. Where else would I be?
@@ -275,9 +303,10 @@ a : Nothing turns into something. | It's hot. Bed. | Honey. Now. | Then stay by 
 
 scene f7_home_sick_bed
 when topic=family pair.kin=spouses|parent|siblings|family|household here.place=home b.injured=light|bad
+does tell.self / react.self / assess
 a : How are you feeling? | Drink this. It's foul, but drink it. | Don't get up. I mean it. | You've slept the whole day. Good.
 b[injured=bad] : Like a cart went over me. Twice. | It hurts to swallow. It hurts to breathe. | I tried. The floor came up to meet me. | Did I? It feels like I've been beaten.
 b[young] : Better. Can I have honey now? | Is it the brown one? I hate the brown one. | I'm bored. Bored bored bored. | Can I have a story?
 b[old] : Old. That's how I'm feeling. | I've drunk worse. I've drunk my own cooking. | I'll stay. My legs have voted. | At my age, sleep's a rehearsal.
-b : Better. A little. | Gods, that's awful. Thank you. | I'll stay. Only because you're watching. | Was I snoring?
+b : Better. A little. | Bright One, that's awful. Thank you. | I'll stay. Only because you're watching. | Was I snoring?
 a : Rest, then. | Every drop. | I'll be watching all day. | Sleep's what mends you.

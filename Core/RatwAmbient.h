@@ -31,6 +31,10 @@ struct AmbientTopic
     // Whether the teller saw it with their own eyes ("yes"), only heard it ("no"), or it isn't a thing one sees (""): the
     // scorecard's T3 counts an eyewitness's words said without it (doc 84 §15.3).
     std::string seen;
+    // What it is about, so the director knows it again (doc 84 §8.5, Phase 5): a claim's subject and words, a wagon, a
+    // ship, a good's price, an incident; an everyday topic's own name. The ledger's pair notes and a place's day keep it
+    // (novelty, saturation, the told set).
+    std::string key;
 };
 struct AmbientPick
 {

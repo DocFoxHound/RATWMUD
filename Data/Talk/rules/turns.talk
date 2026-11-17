@@ -1,0 +1,144 @@
+# The turn engine's own lines (Docs/Design/84 §8.2-8.4, Phase 3). Each is a move line: a rule with no concept, found by
+# the move it makes (`does`), so it answers in any talk where its criteria hold. Their words are the speaker's dialect
+# through the grammar's symbols (#farewell#, #greet#, #agree#...): Coldwater's "Fair winds", Saltwell's "Go in peace".
+# Phase 8 writes the bulk of the shared lines; these are what a talk needs to open properly, to close, and to answer
+# something owed when nothing written for it holds (the fallbacks walk down to ack).
+#
+# They are said often, by anyone, so they are short (under six words: never a "distinctive" line heard again or said by
+# two in one place, R4 and R5), and they are spread wide: few criteria (a rule whose criteria hold outscores the rest
+# and would be said most of the time), many alternatives.
+
+## Closing (§8.4, after Schegloff and Sacks): the farewell pair, with a preclose and its answer before it when the talk
+## has run long enough and its budget has room (its frames' preclose makes the room smaller). The one at work closes
+## first, else the one who didn't speak last. A line may preclose and take leave at once.
+
+rule cv_pre_any
+does preclose
+say Well. There it is. | Right, then. | Anyway. | Ah, well. | Well, that's that.
+
+rule cv_pre_any2
+does preclose
+say I mustn't keep you. | Still. Can't stand about. | Well. Enough of me. | So. There we are.
+
+rule cv_pre_work
+does preclose
+when self.working=yes self.job!=child
+say Back to it, then. | Work won't wait. | I'd better get on. | This won't earn my keep. | Well. Hands to it.
+
+rule cv_pre_school
+does preclose
+when self.working=yes self.job=child
+say Teacher's looking. | I'd better get back to my letters. | We'll catch it if we're caught talking. | I'll be missed in a minute.
+
+rule cv_accept_any
+does accept_preclose
+say #bc_go_on_then# | Right you are. | You do that. | Off you go. | Aye, I'd best too.
+
+rule cv_accept_any2
+does accept_preclose
+say #agree#. | And me. | #bc_right# | Aye, go on. | Same here.
+
+rule cv_bye_any
+does farewell
+say #farewell#. | #farewell#, #address#. | #farewell#, then. | Take care.
+
+rule cv_bye_any2
+does farewell
+say Be seeing you. | Till next time. | #later.capitalize#, then. | Look after yourself.
+
+rule cv_bye_any3
+does farewell
+say Mind yourself. | Go well. | I'll see you. | See you about.
+
+rule cv_bye_both
+does preclose farewell
+say Well. #farewell#. | Right. #farewell#. | Anyway. Take care. | Well. I'll see you.
+
+rule cv_bye_both2
+does preclose farewell
+say I'll let you be. | Right. Till next time. | I'll leave you to it.
+
+rule cv_bye_both_leave
+does preclose farewell
+when self.working=no self.job!=innkeeper
+say {leave=yes} Off I go, then. | {leave=yes} I'll be on my way. | {leave=yes} Right. I'm away. | {leave=yes} I'll get along, then. | {leave=yes} Time I was off. | {leave=yes} Well. I'll be getting along.
+
+rule cv_bye_night
+does farewell
+when here.time=night|dusk
+say Good night. | Sleep sound. | Good night, #address#. | Rest well. | Mind the dark. | Don't stay up late. | Till morning, then. | See you in the morning. | Sleep well, now.
+
+rule cv_bye_young
+does farewell
+when self.stage=young|adolescent
+say Bye! | See you! | Bye, then! | Bye bye! | See you later! | Bye for now!
+
+rule cv_return_any
+does farewell.return
+say #farewell#. | And you. | You too. | #farewell#, #address#.
+
+rule cv_return_any2
+does farewell.return
+say Take care, now. | Mind how you go. | Aye. #farewell#. | Till next time.
+
+rule cv_return_any3
+does farewell.return
+say #bc_go_on_then# | Right you are. | #later.capitalize#. | Aye, you too.
+
+rule cv_return_any4
+does farewell.return
+say And you, #address#. | Mind yourself. | Go well. | See you.
+
+rule cv_return_night
+does farewell.return
+when here.time=night|dusk
+say Good night. | Sleep well. | Sleep sound. | Rest well. | Good night, #address#. | And you. Mind the dark.
+
+rule cv_return_young
+does farewell.return
+when self.stage=young|adolescent
+say Bye! | Bye, then! | See you!
+
+## Opening (§8.4): strangers greet properly; a host greets a guest. Kin and housemates skip the greeting. A greeting is
+## said in the same breath as an opener that says what it does and doesn't open itself.
+
+rule cv_greet_strangers
+does greet
+when pair.band=strangers
+say #greet#. | #greet#, #address#.
+
+rule cv_greet_host
+does greet
+when here.place=tavern self.job=innkeeper
+say #greet#. Sit yourself down. | #greet#. Take the warm end. | #greet#. What can I get you? | #greet#. There's room by the fire. | #greet#. Pull up a stool. | #greet#. Sit where you like. | #greet#. Good to see you in. | #greet#. In you come.
+
+rule cv_greet_back
+does greet.return
+say #greet#. | #greet#, #address#.
+
+## Answers owed when nothing written for them holds (§7.2's fallbacks, walked down to ack). Plain, and true whatever
+## came before them.
+
+rule cv_ack_any
+does ack
+say I see. | Is that so. | Well, well. | So it goes.
+
+rule cv_ack_any2
+does ack
+say Fancy that. | I'll bear it in mind. | There it is. | Well, now.
+
+rule cv_agree_any
+does agree
+say #agree#. | Can't argue with that. | That's the truth of it.
+
+rule cv_accept_apology
+does accept_apology
+say No harm done. | Think nothing of it. | It's forgotten.
+
+rule cv_deflect_thanks
+does deflect_thanks
+say Any time. | Don't mention it. | It's nothing.
+
+rule cv_accept_decline
+does accept_decline
+say Another time, then. | #bc_fair_enough# | No matter.

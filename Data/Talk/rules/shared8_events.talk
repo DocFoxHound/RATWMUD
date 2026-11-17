@@ -1,0 +1,939 @@
+# The shared lines, Phase 8 session 3 (Docs/Design/84 §33, §14.1's thin topics): the week's happenings at the market
+# (talk.event). The topic's openers are the point here (§33.1), so these carry the concept; each hands on to
+# event.answer with what kind of news it was ({ev=good}, {ev=bad}, {ev=loss}, {ev=news}: economy8_times.talk's tags),
+# and the answers below are by the event's own kind, so a reply to the drovers speaks of the drovers.
+#
+# The facts (Core/RatwEvents.cpp World::eventFacts): world.event (the kind), world.event_words (its noun phrase: "the
+# drovers and their herds", "the lame ox that held up the Greenholt cart"), world.event_goods (what its market deals
+# in, "raw meat, mutton and hides"), world.event_when (now, soon, past). A House wedding is the city's alone, a ship's
+# cargo or loss the Wharf's; the rest happen in any market, so a line that names a place is gated to its region.
+#
+# The rules they keep: never a price figure, and a good dear or cheap only where world.<good>_price says so; an event
+# over is spoken of in the past; nobody claims to have seen what the game didn't show them (the notices and the criers
+# are what everyone knows; "I'm told" for the rest); who says it by the grammar (#s8_heard#, plain.grammar), what about
+# by the criteria. The phase's measure: in Phase 8 session 2's card the event topic fell to the authored route ("A day
+# like any other.") 960 times of 1,964, its few openers spent; these are the more ways to say it.
+
+## ================================================================ The drovers and their herds
+
+rule s83e_drovers_1
+when concept=talk.event world.event=drovers_in world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} The drovers are in, then. | {ev=good} #s8_heard# The drovers have come in. | {ev=good} Drovers in today. Mind where you step.
+then other: event.answer
+
+rule s83e_drovers_2
+when concept=talk.event world.event=drovers_in world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} Have you heard the bleating? The drovers are in. | {ev=good} Sheep in the lanes and the drovers shouting. Market week, all right. | {ev=good} The herds came in this morning. You'll have smelled them.
+then other: event.answer
+
+rule s83e_drovers_3
+when concept=talk.event world.event=drovers_in world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} There'll be meat on every table tonight, with the drovers in. | {ev=good} Butchers will be busy. The drovers are here. | {ev=good} Fresh meat at last. The drovers have brought their herds down.
+then other: event.answer
+
+rule s83e_drovers_4
+when concept=talk.event world.event=drovers_in world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} #surprise#! The drovers, and half the hills' sheep with them. | {ev=good} Drovers, herds, mud to the knee. You know the week. | {ev=good} The drovers are in. Shut your gate if you've got one.
+then other: event.answer
+
+rule s83e_drovers_5
+when concept=talk.event world.event=drovers_in world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} It's all talk of #world.event_words# today. | {ev=good} Nobody can talk of anything but #world.event_words#. | {ev=good} #world.event_words.capitalize#. That's the week sorted, then.
+then other: event.answer
+
+rule s83e_drovers_6
+when concept=talk.event world.event=drovers_in world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} Drovers in. The tanners will have their work cut out. | {ev=good} A herd that size, there'll be hides drying on every fence. | {ev=good} Forty head in one drove, they say, and that's only the first.
+then other: event.answer
+
+rule s83e_drovers_7
+when concept=talk.event world.event=drovers_in world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} You can't hear yourself think for the bleating. | {ev=good} Drovers' week. The inns will be loud tonight. | {ev=good} The drovers are in, and they've thirst enough for the whole town.
+then other: event.answer
+
+rule s83e_drovers_8
+when concept=talk.event world.event=drovers_in world.event_when=now world.mutton_price=down
+does tell.news
+cooldown 1d
+say {ev=good} Mutton's going cheap with the drovers in. | {ev=good} I'll be having mutton tonight. Cheap as I've seen it. | {ev=good} Get your mutton while it's cheap. The drovers won't stay.
+then other: event.answer
+
+rule s83e_drovers_9
+when concept=talk.event world.event=drovers_in world.event_when=now world.raw_meat_price=down
+does tell.news
+cooldown 1d
+say {ev=good} Meat's cheap this week, with the herds in. | {ev=good} Cheap meat at last. The drovers have flooded the stalls. | {ev=good} I'll buy a joint while it's cheap. Who knows when it'll be again.
+then other: event.answer
+
+rule s83e_drovers_herder
+when concept=talk.event world.event=drovers_in world.event_when=now self.job=herder|farmer
+does tell.self
+cooldown 1d
+say {ev=good} Good beasts in that drove, mostly. Hill sheep. | {ev=good} Those drovers push their stock too hard. You can see it in the legs. | {ev=good} Fine flock, that. I'd have liked a look at the ewes.
+then other: event.answer
+
+rule s83e_drovers_cook
+when concept=talk.event world.event=drovers_in world.event_when=now self.job=cook|innkeeper
+does tell.self
+cooldown 1d
+say {ev=good} Stew for a week, with the drovers in. Mutton stew. | {ev=good} The drovers drink like the sea's dry. I've barrels ready. | {ev=good} I'll be buying more mutton than I've hooks for.
+then other: event.answer
+
+rule s83e_drovers_crafter
+when concept=talk.event world.event=drovers_in world.event_when=now self.job=crafter|laborer
+does tell.self
+cooldown 1d
+say {ev=good} Hides and fleeces. There'll be work at the tannery this week. | {ev=good} The tannery's hiring hands while the hides last. | {ev=good} Every hide off that herd wants scraping. Someone's got to do it.
+then other: event.answer
+
+rule s83e_drovers_merchant
+when concept=talk.event world.event=drovers_in world.event_when=now self.role=merchant
+does tell.self
+cooldown 1d
+say {ev=good} The drovers spend before they leave. It's a good week for the counter. | {ev=good} Drovers with coin in their pockets. Good for trade, that. | {ev=good} Rope, salve, a new strap. Drovers always want something.
+then other: event.answer
+
+rule s83e_drovers_poor
+when concept=talk.event world.event=drovers_in world.event_when=now self.wealth=poor|destitute
+does tell.self
+cooldown 1d
+say {ev=good} Meat for once. Or the smell of it, anyway. | {ev=good} The drovers want hands to hold the gates. A penny's a penny. | {ev=good} I might stretch to a bit of mutton this week. Might.
+then other: event.answer
+
+rule s83e_drovers_rich
+when concept=talk.event world.event=drovers_in world.event_when=now self.wealth=rich
+does tell.self
+cooldown 1d
+say {ev=good} The cook's gone down to choose a lamb herself. She trusts nobody. | {ev=good} The noise from those herds. One can't open a window. | {ev=good} Spring lamb on the table, with the drovers in. One small mercy.
+then other: event.answer
+
+rule s83e_drovers_young
+when concept=talk.event world.event=drovers_in world.event_when=now self.stage=young
+does tell.news
+cooldown 1d
+say {ev=good} There's sheep everywhere, they said! Hundreds! | {ev=good} I want to see the sheep! All of them! | {ev=good} Do sheep bite? I want to pat one.
+then other: event.answer
+
+rule s83e_drovers_city
+when concept=talk.event world.event=drovers_in world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} Every butcher in town's sharpening his knives this week. | {ev=good} Herds down from the hills, and the streets all knees and bleating. | {ev=good} You'd think the whole of #here.town# had turned to sheep.
+then other: event.answer
+
+rule s83e_drovers_town
+when concept=talk.event world.event=drovers_in world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} The whole place smells of sheep. I'm not complaining. | {ev=good} Drovers' week. The road's nothing but wool and dust. | {ev=good} There's more sheep than wolves in #here.town# today.
+then other: event.answer
+
+rule s83e_drovers_past
+when concept=talk.event world.event=drovers_in world.event_when=past
+does tell.news
+cooldown 1d
+say {ev=good} The drovers have gone. You can hear the birds again. | {ev=good} The herds moved on. The lanes'll take a week to clean. | {ev=good} Gone, the drovers. Left their mud behind, as ever.
+then other: event.answer
+
+rule s83e_drovers_past2
+when concept=talk.event world.event=drovers_in world.event_when=past
+does tell.news
+cooldown 1d
+say {ev=good} That was a good few days, with the drovers. | {ev=good} I miss the drovers already. Their coin, I mean. | {ev=good} The meat they left will last a while yet.
+then other: event.answer
+
+## ================================================================ The fire at the works
+
+rule s83e_fire_1
+when concept=talk.event world.event=works_fire world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=bad} #s8_heard# There's been a fire at the works. | {ev=bad} Fire at the works. Did you hear? | {ev=bad} The works caught fire. #uneasy#.
+then other: event.answer
+
+rule s83e_fire_2
+when concept=talk.event world.event=works_fire world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=bad} They're still fighting the fire at the works, I'm told. | {ev=bad} Smoke over the works since morning. Bad business. | {ev=bad} A fire at the works. Bright One keep them all.
+then other: event.answer
+
+rule s83e_fire_3
+when concept=talk.event world.event=works_fire world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=bad} No timber to be had, with the works burnt. | {ev=bad} Anyone wanting planks will be waiting a while, after that fire. | {ev=bad} The fire at the works. Nobody will be building this week.
+then other: event.answer
+
+rule s83e_fire_4
+when concept=talk.event world.event=works_fire world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=bad} It's all talk of #world.event_words#. | {ev=bad} #world.event_words.capitalize#. That's all anyone talks of. | {ev=bad} You'll have heard of #world.event_words#. #pity#.
+then other: event.answer
+
+rule s83e_fire_5
+when concept=talk.event world.event=works_fire world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=bad} Fire's the one thing I'm truly afraid of. And now the works. | {ev=bad} I keep smelling smoke. Every time the wind turns. | {ev=bad} A spark and a dry beam, that's all it takes. Look at the works.
+then other: event.answer
+
+rule s83e_fire_planks
+when concept=talk.event world.event=works_fire world.event_when=now world.planks_price=up
+does tell.news
+cooldown 1d
+say {ev=bad} Planks have gone dear since the fire. | {ev=bad} You'll pay through the nose for a plank this week. The fire, see. | {ev=bad} Dear as anything, timber, with the works burnt.
+then other: event.answer
+
+rule s83e_fire_smith
+when concept=talk.event world.event=works_fire world.event_when=now self.job=smith
+does tell.self
+cooldown 1d
+say {ev=bad} Charcoal will be short, with the works burnt. A forge can't wait. | {ev=bad} No nails out of the works this week. I'll be making my own. | {ev=bad} A forge knows fire. That one got away from them.
+then other: event.answer
+
+rule s83e_fire_guard
+when concept=talk.event world.event=works_fire world.event_when=now self.job=guard|soldier
+does tell.self
+cooldown 1d
+say {ev=bad} They'll want the Watch round the works till it's cold. | {ev=bad} Nobody goes near the works till it's cold. Watch orders. | {ev=bad} A fire like that, you keep your eyes open after. Sparks travel.
+then other: event.answer
+
+rule s83e_fire_carter
+when concept=talk.event world.event=works_fire world.event_when=now self.job=carter
+does tell.self
+cooldown 1d
+say {ev=bad} There'll be no loads out of the works for a while. | {ev=bad} The works is shut, and my cart's empty. | {ev=bad} No loads from the works till they're built again.
+then other: event.answer
+
+rule s83e_fire_healer
+when concept=talk.event world.event=works_fire world.event_when=now self.job=healer|priest
+does tell.self
+cooldown 1d
+say {ev=bad} If anyone's scorched, send them to me. Cold water first. | {ev=bad} Smoke in the chest is the worry after a fire. Honey helps. | {ev=bad} We'll say a word for the works at the evening prayers.
+then other: event.answer
+
+rule s83e_fire_past
+when concept=talk.event world.event=works_fire world.event_when=past
+does tell.news
+cooldown 1d
+say {ev=bad} They've the works going again, after the fire. Mostly. | {ev=bad} The fire's out at the works. You can still smell it on a damp day. | {ev=bad} They're putting up new beams at the works. Back to it.
+then other: event.answer
+
+rule s83e_fire_past2
+when concept=talk.event world.event=works_fire world.event_when=past
+does tell.news
+cooldown 1d
+say {ev=bad} That fire at the works. Could've been so much worse. | {ev=bad} After the fire, they've put water butts on every corner of the works. | {ev=bad} Everyone's minding their lamps since that fire.
+then other: event.answer
+
+## ================================================================ The brewers' glut
+
+rule s83e_glut_1
+when concept=talk.event world.event=brewers_glut world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} The brewers have overdone it. Barrels all down the lane. | {ev=good} #s8_heard# The brewers can't sell what they've brewed. | {ev=good} Too much ale in town, they say. Imagine that.
+then other: event.answer
+
+rule s83e_glut_2
+when concept=talk.event world.event=brewers_glut world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} The brewers' glut. Best news all month. | {ev=good} There's a glut on at the brewers. A glut! Of ale! | {ev=good} You'll never guess what there's too much of. Ale.
+then other: event.answer
+
+rule s83e_glut_3
+when concept=talk.event world.event=brewers_glut world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} It's all talk of #world.event_words# at the stalls. | {ev=good} #world.event_words.capitalize#. Every inn in town is full. | {ev=good} Have you heard? #world.event_words.capitalize#.
+then other: event.answer
+
+rule s83e_glut_4
+when concept=talk.event world.event=brewers_glut world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} Somebody's brewed for a festival that isn't coming. | {ev=good} The brewers guessed wrong, and the whole town's grateful. | {ev=good} The brewers are rolling barrels to anyone who'll take them.
+then other: event.answer
+
+rule s83e_glut_cheap
+when concept=talk.event world.event=brewers_glut world.event_when=now world.ale_price=down
+does tell.news
+cooldown 1d
+say {ev=good} #ale.capitalize#'s cheap all week. I'll do my part. | {ev=good} Ale for next to nothing, while the glut lasts. | {ev=good} Never seen #ale# so cheap. I'd buy a barrel if I had a cellar.
+then other: event.answer
+
+rule s83e_glut_cider
+when concept=talk.event world.event=brewers_glut world.event_when=now world.cider_price=down
+does tell.news
+cooldown 1d
+say {ev=good} Cider's cheap with it, too. The glut's not only ale. | {ev=good} Cheap cider this week. Mind your head in the morning. | {ev=good} The cider presses overdid it too. Cheap as water.
+then other: event.answer
+
+rule s83e_glut_keeper
+when concept=talk.event world.event=brewers_glut world.event_when=now self.job=innkeeper
+does tell.self
+cooldown 1d
+say {ev=good} The brewers are selling off. I'll have plenty in. | {ev=good} My cellar's full to the steps, with the brewers selling off. | {ev=good} I'll take a few barrels off the brewers for a song. Come round tonight.
+then other: event.answer
+
+rule s83e_glut_laborer
+when concept=talk.event world.event=brewers_glut world.event_when=now self.job=laborer|carter|miner|fisher
+does tell.self
+cooldown 1d
+say {ev=good} A week of plenty after a day's #work#. That's what I call justice. | {ev=good} The brewers' loss, my gain. I'll drink to them. | {ev=good} #ale.capitalize# by the barrel all week. My back says thank you.
+then other: event.answer
+
+rule s83e_glut_devout
+when concept=talk.event world.event=brewers_glut world.event_when=now self.piety=devout
+does tell.news
+cooldown 1d
+say {ev=good} Too much ale in town. You can hear it from the chapel. | {ev=good} The brewers have a glut, and the young ones know it. | {ev=good} A glut of ale. The priest will have words on Restday.
+then other: event.answer
+
+rule s83e_glut_past
+when concept=talk.event world.event=brewers_glut world.event_when=past
+does tell.news
+cooldown 1d
+say {ev=good} The brewers' glut's done with. Back to proper prices. | {ev=good} That was a good week while it lasted, the glut. | {ev=good} Glut's over. The brewers have learnt, maybe.
+then other: event.answer
+
+rule s83e_glut_past2
+when concept=talk.event world.event=brewers_glut world.event_when=past
+does tell.news
+cooldown 1d
+say {ev=good} I've still a jug from the glut put by. For a cold night. | {ev=good} Half the town's still nursing its head after that glut. | {ev=good} Nobody's sober memory of the glut, I'd wager.
+then other: event.answer
+
+## ================================================================ The lame ox
+
+rule s83e_ox_1
+when concept=talk.event world.event=lame_ox world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=bad} The farm cart's not come. Their ox went lame. | {ev=bad} #s8_heard# The cart's held up. A lame ox. | {ev=bad} No cart in today. Something with the ox.
+then other: event.answer
+
+rule s83e_ox_2
+when concept=talk.event world.event=lame_ox world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=bad} It's all talk of #world.event_words#. | {ev=bad} You'll have heard. #world.event_words.capitalize#. | {ev=bad} #world.event_words.capitalize#. Small thing, but the stalls feel it.
+then other: event.answer
+
+rule s83e_ox_3
+when concept=talk.event world.event=lame_ox world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=bad} One ox goes lame, and half the market's waiting. | {ev=bad} All it takes is one bad hoof, and there's no cart. | {ev=bad} The stalls are short today. The cart never came, ox gone lame.
+then other: event.answer
+
+rule s83e_ox_4
+when concept=talk.event world.event=lame_ox world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=bad} The poor beast. I hope they're resting it. | {ev=bad} A lame ox and a cart stuck at the farm. Bad luck for somebody. | {ev=bad} Lame ox. The farm'll be sorry, and so will we.
+then other: event.answer
+
+rule s83e_ox_farmer
+when concept=talk.event world.event=lame_ox world.event_when=now self.job=farmer|herder
+does tell.self
+cooldown 1d
+say {ev=bad} You don't drive a beast on a bad hoof. They were right to hold the cart. | {ev=bad} Poultice and rest. That ox will be pulling again in a week. | {ev=bad} An ox is worth more than a day's selling. Every farmer knows it.
+then other: event.answer
+
+rule s83e_ox_carter
+when concept=talk.event world.event=lame_ox world.event_when=now self.job=carter
+does tell.self
+cooldown 1d
+say {ev=bad} I'd lend them my mule if they'd asked. | {ev=bad} I've seen a hoof go like that. It's the wet ground. | {ev=bad} Another carter's bad day. Could've been me.
+then other: event.answer
+
+rule s83e_ox_merchant
+when concept=talk.event world.event=lame_ox world.event_when=now self.role=merchant
+does tell.self
+cooldown 1d
+say {ev=bad} I was waiting on that cart. Half my stall's bare. | {ev=bad} No cart, so I've nothing fresh to set out. | {ev=bad} A lame ox, and my morning's gone.
+then other: event.answer
+
+rule s83e_ox_young
+when concept=talk.event world.event=lame_ox world.event_when=now self.stage=young|adolescent
+does tell.news
+cooldown 1d
+say {ev=bad} The ox has a hurt foot. Will it get better? | {ev=bad} The cart's not coming because the ox is limping. | {ev=bad} I hope the ox is all right. Oxen are nice.
+then other: event.answer
+
+rule s83e_ox_past
+when concept=talk.event world.event=lame_ox world.event_when=past
+does tell.news
+cooldown 1d
+say {ev=bad} The cart's running again. Fresh ox in the shafts. | {ev=bad} That business with the ox is done. The cart came this morning. | {ev=bad} The farm cart's back. The stalls are full again.
+then other: event.answer
+
+rule s83e_ox_past2
+when concept=talk.event world.event=lame_ox world.event_when=past
+does tell.news
+cooldown 1d
+say {ev=bad} The ox is mending, I'm told. Good. | {ev=bad} One day without the cart, and everyone talked of nothing else. | {ev=bad} The lame ox is the market's old news already.
+then other: event.answer
+
+## ================================================================ Blight in the orchards
+
+rule s83e_blight_1
+when concept=talk.event world.event=orchard_blight world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=bad} There's blight in the orchards. #uneasy#. | {ev=bad} #s8_heard# The orchards have the blight. | {ev=bad} Blight on the apple trees, I'm told.
+then other: event.answer
+
+rule s83e_blight_2
+when concept=talk.event world.event=orchard_blight world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=bad} It's all talk of #world.event_words#. | {ev=bad} #world.event_words.capitalize#. Nobody's happy about it. | {ev=bad} Have you heard? #world.event_words.capitalize#.
+then other: event.answer
+
+rule s83e_blight_3
+when concept=talk.event world.event=orchard_blight world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=bad} Blight. Black leaves, they say, and rot on the branch. | {ev=bad} The orchards have it bad. They're burning what's sick. | {ev=bad} Blight spreads like gossip. Faster.
+then other: event.answer
+
+rule s83e_blight_apples
+when concept=talk.event world.event=orchard_blight world.event_when=now world.apples_price=up
+does tell.news
+cooldown 1d
+say {ev=bad} Apples have gone dear, with the blight. | {ev=bad} An apple costs what a loaf did. The blight, see. | {ev=bad} You'll pay for an apple this week. Blight's taken the best of them.
+then other: event.answer
+
+rule s83e_blight_cider
+when concept=talk.event world.event=orchard_blight world.event_when=now world.cider_price=up
+does tell.news
+cooldown 1d
+say {ev=bad} Cider's dear already. The blight's got the orchards. | {ev=bad} No cheap cider this year, with the blight. | {ev=bad} The cider-makers are holding their prices high. Blight.
+then other: event.answer
+
+rule s83e_blight_farmer
+when concept=talk.event world.event=orchard_blight world.event_when=now self.job=farmer|herder|woodcutter
+does tell.self
+cooldown 1d
+say {ev=bad} Cut it out early and burn it, that's the only cure for blight. | {ev=bad} I've seen blight take a whole hillside. I pray it stops at the orchards. | {ev=bad} Wet spring, warm nights. Blight weather. I could have told them.
+then other: event.answer
+
+rule s83e_blight_cook
+when concept=talk.event world.event=orchard_blight world.event_when=now self.job=cook|baker|brewer
+does tell.self
+cooldown 1d
+say {ev=bad} No apple pies this week. Tell the pups before they ask. | {ev=bad} I'd planned on cider for the stew. Not with this blight. | {ev=bad} What fruit there is, I'll have to fight for.
+then other: event.answer
+
+rule s83e_blight_young
+when concept=talk.event world.event=orchard_blight world.event_when=now self.stage=young
+does tell.news
+cooldown 1d
+say {ev=bad} The apple trees are poorly. I hope they get better. | {ev=bad} There's a sickness on the apples. I'm not to eat the spotty ones. | {ev=bad} Mum says no apples. Because of the blight.
+then other: event.answer
+
+rule s83e_blight_past
+when concept=talk.event world.event=orchard_blight world.event_when=past
+does tell.news
+cooldown 1d
+say {ev=bad} The blight's run its course, they say. | {ev=bad} They burnt the sick trees. The rest look like they'll hold. | {ev=bad} Fewer apples this year, but the orchards will live.
+then other: event.answer
+
+rule s83e_blight_past2
+when concept=talk.event world.event=orchard_blight world.event_when=past
+does tell.news
+cooldown 1d
+say {ev=bad} The orchards look bare where they cut the blight out. | {ev=bad} After the blight, every apple looks like treasure. | {ev=bad} The blight's gone. The smoke from the burning went on for days.
+then other: event.answer
+
+## ================================================================ The broken mill wheel
+
+rule s83e_mill_1
+when concept=talk.event world.event=mill_stopped world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=bad} The mill wheel's broken. No grinding till it's mended. | {ev=bad} #s8_heard# The mill's stopped. | {ev=bad} Mill wheel's cracked, I'm told. The bakers are worried.
+then other: event.answer
+
+rule s83e_mill_2
+when concept=talk.event world.event=mill_stopped world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=bad} It's all talk of #world.event_words#. | {ev=bad} #world.event_words.capitalize#. Bread will be short. | {ev=bad} You'll have heard of #world.event_words#.
+then other: event.answer
+
+rule s83e_mill_3
+when concept=talk.event world.event=mill_stopped world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=bad} No flour from the mill. It's never quiet like that. | {ev=bad} Funny how you only hear a mill when it stops. | {ev=bad} The wheel's stopped. They're up to their knees in the race, mending it.
+then other: event.answer
+
+rule s83e_mill_flour
+when concept=talk.event world.event=mill_stopped world.event_when=now world.flour_price=up
+does tell.news
+cooldown 1d
+say {ev=bad} Flour's dear with the mill stopped. | {ev=bad} You'll pay double for a sack of flour this week, near enough. | {ev=bad} Flour gone dear. The mill, see.
+then other: event.answer
+
+rule s83e_mill_bread
+when concept=talk.event world.event=mill_stopped world.event_when=now world.bread_price=up
+does tell.news
+cooldown 1d
+say {ev=bad} Bread's dearer, with the mill wheel broken. | {ev=bad} Smaller loaves this week. Blame the mill. | {ev=bad} The baker's raised the bread. The mill's stopped.
+then other: event.answer
+
+rule s83e_mill_poor
+when concept=talk.event world.event=mill_stopped world.event_when=now self.wealth=poor|destitute
+does tell.self
+cooldown 1d
+say {ev=bad} Mill's stopped. It's porridge without the oats for me, then. | {ev=bad} When bread goes dear, I go #hungry#. Simple as that. | {ev=bad} I'll be eating yesterday's crusts till that wheel turns.
+then other: event.answer
+
+rule s83e_mill_cook
+when concept=talk.event world.event=mill_stopped world.event_when=now self.job=cook|innkeeper
+does tell.self
+cooldown 1d
+say {ev=bad} No flour, so it's stew without dumplings. | {ev=bad} I've a sack put by. Not saying where. | {ev=bad} I'll thicken with barley till the mill's mended.
+then other: event.answer
+
+rule s83e_mill_past
+when concept=talk.event world.event=mill_stopped world.event_when=past
+does tell.news
+cooldown 1d
+say {ev=good} The mill's grinding again. You can hear it. | {ev=good} They've mended the wheel. Good bread tomorrow. | {ev=good} Mill's turning. Bread back to rights.
+then other: event.answer
+
+rule s83e_mill_past2
+when concept=talk.event world.event=mill_stopped world.event_when=past
+does tell.news
+cooldown 1d
+say {ev=good} I never thought I'd be glad to hear that mill again. | {ev=good} New paddles on the wheel, I'm told. It'll last now. | {ev=good} The bakers are back at it, with the mill mended.
+then other: event.answer
+
+## ================================================================ A good catch
+
+rule s83e_catch_1
+when concept=talk.event world.event=good_catch world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} A good catch in, I'm told. Fish for everyone. | {ev=good} #s8_heard# The boats did well. | {ev=good} Full nets this morning. Everyone's having fish.
+then other: event.answer
+
+rule s83e_catch_2
+when concept=talk.event world.event=good_catch world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} It's all talk of #world.event_words#. | {ev=good} #world.event_words.capitalize#. You can smell it from here. | {ev=good} Have you heard? #world.event_words.capitalize#.
+then other: event.answer
+
+rule s83e_catch_cheap
+when concept=talk.event world.event=good_catch world.event_when=now world.fish_price=down
+does tell.news
+cooldown 1d
+say {ev=good} Fish is cheap as stones this week. | {ev=good} Cheap fish, with the catch in. I'll have it three nights running. | {ev=good} Fish for a song. They're giving it away near enough.
+then other: event.answer
+
+rule s83e_catch_lake
+when concept=talk.event world.event=good_catch world.event_when=now here.region=coldwater
+does tell.news
+cooldown 1d
+say {ev=good} The lake gave well this morning. #luck.capitalize#. | {ev=good} The boats came in low. The lake's in a giving mood. | {ev=good} Every smokehouse on the shore's lit tonight.
+
+rule s83e_catch_lake2
+when concept=talk.event world.event=good_catch world.event_when=now here.region=coldwater
+does tell.news
+cooldown 1d
+say {ev=good} Pike and perch to the gunwales, they say. | {ev=good} The lake's paid its debts this week. | {ev=good} Nets full on every boat. The lake remembers us sometimes.
+then other: event.answer
+
+rule s83e_catch_fisher
+when concept=talk.event world.event=good_catch world.event_when=now self.job=fisher|sailor
+does tell.self
+cooldown 1d
+say {ev=good} Best haul all year, by the look of the boats. | {ev=good} There'll be gutting till midnight, and glad of it. | {ev=good} The nets near split. Never seen it so thick.
+then other: event.answer
+
+rule s83e_catch_cook
+when concept=talk.event world.event=good_catch world.event_when=now self.job=cook|innkeeper
+does tell.self
+cooldown 1d
+say {ev=good} Fish soup for a week, with the catch in. | {ev=good} I'll be salting more fish than I've room for. | {ev=good} Fish on the menu, and fish on the floor. What a day.
+then other: event.answer
+
+rule s83e_catch_past
+when concept=talk.event world.event=good_catch world.event_when=past
+does tell.news
+cooldown 1d
+say {ev=good} The smokehouses are still full from the catch. | {ev=good} That catch will keep us in fish a while. | {ev=good} You could smell that catch for days.
+then other: event.answer
+
+## ================================================================ The flooded salt pans
+
+rule s83e_salt_1
+when concept=talk.event world.event=salt_short world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=bad} The salt pans flooded. #uneasy#. | {ev=bad} #s8_heard# No salt to be had. | {ev=bad} Salt's short. The pans are under water, I'm told.
+then other: event.answer
+
+rule s83e_salt_2
+when concept=talk.event world.event=salt_short world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=bad} It's all talk of #world.event_words#. | {ev=bad} #world.event_words.capitalize#. Everyone's after salt. | {ev=bad} You'll have heard. #world.event_words.capitalize#.
+then other: event.answer
+
+rule s83e_salt_dear
+when concept=talk.event world.event=salt_short world.event_when=now world.salt_price=up
+does tell.news
+cooldown 1d
+say {ev=bad} Salt's dear as silver this week. | {ev=bad} Salt by the pinch, now. The flood. | {ev=bad} Dear salt. And just when I'd meat to cure.
+then other: event.answer
+
+rule s83e_salt_cook
+when concept=talk.event world.event=salt_short world.event_when=now self.job=cook|innkeeper|fisher
+does tell.self
+cooldown 1d
+say {ev=bad} No salt, no curing. I'll smoke what I can. | {ev=bad} I'm counting grains of salt like coin. | {ev=bad} Bland stew this week, and I'll hear about it.
+then other: event.answer
+
+rule s83e_salt_old
+when concept=talk.event world.event=salt_short world.event_when=now self.stage=old
+does tell.news
+cooldown 1d
+say {ev=bad} The pans flooded in my grandfather's day too. We managed. | {ev=bad} When the salt's short, the old folk remember. We kept a crock. | {ev=bad} Salt short. I've seen it before. It comes back.
+then other: event.answer
+
+rule s83e_salt_past
+when concept=talk.event world.event=salt_short world.event_when=past
+does tell.news
+cooldown 1d
+say {ev=bad} The salt's back. The pans dried out. | {ev=bad} Salt on the stalls again, after the flood. | {ev=bad} The pans are working again, I'm told.
+then other: event.answer
+
+## ================================================================ The House wedding (the city's)
+
+rule s83e_wedding_soon
+when concept=talk.event world.event=house_wedding world.event_when=soon
+does tell.news
+cooldown 1d
+say {ev=good} A House wedding on the way, and the city's in a lather. | {ev=good} #s8_heard# One of the Houses is marrying. | {ev=good} There's a notice up. A House wedding, in a day or two.
+then other: event.answer
+
+rule s83e_wedding_soon2
+when concept=talk.event world.event=house_wedding world.event_when=soon
+does tell.news
+cooldown 1d
+say {ev=good} The stewards are buying #world.event_goods# for the wedding. | {ev=good} Every kitchen up the hill is ordering #world.event_goods#. | {ev=good} The stewards want #world.event_goods#, and plenty.
+then other: event.answer
+
+rule s83e_wedding_now
+when concept=talk.event world.event=house_wedding world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} The House wedding's today. Carriages everywhere. | {ev=good} Have you seen the Heights? Ribbons on every door, for the wedding. | {ev=good} It's the House wedding. The whole city's craning its neck.
+then other: event.answer
+
+rule s83e_wedding_now2
+when concept=talk.event world.event=house_wedding world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} It's all talk of #world.event_words#. | {ev=good} #world.event_words.capitalize#. Music up the hill all day. | {ev=good} #world.event_words.capitalize#. You'd think it was a festival.
+then other: event.answer
+
+rule s83e_wedding_servant
+when concept=talk.event world.event=house_wedding world.event_when=soon|now self.job=servant|cook
+does tell.self
+cooldown 1d
+say {ev=good} Every servant up the hill is polishing silver for the wedding. | {ev=good} The kitchens up the hill work dawn to midnight, with the wedding. | {ev=good} The House wedding. My feet will never forgive it.
+then other: event.answer
+
+rule s83e_wedding_lower
+when concept=talk.event world.event=house_wedding world.event_when=soon|now self.class=lower
+does tell.news
+cooldown 1d
+say {ev=good} #toffs.capitalize# are marrying. We'll get a look at the carriages, if we're lucky. | {ev=good} A House wedding. Not that we'll taste a crumb of it. | {ev=good} The Houses wed and the rest of us carry the chairs.
+then other: event.answer
+
+rule s83e_wedding_past
+when concept=talk.event world.event=house_wedding world.event_when=past
+does tell.news
+cooldown 1d
+say {ev=good} Did you see any of the House wedding? I heard the music three streets off. | {ev=good} The wedding's done. The Heights will talk of the dresses for a year. | {ev=good} After that wedding, the whole hill's asleep.
+then other: event.answer
+
+## ================================================================ A ship's rich cargo, a ship lost (the Wharf's)
+
+rule s83e_cargo_soon
+when concept=talk.event world.event=rich_cargo world.event_when=soon
+does tell.news
+cooldown 1d
+say {ev=good} There's a rich cargo coming in, I'm told. | {ev=good} #s8_heard# A ship's due with a rich hold. | {ev=good} The Wharf office has a notice up. A rich cargo, coming in.
+then other: event.answer
+
+rule s83e_cargo_now
+when concept=talk.event world.event=rich_cargo world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} #world.event_words.capitalize#. The Wharf's heaving with it. | {ev=good} There's #world.event_goods# off that ship at the Wharf. | {ev=good} It's all talk of #world.event_words#.
+then other: event.answer
+
+rule s83e_cargo_now2
+when concept=talk.event world.event=rich_cargo world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=good} The whole city's down at the Wharf for that cargo. | {ev=good} A rich ship in. Even the Heights have come down the hill. | {ev=good} I've never seen the Wharf so busy. That cargo.
+then other: event.answer
+
+rule s83e_cargo_merchant
+when concept=talk.event world.event=rich_cargo world.event_when=soon|now self.role=merchant
+does tell.self
+cooldown 1d
+say {ev=good} I'll be down at the Wharf before dawn for that cargo. | {ev=good} If I can get a crate of what she brings, I'll sell it twice over. | {ev=good} A cargo like that sets the prices for a month.
+then other: event.answer
+
+rule s83e_cargo_past
+when concept=talk.event world.event=rich_cargo world.event_when=past
+does tell.news
+cooldown 1d
+say {ev=good} That rich cargo's all sold, I'm told. | {ev=good} The cargo's gone up the hill, as these things do. | {ev=good} You missed the cargo. Nothing left but the crates.
+then other: event.answer
+
+rule s83e_lost_1
+when concept=talk.event world.event=lost_ship
+does tell.news
+cooldown 1d
+say {ev=loss} #world.event_words.capitalize#. #pity#. | {ev=loss} You'll have heard. #world.event_words.capitalize#. | {ev=loss} The Wharf's in black. #world.event_words.capitalize#.
+then other: event.answer
+
+rule s83e_lost_2
+when concept=talk.event world.event=lost_ship
+does tell.news
+cooldown 1d
+say {ev=loss} A ship lost. The Wharf office put the notice up this morning. | {ev=loss} Lost at sea. Every bell on the Wharf rang for her. | {ev=loss} The sea's taken a ship. You can feel it all down the hill.
+then other: event.answer
+
+rule s83e_lost_sailor
+when concept=talk.event world.event=lost_ship self.job=sailor|fisher
+does tell.self
+cooldown 1d
+say {ev=loss} Every sailor knows someone who sailed on her. #rest.capitalize#. | {ev=loss} Every sailor thinks it, every time. It'll be me one day. | {ev=loss} You don't talk about the sea when she's taken one. You just don't.
+then other: event.answer
+
+rule s83e_lost_merchant
+when concept=talk.event world.event=lost_ship self.role=merchant
+does tell.self
+cooldown 1d
+say {ev=loss} I'd goods coming on her. But that's nothing to the crew. | {ev=loss} Lost cargo, lost crew. The cargo can be replaced. | {ev=loss} The whole market's quiet. Nobody wants to haggle today.
+then other: event.answer
+
+## ================================================================ The festival trade
+
+rule s83e_fest_1
+when concept=talk.event world.event=festival_buying world.event_when=soon|now
+does tell.news
+cooldown 1d
+say {ev=good} Everyone's buying for the festival. | {ev=good} #s8_heard# The inns are stocking up, with the festival close. | {ev=good} Festival trade's started. Every stall's busy.
+then other: event.answer
+
+rule s83e_fest_2
+when concept=talk.event world.event=festival_buying world.event_when=soon|now
+does tell.news
+cooldown 1d
+say {ev=good} It's all talk of #world.event_words#. | {ev=good} #world.event_words.capitalize#. Buy now or go without. | {ev=good} You'll want to get your #world.event_goods# in before the festival.
+then other: event.answer
+
+rule s83e_fest_cheese
+when concept=talk.event world.event=festival_buying world.event_when=soon|now world.cheese_price=up
+does tell.news
+cooldown 1d
+say {ev=good} Cheese has gone dear, with everyone buying for the festival. | {ev=good} I wanted a wheel of cheese for the festival. So did everyone. | {ev=good} Dear cheese. The festival's done it.
+then other: event.answer
+
+rule s83e_fest_young
+when concept=talk.event world.event=festival_buying world.event_when=soon|now self.stage=young|adolescent
+does tell.news
+cooldown 1d
+say {ev=good} Everyone's buying things for the festival! Is it soon? | {ev=good} The inn's got barrels stacked up to the window. For the festival. | {ev=good} They're carrying cheeses about. Big ones! For the festival!
+then other: event.answer
+
+## ================================================================ Any event: notices, criers, the past
+
+rule s83e_any_now
+when concept=talk.event world.event_when=now
+does tell.news
+cooldown 1d
+say {ev=news} #s8_heard# #world.event_words.capitalize#. | {ev=news} The crier's been shouting about #world.event_words# all morning. | {ev=news} #world.event_words.capitalize#. It's on every tongue.
+then other: event.answer
+
+rule s83e_any_now2
+when concept=talk.event world.event_when=now world.event_goods
+does tell.news
+cooldown 1d
+say {ev=news} It's all #world.event_goods# at the stalls today. #world.event_words.capitalize#. | {ev=news} Everyone's talking of #world.event_goods#. It's #world.event_words#. | {ev=news} Watch the price of #world.event_goods# this week. #world.event_words.capitalize#.
+then other: event.answer
+
+rule s83e_any_soon
+when concept=talk.event world.event_when=soon
+does tell.news
+cooldown 1d
+say {ev=news} There's a notice up on the board: #world.event_words#. | {ev=news} Coming in a day or two: #world.event_words#. | {ev=news} Have you seen the board? #world.event_words.capitalize#, soon.
+then other: event.answer
+
+rule s83e_any_past
+when concept=talk.event world.event_when=past
+does tell.news
+cooldown 1d
+say {ev=news} That's done with now, #world.event_words#. | {ev=news} Remember #world.event_words#? Feels a month ago already. | {ev=news} After #world.event_words#, things are back to how they were.
+then other: event.answer
+
+## ================================================================ The answers, by the event's own kind
+# (event.answer: fit before the old answers by conv.ev alone, so a reply to the drovers speaks of the drovers; the old
+# ones by wealth still hold beside them. Never a question here: an answer owes nothing.)
+
+rule s83e_ans_drovers
+when concept=event.answer world.event=drovers_in world.event_when=now
+does react.news
+say Good. The town's been wanting meat. | Drovers' week. I'll keep my door shut. | #agree#. There's mud to the knee all down the lane. | Before dawn, they came in, I'm told.
+
+rule s83e_ans_drovers2
+when concept=event.answer world.event=drovers_in world.event_when=now
+does react.news.glad
+say Meat on the table, then. #gladnews#. | That's the hills' best, coming in. | #gladnews#. I'll get a joint for Restday.
+
+rule s83e_ans_drovers_poor
+when concept=event.answer world.event=drovers_in world.event_when=now self.wealth=poor|destitute
+does react.news
+say Bones for soup, if I'm quick. | Cheap or dear, meat's not for me. | The smell of it's free, anyway.
+
+rule s83e_ans_fire
+when concept=event.answer world.event=works_fire world.event_when=now
+does react.news.sorrow
+say #pity#. I hope nobody was hurt. | Fire. #uneasy#. | #annoyed#. Just when folk were building. | A fire's a terrible thing.
+
+rule s83e_ans_fire2
+when concept=event.answer world.event=works_fire world.event_when=now
+does react.news
+say Smoke like that, you know something's wrong. | They'll build again. They always do. | I'll be minding my own hearth tonight. | Nobody'll sleep easy till it's cold.
+
+rule s83e_ans_glut
+when concept=event.answer world.event=brewers_glut world.event_when=now
+does react.news.glad
+say Then I know where I'm going tonight. | #funny#. A glut. Of ale. | The brewers' bad luck is the town's good luck. | I'll drink to that. Twice.
+
+rule s83e_ans_glut_devout
+when concept=event.answer world.event=brewers_glut world.event_when=now self.piety=devout
+does react.news
+say Ale's no answer to anything. | The young ones will be trouble this week. | Ale's no friend in the morning.
+
+rule s83e_ans_ox
+when concept=event.answer world.event=lame_ox world.event_when=now
+does react.news
+say Poor beast. They'll rest it, I hope. | One day without the cart. We'll manage. | That's farm life. Something always goes lame. | #notsobad#. The cart will come tomorrow.
+
+rule s83e_ans_blight
+when concept=event.answer world.event=orchard_blight world.event_when=now
+does react.news.sorrow
+say #uneasy#. Blight doesn't stop by itself. | #pity#. A whole year's growing. | Let's hope they burn it before it spreads. | No cider this winter, then.
+
+rule s83e_ans_mill
+when concept=event.answer world.event=mill_stopped world.event_when=now
+does react.news
+say Bread will be dear, then. #grumble#. | They'll mend it. Mills always need mending. | I've half a loaf put by. That's me sorted. | A day or two, they said. We'll see.
+
+rule s83e_ans_catch
+when concept=event.answer world.event=good_catch world.event_when=now
+does react.news.glad
+say Fish for supper, then. | #gladnews#. The boats earned it. | I'll take two, if they're cheap. | Good for the boats. They've had lean days.
+
+rule s83e_ans_salt
+when concept=event.answer world.event=salt_short world.event_when=now
+does react.news
+say Salt. You don't think about it till it's gone. | I'll ration mine, then. | Bland suppers for a while. | #grumble#. Everything comes dear at once.
+
+rule s83e_ans_wedding
+when concept=event.answer world.event=house_wedding world.event_when=soon|now
+does react.news
+say #toffs.capitalize# do like a show. | Let's hope they throw something to the gate. | Good luck to the pair. I'll not be invited. | I'll watch the carriages go by, and that'll do me.
+
+rule s83e_ans_wedding_rich
+when concept=event.answer world.event=house_wedding world.event_when=soon|now self.wealth=rich
+does react.news
+say One has had the invitation for a month. | Everyone will be there. Everyone who matters. | The seating will be a scandal, I promise you.
+
+rule s83e_ans_cargo
+when concept=event.answer world.event=rich_cargo world.event_when=soon|now
+does react.news
+say The Heights will buy it all before I get a look. | A rich ship's good for the whole Wharf. | I'll go down and gawp, if nothing else.
+
+rule s83e_ans_lost
+when concept=event.answer world.event=lost_ship
+does react.news.sorrow
+priority 3
+say #rest.capitalize#. | #pity#. The poor families. | The sea's cruel. That's all there is to say. | Bright One, the crew.
+
+rule s83e_ans_festival
+when concept=event.answer world.event=festival_buying world.event_when=soon|now
+does react.news.glad
+say Festival's always dear. Worth it, mostly. | I'll buy mine today, then. | #gladnews#. A festival's what this town needs.
+
+rule s83e_ans_soon
+when concept=event.answer world.event_when=soon
+does react.news
+say I'll keep an eye out. | So the board says. | We'll see what comes of it. | Good to know before it's on us.
+
+rule s83e_ans_past
+when concept=event.answer world.event_when=past
+does react.news
+say Feels longer ago than it was. | That's done, then. On to the next thing. | The town's forgotten it already. | And there'll be something else next week.
+
+rule s83e_ans_past2
+when concept=event.answer world.event_when=past world.event=works_fire|orchard_blight|mill_stopped|salt_short|lame_ox
+does react.news
+say Glad that's over. | We got through it. Most do. | It could have been worse. | #notsobad#, in the end.
+
+rule s83e_ans_merchant
+when concept=event.answer world.event_when=now self.role=merchant
+does react.news
+say It's changed my prices, I'll tell you that. | I've had more folk asking about it than buying. | Good or bad for trade, it's talk for trade.
+
+rule s83e_ans_young
+when concept=event.answer self.stage=young
+does react.news
+say I want to go and see! | It sounds big. | I'll tell everyone! | Ooh.
+
+rule s83e_ans_old
+when concept=event.answer world.event_when=now self.stage=old conv.ev=bad|loss
+does react.news
+say I've seen it before, and I'll see it again. | In my day it was the same, and we managed. | We came through worse, when I was young.
+
+# (Slice 3, H1: "In my day it was the same, and we managed." said to the drovers' good news: the old answer it as it is.)
+rule s83e_ans_old_good
+when concept=event.answer world.event_when=now self.stage=old conv.ev=good
+does react.news
+say Good. I'd not thought to see another week like it. | We'd have made a feast of less, in my day. | I'll enjoy it while my teeth last.
+
+rule s83e_ans_old_news
+when concept=event.answer world.event_when=now self.stage=old conv.ev=news
+does react.news
+say Every year something. Every year. | I've seen a few of those. | It'll be talked of a week, then forgotten.

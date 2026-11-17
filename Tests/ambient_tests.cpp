@@ -2,6 +2,7 @@
 // talk, about what, when, and what their talk changes; and the authored lines that stand in for the NPC Mind.
 #include "RatwClaims.h"
 #include "RatwMind.h"
+#include "RatwTopics.h"
 #include "RatwWorld.h"
 
 #include <fstream>
@@ -418,6 +419,336 @@ void housematesAreNotKin()
 }
 } // namespace
 
+void talkCarriesKnowledge()
+{
+    // Doc 84 §8.6 (Phase 4): a claim told in talk is corroborated by a second, independent source, (1 - c) * 0.4, once
+    // a source; not by the one they had it from, nor by one who had it from them. A denial by the one it's about weakens
+    // it. And a talk spoken a beat at a time counts from its start (ambientBegun) and leaves its people more familiar at
+    // its end (ambientEnded), with no blanket warmth: its lines carry their own.
+    auto w = scene();
+    w.believe("sorrel", "player-ada", "stole from Wren", "saw it", .5, "inc-1");
+    const auto* held = w.holding("sorrel", "player-ada", "stole from Wren");
+    expect(held && held->confidence == .5, "held as believed");
+    expect(w.holding("sorrel", "player-ada", "something else", "inc-1") == held, "found by its incident too");
+    Belief told;
+    told.holder = "sorrel";
+    told.subject = "player-ada";
+    told.claim = "stole from Wren";
+    told.confidence = .3;
+    told.source = "saw it";
+    w.told(told, "");
+    expect(std::abs(w.holding("sorrel", "player-ada", "stole from Wren")->confidence - .5) < 1e-9, "the same source again: no surer");
+    told.source = "fennel";
+    w.told(told, "sorrel");
+    expect(std::abs(w.holding("sorrel", "player-ada", "stole from Wren")->confidence - .5) < 1e-9,
+           "one who had it from them: no surer");
+    told.source = "bram";
+    w.told(told, "someone");
+    expect(std::abs(w.holding("sorrel", "player-ada", "stole from Wren")->confidence - .7) < 1e-9,
+           "a second, independent source: .5 + .5 * .4");
+    w.told(told, "someone");
+    expect(std::abs(w.holding("sorrel", "player-ada", "stole from Wren")->confidence - .7) < 1e-9, "once a source");
+    told.holder = "fennel";
+    w.told(told, "someone");
+    expect(std::abs(w.holding("fennel", "player-ada", "stole from Wren")->confidence - .3) < 1e-9, "new to the hearer: believed as told");
+    w.doubted("sorrel", "player-ada", "stole from Wren", .5);
+    expect(std::abs(w.holding("sorrel", "player-ada", "stole from Wren")->confidence - .35) < 1e-9, "a denial weakens it");
+    w.doubted("sorrel", "player-ada", "stole from Wren", 3);
+    expect(std::abs(w.holding("sorrel", "player-ada", "stole from Wren")->confidence - .35) < 1e-9, "never strengthens it");
+    // Begun and ended.
+    const auto before = w.bonds().find("fennel", "sorrel") ? *w.bonds().find("fennel", "sorrel") : Bond{};
+    AmbientPick pick;
+    pick.teller = "sorrel";
+    pick.listener = "fennel";
+    pick.cell = "town";
+    pick.topic.kind = "day";
+    w.ambientBegun(pick);
+    expect(w.ambientPacing().count("sorrel") && w.ambientPacing().count("cell:town"), "it counts from its start");
+    w.ambientEnded(pick, {"sorrel", "fennel"});
+    const auto* after = w.bonds().find("fennel", "sorrel");
+    expect(after && after->familiarity > before.familiarity && after->affinity < before.affinity + .5,
+           "a little more familiar, warmer only as any conversation is (the event's own), never the old blanket (" + std::to_string(before.familiarity) + " -> " +
+               std::to_string(after ? after->familiarity : -1) + ", " + std::to_string(before.affinity) + " -> " +
+               std::to_string(after ? after->affinity : -1) + ")");
+}
+
+
+void theTalkLedger()
+{
+    // Doc 84 §8.7 (Phase 5): the talk ledger's records, their caps and its save; and what the director does with it
+    // (§8.5): nothing told a listener twice, a pair's topic cooled, an incident talked out in a place, the everyday floor,
+    // close pairs talking more; and daily gossip out of hearing writes notes with no words.
+    {
+        TalkLedger l;
+        for (int i = 0; i < 10; ++i)
+        {
+            auto& n = l.note("a", "b", 1 + i * .1);
+            n.topics = {i % 2 ? "weather" : "prices"};
+            n.keys = {i % 2 ? "weather" : "price|bread"};
+            n.outcome = i == 9 ? "warmed" : "even";
+        }
+        expect(l.notes("b", "a") && l.notes("a", "b")->size() == TalkLedger::NotesPerPair, "eight notes a pair, either way round");
+        expect(l.latest("a", "b") && l.latest("a", "b")->outcome == "warmed" && l.recall("a", "b", "prices") &&
+                   l.recall("a", "b", "prices")->day < 1.85,
+               "the latest note, and the latest on a topic");
+        expect(l.talkedOf("a", "b", "prices", "price|bread", 1.5) && !l.talkedOf("a", "b", "prices", "price|salt", 1.5) &&
+                   !l.talkedOf("a", "b", "prices", "price|bread", 1.9) && l.talkedOf("a", "b", "weather", "", 1.5),
+               "talked of a thing since a day (an everyday topic by its name alone)");
+        auto& open = l.note("a", "b", 2);
+        open.thread = "bandits";
+        open.threadUntil = 4;
+        expect(l.thread("b", "a", 3) == "bandits" && l.thread("a", "b", 4.5).empty(), "a thread, kept its days");
+        l.closeThread("a", "b");
+        expect(l.thread("a", "b", 3).empty(), "a thread taken up is done with");
+        auto& unheard = l.note("a", "b", 2.5);
+        unheard.unheard = true;
+        expect(l.latest("a", "b", true) == &open && l.latest("a", "b") == &unheard, "notes out of hearing kept apart for pair.last_talk");
+        l.told("b", "a", "x|stole", "theft", 2);
+        l.told("b", "a", "x|stole", "theft", 2.2);
+        expect(l.wasTold("b", "x|stole") && !l.wasTold("a", "x|stole") && l.toldBy("b", "a", "x|stole") && !l.counted("b", "a", "x|stole") &&
+                   l.toldMe("b", "a") == "theft",
+               "the told set: who told whom what, once a teller");
+        l.told("b", "a", "x|stole", "theft", 2.3, true);
+        expect(l.counted("b", "a", "x|stole"), "counted as a second source");
+        for (int i = 0; i < 260; ++i)
+            l.told("c", "d" + std::to_string(i), "k" + std::to_string(i), "", 2);
+        expect(!l.wasTold("c", "k0") && l.wasTold("c", "k259"), "256 a listener, the oldest dropped");
+        l.said("x", "took_up", "fiddle", "a", 10);
+        l.said("x", "moved", "yes", "a", 1);
+        auto said = l.saidOf("x", 5);
+        expect(said.size() == 1 && said["took_up"] == "fiddle", "what talk said of a third party, until its day");
+        l.keep("a", "asked", "favour", 4);
+        expect(l.kept("a", 3)["asked"] == "favour" && l.kept("a", 5).empty(), "a speaker's kept tag, until its day");
+        open.kept["carry"] = {"declined", 9};
+        expect(l.pairKept("a", "b", 3)["carry"] == "declined", "the pair's kept tags (pair.was)");
+        for (int i = 0; i < 3; ++i)
+            l.placeTalk("square", "prices", "price|bread", true, 5.2);
+        l.placeTalk("square", "weather", "weather", false, 5.3);
+        expect(l.todayCount("square", "price|bread", 5.9) == 3 && l.todayCount("square", "price|bread", 6.1) == 0 &&
+                   std::abs(l.newsShare("square", 8) - .75) < 1e-9 && l.newsShare("nowhere", 8) < 0,
+               "a place's day and its last talks");
+        l.invites().push_back({"a", "b", "square", "the square", 19, 2, 4, "kept"});
+        l.promises().push_back({"b", "a", "healer", 2, 4, "lapsed"});
+        expect(l.lastInvite("b", "a") && l.lastPromise("b", "a") && l.lastPromise("b", "a")->thing == "healer" && !l.lastPromise("a", "b"),
+               "invitations and promises");
+        // Phase 6 (§7.6, §8.8): stances drifted by events, each event once, never past two steps; mood events, 8 a resident.
+        l.drift("a", "watch", -1, "robbed_uncaught", "inc-1", 3);
+        l.drift("a", "watch", -1, "robbed_uncaught", "inc-1", 3.5);
+        expect(l.drifts("a").at("watch") == std::pair<int, std::string>{-1, "robbed_uncaught"} && l.applied("a", "inc-1|watch"),
+               "an event drifts a stance a step, once");
+        l.drift("a", "watch", -1, "robbed_uncaught", "inc-2", 4);
+        l.drift("a", "watch", -1, "kin_charged", "warrant:x", 4);
+        l.drift("a", "watch", 1, "robbed_caught", "inc-3", 5);
+        expect(l.drifts("a").at("watch") == std::pair<int, std::string>{-1, "robbed_caught"}, "never past two steps either way");
+        for (int i = 0; i < 10; ++i)
+            l.moodEvent("a", i % 2 ? "quarrel" : "praised", 3 + i * .1);
+        expect(l.moodEvents("a", 0).size() == TalkLedger::MoodsPerResident && l.moodEvents("a", 3.75).size() == 2, "mood events, 8 a resident, since a day");
+        const auto saved = l.save();
+        TalkLedger again;
+        again.load(saved);
+        expect(json::dump(again.save()) == json::dump(saved), "saved and loaded, the same");
+        expect(again.drifts("a") == l.drifts("a") && again.applied("a", "inc-1|watch") && again.moodEvents("a", 0).size() == 8,
+               "drift, the events applied and moods come back");
+        l.prune(40);
+        expect(l.moodEvents("a", 0).empty() && !l.drifts("a").empty(), "moods fade in a week; drift is for good");
+        expect(!l.notes("a", "b") && l.saidOf("x", 40).empty() && l.lastInvite("a", "b") == nullptr, "past 30 days: gone");
+        TalkLedger big;
+        for (int i = 0; i < 600; ++i)
+            for (int j = 0; j < 64; ++j)
+                big.told("r" + std::to_string(i), "t", "k" + std::to_string(j), "", 1 + i * .001);
+        big.prune(2);
+        expect(big.size() <= TalkLedger::Records && big.wasTold("r599", "k63") && !big.wasTold("r0", "k63"),
+               "past 30,000 records, the least recently used go first (" + std::to_string(big.size()) + ")");
+        TalkLedger off;
+        off.enabled = false;
+        off.told("b", "a", "k", "", 1);
+        off.said("x", "k", "v", "a", 5);
+        expect(!off.wasTold("b", "k") && off.saidOf("x", 1).empty(), "off (--no-talk-ledger): nothing written");
+    }
+    // Saved with the world.
+    {
+        auto w = scene();
+        w.talkLedger().told("fennel", "sorrel", "k", "theft", w.calendarDays());
+        const auto saved = w.save();
+        World back;
+        expect(back.loadWorldFile(RATW_SOURCE_DIR "/Data/Worlds/Greyfen/world.ratw").ok && back.restore(saved).ok, "restored");
+        expect(back.talkLedger().wasTold("fennel", "k"), "the ledger comes back with the world");
+    }
+    // The director, with the live topics.json (tuned: told once, cooled, the floor, close pairs).
+    std::ifstream in(RATW_SOURCE_DIR "/Data/Talk/topics.json");
+    std::stringstream text;
+    text << in.rdbuf();
+    std::string problem;
+    expect(topics::load(text.str(), problem), "topics.json loads: " + problem);
+    {
+        auto w = scene();
+        w.believe("sorrel", "player-ada", "stole from Wren", "saw it", .9, "inc-1");
+        const auto gossip = [&] {
+            for (const auto& t : w.agendaFor("sorrel", "fennel"))
+                if (t.kind == "gossip")
+                    return t.score;
+            return -1.0;
+        };
+        const double fresh = gossip();
+        const auto band = topics::book().pairBonus.find(w.pairBand("sorrel", "fennel"));
+        const double close = band == topics::book().pairBonus.end() ? 0 : band->second;   // (Added last: strangers -0.2.)
+        expect(fresh > 3 && w.ambientTopic("sorrel", "fennel").kind == "gossip", "a fresh rumour first");
+        const int per = topics::book().saturationPerDay;
+        const double factor = topics::book().saturationFactor;
+        for (int i = 1; i < per; ++i)
+            w.talkLedger().placeTalk("town", "gossip", "player-ada|stole from Wren", true, w.calendarDays());
+        expect(per > 1 && std::abs(gossip() - fresh) < 1e-9, "talked of here today, not yet as often as saturates");
+        w.talkLedger().placeTalk("town", "gossip", "player-ada|stole from Wren", true, w.calendarDays());
+        expect(std::abs(gossip() - ((fresh - close) * factor + close)) < 1e-6, "talked of so often here today: saturated");
+        for (int i = 0; i < 8; ++i)
+            w.talkLedger().placeTalk("town", "crime", "incident|" + std::to_string(i), true, w.calendarDays());
+        double smalltalk = -1;
+        for (const auto& t : w.agendaFor("sorrel", "fennel"))
+            if (t.kind == "smalltalk")
+                smalltalk = t.score;
+        expect(smalltalk > 2.2, "the place's last eight talks all news: everyday talk gets the floor (" + std::to_string(smalltalk) + ")");
+        auto& note = w.talkLedger().note("sorrel", "fennel", w.calendarDays());
+        note.topics = {"smalltalk"};
+        note.keys = {"smalltalk"};
+        double cooled = -1;
+        for (const auto& t : w.agendaFor("sorrel", "fennel"))
+            if (t.kind == "smalltalk")
+                cooled = t.score;
+        const double boost = topics::book().floorBoost;
+        expect(std::abs(cooled - ((smalltalk - boost - close) * .4 + boost + close)) < 1e-6, "the two on it lately: x 0.4, the floor after");
+        w.talkLedger().told("fennel", "sorrel", "player-ada|stole from Wren", "theft", w.calendarDays());
+        expect(gossip() < 0, "told once (the told set), never told again: K3");
+        topics::reset();
+        expect(gossip() > 0, "today's numbers: no told set");
+        expect(topics::load(text.str(), problem), "again");
+        w.bonds().change("sorrel", "fennel", {30, 10, 50, 0, 0}, w.calendarDays());
+        w.bonds().change("fennel", "sorrel", {30, 10, 50, 0, 0}, w.calendarDays());
+        double lore = -1;
+        for (const auto& t : w.agendaFor("sorrel", "fennel"))
+            if (t.kind == "lore")
+                lore = t.score;
+        expect(w.pairBand("sorrel", "fennel") == "friends" && lore >= .7 + topics::book().floorBoost + .6 - 1e-9, "friends talk more (+0.6): " + std::to_string(lore));
+    }
+    // Out of hearing: the daily gossip writes notes with no words, and the told set; off, nothing.
+    for (const bool enabled : {true, false})
+    {
+        auto w = scene();
+        w.talkLedger().enabled = enabled;
+        w.bonds().change("sorrel", "fennel", {5, 5, 40, 0, 0}, w.calendarDays());
+        w.believe("sorrel", "player-ada", "stole from Wren", "saw it", .9, "inc-1");
+        const double day = std::floor(w.calendarDays());
+        for (int s = 0; s < 4000 && std::floor(w.calendarDays()) < day + 1.5; ++s)
+            w.tick(5);
+        const auto* note = w.talkLedger().latest("sorrel", "fennel");
+        if (enabled)
+            expect(note && note->unheard && !note->claims.empty() && w.talkLedger().wasTold("fennel", "player-ada|stole from Wren"),
+                   "talk out of hearing: a note with no words, and the told set");
+        else
+            expect(!note && !w.talkLedger().wasTold("fennel", "player-ada|stole from Wren"), "off: nothing written");
+    }
+    topics::reset();
+}
+
+
+// Doc 84 §35 (Slice 2's review): the ledger keeps what was heard (a daily note out of hearing never takes a heard one's
+// place, nor makes a set look used), the dead take their drift with them; the town's crime is told each wolf once; a
+// resident's own row says where they're from, for the director as for their lines.
+void sliceTwoReview()
+{
+    {
+        TalkLedger l;
+        auto& heard = l.note("a", "b", 1);
+        heard.outcome = "soured";
+        heard.souredBy = "a";
+        for (int d = 2; d <= 25; ++d)
+        {
+            auto& n = l.note("b", "a", d, true);
+            n.topics = {"gossip"};
+            n.keys = {"x|stole"};
+        }
+        int unheard = 0;
+        for (const auto& n : *l.notes("a", "b"))
+            unheard += n.unheard;
+        const auto* last = l.latest("a", "b", true);
+        expect(last && last->day == 1 && last->souredBy == "a" && unheard == int(TalkLedger::UnheardPerPair),
+               "24 days of gossip out of hearing: the heard note is kept, beside the last 2 days of it (" + std::to_string(unheard) + ")");
+        TalkLedger back;
+        back.load(l.save());
+        expect(back.latest("a", "b", true) && back.latest("a", "b", true)->souredBy == "a", "who soured it, saved and loaded");
+        // Past the cap: the notes out of hearing first; a set heard talk used is kept over sets only gossip wrote since.
+        TalkLedger big;
+        big.told("heard", "t", "k", "", 1);
+        for (int i = 0; i < 1600; ++i)
+            for (int j = 0; j < 19; ++j)
+                big.told("r" + std::to_string(i), "t", "k" + std::to_string(j), "", 2 + i * .001, false, false);
+        for (int i = 0; i < 2000; ++i)
+            big.note("p" + std::to_string(i), "q", 3, true).keys = {"x"};
+        expect(big.size() > TalkLedger::Records, "the fixture is past the cap (" + std::to_string(big.size()) + ")");
+        big.prune(3.5);
+        expect(big.size() <= TalkLedger::Records && big.wasTold("heard", "k") && !big.notes("p0", "q"),
+               "past the cap: gossip's notes go first, and what was heard stays (" + std::to_string(big.size()) + ")");
+        // The dead take their drift, its events and their moods with them.
+        TalkLedger d;
+        d.drift("gone", "watch", -1, "robbed_uncaught", "inc-1", 3);
+        d.drift("here", "watch", -1, "robbed_uncaught", "inc-1", 3);
+        d.moodEvent("gone", "quarrel", 3);
+        d.prune(4, [](const std::string& id) { return id == "gone"; });
+        expect(d.drifts("gone").empty() && !d.applied("gone", "inc-1|watch") && d.moodEvents("gone", 0).empty() &&
+                   !d.drifts("here").empty(),
+               "the dead's drift goes; the living's stays");
+    }
+    std::ifstream in(RATW_SOURCE_DIR "/Data/Talk/topics.json");
+    std::stringstream text;
+    text << in.rdbuf();
+    std::string problem;
+    expect(topics::load(text.str(), problem), "topics.json loads: " + problem);
+    {
+        // The town's crime, once to each wolf.
+        auto w = scene();
+        Incident inc;
+        inc.id = "inc-z";
+        inc.kind = "theft";
+        inc.offender = "rook";
+        inc.victim = "linden";
+        inc.cell = "town";
+        inc.town = w.townIdOf("town");
+        inc.day = w.calendarDays();
+        w.crime().incidents.push_back(inc);
+        const auto crime = [&]() -> const AmbientTopic* {
+            static AmbientTopic found;
+            for (const auto& t : w.agendaFor("sorrel", "fennel"))
+                if (t.key == "incident|inc-z")
+                    return &(found = t);
+            return nullptr;
+        };
+        expect(crime() != nullptr, "a theft in town is news between the two");
+        w.talkLedger().told("fennel", "sorrel", "incident|inc-z", "", w.calendarDays());
+        expect(crime() == nullptr, "told it by the other, never told again (nor told back)");
+        auto w2 = scene();
+        w2.crime().incidents.push_back(inc);
+        w2.talkLedger().told("fennel", "birch", "incident|inc-z", "", w2.calendarDays());
+        bool offered = false;
+        for (const auto& t : w2.agendaFor("sorrel", "fennel"))
+            if (t.key == "incident|inc-z")
+                offered = true, expect(t.source == "fennel", "the one who has heard it tells the one who hasn't (" + t.source + ")");
+        expect(offered, "one has heard it: still news to the other");
+        w2.talkLedger().told("sorrel", "birch", "incident|inc-z", "", w2.calendarDays());
+        for (const auto& t : w2.agendaFor("sorrel", "fennel"))
+            expect(t.key != "incident|inc-z", "both have heard it: no news between them");
+        // One who said they're going home talks no more there for the hour.
+        auto w3 = scene();
+        expect(!w3.ambientPicks({"player-ada"}).empty(), "the two talk");
+        w3.ambientLeave("sorrel", 3600);
+        expect(w3.ambientPicks({"player-ada"}).empty(), "not once Sorrel has said she's off home");
+        // A resident's own origin, as their row says.
+        std::string from, accent;
+        w2.setTalkOrigins({{"sorrel", {"coldwater", "broad"}}});
+        w2.talkOrigin("sorrel", from, accent);
+        expect(from == "coldwater" && accent == "broad", "the director's origin is the resident's own row's (" + from + ", " + accent + ")");
+    }
+    topics::reset();
+}
+
 int main()
 {
     try
@@ -429,7 +760,10 @@ int main()
         authoredLines();
         claimsInTheirOwnWords();
         housematesAreNotKin();
+        talkCarriesKnowledge();
+        theTalkLedger();
         sliceEndReview();
+        sliceTwoReview();
     }
     catch (const std::exception& e)
     {

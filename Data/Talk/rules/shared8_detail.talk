@@ -1,0 +1,426 @@
+# The shared lines, Phase 8 session 1 (Docs/Design/84 §33, §14.1): asking for more, and the answer. Move lines (no
+# concept). answer.detail is a core move talk_check --coverage found answered nowhere at Phase 7; ask.detail, the
+# question that makes it due (and the insertion before a request, §7.2), had no move line either, so they are written
+# here as pairs, topic by topic.
+#
+# What a question asks isn't known to the one answering it (a move line answers any ask.detail on its topic: "Who told
+# you that?", a riddle, "Fancy helping me with the shed?"), so an answer says only what is true whatever was asked:
+# - on a topic with news (a claim, a price, a wagon, a ship, an event), what the teller has: where they had it
+#   (#hearsay#: never "I saw it", §15.3's T3), what the topic's own facts say (#topic.where#, #topic.price#,
+#   #topic.who#, #topic.ship#, world.event_words), or that there is no more (#dunno#);
+# - on everyday talk, the ordinary evasions a question gets ("Oh, you know.", "Now there's a question.") and nothing
+#   that claims a fact.
+# A question is asked of what was said, so ask.detail lines are gated to the topic as tightly as the answers.
+#
+# Slice 3 (H1, and the critic's read: "Was much taken?" / "Orla Wickby had the worst of it."; "But why?" / "Never you mind
+# who."): each question says what it asks ({ask=...}: who, source, sure, what, when, where, why, many, more, other; the
+# engine forgets it when a question that doesn't say is asked), and an answer that names a who, a where, a when or a
+# what is said only to the question that asks it. The answers that say only what the teller has fit any.
+
+## Asking for more: any topic
+
+rule s8d_ask_any
+does ask.detail
+say {ask=more} #howso#? | {ask=more} How so? | {ask=more} #bc_and_q# | {ask=more} #bc_go_on# | {ask=more} Such as? | {ask=more} Meaning what?
+
+rule s8d_ask_any2
+does ask.detail
+say {ask=more} What makes you say that? | {ask=more} How's that, then? | {ask=more} And then what? | {ask=more} Oh? Why's that?
+
+rule s8d_ask_who
+does ask.detail
+say {ask=more} #s8_ask# | {ask=more} #s8_ask# | {ask=more} #s8_ask# | {ask=more} #howso#?
+
+rule s8d_ask_gossip
+does ask.detail
+when conv.topic=gossip|crime|news|deed|life
+say {ask=source} Who told you that? | {ask=source} Who says? | {ask=when} Since when? | {ask=sure} Is it certain? | {ask=source} Where'd you hear that? | {ask=source} Says who, though?
+
+rule s8d_ask_gossip_named
+does ask.detail
+when conv.topic=gossip|crime topic.claim_kind=theft|wanted|prowling|promise_broken|other
+say {ask=sure} #topic.subject#? Are you sure? | {ask=sure} #topic.subject#, though? Truly? | {ask=other} Does #topic.subject# know folk are saying it?
+
+rule s8d_ask_theft
+does ask.detail
+when conv.topic=gossip|crime topic.claim_kind=theft|victim
+say {ask=what} What was taken? | {ask=other} Did anyone see? | {ask=other} Has the Watch been told? | {ask=what} Was much taken?
+
+rule s8d_ask_wanted
+does ask.detail
+when conv.topic=gossip|crime topic.claim_kind=wanted
+say {ask=what} Wanted for what, though? | {ask=other} Have they a notice up? | {ask=where} Does the Watch know where #topic.they#'s gone?
+
+rule s8d_ask_violence
+does ask.detail
+when conv.topic=gossip|crime topic.claim_kind=violence
+tone serious
+say {ask=other} Is anyone badly hurt? | {ask=when} When was this? | {ask=other} Did the Watch come?
+
+rule s8d_ask_death
+does ask.detail
+when conv.topic=gossip|life|news topic.claim_kind=death
+tone grave
+say {ask=when} When? | {ask=more} How did it happen? | {ask=other} Has the family been told? | {ask=other} Was it sudden?
+
+rule s8d_ask_marriage
+does ask.detail
+when conv.topic=gossip|life|news topic.claim_kind=marriage
+tone light
+say {ask=who} Married to whom? | {ask=when} When was the wedding? | {ask=other} Was there a feast? | {ask=when} Who'd have thought. When?
+
+rule s8d_ask_newcomer
+does ask.detail
+when conv.topic=newcomer|gossip|news topic.claim_kind=newcomer
+say {ask=where} Where from? | {ask=what} What does #topic.they# do? | {ask=other} Staying long, is #topic.they#? | {ask=other} Have you met #topic.them#?
+
+rule s8d_ask_birth
+does ask.detail
+when conv.topic=life|news topic.kind=birth
+tone light
+say {ask=other} A boy or a girl? | {ask=other} Is the mother well? | {ask=other} Have they named it yet?
+
+## Asking about the road, the wagons, the ships
+
+rule s8d_ask_bandits
+does ask.detail
+when conv.topic=bandits
+say {ask=where} Whereabouts? | {ask=many} How many of them? | {ask=other} Is anyone going after them? | {ask=where} Which road? | {ask=where} Close?
+
+rule s8d_ask_caravan
+does ask.detail
+when conv.topic=caravan
+say {ask=where} From where? | {ask=who} Who's driving? | {ask=when} When, though? | {ask=what} What are they bringing?
+
+rule s8d_ask_caravan_late
+does ask.detail
+when conv.topic=caravan topic.kind=late
+say {ask=why} Late why? | {ask=when} How late? | {ask=why} Is it the road again?
+
+rule s8d_ask_ships
+does ask.detail
+when conv.topic=ships
+say {ask=who} Which ship? | {ask=what} What's she carrying? | {ask=when} When's she in? | {ask=where} Where from?
+
+## Asking about prices, the market, the Times
+
+rule s8d_ask_prices
+does ask.detail
+when conv.topic=prices|price_cause
+say {ask=when} Since when? | {ask=many} How much? | {ask=where} Where'd you see that? | {ask=why} Why, though? | {ask=where} Dear where?
+
+rule s8d_ask_event
+does ask.detail
+when conv.topic=event
+say {ask=what} What's it about? | {ask=when} When's that? | {ask=where} Where at? | {ask=other} What's it mean for prices?
+
+rule s8d_ask_times
+does ask.detail
+when conv.topic=times|harvest
+say {ask=more} Bad as that? | {ask=more} How do you mean? | {ask=why} Why's that, do you think?
+
+rule s8d_ask_festival
+does ask.detail
+when conv.topic=festival
+tone light
+say {ask=when} When? | {ask=other} Is there to be music? | {ask=other} Will there be dancing? | {ask=other} What are you wearing?
+
+## Asking about everyday things
+
+rule s8d_ask_work
+does ask.detail
+when conv.topic=work|day
+say {ask=other} Busy, then? | {ask=who} Who for? | {ask=more} How's that going? | {ask=other} Much on?
+
+rule s8d_ask_home
+does ask.detail
+when conv.topic=home|family|food
+say {ask=who} Whose turn is it? | {ask=when} Since when? | {ask=more} What happened? | {ask=other} All of it?
+
+rule s8d_ask_health
+does ask.detail
+when conv.topic=health
+tone tender
+say {ask=other} Have you seen anyone about it? | {ask=other} Is it bad? | {ask=when} Since when? | {ask=other} Are you eating?
+
+rule s8d_ask_travel
+does ask.detail
+when conv.topic=travel|accent|land
+say {ask=where} Where's that, then? | {ask=other} Far? | {ask=other} Ever been back? | {ask=where} Which way?
+
+rule s8d_ask_story
+does ask.detail
+when conv.topic=memories|lore|dreams|pastimes|animals|friends|faith|season|weather|smalltalk
+say {ask=more} Then what? | {ask=more} Really? Then what? | {ask=more} And what happened? | {ask=more} Truly? Go on.
+
+## Answers on a topic with news: what the teller has, and where they had it. Saying there's no more passes nothing on
+## (`asserts none`); naming the one talked of, the place or the words passes the claim again, as telling it did.
+
+rule s8d_ans_news
+does answer.detail
+asserts none
+when conv.topic=gossip|crime|news|deed|life|bandits|caravan|ships|prices|price_cause|event|times|harvest|newcomer|festival
+say #dunno#. | #hearsay#. | That's all I have. | That's all I was told. | Don't ask me more. | Only what I've said.
+
+rule s8d_ans_news2
+does answer.detail
+asserts none
+when conv.topic=gossip|crime|news|deed|life|bandits|caravan|ships|prices|price_cause|event|times|harvest|newcomer|festival
+say #hearsay#, mind. | I only know what was said. | Ask around. You'll hear the same. | I wasn't there, was I?
+
+rule s8d_ans_gossip
+does answer.detail
+when conv.topic=gossip|crime|deed conv.ask!=what|when|where|who|why|many
+say Everyone's saying it. | Half the street, by now. | I had it from someone who'd know. | Don't quote me. | I'm only telling you.
+
+rule s8d_ans_gossip_guarded
+does answer.detail
+when conv.topic=gossip|crime|deed self.honesty=guarded|sly conv.ask=source|sure
+say Never you mind who. | I'll not say where I had it. | A little bird. | Ask me no more, and I'll tell you no lies.
+
+rule s8d_ans_gossip_frank
+does answer.detail
+when conv.topic=gossip|crime|deed self.honesty=frank conv.ask=source|sure|more
+say I'll not dress it up. That's what's said. | I tell it as I heard it. No more. | I'd not have said it if I didn't credit it.
+
+rule s8d_ans_named
+does answer.detail
+when conv.topic=gossip|crime topic.subject conv.ask=who|sure
+say #topic.subject#, aye. That's the name I heard. | It was #topic.subject#. So they say. | That's what they're saying of #topic.subject#.
+
+rule s8d_ans_victim
+does answer.detail
+when conv.topic=gossip|crime topic.victim conv.ask=what|other|more
+say #topic.victim# had the worst of it. That's all I know. | Ask #topic.victim#, if you dare. | #topic.victim# would know. I wouldn't.
+
+rule s8d_ans_said
+does answer.detail
+when conv.topic=gossip|news topic.said
+say I'll tell you what I heard: #topic.said# | Only this: #topic.said# | Word for word, as I had it: #topic.said#
+
+rule s8d_ans_death
+does answer.detail
+when conv.topic=gossip|life|news topic.claim_kind=death
+tone grave
+say Not long since, I think. | I don't know more than that. I didn't like to ask. | I only just heard it myself.
+
+rule s8d_ans_marriage
+does answer.detail
+when conv.topic=gossip|life|news topic.claim_kind=marriage conv.ask!=who|where|what
+tone light
+say Only lately. | I've not heard about a feast. | Quietly, by the sound of it.
+
+rule s8d_ans_newcomer
+does answer.detail
+when conv.topic=newcomer|gossip|news topic.claim_kind=newcomer
+say I've not met #topic.them# yet. | Come in from the Country, I think. | Couldn't tell you yet. Give it time.
+
+rule s8d_ans_life
+does answer.detail
+when conv.topic=life|news topic.kind=birth|marriage|death|loss|apprentice|succession|work|arrest conv.ask!=who|where|what|why|many
+say Only lately. | A day or two back. | Not long ago. | It's fresh news.
+
+rule s8d_ans_bandits
+does answer.detail
+when conv.topic=bandits conv.ask!=where|when|why
+say Couldn't say how many. Enough. | Ask the carters. They know the road. | Enough to worry the wagons. | Nobody's counted them.
+
+rule s8d_ans_bandits_where
+does answer.detail
+when conv.topic=bandits topic.where conv.ask=where|more
+say #topic.where.capitalize#, so they say. | That's what I heard: #topic.where#. | #topic.where.capitalize#. Too close.
+
+rule s8d_ans_caravan
+does answer.detail
+when conv.topic=caravan
+say The carters will know better. | Ask at the yard. | I only heard it in passing.
+
+rule s8d_ans_caravan_where
+does answer.detail
+when conv.topic=caravan topic.kind=arrived|due|late topic.where conv.ask=where|more
+say From #topic.where#. | #topic.where.capitalize#, on the long road. | All the way from #topic.where#.
+
+rule s8d_ans_caravan_who
+does answer.detail
+when conv.topic=caravan topic.who conv.ask=who
+say #topic.who# has the reins, I heard. | It's #topic.who# driving. | #topic.who#, so they say.
+
+rule s8d_ans_caravan_why
+does answer.detail
+when conv.topic=caravan topic.kind=late topic.why conv.ask=why|more
+say #topic.why.capitalize#, they say. | #topic.why.capitalize#. What else? | Held up by #topic.why#.
+
+rule s8d_ans_caravan_today
+does answer.detail
+when conv.topic=caravan|ships topic.when=today conv.ask=when
+say Today, if all goes well. | Some time today. | Today, they say.
+
+rule s8d_ans_caravan_soon
+does answer.detail
+when conv.topic=caravan|ships topic.when=soon conv.ask=when
+say Soon, they say. | A day or so. | Any day now.
+
+rule s8d_ans_caravan_what
+does answer.detail
+when conv.topic=caravan|ships topic.what conv.ask=what|more
+say #topic.what.capitalize#, mostly, I heard. | #topic.what.capitalize#. That's the talk. | #topic.what.capitalize#, by the sound of it.
+
+rule s8d_ans_ships
+does answer.detail
+when conv.topic=ships topic.ship conv.ask=who
+say #topic.ship.capitalize#. | #topic.ship.capitalize#, the board says. | #topic.ship.capitalize#, I think. Ask on the quay.
+
+rule s8d_ans_prices
+does answer.detail
+when conv.topic=prices|price_cause conv.ask=where|sure|more
+say At the stalls. Look for yourself. | At the market. Go and look. | Ask any trader. | It's on every stall.
+
+rule s8d_ans_prices_price
+does answer.detail
+when conv.topic=prices|price_cause topic.price conv.ask=many|more|sure
+say #topic.price.capitalize#, last I looked. | #topic.price.capitalize#. I nearly fell over. | #topic.price.capitalize#. You heard me.
+
+rule s8d_ans_price_cause
+does answer.detail
+when conv.topic=price_cause|prices topic.cause_words topic.cause!=still conv.ask=why|more
+say #topic.cause_words.capitalize#, they say. | It's #topic.cause_words#. That's the talk. | #topic.cause_words.capitalize#. What else?
+
+rule s8d_ans_event
+does answer.detail
+when conv.topic=event world.event_words conv.ask=what|more
+say It's #world.event_words#. So the criers say. | #world.event_words.capitalize#. Everyone's talking of it. | #world.event_words.capitalize#, at the market.
+
+rule s8d_ans_event_when
+does answer.detail
+when conv.topic=event world.event_when=now conv.ask=when
+say Now. Today. Go and see. | It's on now. | Today, at the market.
+
+rule s8d_ans_event_soon
+does answer.detail
+when conv.topic=event world.event_when=soon conv.ask=when
+say Soon. A day or two. | Not yet. Soon. | Any day, they say.
+
+rule s8d_ans_times
+does answer.detail
+when conv.topic=times world.times_cause conv.ask!=where|what|who
+say #world.times_cause.capitalize#, mostly. | Since #world.times_cause#, I'd say. | It's been so since #world.times_cause#.
+
+rule s8d_ans_times2
+does answer.detail
+when conv.topic=times|harvest
+say Look at the stalls. Half of them shut. | Ask any trader. | Everyone feels it.
+
+rule s8d_ans_festival_today
+does answer.detail
+when conv.topic=festival topic.when=today conv.ask=when|other
+tone light
+say Today! Didn't you know? | Today. Now. Come on! | It's today, you goose.
+
+rule s8d_ans_festival_soon
+does answer.detail
+when conv.topic=festival topic.when=soon conv.ask=when|other
+tone light
+say In a day or two. | Soon. Very soon. | Not long now.
+
+rule s8d_ans_festival_name
+does answer.detail
+when conv.topic=festival here.festival conv.ask=what|more|other
+tone light
+say The #here.festival#, of course. | It's the #here.festival#. | For the #here.festival#.
+
+## Answers on everyday talk: true whatever was asked. They pass nothing on (`asserts none`): answer.detail asserts the
+## topic's claim by default, and "Now there's a question." tells nobody anything.
+
+rule s8d_ans_any
+does answer.detail
+asserts none
+say Oh, you know. | Now there's a question. | Hard to say. | Couldn't tell you. | Let me think. | Search me.
+
+rule s8d_ans_any2
+does answer.detail
+asserts none
+say It's hard to put into words. | Well, you'll see. | I'll tell you another time. | It's nothing, really. | Ask me later.
+
+rule s8d_ans_any3
+does answer.detail
+asserts none
+say Who can say? | You've got me there. | Not sure, to be honest. | I'd have to think on that. | Ah, that'd be telling.
+
+# Who says it: #s8_evade# (plain.grammar), the speaker's own way of not quite answering (the merry tease, the cold
+# shut it, a pup doesn't know), the most specific that holds; these rules rank with the three above.
+rule s8d_ans_who
+does answer.detail
+asserts none
+say #s8_evade# | #s8_evade# | #s8_evade# | Not sure, I'm afraid.
+
+rule s8d_ans_who2
+does answer.detail
+asserts none
+say #s8_evade# | #s8_evade# | Well, you know how it is. | Ah. That's a long story.
+
+rule s8d_ans_work
+does answer.detail
+asserts none
+when conv.topic=work|day
+say Oh, this and that. | The usual. | Same as ever. | Enough to keep me busy. | Nothing worth the telling.
+
+rule s8d_ans_work_working
+does answer.detail
+asserts none
+when conv.topic=work|day self.working=yes
+say Busy enough. | Run off my feet. | There's always more.
+
+rule s8d_ans_work_none
+does answer.detail
+asserts none
+when conv.topic=work|day self.job=none
+say Not much, these days. | I'm between things. | Whatever comes along.
+
+rule s8d_ans_home
+does answer.detail
+asserts none
+when conv.topic=home|family|food
+say Oh, the usual. | Not mine, I'll tell you that. | Same as always. | Don't ask.
+
+rule s8d_ans_health
+does answer.detail
+asserts none
+when conv.topic=health
+tone tender
+say It comes and goes. | I'll live. | Better than it was. | Don't fuss.
+
+rule s8d_ans_travel
+does answer.detail
+asserts none
+when conv.topic=travel|accent|land
+say A fair way off. | Far enough. | Not so far, really. | You'd not find it on your own.
+
+rule s8d_ans_travel_away
+does answer.detail
+asserts none
+when conv.topic=travel|accent self.from!=ridgemere conv.ask=where|more
+say Where I grew up. | Back home, that is. | Where I'm from.
+
+rule s8d_ans_story
+does answer.detail
+asserts none
+when conv.topic=memories|lore|dreams|pastimes|animals|friends|faith|season|weather|smalltalk conv.ask=more
+say That's the end of it. | Nothing, after that. | That's all there was. | That's the whole tale.
+
+## A traveller standing near (the player topic: topic.subject, a name the speaker was given or how they look; their
+## pronoun by sex). Asked about, and what can be said: nothing the town doesn't know.
+
+rule s8d_ask_player
+does ask.detail
+when conv.topic=player|deed
+say {ask=where} Where's #topic.they# from, do you think? | {ask=what} What's #topic.they# after, here? | {ask=other} Staying long, is #topic.they#? | {ask=other} Has #topic.they# said anything to you?
+
+rule s8d_ans_player
+does answer.detail
+when conv.topic=player|deed
+say Ask #topic.them# yourself. | Couldn't tell you. Travellers keep their own counsel. | Not a word to me. | Who knows, with travellers.
+
+rule s8d_ans_player_known
+does answer.detail
+when conv.topic=player topic.known=yes
+say I've spoken with #topic.them# once or twice. That's all. | We've talked. Pleasant enough. | I know #topic.them# to nod to.

@@ -1,0 +1,336 @@
+# Opinions, moods and likes (Docs/Design/84 §8.8; Phase 6). Move lines: no concept, said for what they do.
+#
+# An opinion is given in a lull, on a topic an issue comes up on (opinions.json), by one with a stance on it: the engine
+# sets conv.issue (and conv.issue_words, how it is spoken of), each speaker's stance (self.stance: for, against, mixed),
+# its reason in their own words (self.stance_why) and strength (self.stance_strength, 0-3), and whether the two stand on
+# the same side (conv.agree: yes, no, half). "agree" is said only where they don't differ and "disagree" only where they
+# do, so a disagreement is a real one, remembered between the two (pair.agree.<issue>, read again as conv.agreed_before).
+# Friends and kin who differ argue it a turn (insist, concede); strangers steer away.
+
+## Giving an opinion: the issue's own words first, then the general ones (any issue).
+
+rule op_watch_for
+does give.opinion
+when conv.issue=watch self.stance=for
+priority 2
+say Say what you like about #watch#; #self.stance_why#. | I'll not hear a word against #watch#. #self.stance_why.capitalize#. | #watch.capitalize# get no thanks and deserve plenty. #self.stance_why.capitalize#.
+
+rule op_watch_against
+does give.opinion
+when conv.issue=watch self.stance=against
+priority 2
+say #watch.capitalize#? #self.stance_why.capitalize#. That's all I'll say of them. | Don't talk to me about #watch#. #self.stance_why.capitalize#. | I've no love for #watch#, and I'll tell you why: #self.stance_why#.
+
+rule op_dole_for
+does give.opinion
+when conv.issue=dole self.stance=for
+priority 2
+say Folk sneer at #dole#. Not me. #self.stance_why.capitalize#. | Thank the Bright One for #dole#, I say. #self.stance_why.capitalize#.
+
+rule op_dole_against
+does give.opinion
+when conv.issue=dole self.stance=against
+priority 2
+say #dole.capitalize#? #self.stance_why.capitalize#. | I've my doubts about #dole#. #self.stance_why.capitalize#.
+
+rule op_houses_against
+does give.opinion
+when conv.issue=houses self.stance=against
+priority 2
+say It all comes back to #toffs# up in their Houses. #self.stance_why.capitalize#. | You want to know who's to blame? #toffs.capitalize#. #self.stance_why.capitalize#.
+
+rule op_houses_for
+does give.opinion
+when conv.issue=houses self.stance=for
+priority 2
+say Folk curse the Houses, but #self.stance_why#. | Say what you like about the Houses: #self.stance_why#.
+
+rule op_strangers_against
+does give.opinion
+when conv.issue=strangers self.stance=against
+priority 2
+say I'll be honest: I don't care for a #stranger# I can't place. #self.stance_why.capitalize#. | Every #stranger# that comes through, I count the spoons after. #self.stance_why.capitalize#.
+
+rule op_drink_for
+does give.opinion
+when conv.issue=drink self.stance=for
+priority 2
+say Nothing wrong with #ale#, whatever the chapel says. #self.stance_why.capitalize#. | A drop of #ale# never hurt an honest wolf. #self.stance_why.capitalize#.
+
+rule op_give_for
+does give.opinion
+when self.stance=for self.stance_strength>=1
+say I'll not hear a word against #conv.issue_words#. #self.stance_why.capitalize#. | Say what you like about #conv.issue_words#; #self.stance_why#. | Folk grumble about #conv.issue_words#, but #self.stance_why#. | I'll stand up for #conv.issue_words# any day. #self.stance_why.capitalize#.
+
+rule op_give_for_strong
+does give.opinion
+when self.stance=for self.stance_strength>=2
+say I've said it before and I'll say it again: #self.stance_why#. That's #conv.issue_words# for you. | You'll not find anyone more for #conv.issue_words# than me. #self.stance_why.capitalize#.
+
+rule op_give_against
+does give.opinion
+when self.stance=against self.stance_strength>=1
+say Don't talk to me about #conv.issue_words#. #self.stance_why.capitalize#. | I've no love for #conv.issue_words#. #self.stance_why.capitalize#. | If you ask me, half the trouble starts with #conv.issue_words#. #self.stance_why.capitalize#. | I'll tell you what I think of #conv.issue_words#: #self.stance_why#.
+
+rule op_give_against_strong
+does give.opinion
+when self.stance=against self.stance_strength>=2
+say Don't start me on #conv.issue_words#. #self.stance_why.capitalize#. | I could talk all day about #conv.issue_words#, and none of it kind. #self.stance_why.capitalize#.
+
+rule op_give_mixed
+does give.opinion
+when self.stance=mixed self.stance_strength>=1
+say I go back and forth on #conv.issue_words#, if I'm honest. | There's good and bad in #conv.issue_words#, like most things. | Some days I'm glad of #conv.issue_words#, some days I'm not. | I can never make my mind up about #conv.issue_words#. | Ask me about #conv.issue_words# tomorrow and you'll get another answer.
+
+rule op_give_again_no
+does give.opinion
+when conv.agreed_before=no self.stance=for|against
+priority 3
+say I know, I know. We'll never agree on #conv.issue_words#, you and I. But #self.stance_why#. | Here we go again. You know where I stand on #conv.issue_words#: #self.stance_why#.
+
+## Answers: agreeing where the two stand together, disagreeing where they don't.
+
+rule op_agree
+does agree
+when conv.agree=yes
+say #agree#. | No argument from me. | Just what I think. | Couldn't have put it better. | That's the truth of it. | Just so.
+
+rule op_agree_reason
+does agree
+when conv.agree=yes
+say #agree#. And I'll add this: #self.stance_why#. | Just so. #self.stance_why.capitalize#, for my part.
+
+rule op_agree_again
+does agree
+when conv.agree=yes conv.agreed_before=yes
+priority 2
+say You and I always did see eye to eye on that. | We're of one mind there, as ever.
+
+rule op_agree_half
+does agree
+when conv.agree=half
+say Maybe so. Maybe so. | Something in that. | Could be. | You may be right. | Hm. Perhaps. | If you say so. | One way of seeing it.
+
+rule op_disagree_half
+does disagree
+when conv.agree=half self.stance=mixed self.stance_strength>=1
+say Two sides to it, I'd say. | I'd not go that far. | I've heard otherwise. | Some would say so. | Not the whole of it, though.
+
+rule op_disagree_steer
+does disagree
+when conv.agree=no pair.band=strangers|acquaintances|rivals|apprentice|housemates
+tone even
+say Well. Each to their own. | We'll have to differ on that, I think. | I see it otherwise, but there it is. | Hm. Not how I'd put it. Still.
+
+rule op_disagree_close
+does disagree
+when conv.agree=no pair.band=friends|family|spouses
+owes other: insist|concede
+say #hedge#, I can't go along with that. #self.stance_why.capitalize#. | You know I love you, but no. #self.stance_why.capitalize#. | That's where you and I part company. #self.stance_why.capitalize#. | #hedge#. #self.stance_why.capitalize#, and you know it.
+
+rule op_disagree_close_plain
+does disagree
+when conv.agree=no pair.band=friends|family|spouses
+owes other: insist|concede
+say #hedge#, I can't go along with that. | You know I love you, but no. | That's where you and I part company. | No. You'll not talk me round, and you know it.
+
+rule op_disagree_again
+does disagree
+when conv.agree=no conv.agreed_before=no
+priority 2
+say And we'll never agree on it. Not if we live to a hundred. | Same old quarrel. You know my answer.
+
+rule op_insist
+does insist
+when self.stance=for|against self.stance_strength>=2 conv.agree=no|half
+say I'll not budge on it. #self.stance_why.capitalize#, and that's the end of it. | Say what you like. #self.stance_why.capitalize#. | You'll not talk me round on #conv.issue_words#.
+
+rule op_insist_plain
+does insist
+when self.stance=for|against self.stance_strength>=2 conv.agree=no|half
+say I've said my piece, and I'll not unsay it. | No. I'll not budge on it. | Say what you like. I know what I know.
+
+rule op_concede
+does concede
+when conv.agree=no|half
+say Have it your way. You know your own mind. | Well, I'll think on it. That's all I'll promise. | Maybe you've the right of it. I'll not quarrel with you over it. | Fair enough. We'll leave it there.
+
+rule op_concede_insisted
+does concede
+when conv.move=insist|join.correct
+say All right, all right. Peace. | I'll not fight you on it. | Have it your way, then.
+
+## A third who holds the issue strongly (conv.stake=stance): siding, or putting it right.
+
+rule op_join_side
+does join.side
+when conv.stake=stance
+say Begging your pardon, but I couldn't help hearing. I'm with you there. #self.stance_why.capitalize#. | You have the right of it. #self.stance_why.capitalize#, for one. | Hear, hear. #self.stance_why.capitalize#.
+
+rule op_join_side_plain
+does join.side
+when conv.stake=stance
+say Begging your pardon, but I couldn't help hearing. I'm with you there. | Hear, hear. | You have the right of it. | Well said. I'd say the same.
+
+rule op_join_correct
+does join.correct
+when conv.stake=stance
+say Begging your pardon, but I can't let that pass. #self.stance_why.capitalize#. | You'll forgive me for butting in, but that's not right. #self.stance_why.capitalize#. | Now hold on. #self.stance_why.capitalize#.
+
+## vent (frames.json's goal): a low or sore mood told to one close, and the answers.
+
+rule md_vent_mourning_kin
+does tell.worry
+when conv.goal=vent self.mood_why=mourning|loss self.mourning=kin
+tone grave
+say Can I tell you something? I keep setting a place at the table that nobody sits at. | The house is too quiet since. I talk to the walls, and they don't answer. | I wake and forget, for a moment. Then I remember. | Everyone says it gets easier. It hasn't yet.
+
+rule md_vent_mourning_friend
+does tell.worry
+when conv.goal=vent self.mood_why=mourning|loss
+tone grave
+say I keep thinking I'll see my friend at the market, and then I remember. | Everyone says it gets easier. It hasn't yet. | #vent#, I'm not myself since the burying.
+
+rule md_vent_hungry
+does tell.worry
+when conv.goal=vent self.mood_why=hungry
+tone serious
+say If I'm short with you, it's my belly talking. There's been little in the pot. | #vent#, I've not had a proper meal in days. It makes a wolf #tired#. | I went to bed #hungry# again. I'm not complaining. Well, I am.
+
+rule md_vent_hurt
+does tell.worry
+when conv.goal=vent self.mood_why=hurt
+tone serious
+say If I'm slow today, it's this hurt. It won't let me sleep; I lie there counting the beams. | I'm #hurt# all over and no use to anyone. | Every step's a nag. I'd sit down, only the work won't do itself. | #vent#, this hurt's worse than I let on.
+
+rule md_vent_poor
+does tell.worry
+when conv.goal=vent self.mood_why=poor
+tone serious
+say #vent#, I'm at the end of my #money#, and the week's not half done. | I'll be honest with you: I'm #skint#, and I don't know where the next meal's coming from. | I counted what's left in the jar twice this morning. It didn't get any bigger.
+
+rule md_vent_robbed
+does tell.worry
+when conv.goal=vent self.mood_why=robbed
+tone serious
+say Since I was robbed, I can't stop thinking about it. Somebody was in my things, and they're still out there. | I check the latch three times a night now. Since the thieving. | It's not even what was taken, you know. It's knowing somebody was there. | #vent#, I've not slept right since the thieving.
+
+rule md_vent_attacked
+does tell.worry
+when conv.goal=vent self.mood_why=attacked
+tone serious
+say I keep looking over my shoulder since I was set on. I never used to. | Every footstep behind me, I jump. It's no way to live. | #vent#, I've not been easy since I was set on.
+
+rule md_vent_quarrel
+does tell.worry
+when conv.goal=vent self.mood_why=quarrel
+say I had words with somebody I shouldn't have, and it's sat on me all day. | Can I tell you something? I said a thing I can't take back, and it's eating at me. | I fell out with someone. Over nothing, really. That's the worst of it. | Words were said today, and I can't unsay mine. | I lost my temper with a friend. I'm not proud of it. | #vent#, I said a thing today I wish I hadn't.
+
+rule md_sympathise
+does sympathise
+when other.mood=low|sore
+say That's hard. I'm sorry. | You don't deserve that. | Oh, my dear. That's a weight to carry. | I'm sorry. Truly. | That's a sorry thing. You should have said sooner.
+
+rule md_sympathise_close
+does sympathise
+when other.mood=low|sore pair.band=friends|family|spouses self.homeless=no
+say Come by tonight. You shouldn't be on your own with that. | You know where my door is. Day or night. | Sit with me a while. It needn't be talked about. | You'll eat with us tonight, and I'll hear no argument. | Whatever you need. You only have to say.
+
+rule md_reassure_robbed
+does reassure
+when other.mood_why=robbed|attacked
+say They'll be caught. And if they're not, you've friends who'll keep an eye out. | You did nothing wrong. Remember that. | I'll walk you home of an evening, if it helps.
+
+rule md_reassure_poor
+does reassure
+when other.mood_why=poor|hungry self.homeless=no self.wealth=comfortable|rich
+say It'll turn. It always does, in the end. | There's soup at my place if you need it, and no shame in taking it.
+
+rule md_reassure_mourning
+does reassure
+when other.mood_why=mourning|loss
+tone tender
+say Nobody who loved you would want you sitting alone in the dark. | It doesn't get smaller. You just get stronger round it.
+
+## A mood showing: asked how they are, and the day's talk.
+
+rule md_how_low
+does answer.how.poorly
+when self.mood=low
+say Low, if I'm honest. | Not so well. I'd not want to burden you. | I've been better. | Getting by. Just.
+
+rule md_how_sore
+does answer.how
+when self.mood=sore
+say Out of sorts, and I'll not pretend otherwise. | Sore. In the temper, I mean. | Don't ask. Really, don't.
+
+rule md_how_bright
+does answer.how.well
+when self.mood=bright
+say Never better! | Fine as a fiddle, and twice as loud. | Couldn't be better, and I'll not hear otherwise. | Grand. Truly grand.
+
+rule md_day_bright
+when concept=talk.day self.mood=bright
+does tell.self
+priority 1
+say I'm in fine fettle today, and I'll not let anyone spoil it. | I woke up whistling. Don't ask me why. | It's a good day. I can feel it in my fur. | Everything's going my way for once. I don't trust it, but I'll take it.
+
+rule md_day_wed
+when concept=talk.day self.mood=bright self.mood_why=wed
+does tell.self
+priority 2
+say I keep forgetting I'm wed, and then I remember, and I grin like a fool. | Married life! Ask me again in a month, but so far it's grand.
+
+rule md_day_sore
+when concept=talk.day self.mood=sore
+does tell.feeling
+priority 1
+say Don't mind me. I'm sour as old milk today. | I've a temper on me this morning and no good reason to hide it. | Some days everything rubs the wrong way. This is one of them.
+
+rule md_day_low
+when concept=talk.day self.mood=low
+does tell.feeling
+tone serious
+priority 1
+say I'm not much company today, I'm afraid. | Some days are just long. This is one. | I can't seem to lift myself today.
+
+## Likes and dislikes: held for good (opinions.json), said in their own words.
+
+rule lk_pastime_own
+when concept=pastimes.own
+does answer.detail
+priority 3
+say #self.pastime_words.capitalize#, when I get the chance. Always has been. | Give me #self.pastime_words# and I'm content. | #self.pastime_words.capitalize#. You'll laugh, but it's what keeps me sane. | Mostly #self.pastime_words#. Nothing grand.
+then other: pastimes.react
+
+rule lk_food
+when concept=talk.food
+does tell.self
+priority 1
+say I'd walk to the next town and back for #self.food_words#. | If I could have #self.food_words# every night, I'd ask for nothing more. | You know what I'd give for #self.food_words# right now? Anything. | Nothing beats #self.food_words#. Nothing.
+
+rule lk_food_dislike
+when concept=talk.food self.dislike_kind=food
+does tell.complaint
+say The one thing I can't abide is #self.dislike_words#. Never could. | Whatever you do, don't put #self.dislike_words# in front of me.
+
+rule lk_weather
+when concept=talk.weather
+does tell.self
+priority 1
+say Give me #self.weather_words# any day of the year. | Do you know what I love? #self.weather_words.capitalize#. Always have. | I'm happiest on #self.weather_words#, if you want to know.
+
+rule lk_weather_dislike
+when concept=talk.weather self.dislike_kind=weather
+does tell.complaint
+say I'll tell you what I can't stand: #self.dislike_words#. | Whatever the weather does, I hope it spares me #self.dislike_words#.
+
+rule lk_thing
+when concept=talk.smalltalk|talk.home
+does tell.self
+say There's nothing I like better than #self.thing_words#. Daft, isn't it? | I'm a simple wolf. #self.thing_words.capitalize# and I'm happy. | You know what puts me right? #self.thing_words.capitalize#.
+
+rule lk_thing_dislike
+when concept=talk.smalltalk|talk.home self.dislike_kind=thing
+does tell.complaint
+say The one thing I can't abide is #self.dislike_words#. | If there's one thing that sets my teeth on edge, it's #self.dislike_words#. | Don't get me started on #self.dislike_words#.

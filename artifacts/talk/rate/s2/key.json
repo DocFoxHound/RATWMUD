@@ -1,0 +1,460 @@
+{
+ "about": "talk_rate.py's key: which source each item came from. Open only after rating.",
+ "items": {
+  "1": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 1390
+  },
+  "2": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 4043
+  },
+  "3": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 490
+  },
+  "4": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 889
+  },
+  "5": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 1572
+  },
+  "6": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 766
+  },
+  "7": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 6485
+  },
+  "8": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 657
+  },
+  "9": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 3055
+  },
+  "10": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 5844
+  },
+  "11": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 1215
+  },
+  "12": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 2283
+  },
+  "13": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 4971
+  },
+  "14": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 2223
+  },
+  "15": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 5893
+  },
+  "16": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 536
+  },
+  "17": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 7367
+  },
+  "18": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 4486
+  },
+  "19": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 6343
+  },
+  "20": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 2115
+  },
+  "21": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 2051
+  },
+  "22": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 4462
+  },
+  "23": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 1703
+  },
+  "24": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 5007
+  },
+  "25": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 1777
+  },
+  "26": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 2563
+  },
+  "27": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 4352
+  },
+  "28": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 275
+  },
+  "29": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 1526
+  },
+  "30": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 1618
+  },
+  "31": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 7349
+  },
+  "32": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 6327
+  },
+  "33": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 3307
+  },
+  "34": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 90
+  },
+  "35": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 1407
+  },
+  "36": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 5304
+  },
+  "37": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 129
+  },
+  "38": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 7100
+  },
+  "39": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 3405
+  },
+  "40": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 1115
+  },
+  "41": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 4676
+  },
+  "42": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 3070
+  },
+  "43": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 3325
+  },
+  "44": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 2328
+  },
+  "45": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 1589
+  },
+  "46": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 5522
+  },
+  "47": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 990
+  },
+  "48": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 1848
+  },
+  "49": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 3192
+  },
+  "50": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 335
+  },
+  "51": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 444
+  },
+  "52": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 2974
+  },
+  "53": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 5830
+  },
+  "54": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 4597
+  },
+  "55": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 1075
+  },
+  "56": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 1179
+  },
+  "57": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 3235
+  },
+  "58": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 5266
+  },
+  "59": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 5033
+  },
+  "60": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 1294
+  },
+  "61": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 7080
+  },
+  "62": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 3284
+  },
+  "63": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 2189
+  },
+  "64": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 3768
+  },
+  "65": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 1288
+  },
+  "66": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 258
+  },
+  "67": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 2879
+  },
+  "68": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 1910
+  },
+  "69": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 1000
+  },
+  "70": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 6906
+  },
+  "71": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 6568
+  },
+  "72": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 5424
+  },
+  "73": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 1248
+  },
+  "74": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 7182
+  },
+  "75": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 5974
+  },
+  "76": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 2543
+  },
+  "77": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 3518
+  },
+  "78": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 582
+  },
+  "79": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 3593
+  },
+  "80": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 766
+  },
+  "81": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 5972
+  },
+  "82": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 6765
+  },
+  "83": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 2036
+  },
+  "84": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 4081
+  },
+  "85": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 5966
+  },
+  "86": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 1432
+  },
+  "87": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 376
+  },
+  "88": {
+   "source": "old",
+   "run": "artifacts/talk/runs/p0-baseline/fixtures-L1",
+   "conv": 1203
+  },
+  "89": {
+   "source": "new",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 2049
+  },
+  "90": {
+   "source": "shuffled",
+   "run": "artifacts/talk/runs/s2-tick/tick-L1",
+   "conv": 4184
+  }
+ },
+ "counts": {
+  "new": 30,
+  "old": 30,
+  "shuffled": 30
+ }
+}

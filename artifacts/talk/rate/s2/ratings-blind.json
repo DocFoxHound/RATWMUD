@@ -1,0 +1,1478 @@
+{
+ "about": "The first blind ratings of doc 84's Slice 2 packet (artifacts/talk/rate/s2/packet.md, 90 conversations), by three raters given only the packet, never key.json: each item rated 1-5 for how believable it is as real people talking and how coherent (each line follows the one before), with a note on the low ones. The raters' own words and numbers, unchanged; scored by tools/talk_rate.py score (h1.json, h1.md).",
+ "raters": [
+  {
+   "rater": "A",
+   "ratings": [
+    {
+     "id": "1",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'Good plan' to a wistful wish, then 'It stank' about nothing named. The lines don't connect."
+    },
+    {
+     "id": "2",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "3",
+     "believable": 2,
+     "coherent": 2,
+     "note": "The child asks a direct question and gets a bare 'Well!', which doesn't answer it."
+    },
+    {
+     "id": "4",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "5",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "6",
+     "believable": 2,
+     "coherent": 2,
+     "note": "A greeting is stapled to an unexplained line about the Kestrel. The reply only loosely fits and the talk ends at once."
+    },
+    {
+     "id": "7",
+     "believable": 3,
+     "coherent": 2,
+     "note": "'When it hits my supper' is a food-price retort, but the news is about planks."
+    },
+    {
+     "id": "8",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "9",
+     "believable": 5,
+     "coherent": 5
+    },
+    {
+     "id": "10",
+     "believable": 4,
+     "coherent": 3
+    },
+    {
+     "id": "11",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'Close?' gets 'One of many', and 'Sleep sound' gets 'Much'. Neither answers the line before it."
+    },
+    {
+     "id": "12",
+     "believable": 5,
+     "coherent": 5
+    },
+    {
+     "id": "13",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "14",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "15",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "16",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "17",
+     "believable": 1,
+     "coherent": 1,
+     "note": "Word salad. The well gets a tavern-floor reply, there's a knock-knock punchline with no setup, a speaker talks twice with unrelated lines, and nobody answers anybody."
+    },
+    {
+     "id": "18",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "19",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "20",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "21",
+     "believable": 2,
+     "coherent": 1,
+     "note": "They say farewell mid-talk and then carry on. Replies like 'something else next week' and 'That's done, then' don't follow, and the cells news gets 'It'll mend'."
+    },
+    {
+     "id": "22",
+     "believable": 5,
+     "coherent": 5
+    },
+    {
+     "id": "23",
+     "believable": 2,
+     "coherent": 2,
+     "note": "Hanne offers to 'just listen' to a remark, Aud leaves, and a third speaker who wasn't in the talk says goodbye. The opener repeats 'back'."
+    },
+    {
+     "id": "24",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "25",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "26",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "27",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "28",
+     "believable": 4,
+     "coherent": 3
+    },
+    {
+     "id": "29",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "30",
+     "believable": 2,
+     "coherent": 2,
+     "note": "The child asks 'Is that bad?' and gets 'Is that so.' The question goes unanswered."
+    },
+    {
+     "id": "31",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "32",
+     "believable": 2,
+     "coherent": 1,
+     "note": "Sybil says 'I'll see you' mid-talk. Soren goes on, and the warning about a local stranger gets 'News from far off'."
+    },
+    {
+     "id": "33",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "34",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "35",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "36",
+     "believable": 2,
+     "coherent": 1,
+     "note": "The news is about berries and the reply is about glass. The opener's 'talking wagons lately, too' is clumsy."
+    },
+    {
+     "id": "37",
+     "believable": 1,
+     "coherent": 1,
+     "note": "'I'll let you be' gets 'Of course you have', which answers nothing."
+    },
+    {
+     "id": "38",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "39",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'Rolling in something' is an odd answer to soft water. A goodbye comes in the middle, then Karin names her home though nobody asked."
+    },
+    {
+     "id": "40",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "41",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "42",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "43",
+     "believable": 2,
+     "coherent": 3,
+     "note": "'Is that so. Thank you for telling me.' is stiff, formal filler, not neighbourly talk."
+    },
+    {
+     "id": "44",
+     "believable": 2,
+     "coherent": 2,
+     "note": "The sausage daydream gets a curt 'Good day to you, then'. It's ignored, and the talk just ends."
+    },
+    {
+     "id": "45",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "46",
+     "believable": 2,
+     "coherent": 2,
+     "note": "Ulla says goodbye straight after robbery news, then Dorcas carries on anyway."
+    },
+    {
+     "id": "47",
+     "believable": 5,
+     "coherent": 5
+    },
+    {
+     "id": "48",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'Don't stay up late' doesn't follow a memory, and 'you'd not believe me if I told you' answers nothing."
+    },
+    {
+     "id": "49",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "50",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "51",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'Bless everyone' gets 'I dozed. Don't tell.' The two lines have nothing to do with each other."
+    },
+    {
+     "id": "52",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "53",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "54",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'Night, then' in the morning, mid-talk. 'Not the eels' answers a question nobody asked, and the thread falls apart."
+    },
+    {
+     "id": "55",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "56",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "57",
+     "believable": 5,
+     "coherent": 5
+    },
+    {
+     "id": "58",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "59",
+     "believable": 1,
+     "coherent": 1,
+     "note": "Nonsense: pie, the chapel, 'They were wrong', 'He looked bald'. No line answers another."
+    },
+    {
+     "id": "60",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "61",
+     "believable": 2,
+     "coherent": 1,
+     "note": "A calving cow gets a reply about fishing, then a goodbye."
+    },
+    {
+     "id": "62",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "63",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "64",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "65",
+     "believable": 2,
+     "coherent": 1,
+     "note": "The tax grumble gets 'Off to bed with you' and 'All the better', then a third speaker barges in."
+    },
+    {
+     "id": "66",
+     "believable": 2,
+     "coherent": 2,
+     "note": "'Back so soon?' is stapled to a heavy confession. It gets a bare 'Aye' and an immediate goodbye."
+    },
+    {
+     "id": "67",
+     "believable": 2,
+     "coherent": 2,
+     "note": "The apprentice's dropped tray gets only 'Take care, now'. It doesn't engage."
+    },
+    {
+     "id": "68",
+     "believable": 5,
+     "coherent": 5
+    },
+    {
+     "id": "69",
+     "believable": 1,
+     "coherent": 1,
+     "note": "'Think nothing of it' answers a thanks that was never given, and 'Them too' means nothing."
+    },
+    {
+     "id": "70",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "71",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "72",
+     "believable": 1,
+     "coherent": 1,
+     "note": "A string of stock farewells and non-answers ('Who would I tell?', 'And then what?') after the theft news. No exchange holds together."
+    },
+    {
+     "id": "73",
+     "believable": 2,
+     "coherent": 2,
+     "note": "Clumsy stacked opener. 'Nobody's blaming you' doesn't follow Ansel's line, then an abrupt bedtime exit."
+    },
+    {
+     "id": "74",
+     "believable": 1,
+     "coherent": 1,
+     "note": "A race to the well gets 'A mouse, or a rat?', a complete non sequitur."
+    },
+    {
+     "id": "75",
+     "believable": 1,
+     "coherent": 1,
+     "note": "'Longest day of my life' gets 'Maybe! Who?' and then 'Well, well'. Nonsense."
+    },
+    {
+     "id": "76",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "77",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "78",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "79",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "80",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'I'll call on' the accused thief gets 'You're right. We shouldn't.' The reply contradicts the line it answers."
+    },
+    {
+     "id": "81",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "82",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "83",
+     "believable": 1,
+     "coherent": 1,
+     "note": "Repeated 'Bless you, shore-friend', gibberish ('Rain coast, rain salt, no salt'), and topic jumps with no replies."
+    },
+    {
+     "id": "84",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "85",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "86",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "87",
+     "believable": 2,
+     "coherent": 2,
+     "note": "Three stacked openers, then Oda answers the theft news with 'Go well' and 'Off home, then'. She ignores it."
+    },
+    {
+     "id": "88",
+     "believable": 5,
+     "coherent": 5
+    },
+    {
+     "id": "89",
+     "believable": 3,
+     "coherent": 2,
+     "note": "'We managed' answers good news as if it were hardship. Then an abrupt brush-off."
+    },
+    {
+     "id": "90",
+     "believable": 1,
+     "coherent": 1,
+     "note": "Firewood news gets 'And you. Sleep easy.', answering a farewell nobody gave, and the same line is repeated word for word."
+    }
+   ]
+  },
+  {
+   "rater": "B",
+   "ratings": [
+    {
+     "id": "90",
+     "believable": 1,
+     "coherent": 1,
+     "note": "Wagon price news is answered with 'And you. Sleep easy.', a farewell to something nobody said, and then the same line again word for word."
+    },
+    {
+     "id": "89",
+     "believable": 2,
+     "coherent": 2,
+     "note": "'In my day it was the same, and we managed' answers plenty as if it were hardship, and the talk then drops into stock goodbyes. Opening a meat-tonight remark with 'You again?' is also stilted."
+    },
+    {
+     "id": "88",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "87",
+     "believable": 2,
+     "coherent": 1,
+     "note": "The opener piles three stock gossip lead-ins on top of each other. The listener replies 'Go well' to the news, and nobody really answers anybody."
+    },
+    {
+     "id": "86",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "85",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "84",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "83",
+     "believable": 1,
+     "coherent": 1,
+     "note": "Word salad: 'Bless you, shore-friend' twice in reply to nothing, 'Rain coast, rain salt, no salt', 'It feels like the cheap cloth'. No line answers the one before."
+    },
+    {
+     "id": "82",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "81",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "80",
+     "believable": 2,
+     "coherent": 1,
+     "note": "Saying you'll call on the accused thief to see how they are is odd. 'You're right. We shouldn't.' agrees with something that was never said."
+    },
+    {
+     "id": "79",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "78",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "77",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "76",
+     "believable": 2,
+     "coherent": 2,
+     "note": "'Good old Grayrock' comes out of nowhere, since the wagon's origin was never named, and 'Fair weights, friend' answers neither line."
+    },
+    {
+     "id": "75",
+     "believable": 1,
+     "coherent": 1,
+     "note": "'Longest day of my life' gets 'Maybe! Who?', then 'Well, well.' Pure non sequiturs."
+    },
+    {
+     "id": "74",
+     "believable": 1,
+     "coherent": 1,
+     "note": "A bet to race to the well is answered with 'A mouse, or a rat?', which has nothing to do with it."
+    },
+    {
+     "id": "73",
+     "believable": 2,
+     "coherent": 2,
+     "note": "The opener is overstuffed with stock fragments ('Twice in a day', 'We'd only just finished'). 'Nobody's blaming you' doesn't follow from the weather remark, and the talk ends abruptly."
+    },
+    {
+     "id": "72",
+     "believable": 1,
+     "coherent": 1,
+     "note": "Theft gossip is met with 'And you. Mind the dark.', then 'Who would I tell?' and 'And then what?' answer nothing. It is a string of goodbyes and warnings with no exchange."
+    },
+    {
+     "id": "71",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "70",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "69",
+     "believable": 1,
+     "coherent": 1,
+     "note": "Praise for someone's apprenticeship gets 'Think nothing of it', as if thanked, then 'Ha. Them too.', which is meaningless."
+    },
+    {
+     "id": "68",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "67",
+     "believable": 2,
+     "coherent": 1,
+     "note": "A small complaint (the dropped tray) is met with 'Take care, now'. The listener ignores it entirely."
+    },
+    {
+     "id": "66",
+     "believable": 2,
+     "coherent": 2,
+     "note": "The greeting swerves into an unprompted lament about losing a house, and it gets a bare 'Aye' and an immediate goodbye."
+    },
+    {
+     "id": "65",
+     "believable": 1,
+     "coherent": 1,
+     "note": "A tax grumble gets 'Off to bed with you', then 'All the better', then a third speaker barges in. Nothing connects."
+    },
+    {
+     "id": "64",
+     "believable": 2,
+     "coherent": 2,
+     "note": "The opening sentence ('We'd only just finished with the last of this') is confusing, and 'Keep your purse close' is a generic tag that doesn't fit a smokehouse break-in."
+    },
+    {
+     "id": "63",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "62",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "61",
+     "believable": 1,
+     "coherent": 1,
+     "note": "Calving news is answered with a remark about fishing, then a goodbye. A complete non sequitur."
+    },
+    {
+     "id": "60",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "59",
+     "believable": 1,
+     "coherent": 1,
+     "note": "Nonsense chain: 'Don't say pie', 'Whatever the chapel's giving', 'They were wrong', 'He looked bald'. No thread at all."
+    },
+    {
+     "id": "58",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "57",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "56",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "55",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "54",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'Night, then' cuts in mid-topic, and 'Not the eels. The quiet.' answers a question nobody asked."
+    },
+    {
+     "id": "53",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "52",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "51",
+     "believable": 1,
+     "coherent": 1,
+     "note": "'Bless you. Bless everyone.' as a greeting is strange, and 'I dozed. Don't tell.' bears no relation to it."
+    },
+    {
+     "id": "50",
+     "believable": 3,
+     "coherent": 2,
+     "note": "If she can't empty the full cash box, the cutpurse gets everything, so 'Then the cutpurse gets nothing' contradicts the line before it."
+    },
+    {
+     "id": "49",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "48",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'Don't stay up late' doesn't answer a memory, 'Fields and a ford' hangs alone, and 'you'd not believe me' comes from the wrong speaker."
+    },
+    {
+     "id": "47",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "46",
+     "believable": 2,
+     "coherent": 2,
+     "note": "'Right. Till next time.' brushes off the robbery news, and the speaker then carries on as though no goodbye had been said."
+    },
+    {
+     "id": "45",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "44",
+     "believable": 2,
+     "coherent": 1,
+     "note": "A playful wish about sausages is met with a flat goodbye. No engagement at all."
+    },
+    {
+     "id": "43",
+     "believable": 2,
+     "coherent": 3,
+     "note": "'Is that so. Thank you for telling me.' is stiff and formal, like a clerk rather than a neighbour hearing of a wedding."
+    },
+    {
+     "id": "42",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "41",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "40",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "39",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'Have you tried rolling in something?' doesn't answer the water complaint. 'Coldwater, where the High Road starts to climb' answers an unasked question after a goodbye."
+    },
+    {
+     "id": "38",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "37",
+     "believable": 1,
+     "coherent": 1,
+     "note": "Theft news gets 'I'll let you be', then 'Of course you have', which answers nothing."
+    },
+    {
+     "id": "36",
+     "believable": 1,
+     "coherent": 1,
+     "note": "The news is that berries are dear, and the reply talks about glass on the roads. Mismatched."
+    },
+    {
+     "id": "35",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "34",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "33",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "32",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'I'll see you' comes as a goodbye mid-topic. 'News from far off' answers a warning about a local stranger."
+    },
+    {
+     "id": "31",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "30",
+     "believable": 2,
+     "coherent": 1,
+     "note": "The child asks 'Is that bad?', and the adult's 'Is that so.' ignores the question."
+    },
+    {
+     "id": "29",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "28",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "27",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "26",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "25",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "24",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "23",
+     "believable": 2,
+     "coherent": 2,
+     "note": "A good opening line, but the talk immediately becomes an onlooker's line and goodbyes, and a fourth person who never spoke says the farewell."
+    },
+    {
+     "id": "22",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "21",
+     "believable": 1,
+     "coherent": 1,
+     "note": "Disjointed fragments: 'Farewell' comes mid-conversation and then the talk carries on, a speech about the roads answers nothing, and the stock fillers ('So it goes', 'It'll mend') don't respond to anything."
+    },
+    {
+     "id": "20",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "19",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "18",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "17",
+     "believable": 1,
+     "coherent": 1,
+     "note": "Total word salad: well, tavern floor, a goose joke, 'Did so', 'A maybe's a yes with its boots off'. No line follows from the one before."
+    },
+    {
+     "id": "16",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "15",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "14",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "13",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "12",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "11",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'Close?' gets 'One of many', and 'Sleep sound.' gets 'Much.' After the first line, nothing fits."
+    },
+    {
+     "id": "10",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "9",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "8",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "7",
+     "believable": 2,
+     "coherent": 2,
+     "note": "Planks being dear wouldn't 'hit my supper'. The stock reply about prices doesn't fit the goods."
+    },
+    {
+     "id": "6",
+     "believable": 2,
+     "coherent": 2,
+     "note": "The opener jumps from a greeting to an unexplained ship ('the Kestrel'). The reply is only loosely related, and the talk goes straight to goodbyes."
+    },
+    {
+     "id": "5",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "4",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "3",
+     "believable": 2,
+     "coherent": 2,
+     "note": "The child asks 'Is that bad?' and gets only 'Well!', which doesn't answer it. The exchange stops dead."
+    },
+    {
+     "id": "2",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "1",
+     "believable": 2,
+     "coherent": 1,
+     "note": "Wanting to ride the carts gets 'Good plan', then 'It stank' refers to nothing, and the advice to pray doesn't fit any of it."
+    }
+   ]
+  },
+  {
+   "rater": "C",
+   "ratings": [
+    {
+     "id": "1",
+     "believable": 2,
+     "coherent": 2,
+     "note": "'It stank' has nothing to refer back to after the line about the cart. 'Good plan' and 'say a prayer' are stock replies that don't engage with what Gwen said."
+    },
+    {
+     "id": "3",
+     "believable": 3,
+     "coherent": 2,
+     "note": "The child asks a direct question and the bare 'Well!' never answers it."
+    },
+    {
+     "id": "5",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "7",
+     "believable": 3,
+     "coherent": 2,
+     "note": "The reply about the price hitting 'my supper' doesn't fit planks, which aren't food. The opener's 'Frosthollow... Frosthollow wagon' is clumsy."
+    },
+    {
+     "id": "9",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "11",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'One of many' doesn't answer 'Close?', and 'Sleep sound.' / 'Much.' is gibberish as an exchange."
+    },
+    {
+     "id": "13",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "15",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "17",
+     "believable": 1,
+     "coherent": 1,
+     "note": "A string of unrelated lines: the well, then a tavern floor, then a goose joke, then 'Did so'. One speaker talks twice in a row and nobody answers anybody."
+    },
+    {
+     "id": "19",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "21",
+     "believable": 1,
+     "coherent": 1,
+     "note": "Maren says farewell halfway through and then keeps talking. The lines are non sequiturs about roads and the cells, and the stock closers ('It'll mend') fit nothing that came before."
+    },
+    {
+     "id": "23",
+     "believable": 2,
+     "coherent": 1,
+     "note": "The opener is garbled ('Back again? Back home...'). Hanne's 'I'll just listen' answers nothing, and a third speaker says goodbye out of nowhere."
+    },
+    {
+     "id": "25",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "27",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "29",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "31",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "33",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "35",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "37",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'I'll let you be' brushes the gossip off, and 'Of course you have' doesn't follow from it at all."
+    },
+    {
+     "id": "39",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'Rolling in something' is a strange answer to water that tastes wrong. Goodbyes come in the middle, and the line about Coldwater's fishing folk answers nothing."
+    },
+    {
+     "id": "41",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "43",
+     "believable": 2,
+     "coherent": 3,
+     "note": "'Thank you for telling me' is stiff, almost clerical, as a reaction to wedding gossip, and the opener never says who Berit married."
+    },
+    {
+     "id": "45",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "47",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "49",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "51",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'I dozed. Don't tell.' has no link to 'Bless you. Bless everyone.'"
+    },
+    {
+     "id": "53",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "55",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "57",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "59",
+     "believable": 1,
+     "coherent": 1,
+     "note": "Nonsense: pie, then the chapel, then 'They were wrong', then 'He looked bald'. No line connects to the one before it."
+    },
+    {
+     "id": "61",
+     "believable": 2,
+     "coherent": 1,
+     "note": "A cow calving gets a reply about fishing. Total non sequitur."
+    },
+    {
+     "id": "63",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "65",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'Off to bed with you' answers the tax complaint with nothing, 'All the better' doesn't follow, and a third speaker barges in at the end."
+    },
+    {
+     "id": "67",
+     "believable": 2,
+     "coherent": 2,
+     "note": "The apprentice story gets only a farewell, a non-response nobody would give to that."
+    },
+    {
+     "id": "69",
+     "believable": 1,
+     "coherent": 1,
+     "note": "'Think nothing of it' answers praise for a third party as if it were thanks, and 'Ha. Them too.' is meaningless."
+    },
+    {
+     "id": "71",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "73",
+     "believable": 2,
+     "coherent": 2,
+     "note": "The opener stacks three unrelated openers. 'Nobody's blaming you' doesn't follow Ansel's remark, and the exchange then just stops."
+    },
+    {
+     "id": "75",
+     "believable": 1,
+     "coherent": 1,
+     "note": "'Maybe! Who?' has no connection to 'the longest day of my life', and 'Well, well' closes nothing."
+    },
+    {
+     "id": "77",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "79",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "81",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "83",
+     "believable": 1,
+     "coherent": 1,
+     "note": "Word salad: 'Bless you, shore-friend' is said twice to unrelated lines, 'Rain coast, rain salt, no salt' means nothing, and the reply about cheap cloth answers a line about a stranger nursing a drink."
+    },
+    {
+     "id": "85",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "87",
+     "believable": 2,
+     "coherent": 2,
+     "note": "The opener piles three openers onto the news. Oda answers the theft with 'Go well' and 'Off home', ignoring it completely."
+    },
+    {
+     "id": "89",
+     "believable": 3,
+     "coherent": 2,
+     "note": "'We managed' implies hardship, which makes no sense as a reply to news that meat will be plentiful. Then the talk just ends."
+    },
+    {
+     "id": "2",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "4",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "6",
+     "believable": 2,
+     "coherent": 2,
+     "note": "The Kestrel comes up with no context, the reply about 'a thousand' only loosely connects, and the pair go straight to goodbyes."
+    },
+    {
+     "id": "8",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "10",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "12",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "14",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "16",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "18",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "20",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "22",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "24",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "26",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "28",
+     "believable": 4,
+     "coherent": 3
+    },
+    {
+     "id": "30",
+     "believable": 2,
+     "coherent": 1,
+     "note": "The child's question 'Is that bad?' gets 'Is that so.', which neither answers it nor fits."
+    },
+    {
+     "id": "32",
+     "believable": 2,
+     "coherent": 1,
+     "note": "Sybil says goodbye, then Soren carries on with a warning, and Sybil answers it with 'News from far off', which doesn't fit a stranger close by."
+    },
+    {
+     "id": "34",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "36",
+     "believable": 2,
+     "coherent": 1,
+     "note": "Berries are dear, and the reply is about glass. A mismatched reply."
+    },
+    {
+     "id": "38",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "40",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "42",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "44",
+     "believable": 2,
+     "coherent": 1,
+     "note": "The sausage daydream gets only a farewell. Nobody answers anybody."
+    },
+    {
+     "id": "46",
+     "believable": 2,
+     "coherent": 2,
+     "note": "Ulla says goodbye to robbery news, then Dorcas carries on as if she hadn't."
+    },
+    {
+     "id": "48",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'Don't stay up late' doesn't answer a memory coming back, 'Fields and a ford' hangs in the air, and Corwin's last line answers nothing."
+    },
+    {
+     "id": "50",
+     "believable": 3,
+     "coherent": 2,
+     "note": "The logic falls apart. If there's nowhere to empty the cash box, it stays full, so 'Then the cutpurse gets nothing' is backwards. 'Like a drum' is unclear too."
+    },
+    {
+     "id": "52",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "54",
+     "believable": 2,
+     "coherent": 1,
+     "note": "'Morning' turns into 'Night, then' halfway through, 'Not the eels' refers to nothing, and the replies don't line up."
+    },
+    {
+     "id": "56",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "58",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "60",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "62",
+     "believable": 3,
+     "coherent": 4
+    },
+    {
+     "id": "64",
+     "believable": 2,
+     "coherent": 2,
+     "note": "The opening sentence ('finished with the last of this') makes no sense, and 'Keep your purse close' doesn't fit a raid on the smokehouse."
+    },
+    {
+     "id": "66",
+     "believable": 2,
+     "coherent": 2,
+     "note": "A personal confession about losing a house gets 'Aye' and an immediate goodbye. The opener's greeting is spliced awkwardly onto it."
+    },
+    {
+     "id": "68",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "70",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "72",
+     "believable": 1,
+     "coherent": 1,
+     "note": "Farewells are scattered through it, 'Who would I tell?' and 'And then what?' answer nothing, and the theft news is never taken up."
+    },
+    {
+     "id": "74",
+     "believable": 1,
+     "coherent": 1,
+     "note": "'A mouse, or a rat?' has nothing to do with a race to the well."
+    },
+    {
+     "id": "76",
+     "believable": 2,
+     "coherent": 2,
+     "note": "'Good old Grayrock' comes from nowhere (wagon day, but no place was named), and 'Fair weights, friend' doesn't follow."
+    },
+    {
+     "id": "78",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "80",
+     "believable": 2,
+     "coherent": 2,
+     "note": "'You're right. We shouldn't.' doesn't follow Imogen's plan to call on Rosamund, and it's odd to call on the accused thief rather than the victim."
+    },
+    {
+     "id": "82",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "84",
+     "believable": 4,
+     "coherent": 4
+    },
+    {
+     "id": "86",
+     "believable": 3,
+     "coherent": 3
+    },
+    {
+     "id": "88",
+     "believable": 4,
+     "coherent": 5
+    },
+    {
+     "id": "90",
+     "believable": 1,
+     "coherent": 1,
+     "note": "The news about firewood prices gets 'And you. Sleep easy.', and that same line is repeated word for word at the end."
+    }
+   ]
+  }
+ ]
+}
