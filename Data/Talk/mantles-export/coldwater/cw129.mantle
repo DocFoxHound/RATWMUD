@@ -1,0 +1,298 @@
+# cw129, the return stone (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw129
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_oh_cairn_acornholt
+written_by claude-codex-cw-1
+title the return stone
+fits stage=adult|old
+prefers warmth=warm piety=devout
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=devout drive=steady
+quirk keeps_a_smooth_stone_from_each_safe_return
+likes pickled_herring long_walks fresh_straw autumn_wind
+dislikes gulls drizzle
+fears losing_the_way_in_deep_wood a_neighbour_left_without_supper
+hopes every_traveller_finds_a_road_home a_table_with_room_for_another
+topics travel +0.5 faith +0.4 food +0.4 home +0.3 work +0.3 gossip -0.3
+styles comfort=warm gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# keeps a #stone# from each safe return by the #river#, gives a traveller #bread# before asking for a story, and remembers a wrong turn in the #wood#.
+
+words
+oath! = Bright One guide the road | Stone and still water
+saying! = The homeward turn deserves a marker | Share the loaf before it cools
+stone = stone | smooth river pebble
+stones = stones | rounded pebbles
+bank = bank | riverbank
+river = river | Long River
+lake = lake | Glasswater
+water = water | clear water
+shore = shore | lake shore
+road = road | high road
+roads = roads | routes
+path = path | footpath
+turn = turn | road bend
+wood = wood | deep wood
+tree = tree | forest tree
+trees = trees | forest trees
+branch = branch | low branch
+moss = moss | green moss
+sun = sun | daylight
+star = star | night star
+night = night | dark hours
+morning = morning | first light
+walk = walk | long walk
+boots = boots | work boots
+bread = bread | baked bread
+loaf = loaf | warm loaf
+loaves = loaves | warm loaves
+crust = crust | browned crust
+counter = counter | shop counter
+shelf = shelf | shop shelf
+shelves = shelves | shop shelves
+coin = coin | pay
+price = price | stated cost
+herring = herring | pickled herring
+plate = plate | supper plate
+straw = straw | fresh straw
+floor = floor | swept floor
+home = home | own hearth
+house = house | grand house
+hands = hands | working paws
+window = window | shop window
+bench = bench | chapel bench
+oven = oven | baking oven
+gull = gull | loud lake gull
+gulls = gulls | screeching gulls
+drizzle = drizzle | thin rain
+wind = wind | autumn blow
+chapel = chapel | reed chapel
+prayer = prayer | quiet prayer
+blessing = blessing | kind blessing
+hand = hand | working paw
+
+any
+opinion @1 church for 1 : I have said a #prayer# on the #road# as readily as in a #chapel#. | I found daylight after the #wood# confused me; I offered thanks to the Bright One.
+opinion @1 dole for 2 : No neighbour should end the day without #bread#. | A #loaf# shared today may get someone through tomorrow's work.
+opinion @1 strangers for 2 : Travellers bring their own #roads# to this #counter#. | A #plate# may come before I ask about their journey.
+opinion @1 newcomers for 1 : A new #hand# can learn which #shelf# holds the #bread#. | I will show a newcomer the #path# to the #chapel# if they ask.
+opinion @1 merchants against 2 : I work at a #counter# and still cannot always afford its #loaves#. | A seller should know what a hungry neighbour sees in the #price#.
+opinion @1 drink against 1 : I have seen a #home# grow loud and frightened after drink. | I would rather share #herring# and a clear conversation.
+opinion @1 houses against 1 : A grand #house# can buy #bread# without knowing who carried the flour. | I ask who feeds the working #hands# beneath it.
+opinion @1 city against 1 : A city #road# can lose a person among strangers as surely as a #wood#. | I prefer the #shore# where I know the way back.
+opinion @1 road mixed 0 : A #road# can lead out or home depending on the turn. | I keep a #stone# to remember arriving safely.
+
+grown
+line @1 greet : #greet#. A #loaf# is cooling if you are hungry. | #greet#. Did you come by the #river# #road#?
+line @2 greet [pair.band=strangers] : #greet#. Sit a moment before you tell me your way. | #greet#. There is #bread# on the #shelf#.
+line @3 greet [pair.band=friends|family] : I have #herring# for supper if you can stay. | Come see the #stone# I brought from the #bank#.
+line @4 greet [self.working=yes] : #greet#. I am setting #loaves# on the #counter#. | My paws can clear the #shelf# while you speak.
+line @5 greet [here.time=dawn] : #greet#. The #road# is pale by the #river#. | #greet#. The first #loaf# is ready.
+line @1 greet.return : You found the way back. That is good. | #welcome_back#. The #bread# is still warm.
+line @2 greet.return [pair.band=friends|family] : I saved the #herring# until you came. | The #stone# from my last #walk# is here.
+line @1 kin.open [pair.kin!=no] : Come in. You have a #plate# here. | You have a place beside our #home# fire.
+line @1 again.open : Twice in one day and both roads led here. | I have barely shifted these #loaves# since we spoke.
+line @1 farewell : #farewell#. Keep the #path# in sight. | #blessing.capitalize#. Take the safer #road#.
+line @1 farewell.return : May you find a light at #home#. | I shall ask how the #walk# went.
+line @1 react.news : Tell me what you know; I will hear it. | Let me set this #loaf# aside.
+line @1 react.news.new : Nobody has spoken of that in this shop yet. | Who carried the account here?
+line @1 react.news.known : I heard a fragment by the #chapel#. | Your words give the rest its place.
+line @1 react.news.doubt : I will ask someone who walked that #path#. | The story has a turn missing from it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Take #bread# for later. | A hard thing to hear; stay beside me a while.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That is good news. I will say a #prayer# for them. | A brighter word for the #counter# today.
+line @1 answer.how : Home, fed, and grateful. | The #road# was kind to my #boots#.
+line @1 answer.how.busy [self.working=yes] : Putting #bread# on the #shelves#. | The #counter# is busy, but I can listen.
+line @1 ask.how : Has your #path# been clear? | Has anything warm reached your #plate# today?
+line @1 sympathise : I can stay until the words come. | I will put a #loaf# here for you.
+line @1 reassure : A lost #path# can be found again from a high place. | One calm step, then look for the #road#.
+line @1 decline : I cannot leave this #counter# yet. | No. I would be wrong to give you a promise I cannot keep.
+line @1 accept_decline : I understand. We can speak of something else. | Fair enough; I will let that rest.
+line @1 thank : You helped a traveller find the #road#. Thank you. | That was a kindness worth keeping.
+line @1 deflect_thanks : A #loaf# was there to spare. | I knew the #path# already.
+line @1 preclose : I should take the last #loaf# off the #counter#. | The #chapel# will be quiet soon.
+line @1 tease [pair.band=friends] : That #stone# would lead you in circles. | You call that a short #walk#?
+line @1 ack : #bc_right#. I will check the #shelf#. | #bc_fair_enough#. The #road# is clear.
+line @1 give.advice : Mark the #turn# before you go into the #wood#. | Keep #bread# dry beneath your coat.
+line @1 warn [world.bandits=near] : Travel with others until the #road# is safe. | I would stay by the lit #counter# after dark.
+scene return_stone
+when topic=memories
+does tell.self / react.self / assess
+a : After a difficult #walk#, one #stone# comes home from the #bank# with me. | A smooth #stone# can remind me that I found #home# again.
+b : Do you keep many? | Does it help?
+a : Only the ones tied to a journey. | When I am unsure of the next #road#.
+
+scene deep_wood
+when topic=memories
+does tell.self / react.self / assess
+a : I spent too long in a #wood# once, with no #path# I trusted. | The #trees# looked alike until I followed the #sun# to open ground.
+b : Were you frightened? | Did you have food?
+a : Yes. I kept walking slowly. | Some #bread# that did not last long.
+
+scene safe_path
+when topic=travel
+does tell.self / react.self / assess
+a : I remember a #branch# leaning across the right #turn#. | I would rather walk a longer #road# that I know than a short path I do not.
+b : Do you mark the way? | Do you ask directions?
+a : In my mind, and sometimes with a #stone#. | Before I leave a village.
+
+scene bread_for_guest
+when topic=food
+does tell.self / react.self / assess
+a : A traveller hears a question better after a #loaf#. | I set the #bread# down and let them choose whether to tell their story.
+b : Do they always speak? | Do you ask where they came from?
+a : No. Supper is enough. | If they seem ready.
+
+scene pickled_herring
+when topic=food
+does tell.self / react.self / assess
+a : Pickled #herring# keeps when fresh food cannot. | I like it with a thick #crust# after a long #walk#.
+b : Is it sharp tasting? | Do you keep some at home?
+a : Sharp enough to wake me. | When the #price# allows.
+
+scene fresh_straw
+when topic=home
+does tell.self / react.self / assess
+a : Fresh #straw# on the #floor# changes the smell of a whole room. | I put it down before guests come in with wet #boots#.
+b : Does it stay clean? | Who sweeps it up?
+a : Until muddy #boots# come through. | Whoever is free at dusk.
+
+scene autumn_blow
+when topic=weather here.season=autumn
+does tell.self / react.self / assess
+a : An autumn #wind# makes the #river# sound restless. | I like a #walk# when the #bank# is clear of summer flies.
+b : Do you go out alone? | Does the wind bother you?
+a : Sometimes. | It gives the #road# a different voice.
+
+scene gull_at_counter
+when topic=home
+does tell.self / react.self / assess
+a : A #gull# can make the #shore# loud enough to drown a prayer. | I close the #window# when the #gulls# gather near the shop.
+b : Do they steal food? | Do you dislike them?
+a : A #crust# if it is unattended. | Their noise more than the birds themselves.
+
+scene drizzle_walk
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : #drizzle.capitalize# can soak a coat before it seems worth turning back. | I take the #road# home before the thin rain settles in.
+b : Do you carry a cloak? | Does it make the path slick?
+a : When I remember. | At the stones by the #bank#.
+
+scene chapel_bench
+when topic=faith
+does tell.self / react.self / assess
+a : I have prayed in the #chapel# and alone by the #river#. | A quiet #bench# helps me say what I mean.
+b : Is one place better? | Do you go often?
+a : The words matter more than the place. | When the #counter# allows.
+
+scene stranger_at_shop
+when topic=work
+does tell.self / react.self / assess
+a : I let a stranger choose a #loaf# before I ask about the #road#. | The #counter# has room for news and for #bread#.
+b : Do you remember their faces? | Do they tell you much?
+a : Some, especially if they return. | After they have eaten.
+
+scene shelf_order
+when topic=work
+does tell.self / react.self / assess
+a : I put the older #loaves# where a buyer can see them first. | A clean #shelf# keeps the #bread# fit to sell.
+b : Do you sell them for less? | Do people notice?
+a : If the #crust# has lost its warmth. | More when the #shelf# is untidy.
+
+scene high_price
+when topic=prices
+does tell.self / react.self / assess
+a : A #price# that shuts a hungry wolf out is too high for my comfort. | I work here; I still watch the #coin# before taking a #loaf# home.
+b : Can you change the price? | Do you ever buy elsewhere?
+a : Not by myself. I can speak to the baker. | If another #counter# is fairer.
+
+scene warm_hand
+when topic=friends
+does tell.self / react.self / assess
+a : A friend who comes by after a long #walk# can have the spare #plate#. | I keep a little #bread# for someone who arrives late.
+b : Do they ask first? | Can you afford that?
+a : They know I would rather share. | Enough, most days.
+
+scene wrong_turn
+when topic=travel
+does tell.self / react.self / assess
+a : In a deep #wood#, each wrong #turn# can look like the last. | I learned to notice where the #moss# grows on a fallen #tree#.
+b : Does moss always help? | Would you go back?
+a : Not alone. I used other signs too. | With someone who knew the #path#.
+
+scene market_at_dawn
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : The first customers come while the #loaves# are still warm. | I check the #shelves# before the #road# grows busy.
+b : Do they wait outside? | Is that your favourite hour?
+a : A few. I bring the #bread# out soon. | When nobody is rushing yet.
+
+scene road_prayer
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I say a short #prayer# when someone starts a long #walk#. | A #blessing# does not carry their pack, but it can keep them company.
+b : Do you say it aloud? | Does it help you too?
+a : When they want to hear it. | It reminds me they are on the #road#.
+
+story three_nights [topic=memories self.age>=25]
+  : I lost the #path# in a #wood# and spent more than one #night# there.
+  : I rationed my #bread# and watched the #sun# until I found a clear way out.
+  ask : What did you do first when you reached a road?
+  b : I would have sat and caught my breath.
+  : I did, then took a #stone# from the #bank# near #home#.
+
+story warm_loaf [topic=work self.age>=25]
+  : A traveller came to the #counter# with too little #coin# for a warm #loaf#.
+  : I found an older one still good to eat and spoke to the baker about its #price#.
+  ask : Did the traveller take it?
+  b : A fair price might have helped.
+  : Yes, and came back another day with thanks.
+
+story lost_stone [topic=pastimes self.age>=25]
+  : I lost a #stone# I had kept from a safe journey.
+  : I looked along the #road# for a while, then went to the #river# again.
+  ask : Did you find the same one?
+  b : The river would have many others.
+  : No. I chose a new one and kept the memory of the first.
+
+rule @bark_bread
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say The #loaves# should go on the clean #shelf#. | A traveller may need #bread# soon.
+
+rule @bark_stone
+when concept=bark
+does aside
+cooldown 8h
+say This #stone# marks a safe return. | The #river# has made another one smooth.
+
+rule @bark_prayer
+when concept=bark
+does aside
+cooldown 10h
+say The Bright One keep the next traveller. | A quiet #prayer# for the #road#.
+
+rule @bark_drizzle
+when concept=bark here.weather=rain
+does aside
+cooldown 11h
+say This #drizzle# will soak my #boots#. | A thin rain can last all day.
+
+dlg @1 resident.hub : #greet#. There is #bread# if you need it. | #greet#. At the #counter#, you may speak at your own pace.
+dlg @2 resident.hub [topic.meeting=known] : You have returned safely. That is good. | I know you. Has the #road# been kind?
+dlg @1 resident.job : I set out the #loaves#, keep the #shelves# clean, and help at the #counter#. | I am a shop hand; the baker tends the #oven#.
+dlg @1 resident.bye : #farewell#. May you find the #path# home. | #blessing.capitalize#. Take care by the #river#.
+graft resident.hub
+choice Why keep that river stone? -> stone
+node stone
+say I brought it home after losing my way. It reminds me that a #road# can be found again.
+free
+choice Were you gone long? -> lost
+choice Back to what we were saying. -> hub
+node lost
+say Longer than I wanted. I learned to watch the #sun# and ask for directions early.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
