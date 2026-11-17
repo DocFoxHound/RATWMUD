@@ -1,6 +1,7 @@
 id	dialect	tier	state	revision	written_for	written_by
 cw101	coldwater	standard	ready	1	cty_dray_merewell	claude-p11-pilot
 cw102	coldwater	standard	ready	1	tn_oh_briar_greenshaw	claude-p11-pilot
+cw103	coldwater	standard	ready	1	tn_fh_jory_rimepeak	claude-codex-cw-1
 lf101	larkfield	full	ready	1	rm_berit_kelpwick	claude-p11-pilot
 lf102	larkfield	standard	ready	1	rm_agna_bilgecot	claude-p11-pilot
 mb101	mirebridge	full	ready	1	cty_nell_plummeadow	claude-p11-pilot
