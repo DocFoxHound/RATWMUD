@@ -1,0 +1,271 @@
+# cw104, the river-stone grower (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw104
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_sm_hob_cornwell
+written_by claude-codex-cw-1
+title the river-stone grower
+fits stage=young|adolescent|adult|old
+prefers talk=chatty humour=merry
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=frank piety=ordinary drive=steady
+quirk collects_smooth_stones_from_the_riverbanks
+likes crisp_apples wrestling new_boots summer_evenings
+dislikes early_bells deep_mud
+fears losing_the_riverbank a_year_without_fruit
+hopes a_wide_orchard trees_of_my_own
+topics pastimes +0.5 home +0.4 work +0.3 weather +0.2 memories +0.2 gossip -0.3
+styles comfort=practical gossip=reluctant refuse=plain tease=merry
+marks oath saying
+persona #self.first# is an open, playful collector of #stones# with an eye for #trees# and a frank answer for almost anything.
+
+words
+oath! = River turn me round | By the third smooth stone
+saying! = A stone takes its time | Plant first and count later
+stones = smooth river stones | pebbles the water has rubbed round
+stone = river stone | round pebble
+pocket = pocket full of pebbles | pocket with a mended seam
+bank = low riverbank | gravel shore
+current = current around the bend | fast water in midstream
+apple = apple | orchard apple
+trees = fruit trees | orchard trees
+tree = sapling | fruit tree
+roots = thirsty roots | roots under the orchard soil
+boots = new boots | stout boots
+boot = boot | shoe
+green = green by the lane | open green for wrestling
+hold = wrestling hold | firm grip
+bell = bell that wakes the lane | early chapel bell
+mud = mud deep enough to take a boot | soft ruts after rain
+evening = long light after supper | summer evening with time to spare
+rows = straight lines between the trees | orchard rows
+row = row | line
+road = high road | lane
+coin = coin | hard-earned pay
+
+any
+opinion @1 festivals for 3 : Give me a day on the #green# with music and I will dance. | A festival lets even the #bell# sound cheerful for once.
+opinion @1 merchants against 1 : I ask what a thing costs before a trader wraps it. The #coin# is easier to keep that way. | A bright #apple# does not make a bruised basket worth more.
+opinion @1 road mixed 0 : The road looks wide until you try to bring a cart past #mud#. | I would travel for a good #tree# to plant, then come home with it.
+opinion @1 houses mixed 0 : A crest cannot tell me whether the #roots# got water. | I care more for a sound #tree# than a fine name above a gate.
+opinion @1 newcomers mixed 0 : Show a new wolf the #bank# and you will know whether to walk together. | A stranger may know a better way to set #rows#. I would hear it.
+opinion @1 times mixed 0 : When the purse is thin, a planted #tree# is still a promise. | Bad seasons come round. So do good #apple# crops.
+line @1 greet : #greet#. Have you seen the #bank# today? | #greet#. I found room for one more #stone# in my pocket.
+line @2 greet [pair.band=strangers] : #greet#. You can see the #trees# from the lane. | #greet#. Mind the #mud# if you have come by the river.
+line @3 greet [here.time=dawn] : #greet#. That #bell# sounded too early even for the birds. | #greet#. The #trees# are awake before I am.
+line @4 greet [here.time=dusk|night] : #greet#. The #evening# has nearly slipped away. | #greet#. I was taking one last look at the #rows#.
+line @1 greet.return : #welcome_back#. Did you find the #bank#? | #welcome_back#. I have settled where that #tree# belongs.
+line @2 greet.return [pair.band=friends|family] : Your place on the #green# is still open. | The best #apple# is waiting; I saved it for you.
+line @1 kin.open [pair.kin!=no] : Come along; the #apple# basket is out. | I thought I heard your #boots# on the path.
+line @1 again.open : Back before my #pocket# is empty? | Twice in a day. The #current# has not even turned.
+line @1 farewell : #saying.capitalize#. Keep your footing. | #farewell#. Take the path above the #mud#.
+line @1 farewell.return : I shall be here by the #trees#. Go well. | Until next time; leave me a good #stone#.
+line @1 react.news : #listen.capitalize#. I nearly dropped this #apple#. | Tell it again; I lost the first word under the #bell#.
+line @1 react.news.new : New to me. Who brought that up from the #bank#? | This is fresh to my ears. Is the word from the #road#?
+line @1 react.news.known : I heard part of that by the #green#. | That fills in the bit I missed near the #bell#.
+line @1 react.news.doubt : I would walk down to the #bank# and ask before I believed it. | That account has more turns than the #current#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Come sit by the #trees# awhile. | That is hard news. I can fetch an #apple# or just listen.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves a day on the #green#. | Good news! I might save the finest #apple# for them.
+line @1 answer.how : Well enough. My #boots# and I have been down to the water. | The #apple# crop is on my mind, as usual.
+line @1 ask.how : How are you keeping? Shall we walk by the #bank#? | How has your day gone, away from the #bell#?
+line @1 sympathise : Tell me what happened. I can listen beside the #trees#. | I am sorry. We can sit on the #bank# as long as you need.
+line @1 reassure : A bent #tree# can grow straight again with care. | Take the next step first; watch where the #mud# is deep.
+line @1 decline : I cannot promise that; my #rows# need tending today. | I would come if I could, but the #trees# cannot wait this time.
+line @1 accept_decline : Fair enough. I will take my #boots# elsewhere. | No trouble. I can find another hand for the #rows#.
+line @1 thank : You saved me a trip through the #mud#. Thank you. | That was kind; take the better #apple#.
+line @1 deflect_thanks : I had both paws free of #stones#. | No grand deed. I was going by the #bank# anyway.
+line @1 preclose : The light is going from the #rows#. | I ought to get these #stones# home before the pocket tears.
+line @1 tease [pair.band=friends] : You call that a #hold#? I am still standing. | Those #boots# make you slower, surely.
+line @1 tease.return [pair.band=friends] : Talk all you like; the #green# will settle it. | I heard that. My #pocket# is full enough to answer.
+line @1 ack : #bc_fair_enough#. I will look at the #trees#. | #bc_right#. Down by the #bank#, then.
+line @1 give.advice : Give the #roots# water before you admire the leaves. | Keep your footing on the #bank# and take your time.
+line @1 warn [world.bandits=near] : Stay on the broad road. The #bank# is too lonely now. | Trouble is near; keep your #boots# where other paws have gone.
+scene third_stone
+when topic=pastimes
+does tell.self / react.self / assess
+a : I found a third #stone# smooth as an egg today. | The #current# worked one pebble nearly round.
+b : Why the third? | How long does that take?
+a : Three fit my paw, and the fourth falls out of my #pocket#. | Longer than I can stand still; the river has the patience.
+
+scene orchard_spacing
+when topic=work
+does tell.self / react.self / assess
+a : If I set the #rows# too close, grown trees will steal one another's light. | I keep stepping out the distance between future #trees#.
+b : How far apart will you plant them? | Have you put any in yet?
+a : Far enough to carry a basket through when the #roots# spread. | One at a time. I would rather set one well than crowd five.
+
+scene sharp_apple
+when topic=food here.season=summer|autumn
+does tell.self / react.self / assess
+a : That #apple# wakes up your whole mouth. | I saved an #apple# with the first sharp taste of the season.
+b : Is it sweet too? | Will you share it?
+a : After the first bite. Then it turns sweet. | Half for you, half for me; mind the #pocket# stones.
+
+scene friendly_hold
+when topic=pastimes
+does tell.self / react.self / assess
+a : I learned a new #hold# on the green and landed on my back. | A bout on the #green# makes an afternoon go quickly.
+b : Did you try it again? | Who won?
+a : At once. It worked better after I saw how to fall. | We both had grass in our fur; that counts as even.
+
+scene boot_tracks
+when topic=weather here.weather=rain|storm
+does tell.self / react.self / assess
+a : The #mud# keeps a print of every #boot# on this lane. | Rain has filled the #rows# till I cannot see the ruts.
+b : Can you tell whose tracks they are? | Will the trees mind it?
+a : Some. Mine turn toward every patch of gravel. | The #roots# want water; too much at once can drown them.
+
+scene evening_light
+when topic=weather here.season=summer here.time=dusk
+does tell.self / react.self / assess
+a : This #evening# makes the #bank# look longer than it is. | The last light catches the tops of the #trees#.
+b : Is that why you stayed out? | Will you go in soon?
+a : I like one more turn by the water before supper. | Once the light has left the #rows#. Nearly there.
+
+scene waking_bell
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : That #bell# found me under the blanket again. | I can hear the #bell# before I can open my eyes.
+b : Does it always wake you? | Would you rather sleep later?
+a : Every time. It might be calling the #trees# too. | Just once. The #roots# can wait until I have eaten.
+
+scene river_curve
+when topic=home here.region=coldwater
+does tell.self / react.self / assess
+a : The #bank# bends where the stones are easiest to find. | I know the #current# by the sound it makes at the turn.
+b : Will you show me the spot? | Does the sound change?
+a : Come after the work is done. Bring a sound #pocket#. | When the water rises it grows louder; the little stones vanish.
+
+scene pocket_seam
+when topic=pastimes
+does tell.self / react.self / assess
+a : I mended my #pocket# twice this month. | A smooth #stone# escaped through a hole in my seam.
+b : What made the hole? | Did you find it?
+a : Too many stones, I fear. I kept the newest one. | By the #bank#, where I first picked it up. A lucky turn.
+
+scene small_seedling
+when topic=work here.season=spring|summer
+does tell.self / react.self / assess
+a : A young #tree# needs a guard around its stem. | I set a little ring around the #roots# so paws stay clear.
+b : What are you guarding it from? | Will that help it grow?
+a : A cart wheel, a hungry mouth, a careless #boot#. | It will keep the #mud# from covering the first leaves.
+
+scene wide_orchard
+when topic=dreams
+does tell.self / react.self / assess
+a : I picture #rows# long enough to walk before breakfast is cold. | One day I want #trees# all the way to the far fence.
+b : Would you tend them alone? | Why so many?
+a : No. There is work enough for a whole household. | More fruit than I can eat; the rest can fill other baskets.
+
+scene polished_gift
+when topic=friends
+does tell.self / react.self / assess
+a : A little #stone# makes a better gift when you found it yourself. | I choose a #stone# by how it rests in another paw.
+b : Do you give many away? | How can you tell which one fits?
+a : Only the ones I would miss from my own #pocket#. | I hand over two. The right one stays held a moment longer.
+
+scene price_of_fruit
+when topic=prices
+does tell.self / react.self / assess
+a : A basket of fruit should cost what it took to grow among the #trees#. | I watched someone price an #apple# by the shine alone.
+b : How would you measure that? | Did you buy one?
+a : Count the seasons, the watering, and the bruised ones. | No. The dull one beside it tasted better.
+
+scene new_boots
+when topic=pastimes
+does tell.self / react.self / assess
+a : My #boots# still shine, though the lane is doing its best. | I wore #boots# straight through the first muddy stretch.
+b : Are they comfortable? | Were they ruined?
+a : Better after a long walk; I will get there. | Only the shine. The soles know the road now.
+
+scene festival_bout
+when topic=festival
+does tell.self / react.self / assess
+a : The festival gave us a clear #green# for wrestling. | I would trade half the cakes for one more bout on the #green#.
+b : Did anyone put you down? | Were the cakes poor?
+a : Yes, and I went back laughing. That is the point. | Good cakes. I simply like the #hold# more.
+
+scene roots_and_stones
+when topic=work
+does tell.self / react.self / assess
+a : Before I plant, I pull the big #stones# away from the #roots#. | A #stone# looks fine in a hand and poor under a sapling.
+b : Do you keep them all? | Does one stone matter?
+a : Only the smooth ones. I leave the rest beside the #rows#. | It can turn a root aside; better move it first.
+
+scene honest_answer
+when topic=smalltalk
+does tell.self / react.self / assess
+a : If I think a plan will fail, I say so before the #roots# go in. | Someone asked me whether a crooked #row# looked straight.
+b : Does that upset people? | What did you say?
+a : For a moment. Then they can choose what to do. | I said the far end bent left. We pulled the line and fixed it.
+
+story first_smooth_stone [topic=memories self.age>=12]
+  : My first #stone# was rough on one side. I kept turning it in my paw.
+  : I put it back in the #current# and found it a season later, smoother than before.
+  ask : Have you ever given a thing back so it could change?
+  b : Perhaps. I would have to think.
+  : I thought I had lost it. The river had only kept it awhile.
+
+story wrong_row [topic=memories self.age>=12]
+  : I once marked a planting #row# by following my own crooked footprints.
+  : By the far fence I was nearly a whole pace off. I pulled the markers and began again.
+  ask : Would you have left a row like that?
+  b : I might have, if the trees had gone in already.
+  : I was glad the holes were still empty. It cost an hour, not a season.
+
+story wrestling_lesson [topic=pastimes self.age>=12]
+  : I thought a firm #hold# meant squeezing harder than the other wolf.
+  : I learned that shifting one foot did more than all that straining.
+  ask : Where do you think your feet would go?
+  b : Somewhere I could keep my balance.
+  : Just so. Mine were in the #mud# the first time I tried.
+
+rule @bark_stone
+when concept=bark here.region=coldwater
+does aside
+cooldown 8h
+say A round #stone# right here on the path! | This #pocket# has room for one more, surely.
+
+rule @bark_apple
+when concept=bark here.season=summer|autumn
+does aside
+cooldown 8h
+say The #apple# crop smells ready. | That #apple# would be good with supper.
+
+rule @bark_bell
+when concept=bark here.time=dawn
+does aside
+cooldown 9h
+say The #bell# again? I was nearly awake. | The #trees# have heard the #bell# before I have.
+
+rule @bark_green
+when concept=bark here.time=day
+does aside
+cooldown 7h
+say Anyone for a turn on the #green#? | I can show you a #hold# that almost works.
+
+dlg @1 resident.hub : #greet#. I can tell you about the #bank# or the #trees#. | #greet#. Have a seat; I am sorting #stones#.
+dlg @2 resident.hub [topic.meeting=known] : You came back! Did you bring a #stone#? | I remember you. The #apple# basket is by the door.
+dlg @1 resident.job : I help among the #trees# and keep planning more #rows#. | There is always something to clear from the #roots#.
+dlg @1 resident.bye : #farewell#. Keep above the #mud#. | #saying.capitalize#. Come by again.
+graft resident.hub
+choice Why do you collect stones? -> stones
+node stones
+say The #current# does the shaping. I only notice when it has finished.
+mood pleased
+free
+choice Which stone is your favourite? -> favourite
+choice Back to what we were saying. -> hub
+node favourite
+say I have not found it yet. That is why I keep walking the #bank#.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : #greet#. Come see the #stones# I found. | #greet#. There is room to run by the #bank#.
+
+adolescent
+line @1 greet : #greet#. I have been measuring the #rows# again. | #greet#. A bout on the #green# after work?
