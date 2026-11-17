@@ -1,0 +1,424 @@
+# cw122, the evening line (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw122
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier full
+written_for cty_wenna_rainford
+written_by claude-codex-cw-1
+title the evening line
+fits stage=adult|old
+prefers talk=chatty temper=short
+traits temper=short talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk feeds_the_sparrows
+likes spiced_cider evening_line sharp_knife summer_evenings
+dislikes gulls crowds
+fears a_hungry_pig_in_an_open_pen a_family_chance_lost
+hopes a_good_post_for_a_younger_kin a_calm_evening_at_the_lake
+topics work +0.5 family +0.4 pastimes +0.4 travel +0.3 food +0.3 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=blunt tease=dry
+marks oath saying
+persona #self.first# feeds the #sparrows# beside the #pen#, keeps a #knife# sharp for yard work, and seeks a quiet #shore# at the end of the day.
+
+words
+oath! = Bristle and bank | Gulls take the noise
+saying! = Feed the little mouths before they ask | A taut line needs a patient paw
+sparrow = sparrow | small brown bird
+sparrows = sparrows | small brown birds
+crumb = crumb | bread crumb
+crumbs = crumbs | bread crumbs
+gull = gull | loud lake gull
+gulls = gulls | screeching gulls
+bird = bird | shore bird
+birds = birds | shore birds
+pen = pen | pig yard
+gate = gate | yard gate
+gates = gates | yard gates
+fence = fence | rough rail
+pig = pig | young pig
+pigs = pigs | yard herd
+sow = sow | mother pig
+trough = trough | feeding trough
+feed = feed | grain for the pigs
+straw = straw | dry bedding
+bucket = bucket | feed bucket
+knife = knife | sharp blade
+edge = edge | keen edge
+stone = stone | sharpening stone
+mud = mud | yard muck
+boots = boots | work boots
+line = line | fishing line
+hook = hook | fishing hook
+float = float | small bobber
+rod = rod | fishing rod
+water = water | lake water
+lake = lake | Glasswater
+shore = shore | lake shore
+reed = reed | shore reed
+reeds = reeds | shore reeds
+wind = wind | lake breeze
+evening = evening | long dusk
+sun = sun | last light
+cup = cup | clay cup
+cider = cider | spiced cider
+spice = spice | warm spice
+bread = bread | warm loaf
+market = market | stalls
+price = price | asking cost
+coin = coin | pay
+road = road | high road
+house = house | great house
+post = post | service post
+child = child | younger child
+kin = kin | family
+crowd = crowd | press of folk
+quiet = quiet | stillness
+count = count | tally
+
+any
+opinion @1 houses against 1 : I want a fair #post# for a young #kin#, though I do not trust a #house# to notice them. | A House should see the worker before it counts the #pigs#.
+opinion @1 merchants against 2 : The #price# climbs while my #bucket# holds the same #feed#. | A seller sees the #coin# and forgets what it took to earn it.
+opinion @1 newcomers against 1 : I will judge a new hand by the #gate# they leave shut. | There is little #work# to divide; a fine story will not enlarge it.
+opinion @1 city against 1 : A city #crowd# would leave me wanting the #shore#. | I can hear a #gull# here; at least I know which noise to blame.
+opinion @1 festivals mixed 1 : I like the first song and leave when the #crowd# presses in. | A festival gives the #sparrows# plenty of #crumbs# afterward.
+opinion @1 road mixed 0 : The #road# brings work and strangers in the same #bucket#. | I will walk it for family, though I prefer the #shore# path.
+opinion @1 watch mixed 0 : The Watch can help at an open #gate# if they arrive promptly. | I would give them a straight count before a rumour.
+opinion @1 dole mixed 0 : A hungry #child# needs #bread#; I will not argue over that. | A job that fills a #trough# would do more in the long run.
+opinion @1 strangers mixed 0 : I will offer a #cup# once I know why someone came. | A stranger can keep their story until they have helped shut the #gate#.
+opinion @1 times against 1 : The #feed# costs more #coin# every season. | A good #post# for young hands is harder to find than it ought to be.
+
+grown
+line @1 greet : #greet#. The #sparrows# have had their #crumbs#; what brings you? | #greet#. Watch the #gate# while I finish this #count#.
+line @2 greet [pair.band=strangers] : #greet#. Say where you came from and why. | #greet#. Pull that #pen# gate fast when you pass.
+line @3 greet [pair.band=friends|family] : I have #cider# if you want a #cup#. | Come walk toward the #shore# when the #pigs# settle.
+line @4 greet [self.working=yes] : #greet#. I have a #trough# to fill before we stand talking. | Speak as we carry the #feed#.
+line @5 greet [here.time=dawn] : #greet#. The #sparrows# are already at the #fence#. | #greet#. The #pigs# have started their racket.
+line @6 greet [here.time=dusk|night] : #greet#. I can set down the #rod# to hear this. | #greet#. I am about to shut the #gate#.
+line @1 greet.return : Back from the #road# already? | The #sparrows# have found the last #crumb# since you left.
+line @2 greet.return [pair.band=friends|family] : I kept a #cup# clean for you. | Join me by the #shore# if the light holds.
+line @3 greet.return [self.working=yes] : You caught me at the #trough# again. | Let me make this last #count#, then speak.
+line @1 kin.open [pair.kin!=no] : There you are. Take a #cup#. | I have a thought about that #post#; come near.
+line @1 again.open : You have crossed this #gate# twice today. | I have scarcely put the #bucket# down since we spoke.
+line @1 hail : Here, mind that loose #reed# by the #shore#. | You are just in time to see the #birds# gather.
+line @1 farewell : #farewell#. Do not leave the #gate# swinging. | #saying.capitalize#. Walk clear of the #mud#.
+line @1 farewell.return : Take the #road# carefully. | I will be near the #pen# tomorrow.
+line @2 farewell [here.time=night] : The #shore# path is dark now. | Keep the #rod# clear of anyone's #boots#.
+line @1 react.news : Let me hear the facts before the rumour. | Wait until I set this #knife# safely aside.
+line @1 react.news.new : That word has not crossed this #gate# before. | Who brought it down the #road#?
+line @1 react.news.known : The #market# carried a fragment of that earlier. | That finishes an account I heard earlier.
+line @1 react.news.doubt : Show me who counted it; I do not trust a loose total. | A #float# can dip for weeds too. I want more proof.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is cruel. Sit away from the #crowd#. | I am sorry. The #pen# can stand without me while we talk.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I hope it opens a useful #post#. | I will raise a #cup# to that tonight.
+line @1 answer.how : The #pigs# are loud, but I am well. | I need an #evening# without #gulls#.
+line @1 answer.how.busy [self.working=yes] : A stubborn #gate# took time from the #feed# and #straw#. | I can answer while I carry this #bucket#.
+line @1 ask.how : Has anyone left you a moment to yourself? | Did the #road# leave you any patience?
+line @1 sympathise : The edge of the #crowd# is quieter; I will listen there. | Speak without dressing it up; I am listening.
+line @1 reassure : A #line# can be cast again after a poor throw. | Secure the #gate# nearest you, then choose the next task.
+line @1 decline : No. The #pen# needs me until it is sound. | I will not say yes and leave you waiting.
+line @1 accept_decline : I heard your choice. We can go on. | Very well. The #cup# can stay on the table.
+line @1 thank : You saved me a second trip to the #trough#. | That help was worth more than a kind word.
+line @1 deflect_thanks : A #crumb# was left, and the birds were there. | The #bucket# was already in my paw.
+line @1 preclose : I want the #gate# secured before I go. | The #sun# has left the #shore#; I should head in.
+line @1 tease [pair.band=friends] : Your #float# has more patience than you. | The #sparrows# have learned to wait more quietly.
+line @1 tease.return [pair.band=friends] : Keep that #hook# out of my sleeve next time. | I will ask the #gulls# to judge your wit.
+line @1 ack : #bc_right#. I will check the #fence#. | #bc_fair_enough#. I have the #count#.
+line @1 give.advice : Sharpen the #knife# before you open the #feed# sack. | Fish beside the #reeds# when the #wind# is gentle.
+line @1 warn [world.bandits=near] : Keep company on the #road# while trouble is near. | The #shore# is no place to be alone after dark.
+scene sparrows_before_pigs
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : The #sparrows# arrive before I open the #pen#. | I keep a few #crumbs# where the #birds# can find them without entering the yard.
+b : Do they know your routine? | Do the pigs chase them?
+a : They are at the #fence# as soon as I come. | Only if a #bird# lands by the #trough#.
+
+scene gulls_too_loud
+when topic=home
+does tell.self / react.self / assess
+a : The #gulls# make a #crowd# of their own over the #shore#. | The #sparrows# at the #fence# make a gentler racket.
+b : Do they steal the crumbs? | Do you try to drive them off?
+a : If I leave the #bread# exposed. | I move farther from the #water#.
+
+scene feed_count
+when topic=work
+does tell.self / react.self / assess
+a : Before any #feed# is poured, I want every #pig# accounted for. | A missing #pig# matters more than an empty #trough# for one minute.
+b : Do they stand still? | Where do you look first?
+a : Never, so I learn their shapes. | At the #gate# and along the #fence#.
+
+scene sound_gate
+when topic=work
+does tell.self / react.self / assess
+a : I pull the #gate# once after I latch it. | A #pen# is only secure if the #fence# behind it is sound.
+b : Does that catch mistakes? | Do you inspect every rail?
+a : More than I like to admit. | The low ones where a #pig# can press.
+
+scene dry_straw
+when topic=work
+does tell.self / react.self / assess
+a : I put dry #straw# beyond the #trough# where it will last. | A #sow# will move her own bedding if I leave it in a heap.
+b : Do you spread it for her? | Does it stay clean?
+a : The first layer. She finishes the rest. | Until wet #boots# bring #mud# across it.
+
+scene sharp_knife
+when topic=work
+does tell.self / react.self / assess
+a : A sharp #knife# opens a #feed# sack without a tug. | Before work grows loud, the #edge# gets a look.
+b : Do you keep a spare? | Do you sharpen it there?
+a : One is enough if I care for it. | On a #stone# after work.
+
+scene slow_sow
+when topic=work
+does tell.self / react.self / assess
+a : I give a #sow# room to see me before I enter her #pen#. | A quick step near new young can make the whole yard loud.
+b : Does she let you pass? | Do you speak to her?
+a : If I keep the #bucket# low. | Quietly, so she knows where I am.
+
+scene yard_market
+when topic=prices
+does tell.self / react.self / assess
+a : A buyer names a #price# after seeing the #pigs#. | I will not let a #market# tale set the worth of an animal I raised.
+b : Do you bargain? | What do you tell them first?
+a : Once, with a clear count. | How it has eaten and grown.
+
+scene evening_cast
+when topic=pastimes
+does tell.self / react.self / assess
+a : I cast a #line# when the #pen# is shut for the #evening#. | A #float# on still #water# gives my paws somewhere to rest.
+b : Do you catch much? | Do you fish alone?
+a : Some nights nothing. I still go. | Often. A quiet companion is welcome.
+
+scene reed_line
+when topic=pastimes
+does tell.self / react.self / assess
+a : I set the #float# beside the #reeds#, away from the #gulls#. | A #hook# can catch a #reed# if I throw carelessly.
+b : Do fish hide there? | Can you free the line?
+a : Sometimes. I wait and watch. | If I do not yank it.
+
+scene lake_wind
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : A summer #wind# off the #lake# cools the #pen# smell. | The long #evening# leaves time for one more cast.
+b : Is the water calm then? | Do you stay late?
+a : Some days. I watch for a patch without ripples. | Until the last #sun# is off the shore.
+
+scene cider_after_shift
+when topic=food
+does tell.self / react.self / assess
+a : I like #cider# with enough #spice# to wake a tired nose. | A warm #cup# belongs after the #gate# is shut.
+b : Do you make it strong? | Do you share it?
+a : Not if tomorrow asks me to keep a clear head. | If there is another #cup#.
+
+scene family_post
+when topic=family
+does tell.self / react.self / assess
+a : I would like one young #kin# to find a sound #post# one day. | A #house# could employ a careful worker regardless of family wealth.
+b : Would you ask for them? | Do they want that life?
+a : I would, if they asked me. | That is theirs to decide.
+
+scene house_gate
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I have crossed many #gates# for work, but a great #house# has never opened one for me. | If a #post# came to someone in my family, I would want it to be fair.
+b : Would you trust the offer? | What would you ask first?
+a : I would read its terms. | The hours and who answers for them.
+
+scene crowded_festival
+when topic=festival
+does tell.self / react.self / assess
+a : I can hear a festival song from outside the #crowd#. | I leave when too many paws press near the stalls.
+b : Do you miss the dancing? | Where do you go?
+a : A little. I keep the song. | Toward the #shore# where I can breathe.
+
+scene summer_shore
+when topic=home here.region=coldwater
+does tell.self / react.self / assess
+a : The #shore# is broad enough for a quiet #line# after supper. | I know the #reeds# where the #gulls# make the least racket.
+b : Is that a secret place? | Do you bring anyone?
+a : No. Anyone can find it if they walk slowly. | Sometimes a friend with patience.
+
+scene cup_in_silence
+when topic=friends
+does tell.self / react.self / assess
+a : A friend can hold a #cup# beside me without making a speech. | I talk enough at the #pen#; at the #shore# I can be quiet.
+b : Does that feel companionable? | Do you tell them when you worry?
+a : More than a crowded table does. | When I know what the worry is.
+
+scene gull_at_hook
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #gull# once stared at my #hook# as if it owned the #lake#. | I keep the bait low until the #line# is ready to cast.
+b : Did it take anything? | Do they follow you?
+a : No. I looked back at it. | Only when I have food in hand.
+
+scene pen_in_rain
+when topic=weather here.weather=rain|storm
+does tell.self / react.self / assess
+a : Rain makes the #mud# deep around the #gate#. | I set the #bucket# on a dry board before I bring out #feed#.
+b : Do the pigs mind? | Does the board stay put?
+a : They mind an empty #trough# more. | If I wedge it behind the #fence#.
+
+scene repairing_rail
+when topic=work
+does tell.self / react.self / assess
+a : I replace a weak #fence# rail before a #pig# breaks it. | A fresh post is cheaper than searching the #road# for a loose animal.
+b : Do you do that alone? | Can you spot a weak rail?
+a : With another paw for the heavy end. | The #mud# marks where they push.
+
+scene knife_on_stone
+when topic=pastimes
+does tell.self / react.self / assess
+a : I draw the #knife# over a #stone# when the #pen# falls quiet. | A clean #edge# means less force on the next #feed# sack.
+b : Does that relax you? | What tells you the edge is ready?
+a : More than the #gulls# do. | A light cut on scrap cloth tells me.
+
+scene late_sparrows
+when topic=day here.time=dusk
+does tell.self / react.self / assess
+a : The #sparrows# take their last #crumbs# before the #sun# leaves. | I do not put #bread# out after dark; the #gulls# find it first.
+b : Do they return tomorrow? | Do you count them?
+a : The same bold ones, I think. | No. The #pigs# are enough to count.
+
+scene feed_for_winter
+when topic=season here.season=winter
+does tell.self / react.self / assess
+a : Winter asks more #feed# for the same #pigs#. | I keep #straw# dry so a #sow# can settle away from the cold #gate#.
+b : Do the sparrows stay? | Does the pen freeze?
+a : A few wait for #crumbs#. | At the edge if I leave #water# too long.
+
+scene market_words
+when topic=prices
+does tell.self / react.self / assess
+a : I have heard buyers praise a #pig# then offer less #coin#. | I state the #count# and let the #market# decide if it can pay.
+b : Do you walk away? | Does anyone agree at once?
+a : If the price is foolish. | The honest ones do.
+
+scene road_to_yard
+when topic=travel
+does tell.self / react.self / assess
+a : The #sparrows# mark my turn toward the yard better than a sign. | The first #gate# is easier to find than the last on a misty morning.
+b : Do you walk before dawn? | Do you ever get lost?
+a : When the #pigs# need me. | Not there. I know each #fence#.
+
+scene shared_supper
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse# and I sit with #cider# once our work has ended. | We can share a quiet #cup# without discussing every #pig#.
+b : Do you leave the yard behind? | Do you make plans then?
+a : Until the yard calls for us again. | Sometimes, for the younger #kin#.
+
+scene watched_birds
+when topic=dreams
+does tell.self / react.self / assess
+a : I would like a young #kin# to have choices beyond the #pen#. | A sound #post# could open a #road# my family has not walked.
+b : Would you miss them? | Would you advise them to go?
+a : Of course. I would still help pack. | If they wanted the work.
+
+story open_gate [topic=work self.age>=25]
+  : I found a #gate# closed but unlatched after the #feed# was carried in.
+  : I counted the #pigs# before checking the #fence# beyond it.
+  ask : Had one escaped?
+  b : You would have seen the gap quickly.
+  : None had. I fastened the #gate# and asked everyone to pull it once after closing.
+
+story small_sparrow [topic=memories self.age>=25]
+  : One #sparrow# waited below the #fence# while the others took the #crumbs#.
+  : I set a piece of #bread# farther away, where it could reach it alone.
+  ask : Did it take the bread?
+  b : Once the other birds moved off.
+  : It did. I watched from the #pen# until it flew.
+
+story lost_float [topic=pastimes self.age>=25]
+  : My #float# vanished beside the #reeds# and I thought I had a catch.
+  : I pulled gently and found the #hook# caught in an old stem.
+  ask : Did you lose the line?
+  b : A patient pull might free it.
+  : I worked it loose and sat another hour without a fish.
+
+story cider_spice [topic=food self.age>=25]
+  : I added too much #spice# to a pot of #cider# after a tiring day.
+  : Nobody wanted the first #cup#, so I thinned it and warmed it again.
+  ask : Was the second cup better?
+  b : The smell must have filled the room.
+  : It was. Now I measure #spice# while still standing by the pot.
+
+story quiet_post [topic=family self.age>=25]
+  : I heard of a #post# with better pay and asked what it required.
+  : The hours were longer than the promise made it sound, so I brought the terms home to think on.
+  ask : Did you take the work?
+  b : You would want the hours clear first.
+  : No. I learned to ask that question before any family member agrees.
+
+rule @bark_sparrow
+when concept=bark
+does aside
+cooldown 7h
+say The #sparrows# have found the #crumbs#. | Leave that bit of #bread# by the #fence#.
+
+rule @bark_gate
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say Pull the #gate# once after latching it. | The #trough# is nearly full.
+
+rule @bark_gull
+when concept=bark here.time=day
+does aside
+cooldown 9h
+say That #gull# can scream at someone else. | The #sparrows# are quieter company.
+
+rule @bark_shore
+when concept=bark here.time=dusk
+does aside
+cooldown 10h
+say Enough light for one cast of the #line#. | The #shore# will quiet soon.
+
+rule @bark_knife
+when concept=bark
+does aside
+cooldown 11h
+say The #knife# wants a few strokes on the #stone#. | I will keep this #edge# sound.
+
+rule @bark_cider
+when concept=bark here.time=night
+does aside
+cooldown 12h
+say A warm #cup# after that shift. | The #cider# needs a little #spice#.
+
+dlg @1 resident.hub : #greet#. The #gate# is shut; I can hear you. | #greet#. Tell me what you came to ask.
+dlg @2 resident.hub [topic.meeting=known] : Here again? Step away from the #pen# so we can talk. | I know you. Is the #road# treating you fairly?
+dlg @3 resident.hub [here.time=night] : #greet#. The #shore# is dark now; come inside. | My #cup# can wait. Say what brought you.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Give me a straight account and keep clear of the #gate#. | I can listen if you lower your voice.
+dlg @1 resident.job : I keep the #pigs# fed, the #trough# filled, and the #fence# sound. | The #pen# is my work; the #shore# is where I rest.
+dlg @1 resident.bye : #farewell#. Leave the #gate# latched. | #saying.capitalize#. Mind the #mud# on the #road#.
+dlg @1 master.learn [here.teaches=yes] : I teach the yard by doing. Which task do you need to learn? | This trade starts with watching the herd. Ask what you need.
+dlg @1 master.work : Count the #pigs#, fill the #trough#, replace wet #straw#, and close the #gate#. | Most days are steady work, with a sharp eye on the #fence#.
+dlg @1 master.wages : Learning beside me brings no wage; what you make is yours to sell. | No pay comes with training; the things you make are yours to sell.
+dlg @1 master.takes [here.take_on=yes] : Only one learner can work with me, and I must trust them. Ask when you mean it. | I have room for one apprentice whose work I have seen.
+dlg @2 master.takes [here.take_on=no] : The apprenticeship is closed at present. #here.take_on_why# | The place is closed for now. #here.take_on_why#
+dlg @1 master.taken : Good. Start by counting the #pigs# at the #gate#. | Settled. Bring dry #boots# and a patient paw.
+dlg @1 master.refused : #topic.why# | Not today. #topic.why#
+dlg @1 master.bye : #farewell#. Keep the #gate# sound. | #farewell#. Ask me again when the #pen# is quiet.
+graft resident.hub
+choice Why do you feed the sparrows? -> sparrows
+node sparrows
+say They wait by the #fence# for the #crumbs#. They are quieter than the #gulls#.
+free
+choice Do they recognize you? -> recognize
+choice Back to what we were saying. -> hub
+node recognize
+say They come when I carry the #bucket#. I suspect they know the #bread# more than my face.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice How do I keep a sow calm? -> sow
+node sow
+say Let her see you, keep the #bucket# low, and leave space beside her young.
+free
+choice What if she blocks the gate? -> blocked
+choice Back to the lesson. -> learn
+node blocked
+say Wait. A #sow# that can move in her own time is easier to work beside.
+choice Back to the lesson. -> learn
+choice Goodbye. -> bye
