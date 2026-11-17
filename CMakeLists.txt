@@ -490,3 +490,6 @@ add_test(NAME talk_equiv COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/talk_
 add_test(NAME talk_coverage COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/Tests/talk_coverage_check.py ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(talk_coverage PROPERTIES DEPENDS talk_check)
 add_test(NAME talk_p7_rules COMMAND python3 -m unittest test_talk_p7 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
+# Phase 8 (doc 84 §33): the shared lines keep their promises (move lines, symbols defined in every grammar, closings
+# short, feelings gated to the claim, news to one who hadn't heard never "I'd heard", no "they" for one known wolf).
+add_test(NAME talk_p8_rules COMMAND python3 -m unittest test_talk_p8 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)

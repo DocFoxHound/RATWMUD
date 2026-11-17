@@ -1357,6 +1357,17 @@ binds x=self.spouse
 does tell.self
 say #x.name# snores. #x.they.capitalize# always did.
 
+rule mv_detail
+when concept=talk.crime
+does answer.detail
+say Only what I heard.
+
+rule mv_detail_none
+when concept=talk.lore
+does answer.detail
+asserts none
+say Now there's a question.
+
 scene mv_scene
 when topic=smalltalk
 does give.opinion / agree / tease
@@ -1400,6 +1411,17 @@ a : Like your coat.
     expect(sad.info.size() == 1 && sad.info[0].tone == "grave" && sad.info[0].invites == std::vector<std::string>({"react.news"}) &&
                sad.info[0].owes.empty() && sad.info[0].asserts == std::vector<std::string>({"topic"}),
            "a soft obligation (invites), a written tone, and asserting with no claim kind: the topic");
+    // Phase 8: answer.detail asserts the topic's claim by its move's default; `asserts none` says nothing is passed on.
+    auto crime = moment("talk.crime");
+    crime.facts["topic.claim_kind"] = "theft";
+    auto lore = crime;
+    lore.concept = "talk.lore";
+    const auto detail = lib.pick(crime, 1, None, {});
+    const auto evasion = lib.pick(lore, 1, None, {});
+    expect(detail.info.size() == 1 && detail.info[0].asserts == std::vector<std::string>({"theft"}),
+           "an answer passes the topic's claim on by default");
+    expect(evasion.info.size() == 1 && evasion.info[0].asserts.empty() && lib.find("mv_detail_none")->asserts == Entry::NeverAsserts,
+           "`asserts none`: not even by default");
     auto small = moment("talk.smalltalk");
     const auto* scene = lib.find("mv_scene");
     const auto talk = lib.render(*scene, small, 1);
@@ -1772,6 +1794,11 @@ say No harm done.
 rule bw_return
 does return
 say As I was saying.
+scene bw_well
+when topic=smalltalk here.weather=clear
+does tell.self / react.self
+a : The well's been sweet all week.
+b : Sweeter than it was last summer, by far.
 )", "beats.talk", problem), problem);
     const Freshness fresh{None, {}};
     // 1. Each beat asks the facts again: the answer is chosen from the moment as it is when it comes due.
@@ -1811,6 +1838,28 @@ say As I was saying.
         lifted.facts["here.weather"] = "clear";
         const auto next = lib.next(c, [&](int, int) { return lifted; }, fresh);
         expect(c.dropped == 1 && (!next || next->text != "Thick as wool."), "the fog lifted: the scene's later turn is dropped");
+    }
+    // 2b. Phase 8 (§8.12.3): nor is a scene's later turn said when another speaker has said its words in the place since
+    // the scene was chosen (two talks there chose it within the hour); what was owed stays owed, and is answered.
+    {
+        auto q = moment("talk.smalltalk");
+        q.facts["here.weather"] = "clear";
+        Conversation c;
+        c.seed = 1;
+        const auto first = lib.begin(c, q, fresh);
+        expect(first && first->entry == "bw_well", "the well scene opens: " + (first ? first->entry : std::string("none")));
+        Conversation clear = c;
+        Freshness quiet = fresh;
+        quiet.collides = [](const std::string&, const std::string&) { return false; };
+        const auto said = lib.next(clear, [&](int, int) { return q; }, quiet);
+        expect(said && said->text == "Sweeter than it was last summer, by far." && clear.dropped == 0,
+               "nobody else said it here: its turn is said");
+        Freshness heard = fresh;
+        heard.collides = [](const std::string& words, const std::string&) { return words.rfind("Sweeter than", 0) == 0; };
+        const auto next = lib.next(c, [&](int, int) { return q; }, heard);
+        expect(c.dropped == 1 && next && next->text != "Sweeter than it was last summer, by far.",
+               "another said its words here within the hour: the rest of the scene is dropped, and the talk goes on: " +
+                   (next ? next->text : std::string("nothing")));
     }
     // 3. Broken off (§8.10): conv.interrupt, a break line by the one named, and the talk ends; with none fitting, it ends.
     {

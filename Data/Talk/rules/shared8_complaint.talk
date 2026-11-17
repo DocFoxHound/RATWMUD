@@ -1,0 +1,238 @@
+# The shared lines, Phase 8 session 1 (Docs/Design/84 §33, §14.1): a grumble answered. Move lines (no concept) doing
+# react.complaint, the core move talk_check --coverage found answered nowhere at Phase 7: what any tell.complaint (and
+# a told hardship read as one) is owed when nothing written for it holds. Its variants are agree (the grumble shared)
+# and disagree (not shared: softened and explained, as a dispreferred answer is, §7.2).
+#
+# Grumbles are about prices, the Times, the house, work, the weather, a levy, a neighbour's noise, the road: the lines
+# are gated to the topic where they say something of it, and to the speaker's own lot where they speak of it (one who
+# has no home has no "ours"; the rich don't count pennies). Short where often said; the dialect through #grumble#,
+# #notsobad#, #hedge#, #annoyed#, #skint#, #toffs#, #money#, #work#...
+
+## Any grumble
+
+rule s8c_agree_any
+does react.complaint.agree
+say #grumble#. | #grumble#! | Aye. Same here. | I hear you. | Isn't it always. | You and me both.
+
+rule s8c_agree_any2
+does react.complaint.agree
+say Same for all of us. | Never a good day, is there? | That's the way of it. | #annoyed#, aye. | Don't start me.
+
+rule s8c_any
+does react.complaint
+say Mm. | That's how it goes. | There's always something. | So it goes, I suppose. | Ah, well.
+
+# Who says it: #s8_gripe# (plain.grammar), the speaker's own way of sharing a grumble (the warm pity it, the dry make a
+# joke of it, a pup calls it unfair), the most specific that holds; these rules rank with the two above.
+rule s8c_agree_who
+does react.complaint.agree
+say #s8_gripe# | #s8_gripe# | #s8_gripe# | #grumble#.
+
+rule s8c_agree_who2
+does react.complaint.agree
+say #s8_gripe# | #s8_gripe# | I hear you. | Aye. Same here.
+
+rule s8c_disagree_any
+does react.complaint.disagree
+say #hedge#. #notsobad#, surely. | #hedge#. #notsobad#. Chin up. | #notsobad#. You'll see it brighter tomorrow.
+
+rule s8c_disagree_any2
+does react.complaint.disagree
+say #hedge#, but I've known worse, and so have you. | #hedge#. It'll pass. Most things do. | Oh, it's not as bad as all that.
+
+rule s8c_disagree_frank
+does react.complaint.disagree
+when self.honesty=frank
+say I don't see it. It's not so bad as you make out. | Honestly? You'd find something to grumble at in a feast. | You're making a mountain of it.
+
+rule s8c_disagree_content
+does react.complaint.disagree
+when self.drive=content
+say I can't complain, myself. It'll come right. | It suits me well enough, as it is. | #hedge#. I've no complaints, truly.
+
+## The price of things (prices, price_cause, times; and a told price read as a grumble)
+
+rule s8c_prices
+does react.complaint.agree
+when conv.topic=prices|price_cause|times
+say Everything's dear. Everything. | My purse knows it. | #robbery#. | And it's never going back down. | We pay, and we pay.
+
+rule s8c_prices2
+does react.complaint.agree
+when conv.topic=prices|price_cause|times
+say Dear as I've seen it. | Every market, a bit dearer. | Something's got to give. | Who can keep up?
+
+rule s8c_prices_poor
+does react.complaint.agree
+when conv.topic=prices|price_cause|times self.wealth=poor|destitute
+say I'm the same. Counting every penny. | We're #skint# by midweek. | That's my supper, too. | I go without, most days.
+
+rule s8c_prices_comfortable
+does react.complaint.agree
+when conv.topic=prices|price_cause|times self.wealth=comfortable
+say I feel it too, and I'm not badly off. | Even I've started looking twice at the prices. | It pinches, aye.
+
+rule s8c_prices_rich
+does react.complaint.disagree
+when conv.topic=prices|price_cause|times self.wealth=rich
+say #hedge#. It's dear, but it'll settle soon enough. | #hedge#. Prices go up and come down again. | #hedge#; I'd not worry. Markets always turn.
+
+rule s8c_prices_merchant
+does react.complaint
+when conv.topic=prices|price_cause|times self.role=merchant
+say Don't look at me. I pay dear too. | I only pass it on. | You think I like it? My custom's down.
+
+rule s8c_prices_food
+does react.complaint.agree
+when conv.topic=prices|price_cause topic.sort=food
+say Folk have to eat. That's what galls. | Bread shouldn't be a luxury. | It's food. It shouldn't cost like that.
+
+rule s8c_prices_toffs
+does react.complaint.agree
+when conv.topic=prices|price_cause|times self.class=lower
+say #toffs.capitalize# don't feel it. We do. | It's us at the bottom that pays. | Nobody up the hill counts pennies.
+
+## The Times: trade slow, folk buying less, belts tightened
+
+rule s8c_times
+does react.complaint.agree
+when conv.topic=times
+say Hard all round. | Nobody's buying. | We'll all be tightening our belts. | It's thin everywhere.
+
+rule s8c_times_merchant
+does react.complaint.agree
+when conv.topic=times self.role=merchant
+say My till's light too. | You feel it at the counter, don't you? | Slowest I've known.
+
+rule s8c_times_hard
+does react.complaint.agree
+when conv.topic=times world.times=hard|lean
+tone serious
+say Hard times. Nobody's spared. | It's lean, and it'll be leaner. | You can see it in folk's faces.
+
+## Work
+
+rule s8c_work
+does react.complaint.agree
+when conv.topic=work|day
+say Work's work. Never what it should be. | They never let up, do they? | Same old graft. | Never enough hours.
+
+rule s8c_work_boss
+does react.complaint.agree
+when conv.topic=work self.job!=none|child
+say #boss.capitalize#'s the same with me. | Nobody thanks you for it. | And the pay's no better.
+
+rule s8c_work_none
+does react.complaint
+when conv.topic=work self.job=none
+say I'd take any work, myself. | At least you've work to grumble at. | Better than no work at all.
+
+rule s8c_work_levy
+does react.complaint.agree
+when conv.topic=work|smalltalk|day|times
+say Another levy, is it? Typical. | They'd tax the air if they could. | And what do we get for it?
+
+## The house and home
+
+rule s8c_home
+does react.complaint.agree
+when conv.topic=home|family self.homeless!=yes
+say Same at ours. | A house is never quiet. | Always something wants fixing. | Homes. They're never done.
+
+rule s8c_home_noise
+does react.complaint.agree
+when conv.topic=home|smalltalk self.homeless!=yes
+say I can't sleep for it either, some nights. | Walls like paper, these houses. | Nobody thinks of the neighbours.
+
+rule s8c_home_homeless
+does react.complaint
+when conv.topic=home|family self.homeless=yes
+say At least you've a door to grumble at. | I'd take a draughty one. | A roof's a roof.
+
+rule s8c_family
+does react.complaint.agree
+when conv.topic=family
+say Family. You love them, mostly. | Kin, eh. | That's family for you. | They mean well. Mostly.
+
+## The weather, the season, the land
+
+rule s8c_weather
+does react.complaint.agree
+when conv.topic=weather|season|land
+say This weather. | It's been a trying season. | It's never right, is it? | Too much of one thing, never enough of the other.
+
+rule s8c_weather_wet
+does react.complaint.agree
+when conv.topic=weather|season here.outdoors=rain|storm
+say Soaked through, again. | When will it stop? | Everything's damp.
+
+rule s8c_weather_cold
+does react.complaint.agree
+when conv.topic=weather|season here.season=winter
+say It's in my bones, this cold. | Winter drags. | I can't get warm.
+
+rule s8c_weather_hot
+does react.complaint.agree
+when conv.topic=weather|season here.season=summer here.outdoors=clear
+say Too close by half. | I'd give a lot for a breeze. | It saps you, this.
+
+rule s8c_weather_farmer
+does react.complaint
+when conv.topic=weather|season|land self.job=farmer|herder
+say You should see the fields. | The beasts feel it worse. | It's the crops I fret for.
+
+## Health, food, the body
+
+rule s8c_health
+does react.complaint.agree
+when conv.topic=health
+say Aches and pains. We all have them. | My back's the same. | Getting old's no fun. | Rest it, if you can.
+
+rule s8c_health_healer
+does react.complaint
+when conv.topic=health self.job=healer
+say Come and see me. I'll find you something for it. | That wants looking at. | Rest, and keep it warm.
+
+rule s8c_food
+does react.complaint.agree
+when conv.topic=food
+say Nothing worse. | That'd put me off my supper. | There's no excuse for it. | I can't abide that either.
+
+rule s8c_hungry
+does react.complaint.agree
+when conv.topic=food|health|smalltalk|day self.hungry=yes
+say My belly says the same. | I've not eaten right either. | Empty pots all round.
+
+## The road, the Watch, thieves
+
+rule s8c_bandits
+does react.complaint.agree
+when conv.topic=bandits|caravan|travel
+say Somebody ought to do something. | The roads were never this bad. | Every season it's worse. | And not a soldier to be seen.
+
+rule s8c_bandits_guard
+does react.complaint.disagree
+when conv.topic=bandits|crime self.job=guard|soldier
+say #hedge#. We're doing what we can with what we've got. | #hedge#; there's only so many of us, and a lot of road. | Begging your pardon, we're out there every night.
+
+rule s8c_crime
+does react.complaint.agree
+when conv.topic=crime|gossip
+say Locks on everything now. | You can't leave a thing out. | It's not the town it was. | Light fingers everywhere.
+
+rule s8c_crime_watch
+does react.complaint.agree
+when conv.topic=crime|bandits self.job!=guard|soldier
+say Never #watch# about when you want them. | #watch.capitalize#? Asleep, I expect. | And what do #watch# do about it?
+
+## A trouble told in passing: an ankle turned, a cart in the rut, tea gone cold, the day
+
+rule s8c_smalltalk
+does react.complaint.agree
+when conv.topic=smalltalk|day|lore|friends|pastimes|animals|dreams|memories|faith|festival|accent|travel|event|ships|newcomer|life|news|deed|harvest|player|gossip
+say One of those days. | Oh, I know the feeling. | That's rotten luck. | It never comes alone, does it? | That'd try anyone.
+
+rule s8c_smalltalk2
+does react.complaint.agree
+when conv.topic=smalltalk|day|lore|friends|pastimes|animals|dreams|memories|faith|festival|accent|travel|event|ships|newcomer|life|news|deed|harvest|player|gossip
+say Isn't that the way. | Some days are like that. | You can't win. | Of all the luck.

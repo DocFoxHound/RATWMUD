@@ -174,13 +174,13 @@ say {ha=hush} I'd not repeat that, if I were you. | {ha=hush} Hm. I'll keep that
 then other: town.close
 
 rule n7_ga2_sly
-when concept=town.gossip self.honesty=sly
+when concept=town.gossip self.honesty=sly topic.claim_kind!=death|violence|victim
 does ask.detail
 say {ha=eager} And? There's always more. What else? | {ha=eager} Interesting. Who else knows? | {ha=eager} That's worth knowing. Thank you. Very much.
 then other: town.close
 
 rule n7_ga2_chatty
-when concept=town.gossip self.talk=chatty
+when concept=town.gossip self.talk=chatty topic.claim_kind!=death|violence|victim
 does react.news.glee
 say {ha=eager} No! Wait till I tell my sister. | {ha=eager} I knew it! Didn't I say? I said! | {ha=eager} Tell me everything. Slowly. From the start.
 then other: town.close
@@ -188,17 +188,17 @@ then other: town.close
 rule n7_ga2_warm
 when concept=town.gossip self.warmth=warm topic.claim_kind=victim|newcomer|other
 does react.news.sorrow
-say {ha=kind} Oh. Well, I hope they're all right, whatever's what. | {ha=kind} I'll call on #topic.subject#. See how #topic.they# is. | {ha=kind} We shouldn't talk. But oh, #topic.subject#.
+say {ha=kind} Oh. Well, I hope #topic.they#'s all right, whatever's what. | {ha=kind} I'll call on #topic.subject#. See how #topic.they# is. | {ha=kind} We shouldn't talk. But oh, #topic.subject#.
 then other: town.close
 
 rule n7_ga2_cold
-when concept=town.gossip self.warmth=cold
+when concept=town.gossip self.warmth=cold topic.claim_kind!=death
 does react.news
 say {ha=cold} Not my business. | {ha=cold} #bc_and_q# | {ha=cold} Doesn't surprise me.
 then other: town.close
 
 rule n7_ga2_devout
-when concept=town.gossip self.piety=devout topic.claim_kind!=marriage
+when concept=town.gossip self.piety=devout topic.claim_kind!=marriage|death
 does counter
 say {ha=pious} The gods hear tattle too, you know. | {ha=pious} Judge not. Well. A little. | {ha=pious} I'll pray for #topic.subject#. And for us, for listening.
 then other: town.close
@@ -210,37 +210,37 @@ say {ha=plain} I'll keep an ear open. | {ha=plain} I'll make a note of that. | {
 then other: town.close
 
 rule n7_ga2_priest
-when concept=town.gossip self.job=priest topic.claim_kind!=marriage
+when concept=town.gossip self.job=priest topic.claim_kind!=marriage|death
 does counter
 say {ha=pious} I'll not hear it. And nor should you. | {ha=pious} If #topic.subject# needs help, I'll go. If not, I'll not hear another word. | {ha=pious} Words are stones. Be careful where you throw them.
 then other: town.close
 
 rule n7_ga2_old
-when concept=town.gossip self.stage=old
+when concept=town.gossip self.stage=old topic.claim_kind!=death|violence|victim
 does react.news.known
 say {ha=plain} I've heard it all in my time. Most of it twice. | {ha=plain} It'll be forgotten by the next festival. Everything is. | {ha=plain} Ha. Their grandmother was just the same.
 then other: town.close
 
 rule n7_ga2_young
-when concept=town.gossip self.stage=young
+when concept=town.gossip self.stage=young topic.claim_kind!=death|violence|victim
 does ask.detail
 say {ha=pup} What does that mean? | {ha=pup} Is that bad? It sounds bad. | {ha=pup} I'm telling everyone!
 then other: town.close
 
 rule n7_ga2_dry
-when concept=town.gossip self.humour=dry
+when concept=town.gossip self.humour=dry topic.claim_kind!=death|violence|victim
 does react.news.doubt
 say {ha=doubt} And the moon's made of cheese, I suppose. | {ha=doubt} Gossip travels fast. The truth's still putting its boots on. | {ha=doubt} Fascinating. Tell me again, slower, so I can not believe it properly.
 then other: town.close
 
 rule n7_ga2_merry
-when concept=town.gossip self.humour=merry
+when concept=town.gossip self.humour=merry topic.claim_kind!=death|violence|victim
 does react.news.glee
 say {ha=eager} Ha! No! | {ha=eager} Oh, that's too good. Is it true? Don't tell me. Tell me. | {ha=eager} Ha! I'll never look at #topic.subject# the same.
 then other: town.close
 
 rule n7_ga2_nervy
-when concept=town.gossip self.temper=nervy
+when concept=town.gossip self.temper=nervy topic.claim_kind!=death|violence|victim
 does react.news
 say {ha=hush} Don't. If they hear we said it... | {ha=hush} Shh! Not so loud. | {ha=hush} Oh, I wish you hadn't told me. Now I'll have to not tell people.
 then other: town.close
@@ -268,14 +268,14 @@ when concept=town.gossip topic.claim_kind=death
 priority 3
 does react.news.sorrow
 tone grave
-say {ha=dead} Gods. I'd no idea. | {ha=dead} No. I saw them only the other day. | {ha=dead} Dead? #topic.subject#? Oh, that's hard.
+say {ha=dead} Gods. I'd no idea. | {ha=dead} No. Not #topic.them#. Surely not. | {ha=dead} Dead? #topic.subject#? Oh, that's hard.
 then other: town.close
 
 rule n7_ga2_death_devout
 when concept=town.gossip topic.claim_kind=death self.piety=devout
 does react.news
 priority 3
-say {ha=dead} The Bright One keep them. I'll light a candle tonight. | {ha=dead} May they find their rest. | {ha=dead} We'll pray for them at Restday. All of us.
+say {ha=dead} The Bright One keep #topic.them#. I'll light a candle tonight. | {ha=dead} May #topic.they# find rest. | {ha=dead} We'll pray for #topic.them# at Restday. All of us.
 then other: town.close
 
 rule n7_ga2_death_old
@@ -289,7 +289,7 @@ rule n7_ga2_death_cold
 when concept=town.gossip topic.claim_kind=death self.warmth=cold
 does react.news
 priority 3
-say {ha=dead} Hm. Everyone goes. | {ha=dead} I hardly knew them. | {ha=dead} Well. That's that.
+say {ha=dead} Hm. Everyone goes. | {ha=dead} I hardly knew #topic.them#. | {ha=dead} Well. That's that.
 then other: town.close
 
 ## The last word on gossip (the teller; conv.ha says how it was taken)

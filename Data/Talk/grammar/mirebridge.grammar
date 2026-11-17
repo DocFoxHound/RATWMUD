@@ -141,6 +141,24 @@ demur = That's boggy ground | I'd not step there
 doubt = Bog-wind, maybe | Not till I see it dry
 listen = Listen, fen-friend | Hark, fen-friend
 
+# Phase 8 (doc 84 §33): the shared lines' words, as Mirebridge says them. Drafts, to be tuned by ear.
+marvel = Well, sink me sideways | Up out of the mud, that | Now there's an eel I never caught
+pity = Sunk, and no rope | That's deep mud for anyone
+gladnews = Dry ground at last | That's a dry day's news
+uneasy = Something's stirring the mud | I smell bog-gas in that
+grumble = Mud, mud and more of it | Sure as the mizzle
+notsobad = Drier than you'd think | I've waded worse
+dunno = That's all the reeds told me | No more under that mud
+hearsay = The reeds had it, is all | Fen-talk, mind
+howso = Muddy, that. How so | How's that, fen-friend
+rest = Dry rest to the soul | The fen hold the soul gently
+# Greetings and closings for rules/shared8_turns.talk (plain.grammar's s8_* say who; here, the dialect's own).
+s8_hello = Dry feet, fen-friend | Ah, dry feet | Well met, fen-friend | In from the mizzle
+s8_okay = Wade on, then | Go on, fen-friend | The reeds won't wait | Off through the mud
+s8_bye = Stick to the boards | Wade careful | Dry feet, fen-friend | Watch the soft mud
+s8_byeback = And dry feet to you | Mind the boards | Dry boots, now | Wade careful, fen-friend
+s8_nevermind = When it's dry, then | Let it sink | No matter, fen-friend
+
 # Backchannel lines (doc 84 §10.2, Phase 7): plain's short answers ("Good.", "Always.", "It is.") as Mirebridge says them.
 # Drafts, to be tuned by ear; one left out falls back to plain's words.
 bc_good = Dry enough. | Fair-dry.
@@ -160,7 +178,7 @@ bc_lovely = Lovely and dry. | Dry and lovely.
 bc_every_year = Every year, like the floods. | Every year, wet or dry.
 bc_wise = Heron-wise. | Wise, no?
 bc_i_know = Don't I know it. | I know, no?
-bc_so_they_say = So the reeds whisper. | So they say, no?
+bc_so_they_say = So the reeds whisper. | So they say, in the fen.
 bc_again_q = Again? Sink me. | What, again?
 bc_of_course = Course, no? | Of course, fen-friend.
 bc_about_time = About time. Slow as a pool. | High time, no?
@@ -183,7 +201,7 @@ bc_i_hope_so = I hope so, mud allowing. | Hope so, no?
 bc_exactly = Fen-sure. | Exactly, no?
 bc_everything = Mud, eels and all. | The whole bog.
 bc_true = Fen-true. | True, no?
-bc_mostly = Mostly, no? | Mostly, when it's dry.
+bc_mostly = Mostly, aye. | Mostly, when it's dry.
 bc_gladly = Gladly, fen-friend. | Gladly, mud and all.
 bc_fair_enough = Fair-dry, that.
 bc_sorry = Sorry, fen-friend.

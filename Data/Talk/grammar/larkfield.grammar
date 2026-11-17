@@ -145,6 +145,24 @@ demur = I'd not pay that price | Not at that weight
 doubt = I'd weigh that twice | Sounds short-weight to me
 listen = Listen, friend | Here's a thing
 
+# Phase 8 (doc 84 §33): the shared lines' words, as Larkfield says them. Drafts, to be tuned by ear.
+marvel = Now that's worth the stall-fee | Well, there's fresh goods | That's news at any price
+pity = That's a dear price to pay | A bad bargain, for anyone
+gladnews = That's good weight | Now that's a bargain of news
+uneasy = That'll cost us all at the scales | That's ill weight for trade
+grumble = Short-weighed, the lot of us | Don't I know it, by the pound
+notsobad = It weighs lighter than that | I've paid dearer
+dunno = That's the full weight of it | That's all I've got on the scales
+hearsay = Stall-talk, that's all | It came to me across the stalls
+howso = Weigh it out for me | How's that weigh, then
+rest = The scales are even now | Fair weighing to the soul
+# Greetings and closings for rules/shared8_turns.talk (plain.grammar's s8_* say who; here, the dialect's own).
+s8_hello = Good trade to you | Fair price, friend | Ah, a customer | Well met at market
+s8_okay = Sold. Go on | Off to the stalls | Trade waits for nobody | Off you trade, then
+s8_bye = Good trading | Fair weights, friend | Mind the weights | Keep a full purse
+s8_byeback = And good trading | Fair price to you | Full weight, friend | And a full purse
+s8_nevermind = No sale, then | Another market | Fair enough, by weight
+
 # Backchannel lines (doc 84 §10.2, Phase 7): plain's short answers ("Good.", "Always.", "It is.") as Larkfield says them.
 # Drafts, to be tuned by ear; one left out falls back to plain's words.
 bc_good = Full weight. | That's fair-priced.

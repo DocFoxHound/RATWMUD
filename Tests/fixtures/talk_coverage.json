@@ -17,7 +17,7 @@
    "cells": 21600,
    "core": true,
    "holes": 0,
-   "lines": 3
+   "lines": 5
   },
   "accept_invite": {
    "cells": 21600,
@@ -29,7 +29,7 @@
    "cells": 21600,
    "core": true,
    "holes": 0,
-   "lines": 2
+   "lines": 4
   },
   "ack": {
    "cells": 21600,
@@ -58,8 +58,8 @@
   "answer.detail": {
    "cells": 21600,
    "core": true,
-   "holes": 21600,
-   "lines": 0
+   "holes": 0,
+   "lines": 48
   },
   "answer.how": {
    "cells": 21600,
@@ -88,8 +88,8 @@
   "ask.detail": {
    "cells": 21600,
    "core": false,
-   "holes": 21600,
-   "lines": 0
+   "holes": 0,
+   "lines": 26
   },
   "assess": {
    "cells": 21600,
@@ -161,13 +161,13 @@
    "cells": 21600,
    "core": false,
    "holes": 0,
-   "lines": 7
+   "lines": 14
   },
   "farewell.return": {
    "cells": 21600,
    "core": true,
    "holes": 0,
-   "lines": 6
+   "lines": 13
   },
   "give.advice": {
    "cells": 21600,
@@ -197,7 +197,7 @@
    "cells": 21600,
    "core": true,
    "holes": 0,
-   "lines": 1
+   "lines": 7
   },
   "insist": {
    "cells": 21600,
@@ -244,20 +244,20 @@
   "react.complaint": {
    "cells": 21600,
    "core": true,
-   "holes": 21600,
-   "lines": 0
+   "holes": 0,
+   "lines": 43
   },
   "react.news": {
    "cells": 21600,
    "core": true,
-   "holes": 21600,
-   "lines": 4
+   "holes": 0,
+   "lines": 128
   },
   "react.news.doubt": {
    "cells": 21600,
    "core": false,
-   "holes": 21600,
-   "lines": 0
+   "holes": 0,
+   "lines": 9
   },
   "react.self": {
    "cells": 21600,
@@ -333,9 +333,9 @@
   }
  },
  "cells": 1188000,
- "core_holes": 64800,
- "hole_rate": 0.5583030303030303,
- "holes": 663264,
+ "core_holes": 0,
+ "hole_rate": 0.4673939393939394,
+ "holes": 555264,
  "kinds": 150,
  "moves_owed": 55,
  "topics": 36

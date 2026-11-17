@@ -141,6 +141,24 @@ demur = That's chaff to me | I'd not pick that
 doubt = Sounds wormy | Not till it's ripe
 listen = Listen, bless you | Here
 
+# Phase 8 (doc 84 §33): the shared lines' words, as Southmeadow says them. Drafts, to be tuned by ear.
+marvel = Well, bless the apples | Pick me, now | Bless me, that's new fruit
+pity = Blight on a good tree, that | That's a sour harvest
+gladnews = That's ripe news | Fruit on the bough, that
+uneasy = That's blight on the wind | I don't like the smell of that crop
+grumble = Blighted, all of it | Wormy as last year, bless you
+notsobad = There's fruit on it yet | I've seen thinner harvests
+dunno = That's all the gleaning | Not a pip more, bless you
+hearsay = Field-talk, that's all | Heard it over the hedge
+howso = Ripe, is it? How so | How's that, bless you
+rest = Soft earth to the soul | Rest easy in the orchard
+# Greetings and closings for rules/shared8_turns.talk (plain.grammar's s8_* say who; here, the dialect's own).
+s8_hello = Harvest to you, neighbour | Ah, bless you | Good harvest, friend | Well, bless me, hello
+s8_okay = Off you pick, then | Bless you, go on | The furrows won't wait | Ripe time to go
+s8_bye = Ripe days, neighbour | Bless you, then | Mind the furrows | Good gleaning
+s8_byeback = And ripe days to you | And bless you | Good gleaning to you | Mind the furrows, now
+s8_nevermind = Another harvest, then | Bless you, no matter | Let it lie fallow
+
 # Backchannel lines (doc 84 §10.2, Phase 7): plain's short answers ("Good.", "Always.", "It is.") as Southmeadow says them.
 # Drafts, to be tuned by ear; one left out falls back to plain's words.
 bc_good = Ripe. | Ripe, that.

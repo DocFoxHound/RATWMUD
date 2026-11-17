@@ -333,7 +333,8 @@ struct Entry
     std::vector<std::vector<std::string>> does;
     std::vector<std::string> tones;
     std::vector<Owed> owes;
-    int asserts = -1, denies = -1, gist = -1;
+    int asserts = -1, denies = -1, gist = -1;     // (asserts: the turn, -1 its move's default, NeverAsserts `asserts none`)
+    static constexpr int NeverAsserts = -3;
     std::string assertsClaim, deniesClaim;
     std::map<std::string, std::string> binds;
     bool aliasMoves = false;              // Its moves are its concept's alias, not written

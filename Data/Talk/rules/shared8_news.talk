@@ -1,0 +1,706 @@
+# The shared lines, Phase 8 session 1 (Docs/Design/84 §33, §14.1): news taken in. Move lines (no concept; found by the
+# move they make, §8.2), so any tell.news or tell.gossip line in any file can be answered by them where nothing written
+# for it holds: react.news for one who hadn't heard (the core hole talk_check --coverage found everywhere at Phase 7),
+# with its variants: new, sorrow, glad, doubt, glee.
+#
+# The rules they keep (§7.8, §8.6, §11, §15.3):
+# - One who knew the news before the talk began answers with beats.talk's "I'd heard" (the engine's exact fit); these
+#   are for one who didn't. A line that says it is news to them does react.news.new (never said by one who knew), or
+#   tests `self.knows!=yes` (a topic with no claim has no `knows`, and the line holds there).
+# - Pity only for a bad claim, gladness only for a good one (truth.json's pity and glad rules, talk_lint's gossip_kind):
+#   the claim's kind gates every line that feels anything about the one talked of.
+# - The one talked of by name and pronoun from the topic (#topic.subject#, #topic.they#, #topic.them#, #topic.their#),
+#   never "they" for one known wolf. Nothing claimed of them that the claim doesn't say.
+# - Often said, so short: most alternatives under six words (never "distinctive" for R4 and R5); the longer ones are
+#   the topic's own, heard less. The dialect through the grammars' symbols (#marvel#, #pity#, #gladnews#, #uneasy#,
+#   #rest#, #surprise#, #oath#, #thief#, #watch#, #bandits#...), so a plain speaker says plain words.
+
+## Any news, to one who hadn't heard it (never for a death or a hurt: those are below)
+
+rule s8n_new_any
+does react.news.new
+when topic.claim_kind!=death|violence|victim
+say #marvel#. | #marvel#! | Is it, now? | Go on! | Well, now. | Truly?
+
+rule s8n_new_any2
+does react.news.new
+when topic.claim_kind!=death|violence|victim
+say #surprise#. | #surprise#! | First I've heard of it. | News to me. | Is that so, now? | Who'd have thought?
+
+rule s8n_new_any3
+does react.news.new
+when topic.claim_kind!=death|violence|victim
+say #oath#! | #oath#. Truly? | Never! | You're sure? | Well! | There's a thing to chew on.
+
+# Who says it: #s8_wow# (plain.grammar) is the speaker's own way of taking news (a merry wolf laughs, a cold one
+# shrugs, a pup asks if it's true), the most specific that holds; these rules rank with the three above.
+rule s8n_new_who
+does react.news.new
+when topic.claim_kind!=death|violence|victim
+say #s8_wow# | #s8_wow# | #s8_wow# | #marvel#.
+
+rule s8n_new_who2
+does react.news.new
+when topic.claim_kind!=death|violence|victim
+say #s8_wow# | #s8_wow# | #surprise#. | Well!
+
+rule s8n_theft
+does react.news.new
+when conv.topic=gossip|crime topic.claim_kind=theft
+say #topic.subject#? I'd never have said. | Light paws. Well. | I'll be counting my spoons, then. | #thief.capitalize#, is it? | Stealing? In this town. | #topic.subject#, of all wolves.
+
+rule s8n_theft_victim
+does react.news.new
+when conv.topic=gossip|crime topic.claim_kind=theft
+say And from #topic.victim#, too. | #topic.victim#, of all wolves to rob. | Poor #topic.victim#. What was taken? | From #topic.victim#? That's low.
+
+rule s8n_theft_merchant
+does react.news.new
+when conv.topic=gossip|crime topic.claim_kind=theft self.role=merchant
+say I'll be watching my stall, then. | That's custom I can do without. | I'll keep the good stock under the counter. | And I'm the one with a till.
+
+rule s8n_theft_poor
+does react.news.new
+when conv.topic=gossip|crime topic.claim_kind=theft self.wealth=poor|destitute
+say Not much to steal off me, at least. | Nobody'd bother robbing me. | Lucky I've nothing worth the trouble.
+
+rule s8n_theft_rich
+does react.news.new
+when conv.topic=gossip|crime topic.claim_kind=theft self.wealth=rich
+say I'll have the locks seen to. | I'll have a word with my door. | That's the second time this season I've heard such.
+
+rule s8n_theft_guard
+does react.news.new
+when conv.topic=gossip|crime topic.claim_kind=theft self.job=guard
+say I'll be keeping an eye on #topic.subject#, then. | The Watch will want a word with #topic.them#. | Noted. I'll pass it on at the house. | I'll ask about it at muster.
+
+rule s8n_theft_sly
+does react.news.new
+when conv.topic=gossip|crime topic.claim_kind=theft self.honesty=sly
+say Clumsy, to get caught at it. | Well, someone was bound to be. | #topic.subject#? Sloppy.
+
+rule s8n_theft_frank
+does react.news.new
+when conv.topic=gossip|crime topic.claim_kind=theft self.honesty=frank
+say If it's true, I hope it's put right. | A thief's a thief, and that's that. | That wants saying to #topic.their# face.
+
+rule s8n_theft_young
+does react.news.new
+when conv.topic=gossip|crime topic.claim_kind=theft self.stage=young|adolescent
+say A real #thief#? Here? | Did they catch #topic.them#? | Will the Watch put #topic.them# in #gaol#?
+
+rule s8n_violence
+does react.news.sorrow
+when conv.topic=gossip|crime topic.claim_kind=violence self.knows!=yes
+tone serious
+say Gods. That's an ugly thing to hear. | There's no call for that. None. | #uneasy#. | Violence, here? | That's beyond a quarrel. | Hurting folk. #annoyed#.
+
+rule s8n_violence_victim
+does react.news.sorrow
+when conv.topic=gossip|crime topic.claim_kind=violence self.knows!=yes
+tone serious
+say I hope #topic.victim# is mending. | Poor #topic.victim#. | Is #topic.victim# all right? | Someone should look in on #topic.victim#.
+
+rule s8n_violence_guard
+does react.news.sorrow
+when conv.topic=gossip|crime topic.claim_kind=violence self.job=guard|soldier self.knows!=yes
+tone serious
+say That's the Watch's business, and I'll see it is. | I'll see it's reported, if it isn't. | We'll want #topic.subject# for that.
+
+rule s8n_violence_nervy
+does react.news.sorrow
+when conv.topic=gossip|crime topic.claim_kind=violence self.temper=nervy self.knows!=yes
+tone serious
+say Oh, gods. I'll not walk home alone now. | That's frightening. Here, of all places. | Oh, don't. I'll not sleep.
+
+rule s8n_victim
+does react.news.sorrow
+when conv.topic=gossip|crime topic.claim_kind=victim self.knows!=yes
+tone serious
+say #pity#. | Poor #topic.victim#. | And nobody saw who? | That's a rotten thing. | Who'd do that? | #pity#. Did anyone see?
+
+rule s8n_victim_warm
+does react.news.sorrow
+when conv.topic=gossip|crime topic.claim_kind=victim self.warmth=warm self.knows!=yes
+tone tender
+say I'll take #topic.victim# something round. | Poor #topic.victim#. That's a weight on anyone. | Someone ought to sit with #topic.victim#.
+
+rule s8n_wanted
+does react.news.new
+when conv.topic=gossip|crime topic.claim_kind=wanted
+say Wanted? #topic.subject#? | The Watch don't put a name up for nothing. | I'd keep my distance, then. | Well. There's a name to remember. | #topic.subject#, wanted. Fancy.
+
+rule s8n_wanted_frank
+does react.news.new
+when conv.topic=gossip|crime topic.claim_kind=wanted self.honesty=frank|plain
+say If #topic.they# did it, let #topic.them# answer for it. | I hope they find #topic.them#, then. | Let the Watch sort it.
+
+rule s8n_wanted_sly
+does react.news.new
+when conv.topic=gossip|crime topic.claim_kind=wanted self.honesty=sly|guarded
+say Good luck to them catching #topic.them#. | Wanted's not the same as caught. | I never saw a thing, mind.
+
+rule s8n_wanted_glee
+does react.news.glee
+when conv.topic=gossip|crime topic.claim_kind=wanted self.temper=short|even self.humour=merry|dry self.knows!=yes
+say Ha! About time. | Serves #topic.them# right, I'd say. | Ha! Couldn't happen to a nicer wolf.
+
+rule s8n_marriage
+does react.news.glad
+when conv.topic=gossip|life|news topic.claim_kind=marriage self.knows!=yes
+tone light
+say Married! #gladnews#. | #gladnews#! | A wedding! We could use one. | Well! There's some cheer. | Married. Who'd have thought it?
+
+rule s8n_marriage2
+does react.news.glad
+when conv.topic=gossip|life|news topic.claim_kind=marriage self.knows!=yes
+tone light
+say Good luck to the pair. | I hope there's a feast. | Married, and I never knew a thing. | Fine news, that. Fine.
+
+rule s8n_marriage_dry
+does react.news.glad
+when conv.topic=gossip|life|news topic.claim_kind=marriage self.humour=dry self.knows!=yes
+tone light
+say Married. Brave, I'll say that. | Well. Somebody's happy. | Another one tied up.
+
+rule s8n_marriage_cold
+does react.news.glad
+when conv.topic=gossip|life|news topic.claim_kind=marriage self.warmth=cold self.knows!=yes
+say Married, is it. Well. | Hm. Good luck to them. | Each to their own.
+
+rule s8n_marriage_warm
+does react.news.glad
+when conv.topic=gossip|life|news topic.claim_kind=marriage self.warmth=warm self.knows!=yes
+tone light
+say Oh, that's lovely news. | Oh! I'm so glad for #topic.them#. | That's made my day, that has.
+
+rule s8n_marriage_young
+does react.news.glad
+when conv.topic=gossip|life|news topic.claim_kind=marriage self.stage=young|adolescent self.knows!=yes
+tone light
+say Will there be cake? | Ew. | A wedding! Can we go? | Who'd marry #topic.subject#?
+
+rule s8n_death
+does react.news.sorrow
+when conv.topic=gossip|life|news topic.claim_kind=death self.knows!=yes
+tone grave
+say #rest#. | Gods. I hadn't heard. | Gone? I can hardly take it in. | #pity#. #rest#. | Oh, no. | That's a hard thing to hear.
+
+rule s8n_death2
+does react.news.sorrow
+when conv.topic=gossip|life|news topic.claim_kind=death self.knows!=yes
+tone grave
+say I'm sorry to hear it. | #topic.subject#. Gone. | And so sudden. | That's a loss to the town. | I don't know what to say.
+
+rule s8n_death_warm
+does react.news.sorrow
+when conv.topic=gossip|life|news topic.claim_kind=death self.warmth=warm self.knows!=yes
+tone grave
+say Oh, no. Someone should see the family has bread. | I'll go round with something hot. | Oh, the poor family.
+
+rule s8n_death_devout
+does react.news.sorrow
+when conv.topic=gossip|life|news topic.claim_kind=death self.piety=devout self.knows!=yes
+tone grave
+say #rest#. I'll light a candle for #topic.them#. | The Bright One keep #topic.them#. | I'll say the words for #topic.them# tonight.
+
+rule s8n_death_old
+does react.news.sorrow
+when conv.topic=gossip|life|news topic.claim_kind=death self.stage=old self.knows!=yes
+tone grave
+say They go before us, and we're left. | Another gone. There's fewer of us every year. | At my age you hear it too often.
+
+rule s8n_death_young
+does react.news.sorrow
+when conv.topic=gossip|life|news topic.claim_kind=death self.stage=young|adolescent self.knows!=yes
+tone grave
+say Gone? Gone for good? | Will there be a funeral? | I don't like it when people die.
+
+rule s8n_death_cold
+does react.news.sorrow
+when conv.topic=gossip|life|news topic.claim_kind=death self.warmth=cold self.knows!=yes
+tone grave
+say Dead. Well. | It comes to us all. | Hm. That's that, then.
+
+rule s8n_newcomer
+does react.news.new
+when conv.topic=gossip|newcomer|news topic.claim_kind=newcomer
+say A new face. That'll set tongues going. | New, is it? From where? | Well, the town could use fresh blood. | Another one. | New in town. Huh.
+
+rule s8n_newcomer_warm
+does react.news.glad
+when conv.topic=gossip|newcomer|news topic.claim_kind=newcomer self.warmth=warm self.knows!=yes
+tone light
+say We'll have to make #topic.them# welcome. | Good. I'll take round a loaf. | That's nice. It's hard, being new.
+
+rule s8n_newcomer_wary
+does react.news.new
+when conv.topic=gossip|newcomer|news topic.claim_kind=newcomer self.op.newcomers=against
+say Another one. Hm. | I'll wait and see what #topic.they#'s made of. | There's no room as it is.
+
+rule s8n_newcomer_merchant
+does react.news.new
+when conv.topic=gossip|newcomer|news topic.claim_kind=newcomer self.role=merchant
+say New custom, maybe. | I'll see #topic.them# at the stall soon enough. | Another mouth to sell to.
+
+rule s8n_prowling
+does react.news.new
+when conv.topic=gossip|crime topic.claim_kind=prowling
+say #uneasy#. | I'll bar the door tonight. | Prowling? Round here? | Somebody ought to tell the Watch. | Creeping about. I don't like it.
+
+rule s8n_prowling_nervy
+does react.news.new
+when conv.topic=gossip|crime topic.claim_kind=prowling self.temper=nervy
+say Oh, I won't sleep now. | I thought something was out there. | I'll keep the lamp lit.
+
+rule s8n_promise_kept
+does react.news.glad
+when conv.topic=gossip|news topic.claim_kind=promise_kept self.knows!=yes
+tone light
+say Good. A wolf of #topic.their# word. | #gladnews#. | There's honesty left, then. | Good for #topic.them#.
+
+rule s8n_promise_broken
+does react.news.new
+when conv.topic=gossip|news topic.claim_kind=promise_broken
+say That's poor form. | I'll not take #topic.their# word in a hurry. | Broke it? Shameful. | A promise is a promise. | Well, that's #topic.their# name spoiled.
+
+rule s8n_gossip_other
+does react.news.new
+when conv.topic=gossip topic.claim_kind=other
+say Is that what they're saying? | Folk will talk. | Hm. I'd want to hear it twice. | There's always something.
+
+rule s8n_gossip_named
+does react.news.new
+when conv.topic=gossip topic.claim_kind=theft|wanted|prowling|promise_broken|other
+say #topic.subject#, eh? | #topic.subject#? Well, well. | I'd not have thought it of #topic.subject#. | #topic.subject#? Never.
+
+## The roads: a camp, a raid, robbers about (bandits; and gossip of them)
+
+rule s8n_bandits
+does react.news.new
+when conv.topic=bandits
+say #uneasy#. | #bandits.capitalize#. Again. | That's the road shut for me, then. | And the wagons still going out? | Gods, not again.
+
+rule s8n_bandits_gossip
+does react.news.new
+when conv.topic=gossip topic.claim_kind=bandit
+say #uneasy#. | #bandits.capitalize#, is it? | Out on the roads again. | I'll mind where I walk, then.
+
+rule s8n_bandits2
+does react.news.new
+when conv.topic=bandits
+say I'll not travel till that's cleared. | Somebody ought to do something. | Out there, is it? | They'll be bold, then.
+
+rule s8n_bandits_carter
+does react.news.new
+when conv.topic=bandits self.job=carter
+say That's my road they're on. | I'll want company on the next run. | That's my living sat out there. | I'll take the long way, then.
+
+rule s8n_bandits_guard
+does react.news.new
+when conv.topic=bandits self.job=guard|soldier
+say Somebody ought to clear them out. Might be us. | Then we'll be riding out. | The captain will want to hear that.
+
+rule s8n_bandits_merchant
+does react.news.new
+when conv.topic=bandits self.role=merchant
+say There goes my next delivery. | Prices up again, then. | I'll pay more for every crate, and so will you.
+
+rule s8n_bandits_farmer
+does react.news.new
+when conv.topic=bandits self.job=farmer|herder
+say They'll be after the stock next. | I'll keep the beasts close. | Not near my fields, I hope.
+
+rule s8n_bandits_poor
+does react.news.new
+when conv.topic=bandits self.wealth=poor|destitute
+say They'll get nothing off me. | Let them try. I've a hole in my purse. | Rich wolves' worry, that.
+
+rule s8n_bandits_nervy
+does react.news.new
+when conv.topic=bandits self.temper=nervy
+say Oh, gods. Not near here? | I'll not set foot past the gate. | I knew something was wrong.
+
+rule s8n_bandits_young
+does react.news.new
+when conv.topic=bandits self.stage=young|adolescent
+say Real #bandits#? | Are they coming here? | I'd fight them. I would!
+
+rule s8n_bandits_raided
+does react.news.sorrow
+when conv.topic=bandits|caravan topic.kind=raided self.knows!=yes
+tone serious
+say Raided? Gods. I hope the drivers got away. | Another wagon gone. | Anyone hurt? | #annoyed#. And the goods?
+
+## Wagons on the road (caravan: topic.kind arrived, left, late, raided, due; topic.where; topic.who, the driver)
+
+rule s8n_caravan
+does react.news.new
+when conv.topic=caravan
+say Is that so? | Carters' talk, that. | The roads are busy, then. | Something's moving, at least. | Huh. Wagons.
+
+rule s8n_caravan_arrived
+does react.news.glad
+when conv.topic=caravan topic.kind=arrived
+tone light
+say Good. We could use what's on it. | About time something came in. | In? Good. | Fresh goods, then.
+
+rule s8n_caravan_arrived_merchant
+does react.news.glad
+when conv.topic=caravan topic.kind=arrived self.role=merchant
+tone light
+say Fresh stock. I'll be down to look. | Good. My shelves were thin. | I'll be first at the tailboard.
+
+rule s8n_caravan_late
+does react.news.new
+when conv.topic=caravan topic.kind=late
+say Late again. That road. | Something always holds them up. | Late. Of course. | There's always a reason.
+
+rule s8n_caravan_late_why
+does react.news.new
+when conv.topic=caravan topic.kind=late topic.why
+say #topic.why.capitalize#? That'll do it. | #topic.why.capitalize#. Typical. | Held up by #topic.why#. Well.
+
+rule s8n_caravan_due
+does react.news.new
+when conv.topic=caravan topic.kind=due
+say Due, is it? I'll believe it when I see dust. | Good. Soon, then. | Due. We'll see. | I'll keep an ear out for the wheels.
+
+rule s8n_caravan_left
+does react.news.new
+when conv.topic=caravan topic.kind=left
+say Gone already? | Off again, then. | Safe roads to them. | That was quick.
+
+rule s8n_caravan_where
+does react.news.new
+when conv.topic=caravan topic.kind=arrived|due|late topic.where
+say From #topic.where#? Long road. | #topic.where#, eh? | All the way from #topic.where#.
+
+## Prices (topic.dir up or down; topic.what, topic.is: "bread is", "nails are"; topic.sort food, drink, goods)
+
+rule s8n_prices_up
+does react.news.new
+when conv.topic=prices|price_cause topic.dir=up
+say Dearer again? | Up again. Of course it is. | #annoyed#. | Everything's going up. | #robbery#. | And wages aren't.
+
+rule s8n_prices_up_what
+does react.news.new
+when conv.topic=prices|price_cause topic.dir=up topic.what
+say #topic.what.capitalize#? Up again? | #topic.what.capitalize#, dearer. Wonderful. | I'll go without #topic.what#, then.
+
+rule s8n_prices_up_poor
+does react.news.new
+when conv.topic=prices|price_cause topic.dir=up self.wealth=poor|destitute
+say That's me going without, then. | We're #skint# as it is. | How are folk meant to live? | Another thing off the list.
+
+rule s8n_prices_up_rich
+does react.news.new
+when conv.topic=prices|price_cause topic.dir=up self.wealth=rich
+say Dear, but there it is. | One pays. | It'll come down again.
+
+rule s8n_prices_up_food
+does react.news.new
+when conv.topic=prices|price_cause topic.dir=up topic.sort=food
+say Food's dear enough without that. | Folk have to eat. | That'll empty a few bellies.
+
+rule s8n_prices_up_merchant
+does react.news.new
+when conv.topic=prices|price_cause topic.dir=up self.role=merchant
+say I'll have to put mine up too. | Don't blame me when I pass it on. | Good for some, bad for others.
+
+rule s8n_prices_down
+does react.news.glad
+when conv.topic=prices|price_cause topic.dir=down
+tone light
+say Cheaper? Well, that's a mercy. | I'll stock up while it lasts. | About time something went our way. | Down? Good.
+
+rule s8n_prices_down_what
+does react.news.glad
+when conv.topic=prices|price_cause topic.dir=down topic.what
+tone light
+say #topic.what.capitalize#, cheaper? I'll have some. | Cheap #topic.what#. I'll be down there. | #topic.what.capitalize#, down. #gladnews#.
+
+rule s8n_prices_down_dry
+does react.news.new
+when conv.topic=prices|price_cause topic.dir=down self.humour=dry
+say Enjoy it while it lasts. | It won't last. | Down today, up tomorrow.
+
+rule s8n_prices_down_poor
+does react.news.glad
+when conv.topic=prices|price_cause topic.dir=down self.wealth=poor|destitute
+tone light
+say That's something. | Every penny helps. | That's supper sorted, maybe.
+
+rule s8n_price_cause
+does react.news.new
+when conv.topic=price_cause topic.cause!=still
+say Ah. So that's why. | That explains it. | Always a reason. | And it's us that pays. | I wondered.
+
+## Ships at the Wharf (topic.kind in, due, late, lost, sailed; topic.ship)
+
+rule s8n_ships
+does react.news.new
+when conv.topic=ships
+say A ship? Good. | The Wharf will be busy. | Is that so? | I'll keep an eye on the quay.
+
+rule s8n_ships_in
+does react.news.glad
+when conv.topic=ships topic.kind=in
+tone light
+say In, is she? Good. | There'll be goods on the quay. | Good. The town needed that. | In safe. Good.
+
+rule s8n_ships_in_named
+does react.news.glad
+when conv.topic=ships topic.kind=in topic.ship
+tone light
+say #topic.ship.capitalize#, in safe. Good. | #topic.ship.capitalize#? There'll be work unloading. | #topic.ship.capitalize# in. That's a relief to someone.
+
+rule s8n_ships_due
+does react.news.new
+when conv.topic=ships topic.kind=due
+say Due? I'll watch for her sails. | Soon, then. | Let's hope the weather holds for her.
+
+rule s8n_ships_late
+does react.news.new
+when conv.topic=ships topic.kind=late
+tone serious
+say Stormbound? I hope she rides it out. | That sea's no friend. | Late. Somebody's waiting on her.
+
+rule s8n_ships_lost
+does react.news.sorrow
+when conv.topic=ships topic.kind=lost self.knows!=yes
+tone grave
+say Lost? Gods. The crew? | The sea takes, and takes. | #rest#. Every one of them. | That's a cruel sea.
+
+rule s8n_ships_sailed
+does react.news.new
+when conv.topic=ships topic.kind=sailed
+say Off again. Fair seas to her. | Gone, then. | Sailed. That's the quay quiet.
+
+rule s8n_ships_sailor
+does react.news.new
+when conv.topic=ships self.job=sailor|fisher
+say I'll go down and look her over. | There'll be berths going, then. | I'll ask about a berth.
+
+## The market's event (world.event_words, world.event_when now, soon or past)
+
+rule s8n_event
+does react.news.new
+when conv.topic=event
+say Is that so? | Always something at the market. | That'll shift prices. | Huh. I'd not heard. | Well. There's the market for you.
+
+rule s8n_event_now
+does react.news.new
+when conv.topic=event world.event_when=now
+say Now? Today? | I'll go and see for myself. | Is it on now? I'll go and look. | That'll be the talk of the stalls.
+
+rule s8n_event_soon
+does react.news.new
+when conv.topic=event world.event_when=soon
+say Soon, is it? | Something to look forward to, or dread. | We'll see when it comes.
+
+rule s8n_event_merchant
+does react.news.new
+when conv.topic=event self.role=merchant
+say That'll move my prices, one way or the other. | Good for trade, maybe. | I'll want to know more about that.
+
+## Times, the harvest, a festival
+
+rule s8n_times
+does react.news.new
+when conv.topic=times
+say Times, eh. | Is that how it is? | We'll weather it. | It comes and goes.
+
+rule s8n_times_hard
+does react.news.sorrow
+when conv.topic=times world.times=hard|lean self.knows!=yes
+tone serious
+say Hard times. Again. | We'll tighten our belts, then. | I felt it coming. | Lean, is it. I'd noticed.
+
+rule s8n_times_good
+does react.news.glad
+when conv.topic=times world.times=good|boom
+tone light
+say Good times? I'll take them. | #bc_about_time# | Well, make hay, then.
+
+rule s8n_harvest
+does react.news.new
+when conv.topic=harvest
+say The harvest, eh? | That'll tell in the bread. | We'll see what comes in.
+
+rule s8n_harvest_poor
+does react.news.new
+when conv.topic=harvest world.harvest=poor
+tone serious
+say Poor? That's a hungry winter. | Bread'll be dear, then. | Gods help the farms.
+
+rule s8n_harvest_good
+does react.news.glad
+when conv.topic=harvest world.harvest=good
+tone light
+say Good? That's a mercy. | Full barns. Good. | Cheap bread, maybe, for once.
+
+rule s8n_harvest_farmer
+does react.news.new
+when conv.topic=harvest self.job=farmer|herder
+say I could have told you that. | I've been in the fields, I know. | That's my year, then.
+
+rule s8n_festival
+does react.news.glad
+when conv.topic=festival
+tone light
+say A festival! Good. | About time we had some cheer. | I'll find my good coat. | Music, then. Good.
+
+rule s8n_festival_soon
+does react.news.glad
+when conv.topic=festival topic.when=soon
+tone light
+say Soon? I'll be ready. | Something to look forward to. | Good. I need a day off.
+
+rule s8n_festival_dry
+does react.news.new
+when conv.topic=festival self.humour=dry
+say Noise, then. | I'll be in bed early, as ever. | Another excuse to drink.
+
+rule s8n_festival_young
+does react.news.glad
+when conv.topic=festival self.stage=young|adolescent
+tone light
+say Will there be sweets? | Can I stay up? | I'm going to dance all night!
+
+## The town's news: a birth, a wedding, a death, a post, an arrest (life, news; topic.kind)
+
+rule s8n_life_birth
+does react.news.glad
+when conv.topic=life|news topic.kind=birth self.knows!=yes
+tone light
+say A pup! #gladnews#. | New life. That's good. | Healthy, I hope? | Well! Bless the little one.
+
+rule s8n_life_birth_warm
+does react.news.glad
+when conv.topic=life|news topic.kind=birth self.warmth=warm self.knows!=yes
+tone light
+say Oh, bless. I'll knit something. | A pup! Oh, that's lovely. | I'll take a pie round.
+
+rule s8n_life_marriage
+does react.news.glad
+when conv.topic=life|news topic.kind=marriage self.knows!=yes
+tone light
+say Married! Good. | #gladnews#. A wedding. | That's a fine match, I'd say.
+
+rule s8n_life_death
+does react.news.sorrow
+when conv.topic=life|news topic.kind=death|loss self.knows!=yes
+tone grave
+say #rest#. | Gone. I hadn't heard. | #pity#. | That's a sorrow for the family. | The poor family.
+
+rule s8n_life_apprentice
+does react.news.glad
+when conv.topic=life|news topic.kind=apprentice self.knows!=yes
+tone light
+say An apprentice? Good for #topic.them#. | A trade. That's a future. | Good. Learning's never wasted.
+
+rule s8n_life_succession
+does react.news.new
+when conv.topic=life|news topic.kind=succession
+say Changes at the top, then. | New hands on the reins. | We'll see how #topic.they# does.
+
+rule s8n_life_work
+does react.news.glad
+when conv.topic=life|news topic.kind=work self.knows!=yes
+tone light
+say A new post? Good for #topic.them#. | Steady work. That's something. | Good. Everyone needs a place.
+
+rule s8n_crime_arrest
+does react.news.new
+when conv.topic=crime|life|news topic.kind=arrest
+say Taken in? #topic.subject#? | The Watch has been busy. | Well. That's one off the street. | Arrested. Huh.
+
+rule s8n_crime_theft
+does react.news.new
+when conv.topic=crime topic.kind=theft
+say Robbed? Here? | Another one. | I'll check my door twice tonight. | #robbery#.
+
+rule s8n_crime_assault
+does react.news.sorrow
+when conv.topic=crime topic.kind=assault self.knows!=yes
+tone serious
+say Attacked? Gods. | That's beyond the pale. | Is #topic.victim# hurt bad? | #uneasy#.
+
+rule s8n_news_carters
+does react.news.new
+when conv.topic=news topic.kind=news
+say Carters' news. | Is that what they're saying out there? | News travels. | From #topic.where#? Well.
+
+## A deed done: what the town says a traveller did (deed; topic.subject, topic.deed)
+
+rule s8n_deed
+does react.news.new
+when conv.topic=deed|player
+say Is that so? | Some traveller. | Huh. Big if true. | Well, there's a story. | I'd like to see that.
+
+rule s8n_deed_admire
+does react.news.glad
+when conv.topic=deed self.warmth=warm|reserved
+tone light
+say Good on #topic.them#. | Now that's a deed. | The town could use more like that.
+
+rule s8n_deed_dry
+does react.news.doubt
+when conv.topic=deed self.humour=dry
+say And I suppose #topic.they# flew home after. | Stories grow in the telling. | Hm. I'll wait for the song.
+
+## Everyday news (smalltalk, the day, the weather, work, the street: whatever was just told)
+
+rule s8n_everyday
+does react.news.new
+when conv.topic=day|smalltalk|weather|work|home|food|health|pastimes|animals|land|season|travel|faith|lore|dreams|memories|family|friends|accent
+say Is that so? | Is it, now? | Oh, aye? | Huh. | Well, now. | There you are, then.
+
+rule s8n_everyday2
+does react.news.new
+when conv.topic=day|smalltalk|weather|work|home|food|health|pastimes|animals|land|season|travel|faith|lore|dreams|memories|family|friends|accent
+say I'd not heard. | Fancy that. | That's something. | Well, well. | So that's how it is.
+
+## Doubt (react.news.doubt): the news not believed yet. Leaned on by the sly, the nervy and the guarded (temperaments.json).
+## Never of a death or a wedding: nobody scoffs at those.
+
+rule s8n_doubt
+does react.news.doubt
+when topic.claim_kind!=death|marriage|victim
+say #doubt#. | I'll believe it when I see it. | Says who? | Hm. I've heard tales before. | That's talk. | Sounds like a tale to me.
+
+rule s8n_doubt_gossip
+does react.news.doubt
+when conv.topic=gossip topic.claim_kind=theft|wanted|prowling|promise_broken|other
+say #topic.subject#? I'd want that from someone who saw it. | Who started that one? | I'd not repeat it till it's proved. | Somebody's got it in for #topic.subject#.
+
+rule s8n_doubt_guarded
+does react.news.doubt
+when self.honesty=guarded topic.claim_kind!=death|marriage|victim
+say I'd keep that under my hat till it's sure. | Folk say a lot of things. | Maybe. Maybe not.
+
+rule s8n_doubt_sly
+does react.news.doubt
+when self.honesty=sly topic.claim_kind!=death|marriage|victim
+say And who benefits, if folk believe it? | Convenient, that. | I'd ask who's telling it, and why.
+
+rule s8n_doubt_prices
+does react.news.doubt
+when conv.topic=prices|price_cause topic.dir=down
+say Down? I'll believe it when I'm charged it. | Cheap? Not where I shop, it isn't. | Prices never go down. Not really.
+
+rule s8n_doubt_bandits
+does react.news.doubt
+when conv.topic=bandits
+say There's always talk of #bandits#. | I've walked that road a dozen times. | Half of that's carters' tales.
+
+rule s8n_doubt_ships
+does react.news.doubt
+when conv.topic=ships topic.kind=due
+say Due's a word, not a promise. | I'll believe it when she's tied up. | They said that last time.
+
+rule s8n_doubt_caravan
+does react.news.doubt
+when conv.topic=caravan topic.kind=due|late
+say Due's a word, not a promise. | I'll believe it when the wheels stop. | Carters say a lot of things.

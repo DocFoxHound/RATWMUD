@@ -140,6 +140,24 @@ demur = That won't float with me | I'd not cast that way
 doubt = Sounds fishy to me | I'd want it netted first
 listen = Listen here, shore-friend | Hark
 
+# Phase 8 (doc 84 §33): the shared lines' words, as Coldwater says them. Drafts, to be tuned by ear.
+marvel = Well, I'll be landed | Up from the deep, that | There's a fish I never saw
+pity = A cruel tide, that | Cold water to wake to, that
+gladnews = That's a full net of news | Fair water, that news
+uneasy = I don't like the look of that water | There's a squall in that
+grumble = Holed and leaking, same as you | Don't I know it, shore-friend
+notsobad = Calmer than it sounds, surely | The lake's seen rougher
+dunno = That's all the net brought up | That's the whole catch of it
+hearsay = It washed up on the shore, is all | Shore-talk, that's all I have
+howso = How did that wash up | How do you mean, shore-friend
+rest = The deep keep the soul | Calm water to the soul
+# Greetings and closings for rules/shared8_turns.talk (plain.grammar's s8_* say who; here, the dialect's own).
+s8_hello = Still water, shore-friend | Ah, it's you, shore-friend | Well met on the shore | Calm water
+s8_okay = Aye, row on | Off you row, then | The tide won't wait | Go on, shore-friend
+s8_bye = Calm water to you | Steady on the jetty | Row safe | Off with the tide
+s8_byeback = And calm water to you | Row safe, then | Mind the deep | And you, shore-friend
+s8_nevermind = Another tide, then | Let it drift | No ripple, shore-friend
+
 # Backchannel lines (doc 84 §10.2, Phase 7): plain's short answers ("Good.", "Always.", "It is.") as Coldwater says them.
 # Drafts, to be tuned by ear; one left out falls back to plain's words.
 bc_good = Fair catch. | That'll float.

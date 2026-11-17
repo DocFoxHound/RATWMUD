@@ -1760,6 +1760,14 @@ bool Library::parse(const std::string& text, const std::string& file, std::strin
                     ws.erase(ws.begin());
                 }
                 const auto claim = ws.empty() ? std::string() : ws[0];
+                if (head == "asserts" && claim == "none" && ws.size() == 1)
+                {
+                    // Phase 8 (§33.2): a line that answers without passing anything on ("Now there's a question."), on a
+                    // move that would assert the topic's claim by default (answer.detail).
+                    e->asserts = Entry::NeverAsserts;
+                    e->assertsClaim.clear();
+                    continue;
+                }
                 if (ws.size() > 1 || (head == "gist" && !claim.empty()))
                     fail(head == "gist" ? "gist is 'gist' (in a scene, 'gist <turn>')" : head + " is '" + head + " [turn] [claim kind]'");
                 else if (!claim.empty() && claims::loaded() && !claims::find(claim))
@@ -2663,6 +2671,8 @@ void Library::describe(const Entry& e, std::size_t turn, const Query& q, const s
     // A scene is written whole: its last line owes only what is written (a set piece handing on into open talk, §8.2),
     // never what its moves expect by default.
     describeMoves(line, before, q.facts, !(e.scene && turn + 1 == e.turns.size()));
+    if (e.asserts == Entry::NeverAsserts)
+        line.asserts.clear();                       // (`asserts none`: not even by its move's default.)
     // Phase 6 (§8.8): a line airing a stance on the issue a talk is on records the speaker's own side, and the steps events
     // had moved it (the scorecard's T4).
     if (const auto issue = q.facts.find("conv.issue"); issue != q.facts.end())
@@ -3609,14 +3619,25 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
         // what was said.
         const auto& due = c.queued.front();
         int side = 0;
-        if (c.legacy || due.entry.empty() || c.people.size() < 2 || due.who < 0 || due.who > 1 ||
-            stillHolds(due, beatQuery(c, facts, 0, 1, side)))
+        if (c.legacy || due.entry.empty() || c.people.size() < 2 || due.who < 0 || due.who > 1)
+            return sayNext(c);
+        // Phase 8 (§8.12.3): nor if another speaker has said its words in this place since the scene was chosen (two
+        // talks there chose the same scene within the hour, and the other reached this turn first).
+        Said turn;
+        turn.info.push_back(due);
+        turn.info.back().who = 0;
+        Query by;
+        by.a.facts["id"] = c.people[std::size_t(due.who)];
+        const bool collided = collides(turn, by, fresh);
+        if (!collided && stillHolds(due, beatQuery(c, facts, 0, 1, side)))
             return sayNext(c);
         if (trace)
-            trace->why += "; " + due.entry + "'s turn " + std::to_string(due.turn + 1) + " no longer holds: the rest dropped";
+            trace->why += "; " + due.entry + "'s turn " + std::to_string(due.turn + 1) +
+                          (collided ? " was said here lately by another" : " no longer holds") + ": the rest dropped";
         c.dropped += int(c.queued.size());
         c.queued.clear();
-        c.open.clear();
+        if (!collided)
+            c.open.clear();                         // (A collision leaves what was owed owed: the engine answers it.)
     }
     if (c.legacy)
         return legacyNext(c, facts, fresh, trace);
@@ -4940,7 +4961,7 @@ bool Library::toldAlready(const Conversation& c, const Entry& e, const Query& q,
         if (who != 0)
             continue;                               // (The speaker's own turns: what they tell.)
         const auto& moves = e.does[t];
-        const bool tells = int(t) == e.asserts || (e.asserts < 0 && q.facts.count("topic.claim_kind") &&
+        const bool tells = int(t) == e.asserts || (e.asserts == -1 && q.facts.count("topic.claim_kind") &&
                                                    (hasMove(moves_, moves, "tell.news") || hasMove(moves_, moves, "tell.gossip")));
         if (tells && !c.claim.empty() && fresh.told(id->second, "claim:" + c.claim))
             return true;

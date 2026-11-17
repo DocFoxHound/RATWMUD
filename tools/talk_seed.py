@@ -14,6 +14,13 @@ and by the Dungeon Master. Rows already there are kept (an edit is never overwri
                       Communal homes are left out.
 
     python3 tools/talk_seed.py [--dry-run] [--replace dialects,voices,relations] [--world KEY] [--reorigin]
+    python3 tools/talk_seed.py --only dialects [--dry-run] [--world KEY]
+
+--only dialects (Docs/Design/84 §33, Phase 8) brings live.dialects up to the grammar files and touches nothing else:
+each row that isn't its file word for word is written from the file (the rows it changes dumped first, as below), a
+dialect with no row gets one, and a row with no file is left alone. The game reads the rows over the files, so a
+world whose rows predate a change to the grammars speaks the old words until this is run. Re-runnable: a second run
+changes nothing.
 
 --reorigin (Docs/Design/83-dialogue-trees.md, Phase 4) works every resident's origin and accent out again from where
 the server places them now (World::talkOrigin: talk_check --residents --json, `_origin_from` and `_origin_accent`),
@@ -203,6 +210,27 @@ def families(npcs: list[dict]) -> list[tuple[str, str, str]]:
     return out
 
 
+def sync_dialects(conn, args, world: str) -> int:
+    """--only dialects: each live.dialects row that isn't its grammar file word for word, written from the file."""
+    files = [(f.stem, i, f.read_text()) for i, f in enumerate(sorted(GRAMMARS.glob('*.grammar'))) if f.stem != 'plain']
+    rows = {r[0]: r[1] for r in conn.execute('SELECT name, grammar FROM live.dialects WHERE world_id = %s', (world,)).fetchall()}
+    changed = [(name, position, text) for name, position, text in files if rows.get(name) != text]
+    print(f'{world}: {len(files)} dialect files; {len(changed)} differ from live.dialects'
+          + (': ' + ', '.join(f'{n} ({"new" if n not in rows else f"{len(rows[n])} to {len(t)} characters"})'
+                              for n, _, t in changed) if changed else '') + '.')
+    if args.dry_run or not changed:
+        return 0
+    print('Backed up:', backup(args.world, ['live.dialects'], Path(args.backups) if args.backups else
+                               main_checkout() / 'Saved' / 'Backups'))
+    with conn.transaction():
+        for name, position, text in changed:
+            conn.execute('INSERT INTO live.dialects (world_id, name, position, grammar) VALUES (%s, %s, %s, %s) '
+                         'ON CONFLICT (world_id, name) DO UPDATE SET grammar = EXCLUDED.grammar, updated_at = now()',
+                         (world, name, position, text))
+    print(f'Written: {len(changed)} rows.')
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--dry-run', action='store_true', help='count what would be written, write nothing')
@@ -211,14 +239,20 @@ def main() -> int:
     parser.add_argument('--reorigin', action='store_true',
                         help="work out again every placed resident's origin and accent (seed rows only: doc 83, Phase 4)")
     parser.add_argument('--backups', default='', help='where the dumps go (default the main checkout\'s Saved/Backups)')
+    parser.add_argument('--only', default='', help='dialects: bring live.dialects up to the grammar files, nothing else')
     args = parser.parse_args()
     args.world = world_db.resolve(args.world, 'dev')
     replace = {r for r in args.replace.split(',') if r}
+    only = {o for o in args.only.split(',') if o}
+    if only and (only != {'dialects'} or replace or args.reorigin):
+        sys.exit('--only takes dialects, alone (the rest is the whole seed)')
     with world_db.connect(args.world, 'editor') as conn:
         worlds = [r[0] for r in conn.execute('SELECT id FROM world.worlds').fetchall()]
         if len(worlds) != 1:
             sys.exit(f'Expected one world in {args.world}, found {worlds}')
         world = worlds[0]
+        if only:
+            return sync_dialects(conn, args, world)
         npcs = [{'id': r[0], 'name': r[1], 'age': r[2], 'sex': (r[3] or {}).get('sex', ''), 'home_area': r[4] or '',
                  'personality': r[5] or ''}
                 for r in conn.execute('SELECT id, name, age, appearance, home_area, personality FROM live.npcs '

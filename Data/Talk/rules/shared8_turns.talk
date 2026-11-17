@@ -1,0 +1,133 @@
+# The shared lines, Phase 8 session 1 (Docs/Design/84 §33, §14.1): openings and closings, widened. turns.talk (Phase 3)
+# gave every talk the moves it needs to open and close; at Phase 7 greet.return had one line, and the pups' and the
+# night's farewells were the most-said lines of all ("Bye!", "See you!", "Rest well."). These move lines sit beside
+# those, a choice among them: more ways to answer a greeting, to take a preclose, to say goodbye and to answer it, and
+# to take a refusal well, by the hour, the band, the speaker's age and temper, and in each dialect through #greet#,
+# #farewell#, #bless#, #blessing#, #later#, #no_matter#.
+#
+# Said in nearly every talk, so short (under six words: never "distinctive", R4 and R5), many alternatives. Who says
+# what is mostly plain.grammar's #s8_hello#, #s8_okay#, #s8_bye#, #s8_byeback# and #s8_nevermind#, whose most specific
+# entry that holds is said (to friends, to strangers, at dawn, by the cold or the merry), not the rules' criteria: a
+# rule's criteria make it outrank every rule with fewer (the tiers, §8.2), so a farewell for friends written as a rule
+# would be most of all friends' farewells. Only the pups (whose words are their own) and the night (turns.talk's tier
+# already) have rules of their own. Nothing claims the hour unless it tests it (truth.json: "good morning").
+
+## A greeting answered (greet.return answers greet, hail, again.open, kin.open)
+
+rule s8t_greet_back
+does greet.return
+say #s8_hello#. | #s8_hello#. | #greet#. | And to you. | Hello, #address#.
+
+rule s8t_greet_back2
+does greet.return
+say #s8_hello#. | #s8_hello#. | Hello. | Ah. #greet#.
+
+rule s8t_greet_again
+does greet.return
+when conv.move=again.open
+say Can't keep away. | Back again, aye. | Me again. | Twice, aye. | Here I am. | #s8_hello#.
+
+rule s8t_greet_kin
+does greet.return
+when conv.move=kin.open
+say Hello, you. | Mm? What is it? | Oh. You. | What now? | I'm here. | #s8_hello#.
+
+rule s8t_greet_young
+does greet.return
+when self.stage=young
+say Hi! | Hello! | Hi there! | Hello, hello! | Hiya!
+
+rule s8t_greet_adolescent
+does greet.return
+when self.stage=adolescent
+say Hey. | Oh. Hi. | All right? | Hello. | Hi.
+
+## A preclose taken (accept_preclose answers preclose)
+
+rule s8t_accept
+does accept_preclose
+say #s8_okay#. | #s8_okay#. | Off you go. | #bc_fair_enough#
+
+rule s8t_accept2
+does accept_preclose
+say #s8_okay#. | #s8_okay#. | Right. Me too. | Of course, of course.
+
+## Goodbye (farewell), beside turns.talk's
+
+rule s8t_bye
+does farewell
+say #s8_bye#. | #s8_bye#. | #farewell#. | Go well.
+
+rule s8t_bye2
+does farewell
+say #s8_bye#. | #s8_bye#. | Till next we meet. | Take care, now.
+
+rule s8t_bye_night
+does farewell
+when here.time=night|dusk
+say Night, then. | Sleep easy. | Mind the dark streets. | Off home, then. | Bed for me. | Till tomorrow, then. | Lock your door. | Off to my bed. | Sleep easy, now. | Warm bed, I hope.
+
+rule s8t_bye_young
+does farewell
+when self.stage=young
+say Got to go! Bye! | Off I go! | Bye-bye! | See you soon! | I'm going now. Bye! | #farewell#! | Bye! Bye! | Bye-bye now! | Gotta run! | See you tomorrow! | I'm off!
+
+rule s8t_bye_adolescent
+does farewell
+when self.stage=adolescent
+say Later. | See you around. | I'm off. | Right, bye. | Catch you later. | #farewell#. | See you, then. | I'll be off.
+
+rule s8t_bye_young3
+does farewell
+when self.stage=young
+say #s8_pupbye# | #s8_pupbye# | #s8_pupbye#
+
+rule s8t_bye_adolescent2
+does farewell
+when self.stage=adolescent
+say #s8_teenbye# | #s8_teenbye# | #s8_teenbye#
+
+## Goodbye answered (farewell.return), beside turns.talk's
+
+rule s8t_return
+does farewell.return
+say #s8_byeback#. | #s8_byeback#. | #farewell#. | And you.
+
+rule s8t_return2
+does farewell.return
+say #s8_byeback#. | #s8_byeback#. | Go carefully. | Aye. Go well.
+
+rule s8t_return_night
+does farewell.return
+when here.time=night|dusk
+say Night, then. | Sleep easy. | And you. Sleep easy. | Till tomorrow. | Lock your door. | And you. Bed, now. | Night. Mind the dark. | Warm bed, now.
+
+rule s8t_return_young
+does farewell.return
+when self.stage=young
+say Bye-bye! | See you soon! | Bye! Bye! | Bye for now! | #farewell#! | Bye-bye now! | See you tomorrow! | Yes! Bye! | Bye, bye, bye!
+
+rule s8t_return_adolescent
+does farewell.return
+when self.stage=adolescent
+say Later. | See you around. | Yeah, bye. | Catch you later. | #farewell#. | See you, then.
+
+rule s8t_return_young3
+does farewell.return
+when self.stage=young
+say #s8_pupbyeback# | #s8_pupbyeback# | #s8_pupbyeback#
+
+rule s8t_return_adolescent2
+does farewell.return
+when self.stage=adolescent
+say #s8_teenbye# | #s8_teenbye# | #s8_teenbye#
+
+## A refusal taken well (accept_decline answers decline, refuse, put_off)
+
+rule s8t_accept_decline
+does accept_decline
+say #s8_nevermind#. | #s8_nevermind#. | #no_matter#. | #no_matter#, then.
+
+rule s8t_accept_decline2
+does accept_decline
+say #s8_nevermind#. | #bc_fair_enough# | Another day, then. | #s8_nevermind#.

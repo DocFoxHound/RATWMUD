@@ -139,6 +139,24 @@ demur = That won't take root | I'd not lean that way
 doubt = Hollow, that sounds | Show me the roots first
 listen = Listen, mm | Hark, now
 
+# Phase 8 (doc 84 §33): the shared lines' words, as Oakhaven says them. Drafts, to be tuned by ear.
+marvel = Well, mm, there's new leaf | Branch me, now | Mm, that's a new acorn
+pity = A bough broke, that | That's a cruel wind, mm
+gladnews = That's good sap rising | New leaf, that, mm
+uneasy = There's a wind in the branches | I don't like the creak of that
+grumble = Knots everywhere, mm | Hard bark, all of it
+notsobad = The root's sound yet | I've seen trees bend worse
+dunno = That's all the leaves said | No more on that branch, mm
+hearsay = Leaf-talk, mm, that's all | It came on the wind
+howso = Slow, now. How so | How's that, mm
+rest = Root deep, and rest | The old oak keep the soul
+# Greetings and closings for rules/shared8_turns.talk (plain.grammar's s8_* say who; here, the dialect's own).
+s8_hello = Good shade, old root | Shade on you, mm | Ah, old root | Well, mm, hello
+s8_okay = Mm, go on, then | Slow, now. Off you go | Root well, then | Go on, old root
+s8_bye = Root well, old root | Good shade, mm | Step over the roots | Go slow, mm
+s8_byeback = And good shade to you | Root well, mm | Step over the roots, now | Slow, now, mm
+s8_nevermind = In its season, then | Mm. No matter | Let it grow
+
 # Backchannel lines (doc 84 §10.2, Phase 7): plain's short answers ("Good.", "Always.", "It is.") as Oakhaven says them.
 # Drafts, to be tuned by ear; one left out falls back to plain's words.
 bc_good = Good bark. | Sound wood, that.

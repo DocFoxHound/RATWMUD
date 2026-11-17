@@ -36,6 +36,23 @@ EDITED = {
     'ag_again_any2': 'the same',
     'w7s_shore_work': '"My nets are tangled past saving." from a weaver at the shore (talk_lint\'s fisher_self, frozen since '
                       'Phase 1): "Look at those nets. Tangled past saving." now, true for anyone there',
+    # Phase 8, session 1 (doc 84 §33.2): the town's gossip answers, met by the card answering a death.
+    'n7_ga2_merry': 'laughed at a death ("Ha! I\'ll never look at Gunnar Harrowgate the same.", C4): not for a death, a '
+                    'hurt or a victim now (topic.claim_kind!=death|violence|victim)',
+    'n7_ga2_dry': 'the same ("And the moon\'s made of cheese" to a death)',
+    'n7_ga2_sly': 'the same ("Interesting. Who else knows?" to a death)',
+    'n7_ga2_chatty': 'the same ("I knew it! Didn\'t I say?" to a death)',
+    'n7_ga2_young': 'the same ("I\'m telling everyone!" to a death)',
+    'n7_ga2_old': 'the same ("It\'ll be forgotten by the next festival" to a death)',
+    'n7_ga2_nervy': 'the same ("If they hear we said it..." to a death)',
+    'n7_ga2_cold': '"Doesn\'t surprise me." to a death: not for a death now (n7_ga2_death_cold is the cold wolf\'s)',
+    'n7_ga2_devout': '"The gods hear tattle too" to a death: not for a death now (n7_ga2_death_devout is the devout\'s)',
+    'n7_ga2_priest': '"I\'ll not hear it" to a death: the same',
+    'n7_ga2_warm': '"I hope they\'re all right" of one wolf: #topic.they# (he or she) now',
+    'n7_ga2_death': '"I saw them only the other day": "they" for one wolf, and an eyewitness who saw nothing; "No. Not '
+                    '#topic.them#. Surely not." now',
+    'n7_ga2_death_devout': '"May they find their rest" and "keep them" of one wolf: #topic.they#, #topic.them# now',
+    'n7_ga2_death_cold': '"I hardly knew them" of one wolf: #topic.them# now',
 }
 DISCOURSE = {'hedge', 'account', 'ack', 'pivot', 'anyway', 'later', 'resume', 'preclose', 'excuse', 'knew', 'sympathy',
              'concede', 'insist', 'warn', 'welcome_back', 'welcome', 'sorry', 'forgive', 'deflect', 'no_matter',

@@ -164,6 +164,24 @@ demur = I would not say so | Not by my measure
 doubt = Mirage-talk, maybe | Mirage, maybe, till I see it
 listen = Hear me, my friend | Listen
 
+# Phase 8 (doc 84 §33): the shared lines' words, as Saltwell says them. Drafts, to be tuned by ear.
+marvel = Stars above, who would have said | The sands bring strange news | By the spring, that is new to me
+pity = May the well be kind | A bitter draught, that
+gladnews = Sweet water, that news | The stars are kind
+uneasy = Sand on that wind, my friend | I mislike that, truly
+grumble = Dry as the pans, all of it | It is so, and the dust with it
+notsobad = The well has known worse | It will pass, like noon
+dunno = That is all the well gave me | No more water in that bucket
+hearsay = Caravan-talk, no more | The road brought it to me
+howso = Tell it slowly, my friend | How so, my friend
+rest = May the well remember the name | Peace on the one gone
+# Greetings and closings for rules/shared8_turns.talk (plain.grammar's s8_* say who; here, the dialect's own).
+s8_hello = Peace on you | Be welcome, friend | Water and shade | Welcome, truly
+s8_okay = Go in peace, then | As you must | The sun moves | Truly, go
+s8_bye = Go in peace | Peace on your road | Shade on your way | Stars keep you
+s8_byeback = And peace on yours | Stars keep you, too | Peace, friend | Shade on your way
+s8_nevermind = As the stars will | Another day, truly | No matter, friend
+
 # Backchannel lines (doc 84 §10.2, Phase 7): plain's short answers ("Good.", "Always.", "It is.") as Saltwell says them.
 # Drafts, to be tuned by ear; one left out falls back to plain's words.
 bc_good = Sweet. | Sweet as well water.
