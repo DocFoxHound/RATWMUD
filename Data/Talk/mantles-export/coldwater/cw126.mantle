@@ -1,0 +1,301 @@
+# cw126, the strap song (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw126
+revision 1
+state ready
+dialect coldwater
+accent broad light
+tier standard
+written_for cty_wick_marshwade
+written_by claude-codex-cw-1
+title the strap song
+fits stage=adult|old
+prefers job=carter talk=chatty
+traits temper=nervy talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk hums_a_march_when_tightening_cart_straps
+likes spiced_cider dancing sharp_knife first_snow
+dislikes night_noise rats
+fears a_load_slipping_on_a_bend a_stranger_following_the_cart
+hopes a_good_post_for_a_young_relative a_safe_road_home
+topics work +0.5 pastimes +0.4 family +0.4 travel +0.3 weather +0.3 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=plain tease=playful
+marks oath saying
+persona #self.first# hums a #march# while tightening each #strap#, checks the #cart# twice at dusk, and dreams of a better #post# for young #kin#.
+
+words
+oath! = Strap and snow | Wheels on water
+saying! = Tie it to the beat and check it at the bend | A dry cart carries a lighter mind
+cart = cart | freight cart
+carts = carts | freight carts
+wheel = wheel | cart wheel
+rim = rim | outer rim
+wheels = wheels | turning wheels
+axle = axle | iron axle
+strap = strap | leather strap
+straps = straps | leather straps
+rope = rope | hauling rope
+knot = knot | firm knot
+load = load | freight
+loads = loads | freight loads
+sack = sack | tied sack
+sacks = sacks | tied sacks
+road = road | high road
+bend = bend | sharp turn
+rut = rut | wheel rut
+ruts = ruts | wheel ruts
+mile = mile | long mile
+miles = miles | long miles
+march = march | old marching tune
+riddle = riddle | puzzle
+hum = hum | low humming
+beat = beat | steady rhythm
+bells = bells | festival bells
+hand = hand | working paw
+step = step | dance step
+dance = dance | festival dance
+boots = boots | work boots
+knife = knife | sharp blade
+edge = edge | keen edge
+snow = snow | first snowfall
+flake = flake | snowflake
+wind = wind | cold blow
+night = night | dark hours
+noise = noise | late clatter
+rat = rat | larder rat
+rats = rats | larder rats
+larder = larder | food cupboard
+cup = cup | clay cup
+cider = cider | spiced cider
+spice = spice | warm spice
+gate = gate | yard gate
+lantern = lantern | road lantern
+house = house | great house
+post = post | service post
+kin = kin | family
+stranger = stranger | unfamiliar wolf
+coin = coin | pay
+price = price | asking cost
+market = market | row of stalls
+home = home | own hearth
+
+any
+opinion @1 festivals for 2 : I can still find a #dance# after a long #mile#. | The first song lifts my #boots# more than a full night's sleep.
+opinion @1 drink for 1 : A #cup# of #cider# with friends eases a hard #road#. | I keep enough sense left to tie the next #strap# straight.
+opinion @1 city against 2 : City streets trap a #cart# between too many hurried paws. | I like a #road# where the next #bend# belongs to one wagon at a time.
+opinion @1 newcomers against 2 : I ask who a new #hand# worked for before I give them a #load#. | Too much can follow a stranger into a small town.
+opinion @1 strangers against 1 : A polite #stranger# may still bring trouble at the #gate#. | I keep the #cart# close until I know the visitor.
+opinion @1 merchants against 1 : The #price# of #straps# rises while the freight pay stays still. | I will not haggle through a whole #mile# for an honest measure.
+opinion @1 houses against 1 : A young #kin# might earn a #post# if a House looked past the family coat. | I haul their #loads#; I want them to know the hands that do it.
+opinion @1 road mixed 1 : The #road# can turn rough, but it feeds us. | A well tied #load# lets me enjoy a clear #mile#.
+opinion @1 times against 1 : Another week, another #coin# needed for the same repair. | With steady work, this #cart# can keep rolling.
+
+grown
+line @1 greet : #greet#. I am finishing this #strap#. | #greet#. Stand beyond the #cart# wheel.
+line @2 greet [pair.band=strangers] : #greet#. Tell me your business before you touch the #load#. | #greet#. Where on the #road# did you come from?
+line @3 greet [pair.band=friends|family] : A #cup# of #cider# after this run? | I learned a festival #dance# step on my last run.
+line @4 greet [self.working=yes] : #greet#. Walk by the #wheel# and speak. | The #rope# needs a second #knot# first.
+line @5 greet [here.time=dawn] : #greet#. The #cart# is awake before the #market#. | #greet#. My #boots# have found the cold already.
+line @1 greet.return : Back already? My #march# must have carried farther than I thought. | #welcome_back#. The #load# is still secure.
+line @2 greet.return [pair.band=friends|family] : The #cider# is warm enough now. | I kept the best #dance# story for you.
+line @1 kin.open [pair.kin!=no] : Come home; the #cart# can rest. | There is a #cup# on the table.
+line @1 again.open : I have tightened only two #straps# since you left. | Another visit before the #wheel# has turned?
+line @1 farewell : #farewell#. Walk safely on the #road#. | #saying.capitalize#. Avoid the deep #rut#.
+line @1 farewell.return : I shall see you after the next #mile#. | A safe #road# home.
+line @1 react.news : I will hear it while I tie this #rope#. | Start with who saw it.
+line @1 react.news.new : No driver mentioned that at the #market#. | Who carried the word here?
+line @1 react.news.known : A piece reached me with the last #cart#. | That fills the missing turn in an earlier account.
+line @1 react.news.doubt : I want another witness before I carry that word. | A loose claim is worse than a loose #strap#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is awful. The #load# may stand a moment without me. | I am sorry. Sit near the #lantern# and tell me.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good! That calls for a #dance#. | I will raise a #cup# when the #cart# is put away.
+line @1 answer.how : The #cart# has held together and I have had supper. | Restless, but the #straps# are sound.
+line @1 answer.how.busy [self.working=yes] : A stubborn #knot# has slowed the #sacks# today. | The #wheels# need a close look today.
+line @1 ask.how : Has your #road# been clear? | Did the #night# stay quiet at your #home#?
+line @1 sympathise : The #rope# can stay here while you speak. | Take a #cup#; your words can come slowly.
+line @1 reassure : A #knot# can be retied after a bad turn. | We can carry the next #sack# first, then think ahead.
+line @1 decline : I cannot take that #load# with this #axle#. | No. The #cart# is committed elsewhere.
+line @1 accept_decline : That is plain enough. I will leave the #strap# loose. | Fair enough; another #cart# may come.
+line @1 thank : You saw the #wheel# wobble before the #road#. | That saved a whole #load#. Thank you.
+line @1 deflect_thanks : My #cart# was going that way. | I had a #rope# to spare.
+line @1 preclose : One more pass along the #straps# before I leave. | The #lantern# must be lit before dark.
+line @1 tease [pair.band=friends] : Your #step# belongs on the other paw. | That #knot# is trying to be a #riddle#.
+line @1 ack : #bc_right#. I will pull the #strap# again. | #bc_fair_enough#. The #wheel# looks true.
+line @1 give.advice : Test the #load# after the first #bend#. | Keep a sharp #knife# safely covered in the #cart#.
+line @1 warn [world.bandits=near] : Stay with other #carts# while trouble is on the #road#. | Do not stop at a dark #bend# alone.
+scene strap_march
+when topic=work
+does tell.self / react.self / assess
+a : I #hum# a #march# while I tighten the #straps#. | The #beat# reminds me to pull each #strap# the same way.
+b : Does it help? | Do you ever forget a strap?
+a : It keeps my hands in order. | Once, so now I count at the end.
+
+scene load_at_bend
+when topic=travel
+does tell.self / react.self / assess
+a : I slow the #cart# before a steep #bend#. | A high #load# leans when a #wheel# finds a deep #rut#.
+b : Do you stop to adjust it? | Can you feel it shift?
+a : If the #straps# have loosened. | Through the cart bed, yes.
+
+scene wheel_before_road
+when topic=work
+does tell.self / react.self / assess
+a : I walk round the #cart# once before the #road#. | A #wheel# may look sound until I press at the #rim#.
+b : Do you check every wheel? | What if one moves?
+a : Each one. | The #load# stays until it is fixed.
+
+scene knot_in_rain
+when topic=weather here.weather=rain|storm
+does tell.self / react.self / assess
+a : Wet #rope# pulls tight and can bite my paws. | Before a wet departure, I shield the #knot# beneath the cover.
+b : Does that keep it dry? | Do you retie it later?
+a : Long enough for the first #mile#. | When the #road# gives me a safe stop.
+
+scene first_snow
+when topic=weather here.season=winter here.weather=snow
+does tell.self / react.self / assess
+a : The first #snow# makes the #road# look smoother than it is. | I like the first #flake# until it hides a #rut#.
+b : Do you enjoy driving in it? | Does the load get wet?
+a : Only before the #wheels# start slipping. | If I forget the cover.
+
+scene festival_dance
+when topic=festival
+does tell.self / react.self / assess
+a : I take the first #dance# even after a freight day. | A good #step# can shake the #road# out of my legs.
+b : Do you know the songs? | Do you stay late?
+a : I know enough to join in. | Until the #noise# grows tiresome.
+
+scene spiced_cup
+when topic=food
+does tell.self / react.self / assess
+a : The #spice# in my #cider# should reach the nose first. | One warm #cup# can end a hard #mile# kindly.
+b : Is it mild enough before a morning run? | Do you share?
+a : Not when I drive early. | With anyone who helped unload.
+
+scene quiet_night
+when topic=day here.time=night
+does tell.self / react.self / assess
+a : Late #noise# makes me think someone is at the #cart#. | I keep the #lantern# near the #gate# until the street settles.
+b : Do you go look? | Does it wake the whole house?
+a : If the #wheels# sound disturbed. | Only the light sleepers.
+
+scene larder_rat
+when topic=home
+does tell.self / react.self / assess
+a : A #rat# in the #larder# can undo a week's careful buying. | I put the #cider# and food above where #rats# can reach.
+b : Do you set traps? | Have they taken anything?
+a : I find the entry hole before setting a trap. | A little grain, once.
+
+scene knife_for_ropes
+when topic=work
+does tell.self / react.self / assess
+a : A sharp #knife# cuts a tangled #rope# without pulling the #load#. | The #edge# stays clear of any #strap# still worth using.
+b : Do you use it often? | Can you untie knots instead?
+a : Only when a #knot# has gone hard. | Usually; I try that first.
+
+scene festival_bells
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : Festival #bells# make an early #road# easier to bear. | I time the first #mile# by how long their sound follows the #cart#.
+b : Do you stop to listen? | Are you working on festival day?
+a : The #load# will not wait. | Sometimes; freight still moves.
+
+scene friend_on_road
+when topic=friends
+does tell.self / react.self / assess
+a : A friend riding beside me can take the #march# for half a #mile#. | I like someone who will say when the #load# leans.
+b : Do you sing together? | Do you ask them to watch the road?
+a : If they know the tune. | We trade that task at each #bend#.
+
+scene house_post
+when topic=family
+does tell.self / react.self / assess
+a : I hope a young #kin# can find a better #post# than hauling every #sack#. | A great #house# ought to take a careful worker without a fine coat.
+b : Would you speak on their behalf? | Do they want that work?
+a : If they wanted me to. | They must say for themselves.
+
+scene city_crowd
+when topic=travel
+does tell.self / react.self / assess
+a : A city street leaves no room to turn a #cart# without someone shouting. | I watch every #stranger# near the #load# when the #market# is packed.
+b : Is that a frequent journey? | Has anything been stolen?
+a : Only when the freight calls for it. | Not while I kept a close eye.
+
+scene price_of_straps
+when topic=prices
+does tell.self / react.self / assess
+a : A good #strap# costs more #coin# than last year. | I ask the #price# before the seller cuts the leather to length.
+b : Do you haggle? | Do you buy the best?
+a : Only if the measure is wrong. | The soundest I can afford.
+
+scene warm_home
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse# can tell from my #boots# whether the #road# was rough. | We talk after the #cart# is put away and the #cider# is warm.
+b : Do you share the driving? | Do you leave work outside?
+a : When another #load# needs us both. | We try, once the #gate# shuts.
+
+scene road_riddle
+when topic=pastimes
+does tell.self / react.self / assess
+a : I make up a silly #riddle# when the #road# has too many straight #miles#. | A #march# and a puzzle can keep a driver awake.
+b : Are your riddles good? | Do you give the answer?
+a : Good enough to make a friend groan. | At the next #bend#.
+
+story loosened_strap [topic=work self.age>=18]
+  : I heard a #strap# slapping the #cart# after the first #mile#.
+  : I stopped, pulled it tight to the #beat# of an old #march#, and checked the others.
+  ask : Had anything shifted?
+  b : The load might have leaned.
+  : One #sack# had moved. I set it back before taking the #road# again.
+
+story dance_after_delivery [topic=pastimes self.age>=18]
+  : I reached a festival after a late delivery with #boots# still dusty.
+  : I took one #dance# anyway, then helped move the empty #carts# from the green.
+  ask : Did you enjoy it?
+  b : Even one dance can help after work.
+  : I did. I hummed the tune on the way #home#.
+
+story first_snow_cart [topic=weather self.age>=18]
+  : I set off in the first #snow# thinking the #road# would stay firm.
+  : The #wheels# found hidden #ruts#, so I slowed and shortened the day's run.
+  ask : Did you arrive?
+  b : Slowly is better than a broken axle.
+  : Before dark, with every #sack# still tied.
+
+rule @bark_strap
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say One more pull on the #strap#. | The #load# is tied to the #beat# now.
+
+rule @bark_march
+when concept=bark
+does aside
+cooldown 8h
+say That #march# has followed me all day. | I can #hum# the next turn.
+
+rule @bark_cider
+when concept=bark here.time=dusk|night
+does aside
+cooldown 10h
+say A warm #cup# would finish this day. | The #spice# is already in the #cider#.
+
+rule @bark_snow
+when concept=bark here.season=winter here.weather=snow
+does aside
+cooldown 11h
+say The first #snow# has found the #ruts#. | Take this #bend# slowly with the #cart#.
+
+dlg @1 resident.hub : #greet#. Your voice will reach me beside the #wheels#. | #greet#. The #strap# is nearly tied; speak.
+dlg @2 resident.hub [topic.meeting=known] : You have come back. Did you solve that #riddle#? | I know you. Ride beside the #cart# a while.
+dlg @1 resident.job : I haul #loads#, tie the #straps#, and keep the #wheels# true. | My #cart# takes freight along the #road# from Coldwater.
+dlg @1 resident.bye : #farewell#. Keep to the lit #road#. | #saying.capitalize#. The #cart# is waiting.
+graft resident.hub
+choice Why hum while you tie the straps? -> march
+node march
+say The #march# gives each #strap# a #beat#. I know when I have missed one.
+free
+choice Does it really keep the load safe? -> safety
+choice Back to what we were saying. -> hub
+node safety
+say It helps me remember the order. Then I pull every #strap# once more by hand.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
