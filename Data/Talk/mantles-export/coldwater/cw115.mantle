@@ -1,0 +1,281 @@
+# cw115, the owed mark (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw115
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for cty_jessamy_greyford
+written_by claude-codex-cw-1
+title the owed mark
+fits stage=adult|old
+prefers job=herder honesty=frank
+traits temper=even talk=quiet warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk keeps_a_tally_of_favours_owed
+likes roast_pork wrestling full_larder thunder
+dislikes crowds deep_mud
+fears forgetting_a_kindness a_sheep_lost_in_a_storm
+hopes a_full_larder a_promise_kept_at_home
+topics work +0.5 home +0.4 food +0.3 pastimes +0.3 weather +0.2 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# marks every kindness in a #ledger#, keeps the #flock# in sight, and speaks plainly even when tired.
+
+words
+oath! = By fleece and chalk | Thunder over the fold
+saying! = Count the help as well as the sheep | A mark is no favour until it is returned
+ledger = ledger | little tally book
+mark = mark | chalk stroke
+chalk = chalk | white chalk
+favour = favour | kindness owed
+promise = promise | word given
+flock = flock | flock of sheep
+sheep = sheep | woolly sheep
+lamb = lamb | young sheep
+fold = fold | sheep pen
+fence = fence | rail fence
+gate = gate | field gate
+wool = wool | fleece
+shears = shears | cutting shears
+pasture = pasture | grazing field
+mud = mud | deep muck
+boots = boots | work boots
+larder = larder | food cupboard
+pork = pork | roast pork
+crackling = crackling | crisp rind
+roof = roof | shelter
+thunder = thunder | storm's rumble
+storm = storm | rough weather
+ring = ring | wrestling circle
+hold = hold | grip
+crowd = crowd | press of folk
+home = home | own hearth
+spouse = spouse | partner
+coin = coin | pay
+price = price | asking cost
+road = road | high path
+lake = lake | Glasswater
+mist = mist | shore haze
+hand = hand | working paw
+count = count | tally
+boot = boot | work boot
+
+any
+opinion @1 houses against 1 : A crest above a #gate# will not mend the #fence#. | I have worked beneath their land for years; I know the workers' names better than theirs.
+opinion @1 merchants against 2 : I mark the #price# before I hand over #coin#. | A seller who changes the weight twice will find me walking away.
+opinion @1 city against 1 : A #crowd# of strangers leaves me more tired than a whole #flock#. | I prefer a place where a neighbour can find my #home#.
+opinion @1 festivals mixed 0 : I may watch a bout in the #ring#, then go home. | I like the music better from the edge of a #crowd#.
+opinion @1 road mixed 0 : The #road# brings help and trouble by the same turn. | I carry a #ledger# because even a long journey can end in a remembered kindness.
+opinion @1 newcomers mixed 0 : Show a new #hand# the #gate# before judging their pace. | I remember who did a fair shift, wherever they came from.
+opinion @1 watch mixed 0 : The Watch may need a straight account; I will give one. | I would rather see the patrol help a lost #lamb# than stand counting blame.
+
+grown
+line @1 greet : #greet#. I have a #flock# to count, then I can listen. | #greet#. Say it straight.
+line @2 greet [pair.band=strangers] : #greet#. What brings you over the #road#? | #greet#. The #gate# opens when I know your business.
+line @3 greet [self.working=yes] : #greet#. Mind the #gate# while I check the #flock#. | I can listen after I set these #shears# down.
+line @4 greet [here.time=dawn] : #greet#. The #mist# is still caught in the #fence#. | #greet#. I have the first #mark# in the book already.
+line @1 greet.return : Back, are you? I kept the #ledger# open. | #welcome_back#. The #flock# has settled since you left.
+line @2 greet.return [pair.band=friends|family] : I saved a piece of #pork# if you want it. | You can sit where the #roof# keeps the rain off.
+line @1 kin.open [pair.kin!=no] : Come nearer the #home# fire. | The #ledger# is on its usual shelf.
+line @1 again.open : Back before the #count# is done? | Another visit? I have only made one #mark# since the last.
+line @1 farewell : #farewell#. Shut the #gate# gently. | #saying.capitalize#. Keep out of the #mud#.
+line @1 farewell.return : I will remember the #favour#. | A calm #road# home to you.
+line @1 react.news : Set it out clearly; I will listen. | Give me the account from the beginning.
+line @1 react.news.new : I have heard no word of that at the #fold#. | Who brought this news over the #road#?
+line @1 react.news.known : Part of that reached the #pasture# earlier. | I know a little of it; go on.
+line @1 react.news.doubt : That account needs another witness before I believe it. | Let me see the #ledger# before I settle it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Come under the #roof#. | A hard thing. I will hear what you need to say.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I am glad for them. | That earns a sound #mark# in my day.
+line @1 answer.how : Tired, but the #flock# is sound. | I have had enough work and enough supper.
+line @1 answer.how.busy [self.working=yes] : Counting #sheep# and watching the #gate#. | The #shears# have kept me busy.
+line @1 ask.how : Has your #road# been easy? | Have you had a decent meal today?
+line @1 sympathise : I can stay and hear it, though I cannot mend it all. | Let me set the #ledger# aside while you speak.
+line @1 reassure : Take the next #gate# first. The whole #road# can wait. | A bad day does not cancel every good #mark#.
+line @1 decline : I cannot promise a thing I cannot carry through. | My #flock# needs me now; I cannot leave it.
+line @1 accept_decline : That is clear. I will leave the matter there. | Fair enough; I will close the #ledger# on that.
+line @1 thank : I have marked what you did. Thank you. | A kindness returned when I needed it; I know that.
+line @1 deflect_thanks : A favour goes both ways. | My paws were idle and the work needed doing.
+line @1 preclose : I must bring the #flock# inside. | One last #count# before the light goes.
+line @1 tease [pair.band=friends] : You would lose a wrestling #hold# to a wool sack. | That #mud# chose your #boots# in particular.
+line @1 ack : #bc_right#. I will make a #mark#. | #bc_fair_enough#. The #count# seems sound.
+line @1 give.advice : Write down what was promised before the #price# changes. | Check the far #fence# after #thunder#.
+line @1 warn [world.bandits=near] : Take the busier #road# while trouble is about. | Keep someone beside you past the outer #gate#.
+scene tally_of_help
+when topic=home
+does tell.self / react.self / assess
+a : I put a #mark# in my #ledger# when someone lends a paw. | A #favour# can vanish from memory if a busy week passes.
+b : Do you write their names? | Do they know you keep count?
+a : Enough to remember what I owe. | I tell them when I can return it.
+
+scene promise_at_home
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : My #spouse# knows I will do what I promised at #home#. | A word given beside the fire matters more to me than a public oath.
+b : What if work keeps you away? | Do you write that down too?
+a : I say so early, and make the time later. | No. I can remember that one without #chalk#.
+
+scene flock_before_supper
+when topic=work
+does tell.self / react.self / assess
+a : Before supper, every #sheep# goes through my #count#. | A missing #lamb# is easier to find while there is still light.
+b : Do you count them twice? | Where do they stray?
+a : At the #gate# and again in the #fold#. | Usually where the #fence# has a low rail.
+
+scene shears_rest
+when topic=work
+does tell.self / react.self / assess
+a : The #shears# get heavy by the last #sheep#. | I clean the #shears# before putting them away.
+b : Does the work hurt your paws? | Why clean them then?
+a : Some evenings, yes. | The next #wool# should not catch on a dull edge.
+
+scene wool_in_piles
+when topic=work
+does tell.self / react.self / assess
+a : I keep clean #wool# away from the #mud#. | Each pile gets a #mark# before anyone carries it off.
+b : Can you tell the sheep apart? | Who moves the wool?
+a : Most, by their coats and gait. | Whoever has dry paws and a clear path.
+
+scene roof_and_thunder
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : I like #thunder# best with a sound #roof# overhead. | A storm is easier to hear when the #flock# is safely in the #fold#.
+b : Will you check the outer rail? | Does the noise bother the sheep?
+a : Only if a #gate# rattles loose. | Some huddle; others barely lift a head.
+
+scene mud_at_hem
+when topic=weather here.weather=rain|storm
+does tell.self / react.self / assess
+a : Deep #mud# takes a #boot# if you pull too fast. | I test the ground beside the #fence# before leading #sheep# through.
+b : Have you lost a boot? | Will the flock follow a drier way?
+a : Once, until I dug it free. | Usually, if I leave room at the #gate#.
+
+scene full_larder
+when topic=food
+does tell.self / react.self / assess
+a : A full #larder# lets me rest after a hard day. | I like knowing there is #pork# for supper before the #flock# comes in.
+b : Do you keep much stored? | What do you cook with it?
+a : Enough for a few lean days. | Whatever is at #home# with it.
+
+scene crackling_edge
+when topic=food
+does tell.self / react.self / assess
+a : I save the #crackling# for the end of the meal. | The best #pork# has a crisp edge and a soft middle.
+b : Do you share the last piece? | Is it your own cooking?
+a : If another wants it more. | When there is time after work.
+
+scene wrestling_green
+when topic=pastimes
+does tell.self / react.self / assess
+a : I like a fair bout in the #ring#. | A good #hold# needs balance more than size.
+b : Do you wrestle often? | What makes a bout fair?
+a : On a day when someone else minds the #flock#. | Both leave the #ring# willing to shake paws.
+
+scene crowd_at_ring
+when topic=pastimes
+does tell.self / react.self / assess
+a : I stand at the edge of a #crowd# to watch a bout. | The shouting tires me sooner than the wrestling.
+b : Why stay if it is noisy? | Do you leave early?
+a : I like seeing a clever #hold#. | Once I have seen the final turn.
+
+scene price_in_chalk
+when topic=prices
+does tell.self / react.self / assess
+a : The weight and #price# each get their own #chalk# mark. | A clear #mark# saves a quarrel later.
+b : Does a buyer object? | Is chalk enough proof?
+a : One who means to pay fairly does not. | It helps us both remember what was said.
+
+scene neighbour_owed
+when topic=friends
+does tell.self / react.self / assess
+a : If a neighbour helps mend the #fence#, I remember it. | A borrowed paw deserves more than a nod at the #gate#.
+b : How do you repay them? | Do you ask them first?
+a : With work when theirs needs doing. | I ask what would actually help.
+
+scene mist_on_lake
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : The #mist# off the #lake# can hide the far #pasture#. | In thick #mist#, their bells find me before their shapes do.
+b : Does that worry you? | Can you count by sound?
+a : Enough to keep the #gate# closed. | No. I wait for a clear view.
+
+scene hard_truth
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I would rather give an awkward answer than a soft lie. | A #promise# is lighter to make than to carry.
+b : Do people thank you for that? | Is silence ever better?
+a : Not usually. They know where I stand. | If I have not learned the facts yet.
+
+scene lake_road
+when topic=travel
+does tell.self / react.self / assess
+a : Before the carts arrive, the high #road# by the #lake# belongs to walkers. | I can walk a long way if the #boots# stay dry.
+b : Do you go far? | Where do you stop?
+a : Not while the #flock# needs me. | Where the high path broadens beside the #lake#.
+
+scene final_count
+when topic=day here.time=dusk
+does tell.self / react.self / assess
+a : I count the #sheep# as the light leaves the #pasture#. | The last #lamb# through the #gate# always makes me breathe easier.
+b : What if one is missing? | Do they hurry home?
+a : I follow the #fence# before dark settles. | Some do. The rest need guiding.
+
+story lost_chalk [topic=memories self.age>=25]
+  : I lost my #chalk# after promising to repay a neighbour's help.
+  : I made a #mark# with a bit of charcoal until I could find another stick.
+  ask : Did the neighbour ever see it?
+  b : A dark mark would be easy to spot.
+  : I showed it when I brought a board for their #fence#. The debt was settled.
+
+story storm_fold [topic=work self.age>=25]
+  : #thunder.capitalize# came while the #flock# was still in the #pasture#.
+  : I opened the #gate# wide and waited by the rail as they pressed in.
+  ask : Did every sheep reach the fold?
+  b : You counted before you shut it, I hope.
+  : I did. One #lamb# came last, sheltered by the others.
+
+story quiet_bout [topic=pastimes self.age>=25]
+  : I took a #hold# in a wrestling bout while the #crowd# shouted advice.
+  : I stopped listening to them and watched where the other wolf put a paw.
+  ask : Did you throw them?
+  b : You waited for their balance to change.
+  : We both went down. It was a draw, and a fair one.
+
+rule @bark_tally
+when concept=bark
+does aside
+cooldown 8h
+say I owe a #favour# yet. | That #mark# belongs in the #ledger#.
+
+rule @bark_flank
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say Keep the #flock# away from the far #fence#. | The #gate# needs another look.
+
+rule @bark_shelter
+when concept=bark here.weather=storm
+does aside
+cooldown 10h
+say A sound #roof# makes that #thunder# pleasant. | Bring the #sheep# in before the rain hardens.
+
+rule @bark_food
+when concept=bark here.time=dusk|night
+does aside
+cooldown 9h
+say There should be #pork# in the #larder#. | Supper first, then the #ledger#.
+
+dlg @1 resident.hub : #greet#. Speak plainly and I will do the same. | #greet#. The #count# is nearly finished; speak.
+dlg @2 resident.hub [topic.meeting=known] : You came back. What do you need? | I know your face. Tell me what brought you here.
+dlg @1 resident.job : I tend the #flock#, shear #wool#, and keep the #gate# sound. | My work is #sheep#, #shears#, and a fair #count#.
+dlg @1 resident.bye : #farewell#. Keep your #boots# dry. | #saying.capitalize#. I will close the #ledger# now.
+graft resident.hub
+choice Why do you write down favours? -> tally
+node tally
+say I forget small kindnesses when a week gets crowded. The #ledger# keeps me honest.
+free
+choice Do you expect them repaid? -> repayment
+choice Back to what we were saying. -> hub
+node repayment
+say I repay what I owe when I can, but kindness has no price in my book.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
