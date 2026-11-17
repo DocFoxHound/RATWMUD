@@ -114,3 +114,24 @@ a crash or a maintenance close (exit 76).
 - Known data problems the pilot writers found (doc §40/§41): workplaces that are districts, friend slots pointing at
   kin, fen backstories on Saltwell residents, the dialect word list flagging ordinary English. Fix in a data pass;
   ask the user if unsure.
+
+## 8. Problems found while writing the handbook (fix before or during stage 5)
+
+Found by the agent that wrote `Docs/Mantle-writing-handbook.md` (commit `e4a597b1`, with `tools/mantle_batch.py`);
+documented there, not fixed:
+
+- **Mark banks can't be written yet:** the grammar parser refuses `mark.oath`, the name the engine looks for. P15's mark
+  banks are blocked on this engine fix.
+- **The pilot's window lines can hide real facts:** ungated news, gossip, business, shop and inn lines in mantles outrank
+  the trees' own (84 lines). E.g. `sw101`'s "Nothing worth the telling" won over real news 20 times in 20. Gate those
+  lines on the facts (or lower their priority) and fix the 84.
+- **G2 (`mantle_check`) doesn't check tagged scene lines** (`b[...] #tag :`, `a@tag :`), though doc §40 says it does.
+  `mantle_batch.py lint` covers it and found 52 hidden problems in the pilot (5-word runs, a Southmeadow phrase in
+  `mb120`, a resident's name "Ash" used as a word). Fix the 52 and teach G2.
+- **15 pilot personas use pronouns**, though a mantle can pass to either sex: make them sex-neutral or slotted.
+- **`cw102`'s stories misuse `ask :`** (it is the teller's line, not the listener's).
+- **`mantle_load` exits 0 when a binding fails:** read its output, or make it exit non-zero.
+- **`mantle_check --pools` was never built.**
+- **`written_by` is always `claude-<batch>`**, whoever writes the batch: make it a parameter.
+- **The plain kits will fail `test_mantle_check.py`** until its kit table gets a plain-to-Ridgemere entry (the handbook
+  allows that one-line edit).
