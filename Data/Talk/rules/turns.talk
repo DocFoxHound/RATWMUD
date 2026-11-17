@@ -22,8 +22,13 @@ say I mustn't keep you. | Still. Can't stand about. | Well. Enough of me. | So. 
 
 rule cv_pre_work
 does preclose
-when self.working=yes
+when self.working=yes self.job!=child
 say Back to it, then. | Work won't wait. | I'd better get on. | This won't earn my keep. | Well. Hands to it.
+
+rule cv_pre_school
+does preclose
+when self.working=yes self.job=child
+say Teacher's looking. | I'd better get back to my letters. | We'll catch it if we're caught talking. | I'll be missed in a minute.
 
 rule cv_accept_any
 does accept_preclose
@@ -51,12 +56,17 @@ say Well. #farewell#. | Right. #farewell#. | Anyway. Take care. | Well. I'll see
 
 rule cv_bye_both2
 does preclose farewell
-say Off I go, then. | I'll let you be. | Right. Till next time. | I'll leave you to it.
+say I'll let you be. | Right. Till next time. | I'll leave you to it.
+
+rule cv_bye_both_leave
+does preclose farewell
+when self.working=no self.job!=innkeeper
+say {leave=yes} Off I go, then. | {leave=yes} I'll be on my way.
 
 rule cv_bye_night
 does farewell
 when here.time=night|dusk
-say Good night. | Sleep sound. | Good night, #address#. | Rest well. | Mind the dark. | Don't stay up late. | Till morning, then. | See you in the morning. | Sleep well, now. | Off to bed with me.
+say Good night. | Sleep sound. | Good night, #address#. | Rest well. | Mind the dark. | Don't stay up late. | Till morning, then. | See you in the morning. | Sleep well, now.
 
 rule cv_bye_young
 does farewell
@@ -100,7 +110,7 @@ say #greet#. | #greet#, #address#.
 rule cv_greet_host
 does greet
 when here.place=tavern self.job=innkeeper
-say #greet#. Sit yourself down. | #greet#. Take the warm end.
+say #greet#. Sit yourself down. | #greet#. Take the warm end. | #greet#. What can I get you? | #greet#. There's room by the fire. | #greet#. Pull up a stool. | #greet#. Sit where you like. | #greet#. Good to see you in. | #greet#. In you come.
 
 rule cv_greet_back
 does greet.return

@@ -182,7 +182,7 @@ b : Thanks. | Don't tell anyone. | #bc_sorry# | It was worth it.
 scene r7_fr_childhood_name
 when topic=friends
 does ask.detail / answer.detail / assess / assess
-a : Morning, Puddles. | Remember when everyone called you Little Ears? | Your mother still calls you Bun, doesn't she? | Do you still answer to Scrap?
+a : Well, if it isn't Puddles. | Remember when everyone called you Little Ears? | Your mother still calls you Bun, doesn't she? | Do you still answer to Scrap?
 b : Don't. Not in the street. | I grew into them. | Only when she's cross. Which is always. | Nobody's called me that in years.
 a : Puddles. Puddles! | #bc_mostly# | Bun. | Scrap.
 b[temper=short] : Say it again and I'll tell them what we called you. | I'll tell everyone yours. Everyone. | Careful. | Careful. I know yours.

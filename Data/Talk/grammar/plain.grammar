@@ -17,10 +17,19 @@
 # half the time; broad, always, with its .broad words. Drafts (phase 3), to be written properly with you (phase 7).
 
 grammar plain
-greet = Good day | Hello | Morning
+greet = Good day | Hello
+greet[here.time=day here.hour<12] = Morning | Good morning | Good day | Hello
 greet[here.time=dawn] = Morning | Good morning
 greet[here.time=dusk|night] = Evening | Good evening
 farewell = Farewell | Good day to you | Mind how you go
+farewell[here.time=dusk|night] = Farewell | Good night | Mind how you go
+# "Good day" where it's said as a greeting or a goodbye: never at night (Slice 2's review: "Bed for me." / "Good day to you.").
+good_day = Good day
+good_day[here.time=dawn] = Good morning
+good_day[here.time=dusk|night] = Good evening
+# Said of the day as it is now: tonight once the lamps are lit, else today (a mourner in the tavern at seven in the morning).
+tonight = today
+tonight[here.time=dusk|night] = tonight
 thanks = Thank you | Thanks | Much obliged
 agree = Aye | True enough | That it is
 refuse = No | Not likely | I'd rather not
@@ -274,25 +283,29 @@ s8_okay[self.stage=adult|old self.warmth=cold] = Fine | Go, then | Right
 s8_okay[self.stage=adult|old self.talk=chatty] = Already? Well, go on | So soon? Go on, then | Oh, already? Fine, fine
 s8_okay[self.stage=old] = Off you go, then | Go on, go on | Don't mind me
 s8_bye = Go carefully | All the best | Keep well | Mind yourself, then | Go well, now
-s8_bye[self.stage=young|adolescent] = Bye, now | See you | Bye, then | Off I go
+s8_bye[self.stage=young|adolescent] = Bye, now | See you | Bye, then | See you later
 s8_bye[self.stage=adult|old pair.band=friends|family|spouses|housemates] = See you soon | Don't be a stranger | Look after yourself, you | Mind how you go, love | Off you go, you
 s8_bye[self.stage=adult|old pair.band=strangers] = Good day to you | Safe travels | Good day | Mind how you go
+s8_bye[self.stage=adult|old pair.band=strangers here.time=dusk|night] = Good evening to you | Safe home | Good night | Mind how you go
 s8_bye[self.stage=adult|old here.time=dawn] = Have a good day | Make it a good one | Off to it, then | Long day ahead
 s8_bye[self.stage=adult|old self.piety=devout] = #bless# | #blessing# | Bright One keep you
 s8_bye[self.stage=adult|old self.warmth=cold] = Right | Good day | Yes. Goodbye | That's all, then
+s8_bye[self.stage=adult|old self.warmth=cold here.time=dusk|night] = Right | Night | Yes. Goodnight | That's all, then
 s8_bye[self.stage=adult|old self.humour=merry] = Don't do anything I wouldn't | Behave yourself | Mind you don't trip | Stay out of trouble
 s8_bye[self.stage=old] = Off you go, then | Mind how you go, now | Don't hurry on my account | Come and see me again
 s8_byeback = And to you | Same to you | You too, now | Go well, then | Keep well | All the best
 s8_byeback[self.stage=young|adolescent] = Bye | See you | Bye, then | Bye, now
 s8_byeback[self.stage=adult|old pair.band=friends|family|spouses|housemates] = See you soon | Don't be a stranger | Look after yourself | Mind yourself, you | You too, now
 s8_byeback[self.stage=adult|old pair.band=strangers] = Good day to you | And good day | Safe travels | Good day, then
+s8_byeback[self.stage=adult|old pair.band=strangers here.time=dusk|night] = Good evening to you | And good night | Safe home | Good night, then
 s8_byeback[self.stage=adult|old here.time=dawn] = And you. Good day | Make it a good one | Long day. Go on
 s8_byeback[self.stage=adult|old self.piety=devout] = #bless# | #blessing# | Bright One keep you, too
 s8_byeback[self.stage=adult|old self.warmth=cold] = Mm | Goodbye | Yes. Good day | Right
+s8_byeback[self.stage=adult|old self.warmth=cold here.time=dusk|night] = Mm | Goodnight | Yes. Night | Right
 s8_byeback[self.stage=adult|old self.warmth=warm] = Take good care, now | Look after yourself | Come by any time
 s8_byeback[self.stage=old] = Off you go | Mind the step, now | Come again soon | Go on, young one
 # Phase 8 session 3: the night's goodbye and its answer (s8t_bye_night, s8t_return_night), in this voice.
-s8_night = Sleep sound | Rest well, then | Off to bed with you | Mind the gutters home | Lamps are lit. Off home
+s8_night = Sleep sound | Rest well, then | Off to bed with you | Mind the gutters home | Lamps lit. Home with you
 s8_nightback = And you. Rest well | Sleep sound, then | Mind the gutters | Lamps are lit. Go on
 s8_nevermind = Ah, well | Never mind | Some other time | That's all right | No harm in asking
 s8_nevermind[self.stage=young|adolescent] = Aw | Okay | Fine | Aw, all right | Oh. Okay
@@ -300,15 +313,15 @@ s8_nevermind[self.stage=adult|old self.warmth=warm] = Of course. Don't fret | Th
 s8_nevermind[self.stage=adult|old self.temper=short] = Suit yourself | Fine. Be like that | Your loss
 s8_nevermind[self.stage=adult|old self.humour=dry] = I'll survive. Somehow | My heart's broken | I'll get over it
 # Pups' and adolescents' goodbyes, to their own and to the grown (rules/shared8_turns.talk). Each ends its own sentence.
-s8_pupbye = Bye! | See you! | Bye-bye! | Off I go!
+s8_pupbye = Bye! | See you! | Bye-bye! | See you later!
 s8_pupbye[other.stage=young|adolescent] = See you at the well! | Race you tomorrow! | Don't forget! | Bye, slowcoach! | Same time tomorrow! | Save me a spot! | Bye! You're it! | Last one home's a toad! | Don't tell, now! | See you, then! | Wait for me tomorrow!
-s8_pupbye[other.stage=adult|old] = Goodbye, #sir#! | Bye! Thank you! | Bye! I'll be good! | Bye! I'm going now!
+s8_pupbye[other.stage=adult|old] = Goodbye, #sir#! | Bye! Thank you! | Bye! I'll be good! | Bye! See you!
 s8_pupbyeback = Bye! | See you! | Bye-bye! | Bye, then!
 s8_pupbyeback[other.stage=young|adolescent] = Bye, slowcoach! | See you tomorrow, then! | Don't be late! | Bye! Don't forget! | Same time! | I won't tell! | You're it, not me! | Bye! Bye-bye! | Wait for me, then! | Bye, silly!
 s8_pupbyeback[other.stage=adult|old] = Goodbye, #sir#! | Bye! I will! | Yes, bye! | Bye! Thank you!
-s8_teenbye = Later. | See you. | Right. | I'll be off.
+s8_teenbye = Later. | See you. | Right. | Bye, then.
 s8_teenbye[other.stage=young] = Go on, run along. | Off you go, squirt. | See you, pup. | Go on. Home with you.
-s8_teenbye[other.stage=adult|old] = Goodbye, then. | Right. Goodbye. | Bye, #sir#. | I'd best go.
+s8_teenbye[other.stage=adult|old] = Goodbye, then. | Right. Goodbye. | Bye, #sir#. | Good to see you.
 s8_teenbye[other.stage=adolescent] = Later, then. | See you about. | Don't do anything daft. | Right. Laters.
 
 # Phase 8 (doc 84 §33): news taken in, a grumble shared and a question turned, by who says it, for the shared lines'

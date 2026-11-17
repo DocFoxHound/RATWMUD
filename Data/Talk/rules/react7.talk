@@ -1008,7 +1008,7 @@ rule x7_cust_formal
 when concept=react.customer self.tone=formal
 does greet
 cooldown 1h
-say Good day. How may I serve? | Welcome. Please, take your time. | Good day to you. Do let me know what you require.
+say #good_day#. How may I serve? | Welcome. Please, take your time. | #good_day# to you. Do let me know what you require.
 then self: shop.pitch
 remember pair: served 7d
 
@@ -1753,7 +1753,7 @@ rule x7_fr_flock_faithful
 when concept=react.friend pair.flock=b
 does hail
 cooldown 1d
-say {fp=blessing} Blessings to you. | {fp=blessing} Good day! I'll be at chapel Restday, I promise. | {fp=blessing} The candle you lit for us, thank you. It helped.
+say {fp=blessing} Blessings to you. | {fp=blessing} #good_day#! I'll be at chapel Restday, I promise. | {fp=blessing} The candle you lit for us, thank you. It helped.
 then other: friend.parting
 
 rule x7_fr_customer_buyer
@@ -1823,7 +1823,7 @@ rule x7_fr_formal
 when concept=react.friend self.tone=formal
 does hail
 cooldown 6h
-say {fg=ask} Good day, #other.name#. You are well, I trust? | {fg=ask} Ah, #other.name#. A pleasure, as ever. You keep well? | {fg=ask} Good day to you. Well, I hope?
+say {fg=ask} #good_day#, #other.name#. You are well, I trust? | {fg=ask} Ah, #other.name#. A pleasure, as ever. You keep well? | {fg=ask} #good_day# to you. Well, I hope?
 then other: greet.answer
 
 rule x7_fr_cold_warmth

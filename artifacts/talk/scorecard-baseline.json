@@ -19,23 +19,24 @@
    "better": "higher",
    "gate": "hard",
    "target": "40 h+; hard 20 h+",
-   "value": 0.418125,
+   "value": 4.086180555555556,
    "passes": false,
    "by_profile": {
-    "L1": 0.435,
-    "L2": 3.335,
-    "L3": 1.085,
-    "L4": 0.501,
-    "L5": 0.585,
-    "L6": 0.668,
-    "L7": 0.418,
+    "L1": 4.086,
+    "L2": 10.868,
+    "L3": 10.774,
+    "L4": 15.251,
+    "L5": 10.251,
+    "L6": 16.585,
+    "L7": 31.751,
     "L8": 0,
     "L9": 0,
-    "L10": 1.585
+    "L10": 16.918
    },
-   "control": 0.14034722222222223,
-   "separation": 0.6643414715163594,
-   "separates": true,
+   "control": 24.679236111111113,
+   "separation": 0.8344284021937021,
+   "real_better": false,
+   "separates": false,
    "control_required": false,
    "structural": false
   },
@@ -94,25 +95,30 @@
    "better": "lower",
    "gate": "soft",
    "target": "5 or fewer",
-   "value": 3860.0525123404,
+   "value": 5555.384033308445,
    "passes": false,
    "by_profile": {
-    "L1": 7249.0,
-    "L2": 965.0,
-    "L3": 1427.0,
-    "L4": 953.0,
-    "L5": 242.0,
-    "L6": 356.0,
-    "L7": 313.0,
+    "L1": 10349.0,
+    "L2": 1678.0,
+    "L3": 1694.0,
+    "L4": 2189.0,
+    "L5": 913.0,
+    "L6": 491.0,
+    "L7": 1254.0,
     "L8": 0.0,
     "L9": 0.0,
-    "L10": 640.0
+    "L10": 1125.833
    },
-   "control": 3859.7088490795336,
-   "separation": 8.903072167223214e-05,
+   "control": 5704.755971046955,
+   "separation": 0.026183755886598666,
+   "real_better": true,
    "separates": false,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    19919,
+    820.0
+   ]
   },
   "R5": {
    "name": "collision index, per 100 h",
@@ -144,22 +150,23 @@
    "better": "lower",
    "gate": "soft",
    "target": "0.4%",
-   "value": 13.152090741324212,
+   "value": 2.4751119960179193,
    "passes": false,
    "by_profile": {
-    "L1": 9.873,
-    "L2": 9.013,
-    "L3": 16.506,
-    "L4": 13.939,
-    "L5": 23.188,
-    "L6": 16.694,
-    "L7": 21.486,
+    "L1": 3.245,
+    "L2": 1.591,
+    "L3": 1.622,
+    "L4": 1.429,
+    "L5": 1.503,
+    "L6": 5.389,
+    "L7": 0.984,
     "L8": 0,
     "L9": 0,
-    "L10": 18.785
+    "L10": 1.515
    },
-   "control": 13.141588273244212,
-   "separation": 0.0007985398129136456,
+   "control": 2.460179193628671,
+   "separation": 0.006033182503770715,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -261,29 +268,29 @@
    "better": "higher",
    "gate": "soft",
    "target": "80% / 3% / 5%",
-   "value": 0.1867549681454415,
-   "passes": false,
+   "value": 99.97457545169726,
+   "passes": true,
    "by_profile": {
-    "L1": 0.075,
-    "L2": 0.126,
-    "L3": 0.5,
-    "L4": 0.583,
-    "L5": 0.167,
-    "L6": 0.083,
-    "L7": 0.0,
+    "L1": 100.0,
+    "L2": 99.832,
+    "L3": 100.0,
+    "L4": 100.0,
+    "L5": 100.0,
+    "L6": 100.0,
+    "L7": 100.0,
     "L8": 0.0,
     "L9": 0.0,
-    "L10": 0.139
+    "L10": 99.86
    },
-   "control": 0.29168185993068807,
-   "separation": 0.35973060446810157,
-   "real_better": false,
-   "separates": false,
+   "control": 39.824819910718084,
+   "separation": 0.6016505223374572,
+   "real_better": true,
+   "separates": true,
    "control_required": true,
    "structural": false,
    "events": [
-    50,
-    26142.0
+    24513,
+    24519.0
    ]
   },
   "C4": {
@@ -305,7 +312,7 @@
     "L9": 0.0,
     "L10": 0.0
    },
-   "control": 0.08989841479128585,
+   "control": 0.018666002986560477,
    "separation": 1.0,
    "real_better": true,
    "separates": true,
@@ -313,7 +320,7 @@
    "structural": false,
    "events": [
     0,
-    66742.0
+    160720.0
    ]
   },
   "C5": {
@@ -425,27 +432,27 @@
    "better": "higher",
    "gate": "soft",
    "target": "1.5+",
-   "value": 0.7605021533751801,
+   "value": 0.7449283430010758,
    "passes": false,
    "by_profile": {
-    "L1": 0.385,
-    "L2": 0.837,
-    "L3": 0.767,
-    "L4": 1.383,
-    "L5": 1.45,
-    "L6": 1.0,
-    "L7": 1.05,
-    "L10": 1.069
+    "L1": 0.695,
+    "L2": 1.199,
+    "L3": 0.41,
+    "L4": 0.354,
+    "L5": 0.96,
+    "L6": 1.208,
+    "L7": 1.071,
+    "L10": 0.929
    },
-   "control": 0.7605021533751801,
+   "control": 0.7449283430010758,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    1907,
-    25964.0
+    1830,
+    24519.0
    ]
   },
   "T1": {
@@ -793,7 +800,7 @@
    "structural": false,
    "events": [
     0,
-    25964.0
+    24519.0
    ]
   },
   "W1": {
@@ -892,29 +899,29 @@
    "better": "higher",
    "gate": "soft",
    "target": "light 25-50%",
-   "value": 0.9333679786881363,
+   "value": 2.2902385456142142,
    "passes": false,
    "by_profile": {
     "L1": 0.0,
-    "L2": 0.473,
-    "L3": 2.449,
-    "L4": 1.538,
-    "L5": 3.996,
-    "L6": 4.326,
+    "L2": 0.754,
+    "L3": 2.497,
+    "L4": 7.317,
+    "L5": 4.097,
+    "L6": 19.388,
     "L7": 0.0,
     "L8": 0,
     "L9": 0,
     "L10": 0.0
    },
-   "control": 2.0939484043416763,
-   "separation": 0.5542545476512918,
+   "control": 2.733987862742257,
+   "separation": 0.16230844444311154,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    385,
-    73172.0
+    468,
+    73100.0
    ]
   },
   "D1B": {
@@ -922,29 +929,29 @@
    "better": "higher",
    "gate": "soft",
    "target": "broad 60%+",
-   "value": 2.8677323044114504,
+   "value": 4.737926811801886,
    "passes": false,
    "by_profile": {
     "L1": 0.0,
-    "L2": 4.222,
-    "L3": 6.177,
-    "L4": 7.052,
-    "L5": 5.58,
-    "L6": 8.525,
-    "L7": 5.284,
+    "L2": 8.274,
+    "L3": 8.179,
+    "L4": 8.628,
+    "L5": 6.803,
+    "L6": 28.521,
+    "L7": 8.075,
     "L8": 0,
     "L9": 0,
     "L10": 0.0
    },
-   "control": 2.7110737042929056,
-   "separation": 0.0546280417727819,
+   "control": 4.551978703796891,
+   "separation": 0.03924672444112256,
    "real_better": true,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    3667,
-    81536.0
+    5850,
+    74774.0
    ]
   },
   "C1M": {
@@ -1110,29 +1117,29 @@
    "better": "lower",
    "gate": "soft",
    "target": "0",
-   "value": 0.01783516738304589,
+   "value": 0.0746640119462419,
    "passes": false,
    "by_profile": {
     "L1": 0.0,
-    "L2": 0.0,
-    "L3": 0.128,
+    "L2": 0.497,
+    "L3": 0.215,
     "L4": 0.0,
     "L5": 0.0,
     "L6": 0.0,
     "L7": 0.0,
     "L8": 0.0,
     "L9": 0.0,
-    "L10": 0.0
+    "L10": 0.081
    },
-   "control": 0.01783516738304589,
-   "separation": 0.0,
+   "control": 0.03733200597312095,
+   "separation": 0.5,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    3,
-    168207.0
+    12,
+    160720.0
    ]
   },
   "D1A": {
@@ -1196,17 +1203,19 @@
   "L1": {
    "R1_detail": {
     "listeners": 2,
-    "median": 1.0195138888888888,
+    "median": 5.201458333333333,
     "censored": false,
-    "exchange": 27
+    "exchange": 246
    },
    "R2_detail": {
     "median": 1.0195138888888888,
     "censored": false
    },
    "R6_detail": {
-    "line": "A day like any other.",
-    "times": 3085
+    "sentence": "Bye!",
+    "times": 2395,
+    "line": "Bye, then!",
+    "line_pct": 1.58
    },
    "R8_detail": {
     "p90": 0.0,
@@ -1219,12 +1228,12 @@
     "met": 10823
    },
    "C3_detail": {
-    "farewell": 0.075,
+    "farewell": 92.89727463312369,
     "marked_break": 0.0,
     "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.925,
-    "curt": 0.0
+    "nothing_fits": 0.0,
+    "curt": 7.10272536687631
    },
    "C7_detail": {
     "p90": 3,
@@ -1321,7 +1330,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 19840,
@@ -1354,9 +1364,10 @@
     "turned_talks": 3401
    },
    "C9_detail": {
-    "callbacks": 462,
+    "callbacks": 829,
     "goals": {
-     "mend": 70
+     "vent": 106,
+     "mend": 11
     }
    },
    "T4_detail": {
@@ -1367,6 +1378,7 @@
    },
    "T6_detail": {
     "lines": 0,
+    "across": 0,
     "examples": []
    },
    "D1A_detail": {}
@@ -1374,17 +1386,19 @@
   "L2": {
    "R1_detail": {
     "listeners": 1,
-    "median": 3.334791666666667,
+    "median": 10.868125,
     "censored": false,
-    "exchange": 93
+    "exchange": 258
    },
    "R2_detail": {
     "median": 3.334791666666667,
     "censored": false
    },
    "R6_detail": {
-    "line": "A day like any other.",
-    "times": 550
+    "sentence": "Bye!",
+    "times": 224,
+    "line": "Bye!",
+    "line_pct": 0.859
    },
    "R8_detail": {
     "p90": 0.0,
@@ -1397,12 +1411,12 @@
     "met": 2229
    },
    "C3_detail": {
-    "farewell": 0.12594458438287154,
+    "farewell": 87.83670033670033,
     "marked_break": 0.0,
-    "cut_off": 0.0,
-    "cap": 0.0,
-    "nothing_fits": 99.87405541561712,
-    "curt": 0.0
+    "cut_off": 0.12626262626262627,
+    "cap": 0.04208754208754209,
+    "nothing_fits": 0.0,
+    "curt": 11.994949494949495
    },
    "C7_detail": {
     "p90": 3,
@@ -1502,7 +1516,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 3776,
@@ -1537,13 +1552,14 @@
     "turned_talks": 530
    },
    "C9_detail": {
-    "callbacks": 201,
+    "callbacks": 285,
     "goals": {
-     "favour": 45,
-     "mend": 33,
-     "visit": 8,
-     "nag": 5,
-     "learn_name": 2
+     "favour": 32,
+     "vent": 21,
+     "visit": 7,
+     "mend": 4,
+     "nag": 4,
+     "learn_name": 1
     }
    },
    "T4_detail": {
@@ -1553,8 +1569,17 @@
     "examples": []
    },
    "T6_detail": {
-    "lines": 0,
-    "examples": []
+    "lines": 7,
+    "across": 6,
+    "examples": [
+     "rm_edmund_sootdale: Can't keep away, then. Another bad business. It never stops. A light-pawed sort took Rupert Fogton's things. They'll be disappointed.",
+     "Good evening, little one. Agnes Wetley tried to steal from Ebba Slagstack, they say. / rmx_ebba_netherby: Who's they?",
+     "Back so soon? More trouble. We were on about it only lately. They say Rika Gullwell did Dagny Slaghand. We've had Rika Gullwell at our fire. / rm_josephine_brineford: I counted the spoons after they left. Never told you.",
+     "Again! We'd only just finished with the last of this. I keep my purse inside my coat since Rupert Fogton. / rm_cressida_tarham: Inside the coat's where they look first.",
+     "That's not the only tale going. Osric Ropeworth is wanted by the Watch for attempted theft. Best not be seen with him. / rm_imogen_ashby: Have they a notice up?",
+     "And it'll do nothing for prices. Karin Sootdale gave me short weight again. I'm sure of it. / rmx_philippa_coldby: They're all the same, shopkeepers. Thumb on the scale.",
+     "Prices again. It's all anyone talks of. Went to Tove Brinegate's for candles. Came out with soap. Don't ask. / rmx_ilse_netherby: They're all the same, shopkeepers. Thumb on the scale."
+    ]
    },
    "D1A_detail": {
     "broader": 1658,
@@ -1564,17 +1589,19 @@
   "L3": {
    "R1_detail": {
     "listeners": 1,
-    "median": 1.0847916666666666,
+    "median": 10.773680555555556,
     "censored": false,
-    "exchange": 40
+    "exchange": 342
    },
    "R2_detail": {
     "median": 0.14034722222222223,
     "censored": false
    },
    "R6_detail": {
-    "line": "A day like any other.",
-    "times": 1486
+    "sentence": "And you.",
+    "times": 302,
+    "line": "Good night.",
+    "line_pct": 0.779
    },
    "R8_detail": {
     "p90": 0.6666666666666666,
@@ -1587,11 +1614,11 @@
     "met": 3199
    },
    "C3_detail": {
-    "farewell": 0.5,
+    "farewell": 100.0,
     "marked_break": 0.0,
     "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.5,
+    "nothing_fits": 0.0,
     "curt": 0.0
    },
    "C7_detail": {
@@ -1684,7 +1711,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 5177,
@@ -1714,10 +1742,9 @@
     "turned_talks": 994
    },
    "C9_detail": {
-    "callbacks": 261,
+    "callbacks": 121,
     "goals": {
-     "favour": 138,
-     "mend": 43
+     "favour": 41
     }
    },
    "T4_detail": {
@@ -1727,11 +1754,13 @@
     "examples": []
    },
    "T6_detail": {
-    "lines": 3,
+    "lines": 4,
+    "across": 3,
     "examples": [
-     "tn_fh_jory_rimepeak: Varg Acorndell's family are coming for the festival. All of them.",
-     "tn_fh_jory_rimepeak: Varg Acorndell's family are coming for the festival. All of them.",
-     "tn_oh_varg_acorndell: Jory Rimepeak's family are coming for the festival. All of them."
+     "tn_oh_varg_acorndell: Jory Rimepeak's family are coming for the festival. All of them.",
+     "Jory Rimepeak's family are coming for the festival. All of them. / tn_cw_fallow_lakewick: In-laws. Like weather. You wait them out.",
+     "My belly's been talking to me all morning. Jory Rimepeak hides the honey from me. I always find it. / tn_cw_fallow_lakewick: They'll keep you young. Or old. One of the two.",
+     "Jory Rimepeak snores like a mill. / tn_cw_fallow_lakewick: They'll keep you young. Or old. One of the two."
     ]
    },
    "D1A_detail": {
@@ -1741,17 +1770,19 @@
   "L4": {
    "R1_detail": {
     "listeners": 1,
-    "median": 0.5014583333333333,
+    "median": 15.251458333333334,
     "censored": false,
-    "exchange": 13
+    "exchange": 367
    },
    "R2_detail": {
     "median": 0.27923611111111113,
     "censored": false
    },
    "R6_detail": {
-    "line": "A day like any other.",
-    "times": 880
+    "sentence": "And you.",
+    "times": 249,
+    "line": "Good trading.",
+    "line_pct": 0.826
    },
    "R8_detail": {
     "p90": 0.6329113924050633,
@@ -1764,12 +1795,12 @@
     "met": 2135
    },
    "C3_detail": {
-    "farewell": 0.5833333333333334,
+    "farewell": 88.43830888697153,
     "marked_break": 0.0,
     "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.41666666666667,
-    "curt": 0.0
+    "nothing_fits": 0.0,
+    "curt": 11.561691113028473
    },
    "C7_detail": {
     "p90": 4,
@@ -1858,7 +1889,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 3521,
@@ -1888,10 +1920,9 @@
     "turned_talks": 1282
    },
    "C9_detail": {
-    "callbacks": 332,
+    "callbacks": 82,
     "goals": {
-     "favour": 244,
-     "mend": 59
+     "favour": 147
     }
    },
    "T4_detail": {
@@ -1902,6 +1933,7 @@
    },
    "T6_detail": {
     "lines": 0,
+    "across": 0,
     "examples": []
    },
    "D1A_detail": {
@@ -1911,17 +1943,19 @@
   "L5": {
    "R1_detail": {
     "listeners": 1,
-    "median": 0.5847916666666667,
+    "median": 10.251458333333334,
     "censored": false,
-    "exchange": 8
+    "exchange": 124
    },
    "R2_detail": {
     "median": 0.5847916666666667,
     "censored": false
    },
    "R6_detail": {
-    "line": "It is at that.",
-    "times": 656
+    "sentence": "And you.",
+    "times": 132,
+    "line": "Till next time.",
+    "line_pct": 0.683
    },
    "R8_detail": {
     "p90": 0.0,
@@ -1934,12 +1968,12 @@
     "met": 1001
    },
    "C3_detail": {
-    "farewell": 0.16666666666666666,
+    "farewell": 84.91859468723221,
     "marked_break": 0.0,
     "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.83333333333333,
-    "curt": 0.0
+    "nothing_fits": 0.0,
+    "curt": 15.08140531276778
    },
    "C7_detail": {
     "p90": 3,
@@ -2028,7 +2062,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 1646,
@@ -2058,10 +2093,8 @@
     "turned_talks": 657
    },
    "C9_detail": {
-    "callbacks": 174,
-    "goals": {
-     "mend": 52
-    }
+    "callbacks": 112,
+    "goals": {}
    },
    "T4_detail": {
     "stance_lines": 267,
@@ -2071,6 +2104,7 @@
    },
    "T6_detail": {
     "lines": 0,
+    "across": 0,
     "examples": []
    },
    "D1A_detail": {
@@ -2080,17 +2114,19 @@
   "L6": {
    "R1_detail": {
     "listeners": 1,
-    "median": 0.668125,
+    "median": 16.584791666666668,
     "censored": false,
-    "exchange": 9
+    "exchange": 200
    },
    "R2_detail": {
     "median": 0.668125,
     "censored": false
    },
    "R6_detail": {
-    "line": "So it is.",
-    "times": 513
+    "sentence": "Good harvest.",
+    "times": 410,
+    "line": "Good night.",
+    "line_pct": 0.933
    },
    "R8_detail": {
     "p90": 0.0,
@@ -2103,11 +2139,11 @@
     "met": 919
    },
    "C3_detail": {
-    "farewell": 0.08333333333333333,
+    "farewell": 100.0,
     "marked_break": 0.0,
     "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.91666666666667,
+    "nothing_fits": 0.0,
     "curt": 0.0
    },
    "C7_detail": {
@@ -2198,7 +2234,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 1889,
@@ -2228,10 +2265,10 @@
     "turned_talks": 298
    },
    "C9_detail": {
-    "callbacks": 120,
+    "callbacks": 145,
     "goals": {
-     "visit": 89,
-     "mend": 59
+     "visit": 82,
+     "favour": 8
     }
    },
    "T4_detail": {
@@ -2242,6 +2279,7 @@
    },
    "T6_detail": {
     "lines": 0,
+    "across": 0,
     "examples": []
    },
    "D1A_detail": {
@@ -2251,17 +2289,19 @@
   "L7": {
    "R1_detail": {
     "listeners": 1,
-    "median": 0.418125,
+    "median": 31.751458333333332,
     "censored": false,
-    "exchange": 6
+    "exchange": 382
    },
    "R2_detail": {
     "median": 0.418125,
     "censored": false
    },
    "R6_detail": {
-    "line": "It is at that.",
-    "times": 616
+    "sentence": "Well.",
+    "times": 80,
+    "line": "Not out loud.",
+    "line_pct": 0.504
    },
    "R8_detail": {
     "p90": 0.0,
@@ -2274,12 +2314,12 @@
     "met": 981
    },
    "C3_detail": {
-    "farewell": 0.0,
+    "farewell": 55.66202090592334,
     "marked_break": 0.0,
     "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 100.0,
-    "curt": 0.0
+    "nothing_fits": 0.0,
+    "curt": 44.33797909407666
    },
    "C7_detail": {
     "p90": 3,
@@ -2367,7 +2407,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 1679,
@@ -2397,10 +2438,8 @@
     "turned_talks": 768
    },
    "C9_detail": {
-    "callbacks": 126,
-    "goals": {
-     "mend": 20
-    }
+    "callbacks": 123,
+    "goals": {}
    },
    "T4_detail": {
     "stance_lines": 141,
@@ -2410,6 +2449,7 @@
    },
    "T6_detail": {
     "lines": 0,
+    "across": 0,
     "examples": []
    },
    "D1A_detail": {
@@ -2428,8 +2468,10 @@
     "censored": false
    },
    "R6_detail": {
+    "sentence": "",
+    "times": 0,
     "line": "",
-    "times": 0
+    "line_pct": 0
    },
    "R8_detail": {
     "p90": 0.0,
@@ -2511,7 +2553,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 0,
@@ -2541,6 +2584,7 @@
    },
    "T6_detail": {
     "lines": 0,
+    "across": 0,
     "examples": []
    },
    "D1A_detail": {}
@@ -2557,8 +2601,10 @@
     "censored": false
    },
    "R6_detail": {
+    "sentence": "",
+    "times": 0,
     "line": "",
-    "times": 0
+    "line_pct": 0
    },
    "R8_detail": {
     "p90": 0.0,
@@ -2640,7 +2686,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 0,
@@ -2670,6 +2717,7 @@
    },
    "T6_detail": {
     "lines": 0,
+    "across": 0,
     "examples": []
    },
    "D1A_detail": {}
@@ -2677,17 +2725,19 @@
   "L10": {
    "R1_detail": {
     "listeners": 1,
-    "median": 1.5847916666666666,
+    "median": 16.918125,
     "censored": false,
-    "exchange": 58
+    "exchange": 225
    },
    "R2_detail": {
     "median": 1.5847916666666666,
     "censored": false
    },
    "R6_detail": {
-    "line": "Aye.",
-    "times": 980
+    "sentence": "And you.",
+    "times": 186,
+    "line": "Sleep sound.",
+    "line_pct": 0.749
    },
    "R8_detail": {
     "p90": 0.10090817356205853,
@@ -2700,12 +2750,12 @@
     "met": 1853
    },
    "C3_detail": {
-    "farewell": 0.1388888888888889,
+    "farewell": 98.95178197064989,
     "marked_break": 0.0,
     "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.86111111111111,
-    "curt": 0.0
+    "nothing_fits": 0.13976240391334732,
+    "curt": 0.9084556254367575
    },
    "C7_detail": {
     "p90": 3,
@@ -2798,7 +2848,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 3072,
@@ -2828,11 +2879,11 @@
     "turned_talks": 1117
    },
    "C9_detail": {
-    "callbacks": 231,
+    "callbacks": 133,
     "goals": {
-     "visit": 214,
-     "mend": 176,
-     "nag": 1
+     "visit": 103,
+     "nag": 6,
+     "vent": 1
     }
    },
    "T4_detail": {
@@ -2842,8 +2893,11 @@
     "examples": []
    },
    "T6_detail": {
-    "lines": 0,
-    "examples": []
+    "lines": 1,
+    "across": 1,
+    "examples": [
+     "Good day. Good to see you in. You look tired, Gunnar Farrow. / rmx_gunnar_farrow: The knees complain, but they still carry me."
+    ]
    },
    "D1A_detail": {}
   }
@@ -3105,6 +3159,34 @@
     "L10": "artifacts/talk/runs/p7/frozen-L10"
    },
    "on": "2026-11-17T00:36:47+00:00"
+  },
+  {
+   "metrics": [
+    "R1",
+    "R4",
+    "R6",
+    "C3",
+    "C4",
+    "C9",
+    "K3",
+    "T6",
+    "D1L",
+    "D1B"
+   ],
+   "why": "Slice 2's review (doc 84 §35): measured again as redefined: R1 the talk between its ceremonies; R4 and R6 by the sentence; C3 a curt ending an ending; C4 a light bridge into grave news within a line too; C9 without 'Back again?'; K3 line by line, the town's crime and news and joiners included; T6 across a line too; D1L and D1B what is said, not the greetings and goodbyes",
+   "from": {
+    "L1": "artifacts/talk/runs/s2r/frozen-L1",
+    "L2": "artifacts/talk/runs/s2r/frozen-L2",
+    "L3": "artifacts/talk/runs/s2r/frozen-L3",
+    "L4": "artifacts/talk/runs/s2r/frozen-L4",
+    "L5": "artifacts/talk/runs/s2r/frozen-L5",
+    "L6": "artifacts/talk/runs/s2r/frozen-L6",
+    "L7": "artifacts/talk/runs/s2r/frozen-L7",
+    "L8": "artifacts/talk/runs/s2r/frozen-L8",
+    "L9": "artifacts/talk/runs/s2r/frozen-L9",
+    "L10": "artifacts/talk/runs/s2r/frozen-L10"
+   },
+   "on": "2026-11-17T08:41:40+00:00"
   }
  ]
 }

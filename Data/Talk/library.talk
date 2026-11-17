@@ -160,14 +160,14 @@ does tell.self / react.self / tell.self
 priority -1
 a : #topic.remark#
 b : So it is.
-a : Well. Good day to you.
+a : Well. #good_day# to you.
 
 scene lib_day_3
 when topic=day pair.band!=friends|rivals
 does tell.self / react.self
 priority -1
 a : #topic.remark#
-b : Aye. Good day, #a.name#.
+b : Aye. #good_day#, #a.name#.
 
 scene lib_day_4
 when topic=day pair.band=friends

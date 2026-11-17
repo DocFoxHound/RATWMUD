@@ -1471,6 +1471,8 @@ class World
     // is the game's, as each is said.
     void ambientBegun(const AmbientPick& pick);
     void ambientEnded(const AmbientPick& pick, const std::vector<std::string>& people);
+    // One who said they're leaving (a goodbye tagged {leave=yes}) talks no more here for `seconds`: Slice 2's review.
+    void ambientLeave(const std::string& id, double seconds);
     // A claim told in talk (doc 84 §8.6): believed as `believe` does, except that from a second, independent source
     // (not the one they had it from, nor one who had it from them: `via` is where the teller had it) it is corroborated:
     // confidence c becomes c + (1 - c) * 0.4, once a source.
@@ -1965,6 +1967,8 @@ class World
     std::map<std::string, std::vector<AmbientNews>> news_;
     std::map<std::string, std::vector<TownNews>> townNews_;      // By town (or region).
     std::map<std::string, std::string> talkDialectOf_;           // (setTalkDialects.)
+    std::map<std::string, std::pair<std::string, std::string>> talkOrigins_;   // (setTalkOrigins.)
+    void talkOriginWorked(const std::string& id, std::string& from, std::string& accent) const;
     mutable std::vector<std::pair<std::string, int>> talkHomes_; // The places somebody lives and how many, for talkOrigin (once).
     // The street a building's door gives onto, by cell (here.outdoors: doc 84 §7.8), found through the doors once and
     // found again when the doors change.
@@ -2008,6 +2012,9 @@ class World
     // Where resident `id` grew up (one of the realm's seven regions; "" for none) and how strongly they speak like it
     // ("none", "light", "broad"): the talk library's `from` and `accent` (doc 62, phase 3).
     void talkOrigin(const std::string& id, std::string& from, std::string& accent) const;
+    // Each resident's own origin and accent where their live.npc_voice row says one (id -> (from, accent); either may be
+    // empty): talkOrigin answers with it (Slice 2's review).
+    void setTalkOrigins(std::map<std::string, std::pair<std::string, std::string>> origins);
     // The towns with no dialect of their own and the dialect each speaks (the talk library's settings.json, "dialect_of":
     // doc 83, Phase 4), so their folk have an origin too.
     void setTalkDialects(std::map<std::string, std::string> dialectOf);

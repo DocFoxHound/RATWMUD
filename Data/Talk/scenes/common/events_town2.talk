@@ -118,9 +118,9 @@ when topic=life topic.kind=death
 does tell.news / react.news / tell.self / react.self / assess
 a : #topic.subject# died. | We lost #topic.subject#. | #topic.subject# is gone.
 b?[old] : The young go too, these days. It's the old who are left wondering why.
-a?[friends] : And #topic.where#'s left alone now. I'll take them supper.
-b : Bright One keep them. | #bc_im_sorry# | Too soon.
-a : Bright One keep them. | #bc_so_am_i# | Much too soon.
+a?[friends] : And #topic.where#'s left alone now. I'll take #topic.where# some supper.
+b : Bright One keep #topic.them#. | #bc_im_sorry# | Too soon.
+a : Bright One keep #topic.them#. | #bc_so_am_i# | Much too soon.
 
 scene et_death_estate
 when topic=life topic.kind=death
@@ -218,8 +218,8 @@ does tell.news / react.news / assess / tell.self
 a : #topic.subject#'s been taken on as an apprentice. | #topic.subject# starts an apprenticeship this week. | #topic.subject#'s indentured. Seven years.
 b[crafter] : Seven years of sweeping before they let you touch the tools. I remember.
 b[old] : Good. Idle paws are the Dark One's tools.
-b : A trade! Good for them. | Who'd take #topic.subject# on? | Seven years is a long time.
-a : Good for them. | Someone patient. | It goes quicker than you think.
+b : A trade! Good for #topic.them#. | Who'd take #topic.subject# on? | Seven years is a long time.
+a : Good for #topic.them#. | Someone patient. | It goes quicker than you think.
 a?[friends] : With #topic.where#, I heard. Strict, but fair.
 
 scene et_appr_pride

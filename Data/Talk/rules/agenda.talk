@@ -242,7 +242,17 @@ say And how's the house, since we last spoke? | All well at home, since? | How's
 rule ag_cb_prices
 when concept=talk.prices pair.talked.prices<3
 does tell.complaint
-say Prices again. You'd think they'd settle. | Dearer than when we spoke of it last. | I said it would go this way, didn't I?
+say Prices again. You'd think they'd settle. | #topic.what.capitalize# again. You'd think it would settle.
+
+rule ag_cb_prices_up
+when concept=talk.prices pair.talked.prices<3 topic.dir=up
+does tell.complaint
+say #topic.what.capitalize#, dearer than when we spoke of it last. | I said #topic.what# would go this way, didn't I? Dearer again.
+
+rule ag_cb_prices_down
+when concept=talk.prices pair.talked.prices<3 topic.dir=down
+does tell.news
+say #topic.what.capitalize# #topic.is# cheaper than when we spoke of it last. | You remember #topic.what#? It's come down since we spoke.
 
 ## A third who joins for the love of the topic (Phase 5: one who likes to talk, the talk on their favourite topic,
 ## topics.json's favourites, and they know both): Game::joiners' stake "favourite". Under six words, never distinctive.

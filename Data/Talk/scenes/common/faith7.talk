@@ -35,7 +35,7 @@ when topic=faith a.priest a.job!=priest pair.flock!=b
 does tell.self / ask.detail / answer.detail
 cooldown 3d
 a : #a.priest# was at our door this week. Asking after my soul. | Have you heard #a.priest# sing? Like a gate in the wind. | #a.priest# says the chapel roof needs a collection. Again.
-b : What did you tell them? | Every Restday. | Again? Where does it go?
+b : What did you tell #a.priest_them#? | Every Restday. | Again? Where does it go?
 a : That it's fine, thank you. | Loudly, too. | Slates, they say.
 
 scene e4_fa_priest_scolds

@@ -2016,14 +2016,15 @@ void World::gossip()
         // player arrives. Off with the ledger (--no-talk-ledger).
         if (!talkLedger_.enabled)
             continue;
+        // (Out of hearing: no set is made to look used by it, and a pair keeps its last two days of it beside, never in
+        // place of, what was heard: Slice 2's review. Each claim once a note.)
         const auto key = b.subject + "|" + b.claim;
-        talkLedger_.told(listener, b.source, key, b.kind, calendarDays_);
+        talkLedger_.told(listener, b.source, key, b.kind, calendarDays_, false, false);
         auto* note = talkLedger_.latest(b.source, listener);
         if (!note || !note->unheard || std::floor(note->day) != std::floor(calendarDays_))
-        {
-            note = &talkLedger_.note(b.source, listener, calendarDays_);
-            note->unheard = true;
-        }
+            note = &talkLedger_.note(b.source, listener, calendarDays_, true);
+        if (std::find(note->keys.begin(), note->keys.end(), key) != note->keys.end())
+            continue;
         const auto* kind = claims::find(b.kind);
         note->topics.push_back(kind ? kind->topic : std::string("gossip"));
         note->keys.push_back(key);

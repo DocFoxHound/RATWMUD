@@ -58,8 +58,14 @@ say And that's not the only talk going round. | There's more folk talking than d
 
 rule s8p_crime_life
 does pivot
-when conv.from=crime conv.topic=life
+when conv.from=crime conv.topic=life topic.kind!=death|succession
 say Not all the news is bad, mind. | Life goes on, for all that. | There's better news than that, at least.
+
+rule s8p_crime_life_grave
+does pivot
+when conv.from=crime conv.topic=life topic.kind=death|succession
+tone serious
+say And that's not the only sorrow this week. | As if that weren't enough. | There's sadder news than that, too.
 
 rule s8p_crime_home
 does pivot
@@ -89,7 +95,7 @@ say Your own come to mind, after that. | That sort of news turns your mind homew
 rule s8p_life_gossip
 does pivot
 when conv.from=life conv.topic=gossip
-say There's other talk too, mind. | That's the kind news. There's the other sort. | Folk have been talking, besides.
+say There's other talk too, mind. | That's the town's news. There's other talk, too. | Folk have been talking, besides.
 
 rule s8p_life_news
 does pivot

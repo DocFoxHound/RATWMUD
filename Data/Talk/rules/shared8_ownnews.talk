@@ -177,7 +177,7 @@ rule s83w_loss_tavern
 when concept=talk.news topic.kind=loss here.place=tavern
 does tell.feeling
 cooldown 1d
-say One cup, for remembering. #topic.news#. | #topic.news#. I didn't want to be at home tonight. | #topic.news#. Drink one with me.
+say One cup, for remembering. #topic.news#. | #topic.news#. I didn't want to be at home #tonight#. | #topic.news#. Drink one with me.
 
 rule s83w_loss_devout
 when concept=talk.news topic.kind=loss self.piety=devout
@@ -627,7 +627,7 @@ rule s83w_loss_tavern_friend
 when concept=talk.news topic.kind=loss self.mourning=friend here.place=tavern
 does tell.feeling
 cooldown 1d
-say We used to sit right there. #topic.news#. | #topic.news#. That bench looks empty tonight. | #topic.news#. I'll drink to an old friend.
+say We used to sit right there. #topic.news#. | #topic.news#. That bench looks empty #tonight#. | #topic.news#. I'll drink to an old friend.
 
 rule s83w_work_festival
 when concept=talk.news topic.kind=work world.festival=today|soon

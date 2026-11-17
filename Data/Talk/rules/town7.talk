@@ -630,7 +630,7 @@ say Then do it better. | Excuses. | Hmph. Somebody's to blame, and it's not me.
 rule n7_close_gr_rich
 when concept=town.close conv.on=grumble conv.ga=rich
 does ack
-say Must be nice. | Easy for some. | Aye. Well. Not up your way, I suppose. | Quite. Good day.
+say Must be nice. | Easy for some. | Aye. Well. Not up your way, I suppose. | Quite. #good_day#.
 
 rule n7_close_gr_rich_rich
 when concept=town.close conv.on=grumble conv.ga=rich self.wealth=rich

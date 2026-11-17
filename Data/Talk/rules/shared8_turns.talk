@@ -65,17 +65,40 @@ say #s8_bye#. | #s8_bye#. | Till next we meet. | Take care, now.
 rule s8t_bye_night
 does farewell
 when here.time=night|dusk
-say Night, then. | Sleep easy. | Mind the dark streets. | Off home, then. | Bed for me. | Till tomorrow, then. | Lock your door. | Off to my bed. | Sleep easy, now. | Warm bed, I hope. | #s8_night#. | #s8_night#. | #s8_night#.
+say Night, then. | Sleep easy. | Mind the dark streets. | Till tomorrow, then. | Lock your door. | Sleep easy, now. | Warm bed, I hope. | #s8_night#. | #s8_night#. | #s8_night#.
+
+## Goodbyes that say one is going (Slice 2's review): only from one free to go (not at work, not keeping the inn), and
+## said true: {leave=yes} has the one who said it leave the room's talk for an hour (Game::ambientSaid).
+
+rule s8t_bye_leave_dusk
+does farewell
+when here.time=night|dusk self.working=no self.job!=innkeeper self.stage=adult|old
+say {leave=yes} Off home, then. | {leave=yes} Home for me, I think. | {leave=yes} I'll be getting home.
+
+rule s8t_bye_leave_night
+does farewell
+when here.time=night self.working=no self.job!=innkeeper self.stage=adult|old
+say {leave=yes} Bed for me. | {leave=yes} Off to my bed. | {leave=yes} Off to bed with me.
 
 rule s8t_bye_young
 does farewell
 when self.stage=young
-say Got to go! Bye! | Off I go! | Bye-bye! | See you soon! | I'm going now. Bye! | #farewell#! | Bye! Bye! | Bye-bye now! | Gotta run! | See you tomorrow! | I'm off!
+say Bye-bye! | See you soon! | #farewell#! | Bye! Bye! | Bye-bye now! | See you tomorrow!
+
+rule s8t_bye_young_leave
+does farewell
+when self.stage=young self.working=no
+say {leave=yes} Got to go! Bye! | {leave=yes} Off I go! | {leave=yes} I'm going now. Bye! | {leave=yes} Gotta run! | {leave=yes} I'm off!
 
 rule s8t_bye_adolescent
 does farewell
 when self.stage=adolescent
-say Later. | See you around. | I'm off. | Right, bye. | Catch you later. | #farewell#. | See you, then. | I'll be off.
+say Later. | See you around. | Right, bye. | Catch you later. | #farewell#. | See you, then.
+
+rule s8t_bye_adolescent_leave
+does farewell
+when self.stage=adolescent self.working=no
+say {leave=yes} I'm off. | {leave=yes} I'll be off.
 
 rule s8t_bye_young3
 does farewell

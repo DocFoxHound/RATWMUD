@@ -207,4 +207,4 @@ when topic=smalltalk pair.band=strangers a.stage=adult b.stage=adult
 does tell.self / react.self / assess
 a : After you. | Please, go ahead. | Excuse me. I'm in your way.
 b : #bc_thank_you# | Thank you kindly. | Not at all.
-a : Bright One's day to you. | Good day. | Good day to you.
+a : Bright One's day to you. | #good_day#. | #good_day# to you.

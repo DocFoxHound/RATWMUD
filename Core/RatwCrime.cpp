@@ -1011,6 +1011,10 @@ void World::crimeDaily()
     for (const auto& [guard, person] : found)
         confront(guard, person);
     gossip();
-    talkLedger_.prune(calendarDays_);               // (Doc 84 §8.7: the ledger's expired records, and its cap.)
+    // (Doc 84 §8.7: the ledger's expired records, and its cap; the drift and moods of the dead: Slice 2's review.)
+    talkLedger_.prune(calendarDays_, [this](const std::string& id) {
+        const auto* e = entity(id);
+        return !e || e->dead;
+    });
 }
 } // namespace ratw

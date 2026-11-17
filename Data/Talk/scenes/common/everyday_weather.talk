@@ -410,4 +410,4 @@ when topic=weather pair.band=strangers
 does tell.self / react.self / assess
 a : Weather, eh? | Some weather we're having. | Seen worse, I suppose.
 b : Indeed. | Some weather. | Always have.
-a : Well. Good day. | Mm. | Haven't we all.
+a : Well. #good_day#. | Mm. | Haven't we all.

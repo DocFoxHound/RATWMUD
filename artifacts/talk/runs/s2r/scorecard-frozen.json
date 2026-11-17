@@ -1,0 +1,2988 @@
+{
+ "about": "Docs/Design/84 §15.3: the talk scorecard (tools/talk_score.py), from talk_sim transcripts.",
+ "generated": "2026-11-17T08:41:40+00:00",
+ "runs": {
+  "L1": "artifacts/talk/runs/s2r/frozen-L1",
+  "L2": "artifacts/talk/runs/s2r/frozen-L2",
+  "L3": "artifacts/talk/runs/s2r/frozen-L3",
+  "L4": "artifacts/talk/runs/s2r/frozen-L4",
+  "L5": "artifacts/talk/runs/s2r/frozen-L5",
+  "L6": "artifacts/talk/runs/s2r/frozen-L6",
+  "L7": "artifacts/talk/runs/s2r/frozen-L7",
+  "L8": "artifacts/talk/runs/s2r/frozen-L8",
+  "L9": "artifacts/talk/runs/s2r/frozen-L9",
+  "L10": "artifacts/talk/runs/s2r/frozen-L10"
+ },
+ "metrics": {
+  "R1": {
+   "name": "first identical conversation, per listener (h)",
+   "better": "higher",
+   "gate": "hard",
+   "target": "40 h+; hard 20 h+",
+   "value": 4.086180555555556,
+   "passes": false,
+   "by_profile": {
+    "L1": 4.086,
+    "L2": 10.868,
+    "L3": 10.774,
+    "L4": 15.251,
+    "L5": 10.251,
+    "L6": 16.585,
+    "L7": 31.751,
+    "L8": 0,
+    "L9": 0,
+    "L10": 16.918
+   },
+   "control": 24.679236111111113,
+   "separation": 0.8344284021937021,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "R2": {
+   "name": "first repeated opener, per listener (h)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "8 h+",
+   "value": 2.6014583333333334,
+   "passes": false,
+   "by_profile": {
+    "L1": 2.601,
+    "L2": 7.001,
+    "L3": 6.107,
+    "L4": 3.418,
+    "L5": 4.085,
+    "L6": 27.418,
+    "L7": 3.918,
+    "L8": 0,
+    "L9": 0,
+    "L10": 12.751
+   },
+   "control": 2.6014583333333334,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "R3": {
+   "name": "distinct openers per 3,000 exchanges",
+   "better": "higher",
+   "gate": "soft",
+   "target": "L1 1,500+",
+   "value": 2177.494261200753,
+   "passes": true,
+   "by_profile": {
+    "L1": 2159.0,
+    "L2": 2376.263,
+    "L3": 1980.366,
+    "L4": 1855.91,
+    "L5": 2077.121,
+    "L6": 2895.0,
+    "L7": 1868.467,
+    "L8": 0,
+    "L9": 0,
+    "L10": 2647.799
+   },
+   "control": 2177.494261200753,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "R4": {
+   "name": "distinctive line heard again within 10 h, per 100 h",
+   "better": "lower",
+   "gate": "soft",
+   "target": "5 or fewer",
+   "value": 5555.384033308445,
+   "passes": false,
+   "by_profile": {
+    "L1": 10349.0,
+    "L2": 1678.0,
+    "L3": 1694.0,
+    "L4": 2189.0,
+    "L5": 913.0,
+    "L6": 491.0,
+    "L7": 1254.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 1125.833
+   },
+   "control": 5704.755971046955,
+   "separation": 0.026183755886598666,
+   "real_better": true,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    19919,
+    820.0
+   ]
+  },
+  "R5": {
+   "name": "collision index, per 100 h",
+   "better": "lower",
+   "gate": "hard",
+   "target": "1 or fewer; hard 3",
+   "value": 0.0,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 396.8456487473038,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    0,
+    820.0
+   ]
+  },
+  "R6": {
+   "name": "most-spoken line's share (%)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "0.4%",
+   "value": 2.4751119960179193,
+   "passes": false,
+   "by_profile": {
+    "L1": 3.245,
+    "L2": 1.591,
+    "L3": 1.622,
+    "L4": 1.429,
+    "L5": 1.503,
+    "L6": 5.389,
+    "L7": 0.984,
+    "L8": 0,
+    "L9": 0,
+    "L10": 1.515
+   },
+   "control": 2.460179193628671,
+   "separation": 0.006033182503770715,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "R7": {
+   "name": "distinct reply entries per 1,000 reply beats",
+   "better": "higher",
+   "gate": "soft",
+   "target": "500+",
+   "value": 126.46393757764422,
+   "passes": false,
+   "by_profile": {
+    "L1": 53.923,
+    "L2": 248.383,
+    "L3": 163.993,
+    "L4": 125.983,
+    "L5": 210.701,
+    "L6": 247.79,
+    "L7": 185.199,
+    "L8": 0,
+    "L9": 0,
+    "L10": 192.159
+   },
+   "control": 111.99607362150044,
+   "separation": 0.11440307990774869,
+   "real_better": true,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "R8": {
+   "name": "habit saturation (% of a speaker's lines, mean)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "15% or less",
+   "value": 0.109037458086733,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.061,
+    "L2": 0.083,
+    "L3": 0.277,
+    "L4": 0.08,
+    "L5": 0.099,
+    "L6": 0.176,
+    "L7": 0.185,
+    "L8": 0,
+    "L9": 0,
+    "L10": 0.129
+   },
+   "control": 0.14519762793929272,
+   "separation": 0.2490410509163299,
+   "real_better": true,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    174,
+    159448.0
+   ]
+  },
+  "C1": {
+   "name": "owed answers answered, by moves (%)",
+   "better": "higher",
+   "gate": "hard",
+   "target": "97%; hard 92%",
+   "value": 98.69994550207088,
+   "passes": true,
+   "by_profile": {
+    "L1": 98.016,
+    "L2": 96.993,
+    "L3": 99.152,
+    "L4": 100.0,
+    "L5": 100.0,
+    "L6": 99.924,
+    "L7": 99.958,
+    "L10": 99.718
+   },
+   "control": 17.105589089135076,
+   "separation": 0.8266909976279959,
+   "real_better": true,
+   "separates": true,
+   "control_required": true,
+   "structural": false,
+   "events": [
+    52682,
+    53381.0
+   ]
+  },
+  "C1Q": {
+   "name": "questions answered: the '?' heuristic (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "diagnostic (C1 until Phase 3; doesn't separate from the control)",
+   "value": 97.40347965543899,
+   "passes": null,
+   "by_profile": {
+    "L1": 98.22,
+    "L2": 96.981,
+    "L3": 98.182,
+    "L4": 97.876,
+    "L5": 92.061,
+    "L6": 98.383,
+    "L7": 93.644,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 96.833
+   },
+   "control": 87.52758300842109,
+   "separation": 0.1013916205247851,
+   "real_better": true,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    10926,
+    11217.0
+   ]
+  },
+  "M1": {
+   "name": "lines carrying moves (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "100% at Phase 7 (every entry)",
+   "value": 99.99937779990044,
+   "passes": null,
+   "by_profile": {
+    "L1": 100.0,
+    "L2": 99.993,
+    "L3": 100.0,
+    "L4": 100.0,
+    "L5": 100.0,
+    "L6": 100.0,
+    "L7": 100.0,
+    "L8": 0,
+    "L9": 0,
+    "L10": 100.0
+   },
+   "control": 99.99937779990044,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "C2": {
+   "name": "replies at the best fit available (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "95%",
+   "value": 99.9844389246739,
+   "passes": true,
+   "by_profile": {
+    "L1": 99.98,
+    "L2": 99.978,
+    "L3": 99.982,
+    "L4": 99.979,
+    "L5": 100.0,
+    "L6": 100.0,
+    "L7": 100.0,
+    "L10": 100.0
+   },
+   "control": 99.98653370904648,
+   "separation": 2.0950665003384154e-05,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "C3": {
+   "name": "endings by a farewell or a marked break (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "80% / 3% / 5%",
+   "value": 99.97457545169726,
+   "passes": true,
+   "by_profile": {
+    "L1": 100.0,
+    "L2": 99.832,
+    "L3": 100.0,
+    "L4": 100.0,
+    "L5": 100.0,
+    "L6": 100.0,
+    "L7": 100.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 99.86
+   },
+   "control": 39.824819910718084,
+   "separation": 0.6016505223374572,
+   "real_better": true,
+   "separates": true,
+   "control_required": true,
+   "structural": false,
+   "events": [
+    24513,
+    24519.0
+   ]
+  },
+  "C4": {
+   "name": "tone clashes per 1,000 beats",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": 0.0,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 0.018666002986560477,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
+   "control_required": true,
+   "structural": false,
+   "events": [
+    0,
+    160720.0
+   ]
+  },
+  "C5": {
+   "name": "unmarked topic jumps per 1,000 beats",
+   "better": "lower",
+   "gate": "soft",
+   "target": "5",
+   "value": 0.0,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L10": 0.0
+   },
+   "control": 52.177700348432055,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    0,
+    160720.0
+   ]
+  },
+  "C6": {
+   "name": "same entry or question twice in a conversation, per 1,000",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": 0.0,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 196.90670963577998,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
+   "control_required": true,
+   "structural": false,
+   "events": [
+    0,
+    24519.0
+   ]
+  },
+  "C7": {
+   "name": "lines per conversation (mean)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "5-7; p90 9+",
+   "value": 6.630834837189295,
+   "passes": true,
+   "by_profile": {
+    "L1": 6.189,
+    "L2": 5.926,
+    "L3": 6.303,
+    "L4": 7.516,
+    "L5": 7.525,
+    "L6": 6.34,
+    "L7": 7.079,
+    "L8": 0,
+    "L9": 0,
+    "L10": 8.579
+   },
+   "control": 6.630834837189295,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": true
+  },
+  "C8": {
+   "name": "conversations with a third speaker (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "5-15%",
+   "value": 5.397232182501301,
+   "passes": true,
+   "by_profile": {
+    "L1": 9.048,
+    "L2": 7.912,
+    "L3": 4.705,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.083,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 5.397232182501301,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": true,
+   "events": [
+    1407,
+    24519.0
+   ]
+  },
+  "C9": {
+   "name": "callbacks per 10 conversations",
+   "better": "higher",
+   "gate": "soft",
+   "target": "1.5+",
+   "value": 0.7449283430010758,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.695,
+    "L2": 1.199,
+    "L3": 0.41,
+    "L4": 0.354,
+    "L5": 0.96,
+    "L6": 1.208,
+    "L7": 1.071,
+    "L10": 0.929
+   },
+   "control": 0.7449283430010758,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    1830,
+    24519.0
+   ]
+  },
+  "T1": {
+   "name": "raw ids spoken, per 1,000 lines",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": 0.0,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 0.0,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    0,
+    160720.0
+   ]
+  },
+  "T2": {
+   "name": "presupposition failures, per 1,000 lines",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": 0.0,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 6.968641114982578,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    0,
+    160720.0
+   ]
+  },
+  "T3": {
+   "name": "self-reference errors (own name, the listener in the third person, unbacked eyewitness words), per 1,000 lines",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": 0.0,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 0.031110004977600796,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    0,
+    160720.0
+   ]
+  },
+  "T4": {
+   "name": "identity drift: a stance changed with no event or concede, or answered against one's own, per 1,000 stance lines",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": 0.0,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0,
+    "L9": 0,
+    "L10": 0.0
+   },
+   "control": 4.013292750294116,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    0,
+    5611.0
+   ]
+  },
+  "T6": {
+   "name": "'they' said of one known wolf named in the line, per 1,000 lines",
+   "better": "lower",
+   "gate": "soft",
+   "target": "0",
+   "value": 0.0746640119462419,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.497,
+    "L3": 0.215,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.081
+   },
+   "control": 0.03733200597312095,
+   "separation": 0.5,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    12,
+    160720.0
+   ]
+  },
+  "D1A": {
+   "name": "lines said a step broader or plainer than the speaker's own accent (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "diagnostic: accommodation (§10.6)",
+   "value": 32.25734196117472,
+   "passes": null,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 13.949,
+    "L3": 62.744,
+    "L4": 99.076,
+    "L5": 99.886,
+    "L6": 53.155,
+    "L7": 99.902,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 32.25734196117472,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "O1": {
+   "name": "opinions given per 10 conversations",
+   "better": "higher",
+   "gate": "soft",
+   "target": "diagnostic (§8.8)",
+   "value": 1.2156620252946897,
+   "passes": null,
+   "by_profile": {
+    "L1": 0.888,
+    "L2": 1.402,
+    "L3": 1.09,
+    "L4": 1.786,
+    "L5": 1.32,
+    "L6": 0.65,
+    "L7": 1.176,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 2.655
+   },
+   "control": 0.11027498724341432,
+   "separation": 0.9092881204241924,
+   "real_better": true,
+   "separates": true,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    2875,
+    24519.0
+   ]
+  },
+  "T5": {
+   "name": "telling what the listener already believes, with no 'known' answer (%)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "2%",
+   "value": 0.0,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0.0,
+    "L6": 0.0,
+    "L10": 0.0
+   },
+   "control": 0.0,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    0,
+    75.0
+   ]
+  },
+  "D1": {
+   "name": "lines with a dialect's words (%): accent none",
+   "better": "lower",
+   "gate": "hard",
+   "target": "none 0%",
+   "value": 0.0,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.0,
+    "L3": 0,
+    "L4": 0,
+    "L5": 0.0,
+    "L6": 0,
+    "L7": 0,
+    "L8": 0,
+    "L9": 0,
+    "L10": 0
+   },
+   "control": 0.19494472873884053,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    0,
+    12846.0
+   ]
+  },
+  "D1L": {
+   "name": "lines with a dialect's words (%): light speakers",
+   "better": "higher",
+   "gate": "soft",
+   "target": "light 25-50%",
+   "value": 2.2902385456142142,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.754,
+    "L3": 2.497,
+    "L4": 7.317,
+    "L5": 4.097,
+    "L6": 19.388,
+    "L7": 0.0,
+    "L8": 0,
+    "L9": 0,
+    "L10": 0.0
+   },
+   "control": 2.733987862742257,
+   "separation": 0.16230844444311154,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    468,
+    73100.0
+   ]
+  },
+  "D1B": {
+   "name": "lines with a dialect's words (%): broad speakers",
+   "better": "higher",
+   "gate": "soft",
+   "target": "broad 60%+",
+   "value": 4.737926811801886,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 8.274,
+    "L3": 8.179,
+    "L4": 8.628,
+    "L5": 6.803,
+    "L6": 28.521,
+    "L7": 8.075,
+    "L8": 0,
+    "L9": 0,
+    "L10": 0.0
+   },
+   "control": 4.551978703796891,
+   "separation": 0.03924672444112256,
+   "real_better": true,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    5850,
+    74774.0
+   ]
+  },
+  "D2": {
+   "name": "another dialect's words in a speaker's line",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": 0,
+   "passes": true,
+   "by_profile": {
+    "L1": 0,
+    "L2": 0,
+    "L3": 0,
+    "L4": 0,
+    "L5": 0,
+    "L6": 0,
+    "L7": 0,
+    "L8": 0,
+    "L9": 0,
+    "L10": 0
+   },
+   "control": 15,
+   "separation": 1.0,
+   "real_better": true,
+   "separates": true,
+   "control_required": false,
+   "structural": false
+  },
+  "D3": {
+   "name": "dialect guessed from 20 lines (%): light and broad",
+   "better": "higher",
+   "gate": "soft",
+   "target": "85%+",
+   "value": 82.50498603909054,
+   "passes": false,
+   "by_profile": {
+    "L2": 78.261,
+    "L3": 85.714
+   },
+   "control": 85.98172735388532,
+   "separation": 0.04043581609479811,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    132,
+    168.0
+   ]
+  },
+  "U1": {
+   "name": "a resident's lines from their own words (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "20-35%",
+   "value": 0.0006222000995520159,
+   "passes": false,
+   "by_profile": {
+    "L1": 0.0,
+    "L2": 0.007,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 0.0006222000995520159,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "U2": {
+   "name": "distinguishability of look-alike residents (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "90%+",
+   "value": 34.48563059738683,
+   "passes": false,
+   "by_profile": {
+    "L1": 64.808,
+    "L2": 53.943,
+    "L3": 0.0,
+    "L4": 0.0,
+    "L5": 0.0,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 0.0
+   },
+   "control": 33.36209824395409,
+   "separation": 0.03257972477144959,
+   "real_better": true,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "K1": {
+   "name": "conversations on everyday topics (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "35%+",
+   "value": 74.2578649450327,
+   "passes": true,
+   "by_profile": {
+    "L1": 88.637,
+    "L2": 47.727,
+    "L3": 75.254,
+    "L4": 81.148,
+    "L5": 53.128,
+    "L6": 56.667,
+    "L7": 50.697,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 48.567
+   },
+   "control": 74.2578649450327,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "K2": {
+   "name": "largest topic's share (%)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "25% or less",
+   "value": 13.224993986259957,
+   "passes": true,
+   "by_profile": {
+    "L1": 12.688,
+    "L2": 17.719,
+    "L3": 9.851,
+    "L4": 10.181,
+    "L5": 14.139,
+    "L6": 21.667,
+    "L7": 16.028,
+    "L8": 0,
+    "L9": 0,
+    "L10": 12.998
+   },
+   "control": 13.224993986259957,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "K3": {
+   "name": "same news told twice to the same resident",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": 0,
+   "passes": true,
+   "by_profile": {
+    "L1": 0,
+    "L2": 0,
+    "L3": 0,
+    "L4": 0,
+    "L5": 0,
+    "L6": 0,
+    "L7": 0,
+    "L8": 0,
+    "L9": 0,
+    "L10": 0
+   },
+   "control": 0,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false,
+   "events": [
+    0,
+    24519.0
+   ]
+  },
+  "W1": {
+   "name": "window lines from mantles (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "40%+",
+   "value": null,
+   "note": "n/a until Phase 13"
+  },
+  "W2": {
+   "name": "free-text understanding",
+   "better": "higher",
+   "gate": "hard",
+   "target": "85%+; wrong 8% or less",
+   "value": null,
+   "note": "n/a until Phase 13"
+  },
+  "W3": {
+   "name": "a resident answers chat with the option off",
+   "better": "lower",
+   "gate": "hard",
+   "target": "0",
+   "value": null,
+   "note": "n/a until Phase 12"
+  },
+  "B1": {
+   "name": "one beat: the director's mean (ms)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "0.6 ms or less (gate: talk_bench)",
+   "value": 0.34517866724058377,
+   "passes": true,
+   "by_profile": {
+    "L1": 0.345,
+    "L2": 0.265,
+    "L3": 0.225,
+    "L4": 0.262,
+    "L5": 0.233,
+    "L6": 0.231,
+    "L7": 0.256,
+    "L10": 0.247
+   },
+   "control": 0.34517866724058377,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "B1P": {
+   "name": "one beat: the director's 99th percentile (ms)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "3 ms or less (gate: talk_bench)",
+   "value": 2.027677,
+   "passes": true,
+   "by_profile": {
+    "L1": 2.028,
+    "L2": 1.74,
+    "L3": 1.037,
+    "L4": 0.881,
+    "L5": 0.738,
+    "L6": 0.676,
+    "L7": 1.12,
+    "L10": 0.779
+   },
+   "control": 2.027677,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "B1L": {
+   "name": "a director look: 99th percentile (ms)",
+   "better": "lower",
+   "gate": "soft",
+   "target": "5 ms or less (gate: talk_bench)",
+   "value": 11.725553,
+   "passes": false,
+   "by_profile": {
+    "L1": 11.726,
+    "L2": 8.794,
+    "L3": 4.706,
+    "L4": 5.623,
+    "L5": 3.107,
+    "L6": 4.515,
+    "L7": 3.774,
+    "L8": 0.015,
+    "L9": 0.012,
+    "L10": 4.044
+   },
+   "control": 11.725553,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "B5": {
+   "name": "exchanges simulated a second",
+   "better": "higher",
+   "gate": "hard",
+   "target": "150+",
+   "value": 74.85027490412149,
+   "passes": false,
+   "by_profile": {
+    "L1": 75.837,
+    "L2": 74.85,
+    "L3": 145.823,
+    "L4": 109.94,
+    "L5": 134.215,
+    "L6": 115.392,
+    "L7": 115.985,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 121.847
+   },
+   "control": 74.85027490412149,
+   "separation": 0.0,
+   "real_better": false,
+   "separates": false,
+   "control_required": false,
+   "structural": false
+  },
+  "X1": {
+   "name": "lexical cohesion: replies sharing a content word with the line before (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "diagnostic (not in §15.3): shows the control is discriminating",
+   "value": 16.01655799444897,
+   "passes": null,
+   "by_profile": {
+    "L1": 16.031,
+    "L2": 14.617,
+    "L3": 15.114,
+    "L4": 14.912,
+    "L5": 16.509,
+    "L6": 19.788,
+    "L7": 18.692,
+    "L8": 0.0,
+    "L9": 0.0,
+    "L10": 16.013
+   },
+   "control": 1.9251683025155604,
+   "separation": 0.8798013716066344,
+   "real_better": true,
+   "separates": true,
+   "control_required": true,
+   "structural": false
+  },
+  "H1": {
+   "name": "blind naturalness 1-5",
+   "better": "higher",
+   "gate": "soft",
+   "target": "3.8+",
+   "value": null,
+   "note": "n/a until slice ends (talk_rate.py)"
+  },
+  "H2": {
+   "name": "'written whole by a writer?' (%)",
+   "better": "higher",
+   "gate": "soft",
+   "target": "40%+",
+   "value": null,
+   "note": "n/a until slice ends (talk_rate.py)"
+  }
+ },
+ "details": {
+  "L1": {
+   "R1_detail": {
+    "listeners": 2,
+    "median": 5.201458333333333,
+    "censored": false,
+    "exchange": 246
+   },
+   "R2_detail": {
+    "median": 2.6361805555555557,
+    "censored": false
+   },
+   "R6_detail": {
+    "sentence": "Bye!",
+    "times": 2395,
+    "line": "Bye, then!",
+    "line_pct": 1.58
+   },
+   "R7_detail": {
+    "replies": 38388,
+    "closing_beats": 23490,
+    "closings_distinct_per_1000": 16.1
+   },
+   "R8_detail": {
+    "p90": 0.2094240837696335,
+    "speakers": 46,
+    "lines20": 73776,
+    "any_habit_mean": 0.266072361908363
+   },
+   "C1Q_detail": {
+    "questions": 5786,
+    "answered": 5683
+   },
+   "C1_detail": {
+    "owed": 23588,
+    "met": 23120
+   },
+   "C2_detail": {
+    "answers": 20022,
+    "fallbacks": 0
+   },
+   "M1_detail": {
+    "scene": 100.0,
+    "written": 100.0
+   },
+   "C3_detail": {
+    "farewell": 92.89727463312369,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
+    "cap": 0.0,
+    "nothing_fits": 0.0,
+    "curt": 7.10272536687631
+   },
+   "C4_detail": {
+    "clashes": 0,
+    "by_tone": 0,
+    "in_line": 0
+   },
+   "C7_detail": {
+    "p90": 9,
+    "three_lines": 3.0859538784067087,
+    "four_lines": 6.415094339622642
+   },
+   "T2_detail": {
+    "by_kind": {},
+    "examples": []
+   },
+   "T3_detail": {
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": true
+   },
+   "T4_detail": {
+    "stance_lines": 2038,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "across": 0,
+    "examples": []
+   },
+   "T1_detail": {
+    "examples": []
+   },
+   "K2_detail": {
+    "topics": {
+     "work": 12.69,
+     "animals": 12.11,
+     "pastimes": 10.88,
+     "smalltalk": 8.27,
+     "friends": 7.66,
+     "travel": 4.83,
+     "season": 3.94,
+     "lore": 3.88,
+     "memories": 3.57,
+     "dreams": 3.54,
+     "home": 3.51,
+     "food": 3.35,
+     "health": 3.3,
+     "faith": 3.29,
+     "land": 3.21,
+     "prices": 2.6,
+     "player": 2.15,
+     "event": 2.14,
+     "ships": 1.99,
+     "caravan": 1.64,
+     "crime": 0.68,
+     "family": 0.4,
+     "day": 0.21,
+     "gossip": 0.15,
+     "festival": 0.03
+    }
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "C5_detail": {
+    "turns": 3777,
+    "unmarked": 0,
+    "examples": [],
+    "topics_per_talk": 1.317,
+    "turned_talks": 3316
+   },
+   "C9_detail": {
+    "callbacks": 829,
+    "goals": {
+     "vent": 106,
+     "mend": 11
+    }
+   },
+   "T5_detail": {
+    "asserted": 18,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "D1_detail": {
+    "light": 0.0,
+    "broad": 0.0,
+    "none": 0.0,
+    "body": {
+     "light": 0.0,
+     "broad": 0.0,
+     "none": 0.0
+    }
+   },
+   "D1A_detail": {},
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "speakers": 46,
+    "judged": 0,
+    "note": "fewer than two dialects heard"
+   },
+   "U2_detail": {
+    "pairs": 6,
+    "lines": 9988
+   },
+   "B1_detail": {
+    "beats": 62727,
+    "beat_max": 44.125737,
+    "looks": 72000,
+    "look_mean": 1.6780929296388851,
+    "look_max": 580.412705
+   },
+   "_counts": {
+    "lines": 73803,
+    "conversations": 11925,
+    "hours": 100.0,
+    "listeners": 2,
+    "speakers": 49,
+    "questions": 5786,
+    "owed": 23588,
+    "asserted": 18,
+    "stance_lines": 2038,
+    "none_lines": 10639,
+    "light_lines": 48096,
+    "broad_lines": 15068
+   }
+  },
+  "L2": {
+   "R1_detail": {
+    "listeners": 1,
+    "median": 10.868125,
+    "censored": false,
+    "exchange": 258
+   },
+   "R2_detail": {
+    "median": 7.001458333333333,
+    "censored": false
+   },
+   "R6_detail": {
+    "sentence": "Bye!",
+    "times": 224,
+    "line": "Bye!",
+    "line_pct": 0.859
+   },
+   "R7_detail": {
+    "replies": 7114,
+    "closing_beats": 4590,
+    "closings_distinct_per_1000": 111.1
+   },
+   "R8_detail": {
+    "p90": 0.0,
+    "speakers": 197,
+    "lines20": 12835,
+    "any_habit_mean": 0.2811502494440564
+   },
+   "C1Q_detail": {
+    "questions": 828,
+    "answered": 803
+   },
+   "C1_detail": {
+    "owed": 5321,
+    "met": 5161
+   },
+   "C2_detail": {
+    "answers": 4470,
+    "fallbacks": 0
+   },
+   "M1_detail": {
+    "scene": 99.99289469944578,
+    "written": 100.0
+   },
+   "C3_detail": {
+    "farewell": 87.83670033670033,
+    "marked_break": 0.0,
+    "cut_off": 0.12626262626262627,
+    "cap": 0.04208754208754209,
+    "nothing_fits": 0.0,
+    "curt": 11.994949494949495
+   },
+   "C4_detail": {
+    "clashes": 0,
+    "by_tone": 0,
+    "in_line": 0
+   },
+   "C7_detail": {
+    "p90": 9,
+    "three_lines": 4.040404040404041,
+    "four_lines": 16.96127946127946
+   },
+   "T2_detail": {
+    "by_kind": {},
+    "examples": []
+   },
+   "T3_detail": {
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": true
+   },
+   "T4_detail": {
+    "stance_lines": 651,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 7,
+    "across": 6,
+    "examples": [
+     "rm_edmund_sootdale: Can't keep away, then. Another bad business. It never stops. A light-pawed sort took Rupert Fogton's things. They'll be disappointed.",
+     "Good evening, little one. Agnes Wetley tried to steal from Ebba Slagstack, they say. / rmx_ebba_netherby: Who's they?",
+     "Back so soon? More trouble. We were on about it only lately. They say Rika Gullwell did Dagny Slaghand. We've had Rika Gullwell at our fire. / rm_josephine_brineford: I counted the spoons after they left. Never told you.",
+     "Again! We'd only just finished with the last of this. I keep my purse inside my coat since Rupert Fogton. / rm_cressida_tarham: Inside the coat's where they look first.",
+     "That's not the only tale going. Osric Ropeworth is wanted by the Watch for attempted theft. Best not be seen with him. / rm_imogen_ashby: Have they a notice up?",
+     "And it'll do nothing for prices. Karin Sootdale gave me short weight again. I'm sure of it. / rmx_philippa_coldby: They're all the same, shopkeepers. Thumb on the scale.",
+     "Prices again. It's all anyone talks of. Went to Tove Brinegate's for candles. Came out with soap. Don't ask. / rmx_ilse_netherby: They're all the same, shopkeepers. Thumb on the scale."
+    ]
+   },
+   "T1_detail": {
+    "examples": []
+   },
+   "K2_detail": {
+    "topics": {
+     "event": 17.72,
+     "work": 13.55,
+     "prices": 12.16,
+     "player": 10.4,
+     "smalltalk": 8.63,
+     "pastimes": 6.82,
+     "animals": 6.14,
+     "friends": 4.12,
+     "ships": 3.62,
+     "caravan": 2.9,
+     "crime": 1.89,
+     "faith": 1.81,
+     "gossip": 1.56,
+     "family": 1.52,
+     "travel": 1.43,
+     "festival": 1.39,
+     "home": 1.14,
+     "memories": 0.59,
+     "land": 0.51,
+     "times": 0.51,
+     "food": 0.46,
+     "accent": 0.34,
+     "health": 0.25,
+     "season": 0.21,
+     "bandits": 0.13,
+     "lore": 0.13,
+     "dreams": 0.08
+    }
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "C5_detail": {
+    "turns": 648,
+    "unmarked": 0,
+    "examples": [],
+    "topics_per_talk": 1.272,
+    "turned_talks": 592
+   },
+   "C9_detail": {
+    "callbacks": 285,
+    "goals": {
+     "favour": 32,
+     "vent": 21,
+     "visit": 7,
+     "mend": 4,
+     "nag": 4,
+     "learn_name": 1
+    }
+   },
+   "T5_detail": {
+    "asserted": 49,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "D1_detail": {
+    "light": 1.01,
+    "broad": 10.29,
+    "none": 0.0,
+    "body": {
+     "light": 0.75,
+     "broad": 8.27,
+     "none": 0.0
+    }
+   },
+   "D1A_detail": {
+    "broader": 1828,
+    "plainer": 136
+   },
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "light": 78.0,
+    "none": 52.8,
+    "broad": 78.9,
+    "speakers": 197,
+    "judged": 161
+   },
+   "U2_detail": {
+    "pairs": 27,
+    "lines": 1978
+   },
+   "B1_detail": {
+    "beats": 11991,
+    "beat_max": 15.590062,
+    "looks": 72000,
+    "look_mean": 0.3458954023750001,
+    "look_max": 380.194368
+   },
+   "_counts": {
+    "lines": 14080,
+    "conversations": 2376,
+    "hours": 100.0,
+    "listeners": 1,
+    "speakers": 313,
+    "questions": 828,
+    "owed": 5321,
+    "asserted": 49,
+    "stance_lines": 651,
+    "none_lines": 2202,
+    "light_lines": 7719,
+    "broad_lines": 4159
+   }
+  },
+  "L3": {
+   "R1_detail": {
+    "listeners": 1,
+    "median": 10.773680555555556,
+    "censored": false,
+    "exchange": 342
+   },
+   "R2_detail": {
+    "median": 6.107013888888889,
+    "censored": false
+   },
+   "R6_detail": {
+    "sentence": "And you.",
+    "times": 302,
+    "line": "Good night.",
+    "line_pct": 0.779
+   },
+   "R7_detail": {
+    "replies": 9226,
+    "closing_beats": 6440,
+    "closings_distinct_per_1000": 51.1
+   },
+   "R8_detail": {
+    "p90": 0.7662835249042146,
+    "speakers": 7,
+    "lines20": 18620,
+    "any_habit_mean": 0.3684235583002492
+   },
+   "C1Q_detail": {
+    "questions": 1155,
+    "answered": 1134
+   },
+   "C1_detail": {
+    "owed": 6486,
+    "met": 6431
+   },
+   "C2_detail": {
+    "answers": 5500,
+    "fallbacks": 0
+   },
+   "M1_detail": {
+    "scene": 100.0
+   },
+   "C3_detail": {
+    "farewell": 100.0,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
+    "cap": 0.0,
+    "nothing_fits": 0.0,
+    "curt": 0.0
+   },
+   "C4_detail": {
+    "clashes": 0,
+    "by_tone": 0,
+    "in_line": 0
+   },
+   "C7_detail": {
+    "p90": 9,
+    "three_lines": 0.3046716316858497,
+    "four_lines": 10.765064319566688
+   },
+   "T2_detail": {
+    "by_kind": {},
+    "examples": []
+   },
+   "T3_detail": {
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": true
+   },
+   "T4_detail": {
+    "stance_lines": 642,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 4,
+    "across": 3,
+    "examples": [
+     "tn_oh_varg_acorndell: Jory Rimepeak's family are coming for the festival. All of them.",
+     "Jory Rimepeak's family are coming for the festival. All of them. / tn_cw_fallow_lakewick: In-laws. Like weather. You wait them out.",
+     "My belly's been talking to me all morning. Jory Rimepeak hides the honey from me. I always find it. / tn_cw_fallow_lakewick: They'll keep you young. Or old. One of the two.",
+     "Jory Rimepeak snores like a mill. / tn_cw_fallow_lakewick: They'll keep you young. Or old. One of the two."
+    ]
+   },
+   "T1_detail": {
+    "examples": []
+   },
+   "K2_detail": {
+    "topics": {
+     "friends": 9.85,
+     "work": 8.56,
+     "smalltalk": 8.12,
+     "prices": 7.85,
+     "faith": 7.65,
+     "home": 5.65,
+     "pastimes": 5.18,
+     "event": 4.4,
+     "player": 4.23,
+     "caravan": 4.16,
+     "times": 3.89,
+     "travel": 3.52,
+     "lore": 3.35,
+     "season": 3.32,
+     "animals": 3.18,
+     "food": 3.15,
+     "memories": 3.15,
+     "land": 3.08,
+     "dreams": 2.88,
+     "health": 2.78,
+     "family": 1.56,
+     "day": 0.27,
+     "festival": 0.17,
+     "bandits": 0.03
+    }
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "C5_detail": {
+    "turns": 919,
+    "unmarked": 0,
+    "examples": [],
+    "topics_per_talk": 1.31,
+    "turned_talks": 752
+   },
+   "C9_detail": {
+    "callbacks": 121,
+    "goals": {
+     "favour": 41
+    }
+   },
+   "T5_detail": {
+    "asserted": 1,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "D1_detail": {
+    "light": 5.25,
+    "broad": 14.68,
+    "none": 0.0,
+    "body": {
+     "light": 2.5,
+     "broad": 8.18
+    }
+   },
+   "D1A_detail": {
+    "broader": 11683
+   },
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "light": 85.7,
+    "speakers": 7,
+    "judged": 7
+   },
+   "U2_detail": {
+    "pairs": 0,
+    "lines": 0
+   },
+   "B1_detail": {
+    "beats": 15668,
+    "beat_max": 13.067367,
+    "looks": 72000,
+    "look_mean": 0.19114304469444393,
+    "look_max": 396.188286
+   },
+   "_counts": {
+    "lines": 18620,
+    "conversations": 2954,
+    "hours": 100.0,
+    "listeners": 1,
+    "speakers": 7,
+    "questions": 1155,
+    "owed": 6486,
+    "asserted": 1,
+    "stance_lines": 642,
+    "none_lines": 0,
+    "light_lines": 6937,
+    "broad_lines": 11683
+   }
+  },
+  "L4": {
+   "R1_detail": {
+    "listeners": 1,
+    "median": 15.251458333333334,
+    "censored": false,
+    "exchange": 367
+   },
+   "R2_detail": {
+    "median": 3.418125,
+    "censored": false
+   },
+   "R6_detail": {
+    "sentence": "And you.",
+    "times": 249,
+    "line": "Good trading.",
+    "line_pct": 0.826
+   },
+   "R7_detail": {
+    "replies": 10049,
+    "closing_beats": 5056,
+    "closings_distinct_per_1000": 34.8
+   },
+   "R8_detail": {
+    "p90": 0.1091703056768559,
+    "speakers": 5,
+    "lines20": 17423,
+    "any_habit_mean": 0.23508384516045214
+   },
+   "C1Q_detail": {
+    "questions": 1177,
+    "answered": 1152
+   },
+   "C1_detail": {
+    "owed": 5572,
+    "met": 5572
+   },
+   "C2_detail": {
+    "answers": 4671,
+    "fallbacks": 0
+   },
+   "M1_detail": {
+    "scene": 100.0,
+    "written": 100.0
+   },
+   "C3_detail": {
+    "farewell": 88.43830888697153,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
+    "cap": 0.0,
+    "nothing_fits": 0.0,
+    "curt": 11.561691113028473
+   },
+   "C4_detail": {
+    "clashes": 0,
+    "by_tone": 0,
+    "in_line": 0
+   },
+   "C7_detail": {
+    "p90": 10,
+    "three_lines": 3.4081104400345126,
+    "four_lines": 1.2942191544434858
+   },
+   "T2_detail": {
+    "by_kind": {},
+    "examples": []
+   },
+   "T3_detail": {
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": false
+   },
+   "T4_detail": {
+    "stance_lines": 804,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "across": 0,
+    "examples": []
+   },
+   "T1_detail": {
+    "examples": []
+   },
+   "K2_detail": {
+    "topics": {
+     "friends": 10.18,
+     "home": 7.46,
+     "work": 7.42,
+     "prices": 6.77,
+     "smalltalk": 6.77,
+     "pastimes": 6.0,
+     "event": 5.61,
+     "player": 5.48,
+     "travel": 4.92,
+     "season": 4.87,
+     "dreams": 4.66,
+     "lore": 4.57,
+     "memories": 4.44,
+     "land": 4.4,
+     "health": 3.97,
+     "food": 3.8,
+     "animals": 3.8,
+     "faith": 3.62,
+     "caravan": 0.82,
+     "day": 0.26,
+     "festival": 0.17
+    }
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "C5_detail": {
+    "turns": 1446,
+    "unmarked": 0,
+    "examples": [],
+    "topics_per_talk": 1.624,
+    "turned_talks": 1309
+   },
+   "C9_detail": {
+    "callbacks": 82,
+    "goals": {
+     "favour": 147
+    }
+   },
+   "T5_detail": {
+    "asserted": 0,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "D1_detail": {
+    "broad": 15.43,
+    "light": 9.94,
+    "none": 0.0,
+    "body": {
+     "broad": 8.63,
+     "light": 7.32
+    }
+   },
+   "D1A_detail": {
+    "broader": 17262
+   },
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "speakers": 5,
+    "judged": 0,
+    "note": "fewer than two dialects heard"
+   },
+   "U2_detail": {
+    "pairs": 0,
+    "lines": 0
+   },
+   "B1_detail": {
+    "beats": 15374,
+    "beat_max": 1.426972,
+    "looks": 72000,
+    "look_mean": 0.1963748164305553,
+    "look_max": 501.116407
+   },
+   "_counts": {
+    "lines": 17423,
+    "conversations": 2318,
+    "hours": 100.0,
+    "listeners": 1,
+    "speakers": 5,
+    "questions": 1177,
+    "owed": 5572,
+    "asserted": 0,
+    "stance_lines": 804,
+    "none_lines": 0,
+    "light_lines": 161,
+    "broad_lines": 17262
+   }
+  },
+  "L5": {
+   "R1_detail": {
+    "listeners": 1,
+    "median": 10.251458333333334,
+    "censored": false,
+    "exchange": 124
+   },
+   "R2_detail": {
+    "median": 4.084791666666667,
+    "censored": false
+   },
+   "R6_detail": {
+    "sentence": "And you.",
+    "times": 132,
+    "line": "Till next time.",
+    "line_pct": 0.683
+   },
+   "R7_detail": {
+    "replies": 5121,
+    "closing_beats": 2494,
+    "closings_distinct_per_1000": 91.4
+   },
+   "R8_detail": {
+    "p90": 0.1769464105156724,
+    "speakers": 2,
+    "lines20": 8782,
+    "any_habit_mean": 0.19891412248366513
+   },
+   "C1Q_detail": {
+    "questions": 592,
+    "answered": 545
+   },
+   "C1_detail": {
+    "owed": 2810,
+    "met": 2810
+   },
+   "C2_detail": {
+    "answers": 2323,
+    "fallbacks": 0
+   },
+   "M1_detail": {
+    "scene": 100.0,
+    "written": 100.0
+   },
+   "C3_detail": {
+    "farewell": 84.91859468723221,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
+    "cap": 0.0,
+    "nothing_fits": 0.0,
+    "curt": 15.08140531276778
+   },
+   "C4_detail": {
+    "clashes": 0,
+    "by_tone": 0,
+    "in_line": 0
+   },
+   "C7_detail": {
+    "p90": 10,
+    "three_lines": 1.7994858611825193,
+    "four_lines": 4.712939160239931
+   },
+   "T2_detail": {
+    "by_kind": {},
+    "examples": []
+   },
+   "T3_detail": {
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": false
+   },
+   "T4_detail": {
+    "stance_lines": 298,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "across": 0,
+    "examples": []
+   },
+   "T1_detail": {
+    "examples": []
+   },
+   "K2_detail": {
+    "topics": {
+     "prices": 14.14,
+     "caravan": 11.05,
+     "player": 10.71,
+     "event": 10.63,
+     "friends": 9.43,
+     "smalltalk": 7.54,
+     "pastimes": 6.0,
+     "work": 4.8,
+     "season": 3.34,
+     "land": 2.66,
+     "faith": 2.66,
+     "animals": 2.57,
+     "dreams": 2.57,
+     "health": 2.23,
+     "memories": 2.23,
+     "home": 2.06,
+     "lore": 1.89,
+     "food": 1.89,
+     "travel": 1.03,
+     "festival": 0.34,
+     "day": 0.26
+    }
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "C5_detail": {
+    "turns": 846,
+    "unmarked": 0,
+    "examples": [],
+    "topics_per_talk": 1.725,
+    "turned_talks": 750
+   },
+   "C9_detail": {
+    "callbacks": 112,
+    "goals": {}
+   },
+   "T5_detail": {
+    "asserted": 0,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "D1_detail": {
+    "broad": 14.02,
+    "light": 7.43,
+    "none": 0.0,
+    "body": {
+     "broad": 6.8,
+     "light": 4.1,
+     "none": 0.0
+    }
+   },
+   "D1A_detail": {
+    "broader": 8772
+   },
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "speakers": 2,
+    "judged": 0,
+    "note": "fewer than two dialects heard"
+   },
+   "U2_detail": {
+    "pairs": 0,
+    "lines": 0
+   },
+   "B1_detail": {
+    "beats": 7792,
+    "beat_max": 1.298176,
+    "looks": 72000,
+    "look_mean": 0.07603699223611123,
+    "look_max": 364.718819
+   },
+   "_counts": {
+    "lines": 8782,
+    "conversations": 1167,
+    "hours": 100.0,
+    "listeners": 1,
+    "speakers": 2,
+    "questions": 592,
+    "owed": 2810,
+    "asserted": 0,
+    "stance_lines": 298,
+    "none_lines": 5,
+    "light_lines": 3956,
+    "broad_lines": 4821
+   }
+  },
+  "L6": {
+   "R1_detail": {
+    "listeners": 1,
+    "median": 16.584791666666668,
+    "censored": false,
+    "exchange": 200
+   },
+   "R2_detail": {
+    "median": 27.418125,
+    "censored": false
+   },
+   "R6_detail": {
+    "sentence": "Good harvest.",
+    "times": 410,
+    "line": "Good night.",
+    "line_pct": 0.933
+   },
+   "R7_detail": {
+    "replies": 3846,
+    "closing_beats": 2562,
+    "closings_distinct_per_1000": 71.0
+   },
+   "R8_detail": {
+    "p90": 0.4319654427645788,
+    "speakers": 3,
+    "lines20": 7608,
+    "any_habit_mean": 0.22294000468593492
+   },
+   "C1Q_detail": {
+    "questions": 371,
+    "answered": 365
+   },
+   "C1_detail": {
+    "owed": 2616,
+    "met": 2614
+   },
+   "C2_detail": {
+    "answers": 2225,
+    "fallbacks": 0
+   },
+   "M1_detail": {
+    "scene": 100.0
+   },
+   "C3_detail": {
+    "farewell": 100.0,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
+    "cap": 0.0,
+    "nothing_fits": 0.0,
+    "curt": 0.0
+   },
+   "C4_detail": {
+    "clashes": 0,
+    "by_tone": 0,
+    "in_line": 0
+   },
+   "C7_detail": {
+    "p90": 9,
+    "three_lines": 0.0,
+    "four_lines": 9.583333333333334
+   },
+   "T2_detail": {
+    "by_kind": {},
+    "examples": []
+   },
+   "T3_detail": {
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": true
+   },
+   "T4_detail": {
+    "stance_lines": 179,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "across": 0,
+    "examples": []
+   },
+   "T1_detail": {
+    "examples": []
+   },
+   "K2_detail": {
+    "topics": {
+     "prices": 21.67,
+     "event": 10.42,
+     "player": 10.25,
+     "friends": 10.17,
+     "land": 9.67,
+     "food": 8.92,
+     "work": 8.5,
+     "smalltalk": 3.75,
+     "season": 2.0,
+     "lore": 1.92,
+     "health": 1.75,
+     "dreams": 1.75,
+     "faith": 1.67,
+     "pastimes": 1.5,
+     "travel": 1.42,
+     "home": 1.33,
+     "animals": 1.25,
+     "memories": 1.08,
+     "caravan": 0.42,
+     "festival": 0.42,
+     "gossip": 0.17
+    }
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "C5_detail": {
+    "turns": 330,
+    "unmarked": 0,
+    "examples": [],
+    "topics_per_talk": 1.275,
+    "turned_talks": 290
+   },
+   "C9_detail": {
+    "callbacks": 145,
+    "goals": {
+     "visit": 82,
+     "favour": 8
+    }
+   },
+   "T5_detail": {
+    "asserted": 2,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "D1_detail": {
+    "light": 17.65,
+    "broad": 30.38,
+    "none": 0.0,
+    "body": {
+     "light": 19.39,
+     "broad": 28.52
+    }
+   },
+   "D1A_detail": {
+    "broader": 4044
+   },
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "speakers": 3,
+    "judged": 0,
+    "note": "fewer than two dialects heard"
+   },
+   "U2_detail": {
+    "pairs": 0,
+    "lines": 0
+   },
+   "B1_detail": {
+    "beats": 6408,
+    "beat_max": 1.558688,
+    "looks": 72000,
+    "look_mean": 0.1022254788333333,
+    "look_max": 444.046827
+   },
+   "_counts": {
+    "lines": 7608,
+    "conversations": 1200,
+    "hours": 100.0,
+    "listeners": 1,
+    "speakers": 3,
+    "questions": 371,
+    "owed": 2616,
+    "asserted": 2,
+    "stance_lines": 179,
+    "none_lines": 0,
+    "light_lines": 323,
+    "broad_lines": 7285
+   }
+  },
+  "L7": {
+   "R1_detail": {
+    "listeners": 1,
+    "median": 31.751458333333332,
+    "censored": false,
+    "exchange": 382
+   },
+   "R2_detail": {
+    "median": 3.918125,
+    "censored": false
+   },
+   "R6_detail": {
+    "sentence": "Well.",
+    "times": 80,
+    "line": "Not out loud.",
+    "line_pct": 0.504
+   },
+   "R7_detail": {
+    "replies": 5351,
+    "closing_beats": 1628,
+    "closings_distinct_per_1000": 116.7
+   },
+   "R8_detail": {
+    "p90": 0.36968576709796674,
+    "speakers": 2,
+    "lines20": 8127,
+    "any_habit_mean": 0.26686904330458633
+   },
+   "C1Q_detail": {
+    "questions": 708,
+    "answered": 663
+   },
+   "C1_detail": {
+    "owed": 2382,
+    "met": 2381
+   },
+   "C2_detail": {
+    "answers": 1749,
+    "fallbacks": 0
+   },
+   "M1_detail": {
+    "scene": 100.0,
+    "written": 100.0
+   },
+   "C3_detail": {
+    "farewell": 55.66202090592334,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
+    "cap": 0.0,
+    "nothing_fits": 0.0,
+    "curt": 44.33797909407666
+   },
+   "C4_detail": {
+    "clashes": 0,
+    "by_tone": 0,
+    "in_line": 0
+   },
+   "C7_detail": {
+    "p90": 10,
+    "three_lines": 7.142857142857143,
+    "four_lines": 1.132404181184669
+   },
+   "T2_detail": {
+    "by_kind": {},
+    "examples": []
+   },
+   "T3_detail": {
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": false
+   },
+   "T4_detail": {
+    "stance_lines": 257,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "across": 0,
+    "examples": []
+   },
+   "T1_detail": {
+    "examples": []
+   },
+   "K2_detail": {
+    "topics": {
+     "prices": 16.03,
+     "caravan": 11.59,
+     "player": 10.63,
+     "event": 10.63,
+     "friends": 10.19,
+     "land": 8.54,
+     "smalltalk": 6.71,
+     "work": 3.75,
+     "dreams": 3.05,
+     "season": 2.7,
+     "memories": 2.44,
+     "faith": 2.18,
+     "pastimes": 2.0,
+     "home": 1.83,
+     "animals": 1.66,
+     "health": 1.57,
+     "lore": 1.39,
+     "travel": 1.31,
+     "food": 1.22,
+     "festival": 0.44,
+     "day": 0.17
+    }
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "C5_detail": {
+    "turns": 973,
+    "unmarked": 0,
+    "examples": [],
+    "topics_per_talk": 1.848,
+    "turned_talks": 825
+   },
+   "C9_detail": {
+    "callbacks": 123,
+    "goals": {}
+   },
+   "T5_detail": {
+    "asserted": 0,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "D1_detail": {
+    "broad": 12.93,
+    "light": 0.0,
+    "none": 0.0,
+    "body": {
+     "broad": 8.08,
+     "light": 0.0
+    }
+   },
+   "D1A_detail": {
+    "broader": 8119
+   },
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "speakers": 2,
+    "judged": 0,
+    "note": "fewer than two dialects heard"
+   },
+   "U2_detail": {
+    "pairs": 0,
+    "lines": 0
+   },
+   "B1_detail": {
+    "beats": 7492,
+    "beat_max": 3.834112,
+    "looks": 72000,
+    "look_mean": 0.09167605026388882,
+    "look_max": 504.768506
+   },
+   "_counts": {
+    "lines": 8127,
+    "conversations": 1148,
+    "hours": 100.0,
+    "listeners": 1,
+    "speakers": 2,
+    "questions": 708,
+    "owed": 2382,
+    "asserted": 0,
+    "stance_lines": 257,
+    "none_lines": 0,
+    "light_lines": 8,
+    "broad_lines": 8119
+   }
+  },
+  "L8": {
+   "R1_detail": {
+    "listeners": 0,
+    "median": 0.0,
+    "censored": false,
+    "exchange": null
+   },
+   "R2_detail": {
+    "median": 0.0,
+    "censored": false
+   },
+   "R6_detail": {
+    "sentence": "",
+    "times": 0,
+    "line": "",
+    "line_pct": 0
+   },
+   "R7_detail": {
+    "replies": 0,
+    "closing_beats": 0,
+    "closings_distinct_per_1000": null
+   },
+   "R8_detail": {
+    "p90": 0.0,
+    "speakers": 0,
+    "lines20": 0,
+    "any_habit_mean": 0
+   },
+   "C1Q_detail": {
+    "questions": 0,
+    "answered": 0
+   },
+   "C1_detail": {
+    "owed": 0,
+    "met": 0
+   },
+   "C2_detail": {
+    "answers": 0,
+    "fallbacks": 0
+   },
+   "M1_detail": {},
+   "C3_detail": {
+    "farewell": 0.0,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
+    "cap": 0.0,
+    "nothing_fits": 0.0,
+    "curt": 0.0
+   },
+   "C4_detail": {
+    "clashes": 0,
+    "by_tone": 0,
+    "in_line": 0
+   },
+   "C7_detail": {
+    "p90": 0.0,
+    "three_lines": 0.0,
+    "four_lines": 0.0
+   },
+   "T2_detail": {
+    "by_kind": {},
+    "examples": []
+   },
+   "T3_detail": {
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": false
+   },
+   "T4_detail": {
+    "stance_lines": 0,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "across": 0,
+    "examples": []
+   },
+   "T1_detail": {
+    "examples": []
+   },
+   "K2_detail": {
+    "topics": {}
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "T5_detail": {
+    "asserted": 0,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "D1_detail": {
+    "none": 0.0,
+    "body": {
+     "light": 0.0,
+     "broad": 0.0
+    }
+   },
+   "D1A_detail": {},
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "speakers": 0,
+    "judged": 0,
+    "note": "fewer than two dialects heard"
+   },
+   "U2_detail": {
+    "pairs": 0,
+    "lines": 0
+   },
+   "B1_detail": {
+    "beats": 0,
+    "beat_max": 0,
+    "looks": 72000,
+    "look_mean": 0.0065959039583333885,
+    "look_max": 0.52737
+   },
+   "_counts": {
+    "lines": 0,
+    "conversations": 0,
+    "hours": 100.0,
+    "listeners": 0,
+    "speakers": 0,
+    "questions": 0,
+    "owed": 0,
+    "asserted": 0,
+    "stance_lines": 0,
+    "none_lines": 0,
+    "light_lines": 0,
+    "broad_lines": 0
+   }
+  },
+  "L9": {
+   "R1_detail": {
+    "listeners": 0,
+    "median": 0.0,
+    "censored": false,
+    "exchange": null
+   },
+   "R2_detail": {
+    "median": 0.0,
+    "censored": false
+   },
+   "R6_detail": {
+    "sentence": "",
+    "times": 0,
+    "line": "",
+    "line_pct": 0
+   },
+   "R7_detail": {
+    "replies": 0,
+    "closing_beats": 0,
+    "closings_distinct_per_1000": null
+   },
+   "R8_detail": {
+    "p90": 0.0,
+    "speakers": 0,
+    "lines20": 0,
+    "any_habit_mean": 0
+   },
+   "C1Q_detail": {
+    "questions": 0,
+    "answered": 0
+   },
+   "C1_detail": {
+    "owed": 0,
+    "met": 0
+   },
+   "C2_detail": {
+    "answers": 0,
+    "fallbacks": 0
+   },
+   "M1_detail": {},
+   "C3_detail": {
+    "farewell": 0.0,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
+    "cap": 0.0,
+    "nothing_fits": 0.0,
+    "curt": 0.0
+   },
+   "C4_detail": {
+    "clashes": 0,
+    "by_tone": 0,
+    "in_line": 0
+   },
+   "C7_detail": {
+    "p90": 0.0,
+    "three_lines": 0.0,
+    "four_lines": 0.0
+   },
+   "T2_detail": {
+    "by_kind": {},
+    "examples": []
+   },
+   "T3_detail": {
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": false
+   },
+   "T4_detail": {
+    "stance_lines": 0,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 0,
+    "across": 0,
+    "examples": []
+   },
+   "T1_detail": {
+    "examples": []
+   },
+   "K2_detail": {
+    "topics": {}
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "T5_detail": {
+    "asserted": 0,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "D1_detail": {
+    "none": 0.0,
+    "body": {
+     "light": 0.0,
+     "broad": 0.0
+    }
+   },
+   "D1A_detail": {},
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "speakers": 0,
+    "judged": 0,
+    "note": "fewer than two dialects heard"
+   },
+   "U2_detail": {
+    "pairs": 0,
+    "lines": 0
+   },
+   "B1_detail": {
+    "beats": 0,
+    "beat_max": 0,
+    "looks": 72000,
+    "look_mean": 0.005919002208333348,
+    "look_max": 0.057858
+   },
+   "_counts": {
+    "lines": 0,
+    "conversations": 0,
+    "hours": 100.0,
+    "listeners": 0,
+    "speakers": 0,
+    "questions": 0,
+    "owed": 0,
+    "asserted": 0,
+    "stance_lines": 0,
+    "none_lines": 0,
+    "light_lines": 0,
+    "broad_lines": 0
+   }
+  },
+  "L10": {
+   "R1_detail": {
+    "listeners": 1,
+    "median": 16.918125,
+    "censored": false,
+    "exchange": 225
+   },
+   "R2_detail": {
+    "median": 12.751458333333334,
+    "censored": false
+   },
+   "R6_detail": {
+    "sentence": "And you.",
+    "times": 186,
+    "line": "Sleep sound.",
+    "line_pct": 0.749
+   },
+   "R7_detail": {
+    "replies": 7244,
+    "closing_beats": 3602,
+    "closings_distinct_per_1000": 64.7
+   },
+   "R8_detail": {
+    "p90": 0.4716981132075472,
+    "speakers": 6,
+    "lines20": 12277,
+    "any_habit_mean": 0.19013273973581538
+   },
+   "C1Q_detail": {
+    "questions": 600,
+    "answered": 581
+   },
+   "C1_detail": {
+    "owed": 4606,
+    "met": 4593
+   },
+   "C2_detail": {
+    "answers": 3956,
+    "fallbacks": 0
+   },
+   "M1_detail": {
+    "scene": 100.0
+   },
+   "C3_detail": {
+    "farewell": 98.95178197064989,
+    "marked_break": 0.0,
+    "cut_off": 0.0,
+    "cap": 0.0,
+    "nothing_fits": 0.13976240391334732,
+    "curt": 0.9084556254367575
+   },
+   "C4_detail": {
+    "clashes": 0,
+    "by_tone": 0,
+    "in_line": 0
+   },
+   "C7_detail": {
+    "p90": 12,
+    "three_lines": 0.5590496156533893,
+    "four_lines": 5.101327742837177
+   },
+   "T2_detail": {
+    "by_kind": {},
+    "examples": []
+   },
+   "T3_detail": {
+    "by_kind": {},
+    "examples": [],
+    "eyewitness_judged": true
+   },
+   "T4_detail": {
+    "stance_lines": 742,
+    "drifted": 0,
+    "answered_against_own": 0,
+    "examples": []
+   },
+   "T6_detail": {
+    "lines": 1,
+    "across": 1,
+    "examples": [
+     "Good day. Good to see you in. You look tired, Gunnar Farrow. / rmx_gunnar_farrow: The knees complain, but they still carry me."
+    ]
+   },
+   "T1_detail": {
+    "examples": []
+   },
+   "K2_detail": {
+    "topics": {
+     "prices": 13.0,
+     "event": 9.99,
+     "player": 9.85,
+     "memories": 8.81,
+     "ships": 8.74,
+     "caravan": 8.25,
+     "friends": 7.34,
+     "smalltalk": 5.8,
+     "food": 3.98,
+     "pastimes": 3.21,
+     "work": 3.0,
+     "season": 2.59,
+     "land": 2.03,
+     "animals": 1.96,
+     "faith": 1.89,
+     "dreams": 1.68,
+     "health": 1.61,
+     "home": 1.54,
+     "travel": 1.47,
+     "lore": 1.4,
+     "crime": 0.84,
+     "festival": 0.42,
+     "gossip": 0.28,
+     "day": 0.28,
+     "bandits": 0.07
+    }
+   },
+   "K3_detail": {
+    "repeats": []
+   },
+   "C5_detail": {
+    "turns": 1234,
+    "unmarked": 0,
+    "examples": [],
+    "topics_per_talk": 1.862,
+    "turned_talks": 913
+   },
+   "C9_detail": {
+    "callbacks": 133,
+    "goals": {
+     "visit": 103,
+     "nag": 6,
+     "vent": 1
+    }
+   },
+   "T5_detail": {
+    "asserted": 5,
+    "told_what_they_knew": 0,
+    "examples": []
+   },
+   "D1_detail": {
+    "light": 0.0,
+    "broad": 0.0,
+    "none": 0.0,
+    "body": {
+     "light": 0.0,
+     "broad": 0.0
+    }
+   },
+   "D1A_detail": {},
+   "D2_detail": {
+    "by_layers": 0,
+    "by_lexicon": 0,
+    "examples": [],
+    "lexicon": "tools/dialect_check.py"
+   },
+   "D3_detail": {
+    "speakers": 6,
+    "judged": 0,
+    "note": "fewer than two dialects heard"
+   },
+   "U2_detail": {
+    "pairs": 0,
+    "lines": 0
+   },
+   "B1_detail": {
+    "beats": 10870,
+    "beat_max": 1.301405,
+    "looks": 43200,
+    "look_mean": 0.16549375027777788,
+    "look_max": 384.085807
+   },
+   "_counts": {
+    "lines": 12277,
+    "conversations": 1431,
+    "hours": 120.0,
+    "listeners": 1,
+    "speakers": 6,
+    "questions": 600,
+    "owed": 4606,
+    "asserted": 5,
+    "stance_lines": 742,
+    "none_lines": 0,
+    "light_lines": 5900,
+    "broad_lines": 6377
+   }
+  }
+ },
+ "control": {
+  "runs": [
+   "L1",
+   "L10",
+   "L2",
+   "L3",
+   "L4",
+   "L5",
+   "L6",
+   "L7",
+   "L8",
+   "L9"
+  ],
+  "how": "talk_sim --ablate shuffle: lines after the first replaced by lines said at the same side of other conversations on the same topic, by a speaker of the same dialect where possible (§15.5)"
+ },
+ "mode": "frozen",
+ "freeze_at": 28.5
+}

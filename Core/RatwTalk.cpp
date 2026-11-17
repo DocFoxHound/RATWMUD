@@ -1096,7 +1096,11 @@ bool Library::checkText(const std::string& text, std::vector<std::string>& error
     const auto before = errors.size();
     std::size_t length = 0;
     std::map<std::string, std::size_t> memo;
-    const auto& plain = grammars_.count("plain") ? grammars_.at("plain") : Grammar{};
+    // A reference, never a copy (the conditional with a Grammar{} branch copied the whole plain grammar for every
+    // alternative checked: 76% of the library's load once plain.grammar grew to 44 KB; Slice 2's review).
+    static const Grammar none;
+    const auto found = grammars_.find("plain");
+    const Grammar& plain = found != grammars_.end() ? found->second : none;
     const auto checkRef = [&](const std::string& inside) {
         const auto ref = readRef(inside);
         if (ref.parts.empty() || std::any_of(ref.parts.begin(), ref.parts.end(), [](const std::string& p) { return p.empty(); }))
@@ -2537,6 +2541,30 @@ Said Library::renderWith(const Entry& e, const Query& q, std::uint64_t seed, Tra
             habits.clear();
             Expansion x{q, who, mix(r ^ 0x7A1CULL ^ k), binds, trace, &used, &habits};
             done = expandInto(chosen->texts[(start + k) % n], x, 0, said) && !muted(said, q, who);   // (Salience: 10.3.)
+            // Never the same question twice in one exchange (C6): an echo in a dialect whose backchannels are tag
+            // questions ("I know, no?" / "I know, no?", Mirebridge's) is said again with other words where it has them.
+            // Slice 2's review.
+            const auto askedBefore = [&](const std::string& text) {
+                auto tidied = text;
+                tidy(tidied);
+                return !tidied.empty() && tidied.back() == '?' &&
+                       std::any_of(out.lines.begin(), out.lines.end(), [&](const auto& l) { return l.second == tidied; });
+            };
+            for (std::uint64_t again = 1; done && again < 16 && askedBefore(said); ++again)
+            {
+                auto keptAgain = binds;
+                std::vector<std::string> usedAgain, habitsAgain;
+                Expansion y{q, who, mix(r ^ 0x7A1CULL ^ k ^ (again * 0x9E3779B97F4A7C15ULL)), binds, trace, &usedAgain, &habitsAgain};
+                std::string other;
+                if (expandInto(chosen->texts[(start + k) % n], y, 0, other) && !muted(other, q, who) && !askedBefore(other))
+                {
+                    said = std::move(other);
+                    used = std::move(usedAgain);
+                    habits = std::move(habitsAgain);
+                    break;
+                }
+                binds = std::move(keptAgain);
+            }
             if (!done)
                 binds = std::move(kept);
         }
@@ -3193,8 +3221,19 @@ bool Library::stillHolds(const SaidLine& line, const Query& q) const
 
 void Library::take(Conversation& c, Said said) const
 {
+    // A scene's turns stop before a player's (§13: the engine never writes a player's line; Slice 2's review). The first
+    // line taken is always said: no caller asks a player to speak.
+    bool first = true;
     for (auto& line : said.info)
+    {
+        if (!first && c.players.count(line.who))
+        {
+            ++c.dropped;
+            continue;
+        }
+        first = false;
         c.queued.push_back(std::move(line));
+    }
     for (auto& e : said.effects)
         c.effects.push_back(std::move(e));
     for (auto& id : said.chain)
@@ -3330,11 +3369,15 @@ void Library::setUp(Conversation& c, const Query& q) const
     c.concept = q.concept;
     c.legacy = moves_.empty();
     c.people.clear();
+    c.players.clear();
     for (const auto* s : {&q.a, &q.b})
     {
         if (s == &q.b && q.alone)
             break;
         const auto id = s->facts.find("id");
+        const auto player = s->facts.find("player");
+        if (s->player || (player != s->facts.end() && player->second == "yes"))
+            c.players.insert(int(c.people.size()));
         c.people.push_back(id == s->facts.end() ? std::string() : id->second);
     }
     if (const auto kind = q.facts.find("topic.kind"); kind != q.facts.end())
@@ -3390,7 +3433,9 @@ void Library::preface(Conversation& c, Said& said, const Query& q, const Freshne
         line.text = g.text + " " + line.text;
         said.lines.front().second = line.text;
         line.moves.insert(line.moves.begin(), g.moves.begin(), g.moves.end());
-        line.callback = line.callback || g.callback;   // (Phase 8: a word that stands on the ledger is a callback, C9.)
+        // (Phase 8: a word that stands on the ledger is a callback, C9; "Back again?" isn't one: the raters' worst frame,
+        // it recalls nothing said. Slice 2's review.)
+        line.callback = line.callback || (g.callback && std::find(g.moves.begin(), g.moves.end(), "again.open") == g.moves.end());
         line.layers.insert(line.layers.end(), g.layers.begin(), g.layers.end());
         line.habits.insert(line.habits.end(), g.habits.begin(), g.habits.end());
         said.chain.push_back(before.id);
@@ -3418,7 +3463,8 @@ void Library::preface(Conversation& c, Said& said, const Query& q, const Freshne
         const auto last = q.facts.find("pair.last_outcome");
         return q.facts.count("pair.talked." + c.topics.back()) > 0 || (last != q.facts.end() && last->second == "broken");
     };
-    if (back.id.empty() && !does("return") && !does("recall") && moves_.find("recall") && onLedger() &&
+    // (Never before an opener that stands on the ledger itself: "Prices again. ... Prices again." Slice 2's review.)
+    if (back.id.empty() && !does("return") && !does("recall") && !said.info.front().callback && moves_.find("recall") && onLedger() &&
         unit(mix(c.seed * 0x9E3779B97F4A7C15ULL + 0x5EC0)) < .5)
     {
         auto onTopic = q;
@@ -3641,6 +3687,13 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
         // what was said.
         const auto& due = c.queued.front();
         int side = 0;
+        if (c.players.count(due.who))
+        {
+            c.dropped += int(c.queued.size());       // (A player's turn: theirs to say in the window, never ours: §13.)
+            c.queued.clear();
+            end(c, "done", trace);
+            return std::nullopt;
+        }
         if (c.legacy || due.entry.empty() || c.people.size() < 2 || due.who < 0 || due.who > 1)
             return sayNext(c);
         // Phase 8 (§8.12.3): nor if another speaker has said its words in this place since the scene was chosen (two
@@ -3660,6 +3713,11 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
         c.queued.clear();
         if (!collided)
             c.open.clear();                         // (A collision leaves what was owed owed: the engine answers it.)
+    }
+    if (c.legacy && !c.players.empty())
+    {
+        end(c, "done", trace);                      // (§13: a player answers for themselves.)
+        return std::nullopt;
     }
     if (c.legacy)
         return legacyNext(c, facts, fresh, trace);
@@ -3693,6 +3751,8 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
             break;
         const int who = o.to >= 0 ? o.to : partner(c, o.by);
         const int to = who == o.by ? partner(c, who) : o.by;
+        if (c.players.count(who))
+            continue;                               // (Owed by a player: theirs to answer, in the window or not at all: §13.)
         int side = 0;
         auto q = beatQuery(c, facts, who, to, side);
         // An invitation is taken up half the time, as the one invited leans (Phase 6, §7.5: a warm wolf sympathises).
@@ -3739,8 +3799,9 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
     if (c.phase == Conversation::Phase::Ended)
         return std::nullopt;
     // Only a conversation between residents on a topic (talk.*, as the director starts one) closes or greets: a reaction,
-    // a bark or an answer to a player is said, and what it owes answered, and that is all (the other may be a player).
-    if (c.concept.rfind("talk.", 0) != 0)
+    // a bark or an answer to a player is said, and what it owes answered, and that is all. With a player in it, what the
+    // player owes is never answered for them (§13; Slice 2's review: a keeper's greeting had the customer's wolf greet back).
+    if (c.concept.rfind("talk.", 0) != 0 || !c.players.empty())
     {
         end(c, "done", trace);
         return std::nullopt;
@@ -3832,12 +3893,15 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
 std::optional<SaidLine> Library::lull(Conversation& c, const std::function<Query(int, int)>& facts, const Freshness& fresh,
                                       Trace* trace) const
 {
-    // Doc 84 §8.3, §8.5 (Phase 5). Room for a step, its answer and the farewell pair, or nothing (the talk closes).
+    // Doc 84 §8.3, §8.5 (Phase 5). Room for a step, its answer and the farewell pair, or nothing (the talk closes). A goal
+    // under way takes its next step whatever the budget says, while the talk may still have it (Slice 2's review: "I've a
+    // favour to ask." / "What is it?" / "I'd better get on."), and one is begun only with room for all of it.
     if (c.legacy || moves_.empty() || c.people.size() < 2 || c.lines.empty())
         return std::nullopt;
     const int n = int(c.lines.size());
-    if (n + 4 > c.budget || n + 4 > budgets_.most)
+    if (n + 4 > budgets_.most || (n + 4 > c.budget && c.goal.empty()))
         return std::nullopt;
+    const bool roomy = n + 4 <= c.budget;
     const int last = c.lines.back().who;
     const auto beatSeed = [&](std::uint64_t salt) { return mix(c.seed + std::uint64_t(n) * 7919 + salt); };
     // Turn-taking (§8.3): the one who didn't speak last first, then the other (a chatty speaker may go on).
@@ -3862,7 +3926,8 @@ std::optional<SaidLine> Library::lull(Conversation& c, const std::function<Query
             const bool underWay = c.goal == g.name;
             if (!underWay)
             {
-                if (!c.goal.empty() || c.conv.count("goal_" + g.name))
+                if (!c.goal.empty() || c.conv.count("goal_" + g.name) || !roomy ||
+                    n + 2 * int(g.plan.size()) + 2 > std::min(c.budget, budgets_.most))
                     continue;
                 if (const auto done = q.facts.find("pair.was.goal_" + g.name); done != q.facts.end() && done->second == "yes")
                     continue;
@@ -3908,6 +3973,8 @@ std::optional<SaidLine> Library::lull(Conversation& c, const std::function<Query
             return sayNext(c);
         }
     }
+    if (!roomy)
+        return std::nullopt;                        // (Only a goal under way went past the budget.)
     // 1b. An opinion on the issue the topic raises (Phase 6, §8.8), by the one whose turn it is.
     if (c.people.size() == 2)
         for (const int who : order)
@@ -4143,16 +4210,23 @@ Said Library::answer(const Conversation& c, const Conversation::Open& owed, cons
         // Phase 6: agree or disagree as the stances are (§8.8); nothing a town's mood mutes (§7.4); never told again (§8.6).
         if (!stanceFits(e, asked) || moodMuted(e, asked) || toldAlready(c, e, asked, speaker, fresh))
             continue;
-        // An opinion answered with one's own only by one who differs, and once (one who agrees says so).
+        // An opinion answered with one's own only by one who differs, and once (one who agrees says so). The first to air
+        // it gives it whoever they're talking to (Slice 2's review: two of a side never aired it to each other, so nobody
+        // ever agreed but one with no view).
         if (c.conv.count("issue") && hasMove(moves_, e.does.front(), "give.opinion"))
         {
             const auto agree = asked.facts.find("conv.agree");
             const auto id = self.facts.find("id");
-            const bool gave = id != self.facts.end() && std::any_of(c.lines.begin(), c.lines.end(), [&](const SaidLine& l) {
-                return l.who >= 0 && std::size_t(l.who) < c.people.size() && c.people[std::size_t(l.who)] == id->second &&
-                       hasMove(moves_, l.moves, "give.opinion");
-            });
-            if (gave || (agree != asked.facts.end() && agree->second == "yes"))
+            const auto& issue = c.conv.at("issue");
+            bool aired = false, gave = false;
+            for (const auto& l : c.lines)
+                if (hasMove(moves_, l.moves, "give.opinion") && l.issue == issue)
+                {
+                    aired = true;
+                    gave |= id != self.facts.end() && l.who >= 0 && std::size_t(l.who) < c.people.size() &&
+                            c.people[std::size_t(l.who)] == id->second;
+                }
+            if (gave || (aired && agree != asked.facts.end() && agree->second == "yes"))
                 continue;
         }
         // Phase 8 (§33.3): once one of the realm's issues is aired, a move line's everyday view or pushback (one not
@@ -4713,6 +4787,7 @@ bool Library::readOpinions(const std::string& text, std::string& problem)
     {
         person_["op." + i.name] = FactKind{FactKind::Type::Words, {"for", "against", "mixed"}};
         person_["op_why." + i.name] = FactKind{FactKind::Type::Text, {}};
+        person_["op_whys." + i.name] = FactKind{FactKind::Type::Text, {}};   // (Every reason of their side: Slice 2's review.)
         person_["op_strength." + i.name] = FactKind{FactKind::Type::Number, {}};
         person_["op_drift." + i.name] = FactKind{FactKind::Type::Number, {}};
         person_["op_basis." + i.name] = FactKind{FactKind::Type::Text, {}};
@@ -4809,12 +4884,13 @@ void Library::stances(Facts& person, const std::map<std::string, std::pair<int, 
     {
         if (!holdsAll(i.who, q, 0))
         {
-            for (const char* k : {"op.", "op_why.", "op_strength.", "op_drift.", "op_basis."})
+            for (const char* k : {"op.", "op_why.", "op_whys.", "op_strength.", "op_drift.", "op_basis."})
                 erased.push_back(k + i.name);
             continue;                               // (No view on it at all: the Sump, to one who never lived by it.)
         }
         int sum = 0, pulls = 0;
         std::string forWhy, againstWhy, basis;
+        std::vector<std::string> forWhys, againstWhys;   // (Every reason of each side, the strongest first: op_whys.)
         for (std::size_t li = 0; li < i.leans.size(); ++li)
             if (const auto& l = i.leans[li]; holdsAll(l.when, q, 0))
             {
@@ -4824,6 +4900,9 @@ void Library::stances(Facts& person, const std::map<std::string, std::pair<int, 
                 auto& why = l.side > 0 ? forWhy : againstWhy;
                 if (why.empty() && !l.reason.empty())
                     why = i.reasons.at(l.reason);
+                auto& whys = l.side > 0 ? forWhys : againstWhys;
+                if (!l.reason.empty() && std::find(whys.begin(), whys.end(), i.reasons.at(l.reason)) == whys.end())
+                    whys.push_back(i.reasons.at(l.reason));
             }
         int moved = 0;
         if (const auto d = drift.find(i.name); d != drift.end() && d->second.first != 0)
@@ -4831,7 +4910,12 @@ void Library::stances(Facts& person, const std::map<std::string, std::pair<int, 
             moved = d->second.first;
             sum += moved;
             if (const auto r = i.reasons.find(d->second.second); r != i.reasons.end())
+            {
                 (moved > 0 ? forWhy : againstWhy) = r->second;
+                auto& whys = moved > 0 ? forWhys : againstWhys;
+                whys.erase(std::remove(whys.begin(), whys.end(), r->second), whys.end());
+                whys.insert(whys.begin(), r->second);
+            }
         }
         const char* side = sum > 0 ? "for" : sum < 0 ? "against" : "mixed";
         set.emplace_back("op." + i.name, side);
@@ -4842,6 +4926,13 @@ void Library::stances(Facts& person, const std::map<std::string, std::pair<int, 
             set.emplace_back("op_why." + i.name, why);
         else
             erased.push_back("op_why." + i.name);
+        std::string whys;
+        for (const auto& w : sum > 0 ? forWhys : sum < 0 ? againstWhys : std::vector<std::string>{})
+            whys += (whys.empty() ? "" : "\n") + w;
+        if (!whys.empty())
+            set.emplace_back("op_whys." + i.name, whys);
+        else
+            erased.push_back("op_whys." + i.name);
         if (moved)
             set.emplace_back("op_drift." + i.name, std::to_string(moved));
         else
@@ -4963,6 +5054,22 @@ void Library::accommodate(Query& q) const
     }
 }
 
+namespace
+{
+// Whether words were said in the talk already, whatever their first letter's case ("#self.stance_why.capitalize#").
+bool saidIn(const Conversation& c, const std::string& words)
+{
+    if (words.size() < 2)
+        return false;
+    const auto tail = words.substr(1);
+    for (const auto& l : c.lines)
+        for (auto at = l.text.find(tail); at != std::string::npos; at = l.text.find(tail, at + 1))
+            if (at > 0 && std::tolower(static_cast<unsigned char>(l.text[at - 1])) == std::tolower(static_cast<unsigned char>(words[0])))
+                return true;
+    return false;
+}
+} // namespace
+
 void Library::stanceFacts(const Conversation& c, Query& q) const
 {
     const auto issue = c.conv.find("issue");
@@ -4979,7 +5086,26 @@ void Library::stanceFacts(const Conversation& c, Query& q) const
         sides[side] = at("op").empty() ? "mixed" : at("op");
         s.facts["stance"] = sides[side];
         s.facts["stance_strength"] = at("op_strength").empty() ? "0" : at("op_strength");
-        if (const auto why = at("op_why"); !why.empty())
+        // Their reason: the first of their side's (op_whys, the strongest first) not said in this talk already (Slice 2's
+        // review: a joiner, a disagreement or an insist said back the very sentence given two lines before). None left:
+        // no reason (the lines without one are said).
+        std::string why;
+        const auto whys = at("op_whys");
+        std::size_t from = 0;
+        for (bool any = !whys.empty(); from <= whys.size();)
+        {
+            const auto bar = whys.find('\n', from);
+            const auto one = any ? whys.substr(from, bar == std::string::npos ? std::string::npos : bar - from) : at("op_why");
+            if (!one.empty() && !saidIn(c, one))
+            {
+                why = one;
+                break;
+            }
+            if (!any || bar == std::string::npos)
+                break;
+            from = bar + 1;
+        }
+        if (!why.empty())
             s.facts["stance_why"] = why;
         else
             s.facts.erase("stance_why");

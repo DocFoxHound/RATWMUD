@@ -19,22 +19,23 @@
    "better": "higher",
    "gate": "hard",
    "target": "40 h+; hard 20 h+",
-   "value": 2.2171944443010823,
+   "value": 6.628305554480871,
    "passes": false,
    "by_profile": {
-    "L1": 2.735,
-    "L2": 3.834,
-    "L3": 2.351,
-    "L4": 2.384,
-    "L5": 2.217,
-    "L6": 3.134,
-    "L7": 2.551,
+    "L1": 19.384,
+    "L2": 23.495,
+    "L3": 6.628,
+    "L4": 22.745,
+    "L5": 42.634,
+    "L6": 38.967,
+    "L7": 38.717,
     "L8": 0,
     "L9": 0,
-    "L10": 6.884
+    "L10": 19.984
    },
-   "control": 2.3005277776344157,
-   "separation": 0.03622357188793582,
+   "control": 18.461638885020236,
+   "separation": 0.6409687354539756,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -94,25 +95,30 @@
    "better": "lower",
    "gate": "soft",
    "target": "5 or fewer",
-   "value": 990.8077503048436,
+   "value": 825.178579645408,
    "passes": false,
    "by_profile": {
-    "L1": 1786.0,
-    "L2": 668.0,
-    "L3": 432.0,
-    "L4": 248.0,
-    "L5": 61.0,
-    "L6": 82.0,
-    "L7": 95.0,
+    "L1": 1417.0,
+    "L2": 975.0,
+    "L3": 484.0,
+    "L4": 674.0,
+    "L5": 188.0,
+    "L6": 88.0,
+    "L7": 394.0,
     "L8": 0.0,
     "L9": 0.0,
-    "L10": 868.0
+    "L10": 437.0
    },
-   "control": 978.4308694552776,
-   "separation": 0.01249170774628877,
+   "control": 880.878475965862,
+   "separation": 0.06323221402291655,
+   "real_better": true,
    "separates": false,
    "control_required": false,
-   "structural": false
+   "structural": false,
+   "events": [
+    4657,
+    800.0
+   ]
   },
   "R5": {
    "name": "collision index, per 100 h",
@@ -144,22 +150,23 @@
    "better": "lower",
    "gate": "soft",
    "target": "0.4%",
-   "value": 3.6137486243697694,
+   "value": 2.686471858181044,
    "passes": false,
    "by_profile": {
-    "L1": 1.38,
-    "L2": 1.297,
-    "L3": 9.665,
-    "L4": 9.217,
-    "L5": 12.13,
-    "L6": 7.42,
-    "L7": 7.633,
+    "L1": 1.872,
+    "L2": 2.077,
+    "L3": 2.252,
+    "L4": 2.934,
+    "L5": 6.362,
+    "L6": 6.888,
+    "L7": 2.82,
     "L8": 0,
     "L9": 0,
-    "L10": 0.949
+    "L10": 2.437
    },
-   "control": 3.603511376142093,
-   "separation": 0.002832861189801656,
+   "control": 2.835466901815307,
+   "separation": 0.05254691689008053,
+   "real_better": true,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -261,29 +268,29 @@
    "better": "higher",
    "gate": "soft",
    "target": "80% / 3% / 5%",
-   "value": 0.8906588828197891,
-   "passes": false,
+   "value": 99.70813951205204,
+   "passes": true,
    "by_profile": {
-    "L1": 0.8,
-    "L2": 0.758,
-    "L3": 0.843,
-    "L4": 0.875,
-    "L5": 0.389,
-    "L6": 0.778,
-    "L7": 0.584,
+    "L1": 99.775,
+    "L2": 99.186,
+    "L3": 99.413,
+    "L4": 100.0,
+    "L5": 100.0,
+    "L6": 100.0,
+    "L7": 100.0,
     "L8": 0.0,
     "L9": 0.0,
-    "L10": 1.473
+    "L10": 99.938
    },
-   "control": 0.5980164653762842,
-   "separation": 0.32856845992150346,
+   "control": 45.54816028297856,
+   "separation": 0.5431851350764297,
    "real_better": true,
    "separates": true,
    "control_required": true,
    "structural": false,
    "events": [
-    115,
-    13019.0
+    11890,
+    11927.0
    ]
   },
   "C4": {
@@ -291,13 +298,13 @@
    "better": "lower",
    "gate": "hard",
    "target": "0",
-   "value": 0.02560360498758225,
+   "value": 0.01520357588104722,
    "passes": false,
    "by_profile": {
     "L1": 0.0,
-    "L2": 0.145,
+    "L2": 0.0,
     "L3": 0.0,
-    "L4": 0.0,
+    "L4": 0.132,
     "L5": 0.0,
     "L6": 0.0,
     "L7": 0.0,
@@ -305,15 +312,15 @@
     "L9": 0.0,
     "L10": 0.0
    },
-   "control": 0.46086488977648055,
-   "separation": 0.9444444444444444,
+   "control": 0.06081430352418889,
+   "separation": 0.7500000000000001,
    "real_better": true,
    "separates": true,
    "control_required": true,
    "structural": false,
    "events": [
     1,
-    39057.0
+    65774.0
    ]
   },
   "C5": {
@@ -425,27 +432,27 @@
    "better": "higher",
    "gate": "soft",
    "target": "1.5+",
-   "value": 1.210784911158425,
+   "value": 1.4464032320439644,
    "passes": false,
    "by_profile": {
-    "L1": 1.325,
-    "L2": 0.769,
-    "L3": 1.01,
-    "L4": 1.644,
-    "L5": 1.479,
-    "L6": 1.362,
-    "L7": 1.265,
-    "L10": 1.159
+    "L1": 1.671,
+    "L2": 0.928,
+    "L3": 1.279,
+    "L4": 1.868,
+    "L5": 1.576,
+    "L6": 1.518,
+    "L7": 1.304,
+    "L10": 1.39
    },
-   "control": 1.210784911158425,
+   "control": 1.4464032320439644,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    1560,
-    13041.0
+    1712,
+    11927.0
    ]
   },
   "T1": {
@@ -799,7 +806,7 @@
    "structural": false,
    "events": [
     0,
-    13041.0
+    11927.0
    ]
   },
   "W1": {
@@ -898,29 +905,29 @@
    "better": "higher",
    "gate": "soft",
    "target": "light 25-50%",
-   "value": 0.83405825477109,
+   "value": 1.6802424663556594,
    "passes": false,
    "by_profile": {
-    "L1": 0.052,
-    "L2": 0.597,
-    "L3": 3.761,
+    "L1": 0.087,
+    "L2": 1.253,
+    "L3": 4.934,
     "L4": 0.0,
-    "L5": 0.0,
-    "L6": 7.018,
-    "L7": 0.0,
+    "L5": 0,
+    "L6": 18.254,
+    "L7": 0,
     "L8": 0,
     "L9": 0,
-    "L10": 0.052
+    "L10": 0.325
    },
-   "control": 2.4178407947510516,
-   "separation": 0.6550400437523567,
+   "control": 2.0393019432396744,
+   "separation": 0.17606979588005794,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    257,
-    26793.0
+    391,
+    25106.0
    ]
   },
   "D1B": {
@@ -928,29 +935,29 @@
    "better": "higher",
    "gate": "soft",
    "target": "broad 60%+",
-   "value": 4.022272048109073,
+   "value": 8.281534654842135,
    "passes": false,
    "by_profile": {
-    "L1": 0.083,
-    "L2": 2.647,
-    "L3": 10.685,
-    "L4": 8.626,
-    "L5": 8.743,
-    "L6": 10.396,
-    "L7": 9.979,
+    "L1": 0.149,
+    "L2": 4.337,
+    "L3": 10.162,
+    "L4": 10.992,
+    "L5": 27.536,
+    "L6": 34.2,
+    "L7": 29.652,
     "L8": 0,
     "L9": 0,
-    "L10": 0.053
+    "L10": 0.205
    },
-   "control": 3.612843738844215,
-   "separation": 0.10179030765891042,
+   "control": 7.862368936087214,
+   "separation": 0.05061449794330555,
    "real_better": true,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    2008,
-    38875.0
+    4443,
+    35380.0
    ]
   },
   "C1M": {
@@ -1116,29 +1123,29 @@
    "better": "lower",
    "gate": "soft",
    "target": "0",
-   "value": 0.22447318948343106,
+   "value": 2.067686319822422,
    "passes": false,
    "by_profile": {
-    "L1": 0.433,
-    "L2": 0.331,
+    "L1": 4.109,
+    "L2": 4.206,
     "L3": 0.0,
-    "L4": 0.139,
+    "L4": 0.132,
     "L5": 0.0,
     "L6": 0.0,
     "L7": 0.0,
     "L8": 0.0,
     "L9": 0.0,
-    "L10": 0.099
+    "L10": 0.761
    },
-   "control": 0.22447318948343106,
-   "separation": 0.0,
+   "control": 1.3531182534132027,
+   "separation": 0.34558823529411764,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    16,
-    71278.0
+    136,
+    65774.0
    ]
   },
   "D1A": {
@@ -1202,17 +1209,19 @@
   "L1": {
    "R1_detail": {
     "listeners": 4,
-    "median": 22.339416661866693,
+    "median": 78.96641669581858,
     "censored": true,
-    "exchange": 43
+    "exchange": 367
    },
    "R2_detail": {
     "median": 22.339416661866693,
     "censored": true
    },
    "R6_detail": {
-    "line": "Good.",
-    "times": 198
+    "sentence": "Bye!",
+    "times": 369,
+    "line": "I'll be on my way.",
+    "line_pct": 1.147
    },
    "R8_detail": {
     "p90": 0.0,
@@ -1225,12 +1234,12 @@
     "met": 3342
    },
    "C3_detail": {
-    "farewell": 0.7998270644185042,
-    "marked_break": 0.0,
-    "cut_off": 0.0,
+    "farewell": 83.89110889110889,
+    "marked_break": 0.024975024975024976,
+    "cut_off": 0.22477522477522477,
     "cap": 0.0,
-    "nothing_fits": 99.20017293558149,
-    "curt": 0.0
+    "nothing_fits": 0.0,
+    "curt": 15.85914085914086
    },
    "C7_detail": {
     "p90": 4,
@@ -1345,7 +1354,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 9840,
@@ -1380,13 +1390,14 @@
     "turned_talks": 339
    },
    "C9_detail": {
-    "callbacks": 616,
+    "callbacks": 669,
     "goals": {
-     "learn_name": 51,
-     "mend": 14,
-     "favour": 6,
-     "visit": 3,
-     "nag": 3
+     "learn_name": 40,
+     "vent": 7,
+     "favour": 5,
+     "visit": 4,
+     "nag": 3,
+     "robbed": 1
     }
    },
    "T4_detail": {
@@ -1396,14 +1407,17 @@
     "examples": []
    },
    "T6_detail": {
-    "lines": 10,
+    "lines": 81,
+    "across": 77,
     "examples": [
-     "rmx_orm_blackwood: A light-pawed sort took from Rupert Fogton. Bet they ate well tonight.",
-     "rmx_orm_blackwood: Back again? First Ebba Netherby, now everyone's barring their doors.",
-     "rm_edmund_sootdale: A light-pawed sort took Gudrun Wickby's things. They'll be disappointed.",
-     "rm_winifred_pitchdale: I walked mine to the well this morning, after Rune Pitchhand. They thought I'd gone soft.",
-     "rmx_maren_hatherley: A cutpurse took Wenna Tarford's things. They'll be disappointed.",
-     "rm_rosamund_tarridge: Here we are again. First Oda Cinderby, now everyone's barring their doors."
+     "rmx_magda_orme: Good evening. A cutpurse took Rupert Fogton's things. They'll be disappointed.",
+     "rmx_ulla_brindle: Hello. Another bad business. It never stops. A thief took Wenna Tarford's things. They'll be disappointed.",
+     "rm_edmund_sootdale: Back again? Somebody robbed Josephine Fenwick. I hope they wiped their paws.",
+     "rm_rosamund_tarridge: Hello. Take the warm end. We'd only just finished with the last of this. Another theft. Desmond Bilgeridge. They should make an example.",
+     "And it's not the first this week. They say Orla Wickby was robbed on the long stair. / rmx_philippa_coldby: If they'd taken a ledger from the Hall of Records I'd understand. Coin? Vulgar.",
+     "Back again? They cleaned out Rosamund Tarridge. Down to the spoons. / rm_torvald_slagton: Spoons. Gods. Were they silver?",
+     "Can't keep away, then. Orla Wickby! In broad day! And the watch drinking somewhere! / rm_elspet_sootley: Will they come to our house?",
+     "In a city this size, and still everyone knows. Florence Pennock is wanted by the Watch for attempted theft. / rmx_montague_kettlewick: Good luck to them catching her."
     ]
    },
    "D1A_detail": {
@@ -1413,17 +1427,19 @@
   "L2": {
    "R1_detail": {
     "listeners": 1,
-    "median": 3.833861110967749,
+    "median": 23.494972217422248,
     "censored": false,
-    "exchange": 78
+    "exchange": 478
    },
    "R2_detail": {
     "median": 3.833861110967749,
     "censored": false
    },
    "R6_detail": {
-    "line": "Good.",
-    "times": 89
+    "sentence": "I'll be on my way.",
+    "times": 237,
+    "line": "I'll be on my way.",
+    "line_pct": 2.077
    },
    "R8_detail": {
     "p90": 0.0,
@@ -1436,12 +1452,12 @@
     "met": 1835
    },
    "C3_detail": {
-    "farewell": 0.7575757575757576,
+    "farewell": 85.24886877828054,
     "marked_break": 0.0,
-    "cut_off": 0.44563279857397503,
+    "cut_off": 0.6787330316742082,
     "cap": 0.0,
-    "nothing_fits": 98.79679144385027,
-    "curt": 0.0
+    "nothing_fits": 0.13574660633484162,
+    "curt": 13.936651583710407
    },
    "C7_detail": {
     "p90": 3,
@@ -1551,8 +1567,9 @@
     "fallbacks": 0
    },
    "C4_detail": {
-    "clashes": 1,
-    "by_tone": 0
+    "clashes": 0,
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 4631,
@@ -1587,12 +1604,13 @@
     "turned_talks": 197
    },
    "C9_detail": {
-    "callbacks": 173,
+    "callbacks": 205,
     "goals": {
-     "favour": 71,
-     "learn_name": 16,
-     "mend": 9,
-     "visit": 2
+     "favour": 38,
+     "vent": 28,
+     "learn_name": 14,
+     "visit": 4,
+     "nag": 3
     }
    },
    "T4_detail": {
@@ -1602,12 +1620,17 @@
     "examples": []
    },
    "T6_detail": {
-    "lines": 4,
+    "lines": 48,
+    "across": 46,
     "examples": [
      "rmx_grete_dunn: A light-pawed sort took Dagny Slaghand's things. Hope they like them.",
-     "rm_wenna_tarford: Another theft. Edric Millton. They should make an example.",
-     "rm_liv_slagstack: The little ones keep asking about Oskar Millwell. What do I tell them?",
-     "rm_liv_cinderby: First Edda Ropeton, now everyone's barring their doors."
+     "rm_osric_slagstack: The little ones keep asking about Arne Wickdale. What do I tell them?",
+     "Good evening. They'll blame the Sump for Rosamund Tarridge. Watch. / rmx_edda_muddale: I can't say I blame them. Don't look at me like that.",
+     "While we're on folk behaving badly. Somebody got Rosamund Tarridge. Not me, before you ask. / rmx_ebba_netherby: Why did they do it?",
+     "My neighbour nailed their shutters shut after Finn Dripwick. / cty_hob_appleby: And how do they get the air in?",
+     "A light-pawed sort took Dagny Slaghand's things. Hope they like them. / rm_aldric_grayrock_: They'll have a fine time with the old chair.",
+     "Soren Ashcote is wanted by the Watch for attempted theft. The whole town knows it now. / rm_eleanor_wetby: Good luck to them catching him.",
+     "Rika Gullwell is wanted by the Watch for attempted theft. Best not be seen with her. / rmx_tobias_dunley: I hope they find her, then."
     ]
    },
    "D1A_detail": {
@@ -1618,17 +1641,19 @@
   "L3": {
    "R1_detail": {
     "listeners": 1,
-    "median": 2.3505277776344156,
+    "median": 6.628305554480871,
     "censored": false,
-    "exchange": 20
+    "exchange": 101
    },
    "R2_detail": {
     "median": 2.3505277776344156,
     "censored": false
    },
    "R6_detail": {
-    "line": "A day like any other.",
-    "times": 418
+    "sentence": "Right.",
+    "times": 191,
+    "line": "Take care, now.",
+    "line_pct": 1.214
    },
    "R8_detail": {
     "p90": 0.47904191616766467,
@@ -1641,11 +1666,11 @@
     "met": 1270
    },
    "C3_detail": {
-    "farewell": 0.8430609597924773,
+    "farewell": 99.41253263707571,
     "marked_break": 0.0,
-    "cut_off": 0.0,
+    "cut_off": 0.587467362924282,
     "cap": 0.0,
-    "nothing_fits": 99.15693904020752,
+    "nothing_fits": 0.0,
     "curt": 0.0
    },
    "C7_detail": {
@@ -1749,7 +1774,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 2725,
@@ -1779,10 +1805,10 @@
     "turned_talks": 82
    },
    "C9_detail": {
-    "callbacks": 155,
+    "callbacks": 196,
     "goals": {
-     "favour": 64,
-     "mend": 11
+     "vent": 23,
+     "favour": 11
     }
    },
    "T4_detail": {
@@ -1793,6 +1819,7 @@
    },
    "T6_detail": {
     "lines": 0,
+    "across": 0,
     "examples": []
    },
    "D1A_detail": {
@@ -1802,17 +1829,19 @@
   "L4": {
    "R1_detail": {
     "listeners": 1,
-    "median": 2.3838611109677488,
+    "median": 22.744972217422248,
     "censored": false,
-    "exchange": 15
+    "exchange": 264
    },
    "R2_detail": {
     "median": 2.3838611109677488,
     "censored": false
    },
    "R6_detail": {
-    "line": "A day like any other.",
-    "times": 266
+    "sentence": "Well.",
+    "times": 223,
+    "line": "Well. Hands to it.",
+    "line_pct": 1.526
    },
    "R8_detail": {
     "p90": 0.3418803418803419,
@@ -1825,12 +1854,12 @@
     "met": 916
    },
    "C3_detail": {
-    "farewell": 0.8754863813229572,
+    "farewell": 90.27237354085604,
     "marked_break": 0.0,
     "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.12451361867704,
-    "curt": 0.0
+    "nothing_fits": 0.0,
+    "curt": 9.727626459143968
    },
    "C7_detail": {
     "p90": 4,
@@ -1924,8 +1953,9 @@
     "fallbacks": 0
    },
    "C4_detail": {
-    "clashes": 0,
-    "by_tone": 0
+    "clashes": 1,
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 1730,
@@ -1955,10 +1985,10 @@
     "turned_talks": 368
    },
    "C9_detail": {
-    "callbacks": 169,
+    "callbacks": 192,
     "goals": {
-     "favour": 88,
-     "mend": 37
+     "favour": 58,
+     "vent": 21
     }
    },
    "T4_detail": {
@@ -1969,8 +1999,9 @@
    },
    "T6_detail": {
     "lines": 1,
+    "across": 1,
     "examples": [
-     "tn_lf_tansy_sunmead: Vale Miremore's family are coming for the festival. All of them."
+     "Vale Miremore burnt the bread again. Don't tell anyone. / tn_oh_quill_oakdell: Give them my best."
     ]
    },
    "D1A_detail": {
@@ -1980,17 +2011,19 @@
   "L5": {
    "R1_detail": {
     "listeners": 1,
-    "median": 2.2171944443010823,
+    "median": 42.63384721784652,
     "censored": false,
-    "exchange": 6
+    "exchange": 227
    },
    "R2_detail": {
     "median": 2.2171944443010823,
     "censored": false
    },
    "R6_detail": {
-    "line": "A day like any other.",
-    "times": 164
+    "sentence": "Dry feet.",
+    "times": 255,
+    "line": "Back to it, then.",
+    "line_pct": 1.672
    },
    "R8_detail": {
     "p90": 0.0,
@@ -2003,11 +2036,11 @@
     "met": 463
    },
    "C3_detail": {
-    "farewell": 0.38910505836575876,
+    "farewell": 100.0,
     "marked_break": 0.0,
     "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.61089494163424,
+    "nothing_fits": 0.0,
     "curt": 0.0
    },
    "C7_detail": {
@@ -2103,7 +2136,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 841,
@@ -2133,12 +2167,12 @@
     "turned_talks": 188
    },
    "C9_detail": {
-    "callbacks": 76,
+    "callbacks": 81,
     "goals": {
-     "visit": 55,
-     "mend": 36,
-     "favour": 27,
-     "nag": 1
+     "visit": 51,
+     "favour": 20,
+     "vent": 6,
+     "nag": 3
     }
    },
    "T4_detail": {
@@ -2149,6 +2183,7 @@
    },
    "T6_detail": {
     "lines": 0,
+    "across": 0,
     "examples": []
    },
    "D1A_detail": {
@@ -2158,17 +2193,19 @@
   "L6": {
    "R1_detail": {
     "listeners": 1,
-    "median": 3.1338611109677488,
+    "median": 38.96718054745456,
     "censored": false,
-    "exchange": 17
+    "exchange": 207
    },
    "R2_detail": {
     "median": 3.1338611109677488,
     "censored": false
    },
    "R6_detail": {
-    "line": "A day like any other.",
-    "times": 107
+    "sentence": "Good harvest.",
+    "times": 189,
+    "line": "And you.",
+    "line_pct": 1.458
    },
    "R8_detail": {
     "p90": 0.0,
@@ -2181,11 +2218,11 @@
     "met": 434
    },
    "C3_detail": {
-    "farewell": 0.7782101167315175,
+    "farewell": 100.0,
     "marked_break": 0.0,
     "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.22178988326849,
+    "nothing_fits": 0.0,
     "curt": 0.0
    },
    "C7_detail": {
@@ -2276,7 +2313,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 937,
@@ -2306,11 +2344,10 @@
     "turned_talks": 7
    },
    "C9_detail": {
-    "callbacks": 70,
+    "callbacks": 78,
     "goals": {
-     "visit": 29,
-     "mend": 7,
-     "favour": 3
+     "visit": 27,
+     "nag": 2
     }
    },
    "T4_detail": {
@@ -2321,6 +2358,7 @@
    },
    "T6_detail": {
     "lines": 0,
+    "across": 0,
     "examples": []
    },
    "D1A_detail": {
@@ -2330,17 +2368,19 @@
   "L7": {
    "R1_detail": {
     "listeners": 1,
-    "median": 2.5505277776344157,
+    "median": 38.71718054745456,
     "censored": false,
-    "exchange": 10
+    "exchange": 204
    },
    "R2_detail": {
     "median": 2.5505277776344157,
     "censored": false
    },
    "R6_detail": {
-    "line": "A day like any other.",
-    "times": 109
+    "sentence": "Well.",
+    "times": 111,
+    "line": "This won't earn my keep.",
+    "line_pct": 1.448
    },
    "R8_detail": {
     "p90": 0.11848341232227488,
@@ -2353,11 +2393,11 @@
     "met": 471
    },
    "C3_detail": {
-    "farewell": 0.5836575875486382,
+    "farewell": 100.0,
     "marked_break": 0.0,
     "cut_off": 0.0,
     "cap": 0.0,
-    "nothing_fits": 99.41634241245136,
+    "nothing_fits": 0.0,
     "curt": 0.0
    },
    "C7_detail": {
@@ -2448,7 +2488,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 918,
@@ -2478,11 +2519,13 @@
     "turned_talks": 150
    },
    "C9_detail": {
-    "callbacks": 65,
+    "callbacks": 67,
     "goals": {
-     "visit": 53,
-     "mend": 35,
-     "favour": 27
+     "visit": 50,
+     "favour": 13,
+     "vent": 2,
+     "nag": 1,
+     "missed": 1
     }
    },
    "T4_detail": {
@@ -2493,6 +2536,7 @@
    },
    "T6_detail": {
     "lines": 0,
+    "across": 0,
     "examples": []
    },
    "D1A_detail": {
@@ -2511,8 +2555,10 @@
     "censored": false
    },
    "R6_detail": {
+    "sentence": "",
+    "times": 0,
     "line": "",
-    "times": 0
+    "line_pct": 0
    },
    "R8_detail": {
     "p90": 0.0,
@@ -2594,7 +2640,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 0,
@@ -2624,6 +2671,7 @@
    },
    "T6_detail": {
     "lines": 0,
+    "across": 0,
     "examples": []
    },
    "D1A_detail": {}
@@ -2640,8 +2688,10 @@
     "censored": false
    },
    "R6_detail": {
+    "sentence": "",
+    "times": 0,
     "line": "",
-    "times": 0
+    "line_pct": 0
    },
    "R8_detail": {
     "p90": 0.0,
@@ -2723,7 +2773,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 0,
@@ -2753,6 +2804,7 @@
    },
    "T6_detail": {
     "lines": 0,
+    "across": 0,
     "examples": []
    },
    "D1A_detail": {}
@@ -2760,17 +2812,19 @@
   "L10": {
    "R1_detail": {
     "listeners": 1,
-    "median": 6.883861110036427,
+    "median": 19.983861107242458,
     "censored": false,
-    "exchange": 110
+    "exchange": 333
    },
    "R2_detail": {
     "median": 6.883861110036427,
     "censored": false
    },
    "R6_detail": {
-    "line": "Good.",
-    "times": 61
+    "sentence": "And you.",
+    "times": 192,
+    "line": "Off I go, then.",
+    "line_pct": 1.815
    },
    "R8_detail": {
     "p90": 0.0,
@@ -2783,12 +2837,12 @@
     "met": 1473
    },
    "C3_detail": {
-    "farewell": 1.4727540500736378,
+    "farewell": 87.52327746741155,
     "marked_break": 0.0,
-    "cut_off": 0.0,
+    "cut_off": 0.06207324643078833,
     "cap": 0.0,
-    "nothing_fits": 98.52724594992637,
-    "curt": 0.0
+    "nothing_fits": 0.0,
+    "curt": 12.414649286157665
    },
    "C7_detail": {
     "p90": 4,
@@ -2895,7 +2949,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "R7_detail": {
     "replies": 4416,
@@ -2925,13 +2980,12 @@
     "turned_talks": 166
    },
    "C9_detail": {
-    "callbacks": 236,
+    "callbacks": 224,
     "goals": {
-     "learn_name": 43,
-     "mend": 5,
-     "visit": 2,
-     "robbed": 1,
-     "nag": 1
+     "learn_name": 34,
+     "visit": 5,
+     "vent": 4,
+     "nag": 4
     }
    },
    "T4_detail": {
@@ -2941,9 +2995,15 @@
     "examples": []
    },
    "T6_detail": {
-    "lines": 1,
+    "lines": 6,
+    "across": 5,
     "examples": [
-     "rm_rosamund_tarridge: I've had the locks changed. After Wenna Tarford. All of them."
+     "rmx_ivar_netherworth: Back again? A cutpurse took from Wenna Tarford. Bet they ate well tonight.",
+     "Hello, friend. We'd only just finished with the last of this. My neighbour nailed their shutters shut after Wenna Tarford. / rm_winifred_cinderworth: And how do they get the air in?",
+     "Hello. Somebody lifted Wenna Tarford's coin on the way home. / rmx_maren_hatherley: When I was young we hanged thieves at the gate. Not that it stopped them.",
+     "Good day. A thief by the Rain Hall. Wynn Rustworth, robbed under the Council's own windows. / rmx_lothar_abbot: If they'd taken a ledger from the Hall of Records I'd understand. Coin? Vulgar.",
+     "Good day, neighbour. We'd only just finished with the last of this. The Watch is turning out every street in the Commons over Josephine Fenwick. / rmx_lothar_abbot: If they'd taken a ledger from the Hall of Records I'd understand. Coin? Vulgar.",
+     "Good day. Now it's Bo Gilbey. The road wolves have come into town. / rm_wenna_tarford: Or one of ours, using them as cover."
     ]
    },
    "D1A_detail": {
@@ -3208,6 +3268,34 @@
     "L10": "artifacts/talk/runs/p7/fixtures-L10"
    },
    "on": "2026-11-17T00:37:03+00:00"
+  },
+  {
+   "metrics": [
+    "R1",
+    "R4",
+    "R6",
+    "C3",
+    "C4",
+    "C9",
+    "K3",
+    "T6",
+    "D1L",
+    "D1B"
+   ],
+   "why": "Slice 2's review (doc 84 §35): measured again as redefined: R1 the talk between its ceremonies; R4 and R6 by the sentence; C3 a curt ending an ending; C4 a light bridge into grave news within a line too; C9 without 'Back again?'; K3 line by line, the town's crime and news and joiners included; T6 across a line too; D1L and D1B what is said, not the greetings and goodbyes",
+   "from": {
+    "L1": "artifacts/talk/runs/s2r/fixtures-L1",
+    "L2": "artifacts/talk/runs/s2r/fixtures-L2",
+    "L3": "artifacts/talk/runs/s2r/fixtures-L3",
+    "L4": "artifacts/talk/runs/s2r/fixtures-L4",
+    "L5": "artifacts/talk/runs/s2r/fixtures-L5",
+    "L6": "artifacts/talk/runs/s2r/fixtures-L6",
+    "L7": "artifacts/talk/runs/s2r/fixtures-L7",
+    "L8": "artifacts/talk/runs/s2r/fixtures-L8",
+    "L9": "artifacts/talk/runs/s2r/fixtures-L9",
+    "L10": "artifacts/talk/runs/s2r/fixtures-L10"
+   },
+   "on": "2026-11-17T08:41:59+00:00"
   }
  ]
 }

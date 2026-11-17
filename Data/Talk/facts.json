@@ -30,6 +30,8 @@
     "knows": ["yes", "no"],
     "told_me": "text",
     "promised": ["open", "lapsed"],
+    "soured": ["yes", "no"],
+    "home_here": ["yes", "no"],
     "promise_what": "text",
     "working": ["yes", "no"],
     "shift": ["before", "during", "after", "day_off", "none"],

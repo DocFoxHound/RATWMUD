@@ -128,6 +128,12 @@ when conv.agree=no pair.band=friends|family|spouses
 owes other: insist|concede
 say #hedge#, I can't go along with that. #self.stance_why.capitalize#. | You know I love you, but no. #self.stance_why.capitalize#. | That's where you and I part company. #self.stance_why.capitalize#. | #hedge#. #self.stance_why.capitalize#, and you know it.
 
+rule op_disagree_close_plain
+does disagree
+when conv.agree=no pair.band=friends|family|spouses
+owes other: insist|concede
+say #hedge#, I can't go along with that. | You know I love you, but no. | That's where you and I part company. | No. You'll not talk me round, and you know it.
+
 rule op_disagree_again
 does disagree
 when conv.agree=no conv.agreed_before=no
@@ -138,6 +144,11 @@ rule op_insist
 does insist
 when self.stance=for|against self.stance_strength>=2 conv.agree=no|half
 say I'll not budge on it. #self.stance_why.capitalize#, and that's the end of it. | Say what you like. #self.stance_why.capitalize#. | You'll not talk me round on #conv.issue_words#.
+
+rule op_insist_plain
+does insist
+when self.stance=for|against self.stance_strength>=2 conv.agree=no|half
+say I've said my piece, and I'll not unsay it. | No. I'll not budge on it. | Say what you like. I know what I know.
 
 rule op_concede
 does concede
@@ -155,6 +166,11 @@ rule op_join_side
 does join.side
 when conv.stake=stance
 say Begging your pardon, but I couldn't help hearing. I'm with you there. #self.stance_why.capitalize#. | You have the right of it. #self.stance_why.capitalize#, for one. | Hear, hear. #self.stance_why.capitalize#.
+
+rule op_join_side_plain
+does join.side
+when conv.stake=stance
+say Begging your pardon, but I couldn't help hearing. I'm with you there. | Hear, hear. | You have the right of it. | Well said. I'd say the same.
 
 rule op_join_correct
 does join.correct

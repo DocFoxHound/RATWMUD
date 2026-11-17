@@ -192,11 +192,17 @@ void Game::ambientSpeak(double)
             {
                 const auto knew = it->knew.find(spokenTo);
                 const auto& talk = it->pick.topic.talk;
+                // (What the line is telling, once it has turned to it too: the agenda's item. The scorecard's K3.)
+                const bool turning = it->engine && it->conv.agendaAt >= 0 && std::size_t(it->conv.agendaAt) < it->agenda.size();
+                AmbientPick now = it->pick;
+                if (turning)
+                    now.topic = it->agenda[std::size_t(it->conv.agendaAt)];
                 onAmbientLine({it->id, it->spoken, speaker, spokenTo, text, a->cellId, it->pick.hearer, it->pick.topic.kind,
                                it->pick.topic.claim, it->route, info, it->pick.topic.subject, it->pick.topic.seen,
                                knew == it->knew.end() ? std::string() : knew->second,
                                talk.count("topic.claim_kind") ? talk.at("topic.claim_kind") : std::string(),
-                               talk.count("topic.kind") ? talk.at("topic.kind") : std::string()});
+                               talk.count("topic.kind") ? talk.at("topic.kind") : std::string(),
+                               toldTopic(now) ? now.topic.key : std::string()});
             }
             if (it->engine)
             {
@@ -435,6 +441,8 @@ bool Game::ambientBegin(AmbientTalk& t, const talk::Query& start, const mind::Ex
         const auto x = mind::Client::authoredExchange(context);
         talk::Conversation fresh;
         fresh.seed = seed;
+        fresh.agenda = std::move(t.conv.agenda);   // (Its agenda and what it is about kept: it may turn, and never
+        fresh.claim = t.conv.claim;                 // re-tells its claim; Slice 2's review.)
         t.conv = std::move(fresh);
         first = talk_.beginWith(t.conv, q, authoredMoves(talk_, t.pick.topic.kind, q.facts, x));
         t.route = "written";
@@ -711,8 +719,13 @@ std::optional<talk::SaidLine> Game::joiners(AmbientTalk& t, const talk::Freshnes
             const auto wares = society.wares(e->id);   // (A copy: wares() makes its list.)
             return std::any_of(wares.begin(), wares.end(), [&](const std::string& w) { return items::baseOf(w) == good->second; });
         };
+        // The one talked of: objecting to what is said of them, or (Slice 2's review: a husband once "objected" to his own
+        // wedding) adding to it, when it is one's own good news or a kind claim (a wedding, a promise kept, a newcomer).
+        static const std::set<std::string> Kind{"marriage", "promise_kept", "newcomer"};
+        const bool kindNews = (topic.kind == "news" && topic.claim != "crime" && topic.claim != "loss") ||
+                              (!topic.claimKind.empty() && Kind.count(claims::family(topic.claimKind, topic.claim)) > 0);
         if ((subject && e->id == subject->id && claimSaid) || (!e->name.empty() && lastText.find(e->name) != std::string::npos))
-            c.stake = "named", c.moves = {"join.object"};
+            c.stake = "named", c.moves = {kindNews ? "join.add" : "join.object"};
         else if (subject && subject->npc && claimSaid && (kin || (toSubject && toSubject->affinity >= 40)))
             c.stake = kin ? "kin" : "friend", c.moves = {Ill.count(topic.claimKind) ? "join.defend" : "join.add"};
         else if (deals())
@@ -750,6 +763,11 @@ std::optional<talk::SaidLine> Game::joiners(AmbientTalk& t, const talk::Freshnes
                 last.stance != "mixed")
                 c.stake = "stance", c.moves = {side->second == last.stance ? "join.side" : "join.correct"};
         }
+        // One who has been told what the talk is telling doesn't cut in to hear it again ("Bad news, is it? Tell me." from
+        // the one told it an hour before; Slice 2's review, K3 line by line), unless it is about them or their own.
+        if (!c.stake.empty() && c.stake != "named" && c.stake != "kin" && c.stake != "friend" && toldTopic(t.pick) &&
+            world_.talkLedger().wasTold(e->id, t.pick.topic.key))
+            continue;
         if (!c.stake.empty())
             found.push_back(std::move(c));
     }
@@ -775,6 +793,9 @@ std::optional<talk::SaidLine> Game::joiners(AmbientTalk& t, const talk::Freshnes
         {
             t.people.push_back(c.id);
             world_.ambientPacing()[c.id] = now;
+            // One who joins has heard what the talk is telling (Slice 2's review): never told it again as news.
+            if (toldTopic(t.pick) && !t.teller.empty() && c.id != t.teller)
+                world_.talkLedger().told(c.id, t.teller, t.pick.topic.key, t.pick.topic.claimKind, world_.calendarDays());
             if (const auto key = t.queries.find(c.id + "|" + lastSpeaker); key != t.queries.end())
                 key->second.a.facts["knows"] = t.knew.count(c.id) ? t.knew[c.id] : std::string();
             return line;
@@ -799,6 +820,8 @@ void Game::ambientSaid(AmbientTalk& t, const talk::SaidLine& line)
     // The topic (§8.5, Phase 5): the talk's first, or one it turned to (the agenda's: the pick follows it), taken up.
     if (t.conv.agendaAt != t.agendaAt && t.conv.agendaAt >= 0 && std::size_t(t.conv.agendaAt) < t.agenda.size())
     {
+        if (t.kind.empty())
+            t.kind = t.pick.topic.kind;             // (What it began as: a quarrel that turns is still a quarrel.)
         t.agendaAt = t.conv.agendaAt;
         t.pick.topic = t.agenda[std::size_t(t.agendaAt)];
         t.knew = t.conv.knows;
@@ -890,6 +913,10 @@ void Game::ambientSaid(AmbientTalk& t, const talk::SaidLine& line)
     // The point of it made (§8.10): a thread is kept only for a talk broken off before.
     if (line.gist || !line.asserts.empty() || hasMove(line.moves, "preclose") || hasMove(line.moves, "farewell"))
         t.gist = true;
+    // A goodbye that says one is going ({leave=yes}: "Off home, then."): said true, they talk no more here for an hour
+    // (Slice 2's review).
+    if (const auto leave = line.tags.find("leave"); leave != line.tags.end() && leave->second == "yes")
+        world_.ambientLeave(speaker, 3600);
     // The talk ledger (§8.7, Phase 5). A thread taken up again is done with.
     auto& ledger = world_.talkLedger();
     const double day = world_.calendarDays();
@@ -963,13 +990,23 @@ void Game::ambientTopicBegun(AmbientTalk& t, const std::string& speaker)
     const double day = world_.calendarDays();
     ledger.placeTalk(t.pick.cell, topic.kind, topic.key, topics::book().news(topic.kind), day);
     t.covered.push_back({topic.kind, topic.key});
-    if (claimTopic(t.pick) || topic.kind == "news" || topic.kind == "deed")
+    if (toldTopic(t.pick))
     {
         const auto teller = topic.source.empty() ? speaker : topic.source;
+        t.teller = teller;
         for (const auto& p : t.people.empty() ? std::vector<std::string>{t.pick.teller, t.pick.listener} : t.people)
             if (p != teller)
                 ledger.told(p, teller, topic.key, topic.claimKind, day);
     }
+}
+
+bool Game::toldTopic(const AmbientPick& pick)
+{
+    // What is told a listener once (§8.6, K3): a claim, one's own news, a deed, and (Slice 2's review) the town's crime and
+    // news (an incident, a wedding, a death).
+    const auto& k = pick.topic.key;
+    return claimTopic(pick) || pick.topic.kind == "news" || pick.topic.kind == "deed" || k.rfind("incident|", 0) == 0 ||
+           k.rfind("town|", 0) == 0;
 }
 
 void Game::ambientNote(AmbientTalk& t, const std::string& reason)
@@ -988,18 +1025,45 @@ void Game::ambientNote(AmbientTalk& t, const std::string& reason)
             return std::any_of(moves.begin(), moves.end(), [&](const char* m) { return hasMove(l.moves, m); });
         });
     };
+    // How it went is how it ended up, not one mild line (Slice 2's review): a decline taken in good part ("No matter.")
+    // or a tease countered ("And whose fault is that?") is no falling-out. A real one is an old grudge aired, a challenge,
+    // offence taken, an apology refused, a third objecting or defending; made up in the talk (an apology accepted) it is
+    // over. Who made the sharp move is kept (the note's soured_by: self.soured), so it is they who say sorry next time.
+    const auto& began = t.kind.empty() ? t.pick.topic.kind : t.kind;
+    const auto whoSaid = [&](int i) { return i >= 0 && std::size_t(i) < t.people.size() ? t.people[std::size_t(i)] : std::string(); };
+    std::string souredBy;
+    bool sharp = false, challenged = false;
+    for (const auto& l : t.conv.lines)
+    {
+        const bool cross = std::any_of(l.moves.begin(), l.moves.end(), [](const std::string& m) {
+            return m == "challenge" || m == "take_offence" || m == "decline_apology" || m == "join.object" || m == "join.defend";
+        });
+        if (cross)
+        {
+            sharp = true;
+            challenged |= hasMove(l.moves, "challenge");
+            if (souredBy.empty())
+                souredBy = whoSaid(l.who);
+        }
+        else if (sharp && hasMove(l.moves, "accept_apology"))
+            sharp = challenged = false, souredBy.clear();   // (Made up before they parted.)
+    }
+    if (began == "quarrel" && souredBy.empty())
+        souredBy = t.pick.topic.source.empty() ? t.pick.teller : t.pick.topic.source;   // (The one who bears the grudge.)
     std::string outcome = brokenOff                 ? "broken"
                           : t.conv.ended == "curt"  ? "curt"
-                          : t.pick.topic.kind == "quarrel" || any({"challenge", "counter"}) ? "quarrelled"
-                          : any({"take_offence", "decline_apology", "decline", "refuse", "join.object", "join.defend"}) ? "soured"
+                          : began == "quarrel" || (sharp && challenged) ? "quarrelled"
+                          : sharp ? "soured"
                           : any({"concede"}) ? "conceded"
                           : any({"reassure", "sympathise"}) ? "reassured"
                           : t.conv.ended == "farewell" ? "warmed"
                                                        : "even";
+    if (outcome != "quarrelled" && outcome != "soured")
+        souredBy.clear();
     std::vector<std::string> people = t.people.empty() ? std::vector<std::string>{t.pick.teller, t.pick.listener} : t.people;
     // Phase 6 (§8.8): a quarrel sours each one's mood a while: a real one (an old grudge aired, offence taken, an apology
     // refused), not a talk that only cooled or a tease countered.
-    if (t.pick.topic.kind == "quarrel" || any({"take_offence", "decline_apology"}))
+    if (began == "quarrel" || any({"take_offence", "decline_apology"}))
         for (const auto& p : people)
             ledger.moodEvent(p, "quarrel", day);
     for (std::size_t i = 0; i < people.size(); ++i)
@@ -1013,6 +1077,8 @@ void Game::ambientNote(AmbientTalk& t, const std::string& reason)
                 note.keys.push_back(key);
             }
             note.outcome = outcome;
+            if (souredBy == people[i] || souredBy == people[j])
+                note.souredBy = souredBy;
             note.told = t.toldEntries;
             note.claims = t.claims;
             note.kept = t.kept;
@@ -1113,7 +1179,11 @@ void Game::ambientFinish(AmbientTalk& t, const std::string& reason)
 {
     if (t.spoken == 0)
         return;                                     // (Nothing was said.)
-    world_.ambientEnded(t.pick, t.people);
+    // As the talk began (Slice 2's review): a quarrel that turned to the weather still leaves its grudge.
+    auto began = t.pick;
+    if (!t.kind.empty())
+        began.topic.kind = t.kind;
+    world_.ambientEnded(began, t.people);
     // A curt ending costs regard (§8.4; frames.json's curt effects).
     if (t.conv.ended == "curt" && t.conv.closer >= 0 && std::size_t(t.conv.closer) < t.people.size())
     {

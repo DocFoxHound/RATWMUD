@@ -346,7 +346,7 @@ rule qk_sparrows_bark
 when concept=bark quirk=feeds_the_sparrows here.weather!=indoors
 does aside
 cooldown 6h
-say Here, little ones. Here. Crumbs for you. | Shoo, you greedy thing. Let the small one eat. | There's the one with the bent wing. Morning, you.
+say Here, little ones. Here. Crumbs for you. | Shoo, you greedy thing. Let the small one eat. | There's the one with the bent wing. Back again, you.
 
 rule qk_sparrows_talk
 when concept=talk.animals|talk.smalltalk quirk=feeds_the_sparrows

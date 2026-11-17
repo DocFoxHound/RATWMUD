@@ -44,6 +44,7 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     if (job != "none")
         f["trade"] = job;
     talkRecall("person:" + e.id, "", f);            // (What rules remembered of them: phase 4.)
+    p.player = !e.npc;                              // (Never given a line by the engine: doc 84 §13, Slice 2's review.)
     if (!e.npc || !life)
         return p;                                   // (A player, or someone passing: who they are, and no more.)
 
@@ -579,6 +580,12 @@ talk::Query Game::talkQuery(const std::string& a, const std::string& b, const st
         if (q.b.facts.count("wealth") && q.a.facts.count("wealth"))
             q.facts["pair.richer"] = richer;
     }
+    // Whether each grew up where they stand (self.home_here; Slice 2's review): a city-born wolf in the city is never told
+    // he's a long way from home.
+    if (const auto region = q.facts.find("here.region"); region != q.facts.end())
+        for (auto* s : {&q.a, &q.b})
+            if (const auto from = s->facts.find("from"); from != s->facts.end())
+                s->facts["home_here"] = from->second == region->second ? "yes" : "no";
     if (!q.alone)
     {
         talkRecall("pair:" + std::min(a, b) + "|" + std::max(a, b), "pair.", q.facts);
@@ -680,6 +687,11 @@ void Game::talkLedgerFacts(const std::string& a, const std::string& b, talk::Que
                 q.facts["pair.last_talk"] = days(day - it->day);
                 if (!it->outcome.empty())
                     q.facts["pair.last_outcome"] = it->outcome;
+                // Who soured it (Slice 2's review): the one who says sorry (frames.json's mend: self.soured=yes).
+                if (!it->souredBy.empty())
+                    for (auto* s : {&q.a, &q.b})
+                        if (const auto id = s->facts.find("id"); id != s->facts.end())
+                            s->facts["soured"] = id->second == it->souredBy ? "yes" : "no";
                 if (!it->thread.empty() && day <= it->threadUntil)
                     q.facts["pair.thread"] = it->thread;
             }
@@ -1304,6 +1316,12 @@ void Game::loadVoices()
             if (const auto trait = v.traits.find("honesty"); trait != v.traits.end() && !trait->second.empty())
                 honesty[id] = trait->second;
         world_.society().setHonesty(std::move(honesty));
+        // Their origin and accent (Slice 2's review): the world's talk (the accent topic) as their own facts have it.
+        std::map<std::string, std::pair<std::string, std::string>> origins;
+        for (const auto& [id, v] : npcVoice_)
+            if (!v.from.empty() || !v.accent.empty())
+                origins[id] = {v.from, v.accent};
+        world_.setTalkOrigins(std::move(origins));
     }
     voiceLayers_ = std::move(layers);
     voiceRules_ = std::move(rules);

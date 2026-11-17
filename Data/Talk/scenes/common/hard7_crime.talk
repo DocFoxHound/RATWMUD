@@ -245,9 +245,9 @@ scene h7_arrest_visit
 when topic=crime topic.kind=arrest
 does tell.news / react.news / tell.self / react.self
 a : I'm taking bread to #topic.subject# in #gaol#. | Will anyone visit #topic.subject#, do you think? | Can you visit folk in #gaol#? I'd like to see #topic.subject#. | Someone should take #topic.subject# a blanket. It's cold in there.
-b : Mind they don't keep you. | Their mother. Nobody else. | If you grease the right paw. | Take two. It's very cold in there.
+b : Mind they don't keep you. | #topic.their.capitalize# mother. Nobody else. | If you grease the right paw. | Take two. It's very cold in there.
 a : Ha. Thank you. | Then I'll go too. | I've no grease. | You sound like you know.
-b : Bring them a comb, too. | Good of you. | Then smile nicely. | I was young once. Don't ask.
+b : Bring #topic.them# a comb, too. | Good of you. | Then smile nicely. | I was young once. Don't ask.
 
 scene h7_arrest_wrong_one
 when topic=crime topic.kind=arrest

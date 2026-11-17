@@ -38,7 +38,7 @@ rule player_greet_stranger_formal
 when concept=player.greet topic.meeting=stranger tone=formal
 does greet.return
 priority 1
-say #topic.greeting# | Good day to you. | Greetings, traveller. | #greet#, traveller.
+say #topic.greeting# | #good_day# to you. | Greetings, traveller. | #greet#, traveller.
 
 rule player_greet_stranger_sly
 when concept=player.greet topic.meeting=stranger tone=sly
@@ -110,7 +110,7 @@ rule player_greet_famous_formal
 when concept=player.greet topic.meeting=famous tone=formal
 does greet.return
 priority 1
-say Good day, #topic.player#. I understand you #topic.deed#. | #topic.player#. The town owes you thanks: you #topic.deed#, I am told. | Well met, #topic.player#. Word has it you #topic.deed#. | Good day, #topic.player#. Or should I say #topic.nickname#?
+say #good_day#, #topic.player#. I understand you #topic.deed#. | #topic.player#. The town owes you thanks: you #topic.deed#, I am told. | Well met, #topic.player#. Word has it you #topic.deed#. | #good_day#, #topic.player#. Or should I say #topic.nickname#?
 
 rule player_greet_famous_sly
 when concept=player.greet topic.meeting=famous tone=sly
@@ -146,7 +146,7 @@ rule player_greet_famous_look_formal
 when concept=player.greet topic.meeting=famous_look tone=formal
 does greet.return
 priority 1
-say Good day. Forgive me: are you the wolf who #topic.deed#? | Greetings. You answer the description of the one who #topic.deed#. | Good day to you. Might you be the one who #topic.deed#?
+say #good_day#. Forgive me: are you the wolf who #topic.deed#? | Greetings. You answer the description of the one who #topic.deed#. | #good_day# to you. Might you be the one who #topic.deed#?
 
 rule player_greet_famous_look_sly
 when concept=player.greet topic.meeting=famous_look tone=sly
@@ -262,7 +262,7 @@ say Aye. | Off you go. | Mind yourself. | #farewell#.
 rule player_bye_any_formal
 when concept=player.bye tone=formal
 does farewell.return
-say Farewell, and good fortune. | Until we meet again. | Good day to you. | #farewell#, and good fortune.
+say Farewell, and good fortune. | Until we meet again. | #good_day# to you. | #farewell#, and good fortune.
 
 rule player_bye_any_sly
 when concept=player.bye tone=sly

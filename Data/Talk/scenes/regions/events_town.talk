@@ -63,10 +63,10 @@ scene et_rm_arrest_houses
 when topic=crime topic.kind=arrest here.region=ridgemere
 does tell.news / react.news / assess
 tone serious / even / even
-a : The Watch took #topic.subject#. Some House will have #topic.them# out by morning. | #topic.subject#'s arrested. Greatly's man, they say. | #topic.subject# in the Gaol. I'll wager the Council hears of it.
+a : The Watch took #topic.subject#. Some House will have #topic.them# out by morning. | #topic.subject#'s arrested. One of Greatly's, they say. | #topic.subject# in the Gaol. I'll wager the Council hears of it.
 b[noble] : The Houses do not interfere with the Watch. Publicly.
-b : If they're owned, they'll walk. | Then they'll be out by noon. | The Council hears everything.
-a : They're always owned. | Mark me. | And does nothing.
+b : If #topic.they#'s owned, #topic.they#'ll walk. | Then #topic.they#'ll be out by noon. | The Council hears everything.
+a : That sort always is. | Mark me. | And does nothing.
 
 scene et_rm_death_harbour
 when topic=life topic.kind=death here.region=ridgemere

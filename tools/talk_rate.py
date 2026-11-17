@@ -380,8 +380,8 @@ def score_ratings(key: dict, raters: list[dict], worst: int = 5) -> dict:
                     both = [i for i in items if a in raters[x]["scores"].get(i, {}) and a in raters[y]["scores"].get(i, {})]
                     xs = [raters[x]["scores"][i][a] for i in both]
                     ys = [raters[y]["scores"][i][a] for i in both]
-                    if rho := spearman(xs, ys):
-                        pairs.append(rho)
+                    if (rho := spearman(xs, ys)) is not None:
+                        pairs.append(rho)           # (A correlation of exactly 0 is one too: Slice 2's review.)
                     exact += [p == q for p, q in zip(xs, ys)]
                     within += [abs(p - q) <= 1 for p, q in zip(xs, ys)]
             agreement[a] = {"alpha_interval": r3(krippendorff(units, "interval")),
@@ -494,8 +494,10 @@ def report(out: dict) -> str:
             lines.append(f"\n{name.replace('_', ' ')}: **{d['diff']:+.2f}** (95% {d['ci95'][0]:+.2f} to {d['ci95'][1]:+.2f})")
         if a in out["agreement"]:
             g = out["agreement"][a]
+            # (Raters who share no item have no exact or within-one agreement: "n/a", never a crash. Slice 2's review.)
+            pct = lambda v: "n/a" if v is None else f"{v:.1f}%"  # noqa: E731
             lines.append(f"\nagreement: alpha interval {g['alpha_interval']}, ordinal {g['alpha_ordinal']}; Spearman "
-                         f"{g['spearman_pairwise_mean']}; exact {g['exact_pct']:.1f}%, within one {g['within_one_pct']:.1f}%")
+                         f"{g['spearman_pairwise_mean']}; exact {pct(g['exact_pct'])}, within one {pct(g['within_one_pct'])}")
         lines.append("")
     if h1.get("by_length"):
         lines += [f"## What goes with the rating (`{h1['axis']}`)", "", "By length (lines; the items rated, and the "

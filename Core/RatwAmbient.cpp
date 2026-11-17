@@ -744,6 +744,25 @@ void World::setTalkDialects(std::map<std::string, std::string> dialectOf)
 
 void World::talkOrigin(const std::string& id, std::string& from, std::string& accent) const
 {
+    // Worked out (below), and then as the resident's own row says (live.npc_voice: setTalkOrigins), so the director's
+    // accent topic and the speaker's own facts name the same home town (Slice 2's review: "Oakhaven, if you must know."
+    // from a Coldwater wolf).
+    talkOriginWorked(id, from, accent);
+    if (const auto own = talkOrigins_.find(id); own != talkOrigins_.end())
+    {
+        if (!own->second.first.empty())
+            from = own->second.first;
+        if (!own->second.second.empty())
+            accent = own->second.second;
+        if (!from.empty() && accent.empty())
+            accent = "light";
+    }
+}
+
+void World::setTalkOrigins(std::map<std::string, std::pair<std::string, std::string>> origins) { talkOrigins_ = std::move(origins); }
+
+void World::talkOriginWorked(const std::string& id, std::string& from, std::string& accent) const
+{
     // Where a resident grew up, and how strongly they still speak like it (doc 62, phase 3; doc 83, Phase 4). Worked
     // out from who they are, never stored, so the same resident always has the same: most grew up where they live; of
     // each place's grown folk about one in seven came from another (one in four in Ridgemere, the city everyone comes
@@ -1131,11 +1150,28 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
             consider(std::move(t));
             break;
         }
+    // The town's news told once to each listener (Slice 2's review: a theft and a death were told the same wolf as fresh
+    // news five times): never between two who have told each other; one who has been told it tells one who hasn't; two
+    // who both have heard it have no news to give. False: not offered.
+    const auto townTold = [&](AmbientTopic& t) {
+        if (!book.toldOnce)
+            return true;
+        if (talkLedger_.toldBy(a, b, t.key) || talkLedger_.toldBy(b, a, t.key))
+            return false;
+        const bool ta = talkLedger_.wasTold(a, t.key), tb = talkLedger_.wasTold(b, t.key);
+        if (ta && tb)
+            return false;
+        if (ta || tb)
+            t.source = ta ? a : b;
+        return true;
+    };
     // Crime in town, not between the two talking.
     for (const auto& i : crime_.incidents)
         if (i.town == townId && calendarDays_ - i.day <= 2 && i.victim != a && i.victim != b && i.offender != a && i.offender != b)
         {
             auto t = topic("crime", H(book.score("crime")), "incident|" + i.id);
+            if (!townTold(t))
+                continue;
             t.talk["topic.kind"] = i.kind == "assault" ? "assault" : "theft";
             t.talk["topic.victim"] = name(i.victim);
             // The one who did it is named only if a witness saw who (one who heard a struggle, or glimpsed someone they
@@ -1175,6 +1211,8 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
             auto t = topic(fresh ? "newcomer" : n.kind == "arrest" ? "crime" : "life",
                            fresh ? H(book.score("newcomer")) : n.kind == "arrest" ? H(book.score("crime", "arrest")) : H(book.score("life", n.kind)),
                            "town|" + n.kind + "|" + n.subject);
+            if (!townTold(t))
+                continue;
             t.talk["topic.kind"] = n.kind;
             t.talk["topic.subject"] = name(n.subject);
             talkSexes(n.subject, {}, t.talk);
@@ -1333,6 +1371,15 @@ void World::ambientBegun(const AmbientPick& pick)
     ambientLast_[pick.teller] = ambientLast_[pick.listener] = ambientLast_["cell:" + pick.cell] = time_;
     for (auto it = ambientLast_.begin(); it != ambientLast_.end();)
         it = time_ - it->second > 3600 ? ambientLast_.erase(it) : std::next(it);
+}
+
+void World::ambientLeave(const std::string& id, double seconds)
+{
+    // One who said they're going (Slice 2's review: "Off home, then." and talking again five minutes later in the same
+    // room): out of the director's picks and the joins for `seconds` (the director's rest for anyone, EachEvery, from
+    // then; the joins' rest, from the same stamp).
+    if (!id.empty() && seconds > 0)
+        ambientLast_[id] = std::max(ambientLast_.count(id) ? ambientLast_[id] : 0.0, time_ + seconds - EachEvery);
 }
 
 void World::ambientEnded(const AmbientPick& pick, const std::vector<std::string>& people)

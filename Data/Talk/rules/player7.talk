@@ -152,7 +152,7 @@ rule x7_pg_s_rich
 when concept=player.greet topic.meeting=stranger wealth=rich
 does greet.return
 priority 1
-say Yes? Good day. | Ah. A traveller. How quaint. | Good day. Do I know you? No.
+say Yes? #good_day#. | Ah. A traveller. How quaint. | #good_day#. Do I know you? No.
 
 rule x7_pg_s_poor
 when concept=player.greet topic.meeting=stranger wealth=poor|destitute
@@ -170,7 +170,7 @@ rule x7_pg_s_heights
 when concept=player.greet topic.meeting=stranger quarter=heights
 does greet.return
 priority 1
-say Good day. Are you expected? | Hello. Visiting someone on the Heights? | Good day. Tradesmen use the side door, as a rule.
+say #good_day#. Are you expected? | Hello. Visiting someone on the Heights? | #good_day#. Tradesmen use the side door, as a rule.
 
 rule x7_pg_s_dawn
 when concept=player.greet topic.meeting=stranger here.time=dawn

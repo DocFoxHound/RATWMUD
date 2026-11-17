@@ -36,7 +36,10 @@
         {"when": "self.drive=content self.wealth=comfortable|rich", "why": "steady"}
       ],
       "against": [
-        {"when": "self.class=lower", "why": "lower"},
+        {"when": "self.class=lower self.stage=adult self.job!=none|child", "why": "lower"},
+        {"when": "self.class=lower self.stage=old", "why": "lower"},
+        {"when": "self.class=lower self.stage=adult self.job=none", "why": "lower_idle"},
+        {"when": "self.class=lower self.job=child", "why": "lower_young"},
         {"when": "self.quarter=sump", "why": "sump"},
         {"when": "self.drive=ambitious self.class=middle|lower", "why": "ambitious"}
       ],
@@ -45,6 +48,8 @@
         "servant": "they've kept a roof over my head and bread in my belly",
         "steady": "they keep the works going, and the works keep the rest of us",
         "lower": "I've worked my whole life in their shadow and never once seen their faces",
+        "lower_idle": "they'd sooner leave a bench empty than take on the likes of me",
+        "lower_young": "they ride past our door and never once look down",
         "sump": "they own every brick down our way and mend none of them",
         "ambitious": "nobody rises in this town without a House's say-so"
       }
@@ -58,8 +63,8 @@
         {"when": "self.piety=devout", "why": "devout"}
       ],
       "against": [
-        {"when": "self.wealth=rich", "why": "rich"},
-        {"when": "self.drive=ambitious self.on_dole=no", "why": "earned"},
+        {"when": "self.wealth=rich self.stage=adult|old", "why": "rich"},
+        {"when": "self.drive=ambitious self.on_dole=no self.stage=adult|old self.job!=none", "why": "earned"},
         {"when": "self.warmth=cold self.on_dole=no", "why": "cold"}
       ],
       "reasons": {
@@ -105,7 +110,7 @@
       ],
       "against": [
         {"when": "self.honesty=sly", "why": "sly"},
-        {"when": "self.drive=ambitious self.piety=ordinary", "why": "busy"}
+        {"when": "self.drive=ambitious self.piety=ordinary self.stage=adult|old", "why": "busy"}
       ],
       "reasons": {
         "devout": "the Bright One has kept me through worse than this",
@@ -125,7 +130,9 @@
         {"when": "self.job=carter", "why": "carter"}
       ],
       "against": [
-        {"when": "self.wealth=poor|destitute", "why": "poor"},
+        {"when": "self.wealth=poor|destitute self.job!=none|child", "why": "poor"},
+        {"when": "self.wealth=poor|destitute self.job=none self.stage=adult|old", "why": "poor_idle"},
+        {"when": "self.wealth=poor|destitute self.job=child", "why": "poor_young"},
         {"when": "self.class=lower self.role=civilian", "why": "lower"},
         {"when": "self.honesty=frank self.role=civilian", "why": "frank"}
       ],
@@ -133,6 +140,8 @@
         "merchant": "I keep a counter myself, and I know what the wagons cost",
         "carter": "I drive the wagons, and nobody sees what the road takes out of a load",
         "poor": "I can't buy a loaf on what I'm paid, and they never go short",
+        "poor_idle": "there's nothing coming into my house, and still they put the bread up",
+        "poor_young": "we go without half the week, and they never go short",
         "lower": "they put a penny on whenever they think nobody's counting",
         "frank": "half of what they call the price is the merchant's own supper"
       }
@@ -187,7 +196,7 @@
       ],
       "against": [
         {"when": "self.temper=short", "why": "short"},
-        {"when": "self.drive=ambitious", "why": "work"},
+        {"when": "self.drive=ambitious self.job!=none|child", "why": "work"},
         {"when": "self.humour=dry self.talk=quiet", "why": "dry"}
       ],
       "reasons": {
@@ -206,7 +215,7 @@
       "topics": ["friends", "pastimes", "health"],
       "for": [
         {"when": "self.job=brewer|innkeeper", "why": "trade"},
-        {"when": "self.humour=merry", "why": "merry"}
+        {"when": "self.humour=merry self.stage=adult|old", "why": "merry"}
       ],
       "against": [
         {"when": "self.piety=devout", "why": "devout"},
@@ -232,7 +241,7 @@
       "against": [
         {"when": "self.wealth=poor|destitute", "why": "poor"},
         {"when": "self.business=failing", "why": "failing"},
-        {"when": "self.on_dole=yes", "why": "dole"}
+        {"when": "self.on_dole=yes self.stage=adult|old", "why": "dole"}
       ],
       "reasons": {
         "thriving": "trade's never been better at my door",

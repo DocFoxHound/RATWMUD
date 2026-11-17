@@ -4,9 +4,12 @@
 //
 //   pair notes   what two talked of (topics, and what about: the director's keys), how it went, the claims passed, the
 //                tags kept ({k=v keep 7d}: pair.was.k), an open thread, who began it; or, written by World::gossip once a
-//                day for talk out of anyone's hearing, only that they talked of a claim (no words). 8 a pair, 30 days.
+//                day for talk out of anyone's hearing, only that they talked of a claim (no words). 8 heard a pair, 30
+//                days; and the last 2 days' out of hearing beside them, never in their place (Slice 2's review: a daily
+//                note out of hearing pushed every heard one out of a close pair's 8 within 8 days).
 //   told         who told a listener which claim (or their own news), and when: a claim is told to a listener once
-//                (the scorecard's K3), a second source corroborates once (World::told), other.told_me. 64 a listener.
+//                (the scorecard's K3), a second source corroborates once (World::told), other.told_me. 256 a listener
+//                (64 until Slice 2's review: a tavern regular overhears that many claims in a week, and was told one again).
 //   person facts what talk has said of a third party (remember x: took_up=fiddle 30d), by whom, until when: x.said.k.
 //                16 a subject.
 //   heard        the distinctive entries (stories, teases) a resident has heard: told once per listener. 64 a resident.
@@ -20,11 +23,15 @@
 //   moods        (Phase 6, §8.8) a resident's recent events as talk saw them (a quarrel, praise, a warm talk): self.mood.
 //                8 a resident, 7 days.
 //
-// At most 30,000 records in all (places aside), the least recently used dropped first (prune, each game day).
+// At most 30,000 records in all (places aside): past it, the notes out of hearing go first, the oldest first, then whole
+// record sets, the least recently used first (prune, each game day). A set is used when talk in someone's hearing writes
+// or reads it; gossip out of hearing never makes one look used (Slice 2's review: World::gossip's daily writes made every
+// set heard talk had touched the least recently used). Drift and moods of the dead go with them.
 #include "RatwJsonDoc.h"
 
 #include <cstdint>
 #include <deque>
+#include <functional>
 #include <map>
 #include <string>
 #include <vector>
@@ -37,6 +44,7 @@ struct TalkNote
     std::string opener;                                      // Who began it.
     std::vector<std::string> topics, keys;                   // Talked of, and what about, in order.
     std::string outcome;                                     // warmed, soured, reassured, conceded, quarrelled, broken, curt, even
+    std::string souredBy;                                    // Soured or quarrelled: who made the sharp move (self.soured)
     std::vector<std::string> told;                           // Entries told (stories, teases: once per listener).
     std::vector<std::string> claims;                         // "teller|key": claims passed, each way.
     std::map<std::string, std::pair<std::string, double>> kept;   // {k=v keep Nd}: k -> (v, until).
@@ -78,8 +86,9 @@ struct TalkDrift
 class TalkLedger
 {
   public:
-    static constexpr std::size_t NotesPerPair = 8, ToldPerResident = 64, SaidPerSubject = 16, HeardPerResident = 64,
-                                 PlaceLast = 16, Records = 30000, AppliedPerResident = 32, MoodsPerResident = 8;
+    static constexpr std::size_t NotesPerPair = 8, UnheardPerPair = 2, ToldPerResident = 256, SaidPerSubject = 16,
+                                 HeardPerResident = 64, PlaceLast = 16, Records = 30000, AppliedPerResident = 32,
+                                 MoodsPerResident = 8;
     static constexpr double MoodDays = 7;
     static constexpr double NoteDays = 30;
     // Off in fast economy sims (--no-talk-ledger): nothing is written, so nothing is read.
@@ -87,8 +96,9 @@ class TalkLedger
 
     static std::string pairKey(const std::string& a, const std::string& b);
 
-    // Pair notes. `note` begins a new one (the oldest past 8 dropped).
-    TalkNote& note(const std::string& a, const std::string& b, double day);
+    // Pair notes. `note` begins a new one (the oldest heard past 8 dropped; `unheard`, World::gossip's: the oldest of
+    // those past 2).
+    TalkNote& note(const std::string& a, const std::string& b, double day, bool unheard = false);
     const std::deque<TalkNote>* notes(const std::string& a, const std::string& b) const;
     TalkNote* latest(const std::string& a, const std::string& b, bool heardOnly = false);
     const TalkNote* latest(const std::string& a, const std::string& b, bool heardOnly = false) const;
@@ -101,8 +111,9 @@ class TalkLedger
     void closeThread(const std::string& a, const std::string& b);
 
     // The told set.
+    // (`heard` false: told out of anyone's hearing, World::gossip: the set isn't made to look used.)
     void told(const std::string& listener, const std::string& teller, const std::string& key, const std::string& kind, double day,
-              bool counted = false);
+              bool counted = false, bool heard = true);
     bool wasTold(const std::string& listener, const std::string& key) const;
     bool toldBy(const std::string& listener, const std::string& teller, const std::string& key) const;
     // Whether `teller` has been counted as a source of the claim for `listener` (corroboration: once a source).
@@ -150,8 +161,9 @@ class TalkLedger
     // The latest talk-only promise `by` made to `to`, or null.
     const TalkPromise* lastPromise(const std::string& by, const std::string& to) const;
 
-    // Expired records dropped, then the least recently used past 30,000.
-    void prune(double day);
+    // Expired records dropped, and the drift, moods and kept tags of residents `gone` says are gone (dead, or no longer in
+    // the world); then, past 30,000, the notes out of hearing, then the least recently used sets.
+    void prune(double day, const std::function<bool(const std::string&)>& gone = {});
     std::size_t size() const;
     void clear();
     json::Value save() const;
@@ -179,5 +191,10 @@ class TalkLedger
     mutable std::map<std::string, double> touched_;
     double now_ = 0;                                        // The latest day written (what reads are stamped with).
     void touch(const std::string& key) const { touched_[key] = now_; }
+    // Stamped once, and before any set heard talk used (a million days back): a set only gossip out of hearing ever wrote
+    // goes before every one that was heard, the oldest first; heard talk using it later makes it recent.
+    static constexpr double QuietBias = 1e6;
+    void touchQuiet(const std::string& key) const { touched_.emplace(key, now_ - QuietBias); }
+    void trimNotes(std::deque<TalkNote>& list) const;
 };
 } // namespace ratw

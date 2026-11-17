@@ -10,13 +10,13 @@
    "better": "higher",
    "gate": "hard",
    "target": "40 h+; hard 20 h+",
-   "value": 12.857569444444444,
+   "value": 4.621527777777777,
    "passes": false,
    "by_profile": {
-    "town": 12.858
+    "town": 4.622
    },
-   "control": 12.857569444444444,
-   "separation": 0.0,
+   "control": 12.903263888888889,
+   "separation": 0.6418326543133467,
    "real_better": false,
    "separates": false,
    "control_required": false,
@@ -61,20 +61,20 @@
    "better": "lower",
    "gate": "soft",
    "target": "5 or fewer",
-   "value": 2549.5668133113813,
+   "value": 5993.901553651807,
    "passes": false,
    "by_profile": {
-    "town": 2549.567
+    "town": 5993.902
    },
-   "control": 7353.3237969285565,
-   "separation": 0.653276955602537,
+   "control": 9432.263685204007,
+   "separation": 0.3645320197044335,
    "real_better": true,
    "separates": true,
    "control_required": false,
    "structural": false,
    "events": [
-    328,
-    12.86
+    774,
+    12.91
    ]
   },
   "R5": {
@@ -103,14 +103,14 @@
    "better": "lower",
    "gate": "soft",
    "target": "0.4%",
-   "value": 0.8920418627519843,
+   "value": 1.6276413478012564,
    "passes": false,
    "by_profile": {
-    "town": 0.892
+    "town": 1.628
    },
-   "control": 0.8077544426494345,
-   "separation": 0.09448818897637801,
-   "real_better": false,
+   "control": 1.7347230154197602,
+   "separation": 0.06172839506172844,
+   "real_better": true,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -239,8 +239,8 @@
    "by_profile": {
     "town": 99.95
    },
-   "control": 33.4,
-   "separation": 0.6658329164582292,
+   "control": 35.65,
+   "separation": 0.6433216608304153,
    "real_better": true,
    "separates": true,
    "control_required": true,
@@ -268,7 +268,7 @@
    "structural": false,
    "events": [
     0,
-    14237.0
+    14008.0
    ]
   },
   "C5": {
@@ -356,19 +356,19 @@
    "better": "higher",
    "gate": "soft",
    "target": "1.5+",
-   "value": 1.37,
+   "value": 0.17,
    "passes": false,
    "by_profile": {
-    "town": 1.37
+    "town": 0.17
    },
-   "control": 1.37,
+   "control": 0.17,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    274,
+    34,
     2000.0
    ]
   },
@@ -461,20 +461,20 @@
    "better": "lower",
    "gate": "soft",
    "target": "0",
-   "value": 0.0,
-   "passes": true,
+   "value": 0.2855511136493432,
+   "passes": false,
    "by_profile": {
-    "town": 0.0
+    "town": 0.286
    },
-   "control": 0.0,
-   "separation": 0.0,
+   "control": 0.0713877784123358,
+   "separation": 0.75,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    0,
-    14237.0
+    4,
+    14008.0
    ]
   },
   "D1A": {
@@ -550,20 +550,20 @@
    "better": "higher",
    "gate": "soft",
    "target": "light 25-50%",
-   "value": 3.6654620547237995,
+   "value": 2.045808316655548,
    "passes": false,
    "by_profile": {
-    "town": 3.665
+    "town": 2.046
    },
-   "control": 5.059370160041301,
-   "separation": 0.2755102040816326,
+   "control": 3.35345405767941,
+   "separation": 0.3899399599733156,
    "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    284,
-    7748.0
+    145,
+    7089.0
    ]
   },
   "D1B": {
@@ -571,20 +571,20 @@
    "better": "higher",
    "gate": "soft",
    "target": "broad 60%+",
-   "value": 11.566068515497554,
+   "value": 5.768332554880897,
    "passes": false,
    "by_profile": {
-    "town": 11.566
+    "town": 5.768
    },
-   "control": 9.053833605220229,
-   "separation": 0.21720733427362485,
+   "control": 4.884379424256725,
+   "separation": 0.15324240102561554,
    "real_better": true,
    "separates": false,
    "control_required": false,
    "structural": false,
    "events": [
-    709,
-    6130.0
+    376,
+    6523.0
    ]
   },
   "D2": {
@@ -844,17 +844,19 @@
   "town": {
    "R1_detail": {
     "listeners": 3,
-    "median": 12.860208333333333,
-    "censored": true,
-    "exchange": null
+    "median": 5.753472222222221,
+    "censored": false,
+    "exchange": 276
    },
    "R2_detail": {
     "median": 5.128055555555554,
     "censored": false
    },
    "R6_detail": {
-    "line": "Go well.",
-    "times": 127
+    "sentence": "Well.",
+    "times": 228,
+    "line": "Take care, now.",
+    "line_pct": 0.742
    },
    "R7_detail": {
     "replies": 7160,
@@ -892,7 +894,8 @@
    },
    "C4_detail": {
     "clashes": 0,
-    "by_tone": 0
+    "by_tone": 0,
+    "in_line": 0
    },
    "C7_detail": {
     "p90": 10,
@@ -915,8 +918,14 @@
     "examples": []
    },
    "T6_detail": {
-    "lines": 0,
-    "examples": []
+    "lines": 4,
+    "across": 4,
+    "examples": [
+     "But let the wind take that. Dune Saltash says he'll buy me a house one day. I'm holding him to it. / tt_sa_raker: Ours'll do better. They have to.",
+     "Bread. Dune Saltash ate everything else. / tt_sa_raker_wife: Bless them.",
+     "Anyway, it passes the time. Ysolde Marsh never smiles. Not once in ten years. / tt_co_swineherd: They're all the same, shopkeepers. Thumb on the scale.",
+     "Wren Flint came for supper. Ate everything, left nothing, as ever. / tt_ri_smith: They'll keep you young. Or old. One of the two."
+    ]
    },
    "T1_detail": {
     "examples": []
@@ -957,11 +966,11 @@
     "turned_talks": 833
    },
    "C9_detail": {
-    "callbacks": 274,
+    "callbacks": 34,
     "goals": {
-     "mend": 43,
-     "vent": 18,
-     "visit": 10
+     "visit": 10,
+     "vent": 5,
+     "mend": 2
     }
    },
    "T5_detail": {
@@ -1023,5 +1032,26 @@
    "town"
   ],
   "how": "talk_sim --ablate shuffle: lines after the first replaced by lines said at the same side of other conversations on the same topic, by a speaker of the same dialect where possible (§15.5)"
- }
+ },
+ "refrozen": [
+  {
+   "metrics": [
+    "R1",
+    "R4",
+    "R6",
+    "C3",
+    "C4",
+    "C9",
+    "K3",
+    "T6",
+    "D1L",
+    "D1B"
+   ],
+   "why": "Slice 2's review (doc 84 §35): measured again as redefined: R1 the talk between its ceremonies, R4 and R6 by the sentence, C3 a curt ending an ending, C4 a light bridge into grave news within a line, C9 without 'Back again?', K3 line by line, T6 across a line, D1L and D1B what is said, not the greetings and goodbyes",
+   "from": {
+    "town": "/tmp/s2r/quick/town"
+   },
+   "on": "2026-11-17T08:12:12+00:00"
+  }
+ ]
 }

@@ -100,7 +100,7 @@ when topic=smalltalk pair.band=strangers
 does ask.detail / answer.detail / assess
 a : Fine day, isn't it? | You're not from around here, are you? | Excuse me, is this the way to the square?
 b : Fine enough. | No, just passing through. | Straight on, past the well.
-a : Good day to you. | Safe road, then. | My thanks.
+a : #good_day# to you. | Safe road, then. | My thanks.
 
 scene ev_pp_strangers_wary
 when topic=smalltalk pair.band=strangers here.time=dusk|night
@@ -140,7 +140,7 @@ a : Go and stay near them. | Standing high, then. Get down. | There's rust on yo
 scene ev_pp_merchant_customer
 when topic=smalltalk a.role=merchant b.role=civilian here.place=market|street|work
 does tell.self / react.self / assess
-a : Good day! Looking or buying? | For you, a special price. | You came back! I knew you would.
+a : #good_day#! Looking or buying? | For you, a special price. | You came back! I knew you would.
 b : Looking. | Special for everyone, I'll bet. | Don't get excited.
 a : Looking costs nothing. Yet. | Special for you. And everyone. | Too late. I'm excited.
 

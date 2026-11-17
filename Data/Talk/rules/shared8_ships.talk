@@ -56,7 +56,7 @@ say I'll be on the pier at first light for #topic.ship#. | #topic.ship.capitaliz
 then other: ships.answer
 
 rule s83s_due_porter
-when concept=talk.ships topic.kind=due topic.ship wealth=poor|destitute
+when concept=talk.ships topic.kind=due topic.ship wealth=poor|destitute self.stage=adolescent|adult self.job!=child|innkeeper self.role=civilian
 does tell.self
 cooldown 1d
 say #topic.ship.capitalize#'s due. They'll want porters. I'll be there early. | A ship means a day's carrying, if they'll have me. | I'll queue at the gangplank for #topic.ship#. Somebody has to carry it.
@@ -378,7 +378,7 @@ does react.news
 say The Wharf will be busy, then. | #agree#. Ship days are good days. | We'll see her sails before long.
 
 rule s83s_ans_due_poor
-when concept=ships.answer topic.kind=due wealth=poor|destitute
+when concept=ships.answer topic.kind=due wealth=poor|destitute self.stage=adolescent|adult self.job!=child|innkeeper self.role=civilian
 does react.news
 say Work for somebody, then. Maybe me. | A ship's a day's bread, if you're quick. | I'll be on the pier.
 

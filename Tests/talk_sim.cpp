@@ -532,6 +532,10 @@ void Sim::hook()
             v.add("best", l.info.best);
         }
         v.add("asserts", list(l.info.asserts));
+        if (!l.toldKey.empty())
+            v.add("told_key", l.toldKey);           // (Slice 2's review: what it tells, turned to or not: K3 line by line.)
+        if (!l.info.bare.empty() && l.info.bare != l.text)
+            v.add("bare", l.info.bare);             // (Slice 2's review: the opener's own words, R1's key without the greeting.)
         if (!l.info.denies.empty())
             v.add("denies", list(l.info.denies));
         if (!l.knew.empty())

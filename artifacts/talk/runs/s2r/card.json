@@ -1,0 +1,187 @@
+{
+ "freeze_at": 28.5,
+ "fixtures": "artifacts/talk/fixtures/p0-r3-25d",
+ "wall_seconds": 338.7312496009981,
+ "runs": [
+  {
+   "mode": "fixtures",
+   "profile": "L1",
+   "rc": 0,
+   "wall": 276.42509603098733,
+   "tail": [
+    "talk_sim fixtures-L1: 4004 exchanges, 19712 lines in 100 world hours; 269.081 s wall"
+   ]
+  },
+  {
+   "mode": "fixtures",
+   "profile": "L10",
+   "rc": 0,
+   "wall": 174.5004191030166,
+   "tail": [
+    "talk_sim fixtures-L10: 1611 exchanges, 7880 lines in 100 world hours; 167.087 s wall"
+   ]
+  },
+  {
+   "mode": "fixtures",
+   "profile": "L2",
+   "rc": 0,
+   "wall": 270.0066632129601,
+   "tail": [
+    "talk_sim fixtures-L2: 2210 exchanges, 11411 lines in 100 world hours; 263.792 s wall"
+   ]
+  },
+  {
+   "mode": "fixtures",
+   "profile": "L3",
+   "rc": 0,
+   "wall": 237.44660586101236,
+   "tail": [
+    "talk_sim fixtures-L3: 1532 exchanges, 8482 lines in 100 world hours; 230.836 s wall"
+   ]
+  },
+  {
+   "mode": "fixtures",
+   "profile": "L4",
+   "rc": 0,
+   "wall": 236.88576105202083,
+   "tail": [
+    "talk_sim fixtures-L4: 1028 exchanges, 7601 lines in 100 world hours; 229.969 s wall"
+   ]
+  },
+  {
+   "mode": "fixtures",
+   "profile": "L5",
+   "rc": 0,
+   "wall": 226.9019589779782,
+   "tail": [
+    "talk_sim fixtures-L5: 514 exchanges, 4008 lines in 100 world hours; 219.908 s wall"
+   ]
+  },
+  {
+   "mode": "fixtures",
+   "profile": "L6",
+   "rc": 0,
+   "wall": 226.35787290200824,
+   "tail": [
+    "talk_sim fixtures-L6: 514 exchanges, 2744 lines in 100 world hours; 220.24 s wall"
+   ]
+  },
+  {
+   "mode": "fixtures",
+   "profile": "L7",
+   "rc": 0,
+   "wall": 227.28535926603945,
+   "tail": [
+    "talk_sim fixtures-L7: 514 exchanges, 3936 lines in 100 world hours; 219.325 s wall"
+   ]
+  },
+  {
+   "mode": "fixtures",
+   "profile": "L8",
+   "rc": 0,
+   "wall": 200.69303346198285,
+   "tail": [
+    "talk_sim fixtures-L8: 0 exchanges, 0 lines in 100 world hours; 194.005 s wall"
+   ]
+  },
+  {
+   "mode": "fixtures",
+   "profile": "L9",
+   "rc": 0,
+   "wall": 204.57933221099665,
+   "tail": [
+    "talk_sim fixtures-L9: 0 exchanges, 0 lines in 100 world hours; 197.568 s wall"
+   ]
+  },
+  {
+   "mode": "frozen",
+   "profile": "L1",
+   "rc": 0,
+   "wall": 164.22792476799805,
+   "tail": [
+    "talk_sim frozen-L1: 11925 exchanges, 73803 lines in 100 world hours; 157.246 s wall"
+   ]
+  },
+  {
+   "mode": "frozen",
+   "profile": "L10",
+   "rc": 0,
+   "wall": 16.97196077700937,
+   "tail": [
+    "talk_sim frozen-L10: 1431 exchanges, 12277 lines in 120 world hours; 11.7442 s wall"
+   ]
+  },
+  {
+   "mode": "frozen",
+   "profile": "L2",
+   "rc": 0,
+   "wall": 39.45367052999791,
+   "tail": [
+    "talk_sim frozen-L2: 2376 exchanges, 14080 lines in 100 world hours; 31.7434 s wall"
+   ]
+  },
+  {
+   "mode": "frozen",
+   "profile": "L3",
+   "rc": 0,
+   "wall": 25.806392655998934,
+   "tail": [
+    "talk_sim frozen-L3: 2954 exchanges, 18620 lines in 100 world hours; 20.2574 s wall"
+   ]
+  },
+  {
+   "mode": "frozen",
+   "profile": "L4",
+   "rc": 0,
+   "wall": 28.68060995801352,
+   "tail": [
+    "talk_sim frozen-L4: 2318 exchanges, 17423 lines in 100 world hours; 21.0842 s wall"
+   ]
+  },
+  {
+   "mode": "frozen",
+   "profile": "L5",
+   "rc": 0,
+   "wall": 15.957773024972994,
+   "tail": [
+    "talk_sim frozen-L5: 1167 exchanges, 8782 lines in 100 world hours; 8.69501 s wall"
+   ]
+  },
+  {
+   "mode": "frozen",
+   "profile": "L6",
+   "rc": 0,
+   "wall": 17.98502170399297,
+   "tail": [
+    "talk_sim frozen-L6: 1200 exchanges, 7608 lines in 100 world hours; 10.3994 s wall"
+   ]
+  },
+  {
+   "mode": "frozen",
+   "profile": "L7",
+   "rc": 0,
+   "wall": 15.116528519021813,
+   "tail": [
+    "talk_sim frozen-L7: 1148 exchanges, 8127 lines in 100 world hours; 9.89781 s wall"
+   ]
+  },
+  {
+   "mode": "frozen",
+   "profile": "L8",
+   "rc": 0,
+   "wall": 7.4191790240001865,
+   "tail": [
+    "talk_sim frozen-L8: 0 exchanges, 0 lines in 100 world hours; 0.795456 s wall"
+   ]
+  },
+  {
+   "mode": "frozen",
+   "profile": "L9",
+   "rc": 0,
+   "wall": 8.315785914019216,
+   "tail": [
+    "talk_sim frozen-L9: 0 exchanges, 0 lines in 100 world hours; 0.715888 s wall"
+   ]
+  }
+ ]
+}

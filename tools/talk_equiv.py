@@ -91,6 +91,32 @@ for _entry in (
 ):
     EDITED[_entry] = 'a traveller near is one wolf: the "them", "they" and "their" said of the traveller are #topic.them#, ' \
                      '#topic.they#, #topic.their# (he or she) now, the verb agreeing'
+# Slice 2's review (doc 84 §35): lines changed by hand, each with why.
+EDITED.update({
+    'e4_fa_priest_named': '"What did you tell them?" of the one priest named: #a.priest_them# (him or her) now',
+    'et_rm_arrest_houses': '"Greatly\'s man" of a woman, and "they\'ll be out by noon" of one wolf: "One of Greatly\'s", '
+                           '#topic.they# now; "They\'re always owned." is "That sort always is."',
+    'et_appr_news': '"Good for them" of one apprentice: #topic.them# now',
+    'et_death_spouse': '"I\'ll take them supper" of the widowed one, named: "I\'ll take #topic.where# some supper"; '
+                       '"Bright One keep them" of the one dead: #topic.them#',
+    'h7_cr_ans_cold': '"Should\'ve locked their door" of one victim: #topic.victim_their#',
+    'h7_arrest_visit': '"Their mother", "Bring them a comb" of the one arrested: #topic.their#, #topic.them#',
+    'cv_greet_host': 'a host\'s two greetings were 13% of a room\'s lines (R6 by sentence): six more ways to greet a guest',
+    'ag_cb_prices': '"Dearer than when we spoke of it last." whichever way prices went, and "I said it would go this way" '
+                    'naming nothing: by the price\'s way now (ag_cb_prices_up, _down), the good named',
+    'r7_fr_childhood_name': '"Morning, Puddles." at any hour: "Well, if it isn\'t Puddles."',
+    'qk_sparrows_bark': '"Morning, you." at any hour: "Back again, you."',
+    'cv_pre_work': '"This won\'t earn my keep." from pupils at school: not for a child now (cv_pre_school is theirs)',
+    'cv_bye_night': '"Off to bed with me." from one who stays (an innkeeper at work): s8t_bye_leave_night\'s now, said '
+                    'only by one free to go, who leaves the room\'s talk for an hour',
+    'cv_bye_both2': '"Off I go, then." the same: cv_bye_both_leave\'s now',
+    'gs_secret': 'says the claim ("Don\'t tell a soul, but X stole...") and passes it on now (asserts)',
+    'et_gs_apprentice': 'the same ("I heard X stole from Y, master.")',
+    'm7_home_re_any': '"Ridgemere. I\'ll die talking like it." from one standing in Ridgemere, then told "Long way from home": '
+                      'only from one not at home (self.home_here), m7_home_re_local_any else',
+    'm7_close_home': '"Long way from home, then." to one born where they stand: not to one at home (other.home_here)',
+    'm7_close_home_cold': 'the same',
+})
 DISCOURSE = {'hedge', 'account', 'ack', 'pivot', 'anyway', 'later', 'resume', 'preclose', 'excuse', 'knew', 'sympathy',
              'concede', 'insist', 'warn', 'welcome_back', 'welcome', 'sorry', 'forgive', 'deflect', 'no_matter',
              'go_ahead', 'put_off', 'vent', 'reassure', 'congrats', 'demur', 'doubt', 'listen'}

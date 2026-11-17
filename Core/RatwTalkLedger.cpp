@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <tuple>
 
 namespace ratw
 {
@@ -31,17 +32,36 @@ std::vector<std::string> strings(const json::Value& v)
 
 std::string TalkLedger::pairKey(const std::string& a, const std::string& b) { return a < b ? a + "|" + b : b + "|" + a; }
 
-TalkNote& TalkLedger::note(const std::string& a, const std::string& b, double day)
+void TalkLedger::trimNotes(std::deque<TalkNote>& list) const
+{
+    // The oldest heard past 8, the oldest out of hearing past 2, each kept in its own room (the newest is never dropped).
+    std::size_t heard = 0, unheard = 0;
+    for (const auto& n : list)
+        ++(n.unheard ? unheard : heard);
+    for (auto it = list.begin(); it != list.end() && (heard > NotesPerPair || unheard > UnheardPerPair) && std::next(it) != list.end();)
+        if (it->unheard ? unheard > UnheardPerPair : heard > NotesPerPair)
+        {
+            --(it->unheard ? unheard : heard);
+            it = list.erase(it);
+        }
+        else
+            ++it;
+}
+
+TalkNote& TalkLedger::note(const std::string& a, const std::string& b, double day, bool unheard)
 {
     now_ = std::max(now_, day);
     const auto key = pairKey(a, b);
-    touch("n:" + key);
+    if (unheard)
+        touchQuiet("n:" + key);
+    else
+        touch("n:" + key);
     auto& list = notes_[key];
     list.push_back({});
     list.back().day = day;
     list.back().opener = a;
-    if (list.size() > NotesPerPair)
-        list.pop_front();
+    list.back().unheard = unheard;
+    trimNotes(list);
     return list.back();
 }
 
@@ -113,12 +133,15 @@ void TalkLedger::closeThread(const std::string& a, const std::string& b)
 }
 
 void TalkLedger::told(const std::string& listener, const std::string& teller, const std::string& key, const std::string& kind,
-                      double day, bool counted)
+                      double day, bool counted, bool heard)
 {
     if (!enabled || listener.empty() || key.empty())
         return;
     now_ = std::max(now_, day);
-    touch("t:" + listener);
+    if (heard)
+        touch("t:" + listener);
+    else
+        touchQuiet("t:" + listener);
     auto& list = told_[listener];
     for (auto& t : list)
         if (t.teller == teller && t.key == key)
@@ -136,6 +159,8 @@ void TalkLedger::told(const std::string& listener, const std::string& teller, co
 bool TalkLedger::counted(const std::string& listener, const std::string& teller, const std::string& key) const
 {
     const auto found = told_.find(listener);
+    if (found != told_.end())
+        touch("t:" + listener);
     return found != told_.end() && std::any_of(found->second.begin(), found->second.end(), [&](const TalkTold& t) {
                return t.key == key && t.teller == teller && t.counted;
            });
@@ -153,6 +178,8 @@ bool TalkLedger::wasTold(const std::string& listener, const std::string& key) co
 bool TalkLedger::toldBy(const std::string& listener, const std::string& teller, const std::string& key) const
 {
     const auto found = told_.find(listener);
+    if (found != told_.end())
+        touch("t:" + listener);
     return found != told_.end() &&
            std::any_of(found->second.begin(), found->second.end(), [&](const TalkTold& t) { return t.key == key && t.teller == teller; });
 }
@@ -162,6 +189,7 @@ std::string TalkLedger::toldMe(const std::string& listener, const std::string& t
     const auto found = told_.find(listener);
     if (found == told_.end())
         return {};
+    touch("t:" + listener);
     for (auto it = found->second.rbegin(); it != found->second.rend(); ++it)
         if (it->teller == teller && !it->kind.empty())
             return it->kind;
@@ -206,6 +234,8 @@ void TalkLedger::heard(const std::string& resident, const std::string& entry)
 bool TalkLedger::hasHeard(const std::string& resident, const std::string& entry) const
 {
     const auto found = heard_.find(resident);
+    if (found != heard_.end())
+        touch("h:" + resident);
     return found != heard_.end() && std::find(found->second.begin(), found->second.end(), entry) != found->second.end();
 }
 
@@ -360,9 +390,22 @@ std::size_t TalkLedger::size() const
     return n;
 }
 
-void TalkLedger::prune(double day)
+void TalkLedger::prune(double day, const std::function<bool(const std::string&)>& gone)
 {
     now_ = std::max(now_, day);
+    // Those gone (dead, or out of the world) take their drift, its events, their moods and their own kept tags with them
+    // (Slice 2's review: kept for good, they grew with every resident who ever lived).
+    if (gone)
+    {
+        for (auto it = drift_.begin(); it != drift_.end();)
+            it = gone(it->first) ? drift_.erase(it) : std::next(it);
+        for (auto it = applied_.begin(); it != applied_.end();)
+            it = gone(it->first) ? applied_.erase(it) : std::next(it);
+        for (auto it = moods_.begin(); it != moods_.end();)
+            it = gone(it->first) ? moods_.erase(it) : std::next(it);
+        for (auto it = kept_.begin(); it != kept_.end();)
+            it = gone(it->first) ? (touched_.erase("k:" + it->first), kept_.erase(it)) : std::next(it);
+    }
     for (auto it = notes_.begin(); it != notes_.end();)
     {
         auto& list = it->second;
@@ -402,10 +445,37 @@ void TalkLedger::prune(double day)
             list.pop_front();
         it = list.empty() ? moods_.erase(it) : std::next(it);
     }
-    // Past the cap: whole record sets, the least recently used first.
+    // Past the cap: the notes out of hearing first, the oldest first (World::gossip writes them again tomorrow); then whole
+    // record sets, the least recently used first.
     auto total = size();
     if (total <= Records)
         return;
+    {
+        std::vector<std::tuple<double, std::string>> unheard;
+        for (const auto& [pair, list] : notes_)
+            for (const auto& n : list)
+                if (n.unheard)
+                    unheard.emplace_back(n.day, pair);
+        std::sort(unheard.begin(), unheard.end());
+        for (const auto& [d, pair] : unheard)
+        {
+            if (total <= Records)
+                break;
+            auto& list = notes_[pair];
+            const auto at = std::find_if(list.begin(), list.end(), [&](const TalkNote& n) { return n.unheard && n.day == d; });
+            if (at == list.end())
+                continue;
+            list.erase(at);
+            --total;
+            if (list.empty())
+            {
+                notes_.erase(pair);
+                touched_.erase("n:" + pair);
+            }
+        }
+        if (total <= Records)
+            return;
+    }
     std::vector<std::pair<double, std::string>> order;
     for (const auto& [k, t] : touched_)
         order.push_back({t, k});
@@ -449,6 +519,8 @@ void TalkLedger::clear()
 
 json::Value TalkLedger::save() const
 {
+    // Days to a ten-thousandth (about nine seconds): the checkpoint's whole-written part every 30 s (Slice 2's review).
+    const auto d = [](double v) { return std::round(v * 1e4) / 1e4; };
     auto out = json::Value::object();
     auto notes = json::Value::object();
     for (const auto& [pair, list] : notes_)
@@ -457,12 +529,14 @@ json::Value TalkLedger::save() const
         for (const auto& n : list)
         {
             auto j = json::Value::object();
-            j.add("day", n.day);
+            j.add("day", d(n.day));
             j.add("by", n.opener);
             j.add("topics", strings(n.topics));
             j.add("keys", strings(n.keys));
             if (!n.outcome.empty())
                 j.add("outcome", n.outcome);
+            if (!n.souredBy.empty())
+                j.add("soured_by", n.souredBy);
             if (!n.told.empty())
                 j.add("told", strings(n.told));
             if (!n.claims.empty())
@@ -474,7 +548,7 @@ json::Value TalkLedger::save() const
                 {
                     auto pair = json::Value::array();
                     pair.push(v.first);
-                    pair.push(v.second);
+                    pair.push(d(v.second));
                     kept.add(k, pair);
                 }
                 j.add("kept", kept);
@@ -482,7 +556,7 @@ json::Value TalkLedger::save() const
             if (!n.thread.empty())
             {
                 j.add("thread", n.thread);
-                j.add("thread_until", n.threadUntil);
+                j.add("thread_until", d(n.threadUntil));
             }
             if (n.unheard)
                 j.add("unheard", true);
@@ -501,7 +575,7 @@ json::Value TalkLedger::save() const
             row.push(t.teller);
             row.push(t.key);
             row.push(t.kind);
-            row.push(t.day);
+            row.push(d(t.day));
             if (t.counted)
                 row.push(true);
             a.push(row);
@@ -519,7 +593,7 @@ json::Value TalkLedger::save() const
             row.push(s.key);
             row.push(s.value);
             row.push(s.by);
-            row.push(s.until);
+            row.push(s.until < 0 ? s.until : d(s.until));
             a.push(row);
         }
         said.add(who, a);
@@ -537,7 +611,7 @@ json::Value TalkLedger::save() const
         {
             auto pair = json::Value::array();
             pair.push(v.first);
-            pair.push(v.second);
+            pair.push(d(v.second));
             o.add(k, pair);
         }
         kept.add(who, o);
@@ -569,7 +643,7 @@ json::Value TalkLedger::save() const
     {
         auto j = json::Value::object();
         j.add("by", i.by); j.add("to", i.to); j.add("cell", i.cell); j.add("place", i.place); j.add("hour", i.hour);
-        j.add("from", i.from); j.add("until", i.until); j.add("state", i.state);
+        j.add("from", d(i.from)); j.add("until", d(i.until)); j.add("state", i.state);
         invites.push(j);
     }
     out.add("invites", invites);
@@ -577,7 +651,7 @@ json::Value TalkLedger::save() const
     for (const auto& p : promises_)
     {
         auto j = json::Value::object();
-        j.add("by", p.by); j.add("to", p.to); j.add("thing", p.thing); j.add("day", p.day); j.add("until", p.until);
+        j.add("by", p.by); j.add("to", p.to); j.add("thing", p.thing); j.add("day", d(p.day)); j.add("until", d(p.until));
         j.add("state", p.state);
         promises.push(j);
     }
@@ -587,12 +661,12 @@ json::Value TalkLedger::save() const
     for (const auto& [who, issues] : drift_)
     {
         auto o = json::Value::object();
-        for (const auto& [issue, d] : issues)
+        for (const auto& [issue, dr] : issues)
         {
             auto row = json::Value::array();
-            row.push(d.steps);
-            row.push(d.event);
-            row.push(d.day);
+            row.push(dr.steps);
+            row.push(dr.event);
+            row.push(d(dr.day));
             o.add(issue, row);
         }
         drift.add(who, o);
@@ -609,7 +683,7 @@ json::Value TalkLedger::save() const
         for (const auto& [day, kind] : list)
         {
             auto row = json::Value::array();
-            row.push(day);
+            row.push(d(day));
             row.push(kind);
             a.push(row);
         }
@@ -618,7 +692,7 @@ json::Value TalkLedger::save() const
     out.add("moods", moods);
     auto touched = json::Value::object();
     for (const auto& [k, t] : touched_)
-        touched.add(k, t);
+        touched.add(k, d(t));
     out.add("touched", touched);
     out.add("now", now_);
     return out;
@@ -638,6 +712,7 @@ void TalkLedger::load(const json::Value& v)
             n.topics = strings(j["topics"]);
             n.keys = strings(j["keys"]);
             n.outcome = j.string("outcome");
+            n.souredBy = j.string("soured_by");
             n.told = strings(j["told"]);
             n.claims = strings(j["claims"]);
             for (const auto& [k, kv] : j.object("kept").fields())
@@ -648,7 +723,7 @@ void TalkLedger::load(const json::Value& v)
             n.unheard = j.boolean("unheard");
             auto& d = notes_[pair];
             d.push_back(std::move(n));
-            cap(d, NotesPerPair);
+            trimNotes(d);
         }
     for (const auto& [who, list] : v.object("told").fields())
         for (const auto& row : list.items())

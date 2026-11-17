@@ -1019,6 +1019,9 @@ void otherRoles()
                            f.count("affinity") && f.count("disposition"),
                        std::string("bound ") + slot + " of " + who + ": a resident's facts and the speaker's bond");
             }
+        // Slice 2's review (§13): a player's character is never given a line by the engine: the query says who is one.
+        const auto toPlayer = town.g.talkQuery("ui", town.ash.entityId, "react.customer");
+        expect(toPlayer.b.player && !toPlayer.a.player, "a player spoken to is marked a player, the resident isn't");
         auto qx = town.g.talkQuery("u1", "u2", "talk.smalltalk");
         talk::Facts none;
         expect(bound > 0 && qx.bind && !qx.bind("self.cousin", 0, none) && !qx.bind("topic.subject", 0, none),

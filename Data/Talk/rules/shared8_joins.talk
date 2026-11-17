@@ -332,10 +332,23 @@ tone serious
 say I can hear every word, you know. | Say it to my face, if you think it. | If you've something to say, say it to me.
 
 rule s8j_named_kind
-does join.object
+does join.add
 when conv.stake=named topic.claim_kind=marriage|promise_kept|newcomer
 tone light
 say Talking about me? Good things, I hope. | I can hear you, you know. Go on, then. | My ears are burning.
+
+## One's own good news, joined by the one it names (Slice 2's review: a husband once "objected" to his own wedding).
+
+rule s8j_named_news_marriage
+does join.add
+when conv.stake=named conv.topic=news topic.kind=marriage
+tone light
+say And I'd do it all again tomorrow. | You're looking at the lucky one. | It's true. I still can't quite believe it. | Best day of my life, that was.
+
+rule s8j_named_news
+does join.add
+when conv.stake=named conv.topic=news topic.kind!=marriage|crime|loss
+say It's true, every word. | Aye, that's the way of it. | I can vouch for that.
 
 rule s8j_kin_defend_theft
 does join.defend

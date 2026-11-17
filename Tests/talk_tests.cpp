@@ -2761,6 +2761,302 @@ say The merchants never go short.
     }
 }
 
+
+// Doc 84 §35 (Slice 2's review): the engine never gives a player a line; two of a side air an issue and agree; a reason
+// is said once a talk; a goal under way finishes; the library's lines say true things of who says them and when.
+void sliceTwoReview()
+{
+    std::string problem;
+    // 1. A keeper's greeting to a customer: the engine never answers it for the player (§13).
+    {
+        auto lib = foundation();
+        expect(lib.parse("rule s2r_cust\nwhen concept=react.customer\ndoes greet\nsay Hello there. Mind where you tread.\n"
+                         "rule s2r_back\ndoes greet.return\nsay Hello there.\n", "s2r.talk", problem), problem);
+        auto q = moment("react.customer");
+        int resident = 0;
+        for (std::uint64_t seed = 1; seed <= 40; ++seed)
+        {
+            q.b.player = false;
+            resident += lib.converse(q, seed, None, {}).lines.size() == 2;
+            q.b.player = true;
+            const auto said = lib.converse(q, seed, None, {});
+            expect(said.lines.size() == 1 && said.lines.front().first == 0, "a player's wolf is never made to greet back");
+        }
+        expect(resident > 0, "a resident greeted greets back, now and then (" + std::to_string(resident) + " of 40)");
+        auto f = moment("react.customer");
+        f.b.facts["player"] = "yes";                // (talk_check's way of saying so.)
+        expect(lib.converse(f, 3, None, {}).lines.size() == 1, "nor by the facts' player=yes");
+    }
+    // 1b. An echo never asks the same question twice ("I know, no?" / "I know, no?": C6).
+    {
+        auto lib = foundation();
+        expect(lib.setGrammar("s2r_tags", "grammar s2r_tags\nbc_i_know = I know, no? | Don't I know it.\n", problem), problem);
+        expect(lib.parse("scene s2r_echo\nwhen topic=smalltalk\na : That camp's still there.\nb : #bc_i_know#\na : #bc_i_know#\n",
+                         "s2r_echo.talk", problem), problem);
+        auto q = moment("talk.smalltalk");
+        q.a.grammar = q.b.grammar = {"s2r_tags"};
+        int asked = 0;
+        for (std::uint64_t seed = 1; seed <= 60; ++seed)
+        {
+            const auto said = lib.converse(q, seed, None, {});
+            if (said.lines.size() >= 3 && said.lines[1].second == "I know, no?")
+            {
+                ++asked;
+                expect(said.lines[2].second != "I know, no?", "the echo isn't the same question again");
+            }
+        }
+        expect(asked > 0, "the question form was said (" + std::to_string(asked) + ")");
+    }
+    // 2-3. Opinions: two guards both for the Watch air it to each other and agree; a reason is said once a talk.
+    {
+        auto lib = foundation();
+        for (const char* f : {"rules/opinions.talk", "rules/turns.talk"})
+        {
+            std::ifstream in(Dir + "/" + f);
+            std::stringstream text;
+            text << in.rdbuf();
+            expect(lib.parse(text.str(), f, problem), std::string(f) + ": " + problem);
+        }
+        expect(lib.parse("rule op_open_crime\nwhen concept=talk.crime\ndoes tell.news\nsay There was a theft by the well.\n"
+                         "rule op_react\ndoes react.news\nsay Was there now.\n", "crime.talk", problem), problem);
+        int same = 0, agreed = 0, repeats = 0;
+        for (const bool differ : {false, true})
+            for (std::uint64_t seed = 1; seed <= 60; ++seed)
+            {
+                auto q = moment("talk.crime");
+                q.a.facts["role"] = "guard";
+                q.a.facts["class"] = "upper";            // (Two reasons for the Watch: the guard's, the upper class's.)
+                q.a.facts["talk"] = q.b.facts["talk"] = "chatty";
+                if (differ)
+                    q.b.facts["honesty"] = "sly", q.b.facts["quarter"] = "sump", q.b.facts["class"] = "lower";
+                else
+                    q.b.facts["role"] = "guard";
+                lib.stances(q.a.facts, {});
+                lib.stances(q.b.facts, {});
+                Conversation c;
+                c.seed = seed;
+                std::vector<SaidLine> said;
+                if (auto first = lib.begin(c, q, Freshness{None, {}}))
+                    said.push_back(*first);
+                for (int i = 0; i < 16; ++i)
+                    if (auto line = lib.next(c, [&](int, int) { return q; }, Freshness{None, {}}))
+                        said.push_back(*line);
+                    else
+                        break;
+                std::map<std::string, int> sentences;
+                for (const auto& l : said)
+                {
+                    std::size_t from = 0;
+                    for (std::size_t at = 0; at <= l.text.size(); ++at)
+                        if (at == l.text.size() || ((l.text[at] == '.' || l.text[at] == '!') && (at + 1 == l.text.size() || l.text[at + 1] == ' ')))
+                        {
+                            auto one = l.text.substr(from, at - from);
+                            while (!one.empty() && one.front() == ' ')
+                                one.erase(one.begin());
+                            if (std::count(one.begin(), one.end(), ' ') >= 5 && one.find("couldn't help hearing") == std::string::npos)
+                            {
+                                one[0] = char(std::tolower(static_cast<unsigned char>(one[0])));
+                                repeats += ++sentences[one] > 1;
+                            }
+                            from = at + 1;
+                        }
+                }
+                if (differ)
+                    continue;
+                const auto given = std::find_if(said.begin(), said.end(), [](const SaidLine& l) {
+                    return std::find(l.moves.begin(), l.moves.end(), "give.opinion") != l.moves.end() && l.issue == "watch";
+                });
+                if (given == said.end())
+                    continue;
+                ++same;
+                const auto reply = std::next(given);
+                if (reply != said.end() && std::find(reply->moves.begin(), reply->moves.end(), "agree") != reply->moves.end())
+                    ++agreed;
+                expect(reply == said.end() || std::find(reply->moves.begin(), reply->moves.end(), "disagree") == reply->moves.end(),
+                       "two of a side never disagree: " + given->text + " / " + (reply == said.end() ? std::string() : reply->text));
+            }
+        expect(same >= 5 && agreed >= 3, "two guards air the Watch to each other and agree (" + std::to_string(same) + " aired, " +
+                                             std::to_string(agreed) + " agreed)");
+        expect(repeats == 0, "no reason said twice in a talk (" + std::to_string(repeats) + ")");
+    }
+    // 4. A favour asked: once begun, the asking comes before the goodbyes, however short the budget.
+    {
+        auto lib = foundation();
+        expect(lib.parse(R"(
+rule s2r_open
+when concept=talk.smalltalk
+does tell.self
+say Quiet day.
+rule s2r_ack
+does react.self
+say So it is.
+rule s2r_pre
+does pre.request
+when conv.goal=favour
+say Have you a moment? I've a favour to ask.
+rule s2r_go
+does go_ahead
+say What is it?
+rule s2r_ask
+does request
+when conv.goal=favour
+say Could you spare me a loaf till Restday?
+rule s2r_grant
+does grant
+say Of course.
+rule s2r_decline
+does decline
+say I can't, I'm sorry.
+rule s2r_no_matter
+does accept_decline
+say No matter.
+rule s2r_bye
+does farewell
+say Farewell.
+rule s2r_bye_back
+does farewell.return
+say And you.
+)", "s2r_favour.talk", problem), problem);
+        int asked = 0, begun = 0;
+        for (std::uint64_t seed = 1; seed <= 80; ++seed)
+        {
+            auto q = moment("talk.smalltalk");
+            q.a.facts["wealth"] = q.b.facts["wealth"] = "poor";
+            q.a.facts["talk"] = q.b.facts["talk"] = "quiet";
+            q.facts["pair.trust"] = "30";
+            Conversation c;
+            c.seed = seed;
+            std::vector<std::string> said;
+            if (auto first = lib.begin(c, q, Freshness{None, {}}))
+                said.push_back(first->entry);
+            for (int i = 0; i < 16; ++i)
+                if (auto line = lib.next(c, [&](int, int) { return q; }, Freshness{None, {}}))
+                    said.push_back(line->entry);
+                else
+                    break;
+            const auto pre = std::find(said.begin(), said.end(), "s2r_pre");
+            if (pre == said.end())
+                continue;
+            ++begun;
+            asked += std::find(pre, said.end(), "s2r_ask") != said.end();
+        }
+        expect(begun > 0 && asked == begun, "a favour begun is asked (" + std::to_string(asked) + " of " + std::to_string(begun) + ")");
+    }
+    // 4b. No recall said in the breath of an opener that is a callback itself ("Prices again. ... Prices again.").
+    {
+        auto lib = foundation();
+        expect(lib.parse(R"(
+rule s2r_cb_open
+when concept=talk.prices pair.talked.prices<3
+does tell.complaint
+say Prices again. You'd think they'd settle.
+rule s2r_recall
+does recall
+when conv.topic=prices pair.talked.prices<3
+say Prices again. It's all anyone talks of.
+)", "s2r_recall.talk", problem), problem);
+        for (std::uint64_t seed = 1; seed <= 40; ++seed)
+        {
+            auto q = moment("talk.prices");
+            q.facts["pair.talked.prices"] = "1";
+            Conversation c;
+            c.seed = seed;
+            const auto first = lib.begin(c, q, Freshness{None, {}});
+            expect(first && first->text == "Prices again. You'd think they'd settle.", "a callback opener says it once: " +
+                                                                                           (first ? first->text : std::string()));
+        }
+    }
+    // 5. The real library.
+    {
+        Library lib;
+        expect(lib.load(Dir, problem), "the library loads: " + problem);
+        // An opener that says the claim passes it on (gs_secret: "Don't tell a soul, but X stole..."; the listener was
+        // marked told and never held it).
+        for (const auto& e : lib.entries())
+        {
+            if (e.turns.empty() || e.asserts == 0 || e.asserts == Entry::NeverAsserts || e.id.rfind("dlg.", 0) == 0)
+                continue;                           // (The window's lines are said to a player: no claim passes there.)
+            const bool says = std::any_of(e.turns[0].variants.begin(), e.turns[0].variants.end(), [](const Variant& v) {
+                return std::any_of(v.texts.begin(), v.texts.end(), [](const std::string& t) { return t.find("#topic.claim#") != std::string::npos; });
+            });
+            const bool byMove = !e.does.empty() && std::any_of(e.does[0].begin(), e.does[0].end(), [&](const std::string& m) {
+                const auto* mv = lib.moves().find(m);
+                return mv && mv->asserts;
+            });
+            expect(!says || byMove, e.id + " says the topic's claim in its first line and passes it on (asserts)");
+        }
+        // Greetings and goodbyes by the hour: no "Morning" after noon, no "Good day" at night.
+        auto q = moment("talk.smalltalk");
+        q.facts["here.time"] = "day";
+        q.facts["here.hour"] = "15";
+        for (std::uint64_t seed = 0; seed < 200; ++seed)
+        {
+            std::string out;
+            expect(lib.expand("#greet#", q, 0, seed, out) && out.rfind("Morning", 0) != 0, "no Morning at three: " + out);
+        }
+        q.facts["here.time"] = "night";
+        q.facts["here.hour"] = "21";
+        q.facts["pair.band"] = "strangers";
+        for (const char* sym : {"#farewell#", "#good_day#", "#s8_bye#", "#s8_byeback#", "#tonight#"})
+            for (std::uint64_t seed = 0; seed < 100; ++seed)
+            {
+                std::string out;
+                expect(lib.expand(sym, q, 0, seed, out) && out.find("Good day") == std::string::npos && out.find("today") == std::string::npos,
+                       std::string(sym) + " at night: " + out);
+            }
+        // Lines true of who says them.
+        const auto fits = [&](const char* id, const Query& x) {
+            const auto* e = lib.find(id);
+            expect(e != nullptr, std::string(id) + " is in the library");
+            return e && lib.fits(*e, x);
+        };
+        auto pupil = moment("talk.smalltalk");
+        pupil.a.facts["stage"] = "young";
+        pupil.a.facts["job"] = "child";
+        pupil.a.facts["working"] = "yes";
+        expect(!fits("cv_pre_work", pupil) && fits("cv_pre_school", pupil), "a pupil at school isn't earning their keep");
+        auto keeper = moment("talk.smalltalk");
+        keeper.facts["here.time"] = "night";
+        keeper.a.facts["job"] = "innkeeper";
+        keeper.a.facts["working"] = "yes";
+        expect(!fits("s8t_bye_leave_night", keeper) && !fits("s8t_bye_leave_dusk", keeper), "the innkeeper at work isn't off home");
+        keeper.a.facts["job"] = "baker";
+        keeper.a.facts["working"] = "no";
+        expect(fits("s8t_bye_leave_night", keeper), "one free to go may say so, at night");
+        keeper.facts["here.time"] = "dusk";
+        expect(!fits("s8t_bye_leave_night", keeper) && fits("s8t_bye_leave_dusk", keeper), "bed only once it's night; home at dusk");
+        auto death = moment("talk.crime");
+        death.facts["conv.from"] = "crime";
+        death.facts["conv.topic"] = "life";
+        death.facts["topic.kind"] = "death";
+        expect(!fits("s8p_crime_life", death) && fits("s8p_crime_life_grave", death), "a death is never the better news");
+        auto home = moment("moment.close");
+        home.facts["conv.m7"] = "home";
+        home.b.facts["home_here"] = "yes";
+        expect(!fits("m7_close_home", home), "never a long way from home to one born where they stand");
+        auto porter = moment("talk.ships");
+        porter.facts["topic.kind"] = "due";
+        porter.facts["topic.ship"] = "the Wavecutter";
+        porter.a.facts["wealth"] = "poor";
+        porter.a.facts["stage"] = "young";
+        porter.a.facts["job"] = "child";
+        porter.a.facts["role"] = "civilian";
+        expect(!fits("s83s_due_porter", porter), "a pup doesn't carry cargo at the pier");
+        porter.a.facts["stage"] = "adult";
+        porter.a.facts["job"] = "labourer";
+        expect(fits("s83s_due_porter", porter), "a poor labourer does");
+        // Stances: no wage reason from a pup, no jar among friends from an eleven-year-old.
+        Facts pup = {{"stage", "young"}, {"job", "child"}, {"wealth", "poor"}, {"class", "lower"}, {"role", "civilian"},
+                     {"humour", "merry"}};
+        lib.stances(pup, {});
+        for (const auto& [k, v] : pup)
+            if (k.rfind("op_why", 0) == 0)
+                expect(v.find("paid") == std::string::npos && v.find("worked my whole life") == std::string::npos &&
+                           v.find("a jar among friends") == std::string::npos,
+                       "a pup's reason is a pup's: " + k + ": " + v);
+    }
+}
+
 int main()
 {
     try
@@ -2785,6 +3081,7 @@ int main()
         agendasAndGoals();
         opinionsMoodsAccent();
         sharedLinesTwo();
+        sliceTwoReview();
     }
     catch (const std::exception& error)
     {

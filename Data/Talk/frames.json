@@ -16,7 +16,7 @@
   "join": {"about": "A third voice (§8.9; the game's Game::joiners): one idle within tiles of both, hearing it at hearing or more, out of talk for rest seconds, knowing one of them, with a stake in what was just said, and a join line that fits; people in all at most (2: nobody joins). Phase 4.", "people": 3, "tiles": 3, "hearing": 0.5, "rest": 60},
   "goals": {
     "about": "A reason a speaker has to steer a talk (§7.4, §8.5; Phase 5), in this order: in a lull, the first that holds of the one whose turn it is (self: them, other: the one spoken to), unless pursued in this talk or done between the two lately. Its plan's moves are said a step a lull, by move lines doing them (a step no line fits gives it up); done, or tried and given up, it is kept between the two for `days` (pair.was.goal_<name>). vent (a low mood to a friend) waits on Phase 6's self.mood.",
-    "mend":       {"when": "pair.last_outcome=soured|quarrelled pair.last_talk<=7", "plan": ["apologise"], "days": 7},
+    "mend":       {"when": "pair.last_outcome=soured|quarrelled self.soured=yes pair.last_talk<=7", "plan": ["apologise"], "days": 7},
     "comfort":    {"when": "other.mourning=kin|friend", "plan": ["ask.after"], "days": 3},
     "hurt":       {"when": "other.injured=light|bad", "plan": ["ask.after"], "days": 2},
     "robbed":     {"when": "other.robbed=yes", "plan": ["ask.after"], "days": 4},

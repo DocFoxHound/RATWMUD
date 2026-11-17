@@ -140,6 +140,19 @@ class Score(unittest.TestCase):
         self.assertEqual(out["worst"][0]["notes"], {"A": "Nothing answers.", "B": "Odd."})
         self.assertIn("**Not met**", talk_rate.report(out))
 
+    def test_raters_who_share_no_item_and_a_rank_correlation_of_nought(self):
+        # Slice 2's review: a packet split between raters (no item rated twice) crashed the report; a pair whose ranks
+        # don't correlate at all (0.0) was left out of the agreement.
+        a = {"rater": "A", "ratings": [{"id": i, "believable": 3, "coherent": 4} for i in ("1", "2", "3")]}
+        b = {"rater": "B", "ratings": [{"id": i, "believable": 4, "coherent": 3} for i in ("4", "5", "6")]}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ratings.json"
+            path.write_text(json.dumps({"raters": [a, b]}))
+            out = talk_rate.score_ratings(self.KEY, talk_rate.read_raters([path]), worst=0)
+        self.assertIsNone(out["agreement"]["coherent"]["exact_pct"])
+        self.assertIn("exact n/a", talk_rate.report(out))
+        self.assertEqual(talk_rate.spearman([1, 2, 3, 4], [2, 1, 1, 2]), 0.0)
+
     def test_one_csv_still_scores(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "ratings.csv"

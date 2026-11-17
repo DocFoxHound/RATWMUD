@@ -872,13 +872,13 @@ priority 2
 say Aye. Back to it. | Don't tempt me to stop. | It won't do itself, more's the pity.
 
 rule m7_close_home
-when concept=moment.close conv.m7=home
+when concept=moment.close conv.m7=home other.home_here!=yes
 does ack
 priority 1
 say Long way from home, then. | Tell me about it some time. Properly. | I'd like to see it one day. | You're here now, any road.
 
 rule m7_close_home_cold
-when concept=moment.close conv.m7=home self.warmth=cold
+when concept=moment.close conv.m7=home self.warmth=cold other.home_here!=yes
 does ack
 priority 1
 say Nobody made you come. | Go back, then. | Everyone's from somewhere.
@@ -1773,7 +1773,7 @@ then other: moment.reply_home
 # where they stand at home (the one who asked is the stranger) answers that, first.
 
 rule m7_home_re_any
-when concept=moment.reply_home
+when concept=moment.reply_home self.home_here!=yes
 does answer.detail
 say {m7=home} #topic.accent_town#, born and bred. | {m7=home} #topic.accent_town#, if you must know. | {m7=home} From #topic.accent_town#. It shows, does it? | {m7=home} #topic.accent_town#. I'll die talking like it.
 then other: moment.close
@@ -1873,6 +1873,13 @@ say {m7=gladgone} #topic.accent_town#. And glad to be shot of it. | {m7=gladgone
 then other: moment.close
 
 # At home: the one asking is the stranger here (priority 2, before all the rest).
+
+rule m7_home_re_local_any
+when concept=moment.reply_home self.home_here=yes
+does answer.detail
+priority 1
+say {m7=local} From here, as it happens. You're standing in it. | {m7=local} Born and raised right here. It's you that's the stranger. | {m7=local} Here. I've never lived anywhere else.
+then other: moment.close
 
 rule m7_home_re_local_ridgemere
 when concept=moment.reply_home self.from=ridgemere here.region=ridgemere

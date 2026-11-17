@@ -14,12 +14,15 @@ Metrics are worked out per run (a profile), then over all the runs given.
 
 What P0 can measure, before moves and tones exist (§15.1: "the text-only metrics still work: that is how the baseline
 is measured"); the rest are listed as n/a with the phase that brings them:
-  R1 first word-for-word identical conversation, per listener (hours; the earliest listener's)
+  R1 first word-for-word identical conversation, per listener (hours; the earliest listener's): since Slice 2's review,
+     the talk between its ceremonies (the opener's own words, `bare`, without the greeting, "Back again?" or recall said
+     in its breath; the closing left out), so a goodbye said another way no longer makes the same talk new
   R2 first repeated opener, per listener (hours)
   R3 distinct openers in a listener's first 3,000 exchanges (fewer heard: scaled to 3,000)
-  R4 a distinctive line (6+ words) heard again by the same listener within 10 h, per 100 h
+  R4 a distinctive sentence (6+ words) heard again by the same listener within 10 h, per 100 h (whole lines until
+     Slice 2's review: a sentence spliced into longer lines went uncounted)
   R5 collision index: the same distinctive line from two speakers in one place within an hour, per 100 h
-  R6 the most-spoken line's share of all lines
+  R6 the most-spoken sentence's share of the lines (Slice 2's review; the most-spoken whole line in R6_detail)
   R7 distinct reply entries per 1,000 reply beats: replies to what was said, the closing pairs apart (Phase 3: a
      preclose, a farewell and their answers are formulaic by design, §8.4; their own variety is in R7_detail)
   R8 habit saturation: the share of a speaker's lines using their oath! or saying! (speakers with 20+ lines: mean, p90)
@@ -37,10 +40,12 @@ is measured"); the rest are listed as n/a with the phase that brings them:
   C3 endings: by a farewell or a marked break / at the beat cap / by nothing fitting (a talk cut off by a speaker walking
      away, or the other busy, ends with no line: it is counted apart, never as a good ending). A farewell: the last line
      makes a closing move that takes leave (farewell, farewell.return, leave, break), or its words do (the lexicon, with
-     the dialects' farewells). The cap: the turn engine's `ended` (Phase 3), else 8 lines written
+     the dialects' farewells). The cap: the turn engine's `ended` (Phase 3), else 8 lines written. A curt ending (`ended`
+     curt: the engine's own short close, §8.4) is a good ending too since Slice 2's review
   C4 tone clashes per 1,000 beats: a grave line followed within two beats by a light one from the other, with no bridge:
      by the lines' tones (Phase 2's moves; a bridge is change_subject, assess or preclose) or by the lexicon (death,
-     grief, robbery... then laughter, a jest)
+     grief, robbery... then laughter, a jest); and (Slice 2's review) a light bridge into grave news within one line
+     ("There's better news than that. They're burying...")
   C6 the same entry (or the same question) twice in one conversation, per 1,000 conversations
   C7 lines per conversation: mean, 90th percentile, and the share of 3-line ones
   C8 conversations with a third speaker (Phase 4: one who joined, §8.9)
@@ -59,23 +64,29 @@ is measured"); the rest are listed as n/a with the phase that brings them:
   K1 conversations on everyday topics: those Data/Talk/topics.json calls everyday (Phase 5; before it, anything but
      news, gossip, crime, deeds, events, quarrels and the like)
   K2 the largest topic's share
-  K3 the same news (topic, subject, claim; one's own news by its teller) told twice to the same resident
+  K3 the same news (topic, subject, claim; one's own news by its teller) told twice to the same resident; where the run
+     says what each line tells (talk_sim's told_key, Slice 2's review), every piece of news a talk tells, at its start or
+     turned to, to everyone in it (a joiner too), the town's crime and news among them
   C5 unmarked topic jumps per 1,000 lines (Phase 5): a line on another topic than the line before (talk_sim's topic_now)
      with no pivot, change of subject or return among its moves
   C9 callbacks per 10 conversations (Phase 5): lines standing on the talk ledger (their criteria read it: pair.last_talk,
-     pair.talked.*, a promise, an invitation; a return to a thread; "Back again?")
+     pair.talked.*, a promise, an invitation; a return to a thread). "Back again?" isn't one since Slice 2's review
   D1 lines carrying a dialect's words (a dialect grammar layer in the expansion) spoken in accent none: the hard gate
      (§15.3: "none 0%", "hard for none"; §10: none sounds plain); D1L lines spoken light (25-50%) and D1B broad (60%+),
      soft. Phase 6: by the accent a line was spoken in (talk_sim's spoken_accent: a step broader toward kin and friends
      of one's own speech, plainer toward a class above, a stranger from elsewhere, a hostile pair; §10.6), the speaker's
-     own where a run has none. D1A: the lines spoken in another accent than the speaker's own (broader, plainer)
+     own where a run has none. D1A: the lines spoken in another accent than the speaker's own (broader, plainer). Since
+     Slice 2's review D1L and D1B judge what is said: a greeting, "Back again?" or the closing (moves all ceremony) left out
+     (D1_detail's "body"; every line beside it)
   T4 identity drift (Phase 6): of the lines airing a stance (issue, stance), one whose speaker's side changed from their
      last within 30 days on the same basis (the same leans held, the same drift: nothing in their life moved it) and no
      concede between, or an answer against the speaker's own
      side (agreeing with the other side, disagreeing with one's own), per 1,000 stance lines. O1 opinions given per 10
      conversations (a diagnostic)
   T6 "they", "them", "their" said after the one known resident a line names (Phase 6; the lint's they_named is the
-     hard gate on the library's lines, this the soft one on what is said), per 1,000 lines
+     hard gate on the library's lines, this the soft one on what is said), per 1,000 lines; and (Slice 2's review) the
+     answer to a line naming one known wolf that names nobody and says "they" ("Aud Kemp's arrested." / "Then they'll be
+     out by noon."): T6_detail's across
   D2 another dialect's words in a speaker's line (by the expansion's layers, and by tools/dialect_check.py's lexicon)
   D3 a speaker's dialect guessed from 20 of their lines (naive Bayes on words, trained on the other speakers), light and
      broad speakers
@@ -184,7 +195,7 @@ now still yet ever again one two get got go going gone come came say said tell t
 see saw look""".split())
 
 NEWSY = {"gossip", "crime", "news", "deed", "event", "quarrel", "loss", "prices", "caravan", "bandits", "ships",
-         "harvest", "newcomer", "storyteller", "festival", "death"}
+         "harvest", "newcomer", "storyteller", "festival", "death", "life"}
 
 
 def everyday_topics() -> set[str] | None:
@@ -216,6 +227,14 @@ FAREWELL_END = re.compile(r"(?:^|[.!?,]\s*)(fair price|good harvest)(?:,[^.!?]*)
 LEAVING = ("farewell", "farewell.return", "leave", "break")
 CLOSING = ("preclose", "accept_preclose", "extend", "farewell", "farewell.return", "leave", "break")
 BRIDGES = ("change_subject", "assess", "preclose")
+# The ceremony of a talk (greetings, "Back again?", kin's first words, the closing): R1 and D1L/D1B judge what is said
+# between them (Slice 2's review: a farewell said in another way made a talk heard word for word "new").
+CEREMONY = CLOSING + ("greet", "greet.return", "again.open", "kin.open")
+# A light bridge said in the same breath as grave news (C4 within a line: "There's better news than that, at least.
+# They're burying Gunnar Harrowgate."; Slice 2's review).
+LIGHT_BRIDGE = re.compile(r"\b(better news|not all the news is bad|that's the kind news|the good news is)\b", re.I)
+SENTENCE = re.compile(r"(?<=[.!?])\s+")
+BURY = re.compile(r"\b(bury\w*|burie\w*)\b", re.I)
 RAW_ID = re.compile(r"\b[A-Za-z]+_[A-Za-z0-9_]+\b")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import talk_truth  # noqa: E402
@@ -323,6 +342,27 @@ def closing(line: dict, book: dict | None = None) -> bool:
     return bool(ms) and all(any(meets(m_, c, book) for c in CLOSING) for m_ in ms)
 
 
+def ceremony(line: dict, book: dict | None = None) -> bool:
+    """A greeting, "Back again?", kin's first words or a line of the closing: the talk's ceremony, by its moves."""
+    ms = line.get("moves") or []
+    return bool(ms) and all(any(meets(m_, c, book) for c in CEREMONY) for m_ in ms)
+
+
+def body_key(c: list[dict], book: dict | None = None) -> str:
+    """A conversation as R1 compares it (Slice 2's review): the words between its ceremonies, the opener's own words
+    without what was said in its breath (a greeting, "Back again?", a recall), the closing left out."""
+    out = []
+    for i, l in enumerate(c):
+        if ceremony(l, book):
+            continue
+        out.append(l.get("bare") or l["text"] if i == 0 else l["text"])
+    return "\n".join(out) if out else "\n".join(l["text"] for l in c)
+
+
+def sentences(text: str) -> list[str]:
+    return [s.strip() for s in SENTENCE.split(text) if s.strip()]
+
+
 def fallbacks(book: dict, move: str) -> list[str]:
     """A move and its fallbacks, walked breadth first (Moves::chain); a variant's are its move's."""
     out, todo = [], [move]
@@ -355,11 +395,12 @@ def score_run(run: Run) -> dict:
     r1, r2, r3 = [], [], []
     r1_censored = r2_censored = False
     first_exchange = None
+    book = move_book()
     for who, cs in listeners.items():
         seen_conv, seen_open = {}, {}
         first_conv = first_open = None
         for i, c in enumerate(cs):
-            key = "\n".join(l["text"] for l in c)
+            key = body_key(c, book)
             if first_conv is None and key in seen_conv and len(c) > 0:
                 first_conv = (c[0]["t"] / 3600, i + 1)
             seen_conv.setdefault(key, i)
@@ -384,28 +425,36 @@ def score_run(run: Run) -> dict:
     m["R2"] = min(r2) if r2 else 0
     m["R2_detail"] = {"median": quantile(r2, .5), "censored": r2_censored}
     m["R3"] = sum(r3) / len(r3) if r3 else 0
-    # R4: heard again by the same listener within 10 h; R5: collisions in a place within an hour.
+    # R4: a distinctive sentence (6 words or more) heard again by the same listener within 10 h (Slice 2's review: a
+    # sentence spliced into longer lines, "Sit yourself down.", counts as itself); R5: collisions in a place within an
+    # hour (whole lines, as said).
     heard: dict[tuple, float] = {}
     said_at: dict[tuple, list[tuple[float, str]]] = collections.defaultdict(list)
     r4 = r5 = 0
     for l in sorted(lines, key=lambda x: x["t"]):
+        for s in sentences(l["text"]):
+            if len(words(s)) < 6:
+                continue
+            k = (l.get("listener", ""), s)
+            if k in heard and l["t"] - heard[k] <= 36000:
+                r4 += 1
+            heard[k] = l["t"]
         if len(words(l["text"])) < 6:
             continue
-        k = (l.get("listener", ""), l["text"])
-        if k in heard and l["t"] - heard[k] <= 36000:
-            r4 += 1
-        heard[k] = l["t"]
         place = (l.get("cell", ""), l["text"])
         if any(l["t"] - t <= 3600 and who != l["who"] for t, who in said_at[place]):
             r5 += 1
         said_at[place] = [(t, w) for t, w in said_at[place] if l["t"] - t <= 3600] + [(l["t"], l["who"])]
     m["R4"] = r4 * 100 / hours
     m["R5"] = r5 * 100 / hours
-    counts = collections.Counter(l["text"] for l in lines)
+    # R6: the most-spoken sentence's share of the lines it is in (Slice 2's review: whole lines missed a host's "Sit
+    # yourself down." in 7% of a room's lines, said before every opener); the whole line's beside it.
+    counts = collections.Counter(s for l in lines for s in set(sentences(l["text"])))
     top = counts.most_common(1)
+    whole = collections.Counter(l["text"] for l in lines).most_common(1)
     m["R6"] = pct(top[0][1], len(lines)) if top else 0
-    m["R6_detail"] = {"line": top[0][0] if top else "", "times": top[0][1] if top else 0}
-    book = move_book()
+    m["R6_detail"] = {"sentence": top[0][0] if top else "", "times": top[0][1] if top else 0,
+                      "line": whole[0][0] if whole else "", "line_pct": round(pct(whole[0][1], len(lines)), 3) if whole else 0}
     replies = [l for l in lines if l["beat"] > 0 and not closing(l, book)]
     m["R7"] = len({l["entry"] for l in replies}) * 1000 / len(replies) if replies else 0
     closings = [l for l in lines if l["beat"] > 0 and closing(l, book)]
@@ -476,11 +525,12 @@ def score_run(run: Run) -> dict:
             farewell += 1
         elif head.get("ended") == "cap" or ("ended" not in head and int(head.get("written", len(c))) >= 8):
             cap += 1
+        elif head.get("ended") == "curt":
+            curt += 1                               # (Ended short on purpose, §8.4: a good ending. Slice 2's review.)
         else:
             nothing += 1
-            curt += head.get("ended") == "curt"
     n = max(1, len(run.by_conv))
-    m["C3"] = pct(farewell + marked, n)
+    m["C3"] = pct(farewell + marked + curt, n)
     m["C3_detail"] = {"farewell": pct(farewell, n), "marked_break": pct(marked, n), "cut_off": pct(cut, n), "cap": pct(cap, n),
                       "nothing_fits": pct(nothing, n), "curt": pct(curt, n)}
     # C4: grave then light from the other within two beats, with no bridge.
@@ -504,8 +554,11 @@ def score_run(run: Run) -> dict:
                     clashes += 1
                     by_tone += bool(tone_clash)
                     break
+    # (Within a line: a light bridge into grave news in the same breath. Slice 2's review.)
+    in_line = sum(1 for l in lines if LIGHT_BRIDGE.search(l["text"]) and (GRAVE.search(l["text"]) or BURY.search(l["text"])))
+    clashes += in_line
     m["C4"] = clashes * 1000 / max(1, beats)
-    m["C4_detail"] = {"clashes": clashes, "by_tone": by_tone}
+    m["C4_detail"] = {"clashes": clashes, "by_tone": by_tone, "in_line": in_line}
     # C6: an entry again after another (a scene's own lines are one), or the same question twice.
     repeats = 0
     for c in convs:
@@ -638,9 +691,21 @@ def score_run(run: Run) -> dict:
     names = {r.get("name") for r in run.residents.values() if isinstance(r, dict) and r.get("name")}
     t6 = 0
     t6_examples = []
+    # (Each line's names once: the line's and the line after's checks both read them.)
+    capital = re.compile(r"\b[A-Z][a-z]+ [A-Z][a-z]+")
+    first_names = {n.split(" ", 1)[0] for n in names if n}
+    named_in: dict[int, list[str]] = {}
+
+    def named(l: dict) -> list[str]:
+        k = id(l)
+        if k not in named_in:
+            text = l["text"]
+            named_in[k] = [n for n in names if n and n.split(" ", 1)[0] in text and n in text] \
+                if any(m_.group(0).split(" ", 1)[0] in first_names for m_ in capital.finditer(text)) else []
+        return named_in[k]
     for l in lines:
         text = l["text"]
-        found = [n for n in names if n and n in text]
+        found = named(l)
         if len(found) != 1:
             continue
         after = text[text.index(found[0]) + len(found[0]):]
@@ -651,8 +716,26 @@ def score_run(run: Run) -> dict:
             if len(t6_examples) < 6:
                 t6_examples.append(f"{l['who']}: {text}")
             break
+    # (Slice 2's review: and across a line: the answer to a line naming one known wolf, naming nobody, says "they":
+    # "Aud Kemp's arrested." / "Then they'll be out by noon.")
+    t6_cross = 0
+    for c in convs:
+        for i in range(1, len(c)):
+            before, l = c[i - 1], c[i]
+            if l["who"] == before["who"]:
+                continue
+            named_before = named(before)
+            if len(named_before) != 1 or re.search(r"\band\b", before["text"][before["text"].index(named_before[0]):]) or \
+                    named(l):
+                continue
+            w = THEY.search(l["text"])
+            if w and not TOWN_THEY.match(l["text"], w.start()):
+                t6 += 1
+                t6_cross += 1
+                if len(t6_examples) < 8:
+                    t6_examples.append(f"{before['text']} / {l['who']}: {l['text']}")
     m["T6"] = t6 * 1000 / max(1, len(lines))
-    m["T6_detail"] = {"lines": t6, "examples": t6_examples}
+    m["T6_detail"] = {"lines": t6, "across": t6_cross, "examples": t6_examples}
     m["T1_detail"] = {"examples": t1_examples}
     # K1, K2, K3.
     topics = collections.Counter(run.conv_head.get(cid, {}).get("topic", c[0].get("topic", "")) for cid, c in run.by_conv.items())
@@ -661,7 +744,21 @@ def score_run(run: Run) -> dict:
     m["K2"] = pct(topics.most_common(1)[0][1], total) if topics else 0
     m["K2_detail"] = {"topics": {t: round(pct(n, total), 2) for t, n in topics.most_common()}}
     told = collections.Counter()
-    for cid, c in run.by_conv.items():
+    if any("told_key" in l for l in lines):
+        # (Slice 2's review: every piece of news a talk tells, at its start or turned to, and to everyone in it, a joiner
+        # too; the town's crime and news counted with the claims. Each talk once: one who hears it told is told it.)
+        for cid, c in run.by_conv.items():
+            people = {x for l in c for x in (l["who"], l.get("to", "")) if x}
+            heard_here = set()
+            for i, l in enumerate(c):
+                key = l.get("told_key")
+                if not key or (i > 0 and c[i - 1].get("told_key") == key):
+                    continue                        # (Only where it starts to be told.)
+                for p in people - {l["who"]}:
+                    heard_here.add((p, key))
+            for k in heard_here:
+                told[(k[0], "", k[1], "")] += 1
+    for cid, c in ([] if told or any("told_key" in l for l in lines) else run.by_conv.items()):
         head = run.conv_head.get(cid, {})
         if head.get("topic") in NEWSY and (head.get("subject") or head.get("claim")):
             # (One's own news has no subject but its teller: "I married Runa" and "I married Maren", told to one wolf by
@@ -688,8 +785,9 @@ def score_run(run: Run) -> dict:
                     if len(jump_examples) < 4:
                         jump_examples.append(f"{a} -> {b}: {c[i]['text']}")
         m["C5"] = jumps * 1000 / max(1, len(lines))
-        callbacks = sum(1 for l in lines if l.get("callback") or
-                        any(x in ("return", "again.open") for x in l.get("moves") or []))
+        # ("Back again?" isn't one: it recalls nothing said, and the raters marked it down most. Slice 2's review; the
+        # engine no longer counts it as one, and an older run's line made only of it is left out here.)
+        callbacks = sum(1 for l in lines if l.get("callback") or "return" in (l.get("moves") or []))
         m["C9"] = callbacks * 10 / max(1, len(convs))
         topics_per = [len({l.get("topic_now") for l in c if l.get("topic_now")}) for c in convs]
         goals = collections.Counter(l["goal"] for l in lines if l.get("goal"))
@@ -718,6 +816,7 @@ def score_run(run: Run) -> dict:
     m["T5_detail"] = {"asserted": asserted, "told_what_they_knew": knew_unsaid, "examples": t5_examples}
     # D1, D2.
     by_accent = collections.defaultdict(lambda: [0, 0])
+    body_accent = collections.defaultdict(lambda: [0, 0])  # (D1L, D1B: what is said, not the greetings and goodbyes.)
     d2_layers = 0
     d2_text = 0
     d2_examples = []
@@ -734,6 +833,9 @@ def score_run(run: Run) -> dict:
         by_accent[acc][1] += 1
         if used:
             by_accent[acc][0] += 1
+        if not ceremony(l, book):
+            body_accent[acc][1] += 1
+            body_accent[acc][0] += bool(used)
         if any(u != own for u in used):
             d2_layers += 1
         if lex is not None:
@@ -743,9 +845,12 @@ def score_run(run: Run) -> dict:
                 if len(d2_examples) < 4:
                     d2_examples.append(f"{own}: {l['text']} ({', '.join(sorted(others))})")
     m["D1"] = pct(*by_accent["none"]) if by_accent["none"][1] else 0
-    m["D1L"] = pct(*by_accent["light"]) if by_accent["light"][1] else 0
-    m["D1B"] = pct(*by_accent["broad"]) if by_accent["broad"][1] else 0
+    # (Slice 2's review: light and broad speakers judged by what they say, not their goodbyes in dialect, which were most
+    # of a broad speaker's dialect lines; D1, the hard gate for none, by every line.)
+    m["D1L"] = pct(*body_accent["light"]) if body_accent["light"][1] else 0
+    m["D1B"] = pct(*body_accent["broad"]) if body_accent["broad"][1] else 0
     m["D1_detail"] = {a: round(pct(*v), 2) for a, v in by_accent.items()}
+    m["D1_detail"]["body"] = {a: round(pct(*v), 2) for a, v in body_accent.items()}
     m["D1A"] = pct(sum(shifted.values()), len(lines))
     m["D1A_detail"] = dict(shifted)
     m["D2"] = d2_layers + d2_text

@@ -45,7 +45,7 @@ rule n7_st_poor_defer
 when concept=talk.smalltalk|talk.day self.wealth=poor|destitute other.wealth=rich self.temper=calm|even|nervy pair.band=strangers|acquaintances
 does greet
 cooldown 2d
-say {st=defer on=station} Good day to you, #sir#. | {st=defer on=station} Lovely coat, #sir#, if I may say. | {st=defer on=station} Begging your pardon, #sir#. Am I in your way?
+say {st=defer on=station} #good_day# to you, #sir#. | {st=defer on=station} Lovely coat, #sir#, if I may say. | {st=defer on=station} Begging your pardon, #sir#. Am I in your way?
 then other: town.station
 
 rule n7_st_poor_work
@@ -338,13 +338,13 @@ then other: town.close
 rule n7_sa_defer
 when concept=town.station conv.st=defer
 does react.complaint
-say {sa=nod} Good day. | {sa=nod} Not at all. Carry on. | {sa=nod} Hm? Oh. Yes. Good day.
+say {sa=nod} #good_day#. | {sa=nod} Not at all. Carry on. | {sa=nod} Hm? Oh. Yes. #good_day#.
 then other: town.close
 
 rule n7_sa_defer_warm
 when concept=town.station conv.st=defer self.warmth=warm
 does react.complaint
-say {sa=warmnod} No need for sirs with me. My grandmother sold fish. | {sa=warmnod} Good day to you too. How's your family? | {sa=warmnod} Please. Call me by my name.
+say {sa=warmnod} No need for sirs with me. My grandmother sold fish. | {sa=warmnod} #good_day# to you too. How's your family? | {sa=warmnod} Please. Call me by my name.
 regard other: affinity +1
 then other: town.close
 
@@ -572,7 +572,7 @@ say Well! I never. | How very rude. | One was only making conversation.
 rule n7_close_st_bite_short
 when concept=town.close conv.on=station conv.sa=bite self.temper=short
 does ack
-say We'll see who's laughing. | Hmph. Fine. Good day. | Say that again somewhere quieter.
+say We'll see who's laughing. | Hmph. Fine. #good_day#. | Say that again somewhere quieter.
 
 rule n7_close_st_joke
 when concept=town.close conv.on=station conv.sa=joke
@@ -582,7 +582,7 @@ say Hm. Clever. | Ha. Fair. | I suppose I asked for that.
 rule n7_close_st_joke_rich
 when concept=town.close conv.on=station conv.sa=joke self.wealth=rich self.warmth=cold
 does ack
-say I hardly think that's called for. | Hm. Droll. | Yes. Well. Good day.
+say I hardly think that's called for. | Hm. Droll. | Yes. Well. #good_day#.
 
 rule n7_close_st_give
 when concept=town.close conv.on=station conv.sa=give
@@ -627,7 +627,7 @@ say Hm. Maybe I will. | Well. You're not the worst of them. | Huh. Didn't expect
 rule n7_close_st_nod
 when concept=town.close conv.on=station conv.sa=nod
 does ack
-say Good day, #sir#. | Thank you, #sir#. | Mind how you go, #sir#.
+say #good_day#, #sir#. | Thank you, #sir#. | Mind how you go, #sir#.
 
 rule n7_close_st_warmnod
 when concept=town.close conv.on=station conv.sa=warmnod

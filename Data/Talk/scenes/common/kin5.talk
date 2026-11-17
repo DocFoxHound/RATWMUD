@@ -259,7 +259,7 @@ a : Restday. | Please do. | I'll be quick.
 scene kn_riv_polite
 when topic=smalltalk|day pair.band=rivals
 does tell.self / react.self / ask.detail / answer.detail ask.detail / answer.detail
-a : #b.name#. | Good day to you. | Oh. It's you.
+a : #b.name#. | #good_day# to you. | Oh. It's you.
 b : #a.name#. | And to you. | It's me.
 a : Busy, I trust? | Business good? | Still here, then.
 b : Very. You? | Excellent. Yours? | Still here.

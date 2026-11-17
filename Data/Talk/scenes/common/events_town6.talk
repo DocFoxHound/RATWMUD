@@ -433,6 +433,7 @@ a : #bc_very_bad# | All day. | #bc_true#
 scene et_gs_apprentice
 when topic=gossip pair.band=apprentice
 does ask.detail / counter / concede
+asserts
 a : Master, is it true #topic.subject# #topic.claim#? | The other apprentices say #topic.subject# #topic.claim#. | I heard #topic.subject# #topic.claim#, master.
 b : Sweep, don't gossip. | The other apprentices talk too much. | Back to work.
 a : Yes, master. | Sorry, master. | Yes, master.

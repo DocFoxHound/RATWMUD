@@ -227,7 +227,7 @@ then other: crime.close
 rule h7_cr_ans_cold
 when concept=crime.answer topic.kind=theft|assault self.warmth=cold
 does react.news
-say {h7_said=cold} Should've locked their door. | {h7_said=cold} Happens. | {h7_said=cold} Not my business. | {h7_said=cold} They'll live.
+say {h7_said=cold} Should've locked #topic.victim_their# door. | {h7_said=cold} Happens. | {h7_said=cold} Not my business. | {h7_said=cold} They'll live.
 then other: crime.close
 
 rule h7_cr_ans_old

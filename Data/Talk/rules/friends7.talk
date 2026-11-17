@@ -1774,7 +1774,7 @@ then other: reply.close
 rule r7_jibe_calm_answer
 when concept=jibe.answer self.temper=calm
 does counter
-say {went=cool} Are you finished? Good. Good day. | {went=cool} If it makes you feel better, say it. | {went=cool} I'm not going to fight you. Not today, not any day.
+say {went=cool} Are you finished? Good. #good_day#. | {went=cool} If it makes you feel better, say it. | {went=cool} I'm not going to fight you. Not today, not any day.
 then other: reply.close
 
 rule r7_jibe_nervy_answer
@@ -2212,7 +2212,7 @@ rule r7_chat_formal
 when concept=talk.day|talk.smalltalk self.tone=formal pair.band=acquaintances
 does tell.self
 cooldown 1d
-say {thread=chat ch=how} I trust the day finds you well. | {thread=chat ch=how} Good day to you. In good health, I hope? | {thread=chat ch=how} And how do you do, this fine morning?
+say {thread=chat ch=how} I trust the day finds you well. | {thread=chat ch=how} #good_day# to you. In good health, I hope? | {thread=chat ch=how} And how do you do, this fine morning?
 then other: chat.answer
 
 rule r7_chat_sly

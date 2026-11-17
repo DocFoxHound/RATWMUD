@@ -47,10 +47,17 @@
     },
     {
       "id": "morning_greeting",
-      "match": "(^|[.!?]\\s+)(good morning(?!'s)|morning to you)\\b",
+      "match": "(^|[.!?]\\s+)(good morning(?!'s)|morning to you)\\b|^morning(?=[,.!])",
       "needs_any": [
         "here.time=dawn",
         "here.hour<12"
+      ]
+    },
+    {
+      "id": "day_greeting",
+      "match": "(^|[.!?]\\s+)good day\\b(?! (?:today|for)\\b)(?!, for)",
+      "needs_any": [
+        "here.time=dawn|day"
       ]
     },
     {

@@ -533,6 +533,9 @@ class Game
         // Phase 6: the topic's claim kind and kind (topic.claim_kind, topic.kind) as the line was said: T2 judges pity
         // and gladness by them (truth.json's pity and glad).
         std::string claimKind, topicKind;
+        // Slice 2's review: the key of what the line is telling, if it is told a listener once (a claim, one's own news,
+        // a deed, the town's crime and news; "" else), as the talk now is (it may have turned): K3, line by line.
+        std::string toldKey;
     };
     struct AmbientEnd
     {
@@ -1953,6 +1956,8 @@ class Game
         // note of it will keep (tags kept, entries told once a listener, claims passed).
         std::vector<AmbientTopic> agenda;
         int agendaAt = -1;
+        std::string kind;                            // The topic it began on, once it turns ("": it hasn't): Slice 2's review
+        std::string teller;                          // Who is telling the topic now (a joiner is told it too)
         std::vector<std::pair<std::string, std::string>> covered;
         std::map<std::string, std::pair<std::string, double>> kept;
         std::vector<std::string> toldEntries, claims;
@@ -2280,6 +2285,7 @@ class Game
     const Belief* claimHeld(const AmbientTalk& t, const std::string& who) const;
     // Whether talk may name the topic's claim as a thing one knows (a claim passed on: gossip, a camp, a deed).
     static bool claimTopic(const AmbientPick& pick) { return pick.topic.passes && !pick.topic.subject.empty() && !pick.topic.claim.empty(); }
+    static bool toldTopic(const AmbientPick& pick);
     // Doc 84 §8.5, §8.7 (Phase 5). The topic's own facts (topic.*, the Mind's words: exchangeQuery's), for an agenda item.
     talk::Facts exchangeFacts(const AmbientPick& pick, const mind::ExchangeContext& context);
     // The context's words only (the subject's name as the teller knows them, the claim, the news, the day's remark): what

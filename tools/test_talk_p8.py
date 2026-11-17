@@ -77,7 +77,8 @@ def rules() -> list[dict]:
 
 
 def words(text: str) -> int:
-    return len(re.findall(r"[A-Za-z']+", re.sub(r'#[^#\s]*#', ' ', text)))
+    # (A tag, {leave=yes}, is the talk's, never spoken: Slice 2's review.)
+    return len(re.findall(r"[A-Za-z']+", re.sub(r'\{[^}]*\}', ' ', re.sub(r'#[^#\s]*#', ' ', text))))
 
 
 class SharedLines(unittest.TestCase):

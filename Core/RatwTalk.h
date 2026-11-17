@@ -54,6 +54,9 @@ struct Speaker
 {
     Facts facts;                          // id, name, sex, stage, age, job, role, trade...: keys without "a."/"self.".
     std::vector<std::string> grammar;     // Their grammar layers, nearest first; "plain" always comes last.
+    // A player's character (or facts "player=yes"): the engine never writes them a line (doc 84 §13: players speak only
+    // in the window). What a resident's line owes them stays theirs to answer (Slice 2's review).
+    bool player = false;
 };
 
 // What is about to be said, and everything true about it.
@@ -238,6 +241,8 @@ struct Conversation
     // Phase 6 (§8.6): what the topic now is about (the director's key: a claim's subject and words, one's own news), for
     // Freshness::told: never told a listener twice.
     std::string claim;
+    // Slice 2's review (§13): who in it is a player (0: a, 1: b), never given a line by the engine.
+    std::set<int> players;
 };
 
 

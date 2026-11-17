@@ -45,6 +45,7 @@ a : That's what I heard. | Never you mind. | It's true, I'd wager.
 scene gs_secret
 when topic=gossip pair.band=friends|family|spouses
 does confide / keep_confidence / ack
+asserts
 a : Between us, #b.name#: #topic.subject# #topic.claim#. | Don't tell a soul, but #topic.subject# #topic.claim#. | You'll keep this to yourself? #topic.subject# #topic.claim#.
 b : I won't say a word. | Truly? | You're making that up.
 a : #bc_good# | Truly. | I'm not!
