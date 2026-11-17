@@ -277,7 +277,7 @@ then other: crime.close
 rule h7_cr_ans_sump
 when concept=crime.answer topic.kind=theft|assault here.region=ridgemere self.quarter=sump
 does react.news
-say {h7_said=blame} And they'll blame us. Watch them. | {h7_said=blame} Not one of ours. We'd have heard. | {h7_said=blame} Up the hill, that's news. Down here it's the weather. | {h7_said=blame} They'll come kicking our doors in for it.
+say {h7_said=blame} And they'll blame us. Watch them. | {h7_said=blame} Not one of ours. We'd have heard. | Up the hill, that's news. Down here it's the weather. | {h7_said=blame} They'll come kicking our doors in for it.
 then other: crime.close
 
 rule h7_cr_ans_heights

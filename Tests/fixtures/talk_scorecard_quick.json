@@ -318,12 +318,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "5-7; p90 9+",
-   "value": 7.1185,
+   "value": 5.5245,
    "passes": true,
    "by_profile": {
-    "town": 7.119
+    "town": 5.524
    },
-   "control": 7.1185,
+   "control": 5.5245,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -899,8 +899,8 @@
    },
    "C7_detail": {
     "p90": 10,
-    "three_lines": 0.2,
-    "four_lines": 2.15
+    "three_lines": 54.7,
+    "four_lines": 0.0
    },
    "T2_detail": {
     "by_kind": {},
@@ -1052,6 +1052,16 @@
     "town": "/tmp/s2r/quick/town"
    },
    "on": "2026-11-17T08:12:12+00:00"
+  },
+  {
+   "metrics": [
+    "C7"
+   ],
+   "why": "Slice 3 (doc 84 §36): a talk of one exchange ends there without a farewell pair (H1: one exchange and goodbyes rated 2.85, a talk left where it ended 3.90), so talks are shorter by design",
+   "from": {
+    "town": "/home/martinb/.claude/jobs/ee03c49e/tmp/quick/town"
+   },
+   "on": "2026-11-17T09:19:52+00:00"
   }
  ]
 }

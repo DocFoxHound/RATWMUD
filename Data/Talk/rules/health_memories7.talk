@@ -912,7 +912,7 @@ rule e3_mr_frank
 when concept=talk.memories honesty=frank stage!=young
 does tell.memory
 cooldown 2d
-say People say the old days were better. They weren't. They were colder and hungrier. | My childhood was hard and I'll not dress it up. | I don't miss being young. I was a fool.
+say {mk=hard} People say the old days were better. They weren't. They were colder and hungrier. | {mk=hard} My childhood was hard and I'll not dress it up. | {mk=hard} I don't miss being young. I was a fool.
 then other: memories.answer
 
 rule e3_mr_merry
@@ -947,7 +947,7 @@ rule e3_mr_poor
 when concept=talk.memories wealth=poor|destitute stage!=young
 does tell.memory
 cooldown 3d
-say We had a proper house once. Before things went wrong. | There was a time I had two coats and didn't think about it. | I used to give pennies to beggars. Funny, that.
+say {mk=hard} We had a proper house once. Before things went wrong. | {mk=hard} There was a time I had two coats and didn't think about it. | {mk=hard} I used to give pennies to beggars. Funny, that.
 then other: memories.answer
 
 rule e3_mr_soldier
@@ -1095,7 +1095,7 @@ rule e3_ma_quiet
 when concept=memories.answer talk=quiet
 does react.story
 cooldown 12h
-say Mm. I remember. | Aye. | ... Good times.
+say Mm. I remember that. | Aye. Those were the days. | ... Good times, those.
 then other: memories.back
 
 rule e3_ma_elsewhere
@@ -1208,6 +1208,43 @@ when concept=memories.answer conv.mk=home warmth=warm
 does react.story
 priority 1
 say Then you'll tell me all about it, some evening. I'd love that. | It's in your voice when you talk of it. | We'll have to make this place feel more like home for you.
+then other: memories.back
+
+# Hard times remembered (mk=hard: a house lost, a hard childhood): answered as hard, never "That's lovely" or "Good
+# times" (Slice 3, H1: "We had a proper house once." / "Aye." / goodbyes, rated 2.00). The answer says something.
+rule e3_ma_hard
+when concept=memories.answer conv.mk=hard
+does react.story
+priority 5
+say That's a hard thing to carry. | Things go wrong for the best of us. | It's no shame, coming down in the world. | You've come through it, though.
+then other: memories.back
+
+rule e3_ma_hard_warm
+when concept=memories.answer conv.mk=hard warmth=warm
+does react.story
+priority 4
+say You never said. I'm sorry. | You'll have better again. I'd put money on it, if I had any. | Come by mine whenever it gets heavy.
+then other: memories.back
+
+rule e3_ma_hard_poor
+when concept=memories.answer conv.mk=hard wealth=poor|destitute
+does react.story
+priority 4
+say We're none of us far from it. I know. | Same here. You learn to stop counting what's gone. | I had more once, too. Not much more.
+then other: memories.back
+
+rule e3_ma_hard_quiet
+when concept=memories.answer conv.mk=hard talk=quiet
+does react.story
+priority 4
+say Mm. Hard times, those. | Aye. I know how that goes. | ... I'm sorry. It's a hard road.
+then other: memories.back
+
+rule e3_ma_hard_young
+when concept=memories.answer conv.mk=hard stage=young|adolescent
+does react.story
+priority 4
+say That sounds sad. | Is that why you don't talk about it? | I didn't know that.
 then other: memories.back
 
 # Grief (mk=grief): the answer has the say alone.

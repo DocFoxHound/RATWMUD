@@ -115,8 +115,8 @@ scene h7_theft_named
 when topic=crime topic.kind=theft topic.subject!=someone
 does tell.gossip / react.news / agree / assess
 a : #topic.subject# robbed #topic.victim#, they're saying. | It was #topic.subject#. Seen with #topic.victim#'s things. | Folk saw #topic.subject# at #topic.victim#'s door. | They're all pointing at #topic.subject#. For #topic.victim#.
-b[guard] #guard : We know. They'll be picked up. Don't go doing it yourself.
-b : #topic.subject#? I'd never have said. | Then why aren't they in #gaol#? | Seen? By whom? | Pointing's easy.
+b[guard] #guard : We know. #topic.they#'ll be picked up. Don't go doing it yourself.
+b : #topic.subject#? I'd never have said. | Then why isn't #topic.they# in #gaol#? | Seen? By whom? | Pointing's easy.
 a@guard : I'd not dream of it. I'd only dream about it.
 a : No. Nor would anyone. | Ask #watch#. | Folk with eyes. | Easier than proving, aye.
 b@guard : Dream quietly.
@@ -125,7 +125,7 @@ b : Makes you wonder about everyone. | #bc_i_might# | Folk with grudges, more li
 scene h7_theft_named_friend
 when topic=crime topic.kind=theft topic.subject!=someone pair.band=family|spouses
 does tell.news / react.news / assess / assess
-a : They say #topic.subject# did #topic.victim#. We've had #topic.subject# at our fire. | #topic.subject#. Robbing #topic.victim#. Did you ever think it? | #topic.subject# sat at our table last month. And now this. | Do you think #topic.subject# really robbed #topic.victim#?
+a : They say #topic.subject# did #topic.victim#. We've had #topic.them# at our fire. | #topic.subject#. Robbing #topic.victim#. Did you ever think it? | #topic.subject# sat at our table last month. And now this. | Do you think #topic.subject# really robbed #topic.victim#?
 b : I counted the spoons after they left. Never told you. | No. And I still don't. | Then count what's missing from ours. | Folk do things when they're desperate.
 a : You never said! | Me neither. Someone's lying. | I've checked. Nothing gone. | So they do. So they do.
 b : I'm saying now. | Then let's find out who. | Then they liked us. | Doesn't make it right.

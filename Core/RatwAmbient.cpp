@@ -1006,6 +1006,12 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
             t.talk["topic.kind"] = "news";
             t.talk["topic.news"] = news->second.words;
             t.talk["topic.where"] = marketWords(news->second.from);
+            // Which way it went (Slice 3: the answers follow the news, "Cheap there. Shame it's not cheap here."): the
+            // words are World::caravanArrives', "<good> is dear in <town>" or "cheap in", or the Times ("times are hard").
+            if (news->second.words.find(" dear in ") != std::string::npos)
+                t.talk["topic.dir"] = "up";
+            else if (news->second.words.find(" cheap in ") != std::string::npos)
+                t.talk["topic.dir"] = "down";
             t.facts.push_back("The last wagon in brought word: " + news->second.words + ".");
             consider(std::move(t));
         }

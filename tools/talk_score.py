@@ -525,8 +525,9 @@ def score_run(run: Run) -> dict:
             farewell += 1
         elif head.get("ended") == "cap" or ("ended" not in head and int(head.get("written", len(c))) >= 8):
             cap += 1
-        elif head.get("ended") == "curt":
-            curt += 1                               # (Ended short on purpose, §8.4: a good ending. Slice 2's review.)
+        elif head.get("ended") in ("curt", "parted"):
+            curt += 1                               # (Ended short on purpose, §8.4: a good ending. Slice 2's review;
+                                                    # parted, one exchange and back to what they were doing: Slice 3.)
         else:
             nothing += 1
     n = max(1, len(run.by_conv))

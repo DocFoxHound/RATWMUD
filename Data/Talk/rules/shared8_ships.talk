@@ -245,7 +245,7 @@ rule s83s_late_sailor
 when concept=talk.ships topic.kind=late topic.ship job=sailor|fisher
 does tell.self
 cooldown 1d
-say You don't argue with a storm. #topic.ship.capitalize#'s skipper knows that. | She'll be tucked in a cove somewhere, #topic.ship#. Waiting. | I've sat out storms like that. Longest days of your life.
+say #topic.ship.capitalize#'s stormbound. You don't argue with a storm, and her skipper knows it. | No #topic.ship# yet. She'll be tucked in a cove somewhere, waiting out the weather. | #topic.ship.capitalize#'s late with the storms. I've sat out weather like that. Longest days of your life.
 then other: ships.answer
 
 rule s83s_late_family
@@ -435,6 +435,12 @@ does react.news
 say I love ships! | I want to be a sailor. | How many sails has she got? I'll count them.
 
 rule s83s_ans_old
-when concept=ships.answer stage=old
+when concept=ships.answer stage=old topic.kind=due|in|sailed
 does react.news
-say Ships. Always the ships. | I've watched a thousand come and go. | The sea gives and the sea takes.
+say Ships. Always the ships. | I've watched a thousand come and go. | I used to run down to the pier for every one.
+
+# (Slice 3, H1: "I've watched a thousand come and go." said to a ship lost or late.)
+rule s83s_ans_old_grave
+when concept=ships.answer stage=old topic.kind=late|lost
+does react.news
+say The sea gives and the sea takes. | I've sat on that wall waiting for ships like her. | I've seen ships come in a fortnight late. And some not at all.

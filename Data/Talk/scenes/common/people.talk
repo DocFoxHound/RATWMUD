@@ -35,7 +35,7 @@ a : Fine. | #bc_exactly# | #bc_ha#
 scene gs_heard
 when topic=gossip
 does tell.gossip / react.news / insist
-a : Have you heard? They say #topic.subject# #topic.claim#. | Word is #topic.subject# #topic.claim#. | I heard something about #topic.subject#. That #topic.subject# #topic.claim#.
+a : Have you heard? They say #topic.subject# #topic.claim#. | Word is #topic.subject# #topic.claim#. | I heard something about #topic.subject#. That #topic.they# #topic.claim#.
 b[old] : People say all sorts. I'll believe it when I see it.
 b[guard] : Is that so? I'll remember that.
 b[child] : Really? Really really?

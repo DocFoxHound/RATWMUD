@@ -1538,13 +1538,11 @@ say And you.
     std::vector<SaidLine> rest;
     while (auto l = lib.next(c, facts, fresh))
         rest.push_back(*l);
-    expect(c.phase == Conversation::Phase::Ended && c.ended == "farewell", "a lull closes it with a farewell: " + c.ended);
-    expect(!rest.empty() && rest.back().moves == std::vector<std::string>{"farewell.return"} && rest.back().text == "And you.",
-           "the farewell pair ends it");
-    expect(rest.size() >= 2 && rest[rest.size() - 2].text == "Farewell." && rest[rest.size() - 2].who != rest.back().who,
-           "the farewell, answered by the other");
+    // (Slice 3, H1: one exchange and a goodbye each rated 2.85, a talk left there 3.90: one exchange, and they part.)
+    expect(c.phase == Conversation::Phase::Ended && c.ended == "parted" && rest.empty(),
+           "a lull after one exchange: they part without ceremony: " + c.ended);
     const auto whole = lib.converse(q, 3, None, {});
-    expect(whole.lines.size() == c.lines.size() && whole.ended == "farewell" && whole.id == "tw_open" &&
+    expect(whole.lines.size() == c.lines.size() && whole.ended == "parted" && whole.id == "tw_open" &&
                whole.chain.front() == "tw_open",
            "converse is begin and next, whole");
     // Fit, then tiers within it: the guard's own answer mostly, anyone's sometimes (no longer only the best tier).
@@ -1577,8 +1575,8 @@ say And you.
                        "rule mv_bye\ndoes farewell\nsay Farewell.\nrule mv_bye_back\ndoes farewell.return\nsay And you.\n",
                        "shrug.talk", problem), problem);
     const auto shrugged = shrug.converse(moment("talk.smalltalk"), 1, None, {});
-    expect(shrugged.info.size() == 4 && shrugged.info[1].moves == std::vector<std::string>{"ack"} && shrugged.info[1].owes.empty() &&
-               shrugged.info[2].text == "Farewell.",
+    expect(shrugged.info.size() == 2 && shrugged.info[1].moves == std::vector<std::string>{"ack"} && shrugged.info[1].owes.empty() &&
+               shrugged.ended == "parted",
            "a shrug is an ack: no hand-on, and the talk closes");
     // A preclose when the talk has run long enough and its budget has room; the one at work closes first.
     auto longer = foundation();
@@ -1865,7 +1863,7 @@ b : Sweeter than it was last summer, by far.
         Freshness heard = fresh;
         heard.collides = [](const std::string& words, const std::string&) { return words.rfind("Sweeter than", 0) == 0; };
         const auto next = lib.next(c, [&](int, int) { return q; }, heard);
-        expect(c.dropped == 1 && next && next->text != "Sweeter than it was last summer, by far.",
+        expect(c.dropped == 1 && (next ? next->text != "Sweeter than it was last summer, by far." : c.ended == "parted"),
                "another said its words here within the hour: the rest of the scene is dropped, and the talk goes on: " +
                    (next ? next->text : std::string("nothing")));
     }
@@ -1978,8 +1976,8 @@ b : Sweeter than it was last summer, by far.
         std::vector<SaidLine> rest;
         while (auto l = lib.next(c, [&](int, int) { return q; }, fresh))
             rest.push_back(*l);
-        expect(rest.size() >= 3 && rest.front().text == "So I saw." && c.ended == "farewell",
-               "then the second, and the farewell pair: " + c.ended);
+        expect(rest.size() == 1 && rest.front().text == "So I saw." && c.ended == "parted",
+               "then the second, and (one exchange) they part: " + c.ended);
     }
     // 8. frames.json's curt, join and thread are checked when it loads.
     for (const auto& [text, why] : std::vector<std::pair<std::string, std::string>>{
@@ -2220,7 +2218,8 @@ say As I was saying.
         Conversation c;
         c.seed = 4;
         const auto said = talk(c, q);
-        expect(c.conv["goal_favour"] == "off" && said.size() >= 3 && c.ended == "farewell", "favour: no line, given up; the talk closes as ever");
+        expect(c.conv["goal_favour"] == "off" && said.size() >= 2 && (c.ended == "farewell" || c.ended == "parted"),
+               "favour: no line, given up; the talk closes as ever: " + c.ended);
     }
     // 7. Invitations, promises and what talk says of a third party: parsed, carried on the line, checked.
     {
@@ -2626,7 +2625,7 @@ void sharedLinesTwo()
 rule s2_open_prices
 when concept=talk.prices
 does tell.complaint
-say Herbs are dear again.
+say Herbs are dear this week.
 rule s2_agree
 does react.complaint
 say They are that.
@@ -2764,6 +2763,132 @@ say The merchants never go short.
 
 // Doc 84 §35 (Slice 2's review): the engine never gives a player a line; two of a side air an issue and agree; a reason
 // is said once a talk; a goal under way finishes; the library's lines say true things of who says them and when.
+// Slice 3 (Docs/Design/84 §36): what the first blind ratings asked of the engine, and what a critic's read found.
+void sliceThree()
+{
+    std::string problem;
+    const Freshness fresh{None, {}};
+    // 1. One exchange, and the two part without ceremony; two exchanges, and the farewell pair.
+    {
+        auto lib = foundation();
+        expect(lib.parse("scene s3_one\nwhen topic=work\na : The bellows leak.\nb : Patch them.\na : With what?\n"
+                         "rule s3_bye\ndoes farewell\nsay Farewell.\nrule s3_bye_back\ndoes farewell.return\nsay And you.\n",
+                         "s3_one.talk", problem), problem);
+        const auto one = lib.converse(moment("talk.work"), 1, None, {});
+        expect(one.lines.size() == 3 && one.ended == "parted", "one exchange: they part (" + one.ended + ")");
+        auto two = foundation();
+        expect(two.parse("scene s3_two\nwhen topic=work\na : The bellows leak.\nb : Patch them.\na : With what?\nb : Leather.\n"
+                         "rule s3_bye\ndoes farewell\nsay Farewell.\nrule s3_bye_back\ndoes farewell.return\nsay And you.\n",
+                         "s3_two.talk", problem), problem);
+        const auto said = two.converse(moment("talk.work"), 1, None, {});
+        expect(said.lines.size() == 6 && said.ended == "farewell" && said.lines[4].second == "Farewell.",
+               "two exchanges: the farewell pair (" + said.ended + ")");
+    }
+    // 2. "Back again?" now and then before small talk; never before a crime, a line that echoes it, or beside a recall.
+    {
+        auto lib = foundation();
+        expect(lib.parse("rule s3_again\ndoes again.open\nwhen pair.last_talk<0.3\nsay Back again?\n"
+                         "rule s3_small\nwhen concept=talk.smalltalk\ndoes tell.self\nsay The swallows are nesting.\n"
+                         "rule s3_echo\nwhen concept=talk.weather\ndoes tell.self\nsay The rain's back.\n"
+                         "rule s3_crime\nwhen concept=talk.crime\ndoes tell.news\nsay Somebody broke the bakery window.\n"
+                         "rule s3_recall\ndoes recall\nwhen conv.topic=smalltalk pair.talked.smalltalk<3\nsay We were on this lately.\n",
+                         "s3_again.talk", problem), problem);
+        int small = 0, crime = 0, echo = 0, both = 0;
+        for (std::uint64_t seed = 1; seed <= 200; ++seed)
+        {
+            auto q = moment("talk.smalltalk");
+            q.facts["pair.last_talk"] = "0.1";
+            const auto a = lib.converse(q, seed, None, {});
+            small += a.lines.front().second.rfind("Back again? ", 0) == 0;
+            q.concept = "talk.crime";
+            crime += lib.converse(q, seed, None, {}).lines.front().second.rfind("Back again?", 0) == 0;
+            q.concept = "talk.weather";
+            echo += lib.converse(q, seed, None, {}).lines.front().second.rfind("Back again?", 0) == 0;
+            q.concept = "talk.smalltalk";
+            q.facts["pair.talked.smalltalk"] = "0.1";
+            const auto r = lib.converse(q, seed, None, {}).lines.front().second;
+            both += r.find("Back again?") != std::string::npos && r.find("lately") != std::string::npos;
+        }
+        expect(small > 10 && small < 80, "before small talk, now and then: " + std::to_string(small) + " of 200");
+        expect(crime == 0 && echo == 0 && both == 0, "never before a crime (" + std::to_string(crime) + "), an echo (" +
+                                                          std::to_string(echo) + "), nor beside a recall (" + std::to_string(both) + ")");
+    }
+    // 3. A resident's own words that name the hour are passed over at another: "Morning to you" never at night.
+    {
+        auto lib = foundation();
+        expect(lib.setGrammar("p_s3", "grammar p_s3\ngreet = Morning to you; the loaves are honest\n", problem), problem);
+        expect(lib.parse("rule s3_hi\nwhen concept=talk.smalltalk\ndoes tell.self\nsay #greet#. Quiet in here.\n", "s3_hi.talk", problem), problem);
+        auto q = moment("talk.smalltalk");
+        q.a.grammar = {"p_s3"};
+        int mine = 0;
+        for (std::uint64_t seed = 1; seed <= 40; ++seed)
+        {
+            q.facts["here.time"] = "night";
+            q.facts["here.hour"] = "21";
+            expect(lib.converse(q, seed, None, {}).lines.front().second.rfind("Morning", 0) != 0, "never Morning at nine at night");
+            q.facts["here.time"] = "dawn";
+            q.facts["here.hour"] = "6";
+            mine += lib.converse(q, seed, None, {}).lines.front().second.rfind("Morning to you", 0) == 0;
+        }
+        expect(mine == 40, "her own words at dawn: " + std::to_string(mine));
+    }
+    // 4. One who joins for the pleasure of the talk cuts in before the answer; the one spoken to still answers.
+    {
+        auto lib = foundation();
+        expect(lib.parse("rule s3_news\nwhen concept=talk.crime\ndoes tell.news\nsay Somebody broke the bakery window.\n"
+                         "rule s3_react\ndoes react.news\nsay Did they, now.\n"
+                         "rule s3_join\ndoes join.add\nsay Don't let me stop you.\n"
+                         "rule s3_welcome\ndoes welcome_join\nsay Pull up a stool.\n", "s3_join.talk", problem), problem);
+        auto q = moment("talk.crime");
+        q.a.facts["talk"] = q.b.facts["talk"] = "chatty";
+        const auto wren = person("wren", "Wren", "female", "adult", "baker", "civilian");
+        const auto query = [&](int speaker, int to) {
+            if (speaker < 2 && to < 2)
+                return q;
+            auto x = q;
+            const auto who = [&](int i) { return i == 0 ? q.a : i == 1 ? q.b : wren; };
+            x.a = who(speaker);
+            x.b = who(to);
+            return x;
+        };
+        Conversation c;
+        c.seed = 5;
+        lib.begin(c, q, fresh);
+        const auto joined = lib.join(c, "wren", "favourite", {"join.add"}, query(2, 0), fresh);
+        expect(joined && joined->who == 2, "she cuts in");
+        bool answered = false;
+        for (int i = 0; i < 8; ++i)
+            if (const auto l = lib.next(c, query, fresh))
+                answered = answered || (l->who == 1 && l->text == "Did they, now.");
+            else
+                break;
+        expect(answered, "and the one spoken to still answers the news");
+    }
+    // 5. A preclose taken, the goodbye is a goodbye ("Back to it." / "Go on, then." / never "I'll let you be.").
+    {
+        auto lib = foundation();
+        expect(lib.parse("scene s3_long\nwhen topic=work\na : One.\nb : Two.\na : Three.\nb : Four.\n"
+                         "rule s3_pre\ndoes preclose\nsay Back to it.\nrule s3_pre_ok\ndoes accept_preclose\nsay Go on, then.\n"
+                         "rule s3_both\ndoes preclose farewell\nsay I'll let you be.\n"
+                         "rule s3_bye\ndoes farewell\nsay Farewell.\nrule s3_bye_back\ndoes farewell.return\nsay And you.\n",
+                         "s3_long.talk", problem), problem);
+        auto q = moment("talk.work");
+        q.a.facts["talk"] = q.b.facts["talk"] = "chatty";
+        int closed = 0;
+        for (std::uint64_t seed = 1; seed <= 40; ++seed)
+        {
+            const auto said = lib.converse(q, seed, None, {});
+            for (std::size_t i = 1; i < said.lines.size(); ++i)
+                if (said.lines[i - 1].second == "Go on, then.")
+                {
+                    ++closed;
+                    expect(said.lines[i].second == "Farewell.", "after the preclose taken, a goodbye: " + said.lines[i].second);
+                }
+        }
+        expect(closed > 0, "preclosed talks: " + std::to_string(closed));
+    }
+}
+
 void sliceTwoReview()
 {
     std::string problem;
@@ -3082,6 +3207,7 @@ int main()
         opinionsMoodsAccent();
         sharedLinesTwo();
         sliceTwoReview();
+        sliceThree();
     }
     catch (const std::exception& error)
     {

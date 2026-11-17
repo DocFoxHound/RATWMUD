@@ -117,6 +117,27 @@ EDITED.update({
     'm7_close_home': '"Long way from home, then." to one born where they stand: not to one at home (other.home_here)',
     'm7_close_home_cold': 'the same',
 })
+# Slice 3 (Docs/Design/84 §36: the first blind ratings' causes, and a critic's read of 60+ talks).
+EDITED.update({
+    'e3_ma_quiet': '"Aye." taken as the answer to a confession, and "... Good times." to a hard memory (H1\'s item 66): '
+                   'a word more ("Aye. Those were the days."), and hard memories (mk=hard) have answers of their own',
+    'e8r_cv_news': '"Frosthollow ... the Frosthollow wagon": the news already names its town (H1\'s item 7); said once now',
+    'e8r_cva_news': '"Good for Coldwater." said to berries dear there: by the way the news went now (_dear, _cheap)',
+    'et_gos_guard': 'the one talked of named twice in a line: the name, then #topic.them#',
+    'et_gos_shocked': 'the same ("Brenna Milldale. Brenna Milldale stole..."): the name, then #topic.they#',
+    'gs_heard': 'the same ("I heard something about X. That X..."): #topic.they#',
+    'h7_cr_ans_sump': 'all four alternatives tagged {h7_said=blame}, so "Up the hill, that\'s news." was answered "Nobody\'s '
+                      'blaming you." (H1\'s item 73): the tag only on the three about blame',
+    'h7_theft_named': '"Then why aren\'t they in the gaol?" and "They\'ll be picked up" of one named wolf: #topic.they#',
+    'h7_theft_named_friend': '"We\'ve had X at our fire" after naming X: #topic.them#',
+    'w7_pr_down_cook': '"101 pence!" naming nothing: "#topic.price# a meal!"',
+    'w7_pr_down_healer': '"Down to 3 pennies." naming nothing: "Herbs down to..."',
+    'w7_pr_down_poor': '"101 pence! I can afford it this week." naming nothing: the good named',
+    'w7_pr_up_destitute': '"3 pennies. I\'ve not seen 3 pennies all week." naming nothing: the good named',
+    'w7_pr_up_healer': '"3 pennies! How am I to treat the poor at that?" naming nothing: the good named',
+    'st2_apology': '"I\'m sorry about what I said." to one nothing was said to: only after a talk that went sour '
+                   '(pair.last_outcome)',
+})
 DISCOURSE = {'hedge', 'account', 'ack', 'pivot', 'anyway', 'later', 'resume', 'preclose', 'excuse', 'knew', 'sympathy',
              'concede', 'insist', 'warn', 'welcome_back', 'welcome', 'sorry', 'forgive', 'deflect', 'no_matter',
              'go_ahead', 'put_off', 'vent', 'reassure', 'congrats', 'demur', 'doubt', 'listen'}
@@ -260,7 +281,7 @@ def compare(rev: str) -> list[str]:
             for a in nalts:
                 tag, words = strip_tag(a)
                 have = set(tag.split())
-                if tags - have:
+                if tags - have and id not in EDITED:     # (A tag taken off by hand is named in EDITED, with why.)
                     problems.append(f'{where}: "{words[:50]}" lacks the tags {sorted(tags - have)}')
                 exp = expansions(words, plain)
                 possible |= exp

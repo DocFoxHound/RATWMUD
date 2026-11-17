@@ -242,7 +242,7 @@ rule s8cb_crime
 does recall
 when conv.topic=crime pair.talked.crime<3
 tone serious
-say More trouble. We were on about it only lately. | Another bad business. It never stops. | We'd only just finished with the last of this.
+say More trouble. We were on about it only lately. | Another bad business. It never stops. | More of it. We'd only just done talking of the last.
 
 rule s8cb_caravan
 does recall

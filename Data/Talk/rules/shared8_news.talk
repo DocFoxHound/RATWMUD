@@ -52,7 +52,7 @@ say #topic.subject#? I'd never have said. | Light paws. Well. | I'll be counting
 rule s8n_theft_victim
 does react.news.new
 when conv.topic=gossip|crime topic.claim_kind=theft
-say And from #topic.victim#, too. | #topic.victim#, of all wolves to rob. | Poor #topic.victim#. What was taken? | From #topic.victim#? That's low.
+say #topic.victim#, of all wolves to rob. | Poor #topic.victim#. I hope it wasn't much. | From #topic.victim#? That's low.
 
 rule s8n_theft_merchant
 does react.news.new

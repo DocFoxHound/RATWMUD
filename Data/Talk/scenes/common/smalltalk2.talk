@@ -180,7 +180,7 @@ b : For me? | You shouldn't have. | It's lovely.
 a : #bc_of_course# | I wanted to. | I hoped you'd like it.
 
 scene st2_apology
-when topic=smalltalk pair.band=friends|family|acquaintances
+when topic=smalltalk pair.band=friends|family|acquaintances pair.last_outcome=soured|quarrelled|curt
 does tell.self / react.self / thank
 weight 0.4
 a : I'm sorry about what I said. | I was wrong, before. | Can we forget last week?

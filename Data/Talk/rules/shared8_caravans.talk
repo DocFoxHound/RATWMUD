@@ -231,9 +231,20 @@ does react.news
 say Is that so? Things move fast out there. | Good to know. | We'll feel it here soon, I expect. | The carters always know first.
 
 rule s83v_ans_news_poor
-when concept=caravan.answer topic.kind=news wealth=poor|destitute
+when concept=caravan.answer topic.kind=news wealth=poor|destitute topic.dir=up
 does react.news
-say Whatever it is, it'll cost me. | News from far off. It never helps us. | I'll hear about it when it hits my supper.
+say Dear there means dear here, soon enough. | Whatever it is, it'll cost me. | And it'll be us who pay for it.
+
+# (Slice 3, H1: "I'll hear about it when it hits my supper." said to planks, cheap or dear: the poor answer the news as it is.)
+rule s83v_ans_news_poor_cheap
+when concept=caravan.answer topic.kind=news wealth=poor|destitute topic.dir=down
+does react.news
+say Cheap there. It's never cheap by the time it gets here. | Cheap somewhere, then. Not here. | Not that I'll see the difference.
+
+rule s83v_ans_news_poor_times
+when concept=caravan.answer topic.kind=news wealth=poor|destitute topic.dir!=up topic.dir!=down
+does react.news
+say News from far off. It never helps us. | Far off. Nothing to do with my table. | Good or bad, it's all one to me.
 
 rule s83v_ans_late
 when concept=caravan.answer topic.kind=late

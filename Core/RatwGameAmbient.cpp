@@ -1056,7 +1056,7 @@ void Game::ambientNote(AmbientTalk& t, const std::string& reason)
                           : sharp ? "soured"
                           : any({"concede"}) ? "conceded"
                           : any({"reassure", "sympathise"}) ? "reassured"
-                          : t.conv.ended == "farewell" ? "warmed"
+                          : t.conv.ended == "farewell" || t.conv.ended == "parted" ? "warmed"
                                                        : "even";
     if (outcome != "quarrelled" && outcome != "soured")
         souredBy.clear();

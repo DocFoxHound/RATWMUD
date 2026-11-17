@@ -923,6 +923,17 @@ does react.news
 say I want to go and see! | It sounds big. | I'll tell everyone! | Ooh.
 
 rule s83e_ans_old
-when concept=event.answer world.event_when=now self.stage=old
+when concept=event.answer world.event_when=now self.stage=old conv.ev=bad|loss
 does react.news
-say I've seen it before, and I'll see it again. | Every year something. Every year. | In my day it was the same, and we managed.
+say I've seen it before, and I'll see it again. | In my day it was the same, and we managed. | We came through worse, when I was young.
+
+# (Slice 3, H1: "In my day it was the same, and we managed." said to the drovers' good news: the old answer it as it is.)
+rule s83e_ans_old_good
+when concept=event.answer world.event_when=now self.stage=old conv.ev=good
+does react.news
+say Good. I'd not thought to see another week like it. | We'd have made a feast of less, in my day. | I'll enjoy it while my teeth last.
+
+rule s83e_ans_old_news
+when concept=event.answer world.event_when=now self.stage=old conv.ev=news
+does react.news
+say Every year something. Every year. | I've seen a few of those. | It'll be talked of a week, then forgotten.

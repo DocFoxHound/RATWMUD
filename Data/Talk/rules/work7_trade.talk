@@ -60,7 +60,7 @@ rule w7_pr_up_healer
 when concept=talk.prices topic.item=herbs topic.dir=up job=healer
 does tell.self
 cooldown 1d
-say #topic.price#! How am I to treat the poor at that? | I'll have to gather my own. My knees hate that. | They'll come to me sicker, because they waited.
+say #topic.what.capitalize# at #topic.price#! How am I to treat the poor at that? | I'll have to gather my own. My knees hate that. | They'll come to me sicker, because they waited.
 then other: prices.answer_complaint
 
 rule w7_pr_up_destitute
@@ -68,7 +68,7 @@ when concept=talk.prices topic.dir=up wealth=destitute
 does tell.self
 priority 1
 cooldown 12h
-say #topic.price#. I've not seen #topic.price# all week. | I'll go without, then. Again. | They might as well charge the moon.
+say #topic.what.capitalize#, #topic.price#. I've not had #topic.price# to my name all week. | I'll go without, then. Again. | They might as well charge the moon.
 then other: prices.answer_complaint
 
 rule w7_pr_up_market
@@ -235,21 +235,21 @@ rule w7_pr_down_poor
 when concept=talk.prices topic.dir=down wealth=poor|destitute
 does tell.news
 cooldown 1d
-say #topic.price#! I can afford it this week. | Down to #topic.price#. Thank the Bright One. | Cheaper! I'll buy two, while it lasts.
+say #topic.what.capitalize# at #topic.price#! I can afford it this week. | #topic.what.capitalize#, down to #topic.price#. Thank the Bright One. | Cheaper! I'll buy two, while it lasts.
 then other: prices.answer_cheap
 
 rule w7_pr_down_healer
 when concept=talk.prices topic.item=herbs topic.dir=down job=healer
 does tell.news
 cooldown 1d
-say Herbs at #topic.price#. I'll stock up the whole shelf. | Cheap herbs. I can treat the poor for nothing again. | Down to #topic.price#. I'll not ask why.
+say Herbs at #topic.price#. I'll stock up the whole shelf. | Cheap herbs. I can treat the poor for nothing again. | Herbs down to #topic.price#. I'll not ask why.
 then other: prices.answer_cheap
 
 rule w7_pr_down_cook
 when concept=talk.prices topic.item=meal topic.dir=down job=cook|innkeeper
 does tell.news
 cooldown 1d
-say Meals are down to #topic.price#. My takings'll be thin. | #topic.price#! My takings won't like it. | Cheaper meals. Good for them, bad for me.
+say Meals are down to #topic.price#. My takings'll be thin. | #topic.price# a meal! My takings won't like it. | Cheaper meals. Good for them, bad for me.
 then other: prices.answer_undercut
 
 rule w7_pr_down_merchant

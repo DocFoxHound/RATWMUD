@@ -45,7 +45,7 @@ a : #bc_wise# | Do. | And money, probably.
 scene et_gos_guard
 when topic=gossip b.role=guard topic.claim_kind=theft|violence|wanted|prowling|promise_broken
 does tell.gossip / react.news.doubt / assess
-a : Did you know #topic.subject# #topic.claim#? | They're saying #topic.subject# #topic.claim#. | I'd look into #topic.subject#, if I were the watch. They say #topic.subject# #topic.claim#.
+a : Did you know #topic.subject# #topic.claim#? | They're saying #topic.subject# #topic.claim#. | They say #topic.subject# #topic.claim#. I'd look into #topic.them#, if I were the Watch.
 b : I don't arrest wolves for rumours. | Saying's not proof. | If #topic.subject# breaks a law, I'll look.
 a : Shame. | It's a start. | #bc_fair#
 
@@ -128,7 +128,7 @@ a : Everyone, it seems. | The usual mouths. | #bc_true#
 scene et_gos_shocked
 when topic=gossip
 does tell.gossip / ask.detail / answer.detail
-a : #topic.subject# #topic.claim#! I nearly dropped my basket. | My jaw hit the floor. #topic.subject# #topic.claim#. | #topic.subject#. #topic.subject# #topic.claim#! Can you imagine?
+a : #topic.subject# #topic.claim#! I nearly dropped my basket. | My jaw hit the floor. #topic.subject# #topic.claim#. | #topic.subject#, of all wolves! #topic.they# #topic.claim#. Can you imagine?
 b : Did you drop it? | Pick it up, then. | I can, actually.
 a : Nearly. | Very funny. | You would.
 

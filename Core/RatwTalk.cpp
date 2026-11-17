@@ -2209,6 +2209,54 @@ bool Library::loadFoundation(const std::string& dir, std::string& problem)
     return ok;
 }
 
+// A greeting or goodbye that names the hour, said at another (Slice 3: "Morning to you" at eight in the evening, from a
+// resident's own words, a personal layer that tests no hour): its words are passed over where they don't fit the moment,
+// as truth.json's morning_greeting, day_greeting and night_greeting judge them.
+static bool wrongHour(const std::string& text, const Query& q)
+{
+    const auto f = [&](const char* k) {
+        const auto it = q.facts.find(k);
+        return it == q.facts.end() ? std::string() : it->second;
+    };
+    const auto time = f("here.time");
+    if (time.empty())
+        return false;
+    std::string t;
+    for (const char ch : text)
+        t += char(std::tolower(static_cast<unsigned char>(ch)));
+    const auto at = [&](const std::string& w) {     // At the start of the text or of a sentence in it.
+        for (std::size_t p = t.find(w); p != std::string::npos; p = t.find(w, p + 1))
+        {
+            std::size_t b = p;
+            while (b > 0 && t[b - 1] == ' ')
+                --b;
+            if (b == 0 || t[b - 1] == '.' || t[b - 1] == '!' || t[b - 1] == '?' || t[b - 1] == ';')
+                return true;
+        }
+        return false;
+    };
+    const bool night = time == "dusk" || time == "night";
+    int hour = 12;
+    try
+    {
+        hour = std::stoi(f("here.hour"));
+    }
+    catch (...)
+    {
+    }
+    const bool morning = time == "dawn" || (time == "day" && hour < 12);
+    if (!morning && (at("good morning") || at("morning to you") || at("morning,") || at("morning.") || at("morning!") ||
+                     t == "morning"))
+        return true;
+    if (!night && at("good night"))
+        return true;
+    if (night && at("good day") && !at("good day today") && !at("good day for"))
+        return true;
+    if (!night && (at("good evening") || at("evening to you") || at("evening,") || at("evening.")))
+        return true;
+    return false;
+}
+
 bool Library::expandSymbol(const std::string& name, Expansion& x, int depth, std::string& out) const
 {
     if (depth > DeepestSymbol)
@@ -2262,14 +2310,18 @@ bool Library::expandSymbol(const std::string& name, Expansion& x, int depth, std
         if (best < 0)
             continue;
         bool adds = true;
+        std::size_t added = 0;
         for (const auto* s : symbols)
             for (const auto& e : s->entries)
                 if (e.score == best && holdsAll(e))
                 {
                     for (const auto& a : e.alts)
-                        alts.push_back(&a), altLayer.push_back(&layer);
+                        if (!wrongHour(a.text, x.q))
+                            alts.push_back(&a), altLayer.push_back(&layer), ++added;
                     adds = adds && e.add;
                 }
+        if (added == 0)
+            continue;                               // (Only words for another hour here: the layer below has the hour's.)
         from += (from.empty() ? "" : "+") + layer;
         if (!adds)
             break;
@@ -3260,7 +3312,10 @@ SaidLine Library::sayNext(Conversation& c) const
                                                                          : answersOf(c.lines.back().moves, line.moves);
     }
     // The conversation's own facts for the lines after (§7.11): every tag, the move just made and the one before, its
-    // tone, the lines said.
+    // tone, the lines said. A question that doesn't say what it asks ({ask=...}, shared8_detail.talk) leaves no earlier
+    // question's kind behind it (Slice 3).
+    if (!line.tags.count("ask") && std::any_of(line.moves.begin(), line.moves.end(), [&](const std::string& m) { return moves_.kindOf(m, "ask.detail"); }))
+        c.conv.erase("ask");
     for (const auto& [k, v] : line.tags)
         c.conv[k] = v;
     line.topic = c.topics.empty() ? c.topic : c.topics.back();
@@ -3279,8 +3334,18 @@ SaidLine Library::sayNext(Conversation& c) const
     if (!c.legacy && !moves_.empty())
     {
         // Who owes what now (§8.3): whatever its speaker owed is answered or passed over by speaking; a scene's own
-        // lines answer each other, so only its last line's (and a rule's) obligations stand.
-        c.open.clear();
+        // lines answer each other, so only its last line's (and a rule's) obligations stand. A third cutting in owed
+        // nothing and answers nothing: what the others owed is still theirs to answer (Slice 3, H1).
+        // (One who adds a word, sides or teases; one who objects, defends or corrects turns the talk to themselves.)
+        const bool cutsIn = std::any_of(line.moves.begin(), line.moves.end(), [&](const std::string& m) {
+            return moves_.kindOf(m, "join.add") || moves_.kindOf(m, "join.side") || moves_.kindOf(m, "join.tease");
+        });
+        std::vector<Conversation::Open> stillOwed;
+        if (cutsIn)
+            for (const auto& o : c.open)
+                if (!o.soft && (o.to >= 0 ? o.to : partner(c, o.by)) != line.who)
+                    stillOwed.push_back(o);
+        c.open = std::move(stillOwed);
         // Owed by the one it was said to (a third speaker's line names its own: Phase 4).
         const auto toOf = [&](const SaidLine& l) {
             return c.people.size() < 2 ? -1 : l.to >= 0 && l.to != l.who ? l.to : partner(c, l.who);
@@ -3411,7 +3476,34 @@ void Library::preface(Conversation& c, Said& said, const Query& q, const Freshne
             return mv && (what == "opening" ? mv->family == "opening" : moves_.kindOf(m, what));
         });
     };
+    // (No word of four letters or more said twice in one breath: "Oh, you're back. I miss Marketday back home." The
+    // breath goes without what was to come before. Slice 3.)
+    const auto words = [](const std::string& t) {
+        std::set<std::string> out;
+        std::string w;
+        for (const char ch : t + " ")
+            if (std::isalpha(static_cast<unsigned char>(ch)))
+                w += char(std::tolower(static_cast<unsigned char>(ch)));
+            else
+            {
+                if (w.size() >= 4)
+                    out.insert(w);
+                w.clear();
+            }
+        return out;
+    };
+    const auto echoes = [&](const Said& before) {
+        const auto mine = words(before.info.front().text);
+        const auto theirs = words(said.info.front().text);
+        return std::any_of(mine.begin(), mine.end(), [&](const std::string& w) { return theirs.count(w) > 0; });
+    };
     const auto prepend = [&](Said& before, const std::string& why) {
+        if (echoes(before))
+        {
+            if (trace)
+                trace->why += "; " + why + " left out (" + before.id + " says a word the opener says)";
+            return;
+        }
         auto& g = before.info.front();
         auto& line = said.info.front();
         // Phase 7 (§8.12.3): what is said in the opener's breath makes a longer line; if another said those very words
@@ -3477,17 +3569,67 @@ void Library::preface(Conversation& c, Said& said, const Query& q, const Freshne
     const bool opens = does("opening");
     Said greet;
     std::vector<std::string> open;
+    // (Met already today, the two don't greet, sit down or say kin's first words all over again: the innkeeper's "Sit
+    // yourself down." to the same regular at noon and at midnight. Only, now and then, that it's twice. Slice 3.)
+    const bool again = std::find(c.frames.begin(), c.frames.end(), "again_today") != c.frames.end();
     for (const auto& name : c.frames)
         for (const auto& f : frames_)
-            if (f.name == name)
+            if (f.name == name && (!again || name == "again_today"))
                 for (const auto& m : f.open)
                     if (std::find(open.begin(), open.end(), m) == open.end())
                         open.push_back(m);
+    // Slice 3 (H1, the first blind ratings: "Back again?" in a third of the talks rated 2.50 against 3.65 without it):
+    // meeting twice in a day is remarked on now and then, before small talk, never before a sorrow, a memory, a crime or
+    // anyone's news, never beside a recall or a return (two openers in one breath at most: the opener and one before it),
+    // and never when the opener starts with the same word ("Back again? Back home rich and poor...").
+    const auto againFits = [&](const Said& g) {
+        static const std::set<std::string> Light{"day", "weather", "smalltalk", "food", "pastimes", "animals", "work", "travel",
+                                                 "land", "season", "player", "lore", "home", "friends", "festival", "dreams"};
+        const auto& line = said.info.front();
+        if (!back.id.empty() || !Light.count(c.topics.empty() ? c.topic : c.topics.back()) ||
+            (line.tone != "light" && line.tone != "even" && !line.tone.empty()) || unit(mix(c.seed * 0x9E3779B97F4A7C15ULL + 0xA6A1)) >= .25)
+            return false;
+        const auto firstWord = [](const std::string& t) {
+            std::string w;
+            for (const char ch : t)
+            {
+                if (!std::isalpha(static_cast<unsigned char>(ch)))
+                {
+                    if (!w.empty())
+                        break;
+                    continue;
+                }
+                w += char(std::tolower(static_cast<unsigned char>(ch)));
+            }
+            return w;
+        };
+        const auto lower = [](std::string t) {
+            for (auto& ch : t)
+                ch = char(std::tolower(static_cast<unsigned char>(ch)));
+            return t;
+        };
+        // (Nor a word of four letters or more said twice in the breath: "Back again? Swallows are back.")
+        const auto said0 = lower(g.info.front().text);
+        const auto opener = firstWord(line.text);
+        return (opener.empty() || said0.find(opener) == std::string::npos) && !echoes(g);
+    };
     for (std::size_t i = 0; !opens && i < open.size() && greet.id.empty(); ++i)
     {
         greet = one(open[i]);
+        if (!greet.id.empty() && open[i] == "again.open" && !againFits(greet))
+        {
+            greet = {};
+            continue;
+        }
         if (!greet.id.empty() && trace)
             trace->why += "; greeted first (" + open[i] + ")";
+    }
+    // One said before the opener at most: a greeting the meeting asks for (strangers, kin, a host) goes before a recall.
+    if (!back.id.empty() && !greet.id.empty())
+    {
+        if (trace)
+            trace->why += "; " + back.id + " left out (one word before the opener is enough)";
+        back = {};
     }
     if (!back.id.empty())
         prepend(back, does("return") || back.info.front().moves.empty() || back.info.front().moves.front() != "recall"
@@ -3570,9 +3712,14 @@ std::optional<SaidLine> Library::join(Conversation& c, const std::string& id, co
                                       Trace* trace) const
 {
     // A third voice (§8.9): only into a talk of two in its body, with room for the joining line, its answer and the
-    // closing, said to the one who spoke last; the joiner cuts in before whatever was owed.
+    // closing, said to the one who spoke last; the joiner cuts in before whatever was owed, and what was owed is still
+    // answered after (Slice 3: H1's lowest, "Don't let me stop you. I'll just listen." and the one spoken to never
+    // answered, the talk closed on nothing).
     if (c.legacy || moves_.empty() || c.people.size() != 2 || c.lines.empty() || !c.queued.empty() || moves.empty() ||
-        c.phase != Conversation::Phase::Body || int(c.lines.size()) + 4 > budgets_.most || id.empty() ||
+        c.phase != Conversation::Phase::Body || int(c.lines.size()) + 4 > budgets_.most ||
+        // (Slice 3: one who joins only for the pleasure of the talk, its topic their favourite or the two their friends,
+        // does so only where the talk has room to go on after: "Oh, let me in." and then goodbyes, else.)
+        ((stake == "favourite" || stake == "friends") && int(c.lines.size()) + 6 > c.budget) || id.empty() ||
         std::find(c.people.begin(), c.people.end(), id) != c.people.end())
         return std::nullopt;
     const int to = c.lines.back().who;
@@ -3599,7 +3746,6 @@ std::optional<SaidLine> Library::join(Conversation& c, const std::string& id, co
         line.fit = line.best = -1;                  // (It answers nothing owed: it cuts in.)
     if (trace)
         trace->why += "; " + id + " joins (" + stake + "): " + s.id;
-    c.open.clear();
     take(c, std::move(s));
     return sayNext(c);
 }
@@ -3823,6 +3969,8 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
         };
         const bool aw = working(q.a), bw = working(q.b);
         c.closer = aw != bw ? (aw ? 0 : 1) : partner(c, last);
+        if (c.closer >= 2)
+            c.closer = last == 0 ? 1 : 0;           // (One who has just joined doesn't close the talk they joined.)
     }
     // 3. Closing (§8.4): a preclose when there's room for the whole of it (preclose, its answer, the farewell pair),
     // then the farewell, answered (above). The frames' preclose makes the room it needs smaller.
@@ -3846,6 +3994,15 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
     const int to = partner(c, who);
     int side = 0;
     auto q = beatQuery(c, facts, who, to, side);
+    // Slice 3 (H1, the first blind ratings): one exchange and then a goodbye each rated 2.85, a talk left where it ended
+    // 3.90. A talk that has had only one exchange (fewer than four lines) ends there, the two going back to what they
+    // were doing without a word of ceremony; the farewell pair is for a talk that has run a while.
+    if (!precloseSaid && n < 4 && c.extended == 0)
+    {
+        c.closer = who;
+        end(c, "parted", trace);
+        return std::nullopt;
+    }
     // Only a cold or short-tempered wolf goes without a word (§8.4), now and then (frames.json's curt chance; Phase 6's
     // temperaments weigh it); it costs regard (the game's, from frames.json's curt effects).
     if (!precloseSaid)
@@ -3880,7 +4037,20 @@ std::optional<SaidLine> Library::next(Conversation& c, const std::function<Query
     o.by = to;
     o.to = who;
     o.moves = {"farewell"};
-    if (auto s = answer(c, o, q, side, fresh, trace); !s.id.empty())
+    // After a preclose taken, the goodbye alone: not a line that closes again ("Back to it, me too." / "I'll let you be.").
+    Said bye;
+    if (precloseSaid)
+        if (const auto* list = byMove("farewell"))
+        {
+            Conversation probe = c;
+            for (const auto i : *list)
+                if (!entries_[i].does.empty() && hasMove(moves_, entries_[i].does.front(), "preclose"))
+                    probe.said.insert(entries_[i].id);
+            bye = answer(probe, o, q, side, fresh, trace);
+        }
+    if (bye.id.empty())
+        bye = answer(c, o, q, side, fresh, trace);
+    if (auto s = std::move(bye); !s.id.empty())
     {
         for (auto& line : s.info)
             line.fit = line.best = -1;
@@ -5224,6 +5394,10 @@ std::optional<SaidLine> Library::opinion(Conversation& c, const Query& now, int 
     const auto& topic = c.topics.back();
     const Speaker& self = who == 0 ? now.a : now.b;
     const int n = int(c.lines.size());
+    // (One view aired a talk: a second, straight after, from the same wolf, read as a speech. Slice 3.)
+    for (const auto& [k, v] : c.conv)
+        if (k.rfind("aired_", 0) == 0 && v == "yes")
+            return std::nullopt;
     for (const auto& i : issues_)
     {
         if (!i.topics.count(topic) || c.conv.count("aired_" + i.name))

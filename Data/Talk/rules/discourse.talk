@@ -8,7 +8,14 @@
 ## Closing (§8.4)
 rule ds_preclose
 does preclose
+when self.stage=adult|old
 say #preclose#. | #excuse#.
+
+# (Slice 3: a pup's excuse isn't the grown-ups' "Work won't wait." or "The shift won't wait.")
+rule ds_preclose_young
+does preclose
+when self.stage=young|adolescent
+say #preclose#.
 
 ## Refusals, softened and explained (§7.2: hedge, account, remedy)
 rule ds_decline

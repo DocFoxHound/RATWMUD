@@ -152,7 +152,7 @@ rule e8r_cv_news
 when concept=talk.caravan topic.kind=news topic.news
 does tell.news
 cooldown 1d
-say Word off the #topic.where# wagon: #topic.news#. | #topic.news.capitalize#, so the #topic.where# wagon says.
+say Word off the last wagon: #topic.news#. | #topic.news.capitalize#, so the carters say.
 then other: caravan.answer
 
 rule e8r_cv_news_carters
@@ -165,7 +165,18 @@ then other: caravan.answer
 rule e8r_cva_news
 when concept=caravan.answer topic.kind=news
 does react.news
-say Is it now. | Good for #topic.where#. | Carters will say anything over a cup.
+say Is it now. | Carters will say anything over a cup.
+
+# (Slice 3: "Good for Coldwater." said to berries dear there; the answer follows the news.)
+rule e8r_cva_news_dear
+when concept=caravan.answer topic.kind=news topic.dir=up
+does react.news
+say Then we'll be paying for it here before long. | Dear there, dear here by the next wagon.
+
+rule e8r_cva_news_cheap
+when concept=caravan.answer topic.kind=news topic.dir=down
+does react.news
+say Cheap there. Shame it's not cheap here. | Then the next wagon should bring some our way.
 
 rule e8r_cva_news_merchant
 when concept=caravan.answer topic.kind=news role=merchant

@@ -91,7 +91,7 @@
     },
     {
       "id": "fisher_self",
-      "match": "\\bmy (nets?|catch)\\b|\\bthrew the first fish\\b",
+      "match": "\\bmy nets?\\b|(?<!, )\\bmy catch\\b|\\bthrew the first fish\\b",
       "needs": [
         "self.job=fisher|sailor"
       ],

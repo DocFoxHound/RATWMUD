@@ -142,7 +142,7 @@ rule s83g_theft_merchant2
 when concept=talk.gossip topic.claim_kind=theft self.role=merchant
 does tell.gossip
 cooldown 1d
-say If #topic.subject# comes to my counter, I'll be watching #topic.their# paws. #topic.subject# #topic.claim#. | Bad for trade, a #thief#. #topic.subject# #topic.claim#. | The stalls are passing it along. #topic.subject# #topic.claim#.
+say #topic.subject# #topic.claim#. If #topic.they# comes to my counter, I'll be watching #topic.their# paws. | Bad for trade, a #thief#. #topic.subject# #topic.claim#. | The stalls are passing it along. #topic.subject# #topic.claim#.
 
 rule s83g_theft_guard
 when concept=talk.gossip topic.claim_kind=theft self.job=guard|soldier
@@ -154,7 +154,7 @@ rule s83g_theft_keeper
 when concept=talk.gossip topic.claim_kind=theft self.job=innkeeper|brewer
 does tell.gossip
 cooldown 1d
-say I hear everything over the bar. #topic.subject# #topic.claim#. | If #topic.subject# comes in, I'll count the cups. #topic.subject# #topic.claim#, they say. | Barrel-talk. #topic.subject# #topic.claim#.
+say I hear everything over the bar. #topic.subject# #topic.claim#. | #topic.subject# #topic.claim#, they say. If #topic.they# comes in, I'll count the cups. | Barrel-talk. #topic.subject# #topic.claim#.
 
 rule s83g_theft_servant
 when concept=talk.gossip topic.claim_kind=theft self.job=servant|cook
@@ -178,7 +178,7 @@ rule s83g_theft_poor
 when concept=talk.gossip topic.claim_kind=theft self.wealth=poor|destitute
 does tell.gossip
 cooldown 1d
-say #topic.subject# #topic.claim#. As if any of us has anything worth taking. | Not that there's much at mine to steal. But #topic.subject# #topic.claim#. | They'll blame the likes of us. But #topic.subject# #topic.claim#.
+say #topic.subject# #topic.claim#. As if any of us has anything worth taking. | Not that there's much at mine to steal. But #topic.subject# #topic.claim#. | They'll blame the likes of us. And it was #topic.subject# who #topic.claim#.
 
 rule s83g_theft_beggar
 when concept=talk.gossip topic.claim_kind=theft self.job=beggar|laborer

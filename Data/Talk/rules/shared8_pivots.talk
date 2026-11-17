@@ -327,7 +327,7 @@ say And what's on the table. | And the pot, while I think of it. | Home's where 
 rule s8p_home_work
 does pivot
 when conv.from=home conv.topic=work
-say It doesn't pay for itself, mind. | And then there's the work that keeps it. | Somebody has to pay for it.
+say A house doesn't pay for itself, mind. | And then there's the work that keeps it. | Somebody has to pay for it.
 
 rule s8p_work_prices
 does pivot
@@ -387,7 +387,7 @@ say My belly's been thinking. | Which puts me in mind of supper. | I could eat, 
 rule s8p_smalltalk_pastimes
 does pivot
 when conv.from=smalltalk conv.topic=pastimes
-say What do you do with yourself, after? | Which brings me to idle hours. | There's more to life than work. | And when there's time to spare. | Not that there's much spare time.
+say What do you do with yourself, after? | Which brings me to idle hours. | There's more to life than work. | And when there's time to spare. | And when the day's done.
 
 rule s8p_food_prices
 does pivot
