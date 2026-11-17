@@ -1,0 +1,296 @@
+# cw120, the measured turn (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw120
+revision 1
+state ready
+dialect coldwater
+accent broad light
+tier standard
+written_for tn_cw_willa_coldwick
+written_by claude-codex-cw-1
+title the measured turn
+fits stage=adult|old
+prefers job=carter honesty=frank
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk collects_smooth_stones_from_the_riverbanks
+likes hard_cheese riddles festival_bells frosty_mornings
+dislikes rats night_noise
+fears a_wheel_failing_on_ice something_moving_beneath_the_lake
+hopes a_cart_that_runs_true a_quiet_larder
+topics work +0.5 travel +0.5 pastimes +0.4 weather +0.3 food +0.2 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=plain tease=dry
+marks oath saying
+persona #self.first# checks every #wheel# before departure, collects a #stone# when the #river# runs low, and sets a #riddle# for the road.
+
+words
+oath! = Wheel and water | Frost beneath us
+saying! = Count the spokes before the miles | The road answers careful paws
+cart = cart | freight cart
+carts = carts | loaded carts
+wheel = wheel | cart wheel
+wheels = wheels | turning wheels
+spoke = spoke | wooden spoke
+spokes = spokes | wooden spokes
+axle = axle | iron axle
+hub = hub | wheel hub
+rim = rim | outer rim
+rope = rope | hauling rope
+knot = knot | firm knot
+load = load | freight
+loads = loads | freight loads
+sack = sack | grain sack
+sacks = sacks | tied sacks
+road = road | high road
+rut = rut | wheel rut
+ruts = ruts | wheel ruts
+bend = bend | sharp turn
+mile = mile | long mile
+stone = stone | smooth pebble
+stones = stones | rounded pebbles
+bank = bank | riverbank
+river = river | Long River
+lake = lake | Glasswater
+ice = ice | lake ice
+shadow = shadow | dark shape
+frost = frost | white rime
+morning = morning | first light
+bell = bell | festival bell
+bells = bells | ringing bells
+riddle = riddle | puzzle
+riddles = riddles | puzzles
+answer = answer | solution
+cheese = cheese | hard cheese
+larder = larder | food cupboard
+shelf = shelf | pantry shelf
+rat = rat | larder rat
+rats = rats | larder rats
+night = night | dark hours
+noise = noise | late clatter
+lantern = lantern | road lantern
+coin = coin | pay
+price = price | stated cost
+market = market | row of stalls
+strap = strap | leather strap
+boots = boots | road boots
+home = home | own hearth
+
+any
+opinion @1 road for 1 : The #road# feeds me when the #wheel# holds. | A rough #rut# is easier to face than an empty #cart#.
+opinion @1 merchants against 2 : The #price# of #cheese# does not care what my #cart# earned. | A buyer who changes the weight after loading can unload their own #sacks#.
+opinion @1 houses against 1 : I haul their #load# and know the names of the hands on the #rope#. | A House could try riding the worst #rut# before setting a driver's pay.
+opinion @1 newcomers against 1 : Work is scarce; I ask whether a new driver knows the #road# before giving up a #load#. | A fine story does not mend a loose #axle#.
+opinion @1 city against 1 : Too many #carts# in one street make a day's work crawl. | At a #bend#, I want a clear view along the next #mile#.
+opinion @1 festivals mixed 0 : I like the #bells# at the start and quiet at the end. | One good #riddle# by the fire beats a packed square.
+opinion @1 watch mixed 0 : I will tell the Watch what I saw on the #road#. | Let them ask the driver before blaming a late #cart#.
+opinion @1 times against 1 : Another #coin# goes on a repair while freight pays the same. | The #wheel# still turns, but it costs more to keep it true.
+
+grown
+line @1 greet : #greet#. I am checking a #wheel#. | #greet#. Give me the short version of your business.
+line @2 greet [pair.band=strangers] : #greet#. Do you need the #road# or the #market#? | #greet#. Stand to the side of the #load# while we speak.
+line @3 greet [pair.band=friends|family] : I have a new #riddle# for the next #mile#. | Hungry? Cut some of that hard #cheese#.
+line @4 greet [self.working=yes] : #greet#. Let me secure this #knot#, then we can speak. | Walk beside the #cart# and speak.
+line @5 greet [here.time=dawn] : #greet#. White #frost# outlines the #rim# this morning. | #greet#. The #wheels# are turning before the #bells#.
+line @1 greet.return : You have come back before the #load# is tied. | #welcome_back#. I found the #answer# to your last #riddle#.
+line @2 greet.return [pair.band=friends|family] : Your #riddle# kept me busy over the #road#. | The #larder# holds #cheese# for you.
+line @1 kin.open [pair.kin!=no] : Come closer. I have a #stone# to show you. | There is #cheese# at #home#.
+line @1 again.open : Already returned? The #cart# has stayed in place. | Twice in a morning and still the same #knot#.
+line @1 farewell : #saying.capitalize#. Keep off the icy #rut#. | #farewell#. Watch the #bend# ahead.
+line @1 farewell.return : Bring a harder #riddle# next time. | Perhaps we will meet at the next unloading.
+line @1 react.news : I will listen once this #strap# is fastened. | Give me the place and the time first.
+line @1 react.news.new : No driver has brought that word to me. | Who saw it happen?
+line @1 react.news.known : A driver mentioned a piece of that at the #market#. | You have the end of a story I heard at dawn.
+line @1 react.news.doubt : The #answer# leaves a gap. Who verified it? | I would inspect the #load# before calling that true.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Come out of the #road# and sit. | That news weighs heavily. The #rope# can lie here while we speak.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That deserves a festival #bell#. | A sound answer after a long #mile#.
+line @1 answer.how : The #cart# rolls true enough. | My paws are cold, but the #load# is sound.
+line @1 answer.how.busy [self.working=yes] : Tying #sacks# and counting #wheels#. | Busy, but I can hear while I work.
+line @1 ask.how : Did you avoid the worst #ruts#? | Is there #cheese# in your #larder# tonight?
+line @1 sympathise : I will hear you through without guessing the end. | Sit where the #lantern# reaches, then tell me.
+line @1 reassure : A crooked #wheel# can be trued one #spoke# at a time. | Find the next firm #knot# and start there.
+line @1 decline : That #load# needs a sound #cart# before I can agree. | No. I need the #wheels# free for another task.
+line @1 accept_decline : Your choice is clear. I will untie the #rope#. | Fair enough; the #road# remains open.
+line @1 thank : You spotted that slack #strap# in time. Thank you. | That was useful help, and I know it.
+line @1 deflect_thanks : I had the #lantern# in hand already. | The #knot# only wanted another pull.
+line @1 preclose : The #cart# needs its last check. | I must get this #load# under cover before dark.
+line @1 tease [pair.band=friends] : That #riddle# has fewer turns than your #road#. | You would miss a #wheel# if it rolled over your toe.
+line @1 ack : #bc_right#. I will mark the #sack#. | #bc_fair_enough#. The #axle# sounds clear.
+line @1 give.advice : Feel each #strap# after the first #mile#. | Ask the #price# before the #load# is on your #cart#.
+line @1 warn [world.bandits=near] : Keep the #lantern# near and the #cart# on the travelled #road#. | Do not take the narrow #bend# alone tonight.
+scene spoke_by_spoke
+when topic=work
+does tell.self / react.self / assess
+a : I tap each #spoke# before a long #mile#. | A loose #spoke# gives a different note from the sound ones.
+b : Can you hear that clearly? | Do you fix it on the road?
+a : If the yard is quiet. | Before I start, if I can.
+
+scene axle_grease
+when topic=work
+does tell.self / react.self / assess
+a : I check the #axle# where the #hub# meets it. | A warm #hub# after a short trip means the #wheel# needs looking at.
+b : Does it get hot? | Can you keep travelling?
+a : It should not. | Not until I know why.
+
+scene ropes_and_sacks
+when topic=work
+does tell.self / react.self / assess
+a : I tie the heaviest #sacks# closest to the #axle#. | The #rope# should hold a #load# even over a rough #rut#.
+b : Do you use one knot? | What if a sack shifts?
+a : More than one. I check both ends. | I stop and tie it again.
+
+scene counting_load
+when topic=work
+does tell.self / react.self / assess
+a : I count the #sacks# before the #cart# moves. | I mark a #load# as soon as it is tied down.
+b : Do the numbers change? | Who checks your count?
+a : Only when someone has moved a #sack#. | Whoever gave me the freight can look with me.
+
+scene dry_rut
+when topic=travel
+does tell.self / react.self / assess
+a : A dry #rut# can still catch a #wheel# at a sharp #bend#. | I keep the #cart# slow where the #road# has two tracks.
+b : Do you choose one track? | Does the load lean?
+a : The firmer side if I can see it. | If I take the turn too fast.
+
+scene festival_bells
+when topic=festival
+does tell.self / react.self / assess
+a : The first festival #bells# are the ones I enjoy. | By evening, the #noise# makes me wish for the open #road#.
+b : Do you stay for the feast? | Do you ring a bell yourself?
+a : If there is room at the table. | No. I listen from the edge.
+
+scene riddle_on_road
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #riddle# makes a long #mile# pass quickly. | I give the #answer# only after the next #bend#.
+b : Do people solve them? | Do you make them up?
+a : Some, before I finish asking. | The easier ones, yes.
+
+scene wrong_answer
+when topic=pastimes
+does tell.self / react.self / assess
+a : A wrong #answer# can be cleverer than the right one. | I remember the #riddles# that keep the #cart# laughing.
+b : Do you tell them the solution? | Can you give me one?
+a : After I hear their reason. | When this #rope# is tied.
+
+scene cheese_for_trip
+when topic=food
+does tell.self / react.self / assess
+a : Hard #cheese# travels better than a soft supper. | I keep a piece wrapped away from the #sacks#.
+b : Does it last all day? | Do you eat while driving?
+a : If I do not share too much. | I stop where the #cart# can rest.
+
+scene rats_in_larder
+when topic=home
+does tell.self / react.self / assess
+a : A #rat# in the #larder# will chew through more than supper. | I keep #cheese# off the low #shelf# when I hear #rats# at night.
+b : Do you set a trap? | Can they reach the food?
+a : I close the gaps first. | Only if I leave it careless.
+
+scene bank_stones
+when topic=pastimes
+does tell.self / react.self / assess
+a : I pick up a #stone# after a #road# day if the #bank# is near. | A smooth #stone# fits between my paws while I think of the next #riddle#.
+b : Do you keep many? | Why smooth ones?
+a : A few. I return others to the #river#. | They feel finished without any work from me.
+
+scene wheel_or_stone
+when topic=smalltalk
+does tell.self / react.self / assess
+a : A #wheel# should turn; a #stone# should stay put. | I like a #riddle# with a simple #answer# and a long way to reach it.
+b : Is that a riddle? | Which do you carry?
+a : Not yet. Give me a #mile#. | The #cart# and one #stone# in my pocket.
+
+scene frost_on_rim
+when topic=weather here.season=winter here.weather=clear
+does tell.self / react.self / assess
+a : White #frost# makes a #rim# look wider than it is. | I scrape the #wheel# before trusting it on the #road#.
+b : Does ice collect there? | Can you leave early?
+a : At the bottom whenever meltwater reaches it. | Once I can see the #spokes# clearly.
+
+scene ice_shadow
+when topic=memories here.season=winter
+does tell.self / react.self / assess
+a : I once saw a dark #shadow# move beneath the #lake# #ice#. | I watched the #ice# after that, but nothing surfaced.
+b : Was it a fish? | Were you afraid?
+a : Too large for one I knew. | I moved away from the icy bank.
+
+scene lake_in_winter
+when topic=weather here.season=winter
+does tell.self / react.self / assess
+a : The #lake# can look still while shapes move under its #ice#. | I keep the #cart# well back from the shore in winter.
+b : Have you seen something? | Does the road cross it?
+a : Once. I will not guess what. | No, and I mean to keep it that way.
+
+scene loud_night
+when topic=day here.time=night
+does tell.self / react.self / assess
+a : A late #noise# sets my mind checking the #cart# again. | I like the #night# after the last #bell# has faded.
+b : Do you get up to look? | Can you fall asleep with it going on?
+a : If it sounds like a #wheel# being moved. | Once the street settles.
+
+scene market_weight
+when topic=prices
+does tell.self / react.self / assess
+a : The #market# scale should agree with the #load# I brought. | A buyer can argue a #price# after counting, not before seeing the #sacks#.
+b : Do you make them recount? | Do prices change often?
+a : If the number differs from mine. | Often enough to write them down.
+
+story short_road [topic=travel self.age>=18]
+  : I took a narrow #bend# with a #cart# that carried more #sacks# than usual.
+  : The #load# leaned, so I stopped and moved two sacks closer to the #axle#.
+  ask : Did it ride better then?
+  b : A balanced cart should.
+  : It did. The shorter way had still taken more time.
+
+story winter_shadow [topic=memories self.age>=18]
+  : I saw a long #shadow# pass beneath the #ice# near the #lake# shore.
+  : I stood still until it moved beyond the clear patch, then went back to the #road#.
+  ask : What was it?
+  b : You may never know from the bank.
+  : I do not. I know it was there.
+
+story hard_cheese [topic=food self.age>=18]
+  : I packed #cheese# for a trip and forgot to wrap it away from the #rope#.
+  : The #sacks# knocked it about until the pieces broke apart.
+  ask : Did you eat it anyway?
+  b : Broken cheese tastes the same.
+  : I did, at the next stop. I wrap it better now.
+
+rule @bark_wheel
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say One more pull on that #strap#. | The #wheel# sounds right today.
+
+rule @bark_riddle
+when concept=bark
+does aside
+cooldown 8h
+say A #riddle# for the next #mile#. | That #answer# is too easy.
+
+rule @bark_frost
+when concept=bark here.season=winter
+does aside
+cooldown 10h
+say The #rim# has taken #frost# again. | The #road# is sharp with cold.
+
+rule @bark_rat
+when concept=bark here.time=night
+does aside
+cooldown 11h
+say I heard something by the #larder#. | That had better not be a #rat#.
+
+dlg @1 resident.hub : #greet#. Keep clear of the #cart# and speak. | #greet#. I will finish this #knot# while you talk.
+dlg @2 resident.hub [topic.meeting=known] : You have found me again. Is the #road# clear? | I know you. Have you solved the #riddle# yet?
+dlg @1 resident.job : I haul #loads#, check the #wheels#, and deliver by the #road#. | My #cart# carries freight into and out of Coldwater.
+dlg @1 resident.bye : #farewell#. Mind the #rut# at the #bend#. | #saying.capitalize#. Keep your #boots# dry.
+graft resident.hub
+choice What are the smooth stones for? -> stones
+node stones
+say I collect one when a #road# day brings me near the #river#. A good one rests easily in my paw.
+free
+choice Do you keep many? -> collection
+choice Back to what we were saying. -> hub
+node collection
+say Only a few. I carry one until I find a better place for it at #home#.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye

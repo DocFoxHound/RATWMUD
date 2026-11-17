@@ -1,0 +1,430 @@
+# cw124, the second seal (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw124
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier full
+written_for tn_sm_linden_harvestton
+written_by claude-codex-cw-1
+title the second seal
+fits stage=adult|old
+prefers job=merchant warmth=warm
+traits temper=calm talk=quiet warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk checks_each_lid_twice_before_leaving
+likes plum_tart long_walks new_boots summer_evenings
+dislikes wet_floors early_bells
+fears a_spoiled_cask a_promise_of_land_not_kept
+hopes a_large_southern_orchard a_still_that_feeds_its_hands
+topics work +0.5 dreams +0.4 travel +0.4 prices +0.3 food +0.3 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# checks every #lid# a second time, keeps the #still# steady, and saves the #best# of the walk for imagining a southern #orchard#.
+
+words
+oath! = Cask and current | Lid and lake
+saying! = Seal it twice and sleep once | A tree begins beneath the ground
+still = still | copper still
+copper = copper | red metal
+pipe = pipe | cooling pipe
+flame = flame | low fire
+heat = heat | gentle heat
+water = water | lake water
+lake = lake | Glasswater
+barrel = barrel | wooden barrel
+cask = cask | stout cask
+casks = casks | wooden casks
+jar = jar | sealed jar
+jars = jars | stoppered jars
+lid = lid | close fitting lid
+lids = lids | jar lids
+seal = seal | wax seal
+stopper = stopper | wooden stopper
+rack = rack | storage rack
+shelf = shelf | store shelf
+shelves = shelves | store shelves
+counter = counter | shop counter
+scale = scale | counter scale
+weight = weight | measured weight
+coin = coin | pay
+count = count | tally
+batch = batch | day's run
+load = load | freight
+price = price | stated cost
+wagon = wagon | supply wagon
+road = road | high road
+roads = roads | routes
+cart = cart | passing cart
+orchard = orchard | apple grove
+tree = tree | fruit tree
+trees = trees | orchard trees
+root = root | young root
+roots = roots | young roots
+soil = soil | dark earth
+seed = seed | seed grain
+plum = plum | ripe plum
+plums = plums | ripe plums
+tart = tart | plum tart
+crust = crust | baked crust
+plate = plate | supper plate
+walk = walk | long walk
+walks = walks | long walks
+path = path | footpath
+turn = turn | road turn
+boots = boots | new boots
+boot = boot | sturdy boot
+floor = floor | wooden floor
+rain = rain | lake rain
+bell = bell | early bell
+evening = evening | long dusk
+south = south | southern country
+field = field | open field
+hand = hand | working paw
+hands = hands | working paws
+best = best | finest part
+
+any
+opinion @1 merchants for 1 : I know the #wagon# cost before I set a #price#. | A fair #scale# serves both sides of the #counter#.
+opinion @1 newcomers for 2 : A new #hand# who learns the #still# deserves a place. | I would show a willing worker the #rack# before asking where they came from.
+opinion @1 strangers for 1 : Travellers bring news of #roads# I have yet to walk. | I can welcome a stranger and keep the #counter# count exact.
+opinion @1 watch for 1 : A patrol near the #counter# lets me close without worry. | I will give the Watch a clear account if a #cask# goes missing.
+opinion @1 road against 1 : Every late #wagon# leaves the #shelves# thinner. | I like to walk a #path# with no freight due on it.
+opinion @1 city against 1 : Too much smoke would hide the #trees# I mean to plant. | I can trade with a city without wanting to live in one.
+opinion @1 dole for 1 : A worker short of #coin# still needs a warm #plate#. | An empty #shelf# at home can break a careful hand.
+opinion @1 houses mixed 0 : A House might buy a #cask# fairly; I keep the #weight# plain. | The name above a #counter# matters less than the bargain below.
+opinion @1 drink mixed 0 : A well made #cask# is honest work. | I want customers to know when their #boots# have had enough.
+opinion @1 festivals mixed 0 : A festival can clear the #shelves# and tire the #hands#. | I prefer a quiet #walk# after its first song.
+
+grown
+line @1 greet : #greet#. I am checking the #lids# before I serve. | #greet#. The #counter# is clear for you.
+line @2 greet [pair.band=strangers] : #greet#. Where did the #road# bring you? | #greet#. Name the goods you seek and I will state their #price#.
+line @3 greet [pair.band=friends|family] : Come sit while the #jar# cools. | I have a slice of #tart# if you stay.
+line @4 greet [self.working=yes] : #greet#. Let me seal this #cask#. | Speak by the #rack#; this #count# will take only a moment.
+line @5 greet [here.time=dawn] : #greet#. The #bell# beat me to the #still#. | #greet#. The first #flame# is lit.
+line @6 greet [here.time=dusk|night] : #greet#. I will close the #counter# after one more sale. | #greet#. The #jars# are on the #shelf# for the night.
+line @1 greet.return : Back again? I have checked that #lid# twice now. | #welcome_back#. The #wagon# has come in since you left.
+line @2 greet.return [pair.band=friends|family] : The #tart# is still good, if you want a slice. | Tell me where your #walk# took you.
+line @3 greet.return [self.working=yes] : You caught me beside the #pipe# again. | I will turn from the #still# in a moment.
+line @1 kin.open [pair.kin!=no] : Come in. There is a #plate# near the fire. | I have a quiet #walk# in mind after work.
+line @1 again.open : This is your second visit across my #floor# today. | I had only just put the #stopper# back in.
+line @1 hail : There you are. Mind the #floor# by the #rack#. | A fresh #tart# waits if you have time.
+line @1 farewell : #farewell#. Mind the slick #floor# with those #boots#. | #saying.capitalize#. The #road# is open.
+line @1 farewell.return : May your next #walk# be an easy one. | I will hold a #plate# if you return.
+line @2 farewell [here.time=night] : Take a light along the #path#. | The #counter# is closing; go safely.
+line @1 react.news : Let me test this #lid#, then I am listening. | Give me the source before the story.
+line @1 react.news.new : That word has not reached my #counter#. | Which #cart# carried it here?
+line @1 react.news.known : I heard an earlier version from a #wagon# hand. | That explains why the last account stopped short.
+line @1 react.news.doubt : I would weigh that report again. | A missing piece makes the whole account uncertain.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Come away from the #counter# and rest. | That is heavy news. I will leave the #still# to hear the rest.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. May their supper taste better for the news. | That is welcome news for a tired day.
+line @1 answer.how : The #still# is steady and the #jars# hold. | Thinking of a #walk# after this shift.
+line @1 answer.how.busy [self.working=yes] : Between one #lid# and the next, I watch the #heat#. | Busy with #casks# and a late #wagon#.
+line @1 ask.how : Has the #road# treated your #boots# gently? | Did you have a quiet #evening#?
+line @1 sympathise : I can sit nearby without asking you to speak quickly. | There is #tart# if food would help.
+line @1 reassure : A #root# can take hold after a hard season. | First make the #lid# sound; the rest can follow tomorrow.
+line @1 decline : I cannot promise a #cask# I have not weighed. | No. The #still# needs my attention today.
+line @1 accept_decline : Your answer is enough. We can put the matter down. | Understood; I will return this #jar# to the #rack#.
+line @1 thank : You checked the #stopper# before the #wagon# left. | That spared us a lost #cask#. Thank you.
+line @1 deflect_thanks : The #lid# only needed another turn. | I had a steady #hand# for it.
+line @1 preclose : I have two #lids# left to check. | I must lower the #flame#, then take the #road# home.
+line @1 tease [pair.band=friends] : That #boot# has walked farther than its owner today. | Your #tart# slice is larger than the plate.
+line @1 tease.return [pair.band=friends] : Keep your best answer for the next #walk#. | I will leave you the smaller slice next time.
+line @1 ack : #bc_right#. I will check the #scale#. | #bc_fair_enough#. The #cask# is sealed.
+line @1 give.advice : Test the #stopper# after the #cask# is moved. | Let new #boots# learn the #road# before a long journey.
+line @1 warn [world.bandits=near] : A #wagon# should not take the lonely #road# tonight. | Walk with company until the patrol comes by.
+scene second_lid
+when topic=work
+does tell.self / react.self / assess
+a : I press each #lid# a second time before leaving the #rack#. | A #jar# that looks sealed can still breathe around its rim.
+b : Do you find many loose? | Is a second check needed?
+a : Fewer now that everyone expects it. | It costs a moment and saves a #batch#.
+
+scene sound_stopper
+when topic=work
+does tell.self / react.self / assess
+a : I turn a #stopper# until the #cask# gives a dull note. | A loose #stopper# can stain the whole #wagon#.
+b : Can you hear the difference? | Do you mark it afterward?
+a : Usually, if the room is quiet. | I set a #seal# beside it.
+
+scene pipe_temperature
+when topic=work
+does tell.self / react.self / assess
+a : The #pipe# should cool evenly from one end to the other. | I check the #water# before raising the #flame#.
+b : Does it run hot? | What if there is too little water?
+a : Some days. I slow the #heat#. | I wait and fill it before continuing.
+
+scene jar_on_rack
+when topic=work
+does tell.self / react.self / assess
+a : I leave space between #jars# on the #rack#. | A #jar# set against another can hide a leak.
+b : Do you move them later? | How do you spot one?
+a : When they have cooled. | The #shelf# beneath shows a stain.
+
+scene wagon_due
+when topic=work
+does tell.self / react.self / assess
+a : Before the #wagon# arrives, every #cask# gets a place in my tally. | A late #wagon# can still leave on time if the #load# is ready.
+b : Do drivers help? | Do you keep them waiting?
+a : Some do. I tell them where to stand. | Only until each #stopper# is sound.
+
+scene counter_scale
+when topic=prices
+does tell.self / react.self / assess
+a : A #scale# should stand level before a customer sees the #price#. | I keep the #weight# beside the goods, not behind the #counter#.
+b : Do you check it each sale? | Does anyone question the measure?
+a : When the #cask# is new. | They may; I show them again.
+
+scene new_hand
+when topic=work
+does tell.self / react.self / assess
+a : A new #hand# learns the #flame# before facing customers. | The #still# rewards a careful question more than a quick guess.
+b : Do they learn by watching? | Do you let them touch the pipe?
+a : First by watching, then by doing. | After they know where the #heat# gathers.
+
+scene promised_orchard
+when topic=dreams
+does tell.self / react.self / assess
+a : I would plant an #orchard# wide enough to lose the last row in the distance. | I keep imagining #trees# in southern #soil#.
+b : What would you grow? | Why the south?
+a : Plums first, then whatever takes. | Longer warmth for the #roots#.
+
+scene first_root
+when topic=dreams
+does tell.self / react.self / assess
+a : A large #orchard# begins with one sound #root#. | I would test the #soil# before buying a field of trees.
+b : Do you know how? | Would you keep this trade?
+a : Enough to ask the right grower. | Until the trees could support me.
+
+scene southern_walk
+when topic=travel
+does tell.self / react.self / assess
+a : I would like to walk the southern #road# without a #wagon# due at the end. | A #path# with no fixed destination clears my head.
+b : Do you go far now? | Would you travel alone?
+a : As far as the day's work allows. | If the #road# were safe enough.
+
+scene boots_on_path
+when topic=pastimes
+does tell.self / react.self / assess
+a : New #boots# need several short #walks# before a long one. | I choose a #path# where I can turn back without hurry.
+b : Do they rub? | Do you walk every day?
+a : Less if I break them in slowly. | If another hand tends the #still#.
+
+scene plum_tart
+when topic=food
+does tell.self / react.self / assess
+a : A #plum# #tart# with a firm #crust# is worth sitting down for. | I keep the last slice until the #jars# are sealed.
+b : Do you bake it yourself? | Does it taste better then?
+a : Sometimes, when the #flame# is out. | Rest makes the sweetness easier to notice.
+
+scene wet_floor
+when topic=home here.weather=rain|storm
+does tell.self / react.self / assess
+a : Wet #boots# turn the #floor# by the #counter# slick. | I put a rag near the entry when rain reaches the #road#.
+b : Do people use it? | Have you slipped there?
+a : If I ask them. | Once; I would rather not repeat it.
+
+scene early_bell
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : The #bell# starts before I need it. | I would hear the #pipe# wake without a #bell# marking the hour.
+b : Does it trouble your sleep? | Does it help you begin?
+a : On cold mornings. | The #flame# is better at setting my pace.
+
+scene summer_evening
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : A summer #evening# gives me time to walk after the last sale. | I can see the #lake# light fade from the #path# above town.
+b : Do you walk far? | Do you take company?
+a : Until I forget the #counter# for a while. | If someone wants a quiet pace.
+
+scene guarded_counter
+when topic=smalltalk
+does tell.self / react.self / assess
+a : A warm greeting costs nothing, but a #price# should be exact. | I can share a #plate# without sharing every thought.
+b : Do customers find you distant? | Does that keep things simple?
+a : Some. I still serve them fairly. | It keeps the #counter# clear.
+
+scene festival_casks
+when topic=festival
+does tell.self / react.self / assess
+a : Festivals move #casks# faster than ordinary days. | The empty #shelves# are welcome until I have to fill them again.
+b : Do you attend? | Do you run out?
+a : After the #counter# closes. | Only if a #wagon# is late.
+
+scene lake_after_work
+when topic=home here.region=coldwater
+does tell.self / react.self / assess
+a : After the last #wagon# goes, the #lake# grows still. | A #walk# beside the #water# lets the #still# sound leave my ears.
+b : Do you go alone? | Does the walk settle your thoughts?
+a : Often. | Enough to sleep before the #bell#.
+
+scene city_distance
+when topic=travel
+does tell.self / react.self / assess
+a : I can send a #cask# to the city without going with it. | The #road# south interests me more once it leaves the smoke behind.
+b : Would you ever go? | What would you seek?
+a : To look at #soil# for an #orchard#. | A place where #trees# can spread.
+
+scene fresh_plum
+when topic=food
+does tell.self / react.self / assess
+a : I would taste the #plum# before deciding how much #coin# to spend. | A #tart# begins with fruit that can stand on its own.
+b : Do you buy many? | Do you prefer them baked?
+a : Only what we will use. | Either, if the #plum# is ripe.
+
+scene counting_returns
+when topic=prices
+does tell.self / react.self / assess
+a : Empty #casks# returning on the #wagon# still have to be counted. | I check each #stopper# before a used #cask# goes on the #rack#.
+b : Do you reuse them? | Do some go missing?
+a : The sound ones, after cleaning. | I count because they can.
+
+scene quiet_walk
+when topic=pastimes
+does tell.self / react.self / assess
+a : I take a #walk# with no errand when the shop has closed. | A #turn# I did not plan can be the best part of the #path#.
+b : Do you take a map? | Have you missed the way back?
+a : No. I can follow the #road# home. | Only for a pleasant little while.
+
+scene night_seal
+when topic=day here.time=night
+does tell.self / react.self / assess
+a : At night I test the #lid# on the last #jar# again. | A quiet #rack# is easier to leave when every #seal# has held.
+b : Is anyone there to help? | Do you still worry?
+a : Sometimes. I do the check myself. | Less after the second pass.
+
+scene rain_on_wagon
+when topic=weather here.weather=rain|storm
+does tell.self / react.self / assess
+a : Rain on a #wagon# finds every weak #stopper#. | I cover the #casks# before the first wheel reaches the #road#.
+b : Does the cover stay tied? | Do you send it out anyway?
+a : If the knots are sound. | When the driver says the route is passable.
+
+scene first_trees
+when topic=dreams
+does tell.self / react.self / assess
+a : I picture the first row of #trees# after a year's growth. | The biggest #orchard# begins with patient work below the #soil#.
+b : Would you plant them yourself? | Could you wait that long?
+a : With help for the heavy digging. | I have waited for slower things.
+
+scene mixed_trade
+when topic=work
+does tell.self / react.self / assess
+a : The #still# and the #counter# ask different sorts of care. | At the #still# I listen; at the #counter# I measure in front of someone.
+b : Which do you prefer? | Do they keep you busy?
+a : The quiet #pipe#, most days. | Enough that a long #walk# feels earned.
+
+scene help_at_counter
+when topic=friends
+does tell.self / react.self / assess
+a : A trusted #hand# may mind the #counter# during my #flame# check. | I would rather teach one helper well than hurry three through a shift.
+b : Do you give them the price list? | Do they ask you questions?
+a : Yes, and the #scale# beside it. | Often. That keeps mistakes small.
+
+story second_check [topic=work self.age>=25]
+  : I found one #lid# loose after the #jars# had been set on the #rack#.
+  : I checked every other #jar# before going home that night.
+  ask : Were any others loose?
+  b : One faulty lid can mean a hurried batch.
+  : Two more. I began making a second pass after that.
+
+story walking_no_errand [topic=pastimes self.age>=25]
+  : I set off with new #boots# and no destination beyond the next #turn#.
+  : I reached the #lake#, sat until the light softened, and came back by another #path#.
+  ask : Did the boots wear well?
+  b : A gentle first walk should help.
+  : They did. I wore them to work the next morning.
+
+story plum_first [topic=food self.age>=25]
+  : I bought #plums# for a #tart# before tasting one from the basket.
+  : The first was sour, so I added less fruit and saved the rest for cooking.
+  ask : Was the tart still good?
+  b : A little sweetness might balance it.
+  : It was, after I gave the #crust# more time.
+
+story missed_wagon [topic=work self.age>=25]
+  : A #wagon# came late and its driver wanted the #casks# moved at once.
+  : I checked each #stopper# before letting a single one onto the boards.
+  ask : Did the driver complain?
+  b : Probably, if the road was waiting.
+  : They did. None of the #casks# leaked, and the complaint ended there.
+
+story southern_seed [topic=dreams self.age>=25]
+  : I carried a #seed# from a southern #tree# in my pocket for a whole season.
+  : It never grew where I planted it, but I kept reading about the #soil# it needed.
+  ask : Would you try again?
+  b : You sound as though you would.
+  : I will, when I find ground that suits it.
+
+rule @bark_lid
+when concept=bark
+does aside
+cooldown 7h
+say That #lid# wants another press. | I have one #jar# left to check.
+
+rule @bark_still
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say The #pipe# is running evenly. | Lower the #flame# a little.
+
+rule @bark_counter
+when concept=bark self.working=yes
+does aside
+cooldown 9h
+say The #scale# is ready for the next #cask#. | I should mark that #weight#.
+
+rule @bark_walk
+when concept=bark here.time=dusk
+does aside
+cooldown 10h
+say There is time for a short #walk#. | The #path# beyond town may be quiet.
+
+rule @bark_wagon
+when concept=bark
+does aside
+cooldown 11h
+say Another #wagon# due before night. | The #casks# must be ready when it comes.
+
+rule @bark_plum
+when concept=bark here.season=summer|autumn
+does aside
+cooldown 12h
+say This day asks for a #plum# with a little tartness. | I could bake a #tart# after work.
+
+dlg @1 resident.hub : #greet#. The cooling #jar# gives us time to talk. | #greet#. Come around the #counter# where it is quiet.
+dlg @2 resident.hub [topic.meeting=known] : Back again. Have you taken that #walk#? | I remember you. The #casks# are ready now.
+dlg @3 resident.hub [here.time=night] : #greet#. I have one #lid# left to test. | It is late, but the #counter# has not closed yet.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I will hear you, though I want a clear account. | Speak calmly. The #still# is hot.
+dlg @1 resident.job : I keep the #still# and the #counter#, with a check on every #cask#. | The #pipe#, #flame#, and #scale# all need watching.
+dlg @1 resident.bye : #farewell#. Keep your #boots# from the wet #floor#. | #saying.capitalize#. I must finish the #lids#.
+dlg @1 shop.greet [here.shop=open] : #greet#. The #casks# are sealed and weighed. What would you like? | #greet#. The stock is arranged beside the #rack#; come see.
+dlg @2 shop.greet [here.shop=bare] : The #shelves# are bare; I can still buy from you. | Nothing left to sell today. Have you brought something?
+dlg @3 shop.greet [here.shop=asleep] : Mm... the #lids# are sound... | Sleeping now... come back after the #bell#.
+dlg @4 shop.greet [here.shop=open topic.meeting=known] : You have returned. The #scale# has been reset for your visit. | I remember your last #cask#; ask for the new stock.
+dlg @5 shop.greet [here.shop!=bare here.shop!=asleep] : #greet#. Bring the goods to this #scale# and I will weigh them. | The #rack# holds the current stock; come nearer.
+dlg @1 shop.prices [here.shop=open|bare] : The #wagon# cost has risen, but the #weight# is plainly shown. | Tell me the #cask# you mean and I will give its #price#.
+dlg @1 shop.bye : #farewell#. Keep the #stopper# sound on the #road#. | #shop_bye# I will check the #lid# again after you go.
+graft resident.hub
+choice Why do you check every lid twice? -> second
+node second
+say I found several loose #lids# in one #batch#. A second pass is quicker than a lost #cask#.
+free
+choice Do you trust anyone else to check? -> helper
+choice Back to what we were saying. -> hub
+node helper
+say Yes, when they know the #rack#. I still make my own pass before I leave.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Why are the casks sealed that way? -> seal
+node seal
+say A sound #stopper# and #seal# let a #cask# travel without leaking onto the #wagon#.
+free
+choice Do you test every one? -> test
+choice Back to the counter. -> greet
+node test
+say Twice before it leaves this #rack#. I would rather lose a moment than a whole #load#.
+choice Back to the counter. -> greet
+choice Goodbye. -> bye

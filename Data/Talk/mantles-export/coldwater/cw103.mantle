@@ -1,0 +1,265 @@
+# cw103, the quiet name-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw103
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_fh_jory_rimepeak
+written_by claude-codex-cw-1
+title the quiet name-keeper
+fits stage=adult|old
+prefers talk=quiet humour=dry
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=frank piety=ordinary drive=steady
+quirk remembers_every_name_ever_heard
+likes blackberries draughts market_bustle autumn_wind
+dislikes cold_tea bad_manners
+fears being_forgotten empty_workbench
+hopes a_room_in_ridgemere fair_wages
+topics work +0.6 memories +0.5 friends +0.4 pastimes +0.3 weather +0.2 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=soft tease=dry
+marks oath saying
+persona #self.first# is a quiet, dryly funny loom hand with a head full of #names#, a worn #board#, and a wish for fair work.
+
+words
+oath! = Count the threads | By the last knot
+saying! = A name holds longer than a knot | The loose end always shows
+shuttle = the shuttle in my paw | that little wooden runner
+warp = the long threads held tight | threads stretched for weaving
+weft = the thread crossing back | the thread that goes across
+selvedge = the edge that keeps its shape | the cloth's firm edge
+bench = my place by the loom | the bench at the loom
+names = names I keep in my head | the names that stay with me
+board = my draughts board | the board with the worn corners
+pieces = the dark and pale pieces | those little playing stones
+berries = berries from the hedge | the black fruit on the lane
+wind = wind with a cold edge | air that lifts the loose wool
+quiet = a little room to think | the hush between two turns
+coin = a coin earned by the hour | what a day's work brings home
+city = the city down the road | Ridgemere beyond the fields
+
+any
+opinion @1 city against 1 : #city.capitalize# has work, I hear, but a crowd can make a wolf feel uncounted. | There may be wages in #city#, though I would miss knowing who sat beside me.
+opinion @1 merchants against 2 : A fair scale is easy to recognise. I wish more keepers used one when they reckon #coin#. | If cloth sells dear, the hands at #bench# should see more of the money.
+opinion @1 times against 1 : Each week takes a little more #coin# to put supper on the table. | I count the hours, then count what #coin# they'll buy. The second number keeps shrinking.
+opinion @1 festivals mixed 0 : I like hearing the music from a step away; the crush is too much for me. | A festival is fine from the edge, with a little #quiet# between the songs.
+opinion @1 newcomers mixed 0 : I learn a new wolf's name before I decide what sort of neighbour that wolf will be. | A new face means another of the #names# I keep, and another pair of hands.
+opinion @1 houses against 1 : A House can price a bolt of cloth without knowing who kept the #selvedge# straight. | I'd trust a hand that checked the #warp# before I'd trust a crest on a door.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. I'll remember your name if you give it. | #greet#. There is room beside the #board#, if you like quiet.
+line @2 greet [self.working=yes] : #greet#. Let me finish this pass of the #shuttle#. | #greet#. The #weft# will wander if I look away now.
+line @3 greet [here.time=dawn] : #greet#. The #wind# has got here before the rest of us. | #greet#. A fresh day, and a fresh length of #warp#.
+line @4 greet [here.time=dusk|night] : #greet#. I'd know that step even in the dark. | #greet#. The #bench# can wait until morning.
+line @1 kin.open [pair.kin!=no] : Ah, you. I kept a place by the fire. | There you are. I was beginning to count the minutes.
+line @1 again.open : Twice today. I have not forgotten the first time. | Here again; your face had not gone from my mind.
+line @1 greet.return : #welcome_back#. I still owe you a proper answer. | #welcome_back#. I had another thought about what you said.
+line @2 greet.return [pair.band=friends|family] : Your turn at the #board# is still waiting. | Come sit. I saved the good chair for you.
+line @3 greet.return [self.working=yes] : Back already. This length of #warp# is nearly done. | I can speak when the #shuttle# reaches the end.
+line @4 greet.return [here.time=dusk|night] : Back before sleep. I thought that might be you. | Another visit after dark. I shall keep the lamp low.
+line @1 farewell : #saying.capitalize#. Walk carefully. | Keep your #quiet# when you can. Farewell.
+line @1 farewell.return : And a safe road toward #city# to you. | I'll know your step next time. Go well.
+line @2 farewell [here.time=night] : Mind the dark stones on the road to #city#. | Go gently. The lamp outside has a short reach.
+line @1 react.news : #listen.capitalize#. Say that once more, while the #shuttle# rests. | That is news worth putting down the #shuttle# for.
+line @1 react.news.new : I had not heard it. Who told you? | New to me. I'll keep that among the #names# and stories I remember.
+line @1 react.news.known : I heard a little of it. Your part fills a gap among the #names# I heard. | So it has reached you too. I wondered when it would.
+line @1 react.news.doubt : That account has a loose end, like a bad #selvedge#. | I would hear it from another mouth before I set it down as true.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A hard thing to carry. I am sorry. | I can sit with you in the #quiet# if you want.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good for them. I hope it lasts. | That is a bright turn of the #weft#.
+line @1 answer.how : Well enough, with work for my paws. | A little tired, but steady as the #warp#.
+line @1 answer.how.busy [self.working=yes] : Busy. I can count the #shuttle# passes better than the hours. | The #weft# has kept me here since first light.
+line @1 ask.how : How has the day treated you? | And how are you holding up? I have a little #quiet# to listen.
+line @1 sympathise : I will sit a while if you want company. | I heard you. We can have a little #quiet# if you need it.
+line @1 reassure : One bad row of #weft# can be undone. Breathe first. | We'll see the whole cloth before we judge this bit.
+line @1 decline : I cannot give that the care it needs just now; ask me after the #shuttle# rests. | I would rather say no plainly than promise and leave you waiting.
+line @1 accept_decline : Fair enough. No #coin# owed between us. | I asked; you answered. That will do.
+line @1 thank : You spared me a difficult hour at the #bench#. Thank you. | I will remember the help, and the wolf who gave it.
+line @1 deflect_thanks : I had a free paw off the #shuttle#. That is all. | You would have done as much for me.
+line @1 preclose [self.working=yes] : The #shuttle# is waiting for me. We can finish this later. | I must get back to the #bench# before the light goes.
+line @2 preclose : I should leave you a little #quiet#. | That is enough talk for one sitting, I think.
+line @1 tease [pair.band=friends] : Your #pieces# move faster when I am not looking. Curious. | I could let you win at #board#, but you would spot it.
+line @1 tease.return [pair.band=friends] : Keep talking; I am learning your next move. | That was almost sharp enough to cut #weft#.
+line @1 ack : #bc_it_is#. | #bc_fair_enough#.
+line @1 give.advice : Do the next small thing well. The rest can wait. | Leave a little slack in the #weft#; a thread drawn too hard will snap.
+line @1 warn [world.bandits=near] : Keep to the travelled road. Trouble has been close to #city#. | Do not take the short path alone while the roads are troubled.
+line @1 hail [pair.band=friends] : I know that walk. Come to the #board#. | Your chair is free, if you want it.
+scene shuttle_pause
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : The #shuttle# sticks when my mind gets ahead of my paws. | I have crossed this #weft# three times and still found a fault.
+b : Shall I leave you to it? | Is it worth undoing now?
+a : Stay, but let me finish this row of #weft#. Then I can listen. | Better now than after a whole bolt. There, the edge lies right.
+
+scene cloth_edge
+when topic=work
+does tell.self / react.self / assess
+a : The #selvedge# tells you how careful a hand was. | Give me the end of a bolt and I will show you the maker's hurry.
+b : I never thought to look at the edge. | Does a small flaw matter so much?
+a : Most folk do not look at the #selvedge#. They notice when it comes loose. | It matters when someone wears it through winter.
+
+scene counting_names
+when topic=memories
+does tell.self / react.self / assess
+a : I keep #names# without meaning to. It began with the wolves on our street. | A stranger tells me a name once, and it sits with all the others.
+b : That must fill your head. | Do you ever forget one?
+a : There is room for #names#. I forget where I left my cup instead. | I forget cups and errands. Names are stubborn things.
+
+scene draughts_corner
+when topic=pastimes
+does tell.self / react.self / assess
+a : My #board# has a chipped corner. It still makes a fair game. | I keep the #pieces# in an old cloth bag, dark against pale.
+b : Who taught you to play? | Have you lost many pieces?
+a : A neighbour who never let me take a move back at #board#. A useful teacher. | Only one. I made another from a pebble, and it plays as well.
+
+scene berries_hill
+when topic=food here.season=summer|autumn
+does tell.self / react.self / assess
+a : The #berries# are black along the lane now. | I came home with #berries# in my pocket and a stain on my sleeve.
+b : Are they sweet this year? | Did you save any for supper?
+a : Some #berries# are. I eat the sour ones too, to keep the sweet ones honest. | Enough for a bowl. The rest went before I reached the door.
+
+scene wind_in_wool
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : This #wind# gets into a bundle of wool before you can tie it. | I could hear the #wind# working at the shutters all night.
+b : Did it spoil your work? | Were you able to sleep?
+a : Only the bundle of wool I left loose in that #wind#. That was my doing. | Some. The shutters lost the contest before dawn.
+
+scene held_breath
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I like the #quiet# after everyone has gone to supper. | There is a moment at the end of work when the whole room seems to wait.
+b : Does it stay quiet long? | What are you waiting for?
+a : Only until somebody remembers a last errand. Long enough for #quiet#. | Nothing. That is why I like it.
+
+scene friend_at_board
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# can tell when I am hiding a move on the #board#. | I can sit with #self.friend# for an hour and say very little.
+b : Is that a good friend, then? | Is the silence comfortable?
+a : A very good one. I have never had to pretend to win at #board#. | It is. Some company asks you for nothing at all.
+
+scene spouse_evening
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : #self.spouse# knows when I have counted too many hours at the #bench#. | #self.spouse# sets a cup down beside me when I go quiet.
+b : What gives you away? | That sounds like kindness.
+a : I start counting steps on the walk home. It makes my #self.spouse_word# laugh. | It is. I try to notice before the cup goes cold, as #self.spouse# notices me.
+
+scene town_names
+when topic=home here.region=coldwater
+does tell.self / react.self / assess
+a : I could give you #names# for every door on this street. | Coldwater changes, but I keep #names# for the houses that stood before.
+b : Would you tell me one? | Does that make leaving difficult?
+a : Another day. One of those #names# deserves a whole story. | It might. I have not settled that question.
+
+scene road_to_city
+when topic=travel self.from=coldwater
+does tell.self / react.self / assess
+a : I wonder what work a hand can find in #city#. | The road to #city# is plain enough. Deciding to take it is harder.
+b : Would you go alone? | What keeps you here?
+a : Perhaps. A new place gives a wolf room to begin again. | Familiar faces, familiar #names#, and things I have not finished.
+
+scene market_edge
+when topic=prices
+does tell.self / react.self / assess
+a : I watch the market from the edge. You can hear the price change from stall to stall. | I count #coin# twice before buying, and still come home with less than I hoped.
+b : Do you challenge a bad price? | Does anyone get a fair bargain?
+a : If I know the measure and the #coin# asked. Otherwise I walk on. | Sometimes. You have to know what you are looking at.
+
+scene thin_week
+when topic=times world.times=hard|lean
+does tell.self / react.self / assess
+a : A thin week makes every #coin# feel heavy in the paw. | I have seen a wolf put back a loaf and pretend it was a choice.
+b : What can be done? | Did you say anything?
+a : Start with the nearest table and see who has a spare #coin#. | No. I bought the loaf and left it where it could be found.
+
+scene autumn_steps
+when topic=season here.season=autumn
+does tell.self / react.self / assess
+a : The #wind# has that autumn bite again. | The first leaves gather by the door before anyone thinks to sweep.
+b : Do you like this season? | Will you clear them away?
+a : I do. That #wind# gives a wolf a reason to come in and sit. | After the next cup. They can wait as well as I can.
+
+scene chapel_listen
+when topic=faith
+does tell.self / react.self / assess
+a : I seek #quiet# in chapel. There is enough speaking elsewhere. | I have never asked the Bright One for a full purse.
+b : What do you ask for? | What would you ask for, then?
+a : Patience to hear what I missed the first time, and a little #quiet#. | A steady hand, and a kinder day for the wolves beside me.
+
+scene name_newcomer
+when topic=newcomer
+does tell.self / react.self / assess
+a : A new face came through today. I shall learn the name before I learn the tale. | I heard another unfamiliar name at the well this morning.
+b : You are curious, then? | Will you ask whose it is?
+a : About the wolf, yes. Even the #names# I keep are only a beginning. | If we meet. I will not chase a rumour round town.
+
+scene two_moves_ahead
+when topic=pastimes
+does tell.self / react.self / assess
+a : I lost at #board# by planning three moves ahead and missing the one under my nose. | A patient player can make my #pieces# look foolish.
+b : Will you play again? | Do you mind losing?
+a : Certainly. I might notice the #board# this time. | Only when I had a better move and failed to see it.
+
+story first_game [topic=memories self.age>=25]
+  : The first #board# I learned on was scratched into a tabletop.
+  : We used pebbles for #pieces#, and a missing pebble meant somebody had taken a move home.
+  ask : Did you ever learn a game from someone who refused to explain it?
+  b : I have had a teacher like that.
+  : I remember the moves better than the lesson, which may have been the lesson.
+
+story wrong_name [topic=memories self.age>=25]
+  : I once answered to the wrong name all morning rather than embarrass a tired carter.
+  : By noon the whole yard used it. I finally told him, and we both laughed.
+  ask : Would you have corrected him sooner?
+  b : I might have. It depends on the carter.
+  : Probably wise. I still remember the name he gave me.
+
+story unruly_thread [topic=work self.working=yes]
+  : One day a loose thread caught the #shuttle# and stopped the loom outright.
+  : I spent longer finding the knot than I would have spent doing the row again.
+  ask : Would you start again, or hunt for the knot?
+  b : I would have to see the cloth.
+  : A fair answer. I started again, then found the knot under my sleeve.
+
+rule @bark_board
+when concept=bark here.time=dusk|night
+does aside
+cooldown 8h
+say The #board# is out, if anyone wants a game. | One seat by the #board# is free.
+
+rule @bark_work
+when concept=bark self.working=yes
+does aside
+cooldown 6h
+say Mind the #warp#; it is stretched tight. | That #shuttle# has a mind of its own today.
+
+rule @bark_berries
+when concept=bark here.season=summer|autumn
+does aside
+cooldown 10h
+say #berries.capitalize# by the lane, if the birds have left any. | I know where the #berries# grow, and I am not telling.
+
+rule @bark_wind
+when concept=bark here.weather=storm
+does aside
+cooldown 9h
+say Hold the door; the #wind# will have it. | There goes another bundle after the #wind#.
+
+dlg @1 resident.hub : #greet#. I can spare a moment. What did you want to know? | #greet#. Say on; I am listening.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I remember you. What brings you back? | #topic.player#. There is a place beside me if you want to talk.
+dlg @1 resident.job : I work with cloth. The #selvedge# tells me when a day has gone well. | I take the #shuttle# from one edge to the other until the light fails.
+dlg @1 resident.bye : Walk safely. I shall remember the visit. | #saying.capitalize#. Go well.
+graft resident.hub
+choice How do you remember every name? -> names
+node names
+say I hear a name once and it stays. I cannot do the same with where I left my cup.
+mood pleased
+free
+choice Has that ever caused trouble? -> names_trouble
+choice Thank you. -> hub
+node names_trouble
+say I once answered to a wrong name all morning to spare a tired carter. It took until noon to correct him.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye

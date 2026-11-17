@@ -1,0 +1,408 @@
+# cw106, the loud ledger (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw106
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier full
+written_for tn_cw_fallow_lakewick
+written_by claude-codex-cw-1
+title the loud ledger
+fits stage=adult|old
+prefers role=merchant job=crafter
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk distrusts_anything_from_the_city
+likes hard_cheese old_tales new_boots autumn_wind
+dislikes night_noise haggling
+fears a_cart_lost_on_the_road a_shed_without_hands
+hopes honest_measure steady_work_for_the_shed
+topics work +0.6 prices +0.5 travel +0.4 faith +0.3 memories +0.2 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# runs a #loom# with a carrying voice, reads every #ledger# aloud, distrusts city goods, and leaves a clear #measure# for every hand at work.
+
+words
+oath! = By wool and wheel | Bright One keep the axle
+saying! = Count it before it rolls | A straight edge speaks plainly
+loom = loom | wool frame
+wool = wool | fleece ready to work
+fleece = fleece | wool fleece
+shuttle = shuttle | wooden runner
+warp = warp | long threads
+weft = weft | crossing threads
+edge = edge | firm border
+bolt = bolt of cloth | rolled length
+bolts = bolts of cloth | rolled lengths
+ledger = ledger | book of measures
+measure = measure | marked length
+mark = mark | little notch
+scale = scale | weighing pan
+cart = cart | wagon
+wheel = wheel | iron-bound wheel
+axle = axle | wooden axle
+road = road | high road
+load = load | cargo
+cheese = hard cheese | well-aged cheese
+tale = old tale | story worth retelling
+boots = boots | new boots
+wind = autumn wind | blow off the lake
+counter = counter | trade bench
+hand = hand | working paw
+hands = hands | working paws
+bell = bell | shop bell
+night = night | dark hours
+price = price | cost written down
+cloth = cloth | woven wool
+thread = thread | strand
+door = door | shed door
+choice = choice | decision
+beat = beat | steady rhythm
+prayer = prayer | plea to the Bright One
+
+any
+opinion @1 city against 1 : A #load# from the city gets a second look before I open it. | Smoke and fine wrapping do not make a poor #bolt# sound.
+opinion @1 road against 1 : Every late #cart# costs an hour I cannot give back. | The #road# takes the #wheel# and the patience with it.
+opinion @1 merchants for 1 : I know what it costs to keep a #counter# supplied. | A fair #price# leaves room for the carter and the maker both.
+opinion @1 church for 1 : I thank the Bright One for every safe #cart# that reaches home. | A #prayer# is easier to mean after a hard day of work.
+opinion @1 dole for 1 : Feed a hungry wolf before you ask for the #ledger#. | I would rather share #cheese# than count who deserves a bite.
+opinion @1 drink against 1 : A bottle can take more from a #load# than a broken #wheel#. | I need a clear head when the #ledger# is open.
+opinion @1 festivals for 1 : A festival gives every #hand# in town something to say. | I will leave the #counter# long enough to hear a #tale# there.
+opinion @1 watch for 1 : Let the Watch mind the #counter# while I count the #load#. | A patrol on the #road# makes the late #cart# easier to wait for.
+opinion @1 houses mixed 0 : A crest can pay a fair #price# or a poor one. I look at the offer. | The #ledger# tells me more about a House than its gate.
+opinion @1 times mixed 0 : Some days the #scale# is even; some days it is not. | I keep the #measure# straight whatever the season brings.
+
+grown
+line @1 greet : #greet#! Come where I can hear you over the #loom#. | #greet#. The #ledger# is open; say your piece.
+line @2 greet [pair.band=strangers] : #greet#. State what you need at the #counter#. | I do not know your #hand# yet. Give me a plain request.
+line @3 greet [pair.band=friends|family] : There you are. The #cheese# is on the table. | Come in. I have a #tale# for you when the work is done.
+line @4 greet [self.working=yes self.role=merchant] : #greet#. I can speak while I count this #load#. | #greet#. Mind the #scale#; I have just set it.
+line @5 greet [here.time=dawn] : #greet#. The first #cart# is due soon. | #greet#. I have the #ledger# out before breakfast.
+line @6 greet [here.time=dusk|night] : #greet#. I am closing the #ledger# for the day. | #greet#. The #bell# sounds twice as loud at this hour.
+line @1 greet.return : #welcome_back#. Did you bring the #measure#? | Back again. I have set the #ledger# where you can see it.
+line @2 greet.return [pair.band=friends|family] : I kept a wedge of #cheese# for you. | Sit. That #tale# is not finished yet.
+line @3 greet.return [self.working=yes] : One more #bolt# to count, then I am yours. | I can talk after the #shuttle# clears this row.
+line @1 kin.open [pair.kin!=no] : Come in; the #night# is too cold for the step. | You know where the #boots# can be set down.
+line @1 again.open : Twice today? The #ledger# has barely changed. | I heard that #bell# and knew you had returned.
+line @1 hail [pair.band=friends] : Over here! I have news from the #road#. | Come along the #counter#; there is room.
+line @1 farewell : #saying.capitalize#. Go carefully. | #farewell#. Keep your #boots# dry.
+line @1 farewell.return : And a safe #road# to you. | The #counter# will be open again.
+line @2 farewell [here.time=night] : Keep the lamp ahead of your #boots#. | Mind the #road# after dark.
+line @1 react.news : #listen.capitalize#. Let me put down the #ledger#. | Say it plainly; I will hear the whole #tale#.
+line @1 react.news.new : That has not reached my #counter#. Who brought it? | New to me. I shall put a #mark# beside it.
+line @1 react.news.known : I heard a piece when the #cart# came in. | Your telling fills the blank in my #ledger#.
+line @1 react.news.doubt : I would see the #measure# before trusting that account. | The #price# sounds too neat; I will ask again.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A hard #load# to carry. Sit down. | I am sorry. I will set the #ledger# away and listen.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news! I shall bring out the #cheese#. | That deserves a brighter #tale# than I had today.
+line @1 answer.how : Busy, but the #loom# is running. | Well enough. The #road# has given us work.
+line @1 answer.how.busy [self.working=yes] : I am counting #bolts# and answering you at once. | The #shuttle# has kept my #hands# moving all day.
+line @1 ask.how : How has the #road# treated you? | Have you had a fair #price# for your work?
+line @1 sympathise : Sit. I will close the #ledger# and give you my time. | I have #cheese# and a quiet table if you need either.
+line @1 reassure : One bad #load# does not settle the whole year. | Check the #measure# first. Then we can mend what is wrong.
+line @1 decline : I cannot take that #load# without a sound #cart#. | I would help, but the #ledger# is full of promises already.
+line @1 accept_decline : Fair enough. I will turn this #cart# another way. | You have answered. I shall close the #ledger# on it.
+line @1 thank : You kept the #wheel# turning. Thank you. | That was help worth more than the #price#.
+line @1 deflect_thanks : I had a spare #hand#; it was yours. | No need. The #cart# was going that way already.
+line @1 preclose : I need to finish the #ledger# as daylight thins. | The #loom# has waited long enough for me.
+line @1 tease [pair.band=friends] : You would lose a #scale# under your own #boots#. | Your #tale# has grown another turn since yesterday.
+line @1 tease.return [pair.band=friends] : I shall put that beside your name in the #ledger#. | Keep your #boots# on; we may need the #road#.
+line @1 ack : #bc_fair_enough#. I will check the #measure#. | #bc_right#. I have marked the #ledger#.
+line @1 give.advice : Count the #load# before the #cart# leaves. | Ask who set the #price# and what the #scale# showed.
+line @1 warn [world.bandits=near] : Keep the #cart# among others on the #road#. | Trouble has come near; do not take a #load# out alone.
+scene ledger_aloud
+when topic=work
+does tell.self / react.self / assess
+a : I read each #measure# aloud before I write it. | The #ledger# stays clearer when another wolf hears the count.
+b : Does that slow you down? | Do the others like hearing it?
+a : Less than correcting a wrong #mark# afterward. | Some do. Anyone can stop me before the #cart# leaves.
+
+scene straight_border
+when topic=work
+does tell.self / react.self / assess
+a : A firm #edge# keeps the whole #bolt# useful. | I look at the #edge# before I praise a length of #cloth#.
+b : Can it be fixed if it wanders? | What do you see there?
+a : Early, yes. After rolling, it costs more time. | Where the #weft# pulled too hard, or a paw rushed.
+
+scene axle_check
+when topic=travel
+does tell.self / react.self / assess
+a : I run my #hand# along the #axle# before a load goes out. | A #wheel# can look sound and still shift when the #cart# moves.
+b : What are you feeling for? | Has that happened to you?
+a : Heat, a crack, or a loose pin. | Once was enough to make the check a habit.
+
+scene late_wagon
+when topic=travel
+does tell.self / react.self / assess
+a : A late #cart# leaves the #loom# waiting for its next #load#. | I can stand at the door and know from the #wheel# sound who is coming.
+b : Do you get angry with the driver? | Can you tell from far away?
+a : I ask what delayed the #road# before I blame anyone. | Far enough to put the #ledger# down.
+
+scene hard_cheese
+when topic=food
+does tell.self / react.self / assess
+a : A wedge of #cheese# can see me through a long count. | I keep #cheese# by the workroom when the #cart# is late.
+b : Do you share it? | Does it keep well?
+a : With any #hand# who asks. I cut it thick. | Longer than soft cheese, and it tastes better after work.
+
+scene tale_after_work
+when topic=memories
+does tell.self / react.self / assess
+a : I like a #tale# told by someone who remembers the hard part. | A good #tale# leaves room for the listener to ask.
+b : Do you tell old stories yourself? | Which part matters most?
+a : Yes, when the #ledger# is closed. | The #choice# that made the ending possible.
+
+scene boot_test
+when topic=pastimes
+does tell.self / react.self / assess
+a : I walk a full round in #boots# before I trust them on the #road#. | Good #boots# should carry a #load# without taking my mind off my feet.
+b : What do you watch for? | Have you bought a bad pair?
+a : A pinch at the heel, a slip near the toes. | I have. They spent more time by the #counter# than on the road.
+
+scene autumn_draught
+when topic=weather here.season=autumn
+does tell.self / react.self / assess
+a : This #wind# pulls loose #wool# toward the door. | I know autumn by the #wind# under the workroom shutters.
+b : Does it spoil the cloth? | Do you shut them tight?
+a : Only if I leave the #fleece# uncovered. | Until the #loom# is still. Then I let the air through.
+
+scene noise_after_dark
+when topic=home here.time=night
+does tell.self / react.self / assess
+a : I sleep lightly when the #bell# rings after dark. | A noise in the #night# makes me check the #counter# twice.
+b : Do you expect trouble? | Can you go back to sleep?
+a : Not always. I want to know which #door# opened. | Once I know the #load# is safe, yes.
+
+scene no_haggling
+when topic=prices
+does tell.self / react.self / assess
+a : I put the #price# beside the #measure# and leave both visible. | I would rather explain a #price# than haggle over it.
+b : What if a buyer objects? | Do you ever change it?
+a : I show the #ledger#. Then they can choose. | If the #scale# was wrong, of course.
+
+scene city_wrapping
+when topic=travel
+does tell.self / react.self / assess
+a : I open a city #load# at the door, where there is light. | A fine wrapper can hide a short #measure#.
+b : Do you expect a trick? | Has it happened often?
+a : I expect to check what I paid for. | Enough that I keep the #ledger# close.
+
+scene watch_at_counter
+when topic=work
+does tell.self / react.self / assess
+a : The Watch passed the #counter# while I counted the day's #price# slips. | I like seeing a patrol on the #road# before a #cart# arrives.
+b : Does their presence help? | Do you speak with them?
+a : It lets me leave the #load# for a moment. | If I have something worth saying, yes.
+
+scene wages_on_page
+when topic=work
+does tell.self / react.self / assess
+a : Every #hand# should see the hours beside the pay in my #ledger#. | A #bolt# leaves this shed by many paws, not mine alone.
+b : Do the workers check? | How do you divide the credit?
+a : They may, and I want them to. | The #ledger# names the work each hand finished.
+
+scene patient_learner
+when topic=work self.master=yes
+does tell.self / react.self / assess
+a : I tell a learner to stop the #loom# before a loose #thread# grows. | A quick #shuttle# is no proof of a sound #edge#.
+b : Do they listen? | What do you teach first?
+a : After they see the gap, they do. | How to keep the #warp# even. Speed comes later.
+
+scene prayer_for_road
+when topic=faith
+does tell.self / react.self / assess
+a : I say a #prayer# when a full #cart# leaves the yard. | The Bright One can keep a #wheel# safe where my hands cannot reach.
+b : Do you say the same words each time? | Does that ease your worry?
+a : Near enough. I still mean them. | Some. I check the #axle# as well.
+
+scene festival_outside
+when topic=festival
+does tell.self / react.self / assess
+a : At a festival I listen for a #tale# I have not heard. | I like hearing the town without the #loom# beneath it.
+b : Do you join the dancing? | Does the noise bother you?
+a : If the #boots# hold me, perhaps. | In daylight, no. At #night#, I would go home.
+
+scene uphill_cart
+when topic=travel
+does tell.self / react.self / assess
+a : The uphill #road# makes every extra crate a decision. | I count the #load# once more before the #cart# climbs.
+b : What do you leave behind? | Is the road that difficult?
+a : Anything that can wait for the next #wheel#. | Hard enough to teach a careful #measure#.
+
+scene scale_zero
+when topic=prices
+does tell.self / react.self / assess
+a : I show a buyer the empty #scale# before anything goes on it. | A #scale# that starts wrong can cheat an honest seller too.
+b : Do buyers care? | How do you set it right?
+a : They do once they see the #price# written down. | I clear the pan and check the #mark# again.
+
+scene friend_in_shed
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : I can admit to #self.friend# when a #loom# has bested me. | I can speak my mind with #self.friend# without raising the #price# of the day.
+b : Does your friend tell you when you are wrong? | Do you find time to meet often?
+a : Yes, and I hear it, even when I grumble. | When I can set down a #load#, yes.
+
+scene lamps_for_loading
+when topic=work here.time=dusk|night
+does tell.self / react.self / assess
+a : I will not load a #cart# by a single dim lamp. | The #measure# looks different when the light is poor.
+b : What if the driver wants to leave? | Do you wait until morning?
+a : The #road# will be there when the crates are safe. | Often. A sound #load# matters more than an hour.
+
+scene rain_on_wool
+when topic=weather here.weather=rain|storm
+does tell.self / react.self / assess
+a : Wet #wool# weighs differently on the #scale#. | I cover every #bolt# when rain reaches the door.
+b : Can it dry without damage? | Have you lost one to weather?
+a : If we spread it soon enough. | Once. I changed where the #load# waits.
+
+scene spare_hand
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : Another #hand# could clear these #bolts# before supper. | I have work for two, but only one #shuttle# free.
+b : Should I help carry? | What needs doing first?
+a : Take the light end of that #load#. Thank you. | Count the #bolts# on the #ledger# before moving any.
+
+scene returned_cloth
+when topic=work
+does tell.self / react.self / assess
+a : When a #bolt# comes back, I inspect the #edge# before I answer. | A complaint deserves a #measure#, not a loud refusal.
+b : What if the buyer is right? | Do you ever get unfair returns?
+a : Then I put the work right. | Sometimes. The #ledger# helps me see what changed.
+
+scene first_fleece
+when topic=memories
+does tell.self / react.self / assess
+a : I remember lifting a #fleece# too heavy for my small paws. | The first #wool# I sorted taught me how much dirt hides in a good coat.
+b : Did anyone help you? | Was that discouraging?
+a : A stronger #hand# took the other side. | No. It made the clean #cloth# seem earned.
+
+scene warm_workroom
+when topic=home
+does tell.self / react.self / assess
+a : A shed full of #hands# has a sound I miss when it is empty. | Even when the #loom# stops, I hear the day's #beat# in my head.
+b : Do you dislike being alone? | Does it keep you awake?
+a : I like quiet after work; I want work waiting tomorrow. | Only when I am still counting the #load#.
+
+scene mark_on_page
+when topic=prices
+does tell.self / react.self / assess
+a : I leave space by every #mark# for a correction. | A clean #ledger# should show mistakes as well as totals.
+b : Why keep the mistakes? | Is that not embarrassing?
+a : So the next count can be trusted. | Less than pretending a wrong #price# was right.
+
+scene tale_and_truth
+when topic=memories
+does tell.self / react.self / assess
+a : A #tale# may grow in the telling, but its hard facts should hold. | I stop a storyteller when the #road# turns where no road exists.
+b : Does that spoil the story? | Do they thank you for it?
+a : Only if the story cannot bear a true #measure#. | Rarely at once. Some come back to check the turn.
+
+story first_ledger [topic=memories self.age>=25]
+  : My first #ledger# had a blot where I tried to hide a wrong count.
+  : The older worker saw it and made me write the correction beside it.
+  ask : Would you have left the blot in place?
+  b : I might have started a new page.
+  : I wanted to. Keeping it taught me to own the #mark#.
+
+story broken_axle [topic=travel self.age>=25]
+  : A #cart# once stopped with a cracked #axle# before it left the yard.
+  : We moved the #load# by hand and lost the morning, but none of the goods.
+  ask : Would you have tried the road first?
+  b : Not with the axle already cracked.
+  : Neither would I now. That morning made me look before the #wheel# turns.
+
+story mistaken_bolt [topic=work self.age>=25]
+  : I once marked a #bolt# with the wrong #measure# in my book.
+  : The work itself was sound; the written length sent it to the wrong pile.
+  ask : Would you have blamed the label or the writer?
+  b : I would have checked who wrote it.
+  : I did. It was my #hand#. I corrected the #ledger# in front of the others.
+
+story old_teller [topic=memories self.age>=25]
+  : I heard a #tale# twice in one week from the same traveller.
+  : The ending changed, but the traveller held to the same hard #choice# in the middle.
+  ask : Which ending would you keep?
+  b : The one that made the choice matter.
+  : That was my thought. I still remember the middle better.
+
+story muddy_boots [topic=memories self.age>=25]
+  : I put on #boots# for a long #road# and found a deep rut before the first mile.
+  : I stopped caring about their shine and started caring whether the soles held.
+  ask : Would you have turned back for older boots?
+  b : A bad #road# might have sent me back.
+  : I kept going. The #load# arrived, and the boots earned their scuffs.
+
+rule @bark_count
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say Three #bolts#, four #bolts#... let me check the #ledger#. | The #measure# goes beside the name, not under it.
+
+rule @bark_cart
+when concept=bark here.time=dawn|day
+does aside
+cooldown 9h
+say Has the #cart# come round the bend yet? | I can hear a #wheel# from the far end of the lane.
+
+rule @bark_wind
+when concept=bark here.season=autumn
+does aside
+cooldown 10h
+say Shut that door against the #wind#. | The #fleece# will be across the room if this #wind# keeps up.
+
+rule @bark_cheese
+when concept=bark
+does aside
+cooldown 11h
+say I left a wedge of #cheese# for supper. | #cheese.capitalize# keeps a worker going.
+
+rule @bark_night
+when concept=bark here.time=night
+does aside
+cooldown 12h
+say Who rang the #bell# at this hour? | I had better see whether the #load# is still safe.
+
+rule @bark_prayer
+when concept=bark here.time=dawn
+does aside
+cooldown 13h
+say A #prayer# for the #road# before the carts go. | Bright One, keep this #wheel# turning true.
+
+dlg @1 resident.hub : #greet#. Speak up over the #loom#. | #greet#. The #ledger# can wait while you ask.
+dlg @2 resident.hub [topic.meeting=stranger] : #greet#. I do not know your #hand# yet. What brings you here? | Come closer to the #counter# and say what you need.
+dlg @3 resident.hub [topic.meeting=known] : You are back. Has your #load# come in? | I remember your last #measure#. What changed?
+dlg @4 resident.hub [here.time=dusk|night] : The #loom# is still now. We can speak plainly. | I have put the #ledger# down for tonight; come in.
+dlg @1 resident.job : I oversee the #loom# and keep a #ledger# of the work. | I see the #fleece# in and the #bolt# out.
+dlg @2 resident.job [self.working=yes] : Watch me count this #load#, then I shall answer. | My #hands# are on the #cloth#; my ears are yours.
+dlg @1 resident.bye : #farewell#. Keep the #road# under your paws. | #saying.capitalize#. Call again.
+dlg @2 resident.bye [here.time=night] : Take care in the dark. The #wheel# ruts are deep. | Good night. The #bell# will wake me soon enough.
+dlg @1 shop.greet [here.shop!=bare] : #greet#. The #bolts# are here for your inspection. | Come in. The #counter# has room for you.
+dlg @2 shop.greet [topic.meeting=known here.shop!=bare] : Back for another #bolt#? Look at the #edge#. | Good to see you again. The #scale# is clear.
+dlg @1 shop.prices : The #price# follows the #measure# and the work. | What is written in the #ledger# is what I ask.
+dlg @2 shop.prices [here.shop!=bare] : I can show you the #scale# and the #ledger# together. | The #bolt# is priced by length; take your time looking.
+dlg @1 shop.bye : #farewell#. Keep the #cloth# dry. | Your #bolt# is wrapped. Mind the #road#.
+graft resident.hub
+choice Why do you read the ledger aloud? -> aloud
+node aloud
+say Another pair of ears catches a wrong #measure# before it leaves the #counter#.
+mood pleased
+free
+choice Has that saved a load? -> saved
+choice Back to what we were saying. -> hub
+node saved
+say More than one. A #mark# spoken aloud is harder to miss.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice How do you set a price? -> price
+node price
+say I count the #wool#, the #hands#, and the road it travelled. Then I write the #price# where you can see it.
+mood pleased
+free
+choice May I see the measure? -> measure
+choice Back to the counter. -> greet
+node measure
+say Of course. The #measure# is beside the #ledger#. Check it yourself.
+choice Back to the counter. -> greet
+choice Goodbye. -> bye

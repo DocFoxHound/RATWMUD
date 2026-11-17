@@ -1,0 +1,291 @@
+# sm102, the quiet count (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm102
+revision 1
+state ready
+dialect southmeadow
+accent light broad
+tier standard
+written_for cty_vale_pikebridge
+written_by claude-codex-cw-1
+title the quiet count
+fits stage=adult|old
+prefers talk=quiet
+traits temper=short talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk counts_things_under_the_breath
+likes roast_pork dancing fresh_straw first_snow
+dislikes waiting crowds
+fears someone_hearing_the_savings_count a_missing_sheep_on_the_hill
+hopes enough_coin_for_a_private_plan a_safe_flock_through_winter
+topics work +0.5 pastimes +0.3 food +0.3 weather +0.3 gossip -0.5
+styles comfort=practical gossip=guarded refuse=blunt tease=dry
+marks oath saying
+persona #self.first# counts #sheep# beneath the breath, checks each #fleece# by touch, and hides a private #coin# tally.
+
+words
+oath! = Straw and silver | By the unshorn lamb
+saying! = Count the flock before the dance | A clean floor tells on every boot
+sheep = sheep | flock
+flock = flock | sheep
+lamb = lamb | young lamb
+lambs = lambs | young lambs
+ewe = ewe | mother ewe
+fleece = fleece | shorn wool
+wool = wool | fleece
+shears = shears | shearing blades
+barn = barn | shearing barn
+pen = pen | sheep pen
+gate = gate | pasture gate
+hill = hill | high pasture
+field = field | grazing field
+city = city | Ridgemere
+row = row | line
+grass = grass | pasture
+straw = straw | clean bedding
+floor = floor | barn floor
+boot = boot | work boot
+boots = boots | work boots
+rope = rope | lead rope
+cord = cord | braided cord
+count = count | tally
+tally = tally | quiet count
+coin = coin | saved penny
+purse = purse | small purse
+market = market | market square
+price = price | asking price
+bread = bread | loaf
+pork = pork | roast pork
+crackling = crackling | crisp crackling
+dance = dance | festival dance
+music = music | festival tune
+crowd = crowd | press of people
+wait = wait | delay
+snow = snow | first snow
+lake = lake | Glasswater
+shore = shore | lake shore
+road = road | High Road
+home = home | cottage
+wind = wind | hill wind
+rain = rain | shower
+friend = friend | trusted companion
+secret = secret | private matter
+hand = hand | working hand
+hands = hands | working hands
+
+any
+opinion @1 city against 1 : The #city# has more elbows than room to stand. | I would rather hear one #sheep# than a street of sellers.
+opinion @1 festivals against 1 : I like the #dance#, but leave before the #crowd# turns sour. | Spilt drink on a clean #floor# ruins the evening.
+opinion @1 houses against 1 : I have cut their #wool# without meeting the people who own the #field#. | Their gates close before workers reach the front path.
+opinion @1 merchants against 2 : The #bread# price rises while my pay stays put. | A merchant can count every #coin# except the ones I lack.
+opinion @1 newcomers against 1 : A new #hand# ought to learn the #gate# before taking my place. | I am slow to trust someone who never carried a #fleece#.
+opinion @1 strangers against 1 : I keep my #purse# closed around unfamiliar faces. | A stranger can ask the hour without asking my business.
+opinion @1 times against 1 : Each week I set aside less #coin#. | Work takes a full day and leaves a thinner #purse#.
+opinion @1 road mixed 0 : The #road# brings #wool# buyers to us. | I dislike how long it takes to come back from the #market#.
+
+grown
+line @1 greet : #greet#. I am counting; give me a moment. | #greet#. Shut the #gate# behind you.
+line @2 greet [self.working=yes] : Wait until I finish this #fleece#. | Speak while I lead the #sheep# into the #pen#.
+line @3 greet [pair.band=friends|family] : You may come inside the #barn#. | I saved you the clean side of the #floor#.
+line @4 greet [here.time=dawn] : The #flock# is moving already. | #greet#. I have counted half the #pen#.
+line @1 greet.return : You are back. I have not lost count. | #welcome_back#. The #shears# are put away now.
+line @1 kin.open [pair.kin!=no] : Come in and leave your #boots# by the door. | There is supper if you want it.
+line @1 again.open : We spoke before I finished this #row# of #sheep#. | Have you come for another answer?
+line @1 farewell : #farewell#. Keep clear of the #gate#. | #saying.capitalize#. I have another #count# to make.
+line @1 farewell.return : I may be at the #market# tomorrow. | The #barn# will be open at first light.
+line @1 react.news : Tell me the part that matters. | I will put down the #shears# and hear you.
+line @1 react.news.new : That has not reached this #barn#. | Who brought the word up the #road#?
+line @1 react.news.known : I heard an account by the #market#. | Yours adds one fact I did not have.
+line @1 react.news.doubt : #hedge#, whose eyes saw it? | I will not repeat a claim I cannot check.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. We can stand away from the #crowd#. | That is hard news. Sit here.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I hope they mark it with a #dance#. | That will be worth a proper supper.
+line @1 answer.how : The #flock# is whole; I can think about the #market# later. | Tired, but the #barn# is in order.
+line @1 answer.how.busy [self.working=yes] : I have #sheep# to sort and #wool# to bundle. | Busy enough to keep counting.
+line @1 ask.how : Has your work paid fairly? | Did you get through the #road# safely?
+line @1 sympathise : I can make room on the #straw# for you. | I will listen without repeating it.
+line @1 reassure : We can count the #sheep# once more. | A fresh #floor# can be laid after a messy day.
+line @1 decline : No. I am keeping that #coin#. | I cannot leave the #flock# unattended.
+line @1 accept_decline : Your choice stands. | Then the matter is finished for today.
+line @1 thank : You caught a missing #lamb# before dusk. Thank you. | That saved my #hands# more work.
+line @1 deflect_thanks : I only closed the #gate#. | The #straw# needed changing anyway.
+line @1 preclose : I must tally the #wool# before I go. | One more circuit of the #pen#.
+line @1 ack : #bc_right#. I will check the #count#. | #bc_fair_enough#. That is settled.
+line @1 give.advice : Count the #sheep# at both ends of the #road#. | Keep new #straw# away from damp walls.
+line @1 warn [world.bandits=near] : Hide your #purse# before the next bend. | Take the #road# with company tonight.
+scene breath_count
+when topic=work
+does tell.self / react.self / assess
+a : I count the #sheep# under my breath as they pass the #gate#. | If someone interrupts, I start the #tally# again.
+b : How high do you get? | Does it help?
+a : High enough for this #flock#. | I know when one is missing.
+
+scene clean_straw
+when topic=work
+does tell.self / react.self / assess
+a : Fresh #straw# on the #floor# makes the #barn# easier to bear. | I save the driest bundles for the #lambs#.
+b : How often do you change it? | Does it keep them warm?
+a : Before the smell turns. | It does through the first #snow#.
+
+scene secret_purse
+when topic=memories
+does tell.self / react.self / assess
+a : I set aside a little #coin# when the #market# pays fairly. | No one needs to know what the #purse# is for.
+b : Is it a great sum? | Will you tell a friend?
+a : It grows slowly. | When the time is right.
+
+scene shearing_line
+when topic=work
+does tell.self / react.self / assess
+a : I line the #sheep# beside the #barn# before the #shears# come out. | A calm #ewe# makes the next one easier to handle.
+b : Who holds them? | Do they struggle?
+a : Whoever has a steady #hand#. | Some do, and I wait them out.
+
+scene wool_tally
+when topic=work
+does tell.self / react.self / assess
+a : Each #fleece# gets a mark on my #tally#. | I check the bundles again before they leave the #barn#.
+b : Do merchants question it? | What if the count differs?
+a : They try. | Then nobody leaves until we find the gap.
+
+scene high_hill
+when topic=work
+does tell.self / react.self / assess
+a : The #flock# spreads across the #hill# when the #grass# is fresh. | I keep the #lambs# away from the steep side.
+b : Can you see them all? | Is that dangerous?
+a : From the upper path. | If the #wind# pushes hard.
+
+scene knotted_rope
+when topic=work
+does tell.self / react.self / assess
+a : A frayed #rope# belongs in the scrap pile, not on a #gate#. | I replace a knot before it has a chance to fail.
+b : Do you tie them yourself? | Has one broken?
+a : Every week. | Once, at the worst moment.
+
+scene first_snow
+when topic=weather here.season=winter
+does tell.self / react.self / assess
+a : I like the first #snow# until it covers the #grass#. | The #sheep# stand close and make their own warmth.
+b : Do you bring them in? | Does it last?
+a : Before dusk. | Sometimes for days.
+
+scene roast_pork
+when topic=food
+does tell.self / react.self / assess
+a : Roast #pork# needs #crackling# that breaks cleanly. | I can wait for supper if I know it is in the oven.
+b : Do you cook it? | Do you share it?
+a : When I have the time. | With someone who helped in the #barn#.
+
+scene dancing_steps
+when topic=pastimes
+does tell.self / react.self / assess
+a : I know the steps to a festival #dance#, though I leave early. | The #music# is better than the crush at the door.
+b : Who taught you? | Why leave early?
+a : Someone from the south. | I dislike the shouting #crowd#.
+
+scene festival_crowd
+when topic=festival
+does tell.self / react.self / assess
+a : I stand where I can hear the #music# without being pressed by the #crowd#. | If the #floor# gets slick, I stop dancing.
+b : Is that no fun? | Have you slipped?
+a : I enjoy the first few tunes. | Once was enough.
+
+scene market_wait
+when topic=prices
+does tell.self / react.self / assess
+a : Waiting for a #wool# buyer wastes half the morning. | I want a #price# spoken before anyone unrolls the #fleece#.
+b : Do they arrive late? | Do you turn them away?
+a : More often than they admit. | If another buyer is ready.
+
+scene bread_cost
+when topic=prices
+does tell.self / react.self / assess
+a : I check the #bread# price whenever I take #wool# to the #market#. | Some weeks the #coin# from a bundle scarcely buys supper.
+b : Do you complain? | Is it worse lately?
+a : When the seller will listen. | It is.
+
+scene southern_memory
+when topic=memories
+does tell.self / react.self / assess
+a : The #field# where I grew up was softer underfoot. | I still remember a #dance# held after the last cutting.
+b : Do you miss it? | Did you return?
+a : At odd moments. | Not recently.
+
+scene coldwater_home
+when topic=family
+does tell.self / react.self / assess
+a : The #lake# air makes my current #home# colder than I expected. | I keep clean #straw# near the door for wet #boots#.
+b : Have you settled in? | Is the lake quiet?
+a : Well enough. | Sometimes too quiet.
+
+scene braided_cord
+when topic=pastimes
+does tell.self / react.self / assess
+a : I braided this #cord# while watching the #flock#. | Keeping my #hands# busy helps me think without talking.
+b : Is it strong? | Will you make another?
+a : Strong enough for a small bundle. | If the next long watch allows.
+
+scene rainy_barn
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : #rain.capitalize# on the #barn# roof drowns out my quiet #count#. | I move the #sheep# inward before the #floor# gets wet.
+b : Can you still work? | Does it leak?
+a : Slowly. | At one corner I mean to mend.
+
+story first_hidden_coin [topic=memories self.age>=25]
+  : I hid the first saved #coin# inside a fold of my #cord#.
+  : By the time I found a safer place, I had nearly forgotten it was there.
+  ask : What is the saving for?
+  b : That sounds like a private beginning.
+  : I will say when I have reached the sum.
+
+story crowd_exit [topic=pastimes self.age>=25]
+  : I went to a #dance# and knew every step of the first tune.
+  : By the third, the #crowd# had filled the whole #floor#.
+  ask : Did you stay?
+  b : It would be hard to enjoy the music then.
+  : I left with the tune still in my head.
+
+story lost_lamb [topic=work self.age>=25]
+  : My #count# came up one short as the #flock# entered the #barn#.
+  : I found a #lamb# behind the last rise of the #hill#.
+  ask : Was it hurt?
+  b : Counting twice paid off.
+  : Only cold. I carried it back before the #snow#.
+
+rule @bark_count
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say Twenty-eight... twenty-nine... | One #sheep# behind the #gate#.
+
+rule @bark_straw
+when concept=bark
+does aside
+cooldown 9h
+say This #straw# is still dry. | The #floor# wants sweeping.
+
+rule @bark_coin
+when concept=bark
+does aside
+cooldown 11h
+say I will check the #tally# at #home#. | That #purse# can stay where it is.
+
+rule @bark_snow
+when concept=bark here.season=winter
+does aside
+cooldown 12h
+say The first #snow# is on the #hill#. | Bring the #flock# inside soon.
+
+dlg @1 resident.hub : #greet#. Let me finish this #count#. | #greet#. Stand by the #gate# if you need me.
+dlg @2 resident.hub [topic.meeting=known] : You know the way into the #barn#. | Back again? I have sorted the #wool# now.
+dlg @1 resident.job : I tend the #flock# at #self.workplace# and help with shearing. | I count #sheep#, bundle #fleece#, and keep the #pen# clean.
+dlg @1 resident.bye : #farewell#. I must count them once more. | #saying.capitalize#. Shut the #gate# as you leave.
+graft resident.hub
+choice What are you counting? -> flock
+node flock
+say #sheep# through the #gate#, #fleece# out of the #barn#. The numbers keep the work honest.
+free
+choice Are you saving for something? -> savings
+choice Back to the flock. -> hub
+node savings
+say I am. The sum is mine to share when I am ready.
+choice Back to the flock. -> hub
+choice Goodbye. -> bye

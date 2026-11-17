@@ -1,0 +1,296 @@
+# cw113, the weather nose (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw113
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_fh_stone_pinefell
+written_by claude-codex-cw-1
+title the weather nose
+fits stage=adult|old
+prefers temper=nervy warmth=warm
+traits temper=nervy talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk can_smell_snow_a_day_before_it_comes
+likes roast_pork dancing fresh_straw frosty_mornings
+dislikes gulls bad_manners
+fears a_fire_left_unwatched a_road_after_dark
+hopes a_safe_shift a_quiet_table_after_supper
+topics weather +0.5 work +0.4 food +0.4 home +0.3 memories +0.2 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# notices #snow# in the air before the sky changes, keeps a cautious #watch# on heat and doors, and offers a warm #plate# to anyone who comes in cold.
+
+words
+oath! = Smoke and snowfall | By the covered flame
+saying! = Watch the heat before the clock | The cold has a scent
+snow = snow | coming snowfall
+frost = frost | white rime
+air = air | wind off the lake
+wind = wind | cold blow
+nose = nose | sense of smell
+smell = smell | sharp scent
+still = still | copper vessel
+flame = flame | low fire
+heat = heat | warmth from the fire
+water = water | cooling water
+pipe = pipe | narrow copper pipe
+steam = steam | rising vapour
+lid = lid | fitted cover
+barrel = barrel | wooden cask
+jar = jar | sealed crock
+straw = straw | bedding
+floor = floor | kitchen floor
+door = door | outer door
+road = road | lane out of town
+gull = gull | shore bird
+gulls = gulls | shore birds
+pork = roast pork | pork with crisp crackling
+plate = plate | serving dish
+table = table | supper table
+dance = dance | turn to music
+step = step | pace
+watch = watch | careful look
+hour = hour | stretch of work
+shift = shift | turn at the still
+hand = hand | working paw
+cup = cup | drinking cup
+key = key | workroom key
+coin = coin | pay
+jars = jars | sealed crocks
+fire = fire | hearth fire
+morning = morning
+sun = sun | morning light
+spade = spade | digging blade
+soil = soil | garden earth
+furrow = furrow | narrow trench
+winter = winter
+lake = lake | cold lake
+shadow = shadow | dark shape
+ice = ice | winter ice
+
+any
+opinion @1 drink against 1 : I know the #still# and I know what a full #jar# can make a wolf say. | A clear head is worth more than another #cup# at the end of a shift.
+opinion @1 strangers mixed 1 : I will offer a cold traveller a #plate#. I will still ask which #road# brought them. | Good manners at the #door# tell me more than a fine coat.
+opinion @1 newcomers against 1 : I ask who will keep a #watch# before I hand over a #key#. | A new #hand# may help, but I need to know who stands behind it.
+opinion @1 road against 1 : A lonely #road# makes every sound larger after dark. | I would rather wait out the #snow# than hurry down an empty lane.
+opinion @1 dole for 1 : A hungry wolf can have a #plate# before the questions begin. | The #table# has room for someone who has lost work.
+opinion @1 merchants against 2 : They ask more #coin# for the #barrel# and tell me to make do. | A clean #jar# costs more each week; the pay has not followed it.
+opinion @1 houses against 1 : A House sees the finished #barrel#, not the #hand# that kept the #flame# steady. | I would like a crest to answer for a dangerous #shift# once.
+opinion @1 times against 1 : The #hour# gets longer when the #coin# buys less. | I count the #jars# twice now before promising any away.
+
+grown
+line @1 greet : #greet#. Do you smell #snow# in that #air#? | #greet#. Come by the #table# if you are cold.
+line @2 greet [pair.band=strangers] : #greet#. What took you down this #road#? | #greet#. I can find a #plate# if you are hungry.
+line @3 greet [self.working=yes] : #greet#. Keep back from the #flame# a moment. | #greet#. I am watching the #pipe#; speak from there.
+line @4 greet [here.time=dawn here.season=winter] : #greet#. I found #frost# along the #door# frame. | #greet#. I am on the earliest #watch# today.
+line @5 greet [here.time=dusk|night] : #greet#. The #road# is darker than I like. | #greet#. I will put the #lid# on before I speak.
+line @1 greet.return : #welcome_back#. The #air# has changed since you left. | You have returned. I saved a #plate# if you need it.
+line @2 greet.return [pair.band=friends|family] : Come in. The #table# is warm. | Your #step# is familiar at the #door#.
+line @1 kin.open [pair.kin!=no] : I can warm #pork# if supper passed you by. | Sit; I have a dry #plate# for you.
+line @1 again.open : Back in one #shift#? I thought I heard you. | I know that second #step# at my #door#.
+line @1 farewell : #saying.capitalize#. Keep warm. | #farewell#. Watch the #road#.
+line @1 farewell.return : May the #air# stay clear for you. | Another #plate# when you come back.
+line @1 react.news : #listen.capitalize#. I will check the #flame# after. | Say it while I set the #lid# down.
+line @1 react.news.new : That has not reached this #table# yet. Who said it? | The #steam# kept that from my ears until now.
+line @1 react.news.known : A piece of that came by the #road# already. | I caught an earlier version over the #steam#.
+line @1 react.news.doubt : I would wait for a second #hand# to confirm it. | The #smell# of that account is not quite right.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That news hurts. I will sit by the #table# with you. | That is bitter news. Take the warm #plate#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I would set the best #plate# out for that. | That makes a hard #shift# easier to finish.
+line @1 answer.how : Keeping the #flame# steady and my nose awake. | Well enough. The #air# is clear today.
+line @1 answer.how.busy [self.working=yes] : Busy at the #still#; the #pipe# needs watching. | The #jars# are waiting, and so is the #water#.
+line @1 ask.how : Have you been warm enough on the #road#? | Has the #air# agreed with you today?
+line @1 sympathise : Sit by the #table#; I will hear you. | I can bring a #plate# or stay quiet.
+line @1 reassure : We can let the #flame# settle before deciding. | One safe #step# first; the rest can follow.
+line @1 decline : I cannot promise that; I have enough to keep steady today. | I would rather give you a clear no than a late answer.
+line @2 decline [self.working=yes] : I cannot leave the #still# while it is hot. | I would help, but this #shift# needs another #hand# before I go.
+line @1 accept_decline : I understand. The #jar# can wait. | No quarrel; I shall find another #hand#.
+line @1 thank : You eased a worry I was carrying. Thank you. | That help means more than a warm #plate# today.
+line @1 deflect_thanks : I was near the #door# already. | The #plate# was warm and there was room.
+line @1 preclose : The #road# will not grow shorter if I wait. | My nose says the #air# will cool soon.
+line @2 preclose [self.working=yes] : I ought to check the #pipe# once more. | The #flame# needs covering before I leave.
+line @1 tease [pair.band=friends] : Your #step# is louder than the #gulls#. | I can smell that #jar# from here, and so can everyone else.
+line @1 tease.return [pair.band=friends] : Keep that for the next #dance#. | I will answer when the #pipe# stops hissing.
+line @1 ack : #bc_right#. I will check the #lid#. | #bc_fair_enough#. Another #shift# then.
+line @1 give.advice : Never walk away from an uncovered #flame#. | Ask who checked the #pipe# before trusting a full #barrel#.
+line @1 warn [world.bandits=near] : Keep to a lit #road#. | Stay by the #door# until there is company.
+scene snow_scent
+when topic=weather here.season=autumn|winter
+does tell.self / react.self / assess
+a : Before #snow#, the #air# takes on a sharp scent. | I notice the #smell# of coming #snow# before I see a cloud.
+b : Is it always right? | What does it remind you of?
+a : Often enough that I check the #road#. | Clean #water# over cold stone, with no warmth behind it.
+
+scene covered_flame
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : I put the #lid# on before I step away from the #flame#. | Even a #flame# needs a #watch#.
+b : Does the cover change the work? | Can someone else watch it?
+a : It keeps a stray spark from making a bad #hour#. | Yes, if I show the #pipe# and the #water# first.
+
+scene cooling_pipe
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : I put my #hand# near the #pipe#, never on it, to judge the #heat#. | The #water# around the #pipe# must keep moving.
+b : Could it burn you? | What if the water stops?
+a : It could. That is why I leave a little air between us. | I turn the #flame# down and find the blockage.
+
+scene sealed_jar
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : A clean #jar# gets its #lid# before dust can settle. | I check each #jar# for a crack before filling it.
+b : Does a small crack matter? | Do you wash them yourself?
+a : It does if the #jar# is carried far. | When I can. I trust what I have seen clean.
+
+scene smoke_and_snow
+when topic=weather here.season=winter
+does tell.self / react.self / assess
+a : In #winter#, #smell# from a warm chimney hangs low. | The #air# can carry #snow# and smoke at once.
+b : Does that trouble your nose? | Can you tell them apart?
+a : Only when the #flame# is too strong. | The #snow# scent is thinner; the smoke has weight.
+
+scene fresh_straw
+when topic=home
+does tell.self / react.self / assess
+a : I like #straw# on a swept #floor#. | Fresh #straw# makes a room smell clean after a shift.
+b : Does it not scatter? | Do you change it often?
+a : Some. I keep it clear of the #flame#. | When the #smell# turns stale, yes.
+
+scene roast_pork
+when topic=food
+does tell.self / react.self / assess
+a : The best part of #pork# is the crisp edge. | I save #pork# for a meal with time to sit.
+b : Do you cook it yourself? | What do you eat with it?
+a : When I have a steady #fire#. | Bread, and a little #water# afterward.
+
+scene dance_after_shift
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #dance# makes the #shift# fall out of my paws. | I can keep a #step# even after the #pipe# has hissed all day.
+b : Do you dance often? | Does the work leave you any strength?
+a : When the room has space. | Some nights. The first turn shakes it off.
+
+scene gull_at_door
+when topic=home
+does tell.self / react.self / assess
+a : A #gull# has learned to shout outside my #door#. | I heard #gulls# over the #lake# before dawn.
+b : Do you feed it? | Do you like that sound?
+a : No. It would bring every other #gull#. | No. I would rather hear the #water#.
+
+scene rough_manners
+when topic=smalltalk
+does tell.self / react.self / assess
+a : A harsh word can stay longer than an empty #jar#. | I notice a wolf who shuts the #door# in another face.
+b : Do you say something? | Does that anger you?
+a : If the wolf is still there, yes. | More than a late #shift# does.
+
+scene road_worry
+when topic=travel here.time=dusk|night
+does tell.self / react.self / assess
+a : A #road# after dark asks me to listen behind every #step#. | I would rather take the long #road# with another wolf.
+b : Has something happened to you? | Do you wait for company?
+a : I have seen how quickly a safe hour can turn. | If I can. I do not mind waiting by a lit #door#.
+
+scene spouse_home
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : #self.spouse# knows when I have spent too long by the #flame#. | I like setting a clean #plate# out for #self.spouse#.
+b : How can your spouse tell? | Do you eat together often?
+a : I come home still checking the #lid# in my head. | When the #shift# ends at a kind hour, yes.
+
+scene caution_below
+when topic=work
+does tell.self / react.self / assess
+a : I ask about a second way out before I work below ground. | A warm #flame# is easier to trust when the #door# stays clear.
+b : Have you worked in a mine? | Is that always possible?
+a : Stories from below ground taught me to ask. | Not always. I can still keep the #road# out in mind.
+
+scene festival_table
+when topic=festival
+does tell.self / react.self / assess
+a : I like a #dance# best before the #jars# go round too many times. | A festival is easier when someone leaves a #table# clear for food.
+b : Do you leave early? | Do you help set it up?
+a : Sometimes. I can hear the music from home. | If I am there, yes. I move the #jars# first.
+
+scene ice_shape
+when topic=memories here.season=winter
+does tell.self / react.self / assess
+a : I remember a #shadow# under the #ice# wider than my outstretched paws. | The #lake# looked still, then a #shadow# moved below.
+b : Do you know what it was? | Did you wait to see it again?
+a : No. I know what I saw, not its name. | For a moment. Then I took the #road# home.
+
+scene frosty_first_hour
+when topic=weather here.season=winter here.time=dawn
+does tell.self / react.self / assess
+a : A frosty #morning# makes the #air# smell sharp. | The #frost# stays on the #door# until the #sun# reaches it.
+b : Do you like that hour? | Does it delay your work?
+a : Once I have a warm #cup#, yes. | Only until the #water# begins to flow freely.
+
+scene garden_after_work
+when topic=pastimes
+does tell.self / react.self / assess
+a : I take the #spade# to the #bed# when a shift has been loud. | The #soil# gives me one task at a time.
+b : Does it help you settle? | What do you grow?
+a : Yes. A straight #furrow# needs no argument. | Whatever can take this #air# and still reach the sun.
+
+story early_snow [topic=memories self.age>=25]
+  : I noticed the #smell# of #snow# on a day when the sky was bare.
+  : I covered the #barrel# that evening. White flakes came after the house went quiet.
+  ask : Would you have covered it without seeing a cloud?
+  b : If the barrel mattered, I would.
+  : It did. The #lid# came off dry the next morning.
+
+story cracked_jar [topic=work self.age>=25]
+  : I found a hairline crack in a #jar# just before filling it.
+  : The other #jars# were ready, so I set that one apart and took another.
+  ask : Would you set it aside, or repair it then?
+  b : I would set it aside while work waited.
+  : I marked it for later. A lost #jar# costs less than a spilled load.
+
+story missed_step [topic=pastimes self.age>=25]
+  : I missed a #step# in a #dance# because I kept watching the #door#.
+  : My partner laughed, took the next turn slowly, and we found the rhythm.
+  ask : Could you face another turn after that?
+  b : One more turn, if my partner waited.
+  : I did. The second #dance# was steadier.
+
+rule @bark_snow
+when concept=bark here.season=autumn|winter
+does aside
+cooldown 8h
+say There is a sharp #smell# in the #air#. | I should see whether the #road# is ready for #snow#.
+
+rule @bark_still
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say Keep the #water# moving round the #pipe#. | The #flame# is low and steady.
+
+rule @bark_gull
+when concept=bark here.time=dawn|day
+does aside
+cooldown 10h
+say That #gull# can find another #door#. | The #gulls# are louder than the #steam# today.
+
+rule @bark_frost
+when concept=bark here.season=winter here.weather=clear
+does aside
+cooldown 11h
+say The #frost# has kept its grip. | I need a warm #cup# before the #shift#.
+
+dlg @1 resident.hub : #greet#. Come in from the #road#. | #greet#. I can listen while the #water# cools.
+dlg @2 resident.hub [topic.meeting=known] : You returned. The #air# has changed. | I recall you. Take the place by the #table#.
+dlg @1 resident.job : I mind the #still#, its #pipe#, and the #water# round it. | My eyes stay on the #flame# until the #jars# are ready.
+dlg @1 resident.bye : #farewell#. Mind the #road# after dark. | #saying.capitalize#. Keep warm.
+graft resident.hub
+choice Can you really smell snow coming? -> snow
+node snow
+say The #air# turns sharp before the first flake. I have learned to notice.
+mood wary
+free
+choice Are you always right? -> forecast
+choice Back to what we were saying. -> hub
+node forecast
+say No. I still check the sky and the #road# before I change a plan.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye

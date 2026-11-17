@@ -1,0 +1,289 @@
+# cw117, the pocket stones (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw117
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_lf_wald_larkwell
+written_by claude-codex-cw-1
+title the pocket stones
+fits stage=adult|old
+prefers warmth=warm drive=steady
+traits temper=even talk=quiet warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk collects_smooth_stones_from_the_riverbanks
+likes blackberries dancing full_larder summer_evenings
+dislikes night_noise smoke
+fears a_home_without_food a_fire_left_unwatched
+hopes a_small_farm_of_own a_larder_ready_for_winter
+topics home +0.5 work +0.4 pastimes +0.4 food +0.4 dreams +0.3 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=soft tease=gentle
+marks oath saying
+persona #self.first# carries a #stone# from each riverbank walk, keeps the #still# tended, and pictures a #field# beside a full #larder#.
+
+words
+oath! = By bank and bottle | Water on the stones
+saying! = The river rounds what it keeps | A full shelf eases the mind
+stone = stone | smooth river pebble
+stones = stones | rounded pebbles
+pocket = pocket | coat pocket
+bank = bank | riverbank
+river = river | Long River
+water = water | clear water
+shore = shore | lake shore
+lake = lake | Glasswater
+reed = reed | bank reed
+reeds = reeds | bank reeds
+still = still | copper still
+copper = copper | red metal
+pipe = pipe | cooling pipe
+flame = flame | low fire
+heat = heat | steady warmth
+steam = steam | rising vapour
+jar = jar | sealed jar
+jars = jars | stoppered jars
+cask = cask | wooden cask
+smoke = smoke | bitter smoke
+window = window | open window
+berry = berry | blackberry
+berries = berries | blackberries
+bush = bush | berry bush
+larder = larder | food cupboard
+shelf = shelf | kitchen shelf
+field = field | small field
+farm = farm | little holding
+seed = seed | seed grain
+soil = soil | dark earth
+dance = dance | festival dance
+step = step | dance step
+evening = evening | long dusk
+night = night | dark hours
+noise = noise | loud clatter
+door = door | home door
+home = home | own hearth
+coin = coin | pay
+bread = bread | loaf
+price = price | asking cost
+road = road | high path
+
+any
+opinion @1 dole for 1 : A full #larder# for one household means little if a neighbour has no #bread#. | I will share a #shelf# before a child goes hungry.
+opinion @1 merchants against 2 : I watch the #price# of #bread# climb while my #coin# stays the same. | A seller should show the measure before taking payment.
+opinion @1 houses against 1 : A House owns a #field#; I would like to work one of my own. | Their benches are full enough without hearing how a small #farm# might begin.
+opinion @1 city against 1 : #smoke.capitalize# and #noise# would make a city hard on me. | A #bank# with moving #water# is enough company for me.
+opinion @1 newcomers mixed 1 : A new neighbour can join a #dance# without knowing every #step#. | I will show someone the #road# once I know where they mean to go.
+opinion @1 strangers mixed 1 : I can offer a #berry# and still keep my own counsel. | A quiet stranger may be easier company than a loud friend.
+opinion @1 festivals mixed 0 : I like a #dance# near the edge of the gathering. | By late #evening# I want the path home.
+opinion @1 drink mixed 0 : The #still# makes work, and a #jar# has its place. | A crowded drinking room soon sends me outside for the river air.
+
+grown
+line @1 greet : #greet#. The #river# has left me another #stone#. | #greet#. Come in, but leave the #door# quiet.
+line @2 greet [pair.band=strangers] : #greet#. We can speak quietly by the #bank#. | #greet#. Speak softly; the #still# needs an ear.
+line @3 greet [pair.band=friends|family] : I found #berries# if you would like some. | There is room by the #shelf# for you.
+line @4 greet [self.working=yes] : #greet#. The #flame# wants watching. | Come nearer the #pipe#; your words will reach me.
+line @5 greet [here.time=dawn] : #greet#. The #bank# is cool at this hour. | #greet#. I have set the #flame# low for the morning.
+line @1 greet.return : Another walk brought you here. | #welcome_back#. The #jar# is sealed now.
+line @2 greet.return [pair.band=friends|family] : I kept a few #berries# for you. | The #stones# from my last walk are on the #shelf#.
+line @1 kin.open [pair.kin!=no] : Come home. I have #bread# on the #shelf#. | The #door# is open for you.
+line @1 again.open : You have found me twice today. | I have only gathered one #stone# since we spoke.
+line @1 farewell : #farewell#. Keep your footing by the #bank#. | #saying.capitalize#. Take the quiet #road#.
+line @1 farewell.return : I will save the next smooth #stone# to show you. | May you reach a warm #home#.
+line @1 react.news : I will listen. Leave me a moment to lower the #flame#. | Tell it slowly; I do not need the loud version.
+line @1 react.news.new : That has not reached me by the #river#. | Who first brought the word to town?
+line @1 react.news.known : A fragment came to me along the #shore#. | That gives me the missing part.
+line @1 react.news.doubt : I would see another account before I pass that along. | The #stones# tell less than they seem; so might this tale.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Sit here until you are ready. | That is a hard weight to carry home.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A good word. I hope they have a full #shelf# tonight. | I am glad to hear it.
+line @1 answer.how : Warm enough, and the #larder# holds. | Steady. I took a walk by the #river#.
+line @1 answer.how.busy [self.working=yes] : Watching the #heat# and sealing #jars#. | Busy with the #pipe#, but I can talk.
+line @1 ask.how : Has your #home# been quiet? | Did you find supper before the #evening#?
+line @1 sympathise : Sit here; I will give you my attention. | You may take your time; the #stone# can wait.
+line @1 reassure : One #seed# can make a #field# worth tending. | Let us find one thing that can be done today.
+line @1 decline : I must mind the #flame# for now. | That task is beyond what I can promise today.
+line @1 accept_decline : I understand. We can leave it there. | Fair enough; another #road# may open.
+line @1 thank : That spared me a hard walk. Thank you. | The next heavy task can come to my paws.
+line @1 deflect_thanks : I was going along the #bank# anyway. | There were #berries# enough to share.
+line @1 preclose : The #still# needs its last look. | I want to be home before the #noise# starts.
+line @1 tease [pair.band=friends] : That #stone# is smoother than your last #dance# step. | You have taken the finest #berry# again.
+line @1 ack : #bc_right#. The #pipe# is sound. | #bc_fair_enough#. I will think on it.
+line @1 give.advice : Keep the #flame# low before opening the #window#. | Choose #seed# you can plant in the #soil# you have.
+line @1 warn [world.bandits=near] : The #road# by the #bank# is lonely now. | Take company if you must travel after dark.
+scene river_stones
+when topic=pastimes
+does tell.self / react.self / assess
+a : I take a #stone# from the #bank# when one sits right in my paw. | The #river# has rounded the sharpness off these #stones#.
+b : Do you keep every one? | How do you choose?
+a : Only the ones I remember finding. | By touch, before I look.
+
+scene pocket_weight
+when topic=home
+does tell.self / react.self / assess
+a : A #stone# in my #pocket# reminds me to slow down. | I empty the #pocket# before washing the coat.
+b : Does it work? | Have you lost one?
+a : More often than a shouted warning. | Once. I found another by the same #bank#.
+
+scene jar_cooling
+when topic=work
+does tell.self / react.self / assess
+a : A warm #jar# waits on the #shelf# until I can touch it safely. | I leave space between #jars# for the air to move.
+b : Does that take long? | What happens if you stack them early?
+a : Longer on a still day. | The #heat# stays trapped between them.
+
+scene watching_flame
+when topic=work
+does tell.self / react.self / assess
+a : I keep the #flame# low enough to hear the #pipe#. | Too much #heat# makes the #copper# complain.
+b : Can you hear a fault? | Do you ever step away?
+a : A change in the sound can tell me. | Only when another hand takes the watch.
+
+scene smoke_at_window
+when topic=work
+does tell.self / react.self / assess
+a : I open the #window# when #smoke# gathers. | The #still# should smell of work, not a choking #flame#.
+b : Does smoke mean trouble? | Does the cold air help?
+a : It means I check the fire first. | Enough to clear my head.
+
+scene berries_in_hand
+when topic=food here.season=summer|autumn
+does tell.self / react.self / assess
+a : #berries.capitalize# taste best off the #bush#. | I bring a small handful of #berries# home if the #road# passes the thicket.
+b : Do you wash them? | Are there enough to share?
+a : If the #bank# has splashed them. | Usually, if I do not eat them all first.
+
+scene larder_count
+when topic=home
+does tell.self / react.self / assess
+a : A full #larder# lets me sleep through an ordinary #night#. | I check the #shelf# before buying more #bread#.
+b : Is there enough for winter? | Do you keep a list?
+a : Not yet, but we are adding to it. | In my head until the #price# changes.
+
+scene farm_dream
+when topic=dreams
+does tell.self / react.self / assess
+a : I picture a small #farm# with a #field# I can cross before supper. | I would plant #seed# close enough to see from the #door#.
+b : Would you leave the still? | What would you grow first?
+a : If I could make the land pay. | Something that fills a #larder#.
+
+scene first_seeds
+when topic=dreams
+does tell.self / react.self / assess
+a : A #farm# begins with good #soil#, not a fancy fence. | I would test the #field# after rain before putting in #seed#.
+b : Do you know the work? | Could you afford land?
+a : Some. I would learn the rest. | Not today. I keep saving #coin#.
+
+scene summer_bank
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : A long #evening# lets me walk the #bank# after work. | The #stones# hold a little #heat# after the sun leaves.
+b : Do you go far? | Do you stay until dark?
+a : Until the #river# bends away from the #road#. | I come back before the #noise# of night.
+
+scene quiet_night
+when topic=day here.time=night
+does tell.self / react.self / assess
+a : A silent #shore# after dark lets me rest. | A late #noise# carries over the #lake# farther than its maker thinks.
+b : Does it wake you? | Do you go see what it is?
+a : Often. I listen until it stops. | Only if it sounds like someone needs help.
+
+scene dance_at_edge
+when topic=pastimes
+does tell.self / react.self / assess
+a : I will #dance# if there is space at the edge. | I can follow a #step# without joining the loudest group.
+b : Do you know the old dances? | Do you stay late?
+a : Enough to find my way through one. | Until the music grows too loud.
+
+scene partner_step
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse# knows when I want a #dance# and when I want the #road# home. | We can miss a #step# and still finish together.
+b : Do you practise? | Who leads?
+a : Not outside a festival. | Whoever remembers the next turn.
+
+scene child_stones
+when topic=family self.parent=yes
+does tell.self / react.self / assess
+a : I show #self.child# how to feel a #stone# for rough edges. | A child can find a better pebble than I can if I let them choose.
+b : Does your child keep them too? | Where do the stones go afterward?
+a : Some, until the #pocket# grows heavy. | Set a few on the #shelf# and leave the rest by the #bank#.
+
+scene river_after_rain
+when topic=weather here.weather=rain|storm
+does tell.self / react.self / assess
+a : Rain makes the #river# carry fresh #stones# past the #bank#. | I wait for the #water# to fall before I go looking.
+b : Is the bank dangerous then? | Do the stones change?
+a : It can be slippery. | The grit washes off and shows their colours.
+
+scene price_of_bread
+when topic=prices
+does tell.self / react.self / assess
+a : The #price# of #bread# rises while a day's pay stands still. | I keep an eye on the #larder# before spending spare #coin#.
+b : Do you buy less? | Does the still pay enough?
+a : I waste less. | Enough for today, not the #farm# I want.
+
+scene reeds_at_lake
+when topic=home here.region=coldwater
+does tell.self / react.self / assess
+a : The #reeds# by the #lake# move even when the street is still. | I take the #shore# path when the #road# has grown noisy.
+b : Do you meet anyone there? | Is it a longer walk?
+a : Sometimes a neighbour with the same idea. | A little. I do not mind.
+
+story first_stone [topic=memories self.age>=25]
+  : I found a flat #stone# at the #bank# while I was meant to be hurrying home.
+  : I carried it in my #pocket# and kept touching its edge along the #road#.
+  ask : Did you keep that first one?
+  b : A stone with a story is harder to throw back.
+  : I did. It sits on my #shelf# among the others.
+
+story berry_basket [topic=food self.age>=25]
+  : I went out for #berries# and came home with more #stones# than fruit.
+  : The best #bush# had already been picked, so I walked farther along the #bank#.
+  ask : Did you find any berries at all?
+  b : Enough for a taste, perhaps.
+  : A handful. We ate them before the #larder# door was open.
+
+story low_flame [topic=work self.age>=25]
+  : I let the #flame# grow too high while I was counting #jars#.
+  : The #pipe# changed its sound, so I lowered the fire and watched until it settled.
+  ask : Was anything lost?
+  b : You caught it early if you heard the pipe.
+  : Nothing but time. Since then I listen before I count.
+
+rule @bark_stone
+when concept=bark
+does aside
+cooldown 8h
+say This #stone# will fit in my #pocket#. | The #river# has polished this one well.
+
+rule @bark_flame
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say Keep the #flame# steady. | The #pipe# sounds right for now.
+
+rule @bark_berry
+when concept=bark here.season=summer|autumn
+does aside
+cooldown 10h
+say There may be #berries# beyond the #bank#. | A ripe #berry# would suit this walk.
+
+rule @bark_night
+when concept=bark here.time=night
+does aside
+cooldown 9h
+say What is making that #noise#? | A quiet #night# would be welcome.
+
+dlg @1 resident.hub : #greet#. Come nearer if you have something to say. | #greet#. I can listen by the #window#.
+dlg @2 resident.hub [topic.meeting=known] : We have spoken before. Is all well? | I know you. Come in from the #road#.
+dlg @1 resident.job : The #still# needs a careful ear and each #jar# a sound seal. | I keep the #flame# steady while the #still# works.
+dlg @1 resident.bye : #farewell#. The #bank# is slippery after rain. | #saying.capitalize#. Perhaps our paths will meet along the #river#.
+graft resident.hub
+choice Why do you carry stones? -> stones
+node stones
+say I pick one up on a #river# walk if it feels smooth in my paw. Each recalls the place I found it.
+free
+choice Do you keep them all? -> shelf
+choice Back to what we were saying. -> hub
+node shelf
+say No. A few stay on the #shelf# at #home#. The rest go back to the #bank#.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye

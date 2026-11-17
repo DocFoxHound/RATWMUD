@@ -1,0 +1,419 @@
+# cw116, the road beyond the door (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw116
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier full
+written_for tn_fh_laurel_pinefell
+written_by claude-codex-cw-1
+title the road beyond the door
+fits stage=adult|old
+prefers job=innkeeper drive=ambitious
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk never_sits_with_a_back_to_the_door
+likes warm_bread old_tales sharp_knife frosty_mornings
+dislikes deep_mud haggling
+fears a_life_spent_at_one_sill a_blade_slipping_in_a_rush
+hopes a_place_of_own_downriver a_road_that_keeps_opening
+topics travel +0.6 work +0.5 food +0.4 memories +0.3 pastimes +0.3 prices -0.3
+styles comfort=practical gossip=curious refuse=plain tease=dry
+marks oath saying
+persona #self.first# scrubs the #pot# while listening to travellers, watches the #door# from the side of the #hearth#, and plans for the #road# downriver.
+
+words
+oath! = By pot and current | Frost on the sill
+saying! = A road begins at a door | The pot is clean when the last story ends
+pot = pot | cooking pot
+pots = pots | cooking pots
+pan = pan | black iron pan
+pans = pans | iron pans
+bowl = bowl | earthen bowl
+bowls = bowls | earthen bowls
+spoon = spoon | long spoon
+ladle = ladle | serving ladle
+bread = bread | warm loaf
+loaf = loaf | fresh loaf
+crust = crust | browned crust
+oven = oven | baking oven
+knife = knife | sharp blade
+edge = edge | keen edge
+board = board | cutting board
+water = water | lake water
+bucket = bucket | wash bucket
+soap = soap | bar of soap
+steam = steam | rising steam
+hearth = hearth | fireside hearth
+fire = fire | hearth flame
+chair = chair | seat by the wall
+door = door | main door
+sill = sill | door sill
+room = room | guest room
+stairs = stairs | upper steps
+bed = bed | upstairs bunk
+blanket = blanket | wool blanket
+road = road | high road
+roads = roads | routes
+cart = cart | passing cart
+river = river | Long River
+lake = lake | Glasswater
+shore = shore | lake shore
+mist = mist | shore mist
+frost = frost | white rime
+mud = mud | deep muck
+boots = boots | travel boots
+tale = tale | old story
+stories = stories | travellers' accounts
+name = name | name given
+names = names | names given
+coin = coin | pay
+price = price | stated cost
+work = work | day's labour
+night = night | dark hours
+morning = morning | first light
+
+any
+opinion @1 strangers for 1 : A stranger may leave a good #tale# with the supper dishes. | I ask for a #name#, then I listen before deciding anything else.
+opinion @1 newcomers for 1 : A fresh pair of paws can learn the #pot# as well as anyone. | Someone has to show a newcomer where the #bucket# belongs.
+opinion @1 drink for 1 : A fair drink belongs beside a hot #bowl#. | The taproom earns its keep when travellers can sit safely inside.
+opinion @1 houses against 2 : Their fine tables have hands beneath them that no one names. | I have carried their empty #bowls#; they could learn who washed them.
+opinion @1 merchants against 2 : The #price# of #bread# climbs faster than the pay for scrubbing #pots#. | A seller can name a #price# once; I will not chase it up and down.
+opinion @1 dole against 1 : I want #work# and enough #coin# for a #loaf#. | Waiting in a queue will not clean the #pan# or fill my own shelf.
+opinion @1 church against 1 : I have heard a sermon from the back of a #room# while still hungry. | Give me a #loaf# and a task before another lecture.
+opinion @1 city mixed 1 : I want to see Ridgemere beyond a traveller's #tale#. | A city #door# may be crowded, but it opens onto more #roads#.
+opinion @1 festivals mixed 1 : A festival fills the #room# with #stories# and leaves every #bowl# dirty. | I enjoy the songs once the #pots# are finally clean.
+opinion @1 times against 1 : Each season costs more #coin# for the same #bread#. | I am saving anyway; the #road# will not wait for easy times.
+
+grown
+line @1 greet : #greet#. Give me a moment with this #pot#. | #greet#. I will set down the #bowl# to listen.
+line @2 greet [pair.band=strangers] : #greet#. What #road# brought you to this #door#? | #greet#. Tell me your #name# and where you came from.
+line @3 greet [pair.band=friends|family] : There is a #chair# where the #fire# reaches. | I have saved the best #crust# for someone I know.
+line @4 greet [self.working=yes] : #greet#. I can talk while I rinse these #bowls#. | I will set down the #pan# before I turn to you.
+line @5 greet [here.time=dawn] : #greet#. White #frost# has taken the whole #sill#. | #greet#. That first #loaf# smells worth getting up for.
+line @6 greet [here.time=dusk|night] : #greet#. The #hearth# has room beside it. | #greet#. Keep your #boots# off the wet #stairs#.
+line @1 greet.return : Back from the #road#? I want the whole #tale#. | You are here again. The #pot# is cleaner than last time.
+line @2 greet.return [pair.band=friends|family] : Come to the #hearth#; I have a new #tale# to trade. | That #chair# is free for a longer visit.
+line @1 kin.open [pair.kin!=no] : Come in. I will make another #bowl#. | You know the way past the #door#.
+line @1 again.open : Twice past this #sill# today. What changed? | I have barely put the #ladle# away since you left.
+line @1 hail : From the #road# again? Come tell me. | The #door# is open; I can hear you.
+line @1 farewell : #farewell#. Watch the #mud# beyond the #sill#. | #saying.capitalize#. Bring another #tale# next time.
+line @1 farewell.return : And a clear way down the #road# to you. | I shall keep a #bowl# ready if you return.
+line @2 farewell [here.time=night] : Step carefully past the #stairs#. | The #road# is dark; carry a light.
+line @1 react.news : I am listening. Start with where it happened. | Wait. Let me put the #knife# down first.
+line @1 react.news.new : That has not come through this #door# yet. Who told you? | I have heard no such #tale# at the #hearth#.
+line @1 react.news.known : I heard a little from a #cart# driver. | That fills a gap in the last telling.
+line @1 react.news.doubt : The end of that #tale# does not fit the beginning. | I would ask another traveller before repeating it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Sit by the #hearth# if you need. | That is a hard word to bring through a #door#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I will tell them when they come in. | That is a #tale# worth hearing twice.
+line @1 answer.how : Busy enough to keep the #pots# warm. | Thinking about the #road# while I wash another #bowl#.
+line @1 answer.how.busy [self.working=yes] : I have #bowls# to rinse and #bread# to set out. | The #pan# wants attention. Speak while I stir it.
+line @1 ask.how : Was the #road# passable today? | Have you eaten anything warm yet?
+line @1 sympathise : I can stay while you find your words. | Let me bring a #bowl# before we speak further.
+line @1 reassure : One #door# closes; another opens down the #road#. | Eat first. A warm #loaf# makes the next step easier.
+line @1 decline : I cannot leave the #hearth# just now. | No. I will not promise what I cannot deliver.
+line @1 accept_decline : Your choice. The #bowl# can go back on the shelf. | Fair enough. The #door# stays open if you change your mind.
+line @1 thank : I saw you take the heavy #bucket#; that spared me a trip. | That kindness made the evening easier.
+line @1 deflect_thanks : The #fire# was lit already. | I had an extra #bowl#; take it.
+line @1 preclose : I still have a #pot# to scrape before sleep. | The #hearth# needs tending and the #door# needs closing.
+line @1 tease [pair.band=friends] : Your #tale# grew a new ending since supper. | Those #boots# have brought half the #road# inside.
+line @1 tease.return [pair.band=friends] : Leave me a better ending next visit. | I will make you wash the #bucket# for that.
+line @1 ack : #bc_right#. I will keep that in mind. | #bc_fair_enough#. The #pan# can wait.
+line @1 give.advice : Get the #room# cost stated before you agree. | Dry the #knife# before it goes into the drawer.
+line @1 warn [world.bandits=near] : Trouble on the #road# makes a late #cart# an uneasy sight. | Stay where the lamps reach if you go out tonight.
+scene pot_after_supper
+when topic=work
+does tell.self / react.self / assess
+a : The last #pot# takes longer than the first. | I leave a little #water# in the #pan# before the crust hardens.
+b : Do you ever leave it for morning? | Does that spare your paws?
+a : Rarely. I want a clean start. | More than scraping at dried food.
+
+scene bread_from_oven
+when topic=food
+does tell.self / react.self / assess
+a : The first #loaf# out of the #oven# makes the #room# quiet. | I can tell a fresh #bread# by its #crust# before I touch it.
+b : Do you eat it hot? | How do you know it is ready?
+a : When I am allowed the end piece. | The #crust# gives a little under my paw.
+
+scene knife_and_board
+when topic=work
+does tell.self / react.self / assess
+a : A sharp #knife# does less damage to the #board# than a dull one. | I dry the #edge# before putting the #knife# away.
+b : Do you sharpen it yourself? | Is the blade old?
+a : When I have a quiet moment. | Old enough to be worth caring for.
+
+scene buckets_by_door
+when topic=work
+does tell.self / react.self / assess
+a : The clean #bucket# stands by the #door# where nobody trips. | I keep #soap# apart from the #bowls# meant for food.
+b : Does everyone remember that? | Why so careful?
+a : I remind the hurried ones. | A rushed #pan# can spoil the next meal.
+
+scene chair_with_view
+when topic=home
+does tell.self / react.self / assess
+a : I turn the #chair# so the #door# stays in sight. | I can hear a #tale# better when I know who enters.
+b : Is that a habit from work? | Does it help you rest?
+a : Partly. I am always watching for a new guest. | Enough to sit through a whole story.
+
+scene first_cold_hour
+when topic=weather here.season=winter here.weather=clear
+does tell.self / react.self / assess
+a : #frost.capitalize# makes the #sill# pale before the first #cart# passes. | A biting #morning# by the still #lake# wakes me quickly.
+b : Do you go outside then? | Does the kitchen stay warm?
+a : For a short walk before work. | The #oven# helps once it is lit.
+
+scene wet_boots
+when topic=weather here.weather=rain|storm
+does tell.self / react.self / assess
+a : Deep #mud# rides on #boots# until someone stops them at the #sill#. | I keep a rag beside the #door# when the #road# turns soft.
+b : Do guests use it? | Is there much to clean?
+a : When I ask them plainly. | More when a #cart# has just come in.
+
+scene traveller_question
+when topic=travel
+does tell.self / react.self / assess
+a : I ask travellers which #road# they would take twice. | A traveller may know the turns no map bothers to mark.
+b : Do they agree? | Are you planning a journey?
+a : Seldom; that is why I ask again. | I am saving for one.
+
+scene ridgemere_downroad
+when topic=dreams
+does tell.self / react.self / assess
+a : I mean to see Ridgemere for myself one day. | The #river# goes down from here; I keep thinking of the streets beyond it.
+b : Would you work there? | Would you come back?
+a : If I find a place that needs quick paws. | I cannot promise that.
+
+scene saved_coin
+when topic=prices
+does tell.self / react.self / assess
+a : I put a little #coin# aside before I buy anything else. | Haggling over a #loaf# wastes the time I could spend earning the #price#.
+b : Is the saving for travel? | Do you ever bargain?
+a : For the #road# and what waits at its end. | Only if someone has named two prices for one thing.
+
+scene old_tale
+when topic=pastimes
+does tell.self / react.self / assess
+a : An old #tale# gets better when the teller knows where to pause. | I can listen to the same #stories# if the voices change.
+b : Do you tell them yourself? | Which sort do you like?
+a : Sometimes, when the #pots# are done. | The ones where someone chooses a difficult #road#.
+
+scene inn_hearth
+when topic=home
+does tell.self / react.self / assess
+a : A #hearth# keeps more than a #room# warm. | Travellers come in quiet and leave a little of their #stories# behind.
+b : Do you remember them? | Does the noise tire you?
+a : Their #names# if they give them. | Only when I have missed supper.
+
+scene washing_steam
+when topic=work
+does tell.self / react.self / assess
+a : #steam.capitalize# hides a crack in a #bowl# until it cools. | I run a paw round the rim before I stack anything.
+b : Have you cut yourself? | What do you do with a cracked bowl?
+a : Once, and I learned. | Set it apart before another hand finds it.
+
+scene bed_for_guest
+when topic=work
+does tell.self / react.self / assess
+a : A dry #blanket# matters more than a fine #room# after a wet #road#. | I check the #stairs# before carrying clean linen up.
+b : Do you make the beds? | Is the stair steep?
+a : I help when the keeper needs me. | Steep enough with both paws full.
+
+scene guest_with_story
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I can tell when a guest wants supper before questions. | Some travellers begin a #tale# as soon as they see the #fire#.
+b : Which do you prefer? | Do you ever interrupt?
+a : The one who eats first. Their words settle. | If the #pot# is boiling over, yes.
+
+scene shore_before_shift
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : The #shore# is pale before the inn's #fire# is lit. | I like a breath of #frost# before a day of #steam#.
+b : Do you walk there alone? | Is it far from the kitchen?
+a : When I have time. | Near enough to hear the first #cart#.
+
+scene river_beyond
+when topic=travel
+does tell.self / react.self / assess
+a : The #river# begins near this #lake# and carries a thought far. | I watch it and imagine where a #cart# could take me.
+b : Have you followed it? | Where would you stop?
+a : Not as far as I intend. | Ridgemere first. Then I would decide.
+
+scene busy_bowls
+when topic=work here.time=dusk|night
+does tell.self / react.self / assess
+a : At supper, the #bowls# return faster than I can dry them. | I set the clean #spoon# away before someone takes it for another serving.
+b : Do you get help? | Does it slow down late?
+a : When another hand is free. | Once the last #cart# has come in.
+
+scene price_once
+when topic=prices
+does tell.self / react.self / assess
+a : Name the #price# once and I will answer once. | A long bargain can wear out the person keeping the #fire# going.
+b : Do guests try to haggle? | Would you ever lower a price?
+a : Some do before they have sat down. | That belongs to the keeper, not me.
+
+scene winter_sill
+when topic=season here.season=winter
+does tell.self / react.self / assess
+a : The #sill# can freeze before the #room# has cooled. | I keep the #door# shut between guests so the #fire# lasts.
+b : Does it get much colder? | Can guests still come through?
+a : Near the #lake#, yes. | I open it when I hear #boots# outside.
+
+scene neighbour_at_fire
+when topic=friends
+does tell.self / react.self / assess
+a : I like hearing a neighbour's #tale# without asking for #coin#. | A familiar face by the #hearth# makes a long shift shorter.
+b : Do you tell them yours? | Does work leave time?
+a : A little at a time. | Once the #pots# are put away.
+
+scene tale_with_knife
+when topic=pastimes
+does tell.self / react.self / assess
+a : I sometimes retell an old #tale# while cutting #bread#. | A steady #knife# keeps my paws busy while my mind goes down the #road#.
+b : Do you lose your place? | Do people listen?
+a : Only when the #loaf# runs out. | More when supper is ready.
+
+scene fogged_window
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : Lake #mist# reaches the #door# before the guests can see the sign. | I wipe the window clear to watch for a late #cart#.
+b : Can you see much? | Do travellers still arrive?
+a : A shape when it gets close. | Yes, with wet #boots# and hungry faces.
+
+scene closing_kitchen
+when topic=work here.time=night
+does tell.self / react.self / assess
+a : I leave the #pan# clean and the #knife# dry before I sleep. | The last #bucket# goes out after the #hearth# is safe.
+b : Do you check twice? | Is anyone still awake?
+a : I do when I am tired. | Usually someone has one last #tale#.
+
+scene open_city
+when topic=travel
+does tell.self / react.self / assess
+a : The #road# to Ridgemere is long enough to make me plan every #coin#. | I want a #room# of my own when I reach the city.
+b : Are you close to leaving? | Would you run an inn there?
+a : Closer than last winter. | Perhaps. I would learn its streets first.
+
+scene family_at_tap
+when topic=family
+does tell.self / react.self / assess
+a : A family member can work the tap while I wash the #pots#. | Shared work can keep a family close and wear it thin in the same day.
+b : Do you talk after the shift? | Does anyone get a quiet hour?
+a : When the last guest has gone upstairs. | We try to leave one #chair# by the #hearth# free.
+
+scene door_to_elsewhere
+when topic=dreams
+does tell.self / react.self / assess
+a : Every guest opens the #door# from a different part of the #road#. | I want to know how many streets a city can hold.
+b : Will their tales be enough? | Would you miss the lake?
+a : No. I mean to see it myself. | Some mornings, surely.
+
+story hot_pan [topic=work self.age>=25]
+  : I lifted a #pan# by a handle I thought had cooled.
+  : I let it down quickly and found a cloth before moving it again.
+  ask : Did you drop supper?
+  b : I hope you kept it level.
+  : I did. The guests never knew how close their meal came to the floor.
+
+story guest_from_downroad [topic=travel self.age>=25]
+  : A traveller described a Ridgemere street while I rinsed the #bowls#.
+  : I asked for its name twice and wrote it down after the kitchen closed.
+  ask : Did you visit it?
+  b : You sound as if you intend to.
+  : Not yet. The #road# is still there when I am ready.
+
+story blunt_knife [topic=work self.age>=25]
+  : A dull #knife# tore a fresh #loaf# when I tried to cut supper.
+  : I stopped, sharpened the #edge#, and sliced the rest cleanly.
+  ask : Did anyone mind the wait?
+  b : Warm bread might have kept them patient.
+  : One guest asked for another piece. I took that as my answer.
+
+story window_seat [topic=memories self.age>=25]
+  : Once I took the only free #chair#, facing away from the #door#.
+  : I kept turning at each footstep and missed the ending of an old #tale#.
+  ask : Did you hear the ending later?
+  b : The teller might have repeated it.
+  : I asked them to. Then I stood by the #hearth# to listen.
+
+story shore_before_departure [topic=dreams self.age>=25]
+  : I walked to the #shore# before a traveller's #cart# left town.
+  : I thought of asking for a place, but counted the #coin# I had and came back to work.
+  ask : Did you regret staying?
+  b : You could take another cart when you are ready.
+  : That is what I told myself. I have saved more since.
+
+rule @bark_pot
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say The #pot# needs one more rinse. | These #bowls# should go on the dry shelf.
+
+rule @bark_road
+when concept=bark
+does aside
+cooldown 10h
+say I wonder where that #cart# goes next. | The #road# is long past this #door#.
+
+rule @bark_bread
+when concept=bark here.time=dawn|day
+does aside
+cooldown 8h
+say Fresh #bread# changes the whole #room#. | I can smell a warm #loaf# from here.
+
+rule @bark_frost
+when concept=bark here.season=winter
+ does aside
+cooldown 11h
+say #frost.capitalize# on the #sill# again. | The #lake# has sent a cold #morning#.
+
+rule @bark_chair
+when concept=bark
+does aside
+cooldown 12h
+say I will take the #chair# that faces the #door#. | Let me turn this #chair# a little.
+
+rule @bark_late
+when concept=bark here.time=night
+does aside
+cooldown 9h
+say The last #pan# is nearly done. | Another #tale# before the #fire# burns low.
+
+dlg @1 resident.hub : #greet#. What brings you through this #door#? | #greet#. Set out your business while I put this #bowl# aside.
+dlg @2 resident.hub [topic.meeting=known] : You are back. Have you brought a new #tale#? | I know your face now. Come closer to the #hearth#.
+dlg @3 resident.hub [here.time=night] : #greet#. Keep the #door# shut against the cold. | The #fire# is still burning if you need a moment.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say what you need plainly. | I will hear you, but I have work waiting.
+dlg @1 resident.job : I wash #pots#, help with #bread#, and keep the kitchen moving. | I am a pot hand. The #bowls# and #pans# come to me.
+dlg @1 resident.bye : #farewell#. Step clear of the #bucket#. | #saying.capitalize#. Mind your #boots# on the #road#.
+dlg @1 inn.greet [here.inn_helper=yes] : #greet#. I help in the kitchen. Ask #here.innkeeper# about a #bed#. | I can get you warm by the #fire#; #here.innkeeper# handles the rooms.
+dlg @2 inn.greet [here.inn_helper=yes topic.meeting=known] : Back again? #here.innkeeper# can arrange a #bed# if you need one. | I remember you. Come in out of the cold; ask #here.innkeeper# about lodging.
+dlg @3 inn.greet [here.inn_helper=yes here.time=night] : Late on the #road#? Come by the #fire#; #here.innkeeper# can speak for the beds. | The kitchen is slowing down. Ask #here.innkeeper# if you need a room.
+dlg @4 inn.greet [here.inn_helper!=yes here.shop!=asleep] : #greet#. The #fire# is ready; have you come for supper or rest? | #greet#. We have warmth for travellers coming off the #road#.
+dlg @1 inn.rest [here.lodging!=yes] : Rest by the #fire# a while. I will keep the #bucket# clear of your feet. | There is a #chair# by the #hearth#; take it.
+dlg @2 inn.rest [here.lodging=yes] : Sit as long as you like. Your #bed# is upstairs when you want it. | You have a place upstairs; warm yourself first.
+dlg @1 inn.refused : #topic.why# | I am sorry. #topic.why#
+dlg @1 inn.bye : #farewell#. Bring another #tale# when you come through. | #farewell#. The #road# is cool by the #lake#.
+graft resident.hub
+choice Why do you always face the door? -> doorway
+node doorway
+say I see who needs a #bowl#, and I can relax if I know who has come in.
+free
+choice Is that why you work in an inn? -> workdoor
+choice Back to what we were saying. -> hub
+node workdoor
+say It helps. Mostly I like the #stories# people bring from the #road#.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
+
+graft inn.greet
+choice Have you heard a good road tale today? [here.inn_helper=yes] -> roadtale
+node roadtale
+say A traveller spoke of Ridgemere streets last night. I keep asking where the #road# turns after that.
+free
+choice Would you go there yourself? -> citydream
+choice Back to the inn. -> greet
+node citydream
+say One day. I am saving #coin# and learning everything an inn needs first.
+choice Back to the inn. -> greet
+choice Goodbye. -> bye

@@ -1,0 +1,412 @@
+# cw114, the unanswered page (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw114
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier full
+written_for cty_orrin_reedmere
+written_by claude-codex-cw-1
+title the unanswered page
+fits stage=adult|old
+prefers talk=quiet warmth=cold
+traits temper=even talk=quiet warmth=cold humour=none honesty=guarded piety=ordinary drive=content
+quirk never_sits_with_a_back_to_the_door
+likes crisp_apples cards sharp_knife autumn_wind
+dislikes early_bells deep_mud
+fears a_pen_without_a_latch a_letter_never_answered
+hopes a_quiet_place_for_the_herd a_fair_hearing_for_working_folk
+topics work +0.5 home +0.4 pastimes +0.3 prices +0.3 memories +0.2 gossip -0.5
+styles comfort=practical gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# watches the #door# from every #seat#, keeps the #pen# latched, and weighs a written #answer# longer than a spoken promise.
+
+words
+oath! = By bristle and board | Mud take the empty promise
+saying! = A shut pen lets a wolf sleep | Ink can wait; a latch cannot
+pen = pen | pig yard
+gate = gate | yard gate
+latch = latch | iron catch
+fence = fence | rough rail
+trough = trough | feeding trough
+feed = feed | grain for the pigs
+pig = pig | young pig
+pigs = pigs | restless herd
+sow = sow | mother pig
+litter = litter | group of piglets
+straw = straw | clean bedding
+mud = mud | deep yard muck
+boots = boots | stout boots
+knife = knife | keen blade
+edge = edge | sharp side
+apple = apple | crisp apple
+cards = cards | worn deck
+card = card | playing card
+hand = hand | working paw
+table = table | common table
+seat = seat | chair by the wall
+door = door | outer door
+wind = wind | strong gust
+bell = bell | early bell
+road = road | track to town
+paper = paper | folded sheet
+seal = seal | wax mark
+answer = answer | reply
+question = question | point put plainly
+coin = coin | pay
+price = price | asking cost
+market = market | row of stalls
+work = work | day's labour
+quiet = quiet | stillness
+shadow = shadow | dark shape
+count = count | tally
+day = day | whole day
+step = step | footfall
+
+any
+opinion @1 houses against 2 : I have seen a #paper# go in and no #answer# come out. | A House can say it hears workers; I want the #seal# on a real reply.
+opinion @1 merchants against 2 : The #price# rises while the #feed# bag gets no fuller. | A buyer counts the #pigs# and forgets the #work# between births and sale.
+opinion @1 newcomers against 1 : A new #hand# may be sound, but I do not open the #gate# on a fine story alone. | I ask who will share the #work# before I give up a #seat#.
+opinion @1 strangers against 2 : I keep the #door# shut until a stranger gives a reason. | A good stranger can answer a plain #question# without taking offence.
+opinion @1 dole against 1 : A queue costs a #day# and still leaves the #trough# empty. | I would rather know what #work# is offered than wait for a stamped #paper#.
+opinion @1 city against 1 : The city sends #paper# and takes #coin#; I prefer a face at the #gate#. | Smoke and elbows do not make a better #market#.
+opinion @1 times against 1 : The #feed# costs more and the #price# paid for a pig does not follow. | I keep the same #count# and have less to set aside.
+opinion @1 road mixed 0 : The #road# can bring a fair buyer or a late cart. | I might take the #road# to seek an honest #answer#, though I would not enjoy the way.
+opinion @1 watch mixed 0 : A Watch patrol is welcome by an open #pen#. | I still want the Watch to ask a #question# before choosing a culprit.
+opinion @1 festivals mixed 0 : A few #cards# after work will do me more good than a crowd. | The music carries on the #wind# even if I stay home.
+
+grown
+line @1 greet : #greet#. The #door# is in view from here. | #greet#. The #pen# is latched; speak plainly.
+line @2 greet [pair.band=strangers] : #greet#. Give me a #question# I can answer. | #greet#. Leave the #gate# shut and say why you came.
+line @3 greet [pair.band=friends|family] : Take the #seat# near me. | I kept the #cards# dry if you want a game.
+line @4 greet [self.working=yes] : #greet#. The #pigs# need #feed# first. | #greet#. I will hear you after I close the #gate#.
+line @5 greet [here.time=dawn] : #greet#. That #bell# found me before the #pigs# did. | #greet#. The #pen# is quiet for another moment.
+line @6 greet [here.time=dusk|night] : #greet#. Keep the #door# in sight. | #greet#. I have checked the #latch# for the night.
+line @1 greet.return : Back already? Has any #answer# arrived? | #welcome_back#. The #table# is clear now.
+line @2 greet.return [pair.band=friends|family] : The #cards# are here if you want them. | There is a #seat# facing the #door# if you want it.
+line @3 greet.return [self.working=yes] : Back before the #trough# is filled? | Let me empty this #feed# bucket, then we can speak.
+line @1 kin.open [pair.kin!=no] : Come by the #table#. | I know that #step# at the #door#.
+line @1 again.open : Here again so soon? The #paper# has not moved. | You have found the #gate# open again.
+line @1 hail [pair.band=friends] : Here. I have the #cards# if there is time. | I saw you past the #fence#; come over.
+line @1 farewell : #saying.capitalize#. Close the #door#. | #farewell#. Mind the #mud# beyond the #gate#.
+line @1 farewell.return : I will keep the #cards# for next time. | And a clear #road# to you.
+line @2 farewell [here.time=night] : Keep to the lit #road#. | Listen for the #gate# closing behind you.
+line @1 react.news : #listen.capitalize#. I will put the #cards# down. | Give me the first #question# before the answer.
+line @1 react.news.new : A new word at the #pen#, then. Who witnessed it? | That is a new #paper# to set beside the old.
+line @1 react.news.known : I heard an earlier telling by the #market#. | I heard one part of that already; tell me the rest.
+line @1 react.news.doubt : I want to see a #seal# before I trust that word. | Something in that #count# does not reach the end.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is cruel news. Take the #seat#. | I will leave the #pen# a while and listen.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I hope they tell the whole town. | That is welcome news today.
+line @1 answer.how : The #pen# is sound. I am steady. | Keeping the #count# and the #door# in view.
+line @1 answer.how.busy [self.working=yes] : Busy with #feed# and a stubborn #gate#. | The #pigs# are louder than a conversation today.
+line @1 ask.how : Has the #road# brought you any ease? | Are you keeping well behind that #door# of yours?
+line @1 sympathise : Let me face the #door#; then I will listen. | Take time. The #cards# can wait.
+line @1 reassure : A bad #answer# can be questioned again. | Shut one #gate# first; then look at the next.
+line @1 decline : I cannot promise that without seeing the #paper#. | I would rather refuse than leave you waiting for an #answer# I cannot give.
+line @1 accept_decline : Plain enough. I will put the #paper# away. | You have decided; I can close the #count#.
+line @1 thank : You gave me a straight #answer#. Thank you. | Your help matters more than the #paper#.
+line @1 deflect_thanks : I only held the #gate#. | The #cards# were out; I had time to listen.
+line @1 preclose : I should make the last #count# before dark. | The #latch# will not check itself.
+line @1 tease [pair.band=friends] : Your #card# was showing from the start. | You chose the #seat# with its back to the #door#.
+line @1 tease.return [pair.band=friends] : That #card# will come out again when we play. | Try that wit once the #gate# is secure.
+line @1 ack : #bc_right#. The #paper# is clear. | #bc_fair_enough#. I shall check the #count#.
+line @1 give.advice : Ask for a written #answer# before you leave the counter. | Check the #latch# after the first pull.
+line @1 warn [world.bandits=near] : Take the broad #road# while trouble is near. | Do not leave the #pen# alone if you hear a stranger at the #gate#.
+scene door_in_sight
+when topic=home
+does tell.self / react.self / assess
+a : I choose the #seat# that lets me see the #door# and the #cards#. | I turn a chair toward the #door# without thinking.
+b : Is that for comfort? | Do you expect trouble?
+a : It lets me settle enough to play. | No. I dislike surprises behind my back.
+
+scene trough_before_dawn
+when topic=work
+does tell.self / react.self / assess
+a : The #trough# is filled before that #bell# starts. | A hungry #pig# makes more noise than an early bell.
+b : Do they wake before you? | Is feeding them difficult?
+a : Usually. I hear the #pen# before I see it. | Less difficult when I have the #feed# measured out.
+
+scene sow_and_litter
+when topic=work
+does tell.self / react.self / assess
+a : I leave room around a #sow# with a new #litter#. | The smallest #pig# will follow the others if I keep the #gate# quiet.
+b : Do you go near the young? | Do they need help?
+a : Only as much as the #sow# permits. | Sometimes. I watch the #trough# and let them find it.
+
+scene pigs_listen
+when topic=work
+does tell.self / react.self / assess
+a : The #pigs# know when a bucket carries #feed#. | A quiet #pen# can turn loud at one lifted #latch#.
+b : Can they tell from the sound? | Do they crowd you?
+a : They know the scrape before I reach the #gate#. | They try. I set the #trough# down from the side.
+
+scene mud_line
+when topic=weather here.weather=rain|storm
+does tell.self / react.self / assess
+a : The #mud# rises above my #boots# after hard rain. | I mark the dry edge of the #pen# before the water spreads.
+b : Can you keep the pigs dry? | Does the mark help?
+a : I bring #straw# to the high side. | It tells me where to put the next #fence# board.
+
+scene knife_for_repair
+when topic=work
+does tell.self / react.self / assess
+a : I keep the #knife# keen for cutting rope and #feed# sacks. | A sound #edge# is useful at the #pen# without ever being waved about.
+b : Do you sharpen it each day? | Is it safe near the animals?
+a : I check it before a long #work# day. | It stays sheathed until the #gate# is closed.
+
+scene apple_core
+when topic=food
+does tell.self / react.self / assess
+a : I save the best #apple# for myself and the cores for the #pigs#. | A crisp #apple# is a good pause after the #trough# is clean.
+b : Do the pigs like the cores? | Do you have many trees?
+a : They do. I cut out the seeds first. | Enough to find an #apple# when the season comes.
+
+scene card_count
+when topic=pastimes
+does tell.self / react.self / assess
+a : I count the #cards# left in the deck, not the look on a face. | A close #hand# can be weaker than it looks.
+b : Does that make you good at the game? | Do you bluff?
+a : It makes me careful. Winning is another thing. | Only when I have a #card# that can bear it.
+
+scene marked_card
+when topic=pastimes
+does tell.self / react.self / assess
+a : One #card# has a nick at the corner, so I keep it out of play. | A worn #cards# deck tells you which #hand# has held it longest.
+b : Could someone use the nick to cheat? | Do you replace the cards?
+a : Yes. That is why it sits apart. | When the faces fade; the #table# can bear old edges.
+
+scene market_weighing
+when topic=prices
+does tell.self / react.self / assess
+a : Before a buyer weighs the #pigs#, I ask for a #price#. | A fair #market# shows the measure before it asks for a promise.
+b : Do you trust the first offer? | Do you bargain much?
+a : Rarely. I keep my own #count#. | I state what I know and let the buyer answer.
+
+scene unanswered_page
+when topic=smalltalk
+does tell.self / react.self / assess
+a : A #paper# sent upward can vanish without an #answer#. | I trust a #seal# less when it comes without a reason.
+b : Have you sent one yourself? | What would satisfy you?
+a : I have. I still think a question deserves a reply. | A clear #answer#, even one I dislike.
+
+scene folded_reply
+when topic=memories
+does tell.self / react.self / assess
+a : I keep old #paper# folded where it will not soak. | A wax mark proves a letter was closed; it says little about the reader.
+b : Do you reread it? | Why keep it at all?
+a : Sometimes, when the #question# still matters. | To remember what was actually said.
+
+scene fair_hearing
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I can accept a hard #answer# if someone heard the whole #question#. | A silence after a #paper# is harder to live with than a no.
+b : Would a refusal be enough? | Do you ask again?
+a : If it came with a reason. | Once, more plainly. Then I keep the #paper#.
+
+scene bell_before_light
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : The #bell# rings while the #pen# is still dark. | I can hear the #bell# from under the blanket.
+b : Does it get you up? | Do you wish it were later?
+a : The #pigs# do that sooner. | Every cold morning. It will not change for me.
+
+scene knife_on_stone
+when topic=work
+does tell.self / react.self / assess
+a : A dull #knife# slips on a feed sack. | I sharpen the #edge# before I cut fresh #straw#.
+b : Do you sharpen it every day? | Does the knife do much else?
+a : I check it every morning. | It cuts twine and opens bags; that is enough.
+
+scene apple_after_work
+when topic=food
+does tell.self / react.self / assess
+a : Give me a crisp #apple# after the #pen# is clean. | I keep an #apple# for the walk home.
+b : Do you share it with the pigs? | Is that your supper?
+a : The bruised pieces, sometimes. | No. It keeps me going until supper.
+
+scene careful_hand
+when topic=pastimes
+does tell.self / react.self / assess
+a : I like a #hand# of #cards# after a quiet shift. | I can read a bad #card# better than a fine promise.
+b : Do you play to win? | Who do you play with?
+a : I play to see what the others will show. | Whoever sits down and pays attention.
+
+scene chair_at_the_wall
+when topic=home
+does tell.self / react.self / assess
+a : I move the #seat# until the #door# stays in view. | A #table# against the wall suits me better than the middle of a room.
+b : Can you relax that way? | Does it bother anyone?
+a : Once I can watch each arrival. | I put the chair back when I leave.
+
+scene wind_over_rail
+when topic=weather here.season=autumn
+does tell.self / react.self / assess
+a : Autumn #wind# pulls the smell from the #pen#. | The #fence# hums when a good blow comes through.
+b : Do you like that? | Does it trouble the herd?
+a : More than the still heat. | They bunch together, then settle if the #gate# holds.
+
+scene bell_and_bucket
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : I would sooner hear a #trough# fill than an early #bell#. | That #bell# finds me with the #feed# bucket in hand.
+b : Can you sleep through it? | Can you tell the hour by it?
+a : Never. It cuts through sleep however I try to ignore it. | Only when I have lost count of the morning.
+
+scene clean_straw
+when topic=work
+does tell.self / react.self / assess
+a : Fresh #straw# stays dry if I lay it away from the #trough#. | I lift the old #straw# before the #pen# begins to smell.
+b : Is that every morning? | Where does the old bedding go?
+a : Whenever the floor is wet. | On a heap beyond the #fence#.
+
+scene road_to_alder
+when topic=travel
+does tell.self / react.self / assess
+a : I know the #road# to the yard by the ruts. | A cart can hide a deep hole until its wheel drops in.
+b : Do you walk it often? | Do you warn the drivers?
+a : On work days, yes. | If I see them before the wheel reaches it.
+
+scene counted_feed
+when topic=prices
+does tell.self / react.self / assess
+a : I measure the #feed# before I buy another bag. | One lost scoop each #day# becomes a costly habit.
+b : Does anyone else count it? | Can you save much that way?
+a : I keep my own #count#. | Enough to see when a bag runs short.
+
+scene shared_table
+when topic=home
+does tell.self / react.self / assess
+a : At a crowded #table#, I keep my #cards# close. | I can enjoy supper if the #door# is not behind me.
+b : Do you talk much there? | Would you move for someone else?
+a : When someone asks a straight #question#. | Yes, if they need the place more.
+
+scene fair_price
+when topic=prices
+does tell.self / react.self / assess
+a : A buyer should say the #price# while the #pigs# stand in front of us. | I do not bargain over a #pig# I have not seen.
+b : Do you trust a spoken offer? | What do you check first?
+a : If the buyer will repeat it in daylight. | The animal, then the #count#.
+
+scene lake_mist_gate
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : Lake #fog# can hide the end of the #fence#. | I leave the #gate# shut while the far #trough# is hidden.
+b : Do the pigs mind the mist? | How long does it last?
+a : They still want their #feed#. | Until the air moves or the light finds a gap.
+
+scene reply_in_hand
+when topic=memories
+does tell.self / react.self / assess
+a : A #paper# is easy to fold; a refusal takes longer. | I once carried a #question# up to a high desk.
+b : Did someone answer it? | Would you do it again?
+a : They answered, but did not change their minds. | I would ask more plainly next time.
+
+story latch_at_dawn [topic=work self.age>=18]
+  : I found the #gate# open a finger's width before dawn.
+  : I checked the #count#, then followed the marks beside the #fence#.
+  ask : Had a pig got out?
+  b : The gap sounds wide enough for one.
+  : No. The #latch# had caught on old #straw#. I cleared it and checked the #count# again.
+
+story the_wet_page [topic=memories self.age>=18]
+  : I carried a #paper# through lake rain with the corner tucked inside my coat.
+  : A drop still found the #seal# before I reached the #door#.
+  ask : Did they take it wet?
+  b : A little water should not hide the words.
+  : They took it. I remember the wait for an #answer# more clearly than the rain.
+
+story three_cards [topic=pastimes self.age>=18]
+  : I held three poor #cards# and watched everyone else study their own hands.
+  : I stayed in for one turn because I wanted to see who would show a strong #card#.
+  ask : Did you win the hand?
+  b : Not with those cards, surely.
+  : No. I learned who bluffs when the #table# goes quiet.
+
+story first_litter [topic=work self.age>=18]
+  : I tried to clear a #pen# while a #sow# guarded a new #litter#.
+  : She planted herself between me and the #straw#, so I set the bucket down and waited.
+  ask : Did she let you through?
+  b : After you gave her room, perhaps.
+  : At last. I learned to move the #trough# before touching her bedding.
+
+story sharp_edge [topic=work self.age>=18]
+  : I reached for a #knife# when a feed sack would not open.
+  : The #edge# had gone dull, so I put the sack down and found a stone.
+  ask : Was the delay worth it?
+  b : Better than a slipped blade.
+  : Yes. The clean cut took less time than forcing a blunt one.
+
+rule @bark_gate
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say Check the #latch# once more. | The #gate# should sit flush.
+
+rule @bark_feed
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say One more #count# before I fill the #trough#. | The #feed# is measured.
+
+rule @bark_cards
+when concept=bark here.time=dusk|night
+does aside
+cooldown 9h
+say A quiet #hand# of #cards# would suit me. | I will put the #cards# away soon.
+
+rule @bark_bell
+when concept=bark here.time=dawn
+does aside
+cooldown 11h
+say The #bell# started early again. | I heard the #bell# before the #gate# opened.
+
+rule @bark_door
+when concept=bark
+does aside
+cooldown 12h
+say That #seat# leaves the #door# in sight. | I will sit where I can see the #door#.
+
+rule @bark_wind
+when concept=bark here.season=autumn
+does aside
+cooldown 10h
+say Fair #wind# across the #fence# today. | The #wind# has reached the #pen#.
+
+dlg @1 resident.hub : #greet#. Your voice reaches me here. | #greet#. Speak plainly; I am listening.
+dlg @2 resident.hub [topic.meeting=known] : Back again. Take a #seat#. | We have met. What is your business today?
+dlg @3 resident.hub [here.time=night] : #greet#. Keep the #door# closed behind you. | #greet#. I will listen a moment before I turn in.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say what you came to say. | I am listening, though I would like a plain #answer#.
+dlg @1 resident.job : I keep the #pen# fed and the #gate# sound. | I mind the #pigs#, the #feed#, and the #count#.
+dlg @1 resident.bye : #farewell#. Mind the #road#. | #saying.capitalize#. Close the #gate# behind you.
+dlg @1 master.learn [here.teaches=yes] : I can show you how to keep a #pen# and read a herd. What do you want to know? | You can learn the yard work here. Ask what you need.
+dlg @1 master.work : Feed, clean #straw#, sound #fence#, and a #count# at each #gate#. | Most of it is watching carefully before moving a thing.
+dlg @1 master.wages : An apprentice earns no wage from me. You learn beside me; what you make, you sell. | There is no wage for learning. You work beside me and learn the trade.
+dlg @1 master.takes [here.take_on=yes] : One apprentice at a time, and one I know and trust. Ask, and it is settled. | I can take one learner. If you are ready, ask me.
+dlg @2 master.takes [here.take_on=no] : One apprentice at a time, and one I know and trust. #here.take_on_why# | I cannot take you on now. #here.take_on_why#
+dlg @1 master.taken : Good. We begin with the #gate# and the #count#. | Settled. Come ready to work and keep the #pen# quiet.
+dlg @1 master.refused : #topic.why# | Not yet. #topic.why#
+dlg @1 master.bye : #farewell#. Mind the #gate#. | #farewell#. We can speak another day.
+graft resident.hub
+choice Why do you always watch the door? -> door
+node door
+say I settle better when I can watch each arrival. It is a habit I keep.
+mood wary
+free
+choice Has something happened? -> reason
+choice Back to what we were saying. -> hub
+node reason
+say Nothing you need to fear. I simply like to know where the #door# is.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice What should I check first in a pig yard? -> yard
+node yard
+say Start with the #gate# and #latch#, then count the herd before you fill the #trough#.
+free
+choice What if a pig is missing? -> missing
+choice Back to the lesson. -> learn
+node missing
+say Shut the #gate#, check the #fence#, and follow the marks before you guess where it went.
+choice Back to the lesson. -> learn
+choice Goodbye. -> bye

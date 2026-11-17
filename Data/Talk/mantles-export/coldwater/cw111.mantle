@@ -1,0 +1,286 @@
+# cw111, the warm bowl (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw111
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_lf_rusk_downfield
+written_by claude-codex-cw-1
+title the warm bowl
+fits stage=adult|old
+prefers job=herder warmth=warm
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk hums_old_marching_songs
+likes barley_soup swimming new_boots frosty_mornings
+dislikes haggling early_bells
+fears an_empty_pot a_lamb_left_out_in_frost
+hopes a_farm_with_room_for_everyone a_long_shared_table
+topics food +0.5 family +0.4 work +0.4 pastimes +0.3 weather +0.2 gossip -0.3
+styles comfort=practical gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# hums a #march# over a #pot# of barley, welcomes another #bowl# at the table, and watches the #flock# with steady patience.
+
+words
+oath! = By the warm bowl | Frost and fleece
+saying! = Let the pot hold one more | Cold water wakes a steady paw
+pot = pot | soup pot
+bowl = bowl | clay bowl
+bowls = bowls | earthen bowls
+barley = barley | barley grains
+soup = soup | barley broth
+spoon = spoon | wooden spoon
+table = table | supper table
+hearth = hearth | fireside
+march = march | marching tune
+hum = hum | low tune
+flock = flock | flock of sheep
+sheep = sheep
+lamb = lamb | young sheep
+fold = fold | sheep pen
+wool = wool | fleece
+frost = frost | white rime
+morning = morning
+water = water | cold lake water
+shore = shore | lake shore
+swim = swim | turn through the water
+boots = boots | new boots
+field = field | pasture
+gate = gate | field gate
+fence = fence | rail fence
+road = road | lane through the fields
+hand = hand | working paw
+hands = hands | working paws
+coin = coin | pay
+bell = bell | early bell
+day = day | stretch of daylight
+price = price | cost
+prayer = prayer | quiet petition
+stone = stone | smooth rock
+fire = fire | hearth fire
+straw = straw | bedding
+sun = sun | morning light
+
+any
+opinion @1 strangers for 1 : A stranger can sit for #soup# before telling me a story. | Another #bowl# on the #table# is easy enough to manage.
+opinion @1 newcomers for 1 : A new #hand# can find a place if we show where the work is. | I would offer the #road# to the #fold# before judging a newcomer.
+opinion @1 dole for 1 : No wolf should end a #day# without a #bowl# of something warm. | I would rather fill the #pot# than argue over who earned supper.
+opinion @1 city against 1 : The city crowds out the sound of one neighbour at the #table#. | I prefer a #field# where I can hear the #flock# settle.
+opinion @1 merchants mixed 0 : A seller who shows the weight of #wool# may have my #coin#. | I will pay a fair #price#; I will not haggle until supper cools.
+opinion @1 houses mixed 0 : A House can keep a sound #fence# if it chooses to pay the hands. | I care more for the worker who set the #gate# than the crest above it.
+opinion @1 church mixed 0 : A quiet #prayer# can be said over a #pot# as well as in a chapel. | The Bright One has heard me on the #shore# more than once.
+opinion @1 festivals mixed 0 : I like to watch the dancing, then take the #road# home. | A festival is easier with #soup# ready when everyone returns.
+
+grown
+line @1 greet : #greet#. There is #soup# if you are hungry. | #greet#. Sit near the #hearth# and warm your paws.
+line @2 greet [pair.band=strangers] : #greet#. The #table# has another place. | #greet#. Tell me where the #road# brought you from.
+line @3 greet [self.working=yes self.job=herder] : #greet#. I am leading the #flock# in. | #greet#. Walk with me to the #fold# and speak.
+line @4 greet [here.time=dawn] : #greet#. The #frost# is still on the #field#. | #greet#. I have the #pot# over the fire already.
+line @5 greet [here.time=dusk|night] : #greet#. The #sheep# are quiet in the #fold#. | #greet#. The #soup# is warm yet.
+line @1 greet.return : #welcome_back#. I can set out another #bowl#. | You have returned before the #pot# emptied.
+line @2 greet.return [pair.band=friends|family] : Your #spoon# is here. | Come to the #table#; I saved you a place.
+line @1 kin.open [pair.kin!=no] : Come inside. You know where the #bowls# are. | I made enough #soup# for another paw.
+line @1 again.open : Another visit today? The #hearth# has stayed warm. | The #march# has not reached its ending, and you are here again.
+line @1 farewell : #saying.capitalize#. Travel kindly. | #farewell#. Keep your #boots# from the ditch.
+line @1 farewell.return : May your #bowl# be full when you get home. | I will see you by the #shore# another day.
+line @1 react.news : #listen.capitalize#. The #spoon# can wait while I hear you. | That needs hearing beside the #hearth#.
+line @1 react.news.new : A new word. Who carried it down the #road#? | I have not heard that by the #fold#.
+line @1 react.news.known : A little of it reached me over #soup#. | Your account gives the rest of that #day# its shape.
+line @1 react.news.doubt : I would ask the other #hand# before settling it. | That account needs a second look, like a loose #fence#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Come sit. I will make room by the #hearth#. | I am sorry. Let me bring you a #bowl# before we speak.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good! That calls for another #bowl# at supper. | I am glad. The #march# will sound lighter tonight.
+line @1 answer.how : Warm enough, with #soup# on the fire. | Steady. The #flock# is settled.
+line @1 answer.how.busy [self.working=yes] : The #flock# needs me now, but I can listen. | Busy with the #gate# and the #pot# in turns.
+line @1 ask.how : Have you had a warm #bowl# today? | Was the #road# gentle under your paws?
+line @1 sympathise : We can sit at the #table# until you have words. | I will bring #soup# and leave you time.
+line @1 reassure : A cold #morning# can turn into a gentle #day#. | Take a #spoon# of something warm, then the next step.
+line @1 decline : I cannot go yet; the #flock# needs a keeper. | I would come, but the #pot# and the #fold# both need me now.
+line @1 accept_decline : Fair enough. I can keep the #bowl# for later. | No quarrel; the #road# may bring another chance.
+line @1 thank : You carried the #pot# when my paws were full. Thank you. | That helped the #flock# and me.
+line @1 deflect_thanks : There was #soup# to spare. | My paws were free and the #road# was mine to walk.
+line @1 preclose : I need to tend the #hearth# before supper. | The #fold# wants one last look.
+line @1 tease [pair.band=friends] : That #bowl# is larger than your appetite. | Your #boots# found the only muddy patch.
+line @1 tease.return [pair.band=friends] : I shall add another #spoon# for that. | The #march# can cover your laughter.
+line @1 ack : #bc_right#. I will check the #gate#. | #bc_fair_enough#. The #pot# can wait a moment.
+line @1 give.advice : Feed the #hands# before asking for another #day# of work. | A sound #fence# begins with one firm post.
+line @1 warn [world.bandits=near] : Keep to the travelled #road#. | Wait by the #gate# until someone can walk with you.
+scene barley_in_pot
+when topic=food
+does tell.self / react.self / assess
+a : I add #barley# early so the #soup# has time to thicken. | A good #pot# begins before anyone admits to being hungry.
+b : Do you use much barley? | What goes in first?
+a : A #hand# of it for every hungry mouth. | Water, then #barley#. The rest can wait.
+
+scene cold_swim
+when topic=pastimes here.season=summer
+does tell.self / react.self / assess
+a : I like a #swim# even when the #water# makes me gasp. | The #shore# is warm until the first step into the lake.
+b : Do you stay in long? | Why go in if it is cold?
+a : Long enough to feel my #hands# again. | I come out lighter than I went in.
+
+scene frost_on_field
+when topic=weather here.season=winter here.weather=clear
+does tell.self / react.self / assess
+a : The #frost# draws every #fence# rail in white. | A clear #morning# after a cold night lets me see the #flock# from far off.
+b : Is that good for the sheep? | Do you go out early?
+a : If the #fold# is dry, they manage. | Before the #bell#, if a lamb needs looking at.
+
+scene marching_hum
+when topic=pastimes
+does tell.self / react.self / assess
+a : An old #march# slips out while I carry the #pot#. | I catch myself keeping time with the #spoon#.
+b : Do you know the words? | Does anyone join in?
+a : A few. I like the #hum# better. | Sometimes. The #table# finds the same beat.
+
+scene flock_at_gate
+when topic=work self.job=herder
+does tell.self / react.self / assess
+a : The #flock# waits more calmly when I open the #gate# wide. | I lead the #sheep# through without pushing the last one.
+b : Is it always that easy? | Does one fall behind?
+a : No. I give them time to see the #field#. | Sometimes. I stay beside the #fold# until it comes.
+
+scene small_lamb
+when topic=work self.job=herder here.season=spring
+does tell.self / react.self / assess
+a : A new #lamb# needs a warm corner of the #fold#. | I keep extra #straw# for the smallest #lamb#.
+b : Does it need your help to stand? | Is its mother near?
+a : Some do at first. I wait and watch. | I keep the #gate# closed so the pair can settle.
+
+scene wool_in_sun
+when topic=work self.job=herder here.weather=clear
+does tell.self / react.self / assess
+a : I spread the #wool# where the #sun# reaches it. | Damp #wool# wants air before it goes into a bundle.
+b : Will it blow away? | How long does it take?
+a : I set a light #stone# at each edge. | Until the damp of the #morning# is out of it.
+
+scene extra_bowl
+when topic=home
+does tell.self / react.self / assess
+a : I keep one spare #bowl# on the shelf. | A visitor can come in while the #pot# is still full.
+b : Is that for someone in particular? | Would you feed a stranger?
+a : Whoever arrives hungry. | Yes. We can ask about the #road# over supper.
+
+scene child_at_table
+when topic=family self.parent=yes
+does tell.self / react.self / assess
+a : I show #self.child# how to stir the #pot# from the bottom. | A child can carry an empty #bowl# before a full one.
+b : Does your child like cooking? | Do you let children help?
+a : I ask, and leave room to say no. | With safe tasks. The #fire# stays my concern.
+
+scene boots_on_shore
+when topic=pastimes
+does tell.self / react.self / assess
+a : I leave my #boots# above the wet line before a #swim#. | #boots.capitalize# look best after they have survived the #road#.
+b : Have you ever lost them? | Do you take care of them?
+a : Not yet. I set a #stone# on top so I can find them. | I dry them by the #hearth#, away from the flame.
+
+scene price_without_bargain
+when topic=prices
+does tell.self / react.self / assess
+a : I ask the #price# once, then decide whether to buy. | Haggling cools the #soup# and tires both sides.
+b : Would you pay too much? | Do sellers mind?
+a : I can walk away if the #coin# is too dear. | Some prefer a quick answer as much as I do.
+
+scene early_bell
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : The #bell# has a sharp voice on a frosty #morning#. | I can get the #pot# going without a #bell# to tell me.
+b : Does it wake you? | Would you rather sleep?
+a : It does, though the #flock# would wake me soon. | A little longer, yes. Then I would miss the quiet start.
+
+scene farm_of_own
+when topic=dreams
+does tell.self / react.self / assess
+a : I would like a #field# where there is room for another #fold#. | A place of my own would have a long #table# before it had fine walls.
+b : What would live on that land? | Who would sit at that table?
+a : Some #sheep#, with space to graze and a sound #fence#. | Whoever had walked the #road# to visit.
+
+scene stranger_from_road
+when topic=travel
+does tell.self / react.self / assess
+a : I like asking a traveller where the #road# was kind. | A newcomer can tell me what the next town serves for #soup#.
+b : Do they answer readily? | Do you ever travel yourself?
+a : More after a #bowl# and a rest. | When the #flock# has another keeper.
+
+scene storm_fence
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : I check the #fence# when a hard #wind# settles. | A storm can leave the #fold# sound and the outer #gate# loose.
+b : Do you go out during the storm? | What do you fix first?
+a : Only if the #flock# is in danger. | The #gate#, then any rail a #lamb# could pass.
+
+scene morning_shore
+when topic=home here.region=coldwater
+does tell.self / react.self / assess
+a : The #shore# is quiet before the carts use the #road#. | I can hear a #hum# carry farther over the #water# at dawn.
+b : Do you go there often? | What song is that?
+a : When someone else can watch the #flock#. | An old #march# with more pauses than words.
+
+scene festival_pot
+when topic=festival
+does tell.self / react.self / assess
+a : I put a larger #pot# on when the festival sends everyone home hungry. | A warm #bowl# after dancing can keep the talk gentle.
+b : Do you miss the celebration? | Do people come to your table?
+a : I see some of it. The #soup# gives me a reason to leave early. | Enough to empty the #pot#, and that is welcome.
+
+story first_broth [topic=memories self.age>=25]
+  : I tried to make #soup# from too much #barley# and too little water.
+  : The #spoon# stood in the #pot# on its own. We ate it anyway.
+  ask : Would you have thinned it or called it supper?
+  b : Water would have been my first thought.
+  : I did after the first #bowl#. The second helping went more easily.
+
+story cold_lake [topic=pastimes self.age>=25]
+  : I stepped into the #water# expecting a gentle #swim# and caught my breath.
+  : I went in slowly, came out laughing, and left my #boots# on the wrong patch of shore.
+  ask : Would you have gone back in for them?
+  b : I would have looked along the bank first.
+  : They were above the #shore# line, dry and waiting.
+
+story late_lamb [topic=work self.job=herder self.age>=25]
+  : A #lamb# once stayed behind the #flock# when the weather began to turn.
+  : I found it beside the #fence# and carried it into the #fold# before the rain.
+  ask : Would you have searched the whole field?
+  b : I would start where a lamb might shelter.
+  : That is where I found it. The #gate# was open for us.
+
+rule @bark_soup
+when concept=bark here.time=dusk|night
+does aside
+cooldown 8h
+say The #soup# has thickened nicely. | There is another #bowl# if anyone needs it.
+
+rule @bark_flock
+when concept=bark self.job=herder self.working=yes
+does aside
+cooldown 7h
+say Easy, #flock#. The #gate# is wide. | I have #straw# ready in the #fold#.
+
+rule @bark_frost
+when concept=bark here.season=winter here.weather=clear
+does aside
+cooldown 10h
+say The #frost# has drawn the #fence# white. | A fine #morning# for a warm #pot#.
+
+rule @bark_swim
+when concept=bark here.season=summer here.time=day
+does aside
+cooldown 11h
+say I might take a #swim# after this work. | The #shore# is calling more loudly than the #bell#.
+
+dlg @1 resident.hub : #greet#. Come in for a #bowl#. | #greet#. You may sit by the #hearth# while we talk.
+dlg @2 resident.hub [topic.meeting=known] : You are here again. I have kept the #pot# warm. | Back by my #table#; you are welcome.
+dlg @1 resident.job [self.job=herder] : I tend a #flock# and keep its #fold# dry. | I raise #sheep#; most days I am on the #field#.
+dlg @1 resident.bye : #farewell#. There will be #soup# another day. | #saying.capitalize#. Go safely by the #road#.
+graft resident.hub
+choice Why is there always another bowl? -> bowl
+node bowl
+say A traveller can arrive hungry, and a #pot# that serves one more costs little.
+mood pleased
+free
+choice What is in the soup? -> soup
+choice Back to what we were saying. -> hub
+node soup
+say #barley.capitalize#, water, and what the #field# gave us. I let it cook slowly.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye

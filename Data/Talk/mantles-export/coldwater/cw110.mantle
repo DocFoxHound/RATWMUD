@@ -1,0 +1,288 @@
+# cw110, the gate watcher (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw110
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for cty_lorn_hedgeton
+written_by claude-codex-cw-1
+title the gate watcher
+fits stage=adult|old
+prefers job=herder warmth=cold
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=ambitious
+quirk never_sits_with_a_back_to_the_door
+likes pickled_herring digging fresh_straw first_warm_day
+dislikes crowds waiting
+fears a_gate_left_open another_hard_winter
+hopes a_flock_with_room_to_grow land_behind_a_sound_fence
+topics work +0.6 home +0.4 weather +0.3 prices +0.2 memories +0.2 gossip -0.5
+styles comfort=practical gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# chooses a #seat# facing the #door#, checks every #gate# twice, and trusts a sound #fence# more than an easy promise.
+
+words
+oath! = By the north gate | Wool and winter's teeth
+saying! = A shut gate saves a search | Watch the road before resting
+gate = gate | field gate
+door = door | house door
+seat = seat
+fence = fence | boundary rail
+flock = flock | gathering of sheep
+sheep = sheep
+lamb = lamb | young sheep
+lambs = lambs | young sheep
+wool = wool | shorn fleece
+straw = straw | bedding
+fold = fold | sheep pen
+hill = hill | high slope
+road = road | track past the fields
+wind = wind | blow off the ridge
+winter = winter
+spring = spring
+sun = sun | morning light
+spade = spade | digging blade
+earth = earth | garden soil
+furrow = furrow | narrow trench
+herring = pickled herring | fish kept in vinegar
+coin = coin | pay
+prayer = prayer | quiet plea
+hand = hand | working paw
+market = market | row of stalls
+scale = scale | weighing pan
+step = step
+work = work | labour
+watch = watch | careful look
+count = count | tally
+mark = mark | notch
+crowd = crowd | press of wolves
+stone = stone | loose rock
+cart = cart | wagon
+field = field | patch of pasture
+steps = steps | paces
+price = price | cost
+hour = hour | hour of work
+
+any
+opinion @1 strangers against 2 : I keep the #door# closed until a stranger says why they came. | An unknown wolf may be welcome; first I check the #gate# behind me.
+opinion @1 dole against 2 : I have more trust in #work# I can point to than in a promise from a counter. | I would share #herring# with a hungry wolf, but I will not praise a system I cannot inspect.
+opinion @1 festivals against 1 : The #flock# still needs tending when the music begins. | A festival takes a day of #work# and gives no extra hands for it.
+opinion @1 church against 1 : A sermon has yet to mend my #fence#. | I will hear a #prayer# from a wolf who helps at the #gate#.
+opinion @1 houses against 1 : A House can look past a working #hand# as though the #fence# built itself. | I want land earned by #work#, not a crest above it.
+opinion @1 city mixed 1 : The city has a #market# for #wool#; the road to it takes time. | I will go where the #coin# is fair, then come back to the #hill#.
+opinion @1 merchants mixed 0 : A fair buyer shows the #scale# before taking the #wool#. | I do not mind a profit that leaves the worker some #coin#.
+opinion @1 times mixed 0 : I count the #flock# again when a season turns hard. | I trust a sound #gate# before I trust a prediction about next week.
+
+grown
+line @1 greet : #greet#. Leave the #gate# as you found it. | #greet#. I can see the #door# from here.
+line @2 greet [pair.band=strangers] : #greet#. Say your purpose before crossing the #fence#. | #greet#. You came by the #road#; what do you need?
+line @3 greet [self.working=yes self.job=herder] : #greet#. I am counting the #flock#. | #greet#. Once I latch the #gate#, you have my ear.
+line @4 greet [here.time=dawn] : #greet#. The #sheep# have been awake awhile. | #greet#. The #sun# is on the #hill# already.
+line @5 greet [here.time=dusk|night] : #greet#. I want the #fold# shut before dark. | #greet#. Keep the #door# in sight.
+line @1 greet.return : #welcome_back#. Did you leave the #gate# closed? | You came back by the #road# I expected.
+line @2 greet.return [pair.band=friends|family] : Choose the #seat# facing the #door#. | You are here. I was watching the #road#.
+line @1 kin.open [pair.kin!=no] : There is #herring# if you have eaten nothing. | Come in. The #door# is yours to close.
+line @1 again.open : You have returned before I finished the #count#. | The #gate# has opened twice for you today.
+line @1 farewell : #saying.capitalize#. | #farewell#. Latch the #gate# behind you.
+line @1 farewell.return : And keep a #watch# on the #road#. | I will see the #gate# open next time.
+line @1 react.news : #listen.capitalize#. I will finish this #count# after. | Speak clearly; I am watching the #road#.
+line @1 react.news.new : I had not heard that at the #fold#. Who brought it? | That is new. I need a #mark# for that in my tally.
+line @1 react.news.known : I heard a part from the #road#. | Your words give the #count# its missing piece.
+line @1 react.news.doubt : That report has an open #gate# in it. | Let me inspect the #mark# before I rely on it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is hard news. Take the #seat# while I listen. | I am sorry. I shall close the #gate# and stay.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A good turn. I hope it holds like a #fence#. | I am glad. Let the #flock# wait a moment for this.
+line @1 answer.how : Well enough. The #gate# is sound. | Keeping the #count# and the #road# both in view.
+line @1 answer.how.busy [self.working=yes] : Busy with the #flock#; I can spare a word. | The #fence# needs me before supper.
+line @1 ask.how : How was the #road# on your way here? | Have you found a dry #seat# today?
+line @1 sympathise : Sit where the #door# is in sight. I will listen. | I can give you a quiet #seat# and time.
+line @1 reassure : We can close one #gate# at a time. | Take the next #step# when you can see the ground.
+line @1 decline : I cannot leave the #flock# without another keeper. | The #gate# needs fixing first; I cannot leave it.
+line @1 accept_decline : I hear you. I will keep the #count# myself. | Fair enough. The #road# is open to another plan.
+line @1 thank : You found the loose #gate# before I did. Thank you. | That saved a search over the #hill#.
+line @1 deflect_thanks : I checked the #fence# because it needed checking. | No debt. I was walking the #road# anyway.
+line @1 preclose : I need to make one more #count# before dark. | The #fold# is waiting for its latch.
+line @1 tease [pair.band=friends] : You chose the #seat# with the worst view of the #door#. | Even the #lambs# found that #gate# before you.
+line @1 tease.return [pair.band=friends] : Say it again when the #fence# holds. | I can hear you from this #seat# just fine.
+line @1 ack : #bc_right#. The #gate# stays shut. | #bc_fair_enough#. I have the #count#.
+line @1 give.advice : Walk the #fence# before promising the land it surrounds. | Look at the #gate# from both sides.
+line @1 warn [world.bandits=near] : Keep to the busy #road#. | Trouble has been near; do not cross the #hill# alone.
+scene facing_door
+when topic=home
+does tell.self / react.self / assess
+a : I choose a #seat# that faces the #door#. | I turn a chair until I can see the #gate# beyond the window.
+b : Are you expecting someone? | Does that help you relax?
+a : No. I prefer seeing who enters. | More than sitting with my back to the #road#.
+
+scene winter_count
+when topic=work self.job=herder here.season=winter
+does tell.self / react.self / assess
+a : In #winter# I count the #flock# once before dark and again at dawn. | A fresh fall of snow hides the #fence# line.
+b : Does the number change often? | How do you find the boundary?
+a : It must not. A missing #sheep# sends me out. | I follow the #gate# posts, not the drift.
+
+scene lamb_at_gate
+when topic=work self.job=herder
+does tell.self / react.self / assess
+a : A #lamb# will try the #gate# just when your paws are full. | I set the latch above a #lamb#'s reach.
+b : Can one open it? | Does the mother follow?
+a : Not if the #fence# is sound. The trouble is the gap below. | Usually. Then half the #flock# has an idea.
+
+scene shearing_day
+when topic=work self.job=herder
+does tell.self / react.self / assess
+a : I keep the #sheep# moving one at a time on shearing day. | A calm #flock# gives cleaner #wool# than a crowded pen.
+b : Do they resist? | Do you shear them yourself?
+a : Some do. I give each a clear way through the #fold#. | I help hold them steady and gather the #wool#.
+
+scene fresh_straw
+when topic=work self.job=herder
+does tell.self / react.self / assess
+a : Fresh #straw# tells me the #fold# is ready for a cold night. | I lay #straw# where the #lambs# gather.
+b : Does it stay dry? | Is that their warmest place?
+a : If the roof holds and I keep the #gate# shut. | Near enough. I check the corner before I leave.
+
+scene garden_furrow
+when topic=pastimes
+does tell.self / react.self / assess
+a : Digging a #furrow# clears my head better than a crowd. | I can feel a hidden #stone# through the #spade#.
+b : Do you grow much? | Do you keep the stones?
+a : Enough for my own table. | I move them to the #fence# line, away from roots.
+
+scene herring_supper
+when topic=food
+does tell.self / react.self / assess
+a : A little #herring# after the day is done suits me. | I take #herring# with bread when the #fold# work runs late.
+b : Is it very sharp? | Do you share it?
+a : Sharp enough to bring me awake. | If there is another #seat#, yes.
+
+scene market_crush
+when topic=prices
+does tell.self / react.self / assess
+a : At a crowded #market# I wait at the edge until I can hear a #price#. | A #crowd# makes every seller shout and every buyer miss the #scale#.
+b : Do you leave without buying? | How do you check the weight?
+a : Sometimes. The #road# will bring me back another day. | When the #crowd# thins, I ask them to clear the pan.
+
+scene slow_carter
+when topic=travel
+does tell.self / react.self / assess
+a : Waiting on another wolf's #cart# makes the #road# seem longer. | I count #gate# posts while a late cart is expected.
+b : Can you do other work? | Does counting make it arrive?
+a : I try. My ears stay on the #road#. | No. It gives the waiting an end I can see.
+
+scene more_land
+when topic=dreams
+does tell.self / react.self / assess
+a : I would take a larger #field# if I could keep its #fence# sound. | I want enough land for the #flock# to grow without crowding.
+b : Would you manage it alone? | Is the flock too large now?
+a : I would need another #hand# and I know it. | Not yet. I plan ahead of the #count#.
+
+scene two_latches
+when topic=work self.job=herder
+does tell.self / react.self / assess
+a : I test the #gate# twice because the second pull finds a loose pin. | A latch that looks closed can lift when the #flock# presses it.
+b : Has that saved you a search? | Do you repair it yourself?
+a : More than once. | If I have the pin. Otherwise I watch the #gate# until help comes.
+
+scene road_after_dark
+when topic=home here.time=night
+does tell.self / react.self / assess
+a : I listen for a #step# on the #road# after dark. | A late sound at the #gate# gets my attention.
+b : Do you call out? | Is it usually someone you know?
+a : From behind the #door#, yes. | Often. I still ask before I lift the latch.
+
+scene first_mild_day
+when topic=weather here.season=spring here.weather=clear
+does tell.self / react.self / assess
+a : The first mild #sun# makes the #hill# worth walking again. | I can feel the #spring# in the #earth# before the grass shows.
+b : Will you take the sheep higher? | Is the ground dry?
+a : When the #fence# above has been checked. | Firm under the #spade# where the sun reaches.
+
+scene rain_fence
+when topic=weather here.weather=rain|storm
+does tell.self / react.self / assess
+a : Rain softens the #earth# around a #fence# post. | I walk the #fence# after hard weather, even if the #fold# looks safe.
+b : Can a post fall suddenly? | What do you look for?
+a : A strong #wind# can finish what rain began. | A new lean, a gap, or #wool# snagged on a rail.
+
+scene wool_buyer
+when topic=prices self.job=herder
+does tell.self / react.self / assess
+a : I ask a buyer to show the empty #scale# before the #wool# goes on. | The #price# means nothing if the #count# is hidden.
+b : Does that offend a buyer? | Do you know the weight yourself?
+a : An honest one can spare the moment. | Near enough to question a wrong #mark#.
+
+scene friend_at_fence
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : I can ask #self.friend# for a second look at a #fence#. | A #gate# is easier to mend when another wolf holds it steady.
+b : Would your friend come for that? | Would another paw help?
+a : If there is time and a good reason to ask. | Yes. I could return the favour with the #spade#.
+
+scene counted_home
+when topic=memories
+does tell.self / react.self / assess
+a : I learned to look down the #road# when the weather turned hard. | In a cold season I count the #steps# toward home as carefully as the #flock#.
+b : What are you looking for? | Does it make the journey easier?
+a : Anyone coming late, or any #gate# left swinging. | It makes me notice who is missing from the #count#.
+
+story open_latch [topic=work self.job=herder self.age>=25]
+  : I once found a #gate# touching its post but not caught by the latch.
+  : One push opened it. I put a new pin through before the #flock# reached it.
+  ask : Would you check a gate that already looked shut?
+  b : I would after hearing that.
+  : I do now. The second pull takes less time than a search.
+
+story winter_tracks [topic=memories self.age>=25]
+  : I followed a set of #steps# over fresh snow once, expecting a late traveller.
+  : They ended at a #fence# where someone had turned back toward home.
+  ask : Would you have kept following?
+  b : I might have looked over the fence.
+  : I did, then went home. A closed #gate# was enough that night.
+
+story hidden_stone [topic=pastimes self.age>=25]
+  : My #spade# struck a flat #stone# where I wanted a straight #furrow#.
+  : I dug around it and found it was wider than the little patch I meant to plant.
+  ask : Would you lift it or plant around it?
+  b : I would plant around a stone that large.
+  : So did I. The #furrow# bends there, but the soil is good.
+
+rule @bark_gate
+when concept=bark self.job=herder
+does aside
+cooldown 7h
+say The #gate# gets one more check. | That #fence# is holding for now.
+
+rule @bark_lamb
+when concept=bark here.season=spring self.job=herder
+does aside
+cooldown 8h
+say Keep the #lambs# inside the #fold#. | A #lamb# has found the smallest gap again.
+
+rule @bark_spade
+when concept=bark here.time=day
+does aside
+cooldown 9h
+say The #spade# could use an #hour# in the #earth#. | I found another #stone# under the #furrow#.
+
+rule @bark_road
+when concept=bark here.time=dusk|night
+does aside
+cooldown 10h
+say I heard a #step# on the #road#. | Shut the #door#; the #wind# is rising.
+
+dlg @1 resident.hub : #greet#. Sit where the #door# stays in sight. | #greet#. Keep the #gate# closed while we speak.
+dlg @2 resident.hub [topic.meeting=known] : You are back. I know that #step#. | Come in. The #seat# by the #door# is free.
+dlg @1 resident.job [self.job=herder] : I keep a #flock# on the #hill# and mend its #fence#. | I raise #sheep# and keep the #gate# sound.
+dlg @1 resident.bye : #farewell#. Latch the #gate#. | #saying.capitalize#. Take the main #road#.
+graft resident.hub
+choice Why do you face the door? -> door
+node door
+say I can rest if I can see who comes through the #door#. That is all.
+mood wary
+free
+choice Has something happened? -> happened
+choice Back to what we were saying. -> hub
+node happened
+say A hard #winter# taught me to look for late paws on the #road#.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye

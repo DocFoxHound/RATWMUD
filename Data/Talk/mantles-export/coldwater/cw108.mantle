@@ -1,0 +1,281 @@
+# cw108, the map mender (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw108
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_lf_wolde_downfield
+written_by claude-codex-cw-1
+title the map mender
+fits stage=young|adolescent|adult|old
+prefers talk=quiet humour=dry
+traits temper=calm talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk collects_smooth_stones_from_the_riverbanks
+likes blackberries whittling old_maps first_warm_day
+dislikes night_noise cold_tea
+fears losing_the_path an_empty_fold
+hopes a_small_farm_of_my_own a_map_that_gets_me_home
+topics home +0.5 pastimes +0.5 memories +0.3 weather +0.3 work +0.2 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=soft tease=dry
+marks oath saying
+persona #self.first# keeps #maps# folded beside #carvings#, weighs #stones# in the paw, and quietly redraws roads that were put where no track runs.
+
+words
+oath! = By the bent track | River keep the turning
+saying! = The paper does not know the hill | A path earns its line
+map = map | folded chart
+maps = old maps | worn charts
+road = road | track
+roads = roads | tracks
+path = path | footway
+turn = turn | bend
+hill = hill | long rise
+fold = sheepfold | pen by the field
+sheep = sheep | woolly flock
+stone = stone | smooth pebble
+stones = smooth stones | river pebbles
+pocket = pocket | mended pouch
+knife = whittling knife | little carving blade
+wood = soft wood | dry branchwood
+carving = carving | shape cut in wood
+carvings = small carvings | shapes cut in wood
+berry = berry | black berry
+berries = blackberries | berries from the hedge
+tea = tea | brewed tea
+bell = bell | late bell
+quiet = quiet | hush
+light = light | daylight
+warmth = first warmth of spring | mild air after winter
+field = field | patch of pasture
+fence = fence | boundary rail
+mark = mark | pencil stroke
+price = price | cost
+prayer = prayer | quiet request
+tale = tale | story
+door = door | house door
+
+any
+opinion @1 road mixed 0 : A #map# can promise an easy #road#; ask the hill before you trust it. | I like a #path# that shows where the carts turn.
+opinion @1 festivals mixed 1 : The music reaches even the #fold#. | I will watch a dance from the edge of the #field#.
+opinion @1 merchants mixed 0 : I would ask to unfold a #map# before paying for it. | A fair #price# for a good #knife# is easier to judge than a painted box.
+opinion @1 newcomers mixed 0 : I would show a stranger the #road# before asking why the stranger came. | New feet sometimes find a #path# the rest of us missed.
+opinion @1 church mixed 0 : The chapel is a good place for #quiet#. | I can say a #prayer# while walking the #field#.
+opinion @1 times mixed 0 : A good #map# lasts through a poor season. | When money runs short, I can still make a #carving# from fallen wood.
+line @1 greet : #greet#. The #map# is wrong at the second #turn#. | #greet#. I have a few #berries# if you want them.
+line @2 greet [pair.band=strangers] : #greet#. The #path# to the houses is this way. | #greet#. I am marking a #road# that the old chart missed.
+line @3 greet [here.time=dawn] : #greet#. The #light# has reached the #field#. | #greet#. The #sheep# are awake before the bell.
+line @4 greet [here.time=dusk|night] : #greet#. At this hour I leave the #map# folded. | #greet#. I am putting the #knife# away.
+line @1 greet.return : #welcome_back#. I found another #turn#. | You are back. The #map# is still open.
+line @2 greet.return [pair.band=friends|family] : You may have the ripe #berry# I saved. | Come see where I put the #mark#.
+line @1 kin.open [pair.kin!=no] : There is #tea# by the hearth, if you want it. | Come in; I was sorting #stones#.
+line @1 again.open : Twice today? The #path# did not move. | You came back before I finished this #carving#.
+line @1 farewell : #saying.capitalize#. Mind the ditch. | #farewell#. Keep to the #path#.
+line @1 farewell.return : And take the right #turn# home. | I will have another #map# to show you.
+line @1 react.news : #listen.capitalize#. Where did that happen on the #map#? | I should set this #knife# down to hear it.
+line @1 react.news.new : That is new to me. Which #road# did it come by? | I have not heard it. Let me put a #mark# here.
+line @1 react.news.known : A scrap of that news reached the #fold# earlier. | Your part puts the story on the #map#.
+line @1 react.news.doubt : That #road# does not go where the tale says. | I would check the #turn# before repeating it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I wish that had not happened. We can sit in the #quiet#. | That is hard to hear. I will fold the #map# away.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I shall put a bright #mark# beside that. | I like hearing where a good #path# led someone.
+line @1 answer.how : Well enough. My #knife# is sharp and the day is mild. | I have been following the #field# lines on an old chart.
+line @1 ask.how : Has your #road# been kind today? | How are you, away from the #bell#?
+line @1 sympathise : I can listen while we walk the #path#. | There is #quiet# by the #fold# if you want to sit.
+line @1 reassure : Even a wrong #turn# can be marked and mended. | Take the #path# one step at a time.
+line @1 decline : I cannot go now; the #sheep# need me near the #fold#. | I would help, but I promised to finish this #carving# first.
+line @1 accept_decline : All right. I will draw another #path#. | Fair enough. The #map# has other turns.
+line @1 thank : You found the missing #turn#. Thank you. | I would have walked that #road# twice without you.
+line @1 deflect_thanks : I only held the #map#. | The #stone# was right there for anyone to find.
+line @1 preclose : The #light# is leaving the #field#. | I should take the #knife# inside now.
+line @1 tease [pair.band=friends] : Your #map# has a hill where the lake ought to be. | I could give you the right #turn#, but watching you guess is almost worth it.
+line @1 tease.return [pair.band=friends] : I have marked that insult on the #map#. | Keep walking; the #hill# will answer for me.
+line @1 ack : #bc_right#. That is the #turn#. | #bc_fair_enough#. I will mark the #path#.
+line @1 give.advice : Ask a walker before you trust a #map#. | A small #mark# now saves a long wrong road later.
+line @1 warn [world.bandits=near] : Stay on the travelled #road#. | Leave the lonely #path# until the watch says it is clear.
+scene missing_hill
+when topic=travel
+does tell.self / react.self / assess
+a : This #map# draws a straight #road# where there is a hill. | The #hill# is missing from this old #map#.
+b : Is that a serious mistake? | How would you mark it?
+a : Only if your cart is heavy. Then it matters a great deal. | With a #mark# that rises instead of another straight line.
+
+scene stone_marker
+when topic=pastimes
+does tell.self / react.self / assess
+a : I set #stones# on the #map# to hold its corners down. | A flat #stone# can stand for a hill until I draw it properly.
+b : Are the stones from the river? | Do you leave them there?
+a : Most are. The #road# brought me one or two. | Until the ink dries. Then they go back in my #pocket#.
+
+scene wooden_sheep
+when topic=pastimes
+does tell.self / react.self / assess
+a : I tried to make a #carving# shaped like a #sheep#. | The first notch of the #knife# gave it ears too long.
+b : Does it look right now? | Will you start again?
+a : From one side. The other side looks like a cloud. | No. I can make the ears part of the #tale#.
+
+scene berry_path
+when topic=food here.season=summer|autumn
+does tell.self / react.self / assess
+a : The #berries# grow beyond the #fence# where the #path# bends. | I found #berries# on a bush the old #map# forgot.
+b : Are they ripe? | Will you mark the bush?
+a : The dark ones are. I leave the pale ones. | Perhaps. I would rather have a reason to find it again.
+
+scene cold_cup
+when topic=food
+does tell.self / react.self / assess
+a : I forgot my #tea# while fixing a line on the #map#. | The #tea# had gone cold before the #knife# left my paw.
+b : Did you drink it anyway? | Can you warm it?
+a : I did, and regretted it. | Yes, but I will finish this #carving# first.
+
+scene first_mild_day
+when topic=weather here.season=spring here.weather=clear
+does tell.self / react.self / assess
+a : The #warmth# makes every #path# look inviting. | I can work by the #fence# without my paws going stiff.
+b : Where will you walk? | Will you stay out long?
+a : To the #hill# and back, if the #sheep# settle. | Until the #light# leaves that gate.
+
+scene bell_at_night
+when topic=home here.time=night
+does tell.self / react.self / assess
+a : A #bell# after dark makes me listen for trouble at the #fold#. | I like the #quiet# when the #sheep# are settled.
+b : Do you go out to check? | Does the silence last?
+a : If the sound comes again, yes. | Until some wolf opens the #door# too loudly.
+
+scene sheep_shape
+when topic=work
+does tell.self / react.self / assess
+a : From the #hill#, the #sheep# look like pale marks in the #field#. | I count the #sheep# by gaps in the flock, not only by heads.
+b : Does that tell you if one is missing? | Why count the gaps?
+a : If a gap moves toward the #fence#, I go and look. | A stray makes a shape the others do not fill.
+
+scene own_patch
+when topic=dreams
+does tell.self / react.self / assess
+a : I would like a #field# I could draw from memory. | One day I want a #fold# with a #fence# I set myself.
+b : How large would it be? | Would you keep sheep there?
+a : A size I can cross before the morning meal. | A few. I would learn every #path# around it.
+
+scene fence_corner
+when topic=work
+does tell.self / react.self / assess
+a : A #fence# corner is where a wrong #map# first gives itself away. | I walk the #fence# when I cannot tell which #field# begins where.
+b : Do boundaries matter so much? | Does the owner mind?
+a : They do if a gate opens into the wrong #fold#. | I ask before I cross. The #path# itself is free.
+
+scene friend_and_map
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : I would ask #self.friend# to check the #road# I drew. | I like to show #self.friend# a #map# before I decide it is finished.
+b : Would another pair of eyes help? | Do you always take the advice?
+a : More than a chart that has stayed folded for years. | No. I walk the #path# and see which line is true.
+
+scene wrong_turn
+when topic=memories
+does tell.self / react.self / assess
+a : I once followed a #map# past the right #turn#. | A thin #mark# on old paper sent me down the wrong #path#.
+b : How did you get back? | Were you lost long?
+a : I found the #hill# and kept it on one side. | Long enough to stop trusting that #mark#.
+
+scene room_for_quiet
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I like a little #quiet# while I cut #wood#. | A good #map# can hold my attention longer than a loud room.
+b : Does someone talking disturb you? | Do you ever tire of maps?
+a : Only if I am near the last cut. | When the #light# fails. Then I put it away.
+
+scene shore_line
+when topic=home here.region=coldwater
+does tell.self / react.self / assess
+a : This #map# draws the shore too straight. | The water has changed the #path# by the lake again.
+b : Can a map keep up? | Will you redraw it?
+a : Only if someone walks it again. | I will leave a #mark# where the ground is firm.
+
+scene shelter_from_rain
+when topic=weather here.weather=rain|storm
+does tell.self / react.self / assess
+a : I keep the #map# beneath my coat when the rain starts. | A wet #map# turns every #road# into the same blur.
+b : Does it dry flat? | Can you still use it?
+a : Under a book, if the ink holds. | I wait for the #light# and draw it again.
+
+scene seller_of_charts
+when topic=prices
+does tell.self / react.self / assess
+a : I ask a chart seller where the #hill# is before I ask the #price#. | A neat #map# can be wrong in a very tidy hand.
+b : What if the seller has never been there? | Would you buy a faulty map?
+a : Then I will not trust that #mark#. | If the blank paper is worth the #price#.
+
+scene shadow_direction
+when topic=travel here.time=day
+does tell.self / react.self / assess
+a : I look at the #light# on the #fence# when a #map# confuses me. | A shadow can show which #turn# faces the sun.
+b : Does that always work? | What about under trees?
+a : Only when the sky is clear enough. | Then I follow the #path# until it opens.
+
+story redrawn_track [topic=memories self.age>=12]
+  : I copied a #map# once and drew the #road# around the wrong side of a #hill#.
+  : The paper looked fine until I walked the track and found the fence in my way.
+  ask : Would you erase the whole map?
+  b : Perhaps only the wrong road.
+  : So I erased the #road#. The old #mark# still shows if you hold it to the #light#.
+
+story wooden_gate [topic=pastimes self.age>=12]
+  : I tried to cut a tiny #fence# gate from a scrap of #wood#.
+  : The hinge broke. I turned it into a signpost instead.
+  ask : Would you have thrown the first shape away?
+  b : I might have tried another piece.
+  : I kept this one. It points to the #path# on my table.
+
+story fog_without_chart [topic=travel self.age>=12]
+  : I went out with a #map# on a day when mist hid the far #hill#.
+  : The chart did little good; I followed the #fence# until I found the gate.
+  ask : At what point would you have gone home?
+  b : If the gate stayed hidden, yes.
+  : I was glad to see it. A #map# cannot lift the mist.
+
+rule @bark_map
+when concept=bark
+does aside
+cooldown 8h
+say That #road# is drawn too straight. | One more #mark# on this #map#.
+
+rule @bark_fold
+when concept=bark here.time=day
+does aside
+cooldown 7h
+say The #sheep# are near the #fence# again. | I had better look at the #fold#.
+
+rule @bark_warmth
+when concept=bark here.season=spring here.weather=clear
+does aside
+cooldown 10h
+say The #warmth# is touching the #hill# today. | A good day to carry the #map# outside.
+
+rule @bark_night
+when concept=bark here.time=night
+does aside
+cooldown 11h
+say The #knife# stays shut until daylight. | I thought I heard the #bell#.
+
+dlg @1 resident.hub : #greet#. I have the #map# open if you need a way. | #greet#. I can listen while I fold this #map#.
+dlg @2 resident.hub [topic.meeting=known] : Back again? I have marked another #turn# on the chart. | I remember you. I have the #map# open today.
+dlg @1 resident.job : I help near the #fold# and draw the #roads# I walk. | The #sheep# keep me busy; the #map# is for later.
+dlg @1 resident.bye : #farewell#. Follow the #fence# if the mist comes. | #saying.capitalize#. Keep the #map# dry.
+graft resident.hub
+choice What is wrong with that map? -> wrong_map
+node wrong_map
+say It sends the #road# across a #hill# where the track goes round.
+mood pleased
+free
+choice Can you fix it? -> fix_map
+choice Back to what we were saying. -> hub
+node fix_map
+say I can draw the #turn#. Someone still has to walk it and check.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : #greet#. I drew a #path# today. | #greet#. Look at this #stone#.
+
+adolescent
+line @1 greet : #greet#. This #map# leaves out the hill. | #greet#. I am cutting a little #carving#.

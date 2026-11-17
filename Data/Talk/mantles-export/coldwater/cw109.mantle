@@ -1,0 +1,416 @@
+# cw109, the keeper of names (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw109
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier full
+written_for tn_fh_loam_pinefell
+written_by claude-codex-cw-1
+title the keeper of names
+fits stage=adult|old
+prefers role=merchant job=innkeeper
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk remembers_every_name_ever_heard
+likes oatcakes dancing tidy_house first_warm_day
+dislikes haggling night_noise
+fears an_empty_common_room a_guest_lost_on_the_road
+hopes a_full_guest_book a_quiet_night_after_work
+topics work +0.6 food +0.4 home +0.4 memories +0.3 prices +0.2 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# keeps a #guestbook# of names, a clean #hearth#, and a firm #rate# for every room, with little patience for a quarrel after dark.
+
+words
+oath! = Hearth and hinge | By the clean cup
+saying! = A room knows who kept it | Come dry and leave dry
+guestbook = guest book | bound guest ledger
+name = name
+names = names | entries I remember
+hearth = hearth | hearthside fire
+fire = fire | hearth fire
+cup = cup | drinking cup
+cups = cups | drinking cups
+tray = tray | serving board
+table = table | common-room table
+bench = bench | long seat
+seat = seat | place to sit
+room = room | sleeping chamber
+rooms = rooms | beds upstairs
+bed = bed | made-up bunk
+sheet = sheet | linen sheet
+key = key | room key
+rate = rate | written charge
+coin = coin | payment
+bar = bar | serving counter
+bell = bell | little service bell
+counter = counter | bar top
+oatcake = oatcake | oat biscuit
+oatcakes = oatcakes | cakes made from oats
+ale = ale | house ale
+spill = spill | puddle on the boards
+floor = floor | swept boards
+boards = boards | floorboards
+door = door | front door
+stair = stair | upstairs step
+road = road | way from the hills
+boots = boots | travelling boots
+price = price | charge
+cart = cart | supply wagon
+load = load | cargo
+mine = mine | mine shaft
+lamp = lamp | lantern
+noise = noise | racket
+night = night | late hour
+light = mild spring light | warmth of a clear morning
+step = step
+
+any
+opinion @1 strangers for 1 : A stranger at the #door# is a guest if there is room. | Travellers bring #names# and news; I give them a dry #bench#.
+opinion @1 drink for 1 : A sound #ale# is honest trade when it is served by the #cup#. | I watch the #bar# and cut off a guest who cannot stand steady.
+opinion @1 festivals against 1 : I like a dance; I dislike the #spill# and the shouting afterward. | A festival leaves the #floor# sticky and the #night# loud.
+opinion @1 city against 1 : City parcels look fine until I check the #rate# on the bill. | I prefer a #name# I can call across the #table#.
+opinion @1 houses against 1 : A House can fill a #room# and still forget who made the #bed#. | I have heard grand titles at the #bar#; I remember the worker's name.
+opinion @1 merchants mixed 1 : I keep a #rate# myself. I know what the wagon costs. | A fair #coin# is plain on the slate; I do not haggle over it.
+opinion @1 road against 1 : A late cart leaves the #hearth# waiting for supplies. | The #road# takes its time, then asks me to hurry supper.
+opinion @1 watch for 1 : A patrol near the #door# helps keep the #night# quiet. | I want the Watch to hear a guest's account before judging it.
+opinion @1 times against 1 : The #rate# stays written while the cost of #oatcakes# rises. | Every week asks another #coin# to keep the #fire# burning.
+
+grown
+line @1 greet : #greet#. Wipe your feet and come to the #hearth#. | #greet#. Tell me the #name# you want in the #guestbook#.
+line @2 greet [pair.band=strangers] : #greet#. A #room#, a meal, or a #bench#? | #greet#. Give me your #name# before you take the stair.
+line @3 greet [pair.band=friends|family] : The #fire# is up. Come in. | You have a #cup# at my #table#.
+line @4 greet [self.working=yes self.job=innkeeper] : #greet#. I can speak after this #tray# goes out. | #greet#. Keep clear of the #bar# while I pour.
+line @5 greet [here.time=dawn] : #greet#. The #hearth# has only just caught. | #greet#. I am putting #oatcakes# on the #tray#.
+line @6 greet [here.time=dusk|night] : #greet#. Keep your voice below the #stair#. | #greet#. The #lamp# is lit; come in.
+line @1 greet.return : #welcome_back#. I have the #guestbook# here. | I recall your #name#. The #bench# is free.
+line @2 greet.return [pair.band=friends|family] : Your #cup# is clean. Sit. | I have room at the #table# for you.
+line @1 again.open : Back already? The #fire# has scarcely changed. | I have not closed the #guestbook# since you left.
+line @1 kin.open [pair.kin!=no] : Come inside and leave the #road# behind. | You know where the spare #cup# sits.
+line @1 hail [pair.band=friends] : I cleared the #bench# when I saw you. | Come to the #bar# when you have a moment.
+line @1 farewell : #saying.capitalize#. Mind the #stair#. | #farewell#. The #lamp# will show the way out.
+line @1 farewell.return : And keep a safe #step#. | I will see you when the #door# opens again.
+line @2 farewell [here.time=night] : Stay by the lamps on the #road#. | Keep the #night# quiet as you go.
+line @1 react.news : #listen.capitalize#. Put down that #cup# and start again. | I shall hear it after I set the #tray# aside.
+line @1 react.news.new : A new #name# in this story. Who brought the word? | No one at the #bar# has spoken of it.
+line @1 react.news.known : I heard part of it at the #table#. | That supplies the part no guest at the #bar# knew.
+line @1 react.news.doubt : I would ask the guest whose #name# was used. | A story told over #ale# needs a second hearing.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : This hurts. Take the warm #bench#. | A hard word. I will stop the #bar# work and listen.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news earns a fresh #oatcake#. | I am glad. The #hearth# should hear that tale.
+line @1 answer.how : The #rooms# are ready and the #fire# is steady. | Busy. I have three #cups# to wash.
+line @1 answer.how.busy [self.working=yes] : The #tray# is full; give me a moment. | I am keeping up with the #bar#, just.
+line @1 ask.how : Did the #road# treat you kindly? | Have you eaten by a warm #hearth# today?
+line @1 sympathise : The #fire# is yours until you feel steadier. | I can make a quiet place at the #table#.
+line @1 reassure : A bad #night# ends; the #fire# can be lit again. | We will take this one #step# at a time.
+line @1 decline : I cannot change the #rate# for one guest and keep it fair to the rest. | I would help, but these #rooms# are already promised.
+line @1 accept_decline : Understood. The #guestbook# stays as it is. | No quarrel; the #door# is still open.
+line @1 thank : You cleared the #tray# when I needed a hand. Thank you. | That saved the #bar# from a long queue.
+line @1 deflect_thanks : I had a spare #cup# and room by the #fire#. | No debt. You were cold, and the #door# was open.
+line @1 preclose : I need to check the #rooms# before the next arrival. | The #fire# wants another log; I should go.
+line @1 tease [pair.band=friends] : You found the only chair that creaks. | I shall add that to the #guestbook# under your #name#.
+line @1 tease.return [pair.band=friends] : That remark costs one #oatcake#. | You can say it again after you mop the #spill#.
+line @1 ack : #bc_fair_enough#. I will mark the #guestbook#. | #bc_right#. The #key# is here.
+line @1 give.advice : Ask the #rate# before you take a #key#. | A dry #bed# is worth more than a grand sign outside.
+line @1 warn [world.bandits=near] : Do not take the back #road# alone. | The #lamp# by the #door# is where you should wait for company.
+scene name_at_door
+when topic=work self.job=innkeeper
+does tell.self / react.self / assess
+a : I ask a guest's #name# before I ask how far the #road# ran. | A #name# stays with me longer than a bill.
+b : Do guests mind that? | Have you forgotten any?
+a : Some are surprised. They still answer. | A face may take a moment; the #name# does not.
+
+scene guestbook_spelling
+when topic=work self.job=innkeeper
+does tell.self / react.self / assess
+a : I write a #name# as the guest says it, then read it back. | The #guestbook# is no use if I invent the spelling.
+b : Does anyone correct you? | Is the book for rooms only?
+a : Often enough. I thank them and change the line. | It tells me who had a #room# and when.
+
+scene clean_sheet
+when topic=work self.job=innkeeper
+does tell.self / react.self / assess
+a : I check the #sheet# before a guest gets the #key#. | A clean #bed# says more than the sign above the #door#.
+b : Do guests inspect it? | Who changes the linen?
+a : They may. I would if I paid for the #room#. | The work is shared; I make certain it is done.
+
+scene cup_ring
+when topic=work self.job=innkeeper
+does tell.self / react.self / assess
+a : A wet #cup# leaves a ring if you put it straight on the wood. | I keep a cloth near the #bar# for #spill# and rings.
+b : Is the table marked badly? | Does that keep it tidy?
+a : Less since I started leaving a dry board beneath the #cup#. | It helps, if guests use it before the puddle spreads.
+
+scene oatcake_tray
+when topic=food
+does tell.self / react.self / assess
+a : An #oatcake# beside a hot #cup# settles a traveller. | I put #oatcakes# out before the first road dust comes in.
+b : Are they fresh? | Do they disappear quickly?
+a : They should be. I will not serve yesterday's as today's. | By the time the #tray# returns, yes.
+
+scene hearth_seat
+when topic=home
+does tell.self / react.self / assess
+a : The #bench# nearest the #hearth# is for the coldest guest. | I leave a clear #step# between the #fire# and the #table#.
+b : Do people argue over it? | Why the gap?
+a : Sometimes. I send the warmer wolf to the next #seat#. | So a guest can pass with a #tray# without tipping it.
+
+scene rate_on_slate
+when topic=prices self.job=innkeeper
+does tell.self / react.self / assess
+a : I keep the #rate# written where every guest can see it. | A #room# costs the same before and after I learn the guest's #name#.
+b : Do guests try to bargain? | Does that ever change?
+a : They do. I point to the slate and stay put. | If the #rate# changes, I write it before taking another booking.
+
+scene full_rooms
+when topic=work self.job=innkeeper here.bed_ok=no
+does tell.self / react.self / assess
+a : I dislike turning a traveller away when the #rooms# are full. | A full #guestbook# is good trade until another wolf needs a #bed#.
+b : Do you offer the bench? | Can they stay by the fire?
+a : If it is safe and the #hearth# is open, yes. | I can offer a rest, not a #key# I do not have.
+
+scene kept_booking
+when topic=work self.job=innkeeper
+does tell.self / react.self / assess
+a : I will not give away a #room# already promised to another guest. | A #name# in the #guestbook# keeps a #bed# until the agreed hour.
+b : What if they are late? | Do you ever make exceptions?
+a : I wait for the agreed time. Then I check what was said. | Only when I can offer another #room# honestly.
+
+scene enough_ale
+when topic=food self.job=innkeeper
+does tell.self / react.self / assess
+a : When a guest cannot stand steady, I put the #ale# away. | A full #cup# is no kindness when someone has had enough.
+b : Do they accept that? | What do you give instead?
+a : Some grumble. I can bear a grumble better than a fall. | Water, a #bench#, and time to clear the head.
+
+scene festival_dance
+when topic=festival
+does tell.self / react.self / assess
+a : I like dancing before the #night# turns loud. | I can keep time on the #floor# when the room is cleared.
+b : Do you dance often? | Who moves the tables?
+a : When the work lets me leave the #bar#. | We shift them together, then put them back before supper.
+
+scene festival_mop
+when topic=festival
+does tell.self / react.self / assess
+a : The festival leaves a #spill# under nearly every #table#. | I enjoy the music; I dread the #floor# afterward.
+b : Do you clean it all yourself? | Is it worth opening that night?
+a : No. I ask for help, then inspect the last corner. | Some years. The #rate# of a room does not pay for every mess.
+
+scene spring_door
+when topic=weather here.season=spring here.weather=clear
+does tell.self / react.self / assess
+a : The first #light# lets me prop the #door# open. | On a mild day the #hearth# can burn low for once.
+b : Does that bring more guests? | Do you prefer the door open?
+a : A few stop when they smell the #oatcakes#. | Until the #road# dust blows across the #floor#.
+
+scene noise_after_beds
+when topic=home here.time=night
+does tell.self / react.self / assess
+a : Once the upstairs #rooms# are occupied, I lower every voice at the #bar#. | A shout in the #night# travels through the #stair#.
+b : What if a guest will not quiet down? | Does it wake everyone?
+a : I ask once, plainly. Then the #cup# is finished for that guest. | Usually the wolf nearest the #door# wakes first.
+
+scene late_supplies
+when topic=work self.job=innkeeper
+does tell.self / react.self / assess
+a : A late #cart# means I count the #oatcakes# twice. | I plan supper around what is on the #tray#, not what a driver promised.
+b : Do you run short? | Do guests understand?
+a : Sometimes. I say so before anyone orders. | Most do if I tell them what I can serve.
+
+scene watch_by_door
+when topic=work self.job=innkeeper
+does tell.self / react.self / assess
+a : I like seeing a Watch patrol pass the #lamp# outside. | A busy #bar# is easier when the #door# is watched.
+b : Have they helped you before? | Do they come inside?
+a : They have settled arguments by hearing both guests. | Sometimes for a #cup# when the shift ends.
+
+scene child_at_counter
+when topic=family self.parent=yes
+does tell.self / react.self / assess
+a : #self.child# knows where the spare #key# hangs, though I keep the bookings. | I teach #self.child# to carry the #tray# with both paws.
+b : Does your child work here? | Is the tray heavy?
+a : When there is a safe task, yes. I do not send a pup upstairs alone. | Full #cups# are. We start with empty ones.
+
+scene helper_in_kitchen
+when topic=work self.job=innkeeper
+does tell.self / react.self / assess
+a : The kitchen can hear my #bell# even when I cannot leave the #bar#. | I keep the #tray# clear so the cook has a place to set supper.
+b : Do you call for every order? | Does that help the cook?
+a : Only when the order changes. Repeating it is no help. | It keeps hot food off the edge of the #counter#.
+
+scene old_guest
+when topic=memories
+does tell.self / react.self / assess
+a : A returning guest may forget me; I still recall the #name#. | The #guestbook# still carries names from earlier seasons.
+b : Do you say that you remember? | Does it make you sad?
+a : If it helps the guest feel welcome, yes. | Sometimes. The empty #room# soon has another story.
+
+scene road_tale
+when topic=travel
+does tell.self / react.self / assess
+a : A traveller's #road# story is best after the boots are dry. | I listen to the #road# first, then ask about the destination.
+b : Why wait until then? | What do you hear in it?
+a : Cold paws make every turn sound worse. | Which #step# was hardest, and who helped.
+
+scene safety_below
+when topic=work
+does tell.self / react.self / assess
+a : I ask after the safety of a #mine# before I praise its output. | A #load# from below ground has more than stone in its cost.
+b : Have you seen a mine? | What else would you count?
+a : I have heard enough to know a beam matters more than a fast #cart#. | The #names# of the wolves who did not come home.
+
+scene swept_floor
+when topic=home
+does tell.self / react.self / assess
+a : A tidy #floor# lets me spot a #spill# before anyone slips. | I sweep the #floor# even when the last guest leaves late.
+b : Does that not wait till morning? | Do you enjoy cleaning?
+a : Not if there is #ale# under the #bench#. | I enjoy knowing where the #step# is safe.
+
+scene missing_key
+when topic=work self.job=innkeeper
+does tell.self / react.self / assess
+a : A missing #key# makes me check every hook beside the #bar#. | I write the #room# beside each #key# before I hand one over.
+b : Do keys often vanish? | Is that not too much writing?
+a : Rarely, because I keep count. | Less work than waking the wrong guest.
+
+scene borrowed_cup
+when topic=work self.job=innkeeper
+does tell.self / react.self / assess
+a : A guest once carried a #cup# upstairs and forgot it there. | I count #cups# at closing so I know what needs washing.
+b : Was the cup broken? | Do you charge for one missing?
+a : No. I found it by the #bed# next morning. | Only if it is gone. Most turn up under a #bench#.
+
+scene nap_by_fire
+when topic=home
+does tell.self / react.self / assess
+a : I leave the #bench# by the #hearth# free for a traveller who needs a rest. | A short sleep beside the #fire# can make the #road# possible again.
+b : Can someone stay long? | Do you wake them?
+a : Until another guest needs the #seat#. I ask gently. | When the #night# gets late, I offer a #room# if one is free.
+
+scene banked_fire
+when topic=home here.time=dusk|night
+does tell.self / react.self / assess
+a : I bank the #fire# before the last #cup# is washed. | The #hearth# should be warm when an early traveller rises.
+b : Does it last until dawn? | Who tends it first?
+a : If I set the coals close and keep the draught low. | Whoever wakes earliest adds the first log.
+
+scene creaking_stair
+when topic=home
+does tell.self / react.self / assess
+a : The third #stair# speaks louder than the rest. | I know which #step# a guest took by the sound of the boards.
+b : Can you mend it? | Does that help you sleep?
+a : I have tightened it. The old wood still has a voice. | I know when someone is lost, and can point to the #room#.
+
+story first_guestbook [topic=memories self.age>=25]
+  : My first #guestbook# had a name written so badly that I could not read it back.
+  : I asked the guest to say it again. The guest laughed and wrote it properly for me.
+  ask : Would you have guessed the #name# instead?
+  b : I would have asked as you did.
+  : Good. A guessed #name# is a poor welcome.
+
+story winter_arrival [topic=memories self.age>=25]
+  : A traveller once arrived with ice on the #boots# and no strength to ask for supper.
+  : I moved the #bench# nearer the #hearth# and brought a warm #cup# first.
+  ask : Would you have asked about payment then?
+  b : I would have seen whether the traveller could sit up.
+  : We settled the #rate# after the hands stopped shaking.
+
+story dance_after_closing [topic=memories self.age>=25]
+  : Once the #bar# was clean, someone struck up a tune by the #door#.
+  : I took one turn on the #floor#, then went back for the mop.
+  ask : Would you have stayed for another dance?
+  b : I might have, with the work finished.
+  : The #spill# would still be there at dawn. One turn was enough.
+
+story swapped_keys [topic=work self.age>=25 self.job=innkeeper]
+  : I nearly handed a #key# to the wrong guest after a crowded supper.
+  : I read the #room# number aloud, and the guest corrected me before reaching the #stair#.
+  ask : Would you have checked the book first?
+  b : After a busy night, I think I would.
+  : Now I do. A moment at the #guestbook# saves a long apology.
+
+story oatcake_count [topic=food self.age>=25]
+  : I once counted the #oatcakes# for a full #table# and came up one short.
+  : I cut my own cake in two and brought the #tray# out even.
+  ask : Would you have told the guests?
+  b : I might have brought more from the kitchen.
+  : I did, once the next batch was done. Nobody left hungry.
+
+rule @bark_name
+when concept=bark self.job=innkeeper self.working=yes
+does aside
+cooldown 7h
+say Your #name# for the #guestbook#, please. | I know that #name#. The #room# is this way.
+
+rule @bark_oatcake
+when concept=bark here.time=dawn|day
+does aside
+cooldown 8h
+say #oatcakes.capitalize# are ready. | The #tray# is hot; clear a place.
+
+rule @bark_quiet
+when concept=bark here.time=night
+does aside
+cooldown 9h
+say Voices down by the #stair#, please. | The #rooms# are occupied; mind the #noise#.
+
+rule @bark_spring
+when concept=bark here.season=spring here.weather=clear
+does aside
+cooldown 11h
+say The #light# is through the #door# at last. | I can leave the #hearth# low today.
+
+rule @bark_cup
+when concept=bark self.working=yes
+does aside
+cooldown 6h
+say That #cup# goes to the far #table#. | I have one #tray# too many for these paws.
+
+rule @bark_floor
+when concept=bark here.time=dusk|night
+does aside
+cooldown 10h
+say Keep the #ale# off the #floor#. | I just swept these #boards#.
+
+dlg @1 resident.hub : #greet#. I can speak while the #fire# holds. | #greet#. Sit near the #hearth#; I will listen.
+dlg @2 resident.hub [topic.meeting=stranger] : Welcome. Give me your #name# before you take a #room#. | A traveller? The #bench# is open while we speak.
+dlg @3 resident.hub [topic.meeting=known] : I recall your #name#. Come in. | Back at my #door#; take a #seat#.
+dlg @1 resident.job : I keep the #rooms#, the #bar#, and the #guestbook# in order. | A dry #bed# and a fair #rate# are my work.
+dlg @2 resident.job [self.working=yes] : I am carrying a #tray#. Walk with me and ask. | The #bar# needs my paws, but I can listen.
+dlg @1 resident.bye : #farewell#. Keep your feet dry. | #saying.capitalize#. The #door# is this way.
+dlg @2 resident.bye [here.time=night] : Good night. Mind the third #stair#. | Travel by the lit #road#.
+dlg @1 inn.greet [here.shop!=asleep here.inn_helper!=yes] : #greet#. A #bed#, supper, or a rest by the #hearth#? | Come in off the #road#. Tell me what you need.
+dlg @2 inn.greet [topic.meeting=known here.shop!=asleep here.inn_helper!=yes] : I know your #name#. The #bench# is open. | Back again? I have the #guestbook# here.
+dlg @1 inn.rooms : A #bed# is #here.bed_night#p a night or #here.bed_week#p for the week. The whole upstairs is #here.upstairs_night#p tonight, if free. | A #bed# is #here.bed_night#p tonight; a week is #here.bed_week#p, or the upstairs #here.upstairs_night#p if empty.
+dlg @1 inn.roomed : The #key# is yours. Take the #stair# gently. | Your #bed# is ready; leave wet #boots# below.
+dlg @1 inn.rest [here.lodging!=yes] : Sit by the #hearth#. You may rest there awhile. | The #bench# is free. I will keep the #fire# up.
+dlg @1 inn.refused : #topic.why# I cannot give a #key# against that. | I am sorry. #topic.why# The #bench# is still open.
+dlg @1 inn.bye : #farewell#. Leave the #door# closed behind you. | Go carefully; the #road# is dark.
+dlg @1 shop.greet [here.shop=open] : #greet#. There is #ale# and #oatcakes# at the #bar#. | Settle by the #hearth# and I will bring a #tray#.
+dlg @1 shop.prices [here.shop!=bare] : The #rate# is on the slate. I will not haggle over it. | Look at the #price# there, then choose your #cup#.
+dlg @1 shop.bye : #farewell#. Set the empty #cup# on the #bar#. | Mind the #step# outside.
+graft resident.hub
+choice How do you remember every name? -> names
+node names
+say I hear a #name# once and keep it. The #guestbook# helps when I need the spelling.
+mood pleased
+free
+choice Does that help at the inn? -> helpful
+choice Back to what we were saying. -> hub
+node helpful
+say A returning guest likes being remembered. I still check the #room# before handing over a #key#.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
+
+graft inn.greet
+choice What makes a good room? -> good_room
+node good_room
+say A dry #sheet#, a sound #key#, and quiet past the #stair#. Those come before a fine view.
+mood pleased
+free
+choice Do you check them yourself? -> check_room
+choice Back to the inn. -> greet
+node check_room
+say I do before a guest takes the #key#. A promise made at the #bar# ought to hold upstairs.
+choice Back to the inn. -> greet
+choice Goodbye. -> bye

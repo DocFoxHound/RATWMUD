@@ -1,0 +1,268 @@
+# cw105, the measured hum (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw105
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_oh_varg_acorndell
+written_by claude-codex-cw-1
+title the measured hum
+fits stage=adult|old
+prefers talk=plain temper=calm
+traits temper=calm talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=content
+quirk hums_old_marching_songs
+likes crisp_apples wrestling new_boots first_warm_day
+dislikes crowds rats
+fears an_empty_loom a_house_too_quiet
+hopes enough_work_to_stay a_bird_for_every_friend
+topics work +0.5 memories +0.4 pastimes +0.4 home +0.3 prices +0.2 gossip -0.5
+styles comfort=practical gossip=reluctant refuse=soft tease=dry
+marks oath saying
+persona #self.first# keeps a calm #beat# at the #loom#, hums old marches, carves small #birds#, and measures every offer before answering.
+
+words
+oath! = Four beats and a breath | By the old drum
+saying! = A pause can save a day | The last step takes its time
+beat = beat beneath the humming | march's steady beat
+march = marching tune | tune in four beats
+loom = loom bench | working loom
+shuttle = shuttle | wooden runner through the threads
+thread = thread | strand of wool
+edge = cloth edge | finished selvedge
+cloth = cloth | woven wool
+knife = small carving knife | blade kept sharp for wood
+wood = soft wood | dry wood
+bird = carved bird | small wooden bird
+birds = carved birds | wooden birds with open wings
+wing = wing | carved wing
+hands = hands that know their work | working paws
+hand = paw | hand
+hold = hold | wrestling grip
+quiet = hush after the loom stops | silence between notes
+offer = offer | honest offer
+bench = bench by the loom | seat beside the work
+crowd = press of wolves | crowd round a doorway
+step = measured step | pace that does not hurry
+warmth = first warmth after winter | mild air on the lane
+
+any
+opinion @1 merchants against 2 : I count the #cloth# before I hear the #offer#. | A trader praises the #edge# and pays as though it were frayed.
+opinion @1 houses against 1 : An empty #bench# suits a House better than a full wage. | Crests do not keep the #shuttle# moving; #hands# do.
+opinion @1 city against 1 : Give me a street where I can hear one #step# at a time. | In the city a wolf gets lost in the #crowd# before reaching the door.
+opinion @1 newcomers against 1 : A new pair of #hands# needs work too. So do the hands already here. | I would rather judge a stranger at the #bench# than by a loud promise.
+opinion @1 church against 1 : I leave my coin where I can see it help. The plate goes round too often. | A quiet prayer at the #loom# costs me nothing and asks no witness.
+opinion @1 times against 1 : A longer day at the #loom# buys less bread than it used to. | When a week is hard, the #shuttle# still has to cross the cloth.
+
+grown
+line @1 greet : #greet#. I was keeping the #beat# to myself. | #greet#. Pull up to the #bench# if you mean to stay.
+line @2 greet [pair.band=strangers] : #greet#. You needn't speak above the #loom#. | #greet#. A stranger can find a seat by the #bench#.
+line @3 greet [self.working=yes] : #greet#. I will answer after this pass of the #shuttle#. | #greet#. My #hands# are busy; my ears are free.
+line @4 greet [here.time=dawn] : #greet#. The #warmth# has not reached the shed yet. | #greet#. The first #beat# of the day is always slow.
+line @5 greet [here.time=dusk|night] : #greet#. The #loom# can rest until morning. | #greet#. I was putting the #knife# away.
+line @1 greet.return : #welcome_back#. The #beat# is where you left it. | You came back. The #bench# has room.
+line @2 greet.return [pair.band=friends|family] : I kept a #bird# for you. | Sit. I have stopped the #shuttle# for now.
+line @1 kin.open [pair.kin!=no] : There is room beside me at the #bench#. | I know that #step#; come in.
+line @1 again.open : Twice already? The #thread# has barely moved. | You found me again before the #march# ended.
+line @1 farewell : #saying.capitalize#. Keep an easy pace. | #farewell#. Mind the #step# outside.
+line @1 farewell.return : And a good road under your #step#. | I will be at the #bench# another day.
+line @1 react.news : #listen.capitalize#. Let the #shuttle# wait. | I had the wrong #beat# for that news.
+line @1 react.news.new : That has not reached the #loom# yet. Who said it? | A fresh word. I will weigh it like an #offer#.
+line @1 react.news.known : I heard a part of it over the #shuttle#. | That makes more sense than the first telling at the #bench#.
+line @1 react.news.doubt : An #offer# that neat usually hides a catch. | I would hear the other side before I set down my #knife#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A heavy word. I will sit here with you while the #loom# rests. | I am sorry. Take the #bench#; there is time.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That is worth a brighter #march#. | Good. I might carve a #bird# for the occasion.
+line @1 answer.how : Steady. The #shuttle# knows its path. | Well enough; the #knife# is sharp and the work is here.
+line @1 ask.how : How has your #step# been today? | Are you keeping well, away from the #crowd#?
+line @1 sympathise : You can sit at the #bench# and say as much as you please. | I cannot mend that for you, but I can keep the #loom# quiet.
+line @1 reassure : Take one #step#, then another. There is no need to race. | The #thread# can be joined again if it breaks.
+line @1 decline : I cannot take that on; these #hands# have enough today. | I would give it thought, but I have promised this #cloth# first.
+line @1 accept_decline : Fairly answered. I will put the #offer# aside. | No quarrel; my #step# can turn another way.
+line @1 thank : You spared my #hands# a long task. Thank you. | I shall remember that when I see the #bird# on my shelf.
+line @1 deflect_thanks : I had a free #hand# and used it. | It was a small #step#; you owe me nothing.
+line @1 preclose : I must finish this #edge# before the light goes. | The #knife# needs putting away before I forget.
+line @1 tease [pair.band=friends] : Your #step# gives away where you are hiding. | I heard you miss the #beat# and kept my face straight.
+line @1 tease.return [pair.band=friends] : You may have the last word; I have the #shuttle#. | Save that for the next #march#.
+line @1 ack : #bc_fair_enough#. I will keep the #beat#. | #bc_right#. Let me finish the #edge#.
+line @1 give.advice : Check the #edge# before you pay for the whole cloth. | An #offer# sounds better after a night's thought.
+line @1 warn [world.bandits=near] : Avoid the back road alone; keep a steady #step# on the main one. | There has been trouble. Stay where the #crowd# can see you.
+scene four_beat_hum
+when topic=pastimes
+does tell.self / react.self / assess
+a : The old #march# has four beats, then a space to breathe. | I caught myself humming the #beat# before I knew the tune.
+b : Who taught it to you? | Does it help you work?
+a : I heard it from older voices; I cannot put a name to the first. | It keeps my #hands# steady without making them hurry.
+
+scene shuttle_pause
+when topic=work self.working=yes
+does tell.self / react.self / assess
+a : A rushed #shuttle# skips a #thread#. | I stopped the #loom# for a moment to check that edge.
+b : Will it take long to mend? | Did you find a fault?
+a : Less than crossing the whole length again. | A small one. The #edge# is sound now.
+
+scene carved_wing
+when topic=pastimes
+does tell.self / react.self / assess
+a : The #wing# is the hard part of a #bird#. | A scrap of #wood# has a bird in it if I turn it slowly.
+b : Why that part? | How do you know where to cut?
+a : Too deep and the #wing# breaks away. | I hold the #wood# until the shape feels balanced.
+
+scene give_a_bird
+when topic=friends
+does tell.self / react.self / assess
+a : I give away most of the #birds# I finish. | A #bird# in another house has done its work better than one in mine.
+b : Do you keep any? | Do you know where they end up?
+a : One, to remind me how my #knife# used to slip. | Some. I do not ask after every #wing# I carve.
+
+scene work_price
+when topic=prices
+does tell.self / react.self / assess
+a : A trader runs a paw along the #edge# and calls the #cloth# dear. | I know how many hours sit in one length of #cloth#.
+b : Do you answer back? | Does the buyer know?
+a : I ask what a poor #edge# would cost. That usually ends it. | Not always. I can tell them without raising my voice.
+
+scene crowded_lane
+when topic=home here.region=coldwater
+does tell.self / react.self / assess
+a : The lane fills quickly when carts reach the #crowd# by the market. | I wait at the side until the #crowd# thins.
+b : Does it make you uneasy? | Why not pass through?
+a : I hear too many voices at once. One is enough for me. | I lose less time waiting than pushing past every #step#.
+
+scene first_warm_day
+when topic=weather here.season=spring here.weather=clear
+does tell.self / react.self / assess
+a : The first #warmth# has reached the #bench#. | I can finally leave the door open while I work the #loom#.
+b : Will it last? | Does that change your work?
+a : It need only last through the afternoon. | The #thread# stops catching on my cold paws.
+
+scene lamp_by_bench
+when topic=day here.time=dusk|night
+does tell.self / react.self / assess
+a : The lamp shows the #edge# but not the whole #cloth#. | I put down the #knife# when its shadow doubles.
+b : Do you keep working? | What do you do then?
+a : Only until this row is safe. Then the #loom# rests. | I hum the #march# softly and leave the wood alone.
+
+scene wrong_foot
+when topic=pastimes
+does tell.self / react.self / assess
+a : In a wrestling bout, I watch the other wolf's #step#. | I lose when I look at the #hands# and forget the feet.
+b : Is that enough to tell? | Does that happen often?
+a : Usually. The feet move before the #hold# does. | Often enough that I keep looking down now.
+
+scene quiet_room
+when topic=home
+does tell.self / react.self / assess
+a : A room can be full of wolves and still leave me a little #quiet#. | I like hearing one #step# return when evening comes.
+b : Do you like company, then? | Can you tell who it is?
+a : Yes, when no one asks me to fill every silence. | Sometimes. Each #step# carries a different weight.
+
+scene spouse_tune
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : #self.spouse# can name a #march# from two hummed notes. | I keep the #knife# off the table when #self.spouse# sets supper down.
+b : Does your spouse sing along? | Has the blade ever been in the way?
+a : Sometimes, and the #beat# improves. | Once was enough. Now the #bird# stays on its shelf.
+
+scene plain_answer
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I like to hear an #offer# twice before I say yes. | I take my time when someone asks for an answer at the #bench#.
+b : Are you afraid of choosing? | Do they wait for you?
+a : No. I want to hear what is left out. | Those who need a true answer do. The others take their #step# elsewhere.
+
+scene new_knife_edge
+when topic=pastimes
+does tell.self / react.self / assess
+a : A blunt #knife# tears the #wood# where a wing ought to be. | I sharpen the #knife# before starting another #bird#.
+b : How do you tell it is ready? | What shape next?
+a : It takes a thin shaving without a pull. | A small #bird# with its head turned toward the door.
+
+scene old_song_new_voice
+when topic=memories
+does tell.self / react.self / assess
+a : I remember the #march# differently each time another wolf hums it. | An old #beat# can carry a voice long after the singer is gone.
+b : Does that bother you? | Do you remember who sang it?
+a : No. A tune ought to change a little as it travels. | Some voices. I do not need every name to hear them.
+
+scene work_stillness
+when topic=work
+does tell.self / react.self / assess
+a : The #loom# makes its own measure when I stop talking. | I can hear a loose #thread# before I find it.
+b : What does it sound like? | Can you mend it quickly?
+a : A small catch where the #shuttle# should slide. | If I stop at once. The #edge# tells me where.
+
+scene spare_seat
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : I leave a space on the #bench# for #self.spouse#. | #self.spouse# sits with me while I finish a #bird#.
+b : Do you talk as you work? | Is it good company?
+a : Only when there is something to say. The #beat# carries the rest. | The best. The #knife# moves more surely then.
+
+scene small_bargain
+when topic=prices
+does tell.self / react.self / assess
+a : If a seller changes the #offer# after my answer, I walk away. | I once turned down a good #offer# because the terms kept shifting.
+b : Even if you need the thing? | Did you regret it?
+a : Especially then. Need makes a poor bargain worse. | Not after I heard what the #cloth# actually cost.
+
+story first_carving [topic=memories self.age>=20]
+  : My first #bird# had one #wing# twice the size of the other.
+  : I nearly threw it into the fire. Then I set it on the #bench# and kept working.
+  ask : Would you have kept such a crooked thing?
+  b : I think I would have tried to mend it.
+  : That was what I did. It still leans, but it stands.
+
+story lost_beat [topic=memories self.age>=20]
+  : I forgot the middle of a #march# once and kept humming the first four notes.
+  : Someone beside me supplied the missing turn without stopping their work.
+  ask : Would you have admitted you forgot it?
+  b : Eventually, if the tune kept repeating.
+  : I did, and we both laughed. I have not lost that turn since.
+
+story fair_length [topic=work self.age>=20]
+  : A buyer once called a bolt of #cloth# short before anyone measured it.
+  : I put it on the table and let the buyer count the length aloud.
+  ask : Would you have argued first?
+  b : I might have asked to see the measure.
+  : The measure said enough. I kept the #edge# straight and my voice low.
+
+rule @bark_tune
+when concept=bark
+does aside
+cooldown 8h
+say That #march# has found me again. | Four notes, then a breath; that is the #beat#.
+
+rule @bark_cloth
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say Let the #shuttle# finish its run. | A neat #edge# this time.
+
+rule @bark_carve
+when concept=bark here.time=dusk|night
+does aside
+cooldown 10h
+say One more shaving from this #wood#. | The #wing# is nearly there.
+
+rule @bark_warmth
+when concept=bark here.season=spring here.weather=clear
+does aside
+cooldown 12h
+say The first #warmth# at last. | I might take the #bench# outside today.
+
+dlg @1 resident.hub : #greet#. I can speak while my #hands# rest. | #greet#. Sit at the #bench# if you like.
+dlg @2 resident.hub [topic.meeting=known] : You are back. I have set the #shuttle# down. | I know that #step#. Come in and speak.
+dlg @1 resident.job : I work a #loom# and watch the #edge# of every length. | Most days I carry a #shuttle# from side to side.
+dlg @1 resident.bye : #farewell#. Keep your own #beat#. | #saying.capitalize#. Go at your pace.
+graft resident.hub
+choice What tune are you humming? -> tune
+node tune
+say An old #march#. I know the pauses better than the words.
+mood pleased
+free
+choice Who taught you? -> teacher
+choice Back to what we were saying. -> hub
+node teacher
+say I heard it while I worked beside older paws. I cannot say whose voice came first.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye

@@ -1,0 +1,403 @@
+# rm105, the careful witness (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm105
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for tn_mb_fell_miremore
+written_by claude-codex-cw-1
+title the careful witness
+fits stage=adult|old
+prefers talk=quiet piety=devout
+traits temper=even talk=quiet warmth=reserved humour=none honesty=guarded piety=devout drive=steady
+quirk distrusts_anything_from_the_city
+likes pickled_herring wrestling market_bustle thunder
+dislikes deep_mud stale_bread
+fears trusting_a_false_word losing_the_way_home
+hopes a_safe_table honest_work_for_kin
+topics faith +0.5 home +0.4 work +0.4 memories +0.3 prices +0.2 gossip -0.5
+styles comfort=practical gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# is a quiet, devout loom hand who washes every trace of #mud# from the paws, listens for #thunder# under a roof, and trusts a claim only after checking it.
+
+words
+oath! = Bright One hear me | By the clean edge
+saying! = Check the seam before the story | A clear measure settles it
+seam = seam | sewn edge
+measure = measure | marked length
+cloth = cloth | woven length
+warp = warp | stretched thread
+weft = weft | crossing thread
+thread = thread | strand
+edge = edge | finished side of the cloth
+step = step | measured pace
+offer = offer | proposed price
+loom = loom | working frame
+shuttle = shuttle | wooden runner
+wash = wash water | clean water
+hands = hands | working paws
+mark = mark | notch on the measure
+roof = roof | thatch
+thunder = thunder | storm's low rumble
+market = market | row of stalls
+herring = pickled herring | fish kept in vinegar
+jar = jar | sealed crock
+bread = bread
+mud = mud | wet earth clinging to fur
+road = road | way between towns
+city = city | old streets
+letter = letter | folded note
+seal = seal | wax mark
+light = light | pale glimmer
+prayer = prayer | plea to the Bright One
+table = table | supper table
+door = door | house door
+choice = choice | answer given aloud
+weight = weight | heft of a thing
+
+any
+opinion @1 church for 1 : I have found steadiness in #prayer# when the #road# was uncertain. | The Bright One hears a quiet voice as well as a crowded chapel.
+opinion @1 city for 1 : I know the #city# well enough to walk its turns. | The #city# can be loud and dear; it is still part of me.
+opinion @1 dole for 1 : Set #bread# before a hungry wolf before asking how the hunger began. | Feeding someone is a better #prayer# than arguing over who deserves supper.
+opinion @1 drink against 1 : I have seen a full #jar# empty a purse before it fills a belly. | A clear head keeps the #door# open to those who need you.
+opinion @1 houses against 1 : A House can count the #cloth# and fail to count the #hands#. | A crest is no #measure# of the worker beneath it.
+opinion @1 merchants against 2 : I read the #mark# before I pay for a length. | A seller who hurries the #measure# has given me cause to wait.
+opinion @1 newcomers against 1 : Work is thin enough that I ask where a new pair of #hands# will stand. | I will make room at the #table#, but I will not promise work that is not mine to give.
+opinion @1 strangers against 1 : I listen through the #door# before I open it to a stranger. | A name and an honest purpose go farther with me than a polished #seal#.
+opinion @1 times against 1 : The #bread# grows dearer while the #measure# of pay stays still. | I keep the same hours at the #loom# and bring less home.
+opinion @1 watch mixed 0 : A watchful eye may help on the #road#; it can also linger at the wrong #door#. | I would rather see the Watch ask careful questions than make a quick #choice#.
+
+grown
+line @1 greet : Welcome. I have set the #shuttle# aside. | Come in, if you have a clear purpose at my #door#.
+line @2 greet [pair.band=strangers] : Hello. What brings you to this #door#? | I do not know you yet. Leave the #road# dust outside and speak.
+line @3 greet [pair.band=friends|family] : The #table# has room. Come in. | I know your #step#; you need not wait at the #door#.
+line @4 greet [self.working=yes] : I will hear you after this pass of the #shuttle#. | Speak plainly. My #hands# can work while I listen.
+line @5 greet [here.time=dawn] : The #loom# is barely awake. Good morning. | Morning. I have fresh #wash# in the basin.
+line @6 greet [here.time=dusk|night] : Evening. Keep under the #roof# if the weather turns. | The #shuttle# is down for the night. Come in.
+line @1 greet.return : You have come back. Was the #road# clear? | I remember your #choice# from last time; sit.
+line @2 greet.return [pair.band=friends|family] : I saved you a place at the #table#. | The #door# was open for you.
+line @1 kin.open [pair.kin!=no] : Come inside; there is #bread# enough. | You know where the #wash# is kept.
+line @1 again.open : Again today? Tell me what changed. | The #shuttle# has made one pass since you left.
+line @1 hail [pair.band=friends] : Here. Walk with me past the #market#. | I saw you by the #door#. Come over.
+line @1 farewell : Go with care. Watch the #road#. | #saying.capitalize#. Travel safely.
+line @1 farewell.return : The same care to you. | I shall keep the #door# unlatched a little longer.
+line @2 farewell [here.time=night] : Keep to the lit #road# tonight. | Leave before the #thunder# reaches the lane.
+line @1 react.news : I will listen. Give me the #measure# of it. | That is a strong claim. Begin at the first #mark#.
+line @1 react.news.new : This is the first I have heard. Who carried the #letter#? | New to me. Tell me where the word began.
+line @1 react.news.known : I heard a part at the #market#; yours completes it. | That agrees with the first account, as far as the #mark# goes.
+line @1 react.news.doubt : I would see the #seal# before I trust that message. | Let me hear another witness before I make a #choice#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. There is room at my #table# if you need it. | A grievous thing. I will say a #prayer# with you if you wish.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I am glad for them. May the Bright One keep their #door# safe. | Good news deserves a place at the #table#.
+line @1 answer.how : I am well enough, with #cloth# to finish. | Steady. The #roof# held through the last rain.
+line @1 answer.how.busy [self.working=yes] : Busy at the #loom#. I can talk briefly. | I have #weft# to set before the light changes.
+line @1 ask.how : How are you holding up on the #road#? | Have you eaten at a #table# today?
+line @1 sympathise : I will stay with you. There is no need to explain at once. | We can sit beneath the #roof# until you are ready.
+line @1 reassure : Check what is true, then take the next #step#. | A torn #seam# can be mended with patience.
+line @1 decline : I cannot agree until I have seen the #measure#. | I would rather refuse than give you a #choice# I cannot keep.
+line @1 accept_decline : I hear your answer. I will leave the #door# open another day. | Fair enough. You have made your #choice# plainly.
+line @1 thank : You brought the #letter# safely. Thank you. | I am grateful. Set your things on the #table#.
+line @1 deflect_thanks : I only held the #door#; you did the harder work. | No thanks needed. The #road# brought me this way.
+line @1 preclose : I must return to the #loom# before the light fails. | My #hands# need a turn at the #wash#.
+line @1 tease [pair.band=friends] : You made that #choice# with your eyes closed, I think. | I have checked your #measure#; it is almost straight.
+line @1 tease.return [pair.band=friends] : I shall inspect the #seam# again before I answer that. | You can laugh; the #mark# still stands.
+line @1 ack : I understand. I will check the #measure#. | That is clear enough. Put the #letter# there.
+line @1 give.advice : Read the #seal# and ask who set it there. | Look at the #seam# where the seller does not point.
+line @1 warn [world.bandits=near] : Keep to the travelled #road#. | Trouble has been close. Do not open a strange #door# in the dark.
+scene unbroken_edge
+when topic=work
+does tell.self / react.self / assess
+a : I check the #seam# when the #cloth# comes off the frame. | An even #edge# shows where someone took their time.
+b : Can you tell who made it? | Does anyone else notice?
+a : I can tell how the #shuttle# moved, not whose paw held it. | A buyer notices when the #seam# fails. I prefer they never have to.
+
+scene wash_before_supper
+when topic=home
+does tell.self / react.self / assess
+a : I keep #wash# by the #door# for work-stained paws. | I scrub the #mud# away before I touch the supper #table#.
+b : Is that a rule in your house? | Does the mud trouble you so much?
+a : A habit. Clean #hands# make it easier to share a meal. | It gets everywhere if you let it in once.
+
+scene market_noise
+when topic=prices
+does tell.self / react.self / assess
+a : I like the #market# when every stall has a voice. | The #market# tells you what the town has grown.
+b : I thought you liked quiet. | How can you hear anything useful?
+a : I do. I stay long enough to hear the offers, then leave. | I listen for the same #measure# named by two sellers.
+
+scene thunder_under_roof
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : I enjoy #thunder# from beneath a sound #roof#. | The #thunder# shakes the shutters and leaves the #loom# alone.
+b : Are you frightened of it? | Have the shutters held?
+a : No. I like knowing where shelter begins. | So far. I checked the latch before the rain came.
+
+scene sealed_letter
+when topic=news
+does tell.self / react.self / assess
+a : A #seal# shows me who wanted a #letter# believed. | I turn a #letter# over before I read its words.
+b : Is a seal enough for you? | What do you look for?
+a : No. The #mark# can be copied, and a true name can be used badly. | A broken fold, a second hand, anything the sender did not expect.
+
+scene stale_loaf
+when topic=food
+does tell.self / react.self / assess
+a : Stale #bread# is a poor welcome after a long shift. | I would rather soak old #bread# than pretend it is fresh.
+b : Do you waste it? | What do you put it in?
+a : Never. Hunger does not ask whether the crust is soft. | A little broth. It becomes supper again.
+
+scene pickled_jar
+when topic=food
+does tell.self / react.self / assess
+a : A #jar# of #herring# keeps longer than a fresh catch. | I open the #herring# after the other work is put away.
+b : Is it very sharp? | Do you share it?
+a : Sharp enough to wake you, and good with plain #bread#. | If someone sits at the #table#, of course.
+
+scene remembered_street
+when topic=memories self.away=yes
+does tell.self / react.self / assess
+a : I can still picture the first #road# I learned as a pup. | I remember a #door# in #self.from_town# by the sound of its hinge.
+b : Would you know it now? | Would you go back to see it?
+a : The stones may have changed; the turn of the #road# has not. | I might. I do not need to open every old #door#.
+
+scene city_parcel
+when topic=home self.from=ridgemere
+does tell.self / react.self / assess
+a : I was raised in a city, but I check any parcel that arrives from one. | A fine #seal# from the #city# does not prove what is inside.
+b : Why distrust a place you know? | What do you expect to find?
+a : Because I know how easy it is to dress a poor thing well. | I expect the #measure# on the outside to match the contents.
+
+scene marsh_glimmer
+when topic=memories here.time=dusk|night
+does tell.self / react.self / assess
+a : I once saw a #light# where no house stood. | A #light# over the wet ground does not move like a lamp.
+b : What do you think it was? | Did you go nearer?
+a : I think of the drowned when I remember it. I leave them to their rest. | No. I said a #prayer# and took the dry path home.
+
+scene reed_cross
+when topic=faith here.region=coldwater
+does tell.self / react.self / assess
+a : I stop by the reed crosses when my #road# takes me past the chapel. | A simple cross asks more of me than a grand #seal#.
+b : What do you ask for there? | Why more?
+a : Enough sense to do the next right thing. | It gives me no rank to hide behind. Only the #prayer# remains.
+
+scene warm_bench
+when topic=home
+does tell.self / react.self / assess
+a : A #table# can make a crowded house feel settled. | I know a home by where the clean #wash# sits.
+b : Do you need much room? | Why that?
+a : No. A seat and space for another are enough. | Someone thought about the paws coming in from the #road#.
+
+scene fair_measure
+when topic=prices
+does tell.self / react.self / assess
+a : If a seller gives me the #measure#, I check it in front of both of us. | I trust a #mark# more when I can see where it began.
+b : Does that offend the seller? | What if the mark is wrong?
+a : An honest seller need not mind. | Then I ask for another #measure# before paying.
+
+scene quiet_wrestle
+when topic=pastimes
+does tell.self / react.self / assess
+a : Wrestling is easier when neither wolf spends the bout shouting. | I watch the other pair of #hands# before I try a hold.
+b : Does silence help you win? | What do the hands tell you?
+a : It helps me hear a change of #weight#. Winning can wait. | When the grip is coming. Then I move my feet.
+
+scene early_market
+when topic=prices here.time=dawn|day
+does tell.self / react.self / assess
+a : At first light the #market# has gaps between the stalls. | I like seeing which seller opens the #jar# before asking a price.
+b : Is that when you buy? | Why would that matter?
+a : Sometimes. I can hear an #offer# without a dozen others. | If the #herring# is good, they are willing to show it.
+
+scene cloth_for_kin
+when topic=family self.parent=yes
+does tell.self / react.self / assess
+a : I keep the soundest #cloth# for a child's hard-wearing things. | A small coat needs the same straight #seam# as a large one.
+b : Do children mind the stitching? | Does that take much extra work?
+a : Not until it fails. I would rather they never notice. | A little more #weft#, and care at the shoulder.
+
+scene spouse_at_table
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : #self.spouse# can tell when a worry came home with me. | I set a second place at the #table# before I sit.
+b : Do you speak of it at once? | Is that your habit?
+a : After the #wash#. A worry sounds different when the work is off. | Yes. It tells #self.spouse# that I am ready to listen.
+
+scene child_question
+when topic=family self.parent=yes
+does tell.self / react.self / assess
+a : #self.child# asks questions I would rather answer honestly than quickly. | I keep a small piece of #cloth# to show #self.child# how the threads cross.
+b : Have you ever said you did not know? | Does that hold attention?
+a : Often. Then we look for a sound #measure# together. | For a while. The #shuttle# does the rest of the explaining.
+
+scene work_apprentice
+when topic=work self.master=yes
+does tell.self / react.self / assess
+a : I show a learner the #edge# before I ask for speed. | A new hand at the #loom# should know how to stop it safely.
+b : Why the edge first? | Do learners listen?
+a : It shows every careless pass of the #shuttle#. | Most do once they see a torn #warp#.
+
+scene sheltering_storm
+when topic=weather here.weather=rain|storm
+does tell.self / react.self / assess
+a : I listen for leaks where the #roof# meets the wall. | A hard rain can find a gap behind the #loom#.
+b : Have you found any? | Does it hurt the cloth?
+a : One small gap. I put a basin beneath it. | Damp #weft# twists. I move the bolts away.
+
+scene road_after_rain
+when topic=travel here.weather=rain|storm
+does tell.self / react.self / assess
+a : After rain, the #mud# takes the shortest #road# away from you. | I choose the longer #road# when the low ground is soft.
+b : Does that save time? | How do you know it is safer?
+a : It saves a boot and most of my temper. | The cart marks stay shallow on the higher ground.
+
+scene honest_silence
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I do not answer a question until I know what the answer would cost. | Silence can be a more honest #choice# than a quick promise.
+b : Do people think you are hiding something? | Do you tell them why you wait?
+a : Sometimes. I can bear that better than a false word. | If they stay. I say I am checking what I know.
+
+scene watchful_door
+when topic=home
+does tell.self / react.self / assess
+a : I listen at the #door# before I lift the latch. | A stranger at the #door# deserves an answer, not instant trust.
+b : Have you turned someone away? | What do you say first?
+a : Yes, when the purpose was not clear. I was civil. | I ask whom they seek and why.
+
+scene more_than_crest
+when topic=work
+does tell.self / react.self / assess
+a : A House sees finished #cloth#; I wish it saw the tired #hands#. | I have watched a crest pass a working #door# without slowing.
+b : Would you speak to the owner? | Did that anger you?
+a : If I could get a hearing, yes. I would bring the #measure#. | A little. The #shuttle# did not stop for it.
+
+scene supper_prayer
+when topic=faith
+does tell.self / react.self / assess
+a : I say a #prayer# before supper, whether it is fine or plain. | The #table# is where I remember who went without.
+b : Does that change the meal? | Does the thought lead you to act?
+a : It makes me eat with thanks instead of hurry. | I leave #bread# aside when I can share it.
+
+scene borrowed_story
+when topic=gossip
+does tell.self / react.self / assess
+a : A story from the #market# has passed through too many mouths for me to repeat it. | I put a rumour beside the #measure# and see which part fits.
+b : Will you tell me any of it? | What if part of it is true?
+a : Not until someone concerned speaks for themselves. | Then that person can tell it. I will not add a false #mark#.
+
+scene lamp_and_marsh
+when topic=faith here.time=dusk|night
+does tell.self / react.self / assess
+a : When a distant #light# seems to hover, I say a #prayer#. | I cannot prove what the #light# over wet ground is.
+b : Do you believe it is a soul? | Does uncertainty trouble you?
+a : I have my belief. I do not ask anyone else to walk toward it. | No. I can keep the #road# while leaving some things unexplained.
+
+story folded_note [topic=memories self.age>=25]
+  : I once carried a #letter# whose #seal# was broken before it reached me.
+  : I told the sender what I saw and let the sender decide whether to write it again.
+  ask : Would you have read it first?
+  b : I would have been tempted.
+  : So was I. The #letter# was not mine to open.
+
+story river_measure [topic=work self.age>=25]
+  : A long piece of #cloth# once looked short beside a badly cut table.
+  : We laid the #measure# along the floor and found the whole length there.
+  ask : Would you have trusted your eye instead?
+  b : It depends how much cloth I needed.
+  : That is why I keep the #mark# close. Need can make the eye hurry.
+
+story first_thunder [topic=memories self.age>=25]
+  : I remember a storm that drove everyone under one little #roof#.
+  : The #thunder# went on while we passed dry #bread# from paw to paw.
+  ask : Would you have stayed till it passed?
+  b : I think I would have waited.
+  : We did. I remember the shelter more clearly than the rain.
+
+story market_test [topic=prices self.age>=25]
+  : A seller once offered me a #jar# without showing what was beneath the lid.
+  : I asked to see the contents. The seller took it back without another word.
+  ask : Would you have followed after?
+  b : I might have asked another seller.
+  : That is what I did. I paid for a #jar# I could inspect.
+
+story crooked_cross [topic=faith self.age>=25]
+  : I found a little reed cross leaning beside a path after hard weather.
+  : I set it upright and went on. No one was there to thank me.
+  ask : Does an unseen act count as a #prayer#?
+  b : I would say it can.
+  : I think so too. It took less than a moment.
+
+rule @bark_wash
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say The #wash# can wait until this #edge# is done. | A clean #seam# at last.
+
+rule @bark_storm
+when concept=bark here.weather=storm
+does aside
+cooldown 9h
+say Listen to that #thunder# beneath the #roof#. | I had better check the latch before the rain.
+
+rule @bark_market
+when concept=bark here.time=day
+does aside
+cooldown 10h
+say The #market# is loud enough to hear from here. | I should check the #measure# before I buy.
+
+rule @bark_prayer
+when concept=bark here.time=dawn|dusk
+does aside
+cooldown 11h
+say A little #prayer# before I go. | May the Bright One keep this #door# safe.
+
+rule @bark_jar
+when concept=bark
+does aside
+cooldown 12h
+say I should see what is in that #jar# first. | Keep the lid on the #herring# till supper.
+
+rule @bark_work
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say One more pass of the #shuttle#. | The #warp# is holding straight today.
+
+dlg @1 resident.hub : Welcome. Sit at the #table# and say what you need. | The #door# is open. Speak when you are ready.
+dlg @2 resident.hub [topic.meeting=stranger] : I do not know you yet. What brought you to this #door#? | Welcome. Leave the #road# dust there and come in.
+dlg @3 resident.hub [topic.meeting=known] : You have returned. Did the #road# treat you well? | I remember our last talk. Take the place by the #table#.
+dlg @4 resident.hub [pair.disposition=warm|fond] : It is good to see you. I can spare the time by the #loom#. | Come in. There is #bread# if you need it.
+dlg @5 resident.hub [here.time=dawn] : Good morning. The #shuttle# has barely begun. | Come in out of the early #mud#.
+dlg @6 resident.hub [here.time=dusk|night] : Evening. Stand under the #roof# while we speak. | I was about to shut the #door#; you are welcome inside.
+dlg @1 resident.job : I work the #loom#. A sound #seam# is the best answer to my labour. | I set #weft# across #warp# and check the #edge# as I go.
+dlg @2 resident.job [self.working=yes] : I am at the #loom# now. Watch the #shuttle# clear this row. | My #hands# are occupied, but I can explain the #measure#.
+dlg @3 resident.job [here.time=dusk|night] : The #loom# rests at this hour. I will start again in the light. | Tonight the #cloth# stays folded until morning.
+dlg @1 resident.bye : Go carefully on the #road#. | The Bright One keep you. I will close the #door# behind you.
+dlg @2 resident.bye [here.time=night] : Keep to the lamps on the #road#. | Good night. The #roof# is here if the storm comes.
+dlg @3 resident.bye [pair.disposition=warm|fond] : Come back when you can. There is a place at the #table#. | Take care. I shall keep the #door# open for you.
+graft resident.hub
+choice Why do you check every letter? -> letters
+node letters
+say A good #seal# can hide a false word. I read, then I ask who sent it.
+mood wary
+free
+choice Has one ever fooled you? -> fooled
+choice Back to what we were saying. -> hub
+node fooled
+say Once, nearly. The #measure# inside did not match the one on the cover.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
+
+graft resident.job
+choice How do you judge a seam? -> seam
+node seam
+say I run a paw along the #edge#. A gap catches before the eye sees it.
+mood pleased
+free
+choice Can a gap be fixed? -> mending
+choice Back to your work. -> hub
+node mending
+say Usually. I stop the #loom#, lift the loose #thread#, and set it back.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
