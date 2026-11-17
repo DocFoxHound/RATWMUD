@@ -94,8 +94,8 @@ def _bc_words() -> dict:
         if m:
             out[m.group(1)] = m.group(2).strip()
     out.update({'greet': 'Good day', 'farewell': 'Farewell', 'thanks': 'Thank you', 'agree': 'Aye', 'refuse': 'No',
-                'surprise': 'You don\'t say', 'annoyed': 'Bother', 'oath': 'Gods', 'hedge': 'Well', 'pivot': 'Speaking of which.',
-                'anyway': 'Anyway.', 'blessing': 'Bless you', 'bless': 'Gods keep you', 'robbery': 'Daylight robbery'})
+                'surprise': 'You don\'t say', 'annoyed': 'Bother', 'oath': 'Bright One', 'hedge': 'Well', 'pivot': 'Speaking of which.',
+                'anyway': 'Anyway.', 'blessing': 'Bless you', 'bless': 'Bright One keep you', 'robbery': 'Daylight robbery'})
     return out
 
 
@@ -119,7 +119,7 @@ SORRY_FOR = R(r"^(poor (soul|thing|lamb|devil|creature|old)|i'm (so )?sorry|sorr
 APOLOGY = R(r"^(sorry|forgive me|i meant nothing|no offence|my mistake|i didn't mean)\b")
 AGREE = R(r"^(aye|true|it is|that it is|so it is|right enough|quite|exactly|indeed|you're right|i know it|can't argue|same here|me too|nor me|so do i|so am i|they do|it does|always|always is|every (day|year|time|night|one)|they always do)\b")
 DISAGREE = R(r"^(no,|nonsense|rubbish|not at all|that's not|i don't (think|agree|hold)|never!|codswallop|i'd not say|you're wrong)")
-NEWS_NEW = R(r"^(never!|no!|really\?|you don't say|well,? i never|is that so\?|is that right\?|gods|bright one|what\?|stars above|truly\?|surely not)")
+NEWS_NEW = R(r"^(never!|no!|really\?|you don't say|well,? i never|is that so\?|is that right\?|bright one|dark one|what\?|stars above|truly\?|surely not)")
 NEWS_KNOWN = R(r"^(i('d)? heard|so i heard|so they say|so they're saying|i know\b|everyone (knows|says)|it's all over|old news|heard it)")
 ADVICE = R(r"\b(you (should|ought|want to|need to|must)|try (a|some|putting|rubbing)|best (to|thing)|i'd (put|take|go|see|ask|tell)|if i were you|get yourself|go and see|put (a|some) )\b")
 WORRY = R(r"\b(i worry|i'm worried|i fear|i'm afraid|what if|keeps me (up|awake)|frets? me|can't sleep|scares me|nervous)\b")

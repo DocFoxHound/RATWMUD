@@ -142,7 +142,7 @@ when topic=home a.homeless=no here.season=summer pair.roof=no
 does tell.self / react.self / assess
 a : Flies in every room. I'm swatting in my sleep. | The house is like an oven. I slept in the yard. | Something's died under the floor. I can smell it.
 b[young] #pup : I like summer. Even the flies.
-b #plain : Hang some mint. | Me too, near enough. | Gods. Find it quick.
+b #plain : Hang some mint. | Me too, near enough. | Bright One. Find it quick.
 a@pup : You would.
 a@plain : Mint and swearing. | The hens didn't like it. | I'll be pulling boards.
 
@@ -315,7 +315,7 @@ does tell.self / react.self / tell.self
 a[here.region=ridgemere] : The city's never felt like home. Too many walls. | I miss being able to see the sky from my bed. | I'd go back home tomorrow if there was work.
 b[from=ridgemere] #city : Give it twenty years. Then you'll miss the rain when you leave.
 b #plain : It takes a while. | Get a room on the hill. | Why not go?
-a@city : Twenty years. Gods help me.
+a@city : Twenty years. Bright One help me.
 a@plain : It's taken a while already. | On my pay? | No work back home.
 
 scene e1_home_homesick_town

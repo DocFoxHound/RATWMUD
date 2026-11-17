@@ -200,7 +200,7 @@ then other: town.close
 rule n7_ga2_devout
 when concept=town.gossip self.piety=devout topic.claim_kind!=marriage|death
 does counter
-say {ha=pious} The gods hear tattle too, you know. | {ha=pious} Judge not. Well. A little. | {ha=pious} I'll pray for #topic.subject#. And for us, for listening.
+say {ha=pious} The Bright One hears tattle too, you know. | {ha=pious} Judge not. Well. A little. | {ha=pious} I'll pray for #topic.subject#. And for us, for listening.
 then other: town.close
 
 rule n7_ga2_guard
@@ -268,7 +268,7 @@ when concept=town.gossip topic.claim_kind=death
 priority 3
 does react.news.sorrow
 tone grave
-say {ha=dead} Gods. I'd no idea. | {ha=dead} No. Not #topic.them#. Surely not. | {ha=dead} Dead? #topic.subject#? Oh, that's hard.
+say {ha=dead} Bright One. I'd no idea. | {ha=dead} No. Not #topic.them#. Surely not. | {ha=dead} Dead? #topic.subject#? Oh, that's hard.
 then other: town.close
 
 rule n7_ga2_death_devout
@@ -332,7 +332,7 @@ say Please yourself. | I only thought you'd want to know. | Fine. I'll tell some
 rule n7_close_go_pious
 when concept=town.close conv.on=gossip conv.ha=pious
 does concede
-say I know. I know. Gods forgive me. | I'll say no more of it. | You're right. I'll say a prayer for loose tongues. Mine first.
+say I know. I know. Bright One forgive me. | I'll say no more of it. | You're right. I'll say a prayer for loose tongues. Mine first.
 
 rule n7_close_go_pup
 when concept=town.close conv.on=gossip conv.ha=pup
@@ -461,7 +461,7 @@ then other: town.close
 rule n7_da_dun_rich
 when concept=town.debt conv.db=dun self.wealth=rich|comfortable
 does react.self
-say {da=paid} Is it so much? Here. Take it now and we'll say no more. | {da=paid} Gods, I'd forgotten entirely. How embarrassing. Here. | {da=paid} Of course. With something for the wait.
+say {da=paid} Is it so much? Here. Take it now and we'll say no more. | {da=paid} Bright One, I'd forgotten entirely. How embarrassing. Here. | {da=paid} Of course. With something for the wait.
 regard other: trust +1
 then other: town.close
 
@@ -532,7 +532,7 @@ then other: town.close
 rule n7_da_promised_nervy
 when concept=town.debt conv.db=promised self.temper=nervy
 does react.self
-say {da=promise} Oh gods. I forgot. I'm sorry. I'm so sorry. | {da=promise} I'll be there! I will! What day did I say? | {da=promise} I haven't forgotten. I had forgotten. I've remembered now.
+say {da=promise} Oh, Bright One. I forgot. I'm sorry. I'm so sorry. | {da=promise} I'll be there! I will! What day did I say? | {da=promise} I haven't forgotten. I had forgotten. I've remembered now.
 then other: town.close
 
 rule n7_da_promising
@@ -645,7 +645,7 @@ say You're good to me. | Thank you. I'll not forget it. | I'll not keep you wait
 rule n7_close_debt_stern
 when concept=town.close conv.on=debt conv.da=stern
 does ack
-say Restday. I swear. | I know. I know. | Gods, you'd have the pennies off a dead wolf's eyes.
+say Restday. I swear. | I know. I know. | Bright One, you'd have the pennies off a dead wolf's eyes.
 
 rule n7_close_debt_deny
 when concept=town.close conv.on=debt conv.da=deny
@@ -770,7 +770,7 @@ rule n7_ro_neighbour_name
 when concept=talk.smalltalk|talk.day self.neighbour pair.neighbours=no
 does tell.self
 cooldown 3d
-say {on=answer ans=neighbour} #self.neighbour# next door's taken up the fiddle. Gods help me. | {on=answer ans=neighbour} #self.neighbour#'s been at the wall again with a hammer. What is #self.neighbour_they# building? | {on=answer ans=neighbour} #self.neighbour# knows everything about everyone on our row. Everything.
+say {on=answer ans=neighbour} #self.neighbour# next door's taken up the fiddle. Bright One help me. | {on=answer ans=neighbour} #self.neighbour#'s been at the wall again with a hammer. What is #self.neighbour_they# building? | {on=answer ans=neighbour} #self.neighbour# knows everything about everyone on our row. Everything.
 then other: town.answer
 
 rule n7_ro_neighbour_kind
@@ -942,7 +942,7 @@ rule n7_cr_arrest_warm
 when concept=talk.crime topic.kind=arrest self.warmth=warm
 does tell.news
 cooldown 1d
-say {on=answer ans=arrest} Poor #topic.subject#. Whatever #topic.they# did, there's a family. | {on=answer ans=arrest} I knew #topic.subject#'s mother. She'll be heartbroken. | {on=answer ans=arrest} Arrested. Gods. I hope they're fed in there.
+say {on=answer ans=arrest} Poor #topic.subject#. Whatever #topic.they# did, there's a family. | {on=answer ans=arrest} I knew #topic.subject#'s mother. She'll be heartbroken. | {on=answer ans=arrest} Arrested. Bright One. I hope they're fed in there.
 then other: town.answer
 
 rule n7_nw_work_poor
@@ -1236,7 +1236,7 @@ then other: town.close
 rule n7_aa_crime_me
 when concept=town.answer conv.ans=crime_me
 does react.self ask.detail
-say {aa=ask} Gods! Are you hurt? | {aa=ask} What did they take? | {aa=ask} I'm so sorry. Did you see them?
+say {aa=ask} Bright One! Are you hurt? | {aa=ask} What did they take? | {aa=ask} I'm so sorry. Did you see them?
 then other: town.close
 
 rule n7_aa_arrest
@@ -1268,7 +1268,7 @@ rule n7_close_ans_grave
 when concept=town.close conv.on=answer conv.aa=grave
 does ack
 priority 1
-say Aye. Bad times. | Gods keep us. | Strange times. | Mind how you go.
+say Aye. Bad times. | Bright One keep us. | Strange times. | Mind how you go.
 
 rule n7_close_ans_glad
 when concept=town.close conv.on=answer conv.aa=glad

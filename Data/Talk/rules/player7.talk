@@ -268,7 +268,7 @@ rule x7_pg_k_nervy
 when concept=player.greet topic.meeting=known temper=nervy
 does greet.return
 priority 1
-say Oh! #topic.player#. I didn't hear you come up. | #topic.player#! Is everything all right? | Oh, it's you. Thank the gods.
+say Oh! #topic.player#. I didn't hear you come up. | #topic.player#! Is everything all right? | Oh, it's you. Thank the Bright One.
 
 rule x7_pg_k_devout
 when concept=player.greet topic.meeting=known piety=devout
@@ -361,7 +361,7 @@ say I'll treasure that. | High praise. I'll have it carved over the door. | Yes,
 rule x7_pt_devout
 when concept=player.thanks piety=devout
 does deflect_thanks
-say Thank the Bright One, not me. | The gods' work, not mine. | Bless you for saying so.
+say Thank the Bright One, not me. | The Bright One's work, not mine. | Bless you for saying so.
 
 rule x7_pt_sly
 when concept=player.thanks honesty=sly

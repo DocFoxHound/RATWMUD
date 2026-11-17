@@ -717,7 +717,7 @@ say Watch, listen, and sweep. That's how it starts. | Keep your mouth shut and y
 rule s83w_re_crime
 does sympathise
 when conv.topic=news topic.kind=crime other.role!=guard
-say Gods. Are you all right? | #pity#. Sit down a moment. | I'm so sorry. | That's awful. In your own town.
+say Bright One. Are you all right? | #pity#. Sit down a moment. | I'm so sorry. | That's awful. In your own town.
 
 rule s83w_re_crime2
 does reassure

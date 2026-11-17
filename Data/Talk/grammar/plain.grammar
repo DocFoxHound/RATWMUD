@@ -53,7 +53,7 @@ tired = tired | worn out | weary
 drunk = drunk | merry | tipsy
 nonsense = nonsense | rubbish | foolishness
 tag = , isn't it | , eh | , wouldn't you say
-oath! = Gods | Heavens | Blood and bread | Well, I never
+oath! = Bright One | Heavens | Blood and bread | Well, I never
 robbery = Robbery, plain and simple | Daylight robbery | A crime, that is
 home = home | my own fire
 hungry = hungry | starved | empty as a drum
@@ -139,7 +139,7 @@ remedy = willow bark | a mustard poultice | goose grease | honey and onion | a n
 olddays = the old days | days gone by | the good old days
 # Blessings, and someday.
 blessing = The Bright One keep you | Bless you | Blessings on you | Bright One watch over you
-bless = Gods keep you | Bright One bless you | The gods go with you
+bless = Bright One keep you | Bright One bless you | The Bright One go with you
 someday = someday | one day | one fine day
 # Travel.
 far = a long way | a fair step | miles off
@@ -257,7 +257,7 @@ hearsay = It's only what I heard | I had it secondhand | That's how it came to m
 # asking for more (ask.detail)
 howso = How do you mean | How's that, now | How did that come about
 # for the dead
-rest = May the ground lie light | Gods give the soul rest | Bright One keep the soul
+rest = May the ground lie light | Bright One give the soul rest | Bright One keep the soul
 
 # Phase 8 (doc 84 §33): greetings and closings by who says them and to whom, for rules/shared8_turns.talk. The most
 # specific entry that holds is said (a grown wolf's to friends, to strangers, at dawn...; ties are one list), so a
@@ -332,13 +332,13 @@ s8_wow[self.stage=young] = Really? Really truly? | Ooh! | No! Honest? | Is it tr
 s8_wow[self.stage=adolescent] = No way. | Honest? | Huh. That's something. | Seriously? | Nobody tells me anything.
 s8_wow[self.stage=adult|old self.humour=merry] = Ha! Is that so? | Ha! Who'd have thought it. | Well, that's livened my day. | Ha! I'll dine out on that. | Now there's a tale.
 s8_wow[self.stage=adult|old self.humour=dry] = Wonders never cease. | Well. There's a novelty. | And I thought today would be dull. | Fancy. | Stop the presses.
-s8_wow[self.stage=adult|old self.temper=nervy] = Oh! Oh, is that so? | Gods, really? | Oh dear. Truly? | You've given me a turn. | Oh, I don't know what to make of that.
+s8_wow[self.stage=adult|old self.temper=nervy] = Oh! Oh, is that so? | Bright One, really? | Oh dear. Truly? | You've given me a turn. | Oh, I don't know what to make of that.
 s8_wow[self.stage=adult|old self.temper=short] = Hmph. Is that so. | Of course it is. | Huh. Typical. | That figures.
 s8_wow[self.stage=adult|old self.warmth=cold] = Hm. | Is it. | If you say so. | So. | Hm. News, then.
 s8_wow[self.stage=adult|old self.warmth=warm] = Oh, is that so? I'm glad you told me. | Well! Thank you for the word. | Is it, now? I'd not have known.
 s8_wow[self.stage=adult|old self.talk=quiet] = Oh. | Mm. Is that so. | Huh. | Oh, aye?
 s8_wow[self.stage=adult|old self.talk=chatty] = Well! Wait till #self.neighbour# hears. | No! Tell me everything. | Oh, I'll be telling that at supper. | Never! Go on, then. | You don't say! And here I was, bored.
-s8_wow[self.stage=adult|old self.piety=devout] = Bright One! Is that so? | Gods above. Truly? | Well, the Bright One sees all.
+s8_wow[self.stage=adult|old self.piety=devout] = Bright One! Is that so? | Bright One above. Truly? | Well, the Bright One sees all.
 s8_wow[self.stage=old] = In all my years. | My, my. | Well, I've lived to hear it. | Things change, don't they. | I never heard the like, not in my day.
 s8_wow[self.stage=adult|old pair.band=strangers] = Is that so? Thank you. | I hadn't heard. Much obliged. | Is it? I'd not heard that one. | Oh? Thank you for the word.
 s8_wow[self.stage=adult|old pair.band=friends] = You're joking. | No! You're having me on. | Get away! | Truly? You'd not lie to me.
@@ -437,7 +437,7 @@ s8_thanks[self.stage=young|adolescent] = Thank you! | Thanks! | Thanks, then.
 s8_thanks[self.stage=adult|old self.warmth=warm] = Thank you, truly. | Bless you for that. | That's good of you. | You're kind.
 s8_thanks[self.stage=adult|old self.warmth=cold] = Hm. Thanks. | Noted. | Right. Thanks.
 s8_thanks[self.stage=adult|old self.tone=formal] = I'm obliged to you. | Much obliged. | My thanks.
-s8_thanks[self.stage=adult|old self.piety=devout] = Bright One bless you for it. | Bless you. | The gods keep you for that.
+s8_thanks[self.stage=adult|old self.piety=devout] = Bright One bless you for it. | Bless you. | The Bright One keep you for that.
 s8_thanks[self.stage=old] = Thank you, dear. | Bless you. | You're a good one.
 # praise (praise)
 s8_praise = That's well done. | Good for you. | Not bad at all. | Now that's something.

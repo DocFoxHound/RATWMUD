@@ -93,7 +93,7 @@ rule s8n_violence
 does react.news.sorrow
 when conv.topic=gossip|crime topic.claim_kind=violence self.knows!=yes
 tone serious
-say Gods. That's an ugly thing to hear. | There's no call for that. None. | #uneasy#. | Violence, here? | That's beyond a quarrel. | Hurting folk. #annoyed#.
+say Bright One. That's an ugly thing to hear. | There's no call for that. None. | #uneasy#. | Violence, here? | That's beyond a quarrel. | Hurting folk. #annoyed#.
 
 rule s8n_violence_victim
 does react.news.sorrow
@@ -111,7 +111,7 @@ rule s8n_violence_nervy
 does react.news.sorrow
 when conv.topic=gossip|crime topic.claim_kind=violence self.temper=nervy self.knows!=yes
 tone serious
-say Oh, gods. I'll not walk home alone now. | That's frightening. Here, of all places. | Oh, don't. I'll not sleep.
+say Oh, Bright One. I'll not walk home alone now. | That's frightening. Here, of all places. | Oh, don't. I'll not sleep.
 
 rule s8n_victim
 does react.news.sorrow
@@ -184,7 +184,7 @@ rule s8n_death
 does react.news.sorrow
 when conv.topic=gossip|life|news topic.claim_kind=death self.knows!=yes
 tone grave
-say #rest#. | Gods. I hadn't heard. | Gone? I can hardly take it in. | #pity#. #rest#. | Oh, no. | That's a hard thing to hear.
+say #rest#. | Bright One. I hadn't heard. | Gone? I can hardly take it in. | #pity#. #rest#. | Oh, no. | That's a hard thing to hear.
 
 rule s8n_death2
 does react.news.sorrow
@@ -279,7 +279,7 @@ say #topic.subject#, eh? | #topic.subject#? Well, well. | I'd not have thought i
 rule s8n_bandits
 does react.news.new
 when conv.topic=bandits
-say #uneasy#. | #bandits.capitalize#. Again. | That's the road shut for me, then. | And the wagons still going out? | Gods, not again.
+say #uneasy#. | #bandits.capitalize#. Again. | That's the road shut for me, then. | And the wagons still going out? | Bright One, not again.
 
 rule s8n_bandits_gossip
 does react.news.new
@@ -319,7 +319,7 @@ say They'll get nothing off me. | Let them try. I've a hole in my purse. | Rich 
 rule s8n_bandits_nervy
 does react.news.new
 when conv.topic=bandits self.temper=nervy
-say Oh, gods. Not near here? | I'll not set foot past the gate. | I knew something was wrong.
+say Oh, Bright One. Not near here? | I'll not set foot past the gate. | I knew something was wrong.
 
 rule s8n_bandits_young
 does react.news.new
@@ -330,7 +330,7 @@ rule s8n_bandits_raided
 does react.news.sorrow
 when conv.topic=bandits|caravan topic.kind=raided self.knows!=yes
 tone serious
-say Raided? Gods. I hope the drivers got away. | Another wagon gone. | Anyone hurt? | #annoyed#. And the goods?
+say Raided? Bright One. I hope the drivers got away. | Another wagon gone. | Anyone hurt? | #annoyed#. And the goods?
 
 ## Wagons on the road (caravan: topic.kind arrived, left, late, raided, due; topic.where; topic.who, the driver)
 
@@ -470,7 +470,7 @@ rule s8n_ships_lost
 does react.news.sorrow
 when conv.topic=ships topic.kind=lost self.knows!=yes
 tone grave
-say Lost? Gods. The crew? | The sea takes, and takes. | #rest#. Every one of them. | That's a cruel sea.
+say Lost? Bright One. The crew? | The sea takes, and takes. | #rest#. Every one of them. | That's a cruel sea.
 
 rule s8n_ships_sailed
 does react.news.new
@@ -532,7 +532,7 @@ rule s8n_harvest_poor
 does react.news.new
 when conv.topic=harvest world.harvest=poor
 tone serious
-say Poor? That's a hungry winter. | Bread'll be dear, then. | Gods help the farms.
+say Poor? That's a hungry winter. | Bread'll be dear, then. | Bright One help the farms.
 
 rule s8n_harvest_good
 does react.news.glad
@@ -625,7 +625,7 @@ rule s8n_crime_assault
 does react.news.sorrow
 when conv.topic=crime topic.kind=assault self.knows!=yes
 tone serious
-say Attacked? Gods. | That's beyond the pale. | Is #topic.victim# hurt bad? | #uneasy#.
+say Attacked? Bright One. | That's beyond the pale. | Is #topic.victim# hurt bad? | #uneasy#.
 
 rule s8n_news_carters
 does react.news.new

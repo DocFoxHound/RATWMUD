@@ -152,7 +152,7 @@ rule e3_hr_devout
 when concept=talk.health piety=devout
 does tell.self
 cooldown 2d
-say {hk=sick} My cough's no better. I've prayed on it. | {hk=sick} I've had a fever. I've offered it up. | {hk=sick} The gods send aches to remind us we're only lent our bodies. I've been reminded this week.
+say {hk=sick} My cough's no better. I've prayed on it. | {hk=sick} I've had a fever. I've offered it up. | {hk=sick} The Bright One sends aches to remind us we're only lent our bodies. I've been reminded this week.
 then other: health.answer
 
 rule e3_hr_merry
@@ -298,14 +298,14 @@ rule e3_ha_priest
 when concept=health.answer job=priest
 does sympathise
 priority 1
-say {ha=kind} I'll remember you at the evening prayer. | {ha=kind} Come to the chapel. Sit a while. The body follows the heart. | {ha=kind} The gods mend slowly, but they mend.
+say {ha=kind} I'll remember you at the evening prayer. | {ha=kind} Come to the chapel. Sit a while. The body follows the heart. | {ha=kind} The Bright One mends slowly, but mends.
 then other: health.back
 
 rule e3_ha_devout
 when concept=health.answer piety=devout
 does sympathise
 cooldown 12h
-say {ha=kind} I'll pray for you. | {ha=kind} Light a candle. It can't hurt. | {ha=kind} The gods see it. They'll see you through.
+say {ha=kind} I'll pray for you. | {ha=kind} Light a candle. It can't hurt. | {ha=kind} The Bright One sees it, and will see you through.
 then other: health.back
 
 rule e3_ha_old
@@ -686,7 +686,7 @@ say If I die, I'm haunting you. | Put that on my stone. | I'll live. Out of spit
 rule e3_hb_devout
 when concept=health.back piety=devout
 does ack
-say The gods willing. | It's in better hands than mine. | I'll offer it up tonight.
+say Bright One willing. | It's in better hands than mine. | I'll offer it up tonight.
 
 rule e3_hb_old
 when concept=health.back stage=old
@@ -1081,7 +1081,7 @@ rule e3_ma_devout
 when concept=memories.answer piety=devout
 does react.story
 cooldown 12h
-say The gods kept us through all of it. | We should give thanks for the years. | Remember them in your prayers. I do mine.
+say The Bright One kept us through all of it. | We should give thanks for the years. | Remember them in your prayers. I do mine.
 then other: memories.back
 
 rule e3_ma_chatty

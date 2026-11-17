@@ -192,7 +192,7 @@ when concept=talk.smalltalk|talk.day pair.mem.grumble=roads
 does tell.self
 priority 1
 cooldown 2d
-say {gk=mend on=grumble} That hole's still there, you know. Bigger. | {gk=mend on=grumble} Remember the road? A cart lost a wheel in it this morning. Not mine, thank the gods. | {gk=mend on=grumble} Still not mended. I'm going to plant a tree in it.
+say {gk=mend on=grumble} That hole's still there, you know. Bigger. | {gk=mend on=grumble} Remember the road? A cart lost a wheel in it this morning. Not mine, thank the Bright One. | {gk=mend on=grumble} Still not mended. I'm going to plant a tree in it.
 then other: town.grumble
 
 rule n7_gr_again_lamps
@@ -527,7 +527,7 @@ then other: town.close
 rule n7_ga_chapel
 when concept=town.grumble conv.gk=chapel
 does react.complaint
-say {ga=agree} It's a shame, aye. | {ga=agree} I'll put a penny in, Restday. | {ga=agree} Folk are busy. The gods know that.
+say {ga=agree} It's a shame, aye. | {ga=agree} I'll put a penny in, Restday. | {ga=agree} Folk are busy. The Bright One knows that.
 then other: town.close
 
 rule n7_ga_chapel_devout
@@ -539,7 +539,7 @@ then other: town.close
 rule n7_ga_chapel_ordinary
 when concept=town.grumble conv.gk=chapel self.piety=ordinary
 does react.complaint
-say {ga=excuse} I'll come Restday. Probably. | {ga=excuse} I'm there for the festivals. That's something. | {ga=excuse} The gods know where I live. They can call.
+say {ga=excuse} I'll come Restday. Probably. | {ga=excuse} I'm there for the festivals. That's something. | {ga=excuse} The Bright One knows where I live. I'm easy found.
 then other: town.close
 
 rule n7_ga_chapel_rich
@@ -650,7 +650,7 @@ say And a good day to you too. | Bite somebody else, then. | Hmph. Charming.
 rule n7_close_gr_excuse
 when concept=town.close conv.on=grumble conv.ga=excuse
 does ack
-say See that you do. | Probably. Hm. | I'll save you a seat. Near the door, so you can slip off. | The gods notice who comes, you know.
+say See that you do. | Probably. Hm. | I'll save you a seat. Near the door, so you can slip off. | The Bright One notices who comes, you know.
 
 rule n7_close_gr_shame
 when concept=town.close conv.on=grumble conv.ga=shame
@@ -807,4 +807,4 @@ say All right. All right. I believe you. | Calm down. I'm not the Watch. | I hop
 rule n7_close_nb_promise
 when concept=town.close conv.on=nb conv.na=promise
 does ack
-say Thank you. I'll bring you something back. | You're a treasure. | I'll sleep easier on the road. | Back by Restday, gods willing.
+say Thank you. I'll bring you something back. | You're a treasure. | I'll sleep easier on the road. | Back by Restday, Bright One willing.

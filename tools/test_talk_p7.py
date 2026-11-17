@@ -83,7 +83,7 @@ class Tagging(unittest.TestCase):
         self.assertEqual(talk_tag.answer(["I heard."], 'tell.news'), ['react.news.known'])
         self.assertEqual(talk_tag.answer(["Never!"], 'tell.news'), ['react.news.new'])
         self.assertEqual(talk_tag.answer(["Who told you that?"], 'tell.news'), ['ask.detail'])
-        self.assertEqual(talk_tag.answer(["Gods. Who told you?"], 'tell.news'), ['react.news.new', 'ask.detail'])
+        self.assertEqual(talk_tag.answer(["Bright One. Who told you?"], 'tell.news'), ['react.news.new', 'ask.detail'])
 
     def test_every_answer_meets_what_was_owed_or_owes_nothing_of_it(self):
         for before, texts in (('tell.complaint', ['Aye, terrible.']), ('tease', ['Ha!']), ('tell.worry', ["It'll pass."]),

@@ -85,7 +85,7 @@ a : Stalls packing up. | Cheap bread now, if you're quick. | That's Marketday ov
 b[role=merchant] #trade : Good day for me. Don't tell my rivals.
 b : Grab the bargains. | Quick's my middle name. | Back to normal tomorrow. | And pigeons.
 a@trade : Your secret's safe.
-a : Too late. All gone. | Run, then. | Thank the gods. | And pigeons.
+a : Too late. All gone. | Run, then. | Thank the Bright One. | And pigeons.
 
 scene m7_day_rest_quiet
 when topic=day here.day=rest
@@ -219,8 +219,8 @@ does tell.self / react.self / assess
 a : Somebody start a song. | Not that one. Anything but that one. | Who taught the fiddler that tune? | They're singing the drowned sailor again.
 b[humour=merry] #sing : Oh, the Sound was grey and the wind was high, and the...
 b : You start it. | Too late, he's started. | His mother. A cruel woman. | Every night, and worse each time.
-a@sing : Gods help us all.
-a : I sing like a gate. | Gods. | It shows. | Join in. It's quicker.
+a@sing : Bright One help us all.
+a : I sing like a gate. | Bright One. | It shows. | Join in. It's quicker.
 
 scene m7_place_tavern_stranger
 when topic=day|smalltalk here.place=tavern
@@ -302,7 +302,7 @@ a : Been waiting an hour. | Every bench is taken. | The clerk's sharpened that q
 b[job=official] #clerk : We're doing our best, you know. I'm a clerk here, as it happens.
 b : Two, me. | Sit on the floor. | Five. I've been counting. | It's always a fence.
 a@clerk : Oh. Sorry.
-a : Gods. | Floor's taken. | Sharpest quill in the realm. | Fences start wars.
+a : Bright One. | Floor's taken. | Sharpest quill in the realm. | Fences start wars.
 
 scene m7_place_barracks
 when topic=day here.place=barracks
@@ -389,7 +389,7 @@ a : Candles for #here.festival#. I've bought a dozen. | The longest night's comi
 b[stage=old] #old : In my day we sat up the whole long night with a candle lit for the dead.
 b : A dozen? Lighting the street? | Then the days grow. | Holly scratches. | Me included.
 a@old : We still do, some of us.
-a : My window. Proudly. | Thank the gods. | Ivy then. | You and everyone.
+a : My window. Proudly. | Thank the Bright One. | Ivy then. | You and everyone.
 
 # ================================================================ Festivals, today
 

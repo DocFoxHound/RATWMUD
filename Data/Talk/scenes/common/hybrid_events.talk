@@ -206,7 +206,7 @@ when topic=event world.event=works_fire world.event_when=now
 does tell.news / react.news / tell.self / react.self
 tone serious / even / even / even
 a : I walked past the works this morning. Black to the rafters. | They say the works roof came down in the fire. | The works are still smoking. I could smell it from the street.
-b : Was anyone hurt? | Gods. All of it? | It'll be smoking for days.
+b : Was anyone hurt? | Bright One. All of it? | It'll be smoking for days.
 a : I'm told not. | Half, they say. | So it will.
 b : That's a mercy, then. | That's bad enough. | #bc_poor_soul#, whoever owns it.
 

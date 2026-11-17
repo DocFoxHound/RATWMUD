@@ -92,7 +92,7 @@ scene w7b_farmers_weather
 when topic=work a.job=farmer b.job=farmer here.weather=rain|storm
 does tell.self / react.self / assess
 a : It's beating the barley flat. | Rain on rain. The roots'll rot. | Look at the sky. It's not done.
-b[here.season=autumn] : And the harvest half in. Gods help us. | Get in what you can tonight. | Not done, nor are we.
+b[here.season=autumn] : And the harvest half in. Bright One help us. | Get in what you can tonight. | Not done, nor are we.
 b[here.season=spring] : Flat seedlings stand up again. Mostly. | Good for the seed, bad for my back. | Spring rain's welcome. Up to a point.
 b : Can't do anything about the sky. | Dig a ditch for it. | Patience.
 a : No. Just watch it. | Easy said. | Nothing dries in this.
@@ -284,7 +284,7 @@ scene w7b_farmer_brewer
 when topic=work a.job=farmer b.job=brewer
 does tell.self / react.self / assess
 a : Barley's good this year. Plump. | Hops failed. Sorry. | You still want my barley?
-b : Plump barley, good ale. Bring it. | Gods. That's the season gone. | #bc_always#
+b : Plump barley, good ale. Bring it. | Bright One. That's the season gone. | #bc_always#
 a : #bc_i_will# | There's always next year. | #bc_good#
 
 scene w7b_brewer_inn
@@ -427,7 +427,7 @@ does tell.self / react.self / assess
 cooldown 2d
 a : I'm taking on another pair of paws. | We're busy. I'll need you longer hours. | You've done well. More #wages# from next week.
 b[drive=ambitious] : Then make me in charge of them. | Paid longer? | About time!
-b[tired=yes] #tired : Thank the gods. | Longer? I'm already dead. | #bc_thank_you#
+b[tired=yes] #tired : Thank the Bright One. | Longer? I'm already dead. | #bc_thank_you#
 b : #bc_good# | Paid? | Thank you!
 a@tired : Good. More paws, less work. | Paid, mind. Well paid. | You've earned it.
 a : #bc_we_will_see# | Paid, of course. | You've earned it.

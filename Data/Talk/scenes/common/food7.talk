@@ -26,7 +26,7 @@ a : Smell that? Somebody's frying onions. | My nose has been following that smel
 b[young] #pup : My nose is better than yours. It's two doors down. The blue door.
 b #plain : Onions and liver, I'd say. | Mine too. Let's knock. | I like garlic.
 a@pup : Clever nose. Don't go knocking, mind.
-a@plain : Liver. Gods, I hope it's liver. | We can't knock on a stranger's door for a smell. | You would. You'd eat it off the bulb.
+a@plain : Liver. Bright One, I hope it's liver. | We can't knock on a stranger's door for a smell. | You would. You'd eat it off the bulb.
 b?@plain : Shame we weren't asked. | Watch me. | #bc_somebody_has_to#
 
 scene e1_food_raw_honest
@@ -115,7 +115,7 @@ scene e1_food_feeding_neighbours
 when topic=food
 does ask.detail / answer.detail / assess
 a : I made too much soup. Want a bowl? | There's half a pie going spare at mine. | Someone left two loaves on my doorstep. No note. Want one?
-b[wealth=poor|destitute] #poor : Gods bless you. Yes. Yes, please.
+b[wealth=poor|destitute] #poor : Bright One bless you. Yes. Yes, please.
 b[warmth=cold] #cold : No, thank you.
 b #plain : I'll bring my own bowl. | I'll take it off your paws. | Was it warm?
 a@poor : Come by tonight. There's plenty.

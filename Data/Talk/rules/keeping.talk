@@ -242,7 +242,7 @@ then other: keeping.glad
 rule keep_devout
 when concept=keeping.answer piety=devout
 does answer.how
-say Blessed, thank the Bright One. | Well, by the gods' grace. | Content. I've been to chapel. | Well. Every day's a gift, they say. Some are odd gifts.
+say Blessed, thank the Bright One. | Well, by the Bright One's grace. | Content. I've been to chapel. | Well. Every day's a gift, they say. Some are odd gifts.
 then other: keeping.nod
 
 rule keep_restless
@@ -437,7 +437,7 @@ say You should have come to me sooner. | Why didn't you say? | I'm here. Whateve
 rule sorry_devout
 when concept=keeping.sorry piety=devout
 does sympathise
-say I'll pray for you. I mean it. | The gods see it. They do. | I'll light a candle for you.
+say I'll pray for you. I mean it. | The Bright One sees it. Truly. | I'll light a candle for you.
 
 rule sorry_grief
 when concept=keeping.sorry conv.k=grief
@@ -515,7 +515,7 @@ rule sorry_hurt
 when concept=keeping.sorry conv.k=hurt
 does sympathise
 priority 1
-say Let me see. Gods, that looks sore. | Sit down before you fall down. | You want that looked at. Properly. | Go easy. Let it mend.
+say Let me see. Bright One, that looks sore. | Sit down before you fall down. | You want that looked at. Properly. | Go easy. Let it mend.
 
 rule sorry_hurt_warm
 when concept=keeping.sorry conv.k=hurt warmth=warm
@@ -622,7 +622,7 @@ rule glad_good_devout
 when concept=keeping.glad conv.k=good piety=devout
 does react.self.glad
 priority 1
-say The Bright One's been kind. Give thanks. | Blessings, all of them. Don't forget the chapel box. | That's the gods' favour, that is.
+say The Bright One's been kind. Give thanks. | Blessings, all of them. Don't forget the chapel box. | That's the Bright One's favour, that is.
 
 rule glad_family
 when concept=keeping.glad conv.k=family
@@ -658,7 +658,7 @@ rule glad_jest
 when concept=keeping.glad conv.k=jest
 does react.self.glad
 priority 1
-say Ha! You never change. | Get away with you. | You're a tonic, you are. | Ha! Some things stay the same, thank the gods.
+say Ha! You never change. | Get away with you. | You're a tonic, you are. | Ha! Some things stay the same, thank the Bright One.
 
 ## keeping.nod. Unkeyed: fits any ordinary remark, from any file.
 

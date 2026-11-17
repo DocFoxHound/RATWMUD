@@ -45,7 +45,7 @@ rule day_working_restday
 when concept=bark working=yes here.day=rest
 does aside
 cooldown 1d
-say Working on Restday. The gods'll have words. | Everyone at chapel but me. | Somebody's got to. | Rest, they call it. Ha.
+say Working on Restday. The Bright One'll have words. | Everyone at chapel but me. | Somebody's got to. | Rest, they call it. Ha.
 
 rule day_working_festival
 when concept=bark working=yes here.day=festival
@@ -83,7 +83,7 @@ rule day_dawn_old
 when concept=bark here.time=dawn stage=old
 does aside
 cooldown 1d
-say Up before the birds. Always am. | At my age you don't sleep, you wait. | Another morning. Thank the gods. | The cocks are late. I'm not.
+say Up before the birds. Always am. | At my age you don't sleep, you wait. | Another morning. Thank the Bright One. | The cocks are late. I'm not.
 
 rule day_dusk_lamps
 when concept=bark here.time=dusk here.place=street
@@ -202,7 +202,7 @@ rule day_on_dole
 when concept=bark on_dole=yes
 does aside
 cooldown 1d
-say Parish loaf again. | Queue's longer every week. | Thank the gods for the dole, I suppose. | Same bread, same line, same faces.
+say Parish loaf again. | Queue's longer every week. | Thank the Bright One for the dole, I suppose. | Same bread, same line, same faces.
 
 rule day_owes
 when concept=bark owes=yes stage=adult|old

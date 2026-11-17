@@ -16,7 +16,7 @@ say Oi! Pack it in! | Somebody fetch the Watch, quick! | Not here, not in the st
 rule x7_fight_any2
 when concept=react.fight
 does aside
-say Gods, there's blood on the cobbles. | Somebody'll lose an ear before this is done. | Leave off! Leave off, the pair of you! | Who started it? Did anyone see who started it?
+say Bright One, there's blood on the cobbles. | Somebody'll lose an ear before this is done. | Leave off! Leave off, the pair of you! | Who started it? Did anyone see who started it?
 
 rule x7_fight_any3
 when concept=react.fight
@@ -112,7 +112,7 @@ rule x7_fight_nervy
 when concept=react.fight self.temper=nervy
 does aside
 cooldown 20m
-say Oh gods, oh gods. Someone stop them. | I'm not watching. I'm not watching. | Should we run? Should we run? | Somebody do something!
+say Oh, Bright One, oh, Bright One. Someone stop them. | I'm not watching. I'm not watching. | Should we run? Should we run? | Somebody do something!
 
 rule x7_fight_short
 when concept=react.fight self.temper=short
@@ -226,7 +226,7 @@ rule x7_fight_night
 when concept=react.fight here.time=night
 does aside
 cooldown 30m
-say Gods, at this hour? | Fighting in the dark like rats. | Someone'll end up in a ditch before morning. | Keep it down! People are sleeping!
+say Bright One, at this hour? | Fighting in the dark like rats. | Someone'll end up in a ditch before morning. | Keep it down! People are sleeping!
 
 rule x7_fight_festival
 when concept=react.fight here.day=festival here.festival
@@ -482,7 +482,7 @@ rule x7_theft_nervy
 when concept=react.theft self.temper=nervy
 does aside
 cooldown 20m
-say Is my purse... oh, thank the gods. | I'm going home. I'm going straight home. | They could be anywhere. Anyone!
+say Is my purse... oh, thank the Bright One. | I'm going home. I'm going straight home. | They could be anywhere. Anyone!
 
 rule x7_theft_short
 when concept=react.theft self.temper=short
@@ -734,7 +734,7 @@ rule x7_rain_summer
 when concept=react.rain here.season=summer
 does aside
 cooldown 2h
-say Thank the gods. It's been close all week. | Ah, that's better. Cools the stones. | Warm rain. Not so bad.
+say Thank the Bright One. It's been close all week. | Ah, that's better. Cools the stones. | Warm rain. Not so bad.
 
 rule x7_rain_autumn
 when concept=react.rain here.season=autumn
@@ -1076,7 +1076,7 @@ rule x7_cust_nervy
 when concept=react.customer self.temper=nervy
 does greet
 cooldown 1h
-say Oh! You startled me. | Gods, I didn't hear the door. Hello. | Oh. Oh, hello. Sorry. Hello.
+say Oh! You startled me. | Bright One, I didn't hear the door. Hello. | Oh. Oh, hello. Sorry. Hello.
 remember pair: served 7d
 
 rule x7_cust_dawn
@@ -1671,7 +1671,7 @@ rule x7_fr_see_tired
 when concept=react.friend other.tired=yes
 does hail
 cooldown 6h
-say {fg=tired} You look done in. | {fg=tired} Gods, you look like you've not slept in a week. | {fg=tired} When did you last sleep?
+say {fg=tired} You look done in. | {fg=tired} Bright One, you look like you've not slept in a week. | {fg=tired} When did you last sleep?
 then other: greet.answer
 
 rule x7_fr_see_hurt
@@ -1679,7 +1679,7 @@ when concept=react.friend other.injured=light|bad
 does hail
 priority 1
 cooldown 6h
-say {fg=hurt} What've you done to yourself? | {fg=hurt} Gods! Who did that? | {fg=hurt} You're limping. What happened?
+say {fg=hurt} What've you done to yourself? | {fg=hurt} Bright One! Who did that? | {fg=hurt} You're limping. What happened?
 then other: greet.answer
 
 rule x7_fr_see_grief
@@ -2012,7 +2012,7 @@ then other: friend.close
 rule x7_ga_master
 when concept=greet.answer conv.fg=ask self.master=yes
 does answer.how
-say {fx=work} My apprentice ruined a day's work again. | {fx=work} Teaching. Gods give me patience. | {fx=work} The pup's coming along. Don't tell them I said so.
+say {fx=work} My apprentice ruined a day's work again. | {fx=work} Teaching. Bright One give me patience. | {fx=work} The pup's coming along. Don't tell them I said so.
 then other: friend.close
 
 rule x7_ga_working
@@ -2024,7 +2024,7 @@ then other: friend.close
 rule x7_ga_after
 when concept=greet.answer conv.fg=ask self.shift=after
 does answer.how
-say {fx=free} Done for the day, thank the gods. | {fx=free} Free! Free till morning. | {fx=free} Just finished. Every bone aches.
+say {fx=free} Done for the day, thank the Bright One. | {fx=free} Free! Free till morning. | {fx=free} Just finished. Every bone aches.
 then other: friend.close
 
 rule x7_ga_before
@@ -2108,7 +2108,7 @@ say Oh! Um. Fine, thank you. | Oh, hello. Yes. Fine. | Me? Oh. All right, I thin
 rule x7_ga_nervy
 when concept=greet.answer conv.fg=ask self.temper=nervy
 does answer.how
-say {fx=meh} Oh! Gods, I didn't see you there. Fine, fine. | {fx=meh} Jumpy. Didn't sleep. Fine otherwise. | {fx=meh} Is something wrong? No? Oh, good. Fine.
+say {fx=meh} Oh! Bright One, I didn't see you there. Fine, fine. | {fx=meh} Jumpy. Didn't sleep. Fine otherwise. | {fx=meh} Is something wrong? No? Oh, good. Fine.
 then other: friend.close
 
 rule x7_ga_short
@@ -2119,7 +2119,7 @@ say Don't ask. | Fine, before you ask again. | Who wants to know? Oh. You. Fine.
 rule x7_ga_devout
 when concept=greet.answer conv.fg=ask self.piety=devout
 does answer.how
-say {fx=ok} Blessed, #pet#. Truly. | {fx=ok} Well, by the Bright One's grace. | {fx=ok} The gods are good. Mostly.
+say {fx=ok} Blessed, #pet#. Truly. | {fx=ok} Well, by the Bright One's grace. | {fx=ok} The Bright One is good. Mostly.
 then other: friend.close
 
 rule x7_ga_ambitious
@@ -2420,7 +2420,7 @@ then other: friend.close
 rule x7_ft_owe_poor
 when concept=friend.tease conv.ft=owe self.wealth=poor|destitute
 does tease.return
-say {fx=owe} When I've got it, you'll have it. Don't hold your breath. | {fx=owe} Gods, don't. I've not a penny this week. | {fx=owe} Soon. Truly. I'm #skint#.
+say {fx=owe} When I've got it, you'll have it. Don't hold your breath. | {fx=owe} Bright One, don't. I've not a penny this week. | {fx=owe} Soon. Truly. I'm #skint#.
 then other: friend.close
 
 rule x7_ft_owe_short
@@ -2444,7 +2444,7 @@ then other: friend.close
 rule x7_ft_neighbour_sorry
 when concept=friend.tease conv.ft=neigh self.warmth=warm|reserved self.temper=calm|nervy
 does tease.return
-say {fx=sorry} Oh, gods. Sorry. I'll see to it today. | {fx=sorry} Was it? Sorry. I'll have a word. | {fx=sorry} You should have knocked! Sorry, #pet#.
+say {fx=sorry} Oh, Bright One. Sorry. I'll see to it today. | {fx=sorry} Was it? Sorry. I'll have a word. | {fx=sorry} You should have knocked! Sorry, #pet#.
 then other: friend.close
 
 ## An invitation, answered (friend.invite; self: the one invited; conv.fi: plain, feed, play, fest)
@@ -2477,7 +2477,7 @@ rule x7_fi_tired
 when concept=friend.invite self.tired=yes self.stage=adult|old
 does accept_invite
 priority 1
-say {fx=no} I'd fall asleep in my cup. Another night. | {fx=no} Gods, I'd love to, but I'm done in. | {fx=no} Only if there's a bed at the end of it.
+say {fx=no} I'd fall asleep in my cup. Another night. | {fx=no} Bright One, I'd love to, but I'm done in. | {fx=no} Only if there's a bed at the end of it.
 then other: friend.close
 
 rule x7_fi_working
@@ -2514,7 +2514,7 @@ rule x7_fi_hungry
 when concept=friend.invite self.hungry=yes self.stage=adult|old
 does accept_invite
 priority 1
-say {fx=fed} You'd do that? Gods. Thank you. | {fx=fed} I'll not say no to a meal. | {fx=fed} I'll be there. First through the door.
+say {fx=fed} You'd do that? Bright One. Thank you. | {fx=fed} I'll not say no to a meal. | {fx=fed} I'll be there. First through the door.
 then other: friend.close
 
 rule x7_fi_feed_proud
@@ -2582,7 +2582,7 @@ rule x7_fn_death
 when concept=friend.news conv.fq=death
 does react.news
 priority 2
-say {fx=sad} I heard. Terrible. | {fx=sad} Aye. I'll be at the burying. | {fx=sad} Gods rest them.
+say {fx=sad} I heard. Terrible. | {fx=sad} Aye. I'll be at the burying. | {fx=sad} Bright One rest them.
 then other: friend.close
 
 rule x7_fn_birth
@@ -2596,7 +2596,7 @@ rule x7_fn_bandits
 when concept=friend.news conv.fq=bandits
 does react.news
 priority 2
-say {fx=worry} I heard. I'm not setting a paw on that road. | {fx=worry} Let the Watch go looking. I'm staying in. | {fx=worry} Gods. Anyone hurt?
+say {fx=worry} I heard. I'm not setting a paw on that road. | {fx=worry} Let the Watch go looking. I'm staying in. | {fx=worry} Bright One. Anyone hurt?
 then other: friend.close
 
 rule x7_fn_bandits_carter
@@ -2725,7 +2725,7 @@ rule x7_fc_lots
 when concept=friend.close conv.fx=lots
 does farewell
 priority 2
-say Gods, and I only asked. | You can tell me the rest on Restday. | Ha! Breathe, #pet#. Breathe.
+say Bright One, and I only asked. | You can tell me the rest on Restday. | Ha! Breathe, #pet#. Breathe.
 
 rule x7_fc_spouse
 when concept=friend.close conv.fx=spouse
@@ -2815,7 +2815,7 @@ rule x7_fc_sad
 when concept=friend.close conv.fx=sad
 does farewell
 priority 2
-say Aye. Gods rest them. | Hard times. | We'll all be there.
+say Aye. Bright One rest them. | Hard times. | We'll all be there.
 
 rule x7_fc_robbed
 when concept=friend.close conv.fx=robbed
@@ -2961,7 +2961,7 @@ rule x7_fc_sore
 when concept=friend.close conv.fx=sore
 does farewell
 priority 2
-say All right, all right. Only teasing. | Someone's in a mood. | Sorry. Sorry! Gods.
+say All right, all right. Only teasing. | Someone's in a mood. | Sorry. Sorry! Bright One.
 
 rule x7_fc_shy
 when concept=friend.close conv.fx=shy
@@ -3132,7 +3132,7 @@ rule x7_fp_funeral
 when concept=friend.parting conv.fp=funeral
 does farewell.return
 priority 2
-say Gods keep them. | Go gently, #pet#. | I'll be thinking of you all.
+say Bright One keep them. | Go gently, #pet#. | I'll be thinking of you all.
 
 rule x7_fp_funeral_devout
 when concept=friend.parting conv.fp=funeral self.piety=devout

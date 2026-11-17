@@ -165,6 +165,22 @@ class Tables(unittest.TestCase):
         self.assertIn('rm_a', report.failures['tables'][0])
 
 
+class Deities(unittest.TestCase):
+    """Two deities, the Bright One and the Dark One (the user, 2026-11-17): no god or gods by that word."""
+
+    def test_a_god_by_any_name_fails_and_the_two_pass(self):
+        found = DC.deity_lines([('a.talk', 'say Gods keep you. | Thank the gods.\nsay Bright One keep you.'),
+                                ('b.grammar', 'oath! = Sinking gods | A godsend\nbless = Dark One take it'),
+                                ('c.talk', 'say Godric mends goads by the godwit pool.')])
+        self.assertEqual([(w, word) for w, word, _ in found], [('a.talk:1', 'Gods'), ('b.grammar:1', 'gods')])
+        report = DC.Report()
+        DC.check_deities(report, found)
+        self.assertEqual(len(report.failures['deities']), 2)
+
+    def test_the_library_and_the_voice_files_name_no_god(self):
+        self.assertEqual(DC.deity_files(), [])
+
+
 class TheRealLibrary(unittest.TestCase):
     def test_passes(self):
         report, summary = DC.run(render=False)

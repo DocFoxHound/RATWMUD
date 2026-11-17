@@ -23,6 +23,10 @@ Failures (exit 1):
             and no mapping.
   tables    (--world) a character table (live.npc_voice grammar and rules, by a person) using another dialect's phrase.
   dialects  (--world) a live.dialects row that isn't its file's grammar word for word (the database copy wins at load).
+  deities   "god", "gods", "Gods!", "godsend", "goddess" and the like anywhere in Data/Talk or Data/Voice (--world: in
+            live.npc_voice and live.dialects too). The world has two deities (the user, 2026-11-17): the Bright One,
+            named when one is spoken of kindly (blessings, prayers, thanks, oaths of good), and the Dark One, when
+            malevolently (curses, evil, temptation). talk_lint fails on the files' too.
 Warnings: lore, a place's name in the regional scenes (scenes/regions) the world doesn't have (--world: its rooms and
 cells; always: communities.json and the allowlist's places). Kept as legend in dialect_allow.json "legend".
 """
@@ -45,6 +49,9 @@ CITY = 'ridgemere'
 SAYINGS = {'greet', 'farewell', 'blessing', 'bless', 'toast', 'thanks', 'agree', 'refuse', 'surprise', 'annoyed',
            'oath', 'saying', 'shop_bye', 'shop_offer', 'talk_open', 'tag', 'opener'}
 LIMIT = 160
+VOICE = ROOT / 'Data' / 'Voice'
+# The world's two deities are the Bright One and the Dark One: no god or gods by that word (the user, 2026-11-17).
+DEITY = re.compile(r"\b(?:gods?|godsend|godless|godly|godforsaken|goddess(?:es)?)\b", re.I)
 
 
 # ------------------------------------------------------------------ Reading the library
@@ -512,6 +519,29 @@ def check_tables(report: Report, rows: list[tuple], lex: dict, dialect_of: dict[
                     report.fail('tables', f"{npc} (from {origin or 'nowhere'}): their own words say {d}'s \"{p}\": {text}")
 
 
+def deity_lines(texts) -> list[tuple[str, str, str]]:
+    """(where, the word, the line) for each line naming a god: `texts` is [(where, text)]."""
+    out = []
+    for where, text in texts:
+        for n, line in enumerate((text or '').splitlines(), 1):
+            m = DEITY.search(line)
+            if m:
+                out.append((f'{where}:{n}', m.group(0), line.strip()))
+    return out
+
+
+def deity_files(root: Path = TALK, voice: Path = VOICE) -> list[tuple[str, str, str]]:
+    """Every line of the talk library and the voice data (rules, scenes, grammars, trees, facts, corpus) naming a god."""
+    return deity_lines((str(f.relative_to(d.parent)), f.read_text()) for d in (root, voice) if d.is_dir()
+                       for f in sorted(d.rglob('*')) if f.is_file() and f.suffix in ('.talk', '.grammar', '.json', '.txt'))
+
+
+def check_deities(report: Report, found: list[tuple[str, str, str]]):
+    for where, word, line in found:
+        report.fail('deities', f'{where}: "{word}": the world has the Bright One (kindly) and the Dark One (malevolent), '
+                    f'no gods: {line[:140]}')
+
+
 def check_dialect_rows(report: Report, rows: dict[str, str], root: Path = TALK):
     for f in sorted((root / 'grammar').glob('*.grammar')):
         if f.stem == 'plain':
@@ -589,6 +619,7 @@ def run(world: str = '', root: Path = TALK, allow_path: Path = ALLOW, people: li
     report = Report()
     summary = {'lines_read': check_lexicon(report, lex, dialect_of, allow, root)}
     check_symbols(report, gram, root)
+    check_deities(report, deity_files(root, root.parent / 'Voice'))
     if render:
         check_renders(report, renders())
     world_names: set[str] = set()
@@ -605,8 +636,14 @@ def run(world: str = '', root: Path = TALK, allow_path: Path = ALLOW, people: li
             wid = ids[0]
             check_tables(report, conn.execute("SELECT npc_id, home_region, grammar, rules FROM live.npc_voice "
                                               "WHERE world_id = %s AND written_by <> 'seed'", (wid,)).fetchall(), lex, dialect_of)
-            check_dialect_rows(report, {r[0]: r[1] for r in conn.execute(
-                'SELECT name, grammar FROM live.dialects WHERE world_id = %s', (wid,)).fetchall()}, root)
+            dialect_rows = {r[0]: r[1] for r in conn.execute(
+                'SELECT name, grammar FROM live.dialects WHERE world_id = %s', (wid,)).fetchall()}
+            check_dialect_rows(report, dialect_rows, root)
+            voice_rows = conn.execute('SELECT npc_id, persona, grammar, rules FROM live.npc_voice WHERE world_id = %s',
+                                      (wid,)).fetchall()
+            check_deities(report, deity_lines([(f'live.dialects {n}', g) for n, g in dialect_rows.items()] +
+                                              [(f'live.npc_voice {r[0]} {col}', r[i]) for r in voice_rows
+                                               for i, col in ((1, 'persona'), (2, 'grammar'), (3, 'rules'))]))
             world_names = {r[0] for r in conn.execute('SELECT name FROM world.interiors WHERE world_id = %s', (wid,)).fetchall() if r[0]}
             for table in ('world.places', 'world.cells', 'live.factions', 'world.chapters'):
                 world_names |= {r[0] for r in conn.execute(f'SELECT name FROM {table} WHERE world_id = %s', (wid,)).fetchall() if r[0]}

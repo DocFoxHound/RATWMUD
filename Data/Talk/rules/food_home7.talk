@@ -524,7 +524,7 @@ rule e1_fa_child
 when concept=food.answer self.child
 does answer.detail
 cooldown 1d
-say {k=family} Whatever #self.child# leaves on the plate. | {k=family} #self.child# says it's soup tonight. #self.child# made it. Gods help me. | {k=family} Bread. #self.child# ate everything else.
+say {k=family} Whatever #self.child# leaves on the plate. | {k=family} #self.child# says it's soup tonight. #self.child# made it. Bright One help me. | {k=family} Bread. #self.child# ate everything else.
 then other: keeping.glad
 
 rule e1_fa_widowed

@@ -468,7 +468,7 @@ say It brings it all back. | I heard it first when I was small. | Old tales brin
 rule s8p_lore_faith
 does pivot
 when conv.from=lore conv.topic=faith
-say The chapel has its own tales. | That's half a sermon, that. | And the gods, of course. | The old tales and the chapel aren't far apart. | There's faith in the old stories.
+say The chapel has its own tales. | That's half a sermon, that. | And the Bright One, of course. | The old tales and the chapel aren't far apart. | There's faith in the old stories.
 
 rule s8p_lore_dreams
 does pivot

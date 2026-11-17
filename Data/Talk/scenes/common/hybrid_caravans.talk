@@ -84,7 +84,7 @@ when topic=caravan topic.kind=late topic.who
 does tell.news / react.news / assess
 tone serious / even / even
 a : #topic.who#'s late with the #topic.where# wagon. | No sign of #topic.who# yet. | #topic.who# should've been in from #topic.where# by now.
-b : That's not like them. | Gods. I hope they're all right. | Late again?
+b : That's not like them. | Bright One. I hope they're all right. | Late again?
 a : No. It isn't. | #bc_so_do_i# | Not usually, no.
 
 scene hy_cv_late_shelves

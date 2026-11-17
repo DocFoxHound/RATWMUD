@@ -317,13 +317,13 @@ then other: town.close
 rule n7_na_noise
 when concept=town.neighbour pair.mem.nb=noise|walls
 does counter
-say {na=sorry} Sorry. I'll see to it. | {na=sorry} Ah. Sorry, #address#. It won't happen again. | {na=sorry} Was it that loud? Gods. Sorry. | {na=sorry} I'll put a rug down.
+say {na=sorry} Sorry. I'll see to it. | {na=sorry} Ah. Sorry, #address#. It won't happen again. | {na=sorry} Was it that loud? Bright One. Sorry. | {na=sorry} I'll put a rug down.
 then other: town.close
 
 rule n7_na_noise_parent
 when concept=town.neighbour pair.mem.nb=noise|pups self.parent=yes self.age<=45
 does counter
-say {na=sorry} Sorry. The little one had a dream and woke the house. | {na=sorry} Teething. Gods help us all. Sorry. | {na=sorry} They're pups, #address#. You were one.
+say {na=sorry} Sorry. The little one had a dream and woke the house. | {na=sorry} Teething. Bright One help us all. Sorry. | {na=sorry} They're pups, #address#. You were one.
 then other: town.close
 
 rule n7_na_pups
@@ -347,13 +347,13 @@ then other: town.close
 rule n7_na_noise_shy
 when concept=town.neighbour pair.mem.nb=noise|walls self.tone=shy
 does counter
-say {na=sorry} Oh! Oh, gods. Sorry. I didn't know you could hear. | {na=sorry} I'll put a rug down. Two rugs. | {na=sorry} You heard that? All of it? Oh no.
+say {na=sorry} Oh! Oh, Bright One. Sorry. I didn't know you could hear. | {na=sorry} I'll put a rug down. Two rugs. | {na=sorry} You heard that? All of it? Oh no.
 then other: town.close
 
 rule n7_na_borrow
 when concept=town.neighbour pair.mem.nb=borrow
 does counter
-say {na=dodge} Have I? Gods. I'll bring it round tonight. | {na=dodge} Is that yours? I thought it was mine. | {na=dodge} I was going to bring it back. I was just... still using it. | {na=dodge} Tomorrow. First thing. Before the gulls.
+say {na=dodge} Have I? Bright One. I'll bring it round tonight. | {na=dodge} Is that yours? I thought it was mine. | {na=dodge} I was going to bring it back. I was just... still using it. | {na=dodge} Tomorrow. First thing. Before the gulls.
 then other: town.close
 
 rule n7_na_borrow_sly

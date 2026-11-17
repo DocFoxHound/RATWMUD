@@ -78,7 +78,7 @@ b[talk=quiet] : ... | *nods* | *doesn't look up* | ...
 b[temper=short] : Everyone's sorry. Sorry doesn't bring them back. | Then don't say anything. | I'm not hungry. | How do you think?
 b : #bc_thank_you# | Thank you for coming. | #bc_thank_you# | I'm not. I'm not holding up.
 a[warmth=warm] : I'm here. Day or night. You hear me? | I'm not going anywhere. | I'll come back tomorrow. And the day after. | You don't have to. Lean on me.
-a[piety=devout] : The gods have them now. They're held. | I'll light a candle tonight. | Eat a little. For them. | The gods hold them. And I'll hold you.
+a[piety=devout] : The Bright One has them now. They're held. | I'll light a candle tonight. | Eat a little. For them. | The Bright One holds them. And I'll hold you.
 a : I'm here, if you want. | I'll sit a while, then. | Eat a little. | You don't have to be.
 
 scene r7_fr_console_friend
@@ -90,7 +90,7 @@ b : They were the best of us. | We were going to go fishing. On Restday. | They 
 a : Tell me about them. | Go anyway. For them. | Tell me something they did. | Then I'll stay.
 b[humour=merry|dry] #fond : They once ate a candle for a bet. A whole one. | They'd have laughed at me for crying. | They stole a pig from the Heights. Rode it home. | Thank you. They'd have teased you for being soft.
 b : They were kind. That's all. Just kind. | Maybe I will. | They looked after people. | #bc_thank_you#
-a@fond : A whole candle! That's a wolf worth missing. | They would. Cry anyway. | Rode it home! Gods, I'd have paid to see that. | Then I'll be soft. They can tease me from wherever they are.
+a@fond : A whole candle! That's a wolf worth missing. | They would. Cry anyway. | Rode it home! Bright One, I'd have paid to see that. | Then I'll be soft. They can tease me from wherever they are.
 a : Then they'll be missed. | Do. | That's a good thing to be remembered for. | Then I'll be soft.
 
 scene r7_fr_console_widow
@@ -138,7 +138,7 @@ a : They don't make bread here like back home. | Nobody in the city knows how to
 b : Too soft. Bread should fight back. | Too thin. You could read through it. | Me too. Here you can't hear yourself think. | And talk too fast. And think too fast.
 a : I'd give a week's pay for a loaf from the old bakehouse. | My mother's stew. The whole pot. | The wind in the eaves at night. I miss that. | They do. I'm out of breath watching.
 b[accent=broad] : Aye. Aye, and some. #saying#. | #oath#, I'd give two. | The wind. Aye. And the dark, proper dark. | #saying#.
-b : Two weeks'. | With the dumplings. | The wind. Gods, yes. | #bc_me_too#
+b : Two weeks'. | With the dumplings. | The wind. Bright One, yes. | #bc_me_too#
 
 scene r7_fr_same_from_news
 when topic=friends pair.same_from=yes a.from!=ridgemere here.region=ridgemere
@@ -185,7 +185,7 @@ does tell.self / react.self / tell.self / react.self
 a : Haven't seen you all week! | Where've you been hiding? | I've had no one to complain to. | I came by your door twice.
 b : Busy. You know how it is. | Nowhere. Home. | Complain now. I'm here. | I wasn't in. Either time.
 a : I know how it is. Too well. | Hiding, then. | I've saved it all up. Sit down. | Clearly.
-b : #bc_ha# | Hiding from you. | Gods help me. | #bc_sorry#
+b : #bc_ha# | Hiding from you. | Bright One help me. | #bc_sorry#
 
 # ---------------------------------------------------------------- One character against another
 
@@ -230,9 +230,9 @@ a : Ah. A crime. | There. | Better. | There.
 scene r7_fr_devout_and_doubter
 when topic=friends a.piety=devout b.piety=ordinary
 does tell.self / react.self / assess / assess / tell.self
-a : You should come to chapel. | I prayed for you this Restday. | The gods are good to us, you know. | Did you see the new candles at chapel?
-b[honesty=frank] : I don't believe the gods are listening. | Did it help? | Are they? I hadn't noticed. | No. I don't go. You know I don't.
-b : Maybe. Some Restday. | Did you? Thank you. I think. | When they remember. | Are they nice?
+a : You should come to chapel. | I prayed for you this Restday. | The Bright One is good to us, you know. | Did you see the new candles at chapel?
+b[honesty=frank] : I don't believe the Bright One is listening. | Did it help? | Is it? I hadn't noticed. | No. I don't go. You know I don't.
+b : Maybe. Some Restday. | Did you? Thank you. I think. | When it suits. | Are they nice?
 a : They're listening. You're not. | It'll help. Give it time. | Look about you. | Beautiful. Come and see.
 b : #bc_we_will_see# | I'll take your word. | I'm looking. | Some Restday.
 a?[warmth=warm] : I'll save you a seat. Always.

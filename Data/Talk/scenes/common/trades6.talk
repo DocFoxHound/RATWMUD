@@ -132,7 +132,7 @@ scene tr_lk_ice_fishing
 when topic=work here.region=coldwater here.season=winter
 does tell.self / react.self / tell.self
 a : Cut a hole in the ice and sat on it all morning. | Ice cracked under my hind paws. Ran. | Pike through the ice. Fat as a pup.
-b : Catch anything? | Gods! | Show me.
+b : Catch anything? | Bright One! | Show me.
 a : A chill and a perch. | Faster than I've run in years. | It's at home. Being cooked.
 
 scene tr_lk_reeds

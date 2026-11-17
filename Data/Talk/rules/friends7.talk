@@ -37,7 +37,7 @@ rule r7_tease_old
 when concept=talk.friends self.stage=adult other.stage=old pair.band=friends
 does tell.self
 cooldown 2d
-say {thread=jest jk=age} Still with us, then? The gods must be busy elsewhere. | {thread=jest jk=age} Mind you don't fall over, old timer. I'm not carrying you home. | {thread=jest jk=age} You're greyer than last week. I'm counting the hairs. | {thread=jest jk=age} How many winters now? I've lost count. So have you, I expect.
+say {thread=jest jk=age} Still with us, then? The Dark One must be busy elsewhere. | {thread=jest jk=age} Mind you don't fall over, old timer. I'm not carrying you home. | {thread=jest jk=age} You're greyer than last week. I'm counting the hairs. | {thread=jest jk=age} How many winters now? I've lost count. So have you, I expect.
 then other: jest.answer
 
 rule r7_tease_young
@@ -380,7 +380,7 @@ say Suit yourself. | Don't growl at me. I was being friendly. | Oh, bite me, the
 rule r7_close_jest_worried
 when concept=reply.close conv.thread=jest conv.went=worried
 does ack
-say No, no. I'm teasing. You look fine. Truly. | Gods, don't fret. It's a joke. | Nobody says that. I made it up. Breathe.
+say No, no. I'm teasing. You look fine. Truly. | Bright One, don't fret. It's a joke. | Nobody says that. I made it up. Breathe.
 
 rule r7_close_jest_flat
 when concept=reply.close conv.thread=jest conv.went=flat
@@ -400,7 +400,7 @@ say Go home. Sleep. I'll tease you properly tomorrow. | You do look done in. Sit
 rule r7_close_jest_grief
 when concept=reply.close conv.thread=jest conv.went=grief
 does ack
-say Gods. I'm sorry. I didn't think. | Of course. Forgive me. I wasn't thinking. | I'm a fool. Come on, I'll walk with you.
+say Bright One. I'm sorry. I didn't think. | Of course. Forgive me. I wasn't thinking. | I'm a fool. Come on, I'll walk with you.
 regard other: affinity +1
 
 # ================================================================== Wagers (talk.friends -> wager.answer -> close; settled later)
@@ -1072,7 +1072,7 @@ then other: reply.close
 rule r7_plan_tired
 when concept=plan.answer self.tired=yes
 does accept_invite
-say {went=maybe} Ask me when I can stand. | {went=maybe} If I'm awake, I'm there. Don't count on it. | {went=maybe} Gods, I'd fall asleep in the soup.
+say {went=maybe} Ask me when I can stand. | {went=maybe} If I'm awake, I'm there. Don't count on it. | {went=maybe} Bright One, I'd fall asleep in the soup.
 then other: reply.close
 
 rule r7_plan_working
@@ -1108,7 +1108,7 @@ then other: reply.close
 rule r7_plan_parent
 when concept=plan.answer self.child conv.plankind=evening|game
 does accept_invite
-say {went=maybe} If someone can watch #self.child#. | {went=maybe} Bring #self.child#? No. Gods, no. I'll find someone.
+say {went=maybe} If someone can watch #self.child#. | {went=maybe} Bring #self.child#? No. Bright One, no. I'll find someone.
 then other: reply.close
 
 rule r7_plan_ambitious
@@ -1282,7 +1282,7 @@ then other: recall.answer
 rule r7_recall_fond
 when concept=recall.answer
 does react.story
-say {went=fond} How could I forget? | {went=fond} Don't. I still dream about it. | {went=fond} Gods, that was a long time ago. | {went=fond} Ha! I'd almost forgotten. Almost.
+say {went=fond} How could I forget? | {went=fond} Don't. I still dream about it. | {went=fond} Bright One, that was a long time ago. | {went=fond} Ha! I'd almost forgotten. Almost.
 then other: reply.close
 
 rule r7_recall_merry
@@ -1422,7 +1422,7 @@ when concept=talk.friends pair.days_since>=40
 does tell.self
 priority 1
 cooldown 2d
-say {thread=apart} It's been an age. I'd nearly forgotten your face. Nearly. | {thread=apart} Months! Months, and not a word. | {thread=apart} Is it you? It is. Gods, it feels like half a year.
+say {thread=apart} It's been an age. I'd nearly forgotten your face. Nearly. | {thread=apart} Months! Months, and not a word. | {thread=apart} Is it you? It is. Bright One, it feels like half a year.
 then other: apart.answer
 
 rule r7_apart_warm
@@ -1973,7 +1973,7 @@ say See that you do. | I'll believe it when it's in my paw. | By Restday. Or I g
 rule r7_close_jibe_pressed
 when concept=reply.close conv.thread=jibe conv.went=pressed
 does ack
-say Soon. I said soon. | You'll have it. Gods. | I'm working on it, aren't I?
+say Soon. I said soon. | You'll have it. Bright One. | I'm working on it, aren't I?
 
 # ================================================================== Making up (talk.quarrel -> mend.answer -> close)
 
@@ -2069,7 +2069,7 @@ then other: reply.close
 rule r7_mend_warm_answer
 when concept=mend.answer self.warmth=warm
 does accept_apology
-say {went=yes} Yes. Gods, yes. I've hated this. | {went=yes} I've wanted to say it for weeks. Yes. | {went=yes} Come here, you fool.
+say {went=yes} Yes. Bright One, yes. I've hated this. | {went=yes} I've wanted to say it for weeks. Yes. | {went=yes} Come here, you fool.
 regard self: affinity +1
 then other: reply.close
 

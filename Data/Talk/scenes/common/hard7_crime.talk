@@ -9,9 +9,9 @@ scene h7_theft_inventory
 when topic=crime topic.kind=theft
 does tell.news / ask.detail / answer.detail / give.advice
 a : #topic.victim# was robbed. Took the good kettle, they say. | They cleaned out #topic.victim#. Down to the spoons. | #topic.victim# lost a purse. A fat one, apparently. | Somebody had #topic.victim#'s winter coat off the peg.
-b : A kettle? Who steals a kettle? | Spoons. Gods. Were they silver? | Fat? #topic.victim#? Since when? | With winter coming? That's cruel.
+b : A kettle? Who steals a kettle? | Spoons. Bright One. Were they silver? | Fat? #topic.victim#? Since when? | With winter coming? That's cruel.
 a : Someone with no kettle, I suppose. | Tin. That's what makes it sad. | That's what I said. Must've been saving. | Cruel and warm, now.
-b : Well. Lock yours up. | Tin. Gods help us. | Not anymore, they're not. | Warm and wicked. Lovely.
+b : Well. Lock yours up. | Tin. Bright One help us. | Not anymore, they're not. | Warm and wicked. Lovely.
 
 scene h7_theft_night_noise
 when topic=crime topic.kind=theft
@@ -136,7 +136,7 @@ scene h7_assault_how_bad
 when topic=crime topic.kind=assault
 does tell.news / ask.detail / answer.detail / assess / tell.self
 a : They beat #topic.victim# badly. | #topic.victim# was set upon. Did you hear? | Someone laid into #topic.victim# last night. | #topic.victim# was found in the street. Beaten.
-b : How bad? | Who'd do that? | Will they mend? | Gods. Are they awake?
+b : How bad? | Who'd do that? | Will they mend? | Bright One. Are they awake?
 a : Can't open one eye. | Nobody's saying. | The healer says so. Slowly. | Awake and swearing, I heard.
 b : Poor wolf. | Somebody knows. | Slowly's better than not. | Swearing's a good sign.
 a?[old] : I've seen worse. I've had worse. Doesn't make it right.
@@ -163,10 +163,10 @@ when topic=crime topic.kind=assault
 does tell.news / react.news / assess / tell.self
 a : If I knew who hurt #topic.victim#, I'd see to them. | Someone ought to pay for #topic.victim#. | #topic.victim#'s kin are out looking for whoever did it. | Whoever beat #topic.victim# had better leave town.
 b[guard] #guard : And then I'd be taking you in. Leave it to us.
-b : And then what? You in #gaol# beside them? | Someone will. One way or another. | Gods help whoever they find. | They will, if they've sense.
+b : And then what? You in #gaol# beside them? | Someone will. One way or another. | Bright One help whoever they find. | They will, if they've sense.
 a@guard : Then take them in first, and you won't have to.
-a : It'd be worth it. | #bc_good# | They won't need gods. They'll need a healer. | Sense? They beat #topic.victim#.
-b@guard : We're trying. Gods know we're trying.
+a : It'd be worth it. | #bc_good# | They won't need the Bright One. They'll need a healer. | Sense? They beat #topic.victim#.
+b@guard : We're trying. The Bright One knows we're trying.
 b : It wouldn't, and you know it. | Let #watch# do it. | Don't say that out loud. | Then they've none.
 
 scene h7_assault_victim_temper
@@ -174,7 +174,7 @@ when topic=crime topic.kind=assault
 does tell.news / react.news / assess / tell.self
 a : #topic.victim# got a beating. | Somebody gave #topic.victim# a hiding. | #topic.victim# was in a fight. Lost it, by the look. | #topic.victim#'s face is all colours.
 b[temper=short] #short : I'm not surprised. Mouth like theirs.
-b : Was it a fight or a beating? | I'm sorry for them. | Lost badly? | All colours? Gods.
+b : Was it a fight or a beating? | I'm sorry for them. | Lost badly? | All colours? Bright One.
 a@short : A mouth's no reason to break a face.
 a : Depends who you ask. | #bc_me_too# | Badly. | Purple, mostly.
 b@short : Some faces ask for it. Fine. Not that one.
@@ -189,7 +189,7 @@ b : That's never good. | Carried! | That means a long time. | In the night. Then
 a@healer : Then sit on them. Somebody has to.
 a : No. | Like a sack of meal. | #bc_it_does# | #bc_it_was#
 b@healer : I might, at that.
-b : Send them something. | I hope they've folk to sit with them. | Gods mend them. | #bc_poor_soul#
+b : Send them something. | I hope they've folk to sit with them. | Bright One mend them. | #bc_poor_soul#
 
 scene h7_assault_named
 when topic=crime topic.kind=assault topic.subject!=someone
@@ -214,7 +214,7 @@ when topic=crime topic.kind=arrest
 does ask.detail / answer.detail / assess / assess
 a : They took #topic.subject#. What happens to #topic.them# now? | #topic.subject#'s in #gaol#. Will #topic.they# hang? | #watch# has #topic.subject#. What'll it be? | #topic.subject#, locked up. What do you think #topic.they#'ll get?
 b : A fine, if they're lucky. | Not for that. A flogging, maybe. | Depends who they know. | Depends who they crossed.
-a : They've never had a penny for a fine. | Gods. | Nobody, I should think. | Then it'll be bad.
+a : They've never had a penny for a fine. | Bright One. | Nobody, I should think. | Then it'll be bad.
 b : Then the stocks. | They'll mend. Backs do. | Then they'll learn what the cells smell like. | #bc_very_bad#
 
 scene h7_arrest_guard_named
@@ -262,7 +262,7 @@ when topic=crime topic.kind=arrest
 does tell.news / react.news / assess / assess
 a : #topic.subject#'s been arrested! | They've got #topic.subject# in #gaol#. | #topic.subject# went in, kicking and cursing. | #topic.where# took #topic.subject# by the scruff.
 b[humour=merry] #merry : Finally, somewhere they'll have to sit still and listen!
-b : Well, they'll get a roof and a meal. More than some of us. | Gods, that'll be the talk of the market. | Did they curse anyone we know? | By the scruff, like a pup!
+b : Well, they'll get a roof and a meal. More than some of us. | Bright One, that'll be the talk of the market. | Did they curse anyone we know? | By the scruff, like a pup!
 a@merry : Listen to what? The walls?
 a : Ha. That's grim. | All week. | Everyone. In order. | Like a wet pup.
 b@merry : The walls have heard worse. From them, mostly.
@@ -274,7 +274,7 @@ scene h7_life_theft
 when topic=life topic.kind=theft
 does tell.news / react.news.known / tell.self / react.self
 a : I heard #topic.subject# took from #topic.where#. | Is it true? #topic.subject# and #topic.where#'s things? | They're saying #topic.subject# robbed #topic.where#. | #topic.subject#, and #topic.where#'s purse. You'll have heard.
-b : I heard it twice before breakfast. | #bc_so_they_say# | And who's saying? | I hadn't. Gods.
+b : I heard it twice before breakfast. | #bc_so_they_say# | And who's saying? | I hadn't. Bright One.
 a : Then it must be true. | So say we all, then. | Everybody. | Now you have.
 b : Or twice told. | I'd wait before I said it to their face. | Then nobody knows. | I wish I hadn't.
 
@@ -293,7 +293,7 @@ when topic=news topic.kind=crime a.role!=guard
 does tell.news / react.news / tell.self / react.self
 a : #topic.news#. I keep checking the door. | #topic.news#. I've not slept right since. | You'll hear it anyway. #topic.news#. | #topic.news#. I feel such a fool.
 b[guard] #guard : Come by the watch-house. Tell it all again, slowly.
-b : Anyone would. | Nor would I. | Gods. Are you hurt? | Why a fool? It was done to you.
+b : Anyone would. | Nor would I. | Bright One. Are you hurt? | Why a fool? It was done to you.
 a@guard : I've told it three times. It doesn't get better.
 a : Every hour. | It's the quiet that's worst. | Only my pride. | I should've seen it coming.
 b@guard : The fourth time's the one that catches them. Humour me.
@@ -305,7 +305,7 @@ does tell.self / ask.detail / answer.detail / tell.self
 a : I took one in today. Did you hear? | Made an arrest this morning. | Had to drag one to #gaol# today. | Arrest this morning. My paws are still shaking.
 b : #bc_who_q# | Was there a fight? | Did they come quietly? | Shaking? You?
 a : Can't say. Not till the magistrate's seen them. | A small one. I won. | Kicking. Bit me. | Not with fear. Never mind with what.
-b : Then I'll hear it at the market by noon. | #bc_good# | Let me see. Gods, that's deep. | Sit down. Have a drink.
+b : Then I'll hear it at the market by noon. | #bc_good# | Let me see. Bright One, that's deep. | Sit down. Have a drink.
 
 scene h7_news_crime_robbed
 when topic=news topic.kind=crime a.robbed=yes
@@ -325,7 +325,7 @@ scene h7_news_crime_struck
 when topic=news topic.kind=crime a.fought=yes a.role!=guard
 does tell.news / react.news / tell.self / react.self
 a : #topic.news#. Look at me. | #topic.news#. I gave as good as I got. Nearly. | #topic.news#. Over nothing. | #topic.news#. My jaw's still clicking.
-b : Gods. Sit down. | Nearly? | It's never over nothing. | Stop talking, then.
+b : Bright One. Sit down. | Nearly? | It's never over nothing. | Stop talking, then.
 a : I'll not sit. I'll stiffen. | Nearly. They're worse. | It was nothing. Truly. | I can't. I'm too angry.
 b : Then lean on me. | That's my wolf. | Then it was something to them. | Then be angry quietly.
 
@@ -400,8 +400,8 @@ when topic=crime topic.kind=theft a.piety=devout
 does tell.plan / ask.detail / answer.detail / disagree
 a : I'll light a candle for #topic.victim#. And one for the #thief#. | The Bright One sees who robbed #topic.victim#. | I'll pray for #topic.victim#'s #thief#. Truly. | They robbed #topic.victim#. On a chapel day, near enough.
 b : The #thief#? Why them? | Then the Bright One should tell #watch#. | Pray they're caught, I hope you mean. | Thieves don't keep the calendar.
-a : They need it more. | Ha. Don't. | Pray they're sorry. | All the more reason.
-b : Not my candles, they don't. | I'll not. | Sorry and caught, then. | If you say so.
+a : They need it more. | The Bright One sees. The Watch has to look. | Pray they're sorry. | All the more reason.
+b : Not my candles, they don't. | Then the Watch had better look harder. | Sorry and caught, then. | If you say so.
 
 scene h7_crime_dry
 when topic=crime topic.kind=theft a.humour=dry
@@ -428,7 +428,7 @@ does ask.detail / answer.detail / ack / reassure
 a : Did you bolt the back last night? After #topic.victim#? | I want you home before dark. Because of #topic.victim#. | We're keeping the money under the floor from now on. | If anyone comes in, you hide, I'll shout.
 b : Twice. And checked it. | I'll be home. | Under the floor's where everyone keeps it. | Why do you get to shout?
 a : #bc_good# | Promise me. | Then in the roof. | I'm louder.
-b : Go to sleep, #dear#. | I promise. Now stop fretting. | Then the roof falls in. | You are. Gods help us.
+b : Go to sleep, #dear#. | I promise. Now stop fretting. | Then the roof falls in. | You are. Bright One help us.
 
 scene h7_crime_young
 when topic=crime topic.kind=theft|assault a.stage=young

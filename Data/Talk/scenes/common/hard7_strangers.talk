@@ -114,7 +114,7 @@ cooldown 1d
 scene h7_stranger_bandits_hire
 when topic=player world.bandits=near
 does tell.gossip / react.news / tell.self / react.self
-a : With #bandits# on the road, I'd hire #topic.subject# today. | #topic.subject# could earn good coin guarding carts, the way things are. | I wonder if #topic.subject# would go after the road wolves. For a price. | The roads are bad, and here's #topic.subject#. Maybe the gods sent #topic.them#.
+a : With #bandits# on the road, I'd hire #topic.subject# today. | #topic.subject# could earn good coin guarding carts, the way things are. | I wonder if #topic.subject# would go after the road wolves. For a price. | The roads are bad, and here's #topic.subject#. Maybe the Bright One sent #topic.them#.
 b : Today's too late. Yesterday. | If #topic.they#'s any good. | Everyone has a price. | Or the #bandits# did. Spying.
 a : Then today will have to do. | Look at #topic.them#. #topic.they.capitalize#'s good. | Then let's find #topic.theirs#. | You see knives in every shadow.
 b : Ask #topic.them#. Go on. | Looks lie. | We can't afford it. | There are knives in every shadow, lately.
@@ -290,10 +290,10 @@ cooldown 1d
 scene h7_deed_devout
 when topic=deed a.piety=devout
 does tell.news / react.news / assess / assess
-a : #topic.subject# #topic.deed#. That's the Bright One's work. | I'll give thanks for #topic.subject# on Restday. | #topic.subject# #topic.deed#. See? The gods haven't forgotten us. | #topic.subject# #topic.deed#. I'll light a candle.
+a : #topic.subject# #topic.deed#. That's the Bright One's work. | I'll give thanks for #topic.subject# on Restday. | #topic.subject# #topic.deed#. See? The Bright One hasn't forgotten us. | #topic.subject# #topic.deed#. I'll light a candle.
 b : It's #topic.subject#'s work. | Give thanks to #topic.them#, too. | Then where've they been? | Light two. One's for me.
 a : Same thing, sometimes. | #bc_i_will# | Busy. | One for you, then.
-b : Then the gods should pay #topic.them#. | #bc_good# | Busy with someone else. | #bc_thank_you#
+b : Then the Bright One should pay #topic.them#. | #bc_good# | Busy with someone else. | #bc_thank_you#
 cooldown 1d
 
 scene h7_deed_young

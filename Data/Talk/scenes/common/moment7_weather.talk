@@ -258,7 +258,7 @@ a : The water's sulking today. | Look at the waves, white tops all over. | Calm 
 b[job=fisher|sailor] #sea : Mood's for wolves. Water just is. Respect it.
 b : Like my aunt. | Some fool's out in a boat. | Calm water hides things. | Clears your head.
 a@sea : I respect it. From here.
-a : Leave it be, then. | Gods keep them. | That's what I said. | And your nose.
+a : Leave it be, then. | Bright One keep them. | That's what I said. | And your nose.
 
 scene m7_wx_field_sky
 when topic=weather here.place=field

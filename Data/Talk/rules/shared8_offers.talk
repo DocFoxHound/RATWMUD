@@ -294,7 +294,7 @@ rule s8o_view_faith
 does give.opinion
 when conv.topic=faith|dreams|lore
 weight 0.6
-say The gods help those who help themselves. | There's more in the old tales than folk think. | I keep my faith and my own counsel.
+say The Bright One helps those who help themselves. | There's more in the old tales than folk think. | I keep my faith and my own counsel.
 
 rule s8o_view_family
 does give.opinion

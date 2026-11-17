@@ -209,7 +209,7 @@ scene e4_fa_swearing
 when topic=faith a.piety=devout
 does tell.self / react.self / assess
 cooldown 2d
-a : Don't say "Bright One's teeth" in the street, #address#. Folk hear. | You swear like a carter. The gods are listening. | That oath you use. Where did you learn it?
+a : Don't say "Bright One's teeth" in the street, #address#. Folk hear. | You swear like a carter. The Bright One is listening. | That oath you use. Where did you learn it?
 b[job=carter] #carter : I am a carter.
 b : They've heard worse. | Then they'll learn something. | My mother.
 a@carter : That explains it.
@@ -764,8 +764,8 @@ b : I'll say two. | And you. | I'll try. No promises.
 scene e4_fa_quip_luck
 when topic=faith
 does tell.self / react.self
-a : Touch wood. | Knock on the doorpost. Go on. | Claws crossed.
-b : Done. | Done. Twice. | Crossed.
+a : Things are going well. Touch wood for me. | It's been a good week. Knock on the doorpost for me. | Claws crossed for me tomorrow, would you?
+b : There. Touched. | Knocked. Twice, for luck. | Crossed. Both paws.
 
 scene e4_fa_quip_heaven
 when topic=faith a.humour=merry|dry

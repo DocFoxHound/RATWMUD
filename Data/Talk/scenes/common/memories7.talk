@@ -287,7 +287,7 @@ scene e3_m_mourning
 when topic=memories a.mourning=kin|friend
 does tell.memory / react.story / tell.self
 a : I keep remembering little things. The way they laughed. | The last time I saw them, we argued over nothing. | I'd forgotten how much I'd miss them.
-b[piety=devout] #devout : The gods keep them now. And so do you.
+b[piety=devout] #devout : The Bright One keeps them now. And so do you.
 b[warmth=warm] #warm : Tell me about the laugh.
 b : That's how it starts. | They'll have forgotten it already. | It takes us all like that.
 a@devout : I'll try to keep them well.
@@ -746,7 +746,7 @@ a : No need. I came through. | Repeat it. I don't mind. | That's me.
 scene e3_m_devout_old_priest
 when topic=memories a.piety=devout
 does tell.memory / react.story / tell.self
-a : The old priest blessed me as a pup. I still feel it. | My grandmother walked to chapel with a lantern every dawn till she was ninety. | I remember the night the gods answered me. I'll not say more.
+a : The old priest blessed me as a pup. I still feel it. | My grandmother walked to chapel with a lantern every dawn till she was ninety. | I remember the night the Bright One answered me. I'll not say more.
 b[priest] #priest : He was a good priest. I learned from him.
 b[piety=ordinary] #ord : I've missed a dawn or two. Or forty.
 b : That's a fine thing. | Every dawn? | I'll not ask, then.

@@ -7,7 +7,7 @@ rule fb_crime_answer
 when concept=crime.answer
 does react.news
 priority -1
-say That's a bad business. | Gods. What's the town coming to? | Hard to hear. Hard to know what to say.
+say That's a bad business. | Bright One. What's the town coming to? | Hard to hear. Hard to know what to say.
 
 rule fb_dreams_answer
 when concept=dreams.answer

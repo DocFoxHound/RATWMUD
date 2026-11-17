@@ -260,7 +260,7 @@ rule f7_sp_chapel
 when concept=talk.family pair.band=spouses self.piety=devout other.piety=ordinary here.day=rest
 does tell.self
 cooldown 3d
-say {f7_tease=duty f7_chain=tease} You'll come to chapel with me. Won't you? | {f7_tease=duty f7_chain=tease} The priest asked after you. Kindly. Pointedly. | {f7_tease=duty f7_chain=tease} One hour on Restday, #dear#. The gods give us all the others. | {f7_tease=duty f7_chain=tease} They're blessing the new bell today. Everyone will be there. Everyone.
+say {f7_tease=duty f7_chain=tease} You'll come to chapel with me. Won't you? | {f7_tease=duty f7_chain=tease} The priest asked after you. Kindly. Pointedly. | {f7_tease=duty f7_chain=tease} One hour on Restday, #dear#. The Bright One gives us all the others. | {f7_tease=duty f7_chain=tease} They're blessing the new bell today. Everyone will be there. Everyone.
 then other: family.tease_answer
 
 rule f7_sp_short_tired
@@ -1221,7 +1221,7 @@ rule f7_wa_roofless_devout
 when concept=family.worry_answer conv.f7_worry=roofless self.piety=devout
 does reassure
 priority 1
-say {f7_tone=kind} The Bright One sees us. Even here. | {f7_tone=kind} We'll pray, and then we'll find a barn. In that order. | {f7_tone=kind} The gods had no roof either, the old songs say.
+say {f7_tone=kind} The Bright One sees us. Even here. | {f7_tone=kind} We'll pray, and then we'll find a barn. In that order. | {f7_tone=kind} The Bright One had no roof either, the old songs say.
 then other: family.settle
 
 rule f7_wa_damp
@@ -1319,7 +1319,7 @@ rule f7_wa_child_fret_nervy
 when concept=family.worry_answer conv.f7_worry=child_fret self.temper=nervy
 does reassure
 priority 1
-say {f7_tone=fret} Now you've said it I'll not sleep. I'll go and look. | {f7_tone=fret} Should we fetch the healer? Should we? | {f7_tone=fret} Oh, gods. I'll check the shutters again.
+say {f7_tone=fret} Now you've said it I'll not sleep. I'll go and look. | {f7_tone=fret} Should we fetch the healer? Should we? | {f7_tone=fret} Oh, Bright One. I'll check the shutters again.
 then other: family.settle
 
 rule f7_wa_child_fret_short
@@ -1382,7 +1382,7 @@ rule f7_wa_hurt_me_nervy
 when concept=family.worry_answer conv.f7_worry=hurt_me self.temper=nervy
 does reassure
 priority 1
-say {f7_tone=fret} Gods. Gods, look at you. Sit. Sit! | {f7_tone=fret} Is it bleeding? Is it still bleeding? | {f7_tone=fret} I'll fetch the healer. I'll run. Don't move.
+say {f7_tone=fret} Bright One. Bright One, look at you. Sit. Sit! | {f7_tone=fret} Is it bleeding? Is it still bleeding? | {f7_tone=fret} I'll fetch the healer. I'll run. Don't move.
 then other: family.settle
 
 rule f7_wa_grief
@@ -1468,7 +1468,7 @@ rule f7_wa_move_restless
 when concept=family.worry_answer conv.f7_worry=move self.drive=restless
 does reassure
 priority 1
-say {f7_tone=eager} Yes. Gods, yes. When? | {f7_tone=eager} I've been waiting years for you to say that. | {f7_tone=eager} Pack tonight. Before either of us changes our mind.
+say {f7_tone=eager} Yes. Bright One, yes. When? | {f7_tone=eager} I've been waiting years for you to say that. | {f7_tone=eager} Pack tonight. Before either of us changes our mind.
 then other: family.settle
 
 rule f7_wa_move_content
@@ -1808,7 +1808,7 @@ rule f7_ta_flirt_old
 when concept=family.tease_answer conv.f7_tease=flirt self.stage=old
 does tease.return
 priority 1
-say {f7_tone=fond} At our age? Gods. Go on, then. | {f7_tone=fond} Mind my back. Then yes. | {f7_tone=fond} You old fool. Yes.
+say {f7_tone=fond} At our age? Bright One. Go on, then. | {f7_tone=fond} Mind my back. Then yes. | {f7_tone=fond} You old fool. Yes.
 then other: family.settle
 
 rule f7_ta_jibe
@@ -2152,7 +2152,7 @@ rule f7_sa_gathering
 when concept=family.share_answer conv.f7_share=gathering
 does react.self
 priority 1
-say Us. You did it last time and we're still hearing about the gravy. | Not us. The roof's leaking. | All of us at once? Gods help the furniture. | Whoever has the bigger table. So not us.
+say Us. You did it last time and we're still hearing about the gravy. | Not us. The roof's leaking. | All of us at once? Bright One help the furniture. | Whoever has the bigger table. So not us.
 
 rule f7_sa_kin_trouble
 when concept=family.share_answer conv.f7_share=kin_trouble
@@ -2164,7 +2164,7 @@ rule f7_sa_inlaws
 when concept=family.share_answer conv.f7_share=inlaws
 does react.self
 priority 1
-say Count the spoons after. | Gods help you. | You can sleep at ours. Bring a blanket. | In-laws. Like weather. You wait them out.
+say Count the spoons after. | Bright One help you. | You can sleep at ours. Bring a blanket. | In-laws. Like weather. You wait them out.
 
 rule f7_sa_child_news
 when concept=family.share_answer conv.f7_share=child_news
@@ -2634,7 +2634,7 @@ rule f7_ac_why_merry
 when concept=family.answer_child conv.f7_cp=why self.humour=merry
 does answer.detail
 priority 1
-say {f7_tone=play} The moon told me, and the moon doesn't lie. | {f7_tone=play} Ask the hens. Hens know everything. | {f7_tone=play} It's a secret. The gods made me promise.
+say {f7_tone=play} The moon told me, and the moon doesn't lie. | {f7_tone=play} Ask the hens. Hens know everything. | {f7_tone=play} It's a secret. The Bright One made me promise.
 then other: family.settle
 
 rule f7_ac_why_dry
@@ -2979,7 +2979,7 @@ rule f7_st_worry_eager
 when concept=family.settle conv.f7_chain=worry conv.f7_tone=eager
 does ack
 priority 1
-say Steady! I only said what if. | Gods. I thought you'd say no. | Soon. Not tonight. But soon.
+say Steady! I only said what if. | Bright One. I thought you'd say no. | Soon. Not tonight. But soon.
 
 rule f7_st_tease_dodge
 when concept=family.settle conv.f7_chain=tease conv.f7_tone=dodge
@@ -3003,7 +3003,7 @@ rule f7_st_tease_sharp
 when concept=family.settle conv.f7_chain=tease conv.f7_tone=sharp
 does ack
 priority 1
-say Don't you take that tone. | Touchy. | Gods give me strength.
+say Don't you take that tone. | Touchy. | Bright One give me strength.
 
 rule f7_st_tease_sharp_young
 when concept=family.settle conv.f7_chain=tease conv.f7_tone=sharp self.stage=young

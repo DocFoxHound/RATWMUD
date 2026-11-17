@@ -34,13 +34,13 @@ say Rain. Inside, quick. | Here it comes. Under cover! | That's rain. I'm off. |
 rule bt_break_rain2
 does break
 when conv.interrupt=rain here.weather=rain|storm
-say Gods, it's coming down. Later. | Out of this rain. #later.capitalize#. | I'll not stand in this. #farewell#.
+say Bright One, it's coming down. Later. | Out of this rain. #later.capitalize#. | I'll not stand in this. #farewell#.
 
 rule bt_break_fight
 does break
 when conv.interrupt=fight
 tone serious
-say What's that? A fight! | Look there. Trouble. | Gods, they're at it. | Stand back. A fight. | Someone call the Watch!
+say What's that? A fight! | Look there. Trouble. | Bright One, they're at it. | Stand back. A fight. | Someone call the Watch!
 
 rule bt_break_called
 does break

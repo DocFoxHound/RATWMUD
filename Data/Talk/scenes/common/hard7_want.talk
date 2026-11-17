@@ -55,7 +55,7 @@ does tell.self / react.self / assess / assess
 a : Winter will thin the poor out again. | Folk are already burning furniture down my end. | They'll find someone frozen in a doorway before the thaw. They always do. | I've put by wood for a month. It won't last two weeks.
 b : Don't say it like that. | Furniture burns fast. | Every year. And every year we're shocked. | Then come and share ours.
 a : How else is there to say it? | Then they burn the floor. | We shouldn't be. | You've hardly any.
-b : Kindly. Say it kindly. | Gods help them. | We should, and we are. | Hardly any's some. Two fires cost more than one.
+b : Kindly. Say it kindly. | Bright One help them. | We should, and we are. | Hardly any's some. Two fires cost more than one.
 cooldown 1d
 
 scene h7_times_honest_work
@@ -69,8 +69,8 @@ b : A dear pastime. | Course they were. | It's not the floors, it's the coin. | 
 scene h7_times_sickness
 when topic=smalltalk|day
 does tell.self / react.self / assess / assess
-a : There's a cough going round the poor streets. | Half the street's poorly. | Somebody's pups have the fever. Not ours, thank the gods. | Eat your greens, they say. What greens?
-b : There always is, when the cold comes. | And the other half's tired of nursing. | Thank the gods quietly. | Nettles. Free and nasty.
+a : There's a cough going round the poor streets. | Half the street's poorly. | Somebody's pups have the fever. Not ours, thank the Bright One. | Eat your greens, they say. What greens?
+b : There always is, when the cold comes. | And the other half's tired of nursing. | Thank the Bright One quietly. | Nettles. Free and nasty.
 a : The healers can't keep up. | #bc_exactly# | Quietly, then. | Nasty's right.
 b : Then keep warm and keep away. | It's a long season. | They'll hear you anyway. | Better than nothing.
 
@@ -91,7 +91,7 @@ does tell.self / react.self / assess / assess
 a : Baker throws out the burnt ends at dusk. Get there early. | The chapel gives soup on Restday if you sit through the sermon. | The tanner pays a penny a sack for oak bark. Hard picking. | Go to the market late. They'd rather give it than carry it.
 b : Early's when everyone gets there. | I'll sit through anything for soup. | I wasn't going to. I am now. | Late. I'll try.
 a : Earlier, then. | The sermon's long. | It's a penny. | Smile at the fishwives. They're soft.
-b : I'll sleep there. | The soup's thin. | A penny's a penny. | I'll smile. Gods help me.
+b : I'll sleep there. | The soup's thin. | A penny's a penny. | I'll smile. Bright One help me.
 cooldown 2d
 
 scene h7_poor_dream
@@ -188,7 +188,7 @@ does tell.self / react.self / assess / tell.self
 a : Where did you sleep last night? I was under the bridge. | The chapel porch is taken. Every night now. | They moved me on twice last night. | Found a dry doorway. Dry, mind. That's a palace.
 b : Not under the bridge. It's too wet. | Taken by who? | Who did? | A palace with a draught.
 a : Wet's all there is. | Others like me. More every night. | #watch#. Polite, though. | All palaces have draughts.
-b : Come to mine. The floor's yours. | Gods. | Polite doesn't keep you warm. | I've heard. Stay at mine tonight.
+b : Come to mine. The floor's yours. | Bright One. | Polite doesn't keep you warm. | I've heard. Stay at mine tonight.
 cooldown 1d
 
 scene h7_homeless_guard
@@ -197,7 +197,7 @@ does tell.self / react.self / tell.self / react.self / assess
 a : You can't sleep in this doorway. You know that. | Move along, now. Not here. | Find somewhere off the street before the night watch comes. | Have you anywhere to go tonight?
 b : Where, then? Show me where. | Where's along? | You are the night watch. | No.
 a : I don't make the rules. | Anywhere I'm not. | I'm the evening watch. They're worse. | ... Try the chapel. Tell them I sent you.
-b : You just keep them. | Then I'll go where you aren't. | Gods help me, then. | Will they listen?
+b : You just keep them. | Then I'll go where you aren't. | Bright One help me, then. | Will they listen?
 a : I do. I'm sorry. | #bc_good# | Go on. Quick. | They might. Go on.
 cooldown 1d
 
@@ -244,7 +244,7 @@ scene h7_fighting_now
 when topic=smalltalk|day|quarrel a.fighting=yes
 does tell.self / react.self / assess / assess
 a : Stay back! | Get out of the way! | Not now! | Mind yourself!
-b : Gods! I'm going! | Stop it, both of you! | I'll fetch #watch#! | Stop! Stop!
+b : Bright One! I'm going! | Stop it, both of you! | I'll fetch #watch#! | Stop! Stop!
 a : Go! | Back! | Go on, then! | Back!
 b : I'm gone. | I'm fetching them! | Running! | Stop it!
 priority 2

@@ -243,7 +243,7 @@ then other: moment.close
 rule m7_wx_re_storm
 when concept=moment.reply_weather here.weather=storm
 does assess
-say {m7=fear} Inside, and quick about it. | {m7=fear} I've tied everything down that'll tie. | {m7=fear} The gods are moving furniture. | {m7=fear} That one was close. Too close.
+say {m7=fear} Inside, and quick about it. | {m7=fear} I've tied everything down that'll tie. | {m7=fear} The Dark One's moving the furniture. | {m7=fear} That one was close. Too close.
 then other: moment.close
 
 rule m7_wx_re_clear
@@ -779,7 +779,7 @@ rule m7_close_posh_poor
 when concept=moment.close conv.m7=posh self.wealth=destitute|poor
 does ack
 priority 1
-say My heart bleeds. | We should all have your troubles. | A leaky carriage. Gods help us.
+say My heart bleeds. | We should all have your troubles. | A leaky carriage. Bright One help us.
 
 rule m7_close_posh_rich
 when concept=moment.close conv.m7=posh self.wealth=rich
@@ -863,7 +863,7 @@ rule m7_close_tease
 when concept=moment.close conv.m7=tease
 does ack
 priority 2
-say I'll never be a mountain wolf. | Harden up yourself. | Gods help me.
+say I'll never be a mountain wolf. | Harden up yourself. | Bright One help me.
 
 rule m7_close_busy
 when concept=moment.close conv.m7=busy
@@ -1037,7 +1037,7 @@ rule m7_day_open_rest
 when concept=talk.day here.day=rest
 does tell.self
 cooldown 1d
-say {m7o=rest} Restday at last. My paws thank the gods. | {m7o=rest} Quiet, isn't it? You can hear the birds. | {m7o=rest} I don't know what to do with myself on a Restday. | {m7o=rest} Nothing to do but sit. Lovely.
+say {m7o=rest} Restday at last. My paws thank the Bright One. | {m7o=rest} Quiet, isn't it? You can hear the birds. | {m7o=rest} I don't know what to do with myself on a Restday. | {m7o=rest} Nothing to do but sit. Lovely.
 then other: moment.reply_day
 
 rule m7_day_open_work
@@ -1411,7 +1411,7 @@ then other: moment.close
 rule m7_fest_re_any2
 when concept=moment.reply_festival
 does answer.plan
-say Same as every year, and I'll love it the same. | Gods, the noise there'll be. | They'd better not run out of cider like last time.
+say Same as every year, and I'll love it the same. | Bright One, the noise there'll be. | They'd better not run out of cider like last time.
 then other: moment.close
 
 rule m7_fest_re_priest

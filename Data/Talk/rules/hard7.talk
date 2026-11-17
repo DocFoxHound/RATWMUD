@@ -81,7 +81,7 @@ rule h7_cr_open_devout
 when concept=talk.crime topic.kind=theft|assault self.piety=devout
 does tell.news
 cooldown 1d
-say I prayed for #topic.victim# this morning. | Somebody did wrong by #topic.victim#. The gods saw it. | #topic.victim#, of all folk. A chapel-goer! | There's wickedness in this town. Look at #topic.victim#.
+say I prayed for #topic.victim# this morning. | Somebody did wrong by #topic.victim#. The Bright One saw it. | #topic.victim#, of all folk. A chapel-goer! | There's wickedness in this town. Look at #topic.victim#.
 then other: crime.answer
 
 rule h7_cr_open_dry
@@ -118,7 +118,7 @@ then other: crime.answer
 rule h7_cr_ans_any
 when concept=crime.answer topic.kind=theft|assault
 does react.news
-say {h7_said=sorry} Gods. Poor #topic.victim#. | {h7_said=sorry} That's a bad business. | {h7_said=sorry} I heard. It's everywhere. | {h7_said=sorry} Nobody's safe any more. | {h7_said=sorry} And in daylight, too, I'll bet.
+say {h7_said=sorry} Bright One. Poor #topic.victim#. | {h7_said=sorry} That's a bad business. | {h7_said=sorry} I heard. It's everywhere. | {h7_said=sorry} Nobody's safe any more. | {h7_said=sorry} And in daylight, too, I'll bet.
 then other: crime.close
 
 rule h7_cr_ans_any_arrest
@@ -178,7 +178,7 @@ then other: crime.close
 rule h7_cr_ans_nervy
 when concept=crime.answer topic.kind=theft|assault self.temper=nervy
 does react.news
-say {h7_said=fear} Don't. I'll not sleep now. | {h7_said=fear} Was it near here? How near? | {h7_said=fear} I knew it. I knew it'd come to this. | {h7_said=fear} Oh, gods. Oh, gods. My door doesn't even lock properly.
+say {h7_said=fear} Don't. I'll not sleep now. | {h7_said=fear} Was it near here? How near? | {h7_said=fear} I knew it. I knew it'd come to this. | {h7_said=fear} Oh, Bright One. Oh, Bright One. My door doesn't even lock properly.
 then other: crime.close
 
 rule h7_cr_ans_robbed
@@ -191,13 +191,13 @@ then other: crime.close
 rule h7_cr_ans_devout
 when concept=crime.answer topic.kind=theft|assault self.piety=devout
 does react.news
-say {h7_said=pray} I'll pray for #topic.victim#. And for whoever did it. | {h7_said=pray} The gods will settle it. In their time. | {h7_said=pray} There's a wolf out there with a heavy soul tonight. | {h7_said=pray} I'll light a candle for #topic.victim# on Restday.
+say {h7_said=pray} I'll pray for #topic.victim#. And for whoever did it. | {h7_said=pray} The Bright One will settle it. In good time. | {h7_said=pray} There's a wolf out there with a heavy soul tonight. | {h7_said=pray} I'll light a candle for #topic.victim# on Restday.
 then other: crime.close
 
 rule h7_cr_ans_devout_arrest
 when concept=crime.answer topic.kind=arrest self.piety=devout
 does react.news
-say {h7_said=pray} I'll pray they repent in there. | {h7_said=pray} The gods forgive. Magistrates don't. | {h7_said=pray} Somebody should take them a blessing, at least. | {h7_said=pray} We're all a step from #gaol#, if the gods look away.
+say {h7_said=pray} I'll pray they repent in there. | {h7_said=pray} The Bright One forgives. Magistrates don't. | {h7_said=pray} Somebody should take them a blessing, at least. | {h7_said=pray} We're all a step from #gaol#, if the Bright One looks away.
 then other: crime.close
 
 rule h7_cr_ans_dry
@@ -331,7 +331,7 @@ say Easy said from a full belly. | And when it's a hungry pup? Hang them too? | 
 rule h7_cr_close_hang_devout
 when concept=crime.close conv.h7_said=hang self.piety=devout
 does assess
-say The gods judge. Not us. | That's not justice. That's anger. | Pray on that before you say it again.
+say The Bright One judges. Not us. | That's not justice. That's anger. | Pray on that before you say it again.
 
 rule h7_cr_close_pity
 when concept=crime.close conv.h7_said=pity
@@ -346,7 +346,7 @@ say There's always honest work. | That's dangerous talk. | Then they should appl
 rule h7_cr_close_pity_poor
 when concept=crime.close conv.h7_said=pity|pity_arrest self.wealth=poor|destitute
 does assess
-say Aye. It's not hard to see how. | I know. Gods, I know. | We've all stood at that door. | Hush. But aye.
+say Aye. It's not hard to see how. | I know. Bright One, I know. | We've all stood at that door. | Hush. But aye.
 
 rule h7_cr_close_pity_arrest
 when concept=crime.close conv.h7_said=pity_arrest
@@ -366,12 +366,12 @@ say Cheer up. They'll probably rob someone richer. | You're safe. You've nothing
 rule h7_cr_close_same
 when concept=crime.close conv.h7_said=same
 does assess
-say Then you know. | Did they ever find yours? | Gods, I'd forgotten. I'm sorry. | We should go to #watch# together.
+say Then you know. | Did they ever find yours? | Bright One, I'd forgotten. I'm sorry. | We should go to #watch# together.
 
 rule h7_cr_close_pray
 when concept=crime.close conv.h7_said=pray
 does assess
-say Pray for me while you're at it. | If the gods are listening. | Aye. And for all of us. | Prayers are well and good. A bolt's better.
+say Pray for me while you're at it. | If the Bright One is listening. | Aye. And for all of us. | Prayers are well and good. A bolt's better.
 
 rule h7_cr_close_joke
 when concept=crime.close conv.h7_said=joke
@@ -416,7 +416,7 @@ say You'd know, would you? | I don't like the way you said that. | Funny thing t
 rule h7_cr_close_mend
 when concept=crime.close conv.h7_said=mend
 does assess
-say Thank the gods you were there. | Give them my best. | You're a good sort.
+say Thank the Bright One you were there. | Give them my best. | You're a good sort.
 
 rule h7_cr_close_grief
 when concept=crime.close conv.h7_said=grief
@@ -491,7 +491,7 @@ then other: loss.close
 rule h7_ls_ans_own
 when concept=loss.answer topic.kind=loss
 does sympathise
-say {h7_said=sorry} Oh, I'm so sorry. | {h7_said=sorry} I'd no idea. I'm so sorry. | {h7_said=sorry} That's hard. Gods, that's hard. | {h7_said=sorry} Is there anything I can do?
+say {h7_said=sorry} Oh, I'm so sorry. | {h7_said=sorry} I'd no idea. I'm so sorry. | {h7_said=sorry} That's hard. Bright One, that's hard. | {h7_said=sorry} Is there anything I can do?
 then other: loss.close
 
 rule h7_ls_ans_warm
@@ -521,7 +521,7 @@ then other: loss.close
 rule h7_ls_ans_devout
 when concept=loss.answer self.piety=devout
 does sympathise
-say {h7_said=pray} They're with the Bright One now. | {h7_said=pray} I'll pray for them tonight. | {h7_said=pray} The gods keep them. | {h7_said=pray} There's a light gone out, and another lit somewhere.
+say {h7_said=pray} They're with the Bright One now. | {h7_said=pray} I'll pray for them tonight. | {h7_said=pray} The Bright One keep them. | {h7_said=pray} There's a light gone out, and another lit somewhere.
 then other: loss.close
 
 rule h7_ls_ans_old
@@ -552,7 +552,7 @@ rule h7_ls_ans_mourning
 when concept=loss.answer self.mourning=kin|friend
 does sympathise
 priority 1
-say {h7_said=grief} Not another. I can't hold another. | {h7_said=grief} I know how it sits. Gods, I know. | {h7_said=grief} I've no tears left. I'm sorry. | {h7_said=grief} We're all burying someone this season.
+say {h7_said=grief} Not another. I can't hold another. | {h7_said=grief} I know how it sits. Bright One, I know. | {h7_said=grief} I've no tears left. I'm sorry. | {h7_said=grief} We're all burying someone this season.
 then other: loss.close
 
 rule h7_ls_ans_widowed
@@ -564,7 +564,7 @@ then other: loss.close
 rule h7_ls_ans_short
 when concept=loss.answer self.temper=short
 does sympathise
-say {h7_said=angry} Why do the good ones go? Why? | {h7_said=angry} It's not fair. None of it's fair. | {h7_said=angry} Don't. I'll hit a wall. | {h7_said=angry} Gods curse it.
+say {h7_said=angry} Why do the good ones go? Why? | {h7_said=angry} It's not fair. None of it's fair. | {h7_said=angry} Don't. I'll hit a wall. | {h7_said=angry} Dark One take it.
 then other: loss.close
 
 rule h7_ls_ans_priest
@@ -605,7 +605,7 @@ say That's good of you. | They'd be glad of it. | I'll come with you.
 rule h7_ls_close_cold
 when concept=loss.close conv.h7_said=cold
 does ack
-say Is that all? | Well, I knew them. | Gods, you're a stone. | Thank you for nothing.
+say Is that all? | Well, I knew them. | Bright One, you're a stone. | Thank you for nothing.
 
 rule h7_ls_close_pray
 when concept=loss.close conv.h7_said=pray
@@ -615,7 +615,7 @@ say Say one for me too. | #bc_i_hope_so# | If anyone's listening. | Thank you. T
 rule h7_ls_close_pray_short
 when concept=loss.close conv.h7_said=pray self.piety=ordinary self.temper=short
 does ack
-say The gods took them. They can keep their light. | Pray if you like. I'll drink. | Don't tell me about the gods today.
+say The Bright One took them. Much good the light does me. | Pray if you like. I'll drink. | Don't tell me about the Bright One today.
 
 rule h7_ls_close_old
 when concept=loss.close conv.h7_said=old
@@ -712,7 +712,7 @@ when concept=talk.bandits topic.kind=raided|camp self.travelling=yes
 does tell.self
 cooldown 1d
 priority 1
-say I'm on that road tomorrow. That very road. | I've to go out past #topic.where#. Gods help me. | I'd hoped to be away by dawn. Now I don't know. | Is there another way? Any other way?
+say I'm on that road tomorrow. That very road. | I've to go out past #topic.where#. Bright One help me. | I'd hoped to be away by dawn. Now I don't know. | Is there another way? Any other way?
 then other: road.answer
 
 rule h7_rd_open_guard
@@ -735,7 +735,7 @@ then other: road.answer
 rule h7_rd_ans_any
 when concept=road.answer
 does react.news
-say {h7_said=shrug} Not again. | {h7_said=shrug} Gods keep the carters. | {h7_said=shrug} It's getting worse. | {h7_said=shrug} The roads were never safe. | {h7_said=shrug} Somebody ought to do something.
+say {h7_said=shrug} Not again. | {h7_said=shrug} Bright One keep the carters. | {h7_said=shrug} It's getting worse. | {h7_said=shrug} The roads were never safe. | {h7_said=shrug} Somebody ought to do something.
 then other: road.close
 
 rule h7_rd_ans_guard
@@ -753,7 +753,7 @@ then other: road.close
 rule h7_rd_ans_carter
 when concept=road.answer self.job=carter
 does react.news
-say {h7_said=fear_road} I'll not drive that road. Not for double. | {h7_said=fear_road} I know those carters. I'll go and see them. | {h7_said=fear_road} That's my road. That's my road! | {h7_said=fear_road} Next run's mine. Gods.
+say {h7_said=fear_road} I'll not drive that road. Not for double. | {h7_said=fear_road} I know those carters. I'll go and see them. | {h7_said=fear_road} That's my road. That's my road! | {h7_said=fear_road} Next run's mine. Bright One.
 then other: road.close
 
 rule h7_rd_ans_travelling
@@ -797,7 +797,7 @@ then other: road.close
 rule h7_rd_ans_devout
 when concept=road.answer self.piety=devout
 does react.news
-say {h7_said=pray} I'll pray for the carters. | {h7_said=pray} Gods keep the road. | {h7_said=pray} We'll pray for them on Restday. All of us. | {h7_said=pray} There's evil on the roads this season.
+say {h7_said=pray} I'll pray for the carters. | {h7_said=pray} Bright One keep the road. | {h7_said=pray} We'll pray for them on Restday. All of us. | {h7_said=pray} There's evil on the roads this season.
 then other: road.close
 
 rule h7_rd_ans_ambitious
@@ -817,7 +817,7 @@ then other: road.close
 rule h7_rd_close_any
 when concept=road.close
 does ack
-say Aye. Bad times. | Gods keep them. | Let's hope it passes. | #bc_we_will_see#
+say Aye. Bad times. | Bright One keep them. | Let's hope it passes. | #bc_we_will_see#
 
 rule h7_rd_close_duty
 when concept=road.close conv.h7_said=duty
@@ -832,7 +832,7 @@ say You'd put them up anyway. | Lovely. Dearer everything. | Then we go without.
 rule h7_rd_close_fear_road
 when concept=road.close conv.h7_said=fear_road
 does ack
-say Go in daylight. All of it. | Go with others. Never alone. | Gods keep you. | Stay, if you can.
+say Go in daylight. All of it. | Go with others. Never alone. | Bright One keep you. | Stay, if you can.
 
 rule h7_rd_close_fear
 when concept=road.close conv.h7_said=fear
@@ -847,7 +847,7 @@ say It's not the Houses who'll go hungry. | Aye. Sound sleep's the one thing we'
 rule h7_rd_close_rich
 when concept=road.close conv.h7_said=rich
 does ack
-say Wine. Gods help us. | Raise one, then. You've the coin. | The carters had pups, you know. | Tiresome. Aye.
+say Wine. Bright One help us. | Raise one, then. You've the coin. | The carters had pups, you know. | Tiresome. Aye.
 
 rule h7_rd_close_fight
 when concept=road.close conv.h7_said=fight
@@ -862,7 +862,7 @@ say Maybe so. | I hope you're right. | Times change, and not for the better.
 rule h7_rd_close_pray
 when concept=road.close conv.h7_said=pray
 does ack
-say Pray harder. | And a spear, with the prayer. | Pray they come home. | Aye. Gods keep them.
+say Pray harder. | And a spear, with the prayer. | Pray they come home. | Aye. Bright One keep them.
 
 rule h7_rd_close_chance
 when concept=road.close conv.h7_said=chance
@@ -956,7 +956,7 @@ then other: want.answer
 rule h7_wn_ans_any
 when concept=want.answer
 does give.advice
-say {h7_said=sorry} I'm sorry. Truly. | {h7_said=sorry} That's hard. | {h7_said=sorry} Gods. What'll you do? | {h7_said=sorry} It'll turn. It has to. | {h7_said=sorry} That's no way to live.
+say {h7_said=sorry} I'm sorry. Truly. | {h7_said=sorry} That's hard. | {h7_said=sorry} Bright One. What'll you do? | {h7_said=sorry} It'll turn. It has to. | {h7_said=sorry} That's no way to live.
 then other: want.close
 
 rule h7_wn_ans_rich_warm
@@ -1004,7 +1004,7 @@ then other: want.close
 rule h7_wn_ans_devout
 when concept=want.answer self.piety=devout
 does give.advice
-say {h7_said=pray} The chapel feeds anyone who asks. I'll take you. | {h7_said=pray} The gods test the ones they love. | {h7_said=pray} Pray with me. Then we'll find you bread. | {h7_said=pray} The Bright One sees. I'll speak to the chaplain.
+say {h7_said=pray} The chapel feeds anyone who asks. I'll take you. | {h7_said=pray} The Bright One tests the ones most loved. | {h7_said=pray} Pray with me. Then we'll find you bread. | {h7_said=pray} The Bright One sees. I'll speak to the chaplain.
 then other: want.close
 
 rule h7_wn_ans_short
@@ -1106,7 +1106,7 @@ say I know. I know. | Thank you. I think. | You're right. That's the worst part.
 rule h7_wn_close_pray
 when concept=want.close conv.h7_said=pray
 does thank
-say Bread first. Then the gods. | I'll go. Thank you. | The gods can test someone else. | If you'd come with me.
+say Bread first. Then the Bright One. | I'll go. Thank you. | The Bright One can test someone else. | If you'd come with me.
 
 rule h7_wn_close_duty
 when concept=want.close conv.h7_said=duty
@@ -1121,7 +1121,7 @@ say It was too quick. I saw nothing. | Last night. By the well. | Everything I h
 rule h7_wn_close_joke
 when concept=want.close conv.h7_said=joke
 does thank
-say Ha. Thank you. I think. | That's cruel. And true. | You're no help at all. | I needed that. Gods help me.
+say Ha. Thank you. I think. | That's cruel. And true. | You're no help at all. | I needed that. Bright One help me.
 
 rule h7_wn_close_old
 when concept=want.close conv.h7_said=old
@@ -1248,7 +1248,7 @@ then other: stranger.close
 rule h7_st_ans_devout
 when concept=stranger.answer self.piety=devout
 does react.news
-say {h7_said=kind} We were all strangers somewhere once. | {h7_said=kind} The gods send travellers to test us. | {h7_said=kind} I'll pray for #topic.their# road. | {h7_said=kind} #topic.they.capitalize# should come to the chapel. All are welcome.
+say {h7_said=kind} We were all strangers somewhere once. | {h7_said=kind} The Bright One sends travellers to test us. | {h7_said=kind} I'll pray for #topic.their# road. | {h7_said=kind} #topic.they.capitalize# should come to the chapel. All are welcome.
 then other: stranger.close
 
 ############################################################################ Strangers and deeds: closes
@@ -1316,7 +1316,7 @@ say Then ride out yourselves next time. | Sour suits you. | Somebody had to. | H
 rule h7_st_close_pray
 when concept=stranger.close conv.h7_said=pray
 does counter
-say Bless #topic.them#, aye. | Thank #topic.them# too. Not just the gods. | The gods and a strong arm. | If you say so.
+say Bless #topic.them#, aye. | Thank #topic.them# too. Not just the Bright One. | The Bright One and a strong arm. | If you say so.
 
 rule h7_st_close_doubt
 when concept=stranger.close conv.h7_said=doubt
@@ -1387,7 +1387,7 @@ then other: stranger.close
 rule h7_dd_ans_devout
 when concept=deed.answer self.piety=devout
 does react.news
-say {h7_said=pray} The gods work through such folk. | {h7_said=pray} I'll give thanks on Restday. | {h7_said=pray} That's the Bright One's paw in it. | {h7_said=pray} Bless #topic.them#. Bless #topic.them#.
+say {h7_said=pray} The Bright One works through such folk. | {h7_said=pray} I'll give thanks on Restday. | {h7_said=pray} That's the Bright One's paw in it. | {h7_said=pray} Bless #topic.them#. Bless #topic.them#.
 then other: stranger.close
 
 rule h7_dd_ans_young
@@ -1462,7 +1462,7 @@ say Good luck to them. ... I never said that. | Run, you fool! Run! | There's a 
 rule h7_react_theft_rich
 when concept=react.theft wealth=rich
 does aside
-say Stop them! Somebody stop them! Where's the Watch? | Outrageous! In broad day! | My purse. Is it... yes. Thank the gods. | Thief! Guard! Anyone!
+say Stop them! Somebody stop them! Where's the Watch? | Outrageous! In broad day! | My purse. Is it... yes. Thank the Bright One. | Thief! Guard! Anyone!
 
 rule h7_react_theft_merchant
 when concept=react.theft role=merchant
@@ -1472,7 +1472,7 @@ say My stock! Was it my stock? | Watch your stalls! Thief about! | Paws off! Paw
 rule h7_react_theft_nervy
 when concept=react.theft temper=nervy
 does aside
-say Oh, gods. Oh, gods. Is everyone all right? | I knew it. I knew today was a bad day. | Somebody do something! Not me! | My heart. My heart.
+say Oh, Bright One. Oh, Bright One. Is everyone all right? | I knew it. I knew today was a bad day. | Somebody do something! Not me! | My heart. My heart.
 
 rule h7_react_fight_old
 when concept=react.fight stage=old
@@ -1487,7 +1487,7 @@ say Not near the stall! Not near the stall! | Take it outside! This is outside. 
 rule h7_react_fight_devout
 when concept=react.fight piety=devout
 does aside
-say Gods forgive them. Stop! | Peace! In the gods' names, peace! | Brothers! Sisters! Stop! | The Bright One sees you!
+say Bright One forgive them. Stop! | Peace! In the Bright One's name, peace! | Brothers! Sisters! Stop! | The Bright One sees you!
 
 rule h7_react_fight_dry
 when concept=react.fight humour=dry
@@ -1521,20 +1521,20 @@ rule h7_bark_destitute_beg
 when concept=bark wealth=destitute here.place=street|market|gate|chapel
 does aside
 cooldown 6h
-say Spare a penny? Half a penny? | A crust, anyone? For the gods' sake. | Anything at all. Anything. | Bless you. Bless you all. Anyone?
+say Spare a penny? Half a penny? | A crust, anyone? For the Bright One's sake. | Anything at all. Anything. | Bless you. Bless you all. Anyone?
 
 rule h7_bark_destitute_beg_rest
 when concept=bark wealth=destitute here.day=rest here.place=chapel|street
 does aside
 cooldown 1d
 priority 1
-say Restday, friends. A penny for the gods' sake. | Show the gods your kindness. A penny. | Bless you, bless your Restday. A crust?
+say Restday, friends. A penny for the Bright One's sake. | Show the Bright One your kindness. A penny. | Bless you, bless your Restday. A crust?
 
 rule h7_bark_death_recent
 when concept=bark world.death=recent here.place=street|chapel
 does aside
 cooldown 1d
-say Gods rest them. | Quiet street today. | Still can't believe it. | The bell's still in my ears.
+say Bright One rest them. | Quiet street today. | Still can't believe it. | The bell's still in my ears.
 
 rule h7_bark_crime_nervy
 when concept=bark world.crime=recent temper=nervy

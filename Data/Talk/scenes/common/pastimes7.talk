@@ -71,7 +71,7 @@ a[job!=servant] : The Ashfords play whist till the small hours. Ruinous. | Cards
 b[quarter=heights] #heights : And you'll go again next week. We all will.
 b[quarter=sump] #sump : Cards all night. Must be nice, having a night to waste.
 b #plain : Who won? | Why go? | Then scream. It'd liven them up.
-a@heights : We will. Gods help us.
+a@heights : We will. Bright One help us.
 a@sump : It's not as nice as it sounds. Truly.
 a@plain : Her, of course. Always her. | One goes. That's the Heights. | They'd only think it was a song.
 
@@ -488,7 +488,7 @@ a : Stones. And sticks. Mostly sticks. | I'll have you know it's a fine game. | 
 scene e2_pt_old_regret
 when topic=pastimes a.stage=old
 does tell.self / react.self / tell.self
-a[pair.band=friends|family] : I always meant to learn the pipes. Never did. | My dancing days. Gods, what dancing days. | I used to sing in the chapel, you know.
+a[pair.band=friends|family] : I always meant to learn the pipes. Never did. | My dancing days. Bright One, what dancing days. | I used to sing in the chapel, you know.
 b[warmth=warm] #warm : It's not too late. Come round. I'll find you a pipe.
 b #plain : Still could. | Tell me. | Sing something now.
 a@warm : These paws? Well. Maybe.
@@ -500,7 +500,7 @@ scene e2_pt_courting_dance
 when topic=pastimes a.stage=adolescent|adult
 does tell.self / react.self / assess
 a : Who are you asking to dance at the festival? | Somebody asked me to walk out. I said maybe. | They danced together three times last night. Three.
-b[married=yes] #wed : I've done my asking, thank the gods. I just watch now.
+b[married=yes] #wed : I've done my asking, thank the Bright One. I just watch now.
 b[talk=quiet] #shy : I... nobody. Maybe. Nobody.
 b : Not telling. | Maybe! Who? | Three's an announcement.
 a@wed : Smug, that's what you are.
@@ -698,7 +698,7 @@ a[here.season=winter] : Glasswater's frozen to the island. Half the town's out o
 b[temper=nervy] #nervy : I don't trust it. I heard it groan last night.
 b #plain : Is it safe? | Who's racing? | On the ice? Clever.
 a@nervy : It groans every night. It's a lake.
-a@plain : Safe as the gods want it. | The fishers. They know the ice. | Clever and cold.
+a@plain : Safe as the Bright One wants it. | The fishers. They know the ice. | Clever and cold.
 
 scene e2_pt_frosthollow_sledges
 when topic=pastimes here.region=frosthollow

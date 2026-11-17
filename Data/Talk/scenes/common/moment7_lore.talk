@@ -66,7 +66,7 @@ does tell.story / react.story ask.detail / answer.detail / assess
 a : I saw the comet when I was small. Tail across half the sky. | The winter Glasswater froze so hard they drove carts across it. | There was a summer it never rained. Not once. | I remember when the old bridge went down.
 b : What did it mean? | Carts? On the lake? | I'd have liked that summer. | What happened?
 a : Nobody knew. Everybody said. | Out and back. Never again. | You wouldn't. We ate dust. | Six carts in the river. Two wolves.
-b : Gods. | Mad, the lot of you. | No wonder you hate dust. | Gods rest them.
+b : Bright One. | Mad, the lot of you. | No wonder you hate dust. | Bright One rest them.
 
 scene m7_lore_pups_tale
 when topic=lore b.stage=young
@@ -152,7 +152,7 @@ b : #bc_everything# | #bc_every_day# | Different. Better. | Sleep a week.
 a@frost : Blood sausage? You can keep it.
 a@cold : We've trout. Sort of.
 a@oak : I made the face. Sorry.
-a@fen : We've no eels. Thank the gods.
+a@fen : We've no eels. Thank the Bright One.
 a@lark : We shout here. Badly.
 a@south : I'd go south for cider.
 a : Poor thing. | You'll get back. | Course it is. | #bc_lucky_you#
@@ -208,11 +208,11 @@ when topic=accent b.from=mirebridge|fenshore here.region=ridgemere
 does ask.detail / answer.detail / assess
 a : Fen voice. I'd know it. | You're from the fens. Is it true you sleep with your feet up? | #b.from.capitalize#? You'll miss the eels. | Do fen folk really talk to the marsh lights?
 b : Dry feet to you, then. | Keeps them dry. Try it. | Not the eels. The quiet. | They talk back. That's the trouble.
-a : Dry feet. | #bc_i_might# | Quiet's rare here. | Gods.
+a : Dry feet. | #bc_i_might# | Quiet's rare here. | Bright One.
 
 scene m7_acc_city_in_town
 when topic=accent b.from=ridgemere here.region=towns
 does ask.detail / answer.detail / assess
 a : City voice. You're from Ridgemere. | Fancy talk for these parts. | Come down from the big city, have you? | Does it really rain every day up there?
 b : Guilty. | City's no fancier than here. Just wetter. | Climbed down from it. All the stairs. | Every day. And twice on Restday.
-a : We'll forgive you. | Wetter, though. | Good riddance to stairs. | Gods.
+a : We'll forgive you. | Wetter, though. | Good riddance to stairs. | Bright One.

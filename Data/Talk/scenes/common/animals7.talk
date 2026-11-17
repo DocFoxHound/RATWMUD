@@ -20,7 +20,7 @@ a@plain : Nobody's, to hear anyone tell it. | And carters. | Follow-the-leader, 
 scene e2_an_sheep_stupid
 when topic=animals
 does tell.self / react.self / tell.self
-a : A sheep is the stupidest beast the gods ever made. | Watched a sheep stare at a fence all morning. | Sheep are cleverer than folk think.
+a : A sheep is the stupidest beast the Bright One ever made. | Watched a sheep stare at a fence all morning. | Sheep are cleverer than folk think.
 b[job=herder] #herder : They know my step from a stranger's. They know the weather before I do.
 b[humour=dry] #dry : Sheep think slowly. Doesn't mean they don't.
 b #plain : Second stupidest. Geese are first. | Did it get anywhere? | Name one clever thing a sheep's done.
@@ -68,7 +68,7 @@ a : Have you seen a brown goat, one horn? | Our goat's been gone two days. | Fou
 b[job=guard] #gaol : There's a goat in the gaol yard. It butted the gaoler.
 b[stage=young] #pup : I saw a goat! Up by the well! Or it was a sheep. It was brown.
 b #plain : Not today. | It'll come back hungry. | Keep it. Free goat.
-a@gaol : Gods. Goats everywhere this week.
+a@gaol : Bright One. Goats everywhere this week.
 a@pup : Brown. Thank you. That's a start.
 a@plain : If you do, grab its horn and shout. | They always come back angry, not hungry. | It's eaten the bread. It's not free.
 
@@ -259,7 +259,7 @@ b[stage=old] #old : I could catch a hare once. Now I catch my breath.
 b #plain : Good meat? | Bar none. | A bold one.
 a@pup : When you can catch me, I'll teach you.
 a@old : You'll get your second wind.
-a@plain : Stewed with barley. | Gods, they can turn. | Or a ghost.
+a@plain : Stewed with barley. | Bright One, they can turn. | Or a ghost.
 
 scene e2_an_hunt_boar
 when topic=animals
@@ -309,7 +309,7 @@ does tell.self / react.self / assess
 a : Fish are biting. | Pike in the river took a duckling, right off the top. | What's the cleverest fish, would you say?
 b[job=fisher] #fisher : Fish are never where you want them. That's fishing.
 b[job=cook] #cook : Bring me trout. I'll make a meal you'll weep over.
-b #plain : Off you go then. | Gods. | An old one. Can't be caught.
+b #plain : Off you go then. | Bright One. | An old one. Can't be caught.
 a@fisher : That's what I like about it.
 a@cook : Catch them first.
 a@plain : After work. | Pike are devils. | #bc_ha#
@@ -519,7 +519,7 @@ cooldown 3d
 a : How many did you lose over the winter? | I've a ram that'll fetch twenty at market. | Foot-rot again. Half the flock.
 b : Three. And an old one I'd been expecting. | Twenty? He's a ram, not a pony. | Sorry to hear it. Pare and tar them.
 a : Lucky. I lost six. | You'll see when you see him. | I've been at it since dawn.
-b?[humour=dry] : Sheep. The gods' own joke on herders.
+b?[humour=dry] : Sheep. The Dark One's own joke on herders.
 
 scene e2_an_farmers_stock
 when topic=animals a.job=farmer
@@ -574,9 +574,9 @@ a@plain : It knows the door. It waits. | They know bait. | I'll have them roaste
 scene e2_an_priest_beasts
 when topic=animals a.job=priest
 does tell.self / react.self / assess
-a : Folk bring me sick beasts like I'm a horse-leech. | Blessed a mule today. | Everything the gods made has a soul, you know. Even goats.
+a : Folk bring me sick beasts like I'm a horse-leech. | Blessed a mule today. | Everything the Bright One made has a soul, you know. Even goats.
 b[job=herder] #herder : We pray for the flock every lambing.
-b[humour=dry] #dry : Goats would argue with a god.
+b[humour=dry] #dry : Goats would argue with the Bright One.
 b #plain : Can you help them? | Did it work? | Even goats.
 a@herder : And the flock's the better for it.
 a@dry : They have. Often.

@@ -13,7 +13,7 @@ a : Rain runs downhill. Heights to the Sump, every drop. | The stairs are waterf
 b[quarter=sump] #sump : And we get all of it. Theirs and ours. | Down in the Sump we wade. Every lane. | I've a river through my kitchen. Free of charge.
 b[quarter=heights] #heights : Our drains are excellent. I couldn't say about further down.
 b : Gravity's got no manners. | Hold the rail. | Flowers up top, worse down here. | Walls cry. City's sad.
-a@sump : Theirs and ours, and the fish. | Gods. | Charge them for it.
+a@sump : Theirs and ours, and the fish. | Bright One. | Charge them for it.
 a@heights : I'm sure you couldn't.
 a : None at all. | What rail? | Best not look. | City's wet. Same thing.
 
@@ -41,7 +41,7 @@ does tell.self / react.self / assess
 a : Fog's come in off the Sound. | Can't see the water gates. | The fog horn's lowing out on the point like a lost cow. | Masts sticking out of the #fog# like reeds.
 b[job=sailor|fisher] #sea : Nobody's leaving harbour. Nobody sane. | I've rowed in this. Never again. Heard the rocks before I saw them. | Fog's the sea's way of saying stay home.
 b : It'll sit till the tide turns. | Can hear them, though. Creaking. | Somebody find it its mother. | Ships in a cloud.
-a@sea : Somebody insane, then. There's always one. | Gods. | Then I'll listen to the sea.
+a@sea : Somebody insane, then. There's always one. | Bright One. | Then I'll listen to the sea.
 a : Or all week. | Creak, creak. | Ha. Poor beast. | Ghost ships.
 
 scene m7_rg_wharf_dawn
@@ -76,7 +76,7 @@ when topic=weather|day here.region=ridgemere here.weather=rain|storm a.quarter=s
 does tell.self / react.self / assess
 a : The lane's a river. | Water's in the tenement cellar again. | The Bilge has a puddle you could drown in. | Rats are moving upstairs.
 b : #bc_every_time# | Mind the rats. | Somebody did, last year. | Smart rats.
-a : And every time they promise to mend the drain. | They mind me. | Gods. | Smarter than the landlord.
+a : And every time they promise to mend the drain. | They mind me. | Bright One. | Smarter than the landlord.
 
 scene m7_rg_commons_market
 when topic=day here.region=ridgemere here.day=market here.place=market a.quarter=commons|harbour_hill|office
@@ -149,7 +149,7 @@ does tell.story / react.story / assess / assess
 a : Why's it called the Drowned Lantern? | Somebody saw a light under the water at the end of the pier. | They say the Sound's got a town under it. Bells and all. | Fishers say a lamp on the water at night is a drowned wolf looking for home.
 b[quarter=sump|wharf] #local : Ask anyone in the Sump about lights under the water. The Drowned Lantern's named for one.
 b : Nobody remembers. | Lantern fish. | And fish for mayors. | Then don't row to it.
-a@local : Gods. Is that true?
+a@local : Bright One. Is that true?
 a : Somebody does. | Or a ghost. | #bc_ha# | Nobody does, twice.
 b?@local : True as the rain.
 
@@ -188,7 +188,7 @@ does tell.story / react.story / assess / tell.self
 a : Heard the slide on the east face last night. | Snow's hanging over the pass like a breath held. | Pass Road's shut till the slide's cleared. | The thaw's loosening the high snow.
 b[stage=old] #old : The great slide took half the old houses when I was a pup. Same face.
 b : Anyone under it? | It'll let go soon. | Again? Third time this winter. | Keep off the slopes.
-a@old : Gods. And they built again?
+a@old : Bright One. And they built again?
 a : Nobody, thank the lamp. | Then the pass shuts. | Fourth. | Keep off everything.
 b?@old : We always build again. That's Frosthollow.
 
@@ -241,7 +241,7 @@ does tell.self / react.self / assess / assess
 a : First winter up here? | You'll want better boots. | Snow getting to you? | You look froze to the marrow.
 b : Is it always like this? Always? | Better everything. | It's in me. In my bones. | I'm a southern wolf. We melt or we freeze. No middle.
 a : Gets worse. | Go see the cobbler. | That's Frosthollow saying hello. | You'll learn the middle.
-b : Gods help me. | Which way? Quick. | Tell it to say goodbye. | I'll die learning it.
+b : Bright One help me. | Which way? Quick. | Tell it to say goodbye. | I'll die learning it.
 
 # ================================================================ Coldwater: on Glasswater
 
@@ -511,7 +511,7 @@ a : Rain! At last! | Listen to the fields drink. | Somebody's dancing in it. | S
 b[stage=old] #old : Rain in the south's a gift. Never curse it here.
 b : The well'll fill. | Glug glug. | Everybody, nearly. | Like a stone floor fresh washed.
 a@old : I'll not. I'll dance.
-a : Thank the gods. | #bc_ha# | #bc_me_too# | Lovely, after all that dust.
+a : Thank the Bright One. | #bc_ha# | #bc_me_too# | Lovely, after all that dust.
 
 scene m7_sm_lore_scarecrows
 when topic=lore here.region=southmeadow

@@ -312,7 +312,7 @@ rule e8r_sha_lost
 when concept=ships.answer topic.kind=lost
 does react.news
 priority 3
-say The Bright One keep them. | ... Gods. The poor souls. | Their families. Bright One, their families.
+say The Bright One keep them. | ... Bright One. The poor souls. | Their families. Bright One, their families.
 then other: ships.close
 
 rule e8r_sha_sailed

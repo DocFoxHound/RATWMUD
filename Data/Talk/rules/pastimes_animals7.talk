@@ -178,7 +178,7 @@ then other: pastimes.react
 rule e2_r_pt_own_chatty
 when concept=pastimes.own self.talk=chatty
 does answer.detail
-say Oh, everything! Singing, cards, I've a fiddle, I can't play it, but I've got it, and gossip, gods, the gossip... | Talking. You might've noticed. | Visiting! I visit. Everyone. Every evening.
+say Oh, everything! Singing, cards, I've a fiddle, I can't play it, but I've got it, and gossip, Bright One, the gossip... | Talking. You might've noticed. | Visiting! I visit. Everyone. Every evening.
 then other: pastimes.react
 
 rule e2_r_pt_own_restless
@@ -840,7 +840,7 @@ rule e2_r_an_quip_cat
 when concept=talk.animals self.humour=dry
 does tell.self
 cooldown 2d
-say A cat's a landlord who pays you in dead mice. | Geese. Proof the gods have a temper. | A sheep's thought is a lonely thing.
+say A cat's a landlord who pays you in dead mice. | Geese. Proof the Dark One has a sense of humour. | A sheep's thought is a lonely thing.
 
 rule e2_r_an_quip_omen
 when concept=talk.animals self.stage=old

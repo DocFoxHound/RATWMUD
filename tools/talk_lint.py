@@ -254,6 +254,9 @@ def main() -> int:
     except (ValueError, json.JSONDecodeError, re.error) as e:
         print(f'talk_lint: {e}', file=sys.stderr)
         return 1
+    deities = dialect_check.deity_files(a.root, a.root.parent / 'Voice')
+    for where, word, line in deities:
+        print(f'  DEITY {where}: "{word}" (the Bright One if kindly, the Dark One if malevolently): {line[:140]}')
     by_rule = collections.Counter(f['rule'] for f in found)
     if a.list:
         for f in sorted(found, key=lambda f: (f['rule'], f['where'])):
@@ -274,7 +277,9 @@ def main() -> int:
           f"{len(new)} new, {gone} gone since the baseline")
     for f in new[:30]:
         print(f"  NEW {f['rule']}: {f['where']} {f['entry']}: {f['text']}")
-    return 1 if new else 0
+    if deities:
+        print(f'talk_lint: {len(deities)} lines name a god; the world has the Bright One and the Dark One')
+    return 1 if new or deities else 0
 
 
 if __name__ == '__main__':

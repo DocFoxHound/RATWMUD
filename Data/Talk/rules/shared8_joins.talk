@@ -55,7 +55,7 @@ say Beasts? I've a tale or two about beasts. | Talking stock? I'm all ears. | Fi
 rule s8j_favourite_faith
 does join.add
 when conv.stake=favourite conv.topic=faith|lore|dreams
-say The old tales? I love those. | Is this about the gods? Let me sit. | Dreams? I had a queer one myself.
+say The old tales? I love those. | Is this about the Bright One? Let me sit. | Dreams? I had a queer one myself.
 
 rule s8j_favourite_memories
 does join.add
@@ -241,7 +241,7 @@ rule s8j_break_fight_any
 does break
 when conv.interrupt=fight
 tone serious
-say Gods, a fight. I'm away. | Stand back! They're at it. | Look out! Trouble. | That's a fight. Somebody fetch the Watch.
+say Bright One, a fight. I'm away. | Stand back! They're at it. | Look out! Trouble. | That's a fight. Somebody fetch the Watch.
 
 rule s8j_break_fight_young
 does break

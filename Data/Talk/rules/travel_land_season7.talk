@@ -930,7 +930,7 @@ rule e5_season_herder_autumn
 when concept=season.answer self.job=herder here.season=autumn
 does answer.detail
 cooldown 1d
-say Bringing them down off the tops before the weather turns. | Counting, culling, and choosing who goes to market. Hard days. | The tups go in with the ewes. Lambs in spring, gods willing.
+say Bringing them down off the tops before the weather turns. | Counting, culling, and choosing who goes to market. Hard days. | The tups go in with the ewes. Lambs in spring, Bright One willing.
 
 rule e5_season_herder_winter
 when concept=season.answer self.job=herder here.season=winter

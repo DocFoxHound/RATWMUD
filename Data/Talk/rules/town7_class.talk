@@ -436,7 +436,7 @@ then other: town.close
 rule n7_sa_sump
 when concept=town.station conv.st=sump
 does react.complaint
-say {sa=chat} That's the Sump for you. | {sa=chat} Gods. It never gets better down there, does it? | {sa=chat} And nobody up the hill bats an eye.
+say {sa=chat} That's the Sump for you. | {sa=chat} Bright One. It never gets better down there, does it? | {sa=chat} And nobody up the hill bats an eye.
 then other: town.close
 
 rule n7_sa_sump_rich_warm
@@ -587,12 +587,12 @@ say I hardly think that's called for. | Hm. Droll. | Yes. Well. #good_day#.
 rule n7_close_st_give
 when concept=town.close conv.on=station conv.sa=give
 does ack
-say Bless you, #sir#. Bless you. | Thank you. Thank you. | I'll not forget it. | Gods keep you.
+say Bless you, #sir#. Bless you. | Thank you. Thank you. | I'll not forget it. | Bright One keep you.
 
 rule n7_close_st_refuse
 when concept=town.close conv.on=station conv.sa=refuse
 does ack
-say Right. Of course. | Gods keep you anyway. | Sorry to have troubled you. | Hmph.
+say Right. Of course. | Bright One keep you anyway. | Sorry to have troubled you. | Hmph.
 
 rule n7_close_st_refuse_short
 when concept=town.close conv.on=station conv.sa=refuse self.temper=short

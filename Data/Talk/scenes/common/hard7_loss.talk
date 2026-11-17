@@ -25,7 +25,7 @@ b : Then it's the worst kind. | It hollows you. | I'll take bread. | So would I.
 scene h7_death_good_one
 when topic=life topic.kind=death
 does tell.news / react.news / tell.self / react.self
-a : #topic.subject#'s dead. #topic.they.capitalize# was a good one. | We lost #topic.subject#. One of the decent ones. | Gods. #topic.subject#. #topic.they.capitalize# never had a bad word for anyone. | #topic.subject#, gone. #topic.they.capitalize# lent me a coat once and never asked for it back.
+a : #topic.subject#'s dead. #topic.they.capitalize# was a good one. | We lost #topic.subject#. One of the decent ones. | Bright One. #topic.subject#. #topic.they.capitalize# never had a bad word for anyone. | #topic.subject#, gone. #topic.they.capitalize# lent me a coat once and never asked for it back.
 b[honesty=frank] #frank : They had plenty of bad words. They just said them kindly.
 b : The good ones always go first. | There's not many of those. | Not one. Not even for me. | That sounds like them.
 a@frank : Ha. They did. They did, at that.
@@ -81,7 +81,7 @@ scene h7_death_priest
 when topic=life topic.kind=death a.job=priest
 does tell.news / react.news / tell.self / react.self
 a : I'll say the words for #topic.subject# tomorrow. | I sat with #topic.subject# at the end. | #topic.subject# asked for me. I came too late. | I've buried four this season. #topic.subject# makes five.
-b : Say good ones. | Did they go easy? | You came. That's what matters. | Five. Gods.
+b : Say good ones. | Did they go easy? | You came. That's what matters. | Five. Bright One.
 a : There are only so many words. I'll find the right ones. | Easier than most. | It doesn't feel like it. | Five, and the season not half over.
 b : You always do. | Thank you for that. | It will, later. | Then save some words for us.
 
@@ -89,7 +89,7 @@ scene h7_death_healer
 when topic=life topic.kind=death a.job=healer
 does tell.news / react.news / assess / tell.self
 a : I couldn't save #topic.subject#. | I tried with #topic.subject#. Everything I had. | #topic.subject# called me too late. | I should have seen it sooner, with #topic.subject#.
-b : Nobody thinks you didn't try. | Everything's sometimes not enough. | #bc_they_always_do# | You're not the gods.
+b : Nobody thinks you didn't try. | Everything's sometimes not enough. | #bc_they_always_do# | You're not the Bright One.
 a : I think it. | It never is, at the end. | #bc_every_time# | No. I'm the one they send for.
 b : Then stop thinking it, for one night. | Then rest. You look worse than they did. | Then go and tell them sooner. | And you come. That's the job.
 

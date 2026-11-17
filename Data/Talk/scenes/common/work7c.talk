@@ -94,7 +94,7 @@ scene w7c_down_glad
 when topic=prices topic.dir=down
 does tell.news / react.news.glad / ack
 a : #topic.what.capitalize#, #topic.price#! Down! | Something got cheaper. Write down the day. | Good news for the purse. Prices are down.
-b[wealth=poor|destitute] : Gods be thanked. I can eat. | Down? I'll believe it. | My purse needs it.
+b[wealth=poor|destitute] : Bright One be thanked. I can eat. | Down? I'll believe it. | My purse needs it.
 b[role=merchant] #merch : Lovely. For the buyers. | I'm writing it. With tears. | Not for the seller's.
 b[stage=old] : Won't last. Buy now. | I'll remember it. Won't be many. | Down till Restday, maybe.
 b : #bc_about_time# | Marvellous. | #bc_good#
@@ -198,10 +198,10 @@ scene w7c_cv_in_goods
 when topic=caravan topic.kind=arrived
 does tell.news / react.news / assess
 a : What've they brought from #topic.where#, do you know? | There's cloth on the #topic.where# carts. Good cloth. | Salt fish from #topic.where#, I hope.
-b[role=merchant] #merch : My order, gods willing. | I'll have it on my stall by noon. | Hope away. I've bought it all.
+b[role=merchant] #merch : My order, Bright One willing. | I'll have it on my stall by noon. | Hope away. I've bought it all.
 b[stage=young] #pup : Sweets? Are there sweets? | Can I have a ribbon? | Fish. Yuck.
 b : Everything and nothing. | #bc_good# | Fish!
-a@merch : Gods willing. | Save me some. | All of it?
+a@merch : Bright One willing. | Save me some. | All of it?
 a@pup : Maybe. Ask nicely. | #bc_we_will_see# | Fish is good for you.
 a : Everything, then. | #bc_very# | Fried, with bread. Lovely.
 
@@ -262,9 +262,9 @@ a : Prices will jump now. Mark me. | No goods from #topic.where# for a month, I'
 b[role=merchant] #merch : They already have. I put mine up this morning. | A month? Two. | A few thieves and a lazy Watch.
 b[wealth=poor|destitute] #poor : We'll go hungry, then. | Can't afford it anyway. | Thieves rob all of us.
 b : I fear you're right. | Two, more like. | Aye.
-a@merch : Of course you did. | Two. Gods. | Don't let them hear you.
+a@merch : Of course you did. | Two. Bright One. | Don't let them hear you.
 a@poor : Not if I can help it. | Nor can I. | All of us.
-a : I'm always right. | Two, then. Gods. | A few, and look.
+a : I'm always right. | Two, then. Bright One. | A few, and look.
 
 scene w7c_cv_raid_fear
 when topic=caravan topic.kind=raided

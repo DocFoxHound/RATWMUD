@@ -217,7 +217,7 @@ BRIDGE = re.compile(r"\b(anyway|well then|enough of that|still|mind you|on a bri
 FAREWELL = re.compile(r"\b(farewell|goodbye|good night|goodnight|go well|go in peace|fair winds|safe road|take care|"
                       r"see you|be seeing|i'?d best|i must be off|i'?ll be off|must go|be off|off with you|"
                       r"till (?:tomorrow|next)|until (?:tomorrow|next)|calm water|dry feet|walk warm|rest well|"
-                      r"mind how you go|bright one keep you|gods keep|keep well|later,|sleep (?:well|sound)|"
+                      r"mind how you go|bright one keep you|keep well|later,|sleep (?:well|sound)|"
                       r"good day to you|peace on your road|water on your way|keep your lamp lit|lamp lit|root well|"
                       r"shade keep you|good trading|ripe days|look after yourself|mind yourself|bye)\b", re.I)
 # The dialects' farewells that are ordinary words elsewhere ("a fair price", "a good harvest"): a farewell only as a

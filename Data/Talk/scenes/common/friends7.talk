@@ -66,7 +66,7 @@ b[temper=nervy] #scared : No! Someone'll see. | They'll put me in the cells! | I
 b[humour=merry] #game : Watch me. AWOOOO! | Hold my cloak. | Watch and learn. | Stand back.
 b : Not on your life. | You do it. | I'd sooner kiss a goat. | Not in these boots.
 a@scared : Nobody's looking. ...Fine. Somebody's always looking. | Only for a night or two. | You'd live. Probably. | That's what makes it worth watching.
-a@game : Gods, you actually did it. Run! | You're mad. I love it. Go on! | ...The baker's gone red to the ears! | Ha! Clean over. Mostly.
+a@game : Bright One, you actually did it. Run! | You're mad. I love it. Go on! | ...The baker's gone red to the ears! | Ha! Clean over. Mostly.
 a : Coward. | #bc_fair# | The goat's the better offer. | Excuses.
 
 scene r7_fr_getting_old
@@ -132,7 +132,7 @@ b[honesty=frank] #told : Then go and say sorry. You know you were wrong. | Do yo
 b[temper=short] #fierce : Want me to have a word? | Good. Hate them back. | Good for you. | Their loss.
 b : What about? | Why? What've you done? | What did they say? | What happened?
 a@told : I know. I know. | ...Maybe a bit. | Too much. Far too much. | I know. I will.
-a@fierce : No! Gods, no. Leave it be. | I'd rather nobody hated anybody. | Was it? I'm not so sure. | Mine too, mind.
+a@fierce : No! Bright One, no. Leave it be. | I'd rather nobody hated anybody. | Was it? I'm not so sure. | Mine too, mind.
 a : Nothing. Something. I don't know. | Nothing! I think. | It doesn't matter now. | It's daft. It's too daft to say.
 b : Leave it a day. Then go round. | Bake them something. Works every time. | Then let it go. | Daft ones are the easiest to mend.
 
@@ -152,7 +152,7 @@ a : If anyone asks, I was with you last night. | You haven't seen me today. Unde
 b[honesty=frank] #frank : I'll not lie for you. | I'm not lying for you. | I'll not lie to your mother. | I'll not lie. Not even for you.
 b[honesty=sly] : That'll cost you. | Seen who? | Helping me with what? I'd better know. | Ill with what? Make it something good.
 b : Were you? Where were we? | Of course. Why? | Helping me with what? | Why? Where were you?
-a@frank : Fine. I'll tell the truth. Gods help me. | Then don't see me. | Then don't say anything. | Then say nothing at all.
+a@frank : Fine. I'll tell the truth. Bright One help me. | Then don't see me. | Then don't say anything. | Then say nothing at all.
 a : Don't ask. | Don't ask. | Something. Anything. | It's better you don't know.
 b?[warmth=warm] : Mind yourself, whatever it is.
 
@@ -224,7 +224,7 @@ a : I dreamt I could fly last night. | I had the strangest dream. You were in it
 b : Where did you fly to? | Was I handsome? | That means money, they say. Or death. One of the two. | Every week. And I've not done my letters.
 a : The bakery. Obviously. | You were a hen. A big brown one. | Which? | Never. Not once.
 b[humour=merry] : Cluck. | I'd be a lovely hen. | I'll take the money. | Me neither. Ha!
-b[piety=devout] : Dreams are the gods speaking. Mind what they say. | The gods have a sense of humour. | Ask the priest. Priests know about teeth. | The gods know you never did.
+b[piety=devout] : Dreams are the Bright One speaking. Mind what you hear. | The Bright One has a sense of humour. | Ask the priest. Priests know about teeth. | The Bright One knows you never did.
 b : Sensible. | Hm. | Money, then. Let's say money. | Me neither.
 
 scene r7_fr_wedding_clothes
@@ -283,7 +283,7 @@ when topic=friends here.time=dusk|night
 does tell.self / react.self / assess / tell.self
 a : Did you hear the old mill's haunted? | Someone saw a light in the empty house again. | They say a wolf walks the walls at night, with no feet. | My gran swore she saw a ghost at the ford.
 b[temper=nervy] : Don't. I have to walk home. | Don't say that. Not now. | Please don't. | Stop it. I mean it.
-b[piety=devout] : The dead rest. The gods see to that. | Lights are just lights. Say a prayer and walk on. | The gods keep the walls. | Your gran liked a story.
+b[piety=devout] : The dead rest. The Bright One sees to that. | Lights are just lights. Say a prayer and walk on. | The Bright One keeps the walls. | Your gran liked a story.
 b : Haunted by what? | Probably thieves. | No feet? How does it walk? | Your gran saw a lot of things.
 a : A miller. Still grinding. | Thieves, with no shadows. | It floats. Slowly. Behind you. | She did. Most of them were there.
 b : I'm going home. The long way. | Thieves have shadows. | Behind me? Don't. | Ha. Most.
@@ -318,7 +318,7 @@ does ask.detail / answer.detail / assess / tell.self
 a : See that bright one? That's the Hunter. | My father said the stars are wolves who howled too long. | Which one's the Plough? I never can find it. | Look at them all. Makes you feel small.
 b : That's a lamp in a window. | And the moon's the one who won? | There. No. There. Follow my claw. | Speak for yourself. I feel enormous.
 a : It's not! | Ha! I'll take that. | Oh! There! | Because you ate two suppers.
-b[piety=devout] : The gods hung every one of them. Think of that. | The gods' lanterns, my mother said. | The gods put the Plough up so farmers know when to sow. | Small, and seen. Both.
+b[piety=devout] : The Bright One hung every one of them. Think of that. | The Bright One's lanterns, my mother said. | The Bright One put the Plough up so farmers know when to sow. | Small, and seen. Both.
 b : It is. It's the baker's. | He was a clever wolf. | Found it? | Three.
 
 scene r7_fr_soup_sick
@@ -353,7 +353,7 @@ b : Ha! You always cheat. | #bc_ha# | No. Watch. | You'll lose it.
 scene r7_fr_weather_together
 when topic=friends here.weather=rain|storm|snow|fog|overcast
 does tell.self / react.self / assess
-a : Gods, this weather. | Will it ever change? | My fur's not been dry since Restday. | I'm sick of grey.
+a : Bright One, this weather. | Will it ever change? | My fur's not been dry since Restday. | I'm sick of grey.
 b[here.weather=rain|storm] : I know. My boots are ponds. | Not till spring, the way it's going. | Mine's a sponge. | Grey and wet. Lovely.
 b[here.weather=snow] : My ears have frozen. Feel them. | When the snow goes. If it goes. | Mine's frozen solid. | White, now. White's worse.
 b[here.weather=fog] : I can't see my own paws. | When the fog lifts. If it lifts. | Damp right through. | Grey and thick. Like porridge.
@@ -420,7 +420,7 @@ scene r7_fr_slept_in_chapel
 when topic=friends
 does tell.self / react.self / ask.detail / answer.detail
 a : I fell asleep in chapel again. | Did you see me nod off at the sermon? | The priest looked right at me while I was yawning. | Was that you snoring in the back pew?
-b[piety=devout] : I saw. The gods saw. | Every word of it was meant for you, you know. | You deserved that look. | It was. Shame on you. Ha.
+b[piety=devout] : I saw. The Bright One saw. | Every word of it was meant for you, you know. | You deserved that look. | It was. Shame on you. Ha.
 b : So did half the town. | I saw. Your chin was on your chest. | Was it a long yawn? | No. Maybe. Who's asking?
 a : Was I loud? | Was I loud? | A long one. | The priest is asking.
 b : Not as loud as the old miller. | Only at the end. | Long enough to see your back teeth. | Then it wasn't me.
@@ -459,7 +459,7 @@ does tell.self / ask.detail / answer.detail / assess / assess
 a : I had a letter today. | My cousin wrote from the coast. | Someone left a note under my door. | I got word from my sister.
 b : Who from? | What does she say? | #bc_who_q# | Good news?
 a : My aunt. She wants money. | She's married a sailor. | Unsigned. Just "Thinking of you." | She's having a pup.
-b[honesty=sly] : Money? Then she's not seen you lately. | A sailor! Is he rich? | Unsigned? Oh, that's interesting. Who've you been smiling at? | A pup! Gods help it, with her for a mother.
+b[honesty=sly] : Money? Then she's not seen you lately. | A sailor! Is he rich? | Unsigned? Oh, that's interesting. Who've you been smiling at? | A pup! Bright One help it, with her for a mother.
 b : #bc_they_always_do# | A sailor! | Someone's sweet on you. | Wonderful!
 a : Don't. | #bc_we_will_see# | I wish I knew. | Wonderful. Terrifying.
 

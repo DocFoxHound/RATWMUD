@@ -276,7 +276,7 @@ say #bc_about_time# | Good. Long may it last. | Won't last. Never does. | I'll b
 rule w7_cheap_poor
 when concept=prices.answer_cheap wealth=poor|destitute
 does react.news.glad
-say Thank the gods. Something's gone my way. | Cheaper's the best word I've heard all week. | Good. Now I can nearly afford it.
+say Thank the Bright One. Something's gone my way. | Cheaper's the best word I've heard all week. | Good. Now I can nearly afford it.
 
 rule w7_cheap_rich
 when concept=prices.answer_cheap wealth=rich
@@ -497,7 +497,7 @@ when concept=talk.caravan topic.kind=raided job=carter
 does tell.self
 priority 1
 cooldown 12h
-say That could've been me on the #topic.where# road. | I know those drivers. Gods, I know them. | I'm not driving that road again. Not for any money.
+say That could've been me on the #topic.where# road. | I know those drivers. Bright One, I know them. | I'm not driving that road again. Not for any money.
 then other: caravan.answer
 
 rule w7_cv_raided_guard
@@ -572,7 +572,7 @@ rule w7_cva_raided_hurt
 when concept=caravan.answer topic.kind=raided
 does react.news
 priority 1
-say Was anyone hurt? | Gods. Those poor drivers. | Again? That's the third this season.
+say Was anyone hurt? | Bright One. Those poor drivers. | Again? That's the third this season.
 
 rule w7_cva_raided_healer
 when concept=caravan.answer topic.kind=raided job=healer

@@ -134,7 +134,7 @@ scene e3_h_healer_vs_priest
 when topic=health
 does tell.self / react.self / tell.self
 a : The healer says rest. The priest says pray. Who do I listen to? | The priest told my aunt her cough was a sin. | I lit a candle and took the healer's draught. Both at once, to be safe.
-b[priest] #priest : Pray, and then rest. The gods aren't jealous of a good bed.
+b[priest] #priest : Pray, and then rest. The Bright One isn't jealous of a good bed.
 b[healer] #healer : Pray all you like. But take the draught.
 b : Whoever's cheaper. | What sin gives you a cough? | Very wise.
 a@priest : Bed and prayers. That I can do.
@@ -382,15 +382,15 @@ a : After this. | It'll go straight back to sleep. | What day is it?
 scene e3_h_devout
 when topic=health a.piety=devout
 does tell.self / react.self / assess
-a : I had a fever. I prayed, and it broke. | I pray for my knees every night. | The gods sent this cough to teach me patience.
-b[priest] #priest : The gods hear us. They heard you.
-b[healer] #healer : The gods and the draught I gave you. Let's share the credit.
+a : I had a fever. I prayed, and it broke. | I pray for my knees every night. | The Bright One sent this cough to teach me patience.
+b[priest] #priest : The Bright One hears us. You were heard.
+b[healer] #healer : The Bright One and the draught I gave you. Let's share the credit.
 b[piety=devout] #devout : I'll pray for you too. Two prayers can't hurt.
 b : Glad it broke. | Do the knees listen? | It's teaching me patience too.
 a@priest : They do. I'll keep asking.
 a@healer : Half each, then.
 a@devout : Bless you. Two's better than one.
-a : The gods are good. | Not yet. But they're being prayed for. | Then it's working.
+a : The Bright One is good. | Not yet. But they're being prayed for. | Then it's working.
 
 scene e3_h_short_patient
 when topic=health a.temper=short
@@ -654,7 +654,7 @@ scene e3_h_chapel_prayer
 when topic=health here.place=chapel
 does tell.self / react.self / thank
 a : I've come to pray for my brother. He's very low. | I light a candle for the sick every Restday. | The priest blessed my knees. Can't hurt.
-b[priest] #priest : The gods hear prayers for others first. Sit with me.
+b[priest] #priest : The Bright One hears prayers for others first. Sit with me.
 b : I'll pray with you. | That's kind. | Couldn't hurt.
 a@priest : Thank you. I'd like that.
 a : #bc_thank_you# | Someone has to. | And it's warm in here.

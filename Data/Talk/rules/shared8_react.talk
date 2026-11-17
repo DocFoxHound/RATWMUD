@@ -147,7 +147,7 @@ say Look after yourself, now. | Don't leave it too long. | Mind you rest. | That
 rule s8r_self_faith
 does react.self
 when conv.topic=faith|dreams
-say The Bright One sees it, I'm sure. | That's between you and the gods. | There's comfort in that. | I'd not read too much into it.
+say The Bright One sees it, I'm sure. | That's between you and the Bright One. | There's comfort in that. | I'd not read too much into it.
 
 rule s8r_self_dreams
 does react.self

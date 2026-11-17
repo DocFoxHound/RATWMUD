@@ -64,7 +64,7 @@ say Dreams again. We're a pair of dreamers. | We were on about dreams lately too
 rule s8cb_faith
 does recall
 when conv.topic=faith pair.talked.faith<4
-say We were on about the gods lately, too. | The chapel again. We're a pious pair. | Faith again, you and I.
+say We were on about the Bright One lately, too. | The chapel again. We're a pious pair. | Faith again, you and I.
 
 rule s8cb_travel
 does recall
@@ -128,7 +128,7 @@ say Family. Gently, this time. | Last time we spoke of home, it went badly. Let'
 rule s8cb_soured_faith
 does recall
 when conv.topic=faith pair.recall.faith=soured|quarrelled
-say We'll keep the gods out of a quarrel, this time. | Faith, but no fighting about it. | Let's not cross words over the chapel again.
+say We'll keep the Bright One out of a quarrel, this time. | Faith, but no fighting about it. | Let's not cross words over the chapel again.
 
 rule s8cb_soured_prices
 does recall
@@ -284,7 +284,7 @@ say Last time we talked of it, it did me good. | That last talk about health eas
 rule s8cb_warmed_faith
 does recall
 when conv.topic=faith pair.recall.faith=warmed
-say I liked our last talk about the gods. | That was a good talk, last time, about the chapel.
+say I liked our last talk about the Bright One. | That was a good talk, last time, about the chapel.
 
 rule s8cb_soured_health
 does recall

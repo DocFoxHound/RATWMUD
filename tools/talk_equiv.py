@@ -46,7 +46,7 @@ EDITED = {
     'n7_ga2_old': 'the same ("It\'ll be forgotten by the next festival" to a death)',
     'n7_ga2_nervy': 'the same ("If they hear we said it..." to a death)',
     'n7_ga2_cold': '"Doesn\'t surprise me." to a death: not for a death now (n7_ga2_death_cold is the cold wolf\'s)',
-    'n7_ga2_devout': '"The gods hear tattle too" to a death: not for a death now (n7_ga2_death_devout is the devout\'s)',
+    'n7_ga2_devout': '"The Bright One hears tattle too" to a death: not for a death now (n7_ga2_death_devout is the devout\'s)',
     'n7_ga2_priest': '"I\'ll not hear it" to a death: the same',
     'n7_ga2_warm': '"I hope they\'re all right" of one wolf: #topic.they# (he or she) now',
     'n7_ga2_death': '"I saw them only the other day": "they" for one wolf, and an eyewitness who saw nothing; "No. Not '
@@ -149,6 +149,19 @@ EDITED.update({
                               'dusk (the quick card\'s T2): "Take care, then."',
     'st_farewell': 'a goodbye said as a talk of its own was tagged tell.self / react.self, so a greeting went before it '
                    '("Evening, neighbour. Mind how you go."): farewell / farewell.return',
+})
+# The two deities (the user, 2026-11-17): every "god" and "gods" became the Bright One (said kindly) or the Dark One
+# (malevolently), the verb following where one god stands for many. A line that named a god may say it so now.
+DEITY = re.compile(r"\b(?:gods?|godsend|godless|godly|godforsaken|goddess(?:es)?)\b", re.I)
+TWO = re.compile(r"\b(?:Bright|Dark) One\b")
+EDITED.update({
+    'h7_crime_devout': '"Ha. Don\'t." / "I\'ll not." answering "Then the Bright One should tell the Watch." (the fourth '
+                       'blind packet\'s item 25): "The Bright One sees. The Watch has to look." / "Then the Watch had better '
+                       'look harder."',
+    'e4_fa_quip_luck': 'a bare "Touch wood." answered "Done." after a remembered talk (item 57): a luck asked for, and '
+                       'why ("Things are going well. Touch wood for me."), answered "There. Touched."',
+    'r7_fr_devout_and_doubter': '"Are they?" and "When they remember." answering "The gods are good to us": the Bright One '
+                                'is one ("Is it? I hadn\'t noticed.", "When it suits.")',
 })
 DISCOURSE = {'hedge', 'account', 'ack', 'pivot', 'anyway', 'later', 'resume', 'preclose', 'excuse', 'knew', 'sympathy',
              'concede', 'insist', 'warn', 'welcome_back', 'welcome', 'sorry', 'forgive', 'deflect', 'no_matter',
@@ -289,6 +302,7 @@ def compare(rev: str) -> list[str]:
                 problems.append(f'{where}: a line\'s speaker or tags changed ({oh} / {nh})')
                 continue
             olds = [strip_tag(a)[1] for a in oalts]
+            named_god = any(DEITY.search(a) for a in olds)
             possible = set()
             for a in nalts:
                 tag, words = strip_tag(a)
@@ -297,10 +311,10 @@ def compare(rev: str) -> list[str]:
                     problems.append(f'{where}: "{words[:50]}" lacks the tags {sorted(tags - have)}')
                 exp = expansions(words, plain)
                 possible |= exp
-                if not (exp & set(olds)) and id not in EDITED and not re.search(r'#(' + '|'.join(DISCOURSE) + r')(\.[a-z]+)?#', words):
+                if not (exp & set(olds)) and id not in EDITED and not (named_god and TWO.search(words)) and not re.search(r'#(' + '|'.join(DISCOURSE) + r')(\.[a-z]+)?#', words):
                     problems.append(f'{where}: "{words[:60]}" is a new line with no discourse word')
             for a in olds:
-                if a not in possible and id not in EDITED:
+                if a not in possible and id not in EDITED and not DEITY.search(a):
                     problems.append(f'{where}: "{a[:60]}" can no longer be said')
     for id in added:
         print(f'talk_equiv: new entry {new[id]["file"]}: {id}')

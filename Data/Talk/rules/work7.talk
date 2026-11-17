@@ -856,7 +856,7 @@ rule w7_done_tired
 when concept=work.done tired=yes shift=after|none
 does answer.how
 priority 1
-say {w7_tone=tired w7_from=b} Done in. #bed.capitalize#'s calling. | {w7_tone=tired w7_from=b} I've nothing left. Not a whisker. | {w7_tone=tired w7_from=b} Over. Thank the gods it's over.
+say {w7_tone=tired w7_from=b} Done in. #bed.capitalize#'s calling. | {w7_tone=tired w7_from=b} I've nothing left. Not a whisker. | {w7_tone=tired w7_from=b} Over. Thank the Bright One it's over.
 then other: work.reply
 
 rule w7_done_short
@@ -1337,7 +1337,7 @@ say That's lovely to hear. | You deserve it. You do. | Ha! Look at you, all plea
 rule w7_rep_good_dry
 when concept=work.reply conv.w7_tone=good humour=dry
 does react.self
-say Mark the day. Somebody's happy. | Don't say it too loud. The gods listen. | Enjoy it. It never lasts.
+say Mark the day. Somebody's happy. | Don't say it too loud. The Dark One listens. | Enjoy it. It never lasts.
 
 rule w7_rep_good_old
 when concept=work.reply conv.w7_tone=good stage=old
@@ -1511,7 +1511,7 @@ say Hmph. | #bc_we_will_see# | If you say so.
 rule w7_end_tired
 when concept=work.end tired=yes
 does ack
-say Mm. Yes. *yawns* | Right. Right. | Mm. #bed.capitalize# soon, thank the gods.
+say Mm. Yes. *yawns* | Right. Right. | Mm. #bed.capitalize# soon, thank the Bright One.
 
 rule w7_end_dusk
 when concept=work.end here.time=dusk shift=during|after

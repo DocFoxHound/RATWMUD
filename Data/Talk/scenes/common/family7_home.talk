@@ -52,7 +52,7 @@ when topic=family pair.kin=spouses|parent|siblings|family|household here.time=du
 does tell.self / react.self / assess
 a : You're late. #supper.capitalize#'s gone cold. | Where've you been till now? | I kept you a bowl. It's by the fire. | Sit. Eat. Then tell me.
 b[working=yes] : Work ran over. Sorry. | A cart lost a wheel. We all had to lift. | Bless you. I've not stopped once. | I'll eat on my feet. I've to go back.
-b[tired=yes] : Don't. I'm too #tired# to be told off. | Everywhere. My legs say everywhere. | Gods bless you. | I'll eat and fall asleep in it.
+b[tired=yes] : Don't. I'm too #tired# to be told off. | Everywhere. My legs say everywhere. | Bright One bless you. | I'll eat and fall asleep in it.
 b : Cold's fine. I'm fine. | Talking. You know how it is. | #bc_bless_you# | Food first. Then everything.
 a : Eat, then. | Hm. Sit down, then. | Eat it while it's warm. | #bc_go_on#
 
@@ -61,8 +61,8 @@ when topic=family pair.kin=spouses|parent|siblings|family|household here.time=du
 does tell.self / react.self / assess
 a : Say the words before you eat. | Who's saying thanks tonight? | Wait. We give thanks first. | Paws together.
 b[piety=devout] : For the bread and the roof and the ones beside us, thank you. | I will. Bright One, keep this house. | For what we have, and for who. | Bright One, we're grateful. Truly.
-b[young] : Thank you for the soup and the bread and the cat next door and... | Me! Me! Thank you gods for supper and also for no turnips. | Do I have to say it out loud? | Paws together. Thank you. Can I open my eyes?
-b : Thanks for the food. There. | Me. Gods, thanks for this. Can we eat now? | Gods, thanks. Can we eat? | Done. Pass the bread.
+b[young] : Thank you for the soup and the bread and the cat next door and... | Me! Me! Thank you, Bright One, for supper and also for no turnips. | Do I have to say it out loud? | Paws together. Thank you. Can I open my eyes?
+b : Thanks for the food. There. | Me. Bright One, thanks for this. Can we eat now? | Bright One, thanks. Can we eat? | Done. Pass the bread.
 a : Well. It counts. | Short and sweet. | It counts. Eat. | So be it.
 
 # ---------------------------------------------------------------- Chores
@@ -113,7 +113,7 @@ does tell.self / react.self / tell.self
 a : The roof's leaking again. | There's a drip on my pillow. | Put the pot under the corner. | That's a new drip. I know all the old ones.
 b[wealth=destitute] : The landlord says it's character. | Turn it over. The other side's damp too. | We've no pot left. They're all under drips. | Name it. It's family now.
 b[old] : That roof's been leaking since I was a pup. | Turn the pillow over. I always did. | It'll stop when it stops raining. That's how roofs work. | I stopped counting drips the year your father was born.
-b #d : I'll go up when it's dry. | Move the pillow. | Which corner? There's four. | Gods. How many does that make?
+b #d : I'll go up when it's dry. | Move the pillow. | Which corner? There's four. | Bright One. How many does that make?
 a@d : It'll be leaking when the last of us is gone. | And sleep where? On the drip? | Every corner, then. | Nine, I make it.
 a : It'll be leaking when the last of us is gone. | And sleep where? On the drip? | Then the bowls. Then the boots. | Nine, I make it.
 
@@ -146,7 +146,7 @@ a : Up. Up! The sun's up. | Who's got my other boot? | You've slept on your ear.
 b[young] : The sun's not up. It's pretending. | It's under the cat. | It's a good ear. It'll pop up. | I'm wearing it. As a tail.
 b[adolescent] : Five more breaths. | Why is it always me you ask? | Don't look at me. | Under my bed, probably. Everything is.
 b[old] : I've been up since the second cock. | Look under your other boot. | At my age everything's flat. | It's round your waist, you fool.
-b : Coming. Coming. | Where you left it. | Is it? Gods. | On the hook. Where it lives.
+b : Coming. Coming. | Where you left it. | Is it? Bright One. | On the hook. Where it lives.
 a : Now! | That's no help at all. | It's sticking up now. Worse. | Of course it is.
 
 scene f7_home_night
@@ -228,10 +228,10 @@ does tell.self / react.self / assess
 a : Your cousins are coming on Restday. | We've visitors tomorrow. Tidy something. | The whole family's coming. All of them. | Hide the good cups.
 b[young] #y : Are they bringing their pups? Can we play? | Will there be cake? | The ones with the goat? Hooray! | Can I show them my beetle?
 b[warmth=cold] #c : Tell them we're ill. | Must they? | I'll be out. | #bc_every_year#
-b #d : All of them? Where will they sit? | Tidy what? Everything's where I want it. | Gods help us. | They know where the good cups are.
+b #d : All of them? Where will they sit? | Tidy what? Everything's where I want it. | Bright One help us. | They know where the good cups are.
 a@y : Yes, and you'll share your toys. | If you tidy, there'll be cake. | The very same. Keep your tail out of its way. | Only if it stays in its box.
 a@c : We're not ill, and they're coming. | They must. | You'll be in. | Every year. And every year you survive it.
-a : On each other. | #bc_everything# | Gods help the cups. | They'll find them anyway.
+a : On each other. | #bc_everything# | Bright One help the cups. | They'll find them anyway.
 
 scene f7_home_gift
 when topic=family pair.kin=spouses|parent|siblings|family|household
@@ -250,7 +250,7 @@ when topic=family pair.kin=spouses|parent|siblings|family|household here.day=res
 does tell.self / react.self / assess
 a : No work today. Nobody gets up. | Restday. What shall we do? | Chapel, then a walk, then nothing. | Don't you dare start a chore.
 b[young] : Can we go to the river? Please? | Can we go to the fair? Is there a fair? | Can I stay in my nightshirt all day? | Can we play hide?
-b[piety=devout] : Chapel first. The gods gave us the day. | Chapel. Then you can lie about. | We'll walk to chapel and back the long way. | Nothing but prayer and soup.
+b[piety=devout] : Chapel first. The Bright One gave us the day. | Chapel. Then you can lie about. | We'll walk to chapel and back the long way. | Nothing but prayer and soup.
 b[job=guard|healer|innkeeper|priest] : Some of us work Restday. | Not for me. I'm on. | Enjoy it for both of us. | My busiest day, this.
 b : Suits me. | Sleep. Then more sleep. | Nothing sounds right. | I'll start nothing. Promise.
 a : #bc_good# | #bc_we_will_see# | #bc_lovely# | #bc_good#
@@ -263,7 +263,7 @@ b[young] #y : I heard them! They said a rude word! | I like the goat. It ate my 
 b[quarter=sump] : Walls are paper down here. Wet paper. | Goats? Down here it's rats in the cabbages. If we had cabbages. | Six to a room up there. Seven now. | Somebody new every week down here.
 b : Shouting about money. Always money. | That goat's eaten more of our garden than we have. | I heard. Every hour. Like a bell. | A carter. Seems quiet.
 a@y : And you'll not be repeating it. | Your sock's not the point. | Later. When it's awake. | Your size? Then it's trouble.
-a : Aren't we all. | I'll speak to them. | Gods, those lungs. | We'll see how long that lasts.
+a : Aren't we all. | I'll speak to them. | Bright One, those lungs. | We'll see how long that lasts.
 
 # ---------------------------------------------------------------- Money and the jar
 
@@ -285,7 +285,7 @@ a : Your boots are worn through. | You need new boots before the frost. | Where 
 b[wealth=poor|destitute] #p : I'll stuff them with straw. | Boots or bread. I chose bread. | Sold them. Don't be angry. | They'll do another winter. They'll have to.
 b[young] #y : My toes stick out! I can wiggle them! | I grew out of them. Again. | They're in the river. It's a long story. | I like them. They're my lucky boots.
 b : They've a year in them. | After market day. | Under the bed. With the cat. | They're broken in. That's the good part.
-a@p : Straw. Gods help us. | Bread was right. | I'm not angry. I'm sad. | Then we'll patch them again.
+a@p : Straw. Bright One help us. | Bread was right. | I'm not angry. I'm sad. | Then we'll patch them again.
 a@y : Stop wiggling them at me. | Again! On what we earn! | Tell me the long story. Now. | Lucky or not, they're done.
 a : A month, maybe. | Before the frost. | Fetch them out. | Broken, more like.
 
@@ -308,5 +308,5 @@ a : How are you feeling? | Drink this. It's foul, but drink it. | Don't get up. 
 b[injured=bad] : Like a cart went over me. Twice. | It hurts to swallow. It hurts to breathe. | I tried. The floor came up to meet me. | Did I? It feels like I've been beaten.
 b[young] : Better. Can I have honey now? | Is it the brown one? I hate the brown one. | I'm bored. Bored bored bored. | Can I have a story?
 b[old] : Old. That's how I'm feeling. | I've drunk worse. I've drunk my own cooking. | I'll stay. My legs have voted. | At my age, sleep's a rehearsal.
-b : Better. A little. | Gods, that's awful. Thank you. | I'll stay. Only because you're watching. | Was I snoring?
+b : Better. A little. | Bright One, that's awful. Thank you. | I'll stay. Only because you're watching. | Was I snoring?
 a : Rest, then. | Every drop. | I'll be watching all day. | Sleep's what mends you.

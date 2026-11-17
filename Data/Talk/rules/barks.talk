@@ -47,7 +47,7 @@ rule bk_say_hurt
 when concept=bark injured=bad
 does aside
 priority 2
-say #oath#, that hurts. | Someone fetch a healer. Gods. | Don't touch it. Don't.
+say #oath#, that hurts. | Someone fetch a healer. Bright One. | Don't touch it. Don't.
 
 rule bk_say_mourning
 when concept=bark mourning=kin

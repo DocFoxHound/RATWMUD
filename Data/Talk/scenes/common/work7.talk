@@ -212,7 +212,7 @@ scene w7s_omen
 when topic=work
 does tell.self / react.self / assess
 a : A crow sat on the roof all morning. I don't like it. | I dropped my bread butter-side down. Bad day ahead. | Saw a black cat by the door. Bad sign.
-b[piety=devout] : Say a word to the Bright One and get on. | Signs are for the gods to read, not us. | Pray, and work. That's all.
+b[piety=devout] : Say a word to the Bright One and get on. | Signs are for the Bright One to read, not us. | Pray, and work. That's all.
 b[humour=dry] : Crows like roofs. Also, crows are crows. | Bad day for the bread, anyway. | Bad for the cat, probably.
 b[temper=nervy] : Oh no. Oh, I knew today felt wrong. | Don't say that. I'll fret all day. | That's twice this week!
 b : It's just a bird. | It's just bread. | Cats go where they like.
@@ -232,7 +232,7 @@ a : Building what, a mountain? | Busy, or angry. | Let's shout, then.
 scene w7s_smells
 when topic=work
 does ask.detail / answer.detail / assess
-a : What's that smell? | Something's off. Can you smell it? | Gods, the stink today.
+a : What's that smell? | Something's off. Can you smell it? | Bright One, the stink today.
 b[job=brewer] : That's the mash. You get used to it. Mostly. | Wort. Lovely stuff. | You call that a stink? Come by the vats.
 b[job=fisher|cook] : That's yesterday's fish. Sorry. | Me, probably. | Fish. It's always fish.
 b[job=crafter] : The tannery. Wind's turned. | Glue. Hot glue. | Lye. I'm boiling it.
@@ -355,7 +355,7 @@ a : One cup, then home. | I'm not talking about work tonight. | First one's the 
 b[tired=yes] : One. Before I fall asleep in it. | Good. I can't. | I'll drink it lying down.
 b[wealth=poor|destitute] #skint : If you're buying. | Nor me. I'm talking about ale. | I'll watch you drink it.
 b[shift=before] : Home? I've not started yet! | I've not even begun mine. | Steady. I've a night's work after this.
-b : One, you say. | Thank the gods. | Every one's the best one.
+b : One, you say. | Thank the Bright One. | Every one's the best one.
 a@skint : Go on, then. I'm buying. | Ale it is. I'll get them in. | No you won't. Here.
 a : One. Maybe two. | Not one word. | #toast#!
 
@@ -439,7 +439,7 @@ scene w7s_autumn
 when topic=work here.season=autumn
 does tell.self / react.self / assess
 a : Harvest work for anyone who wants it. | Everyone's putting by for winter. | Nights coming in. Work's going dark.
-b[job=farmer] #farm : Then you'll lend a paw? | Every barn's bursting, gods be thanked. | Lamp oil's dear, too.
+b[job=farmer] #farm : Then you'll lend a paw? | Every barn's bursting, Bright One be thanked. | Lamp oil's dear, too.
 b[wealth=poor|destitute] #need : Where? I'll go. | I've nothing to put by. | I've no lamp oil.
 b : Busy season. | Sensible. | I hate the dark mornings.
 a@farm : If you're paying. | Good year, then. | Everything's dear.

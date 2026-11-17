@@ -338,7 +338,7 @@ rule s83g_violence_3
 when concept=talk.gossip topic.claim_kind=violence
 does tell.gossip
 cooldown 1d
-say It's not safe, is it. #topic.subject# #topic.claim#. | #topic.subject#. #topic.they.capitalize# #topic.claim#. Gods. | #hearsay#, but #topic.subject# #topic.claim#.
+say It's not safe, is it. #topic.subject# #topic.claim#. | #topic.subject#. #topic.they.capitalize# #topic.claim#. Bright One. | #hearsay#, but #topic.subject# #topic.claim#.
 
 rule s83g_violence_4
 when concept=talk.gossip topic.claim_kind=violence

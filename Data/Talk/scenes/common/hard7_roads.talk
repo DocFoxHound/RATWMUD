@@ -10,7 +10,7 @@ does tell.news / ask.detail / answer.detail / tell.self
 a : They hit the #topic.where# carts. Took the lot. | #bandits.capitalize# on the #topic.where# road. Cleaned out a whole wagon. | The #topic.where# caravan came in light. Very light. | Did you hear? Robbed on the way from #topic.where#.
 b : The lot? Even the mules? | What was on it? | Light of goods, or light of carters? | #bc_again_q#
 a : The mules came home by themselves. Clever mules. | Salt and cloth, they say. | Goods. The carters are all there. Shaking. | Again. Third time this season.
-b : Smarter than the guards, then. | Salt'll be dear by Restday. | Thank the gods for that. | Then it's not luck. It's a trade.
+b : Smarter than the guards, then. | Salt'll be dear by Restday. | Thank the Bright One for that. | Then it's not luck. It's a trade.
 
 scene h7_raid_prices_follow
 when topic=bandits topic.kind=raided
@@ -25,8 +25,8 @@ when topic=bandits topic.kind=raided
 does tell.news / react.news / assess / tell.self
 a : Was anyone hurt on the #topic.where# road? | Did the carters fight back, from #topic.where#? | The #topic.where# carters ran for it. Can't blame them. | One of the #topic.where# drivers took a blade, I heard.
 b : One carter. Head cut. He'll mend. | Two did. One's limping. | I'd have run faster. | Badly?
-a : Thank the gods. | Brave fools. | You'd have run first. | Bad enough. He won't drive again this year.
-b : The gods weren't there. The carter was. | Brave and limping. Usual. | I'd have been home by now. | Gods help the family.
+a : Thank the Bright One. | Brave fools. | You'd have run first. | Bad enough. He won't drive again this year.
+b : The Bright One wasn't there. The carter was. | Brave and limping. Usual. | I'd have been home by now. | Bright One help the family.
 
 scene h7_raid_who_are_they
 when topic=bandits topic.kind=raided
@@ -81,7 +81,7 @@ does tell.worry / agree / give.opinion / give.opinion
 a : I'll not go past #topic.where# now. | Is there another road round #topic.where#? | My cousin goes by #topic.where# every week. I've told her. | I used to pick berries out by #topic.where#.
 b : Nobody will. | The long way. Two days more. | Did she listen? | Pick them somewhere else.
 a : Then the camp's got the road. | Two days. On my feet. | She laughed. | They were the good berries.
-b : Until someone takes it back. | Better than never getting there. | Then she'll learn. Gods keep her. | Berries'll keep. You might not.
+b : Until someone takes it back. | Better than never getting there. | Then she'll learn. Bright One keep her. | Berries'll keep. You might not.
 
 scene h7_camp_fed
 when topic=bandits topic.kind=camp
@@ -103,7 +103,7 @@ scene h7_camp_children
 when topic=bandits topic.kind=camp a.stage=young|adolescent b.stage=adult|old
 does ask.detail / answer.detail / counter / insist
 a : Is it true there's #bandits# at #topic.where#? | I want to see the camp at #topic.where#. Just from the hill. | Do #bandits# have pups too? At #topic.where#? | If they come I'll fight them. I've a stick.
-b : True. And you're not going near it. | You'll see the back of my paw. | I... suppose they might. | A stick. Gods help us.
+b : True. And you're not going near it. | You'll see the back of my paw. | I... suppose they might. | A stick. Bright One help us.
 a : I wasn't going to. Much. | Just from the hill! | Then are they bad too? | It's a good stick!
 b : Not at all. | No hill. Home. | Hush. Eat your supper. | Put it by the door, then.
 
@@ -115,7 +115,7 @@ does tell.news / ask.detail / answer.detail / tell.self
 a : My order was on the #topic.where# carts. | I'd a cask coming from #topic.where#. Gone to the robbers. | Everything I paid for in #topic.where#, gone. | My cousin sent a parcel from #topic.where#. Some #thief# is wearing it now.
 b : Did you pay ahead? | Will the House make it good? | All of it? | What was in it?
 a : Half. Half up front. | They'll laugh. | All. | Her good shawl.
-b : Then you've lost half, and the rest's a lesson. | They'll laugh and keep the half. | Gods. Sit down. | Somebody's warm tonight.
+b : Then you've lost half, and the rest's a lesson. | They'll laugh and keep the half. | Bright One. Sit down. | Somebody's warm tonight.
 
 scene h7_caravan_raided_guards
 when topic=caravan topic.kind=raided
@@ -150,7 +150,7 @@ does tell.self / react.self / assess / tell.self
 a : There's talk the #bandits# are wolves from our town. | They say the #bandits# have a leader now. A clever one. | Somebody said the road wolves pay the Watch to look away. | They say the #bandits# give to the poor. Rubbish, I say.
 b : Our town? Who? | Clever's worse than cruel. | Somebody says a lot. | They give the poor a fright. That's all.
 a : Nobody's saying names. | Much worse. | That was me. | That's what I said.
-b : Then don't say it at all. | Gods help us. | Then hush, before someone hears. | And they take the rest.
+b : Then don't say it at all. | Bright One help us. | Then hush, before someone hears. | And they take the rest.
 cooldown 1d
 
 scene h7_near_night_bolts
@@ -179,7 +179,7 @@ does tell.self / react.self / assess / assess
 a : Captain wants volunteers for the road. | They're saying we'll ride out. Against the camp. | I'd go. If they paid for it. | Did you see the carter they brought in? Stuck like a pig.
 b : Volunteers. That's what they call it when nobody wants to. | With what? Twelve of us and a lame horse? | They won't. They never do. | I saw. I've not eaten since.
 a : Put my name down. | With what we've got. | Then I'll stay on the gate. | #bc_nor_me#
-b : Your funeral. Literally. | Then gods help the twelve. | Warm on the gate. | Then we'll go hungry together. And then we'll go after them.
+b : Your funeral. Literally. | Then the Bright One help the twelve. | Warm on the gate. | Then we'll go hungry together. And then we'll go after them.
 
 scene h7_road_merchant_hire
 when topic=bandits|caravan topic.kind=raided a.role=merchant

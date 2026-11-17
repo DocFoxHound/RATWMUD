@@ -115,7 +115,7 @@ does tell.news / sympathise / assess / assess
 tone grave / grave / grave / grave
 a : You'll have heard. #topic.ship.capitalize# was lost. | #topic.ship.capitalize#'s gone down. They've stopped waiting. | Lost at sea. #topic.ship.capitalize#. The Wharf's gone quiet.
 b[job=sailor|fisher] #sea : It could have been any of us. Any of us. | I knew the way she sat in the water. A good ship. | The sea doesn't care who's aboard.
-b #plain : I heard. I can't take it in. | Gods. All of them? | I saw the flag at half on the Wharf.
+b #plain : I heard. I can't take it in. | Bright One. All of them? | I saw the flag at half on the Wharf.
 a@sea : #bc_i_know# | She was. | No. It doesn't.
 a@plain : #bc_nor_me# | That's what they're saying. | So did I.
 b?@plain : The sea gives and the sea takes. | Bright One keep them. | I'll light a candle.
