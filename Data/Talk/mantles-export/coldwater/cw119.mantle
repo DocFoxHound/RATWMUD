@@ -1,0 +1,293 @@
+# cw119, the crooked map (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw119
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for cty_heather_fernwood
+written_by claude-codex-cw-1
+title the crooked map
+fits stage=adult|old
+prefers talk=quiet warmth=warm
+traits temper=even talk=quiet warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk quotes_old_sayings_for_everything
+likes smoked_eel digging old_maps thunder
+dislikes early_bells night_noise
+fears a_harvest_lost_to_rot a_family_trade_forgotten
+hopes a_tree_that_keeps_bearing a_garden_with_room_to_grow
+topics work +0.5 memories +0.4 home +0.4 food +0.3 travel +0.3 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=soft tease=dry
+marks oath saying
+persona #self.first# sorts #apples# with an old #saying# on the tongue, keeps a crooked #map# folded in a #pocket#, and digs until the #soil# loosens.
+
+words
+oath! = Branch and basket | Thunder over the orchard
+saying! = A sound apple does not fear the knife | A road drawn straight can still lead astray
+apple = apple | orchard apple
+apples = apples | picked fruit
+basket = basket | picking basket
+branch = branch | fruit branch
+tree = tree | apple tree
+trees = trees | orchard trees
+orchard = orchard | apple grove
+ladder = ladder | picking ladder
+crate = crate | wooden crate
+crates = crates | wooden crates
+fruit = fruit | gathered crop
+bruise = bruise | soft spot
+rot = rot | brown spoilage
+drying = drying | fruit drying
+rack = rack | drying rack
+racks = racks | drying racks
+knife = knife | trimming blade
+skin = skin | apple skin
+garden = garden | kitchen garden
+spade = spade | digging spade
+soil = soil | dark earth
+seed = seed | seed grain
+root = root | plant root
+map = map | old road map
+fold = fold | paper crease
+ink = ink | faded ink
+road = road | high road
+path = path | narrow way
+step = step | footfall
+window = window | house window
+door = door | house door
+lake = lake | Glasswater
+pocket = pocket | coat pocket
+eel = eel | smoked eel
+smoke = smoke | curing smoke
+plate = plate | supper plate
+roof = roof | sound roof
+thunder = thunder | storm's rumble
+bell = bell | early bell
+noise = noise | late clatter
+night = night | dark hours
+morning = morning | first light
+coin = coin | pay
+price = price | asking cost
+@2 saying = saying | old proverb
+
+any
+opinion @1 dole for 1 : A hungry neighbour needs a #plate#, not a lecture. | A good #basket# has room for the fruit too bruised to sell.
+opinion @1 merchants against 2 : I sort every #apple# and still hear the #price# set as if nobody worked. | The seller counts #coin# while I count what the #tree# bore.
+opinion @1 houses against 1 : The #orchard# lasts longer than any crest nailed above it. | Let a House carry the #basket# for a day before calling the crop easy.
+opinion @1 city against 1 : The city would drown out the #trees# with #noise#. | I would lose my way there even with a #map# in hand.
+opinion @1 newcomers mixed 1 : A new picker can learn which #branch# bends before the #ladder# goes up. | I will give a stranger the sound #crate# if they do their share.
+opinion @1 strangers mixed 1 : Someone can share a #plate# without learning all my worries. | I tell a traveller which #road# bends, then let them choose.
+opinion @1 road mixed 0 : The old #map# lies about turns, but it remembers where someone once hoped to go. | I trust a walked #path# over a line of #ink#.
+opinion @1 festivals mixed 0 : A festival is tolerable under a #roof# when the singing stays gentle. | I would rather walk the #orchard# at its quiet end.
+
+grown
+line @1 greet : #greet#. A sound #apple# for you if you want it. | #greet#. The #basket# can wait while we speak.
+line @2 greet [pair.band=strangers] : #greet#. Which #road# led you here? | #greet#. Give me a plain word before asking for mine.
+line @3 greet [pair.band=friends|family] : I kept the best #apple# from the last #basket#. | Come see where the #garden# took root.
+line @4 greet [self.working=yes] : #greet#. I must clear this #rack# first. | I can hear you while I sort the #crates#.
+line @5 greet [here.time=dawn] : #greet#. That #bell# found me too soon. | #greet#. The #trees# are quiet before the carts.
+line @1 greet.return : Back again? I have a new #saying# if you can bear it. | #welcome_back#. The #basket# is lighter now.
+line @2 greet.return [pair.band=friends|family] : I have a #plate# set aside. | Did the #map# get you where you meant to go?
+line @1 kin.open [pair.kin!=no] : Come in. The #plate# is by the fire. | The last #apple# is yours if you want it.
+line @1 again.open : We have spoken twice before this #crate# filled. | The same #road# brought you back quickly.
+line @1 farewell : #saying.capitalize#. Walk carefully. | #farewell#. Mind the #root# beside the #path#.
+line @1 farewell.return : Bring back a better #map# if you find one. | I will save an #apple# next time.
+line @1 react.news : I will hear it; the #rack# can wait. | Tell me what your own eyes witnessed.
+line @1 react.news.new : No word of that reached the #orchard#. | Who came by the #road# with this news?
+line @1 react.news.known : A little of that came with the last #crate#. | The first part reached me; what happened afterward?
+line @1 react.news.doubt : A #map# can be drawn in error; I want a second account. | That story needs a clearer #path# through its facts.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Sit under the #roof# a while. | That is bitter fruit to carry home.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That is a sound #apple# of news. | Good. May they have a peaceful night for that happiness.
+line @1 answer.how : The #garden# needs me, but I am well. | Tired. The #apples# are nearly sorted.
+line @1 answer.how.busy [self.working=yes] : One #crate# after another today. | Busy with #fruit# and the #drying# #racks#.
+line @1 ask.how : Have you found a quiet #path# today? | Did you get a full #plate# at supper?
+line @1 sympathise : I can bring you a #plate# and listen. | Take the time you need to speak.
+line @1 reassure : A bent #branch# can still bear an #apple#. | Let the #soil# rest tonight; try the #spade# tomorrow.
+line @1 decline : I cannot leave the #fruit# on the #rack#. | A false promise would cost you more than my refusal.
+line @1 accept_decline : Fair enough; the #map# stays folded. | I hear you. That matter can rest now.
+line @1 thank : You carried the #crate# when I could not. Thank you. | I know what that kindness cost you.
+line @1 deflect_thanks : I had a spare #apple#. | The #basket# was going your way.
+line @1 preclose : I must finish the #drying# before night. | The #garden# needs one last look.
+line @1 tease [pair.band=friends] : Your #map# would send us through the #lake#. | That #spade# has done more leaning than digging.
+line @1 ack : #bc_right#. I will mark the #crate#. | #bc_fair_enough#. The #path# is clear.
+line @1 give.advice : Check the #branch# before leaning the #ladder#. | Turn the #soil# while it is damp, not wet.
+line @1 warn [world.bandits=near] : Keep to the #road# with other carts. | Do not follow a strange #path# after dusk.
+scene first_picking
+when topic=work
+does tell.self / react.self / assess
+a : I feel an #apple# for softness before I put it in the #basket#. | A #bruise# under the #skin# will show itself by tomorrow.
+b : Can you tell by touch? | Do you throw it away?
+a : Usually. My paws have had practice. | No. It may still be good for supper.
+
+scene ladder_foot
+when topic=work
+does tell.self / react.self / assess
+a : I set the #ladder# where the #soil# is firm. | A high #branch# is not worth a fall into the #crates#.
+b : Do you climb far? | Does anyone hold it?
+a : Only as far as I can reach safely. | When the ground is uneven.
+
+scene fruit_on_rack
+when topic=work
+does tell.self / react.self / assess
+a : I lay the cut #fruit# apart on the #rack#. | Damp pieces turn to #rot# if I crowd them.
+b : How long do they dry? | Do you turn them?
+a : Until they bend without wetness. | When one side has had the air.
+
+scene old_hands
+when topic=memories
+does tell.self / react.self / assess
+a : I learned the #orchard# work from hands older than mine. | A #saying# comes out of my mouth when I hear the #ladder# creak.
+b : Do you remember who taught you? | Does the saying help?
+a : Every one of them. | It makes me check my footing.
+
+scene three_harvests
+when topic=family
+does tell.self / react.self / assess
+a : My family kept this #orchard# trade before I could lift a #basket#. | I hear an old warning whenever I reach for a high #branch#.
+b : Do you feel watched? | Would you leave the work?
+a : By memory, perhaps. | I might, but I would still know an #apple# by touch.
+
+scene digging_hour
+when topic=pastimes
+does tell.self / react.self / assess
+a : Once the #crates# are done, I dig in the #garden#. | Digging asks for no talk, only a firm #step#.
+b : What do you plant? | Does it rest you?
+a : Whatever #seed# the season will take. | More than sitting indoors.
+
+scene roots_in_soil
+when topic=home
+does tell.self / react.self / assess
+a : I loosen #soil# around the #root# without pulling at it. | A #garden# can fail if I hurry the smallest task.
+b : Does the plant recover? | Do you garden alone?
+a : Usually, if the #root# stays whole. | I like the quiet of it.
+
+scene map_crease
+when topic=pastimes
+does tell.self / react.self / assess
+a : My old #map# has a #fold# across a road that moved years ago. | I keep it for the marks someone put in the margins.
+b : Is it still useful? | Can you read the old writing?
+a : For remembering, yes. | Some. The #ink# has faded.
+
+scene wrong_turn
+when topic=travel
+does tell.self / react.self / assess
+a : The #map# shows a #path# where the reeds have taken it back. | A traveller who trusts old #ink# may need dry boots afterward.
+b : Did you follow it? | Which way do you go now?
+a : Once. I turned back at the wet ground. | I ask someone who has walked it lately.
+
+scene smoked_eel
+when topic=food
+does tell.self / react.self / assess
+a : A little smoked #eel# makes a plain #plate# worth sitting for. | I like the #smoke# on the #skin# when the flesh is still soft.
+b : Do you cook it again? | Do you share it?
+a : Just warm it beside the fire. | If there is more than one bite.
+
+scene thunder_roof
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : I like #thunder# from under a sound #roof#. | A storm makes the #trees# move like they are speaking together.
+b : Will you inspect them when it quiets? | Does it frighten you?
+a : When the wind eases. | No. I watch the #roof# for loose thatch.
+
+scene early_bell
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : That #bell# speaks before I have thought of breakfast. | I can hear the #bell# through the orchard's quiet.
+b : Do you need it to wake? | Would you silence it?
+a : The work would wake me soon enough. | For one morning, gladly.
+
+scene night_noise
+when topic=day here.time=night
+does tell.self / react.self / assess
+a : A loud #noise# at night makes the next #morning# heavy. | I leave the #window# closed when the street will not settle.
+b : Does sleep come at all? | Do you complain?
+a : Eventually. I am less kind at dawn. | Only when it keeps the whole house awake.
+
+scene sorted_crates
+when topic=prices
+does tell.self / react.self / assess
+a : A sound #crate# should bring a fair #price#. | The #fruit# I put aside still cost a day of work.
+b : Does the buyer see that? | Can you sell the bruised ones?
+a : Some do. I remember those buyers. | For less, if they are fit to eat.
+
+scene basket_shared
+when topic=friends
+does tell.self / react.self / assess
+a : I will carry another #basket# if a neighbour's paws are tired. | A #crate# can be shared without making a speech of it.
+b : Do they help you later? | Do you ask first?
+a : Some do. That is not why I offer. | I look for the heavy load.
+
+scene quiet_festival
+when topic=festival
+does tell.self / react.self / assess
+a : I watch a festival from the end of the #road#. | The songs sound better once the shouting has thinned.
+b : Do you join in? | Why stay at the edge?
+a : For a little while. | I can leave before the #noise# begins.
+
+scene autumn_rack
+when topic=season here.season=autumn
+does tell.self / react.self / assess
+a : Autumn fills the #rack# faster than I can clear it. | I save the firmest #apples# for the last #crate#.
+b : Are those for winter? | Do you work late?
+a : Some, if they keep sound. | Until the cut #fruit# is safe from damp.
+
+story crooked_road [topic=travel self.age>=25]
+  : I followed the #map# to a turn that no longer existed.
+  : The #path# ended in wet ground, so I folded the paper and found a higher way.
+  ask : Did you mark the change?
+  b : Otherwise someone else would follow it.
+  : I put a new line in the margin. The old one is still there to remind me.
+
+story grandmother_saying [topic=memories self.age>=25]
+  : I heard an elder say a sound #apple# would not fear the #knife#.
+  : I thought it meant to cut every fruit, until they showed me how to feel for a #bruise#.
+  ask : Do you still say it?
+  b : It sounds useful beyond the orchard.
+  : Too often, according to some at #home#.
+
+story wet_rack [topic=work self.age>=25]
+  : I found rain blowing through a gap above the #rack#.
+  : I moved the #fruit# under the #roof# before searching for a board to cover it.
+  ask : Did any of it spoil?
+  b : The top layer would have caught the rain.
+  : A little. The rest dried once the air cleared.
+
+rule @bark_saying
+when concept=bark
+does aside
+cooldown 8h
+say #saying.capitalize#. | There is an old #saying# for this, somewhere.
+
+rule @bark_crate
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say That #crate# wants another look. | The #rack# needs room for the next #basket#.
+
+rule @bark_thunder
+when concept=bark here.weather=storm
+does aside
+cooldown 10h
+say Good #thunder#, from under this #roof#. | I hope the #ladder# is put away.
+
+rule @bark_map
+when concept=bark
+does aside
+cooldown 11h
+say This #map# has one turn wrong. | A new #fold# may hide the old #path#.
+
+dlg @1 resident.hub : #greet#. I have a sound #apple# if you want it. | #greet#. Mind the #crates# by the #door#.
+dlg @2 resident.hub [topic.meeting=known] : Back again? Was that #map# of any use? | I know you now. What brings you through the #orchard#?
+dlg @1 resident.job : I pick #apples#, sort the #fruit#, and tend the #drying# #racks#. | The #basket# is mine until the last #crate# is marked.
+dlg @1 resident.bye : #farewell#. Watch the #root# near the #path#. | #saying.capitalize#. Walk carefully.
+graft resident.hub
+choice Why keep a map with wrong roads? -> map
+node map
+say Its old #ink# shows where people once travelled. I have marked the turns that changed.
+free
+choice Do you use it to travel? -> routes
+choice Back to what we were saying. -> hub
+node routes
+say I take it along, then ask someone who has walked the #road# this season.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
