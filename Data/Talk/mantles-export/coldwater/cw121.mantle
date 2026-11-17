@@ -1,0 +1,423 @@
+# cw121, the lark and the kettle (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw121
+revision 1
+state ready
+dialect coldwater
+accent broad light
+tier full
+written_for tn_lf_sage_wheatridge
+written_by claude-codex-cw-1
+title the lark and the kettle
+fits stage=adult|old
+prefers job=merchant drive=restless
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk whistles_back_at_the_larks
+likes honey_cakes draughts quiet_chapel summer_evenings
+dislikes bad_manners early_bells
+fears a_kettle_boiling_dry a_letter_that_never_arrives
+hopes a_shop_that_feeds_its_workers a_visit_down_to_southmeadow
+topics work +0.6 prices +0.5 pastimes +0.4 food +0.3 travel +0.2 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=plain tease=dry
+marks oath saying
+persona #self.first# minds the #kettle# and #counter# in quick turns, answers a #lark# with a #whistle#, and leaves a quiet #square# on the draughts #board#.
+
+words
+oath! = Kettle and current | Lark above the roof
+saying! = Keep the paddle moving till it shines | A clean bar speaks for its maker
+soap = soap | firm soap
+bar = bar | soap bar
+bars = bars | soap bars
+batch = batch | kettle batch
+kettle = kettle | boiling kettle
+pot = pot | deep pot
+fire = fire | low fire
+heat = heat | steady heat
+water = water | lake water
+fat = fat | rendered fat
+ash = ash | sifted ash
+lye = lye | strong lye
+stir = stir | long stirring
+paddle = paddle | wooden paddle
+mould = mould | soap mould
+shelf = shelf | drying shelf
+shelves = shelves | drying shelves
+wrap = wrap | paper wrap
+paper = paper | folded sheet
+counter = counter | shop counter
+mark = mark | chalk mark
+lantern = lantern | shop lantern
+door = door | shop door
+scale = scale | counter scale
+weight = weight | measured weight
+coin = coin | pay
+price = price | stated cost
+wagon = wagon | supply wagon
+road = road | high road
+bend = bend | road bend
+lark = lark | singing lark
+larks = larks | songbirds
+whistle = whistle | short whistle
+song = song | bird song
+bell = bell | early bell
+chapel = chapel | reed chapel
+bench = bench | empty bench
+cake = cake | honey cake
+cakes = cakes | honey cakes
+honey = honey | golden honey
+board = board | game board
+square = square | draughts square
+piece = piece | game piece
+pieces = pieces | draughts pieces
+evening = evening | long dusk
+letter = letter | folded note
+name = name | given name
+smoke = smoke | bitter smoke
+hand = hand | working paw
+hands = hands | working paws
+manners = manners | common courtesy
+
+any
+opinion @1 merchants for 1 : A #counter# has costs the buyer never sees. | I show the #weight# and say the #price# before asking for #coin#.
+opinion @1 newcomers for 1 : I might be a newcomer myself if I ever took another #road#. | A new #hand# can learn to tend the #kettle# if someone shows the measure.
+opinion @1 watch for 1 : I am glad when the Watch passes the #counter# after dusk. | A sound patrol lets me keep my mind on the #soap#.
+opinion @1 road against 1 : I need the #wagon# and still dislike the #road# that brings it. | I count each late delivery twice before trusting the next.
+opinion @1 drink against 1 : A careless word after drink can break more than a #bar# of #soap#. | I like a clear answer across the #counter#.
+opinion @1 city against 1 : City #smoke# would crowd out the #larks#. | I can bear a busy #counter#, not streets that never quiet.
+opinion @1 houses mixed 0 : A House may buy in bulk and still ask the #price# fairly. | I judge the hand on the #coin#, not the crest on the sleeve.
+opinion @1 festivals mixed 0 : A festival sends customers to the #counter# and noise to my head. | I like the first #song# and the quiet after the last #bell#.
+opinion @1 strangers mixed 1 : A stranger who says please may have my time. | I remember #manners# longer than a face.
+opinion @1 times mixed 0 : The #wagon# costs more, but a fresh #batch# can still sell. | I keep the #scale# honest and watch what next week brings.
+
+grown
+line @1 greet : #greet#. The #kettle# is nearly ready. | #greet#. Come to the #counter#; I will be with you.
+line @2 greet [pair.band=strangers] : #greet#. Give me your #name# and your business. | #greet#. Mind the #fire# while we speak.
+line @3 greet [pair.band=friends|family] : A #cake# waits here for a friend with a minute. | The #pieces# are set; take a side if you have time.
+line @4 greet [self.working=yes] : #greet#. I have one more #stir# before I can turn. | Let me settle the #kettle# and then speak.
+line @5 greet [here.time=dawn] : #greet#. The #larks# were ahead of the #bell#. | #greet#. The #fire# is low and the #batch# is beginning.
+line @6 greet [here.time=dusk|night] : #greet#. I am closing the #shelves# soon. | #greet#. The #counter# is still clear for a moment.
+line @1 greet.return : Back again? The #batch# has cooled. | #welcome_back#. I have made another #mark# on the #board#.
+line @2 greet.return [pair.band=friends|family] : I kept your #piece# on the same #square#. | I kept a #cake# from the last plate.
+line @3 greet.return [self.working=yes] : Back before this #batch# is set? | The #paddle# is still in my paw; speak.
+line @1 kin.open [pair.kin!=no] : Come in and sit away from the #fire#. | I left #cakes# near the #board# for you.
+line @1 again.open : I have scarcely wrapped the last #bar# since you were here. | Another visit? The #counter# has not moved.
+line @1 hail : You there, by the #road#. Come in if you need #soap#. | The #larks# are making more noise than my #kettle#.
+line @1 farewell : #farewell#. Keep the #wrap# dry. | #saying.capitalize#. Mind the #road#.
+line @1 farewell.return : May the #larks# show you a clear #road#. | I will have a fresh #batch# next time.
+line @2 farewell [here.time=night] : Carry a light beyond the #counter#. | The #road# is quiet now; go carefully.
+line @1 react.news : I am listening. Give me a moment to set down the #paddle#. | Tell me where that word came from.
+line @1 react.news.new : That report is new at this #counter#. | Which #wagon# brought the news?
+line @1 react.news.known : I heard an earlier account with the supplies. | You have added a piece I did not know.
+line @1 react.news.doubt : The #weight# of that story feels wrong. | I want a name beside the claim before I repeat it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Sit on the #bench# until you can breathe easily. | That is a heavy word. The #kettle# can wait.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I may have a #cake# for that. | A welcome word after a long day.
+line @1 answer.how : The #soap# is setting and the #larks# are loud. | Restless, but the #counter# is sound.
+line @1 answer.how.busy [self.working=yes] : Measuring a #batch# and wrapping #bars#. | The #kettle# needs me in short turns.
+line @1 ask.how : Have you had a quiet #evening#? | Did the #road# lead you to what you sought?
+line @1 sympathise : The #paddle# can rest while you speak. | Take a #bench# while the #kettle# settles.
+line @1 reassure : A bad #batch# can be measured again. | Sit one turn of the #board# with me; then decide.
+line @1 decline : I cannot leave the #fire# unattended. | No. My #hands# are tied to this #batch#.
+line @1 accept_decline : Understood. I will return that #paper# to its place. | I hear your decision and will leave it there.
+line @1 thank : You caught the #scale# error before a sale. Thank you. | That was timely help.
+line @1 deflect_thanks : That one #bar# cost me little effort. | I had a free #hand# at the #counter#.
+line @1 preclose : The #fire# wants banking before I leave. | I have to count the #bars# on the #shelf#.
+line @1 tease [pair.band=friends] : Your #piece# has been hiding in that #square# all game. | You whistle worse than the #lark# outside.
+line @1 tease.return [pair.band=friends] : I will give your #piece# a fair chance next turn. | Tell the #lark# that one when it returns.
+line @1 ack : #bc_right#. I will check the #scale#. | #bc_fair_enough#. The #batch# can rest.
+line @1 give.advice : Keep #lye# off your paws and out of the #cakes#. | Count the #bars# before you close the #wrap#.
+line @1 warn [world.bandits=near] : Keep goods close along the #road#. | I would wait for company before taking a #wagon# out at dusk.
+scene kettle_bottom
+when topic=work
+does tell.self / react.self / assess
+a : I keep the #paddle# moving so the #batch# does not catch below. | The #kettle# tells me when the #heat# is too high.
+b : Can you hear it? | Does it spoil quickly?
+a : The scrape changes. | Quickly enough that I do not leave the #fire#.
+
+scene measured_lye
+when topic=work
+does tell.self / react.self / assess
+a : I measure #lye# before it meets the #fat#. | A hurried #hand# near the #pot# can leave a burn.
+b : Do you work alone? | Is the mixture dangerous?
+a : Another hand helps when the #batch# is large. | It deserves care even on an easy day.
+
+scene ash_and_fat
+when topic=work
+does tell.self / react.self / assess
+a : The #ash# must be sifted before the #water# runs through it. | I check the #fat# for stray bits before it reaches the #kettle#.
+b : Does that change the soap? | Where do the stray bits go?
+a : It keeps the #bar# even. | Put them aside before the #fire# is lit.
+
+scene mould_and_shelf
+when topic=work
+does tell.self / react.self / assess
+a : The #mould# is ready before I lift the #pot#. | Fresh #soap# needs room on the #shelf# while it sets.
+b : How long must it rest? | Do you cut it then?
+a : Until the #bar# holds its shape. | Once it has cooled enough.
+
+scene wrapped_bars
+when topic=work
+does tell.self / react.self / assess
+a : I #wrap# each #bar# after checking its edges. | A torn #paper# lets damp reach the #soap#.
+b : Do you mark the batches? | Do buyers notice the wrapping?
+a : Yes. Each #kettle# gets its own #mark#. | More when it is missing.
+
+scene honest_scale
+when topic=prices
+does tell.self / react.self / assess
+a : I let a customer see the #scale# before I take #coin#. | The #weight# belongs in plain sight beside the #price#.
+b : Do people challenge you? | Does it slow a sale?
+a : Sometimes. I show them again. | Less than an argument later.
+
+scene late_wagon
+when topic=work
+does tell.self / react.self / assess
+a : When the #wagon# is late, the #kettle# stands empty. | I count what came off the #road# before I sign a #paper#.
+b : Do you send it back if short? | Can you make a smaller batch?
+a : I note the missing #weight# first. | If the measure still works.
+
+scene lark_answer
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #lark# gives a short #song# and I #whistle# back. | I know the #larks# are outside before I see the #road#.
+b : Do they answer? | Can you match their tune?
+a : Sometimes, to my surprise. | Not exactly. I try anyway.
+
+scene lark_over_kettle
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : The #larks# start before the #bell# and before my #fire#. | I answer one #lark# while I measure the first #water#.
+b : Is that how you wake? | Does anyone hear you?
+a : Often. It is kinder than the #bell#. | Anyone near the #counter#.
+
+scene honey_cake
+when topic=food
+does tell.self / react.self / assess
+a : A #cake# with #honey# settles my paws after a long #batch#. | I save one #cake# for the first quiet #evening# of the week.
+b : Do you bake them? | Is one enough?
+a : When the #kettle# is resting. | With tea, usually.
+
+scene draughts_opening
+when topic=pastimes
+does tell.self / react.self / assess
+a : I leave the middle #square# open to see who reaches for it. | A #board# can hold my mind still longer than an empty room.
+b : Do you win often? | Do you play quickly?
+a : Enough to keep trying. | Only the first move.
+
+scene trapped_piece
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #piece# at the edge can look safe until its way back closes. | I watch the #board# for the move my opponent did not make.
+b : Do you set traps? | Do you say when they miss one?
+a : Small ones. | After the game, perhaps.
+
+scene empty_chapel
+when topic=faith
+does tell.self / react.self / assess
+a : The #chapel# is easiest to enter when its #bench# is empty. | I can hear my own breath there after the #kettle# stops.
+b : Do you pray? | Do you go often?
+a : Sometimes. I mostly sit. | When the #counter# has been loud.
+
+scene poor_manners
+when topic=smalltalk
+does tell.self / react.self / assess
+a : A please costs less than a #bar# of #soap#. | I remember the customer who speaks to my #hands# as if I cannot hear.
+b : Do you tell them? | Do you refuse a sale?
+a : If they linger, yes. | Only if they will not stop troubling others.
+
+scene first_bell
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : The early #bell# interrupts the #larks# before I am ready. | I would rather wake to a #song# than a strike of metal.
+b : Does it start your work? | Would you stop it?
+a : The #kettle# does that. | For one morning, gladly.
+
+scene summer_evening
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : A long #evening# lets the #soap# cool while I walk. | The #larks# give the #road# a last #song# when the light thins.
+b : Do you walk far? | Are you out after the light fades?
+a : Only until the next #bend#. | I return in time to shut the #shelves# before night.
+
+scene letter_south
+when topic=memories
+does tell.self / react.self / assess
+a : A #letter# from down the #road# can stay folded in my #hand# a long while. | I read a #name# twice before I open the #paper#.
+b : Are you waiting for someone? | Why not open it at once?
+a : Someone I would like to see again. | The unopened moment is easier to hold.
+
+scene missed_road
+when topic=travel
+does tell.self / react.self / assess
+a : I tell myself the #road# is unsafe, then watch a #wagon# take it. | Perhaps one day I will follow the supplies south.
+b : What keeps you here? | Where would you go first?
+a : The #kettle#, and my own nerves. | Southmeadow, if the day came.
+
+scene small_sale
+when topic=prices
+does tell.self / react.self / assess
+a : One #bar# sold fairly matters more than a loud bargain. | I put the #price# where the buyer can see it without asking.
+b : Does that prevent haggling? | Do people buy more than one?
+a : It shortens the talk. | Some take enough for a household.
+
+scene rack_in_rain
+when topic=weather here.weather=rain|storm
+does tell.self / react.self / assess
+a : Damp reaches the #shelves# before it reaches my nose. | I move the new #bars# away from the outer wall when rain drives in.
+b : Do they soften? | Is the roof leaking?
+a : If I leave them too close. | I check the wall before blaming the roof.
+
+scene workhand
+when topic=work
+does tell.self / react.self / assess
+a : A second #hand# can hold a #mould# while I pour. | I explain the #heat# before giving anyone the #paddle#.
+b : Do they learn quickly? | Do you let them stir?
+a : With practice and clear measures. | Once they know where the #lye# sits.
+
+scene counter_after_dark
+when topic=day here.time=night
+does tell.self / react.self / assess
+a : I count the #bars# after the #counter# empties. | A #bench# in a quiet #chapel# feels far away after a loud shop day.
+b : Do you close alone? | Do you go there at night?
+a : Often, with a #lantern# near. | Not usually. I keep the thought for morning.
+
+scene winter_water
+when topic=season here.season=winter
+does tell.self / react.self / assess
+a : Cold #water# makes the #kettle# take longer to wake. | I leave the #mould# ready while the #fire# finds its strength.
+b : Does the soap change? | Is the room cold?
+a : The timing does. I watch it. | Until the #pot# begins to warm.
+
+scene coin_for_trip
+when topic=dreams
+does tell.self / react.self / assess
+a : I save #coin# for a trip I have not dared to make. | The #road# south stays in my thoughts after the #counter# closes.
+b : Would you leave the shop? | Is someone waiting there?
+a : For a visit, if I can arrange the work. | Someone I hope still wants to see me.
+
+scene chapel_before_market
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : I sometimes sit at the #chapel# before the first #wagon# arrives. | The empty #bench# gives me a little quiet before the #counter# fills.
+b : Does that help? | Do you go in work clothes?
+a : Enough to start with steady paws. | Of course. No one has minded.
+
+scene city_smoke
+when topic=travel
+does tell.self / react.self / assess
+a : I could sell #soap# in a city, but I would miss the #larks#. | A crowded #road# makes me think of every #wagon# that might be late.
+b : Would you move there? | Have you tried the market?
+a : I doubt it. | I know this #counter# better.
+
+scene folded_note
+when topic=home
+does tell.self / react.self / assess
+a : I keep one #letter# where the #soap# cannot dampen it. | A familiar #name# on a #paper# can make the whole room feel less empty.
+b : Do you write back? | Do you read it often?
+a : When I can find words worth sending. | More than I admit.
+
+story first_kettle [topic=work self.age>=25]
+  : I left the #paddle# against the side of a hot #kettle#.
+  : The handle warmed faster than I expected, so I wrapped it before lifting it again.
+  ask : Did the batch spoil?
+  b : You caught the heat in time, perhaps.
+  : It set cleanly. I moved the #paddle# away from the rim after that.
+
+story lark_reply [topic=pastimes self.age>=25]
+  : I gave a #whistle# to a #lark# above the boiling house.
+  : It answered twice, then flew off while I tried to make the same #song#.
+  ask : Did you match it?
+  b : A lark has more practice.
+  : No. I went back to the #kettle# and tried again the next morning.
+
+story wrong_scale [topic=prices self.age>=25]
+  : A #scale# tipped before I had put the full #weight# on it.
+  : I stopped the sale, reset it, and showed the buyer both measures.
+  ask : Did they trust the second one?
+  b : Showing them was the fair way.
+  : They did. I checked the #scale# again after they left.
+
+story quiet_game [topic=pastimes self.age>=25]
+  : I played draughts after a day when every #wagon# arrived late.
+  : I missed an easy move because I kept listening for another knock at the #counter#.
+  ask : Did you lose?
+  b : Your mind was on the road.
+  : I did. The next game, I shut the #door# first.
+
+story unopened_letter [topic=memories self.age>=25]
+  : I carried a #letter# home before I could bring myself to read it.
+  : I made tea, sat down, and opened the #paper# slowly.
+  ask : Was it good news?
+  b : You took your time finding out.
+  : It was a kind word. I wrote back the next day.
+
+rule @bark_kettle
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say The #kettle# wants another #stir#. | That #batch# is thickening.
+
+rule @bark_lark
+when concept=bark here.time=dawn|day
+does aside
+cooldown 8h
+say Was that a #lark#? | I can answer that #song#.
+
+rule @bark_scale
+when concept=bark self.working=yes
+does aside
+cooldown 9h
+say Reset the #scale# for each fresh #bar#. | The #wrap# has slipped on this one.
+
+rule @bark_chapel
+when concept=bark
+does aside
+cooldown 10h
+say The #chapel# may be quiet now. | An empty #bench# would do me good.
+
+rule @bark_board
+when concept=bark here.time=dusk|night
+does aside
+cooldown 11h
+say One turn on the #board# before bed. | That #piece# can wait until morning.
+
+rule @bark_road
+when concept=bark
+does aside
+cooldown 12h
+say Another #wagon# has taken the south #road#. | I should write that #letter# tonight.
+
+dlg @1 resident.hub : #greet#. Say your business before the #kettle# calls me back. | #greet#. The #counter# is clear for our talk.
+dlg @2 resident.hub [topic.meeting=known] : You are back. Did the #soap# suit? | I remember you. The #batch# you saw is on the #shelf# now.
+dlg @3 resident.hub [here.time=night] : #greet#. I am closing the #counter# soon. | It is late; speak while I bank the #fire#.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I will hear you if we keep this civil. | Speak plainly. I have hot #lye# to mind.
+dlg @1 resident.job : I boil #soap#, cut the #bars#, and sell them at this #counter#. | I keep the #kettle# measured and the #scale# honest.
+dlg @1 resident.bye : #farewell#. Keep the #bar# dry. | #saying.capitalize#. Once the #fire# is safe, I can leave.
+dlg @1 shop.greet [here.shop=open] : #greet#. The #bars# are weighed and ready. Looking for #soap#? | #greet#. The new #batch# has its own space on the #shelf#.
+dlg @2 shop.greet [here.shop=bare] : #greet#. The #shelves# are empty today; I can still hear what you have to sell. | No #soap# left to offer. What have you brought?
+dlg @3 shop.greet [here.shop=asleep] : Mm... the #kettle# can wait... | Sleeping now... come when the #fire# is lit.
+dlg @4 shop.greet [here.shop=open topic.meeting=known] : Back for another #bar#? The #scale# is ready. | I know you. The new #batch# has set well.
+dlg @5 shop.greet [here.shop!=bare here.shop!=asleep] : #greet#. I can weigh a #bar# for you at the #counter#. | #greet#. Which #bar# or supply have you come for?
+dlg @1 shop.prices [here.shop=open|bare] : The #price# is written by the #scale#; the #wagon# costs more this week. | I weigh each #bar# in front of you. Tell me which you want.
+dlg @1 shop.bye : #farewell#. Keep the #wrap# away from rain. | #shop_bye# The #road# is clear from here.
+graft resident.hub
+choice Do the larks really answer you? -> larks
+node larks
+say Some do. I give a short #whistle# and wait for the #song# to come back.
+free
+choice Can you imitate one now? -> whistle
+choice Back to what we were saying. -> hub
+node whistle
+say I can try, but the #larks# do it better. Listen toward the roof at dawn.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice How do you make this soap? -> making
+node making
+say I measure #lye# and #fat#, keep the #kettle# moving, then let the #soap# set in a #mould#.
+free
+choice Why let it rest? -> resting
+choice Back to the counter. -> greet
+node resting
+say A fresh #bar# must hold its shape before I can #wrap# and weigh it.
+choice Back to the counter. -> greet
+choice Goodbye. -> bye
