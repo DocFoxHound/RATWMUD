@@ -87,6 +87,7 @@ class Scratch:
             su.execute(f'DROP DATABASE {self.name} WITH (FORCE)')
 
     def load(self, paths=None, **kw):
+        kw.setdefault('strict', False)              # (The fixture is far under the tiers' sizes by design; batches are strict)
         return L.load_into(self.editor, 'w', [str(p) for p in (paths or [self.drafts])], kw.pop('batch', 'test'), **kw)
 
     def count(self, sql, *args):
@@ -145,6 +146,21 @@ class MantleRows(unittest.TestCase):
             self.assertEqual(s.count("SELECT count(*) FROM information_schema.columns WHERE table_name = 'npc_voice' AND "
                                      "column_name = 'mantle_id'"), 0)
             self.assertEqual(W.migrate(o), ['0066_mantles'])
+
+    def test_clear_own(self):
+        """Phase 11: a resident's own words, lines and persona (a luna table) emptied after a dump, and put back."""
+        with Scratch() as s:
+            s.owner.execute("UPDATE live.npc_voice SET grammar = 'oath! = By my whiskers', rules = 'rule r\nwhen concept=bark\nsay Hi.', "
+                            "persona = 'Hollin is old.', quirk = 'hums' WHERE npc_id = 'tt_hollin'")
+            path, done = L.clear_own_conn(s.editor, 'w', ['tt_hollin', 'tt_co_keeper'], 'own')
+            self.assertEqual(done, ['tt_hollin'], 'only a row with something to empty')
+            self.assertEqual(s.owner.execute("SELECT grammar, rules, persona, quirk FROM live.npc_voice WHERE npc_id = 'tt_hollin'").fetchone(),
+                             ('', '', '', 'hums'), 'the rest of the voice row stays')
+            self.assertIn('By my whiskers', Path(path).read_text())
+            self.assertEqual(s.count("SELECT count(*) FROM dm.actions WHERE kind = 'voice.sync'"), 1, 'the server told')
+            L.restore_conn(s.editor, path)
+            self.assertEqual(s.owner.execute("SELECT persona FROM live.npc_voice WHERE npc_id = 'tt_hollin'").fetchone()[0], 'Hollin is old.')
+            Path(path).unlink()
 
     def test_load_export_round_trip(self):
         with Scratch() as s:
@@ -213,6 +229,8 @@ class MantleRows(unittest.TestCase):
 
     def test_refusals_write_nothing(self):
         with Scratch() as s:
+            strict = s.load(strict=True, dry_run=True)['problems']
+            self.assertTrue(any('dialect marker' in p for p in strict) and any("tier's 55" in p for p in strict), strict)
             self.assertEqual(s.load(bind=True)['problems'], [])
             before = s.count('SELECT count(*) FROM live.mantle_history')
             base = (s.drafts / 'saltwell' / 'sw001.mantle').read_text()

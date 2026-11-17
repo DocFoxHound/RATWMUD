@@ -5,6 +5,7 @@ fixture in ctest, and on every save (tools/mantle_store.py, which Atlas, the DM 
 
   python3 tools/mantle_check.py PATH... [--world KEY] [--strict] [--json]     .mantle files (a directory: all under it)
   python3 tools/mantle_check.py --one ID --world KEY [--strict] [--json]      one mantle as the world's rows hold it
+  --facts RESIDENTS.jsonl: the wearers' facts (talk_check --world KEY --residents --json), for the slots they fill
 
 What it refuses (each finding names the mantle and the item's key):
   * names: a first name or surname of any NPC of the world (live.npcs, living or dead: --world) outside a slot, and any
@@ -21,7 +22,13 @@ What it refuses (each finding names the mantle and the item's key):
     its accents allow none (they must come through symbols);
   * uniqueness (§9.1): no 5-word run shared with another mantle of the dialect; with --world, no oath or saying the
     same as another mantle's worn in the same town, a quirk at most twice in a town;
-  * habits (§14.4): its oath and saying in at most 25% of its alternatives;
+  * habits (§14.4): its oath and saying in at most 25% of its alternatives (the wearer's own: a listener's `b :` lines
+    count neither here nor for the density);
+  * the listener's words (Phase 11): a bare `b :` line is said by any listener in their own speech, so it never writes
+    the mantle's dialect out (only `b[from=...]` or `b[dialect=...]` may); through symbols it says each listener's;
+  * slots (§11, Phase 11): a slot is filled only when its fact is (mantle_rules.json's slots), so a line saying one is
+    backed by it for truth ("my #self.spouse_word#": married); with --facts (a saved `talk_check --residents --json`),
+    an item whose every alternative says a slot its wearer hasn't is warned (never heard from them);
   * the tier's minimum (mantle_rules.json): a `ready` mantle's symbols, lines, its answers to the core moves, window lines,
     stories, and a spare's young and adolescent sections; a draft under it is warned.
 Warned, and refused with --strict (the batches of Phase 11 on): the tier's size (§9.3), the dialect density (60% of a
@@ -142,11 +149,36 @@ def sentences(text: str) -> list[str]:
 
 # ------------------------------------------------------------------ The checks
 
-def check(mantles: list[T.Mantle], *, world: dict | None = None, strict: bool = False, others: list[T.Mantle] | None = None) -> list[Finding]:
+def slot_facts(text: str, slots: dict) -> list:
+    """What the slots a line says take for granted, as criteria (mantle_rules.json's slots)."""
+    out = []
+    for raw in SLOT.findall(text):
+        name = raw.strip('#').split('.capitalize')[0]
+        for need in slots.get(name, []):
+            key, _, values = need.partition('=')
+            out.append((key, '=', set(values.split('|'))) if values else (key, 'has', set()))
+    return out
+
+
+def unfilled(text: str, slots: dict, facts: dict) -> list[str]:
+    """The slots a line says that this wearer's facts leave empty."""
+    out = []
+    for raw in SLOT.findall(text):
+        name = raw.strip('#').split('.capitalize')[0]
+        if name.startswith('self.') and name in slots and facts.get(name[5:]) in (None, '', 'no', 'none'):
+            out.append(name)
+    return out
+
+
+LISTENER_GATE = re.compile(r'^(?:b\.|other\.)?(?:from|dialect)=')
+
+
+def check(mantles: list[T.Mantle], *, world: dict | None = None, strict: bool = False, others: list[T.Mantle] | None = None,
+          facts: dict | None = None) -> list[Finding]:
     """Every finding for these mantles. `world` (from world_facts): the names of every NPC, where each wearer lives and
     who wears what; `others`: mantles of the world beside these (for uniqueness)."""
     r = rules()
-    facts = talk_lint.schema(TALK)
+    schema = talk_lint.schema(TALK)
     truth_rules, ids = talk_truth.load(TALK)
     implied = talk_truth.concepts(TALK)
     gram = dialect_check.grammars(TALK)
@@ -157,6 +189,7 @@ def check(mantles: list[T.Mantle], *, world: dict | None = None, strict: bool = 
     forbidden = [(re.compile(f['match'], re.I), f['why']) for f in r['forbidden']]
     pronoun = re.compile(r['pronouns'], re.I)
     person_slot = re.compile(r['person_slots'])
+    slots = r.get('slots', {})
     names = set((world or {}).get('names', ()))
     out: list[Finding] = []
     everyone = list(mantles) + [o for o in (others or []) if o.id not in {m.id for m in mantles}]
@@ -193,7 +226,14 @@ def check(mantles: list[T.Mantle], *, world: dict | None = None, strict: bool = 
         texts_of = [(it, said(it)) for it in m.items]
         for text, key in [(m.persona, 'persona'), (m.title, 'title')]:
             texts_of.append((T.Item(key=key, kind='card'), [([text], [], 'a')]))
+        wearer_facts = (facts or {}).get(m.written_for) if m.written_for else None
         for it, lines in texts_of:
+            if wearer_facts is not None and it.kind not in ('symbol', 'card'):
+                said_ = [t for texts, _, who in lines if who == 'a' for t in texts if t]
+                missing = [unfilled(t, slots, wearer_facts) for t in said_]
+                if said_ and all(missing):
+                    fail(it.key, f'says {", ".join(sorted({x for xs in missing for x in xs}))}, which its wearer '
+                                 f'({m.written_for}) hasn\'t: never heard from them (for a later wearer?)', True)
             for texts, tokens, who in lines:
                 for t in texts:
                     if not t:
@@ -220,8 +260,9 @@ def check(mantles: list[T.Mantle], *, world: dict | None = None, strict: bool = 
                                 continue
                             two = f'{w} {tokens_[i + 1]}' if i + 1 < len(tokens_) else ''
                             prev2 = f'{tokens_[i - 1]} {w}'
-                            if (w in realm or w.lower() in realm_lower or two in realm or prev2 in realm or
-                                    re.sub(r"'s$", '', w) in realm):
+                            bare = lambda x: re.sub(r"'s$", '', x)      # (A possessive: "the Bright One's ear".)
+                            if (w in realm or w.lower() in realm_lower or bare(two) in realm or bare(prev2) in realm or
+                                    bare(w) in realm):
                                 continue
                             fail(it.key, f'"{w}" is capitalised mid-sentence: a name? Names come only through slots; a place of '
                                          f'the realm goes in mantle_rules.json allow')
@@ -230,7 +271,10 @@ def check(mantles: list[T.Mantle], *, world: dict | None = None, strict: bool = 
                                      f'(#other.they#, #x.their#)')
                     if it.kind == 'card' or who == 'p':
                         continue
-                    counted = it.kind != 'symbol'       # (Lines' alternatives, for the habits and the density.)
+                    # (The wearer's own alternatives, for the habits and the density: a scene's `b :` lines are any
+                    # listener's, said in their own speech, so they neither count for the mantle's dialect nor against it.)
+                    counted = it.kind != 'symbol' and who == 'a'
+
                     if counted:
                         total += 1
                         if any(f'#{h}' in t for h in habits):
@@ -238,9 +282,13 @@ def check(mantles: list[T.Mantle], *, world: dict | None = None, strict: bool = 
                     # Dialect: another's words never; its own written out only where its accents allow it.
                     own = 'mirebridge' if m.dialect == 'fenshore' else m.dialect
                     hits = dialect_check.hits(t, lex)
+                    gated = any(LISTENER_GATE.match(x) for x in tokens)
                     for d, phrase in hits:
                         if d != own:
                             fail(it.key, f'"{phrase}" is {d} speech, not {m.dialect}\'s')
+                        elif who == 'b' and not gated:
+                            fail(it.key, f'"{phrase}" is {d} speech written out in a listener\'s line: any listener says it, in '
+                                         f'their own speech; through a symbol, or b[from=...]')
                         elif 'none' in m.accents:
                             fail(it.key, f'"{phrase}" is {d} speech written out, and its wearer may speak with no accent: '
                                          f'through a symbol (the dialect\'s word, or its own words)')
@@ -248,9 +296,13 @@ def check(mantles: list[T.Mantle], *, world: dict | None = None, strict: bool = 
                     if counted and ((syms & (own_symbols | dialect_symbols)) or any(d == own for d, _ in hits)):
                         marked += 1
                     # Truth: what the words take for granted, behind them.
-                    crit = talk_lint.criteria(tokens, 'a' if who == 'a' else 'b', False, facts) + talk_lint.held(tokens, implied)
+                    crit = talk_lint.criteria(tokens, 'a' if who == 'a' else 'b', False, schema) + talk_lint.held(tokens, implied)
+                    if who == 'a':
+                        crit += slot_facts(t, slots)
                     crit.append(('self.mantle', '=', {m.id}))
                     for rule in talk_truth.matches(truth_rules, t):
+                        if rule.topics and talk_lint.on_topic(crit, rule.topics) is not True:
+                            continue                # (Scoped, as talk_lint scopes it: "That's hard" on news only.)
                         if not talk_lint.backed(rule, crit):
                             needs = ', '.join(f'{n.key}{n.op}{"|".join(sorted(n.values))}' for n in rule.needs + rule.needs_any)
                             fail(it.key, f'"{t}" takes for granted what its criteria don\'t say ({rule.id}: {needs})')
@@ -303,6 +355,12 @@ def check(mantles: list[T.Mantle], *, world: dict | None = None, strict: bool = 
         for mark in m.marks:
             if mark not in habits:
                 fail('marks', f"'{mark}' is not a habit of its own (name! in its words)")
+            else:
+                # (Phase 11: a mark is drawn again for a wearer the neighbours would remember it in, §12.4, from the
+                # dialect's bank or else from the mark's own other alternatives: one alternative can't be drawn again.)
+                alts = {a for it in m.items if it.kind == 'symbol' and it.symbol.split('.')[0] == mark for a in (said(it)[0][0] if said(it) else [])}
+                if len(alts) < 2:
+                    fail('marks', f"'{mark}' has {len(alts)} alternative: a mark needs two or more, to be drawn again (§12.4)")
         if m.persona and '#self.first#' not in m.persona and m.persona:
             fail('persona', 'the persona names its wearer by #self.first# (it is passed on)', True)
     # In a world: who wears what, where; a town's oaths, sayings and quirks.
@@ -396,7 +454,15 @@ def main() -> int:
     ap.add_argument('--one')
     ap.add_argument('--strict', action='store_true')
     ap.add_argument('--json', action='store_true')
+    ap.add_argument('--facts', help="the wearers' facts: a saved talk_check --world KEY --residents --json")
     a = ap.parse_args()
+    facts = None
+    if a.facts:
+        facts = {}
+        for line in Path(a.facts).read_text().splitlines():
+            if line.startswith('{'):
+                d = json.loads(line)
+                facts[d['id']] = d
     mantles, problems = [], []
     for f in files(a.paths):
         try:
@@ -416,7 +482,7 @@ def main() -> int:
                     problems.append(f'{a.one}: no such mantle in {a.world}')
     elif a.one:
         ap.error('--one needs --world')
-    found = check(mantles, world=world, strict=a.strict, others=others)
+    found = check(mantles, world=world, strict=a.strict, others=others, facts=facts)
     errors = [f for f in found if not f.warning]
     if a.json:
         print(json.dumps({'problems': problems, 'findings': [vars(f) for f in found]}, indent=1))

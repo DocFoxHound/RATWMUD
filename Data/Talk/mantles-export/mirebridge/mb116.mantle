@@ -1,0 +1,289 @@
+# mb116, the weather-scolding carter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb116
+revision 1
+state ready
+dialect mirebridge
+accent broad light
+tier standard
+written_for cty_jory_corncroft
+written_by claude-p11-pilot
+title the weather-scolding carter
+fits stage=adult|old
+prefers job=carter
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk argues_with_the_weather
+likes pickled_herring whittling full_larder warm_rain
+dislikes deep_mud wet_floors
+fears a_broken_axle_far_from_home
+hopes enough_in_the_tin_at_last
+topics weather +0.4 work +0.3 travel +0.3 prices +0.2 festival -0.3 faith -0.2
+styles comfort=practical gossip=reluctant refuse=plain tease=none
+marks oath saying scold
+persona #self.first# drives a cart along the fen causeway: plain, driven, saving for something unspoken, and forever arguing with the sky.
+
+words
+oath! = Axle and ash | Hoof and hub
+saying! = Mud stops the cart, never the carter | Every mile's a copper in the tin
+scold! = Go on, then, do your worst | I see you up there | Is that the best you've got
+cart = the cart | my old cart
+causeway = the causeway | the long causeway
+hocks = mud to my hocks | slubber up to the hocks
+tin = the tin under the bed | my savings tin
+herring = a pickled herring | herring out of the crock
+whittle = a bit of whittling by the fire | a knife and a stick of willow
+pantry = a full larder | a shelf with something on it
+warmwet = warm rain on a dry road | the warm sort of rain
+pony = the pony | that pony of mine
+load = a full load | a cart piled to the rails
+sky = you up there | you great grey lump
+
+any
+opinion @1 church against 1 : A sermon never once greased an axle. I'll keep my Restday for the harness, thank you.
+opinion @1 dole against 1 : Never took a crumb I hadn't hauled for. I'll not start now, #oath#.
+opinion @1 festivals against 1 : A feast day's a day #cart# stands idle, and the rent doesn't take a holiday.
+opinion @1 houses against 2 : I've hauled their stone and their grain past their gates for twenty years, and never once seen a face at a window.
+opinion @1 road for 1 : The road's my living. It's no worse than it ever was, and some days it's #good#.
+
+grown
+line @1 greet.return : #greet#. | #greet#, #address#. Mind #cart#.
+line @1 greet [pair.band=strangers] : #greet#. You'll be off the causeway, by your boots. | #greet#, #stranger#. Wanting a ride somewhere?
+line @2 greet [here.time=dawn] : #greet#. Early, and #sky# already sulking. | #greet#. First load's on. No time to stand.
+line @3 greet [self.working=yes] : #greet#. Step round #pony#, mind. | #greet#. Can't stop; #load# won't haul itself.
+line @1 again.open : You again. #greet#. | Back, are you. #greet#.
+line @1 farewell : #farewell#. I've miles to make. | #farewell#, #address#.
+line @1 farewell.return : #farewell#. | #farewell#. Mind the soft verge.
+line @1 react.news.new : #surprise#. Is it, now. | #oath#! Who'd have thought.
+line @1 react.news.known : #knew#. I had it on #causeway#. | Old news, that. Heard it two loads back.
+line @1 react.news.doubt : #doubt#. I'd want it off somebody I trust. | Hm. Show me it on a cart and I'll believe it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #bad#. Hard luck. | #pity#. Rough, that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Good for them. | #congrats.capitalize#, I'd say.
+line @1 answer.how : Busy. #busy.capitalize#. | Wheels turning. #bc_good# | Ask me when the road's #good#.
+line @1 answer.how.poorly : #hurt.capitalize#. It'll pass when #sky# stops weeping. | Stiff. It's the damp. It always is.
+line @1 sympathise : #sympathy#. Get your shoulder to it. It shifts. | Hard going. You'll get the wheel out, same as always.
+line @1 decline : Can't. I've #load# promised and the day half gone. | #demur#. I'd lose a run doing it.
+line @1 accept_decline : #no_matter#. Another day. | Fair. I'll ask somebody else.
+line @1 thank : #thanks#. | #thanks#. I'll haul you something one day.
+line @1 deflect_thanks : #deflect#. It was on my way. | Nothing. It was going that way anyhow.
+line @1 preclose : Well. #cart.capitalize# won't drive itself. | #preclose#.
+line @1 ack : #ack#. | Mm. Right.
+scene work_causeway
+when topic=work here.region=fens self.job=carter
+does tell.self / react.self / assess
+a : Three runs up #causeway# today and one more if #sky# behaves. | Took #load# of peat to the kilns. Came back with pots. Never empty both ways, me. | #cart.capitalize#'s due a new pin. I'll whittle one tonight.
+b[job=carter|laborer] #road : Four runs? You'll kill the pony. | Clever. Never an empty run. | Whittle a pin?
+b : That's a lot of runs. | #bc_clever# | You can do that?
+a@road : The pony's fine. It's me that's tired. #oath#. | It's the only way it pays. | Ash, cut green. Holds better than iron, some days.
+a : It's what it pays. #saying#. | #bc_somebody_has_to# | I can whittle most things. Not a wheel. Yet.
+
+scene work_stuck
+when topic=work|weather here.region=fens self.job=carter here.weather=rain|storm|overcast
+does tell.complaint / react.complaint / assess
+a : Sunk #cart# to the hub by the creek turn. #hocks.capitalize#. | Had to unload half and pull her out. Load again. Two hours lost. | That soft stretch past the dyke swallowed a wheel again. #annoyed#.
+b[job=carter|laborer|farmer] #road : That stretch wants stone in it. | Two hours? I'd have left it. | It's had mine.
+b : Did you get it out? | #bc_bad_luck# | #bc_again_q#
+a@road : It wants stone, and nobody'll pay for stone. | And lose the load? #bc_never# | It'll have everyone's, by spring.
+a : Out, and #very# sore for it. | Bad luck's what the fen's made of. | #bc_again#
+
+scene work_pony
+when topic=animals|work here.region=fens self.job=carter
+does tell.self / react.self / assess
+a : #pony.capitalize# stopped dead on #causeway# and looked at me like I owed him money. | Fed #pony# before I fed myself. That's the order of things. | #pony.capitalize#'s got more sense than me. He won't go near the soft verge.
+b[job=farmer|herder|carter] #beasts : They know when you're in a hurry. | #bc_wise# | Trust the beast's feet.
+b : #bc_ha# | That's the right order. | #bc_clever#
+a@beasts : He does. Every time. | It is. He pulls, I eat second. | #bc_i_know#
+a : He got his way. He always does. | It is. #saying#. | Cleverer than half the fen, that pony.
+
+scene rain_scold
+when topic=weather here.region=fens here.weather=rain
+does tell.self / react.self / assess
+a : #scold#. I'm going out in it anyway. | #rain.capitalize# again. I told it twice this morning to give over. It didn't listen. | Hear it? It's waited all week for me to load up.
+b : You're talking to the rain? | #bc_ha# | It's only rain.
+a : Somebody has to. Nobody else tells it. | It never does. #annoyed#. | Only rain, says you. Not you hauling in it.
+
+scene clear_scold
+when topic=weather here.region=fens here.weather=clear
+does tell.self / react.self / assess
+a : Look at that. Clear, and #causeway# dry. Took you long enough, #sky#. | Sun's out. I'll not thank it. It owes me a week. | #good# and dry. I'll have four runs out of today.
+b : #bc_lovely# | #bc_ha#. It owes you? | Four runs!
+a : #bc_about_time# | A week of #rain#. It owes me. | Four, if the pony agrees.
+
+scene fog_scold
+when topic=weather here.region=fens here.weather=fog
+does tell.self / react.self / assess
+a : #fog.capitalize# down to the reeds. You'll not stop me, murk. I know #causeway# blind. | Can't see the pony's ears. I've told the murk what I think of it. | #fog.capitalize# again. It thinks it's clever.
+b : Be careful out there. | What did you tell it? | Is it?
+a : I'm always careful. #saying#. | Nothing fit to repeat. | It's not. It just sits there.
+
+scene storm_scold
+when topic=weather here.region=fens here.weather=storm
+does tell.self / react.self / assess
+a : Blow, then. #scold#. I'm not going out in you. | Lost a day's runs to this. Somebody up there's laughing. | #wind.capitalize# had the tarp off #cart# twice. I tied it three times.
+b : Sit it out. | #bc_bad_luck# | Three times!
+a : I'm sitting. I'm not liking it. | A day lost. That's a copper short in #tin#. | And it'll have it off again by morning, #oath#.
+
+scene warm_rain
+when topic=weather|season here.region=fens here.weather=rain here.season=spring|summer
+does tell.feeling / react.self / assess
+a : Now this I don't mind. #warmwet.capitalize#. Lays the dust and leaves the road. | Warm, for once. I'll not argue with this one. | #warmwet.capitalize#. If it'd always rain like this I'd shut up about it.
+b : You, not arguing? | #bc_for_once# | Would you, though?
+a : Not with this one. It's earned a rest. | #bc_for_once#. Don't tell it. | No. I'd find something.
+
+scene herring_crock
+when topic=food here.region=fens
+does tell.self / react.self / assess
+a : #herring.capitalize# and a crust, sat on #cart#. Best meal in the fen. | Somebody brought a crock of herring up from the coast. I had three before I'd paid. | Can't abide a meal that needs a table. Give me #herring#.
+b[wealth=poor|destitute] #poor : Cheap, too. | Three? Were they dear? | Herring keeps, at least.
+b : #bc_lovely# | Three! | A table's not so bad.
+a@poor : Cheap and it keeps. #bc_exactly# | Not dear enough to stop me. | It keeps, and so do I.
+a : It is. #bc_it_is# | Paid after. Honest. | A table's for folk with time.
+
+scene full_pantry
+when topic=home|food here.region=fens
+does tell.self / react.self / assess
+a : Got #pantry# this week. First time since the thaw. I keep going and looking at it. | A full shelf never lasts. Somebody always eats it. | I like a door I can open and find something behind. That's all.
+b : #bc_lucky_you# | #bc_ha#. Always the way. | #bc_fair#
+a : Not luck. Hauled for every crumb on it. | Always. I'll fill it again. | A cupboard's got one job, #address#.
+
+scene whittling_fire
+when topic=pastimes here.region=fens here.time=dusk|night
+does tell.self / react.self / assess
+a : #whittle.capitalize#. That's my evening, and nobody's asking me for a load. | Whittled a new whistle tonight. Sounds like a sick heron. | I've a box of things I've whittled. Pins, pegs, a spoon or two. Nothing fancy.
+b[job=crafter] #hands : What wood? | #bc_ha#. Keep at it. | Sell them?
+b : #bc_lovely# | #bc_ha# | Nothing fancy's still something.
+a@hands : Willow, mostly. Ash for the pins. | I'll keep at it till it's a heron in health. | Never sold one. Not yet.
+a : It is. Quiet. #bc_it_is# | Better than a sick pony. | It's something. Aye.
+
+scene tin_dream
+when topic=dreams|work here.region=fens
+does tell.self / ask.detail / answer.detail
+a : There's coin in #tin#. Not much. It's going somewhere, one day. | Put three coppers by this week. #saying#. | One day I'll stop hauling other folks' things. One day.
+b : What for? | For what? | And do what?
+a : Never you mind what for. I know. That's enough. | That'd be telling. #oath#. | That's mine to know, #address#.
+
+scene prices_pay
+when topic=prices here.region=fens
+does tell.complaint / react.complaint / assess
+a : Bread's up again. My haul rate isn't. #robbery#. | #self.shopkeeper# put a copper on the herring. I told the herring it wasn't worth it. | Everything goes up but what they pay a carter.
+b[wealth=poor|destitute] #poor : Mine neither. | #bc_ha#. Did it listen? | Or anyone that works.
+b : #bc_they_always_do# | #bc_ha# | #bc_true#
+a@poor : Then we're both short. #bc_i_know# | It didn't. I bought it anyway. | #bc_true#. Anyone that sweats.
+a : #bc_they_do#. | I'll argue with anything that'll stand still. | They do. Every week.
+
+scene festival_lost
+when topic=festival here.region=fens
+does give.opinion / react.self / assess
+a : Feast day. Nobody wants a load moved. A whole day's runs, gone. | They'll dance on the boards and I'll be mending harness. Suits me. | Feast's tomorrow. I'll do two runs before they wake.
+b[stage=young] #pup : Aren't you coming to the dancing? | Mending harness? On a feast day? | Before they wake?
+b : Enjoy it a bit. | #bc_somebody_has_to# | #bc_ha#
+a@pup : Maybe after. If the harness is done. | Harness doesn't know it's a feast day. | Feast or no feast, #saying#.
+a : I'll enjoy it when #tin#'s full. | #bc_somebody_has_to#, aye. | Laugh. I'll be two coppers up.
+
+scene faith_axle
+when topic=faith here.region=fens
+does give.opinion / react.self / assess
+a : The Bright One helps a cart that's already moving. That's my sermon. | I'll go to chapel when it fills a larder. Hasn't yet. | Pray all you like. I'll be on #causeway#.
+b[priest] #cloth : It fills more than you know. | Come once and see. | The Bright One rides with you.
+b : #bc_ha# | #bc_true_enough# | Each to their own.
+a@cloth : Maybe so. I've not seen it. | #bc_i_might#. When the roads are #bad#. | Then the Bright One can help push.
+a : It's a short sermon. | #bc_true_enough# | Each to their own. Mine's #causeway#.
+
+scene friend_share
+when topic=friends|home here.region=fens self.friend
+does tell.self / react.self / assess
+a : #self.friend# and me split the rent and the firewood. Square, every week. | #self.friend# says I talk to #pony# more than to folk. Fair. | #self.friend# fixed my wheel-pin. I'll haul something for nothing in return.
+b : #bc_good# | #bc_ha# | That's fair.
+a : Square's the only way to share a roof. | #pony.capitalize# listens. | Fair's fair. #oath#.
+
+scene houses_shadow
+when topic=times|gossip here.region=fens
+does give.opinion / react.self / assess
+a : I've hauled for the Houses since I could hold reins. Not one of their faces, ever. | The Houses take the road and leave us #causeway#. | Times get harder and nobody up there looks down.
+b[wealth=rich|comfortable] #fine : They've their own troubles. | It's their road. | Times are what they are.
+b : #bc_true# | #bc_they_always_do# | #bc_i_know#
+a@fine : Not that I've noticed. | Built with our backs, though. | Harder for some than others.
+a : #bc_true#. Not once. | #bc_they_do#. | #bc_every_day#
+
+scene wet_floor
+when topic=home|weather here.region=fens here.weather=rain|storm
+does tell.complaint / react.complaint / assess
+a : Came in to #mud# on the floor. #hocks.capitalize# outside, and now inside too. | Floor's wet again. I put a plank across. It floats, #oath#. | A wet floor's the worst of it. You can't sit, you can't stand. #grumble#.
+b : #bc_every_year# | #bc_ha# | #bc_true#
+a : Every year. I'll raise the boards one day. | It does. I've given up. | #annoyed#. And the fen laughs.
+
+scene dawn_harness
+when topic=day here.region=fens here.time=dawn
+does tell.self / react.self / assess
+a : Harnessed before the light. #sky.capitalize#'s not even up yet. | First load's on. I like to be over #causeway# before the murk lifts. | Grey sky. Don't you dare, #sky#.
+b : Early for it. | #bc_wise# | #bc_ha#
+a : Every day. #saying#. | First over's first paid. | It heard me. We'll see.
+
+scene road_living
+when topic=travel|caravan here.region=fens
+does give.opinion / react.self / assess
+a : The road's my living. I'll not hear a word against it. Mostly. | Folk moan about the road. It's always been #bad#. You drive it anyway. | I know every rut between here and the kilns by name. Not their names. Mine.
+b : #bc_mostly#? | #bc_true# | Every rut?
+a : Mostly. It's still #mud#. | You drive it. #bc_somebody_has_to# | Every one. #oath#.
+
+story first_load [topic=memories|work self.age>=25]
+  : First load I ever drove, I was a lad. Turf, piled too high.
+  : Took the dyke bend too fast. Half of it went in the water.
+  b : What did you do?
+  : Waded in after it, turf by turf. Paid for every wet one out of my own pocket. Never piled high again.
+  b : #bc_wise#
+
+story flood_night [topic=memories|weather here.region=fens self.age>=30]
+  : One winter the water came over #causeway# with me halfway along it.
+  : Sat on #cart# all night with the pony, telling the flood to go back where it came from.
+  ask : Do you know what it did?
+  b : What?
+  : It went back. Come dawn. Took its time about it, but it went. I've argued with the weather ever since.
+
+story coach_mud [topic=memories|gossip self.age>=25]
+  : A grand coach came down once. #posh.capitalize# folk, wheels to the hub at the creek turn.
+  : They waved me over. I pulled them out with #pony#. Took an hour.
+  b : They'd have paid well.
+  : A copper. One. And a look like I'd put the mud there. #oath#.
+
+rule @harness
+when concept=bark self.working=yes self.job=carter here.region=fens
+does aside
+cooldown 6h
+say Walk on. Walk on, I said. | #oath#. Mind the verge, #pony#. | Steady. #load.capitalize#, and all of it staying on.
+
+rule @rain
+when concept=bark here.region=fens here.weather=rain|storm here.weather!=indoors
+does aside
+cooldown 6h
+say #scold#. | Oh, that's it. Pour, then. See if I care. | I heard you the first time, #sky#.
+
+rule @clear
+when concept=bark here.region=fens here.weather=clear
+does aside
+cooldown 8h
+say And about time, #sky#. | Dry road. Don't spoil it. | #good#. Stay like that.
+
+rule @mud
+when concept=bark here.region=fens self.job=carter here.season=winter|spring
+does aside
+cooldown 8h
+say #hocks.capitalize#. Every step. | Who left this #mud# here? | #annoyed#. Soft as a pudding.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Need something hauled? I'm cheap and I'm quick, and that's two more than most.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Quick, now. I've a load waiting.
+dlg @3 resident.hub [pair.disposition=wary] : #greet#. Say what you want. I've miles.
+dlg @4 resident.hub [here.weather=rain] : #greet#. Don't mind me; I'm not speaking to the rain. What is it?
+dlg @1 resident.job : I drive #cart# up and down #causeway#. Peat up, pots down, whatever pays. #saying#.
+dlg @1 resident.news : Only what I hear on #causeway#, and most of that's the pony's opinion.
+dlg @1 resident.bye : #farewell#. I've miles to make.
+graft resident.hub
+choice Why do you shout at the sky? -> sky
+node sky
+say Somebody has to. It does what it likes all day and nobody says a word to it. #scold#.
+mood keen
+free
+choice Does it ever listen? -> sky_listen
+choice Fair enough. -> hub
+node sky_listen
+say Once. A flood, years back. It went down by dawn. I've never let it forget it.
+choice I'll leave you to it. -> hub
+choice Goodbye. -> bye

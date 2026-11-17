@@ -1,0 +1,282 @@
+# mb110, the wall-seat skipper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb110
+revision 1
+state ready
+dialect mirebridge
+accent light broad
+tier standard
+written_for cty_ivo_sootridge
+written_by claude-p11-pilot
+title the wall-seat skipper
+fits stage=adult|old
+prefers warmth=warm
+traits temper=even talk=plain warmth=warm humour=none honesty=frank piety=ordinary drive=steady
+quirk never_sits_with_a_back_to_the_door
+likes hard_cheese dancing full_larder misty_dawns
+dislikes flies wet_floors
+fears a_hull_gone_soft
+hopes a_full_table_at_midwinter
+topics food +0.4 work +0.3 weather +0.2 friends +0.2 gossip -0.3
+styles comfort=practical gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# skippers a boat on the fen coast: warm and blunt, feeds whoever comes in, keeps a full larder and always takes the seat by the wall.
+
+words
+oath! = Tar and tiller | Keel and cable
+saying! = A full larder is a quiet head | Feed them first and ask after
+cheese = a wedge of the hard cheese | the hard yellow cheese
+larder = a larder full to the beams | shelves that don't echo
+wall = the wall at my back | my back to good planks
+seat = the seat by the wall | my wall seat
+dawnmurk = a murk-grey dawn | the fen-murk at first light
+flies = the summer flies | those fat fen flies
+floor = a wet floor | water on the boards
+tide = the ebb | the turn of the tide
+pole = the quant pole | the long pole
+hull = the old hull | her timbers
+kinfar = my own folk, a long wade up the coast | kin of mine, past the causeway and beyond
+shipmate = shipmate | old hand
+eat = sit and eat | have a bite first
+
+any
+opinion @1 strangers for 2 : Anyone who comes in off the fen gets fed at my table, dry-footer or not. Who they are can wait till after.
+opinion @1 newcomers for 1 : New folk are welcome by me, #shipmate#. If they'll pull a rope, there's room at the rail.
+opinion @1 merchants against 1 : I pay for #cheese#, and then I pay for whoever stood between me and the cheese.
+opinion @1 dole for 2 : A hamlet with #larder# in one house and a hungry belly next door has gone wrong somewhere.
+opinion @1 festivals mixed 1 : I'll dance till the fiddler drops. It's the ones who drink till they're #drunk# and swinging I could do without.
+opinion @1 city against 1 : Ridgemere's all doors and elbows. Not one place in it to sit with #wall#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Inside, inside. Take any bench but #seat#. | #greet#, stranger. You'll have eaten? No? Then #eat#.
+line @2 greet [pair.band=friends|family] : There you are. #greet#. Sit, the bench is #snug#. | #greet#, #shipmate#. I'd hoped you'd come by.
+line @1 again.open : Back again? Good. #eat.capitalize#, then. | Twice in a day, #shipmate#. You'll want feeding twice.
+line @3 greet [here.time=dawn] : #greet#. #dawnmurk.capitalize#, and nothing in the world to beat it. | Early, the pair of us. #greet#.
+line @4 greet [self.working=yes] : #greet#. Mind the ropes, I've them out to dry. | #greet#. Step round, I've tar on #hull#.
+line @1 greet.return : #greet#. Good to see you on dry boards. | #greet#, #shipmate#. Sit, if you've a minute.
+line @2 greet.return [here.time=night] : #greet#. Late to be out. Mind the boards, they gap. | #greet#. Lamp's lit, come in, #shipmate#.
+line @1 farewell : #farewell#. #eat.capitalize# before you sleep. | #farewell#, #shipmate#. Mind the gap at the end board.
+line @1 farewell.return : #farewell#, #shipmate#. | #farewell#. Come by again.
+line @1 react.news.new : #oath#. I didn't know that. | Is that so, #shipmate#. First I've heard.
+line @1 react.news.known : I had that off the quay this morning. #knew.capitalize#. | Heard it already. It's gone round, #shipmate#.
+line @1 react.news.doubt : I'll believe it when two say it who weren't #drunk# at the time. | Maybe. #doubt.capitalize#. I'd want it from somebody sober.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's heavy news. Is anyone seeing they're fed? | #pity.capitalize#. I'm sorry for it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Good. That's how it should go. | That's a #good# day, then. Glad of it.
+line @1 answer.how : Fed and dry. Can't ask more. | Well. #larder.capitalize#, and #hull# sound.
+line @1 answer.how.busy : #busy.capitalize#. #tide.capitalize# won't wait on me. | Up to the elbows. #hull.capitalize# wants tarring.
+line @1 sympathise : That's heavy. Come and #eat#; it fixes nothing, but it helps. | #sympathy.capitalize#. Sit a while. Nobody'll hurry you here.
+line @1 decline : I can't, #shipmate#. I've #hull# to see to before #tide#. | Not today. My word's promised down at the shed, and my word's #good#.
+line @1 accept_decline : Another time, then. The offer stays open. | Fair enough, #shipmate#. It'll keep.
+line @1 thank : #thanks#. I'll remember that. | That's good of you, #shipmate#. I mean it.
+line @1 deflect_thanks : It was only #cheese#. Go on with you. | Nothing to thank. You'd do the same.
+line @1 preclose [self.working=yes] : Well. #tide.capitalize# turns whether I'm there or not. | I'd best get back. #hull.capitalize# won't tar itself.
+line @1 ack : Right. Understood. | Aye, #shipmate#. Noted.
+rule @rope
+when concept=bark working=yes self.job=fisher|sailor|none self.workplace
+does aside
+cooldown 6h
+say Lift on three. Gently, it's old timber. | Coil it down, don't drop it. Rope's dear enough. | Hand me #pole#. The other one.
+
+rule @larder
+when concept=bark working=no
+does aside
+cooldown 8h
+say Shelf's thinning. I'll want #cheese# before the week's out. | Who left that door open? #flies.capitalize#'ll be in everything.
+
+rule @wall
+when concept=bark working=no
+does aside
+cooldown 8h
+say Shove along. I'll take #seat#. | #floor.capitalize# again. Whose coat is that dripping?
+
+rule @dawn
+when concept=bark here.time=dawn
+does aside
+cooldown 12h
+say #dawnmurk.capitalize#. Best hour there is. | Still out there. Grey all the way down to #tide#.
+
+scene ivo_dawn_white
+when topic=weather|day here.time=dawn here.weather=fog here.region=fens
+does tell.self / react.self / assess
+a : #dawnmurk.capitalize#. The coast's gone white. I'd not trade it. | Can't see bow from stern out there. I love it, #shipmate#. | Sound carries for miles in #fog#. Hear that heron?
+b[job=fisher|sailor] #water : Slow going on the water, then. | You'll be steering by ear. | It's coughing again.
+b : #cold.capitalize#, though. | Can't see my own paws in #fog#. | #bc_lovely#
+a@water : Slow and safe. I'll take that over quick. | Ear and #pole#. It's done. | Sounds like a wolf choking on a bone.
+a : #cold.capitalize#, aye. It burns off by noon. | Wait an hour. It lifts by #tide#. | It is. Best hour there is.
+
+scene ivo_mizzle_hull
+when topic=weather here.weather=rain here.region=fens
+does tell.complaint / react.complaint / assess
+a : Mizzle on #hull# and #floor# in the house. I can't get dry this week. | #rain.capitalize# on the tar. It'll never set. | Mizzle all day. The ropes are like eels.
+b : #bc_every_year# | Leave it a day, #address#. | Hang them by the fire.
+a : Every year I say I'll raise the floor. | A day's a day lost. Still. #notsobad.capitalize#. | Then the house smells of wet rope. Fine. I'll do it.
+
+scene ivo_close_flies
+when topic=weather|animals here.season=summer here.region=fens
+does tell.complaint / react.complaint / assess
+a : #flies.capitalize#. I've swatted twelve since I sat. | The flies have found #cheese# again. | It's #hot#, and #flies# love it.
+b : #bc_every_year# | Put a cloth over it, #address#. | Smoke them out.
+a : Thirteen now. | Cloth's on. They're under the cloth. | Smoke, and #cheese# tastes of smoke. I'll take the flies.
+
+scene ivo_work_tar
+when topic=work self.job=fisher|sailor|none self.workplace here.region=fens
+does tell.self / react.self / assess
+a : Tarring #hull# at #self.workplace# all day. Smell me. | Took the boat round past the dunes and back on #tide#. | New rope on the mast. The old one was ready to go.
+b[job=fisher|sailor] #trade : Good tar, or the cheap stuff? | Wind with you? | Before it went for you, at least.
+b : The smell's on the wind, #address#. | Long day. #bc_very_busy# | #bc_good#
+a@trade : The good stuff. I'll not skimp on #hull#. | Most of the way. #pole.capitalize# for the rest. | That's the idea. You go before it does.
+a : Wash it off with fat, it comes. | Long, but a #good# one. | It's the only way I know to do it, #shipmate#.
+
+scene ivo_work_hands
+when topic=work|friends self.job=fisher|sailor|none self.friend here.region=fens
+does tell.self / react.self / assess
+a : #self.friend# was at the ropes before me again. Every day. | I'd trust #self.friend# with the tiller in #fog#. Not many I'd say that of. | #self.friend# hauls and I steer. It works.
+b : That's a #good# hand to have. | High praise from you. | #bc_i_hope_so#
+a : I know it. I make sure of the supper. | It's meant, #shipmate#. | It does. Sure as #tide#.
+
+scene ivo_work_plank
+when topic=work self.job=fisher|sailor|none here.region=fens
+does tell.worry / reassure / assess
+a : There's a soft plank by the keel. I keep pressing it. | Bar's shifted at the river mouth. Nearly had us on it. | Sail's patched on patches. It'll want new this year.
+b : Get it seen to before it goes, #address#. | Watch it, then. | Costly. #bc_bad_luck#
+a : I will. #tide.capitalize# after next, when #hull#'s out of the water. | Every pass, now. #warn.capitalize#. | It is. Still cheaper than a wet cargo.
+
+scene ivo_food_cheese
+when topic=food self.shopkeeper here.region=fens
+does tell.self / react.self / assess
+a : #self.shopkeeper# kept #cheese# back for me. Have some. | Bread, onion, #cheese#. Best supper there is. | Eel's fine. Give me #cheese# over eel any day.
+b[wealth=poor|destitute] #lean : I won't say no. | It's more than I had. | Eel's what I can get.
+b : Just a sliver. | Plain, but #good#. | #bc_nor_me#
+a@lean : Take the big piece. I've #larder#. | Then sit and have it with me. | Then come by mine. There's always #cheese# spare.
+a : A sliver's an insult to it. Here. | Plain's #good#. | That's settled, then, #shipmate#.
+
+scene ivo_food_larder
+when topic=food|home here.region=fens
+does tell.self / react.self / assess
+a : Restocked #larder#. Every shelf. I sleep better. | Can't rest with an empty shelf in the house. Never could. | #saying.capitalize#. My mam said that, and she was right.
+b : That's a #good# feeling. | I'd sleep, empty or not. | #bc_wise#
+a : It's the best there is. | You've never gone #hungry# on the water, then. | She was that.
+
+scene ivo_food_feed
+when topic=food pair.band=strangers|acquaintances
+does offer / accept / assess
+a : You look #hungry#. #eat.capitalize#. I mean it. | I've stew on. There's a bowl going, #shipmate#. | When did you last eat? Be honest.
+b[wealth=poor|destitute] #lean : That's kind. I will. | If there's enough. | Yesterday. Maybe.
+b : I've eaten, but #bc_thank_you# | Go on, then. #bc_gladly# | This morning.
+a@lean : No kindness in it. Sit. | There's always enough. #larder.capitalize#. | Then you're eating now.
+a : Then have #cheese# for the road. | Good. Sit by me, not by the door. | Not enough. Here.
+
+scene ivo_home_wall
+when topic=home|smalltalk pair.band=acquaintances|friends|family
+does tell.self / ask.detail / answer.detail
+a : Moved my chair again. Now I can see both doors and keep #wall#. | Somebody had #seat# at the Heron. I waited beside it till they shifted. | I'll sit on the floor before I sit with my back to that door.
+b : Why both, #address#? | Did they? #bc_ha# | Why's that, anyway?
+a : I like to see who comes in. That's all. | Took a while. I'm patient. | Old habit, #shipmate#. I'll tell you sometime.
+
+scene ivo_home_floor
+when topic=home here.region=fens here.weather=rain|storm
+does tell.complaint / react.complaint / assess
+a : #floor.capitalize# again. The fen's under the door. | Rushes down, and they're #bad# already. | Water's up to the second step. One more and it's in.
+b : #bc_every_year# | Stilts, #address#. That's the answer. | Sweep it out.
+a : I'll raise the boards in summer. Every year I say it. | Easy said. | Sweeping water. That's a #bad# evening.
+
+scene ivo_friends_door
+when topic=friends|smalltalk pair.band=friends|family
+does tell.feeling / react.self / assess
+a : You're always welcome at mine. I'll say it plain so you know. | Come for supper on Restday. I've #larder#. | I'd do anything for the folk I sit with, #shipmate#. You're one.
+b : That's #good# of you. | I'll be there. #bc_i_will# | #bc_thank_you#
+a : Not good. Just true. | Good. Bring nothing. Come #hungry#. | Now you know.
+
+scene ivo_kin_far
+when topic=family self.married=no self.parent=no
+does tell.self / sympathise / assess
+a : #kinfar.capitalize#. Haven't had a word from them in years. | I set a place for #kinfar# at midwinter. Nobody sits there. | Folk ask if I've family. I have. #far.capitalize#, somewhere.
+b : That's a long silence, #address#. | That's a kind habit. | #bc_poor_soul#
+a : It's how it is. I made my own here. | Habit. Doesn't cost anything. | It's not so bad, #shipmate#. I've folk here.
+
+scene ivo_dance
+when topic=pastimes|festival
+does tell.self / react.self / assess
+a : Next festival I'm dancing till they put the lamps out. | I can't sing and I won't drink much, but I'll dance. | Danced every set last time. My legs were #hurt# for two days after.
+b[stage=young] #young : Can I dance with you? | You dance? | Mine never do.
+b : Save me a set. | You? Dance? #bc_ha# | Worth it, though. #bc_always_is#
+a@young : Every pup who asks gets a set. | All night. Watch. | Then they want work.
+a : Done. Don't be late. | Me. Dance. You'll see, #shipmate#. | Every time.
+
+scene ivo_health
+when topic=health
+does tell.self / ask.how / answer.how
+a : My shoulder's #hurt# from #pole#. Nothing worse. | Sound as a new hull. You? | I eat well and I sleep. That's my whole secret.
+b : Rest it, #address#. | Well enough. #bc_good# | #bc_wise#
+a : Rest's for winter. | Good. Keep it that way. #eat.capitalize#. | No secret. Just habit.
+
+scene ivo_heron_fire
+when topic=lore here.region=fens
+does tell.story / react.story / assess
+a : Lit my lamp from the Heron's fire. Every house should, once a year. | The Heron's fire has outlasted every skipper on this coast. | At the Heron I sit with #wall#. I see the fire and the door both.
+b : #bc_so_they_say# | It'll outlast us too. | Of course you do. #bc_always_is#
+a : They do say. And I do it. | It will. That's a comfort, #shipmate#. | Of course I do.
+
+scene ivo_season_turn
+when topic=season here.season=autumn here.region=fens
+does tell.self / react.self / assess
+a : Autumn. I'm salting what I can and stacking the rest. | Days drawing in. I want #larder# before the first frost. | Geese are going over. Time to stock up.
+b : Busy weeks, #address#. | You always do. #bc_always_is# | #bc_every_year#
+a : #good.capitalize# weeks. | Can't help it. #saying.capitalize#. | They know. So do I.
+
+scene ivo_strangers
+when topic=newcomer|smalltalk pair.band=strangers
+does tell.self / react.self / assess
+a : Fresh off the causeway? You're welcome here. Truly. | Nobody's a stranger long at my table, #shipmate#. | You'll find folk here close at first. They warm.
+b : That's a kind word. #bc_thank_you# | I'll hold you to that. | I'd noticed.
+a : Kind, and meant. | Do. Supper's at dusk. #eat.capitalize#. | Give it a winter.
+
+scene ivo_faith
+when topic=faith
+does give.opinion / react.self / assess
+a : The fish are a gift from the Bright One. Getting them in is my own work. | I say my word at midwinter, and I mean it then. | Pray if you like. I'd sooner feed somebody.
+b : #bc_fair_enough# | Once a year? | Both, maybe, #address#.
+a : That's my faith in one breath, #shipmate#. | Once, and properly. | Both, then. Fair.
+
+story ivo_door [topic=memories self.age>=30]
+  : Years back, up the coast, I was in an alehouse in #wind#. Back to the door, like a fool.
+  : The door came off its pins and took the wolf next to me clean off the bench.
+  b : Was anyone hurt?
+  : A broken arm, and me picking splinters out of my ears. #oath#.
+  : I've sat with #wall# ever since. Every seat, every house.
+  b[friends] : That explains a lot.
+  b : #bc_wise#
+
+story ivo_wet_dance [topic=pastimes self.age>=30]
+  : One midwinter the floods came up to the floor of the hall. Water to the hocks.
+  : Fiddler stood on a table and kept playing. So we danced.
+  ask : You danced in the flood?
+  b : In the water?
+  : All night. Only time in my life I didn't mind #floor#.
+  b : #bc_ha#
+
+story ivo_first_tiller [topic=work self.age>=30 self.job=fisher|sailor|none]
+  : First time I had the tiller I was half grown and too proud to ask.
+  : I took us the long way round the bar. Didn't know the short way. Three hours, #shipmate#.
+  b : Did anyone say?
+  : The old skipper never said a word. Handed me bread and #cheese# when we tied up.
+  : I've done that for every new hand since.
+  b : #bc_wise#
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. You've the look of somebody who's walked a way. #eat.capitalize#; then tell me what you need.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit. #seat.capitalize#'s mine, but the rest is yours.
+dlg @3 resident.hub [pair.disposition=hostile] : #greet#. I'll hear you out, but I'll do it standing, with #wall#.
+dlg @1 resident.job : I'm #self.trade_words#. Boat, rope, tar and #tide#. I steer, the crew haul, and everybody eats.
+dlg @1 resident.news : Nothing that'd keep you up. The bar's shifting at the river mouth, if you're a sailor. #good.capitalize# to know.
+dlg @1 resident.bye : #farewell#, #topic.player#. Mind the gap at the end board.
+graft resident.hub
+choice Why do you always sit by the wall? -> ivo_wall
+node ivo_wall
+say Because of a door that came in on a wolf I sat beside. Since then I like #wall#. Simple as that.
+mood warm
+free
+choice Was the wolf all right? -> ivo_wall_more
+choice Goodbye. -> bye
+node ivo_wall_more
+say Broken arm. Healed. I bought them supper for a month. You'd do the same, I'd hope.
+choice I would. -> hub
+choice Goodbye. -> bye

@@ -1,0 +1,307 @@
+# rm102, the two-at-a-time (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm102
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_ada_rainmore
+written_by claude-p11-pilot
+title the two-at-a-time
+fits stage=young|adolescent|adult|old
+traits temper=calm talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk takes_the_long_stairs_two_at_a_time
+likes crisp_apples roof_birds full_larder first_snow
+dislikes stale_bread drizzle
+fears the_list_being_found
+hopes to_see_every_roof_in_the_city
+topics day +0.4 animals +0.3 food +0.2 festival +0.3 family +0.2 prices -0.2
+styles comfort=practical gossip=keen refuse=short tease=none
+marks oath saying
+persona #self.first# is a quick, blunt pup of the Commons who says exactly what she sees, watches the birds on the roofs, keeps a secret list, and takes every stair two at a time.
+
+words
+oath! = Two at a time | Up and over | Stairs and soot
+saying! = If you're looking, you're not talking | Up is quicker than round | Watch first, ask after
+stairs = the long stairs | all the steps up the hill
+birds = the roof birds | the birds on the gutters
+apple = a crisp apple | an apple that crunches
+snow = the first snow | the very first snow of the year
+list = my list | the secret list
+larder = a full larder | the larder with every shelf full
+drizzle = drizzle | the wet that isn't even rain
+stale = stale bread | bread like a brick
+shop = the shop | the shop downstairs
+count = forty-one | forty-one, I counted
+
+any
+opinion @1 festivals for 1 : Festivals are best. Sweets and music, and nobody sends you to bed.
+opinion @1 merchants against 1 : Half of what they say the price is, is their own supper. I can tell.
+opinion @1 city for 1 : This is the best city. It's the only one, but it's still the best.
+opinion @1 watch mixed 0 : The Watch are mostly nice. Some of them whisper a lot. That goes on #list#.
+opinion @1 houses mixed 0 : The big Houses have the most stairs. That's all I know about them. So far.
+
+grown
+line @1 greet.return : #greet#. Say it plain; I will. | #greet#. What's wanted?
+line @1 farewell.return : #farewell#. Mind the stairs. | #farewell#.
+line @1 react.news.new : Is it? I'll want to know who says so. | #oath#. That's new to me.
+line @1 answer.how : Well. I say so when I'm not. | Fair. No complaints worth the breath.
+scene ad_grown_stairs
+when topic=day|smalltalk here.region=ridgemere
+does tell.self / react.self / assess
+a : Still take #stairs# two at a time. My knees can complain later. | Folk my age walk up. I don't see why. | Every stair in this city, I've climbed. Most of them twice.
+b[stage=old] #old : Your knees will complain. Mine did. | Wait till you're mine. You'll see why. | Twice is a lot of stairs.
+b : Still? | Habit? | Most of them?
+a@old : Let them. I'll listen when they're louder. | I'll see when I see. | It's two at a time. So once, really.
+a : Still. Since I was a pup. | Habit, and it's quicker. | The ones worth climbing.
+
+scene ad_grown_snow
+when topic=season|weather here.season=winter
+does tell.feeling / react.self / assess
+a : I wait for #snow# every year. Like a pup. I'm not sorry. | #snow.capitalize# makes the city quiet. Nothing else does. | I stood out for #snow# last night. Waste of a night. Worth it.
+b : Like a pup? | It does. | Did it come?
+a : Exactly like one. | Nothing. Not even the Watch. | It came at dawn. I was asleep. Next year.
+
+scene ad_grown_plain
+when topic=smalltalk|gossip
+does give.opinion / react.self / backchannel / assess
+a : I say what I see. Folk don't always thank me for it. | I've kept a list since I was small. Things that don't add up. It's long. | If you ask me, I'll tell you. Don't ask if you don't want it.
+b : Better that than the other way. | Still? What's on it? | Fair warning.
+b? : #bc_true# | #bc_go_on# | #bc_ha#
+a : Most think so, after. | Things. #saying#. | It's the only kind I give.
+
+dlg @4 resident.hub : #greet#. Ask plain and I'll answer plain.
+
+young
+line @1 greet : #greet#. Are you going up or down? | #greet#. I'm racing. Not you. Just racing.
+line @2 greet [pair.band=strangers] : #greet#. I don't know you. That's all right. | Who are you? #greet#.
+line @1 kin.open [pair.kin!=no] : I took #stairs# two at a time. Ask me how many. | Guess what I saw. No, guess.
+line @1 again.open : You again. Good. | Back already? I'm still here.
+line @1 greet.return : #greet#. I'm busy, but you can talk. | #greet#! Watch me go down.
+line @1 farewell : Bye. I've got stairs to do. | Bye. Don't tell anyone what I said.
+line @1 farewell.return : Bye! | Bye. Go the quick way.
+line @1 react.news.new : Really? Who told you? | #oath#! I didn't know that.
+line @1 react.news.known : I knew that already. I listen. | Everybody knows that. Even me.
+line @1 react.news.doubt : That's not true. Is it? You're making a face. | I don't think so. Somebody's fibbing.
+line @1 answer.how : Fast. I'm fast today. | I'm all right. I'm hungry. That's all.
+line @1 thank : Thank you. I mean it. | Thanks. I'll remember.
+line @1 decline : No. I'm not allowed, and I don't want to anyway. | I won't. It's a secret, and secrets are mine.
+line @1 accept_decline : All right. You can say no. | Fine. I'll ask someone quicker.
+line @1 ack : Yes. | Mm. | I know.
+line @1 tell.self [concept=talk.day] : I took #stairs# two at a time. #count.capitalize#. | I saw a bird with one foot. It was managing.
+rule @stairs_bark
+when concept=bark
+does aside
+cooldown 6h
+say Two at a time! Watch! | #count.capitalize#. I'll do it again faster. | Up is quicker than round. Everybody should know that.
+
+rule @birds_bark
+when concept=bark here.outdoors=clear|overcast
+does aside
+cooldown 8h
+say There's a bird on that gutter. It's looking at me. | Shh. #birds.capitalize# are talking.
+
+rule @drizzle_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say #drizzle.capitalize#. It's not even proper rain. It's just wet. | I hate this. It creeps down my neck.
+
+scene ad_long_stairs
+when topic=day|smalltalk here.region=ridgemere
+does tell.boast / react.self / assess
+a : I took #stairs# two at a time. All of them. | I can do the chapel steps two at a time now. Even the broken one. | I counted the steps up the hill. #count.capitalize#.
+b[stage=adult|old] #grown : All of them? Without stopping? | Mind the broken one. It'll have you over. | Forty-one? I'd have guessed more.
+b : All of them? | Even the broken one? | That many?
+a@grown : I stopped once. To look at a bird. That's not stopping. | I jump it. It can't have me. | You'd guess wrong. I counted twice.
+a : All of them. Ask anyone who saw. | Especially that one. | That many. I'll do them faster tomorrow.
+
+scene ad_roof_birds
+when topic=animals|pastimes here.region=ridgemere
+does tell.self / react.self / assess
+a : There's a bird on our gutter with a crooked foot. I call it crooked-foot. | I watched #birds# all morning. They fight about everything. | One of #birds# took a crust off a windowsill and flew away. I saw.
+b[stage=adult|old] #grown : That's a good name for it. | What do they fight about? | Bold thing.
+b : Does it mind? | What about? | Whose crust?
+a@grown : It is. It's what it is. | Crusts. Same as everybody. | Bold. Not bad. Hungry.
+a : It doesn't know. Birds don't know their names. | Crusts. And who sits highest. | Not mine. I didn't tell.
+
+scene ad_crisp_apple
+when topic=food
+does tell.self / react.self / assess
+a : #apple.capitalize# is the best food. You can hear it. | I had #apple# for breakfast and I can still taste it. | I don't eat #stale#. I'll eat nothing first.
+b[stage=adult|old] #grown : You can hear it? | Lucky. Where from? | You'll eat it if you're hungry enough.
+b : You can hear it? | Me too, once. | Not even toasted?
+a@grown : Crunch. That's how you know it's good. | A cart. The lady gave me the small one. | I won't. I'll be hungry and I won't.
+a : Crunch. Listen next time. | It's the best kind. | Not even. Toasted brick is still brick.
+
+scene ad_first_snow
+when topic=season|weather here.season=winter
+does tell.feeling / react.self / assess
+a : When is #snow#? I want to see it come down. | I'm going to catch #snow# on my tongue. The very first bit. | I saw #snow# last year. Everything went quiet.
+b[stage=adult|old] #grown : Soon enough. You'll know by the cold. | Make sure it's clean. | It does go quiet. I'd forgotten.
+b : Soon, I hope. | The first bit? | Did it?
+a@grown : I'll know. I'll be on the roof. Not the roof. The window. | I'll look first. | You should watch it more.
+a : Me too. | The very first. That's the rule. | Even the carts. Even the gulls.
+
+scene ad_drizzle
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : I hate #drizzle#. Proper rain is better. | It's wet on the stairs. I slipped on the eighth one. | #drizzle.capitalize# gets in my ears.
+b[stage=adult|old] #grown : Proper rain's wetter. | Take them one at a time when they're wet. | Shake your head. Like this.
+b : Me too. | Did you fall? | Mine too.
+a@grown : Wetter is better. You know where you are. | No. Two at a time. I'll just be careful. | That doesn't help. I tried.
+a : Nobody likes it. | Nearly. I didn't. | It's horrid.
+
+scene ad_secret_list
+when topic=gossip|smalltalk here.region=ridgemere
+does confide / react.self / assess
+a : I keep #list#. You're not on it. Don't ask what it's for. | Grown-ups whisper by the Watch House. I put it on #list#. | I've got #list# under a loose board. Don't tell.
+b[stage=adult|old] #grown : What's on it, then? | Do they, now. What do they whisper? | I won't tell. Promise.
+b : Can I see it? | What do they say? | Which board?
+a@grown : Things. That people do when they think nobody's looking. | I don't know yet. That's why it's a list. | Good. #saying#.
+a : No. It's secret. That's the whole point. | Can't hear. I'm working on it. | I'm not telling you that.
+
+scene ad_mother_shop
+when topic=family self.mother
+does tell.self / react.self / assess
+a : #self.mother# says I mustn't touch the shiny things in #shop#. I look, though. | #self.mother# works with tiny tools. I'm not allowed to breathe near them. | I sat under the counter while #self.mother# worked. I was very still.
+b[stage=adult|old] #grown : Looking's allowed. | Best not. Those tools cost a fortune. | Very still? You?
+b : Not even one? | Not even breathe? | How long?
+a@grown : I know. I'm good at looking. | I don't breathe. I hold it. | I can be still. When it's worth it.
+a : Not one. Looking's free. | Not near them. I breathe after. | Ages. My legs went to sleep.
+
+scene ad_father_door
+when topic=family self.father
+does tell.self / react.self / assess
+a : #self.father# minds the door. I help. I count the customers. | #self.father# lets me sit on the step and say who's coming. | #self.father# can open the door without looking. I'm learning.
+b[stage=adult|old] #grown : How many today? | A good job, that. | It's a trick worth having.
+b : How many? | Who's coming, then? | Can you yet?
+a@grown : Nine. One came twice. That counts once. | It's the best job. You see everyone. | Nearly. I bump my nose.
+a : Nine. One came back. | Nobody yet. I'm watching. | Nearly.
+
+scene ad_festival_sweets
+when topic=festival
+does tell.feeling / react.self / assess
+a : Festival! Sweets and music and nobody sends you to bed. | I'm going to stay up all of the festival. All of it. | I want the sugar ones. The red ones. Not the brown ones.
+b[stage=adult|old] #grown : Somebody will send you to bed eventually. | All of it? You'll be asleep in a doorway. | The brown ones are good too.
+b : The best bit. | All of it? | Why not the brown?
+a@grown : Not at a festival. That's the rule. | I'll sleep standing up. I've practised. | They're not. They taste like boots.
+a : The very best. | All. Every bit. | They taste like boots.
+
+scene ad_full_larder
+when topic=home
+does tell.self / react.self / assess
+a : I counted the jars in the larder. Every shelf is full. | #larder.capitalize# is the best thing in a house. | We've got apples in the larder. I counted. Eleven.
+b[stage=adult|old] #grown : Every shelf? Lucky house. | Better than a fire? | Eleven? Not twelve?
+b : Every shelf? | The best thing? | Eleven?
+a@grown : Every one. I stood on the stool. | A fire is second. | It was twelve. Then breakfast.
+a : All of them. I checked twice. | Yes. Then you're never worried. | Eleven. Now ten.
+
+scene ad_price_supper
+when topic=prices here.region=ridgemere
+does give.opinion / react.self / assess
+a : Half of what they say the price is, is their own supper. | The cart lady charged more because I'm small. That's not fair. | Things cost too much. I saw someone pay and make a face.
+b[role=merchant] #trade : Suppers have to come from somewhere. | Did she now? | Some days I make that face too.
+b : Who told you that? | What did you do? | What face?
+a@trade : From the price. That's what I said. | Yes. I'm going to buy from the other cart. | You should make it less. At your own prices.
+a : Nobody. I worked it out. | Paid it. I wanted the apple. | Like this. Like a sour plum.
+
+scene ad_roof_wish
+when topic=dreams
+does confide / react.self / assess
+a : I want to see the top of every roof in the city. Every one. | When I'm bigger I'll climb the chapel and look at the whole city at once. | I want to stand where #birds# stand. Just once.
+b[stage=adult|old] #grown : That's a lot of roofs. | Not without asking you won't. | Just once. Mind the gutters.
+b : Every one? | All at once? | Why there?
+a@grown : I'll start with ours. | I'll ask. I'll ask after. | I'll mind them. Birds do.
+a : Every one. I'll make a list. | All at once. Then I'll know where everything is. | They can see everything. That's why.
+
+scene ad_games
+when topic=pastimes|day here.region=ridgemere
+does tell.self / react.self / assess
+a : We played chalk squares outside the chapel. I won. I always win. | I race the carts to the corner. The carts don't know they're racing. | I hid in a barrel and nobody found me. I came out myself.
+b[stage=young|adolescent] #pup : You cheat at chalk squares. | You'll get run over. | That's not winning, that's sulking.
+b : Always? | Who wins? | How long were you in?
+a@pup : I don't. I'm just quick. | I won't. I'm quicker. | It's winning. Nobody found me.
+a : Mostly. I don't cheat. | Me. They stop for horses. | Until my tail hurt.
+
+story ad_story_bird [concept=talk.memories]
+  : One day a bird came in our window and sat on the larder shelf.
+  : It ate a crumb, and looked at me, and I looked at it, and nobody said anything.
+  ask : What did you do?
+  b[stage=adult|old] : I'd have chased it out.
+  b : What did you do?
+  : Nothing. I opened the window wider. It went. It came back the next day to the gutter.
+  b : It remembered you.
+  : I know. I'm on its list.
+
+story ad_story_stairs [concept=talk.day self.mother]
+  : The first time I did #stairs# two at a time, I fell on the last one and cut my chin.
+  : I didn't cry. I counted the steps while #self.mother# washed it.
+  ask : Did it hurt?
+  b[stage=adult|old] : That's a brave pup.
+  b : Did it hurt?
+  : Yes. Then I did them again. #saying#.
+
+dlg @1 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've got something to tell you. Not yet, though.
+dlg @2 resident.hub : #greet#. I'm not supposed to talk to strangers. You can talk, though.
+dlg @1 resident.job : I'm a pup. I play in the streets. And I count things. | I don't have a job. I have stairs.
+dlg @1 resident.bye : Bye. Take the long stairs. Two at a time. | Bye. Don't follow me.
+graft resident.hub
+choice Why do you take every stair two at a time? -> twos
+node twos
+say Because one at a time is slow. And it's more stairs. Two at a time is half as many.
+mood pleased
+free
+choice Isn't it dangerous? -> twos_fall
+choice Goodbye. -> bye
+node twos_fall
+say Only if you look at your feet. You look at the top. Then you're there.
+choice I'll try it. -> hub
+choice Goodbye. -> bye
+
+
+adolescent
+line @1 greet.return : #greet#. Don't mind me. I'm passing. | #greet#. I was just going up.
+line @1 answer.how : Fine. Busy. I've errands. | Well enough. Restless, mostly.
+line @1 react.news.new : Who said? Tell me exactly. | #oath#. I didn't hear that one.
+line @1 farewell.return : Bye, then. | Mind how you go.
+rule @teen_errand
+when concept=bark
+does aside
+cooldown 8h
+say Up to the Heights and back before the bell. Watch me. | Still two at a time. Always will be.
+
+scene ad_teen_watching
+when topic=gossip|crime here.region=ridgemere
+does confide / react.self / assess
+a : I still keep #list#. It's longer now. I write it in a proper book. | You'd be surprised who stops to whisper on the stairs. | I notice things. Folk don't notice me noticing.
+b[stage=adult|old] #grown : Careful who sees that book. | I would not, I think. | That'll serve you well, or get you trouble.
+b : What's in it? | Who? | That's a useful thing.
+a@grown : Nobody sees it. It's under the board still. | You would. I'm not telling. | Both, probably. I'll risk it.
+a : Things that don't add up. | Can't say. Not yet. | It is. Mostly.
+
+scene ad_teen_errands
+when topic=day here.region=ridgemere
+does tell.self / react.self / assess
+a : Ran a parcel up to the Heights for #shop#. Took the long stairs. Beat the cart. | I'm quicker than the carts on the hill now. They hate it. | Three errands before noon, and #stairs# twice.
+b[stage=adult|old] #grown : Mind you don't beat a parcel to pieces. | Don't race the carts. They've no brakes to speak of. | You'll sleep well, then.
+b : Beat the cart? | How? | Twice?
+a@grown : It's in one piece. I checked. | They've brakes. They just don't want to use them. | I don't sleep. I lie very still.
+a : By a street. It's the stairs. | Stairs. Carts can't do stairs. | Twice. Two at a time. That's four, in a way.
+
+scene ad_teen_birds
+when topic=animals|pastimes
+does tell.self / react.self / assess
+a : I still watch #birds#. I know which ones nest where now. | There's a bird on the chapel roof that's been there three summers. | I can tell #birds# apart. Nobody believes me.
+b : Where's the best nest? | Three summers? | I believe you.
+a : Not telling. Somebody'd take the eggs. | Same one. Same spot. Like a shopkeeper. | Good. Most don't.
+
+story ad_story_snow [concept=talk.memories]
+  : The first snow I really remember, I stood on the step all morning with my mouth open.
+  : It tasted of nothing. I was so cross. I'd waited all year.
+  ask : Did you still like it?
+  b[stage=adult|old] : That's snow for you.
+  b : Did you still like it?
+  : More. It was quiet, and it was ours, and it tasted of nothing. That's better than it sounds.
+
+dlg @3 resident.hub : #greet#. If you're quick, I'll show you the short way. If you're slow, ask someone else.

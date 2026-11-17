@@ -1,0 +1,277 @@
+# mb114, the three-tale deckhand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb114
+revision 1
+state ready
+dialect mirebridge
+accent none
+tier standard
+written_for cty_stone_marshmore
+written_by claude-p11-pilot
+title the three-tale deckhand
+fits stage=adult|old
+prefers warmth=cold
+traits temper=even talk=chatty warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk tells_the_same_three_stories
+likes fried_fish roof_birds fresh_straw warm_rain
+dislikes deep_mud wet_floors
+fears being_the_one_who_breaks_the_line
+hopes a_fourth_mark_on_the_beam
+topics memories +0.4 animals +0.3 food +0.2 weather +0.2 player -0.4
+styles comfort=deflect gossip=curious refuse=blunt tease=none
+marks oath saying
+persona #self.first# hauls for the skipper on the fen coast: asks everyone everything, answers nothing, and tells the same three stories to anyone who stands still.
+
+words
+oath! = Hook and line | Well, there it is
+saying! = Ask twice, believe once | A question costs nothing, an answer might
+pike = the pike as long as an oar | that pike
+sandbar = the night on the sandbar | the sandbar business
+frozen = the winter the lode froze | that frozen winter
+fish = fish fried in butter | a bit of fried fish, crisp at the edges
+swallows = the swallows on the ridge-pole | the birds along our roof
+newstraw = new straw | straw that still smells of the field
+summerwet = warm rain, the summer kind | a shower you don't mind
+deepmud = deep mud | mud that keeps your boot
+marks = the marks on the shed beam | three sets of notches on the beam
+whosays = who says so | who from, exactly
+told = I've told you this | you'll have heard this one
+askback = And you | What about yours | Your turn
+roof = our roof | the roof over the six of us
+oar = as long as an oar | longer than an oar
+
+any
+opinion @1 strangers against 2 : Faces I don't know can knock and wait. I'll ask them a few things through the door first. #saying.capitalize#.
+opinion @1 newcomers against 1 : New faces keep turning up wanting hauling work. Where from? Why here? #whosays.capitalize#? Nobody asks them that but me.
+opinion @1 merchants against 2 : Our house brings in what it did last year, and the loaf costs a copper more. Who decided that? #whosays.capitalize#?
+opinion @1 dole against 1 : Handouts teach folk to stand in a line. #marks.capitalize# weren't cut by anybody standing in a line.
+opinion @1 festivals for 1 : Festival's the one time the whole place talks to each other. I get more answers at a festival than all year. #bc_true#
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Not from here, are you? What road brought you? | #greet#. Don't know you. What's your business?
+line @2 greet [pair.band=friends|family] : #greet#. What's new? Out with it, every bit. | There you are. #greet#. Where've you been?
+line @1 again.open : Back again. Forget something? #askback.capitalize#? | #welcome_back.capitalize#. What's happened since this morning?
+line @3 greet [here.time=dawn] : #greet#. Up early. Why's that? | #greet#. #swallows.capitalize# are up. So are you. Where to?
+line @4 greet [self.working=yes] : #greet#. I'm hauling. Talk if you like. Ask if you like. I'll ask back. | #greet#. Mind the rope. Who sent you down here?
+line @1 greet.return : #greet#. What brings you? | #greet#. Well? What's the news?
+line @2 greet.return [here.time=night] : #greet#. Late. Where are you off to? | #greet#. Dark out. Who's walking you home?
+line @1 farewell : #farewell#. Mind #deepmud# by the end board. | #farewell#. Come back and tell me how it went.
+line @1 farewell.return : #farewell#. | #farewell#. Where are you off to, anyway?
+line @1 react.news.new : #oath#. #whosays.capitalize#? | Is that so. #whosays.capitalize#, and when?
+line @1 react.news.known : Heard it already. I ask about. #bc_i_know# | #knew.capitalize#. Not much gets past me.
+line @1 react.news.doubt : #whosays.capitalize#? I'd want to know that before I believed any of it. | #doubt.capitalize#. Somebody's made a story out of nothing.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #bad#. When was this? Who found out? | #pity.capitalize#. Was anyone there? Who saw?
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Well. #good#. Who'd have thought. | #gladnews.capitalize#. When did that happen?
+line @1 answer.how : #fine.capitalize#. Why do you ask? | #notsobad.capitalize#. And you? What's happened with you?
+line @1 answer.how.busy : #busy.capitalize#. Hauling. Same as #marks# said I would. | Busy. Never mind with what. #askback.capitalize#?
+line @1 sympathise : #sympathy.capitalize#. These things happen. What will you do? | That's #bad#. Did you see it coming?
+line @1 decline : No. I've the boat at first light and I'm not losing sleep for it, #address#. | Not that. I don't know enough about it. #saying.capitalize#.
+line @1 accept_decline : #no_matter.capitalize#. | Fine. Why, though? #askback.capitalize#?
+line @1 thank : #thanks#. Why, though? What's it for? | #thanks#. I'll remember.
+line @1 deflect_thanks : #deflect.capitalize#. | Leave it, #address#. I'd rather nobody knew.
+line @1 preclose [self.working=yes] : #told.capitalize#, haven't I? Well. The rope's waiting. | Right. Back to it. Tell me the rest #later#.
+line @1 ack : Hm. #bc_i_know# | Right. #bc_and_q#
+rule @haul
+when concept=bark working=yes self.job=fisher|sailor|none self.workplace
+does aside
+cooldown 6h
+say Up. And up. Where's the other end gone? #annoyed.capitalize#. | Who coiled this? Not how #marks# would have done it. | Mind #deepmud#. It'll have your boot.
+
+rule @birds
+when concept=bark here.time=dawn|day
+does aside
+cooldown 8h
+say #swallows.capitalize#. Back again. Same two, I'd bet. | What's that one? Never seen that one on #roof#.
+
+rule @tales
+when concept=bark working=no
+does aside
+cooldown 8h
+say Did I ever tell you about #pike#? | Now, #sandbar#. There's a story. | Cold as #frozen#, tonight.
+
+rule @floor
+when concept=bark working=no here.weather=rain|storm
+does aside
+cooldown 8h
+say Water under the door again. Who left the step low? #grumble.capitalize#. | Wet floor. Everything's soaking. #newstraw.capitalize# ruined.
+
+scene stone_summerwet
+when topic=weather here.weather=rain here.season=spring|summer here.region=fens
+does tell.self / ask.detail / answer.detail
+a : #summerwet.capitalize#. I'd stand out in it all day. Would you? | #rain.capitalize#, and warm. Did you feel it? Like a bath. | #good.capitalize# rain, this. Where are you off to in it?
+b : Not all day. | I felt it. | Home.
+a : No. Nobody would. More fool them. | It's #good#, isn't it? Best rain there is. | Home where? Which end? #askback.capitalize#?
+
+scene stone_deepmud
+when topic=weather here.weather=rain|storm here.region=fens
+does tell.complaint / react.complaint / assess
+a : #deepmud.capitalize# on the low path. Lost a boot to it once. | Who's been treading up the path? It's all #deepmud# now. | I went over the hocks by the store. #bad.capitalize#.
+b : #bc_every_year# | Somebody always does. | Go round.
+a : #bc_every_year# Doesn't make it better. | Who, though? I'd like a name. #whosays.capitalize#. | Round's longer. Still, you're right. #bc_true#
+
+scene stone_swallows
+when topic=animals|pastimes here.time=dawn|day here.region=fens
+does tell.self / ask.detail / answer.detail
+a : #swallows.capitalize# are back. Same pair, third year. | Watched #swallows# an hour this morning. Do you watch them? | There's a new bird on #roof#. Grey. Do you know it?
+b : How do you know it's the same? | Sometimes. | No idea.
+a : Notch on the wing. One of them. I looked. #oath#. | You should. They don't ask anything back. | #bc_nor_me# I'll find out. Somebody'll know.
+
+scene stone_swallows_go
+when topic=animals|season here.season=autumn here.region=fens
+does tell.self / react.self / assess
+a : #swallows.capitalize# went in the night. Didn't see them go. | #roof.capitalize#'s quiet. They've gone south. Where, do you think? | Every year I mean to see #swallows# leave. Every year I miss it.
+b : They'll be back. | Somewhere warm. | #bc_every_year#
+a : They will. Same pair, I'd hope. #bc_i_hope_so# | Somewhere. I'd like to know. #whosays.capitalize#? | #bc_every_year# There it is.
+
+scene stone_work_haul
+when topic=work self.job=fisher|sailor|none self.workplace
+does tell.self / ask.detail / answer.detail
+a : Hauled all morning at #self.workplace#. #askback.capitalize#? What do you do? | Skipper had us out past the dunes. Long pull. #askback.capitalize#? | Ropes all day. Same as yesterday. Same as tomorrow. #askback.capitalize#?
+b : This and that. | Here and there. | Same as ever.
+a : This and that's no answer. #saying.capitalize#. | Here and there. Hm. Fine. Keep it, then. | Ever. Hm. That tells me nothing, #address#.
+
+scene stone_work_marks
+when topic=work|family self.job=fisher|sailor|none here.region=fens
+does tell.self / ask.detail / answer.detail
+a : There's #marks# at the shed. Two before me, and then mine. | I'm the third on these ropes. Did you know that? #secret.capitalize#. | Somebody asked me who cut the top notch in #marks#. I didn't tell them.
+b : Will there be a fourth? | I didn't. | Who did?
+a : Maybe. Who knows. Not my business to say. | Now you do. Don't spread it, #address#. | I said I didn't tell them. #bc_nor_me#
+
+scene stone_work_crew
+when topic=work self.job=fisher|sailor|none pair.band=acquaintances|friends|family
+does ask.detail / answer.detail / assess
+a : What do they pay you, where you work? Roughly. | Does your lot start at first light, or later? | Who's your master? What are they like?
+b : Enough. | First light. | They're fair.
+a : Enough. Right. Nobody ever says. #saying.capitalize#. | Same as us, then. #bc_every_day# | Fair. Hm. That's what folk say when they're not. #doubt.capitalize#.
+
+scene stone_fish
+when topic=food
+does tell.self / react.self / assess
+a : #fish.capitalize#. Do you know a better supper? I don't. | Somebody under #roof# fried fish last night. Smelled it from the boat. | #fish.capitalize#. I'd pick that, if anyone asked me.
+b : Not a better one. | Lucky house. | #bc_lovely#
+a : #bc_nor_me# | Lucky. I didn't get any. #whosays.capitalize#? Who ate it? | Nobody does ask. #oath#.
+
+scene stone_supper
+when topic=food self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : Six under our roof. Supper's whoever gets to the pot. What's yours? | Bread and an onion. #askback.capitalize#? | Ate standing up. #askback.capitalize#?
+b : The same. | Soup. | Not much.
+a : The same. Thought so. Nobody's eating well. #bc_every_day# | Soup. With what in it? Go on. | Not much. Same as us. #bc_every_day#
+
+scene stone_newstraw
+when topic=home here.region=fens
+does tell.self / react.self / assess
+a : #newstraw.capitalize# down this morning. I did it. Nobody helped. | There's six of us under our roof. #newstraw.capitalize# helps. | I like a floor of #newstraw#. Do you put straw down?
+b : Smells #good#. | Six! | Sometimes.
+a : It does. For a day. Then six of us walk on it. | Six. Loud house. #roof.capitalize#'s crowded. I don't mind. Much. | Sometimes. Hm. You should more. #newstraw.capitalize#, mind.
+
+scene stone_wetfloor
+when topic=home here.weather=rain|storm here.region=fens
+does tell.complaint / react.complaint / assess
+a : Water under the door again. Who built the step so low? #whosays.capitalize#? | Floor's wet, straw's wet, everything's wet. #bad.capitalize#. | Wet floor. I hate a wet floor. #askback.capitalize#?
+b : #bc_every_year# | Leave it. It dries. | Now and then.
+a : #bc_every_year# Nobody fixes it. Why not? | It dries. Then it rains. #bc_again# | Now and then. #bc_lucky_you#
+
+scene stone_strangers
+when topic=newcomer|smalltalk pair.band=strangers
+does ask.detail / answer.detail / assess
+a : You're not from here. Where, then? #askback.capitalize#. | What brings you down this way? Work? | Who do you know here, #address#? Anyone?
+b : Down the coast. | Passing through. | Nobody yet.
+a : Down the coast. Which end? Never mind. I'll find out. | Passing. Hm. Everyone says that. #doubt.capitalize#. | Nobody. Hm. Well. #saying.capitalize#.
+
+scene stone_whosays
+when topic=smalltalk|gossip pair.band=acquaintances|friends|family
+does ask.detail / answer.detail / assess
+a : Somebody said the store's putting the price up. #whosays.capitalize#? | Heard a thing at the Heron. Want to know? #askback.capitalize# first. | Has anybody asked you about me? #whosays.capitalize#?
+b : I heard it too. | Nothing much. | No. Why?
+a : Heard it where? #whosays.capitalize#? | Nothing much. Hm. Then I'm keeping mine. #secret.capitalize#. | No reason. Just asking, #address#.
+
+scene stone_pike_again
+when topic=memories|animals pair.band=acquaintances|friends|family
+does tell.story / react.story / assess
+a : Did I ever tell you about #pike#? | Now, #told#, but #pike#. | Saw a big fish today. Not as big as #pike#, mind.
+b : You did. Twice. | I know. As long as an oar. | Here we go.
+a : Well, I'll tell it again. #oar.capitalize#, it was. | #oar.capitalize#. Exactly. #oath#. | Here we go. #oar.capitalize#, it was.
+
+scene stone_sandbar_again
+when topic=memories|work pair.band=acquaintances|friends|family
+does tell.story / react.story / assess
+a : Tide's like it was the night of #sandbar#. Did I tell you? | #told.capitalize#. #sandbar.capitalize#. | You've never had a night like #sandbar#. Nobody has.
+b : You did. | Go on, then. | Tell me again.
+a : Well, it bears telling. All night, we sat. #oath#. | All night, on the sand, the whole crew. Not a word. #told.capitalize#. | All night, on the sand. Lamp went out at midnight. #cold.capitalize#, too.
+
+scene stone_frozen_again
+when topic=memories|season here.season=winter
+does tell.story / react.story / assess
+a : #cold.capitalize# tonight. Not like #frozen#, though. Did I tell you? | Ice on the lode. Reminds me of #frozen#. | You'll have heard about #frozen#.
+b : Every winter. | Go on. | #bc_every_year#
+a : Every winter. It's a winter story. #bc_every_year# | We walked to the boat on the ice. Walked. #oath#. | #bc_every_year# And I'll tell it next year.
+
+scene stone_friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : #self.friend# has heard #pike# more than anyone living. Never says so. | #self.friend# came home late again. I didn't ask where. #later.capitalize#, I'll find out. | Lives under #roof#, #self.friend#. Does #self.friend# talk about me?
+b : Patient, then. | You will. | Not to me.
+a : Patient. Or deaf. | #bc_i_will# I always do. | No. Hm. #good.capitalize#.
+
+scene stone_times
+when topic=times|smalltalk pair.band=acquaintances|friends|family
+does tell.complaint / react.complaint / assess
+a : Harder every week. Does anybody up there notice? #whosays.capitalize#? | The Houses take on their own kin first. Asked at a gate once. #toffs.capitalize#. | #wages.capitalize#'s the same. Bread's not. Why is that? Somebody knows.
+b : Nobody notices. | Their loss. | #bc_true#
+a : Nobody. #saying.capitalize#. | Their loss. #bc_so_they_say# | #bc_true# Somebody's doing well out of it.
+
+scene stone_festival
+when topic=festival
+does tell.self / react.self / assess
+a : Festival. Everyone's out, everyone's talking. Best day for questions. #oath#. | I don't dance. I stand by the barrels and listen. #saying.capitalize#. | Last festival I heard more than all year. Who's courting, who's owing.
+b : You'd do well as the Watch. | What did you learn? | #bc_ha#
+a : The Watch don't listen. I do. | Plenty. Not telling. #secret.capitalize#. | It's not funny, #address#. It's useful.
+
+scene stone_health
+when topic=health
+does tell.self / ask.how / answer.how
+a : Shoulder's #hurt# from the ropes. Third generation of shoulders. | #fine.capitalize#. You? Truly? | Bit of a cough. #poorly.capitalize#. It'll go. Have you had it?
+b : Rest it. | Well enough. | No.
+a : Rest's for winter. #bc_always_is# | Well enough. Hm. You'd say that either way. | Lucky. It's going round, I'd guess. #chill.capitalize#.
+
+story stone_pike [topic=memories self.age>=25]
+  : Years back, out off the dunes, something took the line so hard it nearly had me over.
+  : A pike. #oar.capitalize#. Teeth like a comb.
+  b : Did you land it?
+  : We had it to the side. Then it looked at me, bit through the line, and went.
+  : #oath#. I'd know it again. I look for it every time.
+  b : #bc_so_they_say#
+
+story stone_sandbar [topic=memories self.age>=25 self.job=fisher|sailor|none]
+  : We went on a sandbar one night with the tide going out. Stuck fast.
+  : The whole crew sat there in the dark till the water came back. Lamp out by midnight.
+  ask : Were you afraid?
+  b : Were you afraid?
+  : No. I asked questions all night. #whosays.capitalize#, what next, how long. The others were afraid of that.
+  b : #bc_ha#
+
+story stone_frozen [topic=memories|season self.age>=30]
+  : #frozen.capitalize#, I was young. The water went hard as a floor.
+  : We walked out to the boat. Walked. Sat in it on the ice and hauled nothing.
+  b : Why go at all?
+  : #marks.capitalize#. You don't miss a day. Not one. Even a frozen one.
+  b : #bc_wise#
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Don't know you. Where from, and what for? Take your time. I've plenty of questions.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Where've you been since last time? Every bit, mind.
+dlg @3 resident.hub [pair.disposition=wary] : #greet#. What do you want? Ask, and I'll ask back.
+dlg @1 resident.job : I'm #self.trade_words#. Third of my line on these ropes. That's all you need to know. #askback.capitalize#?
+dlg @1 resident.news : News? You tell me first. Then I'll see what I've got. #saying.capitalize#.
+dlg @1 resident.bye : #farewell#. Mind #deepmud# by the end board.
+graft resident.hub
+choice Tell me one of your stories. -> stone_tales
+node stone_tales
+say One of them? There's three. #pike.capitalize#, #sandbar#, or #frozen#. Everyone's heard them. You'll hear them again.
+mood keen
+free
+choice The pike. -> stone_pike_tale
+choice Goodbye. -> bye
+node stone_pike_tale
+say Long as an oar. Teeth like a comb. Had it to the side, then it bit through and went. #oath#. Who told you to ask me?
+choice Nobody. -> hub
+choice Goodbye. -> bye

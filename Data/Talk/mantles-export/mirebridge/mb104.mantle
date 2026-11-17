@@ -1,0 +1,299 @@
+# mb104, the latch-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb104
+revision 1
+state ready
+dialect mirebridge
+accent broad light
+tier standard
+written_for tn_mb_tamsin_eelbank
+written_by claude-p11-pilot
+title the latch-keeper
+fits stage=adult|old
+prefers stage=old piety=devout
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk bars_the_door_before_dusk
+likes roast_pork riddles tidy_house misty_dawns
+dislikes gulls wet_floors
+fears the_lights_at_the_window
+hopes every_pup_home_before_dark
+topics lore +0.4 faith +0.3 family +0.3 home +0.3 pastimes +0.2 travel -0.4 newcomer -0.2
+styles comfort=prayer gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# keeps the house at the creek: devout, jumpy as a frog at dusk, sure the fen lights are the drowned, and fond of a riddle by the lamp.
+
+words
+oath! = Keep off, keep off | Bright One, not tonight | Bless the latch and all behind it
+saying! = What the fen takes, it keeps | Bar the door before you need to | A lit lamp is a prayer said twice
+lights = the lights out on the fen | the drowned with their lanterns
+drowned = the drowned | them that went under
+latch = the latch | the bar on my door
+riddle = what's wet when it's drying | what has a mouth and never eats | what walks the fen and leaves no print
+crackling = pork roasted till the crackling sings | a good bit of crackling
+gulls = them gulls | the screaming gulls off the shore
+dawnmist = a misty dawn | the white of a fen morning
+floor = my boards, swept and dry | a dry floor
+lamp = the lamp in the window | a lamp lit against the dark
+young = my young 'uns | the three I raised
+twice = I'll say it twice | mark me, I'll say it again
+
+any
+opinion @1 newcomers against 2 : You never know who you're letting over the causeway till it's too late, and then they know where the latch is.
+opinion @1 strangers against 1 : A #stranger# brings what's behind them, and what's following. I'll be civil from the doorway, fen-friend.
+opinion @1 road against 2 : I'd not set a paw on a road these days. #bandits.capitalize#, and worse, #twice#.
+opinion @1 drink against 2 : I've seen #drink# take a good wolf under quicker than the fen does. The Bright One saw it too.
+opinion @1 church for 2 : The Bright One has kept this house through floods and fevers, and my pew will have me while I've knees.
+opinion @1 dole for 1 : Feeding the #hungry# is work the Bright One gave us. Nobody on these boards should go to bed hollow.
+opinion @1 city against 2 : Smoke and strangers and no fen to keep them honest. I'll keep #floor#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Stay on the boards there, #address#, and say who you are. | #greet#. You'll forgive me looking you over, #stranger#.
+line @2 greet [here.time=dawn] : #greet#. #dawnmist.capitalize#, and nothing came to the door in the night. Bright One be blessed. | #greet#, #address#. Early, and dry feet, I hope.
+line @3 greet [here.time=dusk] : #greet#, but be quick, #address#; I'm going in to see to #latch#. | Dusk already? #greet#. I'll not stop long out here.
+line @1 kin.open [pair.kin!=no] : There you are. Was it you on the boards? I heard steps and thought, well, I thought. | You're home. Bar the door behind you, would you, #dear#.
+line @1 again.open : You again, #address#. Is all well? It's not like you, twice. | Back so soon? Nothing's wrong, is it? Tell me nothing's wrong.
+line @1 greet.return [pair.band=strangers] : #greet#. And who might you be? | #greet#, #stranger#. Keep to the boards.
+line @2 greet.return : #greet#. | #greet#, #other.called#. Dry feet to you.
+line @1 farewell : #farewell#. Straight home, mind, and don't look at the fen. | #farewell#. Stay clear of the water, and the Bright One go with you.
+line @1 farewell.return : #farewell#. | #blessing#.
+line @1 react.news.new : #oath#. Is it so? #twice#, I didn't like the look of the sky. | Well, drown me. And nobody told me. Nobody tells me anything.
+line @1 react.news.known : #knew#. My young 'un brought it home with the eels. | I'd heard, #address#. I've been fretting on it since.
+line @1 react.news.doubt : #doubt#. Who said it? Did they see it, or did they hear it said? | I'd not trust that. Fen-talk, mind, and the fen tells lies.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'll light a lamp for it tonight. | Bright One gather them in. Oh, that's deep mud, that is.
+line @1 answer.how : Fretting, #address#, but upright. | #notsobad#. My knees say otherwise. | Fair-dry, by grace. Ask me after dark.
+line @1 decline : I'd sooner not, #address#. Not after dusk, and not off the boards, if you'll forgive me. | Not me. My nerves won't have it, and I'd only be in the way.
+line @1 accept_decline : #no_matter#. I'd not want you troubled. | When it's dry, then. The Bright One knows best.
+line @1 thank : #thanks#. The Bright One marks a kindness. | Bless you, #address#. That's a weight off.
+line @1 sympathise : #sympathy#. I'll pray on it. I'll pray on it tonight. | That's deep mud, #address#. Sit by me; the lamp's lit.
+line @1 preclose : Well. #latch.capitalize# won't see to itself. | Still. It's getting on, and I don't like the light.
+line @1 ack : Mm. | #ack# | Is it, #dear#.
+rule @latch
+when concept=bark here.time=dusk|night
+does aside
+cooldown 8h
+say Bar on, bar checked. Bar checked again. #oath#. | #saying#. There. Now the lamp.
+
+rule @gulls
+when concept=bark here.time=dawn|day here.weather=clear|overcast
+does aside
+cooldown 8h
+say Get off my roof, #gulls#! Go and scream at the boats. | #gulls.capitalize# again. They'll have the thatch off.
+
+rule @floor
+when concept=bark here.place=home
+does aside
+cooldown 8h
+say Who walked the creek in on #floor#? Boots off! | Wet floor. Fetch the cloth, quick, before it soaks.
+
+rule @lamp
+when concept=bark here.time=dusk|night here.region=fens
+does aside
+cooldown 10h
+say #lamp.capitalize#. Bright One, see it lit. | Don't look out there. Don't look at #lights#.
+
+scene lights_are_drowned
+when topic=lore here.region=fens here.time=dusk|night
+does tell.story / react.story / insist / assess
+a : #lights.capitalize# are up, #address#. Don't look. They're the drowned, looking for a door. | Folk call it marsh gas. It isn't. I've seen the faces in them, #twice#. | Every light on the fen is somebody who went under and never came home. Don't follow one.
+b[priest] #chapel : Pray for them, then, and don't fear them. | Marsh gas, and fear, and nothing more. | The Bright One keeps the drowned. They don't walk.
+b : #bc_so_they_say# | Faces? | #bc_never#
+a@chapel : I pray every night. I fear them every night too, Bright One forgive me. | You've not sat by the window when they come close. | Then who carries the lantern, #address#? Tell me that.
+a : They're slow. They come along the dyke, one, then two. I bar the door. | Faces. I'll not say whose. Some I knew, mind. | Never, #twice#. Never follow.
+a : #saying#. | #oath#. | #oath#. Bar the door tonight.
+
+scene lights_at_the_window
+when topic=lore|home here.region=fens self.stage=old
+does tell.worry / react.self / assess
+a : One came up close as the glass last winter. Right up, #address#. I sat, back pressed to the wall, till dawn. | They've been nearer this year. Nearer every year. I've counted. | In my tadpole days they stayed out past the far reeds. Now they come to the dyke.
+b : #bc_poor_soul# | #bc_maybe# | That's a change.
+a : Bright One, never again. I keep #lamp# lit so they know it's a house. | Counted, #twice#. I don't fret for nothing. | It is a change, fen-friend, and I don't like changes.
+
+scene bar_the_door
+when topic=home here.time=dusk
+does tell.self / react.self / assess
+a : Dusk. I'll have #latch# on before the light goes. Always have. | I bar the door before dusk and check it after. And again before I sleep. | My chair faces the door, and the door's barred, and the lamp's lit. Then I can sit.
+b : #bc_wise# | Three times? | #bc_every_night#
+a : #saying#. | Three, and a prayer with the last. #oath#. | Every night of my life, fen-friend. And I'm still here.
+
+scene dry_boards
+when topic=home
+does tell.complaint / react.complaint / assess
+a : I keep #floor#, and then somebody walks the creek in on it. | A wet floor rots a house from the bottom. I've seen it, #twice#. | Twice I swept, first thing, and still a muddy print by the hearth.
+b[pair.roof=yes] #household : I took my boots off. I did. | It's one print. | That one's mine, I'll own it.
+b : #bc_every_time# | #bc_very_bad# | #bc_ha#
+a@household : Then whose are those, #dear#? The heron's? | One print is how it starts. | Then you'll own the cloth too, and quick.
+a : Boots off at the step. I've said it till I'm hoarse. | Dry boards, dry house, dry feet. That's how it goes. | I'll find whose it is. I always do.
+
+scene gulls_screaming
+when topic=animals here.region=fens
+does tell.complaint / react.complaint / assess
+a : #gulls.capitalize# were on the roof again at first light. Screaming like the drowned. | I can't abide a gull. Wicked eyes, and they'll have the eel off your plate. | A gull took a whole eel off the step yesterday. Off my own step, #address#.
+b[job=fisher] #fisher : They follow the boats. Can't be helped. | I've lost a few to them. | Throw a stone. They learn.
+b : #bc_bad_luck# | #bc_true# | #bc_ha#
+a@fisher : Then the boats can keep them. Not my thatch. | Thieving, like a heron at the weir. Worse. | I threw two. They laughed at me, I'd swear it.
+a : I don't like a bird that laughs at you, fen-friend. | #oath#. Wicked things. | The cheek of it. My own step.
+
+scene misty_morning
+when topic=weather here.weather=fog here.time=dawn
+does tell.feeling / react.self / assess
+a : #dawnmist.capitalize#. That's my favourite hour. The night's over and the fen's gone soft and white. | Fen-murk at dawn's a different thing from fen-murk at night, #address#. Morning murk is kindly. | I stood on the step in it with my shawl. Couldn't see the creek. Didn't need to.
+b : #bc_lovely# | Is it? | #bc_ha#
+a : The lights can't come in daylight. That's why I like it. | It is. Night murk hides things. Morning murk only hides the work. | #bc_lovely#. A mercy, after a long night.
+
+scene murk_after_dark
+when topic=weather here.weather=fog here.time=dusk|night
+does tell.worry / react.self / assess
+a : Murk, and dark coming. I'll not go past my own step tonight. | You can't tell a lamp from #lights# in this. That's how they get you. | Somebody's out on the boards in this. I hear them. Do you hear them?
+b : #bc_wise# | #bc_true# | I hear nothing.
+a : Not a step, #twice#. | That's how they got my great-uncle. A lamp, he thought. | Then it's nothing. Bright One, let it be nothing.
+
+scene riddle_lamp
+when topic=pastimes
+does ask.opinion / answer.detail / assess
+a : Here's one for you, #address#. What's wet when it's drying? | I've one, and nobody's had it yet. What has a mouth and never eats? | Sit by #lamp# and I'll ask you one. What walks the fen and leaves no print?
+b[stage=young] #pup : Ooh. A towel? | A river! | Is it a ghost?
+b : I'll have to think. | #bc_who_q# | Give me a clue.
+a@pup : A towel. Clever tadpole. Who taught you? | A river. Well, drown me. | It's the mist, tadpole. Not a ghost. Don't you say ghost.
+a : A towel, #dear#. Think on it next time you dry your paws. | A river, #dear#. Mouth and no teeth. | The mist. Clue's in the fen-murk. Always is.
+
+scene riddle_old
+when topic=pastimes|memories self.age>=50
+does tell.memory / react.self / assess
+a : My #gran# had a riddle nobody ever answered. Took it into the fen with her. | Riddles got us through the long nights, back in my tadpole days. Riddles and the lamp. | I won a pork supper off a pedlar with a riddle once. Never told anyone the answer.
+b : What was it? | #bc_lovely# | What was it?
+a : I'll not say. Bad luck, a dead wolf's riddle. #oath#. | Better than fretting at the window, mind. Though I did both. | I'll not say. A riddle's only worth what nobody knows.
+
+scene crackling
+when topic=food
+does tell.self / react.self / assess
+a : #crackling.capitalize#. That's a feast, that is. Better than eel, and I'll say so in this house. | I had pork for the first time in a year last Restday. I nearly cried, #address#. | Get the skin dry before it goes in. That's the whole secret of crackling.
+b[job=cook] #cook : Salt on the skin, too. | It's the dear meat, pork. | Dry, and a hot oven.
+b : #bc_lovely# | #bc_good# | #bc_wise#
+a@cook : Salt, aye. Fen salt. Nothing else does. | It is. Worth every copper, once in a while. | A hot oven. Not too hot. I fret about it.
+a : #bc_lovely#. Don't tell them I said it about the eels. | The Bright One sends a treat now and then. | Dry. Like everything worth having in a fen.
+
+scene lamp_prayer
+when topic=faith
+does tell.self / react.self / assess
+a : I say my prayer at the lamp every dusk. For the house, the young 'uns, and the drowned. | The Bright One has kept this house through more than I'd tell you, #address#. | I never miss Restday. Not in the wet, not with my knees. I sit by the chapel door.
+b[piety=devout] #devout : The drowned too? That's kind. | And will again. | By the door? So do I.
+b[piety=ordinary] #easy : That's a lot of praying. | You've been lucky. | Even with your knees?
+b : #bc_bless_you# | #bc_true# | #bc_good#
+a@devout : Somebody has to. They've no one else, #dear#. | #twice#, and I'll keep asking. | Back to the wall. You learn it on the fen.
+a@easy : Not enough, some nights. | Lucky's not a word I use. Kept. | Especially then. Prayers on bad knees count double.
+a : #saying#. | Bless you. | #blessing#.
+
+scene child_worry
+when topic=family self.parent=yes self.child
+does tell.worry / react.self / assess
+a : #self.child# was out on the water past dusk again. I sat by the lamp till I heard the boards creak. | I worry about #self.child#. I know I shouldn't. I do. | #self.child# never tells me where they're going. I find out after, and then I fret backwards.
+b[stage=old] #old : They come home. They always do. | We all worry. It's the job. | Ha. Fretting backwards. I know it.
+b : #bc_poor_soul# | #bc_true# | #bc_ha#
+a@old : Till the night they don't. Bright One forgive me for saying it. | It's a job without a #wages#, that. | You'd think we'd learn, at our age.
+a : Home, and dry, and the latch on. That's all I ask. | #twice#. Some nights I'm right. | Better than not fretting at all, #address#.
+
+scene raised_three
+when topic=family self.parent=yes
+does tell.self / react.self / assess
+a : I raised #young#. The house still smells of eels and wet boots. | Three of them, and none of them sits with a back to the wall like I told them. | One of mine traps eels at the creek and brings them home slimy, every night. I'd not have it otherwise.
+b : #bc_lovely# | #bc_ha# | #bc_good#
+a : Every one home safe. The Bright One hears about it nightly. | Young 'uns never listen, #address#. Mine didn't. | Slimy eels on #floor#, mind. I've words about that.
+
+scene strangers_doorway
+when topic=newcomer|smalltalk
+does give.opinion / react.self / assess
+a : Somebody strange out on the boards. I'll be civil from the doorway, #address#. Not past it. | A #stranger# carries things behind them. Or something follows. | Somebody I didn't know asked the way to the creek. I told them. Then I barred the door.
+b : #bc_wise# | That's a bit hard. | #bc_ha#
+a : Civil's free. My door isn't. | Hard, maybe. I'm still here, though. | In daylight, too. #twice#.
+
+scene roads_never
+when topic=travel
+does give.opinion / react.self / assess
+a : I'd not set a paw on a road these days, not for all the eel-money in the fen. | Everybody I know who went up the causeway came back different, #address#. Or didn't. | I've been #far# once, to a wedding. Bright One, never again.
+b[job=carter] #road : The road's not so bad. | I've walked it a hundred times. | Most come back just fine.
+b : #bc_never# | #bc_why_q# | #bc_ha#
+a@road : #bandits.capitalize#, and wheel ruts, and no dyke for a mile. Not bad, you say. | And you'll walk it once too often, fen-friend. Mark me. | Fine, and full of city smoke.
+a : #saying#. | They had the road in them. You could smell it. | My feet stay on the boards, thank you kindly.
+
+scene dole_bread
+when topic=times
+does give.opinion / react.self / assess
+a : To feed the #hungry# is holy work. I put a loaf by for the chapel every Restday. | Nobody on these boards should go to bed hollow while the chapel has bread, #address#. | I've been #skint#, once. I've not forgotten who fed me.
+b : #bc_good# | #bc_true# | Who was it?
+a : It's not much. A loaf's a loaf. | #saying#. And the fen gives back what you give. | The chapel, and the Bright One behind it. I'll not forget.
+
+scene drink_under
+when topic=smalltalk|health
+does give.opinion / react.self / assess
+a : I've seen #drink# take a wolf under quicker than the fen does. I'll not have a jar in the house. | My great-uncle drank. Walked out after a light one night, soused. The fen kept him. | The taproom's a cheerful place, they tell me. So's the fen, from a distance.
+b[job=innkeeper|brewer] #ale : A jar never drowned anyone who stayed indoors. | That's sad, but it's not the ale's doing. | Come and see it. It's warm.
+b : #bc_poor_soul# | #bc_true# | #bc_ha#
+a@ale : Indoors is the trick, and nobody stays there. | Ale and lights, #address#. A bad pair. | Warm's how they get you. No, thank you kindly.
+a : #oath#. Not in my house. | #saying#. | Bless you, but I'll keep to my own hearth.
+
+story the_face_in_the_light [concept=talk.lore self.age>=40 here.region=fens]
+  : I was sat up one winter night, waiting on one of mine, and a light came along the dyke.
+  b : One of the lights?
+  : Slow, the way they come. Right up to the window, #address#. I'd not barred the door that night. The one night.
+  b : #bc_and_q#
+  : There was a face in it. I knew it. A wolf I grew up with, gone in the old floods.
+  b : What did you do?
+  : Barred the door, lit the lamp, and prayed till dawn. #oath#. I've barred it before dusk every night since.
+
+story the_flood_child [concept=talk.memories self.age>=50 here.region=fens]
+  : I was a tadpole when the fen rose over the low boards in one night. #olddays.capitalize#, we call it now.
+  b : Were you frightened?
+  : I sat on the roof with my #mum# and watched the fen come into the house. Wet floors. I've hated them since.
+  b : #bc_poor_soul#
+  : In the morning there were new lights on the fen. More than before. Nobody would say why.
+  b : Oh.
+  : #saying#. I knew why. I was a tadpole, but I knew.
+
+story the_pedlar_riddle [concept=talk.pastimes]
+  : A pedlar came up the boards once and bet me a pork supper I couldn't stump him.
+  b : Did you?
+  : I asked him what walks the fen and leaves no print. He thought a whole hour, #address#.
+  b : #bc_and_q#
+  : He paid up. Best #crackling# I ever ate.
+  b : What's the answer?
+  : I'll not tell you either. You can bet me a supper. #bc_ha#
+
+dlg @1 resident.hub : #greet#. Stay on the boards, please, and say what you want. | #greet#. #talk_open# I'm listening, but I'm watching the light.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Come in, quick, and I'll bar the door. | #topic.player#. You're a welcome face. #talk_open#
+dlg @3 resident.hub [here.time=dusk|night] : It's getting dark, #address#. Say it quick, I'm barring up. | Not now, not after dusk. Well. Quickly, then.
+dlg @1 resident.job : I keep the house. Floors, food, #latch# and lamp. That's work enough at my age. | I keep the house for #young#. #job_busy#
+dlg @1 resident.news : #news_none# I don't go far enough to hear any. | Nothing I'd want to repeat, #address#. The Bright One keep us.
+dlg @1 resident.bye : #farewell#. Straight home, and don't follow any lights. | #blessing#. Mind the boards.
+graft resident.hub
+choice Are the lights on the fen really the drowned? [here.region=fens] -> lights
+node lights
+say They are. I've seen faces in them. Folk say marsh gas. Folk haven't sat by the window all night with the latch off.
+mood worried
+free
+choice Whose faces? -> lights_who
+choice I'll keep away from them. -> hub
+node lights_who
+say Some I knew. Some from before my time. I'll not say names. Bar your door before dusk, and keep a lamp lit. That's all I'll say.
+choice I will. Thank you. -> hub
+choice Goodbye. -> bye
+
+
+old
+line @1 tell.self : At my age the knees decide where I go. Mostly they say the fire. | Seventy winters, #address#, and still I check the latch twice.
+line @1 give.advice : Bar the door before you need to, #dear#. I'll not be here forever to tell you. | Never follow a light. Never. That's an old wolf's whole wisdom.
+scene old_knees
+when topic=health self.stage=old
+does tell.self / react.self / assess
+a : My knees are #hurt# in the damp, and it's always damp. | I had the fen-ague all last month. I lit the lamp every night in case it was the end. | I sleep sitting up now, facing the door. The young 'uns laugh. Let them.
+b[job=healer] #healer : Willow bark for the knees. | You're stronger than you think. | Lie down, or your back will go too.
+b : #bc_poor_soul# | #bc_i_hope_so# | #bc_ha#
+a@healer : #remedy.capitalize#. I've drunk enough to grow a tree. | Strong as a reed in a blow, #address#. Bends, doesn't break. | Lie down with my back to the door? Never.
+a : Seventy winters. They've earned their aching. | It wasn't the end. The Bright One wasn't ready for me. | They'll do the same at my age. Mark me.
+
+scene old_floods_remembered
+when topic=memories self.stage=old here.region=fens
+does tell.memory / react.story / assess
+a : I remember the old boards, before they raised them. Water on the floor every spring. | When I was young, the drowned bell still rang some nights. You don't hear it now. Or I don't. | My #mum# barred the door before dusk, and her #mum# before her. I learned it at the latch.
+b[stage=old] #old : I remember those boards. Cold feet all spring. | I heard it once. Never forgot it. | Mine did the same.
+b : Wet floors every spring? | #bc_poor_soul# | #bc_wise#
+a@old : Cold feet, wet floors, and nobody complained. We'd no breath for it. | Nor me, fen-friend. Nor me. | Then you'll know. Some things you keep.
+a : Every spring. That's why I can't abide them now. | Maybe I've gone deaf. Maybe they've stopped. I don't know which I'd rather. | #saying#. My young 'uns will learn it yet.

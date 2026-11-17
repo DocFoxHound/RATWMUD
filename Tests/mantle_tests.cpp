@@ -247,7 +247,48 @@ void wornByItsWearer()
         out[0] = char(std::tolower(static_cast<unsigned char>(out[0])));
         swims.insert(out);
     }
-    expect(swims.count("every morning till the ice") && swims.count("in before the boats, every day"), "its words: " + *swims.begin());
+    expect(swims.count("every morning till the ice") && swims.count("before the boats, every day"), "its words: " + *swims.begin());
+    // A mantle lent from a neighbouring pool (doc 84 §12.3.5, Phase 11): worn by a wolf of another dialect, its words
+    // that are its own dialect's distinctive words are left out; worn by one of its own, they stay.
+    {
+        auto lent = lib;
+        std::vector<talk::MantleText> one{{"", "mantle cw091\nstate ready\ndialect coldwater\naccent light\ntier spare\n"
+                                                 "fits stage=adult|old\nwords\nhail = Calm water to you | Well met at last\n"
+                                                 "grown\nline greet.return : #hail#.\nline farewell.return : Off you go.\n"
+                                                 "line react.news.new : Is that so.\nline answer.how : Well enough.\n"
+                                                 "line preclose : I must go.\nline ack : Right.\n", "lent"}};
+        std::vector<talk::Library::MantleRefusal> no;
+        expect(lent.setMantles(one, no) == 1, "the lent mantle loads");
+        talk::Query h;
+        h.a = speaker("pup", "cw091", "saltwell");
+        h.alone = true;
+        std::set<std::string> hails, own;
+        for (std::uint64_t s = 1; s <= 30; ++s)
+        {
+            expect(lent.expand("#hail#", h, 0, s, out), "a lent mantle's word");
+            hails.insert(out);
+        }
+        expect(hails == std::set<std::string>{"Well met at last"}, "a Saltwell wearer never says Coldwater's words: " + *hails.begin());
+        h.a = speaker("pup", "cw091", "coldwater");
+        for (std::uint64_t s = 1; s <= 30; ++s)
+            if (lent.expand("#hail#", h, 0, s, out))
+                own.insert(out);
+        expect(own.count("Calm water to you") == 1, "a Coldwater wearer keeps them");
+        expect(lent.saysDialect("coldwater", "Calm water to you, friend.") && !lent.saysDialect("coldwater", "Well met at last"),
+               "the dialect's distinctive words");
+    }
+    // One's people by name, never to that very one's face (Phase 11, T3's listener_third).
+    {
+        talk::Query face;
+        face.a = speaker("hand", "", "coldwater");
+        face.a.facts["boss"] = "Oriel Marsh";
+        face.b = speaker("boss", "", "coldwater");
+        face.b.facts["name"] = "Oriel Marsh";
+        expect(!lib.expand("#self.boss# counts every cup.", face, 0, 1, out), "not said of the boss to the boss");
+        face.b.facts["name"] = "Ash Reed";
+        expect(lib.expand("#self.boss# counts every cup.", face, 0, 1, out) && out == "Oriel Marsh counts every cup.",
+               "said of the boss to anyone else: " + out);
+    }
     std::string oathA, oathB;
     auto g2 = g;
     g2.a = speaker("someone_else", "cw017", "coldwater");

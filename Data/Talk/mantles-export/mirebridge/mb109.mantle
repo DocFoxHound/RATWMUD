@@ -1,0 +1,292 @@
+# mb109, the kiln hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb109
+revision 1
+state ready
+dialect mirebridge
+accent broad light
+tier standard
+written_for tn_sm_bram_harvestgarth
+written_by claude-p11-pilot
+title the kiln hand
+fits stage=adult|old
+prefers job=crafter
+traits temper=even talk=plain warmth=cold humour=dry honesty=guarded piety=ordinary drive=steady
+quirk never_misses_a_harvest_dance
+likes roast_pork stars sharp_knife first_warm_day
+dislikes wet_floors rats
+fears a_cracked_firing
+hopes the_biggest_orchard_in_the_south
+topics work +0.3 food +0.2 pastimes +0.2 dreams +0.1 newcomer -0.3 gossip -0.4 prices +0.1
+styles comfort=gruff gossip=refuses refuse=blunt tease=dry
+marks oath saying
+persona #self.first# tends the kiln at the pottery: wry, cold to strangers, a sharp knife on his belt, and a dream of apple trees he'll admit to nobody.
+
+words
+oath! = Fire and clay | Kiln-cracks
+saying! = Clay remembers every thumb | What goes in the fire comes out the fire
+kiln = the kiln | the old firemouth
+clay = pit clay | Mirebridge clay
+crackling = pork and crackling | a roast with the crackling on
+knife = a good sharp knife | my knife
+stars = the stars | the stars coming out
+orchard = an orchard | apple trees in rows
+firing = a firing | the long burn
+rats = rats | the shed rats
+soot = soot | kiln-soot
+dance = the harvest dance | the reaping dance
+ware = the ware | a shelf of pots
+warmday = the first warm day | the first day the sun means it
+squint = who's asking | and who wants to know
+
+any
+opinion @1 strangers against 2 : A shut door's a careful door. Mine stays shut to any face I've not met. #oath#.
+opinion @1 newcomers against 1 : Every new face off the causeway is after a place at #kiln#. There's one kiln, and it's got me.
+opinion @1 merchants against 2 : They sell our pots up the river for more than I'm paid to fire a hundred. I hear things, fen-friend. I'm not deaf.
+opinion @1 dole against 1 : Hand-outs teach a wolf to queue. I'd sooner they stood at #kiln# and sweated.
+opinion @1 houses against 1 : The Houses own the clay, the kiln and the ground it sits on. I own #knife#. Sure as mud, that's the size of it.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. And you are? | Hm. #greet#. Passing through, are you, #stranger#?
+line @1 kin.open [pair.kin!=no] : Oh. You. Come in, then. | #greet#. Door, #address#. It's #cold#.
+line @1 again.open : Again. What is it now, #address#? | You're back, #address#. I'm counting.
+line @2 greet [here.time=dawn] : #greet#. #kiln.capitalize#'s been lit since dark. I've not slept. | Morning. Don't talk to me yet, #address#.
+line @3 greet [self.working=yes] : #greet#. Stand back from #kiln#, it bites. | Busy. #squint.capitalize#?
+line @1 greet.return : #greet#. | #greet#. What's wanted?
+line @2 greet.return [here.time=dusk|night] : #greet#. Late to be wandering, #address#. | Hm. #greet#. Out under #stars#, are you?
+line @1 farewell : #farewell#. | Right. #farewell#. Shut the door.
+line @1 farewell.return : #farewell#. | Aye. And you, #address#.
+line @1 react.news.new : #oath#. Who told you? | Is that so. #squint.capitalize#, saying it?
+line @1 react.news.known : Old mud, that. Heard it at the pits. | #knew.capitalize#.
+line @1 react.news.doubt : Fired and cooled, then I'll believe it. #squint.capitalize#? | Bog-wind. Somebody's after something, mark me.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Boggy luck. Nobody earned that. | #pity.capitalize#.
+line @1 answer.how : Hot one side, #cold# the other. Kiln work. | Still standing, #address#. You?
+line @1 sympathise : Sit by #kiln#. Warm, at least. Talk if you want. | #sympathy.capitalize#. I've no good words for it. Sit, anyway.
+line @1 decline : No. I've #firing# on, and it won't wait for anybody. | Not likely, #address#. I don't know you well enough for that.
+line @1 accept_decline : Suit yourself, #address#. | #no_matter.capitalize#. Didn't expect much.
+line @1 thank : #thanks#. | Hm. #thanks#, then.
+line @1 deflect_thanks : #deflect.capitalize#. | Don't make a thing of it, #address#.
+line @1 preclose : Right. #kiln.capitalize# won't watch itself. | #preclose.capitalize#.
+line @1 tease : You've clay on your nose. No, leave it. Suits you, #address#. | Dance like that at #dance# and they'll think you've a stone in your boot.
+line @1 tease.return : Ha. Very good, you mudskipper. | Says you, #address#.
+rule @kiln
+when concept=bark working=yes self.job=crafter
+does aside
+cooldown 6h
+say Hold. Hold. Now. | Cracked. #oath#. Three days' clay in the bin.
+
+rule @rats
+when concept=bark here.place=work|home
+does aside
+cooldown 8h
+say Rat. There. Where's #knife#. | #rats.capitalize# in the clay store again. Eels take them.
+
+rule @stars
+when concept=bark here.time=night here.outdoors=clear
+does aside
+cooldown 12h
+say There's the plough. Up early tonight, #oath#. | Clear. #stars.capitalize#. Good.
+
+rule @dance
+when concept=bark here.season=autumn here.day=festival
+does aside
+cooldown 12h
+say #dance.capitalize# tonight. I'll be there. Don't ask. | Boots polished. Don't look at me like that.
+
+scene the_firing
+when topic=work self.job=crafter self.working=yes
+does tell.self / react.self / assess
+a : #firing.capitalize# on since midnight. Two more days of feeding her. | You listen to #kiln#. She tells you when she's right, if you've ears. | Hotter. Hotter. There. Now leave it be and pray.
+b[job=crafter|smith] #fire : Long burn. I don't envy you. | Every fire talks. | #bc_true#
+b : #bc_poor_soul# | #bc_ha# | #bc_good#
+a@fire : Nobody does. | Most don't listen. | #bc_it_is#
+a : Don't. I'd rather this than talking to folk. | Laugh. You'd not hear her. | #saying#.
+
+scene cracked_ware
+when topic=work self.job=crafter
+does tell.complaint / react.complaint / assess
+a : Opened #kiln# this morning. Half #ware# cracked. #oath#. | Somebody wedged that clay with an air bubble in it. I can tell who, too. | One wet pot in the stack and #ware#'s gone boggy, the lot.
+b : What happened? | Who? | #bc_bad_luck#
+a : Damp. Somebody left the shed door open. I'll not say who. | Not saying. They know. #saying#. | Luck's got nothing to do with it, #address#. Care has.
+
+scene clay_pits
+when topic=land|work here.region=fens
+does tell.self / react.self / assess
+a : #clay.capitalize# is the best in the south. Grey as ash and fine as butter. | Dig a spade into #clay# and you'll find somebody's old pot. Every time. | Hauled #clay# all morning. My back's a ruin.
+b : The best? | #bc_so_they_say# | #bc_poor_soul#
+a : Best I've thrown, and I've thrown worse. | The drowned town's under there. Their rubbish is our fortune. | It'll mend. Backs do, mostly.
+
+scene who_asking
+when topic=smalltalk pair.band=strangers
+does ask.detail / answer.detail / assess
+a : You've been looking about a while. #squint.capitalize#? | What brings you this far out on the boards? Nobody comes this far for nothing. | Asking a lot of questions, #stranger#. Why?
+b : Just passing. | Work, maybe. | I'm curious.
+a : Pass on, then. #bc_good# | There's none. Not here. | Curious gets you in the mud. Mark me.
+
+scene newcomers
+when topic=newcomer|times
+does give.opinion / react.self / assess
+a : Another one in from the causeway, after work. There's no work. I've got it. | Every new face wants a place at #kiln#. One kiln. Count it. | Newcomers. Eat our bread, take our jobs, complain about the damp.
+b[from=fenshore] #fen : Fen-sure. Too many dry-footers. | They'll go when the mizzle starts. | #bc_true_enough#
+b : Room enough for everyone, surely. | #bc_maybe# | Weren't we all new once?
+a@fen : They always come back, though. | They never do. That's the trouble. | #bc_they_do#
+a : Surely not, #address#. Look about you. | Maybe's the word for it. | Not me. I was born in this mud.
+
+scene crackling
+when topic=food
+does tell.self / react.self / assess
+a : #crackling.capitalize#. That's the only feast I want. | You know what I'd do for #crackling#? Anything legal. Most things not. | Pork's up at the store again. I'll have it anyway, come Restday.
+b[job=cook|innkeeper] #kitchen : Salt the skin overnight. That's the secret. | I do a good one Restday. | Who doesn't?
+b : #bc_me_too# | #bc_ha# | Is it worth it?
+a@kitchen : I know the secret. I'll keep my own. | I've had it. It's not bad. | Plenty of mudskippers. More for me.
+a : A good bit of #crackling# mends a week. | I'm not joking, #address#. | Every coin. #oath#.
+
+scene the_knife
+when topic=pastimes|smalltalk
+does tell.self / react.self / assess
+a : Sharpened #knife# last night till it'd split a hair. Can't abide a dull blade. | #knife.capitalize# is the best thing I own. Possibly the only thing. | A sharp knife's a careful knife. A dull one's what cuts you.
+b : What do you use it for? | #bc_ha# | #bc_wise#
+a : Trimming clay. Cutting #crackling#. Persuading #rats#. | Says a lot, I know. | Fen-true. Mind yours.
+
+scene stars
+when topic=pastimes here.time=night here.outdoors=clear
+does tell.feeling / react.self / assess
+a : Clear tonight. I'll be up on the roof with #stars# till the cold drives me in. | Look up, #address#. Go on. Nobody looks up out here. | There's the plough, and the heron's eye under it. I know them all, #address#.
+b : #bc_lovely# | Beautiful. | All of them?
+a : They don't talk back. That's the best of it. | Aye. Free, too. Only free thing left. | Every one. #bc_it_is#
+
+scene warm_day
+when topic=weather|season here.season=spring here.weather=clear
+does tell.feeling / react.self / assess
+a : #warmday.capitalize#. Sat outside the shed with my face in it for a whole minute. | Feel that? Sun with some heat in it, after all that damp. I could near smile. | First day in months #clay# dried right on the shelf.
+b : #bc_lovely# | Near smile? | #bc_good#
+a : Don't tell anyone. They'll want me to talk. | Near. Don't push it. | Sure as mud, a good day.
+
+scene the_orchard
+when topic=dreams pair.band=friends|family|housemates
+does confide / react.self / assess
+a : #vent.capitalize#. I want #orchard#. The biggest in the south. | Don't laugh, #address#. I've a bag of apple pips under my bed. Saved them three years. | One day I'll walk off from #kiln# and plant apple trees in rows. Rows and rows.
+b : #bc_good# | I won't laugh. | #bc_go_on#
+a : Not in the fen, mind. Somewhere dry. | Good. I'd have had to cut you. | That's all. I've said it. Don't make me say it again.
+
+scene orchard_guarded
+when topic=dreams pair.band=strangers|acquaintances
+does tell.self / react.self / assess
+a : Dreams? I've none. I fire pots. | What do I want? A day off and a pork chop. | Never you mind what I want.
+b : Nothing at all? | #bc_ha# | Fair enough.
+a : Maybe trees. That's all you're getting. | Two chops. Don't push it. | #bc_good#
+
+scene harvest_dance
+when topic=festival here.season=autumn
+does tell.self / react.self / assess
+a : #dance.capitalize# tonight. I've not missed one since I could walk. | I'll be there. I'll be dancing. Don't look so surprised, #address#. | My boots are polished. Ask me why and I'll not tell you.
+b : #bc_ha# | Dancing? You? | #bc_lucky_you#
+a : Every one. Even the year of the floods, on the Heron's tables. | Me. Fair-dry on my feet, too. | It's #dance#. Of course they're polished.
+
+scene the_rats
+when topic=animals
+does tell.complaint / react.complaint / assess
+a : #rats.capitalize# in the clay store again. Big as cats. Bold as merchants. | I hate a rat. Chewed the straw out of my packing. #oath#. | Set three traps for #rats# last night. Got one. The other two learnt.
+b : #bc_poor_soul# | #bc_ha# | Clever things.
+a : They'll learn #knife#, then. | They'll be gone by the dance, or I will. | Too clever. I'll be cleverer.
+
+scene wet_shed
+when topic=home|work here.weather=rain|storm
+does tell.complaint / react.self / assess
+a : Wet floor in the shed again. One wet floor and half #ware# cracks. | Water on the shed floor. I've told them a hundred times about that roof. | Can't abide a damp floor. Gets in #ware# and in your joints.
+b : #bc_every_time# | Do they listen? | #bc_me_too#
+a : Every time, #address#. #oath#. | Not once. I'll fix it myself, again. | Mud and more mud, sure as mud.
+
+scene merchants
+when topic=prices|times self.wealth=poor|destitute
+does tell.complaint / react.complaint / assess
+a : They sell #ware# up the river for a fortune. I see a crust of it. | Pork's dear, bread's dear, and my pay's the same as when I started. #oath#. | A merchant came round the pottery yesterday. Never touched clay in his life.
+b[wealth=rich|comfortable] #purse : Somebody has to carry them to market. | Times are hard all round. | We all have our trades.
+b : #bc_true_enough# | #bc_poor_soul# | #bc_ha#
+a@purse : Carry them for less, then. | Not all round. Round some. | Aye. Some trades get paid.
+a : Aye. That's how it goes, #address#. | #bc_it_is# | Soft paws. I checked.
+
+scene with_the_carter
+when topic=friends|home self.friend
+does tell.self / react.self / assess
+a : #self.friend# and I share a roof. We get on because we don't talk. | Ask #self.friend# about me. You'll get a shrug. That's a good word, from that one. | #self.friend# carts the pots I fire. We see a lot of each other's backs.
+b : #bc_ha# | Good friend, then. | #bc_good#
+a : Suits us both. | The best kind, #address#. | It works. Don't knock it.
+
+scene the_queue
+when topic=times|prices
+does give.opinion / react.self / assess
+a : Give a wolf a queue to stand in and that's what they'll do. I'd sooner #kiln# had them. | Harder every month. Them up the causeway don't see it. Why would they? | I've worked since I was knee-high to a heron. Not a coin given, not a coin asked.
+b[wealth=poor|destitute] #purse : Some of us can't find work. | Easy said. | #bc_good#
+b : #bc_maybe# | #bc_true# | #bc_fair#
+a@purse : Then come to the pits. They always want backs. | Aye. It is. Still true. | #bc_good#
+a : That's how I see it, #address#. | They never do. | Proud of it. Daft, maybe.
+
+scene drowned_pots
+when topic=lore here.region=fens
+does tell.story / react.story / assess
+a : We find old pots in the pits. Drowned-town pots. Some whole. Better made than mine. | They say the drowned folk had a kiln bigger than ours. Their ware's still coming up in #clay#. | Found a cup in the pits with a thumbprint in the glaze. Somebody's, a long time gone.
+b[old] #elder : My grandmother kept one. Bad luck, she said. | They made fine things. | #bc_so_they_say#
+b : Do you sell them? | #bc_lovely# | #bc_so_they_say#
+a@elder : Bad luck for the drowned. Fine for me. | They did. I'd like to know how. | Fen-true, for once.
+a : The whole ones. I keep the odd one back. | Just a cup. #saying#. | Whoever they were, they had good paws.
+
+scene rain_draw
+when topic=weather|work here.region=fens here.weather=rain|fog
+does tell.complaint / react.self / assess
+a : #kiln.capitalize# won't draw in this murk. Smokes back in my face all day. | Damp days, the fire sulks. So do I. | All this wet, the clay won't dry on the boards. Nothing to fire.
+b : #bc_bad_luck# | #bc_ha# | #bc_every_year#
+a : #soot.capitalize# in my ears. Lovely. | Fen-sure, we're a pair. | Every year, #address#, and still it gets me.
+
+scene no_gossip
+when topic=gossip
+does decline / react.self / assess
+a : Don't tell me. I don't want it. | What folk say about folk is #nonsense# and it's none of mine. | If it's about me, I don't care. If it's not, I care less.
+b : It's #very# good, though. | #bc_ha# | #bc_fair_enough#
+a : Then tell somebody who'll enjoy it. | Mark me. | That's that, then.
+
+scene kiln_marks
+when topic=health
+does tell.self / react.self / assess
+a : Burned my paw on the firemouth. Third time this month. | Every kiln hand has these marks. Count them, if you like. | My eyes sting with #soot# by evening. Can't read a thing.
+b : #bc_poor_soul# | #bc_ha# | Can't you rest?
+a : It's nothing. Heals. | Nineteen. Each one a lesson. | Rest is for after the firing.
+
+story first_firing
+  : First kiln I fired alone, I was barely grown. Packed it myself, lit it myself, watched it all night.
+  : Opened it in the morning and every pot was cracked. Every single one. #oath#.
+  b : What did you do?
+  : Swept it out, dug more clay, and fired it again. #saying#. The second lot came out whole.
+  b : #bc_good#
+
+story dance_till_dawn
+  : There was a harvest dance, years back, when the fiddler wouldn't stop and nor would I.
+  : We danced till the sun came up over the reeds. I fired the kiln that morning without a wink.
+  b : Who were you dancing with?
+  : Never you mind. #squint.capitalize#? That's mine.
+  b : #bc_ha#
+
+story the_thumb_cup
+  : Down in the pits one spring I turned up a cup. Whole. Older than the town.
+  : There's a thumbprint in the glaze. Small one. Somebody's pup helped make it.
+  b : Do you still have it?
+  : On the shelf over my bed. I'll not sell it. Some things you keep, #address#.
+  b : #bc_lovely#
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. #squint.capitalize#?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. What's wanted?
+dlg @3 resident.hub [pair.disposition=hostile] : You again. Say it quick, #address#.
+dlg @1 resident.job [self.job=crafter] : I fire #kiln# at the pottery. Pack it, light it, watch it, open it. Swear at it.
+dlg @1 resident.news : Nothing. And if there was, it'd not come from me, #address#.
+dlg @1 resident.bye : #farewell#. Mind the shed step.
+graft resident.hub
+choice That's a fine knife on your belt. -> blade
+node blade
+say #knife.capitalize#. Sharpest in Fenshore. I keep it that way. Don't touch.
+mood stern
+free
+choice What's it for? -> blade_why
+choice Goodbye. -> bye
+node blade_why
+say Clay, pork and rats. And someday, grafting apple trees. Forget I said that last bit.
+choice Apple trees? -> hub
+choice Goodbye. -> bye

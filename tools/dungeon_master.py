@@ -730,6 +730,55 @@ class DungeonMaster:
                 self.audit(conn, who['username'], 'mantle.retire', str(mantle_id), f'{target.upper()}: mantle.retire {mantle_id}')
         return {'id': action_id, 'status': 'queued', **done}
 
+    # -- The Mantles panel (doc 84 §17.10, Phase 11) -------------------------------------------------------------
+    def mantles(self, target):
+        """Every mantle: dialect, tier, state, revision, and its status (worn by whom, resting since, spare)."""
+        import mantle_store
+        with self.connect(target) as conn:
+            return mantle_store.listing(conn, C.world_of(conn))
+
+    def mantle(self, target, mantle_id, revision=None):
+        """One mantle as its rows hold it (its .mantle text, canonical: the card and every item with its key), its items
+        by key, its wearer and its history; with `revision`, the text as it was then (to revert to: a save of it)."""
+        import mantle_check
+        import mantle_store
+        import mantle_text as T
+        with self.connect(target) as conn:
+            world = C.world_of(conn)
+            found = mantle_check.world_mantles(conn, world, str(mantle_id))
+            if not found:
+                raise DMError(f'No mantle {mantle_id}.', 404)
+            m = found[0]
+            text = T.write(mantle_store.at_revision(conn, world, m.id, int(revision)) if revision else m, 'canonical')
+            return {'id': m.id, 'revision': m.revision, 'state': m.state, 'dialect': m.dialect, 'tier': m.tier,
+                    'text': text, 'items': [{'key': i.key, 'section': i.section, 'kind': i.kind, 'body': i.body} for i in m.items],
+                    'wearer': mantle_store.worn_by(conn, world, m.id), 'history': mantle_store.history(conn, world, m.id),
+                    'at': int(revision) if revision else m.revision}
+
+    def save_mantle(self, who, target, text, base_revision, note=''):
+        """A mantle saved from its text (§17.3: the game's loader and mantle_check first; a stale revision refused, with
+        who moved it; problems by item key): this mantle, so every later wearer hears it (an edit for one wolf alone is
+        their voice's own words and lines, the Voice panel). Items the text no longer has are deleted. Then mantle.sync."""
+        self.allowed(who, 'mantle.sync')
+        import mantle_store
+        import mantle_text as T
+        try:
+            m = T.read(str(text or ''), 'the mantle')
+        except T.MantleError as error:
+            raise DMError('\n'.join(error.problems)) from error
+        with self.connect(target) as conn:
+            with conn.transaction():
+                world = C.world_of(conn)
+                try:
+                    done = mantle_store.save(conn, world, m, base_revision=int(base_revision) if base_revision is not None else None,
+                                             source='dm' if target == 'live' else 'atlas', account=who['username'],
+                                             note=str(note or '')[:400], prune=True)
+                except mantle_store.StoreError as error:
+                    raise DMError('\n'.join(error.problems)) from error
+                action_id = mantle_store.queue(conn, 'mantle.sync', m.id, who['username'])
+                self.audit(conn, who['username'], 'mantle.save', m.id, f'{target.upper()}: {m.id} revision {done.get("revision")}')
+        return {'id': action_id, 'status': 'queued', **done}
+
     def save_kin(self, who, target, npc, other, kind, remove=False):
         """A family tie: `npc` is `other`'s spouse, or `npc` is `other`'s parent; or one taken away."""
         self.allowed(who, 'voice.sync')
@@ -2725,6 +2774,13 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
             if method == 'POST' and path == '/api/talk/dialect':
                 data = self.body()
                 return self.reply(200, dm.save_dialect(who, self.posted(data), data.get('name'), data.get('grammar')))
+            if method == 'GET' and path == '/api/talk/mantles':
+                return self.reply(200, dm.mantles(self.target(query)))
+            if method == 'GET' and path == '/api/talk/mantle':
+                return self.reply(200, dm.mantle(self.target(query), (query.get('id') or [''])[0], (query.get('revision') or [None])[0]))
+            if method == 'POST' and path == '/api/talk/mantle':
+                data = self.body()
+                return self.reply(200, dm.save_mantle(who, self.posted(data), data.get('text'), data.get('revision'), data.get('note', '')))
             if method == 'POST' and path == '/api/talk/mantle/retire':
                 data = self.body()
                 return self.reply(200, dm.mantle_retire(who, self.posted(data), str(data.get('mantle', '')), str(data.get('reason', ''))))

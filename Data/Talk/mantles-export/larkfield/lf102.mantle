@@ -1,0 +1,278 @@
+# lf102, the low-street reckoner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf102
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for rm_agna_bilgecot
+written_by claude-p11-pilot
+title the low-street reckoner
+fits stage=adult|old
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk knows_which_streets_flood_first
+likes crisp_apples cards tidy_house first_warm_day
+dislikes flies early_bells
+fears open_water_that_disappoints
+hopes a_berth_somewhere_dry
+topics weather +0.3 home +0.3 dreams +0.3 ships +0.2 food +0.2 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# stirs the preserving pans and keeps a tidy room under the roof: quiet, tired, content in a thin way, reckoning the floods to the street and dreaming of a berth somewhere dry.
+
+words
+oath! = Honey and halfpence | By the brass weights
+saying! = Water finds the low street first | Honey keeps what sugar spoils
+lowstreets = the low streets | the corner by the steps where it comes up first
+pans = the preserving pans | the big copper pans
+honey = honey, never sugar | good heath honey
+berth = a berth on a ship bound somewhere dry | a bunk on a ship going where it never rains
+apple = a crisp apple | an apple with a snap to it
+cards = a hand of cards | a quiet game of cards
+tidy = a tidy room | a swept floor and everything in its place
+garret = my top floor | my bit of room under the roof
+flies = flies in summer | the flies off the fruit
+farthing = to the farthing | to the last farthing
+jars = jars back, a farthing off | a jar returned is a jar paid for
+
+grown
+scene water_first
+when topic=weather here.weather=rain|storm here.region=ridgemere
+does warn / ask.detail / answer.detail / assess
+a : It'll be over #lowstreets# by dusk if it keeps on. Go round by the upper streets. | Keep off #lowstreets# tonight. I've watched it rise there thirty years. | The drain at the bottom of the steps is already singing. That's the first sign, #address#.
+b : How do you know which go first? | That long? | Singing?
+a : You watch. The low ones go first, then the bad drains, then whatever's not been mended. #saying.capitalize#. | Long enough to know it #farthing#. | Gurgling. Then it goes quiet, and then it comes up the steps. #saying.capitalize#.
+b : I'll go round, then. | I'll take your word. | I'll go round by the top, then.
+
+scene before_the_storm
+when topic=weather here.weather=storm here.region=ridgemere
+does tell.worry / react.self / assess
+a : I've moved everything off my floor onto the bed. Habit, #oath#. I'm up top now and still do it. | Wind like this pushes the Sound up the drains. #lowstreets.capitalize# will have it by midnight. | #oath#. Listen to it. Somebody down the bottom's going to be bailing.
+b : Up top, and still? | Midnight? | Poor souls.
+a : You don't forget the year it took your shoes. | Or sooner. I'd not lay #bet# on later. | They'll be bailing, and #toffs# won't hear a word of it.
+
+scene pans_stirring
+when topic=work self.workplace
+does tell.self / react.self / assess
+a : Six hours at #pans# today. My arm knows the stir better than I do. | You don't leave #pans#. Turn your back and it catches, and a whole batch is #bad#. | Plums today at #self.workplace#. The whole room smelled #very# sweet.
+b : That's a long day. | I'd burn it. | Sounds nice.
+a : It's the day there is. It pays #farthing#. | Most do, the first month. | It is, till the #flies# find it.
+
+scene honey_never_sugar
+when topic=work|food self.workplace
+does give.opinion / ask.detail / answer.detail
+a : #honey.capitalize#. Sugar's a cheat; it hides what the fruit's doing. | I was taught by a cook who'd box your ears for sugar in a preserve. #honey.capitalize#, she'd say. | #saying.capitalize#. I'll swear to it on any weights you like.
+b : What's the difference? | Strict, was she? | Is honey not dearer?
+a : Honey's honest weight; it tells you when a batch is going over. Sugar lies till the jar's open. | Strict and right. I learned more in a season than in years after. | Dearer by the pound, cheaper by the spoiled jar. Reckon it out #farthing#.
+
+scene jars_back
+when topic=work|prices self.workplace
+does request / react.self / assess
+a : If you've jars at home, bring them back. #jars.capitalize#. | Bring your empties. A jar in the street is #money# thrown after it. | #jars.capitalize#. Folk forget that.
+b : I've a shelf of them. | Fair enough. | Do they?
+a : Then that's a shelf of #money#. Bring it down. | #thanks#. | They do. I've never once forgotten it.
+
+scene keep_quiet_boss
+when topic=work self.boss
+does tell.self / react.self / assess
+a : #self.boss# keeps a tight kitchen. I'll say no more than that, #address#. | I'll not talk about #self.boss# in the street. Ask me something else. | #self.boss# pays on the day. That's worth something, #address#.
+b : Fair enough. | All right. | It is.
+a : Walls have ears down here, and so do kitchens. | Ask me about #apple#. I'll talk apples all day. | It's #good#. I've known worse #boss#.
+
+scene dry_berth
+when topic=dreams|ships
+does confide / react.self / assess
+a : I want #berth#. That's all. Somewhere the floor stays where you left it. | When a Grayrock ship goes out I watch it round the point and think of #berth#. | #vent#: I've a bag I could pack in an hour, if a berth came up.
+b : Somewhere dry? Where's that? | Every one? | Would you really go?
+a : I don't know. Somewhere the gutters don't sing. I'd know it when I saw it. | Most. Watching's free; #berth# isn't. | I'd go, #oath#. Scared of the water all the way, and go anyway.
+
+scene water_disappoints
+when topic=dreams|travel pair.band=friends|family|housemates
+does confide / react.self / assess
+a : What frightens me is getting out on the water and finding it no different. | I dream of somewhere dry, and in the dream it's always raining. | I've never been past the harbour mouth. #oath#, I've never been past the steps some years.
+b : It'd be different. | That's a cruel dream. | Then it's time you did.
+a : Maybe. I'd like to see the true weight of it before I'm too old to lift the bag. | It's a bad bargain I make with myself. I don't laugh. | Maybe it is. #hedge#. Let me think on it a while longer.
+
+scene apples_snap
+when topic=food
+does tell.self / react.self / assess
+a : Give me #apple# and I'll not ask for supper. | I paid a farthing over for a good apple today, and it was #good#. | A soft apple's #worthless#. I'd sooner go without.
+b : Just an apple? | Worth it, then. | Sad?
+a : Just. And a bit of cheese, if there's cheese going. | #bc_it_is# The snap's what you pay for. | Sad. You bite and nothing answers.
+
+scene cards_evening
+when topic=pastimes
+does invite / accept_invite / assess
+a : #cards.capitalize# of an evening, and I'm content. Will you sit in? | I've a pack with two jacks missing. We use buttons. Want a hand? | I play for buttons. Never #money#. I've seen what #money# does at a card table.
+b : I'll sit in. | Buttons for jacks? | Buttons suit me.
+a : Good. I deal slow; you'll have to bear it. | Even odds either way. Everyone knows which button's which. | Buttons it is. Nobody goes home #skint# on buttons.
+
+scene garret_tidy
+when topic=home
+does tell.self / react.self / assess
+a : #garret.capitalize# is small, but it's kept. I can find anything in the dark. | I swept twice this morning. #tidy.capitalize#; nobody'll see it but me. | Up top, the water never reaches. I paid fair weight for that in stairs.
+b : That's the way to live. | Why twice? | Many stairs?
+a : It's the way I can live. #tidy.capitalize#, and a lock on the door. | Once for the dust and once for my own peace. | Enough to make my knees argue. Worth every one, #oath#.
+
+scene sump_looks_after
+when topic=home|smalltalk here.region=ridgemere self.quarter=sump
+does give.opinion / react.self / assess
+a : The Sump gets called all sorts. It's home, and folk down here look after their own. | Nobody in the Sump would leave you on the step in the wet. Can't say that for the hill. | #saying.capitalize#, and it's the Sump that bails out the Sump.
+b[wealth=rich] #rich : I'd not know. | That's not fair on the hill. | Somebody should.
+b : They do. | True enough. | Nobody does.
+a@rich : No. You'd not. I don't hold it against you. | Maybe not. I've not seen the hill come down to prove it. | Somebody should. #saying.capitalize#, and help comes last.
+a : #bc_they_do# Little enough to go round, and still they share it. | I'll not have a word said against it in my hearing, #address#. | #oath#. They'll bail with their own pots and lend you one after.
+
+scene flies_summer
+when topic=animals|season here.season=summer
+does tell.complaint / react.complaint / assess
+a : #flies.capitalize#. They know where the fruit is before I do. | I've a cloth over every jar and still they find a way. | A fly on a preserve is a jar thrown out. #farthing#, it costs.
+b : Summer's worst for it. | They always do. | That's a waste.
+a : #bc_it_is# I count the days to the first frost. | Like they've a key. I don't know how. | #bc_it_is# Waste is a sin, I always think. A small one, every time.
+
+scene warm_day_out
+when topic=weather|season here.season=spring here.weather=clear
+does tell.feeling / react.self / assess
+a : The first warm day. I opened my window and let #garret# breathe. | #oath#, warm, and the streets dry for once. I'll walk the long way home. | I sat on the step for an hour in the sun. Didn't think a thing.
+b : About time. | Enjoy it. | That's rare for you.
+a : It is. The one day I don't dream of #berth#. | I will. Every step of it, dry. | It is. I'll pay for it in sleep tonight; I always do.
+
+scene those_bells
+when topic=day here.time=dawn
+does tell.complaint / react.self / assess
+a : Those early bells. #tired.capitalize# as I was, they still made me jump. | #oath#. The bells again. I'd pay a farthing a day to have them rung an hour later. | Up before the bells, out before the gulls. And still behind.
+b : They wake the whole city. | So would I. | Behind on what?
+a : The whole city's #tired# for it. | There's a bargain nobody'll take, #address#. | Everything. It's how the week goes.
+
+scene bread_dearer
+when topic=prices world.bread_price=up
+does tell.complaint / react.complaint / assess
+a : Bread's up again. Nothing coming into my house, and still it goes up. #robbery#. | They've put the loaf up. I counted twice to be sure. | Bread's dearer. #grumble#, and I'll say no more.
+b[role=merchant] #trade : It's what the flour costs. | It's not the bakers' doing. | It'll come down.
+b : It always is. | Twice? | Don't I know it.
+a@trade : I've heard that. The flour never seems to come down. | Then whose is it? I'd like to know. | It might. I'll not hold my breath for it.
+a : Up on the hill they'll not notice a farthing. Down here it's a meal. | I count everything twice. #farthing#, I count it. | Then we're two who know it, #address#.
+
+scene harder_weekly
+when topic=times
+does give.opinion / react.self / assess
+a : It gets a little harder every week, and nobody up there notices. | I'll not complain where it's heard. But a week's #money# goes less far than it did. | #vent#: there's weeks #dole# is the only bread on some tables.
+b[wealth=poor|destitute] #poor : Every week. | Not as far. | Same for me.
+b : I've heard that. | It's hard. | Same here.
+a@poor : Then you know. We'll get through it, #address#. | Not half as far. We make do. | Then we'll neither of us say so, and both get on.
+a : They'd notice if the water came up their stairs. | It is. I keep #garret# swept; it's the one thing I can keep. | It is. And I'm not the worst off on my street, #oath#.
+
+scene watch_down_here
+when topic=crime here.region=ridgemere
+does give.opinion / react.self / assess
+a : The Watch only come down our way to drag somebody off. Never to ask after anyone. | When there's a #thief# on the hill, it's the Sump gets searched. | I'll not speak against the Watch. I'll just not stand near them.
+b[role=guard] #guard : We come where we're sent. | We search where we're told. | That's fair.
+b : That's how it looks. | Always the Sump. | Wise.
+a@guard : I know. It's who sends you I'd have words with. | I know. I'd not blame the paws, only the head. | #bc_it_is# I mean nothing by it.
+a : #bc_it_is# A friendly face down here would go a long way. | It's always the Sump. Short-weighed every time. | Wise or #tired#. Some of both.
+
+scene downs_dry
+when topic=memories|land self.from=larkfield self.away=yes
+does tell.memory / react.story / assess
+a : Larkfield was chalk underfoot. It rained, and by noon you'd never know. | On the downs at home, #rain# dried by dusk. Here a wet day lasts a month. | #mum.capitalize# had a stall at the Larkfield market. I can still hear her weights on the scale.
+b[from=larkfield] #lark : Chalk and wind. You could see three days' drove from the top. | It did. Dry by teatime. | Every stall had a song to its weights.
+b : Sounds like a different world. | A month? | That's a good sound to keep.
+a@lark : Three days' drove, and every one of them dry. | Dry by teatime. I've not had a dry teatime since. | It was. I'd know her weights from anybody's.
+a : It is. That's what #berth# is for, maybe. | Some years. #bc_it_does# | It is. #oath#, I miss it.
+
+scene friend_under_roof
+when topic=friends self.friend pair.band!=housemates
+does tell.self / react.self / assess
+a : #self.friend# and I have a pot of tea most nights. It's a #good# arrangement. | #self.friend# says I worry the floods like a sore tooth. That's fair. | When I'm #tired#, #self.friend# deals the cards and doesn't ask.
+b : Sounds a comfort. | It is fair. | A good friend.
+a : It is. Quiet, both of us. We suit. | #bc_it_is# Somebody has to keep an eye on the water. | The best. I'd not trade that for any berth.
+
+story the_old_counter [concept=talk.memories self.age>=40]
+  : I had a place of my own once. A little counter, and my own jars on the shelf.
+  : It went to somebody better placed. I'll not say more than that.
+  b : That's a shame.
+  : I went back to waged work and I've not grumbled once where it's heard. #saying.capitalize#; it finds it, and you move up a floor.
+
+story the_third_step [concept=talk.memories here.region=ridgemere self.age>=30]
+  : The year the water came up to the third step, I lost my shoes, my bed and a winter's jars.
+  : I stood in it to my knees and thought: never again on the ground floor.
+  ask : Is that why you're up top?
+  b : I'd have done the same.
+  : #bc_it_is# I'll climb to bed every night for the rest of my life, and glad of it.
+
+story the_honey_lesson [concept=talk.work self.workplace]
+  : The cook who taught me took a jar of mine off the shelf and opened it in front of everyone.
+  : Sugar, she said. You can smell the lie. And she poured it out.
+  b : That's harsh.
+  : It was. And I've not put sugar in a preserve since. #honey.capitalize#, every time.
+
+opinion @1 houses against 2 : They'd sooner leave a bench empty than take on the likes of me. I've stood at enough doors to know it #farthing#.
+opinion @1 merchants against 2 : Nothing more coming into my house, and still they put the bread up. Somebody's weights are wrong.
+opinion @1 times against 2 : A bit harder every week, and nobody on the hill notices. They'd notice if the water came up their stairs.
+opinion @1 sump for 1 : It's home, and folk down here look after their own. #lowstreets.capitalize# included.
+opinion @1 watch against 1 : They only come down our way to drag somebody off. I keep out of their road.
+opinion @1 newcomers against 1 : I'd not blame them for coming. But there's only so many benches, and #pans# don't need more paws.
+line @1 greet [pair.band=strangers] : #greet#. Watch your step; the corner's wet. | #greet#. Not from round here? Stay up the hill when it rains.
+line @2 greet [self.working=yes] : #greet#. Can't stop; it'll catch. | #greet#. Mind the floor; it's sticky.
+line @3 greet [here.time=dawn] : #greet#. Up before the bells, too? | #greet#. Early, and #cold# with it.
+line @1 again.open : Back again? #greet#. | Twice in a day. I'll have to start charging.
+line @1 kin.open [pair.kin!=no] : #greet#. Have you eaten? There's bread. | There you are. Sit; I'll put the pot on and find you #grub#.
+line @1 greet.return : #greet#. Keep high. | #greet#. Quiet, mostly.
+line @2 greet.return [here.weather=rain|storm here.region=ridgemere] : #greet#. Watch #lowstreets#. | #greet#. Keep off the steps tonight.
+line @1 farewell : #farewell#. Stay up the hill. | #farewell#. Mind the drains.
+line @1 farewell.return : #farewell#. | #farewell#, and keep dry.
+line @1 react.news.new : #oath#. Well, there's a thing. | #ack#. I'd not heard.
+line @1 react.news.known : #knew#. Down here we hear it before the hill does. | I'd heard. It came down the stairs before you did.
+line @1 react.news.doubt : #doubt#. I'll believe it when I've seen it weighed. | I'd not take that at full weight, not till somebody who saw says so.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'm sorry for them. | #oath#. That's a heavy thing to come home to.
+line @1 answer.how : #tired.capitalize#, but well enough. | Tired of the #mud#. Otherwise well. | Content, near enough. #notsobad#.
+line @1 sympathise : #sympathy#. Sit a minute. | A #bad# week, that. I'll not pretend otherwise.
+line @1 decline : #hedge#. I'd help if I could, but I've nothing spare this week. | I can't, #address#. Not this week. Ask me after pay day.
+line @1 accept_decline : #no_matter#. Another time. | No harm. I'd not have managed it either, #address#.
+line @1 thank : #thanks#. | #thanks#. I'll not forget it.
+line @1 deflect_thanks : #deflect#. | It was nothing. Less than nothing.
+line @1 preclose : Well. #preclose#. | I'll let you go. The stairs won't climb themselves.
+line @1 warn [here.weather=rain|storm here.region=ridgemere] : Don't go by #lowstreets# tonight. Go round. | #warn#: the steps at the bottom will be under by dusk.
+line @1 ack : Mm. | #ack#.
+rule @pans
+when concept=bark working=yes self.workplace
+does aside
+cooldown 6h
+say Stir, and stir, and don't let #pans# catch. | #honey.capitalize#. Never sugar. Never.
+
+rule @rising
+when concept=bark here.weather=rain|storm here.region=ridgemere
+does aside
+cooldown 6h
+say It'll be over #lowstreets# by dusk. | Up off the floor with that. The water comes in at the door.
+
+rule @flies
+when concept=bark here.season=summer
+does aside
+cooldown 8h
+say #flies.capitalize#. Get off. Get off it. | Cover the jars. Cover them.
+
+rule @cards
+when concept=bark working=no here.time=dusk|night
+does aside
+cooldown 8h
+say Whose deal is it? #cards.capitalize#, and then bed. | One more hand. Buttons only.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. You'll want to keep up the hill round here. What is it? | #greet#. Lost? Most are, down here.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Carry something, or keep out of the wet.
+dlg @1 resident.job : I'm #self.trade_words#. #pans.capitalize# and jars, all day. | #job_busy#
+dlg @1 resident.news : Only what's coming up the drains. #news_none# | #lowstreets.capitalize# were under last week. That's my news.
+dlg @1 resident.gossip : I'll not carry that, #address#. Down here it gets back to you. | #gossip_none#
+dlg @1 resident.bye : #farewell#. Keep high. | #farewell#. Mind the steps; they're slick.
+graft resident.hub
+choice Which streets flood first? -> flood
+node flood
+say The bottom ones, then the bad drains, then whatever nobody's mended. I could draw you a map of #lowstreets#.
+mood calm
+free
+choice How do you know them all? -> flood_how
+choice Goodbye. -> bye
+node flood_how
+say Thirty years of wet shoes. #saying.capitalize#. You learn the order of it, or you learn to swim.
+choice I'll stay up the hill. -> hub
+choice Goodbye. -> bye

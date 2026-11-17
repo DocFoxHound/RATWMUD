@@ -19,7 +19,7 @@ import {awaitOutcome, outcomeWords, sureText} from '../lib/acts';
 import {isLive, worldName, dmApi, type Action, type MantleBinding, type Me, type NpcArea, type Npcs, type Target, worldLabel} from './api';
 import {CalendarPanel} from './CalendarPanel';
 import {LifePanel} from './LifePanel';
-import {DialectsPanel, FiguresPanel, VoicePanel} from './TalkPanels';
+import {DialectsPanel, FiguresPanel, MantlesPanel, VoicePanel} from './TalkPanels';
 import {MapView, type Marker, type Mode, type Overlay} from './MapView';
 import {AREA_KINDS, AreaInspector, LAYERS, RouteInspector, SpawnInspector, areaColor, idFrom, type Brush, type Layer, type SpawnDraft} from './LayerPanels';
 
@@ -362,6 +362,7 @@ export function NpcTab({me, target, suite}: {me: Me; target: Target; suite: 'atl
                     {building ? <Hint>Select an NPC on the map or in the list, or place a new one. Saving writes the NPC to {worldName(target)} and a running game server takes them over within a second; without a server, the change applies at its next start.</Hint>
                         : <Hint>Select an NPC on the map or in the list to see them, kill or revive them, or read their life. Making and changing NPCs, their routes and areas, is Atlas’s.</Hint>}
                     {!building && <CalendarPanel me={me} target={target} />}
+                    <MantlesPanel me={me} target={target} />
                     {building && <DialectsPanel me={me} target={target} />}
                     {building && <FiguresPanel me={me} target={target} />}</Overview>)}
             {layer === 'routes' && world && (routeDraft ? <><RouteInspector {...common} route={routeDraft} setRoute={setRouteDraft} world={world}

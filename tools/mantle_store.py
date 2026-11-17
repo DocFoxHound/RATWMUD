@@ -332,3 +332,65 @@ def queue(conn, kind: str, target: str, who: str) -> int | None:
             return conn.execute('SELECT dm.queue_talk_sync(%s, %s, %s)', (who[:60], kind, target)).fetchone()[0]
     except Exception:                                   # (A world before 0066, or a role without the function.)
         return None
+
+
+# ------------------------------------------------------------------ The Mantles panel's reads (doc 84 §17.10, Phase 11)
+
+def listing(conn, world_id: str) -> list[dict]:
+    """Every mantle of a world for the panel: its card's columns, its status (worn by whom; resting since; spare;
+    draft; retired) worked out from the bindings (§9.2), its item count and when it last changed."""
+    cols = ('id', 'dialect', 'tier', 'state', 'revision', 'title', 'written_for', 'written_by', 'updated_at')
+    items = dict(conn.execute('SELECT mantle_id, count(*) FROM live.mantle_lines WHERE world_id = %s GROUP BY mantle_id',
+                              (world_id,)).fetchall())
+    worn, rested = {}, {}
+    for npc, mid, released, name in conn.execute(
+            'SELECT v.npc_id, v.mantle_id, v.released_day, n.name FROM live.npc_voice v JOIN live.npcs n ON n.world_id = v.world_id '
+            'AND n.id = v.npc_id WHERE v.world_id = %s AND v.mantle_id IS NOT NULL', (world_id,)).fetchall():
+        if released is None:
+            worn[mid] = {'npc': npc, 'name': name}
+        elif released > rested.get(mid, {}).get('since', -1):
+            rested[mid] = {'npc': npc, 'name': name, 'since': released}
+    out = []
+    for r in conn.execute(f"SELECT {', '.join(cols)} FROM live.mantles WHERE world_id = %s ORDER BY dialect, id", (world_id,)).fetchall():
+        m = dict(zip(cols, r))
+        m['updated_at'] = m['updated_at'].isoformat() if m['updated_at'] else None
+        m['items'] = items.get(m['id'], 0)
+        if m['state'] != 'ready':
+            m['status'] = m['state']
+        elif m['id'] in worn:
+            m['status'], m['wearer'] = 'worn', worn[m['id']]
+        elif m['id'] in rested:
+            m['status'], m['last_wearer'] = 'resting', rested[m['id']]
+        else:
+            m['status'] = 'spare'
+        out.append(m)
+    return out
+
+
+def history(conn, world_id: str, mantle_id: str, limit: int = 80) -> list[dict]:
+    """A mantle's changes, newest first: who, when, from what, and the item's text before and after."""
+    out = []
+    for seq, key, rev, action, before, after, source, account, note, at in conn.execute(
+            'SELECT seq, key, revision, action, before, after, source, account, note, at FROM live.mantle_history WHERE world_id = %s '
+            'AND mantle_id = %s ORDER BY seq DESC LIMIT %s', (world_id, mantle_id, limit)).fetchall():
+        out.append({'seq': seq, 'key': key, 'revision': rev, 'action': action, 'source': source, 'account': account, 'note': note,
+                    'at': at.isoformat(), 'before': (before or {}).get('body') if key else None,
+                    'after': (after or {}).get('body') if key else None})
+    return out
+
+
+def at_revision(conn, world_id: str, mantle_id: str, revision: int) -> T.Mantle:
+    """The mantle as it was at a revision, replayed from its history (§17.10's revert: saving it is a new revision)."""
+    card, items = None, {}
+    for key, rev, action, after in conn.execute(
+            'SELECT key, revision, action, after FROM live.mantle_history WHERE world_id = %s AND mantle_id = %s AND revision <= %s '
+            'ORDER BY seq', (world_id, mantle_id, revision)).fetchall():
+        if key == '':
+            card = None if action == 'delete' else after
+        elif action == 'delete':
+            items.pop(key, None)
+        else:
+            items[key] = after
+    if card is None:
+        raise StoreError([f'{mantle_id}: no revision {revision} in its history'])
+    return T.read(T.write(T.Mantle.from_columns(card, list(items.values()))), f'{mantle_id}@{revision}')

@@ -2290,6 +2290,64 @@ static bool wrongHour(const std::string& text, const Query& q)
     return false;
 }
 
+namespace
+{
+// Lower-case words (letters, apostrophes, hyphens), one space apart: how a phrase is matched in a text.
+std::string phraseWords(const std::string& t)
+{
+    std::string out;
+    bool space = true;
+    for (const char ch : t)
+    {
+        const auto c = static_cast<unsigned char>(ch);
+        if (std::isalpha(c) || ch == '\'' || ch == '-')
+            out += static_cast<char>(std::tolower(c)), space = false;
+        else if (!space)
+            out += ' ', space = true;
+    }
+    while (!out.empty() && out.back() == ' ')
+        out.pop_back();
+    return out;
+}
+}
+
+const std::vector<std::string>& Library::dialectWords(const std::string& dialect) const
+{
+    // (Per thread and per library, built again when the grammars change: a dialect saved in Atlas.)
+    thread_local const Library* lib = nullptr;
+    thread_local std::size_t sig = 0;
+    thread_local std::map<std::string, std::vector<std::string>> cache;
+    std::size_t now = grammars_.size();
+    for (const auto& [n, g] : grammars_)
+        now = now * 31 + g.size() + n.size();
+    if (lib != this || sig != now)
+        cache.clear(), lib = this, sig = now;
+    if (const auto c = cache.find(dialect); c != cache.end())
+        return c->second;
+    std::map<std::string, std::set<std::string>> said;      // phrase -> the grammars that say it
+    for (const auto& [gname, g] : grammars_)
+        for (const auto& [symbol, s] : g)
+            for (const auto& e : s.entries)
+                for (const auto& a : e.alts)
+                    if (a.text.find('#') == std::string::npos)
+                        if (const auto p = phraseWords(a.text); p.size() >= 3)
+                            said[p].insert(gname);
+    auto& out = cache[dialect];
+    for (const auto& [p, gs] : said)
+        if (gs.size() == 1 && *gs.begin() == dialect && (p.find(' ') != std::string::npos || p.find('-') != std::string::npos))
+            out.push_back(p);
+    return out;
+}
+
+bool Library::saysDialect(const std::string& dialect, const std::string& text) const
+{
+    const auto words = " " + phraseWords(text) + " ";
+    for (const auto& p : dialectWords(dialect))
+        if (words.find(" " + p + " ") != std::string::npos)
+            return true;
+    return false;
+}
+
 bool Library::expandSymbol(const std::string& name, Expansion& x, int depth, std::string& out) const
 {
     if (depth > DeepestSymbol)
@@ -2321,6 +2379,13 @@ bool Library::expandSymbol(const std::string& name, Expansion& x, int depth, std
             continue;
         // (A mantle's words are its wearer's whatever their accent; its .broad words for a broad one: doc 84 Phase 9.)
         const bool worn = layer.rfind("m_", 0) == 0;
+        // (Doc 84 §12.3.5, Phase 11: a mantle lent from a neighbouring pool, worn by a wolf of another dialect, keeps its
+        // own words but those that are its dialect's: a Saltwell pup in a Southmeadow mantle doesn't say the downs' words.)
+        std::string lent;
+        if (worn)
+            if (const auto o = owned_.find("m:" + layer.substr(2)); o != owned_.end() && o->second->card &&
+                o->second->card->dialect != "plain" && o->second->card->dialect != dialect)
+                lent = o->second->card->dialect;
         std::vector<const Symbol*> symbols;
         if (const auto s = g->find(name); s != g->end())
             symbols.push_back(&s->second);
@@ -2351,7 +2416,7 @@ bool Library::expandSymbol(const std::string& name, Expansion& x, int depth, std
                 if (e.score == best && holdsAll(e))
                 {
                     for (const auto& a : e.alts)
-                        if (!wrongHour(a.text, x.q))
+                        if (!wrongHour(a.text, x.q) && (lent.empty() || !saysDialect(lent, a.text)))
                             alts.push_back(&a), altLayer.push_back(&layer), ++added;
                     adds = adds && e.add;
                 }
@@ -2462,7 +2527,22 @@ bool Library::expandInto(const std::string& text, Expansion& x, int depth, std::
                 value = pronoun(ref.parts[1], sex ? *sex : std::string());
             }
             else if (const auto* v = fact(ns, ref.parts[1], {}, x.q, x.speaker))
+            {
                 value = *v;
+                // (Doc 84 Phase 11: one's people by name, never to that very one's face. "#self.boss# counts every cup"
+                // said to the boss, "I can trust #self.hand#" to the hand: the line isn't said to them. The pilot's
+                // mantles brought it out, T3's listener_third.)
+                static const std::set<std::string> People{"spouse", "child", "mother", "father", "neighbour", "friend",
+                                                          "rival", "boss", "hand", "priest", "shopkeeper", "leader"};
+                if (People.count(ref.parts[1]) && !x.q.alone)
+                {
+                    const int whose = ns == Ns::A ? 0 : ns == Ns::B ? 1 : ns == Ns::Self ? x.speaker : 1 - x.speaker;
+                    const auto& them = whose == 0 ? x.q.b : x.q.a;
+                    const auto name = them.facts.find("name");
+                    if (name != them.facts.end() && !name->second.empty() && name->second == value)
+                        return false;
+                }
+            }
             else if (ref.parts[1] == "called" && !expandSymbol("address", x, depth + 1, value))
                 return false;                       // (What one calls a stranger: their #address#. Doc 84 §11.)
         }
@@ -5744,9 +5824,9 @@ std::string jobCategory(const std::string& title, const std::string& label, cons
         {"innkeeper", {"inn", "innkeep*", "tavern*", "taproom*", "barkeep*"}},
         {"cook", {"cook*", "kitchen*"}},
         {"farmer", {"farm*", "field", "plough*", "harvest*", "orchard*", "grain", "miller*", "mill", "salt", "salter*", "vine*", "vineyard*", "bee", "hive*"}},
-        {"herder", {"shepherd*", "drover*", "herd*", "stable*", "sheep", "cattle", "pig", "rabbit", "goat", "milk*", "dairy*"}},
+        {"herder", {"shepherd*", "drover*", "herd*", "stable*", "sheep", "cattle", "pig", "rabbit", "goat", "milk*", "dairy*", "warren*"}},
         {"fisher", {"fish*", "net", "eel*", "boat", "trapper*", "smokehouse*"}},
-        {"sailor", {"sail*", "ship", "harbour*", "dock*", "wharf*", "quay*", "pier", "voyage*"}},
+        {"sailor", {"sail*", "ship", "harbour*", "dock*", "wharf*", "quay*", "pier", "voyage*", "skipper*", "deckhand*", "boatm*"}},
         {"miner", {"mine", "miner*", "ore", "quarr*", "pit", "charcoal*", "peat", "stone", "clay"}},
         {"healer", {"heal*", "bonesetter*", "physician*", "apothecar*", "herbalist*", "infirmar*", "mending", "sick", "phial*"}},
         {"priest", {"priest*", "chapel*", "shrine*", "cathedral*", "acolyte*", "clergy", "saint*", "sermon*"}},

@@ -1,0 +1,425 @@
+# oh101, the knife among the greens (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle oh101
+revision 1
+state ready
+dialect oakhaven
+accent light broad
+tier full
+written_for rm_agnes_millford
+written_by claude-p11-pilot
+title the knife among the greens
+fits stage=adult|old
+prefers role=merchant
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk carries_a_wet_stone_whetting_knife_everywhere
+likes pickled_herring singing festival_bells first_warm_day
+dislikes drizzle early_bells
+fears being_cornered
+hopes a_counter_kept_in_the_family
+topics work +0.3 food +0.3 pastimes +0.3 dreams +0.3 weather +0.2 festival +0.2 player +0.2 gossip -0.4
+styles comfort=practical gossip=reluctant refuse=soft tease=none
+marks oath saying
+persona #self.first# keeps a greens stall: quiet, warm and open-pawed to a fault, half her mind on far roads, and never without her whetting knife and its wet-stone.
+
+words
+oath! = Leaf and whetstone | By the green and the grey
+saying! = A kind edge is a kept edge | Give a leaf away and the tree's no poorer
+whet = my whetting knife | the little knife at my belt
+stone = the wet-stone | my whetstone
+greens = cress and chard | kale and spring onions | the leaf-greens
+herring = pickled herring | a jar of herring in brine
+bells = the feast bells | bells on a festival morning
+drizzle = a drizzle that can't make up its mind | that thin, dithering drip
+song = a good song with friends | a song round a full table
+warmday = the first warm day of spring | the first morning you can leave a shawl off
+road = some far road | the road out past the last hill
+wood = the old wood | the oaks at the end of our lane
+factor = the House factor | the factor with the ledger
+moon = the new moon | the turn of the moon
+sprig = sprig | my sprig
+leek = a bunch of leeks | a fistful of chard
+
+grown
+scene knife_keen
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail / assess
+a : Never without #whet#. I'd sooner go out without my shawl. | Somebody asked me why I carry #whet#, and I'd no good answer. | I gave #stone# a turn before I'd even had my tea.
+b : What do you cut with it? | And what did you tell them? | Is it not sharp enough yet?
+a : Stems, string, the odd apple. Mostly I just keep it keen on #stone#. | That it's #very# good company and asks nothing back. | #oath#, it was sharp a year ago. I keep it so; that's all.
+b : Fair enough. | Fair answer. | Sounds like a habit.
+
+scene knife_kept
+when topic=smalltalk|memories pair.band=friends|family|housemates self.away=yes
+does confide / react.self / tell.feeling
+a : You asked once why I keep #whet#. #gran.capitalize# put it in my paw the day I left. | #vent#: the knife's not for cutting. It's for holding when I'm uneasy. | You'll not laugh. I keep #stone# on the shelf by my head at night.
+b : Then it's more than a knife. | I'd guessed. | I'd not laugh.
+a : #bc_it_is# The last thing of hers I've got. | So now you know what my paw's doing under the counter. | No. You're the one who wouldn't.
+
+scene first_warm
+when topic=weather|season here.season=spring here.weather=clear
+does tell.feeling / react.self / assess
+a : #warmday.capitalize#, and my sleeves are rolled already. | Feel that? #warmday.capitalize#. I could sing. | The sun's on the stalls at last. The greens lift their heads, and #oath#, so do I.
+b : It won't last the week. | Go on, then. | Lovely, isn't it?
+a : Then I'll have it while it's here, #oath#. | Not before noon. My voice wakes #slow#. | #bc_lovely# A whole winter for one morning like this.
+
+scene drizzle_day
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : #drizzle.capitalize#. It wets the greens and never washes them. | Look at it. Not rain, not dry. #drizzle.capitalize#. | I can stand a proper downpour. It's #drizzle# that gets under everything.
+b : The city's made of it. | It'll clear by dusk. | It's in my fur already.
+a : So it is. Even #greens# look sorry for themselves. | Or it won't. It never says which. | Come in out of it. There's room enough by me.
+
+scene grey_lid
+when topic=weather|day here.weather=overcast|fog here.region=ridgemere
+does tell.self / react.self / assess
+a : A grey day. It sits on the roofs like a lid on a pot. | Grey all over the hill. It makes me dreamy, #oath#. | I can't see the Heights for the grey. They might have drifted off.
+b : Heavy, isn't it? | Me too. Half asleep. | Somebody would fetch them back.
+a : #bc_it_is# A day for a warm #supper# and an early bed. | Then we'll dream together and get nothing done. | #bc_probably# They'd want their dinner.
+
+scene dawn_carts
+when topic=day|work here.time=dawn self.role=merchant
+does tell.self / react.self / assess
+a : Up before the bells to get the best of #greens# off the carts. | I've had the stall up since first light, and #stone# out twice. | The carts come in at dawn, and I'm there with a basket before the gulls.
+b : You've the better of me. I'm barely awake. | Twice? Is the knife that blunt? | Before the gulls is early.
+a : Come by at noon, then, and you'll find me nodding. | No. It's my paws that want something to do. | It's the only hour the leaves are #very# fresh.
+
+scene dusk_packing
+when topic=day here.time=dusk self.role=merchant
+does tell.self / react.self / assess
+a : Packing up. Whatever's wilted goes to whoever's #hungry# on my way home. | I sold the cress and kept the chard. The chard can come home with me. | The light's going. I'll give #stone# one turn and call it a day.
+b[wealth=poor|destitute] #poor : I'll walk your way, then. | Chard's a fine supper. | Any leaves going spare?
+b : Kind of you. | Chard for supper, then? | One turn more than most would.
+a@poor : Do. There's #leek# with nobody's name on it yet. | With an onion and a knob of butter it's #good#. | Take the lot. I'd only carry them up the stair.
+a : Leaves don't keep, and nobody should go #hungry# over a leaf. | With an onion and a knob of butter it's #good#. | It's the habit that keeps, more than the edge.
+
+scene greens_folk
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail / assess
+a : Folk walk past #greens# like they're weeds. Then they buy a cabbage. | Cooks from the Heights come down for my cress. They never say who for. | Kale's in, and it's #good#. The cold sweetened it.
+b : What's wrong with a cabbage? | Who for, do you think? | Sweeter than in spring?
+a : Nothing. It's only not a leaf you dream over. | For #toffs#, I'd guess. I don't ask; I wrap. | #very.capitalize# sweet. Try a leaf raw.
+b : Ha. | Wise. | I'll take your word.
+
+scene travellers_trade
+when topic=work|newcomer|player self.role=merchant here.region=ridgemere
+does tell.self / react.self / assess
+a : Half who stop at my stall are off a ship or a wagon. I get the news before the criers do. | Strangers ask me the way, and half of them buy #leek# for my trouble. | I like the travellers. They look at #greens# like they've not seen a leaf in a month.
+b : News and custom both. | A fair trade. | Some haven't.
+a : #bc_it_is# Better than hearing it third-hand. | I'll take it. Directions are free; leeks aren't. | Then they get the best of #greens#, and they come back.
+
+scene counter_kept
+when topic=work|dreams self.role=merchant self.parent=no
+does tell.plan / ask.plan / answer.plan
+a : I mean to keep this stall in the family. Whoever the family turns out to be. | The stall came to me when it came free, and I'll not let it go back. | #someday.capitalize# there'll be a #child# behind this counter, cutting stems with #whet#.
+b : No family yet, then? | Good on you. | Yours?
+a : Not yet. There's time, and the stall to keep warm till then. | #bc_thank_you# It's not much of a counter, but it's mine to keep. | Somebody's. I'm not fussy whose, so long as their heart's #good#.
+
+scene herring_love
+when topic=food
+does tell.self / react.self / assess
+a : I'd trade a week of greens for #herring#. Odd thing for me to say. | There's #herring# on my shelf, and I count the pieces. | Bread, butter and #herring#. Nothing better at the end of a long day.
+b : Each to their own. | Counting them? | I'd want an onion with it.
+a : #very.capitalize# sour, and salt, and soft. I could eat it every day. | So they last. It keeps better than leaves do. | An onion, then. I'll grant you an onion.
+
+scene leaf_a_day
+when topic=food|health
+does give.advice / react.self / assess
+a : Wilted chard and an egg. It'll set you right when #remedy# won't. | When I'm #tired#, I eat something green, and it works more than it doesn't. | Nettle tops in spring, kale in winter. A body wants a leaf a day.
+b : I'll try it. | Does it, now? | Even in winter?
+a : Do. And put an onion in. | #bc_mostly# The rest is sleep. | Kale's sweetest after a frost. Ask any #gran#.
+
+scene sing_small
+when topic=pastimes
+does tell.self / react.self / assess
+a : What I'd give for #song# tonight. It's been too long. | I sing when the street's quiet. Only to myself. | There's a song my #gran# sang. I've the tune and only half the words.
+b : Then let's have one. | Sing louder. | Hum it, then.
+a : You start. My voice warms up #slow#. | Not where folk can hear. I sing #very# small. | Mm-mm... no, it's gone again. It'll come back #someday#.
+
+scene sing_after_supper
+when topic=pastimes|home pair.band=housemates|friends|family
+does invite / accept_invite / assess
+a : Come and sit after #supper#. I'll sing if you start. | I want #song# tonight. Will you sit and hear one? | Let's have the old ones by the fire tonight, the ones everybody knows.
+b : I'll start, but I won't finish. | Gladly. | If you'll do the high bits.
+a : That's all I need. The rest follows. | Good. Bring #drink#. | I'll do the high bits. You do the stamping. #oath#, it'll be loud.
+
+scene feast_bells
+when topic=festival
+does tell.feeling / react.self / assess
+a : #bells.capitalize#. I'd stand in the cold all morning for them. | I don't mind any bell but the early one. #bells.capitalize# I'd have every day. | The feast bells and the work bells are the same bells. I don't know how they ring so different.
+b : They're a fine noise. | Early bells are cruel. | The ringers' mood, maybe.
+a : #oath#, they make me want to give everything away. | Cruel's the word. #bad.capitalize#, and before the sun. | Maybe. On a feast morning everyone pulls a little harder.
+
+scene far_road
+when topic=dreams|travel
+does confide / react.self / assess
+a : Some nights I lie awake and walk #road# in my head. | I'll go somewhere #someday#. I don't know where. It doesn't matter where. | I've a map in my head of a place I've never been. Hills, a river, a market by a bridge.
+b : Where does it go? | It matters a bit. | Sounds like here.
+a : #far.capitalize#, and nowhere I've a name for. I always wake before I get there. | Maybe. But not much. #saying#, and a road's the same. | #bc_ha# So it does, now you say it.
+
+scene factor_moon
+when topic=dreams|prices self.owes=yes
+does tell.worry / sympathise / assess
+a : I owe #factor#, and #moon# is coming. I dream of roads and wake up counting. | There's a sum I've to find by #moon#. I'll find it. I keep telling myself I'll find it. | #factor.capitalize# came by again, all smiles. I gave #stone# a long turn after.
+b : That's a heavy thing to carry. | You will. | Smiles cost them nothing.
+a : #bc_it_is# But I'll carry it a bit further yet. | #bc_i_hope_so# | Nothing at all. I'll pay, and I'll not smile back.
+
+scene oaks_at_home
+when topic=memories|travel self.from=oakhaven self.away=yes
+does tell.memory / react.story / assess
+a : At home the oaks met over the lane, and it was green all summer underneath. | I miss #wood#. You could walk an hour and hear nothing but leaves. | My #gran# kept greens under the oaks. Nothing grew fast, and everything grew.
+b[from=oakhaven] #oak : Good shade, that lane. I mind it well. | The wood keeps you, mm. | Slow grows the oak, she'd have said.
+b : Sounds a long way from here. | Do you go back? | That sounds lovely.
+a@oak : Then you know. Nothing here grows shade like that. | It does. I feel it in my paws still. | She did say it. Every day of her life.
+a : #far.capitalize#. Further every year. | Not yet. #someday.capitalize#, when the stall can spare me. | It was. Here it's all stone and #rain#.
+
+scene talk_slow
+when topic=accent self.from=oakhaven
+does tell.self / react.self / assess
+a : Folk here say I talk slow. I say I talk once. | I've lost half my Oakhaven words. The other half come out when I'm #tired#. | My #mum# would say I sound like a city wolf now. I don't hear it.
+b : There's sense in that. | I hear them now. | You don't, much.
+a : It saves breath for #song#. | #bc_i_know# You've caught me at the end of a day. | Good. I'd sooner keep a bit of #wood# in me.
+
+scene smoke_elbows
+when topic=smalltalk|land here.region=ridgemere self.away=yes
+does give.opinion / agree / assess
+a : All smoke and elbows, this city. I couldn't tell you who lives three doors down. | I know every face at the market and not one name on my own street. | The smoke from the works gets in #greens#. I wash them twice.
+b[from=ridgemere] #city : It grows on you. | Names come slow here. | Twice is wise.
+b : True enough. | It's the same everywhere. | Smoke gets in everything.
+a@city : It's grown on me. Like moss on a north wall. | Slow is fine. I've time, #oath#. | It's the only way they'll sell.
+a : At home you knew the whole lane by their walk. | Not where I grew up. You'd know them by their cough. | It does. My shawl, my fur, my #supper#.
+
+scene first_face
+when topic=friends self.friend self.away=yes
+does tell.self / react.self / assess
+a : #self.friend# is the first face I look for in a morning. | I'd not have stuck my first winter here but for #self.friend#. | #self.friend# and I don't talk much. We sit, and it's enough.
+b : That's worth a lot. | Good friends are rare. | Some of the best are like that.
+a : More than the stall, and I'd not sell the stall for a sack of #money#. | #bc_they_are# I'd give that one my last leaf. | #saying.capitalize#.
+
+scene step_greens
+when topic=friends|home self.neighbour
+does tell.self / react.self / assess
+a : I leave #leek# on #self.neighbour#'s step when there's spare. Nobody's said thank you, and nobody's needed to. | #self.neighbour# and I nod on the stair. That's the city for you. | I'd like to know #self.neighbour# better. I've not found the way in.
+b : That's neighbourly. | A nod's something. | It takes time.
+a : It's how my #gran# did it. You fed the lane. | It's a start. I'll get a cup of tea out of it #someday#. | #bc_it_does# Slow, like everything worth the wait.
+
+scene house_noise
+when topic=home
+does tell.self / react.self / assess
+a : I like a house with noise in it. Somebody's always singing or cooking. | My room has one window. I put a pot of cress on the sill so it feels like mine. | My room's small, but it's #snug#, and the stair creaks friendly.
+b : Better than quiet. | Nice touch. | Friendly's good.
+a : Quiet makes me dream of #road#. | It is. The cress likes the light, and so do I. | It tells me who's coming home late. #bc_every_night#
+
+scene candle_feasts
+when topic=faith
+does give.opinion / react.self / assess
+a : I light a candle for the Bright One at the feasts and leave it at that. The Bright One knows where I am. | The Dark One gets no thought from me. I'd not give it the satisfaction. | I say a word to the Bright One over the first #greens# of spring. Seems only fair.
+b[job=priest] #priest : Come more often than the feasts. | Wise. | That's a fine prayer.
+b : That's most of us. | Nor me. | Fair's fair.
+a@priest : I'll try. The early bells make it hard. | Wise or stubborn. One of the two. | It's the only one I know by heart, #oath#.
+a : #bc_it_is# I'd not trouble the Bright One with more. | Some folk can't stop talking of it. I'd sooner hum. | #bc_fair# A leaf for a blessing.
+
+scene late_carts
+when topic=prices|caravan self.role=merchant here.region=ridgemere
+does tell.complaint / react.complaint / assess
+a : The carts from the farms are late more weeks than not. Late leaves are tired leaves, and I pay full for them. | Every load that's late, I lose a morning. | The roads want mending and nobody's mending them. #greens.capitalize# don't wait on roads.
+b[job=carter] #cart : Try pulling one through that mud. | It's the road, not us. | Tell the Council.
+b : That's a poor business. | They always are. | True.
+a@cart : I know it's not you. I'd only like my mornings back. | I know. I'd not blame the wolf in the shafts. | I would, if they'd listen to a greengrocer.
+a : #bc_it_is# And I'll not put my prices up on my regulars for it. | So I buy more and lose more. #bad.capitalize#, it is. | Nobody up the hill eats wilted kale, so nobody hurries.
+
+scene bread_roof
+when topic=times
+does give.opinion / react.self / assess
+a : There's bread on my table and a roof over it. I'll not grumble at the times. | Folk say it's hard. It's hard for some. I try to make it less hard, #leek# at a time. | The times are what they are. I'd sooner talk of something that grows.
+b[wealth=poor|destitute] #poor : Easy said with bread on the table. | Some of us notice it. | Lucky you.
+b : Fair enough. | That's kind. | Ha. Go on, then.
+a@poor : It is. Come and find me at dusk; there's always spare leaves. | I know you do. I'll not pretend otherwise. | I am. I know it, #oath#.
+a : Count what you've got, I say, and give a bit of it away. | It's not kind. It's only #greens#. | #leek.capitalize#, then. Something's always growing.
+
+scene room_enough
+when topic=newcomer self.away=yes
+does give.opinion / react.self / assess
+a : There's room here for anybody who'll pull their weight. I came in with a bag and a knife myself. | New faces at the market? I give them the best of the basket the first time, so they'll come back. | Somebody new on the street? I'll take round #leek#.
+b : Not everyone's as kind. | Clever. | They'll be glad of it.
+a : #bc_i_know# All the more reason. | It's not clever. It's only how it's done where I'm from. | They mostly are. And if not, I've lost #leek#.
+
+scene let_it_pass
+when topic=gossip
+does decline / react.self / assess
+a : Don't ask me what folk are saying. I hear it all at the market and let it go past like carts. | #hedge#. I'd sooner not pass that on. It's not mine to pass. | I heard something at the market, and I've decided I didn't.
+b : Not even a little? | Fair. | Wise.
+a : Not a leaf of it. Ask me about kale. | #bc_thank_you# Some things wilt if you handle them. | Wise or #tired#. I'll take either.
+
+scene light_paws
+when topic=crime here.region=ridgemere
+does give.opinion / react.self / assess
+a : The Watch keep the light paws off the market. I'll give them #leek# when they pass. | I keep #whet# at my belt and my eyes open. Between that and the Watch, nobody's had a leaf off me yet. | When there's thieving about, I stand a bit nearer the till.
+b : They earn it. | Lucky. | Sensible.
+a : Some of them. The ones who say good morning. | Lucky, and a keen edge on #whet#. | It's a habit more than a fear, #oath#.
+
+scene year_turning
+when topic=season|weather here.season=autumn
+does tell.self / react.self / assess
+a : Autumn's my season for leaves. Kale, leeks, the last chard. #greens.capitalize# never look so fine. | The year's turning. I can smell it in the leeks. | Leaves falling in the street and leaves on my stall. Different sorts.
+b : Lovely. | You can smell that? | One kind sells better.
+a : #bc_it_is# Come before the frost and I'll fill your basket. | After enough years, you can, #oath#. | The kind I can't sweep, mm.
+
+scene gulls_owed
+when topic=animals here.region=ridgemere
+does tell.self / react.self / assess
+a : The gulls have learned which stall's soft. They watch me like I owe them. | There's a rat under the market boards that takes one cress leaf a day. I've stopped minding. | If a gull wants a lettuce that badly, let it have one.
+b : They watch everyone like that. | You're too soft. | Generous to a gull, now.
+a : Maybe I do owe them. I fed the first one. | It's one leaf, and it's #hungry# too. | It's only a lettuce. #saying.capitalize#.
+
+story the_knife [concept=talk.memories self.away=yes]
+  : #gran.capitalize# put #whet# in my paw the morning I left home. A wolf alone wants an edge, she said.
+  : I've used it on string and stems and apples. Never on anyone.
+  ask : Would you, if it came to it?
+  b[old] : Better you never find out.
+  b : I'd hope not.
+  : I don't know. That's why I keep it keen, #oath#.
+
+story cloth_on_the_cobbles [concept=talk.memories self.away=yes self.age>=25]
+  : My first winter here I sold leeks off a cloth on the cobbles. No stall, no awning; me and the cold.
+  : There was an old customer bought the same two leeks every day and never once haggled.
+  b : Kind of them.
+  : When the stall came free, that was who I thought of first. Anyone who comes like that gets #leek# over.
+
+story forgot_the_words [concept=talk.memories self.from=oakhaven]
+  : At my first feast at home they stood me on a cart to sing, and I forgot every word.
+  : I stood there with #bells# going, my mouth open like a landed fish.
+  ask : What did you do?
+  b : I'd have run off.
+  : The whole square sang it for me. That's what a town is, #oath#.
+
+story bag_under_the_bed [concept=talk.dreams]
+  : I nearly went once. Had a bag packed and a seat on a wagon going east.
+  : Got as far as the gate. Then I thought of who'd sell leeks to the old ones on my street.
+  b : So you came back.
+  : I came back. #road.capitalize#'s still there. So's the bag, under my bed.
+
+story the_black_frost [concept=talk.work self.role=merchant]
+  : One spring a late frost took every leaf I'd bought. Black by noon.
+  : I couldn't sell them, so I made a pot of soup the size of a barrel and fed the whole row.
+  b[role=merchant] : I'd have cried.
+  b : What did that cost you?
+  : A month's #money#. And the row's bought from me since without haggling once.
+
+opinion @1 city against 1 : All smoke and elbows. I've the market by heart and not three names on my own street.
+opinion @1 strangers for 2 : Travellers are half my trade and all my news. They get the best of #greens#, every time.
+opinion @1 newcomers for 2 : There's room for anyone who'll pull their weight. Somebody made room for me once, #oath#.
+opinion @1 road against 1 : Every late cart costs me a morning of wilted leaves, and they're later every month.
+opinion @1 houses mixed 1 : They keep the works going, and the works keep the rest of us. I'd only like their factors to smile less.
+opinion @1 merchants for 1 : I keep a counter myself. I know what a wagon costs, and a wet week, and I'd not grudge any trader a #good# margin.
+opinion @1 watch for 1 : They keep the light paws off the market. The ones who nod good day get #leek# from me.
+opinion @1 dole for 1 : Nobody should go to bed hungry in a city with this many leaves going spare at dusk.
+opinion @1 festivals for 2 : #bells.capitalize# are the best sound there is. I'd have a feast every month if I could.
+line @1 greet [pair.band=strangers] : #greet#. You've a lost look. Can I point you somewhere? | #greet#. Mind the puddle there; it's deeper than it looks.
+line @2 greet [self.working=yes self.role=merchant] : #greet#. Have a look; nobody's hurried at my stall. | #greet#. #greens.capitalize#, fresh off the carts.
+line @3 greet [here.time=dawn] : #greet#. Up with the carts, are you? | #greet#. Early, for both of us.
+line @4 greet [here.time=dusk] : #greet#. The light's going, and so am I, nearly. | #greet#. A long day, and a soft end to it.
+line @5 greet [pair.band=friends] : There you are. #greet#. I'd hoped you'd come by. | #greet#, #sprig#. Sit a minute.
+line @6 greet [here.weather=rain here.region=ridgemere] : #greet#. Get in out of #drizzle#. | #greet#. Shake off; there's room by me.
+line @1 kin.open [pair.kin!=no] : #greet#. Have you eaten? You've not, have you. | Come here. #greet#. How are they all?
+line @1 again.open : Twice in a day. #welcome_back#. | You again. I'm glad of it, #sprig#.
+line @1 greet.return : #greet#. And to you, gently. | #greet#. Quiet day?
+line @2 greet.return [pair.band=strangers self.away=yes] : #greet#. Not from round here either? | #greet#. You're welcome by me.
+line @3 greet.return [here.time=dawn] : #greet#. The carts are in. | #greet#. The early bells woke you too?
+line @1 farewell : #farewell#. Go gently. | #farewell#. Mind the cobbles; they're slick.
+line @1 farewell.return : #farewell#. | #farewell#, and come back.
+line @1 react.news.new : #oath#. I'd not heard that. | #marvel#. Truly?
+line @1 react.news.known : #knew#. It's been round the market twice. | I'd heard. It came past me yesterday.
+line @1 react.news.doubt : #doubt#. I'll wait till I hear it from somebody who saw. | I'd not lean on that till it's been said twice by sober folk.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. I'm sorry for them. | #oath#. That's hard news to carry home.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. I'm glad. | Oh, that's #good#. I'll sing on the way home.
+line @1 answer.how : Content, mostly. #stone.capitalize# and I have had a quiet day. | Well enough. #slow.capitalize#, and dreaming more than working. | #fine#, and glad of a face.
+line @1 answer.how.busy [self.working=yes] : Run off my paws. Everybody wants leeks at once. | #busy.capitalize#. Ask me again at dusk.
+line @1 sympathise : #sympathy#. Come and sit, and have some bread. | That's #bad#. If there's a thing I can do, say it.
+line @1 decline : I'd like to, but I can't spare it today. Ask me again at the week's end. | #hedge#. Not this time; I've promised it elsewhere already.
+line @1 accept_decline : #no_matter#. Another day. | Then another time. No harm done.
+line @1 thank : #thanks#. That's a kindness. | #thanks#. I'll remember it.
+line @1 deflect_thanks : It was only a few leaves. | #deflect#. Anyone would.
+line @1 preclose : Well. I'll let you go, #address#. | #preclose#. I've a pot to put on.
+line @2 preclose [self.working=yes self.role=merchant] : Well. The stall wants me. | #excuse#.
+line @1 tease.return : Go on with you, #address#. | You've caught me dreaming again, that's all.
+line @1 ack : Mm. | #ack#.
+line @1 offer : Take #leek#. Go on. | Here, have #greens#. They'll only wilt by me.
+line @1 insist : #insist#. | No, I mean it. Take them.
+line @1 reassure : #reassure#. | It'll come right. Things mostly do, #later#.
+line @1 give.advice : #advise#: eat something green and go to bed early. | Keep your edge and your temper both. I keep mine on a whetstone.
+rule @greens
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say #greens.capitalize#, fresh, and none of it tired. | Leaves for the pot, cheap and green. | Cress, leeks, chard. Come and look, #address#.
+
+rule @whet
+when concept=bark working=no
+does aside
+cooldown 8h
+say Where's... ah. There it is. | One more turn on #stone#. Just the one.
+
+rule @hum
+when concept=bark
+does aside
+cooldown 8h
+say Mm, mm-mm... how does the next bit go. | La, la... no. That's not it either.
+
+rule @dusk_leaves
+when concept=bark here.time=dusk working=yes self.role=merchant
+does aside
+cooldown 1d
+say Last of #greens#, half off. Or free, if you're hungry. | Packing up. Anybody want #leek#?
+
+rule @drip
+when concept=bark here.weather=rain here.region=ridgemere
+does aside
+cooldown 8h
+say #drizzle.capitalize#. Make your mind up, then. | Rain or don't. One or the other, #oath#.
+
+rule @feast
+when concept=bark here.day=festival
+does aside
+cooldown 8h
+say Hark at the bells. Oh, hark at them. | #bells.capitalize#. I could stand here all day.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. You've a new face. Can I help you find something? | #greet#. Not lost, are you?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit a minute, if you've one spare.
+dlg @3 resident.hub [topic.meeting=returning] : #welcome_back#, #topic.player#. I'd hoped you'd come by again.
+dlg @4 resident.hub [pair.disposition=warm|fond] : There you are. #greet#. What can I do for you?
+dlg @5 resident.hub [pair.disposition=hostile|wary] : #greet#. Say what you want, and gently. I've a knife at my belt and I'd sooner it stayed there.
+dlg @6 resident.hub [here.time=night] : It's late. I was dreaming on my feet. What is it?
+dlg @1 resident.job [self.role=merchant] : I keep a #self.trade_words#. #greens.capitalize#, mostly, and whatever the carts bring in good.
+dlg @1 resident.business : Steady. Leaves don't make anyone rich, but they keep #money# coming. | Steady enough. Better on a dry week.
+dlg @1 resident.news [self.role=merchant] : Only what comes past my stall, and I let most of that go by. | #news_none#
+dlg @1 resident.gossip : I don't carry tales. They wilt worse than #greens#. | #gossip_none#
+dlg @1 resident.bye : #farewell#. Go gently. | #farewell#. Come back when the herring's in.
+dlg @1 shop.greet : #greet#. #greens.capitalize#, fresh this morning. Take your time. | #greet#, #address#. Have a look; nothing here's in a hurry.
+dlg @2 shop.greet [topic.meeting=known] : #greet#, #topic.player#. I kept the best of the chard back. Looking or buying?
+dlg @1 shop.prices : Whatever came in late is dear. The rest is fair, and I'll not cheat you. | #shop_dear# Not my doing; the carts are slow.
+dlg @1 shop.bye : #farewell#. Eat them while they're crisp. | #shop_bye#
+graft @knife resident.hub
+choice Why do you always carry that knife? -> knife
+node knife
+say It was my #gran#'s. A wolf alone wants an edge, she said, and I've been a wolf alone a good while.
+mood warm
+free
+choice Have you ever used it? -> knife_used
+choice Goodbye. -> bye
+node knife_used
+say On string and stems and apples. Never on anyone, and I hope never. I keep it keen so I don't have to.
+choice That's wise. -> hub
+choice Goodbye. -> bye
+
+graft @road resident.hub
+choice You look far away. What are you thinking of? -> dream
+node dream
+say #road.capitalize#. I don't know where it goes. I walk it in my head when the street's quiet.
+mood calm
+free
+choice Will you ever take it? -> dream_go
+choice Goodbye. -> bye
+node dream_go
+say #someday.capitalize#. When the stall's in good paws and the leeks can spare me. Not yet.
+choice I hope you do. -> hub
+choice Goodbye. -> bye

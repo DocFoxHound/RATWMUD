@@ -28,6 +28,10 @@ hand-made SQL. Never for a live world (PROD's mantles come by import, §17.9): i
   python3 tools/mantle_load.py backup WORLD [--out FILE]
       Every mantle, item and history row and every binding to Saved/Backups/ (before the rollback of 0066, or any
       repair).
+  python3 tools/mantle_load.py clear-own WORLD NPC... --batch NAME
+      Phase 11 (§9.7): residents' own words, lines and persona (live.npc_voice.grammar, rules, persona: the luna tables)
+      emptied once mantles carry their voices, after a dump to Saved/Backups/ (`restore` puts them back); voice.sync each.
+  Loading is G2 --strict (Phase 11 on: the tier's size and the dialect density refused); --lenient warns them only.
   python3 tools/mantle_load.py restore FILE [--world WORLD]
       A backup's mantles, items and bindings put back (as they were; the history notes the restore).
 """
@@ -132,15 +136,16 @@ def read_files(paths: list[str], reserved_of) -> tuple[list[tuple[Path, T.Mantle
 
 def load(world: str, paths: list[str], batch: str, bind: bool = False, dry_run: bool = False, prune: bool = False,
          take_theirs: set = frozenset(), take_mine: set = frozenset(), export: bool = True, account: str = '',
-         echo=print) -> dict:
+         echo=print, strict: bool = True) -> dict:
     """The batch (steps 1-7 above). What was done: {loaded: {id: changes}, skipped, bound, backup, problems}."""
     key, conn = connect(world)
     with conn:
-        return load_into(conn, key, paths, batch, bind, dry_run, prune, take_theirs, take_mine, export, account)
+        return load_into(conn, key, paths, batch, bind, dry_run, prune, take_theirs, take_mine, export, account, strict)
 
 
 def load_into(conn, key: str, paths: list[str], batch: str, bind: bool = False, dry_run: bool = False, prune: bool = False,
-              take_theirs: set = frozenset(), take_mine: set = frozenset(), export: bool = True, account: str = '') -> dict:
+              take_theirs: set = frozenset(), take_mine: set = frozenset(), export: bool = True, account: str = '',
+              strict: bool = True) -> dict:
     """load() on an open connection (Atlas's role) to the world `key`."""
     report = {'loaded': {}, 'skipped': [], 'bound': [], 'backup': None, 'problems': []}
     world_id = S.world_id_of(conn)
@@ -172,7 +177,7 @@ def load_into(conn, key: str, paths: list[str], batch: str, bind: bool = False, 
         go.append((p, m, current[0] if current else None))
     # 1. The checks, on the batch as a whole.
     if not problems:
-        for mid, found_ in S.check([m for _, m, _ in go], conn, world_id).items():
+        for mid, found_ in S.check([m for _, m, _ in go], conn, world_id, strict=strict).items():
             problems += found_
     if problems:
         report['problems'] = problems
@@ -247,6 +252,41 @@ def check_conn(conn, key: str, export_dir: Path | None = None) -> list[str]:
     return out
 
 
+OWN = ('world_id', 'npc_id', 'grammar', 'rules', 'persona', 'written_by')
+
+
+def clear_own(world: str, npcs: list[str], batch: str) -> tuple[str, list[str]]:
+    """Phase 11 (§9.7, §17.7.2): residents' own words, lines and persona in live.npc_voice (the ten luna tables) emptied
+    once mantles carry their voices, after a dump to Saved/Backups/ that `restore` puts back. The voice rows' other
+    columns (origin, accent, quarter, traits, quirk, the binding) are untouched; the server is told (voice.sync <npc>)."""
+    key, conn = connect(world)
+    with conn:
+        return clear_own_conn(conn, key, npcs, batch)
+
+
+def clear_own_conn(conn, key: str, npcs: list[str], batch: str) -> tuple[str, list[str]]:
+    """clear_own on an open connection (Atlas's role) to the world `key`."""
+    done = []
+    if True:
+        world_id = S.world_id_of(conn)
+        path = backup_path(key, batch)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        rows = conn.execute(f'SELECT {", ".join(OWN)} FROM live.npc_voice WHERE world_id = %s AND npc_id = ANY(%s) ORDER BY npc_id',
+                            (world_id, npcs)).fetchall()
+        with path.open('w') as f:
+            for r in rows:
+                f.write(json.dumps({'table': 'live.npc_voice.own', 'row': dict(zip(OWN, r))}, sort_keys=True) + '\n')
+        with conn.transaction():
+            for r in rows:
+                row = dict(zip(OWN, r))
+                if row['grammar'] or row['rules'] or row['persona']:
+                    conn.execute("UPDATE live.npc_voice SET grammar = '', rules = '', persona = '', updated_at = now() WHERE "
+                                 'world_id = %s AND npc_id = %s', (world_id, row['npc_id']))
+                    S.queue(conn, 'voice.sync', row['npc_id'], f'mantle_load:{batch}')
+                    done.append(row['npc_id'])
+    return str(path), done
+
+
 def restore(path: str, world: str | None = None) -> int:
     lines = [json.loads(l) for l in Path(path).read_text().splitlines() if l.strip()]
     worlds = {l['row']['world_id'] for l in lines}
@@ -281,6 +321,9 @@ def restore_conn(conn, path: str) -> int:
                 conn.execute(f'INSERT INTO live.mantle_lines ({", ".join(cols)}) VALUES ({", ".join(["%s"] * len(cols))}) ON CONFLICT '
                              f'(world_id, mantle_id, key) DO UPDATE SET {", ".join(f"{c} = EXCLUDED.{c}" for c in cols if c not in ("world_id", "mantle_id", "key"))}',
                              [r[c] for c in cols])
+            elif t == 'live.npc_voice.own':
+                conn.execute('UPDATE live.npc_voice SET grammar = %s, rules = %s, persona = %s WHERE world_id = %s AND npc_id = %s',
+                             (r['grammar'], r['rules'], r['persona'], r['world_id'], r['npc_id']))
             elif t == 'live.npc_voice':
                 conn.execute('UPDATE live.npc_voice SET mantle_id = %s, bound_day = %s, bound_how = %s, released_day = %s WHERE '
                              'world_id = %s AND npc_id = %s', (r['mantle_id'], r['bound_day'], r['bound_how'], r['released_day'],
@@ -312,6 +355,16 @@ def main() -> int:
             n = dump(conn, S.world_id_of(conn), None, None, path)
         print(f'{n} rows of {key}\'s mantles, items, history and bindings in {path}')
         return 0
+    if argv[:1] == ['clear-own']:
+        ap = argparse.ArgumentParser(prog='mantle_load.py clear-own')
+        ap.add_argument('world')
+        ap.add_argument('npcs', nargs='+')
+        ap.add_argument('--batch', required=True)
+        a = ap.parse_args(argv[1:])
+        path, done = clear_own(a.world, a.npcs, a.batch)
+        print(f'backup: {path}')
+        print(f'emptied the own words, lines and persona of {len(done)}: {", ".join(done)}')
+        return 0
     if argv[:1] == ['restore']:
         ap = argparse.ArgumentParser(prog='mantle_load.py restore')
         ap.add_argument('file')
@@ -328,8 +381,10 @@ def main() -> int:
     ap.add_argument('--take-theirs')
     ap.add_argument('--take-mine')
     ap.add_argument('--no-export', action='store_true')
+    ap.add_argument('--lenient', action='store_true', help="G2 without --strict (the tier's size and the density warned)")
     a = ap.parse_args(argv)
-    report = load(a.world, a.files, a.batch, a.bind, a.dry_run, a.prune, ids(a.take_theirs), ids(a.take_mine), not a.no_export)
+    report = load(a.world, a.files, a.batch, a.bind, a.dry_run, a.prune, ids(a.take_theirs), ids(a.take_mine), not a.no_export,
+                  strict=not a.lenient)
     for p in report['problems']:
         print(p)
     for mid, done in sorted(report['loaded'].items()):

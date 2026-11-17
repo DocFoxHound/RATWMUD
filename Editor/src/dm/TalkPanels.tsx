@@ -3,7 +3,7 @@
 // and their family; the regional dialects; the figures residents know of who aren't in the game yet. Each is checked by
 // the game's own loader before it is saved (the host runs talk_check), and a running server reads it again at once.
 import {useCallback, useEffect, useState} from 'react';
-import {isLive, worldName, dmApi, type Figure, type Me, type Talk, type Target, type Voice} from './api';
+import {isLive, worldName, dmApi, type Figure, type MantleDetail, type MantleRow, type Me, type Talk, type Target, type Voice} from './api';
 
 // The values Data/Talk/facts.json allows (the host checks them again).
 const REGIONS = ['', 'ridgemere', 'frosthollow', 'coldwater', 'oakhaven', 'mirebridge', 'larkfield', 'southmeadow'];
@@ -143,5 +143,66 @@ export function FiguresPanel({me, target}: {me: Me; target: Target}) {
             <button disabled={busy || !draft.id || !draft.name} onClick={() => void run(`Save ${draft.name}`, () => dmApi.saveFigure(target, draft))}>Save</button>
             <button disabled={busy} onClick={() => setDraft(blank)}>New</button></div>}
         <p className="hint">Residents speak of a figure by role (#world.figure_ruler#…) where they're known.</p>
+    </div>;
+}
+
+/** The mantles (Docs/Design/84 §17.10, Phase 11): each wolf's way of talking, as rows in the world. A list by dialect,
+ *  tier, state and status (worn by whom, resting since when, spare), each pool's count; a mantle opened as its .mantle
+ *  text (the card, then every item with its key), saved through the game's own loader and mantle_check (problems come
+ *  back by item key), a stale revision refused; its history, and any revision taken back as a new one. A change here is
+ *  the mantle's, heard from every later wearer; one for this wolf alone is their Voice's own words and lines. */
+export function MantlesPanel({me, target}: {me: Me; target: Target}) {
+    const [rows, setRows] = useState<MantleRow[]>([]);
+    const [dialect, setDialect] = useState('');
+    const [open, setOpen] = useState<MantleDetail | null>(null);
+    const [text, setText] = useState(''), [note, setNoteText] = useState('');
+    const load = useCallback(() => dmApi.mantles(target).then(setRows).catch(() => setRows([])), [target]);
+    useEffect(() => { void load(); }, [load]);
+    const show = (id: string, revision?: number) => dmApi.mantle(target, id, revision).then(d => { setOpen(d); setText(d.text); });
+    const {busy, problem, note: done, run} = useRun(target, () => { void load(); if (open) void show(open.id); });
+    const canAct = me.role !== 'viewer';
+    const dialects = [...new Set(rows.map(r => r.dialect))].sort();
+    const shown = rows.filter(r => !dialect || r.dialect === dialect);
+    const pool = (d: string) => {
+        const of = rows.filter(r => r.dialect === d);
+        return `${of.filter(r => r.status === 'worn').length} worn, ${of.filter(r => r.status === 'spare').length} spare, ` +
+            `${of.filter(r => r.status === 'resting').length} resting`;
+    };
+    const status = (r: MantleRow) => r.status === 'worn' ? `worn by ${r.wearer?.name}` : r.status === 'resting'
+        ? `resting since day ${Math.floor(r.last_wearer?.since ?? 0)} (${r.last_wearer?.name})` : r.status;
+    return <div className="dm-panel" aria-label="Mantles">
+        <header><div><small>TALK</small><h2>Mantles ({rows.length})</h2></div>
+            <button title="Read again" onClick={() => void load()}>↻</button></header>
+        {problem && <pre className="hint error-text">{problem}</pre>}
+        {done && <p className="hint">{done}</p>}
+        <div className="button-grid"><button className={dialect ? '' : 'on'} onClick={() => setDialect('')}>all</button>
+            {dialects.map(d => <button key={d} className={d === dialect ? 'on' : ''} title={pool(d)} onClick={() => setDialect(d)}>{d}</button>)}</div>
+        {dialect && <p className="meta">{dialect}: {pool(dialect)}</p>}
+        {!open && <ul className="dm-reports-list">{shown.map(r => <li key={r.id}>
+            <button onClick={() => void show(r.id)}><b>{r.id}</b> {r.title}</button>
+            <span className="meta"> {r.dialect} · {r.tier} · revision {r.revision} · {r.items} items · {status(r)}</span></li>)}</ul>}
+        {open && <>
+            <p className="dm-group">{open.id}: {open.dialect}, {open.tier}, {open.state}, revision {open.revision}
+                {open.at !== open.revision ? ` (showing revision ${open.at}: saving it takes it back as a new revision)` : ''}
+                {open.wearer ? `, worn by ${open.wearer}` : ''}</p>
+            <textarea rows={24} className="mono" value={text} disabled={!canAct || busy} onChange={e => setText(e.target.value)} />
+            {canAct && <>
+                <input placeholder="What changed, and why (kept in its history)" value={note} maxLength={400} onChange={e => setNoteText(e.target.value)} />
+                {open.wearer && <p className="hint">This mantle: its next wearers hear the change too. A change for this wolf alone goes in
+                    their Voice (their own words and lines), which is never passed on.</p>}
+                <div className="button-grid">
+                    <button className={isLive(target) ? 'publish' : 'primary'} disabled={busy} onClick={() => void run(`Save ${open.id}`,
+                        () => dmApi.saveMantle(target, text, open.revision, note))}>{busy ? 'Checking…' : `Save to ${worldName(target)}`}</button>
+                    <button disabled={busy} onClick={() => setText(open.text)}>Revert edits</button>
+                    <button disabled={busy} onClick={() => setOpen(null)}>Back to the list</button></div></>}
+            <p className="dm-group">History</p>
+            <ul className="dm-reports-list">{open.history.map(h => <li key={h.seq}>
+                <span className="meta">revision {h.revision} · {h.at.slice(0, 16).replace('T', ' ')} · {h.account || h.source} · {h.action} {h.key || 'the card'}
+                    {h.note ? ` · ${h.note}` : ''}</span>
+                {(h.before || h.after) && <pre className="mono">{h.before ? `- ${h.before}\n` : ''}{h.after ? `+ ${h.after}` : ''}</pre>}
+                {canAct && h.revision < open.revision && <button disabled={busy} onClick={() => void show(open.id, h.revision)}>Show revision {h.revision}</button>}
+            </li>)}</ul></>}
+        <p className="hint">Saved mantles are checked by the game's own loader and mantle_check first (names only through slots, the
+            dialect's words, truth gates, the tier's minimum); a running server reads a saved mantle again at once (mantle.sync).</p>
     </div>;
 }

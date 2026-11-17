@@ -630,15 +630,15 @@
    "better": "higher",
    "gate": "soft",
    "target": "20-35%",
-   "value": 0.0,
+   "value": 0.2336448598130841,
    "passes": false,
    "by_profile": {
-    "town": 0.0
+    "town": 0.234
    },
-   "control": 0.0,
-   "separation": 0.0,
-   "real_better": false,
-   "separates": false,
+   "control": 0.10903426791277258,
+   "separation": 0.5333333333333333,
+   "real_better": true,
+   "separates": true,
    "control_required": false,
    "structural": false
   },
@@ -647,14 +647,14 @@
    "better": "higher",
    "gate": "soft",
    "target": "90%+",
-   "value": 57.601497264612725,
+   "value": 52.21302626844189,
    "passes": false,
    "by_profile": {
-    "town": 57.601
+    "town": 52.213
    },
-   "control": 55.72991649870429,
-   "separation": 0.03249187703074226,
-   "real_better": true,
+   "control": 52.428931270241094,
+   "separation": 0.0041180507892930466,
+   "real_better": false,
    "separates": false,
    "control_required": false,
    "structural": false
@@ -997,8 +997,8 @@
     "judged": 37
    },
    "U2_detail": {
-    "pairs": 19,
-    "lines": 6946
+    "pairs": 17,
+    "lines": 2779
    },
    "B1_detail": {
     "beats": 12239,
@@ -1073,6 +1073,17 @@
     "town": "/tmp/hyb/q/town"
    },
    "on": "2026-11-17T11:47:14+00:00"
+  },
+  {
+   "metrics": [
+    "U1",
+    "U2"
+   ],
+   "why": "Doc 84 Phase 11: the talk town wears the test fixture's mantles (three of its wolves speak their own lines: U1, measured now that a mantle's line counts as its wearer's; U2's look-alike pairs are other wolves)",
+   "from": {
+    "town": "/tmp/p11q"
+   },
+   "on": "2026-11-17T16:41:37+00:00"
   }
  ]
 }

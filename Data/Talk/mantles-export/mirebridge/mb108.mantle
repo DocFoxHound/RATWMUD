@@ -1,0 +1,271 @@
+# mb108, the grandmother-judge (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb108
+revision 1
+state ready
+dialect mirebridge
+accent none
+tier standard
+written_for cty_fallow_reedwell
+written_by claude-p11-pilot
+title the grandmother-judge
+fits stage=adult|old
+prefers wealth=rich|comfortable
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=content
+quirk has_opinions_about_everyone_s_grandmother
+likes honey_cakes long_walks full_larder first_snow
+dislikes night_noise bad_manners
+fears breaking_her_word
+hopes a_quiet_old_age_and_a_full_shelf
+topics family +0.3 food +0.2 pastimes +0.2 home +0.2 festival -0.3 gossip -0.2
+styles comfort=practical gossip=reluctant refuse=polite tease=dry
+marks oath saying
+persona #self.first# works the salt by the fen and wants for nothing: quiet, dry, a little dreamy, with an opinion on everyone's grandmother and a promise she means to keep.
+
+words
+oath! = Upon my word | Mercy me
+saying! = Every grandmother was somebody's trouble once | Manners cost nothing and say everything
+gran = a grandmother | somebody's grandmother
+grans = grandmothers | other people's grandmothers
+cakes = honey cakes | a honey cake
+larder = a full larder | the larder
+walk = a walk with no end in mind | an aimless ramble
+vow = the word I gave at a wedding | a promise made at a wedding
+stillnight = a quiet night | a still night
+manners = good manners | manners
+works = the salt works | the works
+snowfall = the first fall of snow | snow on the reeds
+racket = noise at night | a racket after dark
+drift = where was I | as I was saying
+planks = the old planks | the walkway
+yourgran = your grandmother | that grandmother of yours
+
+any
+opinion @1 dole against 1 : I pay my share into the dole, and I see who comes back for seconds. #oath#, I do.
+opinion @1 houses for 1 : They keep #works# going, and #works# keep the rest of us. Any sensible grandmother would say be grateful.
+opinion @1 times for 1 : I've no complaints. It would be foolish to start, with #larder#.
+opinion @1 festivals against 1 : A festival is noise with ribbons on. I'll take #walk# instead, thank you.
+opinion @1 city against 1 : Ridgemere is elbows and no nods. Nobody there was raised by a decent grandmother, or they'd have #manners#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You'll be new here. Watch #planks#; they're older than they look. | #greet#, #address#. Welcome, I suppose.
+line @1 kin.open [pair.kin!=no] : Oh. It's you. Come in, there are #cakes#. | #greet#. I'd been meaning to ask after you.
+line @1 again.open : Again? People will talk, #address#. | #greet# again. I've nothing new since this morning, I'm afraid.
+line @2 greet [here.time=dawn] : #greet#. Early for #walk#, but here I am. | Morning, #address#. Lovely and still, isn't it.
+line @3 greet [self.working=yes] : #greet#. Don't mind me, I'm counting sacks. | #greet#. Mind the edge; #works# are never quite tidy.
+line @1 greet.return : #greet#. | #greet#, #other.called#.
+line @2 greet.return [here.time=dusk|night] : #greet#. Quietly, if you would; it's late. | #greet#, #other.called#. Out after dark? #oath#.
+line @1 farewell : #farewell#, #other.called#. | #farewell#. Don't be a stranger. Or do, as you like.
+line @1 farewell.return : #farewell#. | And you, #address#.
+line @1 react.news.new : #oath#. Truly? | Well. I'll have to sit with that one, #address#.
+line @1 react.news.known : I'd heard, #address#. I usually have, eventually. | #knew.capitalize#.
+line @1 react.news.doubt : I'd like to know which of #grans# started that one before I believe it. | #doubt.capitalize#. I'll wait for it to be seen.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #very# sad. I'll send something round. | #pity.capitalize#.
+line @1 answer.how : Content, thank you. #larder.capitalize# and #stillnight#. What more is there. | #fine.capitalize#. Dreaming, mostly.
+line @1 sympathise : Sit down. Have one of #cakes#. It won't help, but it won't hurt. | #sympathy.capitalize#. Sit as long as you like.
+line @1 decline : Thank you, but no, #address#. I've a promise to keep elsewhere. | Not tonight, I'm afraid. I like #stillnight#, and I mean to keep this one.
+line @1 accept_decline : #no_matter.capitalize#. | Quite all right, #address#. Another time, perhaps.
+line @1 thank : #thanks#. | That's kind of you, #address#. #thanks#.
+line @1 deflect_thanks : #deflect.capitalize#. | It was nothing. #gran.capitalize# would have done twice as much and complained.
+line @1 preclose : Well. I've kept you, #address#. | #preclose.capitalize#. I should be getting along.
+line @1 tease : I'd wager #gran# had something to say about that coat. | You stand like someone whose grandmother made them carry books on their head. #oath#.
+line @1 tease.return : Fair. I'll let that pass, #address#, since you said it nicely. | Hm. My grandmother would have liked you, #address#. That isn't praise.
+rule @racket
+when concept=bark here.time=night here.place=home
+does aside
+cooldown 8h
+say Who is singing at this hour. Honestly. #oath#. | Some of us sleep, you know. #racket.capitalize#, every night this week.
+
+rule @shelves
+when concept=bark here.place=home here.time=dawn|day
+does aside
+cooldown 12h
+say Flour, honey, three cheeses, salt from #works#. Good. | #larder.capitalize#. That's a comfort, that is.
+
+rule @rude
+when concept=bark here.place=street|market
+does aside
+cooldown 8h
+say Not a nod. Not a word. #gran.capitalize# failed somewhere there. | #saying#.
+
+rule @ramble
+when concept=bark here.outdoors=clear|overcast|fog here.region=fens
+does aside
+cooldown 12h
+say Nowhere to be. Lovely. #oath#. | Left at the dyke, or right. Either will do, #drift#.
+
+scene on_grandmothers
+when topic=family|smalltalk
+does give.opinion / react.self / assess
+a : You can tell everything about a wolf from #gran#. Everything. | #grans.capitalize# are the root of every quarrel on the boards, if you dig. | I've a theory about #grans#. Nobody asks, so I'll tell you.
+b[stage=old] #elder : I'm somebody's grandmother. Careful. | Some of us are trying. | Go on, then.
+b : Everything? | #bc_ha# | Go on.
+a@elder : Then you'll know I'm right. | I can tell. You've the look of a good one. | The strict ones raise the kind ones. Every time.
+a : Their #manners#, their cooking, what they're afraid of. All of it. | Laugh. You'll see it now, everywhere. | The strict ones raise the kind ones, and the kind ones raise the trouble. #saying#.
+
+scene your_gran
+when topic=family|friends pair.band=friends|acquaintances
+does tease / tease.laugh / assess
+a : I'd wager #yourgran# kept a wooden spoon by the stove, and not for stirring. | #yourgran.capitalize# taught you to wipe your feet. I can tell, and I approve. | I've decided #yourgran# was a fine cook and a terrible singer.
+b : #bc_ha# | She did, at that. | Close enough.
+a : I'm rarely wrong about #grans#. | Credit where it's due. #oath#. | It's a gift. Not a useful one.
+
+scene a_long_walk
+when topic=pastimes here.region=fens
+does tell.self / react.self / assess
+a : I went out this morning on #walk# and came back at noon. Best kind of morning. | #walk.capitalize# is all I want from a day off. | I walked out along the dyke till #planks# ran out, then turned round. #drift.capitalize#... oh, yes. It was lovely.
+b : Where did you go? | #bc_lovely# | All that way?
+a : Nowhere. That's the point of it, #address#. | Try it. You'll come back a different shape. | It's not far, if you're not counting.
+
+scene honey_cakes
+when topic=food
+does offer / accept / assess
+a : Have one of #cakes#. I made more than any one wolf ought to. | #cakes.capitalize#, warm. I won't ask twice; I'll just leave the plate there. | My grandmother's way with #cakes#: more honey than sense.
+b : #bc_thank_you# | I'll not refuse. | Is there another way?
+a : Good. They don't keep, and I can't be trusted with them. | Wise. Refusing would be bad #manners#. | There's a sensible way. Nobody uses it.
+
+scene the_larder
+when topic=home|food self.wealth=rich|comfortable
+does tell.self / react.self / assess
+a : I counted the shelves this morning. #larder.capitalize# is the best sight in the world. | Flour, honey, cheese, and salt from #works#. I could sit out a winter. | I don't need much, #address#. I just like to see it there.
+b[wealth=poor|destitute] #purse : Must be nice. | Some of us count empty shelves. | #bc_lucky_you#
+b : #bc_lucky_you# | #bc_wise# | #bc_true#
+a@purse : It is. I know it. I'll not pretend otherwise. | I know. Come by; there's more than I can use. | I am. I try not to forget it.
+a : It's a small vanity. I allow myself one. | Wise, or nervous. One of those. #oath#. | Content, at least. That's enough.
+
+scene night_racket
+when topic=home|smalltalk here.time=dawn|day
+does tell.complaint / react.complaint / assess
+a : Somebody was singing on #planks# past midnight. Badly. | #racket.capitalize#. I lay awake and composed a letter to their grandmother. | I like #stillnight#. I'm not often given one.
+b : #bc_poor_soul# | #bc_ha# | #bc_me_too#
+a : I've learned the whole song now. Against my will. | I didn't send it. Probably. | We'll hope for better tonight, #address#.
+
+scene manners
+when topic=smalltalk
+does tell.complaint / react.self / assess
+a : A wolf walked past me this morning without so much as a nod. #saying#. | Bad cooking I can forgive. Bad #manners#, never. | Somebody pushed in at the store. I let it go. Outwardly.
+b : #bc_true# | #bc_ha# | Outwardly?
+a : #gran.capitalize# somewhere has a great deal to answer for. | One can learn to cook, #address#. | Inwardly, I've written them out of my will.
+
+scene the_wedding_word
+when topic=memories|friends
+does confide / ask.detail / answer.detail / assess
+a : I made a promise at a wedding once, #address#. I've kept it every day since. | People make promises at weddings and forget them by the cake. I didn't. | I think of #vow# more often than I let on.
+b : What did you promise? | #bc_wise# | Whose wedding?
+a : To stand by them both, whatever came. I meant it. | That's between me and the Bright One, #address#. | Friends, long ago. It doesn't matter whose. It matters that I said it.
+b : #bc_good# | #bc_i_know# | #bc_true#
+
+scene at_the_works
+when topic=work self.job=farmer here.region=fens
+does tell.self / react.self / assess
+a : I count the sacks at #works# and let my mind wander. Both get done. | The salt doesn't need me watching it. I watch it anyway. | It's quiet work at #works#, the way I do it. I like it that way.
+b : Does it pay? | #bc_good# | #bc_lucky_you#
+a : Well enough. I don't complain. | It suits me, #address#. | I am. I try to remember that.
+
+scene first_fall
+when topic=weather|season here.season=winter here.weather=snow
+does tell.feeling / react.self / assess
+a : #snowfall.capitalize#. Everything goes quiet. I could weep, and I'm not the weeping sort. | Snow, at last. Even #planks# are polite today. | I walked out at first light to see it before anyone spoiled it.
+b : #bc_lovely# | #bc_ha# | Did you?
+a : I won't, of course. But I could. | Snow has #manners#. More than some. | I did. Then somebody's pup ran through it. Still lovely.
+
+scene the_dole
+when topic=times|prices
+does give.opinion / react.self / assess
+a : I pay into the dole and I don't begrudge it, mostly. I do keep an eye on who comes back for seconds. | Some need it. Some like it. Any of #grans# can tell the difference at forty paces. | I'd give a wolf a meal. I'd rather give them a job.
+b[wealth=poor|destitute] #purse : Easy said with a full larder. | Some of us need it. | Not everyone can get one.
+b : #bc_true# | #bc_maybe# | #bc_fair#
+a@purse : It is easy. I know that. I'll think on it. | Then it's for you, and I'm glad to pay. | True. I'll grant you that, #address#.
+a : Somebody has to count. #oath#. | Mine could. I can, a little. | It's how I see it, #address#.
+
+scene festival_noise
+when topic=festival
+does tell.self / react.self / assess
+a : I'll stay home, #address#. Too many people being glad at me at once. | Festival days I take #walk#, out where nobody's playing a pipe. | I don't mind festivals. I mind the hour they finish.
+b : Come for an hour. | #bc_ha# | #bc_true#
+a : An hour, then. Then I'm off home. | Laugh. I'll be the one who slept. | Midnight, last year. Past it, I'm told.
+
+scene daydream
+when topic=dreams|smalltalk
+does tell.self / react.self / assess
+a : I was thinking about a house on a hill with a long pantry. Then I remembered the fen has no hills. #drift.capitalize#? | Sorry. #drift.capitalize#? I was miles off. | I dream I'm walking, mostly. Walking and walking, and never tired.
+b : #bc_ha# | #bc_go_on# | #bc_lovely#
+a : I'll settle for a long pantry. | Somewhere with no noise, I think. #oath#. | Then I wake up and do it anyway.
+
+scene still_fog
+when topic=weather here.region=fens here.weather=fog
+does tell.feeling / react.self / assess
+a : The fog's in. You can't hear a thing. #oath#, I like it. | Fog makes everyone talk quietly. I wish it would come more often. | I walked to the store in the fog and met nobody. Perfect.
+b : #bc_ha# | #bc_true# | #bc_lovely#
+a : I'm a simple creature, #address#. | We could all stand to be quieter. | Nobody to nod at. Nobody not nodding.
+
+scene the_lights
+when topic=lore here.region=fens here.time=dusk|night
+does tell.self / react.self / assess
+a : #gran.capitalize# told me the marsh lights were the drowned. She also said cats could read. | People say the lights are lost souls. I say they're lights, and I stay indoors. | I've seen #grans# frighten whole hamlets with the lights. It's their favourite trick.
+b[from=fenshore] #fen : They're the drowned. Everyone knows. | Stay in, then. | It works on pups.
+b : #bc_ha# | #bc_wise# | #bc_true#
+a@fen : Everyone knew about the cats, too. | I will, thank you. | And on grown wolves, I've noticed.
+a : She wasn't right about everything. Nearly. | Lights don't need company. Neither do I. | #saying#.
+
+scene chapel
+when topic=faith
+does tell.self / react.self / assess
+a : I'm at chapel on Restday because #gran# would rise from the fen if I didn't. | I keep faith with the Bright One the way I keep it with anyone, #address#. Quietly and always. | The Bright One asks for #manners# more than prayers. That's my reading, anyway.
+b[priest] #faith : That's as good a reason as any. | That's a fine way to keep it. | Both, ideally.
+b : #bc_ha# | #bc_good# | #bc_wise#
+a@faith : I'll take it, then. | Thank you. I try. | Both, then. I'll practise.
+a : Somebody has to keep her resting. | That's all I've got. It's enough. | Somebody had to say it.
+
+scene night_frogs
+when topic=animals here.region=fens here.season=spring|summer
+does tell.complaint / react.self / assess
+a : The frogs. All night. Every one of them convinced it has something to say. | I'd make peace with the frogs if they'd keep any sort of hours. | There's a heron by my door every evening. Very good #manners#. Says nothing.
+b : #bc_every_year# | #bc_ha# | #bc_lovely#
+a : Every year I forget, and every year they remind me. | They won't. Raised without #manners#. | The best neighbour I've had, #address#.
+
+scene quiet_gossip
+when topic=gossip
+does tell.gossip / react.news / assess
+a : I don't repeat things, #address#. But #topic.subject# #topic.claim#. That's all I know. | I'm told #topic.subject# #topic.claim#. Make of it what you like. | You'll have heard #topic.subject# #topic.claim#. I've no opinion. Well, one.
+b : #bc_and_q# | #bc_maybe# | What's your one?
+a : That's all. I said so. | I've made something of it. Privately. | I'll keep it. #oath#.
+
+story the_wedding_promise
+  : There was a wedding, years ago, with all of #planks# strung with reeds and lanterns.
+  : When it came to it, I stood up and said I'd stand by them both, whatever came. Nobody asked me to.
+  b : Have you had to?
+  : Twice. Once with a loan and once with a long night sat up. I'd do it again.
+  b : #bc_wise#
+  : A promise at a wedding is the only kind that counts. My grandmother said so, and I've found no reason to argue.
+
+story grandmothers_larder
+  : My grandmother kept a larder you could get lost in. Jars on jars, and every one labelled.
+  : She'd send me in for honey and I'd come out an hour later with a story about every shelf.
+  b : Is that where yours comes from?
+  : Every shelf of it. I count mine the way she counted hers. #oath#, she'd be pleased.
+  b : #bc_lovely#
+
+story the_longest_walk
+  : Once I set out on #walk# along the dyke and kept going till #planks# ran out.
+  : I sat on a stone with #cakes# and watched the fen do nothing for an afternoon.
+  b : Did you get lost?
+  : Not at all. I knew exactly where I was. Nowhere in particular. Best day of that year.
+  b : #bc_lovely#
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. You're new. Watch #planks#; and your #manners#, ideally.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Come in. There are #cakes#, if you're quick.
+dlg @1 resident.job : I work the salt at #works#. Count it, mostly. It suits me.
+dlg @1 resident.news : Nothing worth repeating, #address#. I wouldn't repeat it anyway.
+dlg @1 resident.bye : #farewell#, #topic.player#. Mind how you go.
+graft resident.hub
+choice What do you make of my grandmother? -> gran
+node gran
+say I've never met her. But I can guess, from you. Firm, I think, and generous with #cakes#. Am I close?
+mood pleased
+free
+choice Close enough. -> gran_right
+choice Goodbye. -> bye
+node gran_right
+say I usually am. #saying#. Give her my regards, if she's living, and a kind thought if she isn't.
+choice I will. -> hub
+choice Goodbye. -> bye

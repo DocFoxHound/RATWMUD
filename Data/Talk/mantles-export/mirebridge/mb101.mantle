@@ -1,0 +1,497 @@
+# mb101, the hearth-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb101
+revision 1
+state ready
+dialect mirebridge
+accent light broad
+tier full
+written_for cty_nell_plummeadow
+written_by claude-p11-pilot
+title the hearth-keeper
+fits stage=adult|old
+prefers role=merchant job=innkeeper
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk feeds_the_sparrows
+likes crisp_apples cards tidy_house warm_rain
+dislikes haggling drizzle
+fears a_cold_hearth
+hopes an_answer_to_an_old_letter
+topics work +0.4 home +0.3 animals +0.3 pastimes +0.2 food +0.2 gossip -0.4 prices -0.2
+styles comfort=practical gossip=reluctant refuse=firm tease=none
+marks oath saying
+persona #self.first# #self.trade_words#: exact, quick to take offence and slow to forget it, and never without crumbs for the sparrows.
+
+words
+oath! = Ash and embers | By the old grate | Embers and ash, and mind the boards
+saying! = A clean cup tells no lies | Sweep first, grumble after | A swept step keeps the fen outside
+hearth = the hundred-year fire | the old fire in the grate
+sparrows = the sparrows on the back rail | my little beggars on the rail
+crumbs = a heel of yesterday's loaf | the crumbs off the bread board
+slate = the slate behind the bar | my chalk slate
+mat = Boots on the sacking, if you please | Wipe them first, fen-friend
+thinwet = that thin mizzle that creeps in at the shutters | a mizzle that never makes up its mind
+apple = a crisp apple | a red one with a snap to it
+cards = a hand of cards once the shutters are up | a quiet game by the grate
+scrubbed = scrubbed | clean enough to eat off
+jar = a jar of the dark | a jar of the house brown
+hooks = every cup on its hook | each jug in its place
+haggle = haggling | that back-and-forth over a copper
+softrain = a warm rain after a dry week | rain you could stand in with your coat open
+boards = my boards | a floor I scrubbed this morning
+cloth = my cloth | the bar-cloth
+regulars = the same faces on the same benches | the regulars
+closing = closing | when the shutters go up
+
+any
+opinion @1 drink for 2 : An honest #jar# never hurt a wolf who knew the way home. I see that they know it, at #closing#.
+opinion @1 road against 2 : The barrels come in late off that road, and late again. It's on #slate# more often than I'd like.
+opinion @1 strangers for 1 : Travellers drink, pay and go, and they wipe their feet better than most of the boards. I'll have more of them, #address#.
+opinion @1 city against 1 : I went up to the city once. Nobody swept a step the length of a street, and they call us the muddy ones. #oath#.
+opinion @1 watch for 1 : The Watch look in, the room behaves. That's worth #jar# on the house now and again.
+opinion @1 merchants for 1 : The stores keep my shelves and I keep their throats wet. That's a fair bargain, and no #haggle# in it.
+opinion @1 newcomers for 1 : New folk are new custom. I judge a #stranger# by the boots, and I'm seldom wrong.
+opinion @1 festivals mixed 1 : Feast days fill the room and empty my hooks. I'm a week finding the cups after, #oath#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. #mat#. | #greet#. #mat.capitalize#, and then you're welcome. | #greet#. Mind the boards; I've just done them.
+line @2 greet [here.time=dawn] : #greet#. Shutters only just down, so mind #boards#. | Early. The fire's in, the floor's wet, so wade careful.
+line @3 greet [here.time=dusk] : #greet#. Lamps are lit, the room's filling. | Evening. #mat#, before the rush.
+line @4 greet [self.working=yes] : #greet#. You'll forgive me if I keep at #cloth#. | #greet#. Say it over the bar; #cloth# won't wait.
+line @5 greet [pair.band=friends|acquaintances] : #greet#, #other.called#. Your hook's empty; I'll fill it. | #greet#. Sit where you like, only not on my #scrubbed# end.
+line @1 kin.open [pair.kin!=no] : There you are. Boots, and the #mud# off them. | You've been in the slubber again. I can smell it from here.
+line @1 again.open : Two visits before dark, #address#. The step won't thank you. | Back already? I've barely dried the last of you off #boards#.
+line @6 greet [here.weather=rain] : In, quick. #mat#, and leave the #rain# at the door. | #greet#. Stand on the sacking till you stop dripping, #address#.
+line @1 greet.return [pair.band=strangers] : #greet#. #mat#. | #greet#. Welcome to it.
+line @2 greet.return [here.time=night] : #greet#. Late for it, but come in. | #greet#. Quiet now. Mind the boards.
+line @3 greet.return : #greet#. | #greet#, #other.called#.
+line @1 farewell : #farewell#. Shut the door behind you, properly. | #farewell#. Mind the boards, it's dark past the lamp.
+line @1 farewell.return : #farewell#. | #farewell#. Mind the step.
+line @1 react.news.new : #oath#. Is that so. | Well, drown me. I'd not heard that. | #surprise#. That never came over my bar.
+line @1 react.news.known : #knew#. Everything comes over my bar sooner or later. | That's old mud, that. It was told me last night.
+line @1 react.news.doubt : I'll believe that when I see it written on #slate#, and not before. | #doubt#. Half what's said over a jar is the jar talking.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #pity#. It grieves me to hear it. | Oh. That's deep mud. I'll keep a seat by the fire for them.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's #gladnews#. Good. | Well, good. There's something fair-dry to hear for once.
+line @1 answer.how : Busy, and #boards# are clean, so well enough. | Fair-dry. My hooks are full, mostly. | Ask me after #closing#.
+line @1 answer.how.busy [self.working=yes] : Elbow-deep in the slubber. Say it quick. | #busy.capitalize#. Every cup in the house is out.
+line @1 sympathise : That's #sympathy#. Sit by the fire a while; nobody will move you. | I'm sorry, #address#. I'll not pretend I know what to say.
+line @1 decline : I'd rather not, if it's the same to you, #address#. I've the room to mind. | Not tonight. #hearth.capitalize# can't be left, and nor can I.
+line @1 accept_decline : Another time, then. #no_matter#. | When it's dry, then. I'll not hold it against you.
+line @1 thank : #thanks#. That's kindly done. | I'm obliged to you, #address#. I'll remember it.
+line @1 deflect_thanks : #deflect#. It's my job. | You'd have done the same, I hope, fen-friend.
+line @1 preclose [self.working=yes] : Well. #cloth.capitalize# won't wring itself. | Right. #hearth.capitalize# wants feeding.
+line @1 take_offence : I'll thank you not to say that in my house, #address#. | That was uncalled for. It's going on #slate#, and I don't mean coin. | I keep #scrubbed# boards, and a clean tongue over them.
+line @1 tease.return : I'll thank you to keep that to yourself, #address#. | Very good. Now #mat#.
+line @1 ack : Mm, #address#. | Is that so. #bc_i_know# | #ack#.
+line @1 give.advice : Wipe your boots and pay on the night. You'll get on anywhere, fen-friend. | #saying#. Count your cups before you count your coin.
+line @1 warn : #warn#. The lamp doesn't reach the end of the boards. | Mind the back step, #address#. It's slick by the rail.
+rule @cups
+when concept=bark working=yes self.job=innkeeper
+does aside
+cooldown 6h
+say One, two... there's a cup gone off its hook. #annoyed#. | Who's left a ring on my bar? #oath#.
+
+rule @fire
+when concept=bark working=yes self.job=innkeeper here.time=dusk|night
+does aside
+cooldown 8h
+say Another log on #hearth#, and bank it right. | Not tonight, you don't. Not while I'm minding #hearth#.
+
+rule @sparrows
+when concept=bark here.time=dawn|day
+does aside
+cooldown 8h
+say There. That's all you get, #sparrows#. | Shoo, the bold one. Let the little ones have #crumbs#.
+
+rule @cards
+when concept=bark working=no here.time=night
+does aside
+cooldown 10h
+say That's my trick, fen-friend, and I counted it. | Deal again, #address#. Properly this time.
+
+rule @wet
+when concept=bark here.weather=rain season=autumn|winter
+does aside
+cooldown 8h
+say #thinwet.capitalize#. And #mud# on every step. | Not again. I've only just dried the sacking. #annoyed#.
+
+rule @tidy
+when concept=bark working=no
+does aside
+cooldown 8h
+say #hooks.capitalize#. Somebody tell the jugs. | #saying#.
+
+scene cups_on_hooks
+when topic=work self.job=innkeeper
+does tell.self / react.self / assess
+a : Counted the cups at #closing#. One short. There's always one short. | I've a hook for #hooks#, and still they walk. | Found a cup of mine on the boardwalk this morning, halfway to the eel-traps.
+b[job=innkeeper|cook] #trade : Mine go the same way. Out in pockets. | Hooks don't stop a thirsty paw. | Mine turn up in the reeds come spring.
+b : Somebody's got a shelf full of them. | #bc_they_always_do# | Walked there by itself, did it?
+a@trade : I'll start counting pockets, #address#. | #bc_true_enough# | And we're meant to smile about it. #oath#.
+a : I'll find it. I always find them. Sure as mud. | Each one's got my scratch on the foot. I'll know it. | It's back on its hook now. Washed twice, and #scrubbed#.
+
+scene slate_owing
+when topic=work self.job=innkeeper
+does tell.self / react.self / assess
+a : I wiped #slate# clean on Restday. It's half full again by Marketday. | Everything owed goes on #slate#. Nobody leaves my bar owing in their head. | One mark on #slate# I've not rubbed out since the floods.
+b[wealth=poor|destitute] #purse : Some of us can't help what's on the slate. | Chalk's kinder than a ledger. | Not mine, I hope.
+b : That's the trade, I suppose. | #bc_wise# | Who's that, then?
+a@purse : I know it, #address#. I don't chalk it hard. | It is. Chalk comes off in the wet. | Not yours. Yours is #scrubbed#.
+a : Chalk's honest. You can see what you owe. | #saying#. | That stays between me and #slate#.
+
+scene barrels_in
+when topic=work self.job=innkeeper
+does tell.self / react.self / assess
+a : The barrels came in on the cart. Rolled every one down the cellar myself, #address#. | Two barrels of brown, one of the pale. Cellar's #good# for a week. | Cellar's got #little# of the fen in it again. I've put the barrels up on planks.
+b[job=carter|laborer] #hauler : You could've asked for a paw with those. | I carried a few of those for the stores. | Planks rot.
+b : Heavy work. | #bc_lucky_you# | #bc_very_bad#
+a@hauler : I've never asked yet. | Then you'll know the weight of #jar#. | Oak planks, #address#. Not pine.
+a : My back's #tired#. My back can say what it likes. | Enough to see the week out, if it stays a week. #bc_we_will_see# | It'll keep the barrels above the water. That's what matters.
+
+scene banking_the_fire
+when topic=work|lore here.region=fens self.job=innkeeper here.time=dusk|night
+does tell.self / react.self / tell.feeling / assess
+a : Time to bank #hearth# for the night. Ash over the coals, just so. | Another log on and the grate swept. #hearth.capitalize# wants doing right. | I sit up with #hearth# till it settles. Every night.
+b[old] #elder : My mother said that fire's older than the boards. | Banked fires keep a house. | You'll be stiff as an old post sitting up like that.
+b : You've a knack for it. | #bc_every_night# | Can't it settle by itself?
+a@elder : Older than the stilts, some say. | They keep this one, at least. #bc_true# | Stiff as a reed already.
+a : It's not a knack, fen-friend. It's care. | It does. It has to. #bc_always# | I'd not sleep, worrying. I'd lie up there listening, still as a pool.
+a : There. It'll see the dawn. #oath#. | #bc_every_night# | #oath#, there it goes. Settled.
+
+scene dawn_sweep
+when topic=day here.time=dawn self.job=innkeeper
+does tell.self / react.self / assess
+a : Swept #boards# before I took the shutters down. #saying#. | Up before #sparrows#, and they're early. | First light, and last night's slubber still on the step. I'll have it off.
+b : Early start. | #bc_every_day# | #bc_every_time#
+a : The room's not open till it's #scrubbed#. | They wait on the rail for #crumbs#. | It'll be off before the first boots come.
+
+scene dusk_lamps
+when topic=day here.time=dusk self.job=innkeeper
+does tell.self / react.self / assess
+a : Lamps lit, glasses out, and the room filling, #address#. | Dusk. The salt crews will be in, white to the elbow, and #mud# to the knee. | The quiet hour's gone. Here come #regulars#.
+b[job=laborer|fisher|sailor] #crew : Save us the bench by the wall. | We'll wipe our feet. Mostly. | We've earned a jar.
+b : Busy night ahead. | #bc_very_busy# | #bc_go_on_then#
+a@crew : It's saved. Don't make me regret it. | Mostly won't do. #mat#. | You have. Pay on the night, and #jar# is yours.
+a : Every night. I'd not swap it. #bc_always# | They'll leave salt on everything. #grumble#. | I'll get #cloth#.
+
+scene sparrows_rail
+when topic=animals
+does tell.self / react.self / tell.self / assess
+a : I put out #crumbs# for #sparrows# every morning. | There's one sparrow with a white feather. Bold as a tadpole. | #sparrows.capitalize# know my step. They're on the rail before I open the door.
+b[stage=young] #pup : Can I feed them? | Can I hold the white one? | Do they know your name?
+b : They'll never leave you now. | #bc_clever# | Spoiled, then.
+a@pup : Gently, tadpole, and scatter it. Don't throw. | Nobody holds a sparrow, tadpole. You let it sit. | They know my step. That's enough, young 'un.
+a : They've no notion of leaving, #address#. Nor would I. | Takes from the bar if I turn my back. #bc_ha# | Fed, not spoiled. There's a difference.
+a : #sparrows.capitalize#. Best customers I have; never a bad word. | I let it. Not a word past the reeds, mind. | #bc_good#
+
+scene sparrows_cold
+when topic=animals|season here.season=winter
+does tell.worry / react.self / assess
+a : #sparrows.capitalize# want more in the #cold#. I've been saving #crumbs#. | Two fewer on the rail this week. The #cold# takes the little ones. | I set a dish of water by the warm wall, so it won't freeze over for #sparrows#.
+b : Kind of you. | #bc_poor_soul# | #bc_wise#
+a : It's #crumbs#, not kindness. | It does, #address#. It always has. | They drink from it before I've set it down. #bc_ha#
+
+scene heron_on_ridge
+when topic=animals here.region=fens here.time=dawn|day
+does tell.self / react.self / assess
+a : There's a heron stood on the roof ridge every morning, watching the eel-traps. | That heron's on the ridge again. I'd swear it's counting #sparrows#. | Folk say a heron on the roof means the house stands. Fen-sure, I'll take it.
+b[dialect=mirebridge] #fen : That's luck, that is. Leave it be. | Wise bird. Watches and says nothing. | Fen-sure. It always has.
+b : Like a sign over the door. | #bc_ha# | #bc_so_they_say#
+a@fen : I do. It's the only lodger that never pays and never owes. | Heron-wise, that. I've had customers less. | So #mum# said.
+a : The house is named for one. It's welcome, fen-friend. | It'll not have them while I'm about. Not my beggars. | I'll take any #luck# that stands still.
+
+scene cards_after
+when topic=pastimes
+does tell.self / react.self / assess
+a : #cards.capitalize#. That's my evening. | I keep the score on #slate#. Nobody argues with chalk. | Four of us at the grate last night. I won, and I counted it twice.
+b[friends] #player : I'd sit in, if there's a seat. | Chalk's for cheats who forget. | Twice? Did they not trust you?
+b : What do you play? | #bc_wise# | #bc_lucky_you#
+a@player : There's a seat. #mat#. | Nobody forgets at my table, fen-friend. | They trusted me. I didn't trust them. #bc_ha#
+a : Four-hand, slow, by #hearth#. No wagers. | It settles what talk won't. #bc_true# | It wasn't #luck#. It was attention.
+
+scene cards_peeker
+when topic=pastimes pair.band!=strangers
+does tell.complaint / react.complaint / assess
+a : I'll not play with a wolf who peeks. I've put two out of the game this year. #oath#. | Somebody marked the deck with a wet thumb. Into #hearth# it went. | A card on #boards# and somebody's paw on it. I saw.
+b : Fair enough. | Burned a whole deck? | Did they own up?
+a : #bc_fair_enough# Rules are rules. | Every card. I'd not touch it after. #bc_never# | They didn't. Their ears did, though. #bc_ha#
+
+scene apple_cart
+when topic=food
+does tell.self / react.self / assess
+a : #apple.capitalize# and a bit of cheese. That's my #supper#, standing up. | The apple cart came round. Half were mealy. I sent them back. | Nothing better than #apple#. You hear it before you taste it.
+b[job=cook|innkeeper|baker] #kitchen : You don't eat your own pot? | Mealy apples are for pigs. | Spoken like someone who's never cooked one.
+b : Plain, but #good#. | Good for you. | #bc_true#
+a@kitchen : I smell it all day, fen-friend. That's enough. | That's what I told the carter. Boggy, that lot. | Cooked apples are a waste of #apple#.
+a : #bc_good# | They'll bring better or they'll not see #money# of mine. | Snap, and then you know. #bc_true#
+
+scene supper_standing
+when topic=food self.job=innkeeper here.time=dusk|night
+does tell.self / react.self / assess
+a : I eat behind the bar, off a board, standing. No time for a chair. | #supper.capitalize# was the end of the pot and #apple#. | I'd my #supper# at midnight. The room was full till then.
+b : You'll ruin your stomach. | #bc_lovely# | #bc_about_time#
+a : It's ruined already, fen-friend. It knows the work. | It does me. #bc_good# | It does. I'm not complaining. I was #hungry#, mind.
+
+scene warm_rain_glad
+when topic=weather here.weather=rain here.season=spring|summer
+does tell.feeling / react.self / assess
+a : #softrain.capitalize#. I stood out in it on the back step. | Smell that. It's not mizzle; it's #softrain#. | This is the rain I like. Drops you can see, not #thinwet#.
+b : Out in it? You? | #bc_lovely# | #bc_it_is#
+a : Only on the step. My boots stayed in, dry feet and all. | It lays the dust off #boards# and leaves the #mud# alone. | The other sort I'd have no truck with. #annoyed#.
+
+scene drizzle_cross
+when topic=weather here.weather=rain here.season=autumn|winter
+does tell.complaint / react.complaint / tell.complaint / assess
+a : #thinwet.capitalize#. I'd rather a downpour. | Wet as a drowned cat, the whole fen, and not even honest rain. #annoyed#. | It's been mizzle all day. I've mopped twice.
+b[dialect=mirebridge] #fen : That's fen weather, that. You'll not change it. | It's always this time of year. | Mop a third time and get it over.
+b : #bc_very_bad# | #bc_again_q# | #bc_every_time#
+a@fen : I don't want to change it, fen-friend. I want it to stay outside. | I know it. I still don't hold with it. #bc_i_know# | I will, at #closing#.
+a : At least proper rain knows what it is. Mizzle doesn't. | #grumble#. And #mud# with it. | #bc_again#. Every boot.
+a : #oath#. Well. Sacking at the door. | Shut the door, would you. | That's the trade in a fen. #saying#.
+
+scene fog_lamp
+when topic=weather here.weather=fog here.region=fens
+does tell.self / react.self / assess
+a : Fen-murk's down. I've a lamp in the window so folk can find the door. | Two wolves walked in last night thinking it was the stores. The #fog# does that. | I can't see the rail from the door. #sparrows.capitalize# are just voices.
+b : That's thoughtful. | #bc_ha# | Can't see much of anything.
+a : It's sense, not thought. Lost folk drip on #boards# longer. | I sold them #jar# each. They stayed. | It'll lift by noon, or it won't. #bc_we_will_see#
+
+scene clear_day_airing
+when topic=weather here.weather=clear here.time=day
+does tell.self / react.self / assess
+a : A clear day, #address#. I've the bedding out on the rail. | Right dry, for once. I've propped the door and let the room breathe. | Bright as anything. Every smear shows on the glass. #annoyed#.
+b : #bc_lovely# | Smells better already. | #bc_true#
+a : Airing's half of #scrubbed#. | It does. Stale ale doesn't keep its welcome. | I'll be at the windows with #cloth# till dusk.
+
+scene upstairs_quiet
+when topic=home
+does tell.self / react.self / assess
+a : I live up over the room. Once the shutters are up it's still as a pool. | Everything upstairs has its place. I know where it is in the dark, #address#. | One room, one chair, one window. #home.capitalize#, and plenty.
+b : Handy for work. | #bc_wise# | Plenty, if it's tidy.
+a : Too handy. I hear every cup that's dropped. | Comes of having to find things in a hurry. #bc_true# | It's #scrubbed#. I'd not sleep otherwise.
+
+scene stair_mud
+when topic=home|smalltalk
+does tell.complaint / react.complaint / assess
+a : Somebody's tracked slubber up my stair. My own stair. | I scrubbed the stair this morning and there's a paw of #mud# on the third step. | #mud.capitalize# on the landing. Upstairs. Where nobody goes but me.
+b : Not me. | #bc_not_me# | Maybe it was you.
+a : I didn't say it was, #address#. I said it was there. | I'll find the paw that fits it. #oath#. | It was not. I wipe twice.
+
+scene boots_wiped
+when topic=smalltalk
+does tell.self / react.self / assess
+a : A #stranger# came in, wiped their boots front and back without being asked. I gave them the good bench. | #mat#. That's all I ask, and you'd think it was a fortune. | Some wolves wipe their feet coming in, fen-friend, and some on my floor.
+b : That's not much to ask. | #bc_true_enough# | #bc_ha#
+a : It isn't. And yet. | I'll say it a hundred times more before I'm done. #saying#. | It's not funny when it's #boards#.
+
+scene thin_ale
+when topic=smalltalk|work self.job=innkeeper pair.band!=strangers
+does tell.complaint / react.complaint / insist / give.advice / insist
+a : A carter called my ale thin. In my house. Over my own bar, #address#. | Somebody said my glasses were cloudy. They are not cloudy. #oath#. | I was told the bench was sticky. I'd wiped it twice with #cloth#.
+b : You'll not have let that pass. | #bc_never# | #bc_who_q#
+a : I let it pass to the door. | I held one to the lamp. Clear as the creek after a dry week. | Never mind who. It's on #slate#.
+b? : You'll forget it. | #bc_good# | Leave it be.
+a : I don't forget things said in my own house, #address#. | #bc_it_is# | #oath#. I won't.
+
+scene the_old_fire
+when topic=lore here.region=fens
+does tell.story / react.story / tell.feeling / assess
+a : #hearth.capitalize# hasn't gone out in a hundred years, and it'll not go out on me. | They say the fen comes back the day #hearth# dies. I don't hold with it. I keep it in anyway. | Every hearth on the boards was lit from ours once. Folk still come for a coal when theirs goes out.
+b[old] #elder : It nearly went the winter of the great frost. | My grandmother carried a coal from it. | It's true. It always comes back.
+b : That's a lot to carry. | #bc_wise# | They still do?
+a@elder : I've heard. I'd not let it get that low. | Most did. #bc_every_one# | Then it can keep coming back.
+a : I don't carry it, fen-friend. I tend it. | Saying or no saying, it's my fire. #bc_true# | In a pot with a lid. I make them bring the pot back.
+a : #oath#. Not while I've breath. | #bc_it_is# | #bc_every_one#
+
+scene drowned_bell
+when topic=lore here.region=fens here.time=night
+does tell.story / react.story / assess
+a : Folk say you can hear the drowned bell some nights. I've heard the fen-wind and the frogs, and that's all. | I heard something like a bell last night, #address#. I'll not say it was. | I don't listen for that bell. A wolf who listens hears it. Fen-sure.
+b[priest] #chapel : Old Mirebridge's chapel bell. Pray for the souls under it. | It might have been. Some things don't drown. | That's wisdom, of a kind.
+b : #bc_so_they_say# | #bc_maybe# | #bc_wise#
+a@chapel : I'll leave the praying to you. I've #hearth# to mind. | Then let them ring. I'll not answer. #bc_never# | It's sense. Wisdom's for chapels.
+a : #wind.capitalize# and frogs. That's my answer. | It wasn't the #wind#, mind. | I keep the shutters up and #hearth# in.
+
+scene faith_ordinary
+when topic=faith
+does give.opinion / react.self / assess
+a : Chapel, when #hearth# lets me. The Bright One knows where I am. | I say thanks at the grate, morning and night. It's as good as a pew, #address#. | I'm not one for long prayers. A short one, and meant.
+b[piety=devout] #devout : The Bright One likes a pew filled. | The grate's not consecrated. | Short ones are heard same as long.
+b : That's enough for most. | #bc_true# | #bc_mostly#
+a@devout : Then send somebody to mind #hearth#. | It's warm. That's holy enough for me, #address#. | I'm glad you agree. #bc_good#
+a : It's what I've got. #bc_true_enough# | It's never failed me. Sure as mud. | #bc_fair#
+
+scene cellar_knees
+when topic=health
+does tell.self / give.advice / assess
+a : My knees have had enough of the cellar steps. Twelve steps, and they're #hurt# on every one. | I'd #chill# in the chest all week. Kept working; who else would? | My paws crack from the scrubbing water.
+b[job=healer] #healer : Warm wrap on the knees at night, and fewer stairs. | Rest it, or you'll be in bed a month. | Goose grease on them. Every night.
+b : You should rest. | #bc_poor_soul# | #bc_ill_try#
+a@healer : Fewer stairs. Tell the barrels, #address#. | A month. I'd sooner be ill standing up. | Smells of goose, though. #annoyed#.
+a : I'll rest when #cloth# wrings itself. | #remedy.capitalize#, and up the stairs again. | I put #remedy# on them, and I scrub anyway.
+
+scene first_taproom
+when topic=memories self.age>=40
+does tell.memory / react.story / assess
+a : The first night I had the room to myself, I counted the cups four times. | When I took this room on, the floor was black with slubber. Took me a month to find the boards. | I've had this bar longer than some of #regulars# have had teeth.
+b[stage=old] #elder : I remember it before you. Dark as a cellar. | I recall that floor. Sticky as a bog. | Longer than mine have.
+b : Were they all there? | A month? | #bc_ha#
+a@elder : Then you'll know what I did with it, #address#. | Not now. Never again. #oath#. | I'll not ask how many you've got.
+a : One short. There's always one short. #bc_always# | A month. #scrubbed.capitalize# now, and kept so. | They don't say so to me. #bc_nobody#
+
+scene first_taproom_b
+when topic=memories self.age>=40
+does tell.memory / react.story / assess
+a : There was a winter the fen froze right to the door. Folk walked across it for #jar#. | We had a flood once up to the third step. I served from the stairs, #address#. | I used to fetch water for the bar when I was a tadpole, before I could see over it.
+b : #bc_never# | Served from the stairs? | And now it's yours.
+a : They did. I mopped the slubber for a month after. | I did. Nobody stopped drinking for a bit of the fen. | Mine to mind, any road. #saying#.
+
+scene dream_full_hooks
+when topic=dreams
+does tell.feeling / react.self / assess
+a : I'd like one night, just one, when #hooks# comes home. | I dreamed #hearth# went out. Woke up and went down to look. It hadn't. | I'd like a room upstairs for a parlour, #address#. Somewhere with a window that faces the sun.
+b : You might get it yet. | #bc_poor_soul# | #bc_i_hope_so#
+a : I won't. I'd be suspicious if I did. | I sat with it till dawn, all the same. #bc_every_night# | It'd only get #mud# on it.
+
+scene city_once
+when topic=travel
+does tell.memory / react.story / assess
+a : I went up to the city once, #address#. Never again. | The city's all elbows. Nobody looks where they put their feet. #oath#. | I've been #far#, and that's far enough.
+b[from=ridgemere] #city : It's not as bad as all that. | Elbows keep you upright in a crowd. | The causeway's just the start.
+b : Why never? | #bc_ha# | #bc_i_know#
+a@city : It's worse. I saw a wolf spit on a #scrubbed# step. | Upright and filthy. | For you. It's the end, for me, #address#.
+a : Nobody swept a step. Not one. | #saying#. Mud's honest. City dirt isn't. | Further's just more #mud#.
+
+scene apples_autumn
+when topic=season here.season=autumn
+does tell.self / react.self / assess
+a : Apples are in. I've a box under the bar, the crisp ones, #address#. | The nights are drawing in. #cards.capitalize# come earlier. | Autumn. #sparrows.capitalize# fatten up and so do #regulars#.
+b : #bc_lovely# | #bc_every_year# | #bc_ha#
+a : Don't ask for one. They're counted. | It's the best of the year, if the mizzle keeps off. | I feed one lot. The other pays. #bc_true#
+
+scene gossip_not_mine
+when topic=gossip
+does decline / react.self / assess
+a : What's said over my bar stays over my bar, #address#. | I hear a lot. I repeat none of it. Not a word past the reeds. | Ask the reed-whisperers. I don't carry tales off the premises.
+b[friends] #nosy : Not even a hint? | You must hear everything. | Somebody will tell me anyway.
+b : Fair enough. | #bc_wise# | #bc_fair#
+a@nosy : Not a hint. Not to you, not to anyone. | I do. That's why it stays put. #bc_true# | Then let them. It won't be me, #address#.
+a : #saying#. Same with a clean bar. | It's why they talk to me. | #bc_true#
+
+scene wagon_late_barrels
+when topic=caravan topic.kind=late self.role=merchant
+does tell.complaint / react.complaint / assess
+a : The wagon's late, and my barrels with it. #annoyed#. | Late again, #address#. I'll be serving the pale till it's gone. | That's twice this month I've had to chalk a sorry on #slate#.
+b[job=carter] #road : Roads are soft this time of year. | It's not the carters' fault, mind. | We do our best on that road.
+b : #bc_again_q# | You'll manage. | #bc_bad_luck#
+a@road : Everything's soft in the fen. I still open on time. | I didn't say whose fault. I said it was late. #bc_true# | Then the road's not doing its best, #address#.
+a : They'll come. They always come, late. #bc_always# | I'll manage. I've waded worse. | I'll put it on #slate# with the rest.
+
+scene newcomer_boots
+when topic=newcomer
+does give.opinion / react.self / assess
+a : There's a new face about. I'll know what they're like when they come through my door. | New folk. Good. New custom, and new #money#. | Somebody new took the end bench last night. Wiped their feet. That's a start.
+b : By their boots? | #bc_we_will_see# | #bc_about_time#
+a : By their boots. Every time, fen-friend. | If they pay on the night. #bc_we_will_see# | It is. I'll watch the rest.
+
+scene festival_cups
+when topic=festival
+does tell.self / react.self / assess
+a : Feast days, I put the old cups out. The good ones go in the chest, #address#. | Every feast I lose six cups and find four. #oath#. | Folk will be in all day and out all night. I'll mop the slubber at dawn.
+b : Sensible. | #bc_every_year# | #bc_poor_soul#
+a : I learned it the hard way. | One of them I find in spring, in the reeds. #bc_every_year# | It's a good day, still. Loud, but #good#.
+
+scene haggle_no
+when topic=prices self.role=merchant
+does tell.complaint / react.self / assess
+a : Somebody tried to haggle me over #jar#. A jar. | The price is chalked on the board. I'll not stand and argue it, fen-friend. | I can't abide #haggle#. Pay what it says or drink water.
+b[job=merchant] #counter : I haggle every day. It's half the fun. | Some wolves can't help it. | You'd not last a morning on a stall.
+b : #bc_ha# | Fair price is a fair price. | #bc_very_bad#
+a@counter : It's not fun. It's rude, with a smile on. #bc_true# | They can help it at my bar. | I'd not want to. Give me a chalked board.
+a : I gave them water. They paid after. #bc_ha# | #bc_it_is# | #saying#. And a fair price tells none.
+
+story the_letter [concept=talk.memories self.age>=30 pair.band=friends|acquaintances|family]
+  : I wrote a letter once, when I was young. To somebody #far#.
+  b : Did they write back?
+  : Every week that summer I met the carter at the end of the boards. Nothing came, #address#.
+  b[old] : The carters lose things. Or say they do.
+  b : A long wait.
+  : I've still got it. I don't read it. I just know where it is. Not a word past the reeds, mind.
+  b : #bc_i_wont#
+
+story the_cold_grate [concept=talk.memories self.age>=30 here.region=fens]
+  : My first winter minding #hearth# alone, I fell asleep in the chair.
+  b : And?
+  : Woke at dawn with the grate grey. One coal left, at the back, still red, #address#.
+  b : #bc_lucky#
+  : I fed it straws, one at a time, for an hour. My paws shook. #oath#, they shook.
+  b : And it caught.
+  : It caught. I've not slept in that chair since, fen-friend.
+
+story the_white_feather [concept=talk.animals]
+  : There was a sparrow once that came right in, sat on the tap and stared me out, #address#.
+  b : In the taproom?
+  : Bold as a #stranger#. I put #crumbs# on the bar. It took them and left.
+  b : #bc_ha#
+  : Came every morning for a whole spring. Never once left a mess on #boards#.
+  b : Better than some.
+  : Better than most. I've a soft spot for that bird. Not a word past the reeds.
+
+story the_flood_night [concept=talk.memories self.age>=30 here.region=fens]
+  : There was a night the water came right up to the step, #address#.
+  b : Up to the door?
+  : Up to the third board. I had every barrel carried upstairs. Half the boards turned out to help.
+  b : #bc_good#
+  : Then they sat on my stairs and drank till it went down. Paid every copper of it, too. Fen-sure.
+  b : And the fire?
+  : #hearth.capitalize# never noticed. That's the thing about it.
+
+story the_card_sleeve [concept=talk.pastimes]
+  : I played a carter once, years back. A #stranger#, passing through.
+  b : And you won?
+  : I lost three hands running. Nobody loses three hands running to me, #address#.
+  b : #bc_and_q#
+  : There was a card in the sleeve, plain as day. I put it on the table and said nothing. #oath#.
+  b : What did the carter do?
+  : Paid for the round and left. I kept the card. It's behind the bar still, by #slate#.
+
+dlg @1 resident.hub : #greet#. #mat#, and then say what you're after. | #greet#. #talk_open#
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Your feet clean? Good. #talk_open# | #topic.player#. Sit, if you're staying. #mat#.
+dlg @3 resident.hub [topic.meeting=returning] : Back again, #topic.player#. I'd wondered. #talk_open# | #topic.player#. #welcome_back#. The bench is where you left it.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : What is it. Say it and be quick, #address#; I've the room to mind. | You. Mind your boots and your tongue, #stranger#.
+dlg @5 resident.hub [here.time=night] : We're near #closing#. One thing, then I bank #hearth#. | Late, #address#. Make it short.
+dlg @1 resident.job [self.job=innkeeper] : I keep the room. Cups, barrels, #slate#, and #hearth#. That last's the one that matters. | The taproom, #address#. Everything you see, I wiped.
+dlg @1 resident.business : Steady. #hooks.capitalize#, then empty, then full again. | Steady enough, fen-friend. Nobody's run off owing, this week.
+dlg @1 resident.news : #news_none# What I hear over the bar stays over it. | Nothing I'd carry, #address#. Ask the stores.
+dlg @1 resident.gossip : I don't repeat what's said at my bar. Not a word past the reeds. | #gossip_none#
+dlg @1 resident.bye : #farewell#. Shut the door properly. | #farewell#. Mind the boards.
+dlg @1 inn.greet : #greet#. #mat#, then #inn_offer# | #greet#. #inn_offer#
+dlg @2 inn.greet [topic.meeting=known] : #greet#, #topic.player#. Your usual's on its hook. | #topic.player#. Feet first, then the bar.
+dlg @1 inn.rooms : Up the stair. #here.bed_night#p a night, #here.bed_week#p the week, the whole floor #here.upstairs_night#p. Sheets changed weekly. #mat#. | #here.bed_night#p a night. Clean sheets, and the stair's #scrubbed#, so keep it so.
+dlg @1 inn.roomed : Top of the stair, second door, high and dry. Boots off at the landing. | #inn_bed# Boots off at the landing, mind.
+dlg @1 inn.rest : Take the bench by #hearth#. It's the warmest seat in the fen. | Sit and dry your feet. Not on the #scrubbed# end.
+dlg @1 inn.bye : #farewell#. Shut the door behind you. | #farewell#. Mind the boards.
+graft resident.hub
+choice What's that you're scattering on the rail? -> sparrows
+node sparrows
+say #crumbs.capitalize#. #sparrows.capitalize# come every morning. I've fed them since I took the room on.
+mood pleased
+free
+choice Which one's the boldest? -> sparrows_bold
+choice Goodbye. -> bye
+node sparrows_bold
+say The one with the white feather. Takes from the bar if I turn my back. I let it. Not a word past the reeds, mind.
+choice Your secret's safe. -> hub
+choice Goodbye. -> bye
+
+graft inn.greet
+choice Is that the fire that never goes out? [here.region=fens] -> oldfire
+node oldfire
+say #hearth.capitalize#. A hundred years, they say, and it's not gone out on me yet. It won't.
+mood pleased
+free
+choice Who keeps it at night? -> oldfire_night
+choice I'll take a seat by it. -> greet
+node oldfire_night
+say I do. Banked just so, ash over the coals. I'm down to look at it twice before dawn, fen-friend. Anyone would, with a fire like that to keep.
+choice I believe you. -> greet
+choice Goodbye. -> bye

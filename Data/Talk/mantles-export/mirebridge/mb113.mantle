@@ -1,0 +1,261 @@
+# mb113, the humming deckhand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb113
+revision 1
+state ready
+dialect mirebridge
+accent none
+tier standard
+written_for cty_jasper_greymore
+written_by claude-p11-pilot
+title the humming deckhand
+fits stage=adult|old
+prefers humour=merry
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=frank piety=ordinary drive=steady
+quirk hums_old_marching_songs
+likes roast_pork riddles full_larder first_snow
+dislikes waiting rats
+fears letting_the_old_ones_down
+hopes a_tiller_of_my_own
+topics pastimes +0.4 food +0.3 festival +0.3 work +0.2 family -0.3
+styles comfort=cheer gossip=frank refuse=plain tease=merry
+marks oath saying tune
+persona #self.first# hauls rope on a river-mouth boat: merry and blunt, full of riddles, always humming some old marching tune, and keeps the rest to himself.
+
+words
+oath! = Left, right, and home again | Drums and boots
+saying! = Every march ends somewhere warm | A riddle's only hard till you know it
+tune! = an old marching tune | the drummer's song | the one about the long road home
+riddle = a riddle | a good riddle with a twist in its tail
+pork = a roast with the skin crisped | crackling that snaps
+pantry = a stocked shelf | a pantry with something in it
+whiteday = the first snow | the first white morning
+rats = rats | the rats in the thatch
+waiting = waiting on other folk | standing about like a post
+before = the two before me | my grandad and his father before him
+ink = ink on my paws | a stub of pencil
+step = in step | on the beat
+
+any
+opinion @1 drink for 1 : A jar with friends never hurt anybody worth knowing. Two jars, and I'll give you #tune#.
+opinion @1 festivals for 2 : One day of dancing does more good than a week of sleep. I'd have one every month, #address#, if they'd let me.
+opinion @1 merchants against 3 : Nothing more coming in at our house, and still the loaf costs more. Here's #riddle#: who gets fat on a loaf they never baked?
+opinion @1 houses against 1 : A House would sooner see a bench go cold than seat a deckhand from our end. #bc_let_them#
+opinion @1 newcomers against 1 : Every new face wants the same work I want. I'm not cruel about it. I just count the ropes. #bc_true#
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. New, are you? Here's #riddle# to welcome you. | #greet#. You look lost. That's half of being new.
+line @2 greet [pair.band=friends|family] : #greet#! Guess what I've got. No. Guess. | There you are! #greet#. I've a new one for you.
+line @1 again.open : You again! I've thought of the answer to your #riddle#. | Two visits in one day! You'll have me humming #tune# at you.
+line @3 greet [here.time=dawn] : #greet#. Up with the birds, the pair of us. #oath#! | #greet#. #cold.capitalize#, but I've #tune# going. Warms you.
+line @4 greet [self.working=yes] : #greet#! Can't stop. Haul #step# with me if you're staying. | #greet#. Mind the rope. It bites.
+line @1 greet.return : #greet#! What's new? Say it straight. | #greet#. You look like you've #riddle# in you.
+line @2 greet.return [here.time=night] : #greet#. Late one. I'll whistle you home if you like. | #greet#. Dark out. Mind your feet.
+line @1 farewell : #farewell#! Left, right, off you go. | #farewell#. Think on that riddle.
+line @1 farewell.return : #farewell#! | #farewell#, #address#.
+line @1 react.news.new : #oath#! Is that so? Never heard a word. | Well! That's #riddle# I didn't see coming.
+line @1 react.news.known : Heard it this morning. Old news, #address#. | #knew.capitalize#. You're slow today.
+line @1 react.news.doubt : That's a tall one. Who told you, and were they sober? | #doubt.capitalize#. That one sounds made up.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #bad#. I'm sorry for whoever it is. | #pity.capitalize#. Nothing funny about that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There's #good# news! Somebody'll be dancing. | #gladnews.capitalize#. I'll hum them something.
+line @1 answer.how : #good.capitalize#, and fed. Can't say fairer. | #fine.capitalize#. Hungry, but that's every day.
+line @1 answer.how.busy : #busy.capitalize#. Rope, rope and more rope. | Run off my feet, and humming through it, #step#.
+line @1 sympathise : That's #bad#. I won't make a joke. Not yet. | #sympathy.capitalize#. Come and have a jar. Mends nothing, but I'll sit with you.
+line @1 decline : I can't, #address#. I've the boat in an hour and I'm never late. | No. I'd like to, but my word's given elsewhere.
+line @1 accept_decline : #bc_fair_enough# Another day. | #no_matter.capitalize#. I'll keep it warm.
+line @1 thank : #thanks#! I owe you #riddle#. | Thanks. That's #good# of you, straight.
+line @1 deflect_thanks : Go on. #bc_nothing# | #deflect.capitalize#. Next time it's you.
+line @1 tease : You walk like you've lost a step. Left, right, #address#! | Your face! Like a riddle with no answer.
+line @1 tease.return : #bc_ha# Fair hit. I'll get you back. | #funny.capitalize#. You'll keep.
+line @1 preclose [self.working=yes] : Right. #before.capitalize# never stood about, and nor will I. | That's my rope calling. #farewell#.
+line @1 ack : Right you are, #address#. | #bc_right#
+rule @hum
+when concept=bark working=no
+does aside
+cooldown 6h
+say (hums #tune#) | Dum, dum, da-dum... how does it go? | Left, right... #oath#, I've lost the middle of it.
+
+rule @ropes
+when concept=bark working=yes self.job=fisher|sailor|none self.workplace
+does aside
+cooldown 6h
+say Haul! And two! And haul! Keep #step#. | Coil it the way #before# coiled it. Neat. | What's long and wet and never #tired#? Rope. Haul it!
+
+rule @rats
+when concept=bark working=no
+does aside
+cooldown 8h
+say Something's in the thatch again. #rats.capitalize#. I'll have it. | Shoo! Get out of the bread, you.
+
+rule @waiting
+when concept=bark working=yes
+does aside
+cooldown 8h
+say Still #waiting#. I could have sung the whole of #tune# twice. | Come on, come on. #waiting.capitalize#'s no work at all.
+
+scene jas_whiteday
+when topic=weather|season here.weather=snow here.region=fens
+does tell.self / react.self / assess
+a : #whiteday.capitalize#! Look at it. Everything's quiet. | Snow on the rail! I've been out in #whiteday# since dawn. | I wrote #riddle# about snow once. You want it?
+b : It's #cold#. | You'll catch a chill. | Go on, then.
+a : Course it is. That's what snow's for. | Not me. I'm too busy marching, #step#. | What falls and never hurts? There. #bc_lovely#
+
+scene jas_rain
+when topic=weather here.weather=rain here.region=fens
+does tell.self / react.self / assess
+a : #rain.capitalize# again! I'm humming to keep warm. | Wet rope, wet paws, wet everything. #grumble.capitalize#. | Rain's got a beat to it, if you listen. Hear that?
+b : #bc_every_day# | You don't mind? | I hear rain.
+a : #bc_every_day# I'll hum through all of it. | Mind it? I'd mind #waiting# worse. | It's #tune#. I swear it.
+
+scene jas_work_step
+when topic=work self.job=fisher|sailor|none self.workplace
+does tell.self / react.self / assess
+a : Hauled all morning at #self.workplace#, all of it #step#. Easier that way. | We hauled to #tune# today. Even the skipper hummed. Nearly. | I keep time for the crew. #bc_somebody_has_to#
+b : Does it help? | That's a sight. | #bc_somebody_has_to#
+a : Course! You never drop a rope #step#. | It was a #good# morning. | Somebody. Me.
+
+scene jas_work_before
+when topic=work|family self.job=fisher|sailor|none self.age<40
+does tell.feeling / react.self / assess
+a : #before.capitalize# hauled these same ropes. I feel them watching. | #before.capitalize#, and now me. I'd better not be the one who drops it. | Folk still call me by my grandad's name. On the boat. By mistake.
+b : They'd be proud. | You won't. | #bc_ha#
+a : #bc_i_hope_so# I'd sooner not ask them. | Not on purpose, anyway. #oath#. | I answer to it. It's easier.
+
+scene jas_work_waiting
+when topic=work self.job=fisher|sailor|none
+does tell.complaint / react.complaint / assess
+a : Stood on the boat an hour #waiting#. I hate it. | The skipper's late again. I've hummed every song I know. | I'd rather haul twice than stand once. #waiting.capitalize#, #bad#.
+b : It's not your fault. | Make up a new one. | #bc_me_too#
+a : No. Still my hour wasted. | Working on it. Here, listen. #step.capitalize#. | #bc_me_too# Good. We'll get on.
+
+scene jas_pork
+when topic=food
+does tell.self / react.self / assess
+a : Do you know what I'd give for #pork#? Anything. Don't tell anyone. | Smelled roast pork from somebody's door last night. Stood there like a fool. | #pork.capitalize#. If there's better in the world, I've not had it.
+b : Who's cooking it? | Not the first. | #bc_lovely#
+a : Not me. Never me. #skint.capitalize#. | Won't be the last. | #bc_it_is#
+
+scene jas_pantry
+when topic=food|home self.wealth=poor|destitute
+does tell.self / react.self / assess
+a : Six of us at ours, and the shelf's bare in a day. #hungry.capitalize#. | I'd give a lot for #pantry#. Just once. | Somebody ate my bread. I know who. I'm not saying. I'll make a song of it.
+b : That's a squeeze. | #bc_hope_so# | #bc_ha#
+a : It's alright. We share. #bc_mostly# | Someday. Keep #step#. | A verse a crumb. They'll know.
+
+scene jas_riddle
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : Here's #riddle#: what has teeth and never eats? | Riddle for you. What runs and never walks? | Try this one. What's full of holes and still holds water?
+b : A comb? | The river? | A sponge?
+a : A comb! You've heard it before. #bc_clever# | The river. You're quick. #oath#! | A sponge. Fair. I'll get you next time, #address#.
+
+scene jas_riddle_back
+when topic=pastimes pair.band=friends|family|acquaintances
+does tell.self / react.self / assess
+a : Give me #riddle#. A hard one. I've run out. | I sat up half the night writing #riddle#. Look, #ink#. | I've a riddle nobody's guessed in a month. I'll not tell you the answer.
+b : I've nothing. | Show me. | Go on.
+a : Then I'll give you one. Easy, this. | Later. When #ink# has finished it. | What's yours and everybody uses it? No? Your name. Ha!
+
+scene jas_hum
+when topic=pastimes|smalltalk
+does tell.self / react.self / assess
+a : Was I humming? I didn't notice. #tune.capitalize#, likely. | My grandad taught me #tune#. I've no idea where he got it. | I don't know the words to #tune#. Never did.
+b : You were. | Old song, then. | #bc_i_know#
+a : #bc_sorry# Not sorry. | Older than us both. #olddays.capitalize#. | It is. That's how songs last.
+
+scene jas_rats
+when topic=animals|home
+does tell.complaint / react.complaint / assess
+a : #rats.capitalize# again. Heard them all night. | #rats.capitalize# had the end off my bread. The cheek! | I hate #rats#. I'll not pretend to be brave about it.
+b : Get a cat. | #bc_bad_luck# | #bc_nor_me#
+a : We can't feed ourselves, never mind a cat. | #bad.capitalize# luck for the rat, when I find it. | #good.capitalize#. We'll be scared together.
+
+scene jas_festival
+when topic=festival
+does tell.self / react.self / assess
+a : Festival! I'll dance till my legs drop off. | I've a new tune for the festival. Nobody's heard it. #secret.capitalize#. | One day of dancing beats a week in bed. That's my belief.
+b : You always do. | Play it, then. | #bc_true#
+a : #bc_always_is# | Not yet. #later.capitalize#. | #bc_true# And I'll prove it again.
+
+scene jas_jar
+when topic=smalltalk|food pair.band=friends|family|acquaintances here.time=dusk|night
+does invite / accept_invite / assess
+a : #drink.capitalize# at the Heron? Just one. Well, two. | I'm buying. Don't faint, #address#. | Come and have a drink. I'll sing you #tune#.
+b : Go on, then. | You? Buying? | Only if you don't sing.
+a : #good.capitalize#! You'll get #riddle# with it. | Once a year. Don't waste it. | I'll hum, then. Quiet. #bc_i_will#
+
+scene jas_bread
+when topic=prices|times
+does tell.complaint / react.complaint / assess
+a : Bread's up again. Here's #riddle#: when does a loaf get dearer? Every week. | Pay's the same and everything else isn't. #bad.capitalize#. | We count coppers at our table now. Six of us. All counting.
+b : #bc_they_always_do# | #bc_true# | Rough on you.
+a : Not a funny #riddle#, that one. | #bc_true# I'll hum through it. | It is. We get by. #notsobad.capitalize#.
+
+scene jas_friend
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# bet me I couldn't hum for an hour. I did. #self.friend# didn't pay. | #self.friend# never laughs at my riddles. I keep trying. | I live with #self.friend#. Loud house. #good.capitalize# one, though.
+b : Typical. | Keep at it. | #bc_good#
+a : Typical. I'll collect. | Someday. One will land. | #bc_it_is# Don't tell anyone I said so.
+
+scene jas_health
+when topic=health
+does tell.self / ask.how / answer.how
+a : Pulled something in my shoulder hauling. Still humming. | #fine.capitalize#. Young and daft, the old ones say. You? | Bit #tired#. Up too late writing #riddle#.
+b : Rest it. | Well enough. | #bc_ha#
+a : I'll rest at the festival. On my feet. | #good.capitalize#! Keep #step#. | Worth it. Ask me #riddle#.
+
+scene jas_dreams
+when topic=dreams|work self.job=fisher|sailor|none
+does tell.plan / react.self / assess
+a : Someday I'll have the tiller. Not soon. But someday. | I'd like a boat of my own and #pantry#. That's all. | #before.capitalize# never had their own boat. I'd like to be the first.
+b : You'll get there. | Not much to ask. | #bc_i_hope_so#
+a : Left, right. One step a time. | It's not, is it? | #bc_so_do_i#
+
+scene jas_lore
+when topic=lore here.region=fens
+does tell.story / react.story / assess
+a : There's an old song about the drowned town. I only know it as #tune#. | They say the drowned bell rings on its own. Nobody's ever caught it at it. | I wrote #riddle# about the marsh lights. It's too sad. I tore it up.
+b : Hum it. | #bc_so_they_say# | Shame.
+a : Dum, da-dum, da... that's it. All I've got. | #bc_so_they_say# | It was a #good# riddle. Just sad.
+
+story jas_grandad [topic=family self.age<40]
+  : My grandad was on the river mouth fifty years. Never missed a tide.
+  : First day I went out, he was too old to haul. Stood on the bank and watched.
+  b : What did he say?
+  : Nothing. Hummed #tune# till I was out of sight.
+  : I hum it every time we cast off. Can't help it. #oath#.
+  b : #bc_lovely#
+
+story jas_supper_riddle [topic=pastimes self.age>=20]
+  : Won a supper with #riddle# once. A whole supper.
+  : Asked a drover at the Heron what has a neck and no head. Bet the drover's supper on it.
+  ask : Did they get it?
+  b : Did they?
+  : A bottle! Nobody gets it. I ate #pork#. Best night of my life. #oath#!
+  b : #bc_ha#
+
+story jas_first_white [topic=memories|season self.age>=20]
+  : First snow I remember, I was a pup. I thought the sky had broken.
+  : Ran out in it with no coat and sang every song I knew. All three. Ate snow till I was #cold# through.
+  b : Did you catch cold?
+  : Caught a beating. Then a cold. Worth both. I still go out for #whiteday#.
+  b : #bc_ha#
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. New face! Here's #riddle# to start you off: what's always coming and never comes?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! Got an answer for my riddle yet? No? I'll wait. I hate waiting.
+dlg @3 resident.hub [pair.disposition=hostile] : #greet#. Say it straight, whatever it is. I'll do the same.
+dlg @1 resident.job : I'm #self.trade_words#. #before.capitalize#, then me, on the same ropes. I haul, I hum, I don't drop anything.
+dlg @1 resident.news : News? Bread's up. #rats.capitalize# are in. I've a new tune. That's the lot.
+dlg @1 resident.bye : #farewell#! Left, right, off you go.
+graft resident.hub
+choice What's the answer to your riddle? -> jas_answer
+node jas_answer
+say Tomorrow. What's always coming and never comes? Tomorrow. Don't look like that, it's a #good# one.
+mood pleased
+free
+choice Tell me another. -> jas_another
+choice Goodbye. -> bye
+node jas_another
+say What has one eye and never sees? A needle. #oath#! You walked into that one.
+choice Ha. All right. -> hub
+choice Goodbye. -> bye

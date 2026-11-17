@@ -1,0 +1,278 @@
+# mb118, the storm-sleeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb118
+revision 1
+state ready
+dialect mirebridge
+accent light broad
+tier standard
+written_for cty_maren_coalwick
+written_by claude-p11-pilot
+title the storm-sleeper
+fits stage=adult|old
+prefers job=none|herder
+traits temper=even talk=quiet warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk sleeps_badly_before_storms
+likes warm_bread swimming fresh_straw first_warm_day
+dislikes early_bells gulls
+fears a_winter_with_nothing_in_the_nets
+hopes an_apology_from_the_council
+topics weather +0.4 work +0.2 food +0.2 times +0.2 newcomer +0.2 festival -0.3
+styles comfort=warm gossip=reluctant refuse=soft tease=dry
+marks oath saying
+persona #self.first# nets rabbits in the sand hills: quiet, dry as a biscuit, kind underneath, and never sleeps the night before a storm.
+
+words
+oath! = Fur and ferret | Nets and nettles
+saying! = Bread's warmest the day you share it | Never trust a quiet ferret
+ferret = the ferret | that ferret of ours
+purse = the purse-nets | a net over every hole
+loaf = bread still warm from the oven | a warm loaf
+dip = a swim, cold water or not | a dip off the strand
+warmday = the first warm day of spring | the first day you can leave the door open
+bells = bells before dawn | that bell at first light
+sleepless = a night staring at the thatch | a night with no sleep in it
+coney = a coney | a fat coney
+bedstraw = a bed of new straw | new straw to sleep on
+screamers = the gulls | those screaming gulls
+grand = those grand folk | the dry-footed lot
+council = the Council | those on the Council
+blow = weather coming | a blow on its way
+
+any
+opinion @1 dole for 1 : Not one soul out here should lie down #hungry#. I'd give the last of #loaf# before I'd let them.
+opinion @1 strangers for 1 : Sit a stranger down and feed them. Then you'll know who they are. Usually someone #hungry#.
+opinion @1 merchants against 2 : The loaf goes up, the coney goes down, and the one in the middle smiles. #annoyed#.
+opinion @1 houses against 1 : I went and asked #council# for one fair thing, once. I know what they think of the likes of me now.
+opinion @1 festivals against 1 : I'll watch the feast from a quiet window with #loaf#. That's my sort of feast.
+
+grown
+line @1 greet.return : #greet#. | #greet#. You look #tired#. Sit.
+line @1 greet [pair.band=strangers] : #greet#. Have you eaten? You've the look of someone who hasn't. | #greet#. You're new. Come in off the sand.
+line @2 greet [here.time=dawn] : #greet#. Did the bell wake you too? | #greet#. Up before #bells#, for once.
+line @3 greet [self.working=yes] : #greet#. Keep your feet off #purse#. | #greet#. Quiet, now, #ferret#'s down.
+line @1 kin.open [pair.kin!=no] : There you are. Eaten? There's #loaf#. | #greet#. Come here, then.
+line @1 again.open : Back already? People will talk, #dear#. | Back for more, are you. #greet#.
+line @1 farewell : #farewell#. Eat something. | #farewell#. Mind the gulls.
+line @1 farewell.return : #farewell#. | And you. #farewell#.
+line @1 react.news.new : Well. #surprise#. | Is it. I'll need a sit-down. #oath#.
+line @1 react.news.known : #knew#. | Heard it last night. #sleepless.capitalize# anyway.
+line @1 react.news.doubt : #doubt#. Somebody's been chewing reeds. | I'll believe it when it's on the table in front of me, #address#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Poor souls. | #sympathy#. That's a cold thing to hear.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. #gladnews#. | That's #good#. Somebody should bake.
+line @1 answer.how : #tired.capitalize#. Storm coming, so I didn't sleep. | #fine#. Fed, and the ferret's behaving. | Can't complain. I do, but I can't.
+line @1 sympathise : #sympathy#. Come and have #loaf#. It mends nothing, but it's warm. | Oh, #dear#. Sit down. Tell it slow.
+line @1 decline : I can't, #address#. I'd let you down and I'd sooner say so now. | #demur#. I've #purse# to mend and no light to do it in.
+line @1 accept_decline : #no_matter#. The offer keeps. | Fair. I'll eat your share of #loaf#.
+line @1 thank : #thanks#. | #thanks#, #dear#.
+line @1 deflect_thanks : #deflect#. You'd have done it. | It was nothing. Well. It was a little something.
+line @1 tease : Look at you. Like a ferret that's found the cream. | You've got that face on. The one with a secret behind it.
+line @1 tease.return : #cheek#. | Says the one with sand in their fur, #dear#.
+line @1 preclose : Well. #purse.capitalize# won't mend themselves. | #preclose#.
+line @1 ack : Mm. #bc_true# | #ack#.
+scene ferret_down
+when topic=work|animals here.region=fens self.job=none|herder self.workplace
+does tell.self / react.self / assess
+a : Put #ferret# down the long burrow at first light. Came up an hour later looking pleased with itself. Nothing in the nets. | Three coneys before noon. #ferret.capitalize# wants paying in liver. | #ferret.capitalize# bit me again. Third time this week. We're very close.
+b[job=herder|farmer] #beasts : They always look pleased. | Three's fair. | Ferrets bite. It's how they say hello.
+b : An hour? | #bc_good# | #bc_ha#
+a@beasts : It's how they get away with it. #saying#. | Fair, and #very# muddy. | Then it loves me #very# much.
+a : An hour. I'd have gone down myself if I fit. | #bc_good#. Liver's dear, mind. | Close as #mud# to a boot.
+
+scene nets_work
+when topic=work here.region=fens self.job=none|herder self.workplace
+does tell.self / react.self / assess
+a : Pegged #purse# over every hole on the south slope. Took all morning. | Mended #purse# till my eyes crossed. #screamers.capitalize# had the old ones. | Caught #coney# with one leg already in the next hole. It nearly had me.
+b : All morning? | The gulls? | #bc_ha#
+a : All morning, for two. #oath#. Some days are like that. | #screamers.capitalize#. They'll take anything that isn't nailed. | Nearly. I'm faster. Just.
+
+scene storm_sleepless
+when topic=weather|health here.region=fens here.weather=overcast|fog
+does tell.feeling / react.self / assess
+a : Didn't sleep. #sleepless.capitalize#. There's a storm coming. | I'll tell you now: #wind# by dark. My bones haven't let me down yet. | Lay awake listening to nothing. That means #blow#.
+b[friends] #mate : You're never wrong. | Bones, is it? | #bc_every_time#
+b : The sky looks fine. | How do you know? | You look #tired#.
+a@mate : Never yet. I'd like to be, once. | Bones and a bad night. | Every time. I'd swap the gift for a night's sleep.
+a : Give it till dark. | I didn't sleep. That's how. #oath#. | I am. Bring the washing in. #blow.capitalize#.
+
+scene storm_told
+when topic=weather here.region=fens here.weather=storm
+does tell.self / react.self / assess
+a : There. What did I say. Didn't sleep a wink last night. | I said this morning. Nobody listens to a #tired# wolf. | Now it's here I'll sleep like a stone. #oath#.
+b : You were right. | I listened. | #bc_ha#. Lucky you.
+a : I'd rather have slept. | Then you're the only one. #bc_ha# | Lucky. That's one word for it.
+
+scene warm_day
+when topic=weather|season here.region=fens here.season=spring here.weather=clear
+does tell.feeling / react.self / assess
+a : #warmday.capitalize#. I've the door wide and the straw out airing. | #warmday.capitalize#. I could lie on the sand till it's dark. | Feel that. That's #warmday#, that is.
+b : #bc_lovely# | Go on, then. | #bc_about_time#
+a : It is. Winter's gone off somewhere to sulk. | I might. Somebody wake me for #supper#. | #bc_about_time# #bc_it_is#
+
+scene cold_swim
+when topic=pastimes here.region=fens
+does tell.self / react.self / assess
+a : Went in off the strand this morning. #dip.capitalize#. Woke up properly. | Cold water's good for you. Nobody believes me. They're all warm and dull. | Swam out to the post and back. A seal gave me a look, as if I was soft.
+b[stage=young] #pup : Can I come next time? | Is it cold? | A seal?
+b : You're mad. | #bc_ha# | In this?
+a@pup : If you hold my tail and don't let go. | Freezing. It's lovely. | A real one. Very rude.
+a : Mad and clean. #oath#. | It's true, though. #saying#. | In any. The water doesn't know the weather. #dip.capitalize#'s a #dip#.
+
+scene warm_loaf
+when topic=food here.region=fens
+does tell.self / react.self / assess
+a : #loaf.capitalize#. I'd walk the length of the boardwalk for one. | The baker's oven door was open. I stood there like a moth. | Tore the end off a loaf on the way home. Nobody saw. Well, you do now.
+b[wealth=poor|destitute] #poor : When there's a copper for it. | Did they give you one? | I'll not tell.
+b : #bc_lovely# | #bc_ha# | Your secret's safe.
+a@poor : When. Aye. Share it, then. #saying#. | Gave me a heel. For looking pitiful. | Good. Have some, then you're in it too.
+a : It's the best thing in the fen. #saying#. | I'm not proud. | It's never safe. Have some #loaf#.
+
+scene bells_dawn
+when topic=day here.region=fens here.time=dawn
+does tell.complaint / react.complaint / assess
+a : #bells.capitalize#. Who needs ringing out of bed before the gulls? | Rang me awake just as I'd dropped off. #oath#. | If I find who rings #bells#, I'll put #ferret# in their bed.
+b : #bc_every_day# | #bc_bad_luck# | #bc_ha#
+a : Every one. I've counted. | It always is, with me. | I mean it. #bc_mostly#
+
+scene friend_worrier
+when topic=friends here.region=fens self.friend
+does tell.self / react.self / assess
+a : #self.friend# frets enough for two. I make the jokes; it evens out, #bc_mostly# | Brought #self.friend# a warm heel this morning. Worrying goes better fed. | #self.friend# says I'm too calm. I said I'm too #tired# to panic.
+b[friends] #mate : You're a good pair. | It does. | #bc_ha#
+b : #bc_good# | Kind of you. | #bc_ha#. Fair.
+a@mate : We are. Nobody else would have us. | It always does. #saying#. | It's true, though.
+a : It works. Mostly. | It was nothing. Half of #loaf#. | Fair's what I am, apparently.
+
+scene council_lost
+when topic=times|gossip here.region=fens pair.band=friends|family|housemates|acquaintances
+does confide / react.self / assess
+a : I went up and asked #council# for something fair once. You know how that went. | #council.capitalize#? I'm still cross, and I'm saving it. | #council.capitalize# wouldn't know a hard winter if it sat on them.
+b[friends] #mate : I know. Still. | Saving it for what? | #bc_true#
+b : #bc_bad_luck# | Still? | #bc_ha#
+a@mate : Still. Some things don't wash out. | For when they ask me for something. | And it never has. #annoyed#.
+a : Bad luck, they called it. I call it something else. | Still. I've a long memory and nothing to fill it. | #bc_true#. #grand.capitalize# never feel it.
+
+scene dole_bowl
+when topic=times|prices here.region=fens
+does give.opinion / react.self / assess
+a : Nobody should go to bed #hungry# out here. Not with eels in the creek and bread in the oven. | If somebody's short, I'll send #coney# round. Can't eat them all. | Hard times. Every week a little harder. #saying#.
+b[wealth=rich|comfortable] #fine : They should work for it. | Generous of you. | Times are hard for everyone.
+b : #bc_true# | Kind of you. | #bc_true_enough#
+a@fine : They do work. It isn't enough. | Not generous. Practical. #saying#. | Harder for some.
+a : Simple as that. #oath#. | Can't eat them all. Honest. | #bc_it_is#
+
+scene stranger_fed
+when topic=newcomer|smalltalk here.region=fens
+does tell.self / react.self / assess
+a : A new face came through yesterday, soaked to the skin. I fed them. They told me everything. | Somebody new on the boards. I'll have them in for #loaf# before they've unpacked. | New folk always look #hungry#. Maybe it's the fen.
+b : That's kind. | You feed everyone. | #bc_ha#. Maybe.
+a : It's not kind. It's nosy, with #loaf#. | Everyone eats. #saying#. | It's the fen. It hollows you out.
+
+scene prices_loaf
+when topic=prices here.region=fens
+does tell.complaint / react.complaint / assess
+a : Bread up again. #coney.capitalize# down again. I'm in the middle, getting thinner. | #self.shopkeeper# added a copper to the loaf and looked sorry about it. Not sorry enough to take it off. | They pay me for #coney# like it's a favour.
+b[wealth=poor|destitute] #poor : #bc_every_time# | Sorry doesn't feed anyone. | #bc_they_always_do#
+b : #bc_they_always_do# | #bc_ha# | #bc_true#
+a@poor : Every week. #grumble#. | It doesn't. #bc_true# | They do. #oath#.
+a : Thinner and crosser. | It never is. | A favour they charge for.
+
+scene straw_bed
+when topic=home here.region=fens
+does tell.self / react.self / assess
+a : Put #bedstraw# down last night. Slept like a coney. Well, till the bell. | Crowded under our thatch. Still, it's #snug#. | Somebody's boots by the fire again. Not mine. I'm too tidy to be blamed.
+b : #bc_lovely# | Warm counts. | #bc_ha#
+a : Till #bells#. Always the bells. | It counts for most things. | I'm blamed anyway. #bc_always#
+
+scene festival_window
+when topic=festival here.region=fens
+does give.opinion / react.self / assess
+a : I'll see it from the window. They can't make me dance from there. | Feast tomorrow. I'll bake #loaf#. That's my part. | All that noise. I'll be asleep, and #sleepless# after.
+b[stage=young] #pup : Come and dance! | Can I have some? | Why?
+b : #bc_ha# | #bc_good# | You'll miss it.
+a@pup : I'll wave. That's dancing, for me. | The first bit. Then it's mine. | Old bones, little one.
+a : They've tried. #oath#. | Somebody has to. #saying#. | I'll hear about it. I always do.
+
+scene dusk_coneys
+when topic=day|animals here.region=fens here.time=dusk
+does tell.self / react.self / assess
+a : Dusk. #coney.capitalize# on every slope, ears up. Bold as you like. | This is when they come out. I sit still and count them. | Light's going. The rabbits are coming. Neither cares about me.
+b : #bc_lovely# | How many? | #bc_ha#
+a : Pretty. And #supper#. Both. | More than yesterday. Good. | It's mutual.
+
+scene faith_ordinary
+when topic=faith here.region=fens
+does give.opinion / react.self / assess
+a : I say thank you to the Bright One for #loaf# and leave it there. | Chapel's warm. I go for that, and the singing. | I don't ask for much. The Bright One has enough to do.
+b[priest] #cloth : That's a good prayer. | Come for the sermon too. | The Bright One has time for all.
+b : #bc_true# | #bc_ha# | #bc_fair#
+a@cloth : Short ones get heard. I hope. | I'll stay awake. Probably. | Then I'll ask for sleep.
+a : Short and honest. | It's #snug#, that's all. | That's all I'd ask.
+
+scene gulls_hate
+when topic=animals here.region=fens here.weather!=indoors
+does tell.complaint / react.complaint / assess
+a : #screamers.capitalize# had a coney out of the purse-net. Shouted at me while they did it. | Can't abide #screamers#. All beak and no manners. | Threw my boot at #screamers#. They took the boot.
+b : #bc_they_always_do# | #bc_true# | #bc_ha#
+a : Thieves with wings. #annoyed#. | Not a scrap of manners. | I want it back. It was my good boot.
+
+story council_walk [topic=memories|times self.age>=30]
+  : Years back I walked all the way to Ridgemere with a paper. Asking #council# for one fair thing.
+  : Sat three days outside a door. They read it in the time it takes to sneeze.
+  ask : Do you know what they said?
+  b : What?
+  : Nothing. A clerk said it for them. I walked home and I haven't forgiven a single one.
+
+story winter_dare [topic=memories|pastimes self.age>=25]
+  : When I was young somebody dared me to swim in midwinter.
+  : Ice at the edges. Neck-deep before I could think better of it.
+  b : And?
+  : I came out blue and laughing. They paid the bet in warm bread. Best I ever won. #oath#.
+
+story lost_ferret [topic=memories|animals self.age>=25]
+  : We lost #ferret# down a burrow once. Gone a week. I'd stopped looking.
+  : Then one morning it was asleep in my boot by the door, fat as you like.
+  b : Where had it been?
+  : Never said. Never trust a quiet ferret. I've said that since.
+
+rule @nets
+when concept=bark self.working=yes here.region=fens self.job=none|herder self.workplace
+does aside
+cooldown 6h
+say Easy. Easy, #ferret#. | There's one. #coney.capitalize#. | Peg it down. Tighter. #oath#.
+
+rule @gulls
+when concept=bark here.region=fens here.weather!=indoors here.time=dawn|day
+does aside
+cooldown 8h
+say Shoo. Go on. #screamers.capitalize#. | You'll not have this one. | Thieves. All of you. #annoyed#.
+
+rule @bell
+when concept=bark here.region=fens here.time=dawn
+does aside
+cooldown 8h
+say #bells.capitalize#. Again. | Who rings a bell this early? #annoyed#. | Couldn't have waited, could they.
+
+rule @storm
+when concept=bark here.region=fens here.weather=overcast
+does aside
+cooldown 8h
+say It's coming. #blow.capitalize#. | #sleepless.capitalize#, tonight. | Bring the washing in. Weather's on its way.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. Have you eaten? Ask your question, then I'll find you something.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You again. You look #tired#. What is it?
+dlg @3 resident.hub [pair.disposition=wary] : #greet#. I'll listen. I'm too #tired# for anything else.
+dlg @1 resident.job : I net coneys in the sand hills. #ferret.capitalize# does the work and I take the credit.
+dlg @1 resident.news : Only that there's #blow#. I didn't sleep. Ask anyone else for the rest.
+dlg @1 resident.bye : #farewell#. Eat something on the way.
+graft resident.hub
+choice How do you always know a storm's coming? -> stormsense
+node stormsense
+say I don't sleep. The night before a storm, I lie there staring at the thatch. Then it comes. #oath#.
+mood warm
+free
+choice Is there a cure for it? -> stormcure
+choice That's a useful gift. -> hub
+node stormcure
+say If there is, I'd swap #loaf# for it. Until then I bring the washing in for the whole house.
+choice I'll bring mine in too. -> hub
+choice Goodbye. -> bye

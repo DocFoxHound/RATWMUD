@@ -1,0 +1,306 @@
+# sw112, the sky-scolder (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sw112
+revision 1
+state ready
+dialect saltwell
+accent light broad
+tier standard
+written_for cty_ash_sheafmeadow
+written_by claude-p11-pilot
+title the sky-scolder
+fits stage=adult|old
+prefers talk=chatty
+traits temper=even talk=chatty warmth=cold humour=merry honesty=guarded piety=ordinary drive=steady
+quirk argues_with_the_weather
+likes mutton_stew draughts old_maps misty_dawns
+dislikes bad_manners flies
+fears a_letter_with_bad_news
+hopes a_map_of_every_road_out
+topics weather +0.4 pastimes +0.3 festival +0.3 food +0.2 work +0.2 family -0.4
+styles comfort=brisk gossip=eager refuse=plain tease=merry
+marks oath saying
+persona #self.first# works down in the cool among the casks: quick-tongued and merry, cold under it, and forever quarrelling with the sky.
+
+words
+oath! = Bung and barrel | By the dark of the cellar
+saying! = Every cask swears it's the best till you taste it | A map's only as true as the last fool who walked it
+brasslid = you great brass lid | you old blue liar
+sky = the sky | that sky
+cellar = the cellar | down among the casks
+tuns = the big tuns | the casks
+stew = a mutton stew | mutton stew with the fat left on
+board = a game of draughts | the draughts board
+oldmap = an old map with the roads all wrong | a map older than the road it shows
+haze = a misty dawn | the haze on the pool at first light
+goatmanners = the manners of a goat | no manners at all
+farkin = my kin out past the dunes | the cousins who never write
+hah = Hah | Ha, there
+bungsip = a sip from the bung | a cellar-hand's taste
+
+any
+opinion @1 strangers against 2 : A guest drinks first. Fine. Doesn't mean I open my door to them. #hah#.
+opinion @2 strangers against 2 [conv.agreed_before=no] : You know me. Strange faces get a smile and a shut door. Both free.
+opinion @1 festivals for 2 : One feast day does more good than a week of sleep. Dance till the lamps gutter. #oath#.
+opinion @1 drink for 1 : A cup among friends never hurt anybody worth knowing. I'd know; I keep #tuns#.
+opinion @1 dole against 1 : The well-share teaches a wolf to stand in a line. I'd sooner stand in #cellar#.
+opinion @1 merchants against 2 : The wine I carry sells for more than I earn in a month. Somebody's laughing, and it's not me.
+opinion @1 city against 1 : Smoke and elbows, they tell me. And no sky to argue with. #hah#, I'd go mad.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. And you are? No, keep it; I'll forget it anyway. | #greet#, #address#. Don't block the light; it's rare enough.
+line @2 greet [here.time=dawn] : #greet#. Look at #sky#, pretending it'll be cool all day. | #greet#. Morning's lying to us again.
+line @3 greet [self.working=yes] : #greet#. Mind the step down; #cellar# bites ankles. | #greet#. Talk fast, the casks are listening.
+line @1 again.open : #hah#. You again. Can't keep away from me. | Back so soon? #oath#, I'm popular.
+line @1 greet.return : #greet#. | #greet#, #address#. Lovely day, says nobody. | #greet#. #hah#.
+line @2 greet.return [here.time=dusk|night] : #greet#. The sky's finally shut up. | #greet#. Cool at last; about time.
+line @1 farewell : #farewell#. Don't let the sun catch you. | #farewell#. Off with you.
+line @1 farewell.return : #farewell#. | And on yours. Mind the heat.
+line @1 react.news.new : #surprise#! Well, there's a thing. | #oath#, is it? Go on. Tell the rest.
+line @1 react.news.known : Old water. #knew#. | Heard it at dawn, #address#. Keep up.
+line @1 react.news.doubt : #doubt#. Who's selling that one? | #hah#. I'll believe it when I've seen it stamped and drunk to.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #pity#. Rotten luck. | #rest#. That's a bitter cask.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#! There'll be a cup in that. | #congrats#. Somebody's luck, at least.
+line @1 answer.how : Arguing with #sky#, as ever. Losing, as ever. | Cool, down in #cellar#. Up here, cooking. | #fine#. Ask me again at dusk.
+line @1 sympathise : #sympathy#. Have a cup; it doesn't help, but it's wet. | #notsobad#. Worse things happen at sea, they tell me. I've never seen it.
+line @1 decline : #hedge#, no. I've casks to turn and no paws spare. | Not for me, thanks. I keep to #cellar# and my own business.
+line @1 accept_decline : Your loss. #hah#. | #no_matter#. I'll ask the casks; they never say no.
+line @1 thank : #thanks#. Now don't make a habit of it. | My thanks. There. Said it.
+line @1 deflect_thanks : #deflect#. Don't get soft on me. | It was nothing. Truly nothing. I checked.
+line @1 tease : You walk like the sun owes you money. | Is that your best coat, #address#? #hah#.
+line @1 tease.return : #cheek#. | #hah#. Says you.
+line @1 preclose [self.working=yes] : #tuns.capitalize# won't turn themselves. #excuse#. | That's my break gone. Back down to #cellar#.
+line @1 ack : #ack#. | #hah#. Right.
+rule @sun_bark
+when concept=bark here.time=day here.weather=clear here.outdoors=clear
+does aside
+cooldown 6h
+say Oh, it's you again, #brasslid#. | Go and shine on somebody else, #brasslid#. | #hot.capitalize#. Thanks for nothing, #brasslid#.
+
+rule @cellar_bark
+when concept=bark self.working=yes self.workplace
+does aside
+cooldown 6h
+say Roll it, turn it, chalk it. #oath#. | #saying#. | Cool down here. Cool and quiet. I like casks; they don't talk back.
+
+rule @flies_bark
+when concept=bark here.season=summer here.time=day
+does aside
+cooldown 8h
+say Flies. In #cellar#. Who invited you? | #annoyed#. Off the bung, you.
+
+rule @dusk_bark
+when concept=bark here.time=dusk here.weather=clear
+does aside
+cooldown 12h
+say There. Beaten you again, #brasslid#. | Down you go, and good riddance. #hah#.
+
+scene sw112_sun_quarrel
+when topic=weather|day here.region=waste here.time=day here.weather=clear
+does tell.self / react.self / assess
+a : I told the sun this morning: one cloud. That's all I ask. Not even a big one. | #hot.capitalize# again. I've a quarrel with #sky#, and #sky#'s winning. | Not one cloud. Look. That's spite, that is.
+b[from=saltwell] #sw : You'll get your cloud when the Waste blooms. | It always wins. Sit in the shade and lose quietly. | The sky doesn't do spite. Only noon.
+b : #bc_ha# | #bc_again# | #hot.capitalize#, though.
+a@sw : When the Waste blooms, I'll thank it. Not before. | Lose quietly? Me? #hah#. | Noon's the spite. The sky's the one holding it.
+a : I'll keep asking. #brasslid.capitalize# hates being asked. | #bc_again# Every day, #brasslid#. | #saying#.
+
+scene sw112_misty_dawn
+when topic=weather|day here.region=waste here.time=dawn here.weather=fog
+does tell.self / react.self / assess
+a : #haze.capitalize#! In the Waste! I've waited all year. | See that? #sky.capitalize# came down to drink. | Don't talk. Just look. It's gone in a breath.
+b[from=saltwell] #sw : The pool breathes out at dawn, twice a year. | Down to drink, and caught. | Gone already. There.
+b : #bc_lovely# | #bc_go_on# | #bc_maybe#
+a@sw : Twice a year. Not enough. I want it every day. | Caught, and sorry for it. #hah#. | There. Nothing lasts that's worth having.
+a : Best hour I'll get till winter. | #haze.capitalize#. Proof #sky# can behave. | #oath#. Back to the casks.
+
+scene sw112_sand_wind
+when topic=weather here.region=waste here.weather=sandstorm
+does tell.complaint / react.complaint / assess
+a : Sand in my ears, sand in my teeth. And what did I ever do to you, #sky#? | I swept the cellar steps twice. The wind swept them back. | Listen to it, howling at the door like it's owed rent.
+b[old] #old : It blows itself out. Always has. | Sweep when it's done, not before. | Owed rent! Ha.
+b : #bc_again# | #bc_very_bad# | #bc_ha#
+a@old : It can blow itself out somewhere else. | Now you tell me. | Well, it can wait like the rest of us.
+a : #annoyed.capitalize#. Shutters, and a cup. | #hah#. Me and the wind, both stubborn. | #oath#. Not opening.
+
+scene sw112_rain
+when topic=weather here.region=waste here.weather=rain|storm
+does tell.self / react.self / assess
+a : Rain! Finally! See, #sky#, you can do it if you try. | It's raining in the Waste and I've no hat. Of course. | Rain on the slope, and every cask in #cellar# sweating.
+b[from=saltwell] #sw : Don't scold it, you'll scare it off. | Hats are for the city. Get wet. | The casks drink the damp. Better wine.
+b : #bc_lovely# | #bc_ha# | #bc_about_time#
+a@sw : Fine. Thank you, sky. There, I said it. | Wet it is. #hah#. | Better wine I'll never taste. Lovely.
+a : About time. I'd given up on it. | #bc_ha# | #saying#.
+
+scene sw112_cellar
+when topic=work here.region=waste self.workplace
+does tell.self / react.self / assess
+a : Turned every cask in #cellar# this morning. Forty-eight. I talk to each one. | Coolest place in Saltwell is #cellar#. I'd live there if they let me. | One of #tuns# sprang a leak. Purple to my elbows.
+b[job=brewer|innkeeper] #drink : Do they answer? | They'd make you pay rent on a barrel. | The leak's the cellar-hand's share, they say.
+b : #bc_wise# | Lucky you, #address#. | #bc_ha#
+a@drink : Better than most wolves. | I'd pay. In wine. #hah#. | They say it. The master doesn't.
+a : Never interrupt, either. #hah#. | #snug.capitalize#, and dark, and nobody's manners to mind. | #oath#. I smell like a feast.
+
+scene sw112_bung_sip
+when topic=work|food here.region=waste self.workplace
+does confide / react.self / assess
+a : Don't tell, but #bungsip# keeps a cellar-hand honest. | You have to taste to know a cask's turned. It's work. Mostly. | The master says no tasting. The casks say otherwise.
+b[friends] #friend : I heard nothing. | Mostly work. | Casks are sly.
+b : #secret#. | #bc_maybe# | #bc_ha#
+a@friend : Good. Have a cup with me later. | #hah#. Mostly. | Slyer than me.
+a : #hah#. Honest work. | #saying#. | #oath#. I listen to the casks.
+
+scene sw112_stew
+when topic=food here.region=waste
+does tell.self / react.self / assess
+a : #stew.capitalize# at the inn tonight. I've been smelling it since noon. | Give me #stew# and keep your dates. All of them. | The only thing worth coming up out of #cellar# for is #stew#.
+b[from=saltwell] #sw : Mutton in the Waste? That's a feast. | Keep my dates? Dates are life here. | And the evening bread.
+b : #bc_good# | #tasty.capitalize#. | #hungry.capitalize#, now.
+a@sw : A feast every night, if I had the silver. | Life's for those who like it chewy. #hah#. | Bread to wipe the bowl. Nothing else.
+a : Can't afford it twice a week. Once is good. | #hah#. Hungry? Good. Less for you. | #oath#. #stew.capitalize#. Nothing better.
+
+scene sw112_draughts
+when topic=pastimes here.region=waste
+does tell.boast / react.self / assess
+a : Beat the whole cottage at #board# last night. Every one of them. | Fancy #board#? I'll give you two pieces start. | Nobody in Saltwell can beat me at draughts. I've checked.
+b[friends] #friend : You cheat. | Two! Generous. Suspicious. | I could. I let you win.
+b : #bc_clever# | #bc_maybe# | #cheek#.
+a@friend : I don't need to. #hah#. | Suspicious is clever. Sit down. | You let me? Prove it.
+a : Every one. They want a rematch. | Your loss if not. | #saying#. Same with boards.
+
+scene sw112_old_map
+when topic=pastimes|travel here.region=waste
+does tell.self / react.self / assess
+a : Found #oldmap# in a carter's crate. Saltwell's drawn on the wrong side of the dunes. | I've #oldmap# pinned over my mat. Half the roads go nowhere. | You know what I love about old maps? They're so sure of themselves.
+b[job=carter] #road : They copy each other's mistakes. I've followed one into a wadi. | Nowhere's a place too. | I steer by stars. Maps lie.
+b : #bc_ha# | #bc_go_on# | #bc_maybe#
+a@road : Did you get out? #hah#. | Not on that map it isn't. | #saying#.
+a : Wrong side of the dunes. Maybe it was right, once. | I mean to walk one, someday. Just to see where nowhere is. | Like a wolf at a dice cup.
+
+scene sw112_manners
+when topic=smalltalk|gossip here.region=waste
+does tell.complaint / react.complaint / assess
+a : Carter pushed in front at the well this morning. Didn't even nod. #goatmanners.capitalize#. | Somebody spat on the cellar steps. My steps. | A guest takes the first draw. A guest doesn't take the whole bucket.
+b[from=saltwell] #sw : The well has its manners. He'll learn. | Your steps! Who'd dare? | Three days a guest. After that, he's a goat.
+b : #bc_very_bad# | #annoyed.capitalize#. | #bc_true#
+a@sw : He'll learn from me, then. | Nobody, now. I sat on them all afternoon. | A goat. #hah#. I'll tell him.
+a : #oath#. Wolves without manners. Worse than flies. | #annoyed.capitalize#. | #hah#. Nobody learns.
+
+scene sw112_flies
+when topic=animals|weather here.region=waste here.season=summer
+does tell.complaint / react.complaint / assess
+a : Flies on the bungs, flies in the stew. I'm told it's summer. I'd like a word with whoever's in charge. | I swatted one fly and its whole family came to the funeral. | #sky.capitalize# sends flies the way the city sends tax-wolves. Nobody asked for either.
+b[job=farmer|herder] #farm : Smoke under the eaves. | Then you'll be swatting till winter. | Ha. Truer than you know.
+b : #bc_ha# | #bc_again# | #bc_very_bad#
+a@farm : My eaves are a cellar door. Smoke the casks? | Winter. Can't come fast enough. | #hah#. I know enough.
+a : #annoyed.capitalize#. All summer. | #oath#. Swat one, ten more. | #saying#. Not flies, though.
+
+scene sw112_festival
+when topic=festival here.region=waste topic.when=today
+does tell.self / react.self / assess
+a : #here.festival# today! I'll dance till the lamps go out and then a bit more. | Lamps round the pool for #here.festival#, and a cup off the master's casks. Free! | #here.festival#. Even #sky# looks cheerful. Don't trust it.
+b[from=saltwell] #sw : Mind you don't dance into the pool. | Free? Who said? | Cheerful, and hot.
+b : #bc_lovely# | #bc_ha# | #bc_good#
+a@sw : Into the pool's the best bit. #hah#. | I said. Don't check. | Hot, but cheerful. I'll take that trade.
+a : Come and dance. Or don't. I won't notice. | #oath#. A feast's a feast. | #saying#.
+
+scene sw112_kin
+when topic=family here.region=waste self.married=no
+does tell.self / react.self / assess
+a : Family? #farkin.capitalize#. Somewhere. Next question. | #farkin.capitalize#. A letter once, years back. Not since. | I write to nobody and nobody writes to me. Fair trade.
+b[friends] #friend : You could write first. | Years? That's cold. | Fair, maybe.
+b : #bc_poor_soul# | #bc_maybe# | Hard, that.
+a@friend : I could. I won't. #hah#. | Cold's what I'm good at. | Maybe. Don't dig.
+a : Don't. I'm fine. #hah#. | #oath#. Leave it there. | #saying#. Same with kin.
+
+scene sw112_strangers
+when topic=newcomer|smalltalk here.region=waste
+does give.opinion / react.self / assess
+a : Another new face at the well. I'll smile. I won't open the door. | #topic.subject#, is it? Nobody knows where from. That's enough for me. | Strangers. All very welcome. At a distance.
+b[from=saltwell] #sw : The stranger draws first. That's our way. | We were all strangers once. | Three days a guest.
+b : #bc_maybe# | #bc_why_q# | #bc_fair#
+a@sw : At the well. Not at my door. | Not me. I was born on that mat. | And the fourth day, they're your problem.
+a : Smiles are cheap. Doors aren't. | #hah#. Habit. | #oath#. Keep your distance, I'll keep mine.
+
+scene sw112_times
+when topic=times|prices here.region=waste world.times=hard|lean
+does tell.complaint / react.complaint / assess
+a : I carry a cask worth a month of my silver, up the steps, every day. Funny, that. | Bread's up again. Wine's up too, but nobody gives me the difference. | The master bought a new cart. I bought a new patch.
+b[wealth=poor|destitute] #poor : Funny's one word for it. | It goes up the hill, and stays there. | Nice patch.
+b : #bc_very_bad# | #bc_true# | #bc_ha#
+a@poor : Funny's the only word that doesn't get me sacked. | Stays there and gets fat. | Thank you. It's my best one.
+a : #skint.capitalize#. And merry anyway. #hah#. | #oath#. Somebody's doing well. | #saying#.
+
+scene sw112_drink
+when topic=friends|pastimes here.region=waste here.time=dusk|night
+does tell.self / react.self / assess
+a : A cup at the inn tonight? You're buying. #hah#. | #ale.capitalize# tastes better after you've carried it. Trust me. | One cup among friends. Then one more for the walk home.
+b[friends] #friend : I bought last time. | Does it? | Two is one too many for you.
+b : #bc_maybe# | #bc_i_might# | #bc_ha#
+a@friend : Did you? I don't remember. Must've been good. | Sweeter. Every step's in it. | Two is exactly right. Three's the trouble.
+a : Your loss. #hah#. | #oath#. Ask the casks. | #drunk.capitalize# by moonrise, and proud.
+
+scene sw112_houses
+when topic=work|times here.region=waste self.workplace
+does give.opinion / react.self / assess
+a : The great Houses drink the wine I carry. Never once seen their faces. | Whoever owns these casks, I'd like to meet them. Just to see if they've paws. | I work in their shadow and they don't know my name. Suits me fine.
+b[wealth=poor|destitute] #poor : They've paws. Soft ones. | Never once. Nor me. | Fine?
+b : #bc_ha# | #bc_true# | #bc_maybe#
+a@poor : Soft as a bung. #hah#. | We're a matched pair, then. | Fine. Nobody to bow to.
+a : #toffs.capitalize#. They can keep their faces. | #oath#. I'll wave at the cart. | #saying#.
+
+scene sw112_night
+when topic=weather|day here.region=waste here.time=night here.weather=clear
+does tell.self / react.self / assess
+a : There. Cold and quiet. That's how a sky should behave. | #cold.capitalize#. See, #sky#, you've no middle. Boil or freeze. | Stars out. #sky.capitalize#'s made up for the day. Nearly.
+b[from=saltwell] #sw : The stars blow on the embers of the day. | No middle in the Waste. That's the Waste. | Nearly's generous.
+b : #bc_lovely# | #cold.capitalize#, though. | #bc_go_on#
+a@sw : Blow harder. I'm still warm. #hah#. | Then I'll argue for one. | I'm generous at night.
+a : Best behaved it's been all day. | #oath#. A blanket, then. | Nearly. Ask me tomorrow.
+
+scene sw112_faith
+when topic=faith here.region=waste
+does give.opinion / react.self / assess
+a : I've asked the Bright One for a cloud every summer. Still waiting. | The Bright One made #sky#. I'll be having words about that. | I pray at feasts. Less crowded than the well, and the Bright One listens better then.
+b[stage=old] #old : Ask nicer. | Mind your tongue, pup. | The Bright One's ear is never crowded.
+b : #bc_ha# | #bc_maybe# | #bc_wise#
+a@old : Nicer? I've been very nice. | #hah#. Sorry. A little. | Then I'll go more often. Maybe.
+a : #oath#. Maybe next summer. | #hah#. Respectfully. | #saying#.
+
+story wrong_map [concept=talk.memories self.age>=20]
+  : A carter sold me #oldmap#, swore it showed a shortcut to the Saltpan.
+  : I walked it one cool morning. Into a wadi. Out of the wadi. Into the same wadi.
+  b[job=carter] : Every carter sells that map.
+  b : #bc_and_q#
+  : Home by noon, burnt to the ears. I kept the map. Best thing I own. #hah#.
+
+story the_letter [concept=talk.family]
+  : Years back a carter brought a letter from #farkin#. Only one, ever.
+  : I've never opened it. It's under my mat.
+  ask : Do you know why, #address#?
+  b : #bc_why_q#
+  : A letter's only good or bad, and shut, it's both. Some casks you leave sealed. #hah#.
+
+story cloud_day [concept=talk.weather]
+  : One summer I stood on the cellar roof at noon and shouted at #sky# for a cloud.
+  : Next morning there was a cloud. Just one. Little. Right over the press house.
+  b[from=saltwell] : I remember that cloud.
+  b : #bc_go_on#
+  : It lasted an hour. I've been trying to get a second one since. #oath#. Some quarrels you win once.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. And who might you be? No, don't, I'll only forget. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Come to hear me scold #sky#? Front row's free.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : You. #hah#. Say it short; I've casks.
+dlg @1 resident.job : I keep #cellar# at #self.workplace#. Turn #tuns#, chalk them, carry them up. #saying#.
+dlg @1 resident.news : News? #sky.capitalize# hasn't rained in a month. That's my news, and it's old.
+dlg @1 resident.gossip : Gossip? From me? I keep my mouth like a cask: sealed, till somebody pays for a cup.
+dlg @1 resident.bye : #farewell#. Don't let #brasslid# catch you.
+graft resident.hub
+choice Do you really argue with the weather? -> weather
+node weather
+say Every day. Somebody has to. #sky# gets away with murder out here. Sun all day, freeze all night, no apology.
+free
+choice Have you ever won? -> weather_won
+choice Goodbye. -> bye
+node weather_won
+say Once. One cloud. One summer. Ask anyone. #hah#. I'm due another.
+choice I hope you get it. -> hub
+choice Goodbye. -> bye

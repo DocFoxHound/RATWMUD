@@ -490,10 +490,18 @@ add_test(NAME talk_score_rules COMMAND python3 -m unittest test_talk_score WORKI
 # Mantles (doc 84 §15.8, Phase 9): G1 (the game's loader) and G2 (tools/mantle_check.py) over the test fixture and the
 # whole committed export; the tools' syntax against the game's and G2's refusals; and, with the local PostgreSQL
 # (skipped without it), migration 0066, tools/mantle_load.py, the export's round trip byte for byte, refusals, backup.
-add_test(NAME mantle_fixture_loads COMMAND talk_check --mantle ${CMAKE_CURRENT_SOURCE_DIR}/Tests/fixtures/mantles
-         ${CMAKE_CURRENT_SOURCE_DIR}/Data/Talk/mantles-export)
+# Phase 11: the fixture (test content) and the export (the world's mantles, the pilot on) are checked apart, the export
+# --strict (the tier's size and the dialect density are refusals for the world's mantles, warnings for the fixture's).
+add_test(NAME mantle_fixture_loads COMMAND talk_check --mantle ${CMAKE_CURRENT_SOURCE_DIR}/Tests/fixtures/mantles)
+add_test(NAME mantle_export_loads COMMAND talk_check --mantle ${CMAKE_CURRENT_SOURCE_DIR}/Data/Talk/mantles-export)
 add_test(NAME mantle_fixture_rules COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/mantle_check.py
-         ${CMAKE_CURRENT_SOURCE_DIR}/Tests/fixtures/mantles ${CMAKE_CURRENT_SOURCE_DIR}/Data/Talk/mantles-export)
+         ${CMAKE_CURRENT_SOURCE_DIR}/Tests/fixtures/mantles)
+add_test(NAME mantle_export_rules COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/mantle_check.py --strict
+         ${CMAKE_CURRENT_SOURCE_DIR}/Data/Talk/mantles-export)
+# G3 (doc 84 §14.4, Phase 11): the talk town wearing the fixture, every worn mantle answering and answered by its town's
+# real residents on the core moves, its scenes heard.
+add_test(NAME mantle_coverage_town COMMAND talk_check --world ${CMAKE_CURRENT_SOURCE_DIR}/Tests/fixtures/talk_town
+         --mantles-from ${CMAKE_CURRENT_SOURCE_DIR}/Tests/fixtures/mantles --mantle-coverage)
 add_test(NAME mantle_check_rules COMMAND python3 -m unittest test_mantle_check WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
 add_test(NAME mantle_load_pg COMMAND python3 -m unittest test_mantle_load WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
 # Doc 84 Phase 10: the pools' forecast arithmetic, a binding's fits, and the name pools (Data/Talk/names) read cleanly.

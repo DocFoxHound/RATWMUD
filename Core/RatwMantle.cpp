@@ -771,9 +771,13 @@ bool Library::compileMantle(Mantle& m, Owned& out, std::vector<std::string>& err
     const auto has = [&](const char* section) {
         return std::any_of(m.items.begin(), m.items.end(), [&](const MantleItem& i) { return i.section == section && i.kind != "symbol"; });
     };
+    // (Phase 11, the format frozen: `grown` is the adult and the old always, and an `old` section adds the old's own on
+    // top. Before, an `old` section took the old out of `grown`, so an old wearer whose writer put most of the mantle
+    // in `grown` heard almost none of it: G3 found three such pilot mantles. Pups' sections still part: a young section
+    // is the young's alone when an adolescent one exists.)
     const std::map<std::string, std::string> stage{
         {"any", ""},
-        {"grown", has("old") ? "self.stage=adult" : "self.stage=adult|old"},
+        {"grown", "self.stage=adult|old"},
         {"young", has("adolescent") ? "self.stage=young" : "self.stage=young|adolescent"},
         {"adolescent", "self.stage=adolescent"},
         {"old", "self.stage=old"}};

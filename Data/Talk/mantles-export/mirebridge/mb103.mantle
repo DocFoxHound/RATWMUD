@@ -1,0 +1,295 @@
+# mb103, the pot hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb103
+revision 1
+state ready
+dialect mirebridge
+accent light broad
+tier standard
+written_for tn_oh_ludo_ashwood
+written_by claude-p11-pilot
+title the pot hand
+fits stage=adult|old
+prefers role=civilian wealth=poor
+traits temper=even talk=chatty warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk counts_the_ways_out_of_every_room
+likes mutton_stew cards quiet_chapel summer_evenings
+dislikes haggling drizzle
+fears losing_the_way_again
+hopes a_bed_of_his_own_under_his_own_thatch
+topics work +0.3 home +0.3 food +0.3 prices +0.2 festival +0.2 pastimes +0.2 travel -0.3
+styles comfort=practical gossip=open refuse=blunt tease=none
+marks oath saying straight
+persona #self.first# is #self.trade_words#: talks the ears off anyone and means every word, poor and plain about it, and never sits where the door is out of sight.
+
+words
+oath! = Pots and pails | Scald and scour | Grease and gristle
+saying! = Know the way out before you sit down | Straight words wash easier than crooked ones | A shut door's only a wall with a promise in it
+straight! = I'll tell you straight | Straight out, and no dressing on it | Plain as a pot, I'll say it
+pots = the pots | a sink of greasy pots
+suds = scouring water to the elbow | suds up to my oxters
+sixof = six bodies and one roof | a cottage with more boots than pegs
+wayout = the way out | the back door and the window both
+deepwood = the deep wood | trees with no end to them
+stew = a mutton stew | mutton stew with the barley in
+chapel = the chapel when nobody's in it | an empty chapel, quiet as a pool
+longlight = a long summer evening | the light that won't go to bed
+potpay = a pot hand's pay | what scrubbing pays, which is not much
+doorside = the door side | a seat with the latch in sight
+cards = a hand of cards on the cottage table | a few hands of cards by the peat fire
+
+any
+opinion @1 merchants against 3 : There's nothing coming into my house and the loaf's gone up again. #straight#, somebody's eating well off that, and it's not me.
+opinion @1 houses against 1 : Sit the likes of me on a House bench? They'd let it stand bare first. I've stopped asking, #address#.
+opinion @1 newcomers against 1 : Each fresh face that comes over the causeway wants a pot to wash or a turf to cut. There's not the work for us as it is.
+opinion @1 times against 1 : Harder by a dab, week on week. #potpay.capitalize# stays where it was and everything else climbs over it.
+opinion @1 festivals for 1 : Feast day's the one day the whole of the boards is out at once, and nobody's too grand to talk to a pot hand.
+opinion @1 city against 1 : Never been up and I'll not go. A place that big, you'd never find #wayout#. #oath#.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Don't mind me, I'll shift; I like this side, where I can see the door. | #greet#, #address#. Not seen you on the boards before. I'd remember.
+line @2 greet [here.time=dawn] : #greet#. First up and last down, that's a pot hand, #straight#. | Morning's grey, #address#, and so am I. #greet#.
+line @3 greet [self.working=yes] : #greet#. Talk away, I'll scrub; my paws don't need my ears. | #greet#. Mind the bucket, it's #suds#.
+line @1 kin.open [pair.kin!=no] : There you are, #address#. I'll not ask where you've been, but you'll tell me. | Well. Sit there, so I've you and the door both in sight.
+line @1 again.open : You again, #address#. Twice before supper. I'll start charging. | Back already, #address#? I was only just telling myself about you.
+line @1 greet.return [pair.band=strangers] : #greet#. #bc_good# | #greet#, #address#. I'll budge up.
+line @2 greet.return : #greet#. | #greet#, #other.called#. Sit on that side, would you, I've the door.
+line @1 farewell : #farewell#. Mind the boards; the third one's loose and I've said so twice. | #farewell#. I'll talk at you again tomorrow, see if I don't.
+line @1 farewell.return : #farewell#. | #farewell#, and mind the loose board.
+line @1 react.news.new : #surprise#. Who told you that? Out with the lot. | Sink me sideways. Not a whisper reached the sink, and I hear most.
+line @1 react.news.known : #knew#. It came over the sink last night with the pots. | Old mud, that. Half the taproom had it by dusk.
+line @1 react.news.doubt : #straight#, I don't believe a word of it, and whoever started it can hear me say it. | #doubt#. That's bog-wind with a coat on.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #pity#. I'll not dress it up; it's rotten. | Deep mud, that. Nobody deserves it.
+line @1 answer.how : #tired.capitalize#, #straight#, but upright. | #pots.capitalize# done, back #hurt#, belly full. Can't complain, but I will. | Grey as dishwater, #address#. You?
+line @1 decline : No. I'll tell you why: I've not the coin, nor the time, and I'd only let you down. | Not me, #address#. I know my limits and that's past them.
+line @1 accept_decline : #no_matter#. I asked, you said, that's that. | Fair enough. I'd have said no as well, #straight#.
+line @1 thank : #thanks#. I'll not forget it. | That's kind, #address#. I've nothing to give back but my word, and you have it.
+line @1 deflect_thanks : #deflect#. I only did what wanted doing. | Don't. You'll make me go red, and I've #pots# to finish.
+line @1 preclose [self.working=yes] : Well. #pots.capitalize# won't scour themselves. | Still. #pots.capitalize# again, and they never stop.
+line @1 give.advice : #saying#. That's all I know, and it's kept me out of trouble. | Say what you mean, the once, and let them make of it what they will.
+line @1 ack : Mm. | #bc_i_know# | Go on, then, #address#, I'm listening.
+rule @pots
+when concept=bark working=yes
+does aside
+cooldown 6h
+say #oath#. Who burned the bottom of this one? | Another one. There's always another one in #pots#.
+
+rule @door
+when concept=bark here.place=tavern|home|chapel
+does aside
+cooldown 8h
+say Back to the wall, #doorside#. That's better. | Door, window, back door. That's #wayout#. Now I'll sit.
+
+rule @drizzle
+when concept=bark here.weather=rain here.season=autumn|winter
+does aside
+cooldown 8h
+say Mizzle again. Not even proper rain. It just hangs about like a debt. | Wet down the neck. #annoyed#.
+
+rule @evening
+when concept=bark working=no here.time=dusk here.season=summer
+does aside
+cooldown 10h
+say #longlight.capitalize#. Nothing finer on the boards, and nobody charges for it. | Still light. I could sit here till it's not.
+
+scene pots_sink
+when topic=work self.workplace self.job=none
+does tell.self / react.self / assess
+a : Forty pots last night, #straight#, and every one of them with the stew burned on the bottom. | #suds.capitalize# from dusk till the lamps go out. My paws are white as a boiled eel. | I've a knack for the black pans. Sand, then #suds#, then elbow. Nobody else will touch them.
+b[job=cook|innkeeper] #kitchen : Somebody has to burn them. | That's the trade, I'm afraid. | That's worth knowing. Show me.
+b : That's a long night. | #bc_poor_soul# | #bc_clever#
+a@kitchen : Then somebody can scour them, I say. Not always me. | It is. I'll not pretend it's grand, but it's mine. | Sand first. Everybody starts with water, and that's wrong.
+a : Long, and wet, and not a word of thanks from #pots#. | They'll go pink by morning. They always do. | Nobody asked before. I'd have told them. I tell everyone everything.
+
+scene boss_counts
+when topic=work self.boss self.workplace
+does tell.self / react.self / assess
+a : #self.boss# counts every cup back on its hook. I wash every one twice. We get on, the pair of us. | #straight#, #self.boss# is particular. A smear on a jug and I hear about it all week. | #self.boss# never says thank you. Never says it's wrong either, if it's right. That's thanks, I reckon.
+b : Sounds a fair match. | #bc_ha# | #bc_true_enough#
+a : Fair. Fen-sure. And nobody runs #self.boss# down in my hearing, mind. | All week. Then it's forgotten, and the next smear starts it off. | It is. I'd rather that than flannel.
+
+scene pay_frank
+when topic=work|times self.wealth=poor|destitute
+does tell.complaint / react.complaint / assess
+a : #potpay.capitalize#. I'll tell you exactly how much, if you like. Nobody else will tell you theirs. | Pot hand's coin buys bread and a share of the rent and then it's #skint# till the week's out. | I'm not ashamed of it. It's honest. It's just not much, #address#.
+b[wealth=poor|destitute] #low : Don't. I know it to the copper. | Same here, every week. | Honest and not much. That's us.
+b : #bc_poor_soul# | #bc_i_know# | #bc_true#
+a@low : Course you do. We all do on these boards. | Same mud, same week. | That's us, #straight#. There's worse company.
+a : Somebody should say it out loud. I'll say it. | #grumble#. I'll manage. | I say it plain. Pretending's for the comfortable.
+
+scene door_seat
+when topic=smalltalk|pastimes here.place=tavern|home|chapel
+does tell.self / react.self / assess
+a : I'll have this side, if it's all the same. I like to see the door. Always have. | Folk think I'm watching for trouble. I'm not. I'm watching for #wayout#. | Every room I go in, I find #wayout# first. Then I sit. Then I talk, and you'll not stop me.
+b : Expecting someone? | Why's that? | #bc_ha#
+a : No. That's the point. I'd like to see them if they come. | I got lost once, properly lost. A wolf learns. I'll tell you sometime. | It's a habit, #address#. A cheap one. Costs nothing but the good seat.
+
+scene cottage_six
+when topic=home
+does tell.self / react.self / assess
+a : #sixof.capitalize#. Salt rakers, a deckhand, a peat cutter, a clay digger, and me. | I sleep on #doorside#. Nobody argues; nobody else wants it, and I'd not have the wall. | Boots by the fire, six pairs, and the whole place smells of salt and peat and clay. #home.capitalize#, though.
+b[pair.roof=yes] #housemate : And you snore, for the record. | You'd not have the wall if we paid you. | It's the clay. Not my fault.
+b : Must be crowded. | #bc_wise# | #bc_ha#
+a@housemate : I don't. #straight#, it's the deckhand. | Couldn't pay me. You've not the coin. | It's always the clay, #address#.
+a : Crowded and warm. You can't have one without the other in a fen winter. | Back to the wall and eyes on the latch. I sleep better than any of them. | It's dry, mostly. That's a palace, on these boards.
+
+scene friend_peat
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# comes in off the cutting black to the ears, and I've the water hot. That's the arrangement. | #straight#, #self.friend# is the best of the lot of them. Doesn't talk much, which suits, as I talk enough for two. | #self.friend# and me play #cards# most nights. I win. #self.friend# says otherwise.
+b : Sounds a good friend. | #bc_ha# | Who wins?
+a : The best. I'll not say it to #self.friend#'s face, mind. That's not how it goes. | Somebody has to listen. Turns out it's #self.friend#. | I do. I'm telling you, and I don't lie. #saying#.
+
+scene mutton_stew
+when topic=food
+does tell.self / react.self / assess
+a : #stew.capitalize#. If anybody asked what I'd have, that's it. | I made #stew# for the whole cottage once. Six bowls, and the pot scraped clean. | Barley in, never rice. Rice in a mutton stew is a crime and I'll say it to anyone.
+b[job=cook] #cook : I'd put rice in. Fight me. | Who taught you that? | You'd make a cook yet.
+b : #bc_lovely# | #bc_good# | #bc_ha#
+a@cook : I'll not fight you, but I'll not eat it. | My #mum#, and she was right. | Not me. I'd rather scour than stir.
+a : Nobody asks, mind. Pot hands eat what's left in the eel-pot. | They said it was the best they'd had. #straight#, it was. | #bc_it_is#. Barley, #address#.
+
+scene bread_up
+when topic=prices|food
+does tell.complaint / react.complaint / assess
+a : Bread's up again. Not a copper more #wages# this month, and it's up again. | They put the loaf up and the loaf got smaller. Both. At once. #oath#. | I'll tell you straight who's eating well, and it's not whoever's buying bread.
+b[job=merchant|baker] #seller : Flour's up. We don't set it. | We're squeezed too, you know. | Nobody's eating well this year.
+b : #bc_very_bad# | #bc_again_q# | #bc_true#
+a@seller : Somebody sets it. It's never the one who pays. | Squeezed. You've a shop. I've a bucket. | Somebody is. It's always somebody.
+a : #grumble#. And I'll keep saying it. | I measured it against my paw, I did. A dab smaller. | #straight#. I'll say it to their face if they ask.
+
+scene cards_buttons
+when topic=pastimes
+does tell.self / react.self / assess
+a : #cards.capitalize#, of an evening, for buttons. Nobody's got coin to lose. | I've a jar of buttons I won off the salt rakers. They want them back. They'll not get them. | #cards.capitalize# is the only time I go quiet. Somebody always remarks on it.
+b : Buttons? | #bc_ha# | #bc_true#
+a : Buttons. Off the coats, some of them. Folk walk home holding their jackets shut. | Not a one. Not unless they win them. | It's concentrating. I can't talk and count at once, #straight#.
+
+scene chapel_empty
+when topic=faith
+does tell.feeling / react.self / assess
+a : I like #chapel#. Not the service. Just the quiet after. | I go in when there's nobody. Sit at the back, #doorside#, naturally. | The Bright One hears better when there's no one else talking, I reckon. Like me.
+b[piety=devout] #devout : The service matters too. | The Bright One hears the crowded pew as well. | You should come on Restday.
+b : #bc_good# | #bc_ha# | #bc_true#
+a@devout : I'll not argue. I'll just not come. #straight#. | Then the Bright One's got good ears. Mine are for the quiet. | I might. I'll sit by the door if I do.
+a : It's the only place I don't talk, #address#. | Back to the wall, eyes on the door, and the Bright One in front. Best seat in the fen. | I'll not say what I say there. That's between us.
+
+scene summer_evening
+when topic=weather|season here.season=summer here.time=dusk here.weather=clear
+does tell.feeling / react.self / assess
+a : #longlight.capitalize#. I sat on the step with my back to the post and watched the reeds go gold. | This is the best of the fen, #straight#. The midges and all. | Light till late. Even the herons stay up for it.
+b : #bc_lovely# | #bc_ha# | #bc_true#
+a : Never get tired of it. I get tired of #pots#. | The midges are the price. I'll pay it. | Fen-sure. Then it's dark all at once, and I'm abed.
+
+scene drizzle_grouse
+when topic=weather here.weather=rain here.season=autumn|winter
+does tell.complaint / react.complaint / assess
+a : Mizzle. I can't abide it. Proper rain, fine, but this is just wet air with no manners. | It gets down your collar and stays there. All day, #address#. | I'd rather a storm. At least a storm tells you what it's up to.
+b : #bc_every_year# | #bc_poor_soul# | #bc_ha#
+a : #annoyed#. And the pots don't dry. | Like a debt, that. Hanging on. | #straight#, I would. I'd sit at the window for a storm.
+
+scene fog_boards
+when topic=weather here.weather=fog here.region=fens
+does tell.worry / react.self / assess
+a : Fen-murk tonight. I'll be going home by the rail, paw on it the whole way. | You can lose #wayout# in this in ten steps. I know. I've lost worse. | I don't like #fog#. I'll say so, I'm not proud.
+b : Wise. | #bc_wise# | Nobody likes it.
+a : Not wise. Frightened once and remembered. | #straight#, I'll tell you about it some time. Not tonight. | Some like it. Lights in it. I'll stay on the boards.
+
+scene woods_or_fen
+when topic=land|travel self.age>=25
+does give.opinion / react.self / assess
+a : Give me the fen. You can see across it. A wood shuts behind you like a door with no handle. | I went into #deepwood# once, a young 'un, and I'll not again. | Trees all look the same, #straight#. Reeds at least tell you which way the water goes.
+b[job=woodcutter] #wood : A wood's easy enough if you know it. | You just went in too far. | Moss on the north side. Always.
+b : #bc_i_know# | What happened? | #bc_true#
+a@wood : If. That's a big word in a wood. | I did. Three days too far. | I'd been told that. The moss hadn't.
+a : #saying#. | Three days. I'll tell you sometime, if you've the evening. | I'll keep to the fen, #address#.
+
+scene houses_bench
+when topic=times|work
+does give.opinion / react.self / assess
+a : The Houses would sooner leave a bench empty than put a pot hand on it. #straight#. | I asked about steady work once at a House store. Got looked at like a wet boot. | A wolf like me rises as far as the top of the sink, #address#. That's the ladder.
+b[wealth=rich|comfortable] #comfy : There's work for those who look. | Maybe you asked the wrong one. | You've a job, at least.
+b : #bc_bad_luck# | #bc_true# | #bc_poor_soul#
+a@comfy : I looked. Looked right back at me, it did, and said no. | I asked the one at the door. That's the one you ask. | I have, and I'm glad of it. Doesn't make the bench any less empty.
+a : #grumble#. I'll not stop saying it. | Wet boot. That's me. | I'll scrub. Somebody has to.
+
+scene newcomers_work
+when topic=newcomer
+does give.opinion / react.self / assess
+a : New face on the boards. That's another wolf wanting a pot to wash. #straight#, there's not enough to go round. | I'll be civil to them. I'll not pretend I'm glad. | Newcomers are fine till they want your bench, #address#.
+b : They need work too. | #bc_ha# | #bc_true#
+a : They do. So do I. That's the trouble. | Civil's a lot from me. I talk; I don't always like. | Mine's #doorside#. They can have any other.
+
+scene festival_out
+when topic=festival
+does give.opinion / react.self / assess
+a : Feast day, and the whole of the boards out at once. Best day of the year, #straight#. | Nobody's too grand to talk to a pot hand on a feast day. I make the most of it. | I'll be scouring after, mind. #pots.capitalize#, forty of them, become eighty on a feast.
+b : #bc_lovely# | You'd talk anyway. | #bc_poor_soul#
+a : Dancing, music, stew from every pot. Fen-sure. | I would. Feast day they talk back. | Eighty, and worth it. #oath#.
+
+scene raw_paws
+when topic=health
+does tell.self / react.self / assess
+a : Paws are raw from #suds#. I put goose grease on them and they're raw again by Riverday. | Back's #hurt# from bending over the sink. Ask anyone at the Heron, I've said so. | I'm healthy as a heron, #straight#. Never ill a day. Except the once.
+b[job=healer] #healer : Gloves, if you can get them. | Straighten up every hour. | The once?
+b : #bc_poor_soul# | #bc_ill_try# | The once?
+a@healer : Gloves on a pot hand. You've a sense of humour, at least. | Every hour I'll think of it. Every hour I'll forget. | The wood. Three days. I'll tell you sometime.
+a : Stiff as a reed, but tough under it. | I'll live. #bc_i_will# | The wood. Three days. Another time, #address#.
+
+scene own_thatch
+when topic=dreams
+does tell.feeling / react.self / assess
+a : I'd like a bed in #home#. Just one bed. One pair of boots by the fire. | One day, #straight#, I'll sleep in a room where I'm the only one snoring. | A cottage with one door. Just one. And I'd sit facing it.
+b : You might get it. | #bc_ha# | #bc_i_hope_so#
+a : I might. Not on #potpay#. But I might. | And I'd miss the others by the second night. Don't tell them. | Fen-sure. #saying#.
+
+scene taproom_ears
+when topic=gossip
+does tell.self / react.self / assess
+a : The taproom hears everything and the sink's in earshot. I hear the taproom. | I'll tell you what I hear, straight, and I'll tell you who said it, #address#. Then you judge. | Gossip's only bad when folk dress it. I don't dress it. I just pass it on as it came.
+b : You'd make a good crier. | That's fair. | #bc_ha#
+a : I'd make a loud one, #address#. | Fair as I can. Folk know I'll say it to their face too. | Undressed. #straight#.
+
+story the_deep_wood [concept=talk.memories self.age>=25]
+  : I went into #deepwood# once, after a stray goat, a young 'un with more legs than sense.
+  b : And?
+  : Lost the goat in an hour and #wayout# in two. Three days I walked, and every tree had my face on it.
+  b : #bc_poor_soul#
+  : I ate berries and slept in a hollow with my back to the bank. I've slept with my back to something ever since.
+  b : How'd you get out?
+  : Heard a cart bell on the road. Followed it like a fool follows a light. It was the only time following was right. #straight#.
+
+story the_storm_door [concept=talk.memories self.age>=25]
+  : There was a storm once, the whole taproom full, and the door blew in off its latch.
+  b : In the storm?
+  : Rain sideways across the room. Everybody jumped. I didn't, #address#; I was facing it. I had it shut before the lamps went.
+  b : #bc_clever#
+  : Shoulder on it, a chair under the latch, and the pots still in my other paw.
+  b : Were you thanked?
+  : I was told I'd dripped on the floor. That's thanks, at the Heron. #oath#.
+
+story the_six_bowls [concept=talk.food]
+  : One winter we were all #skint# at the cottage at once. Not a copper between six.
+  b : What did you do?
+  : I'd a mutton bone off the kitchen, and the barley from the bottom of every sack in the house.
+  b : #bc_and_q#
+  : #stew.capitalize# for six, and it went round twice. Nobody said a word while they ate. That's praise, on our boards.
+  b : #bc_lovely#
+
+dlg @1 resident.hub : #greet#. Sit on that side, would you, I like the door. #talk_open# | #greet#, #address#. What'll it be? I'll talk about anything but pots.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. You'll want news. I've got news. | #topic.player#. Sit. Not there; that's #doorside#.
+dlg @1 resident.job : I scour #pots#. All of them. Every night. #straight#, it's not grand, but it's honest and it's mine. | #self.trade_words.capitalize#. Suds to the elbow.
+dlg @1 resident.news : I'll tell you what came over the sink, straight as I heard it. #news_none# | Nothing worth the breath, #address#, and that's rare from me.
+dlg @1 resident.gossip : I hear it all from the sink, and I'll say it as it came. #gossip_none# | Nothing fit to pass on today, #address#, and that's the truth.
+dlg @1 resident.bye : #farewell#. Mind the loose board, the third one. | #farewell#. Come by the Heron, I'll be at the back with the pots.
+graft resident.hub
+choice Why do you always sit facing the door? -> door
+node door
+say Habit. Lost three days in a wood once. Now I like to know #wayout#. It's not trouble I watch for.
+mood pleased
+free
+choice Three days? What happened? -> door_wood
+choice Goodbye. -> bye
+node door_wood
+say Went after a goat, lost the goat, lost the path, lost my head a bit. Heard a cart bell on the third day and followed it home. That's all of it.
+choice Glad you found it. -> hub
+choice Goodbye. -> bye

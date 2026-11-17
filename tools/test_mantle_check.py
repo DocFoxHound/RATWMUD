@@ -119,6 +119,52 @@ class Rules(unittest.TestCase):
         self.assertTrue(any("sw003's oath too" in f for f in found), found)
         self.assertTrue(any('three in one town' in f for f in found), found)
 
+    def test_slots_and_listeners(self):
+        """Phase 11: the new slots name people (no he/she beside them) and back what they take for granted; a listener's
+        bare line never writes the dialect out; with the wearer's facts, a line they can never say is warned."""
+        world = {'names': set(), 'npcs': {'tt_sa_storekeeper'}, 'town': {}, 'wearer': {}}
+        friend = self.check(self.with_line('#self.friend# came by. She owes me for salt.'), world=world)
+        self.assertTrue(any('beside a person named by a slot' in f for f in friend), friend)
+        # "my husband" is taken for granted by a line that names the husband by his slot (only the married have one).
+        self.assertEqual(self.check(self.with_line('My husband #self.spouse# weighs it too.'), world=world), [])
+        self.assertTrue(any('takes for granted' in f for f in self.check(self.with_line('My husband weighs it too.'), world=world)))
+        scene = self.BASE.replace("b : There's always a thumb on it somewhere.", "b : Sweet as well water, that scale.")
+        found = self.check(scene)
+        self.assertTrue(any("listener's line" in f and 'any.scene.weighing' in f for f in found), found)
+        gated = self.BASE.replace("b : There's always a thumb on it somewhere.",
+                                  "b[from=saltwell] #sw : Sweet as well water, that scale.\nb : There's always a thumb on it somewhere.")
+        self.assertFalse(any("listener's line" in f for f in self.check(gated)), self.check(gated))
+        m = T.read(self.with_line('#self.friend# says the same.'))
+        lacks = [str(f) for f in C.check([m], facts={'tt_sa_storekeeper': {'id': 'tt_sa_storekeeper'}}) if f.warning]
+        self.assertTrue(any('never heard from them' in f and 'any.answer.how.1' in f for f in lacks), lacks)
+        has = [str(f) for f in C.check([m], facts={'tt_sa_storekeeper': {'friend': 'Ash Sheafmeadow'}}) if f.warning]
+        self.assertFalse(any('never heard' in f for f in has), has)
+        one = self.check(self.BASE.replace('Salt keeps, and so do debts | Weigh twice, sell once', 'Weigh twice, sell once'))
+        self.assertTrue(any("'saying' has 1 alternative" in f for f in one), one)
+
+
+class Kits(unittest.TestCase):
+    def test_kits_are_their_dialects_pups(self):
+        """Phase 11: a stage kit (Data/Talk/kits/<dialect>.<stage>.talk, doc 84 §7.10) is the shared floor of one dialect's
+        pups or adolescents: every entry is gated to speakers from that dialect's towns and of that stage."""
+        towns = {'saltwell': {'saltwell'}, 'mirebridge': {'fenshore', 'mirebridge'}}
+        kits = sorted((ROOT / 'Data' / 'Talk' / 'kits').glob('*.talk'))
+        self.assertGreaterEqual(len(kits), 4)
+        for f in kits:
+            dialect, stage = f.stem.split('.')
+            entry, gates = None, []
+            for line in f.read_text().splitlines() + ['rule end']:
+                t = line.strip()
+                if t.startswith(('rule ', 'scene ')):
+                    if entry:
+                        froms = {v for g in gates if g.split('=')[0] in ('self.from', 'a.from') for v in g.split('=')[1].split('|')}
+                        stages = {v for g in gates if g.split('=')[0] in ('self.stage', 'a.stage') for v in g.split('=')[1].split('|')}
+                        self.assertTrue(froms and froms <= towns.get(dialect, {dialect}), f'{f.name} {entry}: from {froms}')
+                        self.assertEqual(stages, {stage}, f'{f.name} {entry}: stage {stages}')
+                    entry, gates = t.split()[1], []
+                elif t.startswith('when '):
+                    gates += t[5:].split()
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,0 +1,481 @@
+# lf101, the plumb line (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf101
+revision 1
+state ready
+dialect larkfield
+accent none
+tier full
+written_for rm_berit_kelpwick
+written_by claude-p11-pilot
+title the plumb line
+fits stage=adult|old
+prefers role=merchant
+traits temper=even talk=quiet warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk takes_the_long_stairs_two_at_a_time
+likes plum_tart old_tales new_boots frosty_mornings
+dislikes cold_tea haggling
+fears a_wall_coming_down
+hopes a_door_of_her_own_in_the_heights
+topics work +0.4 player +0.3 lore +0.3 food +0.2 weather +0.2 newcomer +0.2 festival -0.3 gossip -0.2
+styles comfort=practical gossip=reluctant refuse=soft tease=dry
+marks oath saying
+persona #self.first# builds for the Greatly works and keeps its counter: quiet, dry and warm under it, her coat brushed clean of lime every hour, and she climbs the long stairs two at a time, bound for the Heights.
+
+words
+oath! = Plumb and level | Brick on brick | Mortar and mercy
+saying! = A wall's only as good as its bottom row | Clean coat, straight wall | What's laid crooked stays crooked
+lime = lime dust | lime in every hair
+coat = my coat | a coat kept clean
+course = the bottom row | the first course of brick
+plumb = plumb and true | straight as a dropped line
+hod = the hod | a hod of brick
+tart = plum tart | a slice of plum tart
+oldtale = an old tale told well | a proper old story
+boots = new boots | a new pair of boots
+frost = a frosty morning | frost on every roof
+tea = tea gone cold | a cup I forgot about
+stairs = the long stairs | every stair up the hill
+door = a door in the Heights | a doorstep of my own up the hill
+downs = the downs | the open hills back home
+sticky = sticky paws | the sticky-pawed
+mortar = the mortar | a tub of mortar
+wall = the wall | this wall
+brick = the brick | good red brick
+wry = That one's going in the wall | I'll set that in mortar and keep it
+
+any
+opinion @1 city against 1 : #vent#, it's all smoke and elbows here. Half this street couldn't tell you who sleeps next door.
+opinion @1 dole for 1 : Nobody in a city this size should go to bed hungry. #insist#. There's bread enough; it's the sharing that's short.
+opinion @1 festivals against 1 : I'd sooner watch it from a quiet window with #tart#. Somebody has to be the one who isn't shouting.
+opinion @1 merchants for 1 : I keep a counter myself. I know what a late wagon costs, down to #lime# in the ruts.
+opinion @1 newcomers for 2 : There's room here for anybody who'll pull their weight. Somebody let me in once. #wry#.
+opinion @2 newcomers for 2 [conv.agreed_before=no] : #hedge#, you know where I stand. Room for all who'll carry #hod#.
+opinion @1 road against 1 : Every load that comes in late costs me, and they come in later every month. #grumble#.
+opinion @1 strangers for 2 : #vent#, travellers are half my custom and all my news. I'll hear a stranger out before a neighbour.
+opinion @1 watch for 1 : The Watch keep #sticky# off my counter. #ack#. I'll pour any of them a cup, hot.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Mind your coat on the doorframe; it's all #lime#. | #greet#. Not from round here? Come in out of the wet.
+line @2 greet [here.time=dawn] : #greet#. You're up with #frost#, then. | #greet#. Early. I like a wolf who's up early.
+line @3 greet [here.time=dusk|night] : #greet#. Late to be about. Everything all right? | #greet#. I'm just brushing off the day.
+line @4 greet [self.working=yes] : #greet#. Talk while I work; #mortar# won't wait. | #greet#. Stand clear of #hod#, and say on.
+line @5 greet [pair.band=friends] : There you are. I kept you a corner of #tart#. | #greet#. Sit. I'll find another cup.
+line @6 greet : #greet#. | #greet#. All well?
+line @1 kin.open [pair.kin!=no] : Come here. You've #lime# on you already, and you've only just come in. | #greet#. Have you eaten? Don't lie.
+line @1 again.open : #welcome_back#. Forgot something, or missed me? | Two visits. I'll start charging rent on that stool.
+line @1 greet.return : #greet#. | #greet#. Good to see you.
+line @2 greet.return [pair.band=strangers] : #greet#. New to the city? It shows a little. Kindly. | #greet#. Ask what you like; I'll answer what I can.
+line @3 greet.return [here.time=dawn] : #greet#. Is it #frost# out? I hope so. | #greet#. The best hour, this.
+line @4 greet.return [pair.band=friends] : #greet#. I wondered when you'd come up. | There you are. Mind, I've just brushed #coat#.
+line @1 farewell : #farewell#. | #farewell#. Mind the steps.
+line @2 farewell [here.time=dusk|night] : #farewell#. Take #stairs# slow in the dark. Slower than me. | #farewell#. Get home dry.
+line @1 farewell.return : #farewell#. | #farewell#. Come again.
+line @2 farewell.return [pair.band=friends] : #farewell#. Tomorrow, then. | #farewell#. Bring news.
+line @1 react.news.new : #marvel#. I'd not heard a word of it. | #surprise#. Tell it slow, then.
+line @1 react.news.known : #knew#. Somebody said it over the counter. | #knew#. Travellers carry everything up the hill.
+line @1 react.news.doubt : #doubt#. Who had it first? That's what I'd want to know. | #hedge#. It sounds a row short of a wall to me.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : #sympathy#. I'll say nothing clever. | #pity#. Is there anything wants doing?
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #gladnews#. Somebody's luck held. | #congrats#, whoever earned it.
+line @1 answer.how : #fine#. And yourself? | Clean coat, sore back. #notsobad#.
+line @1 answer.how.well : Well. A wall went up #plumb# today. That's a good day. | #fine#, better than. Somebody brought #tart#.
+line @1 answer.how.poorly : My back's had words with #hod#. #notsobad#. | Tired. #tea.capitalize# again, and no time to warm it.
+line @1 answer.how.busy : #busy#. Talk on; I'll listen with my back. | Up to my elbows in #mortar#. Say it while I stir.
+line @1 sympathise : #sympathy#. Sit a while. I'll put the kettle on and not let it go cold. | #reassure#. Things stand back up. I've seen walls do it.
+line @1 decline : #hedge#. I'd like to, but I can't promise what I can't finish. | #account#. Ask me after the wall's up, and I'll mean yes.
+line @1 accept_decline : #no_matter#. Some other day. | #forgive#. I'll not ask twice.
+line @1 thank : #thanks#. I'll not forget it. | #thanks#. That's kind, and I notice kind.
+line @1 deflect_thanks : #deflect#. Somebody did the same for me once. | #modest#. Keep your coin for #boots#.
+line @1 offer : Take a slice. There's more #tart# than I can eat, and I won't hear no. | #helpout#? Here, have the stool. I'll stand. I've stood all day; I'm good at it.
+line @1 preclose [self.working=yes] : #preclose#. #mortar.capitalize# is going off. | Well. #hod.capitalize# won't carry itself up the ladder.
+line @2 preclose : #preclose#. I should be climbing. | #preclose#. The stairs are waiting, and so's my bed.
+line @1 tease : Is that lime on your coat, or are you going grey? #wry#. | You'd make a good wall. Straight, and nothing gets past you.
+line @1 tease.return : #cheek#. My coat's cleaner than your conscience. | #funny#. I'll lay that in the wall where you can't take it back.
+line @1 ack : #ack#. | #bc_i_know#. | Mm.
+line @1 give.advice : #advise#, get the bottom right and the rest is easy. Walls and most things. | Buy good boots. #advise#, everything else can wait a season.
+rule @counter_bark
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 6h
+say Brick, tile, lime. Ask, and I'll tell you what you need and not a bit more. | #greet#. Mind your coats near #lime#.
+
+rule @lime_bark
+when concept=bark working=yes self.job=merchant|crafter|laborer
+does aside
+cooldown 6h
+say Hold on. #lime.capitalize# again. Every blessed hour. | Brush, brush. #saying#.
+
+rule @stairs_bark
+when concept=bark working=no here.region=ridgemere
+does aside
+cooldown 8h
+say Two at a time. My knees will tell me later. | #stairs.capitalize#. Every one of them is a step nearer #door#.
+
+rule @frost_bark
+when concept=bark here.season=winter here.time=dawn
+does aside
+cooldown 12h
+say #frost.capitalize#. Look at that. The city almost looks clean. | Breathe that. Cold enough to rinse your chest out.
+
+rule @tea_bark
+when concept=bark working=yes
+does aside
+cooldown 10h
+say #tea.capitalize#. Again. I put it down for one brick. | Who made this tea and walked off? Oh. I did.
+
+rule @rain_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say #mortar.capitalize# won't set in this. We'll wait it out. | Cover the brick, somebody. #oath#.
+
+scene bk_lime_coat
+when topic=work|smalltalk self.job=merchant|crafter|laborer
+does tell.self / react.self / assess
+a : Brushed #coat# four times today. #lime.capitalize# just comes back. | Everybody at the yard goes grey with #lime# by noon. I don't. I brush. | #lime.capitalize# gets in the fur and stays. I won't let it stay.
+b[job=crafter|laborer] #trade : I've given up. I'm grey to the bone. | You'll wear the fur off. | It's the job. It comes home with you.
+b : Why bother? It's the job. | Isn't it hopeless? | You're very clean for a builder.
+a@trade : Grey's for old age. I'll wait. | It'll grow. #lime.capitalize# won't. | Not past my door it doesn't.
+a : #saying#. | Most things are. You do them anyway. | #bc_thank_you#. It's the one vanity I keep.
+
+scene bk_bottom_row
+when topic=work self.job=merchant|crafter|laborer
+does give.opinion / react.self / assess
+a : Spent all morning on #course#. Folk think it's slow. It's the only bit that matters. | Somebody rushed #course# on the job next door. You can see it from the street. | I'll lay #course# myself or not at all.
+b[job=crafter|laborer] #trade : Get it wrong and you'll chase it all the way up. | I saw. It's leaning already. | Fair. It's yours if it falls.
+b : All morning? | Can you tell? | Fussy.
+a@trade : #bc_exactly#. All the way to the roof. | It'll lean more. #oath#. | It won't fall. #bc_exactly#.
+a : And the afternoon went up like nothing. #plumb.capitalize#. | From the corner. It wanders like a drunk. | Fussy, and #plumb#.
+
+scene bk_hand_learning
+when topic=work self.hand
+does tell.self / react.self / assess
+a : #self.hand# laid a whole row today without me looking. Near enough #plumb#. | I'm teaching #self.hand# the trowel. Slowly. Patience is cheap. | #self.hand# keeps buttering the brick like bread. Too thick.
+b : Near enough? | How's it going? | Is that bad?
+a : Near enough is a start. I started with worse. | #notsobad#. There's a good paw in there. | It sags in a week. #ack#. I'll show it again. And again.
+
+scene bk_yard_tiles
+when topic=work|lore here.region=ridgemere
+does tell.self / react.self / assess
+a : The yard sent tile up to the Heights today. I carried some myself. Just to look. | Every wall in the Heights has #brick# in it. I like knowing that. | Greatly built the city walls. I lay the little ones. Somebody has to.
+b[wealth=rich] #rich : They're good tiles. We've a roof of them. | It's sound brick. I'll give them that. | Little walls matter.
+b : Look at what? | Do you, now? | Somebody does.
+a@rich : #bc_thank_you#. I'd like to see one from the inside. | It's sound because somebody laid it straight. | #bc_they_do#. Ask anyone whose garden stays in.
+a : The gardens. The doors. #door.capitalize#, one day. | #modest#. It's a quiet sort of pride. | #bc_somebody_has_to#. It may as well be someone careful.
+
+scene bk_counter_custom
+when topic=work self.role=merchant
+does tell.self / react.self / assess
+a : Half my custom's travellers. They buy a sack of #lime# and leave me a week of news. | A wolf from the road bought #brick# today and told me about three towns. | I'd rather sell to a stranger than a neighbour. Strangers tell you things.
+b[from!=ridgemere] #away : We do talk. It's a long road. | Which towns? | I'll tell you things, then.
+b : Good trade? | Did you believe it all? | Odd thing to prefer.
+a@away : #bc_thank_you#. I'm a good listener. #oldtale.capitalize#'s worth a sack of lime. | Ones I'll likely never see. That's why I asked. | Do. I'll put the kettle on and keep it hot.
+a : #fine#. The news more than the coin. | Most. #hedge#, I believe the good bits. | Neighbours tell you what you already know.
+
+scene bk_no_haggling
+when topic=prices self.role=merchant
+does tell.complaint / react.complaint / assess
+a : Somebody stood at my counter and argued over a sack of #lime# till #tea# was all I had. | I say a sum once. If it's dear, I'll tell you why. I won't go round in circles. | I can't abide arguing over coin. Say it plain; I will.
+b[role=merchant] #trade : I'd have shown them the door. | Some folk like the circles. | Plain's easier on the throat.
+b : Did you give in? | Is that fair? | You don't dicker at all?
+a@trade : I showed them #brick# instead. They bought it. | They can circle someone else. | It is. And the ears.
+a : #bc_never#. I warmed the tea and waited. | It's the fairest thing I know. | Not once. #oath#. It wastes the day.
+
+scene bk_late_loads
+when topic=caravan|prices
+does tell.complaint / react.complaint / assess
+a : Another load in late. Every day late is a day #wall# stands half done. | They come in later every month, and I pay for every hour of it. | The road's slower than it was. #grumble#.
+b[job=carter|guard] #road : The road's not kind to wagons lately. | It's not for want of trying. | Slower, and worse.
+b : Can't you get it elsewhere? | Who's to blame? | It is, isn't it.
+a@road : #bc_i_know#. I don't blame the wheels. Only the waiting. | #bc_i_know#. I'll pour you a cup either way. | Worse. Mind yourself out there.
+a : #hedge#, there's only the one road. | Nobody. Everybody. The road. | #bc_it_is#.
+
+scene bk_frosty_dawn
+when topic=weather|season here.season=winter here.time=dawn
+does tell.feeling / react.self / assess
+a : #frost.capitalize#. Best hour of the year. I came up #stairs# just to look. | #frost.capitalize#, and the smoke going straight up. I could stand here all morning. | Frost on #brick#. We can't lay till it lifts. I don't mind.
+b[old] #old : My bones mind it. | It's lovely till you've to work in it. | It'll lift by noon.
+b : It's freezing. | All morning? | Not mind?
+a@old : #sympathy#. Come and stand in the sun bit. | #concede#. But just for now it's lovely. | Then I'll have had the morning.
+a : #bc_lovely#. Breathe it. | All morning. I won't, though. #busy#. | Not a bit. Some days the work can wait for the sky.
+
+scene bk_rain_mortar
+when topic=weather|work here.weather=rain self.job=merchant|crafter|laborer
+does tell.complaint / react.self / assess
+a : Rain. #mortar.capitalize# won't set and the brick drinks it up. | We've tarps on the wall and wolves under the tarps. Nothing to do but talk. | #rain.capitalize# again. This city was built wet.
+b : Can't you work in it? | What do you talk about? | It does rain.
+a : Not well. And I'd rather not than not well. | Brick, mostly. And #oldtale#, if someone has one. | #bc_it_does#. #wry#.
+
+scene bk_cold_tea
+when topic=food|day
+does tell.complaint / react.self / assess
+a : I made a cup at dawn. Found it at noon. #tea.capitalize# is the saddest thing in a city. | Nothing worse than #tea#. I'd sooner drink #rain#. | I put my tea down for one brick. One. #annoyed#. It was cold when I turned round.
+b : Drink it fast, then. | Nothing worse? | One brick?
+a : I never do. There's always #brick#. | #bc_nothing#. Cold tea's a broken promise. | One brick, then twenty. #bc_every_time#.
+
+scene bk_plum_tart
+when topic=food
+does tell.self / react.self / assess
+a : There's a baker on the Commons does #tart# on Restday. I'm always first. | I'll walk a long way for #tart#. Up stairs, even. | #tart.capitalize# with a thick crust. That's a supper, whatever anyone says.
+b[job=baker|cook] #kitchen : The crust's where the skill is. | Restday's a good tart day. | Plums are dear this year.
+b : First? Truly? | Up stairs? | For supper?
+a@kitchen : #bc_exactly#. Anyone can stew a plum. | The best day. Nobody's in a hurry. | I'll pay. Some things you pay for.
+a : Before the bell. I've beaten the baker there twice. | Two at a time, for #tart#. | For supper, and #course# of breakfast.
+
+scene bk_new_boots
+when topic=smalltalk|day
+does tell.self / react.self / assess
+a : #boots.capitalize#. Saved a season for them. I keep looking down. | Got #boots# from the cobbler. They creak on #stairs#. I like it. | Nothing makes a wolf stand straighter than #boots#.
+b : They suit you. | Creak? | A good pair's worth it.
+a : #bc_thank_you#. They'd better. They cost a wall. | Like an old door. They'll soften. | #wellsaid#. Feet first; everything else after.
+
+scene bk_old_tale
+when topic=lore|memories self.away=yes
+does tell.story / react.story / assess
+a : There's a tale from #downs# about a shepherd who counted stars instead of sheep. Lost the lot. | #oldtale.capitalize# is worth more than a meal to me. Want one? | My grandmother told tales on a frosty night by the fire. I still hear the voice.
+b[old] #old : I know one like that. With a goose. | Go on, then. A short one. | We had those too. They stay with you.
+b : What happened? | Go on, then. | What sort of tales?
+a@old : Tell me yours, and I'll tell mine. #bc_fair#. | The short ones are the best. A wolf, a wall, and a wind. | #bc_they_do#. Longer than the faces, some days.
+a : Found them in the morning, counting the stars back. #funny#. | Sit, then. #listen#. | Ones where the clever one loses and the kind one doesn't.
+
+scene bk_long_stairs
+when topic=day|smalltalk here.region=ridgemere
+does tell.self / react.self / assess
+a : I take #stairs# two at a time. Always have. | Folk laugh at me on #stairs#. They're behind me when they do it. | My knees ask me to slow down on #stairs#. I tell them later.
+b[old] #old : Wait till you're my age. | Behind you, eh? | Later comes quicker than you think.
+b : Why the hurry? | Do they? | Do your knees listen?
+a@old : I'll take them one at a time then, and gladly. | #bc_always#. #wry#. | #concede#. I'll still have climbed them.
+a : There's somewhere I'm going. Up. #door.capitalize#. | They do. Out of breath. | Never. Nor do I.
+
+scene bk_heights_hope
+when topic=dreams
+does confide / react.self / assess
+a : One day I'll have #door#. I mean to die somewhere better than I started. | I laid a step in the Heights last month. Stood on it a breath before I left. | Every coin I save goes toward #door#. Slow. Steady. #plumb#.
+b[wealth=rich] #rich : It's quieter up there. You'd like it. | A good step? | You'll get there.
+b : The Heights? Truly? | Just to stand on it? | It's a long way up.
+a@rich : I'd like the quiet. I'd miss the stairs. | Level as a pond. I checked. | #bc_i_hope_so#. I'll not stop climbing either way.
+a : Truly. #vent#, I'm not ashamed of wanting. | Just to see what it's like. It felt like a step. | It is. That's why I take it two at a time.
+
+scene bk_downs_home
+when topic=travel|home self.away=yes
+does tell.feeling / react.self / assess
+a : Some mornings I miss #downs#. Wind, sky, and nobody's elbow in my ribs. | Back in #self.from_town# you knew every face at the well. Here I don't know who's through the wall. | I left #downs# for work and never went back. #hedge#. I meant to.
+b[from=larkfield] #home : I miss it too. The wind most. | You'd know them all still. | Nobody goes back. We just mean to.
+b : Would you go back? | Do you mind it? | You might yet.
+a@home : #bc_me_too#. The wind and the quiet after it. | Most, I hope. Fewer every year. | #wellsaid#. We do mean to.
+a : To visit. Not to stay. #wall.capitalize#'s here now. | Some days. Then I climb #stairs# and see the whole city. | Maybe. When I've #door# to come back to.
+
+scene bk_city_neighbours
+when topic=smalltalk|home here.region=ridgemere
+does tell.complaint / react.self / assess
+a : Ten years on this street and half of it couldn't tell you my name. #grumble#. | Nobody knows their neighbour in this city. I made a point of learning mine. | It's a crowded place to be lonely in, this.
+b[from=ridgemere] #city : We know. We just don't say. | Good. More should. | It's a big city. It takes time.
+b : Does that bother you? | Did they learn yours? | Is it?
+a@city : #concede#. Saying it helps, mind. | #bc_thank_you#. I'll keep on, then. | Ten years is a fair time. #ack#.
+a : #hedge#. A little. I grew up where everyone knew your business. | Eventually. I brought #tart#. | #notsobad#. You find your few.
+
+scene bk_house_friend
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# and I share a roof. We don't talk much. We don't need to. | #self.friend# saves me the end of the supper pot. I save the last of #tart#. | Had a cup with #self.friend# last night. Mostly quiet. Best kind.
+b : That's a good friend. | Fair trade. | Quiet's good.
+a : #bc_the_best#. They're rare in a city. | Fairer than most. We never count. | It is. You don't have to fill it.
+
+scene bk_newcomers
+when topic=newcomer here.region=ridgemere
+does tell.news / react.news / assess
+a : #topic.subject#, newly come, I hear. Good. There's room for anyone who'll carry #hod#. | They say #topic.subject# has come to the city. I hope somebody shows the way up. | #topic.subject# is settling here, I'm told. I'll go and say good day.
+b[from!=ridgemere] #away : Somebody showed me, once. | It's hard coming in new. | That's kind of you.
+b : You don't mind more folk? | Somebody will. | Will you?
+a@away : #bc_somebody_has_to#. Pass it on. | It is. I remember. | It's not kind. It's just what's owed.
+a : Not if they work. #wall.capitalize# needs hands. | #bc_i_hope_so#. I'll ask. | #bc_i_will#. With #tart#, if I've any.
+
+scene bk_strangers_news
+when topic=travel|smalltalk here.region=ridgemere
+does tell.self / react.self / assess
+a : I'll hear a stranger out before a neighbour. Strangers bring the world in on their boots. | A wolf from the road told me there's #frost# up on the hills already. I believe it. | Every traveller at my counter has #oldtale# worth keeping.
+b[from!=ridgemere] #away : We bring mud in too. | It's early this year. | One, if you're lucky.
+b : Even the odd ones? | Already? | Only one?
+a@away : Mud brushes off. #lime.capitalize# doesn't. You're welcome. | Then I'll get up early tomorrow. | I've been lucky most weeks.
+a : The odd ones most. | #bc_already#. #ack#. | One's plenty. I keep them all.
+
+scene bk_dole_bread
+when topic=times
+does give.opinion / react.self / assess
+a : Nobody in a city this size should go to bed hungry. There's bread; it's the sharing that's short. | I gave the end of my loaf at the stair foot today. Somebody's pup ate it in two bites. | #vent#, the dole could be bigger and nobody'd miss it.
+b[wealth=poor|destitute] #poor : Some nights it's not enough. | That's kind. | It could. I'd notice it.
+b : It's a hard thing to fix. | Was it your supper? | Who'd pay?
+a@poor : #sympathy#. I'll leave a loaf at the step. Don't thank me. | #deflect#. Some nights it's me needing it. | You would. That's the point.
+a : Hard. Not past doing. | Half of it. I'll live. | Those who'd not miss it. There are a few.
+
+scene bk_festival_window
+when topic=festival
+does give.opinion / react.self / assess
+a : I'll watch from a quiet window with #tart#. Somebody has to be the one not shouting. | Too many wolves and not one of them looking where they're going. | I like the lanterns. I like them better from upstairs.
+b[stage=young|adolescent] #pup : But you miss the music! | It's fun in the crowd! | Can I come up and look?
+b : You don't go down? | Not even once? | Fair.
+a@pup : I hear it fine. It carries. | #concede#. Go on. Keep your paws clear of the carts. | #bc_go_on_then#. Wipe your feet.
+a : For an hour. Then the window. | Once. I came home with somebody's ale down my coat. | #bc_fair#. Each to their window.
+
+scene bk_watch_counter
+when topic=crime topic.kind=theft here.region=ridgemere
+does tell.news / react.news / assess
+tone serious / even / even
+a : #topic.victim#, robbed, I hear. #sticky.capitalize# about again. | They say #topic.victim# had a purse lifted. Keep a paw on yours. | #topic.victim#, robbed. The Watch had better be quick.
+b[job=guard] #watch : We're on it. Every street. | We'll find them. | We're as quick as we can be.
+b : Did anyone see? | Where was it? | They'll try.
+a@watch : #bc_thank_you#. Come by the counter after. The kettle's on. | #bc_i_hope_so#. #mortar.capitalize# doesn't watch itself, and nor does a counter. | I know you are. I'll not grumble.
+a : Not that I've heard. | #dunno#. | They will. They keep my counter safe enough.
+
+scene bk_faith_footing
+when topic=faith
+does tell.self / react.self / assess
+a : #self.priest# blessed the footing of a wall we laid. I don't know that it helped. I didn't mind it. | I say a word to the Bright One before a big lift. Short word. | The chapel's built well. Whoever laid that knew their trade.
+b[piety=devout] #devout : It helps more than you know. | The Bright One listens to short words. | Built by the faithful.
+b : Did it stand? | Just a short one? | You'd notice that.
+a@devout : #concede#. It's still standing. | #bc_i_hope_so#. I've no long ones. | And #plumb#. That's faith too, of a sort.
+a : Straight as a dropped line. So, yes. | Short. I'm holding a hod. | #bc_always#. I look at walls first.
+
+scene bk_accent_left
+when topic=accent self.away=yes
+does tell.self / react.self / assess
+a : I had the #self.from_town# talk when I came. It wore off on the stairs somewhere. | Folk say I sound city now. #hedge#. I suppose I do. | I lost my home talk the first year. Kept the tales, though.
+b[from=larkfield] #home : I can still hear it in you. A little. | You do. I'd not have known. | The tales are the best of it.
+b : Do you miss it? | Do you mind? | Which tales?
+a@home : #bc_thank_you#. Don't tell anyone. | It's a city coat. It keeps the rain off. | #bc_exactly#. Words go. Stories don't.
+a : Some days. Not the way you'd think. | #notsobad#. I sound like where I live. | Sit down some evening and I'll tell you.
+
+scene bk_back_hod
+when topic=health
+does tell.feeling / react.self / assess
+a : My back and #hod# had words this morning. #hod.capitalize# won. | Lift with the legs, they say. My legs have opinions too. | #tired.capitalize#, but the good kind. Wall's up a full row.
+b[job=crafter|laborer] #trade : Everyone's back goes in the end. | Legs, back, all of it. | Good kind's the only kind worth having.
+b : Rest it. | Don't they all. | A row's something.
+a@trade : #bc_i_know#. I'd like mine to go last. | #bc_true#. Then the paws. | #wellsaid#.
+a : #bc_ill_try#. After the wall. | #bc_they_do#. Loudly. | It's everything, today.
+
+scene bk_spring_season
+when topic=season here.season=spring
+does tell.self / react.self / assess
+a : Spring. Building season. Every House in the Heights wants a wall by summer. | The frost's out of the ground. We can dig footings again. | Spring's the busy time. I'll see #stairs# in the dark both ways.
+b : Busy for you, then. | Is that hard? | Both ways?
+a : #busy#, and glad of it. Idle is worse. | Ground's soft. Sometimes too soft. #ack#. | Up before light, down after. I like it, mostly.
+
+scene bk_ships_custom
+when topic=ships topic.kind=due topic.ship
+does tell.news / react.news / assess
+a : #topic.ship.capitalize#, due, they say. Crews off a ship always want something mended. | A ship due means strangers at my counter. I'll hear all the news. | #topic.ship.capitalize#. I'll want #oldtale# off one of that crew.
+b[job=sailor|fisher] #sea : Something always breaks at sea. | We'll bring news. And mud. | Ask the cook. They know them all.
+b : Good for you, then. | News? | From sailors?
+a@sea : #bc_always#. And I'll mend it straight. | Bring both. I'll brush the one and keep the other. | The cook, then. #bc_thank_you#.
+a : For the counter and the ears. | The world, a week stale. Still the world. | Sailors tell them best. They've had time to practise.
+
+scene bk_gossip_listen
+when topic=gossip
+does tell.self / react.self / assess
+a : I listen to gossip. I don't pass it. Something gets lost carrying it. | Folk talk across my counter. It goes into the wall with the rest. | #secret#. Things said to me stay with me.
+b[talk=chatty] #chatty : Not even the good bits? | Into the wall? | Pity. I had a good one.
+b : Wise. | In the wall? | Good.
+a@chatty : The good bits least. They're the ones that hurt. | Bricked up. Safe as anything. | Keep it. It'll keep. #wry#.
+a : Careful. Not wise. | Where nobody pulls it out again. | #bc_i_know#. It's the only way I know.
+
+scene bk_sump_start
+when topic=memories self.away=yes self.age>=30
+does tell.memory / react.self / assess
+a : When I came to the city I slept in the Sump. A room the size of a hod. | I started at the bottom of #stairs#. Literally. My first room was under them. | First job here was mixing mortar for a wage that barely bought #tea#.
+b[wealth=poor|destitute] #poor : I know those rooms. | Under the stairs? | Barely's about right.
+b : And now? | Did you mind? | And look at you now.
+a@poor : #sympathy#. They're no place to stay. They're a place to start. | Every step overhead. I counted them. | Barely, and I still say thank you for it.
+a : Now I'm halfway up. #saying#. | It taught me where I was going. | #modest#. I'm still climbing.
+
+scene bk_houses_work
+when topic=lore here.region=ridgemere self.workplace
+does give.opinion / react.self / assess
+a : I work for #self.workplace#. They pay what they say, and on the day. That's rare enough. | The House built the walls of this city. I build the bits folk lean on. | Working for a House is like working for weather. You don't argue. You build a roof.
+b[wealth=rich] #rich : They're a sound House. | Leaning's important. | A sensible view.
+b : Do you like it? | Little bits? | And when the weather turns?
+a@rich : #concede#. Sound as their brick. | #bc_it_is#. Ask a tired wolf. | #bc_thank_you#. I have them now and then.
+a : I like the work. The House I don't see. | Steps, sills, garden walls. They matter. | You build a better roof.
+
+story bk_story_first_wall [concept=talk.memories self.age>=25]
+  : The first wall I ever laid myself, I was proud as a cat. It came down in the rain the same week.
+  : The foreman made me take it apart, brick by brick, and stack them clean. Every one.
+  ask : Did you want to quit?
+  b[job=crafter|laborer] : We've all had that wall.
+  b : Did you want to quit?
+  : For a night. Then I laid it again, and it's still there. #plumb#. I go and look at it now and then, on a Restday.
+  b : That's a good wall to have.
+  : The best. It knows what I did wrong.
+
+story bk_story_boots [concept=talk.memories self.away=yes self.age>=25]
+  : I walked to the city from #self.from_town# in boots worn through at the toe. Rain the whole way.
+  : The first coin I earned here went on a new pair. Not food. Boots.
+  ask : Not food?
+  b[wealth=poor|destitute] : Boots first. I understand that.
+  b : Not food?
+  : You can go hungry a day. You can't climb #stairs# on wet feet. #saying#, and boots.
+
+story bk_story_shepherd [concept=talk.memories self.away=yes]
+  : There's #oldtale# from #downs#. A shepherd lay on the hill and counted the stars instead of the sheep.
+  : By morning every sheep was gone, and the shepherd had counted to a number nobody'd ever heard.
+  ask : What happened to the sheep?
+  b[old] : I know that one, near enough.
+  b : What happened to the sheep?
+  : They came home on their own at dusk. The shepherd never could find that number again. #funny#.
+  b : That's a strange one.
+  : The best ones are. You keep turning them over.
+
+story bk_story_frost [concept=talk.memories self.away=yes]
+  : When I was a pup on #downs#, the first frost made every blade of grass stand up white.
+  : I'd go out barefoot to hear it crunch. My grandmother would shout from the door.
+  b[old] : I did the same. You never forget the sound.
+  b : Barefoot? In frost?
+  : Barefoot. I've loved #frost# ever since. Even in a city, with soot on it.
+
+story bk_story_doorstep [concept=talk.memories here.region=ridgemere]
+  : Last spring I laid a doorstep up in the Heights. Good stone, level as a pond.
+  : When it was done I stood on it for one breath. Just to know what it felt like.
+  ask : And what did it feel like?
+  b[wealth=rich] : Like a doorstep, I'd think.
+  b : What did it feel like?
+  : Like a step. Just a step. #hedge#. That's when I knew I could get there.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. New face. Mind your coat on #lime#; what can I do for you?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Sit, if there's a stool clean. What's the news?
+dlg @3 resident.hub [topic.meeting=returning] : #topic.player#. #welcome_back#. You've been on the road; tell me about it.
+dlg @4 resident.hub [pair.disposition=wary] : #greet#. Say what you came to say. I'm listening, if not smiling.
+dlg @5 resident.hub [pair.disposition=warm] : There you are, #topic.player#. I'll put the kettle on, and this time I'll drink it hot.
+dlg @6 resident.hub [here.time=night] : #greet#. Late. Everything all right? Come in out of the dark.
+dlg @1 resident.job : I'm a #self.trade_words#. I lay what folk lean on. | Brick, mostly. Walls, steps, sills. I keep the counter as well.
+dlg @1 resident.business : #fine#. The walls go up and the coin comes in, slow. | Steady. Late loads cost me, but steady.
+dlg @1 resident.news : Travellers tell me things. #news_none# today, though. | The road's slow and the brick's dear. That's my news.
+dlg @1 resident.gossip : #secret#. What's said at my counter stays there. | I don't pass it on. Something always spills, carrying it.
+dlg @1 resident.bye : #farewell#. Mind #stairs#; they bite harder going down. | #farewell#. Come back with a story.
+dlg @1 shop.greet : #greet#. Brick, tile, lime, and somebody who'll tell you which you need. | #greet#. What are you building?
+dlg @2 shop.greet [topic.meeting=known] : #greet#, #topic.player#. Back for more? I put a good stack aside.
+dlg @1 shop.prices : I say a sum once and it's an honest one. If it's dear, I'll tell you why. | That's the price. I don't go round in circles; it wastes the day for both of us.
+dlg @1 shop.bye : #farewell#. Build it straight. | #farewell#. Lay #course# right and the rest is easy.
+graft @stairs resident.hub
+choice Why do you take the stairs two at a time? -> twos
+node twos
+say Because there's somewhere I'm going, and it's up. #door.capitalize#, one day. Two at a time gets me there sooner.
+mood pleased
+free
+choice Up to the Heights? -> twos_heights
+choice Goodbye. -> bye
+node twos_heights
+say The Heights. I started under the stairs in the Sump. Every step counts. I mean to die somewhere better than I was born.
+choice I hope you get there. -> hub
+choice Goodbye. -> bye
+
+graft @tale resident.hub
+choice Do you know any old tales? -> tale
+node tale
+say A few. From the hills I grew up on. Sit, and I'll tell you the short one. A shepherd counted stars instead of sheep.
+free
+choice What happened? -> tale_end
+choice Goodbye. -> bye
+node tale_end
+say Lost every sheep by morning. They came home on their own at dusk. Some things find their way back without counting.
+mood pleased
+choice That's a good one. -> hub
+choice Goodbye. -> bye

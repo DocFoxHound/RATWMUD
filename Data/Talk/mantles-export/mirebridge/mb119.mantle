@@ -1,0 +1,275 @@
+# mb119, the fretful turf-cutter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb119
+revision 1
+state ready
+dialect mirebridge
+accent none
+tier standard
+written_for tn_fh_rowan_cragpeak
+written_by claude-p11-pilot
+title the fretful turf-cutter
+fits stage=adult|old
+prefers job=miner|laborer
+traits temper=nervy talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk distrusts_anything_from_the_city
+likes barley_soup riddles tidy_house first_warm_day
+dislikes rats drizzle
+fears what_the_bog_turns_up
+hopes to_see_the_road_down_one_day_and_come_back_safe
+topics work +0.3 land +0.3 food +0.2 dreams +0.2 travel -0.2 newcomer -0.3
+styles comfort=practical gossip=reluctant refuse=soft tease=none
+marks oath saying fret
+persona #self.first# cuts turf at the cutting: nervy, quiet, forever turning a riddle over in the head, wary of anything with the city on it, and dreaming of the road down all the same.
+
+words
+oath! = Spade and sod | Turf and trouble
+saying! = Cut it in spring, burn it in winter, never the other way | Mind what the bog gives back
+fret! = I'm only saying | Mind, I'm only saying | Just so you know
+spade = my turf spade | the long spade
+turf = a turf | a wet turf
+stack = the stack | the turf stack
+cutting = the cutting | the face of the cutting
+soup = barley soup on a cold day | a bowl of barley soup
+knot = the riddle I'm chewing on | a riddle with no bottom to it
+rats = rats in the larder | a rat in the meal
+citymade = anything off a city cart | city things
+roaddown = the road down | the long road down to Ridgemere
+neat = a tidy room | everything in its place
+bog = the bog | the deep peat
+lights = the lights | those lights on the bog
+sour = drizzle | a thin sour drizzle
+latched = the door latched | the latch down
+mild = the year's first mild morning | the first day the frost lets go
+
+any
+opinion @1 city against 2 : #citymade.capitalize# falls apart in the wet. I've seen it. I don't trust it, and I don't trust who made it. #fret#.
+opinion @1 newcomers against 2 : You don't know what a new face has left behind, or what's coming after it. I keep #latched#.
+opinion @1 road against 1 : I wouldn't put a paw on #roaddown# these days. Not for coin. I think about it, mind. I don't do it.
+opinion @1 drink against 1 : A wolf in drink says things that can't be unsaid. I've heard it happen. I'll have #soup#.
+opinion @1 merchants against 2 : I cut turf all day and can't buy a loaf on it, and the ones selling never go short. #oath#.
+
+grown
+line @1 greet.return : #greet#. | Oh. #greet#. You made me jump.
+line @1 greet [pair.band=strangers] : Oh. #greet#. I don't know you, do I. | #greet#. I've not seen you before. Have I?
+line @2 greet [here.time=dawn] : #greet#. You're up early. Is something wrong? | #greet#. I'm off to #cutting#. Nothing's wrong, is it?
+line @3 greet [self.working=yes] : #greet#. Mind the edge. It's soft. | #greet#. Careful there, the ground gives.
+line @1 again.open : You again. Has something happened? #fret#. | Back already? #greet#.
+line @1 farewell : #farewell#. Go carefully. | #farewell#. Stay on the path, won't you.
+line @1 farewell.return : #farewell#. | #farewell#. Mind how you go.
+line @1 react.news.new : Oh. Oh, that's not good, is it? | #oath#. Are you sure?
+line @1 react.news.known : #knew#. I've been worrying about it since. | I'd heard. I didn't sleep for it. #oath#.
+line @1 react.news.doubt : #doubt#. I hope it's not true. I'm only hoping. | I'd want to hear it twice before I worry about it. Then I'll worry.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's #bad#. I knew something would happen. | #pity#. That frightens me, that does.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : #good#. That's #good#. I'm glad. | #gladnews#. I was afraid it would go the other way.
+line @1 answer.how : #notsobad#. Worried, a little. | #fine#. #fret#. | Tired. #bog.capitalize# was wet today.
+line @1 sympathise : #sympathy#. Have some #soup#. It helps. | Oh. That's hard. I'd be in pieces. #sympathy#.
+line @1 decline : I'd rather not. It makes me nervous, and I'd only do it badly. | #demur#. I'm sorry. I'd fret myself silly.
+line @1 accept_decline : #no_matter#. I understand. | That's all right. Really. #fret#.
+line @1 thank : #thanks#. | #thanks#. I won't forget.
+line @1 deflect_thanks : #deflect#. | It was nothing. Was it all right, though?
+line @1 preclose : Well. #stack.capitalize# won't build itself. | #preclose#.
+line @1 ack : #ack#. | Mm. Yes.
+scene cutting_wet
+when topic=work here.region=fens self.job=miner|laborer
+does tell.self / react.self / assess
+a : #cutting.capitalize#'s wet to the knee today. Every #turf# comes up dripping. | Cut two hundred turves and built #stack#. My back's talking to me. | The face of #cutting# slipped this morning. Just a little. I stood back.
+b[job=miner|laborer|farmer] #hands : Wet cutting's slow cutting. | Two hundred's a good day. | Good. Never stand under a face.
+b : Sounds hard. | Rest it, then. | Were you all right?
+a@hands : It is. #saying#. | It is. I'll pay for it tomorrow. | Never. I learned that young.
+a : It is. I'm only #tired#, though. | I will. After #soup#. | I was. I'm fine. #fret#.
+
+scene bog_finds
+when topic=work|lore here.region=fens self.job=miner|laborer
+does tell.story / react.story / assess
+a : Found an old wooden spoon down in #cutting#. Black as soot. I put it back. | Something hard under #spade# today. I didn't dig to see what. | #bog.capitalize# keeps things. Bones, sometimes. I don't look close.
+b[old] #age : Leave the bog its own. | Wise. | It always has.
+b : You put it back? | Why not? | Bones?
+a@age : That's what I thought. #saying#. | I hope so. | It has. I wish it wouldn't.
+a : It wasn't mine to keep. #saying#. | I didn't want to know. #fret#. | Old ones. Probably old ones.
+
+scene stacking
+when topic=work|season here.region=fens self.job=miner|laborer here.season=summer|autumn
+does tell.self / react.self / assess
+a : Turned every turf on #stack#. If they don't dry this week they'll never dry. | Built #stack# twice. The first leaned. I couldn't stop looking at it. | Covered #stack# in case of rain. Then uncovered it. Then covered it again.
+b : They'll dry. | Twice? | #bc_ha#
+a : I hope so. #fret#. | Twice. The second's straight. I checked. | It might rain. You don't know.
+
+scene drizzle_sour
+when topic=weather here.region=fens here.weather=rain|overcast
+does tell.complaint / react.complaint / assess
+a : I can't abide #sour#. A good storm I can stand. This just creeps in. | The damp's in everything. The handle of #spade#'s gone soft. | Grey and wet, grey and wet. It gets into your head.
+b : #bc_true# | Dry it by the fire. | It'll lift.
+a : It creeps. Under the door, into #bed#. | I will. It warps if you're not careful. | I hope so. I keep thinking it won't. #fret#.
+
+scene first_mild
+when topic=weather|season here.region=fens here.season=spring here.weather=clear
+does tell.feeling / react.self / assess
+a : #mild.capitalize#. I opened every window. Twice. | Feel that. #mild.capitalize#. I almost forgot to worry. | The frost's let go. I stood in the sun and didn't think of anything.
+b : #bc_lovely# | Almost? | #bc_good#
+a : It is. I'll shut them by dark. | Almost. Then I remembered #stack#. | Nothing at all. It was #good#.
+
+scene soup_supper
+when topic=food here.region=fens
+does tell.self / react.self / assess
+a : #soup.capitalize#. That's all I want after the cutting. | Made a pot of #soup# last night. Enough for the whole house. | Can't eat when I'm worried. #soup.capitalize#, I can always manage.
+b[wealth=poor|destitute] #poor : Barley's cheap, at least. | Did they eat it? | Soup goes down easy.
+b : #bc_lovely# | Did it last? | #bc_good#
+a@poor : It is. For now. #fret#. | Every drop. | It does. It's kind, soup.
+a : It's warm and it's plain. | Not till morning. Somebody had seconds. | It's the one thing that settles me.
+
+scene rats_larder
+when topic=home|animals here.region=fens
+does tell.complaint / react.complaint / assess
+a : #rats.capitalize#. I heard it scratching all night. I didn't sleep. | Found holes in the meal sack. #rats.capitalize#. I knew it. | I put everything up on the high shelf. They climb. They always climb.
+b : Get a cat. | #bc_bad_luck# | #bc_they_always_do#
+a : A cat? I'd only worry about the cat. | I knew it. I said there was something. | They do. I'll put a lid on it. Two lids.
+
+scene tidy_room
+when topic=home here.region=fens
+does tell.self / react.self / assess
+a : I like #neat#. If one thing's out of place I can't settle. | Swept, folded, put away. #neat.capitalize#. Then I could sit down. | Somebody moved #spade# from by the door. I looked for it for an hour.
+b : #bc_wise# | #bc_good# | An hour?
+a : It helps. When everything's still, I'm still. | Then I sat. For a little. | An hour. It was behind the door. I'd moved it myself.
+
+scene riddle_head
+when topic=pastimes here.region=fens
+does tell.self / react.self / assess
+a : I keep #knot# in my head while I cut. It stops me thinking about the bog. | There's #knot# I've had for three days. I won't ask you it. I want to crack it myself. | I heard #knot# at the Heron. I've not slept right since.
+b : What is it? | Three days! | That good?
+a : I'll tell you when I've got it. Not before. | Three. It's nearly there. I think. | It's that bad. I mean that good.
+
+scene city_dream
+when topic=dreams|travel here.region=fens
+does confide / react.self / assess
+a : Some nights I dream I've gone down #roaddown#. I wake up and I'm glad I'm here. Mostly. | I think about #roaddown#. I don't trust it. I think about it all the same. | One day I'll walk down to Ridgemere. One day. I'm only saying.
+b[friends] #mate : You've said that before. | That's no harm. | You'd hate it.
+b : #bc_mostly#? | Why not go? | #bc_we_will_see#
+a@mate : I know. I keep saying it. | I suppose not. | I might. I'd still like to see.
+a : Mostly. #fret#. | Because it'd go wrong. Something would. | We'll see. I'll see.
+
+scene city_goods
+when topic=prices|smalltalk here.region=fens
+does give.opinion / react.self / assess
+a : Bought a knife off a city cart once. #citymade.capitalize#. Snapped in a week. | #citymade.capitalize#. Looks fine, falls apart in the damp. | They brought city thread to the store. I bought the old sort. It's dearer. I don't care.
+b[from=ridgemere] #citywolf : Not all of it's bad. | The damp's not the city's fault. | Dearer for nothing.
+b : #bc_true# | #bc_they_always_do# | #bc_fair#
+a@citywolf : No. I'm sure. Some. I'm only being careful. | Somebody's fault, though. | Not for nothing. For knowing.
+a : Never again. #oath#. | They do. Every time. | I know what the old sort does.
+
+scene newcomer_latch
+when topic=newcomer here.region=fens
+does give.opinion / react.self / assess
+a : A new face about the place. #latched.capitalize#. I'm not saying anything. Just latched it. | New folk. You don't know what they've left behind. | Did you see the new one? I didn't like the way they looked at the stacks.
+b : They're probably fine. | #bc_true# | Looked how?
+a : Probably. #latched.capitalize#, anyway. | You don't. And what's following. | Like they were counting. #fret#.
+
+scene friend_boatwolf
+when topic=friends here.region=fens self.friend
+does tell.self / react.self / assess
+a : #self.friend#'s out somewhere in this. I keep looking at the sky. | #self.friend# says I worry for both of us. Somebody has to. | Saved #self.friend# #soup#. It'll go cold. I saved it anyway.
+b[friends] #mate : They know the weather better than you. | #bc_somebody_has_to# | That's kind.
+b : They'll be fine. | #bc_ha# | #bc_good#
+a@mate : I know. I'd still rather they weren't. | I don't mind. Much. | It isn't. It's just soup.
+a : They will. They will. #fret#. | It's true, though. | I'll warm it up. #soup.capitalize# keeps.
+
+scene drink_wary
+when topic=smalltalk|pastimes here.region=fens here.place=tavern
+does give.opinion / react.self / assess
+a : I'll have #soup#, not a jar. Folk in drink say things they can't take back. | Somebody at the next bench is three cups in. I'm watching. | I don't stay late. The Heron gets loud after dark.
+b : One won't hurt. | #bc_wise# | It does.
+a : One's how it starts. #fret#. | I'm only watching. Not saying anything. | I like it before the loud starts.
+
+scene dusk_home
+when topic=day here.region=fens here.time=dusk
+does tell.self / react.self / assess
+a : Light's going. I like to be in before #lights# come out. | Home, door latched, #soup# on. Then I can breathe. | Dusk. I'll count #stack# once more and then go in.
+b : #bc_wise# | #bc_good# | Once more?
+a : Never follow them. Never. | That's the best of the day. | Once. Maybe twice.
+
+scene faith_quiet
+when topic=faith here.region=fens
+does give.opinion / react.self / assess
+a : Every morning before #cutting#, a word to the Bright One. Just in case. | I keep away from anything to do with the Dark One. Even the talk of it. | The Bright One has a lot to listen to. I keep mine short.
+b[priest] #cloth : The Bright One hears every word. | Wise. | Short prayers are still heard.
+b : #bc_good# | #bc_wise# | #bc_fair#
+a@cloth : I hope so. I do hope so. | It's only sense. #oath#. | That's good. That's a comfort.
+a : It can't hurt. #fret#. | Even the talk. | Short and every day.
+
+scene land_bog
+when topic=land here.region=fens
+does tell.self / react.self / assess
+a : #bog.capitalize# moves. You think it doesn't. It does. | Every year the path to #cutting# is a step further round. | Under #turf# it goes down and down. Nobody knows how far.
+b : #bc_so_they_say# | #bc_every_year# | Nobody?
+a : It does. I've marked it. | Every year. I measure. | Nobody. I don't want to be the first.
+
+scene houses_times
+when topic=times|gossip here.region=fens
+does give.opinion / react.self / assess
+a : Each week's a bit harder than the last. Nobody above us seems to notice. | I've cut #turf# for the big houses all my life. Never seen one of them at the cutting. | Times are hard. I don't like to say it out loud.
+b[wealth=rich|comfortable] #fine : They have their own worries. | Why would they come? | It'll turn.
+b : #bc_true# | #bc_they_always_do# | #bc_i_know#
+a@fine : I'm sure. Different worries. | To see. Just once. | I hope so. I'm only hoping.
+a : #bc_true#. I'm only saying. | Not once. #oath#. | There. I've said it now.
+
+story spade_slip [topic=memories|work self.age>=30]
+  : Years back, the face of #cutting# came down where I'd been standing a breath before.
+  : Turf and water, all at once. I'd stepped back for no reason at all.
+  ask : Do you know why I stepped back?
+  b : Why?
+  : I don't. I never have. I've stepped back ever since. #fret#.
+
+story the_lights [topic=memories|lore here.region=fens self.age>=25]
+  : When I was small I saw lights moving beyond #cutting#. Three of them, moving together.
+  : Somebody older took me by the scruff and walked me home without a word.
+  b : Did you ever see them again?
+  : Every year. I never look long. #saying#.
+
+story long_riddle [topic=pastimes|memories self.age>=30]
+  : There was a riddle I heard once from a pedlar. Took me a whole winter.
+  : I got the answer one morning at #cutting#, with #spade# in the air.
+  ask : Shall I tell you what it was?
+  b : Go on.
+  : What's black, burns slow, and was a meadow once? #turf.capitalize#. A whole winter, and it was under my feet. #oath#.
+
+rule @cutting
+when concept=bark self.working=yes self.job=miner|laborer here.region=fens
+does aside
+cooldown 6h
+say Careful. Careful. The edge. | #oath#. That one's heavy as lead. | Steady. #turf.capitalize#. And another.
+
+rule @rats
+when concept=bark here.region=fens here.place=home
+does aside
+cooldown 8h
+say What was that? Was that a rat? | #rats.capitalize#. I knew it. | Shh. Listen. There.
+
+rule @dusk
+when concept=bark here.region=fens here.time=dusk|night here.weather!=indoors
+does aside
+cooldown 8h
+say Don't look at #lights#. Don't. | In before dark. In. | #fret.capitalize#. It's getting dark.
+
+rule @drizzle
+when concept=bark here.region=fens here.weather=rain
+does aside
+cooldown 8h
+say #sour.capitalize#. Everything wet. | It's in my fur now. | Creeping in. Always creeping in.
+
+dlg @1 resident.hub [topic.meeting=stranger] : Oh. #greet#. I don't know your face. What is it you want?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Is everything all right? You look like something's happened.
+dlg @3 resident.hub [pair.disposition=wary] : #greet#. I'll listen. From here. #fret#.
+dlg @1 resident.job : I cut turf at #cutting#. Cut it in spring, stack it, dry it. It's hard, but it's quiet.
+dlg @1 resident.news : I don't know anything. Not really. #fret#. Nothing I'd want to be the one to say.
+dlg @1 resident.bye : #farewell#. Go carefully. Stay off the soft ground.
+graft resident.hub
+choice You seem worried. Is something wrong? -> worried
+node worried
+say Nothing's wrong. Not yet. I just like to be ready for it. #fret#.
+mood calm
+free
+choice Ready for what? -> worried_what
+choice That's sensible. -> hub
+node worried_what
+say Anything. #bog.capitalize#. Rats. The city coming up the road. You don't know. That's the trouble, you never know.
+choice I'll keep an eye out too. -> hub
+choice Goodbye. -> bye

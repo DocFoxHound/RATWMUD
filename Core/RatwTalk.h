@@ -860,6 +860,11 @@ public:
     bool expand(const std::string& text, const Query& q, int speaker, std::uint64_t seed, std::string& out,
                 Trace* trace = nullptr) const;
 
+    // Doc 84 §12.3.5 (Phase 11): a dialect's distinctive words (its grammars' phrases of two words or more, or coined
+    // with a hyphen, that no other grammar says: tools/dialect_check.py's lexicon), and whether a text says one. A mantle
+    // lent from a neighbouring pool speaks its own words to its wearer only where they aren't its dialect's.
+    const std::vector<std::string>& dialectWords(const std::string& dialect) const;
+    bool saysDialect(const std::string& dialect, const std::string& text) const;
 private:
     struct Alt
     {

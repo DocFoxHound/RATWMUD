@@ -1,0 +1,316 @@
+# rm104, the bird-counter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm104
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for tn_mb_nab_bogditch
+written_by claude-p11-pilot
+title the bird-counter
+fits stage=adult|old
+traits temper=even talk=chatty warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk counts_every_bird_that_goes_over
+likes hard_cheese wrestling new_boots thunder
+dislikes waiting wet_floors
+fears the_lights_coming_closer
+hopes a_dry_house_and_a_full_net
+topics animals +0.4 work +0.3 pastimes +0.3 lore +0.2 weather +0.2 newcomer -0.2
+styles comfort=practical gossip=willing refuse=soft tease=dry
+marks oath saying
+persona #self.first# nets birds on the fen and talks the whole time: city-born and broad, dry as a biscuit, friendly in a way that keeps you at arm's length, and counts every bird that goes over.
+
+words
+oath! = Feathers and fishbones | Beak and bootlace
+saying! = You don't net a bird by staring at it | The sky's always full; it's the net that's empty
+birds = teal | widgeon | a string of geese
+net = the clap-net | the long net
+decoys = the decoys | my wooden birds
+boots = these boots | my new boots
+rind = cheese with a rind you could stand on | a heel of proper cheese
+thunder = a good thunderstorm | thunder you feel in your teeth
+grass = a tussle on the grass | a round or two on the grass
+waiting = standing about | waiting on other folk
+lights = the lights | the drowned with their lamps
+pal = old son | pal
+nineteen = ...seventeen, eighteen, nineteen | ...forty, forty-one | ...six, seven, and one late
+
+any
+opinion @1 merchants against 2 : Nothing comes into my house but birds, and still the bread goes up. Somebody's netting me, and it isn't with string.
+opinion @1 houses against 1 : The Houses would leave a bench empty sooner than sit the likes of me on it. Fine. I've a stool.
+opinion @1 newcomers against 1 : Every new face wants a bit of the creek. I'd know; mine was one. There's only so much creek.
+opinion @1 festivals for 1 : One day a year the whole place is out and talking, and nobody asks you to wait. I'm for it.
+opinion @1 city for 1 : I was born in the smoke and I'll go back and die in it, cheerful. Not yet, mind. The birds are better here.
+opinion @1 times against 1 : Harder every week, a little. Like a boot that's shrinking. You don't notice till you limp.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. You're new. I'd have counted you. | #greet#, #pal#. Lost, or just looking?
+line @2 greet [pair.band=housemates] : Oh, it's you. Did you take my good socks? | #greet#. You snore, you know. Like a bittern.
+line @1 again.open : Here twice before supper. Folk will start on us. | Back again? I'd started to miss you. Nearly.
+line @3 greet [here.time=dawn] : Morning. Birds are up. So am I, more or less. | Morning, #pal#. Cold one for the paws.
+line @4 greet [here.time=dusk|night] : Evening. Don't look out over the fen, mind. | Evening. Lamps lit? Good.
+line @5 greet [self.working=yes] : #greet#. Quiet, now. Keep low. | Shh. #nineteen#. Right. #greet#.
+line @1 greet.return : #greet#. | #greet#, #pal#. | Oh, aye. #greet#.
+line @2 greet.return [self.working=yes] : #greet#. Talk low, they spook. | #greet#. Mind the line, it's pegged.
+line @1 farewell : Right, I'm off before somebody gives me a job. | #farewell#. Don't get wet.
+line @1 farewell.return : #farewell#. | Go careful, #pal#.
+line @1 react.news.new : #oath#. Is that right? | #oath#! Well, there's a thing.
+line @1 react.news.known : Heard it this morning. The creek gets it first. | Old news, #pal#. Older than my boots.
+line @1 react.news.doubt : I'll wait to hear it from someone who saw it, if it's all the same. | Somebody's pulling your tail, I reckon. I'd want more.
+line @1 react.news.sorrow : Ah. That's bad. That's properly bad. | No. I'm sorry. I'll keep quiet a bit.
+line @1 react.news.glad : Now that's the best thing I've heard all week. | Good. Somebody deserved it.
+line @1 answer.how : Wet to the knee, dry above it. Can't complain. | Middling. Caught a few, missed more. | Still here. Still counting.
+line @1 sympathise : That's a rough go. Sit down a bit. | I'd be cross too. I'd be crosser, actually.
+line @1 decline : I'd say yes, but I'd be lying and you'd know. Not this time. | Can't, #pal#. I've birds that won't net themselves.
+line @1 accept_decline : Fair enough. Your loss. | No harm. Another time.
+line @1 thank : Kind, that. I owe you a bird. | Ta. Truly.
+line @1 deflect_thanks : Get off. It was nothing. | You'd have done the same. Probably.
+line @1 preclose : Well. The birds won't wait, and nor will I. | Right. I've stood here long enough to put down roots.
+line @1 tease : You walk like you've a boot full of water. | Is that your face, or are you just tired?
+line @1 tease.return : Says you. | I've been told worse by a heron.
+line @1 ack : Aye. | Fair.
+rule @count
+when concept=bark here.region=fens here.time=dawn|dusk
+does aside
+cooldown 6h
+say #nineteen#. Good string, that. | One, two... forget it. Too many.
+
+rule @net
+when concept=bark working=yes self.job=none|fisher here.region=fens
+does aside
+cooldown 6h
+say Come on. Come on. Down you come. | Missed. Course I missed.
+
+rule @waiting
+when concept=bark here.place=market|street
+does aside
+cooldown 8h
+say How long does it take to buy a loaf? | I'll grow moss stood here.
+
+rule @lights
+when concept=bark here.region=fens here.time=night
+does aside
+cooldown 8h
+say Don't look at them. Don't look at them. | They're further out tonight. Good.
+
+scene fowl_dawn
+when topic=work self.job=none|fisher here.region=fens here.time=dawn|day
+does tell.self / react.self / assess
+a : Out before light with #net#. Seven teal and a widgeon. Counted them all over first. | Set #decoys# out at dawn and sat in the reeds till my legs went. | Thirty-one geese over this morning. Netted none. Counted every one.
+b[job=fisher] #water : Not a bad morning, then. | Your legs or your patience? | Counting's not catching.
+b : That's a fair bag. | Did it work? | None at all?
+a@water : I'll eat. | Legs. Patience went first. | Counting's free. Catching costs.
+a : Fair, and wet. | It did. They came in like they'd been asked. | None. But I know exactly how many I missed.
+
+scene fowl_net
+when topic=work self.job=none|fisher here.region=fens
+does tell.complaint / react.complaint / assess
+a : Somebody's been treading on the peg-line of #net#. I'll find the print. | Mended #net# all evening. A rat had been at it. | The cord stretched in the wet. The net drops like a sigh now. Birds laugh at it.
+b : Kept a rat out once with a cat. | A rat? | Do birds laugh?
+a : Fair point, but where'd I get a cat? | A rat with taste. It only ate the good bits. | These ones do.
+
+scene fowl_patience
+when topic=work self.job=none|fisher
+does tell.self / ask.detail / answer.detail / assess
+a : Fowling's mostly sitting. Sitting, and not sneezing. | You know what the hardest bit is? Keeping still when your nose itches. | People think it's the catching. It's the waiting. I hate waiting.
+b : How long do you sit? | And the easy bit? | Then why do it?
+a : Till they come, or till I give up. Usually till they come. | Eating them after. | Because they do come. Eventually.
+b? : #bc_ha# | Fair. | #bc_true#
+
+scene birds_over
+when topic=animals here.time=dawn|day|dusk
+does tell.self / react.self / assess
+a : Look. Up there. #nineteen#. Geese, heading south. | Hear that? That's a curlew. Means rain, some say. I say it means curlew. | A heron's had the eel trap open again. I've seen it. It knows I've seen it.
+b[old] : They were early last year. | Old folk said that, aye. | Herons are clever.
+b : I never notice them. | Does it mean rain? | It looked at you?
+a@old : Early, and fewer. | And they were wet a lot, I expect. | Too clever. I don't trust a clever bird.
+a : I can't not. | Sometimes. Usually it means a curlew. | Bold as you like. Then walked off.
+
+scene birds_lights
+when topic=animals|lore here.region=fens here.time=dusk|night
+does tell.self / react.self / assess
+a : Birds go quiet when #lights# come out. Every time. Notice that. | No bird crosses where #lights# walk. They go round. I've watched. | The ducks bunch up at dusk like they're frightened of something.
+b : Maybe they're asleep. | Round? | Of the dark, maybe.
+a : All at once? No. | Wide round. Like you'd go round a grave. | Of something with a lamp.
+
+scene lights_drowned
+when topic=lore here.region=fens
+does give.opinion / react.self / assess
+a : #lights.capitalize#. Folk say marsh gas. I say they're the ones who went under, and they've lamps out looking for the way back. | Don't go out to them. They're drowned folk, lit up. | I'll believe gas when gas walks in a straight line.
+b[job=priest|scholar] #learned : It's marsh gas. Nothing more. | Pray for them and stay on the path. | Gas drifts. It can look like walking.
+b[old] #old : My grandmother said the same. | The drowned don't rest easy in the fen. | That's what my father said.
+b : You really think so? | Who'd go out to them? | #bc_so_they_say#
+a@learned : And marsh gas knows to keep off the path, does it? | Both. I do both. | Drifts, aye. With purpose.
+a@old : Then she was right. | No. And who'd blame them. | Sensible wolf.
+a : I don't think it. I know it. | Somebody new, every year. | So I say.
+
+scene lights_close
+when topic=lore here.region=fens here.time=dusk|night
+does warn / react.self / assess
+a : Keep away from the window. #lights.capitalize# are close tonight. | Shut the shutter. I'll not have them looking in. | Don't whistle. Not out here, after dark. They come to it.
+b[from=mirebridge|fenshore] #fen : They're always out there. | The shutter's warped. | That's an old one.
+b : Close? How close? | They can look in? | Whistling?
+a@fen : Not this close. | Then stuff a sack in it. | Old ones are the true ones.
+a : Close enough that I'm stood this side of you. | They can try. | They come to it. Don't ask me how I know.
+
+scene thunder_counting
+when topic=weather here.weather=storm
+does tell.feeling / react.self / assess
+a : #thunder.capitalize#. Count with me. Flash... one, two, three. There. | Listen to that. Best sound there is, from under a roof. | Storm's right on top of us. No gap at all now.
+b : You like this? | You're mad. | That's not much gap.
+a : Love it. Hate rain. Love thunder. Sort that out. | From under a roof, I said. | None. Lovely.
+
+scene thunder_waiting
+when topic=weather here.weather=overcast|clear
+does tell.self / react.self / assess
+a : Heavy air. There'll be #thunder# before the week's out, if I'm lucky. | I've been waiting a month for a decent storm. Waiting. Me. | Clouds piling up over the dunes. Something's brewing.
+b : You want a storm? | That's not like you. | Or it'll just rain.
+a : One. Short. Loud. | I know. I've surprised myself. | Then I'll be cross, and wet.
+
+scene rain_floor
+when topic=weather|home here.weather=rain here.region=fens
+does tell.complaint / react.complaint / assess
+a : Rain, and the floor's swimming. Every step in the house is a squelch. | I put my new boots by the door, and the door let the wet in under them. | Wet floor again. I've counted four puddles in one room.
+b[pair.band=housemates] #house : Wasn't me left the door open. | Put them on the shelf. | Five. You missed the one by the bed.
+b : #bc_it_does# | Your new ones? | Four?
+a@house : Somebody did. The door didn't do it alone. | That's where the cheese is. | Five. Lovely. Thank you.
+a : Like walking on soup. | New. They were new. They're still new. Just wet. | Four. One for each corner. It's fair, I suppose.
+
+scene cheese_find
+when topic=food
+does tell.self / react.self / assess
+a : Got #rind# off the store. Hard as a step. I'm in love. | You know what fowl's good with? Cheese. Proper cheese, with a rind. | I traded two teal for a lump of cheese. Best trade I've made.
+b[friends] #mate : Save me a corner. | And bread. | Two teal? For cheese?
+b : Lucky you. | I'd have said bread. | Good trade?
+a@mate : A small corner. | Bread's optional. Cheese isn't. | For that cheese? I'd give three.
+a : Lucky me. I'll not share. | Bread's for folk without cheese. | The best. I'll be eating it a fortnight.
+
+scene grass_bout
+when topic=pastimes
+does tell.self / react.self / assess
+a : Went a round on the grass Restday. Thrown three times. Counted them. | I'm not built for wrestling. Too long, not wide enough. Love it anyway. | Pinned somebody twice my weight once. Once. I talk about it a lot.
+b[stage=young] : Can you teach me? | Did it hurt? | Was it really twice?
+b : Did you win any? | Why do it, then? | I've heard.
+a@young : Ask someone who wins. | Only my pride. Pride heals. | Near enough twice.
+a : One. I'm counting that one twice. | Because the ground's soft and the falling's half the fun. | Everybody's heard. I'll tell it again.
+
+scene grass_challenge
+when topic=pastimes stage=adult
+does invite / react.self / assess
+a : Fancy #grass# come Restday? I'll go easy. | Somebody's got to throw me this week. Might as well be you. | Come and watch the bouts. I'll lose for you.
+b[job=guard|soldier|laborer] #strong : You'll regret it. | Gladly. | Lose well, then.
+b : I'll watch. | Not me. | Watching's safer.
+a@strong : I usually do. | Don't sound so pleased. | I always lose well.
+a : Bring a cheer. | Coward. Fair enough. | Much safer.
+
+scene new_boots
+when topic=smalltalk
+does tell.self / react.self / assess
+a : Look at #boots#. Go on. Look. | New boots. Paid for with geese. Every stitch is a goose. | I've had these boots a month and I still check them every morning.
+b : Very smart. | That's a lot of geese. | For what?
+a : Very. Don't step on them. | Eleven geese. I counted. | For wet. They're winning so far.
+
+scene waiting_folk
+when topic=smalltalk|friends
+does tell.complaint / react.complaint / assess
+a : I've been #waiting# since noon. Noon. For a wolf who said "back in a bit." | Waiting. Hate it. I'd rather sit in a ditch for birds than stand in a doorway for people. | Birds come when they come. People say a time, then don't.
+b : I'm sorry I was late. | That's a fine thing to say. | Folk are like that.
+a : You weren't. This time. | It's a true thing to say. | Folk are worse than birds, is what.
+
+scene mother_letter
+when topic=family self.mother self.away=yes
+does tell.self / react.self / assess
+a : #self.mother# would have my hide for coming home with fen-mud up to my knees. | I keep meaning to send word to #self.mother#. I keep not doing it. | Wonder what #self.mother# would make of this place. Frogs and all.
+b : Send word, then. | Do it now. | Tell them about the birds.
+a : I will. Next week. Probably. | I'm talking to you. That's nearly now. | All forty-one of them.
+
+scene city_born
+when topic=memories self.from=ridgemere
+does tell.self / react.self / assess
+a : In the city I counted pigeons off the roof. Out here it's geese. Same job, better birds. | I grew up with smoke. Out here the sky's so big it gets in your ears. | Down by the Wharf I'd watch the gulls nick fish. Taught me everything.
+b[from=ridgemere] #city : Pigeons. I don't miss them. | You get used to it. | Gulls are thieves.
+b : Better how? | Is that good? | Everything?
+a@city : They miss you. Allegedly. | You don't. I've tried. | Best teachers going.
+a : Bigger, and you can eat them. | Some days. | How to wait, then take.
+
+scene newcomer_creek
+when topic=newcomer
+does give.opinion / react.self / assess
+a : Another one off the road, wanting a share of the creek. I'll say good luck to them, and mean half of it. | New folk. There's only so many birds. | Newcomers. I was one. Still am, if you ask the old ones.
+b[from=mirebridge|fenshore] #fen : You're still new to me. | There's only so many eels, too. | You'll be new till you die.
+b : They need work too. | Plenty of sky. | Are you, still?
+a@fen : I'll take that. | And eels. | Cheerful thought. Ta.
+a : So do I. That's the trouble. | Plenty of sky, not plenty of birds. | To them? I'll be new at my own burial.
+
+scene festival_out
+when topic=festival
+does give.opinion / react.self / assess
+a : Festival's the one day nobody makes you wait. Everybody's out already. | I'll be there. I'll be the one at the bouts losing. | Bring your feet. There'll be dancing. I'll be terrible at it.
+b : You like the crowds? | Again? | So will I.
+a : One day a year I do. | Tradition. | Good. We'll be terrible together.
+
+scene price_bread_birds
+when topic=prices
+does tell.complaint / react.complaint / assess
+a : I sold a brace for less than last month and paid more for bread. Do that sum. | Bread's up. My birds aren't. Somebody's got their thumb in. | Everything costs more but birds. Birds cost the same. My sitting's cheap, apparently.
+b[job=merchant] #shop : It's what it costs us, too. | Bring better birds. | It's the market.
+b : Same here. | Who? | That's the way.
+a@shop : I'm sure it is. You look starving. | Bring better bread. | The market's got thumbs, then.
+a : Same everywhere. That's the trouble. | Not me, that's who. | It's a way. Not a good one.
+
+scene friend_home
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : #self.friend# brought back a fish off the boat and wouldn't say who for. Ate it myself. | #self.friend# snores worse than a bittern, and that's saying a thing. | I'd trust #self.friend# with my boots. That's as high as it goes with me.
+b : You didn't. | Worse than a bittern? | High praise.
+a : It was a lovely fish. | Rattles the shutters. | The highest. Don't spread it.
+
+scene geese_autumn
+when topic=season here.season=autumn
+does tell.self / react.self / assess
+a : Geese are moving. Strings of them all day. I've stopped counting at three hundred. Twice. | Autumn. Best fowling of the year, worst for the paws. | Every autumn I promise I'll mend the net before the geese come. Every autumn I'm mending it in the reeds.
+b : You stopped counting? | Worth it? | Next year, then.
+a : Then started again. | Every time. | Next year. Aye. Like last year said.
+
+story lights_night [topic=lore|memories here.region=fens self.away=yes]
+  : My first winter out here, I was walking back late from the creek. Lamp in one paw, a brace of teal in the other.
+  : And there they were. Off the path. A row of lights, swaying, like folk walking slow.
+  ask : What did you do?
+  b[old] : You didn't follow?
+  b : Did you go to them?
+  : Blew my lamp out. Stood there in the dark and counted to a thousand till they went. I've never been surer of anything. They were drowned folk.
+  b : #bc_i_hope_so#
+
+story first_boots [topic=memories|smalltalk self.away=yes]
+  : I came out here in boots with the soles flapping. Walked half the road like a duck in a hurry.
+  : First proper money I made off the birds, I went and bought new ones. Stood in the shop an hour picking.
+  ask : An hour?
+  b : Worth it?
+  : Eleven geese, those boots. I wore them home and stepped in the first puddle on purpose. To show it who was boss.
+
+story big_throw [topic=pastimes|memories]
+  : There was a bout on the grass once. A great wide wolf, a head over me, laughing before we'd started.
+  : He came at me and I just sat down. Sudden, like. He went straight over the top and onto his back.
+  ask : On purpose?
+  b[job=guard|soldier] : Old trick, that.
+  b : You sat down?
+  : Pure accident. But I've told it as on purpose for years, and you're not to say otherwise.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#, #pal#. Keep your voice down near the reeds, if you'd be so good. What's wanted?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Fancy that. I was just thinking nobody'd come by.
+dlg @3 resident.hub [pair.disposition=warm|fond] : There they are. #greet#, #topic.player#. Sit, if there's anywhere dry.
+dlg @1 resident.job : I net birds. #birds.capitalize#, whatever comes over. Mostly I sit very still and count them.
+dlg @1 resident.news : I've news of birds, if that's any good. Thirty-odd geese yesterday. People news, I'm slower on.
+dlg @1 resident.bye : #farewell#. Mind the lights, if it's dark.
+graft resident.hub
+choice What are you counting? -> counting
+node counting
+say Birds. Always birds. Can't help it. If something goes over, I count it. I counted the geese at my own naming, I'm told.
+mood pleased
+free
+choice What's the most you've counted? -> counting_most
+choice Goodbye. -> bye
+node counting_most
+say Four hundred and nine, one autumn morning. Then a heron landed in front of me and I lost the lot.
+choice Bad luck. -> hub
+choice Goodbye. -> bye

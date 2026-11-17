@@ -1,0 +1,263 @@
+# mb106, the name-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle mb106
+revision 1
+state ready
+dialect mirebridge
+accent broad light
+tier standard
+written_for tn_mb_iris_pikeford
+written_by claude-p11-pilot
+title the name-keeper
+fits stage=adult|old
+prefers job=farmer
+traits temper=even talk=quiet warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk remembers_every_name_ever_heard
+likes plum_tart swimming fresh_straw misty_dawns
+dislikes flies smoke
+fears being_forgotten
+hopes a_name_said_kindly_at_the_last
+topics lore +0.3 work +0.2 food +0.2 friends +0.2 weather +0.1 prices -0.2 festival -0.3
+styles comfort=quiet gossip=reluctant refuse=soft tease=dry
+marks oath saying
+persona #self.first# rakes salt by the fen and says little, but she never forgets a name: warm, dry, and sure the marsh lights are the drowned.
+
+words
+oath! = Brine and bone | Salt in the eye
+saying! = A name's the last thing the fen takes | Salt keeps what water won't
+rake = the rake | my salt rake
+pans = the pans | the salt pans
+brine = the brine | brine
+lights = the marsh lights | the drowned's lanterns
+tart = a plum tart | plum tart
+straw = new straw | straw laid fresh
+dip = a cold dip | a swim off the shingle
+crowd = six to a cottage | six of us and one hearth
+names = every name | each name I've heard
+dawnmist = a misty dawn | the murk at first light
+flies = the flies | summer flies
+reek = the boiling-house smoke | the pan smoke
+
+any
+opinion @1 merchants against 2 : I rake salt dark to dark, and a merchant sells it on for more than I see in a season. #oath#, that.
+opinion @1 houses against 1 : Worked in their shadow all my days. Never once seen their faces. Not a name to put to them, and I'd remember.
+opinion @1 times against 1 : A dab harder every week, fen-friend. And nobody up the causeway notices, or cares to.
+opinion @1 festivals against 1 : Too many folk at once. I'd sooner watch from the window, with #tart#.
+opinion @1 strangers for 1 : Tell me your name and you're no stranger. That's how it goes on the boards, or should.
+
+grown
+line @1 greet [pair.band=strangers] : #greet#. Your name? I'll keep it. | #greet#, #stranger#. Step up out of the wet.
+line @1 kin.open [pair.kin!=no] : There you are. Sit. #tart.capitalize#'s on the shelf. | #greet#. Shove up, there's room.
+line @1 again.open : Twice in a day. You're not following me, fen-friend? | You again, #address#. Good.
+line @2 greet [here.time=dawn] : #greet#. #dawnmist.capitalize#. Best of the day. | Early, #address#. Same as me.
+line @3 greet [self.working=yes] : #greet#. Mind #brine#, it stings. | Can't stop, fen-friend. #pans.capitalize# won't wait.
+line @1 greet.return : #greet#, #other.called#. | #greet#. I know you.
+line @2 greet.return [here.time=dusk|night] : #greet#. Dark on the boards. Mind your feet. | #greet#, #other.called#. Late, no?
+line @1 farewell : #farewell#, #other.called#. | #farewell#. Keep to the boards.
+line @1 farewell.return : #farewell#. | And you, #address#.
+line @1 react.news.new : #oath#. | Well, drown me. Is that so.
+line @1 react.news.known : Heard it at #pans#. | #knew.capitalize#.
+line @1 react.news.doubt : I'd not believe that yet, #address#. Who's saying it? | #doubt.capitalize#. I'll wait and see.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's deep mud. I'm sorry for it. | #pity.capitalize#.
+line @1 answer.how : #tired.capitalize#. Salt in every crack. | Fair-dry. You?
+line @1 sympathise : Sit by me. No call to say anything, #address#. | #sympathy.capitalize#. I'll bring #tart#.
+line @1 decline : Can't, fen-friend. #pans.capitalize# want raking before the light goes. | Not today. I'm #tired#, and I'd be poor company for you.
+line @1 accept_decline : #no_matter.capitalize#. Another day. | Fair-dry. I'll ask again.
+line @1 thank : #thanks#. | Dry thanks, #other.called#.
+line @1 deflect_thanks : #deflect.capitalize#. | It was only #tart#, #address#.
+line @1 preclose : Well. #pans.capitalize# won't rake themselves. | #preclose.capitalize#.
+rule @raking
+when concept=bark working=yes here.region=fens
+does aside
+cooldown 6h
+say Pull, and pull, and pull. #oath#. | #brine.capitalize# in my eyes again. Sure as mud.
+
+rule @flies
+when concept=bark here.season=summer here.region=fens
+does aside
+cooldown 8h
+say Shoo. Go on. #flies.capitalize#. | Flies on the pans, flies on #tart#, flies on me.
+
+rule @lights
+when concept=bark here.time=night here.region=fens here.outdoors=clear|overcast|fog
+does aside
+cooldown 12h
+say There they go. #lights.capitalize#. Rest easy, the lot of you. | I see you out there. #saying#.
+
+rule @straw
+when concept=bark here.place=home
+does aside
+cooldown 12h
+say #straw.capitalize# down. Smell that. | #straw.capitalize#. Small thing. I like it.
+
+scene raking
+when topic=work self.working=yes here.region=fens
+does tell.self / react.self / assess
+a : Rake to the edge, lift, turn. All day. #pans.capitalize# don't care how your back is. | Good crust on #brine# today. White as teeth. | Salt in my fur, salt in my supper, salt in my sleep.
+b[job=farmer|laborer] #hands : Same with any work worth doing. | Good salt sells. | Salt in my sleep sounds about right for any of us.
+b : #bc_poor_soul# | #bc_good# | #bc_ha#
+a@hands : #bc_true# | Sells for somebody, fen-friend. | #bc_it_is#
+a : It's a living. Near enough. | #bc_very_good# | Salt keeps, #address#. So do I.
+
+scene reek
+when topic=work|health here.region=fens
+does tell.complaint / react.complaint / assess
+a : #reek.capitalize# gets in my throat. Can't abide it, and I work beside it. | I'd sooner rake in the #rain# than stand by the boiling house. | You can smell #reek# on me at the Heron. Don't pretend you can't.
+b : Can't you work further off? | #bc_ha# | I can't, now you mention it.
+a : Rakers go where the salt is. | #bc_true# | Liar. Kindly, though.
+
+scene your_name
+when topic=smalltalk pair.band=strangers
+does ask.detail / answer.detail / assess
+a : What do they call you? I like to know. | You've a name, fen-friend. Give it here. | Your name. Then I'll know you.
+b : Why do you want it? | I'd rather keep it. | You'll forget it by morning.
+a : I keep #names#. Never lost one yet. | Fair-dry. You'll tell me when you're ready. | I won't. #saying#.
+
+scene names_kept
+when topic=friends|memories pair.band=friends|acquaintances|family|housemates
+does tell.self / react.self / assess
+a : I know the name of every wolf who's come over the causeway since I was a tadpole. | Somebody asked me a name from thirty winters back yesterday. I had it. | I lie awake some nights and say them over. #names.capitalize#.
+b : Every one? | #marvel.capitalize# | What for?
+a : Every one. Faces I lose. Names, never. | Took me a breath, mind. | So somebody does. #saying#.
+
+scene the_drowned
+when topic=lore here.region=fens here.time=dusk|night
+does tell.story / react.story / assess
+a : #lights.capitalize# are the drowned. I'll swear to it, fen-friend. | They walk where the old town was. Looking for the road home. | Don't follow them. Don't pity them neither. Just let them be.
+b[priest] #faith : It's bog-gas. The Bright One keeps the drowned. | We pray for them. | #bc_wise#
+b : How do you know? | #bc_poor_soul# | #bc_i_wont#
+a@faith : Then the Bright One keeps them out there, with lanterns. | Pray loud. They can't hear much under the murk. | #bc_true#
+a : I've seen them stop where the drowned chapel stood. Every night. | They'll find it. Or they won't. | #bc_good# They've enough company.
+
+scene lights_named
+when topic=lore here.region=fens
+does confide / react.self / assess
+a : Between us and the reeds: I know some of #lights# by name. | My granny told me the drowned's names. I've kept them, every one. | When a light stops by me, I say a name. Feels right.
+b : That's a strange thing to keep. | #bc_so_they_say# | Does it answer?
+a : Somebody has to, fen-friend. | And now I'm the one keeping them. #saying#. | Not yet. I'll keep saying them.
+
+scene cold_dip
+when topic=pastimes|health here.region=fens
+does tell.self / react.self / assess
+a : Had #dip# before work. Coldest water there is. | I swim in the sea off the shingle, winter and all. Clears #brine# off. | Cold water's the only thing gets the salt out of my fur.
+b : In this cold? | #bc_ha# | #bc_i_might#
+a : Cold's the point, #address#. | Laugh. I'm the one awake. | Come with me. You'll curse me, then you'll thank me.
+
+scene misty_dawn
+when topic=weather|day here.region=fens here.time=dawn here.weather=fog
+does tell.feeling / react.self / assess
+a : #dawnmist.capitalize#. Can't see past the next post. I love it, #address#. | Murk on the pans like milk. Best hour there is. | Quiet as the drowned out there. Just the gulls.
+b : Can't see a thing. | Love it? | #bc_lovely#
+a : That's what I love. Nobody can see you neither. | Every bit, fen-friend. | #bc_it_is#
+
+scene plum_tart
+when topic=food
+does offer / accept / assess
+a : There's #tart# going. I made two. | Have a slice of #tart#. Don't argue. | Plums from the store, pastry from nowhere much. Still #good#.
+b : I couldn't. | #bc_thank_you# | What's in the pastry?
+a : You could. Go on. | Fair-dry. Eat it while it's warm. | Lard and luck. Mostly luck.
+
+scene new_straw
+when topic=home
+does tell.self / react.self / assess
+a : Put #straw# down this morning. Whole cottage smells like a field. | Old straw out, new straw in. That's my Restday. | There's nothing like #straw#. Costs a dab and feels like riches.
+b : #bc_lovely# | #bc_good# | Riches?
+a : Smell it for a day. Then it's straw. | It's all the luxury going on the boards. | Near enough, for the likes of us.
+
+scene full_cottage
+when topic=home|family
+does tell.self / react.self / assess
+a : #crowd.capitalize#. Somebody's always snoring. | Six of us, one roof. I know every one by their cough. | Full house, always. Never lonely, never quiet.
+b : Sounds crowded. | #bc_ha# | Would you have it otherwise?
+a : It is. I'd not change it, mind. | I'm the one who doesn't cough. Mostly. | No, fen-friend. Warm's warm.
+
+scene flies
+when topic=weather|season here.season=summer here.region=fens
+does tell.complaint / react.complaint / assess
+a : #flies.capitalize# are back. On the pans, on the bread, in my ears. | Can't abide flies. They know it, too. | Summer. #hot.capitalize#, and every fly in the fen come to see me.
+b : #bc_every_year# | #bc_me_too# | They like you, then.
+a : Every year, and I'm never ready. | Then we'll suffer together. | Somebody has to. #oath#.
+
+scene merchants
+when topic=prices|times self.wealth=poor|destitute
+does tell.complaint / react.complaint / assess
+a : I rake it, they sell it. Guess who eats. | Salt's dear at the store, and I'm the one who made it. #oath#. | Pay comes Restday. Gone by Riverday.
+b[wealth=rich|comfortable] #purse : Someone has to carry it to market. | Things cost what they cost. | Budget better.
+b : #bc_true_enough# | #bc_bad_luck# | #bc_poor_soul#
+a@purse : Carry it, then. I'll sit and count. | For some. | Fair-dry advice from a full larder.
+a : Fen-sure. | #bc_it_is# | It's a living. Barely.
+
+scene hard_week
+when topic=times
+does tell.worry / react.self / assess
+a : Harder every week. A dab, not much. Adds up. | Nobody up the causeway notices. Why would they? | We get by. Six of us, one pot. We get by.
+b : It'll turn. | #bc_true# | #bc_hope_so#
+a : Maybe. I'll be here if it does. | They never do, fen-friend. | #bc_we_will_see#
+
+scene raking_friend
+when topic=friends|work self.friend
+does tell.self / react.self / assess
+a : #self.friend# rakes the next pan to mine. Doesn't talk either. Suits us both. | Ask #self.friend#. Knows the weather before I do. | #self.friend# and I don't say much. Don't need to, fen-friend.
+b : Quiet pair, then. | #bc_good# | #bc_lucky_you#
+a : The pans get the talking. | #bc_very_good# | We are. #saying#.
+
+scene window_festival
+when topic=festival
+does tell.self / react.self / assess
+a : Window seat for me. Tart, a cup, and nobody stepping on me. | Too much noise for me. I hear it fine from home. | Everyone's out. Good. More room on the boards for me.
+b : Come down for an hour. | #bc_ha# | You're missing it.
+a : One hour. Then home, fen-friend. | Laugh away. I'm comfy. | I've had forty of them. I know how it ends.
+
+scene mizzle
+when topic=weather here.region=fens here.weather=rain
+does tell.complaint / react.self / assess
+a : Mizzle on the pans. A day's #brine# gone thin. | Rain's no friend to a raker. Washes the salt back to sea. | Nothing to do in this murk but wait and drip.
+b : #bc_bad_luck# | #bc_poor_soul# | #bc_every_year#
+a : Boggy luck, sure as mud. | We'll rake twice tomorrow. | Every year. #oath#.
+
+scene gulls
+when topic=animals here.region=fens
+does tell.self / react.self / assess
+a : Gulls stand on #pans# like they're paying the rent. | A heron's took to watching me rake. Never says a word. | There's a seal off the shingle mornings. We swim the same water, it and me.
+b : #bc_ha# | Good company. | A seal?
+a : They're not, fen-friend. | Best kind. | Grey one. Fat. Knows me.
+
+story the_light_that_stopped
+  : I was a tadpole, out on the boards after dark, where I shouldn't have been.
+  : A light came up out of the murk and stopped right by me. Close as you are now.
+  b : What did you do?
+  : Said the first name my granny ever taught me. Out loud. And it went out, fen-friend. Just like that.
+  b[priest] : The Bright One heard you, then.
+  b : #marvel.capitalize#.
+  : I've said the names ever since. #saying#.
+
+story the_winter_swim
+  : First winter I swam off the shingle, there was ice on the edges.
+  : In up to the neck I went, and came out blue. Couldn't feel my paws till noon.
+  b : Why do it again?
+  : Because I'd never felt so awake, #address#. I've gone in every winter since.
+  b : #bc_ha#
+
+story the_name_came_back
+  : A wolf came over the causeway once, after twenty years away. Nobody knew him.
+  : I did. I said his name before he'd got his hood down.
+  b : Did he know you?
+  : Not a hope. But he sat down and cried, fen-friend. A name's a door, sometimes.
+  b : #bc_lovely#
+
+dlg @1 resident.hub [topic.meeting=stranger] : #greet#. What do they call you? I'll keep it.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. Told you I'd remember.
+dlg @1 resident.job : I rake salt off #pans#. Dawn to dusk. Salty work, fen-friend.
+dlg @1 resident.news : Nothing floated up but salt. Ask somebody chattier.
+dlg @1 resident.bye : #farewell#, #topic.player#. I'll know you next time.
+graft resident.hub
+choice You remembered my name. -> keeper
+node keeper
+say I remember #names#, fen-friend. Every one. #saying#.
+mood pleased
+free
+choice How do you do it? -> keeper_how
+choice Goodbye. -> bye
+node keeper_how
+say Say them over at night, before sleep. Like counting sheep, only I know the sheep. Yours is in there now.
+choice I'm glad it is. -> hub
+choice Goodbye. -> bye
