@@ -1,0 +1,292 @@
+# cw112, the stone by the knife (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw112
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_cw_harrow_reedford
+written_by claude-codex-cw-1
+title the stone by the knife
+fits stage=adult|old
+prefers job=cook warmth=warm
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk keeps_a_river_stone_beside_the_cutting_board
+likes smoked_eel digging sharp_knife thunder
+dislikes waiting haggling
+fears a_blunt_blade_at_supper the_ice_moving_again
+hopes a_kitchen_that_feeds_every_guest a_quiet_garden_bed
+topics food +0.6 work +0.5 memories +0.3 weather +0.2 home +0.2 gossip -0.3
+styles comfort=practical gossip=reluctant refuse=plain tease=none
+marks oath saying
+persona #self.first# keeps a smooth #stone# beside the #board#, sharpens the #knife# before work, and sends every #plate# out clean.
+
+words
+oath! = By the hot pan | Bright One keep the blade
+saying! = A clean cut saves a meal | Stir before the bottom catches
+stone = river stone | smooth pebble
+stones = river stones | smooth pebbles
+board = cutting board | board by the stove
+knife = knife | kitchen blade
+edge = edge | keen side of the blade
+pan = pan | iron pan
+pot = pot | stew pot
+fire = fire | cooking fire
+hearth = hearth | kitchen fire
+plate = plate | serving dish
+plates = plates | serving dishes
+tray = tray | carrying board
+eel = smoked eel | eel cured over smoke
+broth = broth | soup stock
+salt = salt
+herbs = herbs | cut herbs
+bread = bread
+stove = stove | cooking hearth
+water = water | clear water
+ice = ice | winter ice
+shadow = shadow | dark shape
+lake = lake | cold lake
+bank = bank | riverbank
+spade = spade | digging blade
+soil = soil | garden earth
+bed = bed | garden bed
+guest = guest | hungry traveller
+guests = guests | hungry travellers
+hour = hour | hour of work
+bell = bell | service bell
+cup = cup | drinking cup
+coin = coin | pay
+price = price | cost
+hand = hand | working paw
+road = road | lane
+furrow = furrow | garden trench
+thunder = thunder | storm's low rumble
+oatcakes = oatcakes | cakes made from oats
+
+any
+opinion @1 strangers for 1 : A stranger can have a #plate# before answering questions. | I have #broth# enough for one more #guest#.
+opinion @1 dole for 1 : Feed a hungry wolf first; the #plate# can be counted later. | A warm #pot# belongs where empty stomachs are.
+opinion @1 merchants against 2 : A seller asks more #coin# for #eel# while I get the same wage. | I will not haggle; I will buy elsewhere if the #price# is poor.
+opinion @1 houses against 1 : A crest does not carry a hot #tray# through a crowded room. | I would rather hear a worker thanked than a fine #plate# praised.
+opinion @1 city against 1 : The city can keep its smoke; I have enough at the #stove#. | I like a town where the #guest# can see who cooked the meal.
+opinion @1 times against 1 : Every week the #pot# costs more to fill. | I stretch the #broth# without pretending a thin #plate# is full.
+opinion @1 newcomers mixed 1 : A new #hand# can learn a #knife# if someone takes the time. | I ask what a newcomer can do before handing over the #tray#.
+
+grown
+line @1 greet : #greet#. I can find a #pot# for anyone hungry. | #greet#. Mind the moving #knife#; I can hear you.
+line @2 greet [pair.band=strangers] : #greet#. Have you eaten? I can set a #plate# for you. | #greet#. If you came hungry, I can put the #pan# on.
+line @3 greet [self.working=yes self.job=cook] : #greet#. I will answer when this #pan# is off the #fire#. | #greet#. The #knife# is moving; stand beside the #board#.
+line @4 greet [here.time=dawn] : #greet#. The #stove# is waking. | #greet#. I have the first #pot# going.
+line @5 greet [here.time=dusk|night] : #greet#. The last #tray# has nearly gone. | #greet#. Mind the hot #pan#.
+line @1 greet.return : #welcome_back#. I can set another #plate# if you need one. | You returned before I put the #knife# away.
+line @2 greet.return [pair.band=friends|family] : I saved a little #eel# for you. | Come by the #hearth#; I have time now.
+line @1 kin.open [pair.kin!=no] : Come by the kitchen if you need #bread#. | I can stretch a #pot# for another serving.
+line @1 again.open : Another visit before I wash the #plates#? | The #bell# has brought you back quickly.
+line @1 farewell : #saying.capitalize#. Go well. | #farewell#. Leave the hot #tray# to me.
+line @1 farewell.return : I will put a #plate# out if you return. | Walk safely; the #bank# is slick.
+line @1 react.news : #listen.capitalize#. The #knife# goes on the #board# while you speak. | That can wait until I move this #pan#.
+line @1 react.news.new : I did not hear that in the kitchen. Who brought it? | New to me. I will put down the #tray#.
+line @1 react.news.known : Someone spoke of it near the #stove# earlier. | That completes what I heard while the #bell# was ringing.
+line @1 react.news.doubt : That story needs another #hand# to check it. | I would test the #edge# of that claim before serving it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A heavy thing. Sit by the #hearth#. | I am sorry. I can bring #broth# or listen.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news deserves the better #plate#. | That brightens the kitchen; gladness suits the #hearth#.
+line @1 answer.how : The #knife# has a good edge today. | Busy, but the #pan# is behaving.
+line @1 answer.how.busy [self.working=yes] : The #plates# are waiting; I can talk briefly. | I have a hot #pot# and two orders to finish.
+line @1 ask.how : Did you find a warm #plate# today? | How did the #bank# treat your feet?
+line @1 sympathise : I can put the #knife# down and hear you. | If a quiet #hearth# would help, I know one.
+line @1 reassure : A spoiled #pan# does not ruin every meal. | Let us find the next small thing to put right.
+line @1 decline : I cannot make that promise; I need to finish my own tasks. | I would help another day, when I can give it my full attention.
+line @2 decline [self.working=yes self.job=cook] : I cannot leave this #pot# while it boils. | I must feed the #guests# before I can leave this room.
+line @1 accept_decline : Your answer is clear. I shall leave the #plate# where it is. | Fair enough. The #stove# still needs my paws.
+line @1 thank : Thank you. That help was worth setting the #knife# down for. | You made this #hour# easier; I am grateful.
+line @1 deflect_thanks : I had an extra #plate#. | The #fire# was lit already; it cost me little.
+line @1 preclose : The #pot# needs a stir before I go. | I should sharpen the #knife# for morning.
+line @1 tease [pair.band=friends] : You found the #salt# before the food. | I should mark your #plate# for the larger serving.
+line @1 tease.return [pair.band=friends] : The #pan# heard that, and took my side. | Try that again after the #plates# are washed.
+line @1 ack : #bc_right#. The #tray# goes out next. | #bc_fair_enough#. I will check the #pot#.
+line @1 give.advice : Keep the #knife# sharp, and the work gets safer. | Taste the #broth# before adding more #salt#.
+line @1 warn [world.bandits=near] : Stay near the busy #road# when you leave. | I would wait until another #guest# can walk with you.
+scene knife_test
+when topic=work self.job=cook
+does tell.self / react.self / assess
+a : I test the #edge# before I lay food on the #board#. | A dull #knife# slips where a sharp one cuts clean.
+b : How do you test the edge? | Is a sharp knife safer?
+a : A clean shaving curls away without a pull. | In a steady #hand#, yes. I keep the #board# clear.
+
+scene smoked_eel
+when topic=food
+does tell.self / react.self / assess
+a : I like #eel# with plain #bread# beside it. | The smoke in #eel# needs little #salt#.
+b : Do you serve it hot? | How much do you add?
+a : Warm, if there is time. It keeps its flavour cold. | Just enough to bring it forward, not bury it.
+
+scene hot_pan
+when topic=work self.job=cook
+does tell.self / react.self / assess
+a : I turn the #pan# handle inward before carrying the #tray#. | The #fire# can warm a #pan# long after the flame looks low.
+b : Has someone knocked it before? | Do you warn the others?
+a : Not since I began turning it. | Every time. I would rather repeat a warning than lose a meal.
+
+scene one_stone
+when topic=pastimes
+does tell.self / react.self / assess
+a : I keep a #stone# near the #knife# because it rests well in my paw. | A smooth #stone# can hold down a scrap of recipe paper.
+b : Did you find it by the river? | Does it stay there all day?
+a : Yes, where the #bank# bends. | Until I wash the #board# at closing.
+
+scene herb_bed
+when topic=pastimes here.season=spring|summer
+does tell.self / react.self / assess
+a : I loosen the #soil# around the #herbs# when work is slow. | A short #furrow# can give the kitchen fresh #herbs# later.
+b : Do you grow many? | Is digging restful?
+a : Enough to change a #broth# without buying more. | Yes. The #spade# has a simpler rhythm than the #bell#.
+
+scene thunder_roof
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : I like hearing #thunder# with the #pot# safe beneath a roof. | The #pan# rattles when the #thunder# is close.
+b : Does it frighten you? | Do you stop cooking?
+a : No. I check the #fire# and go on. | Only if a leak reaches the #stove#.
+
+scene shape_under_ice
+when topic=memories here.season=winter
+does tell.self / react.self / assess
+a : I once saw a broad #shadow# move beneath the #ice#. | A #shadow# crossed the #lake# floor where I stood.
+b : What was it? | Did you go closer?
+a : I did not see clearly enough to name it. | No. A sound #bank# was worth keeping under my paws.
+
+scene waiting_order
+when topic=work self.job=cook
+does tell.self / react.self / assess
+a : Waiting for a late #tray# can spoil a good #pan#. | I tell the server when a #plate# must go out at once.
+b : Do you keep it warm? | Do they listen?
+a : For a short while, then I remake what will not hold. | When I give a plain reason, yes.
+
+scene fish_price
+when topic=prices
+does tell.self / react.self / assess
+a : A seller raised the #price# of #eel# and offered no better fish. | Before the #price# is spoken, I inspect the #eel#.
+b : Did you bargain? | What proves it is fresh?
+a : No. I bought less and changed the meal. | A sound smell and flesh that holds together.
+
+scene empty_plate
+when topic=food
+does tell.self / react.self / assess
+a : An empty #plate# comes back more honestly than a compliment. | I notice which #broth# returns untouched.
+b : Does that please you? | Do you change it next time?
+a : Yes, if the #guest# had enough. | I taste the #pot# again before serving it.
+
+scene spouse_supper
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : #self.spouse# knows when I have eaten only kitchen scraps. | I try to bring a clean #plate# home for #self.spouse#.
+b : What gives you away? | Do you cook again at home?
+a : I look at the #pot# instead of the food in front of me. | Not always. Sometimes we share #bread# and rest.
+
+scene second_hand
+when topic=work self.job=cook
+does tell.self / react.self / assess
+a : A second #hand# in the kitchen should know where the hot #pan# sits. | I clear the #board# before asking anyone to help with the #knife#.
+b : Do you explain every task? | Does that slow the work?
+a : The dangerous parts, yes. | Less than searching for a dropped #knife#.
+
+scene clean_board
+when topic=work self.job=cook
+does tell.self / react.self / assess
+a : I wash the #board# between #eel# and vegetables. | A clean #knife# belongs with a clean #board#.
+b : Is that always necessary? | Do you keep many knives?
+a : It keeps one flavour from spoiling the next. | Enough for different work; each has its place.
+
+scene too_much_salt
+when topic=food
+does tell.self / react.self / assess
+a : Too much #salt# can hide a good #broth#. | I taste the #pot# before reaching for #salt#.
+b : Can a salty soup be saved? | Do you trust your first taste?
+a : A little more #water# and patience can help. | I taste again after it warms through.
+
+scene first_fire
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : I light the #stove# before the first #guest# asks for food. | The #pot# needs time before the #bell# starts.
+b : Are you awake that early? | What cooks first?
+a : The #fire# wakes me in stages. | #broth.capitalize#, then #oatcakes# if the kitchen has them.
+
+scene last_tray
+when topic=work self.job=cook here.time=dusk|night
+does tell.self / react.self / assess
+a : The last #tray# takes more care than the first. | I check the #plates# while the #stove# cools.
+b : Are you tired by then? | Do any go missing?
+a : Often. That is why I make my paws slow. | A #cup# may stay at a table; I fetch it before bed.
+
+scene first_dish
+when topic=memories
+does tell.self / react.self / assess
+a : The first meal I made alone had a #broth# thinner than rain. | I remember a #pan# that was hot on one side and cold on the other.
+b : Did anyone eat it? | What did you learn?
+a : Yes. They asked for #bread# to make it filling. | Turn the #pan# before trusting the #fire#.
+
+story blunt_knife [topic=work self.job=cook self.age>=25]
+  : I tried to finish a full #tray# of food with a #knife# that needed sharpening.
+  : It caught on every cut. I stopped, set the #edge# right, and finished sooner.
+  ask : Would you have kept going with the dull blade?
+  b : With a room of waiting guests, I might have.
+  : That was my mistake. A pause by the #board# saved the meal.
+
+story stone_in_pocket [topic=memories self.age>=25]
+  : I carried a #stone# home from the #bank# and forgot it in my pocket.
+  : It fell out beside the #board# the next day, just when I needed a weight for loose paper.
+  ask : Would you have put it back by the river?
+  b : I might have kept it for the paper.
+  : I did. It has stayed by the #knife# since.
+
+story under_ice [topic=memories self.age>=25]
+  : One winter I stood by the #lake# and watched a broad #shadow# move beneath the #ice#.
+  : I could not make out its shape. I took a step back from the edge.
+  ask : Would you have stayed to see it again?
+  b : From a safe distance, perhaps.
+  : I watched a while, but the #shadow# did not return.
+
+rule @bark_plate
+when concept=bark self.job=cook self.working=yes
+does aside
+cooldown 7h
+say The #plate# goes out hot. | Move the #tray# before the #broth# cools.
+
+rule @bark_stone
+when concept=bark
+does aside
+cooldown 9h
+say My #stone# is still by the #board#. | A smooth #stone# holds that paper nicely.
+
+rule @bark_thunder
+when concept=bark here.weather=storm
+does aside
+cooldown 10h
+say That #thunder# has reached the #stove#. | I had better keep the #fire# dry.
+
+rule @bark_garden
+when concept=bark here.season=spring|summer here.time=day
+does aside
+cooldown 11h
+say The #herbs# need a little #water#. | I will take the #spade# to the #bed# after work.
+
+dlg @1 resident.hub : #greet#. You may speak while the #pot# simmers. | #greet#. Stand clear of the #board# and ask.
+dlg @2 resident.hub [topic.meeting=known] : You are back. Did you eat well? | I recall you. The #broth# is nearly ready.
+dlg @1 resident.job [self.job=cook] : I cook the meals here, from first #pot# to last #plate#. | I keep the #knife# keen and the #tray# moving.
+dlg @1 resident.bye : #farewell#. Mind the hot #pan#. | #saying.capitalize#. I should see to the #stove#.
+dlg @1 inn.greet [here.inn_helper=yes] : I keep the #pot# moving here. Ask #here.innkeeper# about a bed. | I can find you food; #here.innkeeper# keeps the keys.
+dlg @1 inn.rest [here.lodging!=yes] : Rest by the #hearth# while I finish the #tray#. | The bench near the #fire# is warm.
+dlg @1 inn.refused : #topic.why# I can still bring you a #plate#. | I regret that. #topic.why# The #hearth# remains open.
+dlg @1 inn.bye : #farewell#. Let me take your empty #plate#. | Go safely; I shall put the #pot# away.
+graft resident.hub
+choice Why keep a stone by the knife? -> stone
+node stone
+say The #stone# holds my recipe paper flat when the door opens.
+mood pleased
+free
+choice Where did you find it? -> found
+choice Back to what we were saying. -> hub
+node found
+say By the #bank#. The water had worn it smooth before I touched it.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
