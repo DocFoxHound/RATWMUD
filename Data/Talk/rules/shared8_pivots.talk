@@ -58,7 +58,7 @@ say And that's not the only talk going round. | There's more folk talking than d
 
 rule s8p_crime_life
 does pivot
-when conv.from=crime conv.topic=life topic.kind!=death|succession
+when conv.from=crime conv.topic=life topic.kind!=death|succession|theft|assault|arrest|crime|loss
 say Not all the news is bad, mind. | Life goes on, for all that. | There's better news than that, at least.
 
 rule s8p_crime_life_grave

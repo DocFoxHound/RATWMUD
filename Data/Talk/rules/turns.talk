@@ -61,7 +61,7 @@ say I'll let you be. | Right. Till next time. | I'll leave you to it.
 rule cv_bye_both_leave
 does preclose farewell
 when self.working=no self.job!=innkeeper
-say {leave=yes} Off I go, then. | {leave=yes} I'll be on my way.
+say {leave=yes} Off I go, then. | {leave=yes} I'll be on my way. | {leave=yes} Right. I'm away. | {leave=yes} I'll get along, then. | {leave=yes} Time I was off. | {leave=yes} Well. I'll be getting along.
 
 rule cv_bye_night
 does farewell

@@ -217,7 +217,7 @@ rule s83s_late_2
 when concept=talk.ships topic.kind=late topic.ship
 does tell.news
 cooldown 1d
-say No #topic.ship#. Stormbound, they say. | #topic.ship.capitalize#'s late. The sea's in a temper. | Storms out there. #topic.ship.capitalize# is sitting it out, please the Bright One.
+say No sign of #topic.ship#. Stormbound, they say. | #topic.ship.capitalize#'s late. The sea's in a temper. | Storms out there. #topic.ship.capitalize# is sitting it out, please the Bright One.
 then other: ships.answer
 
 rule s83s_late_3
@@ -245,7 +245,7 @@ rule s83s_late_sailor
 when concept=talk.ships topic.kind=late topic.ship job=sailor|fisher
 does tell.self
 cooldown 1d
-say #topic.ship.capitalize#'s stormbound. You don't argue with a storm, and her skipper knows it. | No #topic.ship# yet. She'll be tucked in a cove somewhere, waiting out the weather. | #topic.ship.capitalize#'s late with the storms. I've sat out weather like that. Longest days of your life.
+say #topic.ship.capitalize#'s stormbound. You don't argue with a storm, and her skipper knows it. | Still no sign of #topic.ship#. She'll be tucked in a cove somewhere, waiting out the weather. | #topic.ship.capitalize#'s late with the storms. I've sat out weather like that. Longest days of your life.
 then other: ships.answer
 
 rule s83s_late_family

@@ -135,6 +135,8 @@ EDITED.update({
     'w7_pr_down_poor': '"101 pence! I can afford it this week." naming nothing: the good named',
     'w7_pr_up_destitute': '"3 pennies. I\'ve not seen 3 pennies all week." naming nothing: the good named',
     'w7_pr_up_healer': '"3 pennies! How am I to treat the poor at that?" naming nothing: the good named',
+    'ev_rg_ridgemere_rain_forever': 'a pup\'s one answer, "I like the rain.", said to whichever of three lines came ("My '
+                                    'shutters are swollen shut again."): three answers beside the three',
     'st2_apology': '"I\'m sorry about what I said." to one nothing was said to: only after a talk that went sour '
                    '(pair.last_outcome)',
 })
