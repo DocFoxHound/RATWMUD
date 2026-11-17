@@ -1,0 +1,299 @@
+# cw127, the wave march (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw127
+revision 1
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for tn_cw_tansy_reedmere
+written_by claude-codex-cw-1
+title the wave march
+fits stage=young|adolescent
+prefers talk=plain honesty=frank
+traits temper=calm talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=content
+quirk hums_march_to_match_lake_waves
+likes oatcakes whittling full_larder summer_evenings
+dislikes rats flies
+fears a_shadow_under_the_ice a_rat_in_the_food_cupboard
+hopes a_carving_worth_keeping a_lake_evening_without_chores
+topics pastimes +0.5 home +0.4 family +0.4 weather +0.3 memories +0.3 prices -0.2
+styles comfort=plain gossip=reluctant refuse=frank tease=dry
+marks oath saying
+persona #self.first# hums a #march# to the #waves#, cuts little #boats# from spare #wood#, and states plainly what moved beneath the #ice#.
+
+words
+oath! = Waves and willow | Ice keep still
+saying! = A wave keeps its own beat | Cut away from your paw
+march = march | old marching tune
+hum = hum | low tune
+beat = beat | steady rhythm
+wave = wave | small lake wave
+waves = waves | lake waves
+lake = lake | Glasswater
+water = water | clear water
+shore = shore | lake shore
+reed = reed | shore reed
+reeds = reeds | shore reeds
+ice = ice | winter ice
+shadow = shadow | dark shape
+shape = shape | moving shape
+snow = snow | white snowfall
+boat = boat | small boat
+boats = boats | small boats
+wood = wood | spare wood
+knife = knife | whittling blade
+chip = chip | wood shaving
+chips = chips | wood shavings
+figure = figure | carved shape
+pocket = pocket | coat pocket
+oatcake = oatcake | oat cake
+oatcakes = oatcakes | oat cakes
+butter = butter | fresh butter
+plate = plate | supper plate
+larder = larder | food cupboard
+shelf = shelf | kitchen shelf
+rat = rat | larder rat
+rats = rats | larder rats
+fly = fly | buzzing fly
+flies = flies | buzzing flies
+window = window | house window
+roof = roof | sound roof
+farm = farm | family farm
+basket = basket | carrying basket
+baskets = baskets | carrying baskets
+price = price | asking cost
+name = name | given name
+wind = wind | lake breeze
+road = road | high road
+festival = festival | town celebration
+bell = bell | festival bell
+bells = bells | ringing bells
+evening = evening | long dusk
+sun = sun | last light
+chore = chore | household task
+chores = chores | household tasks
+
+any
+opinion @1 festivals for 1 : I like the #bells# because nobody tells me to hurry home at once. | I can hear a #march# beneath the dance music.
+opinion @1 houses for 1 : The Houses keep work going, so I hope they notice good learners. | I would ask what a #chore# there is really like before agreeing.
+opinion @1 merchants against 1 : The #price# on an #oatcake# always seems to include the seller's supper. | I look at what is on the #shelf# before I spend anything.
+opinion @1 times for 1 : There is food in the #larder# and a #roof# above it. | A long #evening# by the #lake# is a fine thing to have.
+opinion @1 city mixed 0 : A city street sounds worth seeing, though I might miss the #waves#. | Someone there must have a better #knife# for whittling.
+opinion @1 road mixed 0 : The #road# carries visitors to the #shore#. | I would go farther one day if someone showed me the turns.
+opinion @1 strangers mixed 0 : I can answer a plain question from a stranger. | I would rather know their #name# before showing them the #boats# I carved.
+
+young
+line @1 greet : #greet#. Look at my little #boat#. | #greet#. I heard the #waves# today.
+line @1 farewell : #farewell#. I have to carry this #basket#. | #farewell#. Next time, you can see how the #boat# turned out.
+
+adolescent
+line @1 greet : #greet#. Listen to this #march#; the #waves# keep changing it. | #greet#. I am finishing a little #boat#.
+line @2 greet [pair.band=strangers] : #greet#. Did you come down the #road# to see the #lake#? | #greet#. I can tell you which #shore# path stays dry.
+line @3 greet [pair.band=friends|family] : I saved an #oatcake# for you. | Look at the #boat# I made from this #wood#.
+line @4 greet [here.time=dawn] : #greet#. The #waves# are quieter before the carts. | #greet#. There are #chores# before I can go to the #shore#.
+line @5 greet [here.time=dusk|night] : #greet#. The #sun# is almost gone; I have time for one tune. | #greet#. Before dark, I should sheathe the #knife#.
+line @1 greet.return : You came back. Has the #lake# changed colour? | #welcome_back#. This #boat# has a bow now.
+line @2 greet.return [pair.band=friends|family] : Your #oatcake# is still here. | The new #figure# is finished; have a look.
+line @1 kin.open [pair.kin!=no] : A #plate# is set out inside for you. | I kept the #wood# you asked for.
+line @1 again.open : Twice by the #shore# today? | I have cut only three #chips# since we spoke.
+line @1 farewell : #farewell#. Watch the #reeds# by the path. | #saying.capitalize#. I need to take this #basket# home.
+line @1 farewell.return : Tell me if you see a better #boat#. | I will be here after the #chores#.
+line @1 react.news : Tell me exactly what you saw. | I will stop cutting and listen.
+line @1 react.news.new : No one at the #farm# told me that. | Who saw it first?
+line @1 react.news.known : I heard one piece of that at supper. | That explains a part I was missing.
+line @1 react.news.doubt : I want to know who was there. | A #shadow# on the #water# can be a cloud too.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is sad. I can stay beside you. | The #boat# can rest here while I stay.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good! Will there be a #festival# for it? | That is the sort of word I want to tell at supper.
+line @1 answer.how : I have had #oatcakes# and finished my #chores#. | Well. The #lake# is bright today.
+line @1 answer.how.busy [self.working=yes] : I am helping carry a #basket#. | Busy with #chores#, but I can talk.
+line @1 ask.how : Did you have supper yet? | Have you been down to the #shore#?
+line @1 sympathise : I can stay until you want to talk. | Would an #oatcake# help a little?
+line @1 reassure : I made a crooked #boat# once and fixed it. | We can ask for help before the next #chore#.
+line @1 decline : I cannot go until the #basket# is carried home. | No. I do not want to promise that.
+line @1 accept_decline : All right. I will keep the #boat# here. | All right. Let us choose another thing to do.
+line @1 thank : You held the #wood# steady for me. Thank you. | That helped me finish the #figure#.
+line @1 deflect_thanks : I had an extra #oatcake#. | I was going to the #shore# anyway.
+line @1 preclose : I need to get home before it is dark. | The #knife# belongs away from the table now.
+line @1 tease [pair.band=friends] : Your #boat# would sail backward. | You hummed the wrong #march# at that #beat#.
+line @1 ack : #bc_right#. I will check the #basket#. | #bc_fair_enough#. I can try that.
+line @1 give.advice : Keep your thumb behind the #knife# when you cut. | Leave the #oatcakes# high where #rats# cannot reach.
+line @1 warn [world.bandits=near] : Do not take the #shore# path alone now. | I will ask an older wolf to walk with us.
+scene wave_march
+when topic=pastimes
+does tell.self / react.self / assess
+a : I #hum# a #march# and let the #waves# choose the #beat#. | The #lake# never keeps it the same way twice.
+b : Can you keep up? | Do you know all the notes?
+a : Sometimes I have to start again. | Enough to make a tune of it.
+
+scene carved_boat
+when topic=pastimes
+does tell.self / react.self / assess
+a : I cut a little #boat# from a scrap of #wood#. | The bow is easy; the bottom is harder to make level.
+b : Will it float? | Do you paint it?
+a : I will test it at the #shore#. | I like seeing the grain of the #wood#.
+
+scene knife_safety
+when topic=pastimes
+does tell.self / react.self / assess
+a : I keep the #knife# pointed away from my paw. | A #chip# can fly farther than the cut looks.
+b : Did someone teach you? | Have you cut yourself?
+a : I was shown and then made to practise. | A small scratch once. I pay attention now.
+
+scene full_larder
+when topic=home
+does tell.self / react.self / assess
+a : A full #larder# means I do not have to ask whether supper is coming. | I like seeing #oatcakes# ready on the #shelf#.
+b : Do you help fill it? | Do they last long?
+a : I carry what I can. | Not when everyone wants one.
+
+scene rats_below
+when topic=home
+does tell.self / react.self / assess
+a : I saw a #rat# under the #shelf# and put the food higher. | A #rat# can squeeze through a gap I cannot fit a paw into.
+b : Did you catch it? | Did it eat anything?
+a : No. I told an older hand where it went. | A corner of one #oatcake#.
+
+scene flies_on_plate
+when topic=food here.season=summer
+does tell.self / react.self / assess
+a : #flies.capitalize# find a #plate# if I leave it uncovered. | I take my #oatcake# near the #window# where there is a breeze.
+b : Does that keep them away? | Do you eat outside?
+a : Some. I still cover the food. | When the #chores# are done.
+
+scene oatcakes_butter
+when topic=food
+does tell.self / react.self / assess
+a : An #oatcake# with #butter# is good even when it has cooled. | I take the crisp edge first.
+b : Do you make them? | Will you share one?
+a : I help mix them sometimes. | If I have two.
+
+scene summer_shore
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : A long #evening# leaves more time to watch the #waves#. | I stay until the #sun# reaches the far #reeds#.
+b : Do you bring a coat? | Can you see the farm from there?
+a : If the #wind# is cold. | Part of its #roof#.
+
+scene first_ice
+when topic=weather here.season=winter
+does tell.self / react.self / assess
+a : I look at the #ice# from the #shore# and stay off it. | A dark #shape# under the #ice# is hard to forget.
+b : Did you really see one? | Would you go closer?
+a : I did. I do not know what it was. | No. The #water# can keep it.
+
+scene moving_shadow
+when topic=memories
+does tell.self / react.self / assess
+a : One winter I saw something large pass beneath the #lake# #ice#. | I waited to see if the #shadow# came back, but it did not.
+b : Could it have been a fish? | Were you alone?
+a : Perhaps, but it seemed much bigger. | Yes. I told them at #home#.
+
+scene chores_before_shore
+when topic=day here.time=dawn|day
+does tell.self / react.self / assess
+a : I carry the #basket# before I take my #boat# to the #shore#. | #chores.capitalize# go faster if I do not stop halfway to whittle.
+b : Is it heavy? | Do you get time afterward?
+a : Not if I hold it with both paws. | Usually, after I finish carrying things.
+
+scene apprentice_question
+when topic=work
+does tell.self / react.self / assess
+a : I am learning to ask why a task is done that way. | An older hand can show me a safer way to hold the #knife#.
+b : Do they answer? | Do you try it their way?
+a : Often, if I ask at the right time. | First. Then I see whether it helps.
+
+scene festival_bells
+when topic=festival
+does tell.self / react.self / assess
+a : I like the #bells# on festival morning. | Nobody sends me to bed just when the music begins.
+b : Do you dance? | Do you stay up too late?
+a : If the dancers leave a gap near the side. | Not so late that I miss breakfast.
+
+scene roof_after_rain
+when topic=weather here.weather=rain|storm
+does tell.self / react.self / assess
+a : Under a rainy #roof#, I can barely hear the #waves#. | I leave my #boats# inside until the #water# is calm again.
+b : Do you go to the shore anyway? | Will the boats get wet?
+a : I look from the #window#. | They can float; I do not want to lose them.
+
+scene road_to_town
+when topic=travel
+does tell.self / react.self / assess
+a : The #road# to town seems shorter when I am going for #oatcakes#. | I know where the #reeds# bend near the turn.
+b : Do you go alone? | Have you missed the turn?
+a : When someone knows where I went. | Once in fog. I came back by the #lake#.
+
+scene family_boat
+when topic=family
+does tell.self / react.self / assess
+a : I made a little #boat# for someone at #home#. | They said the bow looked more like a nose, so I cut it again.
+b : Did they keep it? | Did that bother you?
+a : It is on the #shelf#. | No. They were right.
+
+scene quiet_reply
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I would rather say I do not know than make up an answer. | Adults sometimes think a young wolf cannot see when they guess.
+b : Do you tell them? | Does that annoy you?
+a : If it matters. | A little. I keep asking.
+
+story ice_shape [topic=memories self.age>=12]
+  : I saw a #shadow# pass under the #ice# near the #shore#.
+  : I watched it cross the clear patch without moving a paw.
+  ask : What was it?
+  b : The ice might have changed its shape.
+  : I cannot name it. I know it moved.
+
+story crooked_boat [topic=pastimes self.age>=12]
+  : My first #boat# rolled over when I set it in the #lake#.
+  : I took it home and cut the bottom flatter, one #chip# at a time.
+  ask : Did it float on the second try?
+  b : A level bottom should help.
+  : It did. I kept that one instead of making a new boat.
+
+story missing_oatcake [topic=home self.age>=12]
+  : An #oatcake# disappeared from the lower #shelf# overnight.
+  : I thought someone had eaten it until I found crumbs beside a small hole.
+  ask : Was it a rat?
+  b : The hole sounds small enough.
+  : Yes. We moved the food and closed the gap.
+
+rule @bark_march
+when concept=bark
+does aside
+cooldown 8h
+say The #waves# have changed my #march# again. | I can #hum# that #beat#.
+
+rule @bark_boat
+when concept=bark
+does aside
+cooldown 9h
+say This #boat# may float today. | One more #chip# from the bow.
+
+rule @bark_chores
+when concept=bark here.time=dawn|day
+does aside
+cooldown 7h
+say The #basket# comes before the #shore#. | I will finish the #chores# quickly.
+
+rule @bark_ice
+when concept=bark here.season=winter
+does aside
+cooldown 11h
+say I am staying off that #ice#. | Was that a #shadow# under the #lake#?
+
+dlg @1 resident.hub : #greet#. I am carving a little #boat#. | #greet#. The #waves# are keeping time for me.
+dlg @2 resident.hub [topic.meeting=known] : Back again? How did the #lake# look today? | I know you. Listen to this new #march#.
+dlg @1 resident.job : I help around the #farm# and learn what I can. | I carry #baskets# and do the #chores# they give me.
+dlg @1 resident.bye : #farewell#. I must take the #basket# home. | #saying.capitalize#. Keep clear of the #ice#.
+graft resident.hub
+choice What did you see under the ice? -> shadow
+node shadow
+say A large #shadow# moved beneath the #ice#. I could not see its whole shape.
+free
+choice Did anyone believe you? -> believed
+choice Back to what we were saying. -> hub
+node believed
+say Some did. I wish I knew what it was, but I am not going onto the #ice# to find out.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
