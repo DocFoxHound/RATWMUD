@@ -5,7 +5,7 @@
 scene pl_stranger
 when topic=player topic.known=no
 does tell.gossip / react.news / assess
-a[child] : Look! Who's that? | Is that a traveller? Ask them where they're from!
+a[child] : Look! Who's that? | Is that a traveller? Ask #topic.them# where #topic.they#'s from!
 a[guard] : Keep an eye on #topic.subject#. I don't know that face.
 a[merchant] : #topic.subject# looks like #topic.they#'s coin to spend.
 a : Who's #topic.subject#, do you know? | Never seen #topic.subject# before. | #topic.subject#. Not from round here.
@@ -20,14 +20,14 @@ does tell.gossip / react.news / assess
 a : There's #topic.subject# again. | #topic.subject#'s back, I see. | Isn't that #topic.subject#?
 b[merchant] : Good. #topic.subject# pays fair.
 b[guard] : Hm. I'm watching that one.
-b : So it is. | Seems to like it here. | Hello to them.
+b : So it is. | Seems to like it here. | Hello to #topic.them#.
 a : #bc_it_is# | Seems so. | Indeed.
 
 scene pl_stranger_whisper
 when topic=player topic.known=no pair.band=friends|family
 does warn / counter / ack
 a : Don't look now, but #topic.subject# is listening. | Talk quieter. #topic.subject# can hear us. | #topic.subject# has big ears, I bet.
-b : Let them listen. | Oh. Right. | Ha. Most travellers do.
+b : Let #topic.them# listen. | Oh. Right. | Ha. Most travellers do.
 a : Fine. | #bc_exactly# | #bc_ha#
 
 # ---------------------------------------------------------------- Gossip

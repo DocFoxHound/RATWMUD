@@ -56,6 +56,41 @@ EDITED = {
     'e5_been_old_broad': '"For a funeral. Didn\'t care for it." was laughed at by tale.react\'s merry answer (C4, the hard gate, '
                          'frozen L10 at Phase 8 session 2, reached by a new pivot): "For a wedding." now, the dry joke kept',
 }
+# Slice 2's ticking listen (doc 84 §34): eyewitness words from one who saw nothing (T3), said true for anyone now.
+EDITED['cr2_theft_suspect'] = '"I saw someone near X\'s door that night." from anyone (T3, unbacked): "Someone was seen near ' \
+                              'X\'s door that night." now, and its answer "Nobody got a good look."'
+EDITED['et_arrest_relief'] = '"I saw them marched off." from anyone (T3, unbacked): "Marched off by the watch, I heard." now; ' \
+                             'and the guard\'s "We have them now" of the one arrested: #topic.them#'
+# Slice 2's review (doc 84 §34): the talk of a traveller near (topic=player, its stranger.* answers) and of a traveller's
+# deed said "them", "they" and "their" of the one wolf, male or female; #topic.them#, #topic.they#, #topic.their# now,
+# the verb agreeing ("Ask them." is "Ask him.", "They look tired" is "She looks tired"). 215 alternatives; plural ones
+# (travellers, the door watch, boots) and the town's "they say" kept (talk_lint's they_stranger keeps it so).
+for _entry in (
+    'dd_heard_look', 'dd_heard_named', 'dd_look_curious', 'dd_named_merchant', 'ev_pk_back', 'ev_pk_child_admires',
+    'ev_pk_child_follows', 'ev_pk_debt', 'ev_pk_friendly_wave', 'ev_pk_gossip_about', 'ev_pk_guard',
+    'ev_pk_long_absence', 'ev_pk_old_approves', 'ev_pk_rivals', 'ev_pk_tavern', 'ev_pk_tavern_story', 'ev_pk_wary',
+    'ev_pk_well_thought', 'ev_pl_carter_road_news', 'ev_pl_child_staring', 'ev_pl_farmer_squint',
+    'ev_pl_festival_stranger', 'ev_pl_fortress', 'ev_pl_guard_notes', 'ev_pl_handsome', 'ev_pl_hungry_look',
+    'ev_pl_innkeeper_sizes', 'ev_pl_merchant_appraises', 'ev_pl_new_face', 'ev_pl_newcomer_hope',
+    'ev_pl_noble_dismiss', 'ev_pl_priest_welcome', 'ev_pl_rain_stranger', 'ev_pl_ridgemere_judge', 'ev_pl_road_dust',
+    'ev_pl_rude', 'ev_pl_scholar_curious', 'ev_pl_ser_ferro_judge', 'ev_pl_strong', 'ev_pl_suspicious',
+    'ev_pl_suspicious_night', 'ev_pl_two_kids', 'h7_dd_ans_any', 'h7_dd_ans_bandits', 'h7_dd_ans_devout',
+    'h7_dd_ans_doubt', 'h7_dd_ans_guard', 'h7_dd_ans_rich', 'h7_dd_ans_warm', 'h7_dd_ans_young',
+    'h7_dd_open_nickname', 'h7_deed_bandits_near', 'h7_deed_devout', 'h7_deed_guard', 'h7_deed_nickname',
+    'h7_deed_poor', 'h7_deed_rich_hire', 'h7_deed_what_for', 'h7_deed_who_now', 'h7_deed_young', 'h7_known_fond',
+    'h7_known_help', 'h7_known_sus', 'h7_st_ans_ambitious', 'h7_st_ans_any', 'h7_st_ans_cold', 'h7_st_ans_devout',
+    'h7_st_ans_guard', 'h7_st_ans_merchant', 'h7_st_ans_nervy', 'h7_st_ans_rich', 'h7_st_ans_sly', 'h7_st_ans_warm',
+    'h7_st_ans_young', 'h7_st_close_admire', 'h7_st_close_doubt', 'h7_st_close_doubt_frank', 'h7_st_close_duty',
+    'h7_st_close_fear', 'h7_st_close_hire', 'h7_st_close_kind', 'h7_st_close_pray', 'h7_st_close_road',
+    'h7_st_close_shrug', 'h7_st_close_trade', 'h7_st_close_young', 'h7_stranger_armed', 'h7_stranger_bandits_hire',
+    'h7_stranger_devout', 'h7_stranger_fear', 'h7_stranger_guard_eye', 'h7_stranger_hire_road',
+    'h7_stranger_kind_word', 'h7_stranger_merchant_coin', 'h7_stranger_night', 'h7_stranger_poor_envy',
+    'h7_stranger_restless', 'h7_stranger_rich_bodyguard', 'h7_stranger_robbed_ask', 'h7_stranger_rumours',
+    'h7_stranger_tavern_drink', 'h7_stranger_thief_eye', 'h7_stranger_tired', 'h7_stranger_young_hero',
+    'pl2_known_friendly', 'pl2_known_wary', 'pl2_stranger_child', 'pl_known', 'pl_stranger', 'pl_stranger_whisper',
+):
+    EDITED[_entry] = 'a traveller near is one wolf: the "them", "they" and "their" said of the traveller are #topic.them#, ' \
+                     '#topic.they#, #topic.their# (he or she) now, the verb agreeing'
 DISCOURSE = {'hedge', 'account', 'ack', 'pivot', 'anyway', 'later', 'resume', 'preclose', 'excuse', 'knew', 'sympathy',
              'concede', 'insist', 'warn', 'welcome_back', 'welcome', 'sorry', 'forgive', 'deflect', 'no_matter',
              'go_ahead', 'put_off', 'vent', 'reassure', 'congrats', 'demur', 'doubt', 'listen'}

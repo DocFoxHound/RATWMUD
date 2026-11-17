@@ -72,6 +72,12 @@ scene t_food_pity
 when topic=food
 a : Poor thing, she's not eaten all day.
 b : I'll take her some bread.
+
+scene t_stranger
+when topic=player topic.known=no
+a : Look at #topic.subject#. | See #topic.subject# by the well?
+b : Ask them, then. | Don't bother #topic.them#. | Travellers keep their own counsel.
+a : They look tired. | They say #topic.subject# came over the Pass. | #topic.they.capitalize# looks tired.
 """
 
 
@@ -110,6 +116,13 @@ class Lint(unittest.TestCase):
         self.assertNotIn(('pity', 't_gos_pity_bad', 'Poor thing indeed.'), found)
         self.assertNotIn(('glad', 't_gos_glad', "That's lovely news."), found)
         self.assertNotIn(('pity', 't_food_pity', "Poor thing, she's not eaten all day."), found)   # (Not a news topic.)
+        # A traveller near is one wolf (Slice 2's review): never "them" for the one the two can see; travellers in
+        # general, the town's "they say" and the symbols are fine.
+        self.assertIn(('they_stranger', 't_stranger', 'Ask them, then.'), found)
+        self.assertIn(('they_stranger', 't_stranger', 'They look tired.'), found)
+        for fine in ("Don't bother #topic.them#.", 'Travellers keep their own counsel.',
+                     'They say #topic.subject# came over the Pass.', '#topic.they.capitalize# looks tired.'):
+            self.assertNotIn(('they_stranger', 't_stranger', fine), found)
         # A claim about the weather needs the weather.
         self.assertIn(('rain_claim', 't_cr_rain', 'Rain covers footsteps. #topic.victim# heard nothing.'), found)
         self.assertNotIn(('rain_claim', 't_cr_rain_gated', 'Rain covers footsteps. #topic.victim# heard nothing.'), found)

@@ -1,13 +1,14 @@
 {
  "about": "talk_lint.py findings frozen (Docs/Design/84 \u00a77.8, Phase 1): the truth lexicon counted over the library; a new one fails, the list may only shrink.",
- "count": 33,
+ "count": 59,
  "by_rule": {
   "children": 3,
   "morning_greeting": 3,
   "night_greeting": 1,
   "pity": 1,
   "spouse": 1,
-  "they_named": 24
+  "they_named": 24,
+  "they_stranger": 26
  },
  "findings": [
   "children|cb_ser_ferro_road|My daughter works in Ridgemere now. Never visits.",
@@ -42,6 +43,32 @@
   "they_named|h7_theft_doors|First #topic.victim#, now everyone's barring their doors.",
   "they_named|n7_cr_parent|I walked mine to the well this morning, after #topic.victim#. They thought I'd gone soft.",
   "they_named|n7_cr_parent|The little ones keep asking about #topic.victim#. What do I tell them?",
-  "they_named|n7_go_died_old|#topic.subject#'s gone. Another one. They're dropping like leaves this year."
+  "they_named|n7_go_died_old|#topic.subject#'s gone. Another one. They're dropping like leaves this year.",
+  "they_stranger|dd_look_watch|Was it a hero? Did they have a sword?",
+  "they_stranger|dd_look_watch|We'd like a word with them. A thank-you, I mean.",
+  "they_stranger|ev_pk_gossip_about|We all have them.",
+  "they_stranger|ev_pl_festival_stranger|And their cousins' cousins.",
+  "they_stranger|ev_pl_fortress|Then they'd better be right.",
+  "they_stranger|ev_pl_new_face|They do. Mostly go.",
+  "they_stranger|h7_deed_devout|Then where've they been?",
+  "they_stranger|h7_deed_doubter|Not like this, they don't.",
+  "they_stranger|h7_deed_poor|They are now.",
+  "they_stranger|h7_st_close_duty|Polite's how they start.",
+  "they_stranger|h7_stranger_armed|Not like that, they don't.",
+  "they_stranger|h7_stranger_crime_blame|No. But they're the easiest.",
+  "they_stranger|h7_stranger_crime_blame|Then let them mutter.",
+  "they_stranger|h7_stranger_crime_blame|They'll blame #topic.subject# for the thefts. You watch.",
+  "they_stranger|h7_stranger_devout|The Bright One sends them too. That's the test.",
+  "they_stranger|h7_stranger_hire_road|They're a start.",
+  "they_stranger|h7_stranger_kind_word|Did you pay them back?",
+  "they_stranger|h7_stranger_poor_envy|I could walk out of here in them.",
+  "they_stranger|h7_stranger_poor_envy|I'd swap mine for them.",
+  "they_stranger|h7_stranger_poor_envy|They're good boots.",
+  "they_stranger|h7_stranger_thief_eye|From the front they look like strangers.",
+  "they_stranger|pl2_stranger_suspicious|Often as not, they don't.",
+  "they_stranger|rg_greet_robbed|Did you see anyone running? They robbed me!",
+  "they_stranger|rg_greet_thief|I've heard about you. Hands where I can see them.",
+  "they_stranger|s83d_bandits|With the roads as they are, we need folk like #topic.subject#. #topic.they.capitalize# #topic.deed#.",
+  "they_stranger|x7_pb_bandits|Keep off the road after dark. They've hit a caravan."
  ]
 }

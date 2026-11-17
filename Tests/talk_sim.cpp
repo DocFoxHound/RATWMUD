@@ -885,6 +885,7 @@ void Sim::placeListeners()
         return;
     }
     int n = 0;
+    int paired = 0;
     for (const auto& cell : chosen)
     {
         Listener l{"sim-" + profile_ + "-" + std::to_string(n++)};
@@ -892,7 +893,15 @@ void Sim::placeListeners()
             ch = char(std::tolower(static_cast<unsigned char>(ch)));
         placeListener(l, cell, middle(cell));
         listeners_.push_back(l);
+        paired += all[cell].paired;
+        std::cerr << "talk_sim: " << l.id << " listens in " << cell << " (" << kindOf(cell) << "; " << all[cell].free
+                  << " free there now, " << all[cell].paired << " with someone to talk to)\n";
     }
+    // (Ranked by this moment's crowds: a world saved in the small hours ranks the streets, where nobody will stand and
+    // talk all day. A ticking run from such a save says so, rather than listening to nothing for a hundred hours.)
+    if (args_.places.empty() && !fixture && !chosen.empty() && paired == 0)
+        std::cerr << "talk_sim: warning: nobody in " << profile_ << "'s places stands with anyone to talk to at game hour "
+                  << int(hourOf(w.calendarDays())) << "; its places are this moment's, not the day's (give --places)\n";
 }
 
 // What the profile does as time passes: the wanderer moves on every game hour; the regular comes and goes.

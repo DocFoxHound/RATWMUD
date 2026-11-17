@@ -9,7 +9,7 @@ scene dd_heard_named
 when topic=deed topic.known=yes
 does tell.news / react.news / tell.self
 a : Have you heard? #topic.subject# #topic.deed#. | Word is #topic.subject# #topic.deed#. | You know #topic.subject#? #topic.they.capitalize# #topic.deed#.
-b : Did they now. | #topic.subject#? Good for #topic.them#. | I hadn't heard that.
+b : Did #topic.they# now. | #topic.subject#? Good for #topic.them#. | I hadn't heard that.
 a : #bc_so_they_say# | It's all round the market. | I had it from someone who saw.
 
 scene dd_named_doubt
@@ -25,7 +25,7 @@ scene dd_named_merchant
 when topic=deed topic.known=yes here.place=market
 does tell.news / react.news / assess
 a : #topic.subject# came through here, you know. #topic.they.capitalize# #topic.deed#. | Sold #topic.subject# bread last week. Turns out #topic.they# #topic.deed#. | #topic.subject#, the one who #topic.deed#. I've served #topic.them#.
-b[merchant] : Then give them a good price next time.
+b[merchant] : Then give #topic.them# a good price next time.
 b : Fancy that. | A good customer, then. | Small world.
 a : #bc_i_will# | The best kind. | Isn't it.
 
@@ -37,7 +37,7 @@ does tell.news / ask.detail / answer.detail / tell.self
 a : Heard about the one who #topic.deed#? | Someone #topic.deed#, so they say. | Have you heard? Some wolf #topic.deed#.
 b : Who was it? | No. Who? | #bc_go_on#
 a : Nobody knows the name. #topic.subject#, they said. | #topic.subject#, by the sound of it. Never gave a name. | A stranger. #topic.subject#.
-b : Keep an eye out, then. | I'd like to buy them a drink. | Funny, not leaving a name.
+b : Keep an eye out, then. | I'd like to buy #topic.them# a drink. | Funny, not leaving a name.
 
 scene dd_look_watch
 when topic=deed topic.known=no
@@ -52,6 +52,6 @@ scene dd_look_curious
 when topic=deed topic.known=no here.place=tavern
 does tell.news / react.news / assess
 a : They say #topic.subject# #topic.deed#. Came in here after, too. | #topic.subject# sat right there, the night after #topic.they# #topic.deed#. | You remember #topic.subject#? #topic.they.capitalize# #topic.deed#.
-b[innkeeper] : I poured them a drink. Never said a word about it.
+b[innkeeper] : I poured #topic.them# a drink. Never said a word about it.
 b : Never! | Which one was that? | I'd not have guessed.
 a : Quiet ones often are. | By the hearth. | Neither would I.

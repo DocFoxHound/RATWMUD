@@ -217,6 +217,16 @@ class Metrics(unittest.TestCase):
         ])
         self.assertEqual(m["T3_detail"]["by_kind"], {"own_name": 1, "unbacked": 2})
 
+    def test_k3_own_news_is_its_tellers(self):
+        # Two weddings told to Varg by the two who married are two pieces of news; one told him twice is a repeat.
+        own = {"topic": "news", "claim": "marriage", "other": "varg"}
+        m = self.score([(dict(own, teller="jory"), [("jory", "varg", "I married Wren Tarford.")]),
+                        (dict(own, teller="wren"), [("wren", "varg", "I married Jory Rimepeak.")])])
+        self.assertEqual(m["K3"], 0)
+        m = self.score([(dict(own, teller="jory"), [("jory", "varg", "I married Wren Tarford.")]),
+                        (dict(own, teller="jory"), [("jory", "varg", "Did I say? I married Wren Tarford.")])])
+        self.assertEqual(m["K3"], 1)
+
     def test_c3_a_talk_cut_off_is_not_a_good_ending(self):
         m = self.score([({"reason": "gone"}, [("jory", "varg", "Hm.")]),
                         ({}, [("jory", "varg", "Well, farewell.")]),

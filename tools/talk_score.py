@@ -59,7 +59,7 @@ is measured"); the rest are listed as n/a with the phase that brings them:
   K1 conversations on everyday topics: those Data/Talk/topics.json calls everyday (Phase 5; before it, anything but
      news, gossip, crime, deeds, events, quarrels and the like)
   K2 the largest topic's share
-  K3 the same news (topic, subject, claim) told twice to the same resident
+  K3 the same news (topic, subject, claim; one's own news by its teller) told twice to the same resident
   C5 unmarked topic jumps per 1,000 lines (Phase 5): a line on another topic than the line before (talk_sim's topic_now)
      with no pivot, change of subject or return among its moves
   C9 callbacks per 10 conversations (Phase 5): lines standing on the talk ledger (their criteria read it: pair.last_talk,
@@ -664,7 +664,10 @@ def score_run(run: Run) -> dict:
     for cid, c in run.by_conv.items():
         head = run.conv_head.get(cid, {})
         if head.get("topic") in NEWSY and (head.get("subject") or head.get("claim")):
-            told[(head.get("other", ""), head.get("topic"), head.get("subject", ""), head.get("claim", ""))] += 1
+            # (One's own news has no subject but its teller: "I married Runa" and "I married Maren", told to one wolf by
+            # two, are two weddings, not the same news twice. Slice 2's ticking listen counted them as one.)
+            about = head.get("subject") or ("self:" + head.get("teller", "") if head.get("topic") == "news" else "")
+            told[(head.get("other", ""), head.get("topic"), about, head.get("claim", ""))] += 1
     m["K3"] = sum(n - 1 for n in told.values() if n > 1)
     m["K3_detail"] = {"repeats": [f"{k[0]} told {k[1]}: {k[2]} {k[3]} x{n}" for k, n in told.most_common(4) if n > 1]}
     # C5, C9 (Phase 5): a talk that turns to another topic (the line's topic_now) without a pivot, a change of subject

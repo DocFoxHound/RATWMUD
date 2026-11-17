@@ -178,21 +178,21 @@ scene pl2_stranger_child
 when topic=player topic.known=no a.stage=young
 does ask.detail / give.advice / counter
 a : Is #topic.subject# Gifted? | I want to talk to #topic.subject#! | Does #topic.subject# have a sword?
-b : Leave them be. | Don't bother them. | I doubt it.
+b : Leave #topic.them# be. | Don't bother #topic.them#. | I doubt it.
 a : But I want to! | Fine. | Maybe a little sword.
 
 scene pl2_known_friendly
 when topic=player topic.known=yes
 does tell.gossip / react.news / assess
 a : #topic.subject# helped me once, you know. | Good to see #topic.subject# again. | #topic.subject# always has a kind word.
-b : Did they? | #bc_it_is# | Not to me.
-a : They did. | #bc_very# | #bc_ha#
+b : Did #topic.they#? | #bc_it_is# | Not to me.
+a : #topic.they.capitalize# did. | #bc_very# | #bc_ha#
 
 scene pl2_known_wary
 when topic=player topic.known=yes
 does tell.gossip / react.news / assess
 a : #topic.subject# again. Hm. | Wonder what #topic.subject# wants this time. | #topic.subject# owes me an answer.
-b : Leave it. | Who knows. | Ask them.
+b : Leave it. | Who knows. | Ask #topic.them#.
 a : #bc_maybe# | Who knows. | #bc_i_might#
 
 scene dy2_market

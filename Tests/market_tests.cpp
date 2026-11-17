@@ -1251,9 +1251,17 @@ void talkThroughTheRealPath()
     talk::Query q;
     expect(topicFor(town.ash.entityId, "caravan", q) && q.facts.count("topic.news"), "a wagon's news is talked of");
     expect(q.facts.at("topic.news") == "hides are cheap in Larkfield", "and its words are the wagon's: " + q.facts.at("topic.news"));
+    // (A line may name the wagon itself, as doc 84's shared8_caravans.talk does: "The last wagon brought word: hides are
+    // cheap in Larkfield." What it may not do is say the topic's own first fact, "The last wagon in brought word: ...",
+    // spliced in, or the news twice.)
     for (std::uint64_t seed = 0; seed < 12; ++seed)
         for (const auto& [who, line] : town.g.talkLibrary().converse(q, seed, none, {}).lines)
-            expect(!contains(line, "brought word") && !contains(line, "The last wagon"), "the news said once, as brought: " + line);
+        {
+            const auto first = line.find("ides are cheap in Larkfield");
+            expect(!contains(line, "in brought word") &&
+                       (first == std::string::npos || line.find("ides are cheap in Larkfield", first + 1) == std::string::npos),
+                   "the news said once, as brought: " + line);
+        }
     s.stagedBoard().news.erase(market);
     // (2) Ash buys bread up: the dozen on her list and on Bo's differ (her own push is her own: 7.1), and each hears the
     // price on their own list, from the director's pick and in the topic as the game writes it.

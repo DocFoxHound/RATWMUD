@@ -7,7 +7,9 @@ instrument), Phase 1 (truth fixes), Phase 2 (moves and tags), Phase 3 (the turn 
 knowledge, a third voice), Phase 5 (topics, agendas, goals, the ledger), Phase 6 (opinions, temperament, moods,
 accommodation), Phase 7 (converting the library; coverage) and Phase 8 (the shared lines, in three sessions) are
 built** (2026-11-16, branches `r3-talk-p0` to `r3-talk-p8`; §23, §24, §27-§33 say what and what they
-measured); nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
+measured), and **Slice 2's end** is done (2026-11-17, branch `r3-talk-s2`, §34: the full suite, every profile, the
+ticking 100-hour listen and its packet, the review's fixes, and the first blind packet, waiting for the user's ratings);
+nothing else is. It extends doc 62 (the talk library: facts, rules, grammar) and doc 83 (dialogue trees and the window) and
 replaces neither: every one of today's 8,525 library entries and 10 trees keeps loading and speaking while it is
 converted. It was written from five read-only surveys of the code, the data and the live world at `ridgemere2` 1034c1fc
 (the engine, the trees, the lifecycle, what residents know, and prior art) and three competing designs; §4 says how they
@@ -3746,3 +3748,172 @@ or Phase 9, not lines.
 - The scene turns above; and 476 of §14.1's coverage rules, if the listen asks for more ways to answer than it has.
 - Saltwell's grammar is 16,811 characters of the column's 20,000. Until this branch merges, the main checkout's
   `dialect_check --world ridgemere3` sees rows newer than its files.
+
+## 34. Slice 2's end: the full suite, every profile, the ticking listen and the first blind ratings (2026-11-17)
+
+Branch `r3-talk-s2`, on Phase 8 (`r3-talk-p8` at c6acfdbf). `origin/ridgemere2` had nothing new (still 0ec6d092,
+Slice 1's merge, which Phase 2 was built on), so the merge was empty. Everything was built in one Release build and run.
+
+**The suites.**
+- **Core**: the full ctest, 109 of 109 (`talk_bench`, label perf, among them), with the eight database suites (`*_pg`,
+  `pg_client`) run against the local PostgreSQL (`RATW_TEST_DATABASE_URL` the game role on `ratw_ridgemere3`: the client
+  tests only read and notify); run again after every fix below. `talk_scorecard_quick` failed once on its
+  timing rows (B1, B1P, B1L) with a card of ten runs on the machine, and passed alone. One failed first: **`market_behaviors`, a test fault**.
+  Its guard that a wagon's news is said once ("never the topic's first fact spliced in over it", doc 79 Phase 8) refused
+  any line containing "brought word" or "The last wagon", so Phase 8's own caravan opener "The last wagon brought word:
+  hides are cheap in Larkfield." failed it, though it says the news once and in the wagon's words. The guard now refuses
+  what it meant: the topic's first fact ("The last wagon in brought word: ...") spliced in, or the news twice.
+- **Client**: typecheck, 224 unit tests, the build, and the 11 browser tests (headless, a local central and a world).
+- **Editor**: typecheck, the build, 165 tests (78 and 87), and the render smoke (17 panels).
+- **Talk**: `talk_check --validate` on all 179 files of `Data/Talk` (10,347 library entries say what they do; the 127
+  "not yet" are the dialogue trees' nodes, doc 83's, until Phase 13), `--render-trees`, `--coverage` (0 holes of
+  1,188,000, 0 in the core moves), `talk_lint` (no new finding; below), `tools/dialect_check.py --world ridgemere3`
+  (65,414 lines, 0 failures; 14 warnings, the place names it has always listed), `test_dialect_check` (15),
+  `test_path_check` (17), `talk_equiv --against 1e159420`, `talk_migrate --check`, `talk_tags`, `talk_conv`.
+- **Central**: `test_central.py` (84) and `test_world_join.py` (2).
+
+**The listen's review, and its fix: a traveller is one wolf.** Reading the card's talk and the ticking listen, the most
+heard fault no metric counted was "them" and "they" for the traveller the two can see: "Smiled? Or bared their teeth?",
+"Don't bother them.", "Are they an adventurer? Do they have a sword?". The talk of a traveller near (`topic=player`) is
+said in every real game, since every listener there is a player; T6 counts only a "they" after a name in the same line,
+so none of it showed. **215 alternatives in 110 entries** (`everyday_player.talk`, `hard7_strangers.talk`, `hard7.talk`'s
+stranger and deed answers and closings, `deeds.talk`, `people.talk`, `relations.talk`) now say `#topic.them#`,
+`#topic.they#`, `#topic.their#`, `#topic.theirs#`, which the engine fills by the traveller's sex (Phase 6), each with its
+verb made to agree by hand: "Ask him.", "She looks tired, that's all.", "Is she armed? She's armed.", "He has a walk all
+his own."; the backchannel "Let them." (`#bc_let_them#`) said of the traveller is "Let him." there. Plurals were kept where the words mean many (travellers in general, the door watch, a pair of boots, the gods,
+"they say"), and an unknown doer before anyone names them ("Was it a hero? Did they have a sword?"). One reworded line
+clear of Saltwell's "to the well" (`dialect_check`): "Then show him where the well is." Each entry is named in
+`talk_equiv`'s EDITED with why. To keep it so, `talk_lint` gained **`they_stranger`**: a line on the traveller's topic or
+its `stranger.*` and deed answers saying "they", "them" or "their" with nothing plural before it to stand for, and not
+the town's "they say" or "they're calling"; its 26 findings left are those plurals, each read, and frozen in
+`Tests/fixtures/talk_lint_baseline.json` (59 in all, none new). `test_talk_lint` checks both ways. The fix changes no
+metric of the card (its virtual listeners are men: "Smiled? Or bared his teeth?" is said 59 times there now), and the
+ticking listen and the blind packet were spoken before it.
+
+**The instrument.**
+- **talk_sim says where it listens**, each listener's place, its kind and who stands there free, and warns when none of
+  a profile's places has two who could talk. The first ticking run (below) heard nothing because of this.
+- **talk_rate's packet is blind, and its key is kept apart.** `--key FILE` writes the answer key away from the packet
+  given to the rater; the packet is also a Markdown sheet (`packet.md`, beside `rate.html` and `ratings.csv`); nothing
+  on either says where a conversation came from (no place, day, run, entry or number but its place in the packet);
+  a shuffled conversation keeps its real one's first line, so a conversation taken from one source is never taken from
+  another and no two items open with the same words; a source with too few conversations is refused. `test_talk_rate`
+  (ctest `talk_rate_rules`, 4) checks each.
+
+**The scorecard** (`artifacts/talk/runs/s2`, every profile in both modes over P0's fixture, pinned to build 81, after
+the review's fixes; 12,989 and 25,467 conversations, 71,209 and 166,415 lines). The card was run four times: twice
+beside the ticking listen, before and after the traveller's pronouns (the same values but timings: the card's listeners
+are never its talk), once stopped when three more alternatives changed under it, and this last one alone. Against the Slice 1 baseline (the review's card, `s1r`, §26) and Phase 8's last (`p8s3`, §33.4),
+fixtures / frozen:
+
+| | Metric | Slice 1 (`s1r`) | Phase 8 (`p8s3`) | **Slice 2 (`s2`)** |
+|---|---|---|---|---|
+| R1 | first identical talk (h) | 2.22 / 0.418 | 47.3 / 8.29 | **42.9 / 8.29** |
+| R2 | first repeated opener (h) | 2.22 / 0.14 | 6.49 / 2.28 | **6.49 / 2.28** |
+| R3 | distinct openers per 3,000 | 2,132 / 451 | 2,884 / 2,159 | **2,885 / 2,158** |
+| R4 | a distinctive line heard again within 10 h, per 100 h | 1,010 / 3,922 | 282 / 3,151 | **276 / 3,180** |
+| R5 | collisions per 100 h | 186 / 924 | 0 / 0 | **0 / 0** |
+| R6 | the most-spoken line (%) | 3.51 / 13.2 | 1.23 / 1.1 | **1.21 / 1.1** |
+| R7 | distinct replies per 1,000 | 54.8 / 32.3 | 269 / 126 | **269 / 125** |
+| C1 | owed answers answered (%; Slice 1: the "?" heuristic) | 96.9 / 97.8 | 98.9 / 98.7 | **98.9 / 98.7** |
+| C3 | ended by a farewell or a marked break (%) | 0.891 / 0.176 | 89.0 / 90.7 | **89.0 / 90.7** |
+| C4 | tone clashes per 1,000 beats | 0.0256 / 0 | 0.0281 / 0 | **0.0281 / 0** |
+| C6 | an entry or question twice, per 1,000 talks | 0 / 0.119 | 0 / 0 | **0 / 0** |
+| C7 | lines per talk | 3.01 / 2.56 | 5.63 / 6.59 | **5.64 / 6.59** |
+| C8 | a third speaker (%) | 0 / 0 | 0.224 / 5.43 | **0.217 / 5.44** |
+| C9 | callbacks per 10 talks | - / - | 3.73 / 2.14 | **3.72 / 2.15** |
+| T1 | raw ids per 1,000 lines | 0 / 0 | 0 / 0 | **0 / 0** |
+| T2 | untrue presuppositions per 1,000 | 0.307 / 0 | 0.0281 / 0 | **0.0281 / 0** |
+| T3 | self-reference errors per 1,000 | 0.41 / 0.03 | 0.0844 / 0.00601 | **0.014 / 0** |
+| T5 | told what they knew (%) | - / - | 0.786 / 0.22 | **0.784 / 0.22** |
+| K1 | everyday topics (%) | 3.79 / 24.4 | 45.0 / 75.1 | **45.0 / 75.2** |
+| K2 | the largest topic (%) | 50.7 / 41.8 | 20.8 / 12.7 | **20.8 / 12.7** |
+| K3 | the same news twice | 2,197 / 109 | 0 / 0 | **0 / 0** |
+| D1 | accent none's lines with dialect words (%) | 0 / 0 | 0 / 0 | **0 / 0** |
+| D1L | light (%) | 0.213 / 0.248 | 1.73 / 2.87 | **1.8 / 2.78** |
+| D1B | broad (%) | 0.121 / 0.127 | 10.6 / 7.11 | **10.6 / 7.12** |
+| D2 | another dialect's words | 0 / 0 | 0 / 0 | **0 / 0** |
+| D3 | dialect guessed from 20 lines (%) | 68.4 / 13.2 | 89.9 / 74.2 | **87.2 / 65.2** |
+| U2 | look-alikes told apart (%) | 48.0 / 39.4 | 40.2 / 28.4 | **39.4 / 29.6** |
+| X1 | replies sharing a word with the line before (%) | 26.8 / 15.3 | 18.4 / 16.5 | **18.5 / 16.4** |
+| R8 | habit lines (%) | 0.0242 / 0.0622 | 0.111 / 0.113 | **0.103 / 0.107** |
+| B1 | a beat, mean (ms, the card's load) | - / - | 0.327 / 0.334 | **0.339 / 0.365** |
+| B5 | exchanges a second | 2.13 / 57.6 | 0.778 / 65.8 | **0.761 / 70.9** |
+
+`talk_card` breaks **no hard gate the baselines passed** in either mode. It exits 1 on the rows Phases 5 to 8 left, each
+moved by design and none refrozen, since Slice 2's gate (H1 against the baseline) doesn't ask for them: **R8** (habit
+lines, 0.10% of a speaker's against a 15% ceiling: more talk, a few more habit lines), **U2** and **X1** (everyday talk
+and shared lines, §30; U2 is the mantles' work), **B1** and **B1P** (the card's twenty runs, ten at
+a time), and **B5** below its baseline on an open hard gate (timing under that load). Against `p8s3` the transcripts differ
+in their grammar picks (the same entries, other alternatives: Phase 8's last edits came after its card), and **D3
+frozen** 74.2 → 65.2% is one of L3's seven judged speakers guessed wrong (5 of 7 then, 4 of 7 now; L2's 162 are 78.4 →
+77.8%); **R1 fixtures** 47.3 → 42.9 h is one listener; **T3** fell (0.084 → 0.014 / 0.006 → 0) with the two eyewitness
+lines below.
+
+**The ticking 100-hour listen** (Q6, reported):
+`talk_sim --world ridgemere3 --tick --profile L1 --places r2_the_knucklebones,rm_the_grey_gull_inn,rm_the_rainbarrel,
+rm_the_bilge --hours 100 --seed 1 --ablate shuffle` (`artifacts/talk/runs/s2-tick`), from DEV's save as it was at 05:13
+UTC (game day 32.05, an hour past midnight) to day 57.05: 100 world hours, 360,000 world seconds, 25 game days, 7,200,000
+ticks of 0.05 s, world build 81, nothing written. **3,877 s of wall time** for the ticking (64 min 46 s with the load),
+**speed 93** (Slice 1's was 123, alone; this one shared the machine with two cards of twenty runs for most of its hour),
+**1.38 GiB peak memory**; 7,449 conversations, 48,446 lines, 162 speakers. The four places are Slice 1's, named, because
+the save was at one in the morning: ranked by that moment's crowds, L1 chose two street cells, and **a first ticking run
+there heard nothing in 16 world hours and was stopped after 6 minutes of wall time** (also reported: it is the second
+world simulation this slice ran, of no use). Against Slice 1's ticking listen rescored with today's scorer
+(`artifacts/talk/runs/s1-tick-r`), Slice 2 / Slice 1, the shuffled control in brackets:
+
+| | Ticking L1, Slice 2 | Ticking L1, Slice 1 |
+|---|---|---|
+| R1 first identical talk, earliest listener (h) | **17.6** (median 94, censored) | 2.5 |
+| R2 first repeated opener (h) | 10.1 | 2.5 |
+| R3 distinct openers per 3,000 / R4 per 100 h / R5 collisions per 100 h | 2,803 / 1,582 / **0** (332) | 2,026 / 3,534 / 951 |
+| R6 the most-spoken line / R7 distinct replies per 1,000 | 0.82% ("Sleep sound.") / 98 | 0.68% / 14 |
+| C1 owed answers answered / C3 farewells and breaks (%) | **98.5** (19.4) / 89.2 (32.2) | n/a (no moves) / 1.3 |
+| C7 lines per talk / C8 a third speaker / C9 callbacks per 10 | 6.5 / 2.6% / 4.1 | 3.2 / 0 / n/a |
+| T1 / T2 / T3 per 1,000 lines | 0 / 0.02 / 0.23 | 0 / 4.15 / 0.54 |
+| K1 everyday / K2 the largest (crime) / K3 | **46.9% / 21.2%** / 1 | 0% / 75.2% / 131 |
+| D1L / D1B / D3 (%) | 1.0 / 2.0 / 78.7 | 0.14 / 0.27 / 38.4 |
+| U2 / O1 opinions per 10 talks | 63.9 / 0.80 | 65.6 / 0 |
+
+What the living world showed that the card can't, read from the transcripts: weddings told by the ones who married and
+congratulated, the town's news passed on and not told twice to the same wolf but once (Signe Brineworth's gossip of Karin
+Wetridge to Rune Wickwell, three weeks apart: K3's one, a hard gate that the card, frozen and replayed, holds at 0); the
+everyday as often as crime in the busiest rooms. Its faults, and what became of them:
+- **The traveller was "them"** ("I bet that grey stranger could lift a cart." / "Ask them to help unload."): fixed (above).
+- **Eyewitness words from wolves who saw nothing** (T3's 9 "unbacked"): `et_arrest_relief`'s "I saw them marched off."
+  and `cr2_theft_suspect`'s "I saw someone near X's door that night." are said true for anyone now ("Marched off by the
+  watch, I heard."; "Someone was seen near X's door that night."), each in talk_equiv's EDITED; the rest are a kin's "I
+  saw you at the well this morning" and the dead remembered ("I saw X only on Restday. Laughing."), which the heuristic
+  counts and a listener wouldn't. T3's one `own_name` is a name given back in an introduction ("Sybil Tardale. And I'll
+  confess I've lost yours too."): right as said.
+- **K3 counted two weddings as one piece of news** (one's own news has no subject in the conversation's head, so "I
+  married Runa" and "I married Maren", told to Osric Wetford by the two who married, were the same news twice). A scorer
+  fault: own news is keyed by its teller now (`test_talk_score`: two weddings, then one told twice). 9 → 1 on the tick;
+  the card's K3 was and is 0; Slice 1's tick 133 → 131.
+- **Open:** "We're both from the downs, I think." said by a Southmeadow baker with no accent to a broad Coldwater voice
+  (`s83a_south_pair`, listen packet conversation 3): the accent topic's opener, meant for the one who hears the voice,
+  was said by the other, whose own origin matched the criterion; the director's `topic.accent_of` is the second
+  speaker's origin, so the opener needs the one who hears (A) to speak, or a fact for who is heard. Not fixed here.
+- **Open:** "My son rides with the Frosthollow caravan." from a wolf with no son (T2's one; the lint's frozen
+  `cv2_left_worry` finding since Phase 1); "Sleep sound." the most-said line (395 times: the night's farewell in the
+  taverns, where every talk ends at night); the authored fallback "A day like any other." / "So it is." still heard where
+  no line fits (The Knucklebones' first repeat, at 29.5 hours); light and broad speakers mostly plain in Ridgemere's rooms
+  (D1L 1.0%, D1B 2.0%: the mantles' work).
+
+**The listen packet**: `artifacts/talk/listen/s2-tick.md` (and `.html`, the page with marks): forty of the ticking
+listen's conversations across the kinds of talk (`talk_listen.py --packet 40 --seed 1`), with the run's report and its
+scorecard beside L1 over the fixture and frozen.
+
+**The first blind ratings (H1, §15.7).** `tools/talk_rate.py packet --new artifacts/talk/runs/s2-tick/tick-L1 --old
+artifacts/talk/runs/p0-baseline/fixtures-L1 --each 30 --seed 2 --key artifacts/talk/rate/s2/key.json`: **90
+conversations**, 30 from this slice's ticking listen, 30 from the Slice 1 baseline (P0's baseline transcripts, the L1
+listeners over the fixture: today's talk before this design, the old library), 30 from the ticking listen's shuffled
+control, sampled over topic family and length (2 lines or more), in a random order, numbered 1 to 90 and nothing else.
+The packet is `artifacts/talk/rate/s2/packet.md` (and `rate.html`, `ratings.csv`), the key
+`artifacts/talk/rate/s2/key.json` (don't open it before rating). When the ratings are in, `python3 tools/talk_rate.py
+score ratings.csv --key artifacts/talk/rate/s2/key.json` gives H1 (the means, new − shuffled against 2.0+, new − old
+against 1.0+, new against 3.8+) and H2. Not rated yet: that is the user's.
+
+**For Slice 3.** The open gates are Phase 8's: R1 frozen 8.3 h of 20, B5 under load, C4 fixtures' two old lexicon
+clashes, the Ridgemere 3 look's p99 (`World::districtHouse`); and the soft rows U2, X1, R8. The scene turns that put a
+question beside statements (§33.4) are not split. The ticking listen's own findings are above; the ratings decide H1.

@@ -122,10 +122,10 @@ a : Better safe. | Awful. | Or wicked.
 scene cr2_theft_suspect
 when topic=crime topic.kind=theft
 does tell.news / react.news / assess
-a : I think I know who robbed #topic.victim#. | It was #topic.subject#, they say. | I saw someone near #topic.victim#'s door that night.
+a : I think I know who robbed #topic.victim#. | It was #topic.subject#, they say. | Someone was seen near #topic.victim#'s door that night.
 b[guard] : Then tell the watch, not me.
 b : Tell the watch. | Are you sure? | #bc_who_q#
-a : Maybe I will. | Sure enough. | I couldn't see.
+a : Maybe I will. | Sure enough. | Nobody got a good look.
 
 scene cr2_assault_fear
 when topic=crime topic.kind=assault

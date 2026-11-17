@@ -14,7 +14,9 @@ Phase 6 adds two checks of its own beside truth.json's: they_named, "they", "the
 #topic.they#, #topic.victim_their#, #x.they# instead; "they say" and its like are the town's, not the wolf's); and
 gossip_kind, a line on the gossip topic that pities or defends ("poor thing", "shame") without its entry gating the
 claim kind to bad news, or rejoices without gating it to glad news. truth.json's rules with `topics` judge only lines
-on those topics.
+on those topics. Slice 2's review adds they_stranger: a line on the topic of a traveller near (topic=player and its
+answers, stranger.*: one wolf the two can see, male or female) saying "they", "them" or "their" with nothing plural in the line before it to stand
+for ("travellers", "the door watch", "boots"), and not the town's "they say": #topic.they#, #topic.them#, #topic.their#.
 """
 from __future__ import annotations
 
@@ -140,7 +142,8 @@ NAMED = re.compile(r"#(?:topic\.(?:subject|victim)|x\.(?:name|first)|(?:self|oth
                    r"shopkeeper|priest|leader|friend|rival|boss|hand)|(?:other|a|b)\.(?:name|first))(?:\.[a-z]+)*#")
 THEY = re.compile(r"\b(they|them|their|theirs|themselves|themself|they're|they'd|they'll|they've)\b", re.I)
 TOWN_THEY = re.compile(r"\b(they (?:say|said|reckon|tell|told|do say|are saying|were saying|call|found|took)|they're saying|so they say|"
-                       r"what they say|they've (?:said|been saying)|they'll (?:say|tell))\b", re.I)
+                       r"what they say|they've (?:said|been saying|a name)|they'll (?:say|tell)|they're (?:calling|telling|all talking))\b",
+                       re.I)
 PITY = re.compile(r"\b(poor (?:thing|soul|lamb|creature|devil)|shame on|shameful|sorry to hear|that's (?:sad|hard|awful|terrible))\b", re.I)
 GLAD = re.compile(r"\b(congratulat\w*|happy for (?:him|her|them|#)|good for (?:him|her|them|#)|wonderful news|lovely news|that's grand)\b", re.I)
 BAD_KINDS = {"death", "violence", "theft", "victim", "wanted", "bandit", "promise_broken", "prowling"}
@@ -160,6 +163,21 @@ def they_named(text: str) -> bool:
         # (Two named: "#topic.subject# and #topic.victim#... they" may be both.)
         if NAMED.search(after) or re.search(r"\band\b", talk_truth.SYMBOL.sub(' ', text[:named.start()] + ' ' + after[:after.find(m.group(0))])):
             return False
+        return True
+    return False
+
+
+# (What a plural "they" in a traveller's talk can stand for: travellers in general, the Watch, folk, a pair of things.)
+PLURAL = re.compile(r"\b(travellers|strangers|wolves|folk|people|everyone|everybody|all sorts|cousins|watch|guards|thieves|"
+                    r"boots|looks|manners|scars|ones|others|somebody|someone|(?:any|all|none|some|most|one) of)\b", re.I)
+
+
+def they_stranger(text: str) -> bool:
+    """Whether a line about a traveller near says "they" (them, their...) of that one wolf (Slice 2's review)."""
+    plain = talk_truth.SYMBOL.sub(' ', text)
+    for m in THEY.finditer(plain):
+        if TOWN_THEY.match(plain, m.start()) or PLURAL.search(plain[:m.start()]):
+            continue
         return True
     return False
 
@@ -209,6 +227,9 @@ def findings(root: Path) -> list[dict]:
         # Phase 6: "they" of one known wolf.
         if they_named(text):
             out.append({'rule': 'they_named', 'entry': entry, 'where': where, 'text': text})
+        # Slice 2's review: a traveller near is one wolf, he or she.
+        elif on_topic(crit, {'player', 'stranger', 'deed'}) is True and they_stranger(text):   # (stranger.*, a traveller's deed)
+            out.append({'rule': 'they_stranger', 'entry': entry, 'where': where, 'text': text})
         # Phase 6: gossip that pities, defends or rejoices must say which news it answers.
         if on_topic(crit, {'gossip'}) is True and (PITY.search(words) or GLAD.search(words)):
             bad = bool(PITY.search(words))

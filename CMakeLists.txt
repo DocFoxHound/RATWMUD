@@ -477,6 +477,8 @@ add_test(NAME talk_lint COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/talk_l
 add_test(NAME talk_lint_rules COMMAND python3 -m unittest test_talk_lint WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
 # The scorecard's gate check (doc 84 §15.3): a real regression is caught, noise is not.
 add_test(NAME talk_score_rules COMMAND python3 -m unittest test_talk_score WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
+# The blind ratings' packet (doc 84 §15.7): nothing on it tells the sources apart, the key kept apart, no talk twice.
+add_test(NAME talk_rate_rules COMMAND python3 -m unittest test_talk_rate WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
 # Phase 7 (doc 84 §18, P7): the library converted, and kept so. No short marker left as pair memory (talk_conv); every
 # backchannel's plain value its old words, none left word for word (talk_migrate); every entry says what it does
 # (talk_tag); every line a plain speaker could say at Phase 6 can be said now, nothing else changed but tags, moves and

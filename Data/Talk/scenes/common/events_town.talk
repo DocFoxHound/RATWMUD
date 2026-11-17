@@ -199,8 +199,8 @@ a : Worse days, some of them. Not this. | Shame on them. | We would.
 scene et_arrest_relief
 when topic=crime topic.kind=arrest
 does tell.news / react.news / assess / ask.detail
-a : They've taken #topic.subject# to the cells. | #topic.subject#'s been arrested. I saw #topic.them# marched off. | The watch caught #topic.subject# at last.
-b[guard] : Took four of us. Bit one. We have them now, though.
+a : They've taken #topic.subject# to the cells. | #topic.subject#'s been arrested. Marched off by the watch, I heard. | The watch caught #topic.subject# at last.
+b[guard] : Took four of us. Bit one. We have #topic.them# now, though.
 b[merchant] : Good. Maybe I'll sleep without a cudgel by the bed.
 b : Good riddance. | Marched off? In chains? | #bc_about_time#
 a : For now. | Chains and all. | Long past time.

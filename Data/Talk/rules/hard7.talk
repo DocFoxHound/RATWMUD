@@ -1188,67 +1188,67 @@ then other: stranger.answer
 rule h7_st_ans_any
 when concept=stranger.answer
 does react.news
-say {h7_said=shrug} A traveller. Passing through. | {h7_said=shrug} Don't know. Don't care. | {h7_said=shrug} Who knows, with travellers. | {h7_said=shrug} They look tired. | {h7_said=shrug} Let them be.
+say {h7_said=shrug} A traveller. Passing through. | {h7_said=shrug} Don't know. Don't care. | {h7_said=shrug} Who knows, with travellers. | {h7_said=shrug} #topic.they.capitalize# looks tired. | {h7_said=shrug} Let #topic.them# be.
 then other: stranger.close
 
 rule h7_st_ans_guard
 when concept=stranger.answer self.role=guard
 does react.news
-say {h7_said=duty} I've my eye on them. | {h7_said=duty} They've caused no trouble. Yet. | {h7_said=duty} Came in by the gate. Asked the way. Polite. | {h7_said=duty} If they're trouble, they'll find me.
+say {h7_said=duty} I've my eye on #topic.them#. | {h7_said=duty} #topic.they.capitalize#'s caused no trouble. Yet. | {h7_said=duty} Came in by the gate. Asked the way. Polite. | {h7_said=duty} If #topic.they#'s trouble, #topic.they#'ll find me.
 then other: stranger.close
 
 rule h7_st_ans_nervy
 when concept=stranger.answer self.temper=nervy
 does react.news
-say {h7_said=fear} I don't like them. I don't like any of them. | {h7_said=fear} Don't look at them. They'll see us looking. | {h7_said=fear} Are they armed? They're armed. | {h7_said=fear} Let's go inside.
+say {h7_said=fear} I don't like #topic.them#. I don't like any of them. | {h7_said=fear} Don't look at #topic.them#. #topic.they.capitalize#'ll see us looking. | {h7_said=fear} Is #topic.they# armed? #topic.they.capitalize#'s armed. | {h7_said=fear} Let's go inside.
 then other: stranger.close
 
 rule h7_st_ans_merchant
 when concept=stranger.answer self.role=merchant
 does react.news
-say {h7_said=trade} They've coin. Travellers always do. | {h7_said=trade} I'll give them a good price. Good for me. | {h7_said=trade} Ask them what they need. I've everything. | {h7_said=trade} Customers. That's what I see.
+say {h7_said=trade} #topic.they.capitalize#'s got coin. Travellers always do. | {h7_said=trade} I'll give #topic.them# a good price. Good for me. | {h7_said=trade} Ask #topic.them# what #topic.they# needs. I've everything. | {h7_said=trade} Customers. That's what I see.
 then other: stranger.close
 
 rule h7_st_ans_warm
 when concept=stranger.answer self.warmth=warm
 does react.news
-say {h7_said=kind} Someone should give them a hot meal. | {h7_said=kind} They look like they could use a friend. | {h7_said=kind} I'll say good day. It costs nothing. | {h7_said=kind} Poor thing. Far from home.
+say {h7_said=kind} Someone should give #topic.them# a hot meal. | {h7_said=kind} #topic.they.capitalize# looks like #topic.they# could use a friend. | {h7_said=kind} I'll say good day. It costs nothing. | {h7_said=kind} Poor thing. Far from home.
 then other: stranger.close
 
 rule h7_st_ans_cold
 when concept=stranger.answer self.warmth=cold self.honesty=guarded
 does react.news
-say {h7_said=fear} Strangers bring trouble. Always. | {h7_said=fear} I'll keep my door shut. | {h7_said=fear} Don't talk to them. | {h7_said=fear} They'll be gone soon. Good.
+say {h7_said=fear} Strangers bring trouble. Always. | {h7_said=fear} I'll keep my door shut. | {h7_said=fear} Don't talk to #topic.them#. | {h7_said=fear} #topic.they.capitalize#'ll be gone soon. Good.
 then other: stranger.close
 
 rule h7_st_ans_ambitious
 when concept=stranger.answer self.drive=ambitious|restless
 does react.news
-say {h7_said=envy} I'd like to see what they've seen. | {h7_said=envy} I wonder what they earn. Out there. | {h7_said=envy} I could do what they do. | {h7_said=envy} Lucky. Free as the wind.
+say {h7_said=envy} I'd like to see what #topic.they#'s seen. | {h7_said=envy} I wonder what #topic.they# earns. Out there. | {h7_said=envy} I could do what #topic.they# does. | {h7_said=envy} Lucky. Free as the wind.
 then other: stranger.close
 
 rule h7_st_ans_young
 when concept=stranger.answer self.stage=young|adolescent
 does react.news ask.detail
-say {h7_said=young} Are they a hero? | {h7_said=young} Have they got a sword? Can I see? | {h7_said=young} I want to go and talk to them! | {h7_said=young} Do they fight #bandits#?
+say {h7_said=young} Is #topic.they# a hero? | {h7_said=young} Has #topic.they# got a sword? Can I see? | {h7_said=young} I want to go and talk to #topic.them#! | {h7_said=young} Does #topic.they# fight #bandits#?
 then other: stranger.close
 
 rule h7_st_ans_rich
 when concept=stranger.answer self.wealth=rich
 does react.news
-say {h7_said=hire} One could find a use for someone like that. | {h7_said=hire} Perhaps they'd take a position. | {h7_said=hire} They look capable. One needs capable. | {h7_said=hire} Ask what they charge.
+say {h7_said=hire} One could find a use for someone like that. | {h7_said=hire} Perhaps #topic.they#'d take a position. | {h7_said=hire} #topic.they.capitalize# looks capable. One needs capable. | {h7_said=hire} Ask what #topic.they# charges.
 then other: stranger.close
 
 rule h7_st_ans_sly
 when concept=stranger.answer self.honesty=sly
 does react.news
-say {h7_said=trade} Wonder what's in that pack. | {h7_said=trade} Strangers don't know the prices. Just saying. | {h7_said=trade} Find out what they want. Then sell it. | {h7_said=trade} They'll know things. Things worth knowing.
+say {h7_said=trade} Wonder what's in that pack. | {h7_said=trade} Strangers don't know the prices. Just saying. | {h7_said=trade} Find out what #topic.they# wants. Then sell it. | {h7_said=trade} #topic.they.capitalize#'ll know things. Things worth knowing.
 then other: stranger.close
 
 rule h7_st_ans_devout
 when concept=stranger.answer self.piety=devout
 does react.news
-say {h7_said=kind} We were all strangers somewhere once. | {h7_said=kind} The gods send travellers to test us. | {h7_said=kind} I'll pray for their road. | {h7_said=kind} They should come to the chapel. All are welcome.
+say {h7_said=kind} We were all strangers somewhere once. | {h7_said=kind} The gods send travellers to test us. | {h7_said=kind} I'll pray for #topic.their# road. | {h7_said=kind} #topic.they.capitalize# should come to the chapel. All are welcome.
 then other: stranger.close
 
 ############################################################################ Strangers and deeds: closes
@@ -1261,17 +1261,17 @@ say #bc_maybe# | #bc_we_will_see# | Aye. | Hm.
 rule h7_st_close_shrug
 when concept=stranger.close conv.h7_said=shrug
 does counter
-say #bc_maybe# | #bc_we_will_see# | Aye. | Well. There they are.
+say #bc_maybe# | #bc_we_will_see# | Aye. | Well. There #topic.they# goes.
 
 rule h7_st_close_duty
 when concept=stranger.close conv.h7_said=duty
 does counter
-say Good. Keep it on them. | Polite's how they start. | Good to know. | I'll sleep easier.
+say Good. Keep it on #topic.them#. | Polite's how they start. | Good to know. | I'll sleep easier.
 
 rule h7_st_close_fear
 when concept=stranger.close conv.h7_said=fear
 does counter
-say You're frightened of your own tail. | They're just a traveller. | Calm down. They'll hear you. | Fine. Inside.
+say You're frightened of your own tail. | #topic.they.capitalize#'s just a traveller. | Calm down. #topic.they.capitalize#'ll hear you. | Fine. Inside.
 
 rule h7_st_close_fear_nervy
 when concept=stranger.close conv.h7_said=fear self.temper=nervy
@@ -1281,12 +1281,12 @@ say You see it too? I'm not mad? | Inside. Now. Quickly. | I said so. I said so.
 rule h7_st_close_trade
 when concept=stranger.close conv.h7_said=trade
 does counter
-say You'd sell your mother to a traveller. | Don't fleece them. | Money, money. | Go on, then. Before someone else does.
+say You'd sell your mother to a traveller. | Don't fleece #topic.them#. | Money, money. | Go on, then. Before someone else does.
 
 rule h7_st_close_kind
 when concept=stranger.close conv.h7_said=kind
 does counter
-say You go and do it, then. | You're soft. | Good of you. | They might bite.
+say You go and do it, then. | You're soft. | Good of you. | #topic.they.capitalize# might bite.
 
 rule h7_st_close_envy
 when concept=stranger.close conv.h7_said=envy
@@ -1296,17 +1296,17 @@ say And sleep in ditches? | The wind gets cold. | You'd last a day. | Go, then. 
 rule h7_st_close_young
 when concept=stranger.close conv.h7_said=young
 does counter
-say Ha. Maybe, pup. | You'll have to ask them. | Calm down, little one. | One day, maybe.
+say Ha. Maybe, pup. | You'll have to ask #topic.them#. | Calm down, little one. | One day, maybe.
 
 rule h7_st_close_hire
 when concept=stranger.close conv.h7_said=hire
 does counter
-say Everyone can be bought. The question's how dear. | Then ask. | And trust them how? | You'd hire the moon if it'd carry your parcels.
+say Everyone can be bought. The question's how dear. | Then ask. | And trust #topic.them# how? | You'd hire the moon if it'd carry your parcels.
 
 rule h7_st_close_admire
 when concept=stranger.close conv.h7_said=admire
 does counter
-say Good. We need more like that. | I'll buy them a drink, if I see them. | Let's hope it's catching. | So say we all.
+say Good. We need more like that. | I'll buy #topic.them# a drink, if I see #topic.them#. | Let's hope it's catching. | So say we all.
 
 rule h7_st_close_outdone
 when concept=stranger.close conv.h7_said=outdone
@@ -1316,22 +1316,22 @@ say Then ride out yourselves next time. | Sour suits you. | Somebody had to. | H
 rule h7_st_close_pray
 when concept=stranger.close conv.h7_said=pray
 does counter
-say Bless them, aye. | Thank them too. Not just the gods. | The gods and a strong arm. | If you say so.
+say Bless #topic.them#, aye. | Thank #topic.them# too. Not just the gods. | The gods and a strong arm. | If you say so.
 
 rule h7_st_close_doubt
 when concept=stranger.close conv.h7_said=doubt
 does counter
-say You'd doubt the sun. | Believe what you like. | Ask them, then. | I believe it.
+say You'd doubt the sun. | Believe what you like. | Ask #topic.them#, then. | I believe it.
 
 rule h7_st_close_doubt_frank
 when concept=stranger.close conv.h7_said=doubt self.honesty=frank
 does counter
-say I know the wolf who saw it. I'd trust them with my life. | You weren't there. Nor was I. But I believe them.
+say I know the wolf who saw it. I'd trust that one with my life. | You weren't there. Nor was I. But I believe the ones who were.
 
 rule h7_st_close_road
 when concept=stranger.close conv.h7_said=road
 does counter
-say Aye. If only. | Someone should ask them. | I'd chip in, if somebody asked.
+say Aye. If only. | Someone should ask #topic.them#. | I'd chip in, if somebody asked.
 
 ############################################################################ Deeds: openers and answers (talk.deed: topic.subject, topic.deed, topic.nickname)
 
@@ -1344,7 +1344,7 @@ then other: deed.answer
 rule h7_dd_open_nickname
 when concept=talk.deed topic.has_nickname=yes
 does tell.news
-say #topic.nickname#, they call them now. Because they #topic.deed#. | Heard of #topic.nickname#? That's #topic.subject#. #topic.they.capitalize# #topic.deed#. | #topic.subject# #topic.deed#. Folk call #topic.them# #topic.nickname# for it.
+say #topic.nickname#, they call #topic.them# now. Because #topic.they# #topic.deed#. | Heard of #topic.nickname#? That's #topic.subject#. #topic.they.capitalize# #topic.deed#. | #topic.subject# #topic.deed#. Folk call #topic.them# #topic.nickname# for it.
 then other: deed.answer
 
 rule h7_dd_open_poor
@@ -1357,49 +1357,49 @@ then other: deed.answer
 rule h7_dd_ans_any
 when concept=deed.answer
 does react.news
-say {h7_said=admire} Good for them. | {h7_said=admire} That's something, these days. | {h7_said=admire} Did they, now? | {h7_said=admire} Well, well.
+say {h7_said=admire} Good for #topic.them#. | {h7_said=admire} That's something, these days. | {h7_said=admire} Did #topic.they#, now? | {h7_said=admire} Well, well.
 then other: stranger.close
 
 rule h7_dd_ans_doubt
 when concept=deed.answer self.honesty=guarded|sly
 does react.news
-say {h7_said=doubt} Says who? | {h7_said=doubt} I'll believe it when I see it. | {h7_said=doubt} Funny how nobody saw them do it. | {h7_said=doubt} Nobody does that for nothing.
+say {h7_said=doubt} Says who? | {h7_said=doubt} I'll believe it when I see it. | {h7_said=doubt} Funny how nobody saw #topic.them# do it. | {h7_said=doubt} Nobody does that for nothing.
 then other: stranger.close
 
 rule h7_dd_ans_warm
 when concept=deed.answer self.warmth=warm
 does react.news
-say {h7_said=admire} Oh, that's lovely. That does my heart good. | {h7_said=admire} There are good folk left, then. | {h7_said=admire} I'd like to shake their paw. | {h7_said=admire} That's the best thing I've heard all week.
+say {h7_said=admire} Oh, that's lovely. That does my heart good. | {h7_said=admire} There are good folk left, then. | {h7_said=admire} I'd like to shake #topic.their# paw. | {h7_said=admire} That's the best thing I've heard all week.
 then other: stranger.close
 
 rule h7_dd_ans_guard
 when concept=deed.answer self.role=guard
 does react.news
-say {h7_said=outdone} Doing our job. Better than us, apparently. | {h7_said=outdone} Saves us a ride, I suppose. | {h7_said=outdone} Hmph. They should've left it to the Watch. | {h7_said=outdone} Well. I'll not complain.
+say {h7_said=outdone} Doing our job. Better than us, apparently. | {h7_said=outdone} Saves us a ride, I suppose. | {h7_said=outdone} Hmph. #topic.they.capitalize# should've left it to the Watch. | {h7_said=outdone} Well. I'll not complain.
 then other: stranger.close
 
 rule h7_dd_ans_rich
 when concept=deed.answer self.wealth=rich
 does react.news
-say {h7_said=hire} One should have them to dinner. | {h7_said=hire} Someone like that is worth knowing. | {h7_said=hire} One might find them a position. | {h7_said=hire} How admirable. How useful.
+say {h7_said=hire} One should have #topic.them# to dinner. | {h7_said=hire} Someone like that is worth knowing. | {h7_said=hire} One might find #topic.them# a position. | {h7_said=hire} How admirable. How useful.
 then other: stranger.close
 
 rule h7_dd_ans_devout
 when concept=deed.answer self.piety=devout
 does react.news
-say {h7_said=pray} The gods work through such folk. | {h7_said=pray} I'll give thanks on Restday. | {h7_said=pray} That's the Bright One's paw in it. | {h7_said=pray} Bless them. Bless them.
+say {h7_said=pray} The gods work through such folk. | {h7_said=pray} I'll give thanks on Restday. | {h7_said=pray} That's the Bright One's paw in it. | {h7_said=pray} Bless #topic.them#. Bless #topic.them#.
 then other: stranger.close
 
 rule h7_dd_ans_young
 when concept=deed.answer self.stage=young|adolescent
 does react.news
-say {h7_said=young} A hero! A real one! | {h7_said=young} I want to be them when I grow up! | {h7_said=young} Can we meet them? Please? | {h7_said=young} Did they have a sword?
+say {h7_said=young} A hero! A real one! | {h7_said=young} I want to be like #topic.them# when I grow up! | {h7_said=young} Can we meet #topic.them#? Please? | {h7_said=young} Did #topic.they# have a sword?
 then other: stranger.close
 
 rule h7_dd_ans_bandits
 when concept=deed.answer world.bandits=near
 does react.news
-say {h7_said=road} Now if they'd do the same for the road. | {h7_said=road} Ask them to have a go at the #bandits#. | {h7_said=road} We could use them here. With the road as it is. | {h7_said=road} Someone like that, and the road might open.
+say {h7_said=road} Now if #topic.they#'d do the same for the road. | {h7_said=road} Ask #topic.them# to have a go at the #bandits#. | {h7_said=road} We could use #topic.them# here. With the road as it is. | {h7_said=road} Someone like that, and the road might open.
 then other: stranger.close
 
 ############################################################################ How they're keeping, in hard times (more answers to keeping.sorry and keeping.nod)
