@@ -28,6 +28,7 @@ cw126	coldwater	standard	ready	1	cty_wick_marshwade	claude-codex-cw-1
 cw127	coldwater	standard	ready	1	tn_cw_tansy_reedmere	claude-codex-cw-1
 cw128	coldwater	full	ready	1	tn_lf_lichen_hedgemead	claude-codex-cw-1
 cw129	coldwater	standard	ready	1	tn_oh_cairn_acornholt	claude-codex-cw-1
+cw130	coldwater	standard	ready	1	tn_sm_lichen_harvestton	claude-codex-cw-1
 lf101	larkfield	full	ready	1	rm_berit_kelpwick	claude-p11-pilot
 lf102	larkfield	standard	ready	1	rm_agna_bilgecot	claude-p11-pilot
 mb101	mirebridge	full	ready	1	cty_nell_plummeadow	claude-p11-pilot

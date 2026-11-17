@@ -1,0 +1,296 @@
+# cw130, the sorted stones (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw130
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_sm_lichen_harvestton
+written_by claude-codex-cw-1
+title the sorted stones
+fits stage=adult|old
+prefers talk=quiet temper=short
+traits temper=short talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk lines_up_river_stones_by_size_on_the_shop_sill
+likes plum_tart evening_line new_boots warm_rain
+dislikes smoke salt_wind
+fears a_shop_quarrel_that_costs_a_friend an_orchard_never_planted
+hopes a_southern_orchard a_quiet_evening_by_the_lake
+topics work +0.5 dreams +0.4 pastimes +0.4 weather +0.3 food +0.3 gossip -0.5
+styles comfort=practical gossip=reluctant refuse=blunt tease=dry
+marks oath saying
+persona #self.first# arranges #stones# on the shop #sill# by size, keeps the #counter# exact, and pictures #plum# #trees# on southern ground.
+
+words
+oath! = Stone and sill | By the baker's measure
+saying! = Sort the small ones first | A planted tree will not grow from talk
+stone = stone | smooth river pebble
+stones = stones | rounded pebbles
+bank = bank | riverbank
+river = river | Long River
+lake = lake | Glasswater
+water = water | clear water
+shore = shore | lake shore
+sill = sill | shop window ledge
+window = window | shop window
+counter = counter | shop counter
+shelf = shelf | shop shelf
+shelves = shelves | shop shelves
+bread = bread | baked bread
+loaf = loaf | warm loaf
+loaves = loaves | warm loaves
+crust = crust | browned crust
+flour = flour | ground flour
+oven = oven | baking oven
+tray = tray | baking tray
+price = price | stated cost
+coin = coin | pay
+scale = scale | counter scale
+weight = weight | measured weight
+plum = plum | ripe plum
+plums = plums | ripe plums
+tart = tart | plum tart
+orchard = orchard | fruit grove
+tree = tree | fruit tree
+trees = trees | fruit trees
+root = root | young root
+soil = soil | dark earth
+seed = seed | seed grain
+south = south | southern country
+line = line | fishing line
+float = float | small bobber
+hook = hook | fishing hook
+reed = reed | shore reed
+reeds = reeds | shore reeds
+boots = boots | new boots
+road = road | high road
+rain = rain | warm shower
+wind = wind | salty breeze
+salt = salt | sharp salt
+smoke = smoke | bitter smoke
+fire = fire | oven fire
+crowd = crowd | press of folk
+home = home | own hearth
+
+any
+opinion @1 merchants against 2 : I stand behind a #counter# and still count #coin# before buying a #loaf#. | Whoever grew the grain deserves part of the #price#.
+opinion @1 houses against 1 : Their table gets #bread# without hearing who rose to light the #oven#. | I would rather plant a #tree# of my own than wait for a House's praise.
+opinion @1 festivals against 1 : A #crowd# makes me cross before the music begins. | I prefer a #line# by the #shore# to another shouting square.
+opinion @1 city against 1 : A city holds too much #smoke# and too few #trees#. | I have enough noise at one #counter#.
+opinion @1 newcomers mixed 1 : A new hand can learn to weigh a #loaf#. | I want to see care in the work before sharing the #shelf#.
+opinion @1 strangers mixed 1 : A stranger may buy #bread# and keep their own story. | I will answer a clear question without inviting a crowd.
+opinion @1 road mixed 0 : The #road# south might lead to the #soil# I want. | I would take it after the #counter# was in safe hands.
+opinion @1 times against 1 : #flour.capitalize# costs more and the #loaf# weighs the same. | I save a little #coin# for #trees# even when the day runs thin.
+opinion @1 watch mixed 0 : A patrol can keep a #crowd# orderly by the #counter#. | I still want them to hear the whole account before naming blame.
+
+grown
+line @1 greet : #greet#. Do not jostle the #stones# on the #sill#. | #greet#. State what you want from the #counter#.
+line @2 greet [pair.band=strangers] : #greet#. I can weigh the #loaf# in front of you. | #greet#. Step clear of the #tray#.
+line @3 greet [pair.band=friends|family] : There is #tart# if you can be civil about it. | I have found another #stone# for the #sill#.
+line @4 greet [self.working=yes] : #greet#. The #shelves# need filling first. | Speak while I count these #loaves#.
+line @5 greet [here.time=dawn] : #greet#. The #oven# was lit before I arrived. | #greet#. The first #tray# is coming out.
+line @1 greet.return : Back again? The #stones# have not moved. | #welcome_back#. There is fresh #bread# now.
+line @2 greet.return [pair.band=friends|family] : I kept a small piece of #tart#. | Was the #road# clear enough for you?
+line @1 kin.open [pair.kin!=no] : Come inside; I have cut #bread# already. | I will make room for your #boots# by the #fire#.
+line @1 again.open : You were here before this #shelf# was filled. | Twice past the #sill# today; what changed?
+line @1 farewell : #farewell#. Keep the #bread# out of the #rain#. | #saying.capitalize#. Do not kick the #sill#.
+line @1 farewell.return : I may have #tart# another day. | Walk safely past the #bank#.
+line @1 react.news : Say the part you know for certain. | I can leave the weighing until your account is finished.
+line @1 react.news.new : That has not been said at this #counter#. | Who brought the word from the #road#?
+line @1 react.news.known : Someone gave me the first half earlier. | Your account changes how I heard the last part.
+line @1 react.news.doubt : I want the #weight# of an eyewitness behind that. | A story can tip a #scale# the wrong way.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. There is a quiet place behind the #counter#. | That is a hard thing; I can listen.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I hope they have #bread# to mark it. | That news may soften this day.
+line @1 answer.how : The #loaves# are counted and the #stones# are in order. | Restless for a #line# in the #water#.
+line @1 answer.how.busy [self.working=yes] : Busy with #tray# and #coin#. | Go on speaking; I am sorting the #bread#.
+line @1 ask.how : Has the #road# been passable? | Did you get a quiet supper?
+line @1 sympathise : Let me step away from the #counter# and listen. | There is no hurry to find the words.
+line @1 reassure : A #stone# out of place can be set right. | Find the first #root# before worrying about the whole #orchard#.
+line @1 decline : No. The #counter# needs me here. | I cannot promise a #price# until I see the #weight#.
+line @1 accept_decline : That is your answer; I will respect it. | Then I shall return this #loaf# to its place.
+line @1 thank : You caught an error in the #coin# count. | That help mattered. Thank you.
+line @1 deflect_thanks : I only moved a #tray#. | The #bread# was already there.
+line @1 preclose : I have to clear the #sill# before dark. | The #shelves# want one final look.
+line @1 tease [pair.band=friends] : Your #stone# would roll off this #sill#. | Those #boots# are too clean for a proper #road#.
+line @1 ack : #bc_right#. I will check the #scale#. | #bc_fair_enough#. That #loaf# is marked.
+line @1 give.advice : Leave the #float# still before pulling the #line#. | Count the #loaves# before you set a #price#.
+line @1 warn [world.bandits=near] : Keep the #coin# hidden on the #road#. | Do not stay alone by the #shore# after dark.
+scene sorted_stones
+when topic=pastimes
+does tell.self / react.self / assess
+a : I line the #stones# by size on the #sill#. | The smallest #stone# always tries to disappear beside the window frame.
+b : Why put them in order? | Do you change the line?
+a : So I know if one has been touched. | When I find another at the #bank#.
+
+scene riverbank_find
+when topic=pastimes
+does tell.self / react.self / assess
+a : I pick a #stone# from the #bank# only if it rests flat. | Even river-smoothed #stone# has one uneven side.
+b : How many come home with you? | Do you polish them?
+a : No. Most stay by the #water#. | The #river# has done enough.
+
+scene counter_loaves
+when topic=work
+does tell.self / react.self / assess
+a : Buyers ought to see the #crust# before paying for a #loaf#. | A warm #loaf# should not sit beneath a cold #tray#.
+b : Do you turn them? | Does that matter?
+a : Only if the #shelf# is crowded. | It keeps the #bread# from going soft.
+
+scene weight_of_bread
+when topic=work
+does tell.self / react.self / assess
+a : Before I name the #price#, I weigh each #loaf# in view. | A #weight# on the other side lets the buyer see the measure.
+b : Do they question it? | Do you check the scale?
+a : Some do. I show them. | At the start of the day.
+
+scene shelf_after_sale
+when topic=work
+does tell.self / react.self / assess
+a : An empty #shelf# tells me which #bread# sold first. | I sweep #flour# from the #counter# before the next customer.
+b : Does it stay tidy? | Do you refill it quickly?
+a : While I am there. | If the #oven# has another #tray# ready.
+
+scene smoke_from_oven
+when topic=work
+does tell.self / react.self / assess
+a : #smoke.capitalize# from the #oven# makes me leave the #counter# at once. | I open the #window# only after checking the #fire#.
+b : Does it sting your eyes? | Can you fix the draw?
+a : It does, and I lose my place. | The baker knows the #oven# better than I do.
+
+scene tart_after_shift
+when topic=food
+does tell.self / react.self / assess
+a : #plum.capitalize# #tart# tastes better when nobody is asking a #price#. | I keep a small slice for after the #shelves# are filled.
+b : Do you make it? | Is there ever a slice left for someone else?
+a : Sometimes. The baker helps with the #oven#. | If someone asks before I eat it.
+
+scene fishing_evening
+when topic=pastimes
+does tell.self / react.self / assess
+a : I put a #line# in the #lake# after work. | The #float# is easier to watch than a #crowd#.
+b : Do you catch much? | Do you go alone?
+a : Some evenings nothing. | Often, and I like it that way.
+
+scene hook_by_reeds
+when topic=pastimes
+does tell.self / react.self / assess
+a : A turning #wind# can fling my #hook# into the #reeds#. | A tug on a snag feels like a fish until it stops moving.
+b : Do you free it? | Do you move to another spot?
+a : If I pull gently. | When the #reeds# keep taking the #line#.
+
+scene warm_rain
+when topic=weather here.weather=rain here.season=spring|summer
+does tell.self / react.self / assess
+a : The #soil# smells different when a warm shower breaks the dry spell. | I leave my new #boots# under cover and walk a little in the shower.
+b : Do you like getting wet? | Does it help the trees?
+a : For a short time. | A young #root# wants that water.
+
+scene salt_wind
+when topic=weather
+does tell.self / react.self / assess
+a : Salt on the #wind# dries my mouth before I reach the #shore#. | I keep the #window# shut when the breeze tastes sharp.
+b : Is that from the lake? | Do you stay inside?
+a : The #water# carries it some days. | Until the #line# will cast cleanly.
+
+scene boots_after_road
+when topic=travel
+does tell.self / react.self / assess
+a : I try new #boots# on the lane before trusting them on the #road#. | I clean the soles before I bring them into the bakehouse.
+b : Do they rub? | Do you polish them?
+a : At first. I take slower steps. | Drying matters more to me.
+
+scene southern_orchard
+when topic=dreams
+does tell.self / react.self / assess
+a : I want an #orchard# where the last #tree# stands farther than I can call. | Southern #soil# might give #plums# a longer warm season.
+b : Could you give up the bakehouse? | Have you found a place to plant?
+a : If I had the land. | I would ask a grower before spending #coin#.
+
+scene planted_root
+when topic=dreams
+does tell.self / react.self / assess
+a : A #root# needs ground, not another drawing of an #orchard#. | I have kept #seed# long enough to know I must choose a field.
+b : What holds you back? | Would you plant it yourself?
+a : The #price# of land. | With help for the first row.
+
+scene crowded_festival
+when topic=festival
+does tell.self / react.self / assess
+a : A festival #crowd# can press against the #counter# all at once. | I leave the music before the shoving starts.
+b : Do you sell much? | Do you miss the rest?
+a : Enough to keep me busy. | I hear it from the #road# home.
+
+scene home_after_work
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse# can tell when the shop has tried my patience. | A quiet #home# after the #counter# closes is worth protecting.
+b : Do you talk about it? | Do you cook then?
+a : Once the first irritation passes. | If there is #tart# left, I eat that.
+
+scene market_price
+when topic=prices
+does tell.self / react.self / assess
+a : A #price# should stay where it was written for the day. | I dislike a seller changing the #coin# amount after a buyer reaches for the goods.
+b : Do you say so? | Does it happen often?
+a : Plainly. | Enough that I look twice.
+
+story lost_small_stone [topic=memories self.age>=25]
+  : The smallest #stone# on my #sill# rolled away while I served a customer.
+  : I found it under the #counter# after closing, next to a #coin# I had dropped.
+  ask : Did you put it back in order?
+  b : You would notice the gap.
+  : Of course. I pocketed the stray #coin# first.
+
+story rain_line [topic=pastimes self.age>=25]
+  : Warm #rain# began while my #line# was out on the #lake#.
+  : I stayed for one more cast, then the #float# vanished beneath a ripple.
+  ask : Did you catch anything?
+  b : Rain can make the water hard to read.
+  : A little fish. I went home with wet #boots# and a better temper.
+
+story first_plum [topic=dreams self.age>=25]
+  : I found a #plum# from the south at a market stall and kept its #seed#.
+  : I tried it in a pot, but the #root# did not take through winter.
+  ask : Did you try again?
+  b : Another place might suit it.
+  : I will, once I have ground and a warmer season.
+
+rule @bark_stones
+when concept=bark
+does aside
+cooldown 8h
+say The small #stone# belongs at this end. | Who shifted the #stones# on the #sill#?
+
+rule @bark_bread
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say This #shelf# needs another #loaf#. | Shall I weigh the next buyer's order?
+
+rule @bark_line
+when concept=bark here.time=dusk
+does aside
+cooldown 10h
+say One cast of the #line# before dark. | The #shore# might be empty tonight.
+
+rule @bark_rain
+when concept=bark here.weather=rain
+does aside
+cooldown 11h
+say Warm #rain# would be welcome after work. | Keep the #bread# away from that #window#.
+
+dlg @1 resident.hub : #greet#. Keep clear of the #stones# on the #sill#. | #greet#. What brings you to the bakehouse?
+dlg @2 resident.hub [topic.meeting=known] : Back again? The #stones# are still in order. | I know you. The #loaves# have been set out.
+dlg @1 resident.job : I weigh #loaves#, fill the #shelves#, and mind the #counter#. | I work the shop side of the bakehouse.
+dlg @1 resident.bye : #farewell#. Keep the #bread# dry. | #saying.capitalize#. The #sill# needs clearing.
+graft resident.hub
+choice Why arrange those stones by size? -> stones
+node stones
+say I like knowing where each #stone# belongs. When one moves, I notice.
+free
+choice Where did you find them? -> river
+choice Back to what we were saying. -> hub
+node river
+say Along the #river# #bank#. Most stay there; these few came to the shop.
+choice Back to what we were saying. -> hub
+choice Goodbye. -> bye
