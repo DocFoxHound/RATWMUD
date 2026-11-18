@@ -1,0 +1,319 @@
+# cw158, the river-stone shop hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw158
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_sm_fennel_cornley
+written_by claude-codex-cw-2
+title the river-stone shop hand
+fits stage=adult|old
+prefers talk=plain
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk rubs_a_smooth_river_stone_while_counting_stock
+likes blackberries digging fresh_straw summer_evenings
+dislikes stale_bread waiting
+fears being_stuck_behind_the_counter_forever losing_a_day_to_an_empty_queue
+hopes a_shop_counter_of_his_own a_garden_that_feeds_the_house
+topics work +0.5 prices +0.4 home +0.3 pastimes +0.2
+styles comfort=direct gossip=curious refuse=firm tease=dry
+marks oath saying
+persona #self.first# keeps #river# #stones# in a #pocket#, minds the #counter# with a sharp eye, and digs a #garden# after closing.
+
+words
+oath! = Stone and scale | By the empty counter
+saying! = Count stock before promises | A smooth stone takes a long road
+stone = stone | river stone
+stones = stones | smooth stones
+river = river | Long River
+bank = bank | riverbank
+banks = banks | muddy banks
+pocket = pocket | coat pocket
+hand = hand | working hand
+hands = hands | dusty hands
+shop = shop | the stores
+store = store | town store
+counter = counter | shop counter
+shelf = shelf | high shelf
+shelves = shelves | stocked shelves
+stock = stock | store stock
+crate = crate | wooden crate
+crates = crates | wooden crates
+stool = stool | low stool
+coins = coins | copper coins
+week = week | full week
+row = row | garden row
+sun = sun | low sun
+shops = shops | busy shops
+box = box | packed box
+ledger = ledger | stock ledger
+page = page | marked page
+chalk = chalk | price chalk
+scale = scale | shop scale
+weight = weight | measured weight
+price = price | marked price
+prices = prices | marked prices
+coin = coin | copper coin
+wages = wages | weekly wages
+customer = customer | waiting customer
+customers = customers | waiting customers
+queue = queue | shop queue
+seller = seller | passing seller
+merchant = merchant | town merchant
+traveller = traveller | road traveller
+road = road | High Road
+city = city | Ridgemere
+market = market | town market
+cart = cart | supply cart
+bread = bread | stale bread
+loaf = loaf | bread loaf
+berry = berry | blackberry
+berries = berries | blackberries
+basket = basket | berry basket
+garden = garden | small garden
+soil = soil | garden soil
+spade = spade | iron spade
+hole = hole | deep hole
+seed = seed | saved seed
+straw = straw | fresh straw
+floor = floor | swept floor
+house = house | shared house
+home = home | rented room
+friend = friend | trusted friend
+neighbour = neighbour | near neighbour
+father = father | older father
+summer = summer | late summer
+evening = evening | long evening
+morning = morning | early morning
+rain = rain | light rain
+wind = wind | lake wind
+lake = lake | Glasswater
+shore = shore | lakeshore
+day = day | full day
+hour = hour | long hour
+door = door | shop door
+key = key | shop key
+lock = lock | door lock
+
+any
+opinion @1 church against 1 : The chapel words cannot fill a bare #basket#. | I will give #bread# to a hungry #customer# myself.
+opinion @1 dole against 1 : I want #wages# for #work#, not a place at someone else's #counter#. | Let me earn the #coin#.
+opinion @1 festivals against 2 : Spilled drink and a long #queue# spoil the #evening#. | I would rather dig the #garden#.
+opinion @1 houses against 2 : I stack their #stock# but never meet the people who own it. | That distance has a #price#.
+opinion @1 merchants against 2 : My #wages# will not buy the #loaf# I put on the #shelf#. | Someone else keeps the margin.
+opinion @1 newcomers mixed 1 : A newcomer who knows the #road# may bring business. | I still watch the #scale#.
+opinion @1 strangers for 1 : A #traveller# at the #counter# brings news with every #coin#. | I listen while measuring the #weight#.
+opinion @1 times against 1 : The #prices# rise faster than a #crate# can be filled. | I keep the old marks in my #ledger#.
+line @1 greet : #greet#. If you need the #scale#, wait your turn. | #greet#. The new #stock# is on the high #shelf#.
+line @2 greet [pair.band=friends|family] : Come behind the #counter# after I lock up. | I kept a handful of #berries# for you.
+line @3 greet [here.time=dawn] : The #cart# arrived before the #shop# opened. | #greet#. I have three #crates# left to unpack.
+line @1 greet.return : Back for the thing you saw on the #shelf#? | I have checked that #price# since you left.
+line @1 kin.open [pair.kin!=no] : You can wait beside the #door# while I finish. | I put the #bread# somewhere dry for you.
+line @1 again.open : Are we still discussing the #weight#? | The #ledger# has the answer if you need it.
+line @1 farewell : #farewell#. I must close the #shop# #door#. | Take care near the #river# #bank#.
+line @1 farewell.return : Come when the #queue# is shorter. | The #berries# may be ripe by then.
+line @1 react.news : Say what happened and where. | I can listen while counting #stock#.
+line @1 react.news.new : That never reached this #counter#. | Was it carried down the #road#?
+line @1 react.news.known : A #traveller# mentioned part of it earlier. | You have supplied the missing detail.
+line @1 react.news.doubt : Let me see the mark in the #ledger#. | A claim needs more than a loud voice.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Set down your #basket#; I can mind it. | Rest on the #stool#; I will finish serving these folk.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That is worth an extra handful of #berries#. | I hope the #shop# can spare a good #loaf#.
+line @1 answer.how : The #shelves# are counted and my #garden# has new #seed#. | My #pocket# holds another smooth #stone#.
+line @1 answer.how.busy [self.working=yes] : This #queue# will take the #hour#. | I am weighing #stock# for a #customer#.
+line @1 ask.how : Did anything delay you along the #road#? | Was the #market# stocked with your supplies?
+line @1 sympathise : I can carry that #basket# while you rest. | You can leave the explanation for another #day#.
+line @1 reassure : A bad #price# can be corrected in the #ledger#. | We can search the #shelves# again.
+line @1 decline : No. I have waited long enough for that #cart#. | I cannot leave the #counter# uncovered.
+line @1 accept_decline : Understood. I will mark the #page# and move on. | Then the #crate# stays closed.
+line @1 thank : You carried the #box# without breaking the #lock#. | That #stone# was kind to bring back.
+line @1 deflect_thanks : I only shifted one #crate#. | You would have done the same for a #friend#.
+line @1 preclose : The #door# needs its #key# before dark. | My #spade# is waiting in the #garden#.
+line @1 tease [pair.band=friends] : You count #coins# as slowly as I count pebbles. | Even a #crate# would wait its turn more quietly.
+line @1 ack : #bc_right#. Put it on the lower #shelf#. | #bc_fair_enough#. I will enter the #weight#.
+line @1 give.advice : Check the #scale# before blaming the #seller#. | Work #straw# into wet #soil# before planting.
+line @1 warn [world.bandits=near] : Travel beside a #cart# if you must take the #road#. | Hide that #coin# deep in your coat seam.
+scene smooth_stone
+when topic=pastimes
+does tell.self / react.self / assess
+a : I pick up a #stone# from the #river# #bank# after a hard #day#. | The smoothest ones fit beneath my thumb.
+b : Does each #stone# come #home#? | Why those?
+a : Only the ones that feel right. | The #river# did the polishing.
+
+scene counter_queue
+when topic=work
+does tell.self / react.self / assess
+a : I serve the #queue# in order, even when a loud #customer# pushes forward. | A clear order saves more time than arguing.
+b : Do people complain? | Does it work?
+a : The ones who push do. | Everyone else gets served.
+
+scene scale_mark
+when topic=work
+does tell.self / react.self / assess
+a : I set the #scale# to zero before weighing a new #crate#. | A thumb on the edge changes the whole #price#.
+b : Have you caught anyone? | Do buyers notice?
+a : Once, on a busy #morning#. | They should.
+
+scene old_ledger
+when topic=prices
+does tell.self / react.self / assess
+a : I keep old #prices# in the back of the #ledger#. | When someone calls a rise small, I open that #page#.
+b : Do they listen? | How far back?
+a : Some do. | Since I began at this #counter#.
+
+scene stale_loaf
+when topic=food
+does tell.self / react.self / assess
+a : A #loaf# ought to leave the #shelf# before it goes hard. | I put yesterday's #bread# aside rather than call it fresh.
+b : Does the #shop# sell it? | Would you eat it?
+a : For less #coin#. | If it was all I had.
+
+scene blackberry_patch
+when topic=food
+does tell.self / react.self / assess
+a : I know a #berry# patch above the #river# #bank#. | The ripest ones leave purple marks on my #hands#.
+b : Do you take a #basket#? | Is it far?
+a : When I remember. | A short walk after closing.
+
+scene garden_hole
+when topic=pastimes
+does tell.self / react.self / assess
+a : Digging a #hole# in my #garden# clears the #shop# from my head. | I turn the #soil# until it stops clinging to the #spade#.
+b : What do you plant? | Do you work late?
+a : Whatever #seed# I can save. | While the #evening# holds.
+
+scene fresh_straw
+when topic=home
+does tell.self / react.self / assess
+a : Fresh #straw# on a damp #floor# makes the #house# smell clean. | I change it before the #rain# carries mud inside.
+b : Does it last? | Who brings it?
+a : Through a dry #week#. | I fetch it after the #cart# comes.
+
+scene summer_close
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : A long #summer# #evening# gives me time to close the #shop# and reach the #garden#. | I leave the #key# inside my #pocket#.
+b : Do you rest there? | Is there enough light?
+a : After one #row# of digging. | Until the #sun# drops.
+
+scene road_walk
+when topic=travel
+does tell.self / react.self / assess
+a : I walked to the #city# once to see a bigger #market#. | The return journey taught me how much I prefer this #counter#.
+b : Was it crowded? | Would you go again?
+a : Too crowded to hear a #price#. | For business, perhaps.
+
+scene empty_cart
+when topic=work
+does tell.self / react.self / assess
+a : A supply #cart# arrived with half its #crates# empty. | I had to tell each #customer# what was missing.
+b : Were they angry? | Could you order more?
+a : At the #shop#, not at me. | I entered it in the #ledger#.
+
+scene river_bend
+when topic=home
+does tell.self / react.self / assess
+a : The #river# turns where the #bank# grows soft. | I find the best #stones# after a heavy #rain#.
+b : Is it safe there? | Do they wash away?
+a : If I stay above the mud. | That is how new ones appear.
+
+scene father_stock
+when topic=family
+does tell.self / react.self / assess
+a : My #father# taught me to count a #box# before signing for it. | My #hands# count the goods before the #ledger# gets a mark.
+b : Do you still do that? | Has it saved you?
+a : Every delivery. | More than once.
+
+scene friend_after_close
+when topic=family
+does tell.self / react.self / assess
+a : A #friend# waits until the #shop# #door# is locked before asking for help. | That courtesy gets my full #hour#.
+b : What help? | Do you mind?
+a : Usually a #cart# or a #garden# #hole#. | Not after the #counter# is clear.
+
+scene market_news
+when topic=news
+does tell.self / react.self / assess
+a : Travellers at the #counter# carry more news than the #market# bell. | I remember what they bought along with the tale.
+b : Does that help? | Do you repeat it?
+a : It helps me place the face. | Only what is mine to say.
+
+scene price_chalk
+when topic=prices
+does tell.self / react.self / assess
+a : I mark each new #price# in #chalk# before opening the #door#. | A rubbed mark can start an argument at noon.
+b : Has that happened? | Do you keep a copy?
+a : Once was enough. | The #ledger# is my copy.
+
+scene dusk_lock
+when topic=home
+does tell.self / react.self / assess
+a : At dusk I check the #lock# twice and put the #key# in the same #pocket#. | Then I can leave the #shop# behind.
+b : Have you ever lost it? | Why twice?
+a : No, because I make the habit. | To quiet my mind.
+
+story river_stone [topic=pastimes self.age>=18]
+  : I found a #stone# so smooth it slipped from my wet #hand#.
+  : It rolled along the #bank# and stopped beside a small #berry# patch.
+  ask : Did you keep it?
+  b : A lucky find.
+  : I kept the #stone# and filled my #pocket# with #berries#.
+
+story short_crate [topic=work self.age>=18]
+  : A #cart# delivered a #crate# that felt too light for its #ledger# mark.
+  : I counted the #stock# before signing and found three items missing.
+  ask : Did you get them?
+  b : Good that you checked.
+  : On the next #cart#, after I made a note.
+
+story city_market [topic=travel self.age>=18]
+  : I walked to the #city# market to see how other #shops# kept their #shelves#.
+  : The #prices# were high, though the #counter# work looked much like mine.
+  ask : Did you learn anything?
+  b : You saw the trade elsewhere.
+  : That a larger #shop# still needs someone counting the #crates#.
+
+rule @bark_scale
+when concept=bark
+does aside
+cooldown 8h
+say Set the #scale# straight. | That #weight# wants checking.
+
+rule @bark_queue
+when concept=bark
+does aside
+cooldown 9h
+say One #customer# at a time. | The #queue# begins by the #door#.
+
+rule @bark_stone
+when concept=bark
+does aside
+cooldown 10h
+say The upper #bank# gave me a smooth #stone#. | My #pocket# is full again.
+
+rule @bark_garden
+when concept=bark
+does aside
+cooldown 11h
+say The #garden# #soil# needs turning. | Straw would help this wet #floor#.
+
+dlg @1 resident.hub : #greet#. Name what you need and I will check the #shelf#. | #greet#. Mind the #queue# by the #door#.
+dlg @2 resident.hub [topic.meeting=known] : You again. The #chalk# board still shows your #price#. | I remember your last #basket#.
+dlg @1 resident.job : The #counter# at the stores is mine to mind. | I count #stock#, mark #prices#, and mind the #scale#.
+dlg @1 resident.bye : #farewell#. A delivery #crate# needs fastening. | #saying.capitalize#. Leave the #door# clear.
+graft resident.hub
+choice Why keep those stones? -> stones
+node stones
+say I find them along the #river# #bank# after closing. The smooth ones make the long #queue# easier to bear.
+free
+choice What work do you do here? -> work
+choice Goodbye. -> bye
+node work
+say My #ledger# holds the #prices#; my #hands# verify each #crate# on the #scale#. Someday I want my own #counter#.
+choice Back to the shelves. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #stock# is counted. | #greet#. You can come to the #counter# now.
+line @1 farewell : #farewell#. My #garden# still has a #row# to dig. | The #shop# opens again in the #morning#.
