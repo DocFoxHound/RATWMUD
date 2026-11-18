@@ -1,0 +1,334 @@
+# lf131, the late orchard road-watcher (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf131
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for cty_rowan_hayridge
+written_by claude-codex-lf-1
+title the late orchard road-watcher
+fits stage=adult|old
+prefers talk=plain
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk is_always_a_little_late
+likes warm_bread riddles new_boots frosty_mornings
+dislikes deep_mud waiting
+fears another_hard_winter_taking_someone_home an_orchard_ladder_slipping_on_frost
+hopes the_household_safe_before_snow a_full_crate_before_the_road_closes
+topics work +0.5 memories +0.4 weather +0.3 pastimes +0.2
+styles comfort=blunt gossip=reluctant refuse=firm tease=dry
+marks oath saying
+persona #self.first# picks #apples# a little behind the others, watches the #road# for a missing face, and keeps working through the #frost#.
+
+words
+oath! = Apple and frost | By the last full crate
+saying! = Count the ones who came home | A late hand can still fill a basket
+apple = apple | ripe apple
+apples = apples | picked apples
+fruit = fruit | orchard fruit
+orchard = orchard | Plumtree orchard
+tree = tree | apple tree
+trees = trees | fruit trees
+branch = branch | high branch
+branches = branches | low branches
+ladder = ladder | wooden ladder
+rung = rung | ladder rung
+basket = basket | woven basket
+baskets = baskets | full baskets
+crate = crate | fruit crate
+crates = crates | stacked crates
+store = store | apple store
+shelf = shelf | fruit shelf
+skin = skin | apple skin
+bruise = bruise | small bruise
+stem = stem | apple stem
+hand = hand | picking hand
+hands = hands | working hands
+picker = picker | orchard picker
+work = work | picking work
+wage = wage | day wage
+price = price | fruit price
+merchant = merchant | market merchant
+market = market | town market
+cart = cart | fruit cart
+wagon = wagon | supply wagon
+wheel = wheel | cart wheel
+road = road | long road
+path = path | orchard path
+mud = mud | deep mud
+boot = boot | new boot
+boots = boots | new boots
+frost = frost | morning frost
+snow = snow | winter snow
+winter = winter | hard winter
+cold = cold | winter cold
+morning = morning | frosty morning
+evening = evening | late evening
+night = night | cold night
+day = day | working day
+hour = hour | late hour
+bell = bell | town bell
+bells = bells | festival bells
+festival = festival | town festival
+noise = noise | festival noise
+crowd = crowd | festival crowd
+house = house | shared house
+home = home | cottage
+door = door | cottage door
+window = window | road window
+roof = roof | sound roof
+larder = larder | home larder
+table = table | shared table
+plate = plate | supper plate
+bread = bread | warm bread
+loaf = loaf | fresh loaf
+meal = meal | evening meal
+riddle = riddle | short riddle
+answer = answer | riddle answer
+question = question | riddle question
+friend = friend | close friend
+neighbour = neighbour | near neighbour
+stranger = stranger | passing stranger
+family = family | shared family
+sibling = sibling | lost sibling
+memory = memory | old memory
+promise = promise | quiet promise
+rain = rain | cold rain
+wind = wind | winter wind
+city = city | far city
+watch = watch | town watch
+queue = queue | market queue
+coin = coin | small coin
+bench = bench | empty bench
+pickers = pickers | orchard pickers
+tracks = tracks | cart tracks
+wagons = wagons | passing wagons
+rungs = rungs | frosted rungs
+sun = sun | low sun
+week = week | harvest week
+harvest = harvest | autumn harvest
+field = field | open field
+plates = plates | supper plates
+map = map | old map
+
+any
+opinion @1 city mixed 1 : The #city# may have work beyond the #orchard#. | I would still watch the #road# home.
+opinion @1 festivals against 1 : The #festival# has too much #noise# for me. | Someone usually leaves its #crowd# crying.
+opinion @1 houses against 1 : A great #house# can leave a #bench# empty rather than hire a #picker#. | I have seen it.
+opinion @1 merchants against 2 : My #wage# buys less #bread# after each new #price#. | They still count every #apple#.
+opinion @1 newcomers mixed 1 : A new #hand# can help fill the #crates#. | I want them to know the #ladder# is loose.
+opinion @1 road for 1 : A #road# can bring someone back if it stays open. | I keep an eye on it in #winter#.
+opinion @1 times against 1 : A harder #winter# takes more than a #basket# can replace. | Each season asks more #work#.
+opinion @1 strangers mixed 0 : A #stranger# may only be late for the #market#. | I ask where they came from.
+line @1 greet : #greet#. I am a little behind with this #basket#. | #greet#. Did someone come up the #road#?
+line @2 greet [pair.band=friends|family] : There is warm #bread# if you wait for me. | Come see which #tree# I have left.
+line @1 greet.return : I have filled another #crate# since you went. | The #road# has stayed quiet.
+line @1 kin.open [pair.kin!=no] : Your #plate# waits where the #road# shows through the #window#. | Come in before the #frost# settles.
+line @1 again.open : I was on the last #rung#. | Did you hear my #riddle#?
+line @1 farewell : #farewell#. I must catch up with the #pickers#. | Keep clear of the #mud# by the #cart#.
+line @1 farewell.return : I may have the #basket# done by then. | Tell me if you see anyone on the #road#.
+line @1 react.news : Say it while I lower this #basket#. | Was the #road# nearby when it happened?
+line @1 react.news.new : The #store# has heard nothing of that. | Who saw it first?
+line @1 react.news.known : I heard part near the #market#. | Your account gives it another turn.
+line @1 react.news.doubt : The #cart# #tracks# may show where it went. | Which #hand# was present for the #crate# count?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry; this #basket# can wait. | You can sit where the #road# is visible.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I will bring warm #bread#. | That is a reason to stop a moment.
+line @1 answer.how : I am late but the #fruit# is sound. | Better since the #frost# lifted.
+line @1 answer.how.busy [self.working=yes] : I am balancing this #basket# on the #ladder#. | Let me finish the top #branch#.
+line @1 ask.how : Did the #road# stay open for you? | Have you had #bread# today?
+line @1 sympathise : Sit beside me without speaking. | Once this #crate# is full, supper will be ready.
+line @1 reassure : At #morning#, I will look along the #road# with you. | The #house# has room for one more #plate#.
+line @1 decline : I will not climb a frosted #ladder#. | I cannot leave the #store# unlocked at #night#.
+line @1 accept_decline : Your meaning is clear; the #basket# stays here. | Then the #cart# can go without me.
+line @1 thank : You steadied the #ladder# before the #wind# rose. | That #loaf# helped after a cold #day#.
+line @1 deflect_thanks : The #crate# needed lifting anyway. | I had already walked that #path#.
+line @1 preclose : I should cover the #fruit# before dark. | Someone may still come along the #road#.
+line @1 tease [pair.band=friends] : Your #riddle# took longer than my late #basket#. | The #ladder# arrived before you did.
+line @1 ack : #bc_right#. The #apple# is sound. | #bc_fair_enough#. I will count the #crates#.
+line @1 give.advice : Before stretching for that #branch#, put weight on each #rung#. | Watch the #road# when #snow# comes early.
+line @1 warn [world.bandits=near] : Let the #cart# go with other #wagons#. | Keep to the lit #road# after dark.
+scene late_basket
+when topic=work
+does tell.self / react.self / assess
+a : I reach the #orchard# after the first #basket# has gone out. | I fill mine before the #cart# leaves.
+b : Why come late? | Do they wait for you?
+a : The morning runs ahead of me. | If the #fruit# is good.
+
+scene frosted_ladder
+when topic=work
+does tell.self / react.self / assess
+a : The #ladder# #rungs# turn slick with #frost#. | I wait for the #sun# before the high #branches#.
+b : Does that cost time? | Who checks it?
+a : Some #morning#. | I do.
+
+scene apple_bruise
+when topic=work
+does tell.self / react.self / assess
+a : A #bruise# near the #stem# hides until I turn the #apple#. | I set it aside for supper.
+b : Can it be sold? | Do you waste it?
+a : At a lower #price#. | Not if it feeds someone.
+
+scene crate_tally
+when topic=work
+does tell.self / react.self / assess
+a : I count #crates# after the #cart# loads. | A missing one looks like a missing #wage#.
+b : Have you lost any? | Who checks with you?
+a : Not this #week#. | Another #picker#.
+
+scene branch_reach
+when topic=work
+does tell.self / react.self / assess
+a : A high #branch# can bend a #ladder# away from the #tree#. | I ask another #hand# to hold it.
+b : Does that help? | Do you climb often?
+a : When they listen. | Every #day# in season.
+
+scene road_watch
+when topic=memories
+does tell.self / react.self / assess
+a : From the #store# #window#, my eye follows the bend in the #road#. | A hard #winter# taught me not to assume everyone comes home.
+b : Who were you waiting for? | Does it help?
+a : Someone I lost. | I still look.
+
+scene lost_sibling
+when topic=memories
+does tell.self / react.self / assess
+a : A #sibling# did not come home through one hard #winter#. | I still count the faces returning from the #road#.
+b : Do you speak of them? | I am sorry.
+a : When the house is quiet. | Thank you.
+
+scene winter_cart
+when topic=memories
+does tell.self / react.self / assess
+a : A #cart# stayed away when #snow# closed the #road#. | I stood by the #window# after the others went to bed.
+b : Did it return? | Were you alone there?
+a : Not the one I needed. | Until someone joined me.
+
+scene warm_bread
+when topic=food
+does tell.self / react.self / assess
+a : Warm #bread# is worth arriving late to supper for. | I break it after my #boots# are off.
+b : Do you share? | Who bakes it?
+a : At our #table#. | The baker nearby.
+
+scene short_riddle
+when topic=pastimes
+does tell.self / react.self / assess
+a : A short #riddle# can make the last #crate# feel lighter. | I save the #answer# until the #cart# rolls out.
+b : Do people guess? | What is one?
+a : Some do. | I will tell you later.
+
+scene new_boots
+when topic=pastimes
+does tell.self / react.self / assess
+a : New #boots# help on the #orchard# #path# before it turns to #mud#. | I keep the old pair for #rain#.
+b : Do they fit well? | How long will they last?
+a : Once broken in. | Through #harvest#.
+
+scene first_frost
+when topic=weather
+does tell.self / react.self / assess
+a : A frosty #morning# makes each fallen #apple# shine on the ground. | I pick the sound ones before the #sun# softens them.
+b : Are they sweet? | Does frost hurt the trees?
+a : Some are. | If it comes too early.
+
+scene deep_mud
+when topic=travel
+does tell.self / react.self / assess
+a : Deep #mud# can delay the #cart# longer than a missing #wheel#. | I take the #path# around the #field#.
+b : Does that work? | Do you help the cart?
+a : For my #boots#. | When it needs hands.
+
+scene festival_noise
+when topic=home
+does tell.self / react.self / assess
+a : The #festival# #noise# reaches our #house# after the #bells#. | I keep the #window# closed until the #crowd# thins.
+b : Do you go out? | What troubles you?
+a : For the food. | The shouting.
+
+scene waiting_job
+when topic=work
+does tell.self / react.self / assess
+a : Waiting for a #cart# is worse than picking a whole #tree#. | I want to carry a #crate# somewhere.
+b : Does it arrive late? | Can you do another task?
+a : Too often. | I keep picking.
+
+scene late_supper
+when topic=home
+does tell.self / react.self / assess
+a : I return after the others have found their #plates#. | They leave warm #bread# under a cloth.
+b : Do they tease you? | Do you mind?
+a : They have reason. | Less when I am fed.
+
+scene road_in_snow
+when topic=weather
+does tell.self / react.self / assess
+a : Early #snow# makes the #road# disappear before dusk. | I count everyone home before I close the #door#.
+b : Does it calm you? | Who helps?
+a : Only then. | Someone at home.
+
+story late_start [topic=work self.age>=18]
+  : I arrived after the first #basket# had left the #orchard#.
+  : I filled two #crates# before the #cart# came back.
+  ask : Did they forgive you?
+  b : You made up the time.
+  : After they saw the #fruit#.
+
+story winter_road [topic=memories self.age>=18]
+  : A hard #winter# kept one person from coming home by the #road#.
+  : I still watch its bend when #snow# begins.
+  ask : Who was it?
+  b : I am sorry.
+  : My #sibling#. I do not want another empty #plate#.
+
+story riddle_cart [topic=pastimes self.age>=18]
+  : I gave a #riddle# to the #cart# driver while we loaded #fruit#.
+  : They guessed the #answer# before the last #crate#.
+  ask : What was it?
+  b : A clever driver.
+  : A #road# that never leaves the #map#.
+
+rule @bark_basket
+when concept=bark
+does aside
+cooldown 8h
+say The first #basket# is gone. | I will fill the next one.
+
+rule @bark_road
+when concept=bark
+does aside
+cooldown 9h
+say Someone is coming along the #road#. | Keep the #window# clear.
+
+rule @bark_frost
+when concept=bark
+does aside
+cooldown 10h
+say That #rung# is frosted. | Wait for the #sun# before climbing.
+
+rule @bark_riddle
+when concept=bark
+does aside
+cooldown 11h
+say A #riddle# came to me while picking. | The #answer# waits until the #cart# leaves.
+
+dlg @1 resident.hub : #greet#. I am catching up on #baskets#. | #greet#. Did the #road# lead you here today?
+dlg @2 resident.hub [topic.meeting=known] : The #cart# has just gone. | You have another #riddle# for me?
+dlg @1 resident.job : I pick #apples# at #self.workplace#. | I fill #baskets#, sort #crates#, and watch the #road#.
+dlg @1 resident.bye : #farewell#. One more #tree# waits for my #basket#. | #saying.capitalize#. Mind the #mud#.
+graft resident.hub
+choice Why watch the road? -> road
+node road
+say Someone I loved did not return one #winter#. I still look.
+free
+choice Have you a riddle? -> riddle
+choice Goodbye. -> bye
+node riddle
+say What travels on a #map# but never arrives? A drawn #road#.
+choice Back to the orchard. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #frost# is lifting. | #greet#. I have filled a #crate#.
+line @1 farewell : #farewell#. I will finish this #basket#. | The #road# looks clear for now.
