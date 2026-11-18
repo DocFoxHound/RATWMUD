@@ -1,0 +1,341 @@
+# lf112, the three-tale woodcutter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf112
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for cty_ambrose_gullton
+written_by claude-codex-lf-1
+title the three-tale woodcutter
+fits stage=adult|old
+prefers talk=plain
+traits temper=calm talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk tells_the_same_three_stories
+likes smoked_eel digging festival_bells misty_dawns
+dislikes drizzle deep_mud
+fears a_tree_falling_toward_a_friend a_standing_stone_disturbed_for_roadwork
+hopes a_safe_woodpile_before_winter a_clear_bell_on_festival_morning
+topics work +0.5 memories +0.4 pastimes +0.3 weather +0.2
+styles comfort=direct gossip=reluctant refuse=plain tease=dry
+marks oath saying
+persona #self.first# cuts #wood# with measured #swings#, repeats three #tales# about the #forest# and old #stones#, and believes the #stones# remember.
+
+words
+oath! = Axe and old stone | By the three clear cuts
+saying! = Listen to the tree before the axe | A stone keeps what a road forgets
+wood = wood | cut wood
+woods = woods | deep woods
+forest = forest | Rainwood forest
+tree = tree | standing tree
+trees = trees | tall trees
+trunk = trunk | thick trunk
+branch = branch | heavy branch
+branches = branches | low branches
+root = root | exposed root
+bark = bark | rough bark
+grain = grain | wood grain
+axe = axe | sharp axe
+blade = blade | axe blade
+edge = edge | sharpened edge
+swing = swing | measured swing
+swings = swings | measured swings
+cut = cut | clean cut
+cuts = cuts | clean cuts
+wedge = wedge | wooden wedge
+wedges = wedges | wooden wedges
+log = log | cut log
+logs = logs | cut logs
+pile = pile | woodpile
+stack = stack | stacked wood
+hearth = hearth | Greenholt hearth
+hearths = hearths | town hearths
+city = city | far city
+buyer = buyer | wood buyer
+winter = winter | cold winter
+light = light | evening light
+pig = pig | barn pig
+pack = pack | canvas pack
+river = river | nearby river
+sun = sun | low sun
+handle = handle | axe handle
+dust = dust | road dust
+fire = fire | hearth fire
+ash = ash | cold ash
+work = work | woodcutting work
+hand = hand | working hand
+hands = hands | working hands
+friend = friend | close friend
+neighbour = neighbour | near neighbour
+visitor = visitor | new visitor
+stranger = stranger | passing stranger
+tale = tale | old tale
+tales = tales | three tales
+story = story | familiar story
+stories = stories | familiar stories
+memory = memory | old memory
+stones = stones | standing stones
+stone = stone | standing stone
+circle = circle | stone circle
+mark = mark | worn mark
+marks = marks | worn marks
+road = road | High Road
+path = path | woodland path
+gate = gate | town gate
+wagon = wagon | wood wagon
+cart = cart | supply cart
+market = market | town market
+price = price | marked price
+coin = coin | saved coin
+bell = bell | festival bell
+bells = bells | festival bells
+festival = festival | town festival
+morning = morning | early morning
+evening = evening | quiet evening
+night = night | dark night
+day = day | long day
+hour = hour | passing hour
+dawn = dawn | misty dawn
+mist = mist | morning mist
+drizzle = drizzle | thin drizzle
+rain = rain | steady rain
+mud = mud | deep mud
+boot = boot | muddy boot
+boots = boots | muddy boots
+field = field | open field
+garden = garden | small garden
+soil = soil | garden soil
+spade = spade | digging spade
+hole = hole | deep hole
+eel = eel | smoked eel
+smoke = smoke | cooking smoke
+plate = plate | supper plate
+bread = bread | fresh bread
+table = table | supper table
+house = house | shared house
+home = home | cottage
+door = door | cottage door
+window = window | small window
+roof = roof | sound roof
+
+any
+opinion @1 city mixed 0 : The #city# needs #wood# for #hearths#. | I would ask what they cut to make their #road#.
+opinion @1 houses mixed 0 : A grand #house# has room for a full #pile#. | I hope the workers by its #fire# are paid.
+opinion @1 merchants mixed 0 : A #buyer# can see the #grain# in a #log# before naming a #price#. | I expect the same plain look from them.
+opinion @1 newcomers mixed 0 : A fresh #hand# can learn the #axe# after watching where the blade falls. | I will teach the safe #path#.
+opinion @1 road mixed 0 : A #wagon# carries #logs# toward the #gate#. | I would keep it away from the old #stones#.
+opinion @1 strangers mixed 0 : A #stranger# may have heard a fourth #tale# about the #circle#. | I listen before deciding.
+opinion @1 festivals for 1 : The first #bell# reaches the #woods# in the #morning#. | I set the #axe# down to hear it.
+opinion @1 times mixed 0 : A full #pile# is good before #winter#. | More #coin# does not make a careless #cut# safe.
+line @1 greet : #greet#. I have the #axe# set aside. | #greet#. You have come in time for one of my #tales#.
+line @2 greet [pair.band=friends|family] : You know the first #story# already. | Come sit by the #pile# and eat.
+line @3 greet [here.time=dawn] : The #mist# has hidden the far #trees#. | #greet#. I heard a #bell# from the #field#.
+line @1 greet.return : The #logs# are still waiting for me, and so is that second #tale#. | I still owe you the third #story#.
+line @1 kin.open [pair.kin!=no] : Take a #plate# beside the #fire#. | The #house# is dry after the #rain#.
+line @1 again.open : I was explaining the #wedge#. | Did I finish the #stone# #story#?
+line @1 farewell : #farewell#. The #pile# needs another row. | Mind the #mud# beyond the #gate#.
+line @1 farewell.return : Next time I may tell the third #tale#. | Come when the #bells# sound.
+line @1 react.news : Tell me what you saw, with no ornament. | Was it near the #woods#?
+line @1 react.news.new : That has not reached my #hearth#. | Who brought it along the #road#?
+line @1 react.news.known : A #neighbour# mentioned the outline. | You have supplied the details.
+line @1 react.news.doubt : I would look for the #mark# on the #tree#. | Whose eyes were nearest when it happened?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I will put the #axe# down and listen. | I am sorry; there is a place by the #fire#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves the good #plate#. | I might even tell a new #story#.
+line @1 answer.how : My #axe# held its #edge# and the #pile# grew. | The #mist# lifted before #morning# work.
+line @1 answer.how.busy [self.working=yes] : I am driving a #wedge# into this #trunk#. | The #logs# need stacking before dark.
+line @1 ask.how : Did the #road# keep you out of the #mud#? | Have you heard the #festival# #bells#?
+line @1 sympathise : I can sit without telling a #tale#. | A dry #roof# may help you rest.
+line @1 reassure : We can wait until the #mist# clears to find the #path#. | A hard #day# can end by the #fire#.
+line @1 decline : No, I will not swing an #axe# while someone stands near. | I have not checked that #tree#.
+line @1 accept_decline : I take your meaning; the #logs# will wait. | Then we will take the longer #path#.
+line @1 thank : You held the #wedge# at the right angle. | That #eel# was welcome after work.
+line @1 deflect_thanks : I was carrying the #log# anyway. | It was only one #cut#.
+line @1 preclose : The #light# is going from the #woods#. | I need to cover the #pile#.
+line @1 tease [pair.band=friends] : You have heard my first #tale# more often than this #axe#. | That #spade# digs slower than a sleeping #pig#.
+line @1 ack : #bc_right#. The #grain# runs this way. | #bc_fair_enough#. I will check the #blade#.
+line @1 give.advice : Stand clear of the #branches# before a #tree# moves. | Set a #wedge# where the #grain# opens.
+line @1 warn [world.bandits=near] : Keep to the #road# with company. | Leave the #woods# until daylight.
+scene safe_felling
+when topic=work
+does tell.self / react.self / assess
+a : I clear the #branches# around a #trunk# before the first #cut#. | A falling #tree# needs an empty #path#.
+b : How do you know its direction? | Who watches?
+a : By its lean and the #wind#. | Another #hand# stands beyond the #logs#.
+
+scene axe_edge
+when topic=work
+does tell.self / react.self / assess
+a : A dull #blade# makes my #swing# wander. | I sharpen it before the #grain# turns hard.
+b : Does that slow you? | Do you carry a stone?
+a : Less than a bad #cut#. | One in my #pack#.
+
+scene wedge_sound
+when topic=work
+does tell.self / react.self / assess
+a : I listen to a #wedge# as it enters the #trunk#. | A hollow sound means the #wood# is splitting where I want it.
+b : Can you hear it under the #wind#? | What if it cracks wrong?
+a : If the #drizzle# is light. | I step back.
+
+scene stacked_logs
+when topic=work
+does tell.self / react.self / assess
+a : I stack #logs# with air between them. | A tight #pile# stays damp and smokes in the #hearth#.
+b : Do you cover it? | How long to dry?
+a : Before heavy #rain#. | Through a season.
+
+scene standing_stones
+when topic=memories
+does tell.self / react.self / assess
+a : The old #stones# in the #woods# hold #marks# no one here can read. | I think they remember every #path# that passed them.
+b : Can a stone remember? | Do you go there?
+a : I have no proof, only a feeling. | In daylight.
+
+scene first_tale
+when topic=pastimes
+does tell.self / react.self / assess
+a : My first #tale# is about a #tree# that fell away from the #wind#. | Everyone knows the end and still asks.
+b : Is it true? | How did it fall?
+a : Every #cut# happened. | The #root# had loosened.
+
+scene second_tale
+when topic=pastimes
+does tell.self / react.self / assess
+a : My second #story# begins at the #stone# #circle# after #rain#. | A #mark# I had never seen looked bright there.
+b : Did it change? | Who saw it with you?
+a : The wet #stone# did. | A #friend# who remembers it differently.
+
+scene third_tale
+when topic=pastimes
+does tell.self / react.self / assess
+a : The third #tale# ends with #bells# reaching the #woods# before the #market# opens. | I was alone with the #axe#.
+b : Why tell it again? | Did you stop working?
+a : Because I still hear that sound. | Until the last #bell#.
+
+scene smoked_eel
+when topic=food
+does tell.self / react.self / assess
+a : Smoked #eel# keeps well beside a #pile# of dry #wood#. | I eat it with #bread# after a long #day#.
+b : Do you catch it? | Is it enough?
+a : When the #river# runs low. | For two, if divided.
+
+scene garden_hole
+when topic=pastimes
+does tell.self / react.self / assess
+a : Digging a #hole# in the #garden# uses a different part of my #hands# from the #axe#. | I leave the #spade# by the #door#.
+b : What grows there? | Do you rest afterward?
+a : Whatever takes the #soil#. | When the #sun# goes down.
+
+scene misty_dawn
+when topic=weather here.time=dawn
+does tell.self / react.self / assess
+a : At #dawn# the #mist# hides the ends of the #logs#. | I wait to see the whole #tree# before cutting.
+b : Does it linger? | Do you lose work?
+a : Until the #sun# reaches the #field#. | A little, safely.
+
+scene thin_drizzle
+when topic=weather
+does tell.self / react.self / assess
+a : Thin #drizzle# wets the #axe# #handle# without settling the #dust#. | I would rather have full #rain#.
+b : Do you work through it? | Does it last?
+a : Until the #blade# slips. | Often too long.
+
+scene deep_mud
+when topic=travel
+does tell.self / react.self / assess
+a : Deep #mud# by the #road# can hold a #wagon# longer than a broken wheel. | I lay #branches# before the #logs# travel.
+b : Does that help? | Who brings the branches?
+a : For a short stretch. | The nearby #trees#.
+
+scene festival_bells
+when topic=home here.day=festival
+does tell.self / react.self / assess
+a : The #festival# #bells# reach the #woods# with a delay after the #gate#. | I set the #axe# down for the first one.
+b : Can you count them? | Do you go to town?
+a : As many as ring. | Once the #pile# is covered.
+
+scene hearth_order
+when topic=prices
+does tell.self / react.self / assess
+a : A #buyer# once wanted #logs# before they were dry. | I named a different #price# for the later #pile#.
+b : Did they wait? | Were they angry?
+a : They chose dry #wood#. | Only until the #fire# caught.
+
+scene stone_mark
+when topic=faith
+does tell.self / react.self / assess
+a : I do not ask the #stones# for favors. | I keep their #marks# clear of the #road# work.
+b : Is that respect? | Who made them?
+a : It is caution. | Someone whose #story# is gone.
+
+scene three_tales_again
+when topic=family
+does tell.self / react.self / assess
+a : Someone in our #house# can finish all three of my #tales#. | They still let me begin the first one.
+b : Do they mind hearing it? | Have you tried a fourth?
+a : They know when to interrupt. | Not one that stayed.
+
+story falling_tree [topic=work self.age>=18]
+  : I cut a #tree# that leaned into the #wind#.
+  : Its hidden #root# gave way, and it fell toward an empty #path# instead.
+  ask : Was anyone there?
+  b : The root changed the fall.
+  : No, because I had cleared the #path# first.
+
+story bright_stone [topic=memories self.age>=18]
+  : After #rain#, a worn #mark# on a standing #stone# caught the #sun#.
+  : I had passed it for years without noticing the shape.
+  ask : What did it show?
+  b : The rain made it visible.
+  : A bend like the #road# beyond the #woods#.
+
+story bells_in_wood [topic=home self.age>=18]
+  : I was stacking #logs# at #dawn# when the #festival# #bells# reached the #woods#.
+  : Each one came after a pause, as though the #trees# were waiting too.
+  ask : Did you go to town?
+  b : A clear sound to remember.
+  : After I covered the #pile#.
+
+rule @bark_axe
+when concept=bark
+does aside
+cooldown 8h
+say Keep clear of the #tree#. | The #axe# #edge# needs a stone.
+
+rule @bark_tales
+when concept=bark
+does aside
+cooldown 9h
+say You know this #tale# already. | That was the second of my three.
+
+rule @bark_stones
+when concept=bark
+does aside
+cooldown 10h
+say Leave the old #stones# standing. | This #mark# looks different after #rain#.
+
+rule @bark_bells
+when concept=bark
+does aside
+cooldown 11h
+say I heard the first #bell#. | Cover the #pile# before we go.
+
+dlg @1 resident.hub : #greet#. The #axe# is resting. | #greet#. I can tell you one of three #tales#.
+dlg @2 resident.hub [topic.meeting=known] : You know the second #story#, I think. | Back again? The #logs# are nearly stacked.
+dlg @1 resident.job : I cut #wood# for the #hearths# near home. | I fell #trees#, split #logs#, and stack them dry.
+dlg @1 resident.bye : #farewell#. I have a #pile# to cover. | #saying.capitalize#. Stay out of the #mud#.
+graft resident.hub
+choice Why leave the stones alone? -> stones
+node stones
+say The #stones# remember old feet, I think.
+free
+choice Tell me one of your stories. -> tale
+choice Goodbye. -> bye
+node tale
+say A hidden #root# once sent my falling #tree# sideways.
+choice Back to the woodpile. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #wood# is ready for the #wagon#. | #greet#. Have you heard the #bells#?
+line @1 farewell : #farewell#. I still have wet #logs# to shelter. | The #stones# can wait for another #day#.
