@@ -1,0 +1,330 @@
+# lf129, the frank doorway farmhand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf129
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for cty_brand_sunham
+written_by claude-codex-lf-1
+title the frank doorway farmhand
+fits stage=adult|old
+prefers job=farmer
+traits temper=even talk=plain warmth=warm humour=none honesty=frank piety=ordinary drive=steady
+quirk chooses_a_seat_facing_the_entry
+likes roast_pork whittling tidy_house warm_rain
+dislikes smoke crowds
+fears a_debt_called_in_before_harvest a_granary_fire_after_dusk
+hopes a_clear_account_with_the_city a_quiet_house_after_the_harvest
+topics work +0.5 home +0.4 pastimes +0.3 weather +0.2
+styles comfort=direct gossip=reluctant refuse=frank tease=gentle
+marks oath saying
+persona #self.first# loads #grain# at the #granary#, seats guests where the #door# can be seen, and keeps a private #debt# in mind.
+
+words
+oath! = Grain and clean hands | By the open door
+saying! = Name the weight before the price | A seat should face the way in
+grain = grain | stored grain
+granary = granary | Longmead granary
+field = field | open field
+fields = fields | open fields
+sack = sack | grain sack
+sacks = sacks | grain sacks
+bin = bin | grain bin
+bins = bins | grain bins
+stack = stack | covered stack
+stacks = stacks | covered stacks
+wheat = wheat | dry wheat
+sheaf = sheaf | bound sheaf
+sheaves = sheaves | bound sheaves
+cart = cart | grain cart
+wagon = wagon | supply wagon
+wheel = wheel | cart wheel
+road = road | town road
+path = path | field path
+mud = mud | road mud
+hand = hand | working hand
+hands = hands | working hands
+work = work | farm work
+wage = wage | day wage
+price = price | grain price
+weight = weight | sack weight
+coin = coin | saved coin
+debt = debt | private debt
+account = account | written account
+book = book | farm book
+merchant = merchant | grain merchant
+buyer = buyer | waiting buyer
+market = market | town market
+city = city | far city
+house = house | tidy house
+home = home | shared home
+door = door | front door
+entry = entry | house entry
+seat = seat | front seat
+bench = bench | wooden bench
+table = table | shared table
+window = window | front window
+roof = roof | sound roof
+floor = floor | swept floor
+fire = fire | hearth fire
+smoke = smoke | thick smoke
+ash = ash | cold ash
+wood = wood | whittling wood
+knife = knife | small knife
+blade = blade | knife blade
+shaving = shaving | wood shaving
+shavings = shavings | wood shavings
+pork = pork | roast pork
+crackling = crackling | crisp crackling
+plate = plate | supper plate
+meal = meal | evening meal
+bread = bread | fresh bread
+larder = larder | home larder
+friend = friend | old friend
+neighbour = neighbour | near neighbour
+stranger = stranger | hungry stranger
+crowd = crowd | market crowd
+crowds = crowds | market crowds
+rain = rain | warm rain
+cloud = cloud | passing cloud
+wind = wind | field wind
+morning = morning | early morning
+evening = evening | late evening
+night = night | quiet night
+day = day | working day
+hour = hour | working hour
+harvest = harvest | autumn harvest
+festival = festival | town festival
+watch = watch | town watch
+boot = boot | work boot
+boots = boots | work boots
+queue = queue | long queue
+houses = houses | great houses
+plates = plates | supper plates
+wagons = wagons | loaded wagons
+debts = debts | old debts
+farm = farm | Longmead farm
+gate = gate | granary gate
+box = box | peg box
+
+any
+opinion @1 city against 1 : A #city# account can follow a person farther than a #cart#. | I keep my dealings here as plain as I can.
+opinion @1 dole for 1 : A hungry #neighbour# should have a #meal# before standing in a #queue#. | I can spare #bread#.
+opinion @1 houses against 1 : The great #houses# take #grain# without knowing the #hands# who loaded it. | I remember the weight.
+opinion @1 merchants against 3 : The #merchant# raises a #price# while I still count my #wage#. | I do not hide my opinion.
+opinion @1 newcomers mixed 1 : A new #hand# can help move #sacks#. | I will show the right #bin# if they ask.
+opinion @1 strangers for 1 : A #stranger# can eat at our #table#. | I still choose the #seat# facing the #door#.
+opinion @1 times against 1 : The same #work# fills fewer #plates# each season. | I can say that without a #book#.
+opinion @1 road mixed 0 : The #road# brings #wagons# to the #granary#. | It also carries #debts# back toward the #city#.
+line @1 greet : #greet#. The #sacks# have just come in. | #greet#. Take the #seat# by the #window#.
+line @2 greet [pair.band=friends|family] : Come eat while the #pork# is warm. | I left room for you at the #table#.
+line @1 greet.return : The #cart# is still unloading. | The #rain# still has not reached the #field# since you left.
+line @1 kin.open [pair.kin!=no] : I swept the #floor# before supper. | There is a #plate# waiting near the #door#.
+line @1 again.open : We were checking this #sack# #weight#. | Did that #merchant# leave?
+line @1 farewell : #farewell#. Another #sack# waits for me by the #cart#. | Keep the #door# shut against the #smoke#.
+line @1 farewell.return : I may have the #account# settled by then. | Come back for the next #meal#.
+line @1 react.news : Give me the plain account. | I will stop moving #grain# to hear you.
+line @1 react.news.new : The #granary# has heard no account of that. | Who saw it first?
+line @1 react.news.known : A #hand# mentioned the outline. | You have made the count clearer.
+line @1 react.news.doubt : I would check the #wagon# #weight#. | Who marked the #sack# at loading?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry; a quiet #seat# is open by the #window#. | I can leave the #cart# awhile.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news deserves the #pork# I have saved. | That deserves a full #plate#.
+line @1 answer.how : The #house# is swept, and the #granary# has stayed dry. | I have a little to settle yet.
+line @1 answer.how.busy [self.working=yes] : I am carrying this #sack# into the #bin#. | The #cart# needs one last tally.
+line @1 ask.how : Have you eaten since #morning#? | Did the #road# leave your #boots# clean?
+line @1 sympathise : There is space beside me at the #table#. | Eat before you try to explain it all.
+line @1 reassure : We can count the #sacks# together tomorrow. | A warm #meal# will be here tonight.
+line @1 decline : I cannot promise #grain# that belongs to the #farm#. | I will not name a private #debt# in a crowd.
+line @1 accept_decline : Your point is clear; this #cart# stays put. | The #book# can stay closed now.
+line @1 thank : You held the #door# for the loaded #hands#. | That #pork# was good after work.
+line @1 deflect_thanks : I had an extra #plate# already. | The #knife# needed sharpening regardless.
+line @1 preclose : I must set the #sacks# under the #roof#. | The #house# needs a sweep before bed.
+line @1 tease [pair.band=friends] : You watch the #door# almost as closely as I do. | That #knife# could whittle a #sack# of excuses.
+line @1 ack : #bc_right#. The #weight# matches. | #bc_fair_enough#. I will read the #account#.
+line @1 give.advice : Count the #grain# before signing a #book#. | Keep the #knife# clear of loose #shavings#.
+line @1 warn [world.bandits=near] : Travel beside another loaded #cart# on the #road#. | Keep the #granary# #door# barred at #night#.
+scene sack_weight
+when topic=work
+does tell.self / react.self / assess
+a : Before loading, I test each #sack# #weight# in my #hands#. | A light one may have torn near the seam.
+b : Do you weigh every sack? | Can you tell by hand?
+a : When it feels wrong. | Near enough to check.
+
+scene bin_order
+when topic=work
+does tell.self / react.self / assess
+a : The #bins# fill in a fixed order so no old #grain# is hidden. | I mark each one before the next #cart#.
+b : Do others follow it? | Who set the order?
+a : After I explain. | The farm #hands#.
+
+scene cart_turn
+when topic=work
+does tell.self / react.self / assess
+a : A full #cart# needs room to turn by the #granary# #door#. | I clear the #path# before its #wheel# arrives.
+b : Does that save trouble? | Who guides it?
+a : Every time. | A #hand# at the #gate#.
+
+scene dry_stack
+when topic=work
+does tell.self / react.self / assess
+a : A #stack# of #sheaves# needs a dry base. | I lift the bottom layer above the #floor#.
+b : Does it stay sound? | What if rain comes?
+a : Through #harvest#. | Under the #roof#.
+
+scene honest_count
+when topic=work
+does tell.self / react.self / assess
+a : I say the #sack# count aloud where the #buyer# can hear. | They may disagree, but they know my number.
+b : Do they argue? | Do you change it?
+a : Some do. | When I miscount.
+
+scene door_seat
+when topic=home
+does tell.self / react.self / assess
+a : At supper I choose the #seat# with the #door# before me. | Then I know when another #hand# has come home.
+b : Does anyone mind? | Do you offer that seat?
+a : Not anymore. | To someone who needs it.
+
+scene tidy_floor
+when topic=home
+does tell.self / react.self / assess
+a : A swept #floor# makes the #house# feel settled after a muddy #day#. | I leave the #boots# at the #door#.
+b : Does it last? | Who sweeps?
+a : Until tomorrow evening. | Whoever gets home first.
+
+scene roast_pork
+when topic=food
+does tell.self / react.self / assess
+a : Roast #pork# with crisp #crackling# brings everyone to the #table#. | The last #hand# has a #plate# set aside.
+b : Do you cook it? | Is there enough?
+a : Sometimes. | If we cut it fairly.
+
+scene whittled_peg
+when topic=pastimes
+does tell.self / react.self / assess
+a : I whittle a small #wood# peg while the #fire# settles. | It is useful for a loose #door# or a cart #wheel#.
+b : Do you keep them? | Who taught you?
+a : In a #box#. | Practice did.
+
+scene knife_edge
+when topic=pastimes
+does tell.self / react.self / assess
+a : A sharp #knife# makes cleaner #shavings# and safer #hands#. | I wipe the #blade# before going home.
+b : Do you lend it? | Do you make tools?
+a : To someone careful. | Only small repairs.
+
+scene warm_rain
+when topic=weather
+does tell.self / react.self / assess
+a : Warm #rain# softens a dry #field# without filling every #road# rut. | I like the smell after it passes.
+b : Will the #field# take this #rain# well? | Can the #cart# keep moving in #rain#?
+a : Before #harvest#. | If the #cart# moves.
+
+scene smoke_eyes
+when topic=weather
+does tell.self / react.self / assess
+a : Thick #smoke# in my eyes makes a #sack# look farther away than it is. | I move upwind of the #fire#.
+b : Does that help? | Who lights it?
+a : Usually. | The hearth keeper.
+
+scene market_crowd
+when topic=home
+does tell.self / react.self / assess
+a : A #crowd# at the #market# leaves little room to turn a loaded #cart#. | I unload before the busiest #hour#.
+b : Can you manage that? | Do you dislike crowds?
+a : If the #road# is clear. | At close quarters.
+
+scene city_account
+when topic=memories
+does tell.self / react.self / assess
+a : I keep one #account# from the #city# folded away from the farm #book#. | It is my own matter to settle.
+b : Is it a debt? | Will you speak of it?
+a : I owe what I owe. | When it is paid.
+
+scene shared_meal
+when topic=family
+does tell.self / react.self / assess
+a : Our #house# has several #hands# from the #granary#. | The #plates# tell me who has come home.
+b : Do they all come home? | Is supper loud?
+a : Most evenings. | When the #cart# was late.
+
+scene thin_wage
+when topic=prices
+does tell.self / react.self / assess
+a : A thin #wage# still has to buy #bread# and pay old #debts#. | I keep the numbers in my #book#.
+b : Do they balance? | Will the #wage# rise next season?
+a : Not yet. | I can ask plainly.
+
+scene festival_table
+when topic=home
+does tell.self / react.self / assess
+a : At the #festival# I choose a #bench# with a view of the #door#. | I can still enjoy the talk from there.
+b : Do you stay long? | Who joins you?
+a : Through the #meal#. | A close #friend#.
+
+story open_seat [topic=home self.age>=18]
+  : Someone once set my #seat# with its back to the #door#.
+  : I moved it before the #meal# began.
+  ask : Did anyone object?
+  b : An old habit.
+  : They saved that place for me afterward.
+
+story rain_cart [topic=work self.age>=18]
+  : Warm #rain# caught us with a loaded #cart# of #grain#.
+  : I covered the #sacks# and cleared the #wheel# from a rut.
+  ask : Was the grain dry?
+  b : A quick decision.
+  : Enough to store it.
+
+story city_debt [topic=memories self.age>=18]
+  : I carried an #account# back from the #city# and folded it into my coat.
+  : I have kept it separate from the #farm# #book#.
+  ask : What does it say?
+  b : That sounds private.
+  : It is mine to settle.
+
+rule @bark_cart
+when concept=bark
+does aside
+cooldown 8h
+say Clear the #path# for the #cart#. | That #wheel# needs room to turn.
+
+rule @bark_door
+when concept=bark
+does aside
+cooldown 9h
+say Keep the #door# in sight. | There is another #seat# by the #window#.
+
+rule @bark_grain
+when concept=bark
+does aside
+cooldown 10h
+say That #sack# feels light. | Count the #bins# before closing.
+
+rule @bark_knife
+when concept=bark
+does aside
+cooldown 11h
+say The #knife# edge is ready. | These #shavings# can go in the #fire#.
+
+dlg @1 resident.hub : #greet#. The #cart# is unloading. | #greet#. The #house# has a warm #meal# later.
+dlg @2 resident.hub [topic.meeting=known] : You know the #granary# #door#. | The #sack# count is nearly done.
+dlg @1 resident.job : I move #grain# at #self.workplace#. | I weigh #sacks#, fill #bins#, and turn the #cart#.
+dlg @1 resident.bye : #farewell#. I must cover the #stack#. | #saying.capitalize#. Keep your #boots# dry.
+graft resident.hub
+choice Why face the door? -> door
+node door
+say I like seeing the other #hands# come home after a long #day#.
+free
+choice What are you whittling? -> peg
+choice Goodbye. -> bye
+node peg
+say A small #wood# peg for a loose #wheel# or #door#.
+choice Back to the granary. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #grain# is dry. | #greet#. I have swept the #floor#.
+line @1 farewell : #farewell#. The #cart# is waiting. | I will sharpen the #knife# tomorrow.
