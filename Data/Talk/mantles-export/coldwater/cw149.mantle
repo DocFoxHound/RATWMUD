@@ -1,0 +1,319 @@
+# cw149, the local seed (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw149
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_cw_tamsin_greyton
+written_by claude-codex-cw-2
+title the local seed
+fits stage=adult|old
+prefers talk=plain
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk distrusts_anything_from_the_city
+likes roast_pork digging market_bustle first_warm_day
+dislikes flies early_bells
+fears an_ice_shape_near_the_landing a_city_promise_that_harms_the_house
+hopes a_garden_planted_with_local_seed a_full_table_after_a_safe_return
+topics home +0.4 family +0.4 pastimes +0.3 food +0.3 weather +0.2 gossip -0.3
+styles comfort=practical gossip=reluctant refuse=direct tease=dry
+marks oath saying
+persona #self.first# works the #garden# before the #market# wakes, distrusts goods from the #city#, and keeps the #house# ready for returning kin.
+
+words
+oath! = Seed and sound earth | By the honest spade
+saying! = Ask where the seed was raised | A clean table starts in the soil
+garden = garden | kitchen garden
+soil = soil | garden soil
+earth = earth | dark earth
+spade = spade | garden spade
+fork = fork | digging fork
+bed = bed | planted bed
+beds = beds | planted beds
+seed = seed | saved seed
+seeds = seeds | local seeds
+root = root | good root
+roots = roots | strong roots
+weed = weed | garden weed
+weeds = weeds | garden weeds
+row = row | garden row
+rows = rows | garden rows
+sun = sun | spring sun
+spring = spring | warm season
+warmth = warmth | first warmth
+rain = rain | steady rain
+frost = frost | late frost
+wind = wind | lake wind
+bell = bell | early bell
+bells = bells | morning bells
+fly = fly | biting fly
+flies = flies | biting flies
+market = market | crowded market
+stall = stall | market stall
+seller = seller | stall seller
+buyer = buyer | market buyer
+price = price | asking price
+coin = coin | household coin
+bag = bag | market bag
+goods = goods | market goods
+city = city | Ridgemere
+road = road | High Road
+cart = cart | road cart
+box = box | city box
+label = label | printed label
+promise = promise | seller's promise
+house = house | family house
+home = home | farmhouse
+door = door | front door
+gate = gate | garden gate
+floor = floor | swept floor
+table = table | family table
+plate = plate | supper plate
+fire = fire | cooking fire
+hearth = hearth | house hearth
+pot = pot | cooking pot
+pork = pork | roast pork
+crackling = crackling | browned crackling
+bread = bread | fresh bread
+loaf = loaf | bread loaf
+family = family | household
+child = child | young one
+spouse = spouse | partner
+friend = friend | close friend
+neighbour = neighbour | nearby neighbour
+lake = lake | Glasswater
+shore = shore | near shore
+landing = landing | lakeside landing
+ice = ice | winter ice
+shape = shape | dark shape
+shadow = shadow | moving shadow
+water = water | deep water
+morning = morning | first light
+evening = evening | fading light
+hour = hour | work hour
+hand = hand | working hand
+hands = hands | working hands
+roof = roof | sound roof
+bench = bench | market bench
+festival = festival | feast day
+
+any
+opinion @1 city against 2 : A #city# #label# can say anything; I want to see what is in the #box#. | I trust a #seed# saved here more than a grand seller's #promise#.
+opinion @1 dole against 1 : I have #garden# work enough for another #hand#. | A household can grow part of its supper if given good #soil#.
+opinion @1 festivals against 1 : Too many voices spill out of the #market# at a #festival#. | I would rather gather my #family# around the #table#.
+opinion @1 houses mixed 0 : A House may order good #goods# and pay fairly. | I still judge what reaches my #door#, not the name over it.
+opinion @1 merchants mixed 0 : A #seller# who shows the contents earns my #coin#. | I refuse a #box# that stays sealed behind fine words.
+opinion @1 newcomers mixed 0 : A new #neighbour# can share a #garden# path. | I ask where the #seeds# came from before planting them.
+opinion @1 road mixed 0 : The #road# brings useful things to the #market#. | I will inspect them before taking them #home#.
+opinion @1 times for 1 : The #garden# is producing and the #roof# holds. | I can feed the #family# without asking another house.
+
+grown
+line @1 greet : #greet#. Mind the loose #soil# by the #door#. | #greet#. Did you come from the #market#?
+line @2 greet [self.working=yes] : Speak while I clear this #bed#. | I will lean the #spade# against the wall first.
+line @3 greet [pair.band=friends|family] : There is #pork# resting by the #fire#. | You can help me choose the next #row#.
+line @4 greet [here.time=dawn] : The #bell# has started before I finished digging. | #greet#. The #garden# is still damp.
+line @1 greet.return : You have found me in the #garden# again. | #welcome_back#. I looked at the #seeds# you mentioned.
+line @1 kin.open [pair.kin!=no] : Come through; there is a #plate# for you. | Leave the #market# dust by the #door#.
+line @1 again.open : We had not settled which #bed# needs the #fork#. | Did you find out who packed that #box#?
+line @1 farewell : #farewell#. Keep the #garden# #gate# shut. | #saying.capitalize#. I have supper to tend.
+line @1 farewell.return : The #roots# may be showing next time. | Bring word from the #market# when you come.
+line @1 react.news : Let me put the #spade# aside. | Begin with the one who saw it.
+line @1 react.news.new : None of us heard that over supper. | Whose #cart# carried the word here?
+line @1 react.news.known : A #seller# said something similar this morning. | Your account has a part I did not hear.
+line @1 react.news.doubt : Show me the #box#, not just the #label#. | I want a witness before I pass that on.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is bitter news. Sit near the #fire#. | I will leave the #weeds# until you have caught your breath.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I hope their #table# is busy tonight. | That deserves the better #plate#.
+line @1 answer.how : The #house# is in order and I am well. | My #hands# are sore from the #soil#, but I can rest.
+line @1 answer.how.busy [self.working=yes] : The #weeds# have found every #row#. | I need this #bed# ready before the #frost# returns.
+line @1 ask.how : Has your #home# had a quiet day? | Was the #market# worth the walk?
+line @1 sympathise : There is a place at our #table# while you recover. | I can bring you #bread# and leave you to speak when ready.
+line @1 reassure : We can plant the next #row# after the #rain# passes. | The #house# will manage one difficult day.
+line @1 decline : I will not buy that sealed #box#. | No. These #seeds# have no place in my #soil#.
+line @1 accept_decline : Very well. I will ask someone else. | That is settled for now.
+line @1 thank : That #bag# would have slipped from my muddy #hands# without you. | The #door# was open when I came back; I noticed.
+line @1 deflect_thanks : I had enough #bread# to share. | That #row# needed clearing anyway.
+line @1 preclose : The #pot# needs checking. | I want this #spade# out of the path before dark.
+line @1 tease [pair.band=friends] : Your #garden# #row# bends like the #road# to the #city#. | You picked the one #weed# I meant to keep.
+line @1 ack : #bc_right#. I will check the #label#. | #bc_fair_enough#. The #spade# can wait.
+line @1 give.advice : Ask a #seller# where the #seed# grew. | Keep the #roots# moist until the #sun# comes back.
+line @1 warn [world.bandits=near] : Stay near others on the #road#. | I would bring the #cart# #home# before dusk.
+scene first_spring
+when topic=weather here.season=spring
+does tell.self / react.self / assess
+a : The first warm #sun# makes the #soil# loose enough for the #fork#. | I wait until the #bed# stops sticking to my paws.
+b : Do you plant then? | Can #frost# return?
+a : The hardier #seeds# first. | It often does.
+
+scene garden_hour
+when topic=pastimes
+does tell.self / react.self / assess
+a : An #hour# with the #spade# leaves my thoughts quieter. | A cleared #row# shows exactly where my work went.
+b : Is that why you dig? | Do you work alone?
+a : As much as for supper. | Usually until someone comes out.
+
+scene local_seed
+when topic=home
+does tell.self / react.self / assess
+a : I save #seeds# from plants that managed this #wind#. | A city packet may promise more, but I know these #roots#.
+b : Do they grow well? | Would you try new seed?
+a : Well enough for us. | In one small #bed# first.
+
+scene printed_label
+when topic=prices
+does tell.self / react.self / assess
+a : A bright #label# on a #box# advertises the seller more than the contents. | I open it and judge what was actually packed.
+b : Do sellers allow that? | Have you found a poor one?
+a : Honest ones do. | More than once.
+
+scene busy_market
+when topic=home
+does tell.self / react.self / assess
+a : I enjoy the #market# when every #stall# has a voice. | I can hear a true #price# above the noise if I listen.
+b : Do you stay long? | Do you buy much?
+a : Until my #bag# is full. | What the #house# needs.
+
+scene early_bell
+when topic=weather here.time=dawn
+does tell.self / react.self / assess
+a : The #bell# sounds before I have warmed the #pot#. | I dislike being hurried out of my own #home#.
+b : Do you ignore it? | Does it wake the house?
+a : Until the #fire# catches. | Most mornings.
+
+scene summer_flies
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : The #flies# find a roast before the #family# does. | I keep a cloth over the #plate# until supper.
+b : Does that work? | Do they come from the #garden#?
+a : Better than waving at them. | From anywhere warm.
+
+scene roast_crackling
+when topic=food
+does tell.self / react.self / assess
+a : When the #crackling# browns, I lift the #pork# away from the #fire#. | It makes the #table# quiet for a moment.
+b : Do you save a piece? | Is it difficult to cook?
+a : For the one who carried the wood. | Only if the #pot# runs too hot.
+
+scene swept_floor
+when topic=home
+does tell.self / react.self / assess
+a : I sweep the #floor# after everyone comes in from the #landing#. | Otherwise the #garden# follows us to supper.
+b : Is there much dirt? | Does anyone help?
+a : Enough to fill a small #bag#. | When I hand over the broom.
+
+scene child_seeds
+when topic=family self.parent=yes
+does tell.self / react.self / assess
+a : My #self.child# asks which #seeds# grow fastest. | I put two in a pot so we can watch the difference.
+b : Which comes first? | Does your child tend them?
+a : The local kind, usually. | With a reminder about #water#.
+
+scene spouse_return
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse# brings the smell of the #lake# through the #door#. | I make room at the #table# before asking about the day.
+b : Do you worry when it is late? | Do you eat together?
+a : I listen for the #cart#. | When the #pot# is ready.
+
+scene winter_shape
+when topic=memories self.age>=18
+does tell.self / react.self / assess
+a : A dark #shape# moved below the winter #ice# near the #landing#. | From the #shore#, I followed its course past the reeds.
+b : Was it a fish? | Did you tell anyone?
+a : Larger than I expected. | When I got #home#.
+
+scene frost_rows
+when topic=weather here.season=winter
+does tell.self / react.self / assess
+a : #frost.capitalize# lifts the top of a #garden# #bed#. | I wait before digging so the #roots# below are not torn.
+b : Does it harm the crop? | Can you cover it?
+a : The shallow #seeds#, yes. | With straw if there is enough.
+
+scene garden_gate
+when topic=home
+does tell.self / react.self / assess
+a : The #garden# #gate# swings open when the #wind# comes from the #lake#. | I set the latch high where it catches firmly.
+b : Has anything got in? | Can you repair it?
+a : A wandering hen once. | I can tighten the hinge.
+
+scene market_pork
+when topic=food
+does tell.self / react.self / assess
+a : I look at the cut of #pork# before hearing the #seller#'s story. | A good roast needs fat in the right place.
+b : Do you bargain? | What if none looks right?
+a : If the #price# is high. | I cook another supper.
+
+scene city_cart
+when topic=travel
+does tell.self / react.self / assess
+a : A #cart# from the #city# brought a sealed #box# of tools. | I asked to see the metal before bringing it into the #house#.
+b : Was it sound? | Did the driver object?
+a : Some pieces were. | The driver opened it.
+
+scene broad_road
+when topic=travel
+does tell.self / react.self / assess
+a : The #road# carries us to the #market# and brings the #cart# back. | I use it, though I trust what I can inspect more than what it promises.
+b : Do you travel far? | Is the road safe?
+a : Only when needed. | Better with company.
+
+story dark_ice [topic=memories self.age>=18]
+  : I saw a #shadow# travel under the #ice# while the #shore# was empty.
+  : It disappeared beside the #landing#, and I did not step nearer.
+  ask : What was it?
+  b : You were right to stay back.
+  : I have never found out.
+
+story bad_seed [topic=pastimes self.age>=18]
+  : A #box# of #seeds# from the #city# promised quick roots.
+  : Only one sprouted in my test #bed#, so I kept the rest out of the #garden#.
+  ask : Did the seller refund you?
+  b : Testing saved the larger bed.
+  : I took the #box# back and showed the empty #soil#.
+
+story spilled_roast [topic=food self.age>=18]
+  : I carried a #plate# of #pork# across a freshly swept #floor#.
+  : A gust opened the #door#; my quick #hand# kept supper on the #plate#.
+  ask : Did you spill anything?
+  b : That was close.
+  : Only a little #crackling#.
+
+rule @bark_garden
+when concept=bark
+does aside
+cooldown 8h
+say This #bed# is ready for #seeds#. | The #weeds# came back already.
+
+rule @bark_market
+when concept=bark
+does aside
+cooldown 9h
+say I want to see inside that #box#. | State the #price# plainly.
+
+rule @bark_cooking
+when concept=bark
+does aside
+cooldown 10h
+say The #pork# needs one more turn. | Keep the #flies# from that #plate#.
+
+rule @bark_frost
+when concept=bark here.season=spring
+does aside
+cooldown 11h
+say The #sun# has warmed the #soil#. | I hope the #frost# is finished.
+
+dlg @1 resident.hub : #greet#. I am clearing a #garden# #bed#. | #greet#. Did the #market# send you up this way?
+dlg @2 resident.hub [topic.meeting=known] : Back to see whether those #seeds# grew? | You have arrived while supper is warming in the #pot#.
+dlg @1 resident.job : I keep our #home# and tend the #garden#. | My work is the #table#, the #floor#, and the planted #beds#.
+dlg @1 resident.bye : #farewell#. Leave the #garden# #gate# latched. | #saying.capitalize#. Supper is waiting.
+graft resident.hub
+choice Why avoid goods from Ridgemere? -> city
+node city
+say I have bought fine things from the #city# and poor ones. I open the #box# and inspect what is inside before spending the #coin#.
+free
+choice What grows in your garden? -> garden
+choice Back to the house. -> hub
+node garden
+say I use #seeds# saved in this weather. The first warm #sun# tells me when to prepare the #beds#.
+choice Back to the house. -> hub
+choice Goodbye. -> bye
