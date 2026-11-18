@@ -1,0 +1,283 @@
+# cw132, grandmother's measure (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw132
+revision 1
+state ready
+dialect coldwater
+accent broad light
+tier standard
+written_for cty_fallow_honeyfield
+written_by claude-codex-cw-2
+title grandmother's measure
+fits stage=adult|old
+prefers talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk has_opinions_about_everyone_s_grandmother
+likes hard_cheese wrestling full_larder summer_evenings
+dislikes deep_mud bad_manners
+fears an_empty_larder_after_the_rains a_city_promise_that_costs_home
+hopes a_dry_yard_and_full_larder a_fair_wrestling_match_on_the_green
+topics work +0.4 family +0.3 food +0.3 pastimes +0.3 memories -0.4
+styles comfort=practical gossip=reluctant refuse=blunt tease=dry
+marks oath saying
+persona #self.first# measures manners by the memory of each #grandmother#, keeps the #larder# filled, and lifts #pigs# clear of #mud#.
+
+words
+oath! = Cheese and trough | By the dry green
+saying! = Ask a grandmother before a merchant | A clean gate makes a quiet night
+grandmother = grandmother | elder
+grandmothers = grandmothers | elders
+pig = pig | yard pig
+pigs = pigs | yard pigs
+yard = yard | pig yard
+trough = trough | feed trough
+feed = feed | mash
+bucket = bucket | feed bucket
+gate = gate | pen gate
+pen = pen | pig pen
+fence = fence | yard fence
+straw = straw | dry straw
+mud = mud | deep mire
+boots = boots | work boots
+green = green | village green
+wrestle = wrestle | take a hold
+hold = hold | wrestling hold
+cheese = cheese | hard cheese
+knife = knife | cheese knife
+slice = slice | thick slice
+slices = slices | equal pieces
+larder = larder | food cupboard
+bread = bread | loaf
+supper = supper | evening meal
+evening = evening | long summer dusk
+sun = sun | late sun
+summer = summer | warm season
+lake = lake | Glasswater
+road = road | High Road
+city = city | Ridgemere
+coin = coin | penny
+market = market | market stalls
+promise = promise | fine promise
+manners = manners | courtesy
+home = home | cottage
+hand = hand | working hand
+hands = hands | working hands
+rain = rain | downpour
+price = price | asking price
+
+any
+opinion @1 city against 1 : I took the #road# to the #city# and brought home no fortune. | The #market# here at least knows who carried the #feed#.
+opinion @1 houses against 1 : Their benches stay empty while a good #hand# looks for work. | My #grandmother# would have opened the door before asking a name.
+opinion @1 merchants against 1 : A merchant may add a #coin# while I am counting the #bucket# loads. | I ask for the #price# before showing my purse.
+opinion @1 festivals mixed 0 : The #green# makes room for a decent #hold#. | I leave when the #manners# go missing.
+opinion @1 newcomers mixed 0 : I show a new hand the #gate# before giving out a #bucket#. | I wait to see how they treat the smallest #pig#.
+opinion @1 strangers mixed 0 : I will share a #slice# of #cheese# with a hungry traveller. | My #larder# is for people I have come to trust.
+opinion @1 road mixed 0 : The #road# brings #feed# when the winter stores run low. | It also brings talk of fortunes I no longer believe.
+
+grown
+line @1 greet : #greet#. Step round the #mud# by the #gate#. | #greet#. I shall finish carrying this #bucket#.
+line @2 greet [self.working=yes] : Wait for me to fill the #trough#. | I am listening while I set down the #feed#.
+line @3 greet [pair.band=friends|family] : There is #cheese# inside if you want it. | You know which #gate# sticks.
+line @4 greet [here.time=dawn] : The #pigs# had breakfast before the #sun# did. | #greet#. My #boots# are already wet.
+line @1 greet.return : #welcome_back#. The #yard# has dried a little. | The #trough# still has #feed# since your last visit.
+line @1 kin.open [pair.kin!=no] : Come in and take a #slice# before supper. | There is a dry place for your #boots#.
+line @1 again.open : I recall our talk beside the #fence#. | Have you remembered what you meant to ask?
+line @1 farewell : #farewell#. Close the #gate# firmly. | #saying.capitalize#. Mind the deep #mud#.
+line @1 farewell.return : I may have more #cheese# tomorrow. | Come by before the #evening# cools.
+line @1 react.news : Tell me who was there to see it. | I shall finish this #bucket# and hear you.
+line @1 react.news.new : This news has not reached my #trough# before. | Did someone bring it from the #road#?
+line @1 react.news.known : I heard something similar at the #market#. | Your account gives the matter another side.
+line @1 react.news.doubt : #hedge#, I want more than a traveller's promise. | I have paid dearly for fine words before.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : What a loss. We can talk beside the dry #fence#. | That is hard news; sit beside me.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There is #cheese# enough to mark that. | Good. Their #grandmother# will be glad.
+line @1 answer.how : The #larder# is full and the #pigs# are fed. | Tired from the #mud#, but well.
+line @1 answer.how.busy [self.working=yes] : I have #straw# to change and #feed# to carry. | The #gate# wants mending after the #trough#.
+line @1 ask.how : Have you eaten? | Did the #road# treat you fairly?
+line @1 sympathise : Sit down. I can spare a #slice# and a quiet ear. | You need not make a story of it for me.
+line @1 reassure : One bad #market# day will not empty every #larder#. | We can put the #gate# right before dark.
+line @1 decline : No. My #yard# needs me here. | I will not wager the #coin# set aside for #feed#.
+line @1 accept_decline : Your answer is yours. | Then let us close the matter.
+line @1 thank : You helped move the #pigs# before the #rain#; thank you. | I saw you carry that #bucket#.
+line @1 deflect_thanks : It was only one #gate#. | The #cheese# was already cut.
+line @1 preclose : I must check the #pen# once more. | The #larder# needs counting before supper.
+line @1 ack : #bc_right#. The #fence# needs a check. | #bc_fair_enough#. I heard that.
+line @1 give.advice : Keep both feet under you on the #green#. | Scrape the #mud# from a #gate# before its hinge seizes.
+line @1 warn [world.bandits=near] : Keep your #coin# where a stranger cannot see it. | Take company on the #road# after dark.
+scene grandmother_judgment
+when topic=family
+does tell.self / react.self / assess
+a : I remember how a person's #grandmother# treated visitors. | Some #grandmothers# taught courtesy with no money to spare.
+b : Does that tell you about the family? | Do you ask about them?
+a : More than their best coat. | Sometimes, if I know them well.
+
+scene elder_table
+when topic=family
+does tell.self / react.self / assess
+a : An elder at our table always cut the #cheese# into equal #slices#. | I notice when someone takes the thickest piece without asking.
+b : Did you learn that from her? | Do you say anything?
+a : I learned to watch. | I pass the #knife# back.
+
+scene hard_cheese
+when topic=food
+does tell.self / react.self / assess
+a : Hard #cheese# keeps better than soft in a crowded #larder#. | I wrap each #slice# before bringing it to the #yard#.
+b : Does it taste better? | Do you take it to work?
+a : With #bread#, yes. | It is a good midday meal.
+
+scene full_larder
+when topic=food
+does tell.self / react.self / assess
+a : I count what is in the #larder# before I spend at the #market#. | A full shelf makes a long workday easier.
+b : Do you store much? | What runs out first?
+a : Enough for poor weather. | Usually the #bread#.
+
+scene wrestling_green
+when topic=pastimes
+does tell.self / react.self / assess
+a : On the #green# I can take a proper #hold# without bruising a #pig#. | A fair wrestling match ends with both players standing.
+b : Do you win? | Who taught you?
+a : Some days. | A neighbour with steadier feet.
+
+scene missed_hold
+when topic=pastimes
+does tell.self / react.self / assess
+a : I once reached for a #hold# and caught nothing but air. | The fall taught me to watch a rival's shoulders.
+b : Were you hurt? | Did you try again?
+a : Only my pride. | At the next gathering.
+
+scene summer_evening
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : I use the long summer #evening# to dry out the #yard#. | The last #sun# catches the #fence# beyond the #pen#.
+b : Do you rest then? | Is it quiet?
+a : After the #trough# is filled. | Quieter than morning.
+
+scene mud_hocks
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : Deep #mud# grips my #boots# before I reach the #gate#. | I lay #straw# on the path where the #bucket# must go.
+b : Does that help? | Can you drain it?
+a : For one day. | We need a dry week first.
+
+scene pig_feed
+when topic=work
+does tell.self / react.self / assess
+a : I pour #feed# slowly so the small #pigs# can reach the #trough#. | A full #bucket# brought too fast starts a fight.
+b : Do they push one another? | How many buckets?
+a : They will if I let them. | Enough to make my arms ache.
+
+scene pen_clean
+when topic=work
+does tell.self / react.self / assess
+a : I pull wet #straw# from the #pen# before the smell reaches the #home#. | A clean #yard# costs work now and saves trouble later.
+b : Do you do it alone? | How often?
+a : When I must. | Often enough to know the weight.
+
+scene crooked_gate
+when topic=work
+does tell.self / react.self / assess
+a : The #gate# drags when #mud# dries around the post. | I lift its far corner before pushing.
+b : Will it break? | Can you fix the post?
+a : If someone forces it. | On a clear day.
+
+scene larder_wages
+when topic=prices
+does tell.self / react.self / assess
+a : I divide my #coin# between #feed# and the #larder# first. | A grand purchase can wait until the #pigs# eat.
+b : Is there anything left? | Do prices trouble you?
+a : Some weeks. | I keep the tally myself.
+
+scene city_mistake
+when topic=memories
+does tell.self / react.self / assess
+a : I once followed a #promise# toward the #city#. | I came back with empty #hands# and a dislike of easy fortunes.
+b : What happened there? | Do you regret it?
+a : Nothing I care to repeat today. | I learned where my #home# was.
+
+scene road_return
+when topic=memories
+does tell.self / react.self / assess
+a : The #lake# air met me before I reached the last bend of the #road#. | Even the familiar muddy #yard# looked welcoming.
+b : Had you been away long? | Did anyone wait for you?
+a : Long enough. | A neighbour opened the #gate#.
+
+scene bad_manners
+when topic=family
+does tell.self / react.self / assess
+a : Bad #manners# show at supper before they show in a dispute. | I watch how someone speaks to the person carrying #bread#.
+b : Do you correct them? | Is that fair?
+a : If they are at my table. | It has served me well.
+
+scene straw_stack
+when topic=work
+does tell.self / react.self / assess
+a : I keep dry #straw# above the #yard# splash line. | The bottom bundle can spoil while the top looks sound.
+b : Do you turn the pile? | Who brings it?
+a : When the weather lets me. | A cart from inland.
+
+scene green_after_work
+when topic=pastimes
+does tell.self / react.self / assess
+a : The #green# feels firm after a whole day in #mud#. | I can watch a wrestling bout without joining every time.
+b : Do you cheer? | Is the crowd large?
+a : When a #hold# is clean. | Smaller than a city square.
+
+story empty_city_purse [topic=memories self.age>=25]
+  : I carried #coin# to the #city# after hearing of easy work.
+  : By the return journey, my purse held no more than the road dust.
+  ask : Would you make the trip again?
+  b : That would make anyone wary of promises.
+  : Only for a reason I could name myself.
+
+story pig_at_gate [topic=work self.age>=25]
+  : A young #pig# learned to push the #gate# from below.
+  : I found it rooting by the #fence# while the others ate.
+  ask : Did it get far?
+  b : The clever ones cause the most work.
+  : Far enough that I changed the latch.
+
+story wrestling_return [topic=pastimes self.age>=25]
+  : I lost a bout on the #green# by lunging for a poor #hold#.
+  : A week later I waited for my rival to make the same move.
+  ask : Did you win?
+  b : You learned from the fall.
+  : I did, and we shared #cheese# afterward.
+
+rule @bark_bucket
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say The small #pig# gets this #bucket#. | Move over; there is #feed# for all.
+
+rule @bark_gate
+when concept=bark
+does aside
+cooldown 8h
+say That #gate# has dropped again. | I will clear the #mud# from its hinge.
+
+rule @bark_larder
+when concept=bark
+does aside
+cooldown 10h
+say There is #cheese# left for supper. | I should count the #bread# tonight.
+
+rule @bark_green
+when concept=bark here.time=dusk
+does aside
+cooldown 12h
+say The #green# may still have a match going. | At last, a dry #evening#.
+
+dlg @1 resident.hub : #greet#. Keep your #boots# out of the #trough#. | #greet#. Speak plainly; I have a #bucket# to carry.
+dlg @2 resident.hub [topic.meeting=known] : I know you; take the dry side of the #gate#. | Back again? The #pigs# are fed now.
+dlg @1 resident.job : I tend the #pigs# at #self.workplace#, mostly #feed# and #straw#. | I keep the #pen# clean and the #gate# shut.
+dlg @1 resident.bye : #farewell#. Leave that #gate# as you found it. | #saying.capitalize#. I am going back to the #yard#.
+graft resident.hub
+choice Why ask about grandmothers? -> elder
+node elder
+say An elder's #manners# can tell you how a household treats a guest. I remember those things.
+free
+choice Do you ever wrestle on the green? -> wrestle
+choice Back to the yard. -> hub
+node wrestle
+say When my #boots# are dry. A good #hold# is worth seeing even when I sit out.
+choice Back to the yard. -> hub
+choice Goodbye. -> bye
