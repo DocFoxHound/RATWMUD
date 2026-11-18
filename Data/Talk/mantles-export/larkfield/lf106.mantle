@@ -1,0 +1,339 @@
+# lf106, the plain-step weaver (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf106
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for tn_mb_vale_miremore
+written_by claude-codex-lf-1
+title the plain-step weaver
+fits stage=adult|old
+prefers talk=plain
+traits temper=short talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk hums_old_marching_songs
+likes plum_tart old_tales fresh_straw misty_dawns
+dislikes smoke crowds
+fears fire_in_the_linen_shed a_tale_used_to_hide_the_truth
+hopes a_clean_shed_with_clear_air a_plum_tart_after_the_shift
+topics work +0.5 home +0.3 pastimes +0.3 food +0.2
+styles comfort=direct gossip=reluctant refuse=firm tease=dry
+marks oath saying
+persona #self.first# pulls flawed #linen# from the #loom#, hums a #march# in time with the #shuttle#, and says plainly when a #tale# leaves out the truth.
+
+words
+oath! = Warp and straight step | By the clean shuttle
+saying! = Say the flaw before the buyer finds it | A straight step beats a sweet excuse
+loom = loom | linen loom
+shuttle = shuttle | wooden shuttle
+warp = warp | taut warp
+weft = weft | crossing weft
+thread = thread | linen thread
+threads = threads | linen threads
+linen = linen | woven linen
+cloth = cloth | finished cloth
+bolt = bolt | linen bolt
+bolts = bolts | linen bolts
+hem = hem | narrow hem
+edge = edge | rough edge
+flaw = flaw | visible flaw
+flaws = flaws | visible flaws
+knot = knot | tight knot
+beam = beam | loom beam
+shed = shed | linen shed
+work = work | loom work
+hand = hand | working hand
+hands = hands | working hands
+shift = shift | long shift
+march = march | old march
+song = song | marching song
+songs = songs | old songs
+beat = beat | steady beat
+step = step | measured step
+steps = steps | measured steps
+tale = tale | old tale
+tales = tales | old tales
+truth = truth | plain truth
+ending = ending | tidy ending
+listener = listener | patient listener
+market = market | busy market
+stall = stall | market stall
+buyer = buyer | careful buyer
+seller = seller | market seller
+price = price | asking price
+coin = coin | saved coin
+city = city | Ridgemere
+road = road | High Road
+gate = gate | town gate
+wagon = wagon | supply wagon
+crowd = crowd | market crowd
+house = house | shared house
+home = home | cottage
+door = door | cottage door
+window = window | open window
+floor = floor | clean floor
+straw = straw | fresh straw
+broom = broom | stiff broom
+fire = fire | banked fire
+flame = flame | small flame
+smoke = smoke | sharp smoke
+ash = ash | cold ash
+roof = roof | shed roof
+table = table | supper table
+plate = plate | supper plate
+bread = bread | fresh bread
+plum = plum | ripe plum
+plums = plums | ripe plums
+tart = tart | plum tart
+slice = slice | warm slice
+oven = oven | kitchen oven
+cup = cup | small cup
+friend = friend | trusted friend
+neighbour = neighbour | near neighbour
+visitor = visitor | new visitor
+stranger = stranger | unknown face
+river = river | Long River
+bank = bank | riverbank
+eel = eel | river eel
+trap = trap | eel trap
+water = water | river water
+mist = mist | morning mist
+dawn = dawn | misty dawn
+morning = morning | early morning
+evening = evening | quiet evening
+rain = rain | light rain
+wind = wind | field wind
+field = field | open field
+day = day | long day
+hour = hour | short hour
+bench = bench | wooden bench
+wagons = wagons | passing wagons
+loaf = loaf | fresh loaf
+night = night | dark night
+sun = sun | rising sun
+father = father | older father
+merchant = merchant | passing merchant
+festival = festival | town festival
+jar = jar | ale jar
+
+any
+opinion @1 city against 1 : The #city# puts #smoke# in the air and calls it industry. | I need room to breathe while I #work#.
+opinion @1 festivals against 1 : A #crowd# spilling drink does not improve a #song#. | I leave before the shouting begins.
+opinion @1 houses against 1 : I have seen an empty #bench# kept from a tired #hand#. | A full #table# should have room for one more.
+opinion @1 merchants against 3 : A #seller# raises the #price# of #bread# while my #wages# stay short. | I will tell them exactly what I think.
+opinion @1 newcomers against 1 : A new #hand# can learn the #loom#, but no one should lose a #shift# without warning. | Speak the arrangement plainly.
+opinion @1 road mixed 0 : The #road# brings #bolts# to buyers. | It also brings #smoke# from passing #wagons#.
+opinion @1 strangers mixed 0 : I will answer a #stranger# honestly. | They can decide whether they like it.
+opinion @1 times against 1 : Each season asks more #coin# for the same #loaf#. | I have kept the old #price# marks.
+line @1 greet : #greet#. That #bolt# has a visible #flaw#. | #greet#. Keep the #door# open; the #smoke# is back.
+line @2 greet [pair.band=friends|family] : Come in. The #tart# has cooled enough. | I know your #steps# on this #floor#.
+line @3 greet [here.time=dawn] : The #mist# was thick at the #gate#. | #greet#. My #shuttle# is already moving.
+line @1 greet.return : You returned before I cut the rough #edge#. | The #fire# is banked now.
+line @1 kin.open [pair.kin!=no] : There is a #slice# by the #table#. | Step inside; the #straw# is clean.
+line @1 again.open : I have not changed my view of that #cloth#. | Is the #market# still crowded?
+line @1 farewell : #farewell#. I need to mark this #flaw#. | Shut the #gate# behind you.
+line @1 farewell.return : Come for the last #slice# later. | The #shed# air should be clearer tomorrow.
+line @1 react.news : Tell me what you know, plainly. | Start with what happened at the #gate#.
+line @1 react.news.new : No one in this #house# brought me that word. | Was a #wagon# involved?
+line @1 react.news.known : I heard the first part at the #market#. | This makes the sequence clearer.
+line @1 react.news.doubt : That #tale# has an easy #ending# and a missing middle. | Who can account for the gap?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. I will not dress this up with a #song#. | Sit here while I put the #work# down.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That is good news, without any need to embellish it. | I will cut the #tart#.
+line @1 answer.how : The #loom# is sound and the #floor# is clean. | I found a little #mist# on the #road#.
+line @1 answer.how.busy [self.working=yes] : This #weft# needs my full attention. | I am cutting the bad #thread# out.
+line @1 ask.how : Did the #road# treat you honestly? | Has your #house# had a quiet #morning#?
+line @1 sympathise : I can sit here without asking for details. | A warm #cup# may help.
+line @1 reassure : The #cloth# can be rewoven from the last good #knot#. | The #smoke# will clear with the #window# open.
+line @1 decline : No. I will not call flawed #linen# sound. | I need the #price# written before agreeing.
+line @1 accept_decline : Understood. I will leave the #bolt# on the #beam#. | Then we can settle it after #evening#.
+line @1 thank : You carried the #straw# before the #rain# reached it. | I appreciate a plain answer.
+line @1 deflect_thanks : It was one #slice#, and I had plenty. | The #broom# was in my #hand#.
+line @1 preclose : I need to sweep the #floor# before supper. | The last #shuttle# pass is waiting.
+line @1 tease [pair.band=friends] : Your #tale# has more knots than this #warp#. | That marching #step# would trip over a #straw#.
+line @1 ack : #bc_right#. That #edge# is rough. | #bc_fair_enough#. We can check the #bolt# again.
+line @1 give.advice : Mark a #flaw# while the #cloth# is still on the #beam#. | Put fresh #straw# over a dry #floor#.
+line @1 warn [world.bandits=near] : Do not walk the #road# alone at #night#. | Keep near the #wagons# at the #gate#.
+scene plain_flaw
+when topic=work
+does tell.self / react.self / assess
+a : I tell a #buyer# about a #flaw# before they find it. | A short sale is better than a long quarrel.
+b : Do they still buy? | Does anyone object?
+a : Often, at the right #price#. | Only those who wanted it hidden.
+
+scene rough_edge
+when topic=work
+does tell.self / react.self / assess
+a : The #edge# of a #bolt# can look smooth while the #threads# pull loose. | I run my fingers along it before cutting.
+b : Can you mend it? | Does it take long?
+a : With a new #hem#. | Less than an argument later.
+
+scene marching_shuttle
+when topic=work
+does tell.self / react.self / assess
+a : I hum an old #march# when the #shuttle# runs evenly. | The #beat# changes when a #knot# catches.
+b : Does that help? | Who taught the song?
+a : I hear the mistake sooner. | I learned it at #home#.
+
+scene smoke_in_shed
+when topic=work
+does tell.self / react.self / assess
+a : Smoke from the #fire# can settle in the #linen#. | I open the #door# and stop the #loom# until the air clears.
+b : Does cloth keep the smell? | Has a fire started?
+a : Longer than it should. | Not while I am watching.
+
+scene clean_straw
+when topic=home
+does tell.self / react.self / assess
+a : Fresh #straw# on a dry #floor# keeps mud out of our #house#. | I change it when the #rain# has passed.
+b : Does it stay neat? | Who helps?
+a : For a #day# or two. | Anyone who tracked mud in.
+
+scene plum_tart
+when topic=food
+does tell.self / react.self / assess
+a : A #plum# #tart# should hold its fruit in thick pieces. | I do not want a sweet crust hiding an empty middle.
+b : Do you make it? | Do you share?
+a : When the #oven# is free. | After I keep one #slice#.
+
+scene old_tale_truth
+when topic=pastimes
+does tell.self / react.self / assess
+a : I enjoy an old #tale# until the teller claims it happened yesterday. | Then I ask which part is true.
+b : Does that spoil the story? | Do they answer?
+a : A good teller can laugh. | The honest ones do.
+
+scene forgotten_ending
+when topic=memories
+does tell.self / react.self / assess
+a : A #stranger# once told us a #tale# with an ending too neat for the facts. | I asked what became of the missing #wagon#.
+b : Was there a wagon? | Did the stranger mind?
+a : That was the point. | Enough to tell the rest.
+
+scene mist_gate
+when topic=weather here.time=dawn
+does tell.self / react.self / assess
+a : Mist hides the #gate# at #dawn# but not the sound of a #wagon#. | I follow the wheel ruts in.
+b : Have you lost your way? | Is it cold?
+a : Not on this #road#. | Until the #sun# rises.
+
+scene clear_air
+when topic=weather
+does tell.self / react.self / assess
+a : After #rain#, the #wind# clears #smoke# from the #shed#. | I leave the #window# open until the #linen# smells clean.
+b : Does rain slow the work? | Do you like it?
+a : Only if the #roof# leaks. | When the air improves.
+
+scene river_trap
+when topic=pastimes
+does tell.self / react.self / assess
+a : I know a bend in the #river# where an #eel# #trap# sits properly. | I set it below the shallow #bank#.
+b : Do you catch many? | Is it your secret?
+a : Enough to justify the walk. | I have told you now.
+
+scene shared_cottage
+when topic=family
+does tell.self / react.self / assess
+a : Our shared #house# has #loom# hands and paper hands at one #table#. | I say when the #floor# needs sweeping.
+b : Does anyone mind? | Do they help?
+a : They can mind and still hear me. | Usually by #evening#.
+
+scene father_lesson
+when topic=family
+does tell.self / react.self / assess
+a : My #father# taught me to speak before a small problem grows. | I remember that when a #thread# frays.
+b : Did he weave? | Was he strict?
+a : He knew how to mend. | Plainer than strict.
+
+scene market_crowd
+when topic=home
+does tell.self / react.self / assess
+a : A #crowd# at the #market# makes every #seller# louder than the next. | I buy what I need and leave.
+b : Do you miss the stories? | What if it is busy?
+a : I can hear them later. | I wait by the #gate#.
+
+scene road_price
+when topic=prices
+does tell.self / react.self / assess
+a : A #merchant# blamed the #road# for a higher #price#. | The same #wagon# had brought the last #bolt# more cheaply.
+b : Did you say so? | What did they answer?
+a : To their face. | That costs had changed.
+
+scene festival_spill
+when topic=pastimes here.day=festival
+does tell.self / react.self / assess
+a : At the #festival# a spilled #jar# ran across the #floor# near the #song#. | I left before someone slipped.
+b : Was anyone hurt? | Did you clean it?
+a : Not while I watched. | I warned the keeper.
+
+scene shed_fire
+when topic=memories
+does tell.self / react.self / assess
+a : Once a #flame# rose too high beside stacked #linen#. | I moved the #bolts# before anyone had time to argue.
+b : Did the shed burn? | Were you afraid?
+a : The walls held. | Enough to move quickly.
+
+story marked_flaw [topic=work self.age>=18]
+  : I found a thin #thread# running across a finished #bolt#.
+  : I marked the #flaw# before a #buyer# arrived and offered the #cloth# at a lower #price#.
+  ask : Did they take it?
+  b : Fair dealing.
+  : They did, after seeing the mark.
+
+story smoky_morning [topic=work self.age>=18]
+  : Smoke filled the #shed# while the #loom# was set.
+  : I opened the #door#, moved the #linen# away, and waited for clean air.
+  ask : Did you lose the day?
+  b : Better to stop.
+  : An #hour#, and no #cloth# spoiled.
+
+story river_bend [topic=pastimes self.age>=18]
+  : I moved an #eel# #trap# from a shallow #bank# to a deeper bend.
+  : The first place had left it nearly dry by #morning#.
+  ask : Did you catch one?
+  b : You found the better water.
+  : Enough for a meal after the #shift#.
+
+rule @bark_flaw
+when concept=bark
+does aside
+cooldown 8h
+say Mark that #flaw# before it leaves. | The #edge# needs another look.
+
+rule @bark_smoke
+when concept=bark
+does aside
+cooldown 9h
+say Open the #door#; I smell #smoke#. | Keep the #bolts# clear of the #fire#.
+
+rule @bark_straw
+when concept=bark
+does aside
+cooldown 10h
+say This #straw# has gone damp. | The #floor# wants a #broom#.
+
+rule @bark_tart
+when concept=bark
+does aside
+cooldown 11h
+say Save the last #slice#. | A #plum# #tart# ought to show its fruit.
+
+dlg @1 resident.hub : #greet#. I am checking this #bolt# for #flaws#. | #greet#. Leave the #door# open if you smell #smoke#.
+dlg @2 resident.hub [topic.meeting=known] : Back again? The #edge# was rough after all. | I remember you; the #shed# air is clearer now.
+dlg @1 resident.job : I weave #linen# at the #shed# and mark flaws before it sells. | My #shuttle# keeps time with an old #march#.
+dlg @1 resident.bye : #farewell#. I will finish this #hem#. | #saying.capitalize#. Watch the #gate# on your way.
+graft resident.hub
+choice Why mark a flaw? -> flaw
+node flaw
+say A #buyer# should know what is in a #bolt#. I mark the #flaw# before anyone pays for the #cloth#.
+free
+choice What is that tune? -> march
+choice Goodbye. -> bye
+node march
+say An old #march# I learned at #home#. Its #beat# lets me hear when the #shuttle# catches.
+choice Back to the loom. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #warp# is set. | #greet#. I have marked the rough #edge#.
+line @1 farewell : #farewell#. The #floor# needs sweeping. | The #tart# will be ready after the #shift#.

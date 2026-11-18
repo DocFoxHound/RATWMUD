@@ -1,0 +1,327 @@
+# lf119, the well-wary pig keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf119
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for cty_edric_pitchmarsh
+written_by claude-codex-lf-1
+title the well-wary pig keeper
+fits stage=adult|old
+prefers job=herder
+traits temper=nervy talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk collects_smooth_stones_from_the_riverbanks
+likes spiced_cider riddles new_boots summer_evenings
+dislikes haggling wet_floors
+fears the_shared_well_running_dry an_unknown_hand_at_the_yard_gate
+hopes a_clear_agreement_over_the_well a_full_trough_at_first_light
+topics work +0.4 home +0.4 pastimes +0.3 weather +0.2
+styles comfort=careful gossip=guarded refuse=plain tease=dry
+marks oath saying
+persona #self.first# counts the #pigs# before trusting the #gate#, keeps smooth #stones# in a pocket, and minds a disputed #well#.
+
+words
+oath! = Pig and well | By the river bank
+saying! = Count the trough before the talk | A shared well needs a clear bucket
+pig = pig | yard pig
+pigs = pigs | Southwood pigs
+sow = sow | older sow
+sows = sows | heavy sows
+boar = boar | stubborn boar
+piglet = piglet | young piglet
+piglets = piglets | young piglets
+yard = yard | pig yard
+pen = pen | fenced pen
+pens = pens | fenced pens
+gate = gate | yard gate
+fence = fence | low fence
+latch = latch | stiff latch
+trough = trough | feeding trough
+troughs = troughs | full troughs
+feed = feed | mixed feed
+grain = grain | dry grain
+straw = straw | clean straw
+mud = mud | yard mud
+hoof = hoof | small hoof
+hooves = hooves | muddy hooves
+hand = hand | working hand
+hands = hands | working hands
+work = work | yard work
+herd = herd | small herd
+field = field | near field
+wood = wood | Southwood wood
+road = road | cart road
+path = path | field path
+cart = cart | supply cart
+carts = carts | passing carts
+well = well | shared well
+bucket = bucket | well bucket
+rope = rope | well rope
+water = water | clear water
+bank = bank | river bank
+river = river | near river
+stone = stone | smooth stone
+stones = stones | pocket stones
+pocket = pocket | coat pocket
+neighbour = neighbour | near neighbour
+friend = friend | yard friend
+stranger = stranger | unknown stranger
+visitor = visitor | passing visitor
+house = house | farmhouse
+home = home | farm home
+door = door | front door
+window = window | quiet window
+floor = floor | wet floor
+roof = roof | sound roof
+boot = boot | new boot
+boots = boots | new boots
+cider = cider | spiced cider
+cup = cup | cider cup
+cups = cups | clean cups
+spice = spice | warm spice
+meal = meal | late meal
+bread = bread | day bread
+larder = larder | full larder
+riddle = riddle | small riddle
+answer = answer | riddle answer
+question = question | riddle question
+wager = wager | small wager
+coin = coin | spare coin
+price = price | asked price
+market = market | town market
+merchant = merchant | market merchant
+city = city | distant city
+queue = queue | long queue
+watch = watch | town watch
+summer = summer | long summer
+evening = evening | warm evening
+night = night | quiet night
+morning = morning | early morning
+day = day | working day
+rain = rain | heavy rain
+wind = wind | field wind
+storm = storm | passing storm
+light = light | morning light
+festival = festival | town festival
+
+any
+opinion @1 city against 2 : I met more strangers in one #city# street than I wanted all #day#. | I keep the #yard# at home.
+opinion @1 dole against 1 : I see the same faces in the #queue# while the #troughs# need filling. | There is #work# to do here.
+opinion @1 festivals against 1 : The #festival# sounds better through my #window#. | The #pigs# still need #feed# that #day#.
+opinion @1 newcomers against 1 : I need to know who enters the #yard# before leaving the #gate# open. | A stranger may bring trouble to the #well#.
+opinion @1 road against 1 : The #road# is rough enough to shake a full #bucket# empty. | I would stay by the #field#.
+opinion @1 strangers against 1 : An unknown #visitor# can wait outside the #fence# while we speak. | I have had enough surprises.
+opinion @1 times for 1 : The #troughs# are full and the #roof# holds. | I will not quarrel with this #day#.
+opinion @1 houses mixed 0 : A great #house# may own its #well#. | Ours belongs to no one who can show a deed.
+line @1 greet : #greet#. Keep the #gate# closed behind you. | #greet#. The #pigs# are settled for now.
+line @2 greet [pair.band=friends|family] : I have #cider# if the #yard# stays quiet. | Come see the newest #piglet#.
+line @1 greet.return : You found the #field# #path# again. | The #well# is still giving #water#.
+line @1 kin.open [pair.kin!=no] : I can bring a #cup# from the #house#. | Leave those #boots# by the #door#.
+line @1 again.open : We had reached the part about the #well#. | Did I count that #pen# twice?
+line @1 farewell : #farewell#. Mind the #latch# on your way out. | I have the #troughs# to fill.
+line @1 farewell.return : I may have settled the #well# matter by then. | Come when the #pigs# have eaten.
+line @1 react.news : Tell me where it happened. | I can listen after checking this #gate#.
+line @1 react.news.new : Nothing like that has reached the #yard#. | Who saw it themselves?
+line @1 react.news.known : A #neighbour# gave me one part of it. | Your account has another piece.
+line @1 react.news.doubt : I would look for #hooves# near the #fence#. | Who was standing by the #gate# when it happened?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is sorry news. Come out of the #wind#. | I can set the #bucket# aside.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good; I can bring a #cup# of #cider#. | That deserves a better #meal#.
+line @1 answer.how : The #well# still has #water# and the #pigs# have #feed#. | I would rest better if the #gate# stayed shut.
+line @1 answer.how.busy [self.working=yes] : I am carrying #feed# to the far #pen#. | I must count the #piglets# first.
+line @1 ask.how : Did the #road# leave your #boots# sound? | Have you had a #meal# today?
+line @1 sympathise : I can fetch a #cup# from the #house#. | There is a quiet place beyond the #yard#.
+line @1 reassure : We can check the #well# together in daylight. | The #fence# will hold the #pigs# through #night#.
+line @1 decline : I cannot leave the #gate# unlatched. | The #well# needs a fair agreement first.
+line @1 accept_decline : I understand; the #bucket# stays here. | Then let the #wager# rest.
+line @1 thank : You filled the #trough# while I was away. | The #cider# was welcome after that #day#.
+line @1 deflect_thanks : I was already at the #well#. | The #stone# was lying in the #path#.
+line @1 preclose : I must count the #pigs# before #night#. | The #well# #rope# needs checking.
+line @1 tease [pair.band=friends] : Your #riddle# has fewer turns than the #well# dispute. | Even that #boar# would bargain more gently.
+line @1 ack : #bc_right#. The #latch# is firm. | #bc_fair_enough#. I will check the #water#.
+line @1 give.advice : Keep the #feed# dry and the #gate# latched. | Draw from the #well# before the #yard# gets busy.
+line @1 warn [world.bandits=near] : Stay close to the other #carts# on the #road#. | Keep the #yard# #gate# barred after dark.
+scene morning_count
+when topic=work
+does tell.self / react.self / assess
+a : I count the #pigs# before I count the #feed#. | One missing #piglet# changes the whole #morning#.
+b : Do they wander far? | How do you know them apart?
+a : Not past the #fence#. | By their #hooves#.
+
+scene full_trough
+when topic=work
+does tell.self / react.self / assess
+a : A full #trough# still needs room for each #pig#. | The #boar# will crowd the younger ones.
+b : What do you do? | Does it work?
+a : I set another #trough#. | When he is hungry enough.
+
+scene sow_gate
+when topic=work
+does tell.self / react.self / assess
+a : An older #sow# learned the weak place in the #gate#. | I replaced the #latch# before she taught the others.
+b : Did she escape? | Is she clever?
+a : Only once. | Clever enough.
+
+scene dry_straw
+when topic=work
+does tell.self / react.self / assess
+a : I put clean #straw# in the #pens# after #rain#. | Wet bedding stays cold when the #wind# rises.
+b : Do the pigs notice? | Where do you keep it?
+a : They settle sooner. | Under the #roof#.
+
+scene piglet_tracks
+when topic=work
+does tell.self / react.self / assess
+a : Small #hooves# leave marks beside the #fence#. | I follow them before the #mud# dries.
+b : Do tracks help? | How far can they go?
+a : Better than calling. | Usually one #field#.
+
+scene well_bucket
+when topic=home
+does tell.self / react.self / assess
+a : I lower a #bucket# carefully into the shared #well#. | A frayed #rope# would cost us more than water.
+b : Who mends it? | Who owns the well?
+a : I can splice it. | That is the quarrel.
+
+scene well_dispute
+when topic=home
+does tell.self / react.self / assess
+a : My #neighbour# says the #well# belongs with their #field#. | I say a #bucket# cannot read a boundary.
+b : Will you settle it? | Do you still share?
+a : I hope so. | We must.
+
+scene well_at_dusk
+when topic=home
+does tell.self / react.self / assess
+a : At #evening# I wait until the #well# is free. | A crowded #bucket# line makes every word sharper.
+b : Do you ever argue? | Would you dig another?
+a : I save my words for the #well#. | That is a large #price#.
+
+scene river_stones
+when topic=pastimes
+does tell.self / react.self / assess
+a : I look for smooth #stones# along the #river# #bank#. | A good one fits my #pocket# without pulling the coat.
+b : Where do the #stones# end up? | Will your #pocket# hold another?
+a : Keep a few by the #door#. | Enough for a small #cup#.
+
+scene stone_in_pocket
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #stone# in my #pocket# reminds me to wait before answering. | It has saved a quarrel at the #well# twice.
+b : Does that truly help? | Which stone is it?
+a : Sometimes. | The grey one.
+
+scene short_riddle
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #riddle# is easier company than a hard bargain. | I give the #answer# only after the #pigs# are fed.
+b : Can I hear one? | Do you know many?
+a : After the #troughs#. | A few worth keeping.
+
+scene spiced_cider
+when topic=food
+does tell.self / react.self / assess
+a : A #cup# of spiced #cider# is good after a damp #day#. | I save it for the #house#, not the #yard#.
+b : Do you make it? | Do you share?
+a : A #neighbour# does. | With a known #friend#.
+
+scene new_boots
+when topic=pastimes
+does tell.self / react.self / assess
+a : New #boots# make the #field# #path# feel less uneven. | I spare them the deep #mud# for the first week.
+b : For how long? | What about yard work?
+a : Until the first #rain#. | The old pair serves.
+
+scene summer_evening
+when topic=weather
+does tell.self / react.self / assess
+a : A long #summer# #evening# lets me count the #pens# in good #light#. | I keep a #cup# outside after the work.
+b : Do the pigs settle? | Does it stay warm?
+a : After #feed#. | Long enough.
+
+scene wet_floor
+when topic=home
+does tell.self / react.self / assess
+a : A wet #floor# inside the #house# is worse than #mud# outside. | I leave a #boot# at the #door#.
+b : Does anyone else? | Do you scrub it?
+a : Whoever visits. | Before supper.
+
+scene price_haggle
+when topic=prices
+does tell.self / react.self / assess
+a : A #merchant# tried to haggle after counting the #pigs#. | I held to the #price# we had named at the #gate#.
+b : Did they agree? | Were you angry?
+a : After a while. | Only with the wasted #day#.
+
+scene unknown_cart
+when topic=travel
+does tell.self / react.self / assess
+a : A strange #cart# stopped beside the #well# without asking. | I watched from the #yard# until its driver moved on.
+b : Did they take water? | Why not greet them?
+a : I could not tell. | They had not approached the #gate#.
+
+story latch_once [topic=work self.age>=18]
+  : An older #sow# pushed through a weak #latch# one #morning#.
+  : I followed her #hooves# to the near #field#.
+  ask : Did she come back?
+  b : A clever sow.
+  : When I shook the #feed# #bucket#.
+
+story well_argument [topic=home self.age>=18]
+  : A #neighbour# and I each claimed the same #well# for a #day#.
+  : By dusk we both needed water more than an answer.
+  ask : Did you make peace?
+  b : A hard bargain.
+  : We drew one #bucket# each and spoke less.
+
+story river_stone [topic=pastimes self.age>=18]
+  : I found a smooth #stone# by the #river# after #rain#.
+  : I carried it home and kept it by the #door#.
+  ask : Why that one?
+  b : A small keepsake.
+  : Its weight helps me think before speaking.
+
+rule @bark_gate
+when concept=bark
+does aside
+cooldown 8h
+say Check the #latch# again. | That #sow# watches the #gate#.
+
+rule @bark_trough
+when concept=bark
+does aside
+cooldown 9h
+say The small #pigs# need this #trough#. | Bring more #feed# to the far #pen#.
+
+rule @bark_well
+when concept=bark
+does aside
+cooldown 10h
+say The #well# #rope# is wearing thin. | One #bucket# at a time there.
+
+rule @bark_stone
+when concept=bark
+does aside
+cooldown 11h
+say A smooth #stone# from the #bank#. | This one fits my #pocket#.
+
+dlg @1 resident.hub : #greet#. The #pigs# are in their #pens#. | #greet#. Shut the #gate# as you come through.
+dlg @2 resident.hub [topic.meeting=known] : The #well# dispute still goes on. | You arrived before I finished the #feed#.
+dlg @1 resident.job : I keep #pigs# at #self.workplace#. | I fill the #troughs#, mend the #fence#, and count the #piglets#.
+dlg @1 resident.bye : #farewell#. I must check the #latch#. | #saying.capitalize#. Leave the #well# #rope# dry.
+graft resident.hub
+choice Who owns the well? -> well
+node well
+say Both houses draw from it. Neither has shown me a deed.
+free
+choice Why collect stones? -> stones
+choice Goodbye. -> bye
+node stones
+say A smooth #stone# fits my #pocket# and keeps me from answering too quickly.
+choice Back to the yard. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #feed# has arrived. | #greet#. I have counted the #piglets#.
+line @1 farewell : #farewell#. The #gate# needs its #latch#. | I will draw one more #bucket#.

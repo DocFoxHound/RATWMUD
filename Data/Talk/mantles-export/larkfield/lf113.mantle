@@ -1,0 +1,316 @@
+# lf113, the door-watching vat hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf113
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for tn_cw_fern_mistshore
+written_by claude-codex-lf-1
+title the door-watching vat hand
+fits stage=adult|old
+prefers job=crafter
+traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk keeps_the_entry_in_sight_at_supper
+likes smoked_eel digging full_larder summer_evenings
+dislikes deep_mud waiting
+fears a_vat_spoiled_by_dirty_water a_cart_stuck_far_from_home
+hopes a_full_larder_for_every_house a_shorter_road_to_the_city
+topics work +0.5 home +0.3 travel +0.3 food +0.2
+styles comfort=practical gossip=blunt refuse=plain tease=gentle
+marks oath saying
+persona #self.first# works the #vat#, watches the #door# even at supper, and counts every mile of the #cart# road.
+
+words
+oath! = By the clean sheet | Vat and water
+saying! = Give the pulp time to settle | A clear door makes an easy seat
+vat = vat | paper vat
+pulp = pulp | wet pulp
+sheet = sheet | new sheet
+sheets = sheets | drying sheets
+paper = paper | rough paper
+press = press | printing press
+rag = rag | clean rag
+rags = rags | sorted rags
+water = water | fresh water
+bucket = bucket | full bucket
+frame = frame | wooden frame
+mould = mould | paper mould
+felt = felt | damp felt
+stack = stack | paper stack
+stacks = stacks | paper stacks
+ink = ink | black ink
+letter = letter | printed letter
+letters = letters | printed letters
+hand = hand | working hand
+hands = hands | working hands
+work = work | vat work
+boss = boss | press owner
+cart = cart | goods cart
+wheel = wheel | cart wheel
+road = road | long road
+mile = mile | slow mile
+miles = miles | many miles
+city = city | distant city
+market = market | city market
+price = price | asking price
+coin = coin | thin coin
+bread = bread | oven bread
+larder = larder | full larder
+meal = meal | evening meal
+eel = eel | smoked eel
+plate = plate | plain plate
+home = home | shared home
+house = house | cottage
+room = room | small room
+door = door | open door
+seat = seat | wooden seat
+back = back | chair back
+window = window | front window
+neighbour = neighbour | nearby neighbour
+stranger = stranger | passing stranger
+friend = friend | old friend
+mud = mud | wheel mud
+boot = boot | heavy boot
+boots = boots | wet boots
+rain = rain | steady rain
+weather = weather | shifting weather
+limp = limp | old limp
+knee = knee | stiff knee
+garden = garden | little garden
+soil = soil | turned soil
+spade = spade | garden spade
+summer = summer | warm summer
+evening = evening | long evening
+night = night | dark night
+morning = morning | early morning
+hour = hour | working hour
+hours = hours | working hours
+plates = plates | supper plates
+frames = frames | wooden frames
+table = table | shared table
+gate = gate | town gate
+festival = festival | crowded festival
+wait = wait | long wait
+queue = queue | market queue
+wagon = wagon | loaded wagon
+
+any
+opinion @1 city against 1 : I have hauled #paper# there and counted every dirty #mile# back. | Their #market# forgets the #hands# that made it.
+opinion @1 dole for 1 : A #larder# should never stand empty while a #neighbour# has #bread#. | Put a #meal# on the #plate# first.
+opinion @1 festivals against 1 : There is more noise than supper at a #festival#. | Someone always spills a drink beside the #door#.
+opinion @1 merchants against 2 : The #price# rises while my #coin# stays thin. | They weigh our #sheets# and leave out the #hours#.
+opinion @1 strangers for 1 : I can set a #stranger# at the #table# and bring another #plate#. | A hungry traveller can sit where I see the #door#.
+opinion @1 times against 1 : Another week of #work# buys less #bread#. | My #hands# know the change before any account does.
+opinion @1 road mixed 0 : The #road# brings our #paper# to the #market#. | Its #mud# has taken enough from my #cart#.
+line @1 greet : #greet#. Keep the #door# in view. | #greet#. I have just lifted a #sheet# from the #vat#.
+line @2 greet [pair.band=friends|family] : There is #eel# in the #larder# if you are hungry. | Sit here; I will take the other #seat#.
+line @1 greet.return : The last #stack# is still damp to the touch. | Come in before the #rain# reaches the #door#.
+line @1 kin.open [pair.kin!=no] : I saved you a #plate# by the #window#. | Come inside and dry those #boots#.
+line @1 again.open : I was telling you about the #cart# on the #road#. | The #vat# took another #bucket#.
+line @1 farewell : #farewell#. I have #sheets# to turn. | Mind the #mud# beside the #gate#.
+line @1 farewell.return : Next time the #paper# may be dry. | Come back when the #evening# is long.
+line @1 react.news : Tell it plainly while I put down this #frame#. | Did it happen on the #road#?
+line @1 react.news.new : Nobody at the #press# has said a word of it. | Who brought this from the #city#?
+line @1 react.news.known : I heard the shape of it at the #market#. | Your account fills a gap for me.
+line @1 react.news.doubt : I would ask who watched the #cart# leave. | Which #hand# was near enough to see it happen?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Sit down; I can put the #work# aside. | That is hard news to carry through the #door#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good; I will find another #plate#. | That calls for the better #bread#.
+line @1 answer.how : My #knee# aches, but the #vat# is sound. | Better since the #cart# came home.
+line @1 answer.how.busy [self.working=yes] : I am lifting this #frame# straight. | Wait until the #sheet# is on the #felt#.
+line @1 ask.how : How did your #boots# fare on that #road#? | Have you eaten today?
+line @1 sympathise : Let me bring you a #meal# before you speak. | Sit where the #window# gives you light.
+line @1 reassure : We can find a dry way round the #mud#. | There is room at our #table# tonight.
+line @1 decline : I cannot leave a full #vat# unattended. | I have promised these #sheets# by #morning#.
+line @1 accept_decline : I understand; I will finish the #stack# here. | Then keep your #boots# clear of the #mud#.
+line @1 thank : The #frame# stayed level because of your steady grip. | That #bread# helped more than you know.
+line @1 deflect_thanks : I had filled the #bucket# for my own use. | I was walking past your #door#.
+line @1 preclose : The #sheets# need turning before dark. | I should get the #cart# under cover.
+line @1 tease [pair.band=friends] : You would sit with your #back# to any #door#. | Your #spade# has had a longer rest than I have.
+line @1 ack : #bc_right#. That #sheet# is almost dry. | #bc_fair_enough#. I will try the #road# tomorrow.
+line @1 give.advice : Keep the #frame# level until the #water# drains. | Eat before setting out with a full #cart#.
+line @1 warn [world.bandits=near] : Take company on the #road# tonight. | Keep the #wagon# near the other travellers.
+scene clean_water
+when topic=work
+does tell.self / react.self / assess
+a : Dirty #water# leaves marks in a fresh #sheet#. | I fetch another #bucket# before I waste the #pulp#.
+b : Can you see the dirt? | Does it take long?
+a : Against the light. | Longer than fetching water.
+
+scene lifted_frame
+when topic=work
+does tell.self / react.self / assess
+a : I lift the #frame# evenly from the #vat#. | A tilted #mould# sends #pulp# to one corner.
+b : What happens then? | Can you fix it?
+a : A thin edge tears. | Back into the #vat#.
+
+scene rag_sorting
+when topic=work
+does tell.self / react.self / assess
+a : Good #rags# make a stronger #sheet# than the scraps in the bottom #bucket#. | I sort before dawn.
+b : Who brings the rags? | Do you discard many?
+a : Neighbours and traders. | More than I like.
+
+scene wet_felt
+when topic=work
+does tell.self / react.self / assess
+a : Damp #felt# takes the fresh #paper# without pulling it apart. | I keep a dry piece ready as well.
+b : When do you switch? | Is it heavy?
+a : When the first sticks. | By the end of the day.
+
+scene drying_stack
+when topic=work
+does tell.self / react.self / assess
+a : The top #sheet# can feel dry while the middle of the #stack# stays wet. | I turn the whole lot.
+b : Every day? | What if it rains?
+a : Most mornings. | Then I move them inside.
+
+scene printed_letter
+when topic=work
+does tell.self / react.self / assess
+a : A clean #letter# starts with a sound #sheet#. | I can spot my own rough #paper# under the #ink#.
+b : Does the printer know? | Does it matter?
+a : Usually. | The #letters# bleed less.
+
+scene paper_price
+when topic=prices
+does tell.self / react.self / assess
+a : A buyer counts finished #sheets#, not the #hours# beside the #vat#. | I count both.
+b : Can you ask for more? | Who sets the price?
+a : I do ask. | The #market# has its say.
+
+scene city_cart
+when topic=travel
+does tell.self / react.self / assess
+a : I rode beside a #cart# of #paper# until the #city# gates came into view. | The return #miles# felt longer.
+b : Why go yourself? | Did you stay?
+a : To keep it dry. | Only until the #wagon# was empty.
+
+scene broken_wheel
+when topic=travel
+does tell.self / react.self / assess
+a : A #wheel# stuck in #mud# once cost us half a day. | I dug around it with my bare #hands#.
+b : Did it come free? | Who helped?
+a : Eventually. | A passing #hand#.
+
+scene door_seat
+when topic=home
+does tell.self / react.self / assess
+a : I take the #seat# facing the #door# without thinking now. | I like to know when a #friend# arrives.
+b : Even at home? | Does anyone object?
+a : Especially there. | They know my habit.
+
+scene shared_larder
+when topic=home
+does tell.self / react.self / assess
+a : Our #house# has several #hands# and one #larder#. | I can tell by supper whether everyone ate.
+b : Do you keep count? | What if it runs low?
+a : Of the #plates#. | We share what is there.
+
+scene smoked_eel
+when topic=food
+does tell.self / react.self / assess
+a : Smoked #eel# with fresh #bread# is enough after a day at the #vat#. | I keep a little for the road.
+b : Do you smoke it? | How long does it last?
+a : I buy it ready. | Long enough for a journey.
+
+scene garden_hour
+when topic=pastimes
+does tell.self / react.self / assess
+a : An #hour# digging in the #garden# loosens what the #press# stiffens. | The #spade# rests against our back wall.
+b : What grows there? | Do you rest afterward?
+a : What the #soil# will take. | At supper.
+
+scene summer_evening
+when topic=weather
+does tell.self / react.self / assess
+a : A long #summer# #evening# lets me finish the #stack# and still see the #garden#. | I use every bit of it.
+b : Do you ever stop? | Is it warm enough?
+a : When the light goes. | Usually.
+
+scene weather_limp
+when topic=weather
+does tell.self / react.self / assess
+a : My #knee# knows #rain# before the #window# shows it. | The old #limp# comes back on wet days.
+b : Does it stop you working? | Does it ease?
+a : I slow down. | In dry #weather#.
+
+scene waiting_cart
+when topic=travel
+does tell.self / react.self / assess
+a : Waiting beside a loaded #cart# is worse than walking with it. | I want its #wheel# turning.
+b : What holds it? | Would you leave without it?
+a : Usually a late buyer. | Not with my #paper# aboard.
+
+scene open_door
+when topic=family
+does tell.self / react.self / assess
+a : I keep the #door# in sight when we eat together. | Someone always comes home with wet #boots#.
+b : Do you save a place? | Do they mind?
+a : One extra #plate#. | No one has complained.
+
+story first_vat [topic=work self.age>=18]
+  : My first #sheet# came off the #frame# with a hole through it.
+  : I had lifted one corner before the #water# had drained.
+  ask : Did you try again?
+  b : That sounds frustrating.
+  : I put the #pulp# back and made another.
+
+story long_cart [topic=travel self.age>=18]
+  : We carried a dry #stack# to the #city# under a canvas cover.
+  : Deep #mud# held the #wheel# while a buyer waited at the far end.
+  ask : Was the paper damaged?
+  b : A hard journey for paper.
+  : Only the cover; the #sheets# stayed dry.
+
+story seat_by_door [topic=home self.age>=18]
+  : Someone once moved my usual #seat# away from the #door#.
+  : I spent the whole #meal# turning to see who entered.
+  ask : Did you move it back?
+  b : It is a familiar habit.
+  : Before the next supper.
+
+rule @bark_vat
+when concept=bark
+does aside
+cooldown 8h
+say Keep the #frame# level. | This #pulp# needs another stir.
+
+rule @bark_door
+when concept=bark
+does aside
+cooldown 9h
+say Leave that #door# clear. | The #road# shows through this #window#.
+
+rule @bark_cart
+when concept=bark
+does aside
+cooldown 10h
+say Cover the #paper# before the #rain#. | The #wheel# has found more #mud#.
+
+rule @bark_supper
+when concept=bark
+does aside
+cooldown 11h
+say One more #plate# at the #table#. | The #eel# is for sharing.
+
+dlg @1 resident.hub : #greet#. The #vat# is nearly ready. | #greet#. Take the #seat# facing me.
+dlg @2 resident.hub [topic.meeting=known] : The #cart# made it back today. | I kept a #plate# aside if you need one.
+dlg @1 resident.job : I draw #paper# from the #vat# at #self.workplace#. | I sort #rags#, lift #frames#, and dry the #sheets#.
+dlg @1 resident.bye : #farewell#. I must turn the #stack#. | #saying.capitalize#. Stay clear of the #mud#.
+graft resident.hub
+choice Why face the door? -> door
+node door
+say I like to see who comes home, especially when the #road# is bad.
+free
+choice What happens in the vat? -> vat
+choice Goodbye. -> bye
+node vat
+say I spread #pulp# over a #frame# and let the #water# drain.
+choice Back to the room. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. That #sheet# is holding together. | #greet#. The #cart# is under cover.
+line @1 farewell : #farewell#. I will check the #door# once more. | The #larder# has room for you tomorrow.

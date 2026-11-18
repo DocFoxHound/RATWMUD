@@ -1,0 +1,341 @@
+# lf130, the grandmother-quoting woodcutter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf130
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for cty_kell_greenshaw
+written_by claude-codex-lf-1
+title the grandmother-quoting woodcutter
+fits stage=adult|old
+prefers job=woodcutter
+traits temper=even talk=chatty warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk has_opinions_about_everyone_s_grandmother
+likes crisp_apples whittling old_maps warm_rain
+dislikes cold_tea stale_bread
+fears a_falling_branch_near_a_friend a_saved_coin_found_before_its_purpose_is_ready
+hopes a_safe_cut_for_every_hand enough_coin_for_a_private_plan
+topics work +0.5 pastimes +0.4 family +0.3 weather +0.2
+styles comfort=hearty gossip=cheerful refuse=plain tease=merry
+marks oath saying
+persona #self.first# cuts #wood# for the #hearths#, judges a #stranger# by a #grandmother#, and quietly saves #coin# for an unnamed purpose.
+
+words
+oath! = Axe and apple | By every wise grandmother
+saying! = Ask the grandmother before the trader | A clean cut leaves room to stand
+wood = wood | cut wood
+woods = woods | near woods
+forest = forest | Rainwood forest
+tree = tree | standing tree
+trees = trees | tall trees
+trunk = trunk | thick trunk
+branch = branch | heavy branch
+branches = branches | low branches
+root = root | hidden root
+bark = bark | rough bark
+grain = grain | wood grain
+axe = axe | sharp axe
+blade = blade | axe blade
+edge = edge | clean edge
+cut = cut | safe cut
+cuts = cuts | measured cuts
+swing = swing | axe swing
+swings = swings | even swings
+wedge = wedge | wooden wedge
+wedges = wedges | wooden wedges
+log = log | cut log
+logs = logs | stacked logs
+pile = pile | woodpile
+stack = stack | dry stack
+hearth = hearth | town hearth
+hearths = hearths | town hearths
+fire = fire | hearth fire
+ash = ash | cold ash
+hand = hand | working hand
+hands = hands | working hands
+work = work | wood work
+cart = cart | wood cart
+wagon = wagon | goods wagon
+road = road | forest road
+path = path | woodland path
+map = map | old map
+maps = maps | old maps
+roadmark = roadmark | map roadmark
+mark = mark | faded mark
+marks = marks | faded marks
+bridge = bridge | stone bridge
+market = market | town market
+merchant = merchant | wood merchant
+price = price | asked price
+coin = coin | saved coin
+purse = purse | small purse
+secret = secret | kept secret
+plan = plan | private plan
+friend = friend | close friend
+neighbour = neighbour | near neighbour
+stranger = stranger | passing stranger
+grandmother = grandmother | old grandmother
+grandmothers = grandmothers | town grandmothers
+family = family | shared family
+house = house | shared house
+home = home | cottage
+door = door | cottage door
+roof = roof | sound roof
+window = window | front window
+bench = bench | wooden bench
+table = table | supper table
+plate = plate | supper plate
+apple = apple | crisp apple
+apples = apples | crisp apples
+bread = bread | day bread
+loaf = loaf | stale loaf
+tea = tea | strong tea
+cup = cup | tea cup
+knife = knife | whittling knife
+peg = peg | wooden peg
+pegs = pegs | wooden pegs
+shaving = shaving | wood shaving
+shavings = shavings | wood shavings
+rain = rain | warm rain
+wind = wind | field wind
+mud = mud | road mud
+boot = boot | work boot
+boots = boots | work boots
+morning = morning | early morning
+evening = evening | late evening
+night = night | quiet night
+day = day | working day
+hour = hour | working hour
+festival = festival | town festival
+city = city | far city
+watch = watch | town watch
+houses = houses | grand houses
+gate = gate | town gate
+town = town | near town
+meal = meal | evening meal
+wheel = wheel | cart wheel
+rope = rope | binding rope
+nights = nights | cold nights
+smoke = smoke | wood smoke
+
+any
+opinion @1 city against 1 : The #city# trades in #wood# without seeing a single #tree#. | The #hands# that cut it matter more to me.
+opinion @1 dole for 1 : A hungry #neighbour# deserves #bread# before a lecture. | I can share a #loaf#.
+opinion @1 festivals for 1 : The #festival# puts every #grandmother# in one place. | I enjoy hearing which advice wins.
+opinion @1 houses against 1 : Grand #houses# burn our #logs# and leave the cutters at the #gate#. | I know the #hearth# #hands#.
+opinion @1 merchants against 1 : I check the #price# against the #pile# before a #merchant# loads the #cart#. | They can count too.
+opinion @1 newcomers for 1 : Stacking #logs# gives a fresh #hand# a safe first task. | I will show them how.
+opinion @1 strangers for 1 : A #stranger# can take an #apple# while we talk. | I still ask about their #grandmother#.
+opinion @1 road mixed 0 : The #road# carries #wood# to the #hearths#. | My old #map# draws a better one that never existed.
+line @1 greet : #greet#. The #logs# are nearly stacked. | #greet#. I have an #apple# if you want one.
+line @2 greet [pair.band=friends|family] : I kept a #bench# near the #fire#. | Come see what the #map# got wrong.
+line @1 greet.return : The #axe# is still beside the #pile#. | Your #grandmother# would have counted these #logs# faster.
+line @1 kin.open [pair.kin!=no] : There is a #plate# at the #table#. | The #rain# is near; find the dry #bench# inside.
+line @1 again.open : I was sharpening the #edge#. | Did I show you the old #map#?
+line @1 farewell : #farewell#. The #cart# is ready. | Keep clear of the falling #branches#.
+line @1 farewell.return : I may have a fresh #peg# by then. | The #wood# can wait until another #morning#.
+line @1 react.news : Tell me as we stack these #logs#. | Who passed it along the #road#?
+line @1 react.news.new : The #hearth# workers have said nothing of that. | Did it start in #town#?
+line @1 react.news.known : I heard one part from a #friend# yesterday. | You have added a turn I missed.
+line @1 react.news.doubt : I would check the #marks# on the #cart#. | Which cutter saw the #wood# placed on that #cart#?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Set the #axe# down and sit. | I will find you a #plate#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That is news for the whole #house#. | The good #apples# are for news like this.
+line @1 answer.how : The #cart# took its load, and the #wood# stayed dry. | I have kept the #blade# sharp.
+line @1 answer.how.busy [self.working=yes] : I am splitting this #log# along the #grain#. | Let me clear the #branches# first.
+line @1 ask.how : Have you eaten a proper #meal#? | Did the #road# keep your #boots# dry?
+line @1 sympathise : Sit beside the #fire# while I make #tea#. | A little quiet may help.
+line @1 reassure : We can wait for the #rain# to pass. | There is enough #wood# for tonight.
+line @1 decline : I will not fell that #tree# with another #hand# beneath it. | The #axe# needs a sharper #edge# first.
+line @1 accept_decline : Those #logs# may remain beside the #pile#. | Then the #cart# takes the longer #road#.
+line @1 thank : You steadied the #wedge# as I struck. | That crisp #apple# was welcome.
+line @1 deflect_thanks : The #log# was already split. | My #knife# was already out for whittling.
+line @1 preclose : The #pile# needs its cover before dark. | My #tea# will go cold again.
+line @1 tease [pair.band=friends] : Your #grandmother# would have chosen a better #axe#. | That #map# sends us through a #tree#.
+line @1 ack : #bc_right#. The #grain# runs this way. | #bc_fair_enough#. I will count the #logs#.
+line @1 give.advice : Clear the #path# before the first #swing#. | Keep the #blade# away from loose #branches#.
+line @1 warn [world.bandits=near] : Travel with the next #wagon#. | Keep your #purse# under your coat on the #road#.
+scene safe_cut
+when topic=work
+does tell.self / react.self / assess
+a : I clear a #path# for the falling #tree# before the first #cut#. | A good #axe# is no help if someone stands beneath it.
+b : Who watches the path? | Do you mark it?
+a : Another #hand#. | With a #branch#.
+
+scene wedge_split
+when topic=work
+does tell.self / react.self / assess
+a : A #wedge# keeps the #grain# opening where I want it. | I step back before the #log# moves.
+b : Can it jump? | Who holds it?
+a : A dry one may. | No one once struck.
+
+scene stack_air
+when topic=work
+does tell.self / react.self / assess
+a : I leave air between the #logs# in a covered #stack#. | Wet #wood# smokes in a #hearth#.
+b : How long to dry? | Do you turn them?
+a : Through a season. | After heavy #rain#.
+
+scene cart_load
+when topic=work
+does tell.self / react.self / assess
+a : I place the thick #logs# low on the #cart#. | A top-heavy load can pull the #wheel# off the #road#.
+b : Has that happened? | Do you tie it?
+a : Once, before I knew. | With strong #rope#.
+
+scene blade_edge
+when topic=work
+does tell.self / react.self / assess
+a : A keen #edge# follows the #grain# rather than skipping across it. | I sharpen it before a long #day#.
+b : How often? | Does the first #cut# sound cleaner?
+a : When it needs it. | On the first #cut#.
+
+scene falling_branch
+when topic=work
+does tell.self / react.self / assess
+a : A broken #branch# can fall before the #trunk# moves. | I look up before each #swing#.
+b : Do others do that? | Has one struck you?
+a : When reminded. | Not yet.
+
+scene grandmother_test
+when topic=family
+does tell.self / react.self / assess
+a : I ask who taught a #stranger# to keep a #fire#. | The answer often names a #grandmother#.
+b : Does that tell you much? | Do they mind the question?
+a : More than a trade. | Some laugh.
+
+scene grandmother_advice
+when topic=family
+does tell.self / react.self / assess
+a : One #grandmother# said to count #logs# by how many cold #nights# they cover. | I like that better than a buyer #price#.
+b : Do you follow it? | Whose grandmother?
+a : At home. | One from this #road#.
+
+scene crisp_apple
+when topic=food
+does tell.self / react.self / assess
+a : A crisp #apple# after splitting #wood# cleans the taste of #smoke#. | I keep one in my #purse# without the #coin#.
+b : Do you grow them? | Do you share?
+a : I buy them. | When there are two.
+
+scene whittled_pegs
+when topic=pastimes
+does tell.self / react.self / assess
+a : I whittle small #pegs# from the offcuts of #wood#. | The #knife# keeps my #hands# moving after the #axe# rests.
+b : Who uses them? | Do you sell them?
+a : Anyone with a loose #door#. | I give them away.
+
+scene wrong_map
+when topic=pastimes
+does tell.self / react.self / assess
+a : My old #map# puts a #bridge# where the #road# only crosses #mud#. | I keep it for the lines it gets right.
+b : Have you followed it? | Would you correct it?
+a : Once too far. | It has its own charm.
+
+scene saved_coin
+when topic=home
+does tell.self / react.self / assess
+a : I put a little #coin# away after each #cart# sells. | I have not named the #plan# aloud.
+b : What is it for? | Is it enough?
+a : A thing I hope to do. | Not yet.
+
+scene warm_rain
+when topic=weather
+does tell.self / react.self / assess
+a : Warm #rain# darkens the #bark# before it soaks the #logs#. | I cover the #stack# while the #path# is still firm.
+b : Does it slow work? | Do you like it?
+a : For a #day#. | Once I am under a #roof#.
+
+scene cold_tea
+when topic=food
+does tell.self / react.self / assess
+a : My #tea# turns cold while I count the last #logs#. | I drink it anyway and complain properly.
+b : Do you reheat it? | Who made it?
+a : If there is #fire#. | Someone at home.
+
+scene stale_loaf
+when topic=food
+does tell.self / react.self / assess
+a : A stale #loaf# needs more than a warm #cup# to help it. | I toast it by the #hearth#.
+b : Does that improve it? | Do you waste any?
+a : Somewhat. | Not at our #table#.
+
+scene market_price
+when topic=prices
+does tell.self / react.self / assess
+a : I weigh a #pile# of #wood# against the #merchant# #price#. | A full #cart# should pay the cutters fairly.
+b : Do you bargain? | Do they listen?
+a : When needed. | After I show the #logs#.
+
+scene hearth_company
+when topic=home
+does tell.self / react.self / assess
+a : Our #house# has other #hands# coming home from different #work#. | A full #table# can drown out my #grandmother# stories.
+b : Do you mind? | Do you tell them anyway?
+a : Only a little. | When they let me finish.
+
+story branch_warning [topic=work self.age>=18]
+  : I saw a loose #branch# above the #path# before a #tree# fell.
+  : I called the other #hand# back and waited for it to drop.
+  ask : Was anyone hurt?
+  b : A good warning.
+  : Only the #branch# struck the ground.
+
+story wrong_bridge [topic=pastimes self.age>=18]
+  : My old #map# drew a #bridge# over a patch of #mud#.
+  : A walk by its false #bridge# left my #boots# heavy with #mud#.
+  ask : Did you throw it away?
+  b : A memorable map.
+  : No; I still like its honest errors.
+
+story hidden_savings [topic=home self.age>=18]
+  : I hid a few #coin# after the #cart# was sold.
+  : The #house# asked what I was saving for.
+  ask : Did you answer?
+  b : A private plan.
+  : I said I would tell them when it was real.
+
+rule @bark_axe
+when concept=bark
+does aside
+cooldown 8h
+say Mind the #branch# above you. | The #axe# #edge# is ready.
+
+rule @bark_grandmother
+when concept=bark
+does aside
+cooldown 9h
+say Ask your #grandmother# about that. | Mine would have counted the #logs#.
+
+rule @bark_map
+when concept=bark
+does aside
+cooldown 10h
+say That #bridge# is on the wrong #road#. | The #map# has fooled me again.
+
+rule @bark_coin
+when concept=bark
+does aside
+cooldown 11h
+say The #cart# brought a little #coin#. | I will put this away for later.
+
+dlg @1 resident.hub : #greet#. The #axe# is resting. | #greet#. Have you eaten an #apple# today?
+dlg @2 resident.hub [topic.meeting=known] : I have another #map# error for you. | The #logs# are almost on the #cart#.
+dlg @1 resident.job : I cut #wood# at #self.workplace#. | I clear the #path#, cut #trees#, and build a dry #pile#.
+dlg @1 resident.bye : #farewell#. I must cover the #pile#. | #saying.capitalize#. Mind the #branches#.
+graft resident.hub
+choice Why ask about grandmothers? -> kin
+node kin
+say They teach more about a #hearth# than a #merchant# ever will.
+free
+choice What is wrong with the map? -> map
+choice Goodbye. -> bye
+node map
+say Its #bridge# crosses #mud# where no bridge stands.
+choice Back to the woodpile. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #stack# is dry. | #greet#. I have a #peg# for that #door#.
+line @1 farewell : #farewell#. I will finish this #cart#. | The #apple# can wait for supper.

@@ -1,0 +1,340 @@
+# sm103, the sparrow's wrong map (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle sm103
+revision 1
+state ready
+dialect southmeadow
+accent none
+tier standard
+written_for cty_brisk_lakemere
+written_by claude-codex-lf-1
+title the sparrow's wrong map
+fits stage=adult|old
+prefers talk=plain
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk feeds_the_sparrows
+likes hard_cheese draughts old_maps first_snow
+dislikes wet_floors crowds
+fears a_pig_lost_in_the_wood a_household_child_left_without_a_place
+hopes a_safe_post_for_a_young_relative a_quiet_game_after_the_pigs_are_fed
+topics work +0.4 family +0.4 pastimes +0.3 home +0.2
+styles comfort=gentle gossip=reluctant refuse=plain tease=dry
+marks oath saying
+persona #self.first# scatters #crumbs# for #sparrows# by the #pig# #yard#, studies wrong #roads# on old #maps#, and keeps a #draughts# #board# ready.
+
+words
+oath! = Sparrow and square | By the quiet yard
+saying! = Feed the small ones before counting your own | A wrong map can still start a journey
+pig = pig | yard pig
+pigs = pigs | Southwood pigs
+sow = sow | old sow
+sows = sows | heavy sows
+piglet = piglet | young piglet
+piglets = piglets | young piglets
+yard = yard | pig yard
+gate = gate | yard gate
+fence = fence | low fence
+trough = trough | feed trough
+feed = feed | pig feed
+grain = grain | crushed grain
+bucket = bucket | feed bucket
+straw = straw | dry straw
+mud = mud | deep mud
+field = field | Southwood field
+wood = wood | dark wood
+tree = tree | wood tree
+path = path | narrow path
+road = road | High Road
+roads = roads | drawn roads
+map = map | old map
+maps = maps | worn maps
+line = line | map line
+lines = lines | faded lines
+mark = mark | ink mark
+marks = marks | ink marks
+bridge = bridge | river bridge
+river = river | Long River
+town = town | Larkfield
+market = market | town market
+crowd = crowd | market crowd
+stall = stall | food stall
+seller = seller | market seller
+house = house | shared house
+home = home | cottage
+door = door | cottage door
+window = window | small window
+floor = floor | wooden floor
+plank = plank | floor plank
+broom = broom | stiff broom
+family = family | household
+child = child | growing child
+children = children | young children
+relative = relative | young relative
+friend = friend | trusted friend
+neighbour = neighbour | near neighbour
+stranger = stranger | passing stranger
+post = post | household post
+service = service | paid service
+letter = letter | folded letter
+table = table | kitchen table
+plate = plate | supper plate
+bread = bread | fresh bread
+crumb = crumb | bread crumb
+crumbs = crumbs | bread crumbs
+cheese = cheese | hard cheese
+cup = cup | plain cup
+sparrow = sparrow | small sparrow
+sparrows = sparrows | small sparrows
+wing = wing | brown wing
+wings = wings | brown wings
+bird = bird | yard bird
+birds = birds | yard birds
+draughts = draughts | draughts game
+board = board | square board
+square = square | dark square
+squares = squares | marked squares
+piece = piece | wooden piece
+pieces = pieces | wooden pieces
+move = move | careful move
+moves = moves | careful moves
+snow = snow | first snow
+winter = winter | cold winter
+rain = rain | passing rain
+morning = morning | early morning
+evening = evening | quiet evening
+night = night | still night
+day = day | long day
+hour = hour | quiet hour
+coin = coin | saved coin
+wages = wages | small wages
+game = game | draughts game
+hand = hand | working hand
+step = step | careful step
+planks = planks | floor planks
+dawn = dawn | pale dawn
+wagon = wagon | supply wagon
+boots = boots | dry boots
+stalls = stalls | market stalls
+mornings = mornings | early mornings
+ink = ink | faded ink
+
+any
+opinion @1 houses mixed 0 : A great #house# may offer a young #relative# a steady #post#. | I would ask who keeps the #wages# honest.
+opinion @1 merchants mixed 0 : I buy #grain# where the #seller# lets me see the #bucket# filled. | A full #trough# matters more than a fine sign.
+opinion @1 newcomers mixed 0 : Someone new can learn the #pig# #yard# if they listen first. | The #gate# has its own way of sticking.
+opinion @1 road mixed 0 : My #map# puts the #bridge# too near the #town#. | The real #road# has been kinder than the ink.
+opinion @1 strangers mixed 0 : A #stranger# may know a better path through the #wood#. | I keep the #gate# fastened while we speak.
+opinion @1 times mixed 0 : A quiet #day# with enough #feed# suits me. | I still put a #coin# away for #winter#.
+opinion @1 festivals mixed 0 : I can hear the #market# from the #yard#. | I would rather finish a #game# at the #table#.
+opinion @1 dole mixed 0 : If a #child# needs #bread#, I will share a #piece#. | I know what an empty #plate# looks like.
+line @1 greet : #greet#. The #sparrows# have found the #crumbs#. | #greet#. I was checking the #pig# #gate#.
+line @2 greet [pair.band=friends|family] : The #board# is set out for you. | I saved a #piece# of #cheese#.
+line @3 greet [here.time=dawn] : The #pigs# woke before the #market#. | #greet#. There may be #snow# by the #wood#.
+line @1 greet.return : You came back while the #sparrows# were feeding. | I found another wrong #line# on this #map#.
+line @1 kin.open [pair.kin!=no] : Come inside; the #floor# is dry. | A #plate# is ready if you want it.
+line @1 again.open : Were we discussing the #bridge#? | The #sow# has settled now.
+line @1 farewell : #farewell#. The #trough# needs filling. | Close the #gate# after you.
+line @1 farewell.return : The #board# can wait for another #evening#. | Bring your #map# when you return.
+line @1 react.news : Speak while I set down the #bucket#. | Was it near the #wood#?
+line @1 react.news.new : No word of that reached this #yard#. | Who came down the #road# with it?
+line @1 react.news.known : A #neighbour# mentioned the first part. | Your account adds the rest.
+line @1 react.news.doubt : The #map# may be old, but I would check the real #path#. | Whose own eyes caught the real place?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : We can sit quietly after the #pigs# are fed. | I am sorry. Take the warm #cup#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That is a good turn for them. | I hope there is #bread# enough to mark it.
+line @1 answer.how : The #pigs# ate and the #sparrows# took the last #crumbs#. | I had a quiet #game# yesterday.
+line @1 answer.how.busy [self.working=yes] : I am carrying #feed# to the #trough#. | This #gate# needs its latch checked.
+line @1 ask.how : Has the #road# led you where you meant to go? | Did you find a dry #floor# tonight?
+line @1 sympathise : You can rest here without making a #move#. | I will keep the #yard# quiet.
+line @1 reassure : The #piglets# are behind the #fence#. | One wrong #line# does not ruin a whole #map#.
+line @1 decline : No, I cannot leave the #yard# before feeding. | That #crowd# is more than I want today.
+line @1 accept_decline : I understand. We can leave the #board# set. | Another #day# may suit you.
+line @1 thank : You held the #gate# while I filled the #trough#. | That #letter# was kind to carry.
+line @1 deflect_thanks : The #crumbs# were already in my #hand#. | It was only one #move#.
+line @1 preclose : The #sows# will want their #feed#. | I should sweep the #floor# before #night#.
+line @1 tease [pair.band=friends] : A #sparrow# could jump that #square# before you. | Your #map# has moved the #bridge# again.
+line @1 ack : #bc_right#. The #gate# is fastened. | #bc_fair_enough#. I will make the next #move#.
+line @1 give.advice : Keep the #trough# away from deep #mud#. | Check a #map# against the #road# before trusting a turn.
+line @1 warn [world.bandits=near] : Take the busy #road# while there is light. | I would avoid the #wood# alone.
+scene sparrow_crumbs
+when topic=home
+does tell.self / react.self / assess
+a : I leave #crumbs# beside the #yard# #fence# for the #sparrows#. | They arrive before the #pigs# finish eating.
+b : Do they come close? | Do the pigs mind?
+a : Close enough to hear their #wings#. | The #sows# ignore them.
+
+scene old_board
+when topic=pastimes
+does tell.self / react.self / assess
+a : My #draughts# #board# has one dark #square# rubbed pale. | I know the place by touch now.
+b : Does that help you win? | How old is it?
+a : It mostly reminds me whose turn it is. | Older than this #house#.
+
+scene wrong_bridge
+when topic=travel
+does tell.self / react.self / assess
+a : An old #map# draws the #bridge# where the #river# is too wide. | I have crossed the real one farther east.
+b : Why is the map wrong? | Did you mark it?
+a : The #road# changed. | With a small #line# in the margin.
+
+scene hard_cheese
+when topic=food
+does tell.self / react.self / assess
+a : Hard #cheese# lasts through a long #day# at the #yard#. | I take a #piece# after the #trough# is filled.
+b : Do you share? | Is it enough?
+a : With anyone who helped. | With #bread#, yes.
+
+scene first_snow
+when topic=weather here.season=winter
+does tell.self / react.self / assess
+a : The first #snow# catches on the #fence# before it stays on the #road#. | I watch where the #piglets# step.
+b : Do they like it? | Does the yard freeze?
+a : They nose it and come back. | After a harder #night#.
+
+scene wet_floor
+when topic=home
+does tell.self / react.self / assess
+a : A wet #floor# near the #door# makes me slow every #step#. | I leave a #broom# there after #rain#.
+b : Have you slipped? | Does that help?
+a : Once, carrying #grain#. | It keeps the #planks# clear.
+
+scene quiet_crowd
+when topic=home
+does tell.self / react.self / assess
+a : I stay at the edge of the #market# #crowd#. | From there I can find a #stall# without being pressed along.
+b : Do you shop often? | Why not go earlier?
+a : For #feed# and #bread#. | The #yard# needs me at #dawn#.
+
+scene sow_at_gate
+when topic=work
+does tell.self / react.self / assess
+a : One #sow# waits by the #gate# whenever the #bucket# comes. | I move her back before opening it.
+b : Does she escape? | Does she bite?
+a : Not when I keep the order. | Only at the #feed#.
+
+scene piglet_track
+when topic=work
+does tell.self / react.self / assess
+a : A #piglet# left small #marks# in the #mud# toward the #wood#. | I followed them before the #rain# blurred the trail.
+b : Did you find it? | Was it far?
+a : Under the near #fence#. | Close enough to carry.
+
+scene trough_count
+when topic=work
+does tell.self / react.self / assess
+a : I count the #pigs# at the #trough# before closing the #yard#. | A missing nose means an open #gate#.
+b : Have you lost one? | Do they stand still?
+a : Once for an #hour#. | Long enough for #feed#.
+
+scene map_at_table
+when topic=family
+does tell.self / react.self / assess
+a : I spread old #maps# on the #table# after #supper#. | A young #relative# likes finding the wrong #roads#.
+b : Do you correct them? | Would they travel?
+a : We draw the real turns in. | If a good #post# calls them.
+
+scene service_letter
+when topic=family
+does tell.self / react.self / assess
+a : I keep a #letter# about a household #post# folded beside my #map#. | I would ask about the #wages# before anyone leaves.
+b : Is the post nearby? | Do you hope for it?
+a : Not yet settled. | If the terms are fair.
+
+scene dry_straw
+when topic=work
+does tell.self / react.self / assess
+a : Dry #straw# under the #piglets# keeps the #yard# easier to clean. | I replace it before the #rain# soaks through.
+b : Do they scatter it? | Who brings more?
+a : Every #morning#. | The #wagon# when it comes.
+
+scene empty_square
+when topic=pastimes
+does tell.self / react.self / assess
+a : An empty #square# can invite a better #move# than a crowded one. | I wait rather than push every #piece# forward.
+b : Does patience win? | Do you play slowly?
+a : Sometimes. | As slowly as the #pigs# allow.
+
+scene southwood_path
+when topic=travel
+does tell.self / react.self / assess
+a : The #path# by the #wood# is shorter than the #road# but muddy after #rain#. | I choose it only with dry #boots#.
+b : Do you know it well? | Is it safe?
+a : Every bend. | In daylight.
+
+scene market_sparrows
+when topic=memories
+does tell.self / react.self / assess
+a : When I first came to #town#, #sparrows# waited beneath the #market# #stalls#. | I brought them #crumbs# before finding the #yard#.
+b : Did anyone notice? | Do they still come?
+a : One #seller# smiled. | They know the #bread# stall.
+
+scene quiet_snow
+when topic=weather here.weather=snow
+does tell.self / react.self / assess
+a : Snow quiets the #road# enough to hear #sparrows# near the #window#. | I keep the #pig# #gate# clear.
+b : Is that difficult? | Do you like the quiet?
+a : I sweep it each #hour#. | More than the #crowd#.
+
+story sparrow_yard [topic=home self.age>=18]
+  : A #sparrow# learned to wait on our #fence# while I filled the #pig# #trough#.
+  : I saved a few #crumbs# instead of letting them fall into the #mud#.
+  ask : Does it still come?
+  b : A small regular guest.
+  : On most #mornings#, with another beside it.
+
+story wrong_crossing [topic=travel self.age>=18]
+  : I followed an old #map# toward a #bridge# drawn in the wrong place.
+  : The #road# turned east, and I trusted my feet over the #ink#.
+  ask : Did you get home?
+  b : The road settled it.
+  : Before #evening#, with a new #mark# on the #map#.
+
+story first_snow_piglet [topic=work self.age>=18]
+  : A #piglet# slipped through a loose #fence# on the first #snow#.
+  : Its #marks# led to the #wood#, where I found it beneath a low #tree#.
+  ask : Was it safe?
+  b : Good tracking.
+  : Cold, loud, and glad to be carried.
+
+rule @bark_sparrow
+when concept=bark
+does aside
+cooldown 8h
+say A #sparrow# is waiting for #crumbs#. | Leave a little #bread# by the #fence#.
+
+rule @bark_trough
+when concept=bark
+does aside
+cooldown 9h
+say The #trough# needs another #bucket#. | Count the #piglets# before closing.
+
+rule @bark_map
+when concept=bark
+does aside
+cooldown 10h
+say That #bridge# is drawn too near. | I should mark the real #road#.
+
+rule @bark_board
+when concept=bark
+does aside
+cooldown 11h
+say Your #move# on the dark #square#. | The #board# can wait until #evening#.
+
+dlg @1 resident.hub : #greet#. I have the #pig# #yard# to mind. | #greet#. The #sparrows# have gathered again.
+dlg @2 resident.hub [topic.meeting=known] : You returned before the #trough# emptied. | I remember you; the #map# is still wrong.
+dlg @1 resident.job : I tend the #pigs# at the pig #yard#. | I feed the #sows#, count #piglets#, and keep the #gate# shut.
+dlg @1 resident.bye : #farewell#. I must carry the #bucket#. | #saying.capitalize#. Mind the #mud#.
+graft resident.hub
+choice Why feed the sparrows? -> birds
+node birds
+say A few #crumbs# bring them to the #fence# every #morning#. They keep me company while I tend the #pigs#.
+free
+choice What is wrong with the map? -> map
+choice Goodbye. -> bye
+node map
+say The old #map# puts the #bridge# too near #town#. I have walked the real #road# and marked the crossing.
+choice Back to the yard. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #piglets# are counted. | #greet#. There is a #game# at the #table#.
+line @1 farewell : #farewell#. I will close the #gate#. | The #sparrows# will be back by #morning#.

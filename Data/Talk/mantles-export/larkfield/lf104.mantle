@@ -1,0 +1,341 @@
+# lf104, the counted tale (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf104
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for tn_lf_tansy_sunmead
+written_by claude-codex-lf-1
+title the counted tale
+fits stage=adult|old
+prefers talk=chatty
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=sly piety=ordinary drive=steady
+quirk counts_things_under_the_breath
+likes fried_fish old_tales market_bustle first_warm_day
+dislikes flies rats
+fears a_rat_in_the_linen_stores forgetting_the_ending_of_a_good_tale
+hopes a_lively_market_after_a_long_winter a_tale_worth_repeating
+topics pastimes +0.5 work +0.4 home +0.3 gossip +0.2
+styles comfort=gentle gossip=playful refuse=plain tease=playful
+marks oath saying
+persona #self.first# counts #shuttle# passes under the breath, saves the best #tale# for the #market#, and checks the #linen# #store# for #rats#.
+
+words
+oath! = Shuttle and story | By the thirteenth thread
+saying! = Leave one turn for the teller | Count the cloth, then count the cost
+loom = loom | linen loom
+shuttle = shuttle | wooden shuttle
+shuttles = shuttles | spare shuttles
+warp = warp | linen warp
+weft = weft | crossing weft
+thread = thread | linen thread
+threads = threads | loose threads
+linen = linen | woven linen
+cloth = cloth | finished cloth
+bolt = bolt | linen bolt
+bolts = bolts | linen bolts
+hem = hem | narrow hem
+knot = knot | tight knot
+knots = knots | tight knots
+beam = beam | loom beam
+shed = shed | weaving shed
+store = store | linen store
+shelf = shelf | storeroom shelf
+shelves = shelves | high shelves
+work = work | loom work
+hand = hand | working hand
+hands = hands | quick hands
+count = count | whispered count
+number = number | small number
+numbers = numbers | whispered numbers
+tale = tale | old tale
+tales = tales | old tales
+story = story | market story
+ending = ending | proper ending
+beginning = beginning | surprising beginning
+listener = listener | patient listener
+laugh = laugh | sudden laugh
+joke = joke | sly joke
+market = market | crowded market
+stall = stall | market stall
+seller = seller | loud seller
+buyer = buyer | passing buyer
+crowd = crowd | market crowd
+road = road | High Road
+gate = gate | town gate
+wagon = wagon | supply wagon
+city = city | Ridgemere
+coin = coin | saved coin
+price = price | marked price
+wages = wages | weekly wages
+house = house | shared house
+home = home | cottage
+table = table | supper table
+plate = plate | supper plate
+bread = bread | fresh bread
+fish = fish | fried fish
+butter = butter | melted butter
+pan = pan | frying pan
+cup = cup | small cup
+jar = jar | friendly jar
+friend = friend | close friend
+neighbour = neighbour | near neighbour
+visitor = visitor | new visitor
+stranger = stranger | unfamiliar face
+rat = rat | store rat
+rats = rats | store rats
+fly = fly | summer fly
+flies = flies | summer flies
+trap = trap | wooden trap
+spring = spring | early spring
+summer = summer | warm summer
+winter = winter | long winter
+warmth = warmth | first warmth
+sun = sun | pale sun
+rain = rain | light rain
+wind = wind | field wind
+field = field | open field
+downs = downs | Larkdowns
+morning = morning | early morning
+evening = evening | late evening
+day = day | long day
+hour = hour | passing hour
+door = door | cottage door
+window = window | open window
+bench = bench | plain bench
+merchant = merchant | passing merchant
+wagons = wagons | supply wagons
+stories = stories | market stories
+loaf = loaf | fresh loaf
+endings = endings | proper endings
+days = days | warm days
+toll = toll | gate toll
+coins = coins | saved coins
+bird = bird | carved bird
+feathers = feathers | carved feathers
+wing = wing | wooden wing
+music = music | festival music
+floor = floor | wooden floor
+
+any
+opinion @1 church against 1 : A #plate# can make the rounds before a hungry #neighbour# gets #bread#. | I prefer to know where my #coin# lands.
+opinion @1 city against 1 : The #city# has too many elbows for a good #tale#. | Nobody there waits for the #ending#.
+opinion @1 drink for 1 : One #jar# shared after the #work# is pleasant company. | I know when my #cup# is full.
+opinion @1 festivals for 2 : Give me a dance, a #market# #crowd#, and someone who can finish a #story#. | I will rest in #winter#.
+opinion @1 houses against 1 : They can reserve an empty #bench# while a working #hand# stands. | I notice who gets invited.
+opinion @1 merchants against 2 : The #price# of #bread# runs ahead of my #wages#. | A #merchant# calls it ordinary from behind full #shelves#.
+opinion @1 newcomers against 1 : A newcomer should learn the #loom# before taking a #shuttle# from an older #hand#. | There is room after the #work# is shared.
+opinion @1 watch against 1 : The watch hears a #joke# from across the #market# and misses a missing #bolt#. | Let them count something useful.
+line @1 greet : #greet#. I was at number twelve on this #bolt#. | #greet#. Have you heard the one about the #wagon#?
+line @2 greet [pair.band=friends|family] : Come in; I saved the #ending# for you. | There is #fish# beside your #plate#.
+line @3 greet [here.time=dawn] : The #loom# has had six passes already. | #greet#. The first #seller# is shouting at the #gate#.
+line @1 greet.return : You are back before I finished counting. | I have thought of a better #ending#.
+line @1 kin.open [pair.kin!=no] : Sit by the #table# while I finish this #thread#. | I kept the warm #bread# for you.
+line @1 again.open : Did I tell you the first half? | The #market# was louder than yesterday.
+line @1 farewell : #farewell#. I have a #bolt# to count again. | Keep the #tale# until we meet.
+line @1 farewell.return : Come when the #stall# closes. | I will save a new #joke#.
+line @1 react.news : Begin at the surprising part. | Who heard it at the #market#?
+line @1 react.news.new : No one in the #shed# has brought me that word. | Was the #wagon# late with it?
+line @1 react.news.known : I heard an earlier version from a #seller#. | Your version has a better middle.
+line @1 react.news.doubt : That #story# has a loose #thread#. | Which #listener# saw the thing happen?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I will stop joking. Tell me what you need. | The #work# can wait while you sit.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I would tell that twice at the #table#. | We should make room for another #plate#.
+line @1 answer.how : The #bolt# is even and the #pan# held enough #fish#. | The #market# gave me two good #tales#.
+line @1 answer.how.busy [self.working=yes] : I am keeping the #shuttle# moving. | The #warp# needs every #thread# counted.
+line @1 ask.how : Did the #road# bring you a story? | Has the #market# been kind to you?
+line @1 sympathise : I can leave the #joke# for another #day#. | Take the quiet place beside the #window#.
+line @1 reassure : A missed #number# can be counted again. | The #spring# #sun# will come through this #winter#.
+line @1 decline : No. I have not seen the #price# written down. | I must finish this #bolt# first.
+line @1 accept_decline : Fair; leave the matter until after #supper#. | Then I will tell it another way.
+line @1 thank : You found the missing #shuttle# under the #beam#. | That #bread# came just when I needed it.
+line @1 deflect_thanks : I was counting this way already. | It was only half a #plate#.
+line @1 preclose : The #store# #door# needs checking for #rats#. | My #count# has slipped while we spoke.
+line @1 tease [pair.band=friends] : You would lose a #shuttle# in an empty #shed#. | Your #tale# took longer than the #winter#.
+line @1 ack : #bc_right#. That makes thirteen. | #bc_fair_enough#. I will ask the #seller#.
+line @1 give.advice : Mark every tenth pass with a #knot# you can feel. | Keep the #fish# covered when the #flies# gather.
+line @1 warn [world.bandits=near] : Wait for company before leaving by the #gate#. | I would stay near the #wagons#.
+scene whispered_count
+when topic=work
+does tell.self / react.self / assess
+a : I count each #shuttle# pass under my breath. | If someone interrupts at twelve, I begin that #bolt# again.
+b : Why not mark the number? | Does it take long?
+a : My #hands# are busy. | Less than fixing a skipped #thread#.
+
+scene knot_marker
+when topic=work
+does tell.self / react.self / assess
+a : Every tenth pass gets a little #knot# at the edge. | I can find it by touch when the #shed# grows dim.
+b : Does it show in the cloth? | Who taught you?
+a : I trim it at the #hem#. | An older #hand# at this #loom#.
+
+scene loose_weft
+when topic=work
+does tell.self / react.self / assess
+a : A loose #weft# leaves a pale line across a whole #bolt#. | I stop the #shuttle# when my fingers feel one.
+b : Can you mend it? | Does the buyer notice?
+a : Before the #beam# takes it up. | If I leave it, certainly.
+
+scene crowded_market
+when topic=home
+does tell.self / react.self / assess
+a : I like the #market# when every #stall# has a caller. | I can hear five #stories# before buying one #loaf#.
+b : Do you remember them? | Is it noisy?
+a : The good #endings#. | Loud enough to make me smile.
+
+scene old_tale
+when topic=pastimes
+does tell.self / react.self / assess
+a : A good old #tale# changes with the #listener#. | I keep the same #beginning# and let the middle breathe.
+b : Is that cheating? | Do you know the ending?
+a : Only if I pretend I did not. | I know several.
+
+scene missing_ending
+when topic=memories
+does tell.self / react.self / assess
+a : I once forgot the #ending# of a #tale# before the whole #table#. | I asked each #listener# to invent one.
+b : Did they? | Which was best?
+a : Until #evening#. | The shortest, to my surprise.
+
+scene fried_fish
+when topic=food
+does tell.self / react.self / assess
+a : Fish in #butter# needs watching as closely as the #loom#. | Turn it once and let the edge crisp.
+b : Do you fry it often? | Do the flies come?
+a : When the #market# has some. | Only if I leave the #window# open.
+
+scene fly_cover
+when topic=food
+does tell.self / react.self / assess
+a : I cover the #plate# before a single #fly# finds it. | The #flies# are quicker on warm #days#.
+b : Do they spoil supper? | What do you use?
+a : If I let them. | A clean piece of #linen#.
+
+scene rat_store
+when topic=work
+does tell.self / react.self / assess
+a : A #rat# can make a nest behind the #shelves# of the #store#. | I listen before moving a #bolt#.
+b : Have you caught one? | Does it eat cloth?
+a : With a #trap#, once. | It chews the ties.
+
+scene first_warm_day
+when topic=weather here.season=spring
+does tell.self / react.self / assess
+a : On the first warm #spring# #day# I open the #shed# #door#. | The #warp# feels less stiff under my #hands#.
+b : Do you stop to go outside? | Does it change the work?
+a : At the next rest. | The #threads# move more freely.
+
+scene wagon_story
+when topic=travel
+does tell.self / react.self / assess
+a : A #wagon# driver paid the #gate# #toll# and told me a #tale# from the #city#. | I kept the funny part and doubted the rest.
+b : What was funny? | Did you tell it again?
+a : The driver was the punchline. | After checking a little.
+
+scene market_price
+when topic=prices
+does tell.self / react.self / assess
+a : I count my #coins# before I reach the #stall#. | A #seller# who changes the #price# mid-story loses my trade.
+b : Has that happened? | Do you argue?
+a : Once this #winter#. | I take my #coin# elsewhere.
+
+scene shared_house
+when topic=family
+does tell.self / react.self / assess
+a : Our #house# hears both paper hands and #loom# hands come #home#. | I wait until everyone is eating before a #tale#.
+b : Is it crowded? | Do they listen?
+a : At #supper#. | If I begin well.
+
+scene friend_carving
+when topic=family
+does tell.self / react.self / assess
+a : A #friend# carved a little #bird# and left it by my #plate#. | I counted its #feathers# before saying thank you.
+b : How many were there? | Do you still have it?
+a : One fewer on the left #wing#. | On the #shelf#.
+
+scene spring_dance
+when topic=pastimes here.day=festival
+does tell.self / react.self / assess
+a : I dance near the #market# #stall# until the #music# stops. | A full #day# outside beats a long #winter# inside.
+b : Do you dance with anyone? | Are you tired after?
+a : Whoever keeps the beat. | Happily so.
+
+scene city_smoke
+when topic=travel
+does tell.self / react.self / assess
+a : The #city# sends #wagons# with #cloth# and smoke clinging to the covers. | I would rather smell the #field# after #rain#.
+b : Have you been there? | Is the cloth useful?
+a : Once. | When the #thread# holds.
+
+scene watch_count
+when topic=news
+does tell.self / react.self / assess
+a : The watch counted raised voices at the #market# while a #bolt# went missing. | I kept my own #count# and found the gap.
+b : Did they find the bolt? | Did they believe you?
+a : Behind a #wagon#. | After they saw the #shelf#.
+
+story thirteenth_pass [topic=work self.age>=18]
+  : I reached thirteen #shuttle# passes and a #seller# called through the #shed# #door#.
+  : I lost my place, so I counted the #threads# from the last #knot#.
+  ask : Was the cloth sound?
+  b : A better count than a guess.
+  : The #bolt# came off even.
+
+story borrowed_ending [topic=pastimes self.age>=18]
+  : I began an old #tale# at the #table# and forgot how it ended.
+  : A #friend# supplied a new #ending# so good I now ask for it each time.
+  ask : Do you tell the original?
+  b : Stories can grow.
+  : Only when that #friend# is away.
+
+story first_spring [topic=weather self.age>=18]
+  : The first warm #spring# #day# came while I was tying a #hem#.
+  : I opened the #window#, and the #market# noise carried into the #shed#.
+  ask : Did you finish the work?
+  b : Warm air helps.
+  : Before the #sun# left the #field#.
+
+rule @bark_count
+when concept=bark
+does aside
+cooldown 8h
+say Twelve, thirteen, back to twelve. | That #knot# marks ten.
+
+rule @bark_tale
+when concept=bark
+does aside
+cooldown 9h
+say I know a better #ending#. | The #beginning# is the easy part.
+
+rule @bark_market
+when concept=bark
+does aside
+cooldown 10h
+say The #market# is calling already. | That #seller# has a loud voice.
+
+rule @bark_store
+when concept=bark
+does aside
+cooldown 11h
+say I heard a #rat# behind the #shelf#. | Keep the #bolts# off the #floor#.
+
+dlg @1 resident.hub : #greet#. I have counted this #bolt# twice. | #greet#. Stay for the end of a #tale#.
+dlg @2 resident.hub [topic.meeting=known] : You are back before I found a new #ending#. | I remember you; how did that #story# turn out?
+dlg @1 resident.job : My #shuttle# crosses #linen# at the #shed#. | I count the #weft# passes and tie off each #hem#.
+dlg @1 resident.bye : #farewell#. My #count# is waiting. | #saying.capitalize#. Bring a #tale# next time.
+graft resident.hub
+choice Why count under your breath? -> count
+node count
+say Each #shuttle# pass matters. I whisper the #number# and mark every tenth with a little #knot#.
+free
+choice Tell me an old tale. -> tale
+choice Goodbye. -> bye
+node tale
+say A #wagon# driver forgot a #story# ending at the #gate#. The #market# invented a better one.
+choice Back to the loom. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. I am at the next #knot#. | #greet#. I have a #tale# for you.
+line @1 farewell : #farewell#. The #bolt# needs one more #count#. | I will see you when the #market# quiets.

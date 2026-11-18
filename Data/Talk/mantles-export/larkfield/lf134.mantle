@@ -1,0 +1,346 @@
+# lf134, the sparrow-feeding farmhand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf134
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for cty_ludo_oakholt
+written_by claude-codex-lf-1
+title the sparrow-feeding farmhand
+fits stage=adult|old
+prefers job=farmer
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=restless
+quirk feeds_the_sparrows
+likes warm_bread dancing market_bustle warm_rain
+dislikes bad_manners rats
+fears another winter with no letter from faraway kin a rat taking the grain stores
+hopes a letter bearing familiar handwriting a festival dance with family
+topics work +0.5 home +0.4 pastimes +0.3 family +0.2
+styles comfort=practical gossip=wry refuse=quiet tease=dry
+marks oath saying
+persona #self.first# works the #field# at #self.workplace#, shares #bread# with #sparrows#, and watches for a #letter# from far away.
+
+words
+oath! = By the seed sack | By the barn door
+saying! = Even sparrows find their way home | Rain waits for no harvester
+field = field | ploughed field
+fields = fields | open fields
+farm = farm | Longmead farm
+farmhand = farmhand | field hand
+soil = soil | dark soil
+seed = seed | spring seed
+seeds = seeds | saved seeds
+sack = sack | grain sack
+sacks = sacks | grain sacks
+grain = grain | ripe grain
+wheat = wheat | standing wheat
+barley = barley | cut barley
+oat = oat | dry oat
+crop = crop | field crop
+crops = crops | summer crops
+harvest = harvest | late harvest
+row = row | seeded row
+rows = rows | straight rows
+hoe = hoe | worn hoe
+spade = spade | iron spade
+scythe = scythe | sharp scythe
+blade = blade | field blade
+barn = barn | Longmead barn
+granary = granary | Longmead granary
+loft = loft | granary loft
+bin = bin | grain bin
+bins = bins | grain bins
+floor = floor | barn floor
+roof = roof | sound roof
+boot = boot | worn boot
+boots = boots | muddy boots
+door = door | barn door
+gate = gate | farm gate
+fence = fence | field fence
+post = post | fence post
+wood = wood | dry wood
+cart = cart | grain cart
+wagon = wagon | farm wagon
+wheel = wheel | cart wheel
+road = road | market road
+market = market | town market
+stall = stall | bread stall
+crowd = crowd | market crowd
+bustle = bustle | market bustle
+coin = coin | hard coin
+wage = wage | small wage
+merchant = merchant | town merchant
+bread = bread | warm bread
+crust = crust | bread crust
+loaf = loaf | fresh loaf
+oven = oven | hot oven
+meal = meal | midday meal
+table = table | kitchen table
+home = home | shared home
+hearth = hearth | kitchen hearth
+window = window | small window
+letter = letter | folded letter
+letters = letters | distant letters
+writing = writing | familiar writing
+family = family | distant family
+kin = kin | faraway kin
+spouse = spouse | dear spouse
+friend = friend | old friend
+neighbour = neighbour | near neighbour
+sparrow = sparrow | small sparrow
+sparrows = sparrows | roof sparrows
+bird = bird | field bird
+birds = birds | wild birds
+crumb = crumb | bread crumb
+crumbs = crumbs | spare crumbs
+rat = rat | hungry rat
+rats = rats | granary rats
+trap = trap | rat trap
+festival = festival | harvest festival
+dance = dance | festival dance
+music = music | fiddle music
+fiddle = fiddle | festival fiddle
+rain = rain | warm rain
+cloud = cloud | passing cloud
+sun = sun | late sun
+spring = spring | early spring
+summer = summer | dry summer
+autumn = autumn | wet autumn
+winter = winter | long winter
+morning = morning | early morning
+evening = evening | slow evening
+night = night | quiet night
+day = day | working day
+hour = hour | long hour
+hand = hand | working hand
+hands = hands | calloused hands
+work = work | field work
+rest = rest | deserved rest
+manners = manners | table manners
+stranger = stranger | passing stranger
+watch = watch | town watch
+city = city | distant city
+house = house | great house
+houses = houses | great houses
+
+any
+opinion @1 city against 1 : A #city# has no room to leave #crumbs# for #sparrows#. | I prefer the #field# after #rain#.
+opinion @1 festivals mixed 1 : I wait at the #dance# until the #fiddle# catches me. | #self.spouse# can pull me onto the #floor#.
+opinion @1 houses against 1 : I cut #wheat# in the shadow of a great #house#. | The folk inside never lift a #sack#.
+opinion @1 merchants against 2 : A #merchant# asks more for one #loaf# than a day's #wage# allows. | The #grain# left our own #field#.
+opinion @1 road for 1 : The #road# will take a person to faraway #kin#. | It can bring a #letter# back too.
+opinion @1 strangers mixed 0 : A #stranger# may need #bread#. | I still count the #sacks# after a visit.
+opinion @1 times against 1 : The #bins# seem emptier each #winter#. | The work grows longer for the same #coin#.
+opinion @1 watch mixed 0 : The #watch# passes the #gate# on its round. | It rarely comes through the #field#.
+line @1 greet : #greet#. A half-planted #row# calls me back. | #greet#. Mind the #sparrows# at your feet.
+line @2 greet [pair.band=friends|family] : I saved a #crust# for the #birds#. | Come by after the #work# is done.
+line @1 greet.return : The #field# is where you left it. | I am still waiting for that #letter#.
+line @1 kin.open [pair.kin!=no] : Come close to the #hearth#. | There is #bread# enough at our #table#.
+line @1 again.open : We had left the #seed# by the #gate#. | You were asking about my faraway #kin#.
+line @1 farewell : #farewell#. The #hoe# is waiting. | Step around the newly seeded #rows#.
+line @1 farewell.return : If a #letter# arrives, I will be here. | Another #dance# may come around.
+line @1 react.news : Let me set down this #sack#. | Is it from beyond the #road#?
+line @1 react.news.new : I have heard no word of that while working the #field#. | Who brought the word to #market#?
+line @1 react.news.known : Someone mentioned it near the #granary#. | Your account gives it a different end.
+line @1 react.news.doubt : Who actually watched that #wagon# pass? | The #road# has carried false reports before.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Sit at the #table# while I bring #bread#. | I will stay at the #table# and hear you out.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That calls for fresh #bread#. | There may even be a #dance# tonight.
+line @1 answer.how : The #rows# are coming along. | Better after that warm #rain#.
+line @1 answer.how.busy [self.working=yes] : I am turning this #soil# before it dries. | These #sacks# need carrying to the #loft#.
+line @1 ask.how : What did you see along the #road#? | Did you find a good #meal# today?
+line @1 sympathise : Take some #bread# for the walk. | I can sit with you when the #row# is finished.
+line @1 reassure : We have #seed# set aside for another #spring#. | I will help mend that #fence#.
+line @1 decline : These wet #rows# need one more turn before I go. | The #granary# needs its #bins# checked first.
+line @1 accept_decline : I understand; we will leave that #gate# closed. | Then we can bring the #cart# through.
+line @1 thank : The #sacks# were easier with another pair of #hands#. | You brought word from the #road# when I needed it.
+line @1 deflect_thanks : I had spare #bread# anyway. | The #cart# was going past your #home#.
+line @1 preclose : The #sparrows# will be looking for #crumbs#. | I need to bring this #hoe# indoors.
+line @1 tease [pair.band=friends] : You would plant the #seed# upside down if it could be done. | Your #dance# needs a wider #floor#.
+line @1 ack : #bc_right#. The #grain# is dry. | #bc_fair_enough#. I will check the #fence#.
+line @1 give.advice : Keep #bread# covered when the #rats# are near. | Let the #soil# settle after a warm #rain#.
+line @1 warn [world.bandits=near] : Do not take the #market# #road# alone tonight. | Keep your #coin# inside your #boot#.
+scene sparrow_crumbs
+when topic=home
+does tell.self / react.self / assess
+a : I leave #crumbs# on the #window# ledge for the #sparrows#. | They wait for me before #morning# work.
+b : Do they come every day? | Does your wife mind?
+a : Except in hard #rain#. | #self.spouse# leaves some too.
+
+scene far_letters
+when topic=family
+does tell.self / react.self / assess
+a : My #kin# live beyond the #city# and never send #letters#. | I still look at the #road# when the post comes.
+b : Have you written first? | Will you visit?
+a : Several times. | When the #harvest# is through.
+
+scene grain_sacks
+when topic=work
+does tell.self / react.self / assess
+a : The #grain# #sacks# feel heavier after a full #day# in the #field#. | We stack them by the #granary# #door#.
+b : How many today? | Who helps?
+a : Enough for a sore back. | The other #hands#.
+
+scene seed_rows
+when topic=work
+does tell.self / react.self / assess
+a : I mark a straight #row# with a stretched cord. | The #seed# needs room to grow.
+b : Does it stay straight? | Who taught you?
+a : Near enough. | An old #farmhand#.
+
+scene rat_trap
+when topic=work
+does tell.self / react.self / assess
+a : A #rat# left a trail of #grain# by the #bin#. | I moved the #trap# under the #loft# steps.
+b : Did you catch it? | Are there more?
+a : One. | Always more.
+
+scene warm_loaf
+when topic=food
+does tell.self / react.self / assess
+a : The first #loaf# out of the #oven# never reaches the #market#. | We cut it at the #table#.
+b : Do you keep a piece? | Is it worth waiting?
+a : A thick #crust#. | Every time.
+
+scene festival_edge
+when topic=pastimes
+does tell.self / react.self / assess
+a : I stand near the #festival# #music# until I know the tune. | Then #self.spouse# takes my #hand#.
+b : Do you dance well? | Do you like it?
+a : Well enough to return. | More than I admit.
+
+scene market_noise
+when topic=pastimes
+does tell.self / react.self / assess
+a : The #market# #bustle# wakes me up after a quiet #field#. | I buy #bread# and make for the #field# once the sellers start shouting.
+b : Do you go often? | Do you sell anything?
+a : When we need supplies. | The #grain# goes with others.
+
+scene warm_rain
+when topic=weather
+does tell.self / react.self / assess
+a : A warm #rain# softens the #soil# without washing the #seed# away. | I work the #rows# while I can.
+b : Does it last? | Is it your favourite weather?
+a : Never long enough. | For planting, yes.
+
+scene fence_post
+when topic=work
+does tell.self / react.self / assess
+a : The #fence# by the #road# has a leaning #post#. | I set it straight whenever I pass.
+b : Does it hold? | Why keep doing it?
+a : For a while. | The #crop# needs guarding.
+
+scene scythe_edge
+when topic=work
+does tell.self / react.self / assess
+a : I sharpen the #scythe# before the #sun# reaches the #barn#. | A dull #blade# wastes both time and #wheat#.
+b : Can I see it? | Who taught you?
+a : After I cover it. | My first #farmhand#.
+
+scene dry_loft
+when topic=work
+does tell.self / react.self / assess
+a : The #loft# keeps the #grain# out of #rain#. | I check the #roof# after each storm.
+b : Any leaks? | What if it does leak?
+a : One near the #door#. | Move the #sacks#.
+
+scene late_window
+when topic=home
+does tell.self / react.self / assess
+a : I sit by the #window# after the #evening# meal. | Sometimes a traveller passes with a #letter#.
+b : Do you ask them? | Is that tiring?
+a : Only if they stop. | A little.
+
+scene table_manners
+when topic=home
+does tell.self / react.self / assess
+a : A guest can eat every #crumb# and still leave the #table# pleasantly. | Bad #manners# spoil a good #loaf#.
+b : What do you say? | Is it common?
+a : I pass the #bread# once. | Common enough.
+
+scene field_rest
+when topic=work
+does tell.self / react.self / assess
+a : I take my rest where the #field# meets the #road#. | The #sparrows# come down when I open my #meal#.
+b : Do they eat from your hand? | Do you rest long?
+a : Sometimes. | Until the #sun# moves.
+
+scene winter_seed
+when topic=memories
+does tell.self / react.self / assess
+a : One #winter# we used the last dry #seed# to start the #spring# rows. | I remember counting each #sack#.
+b : Did it grow? | Were you afraid?
+a : Enough to fill a #bin#. | I was.
+
+scene household_hands
+when topic=home
+does tell.self / react.self / assess
+a : Our #home# has several working #hands# under one #roof#. | A warm #hearth# matters more than a wide #floor#.
+b : Is it crowded? | Do you stay there?
+a : At #meal# time. | For now.
+
+story empty_post [topic=family self.age>=18]
+  : I saw the post come through the #gate# after a long #winter#.
+  : None of the #letters# held my family's #writing#.
+  ask : Did you write again?
+  b : A hard wait.
+  : I did, and kept a little hope for #spring#.
+
+story rain_planting [topic=work self.age>=18]
+  : Warm #rain# fell while we still had #seed# in the #sacks#.
+  : We planted every #row# before dark.
+  ask : Did the crop take?
+  b : That sounds tiring.
+  : It came up green and straight.
+
+story first_dance [topic=pastimes self.age>=18]
+  : I waited outside the #festival# until the #fiddle# began.
+  : #self.spouse# took my #hand# and pulled me across the #floor#.
+  ask : Did you dance?
+  b : That was kind.
+  : Badly, but I asked for another tune.
+
+rule @bark_sparrows
+when concept=bark
+does aside
+cooldown 8h
+say The #sparrows# found my #crumbs#. | There is one on the #fence# again.
+
+rule @bark_grain
+when concept=bark
+does aside
+cooldown 9h
+say That #sack# belongs in the #loft#. | Keep the #grain# dry.
+
+rule @bark_letter
+when concept=bark
+does aside
+cooldown 10h
+say No #letter# in the post today. | Perhaps the next #wagon# carries one.
+
+rule @bark_dance
+when concept=bark
+does aside
+cooldown 11h
+say I know that #fiddle# tune. | The #festival# is soon.
+
+dlg @1 resident.hub : #greet#. I am heading back to the #field#. | #greet#. There is warm #bread# on our #table#.
+dlg @2 resident.hub [topic.meeting=known] : The #sparrows# came back this #morning#. | Still no #letter# from my #kin#.
+dlg @1 resident.job : I work the #fields# at #self.workplace#. | I plant #seed#, carry #sacks#, and keep #rats# from the #grain#.
+dlg @1 resident.bye : #farewell#. The #rows# need me. | Come by for the next #dance#.
+graft resident.hub
+choice Why feed the sparrows? -> birds
+node birds
+say They stay through the #winter# when other #birds# leave. A few #crumbs# are easy to spare.
+free
+choice Has your family written? -> letters
+choice Goodbye. -> bye
+node letters
+say No #letter# yet, but I watch the #road# when the post arrives.
+choice Back to the field. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #seed# is ready. | #greet#. I must fetch the #hoe#.
+line @1 farewell : #farewell#. The #barn# is still open. | I will see to the #sparrows#.

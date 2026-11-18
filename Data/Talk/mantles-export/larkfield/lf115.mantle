@@ -1,0 +1,331 @@
+# lf115, the quiet orchard wagerer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf115
+revision 1
+state ready
+dialect larkfield
+accent none
+tier standard
+written_for cty_sorrel_ashbough
+written_by claude-codex-lf-1
+title the quiet orchard wagerer
+fits stage=adult|old
+prefers talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=sly piety=ordinary drive=steady
+quirk cannot_resist_a_wager
+likes fried_fish stars festival_bells autumn_wind
+dislikes stale_bread bad_manners
+fears a_ladder_slipping_under_a_picker a_promise_made_beside_the_stones
+hopes an_honest_orchard_wage a_clear_night_after_the_harvest
+topics work +0.4 pastimes +0.4 memories +0.3 weather +0.2
+styles comfort=quiet gossip=wry refuse=soft tease=dry
+marks oath saying
+persona #self.first# picks #apples#, finds a small #wager# in ordinary work, and watches the old #stones# without claiming knowledge of the past.
+
+words
+oath! = By the last apple | Stones and stars
+saying! = Count the fruit before the odds | A quiet bet lasts longest
+apple = apple | ripe apple
+apples = apples | picked apples
+fruit = fruit | orchard fruit
+orchard = orchard | Plumtree orchard
+tree = tree | apple tree
+trees = trees | fruit trees
+branch = branch | high branch
+branches = branches | low branches
+ladder = ladder | wooden ladder
+rung = rung | ladder rung
+basket = basket | woven basket
+baskets = baskets | full baskets
+crate = crate | fruit crate
+crates = crates | stacked crates
+store = store | apple store
+shelf = shelf | store shelf
+bruise = bruise | small bruise
+skin = skin | apple skin
+stem = stem | short stem
+hand = hand | picking hand
+hands = hands | working hands
+picker = picker | orchard picker
+pickers = pickers | orchard pickers
+work = work | picking work
+wage = wage | day wage
+price = price | fruit price
+coin = coin | spare coin
+market = market | town market
+merchant = merchant | fruit merchant
+wager = wager | small wager
+bet = bet | quiet bet
+odds = odds | poor odds
+die = die | worn die
+dice = dice | old dice
+throw = throw | careful throw
+win = win | narrow win
+loss = loss | small loss
+friend = friend | close friend
+neighbour = neighbour | near neighbour
+newcomer = newcomer | newcomer to town
+stranger = stranger | passing stranger
+watch = watch | town watch
+house = house | shared house
+home = home | cottage
+door = door | cottage door
+window = window | quiet window
+road = road | cart road
+cart = cart | fruit cart
+wheel = wheel | cart wheel
+mud = mud | road mud
+bread = bread | day-old bread
+fish = fish | fried fish
+butter = butter | melted butter
+meal = meal | late meal
+plate = plate | supper plate
+larder = larder | thin larder
+bell = bell | festival bell
+bells = bells | festival bells
+festival = festival | town festival
+star = star | first star
+stars = stars | evening stars
+sky = sky | open sky
+night = night | clear night
+evening = evening | cool evening
+autumn = autumn | blustery autumn
+wind = wind | autumn wind
+rain = rain | cold rain
+morning = morning | early morning
+day = day | harvest day
+stones = stones | standing stones
+stone = stone | old stone
+mark = mark | worn mark
+marks = marks | faded marks
+memory = memory | old memory
+promise = promise | spoken promise
+voice = voice | quiet voice
+seat = seat | quiet seat
+carts = carts | loaded carts
+evenings = evenings | cool evenings
+table = table | supper table
+plates = plates | empty plates
+soil = soil | orchard soil
+queue = queue | market queue
+city = city | far city
+
+any
+opinion @1 church against 1 : A full #plate# would help more than a longer collection. | I count the #coin# passing round.
+opinion @1 city against 1 : Too many voices at once. | No one sees the #fruit# until it has a #price#.
+opinion @1 festivals against 1 : I prefer the #bells# from a quiet #window#. | The #queue# at the stall has poor manners.
+opinion @1 houses against 1 : Their empty benches could hold a #picker# after work. | I have never been asked inside.
+opinion @1 merchants against 2 : I bring #baskets# out and watch the #price# climb beyond my #wage#. | Someone is winning that #bet#.
+opinion @1 newcomers against 1 : A fresh #hand# takes a place in the #orchard#. | I want to know who loses the day's #work#.
+opinion @1 times against 1 : Each #autumn# the #fruit# looks much the same. | The #coin# left afterward grows smaller.
+opinion @1 watch against 1 : The #watch# has questions for every #cart# but no help for a loose #wheel#. | I keep moving.
+line @1 greet : #greet#. The #baskets# are light this #morning#. | #greet#. I was counting #apples#.
+line @2 greet [pair.band=friends|family] : I saved a good #apple# for you. | Come in; I have a #wager# worth hearing.
+line @1 greet.return : My #ladder# has moved only one #tree# since you left. | You are back before the last #basket# filled.
+line @1 kin.open [pair.kin!=no] : I saved a #plate# of #fish# for your return. | Take the quiet #seat# near the #window#.
+line @1 again.open : I was about to tell you the #odds#. | We had reached the #stone# with the worn #mark#.
+line @1 farewell : #farewell#. I have another #crate# to carry. | Watch for the #mud# under the #tree#.
+line @1 farewell.return : I will count the last #baskets# when you come back. | Another clear #night# will suit me.
+line @1 react.news : Who said it first? | I can listen while I sort this #fruit#.
+line @1 react.news.new : That has not come up the #road# yet. | Was there a witness?
+line @1 react.news.known : I heard a different version near the #store#. | Yours has one detail I missed.
+line @1 react.news.doubt : I would ask whose #hands# were on the #cart#. | That account leaves the #wheel# unexplained.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. You need not speak at once. | I will leave the #fruit# and hear you through.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That is worth the best #apple#. | I may even buy fresh #bread#.
+line @1 answer.how : The #fruit# is holding despite the #wind#. | I have had worse #odds# and worked through them.
+line @1 answer.how.busy [self.working=yes] : This #ladder# needs both my #hands#. | Let me lower the #basket# first.
+line @1 ask.how : What did the #road# bring your way today? | Did you see the #stars# last #night#?
+line @1 sympathise : Sit with me where it is quiet. | I can find a #meal# after these #crates#.
+line @1 reassure : One bad #throw# does not decide a whole #day#. | Daylight may make that #mark# easier to read.
+line @1 decline : I will not climb that loose #ladder#. | I cannot make a #promise# on another's behalf.
+line @1 accept_decline : Understood. The #basket# stays where it is. | Then let the #bet# rest.
+line @1 thank : You steadied the #ladder# when the #wind# rose. | That #fish# was a welcome supper.
+line @1 deflect_thanks : I only moved one #crate#. | The #apple# was going to fall anyway.
+line @1 preclose : The #store# will close before the #rain#. | I hope the first #star# shows through tonight.
+line @1 tease [pair.band=friends] : Your #bet# has more courage than its #odds#. | Even the #ladder# knows when to stop climbing.
+line @1 ack : #bc_right#. The #fruit# is sound. | #bc_fair_enough#. I will count it again.
+line @1 give.advice : Test the #rung# before reaching for the top #branch#. | Look at the #skin# before setting a #price#.
+line @1 warn [world.bandits=near] : Travel with the other #carts# after dark. | Keep the #coin# out of sight on the #road#.
+scene ladder_rung
+when topic=work
+does tell.self / react.self / assess
+a : I test each #rung# before I climb for the high #fruit#. | A loose one is not worth a full #basket#.
+b : Do you find many loose? | Who repairs them?
+a : Enough to keep testing. | The #pickers# together.
+
+scene bruised_apple
+when topic=work
+does tell.self / react.self / assess
+a : A small #bruise# hides under the #skin# until the #apple# is handled. | I put those aside for an early #meal#.
+b : Can you sell them? | Do you waste them?
+a : For less #coin#. | Never if I can help it.
+
+scene first_basket
+when topic=work
+does tell.self / react.self / assess
+a : The first #basket# tells me how the #tree# will yield. | I leave the thin #branches# for later.
+b : Why leave them? | How many baskets today?
+a : They bend under a load. | That depends on the #wind#.
+
+scene crate_count
+when topic=work
+does tell.self / react.self / assess
+a : I count #crates# at the #store# after the #cart# unloads. | One missing #crate# is a full #wage# to someone.
+b : Have you lost one? | Who signs the count?
+a : Not while I watched. | The #store# keeper.
+
+scene stem_twist
+when topic=work
+does tell.self / react.self / assess
+a : A gentle twist keeps the #stem# with the #apple#. | Pulling hard can tear the #branch#.
+b : Does the stem matter? | Is that slower?
+a : It tells a buyer something. | Less than fixing the #tree#.
+
+scene orchard_wage
+when topic=prices
+does tell.self / react.self / assess
+a : I know the #price# of every #basket# and the #wage# for filling it. | Those numbers do not rise together.
+b : Have you asked why? | Who decides?
+a : More than once. | The people buying #fruit#.
+
+scene small_wager
+when topic=pastimes
+does tell.self / react.self / assess
+a : I wagered a #coin# on which #tree# would fill a #basket# first. | The slower #picker# won by a single #apple#.
+b : Did you pay? | Would you bet again?
+a : The #coin# changed hands. | On better #odds#.
+
+scene dice_after_work
+when topic=pastimes
+does tell.self / react.self / assess
+a : I like a #die# with worn corners. | It makes every #throw# look suspicious even when it is fair.
+b : Do you win often? | Do you cheat?
+a : Often enough to play. | I let people wonder.
+
+scene standing_mark
+when topic=memories
+does tell.self / react.self / assess
+a : A #mark# on the old #stones# looked different after #rain#. | I think the #stone# kept the memory of whoever cut it.
+b : Can stone remember? | Did anyone else see it?
+a : I cannot prove it. | One #friend# stood with me.
+
+scene stones_at_dusk
+when topic=memories
+does tell.self / react.self / assess
+a : I pass the #stones# on some #evenings# and leave them untouched. | A spoken #promise# sounds weightier there.
+b : Have you made one? | Are you afraid?
+a : One, a long time ago. | Only of breaking it.
+
+scene festival_bells
+when topic=home
+does tell.self / react.self / assess
+a : The #bells# reach our #window# after the crowd has begun to shout. | I listen from inside until the street is quiet.
+b : Do you go out later? | Which bell is first?
+a : Sometimes for #fish#. | The small one.
+
+scene fried_fish
+when topic=food
+does tell.self / react.self / assess
+a : I would spend a little #coin# on #fish# fried in #butter#. | It improves a day of bruised #fruit#.
+b : Do you cook it? | Do you share?
+a : When I can. | With anyone at the #table#.
+
+scene stale_bread
+when topic=food
+does tell.self / react.self / assess
+a : A hard #apple# still beats a stale heel of #bread#. | I soak it rather than throw it away.
+b : Does that help? | Why not buy fresh?
+a : For supper. | Ask the #merchant#.
+
+scene first_star
+when topic=pastimes
+does tell.self / react.self / assess
+a : When the #store# closes, I look up through the #branches# for a #star#. | It appears where the upper #branches# make a gap.
+b : Can you find it every night? | Do you name it?
+a : When the #sky# is clear. | Only for myself.
+
+scene autumn_gust
+when topic=weather
+does tell.self / react.self / assess
+a : A blustery #autumn# strips the weak #apples# before I can pick them. | I gather what the #wind# leaves sound.
+b : Does it shorten the work? | Do you like the wind?
+a : Not the counting. | From the ground.
+
+scene bad_manners
+when topic=home
+does tell.self / react.self / assess
+a : A buyer once pushed past the #pickers# to seize the first #basket#. | I made them wait while I checked the #fruit#.
+b : Were they angry? | Did they pay?
+a : They had time to be. | At the posted #price#.
+
+scene household_cart
+when topic=family
+does tell.self / react.self / assess
+a : Our #house# fills quickly when the other #hands# come home. | I count the empty #plates# before I ask about the #day#.
+b : Do they tell you? | Is supper noisy?
+a : When they wish. | Less than the #market#.
+
+story loose_ladder [topic=work self.age>=18]
+  : The top #rung# gave way as I reached for a #branch#.
+  : I dropped the #basket# and caught the #tree# instead.
+  ask : Were you hurt?
+  b : A wise catch.
+  : Only the #fruit# was bruised.
+
+story wager_on_wind [topic=pastimes self.age>=18]
+  : I wagered that the #wind# would empty one #tree# by dusk.
+  : It spared that #tree# and scattered the next one.
+  ask : Did you lose?
+  b : The wind chooses its own side.
+  : A single #coin# and a little pride.
+
+story stone_after_rain [topic=memories self.age>=18]
+  : I noticed a faint #mark# on a #stone# after #rain#.
+  : The next dry #day# I could scarcely find it.
+  ask : Was it real?
+  b : That would stay with me.
+  : Real enough for me to leave the #stone# alone.
+
+rule @bark_apple
+when concept=bark
+does aside
+cooldown 8h
+say Set the bruised #apples# here. | This #basket# is nearly full.
+
+rule @bark_ladder
+when concept=bark
+does aside
+cooldown 9h
+say Test that #rung# again. | The #ladder# shifts on this #soil#.
+
+rule @bark_bet
+when concept=bark
+does aside
+cooldown 10h
+say A small #wager#, then? | I will take the longer #odds#.
+
+rule @bark_stones
+when concept=bark
+does aside
+cooldown 11h
+say Leave the old #stones# be. | That #mark# shows after #rain#.
+
+dlg @1 resident.hub : #greet#. I have a #basket# to fill. | #greet#. Keep clear of the #ladder#.
+dlg @2 resident.hub [topic.meeting=known] : You remember my last #wager#? | The #store# has another load in.
+dlg @1 resident.job : I pick #apples# for #self.workplace#. | I sort #fruit#, fill #crates#, and watch the #ladder#.
+dlg @1 resident.bye : #farewell#. I must count the #baskets#. | #saying.capitalize#. Keep to the #road#.
+graft resident.hub
+choice Why make a wager? -> wager
+node wager
+say It gives a long #day# a little shape. I keep the stakes small.
+free
+choice What do the stones remember? -> stones
+choice Goodbye. -> bye
+node stones
+say I cannot say. I leave their old #marks# as I find them.
+choice Back to the orchard. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #cart# has just arrived. | #greet#. There may be #fish# tonight.
+line @1 farewell : #farewell#. I will cover the #crates#. | Perhaps the #stars# will be clear later.

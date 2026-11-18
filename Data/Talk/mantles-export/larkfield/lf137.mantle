@@ -1,0 +1,358 @@
+# lf137, the river-stone collector (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf137
+revision 1
+state ready
+dialect larkfield
+accent broad light
+tier standard
+written_for tn_lf_tor_wheatfield
+written_by claude-codex-lf-1
+title the river-stone collector
+fits stage=young|adolescent|adult|old
+prefers role=civilian
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk keeps_a_pocket_of_river_stones
+likes mutton_stew wrestling festival_bells warm_rain
+dislikes rats salt_wind
+fears rats eating the supper stores a favourite stone lost in the stream
+hopes another visit from a friend from the next town a good wrestling match on the green
+topics pastimes +0.5 family +0.4 home +0.3 food +0.2
+styles comfort=quiet gossip=curious refuse=plain tease=earnest
+marks oath saying
+persona #self.first# lives with #family# at the #farm#, collects smooth #stones# by the #river#, and remembers a #friend# in Southmeadow.
+
+words
+oath! = By the river stones | By the big festival bell
+saying! = The smooth stone rolls farthest | Bells sound better from the green
+stone = stone | smooth stone
+stones = stones | river stones
+pebble = pebble | round pebble
+pebbles = pebbles | round pebbles
+pocket = pocket | full pocket
+pockets = pockets | coat pockets
+river = river | shallow river
+stream = stream | small stream
+bank = bank | river bank
+banks = banks | muddy banks
+water = water | cool water
+current = current | slow current
+mud = mud | river mud
+sand = sand | river sand
+path = path | farm path
+paths = paths | winding paths
+road = road | town road
+bridge = bridge | wooden bridge
+gate = gate | farm gate
+field = field | long field
+fields = fields | Longmead fields
+farm = farm | family farm
+barn = barn | large barn
+yard = yard | farm yard
+home = home | family home
+house = house | farm house
+roof = roof | house roof
+door = door | back door
+window = window | kitchen window
+family = family | my family
+mother = mother | my mother
+father = father | my father
+parent = parent | watchful parent
+friend = friend | distant friend
+friends = friends | close friends
+visit = visit | short visit
+visits = visits | friendly visits
+letter = letter | folded letter
+letters = letters | small letters
+name = name | dear name
+market = market | busy market
+green = green | town green
+festival = festival | town festival
+bell = bell | festival bell
+bells = bells | ringing bells
+music = music | loud music
+crowd = crowd | festival crowd
+wrestle = wrestle | friendly wrestle
+wrestling = wrestling | green wrestling
+match = match | wrestling match
+matches = matches | friendly matches
+hold = hold | strong hold
+holds = holds | wrestling holds
+arm = arm | strong arm
+arms = arms | strong arms
+knee = knee | muddy knee
+knees = knees | muddy knees
+prize = prize | small prize
+stew = stew | mutton stew
+mutton = mutton | tender mutton
+pot = pot | cooking pot
+bowl = bowl | full bowl
+spoon = spoon | wooden spoon
+bread = bread | fresh bread
+supper = supper | family supper
+larder = larder | cool larder
+pantry = pantry | narrow pantry
+rat = rat | larder rat
+rats = rats | hungry rats
+trap = trap | small trap
+wind = wind | salt wind
+salt = salt | sea salt
+rain = rain | warm rain
+cloud = cloud | soft cloud
+sun = sun | bright sun
+spring = spring | mild spring
+summer = summer | warm summer
+winter = winter | cold winter
+morning = morning | early morning
+evening = evening | late evening
+night = night | still night
+day = day | long day
+hour = hour | spare hour
+work = work | farm work
+chores = chores | morning chores
+bucket = bucket | water bucket
+feed = feed | animal feed
+chicken = chicken | yard chicken
+chickens = chickens | yard chickens
+sheep = sheep | field sheep
+watch = watch | town watch
+city = city | distant city
+houses = houses | great houses
+map = map | drawn map
+bowls = bowls | full bowls
+grass = grass | soft grass
+clouds = clouds | rain clouds
+boots = boots | muddy boots
+shelf = shelf | kitchen shelf
+household = household | family household
+merchant = merchant | market merchant
+coin = coin | small coin
+coins = coins | saved coins
+
+any
+opinion @1 city mixed 0 : I have seen the #city# from the #road#. | The #river# near home is easier to find.
+opinion @1 festivals for 1 : The #bells# wake the whole #farm#. | I hurry to the #green# before the #music# starts.
+opinion @1 houses for 1 : The big #houses# keep folk at #work#. | I like the #barn# better than any hall.
+opinion @1 merchants mixed 0 : The #merchant# has bright things at the #market#. | I can find a good #stone# for free.
+opinion @1 newcomers mixed 0 : A new #friend# might know a #wrestling# #hold#. | I ask their #name# first.
+opinion @1 road mixed 0 : The #road# leads to my #friend# in Southmeadow. | I must tell #self.mother# before I go.
+opinion @1 times for 1 : We have #bread# with #supper# and a #roof# over us. | That is enough for me.
+opinion @1 watch mixed 0 : The #watch# comes past the #gate#. | I can find the #river# without help.
+line @1 greet : #greet#. Look at this #stone#. | #greet#. Are the #bells# ringing yet?
+line @2 greet [pair.band=friends|family] : I saved the smoothest #pebble# for you. | Come see my new #wrestling# #hold#.
+line @1 greet.return : I found three more #stones# since you left. | The #stew# is nearly ready.
+line @1 kin.open [pair.kin!=no] : #self.mother# put a #pot# on for #supper#. | Come see what I found by the #river#.
+line @1 again.open : We were sorting the #pebbles# by size. | You asked about my #friend# across the #fields#.
+line @1 farewell : #farewell#. I have #chores# before #supper#. | Keep that #stone# if you like it.
+line @1 farewell.return : Maybe the #bells# will ring next time. | I will find a better #pebble#.
+line @1 react.news : Tell me while I wash this #mud# off. | Was the #bridge# somewhere in the story?
+line @1 react.news.new : I have not heard anyone at the #farm# say that. | Did you see it yourself?
+line @1 react.news.known : The folk by the #gate# mentioned part of it. | What happened after?
+line @1 react.news.doubt : I would ask #self.father# if that #road# is real. | A #map# might help us check.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : You can sit here until you feel better. | I will bring you a #bowl# of #stew#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Can we ring the #bell# for them? | I will tell my #family# at #supper#.
+line @1 answer.how : I found a #pebble# with a white stripe. | The #rain# made the #river# louder.
+line @1 answer.how.busy [self.working=yes] : This #bucket# has to reach the #yard# before I play. | #self.father# asked me to finish the #chores#.
+line @1 ask.how : Have you been to the #river# today? | Did you get any #stew# for #supper#?
+line @1 sympathise : You may keep one of my #stones#. | I can stay until the #sun# moves.
+line @1 reassure : The #bridge# is still there after the #rain#. | We can ask #self.mother# for another #bowl#.
+line @1 decline : I must be home before the #evening# #bell#. | That #pebble# is the one I mean to keep.
+line @1 accept_decline : All right; I will put the #stone# back in my #pocket#. | Then let us go toward the #green# together.
+line @1 thank : You helped me find the lost #pebble#. | That was a good #wrestling# #match#.
+line @1 deflect_thanks : I had two #bowls# of #stew# anyway. | I was going along the #path#.
+line @1 preclose : My #chores# will not finish themselves. | I want to see if the #river# has fallen.
+line @1 tease [pair.band=friends] : You hold that #stone# as if it might run away. | I could win this #match# with one #arm#.
+line @1 ack : #bc_right#. That #pebble# is smoother. | #bc_fair_enough#. We can try another #path#.
+line @1 give.advice : Look beneath the #bridge# for the roundest #stones#. | Check the #larder# #door# for #rats#.
+line @1 warn [world.bandits=near] : Stay on the #farm# side of the #gate#. | If strangers appear on the #road#, I will fetch the #watch#.
+scene smooth_stones
+when topic=pastimes
+does tell.self / react.self / assess
+a : I look for #stones# where the #river# turns slowly. | The best ones fit flat in my #pocket#.
+b : How many do you have? | What makes one best?
+a : Too many to count. | No sharp edge.
+
+scene striped_pebble
+when topic=pastimes
+does tell.self / react.self / assess
+a : One #pebble# has a white line across it. | I keep it separate from the others.
+b : Where did you find it? | May I hold it?
+a : Near the #bridge#. | If you are careful.
+
+scene southmeadow_friend
+when topic=family
+does tell.self / react.self / assess
+a : I have a #friend# in Southmeadow who writes small #letters#. | I try to find a new #stone# before each #visit#.
+b : Do they like stones? | When will they visit?
+a : The striped ones. | When the #road# is dry.
+
+scene river_current
+when topic=pastimes
+does tell.self / react.self / assess
+a : After #rain#, the #current# carries my little #pebbles# away. | I wait until the #water# settles.
+b : Do you go in? | Where do they end up?
+a : Only to my #knees#. | Somewhere past the #bridge#.
+
+scene festival_bells
+when topic=pastimes
+does tell.self / react.self / assess
+a : The #bells# ring before the #festival# #market# opens. | I count them from the #farm# #gate#.
+b : How many rings? | Do you go there?
+a : More than my fingers. | With my #family#.
+
+scene wrestling_green
+when topic=pastimes
+does tell.self / react.self / assess
+a : We #wrestle# on the #green# where the #grass# is soft. | I know one #hold# that works on taller friends.
+b : Will you show me? | Do you ever lose?
+a : After #chores#. | More than I say.
+
+scene mutton_stew
+when topic=food
+does tell.self / react.self / assess
+a : #self.mother# makes #mutton# #stew# in the big #pot#. | I want the first full #bowl#.
+b : Do you help? | Is it your favourite?
+a : I carry the #water#. | Easily.
+
+scene larder_rats
+when topic=home
+does tell.self / react.self / assess
+a : A #rat# squeezed under the #larder# #door#. | I told #self.mother# before opening it.
+b : Did you catch it? | Was the food safe?
+a : The #trap# did. | Most of it.
+
+scene warm_rain
+when topic=weather
+does tell.self / react.self / assess
+a : Warm #rain# leaves little pools beside the #barn#. | I can see the #clouds# in them.
+b : Do you splash? | Does your mother mind?
+a : When my #chores# are done. | My muddy #knees# annoy her.
+
+scene salt_wind
+when topic=weather
+does tell.self / react.self / assess
+a : The #salt# #wind# reaches the #fields# from far away. | It makes the #river# smell strange.
+b : Do you like it? | What lies beyond the #city#?
+a : Less than #rain#. | Beyond the #city#.
+
+scene family_chores
+when topic=home
+does tell.self / react.self / assess
+a : #self.father# gives me the #bucket# and sends me across the #yard#. | The #chickens# follow me for #feed#.
+b : Do they peck? | Is that hard work?
+a : Only my #boots#. | Not very.
+
+scene stone_pockets
+when topic=home
+does tell.self / react.self / assess
+a : My #pockets# are full enough to pull my coat sideways. | #self.mother# finds #pebbles# during the wash.
+b : Does she keep them? | Have you lost any?
+a : She leaves them by the #window#. | One, once.
+
+scene bridge_path
+when topic=travel
+does tell.self / react.self / assess
+a : The #path# to the #bridge# goes past the #field# #gate#. | I can follow it without looking down.
+b : Do you go alone? | How long does it take?
+a : Sometimes. | One short #hour#.
+
+scene summer_match
+when topic=memories
+does tell.self / react.self / assess
+a : Last #summer# I lost a #wrestling# #match# on the #green#. | I learned a better #hold# from it.
+b : Did you try again? | Did it hurt?
+a : The next #day#. | Only my pride.
+
+scene bell_prize
+when topic=memories
+does tell.self / react.self / assess
+a : At the #festival# I won a small #prize# for a short race. | The #bells# covered everyone cheering.
+b : What did you win? | Did you keep it?
+a : A #coin#. | In my #pocket#.
+
+scene family_table
+when topic=home
+does tell.self / react.self / assess
+a : We eat #stew# together when the #farm# work is done. | I show my #stones# after the #bowls# are cleared.
+b : Does your father look? | Does your mother?
+a : He picks the heavy ones. | She likes the striped one.
+
+scene winter_river
+when topic=weather
+does tell.self / react.self / assess
+a : In #winter# the #river# runs cold and the #stones# hide beneath it. | I sort the ones I already have.
+b : Do you miss going out? | Which is your favourite?
+a : A little. | The flat grey #stone#.
+
+story lost_stone [topic=pastimes self.age>=3]
+  : My striped #pebble# fell from my #pocket# near the #bridge#.
+  : I followed the #path# back while the #rain# began.
+  ask : Did you find it?
+  b : I hope it was there.
+  : It was beside a muddy #stone#, waiting for me.
+
+story first_match [topic=pastimes self.age>=3]
+  : I tried a new #wrestling# #hold# on the #green#.
+  : My #friend# slipped free and put my #knees# in the #grass#.
+  ask : Did you try again?
+  b : A fair match.
+  : The next #day#, after I learned how to stand.
+
+story southmeadow_letter [topic=family self.age>=3]
+  : A small #letter# came from my #friend# in Southmeadow.
+  : I put a smooth #pebble# beside it on the #shelf#.
+  ask : Did you write back?
+  b : That is a fine keepsake.
+  : I wrote about the #festival# #bells#.
+
+rule @bark_stone
+when concept=bark
+does aside
+cooldown 8h
+say This #stone# is nearly round. | My #pocket# is full again.
+
+rule @bark_bells
+when concept=bark
+does aside
+cooldown 9h
+say Those #bells# sound close to the #farm#. | The #festival# must be close.
+
+rule @bark_river
+when concept=bark
+does aside
+cooldown 10h
+say The #river# is high after #rain#. | I will wait by the #bridge#.
+
+rule @bark_stew
+when concept=bark
+does aside
+cooldown 11h
+say The #stew# smells ready. | I hope there is a full #bowl# left.
+
+dlg @1 resident.hub : #greet#. I have a new #stone# to show you. | #greet#. The #bells# are ringing somewhere.
+dlg @2 resident.hub [topic.meeting=known] : I found another striped #pebble#. | My #friend# may visit when the #road# dries.
+dlg @1 resident.job : I help my #family# around the #farm#. | I carry #water#, finish #chores#, and look for #stones# when there is time.
+dlg @1 resident.bye : #farewell#. I should get back to the #yard#. | I will save this #pebble# for you.
+graft resident.hub
+choice Show me your favourite stone. -> stone
+node stone
+say This flat grey #stone# came from the #river# below the #bridge#. It fits my #pocket# exactly.
+free
+choice Who is your Southmeadow friend? -> friend
+choice Goodbye. -> bye
+node friend
+say A #friend# I like to visit. We send little #letters# and talk when our families meet.
+choice Back to the farm. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. I kept the old #pebbles#. | #greet#. The #farm# is busy.
+line @1 farewell : #farewell#. I will check the #gate#. | I will see you by the #bridge#.
+
+young
+line @1 greet : #greet#. Come see my #stones#. | #greet#. The #stew# smells good.
+line @1 farewell : #farewell#. I have a #bucket# to carry. | Save me a place when #supper# is done.
+
+adolescent
+line @1 greet : #greet#. I found a better #wrestling# #hold#. | #greet#. The #river# is low today.
+line @1 farewell : #farewell#. The #chores# need finishing. | I am going toward the #green#.

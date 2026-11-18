@@ -1,0 +1,340 @@
+# lf121, the weather-scolding charcoal burner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf121
+revision 1
+state ready
+dialect larkfield
+accent broad light
+tier standard
+written_for cty_fell_cragdrift
+written_by claude-codex-lf-1
+title the weather-scolding charcoal burner
+fits stage=adult|old
+prefers job=miner
+traits temper=short talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk argues_with_the_weather
+likes warm_bread evening_line quiet_chapel autumn_wind
+dislikes cold_tea deep_mud
+fears a_charcoal_pit_catching_open_flame a_repeat_of_the_city_journey
+hopes a_dry_burn_through_autumn a_quiet_evening_by_the_water
+topics work +0.5 weather +0.4 pastimes +0.3 home +0.2
+styles comfort=hearty gossip=deflecting refuse=plain tease=merry
+marks oath saying
+persona #self.first# watches the #mound# for a slow #burn#, quarrels aloud with the #wind#, and keeps a #line# ready for an evening by the #water#.
+
+words
+oath! = Ash and autumn | By the covered pit
+saying! = A slow fire makes the good black | The sky hears me and changes anyway
+charcoal = charcoal | black charcoal
+coal = coal | dry coal
+coals = coals | banked coals
+pit = pit | charcoal pit
+pits = pits | covered pits
+mound = mound | earth mound
+mounds = mounds | sealed mounds
+burn = burn | slow burn
+smoke = smoke | thin smoke
+flame = flame | open flame
+fire = fire | covered fire
+ash = ash | fine ash
+wood = wood | stacked wood
+log = log | cut log
+logs = logs | cut logs
+branch = branch | dry branch
+branches = branches | dry branches
+earth = earth | packed earth
+spade = spade | heavy spade
+shovel = shovel | pit shovel
+hole = hole | small vent
+vents = vents | pit vents
+air = air | moving air
+heat = heat | held heat
+spark = spark | loose spark
+sparks = sparks | loose sparks
+sack = sack | charcoal sack
+sacks = sacks | filled sacks
+hand = hand | working hand
+hands = hands | sooty hands
+work = work | burning work
+hearth = hearth | town hearth
+hearths = hearths | town hearths
+wagon = wagon | coal wagon
+cart = cart | wood cart
+road = road | woodland road
+path = path | woodland path
+forest = forest | Rainwood forest
+woodland = woodland | near woodland
+field = field | open field
+wind = wind | autumn wind
+sky = sky | changing sky
+cloud = cloud | low cloud
+clouds = clouds | low clouds
+rain = rain | heavy rain
+storm = storm | passing storm
+mud = mud | deep mud
+boot = boot | muddy boot
+boots = boots | muddy boots
+autumn = autumn | blustery autumn
+evening = evening | cool evening
+morning = morning | early morning
+night = night | dark night
+day = day | long day
+hour = hour | watching hour
+bread = bread | warm bread
+loaf = loaf | fresh loaf
+tea = tea | strong tea
+cup = cup | tea cup
+water = water | clear water
+river = river | near river
+bank = bank | river bank
+line = line | fishing line
+hook = hook | small hook
+fish = fish | river fish
+chapel = chapel | quiet chapel
+bench = bench | empty bench
+prayer = prayer | brief prayer
+friend = friend | old friend
+neighbour = neighbour | near neighbour
+stranger = stranger | passing stranger
+newcomer = newcomer | new hand
+house = house | shared house
+home = home | cottage
+door = door | cottage door
+window = window | small window
+roof = roof | sound roof
+market = market | town market
+merchant = merchant | market merchant
+price = price | asking price
+coin = coin | small coin
+wage = wage | weekly wage
+city = city | far city
+festival = festival | town festival
+dance = dance | town dance
+jar = jar | shared jar
+watch = watch | town watch
+town = town | near town
+fishing = fishing | river fishing
+trees = trees | woodland trees
+gate = gate | town gate
+evenings = evenings | cool evenings
+music = music | festival music
+
+any
+opinion @1 city against 1 : The #city# took a journey from me and gave me little worth carrying home. | I prefer the #woodland#.
+opinion @1 drink for 1 : A #jar# shared after a full #burn# makes good company. | The #jar# stays at home until the #burn# is done.
+opinion @1 festivals for 1 : I can set the #shovel# down for a #dance#. | The #mound# can keep its #heat# for one evening.
+opinion @1 houses against 1 : Their #hearths# burn our #coal#, yet I have not met the people upstairs. | The #hands# below know me.
+opinion @1 merchants against 2 : The #price# of #bread# rises faster than my #wage#. | A full #sack# of #charcoal# buys less each season.
+opinion @1 newcomers against 1 : I have seen a fresh #hand# take the last paid place by the #pit#. | I want the old #hands# fed first.
+opinion @1 times against 1 : Each #day# brings another load without a larger #wage#. | Even the #sky# could admit that much.
+opinion @1 road mixed 0 : A #wagon# needs the #road# to carry our #sacks#. | The #mud# can keep it for hours.
+line @1 greet : #greet#. Tell the #wind# to hold still. | #greet#. The #mound# is smoking evenly.
+line @2 greet [pair.band=friends|family] : There is #bread# by the #fire# if you want it. | Come see what the #sky# has promised me.
+line @1 greet.return : The #wind# ignored my last instruction. | You have come back before the #pit# finished.
+line @1 kin.open [pair.kin!=no] : I saved a #cup# of hot #tea#. | The #house# has a dry #bench#.
+line @1 again.open : I was explaining how the #vents# breathe. | Did the #clouds# finally turn?
+line @1 farewell : #farewell#. The #mound# needs my eye. | Keep out of the #mud# by the #cart#.
+line @1 farewell.return : The next #sacks# may be ready then. | I will give the #sky# another chance.
+line @1 react.news : Out with it while the #smoke# is low. | Did it come from the #road#?
+line @1 react.news.new : The #hearth# crowd has said nothing of that. | Who brought that from #town#?
+line @1 react.news.known : A #friend# gave me the rough shape. | You have filled in the rest.
+line @1 react.news.doubt : Tracks beside the #road# might settle it. | Which #hand# was there to see it?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Come sit under the #roof#. | The #shovel# can wait a moment.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That is worth a warm #loaf#. | I will raise a #cup# after the #burn#.
+line @1 answer.how : The #coal# is black and the #tea# is still hot. | Better when the #wind# listens.
+line @1 answer.how.busy [self.working=yes] : I am sealing this #vent# with #earth#. | Wait until I move the #sacks#.
+line @1 ask.how : Has the #road# brought you through the #mud#? | Did you hear the #festival# music?
+line @1 sympathise : A dry #bench# is waiting under our #roof#. | Let me make fresh #tea# before we speak.
+line @1 reassure : The #storm# may pass before the #wagon# starts. | One poor #burn# can be followed by a good one.
+line @1 decline : I cannot leave an open #vent# unattended. | I will not lift those #coals# while the #wind# is high.
+line @1 accept_decline : I see; the #sacks# can stay under cover. | Then we will wait for the #sky# to settle.
+line @1 thank : You brought #wood# while the #pit# was open. | The #bread# was good beside a cold #cup#.
+line @1 deflect_thanks : I had the #shovel# in my #hands# already. | The #log# needed moving regardless.
+line @1 preclose : The #smoke# tells me to check the #mound#. | I want one more look at the #vents#.
+line @1 tease [pair.band=friends] : The #sky# listens to you less than it listens to me. | Your #fishing# #line# has grown lazy.
+line @1 ack : #bc_right#. The #smoke# is thin. | #bc_fair_enough#. I will turn the #sack#.
+line @1 give.advice : Watch the #smoke#, not just the #flame#. | Keep the #earth# firm over the #pit#.
+line @1 warn [world.bandits=near] : Wait for a #wagon# before setting out on the #road#. | Keep the #coal# #sacks# covered.
+scene sealed_mound
+when topic=work
+does tell.self / react.self / assess
+a : I pack #earth# over the #mound# until the #smoke# thins. | An open gap draws too much #air#.
+b : What happens then? | Can you fix a gap?
+a : The #wood# burns to #ash#. | With a #shovel#.
+
+scene small_vent
+when topic=work
+does tell.self / react.self / assess
+a : I leave a small #hole# where the #mound# needs breath. | The #smoke# tells me when to close it.
+b : Do you count the vents? | Is the smoke dangerous?
+a : Every one. | Stand upwind.
+
+scene black_coal
+when topic=work
+does tell.self / react.self / assess
+a : Good #charcoal# breaks cleanly without crumbling into #ash#. | I test one piece before filling the #sacks#.
+b : Does it stain? | Who buys it?
+a : Everything nearby. | The #hearths# in town.
+
+scene wood_stack
+when topic=work
+does tell.self / react.self / assess
+a : I stack #wood# by size before covering the #pit#. | A thick #log# needs the right place in the #mound#.
+b : Which place? | Does that take long?
+a : Near the center. | Longer than a poor #burn#.
+
+scene loose_spark
+when topic=work
+does tell.self / react.self / assess
+a : A loose #spark# can find dry #branches# beyond the #pit#. | I keep #water# and a #spade# close.
+b : Has one escaped? | Do you work alone?
+a : Not far. | Another #hand# checks too.
+
+scene coal_sacks
+when topic=work
+does tell.self / react.self / assess
+a : I fill the #sacks# only after the #coals# have cooled. | A warm one can scorch its own cloth.
+b : How long do you wait? | Who carries them?
+a : Until the #heat# leaves. | The #wagon# #hands#.
+
+scene argument_with_wind
+when topic=weather
+does tell.self / react.self / assess
+a : I tell the #wind# to keep away from my #mound#. | It changes direction as if answering me.
+b : Does it listen? | Do you keep arguing?
+a : Never. | Naturally.
+
+scene autumn_gust
+when topic=weather
+does tell.self / react.self / assess
+a : A blustery #autumn# can clear the #smoke# one moment and push it back the next. | I choose the sheltered side of the #pit#.
+b : Do you like that wind? | Can it spoil the work?
+a : Away from the #fire#. | If the #earth# opens.
+
+scene low_cloud
+when topic=weather
+does tell.self / react.self / assess
+a : Low #clouds# make the #smoke# sit among the #trees#. | I take another #path# to see the whole #mound#.
+b : Does that help? | Does rain follow?
+a : Usually. | The #sky# refuses to say.
+
+scene rain_cover
+when topic=weather
+does tell.self / react.self / assess
+a : Heavy #rain# can loosen the #earth# over a #pit#. | I press it down before the #water# cuts a channel.
+b : Do you keep working? | What if it floods?
+a : Under a #roof# nearby. | We start another #mound#.
+
+scene muddy_wagon
+when topic=travel
+does tell.self / react.self / assess
+a : A #wagon# of #sacks# once stuck in #mud# before the town #gate#. | I brought the #shovel# I had just put away.
+b : Did it move? | Did they thank you?
+a : With a push. | After the wheels turned.
+
+scene evening_line
+when topic=pastimes
+does tell.self / react.self / assess
+a : When the last #sack# is tied, I head to the #river# with my #line#. | A quiet #bank# is better than a crowded #market#.
+b : Do you catch fish? | Do you go alone?
+a : Some #evenings#. | Often.
+
+scene empty_chapel
+when topic=faith
+does tell.self / react.self / assess
+a : The #chapel# is best when its #bench# is empty. | I can sit without hearing the #pit# #fire# in my head.
+b : Do you pray there? | Does anyone join you?
+a : A short #prayer#. | Not usually.
+
+scene warm_bread
+when topic=food
+does tell.self / react.self / assess
+a : Warm #bread# takes the taste of #smoke# from my mouth. | I eat a piece before the #tea# cools.
+b : Do you buy it nearby? | Does it last?
+a : At the #market#. | Rarely.
+
+scene cold_tea
+when topic=food
+does tell.self / react.self / assess
+a : Cold #tea# tastes like a promise forgotten on a #bench#. | I warm the #cup# before drinking it.
+b : Do you make fresh? | Who lets it cool?
+a : When there is time. | Usually me.
+
+scene city_silence
+when topic=memories
+does tell.self / react.self / assess
+a : I went to the #city# expecting more than I brought home. | I have no story worth telling about the trip.
+b : Will you go back? | Why not speak of it?
+a : For work, perhaps. | The #pit# has better stories.
+
+scene festival_dance
+when topic=home
+does tell.self / react.self / assess
+a : A #dance# after a good #burn# gets the #ash# out of my thoughts. | I set the #shovel# down when the #music# begins.
+b : Do you dance well? | Do you go every year?
+a : With enthusiasm. | When the #mound# lets me.
+
+story open_vent [topic=work self.age>=18]
+  : I left a #vent# open longer than I meant to.
+  : The #smoke# thickened and the #wood# burned too fast.
+  ask : Could you save it?
+  b : A hard lesson.
+  : I closed the #hole# and kept half the #coal#.
+
+story wind_reply [topic=weather self.age>=18]
+  : I told the #wind# to turn while I sealed a #mound#.
+  : It turned at once and sent #smoke# straight into my face.
+  ask : Did you argue back?
+  b : It heard you, perhaps.
+  : Loud enough for the other #hands# to laugh.
+
+story city_return [topic=memories self.age>=18]
+  : I went to the #city# once with more plans than #coin#.
+  : I returned with the plans and little else.
+  ask : What happened there?
+  b : That sounds disappointing.
+  : I would rather speak about the #river#.
+
+rule @bark_smoke
+when concept=bark
+does aside
+cooldown 8h
+say The #smoke# is turning pale. | Seal that #vent# with #earth#.
+
+rule @bark_wind
+when concept=bark
+does aside
+cooldown 9h
+say Not now, #wind#. | I heard you the first time, #sky#.
+
+rule @bark_sack
+when concept=bark
+does aside
+cooldown 10h
+say Let the #coals# cool first. | This #sack# can wait.
+
+rule @bark_line
+when concept=bark
+does aside
+cooldown 11h
+say My #fishing# #line# is by the #door#. | The #river# may be quiet tonight.
+
+dlg @1 resident.hub : #greet#. The #mound# is burning slowly. | #greet#. Tell the #sky# I have work to do.
+dlg @2 resident.hub [topic.meeting=known] : The #wind# still has not agreed with me. | The #coal# is nearly ready.
+dlg @1 resident.job : I burn #charcoal# for the #hearths# at #self.workplace#. | I cover #wood#, watch #smoke#, and fill #sacks#.
+dlg @1 resident.bye : #farewell#. The #pit# needs watching. | #saying.capitalize#. Keep clear of the #smoke#.
+graft resident.hub
+choice Why argue with the weather? -> weather
+node weather
+say It answers by changing direction. That is enough reason for me.
+free
+choice How does the charcoal burn? -> burn
+choice Goodbye. -> bye
+node burn
+say The #wood# burns slowly beneath #earth# until it turns black.
+choice Back to the pit. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #coals# have cooled. | #greet#. I have a #line# for later.
+line @1 farewell : #farewell#. I will tie the last #sack#. | Tomorrow may bring another quiet hour by the #river#.

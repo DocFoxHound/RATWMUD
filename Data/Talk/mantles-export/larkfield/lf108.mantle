@@ -1,0 +1,335 @@
+# lf108, the straight paper edge (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf108
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for tn_sm_gorse_harvestgarth
+written_by claude-codex-lf-1
+title the straight paper edge
+fits stage=adult|old
+prefers talk=plain
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk hums_marches_while_lifting_paper_sheets
+likes barley_soup stars tidy_house warm_rain
+dislikes stale_bread wet_floors
+fears a_paper_vat_lost_to_dirty_water a_wet_floor_before_the_press
+hopes a_clean_stack_of_sheets_by_sundown a_quiet_house_after_work
+topics work +0.5 home +0.4 weather +0.3 food +0.2
+styles comfort=direct gossip=reluctant refuse=firm tease=dry
+marks oath saying
+persona #self.first# lifts #sheets# from the #vat# in time with an old #march#, keeps the #floor# dry, and watches the #stars# over a tidy #house#.
+
+words
+oath! = Vat and straight edge | By the clean deckle
+saying! = Lift the sheet before it settles | A dry floor saves a day's work
+paper = paper | handmade paper
+sheet = sheet | wet sheet
+sheets = sheets | drying sheets
+vat = vat | paper vat
+vats = vats | paper vats
+pulp = pulp | wet pulp
+water = water | clean water
+bucket = bucket | water bucket
+mould = mould | paper mould
+deckle = deckle | wooden deckle
+screen = screen | fine screen
+edge = edge | straight edge
+edges = edges | clean edges
+fiber = fiber | soaked fiber
+rag = rag | linen rag
+rags = rags | soaked rags
+press = press | paper press
+platen = platen | press platen
+stack = stack | paper stack
+stacks = stacks | drying stacks
+board = board | drying board
+boards = boards | drying boards
+mill = mill | paper mill
+room = room | work room
+floor = floor | wooden floor
+plank = plank | floor plank
+planks = planks | floor planks
+drain = drain | floor drain
+broom = broom | stiff broom
+work = work | vat work
+hand = hand | working hand
+hands = hands | wet hands
+shift = shift | long shift
+march = march | old march
+song = song | marching song
+beat = beat | steady beat
+tune = tune | low tune
+stars = stars | evening stars
+star = star | bright star
+sky = sky | evening sky
+night = night | quiet night
+house = house | shared house
+home = home | cottage
+door = door | house door
+window = window | open window
+table = table | supper table
+plate = plate | supper plate
+bread = bread | stale bread
+loaf = loaf | bread loaf
+soup = soup | barley soup
+barley = barley | cooked barley
+bowl = bowl | warm bowl
+spoon = spoon | wooden spoon
+fire = fire | hearth fire
+friend = friend | trusted friend
+neighbour = neighbour | near neighbour
+visitor = visitor | passing visitor
+stranger = stranger | unknown face
+market = market | town market
+stall = stall | paper stall
+seller = seller | market seller
+buyer = buyer | paper buyer
+price = price | asking price
+coin = coin | saved coin
+wages = wages | weekly wages
+city = city | Ridgemere
+road = road | High Road
+gate = gate | town gate
+wagon = wagon | supply wagon
+wagons = wagons | supply wagons
+rain = rain | warm rain
+cloud = cloud | low cloud
+wind = wind | field wind
+field = field | open field
+morning = morning | early morning
+evening = evening | late evening
+day = day | long day
+hour = hour | quiet hour
+sun = sun | low sun
+dry = dry | properly dry
+wet = wet | soaking wet
+music = music | festival music
+coins = coins | saved coins
+boots = boots | muddy boots
+smoke = smoke | dark smoke
+linen = linen | woven linen
+buckets = buckets | water buckets
+
+any
+opinion @1 city against 1 : The #city# buys our #paper# and sends back #rags# with smoke in them. | I prefer the air over our #field#.
+opinion @1 festivals against 1 : A loud crowd and spilled drink leave me looking for a dry #floor#. | I can hear the #music# from #home#.
+opinion @1 houses against 1 : I have carried #stacks# for grand houses without ever seeing who uses the #sheets#. | The #hands# still do the lifting.
+opinion @1 merchants against 2 : My #wages# will not buy the #bread# I need for a #shift#. | A #buyer# can call that a small difference.
+opinion @1 newcomers against 1 : Let a new #hand# learn the #vat# before taking someone's #shift#. | The #work# has an order.
+opinion @1 road mixed 0 : The #road# takes finished #paper# to the #market#. | It sends muddy #wagons# across our #floor#.
+opinion @1 times against 1 : I count more #coins# for the same #loaf# every season. | The #pulp# has not become easier to lift.
+opinion @1 watch mixed 0 : The watch can keep the #gate# clear. | I will mind the #mill# #door# myself.
+line @1 greet : #greet#. Keep your feet clear of the #vat#. | #greet#. The #sheets# are drying.
+line @2 greet [pair.band=friends|family] : Come in; the #soup# is still warm. | I swept the #floor# before you arrived.
+line @3 greet [here.time=dawn] : The first #stack# is already on the #board#. | #greet#. The #vat# is full this #morning#.
+line @1 greet.return : You returned before this #sheet# dried. | The #planks# are clear now.
+line @1 kin.open [pair.kin!=no] : There is a #bowl# at our #table#. | Mind the wet #boots# at the #door#.
+line @1 again.open : I was checking the #deckle# #edge#. | Did the #wagon# reach the #market#?
+line @1 farewell : #farewell#. I must lift the next #sheet#. | Step around the #drain#.
+line @1 farewell.return : The finished #paper# will be here on your return. | The #soup# may still be warm.
+line @1 react.news : Say it while I empty this #mould#. | Was it by the #gate#?
+line @1 react.news.new : No word of that reached our #mill#. | Did a #wagon# bring it?
+line @1 react.news.known : A #seller# mentioned a small part. | Your account fills the gap.
+line @1 react.news.doubt : I would see the #sheet# before judging the #edge#. | Which witness saw the whole matter clearly?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Take the #bowl#; I will finish this #stack#. | I am sorry. We can sit when the #press# stops.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That merits a fresh #bowl# for supper. | I will mark a clean #sheet# for them.
+line @1 answer.how : The #vat# stayed clear and the #house# is tidy. | I saw the #stars# after a warm #rain#.
+line @1 answer.how.busy [self.working=yes] : This #pulp# must settle before I leave. | The #press# needs another #stack#.
+line @1 ask.how : Did the #road# leave your #boots# dry? | Have you eaten more than stale #bread#?
+line @1 sympathise : I can set this #mould# down and listen. | A warm #bowl# may make the #hour# easier.
+line @1 reassure : A torn #sheet# can be put back in the #vat#. | The wet #floor# is drying now.
+line @1 decline : No, I will not put that #paper# through the #press# yet. | I have to clear the #drain# first.
+line @1 accept_decline : Then we will leave the #stack# for tomorrow. | I hear you; the #vat# can wait.
+line @1 thank : You moved the #bucket# out of the walkway. | The fresh #bread# was a kind thought.
+line @1 deflect_thanks : The #broom# was already in my #hand#. | I had an extra #bowl#.
+line @1 preclose : The #sky# is darkening over the #mill#. | One last sweep will leave the #floor# safe.
+line @1 tease [pair.band=friends] : That #vat# would hide a #sheet# from you. | Your #march# has fewer beats than a broken #press#.
+line @1 ack : #bc_right#. The #edge# is straight. | #bc_fair_enough#. I will take the next #stack#.
+line @1 give.advice : Keep the #deckle# level when lifting #paper#. | Dry the #planks# before carrying a full #bucket#.
+line @1 warn [world.bandits=near] : Travel with the #wagon# on the #road#. | I would wait until the #gate# is busy.
+scene clean_vat
+when topic=work
+does tell.self / react.self / assess
+a : Dirty #water# leaves specks in every #sheet#. | I rinse the #vat# before adding fresh #pulp#.
+b : Does that take long? | Can you remove the specks?
+a : Less than remaking a #stack#. | Only while the #paper# is wet.
+
+scene deckle_edge
+when topic=work
+does tell.self / react.self / assess
+a : I hold the #deckle# level so the #pulp# settles evenly. | A tilted lift makes one #edge# too thin.
+b : Can you see it at once? | Do you lift again?
+a : While the #sheet# shines. | If it has not set.
+
+scene marching_lift
+when topic=work
+does tell.self / react.self / assess
+a : The old #march# comes to me as I lift #sheets# from the #vat#. | The #beat# keeps my #hands# steady.
+b : Does anyone join in? | Why that tune?
+a : When the #mill# is quiet. | It is easy to remember.
+
+scene press_stack
+when topic=work
+does tell.self / react.self / assess
+a : A #stack# under the #press# needs flat #boards# above and below. | A curled #plank# leaves a mark through the middle.
+b : Do you replace the board? | Is the paper lost?
+a : Before pressing. | It can return to the #vat#.
+
+scene dry_board
+when topic=work
+does tell.self / react.self / assess
+a : I spread each #sheet# on a dry #board# after the #press#. | If the edges touch, they cling together.
+b : How long do they dry? | Do you turn them?
+a : Until the #wind# has passed over. | Once, with clean #hands#.
+
+scene floor_drain
+when topic=home
+does tell.self / react.self / assess
+a : I clear the #drain# before the #floor# grows slick. | A #bucket# in the wrong place can trip a carrying #hand#.
+b : Has someone fallen? | Who cleans it?
+a : Not on my #shift#. | When the #drain# looks slow.
+
+scene barley_soup
+when topic=food
+does tell.self / react.self / assess
+a : Barley #soup# needs enough time by the #fire# to thicken. | Whoever closes the #mill# gets a full #bowl#.
+b : Do you cook it? | Is there bread?
+a : When the #house# is quiet. | Fresh if I can get it.
+
+scene stale_loaf
+when topic=food
+does tell.self / react.self / assess
+a : A stale #loaf# takes more chewing than a hard #shift#. | I soften it in #soup# rather than waste it.
+b : Does it taste better? | Is there another way?
+a : With enough #barley#. | A warm #fire# helps.
+
+scene tidy_house
+when topic=home
+does tell.self / react.self / assess
+a : I set the #bucket# and #broom# by the #door# when I come #home#. | A tidy #floor# lets me stop thinking of the #mill#.
+b : Do you clean every evening? | Does anyone help?
+a : The mud, at least. | When I ask.
+
+scene warm_rain
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : A warm #rain# after a dry #day# settles the dust outside the #mill#. | I still keep the #paper# away from the #window#.
+b : Do you like walking in it? | Does the paper curl?
+a : After the #shift#. | If the #wind# drives it inside.
+
+scene evening_stars
+when topic=pastimes
+does tell.self / react.self / assess
+a : I look for the first #star# after the #press# stops. | The #sky# is cleaner than the #vat# on a hard #day#.
+b : Do you know its name? | Do you stay outside?
+a : Only the one I always find. | Until the #house# calls.
+
+scene wet_planks
+when topic=weather
+does tell.self / react.self / assess
+a : Wet #planks# near the #press# hold water long after the #rain# ends. | I walk the dry #edge# with a #stack#.
+b : Does the wood rot? | Is there another path?
+a : If nobody tends it. | Along the wall.
+
+scene paper_buyer
+when topic=prices
+does tell.self / react.self / assess
+a : A #buyer# can see a crooked #edge# before I say a word. | I would rather offer the clean #sheets# and state the #price#.
+b : Do buyers mind rough paper? | Do you set the price?
+a : Some use it for drafts. | I tell the #seller# what is sound.
+
+scene city_rags
+when topic=travel
+does tell.self / react.self / assess
+a : A #wagon# from the #city# brought #rags# dark with #smoke#. | We washed them twice before they reached the #vat#.
+b : Did they make paper? | Was it worth the work?
+a : After the second rinse. | The #mill# needed them.
+
+scene shared_cottage
+when topic=family
+does tell.self / react.self / assess
+a : Our #house# gathers paper and #linen# #hands# around one #table#. | I sweep before the late #shift# comes in.
+b : Is there room? | Does everyone eat together?
+a : If we move the #buckets#. | When the hours meet.
+
+scene old_road_walk
+when topic=memories
+does tell.self / react.self / assess
+a : I walked the #road# to the #city# once and came home with sore feet. | The #stars# over our #field# looked better on my return.
+b : Was the city useful? | Would you go again?
+a : I learned how large a #market# can be. | Only for work.
+
+scene festival_noise
+when topic=home here.day=festival
+does tell.self / react.self / assess
+a : Festival #music# reaches the #mill# through the #window#. | I finish a #stack# before deciding whether to go out.
+b : Do you join them? | Is it loud?
+a : For a short #hour#. | Loud enough to hear indoors.
+
+story first_clean_sheet [topic=work self.age>=18]
+  : My first #sheet# came from the #vat# with a ragged #edge#.
+  : I tried again with the #deckle# level and a slower lift.
+  ask : Was the second better?
+  b : A patient hand.
+  : Straight enough for the #press#.
+
+story spilled_bucket [topic=work self.age>=18]
+  : While I carried a #stack#, someone knocked a #bucket# over by the #press#.
+  : I set the #paper# down and cleared the #floor# before lifting it again.
+  ask : Was any paper ruined?
+  b : You chose your footing.
+  : Only the bottom #sheet# went back to the #vat#.
+
+story city_journey [topic=travel self.age>=18]
+  : I walked to the #city# once to see where our #paper# went.
+  : The #market# was crowded, and the #road# home seemed longer in the dark.
+  ask : Would you return?
+  b : A long day.
+  : For a reason, not for the crowd.
+
+rule @bark_vat
+when concept=bark
+does aside
+cooldown 8h
+say The #vat# needs clean #water#. | Lift that #sheet# level.
+
+rule @bark_press
+when concept=bark
+does aside
+cooldown 9h
+say Mind the #press# #plank#. | This #stack# belongs on dry #boards#.
+
+rule @bark_floor
+when concept=bark
+does aside
+cooldown 10h
+say Clear the #drain# before carrying #paper#. | That #bucket# blocks the path.
+
+rule @bark_star
+when concept=bark
+does aside
+cooldown 11h
+say The first #star# is out. | I will finish this #stack# before supper.
+
+dlg @1 resident.hub : #greet#. The #vat# is ready for another #sheet#. | #greet#. Mind the wet #floor#.
+dlg @2 resident.hub [topic.meeting=known] : You came back while the #paper# dried. | I remember you; the #deckle# is level now.
+dlg @1 resident.job : I lift #paper# from the #vat# at #self.workplace#. | The #mould#, #press#, and dry #boards# keep me busy.
+dlg @1 resident.bye : #farewell#. I have to clear the #drain#. | #saying.capitalize#. Keep your #boots# dry.
+graft resident.hub
+choice How is paper made here? -> paper
+node paper
+say We soak #rags# into #pulp#, lift it on a #mould#, and dry each #sheet# after the #press#.
+free
+choice Why hum that tune? -> tune
+choice Goodbye. -> bye
+node tune
+say The #march# keeps my #hands# steady when I lift a wet #sheet# from the #vat#.
+choice Back to the vat. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #vat# has settled. | #greet#. The #press# is clear.
+line @1 farewell : #farewell#. I will stack the last #sheets#. | The #stars# should be out by then.

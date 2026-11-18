@@ -1,0 +1,331 @@
+# lf103, the carved lark (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf103
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for tn_oh_quill_oakdell
+written_by claude-codex-lf-1
+title the carved lark
+fits stage=adult|old
+prefers talk=plain
+traits temper=even talk=plain warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk distrusts_anything_from_the_city
+likes fried_fish evening_line full_larder thunder
+dislikes gulls cold_tea
+fears a_city_thread_that_breaks_in_the_loom an_empty_larder_after_a_bad_market
+hopes a_full_shelf_before_winter a_carved_bird_for_every_friend
+topics work +0.5 home +0.4 pastimes +0.3 prices +0.2
+styles comfort=gentle gossip=reluctant refuse=plain tease=dry
+marks oath saying
+persona #self.first# tests the #thread# before weaving, carves a #bird# from spare #wood#, and counts #loaves# before the #storm#.
+
+words
+oath! = Shuttle and feather | By the true warp
+saying! = Tug the thread before trusting its color | A little bird can cross any road
+loom = loom | linen loom
+shuttle = shuttle | wooden shuttle
+warp = warp | taut warp
+weft = weft | pale weft
+thread = thread | linen thread
+threads = threads | linen threads
+linen = linen | woven linen
+cloth = cloth | finished cloth
+bolt = bolt | linen bolt
+bolts = bolts | linen bolts
+hem = hem | narrow hem
+knot = knot | tight knot
+knots = knots | tight knots
+needle = needle | fine needle
+beam = beam | loom beam
+shed = shed | linen shed
+work = work | loom work
+hand = hand | working hand
+hands = hands | working hands
+wood = wood | scrap wood
+knife = knife | carving knife
+bird = bird | carved bird
+birds = birds | small birds
+wing = wing | thin wing
+wings = wings | wooden wings
+feather = feather | carved feather
+lark = lark | field lark
+gull = gull | loud gull
+gulls = gulls | loud gulls
+gift = gift | small gift
+friend = friend | close friend
+neighbour = neighbour | next-door neighbour
+visitor = visitor | new visitor
+seller = seller | market seller
+buyer = buyer | careful buyer
+merchant = merchant | city merchant
+city = city | Ridgemere
+market = market | Larkfield market
+stall = stall | linen stall
+road = road | High Road
+gate = gate | town gate
+toll = toll | gate toll
+wagon = wagon | passing wagon
+cart = cart | supply cart
+price = price | asked price
+coin = coin | saved coin
+home = home | shared cottage
+house = house | cottage house
+table = table | supper table
+shelf = shelf | larder shelf
+larder = larder | full larder
+loaf = loaf | fresh loaf
+loaves = loaves | fresh loaves
+bread = bread | fresh bread
+fish = fish | fried fish
+butter = butter | melted butter
+pan = pan | frying pan
+plate = plate | supper plate
+tea = tea | warm tea
+cup = cup | small cup
+line = line | fishing line
+water = water | pond water
+bench = bench | plain bench
+room = room | shared room
+mornings = mornings | early mornings
+box = box | sealed box
+fields = fields | open fields
+window = window | cottage window
+pond = pond | field pond
+field = field | open field
+hill = hill | low hill
+downs = downs | Larkdowns
+evening = evening | late evening
+morning = morning | early morning
+storm = storm | thunderstorm
+thunder = thunder | distant thunder
+rain = rain | hard rain
+roof = roof | sound roof
+wind = wind | west wind
+day = day | long day
+hour = hour | quiet hour
+winter = winter | hard winter
+fire = fire | hearth fire
+
+any
+opinion @1 city against 1 : A #merchant# from the #city# can bring fine #linen# and a hidden weak #thread#. | I test a sample before paying.
+opinion @1 dole for 1 : A #neighbour# should have #bread# before a #shelf# is filled for display. | Hunger can be seen without asking.
+opinion @1 houses against 1 : A fine #house# can leave its #bench# empty and still send us #work#. | I notice who sits outside.
+opinion @1 merchants against 2 : The #price# of #bread# keeps rising while my #loom# pays no more. | A full #larder# makes that easy to ignore.
+opinion @1 newcomers mixed 1 : A #visitor# who offers to carry a #bolt# deserves a place at the #table#. | I still ask where the #wagon# came from.
+opinion @1 road mixed 0 : The #road# brings buyers to our #stall#. | I prefer the quiet #field# after they leave.
+opinion @1 strangers mixed 1 : I can give a #bird# to a new face. | Trust takes longer to carve than a #wing#.
+opinion @1 times against 1 : Each #winter# takes another #coin# from the #shelf#. | I keep a careful count.
+line @1 greet : #greet#. I am testing this #thread#. | #greet#. Have you come by the #market#?
+line @2 greet [pair.band=friends|family] : I kept a carved #bird# for you. | Come sit; the #fish# is still warm.
+line @3 greet [here.time=dawn] : The #loom# began before the #market# opened. | #greet#. I heard the #lark# over the #downs#.
+line @1 greet.return : You returned while the #bolt# was still on the #beam#. | I finished the little #wing# you saw.
+line @1 kin.open [pair.kin!=no] : The #fire# is ready for you. | I put a #plate# beside mine.
+line @1 again.open : We were judging that #linen# sample. | Did you want to see the #bird#?
+line @1 farewell : #farewell#. I must tie off this #knot#. | Take care at the #gate# #toll#.
+line @1 farewell.return : Come before the next #storm#. | Another #bird# may be ready by then.
+line @1 react.news : Tell me which part you saw. | Was the #wagon# near the #gate#?
+line @1 react.news.new : That has not reached our #shed#. | Did a #seller# bring the word?
+line @1 react.news.known : A #buyer# mentioned something at the #stall#. | Your account adds the missing piece.
+line @1 react.news.doubt : I would test the #thread# before praising the #cloth#. | Which witness could show us the place?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Leave the #work# to me for an #hour#. | I can sit under the #roof# with you.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves a place at the #table#. | I have a little #bird# fit for a gift.
+line @1 answer.how : The #loom# held its tension and the #larder# has #bread#. | I watched the #thunder# from a good #roof#.
+line @1 answer.how.busy [self.working=yes] : The #weft# needs another pass. | I cannot leave the #shuttle# halfway across.
+line @1 ask.how : Did the #road# treat you gently? | Is your #house# kept dry from the #rain#?
+line @1 sympathise : Let me pour a warm #cup# for you. | We can keep the #room# quiet.
+line @1 reassure : A broken #thread# can be joined. | The #storm# will pass over the #downs#.
+line @1 decline : No, I need to see the #cloth# before I pay. | I cannot leave this #loom# unattended.
+line @1 accept_decline : Then I will set the #bolt# aside. | Understood; we can speak after the #market#.
+line @1 thank : You held the #beam# while I fixed the #knot#. | That #loaf# was kind of you to bring.
+line @1 deflect_thanks : I had the #wood# in hand already. | The #bird# is only a small thing.
+line @1 preclose : The #shuttle# is waiting in my #hand#. | I should count the #loaves# before #evening#.
+line @1 tease [pair.band=friends] : That #gull# would weave a straighter #hem# than you. | You have carved a #wing# with no #bird#.
+line @1 ack : #bc_right#. The #weft# is even now. | #bc_fair_enough#. I will check the #price# again.
+line @1 give.advice : Tug the #thread# near a #knot# before trusting a new #bolt#. | Keep the #knife# pointed away from your #hand#.
+line @1 warn [world.bandits=near] : Wait for a #wagon# before taking the #road#. | The far #gate# is quiet after dark.
+scene weak_thread
+when topic=work
+does tell.self / react.self / assess
+a : A #city# #thread# looked smooth until I pulled it across the #beam#. | It broke before the first #weft# passed.
+b : Did you return it? | Could you use the rest?
+a : I took a sample to the #seller#. | For tying, not weaving.
+
+scene loom_tension
+when topic=work
+does tell.self / react.self / assess
+a : I tap the #warp# before I start the #shuttle#. | A low sound means one #thread# is slack.
+b : Can you hear the difference? | Do you stop?
+a : After enough #mornings#, yes. | Before the #cloth# goes crooked.
+
+scene quiet_hem
+when topic=work
+does tell.self / react.self / assess
+a : The last #hem# on a #bolt# takes me longer than the middle. | A hurried edge tells the #buyer# everything.
+b : Does anyone look that closely? | Is it worth the time?
+a : The careful ones. | If my name travels with it.
+
+scene market_sample
+when topic=prices
+does tell.self / react.self / assess
+a : I ask to touch a #linen# sample before agreeing to a #price#. | Color hides less than a weak #knot#.
+b : Does the #merchant# allow it? | What do you check?
+a : A fair one does. | The #thread# between my fingers.
+
+scene carved_bird
+when topic=pastimes
+does tell.self / react.self / assess
+a : I carve a little #bird# from spare #wood# after the #loom# stops. | The #wing# is hardest to make thin.
+b : Do you keep them? | How many have you made?
+a : I give them away. | Enough to forget the count.
+
+scene lark_wing
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #lark# has a lighter #wing# than a #gull#. | I watch one over the #field# before lifting the #knife#.
+b : Does it stay still? | Do the carvings look true?
+a : Only for a breath. | True enough for a gift.
+
+scene fried_fish
+when topic=food
+does tell.self / react.self / assess
+a : I fry #fish# in #butter# until the edges curl. | A hot #plate# keeps it from cooling on the #table#.
+b : Do you catch it? | Is there enough?
+a : Sometimes with my #line#. | If I share it carefully.
+
+scene evening_line
+when topic=pastimes
+does tell.self / react.self / assess
+a : An #evening# by the #pond# gives my #hands# a rest from #linen#. | I watch the #line# instead of the #loom#.
+b : Do you often catch one? | Is the water quiet?
+a : Often enough for #supper#. | Until the #gulls# arrive.
+
+scene roof_thunder
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : I like #thunder# when a sound #roof# stands between it and my #loom#. | The #rain# tells me whether the tiles hold.
+b : Do you fear storms? | Does the shed leak?
+a : Not from a dry #bench#. | I check each #winter#.
+
+scene cold_tea
+when topic=food
+does tell.self / react.self / assess
+a : Tea left beside the #loom# goes cold before I remember it. | I pour less and keep the #cup# in reach.
+b : Do you warm it again? | Why not stop weaving?
+a : Once, if the #fire# is lit. | The #shuttle# has its own rhythm.
+
+scene full_larder
+when topic=home
+does tell.self / react.self / assess
+a : I count #loaves# before a #storm# reaches the #downs#. | A full #larder# makes the #thunder# pleasant.
+b : Do you expect the road to close? | Do you share?
+a : A #wagon# may be delayed. | With anyone at this #table#.
+
+scene gull_at_roof
+when topic=home
+does tell.self / react.self / assess
+a : A #gull# sits on our #roof# and calls over the #market# noise. | I would trade it for one quiet #lark#.
+b : Does it come each day? | Can you move it?
+a : When the wind turns. | It has ignored every word.
+
+scene city_package
+when topic=travel
+does tell.self / react.self / assess
+a : A #cart# brought #thread# from the #city# in a sealed #box#. | I opened one end before carrying it to the #shed#.
+b : Was it sound? | Did the driver wait?
+a : Half the #bolts# were sound. | Long enough for a count.
+
+scene shared_cottage
+when topic=family
+does tell.self / react.self / assess
+a : Several #hands# return to our #home# after the #market# closes. | I leave a #loaf# on the #table# for the last one.
+b : Is the house crowded? | Do you eat together?
+a : At #supper#, yes. | When our shifts meet.
+
+scene road_toll
+when topic=travel
+does tell.self / react.self / assess
+a : The #toll# at the #gate# is counted into every #bolt# that travels out. | I can hear the #wagon# drivers complain.
+b : Does it change your wages? | Do you pay it?
+a : The #price# reaches us eventually. | Only when I travel.
+
+scene gift_after_quarrel
+when topic=memories
+does tell.self / react.self / assess
+a : Once I gave a carved #bird# to a #friend# after a foolish quarrel. | It was easier than beginning with an apology.
+b : Did it help? | What bird was it?
+a : Enough to start talking. | A #lark# with crooked #wings#.
+
+scene field_rain
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : Rain darkens the #fields# before it reaches the #shed#. | I close the #window# before the first drops touch the #linen#.
+b : Can you tell when it is coming? | Does work stop?
+a : By the #wind# over the #downs#. | Only if the #roof# fails.
+
+story city_bolt [topic=work self.age>=18]
+  : A #merchant# brought a fine #bolt# from the #city# and praised its color.
+  : I pulled one loose #thread# and found a weak run through the middle.
+  ask : Did you buy it?
+  b : The color was not enough.
+  : Not at the #price# asked.
+
+story bird_for_friend [topic=pastimes self.age>=18]
+  : I carved a small #bird# while a #friend# was away along the #road#.
+  : Its #wing# was uneven, but I left it by the #table# when they came home.
+  ask : Did they like it?
+  b : A gift made by hand.
+  : They kept it beside the #window#.
+
+story thunder_supper [topic=weather self.age>=18]
+  : Thunder reached the #downs# while I was frying #fish#.
+  : The #roof# held, and every #hand# in the #house# came to the #table#.
+  ask : Was supper enough?
+  b : A good place to be.
+  : With #bread# beside the #plate#, yes.
+
+rule @bark_thread
+when concept=bark
+does aside
+cooldown 8h
+say That #thread# needs a tug. | A weak #knot# will show itself.
+
+rule @bark_bird
+when concept=bark
+does aside
+cooldown 9h
+say This #wing# is too thick. | I have one more #bird# to carve.
+
+rule @bark_market
+when concept=bark
+does aside
+cooldown 10h
+say The #market# is loud already. | A #wagon# has stopped at the #gate#.
+
+rule @bark_roof
+when concept=bark
+does aside
+cooldown 11h
+say The #thunder# can stay beyond the #roof#. | I should bring the #linen# inside.
+
+dlg @1 resident.hub : #greet#. I am minding the #loom# and this #thread#. | #greet#. A carved #bird# is nearly done.
+dlg @2 resident.hub [topic.meeting=known] : You came back before the #bolt# was finished. | I remember you; the #bird# has a second #wing# now.
+dlg @1 resident.job : I weave #linen# at the #shed#. | My #shuttle# runs between the #warp# and #weft# all #day#.
+dlg @1 resident.bye : #farewell#. I will secure the #loom#. | #saying.capitalize#. Mind the #gate#.
+graft resident.hub
+choice Why test the thread? -> thread
+node thread
+say A fine color can hide a weak #thread#. I tug a sample before letting it run through the #loom#.
+free
+choice Who is the bird for? -> bird
+choice Goodbye. -> bye
+node bird
+say Usually whoever needs a small #gift#. I carve them from spare #wood# after the #shuttle# rests.
+choice Back to the loom. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #warp# is ready. | #greet#. I was finishing a #bird#.
+line @1 farewell : #farewell#. I have a #hem# to finish. | The #larder# wants counting before the #storm#.

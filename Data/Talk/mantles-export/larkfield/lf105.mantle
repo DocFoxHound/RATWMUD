@@ -1,0 +1,332 @@
+# lf105, the river song (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf105
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for tn_mb_heather_reedwater
+written_by claude-codex-lf-1
+title the river song
+fits stage=adult|old
+prefers talk=plain
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk counts_weft_passes_while_humming
+likes pickled_herring singing full_larder autumn_wind
+dislikes night_noise flies
+fears a_neighbour_going_hungry a_song_drowned_by_night_noise
+hopes a_full_larder_for_the_shared_house a_quiet_evening_song
+topics work +0.4 food +0.4 family +0.3 pastimes +0.3
+styles comfort=gentle gossip=reluctant refuse=plain tease=dry
+marks oath saying
+persona #self.first# hums over the #loom#, measures the #weft# by a quiet #beat#, and offers #herring# from a full #larder#.
+
+words
+oath! = Weft and willow | By the river song
+saying! = A song keeps the hands together | The last plate belongs to the late worker
+loom = loom | linen loom
+shuttle = shuttle | wooden shuttle
+warp = warp | taut warp
+weft = weft | crossing weft
+thread = thread | linen thread
+threads = threads | linen threads
+linen = linen | woven linen
+cloth = cloth | finished cloth
+bolt = bolt | linen bolt
+bolts = bolts | linen bolts
+hem = hem | narrow hem
+knot = knot | tight knot
+knots = knots | tight knots
+beam = beam | loom beam
+shed = shed | linen shed
+work = work | weaving work
+hand = hand | working hand
+hands = hands | working hands
+count = count | soft count
+number = number | passing number
+song = song | old song
+songs = songs | shared songs
+tune = tune | familiar tune
+beat = beat | steady beat
+verse = verse | remembered verse
+verses = verses | old verses
+voice = voice | quiet voice
+voices = voices | friendly voices
+friend = friend | close friend
+neighbour = neighbour | near neighbour
+visitor = visitor | new visitor
+stranger = stranger | unfamiliar traveller
+house = house | shared house
+home = home | cottage
+table = table | supper table
+plate = plate | supper plate
+plates = plates | supper plates
+larder = larder | full larder
+shelf = shelf | larder shelf
+bread = bread | fresh bread
+loaf = loaf | bread loaf
+herring = herring | pickled herring
+jar = jar | herring jar
+fish = fish | river fish
+eel = eel | river eel
+trap = trap | river trap
+line = line | fishing line
+river = river | Long River
+bank = bank | riverbank
+bridge = bridge | river bridge
+water = water | river water
+market = market | town market
+stall = stall | food stall
+seller = seller | market seller
+buyer = buyer | passing buyer
+coin = coin | saved coin
+price = price | marked price
+city = city | Ridgemere
+road = road | High Road
+wagon = wagon | passing wagon
+gate = gate | town gate
+field = field | open field
+downs = downs | Larkdowns
+autumn = autumn | leaf season
+wind = wind | autumn wind
+rain = rain | light rain
+night = night | dark night
+noise = noise | night noise
+fly = fly | summer fly
+flies = flies | summer flies
+morning = morning | early morning
+evening = evening | quiet evening
+day = day | long day
+hour = hour | late hour
+fire = fire | hearth fire
+cup = cup | warm cup
+bench = bench | low bench
+door = door | cottage door
+window = window | open window
+wagons = wagons | passing wagons
+summer = summer | warm summer
+days = days | long days
+evenings = evenings | quiet evenings
+winter = winter | hard winter
+
+any
+opinion @1 city against 1 : The #city# is too loud for a #song# shared round a #table#. | I like knowing who answers the next #verse#.
+opinion @1 dole for 1 : If a #neighbour# lacks #bread#, a full #larder# ought to open. | That is what stored food is for.
+opinion @1 houses against 1 : A #bench# can stay empty while working folk stand nearby. | I would set another #plate# instead.
+opinion @1 merchants against 1 : I mark the #price# before a #seller# finds a new reason to raise it. | A little #coin# matters in this #house#.
+opinion @1 newcomers for 1 : A #visitor# who helps carry a #bolt# can learn the rest of the #work#. | There is space at our #table#.
+opinion @1 strangers for 1 : I would offer a #cup# before asking where a #stranger# slept. | A warm meal steadies a road-weary voice.
+opinion @1 festivals mixed 0 : I like a #song# sung by friends. | The #noise# after dark sends me #home#.
+opinion @1 road mixed 0 : The #road# brings #herring# to the #market#. | I choose the #river# #bank# when I want quiet.
+line @1 greet : #greet#. I was humming the next #verse#. | #greet#. There is #herring# in the #jar#.
+line @2 greet [pair.band=friends|family] : Come in; I kept your #plate# warm. | Join the #song# when you know the #tune#.
+line @3 greet [here.time=dawn] : The #river# was quiet before the #wagons# came. | #greet#. I have started the #loom#.
+line @1 greet.return : Your return came before the #tune# left my head. | There is another #cup# on the #table#.
+line @1 kin.open [pair.kin!=no] : Your #plate# is beside the #fire#. | Come where the #wind# cannot reach you.
+line @1 again.open : Shall I begin the #song# again? | The #bolt# has another length finished.
+line @1 farewell : #farewell#. I should turn the #herring# jar. | Leave the #door# softly tonight.
+line @1 farewell.return : We can sing the last #verse# later. | Come when the #river# runs clear.
+line @1 react.news : Speak; I can keep the #shuttle# moving and listen. | Was someone by the #bridge#?
+line @1 react.news.new : Nobody at our #table# has said that. | Did a #wagon# carry the word?
+line @1 react.news.known : A #neighbour# mentioned the beginning. | You have brought the rest.
+line @1 react.news.doubt : That sounds unlike the #river# I know. | I would ask who witnessed it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I will put the #song# aside and sit with you. | There is a warm #cup# here if you want it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That calls for a new #verse#. | I will bring another #plate# to the #table#.
+line @1 answer.how : The #loom# was steady and the #larder# has enough. | A fresh #wind# came up the #river#.
+line @1 answer.how.busy [self.working=yes] : This #bolt# should come off the #beam# by #evening#. | The #weft# needs a gentle #hand#.
+line @1 ask.how : Has the #road# left you hungry? | Did you hear any good #songs# today?
+line @1 sympathise : You can rest here while I tend the #fire#. | I know a quiet #tune# if words are hard.
+line @1 reassure : The #thread# can be tied and woven again. | We have food enough for this #day#.
+line @1 decline : No, I promised the last #plate# elsewhere. | I cannot leave the #loom# while it is set.
+line @1 accept_decline : I hear you. There will be another #evening#. | Then the #song# can end here.
+line @1 thank : You brought the #jar# through the #rain#. | That #verse# was kind to share.
+line @1 deflect_thanks : I had enough #bread# for two. | A #song# needs another #voice#.
+line @1 preclose : The #night# #noise# is beginning beyond the #window#. | I should close the #herring# #jar#.
+line @1 tease [pair.band=friends] : You missed the #beat# but found the loudest #verse#. | Your #shuttle# dances farther than your feet.
+line @1 ack : #bc_right#. The #weft# is even. | #bc_fair_enough#. I will set another #plate#.
+line @1 give.advice : Keep a #trap# above the mud line when the #river# rises. | Hum the #beat# when counting #weft# passes.
+line @1 warn [world.bandits=near] : Keep near the #wagons# on the #road#. | I would cross the #bridge# in daylight.
+scene humming_count
+when topic=work
+does tell.self / react.self / assess
+a : I hum one #beat# for each pass of the #shuttle#. | It keeps my #count# even when the #shed# is loud.
+b : Do you lose count? | Does anyone sing with you?
+a : Less often than I used to. | When the #work# is light.
+
+scene warp_repair
+when topic=work
+does tell.self / react.self / assess
+a : A broken #warp# needs a clean #knot# before the #weft# crosses it. | I stop the #loom# and take my time.
+b : Does the knot show? | Is it hard to mend?
+a : Not after I trim the #hem#. | Harder if I hurry.
+
+scene finished_bolt
+when topic=work
+does tell.self / react.self / assess
+a : I run my #hand# along the finished #bolt# to find a rough #thread#. | The #cloth# should feel calm from edge to edge.
+b : Do you inspect every one? | What if you find a flaw?
+a : Before it leaves the #shed#. | I mend it there.
+
+scene shared_song
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #song# is better when a #friend# answers the second #verse#. | I leave a space and wait for another #voice#.
+b : What if no one joins? | Do you sing loudly?
+a : I finish it softly. | Only enough to be heard.
+
+scene old_verse
+when topic=memories
+does tell.self / react.self / assess
+a : I remember a #verse# from the days before our #house# was so full. | The words come back while I stir the #fire#.
+b : Who taught it? | Does it end happily?
+a : Someone at the #river# #bank#. | Quietly.
+
+scene herring_jar
+when topic=food
+does tell.self / react.self / assess
+a : Pickled #herring# lasts in a sealed #jar# when the #market# is empty. | I turn it gently so the top pieces do not dry.
+b : Do you make it? | Is it sharp?
+a : When #fish# is plentiful. | Enough to wake the tongue.
+
+scene late_plate
+when topic=food
+does tell.self / react.self / assess
+a : I keep one #plate# for whoever returns after the #work# ends. | A full #larder# means little if the last worker goes hungry.
+b : Who comes home late? | Does it stay warm?
+a : It changes by the #day#. | Beside the #fire#.
+
+scene river_trap
+when topic=pastimes
+does tell.self / react.self / assess
+a : I set an #eel# #trap# where the #river# bends past the reeds. | A little patience feeds a #table# better than boasting.
+b : Do you catch many? | Is the water deep?
+a : Enough to earn my confidence. | Not where I stand.
+
+scene autumn_wind
+when topic=weather here.season=autumn
+does tell.self / react.self / assess
+a : An #autumn# #wind# clears the #flies# from the #river# #bank#. | I can walk there without waving my #hands#.
+b : Does the #wind# trouble you? | Does the river change?
+a : With a warm #cup# afterward. | The surface darkens.
+
+scene summer_flies
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : In #summer# the #flies# find any uncovered #plate#. | I close the #window# before setting out #herring#.
+b : Do they follow you inside? | Is it always this bad?
+a : One always does. | Only on still #days#.
+
+scene night_noise
+when topic=home
+does tell.self / react.self / assess
+a : Noise in the street after #night# breaks the last #verse# of a #song#. | I pull the #window# shut.
+b : Do you speak to them? | Can you sleep?
+a : When I know the #voice#. | Once the #road# quiets.
+
+scene neighbour_cup
+when topic=home
+does tell.self / react.self / assess
+a : I leave a #cup# by the #door# when a #neighbour# has been out in #rain#. | It is a small welcome.
+b : Do they come often? | Is the cup warm?
+a : When the #road# is busy. | I refill it.
+
+scene house_larder
+when topic=family
+does tell.self / react.self / assess
+a : Our shared #house# keeps one #shelf# for everyone's #bread#. | I count what is left before offering a meal outside.
+b : Does anyone quarrel? | Is there enough?
+a : Less when we speak plainly. | Most #days#.
+
+scene family_song
+when topic=family
+does tell.self / react.self / assess
+a : I learned a #song# from someone at our #table# and changed the last #verse#. | Now they ask for my ending.
+b : Do they sing with you? | What changed?
+a : On quiet #evenings#. | I made room for another #voice#.
+
+scene market_herring
+when topic=prices
+does tell.self / react.self / assess
+a : A #seller# raised the #price# of #herring# while I counted my #coin#. | I bought less and filled the gap with #bread#.
+b : Did you argue? | Was there another stall?
+a : Only once. | Not with fresh #fish#.
+
+scene bridge_walk
+when topic=travel
+does tell.self / react.self / assess
+a : I cross the #bridge# when the #river# is high to hear its deeper sound. | The #road# above it stays dry.
+b : Do you stop there? | Is it safe?
+a : For a short #verse#. | With the rail beneath my #hand#.
+
+scene festival_chorus
+when topic=pastimes here.day=festival
+does tell.self / react.self / assess
+a : At a festival I join the #song# before the #night# #noise# rises. | A friend near the #stall# knows the harmony.
+b : Do you stay for dancing? | Which song?
+a : Until the last #verse#. | The one everyone can answer.
+
+story first_trap [topic=pastimes self.age>=18]
+  : I set my first #eel# #trap# too close to a shallow #bank#.
+  : The #river# left it nearly dry, so I moved it below the #bridge#.
+  ask : Did you catch one?
+  b : You learned the bend.
+  : Enough for supper, and I remembered the place.
+
+story borrowed_verse [topic=family self.age>=18]
+  : Someone in our #house# forgot the second #verse# of an old #song#.
+  : I hummed the #beat# until the words returned to them.
+  ask : Did they finish?
+  b : A gentle way to help.
+  : We finished it together at the #table#.
+
+story winter_jar [topic=food self.age>=18]
+  : One #winter# the #market# had little #fish#, but our #larder# held a #jar# of #herring#.
+  : I divided it among the late workers with #bread#.
+  ask : Was there enough?
+  b : You saved it well.
+  : Enough for a meal and a #song#.
+
+rule @bark_song
+when concept=bark
+does aside
+cooldown 8h
+say That #verse# wants another #voice#. | I lost the #beat# for a moment.
+
+rule @bark_loom
+when concept=bark
+does aside
+cooldown 9h
+say The #weft# is even now. | One more #shuttle# pass.
+
+rule @bark_herring
+when concept=bark
+does aside
+cooldown 10h
+say Close the #herring# #jar# tightly. | There is a #plate# for the late worker.
+
+rule @bark_wind
+when concept=bark
+does aside
+cooldown 11h
+say The #autumn# #wind# has come through. | The #flies# will leave us be.
+
+dlg @1 resident.hub : #greet#. I was humming at the #loom#. | #greet#. There is #herring# and #bread# if you are hungry.
+dlg @2 resident.hub [topic.meeting=known] : I know your #voice# now; come in. | You returned before the last #verse#.
+dlg @1 resident.job : I weave #linen# in the #shed#. | The #weft# crosses the #warp# to my little #song#.
+dlg @1 resident.bye : #farewell#. I should finish this #bolt#. | #saying.capitalize#. Leave a #plate# for the last worker.
+graft resident.hub
+choice Why do you hum at the loom? -> song
+node song
+say The #beat# helps me count each #weft# pass. I leave room for another #voice# when someone knows the #verse#.
+free
+choice Do you really trap eels? -> river
+choice Goodbye. -> bye
+node river
+say I set a #trap# below a bend in the #river#. I learned to place it where the #water# does not run too shallow.
+choice Back to the loom. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. I have a #song# in mind. | #greet#. The #loom# is nearly set.
+line @1 farewell : #farewell#. I will cover the #plate#. | The #river# can wait until #morning#.

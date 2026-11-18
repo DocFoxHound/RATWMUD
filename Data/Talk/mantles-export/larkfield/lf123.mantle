@@ -1,0 +1,338 @@
+# lf123, the grandmother-judging swineherd (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf123
+revision 1
+state ready
+dialect larkfield
+accent broad light
+tier standard
+written_for cty_ragnar_wetby
+written_by claude-codex-lf-1
+title the grandmother-judging swineherd
+fits stage=young|adolescent|adult|old
+prefers talk=plain
+traits temper=calm talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=content
+quirk has_opinions_about_everyone_s_grandmother
+likes smoked_eel singing full_larder frosty_mornings
+dislikes early_bells stale_bread
+fears a_piglet_lost_to_the_wood a_question_about_the_city_trip
+hopes a_full_larder_for_the_house a_good_song_after_the_herd_is_fed
+topics work +0.4 family +0.4 pastimes +0.3 food +0.2
+styles comfort=frank gossip=blunt refuse=plain tease=dry
+marks oath saying
+persona #self.first# tends the #pigs#, sings while filling the #trough#, and offers unsolicited judgments about every #grandmother# in town.
+
+words
+oath! = Pig and frost | By the good old grandmothers
+saying! = A grandmother sees the missing pig first | Feed the herd before the song
+pig = pig | yard pig
+pigs = pigs | Southwood pigs
+piglet = piglet | young piglet
+piglets = piglets | young piglets
+sow = sow | older sow
+boar = boar | stubborn boar
+yard = yard | pig yard
+pen = pen | fenced pen
+pens = pens | fenced pens
+gate = gate | yard gate
+latch = latch | gate latch
+fence = fence | low fence
+trough = trough | feed trough
+troughs = troughs | full troughs
+feed = feed | mixed feed
+grain = grain | dry grain
+straw = straw | clean straw
+mud = mud | yard mud
+hoof = hoof | small hoof
+hooves = hooves | muddy hooves
+herd = herd | small herd
+hand = hand | yard hand
+hands = hands | working hands
+work = work | yard work
+lesson = lesson | herding lesson
+master = master | older herder
+friend = friend | close friend
+neighbour = neighbour | near neighbour
+stranger = stranger | passing stranger
+newcomer = newcomer | newcomer to town
+grandmother = grandmother | old grandmother
+grandmothers = grandmothers | town grandmothers
+family = family | house family
+house = house | shared house
+home = home | cottage
+door = door | cottage door
+window = window | small window
+roof = roof | sound roof
+larder = larder | full larder
+bread = bread | day bread
+loaf = loaf | stale loaf
+eel = eel | smoked eel
+plate = plate | supper plate
+meal = meal | evening meal
+song = song | yard song
+songs = songs | old songs
+singing = singing | quiet singing
+voice = voice | young voice
+chorus = chorus | familiar chorus
+bell = bell | early bell
+bells = bells | early bells
+morning = morning | frosty morning
+frost = frost | white frost
+cold = cold | morning cold
+night = night | quiet night
+evening = evening | late evening
+day = day | working day
+field = field | near field
+wood = wood | Southwood wood
+road = road | long road
+path = path | field path
+cart = cart | feed cart
+wagon = wagon | goods wagon
+city = city | far city
+market = market | town market
+merchant = merchant | market merchant
+price = price | asking price
+coin = coin | spare coin
+festival = festival | town festival
+music = music | festival music
+sweet = sweet | festival sweet
+sweets = sweets | festival sweets
+watch = watch | town watch
+queue = queue | market queue
+snow = snow | first snow
+rain = rain | cold rain
+wind = wind | field wind
+boot = boot | work boot
+bucket = bucket | feed bucket
+boots = boots | work boots
+walk = walk | short walk
+orchard = orchard | nearby orchard
+visitor = visitor | passing visitor
+
+any
+opinion @1 festivals for 1 : The #festival# has #sweets# and #music# after the #pigs# are fed. | No one hurries me home from it.
+opinion @1 merchants against 2 : A #merchant# adds a #coin# to the #price# when folk stop counting. | I count even for a #loaf#.
+opinion @1 newcomers against 1 : Another #hand# in the #yard# means less work to learn for me. | I want to know what they can do first.
+opinion @1 times against 1 : The #feed# costs more and the #larder# fills more slowly. | A #pig# notices an empty #trough#.
+opinion @1 city mixed 0 : There are things to see in the #city#. | I do not have a story about my last trip.
+opinion @1 road mixed 0 : A #road# can take a #cart# farther than I wish to go. | I like the #field# #path#.
+opinion @1 strangers mixed 0 : A #stranger# may know a new #song#. | They can stay outside the #gate# until I finish the #feed#.
+opinion @1 houses mixed 0 : I have heard a #grandmother# in a great #house# knows every worker by sight. | I would like to see if that is true.
+line @1 greet : #greet#. The #troughs# are nearly full. | #greet#. Did you hear my #song# from the #road#?
+line @2 greet [pair.band=friends|family] : Come see the new #piglet#. | I kept you the better piece of #eel#.
+line @1 greet.return : The #sow# has stayed in her #pen# since you left. | You missed the best part of the #chorus#.
+line @1 kin.open [pair.kin!=no] : There is #bread# at the #house#. | After supper, come find the #piglets# with me.
+line @1 again.open : I was telling you what a #grandmother# would say. | Did the #boar# get into that #pen#?
+line @1 farewell : #farewell#. I have #feed# to carry. | Mind the #latch# at the #gate#.
+line @1 farewell.return : Next time I may know another #song#. | The #piglets# will be bigger by then.
+line @1 react.news : Tell me who said it. | This #trough# will take its #feed# while you speak.
+line @1 react.news.new : That is new to this #yard#. | Who brought it from the #market#?
+line @1 react.news.known : Someone in the #house# mentioned it. | Your account gives the rest.
+line @1 react.news.doubt : I would ask who counted the #pigs#. | Which #hand# stood by the #gate# that #day#?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is painful news; the #feed# can stay in its #bucket#. | Come under the #roof#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good; that calls for a #song#. | I will save you the last #sweet#.
+line @1 answer.how : The #pigs# are fed and the #frost# is lifting. | I have had a full #plate# today.
+line @1 answer.how.busy [self.working=yes] : I am carrying this #feed# to the #pens#. | Let me close the #gate# first.
+line @1 ask.how : Did the #bells# wake you too early? | Have you eaten any #eel# today?
+line @1 sympathise : I can share the #bread# in our #house#. | Sit until the #wind# settles.
+line @1 reassure : We can follow the #hooves# before the #frost# melts. | The #larder# has enough for tonight.
+line @1 decline : I cannot leave the #piglets# in an open #pen#. | I will not speak about that #city# trip.
+line @1 accept_decline : All right; I will keep the #feed# here. | Then let the #song# wait.
+line @1 thank : You closed the #gate# before the #boar# moved. | That #eel# was worth the #walk#.
+line @1 deflect_thanks : I was standing by the #latch# already. | The #piglet# came when I called.
+line @1 preclose : The #piglets# need one last count before dark. | The #bells# will be too early tomorrow.
+line @1 tease [pair.band=friends] : Your #grandmother# would have found that #pig# first. | The #sow# sings more nearly on key.
+line @1 ack : #bc_right#. The #trough# is full. | #bc_fair_enough#. I will look in the next #pen#.
+line @1 give.advice : Close the #gate# before counting the #pigs#. | Leave clean #straw# where the #piglets# sleep.
+line @1 warn [world.bandits=near] : Stay near the #cart# on the #road#. | Keep the #yard# #gate# shut tonight.
+scene feed_count
+when topic=work
+does tell.self / react.self / assess
+a : Before the #pigs# crowd in, I measure their #feed#. | The small #piglets# need their share.
+b : Do they get pushed out? | Who watches them?
+a : The #boar# tries. | I do.
+
+scene sow_latch
+when topic=work
+does tell.self / react.self / assess
+a : The old #sow# knows when the #latch# has not caught. | I pull it twice before leaving the #yard#.
+b : Has she escaped? | Is she clever?
+a : Once. | More than the #boar#.
+
+scene piglet_voice
+when topic=work
+does tell.self / react.self / assess
+a : A #piglet# calls differently when it is hungry or lost. | I listen before looking in the #pens#.
+b : Can you tell each one? | Who taught you?
+a : Most of them. | The #master# helped.
+
+scene straw_bedding
+when topic=work
+does tell.self / react.self / assess
+a : Clean #straw# keeps the #piglets# dry after #rain#. | I move the old bedding out before supper.
+b : Do they mind? | Is it heavy work?
+a : They settle in. | Less than a full #cart#.
+
+scene boar_gate
+when topic=work
+does tell.self / react.self / assess
+a : The #boar# pushes the #gate# when he hears the #feed# #cart#. | I bring his share last.
+b : Does he wait? | Is that safe?
+a : He grumbles. | With the #fence# shut.
+
+scene herding_lesson
+when topic=work
+does tell.self / react.self / assess
+a : I learned to count #hooves# when the #pigs# hid behind the #wood#. | A moving #herd# is harder to count by heads.
+b : Do you still do it? | Does it work?
+a : When the #field# is crowded. | If they move slowly.
+
+scene grandmother_judgment
+when topic=family
+does tell.self / react.self / assess
+a : A #grandmother# can tell when a #pig# is ill before a young #hand# can. | I believe the ones who have kept a #yard#.
+b : Do you know many? | Do they agree with you?
+a : More than I can count. | Not often.
+
+scene grandmother_advice
+when topic=family
+does tell.self / react.self / assess
+a : Someone told me their #grandmother# would keep the #gate# open for air. | I asked whether she also liked chasing #piglets#.
+b : Were they angry? | Was she right?
+a : A little. | About the air, perhaps.
+
+scene smoked_eel
+when topic=food
+does tell.self / react.self / assess
+a : Smoked #eel# tastes better after a cold #morning# in the #yard#. | I save the thick piece for supper.
+b : Do you catch it? | Do you share?
+a : I buy it. | With the #house#.
+
+scene full_larder
+when topic=home
+does tell.self / react.self / assess
+a : A full #larder# makes the #house# quieter after work. | I check it before buying #sweets# at the #festival#.
+b : Do you keep count? | What runs out first?
+a : Enough to know. | Usually #bread#.
+
+scene frosty_morning
+when topic=weather
+does tell.self / react.self / assess
+a : White #frost# lets me see the #hooves# near the #fence#. | The #pigs# hurry toward the #feed#.
+b : Do your hands freeze? | Does the frost last?
+a : Until I carry the #cart#. | Not all #day#.
+
+scene early_bells
+when topic=home
+does tell.self / react.self / assess
+a : The early #bells# sound before I have found my #boots#. | The #pigs# wake anyway, so I go out.
+b : Do you mind them? | Do they help?
+a : Every #morning#. | The #herd# ignores them.
+
+scene stale_loaf
+when topic=food
+does tell.self / react.self / assess
+a : A stale #loaf# takes more work than my #trough# scoop. | I would rather eat #eel# or fresh #bread#.
+b : Do you throw it away? | Who buys fresh?
+a : The #pigs# may take crumbs. | Whoever reaches #market#.
+
+scene yard_song
+when topic=pastimes
+does tell.self / react.self / assess
+a : I sing while the #feed# falls into the #trough#. | The #sow# stops calling long enough to hear it.
+b : Does she like the song? | Who taught it to you?
+a : She listens. | Someone at home.
+
+scene festival_music
+when topic=pastimes
+does tell.self / react.self / assess
+a : I learn a #song# from the #festival# each year. | The #chorus# follows me back to the #yard#.
+b : Do others sing? | Do you stay late?
+a : Some #hands# join. | Until the #music# stops.
+
+scene city_trip
+when topic=memories
+does tell.self / react.self / assess
+a : I went to the #city# thinking I would return with more #coin#. | I came back to the #yard# and kept the story short.
+b : What happened? | Do you regret going?
+a : Nothing worth a #song#. | I learned the #road#.
+
+scene house_supper
+when topic=family
+does tell.self / react.self / assess
+a : Our #house# is full of #hands# from the #yard# and #orchard#. | I can hear three #songs# before the #meal# ends.
+b : Do you join in? | Is there enough food?
+a : Usually. | We make sure.
+
+story latch_escape [topic=work self.age>=12]
+  : A #sow# found a loose #latch# before I did.
+  : I followed her #hooves# across the frosty #field#.
+  ask : Did you catch her?
+  b : She knew the way.
+  : She came back for the #feed#.
+
+story grandmother_gate [topic=family self.age>=12]
+  : A #visitor# said their #grandmother# would leave the #gate# open.
+  : The #piglets# almost took that advice first.
+  ask : Did you close it?
+  b : A risky opinion.
+  : Before they reached the #road#.
+
+story city_return [topic=memories self.age>=12]
+  : I went to the #city# hoping for a larger #coin# than yard work paid.
+  : I returned to the #pigs# with little to show for it.
+  ask : What went wrong?
+  b : A hard trip.
+  : I would rather sing about the #field#.
+
+rule @bark_pig
+when concept=bark
+does aside
+cooldown 8h
+say That #piglet# has found the #gate#. | Bring the #feed# to this #pen#.
+
+rule @bark_song
+when concept=bark
+does aside
+cooldown 9h
+say I know the next #chorus#. | The #sow# waits for the last note.
+
+rule @bark_frost
+when concept=bark
+does aside
+cooldown 10h
+say The #frost# shows every #hoof#. | Watch the #path# by the #wood#.
+
+rule @bark_bell
+when concept=bark
+does aside
+cooldown 11h
+say Those #bells# are early again. | The #pigs# knew dawn was coming.
+
+dlg @1 resident.hub : #greet#. The #pigs# are busy with #feed#. | #greet#. Want to hear the next #song#?
+dlg @2 resident.hub [topic.meeting=known] : The #sow# stayed behind the #gate# today. | You came back for the #chorus#.
+dlg @1 resident.job : I herd #pigs# at #self.workplace#. | I fill #troughs#, clean #pens#, and count #piglets#.
+dlg @1 resident.bye : #farewell#. I have #straw# to carry. | #saying.capitalize#. Close the #gate#.
+graft resident.hub
+choice What does a grandmother know? -> grandmother
+node grandmother
+say A good one notices a sick #pig# before the rest of us do.
+free
+choice Will you sing something? -> song
+choice Goodbye. -> bye
+node song
+say Hear the #chorus# as I bring #feed# to the #trough#.
+choice Back to the yard. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #feed# is ready. | #greet#. The #frost# is lifting.
+line @1 farewell : #farewell#. I will count the #herd#. | I will save the next #song# for another #day#.
+
+young
+line @1 greet : #greet#. Come see the #piglets#. | #greet#. I know a short #song#.
+line @1 farewell : #farewell#. I have #feed# to carry. | The #gate# is shut now.
+
+adolescent
+line @1 greet : #greet#. I counted the #pigs# myself. | #greet#. I have the next #chorus#.
+line @1 farewell : #farewell#. The #sow# is still watching. | I will bring the #cart# back.

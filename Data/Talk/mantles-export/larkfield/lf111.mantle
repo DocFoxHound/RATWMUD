@@ -1,0 +1,339 @@
+# lf111, the doorway bakehouse hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf111
+revision 1
+state ready
+dialect larkfield
+accent none
+tier standard
+written_for tn_lf_rowan_chalkley
+written_by claude-codex-lf-1
+title the doorway bakehouse hand
+fits stage=adult|old
+prefers talk=plain
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk never_sits_with_a_back_to_the_door
+likes plum_tart roof_birds quiet_chapel warm_rain
+dislikes haggling bad_manners
+fears a_customer_angry_over_an_empty_shelf a_roof_fire_at_the_bakehouse
+hopes a_small_farm_with_an_oven_of_her_own a_quiet_hour_in_the_chapel
+topics work +0.5 food +0.4 home +0.3 faith +0.2
+styles comfort=gentle gossip=reluctant refuse=firm tease=dry
+marks oath saying
+persona #self.first# watches the #door# from the #counter#, counts #loaves# before opening, and dreams of a #farm# with a small #oven#.
+
+words
+oath! = Oven and open doorway | By the last warm loaf
+saying! = Count the bread before naming the price | A quiet bench makes room for thought
+bread = bread | fresh bread
+loaf = loaf | warm loaf
+loaves = loaves | warm loaves
+dough = dough | rising dough
+flour = flour | sifted flour
+yeast = yeast | live yeast
+crust = crust | browned crust
+crumb = crumb | soft crumb
+crumbs = crumbs | bread crumbs
+oven = oven | bakehouse oven
+fire = fire | oven fire
+heat = heat | steady heat
+ash = ash | cold ash
+tray = tray | baking tray
+trays = trays | baking trays
+rack = rack | cooling rack
+shelf = shelf | bread shelf
+shelves = shelves | bread shelves
+counter = counter | bakehouse counter
+shop = shop | bakehouse shop
+door = door | open door
+doorway = doorway | shop doorway
+window = window | shop window
+seat = seat | doorway seat
+bench = bench | chapel bench
+floor = floor | wooden floor
+broom = broom | stiff broom
+work = work | bakehouse work
+hand = hand | working hand
+hands = hands | floury hands
+order = order | bread order
+orders = orders | bread orders
+price = price | marked price
+prices = prices | marked prices
+coin = coin | copper coin
+change = change | counted change
+buyer = buyer | bread buyer
+seller = seller | market seller
+customer = customer | waiting customer
+customers = customers | waiting customers
+queue = queue | shop queue
+market = market | town market
+road = road | High Road
+gate = gate | town gate
+cart = cart | supply cart
+farm = farm | hoped-for farm
+field = field | open field
+soil = soil | good soil
+garden = garden | small garden
+house = house | shared house
+home = home | cottage
+table = table | supper table
+plate = plate | supper plate
+cup = cup | warm cup
+plum = plum | ripe plum
+plums = plums | ripe plums
+tart = tart | plum tart
+slice = slice | warm slice
+butter = butter | fresh butter
+chapel = chapel | quiet chapel
+prayer = prayer | quiet prayer
+lamp = lamp | chapel lamp
+bird = bird | roof bird
+birds = birds | roof birds
+roof = roof | bakehouse roof
+tile = tile | roof tile
+tiles = tiles | roof tiles
+wing = wing | quick wing
+rain = rain | warm rain
+cloud = cloud | passing cloud
+wind = wind | field wind
+morning = morning | early morning
+evening = evening | late evening
+night = night | quiet night
+day = day | long day
+hour = hour | quiet hour
+friend = friend | trusted friend
+buyers = buyers | passing buyers
+fruit = fruit | ripe fruit
+carts = carts | supply carts
+spring = spring | early spring
+neighbour = neighbour | near neighbour
+visitor = visitor | new visitor
+stranger = stranger | passing stranger
+manners = manners | decent manners
+
+any
+opinion @1 merchants mixed 0 : A #price# should be written before a #customer# reaches the #counter#. | I dislike a bargaining game at the #door#.
+opinion @1 newcomers mixed 0 : Careful #hands# learn the #oven# by sorting the #trays# first. | I would show them where the #fire# catches.
+opinion @1 strangers mixed 0 : A #stranger# can have a #loaf# at the posted #price#. | I still keep the #door# in sight.
+opinion @1 houses mixed 0 : I would rather own a small #farm# than wait for a grand #house# to notice me. | One #oven# would be enough.
+opinion @1 church for 1 : The #chapel# is best when the #bench# is empty. | I can hear my own #prayer# there.
+opinion @1 road mixed 0 : The #road# brings #flour# and #buyers#. | A late #cart# makes the #oven# wait.
+opinion @1 times mixed 0 : A good #day# fills the #shelves# and clears them again. | I save a #coin# for the #farm#.
+opinion @1 festivals mixed 0 : A #plum# #tart# sells quickly on a busy #market# #day#. | After closing, I can hear the #roof# #birds# again.
+line @1 greet : #greet#. The #loaves# are on the #rack#. | #greet#. Please stand clear of the #oven#.
+line @2 greet [pair.band=friends|family] : I kept a #slice# of #tart# for you. | Take the place opposite the #door#; I can speak with you there.
+line @3 greet [here.time=dawn] : The #dough# rose before the first #cart#. | #greet#. The #oven# has been hot since #morning#.
+line @1 greet.return : The #crust# browned during your absence. | The marked #price# has not changed.
+line @1 kin.open [pair.kin!=no] : Take a #cup# beside the #counter#. | Your #plate# is under the #window#.
+line @1 again.open : Were you asking about the #tart#? | I have counted the #trays# again.
+line @1 farewell : #farewell#. I must close the #oven# #door#. | Watch the #queue# as you leave.
+line @1 farewell.return : There may be another #loaf# after #morning#. | Come when the #roof# #birds# settle.
+line @1 react.news : Tell me from this side of the #counter#. | Did it come through the #market#?
+line @1 react.news.new : I have not heard that in the #shop#. | Did the #cart# bring the word?
+line @1 react.news.known : A #customer# mentioned a little of it. | Your account is clearer.
+line @1 react.news.doubt : I would look at the #tray# before claiming a #loaf# is there. | Whose account comes from seeing it directly?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Take this #seat#; I will serve the #queue# shortly. | That is hard news. A warm #cup# may help.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I will set aside the best #crust# for that. | A #tart# would suit the news.
+line @1 answer.how : The #oven# behaved and the #birds# stayed off the #roof#. | The #rain# has made the #garden# smell fresh.
+line @1 answer.how.busy [self.working=yes] : I have #loaves# cooling on the #rack#. | These #orders# need counting.
+line @1 ask.how : Have you found #bread# enough today? | Did the #road# bring you in dry?
+line @1 sympathise : I can hold the #door# and listen. | The #chapel# #bench# is quiet if you need it.
+line @1 reassure : A failed #loaf# can become #crumbs# for supper. | The #cart# may still come before #night#.
+line @1 decline : No. I will not lower a posted #price# to win a quarrel. | I cannot leave while the #oven# is hot.
+line @1 accept_decline : Your #order# can remain open until tomorrow. | Then the #tart# can wait.
+line @1 thank : You swept the #floor# before the #queue# arrived. | That #flour# came just in time.
+line @1 deflect_thanks : I had an extra #slice#. | The #broom# was already by the #door#.
+line @1 preclose : The last #tray# needs lifting. | I should close the #shelves# before dark.
+line @1 tease [pair.band=friends] : You have more #flour# on your face than on the #dough#. | That #bird# has better timing at the #oven#.
+line @1 ack : #bc_right#. The #crust# is ready. | #bc_fair_enough#. I will check the #price#.
+line @1 give.advice : Let the #dough# rise away from a cold #window#. | Count the #change# where both #hands# can see it.
+line @1 warn [world.bandits=near] : Walk the #road# while the #market# is busy. | Keep the #shop# #door# fastened at #night#.
+scene doorway_seat
+when topic=home
+does tell.self / react.self / assess
+a : I take the #seat# that faces the #door#. | An arriving #customer# cannot surprise me while I count #change#.
+b : Does that help? | Is it comfortable?
+a : More than turning around each time. | Comfortable enough.
+
+scene first_loaf
+when topic=work
+does tell.self / react.self / assess
+a : I check the first #loaf# before filling the #rack#. | Its #crust# tells me whether the #oven# #heat# is even.
+b : What if it is pale? | Do you waste it?
+a : I turn the next #tray#. | We can eat it.
+
+scene flour_cart
+when topic=work
+does tell.self / react.self / assess
+a : A late #cart# of #flour# can hold the whole #oven# idle. | I keep a small #shelf# of spare bags.
+b : Does that last? | Do you pay more?
+a : Through one delayed #day#. | Only if the #road# stays blocked.
+
+scene cooling_rack
+when topic=work
+does tell.self / react.self / assess
+a : Warm #loaves# need air between them on the #rack#. | Stacked too soon, the #crust# softens.
+b : Do customers wait? | Can you sell them hot?
+a : A few minutes. | Once the steam clears.
+
+scene posted_price
+when topic=prices
+does tell.self / react.self / assess
+a : I mark the #price# beside each #shelf# before opening. | I refuse to argue a new number over a #loaf#.
+b : Do people still bargain? | What if flour costs more?
+a : Some try. | I change the mark before sales.
+
+scene plum_tart
+when topic=food
+does tell.self / react.self / assess
+a : A #plum# #tart# should show its #fruit# through the top. | I leave a wide gap in the #crust#.
+b : Do you bake it here? | Is it sweet?
+a : When the #oven# is free. | When the #plums# are ripe.
+
+scene roof_birds
+when topic=pastimes
+does tell.self / react.self / assess
+a : I watch #birds# on the #roof# after the #queue# thins. | They know when the last #crumbs# are swept out.
+b : Do you feed them? | What kind are they?
+a : Only by accident. | Small, quick ones.
+
+scene empty_chapel
+when topic=faith
+does tell.self / react.self / assess
+a : The #chapel# is quiet after the #market# shuts. | I sit on the back #bench# with no one asking a #price#.
+b : Do you pray? | Do you stay long?
+a : Sometimes. | Until the #lamp# is low.
+
+scene warm_rain
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : Warm #rain# after a dry #day# cools the #roof# without chilling the #oven#. | I leave the #window# open a little.
+b : Does it reach the bread? | Do you like it?
+a : Not past the #counter#. | When the #queue# is gone.
+
+scene wet_floor
+when topic=home
+does tell.self / react.self / assess
+a : A wet #floor# by the #door# can send a #customer# into the #rack#. | I set the #broom# there before the #rain#.
+b : Has that happened? | Do people notice?
+a : Close enough. | They look down afterward.
+
+scene bad_manners
+when topic=home
+does tell.self / react.self / assess
+a : Someone once pushed past the #queue# and called it urgent #work#. | I asked them to wait behind the last #buyer#.
+b : Did they listen? | Were you angry?
+a : At last. | Enough to speak firmly.
+
+scene future_farm
+when topic=home
+does tell.self / react.self / assess
+a : I would like a small #farm# with a #garden# and an #oven# of my own. | One #field# would be plenty to learn.
+b : Where would it be? | Would you leave the town?
+a : Where the #soil# holds. | Near enough for the #market#.
+
+scene old_oven
+when topic=memories
+does tell.self / react.self / assess
+a : The first #oven# I tended had a narrow hot place at the back. | I learned to turn each #tray# without burning my #hands#.
+b : Did you spoil bread? | Do you miss it?
+a : A few #loaves#. | Only its smell.
+
+scene change_count
+when topic=prices
+does tell.self / react.self / assess
+a : I count #change# on the #counter# where the #buyer# can see. | No one should leave wondering about a #coin#.
+b : Do they watch? | Does it take long?
+a : The careful ones. | Less than a dispute.
+
+scene market_roof
+when topic=travel
+does tell.self / react.self / assess
+a : From the #roof# I can see #carts# enter the #gate# at #morning#. | I know whether #flour# is coming before anyone calls.
+b : Do you climb often? | Is it safe?
+a : Only to check the #tiles#. | When the #roof# is dry.
+
+scene supper_crumbs
+when topic=family
+does tell.self / react.self / assess
+a : After closing the #shop#, I bring leftover #crumbs# to our #table#. | Nothing from the #oven# needs wasting.
+b : Do you make a meal? | Does anyone object?
+a : With #butter# and soup. | Not when it is warm.
+
+scene bird_at_window
+when topic=weather here.season=spring
+does tell.self / react.self / assess
+a : A #bird# waits beside the #window# when #spring# warms the #roof#. | I leave it alone until the first #tray# is out.
+b : Does it sing? | Does it take bread?
+a : Every #morning#. | Only fallen #crumbs#.
+
+story haggled_loaf [topic=work self.age>=18]
+  : A #customer# argued the #price# of a #loaf# after I had marked it on the #shelf#.
+  : I showed the sign and counted the #change# in front of them.
+  ask : Did they buy it?
+  b : Clear enough.
+  : They did, without another argument.
+
+story roof_bird [topic=pastimes self.age>=18]
+  : A #bird# nested beneath a loose #tile# over the #shop# #window#.
+  : I fixed the #roof# beside it after the young birds had flown.
+  ask : Did it return?
+  b : You gave it time.
+  : To the next #roof# along the street.
+
+story small_farm [topic=home self.age>=18]
+  : I once walked a #field# beyond the #gate# and imagined a small #farm# there.
+  : The #soil# was dark, and the #road# still led back to the #market#.
+  ask : Did you buy it?
+  b : A place to remember.
+  : Not yet; I keep the #coin# aside.
+
+rule @bark_oven
+when concept=bark
+does aside
+cooldown 8h
+say The #oven# #heat# is rising. | Turn that #tray# once.
+
+rule @bark_roof
+when concept=bark
+does aside
+cooldown 9h
+say The #birds# are on the #roof# again. | A #tile# sounds loose.
+
+rule @bark_price
+when concept=bark
+does aside
+cooldown 10h
+say The #price# is beside the #shelf#. | Count the #change# here.
+
+rule @bark_door
+when concept=bark
+does aside
+cooldown 11h
+say Keep the #doorway# clear of #trays#. | The #queue# starts outside.
+
+dlg @1 resident.hub : #greet#. I am counting the #loaves#. | #greet#. Speak beside the #counter# while I watch the #door#.
+dlg @2 resident.hub [topic.meeting=known] : You returned before the #rack# emptied. | That #tart# you mentioned is cooling now.
+dlg @1 resident.job : I mind the #counter# at #self.workplace#. | The #orders#, #prices#, and cooling #loaves# pass through my #hands#.
+dlg @1 resident.bye : #farewell#. I have the #oven# to tend. | #saying.capitalize#. Mind the wet #floor#.
+dlg @1 shop.greet [here.shop=open] : #greet#. Fresh #loaves# are cooling on the #rack#. | The #prices# are beside the #shelves#.
+dlg @2 shop.greet [here.shop=bare] : The #shelves# are empty until another #tray# comes out. | There is no #bread# to sell at present.
+dlg @3 shop.greet [here.shop=asleep] : The #oven# is cold and I am asleep. | Come when the #shop# opens.
+dlg @4 shop.greet [here.shop!=bare here.shop!=asleep] : #greet#. Ask about the #loaves# on the #rack#. | I will show you what is ready at the #counter#.
+dlg @1 shop.prices [here.shop=open|bare] : The #price# is posted beside each #shelf#. | I count the #change# where we both can see it.
+dlg @1 shop.bye : #farewell#. Wrap your #bread# before taking the #road#. | #shop_bye# The next #tray# needs watching.
+graft resident.hub
+choice Why face the door? -> door
+node door
+say This #seat# lets me spot the arriving #queue# and move the #trays# away from the #doorway#.
+free
+choice Do you want your own farm? -> farm
+choice Goodbye. -> bye
+node farm
+say A small #farm# with one #field# and an #oven# would do. I save a little #coin# toward it.
+choice Back to the counter. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The first #tray# is out. | #greet#. The #roof# #birds# are back.
+line @1 farewell : #farewell#. The #oven# needs checking. | The #chapel# will be quiet after closing.

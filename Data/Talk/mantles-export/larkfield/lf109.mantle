@@ -1,0 +1,330 @@
+# lf109, the city-bound paper hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf109
+revision 1
+state ready
+dialect larkfield
+accent broad light
+tier standard
+written_for tn_fh_clover_snowhollow
+written_by claude-codex-lf-1
+title the city-bound paper hand
+fits stage=adult|old
+prefers talk=plain
+traits temper=even talk=plain warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk checks_city_rags_for_hidden_stains
+likes honey_cakes singing fresh_straw warm_rain
+dislikes gulls bad_manners
+fears a_stain_hidden_in_a_paper_order being_stuck_at_the_vat_forever
+hopes a_paper_job_in_the_city a_song_for_the_road_south
+topics work +0.5 travel +0.4 pastimes +0.3 home +0.2
+styles comfort=gentle gossip=curious refuse=plain tease=playful
+marks oath saying
+persona #self.first# holds each #sheet# to the #light#, sings over the #vat#, and studies the #road# to the #city# while checking city #rags#.
+
+words
+oath! = Paper and pale light | By the clear sheet
+saying! = Hold it to the window before you sell it | A road is longer from the wrong end
+paper = paper | handmade paper
+sheet = sheet | wet sheet
+sheets = sheets | drying sheets
+vat = vat | paper vat
+pulp = pulp | wet pulp
+water = water | clear water
+mould = mould | paper mould
+deckle = deckle | wooden deckle
+screen = screen | fine screen
+fiber = fiber | soaked fiber
+rag = rag | linen rag
+rags = rags | city rags
+stain = stain | hidden stain
+stains = stains | hidden stains
+spot = spot | dark spot
+spots = spots | dark spots
+light = light | window light
+window = window | broad window
+press = press | paper press
+stack = stack | paper stack
+stacks = stacks | drying stacks
+board = board | drying board
+boards = boards | drying boards
+edge = edge | straight edge
+edges = edges | clean edges
+mill = mill | paper mill
+floor = floor | wooden floor
+straw = straw | fresh straw
+broom = broom | stiff broom
+bucket = bucket | water bucket
+work = work | vat work
+hand = hand | paper hand
+hands = hands | wet hands
+shift = shift | long shift
+song = song | work song
+songs = songs | old songs
+verse = verse | lively verse
+tune = tune | road tune
+beat = beat | quick beat
+voice = voice | singing voice
+friend = friend | close friend
+neighbour = neighbour | near neighbour
+visitor = visitor | new visitor
+stranger = stranger | passing stranger
+city = city | Ridgemere
+road = road | High Road
+gate = gate | town gate
+wagon = wagon | supply wagon
+market = market | town market
+stall = stall | paper stall
+seller = seller | market seller
+buyer = buyer | paper buyer
+price = price | posted price
+coin = coin | saved coin
+house = house | shared house
+home = home | cottage
+door = door | cottage door
+table = table | supper table
+plate = plate | supper plate
+cake = cake | honey cake
+cakes = cakes | honey cakes
+honey = honey | thick honey
+bread = bread | fresh bread
+cup = cup | warm cup
+rain = rain | warm rain
+cloud = cloud | low cloud
+wind = wind | field wind
+field = field | open field
+gull = gull | loud gull
+gulls = gulls | loud gulls
+morning = morning | early morning
+evening = evening | late evening
+day = day | long day
+hour = hour | quiet hour
+sun = sun | pale sun
+roof = roof | mill roof
+wagons = wagons | supply wagons
+oven = oven | kitchen oven
+map = map | road map
+evenings = evenings | quiet evenings
+linen = linen | woven linen
+festival = festival | town festival
+
+any
+opinion @1 city mixed 0 : I check every #rag# the #city# sends us. | I still want to see where that #road# ends.
+opinion @1 merchants mixed 0 : A #buyer# may pay for a clean #sheet#. | I will not hide a #stain# to keep the #price#.
+opinion @1 newcomers mixed 0 : A new #hand# can learn to lift #paper# straight. | First they should learn where the #straw# belongs.
+opinion @1 road for 1 : The #road# may take me to a larger #press# someday. | I can carry my #songs# with me.
+opinion @1 strangers for 1 : A #stranger# might know a #mill# beyond this #field#. | I ask before judging.
+opinion @1 festivals mixed 0 : I like the #song# at the #market#. | I leave when people forget their manners.
+opinion @1 watch mixed 0 : I want the watch to leave a clear #gate# for our #wagons#. | I can check our #stacks# myself.
+opinion @1 times mixed 0 : Our #paper# travels farther than I have. | That can change.
+line @1 greet : #greet#. Hold this #sheet# to the #window#. | #greet#. Do you know the #road# to the #city#?
+line @2 greet [pair.band=friends|family] : I saved a #cake# for you. | Come hear the #verse# I learned.
+line @3 greet [here.time=dawn] : The #vat# is quiet at this #hour#. | #greet#. The #rain# has stopped.
+line @1 greet.return : You returned before the #sheet# dried. | I found a #spot# under the #light#.
+line @1 kin.open [pair.kin!=no] : Take the warm #cup# by the #table#. | I kept the better #plate# for you.
+line @1 again.open : Did you see the #stain#? | I was speaking of the #city# #press#.
+line @1 farewell : #farewell#. I have #boards# to clear. | Keep the #road# in sight.
+line @1 farewell.return : Bring news from beyond the #gate#. | I will have another #song# by then.
+line @1 react.news : Tell me where it began. | Did the #wagon# bring this?
+line @1 react.news.new : No one at the #mill# has said so. | That is new to me.
+line @1 react.news.known : A #buyer# mentioned the first part. | Your account has more detail.
+line @1 react.news.doubt : The #sheet# looks clean until it reaches the #light#. | Whose own eyes caught the whole event?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I will stop the #song# and listen. | Come sit where the #roof# keeps us dry.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That calls for a sweet #cake#. | I will sing the good #verse#.
+line @1 answer.how : The #vat# held clear #water# and the #cakes# were fresh. | I have been thinking about the #road#.
+line @1 answer.how.busy [self.working=yes] : I am lifting #sheets# from the #vat#. | This #stack# needs its #boards#.
+line @1 ask.how : Have you travelled beyond our #gate#? | Did the #rain# catch you on the #road#?
+line @1 sympathise : A #cup# and a quiet #hour# are yours. | I will sit here until you want a #song#.
+line @1 reassure : The marked #sheet# can return to the #pulp#. | A long #road# begins with one clear step.
+line @1 decline : No, I saw a #stain# in those #rags#. | I cannot leave the #vat# open.
+line @1 accept_decline : Then we will set it aside for now. | I hear you; another #day# may work.
+line @1 thank : You held the #mould# level for me. | That #song# made the #shift# shorter.
+line @1 deflect_thanks : It was only one #cake#. | I wanted to hear the next #verse#.
+line @1 preclose : The #stacks# need another look. | I should sweep the #floor# before dark.
+line @1 tease [pair.band=friends] : That #gull# has a cleaner #song# than you. | You missed a #spot# as large as a #cake#.
+line @1 ack : #bc_right#. The #edge# is clean. | #bc_fair_enough#. I will check under the #light#.
+line @1 give.advice : Check wet #paper# against the #window# ahead of pressing. | Clear loose #straw# before filling the #vat#.
+line @1 warn [world.bandits=near] : Join a #wagon# before taking the #road#. | The #gate# is safer while the #market# is busy.
+scene held_to_light
+when topic=work
+does tell.self / react.self / assess
+a : I hold a new #sheet# to the #window# before it goes to the #press#. | A hidden #stain# shows when the #light# passes through.
+b : Do you find many? | Can you remove them?
+a : More from city #rags#. | The #pulp# can be cleaned again.
+
+scene city_rags
+when topic=work
+does tell.self / react.self / assess
+a : Rags from the #city# arrive packed too tightly. | I spread them out and check each fold for dark #spots#.
+b : Does that take long? | Are local rags better?
+a : Long enough to be worth it. | I know where those came from.
+
+scene clean_mould
+when topic=work
+does tell.self / react.self / assess
+a : A clean #mould# catches #pulp# evenly across its #screen#. | I wash it before the first #sheet# of the #day#.
+b : Does it dry between uses? | Who cleans it?
+a : Not fully. | Whoever expects a fair #edge#.
+
+scene thin_sheet
+when topic=work
+does tell.self / react.self / assess
+a : A thin #sheet# curls at one #edge# while the middle stays wet. | I return it to the #vat# rather than stack it.
+b : Is it wasted? | Could it be used?
+a : It becomes #pulp# again. | Not for a careful #buyer#.
+
+scene drying_boards
+when topic=work
+does tell.self / react.self / assess
+a : I leave room between the #boards# so #wind# can reach each #sheet#. | Crowded #stacks# keep damp in the middle.
+b : Do you turn them? | Does rain spoil them?
+a : After the first #hour#. | If the #roof# leaks.
+
+scene honey_cake
+when topic=food
+does tell.self / react.self / assess
+a : A #honey# #cake# is good before the #shift# and better after it. | I keep one wrapped beside the #table#.
+b : Do you bake it? | Do you share?
+a : When the #oven# is free. | With someone who asks kindly.
+
+scene first_warm_rain
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : Warm #rain# after a dry #day# clears dust from the #road#. | I open the #window# until the #paper# needs protecting.
+b : Do you go outside? | Is the mill damp?
+a : Once the #shift# ends. | Not if I shut the #roof# vent.
+
+scene straw_floor
+when topic=home
+does tell.self / react.self / assess
+a : Fresh #straw# on the #floor# makes the shared #house# feel cared for. | I change it before it goes damp.
+b : Does everyone notice? | Who brings it?
+a : When it is missing. | Whoever passes the #market#.
+
+scene gull_song
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #gull# tried to answer my #song# beside the #gate#. | It had the loudest voice and the worst #beat#.
+b : Did you sing louder? | Did it follow?
+a : I let it have the last note. | Only to the #roof#.
+
+scene bad_manners
+when topic=home
+does tell.self / react.self / assess
+a : A #visitor# once took the warm #cup# and forgot to greet the #hand# who made it. | I asked for a proper beginning.
+b : Did they apologize? | Were you angry?
+a : After a moment. | Enough to speak plainly.
+
+scene road_to_city
+when topic=travel
+does tell.self / react.self / assess
+a : I have followed the #road# on a #map# farther than my feet have gone. | A larger #mill# waits in the #city#.
+b : Do you plan to go? | What would you do there?
+a : When I have the #coin#. | Work with #paper#, if they will have me.
+
+scene wagon_news
+when topic=travel
+does tell.self / react.self / assess
+a : A #wagon# driver told me of a #press# that prints twice as quickly as ours. | I asked what the #hands# do with the saved #hour#.
+b : Did the driver know? | Would you work there?
+a : The driver had no answer. | If I could see it myself.
+
+scene friend_song
+when topic=family
+does tell.self / react.self / assess
+a : A #friend# takes the next #verse# when my #hands# lift a #sheet#. | The #song# belongs to both of us now.
+b : Do you practice? | Does it help at work?
+a : On quiet #evenings#. | It makes the #shift# lighter.
+
+scene shared_house
+when topic=family
+does tell.self / react.self / assess
+a : Paper and #linen# #hands# share our #table#. | I keep the #cakes# high enough to escape the hungry early arrivals.
+b : Do they complain? | Is it crowded?
+a : They laugh when I bring them down. | Until the #shift# changes.
+
+scene first_city_paper
+when topic=memories
+does tell.self / react.self / assess
+a : The first #city# #paper# I saw had a perfect #edge# and a stain in the middle. | I kept the lesson and discarded the #sheet#.
+b : Did you tell the buyer? | Do you still remember it?
+a : Before they paid. | Every time I hold one to the #light#.
+
+scene market_cakes
+when topic=prices
+does tell.self / react.self / assess
+a : I count my #coin# before reaching the #cake# #stall#. | A sweet smell can make a high #price# seem fair.
+b : Do you buy one? | Do you bargain?
+a : When it fits the count. | Only with a smile.
+
+scene festival_verse
+when topic=pastimes here.day=festival
+does tell.self / react.self / assess
+a : At the #festival# I sing the #verse# that travels down the #road#. | A #stranger# may carry it farther.
+b : Do they know the words? | Do you stay long?
+a : By the second turn. | Until the #gulls# drown us out.
+
+story spotted_sheet [topic=work self.age>=18]
+  : I lifted a #sheet# that looked clean while it lay on the #board#.
+  : Under the #window# #light#, a dark #spot# appeared near the center.
+  ask : Could you mend it?
+  b : Good you checked.
+  : I returned it to the #vat# before the #press# took it.
+
+story city_wagon [topic=travel self.age>=18]
+  : A #wagon# from the #city# stopped by our #gate# with a load of #rags#.
+  : I asked the driver about the larger #press# before I touched the #pulp#.
+  ask : Did you learn anything?
+  b : You are planning ahead.
+  : Enough to know which #road# I want to travel.
+
+story shared_verse [topic=pastimes self.age>=18]
+  : I forgot the third #verse# of a #song# while lifting a wet #sheet#.
+  : A #friend# took the tune and gave me new words for the #beat#.
+  ask : Do you still sing them?
+  b : The song grew.
+  : Every #shift#, when the #vat# is full.
+
+rule @bark_light
+when concept=bark
+does aside
+cooldown 8h
+say Put that #sheet# by the #window#. | A #spot# shows under #light#.
+
+rule @bark_cake
+when concept=bark
+does aside
+cooldown 9h
+say One #honey# #cake# is left. | Keep the #cakes# above the #straw#.
+
+rule @bark_road
+when concept=bark
+does aside
+cooldown 10h
+say The #city# #wagon# has stopped again. | I wonder where that #road# ends.
+
+rule @bark_song
+when concept=bark
+does aside
+cooldown 11h
+say Take the next #verse#. | I have the #beat# now.
+
+dlg @1 resident.hub : #greet#. I am checking this #paper# under the #light#. | #greet#. A #song# helps the #vat# work.
+dlg @2 resident.hub [topic.meeting=known] : You returned before the #sheet# dried. | I remember you; that #stain# was real.
+dlg @1 resident.job : I lift #paper# at #self.workplace# and check it for #spots#. | The #vat#, #mould#, and #press# keep me moving.
+dlg @1 resident.bye : #farewell#. I will move the #stacks# inside. | #saying.capitalize#. Remember the next #verse#.
+graft resident.hub
+choice Why hold the paper to the light? -> light
+node light
+say A hidden #stain# shows when the #sheet# is held against the #window#. I check before the #press# takes it.
+free
+choice Do you want to leave town? -> road
+choice Goodbye. -> bye
+node road
+say Someday I hope to work at a larger #press# in the #city#. I want to see the place for myself first.
+choice Back to the vat. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #window# is clear enough to inspect this #sheet#. | #greet#. Have you heard this #song#?
+line @1 farewell : #farewell#. The #vat# needs another rinse. | The #road# will still be there in the #morning#.
