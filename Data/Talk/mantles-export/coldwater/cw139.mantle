@@ -1,0 +1,293 @@
+# cw139, the chapel at dusk (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw139
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for cty_ilse_fogley
+written_by claude-codex-cw-2
+title the chapel at dusk
+fits stage=adult|old
+prefers job=herder
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=devout drive=steady
+quirk has_opinions_about_everyone_s_grandmother
+likes crisp_apples roof_birds quiet_chapel summer_evenings
+dislikes early_bells stale_bread
+fears the_deep_wood_after_sunset a_hungry_neighbour_turning_away
+hopes a_warm_meal_for_every_house a_quiet_prayer_at_day_end
+topics work +0.4 family +0.3 food +0.3 weather +0.3 memories -0.2
+styles comfort=warm gossip=reluctant refuse=gentle tease=none
+marks oath saying
+persona #self.first# knows which #grandmothers# fed the hungry, watches #birds# along the #roof#, and takes the long way around the deep #wood#.
+
+words
+oath! = Bright One keep the hearth | By the evening bell
+saying! = A neighbour's plate should not stay empty | Go home before the forest darkens
+grandmother = grandmother | elder woman
+grandmothers = grandmothers | elder women
+pig = pig | yard pig
+pigs = pigs | yard pigs
+yard = yard | pig yard
+pen = pen | pig pen
+gate = gate | yard gate
+trough = trough | feed trough
+feed = feed | mash
+bucket = bucket | feed bucket
+straw = straw | dry bedding
+apple = apple | crisp apple
+apples = apples | orchard apples
+bread = bread | loaf
+crust = crust | bread crust
+plate = plate | supper plate
+meal = meal | warm meal
+home = home | farmhouse
+hearth = hearth | own fire
+roof = roof | cottage roof
+bird = bird | rooftop bird
+birds = birds | rooftop birds
+nest = nest | bird nest
+bell = bell | chapel bell
+bells = bells | chapel bells
+chapel = chapel | small chapel
+prayer = prayer | quiet prayer
+bench = bench | chapel bench
+cross = cross | reed cross
+evening = evening | summer dusk
+dawn = dawn | first light
+sun = sun | late sun
+wood = wood | deep wood
+trees = trees | forest trees
+path = path | footpath
+shadow = shadow | dark patch
+lake = lake | Glasswater
+shore = shore | lake shore
+city = city | Ridgemere
+road = road | High Road
+coin = coin | pay
+market = market | market square
+cup = cup | drinking cup
+drink = drink | strong drink
+hand = hand | helping hand
+hands = hands | helping hands
+slice = slice | apple slice
+table = table | supper table
+
+any
+opinion @1 church for 1 : In an empty #chapel#, each #prayer# comes from the heart. | A #cross# by the door reminds me to return a neighbour's kindness.
+opinion @1 dole for 2 : No #home# should lack a #meal# while another has plenty. | I would carry a #plate# myself before sending a hungry person away.
+opinion @1 drink against 1 : Strong #drink# took peace from more than one family I knew. | A clear head is a safer companion near the #yard#.
+opinion @1 newcomers for 1 : A new #hand# deserves a chance at the #trough#. | I remember the #grandmothers# who welcomed strangers when I was young.
+opinion @1 strangers for 1 : I offer an #apple# before asking where someone came from. | A cold traveller may sit by the #hearth#.
+opinion @1 city against 1 : A crowded #city# can overlook the person at its own door. | I prefer neighbours whose #roof# I recognize.
+opinion @1 road mixed 0 : The #road# can bring needed #feed# in winter. | I do not like its turn by the dark #wood#.
+opinion @1 festivals mixed 0 : I enjoy seeing the #birds# startled by festival #bells#. | I want a quiet #bench# before the day is done.
+
+grown
+line @1 greet : #greet#. Have an #apple# if you are hungry. | #greet#. The #yard# is calm enough to speak.
+line @2 greet [self.working=yes] : Speak as I fill the #trough#. | I shall answer after this #bucket#.
+line @3 greet [pair.band=friends|family] : The #hearth# is lit; there is room beside it. | I kept the crisp #apples# for you.
+line @4 greet [here.time=dawn] : The #bells# began too early today. | #greet#. The #birds# were here before me.
+line @1 greet.return : #welcome_back#. I have a fresh #meal# ready. | You know the dry way to the #gate#.
+line @1 kin.open [pair.kin!=no] : Sit by the #hearth# and eat. | There is a clean #plate# for you.
+line @1 again.open : We had reached the #wood# in that account. | Did you remember what came next?
+line @1 farewell : #farewell#. Stay on the lit #path#. | #saying.capitalize#. The #pigs# need shelter now.
+line @1 farewell.return : There will be another #apple# tomorrow. | Come before the #bells# if you want quiet.
+line @1 react.news : I shall hear it with the #bucket# set down. | Begin with what your own eyes saw.
+line @1 react.news.new : No one has spoken of it at the #chapel#. | Did the news travel on the #road#?
+line @1 react.news.known : I heard a piece after the evening #prayer#. | Your account gives me something to consider.
+line @1 react.news.doubt : #hedge#, I would ask the witness directly. | A rumour can sound true when repeated in a crowd.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Such grief deserves company. I can join you at the #chapel#. | Let us find a quiet #bench#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A warm #meal# should mark that news. | I will offer a #prayer# of thanks.
+line @1 answer.how : I have fed every #pig# and checked the #roof#. | Looking forward to a quiet #evening#.
+line @1 answer.how.busy [self.working=yes] : I have #feed# to carry and #straw# to lay. | The #pen# needs a last sweep.
+line @1 ask.how : Have you had a #meal# today? | Was the open #path# clear for you?
+line @1 sympathise : Sit with me; no words are required. | There is room at my #hearth# while you recover.
+line @1 reassure : We can take the #path# together before dark. | A shared #meal# will make this day easier.
+line @1 decline : I cannot go into the #wood# at this hour. | I have promised this #feed# to the #pigs#.
+line @1 accept_decline : I understand; the choice is yours. | We can leave the matter in peace.
+line @1 thank : You brought the #bucket# back before supper. | Your #hands# made the #yard# safer today.
+line @1 deflect_thanks : The #apple# was ripe and ready. | I had a spare #plate#.
+line @1 preclose : The #bells# will sound soon. | I want the #gate# latched before dark.
+line @1 ack : #bc_right#. I shall check the #pen#. | #bc_fair_enough#. The #meal# can wait.
+line @1 give.advice : Take the open #path# rather than the #wood# at dusk. | Keep the #straw# dry above the #pen#.
+line @1 warn [world.bandits=near] : Stay on the #road# with other travellers. | I would avoid the #wood# while the danger lasts.
+scene grandmother_table
+when topic=family
+does tell.self / react.self / assess
+a : I remember which #grandmother# kept an extra #plate# at supper. | A family's welcome often begins with its elders.
+b : Do you judge people by that? | Did you visit them?
+a : I remember kindness. | When I was little.
+
+scene elder_recipe
+when topic=food
+does tell.self / react.self / assess
+a : One elder cut a crisp #apple# into four pieces before anyone asked. | She gave the smallest child the first #slice#.
+b : Did she have enough? | Do you do the same?
+a : Somehow she did. | When there is a child at my #table#.
+
+scene rooftop_birds
+when topic=pastimes
+does tell.self / react.self / assess
+a : The #birds# gather along the #roof# when the #yard# is quiet. | I watch one return to the same #nest# each spring.
+b : Can you recognize it? | Do they come near the pigs?
+a : By its uneven call. | Only when #feed# is scattered.
+
+scene early_bells
+when topic=weather here.time=dawn
+does tell.self / react.self / assess
+a : The #bells# before #dawn# wake the #pigs# as well as me. | I like them better after the #sun# is up.
+b : Do they ring often? | Do you complain?
+a : On the appointed days. | Not inside the #chapel#.
+
+scene quiet_chapel
+when topic=memories
+does tell.self / react.self / assess
+a : I go to the #chapel# when the last visitor has gone. | A #prayer# comes more easily without an audience.
+b : Is it open then? | Do you stay long?
+a : Usually. | Until the #bells# settle in my head.
+
+scene reed_cross
+when topic=family
+does tell.self / react.self / assess
+a : A #cross# of reeds hangs beside my #home# door. | I replace it when the winter wind breaks the binding.
+b : Who made it? | Does it comfort you?
+a : An old friend. | It reminds me to give thanks.
+
+scene deep_wood
+when topic=memories
+does tell.self / react.self / assess
+a : I take the #road# around the deep #wood# even when the #path# is shorter. | The #trees# close over my head too quickly there.
+b : Did something happen? | Do you avoid it by daylight?
+a : I would rather leave that story alone. | I can cross it with company.
+
+scene shadow_path
+when topic=weather here.time=dusk
+does tell.self / react.self / assess
+a : A #shadow# across the #path# makes me look for the last #sun#. | The #pigs# come home while the #wood# still has light.
+b : Are you frightened? | Does the work finish in time?
+a : Cautious. | If I start early.
+
+scene crisp_apple
+when topic=food
+does tell.self / react.self / assess
+a : A crisp #apple# is worth keeping for after the #yard# work. | I eat it with #bread# before evening #prayer#.
+b : Do you grow them? | Do you share them?
+a : A nearby orchard does. | When there is enough.
+
+scene stale_bread
+when topic=food
+does tell.self / react.self / assess
+a : Stale #bread# can still be softened for a hungry guest. | I will not put a hard #crust# before someone who needs a #meal#.
+b : How do you use it? | Do the pigs get any?
+a : Into a warm pot. | The scraps, sometimes.
+
+scene summer_evening
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : A long summer #evening# lets me sit after the #pen# is shut. | The #birds# leave the #roof# only when the light fails.
+b : Do you rest outdoors? | Is it quiet?
+a : By the door. | Once the #pigs# have settled.
+
+scene pig_trough
+when topic=work
+does tell.self / react.self / assess
+a : I fill the #trough# before opening the #gate#. | The older #pigs# will push the young ones from the #feed#.
+b : How do you stop them? | Do they learn?
+a : With a second #bucket#. | They learn the order.
+
+scene straw_bed
+when topic=work
+does tell.self / react.self / assess
+a : I give the smallest #pig# the driest #straw#. | A warm #pen# saves trouble when the #lake# wind turns cold.
+b : Does it sleep well? | Do you check at night?
+a : Better than I do. | Before I close the #home#.
+
+scene broken_gate
+when topic=work
+does tell.self / react.self / assess
+a : A #gate# left swinging can undo a whole morning's feeding. | I test the latch after carrying the last #bucket#.
+b : Has one escaped? | Who fixes the latch?
+a : Not far. | I can tighten it.
+
+scene plate_for_guest
+when topic=family
+does tell.self / react.self / assess
+a : A spare #plate# waits in my #home# even when I expect no guest. | I was taught not to ask a hungry person to explain the need.
+b : Do strangers come often? | Is there enough?
+a : A few. | We make enough.
+
+scene city_crowd
+when topic=travel
+does tell.self / react.self / assess
+a : In a #city# crowd I cannot hear anyone asking for help. | I prefer a #shore# where a voice carries.
+b : Have you visited? | Do you miss the city?
+a : Once. | I have no wish to return.
+
+scene rain_on_roof
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : #rain.capitalize# on a sound #roof# leaves the #home# feeling sheltered. | I check the #pen# before letting the storm sing.
+b : Does it leak? | Do the pigs mind?
+a : Not now. | They settle into the #straw#.
+
+story empty_chapel [topic=memories self.age>=25]
+  : I entered the #chapel# after everyone had gone.
+  : The last #bell# seemed louder in the quiet than it had outside.
+  ask : Did you pray?
+  b : A room can feel different when it empties.
+  : I did, then sat awhile before returning to the #yard#.
+
+story forest_turn [topic=memories self.age>=25]
+  : I reached the #path# through the #wood# near sunset.
+  : I chose the longer #road# with the open #lake# in view.
+  ask : Why avoid the wood?
+  b : You knew the safer way for yourself.
+  : The dark beneath those #trees# has never sat well with me.
+
+story extra_plate [topic=family self.age>=25]
+  : An elder set a second #plate# beside supper when no guest was expected.
+  : A traveller knocked before the food had cooled.
+  ask : Was there enough?
+  b : The extra plate found its guest.
+  : There was, because she had planned to share.
+
+rule @bark_birds
+when concept=bark
+does aside
+cooldown 8h
+say The #birds# are back on the #roof#. | That #nest# held through winter.
+
+rule @bark_plate
+when concept=bark
+does aside
+cooldown 9h
+say Keep one #plate# ready. | An #apple# can be shared.
+
+rule @bark_pigs
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say The smallest #pig# gets this #bucket#. | Close the #gate# before the #feed#.
+
+rule @bark_evening
+when concept=bark here.time=dusk
+does aside
+cooldown 11h
+say I want the #path# clear before dark. | Perhaps the last visitor has left the #chapel#.
+
+dlg @1 resident.hub : #greet#. I can bring out a warm #meal#. | #greet#. I have a moment before feeding the #pigs#.
+dlg @2 resident.hub [topic.meeting=known] : The second #plate# is ready for you. | Back again? The #birds# have returned.
+dlg @1 resident.job : I keep the #pigs# at #self.workplace# and mind their #pen#. | I carry #feed#, change #straw#, and check the #gate#.
+dlg @1 resident.bye : #farewell#. Take the open #path# home. | #saying.capitalize#. I must close the #yard#.
+graft resident.hub
+choice Why keep an extra plate? -> plate
+node plate
+say My elders fed whoever came to the door. I can keep that much of their example.
+free
+choice Do you walk through the woods? -> wood
+choice Back to the yard. -> hub
+node wood
+say I take the #road# around it when light is fading. That is enough of that path for me.
+choice Back to the yard. -> hub
+choice Goodbye. -> bye
