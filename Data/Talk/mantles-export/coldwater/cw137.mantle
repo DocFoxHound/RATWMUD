@@ -1,0 +1,294 @@
+# cw137, the disputed well (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw137
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for cty_delphine_sootley
+written_by claude-codex-cw-2
+title the disputed well
+fits stage=adult|old
+prefers talk=plain
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk cannot_resist_a_wager
+likes oatcakes whittling old_maps thunder
+dislikes waiting salt_wind
+fears the_well_claimed_by_one_house a_wager_that_costs_the_yard
+hopes a_fair_turn_at_the_well steady_work_through_winter
+topics work +0.4 prices +0.3 pastimes +0.3 weather +0.3 gossip -0.5
+styles comfort=reserved gossip=guarded refuse=direct tease=dry
+marks oath saying
+persona #self.first# wagers on the #weather#, whittles a #peg# beside the #fire#, and watches who takes #water# from the common #well#.
+
+words
+oath! = Well and wager | By the unclaimed bucket
+saying! = A shared well takes turns | Never bet the feed money
+wager = wager | small bet
+bet = bet | wager
+coin = coin | penny
+well = well | common well
+water = water | clear water
+bucket = bucket | well bucket
+buckets = buckets | well buckets
+rope = rope | well rope
+turn = turn | fair turn
+turns = turns | fair turns
+line = line | waiting line
+neighbour = neighbour | next-door neighbour
+pig = pig | yard pig
+pigs = pigs | yard pigs
+yard = yard | pig yard
+pen = pen | pig pen
+trough = trough | feed trough
+feed = feed | mash
+straw = straw | dry bedding
+gate = gate | yard gate
+mud = mud | wet mud
+boots = boots | work boots
+oatcake = oatcake | oatcake with butter
+oatcakes = oatcakes | buttered oatcakes
+butter = butter | fresh butter
+knife = knife | whittling knife
+wood = wood | scrap wood
+peg = peg | whittled peg
+fire = fire | hearth fire
+map = map | old map
+maps = maps | old maps
+road = road | High Road
+city = city | Ridgemere
+roof = roof | sound roof
+thunder = thunder | thunderstorm
+cloud = cloud | storm cloud
+wind = wind | salt wind
+lake = lake | Glasswater
+shore = shore | lake shore
+market = market | market square
+bread = bread | loaf
+price = price | asking price
+home = home | cottage
+hand = hand | working hand
+hands = hands | working hands
+time = time | spare hour
+count = count | careful tally
+sun = sun | winter sun
+
+any
+opinion @1 city against 1 : The #city# would put a lock on a shared #well#. | I trust a #road# on an old #map# more than a city's promise.
+opinion @1 dole against 1 : I want another #bucket# of work before a queue. | A full #trough# comes from someone carrying #feed#.
+opinion @1 houses against 1 : They would fence the #well# and charge a #coin# for the key. | I know what an empty bench looks like from their side.
+opinion @1 merchants against 2 : They raise the #bread# #price# even when my #coin# has not changed. | I make them state the cost before I open my purse.
+opinion @1 newcomers against 1 : A new worker takes a #turn# I waited for. | I will still teach the #gate# rule if they stay.
+opinion @1 strangers against 2 : A stranger can draw #water# after the locals take their #turn#. | My #home# door stays shut until I know their name.
+opinion @1 times against 1 : It takes another #coin# to fill the #feed# #bucket# each month. | The #market# does not wait for my wages.
+opinion @1 watch mixed 0 : Let the Watch hear both sides of the #well# dispute. | They can count #buckets# if they have no better task.
+
+grown
+line @1 greet : #greet#. Are you here about the #well#? | #greet#. Keep clear of the #pen# #gate#.
+line @2 greet [self.working=yes] : Speak while I fill the #trough#. | My #bucket# must reach the #pen# first.
+line @3 greet [pair.band=friends|family] : I have #oatcakes# by the #fire#. | You may see the #peg# I just cut.
+line @4 greet [here.time=dawn] : The first #bucket# is already at the #well#. | #greet#. The #pigs# woke early.
+line @1 greet.return : #welcome_back#. Has the #well# settled itself yet? | You have found me with another #map#.
+line @1 kin.open [pair.kin!=no] : Come in; leave your #boots# near the #fire#. | Take an #oatcake# before it cools.
+line @1 again.open : We left the #wager# unresolved. | Have you come with news of the #well#?
+line @1 farewell : #farewell#. Keep your #bucket# upright. | #saying.capitalize#. Shut the #gate#.
+line @1 farewell.return : I may have finished this #peg# by then. | Another #oatcake# will be waiting.
+line @1 react.news : I will listen before placing a #wager#. | Tell me who drew from the #well#.
+line @1 react.news.new : No one has said that at this #yard#. | Did it come from the #market#?
+line @1 react.news.known : I heard a different part beside the #well#. | Your detail changes how I understood it.
+line @1 react.news.doubt : #hedge#, I want to see the #bucket# marks myself. | A person can count turns to suit an argument.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is grim. Sit inside by the #fire#. | Let me leave this #knife# and listen properly.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That deserves fresh #oatcakes#. | I would wager this news will lift the whole #home#.
+line @1 answer.how : The #pigs# are fed; the #well# is another matter. | Waiting less than yesterday, which is something.
+line @1 answer.how.busy [self.working=yes] : I have #feed# to mix and #straw# to change. | The #trough# needs filling before any debate.
+line @1 ask.how : Did you get your #turn# at the #well#? | Have you eaten?
+line @1 sympathise : I can spare a #time# by the #fire#. | I will keep this between us.
+line @1 reassure : We can count the #buckets# together tomorrow. | The #gate# will be mended before another #pig# escapes.
+line @1 decline : No; the #feed# money belongs to the #pigs#. | I must stay while the #yard# is open.
+line @1 accept_decline : Then the #coin# stays in my pocket. | I hear your answer.
+line @1 thank : You returned the #bucket# before the #pigs# needed it. | I saw you close the #gate# properly.
+line @1 deflect_thanks : I cut a #peg# from spare #wood#. | The #oatcakes# were already warm.
+line @1 preclose : I must check the #well# #rope# before dusk. | The #pigs# need another #count#.
+line @1 tease [pair.band=friends] : You would wager on a #cloud# you cannot see. | That #map# is straighter than the #road#.
+line @1 ack : #bc_right#. I will take my #turn# later. | #bc_fair_enough#. The #bucket# is yours.
+line @1 give.advice : Draw #water# with both #hands# on the #rope#. | Never stake the #coin# for #feed#.
+line @1 warn [world.bandits=near] : The #road# is no place for a loose #coin# tonight. | Bring a friend if you must fetch #water# after dark.
+scene common_well
+when topic=work
+does tell.self / react.self / assess
+a : The #well# belongs to everyone who hauls a #bucket#. | I count the #turns# when the morning #line# forms.
+b : Has anyone claimed it? | Who goes first?
+a : Someone tries now and then. | The person who came early.
+
+scene neighbour_turn
+when topic=memories
+does tell.self / react.self / assess
+a : My #neighbour# and I disagree over who had the first #bucket#. | The #well# itself has given no opinion.
+b : Could you share a schedule? | Are you speaking now?
+a : We could, if we agreed where it began. | About the weather.
+
+scene well_rope
+when topic=work
+does tell.self / react.self / assess
+a : I test the #rope# before lowering the #bucket#. | A frayed length can leave the #water# beyond reach.
+b : Has it snapped? | Can you replace it?
+a : Not on my turn. | I have a coil ready.
+
+scene small_wager
+when topic=pastimes
+does tell.self / react.self / assess
+a : I wagered an #oatcake# on which #pig# would reach the #gate# first. | The slow one won after the others stopped for #feed#.
+b : Who took the cake? | Do you bet often?
+a : A friend who knew the #pigs#. | More than I should.
+
+scene thunder_roof
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : I like #thunder# from beneath a sound #roof#. | The #pigs# settle if the #fire# is steady.
+b : Does it frighten them? | Would you go outside?
+a : The young ones. | For the #gate#, if needed.
+
+scene salt_wind
+when topic=weather
+does tell.self / react.self / assess
+a : A #wind# off the #lake# leaves salt on my mouth. | I turn my face away when the #shore# air sharpens.
+b : Does it reach the yard? | Do you close the door?
+a : On clear days. | If it blows into the #home#.
+
+scene map_error
+when topic=pastimes
+does tell.self / react.self / assess
+a : My old #map# sends a #road# over a patch of #lake#. | I keep the mistake; it makes the rest easier to question.
+b : Who drew it? | Would you follow any route on it?
+a : No name remains. | Only after walking it myself.
+
+scene whittled_peg
+when topic=pastimes
+does tell.self / react.self / assess
+a : I whittle a #peg# from spare #wood# while the #fire# burns low. | A useful #peg# is better than a pretty carving.
+b : What is it for? | Do you make many?
+a : The #gate# latch. | Whenever the #knife# is sharp.
+
+scene oatcake_butter
+when topic=food
+does tell.self / react.self / assess
+a : An #oatcake# wants #butter# before it cools. | I save one for after the #yard# is clean.
+b : Do you bake them? | How many do you eat?
+a : When I have the oats. | Enough to stay at work.
+
+scene waiting_line
+when topic=work
+does tell.self / react.self / assess
+a : A #line# at the #well# can steal an hour from the #yard#. | I bring two #buckets# and save a second journey.
+b : Does that upset people? | Can you go earlier?
+a : Only if I take another's #turn#. | Before dawn, sometimes.
+
+scene pen_feed
+when topic=work
+does tell.self / react.self / assess
+a : I put the #feed# into the #trough# before opening the #pen#. | Otherwise the #pigs# rush the #bucket#.
+b : Do they knock you over? | How do you hold them?
+a : They have tried. | With a firm #gate#.
+
+scene dry_straw
+when topic=work
+does tell.self / react.self / assess
+a : Dry #straw# keeps the #pen# sound when the #mud# rises. | I change the bedding before the #pigs# complain.
+b : How do they complain? | Do you have enough straw?
+a : Loudly. | For this week.
+
+scene bad_gate
+when topic=work
+does tell.self / react.self / assess
+a : The #gate# latch slipped when a #pig# leaned on it. | I carved a new #peg# to hold it shut.
+b : Did the pig escape? | Will the peg last?
+a : Only to the #yard#. | Until I can fit iron.
+
+scene first_coin
+when topic=prices
+does tell.self / react.self / assess
+a : I keep the first #coin# of a day's wages out of my wagers. | A foolish #bet# should not empty the #trough#.
+b : Is that difficult? | Do you ever win?
+a : When the odds look good. | Often enough to keep trying.
+
+scene market_bread
+when topic=prices
+does tell.self / react.self / assess
+a : I ask the #bread# seller why the #price# rose before handing over #coin#. | A clear answer is better than a long argument.
+b : Do you get one? | Do you buy anyway?
+a : Rarely. | When the #home# needs it.
+
+scene shared_house
+when topic=family
+does tell.self / react.self / assess
+a : The #home# is full of orchard workers and their #boots#. | I keep my #knife# and #maps# on the high shelf.
+b : Is it noisy? | Do you share meals?
+a : At the end of the day. | When our hours meet.
+
+scene winter_well
+when topic=weather here.season=winter
+does tell.self / react.self / assess
+a : Ice gathers on the #well# #rope# before the #sun# reaches it. | I break the crust before lowering a #bucket#.
+b : Is the water colder? | Does the queue grow?
+a : It feels so through the handle. | When everyone waits for light.
+
+story contested_bucket [topic=memories self.age>=25]
+  : I set my #bucket# at the #well# before dawn.
+  : Another hand arrived and said the place had been saved earlier.
+  ask : Who drew first?
+  b : A common well needs a clear order.
+  : We argued, then drew for both households and spoke less afterward.
+
+story pig_wager [topic=pastimes self.age>=25]
+  : I wagered an #oatcake# on a #pig# reaching the #gate# first.
+  : It stopped for fallen #feed# and another passed.
+  ask : Did you pay?
+  b : The pig had not heard your bet.
+  : I paid, and ate my next #oatcake# without a wager.
+
+story map_water [topic=pastimes self.age>=25]
+  : A faded #map# put a #road# across part of the #lake#.
+  : I took it to the #shore# and compared ink with the water.
+  ask : Did you correct it?
+  b : The lake was unlikely to move.
+  : I drew the true #shore# beside the old line.
+
+rule @bark_well
+when concept=bark
+does aside
+cooldown 8h
+say My #bucket# was here first. | The #well# belongs to all of us.
+
+rule @bark_wager
+when concept=bark
+does aside
+cooldown 9h
+say One #oatcake# says that #cloud# will break. | No, not the #feed# #coin#.
+
+rule @bark_pigs
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say The #trough# needs another #bucket#. | Keep the #pigs# behind the #gate#.
+
+rule @bark_wood
+when concept=bark here.time=dusk
+does aside
+cooldown 11h
+say This #peg# is nearly finished. | The #fire# is low enough to whittle by.
+
+dlg @1 resident.hub : #greet#. I am fetching #water# before the #pigs# wake. | #greet#. Stay clear while I swing the #gate#.
+dlg @2 resident.hub [topic.meeting=known] : You have found the #well# busy again. | Back? I still have that #map# by the #fire#.
+dlg @1 resident.job : At #self.workplace# I haul #water# and feed the #pigs#. | I feed the #pen#, keep #straw# dry, and fix the #gate#.
+dlg @1 resident.bye : #farewell#. Leave the #bucket# by the #well#. | #saying.capitalize#. The #yard# needs me.
+graft resident.hub
+choice Who owns the well? -> well
+node well
+say Everyone who draws from it, which is the trouble. I want a fair #turn#.
+free
+choice What are you whittling? -> peg
+choice Back to the yard. -> hub
+node peg
+say A #peg# for the #gate# latch. If it holds, I owe the #pig# no thanks.
+choice Back to the yard. -> hub
+choice Goodbye. -> bye
