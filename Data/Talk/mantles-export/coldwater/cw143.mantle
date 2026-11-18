@@ -1,0 +1,303 @@
+# cw143, the storm walker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw143
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for cty_quarry_mossfield
+written_by claude-codex-cw-2
+title the storm walker
+fits stage=adult|old
+prefers talk=plain
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk sleeps_badly_before_storms
+likes spiced_cider long_walks old_maps summer_evenings
+dislikes cold_tea crowds
+fears the_deep_wood_after_dusk thunder_over_an_open_orchard
+hopes a_long_walk_with_clear_sky steady_work_for_the_household
+topics work +0.4 weather +0.5 pastimes +0.3 family +0.3 gossip -0.4
+styles comfort=blunt gossip=reluctant refuse=direct tease=dry
+marks oath saying
+persona #self.first# checks the #sky# before bed, carries an old #map# on aimless #walks#, and avoids the deep #wood# at dusk.
+
+words
+oath! = Cloud and crooked road | By the sleepless sky
+saying! = A storm keeps its own hour | Walk until the road explains itself
+sky = sky | open sky
+cloud = cloud | storm cloud
+clouds = clouds | storm clouds
+storm = storm | hard storm
+storms = storms | hard storms
+thunder = thunder | distant thunder
+rain = rain | shower
+wind = wind | lake wind
+night = night | late hour
+sleep = sleep | night's rest
+bed = bed | own bed
+roof = roof | cottage roof
+window = window | small window
+apple = apple | picked apple
+apples = apples | orchard fruit
+orchard = orchard | apple ground
+tree = tree | apple tree
+trees = trees | orchard trees
+branch = branch | bough
+row = row | planted row
+rows = rows | planted rows
+ladder = ladder | picking ladder
+basket = basket | picking basket
+crate = crate | fruit crate
+crates = crates | fruit crates
+tray = tray | drying tray
+trays = trays | drying trays
+store = store | drying house
+market = market | market square
+price = price | asking price
+coin = coin | pay
+bread = bread | loaf
+tea = tea | cup of tea
+cider = cider | spiced cider
+spice = spice | warm spice
+cup = cup | warm cup
+walk = walk | long walk
+walks = walks | long walks
+map = map | old map
+maps = maps | old maps
+road = road | High Road
+path = path | footpath
+wood = wood | deep wood
+shadow = shadow | dark patch
+lake = lake | Glasswater
+shore = shore | lakeshore
+city = city | Ridgemere
+crowd = crowd | press of people
+home = home | shared cottage
+hand = hand | working hand
+hands = hands | working hands
+gate = gate | cottage gate
+evening = evening | summer dusk
+soil = soil | wet earth
+field = field | open field
+weather = weather | changing sky
+fire = fire | hearth fire
+
+any
+opinion @1 city against 2 : A #city# crowd gives me no room to turn around. | I know the #road# here better than any street there.
+opinion @1 drink against 1 : Too much #cider# can turn a plain account into a foolish claim. | An approaching #storm# is easier to face sober.
+opinion @1 houses against 1 : Their #store# has work and still leaves good #hands# outside. | I would rather rely on the #orchard# crew.
+opinion @1 merchants against 3 : They raise the #bread# #price# without raising our pay. | I ask what they gave for the #apples# before I believe their hardship.
+opinion @1 newcomers against 2 : A new face near our #crates# gets my attention. | I need to see someone work before I trust them with a #ladder#.
+opinion @1 road against 1 : I will walk a familiar #path#, but the long #road# has too many surprises. | The turn by the #wood# is especially poor after dusk.
+opinion @1 strangers against 1 : I keep a stranger at the #gate# until I know what follows them. | They can ask directions without entering the #home#.
+opinion @1 times against 1 : The #market# takes more #coin# from every #crate#. | A day's work should buy more than yesterday's #bread#.
+
+grown
+line @1 greet : #greet#. Give me the reason for this visit. | #greet#. The #sky# looks wrong for a long talk.
+line @2 greet [self.working=yes] : I am carrying #crates#; speak as we move. | Give me until this #tray# is set down.
+line @3 greet [pair.band=friends|family] : I have #cider# warming. | You can join my #walk# after the #store# closes.
+line @4 greet [here.time=dawn] : I did not #sleep# much with that #cloud# coming. | #greet#. The #rows# are still wet.
+line @1 greet.return : #welcome_back#. The #sky# has not cleared. | You have caught me between #crates#.
+line @1 kin.open [pair.kin!=no] : Leave the #rain# at the door and sit. | There is #bread# and a dry chair.
+line @1 again.open : We were talking about the #map# before the #wind# rose. | Did the #road# change your mind?
+line @1 farewell : #farewell#. Stay out of the #wood# after dark. | #saying.capitalize#. The #roof# wants one more look.
+line @1 farewell.return : The #cider# may be ready next time. | Perhaps we can walk in clear weather.
+line @1 react.news : Give me the facts in their order. | Let me rest the #basket# before you go on.
+line @1 react.news.new : That has not reached our #store#. | Which traveller brought the word here?
+line @1 react.news.known : Someone at the #market# told me an earlier part. | Yours is a clearer account.
+line @1 react.news.doubt : #hedge#, I want a witness, not a #crowd# repeating it. | A bad #map# can make a straight #road# look bent.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is cruel news. I can leave the #crates# for now. | Sit near the #fire# where the #wind# cannot reach.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I hope the #home# is celebrating. | That is a reason to open the #cider#.
+line @1 answer.how : I was awake through the #night#, but I am standing. | A clear #sky# would settle me more.
+line @1 answer.how.busy [self.working=yes] : A full #row# still needs picking. | The #trays# are waiting for the last #crate#.
+line @1 ask.how : Did the #storm# wake you? | Did you find time for a hot drink?
+line @1 sympathise : I can walk with you while you talk. | I will not dress it up with a #saying#.
+line @1 reassure : A #storm# passes, even when it takes its time. | We can find the #path# again in daylight.
+line @1 decline : No. I will not take the #road# by the #wood#. | The #store# needs me for this #crate#.
+line @1 accept_decline : Your answer is enough. | I shall not press you.
+line @1 thank : You brought the #trays# under the #roof# before #rain#. | I noticed you stayed to finish the #row#.
+line @1 deflect_thanks : The #basket# was within reach. | I knew that turn on the #path#.
+line @1 preclose : The #clouds# tell me to cover the #crates#. | I have a #roof# to inspect before bed.
+line @1 tease [pair.band=friends] : Your #map# has more confidence than sense. | I would trust your #tea# to go cold before a kettle.
+line @1 ack : #bc_right#. I will check the #window#. | #bc_fair_enough#. The #crate# stays.
+line @1 give.advice : Cover the #crates# before a #storm# reaches the #orchard#. | Follow the open #path# when the #wood# grows dim.
+line @1 warn [world.bandits=near] : Keep off the lonely #road# tonight. | Walk with someone you know if you must go.
+scene storm_sleep
+when topic=weather
+does tell.self / react.self / assess
+a : I sleep badly when a #storm# is coming, even before the #clouds# show. | The #roof# seems to make a different sound at #night#.
+b : How can you tell? | Do you rise early?
+a : I wake and listen. | Often before dawn.
+
+scene window_cloud
+when topic=weather
+does tell.self / react.self / assess
+a : From the #window# I watch #clouds# cross the #lake#. | Once they reach the #wood#, I cover the #crates#.
+b : Is that enough warning? | Do you watch all night?
+a : Usually. | When the #wind# will not settle.
+
+scene thunder_roof
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : #thunder.capitalize# over a sound #roof# is easier than waiting for it outside. | I count the time between a flash and the next rumble.
+b : Does that calm you? | Would you check the #orchard# in it?
+a : It gives my mind a task. | Only if a #crate# was left out.
+
+scene long_walk
+when topic=pastimes
+does tell.self / react.self / assess
+a : I take a #walk# without deciding where it ends. | The #road# is better when I owe it no destination.
+b : Do you carry a map? | How far do you go?
+a : An old one, for the mistakes. | Until the #lake# comes back into view.
+
+scene crooked_map
+when topic=pastimes
+does tell.self / react.self / assess
+a : My oldest #map# bends the #road# toward a hill that has never moved. | I keep it because someone walked there and remembered it badly.
+b : Do you correct it? | Does it mislead you?
+a : In the margin. | Only when I forget to look up.
+
+scene wood_edge
+when topic=memories
+does tell.self / react.self / assess
+a : The #path# beside the #wood# shortens a walk, but I avoid it near dusk. | The #shadow# there grows before the rest of the world darkens.
+b : Why avoid it? | Would you go with someone?
+a : I do not like how quiet it becomes. | In full light.
+
+scene summer_evening
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : After the #store# shuts on a summer #evening#, I can keep walking. | The #lake# keeps the last light longer than the #wood#.
+b : Can the walk ease your rest? | Do you walk alone?
+a : More than cold #tea# does. | Often.
+
+scene spiced_cider
+when topic=food
+does tell.self / react.self / assess
+a : Warm #cider# with #spice# can settle me after a rough #night#. | I pour a #cup# before the #storm# reaches the #roof#.
+b : Do you drink much? | Does it help?
+a : One #cup#. | Enough to stop pacing.
+
+scene cold_tea
+when topic=food
+does tell.self / react.self / assess
+a : #tea.capitalize# left cold by the #trays# is barely worth a #cup#. | I will drink it rather than waste it.
+b : Do you prefer cider? | Why leave it so long?
+a : When there is #spice#. | The #crates# needed me.
+
+scene apple_row
+when topic=work
+does tell.self / react.self / assess
+a : I pick one #row# at a time so no #tree# is missed. | A hurried worker leaves sound #apples# on the shaded side.
+b : Do you go back? | Does it slow you?
+a : Before the #ladder# moves. | Less than a missed #crate#.
+
+scene ladder_check
+when topic=work
+does tell.self / react.self / assess
+a : I test the #ladder# foot before carrying a #basket# up. | Wet #soil# can move under a rung.
+b : Has it slipped? | Who steadies it?
+a : Once. | Another picker when available.
+
+scene drying_tray
+when topic=work
+does tell.self / react.self / assess
+a : I bring the #trays# inside before the air turns damp. | A #crate# left open during #rain# can lose a day's care.
+b : Does the fruit spoil? | Can you save it?
+a : Some of it. | By drying it at once.
+
+scene market_crowd
+when topic=prices
+does tell.self / react.self / assess
+a : A #crowd# at the #market# makes it hard to hear the #price#. | I ask a seller to name the sum once more.
+b : Do they dislike that? | Do you bargain?
+a : Some do. | When the #coin# is thin.
+
+scene city_smoke
+when topic=travel
+does tell.self / react.self / assess
+a : I found the #city# loud enough to make me miss the #wind#. | The #road# home was a relief after its crowded streets.
+b : Will you return? | Was it all bad?
+a : If work demands it. | I met one kind person.
+
+scene spouse_roof
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse# can tell when I have spent a #night# listening for #thunder#. | We check the #roof# together in daylight.
+b : Does your spouse sleep through it? | Do you repair it?
+a : Better than I do. | Small leaks, yes.
+
+scene shared_home
+when topic=family
+does tell.self / react.self / assess
+a : Our #home# holds many working #hands# and little quiet. | A long #walk# gives me room to think before supper.
+b : Do you mind the company? | Do you tell them where you go?
+a : I value it. | I leave word.
+
+scene approaching_rain
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : #rain.capitalize# on the #orchard# means we cover the #crates# first. | I do not wait for the #trays# to feel damp.
+b : Can you finish picking? | Do you hurry?
+a : If the shower is light. | I move steadily.
+
+story night_before_storm [topic=weather self.age>=25]
+  : I lay awake while the #sky# still showed stars.
+  : By morning a #storm# had crossed the #lake# and soaked the last #crate#.
+  ask : Could you save the fruit?
+  b : You sensed it before the clouds.
+  : Most of it, after we spread it on #trays#.
+
+story map_walk [topic=pastimes self.age>=25]
+  : I carried an old #map# on a #walk# with no errand.
+  : Its #road# ended at a #field#, so I followed the #shore# instead.
+  ask : Did you get lost?
+  b : A better route than the map.
+  : Only in thought; I knew the way #home#.
+
+story wood_turn [topic=memories self.age>=25]
+  : I reached the #wood# #path# as the #shadow# lengthened.
+  : I turned for the open #road#, though it made the journey longer.
+  ask : Did something follow you?
+  b : You chose the way you could see.
+  : Nothing I saw. The quiet was enough.
+
+rule @bark_cloud
+when concept=bark
+does aside
+cooldown 8h
+say The #clouds# are crossing the #lake#. | I should look at the #roof#.
+
+rule @bark_crates
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say Cover this #crate# before #rain#. | One more #tray# belongs inside.
+
+rule @bark_map
+when concept=bark
+does aside
+cooldown 10h
+say That #map# has a road in the wrong place. | A #walk# might settle me.
+
+rule @bark_night
+when concept=bark here.time=night
+does aside
+cooldown 11h
+say I will check the #window# once more. | The #wind# has changed.
+
+dlg @1 resident.hub : #greet#. State your business before the #rain# starts. | #greet#. I am moving these #crates# inside.
+dlg @2 resident.hub [topic.meeting=known] : You know I watch the #sky#; it looks unsettled. | Back again? The #map# is still by the door.
+dlg @1 resident.job : I pick #apples# for #self.workplace# and bring them to the #trays#. | My work runs from the #rows# to the covered #crates#.
+dlg @1 resident.bye : #farewell#. Take the open #road#. | #saying.capitalize#. The #crates# need covering.
+graft resident.hub
+choice Why watch the sky so closely? -> sky
+node sky
+say I sleep poorly before #storms#. If I see the #clouds# early, I can at least cover the #crates#.
+free
+choice Where do your walks go? -> walks
+choice Back to the orchard. -> hub
+node walks
+say Wherever the #road# stays open. I carry an old #map# and let the #lake# guide me back.
+choice Back to the orchard. -> hub
+choice Goodbye. -> bye
