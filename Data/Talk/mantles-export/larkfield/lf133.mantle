@@ -1,0 +1,349 @@
+# lf133, the road-saying carter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf133
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for cty_imogen_rustford
+written_by claude-codex-lf-1
+title the road-saying carter
+fits stage=adult|old
+prefers job=carter
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk quotes_old_sayings_for_everything
+likes spiced_cider old_tales old_maps warm_rain
+dislikes crowds salt_wind
+fears a_wheel_breaking_with_a_full_load a_well_argument_spreading_to_the_road
+hopes a_clear_road_after_warm_rain a_fair_share_of_the_common_well
+topics travel +0.5 work +0.4 pastimes +0.3 home +0.2
+styles comfort=proverbial gossip=chatty refuse=plain tease=dry
+marks oath saying
+persona #self.first# drives a #cart# along the #road#, quotes old #sayings# for every turn, and argues over a #well# no one owns.
+
+words
+oath! = Wheel and water | By the open road
+saying! = A cart moves when the wheels agree | A shared well has two buckets
+cart = cart | goods cart
+carts = carts | loaded carts
+wagon = wagon | supply wagon
+wagons = wagons | supply wagons
+wheel = wheel | cart wheel
+wheels = wheels | cart wheels
+axle = axle | wooden axle
+rim = rim | wheel rim
+spoke = spoke | wheel spoke
+spokes = spokes | wheel spokes
+harness = harness | cart harness
+strap = strap | leather strap
+straps = straps | leather straps
+reins = reins | worn reins
+load = load | goods load
+loads = loads | heavy loads
+sack = sack | goods sack
+sacks = sacks | goods sacks
+crate = crate | wooden crate
+crates = crates | wooden crates
+rope = rope | binding rope
+knot = knot | tight knot
+road = road | long road
+roads = roads | drawn roads
+path = path | field path
+bridge = bridge | stone bridge
+gate = gate | town gate
+market = market | busy market
+stall = stall | market stall
+city = city | far city
+town = town | near town
+mud = mud | road mud
+rut = rut | deep rut
+ruts = ruts | deep ruts
+stone = stone | road stone
+stones = stones | road stones
+map = map | old map
+maps = maps | old maps
+mark = mark | map mark
+marks = marks | map marks
+ink = ink | faded ink
+tale = tale | old tale
+tales = tales | road tales
+story = story | travel story
+stories = stories | travel stories
+@2 saying = saying | old saying
+sayings = sayings | old sayings
+word = word | wise word
+words = words | wise words
+well = well | shared well
+bucket = bucket | well bucket
+buckets = buckets | well buckets
+ropewell = ropewell | well rope
+water = water | clear water
+neighbour = neighbour | near neighbour
+friend = friend | old friend
+stranger = stranger | road stranger
+traveller = traveller | passing traveller
+merchant = merchant | road merchant
+buyer = buyer | market buyer
+hand = hand | cart hand
+hands = hands | working hands
+work = work | cart work
+wage = wage | day wage
+price = price | goods price
+coin = coin | earned coin
+watch = watch | town watch
+crowd = crowd | market crowd
+crowds = crowds | market crowds
+salt = salt | sea salt
+wind = wind | salt wind
+rain = rain | warm rain
+cloud = cloud | passing cloud
+morning = morning | early morning
+evening = evening | late evening
+night = night | quiet night
+day = day | working day
+hour = hour | road hour
+cider = cider | spiced cider
+spice = spice | warm spice
+cup = cup | cider cup
+bread = bread | fresh bread
+meal = meal | evening meal
+table = table | shared table
+house = house | shared house
+home = home | cottage
+door = door | front door
+window = window | small window
+roof = roof | sound roof
+boot = boot | work boot
+boots = boots | work boots
+festival = festival | town festival
+goods = goods | carried goods
+tool = tool | wheel tool
+stalls = stalls | market stalls
+boards = boards | bridge boards
+field = field | open field
+merchants = merchants | shouting merchants
+smithy = smithy | town smithy
+hammer = hammer | smith hammer
+winter = winter | cold winter
+houses = houses | shared houses
+
+any
+opinion @1 city against 1 : The #city# gives a #cart# too many elbows and no room to turn. | I leave as soon as the #load# is off.
+opinion @1 festivals for 1 : The #festival# brings every #neighbour# onto the #road#. | I can hear a year's #tales# in one #day#.
+opinion @1 houses mixed 1 : A great #house# sends a #wagon# full of #goods#. | The driver still needs a fair #wage#.
+opinion @1 merchants mixed 1 : A #merchant# keeps my #cart# moving. | I read the #price# before agreeing to a #load#.
+opinion @1 road for 1 : The #road# is my living; most days it takes me where I intend. | A #rut# is a problem to mend.
+opinion @1 strangers mixed 0 : A #stranger# on the #road# might need a #strap# fixed. | I ask before opening my #crates#.
+opinion @1 times for 1 : Our #table# has #bread#, and the #roof# keeps out #rain#. | I can work with that.
+opinion @1 watch mixed 0 : The #watch# knows some #roads# after dark. | I know the #ruts# it misses.
+line @1 greet : #greet#. The #cart# is loaded. | #greet#. Have you heard the old #saying# about #wheels#?
+line @2 greet [pair.band=friends|family] : Come ride beside me to the #market#. | I have #cider# for the return.
+line @1 greet.return : The #wheels# are still turning. | You found me at another #gate#.
+line @1 kin.open [pair.kin!=no] : The #house# has #bread# for you. | Come in before I start another #load#.
+line @1 again.open : The #map# had led us toward its false #bridge#. | Did we reach the #well# quarrel?
+line @1 farewell : #farewell#. The #road# is calling. | Keep clear of the #cart# #wheels#.
+line @1 farewell.return : Another #tale# may be waiting then. | The #well# may still belong to everyone.
+line @1 react.news : Tell it while I fix this #strap#. | Did it begin on the #road#?
+line @1 react.news.new : No #cart# driver has mentioned that yet. | Who saw it?
+line @1 react.news.known : I heard a shorter #tale# at the #gate#. | You have added the bend in the middle.
+line @1 react.news.doubt : I would check the #wheel# #marks#. | Which #wagon# reached the #bridge# first?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Sit beneath the #roof#. | I will leave the #load# tied and listen.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A good #day# deserves spiced #cider#. | I will carry that news along the #road#.
+line @1 answer.how : The #cart# rolled and the #harness# held. | Better since the #rain# settled the dust.
+line @1 answer.how.busy [self.working=yes] : I am tightening the #straps# on this #load#. | Let me turn the #cart# at the #gate#.
+line @1 ask.how : Did the #road# treat your #boots# fairly? | Have you found a clean #bridge#?
+line @1 sympathise : A quiet #cup# may help. | I can wait beside the #cart# while you speak.
+line @1 reassure : There is another #path# on my old #map#. | We can get the #cart# moving after #rain#.
+line @1 decline : I cannot carry a #load# with a broken #wheel#. | That #well# belongs to more than one #house#.
+line @1 accept_decline : I heard the choice plainly; the #cart# will wait here. | Then we take the long #road#.
+line @1 thank : The #axle# got checked because you kept the #reins# firm. | I needed that #cider# once the #load# was off.
+line @1 deflect_thanks : The #cart# was headed that way already. | I had a spare #strap# in my #crate#.
+line @1 preclose : The #wheels# need another look before dark. | The #well# will need another #bucket#.
+line @1 tease [pair.band=friends] : Your #map# sends a #cart# through a #house#. | Even my old #saying# could turn that #wheel#.
+line @1 ack : #bc_right#. The #axle# is sound. | #bc_fair_enough#. The #map# deserves another look.
+line @1 give.advice : Tie the #load# before the #wheels# start. | Draw from the #well# without claiming its stones.
+line @1 warn [world.bandits=near] : Travel beside another #wagon# tonight. | Keep your #coin# below the #cart# seat.
+scene wheel_spoke
+when topic=work
+does tell.self / react.self / assess
+a : I tap each #spoke# before a heavy #load#. | A loose one can strand the #cart# before the #bridge#.
+b : Can you hear the fault? | Can you mend it?
+a : When it rings dull. | With the right #tool#.
+
+scene harness_strap
+when topic=work
+does tell.self / react.self / assess
+a : A frayed #strap# can slip when the #cart# turns. | I carry a spare in the #crate#.
+b : Have you needed it? | How long to fit?
+a : More than once. | Less than a stuck #wheel#.
+
+scene load_knot
+when topic=work
+does tell.self / react.self / assess
+a : I tie the #rope# so the #crates# cannot slide toward the #wheel#. | The #knot# has to open when we unload.
+b : Do you test it? | Who taught you?
+a : With a hard pull. | Too many wet #roads#.
+
+scene market_turn
+when topic=work
+does tell.self / react.self / assess
+a : The #market# #road# narrows between two #stalls#. | I arrive before the #crowd# can close it.
+b : Does that help? | What if you are late?
+a : Every time. | I take the far #gate#.
+
+scene bridge_weight
+when topic=work
+does tell.self / react.self / assess
+a : A #bridge# sounds different under an empty #cart# and a full one. | I slow before its middle.
+b : Are you afraid of it? | Do others slow?
+a : I respect its #boards#. | The careful drivers.
+
+scene deep_rut
+when topic=travel
+does tell.self / react.self / assess
+a : A #rut# can hold one #wheel# while the other rolls on. | I carry #stones# to give it a firm edge.
+b : Does that free it? | Who helps?
+a : With a push. | A passing #hand#.
+
+scene wrong_map
+when topic=pastimes
+does tell.self / react.self / assess
+a : My old #map# draws a #road# through a marsh where I find a #field#. | Its false #roads# have given me plenty of #stories#.
+b : Have you followed it? | Will you correct it?
+a : Once. | I like it wrong.
+
+scene old_saying
+when topic=pastimes
+does tell.self / react.self / assess
+a : An old #saying# suits a #cart# even when it does not suit the weather. | I try one for each bad turn.
+b : Do you make them up? | Do they help?
+a : I borrow most. | They fill the #hour#.
+
+scene spiced_cider
+when topic=food
+does tell.self / react.self / assess
+a : Spiced #cider# tastes best after a long #road# without #rain#. | I keep a #cup# for when the #cart# is unloaded.
+b : Do you make it? | Do you share?
+a : Someone else does. | With a #friend#.
+
+scene warm_rain
+when topic=weather
+does tell.self / react.self / assess
+a : Warm #rain# settles the #road# dust before making the #ruts# soft. | I use the first hour to finish a #load#.
+b : Does that work? | Do you like rain?
+a : If I move quickly. | At its beginning.
+
+scene salt_wind
+when topic=weather
+does tell.self / react.self / assess
+a : A #salt# #wind# reaches the #road# and makes the #reins# stiff. | I prefer the local #rain#.
+b : Does it come often? | Can you cover the load?
+a : Too often. | With canvas.
+
+scene well_bucket
+when topic=home
+does tell.self / react.self / assess
+a : The shared #well# has room for two #buckets# if we take turns. | A #neighbour# says it belongs to one #house#.
+b : Do you agree? | Who settles it?
+a : The #well# serves both houses. | We should.
+
+scene well_quarrel
+when topic=home
+does tell.self / react.self / assess
+a : I have argued over a #well# that neither side built. | The #water# keeps coming while we speak.
+b : Have you made peace? | Why does it matter?
+a : Not yet. | Every #bucket# matters.
+
+scene crowded_road
+when topic=travel
+does tell.self / react.self / assess
+a : A #crowd# leaving the #festival# can stop a #cart# longer than #mud#. | I take the outer #road#.
+b : Does it add distance? | Do you enjoy the festival?
+a : A little. | After the #load#.
+
+scene city_delivery
+when topic=travel
+does tell.self / react.self / assess
+a : The #city# makes me unload among shouting #merchants#. | I count every #crate# before turning home.
+b : Do they pay? | Would you stay?
+a : After the count. | Not willingly.
+
+scene housemate_iron
+when topic=home
+does tell.self / react.self / assess
+a : The #house# shares a roof with a #smithy# worker. | I hear the #hammer# before my #cart# leaves.
+b : Does that wake you? | Do you ask for repairs?
+a : Often. | When a #rim# bends.
+
+scene road_tale
+when topic=memories
+does tell.self / react.self / assess
+a : An old #tale# can make a long #road# feel shorter. | I tell it to whoever rides beside the #load#.
+b : Do they believe it? | Do you tell it again?
+a : Some. | Every #winter#.
+
+story shared_well [topic=home self.age>=18]
+  : My #neighbour# claimed the #well# while I was filling a #bucket#.
+  : I asked who had built it; neither of us knew.
+  ask : Did you take the water?
+  b : A difficult quarrel.
+  : We drew a #bucket# each.
+
+story wrong_turn [topic=travel self.age>=18]
+  : I trusted an old #map# and turned the #cart# toward a missing #bridge#.
+  : The real #road# bent past a #field#.
+  ask : Did you turn back?
+  b : A poor map.
+  : I did, and kept the map for its tale.
+
+story spoke_before_bridge [topic=work self.age>=18]
+  : A #wheel# #spoke# sounded dull before I crossed the #bridge#.
+  : I stopped and tightened it beside the #road#.
+  ask : Did it hold?
+  b : Good listening.
+  : Through the rest of the journey.
+
+rule @bark_wheel
+when concept=bark
+does aside
+cooldown 8h
+say That #spoke# sounds loose. | Check the #rim# before loading.
+
+rule @bark_saying
+when concept=bark
+does aside
+cooldown 9h
+say A #cart# needs two sound #wheels#. | That #saying# fits today.
+
+rule @bark_well
+when concept=bark
+does aside
+cooldown 10h
+say One #bucket# each at the #well#. | The #water# belongs to both #houses#.
+
+rule @bark_map
+when concept=bark
+does aside
+cooldown 11h
+say The #bridge# is drawn in the wrong place. | This #map# still amuses me.
+
+dlg @1 resident.hub : #greet#. The #cart# is nearly loaded. | #greet#. I have a #saying# for this #road#.
+dlg @2 resident.hub [topic.meeting=known] : The #wheel# held since you last rode. | The #well# argument has not ended.
+dlg @1 resident.job : I drive a #cart# from #self.workplace#. | I tie #loads#, count #crates#, and mend #straps#.
+dlg @1 resident.bye : #farewell#. The #road# is waiting. | #saying.capitalize#. Mind the #wheels#.
+graft resident.hub
+choice Who owns the well? -> well
+node well
+say No one can show who built it. We should draw #water# by turns.
+free
+choice Why keep a wrong map? -> map
+choice Goodbye. -> bye
+node map
+say Its wrong #bridge# gave me a good #story# for the #road#.
+choice Back to the cart. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #harness# is set. | #greet#. The #road# has room for this #cart# today.
+line @1 farewell : #farewell#. I will check the #axle#. | The #cider# can wait until home.
