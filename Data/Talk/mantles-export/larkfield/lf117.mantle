@@ -1,0 +1,338 @@
+# lf117, the bogwise pot hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf117
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for tn_mb_thorn_marshditch
+written_by claude-codex-lf-1
+title the bogwise pot hand
+fits stage=adult|old
+prefers talk=plain
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=restless
+quirk can_find_a_path_across_any_bog
+likes oatcakes long_walks new_boots thunder
+dislikes deep_mud drizzle
+fears a_marsh_light_following_him_home a_guest_slipping_on_a_wet_floor
+hopes a_long_walk_beyond_the_bog a_quiet_end_to_the_last_shift
+topics work +0.4 travel +0.4 weather +0.3 memories +0.2
+styles comfort=spare gossip=guarded refuse=blunt tease=dry
+marks oath saying
+persona #self.first# washes the #pots#, finds a safe #path# across a #bog#, and keeps an eye on the #marsh# #lights#.
+
+words
+oath! = Bog and thunder | By the clean pot
+saying! = Step where the rushes stand | A pot can wait; a path cannot
+pot = pot | kitchen pot
+pots = pots | stacked pots
+pan = pan | black pan
+pans = pans | used pans
+dish = dish | empty dish
+dishes = dishes | washed dishes
+plate = plate | supper plate
+plates = plates | empty plates
+cup = cup | clay cup
+cups = cups | used cups
+water = water | fresh water
+bucket = bucket | full bucket
+soap = soap | rough soap
+rag = rag | worn rag
+brush = brush | stiff brush
+scrub = scrub | hard scrub
+sink = sink | stone sink
+kitchen = kitchen | inn kitchen
+hearth = hearth | inn hearth
+fire = fire | banked fire
+ash = ash | cold ash
+floor = floor | wet floor
+step = step | back step
+stairs = stairs | narrow stairs
+bench = bench | long bench
+table = table | inn table
+counter = counter | taproom counter
+room = room | upstairs room
+rooms = rooms | guest rooms
+inn = inn | small inn
+boss = boss | inn keeper
+hand = hand | pot hand
+hands = hands | working hands
+work = work | kitchen work
+shift = shift | late shift
+guest = guest | late guest
+guests = guests | road guests
+stranger = stranger | unknown stranger
+friend = friend | old friend
+neighbour = neighbour | near neighbour
+house = house | shared house
+home = home | cottage
+back = back | rear
+riddle = riddle | short riddle
+walker = walker | road walker
+keys = keys | room keys
+door = door | closed door
+window = window | back window
+road = road | firm road
+path = path | bog path
+paths = paths | hidden paths
+bog = bog | low bog
+marsh = marsh | wet marsh
+rushes = rushes | marsh rushes
+reed = reed | tall reed
+reeds = reeds | tall reeds
+pool = pool | dark pool
+pools = pools | shallow pools
+bank = bank | firm bank
+mud = mud | deep mud
+light = light | marsh light
+lights = lights | marsh lights
+flame = flame | distant flame
+night = night | dark night
+morning = morning | early morning
+evening = evening | late evening
+day = day | long day
+walk = walk | long walk
+boots = boots | new boots
+boot = boot | dry boot
+thunder = thunder | heavy thunder
+storm = storm | passing storm
+rain = rain | hard rain
+drizzle = drizzle | thin drizzle
+roof = roof | sound roof
+oatcake = oatcake | buttered oatcake
+oatcakes = oatcakes | warm oatcakes
+butter = butter | soft butter
+bread = bread | day bread
+meal = meal | plain meal
+market = market | town market
+merchant = merchant | passing merchant
+coin = coin | counted coin
+price = price | posted price
+queue = queue | long queue
+watch = watch | town watch
+wagon = wagon | goods wagon
+cart = cart | supply cart
+city = city | far city
+
+any
+opinion @1 dole against 1 : Standing in a #queue# costs a #day# I could spend at #work#. | I would rather carry #pots# for my #coin#.
+opinion @1 houses against 1 : A grand #house# keeps a clean #floor# without knowing who scrubbed it. | I know the #hands#.
+opinion @1 merchants against 1 : A #merchant# can add a little to the #price# while no one watches. | I read the mark twice.
+opinion @1 newcomers for 1 : I might be the newcomer somewhere else. | A #hand# willing to wash #dishes# can start here.
+opinion @1 road for 1 : A firm #road# gives you a way through. | You still watch where it meets the #bog#.
+opinion @1 strangers against 2 : A #stranger# stays outside my #door# until I know their purpose. | I keep the #window# clear.
+opinion @1 watch mixed 0 : The #watch# is useful near the #inn#. | Its boots sink like everyone else's in the #marsh#.
+opinion @1 city mixed 1 : The #city# might pay better for #work#. | Its crowds would turn a short #walk# into a chore.
+line @1 greet : #greet#. The #pots# have just come back. | #greet#. Leave your #boots# off this wet #floor#.
+line @2 greet [pair.band=friends|family] : There are #oatcakes# by the #hearth#. | Sit there if you have something to say.
+line @1 greet.return : I am still washing the last #pan#. | You found the #path# here again.
+line @1 kin.open [pair.kin!=no] : Come through the #door#; I have dry #boots# inside. | The #house# is quiet now.
+line @1 again.open : I was talking about the #rushes#. | Is the #pot# still on the #fire#?
+line @1 farewell : #farewell#. Keep to firm ground. | I have a #bucket# to empty.
+line @1 farewell.return : I may know a shorter #path# when you return. | The #pots# will be here again.
+line @1 react.news : Say who saw it. | I will hear you while this #water# warms.
+line @1 react.news.new : That account is new to the #kitchen#. | Where did it happen?
+line @1 react.news.known : A #guest# said a little about it. | Your version has a different turn.
+line @1 react.news.doubt : I would check the tracks by the #bank#. | Who crossed that #path# in daylight?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is hard news. Sit by the #hearth#. | I will put the #pan# away.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. The #oatcakes# are still warm. | Someone should hear that at the #table#.
+line @1 answer.how : The #floor# is dry and I am restless. | Better after a #walk# beyond the #inn#.
+line @1 answer.how.busy [self.working=yes] : I am scrubbing this #pot# clean. | Let me empty the #bucket# first.
+line @1 ask.how : Did you cross the #bog# safely? | Have you found somewhere dry to sleep?
+line @1 sympathise : I can find a quiet #bench#. | You need not speak while the #water# boils.
+line @1 reassure : There is a firm #path# behind the #rushes#. | We can wait for daylight under this #roof#.
+line @1 decline : I will not follow a #light# into the #marsh#. | I have #pots# to finish before leaving.
+line @1 accept_decline : I take your meaning; this #pan# stays here. | Then take the #road#, not the #bog#.
+line @1 thank : You carried that #bucket# out for me. | The #oatcake# went down well.
+line @1 deflect_thanks : I was heading to the #sink# anyway. | The #brush# did the heavy part.
+line @1 preclose : I need to dry these #dishes#. | The #back# #door# should be shut.
+line @1 tease [pair.band=friends] : Your #boots# know fewer #paths# than my old #pans#. | That #riddle# would lose its way in a clear field.
+line @1 ack : #bc_right#. That #bank# is firm. | #bc_fair_enough#. I will check the #floor#.
+line @1 give.advice : Watch the #rushes#; firm ground keeps them upright. | Dry the #step# before the #guests# descend.
+line @1 warn [world.bandits=near] : Keep to the main #road# with company. | Do not chase distant #lights# at #night#.
+scene black_pan
+when topic=work
+does tell.self / react.self / assess
+a : A black #pan# takes more than a quick rinse. | I soak it while I carry the #plates# out.
+b : Does that loosen it? | Who burned it?
+a : Enough for the #brush#. | Ask the cook.
+
+scene water_bucket
+when topic=work
+does tell.self / react.self / assess
+a : I bring #water# from the pump before the #kitchen# opens. | A full #bucket# makes the first #pots# easier.
+b : Is the pump far? | Does anyone help?
+a : Past the back #door#. | When the #inn# is full.
+
+scene wet_floor
+when topic=work
+does tell.self / react.self / assess
+a : The #floor# stays slick after a crowd of #guests#. | I dry the #step# before anyone comes down the #stairs#.
+b : Has anyone fallen? | Do you leave a warning?
+a : Not on my #shift#. | I stand by the #door#.
+
+scene stacked_pots
+when topic=work
+does tell.self / react.self / assess
+a : I stack the #pots# with a #rag# between the heavy ones. | A crack can hide until the next #meal#.
+b : Do they often crack? | Who checks them?
+a : Less this way. | I do before supper.
+
+scene last_cup
+when topic=work
+does tell.self / react.self / assess
+a : The last #cup# of the #night# always turns up after I put the #water# away. | I keep one #bucket# ready.
+b : Do you resent it? | Who brings it?
+a : Only the noise. | Usually a late #guest#.
+
+scene soap_scrub
+when topic=work
+does tell.self / react.self / assess
+a : Too much #soap# leaves a taste in a clean #cup#. | I rinse twice when the #water# is warm.
+b : Does anyone notice? | Does it take long?
+a : I would. | Less than a complaint.
+
+scene bog_rushes
+when topic=travel
+does tell.self / react.self / assess
+a : The #rushes# tell me where firm #bank# runs under the #bog#. | I step where their roots hold.
+b : Is that always safe? | Can others follow?
+a : After #rain#, no. | If they watch my feet.
+
+scene hidden_path
+when topic=travel
+does tell.self / react.self / assess
+a : A #path# can disappear when the #marsh# takes new #water#. | I carry its turns in my head rather than mark the #reeds#.
+b : Have you been lost? | Why not mark it?
+a : Not for long. | A mark sends strangers there.
+
+scene marsh_lights
+when topic=memories
+does tell.self / react.self / assess
+a : I have seen #lights# above a dark #pool# at #night#. | I think the drowned are walking where the #path# was.
+b : Did you follow them? | Could it be a flame?
+a : Never. | No one stood there.
+
+scene light_at_bank
+when topic=memories
+does tell.self / react.self / assess
+a : A pale #light# once moved against the #wind# near the #bank#. | I stayed on the #road# until it faded.
+b : Were you alone? | Did you tell anyone?
+a : For the first part. | Only after sunrise.
+
+scene long_walk
+when topic=pastimes
+does tell.self / react.self / assess
+a : I walk without a destination after a full #shift#. | A dry #path# is enough reason to go.
+b : Do you come back late? | Do you take food?
+a : Sometimes. | An #oatcake# in my pocket.
+
+scene new_boots
+when topic=pastimes
+does tell.self / react.self / assess
+a : New #boots# make me want to test every #path# beyond the #inn#. | I keep them out of the worst #mud#.
+b : For how long? | Where do you walk?
+a : Until they are old. | Where the #rushes# stand.
+
+scene thunder_roof
+when topic=weather
+does tell.self / react.self / assess
+a : Heavy #thunder# sounds better from under a strong #roof#. | Its sound carries over the clatter of #pots#.
+b : Do you enjoy storms? | Does the roof leak?
+a : From inside. | Not this season.
+
+scene thin_drizzle
+when topic=weather
+does tell.self / react.self / assess
+a : Thin #drizzle# makes the #road# slick without filling the #pools#. | I wait for proper #rain# or clear air.
+b : Does it stop your walk? | Does it last?
+a : It slows me. | Often through supper.
+
+scene deep_mud
+when topic=travel
+does tell.self / react.self / assess
+a : Deep #mud# can take a #boot# and leave the #walker# in place. | I cross on the grass near the #bank#.
+b : Can you tell where? | Would you guide me?
+a : By the #reeds#. | If you follow closely.
+
+scene oatcakes
+when topic=food
+does tell.self / react.self / assess
+a : An #oatcake# with #butter# holds me through the last #pots#. | I eat standing beside the #sink#.
+b : Do you make them? | Is that enough?
+a : The cook does. | Until I get home.
+
+scene closed_door
+when topic=home
+does tell.self / react.self / assess
+a : I close the #house# #door# before unfamiliar #guests# leave the #inn#. | A quiet #night# is easier that way.
+b : Do you fear them? | Do your housemates mind?
+a : I am careful. | They have their own habits.
+
+story lost_cup [topic=work self.age>=18]
+  : A #guest# left a #cup# behind the #bench# after closing.
+  : I found it when I had nearly emptied the last #bucket#.
+  ask : Did you wash it?
+  b : A familiar nuisance.
+  : I kept the #water# and finished the job.
+
+story bog_path [topic=travel self.age>=18]
+  : A #cart# stopped where the #road# sank into the #bog#.
+  : I led its driver along the #rushes# to firmer ground.
+  ask : Did the cart follow?
+  b : You know that ground.
+  : After we lightened it.
+
+story pale_light [topic=memories self.age>=18]
+  : A #light# moved over a #pool# where no #path# remains.
+  : I stayed on the #bank# and waited for dawn.
+  ask : What was it?
+  b : That would trouble me.
+  : I still call it one of the drowned.
+
+rule @bark_pots
+when concept=bark
+does aside
+cooldown 8h
+say There are three #pots# left. | Set the clean #pans# here.
+
+rule @bark_floor
+when concept=bark
+does aside
+cooldown 9h
+say Mind the wet #step#. | I will dry the #floor# before supper.
+
+rule @bark_bog
+when concept=bark
+does aside
+cooldown 10h
+say Follow the #rushes#, not the #light#. | That #bank# will carry your weight.
+
+rule @bark_storm
+when concept=bark
+does aside
+cooldown 11h
+say The #thunder# is moving closer. | The #roof# sounds firm enough.
+
+dlg @1 resident.hub : #greet#. I have #pots# to finish. | #greet#. Keep your #boots# off the wet #floor#.
+dlg @2 resident.hub [topic.meeting=known] : You took the dry #path# back. | The #kitchen# is nearly quiet.
+dlg @1 resident.job : I wash #pots# at #self.workplace#. | I clear #plates#, carry #water#, and dry the #floor#.
+dlg @1 resident.bye : #farewell#. The #bucket# is waiting. | #saying.capitalize#. Stay on firm ground.
+dlg @1 inn.greet [here.inn_helper=yes] : I work in the #kitchen#. Ask #here.innkeeper# for a #bed#. | I can find a #meal#; #here.innkeeper# holds the #keys#.
+dlg @1 inn.bye : #farewell#. Watch that wet #step#. | Take the dry #road# beyond the #door#.
+graft resident.hub
+choice How do you cross a bog? -> bog
+node bog
+say Watch the #rushes# and keep your weight over their roots.
+free
+choice What are the marsh lights? -> lights
+choice Goodbye. -> bye
+node lights
+say I think they are the drowned. I do not ask anyone to believe me.
+choice Back to the kitchen. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #pans# are nearly clean. | #greet#. That #storm# may pass.
+line @1 farewell : #farewell#. I will take a #walk# after this. | Mind the #bog# if you go out.
