@@ -1,0 +1,311 @@
+# cw155, the doorway soap hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw155
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_lf_thistle_downcombe
+written_by claude-codex-cw-2
+title the doorway soap hand
+fits stage=adult|old
+prefers talk=plain
+traits temper=calm talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=content
+quirk chooses_a_seat_with_the_door_in_view
+likes smoked_eel wrestling full_larder summer_evenings
+dislikes waiting salt_wind
+fears a_pan_of_soap_lost_to_a_careless_boil an_empty_larder_in_winter
+hopes a_cupboard_full_before_frost an_evening_free_of_queues
+topics work +0.5 home +0.4 food +0.3 pastimes +0.2
+styles comfort=direct gossip=reluctant refuse=plain tease=dry
+marks oath saying
+persona #self.first# watches the #door# from a #bench#, judges a #boil# by its smell, and keeps a #loaf# in the #cupboard#.
+
+words
+oath! = Pan and paddle | By the open doorway
+saying! = Count the loaves before the frost | Leave the doorway in sight
+door = door | open door
+doorway = doorway | house doorway
+bench = bench | low bench
+seat = seat | corner seat
+back = back | turned back
+window = window | narrow window
+latch = latch | iron latch
+cupboard = cupboard | food cupboard
+larder = larder | full larder
+loaf = loaf | fresh loaf
+loaves = loaves | fresh loaves
+bread = bread | bread heel
+eel = eel | smoked eel
+plate = plate | supper plate
+supper = supper | evening meal
+pan = pan | boiling pan
+paddle = paddle | long paddle
+soap = soap | plain soap
+boil = boil | slow boil
+lye = lye | lye water
+ash = ash | clean ash
+heat = heat | steady heat
+steam = steam | sharp steam
+batch = batch | soap batch
+bar = bar | soap bar
+bars = bars | soap bars
+rack = rack | drying rack
+hand = hand | working hand
+hands = hands | working hands
+work = work | boiling house work
+house = house | shared house
+child = child | grown child
+neighbour = neighbour | near neighbour
+visitor = visitor | unexpected visitor
+road = road | High Road
+city = city | Ridgemere
+shop = shop | town shop
+merchant = merchant | passing merchant
+price = price | raised price
+pay = pay | small pay
+coin = coin | last coin
+queue = queue | long queue
+green = green | village green
+bout = bout | wrestling bout
+grip = grip | careful grip
+summer = summer | late summer
+wind = wind | lake wind
+lake = lake | Glasswater
+shore = shore | lakeshore
+morning = morning | early morning
+evening = evening | long evening
+winter = winter | hard winter
+fire = fire | low fire
+water = water | lake water
+cup = cup | small cup
+hour = hour | full hour
+silence = silence | welcome silence
+letter = letter | folded letter
+table = table | supper table
+floor = floor | wooden floor
+shutter = shutter | window shutter
+sun = sun | low sun
+day = day | long day
+
+any
+opinion @1 church against 1 : I can spare a #coin# for a hungry #neighbour#. | The collection #plate# travels faster than the help.
+opinion @1 city against 1 : In the #city# nobody leaves a clear path to the #door#. | I prefer a room where faces stay known.
+opinion @1 houses against 1 : Their #bench# has space until someone from our #house# comes near it. | I have stopped asking for a welcome.
+opinion @1 merchants against 2 : The #price# of #bread# rises though my #pay# has barely moved. | A #merchant# can call that fair from a full #larder#.
+opinion @1 newcomers against 1 : Let a #visitor# show some #work# before claiming a place in the #queue#. | I will judge the #hands#, not the tale.
+opinion @1 watch against 1 : The watch counts who enters my #door# more closely than it counts missing #coin#. | They may start with the #road#.
+opinion @1 festivals mixed 0 : A #bout# on the #green# is worth seeing. | I still leave before the shouting starts.
+opinion @1 times against 1 : Each #winter# seems to take another #loaf# from the #cupboard#. | Someone ought to count what remains.
+line @1 greet : #greet#. That #seat# keeps the #doorway# in view. | #greet#. The #batch# is cooling.
+line @2 greet [pair.band=friends|family] : Take the #bench# beside me; I kept a #plate#. | You know where the #cupboard# is.
+line @3 greet [here.time=dawn] : The #pan# was hot before the #morning# light. | #greet#. I have already fed the #fire#.
+line @1 greet.return : The #soap# has yet to set since your last visit. | The #door# is open again, then.
+line @1 kin.open [pair.kin!=no] : Step into the light beside the #door#. | There is #bread# in the #cupboard# for kin.
+line @1 again.open : The #lye# needs another stir. | Are we still counting that #price#?
+line @1 farewell : #farewell#. I must lift the #pan# from the #heat#. | Mind the #door# when you leave.
+line @1 farewell.return : I can keep the better #seat# another #evening#. | Come before the #supper# is gone.
+line @1 react.news : Speak while I stir; I hear you. | Start with who was at the #door#.
+line @1 react.news.new : No one in this #house# brought me that word. | Was the word brought from the #road#?
+line @1 react.news.known : I heard the edge of it at the #shop#. | There is more to the matter, I gather.
+line @1 react.news.doubt : Show me where the story begins. | Let my #hands# test the claim first.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Sit down. I can mind the #fire# while you rest. | Leave the #pan# to me; give yourself an #hour#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That calls for the good #plate#. | A fresh #loaf# would suit the occasion.
+line @1 answer.how : My #pan# has behaved and the #larder# has a little left. | The #summer# #evening# suits me.
+line @1 answer.how.busy [self.working=yes] : This #batch# needs steady stirring. | I cannot leave the #lye# alone.
+line @1 ask.how : Did the climb along the #road# tire you? | Is your #house# fed today?
+line @1 sympathise : I will leave this #seat# for you. | We can keep #silence# until you want company.
+line @1 reassure : The #batch# can be started again. | A short delay will not empty every shelf.
+line @1 decline : No. I cannot spare another #hour# standing in a #queue#. | I have the #pan# to watch.
+line @1 accept_decline : Then leave the matter by the #door#. | Understood. Save the rest for another visit.
+line @1 thank : You saved me a place in the #queue#. | That #bread# came at the right time.
+line @1 deflect_thanks : My #hands# were free for a moment. | It was only one #loaf#.
+line @1 preclose : The #soap# will set if I linger. | I need to see what is left in the #cupboard#.
+line @1 tease [pair.band=friends] : That #bench# could throw you on a good day. | Your #paddle# has been resting more than you.
+line @1 ack : #bc_right#. Set it by the #rack#. | #bc_fair_enough#. The #door# stays in my sight.
+line @1 give.advice : Keep the #pan# at a low #heat# when the #lye# goes in. | Choose a #seat# with a view of whoever enters.
+line @1 warn [world.bandits=near] : Keep to the lit #road# after dark. | I would travel with a #neighbour#.
+scene back_to_door
+when topic=home
+does tell.self / react.self / assess
+a : I take the #seat# facing the #door# even in my own #house#. | Seeing a #visitor# arrive lets me choose my words.
+b : Does that make you uneasy? | Is the corner seat better?
+a : Only when I cannot see the #latch#. | Better than a surprise at my #back#.
+
+scene pan_temperature
+when topic=work
+does tell.self / react.self / assess
+a : A #soap# #batch# turns harsh if the #heat# climbs too fast. | I watch the #steam# and ease the #fire#.
+b : Can you smell the change? | What if it boils over?
+a : Before I see it. | Then the #floor# gets my whole #hour#.
+
+scene ash_sieving
+when topic=work
+does tell.self / react.self / assess
+a : Fine #ash# makes cleaner #lye# when I sieve it. | A gritty #bar# tells on a careless #hand#.
+b : Does it take long? | Can you fix a rough batch?
+a : Long enough to do it properly. | Sometimes, before it sets.
+
+scene drying_rack
+when topic=work
+does tell.self / react.self / assess
+a : The #bars# rest on a #rack# with air between them. | Stack them close and the middles stay soft.
+b : How many fit there? | Who checks them?
+a : As many as I can lift safely. | I do, after the #morning# #boil#.
+
+scene soap_skin
+when topic=work
+does tell.self / react.self / assess
+a : Soap stings a cracked #hand# worse than #wind# off the #lake#. | I wrap my fingers before lifting the #paddle#.
+b : Do you stop working? | Does that help?
+a : Only if I must. | It keeps the #lye# out.
+
+scene cupboard_count
+when topic=home
+does tell.self / react.self / assess
+a : I count the #loaves# before promising anyone #supper#. | A full #larder# lasts longer when you know what is in it.
+b : Do you write it down? | Is there enough tonight?
+a : I remember each shelf. | There is #bread# for one more.
+
+scene eel_supper
+when topic=food
+does tell.self / react.self / assess
+a : Smoked #eel# keeps a place at my #table# when the #shop# has little else. | I cut thin pieces and leave the last for a late worker.
+b : Do you warm the #eel# twice? | Who comes home late?
+a : Just enough to warm it. | Someone from the boiling #house#.
+
+scene summer_door
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : In #summer# I sit where the #door# lets in the #evening# air. | I can hear the #green# without joining every argument.
+b : Do you go out at all? | Is the air cool?
+a : For a fair #bout#. | After the #sun# drops.
+
+scene waiting_queue
+when topic=prices
+does tell.self / react.self / assess
+a : A #queue# at the #shop# swallowed my whole #morning#. | The #price# had risen by the time I reached the counter.
+b : Did you buy anything? | Did you complain?
+a : A smaller #loaf#. | Plainly, and to the right person.
+
+scene quiet_bout
+when topic=pastimes
+does tell.self / react.self / assess
+a : I like a wrestling #bout# where both wrestlers know when to yield. | Noise among the watchers on the #green# adds nothing.
+b : Do you wrestle now? | Who taught you?
+a : When the #work# leaves my #hands# free. | A patient #neighbour#.
+
+scene salt_wind
+when topic=weather
+does tell.self / react.self / assess
+a : A sharp #wind# off the #shore# puts salt in my mouth. | It also dries the #soap# too quickly near the #window#.
+b : Can you close it? | Does it ruin the bars?
+a : I pull the #shutter# in. | If nobody notices in time.
+
+scene empty_bench
+when topic=memories
+does tell.self / react.self / assess
+a : Once a hall had an empty #bench# until my #work# clothes came through the #door#. | Then someone said the places were taken.
+b : Were they? | What did you do?
+a : I saw the open wood. | I went where I was welcome.
+
+scene shared_house
+when topic=family
+does tell.self / react.self / assess
+a : A shared #house# makes every #cupboard# #latch# somebody's concern. | I keep my #bread# together and say what is mine.
+b : Do people quarrel? | Is there room to eat?
+a : Less when I speak early. | Around one #table#.
+
+scene child_plate
+when topic=family
+does tell.self / react.self / assess
+a : I set aside a #plate# before the #pan# is clean. | A grown #child# can still arrive hungry.
+b : Do you know when? | What do you leave?
+a : Rarely. | The better piece of #eel#.
+
+scene road_letter
+when topic=travel
+does tell.self / react.self / assess
+a : A #letter# can cross the #road# while I stay by the #boil#. | I keep it folded beside the #larder# key.
+b : How often do you unfold it? | Does it bring good news?
+a : More than I admit. | Enough to keep it dry.
+
+scene chapel_plate
+when topic=faith
+does tell.self / react.self / assess
+a : I have watched a #plate# pass round the chapel faster than #bread# reached a poor #house#. | I still give when I know who will eat.
+b : Do you attend? | Who receives your help?
+a : On a quiet #morning#. | The #neighbour# I can see.
+
+scene winter_stock
+when topic=food here.season=winter
+does tell.self / react.self / assess
+a : Before #winter# I put #bars# of #soap# away and count every #loaf#. | A sealed #cupboard# keeps both dry.
+b : Is that enough? | What about visitors?
+a : For a short frost. | I offer #supper# when I can.
+
+story scorched_batch [topic=work self.age>=18]
+  : I once turned my #back# on a #pan# to answer someone at the #door#.
+  : The #heat# climbed and the #batch# took on a burned edge.
+  ask : Could you save it?
+  b : One distraction was enough.
+  : I cooled it and kept the useful #bars# apart.
+
+story withheld_seat [topic=home self.age>=18]
+  : I entered a hall and chose a #bench# with the #door# in sight.
+  : A stranger claimed every place was spoken for, though no one else came.
+  ask : Did you stay?
+  b : That was unkind.
+  : I found another room and kept my own company.
+
+story last_eel [topic=food self.age>=18]
+  : I saved the final piece of smoked #eel# for a late #hand#.
+  : The #supper# hour passed, but the #door# opened after the #fire# sank low.
+  ask : Was it still good?
+  b : A thoughtful meal.
+  : Warmed by the coals, and welcome.
+
+rule @bark_pan
+when concept=bark
+does aside
+cooldown 8h
+say Lower the #heat# before the #lye# goes in. | That #pan# needs another turn.
+
+rule @bark_door
+when concept=bark
+does aside
+cooldown 9h
+say Leave the #door# clear. | I will take the #seat# facing the entrance.
+
+rule @bark_larder
+when concept=bark
+does aside
+cooldown 10h
+say One more #loaf# behind the #latch#. | The #cupboard# can carry us another #day#.
+
+rule @bark_green
+when concept=bark here.day=festival
+does aside
+cooldown 11h
+say A quiet #bout# is worth the walk. | The crowd on the #green# reaches this #bench#.
+
+dlg @1 resident.hub : #greet#. The #soap# is cooling; speak while I watch the #door#. | #greet#. Pull that #bench# closer to the #door#.
+dlg @2 resident.hub [topic.meeting=known] : Back again? The #batch# held its shape. | I saved the corner #seat# if you need it.
+dlg @1 resident.job : I work the #pan# at the boiling house. | Soap needs #lye#, #heat#, and a patient #hand#.
+dlg @1 resident.bye : #farewell#. The #rack# wants my attention. | #saying.capitalize#. Mind your step outside.
+graft resident.hub
+choice How do you make the soap? -> soap
+node soap
+say First I sift the #ash# for #lye#, then keep the #boil# gentle. The #bars# dry apart on a #rack#.
+free
+choice Why face the doorway? -> seat
+choice Goodbye. -> bye
+node seat
+say From this #bench# I see who comes in and can finish my thought before speaking to them.
+choice Back to the soap. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #pan# is nearly ready. | #greet#. Choose the #seat# opposite mine.
+line @1 farewell : #farewell#. I will check the #rack#. | The #door# will stay open until #supper#.
