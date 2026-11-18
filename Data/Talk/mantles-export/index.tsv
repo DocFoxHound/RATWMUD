@@ -87,6 +87,7 @@ lf124	larkfield	full	ready	1	cty_roald_brinemarsh	claude-codex-lf-1
 lf125	larkfield	standard	ready	1	cty_rowan_eelwater	claude-codex-lf-1
 lf126	larkfield	standard	ready	1	tn_lf_harrow_larkwell	claude-codex-lf-1
 lf127	larkfield	standard	ready	1	tn_lf_rook_wheatfield	claude-codex-lf-1
+lf128	larkfield	full	ready	1	tn_mb_tansy_eelbridge	claude-codex-lf-1
 mb101	mirebridge	full	ready	1	cty_nell_plummeadow	claude-p11-pilot
 mb102	mirebridge	full	ready	1	tn_mb_roan_pikewater	claude-p11-pilot
 mb103	mirebridge	standard	ready	1	tn_oh_ludo_ashwood	claude-p11-pilot

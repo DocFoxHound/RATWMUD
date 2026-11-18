@@ -1,0 +1,488 @@
+# lf128, the bogwise eel-trapping smith (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf128
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier full
+written_for tn_mb_tansy_eelbridge
+written_by claude-codex-lf-1
+title the bogwise eel-trapping smith
+fits stage=adult|old
+prefers role=merchant job=smith
+traits temper=even talk=chatty warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk can_find_a_path_across_any_bog
+likes mutton_stew whittling tidy_house first_warm_day
+dislikes stale_bread bad_manners
+fears a_hot_shoe_cracking_under_the_hammer a_trap_lost_in_a_river_flood
+hopes a_sound_anvil_for_every_order a_first_warm_day_by_the_river
+topics work +0.5 pastimes +0.4 travel +0.3 food +0.2
+styles comfort=practical gossip=wry refuse=plain tease=dry
+marks oath saying
+persona #self.first# runs the #forge#, finds a #path# across any #bog#, and claims the best #eel# #traps# on the #river#.
+
+words
+oath! = Anvil and river | By the sound shoe
+saying! = Heat it evenly before you strike | A good trap waits where the water turns
+smithy = smithy | village smithy
+forge = forge | smithy forge
+anvil = anvil | iron anvil
+hammer = hammer | smith hammer
+hammers = hammers | work hammers
+strike = strike | measured strike
+strikes = strikes | even strikes
+blow = blow | hammer blow
+blows = blows | steady blows
+iron = iron | hot iron
+bar = bar | heated bar
+bars = bars | iron bars
+tongs = tongs | long tongs
+bellows = bellows | forge bellows
+coal = coal | forge coal
+coals = coals | banked coals
+fire = fire | forge fire
+heat = heat | even heat
+spark = spark | bright spark
+sparks = sparks | bright sparks
+ash = ash | cold ash
+steam = steam | quench steam
+quench = quench | water quench
+bucket = bucket | water bucket
+water = water | clear water
+shoe = shoe | horse shoe
+shoes = shoes | fitted shoes
+nail = nail | iron nail
+nails = nails | small nails
+hinge = hinge | door hinge
+hinges = hinges | door hinges
+blade = blade | iron blade
+edge = edge | clean edge
+tool = tool | farm tool
+tools = tools | farm tools
+order = order | smithy order
+orders = orders | written orders
+book = book | order book
+price = price | posted price
+prices = prices | posted prices
+cost = cost | iron cost
+coin = coin | earned coin
+merchant = merchant | travelling merchant
+buyer = buyer | local buyer
+customer = customer | waiting customer
+customers = customers | local customers
+counter = counter | shop counter
+shelf = shelf | tool shelf
+stock = stock | smithy stock
+hand = hand | working hand
+hands = hands | smithy hands
+striker = striker | young striker
+master = master | village master
+lesson = lesson | forge lesson
+work = work | smithy work
+bench = bench | work bench
+floor = floor | swept floor
+roof = roof | sound roof
+label = label | paper label
+shop = shop | small shop
+nightfall = nightfall | late nightfall
+field = field | open field
+marks = marks | worn marks
+sack = sack | coal sack
+scale = scale | shop scale
+wheel = wheel | cart wheel
+bridge = bridge | stone bridge
+step = step | careful step
+handle = handle | tool handle
+stairs = stairs | upstairs steps
+flat = flat | upstairs flat
+door = door | front door
+window = window | small window
+home = home | tidy home
+house = house | small house
+mutton = mutton | stew mutton
+stew = stew | mutton stew
+pot = pot | stew pot
+plate = plate | supper plate
+bread = bread | day bread
+loaf = loaf | stale loaf
+knife = knife | small knife
+wood = wood | whittling wood
+shaving = shaving | wood shaving
+shavings = shavings | wood shavings
+river = river | near river
+bank = bank | river bank
+banks = banks | river banks
+eel = eel | river eel
+eels = eels | river eels
+trap = trap | eel trap
+traps = traps | eel traps
+line = line | trap line
+lines = lines | trap lines
+current = current | river current
+flood = flood | river flood
+reed = reed | bank reed
+reeds = reeds | river reeds
+bog = bog | low bog
+path = path | firm path
+paths = paths | hidden paths
+mud = mud | bog mud
+road = road | town road
+cart = cart | supply cart
+wagon = wagon | iron wagon
+market = market | busy market
+city = city | far city
+friend = friend | old friend
+neighbour = neighbour | near neighbour
+stranger = stranger | passing stranger
+traveller = traveller | road traveller
+watch = watch | town watch
+festival = festival | town festival
+spring = spring | early spring
+warmth = warmth | first warmth
+morning = morning | early morning
+evening = evening | late evening
+night = night | quiet night
+day = day | working day
+rain = rain | steady rain
+wind = wind | field wind
+
+any
+opinion @1 city against 1 : A #city# #merchant# sells #iron# with a bright #label# and no name I know. | I prefer the local #forge#.
+opinion @1 festivals for 1 : The #festival# brings every #neighbour# past my #counter#. | The #forge# can cool for an evening.
+opinion @1 merchants mixed 1 : A #merchant# brings #iron# I cannot make here. | I still count the #cost# before setting a #price#.
+opinion @1 road against 1 : A late #wagon# leaves an #order# on my #bench# without its #iron#. | I can find a better #path# through the #bog#.
+opinion @1 strangers mixed 0 : A #stranger# may need a #shoe# fitted before speaking of home. | I ask the work first.
+opinion @1 times against 1 : The #coal# costs more every season. | I cannot keep the #forge# hot on yesterday's #coin#.
+opinion @1 watch for 1 : The #watch# passes my #door# when the #shop# closes. | I still lock the #stock# away.
+opinion @1 houses mixed 0 : A great #house# has #hinges# like any cottage. | I charge for the #iron# and the #hands# who shape it.
+opinion @1 newcomers mixed 0 : A fresh #hand# can begin at the #bellows#. | I watch where they stand near the #fire#.
+line @1 greet : #greet#. Have you brought a #tool# or a question? | #greet#. The #forge# is taking #heat#.
+line @2 greet [pair.band=friends|family] : I have #stew# upstairs for later. | Come see the #trap# I mended.
+line @1 greet.return : The #shoe# is cooler now. | You returned before I finished that #hinge#.
+line @3 greet [here.time=dawn] : #greet#. The #coals# have just woken. | The #river# may be clear this #morning#.
+line @1 kin.open [pair.kin!=no] : Come upstairs when the #forge# settles. | A #plate# waits beside the upstairs #window#.
+line @1 again.open : I was explaining the #edge#. | Was that the #bog# crossing you meant?
+line @1 farewell : #farewell#. The #anvil# is waiting. | Mind the #mud# past the #door#.
+line @1 farewell.return : Bring the #tool# back if it loosens. | I may have #eels# by then.
+line @1 react.news : Say it while I set this #bar# down. | Did a #traveller# bring the account?
+line @1 react.news.new : The #smithy# has heard none of that. | Who brought it to #market#?
+line @1 react.news.known : A #buyer# gave me the short version. | Yours has a different bend.
+line @1 react.news.doubt : I would inspect the #tool# before agreeing. | Which #hand# saw the #tool# fail in use?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Come away from the #forge#. | I can leave the #iron# until later.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. There will be #stew# enough tonight. | I might put the #hammer# down for that.
+line @1 answer.how : The #forge# held its #heat#; the #river# gave me an #eel#. | Better after a warm #day#.
+line @1 answer.how.busy [self.working=yes] : I am fitting this #shoe# to the #anvil#. | Let me quench the #bar# first.
+line @1 ask.how : Did the #road# bring you over dry ground? | Have you seen the #river# this week?
+line @1 sympathise : The end of this #bench# is clear of #sparks#. | Once the #fire# settles, I can serve you #stew#.
+line @1 reassure : A cracked #shoe# can be made sound again. | There is a firm #path# around the #bog#.
+line @1 decline : I will not hand over #iron# while it is hot. | That #trap# needs more than one #nail#.
+line @1 accept_decline : I understand; the #order# stays on the #bench#. | That #tool# may stay on the #bench# for now.
+line @1 thank : You worked the #bellows# evenly for me. | That #stew# was welcome after the #river#.
+line @1 deflect_thanks : I had the #tongs# ready. | The #eel# found the #trap# on its own.
+line @1 preclose : I should bank the #coals# before #night#. | The #trap# line needs a look.
+line @1 tease [pair.band=friends] : Your #hammer# aim could find any #bog# #path#. | That #eel# would have escaped a slower #trap#.
+line @1 ack : #bc_right#. The #edge# is straight. | #bc_fair_enough#. I will check the #price#.
+line @1 give.advice : Let the #bar# reach even #heat# before the first #blow#. | Set an #eel# #trap# where the #current# turns.
+line @1 warn [world.bandits=near] : Take company on the #road# after #nightfall#. | Keep the #wagon# near the #watch#.
+scene forge_heat
+when topic=work
+does tell.self / react.self / assess
+a : I keep the #bar# in one part of the #fire# until its color is even. | A bright end and dark middle will bend badly.
+b : Can you see it clearly? | Who tends the coals?
+a : Under the #roof#. | We take turns.
+
+scene shoe_curve
+when topic=work
+does tell.self / react.self / assess
+a : A #shoe# must match the hoof before I set the #nails#. | I shape it twice rather than force a poor fit.
+b : Does that take long? | Do you fit many?
+a : Less than a lame horse. | Enough in a season.
+
+scene anvil_face
+when topic=work
+does tell.self / react.self / assess
+a : I keep the #anvil# face clear of stray #shavings# and #ash#. | A small speck can mark hot #iron#.
+b : Do you wipe it often? | Does that matter?
+a : Between #orders#. | For a fine #edge#.
+
+scene hinge_pin
+when topic=work
+does tell.self / react.self / assess
+a : A #hinge# can fail at the pin before the plate shows wear. | I turn it in my #hand# before heating anything.
+b : Can you mend it? | Do people notice?
+a : Usually. | When the #door# sags.
+
+scene bellows_rhythm
+when topic=work
+does tell.self / react.self / assess
+a : A steady #bellows# stroke keeps the #coals# ready without throwing #sparks#. | I show a new #hand# the rhythm first.
+b : Do they learn quickly? | Who taught you?
+a : After a few tries. | An older smith.
+
+scene quench_bucket
+when topic=work
+does tell.self / react.self / assess
+a : The #bucket# water warms through a long #day#. | I change it before a delicate #blade# goes in.
+b : Does warm water matter? | Where do you fetch more?
+a : For the #edge#. | From the pump.
+
+scene farm_tool
+when topic=work
+does tell.self / react.self / assess
+a : A #tool# from the #field# tells me how its owner holds it. | I leave the worn #wood# where the #hand# expects it.
+b : Do you replace any part? | Can you tell its age?
+a : Only what is cracked. | From its #marks#.
+
+scene iron_order
+when topic=prices
+does tell.self / react.self / assess
+a : I write each #order# beside the #cost# of #coal# and #iron#. | The #price# should be clear before I light the #forge#.
+b : Do people bargain? | Does the price change?
+a : Sometimes. | With the #wagon#.
+
+scene late_iron
+when topic=travel
+does tell.self / react.self / assess
+a : The #wagon# brought a load of #bars# after the #fire# had gone out. | I checked the #stock# at #morning# instead.
+b : Was it sound? | Did the driver wait?
+a : Most of it. | Until the count.
+
+scene bog_path
+when topic=travel
+does tell.self / react.self / assess
+a : I can cross the low #bog# by following the firmer #reeds#. | The #road# goes farther around.
+b : Is that safe? | Do you guide others?
+a : After I test it. | When they listen.
+
+scene river_trap
+when topic=pastimes
+does tell.self / react.self / assess
+a : The best #trap# sits where the #river# #current# bends. | I check its #line# before the #day# warms.
+b : Do you catch many? | Who taught you?
+a : More than I tell the #market#. | The #river# did.
+
+scene eel_boast
+when topic=pastimes
+does tell.self / react.self / assess
+a : I have pulled an #eel# from a #trap# others called empty. | They had set it where the #water# ran straight.
+b : Did you show them? | Do you always win?
+a : After I ate. | I know where to look.
+
+scene trap_repair
+when topic=pastimes
+does tell.self / react.self / assess
+a : A broken #trap# takes a finer #hand# than a #shoe#. | I mend the #line# beside the #fire# after work.
+b : Do you use iron? | When will it need mending again?
+a : Only a small #hinge#. | Until the next #flood#.
+
+scene whittled_handle
+when topic=pastimes
+does tell.self / react.self / assess
+a : I whittle a new #wood# handle when the #forge# is quiet. | A #knife# and steady light are enough.
+b : Who uses it? | Do you sell them?
+a : The #hand# with a worn #tool#. | Only with the tool.
+
+scene mutton_stew
+when topic=food
+does tell.self / react.self / assess
+a : A #pot# of #mutton# #stew# is better after a cold #river# morning. | I keep a #plate# upstairs for the late #hand#.
+b : Do you cook it? | Does it last?
+a : When I have time. | Until supper.
+
+scene tidy_flat
+when topic=home
+does tell.self / react.self / assess
+a : I leave the #smithy# #floor# swept before climbing to the #flat#. | A tidy #home# gives the #forge# a proper end.
+b : Do you live alone? | Does it stay tidy?
+a : Most nights. | Until another #order#.
+
+scene first_warm_day
+when topic=weather
+does tell.self / react.self / assess
+a : The first warm #day# of #spring# sends me to the #river# before the #market#. | The #eels# move differently then.
+b : Do you still open the shop? | Does it feel warmer?
+a : After the traps. | At the #bank#.
+
+scene stale_loaf
+when topic=food
+does tell.self / react.self / assess
+a : A stale #loaf# makes poor supper after a hard #day#. | I put it in the #stew# rather than waste it.
+b : Does that help? | Do you buy fresh?
+a : It softens. | When the baker has it.
+
+scene bad_manners
+when topic=home
+does tell.self / react.self / assess
+a : A #customer# once reached for hot #iron# after I warned them. | I closed the #tongs# and made them wait.
+b : Were they angry? | Did they learn?
+a : For a moment. | They kept their #hands#.
+
+scene river_flood
+when topic=weather
+does tell.self / react.self / assess
+a : A #flood# can carry every #trap# past the #bank# overnight. | I pull the #lines# before heavy #rain#.
+b : Have you lost any? | Can you find them?
+a : Two. | Not in that #current#.
+
+scene new_striker
+when topic=work
+does tell.self / react.self / assess
+a : A young #striker# watches the #hammer# head more than the hot #bar#. | I tell them to watch both #hands#.
+b : Do they improve? | Do you trust them?
+a : With a #lesson#. | Once they can stop.
+
+scene market_repair
+when topic=work
+does tell.self / react.self / assess
+a : At the #market# someone always brings a #hinge# that broke at dawn. | I ask how the #door# was hung before pricing it.
+b : Does that change the repair? | Do they answer?
+a : Often. | After a little thought.
+
+scene watch_shoe
+when topic=work
+does tell.self / react.self / assess
+a : The #watch# brings worn #shoes# for its mounts. | I fit them the same as any farm animal.
+b : Do they pay promptly? | Are the horses calm?
+a : When the #book# is right. | Most are.
+
+scene coal_count
+when topic=prices
+does tell.self / react.self / assess
+a : Before hearing the #merchant# #price#, I weigh the #coal#. | The #forge# cannot run on a light #sack#.
+b : Do they object? | Can you weigh it?
+a : If it is short. | On the #scale#.
+
+scene quiet_evening
+when topic=home
+does tell.self / react.self / assess
+a : After the last #order#, I sit upstairs and trim a piece of #wood#. | The #river# can wait until #morning#.
+b : Do you rest then? | Do you think of work?
+a : For a while. | Only when a #tool# is unfinished.
+
+scene river_reeds
+when topic=travel
+does tell.self / react.self / assess
+a : Tall #reeds# mark the dry edge of a #bog# better than a painted sign. | I walk where their roots hold.
+b : Do they move after rain? | Can I follow?
+a : Sometimes. | If you watch the ground.
+
+scene last_spark
+when topic=work
+does tell.self / react.self / assess
+a : I check the last #spark# before shutting the #smithy# #door#. | The #coals# must be banked before I leave.
+b : How do you know? | Does anyone check too?
+a : The #heat# falls. | The #striker# does.
+
+story first_shoe [topic=work self.age>=18]
+  : My first #shoe# looked even on the #anvil# and crooked on the hoof.
+  : I heated it again rather than force the #nails#.
+  ask : Did it fit then?
+  b : A good correction.
+  : After another careful #blow#.
+
+story river_turn [topic=pastimes self.age>=18]
+  : I set a #trap# where the #river# bends against the #reeds#.
+  : At dawn it held an #eel# larger than the others expected.
+  ask : Did you tell them?
+  b : You know that water.
+  : Often enough that they know my claim.
+
+story bog_shortcut [topic=travel self.age>=18]
+  : A #cart# took the long #road# while I crossed the #bog# on foot.
+  : I arrived before its #wheel# reached the #bridge#.
+  ask : Was the ground safe?
+  b : A useful path.
+  : I tested each step.
+
+story flooded_trap [topic=weather self.age>=18]
+  : A #flood# rose while my #traps# were still tied at the #bank#.
+  : I pulled the #lines# before the water took them.
+  ask : Did you save them all?
+  b : A close call.
+  : All but one broken frame.
+
+story warm_spring [topic=home self.age>=18]
+  : The first warm #day# drew me to the #river# after the #forge# closed.
+  : I found the #eels# moving beneath a new bank of #reeds#.
+  ask : Did the shop wait?
+  b : A good day to go.
+  : The #orders# were finished first.
+
+rule @bark_forge
+when concept=bark
+does aside
+cooldown 8h
+say The #bar# has even #heat#. | Keep the #sparks# off the #bench#.
+
+rule @bark_shoe
+when concept=bark
+does aside
+cooldown 9h
+say This #shoe# needs another curve. | Hold the #tongs# steady.
+
+rule @bark_trap
+when concept=bark
+does aside
+cooldown 10h
+say The #river# #line# is ready. | There may be an #eel# by dawn.
+
+rule @bark_bog
+when concept=bark
+does aside
+cooldown 11h
+say The #reeds# show firm ground. | That #path# crosses the #bog#.
+
+rule @bark_stew
+when concept=bark
+does aside
+cooldown 12h
+say The #stew# smells ready. | I will bring a #plate# upstairs.
+
+rule @bark_closing
+when concept=bark
+does aside
+cooldown 13h
+say Bank the #coals# carefully. | The last #order# is in the #book#.
+
+dlg @1 resident.hub : #greet#. The #forge# is hot. | #greet#. Have you come for #iron# or #eels#?
+dlg @2 resident.hub [topic.meeting=known] : Your last #order# is still on the #bench#. | The #river# gave me another #eel#.
+dlg @3 resident.hub [here.time=night] : The #coals# are banked for #night#. | I am upstairs; come back at #morning#.
+dlg @1 resident.job : I run the #forge# at #self.workplace#. | I fit #shoes#, mend #tools#, and keep the #orders#.
+dlg @2 resident.job [self.working=yes] : This #bar# needs a careful #strike#. | I am fitting a #shoe# before it cools.
+dlg @1 resident.bye : #farewell#. I will close the #smithy#. | #saying.capitalize#. Mind the #sparks#.
+dlg @1 shop.greet [here.shop=open] : #greet#. Each #tool# on that #shelf# has a marked #price#. | Tell me what needs mending.
+dlg @2 shop.greet [here.shop=bare] : Finished #iron# is scarce today. | Name the #tool# you seek; I will mark the next #forge# run.
+dlg @3 shop.greet [here.shop=asleep] : The #forge# is resting. | Come when the #coals# are hot again.
+dlg @4 shop.greet [here.shop!=bare here.shop!=asleep] : #greet#. I can inspect your #tool# here. | The #counter# is open for new #orders#.
+dlg @1 shop.prices [here.shop=open|bare] : The #price# covers #iron#, #coal#, and the #hands# shaping it. | I mark each #cost# before work starts.
+dlg @1 shop.bye : #farewell#. Let the #iron# cool before carrying it. | #shop_bye# I have another #order# to finish.
+dlg @1 master.learn [here.teaches=yes] : Start by keeping the #bellows# even. | Stand beside me and watch the #sparks# clear of the #forge#.
+dlg @2 master.learn [here.teaches=yes topic.meeting=known] : Your last #strike# was true. | Today you can shape a small #nail#.
+graft resident.hub
+choice Can you cross any bog? -> bog
+node bog
+say I follow the #reeds# and test each #step# before trusting it.
+free
+choice Are you really the best eel trapper? -> eel
+choice Goodbye. -> bye
+node eel
+say I know where the #current# bends. You may ask anyone on the #river#.
+choice Back to the forge. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Can you mend this tool? -> tool
+node tool
+say Let me see its #edge# and #handle# before I name a #price#.
+free
+choice When will it be ready? -> ready
+choice Goodbye. -> bye
+node ready
+say Your #tool# goes on my #order# list; I will name a day for the #forge#.
+choice Back to the counter. -> greet
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #anvil# is clear. | #greet#. The #river# is low today.
+line @1 farewell : #farewell#. I will bank the #coals#. | The #traps# can wait until dawn.
