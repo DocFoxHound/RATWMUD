@@ -1,0 +1,298 @@
+# cw144, the bell-late picker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw144
+revision 1
+state ready
+dialect coldwater
+accent none
+tier standard
+written_for cty_willa_meadowfield
+written_by claude-codex-cw-2
+title the bell-late picker
+fits stage=adult|old
+prefers talk=plain
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=restless
+quirk is_always_a_little_late
+likes crisp_apples draughts festival_bells thunder
+dislikes gulls stale_bread
+fears a_letter_that_never_arrives missing_the_last_bell
+hopes word_from_distant_family a_quiet_hour_beside_the_hearth
+topics work +0.4 faith +0.4 family +0.3 pastimes +0.3 weather +0.2
+styles comfort=gentle gossip=reluctant refuse=plain tease=dry
+marks oath saying
+persona #self.first# arrives just after the #bell#, saves a #crisp_apple# for later, and listens for news from distant #kin#.
+
+words
+oath! = Bright One, mind the hour | Bell and branch
+saying! = A late hand can still finish well | Every bell leaves an echo
+bell = bell | chapel bell
+bells = bells | festival bells
+hour = hour | passing hour
+minute = minute | short minute
+morning = morning | early morning
+evening = evening | late evening
+apple = apple | orchard apple
+apples = apples | picked apples
+crisp_apple = crisp apple | firm apple
+skin = skin | apple skin
+branch = branch | low branch
+tree = tree | fruit tree
+trees = trees | orchard trees
+row = row | picking row
+rows = rows | orchard rows
+basket = basket | wicker basket
+crate = crate | wooden crate
+crates = crates | stacked crates
+ladder = ladder | picking ladder
+store = store | apple store
+shift = shift | day's work
+hand = hand | working hand
+hands = hands | picking hands
+roof = roof | sound roof
+thunder = thunder | rolling thunder
+storm = storm | summer storm
+rain = rain | lake rain
+sky = sky | wide sky
+gull = gull | shore gull
+gulls = gulls | noisy gulls
+bread = bread | loaf
+loaf = loaf | small loaf
+draughts = draughts | draughts game
+stale_bread = stale bread | dry loaf
+table = table | supper table
+board = board | draughts board
+piece = piece | draughts piece
+game = game | quiet game
+festival = festival | feast day
+chapel = chapel | little chapel
+cross = cross | reed cross
+prayer = prayer | quiet prayer
+letter = letter | written word
+post = post | road post
+road = road | High Road
+kin = kin | family
+home = home | cottage
+spouse = spouse | partner
+window = window | small window
+lake = lake | Glasswater
+shore = shore | lakeshore
+coin = coin | small coin
+price = price | asking price
+market = market | market square
+bench = bench | wooden bench
+
+any
+opinion @1 church for 1 : The #chapel# gives me a quiet #minute# before work. | The Bright One can hear a #prayer# said late.
+opinion @1 dole for 1 : A hungry #home# should have #bread#. | If the #market# has enough, no neighbour should go without.
+opinion @1 drink against 1 : I have seen a full cup empty a family's #table#. | I would spend that #coin# on a #loaf#.
+opinion @1 houses against 1 : A spare #bench# in a great house does little for a tired #hand#. | Their empty rooms could seat people coming in from work.
+opinion @1 merchants against 2 : The #bread# #price# rises before our pay does. | Our supper shrinks while their #coin# piles grow.
+opinion @1 road for 1 : Leave in daylight and pay attention to the #road#. | A long journey starts with a sound first step.
+
+grown
+line @1 greet : #greet#. I thought I had another #minute#. | #greet#. Has the #bell# rung already?
+line @2 greet [self.working=yes] : I am behind with this #row#; walk alongside. | Say your piece while I gather fruit.
+line @3 greet [pair.band=friends|family] : This #crisp_apple# is yours. | The #board# is ready if you have an #hour#.
+line @4 greet [here.time=dawn] : I meant to reach the #trees# before that #bell#. | The #morning# went ahead without me.
+line @1 greet.return : You are back before I finished the #crate#. | #welcome_back#. I have time now.
+line @1 kin.open [pair.kin!=no] : Take the chair by the #window# and begin when ready. | Your place at the #table# is waiting.
+line @1 again.open : We left that #game# half played. | I still owe you an answer about the #road#.
+line @1 farewell : #farewell#. I must catch the next #bell#. | #saying.capitalize#. The #basket# waits.
+line @1 farewell.return : Come back for the rest of the #game#. | I hope we have more than a #minute# next time.
+line @1 react.news : I am listening. Put the #basket# here. | Tell me what you witnessed yourself.
+line @1 react.news.new : No #letter# brought that to our #home#. | When did the word come down the #road#?
+line @1 react.news.known : I heard the first part after #prayer#. | Your account makes it clearer.
+line @1 react.news.doubt : I will wait for a second witness. | A #gull# can make a great noise over nothing.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is painful news. The chair by the #window# is yours. | I can leave the #crate# until we have talked.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves the #festival# #bells#. | I will give thanks at the #chapel#.
+line @1 answer.how : A little hurried, as ever. | I have work enough and a dry #roof#.
+line @1 answer.how.busy [self.working=yes] : This #row# has kept me moving. | The #crates# still need filling before dusk.
+line @1 ask.how : Did you find any rest? | Has your #home# had good news?
+line @1 sympathise : I will sit with you for an #hour#. | A #prayer# may help; I can stay as well.
+line @1 reassure : You can begin again in the #morning#. | We will take the next step when it comes.
+line @1 decline : I cannot leave the #store# yet. | That would take more #coin# than I have.
+line @1 accept_decline : I understand. The offer stands another day. | No offence taken.
+line @1 thank : You carried that #crate# when my #hands# were full. | You waited after the #bell# for me.
+line @1 deflect_thanks : I had a free #hand#. | The #basket# was light enough.
+line @1 preclose : The #bell# has started, and I ought to go. | There is still a #row# to finish.
+line @1 tease [pair.band=friends] : Your #piece# has sat there since supper. | Even I reached the #table# before you.
+line @1 ack : #bc_right#. I will bring the #basket#. | #bc_fair_enough#. The #game# can wait.
+line @1 give.advice : Keep a #crisp_apple# for the walk home. | Leave for the #market# before the first #bell#.
+scene late_to_row
+when topic=work
+does tell.self / react.self / assess
+a : I arrive at the #trees# just after everyone has chosen a #row#. | There is always one #basket# waiting for me.
+b : Does anyone mind? | Do you finish on time?
+a : They have learned my pace. | I stay until the last #crate# is filled.
+
+scene crisp_fruit
+when topic=food
+does tell.self / react.self / assess
+a : I know a good #apple# when the first bite cracks. | A soft one goes into the #basket# for cooking.
+b : Do you eat one at work? | How do you tell before tasting?
+a : Only one. | The #skin# should feel firm.
+
+scene festival_bells
+when topic=home
+does tell.self / react.self / assess
+a : On a #festival# #morning#, the #bells# reach the #shore#. | I hear them from the #trees# if I am late again.
+b : Do you follow them in? | Which sound is clearest?
+a : Once the #row# is done. | The last slow toll.
+
+scene thunder_roof
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : I like #thunder# when a sound #roof# is over us. | Outside, I would rather be carrying the #crates# in.
+b : Does it frighten you? | Do you count the flashes?
+a : Not under shelter. | Sometimes, until the #rain# slows.
+
+scene roof_before_storm
+when topic=weather
+does tell.self / react.self / assess
+a : The #sky# darkened while we were still among the #trees#. | I carried the last #basket# indoors before the #rain#.
+b : Were you caught? | Did you save the fruit?
+a : A little wet. | Every #crate# that mattered.
+
+scene draughts_pause
+when topic=pastimes
+does tell.self / react.self / assess
+a : I study the #board# so long that my opponent thinks I have forgotten the #game#. | Then I move one #piece# and regret another.
+b : Do you like slow games? | Do you win?
+a : Until supper calls. | Just enough to keep playing.
+
+scene far_letters
+when topic=family
+does tell.self / react.self / assess
+a : I have #kin# far down the #road#. | I check for a #letter# though none has come lately.
+b : Have you written? | Does the waiting trouble you?
+a : More than once. | Some days.
+
+scene spouse_game
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse# knows which #piece# I will move before I do. | We leave the #board# out after supper.
+b : Who wins? | Do you play every night?
+a : It changes. | When we both have the #hour#.
+
+scene stale_loaf
+when topic=food
+does tell.self / react.self / assess
+a : #stale_bread.capitalize# can be warmed, but it will not become fresh again. | I buy a smaller #loaf# and eat it that day.
+b : Is that enough? | Where do the crumbs go?
+a : With an #apple#, yes. | Crumble it for the birds, away from the #gulls#.
+
+scene gulls_shore
+when topic=home
+does tell.self / react.self / assess
+a : The #gulls# can find a scrap from across the #lake#. | They wait on the #shore# until someone opens a #basket#.
+b : Do you feed them? | Do they steal fruit?
+a : Never on purpose. | Only when a #crate# is left open.
+
+scene reed_cross
+when topic=faith
+does tell.self / react.self / assess
+a : I stop at the #chapel# and touch the #cross# before a long day. | It takes less than a #minute# to make a #prayer#.
+b : What is in your prayer? | Does that help you begin?
+a : Steady #hands#. | It quiets me.
+
+scene open_road
+when topic=travel
+does tell.self / react.self / assess
+a : I follow the #road# until the mountains hide the next bend. | The mountains make a long journey look short from here.
+b : Would you travel farther? | Do you walk alone?
+a : To visit #kin#, perhaps. | I prefer company.
+
+scene market_bread
+when topic=prices
+does tell.self / react.self / assess
+a : I stood at the #market# and counted my #coin# twice. | The #bread# cost more than it had the week before.
+b : Did you buy it? | Did you ask why?
+a : A small #loaf#. | The seller had no useful answer.
+
+scene day_end
+when topic=work here.time=dusk
+does tell.self / react.self / assess
+a : At dusk I tally each #crate# on my way out of the #store#. | Then I remember which #row# I meant to finish.
+b : Do you go back? | Can it wait?
+a : If the light holds. | Otherwise the #morning# gets it.
+
+scene busy_house
+when topic=home
+does tell.self / react.self / assess
+a : Our #home# is full of people coming back from different work. | The #table# fills in stages, never all at once.
+b : Is there room for you? | Do you eat late?
+a : Someone always makes room. | Often after the #bell#.
+
+scene short_prayer
+when topic=faith
+does tell.self / react.self / assess
+a : I was late to the #chapel# and stood near the door. | The Bright One heard the #prayer# from there as well.
+b : Did you stay? | Does anyone mind?
+a : Until the last #bell#. | I hope not.
+
+scene first_pick
+when topic=memories
+does tell.self / react.self / assess
+a : My first #basket# of #apples# was all bruises and leaves. | I learned to put each fruit down instead of dropping it.
+b : Who taught you? | Did it take long?
+a : A patient picker. | One whole #shift#.
+
+story bell_race [topic=work self.age>=18]
+  : I heard the #bell# while carrying a half-full #basket# down a #row#.
+  : I hurried, caught my foot on the #ladder#, and scattered #apples#.
+  ask : Were you hurt?
+  b : Hurry cost you time.
+  : Only my pride. I gathered each one slowly.
+
+story last_move [topic=pastimes self.age>=18]
+  : I left a #draughts# #piece# in the centre of the #board# all #evening#.
+  : My opponent expected me to take it back, but I had another move waiting.
+  ask : Did you win?
+  b : You let the piece sit there?
+  : For once, yes. I was nearly late to bed.
+
+story unanswered_post [topic=family self.age>=18]
+  : I sent a #letter# to #kin# beyond the #road# and waited by the #window# for news.
+  : The #post# came twice with nothing for me, so I wrote another.
+  ask : Did the answer arrive?
+  b : That is a long wait.
+  : Not yet. I will keep writing.
+
+rule @bark_bell
+when concept=bark
+does aside
+cooldown 8h
+say Was that the #bell# already? | I have lost another #minute#.
+
+rule @bark_crate
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say One more #crate# before I go. | Leave the soft #apples# in that #basket#.
+
+rule @bark_post
+when concept=bark
+does aside
+cooldown 10h
+say No #letter# today. | Perhaps the next #post# will bring word.
+
+rule @bark_storm
+when concept=bark here.weather=storm
+does aside
+cooldown 11h
+say That #thunder# sounds close. | I am glad for this #roof#.
+
+dlg @1 resident.hub : #greet#. I have a #basket# to finish, but I can talk. | #greet#. Did I miss the #bell#?
+dlg @2 resident.hub [topic.meeting=known] : Back again? I am closer to finishing this #row#. | I remember you. I saved a #crisp_apple#.
+dlg @1 resident.job : I pick #apples# for #self.workplace# and fill the #crates#. | Most days I work among the #trees# at #self.workplace#.
+dlg @1 resident.bye : #farewell#. I must reach the #store# before the #bell#. | #saying.capitalize#. I have work to finish.
+graft resident.hub
+choice Why do you watch the chapel? -> bells
+node bells
+say I listen for the #bells#. On #festival# mornings their sound reaches the #shore#, and I try to arrive before the last one.
+free
+choice What is in your basket? -> fruit
+choice Back to the path. -> hub
+node fruit
+say #apples.capitalize# from the #rows#. The firm ones go to the #store#; a #crisp_apple# is worth keeping for supper.
+choice Back to the path. -> hub
+choice Goodbye. -> bye
