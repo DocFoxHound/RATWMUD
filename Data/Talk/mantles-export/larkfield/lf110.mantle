@@ -1,0 +1,339 @@
+# lf110, the frost-watch orchard keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf110
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for cty_fallow_plumfield
+written_by claude-codex-lf-1
+title the frost-watch orchard keeper
+fits stage=adult|old
+prefers talk=plain
+traits temper=short talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk judges_visitors_by_how_they_speak_of_elders
+likes oatcakes dice fresh_straw first_snow
+dislikes bad_manners smoke
+fears the_deep_wood_beyond_the_orchard a_fire_in_the_fruit_store
+hopes a_clean_harvest_before_frost a_household_that_remembers_its_elders
+topics work +0.5 home +0.4 family +0.3 weather +0.2
+styles comfort=direct gossip=reluctant refuse=firm tease=dry
+marks oath saying
+persona #self.first# checks the #orchard# #rows# before first #snow#, keeps the #store# free of #smoke#, and hears how a #visitor# speaks of elders.
+
+words
+oath! = Root and first frost | By the straight orchard row
+saying! = Ask after the elder before the fruit | Snow shows every missed step
+orchard = orchard | Plumtree orchard
+tree = tree | fruit tree
+trees = trees | fruit trees
+row = row | orchard row
+rows = rows | orchard rows
+branch = branch | low branch
+branches = branches | low branches
+root = root | deep root
+roots = roots | orchard roots
+soil = soil | dark soil
+spade = spade | digging spade
+apple = apple | crisp apple
+apples = apples | picked apples
+plum = plum | ripe plum
+plums = plums | ripe plums
+fruit = fruit | picked fruit
+basket = basket | wicker basket
+baskets = baskets | wicker baskets
+crate = crate | wooden crate
+crates = crates | wooden crates
+store = store | fruit store
+shelf = shelf | storage shelf
+shelves = shelves | storage shelves
+straw = straw | fresh straw
+floor = floor | swept floor
+roof = roof | sound roof
+door = door | store door
+gate = gate | orchard gate
+fence = fence | orchard fence
+path = path | orchard path
+wood = wood | deep wood
+woods = woods | dark woods
+shadow = shadow | tree shadow
+light = light | early light
+lamp = lamp | store lamp
+fire = fire | open fire
+flame = flame | stray flame
+smoke = smoke | dark smoke
+wind = wind | field wind
+snow = snow | first snow
+frost = frost | early frost
+rain = rain | passing rain
+morning = morning | early morning
+evening = evening | quiet evening
+night = night | dark night
+day = day | long day
+hour = hour | late hour
+house = house | orchard house
+home = home | farmhouse
+family = family | household
+elder = elder | family elder
+elders = elders | family elders
+grandmother = grandmother | older grandmother
+visitor = visitor | new visitor
+stranger = stranger | passing stranger
+friend = friend | trusted friend
+neighbour = neighbour | near neighbour
+manners = manners | decent manners
+word = word | spoken word
+market = market | town market
+stall = stall | fruit stall
+seller = seller | market seller
+buyer = buyer | fruit buyer
+price = price | marked price
+coin = coin | saved coin
+road = road | High Road
+wagon = wagon | supply wagon
+city = city | Ridgemere
+table = table | kitchen table
+plate = plate | supper plate
+bread = bread | fresh bread
+oatcake = oatcake | buttered oatcake
+oatcakes = oatcakes | buttered oatcakes
+butter = butter | fresh butter
+cup = cup | warm cup
+game = game | dice game
+die = die | six-sided die
+dice = dice | wooden dice
+throw = throw | careful throw
+throws = throws | lucky throws
+number = number | marked number
+bench = bench | wooden bench
+window = window | kitchen window
+harvest = harvest | autumn harvest
+step = step | careful step
+winter = winter | cold winter
+sun = sun | rising sun
+field = field | open field
+dawn = dawn | pale dawn
+shadows = shadows | long shadows
+numbers = numbers | marked numbers
+
+any
+opinion @1 city against 1 : Smoke from the #city# would settle on every #crate# here. | I would rather know the #buyer# at our #gate#.
+opinion @1 merchants mixed 0 : A #seller# who names the #price# clearly gets a hearing. | I count the #baskets# before agreeing.
+opinion @1 newcomers against 1 : A #visitor# should greet the #elders# before asking about the #fruit#. | It is a simple test.
+opinion @1 strangers against 1 : I hear a #stranger# from the far side of the #gate# first. | The #orchard# is not a public #road#.
+opinion @1 road against 1 : A #wagon# can reach the #market# without my walking the #road#. | That suits me.
+opinion @1 festivals mixed 0 : I will bring #fruit# when the #market# is orderly. | I leave when the #manners# fail.
+opinion @1 houses mixed 0 : A fine #house# may keep an old #orchard# alive. | I judge its people by what they do for their #elders#.
+opinion @1 times mixed 0 : A good #harvest# gives us room to breathe. | A hard #frost# can change that in one #night#.
+line @1 greet : #greet#. Close the #gate# behind you. | #greet#. The first #snow# may come tonight.
+line @2 greet [pair.band=friends|family] : There are #oatcakes# beside the #table#. | Come in; I know your #step#.
+line @3 greet [here.time=dawn] : The #rows# are clear of #frost# so far. | #greet#. I have checked the #store#.
+line @1 greet.return : You returned before I closed the #crate#. | The #woods# look darker now.
+line @1 kin.open [pair.kin!=no] : Your #plate# is at the end of the #table#. | Come through the #door# before the #wind# rises.
+line @1 again.open : Were we counting the #baskets#? | I still want to know who sent that #wagon#.
+line @1 farewell : #farewell#. I must fasten the #store# #door#. | Stay on the open #path#.
+line @1 farewell.return : Another #game# can wait until #evening#. | Bring news of the #market# next time.
+line @1 react.news : Speak plainly and begin with the place. | Was the #orchard# involved?
+line @1 react.news.new : No one at #home# mentioned it. | Did a #visitor# bring this word?
+line @1 react.news.known : A #buyer# hinted at it this #morning#. | Your account is more exact.
+line @1 react.news.doubt : I want to hear from someone who saw it. | A #shadow# can make the #woods# look crowded.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Sit here; I will close the #store#. | That is hard news. Take a warm #cup#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Set another #plate# for that. | A basket of #fruit# would suit the day.
+line @1 answer.how : The #fruit# is stored and the #floor# is clean. | The #snow# has not reached the #gate#.
+line @1 answer.how.busy [self.working=yes] : I am counting the #crates#. | This #straw# needs spreading before the #frost#.
+line @1 ask.how : Did you keep to the open #road#? | Are your #elders# well?
+line @1 sympathise : I will leave this #bench# for you. | This #house# can be quiet for you.
+line @1 reassure : The #store# #roof# is sound. | The #orchard# has endured more than one #winter#.
+line @1 decline : No. I will not open the #gate# after dark. | An uncounted #crate# stays in my #store#.
+line @1 accept_decline : I understand. The #fruit# can wait. | The #dice# may stay on the #table#.
+line @1 thank : You carried the #basket# without bruising it. | That #word# about the #frost# was useful.
+line @1 deflect_thanks : The #oatcakes# were already made. | I was walking that #row# anyway.
+line @1 preclose : The #woods# are losing the last #light#. | I have a #lamp# to set by the #store#.
+line @1 tease [pair.band=friends] : Your #die# has better #manners# than your last #throw#. | The #plum# tree would beat you at counting.
+line @1 ack : #bc_right#. The #roof# is dry. | #bc_fair_enough#. I will check the #gate#.
+line @1 give.advice : Put #straw# beneath a #crate# before the #snow# comes. | Ask a #visitor# after their #elders# before giving trust.
+line @1 warn [world.bandits=near] : Stay on the #road# and away from the #woods#. | Keep the #orchard# #gate# locked.
+scene first_snow
+when topic=weather here.season=winter
+does tell.self / react.self / assess
+a : The first #snow# leaves white on the #fence# before the #rows#. | I check which #branches# still hold #fruit#.
+b : Does it ruin the harvest? | Do you go out early?
+a : If we left too much. | Before the #market# bell.
+
+scene deep_wood
+when topic=home
+does tell.self / react.self / assess
+a : The #woods# begin beyond the far #row#. | I know the #path# but do not like the #shadow# after #evening#.
+b : Have you been inside? | Is there a danger?
+a : In daylight. | I have never needed to find out at #night#.
+
+scene clean_store
+when topic=work
+does tell.self / react.self / assess
+a : I sweep the #store# #floor# before a new #crate# comes in. | Dirt under #straw# can spoil the bottom #fruit#.
+b : Do you do it alone? | Does it take long?
+a : Whoever is here helps. | Less than sorting bruises.
+
+scene straw_layer
+when topic=work
+does tell.self / react.self / assess
+a : I put fresh #straw# between #crates# so the #apples# do not rub. | The #store# should smell of #fruit#, not rot.
+b : How thick a layer? | Does it last?
+a : Enough to keep the wood apart. | Until the next #wagon#.
+
+scene orchard_row
+when topic=work
+does tell.self / react.self / assess
+a : I walk every #row# before assigning the picking. | A low #branch# may have better #plums# than its neighbor.
+b : Do you mark the trees? | Who picks first?
+a : In my head. | The hands who arrived early.
+
+scene oatcake_plate
+when topic=food
+does tell.self / react.self / assess
+a : An #oatcake# with #butter# is enough before a long #morning#. | I keep a second one covered for a late worker.
+b : Do you bake them? | Do you eat outdoors?
+a : When the #fire# is lit. | If the #wind# is kind.
+
+scene dice_count
+when topic=pastimes
+does tell.self / react.self / assess
+a : I play #dice# after the #crates# are stacked. | The #number# on the #die# cares nothing for my #work#.
+b : Do you win often? | Do you play for coin?
+a : As often as anyone. | Never more than a little.
+
+scene manners_at_gate
+when topic=home
+does tell.self / react.self / assess
+a : A #visitor# once asked for #fruit# without greeting the #elder# beside me. | I asked them to begin again.
+b : Did they? | Was that too harsh?
+a : They managed a greeting. | It cost them nothing.
+
+scene grandmother_word
+when topic=family
+does tell.self / react.self / assess
+a : I can tell something of a person by how they speak of a #grandmother#. | Respect is easy when no one is listening.
+b : Do you ask everyone? | Can they pretend?
+a : Only when it matters. | For a little while.
+
+scene orchard_house
+when topic=family
+does tell.self / react.self / assess
+a : Our #house# stands close enough to hear the #store# #door# in the #wind#. | I listen before setting the #lamp# down.
+b : Does that wake you? | Is the door strong?
+a : When it rattles. | I check the latch.
+
+scene market_crate
+when topic=prices
+does tell.self / react.self / assess
+a : I send the sound #apples# in one #crate# and bruised #fruit# in another. | A #buyer# should see what the #price# means.
+b : Do both sell? | Does anyone object?
+a : For different uses. | Not when I am clear.
+
+scene city_smoke
+when topic=travel
+does tell.self / react.self / assess
+a : A #wagon# from the #city# carried #smoke# in its canvas. | I kept it beyond the #store# while unloading.
+b : Does smoke hurt fruit? | Did the driver mind?
+a : I dislike it near the #shelves#. | The #work# still got done.
+
+scene forest_path
+when topic=travel
+does tell.self / react.self / assess
+a : A short #path# cuts along the #woods# toward the #market#. | I take the longer #road# when the #light# fades.
+b : Is the shorter path safe? | Why avoid it?
+a : While the #sun# is high. | Because I can choose.
+
+scene plum_basket
+when topic=food
+does tell.self / react.self / assess
+a : I leave small #plums# in a #basket# by the #table#. | They ripen faster there than in the cool #store#.
+b : Do you eat them at once? | Are they sweet?
+a : Before they soften too far. | The dark ones are.
+
+scene first_frost
+when topic=weather here.season=autumn
+does tell.self / react.self / assess
+a : The first #frost# silvering the #field# means I bring in every late #basket#. | The #apples# can wait no longer.
+b : Do you work all night? | Can fruit survive?
+a : Until the #store# is full. | Some, if covered.
+
+scene game_by_fire
+when topic=pastimes
+does tell.self / react.self / assess
+a : A quiet #game# by the #fire# keeps me from counting #crates# in my head. | I put the #dice# away before bed.
+b : Do you play alone? | Does it help?
+a : A #friend# is better. | Enough to sleep.
+
+scene road_snow
+when topic=weather here.weather=snow
+does tell.self / react.self / assess
+a : Snow covers the cart ruts on the #road# but leaves our #gate# visible. | I brush it from the #path# at #dawn#.
+b : Do wagons still come? | Is it heavy?
+a : Fewer. | Enough to mark each #step#.
+
+story late_basket [topic=work self.age>=18]
+  : I found a #basket# of #apples# still under a #tree# as the #frost# came down.
+  : I carried it to the #store# and spread the #fruit# on clean #straw#.
+  ask : Did it keep?
+  b : A timely find.
+  : Long enough to reach the #market#.
+
+story gate_visitor [topic=home self.age>=18]
+  : A #visitor# came to the #gate# and spoke past the oldest person beside me.
+  : I asked them to greet the #elder# before discussing a #price#.
+  ask : Did they listen?
+  b : A fair request.
+  : They did, and we spoke of #fruit# afterward.
+
+story woods_at_dusk [topic=travel self.age>=18]
+  : I took the short #path# beside the #woods# on a late #evening#.
+  : The #shadows# made every #tree# look closer than it was.
+  ask : Did you get home?
+  b : The road would have been easier.
+  : I did, and now I take the open #road#.
+
+rule @bark_frost
+when concept=bark
+does aside
+cooldown 8h
+say The #frost# is near the far #row#. | Bring in that #basket#.
+
+rule @bark_gate
+when concept=bark
+does aside
+cooldown 9h
+say Close the #gate# after you. | Who sent that #wagon#?
+
+rule @bark_straw
+when concept=bark
+does aside
+cooldown 10h
+say Fresh #straw# belongs under those #crates#. | Sweep the #store# first.
+
+rule @bark_dice
+when concept=bark
+does aside
+cooldown 11h
+say One more #throw# before #evening#. | My #die# likes the low #numbers#.
+
+dlg @1 resident.hub : #greet#. The #orchard# is being picked today. | #greet#. Mind the #gate# and speak plainly.
+dlg @2 resident.hub [topic.meeting=known] : You returned before the #frost#. | You know the way here; the #store# is nearly full.
+dlg @1 resident.job : I tend the #orchard# at #self.workplace#. | I count #baskets#, check #crates#, and keep the #store# dry.
+dlg @1 resident.bye : #farewell#. I will close the #store# #door#. | #saying.capitalize#. Stay on the open #road#.
+graft resident.hub
+choice Why watch the first snow? -> snow
+node snow
+say The first #snow# tells me where the #frost# will settle. I bring the last #baskets# into the #store# before it hardens.
+free
+choice Why ask about elders? -> elder
+choice Goodbye. -> bye
+node elder
+say The way a #visitor# speaks of #elders# shows whether a promise about #fruit# is likely to hold.
+choice Back to the orchard. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #rows# are clear. | #greet#. I am watching the #snow# line.
+line @1 farewell : #farewell#. This #crate# needs #straw#. | I will see you after the #market#.
