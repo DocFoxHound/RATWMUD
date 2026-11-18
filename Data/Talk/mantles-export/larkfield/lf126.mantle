@@ -1,0 +1,343 @@
+# lf126, the lark-whistling striker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf126
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for tn_lf_harrow_larkwell
+written_by claude-codex-lf-1
+title the lark-whistling striker
+fits stage=adult|old
+prefers job=smith
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk whistles_back_at_the_larks
+likes crisp_apples cards tidy_house misty_dawns
+dislikes deep_mud rats
+fears a_hot_bar_slipping_from_the_tongs a_letter_from_southmeadow_lost_on_the_road
+hopes a_clean_anvil_before_dawn another_visit_across_the_southmeadow_road
+topics work +0.5 pastimes +0.4 home +0.3 weather +0.2
+styles comfort=practical gossip=guarded refuse=firm tease=dry
+marks oath saying
+persona #self.first# strikes #iron# with a measured #hammer#, whistles back at the #larks#, and keeps the #smithy# neater than a #stable#.
+
+words
+oath! = Iron and lark | By the clear strike
+saying! = Hold the bar before the blow | A neat bench saves a burned hand
+iron = iron | hot iron
+bar = bar | heated bar
+bars = bars | iron bars
+anvil = anvil | smithy anvil
+hammer = hammer | striker hammer
+hammers = hammers | work hammers
+strike = strike | clean strike
+strikes = strikes | measured strikes
+blow = blow | hammer blow
+blows = blows | even blows
+tongs = tongs | long tongs
+forge = forge | smithy forge
+fire = fire | forge fire
+coal = coal | forge coal
+coals = coals | banked coals
+heat = heat | steady heat
+spark = spark | flying spark
+sparks = sparks | flying sparks
+ash = ash | cold ash
+bellows = bellows | forge bellows
+quench = quench | water quench
+bucket = bucket | water bucket
+water = water | clear water
+steam = steam | rising steam
+edge = edge | tool edge
+blade = blade | iron blade
+nail = nail | iron nail
+nails = nails | small nails
+hinge = hinge | door hinge
+hinges = hinges | door hinges
+shoe = shoe | horse shoe
+shoes = shoes | horse shoes
+wheel = wheel | cart wheel
+rim = rim | wheel rim
+smithy = smithy | town smithy
+bench = bench | work bench
+floor = floor | swept floor
+hand = hand | working hand
+hands = hands | sooty hands
+master = master | village smith
+work = work | smithy work
+order = order | smithy order
+orders = orders | written orders
+price = price | posted price
+coin = coin | earned coin
+merchant = merchant | market merchant
+market = market | town market
+road = road | south road
+path = path | field path
+mud = mud | deep mud
+boot = boot | work boot
+boots = boots | work boots
+lark = lark | singing lark
+larks = larks | morning larks
+whistle = whistle | short whistle
+song = song | bird song
+morning = morning | misty morning
+dawn = dawn | misty dawn
+mist = mist | morning mist
+night = night | quiet night
+evening = evening | late evening
+day = day | working day
+rain = rain | steady rain
+cloud = cloud | low cloud
+apple = apple | crisp apple
+apples = apples | crisp apples
+card = card | playing card
+cards = cards | playing cards
+handful = handful | small handful
+game = game | card game
+house = house | tidy house
+home = home | shared home
+door = door | closed door
+window = window | front window
+roof = roof | sound roof
+rat = rat | store rat
+rats = rats | store rats
+friend = friend | old friend
+neighbour = neighbour | near neighbour
+stranger = stranger | unknown stranger
+letter = letter | sealed letter
+letters = letters | sealed letters
+city = city | distant city
+queue = queue | market queue
+watch = watch | town watch
+festival = festival | town festival
+stable = stable | busy stable
+forges = forges | busy forges
+houses = houses | large houses
+customer = customer | waiting customer
+cart = cart | supply cart
+mornings = mornings | early mornings
+gate = gate | smithy gate
+sun = sun | rising sun
+counter = counter | shop counter
+sacks = sacks | coal sacks
+
+any
+opinion @1 city against 1 : The #city# has more noise than a dozen #forges#. | I prefer a #door# I recognize.
+opinion @1 dole against 1 : A #queue# can take a whole #day# from a capable #hand#. | There are #nails# to make here.
+opinion @1 houses against 1 : The large #houses# send #hinges# for repair without meeting the #hands# who mend them. | I notice who collects them.
+opinion @1 merchants against 1 : A #merchant# changes the #price# before the #iron# cools. | I keep the written #order#.
+opinion @1 newcomers mixed 0 : A new #hand# can learn where the #sparks# fly. | I will keep the #tongs# to myself at first.
+opinion @1 road mixed 0 : The #road# brings #coal# and takes finished #iron#. | The #mud# keeps the #wheel# waiting.
+opinion @1 strangers against 2 : An unknown #stranger# can speak from beyond the #smithy# #door#. | The #forge# stays within my reach.
+opinion @1 watch mixed 0 : The #watch# needs sound #shoes# for its mounts. | I ask the same #price# of anyone.
+line @1 greet : #greet#. The #bar# is nearly ready. | #greet#. Did you hear those #larks#?
+line @2 greet [pair.band=friends|family] : There is an #apple# by the #bench#. | Come in after I quench this #iron#.
+line @1 greet.return : The #forge# is still hot. | You arrived before the #hinges# were done.
+line @1 kin.open [pair.kin!=no] : The #house# is swept for your visit. | Come through the #door# and leave the #mud# outside.
+line @1 again.open : The #tongs# were still gripping the #bar#. | Did you want the #wheel# repaired?
+line @1 farewell : #farewell#. I must bank the #coals#. | Keep your #boots# out of the #mud#.
+line @1 farewell.return : On your return, the #nails# should be straight. | Perhaps the #larks# will answer tomorrow.
+line @1 react.news : Tell me after the #hammer# falls. | Did anyone see it happen?
+line @1 react.news.new : The #smithy# has heard no word of it. | Who brought the word?
+line @1 react.news.known : A #customer# left part of that account. | You have another piece.
+line @1 react.news.doubt : I would check the #wheel# #rim# first. | Which #hand# was near the #cart#?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is a hard thing to hear. | My #hammer# can rest while you speak.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I will bring out the crisp #apples#. | The #forge# can wait one moment.
+line @1 answer.how : The #iron# held and the #floor# is swept. | Better since the #mist# lifted.
+line @1 answer.how.busy [self.working=yes] : I am holding this #bar# in the #tongs#. | Let me finish the next #strike#.
+line @1 ask.how : How was your journey through the #rain#? | Have you heard the #larks# today?
+line @1 sympathise : Sit where the #sparks# cannot reach. | I can find an #apple# after this #bar#.
+line @1 reassure : We can straighten the #rim# after it cools. | The #forge# will hold its #heat# tomorrow.
+line @1 decline : I cannot put down hot #iron# to answer that. | I will not give away a #letter# meant for someone else.
+line @1 accept_decline : Very well; this #order# remains on my #bench#. | Then I will leave the #bar# in the #forge#.
+line @1 thank : The #bellows# gave even air because you worked them. | That #apple# helped after the long #day#.
+line @1 deflect_thanks : The #hammer# was ready for its next #blow#. | One #nail# is little work.
+line @1 preclose : I must quench the last #bar#. | The #bench# should be cleared before #night#.
+line @1 tease [pair.band=friends] : Your #cards# are straighter than your #nails#. | Even a #lark# would whistle at that hand.
+line @1 ack : #bc_right#. The #edge# is even. | #bc_fair_enough#. I will test the #hinge#.
+line @1 give.advice : Keep the #tongs# closed around a hot #bar#. | Let the #iron# cool before testing the #edge#.
+line @1 warn [world.bandits=near] : Take company along the #road# tonight. | Keep the #letter# inside your coat.
+scene hammer_count
+when topic=work
+does tell.self / react.self / assess
+a : I count the #blows# before moving the #bar# along the #anvil#. | A measured #strike# gives a cleaner #edge#.
+b : Do you count aloud? | Who sets the rhythm?
+a : Only when alone. | The #master# does.
+
+scene hot_tongs
+when topic=work
+does tell.self / react.self / assess
+a : The #tongs# must grip the #iron# before the #hammer# moves. | I test them with a short pull.
+b : Has a bar slipped? | Can you feel the heat?
+a : Not since I learned. | Through the air.
+
+scene forge_coals
+when topic=work
+does tell.self / react.self / assess
+a : I spread the #coals# until the #forge# holds steady #heat#. | Too much air throws #sparks# at the #bench#.
+b : Do you use the bellows? | Does the fire change quickly?
+a : A little at a time. | When the #door# opens.
+
+scene quench_steam
+when topic=work
+does tell.self / react.self / assess
+a : A hot #bar# hisses when it reaches the #bucket#. | I watch the #steam# clear before lifting it out.
+b : Does that harden it? | Is the water changed?
+a : For some #iron#. | When it clouds.
+
+scene straight_nail
+when topic=work
+does tell.self / react.self / assess
+a : A straight #nail# comes from an even #blow#, not a fast one. | I make a #handful# before I check the #order#.
+b : Do you make many? | Who counts them?
+a : Until the #forge# cools. | I do.
+
+scene door_hinge
+when topic=work
+does tell.self / react.self / assess
+a : A worn #hinge# shows the lean of a crooked #door#. | I mend the pin before reshaping the plate.
+b : Can you see the fault? | Do you test it?
+a : Along the worn #edge#. | On a spare #door#.
+
+scene cart_rim
+when topic=work
+does tell.self / react.self / assess
+a : A #wheel# #rim# needs the same curve all the way round. | I turn it as the #master# checks the #heat#.
+b : Does it take two? | Does it fit at once?
+a : For a large #wheel#. | After a second fitting.
+
+scene swept_floor
+when topic=work
+does tell.self / react.self / assess
+a : I sweep the #floor# after each long #order#. | A stray #nail# can catch a #boot# before anyone sees it.
+b : Is there much ash? | Do others help?
+a : More than it looks. | When the #forge# closes.
+
+scene lark_answer
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #lark# whistles from the #roof# at #dawn#. | I answer with the same short phrase until it moves on.
+b : Does it answer back? | Do you do that at work?
+a : Some #mornings#. | Before the #hammer# starts.
+
+scene misty_dawn
+when topic=weather
+does tell.self / react.self / assess
+a : The #mist# hides the far #road# while the #larks# still sing. | The #gate# stays shut until the #cart# appears through the #mist#.
+b : Does it last? | Do you like it?
+a : Until the #sun# rises. | From the #door#.
+
+scene crisp_apple
+when topic=food
+does tell.self / react.self / assess
+a : A crisp #apple# cuts through the taste of #ash# after work. | I keep one away from the #forge# #heat#.
+b : Do you grow them? | Do you share?
+a : I buy them nearby. | With a close #friend#.
+
+scene card_hand
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #hand# of #cards# is easier to read than a #merchant# at the #counter#. | I play after the #fire# dies.
+b : Do you win? | Do you wager?
+a : Some nights. | Only small #coin#.
+
+scene tidy_house
+when topic=home
+does tell.self / react.self / assess
+a : A tidy #house# makes the #smithy# soot stay on the other side of the #door#. | I brush my #boots# before going in.
+b : Does your housemate agree? | Do you sweep often?
+a : Enough. | After each shift.
+
+scene rats_near_coal
+when topic=home
+does tell.self / react.self / assess
+a : A #rat# found a warm place near the stored #coal#. | I moved the #sacks# before it could settle.
+b : Did you catch it? | Was the coal damaged?
+a : The #rat# slipped away. | The sack was chewed.
+
+scene south_road
+when topic=travel
+does tell.self / react.self / assess
+a : I know the #road# toward Southmeadow better than I say. | I sometimes watch its #cart# from the #smithy# #door#.
+b : Do you travel there? | Who are you waiting for?
+a : When work allows. | A #letter#, perhaps.
+
+scene sealed_letter
+when topic=home
+does tell.self / react.self / assess
+a : A sealed #letter# can sit longer on a #bench# than hot #iron#. | I make sure it reaches the right #hand#.
+b : Is one waiting now? | Do you open it?
+a : I will not say. | Never.
+
+scene muddy_boots
+when topic=weather
+does tell.self / react.self / assess
+a : Deep #mud# sticks to a #boot# and reaches the #forge# #floor#. | I leave a brush by the #door#.
+b : Does everyone use it? | Does rain help?
+a : When reminded. | Only outside.
+
+story first_strike [topic=work self.age>=18]
+  : My first #strike# on a hot #bar# missed the marked spot.
+  : The #master# made me slow the next ten #blows#.
+  ask : Did it improve?
+  b : A patient lesson.
+  : The #edge# came out even.
+
+story lark_roof [topic=pastimes self.age>=18]
+  : A #lark# sang above the #smithy# while I swept the #floor#.
+  : I whistled back and forgot the last corner of #ash#.
+  ask : Did it reply?
+  b : A good interruption.
+  : Long enough to bring me to the #door#.
+
+story south_letter [topic=home self.age>=18]
+  : A #letter# once arrived from the south #road# while I held a hot #bar#.
+  : I waited until the #iron# cooled before opening it.
+  ask : Was it welcome?
+  b : That must have been difficult.
+  : It was worth the wait.
+
+rule @bark_anvil
+when concept=bark
+does aside
+cooldown 8h
+say Hold the #bar# straight. | The #anvil# is clear.
+
+rule @bark_lark
+when concept=bark
+does aside
+cooldown 9h
+say There is that #lark# again. | I can whistle the next phrase.
+
+rule @bark_coal
+when concept=bark
+does aside
+cooldown 10h
+say The #coals# need a little air. | Keep the #sparks# from the #bench#.
+
+rule @bark_letter
+when concept=bark
+does aside
+cooldown 11h
+say A #letter# came on the #cart#. | I will read it after the #forge# rests.
+
+dlg @1 resident.hub : #greet#. The #anvil# is ready. | #greet#. Keep back from the #sparks#.
+dlg @2 resident.hub [topic.meeting=known] : Your #order# is on the #bench#. | The #larks# answered me again.
+dlg @1 resident.job : I strike #iron# at #self.workplace#. | I hold #tongs#, swing the #hammer#, and finish #nails#.
+dlg @1 resident.bye : #farewell#. I will bank the #coals#. | #saying.capitalize#. Watch the hot #bar#.
+graft resident.hub
+choice Why whistle at the larks? -> lark
+node lark
+say Their #song# reaches the #smithy# before the first #hammer# blow.
+free
+choice What are you making? -> iron
+choice Goodbye. -> bye
+node iron
+say A sound #hinge# today. The #iron# needs another #strike#.
+choice Back to the anvil. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #tongs# are ready. | #greet#. The #mist# is lifting.
+line @1 farewell : #farewell#. I will sweep the #floor#. | The #lark# may sing again tomorrow.
