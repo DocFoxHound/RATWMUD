@@ -1,0 +1,293 @@
+# cw134, the name remembered (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw134
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_lf_flint_downcombe
+written_by claude-codex-cw-2
+title the name remembered
+fits stage=adult|old
+prefers talk=chatty
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=frank piety=ordinary drive=steady
+quirk repeats_new_names_while_stirring_soap
+likes roast_pork swimming new_boots misty_dawns
+dislikes bad_manners flies
+fears forgetting_a_name_at_a_funeral lye_splashing_a_new_hand
+hopes steady_work_for_the_whole_house a_clean_swim_after_a_hot_shift
+topics work +0.5 family +0.3 pastimes +0.4 food +0.3 gossip -0.3
+styles comfort=direct gossip=careful refuse=blunt tease=playful
+marks oath saying
+persona #self.first# remembers each #name# spoken across the #vat#, checks the #lye# before a shift, and keeps clean #boots# for the walk #home#.
+
+words
+oath! = Lye and lake | By the clean bar
+saying! = Names sink deeper than the ladle | Test the vat before you stir
+name = name | given name
+names = names | given names
+soap = soap | clean bar
+bar = bar | soap bar
+bars = bars | soap bars
+lye = lye | caustic lye
+vat = vat | boiling vat
+vats = vats | boiling vats
+pot = pot | boiling pot
+fire = fire | low fire
+ash = ash | potash
+oil = oil | rendered fat
+ladle = ladle | long ladle
+stir = stir | stir steadily
+batch = batch | soap batch
+mould = mould | soap mould
+moulds = moulds | soap moulds
+shelf = shelf | drying shelf
+shelves = shelves | drying shelves
+water = water | clear water
+lake = lake | Glasswater
+shore = shore | lake shore
+swim = swim | lake swim
+mist = mist | dawn mist
+dawn = dawn | early morning
+boots = boots | new boots
+boot = boot | work boot
+floor = floor | boiling-house floor
+music = music | dance tune
+lesson = lesson | first lesson
+pair = pair | matched pair
+pork = pork | roast pork
+crackling = crackling | crisp crackling
+supper = supper | evening meal
+flies = flies | biting flies
+manners = manners | courtesy
+market = market | market square
+bread = bread | loaf
+price = price | asking price
+coin = coin | penny
+road = road | High Road
+city = city | Ridgemere
+house = house | cottage
+home = home | own hearth
+hand = hand | working hand
+hands = hands | working hands
+scar = scar | old scar
+
+any
+opinion @1 city against 1 : The #city# makes a person repeat a #name# three times. | I would sooner work beside people who know which #vat# is hot.
+opinion @1 drink for 1 : A cup with the crew after a clean #batch# is fair reward. | I keep my head clear near the #lye#.
+opinion @1 festivals for 3 : I danced at my wedding until my #boots# wore through. | A feast with #pork# and music deserves a full day.
+opinion @1 houses against 1 : They can afford another #hand# yet leave the bench empty. | I have seen their #soap# bought and their workers ignored.
+opinion @1 merchants against 3 : A #bread# seller sees a full #vat# and assumes I have extra #coin#. | I ask them to show what changed before raising the #price#.
+opinion @1 newcomers against 1 : I will teach a new #hand# the #lye# rules, but I fear losing hours to them. | A careless stranger near a #vat# puts us all at risk.
+opinion @1 times against 1 : The #shelves# hold plenty of #soap#, yet supper gets dearer. | Each week my #coin# seems smaller at the #market#.
+opinion @1 strangers mixed 0 : I remember a stranger's #name# after one meeting. | That does not mean I hand over the #ladle#.
+
+grown
+line @1 greet : #greet#. I know your #name#; it will come back while I stir. | #greet#. Keep back from the hot #vat#.
+line @2 greet [self.working=yes] : Speak up while the #pot# boils. | I can answer after this #batch# is stirred.
+line @3 greet [pair.band=friends|family] : I knew your step before I saw you. | Come by the cool #shelf# where we can talk.
+line @4 greet [here.time=dawn] : The #mist# arrived before the #fire# was lit. | #greet#. My #boots# are still dry.
+line @1 greet.return : I have your #name# this time. | #welcome_back#. The #bars# are set to dry.
+line @1 kin.open [pair.kin!=no] : Come in; supper will be ready soon. | Put those #boots# beside mine.
+line @1 again.open : We were naming the workers from that #batch#. | Did you remember the question you meant to ask?
+line @1 farewell : #farewell#. Keep clear of the #lye#. | #saying.capitalize#. I have to turn these #bars#.
+line @1 farewell.return : I will save a fresh #bar# for your return. | The #lake# is good for a swim after work.
+line @1 react.news : Name who saw it and I will listen. | I can set the #ladle# down.
+line @1 react.news.new : Nobody has brought that report to the #pot#. | Was the person from the #market#?
+line @1 react.news.known : I recognize part of that account. | The #name# you gave is new to me in this matter.
+line @1 react.news.doubt : #hedge#, a remembered #name# is not proof by itself. | I want to hear from the person who was there.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is a loss. The #name# will stay with me. | Sit where the #fire# cannot trouble you.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That calls for a feast and clean #boots#. | Good; let me remember the day as well as the #name#.
+line @1 answer.how : The #batch# set well and I am content. | I would like a #swim# after this shift.
+line @1 answer.how.busy [self.working=yes] : I am stirring #lye# and watching the #fire#. | There are #bars# to turn on the #shelf#.
+line @1 ask.how : Have your #hands# had a rest? | How is supper at your #home#?
+line @1 sympathise : I can listen without telling the whole #house#. | Speak plainly; I will stay.
+line @1 reassure : A poor #batch# can be made again. | We will check the #vat# before anyone is hurt.
+line @1 decline : No. The #lye# cannot be left to boil alone. | I will not pretend that #price# is fair.
+line @1 accept_decline : Then I shall leave it there. | I heard your answer.
+line @1 thank : You caught the spill before it reached the #shelf#. | I appreciate the extra #hand# at the #vat#.
+line @1 deflect_thanks : The #bar# was already cut. | I only remembered where the #ladle# had gone.
+line @1 preclose : The #fire# needs banking. | I have to check the last #mould#.
+line @1 tease [pair.band=friends] : I remember your #name# better than you remember mine. | Your #boots# look too fine for this #floor#.
+line @1 ack : #bc_right#. I shall lower the #fire#. | #bc_fair_enough#. The #bars# can wait.
+line @1 give.advice : Wash a splash of #lye# at once. | Let a new #bar# dry before wrapping it.
+line @1 warn [world.bandits=near] : The #road# has thieves near the bend. | Keep your #coin# out of view after dusk.
+scene remembered_names
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #name# stays with me after the face has gone. | I can list the workers who stood by this #vat# years ago.
+b : Does that help? | Have you ever forgotten one?
+a : At a crowded #market#, it does. | A surname, once; I asked again.
+
+scene names_across_vat
+when topic=work
+does tell.self / react.self / assess
+a : I call each #hand# by #name# before moving the #lye#. | It is safer when everyone knows who holds the #ladle#.
+b : Do they answer? | Does that prevent mistakes?
+a : Loud enough over the #pot#. | It has so far.
+
+scene scar_lesson
+when topic=work
+does tell.self / react.self / assess
+a : This old #scar# reminds me to leave room around a boiling #vat#. | I stepped too near a swinging #ladle# once.
+b : Was the burn serious? | Do you warn new workers?
+a : It healed. | On their first morning.
+
+scene lye_test
+when topic=work
+does tell.self / react.self / assess
+a : I test the #lye# before mixing it with #oil#. | A rushed #batch# can bite the #hands# that use it.
+b : How do you test it? | Can it be saved?
+a : By the old measure and a steady eye. | Before it sets, sometimes.
+
+scene slow_fire
+when topic=work
+does tell.self / react.self / assess
+a : A low #fire# keeps the #pot# from surging. | I would rather wait than scrub a boilover from the #floor#.
+b : How long do you stir? | Does it happen often?
+a : Until the mixture thickens. | Only when someone is impatient.
+
+scene mould_rows
+when topic=work
+does tell.self / react.self / assess
+a : I lay the #moulds# in straight rows on the #shelf#. | Each #bar# needs air around its edge.
+b : Do they all set alike? | How soon can you sell them?
+a : Not quite. | Once they have dried enough.
+
+scene drying_shelf
+when topic=work
+does tell.self / react.self / assess
+a : A damp #shelf# spoils good #soap# slowly. | I turn the #bars# so no side stays wet.
+b : Can you tell when one is ready? | Do you cover them?
+a : By its weight. | Only from dust.
+
+scene flies_at_pot
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : #flies.capitalize# find the warm #pot# as soon as summer begins. | I keep the #moulds# covered while the door is open.
+b : Can you drive them out? | Do they spoil the soap?
+a : With a screen and patience. | If they reach a fresh #bar#.
+
+scene misty_dawn
+when topic=weather
+does tell.self / react.self / assess
+a : A misty #dawn# makes the #lake# look closer to the #house#. | I can find the #road# by the smell of the #fire# starting.
+b : Do you like the mist? | Does it delay you?
+a : Before the #pot# heats, yes. | Only if the path is wet.
+
+scene lake_swim
+when topic=pastimes
+does tell.self / react.self / assess
+a : After a shift steeped in #lye# smell, I take a #swim#. | Cold #water# leaves the heat of the #pot# behind.
+b : Is it very cold? | Do you swim alone?
+a : Enough to wake me. | Sometimes with a friend.
+
+scene clean_shore
+when topic=pastimes
+does tell.self / react.self / assess
+a : I leave my #boots# well above the #shore# before swimming. | A dry #pair# makes the return walk pleasant.
+b : Have they been washed away? | Why new boots?
+a : Never; I place them carefully. | The old soles split at the #vat#.
+
+scene roast_pork
+when topic=food
+does tell.self / react.self / assess
+a : Roast #pork# with sharp #crackling# is worth waiting for after a shift. | I eat before the smell of #soap# returns to my head.
+b : Do you cook it? | Does your house share supper?
+a : When I have a free evening. | We pull out another chair for visitors.
+
+scene wedding_dance
+when topic=memories
+does tell.self / react.self / assess
+a : I danced hard enough at my wedding to wear through a #boot#. | The #music# lasted after the lamps burned low.
+b : Did you notice then? | Would you dance that hard again?
+a : The next morning. | With a sturdier #pair#.
+
+scene spouse_supper
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse# knows when a #batch# has gone badly by my silence. | At supper I try to leave the #vat# behind.
+b : Do you talk it over? | Does that help?
+a : Once I have eaten. | More than another hour at work.
+
+scene mother_name
+when topic=family
+does tell.self / react.self / assess
+a : My #self.mother# taught me to ask a person's #name# before asking about work. | I have kept the habit in the boiling #house#.
+b : Did she remember names too? | Do people mind?
+a : Better than I do. | Most are glad.
+
+scene bread_price
+when topic=prices
+does tell.self / react.self / assess
+a : I see #bread# grow dearer while the #soap# is sold by the same #bar#. | The #market# seller has a reason ready, every week.
+b : Do you believe it? | Can you change your price?
+a : I listen, then count my #coin#. | That is for the boss to decide.
+
+scene new_hand
+when topic=work
+does tell.self / react.self / assess
+a : I show a new #hand# where the clean #water# is kept. | The first #lesson# is how to step away from a #vat#.
+b : Do they learn quickly? | Is the job dangerous?
+a : Some do. | Only if we rush.
+
+story name_at_market [topic=memories self.age>=25]
+  : Someone spoke to me at the #market# after years away.
+  : I gave the right #name# before I found the right face in memory.
+  ask : Were they surprised?
+  b : That is a useful gift.
+  : They laughed, and then I remembered their whole family.
+
+story boiling_spill [topic=work self.age>=25]
+  : The #pot# rose too fast while I carried a fresh #mould#.
+  : I stepped back before the #lye# crossed the #floor#.
+  ask : Did anyone get hurt?
+  b : A quick step matters there.
+  : No. We lowered the #fire# and started the #batch# again.
+
+story boot_at_wedding [topic=memories self.age>=25]
+  : My wedding #music# carried on well past supper.
+  : The sole of one #boot# opened during the last dance.
+  ask : Did you stop dancing?
+  b : A new pair sounds deserved.
+  : After that tune. I still keep better #boots# for festivals.
+
+rule @bark_names
+when concept=bark
+does aside
+cooldown 8h
+say I know that #name# from somewhere. | A face returns when I say the #name# aloud.
+
+rule @bark_vat
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say Keep a #hand# clear of the #vat#. | The #lye# wants another check.
+
+rule @bark_boots
+when concept=bark
+does aside
+cooldown 10h
+say These #boots# still hold the road well. | I should scrape the #floor# before leaving.
+
+rule @bark_swim
+when concept=bark here.time=dusk
+does aside
+cooldown 11h
+say The #lake# might clear my head tonight. | One #swim# after this #batch#.
+
+dlg @1 resident.hub : #greet#. Keep back from the #vat# while we speak. | #greet#. Your #name# is coming to me.
+dlg @2 resident.hub [topic.meeting=known] : I knew I remembered you; the #bars# have dried since. | Back again? The #pot# is cool now.
+dlg @1 resident.job : I help make #soap# at #self.workplace#, from the #pot# to the #moulds#. | I mind the #lye#, stir the #vat#, and turn the drying #bars#.
+dlg @1 resident.bye : #farewell#. Mind the hot #pot# on your way. | #saying.capitalize#. I must finish this #batch#.
+graft resident.hub
+choice Do you really remember every name? -> names
+node names
+say Most of them. Say yours once and I will try to keep it, even over the noise of the #pot#.
+free
+choice Where do you swim? -> lake
+choice Back to the soap. -> hub
+node lake
+say At a clear place along the #shore#, after I have washed the #lye# from my #hands#.
+choice Back to the soap. -> hub
+choice Goodbye. -> bye
