@@ -1,0 +1,341 @@
+# lf122, the storm-wakeful granary hand (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf122
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for cty_tamsin_oakshaw
+written_by claude-codex-lf-1
+title the storm-wakeful granary hand
+fits stage=adult|old
+prefers job=farmer
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk sleeps_badly_before_storms
+likes oatcakes dice sharp_knife warm_rain
+dislikes early_bells stale_bread
+fears a_storm_spoiling_the_grain a_house_secret_spoken_in_a_crowd
+hopes a_dry_granary_through_autumn a_quiet_night_before_the_next_storm
+topics work +0.5 weather +0.4 pastimes +0.3 home +0.2
+styles comfort=practical gossip=cautious refuse=plain tease=dry
+marks oath saying
+persona #self.first# hauls #grain# at the #granary#, lies awake ahead of a #storm#, and keeps one dangerous #story# behind closed lips.
+
+words
+oath! = Grain and rain | By the dry loft
+saying! = Cover the sacks before the clouds | A sharp blade needs a steady hand
+farm = farm | Longmead farm
+field = field | open field
+fields = fields | open fields
+granary = granary | dry granary
+loft = loft | grain loft
+barn = barn | wide barn
+sack = sack | grain sack
+sacks = sacks | grain sacks
+grain = grain | stored grain
+corn = corn | milled corn
+wheat = wheat | dry wheat
+barley = barley | field barley
+sheaf = sheaf | cut sheaf
+sheaves = sheaves | bound sheaves
+stack = stack | grain stack
+stacks = stacks | covered stacks
+bin = bin | grain bin
+bins = bins | storage bins
+scoop = scoop | wooden scoop
+spade = spade | field spade
+knife = knife | sharp knife
+blade = blade | clean blade
+edge = edge | keen edge
+rope = rope | binding rope
+cart = cart | grain cart
+wagon = wagon | supply wagon
+wheel = wheel | cart wheel
+road = road | firm road
+path = path | field path
+mud = mud | road mud
+boot = boot | work boot
+boots = boots | work boots
+hand = hand | farm hand
+hands = hands | working hands
+work = work | farm work
+wage = wage | day wage
+price = price | grain price
+merchant = merchant | grain merchant
+market = market | town market
+house = house | great house
+houses = houses | great houses
+secret = secret | kept secret
+story = story | old story
+stories = stories | half-told stories
+friend = friend | close friend
+neighbour = neighbour | near neighbour
+stranger = stranger | passing stranger
+home = home | shared home
+door = door | cottage door
+window = window | small window
+roof = roof | sound roof
+bed = bed | narrow bed
+sleep = sleep | broken sleep
+night = night | restless night
+morning = morning | early morning
+dawn = dawn | first dawn
+evening = evening | late evening
+day = day | long day
+hour = hour | working hour
+bell = bell | early bell
+bells = bells | early bells
+storm = storm | coming storm
+storms = storms | passing storms
+thunder = thunder | distant thunder
+cloud = cloud | dark cloud
+clouds = clouds | dark clouds
+sky = sky | stormy sky
+rain = rain | warm rain
+wind = wind | field wind
+dry = dry | properly dry
+water = water | fresh water
+oatcake = oatcake | buttered oatcake
+oatcakes = oatcakes | warm oatcakes
+butter = butter | soft butter
+bread = bread | day bread
+loaf = loaf | stale loaf
+meal = meal | evening meal
+table = table | shared table
+dice = dice | worn dice
+die = die | small die
+throw = throw | quick throw
+game = game | dice game
+coin = coin | spare coin
+festival = festival | town festival
+dance = dance | town dance
+watch = watch | town watch
+city = city | distant city
+wagons = wagons | loaded wagons
+days = days | working days
+tea = tea | hot tea
+handful = handful | small handful
+floor = floor | granary floor
+bench = bench | work bench
+carts = carts | grain carts
+
+any
+opinion @1 city mixed 1 : The #city# can buy a full #wagon# of #grain#. | I would ask who keeps the difference.
+opinion @1 festivals for 1 : Everyone leaves the #field# for the #festival#. | I can finally hear the whole town talking.
+opinion @1 houses against 1 : I have worked below a #house# wall without seeing who lives inside. | Their #grain# still passes through our #hands#.
+opinion @1 merchants against 2 : The #price# of a #loaf# climbs while my #wage# stays put. | The #merchant# always finds a reason.
+opinion @1 newcomers mixed 1 : More #hands# may help when the #cart# is full. | I will see whether they work through #rain#.
+opinion @1 road for 1 : A firm #road# gets the #grain# to #market#. | I keep my wits where the #mud# begins.
+opinion @1 times against 1 : One more #sack# each #day# and no more #coin#. | I can count that without a #bin#.
+opinion @1 watch mixed 0 : The #watch# keeps #wagons# moving at #night#. | I would rather it mind its own questions.
+line @1 greet : #greet#. I have the #grain# to move. | #greet#. Did you hear that #thunder#?
+line @2 greet [pair.band=friends|family] : There are #oatcakes# if you came hungry. | Come see what the #storm# did to the #field#.
+line @1 greet.return : The #sacks# are still waiting. | You caught the #clouds# still gathering over the #field#.
+line @1 kin.open [pair.kin!=no] : Come inside; the #roof# is holding. | I saved a #meal# after the last #cart#.
+line @1 again.open : I was counting the #bins#. | Did you ask about the #knife#?
+line @1 farewell : #farewell#. Keep your #boots# dry. | I must cover the #stack#.
+line @1 farewell.return : The #storm# may have passed when you return. | I will have another #game# ready.
+line @1 react.news : Tell me straight while I tie this #rope#. | Did it happen near the #road#?
+line @1 react.news.new : No one unloading #grain# has mentioned it. | Who brought the account?
+line @1 react.news.known : I heard the start while unloading #grain#. | You have added the ending.
+line @1 react.news.doubt : I would check who counted the #sacks#. | The #wagon# load may tell it differently.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. I can put the #knife# away. | Come under the #roof# before you speak.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good; we should bring out the #oatcakes#. | That will cheer the #table# tonight.
+line @1 answer.how : I slept little, but the #grain# stayed dry. | Better since the #clouds# cleared.
+line @1 answer.how.busy [self.working=yes] : I am lifting this #sack# onto the #cart#. | Wait until I close the #bin#.
+line @1 ask.how : Did you sleep through the #storm#? | Has the #road# treated you kindly?
+line @1 sympathise : Sit while I bring the #oatcakes#. | A little quiet under this #roof# may help.
+line @1 reassure : The #granary# is dry; we can sort the rest. | The #storm# has not reached us yet.
+line @1 decline : I cannot leave open #bins# in this #rain#. | I will not repeat that #story# in a crowd.
+line @1 accept_decline : All right; I will leave these #sacks# under cover. | Let us leave the #cart# until the #sky# clears.
+line @1 thank : The #cart# stayed still because you braced its #wheel#. | That #game# gave me a better #evening#.
+line @1 deflect_thanks : I had the #knife# ready anyway. | The #grain# needed moving before #rain#.
+line @1 preclose : I must check the #roof# over the #bins#. | The #bells# will start too early tomorrow.
+line @1 tease [pair.band=friends] : Your #die# is as restless as I am before #thunder#. | The #knife# cuts straighter than that tale.
+line @1 ack : #bc_right#. The #stack# is covered. | #bc_fair_enough#. I will count the #sacks#.
+line @1 give.advice : Keep a sharp #knife# for the #rope#, not for rushing. | Cover #grain# before the first #cloud# arrives.
+line @1 warn [world.bandits=near] : Let the #cart# go with another #wagon#. | Keep to the lit #road# at #night#.
+scene dry_bin
+when topic=work
+does tell.self / react.self / assess
+a : I check the bottom of each #bin# before filling it with #grain#. | A damp board can spoil a full #sack#.
+b : How can you tell? | Who repairs it?
+a : By the smell. | The #farm# #hands#.
+
+scene grain_sack
+when topic=work
+does tell.self / react.self / assess
+a : I carry #sacks# with the seam facing out. | A torn one can leave a trail to the #cart#.
+b : Have you lost grain? | Do you mend them?
+a : A little. | With spare #rope#.
+
+scene loft_ladder
+when topic=work
+does tell.self / react.self / assess
+a : The #loft# takes the driest #grain# first. | I set the #stacks# apart so air can pass.
+b : Does that help? | Who climbs up?
+a : Through a wet season. | I do if needed.
+
+scene sharp_knife
+when topic=work
+does tell.self / react.self / assess
+a : A sharp #knife# cuts binding #rope# without dragging the #sheaf# apart. | I keep its #edge# covered on the #cart#.
+b : Do others borrow it? | Who sharpens it?
+a : If they return it. | I do.
+
+scene field_cart
+when topic=work
+does tell.self / react.self / assess
+a : I load the #cart# so the #wheel# does not sink beside the #field#. | The heaviest #sacks# go over the axle.
+b : Does it ride better? | Who drives?
+a : On a dry #road#. | Whichever #hand# is free.
+
+scene covered_stack
+when topic=work
+does tell.self / react.self / assess
+a : A #stack# needs a cover before #rain# touches its top. | I tie the lower #rope# when the #wind# rises.
+b : Does it stay on? | Do you check at night?
+a : If I knot it well. | Before a #storm#.
+
+scene granary_count
+when topic=work
+does tell.self / react.self / assess
+a : I count the #sacks# going in and the #bins# coming full. | The #merchant# counts only what leaves.
+b : Do the sums match? | Who keeps the record?
+a : Most #days#. | I mark each #bin#.
+
+scene storm_ears
+when topic=weather
+does tell.self / react.self / assess
+a : My ears find #thunder# before the first #cloud# seems dark. | I sleep badly whenever the #wind# turns that way.
+b : Does it always storm? | Can you rest anyway?
+a : Not always. | After the #rain# begins.
+
+scene sleepless_night
+when topic=weather
+does tell.self / react.self / assess
+a : I lay awake before the last #storm# listening to the #roof#. | The #granary# was dry at #dawn#, but I was not rested.
+b : Did you go check? | Does anyone know?
+a : Twice. | They see me yawning.
+
+scene warm_rain
+when topic=weather
+does tell.self / react.self / assess
+a : After a dry week, warm #rain# settles the dust along the #road#. | I can smell the #field# from the #door#.
+b : Does the grain need it? | Do you walk in it?
+a : Before harvest. | When work allows.
+
+scene early_bells
+when topic=home
+does tell.self / react.self / assess
+a : The #bells# sound before #dawn# when I have barely slept. | I begin counting #sacks# in my head to drown them out.
+b : Does that work? | Why so early?
+a : Never. | Ask the bell keeper.
+
+scene stale_bread
+when topic=food
+does tell.self / react.self / assess
+a : A stale #loaf# is poor company after a long #day#. | I would rather have an #oatcake# with #butter#.
+b : Do you waste it? | Who bakes the cakes?
+a : I soften it. | Someone at home.
+
+scene dice_evening
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #game# of #dice# keeps my #hands# busy after the #cart# is unloaded. | I do not wager a #wage# on it.
+b : Do you win? | What do you stake?
+a : Now and then. | A cup of #tea#.
+
+scene knife_handle
+when topic=pastimes
+does tell.self / react.self / assess
+a : I keep the #knife# clean even when the #field# work is muddy. | A sound #blade# is worth remembering where I left it.
+b : Do you lose it? | Do others want it?
+a : Not twice. | They can ask.
+
+scene house_story
+when topic=memories
+does tell.self / react.self / assess
+a : I know a #story# about a great #house# that should stay quiet. | I have never found a safe reason to tell it.
+b : Is it true? | Will you tell me?
+a : As far as I know. | Not here.
+
+scene shared_table
+when topic=home
+does tell.self / react.self / assess
+a : Our #table# fills with the other #hands# after the #field# empties. | I hear every account of the #day# before supper is done.
+b : Do you speak too? | Is it loud?
+a : When it is useful. | Often.
+
+scene festival_talk
+when topic=home
+does tell.self / react.self / assess
+a : The #festival# brings every worker from the #fields# into one street. | I can hear the #stories# without leaving the #table#.
+b : Do you enjoy it? | Do you dance?
+a : For an #hour#. | If the #storm# holds off.
+
+story storm_watch [topic=weather self.age>=18]
+  : I woke before a #storm# and heard the #wind# against the #roof#.
+  : I walked to the #granary# to check the #grain#.
+  ask : Was it dry?
+  b : A restless night.
+  : Yes; I slept only after the #rain# began.
+
+story cut_rope [topic=work self.age>=18]
+  : A binding #rope# caught under a #cart# #wheel#.
+  : I used my #knife# to free it before the #sacks# fell.
+  ask : Did the grain spill?
+  b : Good timing.
+  : Only a #handful# from one seam.
+
+story house_whisper [topic=memories self.age>=18]
+  : I heard something about a great #house# while moving #grain#.
+  : I have kept the #story# out of the #market# since.
+  ask : Will you tell it?
+  b : Some accounts are dangerous.
+  : Not while anyone else can hear.
+
+rule @bark_storm
+when concept=bark
+does aside
+cooldown 8h
+say Those #clouds# are turning. | Cover the #stack# before #rain#.
+
+rule @bark_grain
+when concept=bark
+does aside
+cooldown 9h
+say This #bin# is dry. | Keep the #sacks# above the #floor#.
+
+rule @bark_knife
+when concept=bark
+does aside
+cooldown 10h
+say My #knife# is on the #bench#. | Cut the #rope# cleanly.
+
+rule @bark_dice
+when concept=bark
+does aside
+cooldown 11h
+say One more #throw# before bed. | That #die# keeps finding the floor.
+
+dlg @1 resident.hub : #greet#. The #grain# is going into the #bins#. | #greet#. Do you hear the #storm#?
+dlg @2 resident.hub [topic.meeting=known] : The #sacks# are still dry. | The #bells# have yet to sound since you left.
+dlg @1 resident.job : I work the #grain# at #self.workplace#. | I load #carts#, cover #stacks#, and check the #bins#.
+dlg @1 resident.bye : #farewell#. I must tie the #stack#. | #saying.capitalize#. Watch the #clouds#.
+graft resident.hub
+choice Why are you awake before storms? -> storm
+node storm
+say The #wind# changes before the #clouds# gather. My sleep follows it.
+free
+choice What is that House story? -> story
+choice Goodbye. -> bye
+node story
+say It is a #story# I should keep quiet. This #granary# has too many ears.
+choice Back to the sacks. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #cart# is ready. | #greet#. I saved an #oatcake#.
+line @1 farewell : #farewell#. One last look at the #roof# before I rest. | The #dice# can wait until later.
