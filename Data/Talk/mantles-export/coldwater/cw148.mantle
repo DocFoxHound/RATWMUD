@@ -1,0 +1,464 @@
+# cw148, the patient counter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw148
+revision 1
+state ready
+dialect coldwater
+accent broad light
+tier full
+written_for tn_cw_myrtle_stillford
+written_by claude-codex-cw-2
+title the patient counter
+fits stage=adult|old
+prefers role=merchant
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk swims_in_the_lake_even_in_autumn
+likes roast_pork wrestling full_larder frosty_mornings
+dislikes waiting rats
+fears a_larder_emptied_by_winter a_shape_beneath_the_ice
+hopes a_full_shelf_for_every_neighbour fair_wagons_through_the_snow
+topics work +0.5 prices +0.4 home +0.3 food +0.3 weather +0.2
+styles comfort=warm gossip=reluctant refuse=plain tease=dry
+marks oath saying
+persona #self.first# keeps the #shelves# stocked, waits patiently for customers but dislikes late #wagons#, and swims in autumn #water#.
+
+words
+oath! = Shelf and shore | By the last good loaf
+saying! = Count what is left before promising more | A full shelf is a neighbour's comfort
+shop = shop | village store
+store = store | general store
+counter = counter | front counter
+shelf = shelf | wooden shelf
+shelves = shelves | wooden shelves
+larder = larder | full larder
+stock = stock | store stock
+goods = goods | everyday goods
+order = order | written order
+orders = orders | written orders
+list = list | stock list
+ledger = ledger | trade ledger
+page = page | ledger page
+mark = mark | pencil mark
+scale = scale | counter scale
+weight = weight | measured weight
+measure = measure | full measure
+price = price | posted price
+prices = prices | posted prices
+coin = coin | earned coin
+change = change | correct change
+customer = customer | waiting customer
+customers = customers | neighbours shopping
+neighbour = neighbour | local neighbour
+stranger = stranger | passing traveller
+visitor = visitor | road visitor
+seller = seller | wagon seller
+hand = hand | store hand
+hands = hands | helping hands
+wagon = wagon | supply wagon
+wagons = wagons | supply wagons
+road = road | High Road
+wheel = wheel | wagon wheel
+crate = crate | supply crate
+crates = crates | supply crates
+barrel = barrel | supply barrel
+bag = bag | grain bag
+bags = bags | grain bags
+flour = flour | sack flour
+bread = bread | fresh bread
+loaf = loaf | bread loaf
+pork = pork | roast pork
+crackling = crackling | browned crackling
+plate = plate | supper plate
+table = table | supper table
+fire = fire | hearth fire
+rat = rat | larder rat
+rats = rats | larder rats
+trap = trap | safe trap
+door = door | store door
+lock = lock | sound lock
+key = key | store key
+stairs = stairs | upstairs steps
+shoes = shoes | wet shoes
+home = home | upstairs home
+roof = roof | sound roof
+lake = lake | Glasswater
+water = water | cold water
+shore = shore | lakeshore
+swim = swim | autumn swim
+stroke = stroke | swimming stroke
+autumn = autumn | leaf season
+winter = winter | cold season
+frost = frost | morning frost
+morning = morning | early morning
+ice = ice | lake ice
+shape = shape | dark shape
+shadow = shadow | moving shadow
+rain = rain | shower
+wind = wind | lake wind
+sun = sun | first sun
+green = green | village green
+wrestling = wrestling | fair wrestling
+bout = bout | wrestling bout
+grip = grip | steady grip
+bench = bench | shop bench
+watch = watch | town watch
+city = city | Ridgemere
+market = market | market square
+hour = hour | waiting hour
+day = day | working day
+night = night | late night
+week = week | full week
+floor = floor | plank floor
+load = load | wagon load
+light = light | lamp light
+festival = festival | feast day
+bell = bell | chapel bell
+
+any
+opinion @1 city against 1 : The #city# makes a neighbour into one more elbow in a crowd. | I know who comes through my #door# here.
+opinion @1 dole for 1 : A hungry #home# needs #bread# today. | I will put a small #bag# aside for someone short of #coin#.
+opinion @1 drink mixed 0 : A cup after the #shop# closes is pleasant. | I will not let it muddle the #ledger#.
+opinion @1 festivals mixed 0 : A #festival# brings travellers past my #counter#. | I still want an #hour# off to watch the #bout#.
+opinion @1 houses for 1 : Their orders can keep the #wagons# moving. | I ask them to pay the #price# they agreed.
+opinion @1 merchants for 1 : I know what a #wagon# costs before it reaches the #shelf#. | A fair #seller# shows the #weight# without being asked.
+opinion @1 newcomers for 2 : I would teach a new #hand# the #scale# if the work grew. | More customers mean more stories from the #road#.
+opinion @1 road against 1 : A late #wagon# leaves my #shelves# thin. | I need a reliable #road# more than a grand promise.
+opinion @1 strangers for 2 : A #stranger# may need #bread# as much as a familiar face. | Travellers bring half my trade and most of my news.
+opinion @1 times for 2 : The #counter# has been busy and the #stock# holds. | I can keep the #larder# full without raising every #price#.
+opinion @1 watch for 1 : The #watch# keeps light #hands# from the #counter#. | A fair witness can settle a quarrel over missing #coin#.
+
+grown
+line @1 greet : #greet#. Look through the #shelves# at your own pace. | #greet#. Tell me which #goods# you need.
+line @2 greet [self.working=yes] : Speak as I tally this #crate#. | Let me set the #scale# level first.
+line @3 greet [pair.band=strangers] : The #prices# are written by the #counter#. | Come inside and warm your #hands#.
+line @4 greet [pair.band=friends|family] : There is #pork# left if you missed supper. | You may sit behind the #counter# for a moment.
+line @5 greet [here.time=dawn] : The #door# latch caught a little #frost#. | I opened before the first #wagon# reached town.
+line @6 greet [here.time=night] : The #store# is closed; is someone hurt? | Come into the #light# if you need help.
+line @1 greet.return : Your requested #order# is in my #ledger#. | #welcome_back#. The #wagon# arrived since your last visit.
+line @2 greet.return [pair.band=friends|family] : I have a warmer #plate# upstairs. | Your place by the #fire# is still clear.
+line @1 kin.open [pair.kin!=no] : Come upstairs; the #fire# is on. | Leave the wet #shoes# by the #door#.
+line @1 again.open : We were counting the #bags# when you left. | Do you need another look at the #price#?
+line @1 farewell : #farewell#. Mind the #stairs# outside. | #saying.capitalize#. The #key# belongs upstairs now.
+line @1 farewell.return : I will have another #list# ready next time. | Come back when the #wagon# has been unpacked.
+line @1 react.news : Let me put this #ledger# aside. | Speak over the #scale#; I am following you.
+line @1 react.news.new : None of the #wagon# hands brought that word. | When did it happen?
+line @1 react.news.known : A #customer# mentioned the beginning of it. | That explains the missing part.
+line @1 react.news.doubt : I will ask who witnessed it. | A long #road# can stretch a short story.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is painful. Take the #bench# and breathe. | The #list# can stay open while you collect yourself.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news. I hope their #table# is full. | That calls for a better supper than I planned.
+line @1 answer.how : The #shop# has been busy and I am well. | I had a cold #swim# and a warm #fire# afterward.
+line @1 answer.how.busy [self.working=yes] : Two #crates# are waiting to be counted. | The #scale# has not rested today.
+line @1 ask.how : Have you had what you need for supper? | Did the #road# keep you warm?
+line @1 sympathise : Sit here while I finish this #order#. | The #counter# will manage while I listen.
+line @1 reassure : We can find a smaller #bag# that suits your #coin#. | The next #wagon# may bring what is missing.
+line @1 decline : I cannot promise #goods# I do not have. | No, I will not change the #weight# to please a buyer.
+line @1 accept_decline : Fair enough. You may look again later. | I shall leave your #order# on the #page# for now.
+line @1 thank : You lifted the #crate# when my #hands# were full. | That saved me a climb down the #stairs#.
+line @1 deflect_thanks : It was already on my #list#. | A neighbour deserves an honest #measure#.
+line @1 preclose : I need to tally the #shelves#. | The #door# lock must be checked before I go up.
+line @1 tease [pair.band=friends] : Your #grip# would lose a #bout# to this #bag#. | You are studying the #price# as though it were a riddle.
+line @1 ack : #bc_right#. I will mark the #page#. | #bc_fair_enough#. The #crate# stays here.
+line @1 give.advice : Count the #change# before leaving a busy #market#. | Keep #bread# high where #rats# cannot reach it.
+line @1 warn [world.bandits=near] : Stay with the #wagons# on the #road#. | I would keep the #shop# #door# shut after dark.
+line @2 ask.how [pair.band=friends|family] : Is your #larder# holding? | Did you find time to rest after the #bout#?
+line @2 reassure [other.hungry=yes] : Have a #loaf# now; we can settle the #coin# afterward. | Come near the #fire# and eat first.
+line @2 thank [pair.band=friends|family] : You stayed until the last #barrel# was shelved. | I know you checked the #lock# for me.
+line @2 answer.how [here.season=autumn] : The #lake# is cold, but the #swim# still helps. | The #shelves# are full enough for the cold season.
+line @2 give.advice [other.stage=young|adolescent] : Keep your #hands# off the #scale# until I show you. | Close the #larder# #door# so the #rats# stay out.
+scene morning_frost
+when topic=weather here.season=winter
+does tell.self / react.self / assess
+a : A frosty #morning# makes the #store# #lock# stiff. | I warm the #key# in my #hand# before opening.
+b : Does it help? | Do customers wait outside?
+a : Often. | I put the #bench# near the #fire# for them.
+
+scene autumn_swim
+when topic=pastimes here.season=autumn
+does tell.self / react.self / assess
+a : I take a short #swim# even when autumn cools the #lake#. | The cold gives me a clear head before I count the #stock#.
+b : Do you stay long? | Is anyone with you?
+a : One length near the #shore#. | Someone knows when I go.
+
+scene under_ice
+when topic=memories self.age>=25
+does tell.self / react.self / assess
+a : Through winter #ice#, I watched a dark #shape# pass beneath the #lake#. | The #shadow# moved without disturbing the pale surface.
+b : Did the shadow have a clear outline? | Did you see it again?
+a : No boat could pass there. | Never as clearly.
+
+scene full_larder
+when topic=home
+does tell.self / react.self / assess
+a : I feel easier when the #larder# holds #bread# and a little #pork#. | A stocked #shelf# means I can feed a visitor without counting bites.
+b : Do you keep much aside? | Does it ever run low?
+a : Enough for a hard #week#. | When a #wagon# is late.
+
+scene larder_rats
+when topic=home
+does tell.self / react.self / assess
+a : Scratches beside the #larder# #door# told me a #rat# had found the #bags#. | The little thieves can chew through a poor latch.
+b : Did you set a #trap#? | Was anything spoiled?
+a : One where no pup could reach. | A corner of #flour#.
+
+scene roast_pork
+when topic=food
+does tell.self / react.self / assess
+a : Roast #pork# is worth waiting for when the #crackling# comes out right. | After closing, I bring the #plate# upstairs to the #fire#.
+b : Did you tend the roast yourself? | Is it often on the table?
+a : When there is time. | On good #market# days.
+
+scene wrestling_green
+when topic=pastimes
+does tell.self / react.self / assess
+a : A fair #wrestling# #bout# on the #green# clears my head. | I watch the #grip# before I watch who falls.
+b : Do you join in? | What makes a fair bout?
+a : When the #shop# is shut. | Both knowing when to release.
+
+scene late_wagon
+when topic=work
+does tell.self / react.self / assess
+a : I can wait for a #customer# choosing carefully. | A late #wagon# is harder; it leaves an empty #shelf# no patience can fill.
+b : Do you know when it is coming? | Can you borrow stock?
+a : I ask along the #road#. | Sometimes from a #neighbour#.
+
+scene posted_prices
+when topic=prices
+does tell.self / react.self / assess
+a : I write each #price# where a #customer# can read it. | A fair #measure# should not depend on who asks.
+b : Do you change them often? | What if someone argues?
+a : When the #wagon# cost changes. | I show the #weight#.
+
+scene careful_change
+when topic=prices
+does tell.self / react.self / assess
+a : I count #change# on the #counter#, not inside my #hand#. | Both of us can see every #coin# that way.
+b : Does that slow the line? | Have you found a mistake?
+a : Less than a quarrel. | Once, and I corrected it.
+
+scene scale_balance
+when topic=work
+does tell.self / react.self / assess
+a : The #scale# must stand level before I weigh a #bag#. | A sloping #counter# can make honest #goods# look short.
+b : Do buyers notice? | Can you adjust it?
+a : Some watch closely. | With the small wooden foot.
+
+scene stock_list
+when topic=work
+does tell.self / react.self / assess
+a : I mark the #list# when a #crate# is opened, not when the #wagon# arrives. | A sealed #crate# can hold less than the order promised.
+b : Has that happened? | Do you return a short #crate#?
+a : More than once. | I send the #seller# a true count.
+
+scene helping_hand
+when topic=work
+does tell.self / react.self / assess
+a : A #hand# can carry #crates# while I keep the #counter# moving. | I show where each #bag# belongs before asking for speed.
+b : Do they learn quickly? | Why the exact places?
+a : Once the #shelves# make sense. | So nothing gets lost.
+
+scene shop_floor
+when topic=work
+does tell.self / react.self / assess
+a : Each morning I move the loose #crates# off the #floor#. | A rolling #barrel# can surprise someone reaching for #bread#.
+b : Do you move everything? | Is the room crowded?
+a : The heavy things first. | Only when the #wagon# comes.
+
+scene upstairs_home
+when topic=home
+does tell.self / react.self / assess
+a : My #home# is above the #shop#, so I hear the #door# in my sleep. | I still like knowing the #shelves# are close.
+b : Can you rest there? | Do people come after hours?
+a : Once the #lock# is set. | For a true need, sometimes.
+
+scene travellers_news
+when topic=news
+does tell.self / react.self / assess
+a : A #visitor# from the #road# brings a story with the #goods#. | I listen while weighing the #bag# and ask what was seen firsthand.
+b : Do you believe much of it? | Do you pass it on?
+a : After another traveller confirms it. | Only what affects the town.
+
+scene hungry_neighbour
+when topic=home
+does tell.self / react.self / assess
+a : If a #neighbour# has no supper, I can spare a #loaf#. | We may settle the #coin# when the #table# is no longer empty.
+b : Does everyone repay you? | Do you keep a record?
+a : Most do. | A small #mark# in the #ledger#.
+
+scene road_cost
+when topic=prices
+does tell.self / react.self / assess
+a : A #wagon# delayed on the #road# can raise the cost of each #bag#. | I explain that before a #customer# thinks I chose it for pleasure.
+b : Can you absorb some of it? | Do they understand?
+a : When the #stock# allows. | Some do after seeing the #list#.
+
+scene bare_shelf
+when topic=work
+does tell.self / react.self / assess
+a : An empty #shelf# needs a plain sign, not a promise. | I tell a #customer# what I have and when I expect the #wagon#.
+b : What if it never comes? | Can they buy something else?
+a : I give a new date. | I show what is available.
+
+scene festival_counter
+when topic=home here.day=festival
+does tell.self / react.self / assess
+a : On a #festival# day I close the #counter# long enough to watch a #bout#. | I return before the last #wagon# leaves.
+b : Do customers mind? | Who wins?
+a : They have the hours posted. | The steadier wrestler usually does.
+
+scene first_frost
+when topic=weather here.season=autumn
+does tell.self / react.self / assess
+a : The first #frost# marks which #goods# must move away from the #door#. | I carry the softer #bread# toward the #fire#.
+b : Does the cold spoil it? | Do you work alone?
+a : It dries the crust. | A #hand# helps with the #crates#.
+
+scene watch_counter
+when topic=work
+does tell.self / react.self / assess
+a : A #hand# lifting #goods# from the wrong #shelf# gets my attention. | I ask openly before calling the #watch#.
+b : Has someone stolen from you? | Why ask first?
+a : Once. | A mistake deserves a chance to be named.
+
+scene new_worker
+when topic=work
+does tell.self / react.self / assess
+a : I give a new #hand# a small #list# and let the #shelves# teach the rest. | When the first #order# is right, I trust the next one.
+b : Do you correct mistakes? | What is hardest?
+a : Before they travel to a #customer#. | Remembering which #crate# is open.
+
+scene lake_after_close
+when topic=pastimes
+does tell.self / react.self / assess
+a : After the #shop# closes, the #lake# holds no questions about #prices#. | A short #swim# gives me that quiet.
+b : Even when it is cold? | Do you go far?
+a : Into autumn. | Just beyond the near #shore#.
+
+scene market_road
+when topic=travel
+does tell.self / react.self / assess
+a : The #market# has more noise than my #counter#. | I go to compare the #prices# and come back with useful #goods#.
+b : Do you enjoy it? | Do sellers know you?
+a : The work, yes. | Enough to speak plainly.
+
+scene store_key
+when topic=memories
+does tell.self / react.self / assess
+a : I once left the #key# upstairs while a #wagon# waited at the #door#. | I climbed back, opened, and gave the driver the #bench#.
+b : Was the driver cross? | Is there a second #key# now?
+a : Only tired. | Somewhere safe.
+
+scene quiet_customer
+when topic=smalltalk
+does tell.self / react.self / assess
+a : Some #customers# take a long #hour# deciding between two #bags#. | I give them room unless another wolf is waiting.
+b : Does it try your patience? | Do they finally choose?
+a : Less than a missing #wagon#. | Usually the first #bag#.
+
+story ice_shadow [topic=memories self.age>=25]
+  : Beneath the #ice#, a dark #shape# crossed my path along the #shore#.
+  : The #shadow# disappeared before I could call anyone from the #shop#.
+  ask : What made it?
+  b : You must have stopped walking.
+  : I never found an answer. I watched that place for weeks.
+
+story wrong_weight [topic=work self.age>=25]
+  : A #bag# looked full on the #shelf# but weighed short on the #scale#.
+  : I opened it, found a torn corner, and gave the #customer# a new #bag#.
+  ask : Was much lost?
+  b : Good that you checked.
+  : Enough to notice, not enough to waste.
+
+story late_wagon [topic=work self.age>=25]
+  : A #wagon# came after the #shop# should have closed.
+  : I opened the #door#, counted the #crates#, and set out #bread# for the morning.
+  ask : Did you sleep?
+  b : You rescued the shelves.
+  : A little. The #frost# woke me early.
+
+story first_bout [topic=pastimes self.age>=25]
+  : I joined a #wrestling# #bout# on the #green# after a long #day# at the #counter#.
+  : I went for a quick #grip#, lost my footing, and learned to wait for the turn.
+  ask : Did you try again?
+  b : You found a slower way.
+  : Next #festival#, and it went better.
+
+story rat_track [topic=home self.age>=25]
+  : I found a #rat# track beside the #larder# after supper.
+  : I moved the #flour#, set a #trap#, and checked every #door# seam.
+  ask : Did it return?
+  b : You were thorough.
+  : Not to the #larder#.
+
+rule @bark_list
+when concept=bark
+does aside
+cooldown 8h
+say The #list# needs one more #mark#. | This #crate# belongs on the upper #shelf#.
+
+rule @bark_wagon
+when concept=bark
+does aside
+cooldown 9h
+say Where is that #wagon# today? | I have room for the next #load#.
+
+rule @bark_larder
+when concept=bark
+does aside
+cooldown 10h
+say The #larder# is holding well. | Those #rats# cannot have my #flour#.
+
+rule @bark_counter
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say I will count your #change# here. | Let the #scale# settle first.
+
+rule @bark_swim
+when concept=bark here.season=autumn
+does aside
+cooldown 11h
+say One short #swim# before supper. | The #lake# has grown colder.
+
+rule @bark_frost
+when concept=bark here.season=winter
+does aside
+cooldown 12h
+say The #frost# caught the #lock#. | Bring that #bread# closer to the #fire#.
+
+dlg @1 resident.hub : #greet#. You can speak beside the #counter#. | #greet#. I am counting the #stock# just now.
+dlg @2 resident.hub [topic.meeting=known] : I remember the #goods# you asked for. | Back again? The #wagon# has brought fresh #bags#.
+dlg @3 resident.hub [here.time=night] : I closed the #shop# an #hour# ago. Is it urgent? | I am upstairs now; speak from the #door#.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : State what you need clearly at the #counter#. | We can speak while the #door# stays open.
+dlg @1 resident.job : At #self.workplace# I tally #stock#, weigh #goods#, and keep the #shelves# filled. | I weigh the #goods#, set the #prices#, and order from the #wagons#.
+dlg @2 resident.job [self.working=yes] : I am counting a new #crate# for the #shelves#. | This #order# needs a final #mark#.
+dlg @1 resident.bye : #farewell#. Watch the #stairs# outside. | #saying.capitalize#. I must check the #lock#.
+dlg @2 resident.bye [here.time=night] : Good night. The #road# is cold. | I will open again in the #morning#.
+dlg @1 shop.greet [here.shop=open] : #greet#. Look at today's #stock# on the #shelves#. | Come to the #counter# and I will weigh the #goods# you choose.
+dlg @2 shop.greet [here.shop=bare] : There is nothing on the #shelves# to sell today. I can look at goods you brought. | I have no #stock# to sell until the #wagon# comes; have you goods for me?
+dlg @3 shop.greet [here.shop=asleep] : Mm... #crates# in the morning... | I am asleep upstairs. Come when the #shop# opens.
+dlg @4 shop.greet [here.shop=open topic.meeting=known] : Back for the #goods# we discussed? | I know you. The #wagon# brought new #stock#.
+dlg @5 shop.greet [here.shop!=bare here.shop!=asleep] : #greet#. Look along the #shelves# and ask me for a #price#. | The #scale# is ready at the #counter#.
+dlg @1 shop.prices [here.shop=open|bare] : Every #price# is posted beside its #shelf#. | The #scale# shows the #weight#; I count your #change# on the #counter#.
+dlg @1 shop.bye : #farewell#. Keep your #bag# dry on the #road#. | #shop_bye# I have another #order# to tally.
+graft resident.hub
+choice Do you swim after the shop closes? -> swim
+node swim
+say Yes, even in autumn. A short #swim# near the #shore# clears the day's #prices# from my mind.
+free
+choice Why keep the larder full? -> larder
+choice Back to the counter. -> hub
+node larder
+say A full #larder# means a late #visitor# can eat. It also helps when the #wagon# is delayed by #frost#.
+choice Back to the counter. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice How do you set your prices? -> costs
+node costs
+say I count the #wagon# cost and check the #weight# before posting a #price# beside each #shelf#. Ask me about any #bag#.
+free
+choice When will more goods arrive? -> wagon
+choice Back to the shop. -> greet
+node wagon
+say I use the last word from the #road#, but a late #wagon# can change the day. I will tell you what is here now.
+choice Back to the shop. -> greet
+choice Goodbye. -> bye
