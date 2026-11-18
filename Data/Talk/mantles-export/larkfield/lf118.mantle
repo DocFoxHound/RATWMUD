@@ -1,0 +1,461 @@
+# lf118, the patient harvest baker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf118
+revision 1
+state ready
+dialect larkfield
+accent broad light
+tier full
+written_for tn_sm_eskar_cornley
+written_by claude-codex-lf-1
+title the patient harvest baker
+fits stage=adult|old
+prefers role=merchant job=baker
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk never_misses_a_harvest_dance
+likes warm_bread long_walks market_bustle autumn_wind
+dislikes bad_manners early_bells
+fears a_dough_batch_soured_before_dawn a_child_burned_near_the_oven
+hopes a_full_shelf_after_every_harvest a_dance_with_the_family_each_autumn
+topics work +0.5 food +0.4 pastimes +0.3 family +0.2
+styles comfort=practical gossip=reserved refuse=even tease=gentle
+marks oath saying
+persona #self.first# tends the #oven# without haste, walks farther than a #cart# when needed, and keeps the harvest #dance# on the calendar.
+
+words
+oath! = By the warm crust | Flour and autumn wind
+saying! = Let the dough have its hour | A full loaf needs patient hands
+bread = bread | oven bread
+loaf = loaf | brown loaf
+loaves = loaves | brown loaves
+dough = dough | rising dough
+batch = batch | morning batch
+batches = batches | oven batches
+flour = flour | sifted flour
+sack = sack | flour sack
+sacks = sacks | flour sacks
+yeast = yeast | live yeast
+water = water | clean water
+salt = salt | pinch of salt
+crust = crust | firm crust
+crumb = crumb | soft crumb
+oven = oven | bakery oven
+fire = fire | banked fire
+heat = heat | even heat
+ash = ash | cold ash
+wood = wood | dry wood
+tray = tray | bread tray
+trays = trays | baking trays
+rack = rack | cooling rack
+racks = racks | cooling racks
+shelf = shelf | bread shelf
+shelves = shelves | shop shelves
+bench = bench | kneading bench
+table = table | family table
+counter = counter | bakery counter
+shop = shop | small shop
+bakehouse = bakehouse | town bakehouse
+floor = floor | floury floor
+hand = hand | working hand
+hands = hands | floured hands
+work = work | baking work
+helper = helper | shop helper
+apprentice = apprentice | new apprentice
+lesson = lesson | oven lesson
+customer = customer | early customer
+customers = customers | waiting customers
+buyer = buyer | bread buyer
+queue = queue | morning queue
+price = price | posted price
+cost = cost | flour cost
+coin = coin | counted coin
+wage = wage | day wage
+market = market | busy market
+merchant = merchant | town merchant
+cart = cart | flour cart
+wagon = wagon | supply wagon
+road = road | long road
+mile = mile | walking mile
+miles = miles | many miles
+city = city | far city
+bridge = bridge | stone bridge
+gate = gate | town gate
+walk = walk | unhurried walk
+path = path | field path
+field = field | harvest field
+harvest = harvest | autumn harvest
+dance = dance | harvest dance
+music = music | festival music
+step = step | dance step
+steps = steps | dance steps
+festival = festival | harvest festival
+bell = bell | early bell
+bells = bells | early bells
+morning = morning | early morning
+night = night | quiet night
+evening = evening | late evening
+day = day | full day
+hour = hour | patient hour
+hours = hours | working hours
+autumn = autumn | blustery autumn
+wind = wind | cool wind
+rain = rain | steady rain
+roof = roof | sound roof
+home = home | shared home
+house = house | cottage
+child = child | young child
+family = family | home family
+friend = friend | old friend
+neighbour = neighbour | near neighbour
+stranger = stranger | new stranger
+watch = watch | town watch
+larder = larder | full larder
+meal = meal | evening meal
+plate = plate | supper plate
+door = door | bakery door
+window = window | front window
+order = order | bread order
+orders = orders | bread orders
+name = name | given name
+book = book | order book
+prices = prices | marked prices
+
+any
+opinion @1 city against 1 : My one journey to the #city# was all shouting and little trade. | The #road# back felt mercifully quiet.
+opinion @1 merchants for 1 : A #merchant# pays for the #flour# before a #loaf# exists. | I show that #cost# at the #counter#.
+opinion @1 road against 1 : A late #wagon# leaves the #oven# waiting for #flour#. | I have walked the #road# when the #cart# failed.
+opinion @1 times for 1 : There is #bread# on our #table# and a sound #roof#. | I count that as a good #day#.
+opinion @1 watch for 1 : The #watch# keeps the #shop# safe after dark. | I put the #fire# out carefully all the same.
+opinion @1 festivals mixed 0 : I leave the crowded #market# early for the harvest #dance#. | That evening belongs to the #family#.
+opinion @1 newcomers mixed 0 : A new #hand# can begin by keeping the #bench# clean. | The #oven# will teach patience.
+opinion @1 strangers mixed 0 : A #stranger# may buy a #loaf# at the marked #price#. | I learn their #name# if they return.
+opinion @1 houses mixed 1 : A large #house# can buy plenty of #bread#. | I care more whether its kitchen #hands# eat.
+line @1 greet : #greet#. The #oven# has been steady today. | #greet#. There is a #loaf# cooling on the #rack#.
+line @2 greet [pair.band=friends|family] : I saved the end of a warm #loaf#. | Come to the #table# once the #batch# is out.
+line @1 greet.return : The #dough# has risen while you were away. | Your #order# is almost on the #shelf#.
+line @3 greet [here.time=dawn] : #greet#. The #fire# has just taken. | I started the #bench# before the #bell#.
+line @1 kin.open [pair.kin!=no] : I can bring #bread# home after closing. | There is a #plate# for you by the #window#.
+line @1 again.open : I was weighing the next #sack#. | Did you mean to ask about the #harvest#?
+line @1 farewell : #farewell#. I have #dough# to turn. | Wrap that #loaf# before taking the #road#.
+line @1 farewell.return : The next #batch# will be ready on your return. | I hope the #wind# gives you a gentle #walk#.
+line @1 react.news : Tell me while I clear the #bench#. | Did someone bring it from the #market#?
+line @1 react.news.new : The #queue# spoke only of #bread# this #morning#. | Who came with the account?
+line @1 react.news.known : I heard a little before the #bell#. | Your account gives it shape.
+line @1 react.news.doubt : I would want to know who checked the #wagon#. | The #order# and the tale do not agree yet.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is sorrowful news; rest here by the #bench#. | I can spare a warm #loaf#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That calls for fresh #bread# at the #table#. | We will make room for another #plate#.
+line @1 answer.how : The #oven# held its #heat# and the #shelves# are full. | I am ready for a long #walk# after closing.
+line @1 answer.how.busy [self.working=yes] : I am setting this #tray# in the #oven#. | Let me finish folding the #dough#.
+line @1 ask.how : Did you find the #market# too crowded? | Have you eaten since #morning#?
+line @1 sympathise : Sit until the #loaf# is ready. | A quiet #meal# may help you rest.
+line @1 reassure : The #dough# will rise if given time. | We can mend a small #order# before it leaves the #shop#.
+line @1 decline : I cannot sell a #loaf# that has not cooled. | I will not leave the #oven# with its #fire# high.
+line @1 accept_decline : I understand; I will hold the #tray# back. | That settles the #order# for today.
+line @1 thank : The #sack# reached the #shop# dry because of you. | That #walk# was easier with company.
+line @1 deflect_thanks : I had enough #flour# for one more #loaf#. | The #cart# was already coming this way.
+line @1 preclose : I should bank the #fire# and sweep the #floor#. | The last #batch# needs a count.
+line @1 tease [pair.band=friends] : You keep time like #dough# on a cold #day#. | Your #steps# at the #dance# could wake the #oven#.
+line @1 ack : #bc_right#. The #crust# is firm. | #bc_fair_enough#. I will weigh the #sack# again.
+line @1 give.advice : Let the #dough# warm before you shape it. | Keep the #loaf# uncovered until its steam leaves.
+line @1 warn [world.bandits=near] : Take the #road# with the next #cart#. | Keep your #coin# away from the dark #gate#.
+scene banked_oven
+when topic=work
+does tell.self / react.self / assess
+a : I bank the #fire# before the first #batch# goes in. | A rush of #heat# hardens the outside before the #crumb# is ready.
+b : How do you tell? | Does it cool quickly?
+a : By the #crust#. | Not under this #roof#.
+
+scene patient_dough
+when topic=work
+does tell.self / react.self / assess
+a : I give #dough# another #hour# when it needs one. | The #queue# can complain; the #loaf# must still rise.
+b : Can you hurry it? | Do buyers wait?
+a : Not without spoiling it. | Some do.
+
+scene flour_sack
+when topic=work
+does tell.self / react.self / assess
+a : A damp #sack# makes poor #bread# even when the #flour# looks white. | I keep every delivery above the #floor#.
+b : Do you reject it? | How do you spot damp?
+a : If I must. | By the smell.
+
+scene pinch_salt
+when topic=work
+does tell.self / react.self / assess
+a : Too much #salt# hides the taste of the #flour#. | I measure each #batch# even on a busy #day#.
+b : Do you ever forget? | Does anyone notice?
+a : I start again if unsure. | At supper they would.
+
+scene cooling_loaf
+when topic=work
+does tell.self / react.self / assess
+a : A hot #loaf# needs air on every side of the #rack#. | I do not stack it just to clear the #bench#.
+b : Do customers mind waiting? | What if you stack it?
+a : I explain why. | The #crust# softens.
+
+scene oven_ash
+when topic=work
+does tell.self / react.self / assess
+a : I sweep cold #ash# before feeding the next #fire#. | A clean #oven# bakes more evenly.
+b : Is it hot work? | Who helps?
+a : After the last #batch#. | Whoever is free.
+
+scene wood_count
+when topic=work
+does tell.self / react.self / assess
+a : I count the #wood# before the #morning# #fire#. | A late #cart# should not stop the #batch#.
+b : Have you run short? | Do you keep extra?
+a : Once in a hard season. | Enough for a day.
+
+scene bread_order
+when topic=work
+does tell.self / react.self / assess
+a : The #orders# stay away from the #fire#, under my #bench#. | A smudged count makes the #queue# restless.
+b : Do you know them by memory? | Who writes them?
+a : Only the usual ones. | A #hand# at the #counter#.
+
+scene marked_price
+when topic=prices
+does tell.self / react.self / assess
+a : The #price# is posted before the #door# opens. | A #customer# should know it without bargaining over a warm #loaf#.
+b : Does it change often? | Who decides it?
+a : When #flour# changes. | I do the count.
+
+scene empty_shelf
+when topic=prices
+does tell.self / react.self / assess
+a : An empty #shelf# means the #batch# has found its homes. | I keep one #loaf# for our #table# before it does.
+b : Do people complain? | Do you bake more?
+a : Some arrive late. | When the #oven# allows.
+
+scene market_bustle
+when topic=home
+does tell.self / react.self / assess
+a : I like the #market# at its busiest when every #counter# has a voice. | After closing I want a quiet #walk#.
+b : Do you stay long? | Do you sell there?
+a : Until the #queue# thins. | The #shop# takes most of it.
+
+scene early_bells
+when topic=home
+does tell.self / react.self / assess
+a : The early #bells# wake the #shop# before the #oven# is ready. | I would rather hear the #fire# first.
+b : Can you sleep through them? | Do they help anyone?
+a : Never. | The #watch#, perhaps.
+
+scene bad_manners
+when topic=home
+does tell.self / react.self / assess
+a : A #customer# once reached across another for the last #loaf#. | I served the one who had waited.
+b : Did they object? | Did you lose the sale?
+a : For a moment. | They bought the next #loaf#.
+
+scene harvest_dance
+when topic=pastimes
+does tell.self / react.self / assess
+a : I have not missed the harvest #dance# in years. | The #oven# can rest while I learn one new #step#.
+b : Are you a good dancer? | Who goes with you?
+a : Good enough to return. | Whoever is free at home.
+
+scene dance_step
+when topic=pastimes
+does tell.self / react.self / assess
+a : A steady #step# comes easier to me than a fast one. | I keep the #music# in my head while kneading the next #day#.
+b : Does that help? | Do you sing too?
+a : It keeps the rhythm. | Only under my breath.
+
+scene long_walk
+when topic=pastimes
+does tell.self / react.self / assess
+a : My feet took the full #road# to the #city# and back once. | A #cart# would have saved my feet but missed the quiet.
+b : Why go? | Would you walk again?
+a : To settle an #order#. | For a reason.
+
+scene bridge_pause
+when topic=travel
+does tell.self / react.self / assess
+a : On the walk back from the #city# I paused at the #bridge#. | It was the first place I heard the #wind# instead of a crowd.
+b : Did you rest long? | Were you alone?
+a : Until dusk. | For that stretch.
+
+scene late_flour
+when topic=travel
+does tell.self / react.self / assess
+a : The #wagon# brought #flour# after the #fire# was low. | I waited until #morning# rather than rush a #batch#.
+b : Did anyone complain? | Was the flour dry?
+a : The early #queue# did. | I checked every #sack#.
+
+scene autumn_wind
+when topic=weather
+does tell.self / react.self / assess
+a : A good #autumn# #wind# cools the #loaves# by the #window#. | I close it before dust reaches the #bench#.
+b : Can you feel the change? | Do you like the season?
+a : On the #crust#. | More each year.
+
+scene warm_bread
+when topic=food
+does tell.self / react.self / assess
+a : The best #bread# is still warm enough to scent the #table#. | I let it settle before I cut it.
+b : What do you eat with it? | Can you wait that long?
+a : A simple #meal#. | Usually.
+
+scene family_table
+when topic=family
+does tell.self / react.self / assess
+a : I bring the last #loaf# home for the #family# #table#. | After a full #day#, that count matters more than the #queue#.
+b : Does everyone get some? | Do you talk about work?
+a : I make sure of it. | Only if asked.
+
+scene child_near_fire
+when topic=family
+does tell.self / react.self / assess
+a : I keep the young #child# beyond the #bench# when the #oven# is open. | Curiosity moves faster than a falling #tray#.
+b : Do they want to help? | When can they?
+a : They watch every #tray#. | When the #fire# is low.
+
+scene shop_helper
+when topic=work
+does tell.self / react.self / assess
+a : A good #helper# knows which #tray# came out first. | I trust the count but still check the #crust#.
+b : Do you teach them? | Do they mind?
+a : Whenever they ask. | They understand.
+
+scene new_apprentice
+when topic=work
+does tell.self / react.self / assess
+a : I would give an #apprentice# the broom before the #dough#. | A clean #floor# is the start of good #bread#.
+b : Is that a test? | How long to learn?
+a : It tells me if they watch. | As long as needed.
+
+scene watch_after_dark
+when topic=home
+does tell.self / react.self / assess
+a : The #watch# passes the #shop# after I bank the #fire#. | I can hear their #steps# while counting the #orders#.
+b : Do you feel safer? | Do you call to them?
+a : Somewhat. | When there is reason.
+
+scene harvest_supply
+when topic=prices
+does tell.self / react.self / assess
+a : A good #harvest# brings more #flour# but also more mouths to feed. | I order #sacks# before the #festival# crowd arrives.
+b : Do prices fall? | Can you store enough?
+a : Sometimes. | Under a dry #roof#.
+
+scene last_batch
+when topic=work
+does tell.self / react.self / assess
+a : I judge the last #batch# by the sound of its #crust#. | Then I let the #oven# cool at its own pace.
+b : What sound? | When do you rest?
+a : A hollow tap. | After the #fire# settles.
+
+story first_batch [topic=work self.age>=18]
+  : I hurried a #batch# once because the #queue# was growing.
+  : The #crust# browned while the #crumb# stayed heavy.
+  ask : What did you do?
+  b : A lesson in patience.
+  : I sold the later #loaves# and kept those for our #table#.
+
+story city_walk [topic=travel self.age>=18]
+  : I walked to the #city# for a missing #order#.
+  : At the #bridge# on my way home, I finally heard the #wind# again.
+  ask : Did you find the order?
+  b : That is a long walk.
+  : Yes; the #walk# was worth more.
+
+story harvest_step [topic=pastimes self.age>=18]
+  : I reached the harvest #dance# with #flour# still on my sleeve.
+  : Someone pulled me into the first round before I could brush it away.
+  ask : Did you mind?
+  b : A fine evening.
+  : Not for a moment.
+
+story child_and_tray [topic=family self.age>=18]
+  : A young #child# reached for a #tray# near the open #oven#.
+  : I caught the #tray# and moved the #bench# farther back.
+  ask : Were they hurt?
+  b : A close call.
+  : Only surprised.
+
+story late_flour [topic=work self.age>=18]
+  : A #wagon# of #flour# arrived after the #fire# had gone low.
+  : I left the #sacks# dry and waited for a proper #morning# #batch#.
+  ask : Did the queue wait?
+  b : Better than hurried bread.
+  : They did after I told them why.
+
+rule @bark_oven
+when concept=bark
+does aside
+cooldown 8h
+say The #oven# needs a little #wood#. | Watch the #fire# near that #tray#.
+
+rule @bark_dough
+when concept=bark
+does aside
+cooldown 9h
+say Give this #dough# its #hour#. | The next #batch# is still rising.
+
+rule @bark_shelf
+when concept=bark
+does aside
+cooldown 10h
+say There are three #loaves# on that #shelf#. | Keep the warm #bread# on the #rack#.
+
+rule @bark_cart
+when concept=bark
+does aside
+cooldown 11h
+say The #flour# #cart# is due. | Put those #sacks# under cover.
+
+rule @bark_dance
+when concept=bark
+does aside
+cooldown 12h
+say Save me a #step# at the harvest #dance#. | I will close the #shop# in time.
+
+rule @bark_price
+when concept=bark
+does aside
+cooldown 13h
+say The #price# is posted by the #door#. | I will count your #coin# here.
+
+dlg @1 resident.hub : #greet#. The #oven# is working steadily. | #greet#. There is #bread# on the #rack#.
+dlg @2 resident.hub [topic.meeting=known] : Your last #order# is nearly ready. | The #loaves# have scarcely cooled since your last visit.
+dlg @3 resident.hub [here.time=night] : The #fire# is banked for #night#. | If you need #bread#, come at #morning#.
+dlg @1 resident.job : I bake #bread# at #self.workplace#. | I tend the #oven#, weigh #flour#, and shape each #batch#.
+dlg @2 resident.job [self.working=yes] : I am folding this #dough# for its second rise. | These #trays# need a steady #hand#.
+dlg @1 resident.bye : #farewell#. I will sweep the #floor#. | #saying.capitalize#. Mind the hot #tray#.
+dlg @1 shop.greet [here.shop=open] : #greet#. The #loaves# are on the #rack# with their #prices#. | Tell me which #bread# you need.
+dlg @2 shop.greet [here.shop=bare] : The #shelves# are empty until the next #batch#. | I can take an #order# for later.
+dlg @3 shop.greet [here.shop=asleep] : The #oven# is resting. | Come when the #morning# #batch# is ready.
+dlg @4 shop.greet [here.shop!=bare here.shop!=asleep] : #greet#. Ask which #loaves# have cooled. | The #counter# is open for your #order#.
+dlg @1 shop.prices [here.shop=open|bare] : The #price# is marked at the #counter#. | I count #flour# and #wood# before setting it.
+dlg @1 shop.bye : #farewell#. Cover your #loaf# before the #rain# starts. | #shop_bye# I must turn the next #tray#.
+dlg @1 master.learn [here.teaches=yes] : Start by feeling how the #dough# changes. | I will show you the safe side of the #oven#.
+dlg @2 master.learn [here.teaches=yes topic.meeting=known] : Your last #loaf# rose well. | Today you may judge the #heat# yourself.
+graft resident.hub
+choice Why never hurry the dough? -> dough
+node dough
+say The #oven# cannot give back the #hour# a #loaf# needed to rise.
+free
+choice Do you go to the harvest dance? -> dance
+choice Goodbye. -> bye
+node dance
+say Every #autumn#. I finish the last #batch# and go with the #family#.
+choice Back to the bakehouse. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice What is fresh today? -> fresh
+node fresh
+say The #rack# holds today's #loaves#; I will name each #price#.
+free
+choice May I order for later? -> later
+choice Goodbye. -> bye
+node later
+say Tell me how many #loaves# you need; I will write the #order#.
+choice Back to the counter. -> greet
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #flour# has arrived dry. | #greet#. Another #batch# can go into the heated #oven#.
+line @1 farewell : #farewell#. I will leave the #rack# to cool. | The #road# may be windy now.
