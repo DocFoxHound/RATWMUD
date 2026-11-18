@@ -1,0 +1,328 @@
+# cw154, the careful bell (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw154
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_lf_reed_downfield
+written_by claude-codex-cw-2
+title the careful bell
+fits stage=young|adolescent|adult|old
+prefers talk=plain
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk checks_city_goods_for_hidden_flaws
+likes smoked_eel wrestling festival_bells autumn_wind
+dislikes bad_manners cold_tea
+fears a_hidden_break_in_a_new_tool letting_a_friend_down_after_a_promise
+hopes a_fair_bout_on_the_green a_letter_from_a_distant_friend
+topics pastimes +0.4 home +0.3 family +0.3 work +0.3 food +0.2
+styles comfort=direct gossip=reluctant refuse=plain tease=dry
+marks oath saying
+persona #self.first# inspects every #box# from the #city#, practises a patient #grip# on the #green#, and counts the #bells# before a festival.
+
+words
+oath! = Bell and broad green | By the sound handle
+saying! = Turn it over before trusting the shine | A fair grip begins with open hands
+bell = bell | festival bell
+bells = bells | festival bells
+festival = festival | feast day
+green = green | village green
+bout = bout | wrestling bout
+wrestling = wrestling | fair wrestling
+grip = grip | steady grip
+shoulder = shoulder | braced shoulder
+hands = hands | open hands
+hand = hand | open hand
+friend = friend | close friend
+visitor = visitor | new visitor
+stranger = stranger | new face
+manners = manners | good manners
+word = word | given word
+promise = promise | kept promise
+letter = letter | folded letter
+road = road | High Road
+city = city | Ridgemere
+market = market | market square
+stall = stall | market stall
+seller = seller | stall seller
+buyer = buyer | careful buyer
+box = box | packed box
+lid = lid | box lid
+label = label | printed label
+tool = tool | work tool
+tools = tools | work tools
+handle = handle | wooden handle
+handles = handles | wooden handles
+fields = fields | distant fields
+plates = plates | supper plates
+farm = farm | sheep farm
+water = water | fresh water
+crack = crack | fine crack
+edge = edge | rough edge
+price = price | asking price
+coin = coin | saved coin
+home = home | farmhouse
+house = house | family house
+family = family | household
+table = table | supper table
+plate = plate | supper plate
+fire = fire | hearth fire
+tea = tea | cup of tea
+cup = cup | warm cup
+eel = eel | smoked eel
+smoke = smoke | cooking smoke
+bread = bread | fresh bread
+loaf = loaf | bread loaf
+fold = fold | sheep fold
+gate = gate | fold gate
+fence = fence | low fence
+sheep = sheep | grazing sheep
+lamb = lamb | young lamb
+lambs = lambs | young lambs
+hay = hay | dry hay
+bucket = bucket | water bucket
+chores = chores | farm chores
+field = field | open field
+path = path | field path
+lake = lake | Glasswater
+shore = shore | lakeshore
+wind = wind | autumn wind
+autumn = autumn | leaf season
+summer = summer | warm season
+rain = rain | shower
+morning = morning | early morning
+evening = evening | late evening
+sun = sun | low sun
+bench = bench | wooden bench
+hour = hour | passing hour
+day = day | long day
+
+any
+opinion @1 city mixed 0 : The #city# sends useful #tools# and poor ones in the same #box#. | I turn them over before deciding.
+opinion @1 dole for 1 : If the #bread# runs short next door, I set another #plate# here. | A missed meal should not be a lesson.
+opinion @1 festivals for 1 : The #bells# pull me toward the #green# every feast day. | There are sweets after the last #bell#.
+opinion @1 newcomers for 1 : A #visitor# can help with the #fold# #gate# and learn the path. | I would show a new friend the safe #field# crossing.
+opinion @1 strangers for 1 : I can share a #plate# before I know a #stranger# well. | Good #manners# make a new face easier to trust.
+opinion @1 merchants mixed 0 : A #seller# who opens the #box# earns my attention. | A fine #label# cannot hide a cracked #handle#.
+opinion @1 road mixed 0 : The #road# brings letters and #tools#. | Afterward I prefer our narrow #field# #path#.
+line @1 greet : #greet#. I am checking this #handle# for a #crack#. | #greet#. Did you hear the first #bell#?
+line @2 greet [pair.band=friends|family] : I kept your chair beside our #table#. | I saved a #plate# of #eel# after supper.
+line @3 greet [here.time=dawn] : The #fold# #gate# is still wet from #rain#. | #greet#. The #lambs# woke before me.
+line @1 greet.return : You are back while the #box# is still open. | #welcome_back#. The #green# is free for practice.
+line @1 kin.open [pair.kin!=no] : Come inside; the #fire# is steady. | I kept the better #bench# for you.
+line @1 again.open : We were deciding whether that #tool# was sound. | Have you come about the #festival#?
+line @1 farewell : #farewell#. I must close the #fold# #gate#. | #saying.capitalize#. The #bells# will start soon.
+line @1 farewell.return : We can practise another #bout# later. | Bring the #letter# if it arrives.
+line @1 react.news : Set it out plainly; I am listening. | Tell me who was at the #gate#.
+line @1 react.news.new : No one at #home# told me that. | Did a #visitor# bring the word from the #road#?
+line @1 react.news.known : A #seller# mentioned it between customers. | Your account fills the missing part.
+line @1 react.news.doubt : I would open the #box# before praising its #label#. | Whose eyes caught the thing itself?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is sorrowful. Come rest beside the #fire# while I stay near. | Leave the #chores# for a little while.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : May the #bells# ring for that. | I hope someone made an extra #plate#.
+line @1 answer.how : I have had supper and finished my #chores#. | The #wind# has been good for the #field# today.
+line @1 answer.how.busy [self.working=yes] : The #lambs# need the #gate# opened. | I am taking #hay# into the #fold#.
+line @1 ask.how : Was the journey along the #road# easy? | Has anything cheerful reached your #home#?
+line @1 sympathise : I will stay beside you until you want words. | A warm #cup# may help you rest.
+line @1 reassure : We can test the #handle# again in daylight. | A missed #grip# can be practised before the next #bout#.
+line @1 decline : Keep the closed #box#; I have no #coin# for secrets. | No, I promised to tend the #fold# this #evening#.
+line @1 accept_decline : All right. That can wait until tomorrow. | All right; I will ask elsewhere.
+line @1 thank : You held the #gate# while the #lambs# came through. | That #letter# mattered; thank you for carrying it.
+line @1 deflect_thanks : My #chores# already took me past the #fold#. | The #plate# was already set out.
+line @1 preclose : The #lambs# are calling from the #fold#. | I have to put this #tool# away before dark.
+line @1 tease [pair.band=friends] : Your #grip# has the strength of cold #tea#. | You counted the #bells# twice and still missed one.
+line @1 ack : #bc_right#. Let me lift that #lid# and see. | #bc_fair_enough#. We can try the #bout# again.
+line @1 give.advice : Check a #tool# #handle# where the wood joins the head. | Keep your footing when the #green# is wet.
+line @1 warn [world.bandits=near] : Keep to the busy #road# with company. | I would leave the far #field# path until daylight.
+scene tool_handle
+when topic=work
+does tell.self / react.self / assess
+a : I turn a new #tool# in my #hands# and look beneath the #handle#. | A small #crack# can hide where the wood meets the metal.
+b : Have you found one? | Do you refuse the tool?
+a : More than once. | Until the #seller# replaces it.
+
+scene printed_label
+when topic=prices
+does tell.self / react.self / assess
+a : A #box# from the #city# had a grand #label# and a loose #lid#. | I checked each #tool# before spending the #coin#.
+b : Were they all sound? | Did the seller wait?
+a : Two needed new #handles#. | Long enough to hear me.
+
+scene festival_bells
+when topic=home
+does tell.self / react.self / assess
+a : That first #bell# leaves a longer hush than the others. | I count them from the #fold# #gate# before walking to the #green#.
+b : Do you go at once? | Can you hear them from far away?
+a : After the #lambs# are fed. | Over the near #field#.
+
+scene wrestling_stance
+when topic=pastimes
+does tell.self / react.self / assess
+a : I plant my feet before taking a #grip# on the #green#. | A quick throw fails if I am already leaning.
+b : Does that make you slower? | Who showed you?
+a : Steadier. | An older wrestler at a #festival#.
+
+scene fair_bout
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #bout# ends when someone yields or loses footing. | I let go at once, even when I could hold longer.
+b : Has anyone refused to stop? | Does that matter to you?
+a : Once. | It is the rule that makes the game safe.
+
+scene eel_plate
+when topic=food
+does tell.self / react.self / assess
+a : Smoked #eel# needs a full #plate# and quiet company. | A late worker gets the last piece once the #fold# is shut.
+b : Do you warm it? | Is there enough?
+a : Near the #fire#. | We divide it with #bread#.
+
+scene cold_tea
+when topic=food
+does tell.self / react.self / assess
+a : #tea.capitalize# left to cool has no comfort in it. | I pour a smaller #cup# and drink it while it is hot.
+b : Do you waste the old cup? | Why not carry it outside?
+a : I warm it for someone else. | I might forget it again.
+
+scene rude_visitor
+when topic=home
+does tell.self / react.self / assess
+a : A #visitor# pushed past a neighbour at the #gate# without greeting anyone. | I told the visitor to try the entrance again.
+b : Did that help? | Were you angry?
+a : The second greeting was better. | Enough to speak plainly.
+
+scene autumn_wind
+when topic=weather here.season=autumn
+does tell.self / react.self / assess
+a : Autumn #wind# dries the #green# after a shower. | I can practise a #bout# without sliding on the grass.
+b : Do you go out then? | Is it cold?
+a : Once the #chores# are finished. | Less after moving.
+
+scene letter_road
+when topic=travel
+does tell.self / react.self / assess
+a : A #letter# can travel down the #road# while I stay near the #fold#. | I like having a way to speak beyond the #fields#.
+b : Do you write often? | Do replies come quickly?
+a : When there is news. | Not quickly enough.
+
+scene fold_gate
+when topic=work
+does tell.self / react.self / assess
+a : I check the #fold# #gate# after the last #lamb# passes. | A latch that looks shut can lift when the #wind# catches it.
+b : Have any escaped? | What lets you know the latch holds?
+a : One reached the #field#. | I pull from the outside.
+
+scene hay_stack
+when topic=work
+does tell.self / react.self / assess
+a : I stack the #hay# where the #sheep# cannot pull it down all at once. | Then the younger #lambs# get their share.
+b : Do the older ones push ahead? | Is it enough?
+a : They try. | If I spread it along the #fence#.
+
+scene family_table
+when topic=family
+does tell.self / react.self / assess
+a : At our #table# I can hear whether the #fold# is quiet. | I wait for every chore to end before asking for supper.
+b : Does everyone return together? | Do you help cook?
+a : Not always. | I carry the #plates#.
+
+scene wet_green
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : A wet #green# can make a fair #grip# dangerous. | I practise footwork beside the #fence# instead.
+b : Do you stop wrestling? | Does the rain last?
+a : Until the grass dries. | It changes by the #hour#.
+
+scene old_city_box
+when topic=memories
+does tell.self / react.self / assess
+a : I once opened a city #box# to find a #tool# with a split #handle#. | The #label# promised it was ready for work.
+b : Did you return it? | Did anyone get hurt?
+a : I carried it back to the #seller#. | No, because we checked it first.
+
+scene friend_promise
+when topic=family
+does tell.self / react.self / assess
+a : I promised a #friend# a place beside me at the #festival#. | I made sure the #chores# were done before the #bells# began.
+b : Did you arrive on time? | Was your friend waiting?
+a : For the first #bout#. | At the edge of the #green#.
+
+scene stranger_supper
+when topic=home
+does tell.self / react.self / assess
+a : A #stranger# came by the #fold# looking for the #road#. | I pointed the way and offered #bread# before the long walk.
+b : Did the traveller stay? | Was the road hard to find?
+a : Only long enough to eat. | Not from the far #field#.
+
+story loose_handle [topic=work self.age>=13]
+  : I picked up a new #tool# and felt a slight movement in the #handle#.
+  : The #seller# called it sound; I pointed out the fine #crack# beneath the head.
+  ask : Was it replaced?
+  b : Your check was careful.
+  : Before anyone used it.
+
+story early_bells [topic=home self.age>=13]
+  : I heard the #festival# #bells# while a #lamb# still needed #hay#.
+  : I finished at the #fold#, then reached the #green# before the first #bout#.
+  ask : Did you miss anything?
+  b : The lamb came first.
+  : Only the opening song.
+
+story wet_bout [topic=pastimes self.age>=13]
+  : I tried a #wrestling# #bout# after #rain# had slicked the #green#.
+  : My foot slid before the #grip# settled, so we stopped and waited for dry ground.
+  ask : Did you try later?
+  b : Safer to wait.
+  : The next #day#, on firmer grass.
+
+rule @bark_tool
+when concept=bark
+does aside
+cooldown 8h
+say Turn the #handle# once more. | That #label# says more than the #tool# does.
+
+rule @bark_bell
+when concept=bark here.day=festival
+does aside
+cooldown 9h
+say The first #bell# rang already. | I have time to finish the #fold# before the #bout#.
+
+rule @bark_tea
+when concept=bark
+does aside
+cooldown 10h
+say This #tea# needs drinking now. | A smaller #cup# next time.
+
+rule @bark_green
+when concept=bark
+does aside
+cooldown 11h
+say The #green# has lost its puddles. | A fair #grip# begins with good footing.
+
+dlg @1 resident.hub : #greet#. I am checking this #tool# before the #chores#. | #greet#. The #bells# may start soon.
+dlg @2 resident.hub [topic.meeting=known] : Back again? The #handle# was cracked after all. | I remember you. Are you headed for the #green#?
+dlg @1 resident.job : I help at the #farm#, tend the #lambs#, and learn the #fold# work. | My #chores# are mostly #hay#, #water#, and the #gate#.
+dlg @1 resident.bye : #farewell#. I have a #gate# to close. | #saying.capitalize#. I will see you after the #bells#.
+graft resident.hub
+choice Why inspect that tool? -> tool
+node tool
+say The #label# came from the #city#. I check the #handle# and #edge# so no hidden #crack# surprises us at work.
+free
+choice Do you wrestle at festivals? -> bout
+choice Back to the fold. -> hub
+node bout
+say If the #green# is dry, yes. I like a fair #bout#, and I let go as soon as someone yields.
+choice Back to the fold. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #fold# is in order. | #greet#. This #tool# needs my eyes before anyone lifts it.
+line @1 farewell : #farewell#. I will see you on the #green#. | #saying.capitalize#. I should check the #gate# again.
+
+young
+line @1 greet : #greet#. I heard the #bells# from the #fold#. | #greet#. Can you see the #lambs#?
+line @1 farewell : #farewell#. I must carry this #hay#. | Tomorrow I can return to the #green#.
+
+adolescent
+line @1 greet : #greet#. I checked this #tool# myself. | #greet#. The #green# will hold our feet for a #bout#.
+line @1 farewell : #farewell#. I promised to finish the #chores#. | I will meet you after the last #bell#.
