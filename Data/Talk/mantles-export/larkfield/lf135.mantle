@@ -1,0 +1,346 @@
+# lf135, the keeper of favours (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf135
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for cty_njal_rustwick
+written_by claude-codex-lf-1
+title the keeper of favours
+fits stage=adult|old
+prefers role=civilian
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk keeps_a_tally_of_favours_owed
+likes fried_fish old_tales old_maps misty_dawns
+dislikes waiting bad_manners
+fears a debt called in before wages arrive a pig escaping into the town
+hopes to settle the unnamed city debt a quiet dawn after rain
+topics work +0.5 pastimes +0.4 travel +0.3 home +0.2
+styles comfort=patient gossip=measured refuse=firm tease=gentle
+marks oath saying
+persona #self.first# tends #pigs# at #self.workplace#, carries a #tally# of #favours#, and owes an undisclosed #debt# in Ridgemere.
+
+words
+oath! = By the pig pen | By the morning trough
+saying! = A favour has two ends | A full trough quiets the yard
+pig = pig | Southwood pig
+pigs = pigs | yard pigs
+sow = sow | old sow
+boar = boar | young boar
+piglet = piglet | spotted piglet
+piglets = piglets | small piglets
+swine = swine | Southwood swine
+herd = herd | noisy herd
+yard = yard | Southwood yard
+pen = pen | timber pen
+pens = pens | timber pens
+fence = fence | yard fence
+gate = gate | pen gate
+latch = latch | iron latch
+post = post | yard post
+rail = rail | fence rail
+rails = rails | fence rails
+trough = trough | feeding trough
+bucket = bucket | water bucket
+buckets = buckets | feed buckets
+feed = feed | pig feed
+mash = mash | warm mash
+scraps = scraps | kitchen scraps
+straw = straw | dry straw
+mud = mud | yard mud
+hoof = hoof | muddy hoof
+hooves = hooves | muddy hooves
+snout = snout | curious snout
+snouts = snouts | curious snouts
+squeal = squeal | sharp squeal
+noise = noise | yard noise
+hand = hand | working hand
+hands = hands | working hands
+work = work | steady work
+wage = wage | small wage
+coin = coin | saved coin
+coins = coins | saved coins
+price = price | rising price
+merchant = merchant | market merchant
+bread = bread | daily bread
+fish = fish | fried fish
+butter = butter | melted butter
+pan = pan | iron pan
+meal = meal | evening meal
+table = table | shared table
+hearth = hearth | kitchen hearth
+home = home | shared cottage
+house = house | town house
+houses = houses | city houses
+friend = friend | old friend
+stranger = stranger | passing stranger
+neighbour = neighbour | yard neighbour
+favour = favour | owed favour
+favours = favours | returned favours
+tally = tally | pocket tally
+mark = mark | tally mark
+marks = marks | tally marks
+ledger = ledger | small ledger
+page = page | folded page
+ink = ink | dark ink
+debt = debt | private debt
+debts = debts | old debts
+promise = promise | old promise
+name = name | unspoken name
+names = names | written names
+city = city | smoky city
+road = road | western road
+roads = roads | mapped roads
+map = map | old map
+maps = maps | old maps
+line = line | drawn line
+lines = lines | ink lines
+tale = tale | old tale
+tales = tales | evening tales
+story = story | borrowed story
+stories = stories | borrowed stories
+mist = mist | dawn mist
+dawn = dawn | misty dawn
+morning = morning | early morning
+evening = evening | late evening
+night = night | still night
+day = day | working day
+rain = rain | cool rain
+sun = sun | low sun
+winter = winter | hard winter
+spring = spring | mild spring
+waiting = waiting | idle waiting
+hour = hour | slow hour
+watch = watch | town watch
+dole = dole | town dole
+bench = bench | public bench
+manners = manners | common manners
+market = market | crowded market
+cart = cart | feed cart
+wagon = wagon | road wagon
+sack = sack | feed sack
+sacks = sacks | feed sacks
+roof = roof | yard roof
+stall = stall | market stall
+
+any
+opinion @1 city against 1 : In the #city#, a #neighbour# may pass without a word. | I go there only when I must.
+opinion @1 dole for 1 : An empty #table# needs #bread# more than a lecture. | The #dole# can keep a household fed.
+opinion @1 houses against 1 : The great #houses# leave their #bench# empty. | None has room for a #hand# from the #yard#.
+opinion @1 merchants against 2 : The #merchant# raises the #price# even when my #wage# holds still. | I count every #coin# before buying #bread#.
+opinion @1 road mixed 0 : The western #road# leads toward an old #debt#. | It also brings a #friend# to the #gate#.
+opinion @1 strangers for 1 : I offer a #meal# to a passing #stranger# before asking any #name#. | I would hope for the same courtesy.
+opinion @1 times against 1 : #bread# costs more and #feed# costs more. | The #pigs# still need a full #trough#.
+opinion @1 watch mixed 0 : The #watch# can help find a loose #pig#. | It cannot put right every old #promise#.
+line @1 greet : #greet#. The #pigs# are fed for now. | #greet#. Come around the #pen# #gate#.
+line @2 greet [pair.band=friends|family] : I kept a place for you by the #hearth#. | There is #fish# in the #pan#.
+line @1 greet.return : The #yard# has settled since you left. | I made another #mark# in the #tally#.
+line @1 kin.open [pair.kin!=no] : Take a #bench# near the #hearth#. | There is a #meal# waiting inside.
+line @1 again.open : We were speaking about that #map# with the misplaced #road#. | You asked why I keep the #tally#.
+line @1 farewell : #farewell#. The #trough# needs filling. | Mind the #latch# as you leave.
+line @1 farewell.return : I may have a new #tale# by then. | The #pigs# will remember your #scraps#.
+line @1 react.news : I will listen while the #mash# cools. | Whose #wagon# brought it here?
+line @1 react.news.new : No one at the #yard# mentioned such a thing. | Who carried it along the #road#?
+line @1 react.news.known : I heard part of it by the #market#. | Tell me how it ended.
+line @1 react.news.doubt : I need a #name# and a #day# before I believe it. | The #road# improves a #tale# too quickly.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Come sit inside. | I can bring #fish# while you catch your breath.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves a hot #meal#. | I will put another #pan# on the #hearth#.
+line @1 answer.how : The #herd# is quiet today. | The #mist# made the #dawn# pleasant.
+line @1 answer.how.busy [self.working=yes] : The far #pen# needs this #bucket# of #feed#. | These #rails# need tightening before the #pigs# lean on them.
+line @1 ask.how : Have you eaten a #meal# yet? | Did the #road# bring you here safely?
+line @1 sympathise : After the #pigs# settle, the #bench# is ours for as long as you need. | Take a plate of #fish# if you are hungry.
+line @1 reassure : One #rail# at a time will mend the #fence#. | We can find enough #feed# for tomorrow.
+line @1 decline : The #pen# must be shut before I go. | I cannot spend another #coin# until the #debt# is paid.
+line @1 accept_decline : Then the #latch# stays fastened. | Then I will bring the #feed# over.
+line @1 thank : You saved me a long search for that #pig#. | I will remember the #favour# when you need a #hand#.
+line @1 deflect_thanks : I was going past the #gate# anyway. | That #bucket# was light enough to carry.
+line @1 preclose : The #mash# will be ready soon. | I ought to check the last #pen#.
+line @1 tease [pair.band=friends] : The #pigs# would find their way home faster than your #map#. | The #pigs# slept through your long #tale#.
+line @1 ack : #bc_right#. The #latch# is fastened. | #bc_fair_enough#. I can make another #mark#.
+line @1 give.advice : Shut the #gate# before lifting the #feed# #bucket#. | Write a #promise# down while both folk remember it.
+line @1 warn [world.bandits=near] : Keep to the busy #road# after dusk. | A #wagon# can hide a traveller from sight.
+scene favour_tally
+when topic=home
+does tell.self / react.self / assess
+a : I keep a #mark# for each #favour# given and received. | The #tally# reminds me who needs a #hand#.
+b : Do you count small favours? | Do you expect payment?
+a : Some matter most. | Only when they can manage it.
+
+scene private_debt
+when topic=memories
+does tell.self / react.self / assess
+a : There is a #debt# of mine in the #city#. | I have never put the other #name# in my #ledger#.
+b : Will you tell me who? | Are you paying it?
+a : Not today. | A little each #spring#.
+
+scene misty_dawn
+when topic=weather
+does tell.self / react.self / assess
+a : At #dawn#, #mist# hangs over the #pens# and quiets the #yard#. | The #pigs# stir when I bring #feed#.
+b : Do you rise early? | Can you see the gate?
+a : Before the #sun#. | By its #post#.
+
+scene trough_mash
+when topic=work
+does tell.self / react.self / assess
+a : I mix warm #mash# in a #bucket# before filling the #trough#. | A full #herd# will soon empty it.
+b : How much do they eat? | Who helps?
+a : More than you would guess. | The other #hands#.
+
+scene loose_latch
+when topic=work
+does tell.self / react.self / assess
+a : One #pig# learned to lift the #latch# with a #snout#. | I set a second hook above it.
+b : Did it escape? | Did the hook work?
+a : Twice. | So far.
+
+scene pen_rails
+when topic=work
+does tell.self / react.self / assess
+a : The #rails# near the far #pen# bend when the #boar# leans. | I brace them before #night#.
+b : Is the boar strong? | Can I help?
+a : Stronger than the #post#. | Hold this #rail#.
+
+scene piglets_straw
+when topic=work
+does tell.self / react.self / assess
+a : The #piglets# burrow beneath clean #straw# after feeding. | I leave the #pen# quiet then.
+b : Are they growing? | Can I see them?
+a : Very quickly. | From the #gate#.
+
+scene muddy_hooves
+when topic=work
+does tell.self / react.self / assess
+a : The #hooves# carry #mud# across the whole #yard#. | I scrape a clear path to the #trough#.
+b : Does it stay clear? | Is it tiring?
+a : For an #hour#. | Less than slipping.
+
+scene fried_fish
+when topic=food
+does tell.self / react.self / assess
+a : I fry #fish# in #butter# when the #yard# work ends. | The smell draws everyone toward the #table#.
+b : Do you cook often? | Do you share it?
+a : When I have #coin#. | Always.
+
+scene old_map
+when topic=pastimes
+does tell.self / react.self / assess
+a : My old #map# gives the western #road# a bend that is no longer there. | I keep its #lines# anyway.
+b : Have you walked it? | Why keep it?
+a : Years ago. | It remembers an older place.
+
+scene old_tale
+when topic=pastimes
+does tell.self / react.self / assess
+a : A good #tale# can make a long #evening# pass quietly. | I remember the pauses better than the ending.
+b : Who tells them? | Tell me one?
+a : An old #friend#. | After the #feed#.
+
+scene waiting_wage
+when topic=work
+does tell.self / react.self / assess
+a : I can finish the #pens# before the #wage# comes. | Waiting for #coin# is harder than the #work#.
+b : Does it arrive late? | Do you have enough?
+a : Too often. | For the #bread#.
+
+scene guest_manners
+when topic=home
+does tell.self / react.self / assess
+a : A guest with good #manners# shuts the #gate# on the way in. | The #pigs# notice an open one before I do.
+b : Do guests forget? | What happens then?
+a : Some do. | I go looking for a #pig#.
+
+scene city_trip
+when topic=travel
+does tell.self / react.self / assess
+a : I take the #road# to the #city# only when I have enough #coins# put aside. | I come home before the #night#.
+b : Is it far? | Who do you visit?
+a : Far enough. | Someone I owe.
+
+scene neighbour_meal
+when topic=home
+does tell.self / react.self / assess
+a : A #neighbour# once brought a #meal# when our #hearth# was cold. | The first #mark# in my #tally# is for that.
+b : Did you repay it? | Do they know?
+a : With #feed# and #fish#. | I think so.
+
+scene winter_feed
+when topic=work
+does tell.self / react.self / assess
+a : In #winter# I stack #sacks# of #feed# under the #roof#. | A wet #sack# is no use to the #herd#.
+b : Can they last all winter? | Is it costly?
+a : If we count carefully. | More each year.
+
+scene lost_pig
+when topic=memories
+does tell.self / react.self / assess
+a : A young #sow# once slipped past the #gate# toward the #market#. | I found her beside a #bread# #stall#.
+b : Did anyone help? | Was she hurt?
+a : A #friend# held her. | Only hungry.
+
+story city_debt [topic=memories self.age>=18]
+  : I went to the #city# carrying the first #coins# I had saved.
+  : The one I owe would take only part of the #debt#.
+  ask : Did you ask why?
+  b : That sounds difficult.
+  : I left the rest for another visit.
+
+story escaped_sow [topic=work self.age>=18]
+  : The #latch# failed and a #sow# trotted out toward the #market#.
+  : I followed her #hooves# through the #mud#.
+  ask : Did you catch her?
+  b : Clever animal.
+  : A #friend# stopped her with a #bucket# of #feed#.
+
+story first_tally [topic=home self.age>=18]
+  : A #neighbour# brought supper when my #wage# had run out.
+  : I put a small #mark# on a folded #page#.
+  ask : Was that your first tally?
+  b : A kind neighbour.
+  : It was, and the #page# is still in my pocket.
+
+rule @bark_trough
+when concept=bark
+does aside
+cooldown 8h
+say The #trough# is nearly empty. | Bring another #bucket# of #mash#.
+
+rule @bark_latch
+when concept=bark
+does aside
+cooldown 9h
+say That #latch# needs checking. | The #sow# has learned a new trick.
+
+rule @bark_tally
+when concept=bark
+does aside
+cooldown 10h
+say I owe a #favour# there. | Let me add one #mark#.
+
+rule @bark_mist
+when concept=bark
+does aside
+cooldown 11h
+say The #mist# has reached the #gate#. | The #dawn# is quiet today.
+
+dlg @1 resident.hub : #greet#. The #herd# is quiet for now. | #greet#. Come clear of the #pen#.
+dlg @2 resident.hub [topic.meeting=known] : The #latch# has held since you came by. | I have a new #tale# for the #evening#.
+dlg @1 resident.job : I keep the #pigs# at #self.workplace#. | Each day means #feed# for the #trough#, sound #rails#, and a count of the #piglets#.
+dlg @1 resident.bye : #farewell#. I must see to the #feed#. | Keep the #gate# shut behind you.
+graft resident.hub
+choice Why keep a tally? -> tally
+node tally
+say A #favour# can be forgotten when the work is hard. The #marks# help me remember.
+free
+choice Who do you owe in Ridgemere? -> debt
+choice Goodbye. -> bye
+node debt
+say I owe someone there, and I mean to settle it. The #name# is mine to keep for now.
+choice Back to the yard. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #pigs# are stirring. | #greet#. I have the #feed# ready.
+line @1 farewell : #farewell#. I will fasten the #latch#. | There is a #meal# to make.
