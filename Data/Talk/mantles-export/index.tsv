@@ -34,6 +34,7 @@ cw132	coldwater	standard	ready	1	cty_fallow_honeyfield	claude-codex-cw-2
 cw133	coldwater	full	ready	1	tn_cw_kell_greyton	claude-codex-cw-2
 cw134	coldwater	standard	ready	1	tn_lf_flint_downcombe	claude-codex-cw-2
 cw135	coldwater	standard	ready	1	tn_lf_juniper_larkcombe	claude-codex-cw-2
+cw136	coldwater	standard	ready	1	tn_sm_ingram_cornwell	claude-codex-cw-2
 lf101	larkfield	full	ready	1	rm_berit_kelpwick	claude-p11-pilot
 lf102	larkfield	standard	ready	1	rm_agna_bilgecot	claude-p11-pilot
 mb101	mirebridge	full	ready	1	cty_nell_plummeadow	claude-p11-pilot
