@@ -1,0 +1,458 @@
+# cw150, the honest wrapper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw150
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier full
+written_for tn_fh_wren_coldpeak
+written_by claude-codex-cw-2
+title the honest wrapper
+fits stage=adult|old
+prefers talk=chatty
+traits temper=even talk=chatty warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk reads_every_city_label_twice
+likes smoked_eel stars market_bustle summer_evenings
+dislikes waiting cold_tea
+fears a_roof_falling_on_a_worker a_city_order_that_hides_its_cost
+hopes every_worker_returns_from_the_shift honest_labels_on_every_bar
+topics work +0.5 family +0.3 home +0.3 food +0.2 memories +0.3 gossip -0.3
+styles comfort=warm gossip=careful refuse=plain tease=dry
+marks oath saying
+persona #self.first# checks every #wrapper# before a #bar# leaves the boiling house, asks where city #orders# came from, and watches the #stars# after work.
+
+words
+oath! = Wrapper and witness | By the sound roof
+saying! = Read the wrapper before the promise | Count the workers coming home
+soap = soap | firm soap
+bar = bar | soap bar
+bars = bars | soap bars
+batch = batch | boiling batch
+vat = vat | deep vat
+vats = vats | boiling vats
+lye = lye | strong lye
+ash = ash | sifted ash
+fat = fat | rendered fat
+water = water | lake water
+fire = fire | steady fire
+heat = heat | even heat
+paddle = paddle | stirring paddle
+ladle = ladle | long ladle
+mould = mould | soap mould
+moulds = moulds | soap moulds
+shelf = shelf | drying shelf
+shelves = shelves | drying shelves
+wrapper = wrapper | paper wrapper
+wrappers = wrappers | paper wrappers
+paper = paper | wrapping paper
+page = page | order page
+label = label | written label
+mark = mark | batch mark
+marks = marks | batch marks
+order = order | written order
+orders = orders | written orders
+crate = crate | supply crate
+crates = crates | supply crates
+cart = cart | supply cart
+road = road | High Road
+city = city | Ridgemere
+seller = seller | city seller
+price = price | asking price
+coin = coin | earned coin
+coins = coins | earned coins
+weight = weight | measured weight
+buyers = buyers | careful buyers
+plates = plates | supper plates
+list = list | written list
+work = work | day's work
+worker = worker | boiling-house worker
+workers = workers | work crew
+hand = hand | working hand
+hands = hands | working hands
+floor = floor | boiling-house floor
+door = door | workroom door
+roof = roof | sound roof
+gate = gate | yard gate
+beam = beam | roof beam
+mine = mine | deep mine
+stone = stone | fallen stone
+memory = memory | old memory
+home = home | shared home
+house = house | crowded house
+spouse = spouse | partner
+family = family | household
+friend = friend | close friend
+table = table | supper table
+cup = cup | tea cup
+tea = tea | hot tea
+eel = eel | smoked eel
+smoke = smoke | cooking smoke
+plate = plate | supper plate
+bread = bread | loaf
+market = market | busy market
+stall = stall | market stall
+crowd = crowd | market crowd
+stars = stars | night stars
+star = star | bright star
+sky = sky | clear sky
+day = day | long day
+night = night | late hour
+summer = summer | warm season
+evening = evening | long evening
+lake = lake | Glasswater
+shore = shore | lakeshore
+bell = bell | morning bell
+bench = bench | dry bench
+wait = wait | long wait
+watch = watch | town watch
+festival = festival | feast day
+neighbour = neighbour | nearby neighbour
+stranger = stranger | new face
+hour = hour | work hour
+
+any
+opinion @1 city against 1 : A #city# #label# can conceal a poor #bar#. | I open the #crate# before trusting the seller's word.
+opinion @1 dole for 1 : A hungry #worker# needs #bread# while another day's work is found. | A #table# with food can help someone through a hard day.
+opinion @1 drink mixed 0 : I will share a cup after the #vats# cool. | A careless #hand# and hot #lye# are a dangerous pair.
+opinion @1 festivals for 1 : A #festival# gives every #worker# a turn outside the workroom. | I like the #market# when neighbours fill it.
+opinion @1 houses against 1 : A great house can send an #order# without seeing the #hands# that made it. | I would like them to count the #workers# as carefully as the #bars#.
+opinion @1 merchants against 2 : I see what goes into a #bar# before a #seller# names a #price#. | A fancy #wrapper# should not cost more than the work.
+opinion @1 newcomers mixed 1 : Give a new #hand# time to read the #marks#. | I will check a stranger's first #batch# beside them.
+opinion @1 road mixed 0 : The #road# brings #orders# and food to town. | I inspect every #crate# that travelled it.
+opinion @1 strangers for 1 : A #stranger# may need a #plate# as much as a neighbour. | I will hear a traveller's story while the #tea# warms.
+opinion @1 times against 1 : Each week's #bread# takes a larger share of the pay. | I count fewer spare #coins# after each market day.
+opinion @1 watch mixed 0 : I would call the #watch# if a #worker# vanished on the #road#. | A dispute over a #label# can be settled at the #table# first.
+
+grown
+line @1 greet : #greet#. Let me finish wrapping this #bar#. | #greet#. Have you brought an #order# from the #market#?
+line @2 greet [self.working=yes] : Speak while I fold the #paper#. | Give the hot #vat# room and I can hear you.
+line @3 greet [pair.band=strangers] : Stand beyond the painted mark on the #floor#. | I will set aside the #ladle# and hear your errand.
+line @4 greet [pair.band=friends|family] : There is smoked #eel# on your #plate#. | Come by the #fire# when the #vats# cool.
+line @5 greet [here.time=dawn] : The #bell# got here before the #tea# did. | I am setting out fresh #wrappers# for the shift.
+line @6 greet [here.time=night] : I was looking at the #stars#. | The #vats# are cold now; come away from the #door#.
+line @1 greet.return : I remember the #order# you showed me. | #welcome_back#. That #batch# is on the drying #shelf#.
+line @2 greet.return [pair.band=friends|family] : The #tea# is hot this time. | Come see whether the #stars# have cleared.
+line @1 kin.open [pair.kin!=no] : I set supper out for you already. | Even in our busy #house#, your #bench# is free.
+line @1 again.open : That #wrapper# was half folded when the #cart# arrived. | Did you find who sent that #order#?
+line @1 farewell : #farewell#. Mind the damp #floor#. | #saying.capitalize#. I need to mark the last #bar#.
+line @1 farewell.return : Bring the #label# back if you want it checked. | We may have time for #tea# next visit.
+line @1 react.news : Let me stop the #paddle# and hear it properly. | Tell me which #worker# was there.
+line @1 react.news.new : Nothing of that was spoken near our #vats#. | Was the account carried by a #cart#?
+line @1 react.news.known : A #seller# mentioned an earlier piece. | That adds a detail I had not heard.
+line @1 react.news.doubt : Show me the written #order# behind that claim. | An attractive #wrapper# is no proof of what is inside.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is dreadful. Sit where the #heat# cannot reach you. | The unfinished #bars# can stay on the #shelf# while we talk.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That is news to carry #home# gladly. | Set another #plate# on the #table# tonight.
+line @1 answer.how : I have finished the #batch# and kept both #hands# safe. | Better after a look at the #sky#.
+line @1 answer.how.busy [self.working=yes] : The #wrappers# and #marks# still need checking. | This #vat# has a while before it cools.
+line @1 ask.how : Did you get a proper supper? | Have the #stars# been clear by your #home#?
+line @1 sympathise : Once this #batch# is set, I have time for you. | Take a #cup# of hot #tea# before you try to explain.
+line @1 reassure : We can read the #label# together and ask what it means. | A sound #roof# and familiar #hands# can help tonight.
+line @1 decline : I will not put an unmarked #bar# in that #crate#. | No, that #seller# has not shown the #order#.
+line @1 accept_decline : Understood. I will leave it off the #list#. | Fair enough. Another #hand# can take the shift.
+line @1 thank : You checked the #roof# #beam# when the #wind# rose. | You carried the #crate# clear of the #vat#.
+line @1 deflect_thanks : The #wrapper# needed folding anyway. | Both my #hands# were away from the #vat#.
+line @1 preclose : The last #bars# need their #marks#. | I want to see everyone out of the workroom.
+line @1 tease [pair.band=friends] : Your #tea# has gone cold while you talked. | You folded that #wrapper# around more air than #soap#.
+line @1 ack : #bc_right#. I will read the #label# again. | #bc_fair_enough#. The #crate# stays closed.
+line @1 give.advice : Read a city #order# before accepting its #price#. | Stand behind the mark on the #floor# when the #vat# is hot.
+line @1 warn [world.bandits=near] : Stay with others on the #road# after dark. | I would bring the #cart# inside the #gate# tonight.
+line @2 ask.how [pair.band=friends|family] : Has the #house# settled after supper? | Did the #market# have enough #eel#?
+line @2 reassure [other.tired=yes] : Take the #bench# until the #vat# cools. | I can carry the #crate# for now.
+line @2 thank [pair.band=friends|family] : You kept the #tea# hot while I finished. | The #floor# was clean before I noticed.
+line @2 answer.how [here.time=night] : The #stars# have made this a good #evening#. | The workroom is quiet, at last.
+line @2 give.advice [other.stage=young|adolescent] : Watch the #paddle# from the #door#, not beside the #vat#. | Ask before touching any #lye# or hot #soap#.
+scene wrapper_truth
+when topic=work
+does tell.self / react.self / assess
+a : I write the #batch# #mark# before folding the #wrapper#. | A fine fold cannot make an untested #bar# sound.
+b : Do buyers read it? | What does the mark tell them?
+a : Careful ones do. | Which #vat# made it.
+
+scene city_label
+when topic=prices
+does tell.self / react.self / assess
+a : A city #label# arrived with a #crate# of fat. | I opened the lid to check the contents before signing the #order#.
+b : Was it as promised? | Did the driver object?
+a : Mostly, but one jar had leaked. | The driver helped count it.
+
+scene vat_heat
+when topic=work
+does tell.self / react.self / assess
+a : The #heat# must stay even while I stir the #vat#. | If the #fire# leaps, I draw back before touching the #paddle#.
+b : Can you lower it? | Does it spoil the #batch#?
+a : With less wood. | Only if we leave it too long.
+
+scene paper_fold
+when topic=work
+does tell.self / react.self / assess
+a : I fold the #paper# tight enough to keep a #bar# clean, not so tight it tears. | The final corner holds the #label# in place.
+b : Is that quick work? | Can you tell who wrapped it?
+a : Once the #bars# are dry. | By the last fold, often.
+
+scene new_hand
+when topic=work self.master=yes
+does tell.self / react.self / assess
+a : I give a new #hand# cold #bars# to wrap before showing the hot #vat#. | Safe habits should come before speed.
+b : Do they mind waiting? | What is the first lesson?
+a : Some want the #paddle# at once. | Reading the #batch# #mark#.
+
+scene cooling_shelf
+when topic=work
+does tell.self / react.self / assess
+a : Fresh #bars# need space on the #shelf# so air reaches each side. | Crowding them makes a damp #wrapper# later.
+b : Do you turn them? | How long do they stay?
+a : When the surface sets. | Until the #weight# stops changing.
+
+scene ash_sieve
+when topic=work
+does tell.self / react.self / assess
+a : I sift the #ash# before it goes near the #lye#. | A hard chip can leave a mark through the finished #soap#.
+b : Do you throw much away? | Is the dust troublesome?
+a : Only the rough pieces. | I keep it below my face.
+
+scene roof_beam
+when topic=work
+does tell.self / react.self / assess
+a : I notice every new creak in the workroom #beam#. | A #roof# can fail slowly before it falls quickly.
+b : Have you had it checked? | Does it worry you?
+a : I ask whenever the sound changes. | Enough to listen.
+
+scene mine_memory
+when topic=memories self.age>=25
+does tell.self / react.self / assess
+a : A #mine# collapse once took someone from my #family#. | The sound of a strained #beam# has never seemed small since.
+b : Do you speak of that day? | Does the workroom feel safe?
+a : With those who knew. | When its #roof# is checked.
+
+scene smoked_eel
+when topic=food
+does tell.self / react.self / assess
+a : Smoked #eel# is the supper I want after a long #batch#. | The #smoke# smell follows me #home# from the #market#.
+b : Do you cook it? | May I have a small piece?
+a : When I can get it fresh. | Take a piece from the #plate#.
+
+scene cold_tea
+when topic=food
+does tell.self / react.self / assess
+a : I poured #tea# before the #vat# was ready and left it to cool. | It is the sort of mistake I make only when the #batch# hurries me.
+b : Do you drink it cold? | Can someone warm it?
+a : If there is no time. | A fresh #cup# is easier.
+
+scene market_noise
+when topic=home
+does tell.self / react.self / assess
+a : I like the #market# when voices rise from every #stall#. | It is louder than our workroom and somehow easier to hear.
+b : Do you buy much? | What draws you there?
+a : Supper first. | People arriving from the #road#.
+
+scene stars_after_shift
+when topic=pastimes here.time=dusk|night
+does tell.self / react.self / assess
+a : I wait for the first #stars# after leaving the workroom. | It tells me the #evening# belongs to #home# now.
+b : Do you know many? | Do you stay outside?
+a : Enough to find the same one. | Until I smell supper.
+
+scene summer_evening
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : A summer #evening# gives the #bars# longer to dry and me longer to walk. | I take the #shore# path before going #home#.
+b : Do you go alone? | Does the lake cool you?
+a : Sometimes with company. | The breeze does.
+
+scene shared_house
+when topic=family
+does tell.self / react.self / assess
+a : Our #house# holds several workers on different shifts. | We leave space at the #table# for whoever returns last.
+b : Do you eat together? | Is it ever quiet?
+a : When the shifts meet. | After everyone sleeps.
+
+scene spouse_supper
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse# can tell whether a #batch# went well by how I enter the #door#. | I put the day's #orders# aside before supper.
+b : Do you talk about work? | Does that help you rest?
+a : Once the #plate# is filled. | More than another #cup# of #tea#.
+
+scene hungry_worker
+when topic=home
+does tell.self / react.self / assess
+a : I would give a hungry #worker# a #plate# before asking about the missed shift. | A full belly makes a better account possible.
+b : Does it happen often? | Can the household afford it?
+a : Enough to keep food ready. | We make room.
+
+scene city_order
+when topic=work
+does tell.self / react.self / assess
+a : A large #order# from the #city# can hide a poor #price# in small writing. | I read every #page# before we fill a #crate#.
+b : Do you refuse some? | Does it take long?
+a : If the terms are wrong. | Less than unpaid #work#.
+
+scene market_stall
+when topic=prices
+does tell.self / react.self / assess
+a : A #seller# offered me #soap# from elsewhere under a bright #wrapper#. | I unwrapped one #bar# before accepting the seller's account.
+b : Was it any good? | Did you buy it?
+a : Good enough, but no better than ours. | One, to compare.
+
+scene late_cart
+when topic=travel
+does tell.self / react.self / assess
+a : I dislike waiting for a #cart# that promised to come before noon. | Its missing #crate# can delay every #batch# behind it.
+b : Do you send someone to look? | Can you work without it?
+a : After an #hour#. | On the #bars# already cooling.
+
+scene clear_mark
+when topic=work
+does tell.self / react.self / assess
+a : I mark a #wrapper# with the plain #batch# number. | Fancy words cannot help if a buyer needs to tell one #bar# from another.
+b : Do buyers ask about it? | Can a mark be wrong?
+a : Careful ones do. | That is why I check twice.
+
+scene workroom_floor
+when topic=work
+does tell.self / react.self / assess
+a : I dry the #floor# before anyone carries a full #ladle#. | One slip near the #vat# can cost more than a day's #work#.
+b : Is it usually wet? | Who helps you?
+a : After washing the tools. | The nearest free #hand#.
+
+scene first_star
+when topic=memories
+does tell.self / react.self / assess
+a : I learned to wait for one bright #star# above the #lake#. | Seeing it again makes an unfamiliar #day# feel finished.
+b : Do you point it out? | Can clouds hide it?
+a : To anyone walking with me. | Then I wait for another.
+
+scene chapel_bench
+when topic=faith
+does tell.self / react.self / assess
+a : I sit on the #bench# at the chapel when the workroom is too loud. | My prayer asks that all our #workers# reach #home# safely.
+b : Does the quiet help? | Do you go often?
+a : Enough to breathe. | After a hard #batch#.
+
+scene rain_wrappers
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : In #rain# I keep the #wrappers# high and the #crates# covered. | Wet #paper# can undo an afternoon's careful folding.
+b : Can it dry again? | Do you stop work?
+a : It wrinkles. | Only the packing.
+
+scene shop_counter
+when topic=work
+does tell.self / react.self / assess
+a : I take a finished #bar# to the #market# and watch how a #seller# describes it. | The #label# should match what my #hands# made.
+b : Do you correct them? | Does it sell well?
+a : If they promise too much. | When the #price# is fair.
+
+scene neighbour_order
+when topic=home
+does tell.self / react.self / assess
+a : A #neighbour# asked for #soap# with no strong smell. | I checked the #batch# and chose a plain #bar# from the #shelf#.
+b : Was it suitable? | Did you charge less?
+a : The neighbour returned for another. | The same fair #price#.
+
+story beam_sound [topic=memories self.age>=25]
+  : A #beam# in the workroom made a new sound during a hot #batch#.
+  : I stopped the #paddle# and brought someone to inspect the #roof# before we carried on.
+  ask : Was it safe?
+  b : You did not ignore it.
+  : A brace was loose. We fixed it before work resumed.
+
+story city_wrappers [topic=work self.age>=25]
+  : A #crate# of printed #wrappers# came from the #city# with the wrong #weight# written on them.
+  : I set the #paper# aside and wrote the true measure by hand.
+  ask : Did anyone object?
+  b : The label mattered.
+  : Only the #seller#. The #buyers# deserved the truth.
+
+story eel_supper [topic=food self.age>=25]
+  : I brought smoked #eel# #home# after a shift that ran late.
+  : The #house# was still awake, so we divided it across the #plates#.
+  ask : Was there enough?
+  b : A welcome supper.
+  : With #bread#, yes.
+
+story star_walk [topic=pastimes self.age>=25]
+  : I left a crowded #market# and walked toward the #lake# as the #stars# appeared.
+  : The first one showed above the #shore# before the last #stall# closed.
+  ask : Did you stay out?
+  b : That sounds peaceful.
+  : Just long enough to forget the #vats#.
+
+story cold_cup [topic=food self.age>=25]
+  : I left a #cup# of #tea# by the #door# while I helped carry #crates#.
+  : When I returned it was cold, so I shared a fresh pot with the next #worker#.
+  ask : Did you drink the first cup?
+  b : The work interrupted you.
+  : Not that one. I poured it out.
+
+rule @bark_wrapper
+when concept=bark
+does aside
+cooldown 8h
+say This #wrapper# needs its #mark#. | The #label# must say what is inside.
+
+rule @bark_vat
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say Keep clear of the hot #vat#. | The #paddle# is nearly done.
+
+rule @bark_roof
+when concept=bark
+does aside
+cooldown 9h
+say Was that the #beam# again? | The #roof# needs someone to inspect it.
+
+rule @bark_stars
+when concept=bark here.time=night
+does aside
+cooldown 10h
+say The first #star# is up. | A clear #sky# after a long shift.
+
+rule @bark_cart
+when concept=bark
+does aside
+cooldown 11h
+say That #cart# has missed its #hour#. | The next #batch# needs the #crate#.
+
+rule @bark_tea
+when concept=bark
+does aside
+cooldown 12h
+say My #tea# went cold again. | I will put the #cup# nearer the #fire#.
+
+dlg @1 resident.hub : #greet#. I am checking #wrappers# for the next #batch#. | #greet#. Stay away from the hot #vat#.
+dlg @2 resident.hub [topic.meeting=known] : Back again? Was that #bar# useful at #home#? | I remember your #order#; the #shelf# has it now.
+dlg @3 resident.hub [here.time=night] : The workroom is closed; I was watching the #stars#. | What brings you near the #vats# so late?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Speak from the #door# while the #vat# is hot. | I will hear your errand after I set the #ladle# down.
+dlg @1 resident.job : I make and wrap #soap# at #self.workplace#. | I keep the #vats# stirred, the #bars# marked, and the #wrappers# truthful.
+dlg @2 resident.job [self.working=yes] : These #bars# are cooling before I wrap them. | I must finish this #batch# while its #heat# is even.
+dlg @1 resident.bye : #farewell#. Mind the #floor# by the #vats#. | #saying.capitalize#. The next #crate# needs filling.
+dlg @2 resident.bye [here.time=night] : Go safely under the #stars#. | Good night. Keep to the lit #road#.
+dlg @1 master.learn [here.teaches=yes] : Begin with cold #bars# and read each #batch# #mark#. | Learn the #wrapper# before you approach a hot #vat#.
+dlg @2 master.learn [here.teaches=yes topic.meeting=known] : Back for another lesson? Show me the #wrapper# you folded. | You know the #mark# now; tell me which #batch# it names.
+dlg @3 master.learn [here.teaches=yes self.working=yes] : Watch my #hands# as I move the #paddle#. | Keep beside the #door# until the #lye# is safe.
+dlg @3 resident.bye [self.working=yes] : The #vat# needs me for another #hour#. #farewell#. | I will speak after the #bars# are set out.
+graft resident.hub
+choice Why check every wrapper? -> labels
+node labels
+say The #wrapper# carries the #batch# mark and measured #weight#. A pretty #label# cannot replace the truth.
+free
+choice Do you ever leave the workroom? -> stars
+choice Back to the workroom. -> hub
+node stars
+say After my shift I walk where the #stars# show above the #lake#. A short look at the #sky# helps me leave work behind.
+choice Back to the workroom. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice What is the first safe task? -> first
+node first
+say Take a cold #bar#, read its #mark#, and fold the #wrapper# so the writing stays visible. We will approach the #vat# later.
+free
+choice Why keep the floor dry? -> floor
+choice Back to the lesson. -> end
+node floor
+say A full #ladle# and a wet #floor# are a poor pair. Dry the walking space before anyone moves beside the #vat#.
+choice Back to the lesson. -> end
+choice Goodbye. -> bye
