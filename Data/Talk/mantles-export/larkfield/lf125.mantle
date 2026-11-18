@@ -1,0 +1,337 @@
+# lf125, the guarded granary marcher (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf125
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for cty_rowan_eelwater
+written_by claude-codex-lf-1
+title the guarded granary marcher
+fits stage=adult|old
+prefers job=farmer
+traits temper=nervy talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk hums_old_marching_songs
+likes pickled_herring wrestling market_bustle thunder
+dislikes waiting night_noise
+fears a_stranger_learning_the_house_path a_standing_stone_broken_for_roadwork
+hopes a_quiet_watch_on_the_granary a_clear_answer_to_the_old_stones
+topics work +0.5 memories +0.4 pastimes +0.3 weather +0.2
+styles comfort=spare gossip=guarded refuse=blunt tease=dry
+marks oath saying
+persona #self.first# stacks #grain# to the rhythm of an old #march#, guards the #door# against unknown faces, and believes the #stones# remember.
+
+words
+oath! = Grain and old stone | By the steady step
+saying! = March the sacks in order | A stone keeps more than a book
+grain = grain | stored grain
+granary = granary | Longmead granary
+loft = loft | grain loft
+barn = barn | wide barn
+sack = sack | grain sack
+sacks = sacks | grain sacks
+bin = bin | grain bin
+bins = bins | grain bins
+stack = stack | grain stack
+stacks = stacks | grain stacks
+sheaf = sheaf | cut sheaf
+sheaves = sheaves | bound sheaves
+wheat = wheat | dry wheat
+barley = barley | field barley
+scoop = scoop | wooden scoop
+rope = rope | binding rope
+knife = knife | work knife
+cart = cart | grain cart
+wagon = wagon | supply wagon
+wheel = wheel | cart wheel
+road = road | long road
+path = path | field path
+field = field | open field
+mud = mud | road mud
+boot = boot | work boot
+boots = boots | work boots
+floor = floor | granary floor
+hand = hand | working hand
+hands = hands | working hands
+work = work | farm work
+wage = wage | thin wage
+price = price | grain price
+merchant = merchant | town merchant
+market = market | busy market
+queue = queue | waiting queue
+watch = watch | town watch
+city = city | far city
+house = house | shared house
+home = home | cottage
+door = door | closed door
+window = window | small window
+roof = roof | sound roof
+stranger = stranger | unknown stranger
+newcomer = newcomer | newcomer to town
+friend = friend | close friend
+neighbour = neighbour | near neighbour
+song = song | old song
+songs = songs | marching songs
+march = march | old march
+step = step | marching step
+steps = steps | measured steps
+hum = hum | quiet hum
+voice = voice | low voice
+beat = beat | steady beat
+stone = stone | standing stone
+stones = stones | old stones
+mark = mark | worn mark
+marks = marks | worn marks
+memory = memory | old memory
+secret = secret | kept secret
+thunder = thunder | distant thunder
+storm = storm | passing storm
+rain = rain | heavy rain
+cloud = cloud | low cloud
+night = night | noisy night
+morning = morning | early morning
+evening = evening | late evening
+day = day | working day
+hour = hour | long hour
+herring = herring | pickled herring
+pickle = pickle | sharp pickle
+plate = plate | supper plate
+bread = bread | day bread
+meal = meal | plain meal
+larder = larder | small larder
+wrestling = wrestling | green wrestling
+bout = bout | wrestling bout
+green = green | town green
+grapple = grapple | firm grapple
+hold = hold | steady hold
+crowd = crowd | market crowd
+festival = festival | town festival
+coin = coin | small coin
+bench = bench | wooden bench
+table = table | shared table
+name = name | given name
+houses = houses | great houses
+wagons = wagons | unknown wagons
+storms = storms | heavy storms
+
+any
+opinion @1 city against 2 : The #city# takes a #name# and loses it in a #crowd#. | I prefer a #door# I can close.
+opinion @1 dole against 1 : A #queue# can hold a person longer than a #sack# of #grain#. | There is #work# at the #granary#.
+opinion @1 drink against 1 : A loose #voice# after drink cannot put its words back. | I keep my accounts sober.
+opinion @1 houses against 1 : The great #houses# take our #grain# and leave their workers unseen. | I know the #hands# who carried it.
+opinion @1 merchants against 2 : The #price# rises while a #hand# still earns the same #wage#. | I read every mark on a #sack#.
+opinion @1 newcomers against 2 : I keep the #door# shut until I know a #newcomer#. | One careless #hand# can leave the #bins# open.
+opinion @1 road against 1 : The #road# carries more unknown #wagons# each season. | I would rather keep the #field# in sight.
+opinion @1 strangers against 3 : A #stranger# does not need the path to my #home#. | We can speak from the #granary# #door#.
+opinion @1 times against 1 : The #sacks# grow heavier while the #coin# grows thinner. | No one at the #market# calls that fair.
+line @1 greet : #greet#. Keep the #door# clear. | #greet#. The #grain# is nearly stacked.
+line @2 greet [pair.band=friends|family] : Your #plate# is on the #table# beside mine. | Come hear the old #march# if you wish.
+line @1 greet.return : The #bins# are still in order. | You returned before the #wagon# left.
+line @1 kin.open [pair.kin!=no] : Come into the #house#; the #door# is safe. | There is #herring# after the #work#.
+line @1 again.open : I was checking the #rope#. | Did we speak of the #stones#?
+line @1 farewell : #farewell#. Shut the #door# behind you. | Keep to the #field# #path#.
+line @1 farewell.return : The #grain# may be dry when you return. | Another #march# can wait until then.
+line @1 react.news : Give me the account in order. | I will hear it after this #sack#.
+line @1 react.news.new : No one unloading at the #barn# has spoken of it. | Who stood close enough to know?
+line @1 react.news.known : A #hand# spoke of it at the #market#. | You have a different detail.
+line @1 react.news.doubt : I would count the #sacks# again. | The #wagon# mark may say otherwise.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is hard to hear. Take the #bench#. | I will stop the #work# for a moment.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves the better #plate#. | I can hum a less solemn #song#.
+line @1 answer.how : The #grain# is dry and the #roof# holds. | I would welcome a quiet #night#.
+line @1 answer.how.busy [self.working=yes] : I am moving these #sacks# into the #bin#. | Wait until the #cart# is unloaded.
+line @1 ask.how : How much #mud# did the #road# bring you? | Have you heard the #thunder#?
+line @1 sympathise : Sit without speaking if you need. | I can bring #bread# after the #cart# leaves.
+line @1 reassure : The #stones# have stood through worse #storms#. | We can check the #stack# in daylight.
+line @1 decline : At #night# the #granary# #door# must be shut. | That #stranger# may speak from the #road#.
+line @1 accept_decline : I hear you; the #door# remains shut. | Then the #sacks# stay where they are.
+line @1 thank : You braced the #cart# while I moved the #grain#. | That #herring# was welcome after #work#.
+line @1 deflect_thanks : I was at the #door# already. | The #rope# only needed one knot.
+line @1 preclose : The #bins# need their final count before dark. | The #market# noise is carrying this far.
+line @1 tease [pair.band=friends] : You wrestle like a #sack# tied in the middle. | Your #march# loses its #beat# after three #steps#.
+line @1 ack : #bc_right#. The #sack# is dry. | #bc_fair_enough#. I will check the #marks#.
+line @1 give.advice : Keep the #bin# shut through #rain#. | Test the #rope# before moving a full #stack#.
+line @1 warn [world.bandits=near] : Stay with the #wagon# on the #road#. | Close the #granary# #door# at dusk.
+scene grain_order
+when topic=work
+does tell.self / react.self / assess
+a : I put the #sacks# in order before the #wagon# arrives. | Then no one has to guess which #bin# is full.
+b : Does that save time? | Who checks it?
+a : At unloading. | I do.
+
+scene dry_sack
+when topic=work
+does tell.self / react.self / assess
+a : A dry #sack# makes a different sound when I set it down. | I put any damp one apart from the #stack#.
+b : Can you hear that? | Where does the damp #grain# go?
+a : After years of work. | Spread the #grain# to dry.
+
+scene closed_bin
+when topic=work
+does tell.self / react.self / assess
+a : I close each #bin# before walking to the next. | A careless gap invites #rain# and other trouble.
+b : Do you lock them? | Have you found one open?
+a : At #night#. | Too often.
+
+scene wagon_mark
+when topic=work
+does tell.self / react.self / assess
+a : The #wagon# #mark# should match the #sacks# it carries. | I count before a #merchant# names the #price#.
+b : Do they object? | Can you read every mark?
+a : The hurried ones do. | The ones we use.
+
+scene rope_knot
+when topic=work
+does tell.self / react.self / assess
+a : A #rope# across a #stack# needs a knot that will release without a #knife#. | I tie it the same way each time.
+b : Who taught you? | Does it hold in wind?
+a : An older #hand#. | If the cover stays on.
+
+scene granary_floor
+when topic=work
+does tell.self / react.self / assess
+a : A dry #floor# keeps the lower #sacks# sound. | I sweep it before the #cart# comes in.
+b : Is that your task? | What if it is damp?
+a : Today it is. | I lift the #stack#.
+
+scene marching_hum
+when topic=pastimes
+does tell.self / react.self / assess
+a : I hum an old #march# while carrying #grain#. | The #beat# keeps my #steps# even.
+b : Do you know the words? | Does anyone join?
+a : Some. | Only those who remember it.
+
+scene song_without_words
+when topic=memories
+does tell.self / react.self / assess
+a : One #song# has lost its words, but I remember the #beat#. | It comes back when the #barn# is quiet.
+b : Where did you learn it? | Can you sing it?
+a : From a relative. | Only the tune.
+
+scene standing_stones
+when topic=memories
+does tell.self / react.self / assess
+a : The old #stones# have #marks# worn down by seasons. | I think they remember who passed between them.
+b : Can stone remember? | Do you touch them?
+a : I cannot prove it. | I leave them alone.
+
+scene stone_mark
+when topic=memories
+does tell.self / react.self / assess
+a : After #rain# a #mark# on one #stone# looks newly cut. | When it dries, the shape withdraws again.
+b : What shape is it? | Have you shown anyone?
+a : A bend like a #road#. | A close #friend#.
+
+scene pickled_herring
+when topic=food
+does tell.self / react.self / assess
+a : Pickled #herring# has a sharp taste after a day of dry #grain#. | I eat it with #bread# before the #house# fills.
+b : Do you make it? | Do you share?
+a : Someone else pickles it. | When there is enough.
+
+scene green_wrestling
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #bout# of #wrestling# on the #green# clears my head. | I prefer a firm #hold# to a loud #crowd#.
+b : Do you win? | Who teaches you?
+a : Some days. | Practice does.
+
+scene market_bustle
+when topic=home
+does tell.self / react.self / assess
+a : The #market# at its busiest lets me hear every #price# in one place. | When voices turn to #night# shouting, I head home.
+b : Do you buy much? | Do you like crowds?
+a : Only #herring#. | At a distance.
+
+scene thunder_roof
+when topic=weather
+does tell.self / react.self / assess
+a : I like #thunder# best from under a good #roof#. | The #granary# walls hold the sound for a moment.
+b : Does it frighten you? | What about the grain?
+a : Not under cover. | I check the #bins#.
+
+scene night_noise
+when topic=home
+does tell.self / react.self / assess
+a : Noise at #night# reaches through the #window# of our #house#. | I shut it before the #market# empties.
+b : Does that help? | Who makes the noise?
+a : Most nights. | The last #crowd#.
+
+scene waiting_wagon
+when topic=travel
+does tell.self / react.self / assess
+a : Waiting on a #wagon# leaves the #hands# beside empty #bins#. | I would rather carry #grain# than stand still.
+b : Does it arrive late? | Can you do other work?
+a : Often lately. | I keep the #floor# clean.
+
+scene unknown_face
+when topic=home
+does tell.self / react.self / assess
+a : An unknown face asked for the way to my #home# from the #granary#. | I gave the way back to the #market# instead.
+b : Were they lost? | Was that unkind?
+a : They did not say. | I kept my #door# shut.
+
+story old_march [topic=pastimes self.age>=18]
+  : I learned an old #march# long before I worked at the #granary#.
+  : The words have gone, but the #beat# still carries a #sack# across the #floor#.
+  ask : Who taught you?
+  b : A useful rhythm.
+  : Someone at home; I remember the #voice#.
+
+story rain_mark [topic=memories self.age>=18]
+  : After #rain#, the oldest standing #stone# showed a #mark# I had missed.
+  : By the next #day# it looked faint again.
+  ask : What did it mean?
+  b : I would remember that shape.
+  : I think the #stone# remembers, even if I do not.
+
+story late_wagon [topic=travel self.age>=18]
+  : A #wagon# reached the #granary# after all the #hands# had gone home.
+  : I kept the #door# shut until I could count its #sacks# in daylight.
+  ask : Did the driver wait?
+  b : A careful choice.
+  : They returned at #morning#.
+
+rule @bark_grain
+when concept=bark
+does aside
+cooldown 8h
+say Keep the #bin# shut. | This #sack# sounds damp.
+
+rule @bark_march
+when concept=bark
+does aside
+cooldown 9h
+say That is the old #beat#. | I know another #march# without words.
+
+rule @bark_stones
+when concept=bark
+does aside
+cooldown 10h
+say Leave the #stone# where it stands. | The #mark# is clearer after #rain#.
+
+rule @bark_door
+when concept=bark
+does aside
+cooldown 11h
+say Close the #granary# #door#. | I have not met that #stranger#.
+
+dlg @1 resident.hub : #greet#. The #grain# is counted. | #greet#. Keep clear of the #door#.
+dlg @2 resident.hub [topic.meeting=known] : The #sacks# are still in order. | You remember that old #march#?
+dlg @1 resident.job : I move #grain# at #self.workplace#. | I check #bins#, stack #sacks#, and keep the #floor# dry.
+dlg @1 resident.bye : #farewell#. I must close the #bins#. | #saying.capitalize#. Take the #field# #path#.
+graft resident.hub
+choice What is the tune you hum? -> tune
+node tune
+say An old #march# without all its words. The #beat# helps me work.
+free
+choice What do the stones remember? -> stones
+choice Goodbye. -> bye
+node stones
+say I think their #marks# hold the passing years. I cannot prove it.
+choice Back to the granary. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #cart# has arrived. | #greet#. I found the right #rope#.
+line @1 farewell : #farewell#. I will finish this #stack#. | I can visit the #stones# on a quieter #day#.
