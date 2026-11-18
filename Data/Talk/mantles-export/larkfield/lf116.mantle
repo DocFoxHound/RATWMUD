@@ -1,0 +1,472 @@
+# lf116, the river-stone taproom keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf116
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier full
+written_for tn_cw_bramble_reedford
+written_by claude-codex-lf-1
+title the river-stone taproom keeper
+fits stage=adult|old
+prefers role=merchant job=innkeeper
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=devout drive=steady
+quirk collects_smooth_stones_from_the_riverbanks
+likes fried_fish riddles new_boots first_warm_day
+dislikes night_noise drizzle
+fears an_empty_taproom_after_a_bad_harvest a_guest_left_alone_on_the_road
+hopes every_guest_finds_a_bed a_quiet_morning_after_the_last_cart
+topics work +0.4 home +0.4 travel +0.3 faith +0.2
+styles comfort=steady gossip=discreet refuse=plain tease=dry
+marks oath saying
+persona #self.first# keeps the #taproom# warm, collects smooth #stones# by the #river#, and answers a hard #night# with a dry #riddle#.
+
+words
+oath! = By the river stones | Bright One keep the hearth
+saying! = A clean cup needs no story | Let the guest finish the riddle
+taproom = taproom | quiet taproom
+inn = inn | small inn
+room = room | upstairs room
+rooms = rooms | upstairs rooms
+bed = bed | clean bed
+beds = beds | made beds
+key = key | room key
+keys = keys | room keys
+guest = guest | road guest
+guests = guests | overnight guests
+traveller = traveller | tired traveller
+stranger = stranger | passing stranger
+friend = friend | close friend
+hand = hand | working hand
+hands = hands | working hands
+helper = helper | pot hand
+counter = counter | taproom counter
+tap = tap | ale tap
+cask = cask | ale cask
+casks = casks | stored casks
+ale = ale | small ale
+cup = cup | clean cup
+cups = cups | washed cups
+mug = mug | clay mug
+mugs = mugs | clay mugs
+pot = pot | kitchen pot
+pots = pots | washed pots
+plate = plate | supper plate
+plates = plates | empty plates
+bread = bread | fresh bread
+fish = fish | fried fish
+butter = butter | melted butter
+meal = meal | hot meal
+supper = supper | late supper
+hearth = hearth | taproom hearth
+fire = fire | banked fire
+wood = wood | dry wood
+bench = bench | long bench
+table = table | shared table
+seat = seat | corner seat
+floor = floor | scrubbed floor
+stair = stair | narrow stair
+stairs = stairs | upstairs steps
+door = door | front door
+voice = voice | low voice
+log = log | dry log
+nights = nights | hard nights
+nightfall = nightfall | late nightfall
+mornings = mornings | early mornings
+travellers = travellers | road travellers
+house = house | great house
+cost = cost | honest cost
+window = window | small window
+roof = roof | sound roof
+flat = flat | upstairs flat
+ledger = ledger | room ledger
+book = book | guest book
+name = name | guest name
+names = names | guest names
+price = price | room price
+coin = coin | counted coin
+wage = wage | honest wage
+road = road | long road
+mile = mile | slow mile
+miles = miles | unwelcome miles
+cart = cart | supply cart
+wagon = wagon | goods wagon
+wheel = wheel | cart wheel
+city = city | far city
+market = market | city market
+river = river | near river
+bank = bank | river bank
+banks = banks | river banks
+stone = stone | smooth stone
+stones = stones | smooth stones
+riddle = riddle | short riddle
+answer = answer | riddle answer
+question = question | riddle question
+boot = boot | new boot
+boots = boots | dry boots
+spring = spring | early spring
+warmth = warmth | first warmth
+day = day | warm day
+morning = morning | quiet morning
+evening = evening | late evening
+night = night | noisy night
+noise = noise | late noise
+drizzle = drizzle | thin drizzle
+rain = rain | steady rain
+mud = mud | road mud
+lamp = lamp | door lamp
+watch = watch | town watch
+festival = festival | town festival
+prayer = prayer | quiet prayer
+light = light | hearth light
+larder = larder | inn larder
+store = store | supply store
+order = order | guest order
+work = work | inn work
+queue = queue | waiting queue
+
+any
+opinion @1 church for 1 : I speak a #prayer# while turning the #key# each #morning#. | I keep a #bed# for a weary pilgrim.
+opinion @1 city against 1 : I have carried #casks# toward the #city# and begrudged every #mile#. | Its #market# forgets the small inns.
+opinion @1 dole for 1 : Feed a hungry #guest# before weighing the reason. | An empty #plate# is plain enough.
+opinion @1 drink mixed 1 : A #cup# can bring a #traveller# to speak freely. | I cut off anyone who turns loud after dark.
+opinion @1 festivals against 1 : I would rather watch the crowd pass from this #window#. | The #floor# needs cleaning afterward.
+opinion @1 houses against 1 : A grand #house# has more #rooms# than I can name. | Its doors have never opened to my #guests#.
+opinion @1 road against 1 : A late #cart# leaves the #larder# thin. | I know the #road# well enough to blame its ruts.
+opinion @1 strangers for 1 : A #stranger# can have a #meal# before giving a #name#. | That is how I keep this #taproom#.
+opinion @1 times against 1 : The same #coin# now buys less #bread#. | My #guests# feel it at the #counter#.
+opinion @1 watch for 1 : The #watch# makes the #road# safer after #nightfall#. | I still keep the #lamp# lit.
+line @1 greet : #greet#. There is a #seat# near the #hearth#. | #greet#. Tell me if you need a #bed#.
+line @2 greet [pair.band=friends|family] : I kept the smaller #cup# for you. | Come in before the #pot# is empty.
+line @3 greet [here.time=dawn] : #greet#. The #fire# lasted the #night#. | I have already counted the #keys#.
+line @1 greet.return : The #riddle# remains unsolved, if you want another try. | Your #seat# is free again.
+line @1 kin.open [pair.kin!=no] : I have saved #bread# beside the #pot#. | Come upstairs when the #guests# settle.
+line @1 again.open : I was counting the #keys#. | Did you answer the #riddle#?
+line @1 farewell : #farewell#. Shut the #door# gently. | Take care on the #road# beyond the #lamp#.
+line @1 farewell.return : Another #cup# will be ready if you return. | Perhaps you will bring a better #riddle#.
+line @1 react.news : Speak low; the #guests# are resting. | This #cup# can wait; I am listening.
+line @1 react.news.new : I have heard no such news across this #counter#. | Was it brought along the #road#?
+line @1 react.news.known : I heard a little of it from a #traveller#. | You have given me the middle of the tale.
+line @1 react.news.doubt : I would ask who kept the #key# that #night#. | Did anyone watch that #guest# leave the #room#?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry; take the quiet #seat# by the #fire#. | I can find you a quiet #room# tonight.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A good day deserves #fish# from the #pot#. | I will fetch a clean #cup#.
+line @1 answer.how : The #taproom# held together through the #night#. | Better with the #store# stocked.
+line @1 answer.how.busy [self.working=yes] : I must serve this #guest# first. | Let me finish counting the #keys#.
+line @1 ask.how : Were you kept dry by a #roof# last #night#? | Did your #boots# survive the #road#?
+line @1 sympathise : Take the #seat# furthest from the #noise#. | I can bring a #meal# without questions.
+line @1 reassure : The #lamp# will stay lit until you come in. | We can put another #log# on the #fire#.
+line @1 decline : I cannot give out a #key# without a #room# free. | I will not serve another #cup# to a loud #guest#.
+line @1 accept_decline : Understood. I will put that #cup# away. | Then we can leave the #room# unbooked.
+line @1 thank : You carried the #cask# to the #store# for me. | The #fish# was well cooked tonight.
+line @1 deflect_thanks : I only had to find a clean #plate#. | The #door# was open already.
+line @1 preclose : I must bank the #fire# before I rest. | The last #guest# needs a #key#.
+line @1 tease [pair.band=friends] : Your #riddle# has more corners than my #stairs#. | You polish a #stone# by carrying it, not talking to it.
+line @1 ack : #bc_right#. The #room# is ready. | #bc_fair_enough#. I will check the #book#.
+line @1 give.advice : Keep a dry pair of #boots# when the #road# is wet. | Ask for a #bed# before the late #cart# arrives.
+line @1 warn [world.bandits=near] : Stay under the #lamp# until company comes. | Take the #road# with other #travellers#.
+scene clean_cup
+when topic=work
+does tell.self / react.self / assess
+a : A clean #cup# tells a #guest# I noticed them. | I check the rim before setting it on the #counter#.
+b : Do guests notice? | Who washes them?
+a : Some do. | The #hands# take turns.
+
+scene cask_tap
+when topic=work
+does tell.self / react.self / assess
+a : I tap a #cask# gently so the first #ale# runs clear. | A hard knock stirs what should stay at the bottom.
+b : Do you waste any? | Who sets the cask?
+a : Only the first pour. | I do when it arrives.
+
+scene room_key
+when topic=work
+does tell.self / react.self / assess
+a : Every #key# has a mark I can feel in the dark. | I keep them in the same order by the #book#.
+b : Has one gone missing? | Can you tell them apart?
+a : Once, briefly. | With my eyes closed.
+
+scene night_ledger
+when topic=work
+does tell.self / react.self / assess
+a : I count #rooms# against the #ledger# before I close the #counter#. | A #guest# should not find another person in the #bed#.
+b : Has that happened? | Do you check twice?
+a : Not in this inn. | Each #night#.
+
+scene banked_fire
+when topic=work
+does tell.self / react.self / assess
+a : The #fire# must stay warm without throwing sparks toward the #bench#. | I bank it after the last #cup#.
+b : Does it last till morning? | Who rises first?
+a : Most nights. | Whoever hears the #cart#.
+
+scene pot_hand
+when topic=work
+does tell.self / react.self / assess
+a : The #pots# come back from the #table# in every condition. | A good #hand# can make them ready by #morning#.
+b : Does it take long? | Do you help?
+a : Until the final #plate#. | Whenever the room quiets.
+
+scene late_guest
+when topic=home
+does tell.self / react.self / assess
+a : A #traveller# reached the #door# after the #lamp# had burned low. | I found a #room# and let the questions wait.
+b : Did they stay? | Did they pay?
+a : For one #night#. | In the #morning#.
+
+scene quiet_seat
+when topic=home
+does tell.self / react.self / assess
+a : The #seat# near the #window# stays empty until the late #guests# arrive. | It is a place to recover from the #road#.
+b : Do you sit there? | Does it have a view?
+a : After closing. | The #river# bend.
+
+scene river_stone
+when topic=pastimes
+does tell.self / react.self / assess
+a : I collect smooth #stones# along the #river# #bank#. | One fits in my palm like an old #key#.
+b : What do you do with them? | How many have you found?
+a : Keep a few upstairs. | Enough to stop counting.
+
+scene stone_choice
+when topic=pastimes
+does tell.self / react.self / assess
+a : The best #stone# is one the #river# has rounded without cracking. | I leave rough ones where they lie.
+b : Why collect them? | Do guests see them?
+a : They settle in the #hand#. | Only if they ask.
+
+scene short_riddle
+when topic=pastimes
+does tell.self / react.self / assess
+a : A short #riddle# can quiet a #table# faster than a sharp word. | I give the #answer# after supper.
+b : Do people guess it? | What is the prize?
+a : Some do. | The satisfaction.
+
+scene wrong_answer
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #guest# gave me a better #answer# than the one I knew. | I kept the #riddle# and changed its ending.
+b : Do you remember it? | Did they win something?
+a : Yes; it made me laugh. | The last piece of #bread#.
+
+scene fried_fish
+when topic=food
+does tell.self / react.self / assess
+a : A #plate# of #fish# fried in #butter# travels quickly across this room. | I eat mine after the #guests#.
+b : Do you cook it? | Does any remain?
+a : When the #pot# is free. | Rarely.
+
+scene first_warm_day
+when topic=weather
+does tell.self / react.self / assess
+a : On the first warm #day# of #spring# I open the #door# wide. | The #taproom# smells of #river# air instead of old #wood#.
+b : Do you close it at night? | Do guests like it?
+a : When the light goes. | The quiet ones do.
+
+scene thin_drizzle
+when topic=weather
+does tell.self / react.self / assess
+a : Thin #drizzle# brings #mud# in on every pair of #boots#. | It never seems enough to wash the #road# clean.
+b : Do you mind wiping it? | Does it last?
+a : It is part of the #work#. | Far too long.
+
+scene night_noise
+when topic=home
+does tell.self / react.self / assess
+a : A shout after #nightfall# carries from the #counter# to every #room#. | I ask the loud #guest# to finish their #cup# outside.
+b : Do they listen? | What if they refuse?
+a : Usually. | The #watch# is close.
+
+scene cart_to_city
+when topic=travel
+does tell.self / react.self / assess
+a : I took a load of #casks# by #cart# toward the #city#. | Each #mile# felt longer on the return.
+b : Why take the load yourself? | Will you go again?
+a : To keep the #wheel# moving. | Only if I must.
+
+scene road_rut
+when topic=travel
+does tell.self / react.self / assess
+a : A deep rut kept the #cart# still while the #larder# at home emptied. | I remember its place better than the #market# gate.
+b : Did you free it? | Who repaired the road?
+a : Before dark. | No one then.
+
+scene room_price
+when topic=prices
+does tell.self / react.self / assess
+a : I write the #price# plainly beside the #book#. | A tired #guest# should not have to bargain at #night#.
+b : Does it change? | What about a week?
+a : Only when costs do. | The #book# gives that price.
+
+scene bread_for_hungry
+when topic=faith
+does tell.self / react.self / assess
+a : If a #traveller# has no #coin#, I can still put #bread# on a #plate#. | A quiet #prayer# has never filled a stomach alone.
+b : Do you ask for payment later? | Who taught you that?
+a : Only if they can. | Hard #nights# taught me.
+
+scene morning_prayer
+when topic=faith
+does tell.self / react.self / assess
+a : I say a small #prayer# while opening the #door#. | It is brief enough not to delay the #guests#.
+b : Do you pray every day? | Does anyone join you?
+a : Most #mornings#. | Sometimes a #hand#.
+
+scene watch_at_door
+when topic=home
+does tell.self / react.self / assess
+a : The #watch# passes beneath the #lamp# after the #taproom# settles. | I hear their steps as I put away the #keys#.
+b : Do you call to the #watch#? | Is the road safe?
+a : When there is need. | Safer with a light.
+
+scene festival_table
+when topic=home
+does tell.self / react.self / assess
+a : The #festival# fills each #bench# with people talking over one another. | I wait for its last #cup# before I enjoy the day.
+b : Do you ever join in? | Is it profitable?
+a : From the #window#. | Enough to pay the #hands#.
+
+scene new_boots
+when topic=pastimes
+does tell.self / react.self / assess
+a : New #boots# make the walk to the #river# feel like a short errand. | I keep the old ones for carrying #casks#.
+b : Do you wear them often? | Why keep both?
+a : When the #road# is dry. | The old pair still works.
+
+scene guest_names
+when topic=home
+does tell.self / react.self / assess
+a : I write a #name# in the #book# only after I have found the #room#. | People rest more easily when they know the #key# is real.
+b : Do you remember names? | Do you ever turn someone away?
+a : Some. | When all #beds# are taken.
+
+scene city_market
+when topic=travel
+does tell.self / react.self / assess
+a : The #city# #market# was louder than the full #taproom#. | I wanted the #river# and its smooth #stones# before noon.
+b : Did you buy anything? | Did you return quickly?
+a : What the #store# needed. | As soon as the #cart# was ready.
+
+scene last_cup
+when topic=work
+does tell.self / react.self / assess
+a : I leave one clean #cup# behind the #counter# for a late arrival. | It saves a clatter when the #rooms# are asleep.
+b : Do you always need it? | Who gets it?
+a : Often enough. | Whoever reaches the #door# last.
+
+story first_key [topic=work self.age>=18]
+  : A #guest# returned a #key# I thought had vanished.
+  : It had been under the #plate# beside their #bed#.
+  ask : Were you relieved?
+  b : An odd place for it.
+  : I put a brighter mark on that #key#.
+
+story river_pocket [topic=pastimes self.age>=18]
+  : I carried a smooth #stone# from the #river# in my pocket.
+  : It wore a hole through the cloth before I noticed.
+  ask : Did you keep it?
+  b : A costly little stone.
+  : It sits beside the #lamp# now.
+
+story city_cart [topic=travel self.age>=18]
+  : I went to the #city# with a #cart# of supplies.
+  : A rut held the #wheel# while the #taproom# ran short at home.
+  ask : Did you reach them in time?
+  b : A hard way to buy supplies.
+  : Before the last #cask# emptied.
+
+story riddle_guest [topic=pastimes self.age>=18]
+  : A #traveller# answered my #riddle# before I had finished it.
+  : The whole #table# fell quiet for a moment.
+  ask : What was the answer?
+  b : A quick mind.
+  : A #stone# that had never touched the #river#.
+
+story late_bread [topic=faith self.age>=18]
+  : Someone came to the #door# without #coin# after #nightfall#.
+  : I brought #bread# and left a #bed# ready without asking why.
+  ask : Did they stay?
+  b : That was kind.
+  : Until the first #morning# #cart#.
+
+rule @bark_cup
+when concept=bark
+does aside
+cooldown 8h
+say This #cup# still has a mark. | Bring a clean one to the #counter#.
+
+rule @bark_key
+when concept=bark
+does aside
+cooldown 9h
+say The #key# for that #room# is here. | Count the #keys# before the #door# closes.
+
+rule @bark_stone
+when concept=bark
+does aside
+cooldown 10h
+say I found another smooth #stone#. | The #river# did the polishing.
+
+rule @bark_riddle
+when concept=bark
+does aside
+cooldown 11h
+say I owe you a #riddle#. | Give me your #answer# after supper.
+
+rule @bark_fire
+when concept=bark
+does aside
+cooldown 12h
+say Put one more piece of #wood# on. | The #fire# is settling.
+
+rule @bark_night
+when concept=bark
+does aside
+cooldown 13h
+say Keep your #voice# low near the #stairs#. | The #guests# have gone to bed.
+
+dlg @1 resident.hub : #greet#. I can find you a #seat#. | #greet#. The #pot# is warm.
+dlg @2 resident.hub [topic.meeting=known] : Your last #riddle# still bothers me. | The #cup# you favored is clean.
+dlg @3 resident.hub [here.time=night] : Speak softly; the #rooms# are occupied. | I can hear you by the #lamp#.
+dlg @1 resident.job : I keep the #taproom# at #self.workplace#. | I manage #beds#, #casks#, and the #guest# #book#.
+dlg @2 resident.job [self.working=yes] : I am counting #keys# for the #rooms#. | That #cask# needs a careful tap.
+dlg @1 resident.bye : #farewell#. I will bank the #fire#. | #saying.capitalize#. Mind the #stair#.
+dlg @1 inn.greet [here.inn_helper!=yes here.shop!=asleep] : #greet#. A #bed#, a #meal#, or a quiet #seat#? | Come beneath the #lamp# and say whether you need rest or supper.
+dlg @2 inn.greet [topic.meeting=known here.inn_helper!=yes here.shop!=asleep] : You know the #taproom# now. | The #bench# you used before is clear.
+dlg @3 inn.greet [here.inn_helper=yes] : I can find you food; ask #here.innkeeper# about a #bed#. | The #pot# is mine, but the #keys# belong to #here.innkeeper#.
+dlg @1 inn.rooms : A #bed# is #here.bed_night#p tonight or #here.bed_week#p for the week. | The upstairs is #here.upstairs_night#p if all #rooms# are free.
+dlg @1 inn.roomed : Here is your #key#; the #stairs# are by the #hearth#. | Your #room# is ready. Leave wet #boots# below.
+dlg @1 inn.bye : #farewell#. Set the #key# on the #counter# when you go. | The #lamp# will stay lit for the #road#.
+dlg @1 shop.greet [here.shop=open] : #greet#. There is #fish# from the #pot# and #ale# in the #cask#. | Ask me the #price# before you order.
+dlg @2 shop.greet [here.shop=bare] : The #larder# is thin today. | I can pour a #cup# while the #cart# is due.
+dlg @3 shop.greet [here.shop=asleep] : The #counter# is closed for a short rest. | Return after I have warmed the #pot#.
+dlg @4 shop.greet [here.shop!=bare here.shop!=asleep] : #greet#. I can tell you what the #pot# holds. | The #counter# is open; choose a #cup#.
+dlg @1 shop.prices [here.shop=open|bare] : The #price# is marked by the #counter#. | I can explain the #cost# of a #meal# or a #room#.
+dlg @1 shop.bye : #farewell#. Mind your #cup# on the way out. | #shop_bye# I will set another #plate#.
+graft resident.hub
+choice Why keep river stones? -> stones
+node stones
+say The #river# rounds them with no help from me. I keep a few upstairs.
+free
+choice Have you a riddle? -> riddle
+choice Goodbye. -> bye
+node riddle
+say What travels the #road# but never enters the #inn#? A cart rut.
+choice Back to the taproom. -> hub
+choice Goodbye. -> bye
+
+graft inn.greet
+choice Is there a bed tonight? -> beds
+node beds
+say I will check the #book# and show you the #rooms# before taking #coin#.
+free
+choice What is for supper? -> supper
+choice Goodbye. -> bye
+node supper
+say There is #fish# from the #pot# if the last #guest# has not claimed it.
+choice Back to the counter. -> greet
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #hearth# has just caught. | #greet#. I have a #key# free tonight.
+line @1 farewell : #farewell#. The last #cup# is washed. | I will leave the #lamp# lit awhile.
