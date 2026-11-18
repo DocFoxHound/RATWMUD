@@ -1,0 +1,341 @@
+# lf136, the wheat-price matriarch (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf136
+revision 1
+state ready
+dialect larkfield
+accent broad light
+tier standard
+written_for tn_lf_iris_wheatfield
+written_by claude-codex-lf-1
+title the wheat-price matriarch
+fits stage=old|adult
+prefers role=civilian
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=frank piety=ordinary drive=steady
+quirk always_knows_the_price_of_wheat
+likes honey_cakes roof_birds sharp_knife first_warm_day
+dislikes gulls rats
+fears another harvest sold below its worth a rat finding the pantry
+hopes a small plot held in the family name a bright spring for the family child
+topics home +0.5 work +0.4 family +0.3 pastimes +0.2
+styles comfort=blunt gossip=dry refuse=frank tease=wry
+marks oath saying
+persona #self.first# keeps the family #house#, knows the #price# of #wheat#, and watches the #birds# from the #roof#.
+
+words
+oath! = By the flour tin | By the pantry latch
+saying! = A grain has its own weight | A clean blade saves supper
+wheat = wheat | Longmead wheat
+grain = grain | good grain
+price = price | market price
+prices = prices | weekly prices
+weight = weight | true weight
+weights = weights | measured weights
+measure = measure | fair measure
+bushel = bushel | wheat bushel
+bushels = bushels | wheat bushels
+sack = sack | flour sack
+sacks = sacks | flour sacks
+flour = flour | fine flour
+mill = mill | town mill
+market = market | market square
+merchant = merchant | grain merchant
+merchants = merchants | shouting merchants
+coin = coin | counted coin
+coins = coins | counted coins
+house = house | family house
+home = home | family home
+farm = farm | Longmead farm
+field = field | family field
+fields = fields | open fields
+plot = plot | small plot
+land = land | good land
+deed = deed | signed deed
+name = name | family name
+family = family | close family
+child = child | growing child
+husband = husband | steady husband
+friend = friend | old friend
+neighbour = neighbour | nearby neighbour
+table = table | kitchen table
+chair = chair | kitchen chair
+bench = bench | long bench
+pantry = pantry | narrow pantry
+larder = larder | cool larder
+shelf = shelf | high shelf
+shelves = shelves | pantry shelves
+jar = jar | honey jar
+jars = jars | filled jars
+honey = honey | dark honey
+cake = cake | honey cake
+cakes = cakes | honey cakes
+bread = bread | morning bread
+loaf = loaf | fresh loaf
+knife = knife | sharp knife
+blade = blade | kitchen blade
+board = board | cutting board
+pot = pot | iron pot
+pan = pan | shallow pan
+meal = meal | family meal
+supper = supper | warm supper
+hearth = hearth | cooking hearth
+fire = fire | kitchen fire
+smoke = smoke | thin smoke
+window = window | open window
+roof = roof | farmhouse roof
+eave = eave | low eave
+eaves = eaves | low eaves
+bird = bird | roof bird
+birds = birds | rooftop birds
+nest = nest | roof nest
+nests = nests | roof nests
+gull = gull | loud gull
+gulls = gulls | loud gulls
+rat = rat | pantry rat
+rats = rats | hungry rats
+trap = trap | rat trap
+spring = spring | early spring
+summer = summer | warm summer
+autumn = autumn | harvest autumn
+winter = winter | long winter
+sun = sun | bright sun
+rain = rain | spring rain
+wind = wind | cold wind
+day = day | warm day
+morning = morning | early morning
+evening = evening | late evening
+night = night | quiet night
+road = road | old road
+roads = roads | open roads
+city = city | crowded city
+festival = festival | town festival
+church = church | old church
+watch = watch | town watch
+work = work | house work
+gate = gate | farm gate
+door = door | house door
+latch = latch | pantry latch
+oven = oven | baking oven
+wagons = wagons | passing wagons
+hand = hand | capable hand
+hands = hands | working hands
+
+any
+opinion @1 church for 1 : The #church# spoke kindly when we buried old #family#. | I remember the words when someone needs them.
+opinion @1 city against 1 : In the #city#, a person can lose a #child# among the elbows. | Give me a clear #field#.
+opinion @1 festivals against 1 : I hear the #festival# from my #window#. | A quiet #chair# suits me better.
+opinion @1 merchants against 1 : A #merchant# adds supper to the #price# before calling it fair. | I know what a #bushel# weighs.
+opinion @1 newcomers against 1 : A new #neighbour# may be kind. | Each arrival changes the old #road# a little more.
+opinion @1 road against 1 : The #roads# were easier to trust when I was young. | Now I watch #self.child# until the #gate# shuts.
+opinion @1 strangers mixed 0 : A #stranger# may sit at the #table#. | I count the #jars# after a crowd leaves.
+opinion @1 times mixed 0 : The #wheat# #price# changes, and the #family# adapts. | I would welcome one quiet #winter#.
+line @1 greet : #greet#. Wipe your feet at the #door#. | #greet#. There are #cakes# by the #hearth#.
+line @2 greet [pair.band=friends|family] : Sit down; the #pot# has enough for you. | I kept the best #cake# back.
+line @1 greet.return : The #bread# is cooling now. | The #birds# are settling just as you arrive.
+line @1 kin.open [pair.kin!=no] : Your #chair# is where it belongs. | Wash your #hands# before #supper#.
+line @1 again.open : We were counting the #bushels# from the last #field#. | You asked about a #plot# of our own.
+line @1 farewell : #farewell#. Close the #door# firmly. | Watch the #road# after dark.
+line @1 farewell.return : I may have another #cake# by then. | The #wheat# #price# will surely change.
+line @1 react.news : Speak while I cut this #bread#. | Is it news of the #market#?
+line @1 react.news.new : Nobody at this #table# has heard it yet. | Who brought the word?
+line @1 react.news.known : I heard the beginning from a #neighbour#. | Your ending had better be sound.
+line @1 react.news.doubt : A #merchant# said much the same last #autumn#. | Show me a true #measure# of it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Put down your things and sit. | I will warm the #pot# before you go.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There is #honey# for the #cakes# today. | Come tell the #family# at #supper#.
+line @1 answer.how : The #house# is in order. | A new #nest# has appeared beneath the #eaves#.
+line @1 answer.how.busy [self.working=yes] : I am sorting #flour# from the last #sack#. | The #pantry# needs its #shelves# cleared.
+line @1 ask.how : Have you had #bread# today? | Did you get home before the #rain#?
+line @1 sympathise : Sit by the #fire# until you can speak. | A #cake# will keep you going for a while.
+line @1 reassure : The #pot# has fed us through worse #winter# days. | A sound #knife# and willing #hands# can manage it.
+line @1 decline : I have the #house# to keep today. | Those #coins# are set aside for the #field#.
+line @1 accept_decline : Very well; the #jar# stays on its #shelf#. | Then fetch the #board# and we will begin.
+line @1 thank : You caught the #rat# before it reached the #flour#. | The #family# had an easier #day# for your help.
+line @1 deflect_thanks : The #pot# was already on the #fire#. | I had a spare #cake# set by.
+line @1 preclose : The #pantry# #latch# needs my attention. | The #birds# are making noise on the #roof#.
+line @1 tease [pair.band=friends] : That #knife# would cut better if you held the other end. | You priced the #wheat# like a hungry #gull#.
+line @1 ack : #bc_right#. The #bushel# is full. | #bc_fair_enough#. Bring the #jar# here.
+line @1 give.advice : Check the #weight# before you pay the #merchant#. | Cover the #cakes# before the #birds# find them.
+line @1 warn [world.bandits=near] : Stay off the outer #road# tonight. | Bring the #child# home before the #sun# sets.
+scene wheat_price
+when topic=work
+does tell.self / react.self / assess
+a : I know the #price# of #wheat# by the #bushel# before anyone asks. | A #merchant# counts on folk forgetting.
+b : How do you keep up? | Is it fair today?
+a : I listen at the #market#. | Fair enough for the seller.
+
+scene own_plot
+when topic=home
+does tell.self / react.self / assess
+a : We work this #farm#, but I still dream of a #plot# held in our #name#. | A #deed# would settle it.
+b : Would it be nearby? | Have you saved for it?
+a : Near these #fields#. | A few #coins# at a time.
+
+scene roof_birds
+when topic=pastimes
+does tell.self / react.self / assess
+a : The #birds# gather under the #eaves# when #spring# begins. | I know the sound of each #nest#.
+b : Do they bother you? | Can you see them?
+a : Less than #gulls#. | From the #window#.
+
+scene sharp_knife
+when topic=home
+does tell.self / react.self / assess
+a : A well-sharpened #knife# makes a small #meal# go further. | The #child# knows to leave the #blade# alone.
+b : Who sharpened it? | May I use it?
+a : I did. | On the #board#.
+
+scene honey_cakes
+when topic=food
+does tell.self / react.self / assess
+a : I put #honey# in the #cakes# after the #bread# leaves the #oven#. | The #family# smells them before they cool.
+b : Do you save one? | How many do you make?
+a : For #self.child#. | As many as the #jar# allows.
+
+scene spring_first_day
+when topic=weather
+does tell.self / react.self / assess
+a : The first warm #day# of #spring# lets me open every #window#. | The #house# smells of clean #wind#.
+b : Do you go outside? | Does it last?
+a : To the #field#. | Until #evening#.
+
+scene pantry_rats
+when topic=home
+does tell.self / react.self / assess
+a : I found #rat# prints beside the #flour# #sack#. | The #trap# now stands behind the #shelf#.
+b : Did you catch one? | Is the flour safe?
+a : The first one. | In a closed #jar#.
+
+scene gull_noise
+when topic=pastimes
+does tell.self / react.self / assess
+a : The #gulls# cry above the #roof# when the #market# scraps are out. | I shut the #window#.
+b : Do they nest there? | Do they steal food?
+a : Not under my #eaves#. | Anything uncovered.
+
+scene measure_wheat
+when topic=work
+does tell.self / react.self / assess
+a : A #bushel# needs filling level before anyone sets a #price#. | I have watched a #merchant# mound it high.
+b : Do you challenge them? | Does it matter much?
+a : Every time. | To the #family#.
+
+scene family_supper
+when topic=family
+does tell.self / react.self / assess
+a : At #supper#, #self.spouse# asks about the #fields# and #self.child# asks for #cakes#. | I hear both out.
+b : Do they help cook? | Is it lively?
+a : They carry the #pot#. | Until the last #cake#.
+
+scene old_roads
+when topic=memories
+does tell.self / react.self / assess
+a : I remember when the #road# past the #farm# saw fewer #wagons#. | I could hear the #birds# from the #gate#.
+b : Do you miss it? | Was it safer?
+a : On quiet days. | I believe so.
+
+scene flour_shelf
+when topic=home
+does tell.self / react.self / assess
+a : The high #shelf# keeps #flour# above the #rats#. | I still check each #sack# before #winter#.
+b : Can you reach it? | Does the flour keep?
+a : With the #chair#. | If it stays dry.
+
+scene market_haggle
+when topic=work
+does tell.self / react.self / assess
+a : I carry the #prices# in my head when I visit the #market#. | A #merchant# has tried to count on my years.
+b : What did you say? | Did they listen?
+a : I gave the true #weight#. | Soon enough.
+
+scene field_boundary
+when topic=home
+does tell.self / react.self / assess
+a : There is a strip of #land# beyond the last #field# that would suit a #plot#. | I look at it each #spring#.
+b : Who owns it? | Will you ask?
+a : I must find out. | When the #coins# permit.
+
+scene church_words
+when topic=memories
+does tell.self / react.self / assess
+a : The #church# words steadied us after a hard loss. | I keep them for the #family# when needed.
+b : Do you go often? | Do they help?
+a : On some mornings. | More than silence.
+
+scene winter_jars
+when topic=home
+does tell.self / react.self / assess
+a : Before #winter# I line up the #jars# along the #pantry# wall. | Each one is a #meal# we need not buy.
+b : What is inside? | How many are there?
+a : Enough for the #pot#. | I count them twice.
+
+scene child_road
+when topic=family
+does tell.self / react.self / assess
+a : I watch #self.child# take the #road# beyond the #gate#. | I wait for the sound of returning steps.
+b : Do you worry? | Do they go far?
+a : I am a parent. | Not beyond the #market#.
+
+story true_weight [topic=work self.age>=18]
+  : A #merchant# weighed our #wheat# with a light #measure#.
+  : I set my own #weights# beside the #bushel#.
+  ask : Did the price change?
+  b : You caught them.
+  : The #coins# came closer to what the #grain# was worth.
+
+story first_nest [topic=pastimes self.age>=18]
+  : The first #bird# built under our #eaves# in a cold #spring#.
+  : I watched from the #window# while the #house# was quiet.
+  ask : Did it stay?
+  b : That sounds peaceful.
+  : It returned the next year with another.
+
+story saved_plot [topic=home self.age>=18]
+  : I put aside the first #coin# for a #plot# bearing our #name#.
+  : The #jar# has grown slowly beside the #pantry# #shelf#.
+  ask : Is it enough yet?
+  b : A long hope.
+  : Not yet, though I still know where I would plant.
+
+rule @bark_price
+when concept=bark
+does aside
+cooldown 8h
+say The #price# of #wheat# rose again. | Check the #weight# on that #bushel#.
+
+rule @bark_birds
+when concept=bark
+does aside
+cooldown 9h
+say There is a #nest# beneath the #eaves#. | The #birds# are louder than the #gulls#.
+
+rule @bark_pantry
+when concept=bark
+does aside
+cooldown 10h
+say Shut the #pantry# #latch#. | I saw a #rat# near the #flour#.
+
+rule @bark_cakes
+when concept=bark
+does aside
+cooldown 11h
+say The #cakes# need another moment. | Leave the #honey# #jar# here.
+
+dlg @1 resident.hub : #greet#. There are #cakes# on the #table#. | #greet#. I am counting the #jars#.
+dlg @2 resident.hub [topic.meeting=known] : The #wheat# #price# has changed since you called. | #self.child# has been watching the #birds#.
+dlg @1 resident.job : I keep the #house# and its #pantry# for the #family#. | I cook, mind the #shelves#, and know the #market# #prices#.
+dlg @1 resident.bye : #farewell#. See that the #door# closes firmly behind you. | I have a #pot# to tend.
+graft resident.hub
+choice Why track wheat prices? -> price
+node price
+say The #family# sells #grain#. A poor #price# reaches our #table# before it reaches anyone else.
+free
+choice What farm do you dream of? -> plot
+choice Goodbye. -> bye
+node plot
+say A small #plot# with a #deed# in our #name#. I know where its first #field# would lie.
+choice Back to the house. -> hub
+choice Goodbye. -> bye
+
+
+old
+line @1 greet : #greet#. Speak plainly from the #door#. | #greet#. Mind the #flour# #sack#.
+line @1 farewell : #farewell#. I will count the #jars#. | See that the #gate# is shut.
