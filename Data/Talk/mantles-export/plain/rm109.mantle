@@ -1,0 +1,458 @@
+# rm109, the marching hum (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm109
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for tn_cw_clover_coldmere
+written_by claude-codex-cw-2
+title the marching hum
+fits stage=adult|old
+prefers talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk hums_old_marching_songs
+likes honey_cakes stars new_boots autumn_wind
+dislikes drizzle early_bells
+fears a_child_lost_on_the_road a_cart_that_never_comes_home
+hopes the_household_safe_by_night a_day_without_the_city_road
+topics work +0.4 family +0.3 memories +0.3 weather +0.2 pastimes +0.3 gossip -0.4
+styles comfort=quiet gossip=reluctant refuse=plain tease=dry
+marks oath saying
+persona #self.first# hums an old #march# between chores, dreads the #cart# road, and waits for the #stars# before resting.
+
+words
+oath! = By the last mile | March and moonlight
+saying! = A song carries farther than a cart | Dry boots make the return easier
+march = march | old march
+marches = marches | old marches
+tune = tune | half-remembered tune
+song = song | marching song
+songs = songs | marching songs
+hum = hum | quiet hum
+beat = beat | walking beat
+step = step | measured step
+steps = steps | measured steps
+voice = voice | low voice
+silence = silence | welcome silence
+pig = pig | yard pig
+pigs = pigs | yard pigs
+pen = pen | pig pen
+pens = pens | yard pens
+yard = yard | pig yard
+gate = gate | yard gate
+trough = trough | feed trough
+troughs = troughs | feed troughs
+feed = feed | grain mash
+bucket = bucket | feed bucket
+buckets = buckets | feed buckets
+straw = straw | dry bedding
+mud = mud | yard mud
+hoof = hoof | small hoof
+boots = boots | new boots
+sole = sole | boot sole
+soles = soles | boot soles
+lace = lace | boot lace
+pair = pair | new pair
+road = road | High Road
+mile = mile | road mile
+miles = miles | road miles
+cart = cart | goods cart
+wheel = wheel | cart wheel
+axle = axle | cart axle
+load = load | carried goods
+crate = crate | freight crate
+city = city | Ridgemere
+street = street | city street
+streets = streets | city streets
+smoke = smoke | city smoke
+lake = lake | Glasswater
+shore = shore | lakeshore
+home = home | shared cottage
+house = house | crowded house
+roof = roof | sound roof
+table = table | supper table
+fire = fire | hearth fire
+child = child | young one
+children = children | young ones
+spouse = spouse | partner
+family = family | household
+friend = friend | familiar friend
+letter = letter | family letter
+cake = cake | honey cake
+cakes = cakes | honey cakes
+honey = honey | sweet honey
+plate = plate | supper plate
+bread = bread | loaf
+market = market | market square
+price = price | asking price
+coin = coin | earned coin
+stars = stars | night stars
+sky = sky | open sky
+night = night | late night
+moon = moon | high moon
+autumn = autumn | leaf season
+wind = wind | autumn wind
+drizzle = drizzle | thin drizzle
+rain = rain | steady rain
+bell = bell | morning bell
+bells = bells | early bells
+dawn = dawn | first light
+dusk = dusk | fading light
+hour = hour | late hour
+field = field | open field
+path = path | farm path
+watch = watch | town watch
+bench = bench | empty bench
+work = work | day's work
+hands = hands | working hands
+hand = hand | working hand
+sun = sun | autumn sun
+hope = hope | quiet hope
+rest = rest | brief rest
+
+any
+opinion @1 city for 1 : I knew the #city# as a young wolf, and some of its #streets# stay with me. | The #smoke# was part of home once, though the #road# back wears me down.
+opinion @1 dole mixed 0 : Feed a hungry #child# today; settle the ledger tomorrow. | I prefer a day's #work# when there is any to take.
+opinion @1 drink mixed 0 : I have no quarrel with a cup at supper. | Too much leaves the #cart# unsafe in the morning.
+opinion @1 festivals mixed 0 : I like hearing an old #tune# among the stalls. | The #bells# start too early for my liking.
+opinion @1 houses against 1 : A fine house can leave its #bench# empty while workers stand outside. | I have waited at their #gate# with a full #cart#.
+opinion @1 merchants against 2 : The #bread# #price# climbs while my #coin# stays thin. | I ask the sum before lifting a #cake# from the stall.
+opinion @1 newcomers against 1 : I need to know a new worker can shut the #pen# properly. | There is little spare #work# in a small #yard#.
+opinion @1 road against 1 : The #road# takes a whole day and gives nothing back but tired #boots#. | I go when the #load# needs carrying, never for pleasure.
+opinion @1 times against 1 : We keep stretching the same #coin# across more days. | The #trough# and the #table# both need filling.
+opinion @1 watch mixed 0 : The #watch# can be useful when a #cart# goes missing. | I would rather get a neighbour's help before making a report.
+
+grown
+line @1 greet : #greet#. I was trying to remember the next verse. | #greet#. Give me a moment with this #gate#.
+line @2 greet [self.working=yes] : Say it while I carry the #bucket#. | This #pen# needs closing; I can listen.
+line @3 greet [pair.band=strangers] : I know the #path# to the #yard# if you are lost. | Keep your #boots# clear of the #trough#.
+line @4 greet [pair.band=friends|family] : There are #cakes# beside the #fire#. | I thought you might join me for a look at the #stars#.
+line @5 greet [here.time=dawn] : The #bell# got ahead of me again. | I was up with the #pigs# before the light.
+line @6 greet [here.time=night] : I came out to see the #sky#. | Keep your voice low; the #house# is resting.
+line @1 greet.return : Your #steps# sounded familiar. | #welcome_back#. The #cart# is home now.
+line @2 greet.return [pair.band=friends|family] : I left a #cake# on the #plate# for you. | Did you hear the #tune# I was humming?
+line @1 kin.open [pair.kin!=no] : Come by the #fire#; the #wind# has turned cold. | Your place is near the #table#.
+line @1 again.open : We were at the part about the #road#. | I can finish that #song# if you have time.
+line @1 farewell : #farewell#. I must put the #bucket# back. | #saying.capitalize#. Watch the #mud# by the #gate#.
+line @1 farewell.return : Come when the #stars# are clear again. | I hope your #boots# stay dry next time.
+line @1 react.news : Let me stop humming. I am listening. | Start with who was there.
+line @1 react.news.new : That word has not come along our #path#. | Where did you hear it first?
+line @1 react.news.known : Someone at the #market# mentioned part of it. | You know the rest better than I do.
+line @1 react.news.doubt : I would wait for the one who saw it. | A story can change between the #city# and the #lake#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is painful news; leave the #work# for now. | I can make room by the #fire#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That is a welcome thing to hear. | Perhaps someone will bring #cakes# to celebrate.
+line @1 answer.how : A little weary, but settled. | I have #work# to do and a good #roof# tonight.
+line @1 answer.how.busy [self.working=yes] : The #trough# is almost filled. | I have another #pen# to check before I rest.
+line @1 ask.how : Did you get enough sleep? | Did the #drizzle# catch you on the #road#?
+line @1 sympathise : We can leave the #silence# undisturbed until you are ready. | Tell me what would help right now.
+line @1 reassure : We will find the #path# once the light returns. | A steady #step# is enough for this #hour#.
+line @1 decline : I cannot take the #cart# out again today. | No, the #children# need me at #home#.
+line @1 accept_decline : Then let it rest. | I will not press you about it.
+line @1 thank : You tightened the #wheel# before I reached the #road#. | That was a kind thing to do for my #family#.
+line @1 deflect_thanks : I had both #hands# free. | A #bucket# is little trouble to carry.
+line @1 preclose : The #pigs# want their last feed. | I have to see the #children# safely inside.
+line @1 tease [pair.band=friends] : You kept the #beat# worse than my old #cart# #wheel#. | Those #boots# would lose a race to the #trough#.
+line @1 ack : #bc_right#. I will check the #gate#. | #bc_fair_enough#. Let the #cart# stay.
+line @1 give.advice : Dry your #boots# before the next journey. | Give the #pigs# fresh #straw# before the #rain#.
+line @1 warn [world.bandits=near] : Find another traveller before setting out at dusk. | I would keep the #cart# near #home# tonight.
+line @2 ask.how [pair.band=friends|family] : Is your #home# quiet tonight? | Did you have time for supper?
+line @2 reassure [other.tired=yes] : Take the #bench# for an #hour#. | The #bucket# can be carried without you.
+line @2 thank [pair.band=friends|family] : You stayed until the last #pen# was shut. | I noticed you saved the final #cake# for us.
+line @2 answer.how [here.weather=rain] : This #drizzle# tires me more than a proper shower. | The #roof# has kept the worst of it off.
+line @2 give.advice [other.stage=young|adolescent] : Keep beyond the #pen# #gate# when the #pigs# are feeding. | Ask someone older before taking the #cart# #path#.
+scene march_without_words
+when topic=memories
+does tell.self / react.self / assess
+a : I remember the #beat# of an old #march# but only half its words. | My feet carry it after the tune goes quiet.
+b : Can you hum the rest? | Where did you learn it?
+a : Enough to keep walking. | On a #city# #street# when I was young.
+
+scene city_march
+when topic=memories self.away=yes
+does tell.self / react.self / assess
+a : The #city# taught me a #song# for long walks. | Here the #wind# fills the gaps between verses.
+b : Do you miss the city? | Does anyone know the song?
+a : Its familiar turns, sometimes. | I have heard one neighbour hum it.
+
+scene thin_drizzle
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : This #drizzle# cannot decide whether to fall or leave. | It gets beneath my #boots# while I wait for a real shower.
+b : Would steady rain be better? | Does it spoil the #yard#?
+a : Then I could plan the work. | It makes the #mud# cling.
+
+scene autumn_gust
+when topic=weather here.season=autumn
+does tell.self / react.self / assess
+a : The autumn #wind# dries the #yard# faster than a weak #sun#. | It shakes the last leaves across the #path#.
+b : Do the #pigs# mind? | Is it cold?
+a : They settle in the #straw#. | Not while I keep moving.
+
+scene stars_after_work
+when topic=pastimes here.time=dusk|night
+does tell.self / react.self / assess
+a : I wait until the #stars# come out before I go inside. | It gives the day a quiet ending.
+b : Do you know their names? | Do you stay long?
+a : Only a few. | Until the #fire# begins to sound inviting.
+
+scene new_boots
+when topic=pastimes
+does tell.self / react.self / assess
+a : A new #pair# of #boots# feels too clean for this #yard#. | I keep the old ones until the new #soles# soften.
+b : Which pair do you wear to work? | Do they last?
+a : The old pair on muddy days. | Longer if I dry them.
+
+scene boot_laces
+when topic=work
+does tell.self / react.self / assess
+a : A loose #lace# catches on the #pen# rail. | I tie my #boots# before carrying the #feed#.
+b : Has it happened to you? | Does it slow the chores?
+a : Once was enough. | Less than falling would.
+
+scene honey_cakes
+when topic=food
+does tell.self / react.self / assess
+a : #honey.capitalize# on a warm #cake# sticks to my paws. | I save that treat for after the #trough# is filled.
+b : Do you bake them? | Is one enough?
+a : When the #fire# is hot. | One for now, another at supper.
+
+scene early_bell
+when topic=weather here.time=dawn
+does tell.self / react.self / assess
+a : The early #bell# rings while I am still deciding to wake. | The #pigs# make a louder case for getting up.
+b : Which gets you moving? | Do you ever sleep through it?
+a : The empty #trough#. | Not with this #house# awake.
+
+scene feed_order
+when topic=work
+does tell.self / react.self / assess
+a : I fill the nearest #trough# first and carry the #bucket# down the line. | If I change the order, the #pigs# shout about it.
+b : Do they really know? | Does it matter?
+a : They know the sound of my #steps#. | It keeps the #yard# calm.
+
+scene pen_latch
+when topic=work
+does tell.self / react.self / assess
+a : I lift the #gate# before setting the latch. | A sagging rail can look closed while a #pig# has room to push through.
+b : Has one escaped? | How do you test it?
+a : Once into the #path#. | I lean against the wood.
+
+scene straw_depth
+when topic=work
+does tell.self / react.self / assess
+a : The smallest #pigs# need a deeper bed of #straw# when the #wind# turns. | I spread it before the #yard# grows damp.
+b : Do they burrow into it? | Is it hard to keep dry?
+a : Until only their ears show. | Under a sound #roof#, no.
+
+scene cart_goods
+when topic=travel
+does tell.self / react.self / assess
+a : Some days I take a #cart# of goods toward the #city#. | The #load# is honest work, but I count the #miles# going there.
+b : Does the road trouble you? | Is the return quicker?
+a : More than the #yard# does. | It feels that way once I see the #lake#.
+
+scene cart_axle
+when topic=work
+does tell.self / react.self / assess
+a : I look under the #cart# before a long journey. | A weak #axle# can strand every #crate# beyond the last house.
+b : Can you mend it there? | Have you found a crack?
+a : A loose pin, perhaps. | Once, before I set out.
+
+scene city_smoke
+when topic=travel self.away=yes
+does tell.self / react.self / assess
+a : The #city# #smoke# still smells familiar at the first turn. | By the second #street#, I want the #lake# again.
+b : Does the visit get easier? | What do you miss there?
+a : The errand does. | A few people, never the traffic.
+
+scene crowded_house
+when topic=family
+does tell.self / react.self / assess
+a : Our #home# has enough voices to drown out a quiet #hum#. | I wait until supper ends before beginning a #song#.
+b : Do they ask you to sing? | Is there room to rest?
+a : Some evenings. | When the #fire# burns low.
+
+scene child_gate
+when topic=family self.parent=yes
+does tell.self / react.self / assess
+a : I ask my #self.child# to wait outside the #pen# while I carry #feed#. | The #pigs# crowd the #gate# when the #bucket# comes.
+b : Does your child listen? | Can your child help?
+a : More each year. | By filling the small #bucket#.
+
+scene spouse_return
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse# hears the #cart# #wheel# before it reaches our #path#. | I am glad when that sound reaches #home# before dark.
+b : Do you wait outside? | What if it is late?
+a : If the #sky# is clear. | I keep a #fire# ready.
+
+scene helper_lesson
+when topic=work self.master=yes
+does tell.self / react.self / assess
+a : I show a new #hand# which #pen# has the stubborn latch. | Then I let the helper test it twice.
+b : Do they learn quickly? | Why twice?
+a : When they listen to the wood. | So the habit stays.
+
+scene quiet_answer
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I can be quiet without being cross. | I would rather finish one thought before starting another.
+b : Should I leave you alone? | Does the #song# help you think?
+a : Stay if you like. | Its #beat# gives a thought a place.
+
+scene price_of_bread
+when topic=prices
+does tell.self / react.self / assess
+a : The #bread# at the #market# asks more #coin# each week. | I buy it anyway; a #family# needs supper.
+b : Could you bake it? | Do you ask the seller why?
+a : On days with time. | The answer changes less than the #price#.
+
+scene strangers_at_yard
+when topic=gossip
+does tell.self / react.self / assess
+a : A new #hand# came through the #yard# asking for work. | I showed the #gate# first, then waited to see how it was shut.
+b : Was it done well? | Did you hire anyone?
+a : On the second try. | There was no place open that day.
+
+scene rain_on_straw
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : I put fresh #straw# down before the #rain# reaches the #pen#. | Wet bedding makes the whole #yard# miserable.
+b : Can you change it later? | Will the roof hold?
+a : Yes, but twice the work. | I checked it this morning.
+
+scene lake_clear
+when topic=home
+does tell.self / react.self / assess
+a : From the #shore# I can see the #lake# grow dark under the #sky#. | That is when I know the #cart# journey is finished.
+b : Do you stop there? | Does it calm you?
+a : For a moment. | Enough to go #home# quietly.
+
+scene marching_beat
+when topic=pastimes
+does tell.self / react.self / assess
+a : I hum a #march# at the same pace I carry a #bucket#. | The #beat# keeps the #feed# from sloshing over.
+b : Does anyone recognize it? | Can you change the tune?
+a : A few older wolves do. | Not without spilling something.
+
+scene night_count
+when topic=work here.time=dusk|night
+does tell.self / react.self / assess
+a : Before #night# I walk past every #pen# and listen. | A settled #pig# sounds different from one near an open #gate#.
+b : What do you hear? | Do you use a lantern?
+a : Straw moving, mostly. | When the #moon# is hidden.
+
+scene old_city_route
+when topic=memories self.away=yes
+does tell.self / react.self / assess
+a : I know an older route through the #city# that avoids the busy #market#. | The #cart# still catches every stone near the last #street#.
+b : Is it shorter? | Why use it?
+a : Only quieter. | I can keep a steady #beat# there.
+
+story broken_verse [topic=memories self.age>=25]
+  : I began an old #march# on the #road# and forgot its second verse.
+  : I hummed the missing stretch until a traveller supplied a different ending.
+  ask : Was it the right one?
+  b : You found another singer.
+  : I still do not know, but I kept the new ending.
+
+story cart_mile [topic=travel self.age>=25]
+  : I counted the #miles# to the #city# while the #cart# #wheel# made a scrape.
+  : I stopped at a safe bend, cleared a stone, and heard the scrape cease.
+  ask : Did the goods arrive?
+  b : Better to stop early.
+  : Yes. I wished the return had been as quiet.
+
+story honey_plate [topic=food self.age>=25]
+  : I made #honey# #cakes# for supper and set them beside the #fire#.
+  : By the time the #family# gathered, one had gone missing from the #plate#.
+  ask : Did you find who took it?
+  b : That is a small mystery.
+  : The sticky #hoof# print was enough of an answer.
+
+story loose_gate [topic=work self.age>=25]
+  : A #pig# pushed a tired #gate# while I carried the #bucket# away.
+  : I heard the latch scrape, turned back, and found the animal on the #path#.
+  ask : Did it go far?
+  b : You heard it in time.
+  : Only to the first patch of #mud#.
+
+story star_wait [topic=family self.age>=25]
+  : A #cart# from the #road# came late while I watched the #stars# appear.
+  : I stayed by the #shore# until the #wheel# sounded on the homeward #path#.
+  ask : Was everyone safe?
+  b : That must have been a long wait.
+  : Yes. We ate the last #cake# together.
+
+rule @bark_march
+when concept=bark
+does aside
+cooldown 8h
+say I have lost the next verse again. | That #beat# is still in my feet.
+
+rule @bark_feed
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say The #trough# is nearly empty. | This #bucket# goes to the far #pen#.
+
+rule @bark_drizzle
+when concept=bark here.weather=rain
+does aside
+cooldown 10h
+say Make up your mind, #drizzle#. | I should have worn the older #boots#.
+
+rule @bark_stars
+when concept=bark here.time=night
+does aside
+cooldown 11h
+say The #stars# are sharp tonight. | One quiet #hour# beneath that #sky#.
+
+rule @bark_cart
+when concept=bark
+does aside
+cooldown 9h
+say I hope the #cart# is back before dark. | Another #mile# I would rather not travel.
+
+rule @bark_cakes
+when concept=bark
+does aside
+cooldown 12h
+say I can smell the #honey# from here. | Leave one #cake# on the #plate#.
+
+dlg @1 resident.hub : #greet#. I was humming, not calling you. | #greet#. Mind the #gate# while I fill this #bucket#.
+dlg @2 resident.hub [topic.meeting=known] : I know you. Are your #boots# still fit for the #road#? | Back again? The #pigs# have settled since we spoke.
+dlg @3 resident.hub [here.time=night] : I came out for the #stars#. What brings you here? | Keep away from the #pens# in the dark.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Speak from the #path#, please. | The #yard# is closed; say what you need.
+dlg @1 resident.job : My days at #self.workplace# go to the #pigs#, their #feed#, and clean #straw#. | The #troughs# and #gate# take most of my day at #self.workplace#.
+dlg @2 resident.job [self.working=yes] : This #feed# must go in before I can rest. | I am checking the #pen# latches now.
+dlg @1 resident.bye : #farewell#. Keep your #boots# out of the #mud#. | #saying.capitalize#. I must finish the feeding.
+dlg @2 resident.bye [here.time=night] : Good night. Take the lit #path#. | I am going back to the #fire#.
+dlg @1 master.learn [here.teaches=yes] : Start by learning which #gate# catches at the bottom. | Carry the #feed# slowly; a quiet #yard# is easier to manage.
+dlg @2 master.learn [here.teaches=yes topic.meeting=known] : You have come back to practise. Check the far #pen# first. | Show me how you test the latch now.
+dlg @3 master.learn [here.teaches=yes self.working=yes] : Watch how I spread the #straw# before you take a #bucket#. | Stand clear while these #pigs# crowd the #trough#.
+dlg @3 resident.bye [self.working=yes] : I need to secure these #pens#. #farewell#. | We can speak after the #feed# is done.
+graft resident.hub
+choice What is that tune? -> tune
+node tune
+say An old #march# I learned on #city# streets. I have forgotten some words, but the #beat# stays with me through the #work#.
+free
+choice Do you travel to Ridgemere? -> road
+choice Back to the yard. -> hub
+node road
+say When the #cart# has goods for the #city#. I count every #mile# until I can turn toward the #lake# again.
+choice Back to the yard. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice How do I keep the pigs calm? -> calm
+node calm
+say Carry the #bucket# steadily, fill the #trough# in the same order, and check that the #gate# catches after you.
+free
+choice What if one escapes? -> escape
+choice Back to the lesson. -> end
+node escape
+say Close the other #pens# first. Then walk the loose #pig# back along the #path# without chasing it.
+choice Back to the lesson. -> end
+choice Goodbye. -> bye
