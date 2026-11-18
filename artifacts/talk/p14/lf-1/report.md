@@ -1,6 +1,6 @@
 # Mantle batch lf-1: Larkfield (2026-11-18)
 
-Writer: Codex (GPT-6), one agent. Branch: `r3-mantles-lf-1`. Final mantle commit: `9744132a`. Merge: pending.
+Writer: Codex (GPT-6), one agent. Branch: `r3-mantles-lf-1`. Final mantle commit: `9744132a`. Merge: `761502c2`.
 World: DEV `ridgemere3`, game day 40.2 at final check.
 
 ## What was written
@@ -55,7 +55,7 @@ Totals: 36 mantles (7 full, 29 standard; 2 young or adolescent), 6016 loader ite
 - Eight scenes were not sampled: `lf103.roof_thunder` waits on thunder, while `lf104.spring_dance`, `lf105.festival_chorus`, `lf106.festival_spill`, `lf107.market_dance`, `lf108.festival_noise`, `lf109.festival_verse`, and `lf112.festival_bells` wait on festival conditions. No lint warnings remain.
 - Every mantle passed a dry run and was loaded and bound individually in DEV; backups were saved under `Saved/Backups/`. Final DEV check: 145 mantles, 145 worn, 629 residents without a mantle. `mantle_export --check` agrees with the rows.
 - G1 over the whole 145-mantle export: 18,262 items, 10,718 rules and scenes, 0 refused. G2 strict over the two touched dialect folders: 40 mantles, 0 refusals, 0 warnings.
-- Main-checkout ctest after merge: pending.
+- Main-checkout ctest after merge: dialect_check, dialect_check_rules, talk_lint, talk_lint_rules, mantle_export_loads, mantle_export_rules, and mantle_check_rules passed (7/7).
 
 ## Voices
 
