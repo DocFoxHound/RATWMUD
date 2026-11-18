@@ -102,6 +102,7 @@ rm109	plain	full	ready	1	tn_cw_clover_coldmere	claude-codex-cw-2
 rm110	plain	full	ready	1	tn_cw_grist_reedmere	claude-codex-cw-2
 sm101	southmeadow	standard	ready	1	cty_ada_coalstack	claude-p11-pilot
 sm102	southmeadow	standard	ready	1	cty_vale_pikebridge	claude-codex-cw-1
+sm103	southmeadow	standard	ready	1	cty_brisk_lakemere	claude-codex-lf-1
 sw101	saltwell	full	ready	1	tn_fh_thistle_stonepick	claude-p11-pilot
 sw102	saltwell	full	ready	1	tn_mb_oriel_marshditch	claude-p11-pilot
 sw103	saltwell	full	ready	1	tn_lf_moss_downridge	claude-p11-pilot
