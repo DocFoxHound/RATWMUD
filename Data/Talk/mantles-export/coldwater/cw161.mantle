@@ -1,0 +1,341 @@
+# cw161, the quiet map keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw161
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for born_1grqt7uo
+written_by claude-codex-cw-2
+title the quiet map keeper
+fits stage=young|adolescent|adult|old
+prefers talk=plain
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk hums_old_marching_songs_while_studying_maps
+likes hard_cheese dice old_maps warm_rain
+dislikes crowds deep_mud
+fears losing_the_path_on_a_wrong_map being_separated_in_a_crowd
+hopes a_map_with_every_road_drawn_right a_quiet_place_to_play_dice
+topics home +0.4 pastimes +0.4 travel +0.3 food +0.2
+styles comfort=gentle gossip=reluctant refuse=plain tease=dry
+marks oath saying
+persona #self.first# traces #roads# on old #maps#, hums a #marching# #tune#, and keeps a #die# beside a piece of hard #cheese#.
+
+words
+oath! = Dice and dry roads | By the folded map
+saying! = Check the road against your feet | A quiet corner has room for a game
+map = map | old map
+maps = maps | folded maps
+mark = mark | ink mark
+marks = marks | ink marks
+ink = ink | faded ink
+line = line | drawn line
+lines = lines | drawn lines
+road = road | High Road
+roads = roads | drawn roads
+path = path | narrow path
+paths = paths | foot paths
+turn = turn | sharp turn
+bend = bend | road bend
+bridge = bridge | river bridge
+river = river | Long River
+lake = lake | Glasswater
+shore = shore | lakeshore
+town = town | Coldwater
+city = city | Ridgemere
+hill = hill | low hill
+field = field | open field
+mud = mud | deep mud
+puddle = puddle | rain puddle
+rain = rain | warm rain
+cloud = cloud | low cloud
+wind = wind | soft wind
+sun = sun | pale sun
+morning = morning | early morning
+evening = evening | quiet evening
+day = day | long day
+night = night | still night
+house = house | shared house
+home = home | warm home
+room = room | shared room
+corner = corner | quiet corner
+table = table | low table
+bench = bench | wooden bench
+door = door | house door
+window = window | small window
+family = family | household
+mother = mother | busy mother
+father = father | busy father
+friend = friend | close friend
+neighbour = neighbour | near neighbour
+stranger = stranger | new face
+crowd = crowd | busy crowd
+market = market | town market
+stall = stall | market stall
+coin = coin | copper coin
+price = price | high price
+bread = bread | fresh bread
+cheese = cheese | hard cheese
+piece = piece | small piece
+plate = plate | supper plate
+cup = cup | warm cup
+game = game | dice game
+die = die | six-sided die
+dice = dice | little dice
+throw = throw | careful throw
+throws = throws | lucky throws
+number = number | marked number
+numbers = numbers | marked numbers
+song = song | old song
+songs = songs | marching songs
+tune = tune | low tune
+marching = marching | steady marching
+beat = beat | steady beat
+step = step | small step
+steps = steps | careful steps
+hush = hush | quiet hush
+festival = festival | town festival
+sweets = sweets | festival sweets
+music = music | festival music
+pocket = pocket | small pocket
+fold = fold | neat fold
+paper = paper | worn paper
+lamp = lamp | small lamp
+hour = hour | quiet hour
+cart = cart | passing cart
+hand = hand | small hand
+boot = boot | muddy boot
+boots = boots | muddy boots
+turns = turns | road turns
+plates = plates | supper plates
+floor = floor | wooden floor
+
+any
+opinion @1 festivals for 1 : The #music# reaches the quiet side of the street. | The #sweets# are worth a short visit.
+opinion @1 houses against 1 : A fine #house# can pass our #door# without seeing it. | I prefer a #neighbour# who knows this #room#.
+opinion @1 merchants against 2 : The #price# of #cheese# rises while our #plate# stays small. | I count my #coin# against the marked #price#.
+opinion @1 newcomers against 1 : A #stranger# should ask before taking the quiet #corner#. | I would show them the #road# once we know each other.
+opinion @1 road mixed 0 : A #map# makes the #road# look straight. | My feet know it bends beside the #river#.
+opinion @1 strangers mixed 0 : I can share a #game# with a new face. | The #dice# stay in my #pocket# until we are acquainted.
+opinion @1 times against 1 : I want enough #cheese# for the whole #table#. | A longer #song# will not fill an empty #plate#.
+opinion @1 city mixed 0 : The #city# is a dark mark on this #map#. | I would rather learn the small #paths# around #home#.
+line @1 greet : #greet#. I am following this #road# with my finger. | #greet#. The #dice# are on the #table#.
+line @2 greet [pair.band=friends|family] : I kept the good #die# for you. | Come sit in this quiet #corner#.
+line @3 greet [here.time=dawn] : The #rain# woke me before the #market#. | #greet#. The #map# is dry by the #window#.
+line @1 greet.return : You are back; I found another #bend# on the #map#. | The #game# can start again.
+line @1 kin.open [pair.kin!=no] : There is space beside me on the #bench#. | The last #piece# of #cheese# is yours.
+line @1 again.open : I was counting the #steps# to the #bridge#. | Did you see that wrong #line#?
+line @1 farewell : #farewell#. This #map# belongs back in its #fold#. | Keep your feet out of the #mud#.
+line @1 farewell.return : Next visit, bring a second #die#. | We can follow the #road# farther next time.
+line @1 react.news : I will listen if you speak softly. | Where does that happen on the #map#?
+line @1 react.news.new : Nobody here mentioned that before. | Did the #market# hear it first?
+line @1 react.news.known : I heard a few words near the #door#. | Now the account fits together.
+line @1 react.news.doubt : The #mark# on my #map# says otherwise. | A traveller with muddy #boots# might know.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Take my quiet #corner# if you need it. | That hurts to hear; this #corner# is yours for a while.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : We could mark that with a #game#. | I hope there is #cheese# to share.
+line @1 answer.how : I found a dry #path# and my #map# stayed clean. | The #rain# has been warm today.
+line @1 answer.how.busy [self.working=yes] : These #dice# need their cloth pouch. | This #paper# needs folding before it tears.
+line @1 ask.how : Did your #road# have any deep #mud#? | Have you seen a #map# drawn differently?
+line @1 sympathise : We can keep the #room# quiet for you. | Let the #game# rest; I will take the nearby #bench#.
+line @1 reassure : We can check the #path# one #step# at a time. | A wrong #line# can be drawn again.
+line @1 decline : That #crowd# can go on without me today. | I will stay with this #map#.
+line @1 accept_decline : I hear you. The #game# can wait. | Then we will keep to the dry #path#.
+line @1 thank : You kept the #paper# out of the #rain#. | The #cheese# was welcome; thank you.
+line @1 deflect_thanks : I only found a dry #corner#. | There was another #piece# left.
+line @1 preclose : The #map# will tear if I leave it beneath this dim #lamp#. | I can hear the #marching# #tune# again.
+line @1 tease [pair.band=friends] : Your #die# seems to know only one #number#. | That #map# would send you into the #lake#.
+line @1 ack : #bc_right#. That #road# bends sooner. | #bc_fair_enough#. Set the #dice# there.
+line @1 give.advice : Follow the #bridge# you can see, even when the #map# puts it elsewhere. | Keep your #paper# dry in a #pocket#.
+line @1 warn [world.bandits=near] : Stay near familiar #roads#. | I would not cross the #bridge# alone.
+scene wrong_road
+when topic=travel
+does tell.self / react.self / assess
+a : This old #map# draws the #road# through a #field#. | I have seen the real #path# turn beside the #river#.
+b : Which is right? | Why is the map wrong?
+a : The #path# under our feet. | Someone drew it long ago.
+
+scene river_bridge
+when topic=travel
+does tell.self / react.self / assess
+a : The #bridge# sits farther from #town# than this #line# suggests. | From the #bend#, I count each #step# to the crossing.
+b : Have you crossed it? | Is it wide?
+a : With company. | Enough for a #cart#.
+
+scene folded_corner
+when topic=home
+does tell.self / react.self / assess
+a : I keep my #map# folded at the same #corner#. | The #paper# is thin where the #lake# is drawn.
+b : Will it tear? | Can you mend it?
+a : If I tug. | With a careful patch.
+
+scene dice_throw
+when topic=pastimes
+does tell.self / react.self / assess
+a : I roll the #die# in my #hand# before a #throw#. | I like the sound of it against the #table#.
+b : Do you win often? | Is it a trick?
+a : As often as anyone. | The #numbers# choose.
+
+scene quiet_game
+when topic=pastimes
+does tell.self / react.self / assess
+a : A #game# is better with two people in a quiet #room#. | A #crowd# makes me forget whose turn it is.
+b : Can I join? | Do you keep score?
+a : Pull up the #bench#. | On a scrap of #paper#.
+
+scene hard_cheese
+when topic=food
+does tell.self / react.self / assess
+a : Hard #cheese# keeps in a #pocket# for a long walk. | I cut a small #piece# when we stop by the #lake#.
+b : Does it crumble? | Do you share?
+a : Less than fresh cheese. | If you ask.
+
+scene warm_rain
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : Warm #rain# after a dry #day# makes the #road# smell new. | I stay under the #window# until it softens.
+b : Do you walk in it? | Does it make mud?
+a : Once the shower is gentle. | In the #field# ruts.
+
+scene deep_mud
+when topic=weather
+does tell.self / react.self / assess
+a : Deep #mud# holds a #boot# longer than a friend should. | I choose the stones beside the #path#.
+b : Did the mud take a boot from you? | Are the stones safe?
+a : Nearly. | If they do not wobble.
+
+scene marching_tune
+when topic=memories
+does tell.self / react.self / assess
+a : An old #marching# #song# comes back when I trace a #road#. | The #beat# helps me count the #turns#.
+b : Who taught it? | Can you sing it?
+a : I heard it at #home#. | Quietly, if the #room# is still.
+
+scene market_edge
+when topic=home
+does tell.self / react.self / assess
+a : Beside a #stall# I can watch the #market# #crowd# pass. | I can still hear the #music# there.
+b : Do you go inside? | What do you buy?
+a : When it thins. | A #piece# of #cheese#.
+
+scene festival_sweets
+when topic=pastimes here.day=festival
+does tell.self / react.self / assess
+a : I go to the #festival# early for the #sweets#. | Before the #crowd# grows, I can hear the first #song#.
+b : Do you stay long? | Is there a game?
+a : Until the street fills. | Sometimes a #dice# table.
+
+scene family_table
+when topic=family
+does tell.self / react.self / assess
+a : At our #table# I put the #dice# in my #pocket# before supper. | A rolling #die# can disappear under a #bench#.
+b : Has that happened? | Who finds it?
+a : More than once. | Whoever hears it stop.
+
+scene shared_room
+when topic=family
+does tell.self / react.self / assess
+a : A shared #room# has little space for a #map#. | I spread it on the #table# after the meal.
+b : Does anyone mind? | Do they look with you?
+a : Only when the #lamp# is needed. | Sometimes.
+
+scene map_of_city
+when topic=travel
+does tell.self / react.self / assess
+a : The #city# is a small dark #mark# on my #map#. | I know its #roads# are larger than the #ink# shows.
+b : Would you go there? | Is it far?
+a : With someone I trust. | Many #turns# from here.
+
+scene lake_line
+when topic=home
+does tell.self / react.self / assess
+a : The #lake# is drawn as a smooth #line#. | Its real #shore# bends around reeds and stones.
+b : Which do you like? | Can you walk it?
+a : The real one. | Where the #path# stays dry.
+
+scene new_neighbour
+when topic=smalltalk
+does tell.self / react.self / assess
+a : A new #neighbour# asked to see my #map#. | I showed the #bridge# and the safest way through the #mud#.
+b : Did they thank you? | Was the map accurate?
+a : They brought a #piece# of #bread#. | I corrected one #bend# first.
+
+scene dry_pocket
+when topic=work
+does tell.self / react.self / assess
+a : I wrap the #dice# in cloth before putting them in my #pocket#. | The #rain# can spoil the #paper# marks.
+b : Do dice get wet? | Does cloth help?
+a : The wooden ones swell. | Until I reach #home#.
+
+story mistaken_bridge [topic=travel self.age>=3]
+  : I followed an old #map# toward a #bridge# that was drawn too near #town#.
+  : The real crossing waited beyond the next #bend#, where the #road# met the #river#.
+  ask : Did you find it?
+  b : The map needed changing.
+  : I marked the right place in #ink# when I got #home#.
+
+story lost_die [topic=pastimes self.age>=3]
+  : My #die# rolled beneath the #bench# during a quiet #game#.
+  : I found it by listening for the last little knock against the #floor#.
+  ask : Was the game over?
+  b : A careful ear.
+  : We started the #throw# again.
+
+story rain_map [topic=weather self.age>=3]
+  : Warm #rain# caught me with a #map# open beside the #lake#.
+  : I folded it under my coat and followed the real #path# back.
+  ask : Did it stay dry?
+  b : The road was easier to trust.
+  : All but one #corner#.
+
+rule @bark_map
+when concept=bark
+does aside
+cooldown 8h
+say That #road# bends too late on the #map#. | I should redraw the #bridge#.
+
+rule @bark_dice
+when concept=bark
+does aside
+cooldown 9h
+say Your #throw# this time. | The #die# landed under the #bench#.
+
+rule @bark_rain
+when concept=bark
+does aside
+cooldown 10h
+say This #rain# is warm at least. | Keep the #paper# inside.
+
+rule @bark_song
+when concept=bark
+does aside
+cooldown 11h
+say I know that old #marching# #tune#. | The #beat# follows the #road#.
+
+dlg @1 resident.hub : #greet#. I am looking at this #map#. | #greet#. The #dice# are by the #table#.
+dlg @2 resident.hub [topic.meeting=known] : You found me again; I changed the #bridge# #mark#. | The #game# is still here if you want it.
+dlg @1 resident.job : I live here with my #family# and learn the #roads# on old #maps#. | My #maps# take little space when I fold them, and I mind the #paper#.
+dlg @1 resident.bye : #farewell#. I will fold the #map#. | #saying.capitalize#. Keep to the dry #path#.
+graft resident.hub
+choice What is wrong with the map? -> map
+node map
+say This #bridge# is drawn before the #road# bends. I have walked the real #path#, and the crossing is farther on.
+free
+choice Want to play dice? -> dice
+choice Goodbye. -> bye
+node dice
+say Sit by the #table#. We each make a #throw# and see whose #number# is higher.
+choice Back to the map. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #bridge# is marked properly now. | #greet#. I have a quiet #game# ready.
+line @1 farewell : #farewell#. I will follow the #shore# #path#. | #saying.capitalize#. The #dice# are in my #pocket#.
+
+young
+line @1 greet : #greet#. Look at my #map#. | #greet#. I have the #dice#.
+line @1 farewell : #farewell#. This #paper# needs a dry #pocket#. | The #game# can wait until later.
+
+adolescent
+line @1 greet : #greet#. I corrected this #road# myself. | #greet#. Bring another #die# if you like.
+line @1 farewell : #farewell#. The #market# will get crowded soon. | I will keep the #map# dry.
