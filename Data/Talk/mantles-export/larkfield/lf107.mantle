@@ -1,0 +1,489 @@
+# lf107, the open-door loom master (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf107
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier full
+written_for tn_mb_aspen_marshholm
+written_by claude-codex-lf-1
+title the open-door loom master
+fits stage=adult|old
+prefers talk=chatty
+traits temper=even talk=chatty warmth=warm humour=merry honesty=plain piety=ordinary drive=steady
+quirk never_sits_with_a_back_to_the_door
+likes crisp_apples evening_line full_larder autumn_wind
+dislikes wet_floors gulls
+fears a_wet_floor_near_the_looms a_late_wagon_leaving_workers_idle
+hopes a_full_order_book_and_a_full_larder a_skilled_hand_at_every_loom
+topics work +0.5 prices +0.4 home +0.3 pastimes +0.2
+styles comfort=gentle gossip=curious refuse=plain tease=playful
+marks oath saying
+persona #self.first# keeps the #door# in view from the #desk#, tests each #bolt# of #linen#, and offers an #apple# before discussing a late #wagon#.
+
+words
+oath! = Shuttle and open gate | By the turning beam
+saying! = Keep the doorway clear and the work moving | Count the hands before the bolts
+loom = loom | linen loom
+looms = looms | working looms
+shuttle = shuttle | wooden shuttle
+shuttles = shuttles | spare shuttles
+warp = warp | taut warp
+weft = weft | crossing weft
+thread = thread | linen thread
+threads = threads | linen threads
+linen = linen | woven linen
+cloth = cloth | finished cloth
+bolt = bolt | linen bolt
+bolts = bolts | linen bolts
+hem = hem | narrow hem
+edge = edge | finished edge
+knot = knot | tight knot
+knots = knots | tight knots
+beam = beam | loom beam
+shed = shed | linen shed
+work = work | weaving work
+hand = hand | loom hand
+hands = hands | working hands
+master = master | loom master
+learner = learner | new learner
+lesson = lesson | first lesson
+sample = sample | linen sample
+samples = samples | linen samples
+flaw = flaw | visible flaw
+flaws = flaws | visible flaws
+order = order | cloth order
+orders = orders | cloth orders
+book = book | order book
+page = page | marked page
+mark = mark | ink mark
+marks = marks | ink marks
+desk = desk | master desk
+chair = chair | doorway chair
+seat = seat | corner seat
+door = door | shed door
+doorway = doorway | open doorway
+window = window | broad window
+floor = floor | wooden floor
+plank = plank | floor plank
+water = water | spilled water
+bucket = bucket | water bucket
+broom = broom | stiff broom
+rag = rag | dry rag
+apple = apple | crisp apple
+apples = apples | orchard apples
+fruit = fruit | fresh fruit
+basket = basket | apple basket
+bread = bread | fresh bread
+loaf = loaf | bread loaf
+larder = larder | full larder
+table = table | supper table
+plate = plate | supper plate
+cup = cup | small cup
+jar = jar | friendly jar
+friend = friend | trusted friend
+neighbour = neighbour | near neighbour
+visitor = visitor | new visitor
+stranger = stranger | road stranger
+buyer = buyer | linen buyer
+buyers = buyers | passing buyers
+seller = seller | market seller
+merchant = merchant | town merchant
+market = market | Larkfield market
+stall = stall | linen stall
+counter = counter | sales counter
+shelf = shelf | linen shelf
+stock = stock | linen stock
+price = price | posted price
+prices = prices | posted prices
+coin = coin | copper coin
+wages = wages | weekly wages
+cost = cost | wagon cost
+road = road | High Road
+gate = gate | town gate
+toll = toll | gate toll
+wagon = wagon | supply wagon
+wagons = wagons | supply wagons
+cart = cart | passing cart
+load = load | wagon load
+loads = loads | wagon loads
+city = city | Ridgemere
+home = home | upstairs home
+house = house | upstairs house
+river = river | Long River
+bank = bank | riverbank
+line = line | fishing line
+fish = fish | river fish
+eel = eel | river eel
+trap = trap | river trap
+gull = gull | loud gull
+gulls = gulls | loud gulls
+autumn = autumn | leaf season
+wind = wind | autumn wind
+rain = rain | passing rain
+storm = storm | hard storm
+morning = morning | early morning
+evening = evening | late evening
+night = night | dark night
+day = day | long day
+hour = hour | passing hour
+festival = festival | town festival
+dance = dance | festival dance
+music = music | market music
+count = count | careful count
+ink = ink | dark ink
+wood = wood | loom wood
+fire = fire | banked fire
+windows = windows | open windows
+planks = planks | floor planks
+
+any
+opinion @1 city against 1 : A #city# buyer wants the #cloth# but rarely asks whose #hands# made it. | I prefer faces at my #counter#.
+opinion @1 dole for 1 : If a #hand# misses #wages#, the #larder# should still open. | A worker cannot weave on an empty #plate#.
+opinion @1 drink for 1 : A #jar# after the #looms# stop can bring the #hands# together. | I know when the #door# must close.
+opinion @1 festivals for 2 : I will join a #dance# while the #market# music lasts. | The next #morning# comes soon enough.
+opinion @1 merchants for 1 : I post the #price# and show the #sample#. | I also know the #toll# and #wagon# #cost# behind it.
+opinion @1 newcomers for 2 : Give a new #hand# a #lesson# before deciding what they can do. | There is room at a #loom# for steady work.
+opinion @1 road against 1 : A late #wagon# leaves #shuttles# idle and buyers waiting. | The #road# owes us a better count of hours.
+opinion @1 strangers for 2 : A #stranger# may be a #buyer# or a future #hand#. | I start with an #apple# and a clear #price#.
+opinion @1 watch for 1 : A watch patrol near the #counter# keeps light paws away from the #stock#. | I still check my own #book#.
+opinion @1 times mixed 0 : Some #orders# grow while #wages# stand still. | I keep both numbers on the same #page#.
+line @1 greet : #greet#. Come where I can see the #door#. | #greet#. Have an #apple# while I finish this #page#.
+line @2 greet [pair.band=friends|family] : Your #seat# is beside the #desk#. | I kept a crisp #apple# for you.
+line @3 greet [here.time=dawn] : The first #loom# started before the #market#. | #greet#. The #wagons# are due this #morning#.
+line @1 greet.return : You returned as the last #bolt# came off the #beam#. | I have checked that #sample# again.
+line @1 kin.open [pair.kin!=no] : Come up from the #road# and take a #plate#. | I can make room by the #table#.
+line @1 again.open : We were counting the #orders# against the #stock#. | Have you seen the new #linen#?
+line @1 farewell : #farewell#. I must mark another #bolt#. | Keep the #doorway# clear on your way out.
+line @1 farewell.return : Come after the #wagon# arrives. | We can walk to the #river# another #evening#.
+line @1 react.news : Tell me while I close the #book#. | Did it happen near our #gate#?
+line @1 react.news.new : Nothing of that is on my #page# yet. | Who brought the word along the #road#?
+line @1 react.news.known : I heard a #buyer# mention the beginning. | You have supplied the useful part.
+line @1 react.news.doubt : The #load# and the #book# ought to agree. | Which #hand# made the original count?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I will leave the #orders# for now. | Come sit where the #window# is open; I can listen.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves an #apple# from the good #basket#. | I will tell the #hands# at supper.
+line @1 answer.how : The #looms# ran well and the #larder# is full. | The #wind# has made the #river# lively.
+line @1 answer.how.busy [self.working=yes] : I am matching #bolts# to #orders#. | The #wagon# #load# needs checking.
+line @1 ask.how : Did the #road# leave you dry? | Has anyone offered you a crisp #apple# today?
+line @1 sympathise : I can set this #book# aside and stay. | There is a #chair# where the #wind# reaches.
+line @1 reassure : A flawed #bolt# can be rewoven. | We can give the new #hand# another #lesson#.
+line @1 decline : No, I will not sell a #bolt# I have not checked. | I cannot promise #stock# before the #wagon# arrives.
+line @1 accept_decline : I hear you; I will leave that #order# open. | Then we can meet after the #market#.
+line @1 thank : You dried the #floor# before anyone slipped. | Your #count# saved us an #hour#.
+line @1 deflect_thanks : I was going to the #counter# anyway. | The #basket# was full enough to share.
+line @1 preclose : The #door# wants fastening before #night#. | I should set the #orders# in their #book#.
+line @1 tease [pair.band=friends] : You have given that #apple# a longer inspection than my #linen#. | Your #shuttle# may outrun your feet.
+line @1 ack : #bc_right#. Put the #sample# on the #desk#. | #bc_fair_enough#. I will check the #beam#.
+line @1 give.advice : Dry the #floor# before moving a loaded #bolt#. | Keep the #warp# even before the #shuttle# starts.
+line @1 warn [world.bandits=near] : Send the #wagon# with company. | Keep the #gate# #load# under a watchful eye.
+line @1 react.complaint : Show me the #bolt# and tell me where it failed. | I will hear the #hand# who carried it.
+line @1 react.complaint.disagree : My #book# shows a different #count#; let us inspect the #cloth#. | I will check the #sample# before accepting that.
+line @1 accept_apology : We can set the #order# right from here. | I accept that; help me correct the #mark#.
+line @1 decline_apology : An apology will not replace the missing #stock#. | Set the #load# right first, then we can talk.
+scene doorward_seat
+when topic=home
+does tell.self / react.self / assess
+a : I choose a #seat# with the #door# in sight. | When a #wagon# arrives, I know before the messenger speaks.
+b : Does that help you rest? | Is the view good?
+a : Better than facing a wall. | The #gate# lies beyond it.
+
+scene master_book
+when topic=work
+does tell.self / react.self / assess
+a : My #book# lists every #bolt# against an #order#. | A missing #mark# costs more than the #ink# used to make it.
+b : Do you write each one? | Who checks it?
+a : At the end of every #day#. | The #hands# and I compare counts.
+
+scene loom_assignment
+when topic=work
+does tell.self / react.self / assess
+a : I put a new #hand# at the slower #loom# first. | A steady #shuttle# matters more than a fast mistake.
+b : How long do they stay there? | Do they object?
+a : Until the #warp# runs clean. | Some do, then they learn.
+
+scene linen_sample
+when topic=prices
+does tell.self / react.self / assess
+a : A #buyer# may touch the #sample# before hearing the #price#. | The #cloth# should speak for itself.
+b : Do they test the edge? | Do you expect a sale?
+a : I invite it. | Only if the #bolt# suits them.
+
+scene wet_floor
+when topic=work
+does tell.self / react.self / assess
+a : A wet #floor# beside a moving #loom# can put someone under the #beam#. | I leave a #rag# and #broom# at the #door#.
+b : Has anyone fallen? | Do you stop the looms?
+a : Not since I set the rule. | If the #water# spreads.
+
+scene autumn_wind
+when topic=weather here.season=autumn
+does tell.self / react.self / assess
+a : Autumn #wind# clears the #shed# air after a warm #day#. | I keep the #window# open until the last #hand# leaves.
+b : Does the cloth move? | Is it cold?
+a : Not on the #beam#. | Less than stale air.
+
+scene crisp_apple
+when topic=food
+does tell.self / react.self / assess
+a : I offer a crisp #apple# before discussing a late #order#. | It gives both of us a moment to choose words.
+b : Does that soften the news? | Do you keep many?
+a : Sometimes. | A #basket# by the #desk#.
+
+scene full_larder
+when topic=home
+does tell.self / react.self / assess
+a : A full #larder# is easier to enjoy when the #hands# have been paid. | I count the #wages# before buying a fine #loaf#.
+b : Do you pay them yourself? | Is there enough?
+a : I check every amount. | After the #orders# clear.
+
+scene evening_line
+when topic=pastimes
+does tell.self / react.self / assess
+a : I take a #line# to the #river# after the #looms# stop. | The #water# asks no questions about #orders#.
+b : Do you catch anything? | Do you go alone?
+a : A #fish# now and then. | A #friend# may come.
+
+scene gulls_above
+when topic=weather
+does tell.self / react.self / assess
+a : Gulls gather above the #river# and shout over the #market#. | I hear enough shouting in the #shed#.
+b : Do they come close? | Do you chase them?
+a : When a #fish# is caught. | They ignore me.
+
+scene market_counter
+when topic=prices
+does tell.self / react.self / assess
+a : I post the #price# beside each #sample# at the #counter#. | A #buyer# can ask why and get an answer.
+b : Do prices change often? | What is included?
+a : With the #wagon# #cost#. | The #thread#, #work#, and #toll#.
+
+scene late_wagon
+when topic=travel
+does tell.self / react.self / assess
+a : A late #wagon# leaves a #loom# ready with no #thread#. | I keep spare #stock# because the #road# has moods.
+b : How much spare? | Do you blame the driver?
+a : Enough for a #day#. | I ask what happened first.
+
+scene tally_at_gate
+when topic=work
+does tell.self / react.self / assess
+a : I count the #load# at the #gate# before signing my #book#. | A crate on a list is not a crate in the #shed#.
+b : Have loads been short? | Does the toll keeper wait?
+a : Once too often. | Until I finish counting.
+
+scene fair_wages
+when topic=work
+does tell.self / react.self / assess
+a : I set #wages# beside the #orders# they came from. | A good #hand# should see how their #work# is valued.
+b : Do they agree? | Do you show the book?
+a : We discuss it. | The part that concerns them.
+
+scene new_hand
+when topic=work
+does tell.self / react.self / assess
+a : A new #hand# begins by winding #thread# and watching the #shuttle#. | I want them to hear the #loom# before rushing it.
+b : Do they weave soon? | Who teaches them?
+a : When their #knots# hold. | Whoever has a steady #day#.
+
+scene honest_flaw
+when topic=prices
+does tell.self / react.self / assess
+a : A #flaw# gets a #mark# before the #bolt# reaches a #buyer#. | I would rather lower the #price# than hide it.
+b : Have buyers thanked you? | Does it cost much?
+a : Some return. | Less than losing trust.
+
+scene door_at_night
+when topic=home here.time=night
+does tell.self / react.self / assess
+a : I can see the #shed# #door# from my #chair# upstairs. | A late #hand# can call without wandering into the dark.
+b : Do they often come? | Is the house quiet?
+a : When a #wagon# is delayed. | After the #market# closes.
+
+scene river_trap
+when topic=pastimes
+does tell.self / react.self / assess
+a : Below the #bank#, the #river# turns where I set my #eel# #trap#. | I know the bend better than a #gull# knows a fallen #fish#.
+b : Do you catch many? | Is it difficult?
+a : More than the #market# would guess. | Mostly it takes patience.
+
+scene market_dance
+when topic=pastimes here.day=festival
+does tell.self / react.self / assess
+a : I dance where the #market# #music# reaches the #stall#. | A #hand# who kept the #loom# running deserves the first turn.
+b : Do you dance long? | Who joins?
+a : Until my feet complain. | Anyone willing.
+
+scene autumn_load
+when topic=weather here.season=autumn
+does tell.self / react.self / assess
+a : An #autumn# #wind# can tilt an uncovered #load# on the #road#. | I ask for tied covers before a #wagon# leaves.
+b : Does linen get wet? | Do drivers mind?
+a : Not if the knots hold. | Fewer after a #storm#.
+
+scene shared_jar
+when topic=family
+does tell.self / react.self / assess
+a : After a good #day# I bring a #jar# to the #table# for the #hands#. | We talk about the #work# and then let it go.
+b : Does everyone come? | Do you celebrate often?
+a : Whoever has finished. | When there is reason.
+
+scene older_hand
+when topic=memories
+does tell.self / react.self / assess
+a : An older #hand# once showed me how to listen for a loose #warp#. | I still hear that small change before I see it.
+b : Do you teach the same way? | Did it save a bolt?
+a : At the first #lesson#. | More than one.
+
+scene lost_order
+when topic=memories
+does tell.self / react.self / assess
+a : I once misplaced an #order# #page# under a #basket# of #apples#. | The #buyer# arrived before I found it.
+b : What did you do? | Was the buyer angry?
+a : Counted the #bolts# aloud. | Less after I found the #page#.
+
+scene wagon_toll
+when topic=travel
+does tell.self / react.self / assess
+a : The #toll# at the #gate# enters every #price# I write. | I keep the receipt beside the #wagon# #load#.
+b : Do buyers question it? | Can you avoid the toll?
+a : I show the numbers. | Not on this #road#.
+
+scene empty_shed
+when topic=home
+does tell.self / react.self / assess
+a : When the #shed# empties, the #looms# still smell of #linen# and warm #wood#. | I walk the #floor# once before locking.
+b : Do you enjoy the quiet? | What do you check?
+a : For a short #hour#. | Water, #fire#, and open #windows#.
+
+scene rain_on_planks
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : Rain tracks in on #planks# near the #door#. | I put a dry #rag# there before the #buyers# come.
+b : Is the floor slippery? | Who changes the rag?
+a : Until it is wiped. | I do when I see it.
+
+scene spare_shuttles
+when topic=work
+does tell.self / react.self / assess
+a : I keep two spare #shuttles# for each working #loom#. | A cracked one should not stop an entire #order#.
+b : Do they break often? | Who carves replacements?
+a : Less when treated gently. | A careful #hand# at the #market#.
+
+story first_loom [topic=work self.age>=18]
+  : My first #loom# ran too fast for my #hands#.
+  : An older worker slowed the #shuttle# and showed me the sound of a good #warp#.
+  ask : Did you learn quickly?
+  b : A patient teacher.
+  : Quickly enough once I stopped chasing speed.
+
+story short_wagon [topic=travel self.age>=18]
+  : A #wagon# arrived with fewer #bolts# than the #book# promised.
+  : I counted the #load# at the #gate# and sent the list back with the driver.
+  ask : Did the rest arrive?
+  b : You caught it early.
+  : On the next journey, with the missing #stock# marked.
+
+story wet_plank [topic=work self.age>=18]
+  : A #bucket# tipped beside the #shed# #door# while the #looms# were moving.
+  : I stopped the nearest #hand# and dried the #floor# before anyone carried a #bolt# across.
+  ask : Was anyone hurt?
+  b : A small stop saved a fall.
+  : Only our schedule lost a moment.
+
+story river_bend [topic=pastimes self.age>=18]
+  : I moved an #eel# #trap# to a quieter bend after the #market# closed.
+  : The #river# was high, but the #bank# held beneath my feet.
+  ask : Did you catch one?
+  b : You know that water.
+  : Enough to bring something fresh to the #table#.
+
+story apple_order [topic=prices self.age>=18]
+  : A #buyer# asked for a lower #price# while I was giving out #apples#.
+  : I showed the #sample#, the #wagon# #cost#, and the #wages# written beside the #order#.
+  ask : Did they agree?
+  b : Clear numbers help.
+  : We found a #bolt# that suited the #coin# they had.
+
+rule @bark_door
+when concept=bark
+does aside
+cooldown 7h
+say Leave the #doorway# clear. | I can see that #wagon# from here.
+
+rule @bark_floor
+when concept=bark
+does aside
+cooldown 8h
+say The #floor# is wet by the #beam#. | Put a dry #rag# over that #plank#.
+
+rule @bark_apple
+when concept=bark
+does aside
+cooldown 9h
+say Have a crisp #apple# before we count. | The #basket# is full today.
+
+rule @bark_book
+when concept=bark
+does aside
+cooldown 10h
+say One #bolt# is missing its #mark#. | The #book# needs a new #page#.
+
+rule @bark_shuttle
+when concept=bark
+does aside
+cooldown 11h
+say Keep a spare #shuttle# close. | That #warp# sounds slack.
+
+rule @bark_road
+when concept=bark
+does aside
+cooldown 12h
+say The #wagon# has passed the #gate#. | I hope that #load# is complete.
+
+dlg @1 resident.hub : #greet#. I am checking the #orders# from my #desk#. | #greet#. Take an #apple# and tell me your business.
+dlg @2 resident.hub [topic.meeting=known] : I remember the #bolt# you asked about. | The #wagon# is still unloading on your return.
+dlg @3 resident.hub [here.time=night] : The #looms# have stopped; is this urgent? | I am upstairs now. Speak from the #door#.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : We can speak from either side of this #desk#. | State your need while the #door# stays open.
+dlg @1 resident.job : I direct the #looms# at #self.workplace# and inspect each #bolt#. | The #hands#, #orders#, and #wagons# all need a fair count.
+dlg @2 resident.job [self.working=yes] : I am matching #stock# to the #book#. | This #sample# needs my final #mark#.
+dlg @1 resident.bye : #farewell#. I will close the #shed# #door#. | #saying.capitalize#. Watch the #floor#.
+dlg @2 resident.bye [here.time=night] : Good night. The #gate# is quiet now. | Go carefully along the #road#.
+dlg @1 shop.greet [here.shop=open] : #greet#. The #linen# #samples# are beside the #counter#. | I can show you a #bolt# and its posted #price#.
+dlg @2 shop.greet [here.shop=bare] : There is no finished #linen# on the #shelf# today. | The next #wagon# may bring #stock#; I can hear what you offer.
+dlg @3 shop.greet [here.shop=asleep] : Mm... the #looms# can wait for #morning#... | Come back when the #shed# opens.
+dlg @4 shop.greet [here.shop=open topic.meeting=known] : Back for the #sample# we discussed? | I remember your #order#; the #bolt# is ready.
+dlg @5 shop.greet [here.shop!=bare here.shop!=asleep] : #greet#. Ask me which #bolts# are ready. | I can show you the #samples# at this #counter#.
+dlg @1 shop.prices [here.shop=open|bare] : The #price# sits beside each #sample#. | I will show the #cloth# and explain the #wagon# #cost#.
+dlg @1 shop.bye : #farewell#. Keep the #linen# dry on the #road#. | #shop_bye# I have another #order# to mark.
+dlg @1 master.learn [here.teaches=yes] : Begin by winding a straight #warp#. | I will show how the #shuttle# should sound.
+dlg @2 master.learn [here.teaches=yes topic.meeting=known] : You came back for another #lesson#. | Your last #knot# held; let us try the #beam#.
+dlg @3 master.learn [here.teaches=yes] : Stand beside the slow #loom# and watch my #hands#. | This #thread# needs even tension before you begin.
+dlg @4 master.learn [here.teaches=yes] : Take the spare #shuttle# and make one careful pass. | I will check the #weft# when you finish.
+graft resident.hub
+choice How do you run the looms? -> looms
+node looms
+say I assign a #hand# to each #loom#, compare the #bolts# with the #book#, and inspect any #flaw# before sale.
+free
+choice Why face the doorway? -> door
+choice Goodbye. -> bye
+node door
+say From this #chair# I can see arriving #wagons# and hear anyone entering the #shed#. It keeps the #work# moving.
+choice Back to the orders. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice May I inspect the linen? -> sample
+node sample
+say Of course. Feel the #edge# of this #sample# and look along the #weft#. I mark any #flaw# before setting a #price#.
+free
+choice What makes it cost this much? -> price
+choice Goodbye. -> bye
+node price
+say The #thread#, the #hands#, the #wagon# #cost#, and the #gate# #toll# all appear in my #book#.
+choice Back to the linen. -> greet
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #looms# are working steadily. | #greet#. I have an #apple# on my #desk#.
+line @1 farewell : #farewell#. I will finish the #book# tonight. | The #doorway# must stay clear for the last #hand#.
