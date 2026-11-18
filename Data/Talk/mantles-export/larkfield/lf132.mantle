@@ -1,0 +1,341 @@
+# lf132, the marching-song corn grinder (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf132
+revision 1
+state ready
+dialect larkfield
+accent light broad
+tier standard
+written_for cty_gorse_hedgewell
+written_by claude-codex-lf-1
+title the marching-song corn grinder
+fits stage=adult|old
+prefers talk=quiet
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk times_the_millwheel_with_old_marches
+likes smoked_eel whittling new_boots first_snow
+dislikes salt_wind drizzle
+fears a_millstone_cracking_under_load a_walk_too_far_into_the_deep_wood
+hopes a_clean_mill_run_before_winter a_quiet_path_after_the_first_snow
+topics work +0.5 pastimes +0.4 weather +0.3 home +0.2
+styles comfort=gentle gossip=reluctant refuse=plain tease=dry
+marks oath saying
+persona #self.first# grinds #corn# at the #mill#, hums an old #march# to the #wheel#, and turns away before the #wood# grows deep.
+
+words
+oath! = Corn and turning stone | By the steady wheel
+saying! = Feed the turning stone without haste | A song keeps the count when words fail
+mill = mill | Longmead mill
+millstone = millstone | turning millstone
+millstones = millstones | heavy millstones
+stone = stone | grinding stone
+stones = stones | grinding stones
+wheel = wheel | mill wheel
+wheels = wheels | turning wheels
+axle = axle | mill axle
+shaft = shaft | wooden shaft
+hopper = hopper | grain hopper
+chute = chute | flour chute
+sieve = sieve | fine sieve
+sack = sack | corn sack
+sacks = sacks | grain sacks
+corn = corn | field corn
+grain = grain | dry grain
+wheat = wheat | milled wheat
+flour = flour | fresh flour
+meal = meal | ground meal
+dust = dust | flour dust
+sweep = sweep | mill sweep
+floor = floor | mill floor
+board = board | mill board
+boards = boards | wooden boards
+water = water | mill water
+stream = stream | mill stream
+bank = bank | stream bank
+hand = hand | mill hand
+hands = hands | working hands
+work = work | mill work
+load = load | grain load
+cart = cart | grain cart
+wagon = wagon | goods wagon
+road = road | mill road
+path = path | field path
+field = field | open field
+wood = wood | deep wood
+woods = woods | dark woods
+edge = edge | wood edge
+tree = tree | dark tree
+trees = trees | dark trees
+shadow = shadow | wood shadow
+shadows = shadows | long shadows
+map = map | old map
+mark = mark | map mark
+march = march | old march
+song = song | quiet song
+songs = songs | marching songs
+hum = hum | low hum
+beat = beat | steady beat
+step = step | marching step
+steps = steps | measured steps
+knife = knife | whittling knife
+peg = peg | wooden peg
+pegs = pegs | wooden pegs
+shaving = shaving | wood shaving
+shavings = shavings | wood shavings
+boot = boot | new boot
+boots = boots | new boots
+snow = snow | first snow
+winter = winter | coming winter
+rain = rain | steady rain
+drizzzle = drizzle | thin drizzle
+wind = wind | salt wind
+salt = salt | sea salt
+morning = morning | early morning
+evening = evening | late evening
+night = night | quiet night
+day = day | working day
+hour = hour | mill hour
+eel = eel | smoked eel
+bread = bread | fresh bread
+plate = plate | supper plate
+larder = larder | home larder
+house = house | shared house
+home = home | cottage
+door = door | cottage door
+window = window | small window
+roof = roof | sound roof
+friend = friend | old friend
+neighbour = neighbour | near neighbour
+stranger = stranger | passing stranger
+market = market | town market
+merchant = merchant | grain merchant
+price = price | corn price
+coin = coin | small coin
+city = city | far city
+festival = festival | town festival
+watch = watch | town watch
+bench = bench | wooden bench
+walk = walk | quiet walk
+creak = creak | axle creak
+drizzle = drizzle | thin drizzle
+fields = fields | open fields
+
+any
+opinion @1 city against 1 : The #city# does not hear the #millstone# that made its #flour#. | The #stream# is where I would rather work.
+opinion @1 dole for 1 : A #neighbour# without #bread# can take #meal# from our #larder#. | No one should wait hungry.
+opinion @1 houses against 1 : A grand #house# has an empty #bench# but no place for a #mill# #hand#. | I eat at home.
+opinion @1 merchants against 2 : The #merchant# pays a little for #corn# and asks more for #flour#. | The #wheel# did not turn itself.
+opinion @1 newcomers mixed 1 : I teach the #sieve# before letting a newcomer near the #stones#. | I will show them the dangerous side of the #stones#.
+opinion @1 strangers for 1 : A #stranger# may need directions past the #mill#. | I can point to the #road# while the #wheel# turns.
+opinion @1 times against 1 : A full #sack# buys less #bread# every #winter#. | I keep the #mill# running.
+opinion @1 road mixed 0 : The #road# brings #corn# in and #flour# out. | Its #mud# makes the #cart# slow.
+line @1 greet : #greet#. The #wheel# is turning. | #greet#. Do you hear the old #march#?
+line @2 greet [pair.band=friends|family] : I have #eel# for a quiet supper. | Come see the new #peg# I cut.
+line @1 greet.return : The #hopper# is nearly empty now. | Your #boots# found the #mill# again.
+line @1 kin.open [pair.kin!=no] : Supper is inside, away from the #flour# #dust#. | Your #plate# waits away from the #mill# #wheel#.
+line @1 again.open : I was listening to the #axle#. | Was it the deep #wood# you meant?
+line @1 farewell : #farewell#. The #sacks# need tying. | Take the open #path# home.
+line @1 farewell.return : The #flour# may be ready then. | Another #song# may come to me before #evening#.
+line @1 react.news : Speak over the #wheel# if you can. | Was it on the #road#?
+line @1 react.news.new : No word of it has come through the #mill#. | Who carried it here?
+line @1 react.news.known : A #cart# driver gave me part of it. | You have supplied the rest.
+line @1 react.news.doubt : I would inspect the #sack# mark. | Who watched the #load# come in?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is hard news; the #wheel# can pause while you speak. | Sit under the #roof#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That is worth fresh #bread#. | I will hum the quicker #march#.
+line @1 answer.how : The #wheel# held its turn and the #flour# is fine. | Better after a quiet #walk#.
+line @1 answer.how.busy [self.working=yes] : I am feeding #corn# through the #hopper#. | Let me tie this #sack#.
+line @1 ask.how : Did you keep clear of the #mud#? | Did the #snow# reach your #road#?
+line @1 sympathise : Sit where the #wheel# is quieter. | I can share #eel# when the #mill# stops.
+line @1 reassure : The #millstone# can be reset after it cools. | There is #bread# at home tonight.
+line @1 decline : I will not feed wet #corn# into the #hopper#. | The #wheel# must stop before I leave the #mill#.
+line @1 accept_decline : I understand; this #sack# stays on the #floor#. | Then we can wait until #morning#.
+line @1 thank : The #sieve# stayed aligned because you braced the #chute#. | I enjoyed the #eel# after the last #sack#.
+line @1 deflect_thanks : I had the #peg# cut already. | The #board# was loose when I found it.
+line @1 preclose : By dark, the #flour# #dust# must be off the #floor#. | The #wheel# needs its final check.
+line @1 tease [pair.band=friends] : Your #march# loses the #beat# before the #wheel# does. | Those #boots# would lead you into the #wood#.
+line @1 ack : #bc_right#. The #meal# is fine. | #bc_fair_enough#. I will check the #hopper#.
+line @1 give.advice : Add #corn# slowly so the #stone# turns evenly. | Keep clear of the #shaft# when it moves.
+line @1 warn [world.bandits=near] : Go with the next #cart# on the #road#. | Stay away from the #wood# after dark.
+scene hopper_flow
+when topic=work
+does tell.self / react.self / assess
+a : I add #corn# to the #hopper# in small measures. | Too much makes the #stones# grind unevenly.
+b : Can you hear it? | Does it stop the mill?
+a : In the #wheel# sound. | If left alone.
+
+scene stone_gap
+when topic=work
+does tell.self / react.self / assess
+a : The gap between the #millstones# decides how fine the #flour# will be. | I adjust it before the first #sack#.
+b : Do you measure it? | Who taught you?
+a : By feel and sound. | An older #hand#.
+
+scene sieve_flour
+when topic=work
+does tell.self / react.self / assess
+a : The #sieve# keeps coarse pieces out of the finest #flour#. | I set them aside for another pass.
+b : Is anything wasted? | Does it take long?
+a : Very little. | One more turn.
+
+scene axle_creak
+when topic=work
+does tell.self / react.self / assess
+a : A new #creak# in the #axle# is reason to stop the #wheel#. | I check the #shaft# before it grows worse.
+b : Does that cost time? | Can you mend it?
+a : Less than a break. | With another #hand#.
+
+scene chute_dust
+when topic=work
+does tell.self / react.self / assess
+a : Fine #flour# #dust# gathers under the #chute# after each #load#. | That #dust# comes off the #floor# before it turns slick.
+b : Do you breathe it? | Is it useful?
+a : I keep away. | Only a little.
+
+scene sack_knot
+when topic=work
+does tell.self / react.self / assess
+a : I tie the #sack# so it can be opened without a #knife#. | A good knot still holds on the #cart#.
+b : Who taught you? | Does it come loose?
+a : Practice. | Not if I pull it twice.
+
+scene water_wheel
+when topic=work
+does tell.self / react.self / assess
+a : The #stream# moves the #wheel# differently after #rain#. | I listen before adding another #load#.
+b : Does it speed up? | Can you slow it?
+a : At times. | By feeding less #corn#.
+
+scene march_beat
+when topic=pastimes
+does tell.self / react.self / assess
+a : An old #march# keeps time with the #mill# #wheel#. | I hum it when the #sacks# are heavy.
+b : Have the words stayed with you? | Do others join?
+a : Only a few. | Sometimes.
+
+scene march_without_words
+when topic=memories
+does tell.self / react.self / assess
+a : One #song# remains in my head without its old words. | The #beat# survives because the #wheel# keeps turning.
+b : Where did it come from? | Can you sing it?
+a : From long ago. | The tune, yes.
+
+scene wood_edge
+when topic=memories
+does tell.self / react.self / assess
+a : I stop where the open #path# enters the deep #wood#. | The #trees# stand too close beyond that turn.
+b : Why avoid them? | Have you gone in?
+a : I do not rest there. | Not far.
+
+scene first_snow
+when topic=weather
+does tell.self / react.self / assess
+a : The first #snow# makes the #mill# #roof# look clean again. | I watch its melt reach the #stream#.
+b : Does it change the wheel? | Do you like winter?
+a : After a #day#. | At its beginning.
+
+scene thin_drizzle
+when topic=weather
+does tell.self / react.self / assess
+a : Thin #drizzle# dampens the #sacks# without filling the #stream#. | I cover the #cart# and complain softly.
+b : Do you keep milling? | Does the roof hold?
+a : Inside. | So far.
+
+scene salt_wind
+when topic=weather
+does tell.self / react.self / assess
+a : A #salt# #wind# has no business reaching this far inland. | I shut the #window# when it does.
+b : Where does it come from? | Does it trouble you?
+a : The western #road#. | More than #rain#.
+
+scene smoked_eel
+when topic=food
+does tell.self / react.self / assess
+a : Smoked #eel# after a day of #flour# #dust# tastes sharper. | I keep some beside #bread# at home.
+b : Do you catch it? | Do you share?
+a : I buy it. | With the #house#.
+
+scene whittled_peg
+when topic=pastimes
+does tell.self / react.self / assess
+a : I whittle #pegs# for loose #mill# #boards#. | The #knife# work keeps my #hands# quiet after the #wheel# stops.
+b : Do they fit? | Do you make many?
+a : Once trimmed. | As needed.
+
+scene new_boots
+when topic=pastimes
+does tell.self / react.self / assess
+a : New #boots# make the #mill# #floor# easier on a long #day#. | I keep them dry on the #path# home.
+b : Do they last? | Why new ones?
+a : If cared for. | The old pair split.
+
+scene shared_house
+when topic=home
+does tell.self / react.self / assess
+a : The #house# fills with other #hands# after the #fields# empty. | I bring #flour# #dust# on my coat despite brushing it.
+b : Do they mind? | Do you eat together?
+a : They are used to it. | Most nights.
+
+story stone_gap [topic=work self.age>=18]
+  : I set the #millstone# gap too narrow on a damp #morning#.
+  : The #wheel# sounded strained before the #flour# changed.
+  ask : Did you stop it?
+  b : You listened well.
+  : I did, and opened the gap.
+
+story lost_words [topic=memories self.age>=18]
+  : I heard an old #march# while the #mill# #wheel# turned.
+  : I knew its #beat# but none of its words.
+  ask : Will they return?
+  b : The tune remains.
+  : Perhaps if someone else remembers.
+
+story wood_turn [topic=memories self.age>=18]
+  : I took a #path# toward the deep #wood# after supper.
+  : The #trees# closed over it, so I turned back.
+  ask : Were you lost?
+  b : A wise return.
+  : No. I knew exactly where I wanted to be.
+
+rule @bark_wheel
+when concept=bark
+does aside
+cooldown 8h
+say The #wheel# sounds even. | Keep #corn# moving through the #hopper#.
+
+rule @bark_march
+when concept=bark
+does aside
+cooldown 9h
+say That is the old #march#. | The #beat# fits this #wheel#.
+
+rule @bark_snow
+when concept=bark
+does aside
+cooldown 10h
+say First #snow# on the #roof#. | The #stream# will rise when it melts.
+
+rule @bark_wood
+when concept=bark
+does aside
+cooldown 11h
+say The open #path# ends there. | I leave the deep #wood# alone.
+
+dlg @1 resident.hub : #greet#. The #wheel# is turning. | #greet#. There is fresh #flour# today.
+dlg @2 resident.hub [topic.meeting=known] : You remember the #march# I hummed? | The #hopper# is nearly clear.
+dlg @1 resident.job : I grind #corn# at #self.workplace#. | I watch the #wheel#, fill #sacks#, and sift #flour#.
+dlg @1 resident.bye : #farewell#. I must sweep the #floor#. | #saying.capitalize#. Take the open #path#.
+graft resident.hub
+choice Why hum that march? -> march
+node march
+say Its #beat# keeps time with the #wheel#. I have forgotten some words.
+free
+choice Why avoid the woods? -> woods
+choice Goodbye. -> bye
+node woods
+say The #trees# close over the #path# beyond the #field#. I turn back there.
+choice Back to the mill. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #sacks# are tied. | #greet#. I found a dry #path#.
+line @1 farewell : #farewell#. The #wheel# needs its check. | I will save some #eel# for supper.
