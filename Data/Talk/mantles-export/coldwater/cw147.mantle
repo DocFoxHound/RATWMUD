@@ -1,0 +1,323 @@
+# cw147, the autumn swimmer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw147
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_cw_gorse_reedmere
+written_by claude-codex-cw-2
+title the autumn swimmer
+fits stage=young|adolescent|adult|old
+prefers talk=plain
+traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk swims_in_the_lake_even_in_autumn
+likes smoked_eel whittling festival_bells summer_evenings
+dislikes haggling deep_mud
+fears the_shape_beneath_winter_ice a_friend_lost_in_cold_water
+hopes to_swim_the_long_cove a_clean_carving_for_the_festival
+topics pastimes +0.5 weather +0.3 family +0.3 food +0.2 home +0.3 gossip -0.3
+styles comfort=direct gossip=reluctant refuse=blunt tease=dry
+marks oath saying
+persona #self.first# swims until autumn chills the #lake#, guards friends fiercely, and whittles #wood# beside the #fire#.
+
+words
+oath! = Ice and ember | By the cold shore
+saying! = Cold water wakes a stubborn head | Keep your carving above the mud
+lake = lake | Glasswater
+water = water | cold water
+shore = shore | near shore
+cove = cove | long cove
+swim = swim | lake swim
+stroke = stroke | swimming stroke
+strokes = strokes | swimming strokes
+breath = breath | held breath
+depth = depth | deep water
+ice = ice | winter ice
+shape = shape | dark shape
+shadow = shadow | moving shadow
+autumn = autumn | leaf season
+summer = summer | warm season
+evening = evening | long evening
+evenings = evenings | long evenings
+wind = wind | lake wind
+rain = rain | shower
+sun = sun | late sun
+mist = mist | shore mist
+bell = bell | festival bell
+bells = bells | feast bells
+festival = festival | festival day
+wood = wood | carving wood
+chip = chip | wood chip
+chips = chips | wood chips
+knife = knife | small knife
+blade = blade | careful blade
+handle = handle | knife handle
+figure = figure | carved figure
+boat = boat | small boat
+boats = boats | lake boats
+jetty = jetty | lakeside jetty
+rope = rope | mooring rope
+eel = eel | smoked eel
+smoke = smoke | cooking smoke
+plate = plate | supper plate
+fire = fire | hearth fire
+hearth = hearth | house hearth
+home = home | farmhouse
+house = house | busy house
+friend = friend | close friend
+friends = friends | close friends
+mother = mother | mother
+family = family | household
+gate = gate | yard gate
+path = path | shore path
+road = road | High Road
+mud = mud | deep mud
+boots = boots | work boots
+boot = boot | work boot
+market = market | market square
+price = price | asking price
+coin = coin | small coin
+bread = bread | loaf
+stranger = stranger | new face
+visitor = visitor | passing visitor
+bench = bench | dry bench
+field = field | open field
+reed = reed | shoreline reed
+reeds = reeds | tall reeds
+stone = stone | shore stone
+stones = stones | shore stones
+day = day | clear day
+night = night | dark hour
+hand = hand | steady hand
+hands = hands | steady hands
+name = name | given name
+
+any
+opinion @1 dole for 1 : A hungry neighbour needs #bread# before a speech. | I would share my #plate# with anyone who missed supper.
+opinion @1 festivals mixed 1 : I want to hear the #bells# and see what people made. | A #festival# crowd can keep me away from the #lake# too long.
+opinion @1 newcomers for 1 : I will show a new #friend# the shallow #shore#. | Let the #visitor# show what help they can give.
+opinion @1 strangers for 1 : I would offer a #stranger# a dry #bench# and supper. | A new #name# is easier to learn over a #plate#.
+opinion @1 road mixed 0 : The #road# reaches hills beyond my usual walks. | Wherever I go, the #lake# draws me home.
+opinion @1 merchants mixed 0 : Say the #price# once and let me decide. | I dislike turning a #coin# into an argument.
+opinion @1 watch mixed 0 : The Watch ought to know when the #shore# is unsafe. | They should listen to the ones who actually swim there.
+line @1 greet : #greet#. I have just come out of the #lake#. | #greet#. Mind the #chips# near the #fire#.
+line @2 greet [pair.band=friends|family] : I kept a dry #bench# for you. | Come see the #figure# before I change it.
+line @3 greet [here.season=autumn] : The #water# is colder today, and I went in anyway. | I found a clear patch beyond the #reeds#.
+line @1 greet.return : You came back before my #wood# ran out. | #welcome_back#. Did you find the #shore# path?
+line @1 kin.open [pair.kin!=no] : Warm your #hands# by the #hearth#. | There is still #eel# on the #plate#.
+line @1 again.open : I had not finished telling you about the #ice#. | The #figure# looks different now.
+line @1 farewell : #farewell#. I have to dry these #boots#. | #saying.capitalize#. The #shore# calls me back.
+line @1 farewell.return : If you find good #wood#, bring it next time. | We can swim when the #sun# returns.
+line @1 react.news : Hold on while I sheathe the #knife#. | Name the wolves who were there.
+line @1 react.news.new : Nobody by the #jetty# spoke of that. | Where did the story begin?
+line @1 react.news.known : The #market# talk gave me only the beginning. | You know more than I heard.
+line @1 react.news.doubt : I want to ask someone who saw it. | A #shadow# in the #lake# can change shape with the #wind#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is awful. I will stay if you want me here. | The #wood# can wait; sit close to the #fire#.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good! Let the #bells# ring for that. | I hope there is a full #plate# at their #home#.
+line @1 answer.how : My #hands# are cold and I feel fine. | I have made a start on this #figure#.
+line @1 answer.how.busy [self.working=yes] : I have a task to finish before I swim. | The #knife# work needs my attention.
+line @1 ask.how : Was there shelter when the #rain# started? | Did you get down to the #lake# today?
+line @1 sympathise : I will keep you company without asking more. | We could sit near the #hearth# awhile.
+line @1 reassure : The near #shore# is shallow; we can start there. | A spoiled #figure# can be carved again.
+line @1 decline : No. I will not walk through that #mud#. | I am keeping this #knife# away from the water.
+line @1 accept_decline : All right. I will leave it alone. | Then we can do something else.
+line @1 thank : You held the #wood# while I cut. | You watched from the #shore# until I came back.
+line @1 deflect_thanks : I had a free #hand#. | There was room for another #plate#.
+line @1 preclose : The #wood# needs putting away. | I should get out of these wet #boots#.
+line @1 tease [pair.band=friends] : You would call that #stone# a whole island. | Your #figure# has a longer nose than my #boat#.
+line @1 ack : #bc_right#. We will take the #path#. | #bc_fair_enough#. I will set the #knife# down.
+line @1 give.advice : Never swim where you cannot see a safe way back. | Keep your other #hand# behind the #blade#.
+line @1 warn [world.bandits=near] : Stay near #home# until the road is clear. | Do not use the lonely #path# by the #reeds#.
+scene autumn_swim
+when topic=pastimes here.season=autumn
+does tell.self / react.self / assess
+a : I went into the #lake# after the leaves began to fall. | The first #stroke# hurt with cold, then I found my pace.
+b : How long did you stay? | Did anyone go with you?
+a : Until my #hands# grew stiff. | Someone waited on the #shore#.
+
+scene near_reeds
+when topic=pastimes
+does tell.self / react.self / assess
+a : I swim toward the first #reeds# and turn before the #depth# changes. | The return is easier when I save some #breath#.
+b : Can you see the bottom? | Would you go farther?
+a : At the near end. | With someone beside me.
+
+scene under_ice
+when topic=memories self.age>=13
+does tell.self / react.self / assess
+a : During a winter thaw, a large #shape# moved below the #ice#. | It crossed the pale #water# and vanished beyond the #reeds#.
+b : Was it a fish? | Did anyone else see it?
+a : I could not tell. | I called out too late.
+
+scene ice_warning
+when topic=weather here.season=winter
+does tell.self / react.self / assess
+a : The #ice# near the #jetty# looks firm before it really is. | I keep to the #shore# and watch from there.
+b : Do you test it? | Does it ever make a sound?
+a : With a long #stone#, not a foot. | It cracks when the #wind# shifts.
+
+scene whittled_handle
+when topic=pastimes
+does tell.self / react.self / assess
+a : I smooth the #knife# #handle# before I carve anything else. | If it turns in my #hand#, the cut goes wrong.
+b : Have you slipped? | Can you make a new handle?
+a : Once on a small #chip#. | When I find better #wood#.
+
+scene carved_boat
+when topic=pastimes
+does tell.self / react.self / assess
+a : My first carved #boat# had one side higher than the other. | On the #water# it only turned in circles.
+b : Did you fix it? | Would it carry anything?
+a : After it dried. | A #stone# no bigger than a pea.
+
+scene festival_bells
+when topic=home
+does tell.self / react.self / assess
+a : I hear the #festival# #bells# from the #shore#. | They sound clearer over the #lake# than they do by the #market#.
+b : Does the #festival# draw you ashore? | Do you recognize each bell?
+a : After my #swim#. | The largest one, yes.
+
+scene long_evening
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : On long summer #evenings#, I carve after supper. | The #sun# stays above the #lake# while I choose a piece of #wood#.
+b : Do you finish by dark? | Where do you sit?
+a : Small things, yes. | By the #fire# when the light fades.
+
+scene eel_supper
+when topic=food
+does tell.self / react.self / assess
+a : Smoked #eel# tastes best after a cold #swim#. | I can smell the #smoke# before I reach #home#.
+b : Do you save any? | Is it hard to prepare?
+a : A piece for the next #plate#. | I am still learning.
+
+scene mud_detour
+when topic=travel
+does tell.self / react.self / assess
+a : The #mud# by the #gate# can swallow a #boot#. | I take the longer #path# over the #stones#.
+b : Is that faster? | Have you lost one?
+a : Usually. | Only the #boot# I pulled free.
+
+scene price_argument
+when topic=prices
+does tell.self / react.self / assess
+a : I ask the #price# once at the #market#. | If the seller wants a long argument, I keep my #coin#.
+b : Do you ever bargain? | Can you afford to leave?
+a : Only when I know its worth. | Another stall may have it.
+
+scene friend_defence
+when topic=family
+does tell.self / react.self / assess
+a : I get cross when someone mocks a #friend# in front of me. | A joke can sound like a stone thrown twice.
+b : Do you say something? | Can your friend answer?
+a : I ask them to stop. | Yes, but I stand beside my friend.
+
+scene apology_after
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I spoke too sharply yesterday and went back to make it right. | I do not like leaving a #friend# with my anger.
+b : Was the apology accepted? | What made you go back?
+a : It was. | I kept hearing my own words.
+
+scene family_boat
+when topic=family
+does tell.self / react.self / assess
+a : At #home# we hear when a #boat# ties at the #jetty#. | I can tell the #rope# sound from the knock at our #gate#.
+b : Do you go to see? | Does it wake you?
+a : If I am still up. | Sometimes after dark.
+
+scene new_face
+when topic=home
+does tell.self / react.self / assess
+a : A #visitor# asked where the #shore# path starts. | I walked beside the traveller to the first #reeds#.
+b : Did the visitor find it? | Why go along?
+a : The traveller waved from the path. | A stranger may miss the turn.
+
+scene dry_bench
+when topic=home
+does tell.self / react.self / assess
+a : I moved my carving #chips# so a wet #visitor# could use the #bench#. | The #fire# was already warm.
+b : Did you know the visitor? | Did they stay long?
+a : Not before that #evening#. | Until the #rain# stopped.
+
+scene safe_knife
+when topic=pastimes
+does tell.self / react.self / assess
+a : I set the #knife# aside whenever someone crosses in front of me. | A carving can wait for a clear #bench#.
+b : Does that interrupt you? | Who taught you?
+a : Only for a moment. | A patient carver at #home#.
+
+story dark_shape [topic=memories self.age>=13]
+  : I watched the #ice# from the #shore# and saw a #shadow# move beneath it.
+  : It was larger than any #stone# and gone before I could call someone over.
+  ask : What was it?
+  b : That would stay with me.
+  : I still do not know. I keep clear of thin #ice#.
+
+story crooked_figure [topic=pastimes self.age>=13]
+  : I carved a #figure# for the #festival# and took too much from one side.
+  : I turned the mistake into a bent shoulder and finished it anyway.
+  ask : Did anyone like it?
+  b : You kept working.
+  : Someone asked to keep it, so I let them.
+
+story autumn_reeds [topic=pastimes self.age>=13]
+  : I swam toward the #reeds# on a cold autumn #day#.
+  : The #wind# changed as I turned, so I shortened my #strokes# and came back slowly.
+  ask : Were you frightened?
+  b : You kept your head.
+  : A little. That is why I turned when I did.
+
+rule @bark_swim
+when concept=bark
+does aside
+cooldown 8h
+say The #lake# is cold enough to wake me. | One more #swim# before supper.
+
+rule @bark_wood
+when concept=bark
+does aside
+cooldown 9h
+say This #wood# might hold a #figure#. | Keep the #chips# clear of the #fire#.
+
+rule @bark_ice
+when concept=bark here.season=winter
+does aside
+cooldown 10h
+say Something moved under that #ice# once. | I will watch from the #shore#.
+
+rule @bark_bell
+when concept=bark here.day=festival
+does aside
+cooldown 11h
+say The #bells# have started. | I can hear the largest #bell# over the #water#.
+
+dlg @1 resident.hub : #greet#. I have just come from the #lake#. | #greet#. Step around my #wood# #chips#.
+dlg @2 resident.hub [topic.meeting=known] : You remember the #shore# path, then? | Back again? The #figure# is nearly finished.
+dlg @1 resident.job : I help with chores at #home# and practise carving by the #jetty#. | My chores are near the #lake# and our #home#.
+dlg @1 resident.bye : #farewell#. I must put the #knife# away. | #saying.capitalize#. Stay on the near #shore#.
+graft resident.hub
+choice Why swim in cold weather? -> water
+node water
+say I like the quiet #lake# in autumn. I stay close to the #shore# and turn back before the cold slows my #strokes#.
+free
+choice What are you carving? -> carving
+choice Back to the shore. -> hub
+node carving
+say A small #figure# from this #wood#. Come back after I have smoothed its rough side.
+choice Back to the shore. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. I could see the bottom of the #lake# this morning. | #greet#. This #figure# needs a little more carving by the #fire#.
+line @1 farewell : #farewell#. The #jetty# needs a look before dusk. | #saying.capitalize#. The #fire# wants tending.
+
+young
+line @1 greet : #greet#. The #lake# was cold and I still went in. | #greet#. See this bit of #wood#?
+line @1 farewell : #farewell#. I have to get back before supper. | My #hands# need warming now.
+
+adolescent
+line @1 greet : #greet#. I can reach the first #reeds# now. | #greet#. Do you want to see the #figure#?
+line @1 farewell : #farewell#. I have another chore at #home#. | The #knife# is going back in its sheath.
