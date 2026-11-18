@@ -1,0 +1,326 @@
+# cw153, the quiet count (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw153
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_lf_jory_barleyton
+written_by claude-codex-cw-2
+title the quiet count
+fits stage=adult|old
+prefers talk=quiet
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk counts_bars_in_threes_under_the_breath
+likes smoked_eel digging sharp_knife autumn_wind
+dislikes rats wet_floors
+fears a_missed_bar_in_a_batch someone_slipping_near_the_vat
+hopes a_safe_count_at_every_shift a_garden_bed_behind_the_house
+topics work +0.5 home +0.3 pastimes +0.3 food +0.2 weather +0.2
+styles comfort=gentle gossip=reluctant refuse=plain tease=dry
+marks oath saying
+persona #self.first# counts #bars# softly through every shift, keeps a sharp #knife# sheathed, and digs a quiet #garden# when work ends.
+
+words
+oath! = Count and clean floor | By the last good bar
+saying! = Count once for work and once for safety | A quiet sum can save a day
+count = count | careful count
+number = number | small number
+numbers = numbers | small numbers
+sum = sum | final sum
+mark = mark | counting mark
+marks = marks | counting marks
+bar = bar | soap bar
+bars = bars | soap bars
+soap = soap | firm soap
+batch = batch | boiling batch
+vat = vat | hot vat
+vats = vats | boiling vats
+lye = lye | strong lye
+ash = ash | sifted ash
+fat = fat | rendered fat
+water = water | clear water
+fire = fire | low fire
+heat = heat | steady heat
+paddle = paddle | stirring paddle
+ladle = ladle | long ladle
+mould = mould | soap mould
+moulds = moulds | soap moulds
+shelf = shelf | drying shelf
+shelves = shelves | drying shelves
+floor = floor | workroom floor
+plank = plank | floor plank
+bucket = bucket | water bucket
+cloth = cloth | dry cloth
+knife = knife | sharp knife
+blade = blade | clean blade
+edge = edge | keen edge
+sheath = sheath | knife sheath
+hand = hand | working hand
+hands = hands | working hands
+worker = worker | fellow worker
+workers = workers | work crew
+garden = garden | small garden
+bed = bed | garden bed
+beds = beds | garden beds
+soil = soil | garden soil
+spade = spade | digging spade
+root = root | sound root
+roots = roots | sound roots
+weed = weed | garden weed
+weeds = weeds | garden weeds
+wind = wind | autumn wind
+autumn = autumn | leaf season
+rain = rain | shower
+lake = lake | Glasswater
+shore = shore | lakeshore
+eel = eel | smoked eel
+smoke = smoke | cooking smoke
+plate = plate | supper plate
+bread = bread | loaf
+loaf = loaf | bread loaf
+tea = tea | cup of tea
+cup = cup | warm cup
+rat = rat | larder rat
+rats = rats | larder rats
+larder = larder | food cupboard
+home = home | shared cottage
+house = house | shared house
+spouse = spouse | partner
+family = family | household
+table = table | supper table
+pot = pot | supper pot
+door = door | front door
+roof = roof | sound roof
+market = market | market square
+price = price | asking price
+coin = coin | earned coin
+city = city | Ridgemere
+street = street | city street
+road = road | High Road
+bench = bench | wooden bench
+hour = hour | passing hour
+hours = hours | passing hours
+night = night | late night
+morning = morning | early morning
+
+any
+opinion @1 city against 1 : A #city# can make a working #hand# disappear in its crowd. | The #shore# lets me recognize the turns toward #home#.
+opinion @1 dole for 1 : Give a hungry #worker# #bread# today. | A small #sum# from many #hands# can fill a #table#.
+opinion @1 drink mixed 0 : I like a #cup# after the #vat# cools. | Nobody should handle hot #lye# after too much drink.
+opinion @1 festivals mixed 0 : The #market# can be pleasant when work is done. | I still prefer a quieter #table# afterward.
+opinion @1 houses against 1 : A fine house has room to leave a #bench# empty. | The #workers# I know wait outside its #door#.
+opinion @1 merchants against 2 : The #bread# #price# goes up while our pay stays still. | Supper comes after I have counted the remaining #coin#.
+opinion @1 newcomers mixed 1 : Let a new #hand# practise the #count# slowly. | I will show where the dry #floor# begins.
+opinion @1 strangers for 1 : A #stranger# can have a #plate# while we talk. | The #house# has made room for a new face before.
+opinion @1 times against 1 : Each #batch# is hard work, yet the #coin# stretches less. | I hope the next week is easier on our #table#.
+
+grown
+line @1 greet : #greet#. I am at the middle of a #count#. | #greet#. The #floor# is damp; step near the #door#.
+line @2 greet [self.working=yes] : Let me finish these last three #bars#. | Speak as I carry this #bucket# across.
+line @3 greet [pair.band=friends|family] : Your #plate# of #eel# is near the #fire#. | I kept the #bench# beside the #fire# clear.
+line @4 greet [here.time=dawn] : The #vat# is not hot yet. | #greet#. I have counted the #moulds# before breakfast.
+line @1 greet.return : I remember where the #count# stopped. | #welcome_back#. This #batch# is nearly finished.
+line @1 kin.open [pair.kin!=no] : Come inside; I cleared your place at the #table#. | There is #bread# left for you.
+line @1 again.open : I had one #number# left to check when you went. | Did we finish talking about the #garden#?
+line @1 farewell : #farewell#. Mind the wet #plank#. | #saying.capitalize#. This #knife# belongs in its #sheath#.
+line @1 farewell.return : Perhaps the new #garden# #bed# will be turned when you return. | We can share another #plate# then.
+line @1 react.news : Wait until I have finished this #sum#. | Which part did you see yourself?
+line @1 react.news.new : Nobody in the workroom mentioned it. | Who brought the account to the #shore#?
+line @1 react.news.known : I heard a smaller version at supper. | Your details add up differently.
+line @1 react.news.doubt : I would check each #number# before repeating it. | One missing piece changes the whole #sum#.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is a loss no one should carry alone; I will stay nearby. | There is a #bench# here while the #bars# rest.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That brings a good #sum# to the day. | Let their household share an extra #plate# tonight.
+line @1 answer.how : The #work# has gone steadily. | I have supper to look forward to.
+line @1 answer.how.busy [self.working=yes] : I am counting the next #batch#. | The #floor# needs drying before we carry anything else.
+line @1 ask.how : Did your #hands# get a rest? | Has your #home# been quiet?
+line @1 sympathise : I can listen while you sit. | A warm #cup# may help before we speak.
+line @1 reassure : We can recount the #bars# and find what is missing. | The #garden# will still be there tomorrow.
+line @1 decline : I cannot leave this #vat# unattended. | No, that #floor# is too slick to cross with a #bucket#.
+line @1 accept_decline : I understand. I will carry the #bucket# myself. | Very well; we can try another time.
+line @1 thank : You set a dry #cloth# on the #floor# before I slipped. | The #bars# were counted when I returned; thank you.
+line @1 deflect_thanks : I only moved the #bucket# aside. | There was an extra #plate# at #home#.
+line @1 preclose : The #moulds# must be set out before dark. | I have a #garden# #bed# to turn.
+line @1 tease [pair.band=friends] : You lost count before reaching five #bars#. | Your #spade# has done more resting than digging.
+line @1 ack : #bc_right#. I will check the #marks#. | #bc_fair_enough#. The #knife# stays sheathed.
+line @1 give.advice : Dry the #floor# before lifting a full #ladle#. | Count the #moulds# after filling them.
+line @1 warn [world.bandits=near] : Keep company on the #road# tonight. | We should bring the #bucket# work indoors early.
+scene three_at_time
+when topic=work
+does tell.self / react.self / assess
+a : I count the #bars# in threes while moving them to the #shelf#. | It leaves a small group to check if someone calls me away.
+b : Does that help? | Do you ever lose your place?
+a : Most days. | Then I start the group again.
+
+scene quiet_numbers
+when topic=pastimes
+does tell.self / react.self / assess
+a : I count under my breath while walking #home#. | It slows my thoughts after the noise of the #vat#.
+b : What do you count? | Does anyone notice?
+a : The steps to the #door#. | Only someone walking close.
+
+scene dry_floor
+when topic=work
+does tell.self / react.self / assess
+a : A wet #floor# near the #vat# worries me more than a slow #batch#. | I stop and spread a #cloth# before the next #ladle# moves.
+b : Does the crew wait? | Has anyone slipped?
+a : Long enough to stay safe. | Once was enough to teach us.
+
+scene sharp_edge
+when topic=pastimes
+does tell.self / react.self / assess
+a : I keep a #knife# #edge# clean for cutting #soap# from a #mould#. | A dull cut makes the #bar# crumble.
+b : When does the #edge# need work? | Is it safe to carry?
+a : Before a large #batch#. | In its #sheath#.
+
+scene garden_spade
+when topic=pastimes
+does tell.self / react.self / assess
+a : An #hour# digging in the #garden# feels different from stirring a #vat#. | I decide when to rest the #spade# against the wall.
+b : Does anything grow there? | Do you work alone?
+a : A few good #roots#. | Often, until supper.
+
+scene first_roots
+when topic=home
+does tell.self / react.self / assess
+a : I left one #bed# of #soil# loose enough for the first #roots#. | The #weeds# returned before the plants did.
+b : Did you pull them? | Was the planting lost?
+a : Every morning. | The small plants came through.
+
+scene smoked_eel
+when topic=food
+does tell.self / react.self / assess
+a : I bring smoked #eel# #home# when the #market# has it. | A little goes a long way with #bread#.
+b : Do you warm it by the #fire#? | Is it your favourite supper?
+a : Just warm it. | After a long #batch#, yes.
+
+scene larder_rat
+when topic=home
+does tell.self / react.self / assess
+a : I count the #bread# before shutting the #larder#. | A #rat# found the bottom #shelf# once and left crumbs.
+b : Did you catch it? | Was much taken?
+a : After moving the food higher. | One corner of a #loaf#.
+
+scene autumn_wind
+when topic=weather here.season=autumn
+does tell.self / react.self / assess
+a : Autumn #wind# clears the #smoke# from the workroom #door#. | I stand outside for a breath before going back to the #vat#.
+b : Does it cool the room? | Do the others join you?
+a : Only near the #door#. | When the #batch# allows.
+
+scene cold_tea
+when topic=food
+does tell.self / react.self / assess
+a : I dislike #tea# that has cooled while I count #moulds#. | I make a fresh #cup# rather than pretend the first is pleasant.
+b : Does that waste it? | Can you keep it near the #fire#?
+a : A little. | Away from the #lye#, yes.
+
+scene mould_count
+when topic=work
+does tell.self / react.self / assess
+a : I mark each #mould# as it is filled. | The #sum# at the end should match the #bars# on the drying #shelf#.
+b : What if it does not? | Do you recount them?
+a : I look for a cracked one. | By groups of three.
+
+scene water_bucket
+when topic=work
+does tell.self / react.self / assess
+a : I carry less #water# than the #bucket# can hold. | A full one sloshes over the #floor# beside the hot #vat#.
+b : Does that mean more trips? | Is it worth it?
+a : One extra. | We keep our footing.
+
+scene spouse_supper
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : My #self.spouse# hears my counting continue after the workroom is closed. | Supper draws me back to the #table#.
+b : Do you talk about the work? | Does the counting stop?
+a : After the first #plate#. | Once I have eaten.
+
+scene shared_house
+when topic=family
+does tell.self / react.self / assess
+a : Our #house# has workers returning at different #hours#. | I leave a #plate# near the #fire# for whoever comes late.
+b : Is there room for everyone? | Do you stay awake?
+a : Around the #table#, yes. | Until the last #door# closes.
+
+scene fair_price
+when topic=prices
+does tell.self / react.self / assess
+a : I count what a #loaf# costs before I leave the #market#. | It is easier than finding too little #coin# at the stall.
+b : Does the price change often? | Do you buy anything else?
+a : More than I like. | #eel# if there is room.
+
+scene city_crowd
+when topic=travel
+does tell.self / react.self / assess
+a : A #city# crowd would make me lose my count before the second #street#. | I prefer the #shore# where my steps have room.
+b : Have you been there? | Would you go again?
+a : For a short errand. | Only if the #work# requires it.
+
+scene new_worker
+when topic=work
+does tell.self / react.self / assess
+a : I show a new #worker# the dry way around the #vat#. | Then I ask for a count of the cold #bars#.
+b : Do they learn quickly? | Why cold bars first?
+a : When they take their time. | Safe mistakes are easier to mend.
+
+story missing_bar [topic=work self.age>=18]
+  : I counted a #batch# and found one #bar# missing from the #shelf#.
+  : It had slipped behind a #mould#, still sound but out of sight.
+  ask : Did you find it quickly?
+  b : Your count caught it.
+  : After checking each group of three.
+
+story wet_plank [topic=work self.age>=18]
+  : A #bucket# spilled across a #plank# just as a worker lifted a #ladle#.
+  : I called a stop, dried the #floor#, and only then let the #ladle# pass.
+  ask : Did anyone fall?
+  b : Good that you saw it.
+  : No. We lost a little time and nothing else.
+
+story garden_root [topic=pastimes self.age>=18]
+  : I dug a #garden# #bed# after a long day beside the #vat#.
+  : One #root# from last season was still sound beneath the #soil#.
+  ask : Did you keep it?
+  b : A small reward for digging.
+  : It went into the supper #pot#.
+
+rule @bark_count
+when concept=bark
+does aside
+cooldown 8h
+say One, two, three. Start the next #shelf#. | That #sum# needs checking.
+
+rule @bark_floor
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say Dry the #floor# before moving the #ladle#. | The #bucket# can wait here.
+
+rule @bark_garden
+when concept=bark
+does aside
+cooldown 10h
+say The #garden# #bed# has new #weeds#. | I will turn the #soil# after work.
+
+rule @bark_tea
+when concept=bark
+does aside
+cooldown 11h
+say My #tea# has gone cold again. | A fresh #cup# after this #batch#.
+
+dlg @1 resident.hub : #greet#. I am counting the #bars# before they dry. | #greet#. Mind the damp #floor# beside the #vat#.
+dlg @2 resident.hub [topic.meeting=known] : Back for another #batch#? | Your visit has come just before I finish this #count#.
+dlg @1 resident.job : I help make #soap# at #self.workplace# and count each #batch#. | At #self.workplace#, I carry cooled #bars# from #vat# to drying #shelves#.
+dlg @1 resident.bye : #farewell#. Keep clear of the wet #plank#. | #saying.capitalize#. I have the #moulds# to count.
+graft resident.hub
+choice Why count the bars twice? -> count
+node count
+say A #bar# can slip behind a #mould# or a #shelf#. I count as we make them and again when they dry.
+free
+choice What do you do after work? -> garden
+choice Back to the workroom. -> hub
+node garden
+say I dig in the #garden# when the #vat# is done. It lets me stop counting for a while.
+choice Back to the workroom. -> hub
+choice Goodbye. -> bye

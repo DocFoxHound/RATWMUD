@@ -51,6 +51,7 @@ cw149	coldwater	standard	ready	1	tn_cw_tamsin_greyton	claude-codex-cw-2
 cw150	coldwater	full	ready	1	tn_fh_wren_coldpeak	claude-codex-cw-2
 cw151	coldwater	standard	ready	1	tn_lf_cairn_downfield	claude-codex-cw-2
 cw152	coldwater	standard	ready	1	tn_lf_isla_downfield	claude-codex-cw-2
+cw153	coldwater	standard	ready	1	tn_lf_jory_barleyton	claude-codex-cw-2
 lf101	larkfield	full	ready	1	rm_berit_kelpwick	claude-p11-pilot
 lf102	larkfield	standard	ready	1	rm_agna_bilgecot	claude-p11-pilot
 mb101	mirebridge	full	ready	1	cty_nell_plummeadow	claude-p11-pilot
