@@ -1,0 +1,466 @@
+# lf114, the name-keeping country printer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle lf114
+revision 1
+state ready
+dialect larkfield
+accent none
+tier full
+written_for tn_sm_dun_harvestley
+written_by claude-codex-lf-1
+title the name-keeping country printer
+fits stage=adult|old
+prefers role=merchant job=merchant
+traits temper=even talk=plain warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk remembers_every_name_ever_heard
+likes warm_bread digging new_boots thunder
+dislikes rats gulls
+fears a_press_fire_started_by_careless_embers a_name_printed_wrong_on_an_order
+hopes every_wage_is_paid_on_time a_clean_press_for_the_next_generation
+topics work +0.5 memories +0.4 prices +0.3 travel +0.2
+styles comfort=attentive gossip=discreet refuse=plain tease=dry
+marks oath saying
+persona #self.first# runs the #press#, remembers each #name# that crosses the #counter#, and knows the #road# to the city by walking it.
+
+words
+oath! = By type and tally | Ink on my paws
+saying! = A name is worth setting straight | Read the proof before the run
+press = press | country press
+paper = paper | mill paper
+sheet = sheet | clean sheet
+sheets = sheets | stacked sheets
+page = page | printed page
+pages = pages | finished pages
+type = type | metal type
+letter = letter | small letter
+letters = letters | set letters
+line = line | printed line
+lines = lines | even lines
+proof = proof | first proof
+form = form | locked form
+frame = frame | press frame
+plate = plate | inked plate
+ink = ink | black ink
+roller = roller | ink roller
+tray = tray | type tray
+case = case | letter case
+block = block | type block
+blocks = blocks | type blocks
+pressman = pressman | working printer
+hand = hand | press hand
+hands = hands | press hands
+work = work | printing work
+order = order | print order
+orders = orders | town orders
+book = book | order book
+books = books | bound books
+ledger = ledger | wage ledger
+wage = wage | weekly wage
+wages = wages | earned wages
+name = name | remembered name
+names = names | remembered names
+visitor = visitor | new visitor
+neighbour = neighbour | near neighbour
+traveller = traveller | road traveller
+stranger = stranger | passing stranger
+friend = friend | old friend
+buyer = buyer | waiting buyer
+customer = customer | local customer
+counter = counter | shop counter
+shelf = shelf | front shelf
+shop = shop | small shop
+stairs = stairs | steep stairs
+flat = flat | upstairs flat
+roof = roof | sound roof
+door = door | front door
+window = window | upper window
+road = road | long road
+mile = mile | road mile
+miles = miles | many miles
+city = city | far city
+market = market | city market
+wagon = wagon | supply wagon
+cart = cart | goods cart
+load = load | paper load
+price = price | posted price
+cost = cost | wagon cost
+coin = coin | counted coin
+light = light | lamp light
+lamp = lamp | counter lamp
+fire = fire | press fire
+ash = ash | cold ash
+rat = rat | store rat
+rats = rats | hungry rats
+gull = gull | crying gull
+gulls = gulls | roof gulls
+bread = bread | warm bread
+oven = oven | baker oven
+larder = larder | small larder
+boot = boot | new boot
+boots = boots | new boots
+garden = garden | back garden
+spade = spade | garden spade
+soil = soil | dark soil
+thunder = thunder | distant thunder
+storm = storm | coming storm
+rain = rain | heavy rain
+morning = morning | early morning
+evening = evening | late evening
+night = night | quiet night
+day = day | long day
+hour = hour | working hour
+hours = hours | long hours
+queue = queue | waiting queue
+festival = festival | town festival
+watch = watch | town watch
+gate = gate | town gate
+roadwork = roadwork | road repairs
+wagons = wagons | late wagons
+seat = seat | front seat
+sample = sample | printed sample
+samples = samples | printed samples
+prices = prices | posted prices
+print = print | fresh print
+stack = stack | paper stack
+proofs = proofs | first proofs
+lesson = lesson | press lesson
+
+any
+opinion @1 city against 1 : I reached the #city# on foot and found a crowd that knew no #names#. | It swallowed a whole #day# of mine.
+opinion @1 dole for 1 : A paid #hand# may still need #bread# in a thin week. | Keep a #larder# open for them.
+opinion @1 merchants for 1 : I keep a #counter# myself; every #wagon# adds to the #cost#. | I still show the #price# before a sale.
+opinion @1 newcomers for 2 : A new #hand# who learns the #case# can stay. | A #name# belongs in the #book# when the work is good.
+opinion @1 road against 1 : Late #wagons# leave the #press# still when it should be running. | I would put #coin# toward the #roadwork#.
+opinion @1 strangers for 2 : A #traveller# can bring a fresh #order# and a story. | I ask their #name# before the ink dries.
+opinion @1 watch for 1 : The #watch# keeps wandering paws away from my #counter#. | I lock the #door# too.
+opinion @1 festivals mixed 0 : The #festival# fills my #order# #book#. | I enjoy its quiet end more than its noise.
+opinion @1 times mixed 0 : The #press# runs when it has #paper# and #hands#. | I cannot promise the #road# will cooperate.
+line @1 greet : #greet#. I believe I know your #name#. | #greet#. Give me a moment to set down this #proof#.
+line @2 greet [pair.band=friends|family] : The #bread# is still warm upstairs. | You may take the #seat# by my #counter#.
+line @1 greet.return : I kept your last #order# under the #book#. | Your #name# came to me before your face.
+line @3 greet [here.time=dawn] : The #lamp# is still burning over the first #proof#. | #greet#. The #press# wakes early today.
+line @1 kin.open [pair.kin!=no] : Come upstairs when the #press# stops. | There is #bread# left by the #window#.
+line @1 again.open : I had found the missing #letter#. | Were we speaking of the #road#?
+line @1 farewell : #farewell#. I must check the next #proof#. | Take care on those #stairs#.
+line @1 farewell.return : The #pages# may be ready when you return. | Next time I will remember your #order# as well.
+line @1 react.news : Start with the #name#, if you know it. | I can stop sorting #type# and listen.
+line @1 react.news.new : That has not reached the #shop# yet. | Who carried this along the #road#?
+line @1 react.news.known : I heard a shorter account from the #wagon#. | You have added the missing #line#.
+line @1 react.news.doubt : I would want to see the written #order#. | Who put a #name# to that claim?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I am sorry. Sit beside the #lamp# a moment. | I will close the #book# and hear you.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That #name# deserves a fresh #page#. | I have #bread# upstairs for this news.
+line @1 answer.how : The #press# is sound; I found a #rat# near the #paper#. | Better since the #wagon# arrived.
+line @1 answer.how.busy [self.working=yes] : I am locking this #form# before it shifts. | Let me finish one #page#.
+line @1 ask.how : Did you find a dry #road# in? | Has your #work# brought you a new #name#?
+line @1 sympathise : I can hear you after this #sheet#. | Have some warm #bread# and stay under the #roof#.
+line @1 reassure : I will put your #name# beside the next #order#. | We can put the #page# right before it goes out.
+line @1 decline : I will not print a #name# without checking it. | The #press# cannot run with that #plate# loose.
+line @1 accept_decline : I understand; I can hold the #paper# here. | Then I will close the #book# for today.
+line @1 thank : You spotted the reversed #letter# in time. | That new #boot# saved me a cold walk.
+line @1 deflect_thanks : I happened to have the #case# open already. | A proper #proof# is part of my #work#.
+line @1 preclose : The #ink# must be covered overnight. | I still owe the #hands# their #wages#.
+line @1 tease [pair.band=friends] : I remember your #name# better than you remember your #orders#. | Mind my #stairs#; they enjoy surprises.
+line @1 ack : #bc_right#. The #lines# are straight now. | #bc_fair_enough#. I will recheck the #book#.
+line @1 give.advice : Read a #proof# in daylight before paying for a full run. | Keep your #paper# dry beneath the #roof#.
+line @1 warn [world.bandits=near] : Keep your #coin# close on the #road#. | Let the #wagon# travel with company.
+scene clean_proof
+when topic=work
+does tell.self / react.self / assess
+a : I read the #proof# against the #window# before the full run. | A reversed #letter# is easier to fix while the #press# is still.
+b : Do you always find mistakes? | Who checks it?
+a : Enough to keep looking. | Another #hand# reads it too.
+
+scene set_type
+when topic=work
+does tell.self / react.self / assess
+a : I place each #letter# from the #case# into its #line#. | A loose #block# can spoil a whole #page#.
+b : Do your hands ache? | Does it take long?
+a : After a long run. | Longer than most expect.
+
+scene ink_roller
+when topic=work
+does tell.self / react.self / assess
+a : Too much #ink# on the #roller# fills the small #letters#. | I roll it thin across the #plate#.
+b : Can you wipe it away? | Who taught you?
+a : Before the #sheet# dries. | An older #pressman#.
+
+scene paper_from_vat
+when topic=work
+does tell.self / react.self / assess
+a : The vat #hands# send #paper# with different edges. | I choose the even #sheets# for a close #line# of #type#.
+b : What becomes of the rest? | Do they mind?
+a : Broader #pages#. | They know why I ask.
+
+scene locked_form
+when topic=work
+does tell.self / react.self / assess
+a : I tap the #form# gently before the first pull. | A shifting #letter# leaves a mark across every copy.
+b : Does it often move? | Can you tell at once?
+a : Only if rushed. | On the first #proof#.
+
+scene drying_pages
+when topic=work
+does tell.self / react.self / assess
+a : Fresh #pages# need space where air can pass. | I keep them clear of the #lamp# and its flame.
+b : How many fit? | What if it rains?
+a : One run at a time. | Under the sound #roof#.
+
+scene bound_book
+when topic=work
+does tell.self / react.self / assess
+a : A finished #book# hides a great many small decisions. | I still notice which #page# took three tries.
+b : Do readers notice? | Is that satisfying?
+a : Usually not. | Once it closes well.
+
+scene wrong_name
+when topic=memories
+does tell.self / react.self / assess
+a : I have remembered a #name# after one visit and misheard its spelling. | I ask for it twice before it reaches the #press#.
+b : Did anyone mind? | Do you remember mine?
+a : One buyer did. | Yes, I believe I do.
+
+scene old_customer
+when topic=memories
+does tell.self / react.self / assess
+a : A #customer# returned after years with a changed #order#. | The #name# came back to me before the old #page# did.
+b : Did you tell them? | Did they recognize you?
+a : Only after checking. | They remembered the #shop#.
+
+scene new_hand
+when topic=work
+does tell.self / react.self / assess
+a : Speed is the last thing I ask of a #hand# at the #case#. | I ask for careful #lines# first.
+b : How do you teach? | Do mistakes cost much?
+a : One #tray# at a time. | Only if they leave the #press#.
+
+scene wage_book
+when topic=prices
+does tell.self / react.self / assess
+a : I keep the #wage# #book# beside the #orders#. | A worker should see the count behind each payment.
+b : Do they ask? | Is the count simple?
+a : They may whenever they wish. | It rarely feels so.
+
+scene posted_price
+when topic=prices
+does tell.self / react.self / assess
+a : I write the #price# beside each #sample# #page#. | A buyer should know the #cost# before the #press# begins.
+b : Does it change? | What adds to it?
+a : When #paper# is scarce. | A late #wagon#.
+
+scene late_wagon
+when topic=travel
+does tell.self / react.self / assess
+a : The #wagon# from the #city# arrived after the #light# was gone. | I kept the #press# closed until I checked the #load#.
+b : Was it damaged? | Did you wait outside?
+a : A few #sheets# were wet. | Under the #gate# lamp.
+
+scene walk_to_city
+when topic=travel
+does tell.self / react.self / assess
+a : I once walked to the #city# and returned by the same #road#. | The noise there followed me halfway home.
+b : Why walk? | Would you go again?
+a : The #cart# was full. | Only with an #order#.
+
+scene road_miles
+when topic=travel
+does tell.self / react.self / assess
+a : A #mile# feels longer when a promised #load# does not come. | I know each turn from waiting for #wagons#.
+b : Do you travel often? | What is the worst stretch?
+a : Less than I used to. | The low ground after #rain#.
+
+scene watch_round
+when topic=home
+does tell.self / react.self / assess
+a : The #watch# passes my #door# before I cover the #ink#. | I can hear their steps from upstairs.
+b : Does that comfort you? | Do you lock up?
+a : It does. | Every #night#.
+
+scene rat_in_store
+when topic=home
+does tell.self / react.self / assess
+a : A #rat# got behind the bottom #shelf# and chewed the #paper#. | I found the damage by the torn corner.
+b : Did you catch it? | Was much lost?
+a : Not yet. | Only the outside #sheets#.
+
+scene gulls_on_roof
+when topic=home
+does tell.self / react.self / assess
+a : The #gulls# wake before the #press# does. | One likes to shout above my #window#.
+b : Can you drive it off? | Do you mind the sound?
+a : Not for long. | More than the #thunder#.
+
+scene warm_bread
+when topic=food
+does tell.self / react.self / assess
+a : I bring #bread# upstairs while it is still warm. | It makes the #flat# feel less like a second #shop#.
+b : Do you bake it? | Do you share?
+a : The baker has that skill. | Whenever someone is here.
+
+scene garden_spade
+when topic=pastimes
+does tell.self / react.self / assess
+a : Digging with a #spade# asks a different rhythm than setting #type#. | I go to the #garden# when a #proof# will not settle in my head.
+b : Does it help? | What grows there?
+a : Often. | What the #soil# permits.
+
+scene new_boots
+when topic=pastimes
+does tell.self / react.self / assess
+a : A new pair of #boots# makes an old #road# feel shorter. | I save them for the wet stretch beyond the #gate#.
+b : Do they last? | Why keep the old pair?
+a : If I care for them. | For the #garden#.
+
+scene thunder_roof
+when topic=weather
+does tell.self / react.self / assess
+a : I like #thunder# when the #roof# is sound. | The #press# rests while I listen from upstairs.
+b : Does it frighten you? | What about the paper?
+a : I like hearing it from here. | I keep it dry.
+
+scene festival_order
+when topic=home
+does tell.self / react.self / assess
+a : Before the #festival# every #shop# asks for another printed #page#. | Afterward I enjoy the empty #queue#.
+b : Do you celebrate? | Is it good for business?
+a : At its quieter edge. | It keeps the #hands# paid.
+
+scene visitor_names
+when topic=memories
+does tell.self / react.self / assess
+a : I write a #visitor# in memory before I enter an #order# in the #book#. | The face sometimes takes longer to return.
+b : Do you ever forget? | Is that useful?
+a : I have to ask again sometimes. | Especially at the #counter#.
+
+scene printer_fire
+when topic=work
+does tell.self / react.self / assess
+a : I keep hot #ash# far from the dry #sheets#. | A small #fire# could take the whole #press#.
+b : Has one started? | Who checks at night?
+a : Never here. | I make the last round.
+
+scene stair_count
+when topic=home
+does tell.self / react.self / assess
+a : The #stairs# to my #flat# sound different under a loaded #hand#. | I know when the #paper# delivery has arrived.
+b : Can you tell whose steps? | Does it wake you?
+a : Sometimes. | Only the #gulls# do that.
+
+scene quiet_counter
+when topic=memories
+does tell.self / react.self / assess
+a : I like the #counter# after the final #customer# leaves. | Then I can hear whether the #press# has begun to rattle.
+b : Does it rattle often? | Do you rest then?
+a : Only a loose #block#. | After I check it.
+
+story first_proof [topic=work self.age>=18]
+  : My first paid #proof# had one reversed #letter# in the heading.
+  : A buyer spotted it before I did.
+  ask : Did you repair it?
+  b : That is a useful lesson.
+  : I reset the #line# before the #press# ran.
+
+story road_walk [topic=travel self.age>=18]
+  : I walked the full #road# to the #city# because the #wagon# was full.
+  : Coming home I could still hear the city #market# behind me.
+  ask : Did you return with anything?
+  b : A long way on foot.
+  : A little #paper# and a great wish for quiet.
+
+story remembered_name [topic=memories self.age>=18]
+  : A #traveller# came back years after a single #order#.
+  : I recalled the #name# and forgot what I had printed.
+  ask : Did that please them?
+  b : Memory works strangely.
+  : It did once I found the old #book#.
+
+story night_rat [topic=home self.age>=18]
+  : After closing, a #rat# scratched behind the #shelf#.
+  : It had torn a corner from the first #sheet# in a fresh #stack#.
+  ask : Did it get away?
+  b : That is poor company.
+  : It did, but I moved every #sheet# upstairs.
+
+story thunder_proof [topic=weather self.age>=18]
+  : A #storm# stopped the #wagon# while I held a finished #proof#.
+  : I listened to #thunder# under a good #roof# and waited.
+  ask : Did the buyer come?
+  b : A fine place to wait.
+  : The next #morning#, with dry #boots#.
+
+rule @bark_proof
+when concept=bark
+does aside
+cooldown 8h
+say Read the #proof# once more. | This #letter# faces the wrong way.
+
+rule @bark_counter
+when concept=bark
+does aside
+cooldown 9h
+say Your #order# is under the #book#. | Give me the #name# you want printed.
+
+rule @bark_wagon
+when concept=bark
+does aside
+cooldown 10h
+say The #wagon# is late again. | Keep that #paper# beneath the cover.
+
+rule @bark_rat
+when concept=bark
+does aside
+cooldown 11h
+say There is a #rat# behind the #shelf#. | Lift the bottom #stack# clear.
+
+rule @bark_bread
+when concept=bark
+does aside
+cooldown 12h
+say The #bread# is warm upstairs. | I have set aside another #plate#.
+
+rule @bark_thunder
+when concept=bark
+does aside
+cooldown 13h
+say That #thunder# sounds close. | The #roof# is holding well.
+
+dlg @1 resident.hub : #greet#. I have your #name# in mind. | #greet#. The #press# is between runs.
+dlg @2 resident.hub [topic.meeting=known] : I remember your last #order#. | You have returned before the #ink# is dry.
+dlg @3 resident.hub [here.time=night] : You found me above the #press#; speak from the #door#. | Is this needed before #morning#?
+dlg @1 resident.job : I run the #press# at #self.workplace#. | I set #type#, read #proofs#, and count the #orders#.
+dlg @2 resident.job [self.working=yes] : I am setting a narrow #line# of #type#. | This #proof# needs another look.
+dlg @1 resident.bye : #farewell#. I will cover the #ink#. | #saying.capitalize#. Mind the #stairs#.
+dlg @1 shop.greet [here.shop=open] : #greet#. The #samples# and #prices# are here. | Tell me what you want on the #page#.
+dlg @2 shop.greet [here.shop=bare] : The #shelf# is bare, but I can take a future #order#. | The #wagon# has not brought fresh #paper#.
+dlg @3 shop.greet [here.shop=asleep] : The #press# is still for the #night#. | Come when the #counter# opens.
+dlg @4 shop.greet [here.shop!=bare here.shop!=asleep] : #greet#. Ask to see a #sample# of the #print#. | I can price the #pages# at this #counter#.
+dlg @1 shop.prices [here.shop=open|bare] : The #price# depends on #paper# and the number of #pages#. | I put each #cost# in the #book# before work begins.
+dlg @1 shop.bye : #farewell#. Keep the #pages# under cover. | #shop_bye# I will mark your #order# here.
+dlg @1 master.learn [here.teaches=yes] : Start with a single #letter# in the #case#. | I will show you how to read a #proof#.
+dlg @2 master.learn [here.teaches=yes topic.meeting=known] : You returned for the next #lesson#. | The #line# you set yesterday held straight.
+graft resident.hub
+choice How do you remember names? -> names
+node names
+say I listen closely when a person gives me a #name# for an #order#.
+free
+choice Did you walk to the city? -> walk
+choice Goodbye. -> bye
+node walk
+say Once, for a full #day#. The #road# felt quiet on the way home.
+choice Back to the counter. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Can you print an order? -> order
+node order
+say Show me the words and I will quote the #price# before setting #type#.
+free
+choice May I see the paper? -> paper
+choice Goodbye. -> bye
+node paper
+say These #sheets# came from the vat nearby. Feel the edge before deciding.
+choice Back to the shop. -> greet
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. I have cleared the #counter#. | #greet#. The first #proof# is ready.
+line @1 farewell : #farewell#. I must pay the #hands#. | The #pages# can dry while we rest.
