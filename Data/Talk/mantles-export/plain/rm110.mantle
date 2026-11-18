@@ -1,0 +1,451 @@
+# rm110, the guarded riddle (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm110
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for tn_cw_grist_reedmere
+written_by claude-codex-cw-2
+title the guarded riddle
+fits stage=adult|old
+prefers talk=plain
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk swims_in_the_lake_even_in_autumn
+likes hard_cheese riddles sharp_knife first_warm_day
+dislikes flies drizzle
+fears a_false_passenger_on_a_night_crossing a_hull_opened_in_deep_water
+hopes a_clean_landing_after_every_crossing an_answer_worth_the_question
+topics work +0.5 pastimes +0.4 weather +0.2 prices +0.2 gossip -0.5
+styles comfort=blunt gossip=guarded refuse=direct tease=dry
+marks oath saying
+persona #self.first# tests every #knot# and every stranger's answer, swims through autumn chill, and keeps a sharp #blade# sheathed.
+
+words
+oath! = By the hidden answer | Hull and hinge
+saying! = A question can carry a leak | Cut only what needs cutting
+riddle = riddle | old riddle
+riddles = riddles | hard riddles
+answer = answer | plain answer
+question = question | sharp question
+clue = clue | small clue
+secret = secret | kept secret
+truth = truth | clear truth
+boat = boat | working boat
+boats = boats | lake boats
+hull = hull | boat hull
+seam = seam | hull seam
+plank = plank | deck plank
+planks = planks | deck planks
+oar = oar | long oar
+oars = oars | paired oars
+rope = rope | mooring rope
+ropes = ropes | mooring ropes
+knot = knot | close knot
+knots = knots | mooring knots
+post = post | landing post
+jetty = jetty | lake jetty
+landing = landing | safe landing
+shore = shore | near shore
+lake = lake | Glasswater
+water = water | cold water
+depth = depth | deep water
+current = current | lake current
+wind = wind | shifting wind
+rain = rain | hard rain
+drizzle = drizzle | thin drizzle
+autumn = autumn | leaf season
+spring = spring | thaw season
+warmth = warmth | first warmth
+swim = swim | cold swim
+stroke = stroke | swimming stroke
+breath = breath | held breath
+knife = knife | sharp knife
+blade = blade | clean blade
+sheath = sheath | knife sheath
+edge = edge | keen edge
+cheese = cheese | hard cheese
+slice = slice | thick slice
+plate = plate | supper plate
+bread = bread | loaf
+flies = flies | biting flies
+fly = fly | biting fly
+market = market | market square
+price = price | asking price
+coin = coin | earned coin
+city = city | Ridgemere
+street = street | city street
+road = road | High Road
+cart = cart | goods cart
+wheel = wheel | cart wheel
+load = load | carried load
+crate = crate | cargo crate
+passenger = passenger | traveller aboard
+stranger = stranger | unknown face
+crossing = crossing | lake crossing
+door = door | shut door
+home = home | farmhouse
+family = family | household
+table = table | family table
+fire = fire | hearth fire
+bench = bench | dry bench
+sun = sun | warm sun
+sky = sky | open sky
+day = day | clear day
+hour = hour | passing hour
+night = night | dark hour
+dawn = dawn | first light
+light = light | clear light
+hand = hand | working hand
+hands = hands | working hands
+teacher = teacher | older worker
+learner = learner | new hand
+silence = silence | long silence
+streets = streets | city streets
+path = path | shore path
+
+any
+opinion @1 city for 1 : I know the #city#'s shortcuts and their dangers. | A #street# can hold more honest work than a quiet #road#.
+opinion @1 dole against 1 : If there is a #boat# to mend, I would put my #hands# to it. | A queue makes poor use of a sound worker.
+opinion @1 drink mixed 0 : A cup after the #boat# is tied harms no one. | I will not trust a drunk #hand# with an #oar#.
+opinion @1 festivals mixed 0 : The noise is tolerable when the food is good. | I would rather hear a #riddle# than the loudest singer.
+opinion @1 houses mixed 0 : A House that pays for a sound #hull# helps the #jetty#. | I still inspect their terms before taking the #coin#.
+opinion @1 merchants mixed 0 : Some traders state a #price# plainly. | Others hide a poor #load# beneath fine words.
+opinion @1 newcomers mixed 0 : A new #learner# gets a fair test at the #rope#. | I watch the second #knot# more closely than the first.
+opinion @1 road against 1 : A #cart# journey to the #city# costs me a day on the #lake#. | I return as soon as the #load# is delivered.
+opinion @1 strangers against 2 : An unknown #passenger# gives a name before boarding. | My #door# stays shut to a face I cannot place.
+opinion @1 times mixed 0 : The #boat# still earns its keep. | I count every #coin# before calling a season good.
+
+grown
+line @1 greet : #greet#. Do you need passage or an answer? | #greet#. Stand clear of the #rope#.
+line @2 greet [self.working=yes] : Speak after I secure this #knot#. | Tell me your errand as I test the #hull#.
+line @3 greet [pair.band=strangers] : Tell me your business from the #jetty#. | A name first, then a seat on the #bench#.
+line @4 greet [pair.band=friends|family] : I have a #riddle# for the crossing. | Take a #slice# of #cheese# before it goes dry.
+line @5 greet [here.time=dawn] : The #boat# is ready before the #sun#. | I checked the #planks# at first #light#.
+line @6 greet [here.time=night] : Stay beside the lit #post# while we speak. | The #landing# is closed until morning.
+line @1 greet.return : I remember that #question#. | #welcome_back#. The #boat# is where you left it.
+line @2 greet.return [pair.band=friends|family] : Have you solved the #riddle# yet? | I kept one #slice# for you.
+line @1 kin.open [pair.kin!=no] : Come in and close the #door# behind you. | Your #plate# is near the #fire#.
+line @1 again.open : We were arguing over that #clue#. | The #wind# has changed since our last talk.
+line @1 farewell : #farewell#. Test the #plank# underfoot. | #saying.capitalize#. I must sheath the #knife#.
+line @1 farewell.return : Bring me a better #riddle# next time. | The #lake# may be warmer when you return.
+line @1 react.news : Name the witness before the story. | I will set this #oar# aside.
+line @1 react.news.new : That has not been said at this #jetty#. | Who carried the word here?
+line @1 react.news.known : I heard the earlier account from a #passenger#. | Your detail does not match one part.
+line @1 react.news.doubt : I want the #truth#, not a clever #clue#. | An answer without a witness is only a guess.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is a loss. I can keep the #boat# tied while you sit. | Say no more if the telling hurts.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I hope they reach a safe #home#. | That deserves the best #cheese# on the #plate#.
+line @1 answer.how : The #boat# is sound. I am managing. | A cold #swim# cleared my head.
+line @1 answer.how.busy [self.working=yes] : The #seam# needs another look. | I have #ropes# to inspect before sailing.
+line @1 ask.how : Are you steady on your feet? | Did you find the #road# passable?
+line @1 sympathise : I can sit without asking for the whole account. | Let the #fire# do some of the work.
+line @1 reassure : We can inspect the #hull# together before leaving. | One honest #answer# is enough to begin.
+line @1 decline : No. I will not board an unknown #load#. | That #wind# rules out a crossing.
+line @1 accept_decline : Your choice. I will keep the #rope# tied. | Fair enough. Another day may suit.
+line @1 thank : You saw the worn #seam# before it opened. | You kept your #hand# on the #post# until I landed.
+line @1 deflect_thanks : I was already near the #rope#. | A sharp #blade# made the cut easy.
+line @1 preclose : The #boat# needs its last inspection. | I have a #knife# to clean and sheath.
+line @1 tease [pair.band=friends] : That #answer# would sink before the #boat#. | You found a new way to tie an old #knot#.
+line @1 ack : #bc_right#. I will check the #plank#. | #bc_fair_enough#. I will hear the next #clue#.
+line @1 give.advice : Look along the #hull# before trusting its paint. | Keep the #knife# sheathed until it is needed.
+line @1 warn [world.bandits=near] : Use the busy #road# and travel with others. | An empty #jetty# after dark invites trouble.
+line @2 ask.how [pair.band=friends|family] : Have you found your own #answer#? | Is there enough #bread# at #home#?
+line @2 reassure [other.tired=yes] : Rest on the #bench# before you board. | The #boat# will not leave in the next #hour#.
+line @2 thank [pair.band=friends|family] : You tested the spare #oar# without being asked. | I know you kept the #door# shut for us.
+line @2 answer.how [here.season=autumn] : The #lake# is cold, and I went in. | I feel the #wind# more after the #swim#.
+line @2 give.advice [other.stage=young|adolescent] : Stay near the #shore# when the water turns cold. | Ask before touching a working #blade#.
+scene first_warm_day
+when topic=weather here.season=spring
+does tell.self / react.self / assess
+a : On the first warm #day#, I put a #hand# in the #lake# before taking the #boat# out. | The #sun# can feel kind while the #water# stays cold.
+b : Do you swim then? | Does the warmth last?
+a : After the crossing. | It lasts long enough to hope.
+
+scene autumn_stroke
+when topic=pastimes here.season=autumn
+does tell.self / react.self / assess
+a : I still #swim# when autumn #wind# has cleared the #shore#. | I keep close enough to stand if my #breath# shortens.
+b : Do you enjoy the cold? | Does anyone watch you?
+a : I enjoy coming out warm afterward. | Someone usually knows where I am.
+
+scene hard_cheese
+when topic=food
+does tell.self / react.self / assess
+a : Hard #cheese# holds up on a long #boat# day. | I cut a thick #slice# before the first crossing.
+b : Do you share it? | Does it keep well?
+a : With someone who helped. | Better than soft food.
+
+scene knife_edge
+when topic=pastimes
+does tell.self / react.self / assess
+a : I keep the #knife# #edge# sharp enough to part wet #rope#. | A dull #blade# asks for too much force.
+b : Do you test it first? | Who taught you?
+a : On spare cord. | A worker at the #jetty#.
+
+scene riddle_key
+when topic=pastimes
+does tell.self / react.self / assess
+a : A good #riddle# hides the #answer# in plain sight. | If it needs a secret fact, it is only a trick.
+b : Have you one for me? | How do I start?
+a : After I finish this #knot#. | Listen to every word twice.
+
+scene answer_held
+when topic=pastimes
+does tell.self / react.self / assess
+a : I do not give away a #riddle#'s #answer# after one wrong guess. | A little #silence# can help more than a new #clue#.
+b : How long do you wait? | What if I give up?
+a : Until the #boat# lands. | Then I tell you why it fits.
+
+scene flies_at_jetty
+when topic=weather here.season=summer
+does tell.self / react.self / assess
+a : #flies.capitalize# gather under the #jetty# in summer. | They find the one #slice# of #cheese# I set down.
+b : Can you cover it? | Do they bother the passengers?
+a : I wrap it now. | Enough to hurry their boarding.
+
+scene uncertain_drizzle
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : I dislike #drizzle# because it wets the #planks# without making anyone seek shelter. | A real #rain# at least clears the #jetty#.
+b : Is the boat safe? | Do you keep sailing?
+a : If I have scrubbed the deck. | While I can see the #shore#.
+
+scene hull_seam
+when topic=work
+does tell.self / react.self / assess
+a : I run a #hand# along each #hull# #seam# before a crossing. | Fresh paint can hide a gap for one short trip.
+b : What tells you it is loose? | Can you mend it?
+a : A raised edge. | On dry land, yes.
+
+scene rope_question
+when topic=work
+does tell.self / react.self / assess
+a : I ask a learner why a #knot# is tied that way. | A copied #knot# may fail when the #wind# pulls from another side.
+b : Do you show the answer? | What if they cannot explain?
+a : After they try. | We untie it and begin again.
+
+scene landing_post
+when topic=work
+does tell.self / react.self / assess
+a : That #post# leans toward the #water# after heavy #rain#. | I tie to the next one until it is reset.
+b : Can you fix it? | Does anyone else know?
+a : With another pair of #hands#. | I marked it for the crew.
+
+scene passenger_name
+when topic=work
+does tell.self / react.self / assess
+a : I ask a #stranger# for a name before the #boat# moves. | I do not need a life story, only a way to call them in trouble.
+b : Do they refuse? | Have you needed it?
+a : Then they stay ashore. | Once in a rough #wind#.
+
+scene unknown_crate
+when topic=work
+does tell.self / react.self / assess
+a : A sealed #crate# goes aboard only after I know its weight. | I balance the #load# near the middle of the #hull#.
+b : Do you open it? | Would you turn away a heavy #crate#?
+a : Only with its owner's leave. | It waits for another #boat#.
+
+scene learner_oar
+when topic=work self.master=yes
+does tell.self / react.self / assess
+a : A new #learner# takes the near #oar# while I keep the far one. | The first lesson is holding a line through quiet #water#.
+b : When do they steer? | Do they tire quickly?
+a : When the #stroke# stays even. | Then we return to the #jetty#.
+
+scene spring_crossing
+when topic=work here.season=spring
+does tell.self / react.self / assess
+a : Spring #wind# can turn between the #jetty# and the far #shore#. | I leave enough room to change our angle.
+b : Do passengers notice? | Can you still land?
+a : Only when the #oars# shift. | With a second approach.
+
+scene city_smoke
+when topic=memories self.away=yes
+does tell.self / react.self / assess
+a : I know the smell of the #city# before its roofs appear. | I spent enough years there to find familiar #streets# in fog.
+b : Do you miss it? | Could you live there again?
+a : A few corners. | If the #lake# stopped giving work.
+
+scene road_cart
+when topic=travel
+does tell.self / react.self / assess
+a : I carry goods to the #city# by #cart# when there is no water route. | Each #wheel# turn takes me away from useful #boat# work.
+b : Is the pay worth it? | Do you return the same day?
+a : Some days. | If the #road# stays clear.
+
+scene market_terms
+when topic=prices
+does tell.self / react.self / assess
+a : I ask a seller to state the #price# before I name my #coin#. | A vague offer is a trap for someone in a hurry.
+b : Do they answer? | Do you bargain then?
+a : The honest ones do. | If the goods deserve it.
+
+scene shut_door
+when topic=home
+does tell.self / react.self / assess
+a : I keep the #door# closed when an unknown face comes after dark. | They can speak from the #path# until I know the errand.
+b : Do you ever let them in? | Is that not unkind?
+a : If someone I trust vouches. | I can still offer directions.
+
+scene family_table
+when topic=family
+does tell.self / react.self / assess
+a : Our #home# has voices enough without mine adding much. | I listen at the #table# and answer when I have something useful.
+b : Do they mind your silence? | Do you speak more outdoors?
+a : They know me. | On a #boat#, perhaps.
+
+scene cold_reply
+when topic=smalltalk
+does tell.self / react.self / assess
+a : People take a short #answer# for anger. | I would rather say one true thing than fill an #hour# with guesses.
+b : Are you angry now? | Should I ask another question?
+a : I am simply thinking. | If it is one you want answered.
+
+scene guarded_news
+when topic=gossip
+does tell.self / react.self / assess
+a : I heard a story at the #jetty# and kept it there. | A #passenger#'s private trouble is not mine to carry home.
+b : What if someone needs warning? | Do you tell anyone?
+a : Then I give the useful part. | The person concerned, if I can.
+
+scene night_lantern
+when topic=work here.time=night
+does tell.self / react.self / assess
+a : At #night# I set a #light# where the #jetty# edge is visible. | A dark #plank# can look wider than it is.
+b : Will you take a boat out? | Does the light reach far?
+a : Only for a true need. | Far enough to board safely.
+
+scene first_question
+when topic=memories
+does tell.self / react.self / assess
+a : I once answered a #riddle# before hearing its last word. | The final #clue# reversed everything I thought I knew.
+b : Did you guess again? | Did it teach you patience?
+a : After a pause. | More than a lecture could.
+
+scene old_knife
+when topic=memories
+does tell.self / react.self / assess
+a : My first #knife# lost its #edge# every few days. | I learned to sharpen gently instead of grinding away the #blade#.
+b : Do you still have it? | Was it useful?
+a : In a drawer at #home#. | It taught me care.
+
+scene clear_sky
+when topic=weather here.weather=clear
+does tell.self / react.self / assess
+a : A clear #sky# shows the far #shore# before we leave. | I can choose a line without trusting somebody else's #answer#.
+b : Is the route easier then? | Do you sail faster?
+a : Easier to judge. | Only as fast as the #water# permits.
+
+scene autumn_return
+when topic=home here.season=autumn
+does tell.self / react.self / assess
+a : After an autumn #swim#, I walk straight to the #fire#. | The cold stays in my #hands# longer than I admit.
+b : Why keep swimming? | Does food help?
+a : I like the quiet #lake#. | A #slice# of #cheese# does.
+
+story false_answer [topic=pastimes self.age>=25]
+  : I told a #riddle# to a #passenger# who answered before I finished.
+  : The final #clue# changed the meaning, and the #passenger# laughed at the mistake.
+  ask : Did they solve it?
+  b : An impatient answer.
+  : On the far #shore#, after thinking it through.
+
+story cold_swim [topic=pastimes self.age>=25]
+  : I took an autumn #swim# when the #wind# had driven everyone indoors.
+  : Halfway to the #post#, my #hands# grew stiff, so I turned for the near #shore#.
+  ask : Did you make it easily?
+  b : You knew when to turn.
+  : Slowly. I sat by the #fire# afterward.
+
+story hidden_seam [topic=work self.age>=25]
+  : A fresh-painted #hull# looked sound until I touched one #seam#.
+  : The #plank# moved beneath my #hand#, and I kept the #boat# ashore for repair.
+  ask : Was it dangerous?
+  b : The paint hid it well.
+  : It could have been, once the #load# was aboard.
+
+story cart_wheel [topic=travel self.age>=25]
+  : A #cart# #wheel# lost a pin on the #road# toward the #city#.
+  : I stopped the #load# before it leaned and found the pin in the dust.
+  ask : Did you finish the journey?
+  b : You caught it in time.
+  : Yes, though I would rather have rowed all day.
+
+story sharp_edge [topic=memories self.age>=25]
+  : I sharpened an old #knife# too quickly and took a chip from the #edge#.
+  : I spent the rest of the #hour# working the metal smooth again.
+  ask : Did you keep it?
+  b : The repair took longer.
+  : I still carry it, safely in its #sheath#.
+
+rule @bark_riddle
+when concept=bark
+does aside
+cooldown 8h
+say The last #clue# changes it. | That #answer# came too quickly.
+
+rule @bark_hull
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say This #seam# needs a touch. | The #hull# has one more place to check.
+
+rule @bark_knife
+when concept=bark
+does aside
+cooldown 9h
+say Back in the #sheath# now. | A clean #edge# is enough.
+
+rule @bark_flies
+when concept=bark here.season=summer
+does aside
+cooldown 10h
+say The #flies# found the #cheese#. | Keep that #slice# covered.
+
+rule @bark_swim
+when concept=bark here.season=autumn
+does aside
+cooldown 11h
+say The #water# still calls me in. | I will keep the #shore# close.
+
+rule @bark_rain
+when concept=bark here.weather=rain
+does aside
+cooldown 12h
+say A little #drizzle# and every #plank# turns slick. | Give me a proper #rain# or clear #sky#.
+
+dlg @1 resident.hub : #greet#. State your errand from the #jetty#. | #greet#. I am checking this #knot#.
+dlg @2 resident.hub [topic.meeting=known] : I remember your last #question#. | Back for another #crossing#? The #boat# is ready.
+dlg @3 resident.hub [here.time=night] : The #boat# stays tied tonight. What is it? | Keep where the #light# reaches the #plank#.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Remain on that side of the #post#. | I will hear a clear request, nothing more.
+dlg @1 resident.job : I work the #boat# at #self.workplace# and inspect the #hull# before each crossing. | I handle the #oars#, #rope#, and cargo at #self.workplace#.
+dlg @2 resident.job [self.working=yes] : This #seam# must be checked before I leave. | I am setting the #load# in the #boat# now.
+dlg @1 resident.bye : #farewell#. Mind the #jetty# #planks#. | #saying.capitalize#. I need to secure the #boat#.
+dlg @2 resident.bye [here.time=night] : Take the lit #path# back. | Good night. Stay clear of the #water# edge.
+dlg @1 master.learn [here.teaches=yes] : First learn to test a #knot# and read a #hull# #seam#. | A smooth #stroke# comes after you can keep the #boat# safe.
+dlg @2 master.learn [here.teaches=yes topic.meeting=known] : Back for another lesson? Show me the #rope# you tied. | I remember your last #knot#; test this one before we sail.
+dlg @3 master.learn [here.teaches=yes self.working=yes] : Watch the #oar# angle while I finish this crossing. | Stand back while I settle the #load#.
+dlg @3 resident.bye [self.working=yes] : I need both #hands# on the #boat#. #farewell#. | The next #passenger# is ready to board.
+graft resident.hub
+choice Do you swim even when it is cold? -> autumn
+node autumn
+say In autumn, yes. I stay near the #shore# and turn before my #hands# stiffen. Cold #water# punishes showing off.
+free
+choice Give me a riddle. -> riddle
+choice Back to the jetty. -> hub
+node riddle
+say What crosses the #lake# without a #boat# and disappears when you name it? Think before you answer; I will tell you when you return.
+choice Back to the jetty. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice What must I check before rowing? -> safety
+node safety
+say Run a #hand# along the #hull# #seam#, test the #rope#, and keep the #load# low. Then take up the #oar#.
+free
+choice Why ask for a passenger's name? -> names
+choice Back to the lesson. -> end
+node names
+say If someone falls or goes missing, I need to call the right #passenger#. I ask before the #boat# leaves.
+choice Back to the lesson. -> end
+choice Goodbye. -> bye
