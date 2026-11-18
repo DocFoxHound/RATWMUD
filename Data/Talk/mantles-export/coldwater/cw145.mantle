@@ -1,0 +1,322 @@
+# cw145, the name-keeper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw145
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_cw_ash_greyton
+written_by claude-codex-cw-2
+title the name-keeper
+fits stage=young|adolescent|adult|old
+prefers talk=plain
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk remembers_every_name_ever_heard
+likes oatcakes swimming tidy_house autumn_wind
+dislikes salt_wind early_bells
+fears forgetting_a_friends_name being_pulled_under_in_deep_water
+hopes to_know_every_wolf_by_name to_swim_the_wider_cove
+topics family +0.4 home +0.4 pastimes +0.3 weather +0.2 memories +0.2
+styles comfort=gentle gossip=reluctant refuse=plain tease=dry
+marks oath saying
+persona #self.first# remembers every #name# heard, keeps the #room# tidy, and watches the #lake# before a #swim#.
+
+words
+oath! = Name and neat paws | By the clear water
+saying! = A name stays when a face goes | Put each thing in its place
+name = name | first name
+names = names | remembered names
+face = face | familiar face
+memory = memory | clear memory
+voice = voice | speaking voice
+voices = voices | familiar voices
+friend = friend | known friend
+visitor = visitor | new visitor
+family = family | household
+mother = mother | mother
+father = father | father
+home = home | farmhouse
+room = room | small room
+floor = floor | clean floor
+table = table | supper table
+shelf = shelf | wooden shelf
+broom = broom | hand broom
+cup = cup | drinking cup
+cups = cups | drinking cups
+plate = plate | clean plate
+plates = plates | clean plates
+oatcake = oatcake | warm oatcake
+oatcakes = oatcakes | buttered oatcakes
+butter = butter | soft butter
+crumb = crumb | oatcake crumb
+crumbs = crumbs | oatcake crumbs
+lake = lake | Glasswater
+water = water | clear water
+shore = shore | near shore
+cove = cove | sheltered cove
+swim = swim | short swim
+stroke = stroke | swimming stroke
+strokes = strokes | swimming strokes
+stone = stone | smooth stone
+stones = stones | shore stones
+reed = reed | tall reed
+reeds = reeds | lake reeds
+wind = wind | autumn wind
+autumn = autumn | leaf season
+leaf = leaf | fallen leaf
+leaves = leaves | fallen leaves
+salt = salt | sea salt
+bell = bell | early bell
+bells = bells | morning bells
+morning = morning | first light
+evening = evening | fading light
+boat = boat | lake boat
+boats = boats | lake boats
+rope = rope | mooring rope
+landing = landing | lakeside landing
+road = road | High Road
+cart = cart | goods cart
+wheel = wheel | cart wheel
+city = city | Ridgemere
+street = street | busy street
+streets = streets | busy streets
+game = game | yard game
+chalk = chalk | white chalk
+mark = mark | chalk mark
+list = list | little list
+book = book | worn book
+page = page | paper page
+festival = festival | festival day
+sweet = sweet | festival sweet
+song = song | short song
+door = door | front door
+sky = sky | open sky
+mist = mist | lake mist
+
+any
+opinion @1 city for 1 : A #city# holds more #names# than I could learn in a week. | I want to see its #streets# and remember who lives there.
+opinion @1 festivals for 1 : At a #festival# I can learn a new #song# and a new #name#. | Someone always has a #sweet# to share.
+opinion @1 houses against 1 : A fine house should have a #door# for every visitor. | I would rather know the people inside than admire the wall.
+opinion @1 road mixed 0 : A #road# can bring a new #friend#. | I still prefer the #shore# near #home#.
+opinion @1 strangers mixed 0 : I ask a #visitor# for a #name# before I ask anything else. | A new #face# might become familiar tomorrow.
+opinion @1 times for 1 : I have a warm #home# and enough #oatcakes#. | I cannot complain about today.
+line @1 greet : #greet#. What is your #name#? | #greet#. I think we have met by the #landing#.
+line @2 greet [pair.band=friends|family] : I remember where we left our #game#. | There is an #oatcake# for you on the #table#.
+line @3 greet [here.time=dawn] : That #bell# rang before I was ready. | The #morning# came in before the #wind#.
+line @1 greet.return : I remembered your #voice#. | #welcome_back#. I have your #name# right this time.
+line @1 kin.open [pair.kin!=no] : I cleared a place at the #table# for you. | Come inside; I swept the #floor#.
+line @1 again.open : You came back before the #chalk# washed away. | I still remember the last #name# you told me.
+line @1 farewell : #farewell#. I am going down to the #shore#. | #saying.capitalize#. That #cup# belongs on its shelf.
+line @1 farewell.return : Tell me another #name# next time. | We can finish our #game# when you return.
+line @1 react.news : Slow down; I want to remember who was there. | Tell me the #name# again.
+line @1 react.news.new : You have brought a story no one told me at #home#. | Whose #voice# first carried the word?
+line @1 react.news.known : I heard something like that near the #boat#. | Your version has a different ending.
+line @1 react.news.doubt : I would ask the person whose #name# is in it. | Perhaps two stories got mixed together.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That is sad. I will stay here with you. | We can sit by the #lake# for a while.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I want to remember that happy #name#. | We ought to sing a #song# for them.
+line @1 answer.how : I swept the #floor# and had an #oatcake#. | The #lake# looks calm today.
+line @1 answer.how.busy [self.working=yes] : The #cups# need sorting onto the #shelf#. | I still have one task before I go to the #shore#.
+line @1 ask.how : Have you eaten? | Did the #wind# catch you on the #road#?
+line @1 sympathise : We can be quiet together. | Would half an #oatcake# help?
+line @1 reassure : We can learn the #stroke# together in shallow #water#. | Try once more; I will remember how it went.
+line @1 decline : I will stay on this side of the #reeds#. | I need to get back #home# first.
+line @1 accept_decline : All right. We can play another #game#. | I understand; I will ask another day.
+line @1 thank : You remembered my #name#. That was kind. | You kept the #boat# steady while I climbed out.
+line @1 deflect_thanks : I only moved the #plate# out of the way. | I had a spare #oatcake#.
+line @1 preclose : I must be #home# before the #evening# darkens. | I left the #broom# leaning against our #door#.
+line @1 tease [pair.band=friends] : I remember your last wrong move in that #game#. | You left more #crumbs# than a whole flock of birds.
+line @1 ack : #bc_right#. I will check the #shelf#. | #bc_fair_enough#. Let us go to the #shore#.
+line @1 give.advice : Stay where your feet touch the bottom. | Put the #cup# away before you forget it.
+line @1 warn [world.bandits=near] : I heard the #road# is unsafe. Let us stay by #home#. | Ask an older wolf before going past the #landing#.
+scene names_first
+when topic=home
+does tell.self / react.self / assess
+a : I ask a new #visitor# for a #name# and say it twice. | Then the next meeting feels less strange.
+b : Does it stay with you? | What if you hear many?
+a : Nearly always. | I remember the #voice# with it.
+
+scene name_game
+when topic=pastimes
+does tell.self / react.self / assess
+a : I make a #game# of recalling everyone I met at the #landing#. | I can put each #face# beside a #name# in my mind.
+b : Can you name them all? | Does anyone play with you?
+a : I miss one now and then. | Sometimes a #friend# tries to catch me out.
+
+scene tidy_shelf
+when topic=home
+does tell.self / react.self / assess
+a : I put each #cup# in the same place on the #shelf#. | Then nobody has to search before supper.
+b : Does everyone do that? | Where would you search for a missing #cup#?
+a : Not yet. | I look on the #table# first.
+
+scene sweep_floor
+when topic=home
+does tell.self / react.self / assess
+a : The #floor# gathers #crumbs# whenever we eat #oatcakes#. | I sweep toward the #door# and see what has fallen.
+b : Do you find anything else? | Is it your task?
+a : A #stone# from someone's pocket, once. | Often.
+
+scene buttered_cake
+when topic=food
+does tell.self / react.self / assess
+a : A warm #oatcake# holds #butter# until it reaches the #plate#. | I eat mine before the edges cool.
+b : Do you leave any for me? | Does it make a mess?
+a : One is on the #table#. | Only a few #crumbs#.
+
+scene first_swim
+when topic=pastimes
+does tell.self / react.self / assess
+a : I practise one #stroke# at a time near the #shore#. | The #lake# feels cold until I start moving.
+b : Can you reach the reeds? | Do you go alone?
+a : The nearest #reeds#. | Someone watches from the bank.
+
+scene wide_cove
+when topic=pastimes
+does tell.self / react.self / assess
+a : The far side of the #cove# looks close from dry land. | From the #water# it takes many more #strokes#.
+b : Have you crossed it? | Will you try?
+a : Not yet. | When I can swim the near side twice.
+
+scene autumn_breeze
+when topic=weather here.season=autumn
+does tell.self / react.self / assess
+a : The autumn #wind# sends #leaves# across the #landing#. | I chase one until it reaches the #lake#.
+b : Do you catch it? | Is the wind cold?
+a : Once in a while. | Less when I keep moving.
+
+scene salt_gust
+when topic=weather
+does tell.self / react.self / assess
+a : I do not like #salt# in the #wind#. | It clings to my fur after the gust has passed.
+b : Does it reach this #lake#? | Can you wash it out?
+a : Sometimes from a traveller's things. | At the #shore#.
+
+scene early_bell
+when topic=weather here.time=dawn
+does tell.self / react.self / assess
+a : The #bell# wakes me before the #sky# has much light. | I lie still and try to remember my dream.
+b : Can you remember it? | Do you get up?
+a : Only a piece. | When I hear the #home# stirring.
+
+scene boat_names
+when topic=travel
+does tell.self / react.self / assess
+a : I remember the #names# painted on #boats# at the #landing#. | One of them has a letter nearly rubbed away.
+b : Can you read it? | Do you ask the owner?
+a : I think so. | Next time I see that #boat#.
+
+scene family_table
+when topic=family
+does tell.self / react.self / assess
+a : At our #table# I can tell who has come #home# by the sound at the #door#. | I put out the right number of #plates#.
+b : Do you ever count wrong? | Who arrives first?
+a : When a #visitor# comes. | It changes with the day.
+
+scene chalk_list
+when topic=memories
+does tell.self / react.self / assess
+a : I wrote three #names# in #chalk# by the #door#. | The #rain# took the marks, but I still knew each one.
+b : Why write them? | Could you do more?
+a : To see how they looked. | If the #chalk# lasts.
+
+scene festival_names
+when topic=home
+does tell.self / react.self / assess
+a : At the #festival# I learned the #names# of two visitors. | I remember the #song# they sang more clearly than their clothes.
+b : Will you meet them again? | Can you sing it?
+a : If they return. | Only the first verse.
+
+scene road_cart
+when topic=travel
+does tell.self / react.self / assess
+a : A #cart# came down the #road# with a loose #wheel#. | We all stood clear until it stopped by the #landing#.
+b : Did anyone fix it? | Were the goods safe?
+a : The driver tightened it. | Nothing fell that I saw.
+
+scene quiet_water
+when topic=weather here.weather=clear
+does tell.self / react.self / assess
+a : On a clear day I can see #stones# beneath the #lake#. | I try to count them without entering the #water#.
+b : Do the waves spoil the count? | Which is the biggest?
+a : Often. | The one beside the first #reed#.
+
+scene known_voices
+when topic=memories
+does tell.self / react.self / assess
+a : Even when the #mist# hides a #face#, I know some #voices# from the #shore#. | A #name# comes to me before the wolf does.
+b : Are you ever wrong? | Do you call out?
+a : Once, when two laughed alike. | If I am sure.
+
+story wrong_name [topic=memories self.age>=7]
+  : I thought I knew a #visitor# by the #voice# and called the wrong #name#.
+  : The visitor laughed and told me the right one, so I said it again.
+  ask : Did you remember it?
+  b : That must have surprised you.
+  : I do now. I remember the laugh as well.
+
+story oatcake_crumbs [topic=food self.age>=7]
+  : I carried two #oatcakes# to the #table# and left a trail of #crumbs#.
+  : I swept the #floor# before anyone could step on them.
+  ask : Did the cakes survive?
+  b : That was a quick tidy-up.
+  : Both did, though one lost its edge.
+
+story first_reed [topic=pastimes self.age>=7]
+  : I tried to #swim# to the first #reed# and turned back too soon.
+  : The next day I took slower #strokes# and touched its stem.
+  ask : Will you go farther?
+  b : You found the right pace.
+  : Only when someone can watch from the #shore#.
+
+rule @bark_name
+when concept=bark
+does aside
+cooldown 8h
+say I know that #face#. What was the #name#? | I have remembered it now.
+
+rule @bark_table
+when concept=bark
+does aside
+cooldown 7h
+say The #cups# belong on the #shelf#. | There is one #crumb# left on the #table#.
+
+rule @bark_water
+when concept=bark here.place=shore
+does aside
+cooldown 10h
+say I can see the bottom from here. | That #reed# is farther than it looks.
+
+rule @bark_wind
+when concept=bark here.season=autumn
+does aside
+cooldown 11h
+say The #leaves# are racing the #wind#. | This is the best #wind# for a walk.
+
+dlg @1 resident.hub : #greet#. Tell me your #name# and I will remember it. | #greet#. I am sorting the #cups# before I go out.
+dlg @2 resident.hub [topic.meeting=known] : I remember your #face#. Is the #lake# clear today? | Back again? I know your #name#.
+dlg @1 resident.job : I help keep the #home# tidy and play near the #landing#. | I sweep the #floor# and put the #plates# away.
+dlg @1 resident.bye : #farewell#. I am going to the #shore#. | #saying.capitalize#. I have an #oatcake# waiting.
+graft resident.hub
+choice Do you remember everyone you meet? -> names
+node names
+say I try. A #voice# helps me keep the #name# in mind. If you tell me yours, I will practise it.
+free
+choice Where do you swim? -> swim
+choice Back to the landing. -> hub
+node swim
+say Near the #shore#, where I can touch the bottom. The farther #cove# can wait until I am stronger.
+choice Back to the landing. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. I remember you from the #landing#. | #greet#. There is room beside our #table#.
+line @1 farewell : #farewell#. Perhaps we will meet beside the #lake#. | #saying.capitalize#. I should check the #door#.
+
+young
+line @1 greet : #greet#. Tell me your #name# again. | #greet#. I have an #oatcake# for after my #swim#.
+line @1 farewell : #farewell#. I have to put these #cups# away. | I will remember you when you come back.
+
+adolescent
+line @1 greet : #greet#. I was practising a longer #swim#. | #greet#. I can remember every #name# from yesterday.
+line @1 farewell : #farewell#. I will take the #road# after sunrise. | I have a #shelf# to straighten before bed.
