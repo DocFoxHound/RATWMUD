@@ -1,0 +1,323 @@
+# cw156, the apple riddle (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle cw156
+revision 1
+state ready
+dialect coldwater
+accent light broad
+tier standard
+written_for tn_sm_edric_harvestley
+written_by claude-codex-cw-2
+title the apple riddle
+fits stage=young|adolescent|adult|old
+prefers talk=chatty
+traits temper=even talk=chatty warmth=warm humour=merry honesty=plain piety=ordinary drive=steady
+quirk can_tell_an_apple_by_its_smell
+likes oatcakes riddles market_bustle misty_dawns
+dislikes wet_floors rats
+fears a_rat_in_the_orchard_store losing_the_path_in_the_mist
+hopes a_new_riddle_at_the_market a_basket_of_apples_to_share
+topics pastimes +0.5 home +0.4 food +0.3 travel +0.2
+styles comfort=gentle gossip=curious refuse=plain tease=playful
+marks oath saying
+persona #self.first# identifies each #apple# by smell, trades #riddles# for #oatcakes#, and remembers the long #road# home.
+
+words
+oath! = Pips and peel | By the orchard rows
+saying! = Smell the apple before the bite | Every riddle has a seed
+apple = apple | ripe apple
+apples = apples | orchard apples
+peel = peel | red peel
+pip = pip | brown pip
+pips = pips | apple pips
+basket = basket | wicker basket
+orchard = orchard | Meresend orchard
+row = row | tree row
+rows = rows | orchard rows
+tree = tree | apple tree
+branch = branch | low branch
+blossom = blossom | pale blossom
+scent = scent | sweet scent
+smell = smell | apple smell
+fruit = fruit | picked fruit
+store = store | orchard store
+rat = rat | store rat
+rats = rats | cellar rats
+trap = trap | simple trap
+oatcake = oatcake | buttered oatcake
+oatcakes = oatcakes | buttered oatcakes
+butter = butter | fresh butter
+plate = plate | small plate
+bread = bread | soft bread
+riddle = riddle | new riddle
+riddles = riddles | clever riddles
+answer = answer | hidden answer
+question = question | tricky question
+guess = guess | bold guess
+market = market | busy market
+stall = stall | market stall
+seller = seller | fruit seller
+buyer = buyer | passing buyer
+crowd = crowd | market crowd
+road = road | High Road
+city = city | Ridgemere
+mile = mile | long mile
+path = path | orchard path
+home = home | farmhouse
+house = house | family house
+family = family | household
+mother = mother | orchard tending mother
+father = father | house keeping father
+friend = friend | new friend
+visitor = visitor | passing visitor
+lake = lake | Glasswater
+mist = mist | morning mist
+dawn = dawn | misty dawn
+morning = morning | early morning
+rain = rain | soft rain
+floor = floor | wet floor
+step = step | careful step
+boot = boot | muddy boot
+boots = boots | walking boots
+gate = gate | orchard gate
+fence = fence | orchard fence
+day = day | long day
+evening = evening | late evening
+sun = sun | low sun
+bell = bell | market bell
+bells = bells | market bells
+branches = branches | low branches
+guesses = guesses | bold guesses
+trees = trees | orchard trees
+door = door | house door
+baskets = baskets | wicker baskets
+coin = coin | copper coin
+bag = bag | cloth bag
+
+any
+opinion @1 dole for 1 : If a #child# lacks #bread#, I would share my #oatcake#. | Nobody should count crumbs alone.
+opinion @1 festivals for 3 : The dancing ends too soon for me. | I would carry #apples# for everyone waiting by the #gate#.
+opinion @1 newcomers for 1 : A #visitor# can learn our #orchard# #path# in a single walk. | I like a new listener for a #riddle#.
+opinion @1 strangers for 1 : I can offer an #apple# before asking a name. | A hungry traveller may know a fine #question#.
+opinion @1 road mixed 0 : I followed every bend toward the #city# before turning homeward. | The last #mile# toward #home# was my favourite.
+opinion @1 merchants mixed 0 : A #seller# who lets me smell the #fruit# gets my #coin#. | A shiny #peel# can cover a sour middle.
+opinion @1 times for 1 : There are #apples# in our #basket# today. | That seems a good beginning.
+line @1 greet : #greet#. My newest #riddle# has an orchard answer. | #greet#. Smell this #apple# and guess its kind.
+line @2 greet [pair.band=friends|family] : I saved the sweetest #oatcake# for you. | Come see the #basket# I filled.
+line @3 greet [here.time=dawn] : The #mist# made every #tree# look twice as tall. | #greet#. The #apples# smell strongest at #dawn#.
+line @1 greet.return : You came back! I have another #question#. | The #basket# is fuller since you left.
+line @1 kin.open [pair.kin!=no] : Come up the #orchard# #path# with me. | There is room at our #plate# for you.
+line @1 again.open : Is my orchard #riddle# still troubling you? | I found an #apple# with a new #scent#.
+line @1 farewell : #farewell#. I need to carry this #basket# inside. | Keep the #answer# until we meet.
+line @1 farewell.return : Bring me a #riddle# next time. | I will leave an #apple# near the #gate#.
+line @1 react.news : Wait; tell me from the beginning. | Did it happen near the #market#?
+line @1 react.news.new : No such word reached our #orchard# #rows#. | Who came down the #road# with it?
+line @1 react.news.known : The #seller# mentioned a piece of it. | Now I understand the rest.
+line @1 react.news.doubt : That sounds like a #riddle# missing its #answer#. | Can anyone show where it happened?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can bring you an #oatcake# and stay quiet. | I am sorry. Shall we sit by the #tree#?
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I will pick the best #apple# for them. | That is a happy thing to tell at #home#.
+line @1 answer.how : I ate breakfast and found no #rats# in the #store#. | The #mist# lifted before my #boots# got wet.
+line @1 answer.how.busy [self.working=yes] : I am carrying #fruit# from the #rows#. | This #basket# still needs filling.
+line @1 ask.how : What have you seen on the #road# today? | Did you find a good #apple#?
+line @1 sympathise : Take the sheltered place beneath that #branch#; I will stay. | I will listen without asking a #question#.
+line @1 reassure : We can find the #path# once the #mist# clears. | A wrong #guess# only brings us closer.
+line @1 decline : I cannot go; the #basket# needs taking #home#. | No, that #floor# is too slippery.
+line @1 accept_decline : Then my #riddle# can wait for tomorrow. | Perhaps we can walk later.
+line @1 thank : You showed me the dry #step# across the #floor#. | That #answer# was clever; thank you.
+line @1 deflect_thanks : I had an extra #apple# anyway. | I wanted another listener.
+line @1 preclose : The #sun# is slipping behind the #rows#. | My #family# will wonder about this #basket#.
+line @1 tease [pair.band=friends] : A #rat# might solve that #riddle# before you. | You picked the sourest #apple# in the #row#.
+line @1 ack : #bc_right#. That #scent# gives it away. | #bc_fair_enough#. Try the next #question#.
+line @1 give.advice : The stem holds the strongest #scent#; try there first. | Keep one #boot# dry on a wet #floor#.
+line @1 warn [world.bandits=near] : Stay with someone on the #road#. | I would wait until the #morning# light.
+scene apple_scent
+when topic=food
+does tell.self / react.self / assess
+a : I can name an #apple# with my eyes closed if it came from our #orchard#. | The sharp ones smell green even when the #peel# is red.
+b : Do you ever get one wrong? | Can I try?
+a : When a #basket# mixes two #rows#. | Hold this one by the stem.
+
+scene sour_peel
+when topic=food
+does tell.self / react.self / assess
+a : A bright #apple# can hide a sour bite. | I smell around the stem before trading a #coin#.
+b : Does the #seller# mind? | What if it is bruised?
+a : Not the honest one. | I leave it for baking.
+
+scene orchard_rows
+when topic=home
+does tell.self / react.self / assess
+a : Our #orchard# #rows# run toward the #lake#. | On a misty #dawn# I can follow their #scent# back to the #gate#.
+b : Have you lost the path? | Do all the trees smell alike?
+a : Once, for a moment. | Not when the #fruit# is ripe.
+
+scene buttered_oatcake
+when topic=food
+does tell.self / react.self / assess
+a : An #oatcake# is better warm, with #butter# across the middle. | I carry one wrapped in a clean cloth.
+b : For yourself? | Does it stay warm?
+a : For whoever is hungry first. | Until I reach the #fence#.
+
+scene market_riddle
+when topic=pastimes
+does tell.self / react.self / assess
+a : I traded a #riddle# for an #apple# at the #market#. | The #seller# laughed before finding the #answer#.
+b : What was the question? | Did you get the apple?
+a : I will ask you after supper. | The small striped one.
+
+scene crowded_stall
+when topic=home
+does tell.self / react.self / assess
+a : At the #market# I like to hear every #stall# calling at once. | I stay near the #fruit# so I can find my way.
+b : Is it loud? | Do you ever sell there?
+a : Loud as a dozen #bells#. | I help carry the #basket#.
+
+scene misty_dawn
+when topic=weather here.time=dawn
+does tell.self / react.self / assess
+a : Mist sits low under the #branches# at #dawn#. | I can see only the nearest #row#.
+b : Is it frightening? | Do you wait inside?
+a : A little, until I smell #apples#. | I walk slowly.
+
+scene wet_floor
+when topic=home
+does tell.self / react.self / assess
+a : Someone carried #rain# across our #floor# on muddy #boots#. | I slid while holding a full #basket#.
+b : Did the fruit spill? | Were you hurt?
+a : Only one #apple# escaped. | My pride more than my knee.
+
+scene rat_store
+when topic=work
+does tell.self / react.self / assess
+a : I listen for #rats# near the #store# before opening it. | A gnawed #bag# means we must move the #fruit#.
+b : Have you caught one? | Does it eat much?
+a : With a #trap#, once. | More than its size suggests.
+
+scene long_road
+when topic=travel
+does tell.self / react.self / assess
+a : I walked the #road# to the #city# and counted each #mile# home. | The last one smelled of our #orchard#.
+b : Were you tired? | Would you go again?
+a : My #boots# were sore. | With better shoes.
+
+scene wrong_guess
+when topic=pastimes
+does tell.self / react.self / assess
+a : I guessed a #riddle# wrong three times before hearing the trick. | Each wrong #answer# was funnier than the last.
+b : What was the trick? | Did you laugh?
+a : It was about a #pip# pretending to be a #tree#. | More than the teller did.
+
+scene family_basket
+when topic=family
+does tell.self / react.self / assess
+a : I bring the #basket# in when my #family# finishes among the #rows#. | I leave the least bruised #apples# at the top.
+b : Why those? | Do you eat together?
+a : They look welcoming. | After the last #basket# reaches #home#.
+
+scene low_branch
+when topic=home
+does tell.self / react.self / assess
+a : The low #branch# by the #gate# holds three good #apples#. | I must stretch to reach the far one.
+b : Does the branch bend? | Do you climb?
+a : Only when the #basket# is heavy. | I keep my feet on the ground.
+
+scene festival_dance
+when topic=pastimes here.day=festival
+does tell.self / react.self / assess
+a : I like the #market# music when everyone starts dancing. | I offer a #fruit# to anyone waiting beside the #gate#.
+b : Do you dance too? | Are there enough apples?
+a : Until my feet ache. | I bring a second #bag#.
+
+scene road_friend
+when topic=travel
+does tell.self / react.self / assess
+a : I met a #visitor# on the #road# who knew a #riddle# I had never heard. | We walked together to the next turn.
+b : Did you solve it? | Did the visitor stay?
+a : After two #guesses#. | Only until the #market#.
+
+scene apple_blossom
+when topic=weather here.season=spring
+does tell.self / react.self / assess
+a : Blossom makes the #orchard# smell different from ripe #fruit#. | I count the buds before the #rain# shakes them.
+b : Can you tell the trees apart? | Does each become an apple?
+a : By their bark, yes. | Not every one.
+
+scene shared_plate
+when topic=family
+does tell.self / react.self / assess
+a : I put a spare #oatcake# on a #plate# when a #visitor# comes. | Someone who walked the #road# may be hungry.
+b : Do you always have one? | What if they refuse?
+a : I save half of mine. | Then I eat it later.
+
+story city_walk [topic=travel self.age>=10]
+  : I once walked every #mile# to the #city# and back.
+  : The stone streets smelled nothing like our #orchard#, so I kept thinking of the #gate# at #home#.
+  ask : Did you find the way?
+  b : That is a long walk.
+  : I followed the #road# and knew our #trees# by their #scent#.
+
+story rat_basket [topic=work self.age>=10]
+  : A #rat# made a hole in a cloth #bag# beside the #store#.
+  : I moved the #apples# into a clean #basket# before it found another bite.
+  ask : Did you catch it?
+  b : Quick work.
+  : The #trap# caught it the next #morning#.
+
+story riddle_trade [topic=pastimes self.age>=10]
+  : I asked a #seller# a #riddle# while carrying #fruit# through the #market#.
+  : The answer was in the #apple# I held, but the seller guessed a #bell#.
+  ask : What did you win?
+  b : You had the answer already.
+  : A warm #oatcake#, shared in two.
+
+rule @bark_apple
+when concept=bark
+does aside
+cooldown 8h
+say This #apple# came from the upper #row#. | I know that #scent#.
+
+rule @bark_riddle
+when concept=bark
+does aside
+cooldown 9h
+say Here is another #riddle#. | Give me your wildest #guess#.
+
+rule @bark_floor
+when concept=bark
+does aside
+cooldown 10h
+say Mind that wet #floor#. | I will leave my #boots# by the #door#.
+
+rule @bark_market
+when concept=bark
+does aside
+cooldown 11h
+say The #market# sounds lively today. | I can carry one more #basket#.
+
+dlg @1 resident.hub : #greet#. I have an #apple# and a #riddle#. | #greet#. Come see the #orchard#.
+dlg @2 resident.hub [topic.meeting=known] : You returned! I remembered another #question#. | Did you solve the last #riddle#?
+dlg @1 resident.job : I live at the #orchard# and help carry #fruit#. | I fill #baskets# and watch for #rats#.
+dlg @1 resident.bye : #farewell#. I have to bring this #basket# #home#. | #saying.capitalize#. Try the next #apple#.
+graft resident.hub
+choice How do you know the apples? -> apples
+node apples
+say I smell near the stem. Each #row# has a different #scent#, and a bruised #apple# gives itself away.
+free
+choice Tell me a riddle. -> riddle
+choice Goodbye. -> bye
+node riddle
+say What starts as a #pip#, wears white #blossom#, and ends in a red #peel#? An #apple# #tree#, of course.
+choice Back to the orchard. -> hub
+choice Goodbye. -> bye
+
+
+grown
+line @1 greet : #greet#. The #orchard# smells ripe today. | #greet#. Have you brought a #riddle#?
+line @1 farewell : #farewell#. I will see to the #fruit#. | #saying.capitalize#. One last #basket# waits beside our #gate#.
+
+young
+line @1 greet : #greet#. Smell this #apple#. | #greet#. I have a new #riddle#.
+line @1 farewell : #farewell#. This #basket# belongs in the #store# now. | Bring me a hard #question# next time.
+
+adolescent
+line @1 greet : #greet#. I picked these #apples# myself. | #greet#. Guess which #row# this came from.
+line @1 farewell : #farewell#. The #store# still needs checking. | I will save you an #oatcake#.
